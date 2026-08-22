@@ -3,7 +3,16 @@ import { useParams } from "wouter";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
-import { Loader2, Zap, AlertCircle, CheckCircle, MessageSquare, Bot, Calendar, Globe } from "lucide-react";
+import {
+  Loader2,
+  Zap,
+  AlertCircle,
+  CheckCircle,
+  MessageSquare,
+  Bot,
+  Calendar,
+  Globe,
+} from "lucide-react";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import type { WebsiteData, ColorScheme } from "@shared/types";
@@ -12,12 +21,35 @@ import { convertOpeningHoursToGerman } from "@shared/hours";
 const addonIcons: Record<string, any> = { MessageSquare, Bot, Calendar, Globe };
 
 const ADDONS = [
-  { id: "contact-form", name: "Kontaktformular", description: "Professionelles Kontaktformular mit E-Mail-Benachrichtigung", price: 49, icon: "MessageSquare" },
-  { id: "ai-chat", name: "KI-Chat", description: "Intelligenter Chatbot für automatische Kundenanfragen", price: 99, icon: "Bot" },
-  { id: "booking", name: "Terminbuchung", description: "Online-Terminbuchungssystem für Ihre Kunden", price: 79, icon: "Calendar" },
-  { id: "custom-domain", name: "Eigene Domain", description: "Verbinden Sie Ihre eigene Domain", price: 29, icon: "Globe" },
+  {
+    id: "contact-form",
+    name: "Kontaktformular",
+    description: "Professionelles Kontaktformular mit E-Mail-Benachrichtigung",
+    price: 49,
+    icon: "MessageSquare",
+  },
+  {
+    id: "ai-chat",
+    name: "KI-Chat",
+    description: "Intelligenter Chatbot für automatische Kundenanfragen",
+    price: 99,
+    icon: "Bot",
+  },
+  {
+    id: "booking",
+    name: "Terminbuchung",
+    description: "Online-Terminbuchungssystem für Ihre Kunden",
+    price: 79,
+    icon: "Calendar",
+  },
+  {
+    id: "custom-domain",
+    name: "Eigene Domain",
+    description: "Verbinden Sie Ihre eigene Domain",
+    price: 29,
+    icon: "Globe",
+  },
 ];
-
 
 export default function PreviewPage() {
   const params = useParams<{ token: string }>();
@@ -34,7 +66,7 @@ export default function PreviewPage() {
   const websiteIdForOnboarding = data?.website?.id;
   const { data: onboardingData } = trpc.onboarding.get.useQuery(
     { websiteId: websiteIdForOnboarding! },
-    { enabled: !!websiteIdForOnboarding },
+    { enabled: !!websiteIdForOnboarding }
   );
 
   const colorScheme = useMemo(() => {
@@ -63,17 +95,22 @@ export default function PreviewPage() {
     if (ob.addOnGallery !== undefined) patched.addOnGallery = ob.addOnGallery;
     if (ob.addOnMenu !== undefined) patched.addOnMenu = ob.addOnMenu;
     if (ob.addOnMenuData) patched.addOnMenuData = ob.addOnMenuData;
-    if (ob.addOnPricelist !== undefined) patched.addOnPricelist = ob.addOnPricelist;
-    if (ob.addOnPricelistData) patched.addOnPricelistData = ob.addOnPricelistData;
+    if (ob.addOnPricelist !== undefined)
+      patched.addOnPricelist = ob.addOnPricelist;
+    if (ob.addOnPricelistData)
+      patched.addOnPricelistData = ob.addOnPricelistData;
 
     // Kontakt-Section mit Impressum-Daten + Öffnungszeiten patchen (analog
     // OnboardingChat#liveWebsiteData). Die linke Spalte der ContactSection
     // liest address/phone/hours aus websiteData.sections[contact].items[].
     if (!Array.isArray(patched.sections)) patched.sections = [];
-    const contactIdx = patched.sections.findIndex((s: any) => s.type === "contact");
-    const contactSec: any = contactIdx > -1
-      ? patched.sections[contactIdx]
-      : { type: "contact", headline: "Kontakt", items: [] };
+    const contactIdx = patched.sections.findIndex(
+      (s: any) => s.type === "contact"
+    );
+    const contactSec: any =
+      contactIdx > -1
+        ? patched.sections[contactIdx]
+        : { type: "contact", headline: "Kontakt", items: [] };
     const items: any[] = [...(contactSec.items || [])];
     const setItem = (icon: string, value: string) => {
       if (!value) return;
@@ -82,19 +119,28 @@ export default function PreviewPage() {
       else items.push({ icon, description: value });
     };
     const street = ob.legalStreet || "";
-    const zipCity = ob.legalZip && ob.legalCity ? `${ob.legalZip} ${ob.legalCity}` : (ob.legalCity || "");
+    const zipCity =
+      ob.legalZip && ob.legalCity
+        ? `${ob.legalZip} ${ob.legalCity}`
+        : ob.legalCity || "";
     const address = [street, zipCity].filter(Boolean).join(", ");
     setItem("MapPin", address);
     setItem("Phone", ob.legalPhone || "");
     setItem("Mail", ob.legalEmail || "");
-    if (Array.isArray(ob.openingHours) && ob.openingHours.length > 0 && typeof ob.openingHours[0] === "object") {
+    if (
+      Array.isArray(ob.openingHours) &&
+      ob.openingHours.length > 0 &&
+      typeof ob.openingHours[0] === "object"
+    ) {
       const openDays = ob.openingHours.filter((d: any) => d.open);
       if (openDays.length > 0) {
-        const hoursStr = openDays.map((d: any) => {
-          const slot1 = `${d.from}–${d.to}`;
-          const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
-          return `${(d.day || "").slice(0, 2)}: ${slot1}${slot2}`;
-        }).join(" · ");
+        const hoursStr = openDays
+          .map((d: any) => {
+            const slot1 = `${d.from}–${d.to}`;
+            const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
+            return `${(d.day || "").slice(0, 2)}: ${slot1}${slot2}`;
+          })
+          .join(" · ");
         setItem("Clock", hoursStr);
       }
     }
@@ -112,10 +158,12 @@ export default function PreviewPage() {
 
     const applyNavTop = () => {
       const top = window.scrollY >= BANNER_H ? 0 : BANNER_H;
-      document.querySelectorAll<HTMLElement>(".pageblitz-preview-root nav").forEach(nav => {
-        nav.style.setProperty("top", top + "px", "important");
-        nav.style.transition = "top 0.15s ease";
-      });
+      document
+        .querySelectorAll<HTMLElement>(".pageblitz-preview-root nav")
+        .forEach(nav => {
+          nav.style.setProperty("top", top + "px", "important");
+          nav.style.transition = "top 0.15s ease";
+        });
     };
 
     const mo = new MutationObserver(applyNavTop);
@@ -147,21 +195,34 @@ export default function PreviewPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
-          <h1 className="text-xl font-bold mt-4 text-gray-900">Website nicht gefunden</h1>
-          <p className="text-gray-500 mt-2">Der Preview-Link ist ungültig oder abgelaufen.</p>
+          <h1 className="text-xl font-bold mt-4 text-gray-900">
+            Website nicht gefunden
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Der Preview-Link ist ungültig oder abgelaufen.
+          </p>
         </div>
       </div>
     );
   }
 
-  const heroImageUrl = (onboardingData as any)?.heroPhotoUrl
-    || ((data.website as any).heroImageUrl as string | null | undefined);
-  const aboutImageUrl = (onboardingData as any)?.aboutPhotoUrl
-    || ((data.website as any).aboutImageUrl as string | null | undefined);
-  const headlineFontOverride = (onboardingData as any)?.headlineFont || undefined;
+  const heroImageUrl =
+    (onboardingData as any)?.heroPhotoUrl ||
+    ((data.website as any).heroImageUrl as string | null | undefined);
+  const aboutImageUrl =
+    (onboardingData as any)?.aboutPhotoUrl ||
+    ((data.website as any).aboutImageUrl as string | null | undefined);
+  const headlineFontOverride =
+    (onboardingData as any)?.headlineFont || undefined;
   const headlineSize = (onboardingData as any)?.headlineSize || undefined;
-  const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
-  const layoutVersion = (data.website as any).layoutVersion as number | null | undefined;
+  const layoutStyle = (data.website as any).layoutStyle as
+    | string
+    | null
+    | undefined;
+  const layoutVersion = (data.website as any).layoutVersion as
+    | number
+    | null
+    | undefined;
   const requiresAgeGate = !!(data.website as any).requiresAgeGate;
   const slug = (data.website as any).slug as string;
   const business = data.business;
@@ -190,12 +251,16 @@ export default function PreviewPage() {
       `}</style>
 
       {/* Preview Banner — sticky so it scrolls away; IntersectionObserver then resets nav top to 0 */}
-      <div ref={bannerRef} className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4">
+      <div
+        ref={bannerRef}
+        className="sticky top-0 z-[60] bg-gray-900 text-white py-3 px-4"
+      >
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Zap className="h-5 w-5 text-amber-400 flex-shrink-0" />
             <span className="text-sm font-medium truncate">
-              Vorschau für <strong>{business?.name}</strong> – Diese Website wurde von Pageblitz erstellt
+              Vorschau für <strong>{business?.name}</strong> – Diese Website
+              wurde von Pageblitz erstellt
             </span>
           </div>
 
@@ -223,7 +288,8 @@ export default function PreviewPage() {
         businessAddress={business?.address || undefined}
         businessEmail={business?.email || undefined}
         openingHours={
-          Array.isArray(business?.openingHours) && typeof business?.openingHours[0] === 'string'
+          Array.isArray(business?.openingHours) &&
+          typeof business?.openingHours[0] === "string"
             ? convertOpeningHoursToGerman(business.openingHours as string[])
             : undefined
         }

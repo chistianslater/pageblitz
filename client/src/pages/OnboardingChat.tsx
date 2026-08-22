@@ -1,7 +1,30 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
-import { Loader2, Sparkles, Plus, Trash2, Send, ChevronRight, ChevronLeft, Clock, Zap, Check, Monitor, X, Pencil, Upload, ImageIcon, Save, Edit2, Settings2, Mail, CheckCircle, GripVertical, Eye } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  Plus,
+  Trash2,
+  Send,
+  ChevronRight,
+  ChevronLeft,
+  Clock,
+  Zap,
+  Check,
+  Monitor,
+  X,
+  Pencil,
+  Upload,
+  ImageIcon,
+  Save,
+  Edit2,
+  Settings2,
+  Mail,
+  CheckCircle,
+  GripVertical,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import MacbookMockup from "@/components/MacbookMockup";
@@ -13,8 +36,22 @@ import type { WebsiteData, ColorScheme } from "@shared/types";
 import { convertOpeningHoursToGerman } from "@shared/hours";
 import { translateGmbCategory, CATEGORY_GROUPS } from "@shared/gmbCategories";
 import { getContrastColor } from "@shared/colorContrast";
-import { FONT_OPTIONS, LOGO_FONT_OPTIONS, PREDEFINED_COLOR_SCHEMES, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS, withOnColors, prefersSansSerif, generateRandomColorScheme } from "@shared/layoutConfig";
-import { getGalleryImages, getHeroImageUrl, getAboutImageUrl, getRawIndustryColors } from "@shared/industryImages";
+import {
+  FONT_OPTIONS,
+  LOGO_FONT_OPTIONS,
+  PREDEFINED_COLOR_SCHEMES,
+  DEFAULT_LAYOUT_COLOR_SCHEMES,
+  LAYOUT_FONTS,
+  withOnColors,
+  prefersSansSerif,
+  generateRandomColorScheme,
+} from "@shared/layoutConfig";
+import {
+  getGalleryImages,
+  getHeroImageUrl,
+  getAboutImageUrl,
+  getRawIndustryColors,
+} from "@shared/industryImages";
 import { getV2VariantCandidates } from "@shared/stylePacks/variantCandidates";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -26,38 +63,139 @@ import { useAuth } from "@/_core/hooks/useAuth";
  * Tuple: [bold_dark_family[], elegant_refined_family[], clean_warm_family[]]
  * `round` indexes into each family — "Andere zeigen" increments round.
  */
-const VARIANT_FAMILY_RANKINGS: Record<string, [string[], string[], string[]]> = {
-  friseur:       [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
-  beauty:        [["aurora","nexus","bold","flux","dynamic"], ["elegant","luxury","natural","craft","forge"], ["clay","fresh","warm","pulse","clean","modern"]],
-  restaurant:    [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
-  food:          [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
-  baeckerei:     [["flux","aurora","nexus","bold","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
-  fitness:       [["dynamic","aurora","nexus","bold","flux"], ["craft","forge","natural","elegant","luxury"],  ["pulse","fresh","clean","clay","modern","warm"]],
-  bauunternehmen:[["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  handwerk:      [["bold","nexus","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  medizin:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
-  medical:       [["nexus","aurora","bold","flux","dynamic"], ["forge","natural","elegant","luxury","craft"],  ["pulse","clean","clay","modern","fresh","warm"]],
-  beratung:      [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
-  legal:         [["nexus","aurora","bold","flux","dynamic"], ["forge","elegant","luxury","natural","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
-  tech:          [["aurora","nexus","dynamic","bold","flux"], ["forge","elegant","natural","luxury","craft"],  ["pulse","clean","modern","clay","fresh","warm"]],
-  immobilien:    [["nexus","aurora","bold","flux","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  auto:          [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  automotive:    [["nexus","flux","bold","aurora","dynamic"], ["forge","luxury","craft","elegant","natural"],  ["clean","modern","pulse","clay","fresh","warm"]],
-  fotografie:    [["aurora","flux","nexus","bold","dynamic"], ["elegant","forge","luxury","natural","craft"],  ["clay","modern","pulse","clean","fresh","warm"]],
-  hospitality:   [["aurora","flux","nexus","bold","dynamic"], ["luxury","elegant","forge","natural","craft"],  ["warm","fresh","clay","clean","modern","pulse"]],
-  bar:           [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
-  hotel:         [["flux","aurora","bold","nexus","dynamic"], ["luxury","forge","elegant","natural","craft"],  ["warm","clay","fresh","clean","modern","pulse"]],
-  garten:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
-  nature:        [["aurora","nexus","bold","flux","dynamic"], ["natural","craft","forge","elegant","luxury"],  ["warm","fresh","clay","clean","modern","pulse"]],
-  cleaning:      [["nexus","bold","aurora","flux","dynamic"], ["forge","craft","natural","elegant","luxury"],  ["clean","pulse","modern","clay","fresh","warm"]],
-  education:     [["nexus","aurora","bold","flux","dynamic"], ["natural","forge","elegant","luxury","craft"],  ["clean","pulse","modern","clay","fresh","warm"]],
-  fastfood:      [["bold","nexus","aurora","flux","dynamic"], ["craft","forge","natural","elegant","luxury"],  ["fresh","warm","clay","clean","modern","pulse"]],
-};
+const VARIANT_FAMILY_RANKINGS: Record<string, [string[], string[], string[]]> =
+  {
+    friseur: [
+      ["aurora", "nexus", "bold", "flux", "dynamic"],
+      ["elegant", "luxury", "natural", "craft", "forge"],
+      ["clay", "fresh", "warm", "pulse", "clean", "modern"],
+    ],
+    beauty: [
+      ["aurora", "nexus", "bold", "flux", "dynamic"],
+      ["elegant", "luxury", "natural", "craft", "forge"],
+      ["clay", "fresh", "warm", "pulse", "clean", "modern"],
+    ],
+    restaurant: [
+      ["flux", "aurora", "nexus", "bold", "dynamic"],
+      ["natural", "craft", "forge", "elegant", "luxury"],
+      ["fresh", "warm", "clay", "clean", "modern", "pulse"],
+    ],
+    food: [
+      ["flux", "aurora", "nexus", "bold", "dynamic"],
+      ["natural", "craft", "forge", "elegant", "luxury"],
+      ["fresh", "warm", "clay", "clean", "modern", "pulse"],
+    ],
+    baeckerei: [
+      ["flux", "aurora", "nexus", "bold", "dynamic"],
+      ["natural", "craft", "forge", "elegant", "luxury"],
+      ["fresh", "warm", "clay", "clean", "modern", "pulse"],
+    ],
+    fitness: [
+      ["dynamic", "aurora", "nexus", "bold", "flux"],
+      ["craft", "forge", "natural", "elegant", "luxury"],
+      ["pulse", "fresh", "clean", "clay", "modern", "warm"],
+    ],
+    bauunternehmen: [
+      ["bold", "nexus", "aurora", "flux", "dynamic"],
+      ["forge", "craft", "natural", "elegant", "luxury"],
+      ["clean", "modern", "pulse", "clay", "fresh", "warm"],
+    ],
+    handwerk: [
+      ["bold", "nexus", "aurora", "flux", "dynamic"],
+      ["forge", "craft", "natural", "elegant", "luxury"],
+      ["clean", "modern", "pulse", "clay", "fresh", "warm"],
+    ],
+    medizin: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["forge", "natural", "elegant", "luxury", "craft"],
+      ["pulse", "clean", "clay", "modern", "fresh", "warm"],
+    ],
+    medical: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["forge", "natural", "elegant", "luxury", "craft"],
+      ["pulse", "clean", "clay", "modern", "fresh", "warm"],
+    ],
+    beratung: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["forge", "elegant", "luxury", "natural", "craft"],
+      ["pulse", "clean", "modern", "clay", "fresh", "warm"],
+    ],
+    legal: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["forge", "elegant", "luxury", "natural", "craft"],
+      ["pulse", "clean", "modern", "clay", "fresh", "warm"],
+    ],
+    tech: [
+      ["aurora", "nexus", "dynamic", "bold", "flux"],
+      ["forge", "elegant", "natural", "luxury", "craft"],
+      ["pulse", "clean", "modern", "clay", "fresh", "warm"],
+    ],
+    immobilien: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["luxury", "forge", "elegant", "natural", "craft"],
+      ["clean", "modern", "pulse", "clay", "fresh", "warm"],
+    ],
+    auto: [
+      ["nexus", "flux", "bold", "aurora", "dynamic"],
+      ["forge", "luxury", "craft", "elegant", "natural"],
+      ["clean", "modern", "pulse", "clay", "fresh", "warm"],
+    ],
+    automotive: [
+      ["nexus", "flux", "bold", "aurora", "dynamic"],
+      ["forge", "luxury", "craft", "elegant", "natural"],
+      ["clean", "modern", "pulse", "clay", "fresh", "warm"],
+    ],
+    fotografie: [
+      ["aurora", "flux", "nexus", "bold", "dynamic"],
+      ["elegant", "forge", "luxury", "natural", "craft"],
+      ["clay", "modern", "pulse", "clean", "fresh", "warm"],
+    ],
+    hospitality: [
+      ["aurora", "flux", "nexus", "bold", "dynamic"],
+      ["luxury", "elegant", "forge", "natural", "craft"],
+      ["warm", "fresh", "clay", "clean", "modern", "pulse"],
+    ],
+    bar: [
+      ["flux", "aurora", "bold", "nexus", "dynamic"],
+      ["luxury", "forge", "elegant", "natural", "craft"],
+      ["warm", "clay", "fresh", "clean", "modern", "pulse"],
+    ],
+    hotel: [
+      ["flux", "aurora", "bold", "nexus", "dynamic"],
+      ["luxury", "forge", "elegant", "natural", "craft"],
+      ["warm", "clay", "fresh", "clean", "modern", "pulse"],
+    ],
+    garten: [
+      ["aurora", "nexus", "bold", "flux", "dynamic"],
+      ["natural", "craft", "forge", "elegant", "luxury"],
+      ["warm", "fresh", "clay", "clean", "modern", "pulse"],
+    ],
+    nature: [
+      ["aurora", "nexus", "bold", "flux", "dynamic"],
+      ["natural", "craft", "forge", "elegant", "luxury"],
+      ["warm", "fresh", "clay", "clean", "modern", "pulse"],
+    ],
+    cleaning: [
+      ["nexus", "bold", "aurora", "flux", "dynamic"],
+      ["forge", "craft", "natural", "elegant", "luxury"],
+      ["clean", "pulse", "modern", "clay", "fresh", "warm"],
+    ],
+    education: [
+      ["nexus", "aurora", "bold", "flux", "dynamic"],
+      ["natural", "forge", "elegant", "luxury", "craft"],
+      ["clean", "pulse", "modern", "clay", "fresh", "warm"],
+    ],
+    fastfood: [
+      ["bold", "nexus", "aurora", "flux", "dynamic"],
+      ["craft", "forge", "natural", "elegant", "luxury"],
+      ["fresh", "warm", "clay", "clean", "modern", "pulse"],
+    ],
+  };
 
 const DEFAULT_VARIANT_RANKINGS: [string[], string[], string[]] = [
-  ["nexus","aurora","bold","flux","dynamic"],
-  ["forge","elegant","luxury","natural","craft"],
-  ["clay","pulse","fresh","clean","modern","warm"],
+  ["nexus", "aurora", "bold", "flux", "dynamic"],
+  ["forge", "elegant", "luxury", "natural", "craft"],
+  ["clay", "pulse", "fresh", "clean", "modern", "warm"],
 ];
 
 /** Returns 2 layout names — one Dark-Family + one Editorial-Family — based on industry + round.
@@ -65,26 +203,55 @@ const DEFAULT_VARIANT_RANKINGS: [string[], string[], string[]] = [
  *  maximal gegensätzliche Optionen (Dark vs. hell-editorial) sind klarer für die
  *  Kundin. */
 function getVariantLayouts(industryKey: string, round: number): string[] {
-  const families = VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_VARIANT_RANKINGS;
-  return [families[0], families[1]].map((family) => family[round % family.length]);
+  const families =
+    VARIANT_FAMILY_RANKINGS[industryKey] || DEFAULT_VARIANT_RANKINGS;
+  return [families[0], families[1]].map(
+    family => family[round % family.length]
+  );
 }
 
 /** Friendly display names per layout style. */
 const LAYOUT_LABELS: Record<string, string> = {
-  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
-  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
-  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm", modern: "Modern",
-  vibrant: "Vibrant",trust: "Trust",
+  aurora: "Aurora",
+  nexus: "Nexus",
+  bold: "Bold",
+  flux: "Flux",
+  dynamic: "Dynamic",
+  forge: "Forge",
+  elegant: "Elegant",
+  luxury: "Luxury",
+  natural: "Natural",
+  craft: "Craft",
+  clay: "Clay",
+  pulse: "Pulse",
+  fresh: "Fresh",
+  clean: "Clean",
+  warm: "Warm",
+  modern: "Modern",
+  vibrant: "Vibrant",
+  trust: "Trust",
 };
 
 /** Short mood line shown under each preview. */
 const LAYOUT_VIBES: Record<string, string> = {
-  aurora:  "Dunkel · Kosmisch",    nexus:   "Präzise · Navy",        bold:    "Stark · Schwarz-Gold",
-  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",    forge:   "Edel · Zeitlos",
-  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch", natural: "Organisch · Erdtöne",
-  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",      pulse:   "Hell · Vertrauensvoll",
-  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch", warm:    "Herzlich · Einladend",
-  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",        trust:   "Klassisch · Professionell",
+  aurora: "Dunkel · Kosmisch",
+  nexus: "Präzise · Navy",
+  bold: "Stark · Schwarz-Gold",
+  flux: "Dunkel · Warmes Gold",
+  dynamic: "Energie · Diagonal",
+  forge: "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",
+  luxury: "Premium · Cinématisch",
+  natural: "Organisch · Erdtöne",
+  craft: "Handwerk · Industrial",
+  clay: "Soft · Verspielt",
+  pulse: "Hell · Vertrauensvoll",
+  fresh: "Frisch · Luftig",
+  clean: "Klar · Minimalistisch",
+  warm: "Herzlich · Einladend",
+  modern: "Modern · Asymmetrisch",
+  vibrant: "Neon · Energie",
+  trust: "Klassisch · Professionell",
 };
 
 /**
@@ -99,10 +266,17 @@ const LAYOUT_VIBES: Record<string, string> = {
  * ones) so switching between styles is instant – no reload delay.
  */
 const DESKTOP_IFRAME_W = 1280;
-const MOBILE_IFRAME_W  = 390;
+const MOBILE_IFRAME_W = 390;
 const PREVIEW_IFRAME_H = 2400;
 
-function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey, onConfirm, onSkip }: {
+function VariantPickerScreen({
+  websiteId,
+  websiteData,
+  heroImageUrl,
+  industryKey,
+  onConfirm,
+  onSkip,
+}: {
   websiteId: number;
   websiteData?: any;
   heroImageUrl?: string;
@@ -161,15 +335,26 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
   // v1-Verhalten bleibt unverändert (gleicher Aufruf wie zuvor).
   const isV2Website = websiteData?.version === 2;
   const variants = isV2Website
-    ? getV2VariantCandidates(websiteData?.businessCategory || industryKey, round)
+    ? getV2VariantCandidates(
+        websiteData?.businessCategory || industryKey,
+        round
+      )
     : getVariantLayouts(industryKey, round);
-  const handleOtherLayouts = () => { setRound((r) => r + 1); setSelected(null); setActiveSlide(0); };
+  const handleOtherLayouts = () => {
+    setRound(r => r + 1);
+    setSelected(null);
+    setActiveSlide(0);
+  };
 
   const handleConfirm = async () => {
     if (!selected) return;
     const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[selected];
     try {
-      await selectMutation.mutateAsync({ websiteId, layoutStyle: selected, colorScheme: cs ?? undefined });
+      await selectMutation.mutateAsync({
+        websiteId,
+        layoutStyle: selected,
+        colorScheme: cs ?? undefined,
+      });
     } catch {}
     onConfirm(selected);
   };
@@ -180,9 +365,14 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col overflow-hidden select-none">
       <div className="flex-shrink-0 pt-5 pb-3 px-6 text-center">
-        <h1 className="text-xl font-bold text-white mb-0.5">Welcher Stil passt zu dir?</h1>
+        <h1 className="text-xl font-bold text-white mb-0.5">
+          Welcher Stil passt zu dir?
+        </h1>
         <p className="text-slate-400 text-xs max-w-sm mx-auto">
-          {isMobile ? "Wische, um alle Designs zu sehen. Tippe zum Auswählen." : "Klicke auf ein Design, um es auszuwählen."} Farben &amp; Inhalte lassen sich jederzeit anpassen.
+          {isMobile
+            ? "Wische, um alle Designs zu sehen. Tippe zum Auswählen."
+            : "Klicke auf ein Design, um es auszuwählen."}{" "}
+          Farben &amp; Inhalte lassen sich jederzeit anpassen.
         </p>
       </div>
 
@@ -194,22 +384,35 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
               ? "flex-1 min-h-0 flex gap-4 px-6 py-2 overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide"
               : "flex-1 min-h-0 flex items-start justify-center gap-4 px-4 py-2 overflow-y-auto"
           }
-          style={isMobile ? { scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } : undefined}
+          style={
+            isMobile
+              ? { scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }
+              : undefined
+          }
         >
-          {variants.map((layout) => {
+          {variants.map(layout => {
             const isSelected = selected === layout;
-            const accentColor = ((DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout] as any)?.primary ?? "#a3e635";
+            const accentColor =
+              (
+                (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[
+                  layout
+                ] as any
+              )?.primary ?? "#a3e635";
             return (
               <button
                 key={`${round}-${layout}`}
                 type="button"
                 onClick={() => setSelected(layout)}
-                className={`relative flex-shrink-0 rounded-2xl transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? 'scale-[1.02]' : 'hover:ring-1 hover:ring-white/20'}`}
+                className={`relative flex-shrink-0 rounded-2xl transition-all duration-200 ${isMobile ? "snap-center" : ""} ${isSelected ? "scale-[1.02]" : "hover:ring-1 hover:ring-white/20"}`}
                 style={{
                   width: cardWidth,
                   height: PREVIEW_IFRAME_H * scale,
-                  boxShadow: isSelected ? '0 0 32px rgba(163,230,53,0.35)' : '0 8px 32px rgba(0,0,0,0.5)',
-                  border: isSelected ? '3px solid var(--pb-brand)' : '3px solid transparent',
+                  boxShadow: isSelected
+                    ? "0 0 32px rgba(163,230,53,0.35)"
+                    : "0 8px 32px rgba(0,0,0,0.5)",
+                  border: isSelected
+                    ? "3px solid var(--pb-brand)"
+                    : "3px solid transparent",
                   padding: 0,
                 }}
               >
@@ -230,9 +433,26 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
                 </div>
                 {/* Selected badge */}
                 {isSelected && (
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xl"
-                    style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <div
+                    className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-xl"
+                    style={{
+                      backgroundColor: "var(--pb-brand)",
+                      color: "var(--pb-brand-text)",
+                    }}
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                     Ausgewählt
                   </div>
                 )}
@@ -249,10 +469,18 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
                 key={layout}
                 type="button"
                 onClick={() => {
-                  scrollRef.current?.children[i]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                  scrollRef.current?.children[i]?.scrollIntoView({
+                    behavior: "smooth",
+                    inline: "center",
+                    block: "nearest",
+                  });
                 }}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  i === activeSlide ? "bg-lime-400 w-5" : selected === layout ? "bg-lime-400/60" : "bg-slate-600"
+                  i === activeSlide
+                    ? "bg-lime-400 w-5"
+                    : selected === layout
+                      ? "bg-lime-400/60"
+                      : "bg-slate-600"
                 }`}
               />
             ))}
@@ -260,32 +488,100 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
         )}
       </div>
 
-      <div className="flex-shrink-0 flex flex-col items-center gap-1.5 px-6 pt-2"
-        style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))" }}>
+      <div
+        className="flex-shrink-0 flex flex-col items-center gap-1.5 px-6 pt-2"
+        style={{
+          paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 1.25rem))",
+        }}
+      >
         {selected && (
           <div className="text-center mb-1">
-            <span className="text-white text-sm font-semibold">{LAYOUT_LABELS[selected] ?? selected}</span>
-            <span className="text-slate-500 text-xs"> · {LAYOUT_VIBES[selected]}</span>
+            <span className="text-white text-sm font-semibold">
+              {LAYOUT_LABELS[selected] ?? selected}
+            </span>
+            <span className="text-slate-500 text-xs">
+              {" "}
+              · {LAYOUT_VIBES[selected]}
+            </span>
           </div>
         )}
-        <button type="button" onClick={handleConfirm} disabled={!selected || selectMutation.isPending}
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={!selected || selectMutation.isPending}
           className="w-full max-w-xs py-3.5 rounded-xl disabled:opacity-40 font-bold text-sm transition-all flex items-center justify-center gap-2"
-          style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}>
+          style={{
+            backgroundColor: "var(--pb-brand)",
+            color: "var(--pb-brand-text)",
+          }}
+        >
           {selectMutation.isPending ? (
-            <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Wird gespeichert…</>
+            <>
+              <svg
+                className="w-4 h-4 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>{" "}
+              Wird gespeichert…
+            </>
           ) : (
-            <>Dieses Design übernehmen <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg></>
+            <>
+              Dieses Design übernehmen{" "}
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </>
           )}
         </button>
-        <button type="button" onClick={handleOtherLayouts}
-          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <button
+          type="button"
+          onClick={handleOtherLayouts}
+          className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium transition-colors py-1"
+        >
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
           Andere Stile zeigen
         </button>
-        <button type="button" onClick={onSkip}
-          className="text-slate-600 hover:text-slate-400 text-xs transition-colors py-0.5">
+        <button
+          type="button"
+          onClick={onSkip}
+          className="text-slate-600 hover:text-slate-400 text-xs transition-colors py-0.5"
+        >
           Überspringen
         </button>
       </div>
@@ -297,10 +593,21 @@ function VariantPickerScreen({ websiteId, websiteData, heroImageUrl, industryKey
 
 // Star data stored in refs – never causes React re-renders
 interface WarpStarData {
-  x: number; y: number; z: number; size: number; speed: number; hue: number;
+  x: number;
+  y: number;
+  z: number;
+  size: number;
+  speed: number;
+  hue: number;
 }
 
-const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: number }) => {
+const EpicGenerationLoading = ({
+  phase,
+  progress,
+}: {
+  phase: string;
+  progress: number;
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const starsRef = useRef<WarpStarData[]>([]);
@@ -331,15 +638,19 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
     window.addEventListener("resize", init);
 
     const draw = () => {
-      const w = canvas.width, h = canvas.height;
-      const cx = w / 2, cy = h / 2;
+      const w = canvas.width,
+        h = canvas.height;
+      const cx = w / 2,
+        cy = h / 2;
       ctx.clearRect(0, 0, w, h);
 
-      starsRef.current.forEach((s) => {
+      starsRef.current.forEach(s => {
         const prevZ = s.z;
         s.z -= s.speed;
         if (s.z <= 0.01) {
-          s.z = 1; s.x = (Math.random() - 0.5) * 2; s.y = (Math.random() - 0.5) * 2;
+          s.z = 1;
+          s.x = (Math.random() - 0.5) * 2;
+          s.y = (Math.random() - 0.5) * 2;
           s.hue = [200, 180, 220][Math.floor(Math.random() * 3)];
           return;
         }
@@ -384,7 +695,10 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
   };
 
   return (
-    <div className="relative overflow-hidden bg-[#0a0a0a]" style={{ height: "100dvh" }}>
+    <div
+      className="relative overflow-hidden bg-[#0a0a0a]"
+      style={{ height: "100dvh" }}
+    >
       {/* Gradient orbs – mobile-sized, no heavy motion animations */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] max-w-[500px] max-h-[500px] bg-lime-500/20 rounded-full blur-[80px]" />
@@ -393,14 +707,17 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
       </div>
 
       {/* Warp Speed – Canvas-rendered, zero React re-renders */}
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+      />
 
       {/* Grid Pattern Overlay */}
       <div
         className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
+          backgroundSize: "50px 50px",
         }}
       />
 
@@ -424,19 +741,19 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
             transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
             className="absolute inset-0 rounded-3xl bg-gradient-to-br from-lime-500 to-lime-600"
           />
-          
+
           {/* KI-Symbol: Einzelner pulsierender Stern */}
           <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-lime-500 via-lime-500 to-lime-600 flex items-center justify-center shadow-2xl shadow-lime-500/30">
             <motion.div
-              animate={{ 
+              animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.8, 1, 0.8],
-                rotate: [0, 10, 0, -10, 0]
+                rotate: [0, 10, 0, -10, 0],
               }}
-              transition={{ 
-                duration: 2, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
               }}
             >
               <Sparkles className="h-12 w-12 text-white" />
@@ -466,7 +783,9 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           className="flex items-center gap-3 mb-8"
         >
           <span className="text-2xl">{phaseEmojis[phase] || "⚡"}</span>
-          <span className="text-slate-300 text-lg">{phase || "Initialisiere..."}</span>
+          <span className="text-slate-300 text-lg">
+            {phase || "Initialisiere..."}
+          </span>
         </motion.div>
 
         {/* Epic Progress Bar */}
@@ -489,13 +808,18 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
               />
             </motion.div>
           </div>
-          
+
           {/* Progress glow */}
           <motion.div
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1.5, repeat: Infinity }}
             className="absolute -inset-1 bg-lime-500/20 rounded-full blur-lg -z-10"
-            style={{ width: `${progress}%`, margin: "0 auto", left: 0, right: 0 }}
+            style={{
+              width: `${progress}%`,
+              margin: "0 auto",
+              left: 0,
+              right: 0,
+            }}
           />
         </div>
 
@@ -517,17 +841,19 @@ const EpicGenerationLoading = ({ phase, progress }: { phase: string; progress: n
           className="absolute left-0 right-0 flex justify-center gap-4 flex-wrap px-4 pb-8"
           style={{ bottom: "env(safe-area-inset-bottom)" }}
         >
-          {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map((tag, i) => (
-            <motion.div
-              key={tag}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 + i * 0.1 }}
-              className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm backdrop-blur-sm"
-            >
-              {tag}
-            </motion.div>
-          ))}
+          {["KI-gestützt", "SEO-optimiert", "Mobile-ready", "Blitzschnell"].map(
+            (tag, i) => (
+              <motion.div
+                key={tag}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm backdrop-blur-sm"
+              >
+                {tag}
+              </motion.div>
+            )
+          )}
         </div>
       </div>
     </div>
@@ -580,7 +906,15 @@ interface DayHours {
   to2?: string;
 }
 
-const WEEKDAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+const WEEKDAYS = [
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+  "Sonntag",
+];
 
 interface OnboardingData {
   businessCategory: string;
@@ -603,19 +937,31 @@ interface OnboardingData {
   aboutPhotoUrl: string; // selected or uploaded about/second photo URL
   brandLogo: string; // base64 or "font:<fontName>"
   headlineFont: string; // Serif or Sans-serif font name
-  headlineSize: 'large' | 'medium' | 'small'; // Headline font size
+  headlineSize: "large" | "medium" | "small"; // Headline font size
   addOnContactForm: boolean;
-  contactFormFields: { id: string; label: string; placeholder: string; type: "text" | "email" | "textarea" | "select"; required: boolean; options?: string[] }[];
+  contactFormFields: {
+    id: string;
+    label: string;
+    placeholder: string;
+    type: "text" | "email" | "textarea" | "select";
+    required: boolean;
+    options?: string[];
+  }[];
   addOnGallery: boolean;
-  addOnGalleryData: { headline?: string; mode?: 'single' | 'albums'; images: string[]; albums: GalleryAlbum[] };
-  addOnMenu: boolean;       // Speisekarte (Restaurant, Café, Bäckerei)
+  addOnGalleryData: {
+    headline?: string;
+    mode?: "single" | "albums";
+    images: string[];
+    albums: GalleryAlbum[];
+  };
+  addOnMenu: boolean; // Speisekarte (Restaurant, Café, Bäckerei)
   addOnMenuData: { headline?: string; categories: MenuCategory[] };
-  addOnPricelist: boolean;  // Preisliste (Friseur, Beauty, Fitness)
+  addOnPricelist: boolean; // Preisliste (Friseur, Beauty, Fitness)
   addOnPricelistData: { headline?: string; categories: PriceListCategory[] };
-  addOnAiChat: boolean;     // KI-Chat-Widget
+  addOnAiChat: boolean; // KI-Chat-Widget
   chatWelcomeMessage: string; // Begrüßungsnachricht für KI-Chat
-  addOnBooking: boolean;    // Terminbuchung
-  addressingMode: 'du' | 'Sie'; // Besucher duzen oder siezen
+  addOnBooking: boolean; // Terminbuchung
+  addressingMode: "du" | "Sie"; // Besucher duzen oder siezen
   subPages: SubPage[];
   email: string; // for FOMO reminder
   topServicesSkipped?: boolean;
@@ -677,15 +1023,15 @@ const FOMO_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 const COLOR_SCHEMES = PREDEFINED_COLOR_SCHEMES;
 
 const STEP_ORDER: ChatStep[] = [
-  "businessCategory",  // 1. Branche erfassen (für Bilder/Farben)
-  "businessName",      // 2. Unternehmensname erfassen
-  "addressingMode",    // 3. Besucher duzen oder siezen
-  "brandLogo",         // 4. Logo / Schriftart für Logo
-  "colorScheme",       // 4. Farben
-  "heroPhoto",         // 5. Hauptbild
-  "aboutPhoto",        // 6. Über-uns-Bild
-  "headlineFont",      // 7. Überschriften-Schriftart
-  "headlineSize",      // 8. Überschriften-Größe
+  "businessCategory", // 1. Branche erfassen (für Bilder/Farben)
+  "businessName", // 2. Unternehmensname erfassen
+  "addressingMode", // 3. Besucher duzen oder siezen
+  "brandLogo", // 4. Logo / Schriftart für Logo
+  "colorScheme", // 4. Farben
+  "heroPhoto", // 5. Hauptbild
+  "aboutPhoto", // 6. Über-uns-Bild
+  "headlineFont", // 7. Überschriften-Schriftart
+  "headlineSize", // 8. Überschriften-Größe
   "tagline",
   "description",
   "usp",
@@ -782,20 +1128,30 @@ interface Props {
 
 const LAYOUTS_WITHOUT_ABOUT_IMAGE = ["trust", "dynamic", "bold"];
 
-export default function OnboardingChat({ previewToken, websiteId: websiteIdProp }: Props) {
+export default function OnboardingChat({
+  previewToken,
+  websiteId: websiteIdProp,
+}: Props) {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
   // Billing interval – read from URL param (passed from LandingPage), default: yearly
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(() => {
-    const param = new URLSearchParams(window.location.search).get("billing");
-    return param === "monthly" ? "monthly" : "yearly";
-  });
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
+    () => {
+      const param = new URLSearchParams(window.location.search).get("billing");
+      return param === "monthly" ? "monthly" : "yearly";
+    }
+  );
 
   // ── Website data ────────────────────────────────────────────────────────
-  const { data: siteData, isLoading: siteLoading, error: siteError, refetch: refetchSiteData } = trpc.website.get.useQuery(
+  const {
+    data: siteData,
+    isLoading: siteLoading,
+    error: siteError,
+    refetch: refetchSiteData,
+  } = trpc.website.get.useQuery(
     { token: previewToken, id: websiteIdProp },
-    { 
+    {
       enabled: !!(previewToken || websiteIdProp),
       retry: 2,
       retryDelay: 1000,
@@ -815,20 +1171,25 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const websiteNotFound = !!siteError && !siteLoading;
   const deletedSeedQuery = trpc.lifecycle.resolveSeedByPreviewToken.useQuery(
     { previewToken: previewToken || "" },
-    { enabled: websiteNotFound && !!previewToken, retry: false },
+    { enabled: websiteNotFound && !!previewToken, retry: false }
   );
 
   useEffect(() => {
     if (deletedSeedQuery.data?.found && deletedSeedQuery.data.usable) {
-      navigate(`/welcome-back?token=${encodeURIComponent(deletedSeedQuery.data.token)}`);
+      navigate(
+        `/welcome-back?token=${encodeURIComponent(deletedSeedQuery.data.token)}`
+      );
     }
   }, [deletedSeedQuery.data, navigate]);
 
-
-  const websiteId = siteData?.website?.id ? Number(siteData.website.id) : undefined;
+  const websiteId = siteData?.website?.id
+    ? Number(siteData.website.id)
+    : undefined;
   const business = siteData?.business;
   // Hide FOMO banner once checkout is completed (sold = paid, active = live)
-  const isPaid = siteData?.website?.status === "sold" || siteData?.website?.status === "active";
+  const isPaid =
+    siteData?.website?.status === "sold" ||
+    siteData?.website?.status === "active";
 
   // ── Dynamic step order based on layout and websiteData ──────────────────
   // These mirror data.addOn* but are declared before `data` to avoid
@@ -838,7 +1199,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [_addOnGallery, _setAddOnGallery] = useState(false);
   const [_addOnAiChat, _setAddOnAiChat] = useState(false);
   const dynamicStepOrder = useMemo(() => {
-    const layout = (siteData?.website as any)?.layoutStyle as string | undefined;
+    const layout = (siteData?.website as any)?.layoutStyle as
+      | string
+      | undefined;
     const websiteDataRaw = siteData?.website?.websiteData as any;
     const sections = websiteDataRaw?.sections || [];
     const hasAbout = sections.some((s: any) => s.type === "about");
@@ -846,11 +1209,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // from the "general" pool (may include layouts without about-image like "trust").
     // Since the real layout is re-assigned on final generation, always show aboutPhoto
     // for non-GMB users regardless of the preliminary layoutStyle.
-    const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
-    const layoutHasAboutImage = !isGmbFlow || !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
+    const isGmbFlow = !!(
+      business?.placeId && !business.placeId.startsWith("self-")
+    );
+    const layoutHasAboutImage =
+      !isGmbFlow || !layout || !LAYOUTS_WITHOUT_ABOUT_IMAGE.includes(layout);
     const hasCustomerEmail = !!(siteData?.website as any)?.customerEmail;
 
-    return STEP_ORDER.filter((step) => {
+    return STEP_ORDER.filter(step => {
       // Show aboutPhoto for any layout that visually supports an about image.
       // Don't gate on hasAbout (section presence in DB): the siteData may not
       // yet be loaded when dynamicStepOrder is first computed, leading to the
@@ -862,14 +1228,31 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (step === "editGallery") return _addOnGallery;
       if (step === "email") return !hasCustomerEmail; // Skip email step if already provided
       // Skip businessName step if name was already provided from StartPage
-      if (step === "businessName" && business?.name && business.name !== "Neues Unternehmen") return false;
+      if (
+        step === "businessName" &&
+        business?.name &&
+        business.name !== "Neues Unternehmen"
+      )
+        return false;
       // Skip businessCategory step if category was already provided from StartPage
-      if (step === "businessCategory" && (business as any)?.category && (business as any).category.trim() !== "") return false;
+      if (
+        step === "businessCategory" &&
+        (business as any)?.category &&
+        (business as any).category.trim() !== ""
+      )
+        return false;
       // Opening hours only for manual onboarding (GMB already has hours from Google)
       if (step === "openingHours") return !isGmbFlow;
       return true;
     });
-  }, [siteData?.website, business, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
+  }, [
+    siteData?.website,
+    business,
+    _addOnMenu,
+    _addOnPricelist,
+    _addOnGallery,
+    _addOnAiChat,
+  ]);
 
   // ── Chat state ──────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -879,13 +1262,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [chatHidden, setChatHidden] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingServices, setIsGeneratingServices] = useState(false);
-  const [serviceSuggestions, setServiceSuggestions] = useState<{ title: string; description: string }[]>([]);
-  const [initialServices, setInitialServices] = useState<{ title: string; description: string }[]>([]);
+  const [serviceSuggestions, setServiceSuggestions] = useState<
+    { title: string; description: string }[]
+  >([]);
+  const [initialServices, setInitialServices] = useState<
+    { title: string; description: string }[]
+  >([]);
 
   // ── Edit mode state for revisiting completed steps ───────────────────────
   // When user clicks a completed step to edit, we store the original position
   // so we can return there after editing
-  const [editMode, setEditMode] = useState<{ isEditing: boolean; returnToStep: ChatStep | null }>({ isEditing: false, returnToStep: null });
+  const [editMode, setEditMode] = useState<{
+    isEditing: boolean;
+    returnToStep: ChatStep | null;
+  }>({ isEditing: false, returnToStep: null });
 
   // ── Exit intent ──────────────────────────────────────────────────────────
   const [showExitIntent, setShowExitIntent] = useState(false);
@@ -894,8 +1284,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [showSaveReminder, setShowSaveReminder] = useState(false);
   // Quick-Support innerhalb des Exit-Modals
-  const [supportMode, setSupportMode] = useState<"closed" | "select" | "details" | "sent">("closed");
-  const [supportType, setSupportType] = useState<"tech" | "content" | "other" | null>(null);
+  const [supportMode, setSupportMode] = useState<
+    "closed" | "select" | "details" | "sent"
+  >("closed");
+  const [supportType, setSupportType] = useState<
+    "tech" | "content" | "other" | null
+  >(null);
   const [supportText, setSupportText] = useState("");
   const [supportSending, setSupportSending] = useState(false);
 
@@ -907,7 +1301,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       content: "Frage zum Inhalt (was reinschreiben, Texte, Bilder)",
       other: "Anderes",
     };
-    const email = user?.email || data.email || (siteData?.website as any)?.customerEmail || "";
+    const email =
+      user?.email ||
+      data.email ||
+      (siteData?.website as any)?.customerEmail ||
+      "";
     const websiteSlug = siteData?.website?.slug || "";
     const message = `Schnellsupport-Anfrage aus dem Onboarding\n\nKategorie: ${labels[supportType]}\nAktueller Schritt: ${currentStep}\nWebsite-ID: ${websiteId || "—"}\nSlug: ${websiteSlug}\n\nNachricht des Users:\n${supportText.trim() || "(keine zusätzliche Nachricht)"}`;
     try {
@@ -924,7 +1322,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setSupportMode("sent");
     } catch (err) {
       console.error("[Quick-Support] Senden fehlgeschlagen:", err);
-      toast.error("Konnte nicht senden – versuche es bitte direkt per E-Mail: hello@pageblitz.de");
+      toast.error(
+        "Konnte nicht senden – versuche es bitte direkt per E-Mail: hello@pageblitz.de"
+      );
     } finally {
       setSupportSending(false);
     }
@@ -947,14 +1347,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // damit der Cursor-Sprung beim DOM-Wechsel keinen false-positive Exit-Intent triggert.
   const exitIntentSuppressedUntilRef = useRef(0);
   const saveReminderShownRef = useRef(false);
-  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] = useState(false);
+  const [isGeneratingInitialWebsite, setIsGeneratingInitialWebsite] =
+    useState(false);
 
   useEffect(() => {
     // Check if user has email (either from auth or from data)
     const hasUserEmail = !!(isAuthenticated && user?.email);
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (currentStep === "welcome" || currentStep === "checkout" || currentStep === "preview") return;
+      if (
+        currentStep === "welcome" ||
+        currentStep === "checkout" ||
+        currentStep === "preview"
+      )
+        return;
       e.preventDefault();
     };
 
@@ -963,9 +1369,17 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Suppression während kurzer Zeit nach Modal-Closes (Variant-Picker etc.) –
       // verhindert false-positive Exit-Intent durch Cursor-Sprünge beim DOM-Wechsel.
       if (Date.now() < exitIntentSuppressedUntilRef.current) return;
-      if (e.clientY <= 0 && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email" && !exitIntentShownRef.current) {
+      if (
+        e.clientY <= 0 &&
+        currentStep !== "checkout" &&
+        currentStep !== "preview" &&
+        currentStep !== "email" &&
+        !exitIntentShownRef.current
+      ) {
         exitIntentShownRef.current = true;
-        try { (window as any).clarity?.("event", "exit_intent_triggered"); } catch {}
+        try {
+          (window as any).clarity?.("event", "exit_intent_triggered");
+        } catch {}
         if (hasUserEmail) {
           setShowExitConfirmation(true);
         } else {
@@ -984,21 +1398,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     };
-  }, [currentStep, isGeneratingInitialWebsite, isAuthenticated, user?.email, previewToken, websiteIdProp]);
+  }, [
+    currentStep,
+    isGeneratingInitialWebsite,
+    isAuthenticated,
+    user?.email,
+    previewToken,
+    websiteIdProp,
+  ]);
 
   // Mid-funnel save reminder: show after 5 min if no email captured yet
   useEffect(() => {
-    const hasEmail = !!(siteData?.website as any)?.customerEmail || !!data.email;
+    const hasEmail =
+      !!(siteData?.website as any)?.customerEmail || !!data.email;
     if (hasEmail || saveReminderShownRef.current) return;
-    const timer = setTimeout(() => {
-      if (saveReminderShownRef.current) return;
-      const stillNoEmail = !(siteData?.website as any)?.customerEmail && !data.email;
-      if (stillNoEmail && currentStep !== "checkout" && currentStep !== "preview" && currentStep !== "email") {
-        saveReminderShownRef.current = true;
-        setShowSaveReminder(true);
-        try { (window as any).clarity?.("event", "save_reminder_shown"); } catch {}
-      }
-    }, 5 * 60 * 1000);
+    const timer = setTimeout(
+      () => {
+        if (saveReminderShownRef.current) return;
+        const stillNoEmail =
+          !(siteData?.website as any)?.customerEmail && !data.email;
+        if (
+          stillNoEmail &&
+          currentStep !== "checkout" &&
+          currentStep !== "preview" &&
+          currentStep !== "email"
+        ) {
+          saveReminderShownRef.current = true;
+          setShowSaveReminder(true);
+          try {
+            (window as any).clarity?.("event", "save_reminder_shown");
+          } catch {}
+        }
+      },
+      5 * 60 * 1000
+    );
     return () => clearTimeout(timer);
     // data.email wird im Callback per Closure frisch gelesen; nicht im Dep-Array,
     // da `data` lexikalisch weiter unten deklariert ist (sonst TDZ-Fehler).
@@ -1007,10 +1440,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [showSkipServicesWarning, setShowSkipServicesWarning] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [legalConsent, setLegalConsent] = useState(false);
-  const [hiddenSections, setHiddenSections] = useState<Set<string>>(new Set<string>());
+  const [hiddenSections, setHiddenSections] = useState<Set<string>>(
+    new Set<string>()
+  );
   // Section reordering (drag & drop in hideSections step)
   const [sectionOrder, setSectionOrder] = useState<string[]>([]);
-  const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
+  const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(
+    null
+  );
   const [gmbÜbernommenEditMode, setGmbÜbernommenEditMode] = useState(false);
   // Opening hours widget state
   const [hoursState, setHoursState] = useState<DayHours[]>(() =>
@@ -1021,7 +1458,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const [inPlaceEditValue, setInPlaceEditValue] = useState("");
   const [showIndividualColors, setShowIndividualColors] = useState(false);
   const [previewScrollTop, setPreviewScrollTop] = useState(0);
-  const [previewNotification, setPreviewNotification] = useState<string | null>(null);
+  const [previewNotification, setPreviewNotification] = useState<string | null>(
+    null
+  );
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [extendReason, setExtendReason] = useState<string>("");
@@ -1032,7 +1471,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const extendMutation = trpc.lifecycle.extendByPreviewToken.useMutation();
   const reservationQuery = trpc.lifecycle.getReservation.useQuery(
     { previewToken: previewToken || "" },
-    { enabled: !!previewToken, staleTime: 30_000 },
+    { enabled: !!previewToken, staleTime: 30_000 }
   );
 
   const handleExtend = async () => {
@@ -1054,11 +1493,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       setExtendSuccess(
         res.remainingExtensions && res.remainingExtensions > 0
           ? `Super – du hast jetzt 24 Stunden mehr Zeit. Du kannst noch ${res.remainingExtensions}× verlängern.`
-          : "Super – du hast jetzt 24 Stunden mehr Zeit. Das war deine letzte Verlängerung.",
+          : "Super – du hast jetzt 24 Stunden mehr Zeit. Das war deine letzte Verlängerung."
       );
       reservationQuery.refetch();
     } catch (e: any) {
-      setExtendError(e?.message || "Verlängerung fehlgeschlagen. Bitte später erneut versuchen.");
+      setExtendError(
+        e?.message ||
+          "Verlängerung fehlgeschlagen. Bitte später erneut versuchen."
+      );
     } finally {
       setExtendSubmitting(false);
     }
@@ -1069,8 +1511,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const previewInnerRef = useRef<HTMLDivElement>(null);
 
   // Refs für Kaskaden-Update bei Branchen-Änderung
-  const prevCategoryRef = useRef<string>('');
-  const contentPhaseRef = useRef<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>('skeleton');
+  const prevCategoryRef = useRef<string>("");
+  const contentPhaseRef = useRef<
+    "skeleton" | "colors" | "images" | "texts" | "complete"
+  >("skeleton");
   // Guard: Phase-2 KI-Textgenerierung nur einmal ausführen (verhindert Re-Trigger bei State-Changes)
   const contentGenerationAttemptedRef = useRef(false);
 
@@ -1081,8 +1525,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Try id selector first (PremiumLayoutsV2 uses id="hero", id="leistungen" etc.),
     // fall back to data-section attribute for any future components that use it.
-    const element = previewInnerRef.current.querySelector(`#${sectionId}`) ||
-                    previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
+    const element =
+      previewInnerRef.current.querySelector(`#${sectionId}`) ||
+      previewInnerRef.current.querySelector(`[data-section="${sectionId}"]`);
     if (!element) return;
 
     const container = previewInnerRef.current;
@@ -1099,7 +1544,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Cap to avoid white space at the bottom
     const maxScroll = Math.max(0, container.scrollHeight - viewportHeight);
-    const targetScroll = Math.max(0, Math.min(elementTop - viewportHeight * 0.25, maxScroll));
+    const targetScroll = Math.max(
+      0,
+      Math.min(elementTop - viewportHeight * 0.25, maxScroll)
+    );
 
     setPreviewScrollTop(targetScroll);
   }, [currentStep]);
@@ -1128,26 +1576,63 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       background: "#F8FAFC",
       surface: "#FFFFFF",
       text: "#0F172A",
-      textLight: "#475569"
+      textLight: "#475569",
     }),
     heroPhotoUrl: "",
     aboutPhotoUrl: "",
     brandLogo: "",
     headlineFont: "",
     headlineSize: "large", // Default: extra groß
-    addressingMode: 'du',
-  addOnContactForm: false,
+    addressingMode: "du",
+    addOnContactForm: false,
     contactFormFields: [
-      { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-      { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-      { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+      {
+        id: "name",
+        label: "Name",
+        placeholder: "Max Mustermann",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "subject",
+        label: "Betreff",
+        placeholder: "Ihr Anliegen",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "message",
+        label: "Nachricht",
+        placeholder: "Ihre Nachricht...",
+        type: "textarea",
+        required: true,
+      },
     ],
     addOnGallery: false,
-    addOnGalleryData: { headline: "Unsere Galerie", mode: 'single', images: [], albums: [] },
+    addOnGalleryData: {
+      headline: "Unsere Galerie",
+      mode: "single",
+      images: [],
+      albums: [],
+    },
     addOnMenu: false,
-    addOnMenuData: { headline: "Unsere Speisekarte", categories: [{ id: "cat1", name: "Hauptspeisen", items: [{ name: "", description: "", price: "" }] }] },
+    addOnMenuData: {
+      headline: "Unsere Speisekarte",
+      categories: [
+        {
+          id: "cat1",
+          name: "Hauptspeisen",
+          items: [{ name: "", description: "", price: "" }],
+        },
+      ],
+    },
     addOnPricelist: false,
-    addOnPricelistData: { headline: "Unsere Preise", categories: [{ id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] }] },
+    addOnPricelistData: {
+      headline: "Unsere Preise",
+      categories: [
+        { id: "cat1", name: "Leistungen", items: [{ name: "", price: "" }] },
+      ],
+    },
     addOnAiChat: false,
     chatWelcomeMessage: "",
     addOnBooking: false,
@@ -1192,7 +1677,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!photos || photos.length === 0) return;
     setData(prev => ({
       ...prev,
-      heroPhotoUrl:  prev.heroPhotoUrl  || photos[0],
+      heroPhotoUrl: prev.heroPhotoUrl || photos[0],
       aboutPhotoUrl: prev.aboutPhotoUrl || photos[1] || photos[0],
     }));
   }, [earlyGmbData]);
@@ -1203,16 +1688,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Helper to safely convert topServices from DB format
     const rawTopServices = (existingOnboarding as any).topServices;
-    const safeTopServices: { title: string; description: string }[] | undefined =
+    const safeTopServices:
+      | { title: string; description: string }[]
+      | undefined =
       Array.isArray(rawTopServices) && rawTopServices.length > 0
-        ? rawTopServices.map((s: any) => ({ title: s.title || '', description: s.description || '' }))
+        ? rawTopServices.map((s: any) => ({
+            title: s.title || "",
+            description: s.description || "",
+          }))
         : undefined;
 
     // Sync basic onboarding data
     setData(p => ({
       ...p,
       // Business info
-      businessCategory: existingOnboarding.businessCategory || p.businessCategory,
+      businessCategory:
+        existingOnboarding.businessCategory || p.businessCategory,
       businessName: existingOnboarding.businessName || p.businessName,
       tagline: existingOnboarding.tagline || p.tagline,
       description: existingOnboarding.description || p.description,
@@ -1229,9 +1720,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       legalVatId: existingOnboarding.legalVatId || p.legalVatId,
       // Brand
       brandColor: (existingOnboarding as any).brandColor || p.brandColor,
-      brandSecondaryColor: (existingOnboarding as any).brandSecondaryColor || p.brandSecondaryColor,
+      brandSecondaryColor:
+        (existingOnboarding as any).brandSecondaryColor ||
+        p.brandSecondaryColor,
       headlineFont: existingOnboarding.headlineFont || p.headlineFont,
-      addressingMode: ((existingOnboarding as any).addressingMode as 'du' | 'Sie') || p.addressingMode,
+      addressingMode:
+        ((existingOnboarding as any).addressingMode as "du" | "Sie") ||
+        p.addressingMode,
       // Photos
       logoUrl: (existingOnboarding as any).logoUrl || p.logoUrl,
       heroPhotoUrl: existingOnboarding.heroPhotoUrl || p.heroPhotoUrl,
@@ -1242,34 +1737,64 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }));
 
     // Sync add-on boolean flags
-    if (existingOnboarding.addOnMenu !== undefined && existingOnboarding.addOnMenu !== null) {
+    if (
+      existingOnboarding.addOnMenu !== undefined &&
+      existingOnboarding.addOnMenu !== null
+    ) {
       setData(p => ({ ...p, addOnMenu: existingOnboarding.addOnMenu! }));
       _setAddOnMenu(existingOnboarding.addOnMenu!);
     }
-    if (existingOnboarding.addOnPricelist !== undefined && existingOnboarding.addOnPricelist !== null) {
-      setData(p => ({ ...p, addOnPricelist: existingOnboarding.addOnPricelist! }));
+    if (
+      existingOnboarding.addOnPricelist !== undefined &&
+      existingOnboarding.addOnPricelist !== null
+    ) {
+      setData(p => ({
+        ...p,
+        addOnPricelist: existingOnboarding.addOnPricelist!,
+      }));
       _setAddOnPricelist(existingOnboarding.addOnPricelist!);
     }
-    if (existingOnboarding.addOnGallery !== undefined && existingOnboarding.addOnGallery !== null) {
+    if (
+      existingOnboarding.addOnGallery !== undefined &&
+      existingOnboarding.addOnGallery !== null
+    ) {
       setData(p => ({ ...p, addOnGallery: existingOnboarding.addOnGallery! }));
       _setAddOnGallery(existingOnboarding.addOnGallery!);
     }
-    if (existingOnboarding.addOnContactForm !== undefined && existingOnboarding.addOnContactForm !== null) {
-      setData(p => ({ ...p, addOnContactForm: existingOnboarding.addOnContactForm! }));
+    if (
+      existingOnboarding.addOnContactForm !== undefined &&
+      existingOnboarding.addOnContactForm !== null
+    ) {
+      setData(p => ({
+        ...p,
+        addOnContactForm: existingOnboarding.addOnContactForm!,
+      }));
     }
-    if (existingOnboarding.addOnAiChat !== undefined && existingOnboarding.addOnAiChat !== null) {
+    if (
+      existingOnboarding.addOnAiChat !== undefined &&
+      existingOnboarding.addOnAiChat !== null
+    ) {
       setData(p => ({ ...p, addOnAiChat: existingOnboarding.addOnAiChat! }));
       _setAddOnAiChat(existingOnboarding.addOnAiChat!);
     }
-    if (existingOnboarding.addOnBooking !== undefined && existingOnboarding.addOnBooking !== null) {
+    if (
+      existingOnboarding.addOnBooking !== undefined &&
+      existingOnboarding.addOnBooking !== null
+    ) {
       setData(p => ({ ...p, addOnBooking: existingOnboarding.addOnBooking! }));
     }
     if (existingOnboarding.chatWelcomeMessage) {
-      setData(p => ({ ...p, chatWelcomeMessage: existingOnboarding.chatWelcomeMessage! }));
+      setData(p => ({
+        ...p,
+        chatWelcomeMessage: existingOnboarding.chatWelcomeMessage!,
+      }));
     }
     // Sync contact form fields - default to simple fields for onboarding
     if (existingOnboarding.contactFormFields) {
-      setData(p => ({ ...p, contactFormFields: existingOnboarding.contactFormFields! }));
+      setData(p => ({
+        ...p,
+        contactFormFields: existingOnboarding.contactFormFields!,
+      }));
     }
 
     // Sync add-on data (menu, pricelist, gallery)
@@ -1279,8 +1804,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         ...p,
         addOnMenuData: {
           headline: menuData.headline || p.addOnMenuData.headline,
-          categories: menuData.categories || p.addOnMenuData.categories
-        }
+          categories: menuData.categories || p.addOnMenuData.categories,
+        },
       }));
     }
     if (existingOnboarding.addOnPricelistData) {
@@ -1289,23 +1814,27 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         ...p,
         addOnPricelistData: {
           headline: pricelistData.headline || p.addOnPricelistData.headline,
-          categories: pricelistData.categories || p.addOnPricelistData.categories
-        }
+          categories:
+            pricelistData.categories || p.addOnPricelistData.categories,
+        },
       }));
     }
     // Gallery: restore images, mode and albums
     const savedGallery = (existingOnboarding as any).addOnGalleryData as any;
-    const galleryImages = (existingOnboarding as any).photoUrls || savedGallery?.images || [];
-    const galleryMode = savedGallery?.mode || 'single';
+    const galleryImages =
+      (existingOnboarding as any).photoUrls || savedGallery?.images || [];
+    const galleryMode = savedGallery?.mode || "single";
     const galleryAlbums: GalleryAlbum[] = savedGallery?.albums || [];
     setData(p => ({
       ...p,
       addOnGalleryData: {
         headline: savedGallery?.headline || p.addOnGalleryData.headline,
         mode: galleryMode,
-        images: galleryImages.length > 0 ? galleryImages : p.addOnGalleryData.images,
-        albums: galleryAlbums.length > 0 ? galleryAlbums : p.addOnGalleryData.albums,
-      }
+        images:
+          galleryImages.length > 0 ? galleryImages : p.addOnGalleryData.images,
+        albums:
+          galleryAlbums.length > 0 ? galleryAlbums : p.addOnGalleryData.albums,
+      },
     }));
 
     // Restore section order and visibility from hideSections step
@@ -1333,7 +1862,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (data.addOnAiChat !== _addOnAiChat) {
       _setAddOnAiChat(data.addOnAiChat);
     }
-  }, [data.addOnMenu, data.addOnPricelist, data.addOnGallery, data.addOnAiChat, _addOnMenu, _addOnPricelist, _addOnGallery, _addOnAiChat]);
+  }, [
+    data.addOnMenu,
+    data.addOnPricelist,
+    data.addOnGallery,
+    data.addOnAiChat,
+    _addOnMenu,
+    _addOnPricelist,
+    _addOnGallery,
+    _addOnAiChat,
+  ]);
 
   // ── Stable localStorage key – available immediately from props (no async) ──
   // For /preview/TOKEN/onboarding: uses previewToken (always present, no waiting for siteData)
@@ -1342,22 +1880,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const onboardingStorageKey = previewToken
     ? `onboarding_step_token_${previewToken}`
     : websiteIdProp
-    ? `onboarding_step_${websiteIdProp}`
-    : null;
+      ? `onboarding_step_${websiteIdProp}`
+      : null;
 
   // ── Resume from database when onboarding data loads ────────────────────
   // This effect runs when onboarding data is loaded from the server
   // and restores the step position if user returns to an ongoing onboarding
   useEffect(() => {
     // Only proceed if we have onboarding data and are still at welcome step
-    if (!existingOnboarding || currentStep !== 'welcome') return;
+    if (!existingOnboarding || currentStep !== "welcome") return;
 
     // First check localStorage (takes precedence)
     const savedStep = onboardingStorageKey
       ? localStorage.getItem(onboardingStorageKey)
       : null;
 
-    if (savedStep && savedStep !== 'welcome') {
+    if (savedStep && savedStep !== "welcome") {
       setCurrentStep(savedStep as ChatStep);
       return;
     }
@@ -1368,7 +1906,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       const stepIndex = dbStepCurrent;
       if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
         const targetStep = STEP_ORDER[stepIndex];
-        if (targetStep && targetStep !== 'welcome') {
+        if (targetStep && targetStep !== "welcome") {
           setCurrentStep(targetStep);
           // Also save to localStorage for next time
           if (onboardingStorageKey) {
@@ -1386,47 +1924,63 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   const generateTextMutation = trpc.onboarding.generateText.useMutation();
   const suggestServicesMutation = trpc.onboarding.suggestServices.useMutation();
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
-  const generateWebsiteAsyncMutation = trpc.selfService.generateWebsiteAsync.useMutation();
+  const generateWebsiteAsyncMutation =
+    trpc.selfService.generateWebsiteAsync.useMutation();
   const trpcContext = trpc.useContext();
-  const updateCaptureStatusMutation = trpc.selfService.updateCaptureStatus.useMutation();
+  const updateCaptureStatusMutation =
+    trpc.selfService.updateCaptureStatus.useMutation();
   const sendLeadEmailMutation = trpc.selfService.sendLeadEmail.useMutation();
-  const saveCustomerEmailMutation = trpc.selfService.saveCustomerEmail.useMutation();
-  const generateInitialContentMutation = trpc.selfService.generateInitialContent.useMutation();
+  const saveCustomerEmailMutation =
+    trpc.selfService.saveCustomerEmail.useMutation();
+  const generateInitialContentMutation =
+    trpc.selfService.generateInitialContent.useMutation();
   // ── Variant picker state ────────────────────────────────────────────────
   const [showVariantPicker, setShowVariantPicker] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState("");
   // Track if initial content is being generated for skeleton loading
-  const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(() => {
-    // Check localStorage for generation in progress (persists across reloads)
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(`generating_${previewToken || websiteIdProp}`) === 'true';
+  const [isGeneratingInitialContent, setIsGeneratingInitialContent] = useState(
+    () => {
+      // Check localStorage for generation in progress (persists across reloads)
+      if (typeof window !== "undefined") {
+        return (
+          localStorage.getItem(
+            `generating_${previewToken || websiteIdProp}`
+          ) === "true"
+        );
+      }
+      return false;
     }
-    return false;
-  });
-  
+  );
+
   // Content revelation phases for progressive onboarding
   // 'skeleton': Everything is skeleton (start)
   // 'colors': Colors ready, everything else skeleton
   // 'images': Colors + Images ready, text skeleton
   // 'texts': Colors + Images + Text ready, services skeleton
   // 'complete': Everything ready
-  const [contentPhase, setContentPhase] = useState<'skeleton' | 'colors' | 'images' | 'texts' | 'complete'>(() => {
+  const [contentPhase, setContentPhase] = useState<
+    "skeleton" | "colors" | "images" | "texts" | "complete"
+  >(() => {
     // Check localStorage for persisted phase
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
-      return (saved as any) || 'skeleton';
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(
+        `contentPhase_${previewToken || websiteIdProp}`
+      );
+      return (saved as any) || "skeleton";
     }
-    return 'skeleton';
+    return "skeleton";
   });
 
   // Tracks whether the user has explicitly confirmed their business category.
   // Only after confirmation do we reveal the actual website (exit skeleton phase).
   // On resume: if contentPhase was already past skeleton, treat category as confirmed.
   const [categoryConfirmed, setCategoryConfirmed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
-      return saved !== null && saved !== 'skeleton';
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(
+        `contentPhase_${previewToken || websiteIdProp}`
+      );
+      return saved !== null && saved !== "skeleton";
     }
     return false;
   });
@@ -1434,9 +1988,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // Progressive reveal: hero area clears after Du/Sie is confirmed.
   // On resume: if content generation already completed, Du/Sie was definitely answered → skip overlay.
   const [heroRevealed, setHeroRevealed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
-      if (saved === 'complete') return true;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(
+        `contentPhase_${previewToken || websiteIdProp}`
+      );
+      if (saved === "complete") return true;
     }
     return false;
   });
@@ -1447,25 +2003,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!heroRevealed && (existingOnboarding as any)?.addressingMode) {
       setHeroRevealed(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [(existingOnboarding as any)?.addressingMode]);
 
   // Progressive reveal: lower content area clears after text generation finishes.
   // On resume: skip overlay only if fully complete.
   const [contentRevealed, setContentRevealed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(`contentPhase_${previewToken || websiteIdProp}`);
-      return saved === 'complete';
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(
+        `contentPhase_${previewToken || websiteIdProp}`
+      );
+      return saved === "complete";
     }
     return false;
   });
-
 
   // ── Pre-fill colors from existing colorScheme ───────────────────────────
   useEffect(() => {
     if (siteData?.website?.colorScheme && !initialized) {
       const cs = siteData.website.colorScheme as ColorScheme;
-      setData((prev) => ({
+      setData(prev => ({
         ...prev,
         colorScheme: {
           ...withOnColors({
@@ -1480,7 +2037,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           }),
           ...(cs.darkBackground ? { darkBackground: cs.darkBackground } : {}),
           ...(cs.lightText ? { lightText: cs.lightText } : {}),
-        }
+        },
       }));
     }
   }, [siteData?.website?.colorScheme, initialized]);
@@ -1489,21 +2046,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (siteData?.website?.websiteData && !initialized) {
       const wd = siteData.website.websiteData as WebsiteData;
-      setData((prev) => ({
+      setData(prev => ({
         ...prev,
         businessName: wd.businessName || prev.businessName,
         tagline: wd.tagline || prev.tagline,
         description: wd.description || prev.description,
-        ...(wd.designTokens?.headlineFont ? { headlineFont: wd.designTokens.headlineFont } : {}),
+        ...(wd.designTokens?.headlineFont
+          ? { headlineFont: wd.designTokens.headlineFont }
+          : {}),
         // If there's an AI-suggested logo font in designTokens, use it as default
-        ...(wd.designTokens?.headlineFont && !prev.brandLogo ? { brandLogo: `font:${wd.designTokens.headlineFont}` } : {}),
+        ...(wd.designTokens?.headlineFont && !prev.brandLogo
+          ? { brandLogo: `font:${wd.designTokens.headlineFont}` }
+          : {}),
       }));
 
-      const svcSection = wd.sections?.find((s) => s.type === "services");
+      const svcSection = wd.sections?.find(s => s.type === "services");
       if (svcSection?.items) {
-        const svcs = svcSection.items.map((i) => ({ title: i.title || "", description: i.description || "" }));
+        const svcs = svcSection.items.map(i => ({
+          title: i.title || "",
+          description: i.description || "",
+        }));
         setInitialServices(svcs);
-        setData((prev) => {
+        setData(prev => {
           if (prev.topServices.length === 0) {
             return { ...prev, topServices: svcs };
           }
@@ -1520,9 +2084,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // of restarting from the beginning.
   useEffect(() => {
     if (!onboardingStorageKey) return;
-    if (currentStep === 'checkout') {
+    if (currentStep === "checkout") {
       localStorage.removeItem(onboardingStorageKey);
-    } else if (currentStep !== 'welcome') {
+    } else if (currentStep !== "welcome") {
       localStorage.setItem(onboardingStorageKey, currentStep);
     }
   }, [currentStep, onboardingStorageKey]);
@@ -1530,10 +2094,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // ── Pre-fill from GMB data ──────────────────────────────────────────────
   useEffect(() => {
     if (business && !initialized) {
-      setData((prev) => ({
+      setData(prev => ({
         ...prev,
         businessName: business.name || prev.businessName,
-        businessCategory: translateGmbCategory((business as any).category || "") || prev.businessCategory,
+        businessCategory:
+          translateGmbCategory((business as any).category || "") ||
+          prev.businessCategory,
         legalEmail: business.email || prev.legalEmail,
         legalPhone: business.phone || prev.legalPhone,
         email: business.email || prev.email,
@@ -1547,11 +2113,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // For non-GMB flows, pre-fill from website data if available
       const businessData = (siteData.business || {}) as any;
       const websiteData = (siteData.website.websiteData || {}) as any;
-      
-      setData((prev) => ({
+
+      setData(prev => ({
         ...prev,
-        businessName: websiteData.businessName || businessData.name || prev.businessName,
-        businessCategory: websiteData.businessCategory || businessData.category || prev.businessCategory,
+        businessName:
+          websiteData.businessName || businessData.name || prev.businessName,
+        businessCategory:
+          websiteData.businessCategory ||
+          businessData.category ||
+          prev.businessCategory,
       }));
     }
   }, [business, siteData?.website, initialized]);
@@ -1563,14 +2133,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Bot message helper (word-by-word typing animation) ─────────────────
   const addBotMessage = useCallback((content: string, delay = 600) => {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(resolve => {
       setIsTyping(true);
       // Show 3-dot indicator for `delay` ms, then start word-by-word typing
       setTimeout(() => {
         const msgId = genId();
         const words = content.split(" ");
         // Insert empty message first
-        setMessages((prev) => [
+        setMessages(prev => [
           ...prev,
           { id: msgId, role: "bot", content: "", timestamp: Date.now() },
         ]);
@@ -1581,8 +2151,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         const interval = setInterval(() => {
           wordIdx++;
           const partial = words.slice(0, wordIdx).join(" ");
-          setMessages((prev) =>
-            prev.map((m) => (m.id === msgId ? { ...m, content: partial } : m))
+          setMessages(prev =>
+            prev.map(m => (m.id === msgId ? { ...m, content: partial } : m))
           );
           if (wordIdx >= words.length) {
             clearInterval(interval);
@@ -1594,13 +2164,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     });
   }, []);
 
-  const addUserMessage = useCallback((content: string) => {
-    setMessages((prev) => [
-      ...prev,
-      { id: genId(), role: "user", content, timestamp: Date.now(), step: currentStep },
-    ]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentStep]);
+  const addUserMessage = useCallback(
+    (content: string) => {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: genId(),
+          role: "user",
+          content,
+          timestamp: Date.now(),
+          step: currentStep,
+        },
+      ]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [currentStep]
+  );
 
   // ── Quick-reply suggestions per step ──────────────────────────────────
   const getQuickReplies = useCallback(
@@ -1619,7 +2198,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             "Bar/Tapas",
           ];
         case "businessName": {
-          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          const isGmb = !!(
+            business?.placeId && !business.placeId.startsWith("self-")
+          );
           return isGmb && name ? ["Ja, stimmt!"] : [];
         }
         case "addressingMode":
@@ -1680,20 +2261,38 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           const emailSuggestions: string[] = [];
           // Prefer the email the user entered before starting onboarding
           if (data.email) emailSuggestions.push(data.email);
-          if (business?.email && business.email !== data.email) emailSuggestions.push(business.email);
+          if (business?.email && business.email !== data.email)
+            emailSuggestions.push(business.email);
           return emailSuggestions;
         }
         case "legalPhone":
-          return data.legalPhone ? [data.legalPhone] : (business?.phone ? [business.phone] : []);
+          return data.legalPhone
+            ? [data.legalPhone]
+            : business?.phone
+              ? [business.phone]
+              : [];
         case "openingHours":
           return ["Überspringen"];
         case "email":
-          return data.legalEmail ? [data.legalEmail] : (business?.email ? [business.email] : []);
+          return data.legalEmail
+            ? [data.legalEmail]
+            : business?.email
+              ? [business.email]
+              : [];
         default:
           return [];
       }
     },
-    [data.businessName, data.businessCategory, data.legalEmail, data.email, business?.name, business?.address, business?.email, business?.placeId]
+    [
+      data.businessName,
+      data.businessCategory,
+      data.legalEmail,
+      data.email,
+      business?.name,
+      business?.address,
+      business?.email,
+      business?.placeId,
+    ]
   );
   // ── Step promptss ────────────────────────────────────────────────────────
   const getStepPrompt = useCallback(
@@ -1705,7 +2304,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "welcome":
           return `Hey! 👋 Ich bin dein persönlicher Website-Assistent. Ich helfe dir in wenigen Minuten, deine Website mit echten Infos zu befüllen – damit sie nicht mehr generisch klingt, sondern wirklich nach **${name}** aussieht.\n\nKlingt gut? Dann lass uns starten! 🚀`;
         case "businessName": {
-          const isGmb = !!(business?.placeId && !business.placeId.startsWith("self-"));
+          const isGmb = !!(
+            business?.placeId && !business.placeId.startsWith("self-")
+          );
           return isGmb && data.businessName
             ? `Wie lautet der offizielle Name deines Unternehmens? Ich habe **${data.businessName}** vorausgefüllt – stimmt das so?`
             : `Wie lautet der offizielle Name deines Unternehmens?`;
@@ -1723,16 +2324,42 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "targetAudience": {
           const cat = (data.businessCategory || "Dienstleistung").toLowerCase();
           let example = "Privatkunden und kleine Unternehmen in der Region";
-          if (cat.includes("friseur") || cat.includes("hair") || cat.includes("beauty")) {
-            example = "Damen und Herren in Köln, die Wert auf einen modernen Haarschnitt legen";
-          } else if (cat.includes("restaurant") || cat.includes("essen") || cat.includes("food") || cat.includes("café")) {
-            example = "Feinschmecker und Familien, die gerne in gemütlicher Atmosphäre speisen";
-          } else if (cat.includes("bau") || cat.includes("handwerk") || cat.includes("dach")) {
-            example = "Privathaushalte in Köln, die ein neues Dach brauchen oder sanieren möchten";
-          } else if (cat.includes("arzt") || cat.includes("zahnarzt") || cat.includes("medizin")) {
-            example = "Patienten, die eine kompetente und einfühlsame zahnärztliche Betreuung suchen";
-          } else if (cat.includes("anwalt") || cat.includes("beratung") || cat.includes("recht")) {
-            example = "Unternehmen und Privatpersonen, die rechtliche Unterstützung im Arbeitsrecht benötigen";
+          if (
+            cat.includes("friseur") ||
+            cat.includes("hair") ||
+            cat.includes("beauty")
+          ) {
+            example =
+              "Damen und Herren in Köln, die Wert auf einen modernen Haarschnitt legen";
+          } else if (
+            cat.includes("restaurant") ||
+            cat.includes("essen") ||
+            cat.includes("food") ||
+            cat.includes("café")
+          ) {
+            example =
+              "Feinschmecker und Familien, die gerne in gemütlicher Atmosphäre speisen";
+          } else if (
+            cat.includes("bau") ||
+            cat.includes("handwerk") ||
+            cat.includes("dach")
+          ) {
+            example =
+              "Privathaushalte in Köln, die ein neues Dach brauchen oder sanieren möchten";
+          } else if (
+            cat.includes("arzt") ||
+            cat.includes("zahnarzt") ||
+            cat.includes("medizin")
+          ) {
+            example =
+              "Patienten, die eine kompetente und einfühlsame zahnärztliche Betreuung suchen";
+          } else if (
+            cat.includes("anwalt") ||
+            cat.includes("beratung") ||
+            cat.includes("recht")
+          ) {
+            example =
+              "Unternehmen und Privatpersonen, die rechtliche Unterstützung im Arbeitsrecht benötigen";
           }
           return `Für wen macht ihr das alles? Beschreib kurz eure idealen Kunden – wer ruft euch an, wer schreibt euch?\n\nBeispiel: *"${example}"*`;
         }
@@ -1759,14 +2386,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "colorScheme":
           return `🎨 **Gestalte den Look deiner Website!**\n\nWähle ein Farbschema, das zu deinem Unternehmen passt. Alle Schemen wurden nach farbpsychologischen Aspekten optimiert.\n\n*💡 Keine Angst: Du kannst jede einzelne Farbe später in deinem Dashboard noch feiner anpassen!*`;
         case "heroPhoto": {
-          const total = dynamicStepOrder.filter((s) => s === "heroPhoto" || s === "aboutPhoto").length;
-          const intro = total > 1 
-            ? `Schön! Wir gehen jetzt nacheinander die **${total} wichtigsten Bilder** deiner Website durch. Starten wir mit dem **Hauptbild**!` 
-            : `Schön! Jetzt wählen wir das **Hauptbild** für deine Website.`;
+          const total = dynamicStepOrder.filter(
+            s => s === "heroPhoto" || s === "aboutPhoto"
+          ).length;
+          const intro =
+            total > 1
+              ? `Schön! Wir gehen jetzt nacheinander die **${total} wichtigsten Bilder** deiner Website durch. Starten wir mit dem **Hauptbild**!`
+              : `Schön! Jetzt wählen wir das **Hauptbild** für deine Website.`;
           return `${intro} Du kannst ein eigenes Foto hochladen oder aus unseren Vorschlägen wählen – passend zu deiner Branche.`;
         }
         case "aboutPhoto": {
-          const total = dynamicStepOrder.filter((s) => s === "heroPhoto" || s === "aboutPhoto").length;
+          const total = dynamicStepOrder.filter(
+            s => s === "heroPhoto" || s === "aboutPhoto"
+          ).length;
           return `Super! Jetzt wählen wir noch ein **zweites Bild** (2/${total}) für den "Über uns"-Bereich deiner Website. Dieses Bild erscheint im Abschnitt, der dein Unternehmen vorstellt.`;
         }
         case "brandLogo":
@@ -1797,20 +2429,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           return "Nächster Schritt...";
       }
     },
-    [data.businessName, data.email, business?.name, business?.email, business?.placeId, data.headlineFont]
+    [
+      data.businessName,
+      data.email,
+      business?.name,
+      business?.email,
+      business?.placeId,
+      data.headlineFont,
+    ]
   );
 
   // ── Initialize chat ─────────────────────────────────────────────────────
   // ── Auto-generate website if websiteData is missing ────────────────────
   useEffect(() => {
     if (siteLoading || !websiteId || isGeneratingInitialWebsite) return;
-    const hasWebsiteData = !!(siteData?.website?.websiteData);
+    const hasWebsiteData = !!siteData?.website?.websiteData;
     if (!hasWebsiteData) {
       setIsGeneratingInitialWebsite(true);
       // Mark generation in progress in localStorage (persists across reloads)
-      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
+      localStorage.setItem(
+        `generating_${previewToken || websiteIdProp}`,
+        "true"
+      );
       // Für GMB-Flows: 9 Phasen, für non-GMB: nur 5 Phasen (schneller)
-      const isGmbFlow = !!(business?.placeId && !business.placeId.startsWith("self-"));
+      const isGmbFlow = !!(
+        business?.placeId && !business.placeId.startsWith("self-")
+      );
       const allPhases = [
         "Analysiere dein Unternehmen...",
         "Erstelle Texte...",
@@ -1825,68 +2469,88 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // Non-GMB: Nur erste 5 Phasen zeigen, dafür schneller durchlaufen
       const phases = isGmbFlow ? allPhases : allPhases.slice(0, 5);
       const phaseDuration = isGmbFlow ? 2000 : 1500; // Non-GMB: 1.5s pro Phase
-      
+
       let phaseIdx = 0;
       setGenerationPhase(phases[0]);
       setGenerationProgress(10);
-      
+
       // Start async generation and poll for status
-      generateWebsiteAsyncMutation.mutateAsync({ websiteId }).then(async (response) => {
-        const jobId = response.jobId;
-        
-        // Poll for status every 500ms (0.5 seconds) for smoother progress
-        const pollInterval = setInterval(async () => {
-          try {
-            const status = await trpcContext.selfService.getGenerationStatus.fetch({ jobId });
-            
-            // Update progress from server (0-100)
-            if (status.progress > 0) {
-              setGenerationProgress(status.progress);
+      generateWebsiteAsyncMutation
+        .mutateAsync({ websiteId })
+        .then(async response => {
+          const jobId = response.jobId;
+
+          // Poll for status every 500ms (0.5 seconds) for smoother progress
+          const pollInterval = setInterval(async () => {
+            try {
+              const status =
+                await trpcContext.selfService.getGenerationStatus.fetch({
+                  jobId,
+                });
+
+              // Update progress from server (0-100)
+              if (status.progress > 0) {
+                setGenerationProgress(status.progress);
+              }
+
+              // Update phase text based on progress
+              const phaseIndex = Math.min(
+                Math.floor((status.progress / 100) * phases.length),
+                phases.length - 1
+              );
+              setGenerationPhase(phases[phaseIndex]);
+
+              // Check if completed or failed
+              if (status.status === "completed") {
+                clearInterval(pollInterval);
+                setGenerationProgress(100);
+                setGenerationPhase("Website bereit!");
+                // Reset generation state and clear localStorage
+                setIsGeneratingInitialWebsite(false);
+                localStorage.removeItem(
+                  `generating_${previewToken || websiteIdProp}`
+                );
+                // Refetch then show variant picker (instead of immediate reload)
+                refetchSiteData().then(() => {
+                  setShowVariantPicker(true);
+                  try {
+                    (window as any).clarity?.("event", "variant_picker_shown");
+                  } catch {}
+                });
+              } else if (status.status === "failed") {
+                clearInterval(pollInterval);
+                setIsGeneratingInitialWebsite(false);
+                localStorage.removeItem(
+                  `generating_${previewToken || websiteIdProp}`
+                );
+                console.error("Website generation failed:", status.error);
+                toast.error(
+                  "Fehler bei der Website-Erstellung: " +
+                    (status.error || "Unbekannter Fehler")
+                );
+              }
+            } catch (pollErr) {
+              console.error("Error polling generation status:", pollErr);
+              // Don't stop polling on transient errors
             }
-            
-            // Update phase text based on progress
-            const phaseIndex = Math.min(
-              Math.floor((status.progress / 100) * phases.length),
-              phases.length - 1
-            );
-            setGenerationPhase(phases[phaseIndex]);
-            
-            // Check if completed or failed
-            if (status.status === "completed") {
-              clearInterval(pollInterval);
-              setGenerationProgress(100);
-              setGenerationPhase("Website bereit!");
-              // Reset generation state and clear localStorage
-              setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-              // Refetch then show variant picker (instead of immediate reload)
-              refetchSiteData().then(() => {
-                setShowVariantPicker(true);
-                try { (window as any).clarity?.("event", "variant_picker_shown"); } catch {}
-              });
-            } else if (status.status === "failed") {
-              clearInterval(pollInterval);
-              setIsGeneratingInitialWebsite(false);
-              localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-              console.error("Website generation failed:", status.error);
-              toast.error("Fehler bei der Website-Erstellung: " + (status.error || "Unbekannter Fehler"));
-            }
-          } catch (pollErr) {
-            console.error("Error polling generation status:", pollErr);
-            // Don't stop polling on transient errors
-          }
-        }, 2000); // Poll every 2 seconds
-        
-        // Store interval for cleanup
-        return () => clearInterval(pollInterval);
-      }).catch((err) => {
-        setIsGeneratingInitialWebsite(false);
-        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-        console.error("Failed to start website generation:", err);
-        toast.error("Fehler beim Starten der Website-Erstellung: " + (err.message || "Unbekannter Fehler"));
-      });
+          }, 2000); // Poll every 2 seconds
+
+          // Store interval for cleanup
+          return () => clearInterval(pollInterval);
+        })
+        .catch(err => {
+          setIsGeneratingInitialWebsite(false);
+          localStorage.removeItem(
+            `generating_${previewToken || websiteIdProp}`
+          );
+          console.error("Failed to start website generation:", err);
+          toast.error(
+            "Fehler beim Starten der Website-Erstellung: " +
+              (err.message || "Unbekannter Fehler")
+          );
+        });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteLoading, websiteId, siteData?.website?.websiteData]);
 
   useEffect(() => {
@@ -1918,19 +2582,21 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
       const initChat = async () => {
         const source = siteData?.website?.source;
-        const customerEmail = (siteData?.website as any)?.customerEmail as string | undefined;
+        const customerEmail = (siteData?.website as any)?.customerEmail as
+          | string
+          | undefined;
         const hasEmail = !!customerEmail;
 
         // If customerEmail exists, auto-save it as the notification email
         if (hasEmail && customerEmail) {
-          setData((p) => ({ ...p, email: customerEmail }));
+          setData(p => ({ ...p, email: customerEmail }));
           // Also save to database silently
           if (websiteId) {
             try {
-              await saveStepMutation.mutateAsync({ 
-                websiteId, 
-                step: STEP_ORDER.indexOf("email"), 
-                data: { email: customerEmail } 
+              await saveStepMutation.mutateAsync({
+                websiteId,
+                step: STEP_ORDER.indexOf("email"),
+                data: { email: customerEmail },
               });
             } catch (e) {
               // Silent fail - not critical
@@ -1944,11 +2610,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           ? localStorage.getItem(onboardingStorageKey)
           : null;
 
-        if (savedStep && savedStep !== 'welcome') {
+        if (savedStep && savedStep !== "welcome") {
           const step = savedStep as ChatStep;
           setCurrentStep(step);
           // checkout and preview are pure UI steps – no bot message needed, the UI renders directly
-          if (step !== 'checkout' && step !== 'preview') {
+          if (step !== "checkout" && step !== "preview") {
             await addBotMessage(getStepPrompt(step), 800);
           }
           return;
@@ -1961,18 +2627,22 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         // entire customization flow for the prospect.
         const isAdminFreshVisit = source === "admin" && !savedStep;
         const dbStepCurrent = existingOnboarding?.stepCurrent;
-        if (!isAdminFreshVisit && dbStepCurrent !== undefined && dbStepCurrent !== null) {
+        if (
+          !isAdminFreshVisit &&
+          dbStepCurrent !== undefined &&
+          dbStepCurrent !== null
+        ) {
           // Map step number to ChatStep (only resume if user has actually progressed past step 0)
           const stepIndex = dbStepCurrent;
           if (stepIndex > 0 && stepIndex < STEP_ORDER.length) {
             const targetStep = STEP_ORDER[stepIndex];
-            if (targetStep && targetStep !== 'welcome') {
+            if (targetStep && targetStep !== "welcome") {
               setCurrentStep(targetStep);
               // Also save to localStorage for next time
               if (onboardingStorageKey) {
                 localStorage.setItem(onboardingStorageKey, targetStep);
               }
-              if (targetStep !== 'checkout' && targetStep !== 'preview') {
+              if (targetStep !== "checkout" && targetStep !== "preview") {
                 await addBotMessage(getStepPrompt(targetStep), 800);
               }
               return;
@@ -1981,26 +2651,40 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         }
 
         // Manual StartPage flow: name + category already set, skip to first real step
-        const isManualWithData = source === "external"
-          && (business as any)?.category?.trim()
-          && business?.name && business.name !== "Neues Unternehmen"
-          && business?.placeId?.startsWith("self-");
+        const isManualWithData =
+          source === "external" &&
+          (business as any)?.category?.trim() &&
+          business?.name &&
+          business.name !== "Neues Unternehmen" &&
+          business?.placeId?.startsWith("self-");
 
         if (isManualWithData) {
-          const translatedCategory = translateGmbCategory((business as any).category);
-          setData((p) => ({ ...p, businessCategory: translatedCategory, businessName: business!.name }));
+          const translatedCategory = translateGmbCategory(
+            (business as any).category
+          );
+          setData(p => ({
+            ...p,
+            businessCategory: translatedCategory,
+            businessName: business!.name,
+          }));
           setCategoryConfirmed(true);
           const firstStep = dynamicStepOrder[0] || "addressingMode";
           setCurrentStep(firstStep);
           await addBotMessage(getStepPrompt(firstStep), 800);
-        } else if ((source === "admin" || source === "external") && (business as any)?.category) {
+        } else if (
+          (source === "admin" || source === "external") &&
+          (business as any)?.category
+        ) {
           // GMB lead (admin outreach or self-service): pre-select category from Google, let user confirm
-          const translatedCategory = translateGmbCategory((business as any).category);
-          setData((p) => ({ ...p, businessCategory: translatedCategory }));
+          const translatedCategory = translateGmbCategory(
+            (business as any).category
+          );
+          setData(p => ({ ...p, businessCategory: translatedCategory }));
           setCurrentStep("businessCategory");
-          const greeting = source === "admin"
-            ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
-            : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
+          const greeting =
+            source === "admin"
+              ? `Hallo! 👋 Deine Website ist bereits fertig – schau sie dir gerne rechts an! Bevor wir zum Checkout gehen, möchten wir noch ein paar Kleinigkeiten mit dir abstimmen.\n\nZuerst: Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`
+              : `Ich habe deine Branche aus Google erkannt: **${translatedCategory}** ✅\n\nPasst das so, oder möchtest du eine andere Branche auswählen?`;
           await addBotMessage(greeting, 800);
         } else if (source === "admin") {
           setCurrentStep("businessCategory");
@@ -2015,22 +2699,36 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       initChat();
     }
-  }, [siteLoading, initialized, isGeneratingInitialWebsite, addBotMessage, getStepPrompt, websiteId, siteData?.website?.source, existingOnboarding, onboardingStorageKey]);
+  }, [
+    siteLoading,
+    initialized,
+    isGeneratingInitialWebsite,
+    addBotMessage,
+    getStepPrompt,
+    websiteId,
+    siteData?.website?.source,
+    existingOnboarding,
+    onboardingStorageKey,
+  ]);
 
   // ── Show full preview whenever the email step is active ─────────────────
   // Covers both admin outreach sites AND the new external try-before-email flow.
   // Fires on every relevant change so it also catches resumed sessions (localStorage
   // step restoration bypasses initChat, so we can't rely on a one-time initChat call).
   useEffect(() => {
-    const isIncomplete = contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || contentPhase === 'texts';
+    const isIncomplete =
+      contentPhase === "skeleton" ||
+      contentPhase === "colors" ||
+      contentPhase === "images" ||
+      contentPhase === "texts";
     if (!isIncomplete) return;
     const source = siteData?.website?.source;
-    const hasData = !!(siteData?.website?.websiteData);
+    const hasData = !!siteData?.website?.websiteData;
     const shouldReveal =
       source === "admin" ||
       (source === "external" && hasData && currentStep === "email");
     if (shouldReveal) {
-      setContentPhase('complete');
+      setContentPhase("complete");
       setCategoryConfirmed(true);
       setHeroRevealed(true);
       setContentRevealed(true);
@@ -2040,18 +2738,31 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // bei allen nachfolgenden Schritten.
       setIsGeneratingInitialContent(false);
       if (previewToken || websiteIdProp) {
-        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        localStorage.setItem(
+          `contentPhase_${previewToken || websiteIdProp}`,
+          "complete"
+        );
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
       }
     }
-  }, [siteData?.website?.source, siteData?.website?.websiteData, currentStep, contentPhase, previewToken, websiteIdProp]);
+  }, [
+    siteData?.website?.source,
+    siteData?.website?.websiteData,
+    currentStep,
+    contentPhase,
+    previewToken,
+    websiteIdProp,
+  ]);
 
   // Stale-Flag-Recovery: wenn localStorage sagt "generation läuft" aber tatsächlich
   // keine Mutation pending ist (Page wurde mid-fetch entladen, pm2-Restart killed
   // den Fetch ohne Reject, …), ist der Flag stale → clear. Ohne diesen Effect
   // bleibt isLoading=true für immer, weil keine andere Codestelle den Flag löscht.
   useEffect(() => {
-    if (isGeneratingInitialContent && !generateInitialContentMutation.isPending) {
+    if (
+      isGeneratingInitialContent &&
+      !generateInitialContentMutation.isPending
+    ) {
       setIsGeneratingInitialContent(false);
       if (previewToken || websiteIdProp) {
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
@@ -2068,13 +2779,18 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   useEffect(() => {
     if (!isGeneratingInitialContent) return;
     const timeout = setTimeout(() => {
-      console.warn("[Onboarding] AI text generation > 60s, clearing skeleton state");
+      console.warn(
+        "[Onboarding] AI text generation > 60s, clearing skeleton state"
+      );
       setIsGeneratingInitialContent(false);
-      setContentPhase('complete');
+      setContentPhase("complete");
       setContentRevealed(true);
       if (previewToken || websiteIdProp) {
         localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+        localStorage.setItem(
+          `contentPhase_${previewToken || websiteIdProp}`,
+          "complete"
+        );
       }
     }, 60_000);
     return () => clearTimeout(timeout);
@@ -2087,29 +2803,66 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
   // before the user has answered the category question (prevents premature skeleton exit
   // when businessCategory is pre-filled from GMB data or existingOnboarding).
   useEffect(() => {
-    if (categoryConfirmed && contentPhase === 'skeleton') {
-      setContentPhase('colors');
-      localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'colors');
-      
+    if (categoryConfirmed && contentPhase === "skeleton") {
+      setContentPhase("colors");
+      localStorage.setItem(
+        `contentPhase_${previewToken || websiteIdProp}`,
+        "colors"
+      );
+
       // Auto-select color scheme based on category
       const industryColors: Record<string, any> = {
-        'restaurant': { primary: '#c45c26', secondary: '#f4a261', accent: '#e76f51' },
-        'friseur': { primary: '#9a8b7a', secondary: '#f8f6f3', accent: '#c4a882' },
-        'bau': { primary: '#4a5568', secondary: '#bfa880', accent: '#e2e8f0' },
-        'handwerk': { primary: '#4a5568', secondary: '#bfa880', accent: '#e2e8f0' },
-        'fitness': { primary: '#2d3748', secondary: '#4a6b6b', accent: '#e2e8f0' },
-        'medizin': { primary: '#64748b', secondary: '#94a3b8', accent: '#e8ded4' },
-        'immobilien': { primary: '#1e3a5f', secondary: '#c9a227', accent: '#f5f3f0' },
-        'beratung': { primary: '#1e3a5f', secondary: '#9a8b7a', accent: '#e8ded4' },
-        'cafe': { primary: '#6b4e3d', secondary: '#d4a574', accent: '#f5e6d3' },
-        'hotel': { primary: '#c9a227', secondary: '#2d2d2d', accent: '#f5f3f0' },
-        'default': { primary: '#475569', secondary: '#bfa880', accent: '#e2e8f0' },
+        restaurant: {
+          primary: "#c45c26",
+          secondary: "#f4a261",
+          accent: "#e76f51",
+        },
+        friseur: {
+          primary: "#9a8b7a",
+          secondary: "#f8f6f3",
+          accent: "#c4a882",
+        },
+        bau: { primary: "#4a5568", secondary: "#bfa880", accent: "#e2e8f0" },
+        handwerk: {
+          primary: "#4a5568",
+          secondary: "#bfa880",
+          accent: "#e2e8f0",
+        },
+        fitness: {
+          primary: "#2d3748",
+          secondary: "#4a6b6b",
+          accent: "#e2e8f0",
+        },
+        medizin: {
+          primary: "#64748b",
+          secondary: "#94a3b8",
+          accent: "#e8ded4",
+        },
+        immobilien: {
+          primary: "#1e3a5f",
+          secondary: "#c9a227",
+          accent: "#f5f3f0",
+        },
+        beratung: {
+          primary: "#1e3a5f",
+          secondary: "#9a8b7a",
+          accent: "#e8ded4",
+        },
+        cafe: { primary: "#6b4e3d", secondary: "#d4a574", accent: "#f5e6d3" },
+        hotel: { primary: "#c9a227", secondary: "#2d2d2d", accent: "#f5f3f0" },
+        default: {
+          primary: "#475569",
+          secondary: "#bfa880",
+          accent: "#e2e8f0",
+        },
       };
-      
-      const category = data.businessCategory?.toLowerCase() || '';
-      const matchedKey = Object.keys(industryColors).find(k => category.includes(k)) || 'default';
+
+      const category = data.businessCategory?.toLowerCase() || "";
+      const matchedKey =
+        Object.keys(industryColors).find(k => category.includes(k)) ||
+        "default";
       const colors = industryColors[matchedKey];
-      
+
       setData(prev => ({
         ...prev,
         colorScheme: {
@@ -2119,88 +2872,141 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           accent: colors.accent,
         },
       }));
-      
+
       // After 500ms, reveal images – for GMB flow skip straight to 'complete'
       // because the server already generated full content; 'images' would leave
       // isLoading=true indefinitely since Phase 2 is skipped for GMB.
       setTimeout(() => {
-        const isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
-        const nextPhase = isGmb ? 'complete' : 'images';
+        const isGmb =
+          !!business?.placeId && !business.placeId.startsWith("self-");
+        const nextPhase = isGmb ? "complete" : "images";
         setContentPhase(nextPhase);
-        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, nextPhase);
+        localStorage.setItem(
+          `contentPhase_${previewToken || websiteIdProp}`,
+          nextPhase
+        );
       }, 500);
     }
-  }, [categoryConfirmed, contentPhase, data.businessCategory, previewToken, websiteIdProp]);
-  
+  }, [
+    categoryConfirmed,
+    contentPhase,
+    data.businessCategory,
+    previewToken,
+    websiteIdProp,
+  ]);
+
   // Phase 2: When both category AND name are entered -> generate texts
   useEffect(() => {
     const hasCategory = !!data.businessCategory?.trim();
     const hasName = !!data.businessName?.trim();
     const hasWebsiteId = !!websiteId;
-    const isGmbFlow = !!business?.placeId && !business.placeId.startsWith("self-");
-    
+    const isGmbFlow =
+      !!business?.placeId && !business.placeId.startsWith("self-");
+
     // Only proceed if we're at images phase AND addressingMode was confirmed (heroRevealed).
     // This ensures Du/Sie preference is captured before text generation starts.
-    if (hasCategory && hasName && hasWebsiteId && !isGmbFlow && contentPhase === 'images' &&
-        heroRevealed &&
-        !isGeneratingInitialContent && !generateInitialContentMutation.isPending &&
-        !contentGenerationAttemptedRef.current) {
-
+    if (
+      hasCategory &&
+      hasName &&
+      hasWebsiteId &&
+      !isGmbFlow &&
+      contentPhase === "images" &&
+      heroRevealed &&
+      !isGeneratingInitialContent &&
+      !generateInitialContentMutation.isPending &&
+      !contentGenerationAttemptedRef.current
+    ) {
       // Guard against double-trigger (state changes can re-fire this effect)
       contentGenerationAttemptedRef.current = true;
 
-      setContentPhase('texts');
-      localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'texts');
+      setContentPhase("texts");
+      localStorage.setItem(
+        `contentPhase_${previewToken || websiteIdProp}`,
+        "texts"
+      );
       setIsGeneratingInitialContent(true);
-      localStorage.setItem(`generating_${previewToken || websiteIdProp}`, 'true');
+      localStorage.setItem(
+        `generating_${previewToken || websiteIdProp}`,
+        "true"
+      );
 
-      generateInitialContentMutation.mutateAsync({
-        websiteId,
-        businessName: data.businessName,
-        businessCategory: data.businessCategory,
-        addressingMode: (data.addressingMode as 'du' | 'Sie') || 'du',
-      }).then((result) => {
-        if (result.success) {
-          // Update local data state with generated content + services
-          setData(prev => ({
-            ...prev,
-            tagline: result.tagline || prev.tagline,
-            description: result.description || prev.description,
-            topServices: result.services?.map((svc: any) => ({
-              title: svc.title,
-              description: svc.description,
-            })) || prev.topServices,
-          }));
+      generateInitialContentMutation
+        .mutateAsync({
+          websiteId,
+          businessName: data.businessName,
+          businessCategory: data.businessCategory,
+          addressingMode: (data.addressingMode as "du" | "Sie") || "du",
+        })
+        .then(result => {
+          if (result.success) {
+            // Update local data state with generated content + services
+            setData(prev => ({
+              ...prev,
+              tagline: result.tagline || prev.tagline,
+              description: result.description || prev.description,
+              topServices:
+                result.services?.map((svc: any) => ({
+                  title: svc.title,
+                  description: svc.description,
+                })) || prev.topServices,
+            }));
 
-          toast.success("Website-Texte & Leistungen wurden generiert!", { duration: 2000 });
+            toast.success("Website-Texte & Leistungen wurden generiert!", {
+              duration: 2000,
+            });
 
-          // Mark as complete + progressive reveal: lower content area now visible
-          setContentPhase('complete');
-          localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
+            // Mark as complete + progressive reveal: lower content area now visible
+            setContentPhase("complete");
+            localStorage.setItem(
+              `contentPhase_${previewToken || websiteIdProp}`,
+              "complete"
+            );
+            setContentRevealed(true);
+
+            // Refetch to update preview
+            setTimeout(() => {
+              refetchSiteData();
+            }, 300);
+          }
+        })
+        .catch(err => {
+          console.error("Initial content generation failed:", err);
+          // Recover gracefully: show website as-is, don't leave stuck skeleton
+          setContentPhase("complete");
+          localStorage.setItem(
+            `contentPhase_${previewToken || websiteIdProp}`,
+            "complete"
+          );
           setContentRevealed(true);
-
-          // Refetch to update preview
-          setTimeout(() => {
-            refetchSiteData();
-          }, 300);
-        }
-      }).catch((err) => {
-        console.error("Initial content generation failed:", err);
-        // Recover gracefully: show website as-is, don't leave stuck skeleton
-        setContentPhase('complete');
-        localStorage.setItem(`contentPhase_${previewToken || websiteIdProp}`, 'complete');
-        setContentRevealed(true);
-        toast.error("Texte konnten nicht generiert werden. Du kannst sie später bearbeiten.", { duration: 4000 });
-      }).finally(() => {
-        setIsGeneratingInitialContent(false);
-        localStorage.removeItem(`generating_${previewToken || websiteIdProp}`);
-      });
+          toast.error(
+            "Texte konnten nicht generiert werden. Du kannst sie später bearbeiten.",
+            { duration: 4000 }
+          );
+        })
+        .finally(() => {
+          setIsGeneratingInitialContent(false);
+          localStorage.removeItem(
+            `generating_${previewToken || websiteIdProp}`
+          );
+        });
     }
-  }, [data.businessCategory, data.businessName, websiteId, business?.placeId, contentPhase,
-      heroRevealed, isGeneratingInitialContent, generateInitialContentMutation.isPending, previewToken, websiteIdProp]);
+  }, [
+    data.businessCategory,
+    data.businessName,
+    websiteId,
+    business?.placeId,
+    contentPhase,
+    heroRevealed,
+    isGeneratingInitialContent,
+    generateInitialContentMutation.isPending,
+    previewToken,
+    websiteIdProp,
+  ]);
 
   // Halte contentPhaseRef synchron (damit Kaskaden-useEffect ohne Dependency-Array darauf zugreifen kann)
-  useEffect(() => { contentPhaseRef.current = contentPhase; }, [contentPhase]);
+  useEffect(() => {
+    contentPhaseRef.current = contentPhase;
+  }, [contentPhase]);
 
   // ── Kaskaden-Update bei Branchen-Änderung ──────────────────────────────
   useEffect(() => {
@@ -2212,18 +3018,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (!prev || !next || prev === next) return;
 
     // Nur nach abgeschlossenem Onboarding-Initial-Flow
-    if (contentPhaseRef.current !== 'complete') return;
+    if (contentPhaseRef.current !== "complete") return;
 
     // 1. Fotos aktualisieren (nur explizite Unsplash-Stock-Fotos ersetzen)
     // Leere URLs bleiben leer → HeroPhotoStep wählt später das erste GMB-Foto automatisch
     // GMB-Fotos (lh3.googleusercontent.com, maps.googleapis.com) und eigene Uploads bleiben erhalten
-    const isStockHero = !!data.heroPhotoUrl && data.heroPhotoUrl.includes('unsplash.com');
-    const isStockAbout = !!data.aboutPhotoUrl && data.aboutPhotoUrl.includes('unsplash.com');
+    const isStockHero =
+      !!data.heroPhotoUrl && data.heroPhotoUrl.includes("unsplash.com");
+    const isStockAbout =
+      !!data.aboutPhotoUrl && data.aboutPhotoUrl.includes("unsplash.com");
 
     setData(prev => ({
       ...prev,
-      ...(isStockHero  ? { heroPhotoUrl:  getHeroImageUrl(next, data.businessName)  } : {}),
-      ...(isStockAbout ? { aboutPhotoUrl: getAboutImageUrl(next, data.businessName) } : {}),
+      ...(isStockHero
+        ? { heroPhotoUrl: getHeroImageUrl(next, data.businessName) }
+        : {}),
+      ...(isStockAbout
+        ? { aboutPhotoUrl: getAboutImageUrl(next, data.businessName) }
+        : {}),
     }));
 
     // 2. Farbschema zurücksetzen
@@ -2237,35 +3049,46 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // 4. KI-Texte neu generieren
     if (websiteId) {
-      generateInitialContentMutation.mutateAsync({
-        websiteId,
-        businessName: data.businessName,
-        businessCategory: next,
-      }).then((result) => {
-        if (result.success) {
-          setData(prev => ({
-            ...prev,
-            tagline:     result.tagline     || prev.tagline,
-            description: result.description || prev.description,
-            topServices: result.services?.map((svc: any) => ({
-              title:       svc.title       || '',
-              description: svc.description || '',
-            })) || prev.topServices,
-          }));
-          setTimeout(() => { refetchSiteData(); }, 300);
-        }
-      }).catch((err) => {
-        console.error("Cascade content regeneration failed:", err);
-        // Kein Toast – alte Texte bleiben stillschweigend erhalten
-      });
+      generateInitialContentMutation
+        .mutateAsync({
+          websiteId,
+          businessName: data.businessName,
+          businessCategory: next,
+        })
+        .then(result => {
+          if (result.success) {
+            setData(prev => ({
+              ...prev,
+              tagline: result.tagline || prev.tagline,
+              description: result.description || prev.description,
+              topServices:
+                result.services?.map((svc: any) => ({
+                  title: svc.title || "",
+                  description: svc.description || "",
+                })) || prev.topServices,
+            }));
+            setTimeout(() => {
+              refetchSiteData();
+            }, 300);
+          }
+        })
+        .catch(err => {
+          console.error("Cascade content regeneration failed:", err);
+          // Kein Toast – alte Texte bleiben stillschweigend erhalten
+        });
     }
   }, [data.businessCategory]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── AI text generation ──────────────────────────────────────────────────
   const generateWithAI = async (field: keyof OnboardingData) => {
     if (!websiteId) return;
-    const validFields = ["tagline", "description", "usp", "targetAudience"] as const;
-    type ValidField = typeof validFields[number];
+    const validFields = [
+      "tagline",
+      "description",
+      "usp",
+      "targetAudience",
+    ] as const;
+    type ValidField = (typeof validFields)[number];
     if (!validFields.includes(field as ValidField)) return;
     setIsGenerating(true);
     try {
@@ -2281,8 +3104,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       }
     } catch (err: any) {
       const msg = err?.message || "";
-      if (msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many")) {
-        toast.error("KI gerade überlastet – bitte in 10 Sekunden nochmal versuchen.");
+      if (
+        msg.includes("429") ||
+        msg.includes("overloaded") ||
+        msg.includes("Too Many")
+      ) {
+        toast.error(
+          "KI gerade überlastet – bitte in 10 Sekunden nochmal versuchen."
+        );
       } else {
         toast.error("KI-Generierung fehlgeschlagen");
       }
@@ -2296,20 +3125,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     setIsGeneratingServices(true);
     try {
       const context = `Unternehmensname: ${data.businessName || business?.name || ""}, Branche: ${data.businessCategory || business?.category || "Handwerk"}, Adresse: ${business?.address || ""}`;
-      const result = await suggestServicesMutation.mutateAsync({ websiteId, context });
+      const result = await suggestServicesMutation.mutateAsync({
+        websiteId,
+        context,
+      });
       if (result.services && result.services.length > 0) {
-        const suggested = result.services.map((s: { title: string; description: string }) => ({ 
-          title: s.title, 
-          description: s.description 
-        }));
+        const suggested = result.services.map(
+          (s: { title: string; description: string }) => ({
+            title: s.title,
+            description: s.description,
+          })
+        );
         setServiceSuggestions(suggested);
-        
+
         // If current services are empty, pre-fill them for convenience
-        if (data.topServices.length === 0 || (data.topServices.length === 1 && !data.topServices[0].title)) {
-          setData((p) => ({ ...p, topServices: suggested.slice(0, 3) }));
-          toast.success("Vorschläge generiert und eingefügt! Du kannst sie noch anpassen.");
+        if (
+          data.topServices.length === 0 ||
+          (data.topServices.length === 1 && !data.topServices[0].title)
+        ) {
+          setData(p => ({ ...p, topServices: suggested.slice(0, 3) }));
+          toast.success(
+            "Vorschläge generiert und eingefügt! Du kannst sie noch anpassen."
+          );
         } else {
-          toast.success("Neue Vorschläge generiert! Du kannst sie unten auswählen.");
+          toast.success(
+            "Neue Vorschläge generiert! Du kannst sie unten auswählen."
+          );
         }
       }
     } catch {
@@ -2321,9 +3162,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Step advancement ────────────────────────────────────────────────────
   // Steps that get a visual section divider in the chat (instead of a chat bubble)
-  const SECTION_DIVIDERS: Partial<Record<ChatStep, { icon: string; title: string; subtitle: string }>> = {
-    legalOwner: { icon: "📋", title: "Abschnitt 2: Rechtliche Angaben", subtitle: "Impressum & Datenschutz – dauert nur 2 Minuten" },
-    addons: { icon: "⚡", title: "Abschnitt 3: Extras & Fertigstellung", subtitle: "Optionale Features und letzter Schliff" },
+  const SECTION_DIVIDERS: Partial<
+    Record<ChatStep, { icon: string; title: string; subtitle: string }>
+  > = {
+    legalOwner: {
+      icon: "📋",
+      title: "Abschnitt 2: Rechtliche Angaben",
+      subtitle: "Impressum & Datenschutz – dauert nur 2 Minuten",
+    },
+    addons: {
+      icon: "⚡",
+      title: "Abschnitt 3: Extras & Fertigstellung",
+      subtitle: "Optionale Features und letzter Schliff",
+    },
   };
 
   const logStepMutation = trpc.onboarding.logStep.useMutation();
@@ -2341,29 +3192,45 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       // ── Analytics: track step progression ──
       const stepIdx = STEP_ORDER.indexOf(nextStep as any);
       if (websiteId && stepIdx >= 0) {
-        logStepMutation.mutate({ websiteId, step: nextStep, stepIndex: stepIdx, event: "reached" });
+        logStepMutation.mutate({
+          websiteId,
+          step: nextStep,
+          stepIndex: stepIdx,
+          event: "reached",
+        });
       }
       try {
         trackFunnelStep(nextStep, stepIdx);
         (window as any).clarity?.("set", "onboarding_step", nextStep);
-        (window as any).clarity?.("set", "onboarding_step_index", String(stepIdx));
+        (window as any).clarity?.(
+          "set",
+          "onboarding_step_index",
+          String(stepIdx)
+        );
         (window as any).clarity?.("event", `step_${nextStep}`);
       } catch {}
 
       // If this step has a section divider, inject it as a special message type
       const divider = SECTION_DIVIDERS[nextStep];
       if (divider) {
-        setMessages((prev) => [
+        setMessages(prev => [
           ...prev,
-          { id: genId(), role: "divider" as any, content: JSON.stringify(divider), timestamp: Date.now() },
+          {
+            id: genId(),
+            role: "divider" as any,
+            content: JSON.stringify(divider),
+            timestamp: Date.now(),
+          },
         ]);
-        await new Promise((r) => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 400));
       }
 
       // Show step prompt
       await addBotMessage(getStepPrompt(nextStep), divider ? 200 : 800);
       setTimeout(() => {
-        if (["tagline", "description", "usp", "targetAudience"].includes(nextStep)) {
+        if (
+          ["tagline", "description", "usp", "targetAudience"].includes(nextStep)
+        ) {
           textareaRef.current?.focus();
         } else {
           inputRef.current?.focus();
@@ -2381,12 +3248,20 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // UNLESS the next step is an addon config step (editAiChat, editMenu, etc.)
     // that was just activated; those must always be completed even in edit mode.
     if (editMode.isEditing && editMode.returnToStep) {
-      const addonConfigSteps: ChatStep[] = ["editAiChat", "editMenu", "editPricelist", "editGallery"];
+      const addonConfigSteps: ChatStep[] = [
+        "editAiChat",
+        "editMenu",
+        "editPricelist",
+        "editGallery",
+      ];
       if (next && addonConfigSteps.includes(next)) {
         await advanceToStep(next);
         return;
       }
-      addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
+      addBotMessage(
+        `✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`,
+        400
+      );
       await new Promise(resolve => setTimeout(resolve, 600));
       const returnStep = editMode.returnToStep;
       setCurrentStep(returnStep);
@@ -2398,13 +3273,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (next) {
       await advanceToStep(next);
     }
-  }, [currentStep, dynamicStepOrder, advanceToStep, editMode.isEditing, editMode.returnToStep]);
+  }, [
+    currentStep,
+    dynamicStepOrder,
+    advanceToStep,
+    editMode.isEditing,
+    editMode.returnToStep,
+  ]);
 
   // Helper to save step data without blocking chat advancement
-  const trySaveStep = async (stepIdx: number, stepData: Record<string, unknown>) => {
+  const trySaveStep = async (
+    stepIdx: number,
+    stepData: Record<string, unknown>
+  ) => {
     if (!websiteId) return;
     try {
-      await saveStepMutation.mutateAsync({ websiteId, step: stepIdx, data: stepData });
+      await saveStepMutation.mutateAsync({
+        websiteId,
+        step: stepIdx,
+        data: stepData,
+      });
       refetchSiteData();
     } catch (e) {
       console.warn("[Onboarding] saveStep failed (non-blocking):", e);
@@ -2415,7 +3303,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // value=undefined means use inputValue; value="" means explicit empty (e.g. businessName confirm)
     const val = value !== undefined ? value.trim() : inputValue.trim();
     const isExplicitEmpty = value === "";
-    if (!val && !isExplicitEmpty && !["addons", "subpages", "preview", "checkout", "legalVat", "openingHours"].includes(currentStep)) return;
+    if (
+      !val &&
+      !isExplicitEmpty &&
+      ![
+        "addons",
+        "subpages",
+        "preview",
+        "checkout",
+        "legalVat",
+        "openingHours",
+      ].includes(currentStep)
+    )
+      return;
 
     setInputValue("");
 
@@ -2425,13 +3325,14 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     try {
       switch (currentStep) {
         case "businessName": {
-          const confirmationPattern = /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
+          const confirmationPattern =
+            /^(ja|j|yes|y|yep|yup|stimmt|ok|okay|klar)$/i;
           if (val && confirmationPattern.test(val.trim())) {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
             await trySaveStep(stepIdx, { businessName: data.businessName });
           } else if (val) {
             addUserMessage(val);
-            setData((p) => ({ ...p, businessName: val }));
+            setData(p => ({ ...p, businessName: val }));
             await trySaveStep(stepIdx, { businessName: val });
           } else {
             addUserMessage(`Ja, "${data.businessName}" stimmt! ✓`);
@@ -2444,7 +3345,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "usp":
         case "targetAudience": {
           // AI intent detection: if user asks for a suggestion, trigger AI generation
-          const aiIntentPattern = /vorschlag|generier|mach mir|erstell|schreib|idee|hilf|automatisch|ki|ai\b/i;
+          const aiIntentPattern =
+            /vorschlag|generier|mach mir|erstell|schreib|idee|hilf|automatisch|ki|ai\b/i;
           if (aiIntentPattern.test(val)) {
             addUserMessage(val);
             addBotMessage("Klar, ich generiere dir einen Vorschlag! ✨", 200);
@@ -2454,53 +3356,76 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // Use submitted value or fallback to inputValue if empty
           const finalValue = val || inputValue;
           if (!finalValue) return; // Don't submit empty
-          
+
           addUserMessage(finalValue);
-          setData((p) => ({ ...p, [currentStep]: finalValue }));
+          setData(p => ({ ...p, [currentStep]: finalValue }));
           await trySaveStep(stepIdx, { [currentStep]: finalValue });
           break;
         }
         case "legalOwner": {
           if (val.trim().split(/\s+/).length < 2) {
-            toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
+            toast.error(
+              "Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)"
+            );
             return;
           }
           addUserMessage(val);
-          setData((p) => ({ ...p, legalOwner: val }));
+          setData(p => ({ ...p, legalOwner: val }));
           await trySaveStep(stepIdx, { legalOwner: val });
           break;
         }
         case "legalStreet": {
-          if (!val.trim()) { toast.error("Bitte gib Straße und Hausnummer ein"); return; }
-          if (!/\d/.test(val)) { toast.error("Bitte gib auch die Hausnummer an (z.B. Musterstraße 12)"); return; }
+          if (!val.trim()) {
+            toast.error("Bitte gib Straße und Hausnummer ein");
+            return;
+          }
+          if (!/\d/.test(val)) {
+            toast.error(
+              "Bitte gib auch die Hausnummer an (z.B. Musterstraße 12)"
+            );
+            return;
+          }
           addUserMessage(val);
-          setData((p) => ({ ...p, legalStreet: val }));
+          setData(p => ({ ...p, legalStreet: val }));
           await trySaveStep(stepIdx, { legalStreet: val });
           break;
         }
         case "legalZipCity": {
           const zipCityMatch = val.trim().match(/^(\d{5})\s+(.+)$/);
-          if (!zipCityMatch) { toast.error("Bitte im Format 'PLZ Stadt' eingeben, z.B. 50667 Köln"); return; }
+          if (!zipCityMatch) {
+            toast.error(
+              "Bitte im Format 'PLZ Stadt' eingeben, z.B. 50667 Köln"
+            );
+            return;
+          }
           const zip = zipCityMatch[1];
           const city = zipCityMatch[2];
           addUserMessage(val);
-          setData((p) => ({ ...p, legalZip: zip, legalCity: city }));
+          setData(p => ({ ...p, legalZip: zip, legalCity: city }));
           await trySaveStep(stepIdx, { legalZip: zip, legalCity: city });
           break;
         }
         case "legalEmail": {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(val.trim())) { toast.error("Bitte gib eine gültige E-Mail-Adresse ein (z.B. info@firma.de)"); return; }
+          if (!emailRegex.test(val.trim())) {
+            toast.error(
+              "Bitte gib eine gültige E-Mail-Adresse ein (z.B. info@firma.de)"
+            );
+            return;
+          }
           addUserMessage(val);
-          setData((p) => ({ ...p, legalEmail: val.trim() }));
+          setData(p => ({ ...p, legalEmail: val.trim() }));
           await trySaveStep(stepIdx, { legalEmail: val.trim() });
           break;
         }
         case "legalPhone": {
           const phoneVal = val.trim();
-          if (!phoneVal) { toast.error("Bitte gib eine Telefonnummer ein"); return; }
+          if (!phoneVal) {
+            toast.error("Bitte gib eine Telefonnummer ein");
+            return;
+          }
           addUserMessage(phoneVal);
-          setData((p) => ({ ...p, legalPhone: phoneVal }));
+          setData(p => ({ ...p, legalPhone: phoneVal }));
           await trySaveStep(stepIdx, { legalPhone: phoneVal });
           break;
         }
@@ -2508,19 +3433,26 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           // Handled exclusively via the UI widget (Übernehmen/Überspringen buttons)
           // Text "Überspringen" from quickReply skips without saving
           addUserMessage("Überspringen");
-          setData((p) => ({ ...p, openingHours: null }));
+          setData(p => ({ ...p, openingHours: null }));
           await trySaveStep(stepIdx, { openingHours: null });
           break;
         }
         case "legalVat": {
           // Empty input or explicit "no" = Kleinunternehmer (no VAT ID)
           const trimmed = val.trim();
-          const skip = ["nein", "keine", "n/a", "-", ""].includes(trimmed.toLowerCase()) || trimmed === "";
+          const skip =
+            ["nein", "keine", "n/a", "-", ""].includes(trimmed.toLowerCase()) ||
+            trimmed === "";
           const vatRegex = /^DE\d{9}$/i;
-          if (!skip && !vatRegex.test(trimmed)) { toast.error("USt-IdNr. muss das Format DE123456789 haben. Schreib 'Nein' oder lass das Feld leer, wenn du keine hast."); return; }
+          if (!skip && !vatRegex.test(trimmed)) {
+            toast.error(
+              "USt-IdNr. muss das Format DE123456789 haben. Schreib 'Nein' oder lass das Feld leer, wenn du keine hast."
+            );
+            return;
+          }
           const vatId = skip ? "" : trimmed.toUpperCase();
           addUserMessage(skip ? "Keine USt-IdNr. (Kleinunternehmer)" : vatId);
-          setData((p) => ({ ...p, legalVatId: vatId }));
+          setData(p => ({ ...p, legalVatId: vatId }));
           await trySaveStep(stepIdx, { legalVatId: vatId });
           break;
         }
@@ -2531,7 +3463,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             return;
           }
           addUserMessage(val);
-          setData((p) => ({ ...p, email: val }));
+          setData(p => ({ ...p, email: val }));
           trackConversion("qualify_lead");
           // Save as customerEmail in DB
           const alreadyHasEmail = !!(siteData?.website as any)?.customerEmail;
@@ -2554,7 +3486,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         case "businessCategory":
           if (val) {
             addUserMessage(val);
-            setData((p) => ({ ...p, businessCategory: val }));
+            setData(p => ({ ...p, businessCategory: val }));
             await trySaveStep(stepIdx, { businessCategory: val });
             setCategoryConfirmed(true); // Triggers contentPhase skeleton → colors transition
           }
@@ -2591,7 +3523,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     if (nextStep) {
       // If in edit mode, return to the original position instead of advancing
       if (editMode.isEditing && editMode.returnToStep) {
-        addBotMessage(`✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`, 400);
+        addBotMessage(
+          `✓ Gespeichert! Ich bringe dich zurück zu deinem aktuellen Schritt...`,
+          400
+        );
         await new Promise(resolve => setTimeout(resolve, 600));
         const returnStep = editMode.returnToStep;
         setCurrentStep(returnStep);
@@ -2610,29 +3545,29 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     try {
       // Complete onboarding first
       await completeMutation.mutateAsync({ websiteId });
-      
+
       // Update captureStatus and send completion email for external leads
       if (siteData?.website?.source === "external") {
         updateCaptureStatusMutation.mutate({
           websiteId,
           captureStatus: "onboarding_completed",
         });
-        
+
         // Email disabled during development
         // sendLeadEmailMutation.mutate({ websiteId, template: "onboardingCompleted" });
       }
-      
+
       // Then create checkout session
       const session = await checkoutMutation.mutateAsync({
         websiteId,
         billingInterval,
         addOns: {
           contactForm: data.addOnContactForm,
-          gallery:     data.addOnGallery,
-          menu:        _addOnMenu,
-          pricelist:   _addOnPricelist,
-          aiChat:      _addOnAiChat,
-          booking:     data.addOnBooking,
+          gallery: data.addOnGallery,
+          menu: _addOnMenu,
+          pricelist: _addOnPricelist,
+          aiChat: _addOnAiChat,
+          booking: data.addOnBooking,
         },
       });
       trackConversion("close_convert_lead");
@@ -2658,82 +3593,105 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Filter hidden sections
     if (hiddenSections.size > 0) {
-      patched.sections = patched.sections.filter((s) => !hiddenSections.has(s.type));
+      patched.sections = patched.sections.filter(
+        s => !hiddenSections.has(s.type)
+      );
     }
 
     // Patch sections
-    patched.sections = patched.sections.map((section) => {
-      if (section.type === "hero") {
-        return {
-          ...section,
-          headline: data.tagline || section.headline,
-          subheadline: data.description || section.subheadline,
-        };
-      }
-      if (section.type === "about") {
-        return {
-          ...section,
-          content: data.description || section.content,
-          headline: data.businessName ? `Über ${data.businessName}` : section.headline,
-        };
-      }
-      if (section.type === "services") {
-        // If user explicitly skipped services (topServices is empty array after skip), remove section
-        if (data.topServicesSkipped) return null;
-        const filledServices = data.topServices.filter((s) => s.title.trim());
-        if (filledServices.length > 0) {
+    patched.sections = patched.sections
+      .map(section => {
+        if (section.type === "hero") {
           return {
             ...section,
-            items: filledServices.map((s) => ({ title: s.title, description: s.description })),
+            headline: data.tagline || section.headline,
+            subheadline: data.description || section.subheadline,
           };
         }
-      }
-      if (section.type === "cta") {
-        return {
-          ...section,
-          content: data.targetAudience || section.content,
-        };
-      }
-      return section;
-    }).filter(Boolean) as typeof patched.sections;
+        if (section.type === "about") {
+          return {
+            ...section,
+            content: data.description || section.content,
+            headline: data.businessName
+              ? `Über ${data.businessName}`
+              : section.headline,
+          };
+        }
+        if (section.type === "services") {
+          // If user explicitly skipped services (topServices is empty array after skip), remove section
+          if (data.topServicesSkipped) return null;
+          const filledServices = data.topServices.filter(s => s.title.trim());
+          if (filledServices.length > 0) {
+            return {
+              ...section,
+              items: filledServices.map(s => ({
+                title: s.title,
+                description: s.description,
+              })),
+            };
+          }
+        }
+        if (section.type === "cta") {
+          return {
+            ...section,
+            content: data.targetAudience || section.content,
+          };
+        }
+        return section;
+      })
+      .filter(Boolean) as typeof patched.sections;
 
     // Add Menu section if active
     if (data.addOnMenu && !hiddenSections.has("menu")) {
-      const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+      const filledCategories = data.addOnMenuData.categories.filter(
+        c => c.name.trim() || c.items.some(i => i.name.trim())
+      );
       if (filledCategories.length > 0) {
         patched.sections.push({
           type: "menu",
           headline: data.addOnMenuData.headline || "Unsere Speisekarte",
-          items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
-            title: i.name,
-            description: i.description,
-            price: i.price,
-            category: c.name
-          }))) as any
+          items: filledCategories.flatMap(c =>
+            c.items
+              .filter(i => i.name.trim())
+              .map(i => ({
+                title: i.name,
+                description: i.description,
+                price: i.price,
+                category: c.name,
+              }))
+          ) as any,
         });
       }
     }
 
     // Add Pricelist section if active
     if (data.addOnPricelist && !hiddenSections.has("pricelist")) {
-      const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
+      const filledCategories = data.addOnPricelistData.categories.filter(
+        c => c.name.trim() || c.items.some(i => i.name.trim())
+      );
       if (filledCategories.length > 0) {
         patched.sections.push({
           type: "pricelist",
           headline: data.addOnPricelistData.headline || "Unsere Preise",
-          items: filledCategories.flatMap(c => c.items.filter(i => i.name.trim()).map(i => ({
-            title: i.name,
-            price: i.price,
-            category: c.name
-          }))) as any
+          items: filledCategories.flatMap(c =>
+            c.items
+              .filter(i => i.name.trim())
+              .map(i => ({
+                title: i.name,
+                price: i.price,
+                category: c.name,
+              }))
+          ) as any,
         });
       }
     }
 
     // Add or update Gallery section if active
     if (data.addOnGallery && !hiddenSections.has("gallery")) {
-      const isAlbumMode = data.addOnGalleryData.mode === 'albums';
-      const existingGalleryIdx = patched.sections.findIndex(s => s.type === "gallery");
+      const isAlbumMode = data.addOnGalleryData.mode === "albums";
+      const existingGalleryIdx = patched.sections.findIndex(
+        s => s.type === "gallery"
+      );
 
       let gallerySection: any;
       if (isAlbumMode) {
@@ -2748,11 +3706,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         };
       } else {
         // Single mode: flat masonry grid
-        const gmbFallback = earlyGmbData?.photos?.length ? earlyGmbData.photos : null;
-        const fallbackImages = gmbFallback || getGalleryImages(data.businessCategory, data.businessName);
-        const galleryImages = data.addOnGalleryData.images.length > 0
-          ? data.addOnGalleryData.images
-          : fallbackImages;
+        const gmbFallback = earlyGmbData?.photos?.length
+          ? earlyGmbData.photos
+          : null;
+        const fallbackImages =
+          gmbFallback ||
+          getGalleryImages(data.businessCategory, data.businessName);
+        const galleryImages =
+          data.addOnGalleryData.images.length > 0
+            ? data.addOnGalleryData.images
+            : fallbackImages;
         const galleryItems = galleryImages.map((img: string, i: number) => ({
           title: `Projekt ${i + 1}`,
           imageUrl: img,
@@ -2760,7 +3723,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         gallerySection = {
           type: "gallery" as const,
           headline: data.addOnGalleryData.headline || "Unsere Galerie",
-          content: "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
+          content:
+            "Entdecken Sie einige Einblicke in unsere Arbeit und Projekte.",
           mode: "single",
           albums: [],
           items: galleryItems,
@@ -2775,12 +3739,15 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     }
 
     // Ensure contact section exists so it can be shown (locked or unlocked)
-    if (!patched.sections.some(s => s.type === "contact") && !hiddenSections.has("contact")) {
+    if (
+      !patched.sections.some(s => s.type === "contact") &&
+      !hiddenSections.has("contact")
+    ) {
       patched.sections.push({
         type: "contact",
         headline: "Kontaktier uns",
         content: "Hast du Fragen? Schreib uns einfach eine Nachricht.",
-        ctaText: "Nachricht senden"
+        ctaText: "Nachricht senden",
       });
     }
 
@@ -2788,7 +3755,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Hero always stays first; non-hero sections are sorted by sectionOrder.
     if (sectionOrder.length > 0) {
       const heroSec = patched.sections.find((s: any) => s.type === "hero");
-      const others  = patched.sections.filter((s: any) => s.type !== "hero");
+      const others = patched.sections.filter((s: any) => s.type !== "hero");
       others.sort((a: any, b: any) => {
         const ai = sectionOrder.indexOf(a.type);
         const bi = sectionOrder.indexOf(b.type);
@@ -2810,7 +3777,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     // Patch headline font into designTokens
     if (data.headlineFont) {
       patched.designTokens = {
-        ...(patched.designTokens || {} as any),
+        ...(patched.designTokens || ({} as any)),
         headlineFont: data.headlineFont,
       };
     }
@@ -2846,8 +3813,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
     // Patch contact section with user-entered legal data + opening hours
     {
-      const contactIdx = patched.sections.findIndex((s: any) => s.type === "contact");
-      const contactSec: any = contactIdx > -1 ? patched.sections[contactIdx] : { type: "contact", headline: "Kontakt", items: [] };
+      const contactIdx = patched.sections.findIndex(
+        (s: any) => s.type === "contact"
+      );
+      const contactSec: any =
+        contactIdx > -1
+          ? patched.sections[contactIdx]
+          : { type: "contact", headline: "Kontakt", items: [] };
       const items: any[] = [...(contactSec.items || [])];
       const setItem = (icon: string, value: string) => {
         if (!value) return;
@@ -2857,7 +3829,10 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       };
       // Address from legal data
       const street = data.legalStreet || "";
-      const zipCity = data.legalZip && data.legalCity ? `${data.legalZip} ${data.legalCity}` : (data.legalCity || "");
+      const zipCity =
+        data.legalZip && data.legalCity
+          ? `${data.legalZip} ${data.legalCity}`
+          : data.legalCity || "";
       const address = [street, zipCity].filter(Boolean).join(", ");
       setItem("MapPin", address);
       setItem("Phone", data.legalPhone || "");
@@ -2866,11 +3841,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       if (data.openingHours && data.openingHours.length > 0) {
         const openDays = data.openingHours.filter(d => d.open);
         if (openDays.length > 0) {
-          const hoursStr = openDays.map(d => {
-            const slot1 = `${d.from}–${d.to}`;
-            const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
-            return `${d.day.slice(0, 2)}: ${slot1}${slot2}`;
-          }).join(" · ");
+          const hoursStr = openDays
+            .map(d => {
+              const slot1 = `${d.from}–${d.to}`;
+              const slot2 = d.from2 && d.to2 ? `, ${d.from2}–${d.to2}` : "";
+              return `${d.day.slice(0, 2)}: ${slot1}${slot2}`;
+            })
+            .join(" · ");
           setItem("Clock", hoursStr);
         }
       }
@@ -2899,7 +3876,11 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
     data.addOnPricelist,
     data.addOnPricelistData,
     data.contactFormFields,
-    data.legalStreet, data.legalZip, data.legalCity, data.legalPhone, data.legalEmail,
+    data.legalStreet,
+    data.legalZip,
+    data.legalCity,
+    data.legalPhone,
+    data.legalEmail,
     data.openingHours,
     hiddenSections,
     sectionOrder,
@@ -2908,63 +3889,86 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   // ── Section list for hideSections drag-and-drop step ────────────────────
   const SECTION_LABELS: Record<string, { label: string; emoji: string }> = {
-    about:        { label: "Über uns",              emoji: "👤" },
-    services:     { label: "Leistungen",            emoji: "🔧" },
-    testimonials: { label: "Kundenstimmen",         emoji: "⭐" },
-    gallery:      { label: "Bildergalerie",         emoji: "🖼️" },
-    contact:      { label: "Kontaktbereich",        emoji: "📬" },
+    about: { label: "Über uns", emoji: "👤" },
+    services: { label: "Leistungen", emoji: "🔧" },
+    testimonials: { label: "Kundenstimmen", emoji: "⭐" },
+    gallery: { label: "Bildergalerie", emoji: "🖼️" },
+    contact: { label: "Kontaktbereich", emoji: "📬" },
     // cta: not rendered by any layout – intentionally excluded
-    features:     { label: "Vorteile",              emoji: "✅" },
-    team:         { label: "Team",                  emoji: "👥" },
-    faq:          { label: "FAQ",                   emoji: "❓" },
-    menu:         { label: "Speisekarte",           emoji: "📖" },
-    pricelist:    { label: "Preisliste",            emoji: "🏷️" },
-    process:      { label: "Ablauf",                emoji: "⚙️" },
+    features: { label: "Vorteile", emoji: "✅" },
+    team: { label: "Team", emoji: "👥" },
+    faq: { label: "FAQ", emoji: "❓" },
+    menu: { label: "Speisekarte", emoji: "📖" },
+    pricelist: { label: "Preisliste", emoji: "🏷️" },
+    process: { label: "Ablauf", emoji: "⚙️" },
   };
 
   const allSectionsForHideStep = useMemo(() => {
     const base = siteData?.website?.websiteData as any;
-    const fromBase = (base?.sections || []).filter((s: any) => s.type !== "hero");
+    const fromBase = (base?.sections || []).filter(
+      (s: any) => s.type !== "hero"
+    );
     const list = [...fromBase];
-    if (data.addOnMenu     && !list.some(s => s.type === "menu"))      list.push({ type: "menu" });
-    if (data.addOnPricelist && !list.some(s => s.type === "pricelist")) list.push({ type: "pricelist" });
-    if (data.addOnGallery  && !list.some(s => s.type === "gallery"))   list.push({ type: "gallery" });
-    if (!list.some(s => s.type === "contact"))                          list.push({ type: "contact" });
-    const full = list.map((s: any) => ({ type: s.type, ...(SECTION_LABELS[s.type] ?? { label: s.type, emoji: "📄" }) }));
+    if (data.addOnMenu && !list.some(s => s.type === "menu"))
+      list.push({ type: "menu" });
+    if (data.addOnPricelist && !list.some(s => s.type === "pricelist"))
+      list.push({ type: "pricelist" });
+    if (data.addOnGallery && !list.some(s => s.type === "gallery"))
+      list.push({ type: "gallery" });
+    if (!list.some(s => s.type === "contact")) list.push({ type: "contact" });
+    const full = list.map((s: any) => ({
+      type: s.type,
+      ...(SECTION_LABELS[s.type] ?? { label: s.type, emoji: "📄" }),
+    }));
     return Array.from(new Map(full.map(s => [s.type, s])).values());
-  }, [siteData?.website?.websiteData, data.addOnMenu, data.addOnPricelist, data.addOnGallery]);
+  }, [
+    siteData?.website?.websiteData,
+    data.addOnMenu,
+    data.addOnPricelist,
+    data.addOnGallery,
+  ]);
 
   // Initialise sectionOrder once when the hideSections step first appears
   useEffect(() => {
-    if (currentStep === "hideSections" && sectionOrder.length === 0 && allSectionsForHideStep.length > 0) {
+    if (
+      currentStep === "hideSections" &&
+      sectionOrder.length === 0 &&
+      allSectionsForHideStep.length > 0
+    ) {
       setSectionOrder(allSectionsForHideStep.map(s => s.type));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, allSectionsForHideStep.length]);
 
   // ── Price calculation ───────────────────────────────────────────────────
-  const BASE_PRICE_MONTHLY   = 24.90; // 24,90 €/Monat (monatliche Abrechnung)
-  const BASE_PRICE_YEARLY    = 19.90; // 19,90 €/Monat (jährliche Abrechnung)
-  const ADDON_PRICE          = 3.90;  // 3,90 € pro Standard-Add-on
-  const ADDON_PRICE_AI_CHAT  = 9.90;  // 9,90 € KI-Chat
-  const ADDON_PRICE_BOOKING  = 4.90;  // 4,90 € Terminbuchung
+  const BASE_PRICE_MONTHLY = 24.9; // 24,90 €/Monat (monatliche Abrechnung)
+  const BASE_PRICE_YEARLY = 19.9; // 19,90 €/Monat (jährliche Abrechnung)
+  const ADDON_PRICE = 3.9; // 3,90 € pro Standard-Add-on
+  const ADDON_PRICE_AI_CHAT = 9.9; // 9,90 € KI-Chat
+  const ADDON_PRICE_BOOKING = 4.9; // 4,90 € Terminbuchung
 
   const totalPrice = () => {
-    const base  = billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
-    let addons  = 0;
+    const base =
+      billingInterval === "yearly" ? BASE_PRICE_YEARLY : BASE_PRICE_MONTHLY;
+    let addons = 0;
     if (data.addOnContactForm) addons += ADDON_PRICE;
-    if (data.addOnGallery)     addons += ADDON_PRICE;
-    if (_addOnMenu)            addons += ADDON_PRICE;
-    if (_addOnPricelist)       addons += ADDON_PRICE;
-    if (_addOnAiChat)          addons += ADDON_PRICE_AI_CHAT;
-    if (data.addOnBooking)     addons += ADDON_PRICE_BOOKING;
+    if (data.addOnGallery) addons += ADDON_PRICE;
+    if (_addOnMenu) addons += ADDON_PRICE;
+    if (_addOnPricelist) addons += ADDON_PRICE;
+    if (_addOnAiChat) addons += ADDON_PRICE_AI_CHAT;
+    if (data.addOnBooking) addons += ADDON_PRICE_BOOKING;
     return (base + addons).toFixed(2).replace(".", ",");
   };
 
   // ── Render ──────────────────────────────────────────────────────────────
 
   if (siteLoading || isGeneratingInitialWebsite) {
-    return <EpicGenerationLoading phase={generationPhase} progress={generationProgress} />;
+    return (
+      <EpicGenerationLoading
+        phase={generationPhase}
+        progress={generationProgress}
+      />
+    );
   }
 
   // ── Website nicht (mehr) vorhanden ──────────────────────────────────────
@@ -2975,9 +3979,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       return (
         <div className="flex items-center justify-center min-h-screen bg-slate-950 text-slate-300">
           <div className="flex flex-col items-center gap-3">
-            <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            <svg
+              className="w-8 h-8 animate-spin text-blue-500"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
             </svg>
             <p className="text-sm">Einen Moment…</p>
           </div>
@@ -2996,8 +4015,8 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
           </h1>
           <p className="text-slate-400 text-sm leading-relaxed mb-6">
             Dein Website-Entwurf wurde nach Ablauf der Reservierung gelöscht.
-            Kein Problem &ndash; du kannst in 60&nbsp;Sekunden einen neuen Entwurf erstellen,
-            der gleiche Ablauf wie beim ersten Mal.
+            Kein Problem &ndash; du kannst in 60&nbsp;Sekunden einen neuen
+            Entwurf erstellen, der gleiche Ablauf wie beim ersten Mal.
           </p>
           <button
             onClick={() => navigate("/start")}
@@ -3018,15 +4037,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
 
   const websiteData = siteData?.website?.websiteData as WebsiteData | undefined;
   // Fallback to local data.colorScheme so preview works even when DB value is null
-  const colorScheme = (siteData?.website?.colorScheme ?? data.colorScheme ?? undefined) as ColorScheme | undefined;
-  const heroImageUrl = (siteData?.website as any)?.heroImageUrl as string | undefined;
-  const aboutImageUrl = (siteData?.website as any)?.aboutImageUrl as string | undefined;
-  const layoutStyle = (siteData?.website as any)?.layoutStyle as string | undefined;
+  const colorScheme = (siteData?.website?.colorScheme ??
+    data.colorScheme ??
+    undefined) as ColorScheme | undefined;
+  const heroImageUrl = (siteData?.website as any)?.heroImageUrl as
+    | string
+    | undefined;
+  const aboutImageUrl = (siteData?.website as any)?.aboutImageUrl as
+    | string
+    | undefined;
+  const layoutStyle = (siteData?.website as any)?.layoutStyle as
+    | string
+    | undefined;
   const slug = siteData?.website?.slug;
 
   // ── Variant picker (shown once after generation completes) ───────────────
   if (showVariantPicker && websiteId && websiteData) {
-    const industryKey: string = ((siteData?.website as any)?.industry as string) || "general";
+    const industryKey: string =
+      ((siteData?.website as any)?.industry as string) || "general";
     return (
       <VariantPickerScreen
         websiteId={websiteId}
@@ -3067,7 +4095,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-
       {/* ── Fullscreen preview overlay ──────────────────────────────────── */}
       {/* Condition: only showFullPreview — data availability is handled inside
           so the overlay ALWAYS renders when the button is pressed. */}
@@ -3087,11 +4114,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="w-3 h-3 rounded-full bg-green-500/80" />
             </div>
             <div className="flex-1 flex items-center gap-2 px-3 py-1 rounded-md text-xs text-slate-400 bg-slate-800 border border-slate-700 mx-3 min-w-0">
-              <svg className="w-3 h-3 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="w-3 h-3 text-green-400 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
               <span className="truncate">
-                {previewToken ? `pageblitz.de/preview/${previewToken}` : "deine-website.pageblitz.de"}
+                {previewToken
+                  ? `pageblitz.de/preview/${previewToken}`
+                  : "deine-website.pageblitz.de"}
               </span>
             </div>
             {/* Desktop: "Website freischalten" CTA when on preview step */}
@@ -3139,9 +4178,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
             />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-slate-950">
-              <svg className="w-8 h-8 animate-spin text-lime-500" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              <svg
+                className="w-8 h-8 animate-spin text-lime-500"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
               </svg>
             </div>
           )}
@@ -3187,9 +4241,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
       {!isPaid && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-center py-2 px-4 text-sm font-medium flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           <span className="flex items-center gap-2">
-            <Clock className="w-4 h-4 flex-shrink-0" />
-            ⚡ Diese Website ist noch{" "}
-            <strong className="font-bold tabular-nums">{countdown}</strong> für dich reserviert
+            <Clock className="w-4 h-4 flex-shrink-0" />⚡ Diese Website ist noch{" "}
+            <strong className="font-bold tabular-nums">{countdown}</strong> für
+            dich reserviert
           </span>
           {reservationQuery.data?.canExtend !== false && (
             <button
@@ -3216,12 +4270,16 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         >
           <div
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {extendSuccess ? (
               <>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">Alles klar!</h3>
-                <p className="text-slate-600 text-sm leading-relaxed mb-6">{extendSuccess}</p>
+                <h3 className="text-xl font-semibold text-slate-900 mb-3">
+                  Alles klar!
+                </h3>
+                <p className="text-slate-600 text-sm leading-relaxed mb-6">
+                  {extendSuccess}
+                </p>
                 <button
                   onClick={() => setShowExtendModal(false)}
                   className="w-full py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold transition-colors"
@@ -3231,18 +4289,32 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               </>
             ) : (
               <>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">Du brauchst mehr Zeit?</h3>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  Du brauchst mehr Zeit?
+                </h3>
                 <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                  Kein Problem – wir verlängern deine Reservierung um <strong>24 Stunden</strong>. Magst du uns kurz sagen, was dich gerade abhält? (Optional, hilft uns, Pageblitz besser zu machen.)
+                  Kein Problem – wir verlängern deine Reservierung um{" "}
+                  <strong>24 Stunden</strong>. Magst du uns kurz sagen, was dich
+                  gerade abhält? (Optional, hilft uns, Pageblitz besser zu
+                  machen.)
                 </p>
                 <div className="space-y-2 mb-6">
                   {[
-                    { v: "besprechen", t: "Ich möchte mit Partner oder Team besprechen" },
-                    { v: "content", t: "Ich muss noch Fotos oder Texte besorgen" },
-                    { v: "alternativen", t: "Ich vergleiche gerade andere Anbieter" },
+                    {
+                      v: "besprechen",
+                      t: "Ich möchte mit Partner oder Team besprechen",
+                    },
+                    {
+                      v: "content",
+                      t: "Ich muss noch Fotos oder Texte besorgen",
+                    },
+                    {
+                      v: "alternativen",
+                      t: "Ich vergleiche gerade andere Anbieter",
+                    },
                     { v: "zeit", t: "Kurz keine Zeit gehabt" },
                     { v: "other", t: "Anderer Grund" },
-                  ].map((opt) => (
+                  ].map(opt => (
                     <label
                       key={opt.v}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
@@ -3256,7 +4328,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                         name="extendReason"
                         value={opt.v}
                         checked={extendReason === opt.v}
-                        onChange={(e) => setExtendReason(e.target.value)}
+                        onChange={e => setExtendReason(e.target.value)}
                         className="accent-lime-500"
                       />
                       <span className="text-sm text-slate-700">{opt.t}</span>
@@ -3279,7 +4351,9 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     disabled={extendSubmitting}
                     className="flex-1 py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold transition-colors disabled:opacity-50"
                   >
-                    {extendSubmitting ? "Verlängere…" : "Um 24 Stunden verlängern"}
+                    {extendSubmitting
+                      ? "Verlängere…"
+                      : "Um 24 Stunden verlängern"}
                   </button>
                 </div>
               </>
@@ -3307,2724 +4381,41 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <Zap className="w-4.5 h-4.5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-white font-semibold text-sm">Pageblitz Assistent</h1>
-              <p className="text-slate-400 text-xs">Personalisiert deine Website in Minuten</p>
+              <h1 className="text-white font-semibold text-sm">
+                Pageblitz Assistent
+              </h1>
+              <p className="text-slate-400 text-xs">
+                Personalisiert deine Website in Minuten
+              </p>
             </div>
             {/* Price badge */}
             <div className="flex-shrink-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 rounded-lg px-2.5 py-1.5 text-center">
-              <p className="text-amber-300 text-xs font-bold leading-tight">Ab 19,90 €</p>
-              <p className="text-amber-400/70 text-[10px] leading-tight">/Monat</p>
+              <p className="text-amber-300 text-xs font-bold leading-tight">
+                Ab 19,90 €
+              </p>
+              <p className="text-amber-400/70 text-[10px] leading-tight">
+                /Monat
+              </p>
             </div>
-
           </div>
 
           {/* Mobile-only progress bar + step navigation (desktop shows it in the preview panel header) */}
-          {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
-            const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
-            const rawIdx = dynamicStepOrder.indexOf(currentStep);
-            // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
-            if (rawIdx === -1) return null;
-            const currentIdx = rawIdx;
-            const pct = totalSteps > 0 ? Math.round((currentIdx / totalSteps) * 100) : 0;
-
-            // Completed steps – same labels as desktop
-            const stepLabels: Record<string, string> = {
-              businessCategory: "Branche", businessName: "Name", addressingMode: "Anrede",
-              brandLogo: "Logo", colorScheme: "Farben", heroPhoto: "Foto", aboutPhoto: "Über uns",
-              headlineFont: "Schrift", headlineSize: "Größe", tagline: "Claim",
-              description: "Beschreibung", usp: "USP", services: "Leistungen",
-              legalOwner: "Impressum", legalStreet: "Adresse", legalZipCity: "Ort",
-              legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "Steuer",
-              addons: "Extras", editAiChat: "KI-Chat", editMenu: "Speisekarte", editPricelist: "Preise",
-              editGallery: "Galerie", subpages: "Unterseiten", openingHours: "Öffnungszeiten",
-              email: "Kontakt", hideSections: "Anzeige",
-            };
-            const completedSteps = dynamicStepOrder
-              .slice(0, currentIdx)
-              .filter(s => s !== "welcome" && s !== "checkout" && s !== "preview");
-
-            return (
-              <div className="lg:hidden border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0">
-                {/* Scrollable step pills – shown when not in edit mode and steps exist */}
-                {!editMode.isEditing && completedSteps.length > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider flex-shrink-0">Bearbeiten:</span>
-                    {completedSteps.map(step => (
-                      <button
-                        key={step}
-                        onClick={() => {
-                          setEditMode({ isEditing: true, returnToStep: currentStep });
-                          setCurrentStep(step);
-                        }}
-                        className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-slate-700/60 active:bg-slate-600 text-slate-300 border border-slate-600/50 transition-colors"
-                        style={{ touchAction: "manipulation" }}
-                      >
-                        {stepLabels[step] || step}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {/* Edit-mode return button */}
-                {editMode.isEditing && editMode.returnToStep && (
-                  <div className="flex items-center gap-2 px-3 pt-2 pb-1">
-                    <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
-                    <button
-                      onClick={() => {
-                        setCurrentStep(editMode.returnToStep!);
-                        setEditMode({ isEditing: false, returnToStep: null });
-                      }}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 active:bg-amber-600/50 text-amber-200 border border-amber-500/50 transition-colors"
-                      style={{ touchAction: "manipulation" }}
-                    >
-                      Zurück zum aktuellen Schritt
-                    </button>
-                  </div>
-                )}
-                {/* Progress bar + counter */}
-                <div className="flex items-center gap-2 px-3 py-2">
-                  <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div
-                      className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full"
-                      initial={false}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                    />
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
-                    {currentIdx}&thinsp;/&thinsp;{totalSteps}
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
-
-          {/* Messages + Input: flex column, messages scroll, input sticky */}
-          <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
-            {messages.map((msg) => {
-              // Section divider rendering
-              if ((msg.role as string) === "divider") {
-                let divInfo: { icon: string; title: string; subtitle: string } | null = null;
-                try { divInfo = JSON.parse(msg.content); } catch {}
-                if (!divInfo) return null;
-                return (
-                  <div key={msg.id} className="flex items-center gap-3 my-2 px-1">
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
-                    <div className="flex items-center gap-2 bg-slate-700/80 border border-slate-600/60 rounded-xl px-4 py-2 flex-shrink-0 shadow-sm">
-                      <span className="text-base">{divInfo.icon}</span>
-                      <div>
-                        <p className="text-white text-xs font-bold leading-tight">{divInfo.title}</p>
-                        <p className="text-slate-400 text-xs leading-tight">{divInfo.subtitle}</p>
-                      </div>
-                    </div>
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
-                  </div>
-                );
-              }
-
-              return (
-              <div
-                key={msg.id}
-                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {msg.role === "bot" && (
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
-                    <Zap className="w-3.5 h-3.5 text-white" />
-                  </div>
-                )}
-                <div className="flex gap-2 items-end">
-                  {/* In-place edit mode */}
-                  {msg.role === "user" && inPlaceEditId === msg.id ? (
-                    <div className="flex flex-col gap-2 max-w-[85%]">
-                      {/* Category picker */}
-                      {msg.step === "businessCategory" ? (
-                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
-                          <p className="text-slate-300 text-xs">Branche wählen:</p>
-                          <CategoryPicker
-                            selected={inPlaceEditValue}
-                            onSelect={(cat) => {
-                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: cat } : m));
-                              setData((p) => ({ ...p, businessCategory: cat }));
-                              setInPlaceEditId(null);
-                            }}
-                          />
-                          <button
-                            onClick={() => setInPlaceEditId(null)}
-                            className="self-start px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
-                          >Abbrechen</button>
-                        </div>
-                      ) : /* Color picker for color steps */
-                      (msg.step === "brandColor" || msg.step === "brandSecondaryColor") ? (
-                        <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
-                          <p className="text-slate-300 text-xs">
-                            {msg.step === "brandColor" ? "Hauptfarbe wählen:" : "Sekundärfarbe wählen:"}
-                          </p>
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="color"
-                              value={inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/) ? inPlaceEditValue : "#3b82f6"}
-                              onChange={(e) => setInPlaceEditValue(e.target.value)}
-                              className="w-12 h-12 rounded-lg cursor-pointer border-2 border-slate-500 bg-transparent"
-                              style={{ padding: "2px" }}
-                            />
-                            <div className="flex-1">
-                              <div
-                                className="w-full h-10 rounded-lg border border-slate-500"
-                                style={{ backgroundColor: inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/) ? inPlaceEditValue : "#3b82f6" }}
-                              />
-                              <p className="text-slate-400 text-xs mt-1 font-mono">{inPlaceEditValue}</p>
-                            </div>
-                          </div>
-                          {/* Quick presets */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {["#2563eb","#16a34a","#dc2626","#d97706","#7c3aed","#0891b2","#db2777","#1a1a1a","#f5f5f5","#b8860b"].map((c) => (
-                              <button
-                                key={c}
-                                onClick={() => setInPlaceEditValue(c)}
-                                className="w-6 h-6 rounded-full border-2 transition-all"
-                                style={{ backgroundColor: c, borderColor: inPlaceEditValue === c ? "white" : "transparent" }}
-                                title={c}
-                              />
-                            ))}
-                          </div>
-                          <div className="flex gap-1 justify-end">
-                            <button
-                              onClick={() => setInPlaceEditId(null)}
-                              className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
-                            >Abbrechen</button>
-                            <button
-                              onClick={() => {
-                                const step = msg.step;
-                                if (!step || !inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/)) { setInPlaceEditId(null); return; }
-                                const newVal = inPlaceEditValue;
-                                setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
-                                setData((p) => ({ ...p, [step]: newVal }));
-                                setInPlaceEditId(null);
-                              }}
-                              className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
-                            >Übernehmen</button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                        <textarea
-                          className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-lime-500 outline-none resize-none min-h-[60px] w-full"
-                          value={inPlaceEditValue}
-                          onChange={(e) => setInPlaceEditValue(e.target.value)}
-                          autoFocus
-                          rows={3}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              const step = msg.step;
-                              if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
-                              const newVal = inPlaceEditValue.trim();
-                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
-                              if (step === "legalZipCity") {
-                                const m = newVal.match(/^(\d{5})\s+(.+)$/);
-                                if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
-                              } else if (step in data) {
-                                setData((p) => ({ ...p, [step]: newVal }));
-                              }
-                              setInPlaceEditId(null);
-                            }
-                            if (e.key === "Escape") setInPlaceEditId(null);
-                          }}
-                        />
-                        <div className="flex gap-1 justify-end">
-                          <button
-                            onClick={() => setInPlaceEditId(null)}
-                            className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
-                          >Abbrechen</button>
-                          <button
-                            onClick={() => {
-                              const step = msg.step;
-                              if (!step || !inPlaceEditValue.trim()) { setInPlaceEditId(null); return; }
-                              const newVal = inPlaceEditValue.trim();
-                              setMessages((prev) => prev.map((m) => m.id === msg.id ? { ...m, content: newVal } : m));
-                              if (step === "legalZipCity") {
-                                const m = newVal.match(/^(\d{5})\s+(.+)$/);
-                                if (m) setData((p) => ({ ...p, legalZip: m[1], legalCity: m[2] }));
-                              } else if (step in data) {
-                                setData((p) => ({ ...p, [step]: newVal }));
-                              }
-                              setInPlaceEditId(null);
-                            }}
-                            className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
-                          >Speichern</button>
-                        </div>
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <>
-                      <div
-                        className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-                          msg.role === "bot"
-                            ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
-                            : "bg-lime-500 text-white rounded-tr-sm"
-                        }`}
-                        dangerouslySetInnerHTML={{
-                          __html: msg.content
-                            .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                            .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                            .replace(/\n/g, "<br/>"),
-                        }}
-                      />
-                      {msg.role === "user" && msg.step && (
-                        <button
-                          onClick={() => {
-                            setInPlaceEditId(msg.id);
-                            setInPlaceEditValue(msg.content);
-                          }}
-                          className="w-8 h-8 rounded-md bg-slate-600/50 hover:bg-slate-500/50 active:bg-slate-500/70 flex items-center justify-center transition-colors flex-shrink-0"
-                          style={{ touchAction: "manipulation" }}
-                          title="Antwort bearbeiten"
-                        >
-                          <Edit2 className="w-3.5 h-3.5 text-slate-300" />
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-              );
-            })}
-
-            {/* Typing indicator */}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-white" />
-                </div>
-                <div className="bg-slate-700/80 px-4 py-3 rounded-2xl rounded-tl-sm">
-                  <div className="flex gap-1 items-center h-4">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
-                        style={{ animationDelay: `${i * 0.15}s` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Interactive step UI with futuristic transitions */}
-            {!isTyping && (
-              <AnimatePresence mode="wait">
-                {currentStep === "services" && (
-                <motion.div
-                  key="services-step"
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                  className="ml-9 space-y-3"
-                >
-                {/* Suggestions Section */}
-                {(serviceSuggestions.length > 0 || initialServices.length > 0) && (
-                  <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-                    {/* Initial Suggestions */}
-                    {initialServices.length > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                            <ImageIcon className="w-3 h-3" /> Vorschläge aus Entwurf
-                          </p>
-                          <button 
-                            onClick={() => {
-                              const currentValid = data.topServices.filter(s => s.title.trim());
-                              const toAdd = initialServices.filter(s => !currentValid.some(ts => ts.title === s.title));
-                              setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
-                              toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
-                            }}
-                            className="text-[10px] text-lime-400 hover:text-lime-300 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
-                          >
-                            Alle übernehmen
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          {initialServices.map((s, idx) => {
-                            const currentValid = data.topServices.filter(ts => ts.title.trim());
-                            const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
-                            return (
-                              <button
-                                key={`init-${idx}`}
-                                onClick={() => {
-                                  if (isAlreadyAdded) {
-                                    setData(p => ({ ...p, topServices: p.topServices.filter(ts => ts.title !== s.title) }));
-                                    toast.success(`"${s.title}" entfernt`);
-                                  } else {
-                                    setData(p => ({ ...p, topServices: [...currentValid, s] }));
-                                    toast.success(`"${s.title}" hinzugefügt!`);
-                                  }
-                                }}
-                                className={`text-left p-2 rounded-xl border transition-all group ${
-                                  isAlreadyAdded 
-                                    ? "bg-lime-400/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]" 
-                                    : "bg-slate-700/40 border-slate-600/50 hover:border-slate-500"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between gap-1 mb-0.5">
-                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-lime-300' : 'text-slate-300 group-hover:text-white'}`}>
-                                    {s.title}
-                                  </span>
-                                  {isAlreadyAdded ? (
-                                    <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
-                                  ) : (
-                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* AI Suggestions */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-lime-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="w-3 h-3" /> KI-Vorschläge
-                        </p>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={generateServicesWithAI}
-                            disabled={isGeneratingServices}
-                            className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider"
-                          >
-                            {isGeneratingServices ? "Lädt..." : "Neu generieren"}
-                          </button>
-                          {serviceSuggestions.length > 0 && (
-                            <button 
-                              onClick={() => {
-                                const currentValid = data.topServices.filter(s => s.title.trim());
-                                const toAdd = serviceSuggestions.filter(s => !currentValid.some(ts => ts.title === s.title));
-                                setData(p => ({ ...p, topServices: [...currentValid, ...toAdd] }));
-                                toast.success(`${toAdd.length} Leistungen hinzugefügt!`);
-                              }}
-                              className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
-                            >
-                              Alle übernehmen
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {serviceSuggestions.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          {serviceSuggestions.map((s, idx) => {
-                            const currentValid = data.topServices.filter(ts => ts.title.trim());
-                            const isAlreadyAdded = currentValid.some(ts => ts.title === s.title);
-                            return (
-                              <button
-                                key={`ai-${idx}`}
-                                onClick={() => {
-                                  if (isAlreadyAdded) {
-                                    setData(p => ({ ...p, topServices: p.topServices.filter(ts => ts.title !== s.title) }));
-                                    toast.success(`"${s.title}" entfernt`);
-                                  } else {
-                                    setData(p => ({ ...p, topServices: [...currentValid, s] }));
-                                    toast.success(`"${s.title}" hinzugefügt!`);
-                                  }
-                                }}
-                                className={`text-left p-2 rounded-xl border transition-all group ${
-                                  isAlreadyAdded 
-                                    ? "bg-lime-500/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]" 
-                                    : "bg-slate-700/40 border-slate-600/50 hover:border-lime-500/40"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between gap-1 mb-0.5">
-                                  <span className={`text-[11px] font-bold truncate ${isAlreadyAdded ? 'text-lime-300' : 'text-slate-300 group-hover:text-lime-200'}`}>
-                                    {s.title}
-                                  </span>
-                                  {isAlreadyAdded ? (
-                                    <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
-                                  ) : (
-                                    <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
-                                  )}
-                                </div>
-                                <p className="text-[9px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
-                                  {s.description}
-                                </p>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <button
-                          onClick={generateServicesWithAI}
-                          disabled={isGeneratingServices}
-                          className="w-full py-3 rounded-xl border border-dashed border-lime-500/30 bg-lime-500/5 hover:bg-lime-500/10 transition-colors flex flex-col items-center justify-center gap-1 group"
-                        >
-                          {isGeneratingServices ? (
-                            <Loader2 className="w-4 h-4 text-lime-400 animate-spin" />
-                          ) : (
-                            <>
-                              <Sparkles className="w-4 h-4 text-lime-400 group-hover:scale-110 transition-transform" />
-                              <span className="text-[11px] text-lime-300 font-bold uppercase tracking-wider">KI-Vorschläge generieren</span>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Manual List Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deine Auswahl</p>
-                    <button 
-                      onClick={() => setData(p => ({ ...p, topServices: [] }))}
-                      className="text-[10px] text-slate-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
-                    >
-                      Alle leeren
-                    </button>
-                  </div>
-                  
-                  {data.topServices.length === 0 ? (
-                    <div className="py-8 text-center bg-slate-800/20 border border-dashed border-slate-700 rounded-2xl">
-                      <p className="text-xs text-slate-500">Noch keine Leistungen hinzugefügt.</p>
-                      <button 
-                        onClick={() => setData(p => ({ ...p, topServices: [{ title: "", description: "" }] }))}
-                        className="text-xs text-lime-400 font-bold mt-2 hover:underline"
-                      >
-                        Erste Leistung anlegen
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {data.topServices.map((svc, i) => (
-                        <div key={i} className="bg-slate-700/60 rounded-xl p-3 space-y-2 border border-slate-600/30">
-                          <div className="flex items-center gap-2">
-                            <input
-                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
-                              placeholder={`Name der Leistung (z.B. Haarschnitt)`}
-                              value={svc.title}
-                              onChange={(e) => {
-                                const updated = [...data.topServices];
-                                updated[i] = { ...updated[i], title: e.target.value };
-                                setData((p) => ({ ...p, topServices: updated }));
-                              }}
-                            />
-                            <button
-                              onClick={() => {
-                                const updated = data.topServices.filter((_, idx) => idx !== i);
-                                setData((p) => ({ ...p, topServices: updated }));
-                              }}
-                              className="flex-shrink-0 text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-slate-600/50"
-                              title="Leistung entfernen"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <input
-                            className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
-                            placeholder="Kurze Beschreibung (optional)"
-                            value={svc.description}
-                            onChange={(e) => {
-                              const updated = [...data.topServices];
-                              updated[i] = { ...updated[i], description: e.target.value };
-                              setData((p) => ({ ...p, topServices: updated }));
-                            }}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Skip warning dialog */}
-                {showSkipServicesWarning && (
-                  <div className="bg-amber-900/40 border border-amber-500/50 rounded-xl p-3 space-y-2">
-                    <p className="text-amber-200 text-xs font-semibold">⚠️ Wirklich ohne Leistungen fortfahren?</p>
-                    <p className="text-amber-300/80 text-xs leading-relaxed">
-                      Websites ohne Leistungsübersicht konvertieren deutlich schlechter. Kunden wollen auf einen Blick sehen, was du anbietest – das ist oft der wichtigste Faktor für eine Anfrage.
-                    </p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowSkipServicesWarning(false)}
-                        className="flex-1 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        Doch eintragen
-                      </button>
-                      <button
-                        onClick={async () => {
-                          setShowSkipServicesWarning(false);
-                          addUserMessage("Keine Leistungen anzeigen");
-                          setData((p) => ({ ...p, topServices: [], topServicesSkipped: true }));
-                          await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: [] });
-                          await goToNextStep();
-                        }}
-                        className="flex-1 text-xs bg-slate-600 hover:bg-slate-500 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        Trotzdem überspringen
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setData((p) => ({ ...p, topServices: [...p.topServices, { title: "", description: "" }] }))}
-                    className="flex items-center gap-1 text-xs text-lime-400 hover:text-lime-300 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
-                  </button>
-                  {!showSkipServicesWarning && (
-                    <button
-                      onClick={() => setShowSkipServicesWarning(true)}
-                      className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-400 transition-colors"
-                    >
-                      Keine Leistungen anzeigen
-                    </button>
-                  )}
-                  {/* Weiter-Button im fixen Bottom-Bar */}
-              </div>
-            </motion.div>
-          )}
-
-          {currentStep === "businessCategory" && (
-            <motion.div
-              key="businessCategory-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              {/* GMB pre-selected category banner */}
-              {data.businessCategory && (
-                <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
-                  <span className="text-emerald-400 text-xs">✓ Aus Google My Business:</span>
-                  <span className="text-emerald-200 text-sm font-medium">{data.businessCategory}</span>
-                  <button
-                    onClick={async () => {
-                      addUserMessage(`Branche: ${data.businessCategory} ✓`);
-                      await trySaveStep(STEP_ORDER.indexOf("businessCategory"), { businessCategory: data.businessCategory });
-                      setCategoryConfirmed(true);
-                      await goToNextStep();
-                    }}
-                    className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
-                  >
-                    Übernehmen
-                  </button>
-                </div>
-              )}
-              <CategoryPicker
-                selected={data.businessCategory}
-                onSelect={(cat) => handleSubmit(cat)}
-              />
-            </motion.div>
-          )}
-
-          {currentStep === "colorScheme" && (
-            <motion.div
-              key="colorScheme-step"
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-4"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {COLOR_SCHEMES.map((scheme) => (
-                    <button
-                      key={scheme.id}
-                      onClick={() => {
-                        setData((p) => ({
-                          ...p,
-                          colorScheme: {
-                            ...scheme.colors,
-                            // Preserve user-set dark overrides when switching scheme
-                            ...(p.colorScheme.darkBackground ? { darkBackground: p.colorScheme.darkBackground } : {}),
-                            ...(p.colorScheme.lightText ? { lightText: p.colorScheme.lightText } : {}),
-                          }
-                        }));
-                        setShowIndividualColors(false);
-                      }}
-                      className={`text-left p-4 rounded-2xl border-2 transition-all group ${
-                        JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors)
-                          ? "border-lime-500 bg-lime-400/10 shadow-lg shadow-lime-500/10"
-                          : "border-slate-700 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <p className={`text-sm font-bold transition-colors ${
-                          JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors) ? "text-white" : "text-slate-200 group-hover:text-white"
-                        }`}>
-                          {scheme.label}
-                        </p>
-                        {JSON.stringify(data.colorScheme) === JSON.stringify(scheme.colors) && (
-                          <div className="w-4 h-4 rounded-full bg-lime-400 flex items-center justify-center">
-                            <Check className="w-2.5 h-2.5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-tight mb-3 line-clamp-2 italic">
-                        {scheme.description}
-                      </p>
-                      <div className="flex gap-1">
-                        {[scheme.colors.primary, scheme.colors.secondary, scheme.colors.accent, scheme.colors.background].map((c, i) => (
-                          <div key={i} className="h-6 flex-1 rounded-md border border-white/10" style={{ backgroundColor: c }} />
-                        ))}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* 🎲 Random Color Generator Button */}
-                <button
-                  onClick={() => {
-                    const randomScheme = generateRandomColorScheme();
-                    setData((p) => ({ ...p, colorScheme: randomScheme.colors }));
-                    setShowIndividualColors(false);
-                  }}
-                  className="w-full py-3 px-4 rounded-xl border-2 border-lime-500/50 bg-gradient-to-r from-lime-600/20 to-lime-500/20 hover:from-lime-600/30 hover:to-lime-500/30 transition-all flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wider text-lime-300 hover:text-lime-200 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20"
-                >
-                  <Sparkles className="w-4 h-4 animate-pulse" />
-                  Überrasch mich! (Zufallsmix)
-                </button>
-
-                <div className="flex flex-col gap-3">
-                  <button
-                    onClick={() => setShowIndividualColors(!showIndividualColors)}
-                    className={`w-full py-3 px-4 rounded-xl border border-dashed transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
-                      showIndividualColors 
-                        ? "border-lime-500/50 bg-lime-400/10 text-lime-400" 
-                        : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-300"
-                    }`}
-                  >
-                    <Settings2 className="w-4 h-4" />
-                    Farben individuell anpassen
-                  </button>
-
-                  {showIndividualColors && (() => {
-                    const cs = data.colorScheme as any;
-
-                    // Dark section fallbacks (these fields may not exist yet in colorScheme)
-                    const darkDefaults: Record<string, string> = {
-                      darkBackground: '#0a0a0a',
-                      darkSurface: '#1a1a2e',
-                      lightText: '#ffffff',
-                      lightTextMuted: '#9ca3af',
-                    };
-
-                    const getValue = (key: string) =>
-                      cs[key] ?? darkDefaults[key] ?? '';
-
-                    const handleColorChange = (key: string, newValue: string) => {
-                      setData(p => {
-                        const newScheme = { ...(p.colorScheme as any), [key]: newValue };
-                        if (['primary', 'secondary', 'accent', 'surface', 'background'].includes(key)) {
-                          newScheme[`on${key.charAt(0).toUpperCase() + key.slice(1)}`] = getContrastColor(newValue);
-                        }
-                        return { ...p, colorScheme: newScheme };
-                      });
-                    };
-
-                    const colorGroups = [
-                      {
-                        label: "Basis", dot: "bg-lime-500",
-                        keys: [
-                          { key: "primary", label: "Hauptfarbe" },
-                          { key: "accent", label: "Akzentfarbe" },
-                          { key: "background", label: "Hintergrund (helle Layouts)" },
-                          { key: "text", label: "Textfarbe" },
-                          { key: "textLight", label: "Gedämpfte Schrift" },
-                        ],
-                      },
-                      {
-                        label: "Dunkle Layouts & Sektionen", dot: "bg-lime-400",
-                        keys: [
-                          { key: "darkBackground", label: "Hintergrund (dunkle Layouts)" },
-                          { key: "lightText", label: "Heller Text" },
-                        ],
-                      },
-                    ];
-
-                    return (
-                      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                        {colorGroups.map(({ label, dot, keys }, gi) => (
-                          <div key={label} className={gi > 0 ? "mt-4 pt-4 border-t border-slate-700/50" : ""}>
-                            <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-                              <span className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`} />
-                              {label}
-                            </p>
-                            <div className="space-y-0.5">
-                              {keys.map(item => {
-                                const rawVal = getValue(item.key);
-                                const colorVal = /^#[0-9A-Fa-f]{6}$/.test(rawVal) ? rawVal : '#888888';
-                                return (
-                                  <div key={item.key} className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors">
-                                    <div
-                                      className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 overflow-hidden relative shadow-sm"
-                                      style={{ backgroundColor: colorVal }}
-                                    >
-                                      <input
-                                        type="color"
-                                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                                        value={colorVal}
-                                        onChange={(e) => handleColorChange(item.key, e.target.value)}
-                                      />
-                                    </div>
-                                    <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">{item.label}</span>
-                                    <input
-                                      type="text"
-                                      className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-lime-500/60 transition-colors"
-                                      value={rawVal}
-                                      placeholder="#000000"
-                                      onChange={(e) => {
-                                        const v = e.target.value.startsWith('#') ? e.target.value : `#${e.target.value}`;
-                                        if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) {
-                                          setData(p => ({ ...p, colorScheme: { ...(p.colorScheme as any), [item.key]: v } }));
-                                          if (v.length === 7) handleColorChange(item.key, v);
-                                        }
-                                      }}
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                        <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
-                          Kontrast-Farben (Text auf farbigen Hintergründen) werden automatisch berechnet.
-                        </p>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                <button
-                  disabled={isTyping}
-                  onClick={async () => {
-                    if (isTyping) return;
-                    addUserMessage(`Farbschema ausgewählt ✓`);
-                    await trySaveStep(STEP_ORDER.indexOf("colorScheme"), { colorScheme: data.colorScheme });
-                    await goToNextStep();
-                  }}
-                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
-                >
-                  Farben übernehmen <ChevronRight className="w-4 h-4" />
-                </button>
-            </motion.div>
-          )}
-
-          {currentStep === "heroPhoto" && (
-            <motion.div
-              key="heroPhoto-step"
-              initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9"
-            >
-              <HeroPhotoStep
-                businessCategory={data.businessCategory}
-                heroPhotoUrl={data.heroPhotoUrl}
-                websiteId={websiteId}
-                onSelect={(url) => setData((p) => ({ ...p, heroPhotoUrl: url }))}
-                onNext={async () => {
-                  const url = data.heroPhotoUrl || "";
-                  const label = url ? "Hauptbild ausgewählt ✓" : "Bestehendes Hauptbild behalten ✓";
-                  addUserMessage(label);
-                  await trySaveStep(STEP_ORDER.indexOf("heroPhoto"), { heroPhotoUrl: url });
-                  await goToNextStep();
-                }}
-              />
-            </motion.div>
-          )}
-
-          {currentStep === "aboutPhoto" && (
-            <motion.div
-              key="aboutPhoto-step"
-              initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9"
-            >
-              <HeroPhotoStep
-                businessCategory={data.businessCategory}
-                heroPhotoUrl={data.aboutPhotoUrl}
-                websiteId={websiteId}
-                isAboutPhoto
-                onSelect={(url) => setData((p) => ({ ...p, aboutPhotoUrl: url }))}
-                onNext={async () => {
-                  const url = data.aboutPhotoUrl || "";
-                  const label = url ? "Über-uns-Bild ausgewählt ✓" : "Bestehendes Bild behalten ✓";
-                  addUserMessage(label);
-                  await trySaveStep(STEP_ORDER.indexOf("aboutPhoto"), { aboutPhotoUrl: url });
-                  await goToNextStep();
-                }}
-              />
-            </motion.div>
-          )}
-
-          {currentStep === "addressingMode" && (
-            <motion.div
-              key="addressingMode-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              {/* Du */}
-              <button
-                onClick={async () => {
-                  addUserMessage("Duzen – \"du\" 👋");
-                  setData((p) => ({ ...p, addressingMode: 'du' }));
-                  const idx = dynamicStepOrder.indexOf("addressingMode");
-                  await trySaveStep(idx, { addressingMode: 'du' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
-                  setHeroRevealed(true);
-                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
-                  if (_isGmb) {
-                    // GMB: regenerate text with the chosen addressing mode
-                    if (websiteId) {
-                      setIsGeneratingInitialContent(true);
-                      generateInitialContentMutation.mutateAsync({
-                        websiteId,
-                        businessName: data.businessName,
-                        businessCategory: data.businessCategory,
-                        addressingMode: 'du',
-                      }).then((result) => {
-                        if (result.success) {
-                          setData(prev => ({
-                            ...prev,
-                            tagline: result.tagline || prev.tagline,
-                            description: result.description || prev.description,
-                            topServices: result.services?.map((s: any) => ({
-                              title: s.title, description: s.description,
-                            })) || prev.topServices,
-                          }));
-                        }
-                      }).catch(console.error).finally(() => {
-                        setIsGeneratingInitialContent(false);
-                        setTimeout(() => setContentRevealed(true), 600);
-                      });
-                    } else {
-                      setTimeout(() => setContentRevealed(true), 1000);
-                    }
-                  }
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-lime-500/60 hover:bg-lime-400/10 transition-all text-left group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-lime-400/20 flex items-center justify-center text-xl flex-shrink-0">
-                  👋
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">Du – informell</div>
-                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-lime-400">dir</span>" · modern, direkt, nahbar</div>
-                  <div className="text-slate-500 text-[10px] mt-1">Passt gut zu: Restaurants, Friseure, Fitnessstudios, Shops, Startups</div>
-                </div>
-              </button>
-
-              {/* Sie */}
-              <button
-                onClick={async () => {
-                  addUserMessage("Siezen – \"Sie\" 🤝");
-                  setData((p) => ({ ...p, addressingMode: 'Sie' }));
-                  const idx = dynamicStepOrder.indexOf("addressingMode");
-                  await trySaveStep(idx, { addressingMode: 'Sie' });
-                  // Progressive reveal: Layer 1 lifts after Du/Sie choice
-                  setHeroRevealed(true);
-                  const _isGmb = !!business?.placeId && !business.placeId.startsWith("self-");
-                  if (_isGmb) {
-                    // GMB: regenerate text with the chosen addressing mode
-                    if (websiteId) {
-                      setIsGeneratingInitialContent(true);
-                      generateInitialContentMutation.mutateAsync({
-                        websiteId,
-                        businessName: data.businessName,
-                        businessCategory: data.businessCategory,
-                        addressingMode: 'Sie',
-                      }).then((result) => {
-                        if (result.success) {
-                          setData(prev => ({
-                            ...prev,
-                            tagline: result.tagline || prev.tagline,
-                            description: result.description || prev.description,
-                            topServices: result.services?.map((s: any) => ({
-                              title: s.title, description: s.description,
-                            })) || prev.topServices,
-                          }));
-                        }
-                      }).catch(console.error).finally(() => {
-                        setIsGeneratingInitialContent(false);
-                        setTimeout(() => setContentRevealed(true), 600);
-                      });
-                    } else {
-                      setTimeout(() => setContentRevealed(true), 1000);
-                    }
-                  }
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">
-                  🤝
-                </div>
-                <div>
-                  <div className="text-white font-semibold text-sm">Sie – formell</div>
-                  <div className="text-slate-400 text-xs mt-0.5">„Wir helfen <span className="text-emerald-400">Ihnen</span>" · professionell, seriös, vertrauensvoll</div>
-                  <div className="text-slate-500 text-[10px] mt-1">Passt gut zu: Anwälte, Steuerberater, Ärzte, Immobilien, Handwerk</div>
-                </div>
-              </button>
-            </motion.div>
-          )}
-
-          {currentStep === "brandLogo" && (
-            <motion.div
-              key="brandLogo-step"
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-                <p className="text-slate-400 text-xs">Wähle eine Schriftart für deinen Firmennamen als Logo:</p>
-                {LOGO_FONT_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.font}
-                    onClick={() => setData((p) => ({ ...p, brandLogo: `font:${opt.font}` }))}
-                    className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-lime-500 bg-lime-400/10" : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"}`}
-                  >
-                    <p className="text-white text-lg mb-1" style={opt.style}>{data.businessName || business?.name || "Mein Unternehmen"}</p>
-                    <p className="text-slate-400 text-xs">{opt.label}</p>
-                  </button>
-                ))}
-
-                {/* Logo upload option */}
-                <div className="border-t border-slate-700 pt-3">
-                  <p className="text-slate-400 text-xs mb-2">Oder eigenes Logo hochladen:</p>
-                  {data.brandLogo?.startsWith("url:") ? (
-                    <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-lime-500 bg-lime-400/10">
-                      <img src={data.brandLogo.replace("url:", "")} alt="Logo" className="h-10 w-auto max-w-[120px] object-contain rounded" />
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium">Logo hochgeladen ✓</p>
-                        <button
-                          onClick={() => setData((p) => ({ ...p, brandLogo: "font:Montserrat" }))}
-                          className="text-slate-400 text-xs hover:text-white transition-colors"
-                        >
-                          Entfernen
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${uploadLogoMutation.isPending ? "opacity-50 pointer-events-none" : ""}`}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file || !websiteId) return;
-                          if (file.size > 2 * 1024 * 1024) {
-                            toast.error("Logo darf maximal 2 MB groß sein.");
-                            return;
-                          }
-                          const reader = new FileReader();
-                          reader.onload = async () => {
-                            const base64 = (reader.result as string).split(",")[1];
-                            try {
-                              const result = await uploadLogoMutation.mutateAsync({
-                                websiteId,
-                                imageData: base64,
-                                mimeType: file.type,
-                              });
-                              setData((p) => ({ ...p, brandLogo: `url:${result.url}` }));
-                              toast.success("Logo erfolgreich hochgeladen!");
-                            } catch {
-                              toast.error("Upload fehlgeschlagen. Bitte erneut versuchen.");
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        }}
-                      />
-                      {uploadLogoMutation.isPending ? (
-                        <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
-                      ) : (
-                        <ImageIcon className="w-5 h-5 text-slate-400" />
-                      )}
-                      <div>
-                        <p className="text-white text-sm">{uploadLogoMutation.isPending ? "Wird hochgeladen…" : "Bild auswählen"}</p>
-                        <p className="text-slate-400 text-xs">PNG, JPG oder SVG · max. 2 MB</p>
-                      </div>
-                      <Upload className="w-4 h-4 text-slate-500 ml-auto" />
-                    </label>
-                  )}
-                </div>
-
-                {/* Weiter-Button im fixen Bottom-Bar */}
-            </motion.div>
-          )}
-
-          {currentStep === "headlineFont" && (
-            <motion.div
-              key="headlineFont-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              <p className="text-slate-400 text-xs">Wähle eine Schriftart für deine Überschriften – die Vorschau ändert sich sofort:</p>
-                <div className="space-y-2">
-                  {(() => {
-                    const hideSerifs = prefersSansSerif(data.businessCategory);
-                    return (
-                      <>
-                        {!hideSerifs && (
-                          <div>
-                            <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenschriften (klassisch, edel)</p>
-                            {FONT_OPTIONS.serif.map((opt) => (
-                              <button
-                                key={opt.font}
-                                onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                                className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                                  data.headlineFont === opt.font
-                                    ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
-                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                                }`}
-                              >
-                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', serif`, fontWeight: 700 }}>
-                                  {opt.label}
-                                </p>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                        <div className={!hideSerifs ? "mt-6" : ""}>
-                          <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">Serifenlose (modern, progressiv)</p>
-                          {FONT_OPTIONS.sans.map((opt) => (
-                            <button
-                              key={opt.font}
-                              onClick={() => setData((p) => ({ ...p, headlineFont: opt.font }))}
-                              className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                                data.headlineFont === opt.font
-                                  ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
-                                    : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                                }`}
-                              >
-                                <p className="text-white text-lg" style={{ fontFamily: `'${opt.font}', sans-serif`, fontWeight: 700 }}>
-                                  {opt.label}
-                                </p>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-
-                {/* Weiter-Button im fixen Bottom-Bar */}
-            </motion.div>
-          )}
-
-          {currentStep === "headlineSize" && (
-            <motion.div
-              key="headlineSize-step"
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              <p className="text-slate-400 text-xs">Wähle die Größe deiner Überschriften:</p>
-                <div className="space-y-2">
-                  {[
-                    { value: 'large', label: 'Extra groß', desc: 'Dramatisch, mutig', sample: 'PROJEKT' },
-                    { value: 'medium', label: 'Groß', desc: 'Ausgewogen, klassisch', sample: 'PROJEKT' },
-                    { value: 'small', label: 'Normal', desc: 'Dezent, elegant', sample: 'PROJEKT' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setData((p) => ({ ...p, headlineSize: opt.value as 'large' | 'medium' | 'small' }))}
-                      className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
-                        data.headlineSize === opt.value
-                          ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
-                          : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-white font-semibold">{opt.label}</p>
-                          <p className="text-slate-400 text-xs">{opt.desc}</p>
-                        </div>
-                        <p 
-                          className="text-white/80 font-bold" 
-                          style={{ 
-                            fontSize: opt.value === 'large' ? '2rem' : opt.value === 'medium' ? '1.5rem' : '1.1rem',
-                            fontFamily: data.headlineFont || 'inherit'
-                          }}
-                        >
-                          {opt.sample}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Weiter-Button im fixen Bottom-Bar */}
-            </motion.div>
-          )}
-
-          {currentStep === "addons" && (
-            <motion.div
-              key="addons-step"
-              initial={{ opacity: 0, scale: 0.9, rotateY: -5 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              exit={{ opacity: 0, scale: 0.9, rotateY: 5 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-2"
-            >
-                {/* Build industry-specific addon list */}
-                {(() => {
-                  const cat = data.businessCategory.toLowerCase();
-                  // Broad food industry detection
-                  const isFood = /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie|lieferservice|delivery|lieferdienst|catering|food|kueche|küche|steakhouse|grill|gasthaus|wirtshaus|tavern|taverne|pizzeria|trattoria|osteria|ristorante/.test(cat);
-                  
-                  // For everything else, we offer a pricelist
-                  const showMenu = isFood;
-                  const showPricelist = !isFood;
-
-                  const addons: { key: keyof OnboardingData; label: string; price: string; desc: string; emoji: string }[] = [
-                    { key: "addOnContactForm" as const, label: "Kontaktformular", price: "+3,90 €/Monat", desc: "Kunden können direkt anfragen", emoji: "📬" },
-                    { key: "addOnGallery" as const, label: "Bildergalerie", price: "+3,90 €/Monat", desc: "Zeig deine Projekte & Fotos", emoji: "🖼️" },
-                    ...(showMenu ? [{ key: "addOnMenu" as const, label: "Speisekarte", price: "+3,90 €/Monat", desc: "Deine Gerichte übersichtlich präsentieren", emoji: "📖" }] : []),
-                    ...(showPricelist ? [{ key: "addOnPricelist" as const, label: "Preisliste", price: "+3,90 €/Monat", desc: "Deine Leistungen mit Preisen", emoji: "🏷️" }] : []),
-                    { key: "addOnAiChat" as const, label: "KI-Chat", price: "+9,90 €/Monat", desc: "Beantwortet Kundenfragen automatisch 24/7", emoji: "🤖" },
-                    { key: "addOnBooking" as const, label: "Terminbuchung", price: "+4,90 €/Monat", desc: "Kunden buchen Termine direkt auf der Website", emoji: "📅" },
-                  ];
-
-                  return addons.map((addon) => (
-                    <button
-                      key={addon.key}
-                      onClick={() => setData((p) => ({ ...p, [addon.key]: !(p as any)[addon.key] }))}
-                      style={{ touchAction: "manipulation" }}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                        (data as any)[addon.key]
-                          ? "border-lime-500 bg-lime-400/10"
-                          : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
-                      }`}
-                    >
-                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-lime-500 bg-lime-400" : "border-slate-500"}`}>
-                        {(data as any)[addon.key] && <Check className="w-3 h-3 text-white" />}
-                      </div>
-                      <span className="text-lg">{addon.emoji}</span>
-                      <div className="flex-1">
-                        <p className="text-white text-sm font-medium">{addon.label}</p>
-                        <p className="text-slate-400 text-xs">{addon.desc}</p>
-                      </div>
-                      <span className="text-lime-400 text-xs font-medium">{addon.price}</span>
-                    </button>
-                  ));
-                })()}
-
-                {/* Contact Form Info */}
-                {data.addOnContactForm && (
-                  <div className="bg-lime-400/10 border border-lime-500/30 rounded-xl p-3 mt-2">
-                    <p className="text-lime-300 text-xs">
-                      <strong>📬 Kontaktformular:</strong> Name, Betreff und Nachricht werden angezeigt.
-                      Du kannst das Formular später im Kundenportal noch bearbeiten.
-                    </p>
-                  </div>
-                )}
-                {/* Booking Info */}
-                {data.addOnBooking && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
-                    <p className="text-emerald-300 text-xs">
-                      <strong>📅 Terminbuchung:</strong> Du kannst deine Services und Verfügbarkeit nach der Freischaltung im Kunden-Dashboard einrichten.
-                    </p>
-                  </div>
-                )}
-                {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
-            </motion.div>
-          )}
-
-          {currentStep === "editAiChat" && (
-            <motion.div
-              key="editAiChat-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Begrüßungsnachricht</p>
-                <textarea
-                  rows={3}
-                  value={data.chatWelcomeMessage}
-                  onChange={e => setData(p => ({ ...p, chatWelcomeMessage: e.target.value }))}
-                  placeholder={`Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`}
-                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none placeholder-slate-500"
-                />
-                <p className="text-slate-500 text-xs">Der KI-Chat begrüßt Besucher auf deiner Website mit dieser Nachricht. Du kannst sie später im Dashboard jederzeit ändern.</p>
-              </div>
-              <button
-                onClick={() => {
-                  const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
-                  setData(p => ({ ...p, chatWelcomeMessage: suggestion }));
-                }}
-                className="w-full text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
-              >
-                💡 Vorschlag übernehmen
-              </button>
-              {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
-            </motion.div>
-          )}
-
-          {currentStep === "editMenu" && (
-            <motion.div
-              key="editMenu-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-4"
-            >
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
-                  <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
-                    value={data.addOnMenuData.headline}
-                    onChange={(e) => {
-                      setData(p => ({ ...p, addOnMenuData: { ...p.addOnMenuData, headline: e.target.value } }));
-                    }}
-                    placeholder="z.B. Unsere Speisekarte"
-                  />
-                </div>
-
-                {data.addOnMenuData.categories.map((cat, catIdx) => (
-                  <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
-                        value={cat.name}
-                        onChange={(e) => {
-                          const updated = { ...data.addOnMenuData };
-                          updated.categories[catIdx].name = e.target.value;
-                          setData(p => ({ ...p, addOnMenuData: updated }));
-                        }}
-                        placeholder="Kategorie (z.B. Hauptgerichte)"
-                      />
-                      <button 
-                        onClick={() => {
-                          const updated = { ...data.addOnMenuData };
-                          updated.categories = updated.categories.filter((_, i) => i !== catIdx);
-                          setData(p => ({ ...p, addOnMenuData: updated }));
-                        }}
-                        className="text-slate-500 hover:text-red-400 p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {cat.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="bg-slate-700/40 rounded-xl p-3 space-y-2">
-                          <div className="flex gap-2">
-                            <input
-                              className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
-                              value={item.name}
-                              onChange={(e) => {
-                                const updated = { ...data.addOnMenuData };
-                                updated.categories[catIdx].items[itemIdx].name = e.target.value;
-                                setData(p => ({ ...p, addOnMenuData: updated }));
-                              }}
-                              placeholder="Name des Gerichts"
-                            />
-                            <input
-                              className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
-                              value={item.price}
-                              onChange={(e) => {
-                                const updated = { ...data.addOnMenuData };
-                                updated.categories[catIdx].items[itemIdx].price = e.target.value;
-                                setData(p => ({ ...p, addOnMenuData: updated }));
-                              }}
-                              placeholder="12,50"
-                            />
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <input
-                              className="flex-1 bg-slate-600/30 text-white text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
-                              value={item.description}
-                              onChange={(e) => {
-                                const updated = { ...data.addOnMenuData };
-                                updated.categories[catIdx].items[itemIdx].description = e.target.value;
-                                setData(p => ({ ...p, addOnMenuData: updated }));
-                              }}
-                              placeholder="Beschreibung (Zutaten, etc.)"
-                            />
-                            <button 
-                              onClick={() => {
-                                const updated = { ...data.addOnMenuData };
-                                updated.categories[catIdx].items = updated.categories[catIdx].items.filter((_, i) => i !== itemIdx);
-                                setData(p => ({ ...p, addOnMenuData: updated }));
-                              }}
-                              className="text-slate-500 hover:text-red-400 p-1"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      <button 
-                        onClick={() => {
-                          const updated = { ...data.addOnMenuData };
-                          updated.categories[catIdx].items.push({ name: "", description: "", price: "" });
-                          setData(p => ({ ...p, addOnMenuData: updated }));
-                        }}
-                        className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Gericht hinzufügen
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="flex flex-col gap-3 pt-2">
-                  <button 
-                    onClick={() => {
-                      setData(p => ({ 
-                        ...p, 
-                        addOnMenuData: { 
-                          categories: [...p.addOnMenuData.categories, { id: genId(), name: "", items: [{ name: "", description: "", price: "" }] }] 
-                        } 
-                      }));
-                    }}
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Weitere Kategorie hinzufügen
-                  </button>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        addUserMessage("Speisekarte später ausfüllen");
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
-                    >
-                      Mache ich später
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const filledCategories = data.addOnMenuData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
-                        addUserMessage(`Speisekarte gespeichert (${filledCategories.length} Kategorien) ✓`);
-                        await trySaveStep(STEP_ORDER.indexOf("editMenu"), { addOnMenuData: { categories: filledCategories } });
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
-                    >
-                      Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-            </motion.div>
-          )}
-
-          {currentStep === "editPricelist" && (
-            <motion.div
-              key="editPricelist-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-4"
-            >
-                <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
-                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Sektion</p>
-                  <input
-                    className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
-                    value={data.addOnPricelistData.headline}
-                    onChange={(e) => {
-                      setData(p => ({ ...p, addOnPricelistData: { ...p.addOnPricelistData, headline: e.target.value } }));
-                    }}
-                    placeholder="z.B. Unsere Preise"
-                  />
-                </div>
-
-                {data.addOnPricelistData.categories.map((cat, catIdx) => (
-                  <div key={cat.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <input
-                        className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
-                        value={cat.name}
-                        onChange={(e) => {
-                          const updated = { ...data.addOnPricelistData };
-                          updated.categories[catIdx].name = e.target.value;
-                          setData(p => ({ ...p, addOnPricelistData: updated }));
-                        }}
-                        placeholder="Kategorie (z.B. Haarschnitte)"
-                      />
-                      <button 
-                        onClick={() => {
-                          const updated = { ...data.addOnPricelistData };
-                          updated.categories = updated.categories.filter((_, i) => i !== catIdx);
-                          setData(p => ({ ...p, addOnPricelistData: updated }));
-                        }}
-                        className="text-slate-500 hover:text-red-400 p-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {cat.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex gap-2 items-center">
-                          <input
-                            className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
-                            value={item.name}
-                            onChange={(e) => {
-                              const updated = { ...data.addOnPricelistData };
-                              updated.categories[catIdx].items[itemIdx].name = e.target.value;
-                              setData(p => ({ ...p, addOnPricelistData: updated }));
-                            }}
-                            placeholder="Leistung"
-                          />
-                          <input
-                            className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
-                            value={item.price}
-                            onChange={(e) => {
-                              const updated = { ...data.addOnPricelistData };
-                              updated.categories[catIdx].items[itemIdx].price = e.target.value;
-                              setData(p => ({ ...p, addOnPricelistData: updated }));
-                            }}
-                            placeholder="ab 25,-"
-                          />
-                          <button 
-                            onClick={() => {
-                              const updated = { ...data.addOnPricelistData };
-                              updated.categories[catIdx].items = updated.categories[catIdx].items.filter((_, i) => i !== itemIdx);
-                              setData(p => ({ ...p, addOnPricelistData: updated }));
-                            }}
-                            className="text-slate-500 hover:text-red-400 p-1"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                      <button 
-                        onClick={() => {
-                          const updated = { ...data.addOnPricelistData };
-                          updated.categories[catIdx].items.push({ name: "", price: "" });
-                          setData(p => ({ ...p, addOnPricelistData: updated }));
-                        }}
-                        className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="flex flex-col gap-3 pt-2">
-                  <button 
-                    onClick={() => {
-                      setData(p => ({ 
-                        ...p, 
-                        addOnPricelistData: { 
-                          categories: [...p.addOnPricelistData.categories, { id: genId(), name: "", items: [{ name: "", price: "" }] }] 
-                        } 
-                      }));
-                    }}
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Weitere Kategorie hinzufügen
-                  </button>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        addUserMessage("Preisliste später ausfüllen");
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
-                    >
-                      Mache ich später
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const filledCategories = data.addOnPricelistData.categories.filter(c => c.name.trim() || c.items.some(i => i.name.trim()));
-                        addUserMessage(`Preisliste gespeichert (${filledCategories.length} Kategorien) ✓`);
-                        await trySaveStep(STEP_ORDER.indexOf("editPricelist"), { addOnPricelistData: { categories: filledCategories } });
-                        await goToNextStep();
-                      }}
-                      className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
-                    >
-                      Speichern & weiter <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-            </motion.div>
-          )}
-
-          {currentStep === "editGallery" && (
-            <motion.div
-              key="editGallery-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-4"
-            >
-              {/* Überschrift */}
-              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Überschrift der Galerie</p>
-                <input
-                  className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
-                  value={data.addOnGalleryData.headline}
-                  onChange={(e) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, headline: e.target.value } }))}
-                  placeholder="z.B. Unsere Galerie"
-                />
-              </div>
-
-              {/* Modus-Switch */}
-              <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {(['single', 'albums'] as const).map(mode => (
-                    <button
-                      key={mode}
-                      onClick={() => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, mode } }))}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
-                        data.addOnGalleryData.mode === mode
-                          ? 'bg-lime-500/20 border-lime-500/60 text-white'
-                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
-                      }`}
-                    >
-                      {mode === 'single' ? (
-                        <>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                          Einzelgalerie
-                        </>
-                      ) : (
-                        <>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
-                          Alben
-                        </>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Einzelgalerie */}
-              {data.addOnGalleryData.mode !== 'albums' && (
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
-                  <p className="text-slate-400 text-xs font-medium">Bilder auswählen:</p>
-                  <MultiPhotoSelector
-                    websiteId={String(websiteId || "")}
-                    selectedPhotos={data.addOnGalleryData.images}
-                    onUpdate={(urls) => setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, images: urls } }))}
-                    industry={data.businessCategory}
-                  />
-                </div>
-              )}
-
-              {/* Alben-Modus */}
-              {data.addOnGalleryData.mode === 'albums' && (
-                <div className="space-y-3">
-                  {data.addOnGalleryData.albums.map((album, albumIdx) => (
-                    <div key={album.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3">
-                      {/* Album-Header */}
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">Album {albumIdx + 1}</p>
-                          <input
-                            className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
-                            value={album.name}
-                            onChange={(e) => {
-                              const updated = [...data.addOnGalleryData.albums];
-                              updated[albumIdx] = { ...updated[albumIdx], name: e.target.value };
-                              setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
-                            }}
-                            placeholder="z.B. Hochzeiten"
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            const updated = data.addOnGalleryData.albums.filter((_, i) => i !== albumIdx);
-                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
-                          }}
-                          className="mt-5 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
-                        </button>
-                      </div>
-
-                      {/* Cover-Vorschau */}
-                      {album.images.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <img src={album.images[0]} alt="Cover" className="w-12 h-12 rounded-lg object-cover border border-slate-600/50" />
-                          <p className="text-slate-400 text-[10px]">Albumbild: erstes Foto</p>
-                        </div>
-                      )}
-
-                      {/* Fotos für dieses Album */}
-                      <div>
-                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2">Fotos ({album.images.length})</p>
-                        <MultiPhotoSelector
-                          websiteId={String(websiteId || "")}
-                          selectedPhotos={album.images}
-                          onUpdate={(urls) => {
-                            const updated = [...data.addOnGalleryData.albums];
-                            updated[albumIdx] = { ...updated[albumIdx], images: urls };
-                            setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: updated } }));
-                          }}
-                          industry={data.businessCategory}
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Album hinzufügen */}
-                  <button
-                    onClick={() => {
-                      const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
-                      setData(p => ({ ...p, addOnGalleryData: { ...p.addOnGalleryData, albums: [...p.addOnGalleryData.albums, newAlbum] } }));
-                    }}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-lime-500/50 text-sm transition-all"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Album hinzufügen
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          )}
-
-          {currentStep === "subpages" && (
-            <motion.div
-              key="subpages-step"
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-4"
-            >
-              {/* Coming Soon overlay wrapper */}
-              <div className="relative rounded-2xl overflow-hidden">
-                {/* Blurred content behind overlay */}
-                <div className="select-none pointer-events-none opacity-40 blur-[1px]">
-              {/* Info Card */}
-                <div className="bg-lime-500/10 border border-lime-500/30 rounded-2xl p-4 space-y-2">
-                  <div className="flex items-start gap-3">
-                    <Monitor className="w-5 h-5 text-lime-400 mt-0.5 flex-shrink-0" />
-                    <div className="space-y-1">
-                      <p className="text-white text-xs font-bold leading-tight">Später bearbeitbar</p>
-                      <p className="text-slate-400 text-[11px] leading-relaxed">
-                        Hier markierst du deine Wunsch-Seiten. Den Inhalt (Texte, Bilder) kannst du nach der Freischaltung ganz entspannt im **Dashboard** pflegen.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="pt-2 mt-2 border-t border-lime-500/20">
-                    <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
-                      <Check className="w-3 h-3 text-emerald-400" /> Impressum & Datenschutz (inklusive)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  {data.subPages.map((page, i) => (
-                    <div key={page.id} className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start group border border-slate-600/30 hover:border-slate-500/50 transition-colors">
-                      <div className="flex-1 space-y-1.5">
-                        <input
-                          className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
-                          placeholder="Seitenname (z.B. Über uns)"
-                          value={page.name}
-                          onChange={(e) => {
-                            const updated = [...data.subPages];
-                            updated[i] = { ...updated[i], name: e.target.value };
-                            setData((p) => ({ ...p, subPages: updated }));
-                          }}
-                        />
-                        <input
-                          className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
-                          placeholder="Notiz zum Inhalt (optional)"
-                          value={page.description}
-                          onChange={(e) => {
-                            const updated = [...data.subPages];
-                            updated[i] = { ...updated[i], description: e.target.value };
-                            setData((p) => ({ ...p, subPages: updated }));
-                          }}
-                        />
-                      </div>
-                      <button
-                        onClick={() => setData((p) => ({ ...p, subPages: p.subPages.filter((_, j) => j !== i) }))}
-                        className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-slate-600/50 mt-1"
-                        title="Unterseite entfernen"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-col gap-3 pt-1">
-                  <button
-                    className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Neue Unterseite hinzufügen <span className="text-lime-400 font-bold">(+9,90 €)</span>
-                  </button>
-                </div>
-                </div>{/* end blurred content */}
-
-                {/* Coming Soon overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
-                  <div className="flex flex-col items-center gap-3 text-center px-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-lime-500/20 border border-lime-500/40">
-                      <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
-                      <span className="text-lime-300 text-xs font-semibold uppercase tracking-widest">Coming Soon</span>
-                    </div>
-                    <p className="text-white/70 text-sm leading-relaxed max-w-xs">
-                      Unterseiten sind in Kürze verfügbar. Wir arbeiten daran!
-                    </p>
-                  </div>
-                </div>
-              </div>{/* end relative wrapper */}
-
-              {/* Weiter-Button im fixen Bottom-Bar */}
-            </motion.div>
-          )}
-
-          {currentStep === "legalOwner" && business && business.placeId && !business.placeId.startsWith("self-") && (business.address || business.phone || business.email) && (
-            <motion.div
-              key="legalOwner-gmb-step"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 mt-2"
-            >
-                {!gmbÜbernommenEditMode ? (
-                  <div className="space-y-2">
-                    {/* Name field — always required, GMB doesn't provide this */}
-                    <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl px-3 py-2.5 space-y-2">
-                      <p className="text-xs text-amber-300 font-medium">👤 Pflichtangabe für Impressum</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 w-14 flex-shrink-0">Inhaber</span>
-                        <input
-                          type="text"
-                          value={data.legalOwner || ""}
-                          onChange={(e) => setData((p) => ({ ...p, legalOwner: e.target.value }))}
-                          placeholder="Vorname Nachname"
-                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-amber-500 placeholder-slate-500"
-                        />
-                      </div>
-                    </div>
-                    {/* Preview of the GMB data to be imported */}
-                    {(() => {
-                      const parts = business.address ? business.address.split(",") : [];
-                      const street = parts[0]?.trim() || "";
-                      const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
-                      const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
-                      const zip = zipCityMatch?.[1] || "";
-                      const city = zipCityMatch?.[2] || "";
-                      return (
-                        <div className="bg-slate-800/60 border border-slate-600/40 rounded-xl px-3 py-2.5 space-y-1">
-                          <p className="text-[10px] text-slate-500 mb-1">Aus Google übernommen:</p>
-                          {street && <p className="text-xs text-slate-300">📍 {street}{zip && city ? `, ${zip} ${city}` : ""}</p>}
-                          {business.phone && <p className="text-xs text-slate-300">📞 {business.phone}</p>}
-                          {business.email && <p className="text-xs text-slate-300">✉️ {business.email}</p>}
-                        </div>
-                      );
-                    })()}
-                    <button
-                      onClick={async () => {
-                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
-                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
-                          return;
-                        }
-                        const parts = business.address ? business.address.split(",") : [];
-                        const street = parts[0]?.trim() || "";
-                        const zipCityRaw = parts[1]?.trim() || parts[2]?.trim() || "";
-                        const zipCityMatch = zipCityRaw.match(/(\d{5})\s+(.+)$/);
-                        const zip = zipCityMatch?.[1] || "";
-                        const city = zipCityMatch?.[2] || "";
-                        const phone = business.phone || "";
-                        const email = business.email || "";
-                        setData((p) => ({
-                          ...p,
-                          legalStreet: street || p.legalStreet,
-                          legalZip: zip || p.legalZip,
-                          legalCity: city || p.legalCity,
-                          legalPhone: phone || p.legalPhone,
-                          legalEmail: email || p.legalEmail,
-                        }));
-                        const summary = [
-                          `Inhaber: ${data.legalOwner.trim()}`,
-                          street && `Straße: ${street}`,
-                          zip && city && `PLZ/Stadt: ${zip} ${city}`,
-                          phone && `Telefon: ${phone}`,
-                          email && `E-Mail: ${email}`,
-                        ].filter(Boolean).join(" · ");
-                        addUserMessage(`📍 GMB-Daten übernommen – ${summary}`);
-                        const stepIdx = STEP_ORDER.indexOf("legalOwner");
-                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
-                        if (street) await trySaveStep(stepIdx + 1, { legalStreet: street });
-                        if (zip && city) await trySaveStep(stepIdx + 2, { legalZip: zip, legalCity: city });
-                        if (email) await trySaveStep(stepIdx + 3, { legalEmail: email });
-                        if (phone) await trySaveStep(stepIdx + 4, { legalPhone: phone });
-                        await advanceToStep("legalVat");
-                      }}
-                      className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2.5 rounded-xl transition-all font-medium"
-                    >
-                      ✓ Diese Daten übernehmen
-                    </button>
-                  </div>
-                ) : (
-                  /* Edit mode: show fields inline */
-                  <div className="bg-slate-800/80 border border-slate-600/50 rounded-xl p-3 space-y-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-emerald-400 font-medium">📍 GMB-Daten bearbeiten</span>
-                      <button
-                        onClick={() => setGmbÜbernommenEditMode(false)}
-                        className="text-xs text-slate-400 hover:text-white transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    {[
-                      { label: "Inhaber", key: "legalOwner" as const, placeholder: "Vorname Nachname" },
-                      { label: "Straße", key: "legalStreet" as const, placeholder: "Musterstraße 1" },
-                      { label: "PLZ", key: "legalZip" as const, placeholder: "12345" },
-                      { label: "Stadt", key: "legalCity" as const, placeholder: "Musterstadt" },
-                      { label: "Telefon", key: "legalPhone" as const, placeholder: "+49 123 456789" },
-                      { label: "E-Mail", key: "legalEmail" as const, placeholder: "info@firma.de" },
-                    ].map(({ label, key, placeholder }) => (
-                      <div key={key} className="flex items-center gap-2">
-                        <span className="text-xs text-slate-400 w-14 flex-shrink-0">{label}</span>
-                        <input
-                          type="text"
-                          value={data[key] || ""}
-                          onChange={(e) => setData((p) => ({ ...p, [key]: e.target.value }))}
-                          placeholder={placeholder}
-                          className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-lime-500 placeholder-slate-500"
-                        />
-                      </div>
-                    ))}
-                    <button
-                      onClick={async () => {
-                        if (!data.legalOwner || data.legalOwner.trim().split(/\s+/).length < 2) {
-                          toast.error("Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)");
-                          return;
-                        }
-                        setGmbÜbernommenEditMode(false);
-                        const stepIdx = STEP_ORDER.indexOf("legalOwner");
-                        await trySaveStep(stepIdx, { legalOwner: data.legalOwner.trim() });
-                        if (data.legalStreet) await trySaveStep(stepIdx + 1, { legalStreet: data.legalStreet });
-                        if (data.legalZip && data.legalCity) await trySaveStep(stepIdx + 2, { legalZip: data.legalZip, legalCity: data.legalCity });
-                        if (data.legalEmail) await trySaveStep(stepIdx + 3, { legalEmail: data.legalEmail });
-                        if (data.legalPhone) await trySaveStep(stepIdx + 4, { legalPhone: data.legalPhone });
-                        await advanceToStep("legalVat");
-                      }}
-                      className="w-full flex items-center justify-center gap-1.5 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors mt-1"
-                    >
-                      <Check className="w-3.5 h-3.5" /> Bestätigen & weiter
-                    </button>
-                  </div>
-                )}
-            </motion.div>
-          )}
-
-          {/* Pencil to re-open edit mode after GMB data was confirmed */}
-          {currentStep !== "legalOwner" && ["legalStreet","legalZipCity","legalEmail","legalPhone","legalVat"].includes(currentStep) && data.legalStreet && (
-            <motion.div
-              key="legal-edit-pencil"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="ml-9 mt-1"
-            >
-                <button
-                  onClick={() => {
-                    setGmbÜbernommenEditMode(true);
-                    // Go back to legalOwner step to show the edit panel
-                    setCurrentStep("legalOwner" as any);
-                  }}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
-                  title="GMB-Daten nachträglich bearbeiten"
-                >
-                  <Pencil className="w-3 h-3" /> Angaben bearbeiten
-                </button>
-            </motion.div>
-          )}
-
-          {currentStep === "openingHours" && (
-            <motion.div
-              key="openingHours-step"
-              initial={{ opacity: 0, y: 20, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.97 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              {/* Quick-select buttons */}
-              <div className="flex flex-wrap gap-2 mb-1">
-                {[
-                  { label: "Mo – Fr", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 5 }))) },
-                  { label: "Mo – Sa", action: () => setHoursState(h => h.map((d, i) => ({ ...d, open: i < 6 }))) },
-                  { label: "Täglich", action: () => setHoursState(h => h.map(d => ({ ...d, open: true }))) },
-                  { label: "Alle gleiche Zeit", action: () => {
-                    const first = hoursState.find(d => d.open);
-                    if (!first) return;
-                    setHoursState(h => h.map(d => d.open ? { ...d, from: first.from, to: first.to } : d));
-                  }},
-                ].map(({ label, action }) => (
-                  <button key={label} onClick={action}
-                    className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 border border-white/10 transition-colors">
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* 7-day grid */}
-              <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden divide-y divide-white/5">
-                {hoursState.map((dh, i) => (
-                  <div key={dh.day} className="flex items-center gap-3 px-3 py-2.5">
-                    {/* Toggle */}
-                    <button
-                      onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, open: !d.open } : d))}
-                      className={`w-9 h-5 rounded-full flex-shrink-0 transition-colors relative ${dh.open ? 'bg-emerald-500' : 'bg-white/20'}`}
-                    >
-                      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${dh.open ? 'left-4' : 'left-0.5'}`} />
-                    </button>
-                    {/* Day name */}
-                    <span className={`text-sm w-24 flex-shrink-0 ${dh.open ? 'text-white' : 'text-slate-500'}`}>
-                      {dh.day.slice(0, 2)}
-                    </span>
-                    {dh.open ? (
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        {/* First time slot */}
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="time"
-                            value={dh.from}
-                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from: e.target.value } : d))}
-                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
-                          />
-                          <span className="text-slate-500 text-xs">–</span>
-                          <input
-                            type="time"
-                            value={dh.to}
-                            onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to: e.target.value } : d))}
-                            className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
-                          />
-                          {/* Add second slot button */}
-                          {!dh.from2 && (
-                            <button
-                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: "13:00", to2: "18:00" } : d))}
-                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white text-xs flex items-center justify-center transition-colors"
-                              title="Zweites Zeitfenster hinzufügen (z.B. nach Mittagspause)"
-                            >+</button>
-                          )}
-                        </div>
-                        {/* Second time slot (optional, e.g. after lunch break) */}
-                        {dh.from2 !== undefined && (
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="time"
-                              value={dh.from2}
-                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: e.target.value } : d))}
-                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
-                            />
-                            <span className="text-slate-500 text-xs">–</span>
-                            <input
-                              type="time"
-                              value={dh.to2}
-                              onChange={e => setHoursState(h => h.map((d, j) => j === i ? { ...d, to2: e.target.value } : d))}
-                              className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
-                            />
-                            <button
-                              onClick={() => setHoursState(h => h.map((d, j) => j === i ? { ...d, from2: undefined, to2: undefined } : d))}
-                              className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-red-500/30 text-slate-400 hover:text-red-400 text-xs flex items-center justify-center transition-colors"
-                              title="Zweites Zeitfenster entfernen"
-                            >×</button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-slate-500 flex-1">Geschlossen</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={async () => {
-                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
-                    const saved = hoursState;
-                    addUserMessage(`${saved.filter(d => d.open).length} Tage eingetragen`);
-                    setData(p => ({ ...p, openingHours: saved }));
-                    await trySaveStep(stepIdx, { openingHours: saved });
-                    const next = dynamicStepOrder[stepIdx + 1];
-                    if (next) await advanceToStep(next);
-                  }}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors"
-                >
-                  Übernehmen ✓
-                </button>
-                <button
-                  onClick={async () => {
-                    const stepIdx = dynamicStepOrder.indexOf("openingHours");
-                    addUserMessage("Überspringen");
-                    setData(p => ({ ...p, openingHours: null }));
-                    await trySaveStep(stepIdx, { openingHours: null });
-                    const next = dynamicStepOrder[stepIdx + 1];
-                    if (next) await advanceToStep(next);
-                  }}
-                  className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-slate-300 text-sm rounded-xl transition-colors border border-white/10"
-                >
-                  Überspringen
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {currentStep === "hideSections" && (
-            <motion.div
-              key="hideSections-step"
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -30, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-2"
-            >
-                {/* Build the display list from sectionOrder (or fallback to allSectionsForHideStep) */}
-                {(() => {
-                  const displaySections = sectionOrder.length > 0
-                    ? sectionOrder
-                        .map(type => allSectionsForHideStep.find(s => s.type === type))
-                        .filter((s): s is NonNullable<typeof s> => Boolean(s))
-                    : allSectionsForHideStep;
-
-                  const handleDragStart = (idx: number) => setDraggedSectionIdx(idx);
-                  const handleDragOver  = (e: React.DragEvent, idx: number) => {
-                    e.preventDefault();
-                    if (draggedSectionIdx === null || draggedSectionIdx === idx) return;
-                    const next    = [...sectionOrder];
-                    const dragged = next[draggedSectionIdx];
-                    next.splice(draggedSectionIdx, 1);
-                    next.splice(idx, 0, dragged);
-                    setSectionOrder(next);
-                    setDraggedSectionIdx(idx);
-                  };
-                  const handleDragEnd = () => setDraggedSectionIdx(null);
-
-                  return (
-                    <>
-                      {/* Sortable + toggleable section list */}
-                      <div className="space-y-1.5">
-                        {displaySections.map((sec, idx) => {
-                          const isHidden    = hiddenSections.has(sec.type);
-                          const isDragging  = draggedSectionIdx === idx;
-                          return (
-                            <div
-                              key={sec.type}
-                              draggable
-                              onDragStart={() => handleDragStart(idx)}
-                              onDragOver={(e) => handleDragOver(e, idx)}
-                              onDragEnd={handleDragEnd}
-                              className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all select-none ${
-                                isDragging
-                                  ? "opacity-40 border-lime-500/60 bg-lime-400/10 scale-[0.98]"
-                                  : isHidden
-                                  ? "border-slate-700 bg-slate-800/40 text-slate-500"
-                                  : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
-                              }`}
-                            >
-                              {/* Drag handle */}
-                              <GripVertical className="w-4 h-4 text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0" />
-                              {/* Emoji */}
-                              <span className="flex-shrink-0 text-base leading-none">{sec.emoji}</span>
-                              {/* Label */}
-                              <span className={`flex-1 leading-tight ${isHidden ? "line-through text-slate-600" : ""}`}>
-                                {sec.label}
-                              </span>
-                              {/* Visibility toggle */}
-                              <button
-                                onClick={() =>
-                                  setHiddenSections((prev) => {
-                                    const next = new Set(prev);
-                                    if (next.has(sec.type)) next.delete(sec.type);
-                                    else next.add(sec.type);
-                                    return next;
-                                  })
-                                }
-                                className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
-                                  isHidden
-                                    ? "border-slate-600 bg-slate-700 hover:border-slate-500"
-                                    : "border-emerald-500 bg-emerald-500 hover:bg-emerald-400"
-                                }`}
-                              >
-                                {!isHidden && <Check className="w-3 h-3 text-white" />}
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Hints */}
-                      <div className="space-y-1 mt-2">
-                        <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                          <GripVertical className="w-3 h-3 flex-shrink-0" />
-                          Reihenfolge per Drag &amp; Drop ändern – oder später im Dashboard
-                        </p>
-                        {hiddenSections.size > 0 && (
-                          <p className="text-xs text-amber-400/80">
-                            {hiddenSections.size} Bereich{hiddenSections.size > 1 ? "e" : ""} ausgeblendet – jederzeit wieder aktivierbar.
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Weiter-Button im fixen Bottom-Bar */}
-                    </>
-                  );
-                })()}
-            </motion.div>
-          )}
-
-          {currentStep === "preview" && (
-            <motion.div
-              key="preview-step"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-              {/* Fullscreen interactive preview */}
-              {previewToken && (
-                <button
-                  onClick={() => setShowFullPreview(true)}
-                  className="w-full border border-slate-500/60 hover:border-lime-500/60 hover:bg-lime-400/10 text-slate-300 hover:text-white font-medium px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
-                  <Monitor className="w-4 h-4" /> Vollbild-Vorschau öffnen
-                </button>
-              )}
-              <button
-                onClick={async () => {
-                  addUserMessage("Sieht super aus! Jetzt freischalten 🚀");
-                  await advanceToStep("checkout");
-                }}
-                className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-400 hover:to-lime-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-lime-500/20 flex items-center justify-center gap-2"
-              >
-                <Zap className="w-4 h-4" /> Website freischalten
-              </button>
-            </motion.div>
-          )}
-
-          {currentStep === "checkout" && (
-            <motion.div
-              key="checkout-step"
-              initial={{ opacity: 0, y: 40, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -40, scale: 0.9 }}
-              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
-              className="ml-9 space-y-3"
-            >
-                {/* Billing interval toggle */}
-                <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
-                  <button
-                    onClick={() => setBillingInterval("yearly")}
-                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
-                      billingInterval === "yearly"
-                        ? "bg-lime-500 text-gray-900"
-                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    <span>Jährlich · <span className="font-bold">19,90 €</span>/Mo</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-normal transition-all ${
-                      billingInterval === "yearly"
-                        ? "bg-green-500/30 text-green-300"
-                        : "bg-slate-600/40 text-slate-500"
-                    }`}>2 Monate gratis</span>
-                  </button>
-                  <button
-                    onClick={() => setBillingInterval("monthly")}
-                    className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
-                      billingInterval === "monthly"
-                        ? "bg-lime-500 text-gray-900"
-                        : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    <span>Monatlich · <span className="font-bold">24,90 €</span>/Mo</span>
-                    {/* spacer so both buttons stay the same height */}
-                    <span className="text-xs opacity-0 px-2 py-0.5">–</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
-                  {/* Line items */}
-                  <div className="space-y-2 pb-2 border-b border-slate-600">
-                    <div className="flex justify-between text-sm text-slate-300">
-                      <span>Basis-Website</span>
-                      <span>{billingInterval === "yearly" ? "19,90" : "24,90"} €/Monat</span>
-                    </div>
-                    {data.addOnContactForm && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ Kontaktformular</span>
-                        <span>+3,90 €/Monat</span>
-                      </div>
-                    )}
-                    {data.addOnGallery && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ Bildergalerie</span>
-                        <span>+3,90 €/Monat</span>
-                      </div>
-                    )}
-                    {_addOnMenu && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ Speisekarte</span>
-                        <span>+3,90 €/Monat</span>
-                      </div>
-                    )}
-                    {_addOnPricelist && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ Preisliste</span>
-                        <span>+3,90 €/Monat</span>
-                      </div>
-                    )}
-                    {_addOnAiChat && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ KI-Chat</span>
-                        <span>+9,90 €/Monat</span>
-                      </div>
-                    )}
-                    {data.addOnBooking && (
-                      <div className="flex justify-between text-sm text-slate-300">
-                        <span>+ Terminbuchung</span>
-                        <span>+4,90 €/Monat</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="pt-1 flex justify-between font-bold text-white text-base">
-                    <span>Gesamt</span>
-                    <span>{totalPrice()} €/Monat</span>
-                  </div>
-                  <p className="text-xs text-slate-500 pt-0.5">
-                    {billingInterval === "yearly"
-                      ? "Jährliche Abrechnung · monatlich abbuchbar · Jederzeit kündbar"
-                      : "Monatliche Abrechnung · Jederzeit kündbar"}
-                  </p>
-                </div>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div
-                    onClick={() => setLegalConsent((v) => !v)}
-                    className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                      legalConsent ? "border-green-500 bg-green-500" : "border-slate-500 bg-transparent group-hover:border-slate-400"
-                    }`}
-                  >
-                    {legalConsent && <Check className="w-3 h-3 text-white" />}
-                  </div>
-                  <span className="text-xs text-slate-400 leading-relaxed" onClick={() => setLegalConsent((v) => !v)}>
-                    Ich bestätige, dass alle Angaben (insbesondere Impressum & Datenschutz) korrekt und vollständig sind. Ich übernehme die alleinige Verantwortung für die Richtigkeit dieser Daten. Pageblitz haftet nicht für fehlerhafte oder unvollständige Angaben.
-                  </span>
-                </label>
-                <button
-                  onClick={handleCheckout}
-                  disabled={completeMutation.isPending || checkoutMutation.isPending || !legalConsent}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-5 py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {completeMutation.isPending || checkoutMutation.isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <><Zap className="w-5 h-5" /> Jetzt für {totalPrice()} €/Mo freischalten</>
-                  )}
-                </button>
-                <p className="text-center text-xs text-slate-500">
-                  7 Tage gratis testen • Keine Einrichtungsgebühr • SSL inklusive
-                </p>
-            </motion.div>
-          )}
-              </AnimatePresence>
-            )}
-
-        <div ref={messagesEndRef} />
-        </div>
-        {/* Input area – sticky at bottom */}
-          {!["services", "addons", "editAiChat", "subpages", "preview", "checkout", "welcome", "colorScheme", "brandLogo", "businessCategory", "openingHours", "heroPhoto", "aboutPhoto", "headlineFont", "headlineSize", "editGallery", "hideSections"].includes(currentStep) && (
-            <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-slate-700/50">
-              {/* Quick-reply chips – above input */}
-              {!isTyping && !quickReplySelected && getQuickReplies(currentStep).length > 0 && (
-                <div className="pt-3 pb-2">
-                  <p className="text-xs text-slate-500 mb-2 font-medium">Schnellantworten:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {getQuickReplies(currentStep).map((reply) => (
-                      <button
-                        key={reply}
-                        onClick={() => {
-                          setQuickReplySelected(true);
-                          if (currentStep === "businessName" && reply === "Ja, stimmt!") {
-                            handleSubmit("");
-                          } else {
-                            handleSubmit(reply);
-                          }
-                        }}
-                        className="text-sm bg-lime-500/20 hover:bg-lime-500/40 border border-lime-500/50 hover:border-lime-400/70 text-lime-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
-                      >
-                        {reply}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* Marketing consent checkbox — shown on email step */}
-              {currentStep === "email" && (
-                <label className="flex items-start gap-2.5 cursor-pointer mb-2">
-                  <input
-                    type="checkbox"
-                    checked={marketingConsent}
-                    onChange={(e) => setMarketingConsent(e.target.checked)}
-                    className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
-                  />
-                  <span className="text-slate-400 text-xs leading-relaxed">
-                    Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
-                    <a href="/datenschutz" target="_blank" className="text-lime-400 underline underline-offset-2 hover:text-lime-300">Datenschutz</a>
-                  </span>
-                </label>
-              )}
-              <div className="flex gap-2">
-                {/* AI generate button for text fields */}
-                {["tagline", "description", "usp", "targetAudience"].includes(currentStep) && (
-                  <div className="relative flex-shrink-0 group/ai">
-                    <button
-                      onClick={() => generateWithAI(currentStep as keyof OnboardingData)}
-                      disabled={isGenerating}
-                      className="w-10 h-10 rounded-xl bg-lime-600/20 hover:bg-lime-600/30 border border-lime-500/60 flex items-center justify-center transition-all ai-glow-btn"
-                      title="Mit KI generieren"
-                    >
-                      {isGenerating ? (
-                        <Loader2 className="w-4 h-4 text-lime-300 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-4 h-4 text-lime-300" />
-                      )}
-                    </button>
-                    {/* Tooltip – anchored to left edge so it never overflows off-screen */}
-                    <div className="absolute bottom-full left-0 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
-                      <div className="bg-slate-800/95 border border-lime-500/50 text-slate-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
-                        ✨ Automatisch von KI<br/>generieren lassen
-                        {/* Arrow points to the button center (~left-5 ≈ 20px = half of w-10 button) */}
-                        <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800/95" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {["tagline", "description", "usp", "targetAudience"].includes(currentStep) ? (
-                  <textarea
-                    ref={textareaRef}
-                    value={inputValue}
-                    rows={3}
-                    onChange={(e) => {
-                      setInputValue(e.target.value);
-                      // Auto-resize
-                      const el = e.target as HTMLTextAreaElement;
-                      el.style.height = "auto";
-                      el.style.height = Math.min(el.scrollHeight, 160) + "px";
-                    }}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
-                    placeholder={
-                      currentStep === "tagline"
-                        ? `z.B. "Ihr ${(data as any).businessCategory || 'Fachbetrieb'} in ${data.legalCity || 'Ihrer Stadt'}"`
-                        : currentStep === "description"
-                        ? "Was macht dein Unternehmen besonders? (2-3 Sätze)"
-                        : currentStep === "usp"
-                        ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
-                        : currentStep === "targetAudience"
-                        ? `z.B. "Damen und Herren in ${data.legalCity || 'Köln'}, die Wert auf..."`
-                        : "Deine Antwort... (Shift+Enter für neue Zeile)"
-                    }
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none leading-relaxed"
-                    style={{ minHeight: "72px", maxHeight: "160px" }}
-                  />
-                ) : (
-                  <input
-                    ref={inputRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSubmit()}
-                    placeholder={
-                      currentStep === "businessName"
-                        ? data.businessName || "Unternehmensname eingeben..."
-                        : currentStep === "legalOwner"
-                        ? "Vorname Nachname"
-                        : currentStep === "legalStreet"
-                        ? "Musterstraße 12"
-                        : currentStep === "legalZipCity"
-                        ? "50667 Köln"
-                        : currentStep === "legalEmail"
-                        ? "info@musterfirma.de"
-                        : currentStep === "legalVat"
-                        ? "DE123456789 – oder leer lassen (Kleinunternehmer)"
-                        : currentStep === "email"
-                        ? "deine@email.de"
-                        : "Deine Antwort..."
-                    }
-                    className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
-                  />
-                )}
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={!inputValue.trim() && currentStep !== "businessName" && currentStep !== "legalVat"}
-                  className="w-10 h-10 rounded-xl bg-lime-500 hover:bg-lime-400 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
-                >
-                  <Send className="w-4 h-4 text-white" />
-                </button>
-              </div>
-
-
-            </div>
-          )}
-          {/* Weiter-Buttons für UI-Schritte – außerhalb des Scroll-Containers (sticky auf Mobile) */}
-          {currentStep === "addons" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  let snapshot: OnboardingData | null = null;
-                  setData(p => { snapshot = p; return p; });
-                  const d = snapshot ?? data;
-                  const selected = [];
-                  if (d.addOnContactForm) selected.push("Kontaktformular");
-                  if (d.addOnGallery) selected.push("Bildergalerie");
-                  if (d.addOnMenu) selected.push("Speisekarte");
-                  if (d.addOnPricelist) selected.push("Preisliste");
-                  if (d.addOnAiChat) selected.push("KI-Chat");
-                  if (d.addOnBooking) selected.push("Terminbuchung");
-                  addUserMessage(selected.length > 0 ? `Ich nehme: ${selected.join(", ")} ✓` : "Keine Extras nötig");
-                  await trySaveStep(STEP_ORDER.indexOf("addons"), {
-                    addOnContactForm: d.addOnContactForm,
-                    contactFormFields: d.contactFormFields,
-                    addOnGallery: d.addOnGallery,
-                    addOnMenu: d.addOnMenu,
-                    addOnPricelist: d.addOnPricelist,
-                    addOnAiChat: d.addOnAiChat,
-                    addOnBooking: d.addOnBooking,
-                  });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "editAiChat" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const msg = data.chatWelcomeMessage.trim() || `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
-                  if (!data.chatWelcomeMessage.trim()) {
-                    setData(p => ({ ...p, chatWelcomeMessage: msg }));
-                  }
-                  addUserMessage(`🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`);
-                  await trySaveStep(STEP_ORDER.indexOf("editAiChat"), { chatWelcomeMessage: msg });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "brandLogo" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping || uploadLogoMutation.isPending}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const logo = data.brandLogo || "font:Montserrat";
-                  const label = logo.startsWith("url:") ? "Eigenes Logo" : logo.replace("font:", "");
-                  addUserMessage(`Logo gewählt: ${label} ✓`);
-                  await trySaveStep(STEP_ORDER.indexOf("brandLogo"), { brandLogo: logo });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "headlineFont" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping || !data.headlineFont}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  addUserMessage(`Schriftart gewählt: ${data.headlineFont} ✓`);
-                  await trySaveStep(STEP_ORDER.indexOf("headlineFont"), { headlineFont: data.headlineFont });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "headlineSize" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const sizeLabel = data.headlineSize === 'large' ? 'Extra groß' : data.headlineSize === 'medium' ? 'Groß' : 'Normal';
-                  addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
-                  await trySaveStep(STEP_ORDER.indexOf("headlineSize"), { headlineSize: data.headlineSize });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "services" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping || saveStepMutation.isPending}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const filtered = data.topServices.filter((s) => s.title.trim());
-                  if (filtered.length === 0) {
-                    setShowSkipServicesWarning(true);
-                    return;
-                  }
-                  addUserMessage(filtered.map((s) => `✓ ${s.title}`).join("\n"));
-                  await trySaveStep(STEP_ORDER.indexOf("services"), { topServices: filtered });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "editGallery" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const count = data.addOnGalleryData.images.length;
-                  addUserMessage(count > 0 ? `${count} Bilder für die Galerie ausgewählt ✓` : "Standard-Bilder für die Galerie behalten");
-                  await trySaveStep(STEP_ORDER.indexOf("editGallery"), {
-                    galleryHeadline: data.addOnGalleryData.headline,
-                    galleryImages: data.addOnGalleryData.images,
-                    galleryMode: data.addOnGalleryData.mode,
-                    galleryAlbums: data.addOnGalleryData.albums,
-                    addOnGalleryData: data.addOnGalleryData,
-                  });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "subpages" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  addUserMessage("Keine Unterseiten");
-                  await trySaveStep(STEP_ORDER.indexOf("subpages"), { addOnSubpages: [] });
-                  await goToNextStep();
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {currentStep === "hideSections" && (
-            <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
-              <button
-                disabled={isTyping}
-                style={{ touchAction: "manipulation" }}
-                onClick={async () => {
-                  if (isTyping) return;
-                  const hidden = Array.from(hiddenSections);
-                  addUserMessage(hidden.length === 0 ? "Alle Bereiche anzeigen ✓" : `Ausgeblendet: ${hidden.join(", ")}`);
-                  const stepIdx = dynamicStepOrder.indexOf("hideSections");
-                  trySaveStep(stepIdx, {
-                    sectionOrder: sectionOrder.length > 0 ? [...sectionOrder] : [],
-                    hiddenSections: hidden,
-                  });
-                  await advanceToStep("preview");
-                }}
-                className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Weiter <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          {/* Mobile: preview shortcut button – only shown on small screens, hidden on preview step (has its own button) */}
-          {liveWebsiteData && colorScheme && currentStep !== "preview" && (
-            <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
-              <button
-                onClick={() => setShowFullPreview(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600/40 text-slate-300 hover:text-white text-sm transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                Website-Vorschau anzeigen
-              </button>
-            </div>
-          )}
-          </div>{/* end messages+input wrapper */}
-        </div>
-        {/* Preview panel – MacBook mockup (desktop only) */}
-        <div className="hidden lg:flex relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex-col">
-          {/* Preview top bar: chat toggle + progress bar */}
-          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">
-            {/* Chat toggle button – always visible here */}
-            <button
-              onClick={() => setChatHidden((v) => !v)}
-              className="flex items-center gap-1.5 text-xs bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-              title={chatHidden ? "Chat einblenden" : "Chat ausblenden"}
-            >
-              {chatHidden ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
-              {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
-            </button>
-            {/* Progress bar with clickable completed steps */}
-            {currentStep !== "welcome" && currentStep !== "checkout" && (() => {
-              const totalSteps = dynamicStepOrder.filter((s) => s !== "welcome").length;
-              const currentIdx = dynamicStepOrder.indexOf(currentStep);
+          {currentStep !== "welcome" &&
+            currentStep !== "checkout" &&
+            (() => {
+              const totalSteps = dynamicStepOrder.filter(
+                s => s !== "welcome"
+              ).length;
+              const rawIdx = dynamicStepOrder.indexOf(currentStep);
               // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
-              if (currentIdx === -1) return null;
-              const progress = Math.round((currentIdx / totalSteps) * 100);
+              if (rawIdx === -1) return null;
+              const currentIdx = rawIdx;
+              const pct =
+                totalSteps > 0
+                  ? Math.round((currentIdx / totalSteps) * 100)
+                  : 0;
 
-              // Get completed steps (all steps before current)
-              const completedSteps = dynamicStepOrder.slice(0, currentIdx).filter((s) =>
-                s !== "welcome" && s !== "checkout" && s !== "preview"
-              );
-
-              // Step labels for display
+              // Completed steps – same labels as desktop
               const stepLabels: Record<string, string> = {
                 businessCategory: "Branche",
                 businessName: "Name",
@@ -6044,7 +4435,6 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 legalZipCity: "Ort",
                 legalEmail: "E-Mail",
                 legalPhone: "Telefon",
-                openingHours: "Öffnungszeiten",
                 legalVat: "Steuer",
                 addons: "Extras",
                 editAiChat: "KI-Chat",
@@ -6052,61 +4442,4173 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 editPricelist: "Preise",
                 editGallery: "Galerie",
                 subpages: "Unterseiten",
+                openingHours: "Öffnungszeiten",
                 email: "Kontakt",
                 hideSections: "Anzeige",
-                preview: "Vorschau",
               };
+              const completedSteps = dynamicStepOrder
+                .slice(0, currentIdx)
+                .filter(
+                  s => s !== "welcome" && s !== "checkout" && s !== "preview"
+                );
 
               return (
-                <div className="flex flex-col flex-1 gap-2">
-                  {/* Edit mode indicator */}
-                  {editMode.isEditing && editMode.returnToStep && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-amber-400">⚡ Bearbeitungsmodus</span>
-                      <button
-                        onClick={() => {
-                          setCurrentStep(editMode.returnToStep!);
-                          setEditMode({ isEditing: false, returnToStep: null });
-                        }}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 transition-colors border border-amber-500/50"
-                      >
-                        Zurück zu aktuellem Schritt
-                      </button>
-                    </div>
-                  )}
-                  {/* Completed steps - clickable pills */}
+                <div className="lg:hidden border-b border-slate-700/50 bg-slate-800/40 flex-shrink-0">
+                  {/* Scrollable step pills – shown when not in edit mode and steps exist */}
                   {!editMode.isEditing && completedSteps.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">Bearbeiten:</span>
-                      {completedSteps.map((step, idx) => (
+                    <div
+                      className="flex items-center gap-1.5 px-3 pt-2 pb-1 overflow-x-auto scrollbar-hide"
+                      style={{
+                        scrollbarWidth: "none",
+                        msOverflowStyle: "none",
+                      }}
+                    >
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider flex-shrink-0">
+                        Bearbeiten:
+                      </span>
+                      {completedSteps.map(step => (
                         <button
                           key={step}
                           onClick={() => {
-                            // Enter edit mode: save current position and jump to selected step
-                            setEditMode({ isEditing: true, returnToStep: currentStep });
+                            setEditMode({
+                              isEditing: true,
+                              returnToStep: currentStep,
+                            });
                             setCurrentStep(step);
                           }}
-                          className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
-                          title={`Zurück zu: ${stepLabels[step] || step}`}
+                          className="flex-shrink-0 text-[11px] px-2.5 py-1 rounded-full bg-slate-700/60 active:bg-slate-600 text-slate-300 border border-slate-600/50 transition-colors"
+                          style={{ touchAction: "manipulation" }}
                         >
                           {stepLabels[step] || step}
                         </button>
                       ))}
                     </div>
                   )}
-                  {/* Progress bar */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full transition-all duration-500"
-                        style={{ width: `${progress}%` }}
+                  {/* Edit-mode return button */}
+                  {editMode.isEditing && editMode.returnToStep && (
+                    <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+                      <span className="text-[10px] text-amber-400">
+                        ⚡ Bearbeitungsmodus
+                      </span>
+                      <button
+                        onClick={() => {
+                          setCurrentStep(editMode.returnToStep!);
+                          setEditMode({ isEditing: false, returnToStep: null });
+                        }}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 active:bg-amber-600/50 text-amber-200 border border-amber-500/50 transition-colors"
+                        style={{ touchAction: "manipulation" }}
+                      >
+                        Zurück zum aktuellen Schritt
+                      </button>
+                    </div>
+                  )}
+                  {/* Progress bar + counter */}
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full"
+                        initial={false}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                       />
                     </div>
-                    <span className="text-xs text-slate-400 whitespace-nowrap">Schritt {currentIdx} / {totalSteps}</span>
+                    <span className="text-[11px] text-slate-400 font-medium tabular-nums flex-shrink-0">
+                      {currentIdx}&thinsp;/&thinsp;{totalSteps}
+                    </span>
                   </div>
                 </div>
               );
             })()}
+
+          {/* Messages + Input: flex column, messages scroll, input sticky */}
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+              {messages.map(msg => {
+                // Section divider rendering
+                if ((msg.role as string) === "divider") {
+                  let divInfo: {
+                    icon: string;
+                    title: string;
+                    subtitle: string;
+                  } | null = null;
+                  try {
+                    divInfo = JSON.parse(msg.content);
+                  } catch {}
+                  if (!divInfo) return null;
+                  return (
+                    <div
+                      key={msg.id}
+                      className="flex items-center gap-3 my-2 px-1"
+                    >
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+                      <div className="flex items-center gap-2 bg-slate-700/80 border border-slate-600/60 rounded-xl px-4 py-2 flex-shrink-0 shadow-sm">
+                        <span className="text-base">{divInfo.icon}</span>
+                        <div>
+                          <p className="text-white text-xs font-bold leading-tight">
+                            {divInfo.title}
+                          </p>
+                          <p className="text-slate-400 text-xs leading-tight">
+                            {divInfo.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent" />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {msg.role === "bot" && (
+                      <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                        <Zap className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                    <div className="flex gap-2 items-end">
+                      {/* In-place edit mode */}
+                      {msg.role === "user" && inPlaceEditId === msg.id ? (
+                        <div className="flex flex-col gap-2 max-w-[85%]">
+                          {/* Category picker */}
+                          {msg.step === "businessCategory" ? (
+                            <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
+                              <p className="text-slate-300 text-xs">
+                                Branche wählen:
+                              </p>
+                              <CategoryPicker
+                                selected={inPlaceEditValue}
+                                onSelect={cat => {
+                                  setMessages(prev =>
+                                    prev.map(m =>
+                                      m.id === msg.id
+                                        ? { ...m, content: cat }
+                                        : m
+                                    )
+                                  );
+                                  setData(p => ({
+                                    ...p,
+                                    businessCategory: cat,
+                                  }));
+                                  setInPlaceEditId(null);
+                                }}
+                              />
+                              <button
+                                onClick={() => setInPlaceEditId(null)}
+                                className="self-start px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          ) : /* Color picker for color steps */
+                          msg.step === "brandColor" ||
+                            msg.step === "brandSecondaryColor" ? (
+                            <div className="flex flex-col gap-3 bg-slate-700/80 rounded-xl p-3 border border-lime-500">
+                              <p className="text-slate-300 text-xs">
+                                {msg.step === "brandColor"
+                                  ? "Hauptfarbe wählen:"
+                                  : "Sekundärfarbe wählen:"}
+                              </p>
+                              <div className="flex items-center gap-3">
+                                <input
+                                  type="color"
+                                  value={
+                                    inPlaceEditValue.match(/^#[0-9A-Fa-f]{6}$/)
+                                      ? inPlaceEditValue
+                                      : "#3b82f6"
+                                  }
+                                  onChange={e =>
+                                    setInPlaceEditValue(e.target.value)
+                                  }
+                                  className="w-12 h-12 rounded-lg cursor-pointer border-2 border-slate-500 bg-transparent"
+                                  style={{ padding: "2px" }}
+                                />
+                                <div className="flex-1">
+                                  <div
+                                    className="w-full h-10 rounded-lg border border-slate-500"
+                                    style={{
+                                      backgroundColor: inPlaceEditValue.match(
+                                        /^#[0-9A-Fa-f]{6}$/
+                                      )
+                                        ? inPlaceEditValue
+                                        : "#3b82f6",
+                                    }}
+                                  />
+                                  <p className="text-slate-400 text-xs mt-1 font-mono">
+                                    {inPlaceEditValue}
+                                  </p>
+                                </div>
+                              </div>
+                              {/* Quick presets */}
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  "#2563eb",
+                                  "#16a34a",
+                                  "#dc2626",
+                                  "#d97706",
+                                  "#7c3aed",
+                                  "#0891b2",
+                                  "#db2777",
+                                  "#1a1a1a",
+                                  "#f5f5f5",
+                                  "#b8860b",
+                                ].map(c => (
+                                  <button
+                                    key={c}
+                                    onClick={() => setInPlaceEditValue(c)}
+                                    className="w-6 h-6 rounded-full border-2 transition-all"
+                                    style={{
+                                      backgroundColor: c,
+                                      borderColor:
+                                        inPlaceEditValue === c
+                                          ? "white"
+                                          : "transparent",
+                                    }}
+                                    title={c}
+                                  />
+                                ))}
+                              </div>
+                              <div className="flex gap-1 justify-end">
+                                <button
+                                  onClick={() => setInPlaceEditId(null)}
+                                  className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                                >
+                                  Abbrechen
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const step = msg.step;
+                                    if (
+                                      !step ||
+                                      !inPlaceEditValue.match(
+                                        /^#[0-9A-Fa-f]{6}$/
+                                      )
+                                    ) {
+                                      setInPlaceEditId(null);
+                                      return;
+                                    }
+                                    const newVal = inPlaceEditValue;
+                                    setMessages(prev =>
+                                      prev.map(m =>
+                                        m.id === msg.id
+                                          ? { ...m, content: newVal }
+                                          : m
+                                      )
+                                    );
+                                    setData(p => ({ ...p, [step]: newVal }));
+                                    setInPlaceEditId(null);
+                                  }}
+                                  className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
+                                >
+                                  Übernehmen
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <textarea
+                                className="bg-slate-700 text-white text-sm px-3 py-2 rounded-xl border border-lime-500 outline-none resize-none min-h-[60px] w-full"
+                                value={inPlaceEditValue}
+                                onChange={e =>
+                                  setInPlaceEditValue(e.target.value)
+                                }
+                                autoFocus
+                                rows={3}
+                                onKeyDown={e => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    const step = msg.step;
+                                    if (!step || !inPlaceEditValue.trim()) {
+                                      setInPlaceEditId(null);
+                                      return;
+                                    }
+                                    const newVal = inPlaceEditValue.trim();
+                                    setMessages(prev =>
+                                      prev.map(m =>
+                                        m.id === msg.id
+                                          ? { ...m, content: newVal }
+                                          : m
+                                      )
+                                    );
+                                    if (step === "legalZipCity") {
+                                      const m =
+                                        newVal.match(/^(\d{5})\s+(.+)$/);
+                                      if (m)
+                                        setData(p => ({
+                                          ...p,
+                                          legalZip: m[1],
+                                          legalCity: m[2],
+                                        }));
+                                    } else if (step in data) {
+                                      setData(p => ({ ...p, [step]: newVal }));
+                                    }
+                                    setInPlaceEditId(null);
+                                  }
+                                  if (e.key === "Escape")
+                                    setInPlaceEditId(null);
+                                }}
+                              />
+                              <div className="flex gap-1 justify-end">
+                                <button
+                                  onClick={() => setInPlaceEditId(null)}
+                                  className="px-2 py-1 text-xs rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300"
+                                >
+                                  Abbrechen
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const step = msg.step;
+                                    if (!step || !inPlaceEditValue.trim()) {
+                                      setInPlaceEditId(null);
+                                      return;
+                                    }
+                                    const newVal = inPlaceEditValue.trim();
+                                    setMessages(prev =>
+                                      prev.map(m =>
+                                        m.id === msg.id
+                                          ? { ...m, content: newVal }
+                                          : m
+                                      )
+                                    );
+                                    if (step === "legalZipCity") {
+                                      const m =
+                                        newVal.match(/^(\d{5})\s+(.+)$/);
+                                      if (m)
+                                        setData(p => ({
+                                          ...p,
+                                          legalZip: m[1],
+                                          legalCity: m[2],
+                                        }));
+                                    } else if (step in data) {
+                                      setData(p => ({ ...p, [step]: newVal }));
+                                    }
+                                    setInPlaceEditId(null);
+                                  }}
+                                  className="px-2 py-1 text-xs rounded-lg bg-lime-500 hover:bg-lime-400 text-white"
+                                >
+                                  Speichern
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                              msg.role === "bot"
+                                ? "bg-slate-700/80 text-slate-100 rounded-tl-sm"
+                                : "bg-lime-500 text-white rounded-tr-sm"
+                            }`}
+                            dangerouslySetInnerHTML={{
+                              __html: msg.content
+                                .replace(
+                                  /\*\*(.+?)\*\*/g,
+                                  "<strong>$1</strong>"
+                                )
+                                .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                                .replace(/\n/g, "<br/>"),
+                            }}
+                          />
+                          {msg.role === "user" && msg.step && (
+                            <button
+                              onClick={() => {
+                                setInPlaceEditId(msg.id);
+                                setInPlaceEditValue(msg.content);
+                              }}
+                              className="w-8 h-8 rounded-md bg-slate-600/50 hover:bg-slate-500/50 active:bg-slate-500/70 flex items-center justify-center transition-colors flex-shrink-0"
+                              style={{ touchAction: "manipulation" }}
+                              title="Antwort bearbeiten"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-slate-300" />
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Typing indicator */}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center mr-2 flex-shrink-0">
+                    <Zap className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="bg-slate-700/80 px-4 py-3 rounded-2xl rounded-tl-sm">
+                    <div className="flex gap-1 items-center h-4">
+                      {[0, 1, 2].map(i => (
+                        <div
+                          key={i}
+                          className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce"
+                          style={{ animationDelay: `${i * 0.15}s` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Interactive step UI with futuristic transitions */}
+              {!isTyping && (
+                <AnimatePresence mode="wait">
+                  {currentStep === "services" && (
+                    <motion.div
+                      key="services-step"
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* Suggestions Section */}
+                      {(serviceSuggestions.length > 0 ||
+                        initialServices.length > 0) && (
+                        <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                          {/* Initial Suggestions */}
+                          {initialServices.length > 0 && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                  <ImageIcon className="w-3 h-3" /> Vorschläge
+                                  aus Entwurf
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    const currentValid =
+                                      data.topServices.filter(s =>
+                                        s.title.trim()
+                                      );
+                                    const toAdd = initialServices.filter(
+                                      s =>
+                                        !currentValid.some(
+                                          ts => ts.title === s.title
+                                        )
+                                    );
+                                    setData(p => ({
+                                      ...p,
+                                      topServices: [...currentValid, ...toAdd],
+                                    }));
+                                    toast.success(
+                                      `${toAdd.length} Leistungen hinzugefügt!`
+                                    );
+                                  }}
+                                  className="text-[10px] text-lime-400 hover:text-lime-300 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                                >
+                                  Alle übernehmen
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                {initialServices.map((s, idx) => {
+                                  const currentValid = data.topServices.filter(
+                                    ts => ts.title.trim()
+                                  );
+                                  const isAlreadyAdded = currentValid.some(
+                                    ts => ts.title === s.title
+                                  );
+                                  return (
+                                    <button
+                                      key={`init-${idx}`}
+                                      onClick={() => {
+                                        if (isAlreadyAdded) {
+                                          setData(p => ({
+                                            ...p,
+                                            topServices: p.topServices.filter(
+                                              ts => ts.title !== s.title
+                                            ),
+                                          }));
+                                          toast.success(
+                                            `"${s.title}" entfernt`
+                                          );
+                                        } else {
+                                          setData(p => ({
+                                            ...p,
+                                            topServices: [...currentValid, s],
+                                          }));
+                                          toast.success(
+                                            `"${s.title}" hinzugefügt!`
+                                          );
+                                        }
+                                      }}
+                                      className={`text-left p-2 rounded-xl border transition-all group ${
+                                        isAlreadyAdded
+                                          ? "bg-lime-400/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]"
+                                          : "bg-slate-700/40 border-slate-600/50 hover:border-slate-500"
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                                        <span
+                                          className={`text-[11px] font-bold truncate ${isAlreadyAdded ? "text-lime-300" : "text-slate-300 group-hover:text-white"}`}
+                                        >
+                                          {s.title}
+                                        </span>
+                                        {isAlreadyAdded ? (
+                                          <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
+                                        ) : (
+                                          <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
+                                        )}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AI Suggestions */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-lime-300 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <Sparkles className="w-3 h-3" /> KI-Vorschläge
+                              </p>
+                              <div className="flex gap-3">
+                                <button
+                                  onClick={generateServicesWithAI}
+                                  disabled={isGeneratingServices}
+                                  className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider"
+                                >
+                                  {isGeneratingServices
+                                    ? "Lädt..."
+                                    : "Neu generieren"}
+                                </button>
+                                {serviceSuggestions.length > 0 && (
+                                  <button
+                                    onClick={() => {
+                                      const currentValid =
+                                        data.topServices.filter(s =>
+                                          s.title.trim()
+                                        );
+                                      const toAdd = serviceSuggestions.filter(
+                                        s =>
+                                          !currentValid.some(
+                                            ts => ts.title === s.title
+                                          )
+                                      );
+                                      setData(p => ({
+                                        ...p,
+                                        topServices: [
+                                          ...currentValid,
+                                          ...toAdd,
+                                        ],
+                                      }));
+                                      toast.success(
+                                        `${toAdd.length} Leistungen hinzugefügt!`
+                                      );
+                                    }}
+                                    className="text-[10px] text-lime-400 hover:text-lime-200 transition-colors uppercase font-bold tracking-wider underline underline-offset-2"
+                                  >
+                                    Alle übernehmen
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                            {serviceSuggestions.length > 0 ? (
+                              <div className="grid grid-cols-2 gap-2">
+                                {serviceSuggestions.map((s, idx) => {
+                                  const currentValid = data.topServices.filter(
+                                    ts => ts.title.trim()
+                                  );
+                                  const isAlreadyAdded = currentValid.some(
+                                    ts => ts.title === s.title
+                                  );
+                                  return (
+                                    <button
+                                      key={`ai-${idx}`}
+                                      onClick={() => {
+                                        if (isAlreadyAdded) {
+                                          setData(p => ({
+                                            ...p,
+                                            topServices: p.topServices.filter(
+                                              ts => ts.title !== s.title
+                                            ),
+                                          }));
+                                          toast.success(
+                                            `"${s.title}" entfernt`
+                                          );
+                                        } else {
+                                          setData(p => ({
+                                            ...p,
+                                            topServices: [...currentValid, s],
+                                          }));
+                                          toast.success(
+                                            `"${s.title}" hinzugefügt!`
+                                          );
+                                        }
+                                      }}
+                                      className={`text-left p-2 rounded-xl border transition-all group ${
+                                        isAlreadyAdded
+                                          ? "bg-lime-500/10 border-lime-500/40 shadow-[0_0_12px_rgba(163,230,53,0.1)]"
+                                          : "bg-slate-700/40 border-slate-600/50 hover:border-lime-500/40"
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                                        <span
+                                          className={`text-[11px] font-bold truncate ${isAlreadyAdded ? "text-lime-300" : "text-slate-300 group-hover:text-lime-200"}`}
+                                        >
+                                          {s.title}
+                                        </span>
+                                        {isAlreadyAdded ? (
+                                          <Check className="w-3 h-3 text-lime-400 flex-shrink-0" />
+                                        ) : (
+                                          <Plus className="w-3 h-3 text-slate-500 group-hover:text-lime-400 flex-shrink-0" />
+                                        )}
+                                      </div>
+                                      <p className="text-[9px] text-slate-500 line-clamp-1 leading-tight group-hover:text-slate-400">
+                                        {s.description}
+                                      </p>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={generateServicesWithAI}
+                                disabled={isGeneratingServices}
+                                className="w-full py-3 rounded-xl border border-dashed border-lime-500/30 bg-lime-500/5 hover:bg-lime-500/10 transition-colors flex flex-col items-center justify-center gap-1 group"
+                              >
+                                {isGeneratingServices ? (
+                                  <Loader2 className="w-4 h-4 text-lime-400 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Sparkles className="w-4 h-4 text-lime-400 group-hover:scale-110 transition-transform" />
+                                    <span className="text-[11px] text-lime-300 font-bold uppercase tracking-wider">
+                                      KI-Vorschläge generieren
+                                    </span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Manual List Section */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                            Deine Auswahl
+                          </p>
+                          <button
+                            onClick={() =>
+                              setData(p => ({ ...p, topServices: [] }))
+                            }
+                            className="text-[10px] text-slate-500 hover:text-red-400 transition-colors uppercase font-bold tracking-wider"
+                          >
+                            Alle leeren
+                          </button>
+                        </div>
+
+                        {data.topServices.length === 0 ? (
+                          <div className="py-8 text-center bg-slate-800/20 border border-dashed border-slate-700 rounded-2xl">
+                            <p className="text-xs text-slate-500">
+                              Noch keine Leistungen hinzugefügt.
+                            </p>
+                            <button
+                              onClick={() =>
+                                setData(p => ({
+                                  ...p,
+                                  topServices: [{ title: "", description: "" }],
+                                }))
+                              }
+                              className="text-xs text-lime-400 font-bold mt-2 hover:underline"
+                            >
+                              Erste Leistung anlegen
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {data.topServices.map((svc, i) => (
+                              <div
+                                key={i}
+                                className="bg-slate-700/60 rounded-xl p-3 space-y-2 border border-slate-600/30"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
+                                    placeholder={`Name der Leistung (z.B. Haarschnitt)`}
+                                    value={svc.title}
+                                    onChange={e => {
+                                      const updated = [...data.topServices];
+                                      updated[i] = {
+                                        ...updated[i],
+                                        title: e.target.value,
+                                      };
+                                      setData(p => ({
+                                        ...p,
+                                        topServices: updated,
+                                      }));
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updated = data.topServices.filter(
+                                        (_, idx) => idx !== i
+                                      );
+                                      setData(p => ({
+                                        ...p,
+                                        topServices: updated,
+                                      }));
+                                    }}
+                                    className="flex-shrink-0 text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-slate-600/50"
+                                    title="Leistung entfernen"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <input
+                                  className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
+                                  placeholder="Kurze Beschreibung (optional)"
+                                  value={svc.description}
+                                  onChange={e => {
+                                    const updated = [...data.topServices];
+                                    updated[i] = {
+                                      ...updated[i],
+                                      description: e.target.value,
+                                    };
+                                    setData(p => ({
+                                      ...p,
+                                      topServices: updated,
+                                    }));
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Skip warning dialog */}
+                      {showSkipServicesWarning && (
+                        <div className="bg-amber-900/40 border border-amber-500/50 rounded-xl p-3 space-y-2">
+                          <p className="text-amber-200 text-xs font-semibold">
+                            ⚠️ Wirklich ohne Leistungen fortfahren?
+                          </p>
+                          <p className="text-amber-300/80 text-xs leading-relaxed">
+                            Websites ohne Leistungsübersicht konvertieren
+                            deutlich schlechter. Kunden wollen auf einen Blick
+                            sehen, was du anbietest – das ist oft der wichtigste
+                            Faktor für eine Anfrage.
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setShowSkipServicesWarning(false)}
+                              className="flex-1 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              Doch eintragen
+                            </button>
+                            <button
+                              onClick={async () => {
+                                setShowSkipServicesWarning(false);
+                                addUserMessage("Keine Leistungen anzeigen");
+                                setData(p => ({
+                                  ...p,
+                                  topServices: [],
+                                  topServicesSkipped: true,
+                                }));
+                                await trySaveStep(
+                                  STEP_ORDER.indexOf("services"),
+                                  { topServices: [] }
+                                );
+                                await goToNextStep();
+                              }}
+                              className="flex-1 text-xs bg-slate-600 hover:bg-slate-500 text-slate-300 px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              Trotzdem überspringen
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() =>
+                            setData(p => ({
+                              ...p,
+                              topServices: [
+                                ...p.topServices,
+                                { title: "", description: "" },
+                              ],
+                            }))
+                          }
+                          className="flex items-center gap-1 text-xs text-lime-400 hover:text-lime-300 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Leistung hinzufügen
+                        </button>
+                        {!showSkipServicesWarning && (
+                          <button
+                            onClick={() => setShowSkipServicesWarning(true)}
+                            className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-400 transition-colors"
+                          >
+                            Keine Leistungen anzeigen
+                          </button>
+                        )}
+                        {/* Weiter-Button im fixen Bottom-Bar */}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "businessCategory" && (
+                    <motion.div
+                      key="businessCategory-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* GMB pre-selected category banner */}
+                      {data.businessCategory && (
+                        <div className="flex items-center gap-2 bg-emerald-600/20 border border-emerald-500/40 rounded-xl px-3 py-2">
+                          <span className="text-emerald-400 text-xs">
+                            ✓ Aus Google My Business:
+                          </span>
+                          <span className="text-emerald-200 text-sm font-medium">
+                            {data.businessCategory}
+                          </span>
+                          <button
+                            onClick={async () => {
+                              addUserMessage(
+                                `Branche: ${data.businessCategory} ✓`
+                              );
+                              await trySaveStep(
+                                STEP_ORDER.indexOf("businessCategory"),
+                                { businessCategory: data.businessCategory }
+                              );
+                              setCategoryConfirmed(true);
+                              await goToNextStep();
+                            }}
+                            className="ml-auto text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-lg transition-colors"
+                          >
+                            Übernehmen
+                          </button>
+                        </div>
+                      )}
+                      <CategoryPicker
+                        selected={data.businessCategory}
+                        onSelect={cat => handleSubmit(cat)}
+                      />
+                    </motion.div>
+                  )}
+
+                  {currentStep === "colorScheme" && (
+                    <motion.div
+                      key="colorScheme-step"
+                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-4"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {COLOR_SCHEMES.map(scheme => (
+                          <button
+                            key={scheme.id}
+                            onClick={() => {
+                              setData(p => ({
+                                ...p,
+                                colorScheme: {
+                                  ...scheme.colors,
+                                  // Preserve user-set dark overrides when switching scheme
+                                  ...(p.colorScheme.darkBackground
+                                    ? {
+                                        darkBackground:
+                                          p.colorScheme.darkBackground,
+                                      }
+                                    : {}),
+                                  ...(p.colorScheme.lightText
+                                    ? { lightText: p.colorScheme.lightText }
+                                    : {}),
+                                },
+                              }));
+                              setShowIndividualColors(false);
+                            }}
+                            className={`text-left p-4 rounded-2xl border-2 transition-all group ${
+                              JSON.stringify(data.colorScheme) ===
+                              JSON.stringify(scheme.colors)
+                                ? "border-lime-500 bg-lime-400/10 shadow-lg shadow-lime-500/10"
+                                : "border-slate-700 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/60"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <p
+                                className={`text-sm font-bold transition-colors ${
+                                  JSON.stringify(data.colorScheme) ===
+                                  JSON.stringify(scheme.colors)
+                                    ? "text-white"
+                                    : "text-slate-200 group-hover:text-white"
+                                }`}
+                              >
+                                {scheme.label}
+                              </p>
+                              {JSON.stringify(data.colorScheme) ===
+                                JSON.stringify(scheme.colors) && (
+                                <div className="w-4 h-4 rounded-full bg-lime-400 flex items-center justify-center">
+                                  <Check className="w-2.5 h-2.5 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-tight mb-3 line-clamp-2 italic">
+                              {scheme.description}
+                            </p>
+                            <div className="flex gap-1">
+                              {[
+                                scheme.colors.primary,
+                                scheme.colors.secondary,
+                                scheme.colors.accent,
+                                scheme.colors.background,
+                              ].map((c, i) => (
+                                <div
+                                  key={i}
+                                  className="h-6 flex-1 rounded-md border border-white/10"
+                                  style={{ backgroundColor: c }}
+                                />
+                              ))}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 🎲 Random Color Generator Button */}
+                      <button
+                        onClick={() => {
+                          const randomScheme = generateRandomColorScheme();
+                          setData(p => ({
+                            ...p,
+                            colorScheme: randomScheme.colors,
+                          }));
+                          setShowIndividualColors(false);
+                        }}
+                        className="w-full py-3 px-4 rounded-xl border-2 border-lime-500/50 bg-gradient-to-r from-lime-600/20 to-lime-500/20 hover:from-lime-600/30 hover:to-lime-500/30 transition-all flex items-center justify-center gap-2 text-sm font-bold uppercase tracking-wider text-lime-300 hover:text-lime-200 shadow-lg shadow-lime-500/10 hover:shadow-lime-500/20"
+                      >
+                        <Sparkles className="w-4 h-4 animate-pulse" />
+                        Überrasch mich! (Zufallsmix)
+                      </button>
+
+                      <div className="flex flex-col gap-3">
+                        <button
+                          onClick={() =>
+                            setShowIndividualColors(!showIndividualColors)
+                          }
+                          className={`w-full py-3 px-4 rounded-xl border border-dashed transition-all flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
+                            showIndividualColors
+                              ? "border-lime-500/50 bg-lime-400/10 text-lime-400"
+                              : "border-slate-700 bg-slate-800/40 text-slate-400 hover:border-slate-600 hover:text-slate-300"
+                          }`}
+                        >
+                          <Settings2 className="w-4 h-4" />
+                          Farben individuell anpassen
+                        </button>
+
+                        {showIndividualColors &&
+                          (() => {
+                            const cs = data.colorScheme as any;
+
+                            // Dark section fallbacks (these fields may not exist yet in colorScheme)
+                            const darkDefaults: Record<string, string> = {
+                              darkBackground: "#0a0a0a",
+                              darkSurface: "#1a1a2e",
+                              lightText: "#ffffff",
+                              lightTextMuted: "#9ca3af",
+                            };
+
+                            const getValue = (key: string) =>
+                              cs[key] ?? darkDefaults[key] ?? "";
+
+                            const handleColorChange = (
+                              key: string,
+                              newValue: string
+                            ) => {
+                              setData(p => {
+                                const newScheme = {
+                                  ...(p.colorScheme as any),
+                                  [key]: newValue,
+                                };
+                                if (
+                                  [
+                                    "primary",
+                                    "secondary",
+                                    "accent",
+                                    "surface",
+                                    "background",
+                                  ].includes(key)
+                                ) {
+                                  newScheme[
+                                    `on${key.charAt(0).toUpperCase() + key.slice(1)}`
+                                  ] = getContrastColor(newValue);
+                                }
+                                return { ...p, colorScheme: newScheme };
+                              });
+                            };
+
+                            const colorGroups = [
+                              {
+                                label: "Basis",
+                                dot: "bg-lime-500",
+                                keys: [
+                                  { key: "primary", label: "Hauptfarbe" },
+                                  { key: "accent", label: "Akzentfarbe" },
+                                  {
+                                    key: "background",
+                                    label: "Hintergrund (helle Layouts)",
+                                  },
+                                  { key: "text", label: "Textfarbe" },
+                                  {
+                                    key: "textLight",
+                                    label: "Gedämpfte Schrift",
+                                  },
+                                ],
+                              },
+                              {
+                                label: "Dunkle Layouts & Sektionen",
+                                dot: "bg-lime-400",
+                                keys: [
+                                  {
+                                    key: "darkBackground",
+                                    label: "Hintergrund (dunkle Layouts)",
+                                  },
+                                  { key: "lightText", label: "Heller Text" },
+                                ],
+                              },
+                            ];
+
+                            return (
+                              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                {colorGroups.map(({ label, dot, keys }, gi) => (
+                                  <div
+                                    key={label}
+                                    className={
+                                      gi > 0
+                                        ? "mt-4 pt-4 border-t border-slate-700/50"
+                                        : ""
+                                    }
+                                  >
+                                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full inline-block ${dot}`}
+                                      />
+                                      {label}
+                                    </p>
+                                    <div className="space-y-0.5">
+                                      {keys.map(item => {
+                                        const rawVal = getValue(item.key);
+                                        const colorVal =
+                                          /^#[0-9A-Fa-f]{6}$/.test(rawVal)
+                                            ? rawVal
+                                            : "#888888";
+                                        return (
+                                          <div
+                                            key={item.key}
+                                            className="flex items-center gap-3 py-1.5 px-2 rounded-lg hover:bg-slate-700/40 transition-colors"
+                                          >
+                                            <div
+                                              className="w-7 h-7 rounded-md border border-slate-600/80 flex-shrink-0 overflow-hidden relative shadow-sm"
+                                              style={{
+                                                backgroundColor: colorVal,
+                                              }}
+                                            >
+                                              <input
+                                                type="color"
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                                value={colorVal}
+                                                onChange={e =>
+                                                  handleColorChange(
+                                                    item.key,
+                                                    e.target.value
+                                                  )
+                                                }
+                                              />
+                                            </div>
+                                            <span className="text-[11px] text-slate-300 flex-1 min-w-0 truncate">
+                                              {item.label}
+                                            </span>
+                                            <input
+                                              type="text"
+                                              className="w-[76px] bg-slate-700/60 text-slate-200 text-[11px] px-2 py-1 rounded-md outline-none border border-slate-600/50 font-mono text-center focus:border-lime-500/60 transition-colors"
+                                              value={rawVal}
+                                              placeholder="#000000"
+                                              onChange={e => {
+                                                const v =
+                                                  e.target.value.startsWith("#")
+                                                    ? e.target.value
+                                                    : `#${e.target.value}`;
+                                                if (
+                                                  /^#[0-9A-Fa-f]{0,6}$/.test(v)
+                                                ) {
+                                                  setData(p => ({
+                                                    ...p,
+                                                    colorScheme: {
+                                                      ...(p.colorScheme as any),
+                                                      [item.key]: v,
+                                                    },
+                                                  }));
+                                                  if (v.length === 7)
+                                                    handleColorChange(
+                                                      item.key,
+                                                      v
+                                                    );
+                                                }
+                                              }}
+                                            />
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
+                                <p className="text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-700/50">
+                                  Kontrast-Farben (Text auf farbigen
+                                  Hintergründen) werden automatisch berechnet.
+                                </p>
+                              </div>
+                            );
+                          })()}
+                      </div>
+
+                      <button
+                        disabled={isTyping}
+                        onClick={async () => {
+                          if (isTyping) return;
+                          addUserMessage(`Farbschema ausgewählt ✓`);
+                          await trySaveStep(STEP_ORDER.indexOf("colorScheme"), {
+                            colorScheme: data.colorScheme,
+                          });
+                          await goToNextStep();
+                        }}
+                        className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+                      >
+                        Farben übernehmen <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "heroPhoto" && (
+                    <motion.div
+                      key="heroPhoto-step"
+                      initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9"
+                    >
+                      <HeroPhotoStep
+                        businessCategory={data.businessCategory}
+                        heroPhotoUrl={data.heroPhotoUrl}
+                        websiteId={websiteId}
+                        onSelect={url =>
+                          setData(p => ({ ...p, heroPhotoUrl: url }))
+                        }
+                        onNext={async () => {
+                          const url = data.heroPhotoUrl || "";
+                          const label = url
+                            ? "Hauptbild ausgewählt ✓"
+                            : "Bestehendes Hauptbild behalten ✓";
+                          addUserMessage(label);
+                          await trySaveStep(STEP_ORDER.indexOf("heroPhoto"), {
+                            heroPhotoUrl: url,
+                          });
+                          await goToNextStep();
+                        }}
+                      />
+                    </motion.div>
+                  )}
+
+                  {currentStep === "aboutPhoto" && (
+                    <motion.div
+                      key="aboutPhoto-step"
+                      initial={{ opacity: 0, scale: 0.9, rotateY: -10 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, rotateY: 10 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9"
+                    >
+                      <HeroPhotoStep
+                        businessCategory={data.businessCategory}
+                        heroPhotoUrl={data.aboutPhotoUrl}
+                        websiteId={websiteId}
+                        isAboutPhoto
+                        onSelect={url =>
+                          setData(p => ({ ...p, aboutPhotoUrl: url }))
+                        }
+                        onNext={async () => {
+                          const url = data.aboutPhotoUrl || "";
+                          const label = url
+                            ? "Über-uns-Bild ausgewählt ✓"
+                            : "Bestehendes Bild behalten ✓";
+                          addUserMessage(label);
+                          await trySaveStep(STEP_ORDER.indexOf("aboutPhoto"), {
+                            aboutPhotoUrl: url,
+                          });
+                          await goToNextStep();
+                        }}
+                      />
+                    </motion.div>
+                  )}
+
+                  {currentStep === "addressingMode" && (
+                    <motion.div
+                      key="addressingMode-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* Du */}
+                      <button
+                        onClick={async () => {
+                          addUserMessage('Duzen – "du" 👋');
+                          setData(p => ({ ...p, addressingMode: "du" }));
+                          const idx =
+                            dynamicStepOrder.indexOf("addressingMode");
+                          await trySaveStep(idx, { addressingMode: "du" });
+                          // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                          setHeroRevealed(true);
+                          const _isGmb =
+                            !!business?.placeId &&
+                            !business.placeId.startsWith("self-");
+                          if (_isGmb) {
+                            // GMB: regenerate text with the chosen addressing mode
+                            if (websiteId) {
+                              setIsGeneratingInitialContent(true);
+                              generateInitialContentMutation
+                                .mutateAsync({
+                                  websiteId,
+                                  businessName: data.businessName,
+                                  businessCategory: data.businessCategory,
+                                  addressingMode: "du",
+                                })
+                                .then(result => {
+                                  if (result.success) {
+                                    setData(prev => ({
+                                      ...prev,
+                                      tagline: result.tagline || prev.tagline,
+                                      description:
+                                        result.description || prev.description,
+                                      topServices:
+                                        result.services?.map((s: any) => ({
+                                          title: s.title,
+                                          description: s.description,
+                                        })) || prev.topServices,
+                                    }));
+                                  }
+                                })
+                                .catch(console.error)
+                                .finally(() => {
+                                  setIsGeneratingInitialContent(false);
+                                  setTimeout(
+                                    () => setContentRevealed(true),
+                                    600
+                                  );
+                                });
+                            } else {
+                              setTimeout(() => setContentRevealed(true), 1000);
+                            }
+                          }
+                          await goToNextStep();
+                        }}
+                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-lime-500/60 hover:bg-lime-400/10 transition-all text-left group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-lime-400/20 flex items-center justify-center text-xl flex-shrink-0">
+                          👋
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold text-sm">
+                            Du – informell
+                          </div>
+                          <div className="text-slate-400 text-xs mt-0.5">
+                            „Wir helfen{" "}
+                            <span className="text-lime-400">dir</span>" ·
+                            modern, direkt, nahbar
+                          </div>
+                          <div className="text-slate-500 text-[10px] mt-1">
+                            Passt gut zu: Restaurants, Friseure, Fitnessstudios,
+                            Shops, Startups
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Sie */}
+                      <button
+                        onClick={async () => {
+                          addUserMessage('Siezen – "Sie" 🤝');
+                          setData(p => ({ ...p, addressingMode: "Sie" }));
+                          const idx =
+                            dynamicStepOrder.indexOf("addressingMode");
+                          await trySaveStep(idx, { addressingMode: "Sie" });
+                          // Progressive reveal: Layer 1 lifts after Du/Sie choice
+                          setHeroRevealed(true);
+                          const _isGmb =
+                            !!business?.placeId &&
+                            !business.placeId.startsWith("self-");
+                          if (_isGmb) {
+                            // GMB: regenerate text with the chosen addressing mode
+                            if (websiteId) {
+                              setIsGeneratingInitialContent(true);
+                              generateInitialContentMutation
+                                .mutateAsync({
+                                  websiteId,
+                                  businessName: data.businessName,
+                                  businessCategory: data.businessCategory,
+                                  addressingMode: "Sie",
+                                })
+                                .then(result => {
+                                  if (result.success) {
+                                    setData(prev => ({
+                                      ...prev,
+                                      tagline: result.tagline || prev.tagline,
+                                      description:
+                                        result.description || prev.description,
+                                      topServices:
+                                        result.services?.map((s: any) => ({
+                                          title: s.title,
+                                          description: s.description,
+                                        })) || prev.topServices,
+                                    }));
+                                  }
+                                })
+                                .catch(console.error)
+                                .finally(() => {
+                                  setIsGeneratingInitialContent(false);
+                                  setTimeout(
+                                    () => setContentRevealed(true),
+                                    600
+                                  );
+                                });
+                            } else {
+                              setTimeout(() => setContentRevealed(true), 1000);
+                            }
+                          }
+                          await goToNextStep();
+                        }}
+                        className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/60 hover:bg-emerald-500/10 transition-all text-left group"
+                      >
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-xl flex-shrink-0">
+                          🤝
+                        </div>
+                        <div>
+                          <div className="text-white font-semibold text-sm">
+                            Sie – formell
+                          </div>
+                          <div className="text-slate-400 text-xs mt-0.5">
+                            „Wir helfen{" "}
+                            <span className="text-emerald-400">Ihnen</span>" ·
+                            professionell, seriös, vertrauensvoll
+                          </div>
+                          <div className="text-slate-500 text-[10px] mt-1">
+                            Passt gut zu: Anwälte, Steuerberater, Ärzte,
+                            Immobilien, Handwerk
+                          </div>
+                        </div>
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "brandLogo" && (
+                    <motion.div
+                      key="brandLogo-step"
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      <p className="text-slate-400 text-xs">
+                        Wähle eine Schriftart für deinen Firmennamen als Logo:
+                      </p>
+                      {LOGO_FONT_OPTIONS.map(opt => (
+                        <button
+                          key={opt.font}
+                          onClick={() =>
+                            setData(p => ({
+                              ...p,
+                              brandLogo: `font:${opt.font}`,
+                            }))
+                          }
+                          className={`w-full p-4 rounded-xl border-2 transition-all text-left ${data.brandLogo === `font:${opt.font}` ? "border-lime-500 bg-lime-400/10" : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"}`}
+                        >
+                          <p
+                            className="text-white text-lg mb-1"
+                            style={opt.style}
+                          >
+                            {data.businessName ||
+                              business?.name ||
+                              "Mein Unternehmen"}
+                          </p>
+                          <p className="text-slate-400 text-xs">{opt.label}</p>
+                        </button>
+                      ))}
+
+                      {/* Logo upload option */}
+                      <div className="border-t border-slate-700 pt-3">
+                        <p className="text-slate-400 text-xs mb-2">
+                          Oder eigenes Logo hochladen:
+                        </p>
+                        {data.brandLogo?.startsWith("url:") ? (
+                          <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-lime-500 bg-lime-400/10">
+                            <img
+                              src={data.brandLogo.replace("url:", "")}
+                              alt="Logo"
+                              className="h-10 w-auto max-w-[120px] object-contain rounded"
+                            />
+                            <div className="flex-1">
+                              <p className="text-white text-sm font-medium">
+                                Logo hochgeladen ✓
+                              </p>
+                              <button
+                                onClick={() =>
+                                  setData(p => ({
+                                    ...p,
+                                    brandLogo: "font:Montserrat",
+                                  }))
+                                }
+                                className="text-slate-400 text-xs hover:text-white transition-colors"
+                              >
+                                Entfernen
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${uploadLogoMutation.isPending ? "opacity-50 pointer-events-none" : ""}`}
+                          >
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async e => {
+                                const file = e.target.files?.[0];
+                                if (!file || !websiteId) return;
+                                if (file.size > 2 * 1024 * 1024) {
+                                  toast.error(
+                                    "Logo darf maximal 2 MB groß sein."
+                                  );
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onload = async () => {
+                                  const base64 = (
+                                    reader.result as string
+                                  ).split(",")[1];
+                                  try {
+                                    const result =
+                                      await uploadLogoMutation.mutateAsync({
+                                        websiteId,
+                                        imageData: base64,
+                                        mimeType: file.type,
+                                      });
+                                    setData(p => ({
+                                      ...p,
+                                      brandLogo: `url:${result.url}`,
+                                    }));
+                                    toast.success(
+                                      "Logo erfolgreich hochgeladen!"
+                                    );
+                                  } catch {
+                                    toast.error(
+                                      "Upload fehlgeschlagen. Bitte erneut versuchen."
+                                    );
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                            {uploadLogoMutation.isPending ? (
+                              <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+                            ) : (
+                              <ImageIcon className="w-5 h-5 text-slate-400" />
+                            )}
+                            <div>
+                              <p className="text-white text-sm">
+                                {uploadLogoMutation.isPending
+                                  ? "Wird hochgeladen…"
+                                  : "Bild auswählen"}
+                              </p>
+                              <p className="text-slate-400 text-xs">
+                                PNG, JPG oder SVG · max. 2 MB
+                              </p>
+                            </div>
+                            <Upload className="w-4 h-4 text-slate-500 ml-auto" />
+                          </label>
+                        )}
+                      </div>
+
+                      {/* Weiter-Button im fixen Bottom-Bar */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "headlineFont" && (
+                    <motion.div
+                      key="headlineFont-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      <p className="text-slate-400 text-xs">
+                        Wähle eine Schriftart für deine Überschriften – die
+                        Vorschau ändert sich sofort:
+                      </p>
+                      <div className="space-y-2">
+                        {(() => {
+                          const hideSerifs = prefersSansSerif(
+                            data.businessCategory
+                          );
+                          return (
+                            <>
+                              {!hideSerifs && (
+                                <div>
+                                  <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">
+                                    Serifenschriften (klassisch, edel)
+                                  </p>
+                                  {FONT_OPTIONS.serif.map(opt => (
+                                    <button
+                                      key={opt.font}
+                                      onClick={() =>
+                                        setData(p => ({
+                                          ...p,
+                                          headlineFont: opt.font,
+                                        }))
+                                      }
+                                      className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                        data.headlineFont === opt.font
+                                          ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
+                                          : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                      }`}
+                                    >
+                                      <p
+                                        className="text-white text-lg"
+                                        style={{
+                                          fontFamily: `'${opt.font}', serif`,
+                                          fontWeight: 700,
+                                        }}
+                                      >
+                                        {opt.label}
+                                      </p>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                              <div className={!hideSerifs ? "mt-6" : ""}>
+                                <p className="text-slate-300 text-xs font-semibold mb-2 text-center uppercase tracking-widest opacity-50">
+                                  Serifenlose (modern, progressiv)
+                                </p>
+                                {FONT_OPTIONS.sans.map(opt => (
+                                  <button
+                                    key={opt.font}
+                                    onClick={() =>
+                                      setData(p => ({
+                                        ...p,
+                                        headlineFont: opt.font,
+                                      }))
+                                    }
+                                    className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                                      data.headlineFont === opt.font
+                                        ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
+                                        : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                                    }`}
+                                  >
+                                    <p
+                                      className="text-white text-lg"
+                                      style={{
+                                        fontFamily: `'${opt.font}', sans-serif`,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      {opt.label}
+                                    </p>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Weiter-Button im fixen Bottom-Bar */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "headlineSize" && (
+                    <motion.div
+                      key="headlineSize-step"
+                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      <p className="text-slate-400 text-xs">
+                        Wähle die Größe deiner Überschriften:
+                      </p>
+                      <div className="space-y-2">
+                        {[
+                          {
+                            value: "large",
+                            label: "Extra groß",
+                            desc: "Dramatisch, mutig",
+                            sample: "PROJEKT",
+                          },
+                          {
+                            value: "medium",
+                            label: "Groß",
+                            desc: "Ausgewogen, klassisch",
+                            sample: "PROJEKT",
+                          },
+                          {
+                            value: "small",
+                            label: "Normal",
+                            desc: "Dezent, elegant",
+                            sample: "PROJEKT",
+                          },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            onClick={() =>
+                              setData(p => ({
+                                ...p,
+                                headlineSize: opt.value as
+                                  | "large"
+                                  | "medium"
+                                  | "small",
+                              }))
+                            }
+                            className={`w-full p-4 rounded-xl border-2 transition-all text-left mb-3 group ${
+                              data.headlineSize === opt.value
+                                ? "border-lime-500 bg-lime-400/10 shadow-[0_0_20px_rgba(163,230,53,0.1)]"
+                                : "border-slate-700/50 bg-slate-800/40 hover:border-slate-600"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-white font-semibold">
+                                  {opt.label}
+                                </p>
+                                <p className="text-slate-400 text-xs">
+                                  {opt.desc}
+                                </p>
+                              </div>
+                              <p
+                                className="text-white/80 font-bold"
+                                style={{
+                                  fontSize:
+                                    opt.value === "large"
+                                      ? "2rem"
+                                      : opt.value === "medium"
+                                        ? "1.5rem"
+                                        : "1.1rem",
+                                  fontFamily: data.headlineFont || "inherit",
+                                }}
+                              >
+                                {opt.sample}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Weiter-Button im fixen Bottom-Bar */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "addons" && (
+                    <motion.div
+                      key="addons-step"
+                      initial={{ opacity: 0, scale: 0.9, rotateY: -5 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, rotateY: 5 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-2"
+                    >
+                      {/* Build industry-specific addon list */}
+                      {(() => {
+                        const cat = data.businessCategory.toLowerCase();
+                        // Broad food industry detection
+                        const isFood =
+                          /restaurant|café|cafe|bistro|bäckerei|bakery|bar|tapas|pizza|sushi|burger|imbiss|gastronomie|lieferservice|delivery|lieferdienst|catering|food|kueche|küche|steakhouse|grill|gasthaus|wirtshaus|tavern|taverne|pizzeria|trattoria|osteria|ristorante/.test(
+                            cat
+                          );
+
+                        // For everything else, we offer a pricelist
+                        const showMenu = isFood;
+                        const showPricelist = !isFood;
+
+                        const addons: {
+                          key: keyof OnboardingData;
+                          label: string;
+                          price: string;
+                          desc: string;
+                          emoji: string;
+                        }[] = [
+                          {
+                            key: "addOnContactForm" as const,
+                            label: "Kontaktformular",
+                            price: "+3,90 €/Monat",
+                            desc: "Kunden können direkt anfragen",
+                            emoji: "📬",
+                          },
+                          {
+                            key: "addOnGallery" as const,
+                            label: "Bildergalerie",
+                            price: "+3,90 €/Monat",
+                            desc: "Zeig deine Projekte & Fotos",
+                            emoji: "🖼️",
+                          },
+                          ...(showMenu
+                            ? [
+                                {
+                                  key: "addOnMenu" as const,
+                                  label: "Speisekarte",
+                                  price: "+3,90 €/Monat",
+                                  desc: "Deine Gerichte übersichtlich präsentieren",
+                                  emoji: "📖",
+                                },
+                              ]
+                            : []),
+                          ...(showPricelist
+                            ? [
+                                {
+                                  key: "addOnPricelist" as const,
+                                  label: "Preisliste",
+                                  price: "+3,90 €/Monat",
+                                  desc: "Deine Leistungen mit Preisen",
+                                  emoji: "🏷️",
+                                },
+                              ]
+                            : []),
+                          {
+                            key: "addOnAiChat" as const,
+                            label: "KI-Chat",
+                            price: "+9,90 €/Monat",
+                            desc: "Beantwortet Kundenfragen automatisch 24/7",
+                            emoji: "🤖",
+                          },
+                          {
+                            key: "addOnBooking" as const,
+                            label: "Terminbuchung",
+                            price: "+4,90 €/Monat",
+                            desc: "Kunden buchen Termine direkt auf der Website",
+                            emoji: "📅",
+                          },
+                        ];
+
+                        return addons.map(addon => (
+                          <button
+                            key={addon.key}
+                            onClick={() =>
+                              setData(p => ({
+                                ...p,
+                                [addon.key]: !(p as any)[addon.key],
+                              }))
+                            }
+                            style={{ touchAction: "manipulation" }}
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                              (data as any)[addon.key]
+                                ? "border-lime-500 bg-lime-400/10"
+                                : "border-slate-600 bg-slate-700/40 hover:border-slate-500"
+                            }`}
+                          >
+                            <div
+                              className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 ${(data as any)[addon.key] ? "border-lime-500 bg-lime-400" : "border-slate-500"}`}
+                            >
+                              {(data as any)[addon.key] && (
+                                <Check className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <span className="text-lg">{addon.emoji}</span>
+                            <div className="flex-1">
+                              <p className="text-white text-sm font-medium">
+                                {addon.label}
+                              </p>
+                              <p className="text-slate-400 text-xs">
+                                {addon.desc}
+                              </p>
+                            </div>
+                            <span className="text-lime-400 text-xs font-medium">
+                              {addon.price}
+                            </span>
+                          </button>
+                        ));
+                      })()}
+
+                      {/* Contact Form Info */}
+                      {data.addOnContactForm && (
+                        <div className="bg-lime-400/10 border border-lime-500/30 rounded-xl p-3 mt-2">
+                          <p className="text-lime-300 text-xs">
+                            <strong>📬 Kontaktformular:</strong> Name, Betreff
+                            und Nachricht werden angezeigt. Du kannst das
+                            Formular später im Kundenportal noch bearbeiten.
+                          </p>
+                        </div>
+                      )}
+                      {/* Booking Info */}
+                      {data.addOnBooking && (
+                        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                          <p className="text-emerald-300 text-xs">
+                            <strong>📅 Terminbuchung:</strong> Du kannst deine
+                            Services und Verfügbarkeit nach der Freischaltung im
+                            Kunden-Dashboard einrichten.
+                          </p>
+                        </div>
+                      )}
+                      {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "editAiChat" && (
+                    <motion.div
+                      key="editAiChat-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          Begrüßungsnachricht
+                        </p>
+                        <textarea
+                          rows={3}
+                          value={data.chatWelcomeMessage}
+                          onChange={e =>
+                            setData(p => ({
+                              ...p,
+                              chatWelcomeMessage: e.target.value,
+                            }))
+                          }
+                          placeholder={`Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`}
+                          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none placeholder-slate-500"
+                        />
+                        <p className="text-slate-500 text-xs">
+                          Der KI-Chat begrüßt Besucher auf deiner Website mit
+                          dieser Nachricht. Du kannst sie später im Dashboard
+                          jederzeit ändern.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const suggestion = `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                          setData(p => ({
+                            ...p,
+                            chatWelcomeMessage: suggestion,
+                          }));
+                        }}
+                        className="w-full text-xs text-slate-400 hover:text-white py-2 px-3 rounded-xl border border-slate-600/50 hover:border-slate-500 bg-slate-700/40 transition-colors"
+                      >
+                        💡 Vorschlag übernehmen
+                      </button>
+                      {/* Weiter-Button wird im fixen Bottom-Bar gerendert (siehe unten) */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "editMenu" && (
+                    <motion.div
+                      key="editMenu-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-4"
+                    >
+                      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          Überschrift der Sektion
+                        </p>
+                        <input
+                          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
+                          value={data.addOnMenuData.headline}
+                          onChange={e => {
+                            setData(p => ({
+                              ...p,
+                              addOnMenuData: {
+                                ...p.addOnMenuData,
+                                headline: e.target.value,
+                              },
+                            }));
+                          }}
+                          placeholder="z.B. Unsere Speisekarte"
+                        />
+                      </div>
+
+                      {data.addOnMenuData.categories.map((cat, catIdx) => (
+                        <div
+                          key={cat.id}
+                          className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
+                              value={cat.name}
+                              onChange={e => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].name =
+                                  e.target.value;
+                                setData(p => ({
+                                  ...p,
+                                  addOnMenuData: updated,
+                                }));
+                              }}
+                              placeholder="Kategorie (z.B. Hauptgerichte)"
+                            />
+                            <button
+                              onClick={() => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories = updated.categories.filter(
+                                  (_, i) => i !== catIdx
+                                );
+                                setData(p => ({
+                                  ...p,
+                                  addOnMenuData: updated,
+                                }));
+                              }}
+                              className="text-slate-500 hover:text-red-400 p-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-3">
+                            {cat.items.map((item, itemIdx) => (
+                              <div
+                                key={itemIdx}
+                                className="bg-slate-700/40 rounded-xl p-3 space-y-2"
+                              >
+                                <div className="flex gap-2">
+                                  <input
+                                    className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
+                                    value={item.name}
+                                    onChange={e => {
+                                      const updated = { ...data.addOnMenuData };
+                                      updated.categories[catIdx].items[
+                                        itemIdx
+                                      ].name = e.target.value;
+                                      setData(p => ({
+                                        ...p,
+                                        addOnMenuData: updated,
+                                      }));
+                                    }}
+                                    placeholder="Name des Gerichts"
+                                  />
+                                  <input
+                                    className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
+                                    value={item.price}
+                                    onChange={e => {
+                                      const updated = { ...data.addOnMenuData };
+                                      updated.categories[catIdx].items[
+                                        itemIdx
+                                      ].price = e.target.value;
+                                      setData(p => ({
+                                        ...p,
+                                        addOnMenuData: updated,
+                                      }));
+                                    }}
+                                    placeholder="12,50"
+                                  />
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                  <input
+                                    className="flex-1 bg-slate-600/30 text-white text-xs px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
+                                    value={item.description}
+                                    onChange={e => {
+                                      const updated = { ...data.addOnMenuData };
+                                      updated.categories[catIdx].items[
+                                        itemIdx
+                                      ].description = e.target.value;
+                                      setData(p => ({
+                                        ...p,
+                                        addOnMenuData: updated,
+                                      }));
+                                    }}
+                                    placeholder="Beschreibung (Zutaten, etc.)"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updated = { ...data.addOnMenuData };
+                                      updated.categories[catIdx].items =
+                                        updated.categories[catIdx].items.filter(
+                                          (_, i) => i !== itemIdx
+                                        );
+                                      setData(p => ({
+                                        ...p,
+                                        addOnMenuData: updated,
+                                      }));
+                                    }}
+                                    className="text-slate-500 hover:text-red-400 p-1"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const updated = { ...data.addOnMenuData };
+                                updated.categories[catIdx].items.push({
+                                  name: "",
+                                  description: "",
+                                  price: "",
+                                });
+                                setData(p => ({
+                                  ...p,
+                                  addOnMenuData: updated,
+                                }));
+                              }}
+                              className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" /> Gericht
+                              hinzufügen
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex flex-col gap-3 pt-2">
+                        <button
+                          onClick={() => {
+                            setData(p => ({
+                              ...p,
+                              addOnMenuData: {
+                                categories: [
+                                  ...p.addOnMenuData.categories,
+                                  {
+                                    id: genId(),
+                                    name: "",
+                                    items: [
+                                      { name: "", description: "", price: "" },
+                                    ],
+                                  },
+                                ],
+                              },
+                            }));
+                          }}
+                          className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Weitere Kategorie
+                          hinzufügen
+                        </button>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              addUserMessage("Speisekarte später ausfüllen");
+                              await goToNextStep();
+                            }}
+                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
+                          >
+                            Mache ich später
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const filledCategories =
+                                data.addOnMenuData.categories.filter(
+                                  c =>
+                                    c.name.trim() ||
+                                    c.items.some(i => i.name.trim())
+                                );
+                              addUserMessage(
+                                `Speisekarte gespeichert (${filledCategories.length} Kategorien) ✓`
+                              );
+                              await trySaveStep(
+                                STEP_ORDER.indexOf("editMenu"),
+                                {
+                                  addOnMenuData: {
+                                    categories: filledCategories,
+                                  },
+                                }
+                              );
+                              await goToNextStep();
+                            }}
+                            className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                          >
+                            Speichern & weiter{" "}
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "editPricelist" && (
+                    <motion.div
+                      key="editPricelist-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-4"
+                    >
+                      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          Überschrift der Sektion
+                        </p>
+                        <input
+                          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
+                          value={data.addOnPricelistData.headline}
+                          onChange={e => {
+                            setData(p => ({
+                              ...p,
+                              addOnPricelistData: {
+                                ...p.addOnPricelistData,
+                                headline: e.target.value,
+                              },
+                            }));
+                          }}
+                          placeholder="z.B. Unsere Preise"
+                        />
+                      </div>
+
+                      {data.addOnPricelistData.categories.map((cat, catIdx) => (
+                        <div
+                          key={cat.id}
+                          className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <input
+                              className="flex-1 bg-transparent text-white text-base font-bold outline-none border-b border-slate-700 focus:border-lime-500 pb-1"
+                              value={cat.name}
+                              onChange={e => {
+                                const updated = { ...data.addOnPricelistData };
+                                updated.categories[catIdx].name =
+                                  e.target.value;
+                                setData(p => ({
+                                  ...p,
+                                  addOnPricelistData: updated,
+                                }));
+                              }}
+                              placeholder="Kategorie (z.B. Haarschnitte)"
+                            />
+                            <button
+                              onClick={() => {
+                                const updated = { ...data.addOnPricelistData };
+                                updated.categories = updated.categories.filter(
+                                  (_, i) => i !== catIdx
+                                );
+                                setData(p => ({
+                                  ...p,
+                                  addOnPricelistData: updated,
+                                }));
+                              }}
+                              className="text-slate-500 hover:text-red-400 p-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-2">
+                            {cat.items.map((item, itemIdx) => (
+                              <div
+                                key={itemIdx}
+                                className="flex gap-2 items-center"
+                              >
+                                <input
+                                  className="flex-1 bg-slate-600/50 text-white text-sm px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500"
+                                  value={item.name}
+                                  onChange={e => {
+                                    const updated = {
+                                      ...data.addOnPricelistData,
+                                    };
+                                    updated.categories[catIdx].items[
+                                      itemIdx
+                                    ].name = e.target.value;
+                                    setData(p => ({
+                                      ...p,
+                                      addOnPricelistData: updated,
+                                    }));
+                                  }}
+                                  placeholder="Leistung"
+                                />
+                                <input
+                                  className="w-20 bg-slate-600/50 text-white text-sm px-2 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 font-mono text-right"
+                                  value={item.price}
+                                  onChange={e => {
+                                    const updated = {
+                                      ...data.addOnPricelistData,
+                                    };
+                                    updated.categories[catIdx].items[
+                                      itemIdx
+                                    ].price = e.target.value;
+                                    setData(p => ({
+                                      ...p,
+                                      addOnPricelistData: updated,
+                                    }));
+                                  }}
+                                  placeholder="ab 25,-"
+                                />
+                                <button
+                                  onClick={() => {
+                                    const updated = {
+                                      ...data.addOnPricelistData,
+                                    };
+                                    updated.categories[catIdx].items =
+                                      updated.categories[catIdx].items.filter(
+                                        (_, i) => i !== itemIdx
+                                      );
+                                    setData(p => ({
+                                      ...p,
+                                      addOnPricelistData: updated,
+                                    }));
+                                  }}
+                                  className="text-slate-500 hover:text-red-400 p-1"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                            <button
+                              onClick={() => {
+                                const updated = { ...data.addOnPricelistData };
+                                updated.categories[catIdx].items.push({
+                                  name: "",
+                                  price: "",
+                                });
+                                setData(p => ({
+                                  ...p,
+                                  addOnPricelistData: updated,
+                                }));
+                              }}
+                              className="text-xs text-lime-400 hover:text-lime-300 flex items-center gap-1 mt-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" /> Leistung
+                              hinzufügen
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="flex flex-col gap-3 pt-2">
+                        <button
+                          onClick={() => {
+                            setData(p => ({
+                              ...p,
+                              addOnPricelistData: {
+                                categories: [
+                                  ...p.addOnPricelistData.categories,
+                                  {
+                                    id: genId(),
+                                    name: "",
+                                    items: [{ name: "", price: "" }],
+                                  },
+                                ],
+                              },
+                            }));
+                          }}
+                          className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-xl border border-slate-600 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Weitere Kategorie
+                          hinzufügen
+                        </button>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={async () => {
+                              addUserMessage("Preisliste später ausfüllen");
+                              await goToNextStep();
+                            }}
+                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-4 py-2.5 rounded-xl transition-colors"
+                          >
+                            Mache ich später
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const filledCategories =
+                                data.addOnPricelistData.categories.filter(
+                                  c =>
+                                    c.name.trim() ||
+                                    c.items.some(i => i.name.trim())
+                                );
+                              addUserMessage(
+                                `Preisliste gespeichert (${filledCategories.length} Kategorien) ✓`
+                              );
+                              await trySaveStep(
+                                STEP_ORDER.indexOf("editPricelist"),
+                                {
+                                  addOnPricelistData: {
+                                    categories: filledCategories,
+                                  },
+                                }
+                              );
+                              await goToNextStep();
+                            }}
+                            className="flex-1 bg-lime-500 hover:bg-lime-400 text-white text-xs px-4 py-2.5 rounded-xl transition-colors font-medium flex items-center justify-center gap-1"
+                          >
+                            Speichern & weiter{" "}
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "editGallery" && (
+                    <motion.div
+                      key="editGallery-step"
+                      initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-4"
+                    >
+                      {/* Überschrift */}
+                      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-2">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          Überschrift der Galerie
+                        </p>
+                        <input
+                          className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
+                          value={data.addOnGalleryData.headline}
+                          onChange={e =>
+                            setData(p => ({
+                              ...p,
+                              addOnGalleryData: {
+                                ...p.addOnGalleryData,
+                                headline: e.target.value,
+                              },
+                            }))
+                          }
+                          placeholder="z.B. Unsere Galerie"
+                        />
+                      </div>
+
+                      {/* Modus-Switch */}
+                      <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-4 space-y-3">
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                          Galerie-Typ
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {(["single", "albums"] as const).map(mode => (
+                            <button
+                              key={mode}
+                              onClick={() =>
+                                setData(p => ({
+                                  ...p,
+                                  addOnGalleryData: {
+                                    ...p.addOnGalleryData,
+                                    mode,
+                                  },
+                                }))
+                              }
+                              className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
+                                data.addOnGalleryData.mode === mode
+                                  ? "bg-lime-500/20 border-lime-500/60 text-white"
+                                  : "bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200"
+                              }`}
+                            >
+                              {mode === "single" ? (
+                                <>
+                                  <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                  >
+                                    <rect
+                                      x="3"
+                                      y="3"
+                                      width="7"
+                                      height="7"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="14"
+                                      y="3"
+                                      width="7"
+                                      height="7"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="3"
+                                      y="14"
+                                      width="7"
+                                      height="7"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="14"
+                                      y="14"
+                                      width="7"
+                                      height="7"
+                                      rx="1"
+                                    />
+                                  </svg>
+                                  Einzelgalerie
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                  >
+                                    <rect
+                                      x="3"
+                                      y="3"
+                                      width="18"
+                                      height="10"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="3"
+                                      y="16"
+                                      width="8"
+                                      height="5"
+                                      rx="1"
+                                    />
+                                    <rect
+                                      x="13"
+                                      y="16"
+                                      width="8"
+                                      height="5"
+                                      rx="1"
+                                    />
+                                  </svg>
+                                  Alben
+                                </>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Einzelgalerie */}
+                      {data.addOnGalleryData.mode !== "albums" && (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-4">
+                          <p className="text-slate-400 text-xs font-medium">
+                            Bilder auswählen:
+                          </p>
+                          <MultiPhotoSelector
+                            websiteId={String(websiteId || "")}
+                            selectedPhotos={data.addOnGalleryData.images}
+                            onUpdate={urls =>
+                              setData(p => ({
+                                ...p,
+                                addOnGalleryData: {
+                                  ...p.addOnGalleryData,
+                                  images: urls,
+                                },
+                              }))
+                            }
+                            industry={data.businessCategory}
+                          />
+                        </div>
+                      )}
+
+                      {/* Alben-Modus */}
+                      {data.addOnGalleryData.mode === "albums" && (
+                        <div className="space-y-3">
+                          {data.addOnGalleryData.albums.map(
+                            (album, albumIdx) => (
+                              <div
+                                key={album.id}
+                                className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 space-y-3"
+                              >
+                                {/* Album-Header */}
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1">
+                                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+                                      Album {albumIdx + 1}
+                                    </p>
+                                    <input
+                                      className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
+                                      value={album.name}
+                                      onChange={e => {
+                                        const updated = [
+                                          ...data.addOnGalleryData.albums,
+                                        ];
+                                        updated[albumIdx] = {
+                                          ...updated[albumIdx],
+                                          name: e.target.value,
+                                        };
+                                        setData(p => ({
+                                          ...p,
+                                          addOnGalleryData: {
+                                            ...p.addOnGalleryData,
+                                            albums: updated,
+                                          },
+                                        }));
+                                      }}
+                                      placeholder="z.B. Hochzeiten"
+                                    />
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const updated =
+                                        data.addOnGalleryData.albums.filter(
+                                          (_, i) => i !== albumIdx
+                                        );
+                                      setData(p => ({
+                                        ...p,
+                                        addOnGalleryData: {
+                                          ...p.addOnGalleryData,
+                                          albums: updated,
+                                        },
+                                      }));
+                                    }}
+                                    className="mt-5 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                                  >
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                    >
+                                      <polyline points="3 6 5 6 21 6" />
+                                      <path d="M19 6l-1 14H6L5 6" />
+                                      <path d="M10 11v6m4-6v6" />
+                                      <path d="M9 6V4h6v2" />
+                                    </svg>
+                                  </button>
+                                </div>
+
+                                {/* Cover-Vorschau */}
+                                {album.images.length > 0 && (
+                                  <div className="flex items-center gap-2">
+                                    <img
+                                      src={album.images[0]}
+                                      alt="Cover"
+                                      className="w-12 h-12 rounded-lg object-cover border border-slate-600/50"
+                                    />
+                                    <p className="text-slate-400 text-[10px]">
+                                      Albumbild: erstes Foto
+                                    </p>
+                                  </div>
+                                )}
+
+                                {/* Fotos für dieses Album */}
+                                <div>
+                                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-2">
+                                    Fotos ({album.images.length})
+                                  </p>
+                                  <MultiPhotoSelector
+                                    websiteId={String(websiteId || "")}
+                                    selectedPhotos={album.images}
+                                    onUpdate={urls => {
+                                      const updated = [
+                                        ...data.addOnGalleryData.albums,
+                                      ];
+                                      updated[albumIdx] = {
+                                        ...updated[albumIdx],
+                                        images: urls,
+                                      };
+                                      setData(p => ({
+                                        ...p,
+                                        addOnGalleryData: {
+                                          ...p.addOnGalleryData,
+                                          albums: updated,
+                                        },
+                                      }));
+                                    }}
+                                    industry={data.businessCategory}
+                                  />
+                                </div>
+                              </div>
+                            )
+                          )}
+
+                          {/* Album hinzufügen */}
+                          <button
+                            onClick={() => {
+                              const newAlbum: GalleryAlbum = {
+                                id: `album-${Date.now()}`,
+                                name: "",
+                                images: [],
+                              };
+                              setData(p => ({
+                                ...p,
+                                addOnGalleryData: {
+                                  ...p.addOnGalleryData,
+                                  albums: [
+                                    ...p.addOnGalleryData.albums,
+                                    newAlbum,
+                                  ],
+                                },
+                              }));
+                            }}
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-600/60 text-slate-400 hover:text-white hover:border-lime-500/50 text-sm transition-all"
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <line x1="12" y1="5" x2="12" y2="19" />
+                              <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Album hinzufügen
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "subpages" && (
+                    <motion.div
+                      key="subpages-step"
+                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-4"
+                    >
+                      {/* Coming Soon overlay wrapper */}
+                      <div className="relative rounded-2xl overflow-hidden">
+                        {/* Blurred content behind overlay */}
+                        <div className="select-none pointer-events-none opacity-40 blur-[1px]">
+                          {/* Info Card */}
+                          <div className="bg-lime-500/10 border border-lime-500/30 rounded-2xl p-4 space-y-2">
+                            <div className="flex items-start gap-3">
+                              <Monitor className="w-5 h-5 text-lime-400 mt-0.5 flex-shrink-0" />
+                              <div className="space-y-1">
+                                <p className="text-white text-xs font-bold leading-tight">
+                                  Später bearbeitbar
+                                </p>
+                                <p className="text-slate-400 text-[11px] leading-relaxed">
+                                  Hier markierst du deine Wunsch-Seiten. Den
+                                  Inhalt (Texte, Bilder) kannst du nach der
+                                  Freischaltung ganz entspannt im **Dashboard**
+                                  pflegen.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="pt-2 mt-2 border-t border-lime-500/20">
+                              <p className="text-[10px] text-slate-400 flex items-center gap-1.5">
+                                <Check className="w-3 h-3 text-emerald-400" />{" "}
+                                Impressum & Datenschutz (inklusive)
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {data.subPages.map((page, i) => (
+                              <div
+                                key={page.id}
+                                className="bg-slate-700/60 rounded-xl p-3 flex gap-2 items-start group border border-slate-600/30 hover:border-slate-500/50 transition-colors"
+                              >
+                                <div className="flex-1 space-y-1.5">
+                                  <input
+                                    className="w-full bg-slate-600/50 text-white text-sm px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
+                                    placeholder="Seitenname (z.B. Über uns)"
+                                    value={page.name}
+                                    onChange={e => {
+                                      const updated = [...data.subPages];
+                                      updated[i] = {
+                                        ...updated[i],
+                                        name: e.target.value,
+                                      };
+                                      setData(p => ({
+                                        ...p,
+                                        subPages: updated,
+                                      }));
+                                    }}
+                                  />
+                                  <input
+                                    className="w-full bg-slate-600/50 text-white text-[11px] px-3 py-2 rounded-lg placeholder-slate-400 outline-none focus:ring-1 focus:ring-lime-500"
+                                    placeholder="Notiz zum Inhalt (optional)"
+                                    value={page.description}
+                                    onChange={e => {
+                                      const updated = [...data.subPages];
+                                      updated[i] = {
+                                        ...updated[i],
+                                        description: e.target.value,
+                                      };
+                                      setData(p => ({
+                                        ...p,
+                                        subPages: updated,
+                                      }));
+                                    }}
+                                  />
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    setData(p => ({
+                                      ...p,
+                                      subPages: p.subPages.filter(
+                                        (_, j) => j !== i
+                                      ),
+                                    }))
+                                  }
+                                  className="text-slate-500 hover:text-red-400 transition-colors p-1 rounded-lg hover:bg-slate-600/50 mt-1"
+                                  title="Unterseite entfernen"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="flex flex-col gap-3 pt-1">
+                            <button className="flex items-center justify-center gap-2 text-xs bg-slate-700/50 text-slate-300 py-2.5 rounded-xl border border-slate-600">
+                              <Plus className="w-3.5 h-3.5" /> Neue Unterseite
+                              hinzufügen{" "}
+                              <span className="text-lime-400 font-bold">
+                                (+9,90 €)
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                        {/* end blurred content */}
+
+                        {/* Coming Soon overlay */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/70 backdrop-blur-[2px] rounded-2xl z-10">
+                          <div className="flex flex-col items-center gap-3 text-center px-6">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-lime-500/20 border border-lime-500/40">
+                              <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
+                              <span className="text-lime-300 text-xs font-semibold uppercase tracking-widest">
+                                Coming Soon
+                              </span>
+                            </div>
+                            <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                              Unterseiten sind in Kürze verfügbar. Wir arbeiten
+                              daran!
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {/* end relative wrapper */}
+
+                      {/* Weiter-Button im fixen Bottom-Bar */}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "legalOwner" &&
+                    business &&
+                    business.placeId &&
+                    !business.placeId.startsWith("self-") &&
+                    (business.address || business.phone || business.email) && (
+                      <motion.div
+                        key="legalOwner-gmb-step"
+                        initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                        className="ml-9 mt-2"
+                      >
+                        {!gmbÜbernommenEditMode ? (
+                          <div className="space-y-2">
+                            {/* Name field — always required, GMB doesn't provide this */}
+                            <div className="bg-slate-800/80 border border-amber-500/30 rounded-xl px-3 py-2.5 space-y-2">
+                              <p className="text-xs text-amber-300 font-medium">
+                                👤 Pflichtangabe für Impressum
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-slate-400 w-14 flex-shrink-0">
+                                  Inhaber
+                                </span>
+                                <input
+                                  type="text"
+                                  value={data.legalOwner || ""}
+                                  onChange={e =>
+                                    setData(p => ({
+                                      ...p,
+                                      legalOwner: e.target.value,
+                                    }))
+                                  }
+                                  placeholder="Vorname Nachname"
+                                  className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-amber-500 placeholder-slate-500"
+                                />
+                              </div>
+                            </div>
+                            {/* Preview of the GMB data to be imported */}
+                            {(() => {
+                              const parts = business.address
+                                ? business.address.split(",")
+                                : [];
+                              const street = parts[0]?.trim() || "";
+                              const zipCityRaw =
+                                parts[1]?.trim() || parts[2]?.trim() || "";
+                              const zipCityMatch =
+                                zipCityRaw.match(/(\d{5})\s+(.+)$/);
+                              const zip = zipCityMatch?.[1] || "";
+                              const city = zipCityMatch?.[2] || "";
+                              return (
+                                <div className="bg-slate-800/60 border border-slate-600/40 rounded-xl px-3 py-2.5 space-y-1">
+                                  <p className="text-[10px] text-slate-500 mb-1">
+                                    Aus Google übernommen:
+                                  </p>
+                                  {street && (
+                                    <p className="text-xs text-slate-300">
+                                      📍 {street}
+                                      {zip && city ? `, ${zip} ${city}` : ""}
+                                    </p>
+                                  )}
+                                  {business.phone && (
+                                    <p className="text-xs text-slate-300">
+                                      📞 {business.phone}
+                                    </p>
+                                  )}
+                                  {business.email && (
+                                    <p className="text-xs text-slate-300">
+                                      ✉️ {business.email}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                            <button
+                              onClick={async () => {
+                                if (
+                                  !data.legalOwner ||
+                                  data.legalOwner.trim().split(/\s+/).length < 2
+                                ) {
+                                  toast.error(
+                                    "Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)"
+                                  );
+                                  return;
+                                }
+                                const parts = business.address
+                                  ? business.address.split(",")
+                                  : [];
+                                const street = parts[0]?.trim() || "";
+                                const zipCityRaw =
+                                  parts[1]?.trim() || parts[2]?.trim() || "";
+                                const zipCityMatch =
+                                  zipCityRaw.match(/(\d{5})\s+(.+)$/);
+                                const zip = zipCityMatch?.[1] || "";
+                                const city = zipCityMatch?.[2] || "";
+                                const phone = business.phone || "";
+                                const email = business.email || "";
+                                setData(p => ({
+                                  ...p,
+                                  legalStreet: street || p.legalStreet,
+                                  legalZip: zip || p.legalZip,
+                                  legalCity: city || p.legalCity,
+                                  legalPhone: phone || p.legalPhone,
+                                  legalEmail: email || p.legalEmail,
+                                }));
+                                const summary = [
+                                  `Inhaber: ${data.legalOwner.trim()}`,
+                                  street && `Straße: ${street}`,
+                                  zip && city && `PLZ/Stadt: ${zip} ${city}`,
+                                  phone && `Telefon: ${phone}`,
+                                  email && `E-Mail: ${email}`,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ");
+                                addUserMessage(
+                                  `📍 GMB-Daten übernommen – ${summary}`
+                                );
+                                const stepIdx =
+                                  STEP_ORDER.indexOf("legalOwner");
+                                await trySaveStep(stepIdx, {
+                                  legalOwner: data.legalOwner.trim(),
+                                });
+                                if (street)
+                                  await trySaveStep(stepIdx + 1, {
+                                    legalStreet: street,
+                                  });
+                                if (zip && city)
+                                  await trySaveStep(stepIdx + 2, {
+                                    legalZip: zip,
+                                    legalCity: city,
+                                  });
+                                if (email)
+                                  await trySaveStep(stepIdx + 3, {
+                                    legalEmail: email,
+                                  });
+                                if (phone)
+                                  await trySaveStep(stepIdx + 4, {
+                                    legalPhone: phone,
+                                  });
+                                await advanceToStep("legalVat");
+                              }}
+                              className="w-full flex items-center justify-center gap-2 text-xs bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 px-3 py-2.5 rounded-xl transition-all font-medium"
+                            >
+                              ✓ Diese Daten übernehmen
+                            </button>
+                          </div>
+                        ) : (
+                          /* Edit mode: show fields inline */
+                          <div className="bg-slate-800/80 border border-slate-600/50 rounded-xl p-3 space-y-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs text-emerald-400 font-medium">
+                                📍 GMB-Daten bearbeiten
+                              </span>
+                              <button
+                                onClick={() => setGmbÜbernommenEditMode(false)}
+                                className="text-xs text-slate-400 hover:text-white transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {[
+                              {
+                                label: "Inhaber",
+                                key: "legalOwner" as const,
+                                placeholder: "Vorname Nachname",
+                              },
+                              {
+                                label: "Straße",
+                                key: "legalStreet" as const,
+                                placeholder: "Musterstraße 1",
+                              },
+                              {
+                                label: "PLZ",
+                                key: "legalZip" as const,
+                                placeholder: "12345",
+                              },
+                              {
+                                label: "Stadt",
+                                key: "legalCity" as const,
+                                placeholder: "Musterstadt",
+                              },
+                              {
+                                label: "Telefon",
+                                key: "legalPhone" as const,
+                                placeholder: "+49 123 456789",
+                              },
+                              {
+                                label: "E-Mail",
+                                key: "legalEmail" as const,
+                                placeholder: "info@firma.de",
+                              },
+                            ].map(({ label, key, placeholder }) => (
+                              <div
+                                key={key}
+                                className="flex items-center gap-2"
+                              >
+                                <span className="text-xs text-slate-400 w-14 flex-shrink-0">
+                                  {label}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={data[key] || ""}
+                                  onChange={e =>
+                                    setData(p => ({
+                                      ...p,
+                                      [key]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={placeholder}
+                                  className="flex-1 bg-slate-700/60 text-white text-xs px-2.5 py-1.5 rounded-lg border border-slate-600/50 outline-none focus:ring-1 focus:ring-lime-500 placeholder-slate-500"
+                                />
+                              </div>
+                            ))}
+                            <button
+                              onClick={async () => {
+                                if (
+                                  !data.legalOwner ||
+                                  data.legalOwner.trim().split(/\s+/).length < 2
+                                ) {
+                                  toast.error(
+                                    "Bitte gib deinen vollständigen Namen ein (Vor- und Nachname)"
+                                  );
+                                  return;
+                                }
+                                setGmbÜbernommenEditMode(false);
+                                const stepIdx =
+                                  STEP_ORDER.indexOf("legalOwner");
+                                await trySaveStep(stepIdx, {
+                                  legalOwner: data.legalOwner.trim(),
+                                });
+                                if (data.legalStreet)
+                                  await trySaveStep(stepIdx + 1, {
+                                    legalStreet: data.legalStreet,
+                                  });
+                                if (data.legalZip && data.legalCity)
+                                  await trySaveStep(stepIdx + 2, {
+                                    legalZip: data.legalZip,
+                                    legalCity: data.legalCity,
+                                  });
+                                if (data.legalEmail)
+                                  await trySaveStep(stepIdx + 3, {
+                                    legalEmail: data.legalEmail,
+                                  });
+                                if (data.legalPhone)
+                                  await trySaveStep(stepIdx + 4, {
+                                    legalPhone: data.legalPhone,
+                                  });
+                                await advanceToStep("legalVat");
+                              }}
+                              className="w-full flex items-center justify-center gap-1.5 text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors mt-1"
+                            >
+                              <Check className="w-3.5 h-3.5" /> Bestätigen &
+                              weiter
+                            </button>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+
+                  {/* Pencil to re-open edit mode after GMB data was confirmed */}
+                  {currentStep !== "legalOwner" &&
+                    [
+                      "legalStreet",
+                      "legalZipCity",
+                      "legalEmail",
+                      "legalPhone",
+                      "legalVat",
+                    ].includes(currentStep) &&
+                    data.legalStreet && (
+                      <motion.div
+                        key="legal-edit-pencil"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-9 mt-1"
+                      >
+                        <button
+                          onClick={() => {
+                            setGmbÜbernommenEditMode(true);
+                            // Go back to legalOwner step to show the edit panel
+                            setCurrentStep("legalOwner" as any);
+                          }}
+                          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+                          title="GMB-Daten nachträglich bearbeiten"
+                        >
+                          <Pencil className="w-3 h-3" /> Angaben bearbeiten
+                        </button>
+                      </motion.div>
+                    )}
+
+                  {currentStep === "openingHours" && (
+                    <motion.div
+                      key="openingHours-step"
+                      initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -20, scale: 0.97 }}
+                      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* Quick-select buttons */}
+                      <div className="flex flex-wrap gap-2 mb-1">
+                        {[
+                          {
+                            label: "Mo – Fr",
+                            action: () =>
+                              setHoursState(h =>
+                                h.map((d, i) => ({ ...d, open: i < 5 }))
+                              ),
+                          },
+                          {
+                            label: "Mo – Sa",
+                            action: () =>
+                              setHoursState(h =>
+                                h.map((d, i) => ({ ...d, open: i < 6 }))
+                              ),
+                          },
+                          {
+                            label: "Täglich",
+                            action: () =>
+                              setHoursState(h =>
+                                h.map(d => ({ ...d, open: true }))
+                              ),
+                          },
+                          {
+                            label: "Alle gleiche Zeit",
+                            action: () => {
+                              const first = hoursState.find(d => d.open);
+                              if (!first) return;
+                              setHoursState(h =>
+                                h.map(d =>
+                                  d.open
+                                    ? { ...d, from: first.from, to: first.to }
+                                    : d
+                                )
+                              );
+                            },
+                          },
+                        ].map(({ label, action }) => (
+                          <button
+                            key={label}
+                            onClick={action}
+                            className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 border border-white/10 transition-colors"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* 7-day grid */}
+                      <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden divide-y divide-white/5">
+                        {hoursState.map((dh, i) => (
+                          <div
+                            key={dh.day}
+                            className="flex items-center gap-3 px-3 py-2.5"
+                          >
+                            {/* Toggle */}
+                            <button
+                              onClick={() =>
+                                setHoursState(h =>
+                                  h.map((d, j) =>
+                                    j === i ? { ...d, open: !d.open } : d
+                                  )
+                                )
+                              }
+                              className={`w-9 h-5 rounded-full flex-shrink-0 transition-colors relative ${dh.open ? "bg-emerald-500" : "bg-white/20"}`}
+                            >
+                              <span
+                                className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all ${dh.open ? "left-4" : "left-0.5"}`}
+                              />
+                            </button>
+                            {/* Day name */}
+                            <span
+                              className={`text-sm w-24 flex-shrink-0 ${dh.open ? "text-white" : "text-slate-500"}`}
+                            >
+                              {dh.day.slice(0, 2)}
+                            </span>
+                            {dh.open ? (
+                              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                {/* First time slot */}
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="time"
+                                    value={dh.from}
+                                    onChange={e =>
+                                      setHoursState(h =>
+                                        h.map((d, j) =>
+                                          j === i
+                                            ? { ...d, from: e.target.value }
+                                            : d
+                                        )
+                                      )
+                                    }
+                                    className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
+                                  />
+                                  <span className="text-slate-500 text-xs">
+                                    –
+                                  </span>
+                                  <input
+                                    type="time"
+                                    value={dh.to}
+                                    onChange={e =>
+                                      setHoursState(h =>
+                                        h.map((d, j) =>
+                                          j === i
+                                            ? { ...d, to: e.target.value }
+                                            : d
+                                        )
+                                      )
+                                    }
+                                    className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
+                                  />
+                                  {/* Add second slot button */}
+                                  {!dh.from2 && (
+                                    <button
+                                      onClick={() =>
+                                        setHoursState(h =>
+                                          h.map((d, j) =>
+                                            j === i
+                                              ? {
+                                                  ...d,
+                                                  from2: "13:00",
+                                                  to2: "18:00",
+                                                }
+                                              : d
+                                          )
+                                        )
+                                      }
+                                      className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-white/20 text-slate-400 hover:text-white text-xs flex items-center justify-center transition-colors"
+                                      title="Zweites Zeitfenster hinzufügen (z.B. nach Mittagspause)"
+                                    >
+                                      +
+                                    </button>
+                                  )}
+                                </div>
+                                {/* Second time slot (optional, e.g. after lunch break) */}
+                                {dh.from2 !== undefined && (
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="time"
+                                      value={dh.from2}
+                                      onChange={e =>
+                                        setHoursState(h =>
+                                          h.map((d, j) =>
+                                            j === i
+                                              ? { ...d, from2: e.target.value }
+                                              : d
+                                          )
+                                        )
+                                      }
+                                      className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
+                                    />
+                                    <span className="text-slate-500 text-xs">
+                                      –
+                                    </span>
+                                    <input
+                                      type="time"
+                                      value={dh.to2}
+                                      onChange={e =>
+                                        setHoursState(h =>
+                                          h.map((d, j) =>
+                                            j === i
+                                              ? { ...d, to2: e.target.value }
+                                              : d
+                                          )
+                                        )
+                                      }
+                                      className="bg-white/10 border border-white/10 rounded-lg px-2 py-1 text-sm text-white w-[88px] focus:outline-none focus:border-lime-400"
+                                    />
+                                    <button
+                                      onClick={() =>
+                                        setHoursState(h =>
+                                          h.map((d, j) =>
+                                            j === i
+                                              ? {
+                                                  ...d,
+                                                  from2: undefined,
+                                                  to2: undefined,
+                                                }
+                                              : d
+                                          )
+                                        )
+                                      }
+                                      className="ml-1 w-6 h-6 flex-shrink-0 rounded-full bg-white/10 hover:bg-red-500/30 text-slate-400 hover:text-red-400 text-xs flex items-center justify-center transition-colors"
+                                      title="Zweites Zeitfenster entfernen"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-500 flex-1">
+                                Geschlossen
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={async () => {
+                            const stepIdx =
+                              dynamicStepOrder.indexOf("openingHours");
+                            const saved = hoursState;
+                            addUserMessage(
+                              `${saved.filter(d => d.open).length} Tage eingetragen`
+                            );
+                            setData(p => ({ ...p, openingHours: saved }));
+                            await trySaveStep(stepIdx, { openingHours: saved });
+                            const next = dynamicStepOrder[stepIdx + 1];
+                            if (next) await advanceToStep(next);
+                          }}
+                          className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors"
+                        >
+                          Übernehmen ✓
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const stepIdx =
+                              dynamicStepOrder.indexOf("openingHours");
+                            addUserMessage("Überspringen");
+                            setData(p => ({ ...p, openingHours: null }));
+                            await trySaveStep(stepIdx, { openingHours: null });
+                            const next = dynamicStepOrder[stepIdx + 1];
+                            if (next) await advanceToStep(next);
+                          }}
+                          className="px-5 py-2.5 bg-white/10 hover:bg-white/15 text-slate-300 text-sm rounded-xl transition-colors border border-white/10"
+                        >
+                          Überspringen
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "hideSections" && (
+                    <motion.div
+                      key="hideSections-step"
+                      initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -30, scale: 0.95 }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-2"
+                    >
+                      {/* Build the display list from sectionOrder (or fallback to allSectionsForHideStep) */}
+                      {(() => {
+                        const displaySections =
+                          sectionOrder.length > 0
+                            ? sectionOrder
+                                .map(type =>
+                                  allSectionsForHideStep.find(
+                                    s => s.type === type
+                                  )
+                                )
+                                .filter((s): s is NonNullable<typeof s> =>
+                                  Boolean(s)
+                                )
+                            : allSectionsForHideStep;
+
+                        const handleDragStart = (idx: number) =>
+                          setDraggedSectionIdx(idx);
+                        const handleDragOver = (
+                          e: React.DragEvent,
+                          idx: number
+                        ) => {
+                          e.preventDefault();
+                          if (
+                            draggedSectionIdx === null ||
+                            draggedSectionIdx === idx
+                          )
+                            return;
+                          const next = [...sectionOrder];
+                          const dragged = next[draggedSectionIdx];
+                          next.splice(draggedSectionIdx, 1);
+                          next.splice(idx, 0, dragged);
+                          setSectionOrder(next);
+                          setDraggedSectionIdx(idx);
+                        };
+                        const handleDragEnd = () => setDraggedSectionIdx(null);
+
+                        return (
+                          <>
+                            {/* Sortable + toggleable section list */}
+                            <div className="space-y-1.5">
+                              {displaySections.map((sec, idx) => {
+                                const isHidden = hiddenSections.has(sec.type);
+                                const isDragging = draggedSectionIdx === idx;
+                                return (
+                                  <div
+                                    key={sec.type}
+                                    draggable
+                                    onDragStart={() => handleDragStart(idx)}
+                                    onDragOver={e => handleDragOver(e, idx)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-[11px] font-medium transition-all select-none ${
+                                      isDragging
+                                        ? "opacity-40 border-lime-500/60 bg-lime-400/10 scale-[0.98]"
+                                        : isHidden
+                                          ? "border-slate-700 bg-slate-800/40 text-slate-500"
+                                          : "border-emerald-500/50 bg-emerald-500/10 text-emerald-50"
+                                    }`}
+                                  >
+                                    {/* Drag handle */}
+                                    <GripVertical className="w-4 h-4 text-slate-500 cursor-grab active:cursor-grabbing flex-shrink-0" />
+                                    {/* Emoji */}
+                                    <span className="flex-shrink-0 text-base leading-none">
+                                      {sec.emoji}
+                                    </span>
+                                    {/* Label */}
+                                    <span
+                                      className={`flex-1 leading-tight ${isHidden ? "line-through text-slate-600" : ""}`}
+                                    >
+                                      {sec.label}
+                                    </span>
+                                    {/* Visibility toggle */}
+                                    <button
+                                      onClick={() =>
+                                        setHiddenSections(prev => {
+                                          const next = new Set(prev);
+                                          if (next.has(sec.type))
+                                            next.delete(sec.type);
+                                          else next.add(sec.type);
+                                          return next;
+                                        })
+                                      }
+                                      className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+                                        isHidden
+                                          ? "border-slate-600 bg-slate-700 hover:border-slate-500"
+                                          : "border-emerald-500 bg-emerald-500 hover:bg-emerald-400"
+                                      }`}
+                                    >
+                                      {!isHidden && (
+                                        <Check className="w-3 h-3 text-white" />
+                                      )}
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+
+                            {/* Hints */}
+                            <div className="space-y-1 mt-2">
+                              <p className="text-[10px] text-slate-500 flex items-center gap-1">
+                                <GripVertical className="w-3 h-3 flex-shrink-0" />
+                                Reihenfolge per Drag &amp; Drop ändern – oder
+                                später im Dashboard
+                              </p>
+                              {hiddenSections.size > 0 && (
+                                <p className="text-xs text-amber-400/80">
+                                  {hiddenSections.size} Bereich
+                                  {hiddenSections.size > 1 ? "e" : ""}{" "}
+                                  ausgeblendet – jederzeit wieder aktivierbar.
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Weiter-Button im fixen Bottom-Bar */}
+                          </>
+                        );
+                      })()}
+                    </motion.div>
+                  )}
+
+                  {currentStep === "preview" && (
+                    <motion.div
+                      key="preview-step"
+                      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* Fullscreen interactive preview */}
+                      {previewToken && (
+                        <button
+                          onClick={() => setShowFullPreview(true)}
+                          className="w-full border border-slate-500/60 hover:border-lime-500/60 hover:bg-lime-400/10 text-slate-300 hover:text-white font-medium px-5 py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                        >
+                          <Monitor className="w-4 h-4" /> Vollbild-Vorschau
+                          öffnen
+                        </button>
+                      )}
+                      <button
+                        onClick={async () => {
+                          addUserMessage(
+                            "Sieht super aus! Jetzt freischalten 🚀"
+                          );
+                          await advanceToStep("checkout");
+                        }}
+                        className="w-full bg-gradient-to-r from-lime-500 to-lime-600 hover:from-lime-400 hover:to-lime-500 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-lg shadow-lime-500/20 flex items-center justify-center gap-2"
+                      >
+                        <Zap className="w-4 h-4" /> Website freischalten
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {currentStep === "checkout" && (
+                    <motion.div
+                      key="checkout-step"
+                      initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -40, scale: 0.9 }}
+                      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                      className="ml-9 space-y-3"
+                    >
+                      {/* Billing interval toggle */}
+                      <div className="flex rounded-xl overflow-hidden border border-slate-600 mb-1">
+                        <button
+                          onClick={() => setBillingInterval("yearly")}
+                          className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
+                            billingInterval === "yearly"
+                              ? "bg-lime-500 text-gray-900"
+                              : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          <span>
+                            Jährlich ·{" "}
+                            <span className="font-bold">19,90 €</span>/Mo
+                          </span>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full font-normal transition-all ${
+                              billingInterval === "yearly"
+                                ? "bg-green-500/30 text-green-300"
+                                : "bg-slate-600/40 text-slate-500"
+                            }`}
+                          >
+                            2 Monate gratis
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => setBillingInterval("monthly")}
+                          className={`flex-1 py-2 px-2 text-sm font-medium transition-all flex flex-col items-center gap-0.5 ${
+                            billingInterval === "monthly"
+                              ? "bg-lime-500 text-gray-900"
+                              : "bg-slate-700/60 text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          <span>
+                            Monatlich ·{" "}
+                            <span className="font-bold">24,90 €</span>/Mo
+                          </span>
+                          {/* spacer so both buttons stay the same height */}
+                          <span className="text-xs opacity-0 px-2 py-0.5">
+                            –
+                          </span>
+                        </button>
+                      </div>
+
+                      <div className="bg-slate-700/60 rounded-xl p-4 space-y-2">
+                        {/* Line items */}
+                        <div className="space-y-2 pb-2 border-b border-slate-600">
+                          <div className="flex justify-between text-sm text-slate-300">
+                            <span>Basis-Website</span>
+                            <span>
+                              {billingInterval === "yearly" ? "19,90" : "24,90"}{" "}
+                              €/Monat
+                            </span>
+                          </div>
+                          {data.addOnContactForm && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ Kontaktformular</span>
+                              <span>+3,90 €/Monat</span>
+                            </div>
+                          )}
+                          {data.addOnGallery && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ Bildergalerie</span>
+                              <span>+3,90 €/Monat</span>
+                            </div>
+                          )}
+                          {_addOnMenu && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ Speisekarte</span>
+                              <span>+3,90 €/Monat</span>
+                            </div>
+                          )}
+                          {_addOnPricelist && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ Preisliste</span>
+                              <span>+3,90 €/Monat</span>
+                            </div>
+                          )}
+                          {_addOnAiChat && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ KI-Chat</span>
+                              <span>+9,90 €/Monat</span>
+                            </div>
+                          )}
+                          {data.addOnBooking && (
+                            <div className="flex justify-between text-sm text-slate-300">
+                              <span>+ Terminbuchung</span>
+                              <span>+4,90 €/Monat</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="pt-1 flex justify-between font-bold text-white text-base">
+                          <span>Gesamt</span>
+                          <span>{totalPrice()} €/Monat</span>
+                        </div>
+                        <p className="text-xs text-slate-500 pt-0.5">
+                          {billingInterval === "yearly"
+                            ? "Jährliche Abrechnung · monatlich abbuchbar · Jederzeit kündbar"
+                            : "Monatliche Abrechnung · Jederzeit kündbar"}
+                        </p>
+                      </div>
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <div
+                          onClick={() => setLegalConsent(v => !v)}
+                          className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            legalConsent
+                              ? "border-green-500 bg-green-500"
+                              : "border-slate-500 bg-transparent group-hover:border-slate-400"
+                          }`}
+                        >
+                          {legalConsent && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                        <span
+                          className="text-xs text-slate-400 leading-relaxed"
+                          onClick={() => setLegalConsent(v => !v)}
+                        >
+                          Ich bestätige, dass alle Angaben (insbesondere
+                          Impressum & Datenschutz) korrekt und vollständig sind.
+                          Ich übernehme die alleinige Verantwortung für die
+                          Richtigkeit dieser Daten. Pageblitz haftet nicht für
+                          fehlerhafte oder unvollständige Angaben.
+                        </span>
+                      </label>
+                      <button
+                        onClick={handleCheckout}
+                        disabled={
+                          completeMutation.isPending ||
+                          checkoutMutation.isPending ||
+                          !legalConsent
+                        }
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold px-5 py-4 rounded-xl transition-all shadow-lg shadow-green-500/20 flex items-center justify-center gap-2 text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {completeMutation.isPending ||
+                        checkoutMutation.isPending ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <Zap className="w-5 h-5" /> Jetzt für {totalPrice()}{" "}
+                            €/Mo freischalten
+                          </>
+                        )}
+                      </button>
+                      <p className="text-center text-xs text-slate-500">
+                        7 Tage gratis testen • Keine Einrichtungsgebühr • SSL
+                        inklusive
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+            {/* Input area – sticky at bottom */}
+            {![
+              "services",
+              "addons",
+              "editAiChat",
+              "subpages",
+              "preview",
+              "checkout",
+              "welcome",
+              "colorScheme",
+              "brandLogo",
+              "businessCategory",
+              "openingHours",
+              "heroPhoto",
+              "aboutPhoto",
+              "headlineFont",
+              "headlineSize",
+              "editGallery",
+              "hideSections",
+            ].includes(currentStep) && (
+              <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-slate-700/50">
+                {/* Quick-reply chips – above input */}
+                {!isTyping &&
+                  !quickReplySelected &&
+                  getQuickReplies(currentStep).length > 0 && (
+                    <div className="pt-3 pb-2">
+                      <p className="text-xs text-slate-500 mb-2 font-medium">
+                        Schnellantworten:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {getQuickReplies(currentStep).map(reply => (
+                          <button
+                            key={reply}
+                            onClick={() => {
+                              setQuickReplySelected(true);
+                              if (
+                                currentStep === "businessName" &&
+                                reply === "Ja, stimmt!"
+                              ) {
+                                handleSubmit("");
+                              } else {
+                                handleSubmit(reply);
+                              }
+                            }}
+                            className="text-sm bg-lime-500/20 hover:bg-lime-500/40 border border-lime-500/50 hover:border-lime-400/70 text-lime-200 hover:text-white px-3.5 py-2 rounded-xl transition-all font-medium shadow-sm"
+                          >
+                            {reply}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                {/* Marketing consent checkbox — shown on email step */}
+                {currentStep === "email" && (
+                  <label className="flex items-start gap-2.5 cursor-pointer mb-2">
+                    <input
+                      type="checkbox"
+                      checked={marketingConsent}
+                      onChange={e => setMarketingConsent(e.target.checked)}
+                      className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
+                    />
+                    <span className="text-slate-400 text-xs leading-relaxed">
+                      Ich möchte gelegentlich per E-Mail über Neuigkeiten und
+                      Tipps informiert werden.{" "}
+                      <a
+                        href="/datenschutz"
+                        target="_blank"
+                        className="text-lime-400 underline underline-offset-2 hover:text-lime-300"
+                      >
+                        Datenschutz
+                      </a>
+                    </span>
+                  </label>
+                )}
+                <div className="flex gap-2">
+                  {/* AI generate button for text fields */}
+                  {["tagline", "description", "usp", "targetAudience"].includes(
+                    currentStep
+                  ) && (
+                    <div className="relative flex-shrink-0 group/ai">
+                      <button
+                        onClick={() =>
+                          generateWithAI(currentStep as keyof OnboardingData)
+                        }
+                        disabled={isGenerating}
+                        className="w-10 h-10 rounded-xl bg-lime-600/20 hover:bg-lime-600/30 border border-lime-500/60 flex items-center justify-center transition-all ai-glow-btn"
+                        title="Mit KI generieren"
+                      >
+                        {isGenerating ? (
+                          <Loader2 className="w-4 h-4 text-lime-300 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 text-lime-300" />
+                        )}
+                      </button>
+                      {/* Tooltip – anchored to left edge so it never overflows off-screen */}
+                      <div className="absolute bottom-full left-0 mb-2 w-48 pointer-events-none opacity-0 group-hover/ai:opacity-100 transition-opacity duration-200 z-20">
+                        <div className="bg-slate-800/95 border border-lime-500/50 text-slate-100 text-xs px-3 py-2 rounded-lg shadow-lg text-center leading-snug">
+                          ✨ Automatisch von KI
+                          <br />
+                          generieren lassen
+                          {/* Arrow points to the button center (~left-5 ≈ 20px = half of w-10 button) */}
+                          <div className="absolute top-full left-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800/95" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {["tagline", "description", "usp", "targetAudience"].includes(
+                    currentStep
+                  ) ? (
+                    <textarea
+                      ref={textareaRef}
+                      value={inputValue}
+                      rows={3}
+                      onChange={e => {
+                        setInputValue(e.target.value);
+                        // Auto-resize
+                        const el = e.target as HTMLTextAreaElement;
+                        el.style.height = "auto";
+                        el.style.height = Math.min(el.scrollHeight, 160) + "px";
+                      }}
+                      onKeyDown={e =>
+                        e.key === "Enter" && !e.shiftKey && handleSubmit()
+                      }
+                      placeholder={
+                        currentStep === "tagline"
+                          ? `z.B. "Ihr ${(data as any).businessCategory || "Fachbetrieb"} in ${data.legalCity || "Ihrer Stadt"}"`
+                          : currentStep === "description"
+                            ? "Was macht dein Unternehmen besonders? (2-3 Sätze)"
+                            : currentStep === "usp"
+                              ? "z.B. 'Wir sind der einzige Anbieter in der Region, der...' "
+                              : currentStep === "targetAudience"
+                                ? `z.B. "Damen und Herren in ${data.legalCity || "Köln"}, die Wert auf..."`
+                                : "Deine Antwort... (Shift+Enter für neue Zeile)"
+                      }
+                      className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50 resize-none leading-relaxed"
+                      style={{ minHeight: "72px", maxHeight: "160px" }}
+                    />
+                  ) : (
+                    <input
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={e => setInputValue(e.target.value)}
+                      onKeyDown={e =>
+                        e.key === "Enter" && !e.shiftKey && handleSubmit()
+                      }
+                      placeholder={
+                        currentStep === "businessName"
+                          ? data.businessName || "Unternehmensname eingeben..."
+                          : currentStep === "legalOwner"
+                            ? "Vorname Nachname"
+                            : currentStep === "legalStreet"
+                              ? "Musterstraße 12"
+                              : currentStep === "legalZipCity"
+                                ? "50667 Köln"
+                                : currentStep === "legalEmail"
+                                  ? "info@musterfirma.de"
+                                  : currentStep === "legalVat"
+                                    ? "DE123456789 – oder leer lassen (Kleinunternehmer)"
+                                    : currentStep === "email"
+                                      ? "deine@email.de"
+                                      : "Deine Antwort..."
+                      }
+                      className="flex-1 bg-slate-700/60 text-white text-sm px-4 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:ring-1 focus:ring-lime-500 border border-slate-600/50"
+                    />
+                  )}
+                  <button
+                    onClick={() => handleSubmit()}
+                    disabled={
+                      !inputValue.trim() &&
+                      currentStep !== "businessName" &&
+                      currentStep !== "legalVat"
+                    }
+                    className="w-10 h-10 rounded-xl bg-lime-500 hover:bg-lime-400 flex items-center justify-center transition-colors disabled:opacity-40 flex-shrink-0"
+                  >
+                    <Send className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* Weiter-Buttons für UI-Schritte – außerhalb des Scroll-Containers (sticky auf Mobile) */}
+            {currentStep === "addons" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    let snapshot: OnboardingData | null = null;
+                    setData(p => {
+                      snapshot = p;
+                      return p;
+                    });
+                    const d = snapshot ?? data;
+                    const selected = [];
+                    if (d.addOnContactForm) selected.push("Kontaktformular");
+                    if (d.addOnGallery) selected.push("Bildergalerie");
+                    if (d.addOnMenu) selected.push("Speisekarte");
+                    if (d.addOnPricelist) selected.push("Preisliste");
+                    if (d.addOnAiChat) selected.push("KI-Chat");
+                    if (d.addOnBooking) selected.push("Terminbuchung");
+                    addUserMessage(
+                      selected.length > 0
+                        ? `Ich nehme: ${selected.join(", ")} ✓`
+                        : "Keine Extras nötig"
+                    );
+                    await trySaveStep(STEP_ORDER.indexOf("addons"), {
+                      addOnContactForm: d.addOnContactForm,
+                      contactFormFields: d.contactFormFields,
+                      addOnGallery: d.addOnGallery,
+                      addOnMenu: d.addOnMenu,
+                      addOnPricelist: d.addOnPricelist,
+                      addOnAiChat: d.addOnAiChat,
+                      addOnBooking: d.addOnBooking,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "editAiChat" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const msg =
+                      data.chatWelcomeMessage.trim() ||
+                      `Hallo! Ich bin der digitale Assistent von ${data.businessName || "unserem Unternehmen"}. Wie kann ich dir helfen?`;
+                    if (!data.chatWelcomeMessage.trim()) {
+                      setData(p => ({ ...p, chatWelcomeMessage: msg }));
+                    }
+                    addUserMessage(
+                      `🤖 Begrüßung: "${msg.slice(0, 60)}${msg.length > 60 ? "…" : ""}"`
+                    );
+                    await trySaveStep(STEP_ORDER.indexOf("editAiChat"), {
+                      chatWelcomeMessage: msg,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "brandLogo" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping || uploadLogoMutation.isPending}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const logo = data.brandLogo || "font:Montserrat";
+                    const label = logo.startsWith("url:")
+                      ? "Eigenes Logo"
+                      : logo.replace("font:", "");
+                    addUserMessage(`Logo gewählt: ${label} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("brandLogo"), {
+                      brandLogo: logo,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "headlineFont" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping || !data.headlineFont}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    addUserMessage(
+                      `Schriftart gewählt: ${data.headlineFont} ✓`
+                    );
+                    await trySaveStep(STEP_ORDER.indexOf("headlineFont"), {
+                      headlineFont: data.headlineFont,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "headlineSize" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const sizeLabel =
+                      data.headlineSize === "large"
+                        ? "Extra groß"
+                        : data.headlineSize === "medium"
+                          ? "Groß"
+                          : "Normal";
+                    addUserMessage(`Schriftgröße gewählt: ${sizeLabel} ✓`);
+                    await trySaveStep(STEP_ORDER.indexOf("headlineSize"), {
+                      headlineSize: data.headlineSize,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "services" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping || saveStepMutation.isPending}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const filtered = data.topServices.filter(s =>
+                      s.title.trim()
+                    );
+                    if (filtered.length === 0) {
+                      setShowSkipServicesWarning(true);
+                      return;
+                    }
+                    addUserMessage(
+                      filtered.map(s => `✓ ${s.title}`).join("\n")
+                    );
+                    await trySaveStep(STEP_ORDER.indexOf("services"), {
+                      topServices: filtered,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "editGallery" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const count = data.addOnGalleryData.images.length;
+                    addUserMessage(
+                      count > 0
+                        ? `${count} Bilder für die Galerie ausgewählt ✓`
+                        : "Standard-Bilder für die Galerie behalten"
+                    );
+                    await trySaveStep(STEP_ORDER.indexOf("editGallery"), {
+                      galleryHeadline: data.addOnGalleryData.headline,
+                      galleryImages: data.addOnGalleryData.images,
+                      galleryMode: data.addOnGalleryData.mode,
+                      galleryAlbums: data.addOnGalleryData.albums,
+                      addOnGalleryData: data.addOnGalleryData,
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "subpages" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    addUserMessage("Keine Unterseiten");
+                    await trySaveStep(STEP_ORDER.indexOf("subpages"), {
+                      addOnSubpages: [],
+                    });
+                    await goToNextStep();
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {currentStep === "hideSections" && (
+              <div className="flex-shrink-0 px-4 pb-3 pt-2 border-t border-slate-700/50 bg-slate-900/95">
+                <button
+                  disabled={isTyping}
+                  style={{ touchAction: "manipulation" }}
+                  onClick={async () => {
+                    if (isTyping) return;
+                    const hidden = Array.from(hiddenSections);
+                    addUserMessage(
+                      hidden.length === 0
+                        ? "Alle Bereiche anzeigen ✓"
+                        : `Ausgeblendet: ${hidden.join(", ")}`
+                    );
+                    const stepIdx = dynamicStepOrder.indexOf("hideSections");
+                    trySaveStep(stepIdx, {
+                      sectionOrder:
+                        sectionOrder.length > 0 ? [...sectionOrder] : [],
+                      hiddenSections: hidden,
+                    });
+                    await advanceToStep("preview");
+                  }}
+                  className="w-full flex items-center justify-center gap-1 bg-lime-500 hover:bg-lime-400 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Weiter <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            {/* Mobile: preview shortcut button – only shown on small screens, hidden on preview step (has its own button) */}
+            {liveWebsiteData && colorScheme && currentStep !== "preview" && (
+              <div className="lg:hidden px-3 pb-3 pt-1 flex-shrink-0">
+                <button
+                  onClick={() => setShowFullPreview(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-700/50 hover:bg-slate-600/50 border border-slate-600/40 text-slate-300 hover:text-white text-sm transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  Website-Vorschau anzeigen
+                </button>
+              </div>
+            )}
+          </div>
+          {/* end messages+input wrapper */}
+        </div>
+        {/* Preview panel – MacBook mockup (desktop only) */}
+        <div className="hidden lg:flex relative flex-1 overflow-y-auto bg-gradient-to-br from-slate-800 to-slate-900 flex-col">
+          {/* Preview top bar: chat toggle + progress bar */}
+          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-700/50">
+            {/* Chat toggle button – always visible here */}
+            <button
+              onClick={() => setChatHidden(v => !v)}
+              className="flex items-center gap-1.5 text-xs bg-slate-700/60 hover:bg-slate-600/60 border border-slate-600/50 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+              title={chatHidden ? "Chat einblenden" : "Chat ausblenden"}
+            >
+              {chatHidden ? (
+                <ChevronRight className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronLeft className="w-3.5 h-3.5" />
+              )}
+              {chatHidden ? "Chat einblenden" : "Chat ausblenden"}
+            </button>
+            {/* Progress bar with clickable completed steps */}
+            {currentStep !== "welcome" &&
+              currentStep !== "checkout" &&
+              (() => {
+                const totalSteps = dynamicStepOrder.filter(
+                  s => s !== "welcome"
+                ).length;
+                const currentIdx = dynamicStepOrder.indexOf(currentStep);
+                // Guard: if step isn't in dynamicStepOrder yet (add-on states still loading), don't render
+                if (currentIdx === -1) return null;
+                const progress = Math.round((currentIdx / totalSteps) * 100);
+
+                // Get completed steps (all steps before current)
+                const completedSteps = dynamicStepOrder
+                  .slice(0, currentIdx)
+                  .filter(
+                    s => s !== "welcome" && s !== "checkout" && s !== "preview"
+                  );
+
+                // Step labels for display
+                const stepLabels: Record<string, string> = {
+                  businessCategory: "Branche",
+                  businessName: "Name",
+                  addressingMode: "Anrede",
+                  brandLogo: "Logo",
+                  colorScheme: "Farben",
+                  heroPhoto: "Foto",
+                  aboutPhoto: "Über uns",
+                  headlineFont: "Schrift",
+                  headlineSize: "Größe",
+                  tagline: "Claim",
+                  description: "Beschreibung",
+                  usp: "USP",
+                  services: "Leistungen",
+                  legalOwner: "Impressum",
+                  legalStreet: "Adresse",
+                  legalZipCity: "Ort",
+                  legalEmail: "E-Mail",
+                  legalPhone: "Telefon",
+                  openingHours: "Öffnungszeiten",
+                  legalVat: "Steuer",
+                  addons: "Extras",
+                  editAiChat: "KI-Chat",
+                  editMenu: "Speisekarte",
+                  editPricelist: "Preise",
+                  editGallery: "Galerie",
+                  subpages: "Unterseiten",
+                  email: "Kontakt",
+                  hideSections: "Anzeige",
+                  preview: "Vorschau",
+                };
+
+                return (
+                  <div className="flex flex-col flex-1 gap-2">
+                    {/* Edit mode indicator */}
+                    {editMode.isEditing && editMode.returnToStep && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-amber-400">
+                          ⚡ Bearbeitungsmodus
+                        </span>
+                        <button
+                          onClick={() => {
+                            setCurrentStep(editMode.returnToStep!);
+                            setEditMode({
+                              isEditing: false,
+                              returnToStep: null,
+                            });
+                          }}
+                          className="text-[10px] px-2 py-0.5 rounded-full bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 transition-colors border border-amber-500/50"
+                        >
+                          Zurück zu aktuellem Schritt
+                        </button>
+                      </div>
+                    )}
+                    {/* Completed steps - clickable pills */}
+                    {!editMode.isEditing && completedSteps.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                          Bearbeiten:
+                        </span>
+                        {completedSteps.map((step, idx) => (
+                          <button
+                            key={step}
+                            onClick={() => {
+                              // Enter edit mode: save current position and jump to selected step
+                              setEditMode({
+                                isEditing: true,
+                                returnToStep: currentStep,
+                              });
+                              setCurrentStep(step);
+                            }}
+                            className="text-[10px] px-2 py-0.5 rounded-full bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors border border-slate-600/50"
+                            title={`Zurück zu: ${stepLabels[step] || step}`}
+                          >
+                            {stepLabels[step] || step}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {/* Progress bar */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-lime-400 to-lime-500 rounded-full transition-all duration-500"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-400 whitespace-nowrap">
+                        Schritt {currentIdx} / {totalSteps}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
           </div>
           {liveWebsiteData && colorScheme ? (
             <MacbookMockup
@@ -6121,7 +8623,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 {previewNotification && (
                   <div
                     className="absolute top-4 left-1/2 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full bg-lime-500/90 px-4 py-2 text-[11px] font-medium text-gray-900 shadow-lg backdrop-blur-sm pointer-events-none"
-                    style={{ animation: 'fadeInDown 0.25s ease' }}
+                    style={{ animation: "fadeInDown 0.25s ease" }}
                   >
                     {previewNotification}
                   </div>
@@ -6130,46 +8632,86 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div
                   className="absolute inset-0 z-10 w-full bg-white overflow-hidden"
                   style={{
-                    opacity: contentPhase === 'skeleton' ? 1 : 0,
-                    transition: 'opacity 0.45s ease',
-                    pointerEvents: contentPhase === 'skeleton' ? 'auto' : 'none',
-                    minHeight: '100vh',
+                    opacity: contentPhase === "skeleton" ? 1 : 0,
+                    transition: "opacity 0.45s ease",
+                    pointerEvents:
+                      contentPhase === "skeleton" ? "auto" : "none",
+                    minHeight: "100vh",
                   }}
                 >
                   {/* Subtle grid */}
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: 'linear-gradient(rgba(163,230,53,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(163,230,53,0.07) 1px, transparent 1px)',
-                    backgroundSize: '28px 28px',
-                  }} />
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(rgba(163,230,53,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(163,230,53,0.07) 1px, transparent 1px)",
+                      backgroundSize: "28px 28px",
+                    }}
+                  />
                   {/* Wireframe blocks */}
                   <div className="relative z-10 p-5 space-y-3">
                     <div className="flex items-center justify-between pb-1">
                       <div className="h-3 w-14 bg-slate-200 rounded-full animate-pulse" />
                       <div className="flex gap-2">
                         {[0, 100, 200].map(d => (
-                          <div key={d} className="h-2 w-8 bg-slate-100 rounded-full animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                          <div
+                            key={d}
+                            className="h-2 w-8 bg-slate-100 rounded-full animate-pulse"
+                            style={{ animationDelay: `${d}ms` }}
+                          />
                         ))}
                       </div>
                     </div>
-                    <div className="h-28 bg-slate-100 rounded-lg border border-slate-200/80 animate-pulse" style={{ animationDelay: '150ms' }} />
+                    <div
+                      className="h-28 bg-slate-100 rounded-lg border border-slate-200/80 animate-pulse"
+                      style={{ animationDelay: "150ms" }}
+                    />
                     <div className="grid grid-cols-3 gap-2">
                       {[0, 150, 300].map(d => (
-                        <div key={d} className="h-16 bg-slate-100/80 rounded border border-slate-200/60 animate-pulse" style={{ animationDelay: `${d}ms` }} />
+                        <div
+                          key={d}
+                          className="h-16 bg-slate-100/80 rounded border border-slate-200/60 animate-pulse"
+                          style={{ animationDelay: `${d}ms` }}
+                        />
                       ))}
                     </div>
                     <div className="space-y-2 pt-1">
-                      {[{ w: '75%', d: 400 }, { w: '55%', d: 500 }, { w: '35%', d: 600 }].map(({ w, d }) => (
-                        <div key={d} className="h-1.5 bg-slate-200/70 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
+                      {[
+                        { w: "75%", d: 400 },
+                        { w: "55%", d: 500 },
+                        { w: "35%", d: 600 },
+                      ].map(({ w, d }) => (
+                        <div
+                          key={d}
+                          className="h-1.5 bg-slate-200/70 rounded-full animate-pulse"
+                          style={{ width: w, animationDelay: `${d}ms` }}
+                        />
                       ))}
                     </div>
-                    <div className="h-16 bg-slate-100/70 rounded border border-slate-200/50 animate-pulse" style={{ animationDelay: '300ms' }} />
+                    <div
+                      className="h-16 bg-slate-100/70 rounded border border-slate-200/50 animate-pulse"
+                      style={{ animationDelay: "300ms" }}
+                    />
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="h-12 bg-slate-100/60 rounded animate-pulse" style={{ animationDelay: '450ms' }} />
-                      <div className="h-12 bg-slate-100/60 rounded animate-pulse" style={{ animationDelay: '550ms' }} />
+                      <div
+                        className="h-12 bg-slate-100/60 rounded animate-pulse"
+                        style={{ animationDelay: "450ms" }}
+                      />
+                      <div
+                        className="h-12 bg-slate-100/60 rounded animate-pulse"
+                        style={{ animationDelay: "550ms" }}
+                      />
                     </div>
                     <div className="space-y-2 pt-1">
-                      {[{ w: '60%', d: 700 }, { w: '40%', d: 800 }].map(({ w, d }) => (
-                        <div key={d} className="h-1.5 bg-slate-200/40 rounded-full animate-pulse" style={{ width: w, animationDelay: `${d}ms` }} />
+                      {[
+                        { w: "60%", d: 700 },
+                        { w: "40%", d: 800 },
+                      ].map(({ w, d }) => (
+                        <div
+                          key={d}
+                          className="h-1.5 bg-slate-200/40 rounded-full animate-pulse"
+                          style={{ width: w, animationDelay: `${d}ms` }}
+                        />
                       ))}
                     </div>
                   </div>
@@ -6177,39 +8719,66 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                     <div className="text-center bg-white/90 backdrop-blur-sm rounded-xl border border-slate-200 px-5 py-3 space-y-1.5 shadow-md">
                       <Sparkles className="w-5 h-5 text-lime-400 mx-auto" />
-                      <p className="text-slate-700 text-xs font-medium">Vorschau erscheint hier</p>
-                      <p className="text-slate-400 text-[10px]">beantworte die Fragen im Chat</p>
+                      <p className="text-slate-700 text-xs font-medium">
+                        Vorschau erscheint hier
+                      </p>
+                      <p className="text-slate-400 text-[10px]">
+                        beantworte die Fragen im Chat
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Website – fades in when category is entered; skeleton mode prevents flash */}
-                <div style={{
-                  opacity: contentPhase === 'skeleton' ? 0 : 1,
-                  transition: 'opacity 0.6s ease',
-                  position: 'relative',
-                }}>
+                <div
+                  style={{
+                    opacity: contentPhase === "skeleton" ? 0 : 1,
+                    transition: "opacity 0.6s ease",
+                    position: "relative",
+                  }}
+                >
                   <WebsiteRenderer
                     websiteData={liveWebsiteData}
-                    businessCategory={data.businessCategory || (business as any)?.category || undefined}
-                    colorScheme={{
+                    businessCategory={
+                      data.businessCategory ||
+                      (business as any)?.category ||
+                      undefined
+                    }
+                    colorScheme={
+                      {
                         ...colorScheme,
                         ...data.colorScheme,
-                      } as any}
+                      } as any
+                    }
                     heroImageUrl={data.heroPhotoUrl || heroImageUrl}
                     aboutImageUrl={data.aboutPhotoUrl || aboutImageUrl}
                     layoutStyle={layoutStyle}
-                    layoutVersion={(siteData?.website as any)?.layoutVersion ?? undefined}
+                    layoutVersion={
+                      (siteData?.website as any)?.layoutVersion ?? undefined
+                    }
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
-                    isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
+                    isLoading={
+                      contentPhase === "skeleton" ||
+                      contentPhase === "colors" ||
+                      contentPhase === "images" ||
+                      isGeneratingInitialContent
+                    }
                     islandsMode="preview"
                   />
                   {_addOnAiChat && liveWebsiteData && (
                     <ChatWidget
                       slug={siteData?.website?.slug || "preview"}
-                      primaryColor={(data.colorScheme as any)?.primary || colorScheme?.primary || "#2563eb"}
-                      businessName={liveWebsiteData.businessName || data.businessName || "Assistent"}
+                      primaryColor={
+                        (data.colorScheme as any)?.primary ||
+                        colorScheme?.primary ||
+                        "#2563eb"
+                      }
+                      businessName={
+                        liveWebsiteData.businessName ||
+                        data.businessName ||
+                        "Assistent"
+                      }
                       welcomeMessage={data.chatWelcomeMessage || undefined}
                       addOnBooking={!!data.addOnBooking}
                       onBookingRequest={() => {}}
@@ -6225,12 +8794,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div
                     aria-hidden="true"
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       inset: 0,
-                      background: 'linear-gradient(135deg, rgba(8,12,35,0.72) 0%, rgba(12,18,50,0.65) 100%)',
+                      background:
+                        "linear-gradient(135deg, rgba(8,12,35,0.72) 0%, rgba(12,18,50,0.65) 100%)",
                       opacity: heroRevealed ? 0 : 1,
-                      transition: 'opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1)',
-                      pointerEvents: 'none',
+                      transition: "opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1)",
+                      pointerEvents: "none",
                       zIndex: 10,
                     }}
                   />
@@ -6239,20 +8809,35 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   <div
                     aria-hidden="true"
                     style={{
-                      position: 'absolute',
-                      top: '38%', left: 0, right: 0, bottom: 0,
-                      background: 'linear-gradient(to bottom, rgba(8,12,35,0) 0%, rgba(8,12,35,0.68) 18%, rgba(8,12,35,0.68) 100%)',
+                      position: "absolute",
+                      top: "38%",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        "linear-gradient(to bottom, rgba(8,12,35,0) 0%, rgba(8,12,35,0.68) 18%, rgba(8,12,35,0.68) 100%)",
                       opacity: contentRevealed ? 0 : 1,
-                      transition: 'opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.45s',
-                      pointerEvents: 'none',
+                      transition:
+                        "opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.45s",
+                      pointerEvents: "none",
                       zIndex: 10,
                     }}
                   />
 
                   {/* Click-to-info overlay — shows tooltip when user clicks on the non-interactive preview */}
                   <div
-                    style={{ position: 'absolute', inset: 0, zIndex: 20, cursor: 'default' }}
-                    onClick={() => toast.info("Das ist deine Live-Vorschau. Beantworte die Fragen im Chat – alle Inhalte, Bilder und Farben lassen sich dort anpassen.", { duration: 4000 })}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      zIndex: 20,
+                      cursor: "default",
+                    }}
+                    onClick={() =>
+                      toast.info(
+                        "Das ist deine Live-Vorschau. Beantworte die Fragen im Chat – alle Inhalte, Bilder und Farben lassen sich dort anpassen.",
+                        { duration: 4000 }
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -6278,15 +8863,19 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               <div className="w-14 h-14 bg-black/15 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Mail className="w-7 h-7 text-gray-900" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Entwurf speichern?</h2>
-              <p className="text-gray-800 text-sm">Sichere deinen Fortschritt — wir senden dir den Link per E-Mail.</p>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">
+                Entwurf speichern?
+              </h2>
+              <p className="text-gray-800 text-sm">
+                Sichere deinen Fortschritt — wir senden dir den Link per E-Mail.
+              </p>
             </div>
             <div className="p-6 space-y-3">
               <input
                 type="email"
                 placeholder="deine@email.de"
                 value={exitIntentEmail}
-                onChange={(e) => setExitIntentEmail(e.target.value)}
+                onChange={e => setExitIntentEmail(e.target.value)}
                 className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 placeholder-slate-500"
               />
               <button
@@ -6298,13 +8887,23 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                   }
                   setData(p => ({ ...p, email }));
                   await trySaveStep(STEP_ORDER.indexOf("email"), { email });
-                  if (websiteId) saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
+                  if (websiteId)
+                    saveCustomerEmailMutation.mutate({
+                      websiteId,
+                      email,
+                      marketingConsent,
+                    });
                   trackConversion("qualify_lead");
-                  toast.success("Gespeichert! Du kannst jederzeit zurückkehren.");
+                  toast.success(
+                    "Gespeichert! Du kannst jederzeit zurückkehren."
+                  );
                   setShowSaveReminder(false);
                 }}
                 className="w-full py-3 rounded-xl font-semibold text-gray-900 transition-colors"
-                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)",
+                }}
               >
                 Fortschritt speichern
               </button>
@@ -6319,258 +8918,336 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
         </div>
       )}
 
-      {showExitIntent && (() => {
-        const knownEmail = data.email || data.legalEmail;
-        return (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-
-              {supportMode === "closed" && knownEmail ? (
-                /* ── Saved-state: email already known ── */
-                <>
-                  <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-center relative overflow-hidden">
-                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-400/20 rounded-full blur-xl" />
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
-                        <CheckCircle className="w-8 h-8 text-white" />
-                      </div>
-                      <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Fortschritt gespeichert ✓</h2>
-                      {!isPaid && (
-                        <p className="text-emerald-100 text-sm font-medium leading-relaxed">
-                          Deine Website ist noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-8 space-y-5">
-                    <p className="text-slate-300 text-sm leading-relaxed text-center">
-                      Du kannst jederzeit weitermachen – wir haben alles gespeichert.
-                    </p>
-
-                    {/* Email badge */}
-                    <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                        <Mail className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-0.5">Gespeichert unter</p>
-                        <p className="text-emerald-200 text-sm font-medium truncate">{knownEmail}</p>
+      {showExitIntent &&
+        (() => {
+          const knownEmail = data.email || data.legalEmail;
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
+              <div className="bg-slate-800 border border-slate-700 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+                {supportMode === "closed" && knownEmail ? (
+                  /* ── Saved-state: email already known ── */
+                  <>
+                    <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-center relative overflow-hidden">
+                      <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                      <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-emerald-400/20 rounded-full blur-xl" />
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                          <CheckCircle className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">
+                          Fortschritt gespeichert ✓
+                        </h2>
+                        {!isPaid && (
+                          <p className="text-emerald-100 text-sm font-medium leading-relaxed">
+                            Deine Website ist noch{" "}
+                            <span className="text-white font-bold tabular-nums">
+                              {countdown}
+                            </span>{" "}
+                            für dich reserviert.
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setShowExitIntent(false)}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
-                    >
-                      Weiter bearbeiten
-                    </button>
-                  </div>
-                </>
-              ) : supportMode === "closed" ? (
-                /* ── Capture-state: no email yet ── */
-                <>
-                  <div className="bg-gradient-to-br from-lime-600 to-lime-700 p-8 text-center relative overflow-hidden">
-                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-lime-400/20 rounded-full blur-xl" />
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
-                        <Clock className="w-8 h-8 text-white" />
-                      </div>
-                      <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">Warte kurz! ⚡</h2>
-                      <p className="text-lime-100 text-sm font-medium leading-relaxed">
-                        Deine Website ist nur noch <span className="text-white font-bold tabular-nums">{countdown}</span> für dich reserviert.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="p-8 space-y-6">
-                    <div className="space-y-4">
+                    <div className="p-8 space-y-5">
                       <p className="text-slate-300 text-sm leading-relaxed text-center">
-                        Hinterlasse deine E-Mail-Adresse, damit wir deinen Bearbeitungsstand speichern können und du später weitermachen kannst.
+                        Du kannst jederzeit weitermachen – wir haben alles
+                        gespeichert.
                       </p>
-                      <div className="space-y-3">
-                        <input
-                          type="email"
-                          placeholder="deine@email.de"
-                          value={exitIntentEmail}
-                          onChange={(e) => setExitIntentEmail(e.target.value)}
-                          className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 transition-all placeholder-slate-500"
-                        />
-                        <label className="flex items-start gap-2.5 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={marketingConsent}
-                            onChange={(e) => setMarketingConsent(e.target.checked)}
-                            className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
-                          />
-                          <span className="text-slate-400 text-xs leading-relaxed">
-                            Ich möchte gelegentlich per E-Mail über Neuigkeiten und Tipps informiert werden.{" "}
-                            <a href="/datenschutz" target="_blank" className="text-lime-400 underline underline-offset-2 hover:text-lime-300">Datenschutz</a>
-                          </span>
-                        </label>
-                        <button
-                          onClick={async () => {
-                            const email = exitIntentEmail.trim();
-                            if (!email || !email.includes("@") || !email.includes(".")) {
-                              toast.error("Bitte gib eine gültige E-Mail-Adresse ein.");
-                              return;
-                            }
-                            setData(p => ({ ...p, email }));
-                            await trySaveStep(STEP_ORDER.indexOf("email"), { email });
-                            if (websiteId) {
-                              saveCustomerEmailMutation.mutate({ websiteId, email, marketingConsent });
-                            }
-                            toast.success("Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren.");
-                            setShowExitIntent(false);
-                          }}
-                          className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
-                        >
-                          Fortschritt speichern & weiter
-                        </button>
+
+                      {/* Email badge */}
+                      <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                          <Mail className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider mb-0.5">
+                            Gespeichert unter
+                          </p>
+                          <p className="text-emerald-200 text-sm font-medium truncate">
+                            {knownEmail}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setShowExitIntent(false)}
+                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-600/20"
+                      >
+                        Weiter bearbeiten
+                      </button>
+                    </div>
+                  </>
+                ) : supportMode === "closed" ? (
+                  /* ── Capture-state: no email yet ── */
+                  <>
+                    <div className="bg-gradient-to-br from-lime-600 to-lime-700 p-8 text-center relative overflow-hidden">
+                      <div className="absolute -top-12 -right-12 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                      <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-lime-400/20 rounded-full blur-xl" />
+                      <div className="relative z-10">
+                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
+                          <Clock className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-black text-white mb-2 leading-tight uppercase tracking-tight">
+                          Warte kurz! ⚡
+                        </h2>
+                        <p className="text-lime-100 text-sm font-medium leading-relaxed">
+                          Deine Website ist nur noch{" "}
+                          <span className="text-white font-bold tabular-nums">
+                            {countdown}
+                          </span>{" "}
+                          für dich reserviert.
+                        </p>
                       </div>
                     </div>
 
-                    {/* Schnellsupport-Link */}
-                    <button
-                      onClick={() => setSupportMode("select")}
-                      className="w-full text-slate-400 hover:text-white text-sm transition-colors py-1 flex items-center justify-center gap-1.5"
-                    >
-                      <span>⚡</span>
-                      <span>Hakt etwas? Schnellsupport →</span>
-                    </button>
-
-                    <button
-                      onClick={() => setShowExitIntent(false)}
-                      className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
-                    >
-                      Doch nicht schließen
-                    </button>
-                  </div>
-                </>
-              ) : null}
-
-              {/* Quick-Support-Panel (über die ganze Modal-Höhe legen) */}
-              {supportMode !== "closed" && (
-                <div className="p-8 space-y-6">
-                  {supportMode === "select" && (
-                    <>
-                      <div className="text-center">
-                        <h3 className="text-white font-bold text-lg mb-1">Was hakt gerade?</h3>
-                        <p className="text-slate-400 text-sm">Wir antworten persönlich, meist innerhalb einer Stunde.</p>
-                      </div>
-                      <div className="space-y-2">
-                        {[
-                          { v: "tech" as const, emoji: "🐛", title: "Technisches Problem", desc: "Bilder fehlen, Seite hakt, Fehlermeldung" },
-                          { v: "content" as const, emoji: "💭", title: "Frage zum Inhalt", desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos" },
-                          { v: "other" as const, emoji: "✍️", title: "Etwas anderes", desc: "Sag uns kurz, was los ist" },
-                        ].map((opt) => (
-                          <button
-                            key={opt.v}
-                            onClick={() => { setSupportType(opt.v); setSupportMode("details"); }}
-                            className="w-full text-left p-4 rounded-xl border border-slate-700 hover:border-lime-500/50 bg-slate-700/30 hover:bg-lime-500/10 transition-all group"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="text-2xl">{opt.emoji}</div>
-                              <div className="flex-1">
-                                <div className="text-white font-semibold text-sm">{opt.title}</div>
-                                <div className="text-slate-400 text-xs mt-0.5">{opt.desc}</div>
-                              </div>
-                              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-lime-400 mt-1" />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => setSupportMode("closed")}
-                        className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
-                      >
-                        ← Zurück
-                      </button>
-                    </>
-                  )}
-
-                  {supportMode === "details" && supportType && (
-                    <>
-                      <div>
-                        <h3 className="text-white font-bold text-lg mb-1">
-                          {supportType === "tech" && "🐛 Technisches Problem"}
-                          {supportType === "content" && "💭 Frage zum Inhalt"}
-                          {supportType === "other" && "✍️ Was anderes"}
-                        </h3>
-                        <p className="text-slate-400 text-sm">
-                          {supportType === "tech" && "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
-                          {supportType === "content" && "Was ist deine Frage? Wir helfen gerne."}
-                          {supportType === "other" && "Was möchtest du uns sagen?"}
+                    <div className="p-8 space-y-6">
+                      <div className="space-y-4">
+                        <p className="text-slate-300 text-sm leading-relaxed text-center">
+                          Hinterlasse deine E-Mail-Adresse, damit wir deinen
+                          Bearbeitungsstand speichern können und du später
+                          weitermachen kannst.
                         </p>
+                        <div className="space-y-3">
+                          <input
+                            type="email"
+                            placeholder="deine@email.de"
+                            value={exitIntentEmail}
+                            onChange={e => setExitIntentEmail(e.target.value)}
+                            className="w-full bg-slate-700/50 border border-slate-600 text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-lime-500 transition-all placeholder-slate-500"
+                          />
+                          <label className="flex items-start gap-2.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={marketingConsent}
+                              onChange={e =>
+                                setMarketingConsent(e.target.checked)
+                              }
+                              className="mt-0.5 shrink-0 w-4 h-4 rounded accent-lime-500 cursor-pointer"
+                            />
+                            <span className="text-slate-400 text-xs leading-relaxed">
+                              Ich möchte gelegentlich per E-Mail über
+                              Neuigkeiten und Tipps informiert werden.{" "}
+                              <a
+                                href="/datenschutz"
+                                target="_blank"
+                                className="text-lime-400 underline underline-offset-2 hover:text-lime-300"
+                              >
+                                Datenschutz
+                              </a>
+                            </span>
+                          </label>
+                          <button
+                            onClick={async () => {
+                              const email = exitIntentEmail.trim();
+                              if (
+                                !email ||
+                                !email.includes("@") ||
+                                !email.includes(".")
+                              ) {
+                                toast.error(
+                                  "Bitte gib eine gültige E-Mail-Adresse ein."
+                                );
+                                return;
+                              }
+                              setData(p => ({ ...p, email }));
+                              await trySaveStep(STEP_ORDER.indexOf("email"), {
+                                email,
+                              });
+                              if (websiteId) {
+                                saveCustomerEmailMutation.mutate({
+                                  websiteId,
+                                  email,
+                                  marketingConsent,
+                                });
+                              }
+                              toast.success(
+                                "Fortschritt gespeichert! Du kannst nun jederzeit zurückkehren."
+                              );
+                              setShowExitIntent(false);
+                            }}
+                            className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
+                          >
+                            Fortschritt speichern & weiter
+                          </button>
+                        </div>
                       </div>
-                      {!knownEmail && (
-                        <input
-                          type="email"
-                          placeholder="Deine E-Mail (damit wir antworten können)"
-                          value={data.email}
-                          onChange={(e) => setData((p) => ({ ...p, email: e.target.value }))}
-                          className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none transition-colors"
-                        />
-                      )}
-                      <textarea
-                        value={supportText}
-                        onChange={(e) => setSupportText(e.target.value)}
-                        placeholder={
-                          supportType === "tech"
-                            ? 'z.B. "Hero-Bild lädt nicht, sehe nur ein graues Rechteck"'
-                            : supportType === "content"
-                            ? 'z.B. "Brauche Hilfe bei den Service-Beschreibungen"'
-                            : "Deine Nachricht…"
-                        }
-                        rows={4}
-                        className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none resize-none transition-colors"
-                      />
-                      <div className="space-y-2">
+
+                      {/* Schnellsupport-Link */}
+                      <button
+                        onClick={() => setSupportMode("select")}
+                        className="w-full text-slate-400 hover:text-white text-sm transition-colors py-1 flex items-center justify-center gap-1.5"
+                      >
+                        <span>⚡</span>
+                        <span>Hakt etwas? Schnellsupport →</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowExitIntent(false)}
+                        className="w-full text-slate-500 hover:text-slate-300 text-xs font-semibold uppercase tracking-widest transition-colors"
+                      >
+                        Doch nicht schließen
+                      </button>
+                    </div>
+                  </>
+                ) : null}
+
+                {/* Quick-Support-Panel (über die ganze Modal-Höhe legen) */}
+                {supportMode !== "closed" && (
+                  <div className="p-8 space-y-6">
+                    {supportMode === "select" && (
+                      <>
+                        <div className="text-center">
+                          <h3 className="text-white font-bold text-lg mb-1">
+                            Was hakt gerade?
+                          </h3>
+                          <p className="text-slate-400 text-sm">
+                            Wir antworten persönlich, meist innerhalb einer
+                            Stunde.
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          {[
+                            {
+                              v: "tech" as const,
+                              emoji: "🐛",
+                              title: "Technisches Problem",
+                              desc: "Bilder fehlen, Seite hakt, Fehlermeldung",
+                            },
+                            {
+                              v: "content" as const,
+                              emoji: "💭",
+                              title: "Frage zum Inhalt",
+                              desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos",
+                            },
+                            {
+                              v: "other" as const,
+                              emoji: "✍️",
+                              title: "Etwas anderes",
+                              desc: "Sag uns kurz, was los ist",
+                            },
+                          ].map(opt => (
+                            <button
+                              key={opt.v}
+                              onClick={() => {
+                                setSupportType(opt.v);
+                                setSupportMode("details");
+                              }}
+                              className="w-full text-left p-4 rounded-xl border border-slate-700 hover:border-lime-500/50 bg-slate-700/30 hover:bg-lime-500/10 transition-all group"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="text-2xl">{opt.emoji}</div>
+                                <div className="flex-1">
+                                  <div className="text-white font-semibold text-sm">
+                                    {opt.title}
+                                  </div>
+                                  <div className="text-slate-400 text-xs mt-0.5">
+                                    {opt.desc}
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-lime-400 mt-1" />
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                         <button
-                          onClick={handleSupportSubmit}
-                          disabled={supportSending || (!knownEmail && !data.email)}
-                          className="w-full bg-lime-500 hover:bg-lime-400 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
-                        >
-                          {supportSending ? "Senden…" : "Senden"}
-                        </button>
-                        <button
-                          onClick={() => setSupportMode("select")}
+                          onClick={() => setSupportMode("closed")}
                           className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
                         >
                           ← Zurück
                         </button>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
 
-                  {supportMode === "sent" && (
-                    <div className="text-center space-y-4 py-4">
-                      <div className="w-14 h-14 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center mx-auto">
-                        <CheckCircle className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-bold text-lg mb-1">Nachricht ist raus!</h3>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                          Wir antworten meist innerhalb einer Stunde. Du kannst die Seite jetzt schließen — wir melden uns.
-                        </p>
-                      </div>
-                      <button
-                        onClick={closeExitModalsFully}
-                        className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all"
-                      >
-                        Alles klar
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    {supportMode === "details" && supportType && (
+                      <>
+                        <div>
+                          <h3 className="text-white font-bold text-lg mb-1">
+                            {supportType === "tech" && "🐛 Technisches Problem"}
+                            {supportType === "content" && "💭 Frage zum Inhalt"}
+                            {supportType === "other" && "✍️ Was anderes"}
+                          </h3>
+                          <p className="text-slate-400 text-sm">
+                            {supportType === "tech" &&
+                              "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
+                            {supportType === "content" &&
+                              "Was ist deine Frage? Wir helfen gerne."}
+                            {supportType === "other" &&
+                              "Was möchtest du uns sagen?"}
+                          </p>
+                        </div>
+                        {!knownEmail && (
+                          <input
+                            type="email"
+                            placeholder="Deine E-Mail (damit wir antworten können)"
+                            value={data.email}
+                            onChange={e =>
+                              setData(p => ({ ...p, email: e.target.value }))
+                            }
+                            className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none transition-colors"
+                          />
+                        )}
+                        <textarea
+                          value={supportText}
+                          onChange={e => setSupportText(e.target.value)}
+                          placeholder={
+                            supportType === "tech"
+                              ? 'z.B. "Hero-Bild lädt nicht, sehe nur ein graues Rechteck"'
+                              : supportType === "content"
+                                ? 'z.B. "Brauche Hilfe bei den Service-Beschreibungen"'
+                                : "Deine Nachricht…"
+                          }
+                          rows={4}
+                          className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-lime-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none resize-none transition-colors"
+                        />
+                        <div className="space-y-2">
+                          <button
+                            onClick={handleSupportSubmit}
+                            disabled={
+                              supportSending || (!knownEmail && !data.email)
+                            }
+                            className="w-full bg-lime-500 hover:bg-lime-400 disabled:opacity-60 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-lime-500/20"
+                          >
+                            {supportSending ? "Senden…" : "Senden"}
+                          </button>
+                          <button
+                            onClick={() => setSupportMode("select")}
+                            className="w-full text-slate-500 hover:text-slate-300 text-xs transition-colors py-1"
+                          >
+                            ← Zurück
+                          </button>
+                        </div>
+                      </>
+                    )}
 
+                    {supportMode === "sent" && (
+                      <div className="text-center space-y-4 py-4">
+                        <div className="w-14 h-14 rounded-full bg-lime-500/20 text-lime-400 flex items-center justify-center mx-auto">
+                          <CheckCircle className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-bold text-lg mb-1">
+                            Nachricht ist raus!
+                          </h3>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            Wir antworten meist innerhalb einer Stunde. Du
+                            kannst die Seite jetzt schließen — wir melden uns.
+                          </p>
+                        </div>
+                        <button
+                          onClick={closeExitModalsFully}
+                          className="w-full bg-lime-500 hover:bg-lime-400 text-white font-bold py-3.5 rounded-xl transition-all"
+                        >
+                          Alles klar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       {/* Exit confirmation modal for logged-in users */}
       {showExitConfirmation && (
@@ -6585,9 +9262,12 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                 <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-xl">
                   <CheckCircle className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-2xl font-black text-white mb-2 leading-tight">Achtung! ⚡</h2>
+                <h2 className="text-2xl font-black text-white mb-2 leading-tight">
+                  Achtung! ⚡
+                </h2>
                 <p className="text-emerald-100 text-sm font-medium leading-relaxed">
-                  Du verlässt gerade deine Seite, obwohl sie noch nicht fertig ist.
+                  Du verlässt gerade deine Seite, obwohl sie noch nicht fertig
+                  ist.
                 </p>
               </div>
             </div>
@@ -6599,19 +9279,28 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
                       <Mail className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-emerald-300 text-sm font-medium">E-Mail gespeichert:</p>
-                        <p className="text-white font-semibold">{user?.email}</p>
+                        <p className="text-emerald-300 text-sm font-medium">
+                          E-Mail gespeichert:
+                        </p>
+                        <p className="text-white font-semibold">
+                          {user?.email}
+                        </p>
                       </div>
                     </div>
 
                     <p className="text-slate-300 text-sm leading-relaxed text-center">
-                      Wir haben dir eine E-Mail mit deinem persönlichen Link geschickt.
-                      Über diesen Link kannst du deine Seite jederzeit fertigstellen.
+                      Wir haben dir eine E-Mail mit deinem persönlichen Link
+                      geschickt. Über diesen Link kannst du deine Seite
+                      jederzeit fertigstellen.
                     </p>
 
                     <div className="bg-slate-700/50 border border-slate-600 rounded-xl p-4 text-center">
-                      <p className="text-slate-400 text-xs mb-1">Deine Website ist reserviert für:</p>
-                      <p className="text-white font-mono text-lg font-bold tabular-nums">{countdown}</p>
+                      <p className="text-slate-400 text-xs mb-1">
+                        Deine Website ist reserviert für:
+                      </p>
+                      <p className="text-white font-mono text-lg font-bold tabular-nums">
+                        {countdown}
+                      </p>
                     </div>
                   </div>
 
@@ -6645,25 +9334,51 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
               {supportMode === "select" && (
                 <>
                   <div className="text-center">
-                    <h3 className="text-white font-bold text-lg mb-1">Was hakt gerade?</h3>
-                    <p className="text-slate-400 text-sm">Wir antworten persönlich, meist innerhalb einer Stunde.</p>
+                    <h3 className="text-white font-bold text-lg mb-1">
+                      Was hakt gerade?
+                    </h3>
+                    <p className="text-slate-400 text-sm">
+                      Wir antworten persönlich, meist innerhalb einer Stunde.
+                    </p>
                   </div>
                   <div className="space-y-2">
                     {[
-                      { v: "tech" as const, emoji: "🐛", title: "Technisches Problem", desc: "Bilder fehlen, Seite hakt, Fehlermeldung" },
-                      { v: "content" as const, emoji: "💭", title: "Frage zum Inhalt", desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos" },
-                      { v: "other" as const, emoji: "✍️", title: "Etwas anderes", desc: "Sag uns kurz, was los ist" },
-                    ].map((opt) => (
+                      {
+                        v: "tech" as const,
+                        emoji: "🐛",
+                        title: "Technisches Problem",
+                        desc: "Bilder fehlen, Seite hakt, Fehlermeldung",
+                      },
+                      {
+                        v: "content" as const,
+                        emoji: "💭",
+                        title: "Frage zum Inhalt",
+                        desc: "Was soll ich reinschreiben, Hilfe bei Texten/Fotos",
+                      },
+                      {
+                        v: "other" as const,
+                        emoji: "✍️",
+                        title: "Etwas anderes",
+                        desc: "Sag uns kurz, was los ist",
+                      },
+                    ].map(opt => (
                       <button
                         key={opt.v}
-                        onClick={() => { setSupportType(opt.v); setSupportMode("details"); }}
+                        onClick={() => {
+                          setSupportType(opt.v);
+                          setSupportMode("details");
+                        }}
                         className="w-full text-left p-4 rounded-xl border border-slate-700 hover:border-emerald-500/50 bg-slate-700/30 hover:bg-emerald-500/10 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="text-2xl">{opt.emoji}</div>
                           <div className="flex-1">
-                            <div className="text-white font-semibold text-sm">{opt.title}</div>
-                            <div className="text-slate-400 text-xs mt-0.5">{opt.desc}</div>
+                            <div className="text-white font-semibold text-sm">
+                              {opt.title}
+                            </div>
+                            <div className="text-slate-400 text-xs mt-0.5">
+                              {opt.desc}
+                            </div>
                           </div>
                           <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 mt-1" />
                         </div>
@@ -6688,20 +9403,24 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                       {supportType === "other" && "✍️ Was anderes"}
                     </h3>
                     <p className="text-slate-400 text-sm">
-                      {supportType === "tech" && "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
-                      {supportType === "content" && "Was ist deine Frage? Wir helfen gerne."}
+                      {supportType === "tech" &&
+                        "Was funktioniert nicht? Mehr Infos helfen uns, schneller zu fixen."}
+                      {supportType === "content" &&
+                        "Was ist deine Frage? Wir helfen gerne."}
                       {supportType === "other" && "Was möchtest du uns sagen?"}
                     </p>
                   </div>
                   <textarea
                     value={supportText}
-                    onChange={(e) => setSupportText(e.target.value)}
+                    onChange={e => setSupportText(e.target.value)}
                     placeholder={
                       supportType === "tech"
-                        ? "z.B. „Hero-Bild lädt nicht, sehe nur ein graues Rechteck" + '"'
+                        ? "z.B. „Hero-Bild lädt nicht, sehe nur ein graues Rechteck" +
+                          '"'
                         : supportType === "content"
-                        ? "z.B. „Brauche Hilfe bei den Service-Beschreibungen" + '"'
-                        : "Deine Nachricht…"
+                          ? "z.B. „Brauche Hilfe bei den Service-Beschreibungen" +
+                            '"'
+                          : "Deine Nachricht…"
                     }
                     rows={4}
                     className="w-full px-3 py-2.5 bg-slate-700/50 border border-slate-600 focus:border-emerald-500 rounded-xl text-white text-sm placeholder-slate-500 outline-none resize-none transition-colors"
@@ -6730,10 +9449,13 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     <CheckCircle className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-white font-bold text-lg mb-1">Nachricht ist raus!</h3>
+                    <h3 className="text-white font-bold text-lg mb-1">
+                      Nachricht ist raus!
+                    </h3>
                     <p className="text-slate-400 text-sm leading-relaxed">
-                      Wir antworten meist innerhalb einer Stunde an <strong className="text-white">{user?.email}</strong>.
-                      Du kannst die Seite jetzt schließen — wir melden uns.
+                      Wir antworten meist innerhalb einer Stunde an{" "}
+                      <strong className="text-white">{user?.email}</strong>. Du
+                      kannst die Seite jetzt schließen — wir melden uns.
                     </p>
                   </div>
                   <button
@@ -6762,28 +9484,39 @@ interface MultiPhotoSelectorProps {
   industry: string;
 }
 
-function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: MultiPhotoSelectorProps) {
+function MultiPhotoSelector({
+  websiteId,
+  selectedPhotos,
+  onUpdate,
+  industry,
+}: MultiPhotoSelectorProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
   const gmbInitializedRef = useRef(false);
 
-  const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
-    { category: industry },
-    { enabled: !!industry }
-  );
+  const { data: suggestionsData, isLoading: isLoadingSuggestions } =
+    trpc.onboarding.getPhotoSuggestions.useQuery(
+      { category: industry },
+      { enabled: !!industry }
+    );
 
   const { data: gmbData } = trpc.onboarding.getGmbPhotos.useQuery(
     { websiteId: parseInt(websiteId || "0") },
     { enabled: !!websiteId && websiteId !== "0", staleTime: Infinity }
   );
-  const gmbPhotos = (gmbData?.photos || []).filter(url => !brokenImages.has(url));
+  const gmbPhotos = (gmbData?.photos || []).filter(
+    url => !brokenImages.has(url)
+  );
 
   // Pre-select all GMB photos when the gallery is still empty
   useEffect(() => {
     if (gmbInitializedRef.current) return;
     if (!gmbData?.photos?.length) return;
-    if (selectedPhotos.length > 0) { gmbInitializedRef.current = true; return; }
+    if (selectedPhotos.length > 0) {
+      gmbInitializedRef.current = true;
+      return;
+    }
     gmbInitializedRef.current = true;
     onUpdate(gmbData.photos);
   }, [gmbData]);
@@ -6803,21 +9536,27 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
       {/* GMB photo section */}
       {gmbPhotos.length > 0 && (
         <div className="space-y-2">
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">Deine Google-Fotos</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+            Deine Google-Fotos
+          </p>
           <div className="grid grid-cols-3 gap-2">
             {gmbPhotos.map((url, idx) => (
               <button
                 key={url + idx}
                 onClick={() => togglePhoto(url)}
                 className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                  selectedPhotos.includes(url) ? "border-lime-500 ring-2 ring-lime-500/20" : "border-transparent hover:border-slate-500"
+                  selectedPhotos.includes(url)
+                    ? "border-lime-500 ring-2 ring-lime-500/20"
+                    : "border-transparent hover:border-slate-500"
                 }`}
               >
                 <img
                   src={url}
                   alt={`Google Foto ${idx + 1}`}
                   className="w-full h-full object-cover"
-                  onError={() => setBrokenImages(prev => new Set(prev).add(url))}
+                  onError={() =>
+                    setBrokenImages(prev => new Set(prev).add(url))
+                  }
                 />
                 {selectedPhotos.includes(url) && (
                   <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
@@ -6832,7 +9571,9 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
               </button>
             ))}
           </div>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider pt-1">Oder Stockfoto wählen</p>
+          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-wider pt-1">
+            Oder Stockfoto wählen
+          </p>
         </div>
       )}
 
@@ -6841,62 +9582,82 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
         {isLoadingSuggestions ? (
           <div className="col-span-3 py-10 flex flex-col items-center justify-center gap-3 bg-slate-800/30 rounded-xl border border-slate-700/30">
             <Loader2 className="w-5 h-5 text-lime-500 animate-spin" />
-            <p className="text-slate-500 text-[10px]">Passende Fotos werden geladen…</p>
+            <p className="text-slate-500 text-[10px]">
+              Passende Fotos werden geladen…
+            </p>
           </div>
         ) : (
-          photos.filter(p => !brokenImages.has(p.url)).map((photo, idx) => (
-            <button
-              key={idx}
-              onClick={() => togglePhoto(photo.url)}
-              className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                selectedPhotos.includes(photo.url) ? "border-lime-500 ring-2 ring-lime-500/20" : "border-transparent hover:border-slate-500"
-              }`}
-            >
-              <img
-                src={photo.thumb || photo.url}
-                alt={photo.alt}
-                className="w-full h-full object-cover"
-                onError={() => setBrokenImages(prev => new Set(prev).add(photo.url))}
-              />
-              {selectedPhotos.includes(photo.url) && (
-                <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
-                  <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-lg">
-                    <Check className="w-3.5 h-3.5 text-white" />
+          photos
+            .filter(p => !brokenImages.has(p.url))
+            .map((photo, idx) => (
+              <button
+                key={idx}
+                onClick={() => togglePhoto(photo.url)}
+                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                  selectedPhotos.includes(photo.url)
+                    ? "border-lime-500 ring-2 ring-lime-500/20"
+                    : "border-transparent hover:border-slate-500"
+                }`}
+              >
+                <img
+                  src={photo.thumb || photo.url}
+                  alt={photo.alt}
+                  className="w-full h-full object-cover"
+                  onError={() =>
+                    setBrokenImages(prev => new Set(prev).add(photo.url))
+                  }
+                />
+                {selectedPhotos.includes(photo.url) && (
+                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center shadow-lg">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
                   </div>
+                )}
+                <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5 text-[8px] text-white/80">
+                  Vorschlag
                 </div>
-              )}
-              <div className="absolute bottom-1 right-1 bg-black/50 backdrop-blur-sm rounded px-1.5 py-0.5 text-[8px] text-white/80">
-                Vorschlag
-              </div>
-            </button>
-          ))
+              </button>
+            ))
         )}
       </div>
 
       {/* Upload option */}
       <div className="border-t border-slate-700 pt-3">
         <div className="flex flex-wrap gap-2 mb-3">
-          {selectedPhotos.filter(url => !photos.some(p => p.url === url) && !gmbPhotos.includes(url)).map((url, i) => (
-            <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-lime-500 group">
-              <img src={url} alt="" className="w-full h-full object-cover" />
-              <button 
-                onClick={() => onUpdate(selectedPhotos.filter(u => u !== url))}
-                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+          {selectedPhotos
+            .filter(
+              url =>
+                !photos.some(p => p.url === url) && !gmbPhotos.includes(url)
+            )
+            .map((url, i) => (
+              <div
+                key={i}
+                className="relative w-16 h-16 rounded-lg overflow-hidden border border-lime-500 group"
               >
-                <Trash2 className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          ))}
-          <label className={`w-16 h-16 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}>
+                <img src={url} alt="" className="w-full h-full object-cover" />
+                <button
+                  onClick={() =>
+                    onUpdate(selectedPhotos.filter(u => u !== url))
+                  }
+                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                >
+                  <Trash2 className="w-4 h-4 text-white" />
+                </button>
+              </div>
+            ))}
+          <label
+            className={`w-16 h-16 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
+          >
             <input
               type="file"
               accept="image/*"
               className="hidden"
               multiple
-              onChange={async (e) => {
+              onChange={async e => {
                 const files = Array.from(e.target.files || []);
                 if (files.length === 0 || !websiteId) return;
-                
+
                 if (selectedPhotos.length + files.length > 12) {
                   toast.error("Maximal 12 Bilder insgesamt erlaubt.");
                   return;
@@ -6915,7 +9676,7 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
                     reader.onerror = reject;
                   });
                   reader.readAsDataURL(file);
-                  
+
                   try {
                     const base64 = (await promise).split(",")[1];
                     const result = await uploadLogoMutation.mutateAsync({
@@ -6937,10 +9698,14 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
             ) : (
               <Plus className="w-4 h-4 text-slate-400" />
             )}
-            <span className="text-[8px] text-slate-500 mt-1 uppercase font-bold tracking-wider text-center px-1">Hochladen</span>
+            <span className="text-[8px] text-slate-500 mt-1 uppercase font-bold tracking-wider text-center px-1">
+              Hochladen
+            </span>
           </label>
         </div>
-        <p className="text-[10px] text-slate-500">Bilder auswählen oder eigene hochladen (PNG, JPG, WebP · max. 5 MB)</p>
+        <p className="text-[10px] text-slate-500">
+          Bilder auswählen oder eigene hochladen (PNG, JPG, WebP · max. 5 MB)
+        </p>
       </div>
     </div>
   );
@@ -6949,12 +9714,18 @@ function MultiPhotoSelector({ websiteId, selectedPhotos, onUpdate, industry }: M
 // ── HeroPhotoStep ─────────────────────────────────────────────────────────────
 
 // ── CategoryPicker ─────────────────────────────────────────────────────────
-function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (cat: string) => void }) {
+function CategoryPicker({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (cat: string) => void;
+}) {
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
-    ? CATEGORY_GROUPS.flatMap((g) =>
-        g.categories.filter((c) => c.toLowerCase().includes(search.toLowerCase()))
+    ? CATEGORY_GROUPS.flatMap(g =>
+        g.categories.filter(c => c.toLowerCase().includes(search.toLowerCase()))
       )
     : null;
 
@@ -6965,7 +9736,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
           className="w-full bg-slate-700/60 border border-slate-600/50 text-slate-200 placeholder-slate-500 text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500/60 focus:bg-lime-500/10 transition-all"
         />
@@ -6974,7 +9745,9 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
             onClick={() => setSearch("")}
             className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
             aria-label="Suche löschen"
-          >✕</button>
+          >
+            ✕
+          </button>
         )}
       </div>
 
@@ -6983,7 +9756,9 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
         <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
           {filtered.length === 0 ? (
             <div className="px-3 py-3 flex items-center justify-between gap-2">
-              <span className="text-slate-400 text-sm">Keine Treffer – Branche trotzdem übernehmen?</span>
+              <span className="text-slate-400 text-sm">
+                Keine Treffer – Branche trotzdem übernehmen?
+              </span>
               <button
                 onClick={() => onSelect(search.trim())}
                 className="text-xs bg-lime-500 hover:bg-lime-400 text-white px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
@@ -6992,7 +9767,7 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
               </button>
             </div>
           ) : (
-            filtered.map((cat) => (
+            filtered.map(cat => (
               <button
                 key={cat}
                 onClick={() => onSelect(cat)}
@@ -7010,15 +9785,17 @@ function CategoryPicker({ selected, onSelect }: { selected: string; onSelect: (c
       ) : (
         /* Grouped list (no search active) */
         <div className="max-h-64 overflow-y-auto rounded-xl border border-slate-700/50 bg-slate-800/60 divide-y divide-slate-700/40">
-          {CATEGORY_GROUPS.map((group) => (
+          {CATEGORY_GROUPS.map(group => (
             <details key={group.group} className="group">
               <summary className="flex items-center gap-2 px-3 py-2 cursor-pointer select-none text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors text-xs font-semibold uppercase tracking-wide">
                 <span>{group.icon}</span>
                 <span className="flex-1">{group.group}</span>
-                <span className="text-slate-500 group-open:rotate-90 transition-transform text-[10px]">▶</span>
+                <span className="text-slate-500 group-open:rotate-90 transition-transform text-[10px]">
+                  ▶
+                </span>
               </summary>
               <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
-                {group.categories.map((cat) => (
+                {group.categories.map(cat => (
                   <button
                     key={cat}
                     onClick={() => onSelect(cat)}
@@ -7049,7 +9826,14 @@ interface HeroPhotoStepProps {
   onNext: () => Promise<void>;
 }
 
-function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto, onSelect, onNext }: HeroPhotoStepProps) {
+function HeroPhotoStep({
+  businessCategory,
+  heroPhotoUrl,
+  websiteId,
+  isAboutPhoto,
+  onSelect,
+  onNext,
+}: HeroPhotoStepProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
   const uploadLogoMutation = trpc.onboarding.uploadLogo.useMutation();
@@ -7062,21 +9846,30 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
       // Kurze Verzögerung, damit das DOM-Update (Highlight des gewählten Fotos)
       // vor dem Scroll fertig ist und der Scroll smooth wirkt.
       const t = setTimeout(() => {
-        nextButtonRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        nextButtonRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
       }, 120);
       return () => clearTimeout(t);
     }
   }, [heroPhotoUrl]);
 
-  const { data: suggestionsData, isLoading: isLoadingSuggestions } = trpc.onboarding.getPhotoSuggestions.useQuery(
-    { category: businessCategory },
-    { enabled: !!businessCategory }
-  );
+  const { data: suggestionsData, isLoading: isLoadingSuggestions } =
+    trpc.onboarding.getPhotoSuggestions.useQuery(
+      { category: businessCategory },
+      { enabled: !!businessCategory }
+    );
   const { data: gmbData } = trpc.onboarding.getGmbPhotos.useQuery(
     { websiteId: websiteId! },
     { enabled: !!websiteId }
   );
-  const gmbPhotos = (gmbData?.photos || []).map((url) => ({ url, thumb: url, alt: "Google My Business Foto", isGmb: true }));
+  const gmbPhotos = (gmbData?.photos || []).map(url => ({
+    url,
+    thumb: url,
+    alt: "Google My Business Foto",
+    isGmb: true,
+  }));
 
   // Auto-select first GMB photo if nothing chosen yet
   useEffect(() => {
@@ -7085,13 +9878,28 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
       const photo = gmbPhotos[idx] || gmbPhotos[0];
       if (photo) onSelect(photo.url);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gmbData]);
 
   const photos = suggestionsData?.suggestions || [
-    { url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70", alt: "Modernes Büro" },
-    { url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70", alt: "Helles Büro" },
-    { url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80", thumb: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=70", alt: "Gebäude" },
+    {
+      url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80",
+      thumb:
+        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=70",
+      alt: "Modernes Büro",
+    },
+    {
+      url: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&q=80",
+      thumb:
+        "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=400&q=70",
+      alt: "Helles Büro",
+    },
+    {
+      url: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80",
+      thumb:
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&q=70",
+      alt: "Gebäude",
+    },
   ];
 
   return (
@@ -7105,37 +9913,51 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
       {/* GMB photos section */}
       {gmbPhotos.length > 0 && (
         <div className="space-y-2">
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Deine Google-Fotos</p>
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">
+            Deine Google-Fotos
+          </p>
           <div className="grid grid-cols-3 gap-2">
-            {gmbPhotos.filter(p => !brokenImages.has(p.url)).map((photo, idx) => (
-              <button
-                key={photo.url + idx}
-                onClick={() => onSelect(heroPhotoUrl === photo.url ? "" : photo.url)}
-                className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                  heroPhotoUrl === photo.url
-                    ? "border-lime-400 ring-2 ring-lime-400/40"
-                    : "border-slate-600/40 hover:border-slate-400"
-                }`}
-                title={photo.alt}
-              >
-                <img
-                  src={photo.thumb}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={() => setBrokenImages(prev => { const next = new Set(prev); next.add(photo.url); return next; })}
-                />
-                {heroPhotoUrl === photo.url && (
-                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5 text-white" />
+            {gmbPhotos
+              .filter(p => !brokenImages.has(p.url))
+              .map((photo, idx) => (
+                <button
+                  key={photo.url + idx}
+                  onClick={() =>
+                    onSelect(heroPhotoUrl === photo.url ? "" : photo.url)
+                  }
+                  className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                    heroPhotoUrl === photo.url
+                      ? "border-lime-400 ring-2 ring-lime-400/40"
+                      : "border-slate-600/40 hover:border-slate-400"
+                  }`}
+                  title={photo.alt}
+                >
+                  <img
+                    src={photo.thumb}
+                    alt={photo.alt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={() =>
+                      setBrokenImages(prev => {
+                        const next = new Set(prev);
+                        next.add(photo.url);
+                        return next;
+                      })
+                    }
+                  />
+                  {heroPhotoUrl === photo.url && (
+                    <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 text-white" />
+                      </div>
                     </div>
-                  </div>
-                )}
-              </button>
-            ))}
+                  )}
+                </button>
+              ))}
           </div>
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide pt-1">Oder Stockfoto wählen</p>
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide pt-1">
+            Oder Stockfoto wählen
+          </p>
         </div>
       )}
 
@@ -7144,71 +9966,85 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
         {isLoadingSuggestions ? (
           <div className="col-span-3 py-12 flex flex-col items-center justify-center gap-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
             <Loader2 className="w-6 h-6 text-lime-500 animate-spin" />
-            <p className="text-slate-400 text-xs">Passende Fotos werden geladen…</p>
+            <p className="text-slate-400 text-xs">
+              Passende Fotos werden geladen…
+            </p>
           </div>
         ) : (
-          (photos as any[]).filter(p => {
-            const url = typeof p === "string" ? p : p.url;
-            return !brokenImages.has(url);
-          }).map((photo, idx) => {
-            const url = typeof photo === "string" ? photo : photo.url;
-            const thumb = typeof photo === "string" ? photo : photo.thumb || photo.url;
-            const alt = typeof photo === "string" ? businessCategory : photo.alt;
+          (photos as any[])
+            .filter(p => {
+              const url = typeof p === "string" ? p : p.url;
+              return !brokenImages.has(url);
+            })
+            .map((photo, idx) => {
+              const url = typeof photo === "string" ? photo : photo.url;
+              const thumb =
+                typeof photo === "string" ? photo : photo.thumb || photo.url;
+              const alt =
+                typeof photo === "string" ? businessCategory : photo.alt;
 
-            return (
-              <button
-                key={url + idx}
-                onClick={() => onSelect(heroPhotoUrl === url ? "" : url)}
-                className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
-                  heroPhotoUrl === url
-                    ? "border-lime-400 ring-2 ring-lime-400/40"
-                    : "border-slate-600/40 hover:border-slate-400"
-                }`}
-                title={alt}
-              >
-                <img
-                  src={thumb}
-                  alt={alt}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={() => {
-                    setBrokenImages(prev => {
-                      const next = new Set(prev);
-                      next.add(url);
-                      return next;
-                    });
-                  }}
-                />
-                {heroPhotoUrl === url && (
-                  <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
-                    <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5 text-white" />
+              return (
+                <button
+                  key={url + idx}
+                  onClick={() => onSelect(heroPhotoUrl === url ? "" : url)}
+                  className={`relative aspect-video rounded-lg overflow-hidden border-2 transition-all ${
+                    heroPhotoUrl === url
+                      ? "border-lime-400 ring-2 ring-lime-400/40"
+                      : "border-slate-600/40 hover:border-slate-400"
+                  }`}
+                  title={alt}
+                >
+                  <img
+                    src={thumb}
+                    alt={alt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={() => {
+                      setBrokenImages(prev => {
+                        const next = new Set(prev);
+                        next.add(url);
+                        return next;
+                      });
+                    }}
+                  />
+                  {heroPhotoUrl === url && (
+                    <div className="absolute inset-0 bg-lime-400/20 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-lime-400 flex items-center justify-center">
+                        <Check className="w-3.5 h-3.5 text-white" />
+                      </div>
                     </div>
-                  </div>
-                )}
-              </button>
-            );
-          })
+                  )}
+                </button>
+              );
+            })
         )}
       </div>
 
       {/* Stock Photo Search */}
       <div className="border-t border-slate-700 pt-3 space-y-2">
-        <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Stock-Foto suchen</p>
+        <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">
+          Stock-Foto suchen
+        </p>
         <StockPhotoSearch
           defaultQuery={businessCategory}
           selectedUrl={heroPhotoUrl}
-          onSelect={(url) => onSelect(url)}
+          onSelect={url => onSelect(url)}
           perPage={9}
         />
       </div>
 
       {/* Upload option */}
       <div className="border-t border-slate-700 pt-3">
-        <p className="text-slate-400 text-xs mb-2">Oder eigenes Foto hochladen:</p>
-        {heroPhotoUrl && !photos.some((p) => p.url === heroPhotoUrl) ? (
+        <p className="text-slate-400 text-xs mb-2">
+          Oder eigenes Foto hochladen:
+        </p>
+        {heroPhotoUrl && !photos.some(p => p.url === heroPhotoUrl) ? (
           <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-lime-500 bg-lime-400/10">
-            <img src={heroPhotoUrl} alt="Eigenes Foto" className="h-12 w-20 object-cover rounded" />
+            <img
+              src={heroPhotoUrl}
+              alt="Eigenes Foto"
+              className="h-12 w-20 object-cover rounded"
+            />
             <div className="flex-1">
               <p className="text-white text-sm font-medium">Eigenes Foto ✓</p>
               <button
@@ -7220,12 +10056,14 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
             </div>
           </div>
         ) : (
-          <label className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}>
+          <label
+            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-slate-600 bg-slate-700/40 hover:border-slate-500 cursor-pointer transition-all ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
+          >
             <input
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={async (e) => {
+              onChange={async e => {
                 const file = e.target.files?.[0];
                 if (!file || !websiteId) return;
                 if (file.size > 5 * 1024 * 1024) {
@@ -7258,8 +10096,12 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
               <Upload className="w-5 h-5 text-slate-400" />
             )}
             <div>
-              <p className="text-white text-sm">{isUploading ? "Wird hochgeladen…" : "Foto hochladen"}</p>
-              <p className="text-slate-400 text-xs">JPG, PNG oder WebP · max. 5 MB</p>
+              <p className="text-white text-sm">
+                {isUploading ? "Wird hochgeladen…" : "Foto hochladen"}
+              </p>
+              <p className="text-slate-400 text-xs">
+                JPG, PNG oder WebP · max. 5 MB
+              </p>
             </div>
           </label>
         )}
@@ -7267,7 +10109,10 @@ function HeroPhotoStep({ businessCategory, heroPhotoUrl, websiteId, isAboutPhoto
 
       <div ref={nextButtonRef} className="flex gap-2">
         <button
-          onClick={() => { onSelect(""); onNext(); }}
+          onClick={() => {
+            onSelect("");
+            onNext();
+          }}
           className="flex-1 text-xs text-slate-400 hover:text-slate-300 px-3 py-2 rounded-xl border border-slate-700 hover:border-slate-600 transition-colors"
         >
           Bestehendes behalten

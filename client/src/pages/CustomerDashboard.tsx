@@ -5,37 +5,125 @@ import HelpWidget from "@/components/HelpWidget";
 import { trackConversion } from "@/lib/tracking";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
-import { Loader2, Globe, ExternalLink, Edit2, Check, X, Palette, Phone, Mail, MapPin, Image, RefreshCw, Settings, User, LayoutGrid, Type, Sparkles, Plus, Trash2, ChevronLeft, ChevronUp, ChevronDown, Upload, MessageSquare, GripVertical, Eye, EyeOff, Layers, BarChart2, Users, MousePointerClick, Clock, Lock, Calendar, CalendarCheck, CalendarX, CalendarDays } from "lucide-react";
+import {
+  Loader2,
+  Globe,
+  ExternalLink,
+  Edit2,
+  Check,
+  X,
+  Palette,
+  Phone,
+  Mail,
+  MapPin,
+  Image,
+  RefreshCw,
+  Settings,
+  User,
+  LayoutGrid,
+  Type,
+  Sparkles,
+  Plus,
+  Trash2,
+  ChevronLeft,
+  ChevronUp,
+  ChevronDown,
+  Upload,
+  MessageSquare,
+  GripVertical,
+  Eye,
+  EyeOff,
+  Layers,
+  BarChart2,
+  Users,
+  MousePointerClick,
+  Clock,
+  Lock,
+  Calendar,
+  CalendarCheck,
+  CalendarX,
+  CalendarDays,
+} from "lucide-react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import ContentEditorSplitView from "@/components/ContentEditorSplitView";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { WebsiteData, ColorScheme } from "@shared/types";
-import { FONT_OPTIONS, DEFAULT_LAYOUT_COLOR_SCHEMES, LAYOUT_FONTS } from "@shared/layoutConfig";
+import {
+  FONT_OPTIONS,
+  DEFAULT_LAYOUT_COLOR_SCHEMES,
+  LAYOUT_FONTS,
+} from "@shared/layoutConfig";
 
 // ── Layout meta (shared with OnboardingChat variant picker) ──────────────────
 const LAYOUT_LABELS_DASH: Record<string, string> = {
-  aurora: "Aurora",  nexus: "Nexus",    bold: "Bold",    flux: "Flux",    dynamic: "Dynamic",
-  forge: "Forge",    elegant: "Elegant",luxury: "Luxury", natural: "Natural", craft: "Craft",
-  clay: "Clay",      pulse: "Pulse",    fresh: "Fresh",  clean: "Clean",  warm: "Warm",
-  modern: "Modern",  vibrant: "Vibrant",trust: "Trust",
+  aurora: "Aurora",
+  nexus: "Nexus",
+  bold: "Bold",
+  flux: "Flux",
+  dynamic: "Dynamic",
+  forge: "Forge",
+  elegant: "Elegant",
+  luxury: "Luxury",
+  natural: "Natural",
+  craft: "Craft",
+  clay: "Clay",
+  pulse: "Pulse",
+  fresh: "Fresh",
+  clean: "Clean",
+  warm: "Warm",
+  modern: "Modern",
+  vibrant: "Vibrant",
+  trust: "Trust",
 };
 const LAYOUT_VIBES_DASH: Record<string, string> = {
-  aurora:  "Dunkel · Kosmisch",    nexus:   "Präzise · Navy",        bold:    "Stark · Schwarz-Gold",
-  flux:    "Dunkel · Warmes Gold", dynamic: "Energie · Diagonal",    forge:   "Edel · Zeitlos",
-  elegant: "Warm · Éditoriel",     luxury:  "Premium · Cinématisch", natural: "Organisch · Erdtöne",
-  craft:   "Handwerk · Industrial",clay:    "Soft · Verspielt",      pulse:   "Hell · Vertrauensvoll",
-  fresh:   "Frisch · Luftig",      clean:   "Klar · Minimalistisch", warm:    "Herzlich · Einladend",
-  modern:  "Modern · Asymmetrisch",vibrant: "Neon · Energie",        trust:   "Klassisch · Professionell",
+  aurora: "Dunkel · Kosmisch",
+  nexus: "Präzise · Navy",
+  bold: "Stark · Schwarz-Gold",
+  flux: "Dunkel · Warmes Gold",
+  dynamic: "Energie · Diagonal",
+  forge: "Edel · Zeitlos",
+  elegant: "Warm · Éditoriel",
+  luxury: "Premium · Cinématisch",
+  natural: "Organisch · Erdtöne",
+  craft: "Handwerk · Industrial",
+  clay: "Soft · Verspielt",
+  pulse: "Hell · Vertrauensvoll",
+  fresh: "Frisch · Luftig",
+  clean: "Klar · Minimalistisch",
+  warm: "Herzlich · Einladend",
+  modern: "Modern · Asymmetrisch",
+  vibrant: "Neon · Energie",
+  trust: "Klassisch · Professionell",
 };
 // All 18 layouts grouped by visual family for the switcher
 const LAYOUT_FAMILIES_DASH = [
-  { label: "Dunkel & Bold",    layouts: ["aurora", "flux", "bold", "dynamic", "nexus", "vibrant"] },
-  { label: "Edel & Klassisch", layouts: ["elegant", "luxury", "natural", "craft", "forge"] },
-  { label: "Hell & Modern",    layouts: ["clean", "fresh", "warm", "trust", "modern", "clay", "pulse"] },
+  {
+    label: "Dunkel & Bold",
+    layouts: ["aurora", "flux", "bold", "dynamic", "nexus", "vibrant"],
+  },
+  {
+    label: "Edel & Klassisch",
+    layouts: ["elegant", "luxury", "natural", "craft", "forge"],
+  },
+  {
+    label: "Hell & Modern",
+    layouts: ["clean", "fresh", "warm", "trust", "modern", "clay", "pulse"],
+  },
 ];
 
 // ── Types ───────────────────────────────────────────
-type Tab = "preview" | "content" | "structure" | "design" | "addons" | "analytics" | "submissions" | "domain" | "leads" | "appointments" | "settings";
+type Tab =
+  | "preview"
+  | "content"
+  | "structure"
+  | "design"
+  | "addons"
+  | "analytics"
+  | "submissions"
+  | "domain"
+  | "leads"
+  | "appointments"
+  | "settings";
 
 interface SectionConfig {
   type: string;
@@ -52,14 +140,31 @@ interface GalleryAlbum {
 // ── Helpers ───────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    active: { label: "Aktiv", cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-    preview: { label: "Vorschau", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
-    sold: { label: "Verkauft", cls: "bg-violet-500/20 text-violet-300 border-violet-500/40" },
-    inactive: { label: "Inaktiv", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
+    active: {
+      label: "Aktiv",
+      cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+    },
+    preview: {
+      label: "Vorschau",
+      cls: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+    },
+    sold: {
+      label: "Verkauft",
+      cls: "bg-violet-500/20 text-violet-300 border-violet-500/40",
+    },
+    inactive: {
+      label: "Inaktiv",
+      cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+    },
   };
-  const { label, cls } = map[status] || { label: status, cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" };
+  const { label, cls } = map[status] || {
+    label: status,
+    cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+  };
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${cls}`}
+    >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -75,7 +180,14 @@ interface EditableFieldProps {
   onSave: (v: string) => Promise<void>;
 }
 
-function EditableField({ label, value, icon, multiline, placeholder, onSave }: EditableFieldProps) {
+function EditableField({
+  label,
+  value,
+  icon,
+  multiline,
+  placeholder,
+  onSave,
+}: EditableFieldProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -106,7 +218,7 @@ function EditableField({ label, value, icon, multiline, placeholder, onSave }: E
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none resize-none min-h-[80px] placeholder-slate-500"
               value={draft}
               placeholder={placeholder}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={e => setDraft(e.target.value)}
               autoFocus
             />
           ) : (
@@ -114,14 +226,23 @@ function EditableField({ label, value, icon, multiline, placeholder, onSave }: E
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-blue-500 outline-none placeholder-slate-500"
               value={draft}
               placeholder={placeholder}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={e => setDraft(e.target.value)}
               autoFocus
-              onKeyDown={(e) => { if (e.key === "Enter") handleSave(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+              onKeyDown={e => {
+                if (e.key === "Enter") handleSave();
+                if (e.key === "Escape") {
+                  setDraft(value);
+                  setEditing(false);
+                }
+              }}
             />
           )}
           <div className="flex gap-2">
             <button
-              onClick={() => { setDraft(value); setEditing(false); }}
+              onClick={() => {
+                setDraft(value);
+                setEditing(false);
+              }}
               className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-slate-600 hover:bg-slate-500 text-slate-300 transition-colors"
             >
               <X className="w-3 h-3" /> Abbrechen
@@ -131,7 +252,11 @@ function EditableField({ label, value, icon, multiline, placeholder, onSave }: E
               disabled={saving}
               className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50"
             >
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              {saving ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Check className="w-3 h-3" />
+              )}
               Speichern
             </button>
           </div>
@@ -139,10 +264,19 @@ function EditableField({ label, value, icon, multiline, placeholder, onSave }: E
       ) : (
         <div className="flex items-start gap-2">
           <p className="flex-1 text-sm text-slate-200 bg-slate-800/40 px-3 py-2 rounded-lg border border-slate-700/50 min-h-[36px] leading-relaxed">
-            {value || <span className="text-slate-500 italic">{placeholder ? `z.B. ${placeholder.slice(0, 60)}${placeholder.length > 60 ? "…" : ""}` : "Nicht angegeben"}</span>}
+            {value || (
+              <span className="text-slate-500 italic">
+                {placeholder
+                  ? `z.B. ${placeholder.slice(0, 60)}${placeholder.length > 60 ? "…" : ""}`
+                  : "Nicht angegeben"}
+              </span>
+            )}
           </p>
           <button
-            onClick={() => { setDraft(value); setEditing(true); }}
+            onClick={() => {
+              setDraft(value);
+              setEditing(true);
+            }}
             className="flex-shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700 transition-colors opacity-0 group-hover:opacity-100"
             title={`${label} bearbeiten`}
           >
@@ -180,12 +314,14 @@ function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
 
   const applyMutation = trpc.customer.applyAiEdit.useMutation({
     onSuccess: () => {
-      setHistory((h) => [{ message: input.trim(), ts: new Date() }, ...h].slice(0, 10));
+      setHistory(h =>
+        [{ message: input.trim(), ts: new Date() }, ...h].slice(0, 10)
+      );
       setInput("");
       onUpdate();
       toast.success("Änderung übernommen ✓");
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message || "Fehler bei der KI-Bearbeitung");
     },
   });
@@ -204,16 +340,20 @@ function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
           KI-Inhaltseditor
         </h2>
         <p className="text-slate-400 text-xs mt-0.5">
-          Beschreibe auf Deutsch, was du ändern möchtest – die KI setzt es direkt um.
+          Beschreibe auf Deutsch, was du ändern möchtest – die KI setzt es
+          direkt um.
         </p>
       </div>
 
       {/* Examples */}
       <div className="flex flex-wrap gap-1.5">
-        {examples.map((ex) => (
+        {examples.map(ex => (
           <button
             key={ex}
-            onClick={() => { setInput(ex.replace(/„|"/g, "")); textareaRef.current?.focus(); }}
+            onClick={() => {
+              setInput(ex.replace(/„|"/g, ""));
+              textareaRef.current?.focus();
+            }}
             className="text-xs px-2.5 py-1 rounded-full bg-slate-700/60 hover:bg-slate-600/60 text-slate-300 hover:text-white border border-slate-600/40 transition-colors text-left"
           >
             {ex}
@@ -226,9 +366,13 @@ function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
         <textarea
           ref={textareaRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(); }}
-          placeholder={'z.B. "Andere den Hero-Titel zu Ihr Friseur in Munchen" oder "Fuge Service Haarverlangerung hinzu"'}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+          }}
+          placeholder={
+            'z.B. "Andere den Hero-Titel zu Ihr Friseur in Munchen" oder "Fuge Service Haarverlangerung hinzu"'
+          }
           rows={3}
           disabled={applyMutation.isPending}
           className="w-full bg-slate-700/60 text-white text-sm px-3 py-2.5 rounded-xl border border-slate-600 focus:border-blue-500 outline-none resize-none placeholder-slate-500 disabled:opacity-60"
@@ -241,9 +385,13 @@ function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
           >
             {applyMutation.isPending ? (
-              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Wird angepasst…</>
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Wird angepasst…
+              </>
             ) : (
-              <><Sparkles className="w-3.5 h-3.5" /> Änderung umsetzen</>
+              <>
+                <Sparkles className="w-3.5 h-3.5" /> Änderung umsetzen
+              </>
             )}
           </button>
         </div>
@@ -252,13 +400,21 @@ function AiContentEditor({ websiteId, onUpdate }: AiContentEditorProps) {
       {/* History */}
       {history.length > 0 && (
         <div className="space-y-1.5 border-t border-slate-700/50 pt-3">
-          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Letzte Änderungen</p>
+          <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">
+            Letzte Änderungen
+          </p>
           {history.map((h, i) => (
-            <div key={i} className="flex items-start gap-2 text-xs text-slate-400">
+            <div
+              key={i}
+              className="flex items-start gap-2 text-xs text-slate-400"
+            >
               <Check className="w-3 h-3 text-emerald-400 mt-0.5 flex-shrink-0" />
               <span className="flex-1 line-clamp-1">{h.message}</span>
               <span className="text-slate-600 flex-shrink-0">
-                {h.ts.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                {h.ts.toLocaleTimeString("de-DE", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
           ))}
@@ -276,8 +432,17 @@ interface ServicesEditorProps {
   onUpdate: () => void;
 }
 
-function ServicesEditor({ websiteId, initialServices, initialUsp, onUpdate }: ServicesEditorProps) {
-  const [services, setServices] = useState(initialServices.length > 0 ? initialServices : [{ title: "", description: "" }]);
+function ServicesEditor({
+  websiteId,
+  initialServices,
+  initialUsp,
+  onUpdate,
+}: ServicesEditorProps) {
+  const [services, setServices] = useState(
+    initialServices.length > 0
+      ? initialServices
+      : [{ title: "", description: "" }]
+  );
   const [usp, setUsp] = useState(initialUsp || "");
   const [saving, setSaving] = useState(false);
 
@@ -300,9 +465,15 @@ function ServicesEditor({ websiteId, initialServices, initialUsp, onUpdate }: Se
     setSaving(false);
   };
 
-  const addService = () => setServices([...services, { title: "", description: "" }]);
-  const removeService = (idx: number) => setServices(services.filter((_, i) => i !== idx));
-  const updateService = (idx: number, field: "title" | "description", value: string) => {
+  const addService = () =>
+    setServices([...services, { title: "", description: "" }]);
+  const removeService = (idx: number) =>
+    setServices(services.filter((_, i) => i !== idx));
+  const updateService = (
+    idx: number,
+    field: "title" | "description",
+    value: string
+  ) => {
     const newServices = [...services];
     newServices[idx] = { ...newServices[idx], [field]: value };
     setServices(newServices);
@@ -311,31 +482,37 @@ function ServicesEditor({ websiteId, initialServices, initialUsp, onUpdate }: Se
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-xs text-slate-400 font-medium mb-2 block">Unique Selling Proposition (USP)</label>
+        <label className="text-xs text-slate-400 font-medium mb-2 block">
+          Unique Selling Proposition (USP)
+        </label>
         <input
           type="text"
           value={usp}
-          onChange={(e) => setUsp(e.target.value)}
+          onChange={e => setUsp(e.target.value)}
           placeholder="Was macht Ihr Unternehmen besonders?"
           className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
         />
       </div>
 
       <div className="space-y-3">
-        <label className="text-xs text-slate-400 font-medium">Leistungen / Services</label>
+        <label className="text-xs text-slate-400 font-medium">
+          Leistungen / Services
+        </label>
         {services.map((service, idx) => (
           <div key={idx} className="flex gap-2 items-start">
             <div className="flex-1 space-y-2">
               <input
                 type="text"
                 value={service.title}
-                onChange={(e) => updateService(idx, "title", e.target.value)}
+                onChange={e => updateService(idx, "title", e.target.value)}
                 placeholder="Titel der Leistung"
                 className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
               />
               <textarea
                 value={service.description || ""}
-                onChange={(e) => updateService(idx, "description", e.target.value)}
+                onChange={e =>
+                  updateService(idx, "description", e.target.value)
+                }
                 placeholder="Beschreibung (optional)"
                 className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500 resize-none h-16"
               />
@@ -363,7 +540,11 @@ function ServicesEditor({ websiteId, initialServices, initialUsp, onUpdate }: Se
         disabled={saving}
         className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
       >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+        {saving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
         Leistungen speichern
       </button>
     </div>
@@ -422,71 +603,85 @@ function LegalEditor({ websiteId, initialData, onUpdate }: LegalEditorProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">Inhaber/Firma *</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            Inhaber/Firma *
+          </label>
           <input
             type="text"
             value={data.legalOwner}
-            onChange={(e) => updateField("legalOwner", e.target.value)}
+            onChange={e => updateField("legalOwner", e.target.value)}
             placeholder="Max Mustermann"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">Straße & Hausnummer</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            Straße & Hausnummer
+          </label>
           <input
             type="text"
             value={data.legalStreet}
-            onChange={(e) => updateField("legalStreet", e.target.value)}
+            onChange={e => updateField("legalStreet", e.target.value)}
             placeholder="Musterstraße 123"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">PLZ</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            PLZ
+          </label>
           <input
             type="text"
             value={data.legalZip}
-            onChange={(e) => updateField("legalZip", e.target.value)}
+            onChange={e => updateField("legalZip", e.target.value)}
             placeholder="12345"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">Ort</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            Ort
+          </label>
           <input
             type="text"
             value={data.legalCity}
-            onChange={(e) => updateField("legalCity", e.target.value)}
+            onChange={e => updateField("legalCity", e.target.value)}
             placeholder="Musterstadt"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">E-Mail *</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            E-Mail *
+          </label>
           <input
             type="email"
             value={data.legalEmail}
-            onChange={(e) => updateField("legalEmail", e.target.value)}
+            onChange={e => updateField("legalEmail", e.target.value)}
             placeholder="kontakt@beispiel.de"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">Telefon</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            Telefon
+          </label>
           <input
             type="tel"
             value={data.legalPhone}
-            onChange={(e) => updateField("legalPhone", e.target.value)}
+            onChange={e => updateField("legalPhone", e.target.value)}
             placeholder="+49 123 456789"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
         </div>
         <div>
-          <label className="text-xs text-slate-400 font-medium mb-1 block">USt-IdNr.</label>
+          <label className="text-xs text-slate-400 font-medium mb-1 block">
+            USt-IdNr.
+          </label>
           <input
             type="text"
             value={data.legalVatId}
-            onChange={(e) => updateField("legalVatId", e.target.value)}
+            onChange={e => updateField("legalVatId", e.target.value)}
             placeholder="DE123456789"
             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
           />
@@ -502,7 +697,11 @@ function LegalEditor({ websiteId, initialData, onUpdate }: LegalEditorProps) {
         disabled={saving}
         className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
       >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+        {saving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
         Impressum-Daten speichern
       </button>
     </div>
@@ -523,16 +722,49 @@ interface ContactFormEditorProps {
   websiteId: number;
 }
 
-function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEditorProps & { initialFields?: FormField[], onSave?: (fields: FormField[]) => void }) {
+function ContactFormEditor({
+  websiteId,
+  initialFields,
+  onSave,
+}: ContactFormEditorProps & {
+  initialFields?: FormField[];
+  onSave?: (fields: FormField[]) => void;
+}) {
   // Default form fields
   const defaultFields: FormField[] = [
-    { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-    { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-    { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-    { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+    {
+      id: "name",
+      label: "Name",
+      placeholder: "Max Mustermann",
+      type: "text",
+      required: true,
+    },
+    {
+      id: "email",
+      label: "E-Mail",
+      placeholder: "max@beispiel.de",
+      type: "email",
+      required: true,
+    },
+    {
+      id: "subject",
+      label: "Betreff",
+      placeholder: "Ihr Anliegen",
+      type: "text",
+      required: true,
+    },
+    {
+      id: "message",
+      label: "Nachricht",
+      placeholder: "Ihre Nachricht...",
+      type: "textarea",
+      required: true,
+    },
   ];
 
-  const [fields, setFields] = useState<FormField[]>(initialFields || defaultFields);
+  const [fields, setFields] = useState<FormField[]>(
+    initialFields || defaultFields
+  );
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [cfDragIdx, setCfDragIdx] = useState<number | null>(null);
@@ -564,7 +796,10 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
     const newFields = [...fields];
     const swapWith = direction === "up" ? idx - 1 : idx + 1;
     if (swapWith < 0 || swapWith >= newFields.length) return;
-    [newFields[idx], newFields[swapWith]] = [newFields[swapWith], newFields[idx]];
+    [newFields[idx], newFields[swapWith]] = [
+      newFields[swapWith],
+      newFields[idx],
+    ];
     setFields(newFields);
   };
 
@@ -573,9 +808,11 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
     const updated = { ...newFields[idx], ...updates };
     // When type is changed to "email", auto-set id to "email" so form submission works.
     // Only do this if no other field already uses id "email".
-    if (updates.type === 'email' && updated.id !== 'email') {
-      const alreadyHasEmail = fields.some((f, i) => i !== idx && f.id === 'email');
-      if (!alreadyHasEmail) updated.id = 'email';
+    if (updates.type === "email" && updated.id !== "email") {
+      const alreadyHasEmail = fields.some(
+        (f, i) => i !== idx && f.id === "email"
+      );
+      if (!alreadyHasEmail) updated.id = "email";
     }
     newFields[idx] = updated;
     setFields(newFields);
@@ -600,7 +837,8 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
   return (
     <div className="space-y-4">
       <div className="text-sm text-slate-400 mb-3">
-        Passe die Felde deines Kontaktformulars an. Die Änderungen werden auf der Website übernommen.
+        Passe die Felde deines Kontaktformulars an. Die Änderungen werden auf
+        der Website übernommen.
       </div>
 
       <div className="space-y-3">
@@ -609,7 +847,7 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
             key={field.id}
             draggable
             onDragStart={() => setCfDragIdx(idx)}
-            onDragOver={(e) => {
+            onDragOver={e => {
               e.preventDefault();
               if (cfDragIdx === null || cfDragIdx === idx) return;
               const nf = [...fields];
@@ -629,7 +867,7 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
               <input
                 type="text"
                 value={field.label}
-                onChange={(e) => updateField(idx, { label: e.target.value })}
+                onChange={e => updateField(idx, { label: e.target.value })}
                 placeholder="Feldname"
                 className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500 font-medium"
               />
@@ -644,10 +882,16 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-slate-500 mb-1 block">Feldtyp</label>
+                <label className="text-xs text-slate-500 mb-1 block">
+                  Feldtyp
+                </label>
                 <select
                   value={field.type}
-                  onChange={(e) => updateField(idx, { type: e.target.value as FormField["type"] })}
+                  onChange={e =>
+                    updateField(idx, {
+                      type: e.target.value as FormField["type"],
+                    })
+                  }
                   className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
                 >
                   <option value="text">Text</option>
@@ -661,7 +905,9 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
                   <input
                     type="checkbox"
                     checked={field.required}
-                    onChange={(e) => updateField(idx, { required: e.target.checked })}
+                    onChange={e =>
+                      updateField(idx, { required: e.target.checked })
+                    }
                     className="w-4 h-4 rounded border-slate-600 bg-slate-700/60 text-blue-600 focus:ring-blue-500"
                   />
                   Pflichtfeld
@@ -673,7 +919,9 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
               <input
                 type="text"
                 value={field.placeholder}
-                onChange={(e) => updateField(idx, { placeholder: e.target.value })}
+                onChange={e =>
+                  updateField(idx, { placeholder: e.target.value })
+                }
                 placeholder="Platzhalter-Text"
                 className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
               />
@@ -681,11 +929,20 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
 
             {field.type === "select" && (
               <div className="space-y-2">
-                <label className="text-xs text-slate-500">Optionen (kommagetrennt)</label>
+                <label className="text-xs text-slate-500">
+                  Optionen (kommagetrennt)
+                </label>
                 <input
                   type="text"
                   value={field.options?.join(", ") || ""}
-                  onChange={(e) => updateField(idx, { options: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  onChange={e =>
+                    updateField(idx, {
+                      options: e.target.value
+                        .split(",")
+                        .map(s => s.trim())
+                        .filter(Boolean),
+                    })
+                  }
                   placeholder="Option 1, Option 2, Option 3"
                   className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
                 />
@@ -708,8 +965,18 @@ function ContactFormEditor({ websiteId, initialFields, onSave }: ContactFormEdit
         disabled={saving}
         className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
       >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Check className="w-4 h-4" />}
-        {saving ? "Speichern..." : saved ? "Gespeichert!" : "Formularfelder speichern"}
+        {saving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : saved ? (
+          <Check className="w-4 h-4" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
+        {saving
+          ? "Speichern..."
+          : saved
+            ? "Gespeichert!"
+            : "Formularfelder speichern"}
       </button>
     </div>
   );
@@ -727,11 +994,11 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
   const colorsFromWebsite = (w: any) => {
     const cs = (w.colorScheme as ColorScheme) || {};
     return {
-      primary:    cs.primary    || "#3B82F6",
-      secondary:  cs.secondary  || "#F1F5F9",
-      accent:     cs.accent     || "#8B5CF6",
+      primary: cs.primary || "#3B82F6",
+      secondary: cs.secondary || "#F1F5F9",
+      accent: cs.accent || "#8B5CF6",
       background: cs.background || "#FFFFFF",
-      text:       cs.text       || "#1E293B",
+      text: cs.text || "#1E293B",
     };
   };
 
@@ -739,27 +1006,29 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
   const fontsFromWebsite = (w: any) => {
     const dt = ((w.websiteData as WebsiteData) || {}).designTokens || {};
     const rawSize = dt.headlineSize || "large";
-    const headlineSize =
-      ["small", "medium", "large"].includes(rawSize) ? rawSize
-      : rawSize === "text-2xl" || rawSize === "text-3xl" ? "small"
-      : rawSize === "text-5xl" || rawSize === "text-6xl" ? "large"
-      : "large";
+    const headlineSize = ["small", "medium", "large"].includes(rawSize)
+      ? rawSize
+      : rawSize === "text-2xl" || rawSize === "text-3xl"
+        ? "small"
+        : rawSize === "text-5xl" || rawSize === "text-6xl"
+          ? "large"
+          : "large";
     return {
-      headlineFont: (dt.headlineFont as string) || "",  // "" = keep layout default
-      bodyFont:     (dt.bodyFont     as string) || "",
+      headlineFont: (dt.headlineFont as string) || "", // "" = keep layout default
+      bodyFont: (dt.bodyFont as string) || "",
       headlineSize,
     };
   };
 
   const [colors, setColors] = useState(() => colorsFromWebsite(website));
-  const [fonts,  setFonts]  = useState(() => fontsFromWebsite(website));
+  const [fonts, setFonts] = useState(() => fontsFromWebsite(website));
   const [saving, setSaving] = useState(false);
 
   // Sync form state whenever website prop changes (after onUpdate / refetch)
   useEffect(() => {
     setColors(colorsFromWebsite(website));
     setFonts(fontsFromWebsite(website));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [website.colorScheme, website.websiteData]);
 
   const updateDesign = trpc.customer.updateDesign.useMutation({
@@ -778,7 +1047,7 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
       // only send font overrides when explicitly set (empty = keep layout default)
       designTokens: {
         ...(fonts.headlineFont ? { headlineFont: fonts.headlineFont } : {}),
-        ...(fonts.bodyFont     ? { bodyFont:     fonts.bodyFont     } : {}),
+        ...(fonts.bodyFont ? { bodyFont: fonts.bodyFont } : {}),
         headlineSize: fonts.headlineSize,
       },
     });
@@ -786,9 +1055,9 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
   };
 
   const headlineSizeOptions = [
-    { value: "small",  label: "Normal" },
+    { value: "small", label: "Normal" },
     { value: "medium", label: "Groß" },
-    { value: "large",  label: "Extra groß" },
+    { value: "large", label: "Extra groß" },
   ];
   // fontOptions rendered inline via FONT_OPTIONS from layoutConfig
 
@@ -807,22 +1076,32 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               <input
                 type="color"
                 value={colors.primary}
-                onChange={(e) => setColors({ ...colors, primary: e.target.value })}
+                onChange={e =>
+                  setColors({ ...colors, primary: e.target.value })
+                }
                 className="w-8 h-8 rounded border-0 p-0 cursor-pointer"
               />
-              <span className="text-slate-300 text-xs font-mono">{colors.primary}</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {colors.primary}
+              </span>
             </div>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Sekundär</label>
+            <label className="text-xs text-slate-400 mb-1 block">
+              Sekundär
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.secondary}
-                onChange={(e) => setColors({ ...colors, secondary: e.target.value })}
+                onChange={e =>
+                  setColors({ ...colors, secondary: e.target.value })
+                }
                 className="w-8 h-8 rounded border-0 p-0 cursor-pointer"
               />
-              <span className="text-slate-300 text-xs font-mono">{colors.secondary}</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {colors.secondary}
+              </span>
             </div>
           </div>
           <div>
@@ -831,22 +1110,30 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               <input
                 type="color"
                 value={colors.accent}
-                onChange={(e) => setColors({ ...colors, accent: e.target.value })}
+                onChange={e => setColors({ ...colors, accent: e.target.value })}
                 className="w-8 h-8 rounded border-0 p-0 cursor-pointer"
               />
-              <span className="text-slate-300 text-xs font-mono">{colors.accent}</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {colors.accent}
+              </span>
             </div>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Hintergrund</label>
+            <label className="text-xs text-slate-400 mb-1 block">
+              Hintergrund
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="color"
                 value={colors.background}
-                onChange={(e) => setColors({ ...colors, background: e.target.value })}
+                onChange={e =>
+                  setColors({ ...colors, background: e.target.value })
+                }
                 className="w-8 h-8 rounded border-0 p-0 cursor-pointer"
               />
-              <span className="text-slate-300 text-xs font-mono">{colors.background}</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {colors.background}
+              </span>
             </div>
           </div>
           <div>
@@ -855,10 +1142,12 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
               <input
                 type="color"
                 value={colors.text}
-                onChange={(e) => setColors({ ...colors, text: e.target.value })}
+                onChange={e => setColors({ ...colors, text: e.target.value })}
                 className="w-8 h-8 rounded border-0 p-0 cursor-pointer"
               />
-              <span className="text-slate-300 text-xs font-mono">{colors.text}</span>
+              <span className="text-slate-300 text-xs font-mono">
+                {colors.text}
+              </span>
             </div>
           </div>
         </div>
@@ -872,45 +1161,75 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Überschriften</label>
+            <label className="text-xs text-slate-400 mb-1 block">
+              Überschriften
+            </label>
             <select
               value={fonts.headlineFont}
-              onChange={(e) => setFonts({ ...fonts, headlineFont: e.target.value })}
+              onChange={e =>
+                setFonts({ ...fonts, headlineFont: e.target.value })
+              }
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
               <option value="">Layout-Standard</option>
               <optgroup label="── Serifenschriften ──">
-                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                {FONT_OPTIONS.serif.map(f => (
+                  <option key={f.font} value={f.font}>
+                    {f.label}
+                  </option>
+                ))}
               </optgroup>
               <optgroup label="── Serifenlose ──">
-                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                {FONT_OPTIONS.sans.map(f => (
+                  <option key={f.font} value={f.font}>
+                    {f.label}
+                  </option>
+                ))}
               </optgroup>
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Fließtext</label>
+            <label className="text-xs text-slate-400 mb-1 block">
+              Fließtext
+            </label>
             <select
               value={fonts.bodyFont}
-              onChange={(e) => setFonts({ ...fonts, bodyFont: e.target.value })}
+              onChange={e => setFonts({ ...fonts, bodyFont: e.target.value })}
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
               <option value="">Layout-Standard</option>
               <optgroup label="── Serifenschriften ──">
-                {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                {FONT_OPTIONS.serif.map(f => (
+                  <option key={f.font} value={f.font}>
+                    {f.label}
+                  </option>
+                ))}
               </optgroup>
               <optgroup label="── Serifenlose ──">
-                {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                {FONT_OPTIONS.sans.map(f => (
+                  <option key={f.font} value={f.font}>
+                    {f.label}
+                  </option>
+                ))}
               </optgroup>
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Überschriften-Größe</label>
+            <label className="text-xs text-slate-400 mb-1 block">
+              Überschriften-Größe
+            </label>
             <select
               value={fonts.headlineSize}
-              onChange={(e) => setFonts({ ...fonts, headlineSize: e.target.value })}
+              onChange={e =>
+                setFonts({ ...fonts, headlineSize: e.target.value })
+              }
               className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-blue-500"
             >
-              {headlineSizeOptions.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              {headlineSizeOptions.map(s => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -921,7 +1240,11 @@ function DesignEditor({ websiteId, website, onUpdate }: DesignEditorProps) {
         disabled={saving}
         className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50"
       >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+        {saving ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
         Design speichern
       </button>
     </div>
@@ -938,69 +1261,133 @@ interface AddonsEditorProps {
   onGoToTermine: () => void;
 }
 
-function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOns, onGoToTermine }: AddonsEditorProps) {
+function AddonsEditor({
+  websiteId,
+  website,
+  onboarding,
+  onUpdate,
+  purchasedAddOns,
+  onGoToTermine,
+}: AddonsEditorProps) {
   const websiteData = (website.websiteData as WebsiteData) || {};
 
   // Get existing data from website sections
-  const existingMenu = websiteData.sections?.find((s: any) => s.type === "menu");
-  const existingPricelist = websiteData.sections?.find((s: any) => s.type === "pricelist");
-  const existingGallery = websiteData.sections?.find((s: any) => s.type === "gallery");
+  const existingMenu = websiteData.sections?.find(
+    (s: any) => s.type === "menu"
+  );
+  const existingPricelist = websiteData.sections?.find(
+    (s: any) => s.type === "pricelist"
+  );
+  const existingGallery = websiteData.sections?.find(
+    (s: any) => s.type === "gallery"
+  );
 
   // Get contact form fields from onboarding or website
-  const contactFormFields = onboarding?.contactFormFields || websiteData?.contactFormFields || website?.contactFormFields;
+  const contactFormFields =
+    onboarding?.contactFormFields ||
+    websiteData?.contactFormFields ||
+    website?.contactFormFields;
 
   const [addons, setAddons] = useState({
     gallery: {
       enabled: onboarding?.addOnGallery || false,
-      photos: (existingGallery?.items?.map((item: any) => item.imageUrl || item) || []) as string[],
-      mode: ((existingGallery as any)?.mode || 'single') as 'single' | 'albums',
+      photos: (existingGallery?.items?.map(
+        (item: any) => item.imageUrl || item
+      ) || []) as string[],
+      mode: ((existingGallery as any)?.mode || "single") as "single" | "albums",
       albums: ((existingGallery as any)?.albums || []) as GalleryAlbum[],
     },
     menu: {
       enabled: onboarding?.addOnMenu || false,
-      categories: (existingMenu?.items ?
-        // Convert items back to categories format for editing
-        Object.entries(existingMenu.items.reduce((acc: any, item: any) => {
-          const cat = item.category || "Speisekarte";
-          if (!acc[cat]) acc[cat] = [];
-          acc[cat].push({ name: item.title, description: item.description, price: item.price });
-          return acc;
-        }, {})).map(([name, items]) => ({ name, items })) :
-        [{ name: "Speisekarte", items: [] }]
-      ) as any[],
+      categories: (existingMenu?.items
+        ? // Convert items back to categories format for editing
+          Object.entries(
+            existingMenu.items.reduce((acc: any, item: any) => {
+              const cat = item.category || "Speisekarte";
+              if (!acc[cat]) acc[cat] = [];
+              acc[cat].push({
+                name: item.title,
+                description: item.description,
+                price: item.price,
+              });
+              return acc;
+            }, {})
+          ).map(([name, items]) => ({ name, items }))
+        : [{ name: "Speisekarte", items: [] }]) as any[],
     },
     pricelist: {
       enabled: onboarding?.addOnPricelist || false,
-      categories: (existingPricelist?.items ?
-        // Convert items back to categories format for editing
-        Object.entries(existingPricelist.items.reduce((acc: any, item: any) => {
-          const cat = item.category || "Leistungen";
-          if (!acc[cat]) acc[cat] = [];
-          acc[cat].push({ name: item.title, description: item.description, price: item.price });
-          return acc;
-        }, {})).map(([name, items]) => ({ name, items })) :
-        [{ name: "Leistungen", items: [] }]
-      ) as any[],
+      categories: (existingPricelist?.items
+        ? // Convert items back to categories format for editing
+          Object.entries(
+            existingPricelist.items.reduce((acc: any, item: any) => {
+              const cat = item.category || "Leistungen";
+              if (!acc[cat]) acc[cat] = [];
+              acc[cat].push({
+                name: item.title,
+                description: item.description,
+                price: item.price,
+              });
+              return acc;
+            }, {})
+          ).map(([name, items]) => ({ name, items }))
+        : [{ name: "Leistungen", items: [] }]) as any[],
     },
     contactForm: onboarding?.addOnContactForm || false,
     contactFormFields: (contactFormFields as FormField[] | undefined) || [
-      { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-      { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-      { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-      { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+      {
+        id: "name",
+        label: "Name",
+        placeholder: "Max Mustermann",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "email",
+        label: "E-Mail",
+        placeholder: "max@beispiel.de",
+        type: "email",
+        required: true,
+      },
+      {
+        id: "subject",
+        label: "Betreff",
+        placeholder: "Ihr Anliegen",
+        type: "text",
+        required: true,
+      },
+      {
+        id: "message",
+        label: "Nachricht",
+        placeholder: "Ihre Nachricht...",
+        type: "textarea",
+        required: true,
+      },
     ],
   });
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+    "saved"
+  );
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [activeDetail, setActiveDetail] = useState<string | null>(null);
   const [confirmAddon, setConfirmAddon] = useState<string | null>(null);
-  const [bookingEnabled, setBookingEnabled] = useState<boolean>(!!(website as any).addOnBooking);
-  const [aiChatEnabled, setAiChatEnabled] = useState<boolean>(!!(website as any).addOnAiChat);
-  const [menuDragState, setMenuDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
-  const [priceDragState, setPriceDragState] = useState<{ catIdx: number; itemIdx: number } | null>(null);
+  const [bookingEnabled, setBookingEnabled] = useState<boolean>(
+    !!(website as any).addOnBooking
+  );
+  const [aiChatEnabled, setAiChatEnabled] = useState<boolean>(
+    !!(website as any).addOnAiChat
+  );
+  const [menuDragState, setMenuDragState] = useState<{
+    catIdx: number;
+    itemIdx: number;
+  } | null>(null);
+  const [priceDragState, setPriceDragState] = useState<{
+    catIdx: number;
+    itemIdx: number;
+  } | null>(null);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasInitialSavedRef = useRef(false);
   // Stable ref — initialized null here, assigned after updateAddons is declared below
@@ -1027,14 +1414,23 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     },
   });
 
-  const ADDON_LABELS: Record<string, { name: string; icon: string; color: string }> = {
-    gallery:     { name: "Bildergalerie",   icon: "🖼️",  color: "text-pink-300" },
-    menu:        { name: "Speisekarte",     icon: "🍽️",  color: "text-amber-300" },
-    pricelist:   { name: "Preisliste",      icon: "💶",  color: "text-emerald-300" },
-    contactForm: { name: "Kontaktformular", icon: "✉️",  color: "text-blue-300" },
+  const ADDON_LABELS: Record<
+    string,
+    { name: string; icon: string; color: string }
+  > = {
+    gallery: { name: "Bildergalerie", icon: "🖼️", color: "text-pink-300" },
+    menu: { name: "Speisekarte", icon: "🍽️", color: "text-amber-300" },
+    pricelist: { name: "Preisliste", icon: "💶", color: "text-emerald-300" },
+    contactForm: {
+      name: "Kontaktformular",
+      icon: "✉️",
+      color: "text-blue-300",
+    },
   };
 
-  const renderAddonLock = (addonKey: "gallery" | "menu" | "pricelist" | "contactForm") => (
+  const renderAddonLock = (
+    addonKey: "gallery" | "menu" | "pricelist" | "contactForm"
+  ) => (
     <button
       onClick={() => setConfirmAddon(addonKey)}
       className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap flex-shrink-0"
@@ -1063,36 +1459,71 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   updateAddonsRef.current = updateAddons;
 
   // Inline toggle mutations for Booking and AiChat overview rows
-  const saveBookingToggleMutation = trpc.customer.saveBookingSettings.useMutation({
-    onSuccess: () => { onUpdate(); },
-    onError: () => { toast.error("Speichern fehlgeschlagen"); },
-  });
-  const { data: bookingSettingsData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const saveBookingToggleMutation =
+    trpc.customer.saveBookingSettings.useMutation({
+      onSuccess: () => {
+        onUpdate();
+      },
+      onError: () => {
+        toast.error("Speichern fehlgeschlagen");
+      },
+    });
+  const { data: bookingSettingsData } =
+    trpc.customer.getBookingSettings.useQuery({ websiteId });
 
   const handleBookingToggle = () => {
-    if (!purchasedAddOns["booking"]) { setActiveDetail("booking"); return; }
+    if (!purchasedAddOns["booking"]) {
+      setActiveDetail("booking");
+      return;
+    }
     const newVal = !bookingEnabled;
     setBookingEnabled(newVal);
     const s = bookingSettingsData?.settings;
     saveBookingToggleMutation.mutate({
-      websiteId, enabled: newVal,
-      weeklySchedule: (s?.weeklySchedule as any) ?? { mon: { enabled: true, start: "09:00", end: "17:00" }, tue: { enabled: true, start: "09:00", end: "17:00" }, wed: { enabled: true, start: "09:00", end: "17:00" }, thu: { enabled: true, start: "09:00", end: "17:00" }, fri: { enabled: true, start: "09:00", end: "17:00" }, sat: { enabled: false, start: "09:00", end: "12:00" }, sun: { enabled: false, start: "09:00", end: "12:00" } },
-      durationMinutes: s?.durationMinutes ?? 30, bufferMinutes: s?.bufferMinutes ?? 0,
-      advanceDays: s?.advanceDays ?? 30, title: s?.title ?? "Terminbuchung",
-      description: s?.description ?? undefined, notificationEmail: s?.notificationEmail ?? null,
+      websiteId,
+      enabled: newVal,
+      weeklySchedule: (s?.weeklySchedule as any) ?? {
+        mon: { enabled: true, start: "09:00", end: "17:00" },
+        tue: { enabled: true, start: "09:00", end: "17:00" },
+        wed: { enabled: true, start: "09:00", end: "17:00" },
+        thu: { enabled: true, start: "09:00", end: "17:00" },
+        fri: { enabled: true, start: "09:00", end: "17:00" },
+        sat: { enabled: false, start: "09:00", end: "12:00" },
+        sun: { enabled: false, start: "09:00", end: "12:00" },
+      },
+      durationMinutes: s?.durationMinutes ?? 30,
+      bufferMinutes: s?.bufferMinutes ?? 0,
+      advanceDays: s?.advanceDays ?? 30,
+      title: s?.title ?? "Terminbuchung",
+      description: s?.description ?? undefined,
+      notificationEmail: s?.notificationEmail ?? null,
     });
   };
 
   const handleAiChatToggle = () => {
-    if (!purchasedAddOns["aiChat"]) { setActiveDetail("aiChat"); return; }
+    if (!purchasedAddOns["aiChat"]) {
+      setActiveDetail("aiChat");
+      return;
+    }
     const newVal = !aiChatEnabled;
     setAiChatEnabled(newVal);
     updateAddons.mutate({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
-        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        gallery: addons.gallery.enabled
+          ? {
+              enabled: true,
+              photos: addons.gallery.photos,
+              mode: addons.gallery.mode,
+              albums: addons.gallery.albums,
+            }
+          : { enabled: false },
+        menu: addons.menu.enabled
+          ? { enabled: true, categories: addons.menu.categories }
+          : { enabled: false },
+        pricelist: addons.pricelist.enabled
+          ? { enabled: true, categories: addons.pricelist.categories }
+          : { enabled: false },
         contactForm: addons.contactForm,
         contactFormFields: addons.contactFormFields,
         addOnAiChat: newVal,
@@ -1122,15 +1553,50 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
       updateAddonsRef.current.mutate({
         websiteId,
         addOns: {
-          gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
-          menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-          pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+          gallery: addons.gallery.enabled
+            ? {
+                enabled: true,
+                photos: addons.gallery.photos,
+                mode: addons.gallery.mode,
+                albums: addons.gallery.albums,
+              }
+            : { enabled: false },
+          menu: addons.menu.enabled
+            ? { enabled: true, categories: addons.menu.categories }
+            : { enabled: false },
+          pricelist: addons.pricelist.enabled
+            ? { enabled: true, categories: addons.pricelist.categories }
+            : { enabled: false },
           contactForm: addons.contactForm,
           contactFormFields: addons.contactFormFields || [
-            { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-            { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-            { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-            { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+            {
+              id: "name",
+              label: "Name",
+              placeholder: "Max Mustermann",
+              type: "text",
+              required: true,
+            },
+            {
+              id: "email",
+              label: "E-Mail",
+              placeholder: "max@beispiel.de",
+              type: "email",
+              required: true,
+            },
+            {
+              id: "subject",
+              label: "Betreff",
+              placeholder: "Ihr Anliegen",
+              type: "text",
+              required: true,
+            },
+            {
+              id: "message",
+              label: "Nachricht",
+              placeholder: "Ihre Nachricht...",
+              type: "textarea",
+              required: true,
+            },
           ],
         },
       });
@@ -1149,15 +1615,50 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
-        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        gallery: addons.gallery.enabled
+          ? {
+              enabled: true,
+              photos: addons.gallery.photos,
+              mode: addons.gallery.mode,
+              albums: addons.gallery.albums,
+            }
+          : { enabled: false },
+        menu: addons.menu.enabled
+          ? { enabled: true, categories: addons.menu.categories }
+          : { enabled: false },
+        pricelist: addons.pricelist.enabled
+          ? { enabled: true, categories: addons.pricelist.categories }
+          : { enabled: false },
         contactForm: addons.contactForm,
         contactFormFields: addons.contactFormFields || [
-          { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-          { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-          { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-          { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+          {
+            id: "name",
+            label: "Name",
+            placeholder: "Max Mustermann",
+            type: "text",
+            required: true,
+          },
+          {
+            id: "email",
+            label: "E-Mail",
+            placeholder: "max@beispiel.de",
+            type: "email",
+            required: true,
+          },
+          {
+            id: "subject",
+            label: "Betreff",
+            placeholder: "Ihr Anliegen",
+            type: "text",
+            required: true,
+          },
+          {
+            id: "message",
+            label: "Nachricht",
+            placeholder: "Ihre Nachricht...",
+            type: "textarea",
+            required: true,
+          },
         ],
       },
     });
@@ -1170,9 +1671,20 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     await updateAddons.mutateAsync({
       websiteId,
       addOns: {
-        gallery: addons.gallery.enabled ? { enabled: true, photos: addons.gallery.photos, mode: addons.gallery.mode, albums: addons.gallery.albums } : { enabled: false },
-        menu: addons.menu.enabled ? { enabled: true, categories: addons.menu.categories } : { enabled: false },
-        pricelist: addons.pricelist.enabled ? { enabled: true, categories: addons.pricelist.categories } : { enabled: false },
+        gallery: addons.gallery.enabled
+          ? {
+              enabled: true,
+              photos: addons.gallery.photos,
+              mode: addons.gallery.mode,
+              albums: addons.gallery.albums,
+            }
+          : { enabled: false },
+        menu: addons.menu.enabled
+          ? { enabled: true, categories: addons.menu.categories }
+          : { enabled: false },
+        pricelist: addons.pricelist.enabled
+          ? { enabled: true, categories: addons.pricelist.categories }
+          : { enabled: false },
         contactForm: addons.contactForm,
         contactFormFields: fields,
       },
@@ -1197,15 +1709,50 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     updateAddonsRef.current.mutate({
       websiteId,
       addOns: {
-        gallery: newAddons.gallery.enabled ? { enabled: true, photos: newAddons.gallery.photos, mode: newAddons.gallery.mode, albums: newAddons.gallery.albums } : { enabled: false },
-        menu: newAddons.menu.enabled ? { enabled: true, categories: newAddons.menu.categories } : { enabled: false },
-        pricelist: newAddons.pricelist.enabled ? { enabled: true, categories: newAddons.pricelist.categories } : { enabled: false },
+        gallery: newAddons.gallery.enabled
+          ? {
+              enabled: true,
+              photos: newAddons.gallery.photos,
+              mode: newAddons.gallery.mode,
+              albums: newAddons.gallery.albums,
+            }
+          : { enabled: false },
+        menu: newAddons.menu.enabled
+          ? { enabled: true, categories: newAddons.menu.categories }
+          : { enabled: false },
+        pricelist: newAddons.pricelist.enabled
+          ? { enabled: true, categories: newAddons.pricelist.categories }
+          : { enabled: false },
         contactForm: newAddons.contactForm,
         contactFormFields: newAddons.contactFormFields || [
-          { id: "name", label: "Name", placeholder: "Max Mustermann", type: "text", required: true },
-          { id: "email", label: "E-Mail", placeholder: "max@beispiel.de", type: "email", required: true },
-          { id: "subject", label: "Betreff", placeholder: "Ihr Anliegen", type: "text", required: true },
-          { id: "message", label: "Nachricht", placeholder: "Ihre Nachricht...", type: "textarea", required: true },
+          {
+            id: "name",
+            label: "Name",
+            placeholder: "Max Mustermann",
+            type: "text",
+            required: true,
+          },
+          {
+            id: "email",
+            label: "E-Mail",
+            placeholder: "max@beispiel.de",
+            type: "email",
+            required: true,
+          },
+          {
+            id: "subject",
+            label: "Betreff",
+            placeholder: "Ihr Anliegen",
+            type: "text",
+            required: true,
+          },
+          {
+            id: "message",
+            label: "Nachricht",
+            placeholder: "Ihre Nachricht...",
+            type: "textarea",
+            required: true,
+          },
         ],
       },
     });
@@ -1213,24 +1760,36 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
 
   // Gallery functions
   const addGalleryPhoto = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max. 5 MB");
+      return;
+    }
     setUploading(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
       try {
-        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        const result = await uploadMutation.mutateAsync({
+          websiteId,
+          imageData: base64,
+          mimeType: file.type,
+        });
         if (result?.url) {
           setAddons({
             ...addons,
-            gallery: { ...addons.gallery, photos: [...addons.gallery.photos, result.url] },
+            gallery: {
+              ...addons.gallery,
+              photos: [...addons.gallery.photos, result.url],
+            },
           });
           toast.success("Bild hochgeladen");
           // Auto-save will be triggered by useEffect
         }
       } catch (error: any) {
         console.error("Upload error:", error);
-        toast.error("Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+        toast.error(
+          "Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler")
+        );
       } finally {
         setUploading(false);
       }
@@ -1245,54 +1804,85 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const removeGalleryPhoto = (idx: number) => {
     setAddons({
       ...addons,
-      gallery: { ...addons.gallery, photos: addons.gallery.photos.filter((_, i) => i !== idx) },
+      gallery: {
+        ...addons.gallery,
+        photos: addons.gallery.photos.filter((_, i) => i !== idx),
+      },
     });
     // Auto-save will be triggered by useEffect
   };
 
   const addAlbumPhoto = async (albumIdx: number, file: File) => {
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max. 5 MB");
+      return;
+    }
     setUploading(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
       try {
-        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        const result = await uploadMutation.mutateAsync({
+          websiteId,
+          imageData: base64,
+          mimeType: file.type,
+        });
         if (result?.url) {
           setAddons(prev => {
             const albums = [...prev.gallery.albums];
-            albums[albumIdx] = { ...albums[albumIdx], images: [...(albums[albumIdx].images || []), result.url] };
+            albums[albumIdx] = {
+              ...albums[albumIdx],
+              images: [...(albums[albumIdx].images || []), result.url],
+            };
             return { ...prev, gallery: { ...prev.gallery, albums } };
           });
           toast.success("Bild hochgeladen");
         }
       } catch (error: any) {
-        toast.error("Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler"));
+        toast.error(
+          "Upload fehlgeschlagen: " + (error.message || "Unbekannter Fehler")
+        );
       } finally {
         setUploading(false);
       }
     };
-    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploading(false); };
+    reader.onerror = () => {
+      toast.error("Fehler beim Lesen der Datei");
+      setUploading(false);
+    };
     reader.readAsDataURL(file);
   };
 
   const removeAlbumPhoto = (albumIdx: number, photoIdx: number) => {
     setAddons(prev => {
       const albums = [...prev.gallery.albums];
-      albums[albumIdx] = { ...albums[albumIdx], images: albums[albumIdx].images.filter((_, i) => i !== photoIdx) };
+      albums[albumIdx] = {
+        ...albums[albumIdx],
+        images: albums[albumIdx].images.filter((_, i) => i !== photoIdx),
+      };
       return { ...prev, gallery: { ...prev.gallery, albums } };
     });
   };
 
   const addAlbum = () => {
-    const newAlbum: GalleryAlbum = { id: `album-${Date.now()}`, name: '', images: [] };
-    setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, albums: [...prev.gallery.albums, newAlbum] } }));
+    const newAlbum: GalleryAlbum = {
+      id: `album-${Date.now()}`,
+      name: "",
+      images: [],
+    };
+    setAddons(prev => ({
+      ...prev,
+      gallery: { ...prev.gallery, albums: [...prev.gallery.albums, newAlbum] },
+    }));
   };
 
   const removeAlbum = (albumIdx: number) => {
     setAddons(prev => ({
       ...prev,
-      gallery: { ...prev.gallery, albums: prev.gallery.albums.filter((_, i) => i !== albumIdx) }
+      gallery: {
+        ...prev.gallery,
+        albums: prev.gallery.albums.filter((_, i) => i !== albumIdx),
+      },
     }));
   };
 
@@ -1308,21 +1898,33 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const addMenuCategory = () => {
     setAddons({
       ...addons,
-      menu: { ...addons.menu, categories: [...addons.menu.categories, { name: "Neue Kategorie", items: [] }] },
+      menu: {
+        ...addons.menu,
+        categories: [
+          ...addons.menu.categories,
+          { name: "Neue Kategorie", items: [] },
+        ],
+      },
     });
   };
 
   const updateMenuCategoryName = (catIdx: number, name: string) => {
     const newCategories = [...addons.menu.categories];
     newCategories[catIdx] = { ...newCategories[catIdx], name };
-    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, categories: newCategories },
+    });
   };
 
   const removeMenuCategory = (catIdx: number) => {
     if (addons.menu.categories.length <= 1) return;
     setAddons({
       ...addons,
-      menu: { ...addons.menu, categories: addons.menu.categories.filter((_, i) => i !== catIdx) },
+      menu: {
+        ...addons.menu,
+        categories: addons.menu.categories.filter((_, i) => i !== catIdx),
+      },
     });
   };
 
@@ -1330,39 +1932,71 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     const newCategories = [...addons.menu.categories];
     newCategories[catIdx] = {
       ...newCategories[catIdx],
-      items: [...(newCategories[catIdx].items || []), { name: "", description: "", price: "" }],
+      items: [
+        ...(newCategories[catIdx].items || []),
+        { name: "", description: "", price: "" },
+      ],
     };
-    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, categories: newCategories },
+    });
   };
 
-  const updateMenuItem = (catIdx: number, itemIdx: number, field: string, value: string) => {
+  const updateMenuItem = (
+    catIdx: number,
+    itemIdx: number,
+    field: string,
+    value: string
+  ) => {
     const newCategories = [...addons.menu.categories];
     const items = [...(newCategories[catIdx].items || [])];
     items[itemIdx] = { ...items[itemIdx], [field]: value };
     newCategories[catIdx] = { ...newCategories[catIdx], items };
-    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, categories: newCategories },
+    });
   };
 
   const removeMenuItem = (catIdx: number, itemIdx: number) => {
     const newCategories = [...addons.menu.categories];
     newCategories[catIdx] = {
       ...newCategories[catIdx],
-      items: newCategories[catIdx].items.filter((_: any, i: number) => i !== itemIdx),
+      items: newCategories[catIdx].items.filter(
+        (_: any, i: number) => i !== itemIdx
+      ),
     };
-    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, categories: newCategories },
+    });
   };
 
-  const handleMenuItemDragStart = (catIdx: number, itemIdx: number) => setMenuDragState({ catIdx, itemIdx });
-  const handleMenuItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+  const handleMenuItemDragStart = (catIdx: number, itemIdx: number) =>
+    setMenuDragState({ catIdx, itemIdx });
+  const handleMenuItemDragOver = (
+    e: React.DragEvent,
+    catIdx: number,
+    itemIdx: number
+  ) => {
     e.preventDefault();
-    if (!menuDragState || menuDragState.catIdx !== catIdx || menuDragState.itemIdx === itemIdx) return;
+    if (
+      !menuDragState ||
+      menuDragState.catIdx !== catIdx ||
+      menuDragState.itemIdx === itemIdx
+    )
+      return;
     const newCategories = [...addons.menu.categories];
     const items = [...(newCategories[catIdx].items || [])];
     const dragged = items[menuDragState.itemIdx];
     items.splice(menuDragState.itemIdx, 1);
     items.splice(itemIdx, 0, dragged);
     newCategories[catIdx] = { ...newCategories[catIdx], items };
-    setAddons({ ...addons, menu: { ...addons.menu, categories: newCategories } });
+    setAddons({
+      ...addons,
+      menu: { ...addons.menu, categories: newCategories },
+    });
     setMenuDragState({ catIdx, itemIdx });
   };
   const handleMenuItemDragEnd = () => setMenuDragState(null);
@@ -1371,21 +2005,33 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
   const addPriceCategory = () => {
     setAddons({
       ...addons,
-      pricelist: { ...addons.pricelist, categories: [...addons.pricelist.categories, { name: "Neue Kategorie", items: [] }] },
+      pricelist: {
+        ...addons.pricelist,
+        categories: [
+          ...addons.pricelist.categories,
+          { name: "Neue Kategorie", items: [] },
+        ],
+      },
     });
   };
 
   const updatePriceCategoryName = (catIdx: number, name: string) => {
     const newCategories = [...addons.pricelist.categories];
     newCategories[catIdx] = { ...newCategories[catIdx], name };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, categories: newCategories },
+    });
   };
 
   const removePriceCategory = (catIdx: number) => {
     if (addons.pricelist.categories.length <= 1) return;
     setAddons({
       ...addons,
-      pricelist: { ...addons.pricelist, categories: addons.pricelist.categories.filter((_, i) => i !== catIdx) },
+      pricelist: {
+        ...addons.pricelist,
+        categories: addons.pricelist.categories.filter((_, i) => i !== catIdx),
+      },
     });
   };
 
@@ -1393,55 +2039,118 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
     const newCategories = [...addons.pricelist.categories];
     newCategories[catIdx] = {
       ...newCategories[catIdx],
-      items: [...(newCategories[catIdx].items || []), { name: "", description: "", price: "" }],
+      items: [
+        ...(newCategories[catIdx].items || []),
+        { name: "", description: "", price: "" },
+      ],
     };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, categories: newCategories },
+    });
   };
 
-  const updatePriceItem = (catIdx: number, itemIdx: number, field: string, value: string) => {
+  const updatePriceItem = (
+    catIdx: number,
+    itemIdx: number,
+    field: string,
+    value: string
+  ) => {
     const newCategories = [...addons.pricelist.categories];
     const items = [...(newCategories[catIdx].items || [])];
     items[itemIdx] = { ...items[itemIdx], [field]: value };
     newCategories[catIdx] = { ...newCategories[catIdx], items };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, categories: newCategories },
+    });
   };
 
   const removePriceItem = (catIdx: number, itemIdx: number) => {
     const newCategories = [...addons.pricelist.categories];
     newCategories[catIdx] = {
       ...newCategories[catIdx],
-      items: newCategories[catIdx].items.filter((_: any, i: number) => i !== itemIdx),
+      items: newCategories[catIdx].items.filter(
+        (_: any, i: number) => i !== itemIdx
+      ),
     };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, categories: newCategories },
+    });
   };
 
-  const handlePriceItemDragStart = (catIdx: number, itemIdx: number) => setPriceDragState({ catIdx, itemIdx });
-  const handlePriceItemDragOver = (e: React.DragEvent, catIdx: number, itemIdx: number) => {
+  const handlePriceItemDragStart = (catIdx: number, itemIdx: number) =>
+    setPriceDragState({ catIdx, itemIdx });
+  const handlePriceItemDragOver = (
+    e: React.DragEvent,
+    catIdx: number,
+    itemIdx: number
+  ) => {
     e.preventDefault();
-    if (!priceDragState || priceDragState.catIdx !== catIdx || priceDragState.itemIdx === itemIdx) return;
+    if (
+      !priceDragState ||
+      priceDragState.catIdx !== catIdx ||
+      priceDragState.itemIdx === itemIdx
+    )
+      return;
     const newCategories = [...addons.pricelist.categories];
     const items = [...(newCategories[catIdx].items || [])];
     const dragged = items[priceDragState.itemIdx];
     items.splice(priceDragState.itemIdx, 1);
     items.splice(itemIdx, 0, dragged);
     newCategories[catIdx] = { ...newCategories[catIdx], items };
-    setAddons({ ...addons, pricelist: { ...addons.pricelist, categories: newCategories } });
+    setAddons({
+      ...addons,
+      pricelist: { ...addons.pricelist, categories: newCategories },
+    });
     setPriceDragState({ catIdx, itemIdx });
   };
   const handlePriceItemDragEnd = () => setPriceDragState(null);
 
   // ── helper to render a consistent toggle switch ───────────────────────────
-  const Toggle = ({ checked, onChange, color }: { checked: boolean; onChange: () => void; color: string }) => (
+  const Toggle = ({
+    checked,
+    onChange,
+    color,
+  }: {
+    checked: boolean;
+    onChange: () => void;
+    color: string;
+  }) => (
     <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only peer" />
-      <div className={`w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${color}`} />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="sr-only peer"
+      />
+      <div
+        className={`w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${color}`}
+      />
     </label>
   );
 
   const SaveStatus = () => (
     <div className="flex items-center gap-1.5 text-xs">
-      {saveStatus === "saving" && <><Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" /><span className="text-amber-400">Speichern…</span></>}
-      {saveStatus === "saved" && lastSaved && <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Gespeichert {lastSaved.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}</span></>}
+      {saveStatus === "saving" && (
+        <>
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+          <span className="text-amber-400">Speichern…</span>
+        </>
+      )}
+      {saveStatus === "saved" && lastSaved && (
+        <>
+          <Check className="w-3 h-3 text-emerald-400" />
+          <span className="text-emerald-400">
+            Gespeichert{" "}
+            {lastSaved.toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        </>
+      )}
     </div>
   );
 
@@ -1474,26 +2183,56 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
 
               {/* Mode switcher */}
               <div className="space-y-2">
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Galerie-Typ</p>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                  Galerie-Typ
+                </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['single', 'albums'] as const).map(mode => (
+                  {(["single", "albums"] as const).map(mode => (
                     <button
                       key={mode}
-                      onClick={() => setAddons(prev => ({ ...prev, gallery: { ...prev.gallery, mode } }))}
+                      onClick={() =>
+                        setAddons(prev => ({
+                          ...prev,
+                          gallery: { ...prev.gallery, mode },
+                        }))
+                      }
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-xs font-medium transition-all ${
                         addons.gallery.mode === mode
-                          ? 'bg-pink-600/20 border-pink-500/60 text-white'
-                          : 'bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200'
+                          ? "bg-pink-600/20 border-pink-500/60 text-white"
+                          : "bg-slate-700/40 border-slate-600/40 text-slate-400 hover:text-slate-200"
                       }`}
                     >
-                      {mode === 'single' ? (
+                      {mode === "single" ? (
                         <>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          >
+                            <rect x="3" y="3" width="7" height="7" rx="1" />
+                            <rect x="14" y="3" width="7" height="7" rx="1" />
+                            <rect x="3" y="14" width="7" height="7" rx="1" />
+                            <rect x="14" y="14" width="7" height="7" rx="1" />
+                          </svg>
                           Einzelgalerie
                         </>
                       ) : (
                         <>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="10" rx="1"/><rect x="3" y="16" width="8" height="5" rx="1"/><rect x="13" y="16" width="8" height="5" rx="1"/></svg>
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          >
+                            <rect x="3" y="3" width="18" height="10" rx="1" />
+                            <rect x="3" y="16" width="8" height="5" rx="1" />
+                            <rect x="13" y="16" width="8" height="5" rx="1" />
+                          </svg>
                           Alben
                         </>
                       )}
@@ -1503,70 +2242,127 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
               </div>
 
               {/* Single gallery */}
-              {addons.gallery.mode !== 'albums' && (
+              {addons.gallery.mode !== "albums" && (
                 <div className="space-y-3">
                   {addons.gallery.photos.length > 0 && (
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {addons.gallery.photos.map((photo, idx) => (
-                        <div key={idx} className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50">
-                          <img src={photo} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                        <div
+                          key={idx}
+                          className="relative aspect-square rounded-xl overflow-hidden group bg-slate-700/50"
+                        >
+                          <img
+                            src={photo}
+                            alt={`Gallery ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                          <button onClick={() => removeGalleryPhoto(idx)} className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => removeGalleryPhoto(idx)}
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all"
+                          >
                             <X className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       ))}
                     </div>
                   )}
-                  <label className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}>
-                    <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addGalleryPhoto(file); }} />
+                  <label
+                    className={`flex flex-col items-center gap-3 justify-center text-slate-400 hover:text-white bg-slate-700/30 hover:bg-slate-700/50 border-2 border-dashed border-slate-600 hover:border-slate-500 rounded-xl px-6 py-8 cursor-pointer transition-all ${uploading ? "opacity-50" : ""}`}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploading}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) addGalleryPhoto(file);
+                      }}
+                    />
                     <div className="w-12 h-12 rounded-full bg-slate-600/50 flex items-center justify-center">
-                      {uploading ? <Loader2 className="w-6 h-6 animate-spin text-pink-400" /> : <Upload className="w-6 h-6" />}
+                      {uploading ? (
+                        <Loader2 className="w-6 h-6 animate-spin text-pink-400" />
+                      ) : (
+                        <Upload className="w-6 h-6" />
+                      )}
                     </div>
                     <div className="text-center">
-                      <p className="font-medium">{uploading ? "Wird hochgeladen..." : "Bild hochladen"}</p>
-                      <p className="text-xs text-slate-500 mt-1">JPG, PNG • Max. 5 MB</p>
+                      <p className="font-medium">
+                        {uploading ? "Wird hochgeladen..." : "Bild hochladen"}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        JPG, PNG • Max. 5 MB
+                      </p>
                     </div>
                   </label>
                 </div>
               )}
 
               {/* Album mode */}
-              {addons.gallery.mode === 'albums' && (
+              {addons.gallery.mode === "albums" && (
                 <div className="space-y-3">
                   {addons.gallery.albums.map((album, albumIdx) => (
-                    <div key={album.id} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                    <div
+                      key={album.id}
+                      className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30"
+                    >
                       {/* Album header */}
                       <div className="flex items-center gap-2">
                         <div className="flex-1">
-                          <p className="text-slate-500 text-[10px] font-mono mb-1">Album {albumIdx + 1}</p>
+                          <p className="text-slate-500 text-[10px] font-mono mb-1">
+                            Album {albumIdx + 1}
+                          </p>
                           <input
                             type="text"
                             value={album.name}
-                            onChange={(e) => updateAlbumName(albumIdx, e.target.value)}
+                            onChange={e =>
+                              updateAlbumName(albumIdx, e.target.value)
+                            }
                             placeholder="z.B. Hochzeiten"
                             className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-pink-500"
                           />
                         </div>
-                        <button onClick={() => removeAlbum(albumIdx)} className="mt-5 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                        <button
+                          onClick={() => removeAlbum(albumIdx)}
+                          className="mt-5 p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                       {/* Cover preview */}
                       {album.images.length > 0 && (
                         <div className="flex items-center gap-2">
-                          <img src={album.images[0]} alt="Cover" className="w-10 h-10 rounded-lg object-cover border border-slate-600" />
-                          <p className="text-slate-500 text-[10px]">Albumbild: erstes Foto</p>
+                          <img
+                            src={album.images[0]}
+                            alt="Cover"
+                            className="w-10 h-10 rounded-lg object-cover border border-slate-600"
+                          />
+                          <p className="text-slate-500 text-[10px]">
+                            Albumbild: erstes Foto
+                          </p>
                         </div>
                       )}
                       {/* Photos grid */}
                       {album.images.length > 0 && (
                         <div className="grid grid-cols-4 gap-2">
                           {album.images.map((photo, photoIdx) => (
-                            <div key={photoIdx} className="relative aspect-square rounded-lg overflow-hidden group bg-slate-700/50">
-                              <img src={photo} alt={`Album ${albumIdx + 1} Foto ${photoIdx + 1}`} className="w-full h-full object-cover" />
+                            <div
+                              key={photoIdx}
+                              className="relative aspect-square rounded-lg overflow-hidden group bg-slate-700/50"
+                            >
+                              <img
+                                src={photo}
+                                alt={`Album ${albumIdx + 1} Foto ${photoIdx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
                               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                              <button onClick={() => removeAlbumPhoto(albumIdx, photoIdx)} className="absolute top-1 right-1 p-1 rounded-md bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all">
+                              <button
+                                onClick={() =>
+                                  removeAlbumPhoto(albumIdx, photoIdx)
+                                }
+                                className="absolute top-1 right-1 p-1 rounded-md bg-red-500/90 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-all"
+                              >
                                 <X className="w-3 h-3" />
                               </button>
                             </div>
@@ -1574,9 +2370,25 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                         </div>
                       )}
                       {/* Upload for this album */}
-                      <label className={`flex items-center gap-2 justify-center text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/40 border border-dashed border-slate-600 hover:border-slate-500 rounded-lg px-4 py-3 cursor-pointer transition-all text-xs ${uploading ? "opacity-50" : ""}`}>
-                        <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={(e) => { const file = e.target.files?.[0]; if (file) addAlbumPhoto(albumIdx, file); e.target.value = ""; }} />
-                        {uploading ? <Loader2 className="w-4 h-4 animate-spin text-pink-400" /> : <Upload className="w-4 h-4" />}
+                      <label
+                        className={`flex items-center gap-2 justify-center text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/40 border border-dashed border-slate-600 hover:border-slate-500 rounded-lg px-4 py-3 cursor-pointer transition-all text-xs ${uploading ? "opacity-50" : ""}`}
+                      >
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={uploading}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (file) addAlbumPhoto(albumIdx, file);
+                            e.target.value = "";
+                          }}
+                        />
+                        {uploading ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-pink-400" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
                         {uploading ? "Wird hochgeladen..." : "Foto hinzufügen"}
                       </label>
                     </div>
@@ -1606,19 +2418,43 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
               </h3>
               <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.menu.categories.map((category, catIdx) => (
-                  <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                  <div
+                    key={catIdx}
+                    className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input type="text" value={category.name} onChange={(e) => updateMenuCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Hauptgerichte)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium" />
-                      {addons.menu.categories.length > 1 && <button onClick={() => removeMenuCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      <span className="text-xs text-slate-500 font-mono">
+                        Kategorie {catIdx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={category.name}
+                        onChange={e =>
+                          updateMenuCategoryName(catIdx, e.target.value)
+                        }
+                        placeholder="Kategorie Name (z.B. Hauptgerichte)"
+                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500 font-medium"
+                      />
+                      {addons.menu.categories.length > 1 && (
+                        <button
+                          onClick={() => removeMenuCategory(catIdx)}
+                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
                         <div
                           key={itemIdx}
                           draggable
-                          onDragStart={() => handleMenuItemDragStart(catIdx, itemIdx)}
-                          onDragOver={(e) => handleMenuItemDragOver(e, catIdx, itemIdx)}
+                          onDragStart={() =>
+                            handleMenuItemDragStart(catIdx, itemIdx)
+                          }
+                          onDragOver={e =>
+                            handleMenuItemDragOver(e, catIdx, itemIdx)
+                          }
                           onDragEnd={handleMenuItemDragEnd}
                           className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${menuDragState?.catIdx === catIdx && menuDragState?.itemIdx === itemIdx ? "opacity-50 border-amber-500/50 ring-1 ring-amber-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
                         >
@@ -1627,19 +2463,75 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                           </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input type="text" value={item.name || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Gerichtname" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
-                              <input type="text" value={item.price || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis (z.B. 12,90 €)" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
+                              <input
+                                type="text"
+                                value={item.name || ""}
+                                onChange={e =>
+                                  updateMenuItem(
+                                    catIdx,
+                                    itemIdx,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Gerichtname"
+                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                              />
+                              <input
+                                type="text"
+                                value={item.price || ""}
+                                onChange={e =>
+                                  updateMenuItem(
+                                    catIdx,
+                                    itemIdx,
+                                    "price",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Preis (z.B. 12,90 €)"
+                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                              />
                             </div>
-                            <input type="text" value={item.description || ""} onChange={(e) => updateMenuItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500" />
+                            <input
+                              type="text"
+                              value={item.description || ""}
+                              onChange={e =>
+                                updateMenuItem(
+                                  catIdx,
+                                  itemIdx,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Beschreibung (optional)"
+                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-amber-500"
+                            />
                           </div>
-                          <button onClick={() => removeMenuItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+                          <button
+                            onClick={() => removeMenuItem(catIdx, itemIdx)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       ))}
-                      <button onClick={() => addMenuItem(catIdx)} className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-1"><Plus className="w-4 h-4" />Gericht hinzufügen</button>
+                      <button
+                        onClick={() => addMenuItem(catIdx)}
+                        className="flex items-center gap-2 text-sm text-amber-400 hover:text-amber-300 transition-colors py-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Gericht hinzufügen
+                      </button>
                     </div>
                   </div>
                 ))}
-                <button onClick={addMenuCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
+                <button
+                  onClick={addMenuCategory}
+                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neue Kategorie
+                </button>
               </div>
             </div>
           )}
@@ -1655,19 +2547,43 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
               </h3>
               <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 {addons.pricelist.categories.map((category, catIdx) => (
-                  <div key={catIdx} className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30">
+                  <div
+                    key={catIdx}
+                    className="bg-slate-700/40 rounded-xl p-4 space-y-3 border border-slate-600/30"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500 font-mono">Kategorie {catIdx + 1}</span>
-                      <input type="text" value={category.name} onChange={(e) => updatePriceCategoryName(catIdx, e.target.value)} placeholder="Kategorie Name (z.B. Damen)" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium" />
-                      {addons.pricelist.categories.length > 1 && <button onClick={() => removePriceCategory(catIdx)} className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>}
+                      <span className="text-xs text-slate-500 font-mono">
+                        Kategorie {catIdx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        value={category.name}
+                        onChange={e =>
+                          updatePriceCategoryName(catIdx, e.target.value)
+                        }
+                        placeholder="Kategorie Name (z.B. Damen)"
+                        className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500 font-medium"
+                      />
+                      {addons.pricelist.categories.length > 1 && (
+                        <button
+                          onClick={() => removePriceCategory(catIdx)}
+                          className="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                     <div className="space-y-2 pl-4 border-l-2 border-slate-600/50">
                       {category.items?.map((item: any, itemIdx: number) => (
                         <div
                           key={itemIdx}
                           draggable
-                          onDragStart={() => handlePriceItemDragStart(catIdx, itemIdx)}
-                          onDragOver={(e) => handlePriceItemDragOver(e, catIdx, itemIdx)}
+                          onDragStart={() =>
+                            handlePriceItemDragStart(catIdx, itemIdx)
+                          }
+                          onDragOver={e =>
+                            handlePriceItemDragOver(e, catIdx, itemIdx)
+                          }
                           onDragEnd={handlePriceItemDragEnd}
                           className={`flex gap-2 items-center rounded-lg p-3 border cursor-move transition-all ${priceDragState?.catIdx === catIdx && priceDragState?.itemIdx === itemIdx ? "opacity-50 border-emerald-500/50 ring-1 ring-emerald-500/20 bg-slate-800/40" : "bg-slate-800/40 border-slate-700/50"}`}
                         >
@@ -1676,19 +2592,75 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                           </div>
                           <div className="flex-1 space-y-2">
                             <div className="flex gap-2">
-                              <input type="text" value={item.name || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "name", e.target.value)} placeholder="Leistung" className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
-                              <input type="text" value={item.price || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "price", e.target.value)} placeholder="Preis" className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
+                              <input
+                                type="text"
+                                value={item.name || ""}
+                                onChange={e =>
+                                  updatePriceItem(
+                                    catIdx,
+                                    itemIdx,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Leistung"
+                                className="flex-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
+                              />
+                              <input
+                                type="text"
+                                value={item.price || ""}
+                                onChange={e =>
+                                  updatePriceItem(
+                                    catIdx,
+                                    itemIdx,
+                                    "price",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="Preis"
+                                className="w-28 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
+                              />
                             </div>
-                            <input type="text" value={item.description || ""} onChange={(e) => updatePriceItem(catIdx, itemIdx, "description", e.target.value)} placeholder="Beschreibung (optional)" className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500" />
+                            <input
+                              type="text"
+                              value={item.description || ""}
+                              onChange={e =>
+                                updatePriceItem(
+                                  catIdx,
+                                  itemIdx,
+                                  "description",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Beschreibung (optional)"
+                              className="w-full bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-emerald-500"
+                            />
                           </div>
-                          <button onClick={() => removePriceItem(catIdx, itemIdx)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+                          <button
+                            onClick={() => removePriceItem(catIdx, itemIdx)}
+                            className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       ))}
-                      <button onClick={() => addPriceItem(catIdx)} className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-1"><Plus className="w-4 h-4" />Preis hinzufügen</button>
+                      <button
+                        onClick={() => addPriceItem(catIdx)}
+                        className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors py-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Preis hinzufügen
+                      </button>
                     </div>
                   </div>
                 ))}
-                <button onClick={addPriceCategory} className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"><Plus className="w-4 h-4" />Neue Kategorie</button>
+                <button
+                  onClick={addPriceCategory}
+                  className="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg border border-dashed border-blue-500/30"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neue Kategorie
+                </button>
               </div>
             </div>
           )}
@@ -1702,18 +2674,33 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                 </div>
                 Formularfelder bearbeiten
               </h3>
-              <ContactFormEditor websiteId={websiteId} initialFields={addons.contactFormFields} onSave={handleSaveContactFormFields} />
+              <ContactFormEditor
+                websiteId={websiteId}
+                initialFields={addons.contactFormFields}
+                onSave={handleSaveContactFormFields}
+              />
             </div>
           )}
 
           {/* Booking detail */}
           {activeDetail === "booking" && (
-            <BookingAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} onGoToTermine={onGoToTermine} purchasedAddOns={purchasedAddOns} />
+            <BookingAddonSection
+              websiteId={websiteId}
+              website={website}
+              onUpdate={onUpdate}
+              onGoToTermine={onGoToTermine}
+              purchasedAddOns={purchasedAddOns}
+            />
           )}
 
           {/* AiChat detail */}
           {activeDetail === "aiChat" && (
-            <AiChatAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+            <AiChatAddonSection
+              websiteId={websiteId}
+              website={website}
+              onUpdate={onUpdate}
+              purchasedAddOns={purchasedAddOns}
+            />
           )}
         </div>
       )}
@@ -1727,191 +2714,341 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
           </div>
 
           {/* ── Gallery ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.gallery.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.gallery.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0">
                 <Image className="w-5 h-5 text-pink-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">Bildergalerie</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">+3,90 €/Mon</span>
-                  {addons.gallery.enabled && addons.gallery.photos.length > 0 && <span className="text-xs text-pink-400">{addons.gallery.photos.length} Bilder</span>}
+                  <span className="text-white font-semibold text-sm">
+                    Bildergalerie
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
+                    +3,90 €/Mon
+                  </span>
+                  {addons.gallery.enabled &&
+                    addons.gallery.photos.length > 0 && (
+                      <span className="text-xs text-pink-400">
+                        {addons.gallery.photos.length} Bilder
+                      </span>
+                    )}
                 </div>
-                <p className="text-slate-400 text-xs">Präsentiere deine Arbeiten in einer Galerie.</p>
+                <p className="text-slate-400 text-xs">
+                  Präsentiere deine Arbeiten in einer Galerie.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {addons.gallery.enabled && (
-                  <button onClick={() => setActiveDetail("gallery")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("gallery")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["gallery"] ? (
-                  <button onClick={() => setConfirmAddon("gallery")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setConfirmAddon("gallery")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={addons.gallery.enabled} onChange={() => toggleAddon("gallery")} color="peer-checked:bg-pink-500" />
+                  <Toggle
+                    checked={addons.gallery.enabled}
+                    onChange={() => toggleAddon("gallery")}
+                    color="peer-checked:bg-pink-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Speisekarte ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.menu.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.menu.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
                 <Sparkles className="w-5 h-5 text-amber-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">Speisekarte</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">+3,90 €/Mon</span>
-                  {addons.menu.enabled && <span className="text-xs text-amber-400">{addons.menu.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Gerichte</span>}
+                  <span className="text-white font-semibold text-sm">
+                    Speisekarte
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-medium">
+                    +3,90 €/Mon
+                  </span>
+                  {addons.menu.enabled && (
+                    <span className="text-xs text-amber-400">
+                      {addons.menu.categories.reduce(
+                        (a, c) => a + (c.items?.length || 0),
+                        0
+                      )}{" "}
+                      Gerichte
+                    </span>
+                  )}
                 </div>
-                <p className="text-slate-400 text-xs">Ideal für Restaurants, Cafés und Bäckereien.</p>
+                <p className="text-slate-400 text-xs">
+                  Ideal für Restaurants, Cafés und Bäckereien.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {addons.menu.enabled && (
-                  <button onClick={() => setActiveDetail("menu")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("menu")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["menu"] ? (
-                  <button onClick={() => setConfirmAddon("menu")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setConfirmAddon("menu")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={addons.menu.enabled} onChange={() => toggleAddon("menu")} color="peer-checked:bg-amber-500" />
+                  <Toggle
+                    checked={addons.menu.enabled}
+                    onChange={() => toggleAddon("menu")}
+                    color="peer-checked:bg-amber-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Preisliste ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.pricelist.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.pricelist.enabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center flex-shrink-0">
                 <LayoutGrid className="w-5 h-5 text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">Preisliste</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">+3,90 €/Mon</span>
-                  {addons.pricelist.enabled && <span className="text-xs text-emerald-400">{addons.pricelist.categories.reduce((a, c) => a + (c.items?.length || 0), 0)} Preise</span>}
+                  <span className="text-white font-semibold text-sm">
+                    Preisliste
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-medium">
+                    +3,90 €/Mon
+                  </span>
+                  {addons.pricelist.enabled && (
+                    <span className="text-xs text-emerald-400">
+                      {addons.pricelist.categories.reduce(
+                        (a, c) => a + (c.items?.length || 0),
+                        0
+                      )}{" "}
+                      Preise
+                    </span>
+                  )}
                 </div>
-                <p className="text-slate-400 text-xs">Perfekt für Friseure, Beauty-Studios und Dienstleister.</p>
+                <p className="text-slate-400 text-xs">
+                  Perfekt für Friseure, Beauty-Studios und Dienstleister.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {addons.pricelist.enabled && (
-                  <button onClick={() => setActiveDetail("pricelist")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("pricelist")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["pricelist"] ? (
-                  <button onClick={() => setConfirmAddon("pricelist")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setConfirmAddon("pricelist")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={addons.pricelist.enabled} onChange={() => toggleAddon("pricelist")} color="peer-checked:bg-emerald-500" />
+                  <Toggle
+                    checked={addons.pricelist.enabled}
+                    onChange={() => toggleAddon("pricelist")}
+                    color="peer-checked:bg-emerald-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Kontaktformular ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.contactForm ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${addons.contactForm ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center flex-shrink-0">
                 <Mail className="w-5 h-5 text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">Kontaktformular</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">+3,90 €/Mon</span>
-                  {addons.contactForm && <span className="text-xs text-blue-400">{addons.contactFormFields?.length || 4} Felder</span>}
+                  <span className="text-white font-semibold text-sm">
+                    Kontaktformular
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-medium">
+                    +3,90 €/Mon
+                  </span>
+                  {addons.contactForm && (
+                    <span className="text-xs text-blue-400">
+                      {addons.contactFormFields?.length || 4} Felder
+                    </span>
+                  )}
                 </div>
-                <p className="text-slate-400 text-xs">Ermögliche Besuchern, direkt Anfragen zu senden.</p>
+                <p className="text-slate-400 text-xs">
+                  Ermögliche Besuchern, direkt Anfragen zu senden.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {addons.contactForm && (
-                  <button onClick={() => setActiveDetail("contactForm")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("contactForm")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["contactForm"] ? (
-                  <button onClick={() => setConfirmAddon("contactForm")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setConfirmAddon("contactForm")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={addons.contactForm} onChange={() => toggleAddon("contactForm")} color="peer-checked:bg-blue-500" />
+                  <Toggle
+                    checked={addons.contactForm}
+                    onChange={() => toggleAddon("contactForm")}
+                    color="peer-checked:bg-blue-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Terminbuchung ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${bookingEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${bookingEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
                 <CalendarDays className="w-5 h-5 text-violet-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">Terminbuchung</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">+4,90 €/Mon</span>
+                  <span className="text-white font-semibold text-sm">
+                    Terminbuchung
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">
+                    +4,90 €/Mon
+                  </span>
                 </div>
-                <p className="text-slate-400 text-xs">Kunden buchen direkt auf deiner Website einen Termin.</p>
+                <p className="text-slate-400 text-xs">
+                  Kunden buchen direkt auf deiner Website einen Termin.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {bookingEnabled && (
-                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("booking")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["booking"] ? (
-                  <button onClick={() => setActiveDetail("booking")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setActiveDetail("booking")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={bookingEnabled} onChange={handleBookingToggle} color="peer-checked:bg-violet-500" />
+                  <Toggle
+                    checked={bookingEnabled}
+                    onChange={handleBookingToggle}
+                    color="peer-checked:bg-violet-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── KI-Chat ── */}
-          <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${aiChatEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+          <div
+            className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${aiChatEnabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+          >
             <div className="p-4 flex items-center gap-4">
               <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
                 <MessageSquare className="w-5 h-5 text-fuchsia-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">KI-Chat</span>
-                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 font-medium">+9,90 €/Mon</span>
+                  <span className="text-white font-semibold text-sm">
+                    KI-Chat
+                  </span>
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 font-medium">
+                    +9,90 €/Mon
+                  </span>
                 </div>
-                <p className="text-slate-400 text-xs">KI beantwortet Kundenfragen & erfasst Leads automatisch.</p>
+                <p className="text-slate-400 text-xs">
+                  KI beantwortet Kundenfragen & erfasst Leads automatisch.
+                </p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 {aiChatEnabled && (
-                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap">
-                    <Settings className="w-3.5 h-3.5" />Einstellungen
+                  <button
+                    onClick={() => setActiveDetail("aiChat")}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Einstellungen
                   </button>
                 )}
                 {!purchasedAddOns["aiChat"] ? (
-                  <button onClick={() => setActiveDetail("aiChat")} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                    <Lock className="w-3 h-3" />Freischalten
+                  <button
+                    onClick={() => setActiveDetail("aiChat")}
+                    className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                  >
+                    <Lock className="w-3 h-3" />
+                    Freischalten
                   </button>
                 ) : (
-                  <Toggle checked={aiChatEnabled} onChange={handleAiChatToggle} color="peer-checked:bg-fuchsia-500" />
+                  <Toggle
+                    checked={aiChatEnabled}
+                    onChange={handleAiChatToggle}
+                    color="peer-checked:bg-fuchsia-500"
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* ── Team ── */}
-          <TeamAddonSection websiteId={websiteId} website={website} onUpdate={onUpdate} purchasedAddOns={purchasedAddOns} />
+          <TeamAddonSection
+            websiteId={websiteId}
+            website={website}
+            onUpdate={onUpdate}
+            purchasedAddOns={purchasedAddOns}
+          />
 
           {/* ── Purchase confirmation modal ── */}
           {confirmAddon && (
@@ -1923,24 +3060,52 @@ function AddonsEditor({ websiteId, website, onboarding, onUpdate, purchasedAddOn
                       {ADDON_LABELS[confirmAddon]?.icon}
                     </div>
                     <div>
-                      <h3 className="text-white font-semibold">Add-on freischalten</h3>
-                      <p className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}>
+                      <h3 className="text-white font-semibold">
+                        Add-on freischalten
+                      </h3>
+                      <p
+                        className={`text-sm font-medium ${ADDON_LABELS[confirmAddon]?.color}`}
+                      >
                         {ADDON_LABELS[confirmAddon]?.name}
                       </p>
                     </div>
                   </div>
                   <p className="text-slate-300 text-sm leading-relaxed mb-1">
-                    <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+                    <span className="text-white font-semibold">
+                      +3,90 €/Monat
+                    </span>{" "}
+                    werden ab sofort anteilig deinem Abo hinzugefügt.
                   </p>
                   <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                    Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+                    Du kannst das Add-on jederzeit über das Kundenportal wieder
+                    kündigen.
                   </p>
                   <div className="flex gap-3">
-                    <button onClick={() => setConfirmAddon(null)} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50">
+                    <button
+                      onClick={() => setConfirmAddon(null)}
+                      disabled={purchaseAddonMutation.isPending}
+                      className="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 text-sm font-medium transition-colors disabled:opacity-50"
+                    >
                       Abbrechen
                     </button>
-                    <button onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: confirmAddon as any })} disabled={purchaseAddonMutation.isPending} className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2">
-                      {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" />Wird gebucht…</> : "Jetzt freischalten"}
+                    <button
+                      onClick={() =>
+                        purchaseAddonMutation.mutate({
+                          websiteId,
+                          addonKey: confirmAddon as any,
+                        })
+                      }
+                      disabled={purchaseAddonMutation.isPending}
+                      className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                      {purchaseAddonMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Wird gebucht…
+                        </>
+                      ) : (
+                        "Jetzt freischalten"
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1961,9 +3126,15 @@ interface StructureEditorProps {
   onUpdate: () => void;
 }
 
-function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorProps) {
+function StructureEditor({
+  websiteId,
+  websiteData,
+  onUpdate,
+}: StructureEditorProps) {
   const [sections, setSections] = useState<SectionConfig[]>([]);
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+    "saved"
+  );
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const updateMutation = trpc.customer.updateWebsiteContent.useMutation({
@@ -2055,11 +3226,13 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
 
   const saveSections = (newSections: SectionConfig[]) => {
     setSaveStatus("saving");
-    const hiddenSections = newSections.filter((s) => !s.enabled).map((s) => s.type);
+    const hiddenSections = newSections.filter(s => !s.enabled).map(s => s.type);
 
     // Reorder sections in websiteData
-    const reorderedSections = newSections.map((s) => {
-      const original = websiteData?.sections?.find((orig: any) => orig.type === s.type);
+    const reorderedSections = newSections.map(s => {
+      const original = websiteData?.sections?.find(
+        (orig: any) => orig.type === s.type
+      );
       return original || { type: s.type, headline: s.headline };
     });
 
@@ -2112,7 +3285,7 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
               key={section.type}
               draggable
               onDragStart={() => handleDragStart(index)}
-              onDragOver={(e) => handleDragOver(e, index)}
+              onDragOver={e => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
               className={`flex items-center gap-3 p-4 bg-slate-800/60 rounded-xl border transition-all cursor-move ${
                 draggedIndex === index
@@ -2126,16 +3299,22 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
               </div>
 
               {/* Icon */}
-              <div className={`p-2 rounded-lg ${section.enabled ? "bg-violet-500/20 text-violet-400" : "bg-slate-700/50 text-slate-500"}`}>
+              <div
+                className={`p-2 rounded-lg ${section.enabled ? "bg-violet-500/20 text-violet-400" : "bg-slate-700/50 text-slate-500"}`}
+              >
                 {getSectionIcon(section.type)}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <h3 className={`font-medium ${section.enabled ? "text-white" : "text-slate-400"}`}>
+                <h3
+                  className={`font-medium ${section.enabled ? "text-white" : "text-slate-400"}`}
+                >
                   {section.headline}
                 </h3>
-                <p className="text-xs text-slate-500 capitalize">{section.type}</p>
+                <p className="text-xs text-slate-500 capitalize">
+                  {section.type}
+                </p>
               </div>
 
               {/* Toggle Button */}
@@ -2146,7 +3325,9 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
                     ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
                     : "bg-slate-700/50 text-slate-400 hover:bg-slate-700"
                 }`}
-                title={section.enabled ? "Sektion ausblenden" : "Sektion einblenden"}
+                title={
+                  section.enabled ? "Sektion ausblenden" : "Sektion einblenden"
+                }
               >
                 {section.enabled ? (
                   <>
@@ -2169,7 +3350,15 @@ function StructureEditor({ websiteId, websiteData, onUpdate }: StructureEditorPr
 }
 
 // ── Setup Step Chip ───────────────────────────────────
-function StepChip({ done, label, onClick }: { done: boolean; label: string; onClick: () => void }) {
+function StepChip({
+  done,
+  label,
+  onClick,
+}: {
+  done: boolean;
+  label: string;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={done ? undefined : onClick}
@@ -2186,8 +3375,24 @@ function StepChip({ done, label, onClick }: { done: boolean; label: string; onCl
 }
 
 // ── Booking / Appointments constants ─────────────────────────────────────────
-const DAY_LABELS: Record<string, string> = { mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So" };
-const DAY_NAMES: Record<string, string> = { mon: "Montag", tue: "Dienstag", wed: "Mittwoch", thu: "Donnerstag", fri: "Freitag", sat: "Samstag", sun: "Sonntag" };
+const DAY_LABELS: Record<string, string> = {
+  mon: "Mo",
+  tue: "Di",
+  wed: "Mi",
+  thu: "Do",
+  fri: "Fr",
+  sat: "Sa",
+  sun: "So",
+};
+const DAY_NAMES: Record<string, string> = {
+  mon: "Montag",
+  tue: "Dienstag",
+  wed: "Mittwoch",
+  thu: "Donnerstag",
+  fri: "Freitag",
+  sat: "Samstag",
+  sun: "Sonntag",
+};
 const DAY_ORDER = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const DEFAULT_SCHEDULE = {
   mon: { enabled: true, start: "09:00", end: "17:00" },
@@ -2201,20 +3406,31 @@ const DEFAULT_SCHEDULE = {
 
 // ── AI Chat Add-on Section ───────────────────────────
 // ── Booking Add-on Section (in Add-ons tab) ────────────
-function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onGoToTermine, purchasedAddOns }: {
+function BookingAddonSection({
+  websiteId,
+  website,
+  onUpdate,
+  onGoToTermine: _onGoToTermine,
+  purchasedAddOns,
+}: {
   websiteId: number;
   website: any;
   onUpdate: () => void;
   onGoToTermine: () => void;
   purchasedAddOns: Record<string, boolean>;
 }) {
-  const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnBooking);
+  const [enabled, setEnabled] = useState<boolean>(
+    !!(website as any).addOnBooking
+  );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const isPurchased = !!purchasedAddOns["booking"];
 
   // Settings form state
-  const [schedule, setSchedule] = useState<Record<string, { enabled: boolean; start: string; end: string }>>(DEFAULT_SCHEDULE);
+  const [schedule, setSchedule] =
+    useState<Record<string, { enabled: boolean; start: string; end: string }>>(
+      DEFAULT_SCHEDULE
+    );
   const [duration, setDuration] = useState(30);
   const [buffer, setBuffer] = useState(0);
   const [advance, setAdvance] = useState(30);
@@ -2223,16 +3439,34 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
   const [notifEmail, setNotifEmail] = useState("");
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
-    onSuccess: () => { setConfirmOpen(false); setSaving(false); setEnabled(true); onUpdate(); toast.success("Terminbuchung freigeschaltet!"); },
-    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+    onSuccess: () => {
+      setConfirmOpen(false);
+      setSaving(false);
+      setEnabled(true);
+      onUpdate();
+      toast.success("Terminbuchung freigeschaltet!");
+    },
+    onError: (e: any) => {
+      setSaving(false);
+      toast.error("Fehler: " + e.message);
+    },
   });
 
   const saveSettingsMutation = trpc.customer.saveBookingSettings.useMutation({
-    onSuccess: () => { setSaving(false); onUpdate(); toast.success("Terminbuchung gespeichert"); },
-    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+    onSuccess: () => {
+      setSaving(false);
+      onUpdate();
+      toast.success("Terminbuchung gespeichert");
+    },
+    onError: () => {
+      setSaving(false);
+      toast.error("Speichern fehlgeschlagen");
+    },
   });
 
-  const { data: bookingData } = trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const { data: bookingData } = trpc.customer.getBookingSettings.useQuery({
+    websiteId,
+  });
 
   // Populate settings form from fetched data
   useEffect(() => {
@@ -2249,7 +3483,10 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
   }, [bookingData]);
 
   const handleToggle = () => {
-    if (!isPurchased) { setConfirmOpen(true); return; }
+    if (!isPurchased) {
+      setConfirmOpen(true);
+      return;
+    }
     const newVal = !enabled;
     setEnabled(newVal);
     setSaving(true);
@@ -2287,14 +3524,24 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
         <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
           <CalendarDays className="w-4 h-4 text-blue-400" />
           Terminbuchung
-          <span className="ml-auto text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">+4,90 €/Monat</span>
+          <span className="ml-auto text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded-full">
+            +4,90 €/Monat
+          </span>
         </h2>
 
         {!isPurchased ? (
           <div className="space-y-4">
             <div className="text-slate-400 text-xs space-y-1.5">
-              {["Eigenes Buchungssystem – kein externer Account nötig", "Wochenplan mit Uhrzeiten frei konfigurierbar", "Automatische Bestätigungs-E-Mails an Kunden", "Terminübersicht und Absagen im Dashboard"].map(f => (
-                <div key={f} className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">✓</span><span>{f}</span></div>
+              {[
+                "Eigenes Buchungssystem – kein externer Account nötig",
+                "Wochenplan mit Uhrzeiten frei konfigurierbar",
+                "Automatische Bestätigungs-E-Mails an Kunden",
+                "Terminübersicht und Absagen im Dashboard",
+              ].map(f => (
+                <div key={f} className="flex items-start gap-2">
+                  <span className="text-blue-400 mt-0.5">✓</span>
+                  <span>{f}</span>
+                </div>
               ))}
             </div>
             <button
@@ -2306,18 +3553,27 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
           </div>
         ) : (
           <div className="space-y-4">
-            <div className={`rounded-xl p-4 border transition-all ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+            <div
+              className={`rounded-xl p-4 border transition-all ${enabled ? "border-blue-500/40 bg-blue-500/10" : "border-slate-700/50 bg-slate-900/30"}`}
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-white text-sm font-medium">Terminbuchung aktivieren</div>
-                  <div className="text-slate-400 text-xs mt-0.5">Besucher können direkt auf deiner Website Termine buchen</div>
+                  <div className="text-white text-sm font-medium">
+                    Terminbuchung aktivieren
+                  </div>
+                  <div className="text-slate-400 text-xs mt-0.5">
+                    Besucher können direkt auf deiner Website Termine buchen
+                  </div>
                 </div>
                 <button
                   onClick={handleToggle}
                   disabled={saving}
                   className={`relative w-11 h-6 rounded-full transition-colors disabled:opacity-60 ${enabled ? "bg-blue-500" : "bg-slate-600"}`}
                 >
-                  <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: enabled ? "22px" : "2px" }} />
+                  <span
+                    className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
+                    style={{ left: enabled ? "22px" : "2px" }}
+                  />
                 </button>
               </div>
               {enabled && (
@@ -2339,7 +3595,9 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 text-xs font-medium block mb-1">Titel</label>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">
+                        Titel
+                      </label>
                       <input
                         type="text"
                         value={bookingTitle}
@@ -2349,7 +3607,9 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 text-xs font-medium block mb-1">Benachrichtigungs-E-Mail</label>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">
+                        Benachrichtigungs-E-Mail
+                      </label>
                       <input
                         type="email"
                         value={notifEmail}
@@ -2360,7 +3620,9 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                     </div>
                   </div>
                   <div>
-                    <label className="text-slate-400 text-xs font-medium block mb-1">Beschreibung (optional)</label>
+                    <label className="text-slate-400 text-xs font-medium block mb-1">
+                      Beschreibung (optional)
+                    </label>
                     <textarea
                       value={bookingDescription}
                       onChange={e => setBookingDescription(e.target.value)}
@@ -2371,33 +3633,51 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="text-slate-400 text-xs font-medium block mb-1">Dauer (Min.)</label>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">
+                        Dauer (Min.)
+                      </label>
                       <select
                         value={duration}
                         onChange={e => setDuration(Number(e.target.value))}
                         className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                       >
-                        {[15, 20, 30, 45, 60, 90, 120].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                        {[15, 20, 30, 45, 60, 90, 120].map(v => (
+                          <option key={v} value={v}>
+                            {v} Min.
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
-                      <label className="text-slate-400 text-xs font-medium block mb-1">Puffer (Min.)</label>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">
+                        Puffer (Min.)
+                      </label>
                       <select
                         value={buffer}
                         onChange={e => setBuffer(Number(e.target.value))}
                         className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                       >
-                        {[0, 5, 10, 15, 20, 30].map(v => <option key={v} value={v}>{v} Min.</option>)}
+                        {[0, 5, 10, 15, 20, 30].map(v => (
+                          <option key={v} value={v}>
+                            {v} Min.
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div>
-                      <label className="text-slate-400 text-xs font-medium block mb-1">Vorlauf (Tage)</label>
+                      <label className="text-slate-400 text-xs font-medium block mb-1">
+                        Vorlauf (Tage)
+                      </label>
                       <select
                         value={advance}
                         onChange={e => setAdvance(Number(e.target.value))}
                         className="w-full bg-slate-900/60 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                       >
-                        {[7, 14, 21, 30, 60, 90].map(v => <option key={v} value={v}>{v} Tage</option>)}
+                        {[7, 14, 21, 30, 60, 90].map(v => (
+                          <option key={v} value={v}>
+                            {v} Tage
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -2411,34 +3691,63 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                   </h3>
                   <div className="space-y-2">
                     {DAY_ORDER.map(day => {
-                      const slot = schedule[day] ?? { enabled: false, start: "09:00", end: "17:00" };
+                      const slot = schedule[day] ?? {
+                        enabled: false,
+                        start: "09:00",
+                        end: "17:00",
+                      };
                       return (
-                        <div key={day} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.enabled ? "border-blue-500/30 bg-blue-500/5" : "border-slate-700/40 bg-slate-900/30 opacity-60"}`}>
+                        <div
+                          key={day}
+                          className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${slot.enabled ? "border-blue-500/30 bg-blue-500/5" : "border-slate-700/40 bg-slate-900/30 opacity-60"}`}
+                        >
                           <button
-                            onClick={() => setSchedule(prev => ({ ...prev, [day]: { ...slot, enabled: !slot.enabled } }))}
+                            onClick={() =>
+                              setSchedule(prev => ({
+                                ...prev,
+                                [day]: { ...slot, enabled: !slot.enabled },
+                              }))
+                            }
                             className={`relative w-9 h-5 rounded-full transition-colors flex-shrink-0 ${slot.enabled ? "bg-blue-500" : "bg-slate-600"}`}
                           >
-                            <span className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: slot.enabled ? "18px" : "2px" }} />
+                            <span
+                              className="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all"
+                              style={{ left: slot.enabled ? "18px" : "2px" }}
+                            />
                           </button>
-                          <span className="text-slate-300 text-xs font-medium w-6 flex-shrink-0">{DAY_LABELS[day]}</span>
+                          <span className="text-slate-300 text-xs font-medium w-6 flex-shrink-0">
+                            {DAY_LABELS[day]}
+                          </span>
                           {slot.enabled ? (
                             <div className="flex items-center gap-2 flex-1">
                               <input
                                 type="time"
                                 value={slot.start}
-                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, start: e.target.value } }))}
+                                onChange={e =>
+                                  setSchedule(prev => ({
+                                    ...prev,
+                                    [day]: { ...slot, start: e.target.value },
+                                  }))
+                                }
                                 className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
                               />
                               <span className="text-slate-500 text-xs">–</span>
                               <input
                                 type="time"
                                 value={slot.end}
-                                onChange={e => setSchedule(prev => ({ ...prev, [day]: { ...slot, end: e.target.value } }))}
+                                onChange={e =>
+                                  setSchedule(prev => ({
+                                    ...prev,
+                                    [day]: { ...slot, end: e.target.value },
+                                  }))
+                                }
                                 className="bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs outline-none focus:border-blue-500 transition-colors"
                               />
                             </div>
                           ) : (
-                            <span className="text-slate-500 text-xs flex-1">Nicht verfügbar</span>
+                            <span className="text-slate-500 text-xs flex-1">
+                              Nicht verfügbar
+                            </span>
                           )}
                         </div>
                       );
@@ -2451,7 +3760,13 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                   disabled={saving || saveSettingsMutation.isPending}
                   className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                 >
-                  {(saving || saveSettingsMutation.isPending) ? <><Loader2 className="w-4 h-4 animate-spin" /> Speichern…</> : "Einstellungen speichern"}
+                  {saving || saveSettingsMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Speichern…
+                    </>
+                  ) : (
+                    "Einstellungen speichern"
+                  )}
                 </button>
               </div>
             )}
@@ -2464,17 +3779,25 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">📅</div>
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                📅
+              </div>
               <div>
-                <h3 className="text-white font-semibold">Add-on freischalten</h3>
-                <p className="text-blue-400 text-sm font-medium">Terminbuchung</p>
+                <h3 className="text-white font-semibold">
+                  Add-on freischalten
+                </h3>
+                <p className="text-blue-400 text-sm font-medium">
+                  Terminbuchung
+                </p>
               </div>
             </div>
             <p className="text-slate-300 text-sm leading-relaxed mb-1">
-              <span className="text-white font-semibold">+4,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+              <span className="text-white font-semibold">+4,90 €/Monat</span>{" "}
+              werden ab sofort anteilig deinem Abo hinzugefügt.
             </p>
             <p className="text-slate-500 text-xs leading-relaxed mb-6">
-              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+              Du kannst das Add-on jederzeit über das Kundenportal wieder
+              kündigen.
             </p>
             <div className="flex gap-3">
               <button
@@ -2485,11 +3808,23 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
                 Abbrechen
               </button>
               <button
-                onClick={() => { setSaving(true); purchaseAddonMutation.mutate({ websiteId, addonKey: "booking" }); }}
+                onClick={() => {
+                  setSaving(true);
+                  purchaseAddonMutation.mutate({
+                    websiteId,
+                    addonKey: "booking",
+                  });
+                }}
                 disabled={purchaseAddonMutation.isPending}
                 className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+                {purchaseAddonMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…
+                  </>
+                ) : (
+                  "Jetzt freischalten"
+                )}
               </button>
             </div>
           </div>
@@ -2500,14 +3835,21 @@ function BookingAddonSection({ websiteId, website, onUpdate, onGoToTermine: _onG
 }
 
 // ── AI Chat Add-on Section ─────────────────────────────
-function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
+function AiChatAddonSection({
+  websiteId,
+  website,
+  onUpdate,
+  purchasedAddOns,
+}: {
   websiteId: number;
   website: any;
   onUpdate: () => void;
   purchasedAddOns: Record<string, boolean>;
 }) {
   const [aiChat, setAiChat] = useState<boolean>(!!(website as any).addOnAiChat);
-  const [welcomeMsg, setWelcomeMsg] = useState<string>((website as any).chatWelcomeMessage || "");
+  const [welcomeMsg, setWelcomeMsg] = useState<string>(
+    (website as any).chatWelcomeMessage || ""
+  );
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const isPurchased = !!purchasedAddOns["aiChat"];
@@ -2516,24 +3858,47 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   const usagePct = Math.min(100, Math.round((usageCount / 200) * 100));
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
-    onSuccess: () => { setConfirmOpen(false); setSaving(false); setAiChat(true); onUpdate(); toast.success("KI-Chat freigeschaltet!"); },
-    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+    onSuccess: () => {
+      setConfirmOpen(false);
+      setSaving(false);
+      setAiChat(true);
+      onUpdate();
+      toast.success("KI-Chat freigeschaltet!");
+    },
+    onError: (e: any) => {
+      setSaving(false);
+      toast.error("Fehler: " + e.message);
+    },
   });
 
   const updateAddons = trpc.customer.updateAddons.useMutation({
-    onSuccess: () => { setSaving(false); onUpdate(); toast.success("KI-Chat gespeichert"); },
-    onError: () => { setSaving(false); toast.error("Speichern fehlgeschlagen"); },
+    onSuccess: () => {
+      setSaving(false);
+      onUpdate();
+      toast.success("KI-Chat gespeichert");
+    },
+    onError: () => {
+      setSaving(false);
+      toast.error("Speichern fehlgeschlagen");
+    },
   });
 
   const handleToggle = () => {
-    if (!isPurchased) { setConfirmOpen(true); return; }
+    if (!isPurchased) {
+      setConfirmOpen(true);
+      return;
+    }
     const newVal = !aiChat;
     setAiChat(newVal);
     setSaving(true);
     // Auto-save toggle immediately so it persists on page reload
     updateAddons.mutate({
       websiteId,
-      addOns: { gallery: { enabled: false }, aiChat: newVal, chatWelcomeMessage: welcomeMsg.trim() || undefined },
+      addOns: {
+        gallery: { enabled: false },
+        aiChat: newVal,
+        chatWelcomeMessage: welcomeMsg.trim() || undefined,
+      },
     });
   };
 
@@ -2541,7 +3906,11 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
     setSaving(true);
     updateAddons.mutate({
       websiteId,
-      addOns: { gallery: { enabled: false }, aiChat, chatWelcomeMessage: welcomeMsg.trim() || undefined },
+      addOns: {
+        gallery: { enabled: false },
+        aiChat,
+        chatWelcomeMessage: welcomeMsg.trim() || undefined,
+      },
     });
   };
 
@@ -2551,14 +3920,24 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
         <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
           <MessageSquare className="w-4 h-4 text-violet-400" />
           KI-Chat Add-on
-          <span className="ml-auto text-xs bg-violet-600/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">+9,90 €/Monat</span>
+          <span className="ml-auto text-xs bg-violet-600/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
+            +9,90 €/Monat
+          </span>
         </h2>
 
         {!isPurchased ? (
           <div className="space-y-4">
             <div className="text-slate-400 text-xs space-y-1.5">
-              {["KI beantwortet Kundenfragen automatisch rund um die Uhr", "Lead-Erfassung: Name + Kontakt werden direkt gespeichert", "Proaktive Ansprache nach 8 Sekunden auf der Website", "200 Gespräche/Monat inklusive"].map(f => (
-                <div key={f} className="flex items-start gap-2"><span className="text-violet-400 mt-0.5">✓</span><span>{f}</span></div>
+              {[
+                "KI beantwortet Kundenfragen automatisch rund um die Uhr",
+                "Lead-Erfassung: Name + Kontakt werden direkt gespeichert",
+                "Proaktive Ansprache nach 8 Sekunden auf der Website",
+                "200 Gespräche/Monat inklusive",
+              ].map(f => (
+                <div key={f} className="flex items-start gap-2">
+                  <span className="text-violet-400 mt-0.5">✓</span>
+                  <span>{f}</span>
+                </div>
               ))}
             </div>
             <button
@@ -2570,27 +3949,45 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
           </div>
         ) : (
           <>
-            <div className={`rounded-xl p-4 border transition-all mb-4 ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}>
+            <div
+              className={`rounded-xl p-4 border transition-all mb-4 ${aiChat ? "border-violet-500/40 bg-violet-500/10" : "border-slate-700/50 bg-slate-900/30"}`}
+            >
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <div className="text-white text-sm font-medium">KI-Chat aktivieren</div>
-                  <div className="text-slate-400 text-xs mt-0.5">Chat-Widget erscheint auf deiner Website</div>
+                  <div className="text-white text-sm font-medium">
+                    KI-Chat aktivieren
+                  </div>
+                  <div className="text-slate-400 text-xs mt-0.5">
+                    Chat-Widget erscheint auf deiner Website
+                  </div>
                 </div>
                 <button
                   onClick={handleToggle}
                   className={`relative w-11 h-6 rounded-full transition-colors ${aiChat ? "bg-violet-500" : "bg-slate-600"}`}
                 >
-                  <span className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all" style={{ left: aiChat ? "22px" : "2px" }} />
+                  <span
+                    className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"
+                    style={{ left: aiChat ? "22px" : "2px" }}
+                  />
                 </button>
               </div>
               {aiChat && (
                 <div className="mt-3">
                   <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                     <span>Gespräche diesen Monat</span>
-                    <span className={usagePct >= 80 ? "text-orange-400" : "text-slate-400"}>{usageCount} / 200</span>
+                    <span
+                      className={
+                        usagePct >= 80 ? "text-orange-400" : "text-slate-400"
+                      }
+                    >
+                      {usageCount} / 200
+                    </span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`} style={{ width: `${usagePct}%` }} />
+                    <div
+                      className={`h-1.5 rounded-full transition-all ${usagePct >= 80 ? "bg-orange-400" : "bg-violet-500"}`}
+                      style={{ width: `${usagePct}%` }}
+                    />
                   </div>
                 </div>
               )}
@@ -2598,7 +3995,8 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
             {aiChat && (
               <div className="mb-5">
                 <label className="text-slate-300 text-sm font-medium block mb-1.5">
-                  Begrüßungsnachricht <span className="text-slate-500 font-normal">(optional)</span>
+                  Begrüßungsnachricht{" "}
+                  <span className="text-slate-500 font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -2615,7 +4013,11 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
               disabled={saving}
               className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-xl transition-colors"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
               KI-Chat speichern
             </button>
           </>
@@ -2627,17 +4029,23 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-lg flex-shrink-0">💬</div>
+              <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                💬
+              </div>
               <div>
-                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <h3 className="text-white font-semibold">
+                  Add-on freischalten
+                </h3>
                 <p className="text-violet-400 text-sm font-medium">KI-Chat</p>
               </div>
             </div>
             <p className="text-slate-300 text-sm leading-relaxed mb-1">
-              <span className="text-white font-semibold">+9,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+              <span className="text-white font-semibold">+9,90 €/Monat</span>{" "}
+              werden ab sofort anteilig deinem Abo hinzugefügt.
             </p>
             <p className="text-slate-500 text-xs leading-relaxed mb-6">
-              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+              Du kannst das Add-on jederzeit über das Kundenportal wieder
+              kündigen.
             </p>
             <div className="flex gap-3">
               <button
@@ -2648,11 +4056,23 @@ function AiChatAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                 Abbrechen
               </button>
               <button
-                onClick={() => { setSaving(true); purchaseAddonMutation.mutate({ websiteId, addonKey: "aiChat" }); }}
+                onClick={() => {
+                  setSaving(true);
+                  purchaseAddonMutation.mutate({
+                    websiteId,
+                    addonKey: "aiChat",
+                  });
+                }}
                 disabled={purchaseAddonMutation.isPending}
                 className="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+                {purchaseAddonMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…
+                  </>
+                ) : (
+                  "Jetzt freischalten"
+                )}
               </button>
             </div>
           </div>
@@ -2673,14 +4093,23 @@ interface TeamMember {
   bio?: string;
 }
 
-function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
+function TeamAddonSection({
+  websiteId,
+  website,
+  onUpdate,
+  purchasedAddOns,
+}: {
   websiteId: number;
   website: any;
   onUpdate: () => void;
   purchasedAddOns: Record<string, boolean>;
 }) {
   const isPurchased = !!purchasedAddOns["team"];
-  const { data: teamData, refetch: refetchTeam } = trpc.customer.getTeamMembers.useQuery({ websiteId }, { enabled: isPurchased });
+  const { data: teamData, refetch: refetchTeam } =
+    trpc.customer.getTeamMembers.useQuery(
+      { websiteId },
+      { enabled: isPurchased }
+    );
   const [enabled, setEnabled] = useState<boolean>(!!(website as any).addOnTeam);
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [saving, setSaving] = useState(false);
@@ -2690,12 +4119,27 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
 
   const uploadMutation = trpc.customer.uploadGalleryImage.useMutation();
   const saveTeamMutation = trpc.customer.saveTeamMembers.useMutation({
-    onSuccess: () => { setSaving(false); setDirty(false); onUpdate(); refetchTeam(); toast.success("Team gespeichert"); },
-    onError: (e: any) => { setSaving(false); toast.error("Fehler: " + e.message); },
+    onSuccess: () => {
+      setSaving(false);
+      setDirty(false);
+      onUpdate();
+      refetchTeam();
+      toast.success("Team gespeichert");
+    },
+    onError: (e: any) => {
+      setSaving(false);
+      toast.error("Fehler: " + e.message);
+    },
   });
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
-    onSuccess: () => { setConfirmOpen(false); onUpdate(); toast.success("Team Add-on freigeschaltet! 🎉"); },
-    onError: (e: any) => { toast.error("Fehler: " + e.message); },
+    onSuccess: () => {
+      setConfirmOpen(false);
+      onUpdate();
+      toast.success("Team Add-on freigeschaltet! 🎉");
+    },
+    onError: (e: any) => {
+      toast.error("Fehler: " + e.message);
+    },
   });
 
   // Sync remote data into local state once loaded
@@ -2707,20 +4151,29 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   }, [teamData]);
 
   const handleToggle = () => {
-    if (!isPurchased) { setConfirmOpen(true); return; }
+    if (!isPurchased) {
+      setConfirmOpen(true);
+      return;
+    }
     const newVal = !enabled;
     setEnabled(newVal);
     saveTeamMutation.mutate({ websiteId, enabled: newVal, members });
   };
 
   const addMember = () => {
-    const newMember: TeamMember = { id: Math.random().toString(36).slice(2), name: "", role: "" };
+    const newMember: TeamMember = {
+      id: Math.random().toString(36).slice(2),
+      name: "",
+      role: "",
+    };
     setMembers(prev => [...prev, newMember]);
     setDirty(true);
   };
 
   const updateMember = (id: string, field: keyof TeamMember, value: string) => {
-    setMembers(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+    setMembers(prev =>
+      prev.map(m => (m.id === id ? { ...m, [field]: value } : m))
+    );
     setDirty(true);
   };
 
@@ -2730,25 +4183,39 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   };
 
   const handlePhotoUpload = async (memberId: string, file: File) => {
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max. 5 MB");
+      return;
+    }
     setUploadingIdx(memberId);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
       try {
-        const result = await uploadMutation.mutateAsync({ websiteId, imageData: base64, mimeType: file.type });
+        const result = await uploadMutation.mutateAsync({
+          websiteId,
+          imageData: base64,
+          mimeType: file.type,
+        });
         if (result?.url) {
-          setMembers(prev => prev.map(m => m.id === memberId ? { ...m, photo: result.url } : m));
+          setMembers(prev =>
+            prev.map(m => (m.id === memberId ? { ...m, photo: result.url } : m))
+          );
           setDirty(true);
           toast.success("Foto hochgeladen");
         }
       } catch (err: any) {
-        toast.error("Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler"));
+        toast.error(
+          "Upload fehlgeschlagen: " + (err.message || "Unbekannter Fehler")
+        );
       } finally {
         setUploadingIdx(null);
       }
     };
-    reader.onerror = () => { toast.error("Fehler beim Lesen der Datei"); setUploadingIdx(null); };
+    reader.onerror = () => {
+      toast.error("Fehler beim Lesen der Datei");
+      setUploadingIdx(null);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -2761,7 +4228,9 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
   return (
     <>
       {/* Overview row */}
-      <div className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${enabled ? "border-slate-600/50" : "border-slate-700/30"}`}>
+      <div
+        className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${enabled ? "border-slate-600/50" : "border-slate-700/30"}`}
+      >
         <div className="p-4 flex items-center gap-4">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-sky-500/20 flex items-center justify-center flex-shrink-0">
             <Users className="w-5 h-5 text-cyan-400" />
@@ -2769,19 +4238,37 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-white font-semibold text-sm">Team</span>
-              <span className="text-xs px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-medium">+3,90 €/Mon</span>
-              {enabled && members.length > 0 && <span className="text-xs text-cyan-400">{members.length} {members.length === 1 ? "Person" : "Personen"}</span>}
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-medium">
+                +3,90 €/Mon
+              </span>
+              {enabled && members.length > 0 && (
+                <span className="text-xs text-cyan-400">
+                  {members.length}{" "}
+                  {members.length === 1 ? "Person" : "Personen"}
+                </span>
+              )}
             </div>
-            <p className="text-slate-400 text-xs">Stell dein Team mit Foto, Rolle und Kontakt vor.</p>
+            <p className="text-slate-400 text-xs">
+              Stell dein Team mit Foto, Rolle und Kontakt vor.
+            </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             {!isPurchased ? (
-              <button onClick={() => setConfirmOpen(true)} className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap">
-                <Lock className="w-3 h-3" />Freischalten
+              <button
+                onClick={() => setConfirmOpen(true)}
+                className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 hover:text-blue-200 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+              >
+                <Lock className="w-3 h-3" />
+                Freischalten
               </button>
             ) : (
               <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input type="checkbox" checked={enabled} onChange={handleToggle} className="sr-only peer" />
+                <input
+                  type="checkbox"
+                  checked={enabled}
+                  onChange={handleToggle}
+                  className="sr-only peer"
+                />
                 <div className="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500" />
               </label>
             )}
@@ -2793,8 +4280,11 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
           <div className="px-4 pb-4 space-y-4 border-t border-slate-700/40 pt-4">
             {members.length > 0 && (
               <div className="space-y-3">
-                {members.map((m) => (
-                  <div key={m.id} className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/30 space-y-3">
+                {members.map(m => (
+                  <div
+                    key={m.id}
+                    className="bg-slate-700/40 rounded-xl p-4 border border-slate-600/30 space-y-3"
+                  >
                     <div className="flex items-start gap-3">
                       {/* Photo */}
                       <label className="relative flex-shrink-0 cursor-pointer group">
@@ -2802,9 +4292,15 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                           {uploading === m.id ? (
                             <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
                           ) : m.photo ? (
-                            <img src={m.photo} className="w-full h-full object-cover" alt={m.name} />
+                            <img
+                              src={m.photo}
+                              className="w-full h-full object-cover"
+                              alt={m.name}
+                            />
                           ) : (
-                            <span className="text-xl font-bold text-slate-400">{m.name?.charAt(0)?.toUpperCase() || "?"}</span>
+                            <span className="text-xl font-bold text-slate-400">
+                              {m.name?.charAt(0)?.toUpperCase() || "?"}
+                            </span>
                           )}
                         </div>
                         <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -2815,7 +4311,10 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                           accept="image/*"
                           className="hidden"
                           disabled={uploading === m.id}
-                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(m.id, f); }}
+                          onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (f) handlePhotoUpload(m.id, f);
+                          }}
                         />
                       </label>
                       {/* Name + Role */}
@@ -2823,41 +4322,58 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                         <input
                           type="text"
                           value={m.name}
-                          onChange={(e) => updateMember(m.id, "name", e.target.value)}
+                          onChange={e =>
+                            updateMember(m.id, "name", e.target.value)
+                          }
                           placeholder="Name *"
                           className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
                         />
                         <input
                           type="text"
                           value={m.role}
-                          onChange={(e) => updateMember(m.id, "role", e.target.value)}
+                          onChange={e =>
+                            updateMember(m.id, "role", e.target.value)
+                          }
                           placeholder="Position / Rolle *"
                           className="col-span-2 sm:col-span-1 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
                         />
                         <input
                           type="email"
                           value={m.email || ""}
-                          onChange={(e) => updateMember(m.id, "email", e.target.value)}
+                          onChange={e =>
+                            updateMember(m.id, "email", e.target.value)
+                          }
                           placeholder="E-Mail (optional)"
                           className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
                         />
                         <input
                           type="tel"
                           value={m.phone || ""}
-                          onChange={(e) => updateMember(m.id, "phone", e.target.value)}
+                          onChange={e =>
+                            updateMember(m.id, "phone", e.target.value)
+                          }
                           placeholder="Telefon (optional)"
                           className="bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500"
                         />
                         <textarea
                           value={m.bio || ""}
-                          onChange={(e) => updateMember(m.id, "bio", e.target.value.slice(0, 150))}
+                          onChange={e =>
+                            updateMember(
+                              m.id,
+                              "bio",
+                              e.target.value.slice(0, 150)
+                            )
+                          }
                           placeholder="Kurzbio (optional, max. 150 Zeichen)"
                           rows={2}
                           maxLength={150}
                           className="col-span-2 bg-slate-700/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none focus:border-cyan-500 resize-none"
                         />
                       </div>
-                      <button onClick={() => removeMember(m.id)} className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0 mt-0.5">
+                      <button
+                        onClick={() => removeMember(m.id)}
+                        className="p-1.5 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex-shrink-0 mt-0.5"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -2870,7 +4386,8 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                 onClick={addMember}
                 className="flex items-center gap-2 text-sm text-cyan-400 hover:text-cyan-300 transition-colors py-2 px-4 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg border border-dashed border-cyan-500/30"
               >
-                <Plus className="w-4 h-4" />Mitglied hinzufügen
+                <Plus className="w-4 h-4" />
+                Mitglied hinzufügen
               </button>
               {dirty && (
                 <button
@@ -2878,7 +4395,11 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                   disabled={saving}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors"
                 >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  {saving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
                   Speichern
                 </button>
               )}
@@ -2892,17 +4413,23 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-lg flex-shrink-0">👥</div>
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-lg flex-shrink-0">
+                👥
+              </div>
               <div>
-                <h3 className="text-white font-semibold">Add-on freischalten</h3>
+                <h3 className="text-white font-semibold">
+                  Add-on freischalten
+                </h3>
                 <p className="text-cyan-400 text-sm font-medium">Team</p>
               </div>
             </div>
             <p className="text-slate-300 text-sm leading-relaxed mb-1">
-              <span className="text-white font-semibold">+3,90 €/Monat</span> werden ab sofort anteilig deinem Abo hinzugefügt.
+              <span className="text-white font-semibold">+3,90 €/Monat</span>{" "}
+              werden ab sofort anteilig deinem Abo hinzugefügt.
             </p>
             <p className="text-slate-500 text-xs leading-relaxed mb-6">
-              Du kannst das Add-on jederzeit über das Kundenportal wieder kündigen.
+              Du kannst das Add-on jederzeit über das Kundenportal wieder
+              kündigen.
             </p>
             <div className="flex gap-3">
               <button
@@ -2913,11 +4440,19 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
                 Abbrechen
               </button>
               <button
-                onClick={() => purchaseAddonMutation.mutate({ websiteId, addonKey: "team" })}
+                onClick={() =>
+                  purchaseAddonMutation.mutate({ websiteId, addonKey: "team" })
+                }
                 disabled={purchaseAddonMutation.isPending}
                 className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                {purchaseAddonMutation.isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…</> : "Jetzt freischalten"}
+                {purchaseAddonMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Wird gebucht…
+                  </>
+                ) : (
+                  "Jetzt freischalten"
+                )}
               </button>
             </div>
           </div>
@@ -2928,7 +4463,11 @@ function TeamAddonSection({ websiteId, website, onUpdate, purchasedAddOns }: {
 }
 
 // ── Layout Switcher Card ───────────────────────────────
-function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
+function LayoutSwitcherCard({
+  websiteId,
+  currentLayout,
+  onUpdate,
+}: {
   websiteId: number;
   currentLayout: string;
   onUpdate: () => void;
@@ -2964,7 +4503,11 @@ function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
             disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold transition-colors"
           >
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+            {saving ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Check className="w-3 h-3" />
+            )}
             Speichern
           </button>
         )}
@@ -2973,15 +4516,21 @@ function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
       {/* Currently active */}
       <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-700/40 border border-slate-600/50">
         <div className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0" />
-        <span className="text-white text-sm font-medium">{LAYOUT_LABELS_DASH[selected] ?? selected}</span>
-        <span className="text-slate-400 text-xs ml-1">{LAYOUT_VIBES_DASH[selected]}</span>
+        <span className="text-white text-sm font-medium">
+          {LAYOUT_LABELS_DASH[selected] ?? selected}
+        </span>
+        <span className="text-slate-400 text-xs ml-1">
+          {LAYOUT_VIBES_DASH[selected]}
+        </span>
       </div>
 
       {/* Family groups */}
       <div className="space-y-3">
         {LAYOUT_FAMILIES_DASH.map(fam => (
           <div key={fam.label}>
-            <div className="text-slate-500 text-[10px] uppercase tracking-widest font-semibold mb-1.5">{fam.label}</div>
+            <div className="text-slate-500 text-[10px] uppercase tracking-widest font-semibold mb-1.5">
+              {fam.label}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {fam.layouts.map(ls => (
                 <button
@@ -3008,7 +4557,15 @@ function LayoutSwitcherCard({ websiteId, currentLayout, onUpdate }: {
 }
 
 // ── Design Studio (split-view: live preview + design controls) ────────────
-function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, business, onUpdate, setImagePicker }: {
+function DesignStudio({
+  website,
+  websiteData,
+  heroImageUrl,
+  aboutImageUrl,
+  business,
+  onUpdate,
+  setImagePicker,
+}: {
   website: any;
   websiteData: any;
   heroImageUrl?: string;
@@ -3020,19 +4577,19 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
   // ── Draft state (live preview, not yet saved) ──────────────────────────
   const savedLayout = (website as any).layoutStyle || "modern";
   const savedColors = (website.colorScheme as any) || {};
-  const savedTokens = ((websiteData as any)?.designTokens) || {};
+  const savedTokens = (websiteData as any)?.designTokens || {};
 
   const [draftLayout, setDraftLayout] = useState<string>(savedLayout);
   const [draftColors, setDraftColors] = useState<Record<string, string>>({
-    primary:    savedColors.primary    || "#3B82F6",
-    secondary:  savedColors.secondary  || "#F1F5F9",
-    accent:     savedColors.accent     || "#8B5CF6",
+    primary: savedColors.primary || "#3B82F6",
+    secondary: savedColors.secondary || "#F1F5F9",
+    accent: savedColors.accent || "#8B5CF6",
     background: savedColors.background || "#FFFFFF",
-    text:       savedColors.text       || "#1E293B",
+    text: savedColors.text || "#1E293B",
   });
   const [draftFonts, setDraftFonts] = useState({
     headlineFont: savedTokens.headlineFont || "",
-    bodyFont:     savedTokens.bodyFont     || "",
+    bodyFont: savedTokens.bodyFont || "",
     headlineSize: savedTokens.headlineSize || "large",
   });
   const [openSection, setOpenSection] = useState<string>("layout");
@@ -3042,20 +4599,37 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
     setDraftLayout((website as any).layoutStyle || "modern");
     const cs = (website.colorScheme as any) || {};
     setDraftColors({
-      primary:    cs.primary    || "#3B82F6",
-      secondary:  cs.secondary  || "#F1F5F9",
-      accent:     cs.accent     || "#8B5CF6",
+      primary: cs.primary || "#3B82F6",
+      secondary: cs.secondary || "#F1F5F9",
+      accent: cs.accent || "#8B5CF6",
       background: cs.background || "#FFFFFF",
-      text:       cs.text       || "#1E293B",
+      text: cs.text || "#1E293B",
     });
-    const dt = ((websiteData as any)?.designTokens) || {};
-    setDraftFonts({ headlineFont: dt.headlineFont || "", bodyFont: dt.bodyFont || "", headlineSize: dt.headlineSize || "large" });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const dt = (websiteData as any)?.designTokens || {};
+    setDraftFonts({
+      headlineFont: dt.headlineFont || "",
+      bodyFont: dt.bodyFont || "",
+      headlineSize: dt.headlineSize || "large",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [website.colorScheme, website.layoutStyle, websiteData?.designTokens]);
 
-  const isDirty = draftLayout !== savedLayout
-    || JSON.stringify(draftColors) !== JSON.stringify({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" })
-    || JSON.stringify(draftFonts) !== JSON.stringify({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+  const isDirty =
+    draftLayout !== savedLayout ||
+    JSON.stringify(draftColors) !==
+      JSON.stringify({
+        primary: savedColors.primary || "#3B82F6",
+        secondary: savedColors.secondary || "#F1F5F9",
+        accent: savedColors.accent || "#8B5CF6",
+        background: savedColors.background || "#FFFFFF",
+        text: savedColors.text || "#1E293B",
+      }) ||
+    JSON.stringify(draftFonts) !==
+      JSON.stringify({
+        headlineFont: savedTokens.headlineFont || "",
+        bodyFont: savedTokens.bodyFont || "",
+        headlineSize: savedTokens.headlineSize || "large",
+      });
 
   // ── Scale for live preview ─────────────────────────────────────────────
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -3071,22 +4645,27 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
   }, []);
 
   // ── Mutations ──────────────────────────────────────────────────────────
-  const changeLayout  = trpc.customer.changeLayout.useMutation();
-  const updateDesign  = trpc.customer.updateDesign.useMutation();
+  const changeLayout = trpc.customer.changeLayout.useMutation();
+  const updateDesign = trpc.customer.updateDesign.useMutation();
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       if (draftLayout !== savedLayout) {
-        await changeLayout.mutateAsync({ websiteId: website.id, layoutStyle: draftLayout });
+        await changeLayout.mutateAsync({
+          websiteId: website.id,
+          layoutStyle: draftLayout,
+        });
       }
       await updateDesign.mutateAsync({
         websiteId: website.id,
         colorScheme: draftColors as any,
         designTokens: {
-          ...(draftFonts.headlineFont ? { headlineFont: draftFonts.headlineFont } : {}),
-          ...(draftFonts.bodyFont     ? { bodyFont:     draftFonts.bodyFont }     : {}),
+          ...(draftFonts.headlineFont
+            ? { headlineFont: draftFonts.headlineFont }
+            : {}),
+          ...(draftFonts.bodyFont ? { bodyFont: draftFonts.bodyFont } : {}),
           headlineSize: draftFonts.headlineSize,
         },
       });
@@ -3101,42 +4680,87 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
 
   const handleDiscard = () => {
     setDraftLayout(savedLayout);
-    setDraftColors({ primary: savedColors.primary || "#3B82F6", secondary: savedColors.secondary || "#F1F5F9", accent: savedColors.accent || "#8B5CF6", background: savedColors.background || "#FFFFFF", text: savedColors.text || "#1E293B" });
-    setDraftFonts({ headlineFont: savedTokens.headlineFont || "", bodyFont: savedTokens.bodyFont || "", headlineSize: savedTokens.headlineSize || "large" });
+    setDraftColors({
+      primary: savedColors.primary || "#3B82F6",
+      secondary: savedColors.secondary || "#F1F5F9",
+      accent: savedColors.accent || "#8B5CF6",
+      background: savedColors.background || "#FFFFFF",
+      text: savedColors.text || "#1E293B",
+    });
+    setDraftFonts({
+      headlineFont: savedTokens.headlineFont || "",
+      bodyFont: savedTokens.bodyFont || "",
+      headlineSize: savedTokens.headlineSize || "large",
+    });
   };
 
   // ── Color preset palettes (derived from color schemes of all 18 layouts) ──
-  const COLOR_PRESETS = Object.entries(DEFAULT_LAYOUT_COLOR_SCHEMES).map(([key, cs]) => ({
-    key,
-    label: LAYOUT_LABELS_DASH[key] ?? key,
-    primary: (cs as any).primary,
-    accent: (cs as any).accent,
-    background: (cs as any).background,
-  }));
+  const COLOR_PRESETS = Object.entries(DEFAULT_LAYOUT_COLOR_SCHEMES).map(
+    ([key, cs]) => ({
+      key,
+      label: LAYOUT_LABELS_DASH[key] ?? key,
+      primary: (cs as any).primary,
+      accent: (cs as any).accent,
+      background: (cs as any).background,
+    })
+  );
 
   // ── Section accordion helper ───────────────────────────────────────────
-  const Section = ({ id, icon, title, children }: { id: string; icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+  const Section = ({
+    id,
+    icon,
+    title,
+    children,
+  }: {
+    id: string;
+    icon: React.ReactNode;
+    title: string;
+    children: React.ReactNode;
+  }) => (
     <div className="border border-slate-700/50 rounded-xl overflow-hidden">
       <button
         type="button"
-        onClick={() => setOpenSection(s => s === id ? "" : id)}
+        onClick={() => setOpenSection(s => (s === id ? "" : id))}
         className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 hover:bg-slate-800 transition-colors text-left"
       >
-        <span className="flex items-center gap-2 text-white text-sm font-medium">{icon}{title}</span>
-        <svg className={`w-4 h-4 text-slate-400 transition-transform ${openSection === id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        <span className="flex items-center gap-2 text-white text-sm font-medium">
+          {icon}
+          {title}
+        </span>
+        <svg
+          className={`w-4 h-4 text-slate-400 transition-transform ${openSection === id ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
-      {openSection === id && <div className="px-4 py-4 bg-slate-900/60 space-y-3">{children}</div>}
+      {openSection === id && (
+        <div className="px-4 py-4 bg-slate-900/60 space-y-3">{children}</div>
+      )}
     </div>
   );
 
   return (
     <div className="flex h-[calc(100vh-220px)] min-h-[500px] rounded-2xl border border-slate-700/50 overflow-hidden">
-
       {/* ── LEFT: Live preview ─────────────────────────────────────────── */}
-      <div ref={previewContainerRef} className="flex-1 min-w-0 bg-slate-950 overflow-y-auto relative">
-        <div style={{ zoom: previewScale, pointerEvents: "none", userSelect: "none" }}>
+      <div
+        ref={previewContainerRef}
+        className="flex-1 min-w-0 bg-slate-950 overflow-y-auto relative"
+      >
+        <div
+          style={{
+            zoom: previewScale,
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
           <WebsiteRenderer
             websiteData={websiteData}
             colorScheme={draftColors as any}
@@ -3171,7 +4795,6 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
 
       {/* ── RIGHT: Design controls ───────────────────────────────────────── */}
       <div className="w-72 xl:w-80 flex-shrink-0 bg-slate-900 flex flex-col">
-
         {/* Sticky header */}
         <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-700/50 bg-slate-900">
           <span className="text-white font-semibold text-sm flex items-center gap-2">
@@ -3180,14 +4803,23 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
           </span>
           <div className="flex items-center gap-2">
             {isDirty && (
-              <button onClick={handleDiscard} className="text-slate-400 hover:text-white text-xs transition-colors">Verwerfen</button>
+              <button
+                onClick={handleDiscard}
+                className="text-slate-400 hover:text-white text-xs transition-colors"
+              >
+                Verwerfen
+              </button>
             )}
             <button
               onClick={handleSave}
               disabled={saving || !isDirty}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold transition-colors"
             >
-              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+              {saving ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Check className="w-3 h-3" />
+              )}
               Speichern
             </button>
           </div>
@@ -3195,12 +4827,17 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
 
         {/* Scrollable sections */}
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
-
           {/* ── LAYOUT ── */}
-          <Section id="layout" icon={<Layers className="w-4 h-4 text-blue-400" />} title="Layout">
+          <Section
+            id="layout"
+            icon={<Layers className="w-4 h-4 text-blue-400" />}
+            title="Layout"
+          >
             {LAYOUT_FAMILIES_DASH.map(fam => (
               <div key={fam.label}>
-                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">{fam.label}</div>
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">
+                  {fam.label}
+                </div>
                 <div className="grid grid-cols-3 gap-1.5 mb-3">
                   {fam.layouts.map(ls => (
                     <button
@@ -3222,10 +4859,16 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
           </Section>
 
           {/* ── FARBEN ── */}
-          <Section id="farben" icon={<Palette className="w-4 h-4 text-pink-400" />} title="Farben">
+          <Section
+            id="farben"
+            icon={<Palette className="w-4 h-4 text-pink-400" />}
+            title="Farben"
+          >
             {/* Quick presets */}
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Schnell-Paletten</div>
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">
+                Schnell-Paletten
+              </div>
               <div className="flex flex-wrap gap-2">
                 {COLOR_PRESETS.map(p => (
                   <button
@@ -3233,20 +4876,31 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
                     type="button"
                     title={p.label}
                     onClick={() => {
-                      const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as any)[p.key] || {};
+                      const cs =
+                        (DEFAULT_LAYOUT_COLOR_SCHEMES as any)[p.key] || {};
                       setDraftColors({
-                        primary:    cs.primary    || draftColors.primary,
-                        secondary:  cs.secondary  || draftColors.secondary,
-                        accent:     cs.accent     || draftColors.accent,
+                        primary: cs.primary || draftColors.primary,
+                        secondary: cs.secondary || draftColors.secondary,
+                        accent: cs.accent || draftColors.accent,
                         background: cs.background || draftColors.background,
-                        text:       cs.text       || draftColors.text,
+                        text: cs.text || draftColors.text,
                       });
                     }}
                     className="flex gap-0.5 rounded-md overflow-hidden ring-1 ring-slate-600/50 hover:ring-blue-400/50 transition-all"
                   >
-                    <div style={{ width: 14, height: 22, background: p.primary }} />
-                    <div style={{ width: 14, height: 22, background: p.accent }} />
-                    <div style={{ width: 14, height: 22, background: p.background }} />
+                    <div
+                      style={{ width: 14, height: 22, background: p.primary }}
+                    />
+                    <div
+                      style={{ width: 14, height: 22, background: p.accent }}
+                    />
+                    <div
+                      style={{
+                        width: 14,
+                        height: 22,
+                        background: p.background,
+                      }}
+                    />
                   </button>
                 ))}
               </div>
@@ -3254,21 +4908,28 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
             {/* Individual pickers */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               {[
-                { key: "primary",    label: "Primär" },
-                { key: "accent",     label: "Akzent" },
+                { key: "primary", label: "Primär" },
+                { key: "accent", label: "Akzent" },
                 { key: "background", label: "Hintergrund" },
-                { key: "text",       label: "Text" },
+                { key: "text", label: "Text" },
               ].map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-2.5 py-2">
+                <div
+                  key={key}
+                  className="flex items-center gap-2 bg-slate-800/60 rounded-lg px-2.5 py-2"
+                >
                   <input
                     type="color"
                     value={(draftColors as any)[key] || "#000000"}
-                    onChange={e => setDraftColors(c => ({ ...c, [key]: e.target.value }))}
+                    onChange={e =>
+                      setDraftColors(c => ({ ...c, [key]: e.target.value }))
+                    }
                     className="w-7 h-7 rounded cursor-pointer border-0 p-0 flex-shrink-0"
                   />
                   <div>
                     <div className="text-[10px] text-slate-400">{label}</div>
-                    <div className="text-[10px] text-slate-500 font-mono">{(draftColors as any)[key]}</div>
+                    <div className="text-[10px] text-slate-500 font-mono">
+                      {(draftColors as any)[key]}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -3276,48 +4937,84 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
           </Section>
 
           {/* ── SCHRIFTEN ── */}
-          <Section id="schriften" icon={<Type className="w-4 h-4 text-violet-400" />} title="Schriften">
+          <Section
+            id="schriften"
+            icon={<Type className="w-4 h-4 text-violet-400" />}
+            title="Schriften"
+          >
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block">Überschriften</label>
+                <label className="text-xs text-slate-400 mb-1.5 block">
+                  Überschriften
+                </label>
                 <select
                   value={draftFonts.headlineFont}
-                  onChange={e => setDraftFonts(f => ({ ...f, headlineFont: e.target.value }))}
+                  onChange={e =>
+                    setDraftFonts(f => ({ ...f, headlineFont: e.target.value }))
+                  }
                   className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
                 >
                   <option value="">Layout-Standard</option>
                   <optgroup label="── Serifenschriften ──">
-                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                    {FONT_OPTIONS.serif.map(f => (
+                      <option key={f.font} value={f.font}>
+                        {f.label}
+                      </option>
+                    ))}
                   </optgroup>
                   <optgroup label="── Serifenlose ──">
-                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                    {FONT_OPTIONS.sans.map(f => (
+                      <option key={f.font} value={f.font}>
+                        {f.label}
+                      </option>
+                    ))}
                   </optgroup>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block">Fließtext</label>
+                <label className="text-xs text-slate-400 mb-1.5 block">
+                  Fließtext
+                </label>
                 <select
                   value={draftFonts.bodyFont}
-                  onChange={e => setDraftFonts(f => ({ ...f, bodyFont: e.target.value }))}
+                  onChange={e =>
+                    setDraftFonts(f => ({ ...f, bodyFont: e.target.value }))
+                  }
                   className="w-full bg-slate-800/60 text-white text-sm px-3 py-2 rounded-lg border border-slate-700 outline-none focus:border-blue-500"
                 >
                   <option value="">Layout-Standard</option>
                   <optgroup label="── Serifenschriften ──">
-                    {FONT_OPTIONS.serif.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                    {FONT_OPTIONS.serif.map(f => (
+                      <option key={f.font} value={f.font}>
+                        {f.label}
+                      </option>
+                    ))}
                   </optgroup>
                   <optgroup label="── Serifenlose ──">
-                    {FONT_OPTIONS.sans.map(f => <option key={f.font} value={f.font}>{f.label}</option>)}
+                    {FONT_OPTIONS.sans.map(f => (
+                      <option key={f.font} value={f.font}>
+                        {f.label}
+                      </option>
+                    ))}
                   </optgroup>
                 </select>
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block">Schriftgröße Überschriften</label>
+                <label className="text-xs text-slate-400 mb-1.5 block">
+                  Schriftgröße Überschriften
+                </label>
                 <div className="flex gap-2">
-                  {[{ v: "small", l: "Normal" }, { v: "medium", l: "Groß" }, { v: "large", l: "Sehr groß" }].map(({ v, l }) => (
+                  {[
+                    { v: "small", l: "Normal" },
+                    { v: "medium", l: "Groß" },
+                    { v: "large", l: "Sehr groß" },
+                  ].map(({ v, l }) => (
                     <button
                       key={v}
                       type="button"
-                      onClick={() => setDraftFonts(f => ({ ...f, headlineSize: v }))}
+                      onClick={() =>
+                        setDraftFonts(f => ({ ...f, headlineSize: v }))
+                      }
                       className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
                         draftFonts.headlineSize === v
                           ? "bg-blue-600 text-white"
@@ -3333,24 +5030,45 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
           </Section>
 
           {/* ── LOGO ── */}
-          <Section id="logo" icon={<Upload className="w-4 h-4 text-emerald-400" />} title="Logo">
-            <LogoUploadCard websiteId={website.id} logoUrl={(websiteData as any)?.logoImageUrl} onUpdate={onUpdate} />
+          <Section
+            id="logo"
+            icon={<Upload className="w-4 h-4 text-emerald-400" />}
+            title="Logo"
+          >
+            <LogoUploadCard
+              websiteId={website.id}
+              logoUrl={(websiteData as any)?.logoImageUrl}
+              onUpdate={onUpdate}
+            />
           </Section>
 
           {/* ── BILDER ── */}
-          <Section id="bilder" icon={<Image className="w-4 h-4 text-orange-400" />} title="Bilder">
+          <Section
+            id="bilder"
+            icon={<Image className="w-4 h-4 text-orange-400" />}
+            title="Bilder"
+          >
             <div className="space-y-3">
               {/* Hero */}
               <div>
                 <div className="text-xs text-slate-400 mb-1.5">Hauptbild</div>
                 <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
-                  {heroImageUrl
-                    ? <img src={heroImageUrl} alt="Hero" className="w-full h-full object-cover" />
-                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
-                  }
+                  {heroImageUrl ? (
+                    <img
+                      src={heroImageUrl}
+                      alt="Hero"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Image className="w-6 h-6 text-slate-600" />
+                    </div>
+                  )}
                 </div>
                 <button
-                  onClick={() => setImagePicker({ slot: "hero", websiteId: website.id })}
+                  onClick={() =>
+                    setImagePicker({ slot: "hero", websiteId: website.id })
+                  }
                   className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -3359,15 +5077,26 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
               </div>
               {/* About */}
               <div>
-                <div className="text-xs text-slate-400 mb-1.5">Über-uns-Bild</div>
+                <div className="text-xs text-slate-400 mb-1.5">
+                  Über-uns-Bild
+                </div>
                 <div className="relative rounded-lg overflow-hidden aspect-video bg-slate-800/60 border border-slate-700/50">
-                  {aboutImageUrl
-                    ? <img src={aboutImageUrl} alt="Über uns" className="w-full h-full object-cover" />
-                    : <div className="flex items-center justify-center h-full"><Image className="w-6 h-6 text-slate-600" /></div>
-                  }
+                  {aboutImageUrl ? (
+                    <img
+                      src={aboutImageUrl}
+                      alt="Über uns"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Image className="w-6 h-6 text-slate-600" />
+                    </div>
+                  )}
                 </div>
                 <button
-                  onClick={() => setImagePicker({ slot: "about", websiteId: website.id })}
+                  onClick={() =>
+                    setImagePicker({ slot: "about", websiteId: website.id })
+                  }
                   className="mt-2 w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 transition-colors"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -3376,7 +5105,6 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
               </div>
             </div>
           </Section>
-
         </div>
       </div>
     </div>
@@ -3384,22 +5112,46 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
 }
 
 // ── Logo Upload Card ──────────────────────────────────
-function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; logoUrl?: string; onUpdate: () => void }) {
+function LogoUploadCard({
+  websiteId,
+  logoUrl,
+  onUpdate,
+}: {
+  websiteId: number;
+  logoUrl?: string;
+  onUpdate: () => void;
+}) {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadLogoMutation = trpc.customer.uploadLogoForWebsite.useMutation({
-    onSuccess: () => { toast.success("Logo gespeichert"); onUpdate(); setUploading(false); },
-    onError: (e: any) => { toast.error("Upload fehlgeschlagen: " + e.message); setUploading(false); },
+    onSuccess: () => {
+      toast.success("Logo gespeichert");
+      onUpdate();
+      setUploading(false);
+    },
+    onError: (e: any) => {
+      toast.error("Upload fehlgeschlagen: " + e.message);
+      setUploading(false);
+    },
   });
-  const removeLogoMutation = trpc.customer.updateWebsiteContent.useMutation({ onSuccess: () => onUpdate() });
+  const removeLogoMutation = trpc.customer.updateWebsiteContent.useMutation({
+    onSuccess: () => onUpdate(),
+  });
 
   const handleFile = (file: File) => {
-    if (file.size > 2 * 1024 * 1024) { toast.error("Logo darf maximal 2 MB groß sein"); return; }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo darf maximal 2 MB groß sein");
+      return;
+    }
     setUploading(true);
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1];
-      uploadLogoMutation.mutate({ websiteId, imageData: base64, mimeType: file.type });
+      uploadLogoMutation.mutate({
+        websiteId,
+        imageData: base64,
+        mimeType: file.type,
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -3418,9 +5170,15 @@ function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; l
       </h3>
       {logoUrl ? (
         <div className="relative bg-slate-700/30 rounded-xl p-4 flex items-center justify-center min-h-[80px]">
-          <img src={logoUrl} alt="Logo" className="max-h-16 max-w-full object-contain" />
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="max-h-16 max-w-full object-contain"
+          />
           <button
-            onClick={() => removeLogoMutation.mutate({ websiteId, patch: { logoUrl: "" } })}
+            onClick={() =>
+              removeLogoMutation.mutate({ websiteId, patch: { logoUrl: "" } })
+            }
             className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white transition-colors"
           >
             <X className="w-3.5 h-3.5" />
@@ -3438,19 +5196,38 @@ function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; l
           ) : (
             <>
               <Upload className="w-6 h-6 text-slate-500" />
-              <p className="text-slate-400 text-xs text-center">Logo hochladen<br /><span className="text-slate-600">PNG, SVG oder JPG · max. 2 MB</span></p>
+              <p className="text-slate-400 text-xs text-center">
+                Logo hochladen
+                <br />
+                <span className="text-slate-600">
+                  PNG, SVG oder JPG · max. 2 MB
+                </span>
+              </p>
             </>
           )}
         </div>
       )}
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={e => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+        }}
+      />
       {logoUrl && (
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
           className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 cursor-pointer transition-colors disabled:opacity-50"
         >
-          {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          {uploading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
           Logo ersetzen
         </button>
       )}
@@ -3459,15 +5236,36 @@ function LogoUploadCard({ websiteId, logoUrl, onUpdate }: { websiteId: number; l
 }
 
 // ── Chat Leads Tab ────────────────────────────────────
-function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
-  const { data, isLoading, refetch: refetchLeads } = trpc.customer.getChatLeads.useQuery({ websiteId });
-  const { data: transcriptData, isLoading: transcriptsLoading } = trpc.customer.getChatTranscripts.useQuery({ websiteId });
-  const markRead = trpc.customer.markChatLeadRead.useMutation({ onSuccess: () => refetchLeads() });
-  const deleteLead = trpc.customer.deleteChatLead.useMutation({ onSuccess: () => refetchLeads() });
+function ChatLeadsTab({
+  websiteId,
+  website,
+  onGoToAddons,
+}: {
+  websiteId: number;
+  website: any;
+  onGoToAddons: () => void;
+}) {
+  const {
+    data,
+    isLoading,
+    refetch: refetchLeads,
+  } = trpc.customer.getChatLeads.useQuery({ websiteId });
+  const { data: transcriptData, isLoading: transcriptsLoading } =
+    trpc.customer.getChatTranscripts.useQuery({ websiteId });
+  const markRead = trpc.customer.markChatLeadRead.useMutation({
+    onSuccess: () => refetchLeads(),
+  });
+  const deleteLead = trpc.customer.deleteChatLead.useMutation({
+    onSuccess: () => refetchLeads(),
+  });
   const deleteTranscript = trpc.customer.deleteChatTranscript.useMutation();
   const aiChatEnabled = !!(website as any).addOnAiChat;
-  const [activeSubTab, setActiveSubTab] = useState<"leads" | "transcripts">("leads");
-  const [expandedTranscript, setExpandedTranscript] = useState<number | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<"leads" | "transcripts">(
+    "leads"
+  );
+  const [expandedTranscript, setExpandedTranscript] = useState<number | null>(
+    null
+  );
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   if (!aiChatEnabled) {
@@ -3476,9 +5274,12 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
         <div className="w-16 h-16 bg-violet-500/10 border border-violet-500/20 rounded-2xl flex items-center justify-center mb-4">
           <MessageSquare className="w-8 h-8 text-violet-400" />
         </div>
-        <h3 className="text-white font-semibold text-lg mb-2">KI-Chat noch nicht aktiviert</h3>
+        <h3 className="text-white font-semibold text-lg mb-2">
+          KI-Chat noch nicht aktiviert
+        </h3>
         <p className="text-slate-400 text-sm max-w-sm mb-5">
-          Aktiviere den KI-Chat, damit Besucher direkt auf deiner Website mit dir interagieren können – Leads landen dann hier.
+          Aktiviere den KI-Chat, damit Besucher direkt auf deiner Website mit
+          dir interagieren können – Leads landen dann hier.
         </p>
         <button
           onClick={onGoToAddons}
@@ -3495,7 +5296,8 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
   const unread = leads.filter((l: any) => !l.readAt).length;
 
   function downloadTranscriptJson(transcript: any) {
-    const messages = (transcript.messages as Array<{ role: string; content: string }>) ?? [];
+    const messages =
+      (transcript.messages as Array<{ role: string; content: string }>) ?? [];
     const date = transcript.createdAt
       ? new Date(transcript.createdAt).toLocaleString("de-DE")
       : "";
@@ -3507,12 +5309,14 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
       `Datum:     ${date}`,
       `──────────────────────────────`,
       "",
-      ...messages.map((m) => {
+      ...messages.map(m => {
         const role = m.role === "assistant" ? "Bot" : "Besucher";
         return `[${role}]\n${m.content}\n`;
       }),
     ];
-    const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([lines.join("\n")], {
+      type: "text/plain;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -3531,7 +5335,9 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
         >
           Leads
           {unread > 0 && (
-            <span className="ml-1.5 bg-violet-400 text-violet-950 text-xs font-bold px-1.5 py-0.5 rounded-full">{unread}</span>
+            <span className="ml-1.5 bg-violet-400 text-violet-950 text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {unread}
+            </span>
           )}
         </button>
         <button
@@ -3540,14 +5346,16 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
         >
           Gespräche
           {transcripts.length > 0 && (
-            <span className="ml-1.5 bg-slate-600 text-slate-300 text-xs font-bold px-1.5 py-0.5 rounded-full">{transcripts.length}</span>
+            <span className="ml-1.5 bg-slate-600 text-slate-300 text-xs font-bold px-1.5 py-0.5 rounded-full">
+              {transcripts.length}
+            </span>
           )}
         </button>
       </div>
 
       {/* LEADS sub-tab */}
-      {activeSubTab === "leads" && (
-        isLoading ? (
+      {activeSubTab === "leads" &&
+        (isLoading ? (
           <div className="flex items-center justify-center h-40">
             <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
           </div>
@@ -3556,9 +5364,12 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
             <div className="w-16 h-16 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
               <Users className="w-8 h-8 text-slate-500" />
             </div>
-            <h3 className="text-white font-semibold text-lg mb-2">Noch keine Leads</h3>
+            <h3 className="text-white font-semibold text-lg mb-2">
+              Noch keine Leads
+            </h3>
             <p className="text-slate-400 text-sm max-w-sm">
-              Sobald Website-Besucher ihren Namen und Kontakt im Chat hinterlassen, erscheinen sie hier.
+              Sobald Website-Besucher ihren Namen und Kontakt im Chat
+              hinterlassen, erscheinen sie hier.
             </p>
           </div>
         ) : (
@@ -3568,7 +5379,9 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                 <Users className="w-4 h-4 text-violet-400" />
                 Chat-Leads
               </h2>
-              <span className="text-slate-500 text-sm">{leads.length} insgesamt</span>
+              <span className="text-slate-500 text-sm">
+                {leads.length} insgesamt
+              </span>
             </div>
             {leads.map((lead: any) => (
               <div
@@ -3578,34 +5391,55 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="text-white font-medium text-sm">{lead.visitorName || "Unbekannt"}</span>
+                      <span className="text-white font-medium text-sm">
+                        {lead.visitorName || "Unbekannt"}
+                      </span>
                       {!lead.readAt && (
-                        <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full border border-violet-500/30">Neu</span>
+                        <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full border border-violet-500/30">
+                          Neu
+                        </span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                       {lead.email && (
-                        <a href={`mailto:${lead.email}`} className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                          <Mail className="w-3.5 h-3.5" />{lead.email}
+                        <a
+                          href={`mailto:${lead.email}`}
+                          className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          {lead.email}
                         </a>
                       )}
                       {lead.phone && (
-                        <a href={`tel:${lead.phone}`} className="text-green-400 hover:text-green-300 transition-colors flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5" />{lead.phone}
+                        <a
+                          href={`tel:${lead.phone}`}
+                          className="text-green-400 hover:text-green-300 transition-colors flex items-center gap-1"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          {lead.phone}
                         </a>
                       )}
                     </div>
                     {lead.summary && (
-                      <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{lead.summary}</p>
+                      <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                        {lead.summary}
+                      </p>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
                     <span className="text-slate-500 text-xs whitespace-nowrap">
-                      {new Date(lead.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(lead.createdAt).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </span>
                     {!lead.readAt && (
                       <button
-                        onClick={() => markRead.mutate({ leadId: lead.id, websiteId })}
+                        onClick={() =>
+                          markRead.mutate({ leadId: lead.id, websiteId })
+                        }
                         className="text-xs text-slate-400 hover:text-white transition-colors"
                       >
                         Als gelesen markieren
@@ -3615,12 +5449,18 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-400">Löschen?</span>
                         <button
-                          onClick={() => { deleteLead.mutate({ leadId: lead.id, websiteId }); setDeleteConfirmId(null); }}
+                          onClick={() => {
+                            deleteLead.mutate({ leadId: lead.id, websiteId });
+                            setDeleteConfirmId(null);
+                          }}
                           className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
                         >
                           Ja
                         </button>
-                        <button onClick={() => setDeleteConfirmId(null)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                        >
                           Nein
                         </button>
                       </div>
@@ -3638,12 +5478,11 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
               </div>
             ))}
           </div>
-        )
-      )}
+        ))}
 
       {/* TRANSCRIPTS sub-tab */}
-      {activeSubTab === "transcripts" && (
-        transcriptsLoading ? (
+      {activeSubTab === "transcripts" &&
+        (transcriptsLoading ? (
           <div className="flex items-center justify-center h-40">
             <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
           </div>
@@ -3652,7 +5491,9 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
             <div className="w-16 h-16 bg-slate-800 border border-slate-700 rounded-2xl flex items-center justify-center mb-4">
               <MessageSquare className="w-8 h-8 text-slate-500" />
             </div>
-            <h3 className="text-white font-semibold text-lg mb-2">Noch keine Gespräche</h3>
+            <h3 className="text-white font-semibold text-lg mb-2">
+              Noch keine Gespräche
+            </h3>
             <p className="text-slate-400 text-sm max-w-sm">
               Geführte Chat-Gespräche werden hier für 30 Tage gespeichert.
             </p>
@@ -3664,18 +5505,29 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                 <MessageSquare className="w-4 h-4 text-violet-400" />
                 Chat-Gespräche
               </h2>
-              <span className="text-slate-500 text-xs">30 Tage Aufbewahrung</span>
+              <span className="text-slate-500 text-xs">
+                30 Tage Aufbewahrung
+              </span>
             </div>
             {transcripts.map((t: any) => {
-              const messages: Array<{ role: string; content: string }> = t.messages ?? [];
+              const messages: Array<{ role: string; content: string }> =
+                t.messages ?? [];
               const isExpanded = expandedTranscript === t.id;
-              const expiresIn = Math.ceil((new Date(t.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              const expiresIn = Math.ceil(
+                (new Date(t.expiresAt).getTime() - Date.now()) /
+                  (1000 * 60 * 60 * 24)
+              );
               return (
-                <div key={t.id} className="bg-slate-800/60 border border-slate-700/40 rounded-xl overflow-hidden">
+                <div
+                  key={t.id}
+                  className="bg-slate-800/60 border border-slate-700/40 rounded-xl overflow-hidden"
+                >
                   {/* Header */}
                   <div className="flex items-center justify-between gap-3 p-4">
                     <button
-                      onClick={() => setExpandedTranscript(isExpanded ? null : t.id)}
+                      onClick={() =>
+                        setExpandedTranscript(isExpanded ? null : t.id)
+                      }
                       className="flex-1 flex items-center gap-3 text-left min-w-0"
                     >
                       <div className="w-8 h-8 bg-violet-500/15 border border-violet-500/25 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -3683,15 +5535,27 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-white text-sm font-medium">{t.visitorName || "Anonymer Besucher"}</span>
-                          <span className="text-slate-500 text-xs">{t.messageCount} Nachrichten</span>
+                          <span className="text-white text-sm font-medium">
+                            {t.visitorName || "Anonymer Besucher"}
+                          </span>
+                          <span className="text-slate-500 text-xs">
+                            {t.messageCount} Nachrichten
+                          </span>
                         </div>
-                        {t.summary && <p className="text-slate-400 text-xs mt-0.5 truncate">{t.summary}</p>}
+                        {t.summary && (
+                          <p className="text-slate-400 text-xs mt-0.5 truncate">
+                            {t.summary}
+                          </p>
+                        )}
                       </div>
-                      <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                      />
                     </button>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`text-xs px-2 py-0.5 rounded-full border ${expiresIn <= 3 ? "text-orange-400 border-orange-500/30 bg-orange-500/10" : "text-slate-500 border-slate-700"}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full border ${expiresIn <= 3 ? "text-orange-400 border-orange-500/30 bg-orange-500/10" : "text-slate-500 border-slate-700"}`}
+                      >
                         {expiresIn}d
                       </span>
                       <button
@@ -3699,10 +5563,27 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                         title="Als JSON herunterladen"
                         className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700/50 transition-all"
                       >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
                       </button>
                       <button
-                        onClick={() => deleteTranscript.mutate({ transcriptId: t.id, websiteId })}
+                        onClick={() =>
+                          deleteTranscript.mutate({
+                            transcriptId: t.id,
+                            websiteId,
+                          })
+                        }
                         title="Löschen"
                         className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                       >
@@ -3715,18 +5596,31 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
                   {isExpanded && (
                     <div className="border-t border-slate-700/40 px-4 py-3 space-y-2 max-h-80 overflow-y-auto">
                       <div className="text-slate-500 text-xs mb-3">
-                        {new Date(t.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(t.createdAt).toLocaleDateString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                         {" · "}Session {t.sessionId.slice(0, 8)}…
                       </div>
                       {messages.map((msg, idx) => (
-                        <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[80%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
-                            msg.role === "user"
-                              ? "bg-violet-600/30 border border-violet-500/30 text-violet-100"
-                              : "bg-slate-700/60 border border-slate-600/40 text-slate-300"
-                          }`}>
+                        <div
+                          key={idx}
+                          className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div
+                            className={`max-w-[80%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
+                              msg.role === "user"
+                                ? "bg-violet-600/30 border border-violet-500/30 text-violet-100"
+                                : "bg-slate-700/60 border border-slate-600/40 text-slate-300"
+                            }`}
+                          >
                             <span className="text-[10px] font-medium opacity-60 block mb-0.5">
-                              {msg.role === "user" ? "Besucher" : "KI-Assistent"}
+                              {msg.role === "user"
+                                ? "Besucher"
+                                : "KI-Assistent"}
                             </span>
                             {msg.content}
                           </div>
@@ -3738,30 +5632,53 @@ function ChatLeadsTab({ websiteId, website, onGoToAddons }: { websiteId: number;
               );
             })}
           </div>
-        )
-      )}
+        ))}
     </div>
   );
 }
 
 // ── Appointments Tab ───────────────────────────────────
-function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: number; website: any; onGoToAddons: () => void }) {
-  const { data: bookingData, isLoading: bookingLoading } = trpc.customer.getBookingSettings.useQuery({ websiteId });
-  const { data: appointmentsData, isLoading: appointmentsLoading, refetch: refetchAppointments } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
+function AppointmentsTab({
+  websiteId,
+  website,
+  onGoToAddons,
+}: {
+  websiteId: number;
+  website: any;
+  onGoToAddons: () => void;
+}) {
+  const { data: bookingData, isLoading: bookingLoading } =
+    trpc.customer.getBookingSettings.useQuery({ websiteId });
+  const {
+    data: appointmentsData,
+    isLoading: appointmentsLoading,
+    refetch: refetchAppointments,
+  } = trpc.customer.getAppointments.useQuery({ websiteId, upcoming: true });
   const cancelMutation = trpc.customer.cancelAppointmentByOwner.useMutation({
-    onSuccess: () => { toast.success("Termin abgesagt – E-Mail wurde versendet"); refetchAppointments(); setCancelConfirmId(null); setCancelMessage(""); },
+    onSuccess: () => {
+      toast.success("Termin abgesagt – E-Mail wurde versendet");
+      refetchAppointments();
+      setCancelConfirmId(null);
+      setCancelMessage("");
+    },
     onError: () => toast.error("Fehler beim Absagen"),
   });
 
   const [cancelConfirmId, setCancelConfirmId] = useState<number | null>(null);
   const [cancelMessage, setCancelMessage] = useState("");
   const [showPast, setShowPast] = useState(false);
-  const { data: pastData, refetch: refetchPast } = trpc.customer.getAppointments.useQuery(
-    { websiteId, upcoming: false },
-    { enabled: showPast }
-  );
+  const { data: pastData, refetch: refetchPast } =
+    trpc.customer.getAppointments.useQuery(
+      { websiteId, upcoming: false },
+      { enabled: showPast }
+    );
 
-  if (bookingLoading) return <div className="flex items-center justify-center h-40"><Loader2 className="w-6 h-6 animate-spin text-blue-400" /></div>;
+  if (bookingLoading)
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+      </div>
+    );
 
   const enabled = bookingData?.addOnBooking ?? false;
   const appts = appointmentsData?.appointments ?? [];
@@ -3774,17 +5691,30 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
         <h2 className="text-white text-lg font-semibold flex items-center gap-2">
           <CalendarCheck className="w-5 h-5 text-blue-400" />
           Termine
-          {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+          {appts.length > 0 && (
+            <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              {appts.length}
+            </span>
+          )}
         </h2>
-        <p className="text-slate-400 text-sm mt-0.5">Eingehende Buchungen von deiner Website.</p>
+        <p className="text-slate-400 text-sm mt-0.5">
+          Eingehende Buchungen von deiner Website.
+        </p>
       </div>
 
       {!enabled ? (
         <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
           <CalendarDays className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-white font-medium mb-1">Terminbuchung nicht aktiv</p>
-          <p className="text-slate-400 text-sm mb-4">Aktiviere das Add-on, um Buchungen entgegenzunehmen.</p>
-          <button onClick={onGoToAddons} className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors">
+          <p className="text-white font-medium mb-1">
+            Terminbuchung nicht aktiv
+          </p>
+          <p className="text-slate-400 text-sm mb-4">
+            Aktiviere das Add-on, um Buchungen entgegenzunehmen.
+          </p>
+          <button
+            onClick={onGoToAddons}
+            className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+          >
             → Zu den Add-ons
           </button>
         </div>
@@ -3794,17 +5724,27 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
             <h3 className="text-white font-semibold flex items-center gap-2">
               <CalendarCheck className="w-4 h-4 text-emerald-400" />
               Kommende Termine
-              {appts.length > 0 && <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{appts.length}</span>}
+              {appts.length > 0 && (
+                <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {appts.length}
+                </span>
+              )}
             </h3>
           </div>
 
           {appointmentsLoading ? (
-            <div className="flex items-center justify-center h-32"><Loader2 className="w-5 h-5 animate-spin text-blue-400" /></div>
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+            </div>
           ) : appts.length === 0 ? (
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
               <Calendar className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <p className="text-white font-medium mb-1">Keine kommenden Termine</p>
-              <p className="text-slate-400 text-sm">Wenn Besucher einen Termin buchen, erscheint er hier.</p>
+              <p className="text-white font-medium mb-1">
+                Keine kommenden Termine
+              </p>
+              <p className="text-slate-400 text-sm">
+                Wenn Besucher einen Termin buchen, erscheint er hier.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -3814,42 +5754,76 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
                   <div
                     key={a.id}
                     className={`bg-slate-800/60 border rounded-xl p-4 flex items-start justify-between gap-4 ${
-                      a.status === "cancelled" ? "border-slate-700/30 opacity-60" : "border-slate-700/50"
+                      a.status === "cancelled"
+                        ? "border-slate-700/30 opacity-60"
+                        : "border-slate-700/50"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-white font-medium text-sm">{a.visitorName}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-                          a.status === "cancelled" ? "bg-red-500/10 text-red-400 border-red-500/30" :
-                          a.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" :
-                          "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                        }`}>
-                          {a.status === "cancelled" ? "Abgesagt" : a.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                        <span className="text-white font-medium text-sm">
+                          {a.visitorName}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
+                            a.status === "cancelled"
+                              ? "bg-red-500/10 text-red-400 border-red-500/30"
+                              : a.status === "confirmed"
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                          }`}
+                        >
+                          {a.status === "cancelled"
+                            ? "Abgesagt"
+                            : a.status === "confirmed"
+                              ? "Bestätigt"
+                              : "Ausstehend"}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 text-blue-300 text-sm mb-1">
                         <Calendar className="w-3.5 h-3.5" />
-                        {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" })}
-                        {" · "}{a.appointmentTime} Uhr
+                        {new Date(
+                          a.appointmentDate + "T12:00:00"
+                        ).toLocaleDateString("de-DE", {
+                          weekday: "short",
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
+                        {" · "}
+                        {a.appointmentTime} Uhr
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-1">
-                        <a href={`mailto:${a.email}`} className="text-slate-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                          <Mail className="w-3.5 h-3.5" />{a.email}
+                        <a
+                          href={`mailto:${a.email}`}
+                          className="text-slate-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          {a.email}
                         </a>
                         {a.phone && (
-                          <a href={`tel:${a.phone}`} className="text-slate-400 hover:text-green-300 transition-colors flex items-center gap-1">
-                            <Phone className="w-3.5 h-3.5" />{a.phone}
+                          <a
+                            href={`tel:${a.phone}`}
+                            className="text-slate-400 hover:text-green-300 transition-colors flex items-center gap-1"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            {a.phone}
                           </a>
                         )}
                       </div>
-                      {a.message && <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">{a.message}</p>}
+                      {a.message && (
+                        <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                          {a.message}
+                        </p>
+                      )}
                     </div>
                     {a.status !== "cancelled" && (
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         {isCancelling ? (
                           <div className="flex flex-col items-end gap-2 min-w-[200px]">
-                            <p className="text-xs text-slate-400 self-start">Nachricht an Kunden (optional):</p>
+                            <p className="text-xs text-slate-400 self-start">
+                              Nachricht an Kunden (optional):
+                            </p>
                             <textarea
                               value={cancelMessage}
                               onChange={e => setCancelMessage(e.target.value)}
@@ -3859,14 +5833,31 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
                             />
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => { cancelMutation.mutate({ appointmentId: a.id, websiteId, cancelMessage: cancelMessage.trim() || undefined }); }}
+                                onClick={() => {
+                                  cancelMutation.mutate({
+                                    appointmentId: a.id,
+                                    websiteId,
+                                    cancelMessage:
+                                      cancelMessage.trim() || undefined,
+                                  });
+                                }}
                                 disabled={cancelMutation.isPending}
                                 className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50"
                               >
-                                {cancelMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <CalendarX className="w-3 h-3" />}
+                                {cancelMutation.isPending ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <CalendarX className="w-3 h-3" />
+                                )}
                                 Termin absagen
                               </button>
-                              <button onClick={() => { setCancelConfirmId(null); setCancelMessage(""); }} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                              <button
+                                onClick={() => {
+                                  setCancelConfirmId(null);
+                                  setCancelMessage("");
+                                }}
+                                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                              >
                                 Abbrechen
                               </button>
                             </div>
@@ -3876,7 +5867,8 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
                             onClick={() => setCancelConfirmId(a.id)}
                             className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
                           >
-                            <CalendarX className="w-3.5 h-3.5" />Absagen
+                            <CalendarX className="w-3.5 h-3.5" />
+                            Absagen
                           </button>
                         )}
                       </div>
@@ -3889,29 +5881,53 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
 
           {/* Past appointments toggle */}
           <button
-            onClick={() => { setShowPast(v => !v); if (!showPast) refetchPast(); }}
+            onClick={() => {
+              setShowPast(v => !v);
+              if (!showPast) refetchPast();
+            }}
             className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
           >
-            <ChevronDown className={`w-4 h-4 transition-transform ${showPast ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${showPast ? "rotate-180" : ""}`}
+            />
             {showPast ? "Vergangene ausblenden" : "Vergangene Termine anzeigen"}
           </button>
 
           {showPast && pastAppts.length > 0 && (
             <div className="space-y-2 opacity-70">
-              {pastAppts.filter((a: any) => a.appointmentDate < new Date().toISOString().slice(0, 10)).map((a: any) => (
-                <div key={a.id} className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-3 flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-slate-300 text-sm font-medium">{a.visitorName}</span>
-                    <span className="text-slate-500 text-xs ml-2">
-                      {new Date(a.appointmentDate + "T12:00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })} {a.appointmentTime} Uhr
+              {pastAppts
+                .filter(
+                  (a: any) =>
+                    a.appointmentDate < new Date().toISOString().slice(0, 10)
+                )
+                .map((a: any) => (
+                  <div
+                    key={a.id}
+                    className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-3 flex items-center gap-3"
+                  >
+                    <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-slate-300 text-sm font-medium">
+                        {a.visitorName}
+                      </span>
+                      <span className="text-slate-500 text-xs ml-2">
+                        {new Date(
+                          a.appointmentDate + "T12:00:00"
+                        ).toLocaleDateString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}{" "}
+                        {a.appointmentTime} Uhr
+                      </span>
+                    </div>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-slate-400"}`}
+                    >
+                      {a.status === "cancelled" ? "Abgesagt" : "Erledigt"}
                     </span>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-slate-400"}`}>
-                    {a.status === "cancelled" ? "Abgesagt" : "Erledigt"}
-                  </span>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>
@@ -3921,8 +5937,18 @@ function AppointmentsTab({ websiteId, website, onGoToAddons }: { websiteId: numb
 }
 
 // ── Content Fields Accordion (Kontakt, SEO, Leistungen, Impressum) ───────────
-function ContentFieldsAccordion({ website, websiteData, business, onboardingData, makeUpdater, handleUpdate }: {
-  website: any; websiteData: any; business: any; onboardingData: any;
+function ContentFieldsAccordion({
+  website,
+  websiteData,
+  business,
+  onboardingData,
+  makeUpdater,
+  handleUpdate,
+}: {
+  website: any;
+  websiteData: any;
+  business: any;
+  onboardingData: any;
   makeUpdater: (field: string) => (v: string) => Promise<void>;
   handleUpdate: () => void;
 }) {
@@ -3937,7 +5963,11 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
           <Settings className="w-4 h-4 text-slate-400" />
           Detaileinstellungen (Kontakt, SEO, Leistungen, Impressum)
         </span>
-        {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        {open ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
       </button>
 
       {open && (
@@ -3947,9 +5977,23 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
             <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
               <Edit2 className="w-4 h-4 text-blue-400" /> Unternehmensdaten
             </h3>
-            <EditableField label="Unternehmensname" value={websiteData?.businessName || business?.name || ""} onSave={makeUpdater("businessName")} />
-            <EditableField label="Tagline / Slogan" value={websiteData?.tagline || ""} multiline onSave={makeUpdater("tagline")} />
-            <EditableField label="Beschreibung" value={websiteData?.description || ""} multiline onSave={makeUpdater("description")} />
+            <EditableField
+              label="Unternehmensname"
+              value={websiteData?.businessName || business?.name || ""}
+              onSave={makeUpdater("businessName")}
+            />
+            <EditableField
+              label="Tagline / Slogan"
+              value={websiteData?.tagline || ""}
+              multiline
+              onSave={makeUpdater("tagline")}
+            />
+            <EditableField
+              label="Beschreibung"
+              value={websiteData?.description || ""}
+              multiline
+              onSave={makeUpdater("description")}
+            />
           </div>
 
           {/* Contact */}
@@ -3957,22 +6001,70 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
             <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
               <Phone className="w-4 h-4 text-blue-400" /> Kontaktdaten
             </h3>
-            <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
-            <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
-            <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
+            <EditableField
+              label="Telefon"
+              value={business?.phone || ""}
+              icon={<Phone className="w-3 h-3" />}
+              onSave={makeUpdater("phone")}
+            />
+            <EditableField
+              label="E-Mail"
+              value={business?.email || ""}
+              icon={<Mail className="w-3 h-3" />}
+              onSave={makeUpdater("email")}
+            />
+            <EditableField
+              label="Adresse"
+              value={business?.address || ""}
+              icon={<MapPin className="w-3 h-3" />}
+              onSave={makeUpdater("address")}
+            />
           </div>
 
           {/* SEO */}
           <div className="lg:col-span-2 space-y-3">
             <h3 className="text-white font-semibold flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+              <svg
+                className="w-4 h-4 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
+              </svg>
               SEO – Google-Sichtbarkeit
             </h3>
-            <p className="text-slate-400 text-xs">Leer lassen = automatisch generiert.</p>
-            <EditableField label="SEO-Titel" value={websiteData?.seoTitle || ""} placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`} onSave={makeUpdater("seoTitle")} />
+            <p className="text-slate-400 text-xs">
+              Leer lassen = automatisch generiert.
+            </p>
+            <EditableField
+              label="SEO-Titel"
+              value={websiteData?.seoTitle || ""}
+              placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
+              onSave={makeUpdater("seoTitle")}
+            />
             <div>
-              <EditableField label="Meta-Beschreibung" value={websiteData?.seoDescription || ""} multiline placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"} onSave={makeUpdater("seoDescription")} />
-              <p className="text-slate-500 text-xs mt-1">{(websiteData?.seoDescription || "").length}/155{(websiteData?.seoDescription || "").length > 155 && <span className="text-amber-400 ml-1">⚠ zu lang</span>}</p>
+              <EditableField
+                label="Meta-Beschreibung"
+                value={websiteData?.seoDescription || ""}
+                multiline
+                placeholder={
+                  websiteData?.tagline ||
+                  "Kurze Beschreibung (max. 155 Zeichen)"
+                }
+                onSave={makeUpdater("seoDescription")}
+              />
+              <p className="text-slate-500 text-xs mt-1">
+                {(websiteData?.seoDescription || "").length}/155
+                {(websiteData?.seoDescription || "").length > 155 && (
+                  <span className="text-amber-400 ml-1">⚠ zu lang</span>
+                )}
+              </p>
             </div>
           </div>
 
@@ -3981,7 +6073,12 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
             <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
               <Sparkles className="w-4 h-4 text-violet-400" /> Leistungen & USP
             </h3>
-            <ServicesEditor websiteId={website.id} initialServices={onboardingData?.topServices || []} initialUsp={onboardingData?.usp || websiteData?.usp} onUpdate={handleUpdate} />
+            <ServicesEditor
+              websiteId={website.id}
+              initialServices={onboardingData?.topServices || []}
+              initialUsp={onboardingData?.usp || websiteData?.usp}
+              onUpdate={handleUpdate}
+            />
           </div>
 
           {/* Legal */}
@@ -3989,7 +6086,19 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
             <h3 className="text-white font-semibold flex items-center gap-2 text-sm mb-3">
               <Settings className="w-4 h-4 text-amber-400" /> Impressum-Daten
             </h3>
-            <LegalEditor websiteId={website.id} initialData={{ legalOwner: onboardingData?.legalOwner || "", legalStreet: onboardingData?.legalStreet || "", legalZip: onboardingData?.legalZip || "", legalCity: onboardingData?.legalCity || "", legalEmail: onboardingData?.legalEmail || "", legalPhone: onboardingData?.legalPhone || "", legalVatId: onboardingData?.legalVatId || "" }} onUpdate={handleUpdate} />
+            <LegalEditor
+              websiteId={website.id}
+              initialData={{
+                legalOwner: onboardingData?.legalOwner || "",
+                legalStreet: onboardingData?.legalStreet || "",
+                legalZip: onboardingData?.legalZip || "",
+                legalCity: onboardingData?.legalCity || "",
+                legalEmail: onboardingData?.legalEmail || "",
+                legalPhone: onboardingData?.legalPhone || "",
+                legalVatId: onboardingData?.legalVatId || "",
+              }}
+              onUpdate={handleUpdate}
+            />
           </div>
         </div>
       )}
@@ -4000,23 +6109,46 @@ function ContentFieldsAccordion({ website, websiteData, business, onboardingData
 // ── Main Component ────────────────────────────────────
 export default function CustomerDashboard() {
   const { user, loading: authLoading } = useAuth();
-  const [selectedWebsiteId, setSelectedWebsiteId] = useState<number | null>(null);
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState<number | null>(
+    null
+  );
   const [activeTab, setActiveTab] = useState<Tab>(() => {
-    const p = new URLSearchParams(window.location.search).get("tab") as Tab | null;
-    const valid: Tab[] = ["preview","content","design","settings","addons","domain","anfragen","leads","appointments","statistics"];
-    return (p && valid.includes(p)) ? p : "preview";
+    const p = new URLSearchParams(window.location.search).get(
+      "tab"
+    ) as Tab | null;
+    const valid: Tab[] = [
+      "preview",
+      "content",
+      "design",
+      "settings",
+      "addons",
+      "domain",
+      "anfragen",
+      "leads",
+      "appointments",
+      "statistics",
+    ];
+    return p && valid.includes(p) ? p : "preview";
   });
   const [previewKey, setPreviewKey] = useState(0);
-  const [imagePicker, setImagePicker] = useState<{ slot: "hero" | "about"; websiteId: number } | null>(null);
-  const { data: myWebsites, isLoading, refetch } = trpc.customer.getMyWebsites.useQuery(
-    undefined,
-    { enabled: !!user }
-  );
+  const [imagePicker, setImagePicker] = useState<{
+    slot: "hero" | "about";
+    websiteId: number;
+  } | null>(null);
+  const {
+    data: myWebsites,
+    isLoading,
+    refetch,
+  } = trpc.customer.getMyWebsites.useQuery(undefined, { enabled: !!user });
 
-  const { data: onboardingData, isError: onboardingDataError } = trpc.customer.getOnboardingData.useQuery(
-    { websiteId: selectedWebsiteId || myWebsites?.[0]?.website.id || 0 },
-    { enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id, retry: false }
-  );
+  const { data: onboardingData, isError: onboardingDataError } =
+    trpc.customer.getOnboardingData.useQuery(
+      { websiteId: selectedWebsiteId || myWebsites?.[0]?.website.id || 0 },
+      {
+        enabled: !!selectedWebsiteId || !!myWebsites?.[0]?.website.id,
+        retry: false,
+      }
+    );
 
   const { data: imageSuggestions } = trpc.customer.getImageSuggestions.useQuery(
     { websiteId: imagePicker?.websiteId || 0 },
@@ -4026,21 +6158,32 @@ export default function CustomerDashboard() {
   const updateMutation = trpc.customer.updateWebsiteContent.useMutation({
     onSuccess: () => {
       refetch();
-      setPreviewKey((k) => k + 1);
+      setPreviewKey(k => k + 1);
     },
   });
 
   const activeWebsiteId = myWebsites?.[0]?.website.id;
-  const { data: analyticsStats, isLoading: analyticsLoading } = trpc.customer.getAnalytics.useQuery(
-    { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
-    { enabled: !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics" }
-  );
+  const { data: analyticsStats, isLoading: analyticsLoading } =
+    trpc.customer.getAnalytics.useQuery(
+      { websiteId: selectedWebsiteId || activeWebsiteId || 0 },
+      {
+        enabled:
+          !!(selectedWebsiteId || activeWebsiteId) && activeTab === "analytics",
+      }
+    );
 
   const [showArchivedSubmissions, setShowArchivedSubmissions] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
-  const { data: submissionsData, isLoading: submissionsLoading, refetch: refetchSubmissions } = trpc.customer.getSubmissions.useQuery(
-    { websiteId: selectedWebsiteId || activeWebsiteId || 0, includeArchived: showArchivedSubmissions },
+  const {
+    data: submissionsData,
+    isLoading: submissionsLoading,
+    refetch: refetchSubmissions,
+  } = trpc.customer.getSubmissions.useQuery(
+    {
+      websiteId: selectedWebsiteId || activeWebsiteId || 0,
+      includeArchived: showArchivedSubmissions,
+    },
     { enabled: !!(selectedWebsiteId || activeWebsiteId) }
   );
 
@@ -4054,31 +6197,50 @@ export default function CustomerDashboard() {
   });
 
   const deleteMutation = trpc.customer.deleteSubmission.useMutation({
-    onSuccess: () => { setDeleteConfirmId(null); refetchSubmissions(); },
+    onSuccess: () => {
+      setDeleteConfirmId(null);
+      refetchSubmissions();
+    },
     onError: () => toast.error("Fehler beim Löschen."),
   });
 
   const [contactEmailInput, setContactEmailInput] = useState("");
   const [contactEmailSaved, setContactEmailSaved] = useState(false);
   const contactEmailRef = useRef<HTMLInputElement>(null);
-  const updateContactEmailMutation = trpc.customer.updateContactEmail.useMutation({
-    onSuccess: () => { setContactEmailSaved(true); setTimeout(() => setContactEmailSaved(false), 2500); refetch(); },
-    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
-  });
+  const updateContactEmailMutation =
+    trpc.customer.updateContactEmail.useMutation({
+      onSuccess: () => {
+        setContactEmailSaved(true);
+        setTimeout(() => setContactEmailSaved(false), 2500);
+        refetch();
+      },
+      onError: (err: any) => {
+        toast.error("Fehler beim Speichern: " + err.message);
+      },
+    });
 
-  const updateShowBrandingMutation = trpc.customer.updateShowBranding.useMutation({
-    onSuccess: () => { refetch(); toast.success("Einstellung gespeichert"); },
-    onError: (err: any) => { toast.error("Fehler beim Speichern: " + err.message); },
-  });
+  const updateShowBrandingMutation =
+    trpc.customer.updateShowBranding.useMutation({
+      onSuccess: () => {
+        refetch();
+        toast.success("Einstellung gespeichert");
+      },
+      onError: (err: any) => {
+        toast.error("Fehler beim Speichern: " + err.message);
+      },
+    });
 
   const handleUpdate = () => {
     refetch();
-    setPreviewKey((k) => k + 1);
+    setPreviewKey(k => k + 1);
   };
 
   // ── useEffect + Setup-Hooks MÜSSEN vor allen Early-Returns stehen ───────
-  const _selectedEntry = myWebsites?.find((e) => e.website.id === selectedWebsiteId) || myWebsites?.[0];
-  const storedContactEmailEarly = (_selectedEntry?.website as any)?.contactEmail as string | null | undefined;
+  const _selectedEntry =
+    myWebsites?.find(e => e.website.id === selectedWebsiteId) ||
+    myWebsites?.[0];
+  const storedContactEmailEarly = (_selectedEntry?.website as any)
+    ?.contactEmail as string | null | undefined;
   useEffect(() => {
     setContactEmailInput(storedContactEmailEarly ?? "");
   }, [storedContactEmailEarly]);
@@ -4089,11 +6251,13 @@ export default function CustomerDashboard() {
   const _addOnBookingEarly = !!(_selectedEntry?.website as any)?.addOnBooking;
   useEffect(() => {
     if (activeTab === "leads" && !_addOnAiChatEarly) setActiveTab("addons");
-    if (activeTab === "appointments" && !_addOnBookingEarly) setActiveTab("addons");
+    if (activeTab === "appointments" && !_addOnBookingEarly)
+      setActiveTab("addons");
   }, [activeTab, _addOnAiChatEarly, _addOnBookingEarly]);
 
   // ── Setup-Flow State ──────────────────────────────────────────────────────
-  const _isCheckoutSuccess = new URLSearchParams(window.location.search).get("checkout") === "success";
+  const _isCheckoutSuccess =
+    new URLSearchParams(window.location.search).get("checkout") === "success";
   const [setupOpen, setSetupOpen] = useState(() => _isCheckoutSuccess);
 
   // Google Ads Conversion: Kauf nach Stripe-Checkout
@@ -4101,7 +6265,7 @@ export default function CustomerDashboard() {
     if (_isCheckoutSuccess) {
       trackConversion("purchase");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [setupStepIdx, setSetupStepIdx] = useState(0);
   const [slugInput, setSlugInput] = useState("");
@@ -4114,22 +6278,35 @@ export default function CustomerDashboard() {
 
   const _activeWebsiteIdForSetup = _selectedEntry?.website.id ?? 0;
   const updateSlugMutation = trpc.customer.updateSlug.useMutation({
-    onSuccess: () => { refetch(); },
+    onSuccess: () => {
+      refetch();
+    },
   });
   const setLiveMutation = trpc.customer.setLive.useMutation({
-    onSuccess: () => { refetch(); setSetupOpen(false); },
+    onSuccess: () => {
+      refetch();
+      setSetupOpen(false);
+    },
   });
   const generateLegalMutation = trpc.customer.generateLegalPages.useMutation({
-    onSuccess: () => { refetch(); },
+    onSuccess: () => {
+      refetch();
+    },
   });
-  const { data: slugCheck, isFetching: slugChecking } = trpc.customer.checkSlugAvailability.useQuery(
-    { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
-    { enabled: slugInput.length >= 3 }
-  );
-  const { data: domainSlugCheck, isFetching: domainSlugChecking } = trpc.customer.checkSlugAvailability.useQuery(
-    { slug: domainTabSlugInput, websiteId: _activeWebsiteIdForSetup },
-    { enabled: domainTabSlugInput.length >= 3 && domainTabSlugInput !== _selectedEntry?.website?.slug }
-  );
+  const { data: slugCheck, isFetching: slugChecking } =
+    trpc.customer.checkSlugAvailability.useQuery(
+      { slug: slugInput, websiteId: _activeWebsiteIdForSetup },
+      { enabled: slugInput.length >= 3 }
+    );
+  const { data: domainSlugCheck, isFetching: domainSlugChecking } =
+    trpc.customer.checkSlugAvailability.useQuery(
+      { slug: domainTabSlugInput, websiteId: _activeWebsiteIdForSetup },
+      {
+        enabled:
+          domainTabSlugInput.length >= 3 &&
+          domainTabSlugInput !== _selectedEntry?.website?.slug,
+      }
+    );
 
   if (authLoading || isLoading) {
     return (
@@ -4147,7 +6324,9 @@ export default function CustomerDashboard() {
             <Globe className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold mb-3">Meine Website</h1>
-          <p className="text-slate-400 mb-6">Melde dich an, um deine Website zu verwalten.</p>
+          <p className="text-slate-400 mb-6">
+            Melde dich an, um deine Website zu verwalten.
+          </p>
           <a
             href={getLoginUrl()}
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
@@ -4167,7 +6346,10 @@ export default function CustomerDashboard() {
             <Globe className="w-8 h-8 text-slate-400" />
           </div>
           <h1 className="text-2xl font-bold mb-3">Keine Website gefunden</h1>
-          <p className="text-slate-400 mb-6">Du hast noch keine aktive Website. Erstelle jetzt deine erste Website!</p>
+          <p className="text-slate-400 mb-6">
+            Du hast noch keine aktive Website. Erstelle jetzt deine erste
+            Website!
+          </p>
           <a
             href="/start"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
@@ -4179,26 +6361,35 @@ export default function CustomerDashboard() {
     );
   }
 
-  const selectedEntry = myWebsites.find((e) => e.website.id === selectedWebsiteId) || myWebsites[0];
+  const selectedEntry =
+    myWebsites.find(e => e.website.id === selectedWebsiteId) || myWebsites[0];
   const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as WebsiteData | undefined;
   const colorScheme = website.colorScheme as ColorScheme | undefined;
   // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
-  const storedContactEmail = (website as any).contactEmail as string | null | undefined;
+  const storedContactEmail = (website as any).contactEmail as
+    | string
+    | null
+    | undefined;
 
   // ── Setup-Flow Status ─────────────────────────────────
   const addOns = (subscription?.addOns ?? {}) as Record<string, boolean>;
-  const slugDone  = !website.slug.startsWith("preview-");
+  const slugDone = !website.slug.startsWith("preview-");
   const emailDone = !addOns.contactForm || !!(website as any).contactEmail;
-  const legalDone = !!(website.websiteData as any)?.impressumHtml && !!(website.websiteData as any)?.datenschutzHtml;
-  const liveDone  = website.status === "active";
-  const allDone   = slugDone && emailDone && legalDone && liveDone;
+  const legalDone =
+    !!(website.websiteData as any)?.impressumHtml &&
+    !!(website.websiteData as any)?.datenschutzHtml;
+  const liveDone = website.status === "active";
+  const allDone = slugDone && emailDone && legalDone && liveDone;
 
   // Initialise slugInput when setupOpen opens for step 0
   function slugifyFE(text: string): string {
-    return text.toLowerCase()
-      .replace(/[äöüß]/g, (m) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
-      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    return text
+      .toLowerCase()
+      .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" })[m] || m)
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
   }
   const suggestedSlug = slugifyFE(business?.name || "");
 
@@ -4220,33 +6411,90 @@ export default function CustomerDashboard() {
   const aiChatEnabled = !!(website as any).addOnAiChat;
   const bookingEnabled = !!(website as any).addOnBooking;
 
-  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+  const tabs: {
+    id: Tab;
+    label: string;
+    icon: React.ReactNode;
+    badge?: number;
+  }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     { id: "content", label: "Inhalte", icon: <Edit2 className="w-4 h-4" /> },
-    { id: "structure", label: "Struktur", icon: <Layers className="w-4 h-4" /> },
+    {
+      id: "structure",
+      label: "Struktur",
+      icon: <Layers className="w-4 h-4" />,
+    },
     { id: "design", label: "Design", icon: <Palette className="w-4 h-4" /> },
-    { id: "settings", label: "Einstellungen", icon: <Settings className="w-4 h-4" /> },
+    {
+      id: "settings",
+      label: "Einstellungen",
+      icon: <Settings className="w-4 h-4" />,
+    },
     { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
     { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
-    { id: "submissions", label: "Anfragen", icon: <MessageSquare className="w-4 h-4" />, badge: unreadCount },
-    ...(aiChatEnabled ? [{ id: "leads" as Tab, label: "Chat-Leads", icon: <Users className="w-4 h-4" /> }] : []),
-    ...(bookingEnabled ? [{ id: "appointments" as Tab, label: "Termine", icon: <CalendarDays className="w-4 h-4" /> }] : []),
-    { id: "analytics", label: "Statistiken", icon: <BarChart2 className="w-4 h-4" /> },
+    {
+      id: "submissions",
+      label: "Anfragen",
+      icon: <MessageSquare className="w-4 h-4" />,
+      badge: unreadCount,
+    },
+    ...(aiChatEnabled
+      ? [
+          {
+            id: "leads" as Tab,
+            label: "Chat-Leads",
+            icon: <Users className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    ...(bookingEnabled
+      ? [
+          {
+            id: "appointments" as Tab,
+            label: "Termine",
+            icon: <CalendarDays className="w-4 h-4" />,
+          },
+        ]
+      : []),
+    {
+      id: "analytics",
+      label: "Statistiken",
+      icon: <BarChart2 className="w-4 h-4" />,
+    },
   ];
 
   // ── Image upload helper (used by picker + direct upload) ────────────────
-  const handleImageUpload = async (file: File, slot: "hero" | "about", websiteId: number) => {
-    if (file.size > 5 * 1024 * 1024) { toast.error("Max. 5 MB"); return; }
+  const handleImageUpload = async (
+    file: File,
+    slot: "hero" | "about",
+    websiteId: number
+  ) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Max. 5 MB");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
       try {
-        const result = await (window as any).__trpcUpload?.({ websiteId, imageData: base64, mimeType: file.type });
+        const result = await (window as any).__trpcUpload?.({
+          websiteId,
+          imageData: base64,
+          mimeType: file.type,
+        });
         if (result?.url) {
-          await updateMutation.mutateAsync({ websiteId, patch: slot === "hero" ? { heroPhotoUrl: result.url } : { aboutPhotoUrl: result.url } });
+          await updateMutation.mutateAsync({
+            websiteId,
+            patch:
+              slot === "hero"
+                ? { heroPhotoUrl: result.url }
+                : { aboutPhotoUrl: result.url },
+          });
           setImagePicker(null);
         }
-      } catch { toast.error("Upload fehlgeschlagen"); }
+      } catch {
+        toast.error("Upload fehlgeschlagen");
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -4255,7 +6503,10 @@ export default function CustomerDashboard() {
     if (!imagePicker) return;
     await updateMutation.mutateAsync({
       websiteId: imagePicker.websiteId,
-      patch: imagePicker.slot === "hero" ? { heroPhotoUrl: url } : { aboutPhotoUrl: url },
+      patch:
+        imagePicker.slot === "hero"
+          ? { heroPhotoUrl: url }
+          : { aboutPhotoUrl: url },
     });
     setImagePicker(null);
   };
@@ -4265,16 +6516,25 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-
       {/* ── Image Picker Modal ── */}
       {imagePicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setImagePicker(null)}>
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-5" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setImagePicker(null)}
+        >
+          <div
+            className="bg-slate-800 border border-slate-700 rounded-2xl p-5 w-full max-w-lg max-h-[85vh] overflow-y-auto space-y-5"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-white font-semibold text-sm">
-                {imagePicker.slot === "hero" ? "Hauptbild" : "Über-uns-Bild"} auswählen
+                {imagePicker.slot === "hero" ? "Hauptbild" : "Über-uns-Bild"}{" "}
+                auswählen
               </h3>
-              <button onClick={() => setImagePicker(null)} className="p-1.5 text-slate-400 hover:text-white">
+              <button
+                onClick={() => setImagePicker(null)}
+                className="p-1.5 text-slate-400 hover:text-white"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -4282,12 +6542,21 @@ export default function CustomerDashboard() {
             {/* GMB Photos */}
             {gmbPhotos.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Deine GMB-Fotos</p>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                  Deine GMB-Fotos
+                </p>
                 <div className="grid grid-cols-3 gap-2">
                   {gmbPhotos.map((url, i) => (
-                    <button key={i} onClick={() => selectPickerImage(url)}
-                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      key={i}
+                      onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all"
+                    >
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -4297,12 +6566,21 @@ export default function CustomerDashboard() {
             {/* Stock Photos – industry suggestions */}
             {stockPhotos.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Vorgeschlagene Stock-Fotos</p>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                  Vorgeschlagene Stock-Fotos
+                </p>
                 <div className="grid grid-cols-3 gap-2">
                   {stockPhotos.map((url, i) => (
-                    <button key={i} onClick={() => selectPickerImage(url)}
-                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
+                    <button
+                      key={i}
+                      onClick={() => selectPickerImage(url)}
+                      className="aspect-video rounded-lg overflow-hidden ring-2 ring-transparent hover:ring-blue-500 transition-all"
+                    >
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -4311,16 +6589,32 @@ export default function CustomerDashboard() {
 
             {/* Stock Photo Search (Unsplash) */}
             <div className="space-y-2">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Stock-Foto suchen</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                Stock-Foto suchen
+              </p>
               <StockPhotoSearch onSelect={selectPickerImage} />
             </div>
 
             {/* Upload */}
             <div className="space-y-2">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Eigenes Foto hochladen</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                Eigenes Foto hochladen
+              </p>
               <label className="w-full flex items-center gap-2 justify-center text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 border border-slate-600 rounded-xl px-3 py-3 cursor-pointer transition-colors">
-                <input type="file" accept="image/*" className="hidden"
-                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f, imagePicker.slot, imagePicker.websiteId); }} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f)
+                      handleImageUpload(
+                        f,
+                        imagePicker.slot,
+                        imagePicker.websiteId
+                      );
+                  }}
+                />
                 <Upload className="w-4 h-4" />
                 Bild vom Gerät wählen (max. 5 MB)
               </label>
@@ -4337,17 +6631,21 @@ export default function CustomerDashboard() {
               <Globe className="w-4.5 h-4.5 text-white" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg leading-tight">Meine Website</h1>
-              <p className="text-slate-400 text-xs">Verwalte und bearbeite deine Website</p>
+              <h1 className="text-white font-bold text-lg leading-tight">
+                Meine Website
+              </h1>
+              <p className="text-slate-400 text-xs">
+                Verwalte und bearbeite deine Website
+              </p>
             </div>
           </div>
           {myWebsites.length > 1 && (
             <select
               value={selectedWebsiteId || myWebsites[0].website.id}
-              onChange={(e) => setSelectedWebsiteId(Number(e.target.value))}
+              onChange={e => setSelectedWebsiteId(Number(e.target.value))}
               className="bg-slate-700 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none"
             >
-              {myWebsites.map((e) => (
+              {myWebsites.map(e => (
                 <option key={e.website.id} value={e.website.id}>
                   {e.business?.name || e.website.slug}
                 </option>
@@ -4382,17 +6680,49 @@ export default function CustomerDashboard() {
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2 mr-1">
               <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-white text-xs font-semibold">Website einrichten</span>
+              <span className="text-white text-xs font-semibold">
+                Website einrichten
+              </span>
             </div>
             <div className="w-px h-4 bg-blue-400/30" />
-            <StepChip done={slugDone}  label="Subdomain"   onClick={() => openSetupStep(0)} />
+            <StepChip
+              done={slugDone}
+              label="Subdomain"
+              onClick={() => openSetupStep(0)}
+            />
             {addOns.contactForm && (
-              <StepChip done={emailDone} label="Kontakt-E-Mail" onClick={() => openSetupStep(1)} />
+              <StepChip
+                done={emailDone}
+                label="Kontakt-E-Mail"
+                onClick={() => openSetupStep(1)}
+              />
             )}
-            <StepChip done={legalDone} label="Impressum & Datenschutz" onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)} />
-            <StepChip done={liveDone}  label="Live schalten" onClick={() => openSetupStep(addOns.contactForm ? 3 : 2)} />
+            <StepChip
+              done={legalDone}
+              label="Impressum & Datenschutz"
+              onClick={() => openSetupStep(addOns.contactForm ? 2 : 1)}
+            />
+            <StepChip
+              done={liveDone}
+              label="Live schalten"
+              onClick={() => openSetupStep(addOns.contactForm ? 3 : 2)}
+            />
             <button
-              onClick={() => openSetupStep(!slugDone ? 0 : (addOns.contactForm && !emailDone) ? 1 : !legalDone ? (addOns.contactForm ? 2 : 1) : (addOns.contactForm ? 3 : 2))}
+              onClick={() =>
+                openSetupStep(
+                  !slugDone
+                    ? 0
+                    : addOns.contactForm && !emailDone
+                      ? 1
+                      : !legalDone
+                        ? addOns.contactForm
+                          ? 2
+                          : 1
+                        : addOns.contactForm
+                          ? 3
+                          : 2
+                )
+              }
               className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
             >
               Einrichten →
@@ -4404,10 +6734,13 @@ export default function CustomerDashboard() {
       {/* Mobile Tab Navigation (icon + label, scrollable) */}
       <div className="lg:hidden border-b border-slate-700/50 bg-slate-900/50 overflow-x-auto scrollbar-hide">
         <div className="flex px-2 min-w-max">
-          {tabs.map((tab) => (
+          {tabs.map(tab => (
             <button
               key={tab.id}
-              onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
+              onClick={() => {
+                setActiveTab(tab.id);
+                window.history.replaceState(null, "", `?tab=${tab.id}`);
+              }}
               className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "text-blue-400 border-blue-400"
@@ -4431,10 +6764,13 @@ export default function CustomerDashboard() {
         {/* Desktop Sidebar */}
         <nav className="hidden lg:flex flex-col w-52 flex-shrink-0 bg-slate-900/40 border-r border-slate-700/50 min-h-[calc(100vh-120px)]">
           <div className="p-3 space-y-0.5">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id); window.history.replaceState(null, "", `?tab=${tab.id}`); }}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  window.history.replaceState(null, "", `?tab=${tab.id}`);
+                }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                   activeTab === tab.id
                     ? "bg-blue-500/15 text-blue-400"
@@ -4455,632 +6791,855 @@ export default function CustomerDashboard() {
 
         {/* Tab Content */}
         <div className="flex-1 min-w-0 px-4 lg:px-6 py-4 lg:py-6">
-        {/* Preview Tab */}
-        {activeTab === "preview" && (
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                <div className="w-3 h-3 rounded-full bg-green-500/60" />
-              </div>
-              <div className="flex-1 bg-slate-700/60 rounded-lg px-3 py-1 text-slate-400 text-xs font-mono">
-                {website.slug}.pageblitz.de
-              </div>
-              {website.status === "active" && (
-                <a href={`/site/${website.slug}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white">
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              )}
-            </div>
-            <div className="relative overflow-auto max-h-[calc(100vh-280px)]">
-              {websiteData ? (
-                <>
-                  <div key={previewKey} style={{ zoom: 0.85, contain: "layout" }}>
-                    <WebsiteRenderer
-                      websiteData={websiteData}
-                      colorScheme={colorScheme}
-                      heroImageUrl={website.heroImageUrl || undefined}
-                      aboutImageUrl={(website as any).aboutImageUrl || undefined}
-                      layoutStyle={(website as any).layoutStyle || undefined}
-                      layoutVersion={(website as any)?.layoutVersion ?? undefined}
-                      businessPhone={business?.phone || undefined}
-                      businessAddress={business?.address || undefined}
-                      businessEmail={business?.email || undefined}
-                      slug={website.slug}
-                      contactFormLocked={false}
-                      islandsMode="preview"
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center justify-center h-64 text-slate-500">
-                  <div className="text-center">
-                    <Globe className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-                    <p className="text-sm">Keine Vorschau verfügbar</p>
-                  </div>
+          {/* Preview Tab */}
+          {activeTab === "preview" && (
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Content Tab — Split View */}
-        {activeTab === "content" && (
-          <div className="space-y-4">
-            {/* KI Split-View Editor */}
-            <ContentEditorSplitView
-              websiteId={website.id}
-              websiteData={websiteData}
-              colorScheme={colorScheme}
-              website={website}
-              business={business}
-              onUpdate={handleUpdate}
-            />
-          </div>
-        )}
-
-        {/* Design Tab */}
-        {activeTab === "design" && websiteData && (
-          <DesignStudio
-            website={website}
-            websiteData={websiteData}
-            heroImageUrl={website.heroImageUrl || undefined}
-            aboutImageUrl={(website as any).aboutImageUrl || undefined}
-            business={business}
-            onUpdate={handleUpdate}
-            setImagePicker={setImagePicker}
-          />
-        )}
-
-        {/* Settings Tab */}
-        {activeTab === "settings" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-            {/* Kontaktdaten */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <Phone className="w-4 h-4 text-blue-400" />
-                Kontaktdaten
-              </h2>
-              <p className="text-slate-400 text-xs -mt-2">Werden im Kontakt-Bereich deiner Website angezeigt.</p>
-              <EditableField label="Telefon" value={business?.phone || ""} icon={<Phone className="w-3 h-3" />} onSave={makeUpdater("phone")} />
-              <EditableField label="E-Mail" value={business?.email || ""} icon={<Mail className="w-3 h-3" />} onSave={makeUpdater("email")} />
-              <EditableField label="Adresse" value={business?.address || ""} icon={<MapPin className="w-3 h-3" />} onSave={makeUpdater("address")} />
-            </div>
-
-            {/* SEO */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <h2 className="text-white font-semibold flex items-center gap-2">
-                <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-                </svg>
-                SEO – Google-Sichtbarkeit
-              </h2>
-              <p className="text-slate-400 text-xs -mt-2">Leer lassen = automatisch generiert.</p>
-              <EditableField
-                label="SEO-Titel"
-                value={websiteData?.seoTitle || ""}
-                placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
-                onSave={makeUpdater("seoTitle")}
-              />
-              <div>
-                <EditableField
-                  label="Meta-Beschreibung"
-                  value={websiteData?.seoDescription || ""}
-                  multiline
-                  placeholder={websiteData?.tagline || "Kurze Beschreibung (max. 155 Zeichen)"}
-                  onSave={makeUpdater("seoDescription")}
-                />
-                <p className="text-slate-500 text-xs mt-1">
-                  {(websiteData?.seoDescription || "").length}/155
-                  {(websiteData?.seoDescription || "").length > 155 && (
-                    <span className="text-amber-400 ml-1">⚠ zu lang</span>
-                  )}
-                </p>
+                <div className="flex-1 bg-slate-700/60 rounded-lg px-3 py-1 text-slate-400 text-xs font-mono">
+                  {website.slug}.pageblitz.de
+                </div>
+                {website.status === "active" && (
+                  <a
+                    href={`/site/${website.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
               </div>
-            </div>
-
-            {/* Leistungen & USP */}
-            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
-                <Sparkles className="w-4 h-4 text-violet-400" />
-                Leistungen & USP
-              </h2>
-              <p className="text-slate-400 text-xs mb-4">Deine Kernleistungen und Alleinstellungsmerkmale – erscheinen in der Leistungs-Sektion.</p>
-              <ServicesEditor
-                websiteId={website.id}
-                initialServices={onboardingData?.topServices || []}
-                initialUsp={onboardingData?.usp || websiteData?.usp}
-                onUpdate={handleUpdate}
-              />
-            </div>
-
-            {/* Impressum */}
-            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
-                <Settings className="w-4 h-4 text-amber-400" />
-                Impressum-Daten
-              </h2>
-              <p className="text-slate-400 text-xs mb-4">Pflichtangaben für Impressum und Datenschutzerklärung.</p>
-              <LegalEditor
-                websiteId={website.id}
-                initialData={{
-                  legalOwner: onboardingData?.legalOwner || "",
-                  legalStreet: onboardingData?.legalStreet || "",
-                  legalZip: onboardingData?.legalZip || "",
-                  legalCity: onboardingData?.legalCity || "",
-                  legalEmail: onboardingData?.legalEmail || "",
-                  legalPhone: onboardingData?.legalPhone || "",
-                  legalVatId: onboardingData?.legalVatId || "",
-                }}
-                onUpdate={handleUpdate}
-              />
-            </div>
-
-            {/* Pageblitz Branding */}
-            {subscription && (
-              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
-                  <Globe className="w-4 h-4 text-slate-400" />
-                  Pageblitz-Branding
-                </h2>
-                <p className="text-slate-400 text-xs mb-4">Steuere, ob ein kleiner Hinweis auf Pageblitz im Footer deiner Website erscheint.</p>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <div className="relative mt-0.5">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={(website as any).showBranding !== false}
-                      onChange={(e) => {
-                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: e.target.checked });
-                      }}
-                    />
+              <div className="relative overflow-auto max-h-[calc(100vh-280px)]">
+                {websiteData ? (
+                  <>
                     <div
-                      className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? 'bg-blue-600' : 'bg-slate-600'}`}
-                      onClick={() => {
-                        const current = (website as any).showBranding !== false;
-                        updateShowBrandingMutation.mutate({ websiteId: website.id, showBranding: !current });
-                      }}
+                      key={previewKey}
+                      style={{ zoom: 0.85, contain: "layout" }}
                     >
-                      <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${(website as any).showBranding !== false ? 'translate-x-4' : 'translate-x-0'}`} />
+                      <WebsiteRenderer
+                        websiteData={websiteData}
+                        colorScheme={colorScheme}
+                        heroImageUrl={website.heroImageUrl || undefined}
+                        aboutImageUrl={
+                          (website as any).aboutImageUrl || undefined
+                        }
+                        layoutStyle={(website as any).layoutStyle || undefined}
+                        layoutVersion={
+                          (website as any)?.layoutVersion ?? undefined
+                        }
+                        businessPhone={business?.phone || undefined}
+                        businessAddress={business?.address || undefined}
+                        businessEmail={business?.email || undefined}
+                        slug={website.slug}
+                        contactFormLocked={false}
+                        islandsMode="preview"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-slate-500">
+                    <div className="text-center">
+                      <Globe className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+                      <p className="text-sm">Keine Vorschau verfügbar</p>
                     </div>
                   </div>
-                  <div>
-                    <span className="text-white text-sm font-medium">Pageblitz-Branding im Footer anzeigen</span>
-                    <p className="text-slate-400 text-xs mt-0.5">Zeigt einen kleinen "Erstellt mit Pageblitz"-Link im Footer deiner Website.</p>
-                  </div>
-                </label>
+                )}
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
-        )}
-
-        {/* Structure Tab */}
-        {activeTab === "structure" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <StructureEditor
+          {/* Content Tab — Split View */}
+          {activeTab === "content" && (
+            <div className="space-y-4">
+              {/* KI Split-View Editor */}
+              <ContentEditorSplitView
                 websiteId={website.id}
                 websiteData={websiteData}
-                onUpdate={handleUpdate}
-              />
-            </div>
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-blue-400" />
-                Hinweise
-              </h2>
-              <p className="text-slate-400 text-sm mb-3">
-                <strong className="text-white">Sektionen sortieren:</strong> Ziehe die Sektionen per Drag & Drop in die gewünschte Reihenfolge.
-              </p>
-              <p className="text-slate-400 text-sm mb-3">
-                <strong className="text-white">Sektionen ausblenden:</strong> Klicke auf das Augen-Icon, um eine Sektion vorübergehend auszublenden.
-              </p>
-              <p className="text-slate-400 text-sm">
-                Ausgeblendete Sektionen werden auf der Website nicht angezeigt, bleiben aber gespeichert.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Add-ons Tab */}
-        {activeTab === "addons" && (
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-            <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
-              <Sparkles className="w-4 h-4 text-pink-400" />
-              Add-ons
-            </h2>
-            {onboardingData !== undefined || onboardingDataError ? (
-              <AddonsEditor
-                websiteId={website.id}
+                colorScheme={colorScheme}
                 website={website}
-                onboarding={onboardingData ?? null}
+                business={business}
                 onUpdate={handleUpdate}
-                purchasedAddOns={(subscription?.addOns ?? {}) as Record<string, boolean>}
-                onGoToTermine={() => setActiveTab("appointments")}
               />
-            ) : (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            </div>
+          )}
+
+          {/* Design Tab */}
+          {activeTab === "design" && websiteData && (
+            <DesignStudio
+              website={website}
+              websiteData={websiteData}
+              heroImageUrl={website.heroImageUrl || undefined}
+              aboutImageUrl={(website as any).aboutImageUrl || undefined}
+              business={business}
+              onUpdate={handleUpdate}
+              setImagePicker={setImagePicker}
+            />
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === "settings" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Kontaktdaten */}
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-blue-400" />
+                  Kontaktdaten
+                </h2>
+                <p className="text-slate-400 text-xs -mt-2">
+                  Werden im Kontakt-Bereich deiner Website angezeigt.
+                </p>
+                <EditableField
+                  label="Telefon"
+                  value={business?.phone || ""}
+                  icon={<Phone className="w-3 h-3" />}
+                  onSave={makeUpdater("phone")}
+                />
+                <EditableField
+                  label="E-Mail"
+                  value={business?.email || ""}
+                  icon={<Mail className="w-3 h-3" />}
+                  onSave={makeUpdater("email")}
+                />
+                <EditableField
+                  label="Adresse"
+                  value={business?.address || ""}
+                  icon={<MapPin className="w-3 h-3" />}
+                  onSave={makeUpdater("address")}
+                />
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Leads Tab */}
-        {activeTab === "leads" && (
-          <ChatLeadsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
-        )}
-
-        {/* Appointments Tab */}
-        {activeTab === "appointments" && (
-          <AppointmentsTab websiteId={website.id} website={website} onGoToAddons={() => setActiveTab("addons")} />
-        )}
-
-        {/* Analytics Tab */}
-        {activeTab === "analytics" && (
-          <div className="space-y-6">
-            {analyticsLoading ? (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-              </div>
-            ) : analyticsStats ? (
-              <>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { label: "Seitenaufrufe", value: analyticsStats.pageviews.toLocaleString("de-DE"), icon: <MousePointerClick className="w-5 h-5 text-blue-400" />, color: "text-blue-400" },
-                    { label: "Besucher", value: analyticsStats.visitors.toLocaleString("de-DE"), icon: <Users className="w-5 h-5 text-violet-400" />, color: "text-violet-400" },
-                    { label: "Absprungrate", value: `${analyticsStats.bounceRate} %`, icon: <BarChart2 className="w-5 h-5 text-amber-400" />, color: "text-amber-400" },
-                    { label: "Ø Verweildauer", value: `${Math.floor(analyticsStats.avgDuration / 60)}:${String(analyticsStats.avgDuration % 60).padStart(2, "0")} Min`, icon: <Clock className="w-5 h-5 text-green-400" />, color: "text-green-400" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        {stat.icon}
-                        <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">{stat.label}</span>
-                      </div>
-                      <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
-                      <div className="text-slate-500 text-xs mt-1">Letzte 30 Tage</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                  <p className="text-slate-400 text-sm">
-                    Diese Statistiken werden von <span className="text-white font-medium">Umami Analytics</span> erfasst –
-                    cookielos, DSGVO-konform, keine persönlichen Daten.
+              {/* SEO */}
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+                <h2 className="text-white font-semibold flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                    />
+                  </svg>
+                  SEO – Google-Sichtbarkeit
+                </h2>
+                <p className="text-slate-400 text-xs -mt-2">
+                  Leer lassen = automatisch generiert.
+                </p>
+                <EditableField
+                  label="SEO-Titel"
+                  value={websiteData?.seoTitle || ""}
+                  placeholder={`${websiteData?.businessName || business?.name || "Mein Unternehmen"} – professionelle Website`}
+                  onSave={makeUpdater("seoTitle")}
+                />
+                <div>
+                  <EditableField
+                    label="Meta-Beschreibung"
+                    value={websiteData?.seoDescription || ""}
+                    multiline
+                    placeholder={
+                      websiteData?.tagline ||
+                      "Kurze Beschreibung (max. 155 Zeichen)"
+                    }
+                    onSave={makeUpdater("seoDescription")}
+                  />
+                  <p className="text-slate-500 text-xs mt-1">
+                    {(websiteData?.seoDescription || "").length}/155
+                    {(websiteData?.seoDescription || "").length > 155 && (
+                      <span className="text-amber-400 ml-1">⚠ zu lang</span>
+                    )}
                   </p>
                 </div>
-              </>
-            ) : (
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
-                <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">Noch keine Statistiken verfügbar</h3>
-                <p className="text-slate-400 text-sm max-w-sm mx-auto">
-                  Analytics werden aktiviert, sobald deine Website live ist und die ersten Besucher kommen.
+              </div>
+
+              {/* Leistungen & USP */}
+              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4 text-violet-400" />
+                  Leistungen & USP
+                </h2>
+                <p className="text-slate-400 text-xs mb-4">
+                  Deine Kernleistungen und Alleinstellungsmerkmale – erscheinen
+                  in der Leistungs-Sektion.
+                </p>
+                <ServicesEditor
+                  websiteId={website.id}
+                  initialServices={onboardingData?.topServices || []}
+                  initialUsp={onboardingData?.usp || websiteData?.usp}
+                  onUpdate={handleUpdate}
+                />
+              </div>
+
+              {/* Impressum */}
+              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                  <Settings className="w-4 h-4 text-amber-400" />
+                  Impressum-Daten
+                </h2>
+                <p className="text-slate-400 text-xs mb-4">
+                  Pflichtangaben für Impressum und Datenschutzerklärung.
+                </p>
+                <LegalEditor
+                  websiteId={website.id}
+                  initialData={{
+                    legalOwner: onboardingData?.legalOwner || "",
+                    legalStreet: onboardingData?.legalStreet || "",
+                    legalZip: onboardingData?.legalZip || "",
+                    legalCity: onboardingData?.legalCity || "",
+                    legalEmail: onboardingData?.legalEmail || "",
+                    legalPhone: onboardingData?.legalPhone || "",
+                    legalVatId: onboardingData?.legalVatId || "",
+                  }}
+                  onUpdate={handleUpdate}
+                />
+              </div>
+
+              {/* Pageblitz Branding */}
+              {subscription && (
+                <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                  <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
+                    <Globe className="w-4 h-4 text-slate-400" />
+                    Pageblitz-Branding
+                  </h2>
+                  <p className="text-slate-400 text-xs mb-4">
+                    Steuere, ob ein kleiner Hinweis auf Pageblitz im Footer
+                    deiner Website erscheint.
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative mt-0.5">
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={(website as any).showBranding !== false}
+                        onChange={e => {
+                          updateShowBrandingMutation.mutate({
+                            websiteId: website.id,
+                            showBranding: e.target.checked,
+                          });
+                        }}
+                      />
+                      <div
+                        className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? "bg-blue-600" : "bg-slate-600"}`}
+                        onClick={() => {
+                          const current =
+                            (website as any).showBranding !== false;
+                          updateShowBrandingMutation.mutate({
+                            websiteId: website.id,
+                            showBranding: !current,
+                          });
+                        }}
+                      >
+                        <div
+                          className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${(website as any).showBranding !== false ? "translate-x-4" : "translate-x-0"}`}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-white text-sm font-medium">
+                        Pageblitz-Branding im Footer anzeigen
+                      </span>
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        Zeigt einen kleinen "Erstellt mit Pageblitz"-Link im
+                        Footer deiner Website.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Structure Tab */}
+          {activeTab === "structure" && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <StructureEditor
+                  websiteId={website.id}
+                  websiteData={websiteData}
+                  onUpdate={handleUpdate}
+                />
+              </div>
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                <h2 className="text-white font-semibold flex items-center gap-2 mb-4">
+                  <Settings className="w-4 h-4 text-blue-400" />
+                  Hinweise
+                </h2>
+                <p className="text-slate-400 text-sm mb-3">
+                  <strong className="text-white">Sektionen sortieren:</strong>{" "}
+                  Ziehe die Sektionen per Drag & Drop in die gewünschte
+                  Reihenfolge.
+                </p>
+                <p className="text-slate-400 text-sm mb-3">
+                  <strong className="text-white">Sektionen ausblenden:</strong>{" "}
+                  Klicke auf das Augen-Icon, um eine Sektion vorübergehend
+                  auszublenden.
+                </p>
+                <p className="text-slate-400 text-sm">
+                  Ausgeblendete Sektionen werden auf der Website nicht
+                  angezeigt, bleiben aber gespeichert.
                 </p>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Domain Tab */}
-        {activeTab === "domain" && website && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-white text-lg font-semibold">Domain & Adresse</h2>
-              <p className="text-slate-400 text-sm mt-0.5">Verwalte die Web-Adresse deiner Website.</p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          )}
 
-            {/* Subdomain */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-                  <Globe className="w-4 h-4 text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">Pageblitz-Subdomain</p>
-                  <p className="text-slate-400 text-xs">Kostenlos inklusive</p>
-                </div>
-              </div>
-
-              {/* Current URL display */}
-              <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
-                <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <a
-                  href={`https://${website.slug}.pageblitz.de`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
-                >
-                  {website.slug}.pageblitz.de
-                </a>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
-              </div>
-
-              {/* Slug change */}
-              <div className="space-y-2">
-                <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain ändern</label>
-                <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
-                  <input
-                    type="text"
-                    value={domainTabSlugInput || website.slug}
-                    onChange={(e) => {
-                      setDomainTabSlugSaved(false);
-                      setDomainTabSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""));
-                    }}
-                    className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
-                  />
-                  <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
-                </div>
-                {domainTabSlugInput.length >= 3 && domainTabSlugInput !== website.slug && (
-                  <p className={`text-xs flex items-center gap-1.5 ${
-                    domainSlugChecking ? "text-slate-400" :
-                    domainSlugCheck?.available ? "text-emerald-400" : "text-red-400"
-                  }`}>
-                    {domainSlugChecking ? "⏳ Prüfe Verfügbarkeit..." :
-                     domainSlugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben"}
-                  </p>
-                )}
-                {domainTabSlugSaved && (
-                  <p className="text-xs text-emerald-400 flex items-center gap-1">✓ Subdomain gespeichert</p>
-                )}
-                <button
-                  disabled={
-                    !domainTabSlugInput ||
-                    domainTabSlugInput === website.slug ||
-                    domainTabSlugInput.length < 3 ||
-                    (!domainSlugCheck?.available && domainTabSlugInput !== website.slug) ||
-                    domainSlugChecking ||
-                    updateSlugMutation.isPending
+          {/* Add-ons Tab */}
+          {activeTab === "addons" && (
+            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+              <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
+                <Sparkles className="w-4 h-4 text-pink-400" />
+                Add-ons
+              </h2>
+              {onboardingData !== undefined || onboardingDataError ? (
+                <AddonsEditor
+                  websiteId={website.id}
+                  website={website}
+                  onboarding={onboardingData ?? null}
+                  onUpdate={handleUpdate}
+                  purchasedAddOns={
+                    (subscription?.addOns ?? {}) as Record<string, boolean>
                   }
-                  onClick={async () => {
-                    await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: domainTabSlugInput });
-                    setDomainTabSlugSaved(true);
-                    toast.success("Subdomain gespeichert");
-                  }}
-                  className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
-                >
-                  {updateSlugMutation.isPending ? "Speichern..." : "Subdomain speichern"}
-                </button>
-              </div>
+                  onGoToTermine={() => setActiveTab("appointments")}
+                />
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Custom Domain */}
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setShowCustomDomainInfo(v => !v)}
-                className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
-                  <ExternalLink className="w-4 h-4 text-violet-400" />
+          {/* Leads Tab */}
+          {activeTab === "leads" && (
+            <ChatLeadsTab
+              websiteId={website.id}
+              website={website}
+              onGoToAddons={() => setActiveTab("addons")}
+            />
+          )}
+
+          {/* Appointments Tab */}
+          {activeTab === "appointments" && (
+            <AppointmentsTab
+              websiteId={website.id}
+              website={website}
+              onGoToAddons={() => setActiveTab("addons")}
+            />
+          )}
+
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && (
+            <div className="space-y-6">
+              {analyticsLoading ? (
+                <div className="flex items-center justify-center h-40">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm font-semibold">Eigene Domain verbinden</p>
-                  <p className="text-slate-400 text-xs">z.B. www.mein-unternehmen.de</p>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`} />
-              </button>
-              {showCustomDomainInfo && (
-                <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
-                  <p className="text-slate-300 text-sm">Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter (IONOS, Strato, GoDaddy, etc.):</p>
-                  <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+              ) : analyticsStats ? (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                      { label: "Typ",  value: "CNAME" },
-                      { label: "Name", value: "www" },
-                      { label: "Ziel", value: "pageblitz.de" },
-                      { label: "TTL",  value: "3600" },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="flex items-center justify-between">
-                        <span className="text-slate-500 text-xs w-12">{label}</span>
-                        <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">{value}</span>
+                      {
+                        label: "Seitenaufrufe",
+                        value: analyticsStats.pageviews.toLocaleString("de-DE"),
+                        icon: (
+                          <MousePointerClick className="w-5 h-5 text-blue-400" />
+                        ),
+                        color: "text-blue-400",
+                      },
+                      {
+                        label: "Besucher",
+                        value: analyticsStats.visitors.toLocaleString("de-DE"),
+                        icon: <Users className="w-5 h-5 text-violet-400" />,
+                        color: "text-violet-400",
+                      },
+                      {
+                        label: "Absprungrate",
+                        value: `${analyticsStats.bounceRate} %`,
+                        icon: <BarChart2 className="w-5 h-5 text-amber-400" />,
+                        color: "text-amber-400",
+                      },
+                      {
+                        label: "Ø Verweildauer",
+                        value: `${Math.floor(analyticsStats.avgDuration / 60)}:${String(analyticsStats.avgDuration % 60).padStart(2, "0")} Min`,
+                        icon: <Clock className="w-5 h-5 text-green-400" />,
+                        color: "text-green-400",
+                      },
+                    ].map(stat => (
+                      <div
+                        key={stat.label}
+                        className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          {stat.icon}
+                          <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">
+                            {stat.label}
+                          </span>
+                        </div>
+                        <div className={`text-3xl font-bold ${stat.color}`}>
+                          {stat.value}
+                        </div>
+                        <div className="text-slate-500 text-xs mt-1">
+                          Letzte 30 Tage
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-                    <p className="text-amber-300 text-xs">⏱ DNS-Änderungen können bis zu 24 Stunden dauern, bis sie wirksam sind.</p>
+                  <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
+                    <p className="text-slate-400 text-sm">
+                      Diese Statistiken werden von{" "}
+                      <span className="text-white font-medium">
+                        Umami Analytics
+                      </span>{" "}
+                      erfasst – cookielos, DSGVO-konform, keine persönlichen
+                      Daten.
+                    </p>
                   </div>
-                  <p className="text-slate-500 text-xs">Nach dem Setzen des CNAME-Eintrags melde dich beim Support — wir schalten die Domain für dich frei.</p>
+                </>
+              ) : (
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
+                  <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">
+                    Noch keine Statistiken verfügbar
+                  </h3>
+                  <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                    Analytics werden aktiviert, sobald deine Website live ist
+                    und die ersten Besucher kommen.
+                  </p>
                 </div>
               )}
             </div>
-            </div>{/* end grid */}
-          </div>
-        )}
+          )}
 
-        {/* Submissions (Anfragen) Tab */}
-        {activeTab === "submissions" && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Domain Tab */}
+          {activeTab === "domain" && website && (
+            <div className="space-y-6">
               <div>
                 <h2 className="text-white text-lg font-semibold">
-                  {showArchivedSubmissions ? "Archivierte Anfragen" : "Kontaktanfragen"}
+                  Domain & Adresse
                 </h2>
                 <p className="text-slate-400 text-sm mt-0.5">
-                  {submissionsData?.submissions.length ?? 0} {showArchivedSubmissions ? "archivierte" : "aktive"} Anfragen
-                  {!showArchivedSubmissions && unreadCount > 0 && <span className="ml-2 text-rose-400 font-medium">· {unreadCount} ungelesen</span>}
+                  Verwalte die Web-Adresse deiner Website.
                 </p>
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                {/* Archive toggle */}
-                <button
-                  onClick={() => setShowArchivedSubmissions(v => !v)}
-                  className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
-                    showArchivedSubmissions
-                      ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
-                      : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  {showArchivedSubmissions ? "Aktive anzeigen" : "Archiv"}
-                </button>
-                {/* Custom recipient email */}
-                {!showArchivedSubmissions && (
-                  <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
-                    <Mail className="w-4 h-4 text-slate-500 shrink-0" />
-                    <input
-                      type="email"
-                      value={contactEmailInput}
-                      onChange={(e) => setContactEmailInput(e.target.value)}
-                      placeholder={business?.email || "Empfänger-E-Mail eintragen..."}
-                      className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
-                    />
-                    <button
-                      onClick={() => updateContactEmailMutation.mutate({ websiteId: website.id, contactEmail: contactEmailInput })}
-                      disabled={updateContactEmailMutation.isPending}
-                      className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Subdomain */}
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
+                      <Globe className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-white text-sm font-semibold">
+                        Pageblitz-Subdomain
+                      </p>
+                      <p className="text-slate-400 text-xs">
+                        Kostenlos inklusive
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Current URL display */}
+                  <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
+                    <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <a
+                      href={`https://${website.slug}.pageblitz.de`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
                     >
-                      {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                      {website.slug}.pageblitz.de
+                    </a>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
+                  </div>
+
+                  {/* Slug change */}
+                  <div className="space-y-2">
+                    <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                      Subdomain ändern
+                    </label>
+                    <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                      <input
+                        type="text"
+                        value={domainTabSlugInput || website.slug}
+                        onChange={e => {
+                          setDomainTabSlugSaved(false);
+                          setDomainTabSlugInput(
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9-]/g, "")
+                              .replace(/^-+/, "")
+                          );
+                        }}
+                        className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
+                      />
+                      <span className="text-slate-400 text-sm whitespace-nowrap">
+                        .pageblitz.de
+                      </span>
+                    </div>
+                    {domainTabSlugInput.length >= 3 &&
+                      domainTabSlugInput !== website.slug && (
+                        <p
+                          className={`text-xs flex items-center gap-1.5 ${
+                            domainSlugChecking
+                              ? "text-slate-400"
+                              : domainSlugCheck?.available
+                                ? "text-emerald-400"
+                                : "text-red-400"
+                          }`}
+                        >
+                          {domainSlugChecking
+                            ? "⏳ Prüfe Verfügbarkeit..."
+                            : domainSlugCheck?.available
+                              ? "✓ Verfügbar"
+                              : "✗ Bereits vergeben"}
+                        </p>
+                      )}
+                    {domainTabSlugSaved && (
+                      <p className="text-xs text-emerald-400 flex items-center gap-1">
+                        ✓ Subdomain gespeichert
+                      </p>
+                    )}
+                    <button
+                      disabled={
+                        !domainTabSlugInput ||
+                        domainTabSlugInput === website.slug ||
+                        domainTabSlugInput.length < 3 ||
+                        (!domainSlugCheck?.available &&
+                          domainTabSlugInput !== website.slug) ||
+                        domainSlugChecking ||
+                        updateSlugMutation.isPending
+                      }
+                      onClick={async () => {
+                        await updateSlugMutation.mutateAsync({
+                          websiteId: website.id,
+                          slug: domainTabSlugInput,
+                        });
+                        setDomainTabSlugSaved(true);
+                        toast.success("Subdomain gespeichert");
+                      }}
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    >
+                      {updateSlugMutation.isPending
+                        ? "Speichern..."
+                        : "Subdomain speichern"}
                     </button>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {submissionsLoading ? (
-              <div className="flex justify-center py-16">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
-              </div>
-            ) : !submissionsData?.submissions.length ? (
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
-                <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-white font-semibold mb-2">
-                  {showArchivedSubmissions ? "Keine archivierten Anfragen" : "Noch keine Anfragen"}
-                </h3>
-                <p className="text-slate-400 text-sm max-w-sm mx-auto">
-                  {showArchivedSubmissions
-                    ? "Archivierte Anfragen erscheinen hier."
-                    : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {submissionsData.submissions.map((sub) => {
-                  const isUnread = !sub.readAt;
-                  const isDeleting = deleteConfirmId === sub.id;
-                  return (
-                    <div
-                      key={sub.id}
-                      className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
-                        showArchivedSubmissions
-                          ? "border-slate-700/30 opacity-75"
-                          : isUnread
-                            ? "border-blue-500/40 bg-slate-800/80"
-                            : "border-slate-700/50"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-1">
-                            {isUnread && !showArchivedSubmissions && (
-                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                            )}
-                            <span className="text-white font-semibold truncate">{sub.name}</span>
-                            <span className="text-slate-400 text-xs shrink-0">
-                              {new Date(sub.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                {/* Custom Domain */}
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+                  <button
+                    onClick={() => setShowCustomDomainInfo(v => !v)}
+                    className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
+                      <ExternalLink className="w-4 h-4 text-violet-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm font-semibold">
+                        Eigene Domain verbinden
+                      </p>
+                      <p className="text-slate-400 text-xs">
+                        z.B. www.mein-unternehmen.de
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {showCustomDomainInfo && (
+                    <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
+                      <p className="text-slate-300 text-sm">
+                        Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter
+                        (IONOS, Strato, GoDaddy, etc.):
+                      </p>
+                      <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+                        {[
+                          { label: "Typ", value: "CNAME" },
+                          { label: "Name", value: "www" },
+                          { label: "Ziel", value: "pageblitz.de" },
+                          { label: "TTL", value: "3600" },
+                        ].map(({ label, value }) => (
+                          <div
+                            key={label}
+                            className="flex items-center justify-between"
+                          >
+                            <span className="text-slate-500 text-xs w-12">
+                              {label}
+                            </span>
+                            <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">
+                              {value}
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-3 mb-3">
-                            <a
-                              href={`mailto:${sub.email}`}
-                              className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                              {sub.email}
-                            </a>
-                            {sub.phone && (
+                        ))}
+                      </div>
+                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                        <p className="text-amber-300 text-xs">
+                          ⏱ DNS-Änderungen können bis zu 24 Stunden dauern, bis
+                          sie wirksam sind.
+                        </p>
+                      </div>
+                      <p className="text-slate-500 text-xs">
+                        Nach dem Setzen des CNAME-Eintrags melde dich beim
+                        Support — wir schalten die Domain für dich frei.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* end grid */}
+            </div>
+          )}
+
+          {/* Submissions (Anfragen) Tab */}
+          {activeTab === "submissions" && (
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-white text-lg font-semibold">
+                    {showArchivedSubmissions
+                      ? "Archivierte Anfragen"
+                      : "Kontaktanfragen"}
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-0.5">
+                    {submissionsData?.submissions.length ?? 0}{" "}
+                    {showArchivedSubmissions ? "archivierte" : "aktive"}{" "}
+                    Anfragen
+                    {!showArchivedSubmissions && unreadCount > 0 && (
+                      <span className="ml-2 text-rose-400 font-medium">
+                        · {unreadCount} ungelesen
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Archive toggle */}
+                  <button
+                    onClick={() => setShowArchivedSubmissions(v => !v)}
+                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                      showArchivedSubmissions
+                        ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                        : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5" />
+                    {showArchivedSubmissions ? "Aktive anzeigen" : "Archiv"}
+                  </button>
+                  {/* Custom recipient email */}
+                  {!showArchivedSubmissions && (
+                    <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
+                      <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                      <input
+                        type="email"
+                        value={contactEmailInput}
+                        onChange={e => setContactEmailInput(e.target.value)}
+                        placeholder={
+                          business?.email || "Empfänger-E-Mail eintragen..."
+                        }
+                        className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+                      />
+                      <button
+                        onClick={() =>
+                          updateContactEmailMutation.mutate({
+                            websiteId: website.id,
+                            contactEmail: contactEmailInput,
+                          })
+                        }
+                        disabled={updateContactEmailMutation.isPending}
+                        className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                      >
+                        {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {submissionsLoading ? (
+                <div className="flex justify-center py-16">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                </div>
+              ) : !submissionsData?.submissions.length ? (
+                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
+                  <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+                  <h3 className="text-white font-semibold mb-2">
+                    {showArchivedSubmissions
+                      ? "Keine archivierten Anfragen"
+                      : "Noch keine Anfragen"}
+                  </h3>
+                  <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                    {showArchivedSubmissions
+                      ? "Archivierte Anfragen erscheinen hier."
+                      : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {submissionsData.submissions.map(sub => {
+                    const isUnread = !sub.readAt;
+                    const isDeleting = deleteConfirmId === sub.id;
+                    return (
+                      <div
+                        key={sub.id}
+                        className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
+                          showArchivedSubmissions
+                            ? "border-slate-700/30 opacity-75"
+                            : isUnread
+                              ? "border-blue-500/40 bg-slate-800/80"
+                              : "border-slate-700/50"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-1">
+                              {isUnread && !showArchivedSubmissions && (
+                                <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
+                              )}
+                              <span className="text-white font-semibold truncate">
+                                {sub.name}
+                              </span>
+                              <span className="text-slate-400 text-xs shrink-0">
+                                {new Date(sub.createdAt).toLocaleDateString(
+                                  "de-DE",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-3 mb-3">
                               <a
-                                href={`tel:${sub.phone}`}
-                                className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                                href={`mailto:${sub.email}`}
+                                className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
                               >
-                                <Phone className="w-3.5 h-3.5" />
-                                {sub.phone}
+                                <Mail className="w-3.5 h-3.5" />
+                                {sub.email}
                               </a>
+                              {sub.phone && (
+                                <a
+                                  href={`tel:${sub.phone}`}
+                                  className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                                >
+                                  <Phone className="w-3.5 h-3.5" />
+                                  {sub.phone}
+                                </a>
+                              )}
+                            </div>
+                            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
+                              {sub.message}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 shrink-0">
+                            {!showArchivedSubmissions ? (
+                              <>
+                                <a
+                                  href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
+                                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                                >
+                                  <Mail className="w-3 h-3" />
+                                  Antworten
+                                </a>
+                                {isUnread && (
+                                  <button
+                                    onClick={() =>
+                                      markReadMutation.mutate({
+                                        submissionId: sub.id,
+                                      })
+                                    }
+                                    className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                                  >
+                                    Als gelesen markieren
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() =>
+                                    archiveMutation.mutate({
+                                      submissionId: sub.id,
+                                      archive: true,
+                                    })
+                                  }
+                                  disabled={archiveMutation.isPending}
+                                  className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
+                                  title="Archivieren"
+                                >
+                                  <Layers className="w-3.5 h-3.5" />
+                                  Archivieren
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    archiveMutation.mutate({
+                                      submissionId: sub.id,
+                                      archive: false,
+                                    })
+                                  }
+                                  disabled={archiveMutation.isPending}
+                                  className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors disabled:opacity-40"
+                                >
+                                  <Layers className="w-3.5 h-3.5" />
+                                  Wiederherstellen
+                                </button>
+                                {isDeleting ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs text-slate-400">
+                                      Sicher?
+                                    </span>
+                                    <button
+                                      onClick={() =>
+                                        deleteMutation.mutate({
+                                          submissionId: sub.id,
+                                        })
+                                      }
+                                      disabled={deleteMutation.isPending}
+                                      className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
+                                    >
+                                      Ja, löschen
+                                    </button>
+                                    <button
+                                      onClick={() => setDeleteConfirmId(null)}
+                                      className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                    >
+                                      Abbrechen
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setDeleteConfirmId(sub.id)}
+                                    className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                                    title="Endgültig löschen"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Löschen
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
-                          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
-                            {sub.message}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                          {!showArchivedSubmissions ? (
-                            <>
-                              <a
-                                href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
-                                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                              >
-                                <Mail className="w-3 h-3" />
-                                Antworten
-                              </a>
-                              {isUnread && (
-                                <button
-                                  onClick={() => markReadMutation.mutate({ submissionId: sub.id })}
-                                  className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
-                                >
-                                  Als gelesen markieren
-                                </button>
-                              )}
-                              <button
-                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: true })}
-                                disabled={archiveMutation.isPending}
-                                className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
-                                title="Archivieren"
-                              >
-                                <Layers className="w-3.5 h-3.5" />
-                                Archivieren
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => archiveMutation.mutate({ submissionId: sub.id, archive: false })}
-                                disabled={archiveMutation.isPending}
-                                className="flex items-center gap-1 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors disabled:opacity-40"
-                              >
-                                <Layers className="w-3.5 h-3.5" />
-                                Wiederherstellen
-                              </button>
-                              {isDeleting ? (
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs text-slate-400">Sicher?</span>
-                                  <button
-                                    onClick={() => deleteMutation.mutate({ submissionId: sub.id })}
-                                    disabled={deleteMutation.isPending}
-                                    className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-40"
-                                  >
-                                    Ja, löschen
-                                  </button>
-                                  <button
-                                    onClick={() => setDeleteConfirmId(null)}
-                                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                                  >
-                                    Abbrechen
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => setDeleteConfirmId(sub.id)}
-                                  className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
-                                  title="Endgültig löschen"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  Löschen
-                                </button>
-                              )}
-                            </>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-        </div>{/* end flex-1 content */}
-      </div>{/* end flex row (sidebar + content) */}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        {/* end flex-1 content */}
+      </div>
+      {/* end flex row (sidebar + content) */}
 
       {/* ── Setup-Modal ── */}
       {setupOpen && (
@@ -5089,7 +7648,9 @@ export default function CustomerDashboard() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-slate-700">
               <div>
-                <h2 className="text-white font-bold text-lg">Website einrichten</h2>
+                <h2 className="text-white font-bold text-lg">
+                  Website einrichten
+                </h2>
                 <p className="text-slate-400 text-sm mt-0.5">
                   Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
                 </p>
@@ -5107,33 +7668,58 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🌐</div>
-                  <h3 className="text-white font-semibold text-lg">Deine Website-Adresse</h3>
-                  <p className="text-slate-400 text-sm mt-1">Wähle eine einfache, einprägsame Adresse für deine Website.</p>
+                  <h3 className="text-white font-semibold text-lg">
+                    Deine Website-Adresse
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Wähle eine einfache, einprägsame Adresse für deine Website.
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Subdomain</label>
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                    Subdomain
+                  </label>
                   <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
                     <input
                       type="text"
                       value={slugInput}
-                      onChange={(e) => setSlugInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/^-+/, ""))}
+                      onChange={e =>
+                        setSlugInput(
+                          e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9-]/g, "")
+                            .replace(/^-+/, "")
+                        )
+                      }
                       placeholder={suggestedSlug || "mein-unternehmen"}
                       className="flex-1 bg-transparent text-white outline-none text-sm"
                       autoFocus
                     />
-                    <span className="text-slate-400 text-sm whitespace-nowrap">.pageblitz.de</span>
+                    <span className="text-slate-400 text-sm whitespace-nowrap">
+                      .pageblitz.de
+                    </span>
                   </div>
                   {slugInput.length >= 3 && (
-                    <p className={`text-xs flex items-center gap-1.5 ${
-                      slugChecking ? "text-slate-400" :
-                      slugCheck?.available ? "text-emerald-400" : "text-red-400"
-                    }`}>
-                      {slugChecking ? "⏳ Prüfe Verfügbarkeit..." :
-                       slugCheck?.available ? "✓ Verfügbar" : "✗ Bereits vergeben – anderen Namen wählen"}
+                    <p
+                      className={`text-xs flex items-center gap-1.5 ${
+                        slugChecking
+                          ? "text-slate-400"
+                          : slugCheck?.available
+                            ? "text-emerald-400"
+                            : "text-red-400"
+                      }`}
+                    >
+                      {slugChecking
+                        ? "⏳ Prüfe Verfügbarkeit..."
+                        : slugCheck?.available
+                          ? "✓ Verfügbar"
+                          : "✗ Bereits vergeben – anderen Namen wählen"}
                     </p>
                   )}
                   {slugInput.length > 0 && slugInput.length < 3 && (
-                    <p className="text-xs text-slate-400">Mindestens 3 Zeichen</p>
+                    <p className="text-xs text-slate-400">
+                      Mindestens 3 Zeichen
+                    </p>
                   )}
                 </div>
                 <div className="flex gap-3 pt-2">
@@ -5144,14 +7730,23 @@ export default function CustomerDashboard() {
                     Später
                   </button>
                   <button
-                    disabled={!slugCheck?.available || slugInput.length < 3 || updateSlugMutation.isPending}
+                    disabled={
+                      !slugCheck?.available ||
+                      slugInput.length < 3 ||
+                      updateSlugMutation.isPending
+                    }
                     onClick={async () => {
-                      await updateSlugMutation.mutateAsync({ websiteId: website.id, slug: slugInput });
+                      await updateSlugMutation.mutateAsync({
+                        websiteId: website.id,
+                        slug: slugInput,
+                      });
                       setSetupStepIdx(1);
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
                   >
-                    {updateSlugMutation.isPending ? "Speichern..." : "Übernehmen →"}
+                    {updateSlugMutation.isPending
+                      ? "Speichern..."
+                      : "Übernehmen →"}
                   </button>
                 </div>
                 {/* Eigene Domain – subtiler Accordion-Hinweis */}
@@ -5161,23 +7756,38 @@ export default function CustomerDashboard() {
                     className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
                   >
                     <span>🔗</span>
-                    <span>Du hast bereits eine Domain? So verbindest du sie</span>
-                    <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${showDomainHint ? "rotate-180" : ""}`} />
+                    <span>
+                      Du hast bereits eine Domain? So verbindest du sie
+                    </span>
+                    <ChevronDown
+                      className={`w-3 h-3 ml-auto transition-transform ${showDomainHint ? "rotate-180" : ""}`}
+                    />
                   </button>
                   {showDomainHint && (
                     <div className="mt-3 bg-slate-900 rounded-xl p-4 space-y-2">
-                      <p className="text-slate-300 text-xs font-medium mb-2">CNAME-Eintrag bei deinem DNS-Anbieter setzen:</p>
+                      <p className="text-slate-300 text-xs font-medium mb-2">
+                        CNAME-Eintrag bei deinem DNS-Anbieter setzen:
+                      </p>
                       {[
-                        { label: "Typ",  value: "CNAME" },
+                        { label: "Typ", value: "CNAME" },
                         { label: "Name", value: "www" },
                         { label: "Ziel", value: "pageblitz.de" },
                       ].map(({ label, value }) => (
-                        <div key={label} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5">
-                          <span className="text-slate-400 text-xs">{label}</span>
-                          <span className="text-white text-xs font-mono">{value}</span>
+                        <div
+                          key={label}
+                          className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5"
+                        >
+                          <span className="text-slate-400 text-xs">
+                            {label}
+                          </span>
+                          <span className="text-white text-xs font-mono">
+                            {value}
+                          </span>
                         </div>
                       ))}
-                      <p className="text-slate-500 text-xs text-center pt-1">DNS-Änderungen können bis zu 24h dauern</p>
+                      <p className="text-slate-500 text-xs text-center pt-1">
+                        DNS-Änderungen können bis zu 24h dauern
+                      </p>
                     </div>
                   )}
                 </div>
@@ -5189,17 +7799,26 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">📧</div>
-                  <h3 className="text-white font-semibold text-lg">Kontaktformular-E-Mail</h3>
-                  <p className="text-slate-400 text-sm mt-1">Wohin sollen Kundenanfragen aus deinem Kontaktformular gesendet werden?</p>
+                  <h3 className="text-white font-semibold text-lg">
+                    Kontaktformular-E-Mail
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Wohin sollen Kundenanfragen aus deinem Kontaktformular
+                    gesendet werden?
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">Empfänger-E-Mail</label>
+                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                    Empfänger-E-Mail
+                  </label>
                   <input
                     ref={contactEmailRef}
                     type="email"
                     defaultValue={contactEmailInput}
-                    onChange={(e) => setContactEmailInput(e.target.value)}
-                    onInput={(e) => setContactEmailInput((e.target as HTMLInputElement).value)}
+                    onChange={e => setContactEmailInput(e.target.value)}
+                    onInput={e =>
+                      setContactEmailInput((e.target as HTMLInputElement).value)
+                    }
                     placeholder="deine@email.de"
                     className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                     autoComplete="off"
@@ -5217,20 +7836,28 @@ export default function CustomerDashboard() {
                   <button
                     disabled={updateContactEmailMutation.isPending}
                     onClick={async () => {
-                      const val = contactEmailRef.current?.value || contactEmailInput;
+                      const val =
+                        contactEmailRef.current?.value || contactEmailInput;
                       if (!val.trim()) {
                         toast.error("Bitte eine E-Mail-Adresse eingeben.");
                         return;
                       }
                       try {
-                        await updateContactEmailMutation.mutateAsync({ websiteId: website.id, contactEmail: val.trim() });
+                        await updateContactEmailMutation.mutateAsync({
+                          websiteId: website.id,
+                          contactEmail: val.trim(),
+                        });
                         setContactEmailInput(val.trim());
                         setSetupStepIdx(2);
-                      } catch { /* onError handler shows toast */ }
+                      } catch {
+                        /* onError handler shows toast */
+                      }
                     }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
                   >
-                    {updateContactEmailMutation.isPending ? "Speichern..." : "Speichern →"}
+                    {updateContactEmailMutation.isPending
+                      ? "Speichern..."
+                      : "Speichern →"}
                   </button>
                 </div>
               </div>
@@ -5241,44 +7868,58 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-3">📋</div>
-                  <h3 className="text-white font-semibold text-lg">Impressum & Datenschutz</h3>
+                  <h3 className="text-white font-semibold text-lg">
+                    Impressum & Datenschutz
+                  </h3>
                   <p className="text-slate-400 text-sm mt-1">
-                    Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an – dauert 30 Sekunden.
+                    Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an –
+                    dauert 30 Sekunden.
                   </p>
                 </div>
                 {legalDone ? (
                   <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
                     <span className="text-emerald-400 text-xl">✓</span>
                     <div>
-                      <p className="text-emerald-400 text-sm font-medium">Impressum & Datenschutz generiert</p>
-                      <p className="text-slate-400 text-xs mt-0.5">Erreichbar unter /impressum und /datenschutz</p>
+                      <p className="text-emerald-400 text-sm font-medium">
+                        Impressum & Datenschutz generiert
+                      </p>
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        Erreichbar unter /impressum und /datenschutz
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div>
-                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Vor- und Nachname des Inhabers *</label>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">
+                        Vor- und Nachname des Inhabers *
+                      </label>
                       <input
                         type="text"
                         value={legalOwnerInput}
-                        onChange={(e) => setLegalOwnerInput(e.target.value)}
+                        onChange={e => setLegalOwnerInput(e.target.value)}
                         placeholder="Max Mustermann"
                         className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                         autoFocus
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">Impressum-E-Mail *</label>
+                      <label className="text-slate-400 text-xs font-medium uppercase tracking-wide block mb-1.5">
+                        Impressum-E-Mail *
+                      </label>
                       <input
                         type="email"
                         value={legalEmailInput2}
-                        onChange={(e) => setLegalEmailInput2(e.target.value)}
+                        onChange={e => setLegalEmailInput2(e.target.value)}
                         placeholder="info@beispiel.de"
                         className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
                       />
                     </div>
                     {generateLegalMutation.isError && (
-                      <p className="text-red-400 text-xs">{generateLegalMutation.error?.message || "Fehler beim Generieren"}</p>
+                      <p className="text-red-400 text-xs">
+                        {generateLegalMutation.error?.message ||
+                          "Fehler beim Generieren"}
+                      </p>
                     )}
                   </div>
                 )}
@@ -5299,12 +7940,16 @@ export default function CustomerDashboard() {
                       }}
                       className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
                     >
-                      {generateLegalMutation.isPending ? "Generiere..." : "Generieren →"}
+                      {generateLegalMutation.isPending
+                        ? "Generiere..."
+                        : "Generieren →"}
                     </button>
                   )}
                   {legalDone && (
                     <button
-                      onClick={() => setSetupStepIdx(addOns.contactForm ? 3 : 2)}
+                      onClick={() =>
+                        setSetupStepIdx(addOns.contactForm ? 3 : 2)
+                      }
                       className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
                     >
                       Weiter →
@@ -5319,9 +7964,12 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🚀</div>
-                  <h3 className="text-white font-semibold text-lg">Deine Website ist bereit!</h3>
+                  <h3 className="text-white font-semibold text-lg">
+                    Deine Website ist bereit!
+                  </h3>
                   <p className="text-slate-400 text-sm mt-1">
-                    Schalte deine Website jetzt live. Sie wird öffentlich erreichbar unter:
+                    Schalte deine Website jetzt live. Sie wird öffentlich
+                    erreichbar unter:
                   </p>
                   <p className="text-blue-400 text-sm font-mono mt-2">
                     {website.slug}.pageblitz.de
@@ -5329,11 +7977,16 @@ export default function CustomerDashboard() {
                 </div>
                 <div className="space-y-2">
                   {[
-                    { label: "Subdomain",              done: slugDone  },
-                    ...(addOns.contactForm ? [{ label: "Kontakt-E-Mail", done: emailDone }] : []),
+                    { label: "Subdomain", done: slugDone },
+                    ...(addOns.contactForm
+                      ? [{ label: "Kontakt-E-Mail", done: emailDone }]
+                      : []),
                     { label: "Impressum & Datenschutz", done: legalDone },
                   ].map(({ label, done }) => (
-                    <div key={label} className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}>
+                    <div
+                      key={label}
+                      className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}
+                    >
                       <span>{done ? "✓" : "⚠"}</span>
                       <span>{label}</span>
                     </div>
@@ -5341,26 +7994,40 @@ export default function CustomerDashboard() {
                 </div>
                 {!legalDone && (
                   <p className="text-amber-400 text-xs text-center bg-amber-500/10 border border-amber-500/30 rounded-lg p-2">
-                    ⚠ Impressum & Datenschutz fehlen noch – bitte erst generieren (vorheriger Schritt)
+                    ⚠ Impressum & Datenschutz fehlen noch – bitte erst
+                    generieren (vorheriger Schritt)
                   </p>
                 )}
                 <button
                   disabled={setLiveMutation.isPending || !legalDone}
-                  onClick={() => setLiveMutation.mutateAsync({ websiteId: website.id })}
+                  onClick={() =>
+                    setLiveMutation.mutateAsync({ websiteId: website.id })
+                  }
                   className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-lg shadow-emerald-900/30"
                 >
-                  {setLiveMutation.isPending ? "Wird live geschaltet..." : "⚡ Website jetzt live schalten"}
+                  {setLiveMutation.isPending
+                    ? "Wird live geschaltet..."
+                    : "⚡ Website jetzt live schalten"}
                 </button>
               </div>
             )}
 
             {/* Step-Dots */}
             <div className="flex justify-center gap-2 pb-4">
-              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map((_, i) => (
-                <div key={i} className={`w-2 h-2 rounded-full transition-all ${
-                  i === setupStepIdx ? "bg-blue-400 w-4" : i < setupStepIdx ? "bg-emerald-400" : "bg-slate-600"
-                }`} />
-              ))}
+              {Array.from({ length: addOns.contactForm ? 4 : 3 }).map(
+                (_, i) => (
+                  <div
+                    key={i}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      i === setupStepIdx
+                        ? "bg-blue-400 w-4"
+                        : i < setupStepIdx
+                          ? "bg-emerald-400"
+                          : "bg-slate-600"
+                    }`}
+                  />
+                )
+              )}
             </div>
           </div>
         </div>
