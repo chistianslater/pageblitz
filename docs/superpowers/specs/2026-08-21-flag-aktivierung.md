@@ -227,3 +227,54 @@ Schritt laut Plan: dem User die Desktop-PNGs der 10 in Plan C1+C2 neu gebauten P
 salon-noir, marktplatz, landgut, atelier, klarwerk, verve, zunft, schimmer, fundament — zusätzlich
 zu den 4 Leuchtturm-Packs werkbank, kanzlei, morgenlicht, gusto aus Plan A) zeigen und die
 Merge-Freigabe einholen — Abnahme vor Beginn von Teilprojekt B.
+
+## 6. Onboarding v2 (Studio) — Vorbereitung
+
+Teilprojekt B (Plan B1 „Studio-Fundament") führt eine neue Studio-Oberfläche unter
+`/onboarding/:token` ein (`client/src/pages/onboarding-v2/`). Sie ist bewusst **nicht** an das
+`PB_LAYOUT_V2`-Flag aus §1–§5 gekoppelt — dieses steuert nur, welcher Generierungspfad neue
+v2-Websites erzeugt, nicht welche Onboarding-Oberfläche der Kunde sieht. Vor der VPS-Aktivierung
+des Studios sind folgende Punkte zu beachten:
+
+1. **DB-Migration `drizzle/0025_studio_progress.sql`.** Handgeschrieben, wie 0013–0024 (kein
+   `drizzle-kit generate`, siehe §1). Fügt `onboarding_responses.studioProgress` (JSON) hinzu —
+   die Bestätigungs-Flags (`styleConfirmed`, `textsReviewed`, `addonsReviewed`), die sich nicht
+   aus `websiteData` ableiten lassen (siehe `shared/onboardingV2/checklist.ts`). Auf dem VPS wie
+   die übrigen `NNNN_*.sql`-Dateien manuell per `mysql` einspielen:
+   ```bash
+   ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95
+   mysql -u <user> -p <db> < /root/pageblitz/drizzle/0025_studio_progress.sql
+   ```
+   Ohne diese Spalte schlägt jeder Studio-Aufruf beim Lesen/Schreiben des Fortschritts fehl.
+
+2. **Route `/preview-ssr/:token` ist öffentlich erreichbar.** Kein Auth-Check — das Token selbst
+   ist das Geheimnis (32 Zeichen, `nanoid(32)`). Die Route liefert serverseitig gerendertes HTML
+   (auch für die Mini-Preview-iframes im Stil-Panel, per `?pack=<id>`-Override) und muss `noindex`
+   sowie `Cache-Control: no-store` setzen — die Seite darf weder in Suchmaschinen landen noch
+   veraltete Zwischenstände aus einem Cache/CDN ausliefern, während der Kunde im Studio aktiv
+   Änderungen vornimmt.
+
+3. **`/dev/studio-seed` existiert nur außerhalb production.** Die Route prüft
+   `process.env.NODE_ENV === "production"` und antwortet dann mit `404` (siehe
+   `server/onboardingV2/devSeed.ts`). Auf dem VPS ist sie damit automatisch deaktiviert, solange
+   `NODE_ENV=production` gesetzt ist — kein zusätzlicher Schritt nötig, aber vor jedem Deploy
+   gegenprüfen, dass diese Variable tatsächlich gesetzt ist (sonst wäre die Seed-Route, die
+   Websites ohne Bezahlvorgang anlegt, öffentlich erreichbar).
+
+4. **StartPage führt bis Plan B3 weiter in den alten Chat.** Der bestehende Funnel
+   (Landing → StartPage → `OnboardingChat.tsx`) bleibt unverändert aktiv; das Studio ist bis zum
+   Abschluss von Plan B3 ausschließlich per Direktlink `/onboarding/:token` erreichbar (z. B. für
+   internes Testing oder gezielt verschickte Links), nicht über einen regulären Nutzerpfad. Erst
+   Plan B3 verdrahtet StartPage/Checkout mit dem neuen Studio-Flow.
+
+5. **Lokale Entwicklung braucht eine erreichbare MySQL.** Der Dev-Server (`npm run dev`) verbindet
+   sich beim Start mit der DB; ohne sie schlägt bereits `/dev/studio-seed` fehl. Lokal z. B. per
+   Docker:
+   ```bash
+   docker run -d --name pageblitz-mysql -p 3306:3306 \
+     -e MYSQL_ROOT_PASSWORD=<aus .env> -e MYSQL_DATABASE=<aus .env> \
+     mysql:8.4
+   npx drizzle-kit push
+   ```
+   `npx drizzle-kit push` spiegelt das aktuelle Schema (inkl. `studioProgress`) direkt in die neue
+   Instanz — Alternative zum manuellen Abspielen aller `NNNN_*.sql`-Dateien für lokale Zwecke.
