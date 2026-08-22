@@ -49,9 +49,7 @@ describe("applyFeatureFlags — v2-Dokument", () => {
       aiChat: true,
       booking: true,
     });
-    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith(
-      "schreinerei-brandt"
-    );
+    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
   });
 
   test("contactForm hat keine Spalte — nur websiteData.features wird gesetzt", async () => {

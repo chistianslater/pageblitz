@@ -1,6 +1,12 @@
 import type { Express, Request, Response } from "express";
 import { getDb, upsertChatTranscript } from "../db";
-import { generatedWebsites, chatLeads, businesses, users, subscriptions } from "../../drizzle/schema";
+import {
+  generatedWebsites,
+  chatLeads,
+  businesses,
+  users,
+  subscriptions,
+} from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
@@ -8,12 +14,15 @@ import { sendEmail } from "./email";
 // ── In-memory IP rate limiter ────────────────────────────────────────────────
 const ipRateMap = new Map<string, { count: number; resetAt: number }>();
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, data] of ipRateMap.entries()) {
-    if (data.resetAt < now) ipRateMap.delete(ip);
-  }
-}, 60 * 60 * 1000); // cleanup every hour
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [ip, data] of ipRateMap.entries()) {
+      if (data.resetAt < now) ipRateMap.delete(ip);
+    }
+  },
+  60 * 60 * 1000
+); // cleanup every hour
 
 function checkIpLimit(ip: string, maxPerDay = 10): boolean {
   const now = Date.now();
@@ -42,11 +51,12 @@ function buildSystemPrompt(website: any): string {
   // Extract services from sections
   const sections: any[] = wd.sections || [];
   const servicesSection = sections.find((s: any) => s.type === "services");
-  const services = servicesSection?.items
-    ?.slice(0, 5)
-    .map((item: any) => item.title)
-    .filter(Boolean)
-    .join(", ") || industry;
+  const services =
+    servicesSection?.items
+      ?.slice(0, 5)
+      .map((item: any) => item.title)
+      .filter(Boolean)
+      .join(", ") || industry;
 
   const ctaBlock = hasBooking
     ? `Terminbuchung: Weise den Besucher auf das Buchungsformular auf der Website hin – er kann dort direkt einen Termin buchen.`
@@ -81,7 +91,10 @@ Lasse Felder weg die du nicht kennst. Beende danach das Gespräch freundlich ohn
 }
 
 // ── Lead notification email ──────────────────────────────────────────────────
-async function sendLeadNotification(websiteId: number, lead: any): Promise<void> {
+async function sendLeadNotification(
+  websiteId: number,
+  lead: any
+): Promise<void> {
   try {
     // Find business owner email
     const db = await getDb();
@@ -89,9 +102,15 @@ async function sendLeadNotification(websiteId: number, lead: any): Promise<void>
     const [row] = await db
       .select({ userEmail: users.email, businessName: businesses.name })
       .from(generatedWebsites)
-      .innerJoin(subscriptions, eq(subscriptions.id, generatedWebsites.subscriptionId as any))
+      .innerJoin(
+        subscriptions,
+        eq(subscriptions.id, generatedWebsites.subscriptionId as any)
+      )
       .innerJoin(users, eq(users.id, subscriptions.userId as any))
-      .innerJoin(businesses, eq(businesses.id, generatedWebsites.businessId as any))
+      .innerJoin(
+        businesses,
+        eq(businesses.id, generatedWebsites.businessId as any)
+      )
       .where(eq(generatedWebsites.id, websiteId))
       .limit(1)
       .catch(() => [null]);
@@ -187,11 +206,16 @@ export function registerChatRoutes(app: Express) {
       if (!resetAt || resetAt < now) {
         // New month – reset counter
         usageCount = 0;
-        const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        const nextMonthStart = new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          1
+        );
         await db
           .update(generatedWebsites)
           .set({ chatUsageCount: 0, chatUsageResetAt: nextMonthStart })
-          .where(eq(generatedWebsites.id, website.id)).catch(() => {});
+          .where(eq(generatedWebsites.id, website.id))
+          .catch(() => {});
       }
 
       if (usageCount >= 200) {
@@ -208,7 +232,7 @@ export function registerChatRoutes(app: Express) {
       const llmResult = await invokeLLM({
         messages: [
           { role: "system", content: systemPrompt },
-          ...trimmedMessages.map((m) => ({
+          ...trimmedMessages.map(m => ({
             role: m.role as "user" | "assistant",
             content: m.content,
           })),
@@ -217,7 +241,8 @@ export function registerChatRoutes(app: Express) {
       });
 
       const rawContent =
-        (llmResult.choices[0]?.message?.content as string) || "Wie kann ich dir helfen?";
+        (llmResult.choices[0]?.message?.content as string) ||
+        "Wie kann ich dir helfen?";
 
       // Extract lead block if present
       let leadData: {
@@ -241,20 +266,24 @@ export function registerChatRoutes(app: Express) {
       // Save lead
       if (leadData && (leadData.email || leadData.phone)) {
         try {
-          const [inserted] = await db.insert(chatLeads).values({
-            websiteId: website.id,
-            sessionId: sessionId || "anonymous",
-            visitorName: leadData.name || null,
-            email: leadData.email || null,
-            phone: leadData.phone || null,
-            summary: leadData.summary || null,
-          }).$returningId();
+          const [inserted] = await db
+            .insert(chatLeads)
+            .values({
+              websiteId: website.id,
+              sessionId: sessionId || "anonymous",
+              visitorName: leadData.name || null,
+              email: leadData.email || null,
+              phone: leadData.phone || null,
+              summary: leadData.summary || null,
+            })
+            .$returningId();
 
           if (inserted) {
             await db
               .update(chatLeads)
               .set({ notifiedAt: new Date() })
-              .where(eq(chatLeads.id, inserted.id)).catch(() => {});
+              .where(eq(chatLeads.id, inserted.id))
+              .catch(() => {});
 
             sendLeadNotification(website.id, leadData).catch(() => {});
           }
@@ -267,22 +296,18 @@ export function registerChatRoutes(app: Express) {
       await db
         .update(generatedWebsites)
         .set({ chatUsageCount: usageCount + 1 })
-        .where(eq(generatedWebsites.id, website.id)).catch(() => {});
+        .where(eq(generatedWebsites.id, website.id))
+        .catch(() => {});
 
       // Save / update transcript (fire-and-forget)
       const fullMessages = [
         ...trimmedMessages,
         { role: "assistant", content: cleanContent },
       ];
-      upsertChatTranscript(
-        website.id,
-        sessionId || "anonymous",
-        fullMessages,
-        {
-          visitorName: leadData?.name ?? undefined,
-          summary: leadData?.summary ?? undefined,
-        }
-      ).catch(() => {});
+      upsertChatTranscript(website.id, sessionId || "anonymous", fullMessages, {
+        visitorName: leadData?.name ?? undefined,
+        summary: leadData?.summary ?? undefined,
+      }).catch(() => {});
 
       return res.json({
         content: cleanContent,

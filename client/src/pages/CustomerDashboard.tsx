@@ -338,10 +338,8 @@ export default function CustomerDashboard() {
   // fehlen (z. B. nach manueller DB-Korrektur) — ohne Guard rendern die
   // Studio-Links `/onboarding/undefined` statt eines funktionierenden Links
   // oder eines Hinweises.
-  const previewToken = ((website as any).previewToken as
-    | string
-    | null
-    | undefined) ?? null;
+  const previewToken =
+    ((website as any).previewToken as string | null | undefined) ?? null;
   // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
   const storedContactEmail = (website as any).contactEmail as
     | string
