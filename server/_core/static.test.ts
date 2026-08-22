@@ -10,8 +10,13 @@ describe("isSpaRoute", () => {
     expect(isSpaRoute("/onboarding/abc123/")).toBe(true);
   });
 
-  test("Studio-Route mit Query-String bleibt erkannt", () => {
-    expect(isSpaRoute("/onboarding/abc123?panel=impressum")).toBe(true);
+  // "legal" statt "impressum": isSpaRoute() ignoriert den Query-String
+  // ohnehin komplett (nur der Pfad wird geprüft), aber der Beispielwert soll
+  // trotzdem eine echte Panel-ID sein — CHECKLIST_ORDER in
+  // shared/onboardingV2/checklist.ts kennt "style"/"photos"/"texts"/"offer"/
+  // "legal"/"addons", nicht "impressum".
+  test("Studio-Route mit Query-String bleibt erkannt (gültige Panel-ID)", () => {
+    expect(isSpaRoute("/onboarding/abc123?panel=legal")).toBe(true);
   });
 
   test("Studio-Route mit verschachteltem Pfad wird NICHT erkannt (nur ein Token-Segment)", () => {

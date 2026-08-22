@@ -35,6 +35,16 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
 
   await page.goto("/");
 
+  // Blendet die fixe Navbar (client/src/pages/LandingPage.tsx `Navbar`,
+  // `<motion.nav className="fixed top-0 ...">`) und — als Absicherung, falls
+  // die Einwilligung aus skipCookieBanner() doch nicht greift — das
+  // Cookie-Banner (`PageblitzCookieBanner`, `fixed bottom-0 ...`) aus, bevor
+  // der Screenshot entsteht: beide sind fixed-positioniert und würden sonst
+  // je nach Scroll-/Render-Timing über die Showcase-Baseline ragen.
+  await page.addStyleTag({
+    content: "nav, .fixed.top-0, .fixed.bottom-0 { visibility: hidden !important; }",
+  });
+
   const showcase = page.locator("#showcase");
 
   // Scrollt durch die GESAMTE Sektion (nicht nur deren Anfang in den

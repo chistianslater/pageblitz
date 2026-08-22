@@ -121,7 +121,10 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
 - **SSR-Vorschau**: `/preview-ssr/:token` — öffentlich, ohne Auth (Token ist
   das Geheimnis, `nanoid(32)`), `noindex` + `Cache-Control: no-store`.
 - **Legacy-Redirects** (`server/ssr/routes.ts`, `client/src/App.tsx`):
-  - `/preview/:token` → serverseitig 302 auf `/preview-ssr/:token`.
+  - `/preview/:token` → serverseitig 302 auf `/onboarding/:token` (Studio,
+    nicht `/preview-ssr/:token` — die reine SSR-Vorschau hat keinen CTA, das
+    Studio zeigt Vorschau + CheckoutBar bzw. bei v1-Dokument die LegacyCard
+    „Website neu erstellen").
   - `/preview/:token/onboarding` → SPA-Redirect auf `/onboarding/:token`.
   - `/websites/:id/onboarding` → `LegacyWebsiteRedirect`-Komponente lädt
     `website.get({id})` und leitet auf `/onboarding/<previewToken>` um

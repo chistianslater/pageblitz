@@ -90,7 +90,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
   }
   const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
   if (packParam && !isKnownPackId(packParam)) {
-    res.status(400).send(`Unbekanntes Pack: "${packParam}"`);
+    // Bewusst OHNE den Parameter im Body zu reflektieren — ein Query-Wert wie
+    // `<script>...` würde sonst unescaped in einer text/html-Antwort landen
+    // (reflected XSS), siehe handleDemoRoute weiter unten.
+    res.status(400).type("text/plain").send("Unbekanntes Pack");
     return;
   }
   try {
@@ -199,15 +202,17 @@ function handleDevPreview(req: Request, res: Response): void {
     typeof req.query.fixture === "string" ? req.query.fixture : "full";
 
   if (!isKnownPackId(packParam)) {
-    res.status(400).send(`Unbekanntes Pack: "${packParam}"`);
+    // Bewusst OHNE den Parameter im Body zu reflektieren — siehe
+    // handleDemoRoute weiter unten (reflected XSS via Query-Parameter).
+    res.status(400).type("text/plain").send("Unbekanntes Pack");
     return;
   }
   if (!isFixtureKind(fixtureParam)) {
+    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe oben).
     res
       .status(400)
-      .send(
-        `Unbekannte Fixture: "${fixtureParam}" (erwartet: full|minimal|features)`
-      );
+      .type("text/plain")
+      .send("Unbekannte Fixture (erwartet: full|minimal|features)");
     return;
   }
 
@@ -373,12 +378,15 @@ export function registerSsrRoutes(app: Express): void {
     void handlePreviewSsr(req, res);
   });
   // Legacy-Route der alten Preview-Page (Task 3, Cutover-Redirects): die
-  // SPA rendert /preview/:token nicht mehr, direkte Weiterleitung auf die
-  // SSR-Vorschau statt einen Client-Bundle-Roundtrip nur für einen Redirect
-  // zu laden. Absichtlich NICHT `/preview/:token/onboarding` (endet mit $) —
-  // diese Route bleibt SPA-seitig (Redirect auf /onboarding/:token).
+  // SPA rendert /preview/:token nicht mehr. Ziel ist NICHT /preview-ssr/:token
+  // (die reine SSR-Vorschau hat keinen CTA), sondern das Studio — dort sieht
+  // der Outreach-Empfänger dieselbe Vorschau UND (je nach Status) die
+  // CheckoutBar bzw. bei einem v1-Dokument die LegacyCard „Website neu
+  // erstellen", so bleibt der Funnel intakt. Absichtlich NICHT
+  // `/preview/:token/onboarding` (endet mit $) — diese Route bleibt
+  // SPA-seitig (Redirect auf /onboarding/:token, siehe App.tsx).
   app.get(/^\/preview\/([A-Za-z0-9_-]{16,64})$/, (req, res) => {
-    res.redirect(302, `/preview-ssr/${req.params[0]}`);
+    res.redirect(302, `/onboarding/${req.params[0]}`);
   });
   app.use(handleCustomerSiteSsr);
 }

@@ -68,6 +68,16 @@ describe("SSR routes", () => {
     expect(res.status).toBe(400);
   });
 
+  test("unbekanntes Pack (Sonderzeichen) → 400-Body reflektiert den Parameter NICHT (kein reflected XSS)", async () => {
+    const app = express();
+    registerSsrRoutes(app);
+    const res = await request(app).get(
+      "/dev/site-preview?pack=%3Cscript%3E&fixture=full"
+    );
+    expect(res.status).toBe(400);
+    expect(res.text).not.toContain("<script");
+  });
+
   describe("GET /demo/:pack", () => {
     test("gültiges Pack → 200, noindex, 1h-Cache, enthält den Fixture-Business-Namen", async () => {
       const app = buildAppWithFallback();
@@ -387,6 +397,53 @@ describe("SSR routes", () => {
           )
         ).status
       ).toBe(400);
+    });
+
+    test("unbekanntes ?pack → 400-Body reflektiert den Parameter NICHT (kein reflected XSS)", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const res = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?pack=%3Cscript%3E"
+      );
+      expect(res.status).toBe(400);
+      expect(res.text).not.toContain("<script");
+    });
+  });
+
+  describe("GET /preview/:token (Legacy-Redirect ins Studio)", () => {
+    test("gültiger Token → 302 auf /onboarding/<token>", async () => {
+      const res = await request(buildAppWithFallback()).get(
+        "/preview/abcdefghabcdefgh"
+      );
+      expect(res.status).toBe(302);
+      expect(res.headers.location).toBe("/onboarding/abcdefghabcdefgh");
+    });
+
+    test("zu kurzer Token (< 16 Zeichen) → kein Redirect, SPA-Fallback", async () => {
+      const res = await request(buildAppWithFallback()).get(
+        "/preview/kurzertoken"
+      );
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("Token mit Sonderzeichen → kein Redirect, SPA-Fallback", async () => {
+      const res = await request(buildAppWithFallback()).get(
+        "/preview/abcdefgh%3Cscript%3E"
+      );
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("/preview/:token/onboarding matcht diese Route nicht (bleibt SPA-seitig)", async () => {
+      const res = await request(buildAppWithFallback()).get(
+        "/preview/abcdefghabcdefgh/onboarding"
+      );
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("SPA-Fallback");
     });
   });
 });

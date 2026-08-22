@@ -71,7 +71,9 @@ export default function StudioPage({ token }: { token: string }) {
   const { state } = studio;
   // Verkauft/aktiv/inaktiv (alles außer "preview") → Live-Modus: keine
   // Checkout-Leiste mehr, Bearbeitung im Studio bleibt möglich (Spec §2.1).
-  const isLive = state.status !== "preview";
+  // Live-Modus/Status-Unterscheidung (LiveCard) direkt an der Verwendung
+  // geprüft (state.status !== "preview"), damit TS den Union-Typ dort ohne
+  // Cast auf "sold"|"active"|"inactive" verengt.
   // Legacy (v1) ohne aktiven Job: statische Meldung ersetzt durch eine Karte
   // mit "Website neu erstellen" (Task 2) — läuft bereits ein per force
   // gestarteter v2-Job, zeigt der übliche Generierungs-Screen den
@@ -219,8 +221,8 @@ export default function StudioPage({ token }: { token: string }) {
                 onOpenStylePanel={openStylePanelWithSuggestion}
                 onOpenPanel={setActiveId}
               />
-              {isLive ? (
-                <LiveCard slug={state.slug} />
+              {state.status !== "preview" ? (
+                <LiveCard slug={state.slug} status={state.status} />
               ) : (
                 <CheckoutBar
                   state={state}
