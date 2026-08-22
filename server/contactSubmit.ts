@@ -6,7 +6,9 @@ import {
   getBusinessById,
   createContactSubmission,
   countRecentSubmissionsByIp,
+  getOnboardingByWebsiteId,
 } from "./db";
+import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 
 // ── Gemeinsame Logik: tRPC (`contact.submit`) + REST (`/api/site/:slug/contact`) ──
 //
@@ -83,12 +85,36 @@ function buildOwnerNotificationHtml(input: {
 }
 
 /**
+ * Prüft, ob das Kontaktformular für diese Website aktiv ist. v2-Dokumente:
+ * `features.contactForm === true` (vom Zahlungs-Webhook bzw. Studio
+ * gespiegelt, siehe applyFeatures/routerCommerce.ts). v1-Websites haben kein
+ * `features`-Feld im Dokument — dort ist `onboarding_responses.
+ * addOnContactForm` die Quelle der Wahrheit (dieselbe, die die v1-Layouts
+ * client-seitig für die Formular-Sperre lesen, siehe PremiumLayoutsV2.tsx
+ * `websiteData?.addOnContactForm` bzw. CustomerDashboard.tsx).
+ */
+async function isContactFormEnabled(website: {
+  id: number;
+  websiteData: unknown;
+}): Promise<boolean> {
+  const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
+  if (parsed.success) {
+    return parsed.data.features?.contactForm === true;
+  }
+  const onboarding = await getOnboardingByWebsiteId(website.id);
+  return onboarding?.addOnContactForm === true;
+}
+
+/**
  * Verarbeitet eine Kontaktformular-Einreichung: Honeypot-Check, Website-Lookup,
- * IP-Rate-Limit (5/h), Speichern + Owner-Benachrichtigung per Mail.
+ * Add-on-Gate (Finding I3), IP-Rate-Limit (5/h), Speichern + Owner-
+ * Benachrichtigung per Mail (nicht im Preview-Status, siehe unten).
  *
- * Wirft `TRPCError` mit `NOT_FOUND` (unbekannter Slug) oder
- * `TOO_MANY_REQUESTS` (Rate-Limit) — beide Aufrufer (tRPC-Prozedur, Express-
- * Route) mappen den Code auf ihr jeweiliges Fehlerformat.
+ * Wirft `TRPCError` mit `NOT_FOUND` (unbekannter Slug ODER Kontaktformular
+ * nicht aktiv — bewusst derselbe Code, damit ein Angreifer per Response
+ * nicht unterscheiden kann, ob der Slug existiert, aber das Add-on fehlt)
+ * oder `TOO_MANY_REQUESTS` (Rate-Limit) — beide Aufrufer (tRPC-Prozedur,
+ * Express-Route) mappen den Code auf ihr jeweiliges Fehlerformat.
  */
 export async function submitContactRequest(
   input: ContactSubmitInput
@@ -104,6 +130,13 @@ export async function submitContactRequest(
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "Website nicht gefunden",
+    });
+  }
+
+  if (!(await isContactFormEnabled(website))) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Kontaktformular nicht aktiv",
     });
   }
 
@@ -134,7 +167,13 @@ export async function submitContactRequest(
   // contactEmail auf der Website überschreibt business.email
   const recipientEmail = (website as any).contactEmail || business?.email;
 
-  if (recipientEmail) {
+  // Finding I3: im Preview-Status (noch nicht verkauft/aktiv, z. B. Studio-
+  // Live-Vorschau oder Dev-Seed) wird die Einreichung zwar gespeichert, aber
+  // KEINE Owner-Mail verschickt — es gibt noch keinen zahlenden Kunden, der
+  // benachrichtigt werden sollte.
+  const isPreview = (website as any).status === "preview";
+
+  if (recipientEmail && !isPreview) {
     const { sendEmail } = await import("./_core/email");
     const businessName = business?.name ?? website.slug;
     await sendEmail({

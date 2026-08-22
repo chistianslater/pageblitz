@@ -8,6 +8,7 @@ vi.mock("./db", () => ({
   getBusinessById: vi.fn(),
   createContactSubmission: vi.fn(),
   countRecentSubmissionsByIp: vi.fn(),
+  getOnboardingByWebsiteId: vi.fn(),
 }));
 vi.mock("./_core/email", () => ({
   sendEmail: vi.fn().mockResolvedValue(undefined),
@@ -28,7 +29,26 @@ function buildApp() {
   return app;
 }
 
-const WEBSITE = { id: 1, slug: "brandt", businessId: 7, contactEmail: null };
+const v2Doc = {
+  version: 2,
+  stylePackId: "werkbank",
+  businessName: "Brandt",
+  seo: { title: "t", description: "d" },
+  sections: [{ type: "hero", headline: "H" }],
+  features: { contactForm: true },
+};
+
+// status "active" (verkauft) statt "preview" — die meisten bestehenden
+// Tests erwarten eine Owner-Mail beim Erfolgsfall (Finding I3: im
+// Preview-Status wird KEINE Mail verschickt, siehe eigener Test unten).
+const WEBSITE = {
+  id: 1,
+  slug: "brandt",
+  businessId: 7,
+  contactEmail: null,
+  status: "active",
+  websiteData: v2Doc,
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -40,6 +60,7 @@ beforeEach(() => {
   } as any);
   mockedDb.countRecentSubmissionsByIp.mockResolvedValue(0);
   mockedDb.createContactSubmission.mockResolvedValue(1);
+  mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
 });
 
 // ── submitContactRequest (Unit) ─────────────────────────────────────────────
@@ -127,6 +148,126 @@ describe("submitContactRequest", () => {
     expect(call.html).not.toContain("<img");
     expect(call.html).not.toContain("<script>");
     expect(call.html).not.toContain("<b onmouseover=alert(1)>");
+  });
+
+  // ── Finding I3: Kontaktformular-Add-on gaten ────────────────────────────
+
+  test("v2-Dokument ohne features.contactForm → NOT_FOUND, keine Submission, keine Mail", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      websiteData: { ...v2Doc, features: { contactForm: false } },
+    } as any);
+
+    await expect(
+      submitContactRequest({
+        slug: "brandt",
+        name: "Anna",
+        email: "anna@example.com",
+        message: "Hallo",
+        ip: "1.2.3.4",
+      })
+    ).rejects.toMatchObject({
+      code: "NOT_FOUND",
+      message: "Kontaktformular nicht aktiv",
+    });
+    expect(mockedDb.createContactSubmission).not.toHaveBeenCalled();
+    expect(mockedSendEmail).not.toHaveBeenCalled();
+  });
+
+  test("v2-Dokument ganz ohne features-Feld → NOT_FOUND (contactForm nicht aktiv)", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      websiteData: { ...v2Doc, features: undefined },
+    } as any);
+
+    await expect(
+      submitContactRequest({
+        slug: "brandt",
+        name: "Anna",
+        email: "anna@example.com",
+        message: "Hallo",
+        ip: "1.2.3.4",
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mockedDb.createContactSubmission).not.toHaveBeenCalled();
+  });
+
+  test("v1-Website (kein v2-Dokument) mit onboarding.addOnContactForm=true → erlaubt", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      websiteData: { headline: "Altes Dokument" },
+    } as any);
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      addOnContactForm: true,
+    } as any);
+
+    const result = await submitContactRequest({
+      slug: "brandt",
+      name: "Anna",
+      email: "anna@example.com",
+      message: "Hallo",
+      ip: "1.2.3.4",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mockedDb.createContactSubmission).toHaveBeenCalledTimes(1);
+  });
+
+  test("v1-Website mit onboarding.addOnContactForm=false → NOT_FOUND", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      websiteData: { headline: "Altes Dokument" },
+    } as any);
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      addOnContactForm: false,
+    } as any);
+
+    await expect(
+      submitContactRequest({
+        slug: "brandt",
+        name: "Anna",
+        email: "anna@example.com",
+        message: "Hallo",
+        ip: "1.2.3.4",
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  test("v1-Website ganz ohne Onboarding-Zeile → NOT_FOUND (kein Add-on nachweisbar)", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      websiteData: { headline: "Altes Dokument" },
+    } as any);
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
+
+    await expect(
+      submitContactRequest({
+        slug: "brandt",
+        name: "Anna",
+        email: "anna@example.com",
+        message: "Hallo",
+        ip: "1.2.3.4",
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  test("status 'preview' → Submission wird gespeichert, aber KEINE Owner-Mail verschickt", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue({
+      ...WEBSITE,
+      status: "preview",
+    } as any);
+
+    const result = await submitContactRequest({
+      slug: "brandt",
+      name: "Anna",
+      email: "anna@example.com",
+      message: "Hallo",
+      ip: "1.2.3.4",
+    });
+
+    expect(result).toEqual({ ok: true });
+    expect(mockedDb.createContactSubmission).toHaveBeenCalledTimes(1);
+    expect(mockedSendEmail).not.toHaveBeenCalled();
   });
 });
 

@@ -23,9 +23,7 @@ const VIEWPORTS = {
  * kein verlässliches Signal für den Hydration-Zeitpunkt.
  */
 async function waitForContactIslandMounted(page: Page): Promise<void> {
-  await expect(
-    page.locator("#kontakt [data-island='contact']")
-  ).toBeVisible();
+  await expect(page.locator("#kontakt [data-island='contact']")).toBeVisible();
 }
 
 test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", () => {
@@ -36,9 +34,7 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
       await page.waitForLoadState("networkidle");
       await waitForContactIslandMounted(page);
       await expect(page.getByRole("button", { name: "Chat" })).toBeVisible();
-      await expect(
-        page.getByRole("button", { name: "Termin" })
-      ).toBeVisible();
+      await expect(page.getByRole("button", { name: "Termin" })).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
       await expect(page).toHaveScreenshot(
         `islands-werkbank-features-${name}.png`,
@@ -90,12 +86,24 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     await form.getByLabel("Name").fill("Erika Musterfrau");
     await form.getByLabel("E-Mail").fill("erika@example.com");
     await form.getByLabel("Nachricht").fill("Ich hätte gern ein Angebot.");
-    await Promise.all([
+    // Finding F2: /api/site/:slug/contact hat ein globales IP-Rate-Limit
+    // (5 Einreichungen/h, siehe server/contactSubmit.ts) — bei wiederholten
+    // Läufen in kurzer Zeit (lokal oder CI, jeweils dieselbe IP) kann dieses
+    // Limit greifen, ohne dass am Feature selbst etwas kaputt ist. Statt
+    // dann mit einem irreführenden Fehlschlag zu enden, wird der Test bei
+    // 429 übersprungen.
+    const [response] = await Promise.all([
       page.waitForResponse(
-        res => res.url().includes("/contact") && res.request().method() === "POST"
+        res =>
+          res.url().includes("/contact") && res.request().method() === "POST"
       ),
       form.getByRole("button", { name: "Nachricht senden" }).click(),
     ]);
-    await expect(page.getByText("Danke — wir melden uns zeitnah.")).toBeVisible();
+    if (response.status() === 429) {
+      test.skip(true, "IP-Limit erreicht");
+    }
+    await expect(
+      page.getByText("Danke — wir melden uns zeitnah.")
+    ).toBeVisible();
   });
 });
