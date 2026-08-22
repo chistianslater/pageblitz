@@ -21,10 +21,25 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, Search, Globe, Mail, BarChart3, LogOut, PanelLeft, Zap, TrendingUp, Building2, Bug, MailCheck, Users, MessageCircle } from "lucide-react";
+import {
+  LayoutDashboard,
+  Search,
+  Globe,
+  Mail,
+  BarChart3,
+  LogOut,
+  PanelLeft,
+  Zap,
+  TrendingUp,
+  Building2,
+  Bug,
+  MailCheck,
+  Users,
+  MessageCircle,
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
 const menuItems = [
@@ -63,7 +78,7 @@ export default function DashboardLayout({
   }, [sidebarWidth]);
 
   if (loading) {
-    return <DashboardLayoutSkeleton />
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!user) {
@@ -73,7 +88,10 @@ export default function DashboardLayout({
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-2">
               <Zap className="h-8 w-8 text-primary" />
-              <span className="text-3xl font-extrabold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              <span
+                className="text-3xl font-extrabold tracking-tight"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
                 Page<span className="text-primary">blitz</span>
               </span>
             </div>
@@ -85,7 +103,9 @@ export default function DashboardLayout({
             </p>
           </div>
           <Button
-            onClick={() => { window.location.href = getLoginUrl(); }}
+            onClick={() => {
+              window.location.href = getLoginUrl();
+            }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
@@ -101,9 +121,12 @@ export default function DashboardLayout({
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-6 p-8 max-w-md w-full">
           <Zap className="h-12 w-12 text-destructive" />
-          <h1 className="text-xl font-semibold text-center text-foreground">Kein Zugang</h1>
+          <h1 className="text-xl font-semibold text-center text-foreground">
+            Kein Zugang
+          </h1>
           <p className="text-sm text-muted-foreground text-center">
-            Du hast keine Admin-Berechtigung. Bitte kontaktiere den Plattform-Betreiber.
+            Du hast keine Admin-Berechtigung. Bitte kontaktiere den
+            Plattform-Betreiber.
           </p>
         </div>
       </div>
@@ -126,7 +149,10 @@ type DashboardLayoutContentProps = {
   setSidebarWidth: (width: number) => void;
 };
 
-function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutContentProps) {
+function DashboardLayoutContent({
+  children,
+  setSidebarWidth,
+}: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
@@ -145,7 +171,8 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
       if (!isResizing) return;
       const sidebarLeft = sidebarRef.current?.getBoundingClientRect().left ?? 0;
       const newWidth = e.clientX - sidebarLeft;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) setSidebarWidth(newWidth);
+      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH)
+        setSidebarWidth(newWidth);
     };
     const handleMouseUp = () => setIsResizing(false);
     if (isResizing) {
@@ -165,7 +192,11 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
   return (
     <>
       <div className="relative" ref={sidebarRef}>
-        <Sidebar collapsible="icon" className="border-r-0" disableTransition={isResizing}>
+        <Sidebar
+          collapsible="icon"
+          className="border-r-0"
+          disableTransition={isResizing}
+        >
           <SidebarHeader className="h-16 justify-center">
             <div className="flex items-center gap-3 px-2 transition-all w-full">
               <button
@@ -178,7 +209,10 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
               {!isCollapsed && (
                 <div className="flex items-center gap-2 min-w-0">
                   <Zap className="h-5 w-5 text-primary shrink-0" />
-                  <span className="font-bold tracking-tight truncate" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  <span
+                    className="font-bold tracking-tight truncate"
+                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                  >
                     Page<span className="text-primary">blitz</span>
                   </span>
                 </div>
@@ -198,7 +232,9 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                       tooltip={item.label}
                       className="h-10 transition-all font-normal"
                     >
-                      <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                      <item.icon
+                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                      />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -217,13 +253,20 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">{user?.name || "Admin"}</p>
-                    <p className="text-xs text-muted-foreground truncate mt-1.5">{user?.email || "admin"}</p>
+                    <p className="text-sm font-medium truncate leading-none">
+                      {user?.name || "Admin"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-1.5">
+                      {user?.email || "admin"}
+                    </p>
                   </div>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Abmelden</span>
                 </DropdownMenuItem>
@@ -233,7 +276,9 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
         </Sidebar>
         <div
           className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
-          onMouseDown={() => { if (!isCollapsed) setIsResizing(true); }}
+          onMouseDown={() => {
+            if (!isCollapsed) setIsResizing(true);
+          }}
           style={{ zIndex: 50 }}
         />
       </div>
@@ -243,7 +288,9 @@ function DashboardLayoutContent({ children, setSidebarWidth }: DashboardLayoutCo
           <div className="flex border-b h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
-              <span className="tracking-tight text-foreground">{activeMenuItem?.label ?? "Menu"}</span>
+              <span className="tracking-tight text-foreground">
+                {activeMenuItem?.label ?? "Menu"}
+              </span>
             </div>
           </div>
         )}
