@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import {
   createOnboarding,
   getBusinessById,
@@ -24,6 +25,9 @@ import type {
 } from "../../shared/siteContract/types";
 import type { InsertGeneratedWebsite } from "../../drizzle/schema";
 import type { StudioWebsite } from "./ownership";
+
+/** Gemeinsames Input-Schema aller Studio-Prozeduren: der previewToken (Spec §6). */
+export const tokenInput = z.object({ token: z.string().min(1) });
 
 export interface StudioJob {
   id: number;

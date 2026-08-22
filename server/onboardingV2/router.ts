@@ -12,9 +12,8 @@ import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidate
 import { applyStylePack, parsePackId } from "./applyPatch";
 import { loadStudioWebsite } from "./ownership";
 import { withEnsureLock } from "./ensureLock";
-import { buildState, persistDoc, requireDoc } from "./state";
-
-const tokenInput = z.object({ token: z.string().min(1) });
+import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
+import { contentProcedures } from "./routerContent";
 
 const coreProcedures = {
   getState: publicProcedure.input(tokenInput).query(async ({ input, ctx }) => {
@@ -98,4 +97,7 @@ const coreProcedures = {
     }),
 };
 
-export const onboardingV2Router = router({ ...coreProcedures });
+export const onboardingV2Router = router({
+  ...coreProcedures,
+  ...contentProcedures,
+});
