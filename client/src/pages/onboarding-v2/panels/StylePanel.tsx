@@ -44,7 +44,12 @@ export function StyleCandidateList({
                 src={`/preview-ssr/${token}?pack=${c.id}`}
                 title={`Vorschau ${c.name}`}
                 tabIndex={-1}
-                loading="lazy"
+                // eager statt lazy: Visual-Tests warten deterministisch auf
+                // das load-Event jedes iframes vor dem Screenshot — mit
+                // lazy loading hängt der Ladezeitpunkt vom Intersection-
+                // Observer-Timing des Browsers ab, das im Headless-CI
+                // unzuverlässig sein kann (Finding #7).
+                loading="eager"
               />
             </div>
             <div className="pb-studio-cand-name">{c.name}</div>

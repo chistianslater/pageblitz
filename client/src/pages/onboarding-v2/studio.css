@@ -92,9 +92,11 @@
   color: var(--st-accent);
 }
 .pb-studio-check-title {
+  display: block;
   font-weight: 600;
 }
 .pb-studio-check-hint {
+  display: block;
   font-size: 0.85rem;
   color: var(--st-muted);
   margin-top: 0.15rem;
