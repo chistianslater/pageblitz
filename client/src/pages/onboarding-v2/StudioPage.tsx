@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
+import type { PackId } from "@shared/siteContract/types";
 import { useStudioState } from "./useStudioState";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { PreviewFrame } from "./PreviewFrame";
+import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
 import { TextsPanel } from "./panels/TextsPanel";
@@ -19,6 +21,20 @@ export default function StudioPage({ token }: { token: string }) {
   const [activeId, setActiveId] = useState<ChecklistItemId | null>(null);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
+  // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
+  // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
+  const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
+    undefined
+  );
+
+  const openStylePanelWithSuggestion = (packId: PackId) => {
+    setPreselectPackId(packId);
+    setActiveId("style");
+  };
+  const closeStylePanel = () => {
+    setActiveId(null);
+    setPreselectPackId(undefined);
+  };
 
   if (studio.isLoading && !studio.state)
     return (
@@ -100,11 +116,12 @@ export default function StudioPage({ token }: { token: string }) {
               token={token}
               currentPackId={state.stylePackId}
               category={state.category}
+              preselectPackId={preselectPackId}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={closeStylePanel}
             />
           ) : activeId === "photos" ? (
             <PhotosPanel
@@ -163,6 +180,15 @@ export default function StudioPage({ token }: { token: string }) {
                 items={state.checklist}
                 activeId={activeId}
                 onSelect={setActiveId}
+              />
+              <AiChat
+                token={token}
+                onApplied={() => {
+                  studio.refetch();
+                  studio.bumpPreview();
+                }}
+                onOpenStylePanel={openStylePanelWithSuggestion}
+                onOpenPanel={setActiveId}
               />
               <CheckoutBar
                 state={state}

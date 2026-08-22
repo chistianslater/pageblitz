@@ -471,3 +471,113 @@
   font-size: 0.85rem;
   color: var(--st-warn);
 }
+.pb-studio-ai {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--st-line);
+}
+.pb-studio-ai-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.pb-studio-ai-row input {
+  flex: 1;
+  min-width: 0;
+}
+.pb-studio-ai-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--st-muted);
+}
+.pb-studio-ai-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--st-warn);
+}
+.pb-studio-ai-result,
+.pb-studio-ai-style-card,
+.pb-studio-ai-reject {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--st-canvas);
+  border: 1px solid var(--st-line);
+}
+.pb-studio-ai-style-card {
+  border-color: var(--st-accent);
+}
+.pb-studio-ai-reject {
+  font-size: 0.9rem;
+  color: var(--st-muted);
+}
+.pb-studio-ai-diff {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.pb-studio-ai-diff-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+}
+.pb-studio-ai-diff-label {
+  font-weight: 600;
+}
+.pb-studio-ai-diff-values {
+  color: var(--st-muted);
+}
+.pb-studio-ai-diff-before {
+  text-decoration: line-through;
+}
+.pb-studio-ai-diff-after {
+  color: var(--st-ink);
+  font-weight: 500;
+}
+.pb-studio-ai-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--st-muted);
+}
+.pb-studio-ai-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.pb-studio-ai-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--st-muted);
+}
+.pb-studio-ai-history li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-studio-cand-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--st-accent);
+  color: var(--st-accent-ink);
+}
+.pb-studio-cand[data-preselected="true"] {
+  border-color: var(--st-accent);
+  border-style: dashed;
+}

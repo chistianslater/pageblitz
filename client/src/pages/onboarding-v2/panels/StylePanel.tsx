@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 
 interface Candidate {
@@ -14,6 +15,8 @@ interface StyleCandidateListProps {
   currentPackId: PackId | null;
   busyId: PackId | null;
   onPick: (id: PackId) => void;
+  /** Vom KI-Chat vorgeschlagenes Pack — bekommt eine "KI-Vorschlag"-Badge. */
+  preselectPackId?: PackId | null;
 }
 
 export function StyleCandidateList({
@@ -22,11 +25,13 @@ export function StyleCandidateList({
   currentPackId,
   busyId,
   onPick,
+  preselectPackId = null,
 }: StyleCandidateListProps) {
   return (
     <div className="pb-studio-cands" role="group" aria-label="Stil-Kandidaten">
       {candidates.map(c => {
         const isCurrent = c.id === currentPackId;
+        const isPreselected = c.id === preselectPackId;
         const isBusy = busyId === c.id;
         const label = isCurrent
           ? "Aktuell"
@@ -38,7 +43,11 @@ export function StyleCandidateList({
             key={c.id}
             className="pb-studio-cand"
             data-current={isCurrent ? "true" : undefined}
+            data-preselected={isPreselected ? "true" : undefined}
           >
+            {isPreselected && (
+              <span className="pb-studio-cand-badge">KI-Vorschlag</span>
+            )}
             <div className="pb-studio-thumb" aria-hidden="true">
               <iframe
                 src={`/preview-ssr/${token}?pack=${c.id}`}
@@ -76,6 +85,8 @@ interface StylePanelProps {
   category: string;
   onApplied: () => void;
   onClose: () => void;
+  /** Aus dem KI-Chat übergebenes Pack ("Ansehen" auf einer Stil-Karte) — vorausgewählt und hervorgehoben, notfalls als zusätzlicher erster Kandidat eingeblendet. */
+  preselectPackId?: PackId;
 }
 
 export function StylePanel({
@@ -83,19 +94,41 @@ export function StylePanel({
   currentPackId,
   onApplied,
   onClose,
+  preselectPackId,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
   // Lokal nachgeführter Zustand statt der (ggf. veralteten) Prop: verhindert,
   // dass „Passt so" nach einem gerade erfolgreichen Wechsel noch das alte
-  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist.
+  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist. Ist ein
+  // KI-Chat-Vorschlag gesetzt, startet die Auswahl direkt darauf statt auf
+  // dem aktuell angewendeten Pack.
   const [activePackId, setActivePackId] = useState<PackId | null>(
-    currentPackId
+    preselectPackId ?? currentPackId
   );
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
   });
+  // Der KI-Vorschlag muss immer sichtbar sein, auch wenn er nicht unter den
+  // Kandidaten der aktuellen Runde ist — Name/Essenz kommen dann direkt aus
+  // der Pack-Verfassung statt aus der Server-Antwort (client-seitig
+  // verfügbar über shared/stylePacks, siehe Task-Brief).
+  const displayCandidates = useMemo(() => {
+    const base = candidates.data?.candidates ?? [];
+    if (!preselectPackId || base.some(c => c.id === preselectPackId)) {
+      return base;
+    }
+    const constitution = getConstitution(preselectPackId);
+    return [
+      {
+        id: preselectPackId,
+        name: constitution.name,
+        essence: constitution.essence,
+      },
+      ...base,
+    ];
+  }, [candidates.data, preselectPackId]);
   // Eine gemeinsame Mutation für Auswahl UND Bestätigung — verhindert das
   // Race, bei dem ein noch laufender Pick von einer separaten
   // Bestätigungs-Mutation überholt/überschrieben wird.
@@ -139,6 +172,9 @@ export function StylePanel({
           Deine Inhalte bleiben gleich — nur der Look wechselt. Du kannst
           jederzeit zurück.
         </p>
+        {preselectPackId && (
+          <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
+        )}
       </div>
       {candidates.isLoading && <p>Lade Vorschläge …</p>}
       {candidates.error && (
@@ -146,13 +182,14 @@ export function StylePanel({
           {candidates.error.message}
         </p>
       )}
-      {candidates.data && (
+      {displayCandidates.length > 0 && (
         <StyleCandidateList
           token={token}
-          candidates={candidates.data.candidates}
+          candidates={displayCandidates}
           currentPackId={activePackId}
           busyId={busyId}
           onPick={pick}
+          preselectPackId={preselectPackId}
         />
       )}
       {select.error && (
