@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { TextsForm, textsFromDoc } from "./TextsPanel";
+import { TextsForm, textsFromDoc, validateTexts } from "./TextsPanel";
 
 const doc: WebsiteDataV2 = {
   version: 2,
@@ -105,5 +105,54 @@ describe("TextsForm", () => {
     const suggestButtonCount = (html.match(/KI-Vorschlag/g) ?? []).length;
     // headline, subheadline, aboutBody, seoTitle, seoDescription — nicht ctaText/aboutHeadline
     expect(suggestButtonCount).toBe(5);
+  });
+});
+
+describe("validateTexts", () => {
+  test("leere Pflichtfelder (headline/aboutHeadline/aboutBody/seoTitle/seoDescription) liefern je eine Meldung", () => {
+    const messages = validateTexts({
+      headline: "  ",
+      aboutHeadline: "",
+      aboutBody: "",
+      seoTitle: "",
+      seoDescription: "",
+    });
+    expect(messages).toEqual([
+      "Überschrift darf nicht leer sein.",
+      "Über-uns-Überschrift darf nicht leer sein.",
+      "Über-uns-Text darf nicht leer sein.",
+      "SEO-Titel darf nicht leer sein.",
+      "SEO-Beschreibung darf nicht leer sein.",
+    ]);
+  });
+
+  test("alle Pflichtfelder gefüllt → keine Meldungen", () => {
+    expect(
+      validateTexts({
+        headline: "Willkommen",
+        aboutHeadline: "Über uns",
+        aboutBody: "Wir sind ein kleines Café.",
+        seoTitle: "Café Sonne",
+        seoDescription: "Frisch gebrühter Kaffee.",
+      })
+    ).toEqual([]);
+  });
+
+  test("nicht gesetzte (unberührte) Felder lösen keine Meldung aus — {} bleibt speicherbar", () => {
+    expect(validateTexts({})).toEqual([]);
+  });
+
+  test("nicht-pflicht Felder (ctaText/subheadline) dürfen leer sein", () => {
+    expect(
+      validateTexts({
+        headline: "Willkommen",
+        subheadline: "",
+        ctaText: "",
+        aboutHeadline: "Über uns",
+        aboutBody: "Text",
+        seoTitle: "Titel",
+        seoDescription: "Beschreibung",
+      })
+    ).toEqual([]);
   });
 });

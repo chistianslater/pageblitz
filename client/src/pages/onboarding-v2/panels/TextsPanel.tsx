@@ -3,9 +3,9 @@ import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
-import { TextsForm, type TextField } from "./textsParts";
+import { TextsForm, validateTexts, type TextField } from "./textsParts";
 
-export { TextsForm };
+export { TextsForm, validateTexts };
 export type { TextField };
 
 /** Reine Ableitung: Hero-/Über-uns-Texte + SEO-Metadaten aus dem Dokument — Startwerte des Formulars und Basis für den Diff beim Speichern. */
@@ -22,9 +22,7 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
       ? { subheadline: hero.subheadline }
       : {}),
     ...(hero?.ctaText !== undefined ? { ctaText: hero.ctaText } : {}),
-    ...(about?.headline !== undefined
-      ? { aboutHeadline: about.headline }
-      : {}),
+    ...(about?.headline !== undefined ? { aboutHeadline: about.headline } : {}),
     ...(about?.body !== undefined ? { aboutBody: about.body } : {}),
     seoTitle: doc.seo.title,
     seoDescription: doc.seo.description,
@@ -46,13 +44,18 @@ interface TextsPanelProps {
   onClose: () => void;
 }
 
-export function TextsPanel({ token, doc, onApplied, onClose }: TextsPanelProps) {
+export function TextsPanel({
+  token,
+  doc,
+  onApplied,
+  onClose,
+}: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
   const [suggesting, setSuggesting] = useState<TextField | null>(null);
-  const [variants, setVariants] = useState<Partial<Record<TextField, string[]>>>(
-    {}
-  );
+  const [variants, setVariants] = useState<
+    Partial<Record<TextField, string[]>>
+  >({});
 
   const updateTexts = trpc.onboardingV2.updateTexts.useMutation();
   const suggestTexts = trpc.onboardingV2.suggestTexts.useMutation();
@@ -82,6 +85,7 @@ export function TextsPanel({ token, doc, onApplied, onClose }: TextsPanelProps) 
   };
 
   const busy = updateTexts.isPending;
+  const errors = validateTexts(values);
 
   return (
     <PanelFrame
@@ -101,7 +105,7 @@ export function TextsPanel({ token, doc, onApplied, onClose }: TextsPanelProps) 
           <button
             type="button"
             className="pb-studio-btn"
-            disabled={busy}
+            disabled={busy || errors.length > 0}
             onClick={handleSave}
           >
             {busy ? "Bitte warten…" : "Speichern"}

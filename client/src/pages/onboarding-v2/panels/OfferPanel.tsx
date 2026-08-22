@@ -3,9 +3,14 @@ import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
-import { OfferEditor, blankOffer, type OfferMode } from "./offerParts";
+import {
+  OfferEditor,
+  blankOffer,
+  validateOffer,
+  type OfferMode,
+} from "./offerParts";
 
-export { OfferEditor };
+export { OfferEditor, validateOffer };
 
 /** Reine Ableitung: bestehende Angebots-Sektion (services/menu/pricelist) → Patch; ohne Sektion ein leerer Leistungen-Entwurf. */
 export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
@@ -52,7 +57,12 @@ interface OfferPanelProps {
   onClose: () => void;
 }
 
-export function OfferPanel({ token, doc, onApplied, onClose }: OfferPanelProps) {
+export function OfferPanel({
+  token,
+  doc,
+  onApplied,
+  onClose,
+}: OfferPanelProps) {
   const initial = offerFromDoc(doc);
   // Ein Entwurf pro Modus im lokalen State (Ambiguität #2 der Task-Vorgabe):
   // Moduswechsel im Editor verwirft nichts — beim Zurückwechseln steht der
@@ -101,6 +111,7 @@ export function OfferPanel({ token, doc, onApplied, onClose }: OfferPanelProps) 
 
   const busy = updateOffer.isPending;
   const suggesting = suggestOffer.isPending;
+  const errors = validateOffer(value);
 
   return (
     <PanelFrame
@@ -120,7 +131,7 @@ export function OfferPanel({ token, doc, onApplied, onClose }: OfferPanelProps) 
           <button
             type="button"
             className="pb-studio-btn"
-            disabled={busy}
+            disabled={busy || errors.length > 0}
             onClick={handleSave}
           >
             {busy ? "Bitte warten…" : "Speichern"}

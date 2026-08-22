@@ -16,6 +16,8 @@ interface FieldConfig {
   maxLength: number;
   /** Nur gesetzt, wenn der Server für dieses Feld KI-Vorschläge unterstützt (suggestTexts). */
   suggestField?: TextField;
+  /** Deckt sich mit TextsPatchSchema (shared/onboardingV2/patches.ts): min(1), wenn das Feld gesetzt ist. */
+  required?: boolean;
 }
 
 const FIELDS: FieldConfig[] = [
@@ -25,6 +27,7 @@ const FIELDS: FieldConfig[] = [
     kind: "input",
     maxLength: 120,
     suggestField: "headline",
+    required: true,
   },
   {
     key: "subheadline",
@@ -39,6 +42,7 @@ const FIELDS: FieldConfig[] = [
     label: "Über-uns-Überschrift",
     kind: "input",
     maxLength: 120,
+    required: true,
   },
   {
     key: "aboutBody",
@@ -46,6 +50,7 @@ const FIELDS: FieldConfig[] = [
     kind: "textarea",
     maxLength: 2000,
     suggestField: "aboutBody",
+    required: true,
   },
   {
     key: "seoTitle",
@@ -53,6 +58,7 @@ const FIELDS: FieldConfig[] = [
     kind: "input",
     maxLength: 70,
     suggestField: "seoTitle",
+    required: true,
   },
   {
     key: "seoDescription",
@@ -60,8 +66,26 @@ const FIELDS: FieldConfig[] = [
     kind: "textarea",
     maxLength: 170,
     suggestField: "seoDescription",
+    required: true,
   },
 ];
+
+/**
+ * Pflichtfeld-Prüfung vor dem Speichern (deckt sich mit TextsPatchSchema:
+ * headline/aboutHeadline/aboutBody/seoTitle/seoDescription sind min(1), wenn
+ * gesetzt). Prüft bewusst nur Felder, die als Schlüssel in `values` vorhanden
+ * sind (`!== undefined`) — ein nie berührtes Feld (z. B. aboutHeadline ohne
+ * Über-uns-Sektion) bleibt unvalidiert, damit ein unveränderter Aufruf mit
+ * `{}` weiterhin speicherbar ist (Task-Vorgabe „gesichtet"-Semantik).
+ */
+export function validateTexts(values: TextsPatch): string[] {
+  return FIELDS.filter(field => field.required)
+    .filter(field => {
+      const raw = values[field.key];
+      return raw !== undefined && raw.trim() === "";
+    })
+    .map(field => `${field.label} darf nicht leer sein.`);
+}
 
 interface TextsFormProps {
   values: TextsPatch;
@@ -81,14 +105,40 @@ export function TextsForm({
   variants,
   onPickVariant,
 }: TextsFormProps) {
+  const errors = validateTexts(values);
   return (
     <div className="pb-studio-rows">
+      {errors.length > 0 && (
+        <ul
+          role="alert"
+          style={{
+            color: "var(--st-warn)",
+            margin: 0,
+            paddingLeft: "1.25rem",
+            fontSize: "0.85rem",
+          }}
+        >
+          {errors.map((message, i) => (
+            <li key={i}>{message}</li>
+          ))}
+        </ul>
+      )}
       {FIELDS.map(field => {
-        const value = values[field.key] ?? "";
+        const raw = values[field.key];
+        const value = raw ?? "";
         const fieldId = `pb-texts-${field.key}`;
         const suggestField = field.suggestField;
         const fieldVariants = suggestField ? variants[suggestField] : undefined;
+        // Nur die eigene, gerade laufende Anfrage sperrt den eigenen Button —
+        // andere Felder bleiben klickbar. Da alle Felder dieselbe Mutation-
+        // Instanz teilen (TextsPanel), zeigt `suggesting` immer nur das
+        // zuletzt angestoßene Feld als "in Arbeit"; ein zweiter Klick auf ein
+        // anderes Feld überschreibt diese Anzeige, obwohl die erste Anfrage
+        // im Hintergrund noch läuft — die jeweiligen Varianten landen aber
+        // dank feldspezifischer Closures trotzdem im richtigen Feld.
         const isSuggesting = suggestField ? suggesting === suggestField : false;
+        const isInvalid =
+          !!field.required && raw !== undefined && raw.trim() === "";
         return (
           <div className="pb-studio-field" key={field.key}>
             <label htmlFor={fieldId}>{field.label}</label>
@@ -98,6 +148,7 @@ export function TextsForm({
                 className="pb-studio-textarea"
                 maxLength={field.maxLength}
                 value={value}
+                aria-invalid={isInvalid ? "true" : undefined}
                 onChange={e =>
                   onChange({ ...values, [field.key]: e.target.value })
                 }
@@ -109,6 +160,7 @@ export function TextsForm({
                 className="pb-studio-input"
                 maxLength={field.maxLength}
                 value={value}
+                aria-invalid={isInvalid ? "true" : undefined}
                 onChange={e =>
                   onChange({ ...values, [field.key]: e.target.value })
                 }
@@ -122,7 +174,7 @@ export function TextsForm({
                 type="button"
                 className="pb-studio-btn"
                 data-variant="ghost"
-                disabled={suggesting !== null}
+                disabled={isSuggesting}
                 onClick={() => onSuggest(suggestField)}
               >
                 {isSuggesting ? "Wird vorgeschlagen…" : "KI-Vorschlag"}
@@ -139,7 +191,9 @@ export function TextsForm({
                     key={i}
                     type="button"
                     className="pb-studio-chip"
-                    onClick={() => onPickVariant(suggestField as TextField, variant)}
+                    onClick={() =>
+                      onPickVariant(suggestField as TextField, variant)
+                    }
                   >
                     {variant}
                   </button>

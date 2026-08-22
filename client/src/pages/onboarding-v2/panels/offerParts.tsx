@@ -23,6 +23,56 @@ export function blankOffer(mode: OfferMode): OfferPatch {
   return { mode, categories: [{ name: "", items: [{ name: "", price: "" }] }] };
 }
 
+/** Deutscher Bezug auf eine Zeile: Name in Anführungszeichen, wenn vorhanden, sonst der Positions-Fallback. */
+function rowLabel(name: string, fallback: string): string {
+  const trimmed = name.trim();
+  return trimmed ? `‚${trimmed}‘` : fallback;
+}
+
+/**
+ * Pflichtfeld-Prüfung vor dem Speichern (deckt sich mit OfferPatchSchema):
+ * services benötigt headline + je Zeile einen Titel; menu/pricelist benötigt
+ * je Kategorie einen Namen und je Position Name UND Preis (min(1), anders
+ * als description). Anders als bei Texts wird hier immer der komplette
+ * aktuelle Editor-Wert geprüft — updateOffer sendet stets das volle Objekt,
+ * kein Diff.
+ */
+export function validateOffer(value: OfferPatch): string[] {
+  if (value.mode === "services") {
+    const messages: string[] = [];
+    if (value.headline.trim() === "") {
+      messages.push("Überschrift darf nicht leer sein.");
+    }
+    value.items.forEach((item, i) => {
+      if (item.title.trim() === "") {
+        messages.push(`Titel fehlt in Zeile ${i + 1}.`);
+      }
+    });
+    return messages;
+  }
+
+  const messages: string[] = [];
+  value.categories.forEach((category, ci) => {
+    if (category.name.trim() === "") {
+      messages.push(`Kategoriename fehlt bei Kategorie ${ci + 1}.`);
+    }
+    const categoryLabel = rowLabel(category.name, `Kategorie ${ci + 1}`);
+    category.items.forEach((item, ii) => {
+      const itemLabel = rowLabel(
+        item.name,
+        `Zeile ${ii + 1} in ${categoryLabel}`
+      );
+      if (item.name.trim() === "") {
+        messages.push(`Name fehlt bei ${itemLabel}.`);
+      }
+      if (item.price.trim() === "") {
+        messages.push(`Preis fehlt bei ${itemLabel}.`);
+      }
+    });
+  });
+  return messages;
+}
+
 function replaceAt<T>(list: T[], index: number, value: T): T[] {
   return list.map((item, i) => (i === index ? value : item));
 }
@@ -82,12 +132,13 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
   return (
     <>
       <div className="pb-studio-field">
-        <label htmlFor="pb-offer-headline">Überschrift</label>
+        <label htmlFor="pb-offer-services-headline">Überschrift</label>
         <input
-          id="pb-offer-headline"
+          id="pb-offer-services-headline"
           type="text"
           className="pb-studio-input"
           value={value.headline}
+          aria-invalid={value.headline.trim() === "" ? "true" : undefined}
           onChange={e => onChange({ ...value, headline: e.target.value })}
         />
       </div>
@@ -108,6 +159,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
             className="pb-studio-input"
             placeholder="Titel"
             value={item.title}
+            aria-invalid={item.title.trim() === "" ? "true" : undefined}
             onChange={e => updateItem(i, { title: e.target.value })}
           />
           <input
@@ -221,9 +273,11 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
   return (
     <>
       <div className="pb-studio-field">
-        <label htmlFor="pb-offer-headline">Überschrift (optional)</label>
+        <label htmlFor="pb-offer-categories-headline">
+          Überschrift (optional)
+        </label>
         <input
-          id="pb-offer-headline"
+          id="pb-offer-categories-headline"
           type="text"
           className="pb-studio-input"
           value={value.headline ?? ""}
@@ -239,6 +293,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
               className="pb-studio-input"
               placeholder="Kategoriename"
               value={category.name}
+              aria-invalid={category.name.trim() === "" ? "true" : undefined}
               onChange={e => updateCategoryName(ci, e.target.value)}
             />
             <button
@@ -259,6 +314,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
                 className="pb-studio-input"
                 placeholder="Name"
                 value={item.name}
+                aria-invalid={item.name.trim() === "" ? "true" : undefined}
                 onChange={e => updateItem(ci, ii, { name: e.target.value })}
               />
               <input
@@ -277,6 +333,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
                 className="pb-studio-input"
                 placeholder="Preis"
                 value={item.price}
+                aria-invalid={item.price.trim() === "" ? "true" : undefined}
                 onChange={e => updateItem(ci, ii, { price: e.target.value })}
               />
               <button
@@ -321,18 +378,35 @@ interface OfferEditorProps {
 
 /**
  * Reine Darstellung: Modus-Segment (Leistungen | Speisekarte | Preisliste) +
- * passender Listen-Editor. Ein Moduswechsel meldet nur die neue, leere Form
- * über onChange — das Elternpanel (OfferPanel) merkt sich pro Modus den
- * zuletzt bearbeiteten Entwurf und ersetzt den leeren Wert ggf. dadurch.
+ * passender Listen-Editor + Pflichtfeld-Hinweise. Ein Moduswechsel meldet
+ * nur die neue, leere Form über onChange — das Elternpanel (OfferPanel)
+ * merkt sich pro Modus den zuletzt bearbeiteten Entwurf und ersetzt den
+ * leeren Wert ggf. dadurch.
  */
 export function OfferEditor({ value, onChange }: OfferEditorProps) {
   const handleModeSelect = (mode: OfferMode) => {
     if (mode === value.mode) return;
     onChange(blankOffer(mode));
   };
+  const errors = validateOffer(value);
   return (
     <div className="pb-studio-rows">
       <ModeSegment mode={value.mode} onSelect={handleModeSelect} />
+      {errors.length > 0 && (
+        <ul
+          role="alert"
+          style={{
+            color: "var(--st-warn)",
+            margin: 0,
+            paddingLeft: "1.25rem",
+            fontSize: "0.85rem",
+          }}
+        >
+          {errors.map((message, i) => (
+            <li key={i}>{message}</li>
+          ))}
+        </ul>
+      )}
       {value.mode === "services" ? (
         <ServicesEditor value={value} onChange={onChange} />
       ) : (
