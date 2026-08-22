@@ -70,6 +70,8 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
     stylePackId: "werkbank",
     doc: null,
     legacy: false,
+    status: "preview",
+    slug: "testfirma",
     job: null,
     checklist: [
       {

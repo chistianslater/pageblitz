@@ -84,9 +84,41 @@ describe("computeRefetchInterval", () => {
       })
     ).toBe(false);
   });
-  test("legacy-Dokument → kein Polling, auch ohne Job", () => {
+  test("legacy-Dokument ohne Job → kein Polling", () => {
     expect(
       computeRefetchInterval(false, { doc: null, job: null, legacy: true })
+    ).toBe(false);
+  });
+  test("legacy-Dokument mit aktivem Job (force-Neu-Generierung) → pollt", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "pending" },
+        legacy: true,
+      })
+    ).toBe(1500);
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "processing" },
+        legacy: true,
+      })
+    ).toBe(1500);
+  });
+  test("legacy-Dokument mit terminalem Job (failed/completed) → stoppt", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "failed" },
+        legacy: true,
+      })
+    ).toBe(false);
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "completed" },
+        legacy: true,
+      })
     ).toBe(false);
   });
 });

@@ -40,6 +40,15 @@ export function useStudioState(token: string) {
     ensure.mutate({ token }, { onSuccess: () => query.refetch() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ensure, token]);
+  // Manueller Trigger für die Legacy-Regenerierung (Task 2): ruft dieselbe
+  // Mutation mit `force: true` auf, statt eines separaten Endpunkts — der
+  // Server entscheidet anhand von hasLegacyDoc/force/status, ob ein neuer
+  // v2-Job entsteht oder BAD_REQUEST kommt (verkaufte Website).
+  const forceRegenerate = useCallback(() => {
+    ensureFailedRef.current = false;
+    ensure.mutate({ token, force: true }, { onSuccess: () => query.refetch() });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ensure, token]);
   return {
     state: query.data,
     isLoading: query.isLoading,
@@ -48,6 +57,7 @@ export function useStudioState(token: string) {
     retrying: ensure.isPending,
     refetch: query.refetch,
     retry,
+    forceRegenerate,
     previewVersion,
     bumpPreview,
   };

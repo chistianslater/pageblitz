@@ -58,6 +58,10 @@ export interface StudioState {
   doc: WebsiteDataV2 | null;
   /** true = websiteData ist ein v1-Dokument; Studio zeigt eine Meldung statt Generierungs-Screen (Finding #3). */
   legacy: boolean;
+  /** website.status — Client leitet daraus isLive = status !== "preview" ab (Spec §2.1 Live-Modus). */
+  status: "preview" | "sold" | "active" | "inactive";
+  /** website.slug — ergibt die öffentliche URL `https://<slug>.pageblitz.de` im Live-Modus. */
+  slug: string;
   job: StudioJob | null;
   checklist: ChecklistItem[];
   checkoutReady: boolean;
@@ -137,6 +141,8 @@ export async function buildState(
     stylePackId: doc?.stylePackId ?? null,
     doc,
     legacy: hasLegacyDoc,
+    status: website.status,
+    slug: website.slug,
     job: job
       ? {
           id: job.id,

@@ -67,18 +67,23 @@ export interface RefetchIntervalDataLike {
  * und kein terminaler Job-Status vorliegt. Stoppt zusätzlich sofort, wenn
  * die ensureGeneration-Mutation selbst fehlgeschlagen ist — sonst würde
  * alle 1,5s ein Poll laufen, ohne dass sich je etwas ändert (Finding #2).
- * Stoppt außerdem sofort bei einem Legacy-Dokument (v1), da dafür nie ein
- * v2-Job entsteht und sonst ewig weitergepollt würde.
+ *
+ * Bei einem Legacy-Dokument (v1) entsteht ohne `force` nie ein Job — dort
+ * stoppt das Polling, solange kein Job läuft. Löst der Nutzer aber per
+ * `ensureGeneration({ force: true })` eine Neu-Generierung aus, muss
+ * weitergepollt werden, bis der v2-Job fertig ist (Task 2, Legacy-
+ * Regenerierung) — sonst bliebe der Generierungs-Screen auf dem letzten
+ * Stand hängen.
  */
 export function computeRefetchInterval(
   ensureFailed: boolean,
   data: RefetchIntervalDataLike | undefined
 ): number | false {
   if (ensureFailed) return false;
-  if (data?.legacy) return false;
   const job = data?.job;
-  const running =
-    !data?.doc &&
-    (!job || job.status === "pending" || job.status === "processing");
+  const jobActive =
+    !!job && (job.status === "pending" || job.status === "processing");
+  if (data?.legacy) return jobActive ? 1500 : false;
+  const running = !data?.doc && (!job || jobActive);
   return running ? 1500 : false;
 }

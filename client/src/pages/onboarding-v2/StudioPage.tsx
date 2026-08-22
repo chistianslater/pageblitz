@@ -13,12 +13,29 @@ import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
 import { CheckoutBar } from "./CheckoutBar";
+import { LiveCard } from "./LiveCard";
+import { LegacyCard } from "./LegacyCard";
 import { deriveGenerationStatus } from "./studioLogic";
+import { parsePanelParam, withPanelParam } from "./studioUrl";
 import "./studio.css";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
-  const [activeId, setActiveId] = useState<ChecklistItemId | null>(null);
+  const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(() =>
+    parsePanelParam(window.location.search)
+  );
+  // Spiegelt jede Panel-Änderung per history.replaceState in die URL (Task 2,
+  // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
+  // Query-Parameter bleiben erhalten (studioUrl.withPanelParam).
+  const setActiveId = (id: ChecklistItemId | null) => {
+    setActiveIdState(id);
+    const nextSearch = withPanelParam(window.location.search, id);
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${nextSearch}`
+    );
+  };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
@@ -52,13 +69,25 @@ export default function StudioPage({ token }: { token: string }) {
     );
 
   const { state } = studio;
-  if (state.legacy) {
+  // Verkauft/aktiv/inaktiv (alles außer "preview") → Live-Modus: keine
+  // Checkout-Leiste mehr, Bearbeitung im Studio bleibt möglich (Spec §2.1).
+  const isLive = state.status !== "preview";
+  // Legacy (v1) ohne aktiven Job: statische Meldung ersetzt durch eine Karte
+  // mit "Website neu erstellen" (Task 2) — läuft bereits ein per force
+  // gestarteter v2-Job, zeigt der übliche Generierungs-Screen den
+  // Fortschritt (computeRefetchInterval pollt währenddessen weiter).
+  const legacyJobActive =
+    state.legacy &&
+    !!state.job &&
+    (state.job.status === "pending" || state.job.status === "processing");
+  if (state.legacy && !legacyJobActive) {
     return (
       <div className="pb-studio pb-studio-gen">
-        <p role="alert">
-          Diese Website nutzt noch das alte Format und kann im Studio nicht
-          bearbeitet werden.
-        </p>
+        <LegacyCard
+          onRegenerate={studio.forceRegenerate}
+          pending={studio.retrying}
+          error={studio.ensureError}
+        />
       </div>
     );
   }
@@ -76,7 +105,7 @@ export default function StudioPage({ token }: { token: string }) {
           progress={job?.progress ?? 5}
           status={status}
           error={error ?? studio.error}
-          onRetry={studio.retry}
+          onRetry={state.legacy ? studio.forceRegenerate : studio.retry}
           retrying={studio.retrying}
         />
       </div>
@@ -190,11 +219,15 @@ export default function StudioPage({ token }: { token: string }) {
                 onOpenStylePanel={openStylePanelWithSuggestion}
                 onOpenPanel={setActiveId}
               />
-              <CheckoutBar
-                state={state}
-                token={token}
-                onStateChanged={studio.refetch}
-              />
+              {isLive ? (
+                <LiveCard slug={state.slug} />
+              ) : (
+                <CheckoutBar
+                  state={state}
+                  token={token}
+                  onStateChanged={studio.refetch}
+                />
+              )}
             </>
           )}
         </aside>

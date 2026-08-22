@@ -81,6 +81,8 @@ describe("onboardingV2.getState", () => {
     expect(s.checkoutReady).toBe(false);
     expect(s.job).toBeNull();
     expect(s.legacy).toBe(false);
+    expect(s.status).toBe("preview");
+    expect(s.slug).toBe("preview-brandt");
   });
 
   test("liefert legal (E-Mail aus customerEmail vorbelegt), addOns, uploadedPhotos, openingHours", async () => {
@@ -145,13 +147,68 @@ describe("onboardingV2 — Legacy-Dokument (v1)", () => {
     expect(s.doc).toBeNull();
     expect(s.legacy).toBe(true);
   });
-  test("ensureGeneration: BAD_REQUEST, kein neuer Job", async () => {
+  test("ensureGeneration ohne force: BAD_REQUEST, kein neuer Job", async () => {
     await expect(
       appRouter
         .createCaller(ctx())
         .onboardingV2.ensureGeneration({ token: "tok" })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+  });
+
+  test("ensureGeneration mit force auf einer Vorschau (status preview) → neuer v2-Job", async () => {
+    const r = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.ensureGeneration({ token: "tok", force: true });
+    expect(r).toEqual({ jobId: 501, status: "pending" });
+    expect(mockedDb.createGenerationJob).toHaveBeenCalledWith({
+      websiteId: 42,
+      status: "pending",
+      progress: 0,
+    });
+    expect(runWebsiteGenerationV2Job).toHaveBeenCalledWith(501, 42);
+  });
+
+  test("ensureGeneration mit force auf einer verkauften Website (status sold) → BAD_REQUEST, kein Job", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "sold",
+      businessId: 7,
+      websiteData: { hero: {} },
+      customerEmail: null,
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 9,
+      checkoutEmail: null,
+    } as any);
+    await expect(
+      appRouter
+        .createCaller({
+          user: { id: 9, email: "kunde@x.de" },
+          req: { protocol: "https", headers: {} } as any,
+          res: {} as any,
+        })
+        .onboardingV2.ensureGeneration({ token: "tok", force: true })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: expect.stringContaining("Support kontaktieren"),
+    });
+    expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+  });
+
+  test("ensureGeneration mit force, aber bereits laufendem Job → wird zurückgegeben, kein Doppelstart", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 88,
+      status: "processing",
+      progress: 20,
+      error: null,
+    } as any);
+    const r = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.ensureGeneration({ token: "tok", force: true });
+    expect(r).toEqual({ jobId: 88, status: "processing" });
+    expect(runWebsiteGenerationV2Job).not.toHaveBeenCalled();
   });
 });
 

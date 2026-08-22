@@ -24,15 +24,19 @@ const coreProcedures = {
   }),
 
   /**
-   * Idempotent: v2-Dokument da → "completed" ohne neuen Job; v1-Dokument →
-   * BAD_REQUEST (kein Überschreiben eines Legacy-Dokuments, Finding #3);
-   * aktiver Job → zurückgeben; sonst neuen Job anlegen und den v2-Runner im
-   * Hintergrund starten (Fehler landen im Job, nicht im Request). Der
+   * Idempotent: v2-Dokument da → "completed" ohne neuen Job; v1-Dokument
+   * (legacy) ohne `force` → BAD_REQUEST (kein Überschreiben eines Legacy-
+   * Dokuments, Finding #3). Mit `force: true` (Task 2, Legacy-Regenerierung
+   * aus dem Studio) wird ein Legacy-Dokument neu (v2) generiert — aber nur
+   * für Vorschauen (`status === "preview"`); eine bereits verkaufte Website
+   * mit altem Dokument wird nicht automatisch überschrieben, das braucht
+   * Support. Aktiver Job → wird zurückgegeben; sonst neuer Job + v2-Runner
+   * im Hintergrund (Fehler landen im Job, nicht im Request). Der
    * Job-Anlegen-Zweig läuft hinter einem In-Flight-Lock pro websiteId, damit
    * zwei parallele Aufrufe nicht zwei Jobs erzeugen (Finding #4).
    */
   ensureGeneration: publicProcedure
-    .input(tokenInput)
+    .input(tokenInput.extend({ force: z.boolean().optional() }))
     .mutation(async ({ input, ctx }) => {
       const { website, doc, hasLegacyDoc } = await loadStudioWebsite(
         input.token,
@@ -40,11 +44,20 @@ const coreProcedures = {
       );
       if (doc) return { jobId: null, status: "completed" as const };
       if (hasLegacyDoc) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message:
-            "Diese Website nutzt noch das alte Format und kann im Studio nicht bearbeitet werden.",
-        });
+        if (!input.force) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Diese Website nutzt noch das alte Format und kann im Studio nicht bearbeitet werden.",
+          });
+        }
+        if (website.status !== "preview") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Verkaufte Websites werden nicht automatisch neu erstellt — bitte Support kontaktieren.",
+          });
+        }
       }
       return withEnsureLock(website.id, async () => {
         const existing = await getGenerationJobByWebsiteId(website.id);
