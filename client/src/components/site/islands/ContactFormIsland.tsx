@@ -26,11 +26,20 @@ const GENERIC_ERROR_MESSAGE =
  * Honeypot-Feld `website_url`: visuell versteckt, `tabIndex={-1}` +
  * `autoComplete="off"` halten es aus Tab-Reihenfolge und Browser-Autofill
  * heraus — Bots füllen es trotzdem aus, echte Nutzer:innen nie.
+ *
+ * `disabled` (gesetzt von `SiteIslands` im CSR-Vorschau-Modus, siehe
+ * `mode`-Prop dort): alle Felder bleiben sichtbar/ausfüllbar, nur der
+ * Absenden-Button ist deaktiviert + ein Hinweis erscheint — verhindert
+ * echte POSTs gegen `/api/site/:slug/contact` aus internen
+ * Vorschau-Bildschirmen (Dashboard/Editor). `handleSubmit` bricht defensiv
+ * zusätzlich früh ab, falls das Formular trotzdem submitted wird (z. B.
+ * Enter-Taste in einem Feld).
  */
 export const ContactFormIsland: React.FC<{
   slug: string;
   basePath?: string;
-}> = ({ slug, basePath = "" }) => {
+  disabled?: boolean;
+}> = ({ slug, basePath = "", disabled = false }) => {
   const [state, setState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR_MESSAGE);
   const actionUrl = `/api/site/${slug}/contact`;
@@ -45,6 +54,7 @@ export const ContactFormIsland: React.FC<{
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> {
     event.preventDefault();
+    if (disabled) return;
     const form = event.currentTarget;
     const formData = new FormData(form);
     setState("busy");
@@ -143,10 +153,15 @@ export const ContactFormIsland: React.FC<{
       <button
         type="submit"
         className="pb-island-submit"
-        disabled={state === "busy"}
+        disabled={state === "busy" || disabled}
       >
         {state === "busy" ? "Wird gesendet…" : "Nachricht senden"}
       </button>
+      {disabled && (
+        <p className="pb-island-status" data-state="info">
+          In der Vorschau nicht aktiv
+        </p>
+      )}
     </form>
   );
 };

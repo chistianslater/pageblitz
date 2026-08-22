@@ -230,6 +230,7 @@ export default function PreviewPage() {
         businessCategory={(business as any)?.category || undefined}
         showActivateButton={true}
         onActivate={goToOnboarding}
+        islandsMode="preview"
       />
       <CookieBanner primaryColor={colorScheme?.primary} />
     </div>

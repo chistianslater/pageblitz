@@ -26,12 +26,19 @@ import {
  * an (siehe `SiteIslands.tsx`) — Letztere liest `main.tsx` beim Hydrieren
  * aus, weil dort keine `WebsiteDataV2`/DB-Daten zur Verfügung stehen,
  * sondern nur das DOM.
+ *
+ * `disabled` (gesetzt von `SiteIslands` im CSR-Vorschau-Modus, siehe
+ * `mode`-Prop dort): rendert nur den ausgegrauten Button, nie den Dialog —
+ * verhindert echte `fetch`-Aufrufe gegen `/api/chat/:slug/message` aus
+ * internen Vorschau-Bildschirmen (Dashboard/Editor), die dieselbe
+ * Insel-Komponente client-seitig rendern wie die echte Kundenseite.
  */
 export const ChatIsland: React.FC<{
   slug: string;
   businessName?: string;
   welcomeMessage?: string;
-}> = ({ slug, businessName, welcomeMessage }) => {
+  disabled?: boolean;
+}> = ({ slug, businessName, welcomeMessage, disabled = false }) => {
   const panelId = useId();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -41,6 +48,7 @@ export const ChatIsland: React.FC<{
   const [sessionId] = useState(getOrCreateSessionId);
   const inputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const greeting = welcomeMessage || CHAT_FALLBACK_WELCOME;
   const title = businessName ? `Chat mit ${businessName}` : "Chat";
@@ -61,11 +69,19 @@ export const ChatIsland: React.FC<{
     if (body) body.scrollTop = body.scrollHeight;
   }, [messages, busy]);
 
+  // Schließt das Panel und gibt den Fokus an den auslösenden Fab-Button
+  // zurück — sonst fällt der Fokus beim Schließen (Escape/„Schließen") auf
+  // `document.body` und geht für Tastatur-/Screenreader-Nutzung verloren.
+  function closePanel(): void {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
   // Escape schließt das Panel.
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closePanel();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -121,6 +137,7 @@ export const ChatIsland: React.FC<{
       id={panelId}
       className="pb-island-panel"
       role="dialog"
+      aria-modal="true"
       aria-label={title}
       hidden={!open}
     >
@@ -129,7 +146,7 @@ export const ChatIsland: React.FC<{
         <button
           type="button"
           className="pb-island-panel-close"
-          onClick={() => setOpen(false)}
+          onClick={closePanel}
         >
           Schließen
         </button>
@@ -182,14 +199,29 @@ export const ChatIsland: React.FC<{
     </div>
   );
 
+  if (disabled) {
+    return (
+      <button
+        type="button"
+        className="pb-island-fab-btn"
+        disabled
+        aria-disabled="true"
+        title="In der Vorschau nicht aktiv"
+      >
+        Chat
+      </button>
+    );
+  }
+
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className="pb-island-fab-btn"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen(o => !o)}
+        onClick={() => (open ? closePanel() : setOpen(true))}
       >
         Chat
       </button>

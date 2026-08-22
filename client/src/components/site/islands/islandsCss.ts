@@ -39,6 +39,7 @@ export const islandsCss = `
 .pb-island-status{font-size:14px;margin-top:4px}
 .pb-island-status[data-state="success"]{color:var(--pb-accent)}
 .pb-island-status[data-state="error"]{color:#b3261e}
+.pb-island-status[data-state="info"]{color:var(--pb-muted);font-size:12px}
 .pb-island--fab{position:fixed;right:20px;bottom:20px;z-index:60}
 .pb-island--fab ~ .pb-island--fab{bottom:88px}
 .pb-island-fab-button{display:inline-flex;align-items:center;gap:8px;background:var(--pb-ink);color:var(--pb-canvas);border:none;border-radius:var(--pb-radius-button);padding:14px 22px;font-family:var(--pb-font-utility,var(--pb-font-body));font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:transform .15s,opacity .15s}
@@ -47,6 +48,8 @@ export const islandsCss = `
 .pb-island-fab-btn{display:inline-flex;align-items:center;gap:8px;background:var(--pb-accent);color:var(--pb-accent-contrast);border:none;border-radius:var(--pb-radius-button);padding:14px 22px;font-family:var(--pb-font-utility,var(--pb-font-body));font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:transform .15s,opacity .15s}
 .pb-island-fab-btn:hover,.pb-island-fab-btn:focus-visible{transform:translateY(-2px)}
 .pb-island-fab-btn[aria-expanded="true"]{opacity:.85}
+.pb-island-fab-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
+.pb-island-fab-btn:disabled:hover{transform:none}
 .pb-island-panel{position:fixed;right:20px;bottom:90px;width:min(360px,calc(100vw - 2rem));max-height:70vh;background:var(--pb-surface);color:var(--pb-ink);border:1px solid var(--pb-line);border-radius:var(--pb-radius-card);box-shadow:0 20px 60px rgba(0,0,0,.24);z-index:61;display:flex;flex-direction:column;overflow:hidden}
 .pb-island-panel[hidden]{display:none}
 .pb-island-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--pb-line);font-family:var(--pb-font-utility,var(--pb-font-body));font-weight:700;font-size:14px}

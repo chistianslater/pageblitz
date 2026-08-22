@@ -51,4 +51,21 @@ describe("BookingIsland — SSR-Markup", () => {
     expect(html).not.toContain("<script>alert(1)</script>");
     expect(html).toContain("&lt;script&gt;");
   });
+
+  test("Panel trägt aria-modal='true'", () => {
+    const html = renderToStaticMarkup(<BookingIsland slug="brandt" />);
+    expect(html).toContain('aria-modal="true"');
+  });
+
+  test("disabled=true rendert nur den ausgegrauten Button, keinen Dialog", () => {
+    const html = renderToStaticMarkup(<BookingIsland slug="brandt" disabled />);
+    expect(html).toContain('class="pb-island-fab-btn"');
+    expect(html).toContain(">Termin<");
+    expect(html).toContain('disabled=""');
+    expect(html).toContain('aria-disabled="true"');
+    expect(html).toContain('title="In der Vorschau nicht aktiv"');
+    expect(html).not.toContain('role="dialog"');
+    expect(html).not.toContain("aria-expanded");
+    expect(html).not.toContain("pb-island-panel");
+  });
 });

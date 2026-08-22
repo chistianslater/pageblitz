@@ -761,6 +761,7 @@ export default function ContentEditorSplitView({
               layoutStyle={(website as any).layoutStyle || undefined}
               layoutVersion={(website as any)?.layoutVersion ?? undefined}
               slug={website.slug}
+              islandsMode="preview"
             />
           </div>
 

@@ -32,6 +32,14 @@ export const SiteRenderer: React.FC<{
    * Inhalt nicht, nur `renderSiteHtml` füllt es (Kundenseiten-SSR).
    */
   site?: { chatWelcomeMessage?: string | null };
+  /**
+   * Reicht den Vorschau-Modus 1:1 an `SiteIslands` durch (siehe dort für die
+   * Begründung) — `undefined` lässt `SiteIslands` bei seinem eigenen
+   * Default "live" bleiben. `renderSiteHtml` (Kundenseiten-SSR) übergibt das
+   * nie, `WebsiteRenderer` setzt es an den echten internen Vorschau-Stellen
+   * (Dashboard, Editor, ...) explizit auf "preview".
+   */
+  islandsMode?: "live" | "preview";
 }> = ({
   data,
   basePath = "",
@@ -39,6 +47,7 @@ export const SiteRenderer: React.FC<{
   packOverride,
   slug = "",
   site,
+  islandsMode,
 }) => {
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
@@ -65,6 +74,7 @@ export const SiteRenderer: React.FC<{
         slug={slug}
         basePath={basePath}
         site={site}
+        mode={islandsMode}
       />
     </div>
   );

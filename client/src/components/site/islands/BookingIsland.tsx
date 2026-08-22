@@ -26,11 +26,18 @@ type Step = "dates" | "slots" | "form" | "success";
  * `businessName` kommt wie bei `ChatIsland` sowohl als normale Prop als auch
  * redundant als `data-business-name`-Attribut auf dem Insel-Wurzelknoten an
  * (siehe `SiteIslands.tsx`) — Letzteres liest `main.tsx` beim Hydrieren aus.
+ *
+ * `disabled` (gesetzt von `SiteIslands` im CSR-Vorschau-Modus, siehe
+ * `mode`-Prop dort): rendert nur den ausgegrauten Button, nie den Dialog —
+ * verhindert echte Buchungs-`fetch`-Aufrufe aus internen Vorschau-Bildschirmen
+ * (Dashboard/Editor), die dieselbe Insel-Komponente client-seitig rendern wie
+ * die echte Kundenseite.
  */
 export const BookingIsland: React.FC<{
   slug: string;
   businessName?: string;
-}> = ({ slug, businessName }) => {
+  disabled?: boolean;
+}> = ({ slug, businessName, disabled = false }) => {
   const panelId = useId();
   const [open, setOpen] = useState(false);
 
@@ -54,6 +61,7 @@ export const BookingIsland: React.FC<{
   const [error, setError] = useState<string | null>(null);
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const title =
     settings?.title ||
@@ -82,11 +90,19 @@ export const BookingIsland: React.FC<{
     if (open) closeButtonRef.current?.focus();
   }, [open]);
 
+  // Schließt das Panel und gibt den Fokus an den auslösenden Fab-Button
+  // zurück — sonst fällt der Fokus beim Schließen (Escape/„Schließen") auf
+  // `document.body` und geht für Tastatur-/Screenreader-Nutzung verloren.
+  function closePanel(): void {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
   // Escape schließt das Panel.
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closePanel();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -198,6 +214,7 @@ export const BookingIsland: React.FC<{
       id={panelId}
       className="pb-island-panel"
       role="dialog"
+      aria-modal="true"
       aria-label={title}
       hidden={!open}
     >
@@ -207,7 +224,7 @@ export const BookingIsland: React.FC<{
           ref={closeButtonRef}
           type="button"
           className="pb-island-panel-close"
-          onClick={() => setOpen(false)}
+          onClick={closePanel}
         >
           Schließen
         </button>
@@ -351,14 +368,29 @@ export const BookingIsland: React.FC<{
     </div>
   );
 
+  if (disabled) {
+    return (
+      <button
+        type="button"
+        className="pb-island-fab-btn"
+        disabled
+        aria-disabled="true"
+        title="In der Vorschau nicht aktiv"
+      >
+        Termin
+      </button>
+    );
+  }
+
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className="pb-island-fab-btn"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen(o => !o)}
+        onClick={() => (open ? closePanel() : setOpen(true))}
       >
         Termin
       </button>

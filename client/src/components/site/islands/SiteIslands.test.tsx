@@ -142,4 +142,61 @@ describe("SiteIslands", () => {
     expect(html).toContain('href="/site/brandt/datenschutz"');
     expect(html).toContain('data-hydrate="contact"');
   });
+
+  describe("Preview-Modus (mode)", () => {
+    test("Default (kein mode-Prop) ist 'live': data-mode='live', keine Insel deaktiviert", () => {
+      const data = getFixture("werkbank", "features");
+      const html = renderToStaticMarkup(
+        <SiteIslands data={data} slug="brandt" />
+      );
+      expect(html).toContain('data-mode="live"');
+      expect(html).not.toContain("aria-disabled");
+      expect(html).not.toContain("In der Vorschau nicht aktiv");
+    });
+
+    test("mode='live' explizit verhält sich wie der Default", () => {
+      const data = getFixture("werkbank", "features");
+      const html = renderToStaticMarkup(
+        <SiteIslands data={data} slug="brandt" mode="live" />
+      );
+      expect(html).toContain('data-mode="live"');
+      expect(html).not.toContain("aria-disabled");
+    });
+
+    test("mode='preview': Wurzel trägt data-mode='preview'", () => {
+      const data = getFixture("werkbank", "features");
+      const html = renderToStaticMarkup(
+        <SiteIslands data={data} slug="brandt" mode="preview" />
+      );
+      expect(html).toContain('data-mode="preview"');
+    });
+
+    test("mode='preview': Chat- und Termin-Fab-Buttons sind disabled + aria-disabled + title, kein Dialog", () => {
+      const data = getFixture("werkbank", "features");
+      const html = renderToStaticMarkup(
+        <SiteIslands data={data} slug="brandt" mode="preview" />
+      );
+      expect(
+        html.match(/aria-disabled="true"/g)?.length
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        html.match(/title="In der Vorschau nicht aktiv"/g)?.length
+      ).toBeGreaterThanOrEqual(2);
+      expect(html).not.toContain('role="dialog"');
+    });
+
+    test("mode='preview': Kontaktformular bleibt ausfüllbar, nur der Absenden-Button ist disabled + Hinweistext", () => {
+      const data = {
+        ...getFixture("werkbank", "full"),
+        features: { contactForm: true },
+      };
+      const html = renderToStaticMarkup(
+        <SiteIslands data={data} slug="brandt" mode="preview" />
+      );
+      expect(html).toContain('name="name"');
+      expect(html).toContain('name="email"');
+      expect(html).toContain('class="pb-island-submit" disabled=""');
+      expect(html).toContain("In der Vorschau nicht aktiv");
+    });
+  });
 });

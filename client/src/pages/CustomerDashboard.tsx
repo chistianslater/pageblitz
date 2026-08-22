@@ -3152,6 +3152,7 @@ function DesignStudio({ website, websiteData, heroImageUrl, aboutImageUrl, busin
             slug={website.slug}
             isLoading={false}
             contactFormLocked={false}
+            islandsMode="preview"
           />
         </div>
         {/* Draft indicator — bottom so it doesn't cover the nav */}
@@ -4488,6 +4489,7 @@ export default function CustomerDashboard() {
                       businessEmail={business?.email || undefined}
                       slug={website.slug}
                       contactFormLocked={false}
+                      islandsMode="preview"
                     />
                   </div>
                 </>

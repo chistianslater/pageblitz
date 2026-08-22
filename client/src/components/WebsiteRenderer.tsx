@@ -46,6 +46,19 @@ interface WebsiteRendererProps {
    * nicht registrierten Override ignoriert. Für v1-Websites ohne Wirkung.
    */
   packOverride?: PackId;
+  /**
+   * Nur für v2-Websites relevant: 1:1 an `SiteRenderer` → `SiteIslands`
+   * durchgereicht, um die portalierten Chat-/Buchungs-Dialoge in internen
+   * CSR-Vorschauen (Dashboard, Content-Editor, Variant-/Token-Preview,
+   * Onboarding) nicht-interaktiv zu machen — sonst würden Klicks dort echte
+   * `fetch`-Aufrufe gegen `/api/chat/:slug/message` bzw.
+   * `/api/booking/:slug/*` auslösen. `WebsiteRenderer` selbst setzt hier
+   * KEINEN Default: `SitePage.tsx` (die echte, öffentliche Kundenseite als
+   * CSR-Fallback, z. B. wenn `SSR_SITES=off`) rendert ebenfalls über
+   * `WebsiteRenderer` und muss "live" bleiben — nur die tatsächlichen
+   * Vorschau-/Editor-Aufrufer setzen `islandsMode="preview"` explizit.
+   */
+  islandsMode?: "live" | "preview";
 }
 
 function getLayoutComponent(
@@ -107,10 +120,18 @@ export default function WebsiteRenderer({
   headlineFontOverride,
   slug,
   packOverride,
+  islandsMode,
 }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
   if (v2)
-    return <SiteRenderer data={v2} packOverride={packOverride} slug={slug} />;
+    return (
+      <SiteRenderer
+        data={v2}
+        packOverride={packOverride}
+        slug={slug}
+        islandsMode={islandsMode}
+      />
+    );
   // … bestehender v1-Pfad unverändert
 
   const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };

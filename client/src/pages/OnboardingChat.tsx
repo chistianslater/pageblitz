@@ -6203,6 +6203,7 @@ export default function OnboardingChat({ previewToken, websiteId: websiteIdProp 
                     headlineFontOverride={data.headlineFont || undefined}
                     headlineSize={data.headlineSize}
                     isLoading={contentPhase === 'skeleton' || contentPhase === 'colors' || contentPhase === 'images' || isGeneratingInitialContent}
+                    islandsMode="preview"
                   />
                   {_addOnAiChat && liveWebsiteData && (
                     <ChatWidget

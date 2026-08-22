@@ -40,6 +40,19 @@ export function hasActiveFeatures(data: WebsiteDataV2): boolean {
  * einzelnen Inseln-Wurzeln (nicht `.pb-islands` selbst), das `<style>`-Kind
  * bleibt für React daher unangetastetes, statisches DOM — kein
  * Hydration-Mismatch-Risiko.
+ *
+ * `mode` ("live" | "preview", Default "live"): `SiteRenderer` wird sowohl
+ * für echte Kundenseiten-SSR (`renderSiteHtml`, immer "live") als auch für
+ * CSR-Vorschauen INNERHALB von Pageblitz benutzt (`WebsiteRenderer` →
+ * Dashboard/Editor-Vorschauen wie `CustomerDashboard`/
+ * `ContentEditorSplitView`). In diesen internen Vorschauen ist derselbe
+ * portalierte Chat-/Buchungs-Dialog wie auf der echten Seite voll
+ * interaktiv und würde bei einem Klick echte `fetch`-Aufrufe gegen
+ * `/api/chat/:slug/message` bzw. `/api/booking/:slug/*` auslösen — aus
+ * einem internen Admin-Bildschirm heraus nicht gewollt. Im Preview-Modus
+ * bleiben alle Formularfelder sichtbar, aber `disabled` wird an jede Insel
+ * durchgereicht (siehe die einzelnen Insel-Komponenten); die Wurzel trägt
+ * zusätzlich `data-mode` zur Diagnose/für Tests.
  */
 export const SiteIslands: React.FC<{
   data: WebsiteDataV2;
@@ -47,13 +60,15 @@ export const SiteIslands: React.FC<{
   basePath?: string;
   /** DB-Felder außerhalb des v2-Dokuments, aktuell nur der Chat-Begrüßungstext. */
   site?: { chatWelcomeMessage?: string | null };
-}> = ({ data, slug, basePath = "", site }) => {
+  mode?: "live" | "preview";
+}> = ({ data, slug, basePath = "", site, mode = "live" }) => {
   if (!slug) return null;
   if (!hasActiveFeatures(data)) return null;
   const features = data.features ?? {};
   const chatWelcomeMessage = site?.chatWelcomeMessage ?? undefined;
+  const isPreview = mode === "preview";
   return (
-    <div className="pb-islands">
+    <div className="pb-islands" data-mode={mode}>
       <style dangerouslySetInnerHTML={{ __html: islandsCss }} />
       {features.contactForm && (
         <div
@@ -63,7 +78,11 @@ export const SiteIslands: React.FC<{
           data-target="#kontakt"
           data-base-path={basePath}
         >
-          <ContactFormIsland slug={slug} basePath={basePath} />
+          <ContactFormIsland
+            slug={slug}
+            basePath={basePath}
+            disabled={isPreview}
+          />
         </div>
       )}
       {features.aiChat && (
@@ -78,6 +97,7 @@ export const SiteIslands: React.FC<{
             slug={slug}
             businessName={data.businessName}
             welcomeMessage={chatWelcomeMessage}
+            disabled={isPreview}
           />
         </div>
       )}
@@ -88,7 +108,11 @@ export const SiteIslands: React.FC<{
           data-slug={slug}
           data-business-name={data.businessName}
         >
-          <BookingIsland slug={slug} businessName={data.businessName} />
+          <BookingIsland
+            slug={slug}
+            businessName={data.businessName}
+            disabled={isPreview}
+          />
         </div>
       )}
     </div>

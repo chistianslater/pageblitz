@@ -107,6 +107,7 @@ export default function VariantPreviewPage() {
       layoutStyle={layout}
       packOverride={isV2Document ? packOverrideCandidate : undefined}
       isLoading={false}
+      islandsMode="preview"
     />
   );
 }
