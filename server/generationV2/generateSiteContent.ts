@@ -29,6 +29,8 @@ export interface GenerateSiteContentFacts {
     city?: string;
     openingHours?: { day: string; hours: string }[];
   };
+  /** Deterministische Bild-URLs (GMB/Stock), nie vom LLM; nur gesetzt, wenn die Sektion existiert. */
+  images?: { hero?: string; about?: string };
 }
 
 export interface GenerateSiteContentArgs {
@@ -148,6 +150,17 @@ function mergeFacts(
       existingIndex >= 0
         ? data.sections.map((s, i) => (i === existingIndex ? newContact : s))
         : [...data.sections, newContact];
+  }
+
+  if (facts.images) {
+    const { hero, about } = facts.images;
+    sections = sections.map(s => {
+      if (s.type === "hero" && hero !== undefined)
+        return { ...s, imageUrl: hero };
+      if (s.type === "about" && about !== undefined)
+        return { ...s, imageUrl: about };
+      return s;
+    });
   }
 
   return {

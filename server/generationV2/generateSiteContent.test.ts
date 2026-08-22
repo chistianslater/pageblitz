@@ -317,3 +317,67 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 });
+
+describe("facts.images", () => {
+  const validLlmJson = JSON.stringify({
+    version: 2,
+    stylePackId: "werkbank",
+    businessName: "Schreinerei Brandt",
+    seo: { title: "Schreinerei Brandt", description: "Möbelbau in Dortmund." },
+    sections: [
+      { type: "hero", headline: "Massarbeit.", ctaText: "Anfragen" },
+      {
+        type: "services",
+        headline: "Leistungen",
+        items: [{ title: "Möbelbau" }],
+      },
+      { type: "about", headline: "Über uns", body: "Seit Generationen." },
+      { type: "contact", city: "Dortmund" },
+    ],
+  });
+
+  test("setzt hero.imageUrl und about.imageUrl aus facts, nicht vom LLM", async () => {
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(validLlmJson),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const doc = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Brandt", category: "Tischler" },
+      facts: {
+        images: {
+          hero: "https://img/hero.jpg",
+          about: "https://img/about.jpg",
+        },
+      },
+    });
+    const hero = doc.sections.find(s => s.type === "hero");
+    const about = doc.sections.find(s => s.type === "about");
+    expect(hero && "imageUrl" in hero ? hero.imageUrl : undefined).toBe(
+      "https://img/hero.jpg"
+    );
+    expect(about && "imageUrl" in about ? about.imageUrl : undefined).toBe(
+      "https://img/about.jpg"
+    );
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("ohne facts.images bleiben die Sektionen unverändert (kein imageUrl-Feld)", async () => {
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(validLlmJson),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const doc = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Brandt", category: "Tischler" },
+      facts: { slug: "x" },
+    });
+    const hero = doc.sections.find(s => s.type === "hero") as {
+      imageUrl?: string;
+    };
+    expect(hero.imageUrl).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+});
