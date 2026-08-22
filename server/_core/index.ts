@@ -16,6 +16,7 @@ import { registerChatRoutes } from "./chatRoutes";
 import { registerLandingChatRoutes } from "./landingChatRoutes";
 import { registerSupportChatRoutes } from "./supportChatRoutes";
 import { registerBookingRoutes } from "./bookingRoutes";
+import { registerContactRoutes } from "../contactSubmit";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
@@ -286,6 +287,8 @@ async function startServer() {
   registerLandingChatRoutes(app);
   registerSupportChatRoutes(app);
   registerBookingRoutes(app);
+  // Kontaktformular-Insel: No-JS-Fallback (Form-POST) + JSON-Fetch (Hydration)
+  registerContactRoutes(app);
   // Lifecycle-Email Routes (Extension + Unsubscribe, HMAC-signed)
   {
     const { verifyLifecycleToken } = await import("./lifecycleScheduler");

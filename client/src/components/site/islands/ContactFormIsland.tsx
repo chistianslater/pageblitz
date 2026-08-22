@@ -1,11 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+type SubmitState = "idle" | "busy" | "success" | "error";
+
+const SUCCESS_MESSAGE = "Danke — wir melden uns zeitnah.";
+const GENERIC_ERROR_MESSAGE =
+  "Etwas ist schiefgelaufen. Bitte versuche es später erneut.";
 
 /**
- * Statisches Kontaktformular-Markup — funktioniert ohne JS per echtem
- * Formular-POST auf `/api/site/:slug/contact` (Endpunkt kommt in Task 7).
- * `data-hydrate="contact"` markiert die Wurzel für die Hydration in
- * `client/src/site-islands/main.tsx`; das Fetch-basierte Absenden (statt
- * echtem Seiten-Reload) folgt ebenfalls in Task 7.
+ * Kontaktformular-Insel: SSR-Markup funktioniert ohne JS per echtem
+ * Formular-POST auf `/api/site/:slug/contact` (No-JS-Fallback, Server-Logik
+ * in `server/contactSubmit.ts`). `data-hydrate="contact"` markiert die
+ * Wurzel für die Hydration in `client/src/site-islands/main.tsx`.
+ *
+ * Mit JS: `onSubmit` verhindert den echten Seiten-Reload, sendet die Daten
+ * per fetch als JSON an denselben Endpunkt (der anhand von Content-Type /
+ * Accept zwischen JSON- und Formular-Antwort unterscheidet) und zeigt Busy-,
+ * Erfolgs- und Fehlerzustand direkt in der Insel.
+ *
+ * Ohne JS: der Server liefert nach dem echten POST einen 303-Redirect mit
+ * `?kontakt=gesendet` bzw. `?kontakt=fehler` zurück auf die Formular-Sektion
+ * — dieser Query-Parameter wird HIER erst im `useEffect` gelesen (nicht
+ * während des Renderns), damit das allererste Render serverseitig identisch
+ * zum ersten Client-Render bleibt (sonst Hydration-Mismatch).
  *
  * Honeypot-Feld `website_url`: visuell versteckt, `tabIndex={-1}` +
  * `autoComplete="off"` halten es aus Tab-Reihenfolge und Browser-Autofill
@@ -15,12 +31,68 @@ export const ContactFormIsland: React.FC<{
   slug: string;
   basePath?: string;
 }> = ({ slug, basePath = "" }) => {
+  const [state, setState] = useState<SubmitState>("idle");
+  const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR_MESSAGE);
+  const actionUrl = `/api/site/${slug}/contact`;
+
+  useEffect(() => {
+    const kontakt = new URLSearchParams(window.location.search).get("kontakt");
+    if (kontakt === "gesendet") setState("success");
+    else if (kontakt === "fehler") setState("error");
+  }, []);
+
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    setState("busy");
+    try {
+      const res = await fetch(actionUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          phone: formData.get("phone") || undefined,
+          message: formData.get("message"),
+          website_url: formData.get("website_url") ?? "",
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.ok) {
+        setState("success");
+      } else {
+        setErrorMessage(
+          typeof data?.error === "string" ? data.error : GENERIC_ERROR_MESSAGE
+        );
+        setState("error");
+      }
+    } catch {
+      setErrorMessage(GENERIC_ERROR_MESSAGE);
+      setState("error");
+    }
+  }
+
+  if (state === "success") {
+    return (
+      <p className="pb-island-status" data-state="success" role="status">
+        {SUCCESS_MESSAGE}
+      </p>
+    );
+  }
+
   return (
     <form
       className="pb-island-form"
       data-hydrate="contact"
       method="post"
-      action={`/api/site/${slug}/contact`}
+      action={actionUrl}
+      onSubmit={handleSubmit}
     >
       <label>
         Name
@@ -63,8 +135,17 @@ export const ContactFormIsland: React.FC<{
         <a href={`${basePath}/datenschutz`}>Datenschutzerklärung</a>
         {"."}
       </p>
-      <button type="submit" className="pb-island-submit">
-        Nachricht senden
+      {state === "error" && (
+        <p className="pb-island-status" data-state="error" role="alert">
+          {errorMessage}
+        </p>
+      )}
+      <button
+        type="submit"
+        className="pb-island-submit"
+        disabled={state === "busy"}
+      >
+        {state === "busy" ? "Wird gesendet…" : "Nachricht senden"}
       </button>
     </form>
   );
