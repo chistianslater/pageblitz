@@ -395,3 +395,63 @@
   border-radius: 12px;
   background: var(--st-canvas);
 }
+.pb-studio-addon-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.pb-studio-addon-name {
+  font-weight: 600;
+}
+.pb-studio-addon-price {
+  color: var(--st-muted);
+}
+.pb-studio-addon-price[data-muted="true"] {
+  opacity: 0.6;
+}
+.pb-studio-addon-total {
+  font-weight: 600;
+  border-top: 1px solid var(--st-line);
+  padding-top: 0.75rem;
+}
+.pb-studio-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--st-muted);
+  font-weight: 400;
+}
+.pb-studio-checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--st-line);
+}
+.pb-studio-checkout-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--st-canvas);
+  border: 1px solid var(--st-line);
+}
+.pb-studio-checkout-total {
+  font-weight: 600;
+}
+.pb-studio-checkout-hint,
+.pb-studio-checkout-ready {
+  color: var(--st-muted);
+  font-size: 0.85rem;
+}
+.pb-studio-checkout-missing {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--st-warn);
+}

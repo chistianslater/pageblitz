@@ -8,6 +8,9 @@ import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
 import { TextsPanel } from "./panels/TextsPanel";
 import { OfferPanel } from "./panels/OfferPanel";
+import { LegalPanel } from "./panels/LegalPanel";
+import { AddonsPanel } from "./panels/AddonsPanel";
+import { CheckoutBar } from "./CheckoutBar";
 import { deriveGenerationStatus } from "./studioLogic";
 import "./studio.css";
 
@@ -133,29 +136,40 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => setActiveId(null)}
             />
-          ) : activeId ? (
-            <section aria-label="Bereich">
-              <p className="pb-studio-kicker">
-                {state.checklist.find(i => i.id === activeId)?.title}
-              </p>
-              <p style={{ color: "var(--st-muted)" }}>
-                Dieser Bereich kommt im nächsten Schritt.
-              </p>
-              <button
-                type="button"
-                className="pb-studio-btn"
-                data-variant="ghost"
-                onClick={() => setActiveId(null)}
-              >
-                Zurück
-              </button>
-            </section>
-          ) : (
-            <Checklist
-              items={state.checklist}
-              activeId={activeId}
-              onSelect={setActiveId}
+          ) : activeId === "legal" ? (
+            <LegalPanel
+              token={token}
+              initial={state.legal}
+              openingHours={state.openingHours}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => setActiveId(null)}
             />
+          ) : activeId === "addons" ? (
+            <AddonsPanel
+              token={token}
+              addOns={state.addOns}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => setActiveId(null)}
+            />
+          ) : (
+            <>
+              <Checklist
+                items={state.checklist}
+                activeId={activeId}
+                onSelect={setActiveId}
+              />
+              <CheckoutBar
+                state={state}
+                token={token}
+                onStateChanged={studio.refetch}
+              />
+            </>
           )}
         </aside>
         <main className="pb-studio-stage">
