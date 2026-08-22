@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { PACK_IDS, SectionV2Schema } from "../siteContract/schema";
-import type { SectionType, SectionV2, WebsiteDataV2 } from "../siteContract/types";
+import type {
+  SectionType,
+  SectionV2,
+  WebsiteDataV2,
+} from "../siteContract/types";
 
 /**
  * Antwortschema der KI-Chat-Bearbeitung (server/onboardingV2/aiEdit.ts). Drei

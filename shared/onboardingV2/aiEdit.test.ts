@@ -17,7 +17,11 @@ const baseDoc: WebsiteDataV2 = {
         { title: "Reparatur", description: "Schnell" },
       ],
     },
-    { type: "contact", phone: "0231 1", openingHours: [{ day: "Mo", hours: "9–17" }] },
+    {
+      type: "contact",
+      phone: "0231 1",
+      openingHours: [{ day: "Mo", hours: "9–17" }],
+    },
   ],
 };
 
@@ -43,9 +47,9 @@ describe("AiEditResponseSchema", () => {
         reason: "Bitte im Panel ändern.",
       }).success
     ).toBe(true);
-    expect(
-      AiEditResponseSchema.safeParse({ kind: "unknown" }).success
-    ).toBe(false);
+    expect(AiEditResponseSchema.safeParse({ kind: "unknown" }).success).toBe(
+      false
+    );
   });
 
   test("style mit unbekannter packId wird abgelehnt", () => {

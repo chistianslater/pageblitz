@@ -120,7 +120,10 @@ describe("onboardingV2.aiEdit", () => {
     expect(result.diff).toHaveLength(1);
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
     expect(mockedProposeAiEdit).toHaveBeenCalledWith(
-      expect.objectContaining({ message: "Mach die Überschrift knackiger", category: "Tischler" })
+      expect.objectContaining({
+        message: "Mach die Überschrift knackiger",
+        category: "Tischler",
+      })
     );
   });
 

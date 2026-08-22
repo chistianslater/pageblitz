@@ -1,4 +1,8 @@
-import type { SectionOf, SectionV2, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type {
+  SectionOf,
+  SectionV2,
+  WebsiteDataV2,
+} from "../../shared/siteContract/types";
 
 /**
  * Fakten-Garantie für den KI-Chat: die KI darf Sektionstypen weder erfinden

@@ -4,7 +4,11 @@ import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
-import { AiEditResponseSchema, diffDocuments, type AiDiffEntry } from "../../shared/onboardingV2/aiEdit";
+import {
+  AiEditResponseSchema,
+  diffDocuments,
+  type AiDiffEntry,
+} from "../../shared/onboardingV2/aiEdit";
 import { assertQuota } from "./suggest";
 import { restoreFacts } from "./aiEditFacts";
 import { AI_EDIT_SYSTEM_PROMPT, buildAiEditPrompt } from "./aiEditPrompt";
@@ -71,7 +75,8 @@ function mapRawToAiEditResponse(
   raw: z.infer<typeof RawAiEditResponseSchema>
 ): unknown {
   if (raw.kind === "content") {
-    if (!raw.content) throw new Error("KI-Antwort: 'content' fehlt bei kind=content.");
+    if (!raw.content)
+      throw new Error("KI-Antwort: 'content' fehlt bei kind=content.");
     return {
       kind: "content",
       seo: raw.content.seo,
@@ -79,7 +84,8 @@ function mapRawToAiEditResponse(
     };
   }
   if (raw.kind === "style") {
-    if (!raw.packId) throw new Error("KI-Antwort: 'packId' fehlt bei kind=style.");
+    if (!raw.packId)
+      throw new Error("KI-Antwort: 'packId' fehlt bei kind=style.");
     return { kind: "style", packId: raw.packId, reason: raw.reason ?? "" };
   }
   return { kind: "reject", reason: raw.reason ?? "" };
@@ -171,7 +177,11 @@ export async function proposeAiEdit(args: {
       sections: parsed.sections,
     });
     const next = WebsiteDataV2Schema.parse(restored);
-    return { kind: "content" as const, next, diff: diffDocuments(args.doc, next) };
+    return {
+      kind: "content" as const,
+      next,
+      diff: diffDocuments(args.doc, next),
+    };
   });
 }
 
@@ -211,7 +221,10 @@ export function storeProposal(websiteId: number, next: WebsiteDataV2): string {
 }
 
 /** Liefert das gespeicherte Dokument nur bei passender websiteId und entfernt es (einmalig einlösbar). Unbekannt/abgelaufen/fremd → null. */
-export function takeProposal(id: string, websiteId: number): WebsiteDataV2 | null {
+export function takeProposal(
+  id: string,
+  websiteId: number
+): WebsiteDataV2 | null {
   const now = Date.now();
   sweepExpiredProposals(now);
   const entry = proposals.get(id);
