@@ -477,6 +477,21 @@ async function startServer() {
   // ── Dev-Seed-Route (Nur Entwicklung) ───────────────────────────────────────
   registerStudioDevSeed(app);
 
+  // ── SSR-Inseln-Bundle (statisch) ────────────────────────────────────────────
+  // Muss vor registerSsrRoutes() stehen: /islands/site-islands.js wird von
+  // renderSiteHtml() (server/ssr/renderSite.tsx) als <script src> eingebettet,
+  // sobald Features aktiv sind — dieser Static-Mount liefert die Datei aus.
+  // distPath spiegelt server/_core/static.ts (dev: dist/public relativ zum
+  // Repo-Root, prod: public neben dem gebundelten Server).
+  const islandsDistPath =
+    process.env.NODE_ENV === "development"
+      ? path.resolve(import.meta.dirname, "../..", "dist", "public", "islands")
+      : path.resolve(import.meta.dirname, "public", "islands");
+  app.use(
+    "/islands",
+    express.static(islandsDistPath, { maxAge: "1h", immutable: false })
+  );
+
   // ── SSR-Routen (Dev-Preview + Kundenseiten-SSR hinter SSR_SITES-Flag) ───────
   // MUSS vor injectMetaTags registriert werden: injectMetaTags ruft nie next()
   // (jede /site/:slug-Anfrage endet dort), d.h. registriert man SSR danach,

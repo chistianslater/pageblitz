@@ -5,6 +5,7 @@ import type {
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
+import { SiteIslands } from "./islands/SiteIslands";
 
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
@@ -18,7 +19,13 @@ export const SiteRenderer: React.FC<{
    * aktiv.
    */
   packOverride?: PackId;
-}> = ({ data, basePath = "", now = new Date(), packOverride }) => {
+  /**
+   * Slug der Kundenseite — geht an `SiteIslands` weiter (Formular-Action,
+   * Hydration-Ziel). Optional, weil einige Aufrufer (Variant-Picker-Preview)
+   * keinen echten Slug haben; dann rendert `SiteIslands` mit leerem Slug.
+   */
+  slug?: string;
+}> = ({ data, basePath = "", now = new Date(), packOverride, slug = "" }) => {
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
       ? { ...data, stylePackId: packOverride }
@@ -39,6 +46,7 @@ export const SiteRenderer: React.FC<{
     >
       <style dangerouslySetInnerHTML={{ __html: mod.css }} />
       <mod.Page data={effectiveData} basePath={basePath} now={now} />
+      <SiteIslands data={effectiveData} slug={slug} basePath={basePath} />
     </div>
   );
 };

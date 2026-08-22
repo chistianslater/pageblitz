@@ -113,6 +113,7 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       origin,
       pathname,
       basePath,
+      slug: website.slug,
     });
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     res.setHeader("Cache-Control", "no-store");
@@ -217,6 +218,7 @@ function handleDevPreview(req: Request, res: Response): void {
     const { html, status } = renderSiteHtml(data, {
       origin,
       now: new Date("2026-08-19T10:00:00"),
+      slug: "demo",
     });
     res.status(status).type("html").send(html);
   } catch (err) {
@@ -292,6 +294,7 @@ async function handleCustomerSiteSsr(
       origin,
       pathname: siteRequest.pathname,
       basePath: siteRequest.basePath,
+      slug: website.slug,
     });
     siteHtmlCache.set(cacheKey, { html, status, at: now });
     capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);

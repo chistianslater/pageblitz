@@ -130,3 +130,37 @@ describe("renderSiteHtml — Escaping", () => {
     expect(jsonLd).toContain("\\u003cscript");
   });
 });
+
+describe("renderSiteHtml — SSR-Inseln", () => {
+  test("Bundle-Tag und Inseln-CSS fehlen, wenn keine Features aktiv sind (Fixture full)", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+    });
+    expect(html).not.toContain("/islands/site-islands.js");
+    expect(html).not.toContain(".pb-island-form{");
+  });
+
+  test("Bundle-Tag und Inseln-CSS erscheinen, wenn Features aktiv sind (Fixture features)", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+    });
+    expect(
+      html.match(
+        /<script type="module" src="\/islands\/site-islands\.js" defer><\/script>/g
+      )
+    ).toHaveLength(1);
+    expect(html).toContain(".pb-island-form{");
+    expect(html).toContain('data-island="contact"');
+    expect(html).toContain('action="/api/site/brandt/contact"');
+  });
+
+  test("Bundle-Tag fehlt weiterhin bei Fixture minimal", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "minimal"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+    });
+    expect(html).not.toContain("/islands/site-islands.js");
+  });
+});

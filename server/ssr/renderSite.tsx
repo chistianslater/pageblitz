@@ -5,6 +5,8 @@ import "../../client/src/components/site/packs/index";
 import { getConstitution } from "../../shared/stylePacks";
 import type { FontSpec } from "../../shared/stylePacks";
 import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
+import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
+import { islandsCss } from "../../client/src/components/site/islands/islandsCss";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -23,6 +25,12 @@ export interface RenderSiteOptions {
    * bei Echtzeit (Default `new Date()` in SiteRenderer).
    */
   now?: Date;
+  /**
+   * Slug der Kundenseite — geht an `SiteIslands` weiter (Formular-Action,
+   * Hydration-Ziel). Preview-/Dev-Routen übergeben den Slug der jeweiligen
+   * Website (Preview-Route) bzw. `"demo"` (Dev-Preview ohne echte Website).
+   */
+  slug?: string;
 }
 
 export interface RenderSiteResult {
@@ -84,8 +92,16 @@ function buildLocalBusinessJsonLd(data: WebsiteDataV2): string {
   return JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 }
 
-/** Meta/Canonical/OG + LocalBusiness-JSON-LD + Pack-Fonts-Link für die Haupt-Site. */
-function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
+/**
+ * Meta/Canonical/OG + LocalBusiness-JSON-LD + Pack-Fonts-Link für die
+ * Haupt-Site. Bekommt das Inseln-CSS nur, wenn mindestens ein Add-on aktiv
+ * ist (`hasActiveFeatures`) — sonst laden Seiten ohne Add-ons unnötiges CSS.
+ */
+function renderHead(
+  data: WebsiteDataV2,
+  canonicalUrl: string,
+  includeIslands: boolean
+): string {
   const constitution = getConstitution(data.stylePackId);
   const fontsUrl = buildFontsUrl([
     constitution.type.display,
@@ -106,7 +122,10 @@ function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
     `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
     `<script type="application/ld+json">${jsonLd}</script>`,
-  ].join("\n");
+    includeIslands ? `<style>${islandsCss}</style>` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
@@ -207,12 +226,24 @@ export function renderSiteHtml(
     );
   }
 
-  const head = renderHead(data, canonicalUrl);
+  const includeIslands = hasActiveFeatures(data);
+  const head = renderHead(data, canonicalUrl, includeIslands);
   const body = renderToStaticMarkup(
-    <SiteRenderer data={data} basePath={basePath} now={opts.now} />
+    <SiteRenderer
+      data={data}
+      basePath={basePath}
+      now={opts.now}
+      slug={opts.slug}
+    />
   );
 
   const canvasColor = getCanvasColor(data.stylePackId);
+  const bodyParts = [body];
+  if (includeIslands) {
+    bodyParts.push(
+      '<script type="module" src="/islands/site-islands.js" defer></script>'
+    );
+  }
   const html = `<!doctype html>
 <html lang="de">
 <head>
@@ -220,7 +251,7 @@ ${head}
 <style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
 </head>
 <body>
-${body}
+${bodyParts.join("\n")}
 </body>
 </html>`;
   return { html, status: 200 };
