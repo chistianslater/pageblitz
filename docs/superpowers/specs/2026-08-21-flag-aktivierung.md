@@ -332,106 +332,133 @@ des Studios sind folgende Punkte zu beachten:
 
 Diese Zusammenfassung bildet ab, wie Kundenseiten-Features (Kontaktformular, KI-Chat, Terminbuchung)
 als Hydration-„Inseln" ausgeliefert werden und wie Add-on-Freischaltung über den Stripe-Webhook
-erfolgt.
+erfolgt. Neu geschrieben nach der Final-Review-Fixwelle (Finding I2) — nur noch verifizierte Fakten
+mit den tatsächlichen Symbolnamen, keine Zeilenangaben (die veralten bei jeder Änderung).
 
 ### 7.1 Build & Deployment: Islands-Bundle
 
-1. **Build-Ordnung:** `npm run build` führt `npm run build:islands` zuerst aus (siehe `package.json`
-   Zeile 9). Der esbuild-Task in `scripts/build-islands.mjs` baut `client/src/site-islands/main.tsx`
-   zu einem eigenständigen ESM-Bundle (`dist/public/islands/site-islands.js`, ~204 kB gzip/minified).
-   
-2. **Server-Auslieferung:** Express liefert die Insel-Assets via `express.static(islandsDistPath, {
-   maxAge: "1h" })` in `server/_core/index.ts` Zeile 495. Der 1h-Cache gilt sowohl in dev als auch
-   in prod; Nginx/PM2 bleiben unverändert.
-   
-3. **Lokale Entwicklung:** Der Dev-Server baut das Island-Bundle NICHT automatisch. Vor jedem Test
-   oder vor `npm run dev` einmalig `npm run build:islands` ausführen (sonst laden Kundenseiten-
-   Vorschauen die alten Assets).
+1. **Build-Reihenfolge (Finding C1):** `npm run build` (`package.json`) führt zuerst `vite build`
+   aus (leert `dist/public/` per `emptyOutDir`) und **danach** `npm run build:islands` — vorher lief
+   es umgekehrt und Vite löschte das gerade gebaute Inseln-Bundle wieder. Ein Vitest
+   (`server/ssr/buildOrder.test.ts`) prüft diese Reihenfolge per String-Index-Vergleich in
+   `package.json`, damit sie nicht unbemerkt wieder vertauscht wird.
+2. **Gehashter Dateiname (Finding M1):** `scripts/build-islands.mjs` baut
+   `client/src/site-islands/main.tsx` per esbuild zu `dist/public/islands/site-islands.<hash>.js`
+   (Content-Hash, esbuild `entryNames`) und schreibt `dist/public/islands/manifest.json`
+   (`{ "file": "site-islands.<hash>.js" }`) daneben.
+3. **Pfadauflösung zur Laufzeit:** `server/ssr/islandsBundle.ts` (`getIslandsBundlePath()`) liest das
+   Manifest einmal pro Prozess (gecacht) und liefert `/islands/<name>.<hash>.js`. Ohne lesbares
+   Manifest (z. B. Dev-Server ohne vorherigen `build:islands`, Tests) fällt der Pfad auf den
+   ungehashten Namen `site-islands.js` zurück. `server/ssr/renderSite.tsx` bindet diesen Pfad als
+   `<script type="module" src="…" defer>` ein.
+4. **Server-Auslieferung:** `server/_core/index.ts` mountet `/islands` via `express.static(...)` mit
+   `maxAge: "365d", immutable: true` — sicher, weil der Dateiname bei jedem neuen Build seinen Hash
+   wechselt, alte URLs also nie versehentlich neuen Inhalt ausliefern.
+5. **Lokale Entwicklung:** Der Dev-Server (`npm run dev`) baut das Inseln-Bundle NICHT automatisch.
+   Vor Playwright-Läufen oder manuellem Testen einmalig `npm run build:islands` ausführen, sonst
+   laden Kundenseiten-Vorschauen ein veraltetes/fehlendes Bundle.
 
 ### 7.2 Inseln auf Kundenseiten
 
-Jede generierte Website rendert auf der öffentlichen Seite (`/customer/<slug>`) drei optionale
-Inseln, sofern die entsprechenden Feature-Flags aktiv sind. Alle Inseln sind **vollständig No-JS-sicher**:
+Jede v2-Website rendert unter ihrer Pfadform (`/site/<slug>` auf pageblitz.de) und ihrer Subdomain
+(`<slug>.pageblitz.de`) bis zu drei optionale Inseln, sofern die entsprechenden `features`-Flags im
+v2-Dokument aktiv sind (`hasActiveFeatures`, `client/src/components/site/islands/SiteIslands.tsx`).
+Alle Inseln sind No-JS-fähig, wo ein Formular beteiligt ist:
 
-1. **Kontaktformular** (`websiteData.features.contactForm === true`):
-   - Rendert als `<form method="POST" action="/api/site/:slug/contact">` mit Token-Field.
-   - No-JS Fallback: Form-Submit → HTTP 303-Redirect mit Query-Param `?kontakt=gesendet` oder
-     `?kontakt=fehler` (Serverfehler oder Rate-Limit).
-   - Mit JS: Formular wird per Fetch abgesendet, Response in der Seite angezeigt, kein Seiten-
-     reload.
-   - **Rate-Limit:** 5 POST pro IP pro Stunde (IP-basiert), Honeypot-Feld im HTML.
-   - **Endpoint:** `POST /api/site/:slug/contact` (`server/contactSubmit.ts` Zeile 260).
+1. **Kontaktformular** (`features.contactForm === true`):
+   - Rendert als `<form method="POST" action="/api/site/:slug/contact">` (kein Token-Feld — nur
+     Name/E-Mail/Telefon/Nachricht + Honeypot-Feld `website_url`, siehe `ContactFormIsland.tsx`).
+   - No-JS-Fallback: echter Formular-POST → HTTP-303-Redirect mit `?kontakt=gesendet` bzw.
+     `?kontakt=fehler#kontakt`. Mit JS: Fetch-Submit ohne Seitenreload.
+   - Rate-Limit: 5 Einreichungen pro IP pro Stunde (`server/contactSubmit.ts`).
+   - **Finding I3 (Gate):** `submitContactRequest()` prüft vor jeder Einreichung, ob das Add-on
+     tatsächlich aktiv ist — v2: `features.contactForm === true`; v1 (kein v2-Dokument):
+     `onboarding_responses.addOnContactForm === true`. Sonst `NOT_FOUND` „Kontaktformular nicht
+     aktiv". Im `status: "preview"` (noch nicht verkauft) wird die Einreichung gespeichert, aber
+     **keine** Owner-Mail verschickt.
+   - Endpoint: `POST /api/site/:slug/contact` (`server/contactSubmit.ts`).
 
-2. **KI-Chat-Widget** (`websiteData.features.aiChat === true`):
-   - Über `POST /api/chat/:slug/message` (`server/_core/chatRoutes.ts` Zeile 131).
-   - Client-seitig Fetch, async Message-Streaming.
-   - Keine Rate-Limits auf Island-Ebene (Websocket-Mock nur im Studio für `applyAiEdit`).
+2. **KI-Chat-Widget** (`features.aiChat === true`):
+   - Endpoint: `POST /api/chat/:slug/message` (`server/_core/chatRoutes.ts`).
+   - Einfacher Fetch/JSON-Request-Response-Zyklus, **kein** Streaming.
+   - Rate-Limit: 10 Anfragen pro IP pro Tag (`checkIpLimit`, prozesslokaler In-Memory-Zähler),
+     zusätzlich ein monatliches Nutzungslimit pro Website (`chatUsageCount`-Spalte).
 
-3. **Terminbuchung** (`websiteData.features.booking === true`):
-   - Read: `GET /api/booking/:slug/settings` (Öffnungszeiten, Kalender-Typ),
-     `GET /api/booking/:slug/slots` (verfügbare Slots).
-   - Write: `POST /api/booking/:slug/book` (Termin buchen), `GET /api/booking/:slug/cancel/:token`
-     (Termin stornieren).
+3. **Terminbuchung** (`features.booking === true`):
+   - Read: `GET /api/booking/:slug/settings`, `GET /api/booking/:slug/slots`.
+   - Write: `POST /api/booking/:slug/book`, `GET /api/booking/:slug/cancel/:token`.
    - Endpoints in `server/_core/bookingRoutes.ts`.
 
-**Keine Inseln in internen Vorschauen:** Im Dashboard, Editor und Studio-Preview-Komponenten sind
-Inseln im Preview-Modus (iframes mit `?preview`) nicht interaktiv — sie sind read-only HTML-
-Schnappschüsse.
+**Preview-Modus (`islandsMode`):** Dashboard, Editor und Studio-Vorschauen rendern dieselben
+Komponenten mit der Prop `islandsMode="preview"` (durchgereicht `WebsiteRenderer` → `SiteRenderer`
+→ `SiteIslands` als `mode`). Im Preview-Modus sind die Inseln nicht interaktiv (read-only
+Schnappschuss) — nur echtes SSR über `renderSiteHtml()`/`islandsMode` default `"live"` hydratisiert
+tatsächlich.
 
 ### 7.3 Webhook & Add-on-Aktivierung
 
-Der Stripe-Webhook (`server/stripeWebhookHandlers.ts`, Prozedur `handleCheckoutCompleted`) wird bei
-erfolgreicher Zahlung aufgerufen. Er:
+Der Stripe-Webhook (`server/stripeWebhookHandlers.ts`, Funktion `handleCheckoutCompleted`) läuft bei
+`checkout.session.completed`:
 
-1. **Normalisiert alle 7 Add-on-Keys** (Funktion `normalizeAddOns`, Zeile 36–44):
-   - Akzeptiert alte Schlüsselnamensräume (z. B. `features.aiChat`) und neue Website-Spalten-Namens-
-     räume (`addOnAiChat`).
-   - Standard: alle 7 auf `false`, dann die in den Stripe-Metadaten angeforderten auf `true`.
-
-2. **Schreibt drei Website-Spalten** (für alle Dokumente, v1 + v2):
-   - `addOnAiChat`, `addOnBooking`, `addOnTeam` (jeweils boolean, default false).
-
-3. **Spiegelt freischaltbare Extras in v2-`features`** (nur für v2-Dokumente):
-   - `features.contactForm`, `features.aiChat`, `features.booking` (jeweils boolean).
-   - v1-Dokumente: `features`-Feld existiert nicht, kein Schreiben nötig.
-
-4. **Bindet verwaiste Abos** (`server/linkSubscriptions.ts`):
-   - Nach Zahlung ohne vorherigen User (Webhook konnte keine `userId` setzen) wird das Abo auf dem
-     VPS mit `userId = 0` angelegt.
-   - Beim Magic-Link-Login oder Google-SSO: `linkSubscriptions()` sucht Abos mit derselben E-Mail
-     (normalisiert: lowercase/trim) und bindet sie an das Konto, sofern `userId === 0` noch gilt.
-   - Idempotent: Nach dem Binding ist `userId ≠ 0`, ein erneuter Aufruf mit derselben E-Mail ist
-     ein No-Op.
+1. **Normalisiert alle 7 Add-on-Keys** (`normalizeAddOns`): akzeptiert sowohl das alte
+   `{ features: {…} }`-Metadatenformat als auch das aktuelle flache Format; Default `false`.
+   **Finding M5:** das `JSON.parse` der `addOns`-Metadaten steht in try/catch mit Fallback `{}` —
+   kaputte/manipulierte Metadaten lassen den Webhook nicht mehr mit 500 abbrechen (sonst würde
+   Stripe retryen und `createSubscription` liefe ein zweites Mal, nicht idempotent).
+2. **Schreibt drei Website-Spalten** (v1 + v2 gleichermaßen): `addOnAiChat`, `addOnBooking`,
+   `addOnTeam`.
+3. **Spiegelt freischaltbare Extras in v2-`features`** (nur wenn `websiteData` ein valides
+   v2-Dokument ist): `features.contactForm`, `features.aiChat`, `features.booking`.
+4. **Speichert `subscriptions.checkoutEmail`** (Finding I1, Migration
+   `drizzle/0026_subscription_checkout_email.sql`):
+   `session.customer_details?.email ?? session.customer_email`,
+   lowercase/getrimmt, **einmalig und danach unveränderlich**. Ersetzt
+   `generatedWebsites.customerEmail` als Quelle für den Orphan-Claim — jenes Feld bleibt vor dem
+   Kauf frei schreibbar (`selfService.saveCustomerEmail`/`onboardingV2.setCustomerEmail`) und wäre
+   sonst ein Account-Takeover-Vektor. Beide Prozeduren lehnen Schreibversuche nach dem Kauf
+   (`website.status !== "preview"`) jetzt mit `BAD_REQUEST` ab.
+5. **Bindet verwaiste Abos** (`server/linkSubscriptions.ts`, `linkOrphanSubscriptionsToUser`):
+   entstehen Abos mit `userId = 0` (Webhook konnte keinen Nutzer zuordnen), sucht
+   `db.listOrphanSubscriptionsByCheckoutEmail(email)` nach dem Login/Registrieren passende Abos über
+   `subscriptions.checkoutEmail` (case-insensitiv/getrimmt, **kein** Fallback auf
+   `generatedWebsites.customerEmail`) und bindet sie. `server/onboardingV2/ownership.ts`
+   (`loadStudioWebsite`, `isOrphanClaim`) nutzt denselben Vergleich für den Studio-Zugriff.
+   Idempotent: nach dem Binden ist `userId ≠ 0`, ein erneuter Aufruf ist ein No-Op.
 
 ### 7.4 KI-Chat im Studio (`onboardingV2.aiEdit`)
 
-Der KI-Editor im Studio (`/onboarding/:token`, Panel „KI-Vorschläge") läuft über `applyAiEdit`
-(Prozedur in `server/routers.ts` ab Zeile 6385):
+Der KI-Chat im Studio (`/onboarding/:token`, „Was soll anders sein?") läuft über die
+`onboardingV2`-Prozeduren in `server/onboardingV2/routerAi.ts`, die auf
+`server/onboardingV2/aiEdit.ts` aufbauen:
 
-1. **Vorschläge werden NICHT ohne Bestätigung gespeichert:**
-   - `suggestAiEdit()` in `server/onboardingV2/aiEdit.ts` speichert Vorschläge lokal im
-     Prozess-Memory (Map-basierter Speicher, 10-Minuten-TTL, siehe `SERVER_SIDE_SUGGESTIONS` Zeile
-     205).
-   - Erst `confirmAiEdit()` schreibt die bestätigten Änderungen in `websiteData` und die DB.
-   - Reload/Logout verwirft unbestätigte Vorschläge automatisch.
-
-2. **Bestimmte Inhalte sind für die KI unveränderbar:**
-   - **Kontaktdaten** (businessName, businessPhone, businessEmail, address, openingHours),
-   - **Bilder** (heroImage, aboutImage, teamPhotos),
-   - **externe Links** (instagramUrl, whatsappLink, websiteUrl, etc.),
-   - **Rechtstexte** (Impressum, Datenschutzerklärung, AGB).
-   - Der LLM-Prompt erlaubt keine Änderungen an diesen Feldern; Nutzerwünsche dazu werden
-     abgelehnt (`_mode: "chat"` + Erklärung statt Apply/Suggest).
-
-3. **Rate-Limit:** 20 Anfragen pro Website und rollierender Stunde (prozesslokal, Map-basiert).
-   - Limit wird pro PM2-Prozess gezählt — bei horizontaler Skalierung (mehrere Prozesse) würde das
-     Limit effektiv vervielfacht.
-   - Für Beta: Prozess-lokaler Speicher ist ausreichend; bei Produktions-Skalierung würde ein
-     Redis-Backend notwendig.
-
-4. **LLM-Mocking:** `PB_LLM_MOCK=1` aktiviert Mock-Responses (statisch für Testing). Das Flag wird
-   **nur außerhalb production akzeptiert** (siehe `aiEdit.ts` Zeile 129: `process.env.NODE_ENV !==
-   "production"`). Auf dem VPS ist es damit automatisch inaktiv, solange `NODE_ENV=production`.
+1. **Zwei-Schritt-Fluss, nie automatisch gespeichert:** `onboardingV2.aiEdit` ruft
+   `proposeAiEdit()` auf, das bei einem Inhalts-Vorschlag ein neues, bereits fakten-restauriertes
+   Dokument samt Diff liefert — zwischengespeichert nur im Prozess-Memory
+   (`server/onboardingV2/aiEdit.ts`, `proposals`-Map, TTL 10 Minuten). Erst
+   `onboardingV2.applyAiEdit` (mit `proposalId`) schreibt über `persistDoc` tatsächlich in DB/
+   `websiteData`. `onboardingV2.discardAiEdit` verwirft einen Vorschlag explizit; ein abgelaufener/
+   unbekannter Vorschlag bei `applyAiEdit` liefert `BAD_REQUEST`.
+2. **Drei mögliche Ergebnisse** (`ProposeAiEditResult`): `kind: "content"` (Text-/Sektionsänderung
+   mit Diff), `kind: "style"` (Stil-Pack-Wechsel-Vorschlag statt Farb-/Font-Patch) oder
+   `kind: "reject"` (z. B. bei einem Fakten-Wunsch, den die KI nicht erfüllen darf).
+3. **Fakten-Garantie** (`server/onboardingV2/aiEditFacts.ts`): `assertSameSectionTypeSet` lehnt
+   erfundene/entfernte Sektionstypen ab (löst einen Retry aus); `restoreFacts` kopiert Fakten
+   (u. a. `imageUrl`/`ctaHref` je Sektion, die komplette `contact`-Sektion) aus dem Original-Dokument
+   zurück in den KI-Kandidaten, bevor er als Vorschlag gespeichert wird — die KI kann Bilder, Links
+   und Kontaktdaten also nicht verändern, selbst wenn sie es versucht.
+4. **Retry:** genau ein Wiederholungsversuch bei einem fehlgeschlagenen/ungültigen LLM-Aufruf
+   (`MAX_AI_EDIT_ATTEMPTS = 2`), danach `INTERNAL_SERVER_ERROR` mit deutscher Fehlermeldung.
+5. **Quota:** 20 Anfragen pro Website und rollierender Stunde (`assertAiEditQuota`, eigener Bucket
+   `"aiEdit"` in der generalisierten `assertQuota()` aus `server/onboardingV2/suggest.ts` — dieselbe
+   Funktion zählt für die Panel-Vorschläge dort separat unter dem Bucket `"suggest"`, 30/h).
+   Prozesslokal (In-Memory-Map) heißt: bei mehreren PM2-Prozessen zählt jeder Prozess einzeln — für
+   die Beta ausreichend, bei horizontaler Skalierung würde ein gemeinsamer Speicher (z. B. Redis)
+   nötig.
+6. **LLM-Mocking:** `PB_LLM_MOCK=1` aktiviert `mockAiEditResponse()` (deterministischer
+   Inhalts-Vorschlag ohne echten LLM-Aufruf, hängt der Hero-Headline ein „✓" an) — nur wirksam bei
+   `process.env.NODE_ENV !== "production"` (`isLlmMockEnabled()` in `aiEdit.ts`). Playwright setzt
+   das Flag über `playwright.config.ts` (`webServer.command`); auf dem VPS mit
+   `NODE_ENV=production` bleibt es automatisch inaktiv.
 
 ### 7.5 Deferred (nach Plan B3)
 
