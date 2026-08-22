@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
+import { trpc } from "@/lib/trpc";
 import { useStudioState } from "./useStudioState";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { PreviewFrame } from "./PreviewFrame";
+import { StylePanel } from "./panels/StylePanel";
 import "./studio.css";
-// Task 9 ergänzt hier: import { StylePanel } from "./panels/StylePanel";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
   const [activeId, setActiveId] = useState<ChecklistItemId | null>(null);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
+  const selectMutation = trpc.onboardingV2.selectStylePack.useMutation();
 
   if (studio.isLoading && !studio.state)
     return (
@@ -78,7 +80,32 @@ export default function StudioPage({ token }: { token: string }) {
               Vorschau
             </button>
           </div>
-          {activeId ? (
+          {activeId === "style" ? (
+            <StylePanel
+              token={token}
+              currentPackId={state.stylePackId}
+              category={state.category}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => {
+                // „Passt so" = Bestätigung des aktuellen Packs → Punkt wird "done"
+                if (state.stylePackId) {
+                  selectMutation.mutate(
+                    { token, packId: state.stylePackId },
+                    {
+                      onSuccess: () => {
+                        studio.refetch();
+                        studio.bumpPreview();
+                      },
+                    }
+                  );
+                }
+                setActiveId(null);
+              }}
+            />
+          ) : activeId ? (
             <section aria-label="Bereich">
               <p className="pb-studio-kicker">
                 {state.checklist.find(i => i.id === activeId)?.title}
