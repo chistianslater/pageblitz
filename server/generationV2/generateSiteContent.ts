@@ -1,5 +1,6 @@
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
+import { getFixture } from "../../shared/siteContract/fixtures";
 import type {
   PackId,
   SectionOf,
@@ -175,6 +176,46 @@ function mergeFacts(
 }
 
 /**
+ * Nur nicht-produktiv aktivierbar (Playwright/E2E, siehe playwright.config.ts) —
+ * macht die Generierung ohne LLM-API-Key/Netzwerk lauffähig, indem statt eines
+ * echten LLM-Aufrufs die "full"-Fixture des gewählten Packs verwendet wird.
+ */
+function isLlmMockEnabled(): boolean {
+  return (
+    process.env.PB_LLM_MOCK === "1" && process.env.NODE_ENV !== "production"
+  );
+}
+
+/**
+ * Deterministisches Mock-Dokument aus der Fixture "full" des gewählten
+ * Packs: Business-Name aus `business` überschreibt den Fixture-Namen, `facts`
+ * wird genau wie im echten LLM-Pfad NACH der (impliziten, da Fixtures bereits
+ * schema-valide sind) Validierung gemergt und revalidiert.
+ */
+function mockSiteContent(
+  packId: PackId,
+  business: { name: string; category: string; city?: string },
+  facts: GenerateSiteContentFacts | undefined
+): WebsiteDataV2 {
+  const fixture = getFixture(packId, "full");
+  const base: WebsiteDataV2 = {
+    ...fixture,
+    businessName: business.name,
+    seo: { ...fixture.seo, title: business.name },
+  };
+  if (!facts) return base;
+
+  const merged = mergeFacts(base, facts);
+  const revalidated = WebsiteDataV2Schema.safeParse(merged);
+  if (!revalidated.success) {
+    throw new Error(
+      "Mock-Fixture nach Fakten-Merge ungültig: " + revalidated.error.message
+    );
+  }
+  return revalidated.data;
+}
+
+/**
  * Erzeugt die v2-Website-Inhalte per LLM: Prompt bauen → llmComplete →
  * JSON.parse → deterministische Envelope-Felder mergen → zod-Validierung.
  * Bei Fehler GENAU EIN Retry mit angehängter Fehlermeldung; scheitert auch
@@ -184,11 +225,19 @@ function mergeFacts(
  * NACH dieser Validierung gemergt und das Ergebnis erneut per safeParse
  * geprüft — Merge-Reihenfolge ist bewusst so, dass facts niemals von der
  * LLM-Antwort überschrieben werden können.
+ *
+ * PB_LLM_MOCK=1 (nicht-produktiv) überspringt den LLM-Aufruf komplett und
+ * liefert ein deterministisches Fixture-Dokument (siehe mockSiteContent).
  */
 export async function generateSiteContent(
   args: GenerateSiteContentArgs
 ): Promise<WebsiteDataV2> {
   const { packId, business, facts } = args;
+
+  if (isLlmMockEnabled()) {
+    return mockSiteContent(packId, business, facts);
+  }
+
   const constitution = getConstitution(packId);
   const sections = resolveSections(packId);
   const prompt = buildContentPrompt({ constitution, business, sections });

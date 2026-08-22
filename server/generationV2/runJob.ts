@@ -53,8 +53,9 @@ export async function resolveV2Images(
 }
 
 /**
- * v2-Generierungspfad (siehe runWebsiteGeneration in routers.ts, Aufruf
- * hinter PB_LAYOUT_V2-Flag): Pack per Rotation wählen, Inhalte vom LLM holen
+ * v2-Generierungspfad (siehe runWebsiteGeneration in routers.ts — delegiert
+ * seit dem Cutover, Plan B4a, vollständig an runWebsiteGenerationV2Job):
+ * Pack per Rotation wählen, Inhalte vom LLM holen
  * (zod-validiert, genau 1 Retry, kein stiller Fallback), als websiteData
  * persistieren (gleiche JSON-Spalte wie v1) und den SSR-Cache für den Slug
  * invalidieren, damit die neue Seite sofort sichtbar ist statt bis zu
@@ -116,9 +117,10 @@ export async function runWebsiteGenerationV2(
 }
 
 /**
- * Eigenständiger v2-Job (Studio/onboardingV2.ensureGeneration): unabhängig
- * vom PB_LAYOUT_V2-Flag immer der v2-Pfad. Fehler landen im Job (status
- * "failed" + Meldung) statt als unbehandelte Rejection.
+ * Eigenständiger v2-Job (Studio/onboardingV2.ensureGeneration, seit dem
+ * Cutover auch der einzige Generierungspfad für runWebsiteGeneration in
+ * routers.ts): immer der v2-Pfad, kein Flag mehr. Fehler landen im Job
+ * (status "failed" + Meldung) statt als unbehandelte Rejection.
  */
 export async function runWebsiteGenerationV2Job(
   jobId: number,

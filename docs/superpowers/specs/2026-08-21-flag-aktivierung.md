@@ -12,6 +12,15 @@ für **neue** Website-Generierungen greift (`server/routers.ts:1799`, `PB_LAYOUT
 Bestehende v1-Websites sind davon nicht betroffen — `WebsiteRenderer` unterscheidet pro Dokument
 per `parseV2(websiteData)`, nicht global.
 
+> **Erledigt/obsolet seit Cutover (Plan B4a, 2026-08-22).** §1–§5 beschreiben die
+> Übergangsphase mit dem Flag `PB_LAYOUT_V2` — die App läuft seitdem ausschließlich
+> auf v2, das Flag existiert im Code nicht mehr (siehe Spec
+> `docs/superpowers/specs/2026-08-22-cutover-design.md`, Plan
+> `docs/superpowers/plans/2026-08-22-onboarding-v2-b4a-umschalten.md`, Task 3).
+> §1–§5 bleiben unverändert als historisches Protokoll der Aktivierung stehen.
+> §6 (Studio-Vorbereitung) und §7 (Inseln & Add-on-Aktivierung) sind weiterhin
+> aktuell und gelten unverändert.
+
 ---
 
 ## 1. Voraussetzungen (alle erfüllt)

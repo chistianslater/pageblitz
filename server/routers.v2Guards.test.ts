@@ -268,6 +268,11 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
   });
 
   test("website.regenerate auf v2-Website mit korrumpierendem LLM-Payload → TRPCError, kein Write", async () => {
+    // Task 3 (Cutover): website.regenerate läuft ab jetzt über die v2-
+    // Content-Pipeline (server/generationV2, wie ensureGeneration) statt der
+    // alten Inline-LLM-Prompt-Pipeline — selectPack ruft intern
+    // getNextLayoutForIndustry, generateSiteContent ruft intern llmComplete
+    // (== der hier gemockte invokeLLM).
     mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.getBusinessById.mockResolvedValue({
       id: 7,
@@ -280,35 +285,36 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
       phone: null,
       address: null,
       placeId: null,
+      email: null,
+      searchRegion: null,
     } as any);
-    mockedDb.listTemplateUploadsByPool.mockResolvedValue([]);
-    mockedDb.getNextLayoutForIndustry.mockResolvedValue("Kanzlei" as any);
+    mockedDb.getNextLayoutForIndustry.mockResolvedValue("kanzlei" as any);
     // 1. Call: classifyIndustry() erwartet ein einzelnes Wort.
-    // 2. Call: die eigentliche Regenerate-Content-Generierung — bewusst
-    // v1-förmig (kein version/stylePackId/seo), um die v2-Schema-Validierung
-    // im Guard zuverlässig scheitern zu lassen.
+    // 2.+3. Call: die zwei Versuche von generateSiteContent (genau 1 Retry) —
+    // beide bewusst v1-förmig (kein seo-Feld), damit die v2-Schema-
+    // Validierung zuverlässig scheitert statt bei nur einem Fehlversuch
+    // still auf den zweiten Call durchzufallen.
+    const invalidContent = () =>
+      JSON.stringify({
+        tagline: "Neue Perspektiven.",
+        sections: [
+          { type: "hero", headline: "Willkommen" },
+          {
+            type: "services",
+            headline: "Leistungen",
+            items: [{ title: "Möbelbau" }],
+          },
+        ],
+      });
     mockedInvokeLLM
       .mockResolvedValueOnce({
         choices: [{ message: { content: "handwerk" } }],
       } as any)
       .mockResolvedValueOnce({
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                tagline: "Neue Perspektiven.",
-                sections: [
-                  { type: "hero", headline: "Willkommen" },
-                  {
-                    type: "services",
-                    headline: "Leistungen",
-                    items: [{ title: "Möbelbau" }],
-                  },
-                ],
-              }),
-            },
-          },
-        ],
+        choices: [{ message: { content: invalidContent() } }],
+      } as any)
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: invalidContent() } }],
       } as any);
 
     const caller = appRouter.createCaller(createAdminContext());

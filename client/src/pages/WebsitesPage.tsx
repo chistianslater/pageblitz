@@ -3,19 +3,63 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Globe, Eye, Loader2, Wand2, ExternalLink, Mail, Building2, Star, RefreshCw,
-  Sparkles, AlertTriangle, ShoppingCart, CreditCard, Trash2, XCircle, CheckCircle,
-  Clock, TrendingDown, UserPlus, Database, Zap, Users, MessageCircle, ListChecks, Send, Pencil
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Globe,
+  Eye,
+  Loader2,
+  Wand2,
+  ExternalLink,
+  Mail,
+  Building2,
+  Star,
+  RefreshCw,
+  Sparkles,
+  AlertTriangle,
+  ShoppingCart,
+  CreditCard,
+  Trash2,
+  XCircle,
+  CheckCircle,
+  Clock,
+  TrendingDown,
+  UserPlus,
+  Database,
+  Zap,
+  Users,
+  MessageCircle,
+  ListChecks,
+  Send,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -55,10 +99,19 @@ const captureLabels: Record<string, string> = {
  * what captureStatus says (prevents "Aktiv + Onboarding gestartet" contradiction).
  */
 function getEffectiveCaptureStatus(w: any): string {
-  if (w.status === "active" || w.status === "canceling" || w.status === "trialing") return "converted";
+  if (
+    w.status === "active" ||
+    w.status === "canceling" ||
+    w.status === "trialing"
+  )
+    return "converted";
   if (w.status === "sold") {
     // Paid but onboarding not yet marked complete → at minimum onboarding_completed
-    if (w.captureStatus === "onboarding_started" || w.captureStatus === "email_captured") return "onboarding_completed";
+    if (
+      w.captureStatus === "onboarding_started" ||
+      w.captureStatus === "email_captured"
+    )
+      return "onboarding_completed";
   }
   return w.captureStatus || "email_captured";
 }
@@ -66,11 +119,17 @@ function getEffectiveCaptureStatus(w: any): string {
 // ── Main Page ───────────────────────────────────────────
 export default function WebsitesPage() {
   const utils = trpc.useUtils();
-  const { data: businessData } = trpc.business.list.useQuery({ limit: 500, offset: 0 });
-  const { data: websiteData, isLoading: webLoading } = trpc.website.list.useQuery({ limit: 500, offset: 0 });
+  const { data: businessData } = trpc.business.list.useQuery({
+    limit: 500,
+    offset: 0,
+  });
+  const { data: websiteData, isLoading: webLoading } =
+    trpc.website.list.useQuery({ limit: 500, offset: 0 });
 
   const [generatingId, setGeneratingId] = useState<number | null>(null);
-  const [backlogSelectedIds, setBacklogSelectedIds] = useState<Set<number>>(new Set());
+  const [backlogSelectedIds, setBacklogSelectedIds] = useState<Set<number>>(
+    new Set()
+  );
   const [backlogBulkDeleteOpen, setBacklogBulkDeleteOpen] = useState(false);
 
   const backlogBulkDeleteMutation = trpc.business.bulkDelete.useMutation({
@@ -82,7 +141,8 @@ export default function WebsitesPage() {
       utils.website.list.invalidate();
       utils.stats.dashboard.invalidate();
     },
-    onError: (err: any) => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
+    onError: (err: any) =>
+      toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
   });
 
   const generateMutation = trpc.website.generate.useMutation({
@@ -93,7 +153,7 @@ export default function WebsitesPage() {
       utils.business.list.invalidate();
       utils.stats.dashboard.invalidate();
     },
-    onError: (err) => {
+    onError: err => {
       toast.error("Generierung fehlgeschlagen: " + err.message);
       setGeneratingId(null);
     },
@@ -103,23 +163,31 @@ export default function WebsitesPage() {
   const allBusinesses = businessData?.businesses || [];
 
   // Tab 1: GMB-Backlog – only real GMB businesses (with placeId) without a generated website
-  const businessesWithoutWebsite = allBusinesses.filter(b =>
-    !allWebsites.some((w: any) => w.businessId === b.id) &&
-    b.placeId &&
-    !b.placeId.startsWith("self-") &&
-    !b.placeId.startsWith("email-")
+  const businessesWithoutWebsite = allBusinesses.filter(
+    b =>
+      !allWebsites.some((w: any) => w.businessId === b.id) &&
+      b.placeId &&
+      !b.placeId.startsWith("self-") &&
+      !b.placeId.startsWith("email-")
   );
 
   // Tab 2: Admin-generated
-  const adminWebsites = allWebsites.filter((w: any) => w.source === "admin" || !w.source);
+  const adminWebsites = allWebsites.filter(
+    (w: any) => w.source === "admin" || !w.source
+  );
 
   // Tab 3: Externally generated
-  const externalWebsites = allWebsites.filter((w: any) => w.source === "external");
+  const externalWebsites = allWebsites.filter(
+    (w: any) => w.source === "external"
+  );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1
+          className="text-3xl font-bold tracking-tight"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
           Websites
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -129,21 +197,30 @@ export default function WebsitesPage() {
 
       <Tabs defaultValue="external" className="space-y-4">
         <TabsList className="bg-muted/50 border border-border h-auto p-1 gap-1">
-          <TabsTrigger value="external" className="flex items-center gap-2 data-[state=active]:bg-background">
+          <TabsTrigger
+            value="external"
+            className="flex items-center gap-2 data-[state=active]:bg-background"
+          >
             <Users className="h-4 w-4" />
             Extern-generiert
             <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 h-5">
               {externalWebsites.length}
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="admin" className="flex items-center gap-2 data-[state=active]:bg-background">
+          <TabsTrigger
+            value="admin"
+            className="flex items-center gap-2 data-[state=active]:bg-background"
+          >
             <Zap className="h-4 w-4" />
             Admin-generiert
             <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 h-5">
               {adminWebsites.length}
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value="backlog" className="flex items-center gap-2 data-[state=active]:bg-background">
+          <TabsTrigger
+            value="backlog"
+            className="flex items-center gap-2 data-[state=active]:bg-background"
+          >
             <Database className="h-4 w-4" />
             GMB-Backlog
             <Badge variant="outline" className="ml-1 text-xs px-1.5 py-0 h-5">
@@ -160,20 +237,38 @@ export default function WebsitesPage() {
                 <div>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Database className="h-5 w-5 text-primary" />
-                    GMB-Backlog – noch nicht generiert ({businessesWithoutWebsite.length})
+                    GMB-Backlog – noch nicht generiert (
+                    {businessesWithoutWebsite.length})
                   </CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Von Google My Business gescrapte Unternehmen, für die noch keine Website generiert wurde.
+                    Von Google My Business gescrapte Unternehmen, für die noch
+                    keine Website generiert wurde.
                   </p>
                 </div>
                 {backlogSelectedIds.size > 0 && (
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">{backlogSelectedIds.size} ausgewählt</span>
-                    <Button variant="outline" size="sm" onClick={() => setBacklogSelectedIds(new Set())}>Auswahl aufheben</Button>
-                    <Dialog open={backlogBulkDeleteOpen} onOpenChange={setBacklogBulkDeleteOpen}>
+                    <span className="text-sm text-muted-foreground">
+                      {backlogSelectedIds.size} ausgewählt
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBacklogSelectedIds(new Set())}
+                    >
+                      Auswahl aufheben
+                    </Button>
+                    <Dialog
+                      open={backlogBulkDeleteOpen}
+                      onOpenChange={setBacklogBulkDeleteOpen}
+                    >
                       <DialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="gap-2">
-                          <Trash2 className="h-4 w-4" /> {backlogSelectedIds.size} löschen
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />{" "}
+                          {backlogSelectedIds.size} löschen
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-md">
@@ -182,16 +277,38 @@ export default function WebsitesPage() {
                             <Trash2 className="h-5 w-5 text-red-400" />
                             {backlogSelectedIds.size} Unternehmen löschen
                           </DialogTitle>
-                          <DialogDescription>Diese Aktion kann nicht rükgängig gemacht werden.</DialogDescription>
+                          <DialogDescription>
+                            Diese Aktion kann nicht rükgängig gemacht werden.
+                          </DialogDescription>
                         </DialogHeader>
                         <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                           <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                          <p className="text-sm text-red-300">Alle ausgewählten Unternehmen und zugehörige Daten werden dauerhaft gelöscht.</p>
+                          <p className="text-sm text-red-300">
+                            Alle ausgewählten Unternehmen und zugehörige Daten
+                            werden dauerhaft gelöscht.
+                          </p>
                         </div>
                         <DialogFooter className="gap-2">
-                          <Button variant="outline" onClick={() => setBacklogBulkDeleteOpen(false)}>Abbrechen</Button>
-                          <Button variant="destructive" onClick={() => backlogBulkDeleteMutation.mutate({ ids: Array.from(backlogSelectedIds) })} disabled={backlogBulkDeleteMutation.isPending}>
-                            {backlogBulkDeleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                          <Button
+                            variant="outline"
+                            onClick={() => setBacklogBulkDeleteOpen(false)}
+                          >
+                            Abbrechen
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() =>
+                              backlogBulkDeleteMutation.mutate({
+                                ids: Array.from(backlogSelectedIds),
+                              })
+                            }
+                            disabled={backlogBulkDeleteMutation.isPending}
+                          >
+                            {backlogBulkDeleteMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-2" />
+                            )}
                             {backlogSelectedIds.size} endgültig löschen
                           </Button>
                         </DialogFooter>
@@ -207,88 +324,121 @@ export default function WebsitesPage() {
                   <Database className="h-12 w-12 mx-auto mb-4 opacity-30" />
                   <p>Alle Unternehmen haben bereits eine Website.</p>
                 </div>
-              ) : (() => {
-                const allBacklogIds = businessesWithoutWebsite.map(b => b.id);
-                const allBacklogSelected = allBacklogIds.length > 0 && allBacklogIds.every(id => backlogSelectedIds.has(id));
-                return (
-                  <div className="rounded-lg border border-border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-muted/30">
-                          <TableHead className="w-10">
-                            <Checkbox
-                              checked={allBacklogSelected}
-                              onCheckedChange={() => setBacklogSelectedIds(allBacklogSelected ? new Set() : new Set(allBacklogIds))}
-                              aria-label="Alle auswählen"
-                              className="border-muted-foreground/50"
-                            />
-                          </TableHead>
-                          <TableHead>Unternehmen</TableHead>
-                          <TableHead>Branche</TableHead>
-                          <TableHead>Bewertung</TableHead>
-                          <TableHead>Lead-Typ</TableHead>
-                          <TableHead className="text-right">Aktion</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {businessesWithoutWebsite.map((b) => (
-                          <TableRow key={b.id} className={backlogSelectedIds.has(b.id) ? "bg-primary/5" : undefined}>
-                            <TableCell>
+              ) : (
+                (() => {
+                  const allBacklogIds = businessesWithoutWebsite.map(b => b.id);
+                  const allBacklogSelected =
+                    allBacklogIds.length > 0 &&
+                    allBacklogIds.every(id => backlogSelectedIds.has(id));
+                  return (
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/30">
+                            <TableHead className="w-10">
                               <Checkbox
-                                checked={backlogSelectedIds.has(b.id)}
-                                onCheckedChange={() => {
-                                  setBacklogSelectedIds(prev => {
-                                    const next = new Set(prev);
-                                    next.has(b.id) ? next.delete(b.id) : next.add(b.id);
-                                    return next;
-                                  });
-                                }}
+                                checked={allBacklogSelected}
+                                onCheckedChange={() =>
+                                  setBacklogSelectedIds(
+                                    allBacklogSelected
+                                      ? new Set()
+                                      : new Set(allBacklogIds)
+                                  )
+                                }
+                                aria-label="Alle auswählen"
                                 className="border-muted-foreground/50"
                               />
-                            </TableCell>
-                            <TableCell>
-                              <div className="font-medium">{b.name}</div>
-                              <div className="text-xs text-muted-foreground">{b.address}</div>
-                            </TableCell>
-                            <TableCell className="text-sm">{b.category || "–"}</TableCell>
-                            <TableCell>
-                              {b.rating ? (
-                                <div className="flex items-center gap-1">
-                                  <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-                                  <span className="text-sm">{String(b.rating)}</span>
-                                </div>
-                              ) : "–"}
-                            </TableCell>
-                            <TableCell>
-                              <BusinessLeadTypeBadge hasWebsite={!!b.hasWebsite} leadType={b.leadType} website={b.website} />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    setGeneratingId(b.id);
-                                    generateMutation.mutate({ businessId: b.id });
-                                  }}
-                                  disabled={generatingId !== null}
-                                >
-                                  {generatingId === b.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                  ) : (
-                                    <Wand2 className="h-4 w-4 mr-2" />
-                                  )}
-                                  Generieren
-                                </Button>
-                                <DeleteBusinessDialog business={b} />
-                              </div>
-                            </TableCell>
+                            </TableHead>
+                            <TableHead>Unternehmen</TableHead>
+                            <TableHead>Branche</TableHead>
+                            <TableHead>Bewertung</TableHead>
+                            <TableHead>Lead-Typ</TableHead>
+                            <TableHead className="text-right">Aktion</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                );
-              })()}
+                        </TableHeader>
+                        <TableBody>
+                          {businessesWithoutWebsite.map(b => (
+                            <TableRow
+                              key={b.id}
+                              className={
+                                backlogSelectedIds.has(b.id)
+                                  ? "bg-primary/5"
+                                  : undefined
+                              }
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  checked={backlogSelectedIds.has(b.id)}
+                                  onCheckedChange={() => {
+                                    setBacklogSelectedIds(prev => {
+                                      const next = new Set(prev);
+                                      next.has(b.id)
+                                        ? next.delete(b.id)
+                                        : next.add(b.id);
+                                      return next;
+                                    });
+                                  }}
+                                  className="border-muted-foreground/50"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <div className="font-medium">{b.name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {b.address}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-sm">
+                                {b.category || "–"}
+                              </TableCell>
+                              <TableCell>
+                                {b.rating ? (
+                                  <div className="flex items-center gap-1">
+                                    <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                                    <span className="text-sm">
+                                      {String(b.rating)}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  "–"
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <BusinessLeadTypeBadge
+                                  hasWebsite={!!b.hasWebsite}
+                                  leadType={b.leadType}
+                                  website={b.website}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setGeneratingId(b.id);
+                                      generateMutation.mutate({
+                                        businessId: b.id,
+                                      });
+                                    }}
+                                    disabled={generatingId !== null}
+                                  >
+                                    {generatingId === b.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                    ) : (
+                                      <Wand2 className="h-4 w-4 mr-2" />
+                                    )}
+                                    Generieren
+                                  </Button>
+                                  <DeleteBusinessDialog business={b} />
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  );
+                })()
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -300,7 +450,10 @@ export default function WebsitesPage() {
 
         {/* ── Tab 3: Extern-generiert ── */}
         <TabsContent value="external">
-          <ExternalWebsitesTab websites={externalWebsites} isLoading={webLoading} />
+          <ExternalWebsitesTab
+            websites={externalWebsites}
+            isLoading={webLoading}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -308,24 +461,31 @@ export default function WebsitesPage() {
 }
 
 // ── Tab 2: Admin-generierte Websites ───────────────────
-function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading: boolean }) {
+function AdminWebsitesTab({
+  websites,
+  isLoading,
+}: {
+  websites: any[];
+  isLoading: boolean;
+}) {
   const utils = trpc.useUtils();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const bulkDeleteMutation = trpc.website.bulkDelete.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`${data.deleted} Website(s) erfolgreich gelöscht.`);
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);
       utils.website.list.invalidate();
       utils.stats.dashboard.invalidate();
     },
-    onError: (err) => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
+    onError: err => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
   });
 
-  const allIds = websites.map((w) => w.id);
-  const allSelected = allIds.length > 0 && allIds.every((id: number) => selectedIds.has(id));
+  const allIds = websites.map(w => w.id);
+  const allSelected =
+    allIds.length > 0 && allIds.every((id: number) => selectedIds.has(id));
   const someSelected = selectedIds.size > 0;
 
   function toggleSelectAll() {
@@ -349,13 +509,20 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
               Admin-generierte Websites ({websites.length})
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Websites, die du oder das System über die Admin-Oberfläche generiert hat.
+              Websites, die du oder das System über die Admin-Oberfläche
+              generiert hat.
             </p>
           </div>
           {someSelected && (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">{selectedIds.size} ausgewählt</span>
-              <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
+              <span className="text-sm text-muted-foreground">
+                {selectedIds.size} ausgewählt
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedIds(new Set())}
+              >
                 Auswahl aufheben
               </Button>
               <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
@@ -376,12 +543,32 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
                   </DialogHeader>
                   <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                     <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-red-300">Alle ausgewählten Websites, Onboarding-Daten und Abonnements werden dauerhaft gelöscht.</p>
+                    <p className="text-sm text-red-300">
+                      Alle ausgewählten Websites, Onboarding-Daten und
+                      Abonnements werden dauerhaft gelöscht.
+                    </p>
                   </div>
                   <DialogFooter className="gap-2">
-                    <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Abbrechen</Button>
-                    <Button variant="destructive" onClick={() => bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) })} disabled={bulkDeleteMutation.isPending}>
-                      {bulkDeleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    <Button
+                      variant="outline"
+                      onClick={() => setBulkDeleteOpen(false)}
+                    >
+                      Abbrechen
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() =>
+                        bulkDeleteMutation.mutate({
+                          ids: Array.from(selectedIds),
+                        })
+                      }
+                      disabled={bulkDeleteMutation.isPending}
+                    >
+                      {bulkDeleteMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-2" />
+                      )}
                       {selectedIds.size} endgültig löschen
                     </Button>
                   </DialogFooter>
@@ -407,7 +594,12 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
               <TableHeader>
                 <TableRow className="bg-muted/30">
                   <TableHead className="w-10">
-                    <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Alle auswählen" className="border-muted-foreground/50" />
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Alle auswählen"
+                      className="border-muted-foreground/50"
+                    />
                   </TableHead>
                   <TableHead>Unternehmen</TableHead>
                   <TableHead>Branche</TableHead>
@@ -418,32 +610,64 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
               </TableHeader>
               <TableBody>
                 {websites.map((w: any) => (
-                  <TableRow key={w.id} className={selectedIds.has(w.id) ? "bg-primary/5" : undefined}>
+                  <TableRow
+                    key={w.id}
+                    className={
+                      selectedIds.has(w.id) ? "bg-primary/5" : undefined
+                    }
+                  >
                     <TableCell>
-                      <Checkbox checked={selectedIds.has(w.id)} onCheckedChange={() => toggleSelect(w.id)} className="border-muted-foreground/50" />
+                      <Checkbox
+                        checked={selectedIds.has(w.id)}
+                        onCheckedChange={() => toggleSelect(w.id)}
+                        className="border-muted-foreground/50"
+                      />
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{w.business?.name || "Unbekannt"}</div>
-                      <div className="text-xs text-muted-foreground">{w.slug}</div>
+                      <div className="font-medium">
+                        {w.business?.name || "Unbekannt"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {w.slug}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-sm">{w.industry || "–"}</TableCell>
+                    <TableCell className="text-sm">
+                      {w.industry || "–"}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={statusColors[w.status] || ""}>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[w.status] || ""}
+                      >
                         {statusLabels[w.status] || w.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(w.createdAt).toLocaleString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <a href={`/preview/${w.previewToken}`} target="_blank" rel="noopener">
+                          <a
+                            href={`/preview/${w.previewToken}`}
+                            target="_blank"
+                            rel="noopener"
+                          >
                             <Eye className="h-3 w-3 mr-1" /> Preview
                           </a>
                         </Button>
                         <Button variant="outline" size="sm" asChild>
-                          <a href={`/site/${w.slug}`} target="_blank" rel="noopener">
+                          <a
+                            href={`/site/${w.slug}`}
+                            target="_blank"
+                            rel="noopener"
+                          >
                             <ExternalLink className="h-3 w-3 mr-1" /> Live
                           </a>
                         </Button>
@@ -468,7 +692,13 @@ function AdminWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading:
 }
 
 // ── Tab 3: Extern-generierte Websites ──────────────────
-function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoading: boolean }) {
+function ExternalWebsitesTab({
+  websites,
+  isLoading,
+}: {
+  websites: any[];
+  isLoading: boolean;
+}) {
   const utils = trpc.useUtils();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -481,13 +711,13 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
   );
 
   const bulkDeleteMutation = trpc.website.bulkDelete.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`${data.deleted} Website(s) erfolgreich gelöscht.`);
       setSelectedIds(new Set());
       setBulkDeleteOpen(false);
       utils.website.list.invalidate();
     },
-    onError: (err) => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
+    onError: err => toast.error("Bulk-Delete fehlgeschlagen: " + err.message),
   });
 
   const updateStatusMutation = trpc.leads.updateStatus.useMutation({
@@ -496,12 +726,16 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
       utils.website.list.invalidate();
       utils.leads.funnel.invalidate();
     },
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onError: err => toast.error("Fehler: " + err.message),
   });
 
-  const filtered = statusFilter === "all" ? websites : websites.filter((w: any) => w.captureStatus === statusFilter);
+  const filtered =
+    statusFilter === "all"
+      ? websites
+      : websites.filter((w: any) => w.captureStatus === statusFilter);
   const allIds = filtered.map((w: any) => w.id);
-  const allSelected = allIds.length > 0 && allIds.every((id: number) => selectedIds.has(id));
+  const allSelected =
+    allIds.length > 0 && allIds.every((id: number) => selectedIds.has(id));
   const someSelected = selectedIds.size > 0;
 
   function toggleSelectAll() {
@@ -534,24 +768,41 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
               Extern-generierte Websites ({websites.length})
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Websites, die externe Besucher über die Landing Page selbst gestartet haben.
+              Websites, die externe Besucher über die Landing Page selbst
+              gestartet haben.
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setSelectedIds(new Set()); }}>
+            <Select
+              value={statusFilter}
+              onValueChange={v => {
+                setStatusFilter(v);
+                setSelectedIds(new Set());
+              }}
+            >
               <SelectTrigger className="w-52 h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {captureStatusOptions.map(o => (
-                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {someSelected && (
               <>
-                <span className="text-sm text-muted-foreground">{selectedIds.size} ausgewählt</span>
-                <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>Auswahl aufheben</Button>
+                <span className="text-sm text-muted-foreground">
+                  {selectedIds.size} ausgewählt
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedIds(new Set())}
+                >
+                  Auswahl aufheben
+                </Button>
                 <Dialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
                   <DialogTrigger asChild>
                     <Button variant="destructive" size="sm" className="gap-2">
@@ -564,16 +815,37 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                         <Trash2 className="h-5 w-5 text-red-400" />
                         {selectedIds.size} Websites löschen
                       </DialogTitle>
-                      <DialogDescription>Diese Aktion kann nicht rückgängig gemacht werden.</DialogDescription>
+                      <DialogDescription>
+                        Diese Aktion kann nicht rückgängig gemacht werden.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                       <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                      <p className="text-sm text-red-300">Alle ausgewählten Websites werden dauerhaft gelöscht.</p>
+                      <p className="text-sm text-red-300">
+                        Alle ausgewählten Websites werden dauerhaft gelöscht.
+                      </p>
                     </div>
                     <DialogFooter className="gap-2">
-                      <Button variant="outline" onClick={() => setBulkDeleteOpen(false)}>Abbrechen</Button>
-                      <Button variant="destructive" onClick={() => bulkDeleteMutation.mutate({ ids: Array.from(selectedIds) })} disabled={bulkDeleteMutation.isPending}>
-                        {bulkDeleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                      <Button
+                        variant="outline"
+                        onClick={() => setBulkDeleteOpen(false)}
+                      >
+                        Abbrechen
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() =>
+                          bulkDeleteMutation.mutate({
+                            ids: Array.from(selectedIds),
+                          })
+                        }
+                        disabled={bulkDeleteMutation.isPending}
+                      >
+                        {bulkDeleteMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-2" />
+                        )}
                         {selectedIds.size} endgültig löschen
                       </Button>
                     </DialogFooter>
@@ -592,8 +864,13 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p>Keine externen Websites{statusFilter !== "all" ? " mit diesem Status" : ""}.</p>
-            <p className="text-sm mt-1">Externe Websites entstehen, wenn Besucher die Landing Page nutzen.</p>
+            <p>
+              Keine externen Websites
+              {statusFilter !== "all" ? " mit diesem Status" : ""}.
+            </p>
+            <p className="text-sm mt-1">
+              Externe Websites entstehen, wenn Besucher die Landing Page nutzen.
+            </p>
           </div>
         ) : (
           <div className="rounded-lg border border-border overflow-hidden">
@@ -601,7 +878,12 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
               <TableHeader>
                 <TableRow className="bg-muted/30">
                   <TableHead className="w-10">
-                    <Checkbox checked={allSelected} onCheckedChange={toggleSelectAll} aria-label="Alle auswählen" className="border-muted-foreground/50" />
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Alle auswählen"
+                      className="border-muted-foreground/50"
+                    />
                   </TableHead>
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
@@ -613,9 +895,18 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
               </TableHeader>
               <TableBody>
                 {filtered.map((w: any) => (
-                  <TableRow key={w.id} className={selectedIds.has(w.id) ? "bg-primary/5" : undefined}>
+                  <TableRow
+                    key={w.id}
+                    className={
+                      selectedIds.has(w.id) ? "bg-primary/5" : undefined
+                    }
+                  >
                     <TableCell>
-                      <Checkbox checked={selectedIds.has(w.id)} onCheckedChange={() => toggleSelect(w.id)} className="border-muted-foreground/50" />
+                      <Checkbox
+                        checked={selectedIds.has(w.id)}
+                        onCheckedChange={() => toggleSelect(w.id)}
+                        className="border-muted-foreground/50"
+                      />
                     </TableCell>
                     <TableCell>
                       <div className="font-medium text-sm">
@@ -625,50 +916,102 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
                             {w.customerEmail}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground italic text-xs">Keine E-Mail</span>
+                          <span className="text-muted-foreground italic text-xs">
+                            Keine E-Mail
+                          </span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground">{w.slug}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {w.slug}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-sm">{w.industry || "–"}</TableCell>
-                    <TableCell>
-                      {(() => { const eff = getEffectiveCaptureStatus(w); return (
-                        <Badge variant="outline" className={captureColors[eff] || ""}>
-                          {captureLabels[eff] || eff}
-                        </Badge>
-                      ); })()}
+                    <TableCell className="text-sm">
+                      {w.industry || "–"}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={statusColors[w.status] || ""}>
+                      {(() => {
+                        const eff = getEffectiveCaptureStatus(w);
+                        return (
+                          <Badge
+                            variant="outline"
+                            className={captureColors[eff] || ""}
+                          >
+                            {captureLabels[eff] || eff}
+                          </Badge>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={statusColors[w.status] || ""}
+                      >
                         {statusLabels[w.status] || w.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(w.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(w.createdAt).toLocaleString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         {w.previewToken && (
                           <Button variant="outline" size="sm" asChild>
-                            <a href={`/preview/${w.previewToken}`} target="_blank" rel="noopener">
+                            <a
+                              href={`/preview/${w.previewToken}`}
+                              target="_blank"
+                              rel="noopener"
+                            >
                               <Eye className="h-3 w-3 mr-1" /> Preview
                             </a>
                           </Button>
                         )}
                         {w.previewToken && (
-                          <Button variant="outline" size="sm" asChild title="Onboarding-Chat öffnen – Inhalte/Bilder/Steps weiter bearbeiten">
-                            <a href={`/preview/${w.previewToken}/onboarding`} target="_blank" rel="noopener">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            title="Onboarding-Chat öffnen – Inhalte/Bilder/Steps weiter bearbeiten"
+                          >
+                            <a
+                              href={`/preview/${w.previewToken}/onboarding`}
+                              target="_blank"
+                              rel="noopener"
+                            >
                               <Pencil className="h-3 w-3 mr-1" /> Bearbeiten
                             </a>
                           </Button>
                         )}
                         <ProgressButton websiteId={w.id} />
-                        <SupportChatButton websiteId={w.id} chatCount={(chatCounts as any)?.[w.id]} />
-                        <AgeGateToggle websiteId={w.id} enabled={!!w.requiresAgeGate} />
+                        <SupportChatButton
+                          websiteId={w.id}
+                          chatCount={(chatCounts as any)?.[w.id]}
+                        />
+                        <AgeGateToggle
+                          websiteId={w.id}
+                          enabled={!!w.requiresAgeGate}
+                        />
                         {w.customerEmail && w.status === "preview" && (
-                          <SendActivationLinkButton websiteId={w.id} customerEmail={w.customerEmail} />
+                          <SendActivationLinkButton
+                            websiteId={w.id}
+                            customerEmail={w.customerEmail}
+                          />
                         )}
-                        <ExternalLeadStatusDialog website={w} onUpdate={(id, status) => updateStatusMutation.mutate({ id, captureStatus: status as any })} isPending={updateStatusMutation.isPending} />
+                        <ExternalLeadStatusDialog
+                          website={w}
+                          onUpdate={(id, status) =>
+                            updateStatusMutation.mutate({
+                              id,
+                              captureStatus: status as any,
+                            })
+                          }
+                          isPending={updateStatusMutation.isPending}
+                        />
                         <DeleteWebsiteDialog website={w} />
                       </div>
                     </TableCell>
@@ -684,9 +1027,19 @@ function ExternalWebsitesTab({ websites, isLoading }: { websites: any[]; isLoadi
 }
 
 // ── External Lead Status Dialog ─────────────────────────
-function ExternalLeadStatusDialog({ website, onUpdate, isPending }: { website: any; onUpdate: (id: number, status: string) => void; isPending: boolean }) {
+function ExternalLeadStatusDialog({
+  website,
+  onUpdate,
+  isPending,
+}: {
+  website: any;
+  onUpdate: (id: number, status: string) => void;
+  isPending: boolean;
+}) {
   const [open, setOpen] = useState(false);
-  const [status, setStatus] = useState(website.captureStatus || "email_captured");
+  const [status, setStatus] = useState(
+    website.captureStatus || "email_captured"
+  );
   const options = [
     { value: "email_captured", label: "E-Mail erfasst" },
     { value: "onboarding_started", label: "Onboarding gestartet" },
@@ -697,7 +1050,9 @@ function ExternalLeadStatusDialog({ website, onUpdate, isPending }: { website: a
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Status</Button>
+        <Button variant="outline" size="sm">
+          Status
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
@@ -707,15 +1062,33 @@ function ExternalLeadStatusDialog({ website, onUpdate, isPending }: { website: a
           </DialogDescription>
         </DialogHeader>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            {options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+            {options.map(o => (
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button onClick={() => { onUpdate(website.id, status); setOpen(false); }} disabled={isPending}>
-            {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle className="h-4 w-4 mr-2" />}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={() => {
+              onUpdate(website.id, status);
+              setOpen(false);
+            }}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <CheckCircle className="h-4 w-4 mr-2" />
+            )}
             Speichern
           </Button>
         </DialogFooter>
@@ -728,58 +1101,81 @@ function ExternalLeadStatusDialog({ website, onUpdate, isPending }: { website: a
 function RegenerateDialog({ website }: { website: any }) {
   const utils = trpc.useUtils();
   const [open, setOpen] = useState(false);
-  const [generateAiImage, setGenerateAiImage] = useState(false);
 
   const regenerateMutation = trpc.website.regenerate.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("Website erfolgreich neu generiert!", {
-        action: { label: "Preview öffnen", onClick: () => window.open(`/preview/${data.previewToken}`, "_blank") },
+        action: {
+          label: "Preview öffnen",
+          onClick: () =>
+            window.open(`/preview-ssr/${data.previewToken}`, "_blank"),
+        },
         duration: 6000,
       });
       utils.website.list.invalidate();
       utils.stats.dashboard.invalidate();
       setOpen(false);
     },
-    onError: (err) => toast.error("Regenerierung fehlgeschlagen: " + err.message),
+    onError: err => toast.error("Regenerierung fehlgeschlagen: " + err.message),
   });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300"
+        >
           <RefreshCw className="h-3 w-3 mr-1" /> Neu generieren
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <RefreshCw className="h-5 w-5 text-blue-400" /> Website neu generieren
+            <RefreshCw className="h-5 w-5 text-blue-400" /> Website neu
+            generieren
           </DialogTitle>
           <DialogDescription>
-            Die KI erstellt komplett neue Texte und ein neues Layout für{" "}
-            <span className="font-medium text-foreground">{website.business?.name}</span>.
+            Die KI erstellt komplett neue Texte und ein neues Design für{" "}
+            <span className="font-medium text-foreground">
+              {website.business?.name}
+            </span>
+            .
           </DialogDescription>
         </DialogHeader>
         <div className="py-2 space-y-4">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
             <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-amber-300">Der bisherige Preview-Link wird ungültig.</p>
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-400" />
-              <div>
-                <Label htmlFor="ai-image-regen" className="text-sm font-medium cursor-pointer">KI-Bild generieren</Label>
-                <p className="text-xs text-muted-foreground">Erstellt ein einzigartiges Hero-Bild via KI</p>
-              </div>
-            </div>
-            <Switch id="ai-image-regen" checked={generateAiImage} onCheckedChange={setGenerateAiImage} />
+            <p className="text-sm text-amber-300">
+              Der bisherige Preview-Link wird ungültig.
+            </p>
           </div>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={regenerateMutation.isPending}>Abbrechen</Button>
-          <Button onClick={() => regenerateMutation.mutate({ websiteId: website.id, generateAiImage })} disabled={regenerateMutation.isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
-            {regenerateMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />KI generiert…</> : <><RefreshCw className="h-4 w-4 mr-2" />Jetzt neu generieren</>}
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={regenerateMutation.isPending}
+          >
+            Abbrechen
+          </Button>
+          <Button
+            onClick={() => regenerateMutation.mutate({ websiteId: website.id })}
+            disabled={regenerateMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {regenerateMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                KI generiert…
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Jetzt neu generieren
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -794,8 +1190,12 @@ function CheckoutDialog({ website }: { website: any }) {
   const [contactForm, setContactForm] = useState(false);
 
   const checkoutMutation = trpc.checkout.createSession.useMutation({
-    onSuccess: (data) => { setOpen(false); toast.info("Weiterleitung zu Stripe..."); window.open(data.url, "_blank"); },
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onSuccess: data => {
+      setOpen(false);
+      toast.info("Weiterleitung zu Stripe...");
+      window.open(data.url, "_blank");
+    },
+    onError: err => toast.error("Fehler: " + err.message),
   });
 
   const totalMonthly = 79 + subpages * 9.9 + (gallery ? 4.9 : 0);
@@ -803,51 +1203,130 @@ function CheckoutDialog({ website }: { website: any }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300" disabled={website.status === "active"}>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+          disabled={website.status === "active"}
+        >
           <CreditCard className="h-3 w-3 mr-1" />
           {website.status === "active" ? "Aktiv" : "Kaufen"}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><ShoppingCart className="h-5 w-5 text-emerald-400" /> Website kaufen</DialogTitle>
-          <DialogDescription>Wähle dein Paket für <span className="font-medium text-foreground">{website.business?.name}</span></DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5 text-emerald-400" /> Website kaufen
+          </DialogTitle>
+          <DialogDescription>
+            Wähle dein Paket für{" "}
+            <span className="font-medium text-foreground">
+              {website.business?.name}
+            </span>
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
             <div className="flex justify-between items-center">
-              <div><p className="font-semibold">Basis-Paket</p><p className="text-sm text-muted-foreground">1-seitige Website, Impressum & Datenschutz</p></div>
+              <div>
+                <p className="font-semibold">Basis-Paket</p>
+                <p className="text-sm text-muted-foreground">
+                  1-seitige Website, Impressum & Datenschutz
+                </p>
+              </div>
               <span className="text-xl font-bold text-emerald-400">79€/Mo</span>
             </div>
           </div>
           <div className="space-y-3">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Add-ons</p>
+            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              Add-ons
+            </p>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div><Label className="font-medium cursor-pointer">Unterseiten</Label><p className="text-xs text-muted-foreground">+9,90€/Monat pro Seite</p></div>
+              <div>
+                <Label className="font-medium cursor-pointer">
+                  Unterseiten
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  +9,90€/Monat pro Seite
+                </p>
+              </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setSubpages(Math.max(0, subpages - 1))}>-</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubpages(Math.max(0, subpages - 1))}
+                >
+                  -
+                </Button>
                 <span className="w-6 text-center font-medium">{subpages}</span>
-                <Button variant="outline" size="sm" onClick={() => setSubpages(subpages + 1)}>+</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubpages(subpages + 1)}
+                >
+                  +
+                </Button>
               </div>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div><Label htmlFor="gallery-toggle" className="font-medium cursor-pointer">Bildergalerie</Label><p className="text-xs text-muted-foreground">+4,90€/Monat</p></div>
-              <Switch id="gallery-toggle" checked={gallery} onCheckedChange={setGallery} />
+              <div>
+                <Label
+                  htmlFor="gallery-toggle"
+                  className="font-medium cursor-pointer"
+                >
+                  Bildergalerie
+                </Label>
+                <p className="text-xs text-muted-foreground">+4,90€/Monat</p>
+              </div>
+              <Switch
+                id="gallery-toggle"
+                checked={gallery}
+                onCheckedChange={setGallery}
+              />
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div><Label htmlFor="form-toggle" className="font-medium cursor-pointer">Kontaktformular</Label><p className="text-xs text-muted-foreground">Inklusive</p></div>
-              <Switch id="form-toggle" checked={contactForm} onCheckedChange={setContactForm} />
+              <div>
+                <Label
+                  htmlFor="form-toggle"
+                  className="font-medium cursor-pointer"
+                >
+                  Kontaktformular
+                </Label>
+                <p className="text-xs text-muted-foreground">Inklusive</p>
+              </div>
+              <Switch
+                id="form-toggle"
+                checked={contactForm}
+                onCheckedChange={setContactForm}
+              />
             </div>
           </div>
           <div className="p-4 rounded-lg bg-muted/50 border border-border flex justify-between items-center">
             <span className="font-semibold">Gesamt</span>
-            <span className="text-2xl font-bold">{totalMonthly.toFixed(2).replace(".", ",")}€/Mo</span>
+            <span className="text-2xl font-bold">
+              {totalMonthly.toFixed(2).replace(".", ",")}€/Mo
+            </span>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => checkoutMutation.mutate({ websiteId: website.id, addOns: { subpages, gallery, contactForm } })} disabled={checkoutMutation.isPending}>
-            {checkoutMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() =>
+              checkoutMutation.mutate({
+                websiteId: website.id,
+                addOns: { subpages, gallery, contactForm },
+              })
+            }
+            disabled={checkoutMutation.isPending}
+          >
+            {checkoutMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <CreditCard className="h-4 w-4 mr-2" />
+            )}
             Jetzt kaufen
           </Button>
         </DialogFooter>
@@ -858,27 +1337,76 @@ function CheckoutDialog({ website }: { website: any }) {
 
 function OutreachDialog({ website }: { website: any }) {
   const [email, setEmail] = useState(website.business?.email || "");
-  const [subject, setSubject] = useState(`Ihre neue Website ist fertig – ${website.business?.name}`);
+  const [subject, setSubject] = useState(
+    `Ihre neue Website ist fertig – ${website.business?.name}`
+  );
   const [body, setBody] = useState(
     `Sehr geehrte Damen und Herren,\n\nwir haben eine professionelle Website für ${website.business?.name || "Ihr Unternehmen"} erstellt.\n\nSchauen Sie sich die Vorschau hier an:\n${window.location.origin}/preview/${website.previewToken}\n\nBei Interesse können Sie die Website direkt aktivieren.\n\nMit freundlichen Grüßen\nIhr Pageblitz Team`
   );
   const sendMutation = trpc.outreach.send.useMutation({
     onSuccess: () => toast.success("E-Mail erfolgreich gesendet!"),
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onError: err => toast.error("Fehler: " + err.message),
   });
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm"><Mail className="h-3 w-3 mr-1" /> E-Mail</Button>
+        <Button variant="outline" size="sm">
+          <Mail className="h-3 w-3 mr-1" /> E-Mail
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>Outreach E-Mail senden</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Outreach E-Mail senden</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4 mt-4">
-          <div><label className="text-sm text-muted-foreground mb-1.5 block">Empfänger E-Mail</label><Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" /></div>
-          <div><label className="text-sm text-muted-foreground mb-1.5 block">Betreff</label><Input value={subject} onChange={(e) => setSubject(e.target.value)} /></div>
-          <div><label className="text-sm text-muted-foreground mb-1.5 block">Nachricht</label><Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} /></div>
-          <Button className="w-full" onClick={() => { if (!email) { toast.error("E-Mail-Adresse erforderlich"); return; } sendMutation.mutate({ businessId: website.businessId, websiteId: website.id, recipientEmail: email, subject, body }); }} disabled={sendMutation.isPending}>
-            {sendMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">
+              Empfänger E-Mail
+            </label>
+            <Input
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="email@example.com"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">
+              Betreff
+            </label>
+            <Input value={subject} onChange={e => setSubject(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-sm text-muted-foreground mb-1.5 block">
+              Nachricht
+            </label>
+            <Textarea
+              value={body}
+              onChange={e => setBody(e.target.value)}
+              rows={8}
+            />
+          </div>
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (!email) {
+                toast.error("E-Mail-Adresse erforderlich");
+                return;
+              }
+              sendMutation.mutate({
+                businessId: website.businessId,
+                websiteId: website.id,
+                recipientEmail: email,
+                subject,
+                body,
+              });
+            }}
+            disabled={sendMutation.isPending}
+          >
+            {sendMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Mail className="h-4 w-4 mr-2" />
+            )}
             E-Mail senden
           </Button>
         </div>
@@ -896,45 +1424,73 @@ function DeleteWebsiteDialog({ website }: { website: any }) {
       const previous = utils.website.list.getData({ limit: 500, offset: 0 });
       utils.website.list.setData({ limit: 500, offset: 0 }, (old: any) => {
         if (!old) return old;
-        return { ...old, websites: old.websites.filter((w: any) => w.id !== website.id), total: (old.total ?? 1) - 1 };
+        return {
+          ...old,
+          websites: old.websites.filter((w: any) => w.id !== website.id),
+          total: (old.total ?? 1) - 1,
+        };
       });
       return { previous };
     },
     onSuccess: () => {
-      toast.success(`Website "${website.business?.name || website.slug}" wurde gelöscht.`);
+      toast.success(
+        `Website "${website.business?.name || website.slug}" wurde gelöscht.`
+      );
       utils.website.list.invalidate();
       utils.stats.dashboard.invalidate();
       setOpen(false);
     },
     onError: (err, _vars, ctx) => {
-      if (ctx?.previous) utils.website.list.setData({ limit: 500, offset: 0 }, ctx.previous);
+      if (ctx?.previous)
+        utils.website.list.setData({ limit: 500, offset: 0 }, ctx.previous);
       toast.error("Löschen fehlgeschlagen: " + err.message);
     },
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+        >
           <Trash2 className="h-3 w-3" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Trash2 className="h-5 w-5 text-red-400" /> Website löschen</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-400" /> Website löschen
+          </DialogTitle>
           <DialogDescription>
             Möchtest du die Website für{" "}
-            <span className="font-medium text-foreground">{website.business?.name || website.slug}</span>{" "}
+            <span className="font-medium text-foreground">
+              {website.business?.name || website.slug}
+            </span>{" "}
             wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
           <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-          <p className="text-sm text-red-300">Die Website, alle Onboarding-Daten und Abonnement-Informationen werden dauerhaft gelöscht.</p>
+          <p className="text-sm text-red-300">
+            Die Website, alle Onboarding-Daten und Abonnement-Informationen
+            werden dauerhaft gelöscht.
+          </p>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button variant="destructive" onClick={() => deleteMutation.mutate({ id: website.id })} disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteMutation.mutate({ id: website.id })}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
             Endgültig löschen
           </Button>
         </DialogFooter>
@@ -947,15 +1503,29 @@ function TestSubscriptionButton({ website }: { website: any }) {
   const { user } = useAuth();
   const utils = trpc.useUtils();
   const createTestSub = trpc.customer.createTestSubscription.useMutation({
-    onSuccess: () => { utils.website.list.invalidate(); toast.success("Test-Abo erstellt!"); },
-    onError: (err) => toast.error(err.message),
+    onSuccess: () => {
+      utils.website.list.invalidate();
+      toast.success("Test-Abo erstellt!");
+    },
+    onError: err => toast.error(err.message),
   });
   if (!user) return null;
   return (
-    <Button variant="outline" size="sm" className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
-      onClick={() => createTestSub.mutate({ websiteId: website.id, userId: user.id })}
-      disabled={createTestSub.isPending} title="Verknüpft diese Website mit deinem Account (für Test-Zwecke)">
-      {createTestSub.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserPlus className="h-3 w-3 mr-1" />}
+    <Button
+      variant="outline"
+      size="sm"
+      className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+      onClick={() =>
+        createTestSub.mutate({ websiteId: website.id, userId: user.id })
+      }
+      disabled={createTestSub.isPending}
+      title="Verknüpft diese Website mit deinem Account (für Test-Zwecke)"
+    >
+      {createTestSub.isPending ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <UserPlus className="h-3 w-3 mr-1" />
+      )}
       Test-Abo
     </Button>
   );
@@ -965,15 +1535,29 @@ function UnlockAllAddonsButton({ website }: { website: any }) {
   const { user } = useAuth();
   const utils = trpc.useUtils();
   const unlockMutation = trpc.customer.unlockAllAddons.useMutation({
-    onSuccess: () => { utils.website.list.invalidate(); toast.success("Alle Add-ons freigeschaltet! 🎉"); },
-    onError: (err) => toast.error(err.message),
+    onSuccess: () => {
+      utils.website.list.invalidate();
+      toast.success("Alle Add-ons freigeschaltet! 🎉");
+    },
+    onError: err => toast.error(err.message),
   });
   if (!user) return null;
   return (
-    <Button variant="outline" size="sm" className="text-purple-400 border-purple-400/30 hover:bg-purple-400/10"
-      onClick={() => unlockMutation.mutate({ websiteId: website.id, userId: user.id })}
-      disabled={unlockMutation.isPending} title="Schaltet alle Add-ons für Testzwecke frei (ohne Stripe)">
-      {unlockMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+    <Button
+      variant="outline"
+      size="sm"
+      className="text-purple-400 border-purple-400/30 hover:bg-purple-400/10"
+      onClick={() =>
+        unlockMutation.mutate({ websiteId: website.id, userId: user.id })
+      }
+      disabled={unlockMutation.isPending}
+      title="Schaltet alle Add-ons für Testzwecke frei (ohne Stripe)"
+    >
+      {unlockMutation.isPending ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <Sparkles className="h-3 w-3 mr-1" />
+      )}
       Alle Add-ons
     </Button>
   );
@@ -982,22 +1566,47 @@ function UnlockAllAddonsButton({ website }: { website: any }) {
 function ActivateWebsiteButton({ website }: { website: any }) {
   const utils = trpc.useUtils();
   const updateStatusMutation = trpc.website.updateStatus.useMutation({
-    onSuccess: () => { utils.website.list.invalidate(); toast.success("Website-Status aktualisiert"); },
-    onError: (err) => toast.error(err.message),
+    onSuccess: () => {
+      utils.website.list.invalidate();
+      toast.success("Website-Status aktualisiert");
+    },
+    onError: err => toast.error(err.message),
   });
   if (website.status === "active") {
     return (
-      <Button variant="outline" size="sm" className="text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
-        onClick={() => updateStatusMutation.mutate({ id: website.id, status: "preview" })} disabled={updateStatusMutation.isPending}>
-        {updateStatusMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1" />}
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+        onClick={() =>
+          updateStatusMutation.mutate({ id: website.id, status: "preview" })
+        }
+        disabled={updateStatusMutation.isPending}
+      >
+        {updateStatusMutation.isPending ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : (
+          <XCircle className="h-3 w-3 mr-1" />
+        )}
         Deaktivieren
       </Button>
     );
   }
   return (
-    <Button variant="outline" size="sm" className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
-      onClick={() => updateStatusMutation.mutate({ id: website.id, status: "active" })} disabled={updateStatusMutation.isPending}>
-      {updateStatusMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle className="h-3 w-3 mr-1" />}
+    <Button
+      variant="outline"
+      size="sm"
+      className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
+      onClick={() =>
+        updateStatusMutation.mutate({ id: website.id, status: "active" })
+      }
+      disabled={updateStatusMutation.isPending}
+    >
+      {updateStatusMutation.isPending ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <CheckCircle className="h-3 w-3 mr-1" />
+      )}
       Aktivieren
     </Button>
   );
@@ -1012,7 +1621,11 @@ function DeleteBusinessDialog({ business }: { business: any }) {
       const previous = utils.business.list.getData({ limit: 500, offset: 0 });
       utils.business.list.setData({ limit: 500, offset: 0 }, (old: any) => {
         if (!old) return old;
-        return { ...old, businesses: old.businesses.filter((b: any) => b.id !== business.id), total: (old.total ?? 1) - 1 };
+        return {
+          ...old,
+          businesses: old.businesses.filter((b: any) => b.id !== business.id),
+          total: (old.total ?? 1) - 1,
+        };
       });
       return { previous };
     },
@@ -1024,32 +1637,54 @@ function DeleteBusinessDialog({ business }: { business: any }) {
       setOpen(false);
     },
     onError: (err, _vars, ctx) => {
-      if (ctx?.previous) utils.business.list.setData({ limit: 500, offset: 0 }, ctx.previous);
+      if (ctx?.previous)
+        utils.business.list.setData({ limit: 500, offset: 0 }, ctx.previous);
       toast.error("Löschen fehlgeschlagen: " + err.message);
     },
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+        >
           <Trash2 className="h-3 w-3" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Trash2 className="h-5 w-5 text-red-400" /> Unternehmen löschen</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 text-red-400" /> Unternehmen löschen
+          </DialogTitle>
           <DialogDescription>
-            Möchtest du <span className="font-medium text-foreground">{business.name}</span> wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+            Möchtest du{" "}
+            <span className="font-medium text-foreground">{business.name}</span>{" "}
+            wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
           <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-          <p className="text-sm text-red-300">Das Unternehmen und alle zugehörigen Websites, Onboarding-Daten und Abonnements werden dauerhaft gelöscht.</p>
+          <p className="text-sm text-red-300">
+            Das Unternehmen und alle zugehörigen Websites, Onboarding-Daten und
+            Abonnements werden dauerhaft gelöscht.
+          </p>
         </div>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button variant="destructive" onClick={() => deleteMutation.mutate({ id: business.id })} disabled={deleteMutation.isPending}>
-            {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteMutation.mutate({ id: business.id })}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
             Endgültig löschen
           </Button>
         </DialogFooter>
@@ -1060,23 +1695,78 @@ function DeleteBusinessDialog({ business }: { business: any }) {
 
 type LeadType = "no_website" | "outdated_website" | "poor_website" | "unknown";
 
-function BusinessLeadTypeBadge({ hasWebsite, leadType, website }: { hasWebsite: boolean; leadType?: string | null; website?: string | null }) {
+function BusinessLeadTypeBadge({
+  hasWebsite,
+  leadType,
+  website,
+}: {
+  hasWebsite: boolean;
+  leadType?: string | null;
+  website?: string | null;
+}) {
   const lt = leadType as LeadType | undefined;
   const link = website ? (
-    <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noopener noreferrer"
-      className="text-xs text-blue-400 hover:underline truncate max-w-[160px] block mt-0.5">
+    <a
+      href={website.startsWith("http") ? website : `https://${website}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-blue-400 hover:underline truncate max-w-[160px] block mt-0.5"
+    >
       {website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
     </a>
   ) : null;
 
-  if (!hasWebsite || lt === "no_website") return <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1"><XCircle className="h-3 w-3" /> Keine Website</Badge>;
-  if (lt === "outdated_website") return <div><Badge variant="outline" className="text-amber-400 border-amber-400/30 gap-1"><Clock className="h-3 w-3" /> Veraltete Website</Badge>{link}</div>;
-  if (lt === "poor_website") return <div><Badge variant="outline" className="text-orange-400 border-orange-400/30 gap-1"><TrendingDown className="h-3 w-3" /> Schlechte Website</Badge>{link}</div>;
-  return <div><Badge variant="outline" className="text-emerald-400 border-emerald-400/30 gap-1"><CheckCircle className="h-3 w-3" /> Hat Website</Badge>{link}</div>;
+  if (!hasWebsite || lt === "no_website")
+    return (
+      <Badge variant="outline" className="text-red-400 border-red-400/30 gap-1">
+        <XCircle className="h-3 w-3" /> Keine Website
+      </Badge>
+    );
+  if (lt === "outdated_website")
+    return (
+      <div>
+        <Badge
+          variant="outline"
+          className="text-amber-400 border-amber-400/30 gap-1"
+        >
+          <Clock className="h-3 w-3" /> Veraltete Website
+        </Badge>
+        {link}
+      </div>
+    );
+  if (lt === "poor_website")
+    return (
+      <div>
+        <Badge
+          variant="outline"
+          className="text-orange-400 border-orange-400/30 gap-1"
+        >
+          <TrendingDown className="h-3 w-3" /> Schlechte Website
+        </Badge>
+        {link}
+      </div>
+    );
+  return (
+    <div>
+      <Badge
+        variant="outline"
+        className="text-emerald-400 border-emerald-400/30 gap-1"
+      >
+        <CheckCircle className="h-3 w-3" /> Hat Website
+      </Badge>
+      {link}
+    </div>
+  );
 }
 
 // ── Support Chat Dialog (per Website) ─────────────────────
-function SupportChatButton({ websiteId, chatCount }: { websiteId: number; chatCount?: { count: number; totalMessages: number } }) {
+function SupportChatButton({
+  websiteId,
+  chatCount,
+}: {
+  websiteId: number;
+  chatCount?: { count: number; totalMessages: number };
+}) {
   const [open, setOpen] = useState(false);
   const { data, isLoading } = trpc.website.supportChats.useQuery(
     { websiteId },
@@ -1102,23 +1792,39 @@ function SupportChatButton({ websiteId, chatCount }: { websiteId: number; chatCo
           <DialogDescription>Chat-Verläufe für diese Website</DialogDescription>
         </DialogHeader>
         {isLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
         ) : !data?.length ? (
-          <p className="text-center text-muted-foreground text-sm py-8">Keine Support-Chats vorhanden.</p>
+          <p className="text-center text-muted-foreground text-sm py-8">
+            Keine Support-Chats vorhanden.
+          </p>
         ) : (
           <div className="space-y-4">
             {data.map((chat: any) => (
               <div key={chat.id} className="border rounded-lg p-3 space-y-2">
                 <div className="text-xs text-muted-foreground flex justify-between">
-                  <span>{new Date(chat.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+                  <span>
+                    {new Date(chat.createdAt).toLocaleString("de-DE", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                   <span>{chat.messageCount} Nachrichten</span>
                 </div>
                 <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                  {((chat.messages || []) as any[]).map((msg: any, i: number) => (
-                    <div key={i} className={`text-xs px-2.5 py-1.5 rounded-lg max-w-[85%] ${msg.role === "user" ? "bg-lime-500/15 ml-auto text-right" : "bg-muted"}`}>
-                      {msg.content}
-                    </div>
-                  ))}
+                  {((chat.messages || []) as any[]).map(
+                    (msg: any, i: number) => (
+                      <div
+                        key={i}
+                        className={`text-xs px-2.5 py-1.5 rounded-lg max-w-[85%] ${msg.role === "user" ? "bg-lime-500/15 ml-auto text-right" : "bg-muted"}`}
+                      >
+                        {msg.content}
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             ))}
@@ -1138,13 +1844,31 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
   );
 
   const STEP_LABELS: Record<string, string> = {
-    businessCategory: "Branche", businessName: "Unternehmensname", addressingMode: "Ansprache",
-    brandLogo: "Logo", colorScheme: "Farben", heroPhoto: "Hauptbild", aboutPhoto: "Über-uns-Bild",
-    headlineFont: "Schriftart", headlineSize: "Schriftgröße", tagline: "Slogan", description: "Beschreibung",
-    usp: "USP", services: "Leistungen", legalOwner: "Inhaber", legalStreet: "Straße",
-    legalZipCity: "PLZ/Stadt", legalEmail: "E-Mail", legalPhone: "Telefon", legalVat: "USt-ID",
-    openingHours: "Öffnungszeiten", addons: "Add-Ons", email: "Kontakt-E-Mail",
-    hideSections: "Bereiche", preview: "Vorschau", checkout: "Checkout",
+    businessCategory: "Branche",
+    businessName: "Unternehmensname",
+    addressingMode: "Ansprache",
+    brandLogo: "Logo",
+    colorScheme: "Farben",
+    heroPhoto: "Hauptbild",
+    aboutPhoto: "Über-uns-Bild",
+    headlineFont: "Schriftart",
+    headlineSize: "Schriftgröße",
+    tagline: "Slogan",
+    description: "Beschreibung",
+    usp: "USP",
+    services: "Leistungen",
+    legalOwner: "Inhaber",
+    legalStreet: "Straße",
+    legalZipCity: "PLZ/Stadt",
+    legalEmail: "E-Mail",
+    legalPhone: "Telefon",
+    legalVat: "USt-ID",
+    openingHours: "Öffnungszeiten",
+    addons: "Add-Ons",
+    email: "Kontakt-E-Mail",
+    hideSections: "Bereiche",
+    preview: "Vorschau",
+    checkout: "Checkout",
   };
 
   return (
@@ -1160,17 +1884,29 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
           <DialogDescription>Abgeschlossene Steps</DialogDescription>
         </DialogHeader>
         {isLoading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
         ) : !data?.length ? (
-          <p className="text-center text-muted-foreground text-sm py-8">Noch keine Steps abgeschlossen.</p>
+          <p className="text-center text-muted-foreground text-sm py-8">
+            Noch keine Steps abgeschlossen.
+          </p>
         ) : (
           <div className="space-y-1">
             {data.map((evt: any, i: number) => (
-              <div key={i} className="flex items-center gap-2 text-sm py-1.5 border-b border-border/50 last:border-0">
+              <div
+                key={i}
+                className="flex items-center gap-2 text-sm py-1.5 border-b border-border/50 last:border-0"
+              >
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span className="flex-1">{STEP_LABELS[evt.step] || evt.step}</span>
+                <span className="flex-1">
+                  {STEP_LABELS[evt.step] || evt.step}
+                </span>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(evt.createdAt).toLocaleString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(evt.createdAt).toLocaleString("de-DE", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </div>
             ))}
@@ -1182,16 +1918,24 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
 }
 
 // ── FSK-18 Age-Gate Toggle ─────────────────────────────────────────────────
-function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boolean }) {
+function AgeGateToggle({
+  websiteId,
+  enabled,
+}: {
+  websiteId: number;
+  enabled: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const utils = trpc.useUtils();
   const mutation = trpc.website.setAgeGate.useMutation({
-    onSuccess: (data) => {
-      toast.success(data.requiresAgeGate ? "Age-Gate aktiviert" : "Age-Gate deaktiviert");
+    onSuccess: data => {
+      toast.success(
+        data.requiresAgeGate ? "Age-Gate aktiviert" : "Age-Gate deaktiviert"
+      );
       utils.website.list.invalidate();
       setOpen(false);
     },
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onError: err => toast.error("Fehler: " + err.message),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -1200,7 +1944,11 @@ function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boo
           variant="outline"
           size="sm"
           title={enabled ? "FSK-18 Age-Gate aktiv" : "FSK-18 Age-Gate aus"}
-          className={enabled ? "border-rose-500/40 text-rose-300 hover:bg-rose-500/10" : ""}
+          className={
+            enabled
+              ? "border-rose-500/40 text-rose-300 hover:bg-rose-500/10"
+              : ""
+          }
         >
           {enabled ? "18+ ✓" : "18+"}
         </Button>
@@ -1211,7 +1959,8 @@ function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boo
           <DialogDescription>
             Zeigt Besuchern vor dem Site-Content ein Modal mit Altersbestätigung
             („Ich bin 18+"). Wird automatisch aktiviert bei Erotik-, Alkohol-,
-            Glücksspiel- und Tabak-Branchen. Hier kannst du es manuell überschreiben.
+            Glücksspiel- und Tabak-Branchen. Hier kannst du es manuell
+            überschreiben.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 px-1">
@@ -1219,18 +1968,22 @@ function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boo
             Aktueller Status: <strong>{enabled ? "Aktiv" : "Aus"}</strong>
           </p>
           <p className="text-xs text-muted-foreground">
-            Besucher müssen pro Browser einmal alle 30 Tage bestätigen.
-            Bei „Nein" werden sie auf google.de weitergeleitet.
+            Besucher müssen pro Browser einmal alle 30 Tage bestätigen. Bei
+            „Nein" werden sie auf google.de weitergeleitet.
           </p>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
           <Button
             onClick={() => mutation.mutate({ websiteId, enabled: !enabled })}
             disabled={mutation.isPending}
             variant={enabled ? "destructive" : "default"}
           >
-            {mutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null}
+            {mutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : null}
             {enabled ? "Age-Gate deaktivieren" : "Age-Gate aktivieren"}
           </Button>
         </DialogFooter>
@@ -1240,19 +1993,29 @@ function AgeGateToggle({ websiteId, enabled }: { websiteId: number; enabled: boo
 }
 
 // ── Aktivierungs-Link an Kundin senden (Concierge-Workflow) ────────────────
-function SendActivationLinkButton({ websiteId, customerEmail }: { websiteId: number; customerEmail: string }) {
+function SendActivationLinkButton({
+  websiteId,
+  customerEmail,
+}: {
+  websiteId: number;
+  customerEmail: string;
+}) {
   const [open, setOpen] = useState(false);
   const mutation = trpc.website.sendActivationLink.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Aktivierungs-Link an ${data.sentTo} gesendet`);
       setOpen(false);
     },
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onError: err => toast.error("Fehler: " + err.message),
   });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" title="Aktivierungs-Link an Kundin senden">
+        <Button
+          variant="outline"
+          size="sm"
+          title="Aktivierungs-Link an Kundin senden"
+        >
           <Send className="h-3 w-3 mr-1" /> Aktivieren
         </Button>
       </DialogTrigger>
@@ -1260,15 +2023,25 @@ function SendActivationLinkButton({ websiteId, customerEmail }: { websiteId: num
         <DialogHeader>
           <DialogTitle>Aktivierungs-Link senden</DialogTitle>
           <DialogDescription>
-            Schickt eine persönliche Email an <strong>{customerEmail}</strong> mit einem
-            Login-Link zur fertigen Website-Vorschau. Die Kundin loggt sich automatisch ein
-            und kann direkt freischalten (Stripe-Checkout). Link ist 7 Tage gültig.
+            Schickt eine persönliche Email an <strong>{customerEmail}</strong>{" "}
+            mit einem Login-Link zur fertigen Website-Vorschau. Die Kundin loggt
+            sich automatisch ein und kann direkt freischalten (Stripe-Checkout).
+            Link ist 7 Tage gültig.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button onClick={() => mutation.mutate({ websiteId })} disabled={mutation.isPending}>
-            {mutation.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Abbrechen
+          </Button>
+          <Button
+            onClick={() => mutation.mutate({ websiteId })}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-1" />
+            )}
             Jetzt senden
           </Button>
         </DialogFooter>

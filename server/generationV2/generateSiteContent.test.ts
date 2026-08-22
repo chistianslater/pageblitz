@@ -381,3 +381,51 @@ describe("facts.images", () => {
     vi.resetModules();
   });
 });
+
+describe("generateSiteContent — PB_LLM_MOCK (Task 3, LLM-Mock für die Generierung)", () => {
+  test("PB_LLM_MOCK=1 außerhalb production: liefert Fixture ohne LLM-Aufruf", async () => {
+    const llmComplete = vi.fn();
+    vi.doMock("./llmClient", () => ({ llmComplete }));
+    const prevMock = process.env.PB_LLM_MOCK;
+    const prevEnv = process.env.NODE_ENV;
+    process.env.PB_LLM_MOCK = "1";
+    process.env.NODE_ENV = "test";
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "kanzlei",
+      business: { name: "Falk & Partner", category: "Rechtsanwalt" },
+      facts: { slug: "falk-partner" },
+    });
+    expect(llmComplete).not.toHaveBeenCalled();
+    expect(d.version).toBe(2);
+    expect(d.stylePackId).toBe("kanzlei");
+    expect(d.businessName).toBe("Falk & Partner");
+    expect(d.seo.title).toBe("Falk & Partner");
+    expect(d.slug).toBe("falk-partner");
+    process.env.PB_LLM_MOCK = prevMock;
+    process.env.NODE_ENV = prevEnv;
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("PB_LLM_MOCK=1 in production: Mock bleibt aus, echter LLM-Pfad läuft", async () => {
+    const llmComplete = vi.fn().mockResolvedValue(good);
+    vi.doMock("./llmClient", () => ({ llmComplete }));
+    const prevMock = process.env.PB_LLM_MOCK;
+    const prevEnv = process.env.NODE_ENV;
+    process.env.PB_LLM_MOCK = "1";
+    process.env.NODE_ENV = "production";
+    const { generateSiteContent } = await import("./generateSiteContent");
+    await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+    });
+    // In production greift der Mock nicht — der echte LLM-Client wurde
+    // tatsächlich aufgerufen statt der Fixture direkt zu liefern.
+    expect(llmComplete).toHaveBeenCalled();
+    process.env.PB_LLM_MOCK = prevMock;
+    process.env.NODE_ENV = prevEnv;
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+});

@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch, useLocation } from "wouter";
+import { Redirect, Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageblitzCookieBanner from "./components/PageblitzCookieBanner";
@@ -27,9 +27,7 @@ const WebsitesPage = lazy(() => import("./pages/WebsitesPage"));
 const OutreachPage = lazy(() => import("./pages/OutreachPage"));
 const StatsPage = lazy(() => import("./pages/StatsPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
-const PreviewPage = lazy(() => import("./pages/PreviewPage"));
 const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
-const OnboardingChat = lazy(() => import("./pages/OnboardingChat"));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
 const LayoutOverviewPage = lazy(() => import("./pages/LayoutOverviewPage"));
@@ -47,6 +45,9 @@ const WelcomeBack = lazy(() => import("./pages/WelcomeBack"));
 const ErrorsPage = lazy(() => import("./pages/ErrorsPage"));
 const LifecyclePage = lazy(() => import("./pages/LifecyclePage"));
 const StudioPage = lazy(() => import("./pages/onboarding-v2/StudioPage"));
+const LegacyWebsiteRedirect = lazy(
+  () => import("./pages/onboarding-v2/LegacyWebsiteRedirect")
+);
 
 function PageLoader() {
   return (
@@ -195,7 +196,9 @@ function Router() {
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
         <Route path="/welcome-back" component={WelcomeBack} />
-        <Route path="/preview/:token" component={PreviewPage} />
+        {/* /preview/:token wird serverseitig auf /preview-ssr/:token weitergeleitet
+            (siehe server/ssr/routes.ts, registerSsrRoutes) — läuft nie hier ein,
+            eine SPA-Route bräuchte es nicht (Task 3, Cutover-Redirects). */}
         <Route path="/site/:slug">
           {params => <SitePage key={params.slug} />}
         </Route>
@@ -205,11 +208,12 @@ function Router() {
         <Route path="/site/:slug/datenschutz">
           {params => <LegalPage key={params.slug} />}
         </Route>
+        {/* Legacy-Chat-Onboarding → Studio (Task 3, Cutover-Redirects) */}
         <Route path="/preview/:token/onboarding">
-          {params => <OnboardingChat previewToken={params.token} />}
+          {params => <Redirect to={`/onboarding/${params.token}`} />}
         </Route>
         <Route path="/websites/:id/onboarding">
-          {params => <OnboardingChat websiteId={parseInt(params.id || "0")} />}
+          {params => <LegacyWebsiteRedirect id={parseInt(params.id || "0")} />}
         </Route>
         <Route path="/onboarding/:token">
           {params => <StudioPage token={params.token} />}

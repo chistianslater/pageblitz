@@ -162,7 +162,7 @@ export default function StartPage() {
       });
       trackConversion("form_start");
       toast.success("Website wird erstellt...");
-      navigate(`/preview/${data.previewToken}/onboarding`);
+      navigate(`/onboarding/${data.previewToken}`);
     } catch (err: any) {
       toast.error("Fehler beim Erstellen: " + err.message);
     }
@@ -205,7 +205,7 @@ export default function StartPage() {
       });
       trackConversion("form_start");
       toast.success("Website wird erstellt...");
-      navigate(`/preview/${data.previewToken}/onboarding`);
+      navigate(`/onboarding/${data.previewToken}`);
     } catch (err: any) {
       toast.error("Fehler beim Erstellen: " + err.message);
     }

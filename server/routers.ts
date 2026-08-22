@@ -151,7 +151,13 @@ import { onboardingV2Router } from "./onboardingV2/router";
 import { assertV2SafeWrite } from "./v2WriteGuard";
 import { classifyIndustry } from "./industryClassifier";
 import { getGmbPhotos } from "./gmbPhotos";
-import { runWebsiteGenerationV2 } from "./generationV2/runJob";
+import {
+  runWebsiteGenerationV2Job,
+  resolveV2Images,
+} from "./generationV2/runJob";
+import { selectPack } from "./generationV2/selectPack";
+import { generateSiteContent } from "./generationV2/generateSiteContent";
+import { mapGmbOpeningHoursToV2 } from "./generationV2/gmbOpeningHours";
 import { PACK_IDS, WebsiteDataV2Schema } from "@shared/siteContract/schema";
 import { SECTION_TYPES } from "@shared/siteContract/types";
 import type {
@@ -1636,13 +1642,32 @@ function getFallbackWebsiteData(
 }
 
 /**
- * Runs website generation in the background.
- * Updates job progress and status in the database.
+ * Ab Cutover (Plan B4a) läuft die Generierung ausschließlich über den
+ * v2-Pfad — kein Feature-Flag mehr im Sinne einer Laufzeit-Umschaltung.
+ * `V1_BODY_DISABLED` ist eine reine Doku-/Struktur-Konstante (kein Env-Var,
+ * keine Bedingung, die je anders ausgewertet wird): ein einfacher `return`
+ * vor dem v1-Rumpf würde ihn für TypeScript als unreachable markieren, was
+ * die CFG-basierte Null-Narrowing für `website`/`business` im Rumpf abschaltet
+ * (bestätigter tsc-Effekt) und dutzende neue TS18048-Fehler erzeugen würde,
+ * ohne dass der Rumpf jemals wieder ausgeführt wird. Der `if`-Umweg hält den
+ * Rumpf für den Checker "erreichbar" (normale Typprüfung) und läuft trotzdem
+ * nie — `runWebsiteGenerationV2Job` hat dieselbe Job-Semantik/Signatur wie
+ * diese Funktion, die als schmaler Wrapper bestehen bleibt, damit bestehende
+ * Aufrufer (`selfService.generateWebsiteAsync`, `outreach.queueBusinesses`,
+ * `pipelineGenerationBridge.ts`) unverändert bleiben. Der v1-Rumpf wird in
+ * Plan B4b gelöscht.
  */
+const V1_BODY_DISABLED = true;
+
 export async function runWebsiteGeneration(
   jobId: number,
   websiteId: number
 ): Promise<void> {
+  if (V1_BODY_DISABLED) {
+    return runWebsiteGenerationV2Job(jobId, websiteId);
+  }
+
+  // ---- v1-Rumpf (läuft nie, wird in Plan B4b entfernt) ----
   try {
     // Update job status to processing
     await updateGenerationJob(jobId, { status: "processing", progress: 10 });
@@ -1670,20 +1695,6 @@ export async function runWebsiteGeneration(
         )
       ),
     ]);
-
-    // v2-Pfad: LLM liefert nur noch Inhalte, Design kommt aus der Style-Pack-
-    // Verfassung (server/generationV2). Hinter Flag, damit der Altpfad
-    // unterhalb für PB_LAYOUT_V2 !== "1" unangetastet bleibt.
-    if (process.env.PB_LAYOUT_V2 === "1") {
-      await runWebsiteGenerationV2(
-        jobId,
-        website,
-        { ...business, openingHours: business.openingHours as string[] | null },
-        category,
-        industryKey
-      );
-      return;
-    }
 
     // Progress: 25% - Industry classified
     await updateGenerationJob(jobId, { progress: 25 });
@@ -3404,13 +3415,14 @@ export const appRouter = router({
         };
       }),
 
+    // v2-Regenerierung (Task 3, Cutover): gleiche Content-Pipeline wie die
+    // Erstgenerierung (server/generationV2) statt der alten LLM-Prompt-Pipeline
+    // hier inline — Pack-Rotation über selectPack, echte GMB-/Stock-Bilder über
+    // resolveV2Images, Fakten (Kontakt/Rating) werden NACH der Schema-Validierung
+    // gemergt (siehe generateSiteContent.ts). Neuer Slug + Token: der bisherige
+    // Preview-Link wird ungültig (Hinweistext in WebsitesPage.tsx).
     regenerate: adminProcedure
-      .input(
-        z.object({
-          websiteId: z.number(),
-          generateAiImage: z.boolean().default(false),
-        })
-      )
+      .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website)
@@ -3425,333 +3437,62 @@ export const appRouter = router({
             message: "Business not found",
           });
 
-        // Full re-generation: same pipeline as generate, but updates existing record
         const category = business.category || "Dienstleistung";
-        const industryKeyRegen = await classifyIndustry(
+        const industryKey = await classifyIndustry(category, business.name);
+        const packId = await selectPack(category, industryKey);
+        const images = await resolveV2Images(
+          { placeId: business.placeId, name: business.name },
           category,
-          business.name
+          industryKey
         );
-        // Use a different seed so layout/colors vary from the previous version
-        const seed = business.name + Date.now().toString();
-        const industryContext = buildIndustryContext(category, business.name);
-        const personalityHint = buildPersonalityHint(
-          business.name,
-          business.rating,
-          business.reviewCount || 0
-        );
-        const colorScheme = getIndustryColorScheme(
-          category,
-          seed,
-          industryKeyRegen
-        );
-        // Round-robin: guarantees a different layout than the previous generation
-        const { pool: layoutPoolRegen } = getLayoutPool(
-          category,
-          business.name,
-          industryKeyRegen
-        );
-        const layoutStyle = await getNextLayoutForIndustry(
-          industryKeyRegen,
-          layoutPoolRegen
-        );
-        const heroImageUrl = getHeroImageUrl(category, seed, industryKeyRegen);
-        const galleryImages = getGalleryImages(
-          category,
-          business.name,
-          industryKeyRegen
-        );
-
-        // Pick different templates than last time by shuffling
-        const matchingTemplates = selectTemplatesForIndustry(category, seed, 3);
-        const templateStyleDesc =
-          getTemplateStyleDescription(matchingTemplates);
-        const baseTemplateImageUrlsRegen =
-          getTemplateImageUrls(matchingTemplates);
-
-        // Merge with admin-uploaded templates for this industry+pool
-        const uploadedTemplatesRegen = await listTemplateUploadsByPool(
-          industryKeyRegen,
-          layoutStyle
-        );
-        const uploadedImageUrlsRegen = uploadedTemplatesRegen
-          .slice(0, 3)
-          .map(t => t.imageUrl);
-        const templateImageUrls = [
-          ...uploadedImageUrlsRegen,
-          ...baseTemplateImageUrlsRegen,
-        ].slice(0, 5);
-
-        let hoursText = "Nicht angegeben";
-        if (
-          business.openingHours &&
-          Array.isArray(business.openingHours) &&
-          (business.openingHours as string[]).length > 0
-        ) {
-          hoursText = (business.openingHours as string[]).join("\n");
-        }
-
-        const prompt = buildEnhancedPrompt({
-          business: {
-            ...business,
-            openingHours: business.openingHours as string[] | null,
-          },
-          category,
-          industryContext,
-          personalityHint,
-          layoutStyle,
-          colorScheme,
-          templateStyleDesc,
-          hoursText,
-          isRegenerate: true,
-        });
-
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content:
-                "Du bist ein PREISGEKRÖNTER Awwwards-Level Webtexter und Design-Direktor für lokale Unternehmen in Deutschland. Du erstellst eine NEUE VERSION einer Website mit komplett anderem Storytelling-Ansatz und frischen Texten. Antworte AUSSCHLIESSLICH mit validem JSON ohne Markdown-Codeblöcke. Das StoryBrand-Framework ist PFLICHT: Der Kunde ist der Held, das Unternehmen ist der Guide. Niemals generische Phrasen.",
-            },
-            ...(templateImageUrls.length > 0
-              ? [
-                  {
-                    role: "user" as const,
-                    content: [
-                      {
-                        type: "text" as const,
-                        text: `DESIGN-REFERENZEN: Hier sind ${templateImageUrls.length} professionelle Website-Templates.\n\n⚠️ WICHTIG – INDIVIDUALISIERUNG ERFORDERLICH:\n- Das Ergebnis DARF NICHT wie einer der Screenshots aussehen!\n- Nutze die Screenshots nur um das QUALITÄTSNIVEAU und spezifische DESIGN-PATTERNS zu verstehen\n- Erstelle ein KOMPLETT EIGENSTÄNDIGES Design für dieses Unternehmen\n- Die Archetyp-Farben und der Schreibstil haben ABSOLUTE PRIORITÄT`,
-                      },
-                      ...templateImageUrls.map(url => ({
-                        type: "image_url" as const,
-                        image_url: { url, detail: "low" as const },
-                      })),
-                    ],
-                  },
-                ]
-              : []),
-            { role: "user", content: prompt },
-          ],
-          response_format: { type: "json_object" },
-        });
-
-        const llmContent = response.choices[0]?.message?.content;
-        if (!llmContent || typeof llmContent !== "string") {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "KI-Regenerierung fehlgeschlagen",
-          });
-        }
-
-        let websiteData: any;
-        try {
-          const cleaned = llmContent
-            .replace(/^```(?:json)?\s*/i, "")
-            .replace(/\s*```\s*$/, "")
-            .trim();
-          websiteData = JSON.parse(cleaned);
-        } catch {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "KI hat kein valides JSON zurückgegeben",
-          });
-        }
-
-        // Optionally generate AI hero image
-        let finalHeroImageUrl = heroImageUrl;
-        if (input.generateAiImage) {
-          try {
-            const imagePrompt = `Professional hero image for ${business.name}, a ${category} business. ${websiteData.tagline || ""}. High quality, photorealistic, modern, clean composition. No text or logos.`;
-            const { url } = await generateImage({ prompt: imagePrompt });
-            if (url) finalHeroImageUrl = url;
-          } catch {
-            finalHeroImageUrl = heroImageUrl;
-          }
-        }
-
-        // Inject gallery images
-        if (galleryImages.length > 0 && websiteData.sections) {
-          const gallerySection = websiteData.sections.find(
-            (s: any) => s.type === "gallery"
-          );
-          if (gallerySection) {
-            gallerySection.items = galleryImages.map(url => ({
-              imageUrl: url,
-            }));
-            gallerySection.images = galleryImages;
-          }
-        }
-
-        // Inject real Google rating data
-        if (business.rating)
-          websiteData.googleRating = parseFloat(business.rating);
-        if (business.reviewCount)
-          websiteData.googleReviewCount = business.reviewCount;
-
-        // Inject real Google reviews – fetch fresh if not stored yet (backwards-compat)
-        let storedReviewsRegen2 = (business as any).googleReviews as Array<{
-          author_name: string;
-          rating: number;
-          text: string;
-          time: number;
-        }> | null;
-        if (
-          (!storedReviewsRegen2 || storedReviewsRegen2.length === 0) &&
-          business.placeId
-        ) {
-          const fresh2 = await getGmbReviews(business.placeId);
-          if (fresh2.length > 0) {
-            storedReviewsRegen2 = fresh2;
-            await updateBusiness(business.id, { googleReviews: fresh2 } as any);
-          }
-        }
-        const realReviews = storedReviewsRegen2;
-        let injectedRealReviews = false;
-        if (realReviews && realReviews.length > 0 && websiteData.sections) {
-          const testimonialsSection = websiteData.sections.find(
-            (s: any) => s.type === "testimonials"
-          );
-          if (testimonialsSection) {
-            const rawTopReviews = realReviews
-              .filter(r => r.text && r.text.length >= 20)
-              .sort((a, b) => b.rating - a.rating)
-              .slice(0, 5)
-              .map(r => ({
-                title: r.text.slice(0, 60) + (r.text.length > 60 ? "…" : ""),
-                description: r.text,
-                author: r.author_name,
-                rating: r.rating,
-                isRealReview: true,
-              }));
-
-            if (rawTopReviews.length >= 1) {
-              testimonialsSection.items = rawTopReviews;
-              testimonialsSection.isRealReviews = true;
-              injectedRealReviews = true;
-            }
-          }
-        }
-
-        // Strip testimonials if no real reviews could be injected – never show AI-generated fake reviews
-        if (!injectedRealReviews && websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter(
-            (s: any) => s.type !== "testimonials"
-          );
-        }
-
-        // Strip LLM stats + inject industry-specific process section
-        if (websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter(
-            (s: any) => s.type !== "stats" && s.type !== "process"
-          );
-          const proc = buildProcessSection(category);
-          const servIdx = websiteData.sections.findIndex(
-            (s: any) => s.type === "services"
-          );
-          websiteData.sections.splice(
-            servIdx >= 0 ? servIdx + 1 : websiteData.sections.length,
-            0,
-            { type: "process", ...proc }
-          );
-        }
-
-        // Inject real contact data from business record (overrides any AI-generated contact section)
-        if (websiteData.sections) {
-          websiteData.sections = websiteData.sections.filter(
-            (s: any) => s.type !== "contact"
-          );
-          const contactItems: Array<{
-            title: string;
-            description: string;
-            icon: string;
-          }> = [];
-          if (business.phone)
-            contactItems.push({
-              title: "Telefon",
-              description: business.phone,
-              icon: "Phone",
-            });
-          if (business.address)
-            contactItems.push({
-              title: "Adresse",
-              description: business.address,
-              icon: "MapPin",
-            });
-          if (hoursText && hoursText !== "Nicht angegeben")
-            contactItems.push({
-              title: "Öffnungszeiten",
-              description: hoursText,
-              icon: "Clock",
-            });
-          if (contactItems.length > 0) {
-            websiteData.sections.push({
-              type: "contact",
-              headline: "Kontakt",
-              items: contactItems,
-            });
-          }
-        }
-
-        // Sanitize designTokens: ensure enum values are valid
-        if (websiteData.designTokens) {
-          const dt = websiteData.designTokens;
-          if (!DESIGN_TOKEN_CONFIG.radius.includes(dt.borderRadius as any))
-            dt.borderRadius = "md";
-          if (!DESIGN_TOKEN_CONFIG.shadow.includes(dt.shadowStyle as any))
-            dt.shadowStyle = "soft";
-          if (!DESIGN_TOKEN_CONFIG.spacing.includes(dt.sectionSpacing as any))
-            dt.sectionSpacing = "normal";
-          if (!DESIGN_TOKEN_CONFIG.button.includes(dt.buttonStyle as any))
-            dt.buttonStyle = "filled";
-          if (
-            !Array.isArray(dt.sectionBackgrounds) ||
-            dt.sectionBackgrounds.length < 2
-          ) {
-            dt.sectionBackgrounds = [
-              colorScheme.background,
-              colorScheme.surface,
-              colorScheme.background,
-            ];
-          }
-          // Always enforce canonical layout fonts
-          {
-            const lfR = getLayoutFonts(layoutStyle);
-            dt.headlineFont = lfR.headlineFont;
-            dt.bodyFont = lfR.bodyFont;
-          }
-          if (!dt.accentColor || dt.accentColor.includes("["))
-            dt.accentColor = colorScheme.accent;
-          if (!dt.textColor || dt.textColor.includes("["))
-            dt.textColor = colorScheme.text;
-          if (!dt.backgroundColor || dt.backgroundColor.includes("["))
-            dt.backgroundColor = colorScheme.background;
-          if (!dt.cardBackground || dt.cardBackground.includes("["))
-            dt.cardBackground = colorScheme.surface;
-        }
-
-        // Generate a new slug and token for the regenerated version
+        const rating = business.rating ? parseFloat(business.rating) : NaN;
         const newSlug = slugify(business.name) + "-" + nanoid(4);
-        const newPreviewToken = nanoid(32);
 
-        // Update the existing website record with new content
+        const websiteData = await generateSiteContent({
+          packId,
+          business: {
+            name: business.name,
+            category,
+            city: business.searchRegion || undefined,
+          },
+          facts: {
+            slug: newSlug,
+            businessCategory: category,
+            ...(Number.isFinite(rating)
+              ? { google: { rating, reviewCount: business.reviewCount || 0 } }
+              : {}),
+            contact: {
+              phone: business.phone || undefined,
+              email: business.email || undefined,
+              city: business.searchRegion || undefined,
+              openingHours: mapGmbOpeningHoursToV2(
+                business.openingHours as string[] | null
+              ),
+            },
+            images,
+          },
+        });
+
+        const newPreviewToken = nanoid(32);
+        // Defensiv: generateSiteContent liefert bereits schema-valide v2-Daten,
+        // der zentrale Write-Guard bleibt trotzdem davor (Konsistenz mit allen
+        // anderen websiteData-Schreibpfaden, siehe v2WriteGuard.ts).
         assertV2SafeWrite(website.websiteData, websiteData);
         await updateWebsite(input.websiteId, {
           slug: newSlug,
           status: "preview",
-          websiteData,
-          colorScheme,
+          websiteData: websiteData as any,
           industry: category,
           previewToken: newPreviewToken,
-          heroImageUrl: finalHeroImageUrl,
-          layoutStyle,
           requiresAgeGate: shouldRequireAgeGate(category, business.name),
         });
+        invalidateSsrCache(newSlug);
 
         return {
           websiteId: input.websiteId,
           slug: newSlug,
           previewToken: newPreviewToken,
-          heroImageUrl: finalHeroImageUrl,
-          layoutStyle,
+          packId,
           regenerated: true,
         };
       }),
@@ -7675,47 +7416,47 @@ Wichtige Felder im JSON:
             message: "Website not found",
           });
 
-        // v2: die Legacy-Spalte layoutStyle wird von v2-Renderern nicht
-        // gelesen (stylePackId in websiteData entscheidet) — ohne diesen
-        // Zweig wäre die Picker-Bestätigung für v2-Sites wirkungslos.
+        // Ab Cutover (Task 3) gibt es nur noch den v2-Zweig: die Legacy-
+        // Spalte layoutStyle wird von v2-Renderern nicht gelesen
+        // (stylePackId in websiteData entscheidet). Websites im alten
+        // Format werden im Studio per "Website neu erstellen" (v2) neu
+        // generiert statt hier weiter im v1-Format gepflegt zu werden.
         const storedWebsiteData = website.websiteData as any;
-        if (storedWebsiteData?.version === 2) {
-          const candidatePackId = input.layoutStyle.toLowerCase();
-          if (!(PACK_IDS as readonly string[]).includes(candidatePackId)) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: `Unbekanntes Style-Pack: "${input.layoutStyle}"`,
-            });
-          }
-          const nextWebsiteData = {
-            ...storedWebsiteData,
-            stylePackId: candidatePackId as PackId,
-          };
-          const validated = WebsiteDataV2Schema.safeParse(nextWebsiteData);
-          if (!validated.success) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message:
-                "Diese Funktion unterstützt das neue Website-Format noch nicht.",
-            });
-          }
-          await updateWebsite(input.websiteId, {
-            layoutStyle: input.layoutStyle,
-            websiteData: validated.data as any,
-            ...(input.colorScheme
-              ? { colorScheme: input.colorScheme as any }
-              : {}),
+        if (storedWebsiteData?.version !== 2) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Diese Website nutzt noch das alte Format — bitte im Studio neu erstellen.",
           });
-          invalidateSsrCache(website.slug);
-          return { success: true };
         }
 
+        const candidatePackId = input.layoutStyle.toLowerCase();
+        if (!(PACK_IDS as readonly string[]).includes(candidatePackId)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Unbekanntes Style-Pack: "${input.layoutStyle}"`,
+          });
+        }
+        const nextWebsiteData = {
+          ...storedWebsiteData,
+          stylePackId: candidatePackId as PackId,
+        };
+        const validated = WebsiteDataV2Schema.safeParse(nextWebsiteData);
+        if (!validated.success) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Diese Funktion unterstützt das neue Website-Format noch nicht.",
+          });
+        }
         await updateWebsite(input.websiteId, {
           layoutStyle: input.layoutStyle,
+          websiteData: validated.data as any,
           ...(input.colorScheme
             ? { colorScheme: input.colorScheme as any }
             : {}),
         });
+        invalidateSsrCache(website.slug);
         return { success: true };
       }),
 
