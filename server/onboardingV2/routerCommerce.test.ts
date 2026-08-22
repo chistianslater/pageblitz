@@ -382,6 +382,38 @@ describe("onboardingV2.setCustomerEmail", () => {
 
     expect(mockedLifecycle.sendImmediateWelcomeEmail).not.toHaveBeenCalled();
   });
+
+  test("Finding I1: Website bereits verkauft (status !== 'preview') → BAD_REQUEST, kein Write", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "active",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "alt@x.de",
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 7,
+    } as any);
+    const ownerCaller = appRouter.createCaller({
+      user: { id: 7, email: "alt@x.de" },
+      req: { protocol: "https", headers: {} } as any,
+      res: {} as any,
+    } as TrpcContext);
+
+    await expect(
+      ownerCaller.onboardingV2.setCustomerEmail({
+        token: "tok",
+        email: "neu@x.de",
+      })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message:
+        "Die E-Mail-Adresse kann nach dem Kauf nur im Konto geändert werden.",
+    });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    expect(mockedLifecycle.sendImmediateWelcomeEmail).not.toHaveBeenCalled();
+  });
 });
 
 describe("onboardingV2.createCheckout", () => {

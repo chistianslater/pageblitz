@@ -7843,6 +7843,15 @@ Wichtige Felder im JSON:
     /**
      * Save customer email for admin-generated websites (called from Onboarding Chat step 1)
      * Sets customerEmail + captureStatus=email_captured on the website record.
+     *
+     * Finding I1: `customerEmail` ist frei schreibbar und darf NICHT mehr
+     * geändert werden können, sobald die Website verkauft ist — sonst
+     * könnte ein Angreifer nach dem Kauf die hinterlegte E-Mail auf die
+     * eigene ändern und darüber ein verwaistes Abo claimen
+     * (siehe server/onboardingV2/ownership.ts, isOrphanClaim, das seit I1
+     * gegen die unveränderliche subscriptions.checkoutEmail statt gegen
+     * dieses Feld prüft — dieser Guard ist die zweite, unabhängige Hälfte
+     * des Fixes).
      */
     saveCustomerEmail: publicProcedure
       .input(
@@ -7859,6 +7868,13 @@ Wichtige Felder im JSON:
             code: "NOT_FOUND",
             message: "Website not found",
           });
+        if (website.status !== "preview") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Die E-Mail-Adresse kann nach dem Kauf nur im Konto geändert werden.",
+          });
+        }
         await updateWebsite(input.websiteId, {
           customerEmail: input.email,
           captureStatus: "email_captured",

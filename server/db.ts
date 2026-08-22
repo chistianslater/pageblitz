@@ -874,10 +874,15 @@ export async function updateSubscriptionByWebsiteId(
 
 /**
  * Verwaiste Abos (userId = 0) für eine E-Mail: entstehen, wenn ein
- * anonymer Käufer beim Checkout kein Konto hat. `customerEmail` der
- * zugehörigen Website wird case-insensitiv/getrimmt verglichen.
+ * anonymer Käufer beim Checkout kein Konto hat. Vergleicht ausschließlich
+ * die unveränderliche `subscriptions.checkoutEmail` (vom Webhook einmalig
+ * beim Checkout gesetzt, siehe stripeWebhookHandlers.ts) — case-insensitiv/
+ * getrimmt. Finding I1: KEIN Fallback mehr auf
+ * `generatedWebsites.customerEmail` — dieses Feld ist frei schreibbar
+ * (selfService.saveCustomerEmail/onboardingV2.setCustomerEmail vor dem
+ * Kauf) und wäre damit ein Account-Takeover-Vektor für den Orphan-Claim.
  */
-export async function listOrphanSubscriptionsByCustomerEmail(
+export async function listOrphanSubscriptionsByCheckoutEmail(
   email: string
 ): Promise<Subscription[]> {
   const db = await getDb();
@@ -885,19 +890,15 @@ export async function listOrphanSubscriptionsByCustomerEmail(
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail) return [];
   const rows = await db
-    .select({ subscription: subscriptions })
+    .select()
     .from(subscriptions)
-    .innerJoin(
-      generatedWebsites,
-      eq(subscriptions.websiteId, generatedWebsites.id)
-    )
     .where(
       and(
         eq(subscriptions.userId, 0),
-        sql`LOWER(TRIM(${generatedWebsites.customerEmail})) = ${normalizedEmail}`
+        sql`LOWER(TRIM(${subscriptions.checkoutEmail})) = ${normalizedEmail}`
       )
     );
-  return rows.map(row => row.subscription);
+  return rows;
 }
 
 // ── Onboarding Responses ───────────────────────────────

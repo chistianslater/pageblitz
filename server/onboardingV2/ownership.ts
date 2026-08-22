@@ -40,14 +40,21 @@ export async function loadStudioWebsite(
     // Heilfall: Anonymer Käufer (Webhook konnte keinen Nutzer zuordnen,
     // userId = 0) hat sich inzwischen mit derselben E-Mail wie beim
     // Checkout registriert/eingeloggt. Zugriff erlauben und das Abo binden.
+    //
+    // Finding I1 (Account-Takeover): vergleicht gegen die unveränderliche
+    // `subscription.checkoutEmail` (vom Webhook einmalig beim Checkout
+    // gesetzt), NICHT gegen `website.customerEmail` — dieses Feld ist frei
+    // schreibbar (selfService.saveCustomerEmail/onboardingV2.setCustomerEmail)
+    // und ließe sich sonst nach dem Kauf auf eine beliebige E-Mail ändern,
+    // um ein fremdes verwaistes Abo zu claimen.
     const isOrphanClaim =
       !isOwner &&
       !!user &&
       !!user.email &&
       !!subscription &&
       subscription.userId === 0 &&
-      !!website.customerEmail &&
-      website.customerEmail.trim().toLowerCase() ===
+      !!subscription.checkoutEmail &&
+      subscription.checkoutEmail.trim().toLowerCase() ===
         user.email.trim().toLowerCase();
 
     if (!isOwner && !isOrphanClaim) {

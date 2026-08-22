@@ -81,15 +81,16 @@ describe("loadStudioWebsite", () => {
     ).resolves.toBeTruthy();
   });
 
-  test("verwaistes Abo (userId 0) + eingeloggter Nutzer mit gleicher E-Mail wie website.customerEmail → erlaubt, Abo wird gebunden", async () => {
+  test("verwaistes Abo (userId 0) + eingeloggter Nutzer mit gleicher E-Mail wie subscription.checkoutEmail → erlaubt, Abo wird gebunden", async () => {
     mockedDb.getWebsiteByToken.mockResolvedValue({
       id: 1,
       status: "active",
       websiteData: v2,
-      customerEmail: "Kunde@Example.com",
+      customerEmail: "irgendwas-anderes@example.com",
     } as any);
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
       userId: 0,
+      checkoutEmail: "Kunde@Example.com",
     } as any);
 
     const result = await loadStudioWebsite("tok", {
@@ -110,10 +111,50 @@ describe("loadStudioWebsite", () => {
     } as any);
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
       userId: 0,
+      checkoutEmail: "kunde@example.com",
     } as any);
 
     await expect(
       loadStudioWebsite("tok", { id: 42, email: "andere@example.com" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedLink).not.toHaveBeenCalled();
+  });
+
+  test("Finding I1: verkaufte Website mit nachträglich geändertem website.customerEmail bindet KEIN Abo — nur subscription.checkoutEmail zählt (Account-Takeover-Schutz)", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 1,
+      status: "active",
+      websiteData: v2,
+      // Angreifer hat customerEmail nachträglich auf die eigene Adresse
+      // geändert (z. B. über einen ungegateten Endpunkt vor Finding I1) —
+      // darf trotzdem keinen Zugriff/Claim mehr auslösen.
+      customerEmail: "angreifer@example.com",
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 0,
+      checkoutEmail: "echter-kaeufer@example.com",
+    } as any);
+
+    await expect(
+      loadStudioWebsite("tok", { id: 42, email: "angreifer@example.com" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedLink).not.toHaveBeenCalled();
+  });
+
+  test("verwaistes Abo ohne checkoutEmail (null) → kein Claim, auch bei passendem website.customerEmail", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 1,
+      status: "active",
+      websiteData: v2,
+      customerEmail: "kunde@example.com",
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 0,
+      checkoutEmail: null,
+    } as any);
+
+    await expect(
+      loadStudioWebsite("tok", { id: 42, email: "kunde@example.com" })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockedLink).not.toHaveBeenCalled();
   });

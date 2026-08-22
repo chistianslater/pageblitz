@@ -169,6 +169,14 @@ export const subscriptions = mysqlTable("subscriptions", {
     .default("monthly"),
   addOns: json("addOns"), // { contactForm: bool, gallery: bool, menu: bool, pricelist: bool }
   currentPeriodEnd: bigint("currentPeriodEnd", { mode: "number" }),
+  // Finding I1: die Checkout-E-Mail (session.customer_details?.email ??
+  // session.customer_email), lowercase/getrimmt, EINMALIG vom Webhook
+  // gesetzt und danach nie mehr verändert — im Gegensatz zu
+  // generatedWebsites.customerEmail (frei schreibbar über
+  // selfService.saveCustomerEmail/onboardingV2.setCustomerEmail vor dem
+  // Kauf) ist dieses Feld die einzige vertrauenswürdige Quelle für den
+  // Orphan-Claim (server/onboardingV2/ownership.ts).
+  checkoutEmail: varchar("checkoutEmail", { length: 320 }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
 });

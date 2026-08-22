@@ -221,4 +221,81 @@ describe("handleCheckoutCompleted", () => {
     await handleCheckoutCompleted(fakeSession(), deps);
     expect(mockedCancelLifecycleEmails).toHaveBeenCalledWith(42, "converted");
   });
+
+  // ── Finding I1: unveränderliche checkoutEmail am Abo ─────────────────────
+
+  test("speichert checkoutEmail aus customer_details.email (lowercase/getrimmt), bevorzugt vor customer_email", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({
+        customer_email: "anders@x.de",
+        customer_details: { email: "  Kunde@X.de  " } as any,
+      }),
+      deps
+    );
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ checkoutEmail: "kunde@x.de" })
+    );
+  });
+
+  test("Fallback auf customer_email, wenn customer_details.email fehlt", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({ customer_email: "Kunde@X.de", customer_details: null }),
+      deps
+    );
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ checkoutEmail: "kunde@x.de" })
+    );
+  });
+
+  test("weder customer_details.email noch customer_email → checkoutEmail null", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({ customer_email: null, customer_details: null }),
+      deps
+    );
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ checkoutEmail: null })
+    );
+  });
+
+  // ── Finding M5: addOns-Metadaten-Parse abgesichert ───────────────────────
+
+  test("kaputtes JSON in addOns-Metadaten → Fallback {}, kein Crash, Warnung geloggt", async () => {
+    const deps = makeDeps();
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await expect(
+      handleCheckoutCompleted(
+        fakeSession({
+          metadata: {
+            websiteId: "42",
+            billingInterval: "yearly",
+            addOns: "{nicht valides json",
+          },
+        }),
+        deps
+      )
+    ).resolves.toBeUndefined();
+
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        addOns: {
+          contactForm: false,
+          gallery: false,
+          menu: false,
+          pricelist: false,
+          aiChat: false,
+          booking: false,
+          team: false,
+        },
+      })
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("addOns-Metadaten nicht parsebar"),
+      expect.any(Error)
+    );
+    warnSpy.mockRestore();
+  });
 });

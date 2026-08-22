@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 vi.mock("./db", () => ({
-  listOrphanSubscriptionsByCustomerEmail: vi.fn(),
+  listOrphanSubscriptionsByCheckoutEmail: vi.fn(),
   updateSubscription: vi.fn(),
 }));
 import * as db from "./db";
@@ -13,7 +13,7 @@ beforeEach(() => vi.clearAllMocks());
 
 describe("linkOrphanSubscriptionsToUser", () => {
   test("bindet alle verwaisten Abos an den Nutzer und gibt die Anzahl zurück", async () => {
-    mockedDb.listOrphanSubscriptionsByCustomerEmail.mockResolvedValue([
+    mockedDb.listOrphanSubscriptionsByCheckoutEmail.mockResolvedValue([
       { id: 1 } as any,
       { id: 2 } as any,
     ]);
@@ -31,7 +31,7 @@ describe("linkOrphanSubscriptionsToUser", () => {
   });
 
   test("keine Treffer → 0, keine Updates", async () => {
-    mockedDb.listOrphanSubscriptionsByCustomerEmail.mockResolvedValue([]);
+    mockedDb.listOrphanSubscriptionsByCheckoutEmail.mockResolvedValue([]);
 
     const count = await linkOrphanSubscriptionsToUser(42, "kunde@example.com");
 
@@ -40,7 +40,7 @@ describe("linkOrphanSubscriptionsToUser", () => {
   });
 
   test("idempotent: zweiter Aufruf nach dem Binden findet nichts mehr", async () => {
-    mockedDb.listOrphanSubscriptionsByCustomerEmail
+    mockedDb.listOrphanSubscriptionsByCheckoutEmail
       .mockResolvedValueOnce([{ id: 1 } as any])
       .mockResolvedValueOnce([]);
 
@@ -53,12 +53,12 @@ describe("linkOrphanSubscriptionsToUser", () => {
   });
 
   test("gibt die E-Mail unverändert an die DB-Abfrage weiter (Normalisierung liegt in db.ts)", async () => {
-    mockedDb.listOrphanSubscriptionsByCustomerEmail.mockResolvedValue([]);
+    mockedDb.listOrphanSubscriptionsByCheckoutEmail.mockResolvedValue([]);
 
     await linkOrphanSubscriptionsToUser(42, "  Kunde@Example.com ");
 
     expect(
-      mockedDb.listOrphanSubscriptionsByCustomerEmail
+      mockedDb.listOrphanSubscriptionsByCheckoutEmail
     ).toHaveBeenCalledWith("  Kunde@Example.com ");
   });
 });

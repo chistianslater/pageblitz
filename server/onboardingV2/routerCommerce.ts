@@ -169,6 +169,21 @@ export const commerceProcedures = {
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
+      // Finding I1: nach dem Kauf darf die Kunden-E-Mail nicht mehr über
+      // das Studio geändert werden — sonst könnte der (neue) Kontoinhaber
+      // sie auf eine beliebige Adresse setzen und darüber sein eigenes Abo
+      // wirkungslos machen bzw. Verwirrung stiften. `isOrphanClaim`
+      // (ownership.ts) hängt seither ohnehin an der unveränderlichen
+      // `subscriptions.checkoutEmail`, nicht mehr an diesem Feld — dieser
+      // Guard verhindert zusätzlich, dass das Feld selbst nach dem Kauf
+      // noch bewegt wird.
+      if (loaded.website.status !== "preview") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Die E-Mail-Adresse kann nach dem Kauf nur im Konto geändert werden.",
+        });
+      }
       const { email, marketingConsent } = input;
       const normalize = (value: string) => value.trim().toLowerCase();
       const emailChanged =

@@ -59,10 +59,22 @@ export async function handleCheckoutCompleted(
   const website = await deps.getWebsiteById(websiteId);
   if (!website) return;
 
-  // Parse addOns und billingInterval aus den Metadaten
-  const rawAddOns = session.metadata?.addOns
-    ? JSON.parse(session.metadata.addOns)
-    : {};
+  // Parse addOns und billingInterval aus den Metadaten. try/catch (Finding
+  // M5): kaputte/manipulierte Metadaten dürfen den gesamten Webhook nicht
+  // mit einer ungefangenen Exception abbrechen (Stripe würde sonst retryen,
+  // createSubscription liefe erneut und legte eine doppelte Zeile an, da es
+  // nicht idempotent ist) — Fallback auf {} (= alle Add-ons false).
+  let rawAddOns: any = {};
+  if (session.metadata?.addOns) {
+    try {
+      rawAddOns = JSON.parse(session.metadata.addOns);
+    } catch (err) {
+      console.warn(
+        "[Webhook] addOns-Metadaten nicht parsebar, verwende {}:",
+        err
+      );
+    }
+  }
   const billingInterval: "monthly" | "yearly" =
     session.metadata?.billingInterval === "monthly" ? "monthly" : "yearly";
 
@@ -86,6 +98,21 @@ export async function handleCheckoutCompleted(
       console.warn("[Webhook] Could not fetch subscription period end:", e);
     }
   }
+
+  // Finding I1: die Checkout-E-Mail wird EINMALIG hier, beim Checkout,
+  // unveränderlich am Abo gespeichert (subscriptions.checkoutEmail) — im
+  // Unterschied zu generatedWebsites.customerEmail (frei schreibbar über
+  // selfService.saveCustomerEmail/onboardingV2.setCustomerEmail) ist dies
+  // die einzige vertrauenswürdige Quelle für den Orphan-Claim
+  // (server/onboardingV2/ownership.ts, isOrphanClaim).
+  // customer_details.email ist Stripes empfohlenes Feld für die vom Käufer
+  // im Checkout eingegebene E-Mail; customer_email (vom Merchant vorbelegt)
+  // bleibt Fallback für ältere/abweichende Session-Konfigurationen.
+  const rawCheckoutEmail =
+    session.customer_details?.email ?? session.customer_email ?? null;
+  const checkoutEmail = rawCheckoutEmail
+    ? rawCheckoutEmail.trim().toLowerCase()
+    : null;
 
   // userId auflösen: zuerst Metadaten, sonst über customer_email
   let userId = parseInt(session.metadata?.userId || "0") || 0;
@@ -119,6 +146,7 @@ export async function handleCheckoutCompleted(
     plan: "base",
     billingInterval,
     addOns,
+    checkoutEmail,
     currentPeriodEnd,
     createdAt: Date.now(),
     updatedAt: Date.now(),
