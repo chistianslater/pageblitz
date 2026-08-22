@@ -68,9 +68,17 @@ const SPA_ROUTES: RegExp[] = [
   /^\/site\/[^/]+(\/(impressum|datenschutz))?$/,
   /^\/websites\/\d+\/onboarding$/,
   /^\/layout-preview\/[^/]+$/,
+  // Studio (v2 Onboarding/Editor) — Direktaufruf/Reload muss von der SPA
+  // bedient werden statt einem 404, siehe client/src/App.tsx "/onboarding/:token".
+  /^\/onboarding\/[^/]+$/,
 ];
 
+/** Pure, testbare Variante von isKnownSpaRoute — nimmt bereits einen reinen Pfad (ohne Query). */
+export function isSpaRoute(pathname: string): boolean {
+  const normalized = pathname.split("?")[0].replace(/\/+$/, "") || "/";
+  return SPA_ROUTES.some((route) => route.test(normalized));
+}
+
 function isKnownSpaRoute(originalUrl: string): boolean {
-  const pathname = originalUrl.split("?")[0].replace(/\/+$/, "") || "/";
-  return SPA_ROUTES.some((route) => route.test(pathname));
+  return isSpaRoute(originalUrl);
 }

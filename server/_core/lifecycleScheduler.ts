@@ -72,8 +72,13 @@ export function verifyLifecycleToken(
 }
 
 // ── URL-Builder ────────────────────────────────────────────────────────────
-export function buildResumeLink(previewToken: string): string {
-  return `${APP_BASE_URL}/preview/${previewToken}/onboarding`;
+/**
+ * Baut den Link ins Studio (v2-Onboarding/-Editor) für einen previewToken.
+ * Einziger Ort, der die Studio-URL-Form kennt — siehe Cutover-Spec §3
+ * ("Lifecycle-Mail-Links auf /onboarding/:token mit echtem Token").
+ */
+export function buildStudioUrl(previewToken: string): string {
+  return `${APP_BASE_URL}/onboarding/${previewToken}`;
 }
 
 export function buildExtendLink(websiteId: number, email: string): string {
@@ -147,8 +152,8 @@ export async function sendImmediateWelcomeEmail(
     }
 
     const resumeLink = website.previewToken
-      ? buildResumeLink(website.previewToken)
-      : `${APP_BASE_URL}/preview/${website.id}/onboarding`;
+      ? buildStudioUrl(website.previewToken)
+      : `${APP_BASE_URL}/my-website`;
 
     const data: LifecycleEmailData = {
       firstName,
@@ -471,8 +476,8 @@ async function buildEmailData(
   }
 
   const resumeLink = website.previewToken
-    ? buildResumeLink(website.previewToken)
-    : `${APP_BASE_URL}/preview/${website.id}/onboarding`;
+    ? buildStudioUrl(website.previewToken)
+    : `${APP_BASE_URL}/my-website`;
 
   // Extend-Link nur zeigen, wenn noch Extensions verfügbar
   const canExtend = (website.extensionsUsed ?? 0) < MAX_EXTENSIONS;

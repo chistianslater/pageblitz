@@ -252,6 +252,21 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
+  test("customer.updateWebsiteContent auf v2-Website → BAD_REQUEST (Studio-Hinweis), kein Write", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: baseWebsiteRow(), subscription: { status: "active" } },
+    ] as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.updateWebsiteContent({
+        websiteId: 42,
+        patch: { tagline: "Neue Zeile" },
+      })
+    ).rejects.toThrow(TRPCError);
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
   test("website.regenerate auf v2-Website mit korrumpierendem LLM-Payload → TRPCError, kein Write", async () => {
     mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.getBusinessById.mockResolvedValue({

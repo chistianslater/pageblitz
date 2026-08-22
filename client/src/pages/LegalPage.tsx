@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Loader2, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { pickLegalHtml } from "@/lib/legalHtml";
 
 export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
@@ -73,9 +74,11 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const isLightPrimary = parseInt(primaryColor.replace("#", "").slice(0, 2), 16) > 180;
   const textOnPrimary = isLightPrimary ? "#1e293b" : "#ffffff";
 
-  const impressumHtml = websiteData?.impressumHtml;
-  const datenschutzHtml = websiteData?.datenschutzHtml;
-  const html = isImpressum ? impressumHtml : isDatenschutz ? datenschutzHtml : null;
+  const html = isImpressum
+    ? pickLegalHtml(websiteData, "impressum")
+    : isDatenschutz
+      ? pickLegalHtml(websiteData, "datenschutz")
+      : null;
   const pageTitle = isImpressum ? "Impressum" : "Datenschutzerklärung";
 
   return (

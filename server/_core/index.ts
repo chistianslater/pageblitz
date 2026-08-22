@@ -358,7 +358,7 @@ async function startServer() {
       const { getWebsiteById } = await import("../db");
       const website = await getWebsiteById(verified.websiteId);
       const ctaHref = website?.previewToken
-        ? `/preview/${website.previewToken}/onboarding`
+        ? `/onboarding/${website.previewToken}`
         : "/";
       res.send(
         renderInfoPage(

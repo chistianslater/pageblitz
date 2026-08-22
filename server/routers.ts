@@ -4004,7 +4004,7 @@ export const appRouter = router({
           "./db"
         );
         const APP_BASE_URL = process.env.APP_BASE_URL || "https://pageblitz.de";
-        const redirectUrl = `/preview/${website.previewToken}/onboarding`;
+        const redirectUrl = `/onboarding/${website.previewToken}`;
         const token = await createMagicTokenFn(
           website.customerEmail,
           redirectUrl,
@@ -6306,8 +6306,18 @@ Kontext: ${input.context}`,
             message: "Website gehört nicht zu deinem Account",
           });
         const website = owned.website;
-        // Patch websiteData
-        const websiteData = (website.websiteData as any) || {};
+        // v2-Dokumente werden ausschließlich im Studio bearbeitet (siehe
+        // Cutover-Spec §3) — dieser Alt-Editor darf sie nicht mehr anfassen.
+        if (WebsiteDataV2Schema.safeParse(website.websiteData).success) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Diese Website bearbeitest du im Studio.",
+          });
+        }
+        // Patch websiteData — auf einer Kopie arbeiten, nie das geladene
+        // Dokument in-place mutieren (assertV2SafeWrite unten prüft sonst
+        // gegen ein bereits verändertes "storedWebsiteData").
+        const websiteData = structuredClone((website.websiteData as any) || {});
         const {
           tagline,
           description,
@@ -6377,6 +6387,7 @@ Kontext: ${input.context}`,
             });
           }
         }
+        assertV2SafeWrite(website.websiteData, websiteData);
         await updateWebsite(input.websiteId, updateData);
         return { success: true };
       }),
@@ -7926,7 +7937,7 @@ Wichtige Felder im JSON:
 
         const business = await getBusinessById(website.businessId);
         const businessName = business?.name || "Ihr Unternehmen";
-        const previewUrl = `${ENV.appId}/preview/${website.previewToken}/onboarding`;
+        const previewUrl = `${ENV.appId}/onboarding/${website.previewToken}`;
         const startUrl = `${ENV.appId}/start`;
 
         const result = await sendEmailFn({
