@@ -20,12 +20,18 @@ export async function loadStudioWebsite(
 ): Promise<StudioWebsite> {
   const website = await getWebsiteByToken(token);
   if (!website) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Diese Vorschau existiert nicht (mehr)." });
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Diese Vorschau existiert nicht (mehr).",
+    });
   }
   if (website.status !== "preview") {
     const subscription = await getSubscriptionByWebsiteId(website.id);
     if (!user || !subscription || subscription.userId !== user.id) {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Diese Website gehört einem anderen Konto." });
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Diese Website gehört einem anderen Konto.",
+      });
     }
   }
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
