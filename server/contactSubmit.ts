@@ -28,6 +28,16 @@ export interface ContactSubmitInput {
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 const RATE_LIMIT_MAX_PER_HOUR = 5;
 
+/** HTML-Escaping für alle Nutzer-/Business-Eingaben, die in die Mail eingebettet werden. */
+function esc(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function buildOwnerNotificationHtml(input: {
   businessName: string;
   name: string;
@@ -35,7 +45,11 @@ function buildOwnerNotificationHtml(input: {
   phone?: string;
   message: string;
 }): string {
-  const { businessName, name, email, phone, message } = input;
+  const businessName = esc(input.businessName);
+  const name = esc(input.name);
+  const email = esc(input.email);
+  const phone = input.phone ? esc(input.phone) : undefined;
+  const message = esc(input.message);
   return `
 <!DOCTYPE html>
 <html>
@@ -54,7 +68,7 @@ function buildOwnerNotificationHtml(input: {
       </table>
       <div style="margin-top: 24px; background: #f9f9f9; border-radius: 8px; padding: 20px;">
         <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em;">Nachricht</p>
-        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
       </div>
       <div style="margin-top: 24px; text-align: center;">
         <a href="mailto:${email}?subject=Re: Kontaktanfrage" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 8px;">Direkt antworten</a>
@@ -155,6 +169,7 @@ const contactRouteSchema = z.object({
   email: z.string().email().max(320),
   phone: z.string().max(50).optional(),
   message: z.string().min(1).max(5000),
+  customFields: z.record(z.string(), z.string()).optional(),
   website_url: z.string().max(0).optional(),
 });
 
@@ -195,7 +210,16 @@ function buildFormRedirectLocation(
   if (referer) {
     try {
       const refUrl = new URL(referer);
-      if (refUrl.hostname === req.hostname) {
+      // Same-origin UND ein "echter" Pfad: `refUrl.pathname` beginnt bei einer
+      // gültigen URL zwar immer mit "/", aber ein Referer wie
+      // "https://<host>//evil.com/x" parst zu einem Pfad, der mit "//"
+      // beginnt — das ist protokollrelativ und würde im redirect() als
+      // Ziel auf einem FREMDEN Host interpretiert (Browser lesen
+      // "//evil.com/x" als "https://evil.com/x"). Solche Pfade explizit
+      // ablehnen, sonst Open-Redirect über einen gefälschten Referer.
+      const isRealPath =
+        refUrl.pathname.startsWith("/") && !refUrl.pathname.startsWith("//");
+      if (refUrl.hostname === req.hostname && isRealPath) {
         pathname = refUrl.pathname || "/";
       }
     } catch {

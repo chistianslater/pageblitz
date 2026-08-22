@@ -105,6 +105,29 @@ describe("submitContactRequest", () => {
       expect.objectContaining({ to: "info@brandt.de" })
     );
   });
+
+  test("Owner-Mail escaped alle Eingaben (Name/E-Mail/Telefon/Business) gegen HTML-Injection", async () => {
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "<b onmouseover=alert(1)>Schreinerei</b>",
+      email: "info@brandt.de",
+    } as any);
+
+    await submitContactRequest({
+      slug: "brandt",
+      name: "<img src=x onerror=alert(1)>",
+      email: "anna@example.com",
+      phone: '"><script>alert(1)</script>',
+      message: "Hallo",
+      ip: "1.2.3.4",
+    });
+
+    const call = mockedSendEmail.mock.calls[0][0] as { html: string };
+    expect(call.html).toContain("&lt;img");
+    expect(call.html).not.toContain("<img");
+    expect(call.html).not.toContain("<script>");
+    expect(call.html).not.toContain("<b onmouseover=alert(1)>");
+  });
 });
 
 // ── POST /api/site/:slug/contact (Express, supertest) ───────────────────────
@@ -201,6 +224,18 @@ describe("POST /api/site/:slug/contact", () => {
 
     expect(res.status).toBe(303);
     expect(res.headers.location).toBe("/?kontakt=gesendet#kontakt");
+  });
+
+  test("Form-POST mit protokollrelativem Referer-Pfad ('//evil.com/x') → kein Open-Redirect, Fallback auf '/'", async () => {
+    const res = await request(buildApp())
+      .post("/api/site/brandt/contact")
+      .set("Content-Type", "application/x-www-form-urlencoded")
+      .set("Referer", "http://127.0.0.1//evil.com/x")
+      .send("name=Anna&email=anna%40example.com&message=Hallo");
+
+    expect(res.status).toBe(303);
+    expect(res.headers.location).toBe("/?kontakt=gesendet#kontakt");
+    expect(res.headers.location.startsWith("//")).toBe(false);
   });
 
   test("Form-POST bei Rate-Limit → 303 Redirect mit ?kontakt=fehler", async () => {
