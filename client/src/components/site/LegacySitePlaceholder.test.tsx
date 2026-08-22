@@ -5,7 +5,9 @@ import { LegacySitePlaceholder } from "./LegacySitePlaceholder";
 
 describe("LegacySitePlaceholder", () => {
   test("zeigt Hinweis und Business-Namen", () => {
-    const html = renderToStaticMarkup(<LegacySitePlaceholder businessName="Schreinerei Brandt" />);
+    const html = renderToStaticMarkup(
+      <LegacySitePlaceholder businessName="Schreinerei Brandt" />
+    );
     expect(html).toContain("Schreinerei Brandt");
     expect(html).toContain("wird gerade aktualisiert");
   });
