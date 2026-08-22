@@ -14,20 +14,25 @@ export function serveStatic(app: Express) {
   }
 
   // Hashed assets (JS/CSS with content hash in filename) → immutable, 1 year
-  app.use("/assets", express.static(path.join(distPath, "assets"), {
-    maxAge: "1y",
-    immutable: true,
-  }));
+  app.use(
+    "/assets",
+    express.static(path.join(distPath, "assets"), {
+      maxAge: "1y",
+      immutable: true,
+    })
+  );
 
   // All other static files (index.html, favicon, etc.) → short cache
-  app.use(express.static(distPath, {
-    maxAge: "5m",
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith(".html")) {
-        res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-      }
-    },
-  }));
+  app.use(
+    express.static(distPath, {
+      maxAge: "5m",
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith(".html")) {
+          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        }
+      },
+    })
+  );
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (req, res) => {
@@ -40,7 +45,10 @@ export function serveStatic(app: Express) {
     // und drückt die wahrgenommene Qualität der Domain.
     // Jetzt: unbekannter Pfad → echter 404. index.html geht trotzdem raus, damit
     // der Nutzer die gestaltete NotFound-Seite der App sieht statt nackten Texts.
-    if (!isCustomerSiteHost(req.hostname) && !isKnownSpaRoute(req.originalUrl)) {
+    if (
+      !isCustomerSiteHost(req.hostname) &&
+      !isKnownSpaRoute(req.originalUrl)
+    ) {
       return res.status(404).sendFile(indexFile);
     }
     res.sendFile(indexFile);
@@ -76,7 +84,7 @@ const SPA_ROUTES: RegExp[] = [
 /** Pure, testbare Variante von isKnownSpaRoute — nimmt bereits einen reinen Pfad (ohne Query). */
 export function isSpaRoute(pathname: string): boolean {
   const normalized = pathname.split("?")[0].replace(/\/+$/, "") || "/";
-  return SPA_ROUTES.some((route) => route.test(normalized));
+  return SPA_ROUTES.some(route => route.test(normalized));
 }
 
 function isKnownSpaRoute(originalUrl: string): boolean {

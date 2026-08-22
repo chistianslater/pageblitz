@@ -21,11 +21,12 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const website = data?.website;
 
   const regenerateMutation = trpc.onboarding.regenerateLegalPages.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       if (result.success) {
-        toast.success(result.regenerated
-          ? "Seite erfolgreich regeneriert!"
-          : "Rechtliche Daten unvollständig - Impressum/Datenschutz konnten nicht generiert werden."
+        toast.success(
+          result.regenerated
+            ? "Seite erfolgreich regeneriert!"
+            : "Rechtliche Daten unvollständig - Impressum/Datenschutz konnten nicht generiert werden."
         );
         if (result.regenerated) refetch();
       } else {
@@ -33,7 +34,7 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
       }
       setIsRegenerating(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Fehler beim Regenerieren: " + error.message);
       setIsRegenerating(false);
     },
@@ -64,14 +65,18 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const websiteData = website.websiteData as any;
   const colorScheme = (website as any).colorScheme as any;
   const primaryColor = colorScheme?.primary || "#2563eb";
-  const businessName = websiteData?.businessName || (data as any)?.business?.name || "";
+  const businessName =
+    websiteData?.businessName || (data as any)?.business?.name || "";
 
   // Back link: subdomain → "/" , /site/:slug/* → "/site/:slug"
-  const isSubdomain = /^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(window.location.hostname);
+  const isSubdomain = /^[a-z0-9][a-z0-9-]*\.pageblitz\.de$/.test(
+    window.location.hostname
+  );
   const backHref = isSubdomain ? "/" : `/site/${slug}`;
 
   // Determine if text on primary is light or dark
-  const isLightPrimary = parseInt(primaryColor.replace("#", "").slice(0, 2), 16) > 180;
+  const isLightPrimary =
+    parseInt(primaryColor.replace("#", "").slice(0, 2), 16) > 180;
   const textOnPrimary = isLightPrimary ? "#1e293b" : "#ffffff";
 
   const html = isImpressum
@@ -114,7 +119,9 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
         {!html ? (
           <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
             <AlertCircle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-3 text-gray-900">{pageTitle}</h1>
+            <h1 className="text-2xl font-bold mb-3 text-gray-900">
+              {pageTitle}
+            </h1>
             <p className="text-gray-600 mb-3">
               Diese Seite wurde noch nicht generiert. Dies kann passieren, wenn:
             </p>
@@ -129,7 +136,11 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
               className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white disabled:opacity-50 transition-colors"
               style={{ backgroundColor: primaryColor }}
             >
-              {isRegenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {isRegenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
               {isRegenerating ? "Wird generiert..." : "Seite jetzt generieren"}
             </button>
           </div>
@@ -167,18 +178,31 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
         className="w-full py-4 mt-4"
         style={{ backgroundColor: primaryColor }}
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between flex-wrap gap-2 text-xs"
+        <div
+          className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between flex-wrap gap-2 text-xs"
           style={{ color: textOnPrimary, opacity: 0.8 }}
         >
-          <span>© {new Date().getFullYear()} {businessName}</span>
+          <span>
+            © {new Date().getFullYear()} {businessName}
+          </span>
           <div className="flex gap-4">
             {isImpressum ? null : (
-              <a href={isSubdomain ? "/impressum" : `/site/${slug}/impressum`} className="hover:underline" style={{ color: textOnPrimary }}>
+              <a
+                href={isSubdomain ? "/impressum" : `/site/${slug}/impressum`}
+                className="hover:underline"
+                style={{ color: textOnPrimary }}
+              >
                 Impressum
               </a>
             )}
             {isDatenschutz ? null : (
-              <a href={isSubdomain ? "/datenschutz" : `/site/${slug}/datenschutz`} className="hover:underline" style={{ color: textOnPrimary }}>
+              <a
+                href={
+                  isSubdomain ? "/datenschutz" : `/site/${slug}/datenschutz`
+                }
+                className="hover:underline"
+                style={{ color: textOnPrimary }}
+              >
                 Datenschutz
               </a>
             )}

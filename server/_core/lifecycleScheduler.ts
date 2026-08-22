@@ -41,7 +41,7 @@ export function createLifecycleToken(
   action: "extend" | "unsubscribe",
   websiteId: number,
   email: string,
-  validForMs = 30 * 24 * 60 * 60 * 1000, // 30 Tage
+  validForMs = 30 * 24 * 60 * 60 * 1000 // 30 Tage
 ): string {
   const expiresAt = Date.now() + validForMs;
   const payload = `${action}:${websiteId}:${email}:${expiresAt}`;
@@ -51,14 +51,23 @@ export function createLifecycleToken(
 }
 
 export function verifyLifecycleToken(
-  token: string,
-): { action: "extend" | "unsubscribe"; websiteId: number; email: string } | null {
+  token: string
+): {
+  action: "extend" | "unsubscribe";
+  websiteId: number;
+  email: string;
+} | null {
   try {
     const [encoded, sig] = token.split(".");
     if (!encoded || !sig) return null;
     const payload = Buffer.from(encoded, "base64url").toString("utf8");
     const expected = signToken(payload);
-    if (!crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) {
+    if (
+      !crypto.timingSafeEqual(
+        Buffer.from(sig, "hex"),
+        Buffer.from(expected, "hex")
+      )
+    ) {
       return null;
     }
     const [action, websiteIdStr, email, expiresAtStr] = payload.split(":");
@@ -102,7 +111,7 @@ export function buildWelcomeBackLink(seedToken: string): string {
  */
 export async function sendImmediateWelcomeEmail(
   websiteId: number,
-  email: string,
+  email: string
 ): Promise<void> {
   try {
     const db = await getDb();
@@ -172,12 +181,19 @@ export async function sendImmediateWelcomeEmail(
       replyTo: "christian@pageblitz.de",
     });
     if (result.success) {
-      console.log(`[Lifecycle] Welcome-link email sent to ${email} (website ${websiteId})`);
+      console.log(
+        `[Lifecycle] Welcome-link email sent to ${email} (website ${websiteId})`
+      );
     } else {
-      console.warn(`[Lifecycle] Welcome-link send failed for website ${websiteId}: ${result.error}`);
+      console.warn(
+        `[Lifecycle] Welcome-link send failed for website ${websiteId}: ${result.error}`
+      );
     }
   } catch (err) {
-    console.error(`[Lifecycle] sendImmediateWelcomeEmail error for website ${websiteId}:`, err);
+    console.error(
+      `[Lifecycle] sendImmediateWelcomeEmail error for website ${websiteId}:`,
+      err
+    );
   }
 }
 
@@ -186,10 +202,15 @@ export async function sendImmediateWelcomeEmail(
  * Plant die initialen Lifecycle-Mails (reminder_2h, reminder_24h, reminder_final)
  * und setzt reservedUntil auf +48h. Idempotent – doppelte Aufrufe überschreiben nicht.
  */
-export async function scheduleInitialLifecycleEmails(websiteId: number, email: string): Promise<void> {
+export async function scheduleInitialLifecycleEmails(
+  websiteId: number,
+  email: string
+): Promise<void> {
   const db = await getDb();
   if (!db) {
-    console.warn("[Lifecycle] DB unavailable, skipping scheduleInitialLifecycleEmails");
+    console.warn(
+      "[Lifecycle] DB unavailable, skipping scheduleInitialLifecycleEmails"
+    );
     return;
   }
 
@@ -198,12 +219,16 @@ export async function scheduleInitialLifecycleEmails(websiteId: number, email: s
     .from(lifecycleEmails)
     .where(eq(lifecycleEmails.websiteId, websiteId));
   if (existing.length > 0) {
-    console.log(`[Lifecycle] Website ${websiteId} already has scheduled emails, skipping`);
+    console.log(
+      `[Lifecycle] Website ${websiteId} already has scheduled emails, skipping`
+    );
     return;
   }
 
   const now = Date.now();
-  const reservedUntil = new Date(now + INITIAL_RESERVATION_HOURS * 60 * 60 * 1000);
+  const reservedUntil = new Date(
+    now + INITIAL_RESERVATION_HOURS * 60 * 60 * 1000
+  );
 
   // Reservierung setzen
   await db
@@ -213,9 +238,18 @@ export async function scheduleInitialLifecycleEmails(websiteId: number, email: s
 
   // Mails einplanen
   const toInsert = [
-    { type: "reminder_2h" as LifecycleEmailType, scheduledFor: new Date(now + FIXED_OFFSETS.reminder_2h!) },
-    { type: "reminder_24h" as LifecycleEmailType, scheduledFor: new Date(now + FIXED_OFFSETS.reminder_24h!) },
-    { type: "reminder_final" as LifecycleEmailType, scheduledFor: new Date(reservedUntil.getTime() - FINAL_WARNING_LEAD_MS) },
+    {
+      type: "reminder_2h" as LifecycleEmailType,
+      scheduledFor: new Date(now + FIXED_OFFSETS.reminder_2h!),
+    },
+    {
+      type: "reminder_24h" as LifecycleEmailType,
+      scheduledFor: new Date(now + FIXED_OFFSETS.reminder_24h!),
+    },
+    {
+      type: "reminder_final" as LifecycleEmailType,
+      scheduledFor: new Date(reservedUntil.getTime() - FINAL_WARNING_LEAD_MS),
+    },
   ];
 
   for (const row of toInsert) {
@@ -230,26 +264,41 @@ export async function scheduleInitialLifecycleEmails(websiteId: number, email: s
     } catch (err: any) {
       // Unique-Constraint-Kollision ignorieren (idempotent)
       if (!String(err?.message || "").includes("Duplicate")) {
-        console.error(`[Lifecycle] Failed to schedule ${row.type} for website ${websiteId}:`, err);
+        console.error(
+          `[Lifecycle] Failed to schedule ${row.type} for website ${websiteId}:`,
+          err
+        );
       }
     }
   }
 
-  console.log(`[Lifecycle] Scheduled initial emails for website ${websiteId} (${email})`);
+  console.log(
+    `[Lifecycle] Scheduled initial emails for website ${websiteId} (${email})`
+  );
 }
 
 /**
  * Cancelt alle noch scheduled Lifecycle-Mails einer Website.
  * Wird aufgerufen bei Stripe-Conversion, Unsubscribe oder Website-Löschung.
  */
-export async function cancelLifecycleEmails(websiteId: number, reason: string): Promise<void> {
+export async function cancelLifecycleEmails(
+  websiteId: number,
+  reason: string
+): Promise<void> {
   const db = await getDb();
   if (!db) return;
   await db
     .update(lifecycleEmails)
     .set({ status: "cancelled", cancelReason: reason })
-    .where(and(eq(lifecycleEmails.websiteId, websiteId), eq(lifecycleEmails.status, "scheduled")));
-  console.log(`[Lifecycle] Cancelled scheduled emails for website ${websiteId} (reason: ${reason})`);
+    .where(
+      and(
+        eq(lifecycleEmails.websiteId, websiteId),
+        eq(lifecycleEmails.status, "scheduled")
+      )
+    );
+  console.log(
+    `[Lifecycle] Cancelled scheduled emails for website ${websiteId} (reason: ${reason})`
+  );
 }
 
 /**
@@ -297,9 +346,16 @@ export async function extendReservation(websiteId: number): Promise<{
   const finalRows = await db
     .select()
     .from(lifecycleEmails)
-    .where(and(eq(lifecycleEmails.websiteId, websiteId), eq(lifecycleEmails.type, "reminder_final")));
+    .where(
+      and(
+        eq(lifecycleEmails.websiteId, websiteId),
+        eq(lifecycleEmails.type, "reminder_final")
+      )
+    );
   const finalRow = finalRows[0];
-  const newFinalAt = new Date(newReservedUntil.getTime() - FINAL_WARNING_LEAD_MS);
+  const newFinalAt = new Date(
+    newReservedUntil.getTime() - FINAL_WARNING_LEAD_MS
+  );
   if (finalRow) {
     if (finalRow.status === "scheduled") {
       await db
@@ -312,7 +368,11 @@ export async function extendReservation(websiteId: number): Promise<{
     }
   }
 
-  return { success: true, newReservedUntil, remainingExtensions: MAX_EXTENSIONS - newExtensionsUsed };
+  return {
+    success: true,
+    newReservedUntil,
+    remainingExtensions: MAX_EXTENSIONS - newExtensionsUsed,
+  };
 }
 
 // ── Cron-Worker-Logik ──────────────────────────────────────────────────────
@@ -333,7 +393,12 @@ export async function processPendingLifecycleEmails(): Promise<{
   const pending = await db
     .select()
     .from(lifecycleEmails)
-    .where(and(eq(lifecycleEmails.status, "scheduled"), lte(lifecycleEmails.scheduledFor, now)))
+    .where(
+      and(
+        eq(lifecycleEmails.status, "scheduled"),
+        lte(lifecycleEmails.scheduledFor, now)
+      )
+    )
     .limit(50);
 
   let sent = 0;
@@ -389,7 +454,11 @@ export async function processPendingLifecycleEmails(): Promise<{
         continue;
       }
 
-      const result = await sendLifecycleEmail(row.type, row.recipientEmail, data);
+      const result = await sendLifecycleEmail(
+        row.type,
+        row.recipientEmail,
+        data
+      );
       if (result.success) {
         await db
           .update(lifecycleEmails)
@@ -398,7 +467,9 @@ export async function processPendingLifecycleEmails(): Promise<{
         sent++;
       } else {
         // Bei Fehler: scheduled lassen, aber cancelReason logs den Fehler (retry beim nächsten Tick)
-        console.error(`[Lifecycle] Send failed for email ${row.id}: ${result.error}`);
+        console.error(
+          `[Lifecycle] Send failed for email ${row.id}: ${result.error}`
+        );
       }
     } catch (err) {
       console.error(`[Lifecycle] Processing error for email ${row.id}:`, err);
@@ -414,7 +485,7 @@ export async function processPendingLifecycleEmails(): Promise<{
  */
 async function buildEmailData(
   row: LifecycleEmail,
-  website: GeneratedWebsite | undefined,
+  website: GeneratedWebsite | undefined
 ): Promise<LifecycleEmailData | null> {
   const db = await getDb();
   if (!db) return null;
@@ -433,7 +504,10 @@ async function buildEmailData(
       businessName: seed.businessName || "deine Website",
       resumeLink: buildWelcomeBackLink(seed.token),
       welcomeBackLink: buildWelcomeBackLink(seed.token),
-      unsubscribeLink: buildUnsubscribeLink(seed.originalWebsiteId || 0, row.recipientEmail),
+      unsubscribeLink: buildUnsubscribeLink(
+        seed.originalWebsiteId || 0,
+        row.recipientEmail
+      ),
     };
   }
 
@@ -481,7 +555,9 @@ async function buildEmailData(
 
   // Extend-Link nur zeigen, wenn noch Extensions verfügbar
   const canExtend = (website.extensionsUsed ?? 0) < MAX_EXTENSIONS;
-  const extendLink = canExtend ? buildExtendLink(website.id, row.recipientEmail) : undefined;
+  const extendLink = canExtend
+    ? buildExtendLink(website.id, row.recipientEmail)
+    : undefined;
 
   return {
     firstName,
@@ -489,7 +565,8 @@ async function buildEmailData(
     resumeLink,
     extendLink,
     unsubscribeLink: buildUnsubscribeLink(website.id, row.recipientEmail),
-    wasExtended: row.type === "reminder_final" && (website.extensionsUsed ?? 0) > 0,
+    wasExtended:
+      row.type === "reminder_final" && (website.extensionsUsed ?? 0) > 0,
   };
 }
 
@@ -497,7 +574,10 @@ async function buildEmailData(
  * Löscht abgelaufene Website-Entwürfe (reservedUntil < now, nicht konvertiert, externer Lead).
  * Erstellt reactivation_seed + plant fresh_start_7d ein.
  */
-export async function processExpiredReservations(): Promise<{ processed: number; deleted: number }> {
+export async function processExpiredReservations(): Promise<{
+  processed: number;
+  deleted: number;
+}> {
   const db = await getDb();
   if (!db) return { processed: 0, deleted: 0 };
 
@@ -511,8 +591,8 @@ export async function processExpiredReservations(): Promise<{ processed: number;
         lte(generatedWebsites.reservedUntil, now),
         // NULL-sicher: captureStatus darf NULL oder ungleich 'converted' sein
         sql`(${generatedWebsites.captureStatus} IS NULL OR ${generatedWebsites.captureStatus} != 'converted')`,
-        sql`${generatedWebsites.paidAt} IS NULL`,
-      ),
+        sql`${generatedWebsites.paidAt} IS NULL`
+      )
     )
     .limit(20);
 
@@ -549,7 +629,8 @@ export async function processExpiredReservations(): Promise<{ processed: number;
           token: seedToken,
           recipientEmail: website.customerEmail,
           businessName: cleanBizName,
-          businessCategory: onboarding?.businessCategory || business?.category || null,
+          businessCategory:
+            onboarding?.businessCategory || business?.category || null,
           googlePlaceId: business?.placeId || null,
           originalWebsiteId: website.id,
           originalBusinessId: business?.id || null,
@@ -585,7 +666,9 @@ export async function processExpiredReservations(): Promise<{ processed: number;
 
       await deleteWebsite(website.id);
       deleted++;
-      console.log(`[Lifecycle] Expired website ${website.id} deleted (${website.customerEmail})`);
+      console.log(
+        `[Lifecycle] Expired website ${website.id} deleted (${website.customerEmail})`
+      );
     } catch (err) {
       console.error(`[Lifecycle] Failed to expire website ${website.id}:`, err);
     }
@@ -605,6 +688,11 @@ export async function unsubscribeEmail(email: string): Promise<void> {
   await db
     .update(lifecycleEmails)
     .set({ status: "cancelled", cancelReason: "unsubscribed" })
-    .where(and(eq(lifecycleEmails.recipientEmail, email), eq(lifecycleEmails.status, "scheduled")));
+    .where(
+      and(
+        eq(lifecycleEmails.recipientEmail, email),
+        eq(lifecycleEmails.status, "scheduled")
+      )
+    );
   console.log(`[Lifecycle] Unsubscribed ${email}`);
 }
