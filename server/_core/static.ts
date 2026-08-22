@@ -79,7 +79,6 @@ const SPA_ROUTES: RegExp[] = [
   /^\/preview\/[^/]+\/onboarding$/,
   /^\/site\/[^/]+(\/(impressum|datenschutz))?$/,
   /^\/websites\/\d+\/onboarding$/,
-  /^\/layout-preview\/[^/]+$/,
   // Studio (v2 Onboarding/Editor) — Direktaufruf/Reload muss von der SPA
   // bedient werden statt einem 404, siehe client/src/App.tsx "/onboarding/:token".
   /^\/onboarding\/[^/]+$/,

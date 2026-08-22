@@ -46,4 +46,10 @@ describe("isSpaRoute", () => {
   test("Legacy-Route /websites/:id/onboarding wird von der SPA bedient (Redirect-Komponente)", () => {
     expect(isSpaRoute("/websites/42/onboarding")).toBe(true);
   });
+
+  // Plan B4b, Task 1: /layout-preview/:key + LayoutPreviewStandalone.tsx sind
+  // entfernt (Ersatz: /dev/site-preview) — die Route ist keine SPA-Route mehr.
+  test("Entfernte Route /layout-preview/:key wird nicht mehr erkannt", () => {
+    expect(isSpaRoute("/layout-preview/x")).toBe(false);
+  });
 });

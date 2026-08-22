@@ -1,188 +1,26 @@
-import type { WebsiteData, ColorScheme } from "@shared/types";
+import React from "react";
 import type { PackId } from "@shared/siteContract/types";
-import { CURRENT_LAYOUT_VERSION } from "@shared/layoutConfig";
-import {
-  BoldLayoutV2,
-  ElegantLayoutV2,
-  CleanLayoutV2,
-  CraftLayoutV2,
-  DynamicLayoutV2,
-  FreshLayoutV2,
-  LuxuryLayoutV2,
-  ModernLayoutV2,
-  NaturalLayoutV2,
-  PremiumLayoutV2,
-  EdenLayoutV2,
-  ApexLayoutV2,
-  AuroraLayoutV2,
-  NexusLayoutV2,
-  ClayLayoutV2,
-  ForgeLayoutV2,
-  PulseLayoutV2,
-  FluxLayoutV2,
-} from "./layouts/PremiumLayoutsV2";
 import { parseV2 } from "./site/isV2";
 import { SiteRenderer } from "./site/SiteRenderer";
+import { LegacySitePlaceholder } from "./site/LegacySitePlaceholder";
 import "./site/packs/index";
 
-export { CURRENT_LAYOUT_VERSION };
-
 interface WebsiteRendererProps {
-  websiteData: WebsiteData;
-  colorScheme?: ColorScheme;
-  heroImageUrl?: string | null;
-  aboutImageUrl?: string | null;
-  businessCategory?: string | null;
-  layoutStyle?: string | null;
-  layoutVersion?: number | null;
-  isLoading?: boolean;
-  headlineSize?: "large" | "medium" | "small";
-  headlineFontOverride?: string;
+  websiteData: unknown;
   slug?: string;
-  /**
-   * Nur für v2-Websites relevant (Variant-Picker-Preview): erzwingt ein
-   * anderes registriertes Pack für die Darstellung, ohne die gespeicherten
-   * Inhalte zu verändern. Wird 1:1 an SiteRenderer durchgereicht, das einen
-   * nicht registrierten Override ignoriert. Für v1-Websites ohne Wirkung.
-   */
   packOverride?: PackId;
-  /**
-   * Nur für v2-Websites relevant: 1:1 an `SiteRenderer` → `SiteIslands`
-   * durchgereicht, um die portalierten Chat-/Buchungs-Dialoge in internen
-   * CSR-Vorschauen (Dashboard, Content-Editor, Variant-/Token-Preview,
-   * Onboarding) nicht-interaktiv zu machen — sonst würden Klicks dort echte
-   * `fetch`-Aufrufe gegen `/api/chat/:slug/message` bzw.
-   * `/api/booking/:slug/*` auslösen. `WebsiteRenderer` selbst setzt hier
-   * KEINEN Default: `SitePage.tsx` (die echte, öffentliche Kundenseite als
-   * CSR-Fallback, z. B. wenn `SSR_SITES=off`) rendert ebenfalls über
-   * `WebsiteRenderer` und muss "live" bleiben — nur die tatsächlichen
-   * Vorschau-/Editor-Aufrufer setzen `islandsMode="preview"` explizit.
-   */
   islandsMode?: "live" | "preview";
 }
 
-function getLayoutComponent(
-  category: string = "",
-  layoutStyle?: string | null,
-  _layoutVersion?: number | null
-): any {
-  // If explicit layoutStyle is provided (from admin/dashboard), use it directly
-  if (layoutStyle) {
-    const style = layoutStyle.toLowerCase();
-    if (style === "bold") return BoldLayoutV2;
-    if (style === "elegant") return ElegantLayoutV2;
-    if (style === "clean") return CleanLayoutV2;
-    if (style === "craft") return CraftLayoutV2;
-    if (style === "dynamic") return DynamicLayoutV2;
-    if (style === "fresh") return FreshLayoutV2;
-    if (style === "luxury") return LuxuryLayoutV2;
-    if (style === "modern") return ModernLayoutV2;
-    if (style === "natural") return NaturalLayoutV2;
-    if (style === "eden") return EdenLayoutV2;
-    if (style === "apex") return ApexLayoutV2;
-    if (style === "aurora") return AuroraLayoutV2;
-    if (style === "nexus") return NexusLayoutV2;
-    if (style === "clay") return ClayLayoutV2;
-    if (style === "forge") return ForgeLayoutV2;
-    if (style === "pulse") return PulseLayoutV2;
-    if (style === "flux") return FluxLayoutV2;
-    // Aliased styles — unique structure + their own colour scheme
-    if (style === "warm") return ElegantLayoutV2; // warm serif editorial
-    if (style === "trust") return PulseLayoutV2; // clean card-based professional
-    if (style === "vibrant") return DynamicLayoutV2; // energetic diagonal cuts
-  }
-
-  // Fallback: determine by business category
-  const cat = category.toLowerCase();
-  if (cat.includes("bau") || cat.includes("industrie")) return BoldLayoutV2;
-  if (cat.includes("friseur") || cat.includes("beauty")) return ElegantLayoutV2;
-  if (cat.includes("arzt") || cat.includes("praxis")) return CleanLayoutV2;
-  if (cat.includes("tischler") || cat.includes("handwerk"))
-    return CraftLayoutV2;
-  if (cat.includes("fitness") || cat.includes("sport")) return DynamicLayoutV2;
-  if (cat.includes("café") || cat.includes("restaurant")) return FreshLayoutV2;
-  if (cat.includes("auto") || cat.includes("fahrzeug")) return LuxuryLayoutV2;
-  if (cat.includes("agentur") || cat.includes("it")) return ModernLayoutV2;
-  if (cat.includes("natur") || cat.includes("bio")) return NaturalLayoutV2;
-  return PremiumLayoutV2;
-}
-
-export default function WebsiteRenderer({
-  websiteData,
-  colorScheme,
-  heroImageUrl,
-  aboutImageUrl,
-  isLoading = false,
-  businessCategory,
-  layoutStyle,
-  layoutVersion,
-  headlineSize,
-  headlineFontOverride,
-  slug,
-  packOverride,
-  islandsMode,
-}: WebsiteRendererProps) {
+/**
+ * Dünner Wrapper: seit dem Cutover (Plan B4b) gibt es nur noch den v2-Pfad.
+ * Ungültige/alte Dokumente rendern einen Platzhalter statt eines v1-Layouts.
+ */
+export default function WebsiteRenderer({ websiteData, slug, packOverride, islandsMode }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
-  if (v2)
-    return (
-      <SiteRenderer
-        data={v2}
-        packOverride={packOverride}
-        slug={slug}
-        islandsMode={islandsMode}
-      />
-    );
-  // … bestehender v1-Pfad unverändert
-
-  const cs = colorScheme || websiteData?.colorScheme || { primary: "#3b82f6" };
-  const heroImg =
-    heroImageUrl ||
-    websiteData?.heroImage ||
-    "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200";
-
-  // Patch aboutImageUrl and headlineFont into websiteData if provided externally
-  // Also filter out hidden sections
-  let wd = websiteData as any;
-  const hiddenSections = (websiteData as any)?.hiddenSections || [];
-
-  if (
-    aboutImageUrl ||
-    headlineFontOverride ||
-    hiddenSections.length > 0 ||
-    slug
-  ) {
-    wd = { ...websiteData } as any;
-    if (aboutImageUrl) wd.aboutImageUrl = aboutImageUrl;
-    if (headlineFontOverride) {
-      wd.designTokens = {
-        ...(wd.designTokens || {}),
-        headlineFont: headlineFontOverride,
-      };
-    }
-    // Filter out hidden sections
-    if (Array.isArray(wd.sections) && hiddenSections.length > 0) {
-      wd.sections = wd.sections.filter(
-        (s: any) => !hiddenSections.includes(s.type)
-      );
-    }
-    // Pass slug so ContactSection can submit forms
-    if (slug) wd.slug = slug;
+  if (!v2) {
+    const name = (websiteData as { businessName?: string } | null)?.businessName ?? null;
+    return <LegacySitePlaceholder businessName={name} />;
   }
-
-  // Use layoutStyle if provided (from admin/dashboard), otherwise fall back to businessCategory
-  const version = layoutVersion ?? (websiteData as any)?.layoutVersion ?? 1;
-  const LayoutComponent = getLayoutComponent(
-    businessCategory || websiteData?.business?.category,
-    layoutStyle || (websiteData as any)?.layoutStyle,
-    version
-  );
-  return (
-    <LayoutComponent
-      websiteData={wd}
-      cs={cs}
-      heroImageUrl={heroImg}
-      isLoading={isLoading}
-      headlineSize={headlineSize}
-    />
-  );
+  return <SiteRenderer data={v2} packOverride={packOverride} slug={slug} islandsMode={islandsMode} />;
 }

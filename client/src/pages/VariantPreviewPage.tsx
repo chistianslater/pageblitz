@@ -11,7 +11,6 @@
 import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
-import { DEFAULT_LAYOUT_COLOR_SCHEMES } from "@shared/layoutConfig";
 import { STYLE_PACKS } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 
@@ -57,8 +56,6 @@ export default function VariantPreviewPage() {
       { enabled: !!category }
     );
 
-  const cs = (DEFAULT_LAYOUT_COLOR_SCHEMES as Record<string, any>)[layout];
-
   if (!websiteId || isLoading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
@@ -98,15 +95,17 @@ export default function VariantPreviewPage() {
   const websiteData = website.websiteData ?? website;
   const isV2Document = websiteData?.version === 2;
 
+  // heroImageUrl/aboutImageUrl waren v1-Overrides für WebsiteRenderer, das
+  // seit Plan B4b (Task 1) nur noch v2-Dokumente rendert (Bilder kommen aus
+  // websiteData.sections selbst). Variablen bleiben bis Task 3 stehen, wenn
+  // diese Seite insgesamt auf den v2-Variant-Picker reduziert wird.
+  void heroImageUrl;
+  void aboutImageUrl;
+
   return (
     <WebsiteRenderer
       websiteData={websiteData}
-      colorScheme={cs ?? website.colorScheme}
-      heroImageUrl={heroImageUrl}
-      aboutImageUrl={aboutImageUrl}
-      layoutStyle={layout}
       packOverride={isV2Document ? packOverrideCandidate : undefined}
-      isLoading={false}
       islandsMode="preview"
     />
   );

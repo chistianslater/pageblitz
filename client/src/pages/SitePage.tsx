@@ -1,15 +1,11 @@
 import { trpc } from "@/lib/trpc";
 import { useParams } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import WebsiteRenderer from "@/components/WebsiteRenderer";
 import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
-import ChatWidget from "@/components/ChatWidget";
-import BookingWidget from "@/components/BookingWidget";
 import { Loader2, AlertCircle } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
-import type { WebsiteData, ColorScheme } from "@shared/types";
-import { convertOpeningHoursToGerman } from "@shared/hours";
+import { parseV2 } from "@/components/site/isV2";
 
 export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const params = useParams<{ slug: string }>();
@@ -19,9 +15,6 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     { slug: effectiveSlug },
     { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
-
-  // ── ALL hooks MUST be before any early returns (Rules of Hooks) ──────────
-  const [bookingOpen, setBookingOpen] = useState(false);
 
   const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as string | null | undefined;
   useEffect(() => {
@@ -46,24 +39,23 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   // ── SEO meta tags ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!data?.website) return;
-    const wd = data.website.websiteData as any;
+    const v2 = parseV2(data.website.websiteData);
     const biz = data.business;
-    const businessName = wd?.businessName || biz?.name || "";
+    const businessName = v2?.businessName || biz?.name || "";
     const city = biz?.address?.split(",")?.pop()?.trim() || "";
     const category = (biz as any)?.category || "";
 
     // Title: custom → fallback auto-generated
-    const title = wd?.seoTitle ||
+    const title = v2?.seo?.title ||
       (businessName && category && city
         ? `${businessName} – ${category} in ${city}`
         : businessName
           ? `${businessName} – Offizielle Website`
           : "Website");
 
-    // Description: custom → tagline → description → fallback
-    const description = wd?.seoDescription ||
-      wd?.tagline ||
-      (wd?.description ? wd.description.slice(0, 155) + (wd.description.length > 155 ? "…" : "") : "") ||
+    // Description: custom → tagline → fallback
+    const description = v2?.seo?.description ||
+      v2?.tagline ||
       `${businessName} – Professionelle Website mit Infos zu Leistungen, Kontakt und mehr.`;
 
     document.title = title;
@@ -83,8 +75,9 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     setMeta('meta[property="og:title"]', 'property=og:title', title);
     setMeta('meta[property="og:description"]', 'property=og:description', description);
     setMeta('meta[property="og:type"]', 'property=og:type', "website");
-    if (wd?.heroImageUrl || (data.website as any).heroImageUrl) {
-      setMeta('meta[property="og:image"]', 'property=og:image', wd?.heroImageUrl || (data.website as any).heroImageUrl);
+    const heroSection = v2?.sections.find(s => s.type === "hero") as { imageUrl?: string } | undefined;
+    if (heroSection?.imageUrl) {
+      setMeta('meta[property="og:image"]', 'property=og:image', heroSection.imageUrl);
     }
 
     return () => {
@@ -117,87 +110,18 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     );
   }
 
-  const websiteData = data.website.websiteData as WebsiteData;
-  const colorScheme = data.website.colorScheme as ColorScheme;
-  const heroImageUrl = (data.website as any).heroImageUrl as string | null | undefined;
-  const aboutImageUrl = (data.website as any).aboutImageUrl as string | null | undefined;
-  const layoutStyle = (data.website as any).layoutStyle as string | null | undefined;
-  const layoutVersion = (data.website as any).layoutVersion as number | null | undefined;
+  const w = data.website as { requiresAgeGate?: boolean | null; websiteData: unknown };
   const business = data.business;
-  const w = data.website as any;
-  const primaryColor = colorScheme?.primary || "#2563eb";
+  const primaryColor = "#111111";
 
   return (
     <>
       {/* FSK-18 Age-Gate: Self-Declaration vor dem Site-Content, wenn die
           Branche Adult/Alkohol/Glücksspiel ist. Rendert nur wenn Flag aktiv
           und Besucher noch nicht bestätigt hat (localStorage, 30 Tage). */}
-      {w?.requiresAgeGate && (
-        <AgeGate slug={effectiveSlug} businessName={business?.name} />
-      )}
-      <WebsiteRenderer
-        websiteData={websiteData}
-        colorScheme={colorScheme}
-        heroImageUrl={heroImageUrl}
-        aboutImageUrl={aboutImageUrl}
-        layoutStyle={layoutStyle}
-        layoutVersion={layoutVersion}
-        businessPhone={business?.phone || undefined}
-        businessAddress={business?.address || undefined}
-        businessEmail={business?.email || undefined}
-        openingHours={business?.openingHours ? convertOpeningHoursToGerman(business.openingHours as string[]) : undefined}
-        slug={effectiveSlug}
-      />
+      {w.requiresAgeGate && <AgeGate slug={effectiveSlug} businessName={business?.name} />}
+      <WebsiteRenderer websiteData={w.websiteData} slug={effectiveSlug} islandsMode="live" />
       <CookieBanner slug={effectiveSlug} primaryColor={primaryColor} />
-
-      {/* Booking Add-on: floating pill button (only booking, no chat) */}
-      {w.addOnBooking && !w.addOnAiChat && (
-        <>
-          <button
-            onClick={() => setBookingOpen(true)}
-            className="fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-4 py-3 rounded-full shadow-xl font-medium text-sm transition-all hover:scale-105 active:scale-95"
-            style={{ backgroundColor: primaryColor, color: colorScheme?.onPrimary || "#ffffff" }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            Termin buchen
-          </button>
-          <AnimatePresence>
-            {bookingOpen && (
-              <BookingWidget slug={effectiveSlug} primaryColor={primaryColor} onClose={() => setBookingOpen(false)} />
-            )}
-          </AnimatePresence>
-        </>
-      )}
-
-      {/* Booking Add-on: round icon button bottom-left (both add-ons active) */}
-      {w.addOnBooking && w.addOnAiChat && (
-        <button
-          onClick={() => setBookingOpen(true)}
-          className="fixed bottom-6 left-6 z-[9998] w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
-          style={{ backgroundColor: primaryColor, color: colorScheme?.onPrimary || "#ffffff" }}
-          aria-label="Termin buchen"
-          title="Termin buchen"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-        </button>
-      )}
-
-      {/* AI Chat */}
-      {w.addOnAiChat && (
-        <ChatWidget
-          slug={effectiveSlug}
-          primaryColor={primaryColor}
-          businessName={websiteData?.businessName || business?.name || "Assistent"}
-          welcomeMessage={w.chatWelcomeMessage || undefined}
-          addOnBooking={!!w.addOnBooking}
-          onBookingRequest={() => setBookingOpen(true)}
-        />
-      )}
-      <AnimatePresence>
-        {w.addOnBooking && bookingOpen && (
-          <BookingWidget slug={effectiveSlug} primaryColor={primaryColor} onClose={() => setBookingOpen(false)} />
-        )}
-      </AnimatePresence>
     </>
   );
 }
