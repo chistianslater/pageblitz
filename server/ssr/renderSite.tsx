@@ -38,6 +38,15 @@ export interface RenderSiteOptions {
    * über `SiteRenderer` an `SiteIslands` → `ChatIsland` weiter.
    */
   site?: { chatWelcomeMessage?: string | null };
+  /**
+   * Reicht den Vorschau-Modus 1:1 an `SiteRenderer`/`SiteIslands` durch.
+   * `undefined` (Default) lässt Inseln im Live-Modus rendern — so bleibt das
+   * bisherige Verhalten von Kundenseiten-SSR und `/preview-ssr/:token`
+   * unverändert. Nur die öffentliche Pack-Demo (`/demo/:pack`) übergibt
+   * "preview", damit ein eventuell aktives Kontaktformular/Chat/Buchung dort
+   * nichts absenden kann (siehe `SiteIslands` für die Preview-Semantik).
+   */
+  islandsMode?: "live" | "preview";
 }
 
 export interface RenderSiteResult {
@@ -241,6 +250,7 @@ export function renderSiteHtml(
       now={opts.now}
       slug={opts.slug}
       site={opts.site}
+      islandsMode={opts.islandsMode}
     />
   );
 

@@ -229,6 +229,54 @@ function handleDevPreview(req: Request, res: Response): void {
   }
 }
 
+/** Cache-Dauer für die öffentliche Style-Pack-Demo (statisches Fixture-HTML, ändert sich zur Laufzeit nie). */
+const DEMO_CACHE_CONTROL = "public, max-age=3600";
+
+/**
+ * Öffentliche Style-Pack-Demo für die Landingpage-Showcase (`PackShowcase`):
+ * rendert `getFixture(pack, "full")` als eigenständige, cachebare Seite —
+ * ungebunden an eine echte Website/Kunde, daher `noindex` und ohne DB-Query.
+ * Inseln laufen im Preview-Modus (`islandsMode: "preview"`), damit ein
+ * eventuell aktives Kontaktformular/Chat/Buchung aus der Demo heraus nichts
+ * absenden kann — aktuell ein No-op, weil Fixture "full" keine Features
+ * aktiviert hat (siehe `shared/siteContract/fixtures.ts`), schützt aber,
+ * falls sich das ändert. Rechtsseiten (`/demo/:pack/impressum|datenschutz`)
+ * matchen dieses `app.get("/demo/:pack", ...)` nicht (kein Wildcard-Suffix)
+ * und fallen auf die SPA durch — 404 dort ist laut Spec in Ordnung.
+ */
+function handleDemoRoute(req: Request, res: Response): void {
+  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
+  if (!isKnownPackId(packParam)) {
+    res.status(404).send(`Unbekanntes Pack: "${packParam}"`);
+    return;
+  }
+  try {
+    const data = getFixture(packParam, "full");
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const basePath = `/demo/${packParam}`;
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath,
+      slug: "demo",
+      site: {},
+      islandsMode: "preview",
+      // Festes Datum (wie /dev/site-preview) statt Echtzeit: mindestens ein
+      // Pack-Modul (morgenlicht) zeigt datumsabhängige "Heute geöffnet"-
+      // Badges (now.getDay()) — ohne fixes Datum würde die Landingpage-
+      // Showcase (PackShowcase, tests/visual/landing.spec.ts) an
+      // unterschiedlichen Wochentagen unterschiedliches HTML/Pixel-Diffs
+      // liefern.
+      now: new Date("2026-08-19T10:00:00"),
+    });
+    res.setHeader("X-Robots-Tag", "noindex");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Pack-Demo-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
 /**
  * Kundenseiten-SSR hinter Flag: rendert `websiteData` server-seitig, wenn
  * `SSR_SITES !== "off"` UND das geladene Dokument gegen WebsiteDataV2Schema
@@ -310,8 +358,17 @@ async function handleCustomerSiteSsr(
 
 export function registerSsrRoutes(app: Express): void {
   app.get("/dev/site-preview", handleDevPreview);
+  app.get("/demo/:pack", handleDemoRoute);
   app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
     void handlePreviewSsr(req, res);
+  });
+  // Legacy-Route der alten Preview-Page (Task 3, Cutover-Redirects): die
+  // SPA rendert /preview/:token nicht mehr, direkte Weiterleitung auf die
+  // SSR-Vorschau statt einen Client-Bundle-Roundtrip nur für einen Redirect
+  // zu laden. Absichtlich NICHT `/preview/:token/onboarding` (endet mit $) —
+  // diese Route bleibt SPA-seitig (Redirect auf /onboarding/:token).
+  app.get(/^\/preview\/([A-Za-z0-9_-]{16,64})$/, (req, res) => {
+    res.redirect(302, `/preview-ssr/${req.params[0]}`);
   });
   app.use(handleCustomerSiteSsr);
 }

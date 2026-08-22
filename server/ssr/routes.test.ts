@@ -52,6 +52,40 @@ describe("SSR routes", () => {
     expect(res.status).toBe(400);
   });
 
+  describe("GET /demo/:pack", () => {
+    test("gültiges Pack → 200, noindex, 1h-Cache, enthält den Fixture-Business-Namen", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/werkbank");
+      const fixture = getFixture("werkbank", "full");
+
+      expect(res.status).toBe(200);
+      expect(res.headers["x-robots-tag"]).toContain("noindex");
+      expect(res.headers["cache-control"]).toContain("public");
+      expect(res.headers["cache-control"]).toContain("max-age=3600");
+      expect(res.text).toContain(fixture.businessName);
+    });
+
+    test("unbekanntes Pack → 404", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/disco");
+      expect(res.status).toBe(404);
+    });
+
+    test("Rechtsseiten unter /demo/:pack/* matchen die Route nicht → SPA-Fallback (404)", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/werkbank/impressum");
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
+      (getWebsiteBySlug as Mock).mockReset();
+      const app = buildAppWithFallback();
+      await request(app).get("/demo/kanzlei");
+      expect(getWebsiteBySlug).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Kundenseiten-Middleware (/site/:slug)", () => {
     const originalSsrSites = process.env.SSR_SITES;
 
