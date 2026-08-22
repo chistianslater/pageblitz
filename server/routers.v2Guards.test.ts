@@ -189,21 +189,6 @@ describe("selfService.selectWebsiteTemplate — Picker-Persistenz für v2 (C-2)"
 });
 
 describe("Zentraler Write-Guard (C-3)", () => {
-  test("customer.uploadLogoForWebsite auf v2-Website → sauberer Fehler statt stiller Korruption", async () => {
-    mockedDb.getWebsitesByUserId.mockResolvedValue([
-      { website: baseWebsiteRow(), subscription: { status: "active" } },
-    ] as any);
-
-    const caller = appRouter.createCaller(createUserContext());
-    await expect(
-      caller.customer.uploadLogoForWebsite({
-        websiteId: 42,
-        imageData: "data:image/png;base64,AAAA",
-      })
-    ).rejects.toThrow(TRPCError);
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
-
   test("onboarding.regenerateLegalPages auf v2-Website schreibt nach websiteData.legal.* statt top-level", async () => {
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
       legalOwner: "Max Brandt",
@@ -234,38 +219,14 @@ describe("Zentraler Write-Guard (C-3)", () => {
 });
 
 describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", () => {
-  test("customer.updateAddons auf v2-Website mit korrumpierendem Payload → TRPCError, kein Write", async () => {
-    mockedDb.getWebsitesByUserId.mockResolvedValue([
-      { website: baseWebsiteRow(), subscription: { status: "active" } },
-    ] as any);
-    mockedDb.updateOnboarding.mockResolvedValue(undefined as any);
-
-    const caller = appRouter.createCaller(createUserContext());
-    await expect(
-      caller.customer.updateAddons({
-        websiteId: 42,
-        addOns: {
-          gallery: { enabled: true, photos: ["https://cdn.example.com/1.jpg"] },
-        },
-      })
-    ).rejects.toThrow(TRPCError);
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
-
-  test("customer.updateWebsiteContent auf v2-Website → BAD_REQUEST (Studio-Hinweis), kein Write", async () => {
-    mockedDb.getWebsitesByUserId.mockResolvedValue([
-      { website: baseWebsiteRow(), subscription: { status: "active" } },
-    ] as any);
-
-    const caller = appRouter.createCaller(createUserContext());
-    await expect(
-      caller.customer.updateWebsiteContent({
-        websiteId: 42,
-        patch: { tagline: "Neue Zeile" },
-      })
-    ).rejects.toThrow(TRPCError);
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
+  // customer.updateAddons wurde in Task 4 (Dashboard v2) auf reine
+  // Feature-Flags (Kontaktformular, KI-Chat, Calendly) reduziert — der
+  // v1-Pfad, der Galerie-/Menü-/Preislisten-Sektionen direkt in
+  // `websiteData` schrieb (und damit v2-Dokumente korrumpieren konnte),
+  // existiert nicht mehr. `customer.uploadLogoForWebsite` und
+  // `customer.updateWebsiteContent` sind mit dem Dashboard-Umbau ebenfalls
+  // entfallen (Inhaltsbearbeitung läuft ausschließlich über das Studio,
+  // `onboardingV2.*`) — ihre Guard-Tests sind damit hinfällig.
 
   test("website.regenerate auf v2-Website mit korrumpierendem LLM-Payload → TRPCError, kein Write", async () => {
     // Task 3 (Cutover): website.regenerate läuft ab jetzt über die v2-
