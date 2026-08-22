@@ -5,7 +5,11 @@ import { Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import PageblitzCookieBanner from "./components/PageblitzCookieBanner";
-import { initConsent, trackMetaPageView, hasMarketingConsent } from "./lib/consent";
+import {
+  initConsent,
+  trackMetaPageView,
+  hasMarketingConsent,
+} from "./lib/consent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import LandingPage from "./pages/LandingPage";
 import SitePage from "./pages/SitePage";
@@ -16,37 +20,54 @@ import PageblitzDatenschutz from "./pages/PageblitzDatenschutz";
 import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
 
 // ── Lazy-loaded pages (not needed on first paint) ─────────────────────────────
-const DashboardLayout      = lazy(() => import("./components/DashboardLayout"));
-const Home                 = lazy(() => import("./pages/Home"));
-const SearchPage           = lazy(() => import("./pages/SearchPage"));
-const WebsitesPage         = lazy(() => import("./pages/WebsitesPage"));
-const OutreachPage         = lazy(() => import("./pages/OutreachPage"));
-const StatsPage            = lazy(() => import("./pages/StatsPage"));
-const LeadsPage            = lazy(() => import("./pages/LeadsPage"));
-const PreviewPage          = lazy(() => import("./pages/PreviewPage"));
-const OnboardingWizard     = lazy(() => import("./pages/OnboardingWizard"));
-const OnboardingChat       = lazy(() => import("./pages/OnboardingChat"));
-const CustomerDashboard    = lazy(() => import("./pages/CustomerDashboard"));
-const AccountPage          = lazy(() => import("./pages/AccountPage"));
-const LayoutOverviewPage   = lazy(() => import("./pages/LayoutOverviewPage"));
-const PipelinePage         = lazy(() => import("./pages/PipelinePage"));
-const SupportChatsPage     = lazy(() => import("./pages/SupportChatsPage"));
-const UsersPage            = lazy(() => import("./pages/UsersPage"));
-const LayoutPreviewStandalone = lazy(() => import("./pages/LayoutPreviewStandalone"));
-const VariantPreviewPage      = lazy(() => import("./pages/VariantPreviewPage"));
-const LoginPage            = lazy(() => import("./pages/LoginPage"));
-const CustomerLoginPage    = lazy(() => import("./pages/CustomerLoginPage"));
-const BusinessesPage       = lazy(() => import("./pages/BusinessesPage"));
-const WelcomeBack          = lazy(() => import("./pages/WelcomeBack"));
-const ErrorsPage           = lazy(() => import("./pages/ErrorsPage"));
-const LifecyclePage        = lazy(() => import("./pages/LifecyclePage"));
+const DashboardLayout = lazy(() => import("./components/DashboardLayout"));
+const Home = lazy(() => import("./pages/Home"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const WebsitesPage = lazy(() => import("./pages/WebsitesPage"));
+const OutreachPage = lazy(() => import("./pages/OutreachPage"));
+const StatsPage = lazy(() => import("./pages/StatsPage"));
+const LeadsPage = lazy(() => import("./pages/LeadsPage"));
+const PreviewPage = lazy(() => import("./pages/PreviewPage"));
+const OnboardingWizard = lazy(() => import("./pages/OnboardingWizard"));
+const OnboardingChat = lazy(() => import("./pages/OnboardingChat"));
+const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
+const AccountPage = lazy(() => import("./pages/AccountPage"));
+const LayoutOverviewPage = lazy(() => import("./pages/LayoutOverviewPage"));
+const PipelinePage = lazy(() => import("./pages/PipelinePage"));
+const SupportChatsPage = lazy(() => import("./pages/SupportChatsPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
+const LayoutPreviewStandalone = lazy(
+  () => import("./pages/LayoutPreviewStandalone")
+);
+const VariantPreviewPage = lazy(() => import("./pages/VariantPreviewPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const CustomerLoginPage = lazy(() => import("./pages/CustomerLoginPage"));
+const BusinessesPage = lazy(() => import("./pages/BusinessesPage"));
+const WelcomeBack = lazy(() => import("./pages/WelcomeBack"));
+const ErrorsPage = lazy(() => import("./pages/ErrorsPage"));
+const LifecyclePage = lazy(() => import("./pages/LifecyclePage"));
 
 function PageLoader() {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
-      <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+      <svg
+        className="w-8 h-8 animate-spin text-blue-500"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        />
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8v8z"
+        />
       </svg>
     </div>
   );
@@ -59,14 +80,32 @@ function PageLoader() {
 function AdminSwitch() {
   const [location] = useLocation();
   return (
-    <Suspense key={location} fallback={
-      <div className="flex items-center justify-center h-64">
-        <svg className="w-8 h-8 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-        </svg>
-      </div>
-    }>
+    <Suspense
+      key={location}
+      fallback={
+        <div className="flex items-center justify-center h-64">
+          <svg
+            className="w-8 h-8 animate-spin text-blue-500"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            />
+          </svg>
+        </div>
+      }
+    >
       <Switch>
         <Route path="/admin" component={Home} />
         <Route path="/admin/search" component={SearchPage} />
@@ -126,8 +165,12 @@ function Router() {
   if (customerSlug) {
     return (
       <Switch>
-        <Route path="/impressum">{() => <LegalPage forceSlug={customerSlug} />}</Route>
-        <Route path="/datenschutz">{() => <LegalPage forceSlug={customerSlug} />}</Route>
+        <Route path="/impressum">
+          {() => <LegalPage forceSlug={customerSlug} />}
+        </Route>
+        <Route path="/datenschutz">
+          {() => <LegalPage forceSlug={customerSlug} />}
+        </Route>
         <Route>{() => <SitePage forceSlug={customerSlug} />}</Route>
       </Switch>
     );
@@ -152,11 +195,21 @@ function Router() {
         <Route path="/start" component={StartPage} />
         <Route path="/welcome-back" component={WelcomeBack} />
         <Route path="/preview/:token" component={PreviewPage} />
-        <Route path="/site/:slug">{(params) => <SitePage key={params.slug} />}</Route>
-        <Route path="/site/:slug/impressum">{(params) => <LegalPage key={params.slug} />}</Route>
-        <Route path="/site/:slug/datenschutz">{(params) => <LegalPage key={params.slug} />}</Route>
-        <Route path="/preview/:token/onboarding">{(params) => <OnboardingChat previewToken={params.token} />}</Route>
-        <Route path="/websites/:id/onboarding">{(params) => <OnboardingChat websiteId={parseInt(params.id || "0")} />}</Route>
+        <Route path="/site/:slug">
+          {params => <SitePage key={params.slug} />}
+        </Route>
+        <Route path="/site/:slug/impressum">
+          {params => <LegalPage key={params.slug} />}
+        </Route>
+        <Route path="/site/:slug/datenschutz">
+          {params => <LegalPage key={params.slug} />}
+        </Route>
+        <Route path="/preview/:token/onboarding">
+          {params => <OnboardingChat previewToken={params.token} />}
+        </Route>
+        <Route path="/websites/:id/onboarding">
+          {params => <OnboardingChat websiteId={parseInt(params.id || "0")} />}
+        </Route>
         <Route path="/my-website">
           <CustomerRoute>
             <CustomerDashboard />
@@ -169,7 +222,10 @@ function Router() {
         </Route>
         <Route path="/login" component={CustomerLoginPage} />
         <Route path="/admin-login" component={LoginPage} />
-        <Route path="/layout-preview/:key" component={LayoutPreviewStandalone} />
+        <Route
+          path="/layout-preview/:key"
+          component={LayoutPreviewStandalone}
+        />
         <Route path="/variant-preview" component={VariantPreviewPage} />
         <Route component={NotFound} />
       </Switch>
@@ -191,7 +247,7 @@ function ScrollToTop() {
     // which silently ignores behavior:"instant" and never resets the scroll).
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0; // legacy WebKit / iOS fallback
-    window.scrollTo(0, 0);       // virtual viewport fallback (iOS Safari)
+    window.scrollTo(0, 0); // virtual viewport fallback (iOS Safari)
   }, [location]);
   return null;
 }
@@ -212,7 +268,8 @@ function AppContent() {
   }, [location]);
 
   // Kunden-Website-Routen: kein PageBlitz-Banner (auch bei Subdomain-Zugriff)
-  const isCustomerSite = location.startsWith("/site/") || !!getCustomerSubdomain();
+  const isCustomerSite =
+    location.startsWith("/site/") || !!getCustomerSubdomain();
 
   return (
     <>
