@@ -7,7 +7,11 @@
 
 import fs from "fs";
 import path from "path";
-import { makeRequest, type PlacesSearchResult, type PlaceDetailsResult } from "./_core/map";
+import {
+  makeRequest,
+  type PlacesSearchResult,
+  type PlaceDetailsResult,
+} from "./_core/map";
 import { scrapeEmailFromWebsite, hasMxRecord } from "./emailScraper";
 import {
   upsertBusiness,
@@ -99,7 +103,11 @@ export function saveState(state: PipelineState) {
 
 // ── Industry/City configuration ──────────────────────────────────────────────
 
-export const PIPELINE_INDUSTRIES: Array<{ key: string; query: string; label: string }> = [
+export const PIPELINE_INDUSTRIES: Array<{
+  key: string;
+  query: string;
+  label: string;
+}> = [
   { key: "friseur", query: "Friseur", label: "Friseur" },
   { key: "zahnarzt", query: "Zahnarzt", label: "Zahnarzt" },
   { key: "physiotherapie", query: "Physiotherapie", label: "Physiotherapie" },
@@ -112,7 +120,11 @@ export const PIPELINE_INDUSTRIES: Array<{ key: string; query: string; label: str
   { key: "restaurant", query: "Restaurant", label: "Restaurant" },
   { key: "baeckerei", query: "Bäckerei", label: "Bäckerei" },
   { key: "fitnessstudio", query: "Fitnessstudio", label: "Fitnessstudio" },
-  { key: "immobilienmakler", query: "Immobilienmakler", label: "Immobilienmakler" },
+  {
+    key: "immobilienmakler",
+    query: "Immobilienmakler",
+    label: "Immobilienmakler",
+  },
   { key: "architekt", query: "Architekt", label: "Architekt" },
   { key: "fotograf", query: "Fotograf", label: "Fotograf" },
   { key: "hundeschule", query: "Hundeschule", label: "Hundeschule" },
@@ -123,26 +135,80 @@ export const PIPELINE_INDUSTRIES: Array<{ key: string; query: string; label: str
 ];
 
 export const PIPELINE_CITIES: string[] = [
-  "Berlin", "Hamburg", "München", "Köln", "Frankfurt", "Stuttgart", "Düsseldorf",
-  "Leipzig", "Dortmund", "Essen", "Bremen", "Dresden", "Hannover", "Nürnberg",
-  "Duisburg", "Bochum", "Wuppertal", "Bielefeld", "Bonn", "Münster",
-  "Mannheim", "Karlsruhe", "Augsburg", "Wiesbaden", "Gelsenkirchen",
-  "Mönchengladbach", "Braunschweig", "Kiel", "Magdeburg", "Freiburg",
-  "Aachen", "Krefeld", "Lübeck", "Oberhausen", "Erfurt", "Rostock",
-  "Mainz", "Kassel", "Hagen", "Hamm", "Saarbrücken", "Mülheim",
-  "Potsdam", "Ludwigshafen", "Oldenburg", "Osnabrück", "Leverkusen",
+  "Berlin",
+  "Hamburg",
+  "München",
+  "Köln",
+  "Frankfurt",
+  "Stuttgart",
+  "Düsseldorf",
+  "Leipzig",
+  "Dortmund",
+  "Essen",
+  "Bremen",
+  "Dresden",
+  "Hannover",
+  "Nürnberg",
+  "Duisburg",
+  "Bochum",
+  "Wuppertal",
+  "Bielefeld",
+  "Bonn",
+  "Münster",
+  "Mannheim",
+  "Karlsruhe",
+  "Augsburg",
+  "Wiesbaden",
+  "Gelsenkirchen",
+  "Mönchengladbach",
+  "Braunschweig",
+  "Kiel",
+  "Magdeburg",
+  "Freiburg",
+  "Aachen",
+  "Krefeld",
+  "Lübeck",
+  "Oberhausen",
+  "Erfurt",
+  "Rostock",
+  "Mainz",
+  "Kassel",
+  "Hagen",
+  "Hamm",
+  "Saarbrücken",
+  "Mülheim",
+  "Potsdam",
+  "Ludwigshafen",
+  "Oldenburg",
+  "Osnabrück",
+  "Leverkusen",
 ];
 
 function slugifyLocal(text: string): string {
-  return text.toLowerCase()
-    .replace(/[äöüß]/g, (m: string) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" }[m] || m))
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  return text
+    .toLowerCase()
+    .replace(
+      /[äöüß]/g,
+      (m: string) => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" })[m] || m
+    )
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
 }
 
 function extractGmbCategory(types: string[] = []): string {
   const SKIP = new Set([
-    "point_of_interest", "establishment", "food", "store", "health",
-    "premise", "locality", "political", "local_business", "geocode", "route",
+    "point_of_interest",
+    "establishment",
+    "food",
+    "store",
+    "health",
+    "premise",
+    "locality",
+    "political",
+    "local_business",
+    "geocode",
+    "route",
   ]);
   for (const t of types) {
     if (!SKIP.has(t)) return t.replace(/_/g, " ");
@@ -199,13 +265,13 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
     // Pick current city and industry
     const cities =
       state.config.targetCitySlugs.length > 0
-        ? PIPELINE_CITIES.filter((c) =>
+        ? PIPELINE_CITIES.filter(c =>
             state.config.targetCitySlugs.includes(c.toLowerCase())
           )
         : PIPELINE_CITIES;
     const industries =
       state.config.targetIndustryKeys.length > 0
-        ? PIPELINE_INDUSTRIES.filter((i) =>
+        ? PIPELINE_INDUSTRIES.filter(i =>
             state.config.targetIndustryKeys.includes(i.key)
           )
         : PIPELINE_INDUSTRIES;
@@ -244,7 +310,10 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
     let pageToken: string | undefined;
 
     for (let page = 0; page < 2; page++) {
-      const params: Record<string, string> = { query: searchQuery, language: "de" };
+      const params: Record<string, string> = {
+        query: searchQuery,
+        language: "de",
+      };
       if (pageToken) params.pagetoken = pageToken;
       try {
         const result = await makeRequest<PlacesSearchResult>(
@@ -256,7 +325,7 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
         if (!result.next_page_token) break;
         pageToken = result.next_page_token;
         // Google requires a short delay before using next_page_token
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 2000));
       } catch {
         break;
       }
@@ -339,7 +408,11 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
         // ── Website quality analysis ──────────────────────────────────────────
         // Run BEFORE saving so we can store the correct leadType immediately.
         // Skip businesses whose website looks modern/good (leadType = "unknown").
-        let leadType: "no_website" | "outdated_website" | "poor_website" | "unknown" = "no_website";
+        let leadType:
+          | "no_website"
+          | "outdated_website"
+          | "poor_website"
+          | "unknown" = "no_website";
         if (websiteUrl) {
           try {
             const analysis = await analyzeWebsite(websiteUrl);
@@ -418,12 +491,9 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
 
         // Start background generation (non-blocking via bridge to avoid circular imports)
         import("./pipelineGenerationBridge")
-          .then((m) => m.triggerGeneration(jobId, websiteId))
-          .catch((e) =>
-            console.error(
-              `[Pipeline] Generation failed for job ${jobId}:`,
-              e
-            )
+          .then(m => m.triggerGeneration(jobId, websiteId))
+          .catch(e =>
+            console.error(`[Pipeline] Generation failed for job ${jobId}:`, e)
           );
 
         // Status "generating" while website builds → auto-transitions to "draft"
@@ -448,7 +518,8 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
     freshState.todayCount = (freshState.todayCount || 0) + queued;
     freshState.totalQueued = (freshState.totalQueued || 0) + queued;
     freshState.totalFound = (freshState.totalFound || 0) + found;
-    freshState.totalEmailsFound = (freshState.totalEmailsFound || 0) + emailsFound;
+    freshState.totalEmailsFound =
+      (freshState.totalEmailsFound || 0) + emailsFound;
     freshState.lastRunAt = new Date().toISOString();
     freshState.currentCityIdx = state.currentCityIdx;
     freshState.currentIndustryIdx = state.currentIndustryIdx;
@@ -468,7 +539,12 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
     const errState = loadState();
     errState.isRunning = false;
     saveState(errState);
-    return { queued, found, emailsFound, msg: `Error: ${e?.message || String(e)}` };
+    return {
+      queued,
+      found,
+      emailsFound,
+      msg: `Error: ${e?.message || String(e)}`,
+    };
   }
 }
 

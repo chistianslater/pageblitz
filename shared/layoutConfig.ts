@@ -17,7 +17,12 @@ export type { ColorScheme };
 /**
  * Calculates 'on' contrast colors for a color scheme.
  */
-export function withOnColors(cs: Omit<ColorScheme, "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground">): ColorScheme {
+export function withOnColors(
+  cs: Omit<
+    ColorScheme,
+    "onPrimary" | "onSecondary" | "onAccent" | "onSurface" | "onBackground"
+  >
+): ColorScheme {
   return {
     ...cs,
     onPrimary: getContrastColor(cs.primary),

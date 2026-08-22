@@ -3,7 +3,11 @@
  * This file acts as a server-side wrapper for the shared configuration.
  */
 
-import { INDUSTRY_IMAGES, INDUSTRY_COLORS, type IndustryImageSet } from "@shared/industryImages";
+import {
+  INDUSTRY_IMAGES,
+  INDUSTRY_COLORS,
+  type IndustryImageSet,
+} from "@shared/industryImages";
 import { withOnColors, type ColorScheme } from "@shared/layoutConfig";
 
 export { INDUSTRY_IMAGES, type IndustryImageSet };
@@ -12,21 +16,29 @@ export { INDUSTRY_IMAGES, type IndustryImageSet };
  * Find the best matching image set for a given industry/category string.
  * Also checks business name for keywords.
  * If industryKey is provided, it uses that directly.
- * 
+ *
  * Uses intelligent matching: prioritizes longer, more specific keywords
  * to avoid false matches (e.g., "bauunternehmen" vs "bau").
  */
-export function getIndustryImages(category: string, businessName: string = "", industryKey?: string): IndustryImageSet {
+export function getIndustryImages(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): IndustryImageSet {
   if (industryKey && INDUSTRY_IMAGES[industryKey]) {
     return INDUSTRY_IMAGES[industryKey];
   }
 
   const combined = `${category} ${businessName}`.toLowerCase().trim();
-  
+
   // Sortiere nach Priorität: längere/spezifischere Keywords zuerst
   const entries = Object.entries(INDUSTRY_IMAGES).sort(([, setA], [, setB]) => {
-    const avgLenA = setA.keywords.reduce((sum, kw) => sum + kw.length, 0) / setA.keywords.length;
-    const avgLenB = setB.keywords.reduce((sum, kw) => sum + kw.length, 0) / setB.keywords.length;
+    const avgLenA =
+      setA.keywords.reduce((sum, kw) => sum + kw.length, 0) /
+      setA.keywords.length;
+    const avgLenB =
+      setB.keywords.reduce((sum, kw) => sum + kw.length, 0) /
+      setB.keywords.length;
     return avgLenB - avgLenA; // Längere zuerst
   });
 
@@ -35,9 +47,11 @@ export function getIndustryImages(category: string, businessName: string = "", i
     const hasMatch = imageSet.keywords.some(kw => {
       const normalizedKw = kw.toLowerCase();
       // Prüfe auf exakten Match oder als Teilstring
-      return combined === normalizedKw ||
-             combined.includes(normalizedKw) ||
-             normalizedKw.includes(combined);
+      return (
+        combined === normalizedKw ||
+        combined.includes(normalizedKw) ||
+        normalizedKw.includes(combined)
+      );
     });
     if (hasMatch) {
       return imageSet;
@@ -51,13 +65,17 @@ export function getIndustryImages(category: string, businessName: string = "", i
  * Get a random hero image URL for a given industry.
  * Uses a seed based on business name for consistency (same business → same image).
  */
-export function getHeroImageUrl(category: string, businessName: string = "", industryKey?: string): string {
+export function getHeroImageUrl(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): string {
   const imageSet = getIndustryImages(category, businessName, industryKey);
   const heroes = imageSet.hero;
   // Use a simple hash of the businessName to pick a consistent image
   let hash = 0;
   for (let i = 0; i < businessName.length; i++) {
-    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
+    hash = (hash << 5) - hash + businessName.charCodeAt(i);
     hash |= 0;
   }
   const idx = Math.abs(hash) % heroes.length;
@@ -67,7 +85,11 @@ export function getHeroImageUrl(category: string, businessName: string = "", ind
 /**
  * Get gallery images for a given industry.
  */
-export function getGalleryImages(category: string, businessName: string = "", industryKey?: string): string[] {
+export function getGalleryImages(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): string[] {
   const imageSet = getIndustryImages(category, businessName, industryKey);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
 }
@@ -76,14 +98,18 @@ export function getGalleryImages(category: string, businessName: string = "", in
  * Industry-specific color palettes.
  * Returns a ColorScheme object matching the industry's visual identity.
  */
-export function getIndustryColorScheme(category: string, businessName: string = "", industryKey?: string): ColorScheme {
+export function getIndustryColorScheme(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): ColorScheme {
   const key = industryKey || getIndustryKey(category, businessName);
   const palettes = INDUSTRY_COLORS[key] || INDUSTRY_COLORS.default;
-  
+
   // Hash the business name to pick a consistent palette from the options
   let hash = 0;
   for (let i = 0; i < businessName.length; i++) {
-    hash = ((hash << 5) - hash) + businessName.charCodeAt(i);
+    hash = (hash << 5) - hash + businessName.charCodeAt(i);
     hash |= 0;
   }
   const idx = Math.abs(hash) % palettes.length;
@@ -108,10 +134,18 @@ export function getContrastColor(hexColor: string): string {
   if (!hexColor || typeof hexColor !== "string") return "#f8fafc";
   const hex = hexColor.replace("#", "");
   if (hex.length !== 3 && hex.length !== 6) return "#f8fafc";
-  const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-  const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-  const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
+  const r = parseInt(
+    hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2),
+    16
+  );
+  const g = parseInt(
+    hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4),
+    16
+  );
+  const b = parseInt(
+    hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6),
+    16
+  );
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 160 ? "#0f172a" : "#f8fafc";
 }
-
