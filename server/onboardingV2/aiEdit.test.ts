@@ -137,6 +137,47 @@ describe("proposeAiEdit — kind=content", () => {
       "contact",
     ]);
   });
+
+  test("KI liefert MEHR Galerie-Bilder als das Original → zusätzliche Bilder werden verworfen (keine ungeprüfte URL)", async () => {
+    const docWithGallery: WebsiteDataV2 = {
+      ...doc,
+      sections: [
+        ...doc.sections,
+        {
+          type: "gallery",
+          images: [{ url: "https://x/g1.jpg", alt: "Werkstatt" }],
+        },
+      ],
+    };
+    const candidateSections = [
+      doc.sections[0],
+      doc.sections[1],
+      doc.sections[2],
+      {
+        type: "gallery",
+        images: [
+          { url: "https://x/g1.jpg", alt: "Werkstatt" },
+          // Zweites Bild existiert im Original nicht — darf NICHT übernommen werden.
+          { url: "https://boese-quelle/x.jpg", alt: "Erfunden" },
+        ],
+      },
+    ];
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmContentResponse(candidateSections)
+    );
+
+    const result = await proposeAiEdit({
+      doc: docWithGallery,
+      message: "Ändere den Hero-Text",
+      category: "Tischler",
+    });
+
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") throw new Error("unreachable");
+    const gallery = result.next.sections.find(s => s.type === "gallery") as any;
+    expect(gallery.images).toHaveLength(1);
+    expect(gallery.images[0].url).toBe("https://x/g1.jpg");
+  });
 });
 
 describe("proposeAiEdit — kind=style", () => {

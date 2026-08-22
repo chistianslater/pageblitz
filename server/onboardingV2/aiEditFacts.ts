@@ -55,21 +55,31 @@ function restoreSectionFacts(
     }
     case "gallery": {
       const c = candidate as SectionOf<"gallery">;
-      const images = c.images.map((img, i) => ({
-        ...img,
-        url: original.images[i]?.url ?? img.url,
-      }));
+      // Nie mehr Bilder als im Original: für Indizes jenseits der
+      // Original-Länge gibt es keine Fakten-Quelle zum Zurückkopieren — eine
+      // dort von der KI eingesetzte URL bliebe sonst ungeprüft im Dokument
+      // stehen. Zusätzliche Kandidaten-Bilder werden deshalb verworfen statt
+      // ungeprüft übernommen.
+      const images = c.images
+        .slice(0, original.images.length)
+        .map((img, i) => ({ ...img, url: original.images[i].url }));
       return { ...c, images };
     }
     case "team": {
       const c = candidate as SectionOf<"team">;
-      const members = c.members.map((member, i) => {
-        const originalImageUrl = original.members[i]?.imageUrl;
-        const merged = { ...member };
-        if (originalImageUrl !== undefined) merged.imageUrl = originalImageUrl;
-        else delete merged.imageUrl;
-        return merged;
-      });
+      // Gleiche Begründung wie bei "gallery": Teammitglieder jenseits der
+      // Original-Länge haben kein Fakten-Original für imageUrl und werden
+      // verworfen statt mit einer ungeprüften Kandidaten-URL übernommen.
+      const members = c.members
+        .slice(0, original.members.length)
+        .map((member, i) => {
+          const originalImageUrl = original.members[i].imageUrl;
+          const merged = { ...member };
+          if (originalImageUrl !== undefined)
+            merged.imageUrl = originalImageUrl;
+          else delete merged.imageUrl;
+          return merged;
+        });
       return { ...c, members };
     }
     case "cta": {
@@ -90,7 +100,9 @@ function restoreSectionFacts(
  * ausschließlich in Text-/Struktur-Feldern vom Original abweicht.
  * - Die contact-Sektion kommt IMMER 1:1 aus dem Original (reine Fakten).
  * - imageUrl/ctaHref (hero/about/gallery/team/cta) werden je Sektion und
- *   Item-Index aus dem Original zurückkopiert.
+ *   Item-Index aus dem Original zurückkopiert; zusätzliche Kandidaten-Items
+ *   jenseits der Original-Array-Länge (gallery.images/team.members) werden
+ *   verworfen, weil es dafür keine Fakten-Quelle gibt.
  * - Sektionen, die die KI im Kandidaten weggelassen hat, aber im Original
  *   existierten, bleiben unverändert an ihrer ursprünglichen Position.
  * - Reihenfolge und Sektions-Set folgen strikt dem Original.
