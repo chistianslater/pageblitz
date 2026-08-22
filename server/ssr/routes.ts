@@ -78,11 +78,10 @@ const PREVIEW_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
 async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
   // Express-Regex-Route (siehe registerSsrRoutes): params[0] = Token, params[1] = Restpfad
   const token = typeof req.params[0] === "string" ? req.params[0] : "";
-  const rest =
+  const pathname =
     typeof req.params[1] === "string" && req.params[1].length > 0
       ? req.params[1]
       : "/";
-  const pathname = rest.startsWith("/") ? rest : `/${rest}`;
   if (!PREVIEW_PATHNAMES.has(pathname)) {
     res.status(404).send("Vorschau-Seite nicht gefunden");
     return;

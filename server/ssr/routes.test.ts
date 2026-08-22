@@ -190,11 +190,18 @@ describe("SSR routes", () => {
       expect(res.status).toBe(404);
     });
 
-    test("v2-Dokument → 200 HTML, noindex, no-store; Rechtsseiten laufen über basePath", async () => {
+    test("v2-Dokument → 200 HTML, noindex, no-store; Rechtsseiten mit Inhalt laufen über basePath", async () => {
+      // Fixture with legal content override
+      const fixtureWithLegal = {
+        ...getFixture("werkbank", "full"),
+        legal: {
+          impressumHtml: "<p>Impressum-Test-Inhalt</p>",
+        },
+      };
       (getWebsiteByToken as Mock).mockResolvedValue({
         id: 1,
         slug: "s",
-        websiteData: getFixture("werkbank", "full"),
+        websiteData: fixtureWithLegal,
       });
       const app = buildAppWithFallback();
       const res = await request(app).get("/preview-ssr/abcdefghabcdefgh");
@@ -207,7 +214,23 @@ describe("SSR routes", () => {
       const legal = await request(app).get(
         "/preview-ssr/abcdefghabcdefgh/impressum"
       );
-      expect(legal.status).toBe(404);
+      expect(legal.status).toBe(200);
+      expect(legal.text).toContain("Impressum-Test-Inhalt");
+      expect(legal.headers["x-robots-tag"]).toContain("noindex");
+      expect(legal.headers["cache-control"]).toContain("no-store");
+    });
+
+    test("Rechtsseite ohne Inhalt → 404", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      const res = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh/impressum"
+      );
+      expect(res.status).toBe(404);
     });
 
     test("?pack=kanzlei rendert die Inhalte im anderen Pack, ohne zu persistieren", async () => {
