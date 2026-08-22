@@ -84,4 +84,9 @@ describe("computeRefetchInterval", () => {
       })
     ).toBe(false);
   });
+  test("legacy-Dokument → kein Polling, auch ohne Job", () => {
+    expect(
+      computeRefetchInterval(false, { doc: null, job: null, legacy: true })
+    ).toBe(false);
+  });
 });

@@ -27,6 +27,7 @@ const legalDone = {
   legalStreet: "Weg 1",
   legalZip: "44135",
   legalCity: "Dortmund",
+  legalPhone: "0231 1",
 };
 
 describe("deriveChecklistState", () => {
@@ -92,7 +93,7 @@ describe("deriveChecklistState", () => {
       deriveChecklistState(none, {}).find(i => i.id === "offer")?.status
     ).toBe("open");
   });
-  test("legal done nur mit allen fünf Pflichtfeldern; legal ist required", () => {
+  test("legal done nur mit allen Pflichtfeldern; legal ist required", () => {
     const legal = deriveChecklistState(base, legalDone).find(
       i => i.id === "legal"
     );
@@ -100,6 +101,11 @@ describe("deriveChecklistState", () => {
     expect(legal?.required).toBe(true);
     expect(
       deriveChecklistState(base, { ...legalDone, legalZip: "" }).find(
+        i => i.id === "legal"
+      )?.status
+    ).toBe("open");
+    expect(
+      deriveChecklistState(base, { ...legalDone, legalPhone: "" }).find(
         i => i.id === "legal"
       )?.status
     ).toBe("open");

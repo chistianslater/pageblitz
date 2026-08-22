@@ -1,4 +1,10 @@
 import { COOKIE_NAME } from "@shared/const";
+import {
+  PRICING,
+  ADDON_NAMES,
+  addonPrice,
+  type AddOnKey,
+} from "@shared/pricing";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import {
@@ -160,41 +166,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const stripeCompat = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2024-04-10" as any,
 });
-
-const PRICING = {
-  base: {
-    monthly: 2490, // 24,90 €/Monat (monatliche Abrechnung)
-    yearly: 1990, // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
-  },
-  addon: 390, // 3,90 € pro Standard-Add-on
-  addonAiChat: 990, // 9,90 € KI-Chat
-  addonBooking: 490, // 4,90 € Terminbuchung
-} as const;
-
-type AddOnKey =
-  | "contactForm"
-  | "gallery"
-  | "menu"
-  | "pricelist"
-  | "aiChat"
-  | "booking"
-  | "team";
-const ADDON_NAMES: Record<AddOnKey, string> = {
-  contactForm: "Kontaktformular",
-  gallery: "Bildergalerie",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
-  aiChat: "KI-Chat",
-  booking: "Terminbuchung",
-  team: "Team",
-};
-
-function addonPrice(key: AddOnKey): number {
-  if (key === "aiChat") return PRICING.addonAiChat;
-  if (key === "booking") return PRICING.addonBooking;
-  if (key === "team") return PRICING.addon; // 3,90 €
-  return PRICING.addon;
-}
 
 function slugify(text: string): string {
   return text

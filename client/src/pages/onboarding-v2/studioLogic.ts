@@ -58,6 +58,8 @@ export function deriveGenerationStatus({
 export interface RefetchIntervalDataLike {
   doc: unknown;
   job: { status: JobStatus } | null;
+  /** true = websiteData ist ein v1-Dokument; Studio zeigt eine Meldung statt Generierungs-Screen — es entsteht nie ein v2-Job, also nie Polling (Finding #3). */
+  legacy?: boolean;
 }
 
 /**
@@ -65,12 +67,15 @@ export interface RefetchIntervalDataLike {
  * und kein terminaler Job-Status vorliegt. Stoppt zusätzlich sofort, wenn
  * die ensureGeneration-Mutation selbst fehlgeschlagen ist — sonst würde
  * alle 1,5s ein Poll laufen, ohne dass sich je etwas ändert (Finding #2).
+ * Stoppt außerdem sofort bei einem Legacy-Dokument (v1), da dafür nie ein
+ * v2-Job entsteht und sonst ewig weitergepollt würde.
  */
 export function computeRefetchInterval(
   ensureFailed: boolean,
   data: RefetchIntervalDataLike | undefined
 ): number | false {
   if (ensureFailed) return false;
+  if (data?.legacy) return false;
   const job = data?.job;
   const running =
     !data?.doc &&

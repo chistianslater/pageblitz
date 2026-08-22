@@ -21,6 +21,7 @@ export interface ChecklistAnswers {
   legalStreet?: string | null;
   legalZip?: string | null;
   legalCity?: string | null;
+  legalPhone?: string | null;
   studioProgress?: StudioProgress | null;
 }
 
@@ -109,7 +110,8 @@ function legalComplete(a: ChecklistAnswers): boolean {
     hasText(a.legalEmail) &&
     hasText(a.legalStreet) &&
     hasText(a.legalZip) &&
-    hasText(a.legalCity)
+    hasText(a.legalCity) &&
+    hasText(a.legalPhone)
   );
 }
 

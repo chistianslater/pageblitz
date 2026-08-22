@@ -76,6 +76,7 @@ async function buildState(
     legalStreet: onboarding?.legalStreet,
     legalZip: onboarding?.legalZip,
     legalCity: onboarding?.legalCity,
+    legalPhone: onboarding?.legalPhone,
     studioProgress:
       progressOverride ?? parseStudioProgress(onboarding?.studioProgress),
   });
