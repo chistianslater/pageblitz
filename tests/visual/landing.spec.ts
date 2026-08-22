@@ -37,16 +37,35 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
 
   const showcase = page.locator("#showcase");
 
-  // Mindestens ein Pack-Demo-iframe (loading="lazy") muss tatsächlich geladen
-  // haben, bevor der Screenshot entsteht — sonst zeigt die Baseline leere/
-  // teilweise geladene Karten je nach Netzwerk-Timing. Der Waiter muss VOR
-  // dem Scroll registriert werden (Promise.all), sonst kann die Antwort
-  // bereits durch sein, bevor wir zu horchen beginnen (Race, siehe
-  // studio.spec.ts für dasselbe Muster).
-  await Promise.all([
-    page.waitForResponse(res => res.url().includes("/demo/") && res.ok()),
-    showcase.scrollIntoViewIfNeeded(),
-  ]);
+  // Scrollt durch die GESAMTE Sektion (nicht nur deren Anfang in den
+  // Viewport) — mit loading="lazy" auf 14 Karten über mehrere Reihen würde
+  // ein reines "Sektion in den Viewport scrollen" nur die erste(n) Reihe(n)
+  // zum Laden anstoßen, die unteren Karten blieben ungeladen.
+  await showcase.scrollIntoViewIfNeeded();
+  await showcase.locator("article").last().scrollIntoViewIfNeeded();
+
+  // Alle 14 Pack-Demo-iframes müssen tatsächlich fertig geladen sein, bevor
+  // der Screenshot entsteht — sonst zeigt die Baseline leere/teilweise
+  // geladene Karten je nach Netzwerk-Timing (ein einzelnes waitForResponse
+  // auf "irgendein /demo/" reichte nicht: die ersten Karten sind meist
+  // deutlich früher fertig als die letzten).
+  await page.waitForFunction(
+    () => {
+      const frames = Array.from(
+        document.querySelectorAll<HTMLIFrameElement>('iframe[src^="/demo/"]')
+      );
+      return (
+        frames.length === 14 &&
+        frames.every(
+          frame =>
+            frame.contentDocument?.readyState === "complete" &&
+            (frame.contentDocument.body?.children.length ?? 0) > 0
+        )
+      );
+    },
+    undefined,
+    { timeout: 20_000 }
+  );
 
   await expect(showcase).toHaveScreenshot("pack-showcase.png");
 });

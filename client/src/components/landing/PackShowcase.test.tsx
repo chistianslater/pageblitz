@@ -37,4 +37,16 @@ describe("PackShowcase", () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
   });
+
+  test("Heading-Hierarchie: genau ein <h2> (Sektionsüberschrift), Kicker ist kein Heading, Karten nutzen <h3> (kein Sprung h2→h4)", () => {
+    const h2Count = (html.match(/<h2[ >]/g) ?? []).length;
+    const h3Count = (html.match(/<h3[ >]/g) ?? []).length;
+    const h4Count = (html.match(/<h4[ >]/g) ?? []).length;
+    expect(h2Count).toBe(1);
+    expect(html).toContain(">Ein Look für jedes Handwerk.<");
+    expect(h3Count).toBe(14);
+    expect(h4Count).toBe(0);
+    // Kicker "14 Stilwelten" ist bewusst kein Heading (Label, nicht Struktur).
+    expect(html).not.toMatch(/<h[1-6][^>]*>14 Stilwelten</);
+  });
 });

@@ -240,14 +240,24 @@ const DEMO_CACHE_CONTROL = "public, max-age=3600";
  * eventuell aktives Kontaktformular/Chat/Buchung aus der Demo heraus nichts
  * absenden kann — aktuell ein No-op, weil Fixture "full" keine Features
  * aktiviert hat (siehe `shared/siteContract/fixtures.ts`), schützt aber,
- * falls sich das ändert. Rechtsseiten (`/demo/:pack/impressum|datenschutz`)
- * matchen dieses `app.get("/demo/:pack", ...)` nicht (kein Wildcard-Suffix)
- * und fallen auf die SPA durch — 404 dort ist laut Spec in Ordnung.
+ * falls sich das ändert.
+ *
+ * Route-Regex `:pack([a-z0-9-]+)` matcht NUR Pack-ID-artige Segmente — ein
+ * Segment mit Punkt/Großbuchstaben/Sonderzeichen (z. B. eine statische Datei
+ * wie `/demo/werkbank-hero.svg` unter `client/public/demo/`) matcht diese
+ * Route gar nicht erst und fällt automatisch auf die nachfolgende Static-/
+ * SPA-Middleware durch (Regressionsfund: die Fixture-Bilder der Demo-Seiten
+ * selbst liegen unter genau diesem Pfadpräfix). Aus demselben Grund matchen
+ * auch Rechtsseiten (`/demo/:pack/impressum|datenschutz`) nicht und fallen
+ * auf die SPA durch — 404 dort ist laut Spec in Ordnung.
  */
 function handleDemoRoute(req: Request, res: Response): void {
   const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
   if (!isKnownPackId(packParam)) {
-    res.status(404).send(`Unbekanntes Pack: "${packParam}"`);
+    // Bewusst OHNE den Parameter im Body zu reflektieren (öffentliche,
+    // ungegatete Route) — ein Query-/Pfad-Wert wie `<script>...` würde sonst
+    // unescaped in einer text/html-Antwort landen (reflected XSS).
+    res.status(404).type("text/plain").send("Unbekanntes Pack");
     return;
   }
   try {
@@ -268,7 +278,7 @@ function handleDemoRoute(req: Request, res: Response): void {
       // liefern.
       now: new Date("2026-08-19T10:00:00"),
     });
-    res.setHeader("X-Robots-Tag", "noindex");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
     res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
     res.status(status).type("html").send(html);
   } catch (err) {
@@ -358,7 +368,7 @@ async function handleCustomerSiteSsr(
 
 export function registerSsrRoutes(app: Express): void {
   app.get("/dev/site-preview", handleDevPreview);
-  app.get("/demo/:pack", handleDemoRoute);
+  app.get("/demo/:pack([a-z0-9-]+)", handleDemoRoute);
   app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
     void handlePreviewSsr(req, res);
   });

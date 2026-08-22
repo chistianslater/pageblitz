@@ -80,11 +80,11 @@ function PackCard({ packId, index, isDark, animate }: PackCardProps) {
             aria-hidden="true"
           />
         </div>
-        <h4
+        <h3
           className={`font-semibold text-lg mb-1.5 ${isDark ? "text-white" : "text-gray-900"}`}
         >
           {constitution.name}
-        </h4>
+        </h3>
         <p
           className={`text-sm leading-relaxed mb-4 min-h-[2.5rem] ${isDark ? "text-white/50" : "text-gray-500"}`}
         >
@@ -124,15 +124,15 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
   return (
     <section id="showcase" className="py-32 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 mb-12">
-        <motion.h2
+        <motion.p
           initial={animate ? { opacity: 0, y: 20 } : undefined}
           whileInView={animate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true }}
           className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
         >
           14 Stilwelten
-        </motion.h2>
-        <motion.h3
+        </motion.p>
+        <motion.h2
           initial={animate ? { opacity: 0, y: 20 } : undefined}
           whileInView={animate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true }}
@@ -140,7 +140,7 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
           className={`text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
         >
           Ein Look für jedes Handwerk.
-        </motion.h3>
+        </motion.h2>
         <p
           className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}
         >

@@ -23,6 +23,22 @@ function buildAppWithFallback(): Express {
   return app;
 }
 
+/**
+ * App mit SSR-Routen + einem Fallback, der (anders als `buildAppWithFallback`)
+ * 200 statt 404 liefert — macht "die Route hat gar nicht erst gematcht und
+ * die Anfrage ist bei der nachfolgenden Middleware gelandet" von "die Route
+ * hat gematcht und selbst 404 geliefert" eindeutig unterscheidbar (beide
+ * Fälle wären mit einem 404-Fallback nicht zu unterscheiden).
+ */
+function buildAppWithOkFallback(): Express {
+  const app = express();
+  registerSsrRoutes(app);
+  app.use((_req, res) => {
+    res.status(200).send("OK-Fallback");
+  });
+  return app;
+}
+
 describe("SSR routes", () => {
   test("dev-preview liefert HTML für werkbank/full", async () => {
     const app = express();
@@ -59,7 +75,7 @@ describe("SSR routes", () => {
       const fixture = getFixture("werkbank", "full");
 
       expect(res.status).toBe(200);
-      expect(res.headers["x-robots-tag"]).toContain("noindex");
+      expect(res.headers["x-robots-tag"]).toBe("noindex, nofollow");
       expect(res.headers["cache-control"]).toContain("public");
       expect(res.headers["cache-control"]).toContain("max-age=3600");
       expect(res.text).toContain(fixture.businessName);
@@ -71,11 +87,40 @@ describe("SSR routes", () => {
       expect(res.status).toBe(404);
     });
 
+    test("unbekanntes Pack → 404-Body reflektiert den Parameter NICHT (kein reflected XSS, generische Meldung)", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/disco");
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("Unbekanntes Pack");
+      expect(res.text).not.toContain("disco");
+    });
+
+    test("GET /demo/%3Cscript%3E → 404, Body enthält kein <script (weder über Routing- noch über Handler-Ebene reflektiert)", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/%3Cscript%3E");
+      expect(res.status).toBe(404);
+      expect(res.text).not.toContain("<script");
+    });
+
     test("Rechtsseiten unter /demo/:pack/* matchen die Route nicht → SPA-Fallback (404)", async () => {
       const app = buildAppWithFallback();
       const res = await request(app).get("/demo/werkbank/impressum");
       expect(res.status).toBe(404);
       expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("statische Fixture-Assets unter /demo/* (z. B. .svg) matchen die Route nicht — fallen auf die nachfolgende Middleware durch (Regressionsfund: client/public/demo/*.svg wurde vorher von dieser Route abgefangen)", async () => {
+      const app = buildAppWithOkFallback();
+      const res = await request(app).get("/demo/werkbank-hero.svg");
+      expect(res.status).toBe(200);
+      expect(res.text).toBe("OK-Fallback");
+    });
+
+    test("Pack-Segment mit Großbuchstaben matcht die Route (Express-Routing ist standardmäßig case-insensitive), scheitert aber an isKnownPackId → sichere generische 404", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/Werkbank");
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("Unbekanntes Pack");
     });
 
     test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
