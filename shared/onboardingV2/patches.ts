@@ -92,7 +92,14 @@ export const LegalPatchSchema = z
     legalPhone: z.string().min(5).max(40),
     legalVatId: z.string().max(20).optional(),
     openingHours: z
-      .array(z.object({ day: z.string().min(1).max(40), hours: z.string().min(1).max(60) }).strict())
+      .array(
+        z
+          .object({
+            day: z.string().min(1).max(40),
+            hours: z.string().min(1).max(60),
+          })
+          .strict()
+      )
       .max(14)
       .optional(),
   })

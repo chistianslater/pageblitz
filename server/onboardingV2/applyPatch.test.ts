@@ -52,7 +52,7 @@ describe("applyImages", () => {
       gallery: [{ url: "https://x/g.jpg", alt: "Werkstatt" }],
     });
     expect((next.sections[0] as any).imageUrl).toBe("https://x/h.jpg");
-    expect(next.sections.map((s) => s.type)).toEqual([
+    expect(next.sections.map(s => s.type)).toEqual([
       "hero",
       "services",
       "about",
@@ -67,16 +67,16 @@ describe("applyImages", () => {
     });
     expect(
       applyImages(withGallery, { gallery: [] }).sections.some(
-        (s) => s.type === "gallery"
+        s => s.type === "gallery"
       )
     ).toBe(false);
     const noAbout = {
       ...docFull,
-      sections: docFull.sections.filter((s) => s.type !== "about"),
+      sections: docFull.sections.filter(s => s.type !== "about"),
     };
     expect(
       applyImages(noAbout, { about: "https://x/a.jpg" }).sections.some(
-        (s) => s.type === "about"
+        s => s.type === "about"
       )
     ).toBe(false);
   });
@@ -100,7 +100,7 @@ describe("applyOffer", () => {
         { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
       ],
     });
-    expect(next.sections.map((s) => s.type)).toEqual([
+    expect(next.sections.map(s => s.type)).toEqual([
       "hero",
       "menu",
       "about",
@@ -118,7 +118,7 @@ describe("applyOffer", () => {
       headline: "Leistungen",
       items: [{ title: "A" }],
     });
-    expect(next.sections.map((s) => s.type)).toEqual([
+    expect(next.sections.map(s => s.type)).toEqual([
       "hero",
       "services",
       "contact",
@@ -130,7 +130,7 @@ describe("applyOffer", () => {
       ],
     });
     expect(
-      twice.sections.filter((s) =>
+      twice.sections.filter(s =>
         ["services", "menu", "pricelist"].includes(s.type)
       )
     ).toHaveLength(1);

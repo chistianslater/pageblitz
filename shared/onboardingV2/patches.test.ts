@@ -24,7 +24,10 @@ describe("ImagesPatchSchema", () => {
 
 describe("TextsPatchSchema", () => {
   test("akzeptiert Teilmenge gültiger Felder", () => {
-    const result = TextsPatchSchema.safeParse({ headline: "Neu", seoTitle: "SEO" });
+    const result = TextsPatchSchema.safeParse({
+      headline: "Neu",
+      seoTitle: "SEO",
+    });
     expect(result.success).toBe(true);
   });
 

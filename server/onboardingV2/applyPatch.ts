@@ -39,7 +39,7 @@ function replaceSection<T extends SectionType>(
   type: T,
   map: (s: SectionOf<T>) => SectionOf<T>
 ): SectionV2[] {
-  return sections.map((s) => (s.type === type ? map(s as SectionOf<T>) : s));
+  return sections.map(s => (s.type === type ? map(s as SectionOf<T>) : s));
 }
 
 /**
@@ -51,12 +51,16 @@ function insertAfter(
   afterType: SectionType | null,
   section: SectionV2
 ): SectionV2[] {
-  const idx = afterType ? sections.findIndex((s) => s.type === afterType) : -1;
+  const idx = afterType ? sections.findIndex(s => s.type === afterType) : -1;
   if (idx >= 0)
     return [...sections.slice(0, idx + 1), section, ...sections.slice(idx + 1)];
-  const contactIdx = sections.findIndex((s) => s.type === "contact");
+  const contactIdx = sections.findIndex(s => s.type === "contact");
   if (contactIdx >= 0)
-    return [...sections.slice(0, contactIdx), section, ...sections.slice(contactIdx)];
+    return [
+      ...sections.slice(0, contactIdx),
+      section,
+      ...sections.slice(contactIdx),
+    ];
   return [...sections, section];
 }
 
@@ -67,20 +71,20 @@ export function applyImages(
 ): WebsiteDataV2 {
   let sections = doc.sections;
   if (patch.hero !== undefined)
-    sections = replaceSection(sections, "hero", (s) => ({
+    sections = replaceSection(sections, "hero", s => ({
       ...s,
       imageUrl: patch.hero,
     }));
   if (patch.about !== undefined)
-    sections = replaceSection(sections, "about", (s) => ({
+    sections = replaceSection(sections, "about", s => ({
       ...s,
       imageUrl: patch.about,
     }));
   if (patch.gallery !== undefined) {
-    const existing = sections.find((s) => s.type === "gallery") as
+    const existing = sections.find(s => s.type === "gallery") as
       | SectionOf<"gallery">
       | undefined;
-    const without = sections.filter((s) => s.type !== "gallery");
+    const without = sections.filter(s => s.type !== "gallery");
     if (patch.gallery.length === 0) sections = without;
     else {
       const gallery: SectionOf<"gallery"> = {
@@ -89,10 +93,10 @@ export function applyImages(
         images: patch.gallery,
       };
       sections = existing
-        ? sections.map((s) => (s.type === "gallery" ? gallery : s))
+        ? sections.map(s => (s.type === "gallery" ? gallery : s))
         : insertAfter(
             without,
-            without.some((s) => s.type === "about") ? "about" : null,
+            without.some(s => s.type === "about") ? "about" : null,
             gallery
           );
     }
@@ -101,24 +105,21 @@ export function applyImages(
 }
 
 /** Pure: aktualisiert Hero-/About-Texte und die SEO-Metadaten (nur übergebene Felder). */
-export function applyTexts(
-  doc: WebsiteDataV2,
-  p: TextsPatch
-): WebsiteDataV2 {
+export function applyTexts(doc: WebsiteDataV2, p: TextsPatch): WebsiteDataV2 {
   let sections = doc.sections;
   if (
     p.headline !== undefined ||
     p.subheadline !== undefined ||
     p.ctaText !== undefined
   )
-    sections = replaceSection(sections, "hero", (s) => ({
+    sections = replaceSection(sections, "hero", s => ({
       ...s,
       ...(p.headline !== undefined ? { headline: p.headline } : {}),
       ...(p.subheadline !== undefined ? { subheadline: p.subheadline } : {}),
       ...(p.ctaText !== undefined ? { ctaText: p.ctaText } : {}),
     }));
   if (p.aboutHeadline !== undefined || p.aboutBody !== undefined)
-    sections = replaceSection(sections, "about", (s) => ({
+    sections = replaceSection(sections, "about", s => ({
       ...s,
       ...(p.aboutHeadline !== undefined ? { headline: p.aboutHeadline } : {}),
       ...(p.aboutBody !== undefined ? { body: p.aboutBody } : {}),
@@ -135,8 +136,8 @@ export function applyOffer(
   doc: WebsiteDataV2,
   offer: OfferPatch
 ): WebsiteDataV2 {
-  const firstIdx = doc.sections.findIndex((s) => OFFER_TYPES.has(s.type));
-  const without = doc.sections.filter((s) => !OFFER_TYPES.has(s.type));
+  const firstIdx = doc.sections.findIndex(s => OFFER_TYPES.has(s.type));
+  const without = doc.sections.filter(s => !OFFER_TYPES.has(s.type));
   const section: SectionV2 =
     offer.mode === "services"
       ? {
@@ -154,7 +155,7 @@ export function applyOffer(
   if (firstIdx >= 0) {
     const removedBefore = doc.sections
       .slice(0, firstIdx)
-      .filter((s) => OFFER_TYPES.has(s.type)).length;
+      .filter(s => OFFER_TYPES.has(s.type)).length;
     const at = firstIdx - removedBefore;
     sections = [...without.slice(0, at), section, ...without.slice(at)];
   } else sections = insertAfter(without, "hero", section);
