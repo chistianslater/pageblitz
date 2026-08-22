@@ -235,7 +235,8 @@ describe("onboardingV2.updateAddons", () => {
       })
     ).rejects.toMatchObject({
       code: "BAD_REQUEST",
-      message: "Diese Extras sind noch nicht buchbar: KI-Chat, Terminbuchung, Team.",
+      message:
+        "Diese Extras sind noch nicht buchbar: KI-Chat, Terminbuchung, Team.",
     });
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
   });

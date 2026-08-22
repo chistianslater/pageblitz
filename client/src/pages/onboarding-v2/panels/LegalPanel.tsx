@@ -142,9 +142,7 @@ export function LegalPanel({
                 {...register(field.name)}
               />
               {hint && (
-                <span
-                  style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}
-                >
+                <span style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}>
                   {hint}
                 </span>
               )}

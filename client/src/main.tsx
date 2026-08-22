@@ -17,7 +17,9 @@ import "@shared/zodLocale";
       // Stiller no-op: Child wurde von einer externen DOM-Mutation entfernt
       // (Translate, Extension). React-State und tatsächlicher DOM driften
       // dann auseinander; nicht ideal, aber besser als Crash + White-Screen.
-      console.warn("[DOM Patch] removeChild: child is not a child of this node");
+      console.warn(
+        "[DOM Patch] removeChild: child is not a child of this node"
+      );
       return child;
     }
     return origRemoveChild.call(this, child) as T;
@@ -25,19 +27,21 @@ import "@shared/zodLocale";
 
   Node.prototype.insertBefore = function <T extends Node>(
     newNode: T,
-    referenceNode: Node | null,
+    referenceNode: Node | null
   ): T {
     if (referenceNode && referenceNode.parentNode !== this) {
-      console.warn("[DOM Patch] insertBefore: referenceNode is not a child of this node");
+      console.warn(
+        "[DOM Patch] insertBefore: referenceNode is not a child of this node"
+      );
       // Fallback: append am Ende statt insertBefore
-      return (this.appendChild(newNode) as unknown) as T;
+      return this.appendChild(newNode) as unknown as T;
     }
     return origInsertBefore.call(this, newNode, referenceNode) as T;
   };
 })();
 
 import { trpc } from "@/lib/trpc";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -62,18 +66,19 @@ const seen = (key: string) => {
   return false;
 };
 
-window.addEventListener("error", (event) => {
+window.addEventListener("error", event => {
   const msg = event.message || "Unknown window error";
   const fp = `${msg}|${event.filename}|${event.lineno}`;
   if (seen(fp)) return;
   reportClientError({
     source: "window-error",
     message: msg,
-    stack: event.error?.stack || `${event.filename}:${event.lineno}:${event.colno}`,
+    stack:
+      event.error?.stack || `${event.filename}:${event.lineno}:${event.colno}`,
   });
 });
 
-window.addEventListener("unhandledrejection", (event) => {
+window.addEventListener("unhandledrejection", event => {
   const reason = event.reason;
   const msg = reason?.message || String(reason ?? "Unhandled rejection");
   const stack = reason?.stack || null;
@@ -112,10 +117,10 @@ function maybeReloadForStaleCache(msg: string) {
   window.location.reload();
 }
 
-window.addEventListener("error", (event) => {
+window.addEventListener("error", event => {
   maybeReloadForStaleCache(event.message || "");
 });
-window.addEventListener("unhandledrejection", (event) => {
+window.addEventListener("unhandledrejection", event => {
   const msg = (event.reason as any)?.message || String(event.reason ?? "");
   maybeReloadForStaleCache(msg);
 });

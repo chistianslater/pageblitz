@@ -136,10 +136,7 @@ describe("onboardingV2.uploadPhoto", () => {
   test("30 Fotos bereits hochgeladen → BAD_REQUEST, kein Upload (Finding I4)", async () => {
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
       websiteId: 42,
-      photoUrls: Array.from(
-        { length: 30 },
-        (_, i) => `https://u/${i + 1}.jpg`
-      ),
+      photoUrls: Array.from({ length: 30 }, (_, i) => `https://u/${i + 1}.jpg`),
     } as any);
     const { uploadPhoto } = await import("../onboardingUpload");
 
