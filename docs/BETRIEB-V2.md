@@ -20,12 +20,26 @@ Das Produkt läuft vollständig auf v2 — es gibt keinen Flag-Zweig mehr:
   `router.ts`, `routerAi.ts`, `routerCommerce.ts`, `routerContent.ts`,
   `state.ts`, `checkout.ts`, `aiEdit.ts`, `suggest.ts`, `ownership.ts`).
 - **Generierung v2**: `server/generationV2/runJob.ts`
-  (`runWebsiteGenerationV2Job`). `runWebsiteGeneration` (v1) in
-  `server/routers.ts` ist nur noch ein schmaler Wrapper (`V1_BODY_DISABLED =
-  true`), der sofort an `runWebsiteGenerationV2Job` delegiert — der v1-Rumpf
-  läuft nie mehr und wird in Plan B4b gelöscht.
+  (`runWebsiteGenerationV2Job`). `runWebsiteGeneration` (v1) existiert seit
+  Plan B4b **nicht mehr** — alle Aufrufer (`website.generate`,
+  `outreach.queueBusinesses`, `server/outreachPipeline.ts`,
+  `onboardingV2.ensureGeneration`) rufen `runWebsiteGenerationV2Job` direkt
+  auf; der alte v1-Prompt-Rumpf (`DESIGN_ARCHETYPES`, `buildEnhancedPrompt`
+  usw.) ist gelöscht.
 - **`PB_LAYOUT_V2` existiert im Code nicht mehr** (Flag entfernt, Cutover
   Task 3).
+- **`website.generate` (Admin) ist asynchron**: legt Website (`status:
+  "preview"`, `websiteData: null`) + `generation_jobs`-Eintrag an und stößt
+  `runWebsiteGenerationV2Job(jobId, websiteId)` fire-and-forget an —
+  Rückgabe `{ websiteId, jobId, previewToken, slug }` sofort, ohne auf die
+  Generierung zu warten (vorher: synchroner v1-LLM-Aufruf im Request).
+
+**Plan B4b (Löschung des v1-Systems) ist abgeschlossen** (Stand `f74f700`):
+Chat (`OnboardingChat.tsx`), v1-Layouts/-Renderer
+(`client/src/components/layouts/`), v1-Generierungsrumpf, `templates`-Router
++ `server/templateSelector.ts`, v1-`onboarding.*`/`selfService.*`-Prozeduren
+sind gelöscht. Details, Gates und offene Reste: Ergebnis-Dokument
+`docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`.
 
 Specs: `docs/superpowers/specs/2026-08-21-onboarding-v2-design.md`,
 `docs/superpowers/specs/2026-08-22-cutover-design.md`,
@@ -39,7 +53,9 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
 - `npm run build` — `vite build` (leert `dist/public/`) → **danach**
   `npm run build:islands` (Reihenfolge ist bewusst so, sonst löscht Vite das
   Inseln-Bundle wieder; abgesichert durch `server/ssr/buildOrder.test.ts`) →
-  esbuild-Bundle des Servers nach `dist/`.
+  esbuild-Bundle des Servers nach `dist/`. Seit Plan B4b (Templates-Cluster
+  entfernt) kopiert der Build kein `template-library/templates.json` mehr
+  nach `dist/` — der Schritt ist ersatzlos aus dem `build`-Skript raus.
 - `npm run build:islands` — `node scripts/build-islands.mjs`: baut
   `client/src/site-islands/main.tsx` per esbuild zu
   `dist/public/islands/site-islands.<hash>.js` (Content-Hash) + schreibt
@@ -169,14 +185,19 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 
 ## 7. Tests & Gates
 
-- `npx vitest run` — Stand dieses Dokuments: 4 Testdateien schlagen fehl,
-  bekannte Env-Abhängigkeiten, kein Produktcode-Fehler:
-  - `server/contrast.test.ts` — 4 Fälle (Kontrastfarb-Erwartungen
-    weichen lokal ab).
-  - `server/resend.test.ts` — 2 Fälle (kein `RESEND_API_KEY` gesetzt).
-  - `server/auth.logout.test.ts`, `server/pageblitz.test.ts` — je 0 Tests,
-    Suite bricht beim Import ab (`new Stripe(...)` ohne
-    `STRIPE_SECRET_KEY` in `server/onboardingV2/checkout.ts`).
+- `npx vitest run` — Stand dieses Dokuments (755 grün, 6 bekannte Fails):
+  - `server/contrast.test.ts` — 4 Fälle. **Keine Env-Abhängigkeit**, sondern
+    eine echte Wertabweichung: `getContrastColor()` (`shared/colorContrast.ts`,
+    genutzt von `server/industryImages.ts` `getIndustryColorScheme`) liefert
+    Slate-Töne (`#0f172a`/`#f8fafc`), der Test erwartet reines
+    `#000000`/`#ffffff`. Vorbestehend, unabhängig von Plan B4b entstanden —
+    Korrektur der Testerwartungen ist B4c-Kandidat (s. u.).
+  - `server/resend.test.ts` — 2 Fälle (kein `RESEND_API_KEY` gesetzt, echter
+    Env-Fail).
+  - Zwei Suiten ohne `STRIPE_SECRET_KEY` (`server/auth.logout.test.ts`,
+    `server/pageblitz.test.ts`) brechen beim Import ab (`new Stripe(...)` in
+    `server/onboardingV2/checkout.ts`) — abhängig von der lokalen
+    Umgebung, in manchen Setups (Secret gesetzt) grün.
 - `npm run check` (`tsc --noEmit`) — hat pre-existing Fehler unabhängig von
   diesem Plan; Gate ist "keine neuen Fehler", nicht "null Fehler". Zahl hier
   bewusst nicht als Sollwert festgeschrieben (verändert sich mit jedem
@@ -194,6 +215,36 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 
 ## 8. Offen / Nächste Schritte
 
-**Plan B4b** löscht den toten v1-Code auf Basis des Inventars
-(`.superpowers/b4-inventar.md`) — u. a. den deaktivierten v1-Rumpf von
-`runWebsiteGeneration`; danach **Plan B4c** (Politur).
+**Plan B4b ist erledigt** (siehe §1) — der v1-Code laut Inventar
+(`.superpowers/b4-inventar.md`) ist entfernt: Chat, v1-Layouts/-Renderer,
+v1-Generierungsrumpf, Templates-Cluster, v1-`onboarding.*`/`selfService.*`.
+Details: `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`.
+
+**Plan B4c (Politur, offen):**
+- DB-Spalten-Drops (siehe `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`
+  für den aktuellen Referenz-Stand je Spalte): `generatedWebsites.layoutStyle`
+  und `.layoutVersion` werden weiterhin aktiv von `server/onboardingV2/devSeed.ts`
+  (Dev/Test-Seed) und `.layoutStyle` zusätzlich als Admin-Listen-Kompatibilitäts-
+  spiegel von `server/onboardingV2/router.ts` geschrieben — vor einem Drop
+  prüfen, ob diese Schreibpfade noch gebraucht werden. `.aboutImageUrl` hat
+  aktuell 0 Referenzen außerhalb des Schemas und könnte ohne weitere
+  Vorarbeit gedroppt werden. `.colorScheme` ist load-bearing für
+  `LegalPage.tsx` (liest die Akzentfarbe) und den Auto-Migrationspfad in
+  `customer.getMyWebsites` (`server/routers.ts`) — Drop erst nach Umstellung
+  der LegalPage-Farbe auf die v2-Pack-Palette möglich (s. u.).
+  `template_uploads` ist komplett unreferenziert und droppbar.
+- LegalPage-Akzentfarbe aus der v2-Pack-Palette statt aus der
+  `colorScheme`-Spalte ableiten; danach `customer.getMyWebsites`-
+  Migrationsblock, `getIndustryColorScheme` (`server/industryImages.ts`) und
+  `withOnColors`/`ColorScheme` (`shared/layoutConfig.ts`) entfernen.
+- `SSR_ALLOWED_PATHNAMES` (o. ä. Allowlist für Unterseiten) prüfen, ob
+  zusätzliche v2-Unterseiten-Pfade fehlen.
+- Landing-Perf: `/demo/:pack`-Showcase lädt 14 Packs als iframes — Ladezeit-
+  Optimierung offen.
+- Demo-Rechtsseiten (`/demo/:pack/impressum|datenschutz`) fallen aktuell auf
+  SPA/404 durch — laut Spec akzeptiert, aber als offener Punkt vermerkt.
+- a11y-/Perf-Pass (Studio, Kundenseiten).
+- `prefersMenu`, Team-Panel (`addOnTeamData`-Spalte bleibt bis dahin),
+  Unterseiten-Add-on — laut Spec §2.8 aufgeschoben.
+- `server/contrast.test.ts`-Erwartungen an `getContrastColor()` korrigieren
+  (§7).

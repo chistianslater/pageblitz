@@ -26,3 +26,7 @@ v2 (Style Packs, SSR, Studio, Inseln) wird der einzige Weg. Kein Flag, kein v1-R
 - StartPage → Studio in ≤ 90 s mit v2-Website; kein Code-Pfad erzeugt mehr v1-`websiteData`.
 - `client/src/components/layouts/`, `OnboardingChat.tsx`, v1-Prozeduren, `PB_LAYOUT_V2` existieren nicht mehr; Vitest/Playwright grün; tsc-Baseline sinkt (v1-Altfehler verschwinden).
 - Landingpage zeigt 14 Packs; Dashboard-Kernfunktionen (Domain, Inbox, Leads, Termine, Statistiken, Abo) unverändert nutzbar; Bearbeitung über Studio.
+
+**Stand B4b, f74f700:**
+✅ `client/src/components/layouts/`, `OnboardingChat.tsx`, `PB_LAYOUT_V2`, `templates`-Router/`server/templateSelector.ts`, v1-`onboarding.*`/`selfService.*`-Prozeduren existieren nicht mehr; kein Code-Pfad erzeugt mehr v1-`websiteData` (`website.generate` läuft asynchron über `runWebsiteGenerationV2Job`); Landingpage zeigt 14 Packs; tsc-Baseline 40 → 21; vitest 755 grün (6 bekannte Fails, s. `docs/BETRIEB-V2.md` §7); Playwright (packs/studio/islands/landing/startpage-to-studio) grün; Dashboard-Kernfunktionen unverändert nutzbar.
+Offen (→ Plan B4c, Details `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`): DB-Spalten-Drops (`colorScheme` load-bearing für `LegalPage.tsx`, daher noch nicht droppbar), a11y-/Perf-Pass, `prefersMenu`, Team-Panel, Unterseiten-Add-on, `contrast.test.ts`-Erwartungen.
