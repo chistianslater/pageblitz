@@ -78,23 +78,6 @@ describe("legalGenerator - XSS Prevention", () => {
       expect(result).not.toContain('test" onclick="alert(1)"');
     });
 
-    it("escapes websiteUrl", () => {
-      const result = generateImpressum({
-        businessName: "Test",
-        legalOwner: "Owner",
-        legalStreet: "Str",
-        legalZip: "12345",
-        legalCity: "City",
-        legalEmail: "test@example.de",
-        websiteUrl: 'javascript:alert(1)" onerror="alert(1)',
-      });
-
-      // Raw unescaped version should not appear
-      expect(result).not.toContain('javascript:alert(1)" onerror="alert(1)');
-      // Should have escaped version
-      expect(result).toContain('&quot; onerror=&quot;');
-    });
-
     it("escapes vatId, register, registerCourt", () => {
       const result = generateImpressum({
         businessName: "Test",
@@ -250,6 +233,85 @@ describe("legalGenerator - XSS Prevention", () => {
       expect(result).toContain("Hauptstr. 1 &amp; 2");
       // Umlauts should not be escaped
       expect(result).toContain("Müller");
+    });
+  });
+
+  describe("generateImpressum - websiteUrl protocol validation", () => {
+    it("rejects javascript: protocol - no website link rendered", () => {
+      const result = generateImpressum({
+        businessName: "Test",
+        legalOwner: "Owner",
+        legalStreet: "Str",
+        legalZip: "12345",
+        legalCity: "City",
+        legalEmail: "test@example.de",
+        websiteUrl: "javascript:alert(1)",
+      });
+
+      // No website section should be rendered at all
+      expect(result).not.toContain("<p>Website:");
+      expect(result).not.toContain("javascript:alert");
+    });
+
+    it("accepts https URLs", () => {
+      const result = generateImpressum({
+        businessName: "Test",
+        legalOwner: "Owner",
+        legalStreet: "Str",
+        legalZip: "12345",
+        legalCity: "City",
+        legalEmail: "test@example.de",
+        websiteUrl: "https://beispiel.de",
+      });
+
+      expect(result).toContain("<p>Website:");
+      expect(result).toContain("https://beispiel.de");
+      expect(result).toContain('<a href="https://beispiel.de" target="_blank">https://beispiel.de</a>');
+    });
+
+    it("accepts http URLs", () => {
+      const result = generateImpressum({
+        businessName: "Test",
+        legalOwner: "Owner",
+        legalStreet: "Str",
+        legalZip: "12345",
+        legalCity: "City",
+        legalEmail: "test@example.de",
+        websiteUrl: "http://beispiel.de",
+      });
+
+      expect(result).toContain("<p>Website:");
+      expect(result).toContain("http://beispiel.de");
+    });
+
+    it("rejects data: protocol", () => {
+      const result = generateImpressum({
+        businessName: "Test",
+        legalOwner: "Owner",
+        legalStreet: "Str",
+        legalZip: "12345",
+        legalCity: "City",
+        legalEmail: "test@example.de",
+        websiteUrl: "data:text/html,<script>alert(1)</script>",
+      });
+
+      expect(result).not.toContain("<p>Website:");
+      expect(result).not.toContain("data:");
+    });
+
+    it("rejects file: protocol", () => {
+      const result = generateImpressum({
+        businessName: "Test",
+        legalOwner: "Owner",
+        legalStreet: "Str",
+        legalZip: "12345",
+        legalCity: "City",
+        legalEmail: "test@example.de",
+        websiteUrl: "file:///etc/passwd",
+      });
+
+      expect(result).not.toContain("<p>Website:");
+      expect(result).not.toContain("file:");
     });
   });
 });

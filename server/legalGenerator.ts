@@ -34,9 +34,22 @@ function esc(value: string | undefined | null): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Validates and returns safe HTTP(S) URLs only.
+ * Rejects javascript:, data:, and other dangerous protocols.
+ */
+function safeHttpUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+  return null;
+}
+
 export function generateImpressum(data: LegalData): string {
   const country = esc(data.legalCountry || "Deutschland");
   const responsible = esc(data.legalResponsible || data.legalOwner);
+  const validWebsiteUrl = safeHttpUrl(data.websiteUrl);
 
   return `
 <!DOCTYPE html>
@@ -71,7 +84,7 @@ export function generateImpressum(data: LegalData): string {
   <h2>Kontakt</h2>
   ${data.legalPhone ? `<p>Telefon: <a href="tel:${esc(data.legalPhone)}">${esc(data.legalPhone)}</a></p>` : ""}
   <p>E-Mail: <a href="mailto:${esc(data.legalEmail)}">${esc(data.legalEmail)}</a></p>
-  ${data.websiteUrl ? `<p>Website: <a href="${esc(data.websiteUrl)}" target="_blank">${esc(data.websiteUrl)}</a></p>` : ""}
+  ${validWebsiteUrl ? `<p>Website: <a href="${esc(validWebsiteUrl)}" target="_blank">${esc(validWebsiteUrl)}</a></p>` : ""}
 
   ${data.legalVatId ? `
   <h2>Umsatzsteuer-ID</h2>
