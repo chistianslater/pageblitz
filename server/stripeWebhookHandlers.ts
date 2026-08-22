@@ -147,22 +147,39 @@ export async function handleCheckoutCompleted(
     addOnTeam: !!addOns.team,
   });
 
-  // v2-Dokument: freischaltbare Extras als `features` spiegeln
-  const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
-  if (parsed.success) {
-    const next = applyFeatures(parsed.data, {
-      contactForm: !!addOns.contactForm,
-      aiChat: !!addOns.aiChat,
-      booking: !!addOns.booking,
-    });
-    assertV2SafeWrite(website.websiteData, next);
-    await deps.updateWebsite(websiteId, { websiteData: next as any });
-    invalidateSsrCache(website.slug);
+  // v2-Dokument: freischaltbare Extras als `features` spiegeln. Eigener
+  // try/catch: Subscription und "sold"-Status stehen an dieser Stelle
+  // bereits fest — ein Fehler hier (Guard, DB, Cache) darf den Webhook
+  // NICHT mit 500 fehlschlagen lassen, sonst retried Stripe das gesamte
+  // Event und `createSubscription` liefe erneut (nicht idempotent →
+  // doppelte Subscription-Zeile). `assertV2SafeWrite` bleibt trotzdem
+  // stehen — sie ist der zentrale Schutz gegen ein korrumpierendes
+  // v2-Dokument (siehe v2WriteGuard.ts) und soll defensiv bleiben, auch
+  // wenn `applyFeatures` selbst schon schema-valide baut.
+  try {
+    const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
+    if (parsed.success) {
+      const next = applyFeatures(parsed.data, {
+        contactForm: !!addOns.contactForm,
+        aiChat: !!addOns.aiChat,
+        booking: !!addOns.booking,
+      });
+      assertV2SafeWrite(website.websiteData, next);
+      await deps.updateWebsite(websiteId, { websiteData: next as any });
+      invalidateSsrCache(website.slug);
+    }
+  } catch (err) {
+    console.warn(
+      `[Webhook] features-Write fehlgeschlagen (Website ${websiteId}):`,
+      err
+    );
   }
 
   // Lifecycle-Emails canceln (Kunde hat konvertiert)
   try {
-    const { cancelLifecycleEmails } = await import("./_core/lifecycleScheduler");
+    const { cancelLifecycleEmails } = await import(
+      "./_core/lifecycleScheduler"
+    );
     await cancelLifecycleEmails(websiteId, "converted");
   } catch (err) {
     console.warn("[Webhook] Failed to cancel lifecycle emails:", err);

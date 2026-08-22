@@ -122,6 +122,31 @@ describe("handleCheckoutCompleted", () => {
     expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
   });
 
+  test("features-Write schlägt fehl → Handler wirft trotzdem nicht, Subscription bleibt einmalig, Warnung geloggt", async () => {
+    const updateWebsite = vi
+      .fn()
+      .mockResolvedValueOnce(undefined) // 1. Aufruf: status "sold" + Add-on-Flags
+      .mockRejectedValueOnce(new Error("DB down")); // 2. Aufruf: websiteData (features)
+    const deps = makeDeps({ updateWebsite });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await expect(handleCheckoutCompleted(fakeSession(), deps)).resolves.toBeUndefined();
+
+    // createSubscription darf nur EINMAL laufen — ein 500er hier würde
+    // Stripe zum Retry des gesamten Events verleiten und damit zu einer
+    // zweiten Subscription-Zeile führen (Non-Idempotenz).
+    expect(deps.createSubscription).toHaveBeenCalledTimes(1);
+    expect(updateWebsite).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("features-Write fehlgeschlagen (Website 42)"),
+      expect.any(Error)
+    );
+    // Cache darf nicht invalidiert werden, wenn der Write scheiterte.
+    expect(mockedInvalidateSsrCache).not.toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+  });
+
   test("v1-Dokument bleibt unangetastet — kein websiteData-Write, kein Cache-Invalidieren", async () => {
     const deps = makeDeps({
       getWebsiteById: vi.fn().mockResolvedValue({
