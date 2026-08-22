@@ -140,11 +140,12 @@ import {
 } from "@shared/layoutConfig";
 import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
-import { selectPack } from "./generationV2/selectPack";
-import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { invalidateSsrCache } from "./ssr/routes";
 import { applyOnboardingToV2 } from "./onboardingV2Patch";
 import { assertV2SafeWrite } from "./v2WriteGuard";
+import { classifyIndustry } from "./industryClassifier";
+import { getGmbPhotos } from "./gmbPhotos";
+import { runWebsiteGenerationV2 } from "./generationV2/runJob";
 import { PACK_IDS, WebsiteDataV2Schema } from "@shared/siteContract/schema";
 import { SECTION_TYPES } from "@shared/siteContract/types";
 import type {
@@ -244,27 +245,6 @@ function formatOpeningHoursText(
   return lines.join("\n");
 }
 
-/**
- * Mappt Googles `opening_hours.weekday_text` (Places API, per `language: "de"`
- * bereits deutsch lokalisiert, z.B. "Montag: 09:00–17:00 Uhr") auf die
- * v2-ContactSchema-Form { day, hours }. Split am ersten ": " — bei
- * unerwartetem Format wird die Zeile als day mit leeren hours übernommen,
- * statt sie zu verwerfen (Google liefert das Format konsistent).
- */
-function mapGmbOpeningHoursToV2(
-  weekdayText: string[] | null | undefined
-): { day: string; hours: string }[] | undefined {
-  if (!weekdayText || weekdayText.length === 0) return undefined;
-  return weekdayText.map(line => {
-    const sepIndex = line.indexOf(": ");
-    if (sepIndex === -1) return { day: line, hours: "" };
-    return {
-      day: line.slice(0, sepIndex),
-      hours: line.slice(sepIndex + 2),
-    };
-  });
-}
-
 // Generic Google Places types that apply to virtually every business – not useful as category
 const GENERIC_GMB_TYPES = new Set([
   "establishment",
@@ -286,48 +266,6 @@ function extractGmbCategory(types?: string[]): string | null {
   if (!types?.length) return null;
   const specific = types.find(t => !GENERIC_GMB_TYPES.has(t));
   return specific ? specific.replace(/_/g, " ") : null;
-}
-
-/**
- * Fetch photos from Google My Business (Places API) for a given placeId.
- * Returns an array of photo URLs (up to maxPhotos), or empty array on failure.
- */
-async function getGmbPhotos(placeId: string, maxPhotos = 6): Promise<string[]> {
-  try {
-    const details = await makeRequest<any>("/maps/api/place/details/json", {
-      place_id: placeId,
-      fields: "photos",
-      language: "de",
-    });
-    const photos: Array<{
-      photo_reference: string;
-      width: number;
-      height: number;
-    }> = details?.result?.photos || [];
-
-    if (!photos.length) return [];
-    // Build photo URLs – direct Google API or Forge proxy
-    const isDirectGoogle = !!ENV.googlePlacesApiKey;
-    const baseUrl = isDirectGoogle
-      ? "https://maps.googleapis.com"
-      : (ENV.forgeApiUrl || "").replace(/\/+$/, "");
-    const apiKey = isDirectGoogle
-      ? ENV.googlePlacesApiKey
-      : ENV.forgeApiKey || "";
-    if (!baseUrl || !apiKey) return [];
-    const photoPath = isDirectGoogle
-      ? "/maps/api/place/photo"
-      : "/v1/maps/proxy/maps/api/place/photo";
-    return photos.slice(0, maxPhotos).map(p => {
-      const url = new URL(`${baseUrl}${photoPath}`);
-      url.searchParams.set("maxwidth", "1600");
-      url.searchParams.set("photo_reference", p.photo_reference);
-      url.searchParams.set("key", apiKey);
-      return url.toString();
-    });
-  } catch {
-    return [];
-  }
 }
 
 /**
@@ -1173,65 +1111,6 @@ function mapCategoryToIndustryKey(category: string): string {
   )
     return "hospitality";
   return "other";
-}
-
-/**
- * Classifies a business into one of our predefined industry keys using AI.
- * This ensures better image/color matching than simple keyword string matching.
- */
-async function classifyIndustry(
-  category: string,
-  businessName: string
-): Promise<string> {
-  const prompt = `Classify this business into exactly ONE of the following industry keys.
-Keys: friseur, restaurant, pizza, bar, cafe, hotel, bauunternehmen, handwerk, fitness, beauty, medizin, immobilien, baeckerei, beratung, reinigung, auto, fotografie, garten, tech.
-If you are uncertain or the business doesn't fit any specifically, return "default".
-
-Business Category: ${category}
-Business Name: ${businessName}
-
-Return ONLY the key (one word, lowercase).`;
-
-  try {
-    const response = await invokeLLM({
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 10,
-    });
-
-    const rawContent = response.choices[0]?.message?.content;
-    const contentStr = typeof rawContent === "string" ? rawContent : "";
-    const key =
-      contentStr
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z]/g, "") || "default";
-    const validKeys = [
-      "friseur",
-      "restaurant",
-      "pizza",
-      "bar",
-      "cafe",
-      "hotel",
-      "bauunternehmen",
-      "handwerk",
-      "fitness",
-      "beauty",
-      "medizin",
-      "immobilien",
-      "baeckerei",
-      "beratung",
-      "reinigung",
-      "auto",
-      "fotografie",
-      "garten",
-      "tech",
-      "default",
-    ];
-    return validKeys.includes(key) ? key : "default";
-  } catch (error) {
-    console.error("Industry classification failed:", error);
-    return "default";
-  }
 }
 
 // ── Background Website Generation Worker ────────────────────────────────────
@@ -2212,85 +2091,6 @@ export async function runWebsiteGeneration(
       error: error.message || "Unknown error during generation",
     });
   }
-}
-
-/**
- * v2-Generierungspfad (siehe runWebsiteGeneration oben, Aufruf hinter
- * PB_LAYOUT_V2-Flag): Pack per Rotation wählen, Inhalte vom LLM holen
- * (zod-validiert, genau 1 Retry, kein stiller Fallback), als websiteData
- * persistieren (gleiche JSON-Spalte wie v1) und den SSR-Cache für den Slug
- * invalidieren, damit die neue Seite sofort sichtbar ist statt bis zu
- * CACHE_TTL_MS (60s) auf den TTL-Ablauf zu warten.
- */
-async function runWebsiteGenerationV2(
-  jobId: number,
-  website: { id: number; slug: string },
-  business: {
-    name: string;
-    category: string | null;
-    searchRegion: string | null;
-    // Vorhandene Business-Felder (drizzle/schema.ts, Tabelle "businesses")
-    // für den deterministischen facts-Merge in generateSiteContent —
-    // NIEMALS vom LLM, immer aus dem Business-Datensatz.
-    phone: string | null;
-    email: string | null;
-    address: string | null;
-    rating: string | null;
-    reviewCount: number | null;
-    openingHours: string[] | null;
-  },
-  category: string,
-  industryKey: string
-): Promise<void> {
-  await updateGenerationJob(jobId, { progress: 30 });
-
-  const packId = await selectPack(category, industryKey);
-
-  await updateGenerationJob(jobId, { progress: 50 });
-
-  const rating = business.rating ? parseFloat(business.rating) : NaN;
-  const websiteData = await generateSiteContent({
-    packId,
-    business: {
-      name: business.name,
-      category,
-      city: business.searchRegion || undefined,
-    },
-    facts: {
-      slug: website.slug,
-      businessCategory: category,
-      ...(Number.isFinite(rating)
-        ? { google: { rating, reviewCount: business.reviewCount || 0 } }
-        : {}),
-      contact: {
-        phone: business.phone || undefined,
-        email: business.email || undefined,
-        // business.address ist ein unstrukturierter Freitext-Fund (GMB-Adresse,
-        // Tabelle "businesses" hat kein street/zip/city) — die v2-ContactSchema
-        // erwartet street/zip/city getrennt. Ohne strukturierte Trennung wird
-        // hier bewusst NUR die Stadt aus searchRegion übernommen; street/zip
-        // bleiben leer, bis der Onboarding-Legal-Schritt (applyOnboardingToV2)
-        // sie mit echten, vom Nutzer bestätigten Werten füllt.
-        city: business.searchRegion || undefined,
-        openingHours: mapGmbOpeningHoursToV2(business.openingHours),
-      },
-    },
-  });
-
-  await updateGenerationJob(jobId, { progress: 90 });
-
-  await updateWebsite(website.id, { websiteData: websiteData as any });
-  invalidateSsrCache(website.slug);
-
-  await updateGenerationJob(jobId, {
-    status: "completed",
-    progress: 100,
-    result: { success: true, alreadyGenerated: false, usedFallback: false },
-  });
-
-  console.log(
-    `[Generation Job ${jobId}] Completed (v2) for website ${website.id}, pack=${packId}`
-  );
 }
 
 export const appRouter = router({
