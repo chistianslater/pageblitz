@@ -13,9 +13,7 @@ const PACK_ORDER: readonly PackId[] = PACK_IDS;
 
 /** Akzentfarbe der Verfassung — trägt die tatsächliche Pack-Identität in die Karte (Punkt + Hover-Rahmen), statt einer generischen Deko-Farbe. */
 function getAccentColor(packId: PackId): string {
-  const accent = getConstitution(packId).palette.find(
-    c => c.role === "accent"
-  );
+  const accent = getConstitution(packId).palette.find(c => c.role === "accent");
   return accent?.hex ?? "#a3e635";
 }
 
@@ -147,8 +145,8 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
           className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}
         >
           Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
-          Typografie, Farben und Layout passend zur Branche. Du wählst den
-          Stil, der zu dir passt, deine Inhalte bleiben gleich.
+          Typografie, Farben und Layout passend zur Branche. Du wählst den Stil,
+          der zu dir passt, deine Inhalte bleiben gleich.
         </p>
       </div>
 
