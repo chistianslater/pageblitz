@@ -142,6 +142,7 @@ import { uploadLogo, uploadPhoto } from "./onboardingUpload";
 import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
 import { applyOnboardingToV2 } from "./onboardingV2Patch";
+import { onboardingV2Router } from "./onboardingV2/router";
 import { assertV2SafeWrite } from "./v2WriteGuard";
 import { classifyIndustry } from "./industryClassifier";
 import { getGmbPhotos } from "./gmbPhotos";
@@ -5610,6 +5611,8 @@ Kontext: ${input.context}`,
         };
       }),
   }),
+
+  onboardingV2: onboardingV2Router,
 
   // ── Self-Service: Start without GMB ────────────────────────────────
   // ── Customer Dashboard ──────────────────────────────
