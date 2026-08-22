@@ -42,7 +42,8 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
   // der Screenshot entsteht: beide sind fixed-positioniert und würden sonst
   // je nach Scroll-/Render-Timing über die Showcase-Baseline ragen.
   await page.addStyleTag({
-    content: "nav, .fixed.top-0, .fixed.bottom-0 { visibility: hidden !important; }",
+    content:
+      "nav, .fixed.top-0, .fixed.bottom-0 { visibility: hidden !important; }",
   });
 
   const showcase = page.locator("#showcase");
