@@ -5,7 +5,11 @@ import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import { PanelFrame } from "./PanelFrame";
 import { PhotoGrid, PhotoTargetPicker, type PhotoTarget } from "./photoParts";
 
-const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
+// Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
+// (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
+// 5 MB clientseitig lässt Luft für den Data-URL-Overhead, damit keine
+// clientseitig akzeptierte Datei am Server abgelehnt wird.
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const MAX_GALLERY_PHOTOS = 12;
 const ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 type AcceptedMime = (typeof ACCEPTED_MIME_TYPES)[number];
@@ -84,7 +88,7 @@ export function PhotosPanel({
     e.target.value = "";
     if (!file) return;
     if (file.size > MAX_UPLOAD_BYTES) {
-      setUploadError("Datei ist zu groß (maximal 6 MB).");
+      setUploadError("Bitte ein Bild bis 5 MB wählen.");
       return;
     }
     if (!isAcceptedMime(file.type)) {
@@ -106,6 +110,7 @@ export function PhotosPanel({
             handlePick(result.url);
             sources.refetch();
           },
+          onError: err => setUploadError(err.message),
         }
       );
     };
@@ -140,8 +145,27 @@ export function PhotosPanel({
   };
 
   const busy = upload.isPending || setImages.isPending;
+  const hasExistingGallery = !!gallerySection;
+  // Bei Ziel "Galerie" ohne Auswahl UND ohne bestehende Galerie ist "leer
+  // übernehmen" ein No-op (keine Sektion vorhanden) und erlaubt. Existiert
+  // bereits eine Galerie, würde ein leerer Patch sie stillschweigend löschen
+  // — das verlangt die explizite "Galerie entfernen"-Aktion unten statt eines
+  // versehentlichen Klicks auf "Übernehmen".
+  const galleryWouldDeleteExisting =
+    target === "gallery" && galleryUrls.length === 0 && hasExistingGallery;
   const canApply =
-    target === "gallery" ? true : target === "hero" ? !!heroUrl : !!aboutUrl;
+    target === "gallery"
+      ? !galleryWouldDeleteExisting
+      : target === "hero"
+        ? !!heroUrl
+        : !!aboutUrl;
+
+  const removeGallery = () => {
+    setImages.mutate(
+      { token, patch: { gallery: [] } },
+      { onSuccess: onApplied }
+    );
+  };
 
   return (
     <PanelFrame
@@ -176,7 +200,7 @@ export function PhotosPanel({
       />
       <div
         className="pb-studio-seg pb-studio-src-tabs"
-        role="tablist"
+        role="group"
         aria-label="Fotoquelle"
       >
         <button
@@ -232,12 +256,21 @@ export function PhotosPanel({
       )}
       {sourceTab === "upload" && (
         <>
-          <label className="pb-studio-btn" data-variant="ghost">
+          <label
+            className="pb-studio-btn"
+            data-variant="ghost"
+            style={
+              upload.isPending
+                ? { opacity: 0.45, cursor: "not-allowed" }
+                : undefined
+            }
+          >
             Foto auswählen
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleFileChange}
+              disabled={upload.isPending}
               style={{ display: "none" }}
             />
           </label>
@@ -256,6 +289,22 @@ export function PhotosPanel({
             />
           )}
         </>
+      )}
+      {galleryWouldDeleteExisting && (
+        <div>
+          <p style={{ color: "var(--st-warn)" }}>
+            Mindestens ein Foto wählen — oder die Galerie bewusst leeren.
+          </p>
+          <button
+            type="button"
+            className="pb-studio-btn"
+            data-variant="ghost"
+            disabled={busy}
+            onClick={removeGallery}
+          >
+            Galerie entfernen
+          </button>
+        </div>
       )}
       {setImages.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
