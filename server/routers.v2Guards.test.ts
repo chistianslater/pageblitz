@@ -32,7 +32,6 @@ vi.mock("./db", async importOriginal => {
     getOnboardingByWebsiteId: vi.fn(),
     updateOnboarding: vi.fn(),
     getBusinessById: vi.fn(),
-    listTemplateUploadsByPool: vi.fn(),
     getNextLayoutForIndustry: vi.fn(),
     createGeneratedWebsite: vi.fn(),
     createGenerationJob: vi.fn(),

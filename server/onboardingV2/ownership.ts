@@ -44,9 +44,9 @@ export async function loadStudioWebsite(
     // Finding I1 (Account-Takeover): vergleicht gegen die unveränderliche
     // `subscription.checkoutEmail` (vom Webhook einmalig beim Checkout
     // gesetzt), NICHT gegen `website.customerEmail` — dieses Feld ist frei
-    // schreibbar (selfService.saveCustomerEmail/onboardingV2.setCustomerEmail)
-    // und ließe sich sonst nach dem Kauf auf eine beliebige E-Mail ändern,
-    // um ein fremdes verwaistes Abo zu claimen.
+    // schreibbar (onboardingV2.setCustomerEmail) und ließe sich sonst nach
+    // dem Kauf auf eine beliebige E-Mail ändern, um ein fremdes verwaistes
+    // Abo zu claimen.
     const isOrphanClaim =
       !isOwner &&
       !!user &&

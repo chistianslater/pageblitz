@@ -183,9 +183,8 @@ export const commerceProcedures = {
 
   /**
    * Speichert die Kunden-E-Mail (Checkout-Voraussetzung neben Rechtliches)
-   * und stößt die Lifecycle-Mail-Sequenz an — analog zu
-   * `selfService.saveCustomerEmail`. Mail-Fehler dürfen den Request nicht
-   * blockieren, deshalb nur geloggt. Die Lifecycle-/Welcome-Mails laufen nur
+   * und stößt die Lifecycle-Mail-Sequenz an. Mail-Fehler dürfen den Request
+   * nicht blockieren, deshalb nur geloggt. Die Lifecycle-/Welcome-Mails laufen nur
    * an, wenn sich die E-Mail gegenüber dem gespeicherten Stand tatsächlich
    * ändert (Finding I3) — sonst würde ein erneuter Aufruf mit derselben
    * Adresse (z. B. nach einem Reload oder Doppelklick) die Willkommensmail

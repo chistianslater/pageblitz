@@ -102,9 +102,9 @@ export async function handleCheckoutCompleted(
   // Finding I1: die Checkout-E-Mail wird EINMALIG hier, beim Checkout,
   // unveränderlich am Abo gespeichert (subscriptions.checkoutEmail) — im
   // Unterschied zu generatedWebsites.customerEmail (frei schreibbar über
-  // selfService.saveCustomerEmail/onboardingV2.setCustomerEmail) ist dies
-  // die einzige vertrauenswürdige Quelle für den Orphan-Claim
-  // (server/onboardingV2/ownership.ts, isOrphanClaim).
+  // onboardingV2.setCustomerEmail) ist dies die einzige vertrauenswürdige
+  // Quelle für den Orphan-Claim (server/onboardingV2/ownership.ts,
+  // isOrphanClaim).
   // customer_details.email ist Stripes empfohlenes Feld für die vom Käufer
   // im Checkout eingegebene E-Mail; customer_email (vom Merchant vorbelegt)
   // bleibt Fallback für ältere/abweichende Session-Konfigurationen.
