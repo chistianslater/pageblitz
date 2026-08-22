@@ -46,6 +46,7 @@ const BusinessesPage = lazy(() => import("./pages/BusinessesPage"));
 const WelcomeBack = lazy(() => import("./pages/WelcomeBack"));
 const ErrorsPage = lazy(() => import("./pages/ErrorsPage"));
 const LifecyclePage = lazy(() => import("./pages/LifecyclePage"));
+const StudioPage = lazy(() => import("./pages/onboarding-v2/StudioPage"));
 
 function PageLoader() {
   return (
@@ -209,6 +210,9 @@ function Router() {
         </Route>
         <Route path="/websites/:id/onboarding">
           {params => <OnboardingChat websiteId={parseInt(params.id || "0")} />}
+        </Route>
+        <Route path="/onboarding/:token">
+          {params => <StudioPage token={params.token} />}
         </Route>
         <Route path="/my-website">
           <CustomerRoute>
