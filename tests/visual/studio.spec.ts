@@ -61,6 +61,31 @@ async function waitForStyleThumbnails(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Wartet, bis das erste Stockbild im Fotos-Raster entweder geladen ist oder
+ * (Netzwerkfehler) sein error-Event gefeuert hat. `.pb-studio-photo` hat ein
+ * festes aspect-ratio unabhängig vom Bild-Ladezustand, ein reines
+ * "visible"-Warten würde also vor dem Laden greifen und die Baseline
+ * zwischen Läufen instabil machen (mal Bild, mal Leerzustand).
+ */
+async function waitForFirstStockPhoto(page: Page): Promise<void> {
+  const first = page.locator(".pb-studio-photo-grid img").first();
+  await first.waitFor({ state: "visible" });
+  await first.evaluate(
+    img =>
+      new Promise<void>(resolve => {
+        const el = img as HTMLImageElement;
+        if (el.complete) {
+          resolve();
+          return;
+        }
+        const done = () => resolve();
+        el.addEventListener("load", done, { once: true });
+        el.addEventListener("error", done, { once: true });
+      })
+  );
+}
+
 test.describe("Studio", () => {
   for (const vp of VIEWPORTS) {
     test(`Checkliste + Preview ${vp.name}`, async ({ page, request }) => {
@@ -98,5 +123,135 @@ test.describe("Studio", () => {
       "studio-style-panel-desktop.png",
       { animations: "disabled" }
     );
+  });
+
+  test("Rechtliches-Panel desktop", async ({ page, request }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await page
+      .getByRole("button", { name: /Rechtliches/ })
+      .first()
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Rechtliches" })
+    ).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator(".pb-studio-rail")).toHaveScreenshot(
+      "studio-legal-panel-desktop.png",
+      { animations: "disabled" }
+    );
+  });
+
+  test("Fotos-Panel desktop", async ({ page, request }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await page.getByRole("button", { name: /Fotos/ }).first().click();
+    await expect(
+      page.getByRole("region", { name: "Fotos wählen" })
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Stockbilder" }).click();
+    await waitForFirstStockPhoto(page);
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator(".pb-studio-rail")).toHaveScreenshot(
+      "studio-photos-panel-desktop.png",
+      { animations: "disabled" }
+    );
+  });
+
+  test("Checkout-Flow: Rechtliches → Checkout-bereit → Reload", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // Rechtliches-Panel öffnen und alle Pflichtfelder ausfüllen (Spec §4:
+    // nur "legal" ist required, siehe deriveChecklistState/legalComplete).
+    await page
+      .getByRole("button", { name: /Rechtliches/ })
+      .first()
+      .click();
+    const legalPanel = page.getByRole("region", { name: "Rechtliches" });
+    await expect(legalPanel).toBeVisible();
+
+    await legalPanel.getByLabel("Inhaber/Firma").fill("Café Sonnenblick GmbH");
+    await legalPanel.getByLabel("Straße und Hausnummer").fill("Hauptstraße 12");
+    await legalPanel.getByLabel("PLZ").fill("80331");
+    await legalPanel.getByLabel("Ort").fill("München");
+    await legalPanel
+      .getByLabel("E-Mail (für das Impressum)")
+      .fill("kontakt@sonnenblick-cafe.de");
+    await legalPanel.getByLabel("Telefon").fill("089 1234567");
+
+    await Promise.all([
+      page.waitForResponse(
+        res => res.url().includes("onboardingV2.updateLegal") && res.ok()
+      ),
+      legalPanel.getByRole("button", { name: "Speichern" }).click(),
+    ]);
+
+    // LegalPanel schließt sich nicht selbst (onApplied refetcht nur) —
+    // "Fertig" bringt uns zurück zur Checkliste (Finding: StudioPage.tsx
+    // ruft onClose nur explizit über den Fertig-Button auf).
+    await legalPanel.getByRole("button", { name: "Fertig" }).click();
+
+    const legalItem = page.getByRole("button", { name: /Rechtliches/ }).first();
+    await expect(legalItem).toHaveAttribute("data-status", "done");
+    await expect(legalItem.getByText("Erledigt")).toBeVisible();
+
+    // Die Dev-Seed setzt customerEmail nicht zurück (siehe devSeed.ts) — bei
+    // wiederholten Testläufen gegen dieselbe DB kann das E-Mail-Feld daher
+    // schon befüllt sein. Test funktioniert in beiden Fällen.
+    const checkoutBar = page.locator(".pb-studio-checkout");
+    const emailInput = checkoutBar.getByLabel("E-Mail-Adresse");
+    if (await emailInput.isVisible()) {
+      await emailInput.fill("qa+onboarding-v2@pageblitz.de");
+      await Promise.all([
+        page.waitForResponse(
+          res => res.url().includes("onboardingV2.setCustomerEmail") && res.ok()
+        ),
+        checkoutBar.getByRole("button", { name: "Speichern" }).click(),
+      ]);
+    }
+
+    const checkoutButton = checkoutBar.getByRole("button", {
+      name: "Website freischalten",
+    });
+    await expect(checkoutButton).toBeEnabled();
+
+    // Reload-Garantie (Spec §8.1): Rechtliches-Status und Checkout-Bereitschaft
+    // sind serverseitig abgeleitet (deriveChecklistState/isCheckoutReady),
+    // nicht in localStorage — müssen also einen Reload überleben.
+    await page.reload();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    const legalItemAfterReload = page
+      .getByRole("button", { name: /Rechtliches/ })
+      .first();
+    await expect(legalItemAfterReload).toHaveAttribute("data-status", "done");
+    await expect(legalItemAfterReload.getByText("Erledigt")).toBeVisible();
+    await expect(
+      page
+        .locator(".pb-studio-checkout")
+        .getByRole("button", { name: "Website freischalten" })
+    ).toBeEnabled();
   });
 });

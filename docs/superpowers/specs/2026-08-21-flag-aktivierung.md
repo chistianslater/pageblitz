@@ -278,3 +278,36 @@ des Studios sind folgende Punkte zu beachten:
    ```
    `npx drizzle-kit push` spiegelt das aktuelle Schema (inkl. `studioProgress`) direkt in die neue
    Instanz — Alternative zum manuellen Abspielen aller `NNNN_*.sql`-Dateien für lokale Zwecke.
+
+6. **Studio-Checkout nutzt denselben Webhook wie der alte Funnel.** `createStudioCheckoutSession`
+   (`server/onboardingV2/checkout.ts`) baut dieselben Stripe-Metadaten (`websiteId`, `userId`,
+   `billingInterval`, `addOns` als JSON, `totalAmount`) wie das bestehende
+   `checkout.createSession` in `server/routers.ts` — `stripeWebhook.ts` muss dafür **nicht**
+   angepasst werden. Von den Add-ons sind im Studio aktuell nur `contactForm`, `gallery`, `menu`
+   und `pricelist` buchbar; `aiChat`, `booking` und `team` gelten als "Coming Soon"
+   (`COMING_SOON_KEYS` in `client/src/pages/onboarding-v2/panels/AddonsPanel.tsx`,
+   serverseitig über `sanitizeAddOns` erzwungen) — ihre Aktivierung ist erst für Plan B3
+   vorgesehen.
+
+7. **KI-Vorschläge sind pro Website rate-limitiert.** `assertSuggestQuota`
+   (`server/onboardingV2/suggest.ts`) erlaubt maximal 30 Vorschlags-Aufrufe pro Website und
+   rollierender Stunde, rein prozesslokal (`Map` im Speicher, kein Redis) — ein
+   Instanz-Neustart oder ein zweiter PM2-Prozess setzt das Limit zurück bzw. verdoppelt es
+   effektiv. Für einen einzelnen Kunden im Studio reicht das; bei horizontaler Skalierung
+   müsste das Limit auf einen gemeinsamen Store (z. B. Redis) verlegt werden.
+
+8. **Fotos-Uploads laufen über den bestehenden Storage-Pfad.** `PhotosPanel` lädt Dateien über
+   `onboardingV2.uploadPhoto` hoch, das intern `uploadPhotoToStorage`
+   (`server/onboardingUpload.ts` → `storagePut`) verwendet — denselben S3/R2-Pfad wie der alte
+   Chat, inklusive Kompression (`sharp`) und dem serverseitigen 8-MB-Limit auf die base64-Data-URL
+   (`ImagesPatchSchema`/`uploadPhoto`-Input; client-seitig auf 5 MB begrenzt, siehe
+   `PhotosPanel.tsx`). Kein neuer Storage-Mechanismus, keine zusätzliche VPS-Konfiguration nötig.
+
+9. **`legalGenerator` escaped jetzt alle Nutzerwerte.** Commit `5a019fa` hat einen Stored-XSS
+   über Impressum/Datenschutz geschlossen: alle interpolierten Felder (`businessName`,
+   `legalOwner`, `legalStreet`, `legalZip`, `legalCity`, `legalCountry`, `legalEmail`,
+   `legalPhone`, `legalVatId`, `legalRegister`, `legalRegisterCourt`, `legalResponsible`,
+   `websiteUrl`) laufen durch eine `esc()`-Hilfsfunktion, bevor sie in generiertes HTML
+   eingebettet werden. `legalGenerator.ts` wird von beiden Onboarding-Pfaden genutzt — der Fix
+   gilt also gleichermaßen für das neue Studio-Rechtliches-Panel wie für den alten
+   `OnboardingChat.tsx`-Impressum-Schritt, ohne dass an letzterem etwas geändert werden musste.
