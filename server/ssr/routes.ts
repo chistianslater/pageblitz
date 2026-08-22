@@ -3,7 +3,7 @@ import { renderSiteHtml } from "./renderSite";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { PACK_IDS, type PackId } from "../../shared/siteContract/types";
-import { getWebsiteBySlug } from "../db";
+import { getWebsiteBySlug, getWebsiteByToken } from "../db";
 
 /** Mirror of getCustomerSubdomain() in client/src/App.tsx:109-115 — server-side Host-Erkennung. */
 const RESERVED_SUBDOMAINS = ["www", "api", "analytics", "admin", "mail", "ftp"];
@@ -64,6 +64,62 @@ function isKnownPackId(value: string): value is PackId {
 
 function isFixtureKind(value: string): value is "full" | "minimal" {
   return value === "full" || value === "minimal";
+}
+
+/** Nur diese Pfade werden in der Studio-Preview SSR-gerendert. */
+const PREVIEW_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
+
+/**
+ * Studio-Live-Preview: rendert das gespeicherte v2-Dokument per previewToken
+ * (Zugangsgeheimnis, nanoid 32) — ungecacht (jeder Patch soll sofort sichtbar
+ * sein), noindex, optional mit Pack-Override (?pack=) für Stil-Kandidaten.
+ * Der Override verändert NIE das gespeicherte Dokument.
+ */
+async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
+  // Express-Regex-Route (siehe registerSsrRoutes): params[0] = Token, params[1] = Restpfad
+  const token = typeof req.params[0] === "string" ? req.params[0] : "";
+  const rest =
+    typeof req.params[1] === "string" && req.params[1].length > 0
+      ? req.params[1]
+      : "/";
+  const pathname = rest.startsWith("/") ? rest : `/${rest}`;
+  if (!PREVIEW_PATHNAMES.has(pathname)) {
+    res.status(404).send("Vorschau-Seite nicht gefunden");
+    return;
+  }
+  const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
+  if (packParam && !isKnownPackId(packParam)) {
+    res.status(400).send(`Unbekanntes Pack: "${packParam}"`);
+    return;
+  }
+  try {
+    const website = await getWebsiteByToken(token);
+    if (!website || !website.websiteData) {
+      res.status(404).send("Vorschau nicht gefunden");
+      return;
+    }
+    const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
+    if (!parsed.success) {
+      res.status(404).send("Noch keine Website im neuen Format");
+      return;
+    }
+    const data = packParam
+      ? { ...parsed.data, stylePackId: packParam as PackId }
+      : parsed.data;
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const basePath = `/preview-ssr/${token}`;
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      pathname,
+      basePath,
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", "no-store");
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Preview-Render fehlgeschlagen:", err);
+    res.status(500).send("Vorschau konnte nicht gerendert werden");
+  }
 }
 
 /** Extrahiert den Subdomain-Slug aus dem Host-Header (analog getCustomerSubdomain() im Client). */
@@ -245,5 +301,8 @@ async function handleCustomerSiteSsr(
 
 export function registerSsrRoutes(app: Express): void {
   app.get("/dev/site-preview", handleDevPreview);
+  app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
+    void handlePreviewSsr(req, res);
+  });
   app.use(handleCustomerSiteSsr);
 }

@@ -6,11 +6,12 @@ import { getFixture } from "../../shared/siteContract/fixtures";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
+  getWebsiteByToken: vi.fn(),
 }));
 
 // Import nach vi.mock, damit der Mock vor dem ersten Aufruf von registerSsrRoutes greift.
 import { registerSsrRoutes } from "./routes";
-import { getWebsiteBySlug } from "../db";
+import { getWebsiteBySlug, getWebsiteByToken } from "../db";
 
 /** App mit SSR-Routen + einem SPA-Fallback-Stand-in (statt echter Vite-/serveStatic-Middleware). */
 function buildAppWithFallback(): Express {
@@ -173,6 +174,80 @@ describe("SSR routes", () => {
       await request(app).get("/site/nicht-vorhanden-2");
 
       expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("preview-ssr per Token", () => {
+    beforeEach(() => {
+      (getWebsiteByToken as Mock).mockReset();
+    });
+
+    test("unbekannter Token → 404", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue(undefined);
+      const res = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh"
+      );
+      expect(res.status).toBe(404);
+    });
+
+    test("v2-Dokument → 200 HTML, noindex, no-store; Rechtsseiten laufen über basePath", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/preview-ssr/abcdefghabcdefgh");
+      expect(res.status).toBe(200);
+      expect(res.headers["x-robots-tag"]).toContain("noindex");
+      expect(res.headers["cache-control"]).toContain("no-store");
+      expect(res.text).toContain(
+        'href="/preview-ssr/abcdefghabcdefgh/impressum"'
+      );
+      const legal = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh/impressum"
+      );
+      expect(legal.status).toBe(404);
+    });
+
+    test("?pack=kanzlei rendert die Inhalte im anderen Pack, ohne zu persistieren", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const res = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
+      );
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('class="pb-kanzlei');
+    });
+
+    test("v1-Dokument → 404, unbekanntes pack → 400", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: { hero: {} },
+      });
+      expect(
+        (
+          await request(buildAppWithFallback()).get(
+            "/preview-ssr/abcdefghabcdefgh"
+          )
+        ).status
+      ).toBe(404);
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      expect(
+        (
+          await request(buildAppWithFallback()).get(
+            "/preview-ssr/abcdefghabcdefgh?pack=disco"
+          )
+        ).status
+      ).toBe(400);
     });
   });
 });
