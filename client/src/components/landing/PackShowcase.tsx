@@ -115,7 +115,7 @@ function PackCard({ packId, index, isDark, animate }: PackCardProps) {
  * `studio.css`: iframe 400%/400% + `scale(0.25)` in einem
  * Seitenverhältnis-Container statt einer clientseitigen Breitenmessung).
  * Ersetzt den alten v1-Showcase (`WebsiteShowcase`/`LivePreviewCard`), der
- * feste Demo-Daten aus `components/layouts/PremiumLayoutsV2` gerendert hat.
+ * feste Demo-Daten der (in B4b entfernten) v1-Layouts gerendert hat.
  */
 export function PackShowcase({ isDark }: PackShowcaseProps) {
   const prefersReducedMotion = useReducedMotion();

@@ -90,7 +90,7 @@ function buildOwnerNotificationHtml(input: {
  * gespiegelt, siehe applyFeatures/routerCommerce.ts). v1-Websites haben kein
  * `features`-Feld im Dokument — dort ist `onboarding_responses.
  * addOnContactForm` die Quelle der Wahrheit (dieselbe, die die v1-Layouts
- * client-seitig für die Formular-Sperre lesen, siehe PremiumLayoutsV2.tsx
+ * client-seitig für die Formular-Sperre lesen (v2: ContactFormIsland)
  * `websiteData?.addOnContactForm` bzw. CustomerDashboard.tsx).
  */
 async function isContactFormEnabled(website: {
