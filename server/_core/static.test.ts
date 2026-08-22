@@ -52,4 +52,10 @@ describe("isSpaRoute", () => {
   test("Entfernte Route /layout-preview/:key wird nicht mehr erkannt", () => {
     expect(isSpaRoute("/layout-preview/x")).toBe(false);
   });
+
+  // Plan B4b, Task 3: /variant-preview + VariantPreviewPage.tsx sind entfernt
+  // (Studio ersetzt den A/B-Variant-Picker) — die Route ist keine SPA-Route mehr.
+  test("Entfernte Route /variant-preview wird nicht mehr erkannt", () => {
+    expect(isSpaRoute("/variant-preview")).toBe(false);
+  });
 });

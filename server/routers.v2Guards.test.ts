@@ -136,59 +136,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("selfService.generateInitialContent — v2-Guard (C-1)", () => {
-  test("v2-Website: kein Schreiben, keine layoutStyle-Rotation, Antwort-Shape bleibt erhalten", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
-
-    const caller = appRouter.createCaller(createPublicContext());
-    const result = await caller.selfService.generateInitialContent({
-      websiteId: 42,
-      businessName: "Schreinerei Brandt",
-      businessCategory: "Schreinerei",
-    });
-
-    expect(result.success).toBe(true);
-    // Antwort-Shape identisch zum v1-Pfad — Client liest nur result.success
-    // und fällt bei fehlenden Feldern auf lokale Werte zurück.
-    expect(result).toHaveProperty("tagline");
-    expect(result).toHaveProperty("services");
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
-});
-
-describe("selfService.selectWebsiteTemplate — Picker-Persistenz für v2 (C-2)", () => {
-  test("v2-Dokument + Layout 'Kanzlei' → stylePackId 'kanzlei' wird persistiert", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
-    mockedDb.updateWebsite.mockResolvedValue(undefined as any);
-
-    const caller = appRouter.createCaller(createPublicContext());
-    const result = await caller.selfService.selectWebsiteTemplate({
-      websiteId: 42,
-      layoutStyle: "Kanzlei",
-    });
-
-    expect(result.success).toBe(true);
-    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
-    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
-    expect((patch as any).websiteData.stylePackId).toBe("kanzlei");
-    expect((patch as any).layoutStyle).toBe("Kanzlei");
-    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
-  });
-
-  test("v2-Dokument + unbekanntes Pack → BAD_REQUEST, kein Write", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
-
-    const caller = appRouter.createCaller(createPublicContext());
-    await expect(
-      caller.selfService.selectWebsiteTemplate({
-        websiteId: 42,
-        layoutStyle: "nicht-existent",
-      })
-    ).rejects.toThrow(TRPCError);
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
-});
-
 describe("Zentraler Write-Guard (C-3)", () => {
   test("onboarding.regenerateLegalPages auf v2-Website schreibt nach websiteData.legal.* statt top-level", async () => {
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue({

@@ -70,7 +70,7 @@ function isCustomerSiteHost(hostname: string): boolean {
 /** Muss mit den Routen in client/src/App.tsx übereinstimmen. */
 const SPA_ROUTES: RegExp[] = [
   /^\/$/,
-  /^\/(impressum|datenschutz|start|welcome-back|login|admin-login|my-website|my-account|variant-preview)$/,
+  /^\/(impressum|datenschutz|start|welcome-back|login|admin-login|my-website|my-account)$/,
   /^\/admin(\/.*)?$/,
   // Bloß /preview/:token wird VOR dem SPA-Fallback serverseitig auf
   // /onboarding/:token (Studio) umgeleitet (registerSsrRoutes) und erreicht diese

@@ -29,11 +29,9 @@ const StatsPage = lazy(() => import("./pages/StatsPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
-const LayoutOverviewPage = lazy(() => import("./pages/LayoutOverviewPage"));
 const PipelinePage = lazy(() => import("./pages/PipelinePage"));
 const SupportChatsPage = lazy(() => import("./pages/SupportChatsPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
-const VariantPreviewPage = lazy(() => import("./pages/VariantPreviewPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const CustomerLoginPage = lazy(() => import("./pages/CustomerLoginPage"));
 const BusinessesPage = lazy(() => import("./pages/BusinessesPage"));
@@ -113,7 +111,6 @@ function AdminSwitch() {
         <Route path="/admin/leads" component={LeadsPage} />
         <Route path="/admin/businesses" component={BusinessesPage} />
         <Route path="/admin/users" component={UsersPage} />
-        <Route path="/admin/layouts" component={LayoutOverviewPage} />
         <Route path="/admin/pipeline" component={PipelinePage} />
         <Route path="/admin/support-chats" component={SupportChatsPage} />
         <Route path="/admin/errors" component={ErrorsPage} />
@@ -226,7 +223,6 @@ function Router() {
         </Route>
         <Route path="/login" component={CustomerLoginPage} />
         <Route path="/admin-login" component={LoginPage} />
-        <Route path="/variant-preview" component={VariantPreviewPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
