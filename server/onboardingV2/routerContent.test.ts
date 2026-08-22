@@ -27,11 +27,14 @@ vi.mock("../onboardingUpload", () => ({
 vi.mock("../gmbPhotos", () => ({
   getGmbPhotos: vi.fn().mockResolvedValue(["https://g/1.jpg"]),
 }));
+vi.mock("../_core/llm", () => ({ invokeLLM: vi.fn() }));
 
 import { appRouter } from "../routers";
 import * as db from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
 import { getGmbPhotos } from "../gmbPhotos";
+import { invokeLLM } from "../_core/llm";
+import { resetSuggestQuotaForTests } from "./suggest";
 const mockedDb = vi.mocked(db);
 
 const ctx = (): TrpcContext => ({
@@ -56,6 +59,7 @@ const v2 = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  resetSuggestQuotaForTests();
   mockedDb.getWebsiteByToken.mockResolvedValue({
     id: 42,
     slug: "preview-brandt",
@@ -182,5 +186,65 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
     });
     expect(s.doc!.sections.map(x => x.type)).toContain("menu");
     expect(s.doc!.sections.map(x => x.type)).not.toContain("services");
+  });
+});
+
+describe("onboardingV2.suggestTexts / suggestOffer", () => {
+  test("suggestTexts liefert 3 Varianten vom LLM, persistiert nichts", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({ variants: ["Headline A", "Headline B", "Headline C"] }),
+          },
+        },
+      ],
+    } as any);
+    const r = await caller().onboardingV2.suggestTexts({
+      token: "tok",
+      field: "headline",
+    });
+    expect(r.variants).toEqual(["Headline A", "Headline B", "Headline C"]);
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("suggestOffer liefert ein OfferPatch vom LLM, persistiert nichts", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              headline: "Unsere Leistungen",
+              items: Array.from({ length: 6 }, (_, i) => ({
+                title: `Leistung ${i}`,
+                description: `Nutzen ${i}`,
+              })),
+            }),
+          },
+        },
+      ],
+    } as any);
+    const r = await caller().onboardingV2.suggestOffer({
+      token: "tok",
+      mode: "services",
+    });
+    expect(r.offer.mode).toBe("services");
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("suggestTexts: 31. Aufruf in der Stunde → TOO_MANY_REQUESTS", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        { message: { content: JSON.stringify({ variants: ["A", "B", "C"] }) } },
+      ],
+    } as any);
+    for (let i = 0; i < 30; i++) {
+      await expect(
+        caller().onboardingV2.suggestTexts({ token: "tok", field: "headline" })
+      ).resolves.toBeDefined();
+    }
+    await expect(
+      caller().onboardingV2.suggestTexts({ token: "tok", field: "headline" })
+    ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
   });
 });

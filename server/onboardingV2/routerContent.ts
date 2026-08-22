@@ -17,6 +17,12 @@ import {
 import { applyImages, applyOffer, applyTexts } from "./applyPatch";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput } from "./state";
+import {
+  assertSuggestQuota,
+  suggestOffer as suggestOfferVariants,
+  suggestTextVariants,
+} from "./suggest";
+import type { SectionOf } from "../../shared/siteContract/types";
 
 /**
  * Präfixe synthetischer placeIds (Businesses ohne echten Google-Places-
@@ -27,13 +33,36 @@ const SYNTHETIC_PLACE_ID_PREFIXES = ["self-", "email-"];
 
 function isRealPlaceId(placeId: string | null | undefined): placeId is string {
   return (
-    !!placeId && !SYNTHETIC_PLACE_ID_PREFIXES.some(prefix => placeId.startsWith(prefix))
+    !!placeId &&
+    !SYNTHETIC_PLACE_ID_PREFIXES.some(prefix => placeId.startsWith(prefix))
   );
 }
 
-function readPhotoUrls(onboarding: { photoUrls?: unknown } | undefined): string[] {
-  return Array.isArray(onboarding?.photoUrls) ? (onboarding.photoUrls as string[]) : [];
+function readPhotoUrls(
+  onboarding: { photoUrls?: unknown } | undefined
+): string[] {
+  return Array.isArray(onboarding?.photoUrls)
+    ? (onboarding.photoUrls as string[])
+    : [];
 }
+
+/** Stadt für Vorschlags-Prompts — steht (wie readOpeningHours in state.ts) in der contact-Sektion des Dokuments. */
+function readCity(doc: { sections: { type: string }[] }): string | undefined {
+  const contact = doc.sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  return contact?.city;
+}
+
+const TextFieldSchema = z.enum([
+  "headline",
+  "subheadline",
+  "aboutBody",
+  "seoTitle",
+  "seoDescription",
+]);
+
+const OfferModeSchema = z.enum(["services", "menu", "pricelist"]);
 
 export const contentProcedures = {
   /** Fotoquellen für das Bilder-Panel: Google-My-Business, kuratierte Stockbilder, bereits hochgeladene Fotos. */
@@ -119,5 +148,39 @@ export const contentProcedures = {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
       return persistDoc(input.token, loaded, applyOffer(doc, input.offer));
+    }),
+
+  /** KI-Vorschlag für ein Textfeld — persistiert nichts, der User bestätigt über updateTexts. */
+  suggestTexts: publicProcedure
+    .input(tokenInput.extend({ field: TextFieldSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = requireDoc(loaded);
+      assertSuggestQuota(loaded.website.id);
+      const business = await getBusinessById(loaded.website.businessId);
+      const variants = await suggestTextVariants({
+        field: input.field,
+        doc,
+        businessName: doc.businessName,
+        category: doc.businessCategory ?? business?.category ?? "",
+        city: readCity(doc),
+      });
+      return { variants };
+    }),
+
+  /** KI-Vorschlag für das Angebot — persistiert nichts, der User bestätigt über updateOffer. */
+  suggestOffer: publicProcedure
+    .input(tokenInput.extend({ mode: OfferModeSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = requireDoc(loaded);
+      assertSuggestQuota(loaded.website.id);
+      const business = await getBusinessById(loaded.website.businessId);
+      const offer = await suggestOfferVariants({
+        mode: input.mode,
+        businessName: doc.businessName,
+        category: doc.businessCategory ?? business?.category ?? "",
+      });
+      return { offer };
     }),
 };
