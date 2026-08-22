@@ -20,6 +20,6 @@ export const bookingCss = `
 .pb-island-chip:hover,.pb-island-chip:focus-visible{border-color:var(--pb-accent)}
 .pb-island-chip[aria-pressed="true"]{background:var(--pb-accent);color:var(--pb-accent-contrast);border-color:var(--pb-accent)}
 .pb-island-chip[aria-pressed="true"] span{color:inherit;opacity:.8}
-.pb-island-summary{margin:0;padding:10px 14px;border-radius:var(--pb-radius-card);background:rgba(0,0,0,.06);font-size:13px}
+.pb-island-summary{margin:0;padding:10px 14px;border-radius:var(--pb-radius-card);background:color-mix(in srgb, var(--pb-ink) 6%, transparent);font-size:13px}
 .pb-island-empty{margin:0;font-size:14px;color:var(--pb-muted)}
 `;

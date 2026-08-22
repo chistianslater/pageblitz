@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BookingFormFields } from "./BookingFormFields";
+import { BookingDateStep, BookingSlotStep } from "./BookingSteps";
+import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 import {
   buildDateOptions,
   formatSlotLabel,
   mapBookingError,
+  resolveSubmitFailure,
   type BookingSettings,
   type DateOption,
 } from "./bookingHelpers";
@@ -32,6 +35,12 @@ type Step = "dates" | "slots" | "form" | "success";
  * verhindert echte Buchungs-`fetch`-Aufrufe aus internen Vorschau-Bildschirmen
  * (Dashboard/Editor), die dieselbe Insel-Komponente client-seitig rendern wie
  * die echte Kundenseite.
+ *
+ * Gegenseitiger Ausschluss mit `ChatIsland`: beide Panels teilen sich
+ * denselben Fixpunkt unten rechts. `islandEvents.ts` meldet über ein
+ * `window`-CustomEvent, wenn diese Insel öffnet; ist diese Insel offen und
+ * die ANDERE Insel öffnet, schließt sie sich selbst (`closePanel`, inkl.
+ * Fokus-Rückgabe an den eigenen Fab-Button, siehe Task-8-Logik unten).
  */
 export const BookingIsland: React.FC<{
   slug: string;
@@ -91,11 +100,17 @@ export const BookingIsland: React.FC<{
   }, [open]);
 
   // Schließt das Panel und gibt den Fokus an den auslösenden Fab-Button
-  // zurück — sonst fällt der Fokus beim Schließen (Escape/„Schließen") auf
-  // `document.body` und geht für Tastatur-/Screenreader-Nutzung verloren.
+  // zurück — sonst fällt der Fokus beim Schließen (Escape/„Schließen"/
+  // gegenseitiger Ausschluss mit der Chat-Insel) auf `document.body` und
+  // geht für Tastatur-/Screenreader-Nutzung verloren.
   function closePanel(): void {
     setOpen(false);
     triggerRef.current?.focus();
+  }
+
+  function openPanel(): void {
+    notifyIslandOpened("booking");
+    setOpen(true);
   }
 
   // Escape schließt das Panel.
@@ -108,14 +123,28 @@ export const BookingIsland: React.FC<{
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  // Schließt dieses Panel, sobald die Chat-Insel öffnet (gegenseitiger
+  // Ausschluss, siehe islandEvents.ts) — nur abonniert, solange dieses Panel
+  // selbst offen ist, sonst würde ein Öffnen der Chat-Insel bei bereits
+  // geschlossener Buchungs-Insel unnötig deren Fab-Button fokussieren.
+  useEffect(() => {
+    if (!open) return;
+    return subscribeToOtherIslandOpen("booking", closePanel);
+  }, [open]);
+
   const dateOptions: DateOption[] = settings
     ? buildDateOptions(settings.schedule, settings.advanceDays, new Date())
     : [];
 
   const loadSlots = useCallback(
-    async (dateIso: string): Promise<void> => {
+    async (dateIso: string, options?: { keepError?: boolean }): Promise<void> => {
       setSlotsLoading(true);
-      setError(null);
+      // `keepError`: nach einem 409-Race soll der „bereits vergeben"-Hinweis
+      // sichtbar bleiben, während die Slots neu geladen werden — ohne diesen
+      // Schalter würde dieses `setError(null)` denselben Render-Batch wie
+      // `handleSubmit`s `setError(mapBookingError(409))` treffen und ihn
+      // sofort wieder löschen (React batcht beide Aufrufe zusammen).
+      if (!options?.keepError) setError(null);
       try {
         const res = await fetch(`/api/booking/${slug}/slots?date=${dateIso}`);
         if (!res.ok) {
@@ -184,11 +213,12 @@ export const BookingIsland: React.FC<{
         }),
       });
       if (!res.ok) {
-        setError(mapBookingError(res.status));
-        if (res.status === 409) {
+        const result = resolveSubmitFailure(res.status);
+        setError(result.error);
+        setStep(result.step);
+        if (result.clearSelectedSlot) {
           setSelectedSlot(null);
-          setStep("slots");
-          void loadSlots(selectedDate);
+          void loadSlots(selectedDate, { keepError: true });
         }
         return;
       }
@@ -206,7 +236,7 @@ export const BookingIsland: React.FC<{
     : selectedDate;
   const successMessage =
     selectedDateLabel && selectedSlot
-      ? `Danke — dein Termin am ${selectedDateLabel} um ${selectedSlot} Uhr ist angefragt. Du bekommst eine Bestätigung per E-Mail.`
+      ? `Danke — dein Termin am ${selectedDateLabel} um ${formatSlotLabel(selectedSlot)} ist angefragt. Du bekommst eine Bestätigung per E-Mail.`
       : "Danke — dein Termin ist angefragt. Du bekommst eine Bestätigung per E-Mail.";
 
   const panel = (
@@ -247,83 +277,23 @@ export const BookingIsland: React.FC<{
       )}
 
       {!settingsError && !settingsLoading && settings && step === "dates" && (
-        <div className="pb-island-panel-body">
-          {dateOptions.length === 0 ? (
-            <p className="pb-island-empty">
-              Aktuell sind keine Termine verfügbar.
-            </p>
-          ) : (
-            <div
-              className="pb-island-dates"
-              role="group"
-              aria-label="Datum wählen"
-            >
-              {dateOptions.map(opt => (
-                <button
-                  key={opt.iso}
-                  type="button"
-                  className="pb-island-chip"
-                  aria-pressed={selectedDate === opt.iso}
-                  onClick={() => selectDate(opt.iso)}
-                >
-                  <span>{opt.weekday}</span>
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          )}
-          {error && (
-            <p className="pb-island-status" data-state="error" role="alert">
-              {error}
-            </p>
-          )}
-        </div>
+        <BookingDateStep
+          dateOptions={dateOptions}
+          selectedDate={selectedDate}
+          error={error}
+          onSelect={selectDate}
+        />
       )}
 
       {!settingsError && step === "slots" && (
-        <div className="pb-island-panel-body">
-          <button
-            type="button"
-            className="pb-island-step-back"
-            onClick={backToDates}
-          >
-            ← Anderes Datum
-          </button>
-          {slotsLoading && (
-            <p className="pb-island-status" aria-live="polite">
-              Lädt…
-            </p>
-          )}
-          {!slotsLoading && slots.length === 0 && (
-            <p className="pb-island-empty">
-              An diesem Tag sind keine Termine frei.
-            </p>
-          )}
-          {!slotsLoading && slots.length > 0 && (
-            <div
-              className="pb-island-slots"
-              role="group"
-              aria-label="Uhrzeit wählen"
-            >
-              {slots.map(time => (
-                <button
-                  key={time}
-                  type="button"
-                  className="pb-island-chip"
-                  aria-pressed={selectedSlot === time}
-                  onClick={() => selectSlot(time)}
-                >
-                  {formatSlotLabel(time)}
-                </button>
-              ))}
-            </div>
-          )}
-          {error && (
-            <p className="pb-island-status" data-state="error" role="alert">
-              {error}
-            </p>
-          )}
-        </div>
+        <BookingSlotStep
+          slots={slots}
+          slotsLoading={slotsLoading}
+          selectedSlot={selectedSlot}
+          error={error}
+          onBack={backToDates}
+          onSelect={selectSlot}
+        />
       )}
 
       {!settingsError && step === "form" && (
@@ -390,7 +360,7 @@ export const BookingIsland: React.FC<{
         className="pb-island-fab-btn"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => (open ? closePanel() : setOpen(true))}
+        onClick={() => (open ? closePanel() : openPanel())}
       >
         Termin
       </button>

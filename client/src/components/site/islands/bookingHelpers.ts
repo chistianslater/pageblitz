@@ -115,3 +115,30 @@ export function mapBookingError(status: number | undefined): string {
 export function formatSlotLabel(time: string): string {
   return `${time} Uhr`;
 }
+
+export interface SubmitFailureResult {
+  /** Schritt, auf den die UI nach dem Fehler springen soll. */
+  step: "slots" | "form";
+  error: string;
+  /** true bei 409 — der gewählte Slot ist weg, Auswahl muss zurückgesetzt werden. */
+  clearSelectedSlot: boolean;
+}
+
+/**
+ * Reine Zustandsübergangs-Funktion für einen fehlgeschlagenen Buchungs-POST
+ * (`BookingIsland.tsx` `handleSubmit`). Bei 409 (Slot inzwischen anderweitig
+ * vergeben) muss die UI zurück auf den Slot-Auswahl-Schritt springen und dort
+ * die Fehlermeldung zeigen statt im leeren Formular hängen zu bleiben — als
+ * reine Funktion ausgelagert, damit dieser Zustandsübergang ohne
+ * Rendering/Fetch-Mocking testbar ist (Regressionsschutz für den Bug, bei
+ * dem der nachfolgende Slots-Reload den 409-Hinweis sofort wieder löschte).
+ */
+export function resolveSubmitFailure(
+  status: number | undefined
+): SubmitFailureResult {
+  const error = mapBookingError(status);
+  if (status === 409) {
+    return { step: "slots", error, clearSelectedSlot: true };
+  }
+  return { step: "form", error, clearSelectedSlot: false };
+}

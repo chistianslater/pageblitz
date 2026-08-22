@@ -7,6 +7,7 @@ import {
   buildDateOptions,
   formatSlotLabel,
   mapBookingError,
+  resolveSubmitFailure,
   type WeeklySchedule,
 } from "./bookingHelpers";
 
@@ -128,5 +129,33 @@ describe("formatSlotLabel", () => {
 
   test("funktioniert auch für Uhrzeiten am Nachmittag", () => {
     expect(formatSlotLabel("14:30")).toBe("14:30 Uhr");
+  });
+});
+
+describe("resolveSubmitFailure", () => {
+  test("409 → zurück auf 'slots', Fehlermeldung 'bereits vergeben', Slot-Auswahl wird geleert", () => {
+    const result = resolveSubmitFailure(409);
+    expect(result).toEqual({
+      step: "slots",
+      error: BOOKING_ERROR_SLOT_TAKEN,
+      clearSelectedSlot: true,
+    });
+    expect(result.error).toContain("bereits vergeben");
+  });
+
+  test("500 → bleibt auf 'form', generische Fehlermeldung, Slot-Auswahl bleibt erhalten", () => {
+    expect(resolveSubmitFailure(500)).toEqual({
+      step: "form",
+      error: BOOKING_ERROR_GENERIC,
+      clearSelectedSlot: false,
+    });
+  });
+
+  test("404 → bleibt auf 'form' mit Freischaltungs-Hinweis", () => {
+    expect(resolveSubmitFailure(404)).toEqual({
+      step: "form",
+      error: BOOKING_ERROR_LOCKED,
+      clearSelectedSlot: false,
+    });
   });
 });

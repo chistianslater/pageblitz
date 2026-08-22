@@ -7,6 +7,7 @@ import {
   trimHistory,
   type ChatMessage,
 } from "./chatHelpers";
+import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 
 /**
  * KI-Chat-Insel: schwebender Button unten rechts öffnet ein Panel mit
@@ -32,6 +33,12 @@ import {
  * verhindert echte `fetch`-Aufrufe gegen `/api/chat/:slug/message` aus
  * internen Vorschau-Bildschirmen (Dashboard/Editor), die dieselbe
  * Insel-Komponente client-seitig rendern wie die echte Kundenseite.
+ *
+ * Gegenseitiger Ausschluss mit `BookingIsland`: beide Panels teilen sich
+ * denselben Fixpunkt unten rechts. `islandEvents.ts` meldet über ein
+ * `window`-CustomEvent, wenn diese Insel öffnet; ist diese Insel offen und
+ * die ANDERE Insel öffnet, schließt sie sich selbst (`closePanel`, inkl.
+ * Fokus-Rückgabe an den eigenen Fab-Button).
  */
 export const ChatIsland: React.FC<{
   slug: string;
@@ -77,6 +84,11 @@ export const ChatIsland: React.FC<{
     triggerRef.current?.focus();
   }
 
+  function openPanel(): void {
+    notifyIslandOpened("chat");
+    setOpen(true);
+  }
+
   // Escape schließt das Panel.
   useEffect(() => {
     if (!open) return;
@@ -85,6 +97,14 @@ export const ChatIsland: React.FC<{
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  // Schließt dieses Panel, sobald die Buchungs-Insel öffnet (gegenseitiger
+  // Ausschluss, siehe islandEvents.ts) — nur abonniert, solange dieses Panel
+  // selbst offen ist.
+  useEffect(() => {
+    if (!open) return;
+    return subscribeToOtherIslandOpen("chat", closePanel);
   }, [open]);
 
   async function sendMessage(): Promise<void> {
@@ -221,7 +241,7 @@ export const ChatIsland: React.FC<{
         className="pb-island-fab-btn"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => (open ? closePanel() : setOpen(true))}
+        onClick={() => (open ? closePanel() : openPanel())}
       >
         Chat
       </button>
