@@ -600,6 +600,7 @@ export async function createOnboarding(data: Partial<InsertOnboardingResponse> &
     ...(data.addOnPricelist !== undefined && { addOnPricelist: data.addOnPricelist }),
     ...(data.addOnPricelistData ? { addOnPricelistData: data.addOnPricelistData as unknown as object } : {}),
     ...(data.addOnSubpages ? { addOnSubpages: data.addOnSubpages as unknown as object } : {}),
+    ...(data.studioProgress ? { studioProgress: data.studioProgress as unknown as object } : {}),
     ...(data.completedAt && { completedAt: data.completedAt }),
   };
   

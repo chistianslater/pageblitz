@@ -5,6 +5,7 @@ import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { PreviewFrame } from "./PreviewFrame";
 import { StylePanel } from "./panels/StylePanel";
+import { deriveGenerationStatus } from "./studioLogic";
 import "./studio.css";
 
 export default function StudioPage({ token }: { token: string }) {
@@ -29,22 +30,32 @@ export default function StudioPage({ token }: { token: string }) {
     );
 
   const { state } = studio;
+  if (state.legacy) {
+    return (
+      <div className="pb-studio pb-studio-gen">
+        <p role="alert">
+          Diese Website nutzt noch das alte Format und kann im Studio nicht
+          bearbeitet werden.
+        </p>
+      </div>
+    );
+  }
   if (!state.doc) {
     const job = state.job;
+    const { status, error } = deriveGenerationStatus({
+      hasDoc: !!state.doc,
+      job,
+      ensureError: studio.ensureError,
+    });
     return (
       <div className="pb-studio">
         <GenerationScreen
           businessName={state.businessName}
           progress={job?.progress ?? 5}
-          status={
-            job?.status === "failed"
-              ? "failed"
-              : job?.status === "processing"
-                ? "processing"
-                : "pending"
-          }
-          error={job?.error ?? studio.error}
+          status={status}
+          error={error ?? studio.error}
           onRetry={studio.retry}
+          retrying={studio.retrying}
         />
       </div>
     );

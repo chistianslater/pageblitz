@@ -13,6 +13,8 @@ interface GenerationScreenProps {
   status: "pending" | "processing" | "failed";
   error: string | null;
   onRetry: () => void;
+  /** ensureGeneration läuft gerade (erneut) — Retry-Button während dieser Zeit sperren (Findings #1/#4). */
+  retrying?: boolean;
 }
 
 export function GenerationScreen({
@@ -21,6 +23,7 @@ export function GenerationScreen({
   status,
   error,
   onRetry,
+  retrying = false,
 }: GenerationScreenProps) {
   const phase =
     PHASES[
@@ -43,9 +46,10 @@ export function GenerationScreen({
               type="button"
               className="pb-studio-btn"
               onClick={onRetry}
+              disabled={retrying}
               style={{ marginTop: "1rem" }}
             >
-              Erneut versuchen
+              {retrying ? "Wird erneut versucht…" : "Erneut versuchen"}
             </button>
           </>
         ) : (

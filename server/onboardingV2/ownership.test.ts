@@ -35,13 +35,25 @@ describe("loadStudioWebsite", () => {
     const r = await loadStudioWebsite("tok", null);
     expect(r.doc?.stylePackId).toBe("werkbank");
   });
-  test("v1-/leeres Dokument → doc null, kein Throw", async () => {
+  test("v1-Dokument → doc null, hasLegacyDoc true, kein Throw", async () => {
     mockedDb.getWebsiteByToken.mockResolvedValue({
       id: 1,
       status: "preview",
       websiteData: { hero: {} },
     } as any);
-    expect((await loadStudioWebsite("tok", null)).doc).toBeNull();
+    const r = await loadStudioWebsite("tok", null);
+    expect(r.doc).toBeNull();
+    expect(r.hasLegacyDoc).toBe(true);
+  });
+  test("kein Dokument (websiteData null) → doc null, hasLegacyDoc false", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 1,
+      status: "preview",
+      websiteData: null,
+    } as any);
+    const r = await loadStudioWebsite("tok", null);
+    expect(r.doc).toBeNull();
+    expect(r.hasLegacyDoc).toBe(false);
   });
   test("verkaufte Website: fremder/kein User → FORBIDDEN, Eigentümer → ok", async () => {
     mockedDb.getWebsiteByToken.mockResolvedValue({

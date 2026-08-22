@@ -31,4 +31,18 @@ describe("GenerationScreen", () => {
     expect(html).toContain("LLM kaputt");
     expect(html).toContain("Erneut versuchen");
   });
+  test("failed + retrying → Button gesperrt, anderer Label-Text", () => {
+    const html = renderToStaticMarkup(
+      <GenerationScreen
+        businessName="B"
+        progress={0}
+        status="failed"
+        error="LLM kaputt"
+        onRetry={() => {}}
+        retrying
+      />
+    );
+    expect(html).toContain("disabled=\"\"");
+    expect(html).toContain("Wird erneut versucht");
+  });
 });

@@ -6,6 +6,13 @@ import { getSubscriptionByWebsiteId, getWebsiteByToken } from "../db";
 export interface StudioWebsite {
   website: NonNullable<Awaited<ReturnType<typeof getWebsiteByToken>>>;
   doc: WebsiteDataV2 | null;
+  /**
+   * true = websiteData ist vorhanden, aber kein v2-valides Dokument (altes
+   * Format). Unterscheidet „kein Dokument" (frische Preview vor Generierung)
+   * von „v1-Dokument" — sonst würde ensureGeneration ein v1-Dokument mit
+   * einem neuen v2-Job überschreiben (Finding #3).
+   */
+  hasLegacyDoc: boolean;
 }
 
 /**
@@ -35,5 +42,6 @@ export async function loadStudioWebsite(
     }
   }
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
-  return { website, doc: parsed.success ? parsed.data : null };
+  const hasLegacyDoc = !parsed.success && website.websiteData != null;
+  return { website, doc: parsed.success ? parsed.data : null, hasLegacyDoc };
 }
