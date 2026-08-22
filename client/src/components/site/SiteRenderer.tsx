@@ -25,7 +25,21 @@ export const SiteRenderer: React.FC<{
    * keinen echten Slug haben; dann rendert `SiteIslands` mit leerem Slug.
    */
   slug?: string;
-}> = ({ data, basePath = "", now = new Date(), packOverride, slug = "" }) => {
+  /**
+   * DB-Felder außerhalb des v2-Dokuments, die `SiteIslands` trotzdem braucht
+   * (aktuell nur `chatWelcomeMessage` für die KI-Chat-Insel, siehe
+   * `SiteIslands.tsx`). Wird 1:1 durchgereicht — `SiteRenderer` kennt den
+   * Inhalt nicht, nur `renderSiteHtml` füllt es (Kundenseiten-SSR).
+   */
+  site?: { chatWelcomeMessage?: string | null };
+}> = ({
+  data,
+  basePath = "",
+  now = new Date(),
+  packOverride,
+  slug = "",
+  site,
+}) => {
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
       ? { ...data, stylePackId: packOverride }
@@ -46,7 +60,12 @@ export const SiteRenderer: React.FC<{
     >
       <style dangerouslySetInnerHTML={{ __html: mod.css }} />
       <mod.Page data={effectiveData} basePath={basePath} now={now} />
-      <SiteIslands data={effectiveData} slug={slug} basePath={basePath} />
+      <SiteIslands
+        data={effectiveData}
+        slug={slug}
+        basePath={basePath}
+        site={site}
+      />
     </div>
   );
 };

@@ -30,6 +30,13 @@ export interface RenderSiteOptions {
    * Website (Preview-Route) bzw. `"demo"` (Dev-Preview ohne echte Website).
    */
   slug?: string;
+  /**
+   * DB-Felder außerhalb des v2-Dokuments, die Inseln trotzdem brauchen —
+   * aktuell nur `chatWelcomeMessage` (Spalte auf `generatedWebsites`, siehe
+   * `server/routers.ts`, NICHT Teil von `WebsiteDataV2`/`features`). Geht
+   * über `SiteRenderer` an `SiteIslands` → `ChatIsland` weiter.
+   */
+  site?: { chatWelcomeMessage?: string | null };
 }
 
 export interface RenderSiteResult {
@@ -232,6 +239,7 @@ export function renderSiteHtml(
       basePath={basePath}
       now={opts.now}
       slug={opts.slug}
+      site={opts.site}
     />
   );
 

@@ -33,6 +33,16 @@ describe("SSR routes", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('id="leistungen"');
   });
+  test("dev-preview reicht eine feste Demo-Begrüßung an die Chat-Insel durch (fixture=features)", async () => {
+    const app = express();
+    registerSsrRoutes(app);
+    const res = await request(app).get(
+      "/dev/site-preview?pack=werkbank&fixture=features"
+    );
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('data-welcome="Willkommen in der Demo!"');
+  });
+
   test("unbekanntes Pack → 400 mit Meldung", async () => {
     const app = express();
     registerSsrRoutes(app);
@@ -166,6 +176,20 @@ describe("SSR routes", () => {
       expect(getWebsiteBySlug).toHaveBeenCalledWith("foo");
     });
 
+    test("website.chatWelcomeMessage landet als data-welcome-Attribut im gerenderten HTML (Fixture features)", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt",
+        chatWelcomeMessage: "Hallo bei Brandt!",
+        websiteData: getFixture("werkbank", "features"),
+      });
+
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/site/brandt");
+
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('data-welcome="Hallo bei Brandt!"');
+    });
+
     test("Negative-Cache: unbekannter Slug zweimal angefragt → getWebsiteBySlug nur einmal aufgerufen", async () => {
       (getWebsiteBySlug as Mock).mockResolvedValue(undefined);
 
@@ -218,6 +242,19 @@ describe("SSR routes", () => {
       expect(legal.text).toContain("Impressum-Test-Inhalt");
       expect(legal.headers["x-robots-tag"]).toContain("noindex");
       expect(legal.headers["cache-control"]).toContain("no-store");
+    });
+
+    test("website.chatWelcomeMessage landet als data-welcome-Attribut im gerenderten HTML (Fixture features)", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        chatWelcomeMessage: "Willkommen in der Vorschau!",
+        websiteData: getFixture("werkbank", "features"),
+      });
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/preview-ssr/abcdefghabcdefgh");
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('data-welcome="Willkommen in der Vorschau!"');
     });
 
     test("Rechtsseite ohne Inhalt → 404", async () => {

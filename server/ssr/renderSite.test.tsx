@@ -173,6 +173,23 @@ describe("renderSiteHtml — SSR-Inseln", () => {
     expect(html).not.toContain(".pb-island-form{");
   });
 
+  test("opts.site.chatWelcomeMessage landet als data-welcome-Attribut auf der Chat-Insel (Fixture features)", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+      site: { chatWelcomeMessage: "Willkommen bei Brandt!" },
+    });
+    expect(html).toContain('data-welcome="Willkommen bei Brandt!"');
+  });
+
+  test("ohne opts.site fehlt das data-welcome-Attribut auf der Chat-Insel", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
+      origin: "https://brandt.pageblitz.de",
+      slug: "brandt",
+    });
+    expect(html).not.toContain("data-welcome=");
+  });
+
   test("Inseln-CSS steht im <body> bei SiteIslands, nicht mehr separat im <head>", () => {
     const { html } = renderSiteHtml(getFixture("werkbank", "features"), {
       origin: "https://brandt.pageblitz.de",

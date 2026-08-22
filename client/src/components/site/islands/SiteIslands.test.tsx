@@ -80,6 +80,33 @@ describe("SiteIslands", () => {
     expect(html.match(/data-slug="brandt"/g)?.length).toBe(3);
   });
 
+  test("Chat-Insel trägt data-business-name und data-welcome, wenn site.chatWelcomeMessage übergeben wird", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      features: { aiChat: true },
+    };
+    const html = renderToStaticMarkup(
+      <SiteIslands
+        data={data}
+        slug="brandt"
+        site={{ chatWelcomeMessage: "Willkommen bei Brandt!" }}
+      />
+    );
+    expect(html).toContain(`data-business-name="${data.businessName}"`);
+    expect(html).toContain('data-welcome="Willkommen bei Brandt!"');
+  });
+
+  test("Chat-Insel ohne site-Prop trägt kein data-welcome-Attribut", () => {
+    const data = {
+      ...getFixture("werkbank", "full"),
+      features: { aiChat: true },
+    };
+    const html = renderToStaticMarkup(
+      <SiteIslands data={data} slug="brandt" />
+    );
+    expect(html).not.toContain("data-welcome=");
+  });
+
   test("Kontaktformular-Markup enthält Honeypot, Datenschutzlink und action auf /api/site/:slug/contact", () => {
     const data = {
       ...getFixture("werkbank", "full"),

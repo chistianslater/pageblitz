@@ -15,10 +15,16 @@ import { BookingIsland } from "../components/site/islands/BookingIsland";
  * (`data-target`, i. d. R. "#kontakt") verschoben — Packs kennen das
  * `features`-Feld nicht und rendern die Sektion daher ohne das Formular.
  *
- * KI-Chat/Terminbuchung: Platzhalter-Widgets (volle Interaktion folgt in
- * Task 8/9) — `createRoot` statt `hydrateRoot`, weil sie eigenständig vom
- * SSR-Markup übernehmen ("Client-only Widget") und ihr Markup sich mit den
- * kommenden Tasks ändern wird, ohne dass das SSR-Markup Schritt halten muss.
+ * KI-Chat: volle Interaktion (Task 8). Terminbuchung: weiterhin
+ * Platzhalter-Widget (folgt in Task 9). Beide nutzen `createRoot` statt
+ * `hydrateRoot`, weil sie eigenständig vom SSR-Markup übernehmen
+ * ("Client-only Widget") — kein Hydration-Mismatch-Risiko, auch wenn sich
+ * ihr Markup künftig ändert, ohne dass das SSR-Markup Schritt halten muss.
+ *
+ * `data-business-name`/`data-welcome` auf der Chat-Wurzel (siehe
+ * `SiteIslands.tsx`) tragen den Anzeigenamen und die DB-Begrüßung
+ * (`website.chatWelcomeMessage`, kein Teil des v2-Dokuments) — hier gelesen,
+ * um dieselben Werte wie beim SSR-Render als React-Props zu rekonstruieren.
  */
 
 function readSlug(el: Element): string {
@@ -40,7 +46,15 @@ function hydrateContactIslands(): void {
 
 function mountClientOnlyIslands(): void {
   document.querySelectorAll('[data-island="chat"]').forEach(el => {
-    createRoot(el).render(<ChatIsland slug={readSlug(el)} />);
+    const businessName = el.getAttribute("data-business-name") ?? undefined;
+    const welcomeMessage = el.getAttribute("data-welcome") ?? undefined;
+    createRoot(el).render(
+      <ChatIsland
+        slug={readSlug(el)}
+        businessName={businessName}
+        welcomeMessage={welcomeMessage}
+      />
+    );
   });
   document.querySelectorAll('[data-island="booking"]').forEach(el => {
     createRoot(el).render(<BookingIsland slug={readSlug(el)} />);

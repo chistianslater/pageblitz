@@ -19,6 +19,13 @@ export function hasActiveFeatures(data: WebsiteDataV2): boolean {
  * ihre APIs (`/api/site/:slug/contact` usw.), ein leerer Slug würde kaputte
  * Endpunkte erzeugen (siehe CSR-Vorschauen ohne echte Website).
  *
+ * `site` trägt DB-Felder, die NICHT Teil des v2-Dokuments (`WebsiteDataV2`)
+ * sind — aktuell `chatWelcomeMessage` (Spalte auf `generatedWebsites`,
+ * gepflegt im Add-ons-Panel, siehe `server/routers.ts`). `renderSiteHtml`
+ * reicht es über `SiteRenderer` bis hierher durch; ohne echte Website (z. B.
+ * CSR-Dashboard-Vorschau über `WebsiteRenderer`) bleibt es `undefined` und
+ * `ChatIsland` zeigt seinen Default-Begrüßungstext.
+ *
  * Das Inseln-CSS wird als erstes Kind von `.pb-islands` inline mitgerendert
  * (analog zu `mod.css` in `SiteRenderer`) — genau wie die Pack-Seite bringt
  * `SiteIslands` sein Styling selbst mit, egal ob es über `renderSiteHtml`
@@ -38,10 +45,13 @@ export const SiteIslands: React.FC<{
   data: WebsiteDataV2;
   slug: string;
   basePath?: string;
-}> = ({ data, slug, basePath = "" }) => {
+  /** DB-Felder außerhalb des v2-Dokuments, aktuell nur der Chat-Begrüßungstext. */
+  site?: { chatWelcomeMessage?: string | null };
+}> = ({ data, slug, basePath = "", site }) => {
   if (!slug) return null;
   if (!hasActiveFeatures(data)) return null;
   const features = data.features ?? {};
+  const chatWelcomeMessage = site?.chatWelcomeMessage ?? undefined;
   return (
     <div className="pb-islands">
       <style dangerouslySetInnerHTML={{ __html: islandsCss }} />
@@ -61,8 +71,14 @@ export const SiteIslands: React.FC<{
           className="pb-island pb-island--fab"
           data-island="chat"
           data-slug={slug}
+          data-business-name={data.businessName}
+          data-welcome={chatWelcomeMessage}
         >
-          <ChatIsland slug={slug} />
+          <ChatIsland
+            slug={slug}
+            businessName={data.businessName}
+            welcomeMessage={chatWelcomeMessage}
+          />
         </div>
       )}
       {features.booking && (
