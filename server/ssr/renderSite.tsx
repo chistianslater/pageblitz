@@ -6,6 +6,7 @@ import { getConstitution } from "../../shared/stylePacks";
 import type { FontSpec } from "../../shared/stylePacks";
 import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
+import { getIslandsBundlePath } from "./islandsBundle";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -247,7 +248,7 @@ export function renderSiteHtml(
   const bodyParts = [body];
   if (includeIslands) {
     bodyParts.push(
-      '<script type="module" src="/islands/site-islands.js" defer></script>'
+      `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
     );
   }
   const html = `<!doctype html>

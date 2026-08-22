@@ -481,18 +481,24 @@ async function startServer() {
   registerStudioDevSeed(app);
 
   // ── SSR-Inseln-Bundle (statisch) ────────────────────────────────────────────
-  // Muss vor registerSsrRoutes() stehen: /islands/site-islands.js wird von
-  // renderSiteHtml() (server/ssr/renderSite.tsx) als <script src> eingebettet,
-  // sobald Features aktiv sind — dieser Static-Mount liefert die Datei aus.
-  // distPath spiegelt server/_core/static.ts (dev: dist/public relativ zum
-  // Repo-Root, prod: public neben dem gebundelten Server).
+  // Muss vor registerSsrRoutes() stehen: /islands/<name>.<hash>.js wird von
+  // renderSiteHtml() (server/ssr/renderSite.tsx, über getIslandsBundlePath())
+  // als <script src> eingebettet, sobald Features aktiv sind — dieser
+  // Static-Mount liefert die Datei aus. distPath spiegelt server/_core/
+  // static.ts (dev: dist/public relativ zum Repo-Root, prod: public neben
+  // dem gebundelten Server).
+  // Finding M1: der Dateiname trägt seit scripts/build-islands.mjs einen
+  // Content-Hash (site-islands.<hash>.js) — bei einem neuen Build ändert
+  // sich der Dateiname, alte URLs zeigen also nie versehentlich auf einen
+  // neuen Inhalt. Deshalb hier `immutable: true` + 1 Jahr Cache, analog zu
+  // den gehashten Vite-Assets in server/_core/static.ts.
   const islandsDistPath =
     process.env.NODE_ENV === "development"
       ? path.resolve(import.meta.dirname, "../..", "dist", "public", "islands")
       : path.resolve(import.meta.dirname, "public", "islands");
   app.use(
     "/islands",
-    express.static(islandsDistPath, { maxAge: "1h", immutable: false })
+    express.static(islandsDistPath, { maxAge: "365d", immutable: true })
   );
 
   // ── SSR-Routen (Dev-Preview + Kundenseiten-SSR hinter SSR_SITES-Flag) ───────
