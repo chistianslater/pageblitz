@@ -43,6 +43,19 @@ export const SafeUrlSchema = z
   .string()
   .regex(/^(https?:\/\/|\/|#)/, "unsichere URL");
 
+/**
+ * Bezahlte Zusatzfunktionen (Add-ons), die nach Zahlung im Dokument aktiviert
+ * werden. Additiv und strikt: neue Keys müssen hier UND im Webhook ergänzt
+ * werden, damit fremde Felder weiter abgelehnt werden.
+ */
+export const FeaturesSchema = z
+  .object({
+    contactForm: z.boolean().optional(),
+    aiChat: z.boolean().optional(),
+    booking: z.boolean().optional(),
+  })
+  .strict();
+
 const HeroSchema = z
   .object({
     type: z.literal("hero"),
@@ -235,5 +248,6 @@ export const WebsiteDataV2Schema = z
     colorOverrides: z
       .record(z.string(), z.string().regex(/^#[0-9a-fA-F]{3,8}$/))
       .optional(),
+    features: FeaturesSchema.optional(),
   })
   .strict();

@@ -6,8 +6,12 @@ import type { PackId, WebsiteDataV2 } from "./types";
  * Plan A deckt nur "werkbank" ab. Weitere Packs werden nachgezogen,
  * sobald ihre Kompositionen existieren (siehe getFixture-Fehlermeldung).
  */
-type FixtureKind = "full" | "minimal";
-type FixtureSet = Record<FixtureKind, WebsiteDataV2>;
+type StoredFixtureKind = "full" | "minimal";
+type FixtureKind = StoredFixtureKind | "features";
+type FixtureSet = Record<StoredFixtureKind, WebsiteDataV2>;
+
+/** Demo-Werte für die "features"-Fixture-Variante (alle drei Add-ons aktiv). */
+const DEMO_FEATURES = { contactForm: true, aiChat: true, booking: true };
 
 const WERKBANK_FULL: WebsiteDataV2 = {
   version: 2,
@@ -2378,6 +2382,9 @@ export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
   const set = FIXTURES[packId];
   if (!set) {
     throw new Error(`Fixture fehlt für Pack: ${packId}`);
+  }
+  if (kind === "features") {
+    return { ...set.full, features: DEMO_FEATURES };
   }
   return set[kind];
 }

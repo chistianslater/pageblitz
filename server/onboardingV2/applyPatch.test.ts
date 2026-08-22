@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
+  applyFeatures,
   applyImages,
   applyOffer,
   applyStylePack,
@@ -134,5 +135,40 @@ describe("applyOffer", () => {
         ["services", "menu", "pricelist"].includes(s.type)
       )
     ).toHaveLength(1);
+  });
+});
+
+describe("applyFeatures", () => {
+  test("setzt ein neues Feature, mutiert das Original nicht", () => {
+    const next = applyFeatures(docFull, { aiChat: true });
+    expect(next.features).toEqual({ aiChat: true });
+    expect(docFull.features).toBeUndefined();
+  });
+
+  test("mergt zusätzliche Features zum bestehenden Objekt", () => {
+    const withChat = applyFeatures(docFull, { aiChat: true });
+    const withBoth = applyFeatures(withChat, { contactForm: true });
+    expect(withBoth.features).toEqual({ aiChat: true, contactForm: true });
+  });
+
+  test("false entfernt ein Feature; bleibt keins aktiv, verschwindet das ganze Objekt", () => {
+    const withChat = applyFeatures(docFull, { aiChat: true });
+    const removed = applyFeatures(withChat, { aiChat: false });
+    expect(removed.features).toBeUndefined();
+    expect("features" in removed).toBe(false);
+  });
+
+  test("false neben aktiven Features bleibt das Objekt ohne den false-Key", () => {
+    const withBoth = applyFeatures(docFull, {
+      aiChat: true,
+      contactForm: true,
+    });
+    const next = applyFeatures(withBoth, { aiChat: false });
+    expect(next.features).toEqual({ contactForm: true });
+  });
+
+  test("Ergebnis validiert gegen das Schema", () => {
+    const next = applyFeatures(docFull, { booking: true });
+    expect(next.version).toBe(2);
   });
 });

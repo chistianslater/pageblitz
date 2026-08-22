@@ -11,6 +11,7 @@ import {
   type SectionOf,
   type SectionType,
   type SectionV2,
+  type SiteFeatures,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
 
@@ -160,4 +161,25 @@ export function applyOffer(
     sections = [...without.slice(0, at), section, ...without.slice(at)];
   } else sections = insertAfter(without, "hero", section);
   return WebsiteDataV2Schema.parse({ ...doc, sections });
+}
+
+/**
+ * Pure: mergt Feature-Flags (contactForm/aiChat/booking) ins Dokument.
+ * `patch` überschreibt vorhandene Keys; Keys mit Wert `false` werden nicht
+ * gespeichert (kein `false` im Dokument). Bleibt kein aktives (`true`) Feature
+ * übrig, wird das gesamte `features`-Objekt entfernt statt leer/false zu
+ * persistieren.
+ */
+export function applyFeatures(
+  doc: WebsiteDataV2,
+  patch: SiteFeatures
+): WebsiteDataV2 {
+  const merged: SiteFeatures = { ...(doc.features ?? {}), ...patch };
+  const active = Object.fromEntries(
+    Object.entries(merged).filter(([, value]) => value === true)
+  ) as SiteFeatures;
+  const { features: _currentFeatures, ...rest } = doc;
+  const next: WebsiteDataV2 =
+    Object.keys(active).length > 0 ? { ...rest, features: active } : rest;
+  return WebsiteDataV2Schema.parse(next);
 }

@@ -86,6 +86,17 @@ describe("WebsiteDataV2Schema", () => {
     });
   });
 
+  describe("features — additives, striktes Add-on-Objekt", () => {
+    test("akzeptiert features: { contactForm: true }", () => {
+      const ok = { ...valid, features: { contactForm: true } };
+      expect(() => WebsiteDataV2Schema.parse(ok)).not.toThrow();
+    });
+    test("lehnt Fremdfeld in features ab", () => {
+      const bad = { ...valid, features: { foo: true } };
+      expect(() => WebsiteDataV2Schema.parse(bad)).toThrow();
+    });
+  });
+
   describe("colorOverrides — nur Hex erlaubt (CSS-Injection-Härtung)", () => {
     test("lehnt CSS-Injection-Payload ab", () => {
       const bad = {

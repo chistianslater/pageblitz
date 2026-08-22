@@ -62,8 +62,10 @@ function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
 }
 
-function isFixtureKind(value: string): value is "full" | "minimal" {
-  return value === "full" || value === "minimal";
+function isFixtureKind(
+  value: string
+): value is "full" | "minimal" | "features" {
+  return value === "full" || value === "minimal" || value === "features";
 }
 
 /** Nur diese Pfade werden in der Studio-Preview SSR-gerendert. */
@@ -183,7 +185,7 @@ function resolveSiteRequest(req: Request): {
   return null;
 }
 
-/** GET /dev/site-preview?pack=<id>&fixture=<full|minimal> — nur außerhalb production. */
+/** GET /dev/site-preview?pack=<id>&fixture=<full|minimal|features> — nur außerhalb production. */
 function handleDevPreview(req: Request, res: Response): void {
   if (process.env.NODE_ENV === "production") {
     res.status(404).send("Not found");
@@ -201,7 +203,9 @@ function handleDevPreview(req: Request, res: Response): void {
   if (!isFixtureKind(fixtureParam)) {
     res
       .status(400)
-      .send(`Unbekannte Fixture: "${fixtureParam}" (erwartet: full|minimal)`);
+      .send(
+        `Unbekannte Fixture: "${fixtureParam}" (erwartet: full|minimal|features)`
+      );
     return;
   }
 
