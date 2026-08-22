@@ -196,7 +196,7 @@ function Router() {
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
         <Route path="/welcome-back" component={WelcomeBack} />
-        {/* /preview/:token wird serverseitig auf /preview-ssr/:token weitergeleitet
+        {/* /preview/:token wird serverseitig (302) auf /onboarding/:token weitergeleitet
             (siehe server/ssr/routes.ts, registerSsrRoutes) — läuft nie hier ein,
             eine SPA-Route bräuchte es nicht (Task 3, Cutover-Redirects). */}
         <Route path="/site/:slug">

@@ -54,6 +54,17 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
   // zum Laden anstoßen, die unteren Karten blieben ungeladen.
   await showcase.scrollIntoViewIfNeeded();
   await showcase.locator("article").last().scrollIntoViewIfNeeded();
+  // Zusätzlich alle Demo-iframes auf eager umstellen: der Lazy-Loading-
+  // Schwellenwert des Browsers ist beim schnellen Durchscrollen nicht
+  // garantiert für jede Karte ausgelöst worden — ohne das hing der Test
+  // sporadisch im waitForFunction unten (Timeout statt Pixel-Diff).
+  await page.evaluate(() => {
+    document
+      .querySelectorAll<HTMLIFrameElement>('iframe[src^="/demo/"]')
+      .forEach(frame => {
+        frame.loading = "eager";
+      });
+  });
 
   // Alle 14 Pack-Demo-iframes müssen tatsächlich fertig geladen sein, bevor
   // der Screenshot entsteht — sonst zeigt die Baseline leere/teilweise
@@ -75,7 +86,9 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
       );
     },
     undefined,
-    { timeout: 20_000 }
+    // 14 SSR-Renderings auf dem tsx-Dev-Server (ohne Cache) brauchen auf
+    // langsamen Maschinen deutlich länger als 20 s.
+    { timeout: 60_000 }
   );
 
   await expect(showcase).toHaveScreenshot("pack-showcase.png");

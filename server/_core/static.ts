@@ -73,7 +73,7 @@ const SPA_ROUTES: RegExp[] = [
   /^\/(impressum|datenschutz|start|welcome-back|login|admin-login|my-website|my-account|variant-preview)$/,
   /^\/admin(\/.*)?$/,
   // Bloß /preview/:token wird VOR dem SPA-Fallback serverseitig auf
-  // /preview-ssr/:token umgeleitet (registerSsrRoutes) und erreicht diese
+  // /onboarding/:token (Studio) umgeleitet (registerSsrRoutes) und erreicht diese
   // Liste nie — nur die Onboarding-Unterroute bleibt eine SPA-Route
   // (Redirect-Komponente auf /onboarding/:token, Task 3, Cutover-Redirects).
   /^\/preview\/[^/]+\/onboarding$/,
