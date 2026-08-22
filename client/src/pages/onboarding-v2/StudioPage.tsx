@@ -6,6 +6,8 @@ import { Checklist } from "./Checklist";
 import { PreviewFrame } from "./PreviewFrame";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
+import { TextsPanel } from "./panels/TextsPanel";
+import { OfferPanel } from "./panels/OfferPanel";
 import { deriveGenerationStatus } from "./studioLogic";
 import "./studio.css";
 
@@ -103,6 +105,26 @@ export default function StudioPage({ token }: { token: string }) {
             />
           ) : activeId === "photos" ? (
             <PhotosPanel
+              token={token}
+              doc={state.doc}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => setActiveId(null)}
+            />
+          ) : activeId === "texts" ? (
+            <TextsPanel
+              token={token}
+              doc={state.doc}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => setActiveId(null)}
+            />
+          ) : activeId === "offer" ? (
+            <OfferPanel
               token={token}
               doc={state.doc}
               onApplied={() => {
