@@ -223,7 +223,10 @@ test.describe("Studio", () => {
     const checkoutBar = page.locator(".pb-studio-checkout");
     const emailInput = checkoutBar.getByLabel("E-Mail-Adresse");
     if (await emailInput.isVisible()) {
-      await emailInput.fill("qa+onboarding-v2@pageblitz.de");
+      // Domain example.com statt pageblitz.de (Finding I3): reserviert für
+      // Doku/Tests (RFC 2606), damit kein echter Mailversand an eine
+      // pageblitz.de-Adresse ausgelöst wird.
+      await emailInput.fill("qa-onboarding-v2@example.com");
       await Promise.all([
         page.waitForResponse(
           res => res.url().includes("onboardingV2.setCustomerEmail") && res.ok()

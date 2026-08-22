@@ -284,10 +284,23 @@ des Studios sind folgende Punkte zu beachten:
    `billingInterval`, `addOns` als JSON, `totalAmount`) wie das bestehende
    `checkout.createSession` in `server/routers.ts` — `stripeWebhook.ts` muss dafür **nicht**
    angepasst werden. Von den Add-ons sind im Studio aktuell nur `contactForm`, `gallery`, `menu`
-   und `pricelist` buchbar; `aiChat`, `booking` und `team` gelten als "Coming Soon"
-   (`COMING_SOON_KEYS` in `client/src/pages/onboarding-v2/panels/AddonsPanel.tsx`,
-   serverseitig über `sanitizeAddOns` erzwungen) — ihre Aktivierung ist erst für Plan B3
-   vorgesehen.
+   und `pricelist` buchbar (`BOOKABLE_ADDON_KEYS` in `shared/pricing.ts`); `aiChat`, `booking` und
+   `team` gelten als "Coming Soon" (`COMING_SOON_KEYS` in
+   `client/src/pages/onboarding-v2/panels/AddonsPanel.tsx`, clientseitig gesperrt). Serverseitig ist
+   das seit dem Final-Review-Fix (Finding I1, `server/onboardingV2/routerCommerce.ts`) hart
+   erzwungen: `updateAddons` lehnt jeden Request mit einem der drei gesperrten Flags auf `true` mit
+   `BAD_REQUEST` ab (kein Write), und `createCheckout` schickt `sanitizeAddOns(state.addOns)` an
+   Stripe — eine veraltete DB-Zeile mit z. B. `addOnAiChat=true` kann sich also nicht mehr in Preis
+   oder Metadaten einschleichen.
+
+   **E-Mail-Dedupe (Finding I3).** `setCustomerEmail` verschickt die Willkommens-/Lifecycle-Mails
+   nur, wenn sich die E-Mail gegenüber dem gespeicherten Stand tatsächlich ändert (normalisiert
+   über lowercase/trim) — ein erneuter Aufruf mit derselben Adresse (Reload, Doppelklick) löst
+   keinen zweiten Mailversand mehr aus.
+
+   **Upload-Obergrenze (Finding I4).** `uploadPhoto` (`server/onboardingV2/routerContent.ts`) lehnt
+   ab dem 31. eigenen Foto pro Website mit `BAD_REQUEST` ab (`MAX_UPLOADED_PHOTOS = 30`);
+   `PhotosPanel.tsx` sperrt den Upload-Button clientseitig bereits vorher.
 
 7. **KI-Vorschläge sind pro Website rate-limitiert.** `assertSuggestQuota`
    (`server/onboardingV2/suggest.ts`) erlaubt maximal 30 Vorschlags-Aufrufe pro Website und
