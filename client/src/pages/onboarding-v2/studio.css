@@ -390,12 +390,16 @@
    Entfernen-Button, statt der breiteren pb-studio-row-Spalten. */
 .pb-studio-hours-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 0.5rem;
   align-items: center;
 }
+.pb-studio-hours-row input {
+  min-width: 0;
+  width: 100%;
+}
 .pb-studio-hours-remove {
-  padding: 0.5rem 0.7rem;
+  padding: 0.4rem 0.6rem;
   line-height: 1;
 }
 .pb-studio-cat {
