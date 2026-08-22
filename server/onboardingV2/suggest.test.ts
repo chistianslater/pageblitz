@@ -29,20 +29,36 @@ beforeEach(() => {
 describe("suggestTextVariants", () => {
   test("liefert 3 validierte Varianten aus LLM-JSON", async () => {
     vi.mocked(invokeLLM).mockResolvedValue({
-      choices: [{ message: { content: JSON.stringify({ variants: ["A", "B", "C"] }) } }],
+      choices: [
+        { message: { content: JSON.stringify({ variants: ["A", "B", "C"] }) } },
+      ],
     } as any);
     await expect(
-      suggestTextVariants({ field: "headline", doc, businessName: "B", category: "Tischler" })
+      suggestTextVariants({
+        field: "headline",
+        doc,
+        businessName: "B",
+        category: "Tischler",
+      })
     ).resolves.toEqual(["A", "B", "C"]);
     expect(invokeLLM).toHaveBeenCalledTimes(1);
   });
 
   test("ungültiges JSON → ein Retry, dann Fehler", async () => {
     vi.mocked(invokeLLM)
-      .mockResolvedValueOnce({ choices: [{ message: { content: "kaputt" } }] } as any)
-      .mockResolvedValueOnce({ choices: [{ message: { content: "{}" } }] } as any);
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: "kaputt" } }],
+      } as any)
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: "{}" } }],
+      } as any);
     await expect(
-      suggestTextVariants({ field: "headline", doc, businessName: "B", category: "T" })
+      suggestTextVariants({
+        field: "headline",
+        doc,
+        businessName: "B",
+        category: "T",
+      })
     ).rejects.toThrow();
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
@@ -52,10 +68,16 @@ describe("suggestTextVariants", () => {
       choices: [{ message: { content: "kaputt" } }],
     } as any);
     await expect(
-      suggestTextVariants({ field: "headline", doc, businessName: "B", category: "T" })
+      suggestTextVariants({
+        field: "headline",
+        doc,
+        businessName: "B",
+        category: "T",
+      })
     ).rejects.toMatchObject({
       code: "INTERNAL_SERVER_ERROR",
-      message: "Die KI konnte gerade keinen Vorschlag liefern — bitte noch einmal versuchen.",
+      message:
+        "Die KI konnte gerade keinen Vorschlag liefern — bitte noch einmal versuchen.",
     });
   });
 
@@ -63,7 +85,11 @@ describe("suggestTextVariants", () => {
     const tooLong = "x".repeat(200);
     vi.mocked(invokeLLM).mockResolvedValue({
       choices: [
-        { message: { content: JSON.stringify({ variants: [tooLong, "kurz", "kurz2"] }) } },
+        {
+          message: {
+            content: JSON.stringify({ variants: [tooLong, "kurz", "kurz2"] }),
+          },
+        },
       ],
     } as any);
     const result = await suggestTextVariants({
@@ -77,12 +103,23 @@ describe("suggestTextVariants", () => {
 
   test("zweiter Versuch erfolgreich → kein Fehler, invokeLLM 2x", async () => {
     vi.mocked(invokeLLM)
-      .mockResolvedValueOnce({ choices: [{ message: { content: "kaputt" } }] } as any)
       .mockResolvedValueOnce({
-        choices: [{ message: { content: JSON.stringify({ variants: ["A", "B", "C"] }) } }],
+        choices: [{ message: { content: "kaputt" } }],
+      } as any)
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: { content: JSON.stringify({ variants: ["A", "B", "C"] }) },
+          },
+        ],
       } as any);
     await expect(
-      suggestTextVariants({ field: "subheadline", doc, businessName: "B", category: "T" })
+      suggestTextVariants({
+        field: "subheadline",
+        doc,
+        businessName: "B",
+        category: "T",
+      })
     ).resolves.toEqual(["A", "B", "C"]);
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
@@ -96,10 +133,18 @@ describe("suggestOffer", () => {
     }));
     vi.mocked(invokeLLM).mockResolvedValue({
       choices: [
-        { message: { content: JSON.stringify({ headline: "Unsere Leistungen", items }) } },
+        {
+          message: {
+            content: JSON.stringify({ headline: "Unsere Leistungen", items }),
+          },
+        },
       ],
     } as any);
-    const r = await suggestOffer({ mode: "services", businessName: "B", category: "Tischler" });
+    const r = await suggestOffer({
+      mode: "services",
+      businessName: "B",
+      category: "Tischler",
+    });
     expect(OfferPatchSchema.safeParse(r).success).toBe(true);
     expect(r.mode).toBe("services");
     if (r.mode === "services") {
@@ -113,13 +158,19 @@ describe("suggestOffer", () => {
       {
         name: "Pizza",
         items: [
-          { name: "Margherita", description: "Tomate, Mozzarella", price: "ab 9 €" },
+          {
+            name: "Margherita",
+            description: "Tomate, Mozzarella",
+            price: "ab 9 €",
+          },
           { name: "Salami", description: "Tomate, Salami", price: "ab 11 €" },
         ],
       },
       {
         name: "Pasta",
-        items: [{ name: "Carbonara", description: "Ei, Speck", price: "ab 12 €" }],
+        items: [
+          { name: "Carbonara", description: "Ei, Speck", price: "ab 12 €" },
+        ],
       },
       {
         name: "Getränke",
@@ -127,9 +178,15 @@ describe("suggestOffer", () => {
       },
     ];
     vi.mocked(invokeLLM).mockResolvedValue({
-      choices: [{ message: { content: JSON.stringify({ mode: "menu", categories }) } }],
+      choices: [
+        { message: { content: JSON.stringify({ mode: "menu", categories }) } },
+      ],
     } as any);
-    const r = await suggestOffer({ mode: "menu", businessName: "B", category: "Restaurant" });
+    const r = await suggestOffer({
+      mode: "menu",
+      businessName: "B",
+      category: "Restaurant",
+    });
     expect(OfferPatchSchema.safeParse(r).success).toBe(true);
     expect(r.mode).toBe("menu");
     if (r.mode === "menu" || r.mode === "pricelist") {

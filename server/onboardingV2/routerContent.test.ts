@@ -195,7 +195,9 @@ describe("onboardingV2.suggestTexts / suggestOffer", () => {
       choices: [
         {
           message: {
-            content: JSON.stringify({ variants: ["Headline A", "Headline B", "Headline C"] }),
+            content: JSON.stringify({
+              variants: ["Headline A", "Headline B", "Headline C"],
+            }),
           },
         },
       ],

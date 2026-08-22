@@ -1,8 +1,14 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
-import { getConstitution, type PackConstitution } from "../../shared/stylePacks";
-import { OfferPatchSchema, type OfferPatch } from "../../shared/onboardingV2/patches";
+import {
+  getConstitution,
+  type PackConstitution,
+} from "../../shared/stylePacks";
+import {
+  OfferPatchSchema,
+  type OfferPatch,
+} from "../../shared/onboardingV2/patches";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 
 /**
@@ -85,7 +91,12 @@ function clampToLength(value: string, max: number): string {
 }
 
 function buildTextVariantPrompt(
-  args: { field: TextField; businessName: string; category: string; city?: string },
+  args: {
+    field: TextField;
+    businessName: string;
+    category: string;
+    city?: string;
+  },
   constitution: PackConstitution
 ): string {
   const factLines = [
@@ -164,7 +175,9 @@ export async function suggestTextVariants(args: {
     const text = typeof rawContent === "string" ? rawContent : "";
     const json = JSON.parse(text);
     const { variants } = VariantsResponseSchema.parse(json);
-    return variants.map(variant => clampToLength(variant, FIELD_MAX_LENGTH[args.field]));
+    return variants.map(variant =>
+      clampToLength(variant, FIELD_MAX_LENGTH[args.field])
+    );
   });
 }
 
@@ -175,9 +188,10 @@ function buildOfferPrompt(args: {
   businessName: string;
   category: string;
 }): string {
-  const factLines = [`Unternehmen: ${args.businessName}`, `Branche: ${args.category}`].join(
-    "\n"
-  );
+  const factLines = [
+    `Unternehmen: ${args.businessName}`,
+    `Branche: ${args.category}`,
+  ].join("\n");
 
   if (args.mode === "services") {
     return [
@@ -326,7 +340,10 @@ const QUOTA_WINDOW_MS = 60 * 60 * 1000;
 const QUOTA_LIMIT = 30;
 const suggestQuota = new Map<number, QuotaEntry>();
 
-export function assertSuggestQuota(websiteId: number, now: number = Date.now()): void {
+export function assertSuggestQuota(
+  websiteId: number,
+  now: number = Date.now()
+): void {
   const entry = suggestQuota.get(websiteId);
   if (!entry || now - entry.windowStart >= QUOTA_WINDOW_MS) {
     suggestQuota.set(websiteId, { count: 1, windowStart: now });
