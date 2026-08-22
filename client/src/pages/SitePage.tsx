@@ -16,7 +16,10 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
 
-  const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as string | null | undefined;
+  const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as
+    | string
+    | null
+    | undefined;
   useEffect(() => {
     if (!umamiWebsiteId) return;
     if (document.getElementById("pb-umami-script")) return;
@@ -46,7 +49,8 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     const category = (biz as any)?.category || "";
 
     // Title: custom → fallback auto-generated
-    const title = v2?.seo?.title ||
+    const title =
+      v2?.seo?.title ||
       (businessName && category && city
         ? `${businessName} – ${category} in ${city}`
         : businessName
@@ -54,7 +58,8 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
           : "Website");
 
     // Description: custom → tagline → fallback
-    const description = v2?.seo?.description ||
+    const description =
+      v2?.seo?.description ||
       v2?.tagline ||
       `${businessName} – Professionelle Website mit Infos zu Leistungen, Kontakt und mehr.`;
 
@@ -71,13 +76,23 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
       el.setAttribute("content", content);
     };
 
-    setMeta('meta[name="description"]', 'name=description', description);
-    setMeta('meta[property="og:title"]', 'property=og:title', title);
-    setMeta('meta[property="og:description"]', 'property=og:description', description);
-    setMeta('meta[property="og:type"]', 'property=og:type', "website");
-    const heroSection = v2?.sections.find(s => s.type === "hero") as { imageUrl?: string } | undefined;
+    setMeta('meta[name="description"]', "name=description", description);
+    setMeta('meta[property="og:title"]', "property=og:title", title);
+    setMeta(
+      'meta[property="og:description"]',
+      "property=og:description",
+      description
+    );
+    setMeta('meta[property="og:type"]', "property=og:type", "website");
+    const heroSection = v2?.sections.find(s => s.type === "hero") as
+      | { imageUrl?: string }
+      | undefined;
     if (heroSection?.imageUrl) {
-      setMeta('meta[property="og:image"]', 'property=og:image', heroSection.imageUrl);
+      setMeta(
+        'meta[property="og:image"]',
+        "property=og:image",
+        heroSection.imageUrl
+      );
     }
 
     return () => {
@@ -103,14 +118,22 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
-          <h1 className="text-xl font-bold mt-4 text-gray-900">Website nicht gefunden</h1>
-          <p className="text-gray-500 mt-2">Diese Website existiert nicht oder wurde deaktiviert.</p>
+          <h1 className="text-xl font-bold mt-4 text-gray-900">
+            Website nicht gefunden
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Diese Website existiert nicht oder wurde deaktiviert.
+          </p>
         </div>
       </div>
     );
   }
 
-  const w = data.website as { requiresAgeGate?: boolean | null; websiteData: unknown };
+  const w = data.website as {
+    requiresAgeGate?: boolean | null;
+    websiteData: unknown;
+    chatWelcomeMessage?: string | null;
+  };
   const business = data.business;
   const primaryColor = "#111111";
 
@@ -119,8 +142,15 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
       {/* FSK-18 Age-Gate: Self-Declaration vor dem Site-Content, wenn die
           Branche Adult/Alkohol/Glücksspiel ist. Rendert nur wenn Flag aktiv
           und Besucher noch nicht bestätigt hat (localStorage, 30 Tage). */}
-      {w.requiresAgeGate && <AgeGate slug={effectiveSlug} businessName={business?.name} />}
-      <WebsiteRenderer websiteData={w.websiteData} slug={effectiveSlug} islandsMode="live" />
+      {w.requiresAgeGate && (
+        <AgeGate slug={effectiveSlug} businessName={business?.name} />
+      )}
+      <WebsiteRenderer
+        websiteData={w.websiteData}
+        slug={effectiveSlug}
+        islandsMode="live"
+        site={{ chatWelcomeMessage: w.chatWelcomeMessage ?? null }}
+      />
       <CookieBanner slug={effectiveSlug} primaryColor={primaryColor} />
     </>
   );
