@@ -23,7 +23,10 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
-import type { InsertGeneratedWebsite } from "../../drizzle/schema";
+import type {
+  InsertGeneratedWebsite,
+  InsertOnboardingResponse,
+} from "../../drizzle/schema";
 import type { StudioWebsite } from "./ownership";
 
 /** Gemeinsames Input-Schema aller Studio-Prozeduren: der previewToken (Spec §6). */
@@ -169,29 +172,36 @@ export function requireDoc(loaded: StudioWebsite): WebsiteDataV2 {
  * Websites ohne onboarding_responses-Zeile (z. B. per Admin/Outreach
  * angelegt) hätten sonst kein Ziel für das UPDATE und würden den Haken beim
  * nächsten Laden wieder verlieren (Finding #5) — deshalb bei fehlender Zeile
- * eine anlegen statt nur zu updaten.
+ * eine anlegen statt nur zu updaten. Von allen schreibenden Studio-
+ * Prozeduren wiederverwendet (Progress, Rechtliches, Extras), damit dieses
+ * Create-oder-Update-Verhalten nicht mehrfach dupliziert wird.
  */
+export async function upsertOnboarding(
+  websiteId: number,
+  patch: Partial<InsertOnboardingResponse>
+): Promise<void> {
+  const onboarding = await getOnboardingByWebsiteId(websiteId);
+  if (onboarding) {
+    await updateOnboarding(websiteId, { ...patch, updatedAt: Date.now() });
+  } else {
+    await createOnboarding({
+      websiteId,
+      status: "in_progress",
+      stepCurrent: 0,
+      createdAt: Date.now(),
+      ...patch,
+      updatedAt: Date.now(),
+    });
+  }
+}
+
 export async function mergeStudioProgress(
   websiteId: number,
   patch: StudioProgress
 ): Promise<StudioProgress> {
   const onboarding = await getOnboardingByWebsiteId(websiteId);
   const next = { ...parseStudioProgress(onboarding?.studioProgress), ...patch };
-  if (onboarding) {
-    await updateOnboarding(websiteId, {
-      studioProgress: next,
-      updatedAt: Date.now(),
-    });
-  } else {
-    await createOnboarding({
-      websiteId,
-      status: "in_progress",
-      stepCurrent: 0,
-      studioProgress: next,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-  }
+  await upsertOnboarding(websiteId, { studioProgress: next });
   return next;
 }
 
