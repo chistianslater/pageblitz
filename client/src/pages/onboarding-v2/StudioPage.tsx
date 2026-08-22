@@ -5,6 +5,7 @@ import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { PreviewFrame } from "./PreviewFrame";
 import { StylePanel } from "./panels/StylePanel";
+import { PhotosPanel } from "./panels/PhotosPanel";
 import { deriveGenerationStatus } from "./studioLogic";
 import "./studio.css";
 
@@ -94,6 +95,16 @@ export default function StudioPage({ token }: { token: string }) {
               token={token}
               currentPackId={state.stylePackId}
               category={state.category}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => setActiveId(null)}
+            />
+          ) : activeId === "photos" ? (
+            <PhotosPanel
+              token={token}
+              doc={state.doc}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();
