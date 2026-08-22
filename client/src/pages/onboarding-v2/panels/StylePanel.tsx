@@ -27,35 +27,38 @@ export function StyleCandidateList({
     <div className="pb-studio-cands" role="group" aria-label="Stil-Kandidaten">
       {candidates.map(c => {
         const isCurrent = c.id === currentPackId;
+        const isBusy = busyId === c.id;
+        const label = isCurrent
+          ? "Aktuell"
+          : isBusy
+            ? "Wird übernommen…"
+            : "Diesen Stil wählen";
         return (
-          <button
+          <div
             key={c.id}
-            type="button"
             className="pb-studio-cand"
-            aria-pressed={isCurrent}
-            disabled={busyId !== null}
-            onClick={() => onPick(c.id)}
+            data-current={isCurrent ? "true" : undefined}
           >
-            <span className="pb-studio-thumb" aria-hidden="true">
+            <div className="pb-studio-thumb" aria-hidden="true">
               <iframe
                 src={`/preview-ssr/${token}?pack=${c.id}`}
                 title={`Vorschau ${c.name}`}
                 tabIndex={-1}
                 loading="lazy"
               />
-            </span>
-            <span className="pb-studio-cand-name">
-              <span>{c.name}</span>
-              <span className="pb-studio-kicker">
-                {isCurrent
-                  ? "Aktuell"
-                  : busyId === c.id
-                    ? "Wird übernommen…"
-                    : ""}
-              </span>
-            </span>
-            <span className="pb-studio-cand-ess">{c.essence}</span>
-          </button>
+            </div>
+            <div className="pb-studio-cand-name">{c.name}</div>
+            <p className="pb-studio-cand-ess">{c.essence}</p>
+            <button
+              type="button"
+              className="pb-studio-cand-pick"
+              aria-pressed={isCurrent}
+              disabled={busyId !== null}
+              onClick={() => onPick(c.id)}
+            >
+              {label}
+            </button>
+          </div>
         );
       })}
     </div>
@@ -78,22 +81,47 @@ export function StylePanel({
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
+  // Lokal nachgeführter Zustand statt der (ggf. veralteten) Prop: verhindert,
+  // dass „Passt so" nach einem gerade erfolgreichen Wechsel noch das alte
+  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist.
+  const [activePackId, setActivePackId] = useState<PackId | null>(
+    currentPackId
+  );
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
   });
+  // Eine gemeinsame Mutation für Auswahl UND Bestätigung — verhindert das
+  // Race, bei dem ein noch laufender Pick von einer separaten
+  // Bestätigungs-Mutation überholt/überschrieben wird.
   const select = trpc.onboardingV2.selectStylePack.useMutation();
 
-  const pick = (id: PackId) => {
+  const applyPack = (id: PackId, onSuccessExtra?: () => void) => {
     setBusyId(id);
     select.mutate(
       { token, packId: id },
       {
         onSettled: () => setBusyId(null),
-        onSuccess: () => onApplied(),
+        onSuccess: () => {
+          setActivePackId(id);
+          onApplied();
+          onSuccessExtra?.();
+        },
       }
     );
   };
+
+  const pick = (id: PackId) => applyPack(id);
+
+  const confirm = () => {
+    if (activePackId) {
+      applyPack(activePackId, onClose);
+    } else {
+      onClose();
+    }
+  };
+
+  const busy = busyId !== null;
 
   return (
     <section className="pb-studio-panel" aria-label="Stil wählen">
@@ -117,7 +145,7 @@ export function StylePanel({
         <StyleCandidateList
           token={token}
           candidates={candidates.data.candidates}
-          currentPackId={currentPackId}
+          currentPackId={activePackId}
           busyId={busyId}
           onPick={pick}
         />
@@ -132,12 +160,18 @@ export function StylePanel({
           type="button"
           className="pb-studio-btn"
           data-variant="ghost"
+          disabled={busy}
           onClick={() => setRound(r => r + 1)}
         >
           Andere zeigen
         </button>
-        <button type="button" className="pb-studio-btn" onClick={onClose}>
-          Passt so
+        <button
+          type="button"
+          className="pb-studio-btn"
+          disabled={busy}
+          onClick={confirm}
+        >
+          {busy ? "Bitte warten…" : "Passt so"}
         </button>
       </div>
     </section>

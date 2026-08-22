@@ -22,5 +22,8 @@ describe("StyleCandidateList", () => {
     expect(html).toContain("Kanzlei");
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain("Aktuell");
+    // Gültiges HTML: kein interaktives <iframe> innerhalb eines <button> —
+    // die Mini-Previews liegen dekorativ neben dem eigentlichen Auswahl-Button.
+    expect(html).not.toMatch(/<button[^>]*>(?:(?!<\/button>)[\s\S])*<iframe/);
   });
 });

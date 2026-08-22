@@ -239,17 +239,10 @@
   border-radius: 12px;
   background: var(--st-canvas);
   text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
 }
-.pb-studio-cand[aria-pressed="true"] {
+.pb-studio-cand[data-current="true"] {
   border-color: var(--st-accent);
   box-shadow: 0 0 0 2px color-mix(in oklab, var(--st-accent) 25%, transparent);
-}
-.pb-studio-cand:focus-visible {
-  outline: 2px solid var(--st-accent);
-  outline-offset: 2px;
 }
 .pb-studio-thumb {
   position: relative;
@@ -271,11 +264,28 @@
 }
 .pb-studio-cand-name {
   font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
 }
 .pb-studio-cand-ess {
   font-size: 0.85rem;
   color: var(--st-muted);
+  margin: 0;
+}
+.pb-studio-cand-pick {
+  font: inherit;
+  font-weight: 600;
+  width: 100%;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--st-ink);
+  background: transparent;
+  color: var(--st-ink);
+  cursor: pointer;
+}
+.pb-studio-cand-pick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pb-studio-cand-pick:focus-visible {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 2px;
 }
