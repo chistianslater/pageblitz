@@ -872,6 +872,34 @@ export async function updateSubscriptionByWebsiteId(
     .where(eq(subscriptions.websiteId, websiteId));
 }
 
+/**
+ * Verwaiste Abos (userId = 0) für eine E-Mail: entstehen, wenn ein
+ * anonymer Käufer beim Checkout kein Konto hat. `customerEmail` der
+ * zugehörigen Website wird case-insensitiv/getrimmt verglichen.
+ */
+export async function listOrphanSubscriptionsByCustomerEmail(
+  email: string
+): Promise<Subscription[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return [];
+  const rows = await db
+    .select({ subscription: subscriptions })
+    .from(subscriptions)
+    .innerJoin(
+      generatedWebsites,
+      eq(subscriptions.websiteId, generatedWebsites.id)
+    )
+    .where(
+      and(
+        eq(subscriptions.userId, 0),
+        sql`LOWER(TRIM(${generatedWebsites.customerEmail})) = ${normalizedEmail}`
+      )
+    );
+  return rows.map(row => row.subscription);
+}
+
 // ── Onboarding Responses ───────────────────────────────
 export async function createOnboarding(
   data: Partial<InsertOnboardingResponse> & {

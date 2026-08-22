@@ -4,6 +4,7 @@ import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
 import { ENV } from "./env";
 import { SignJWT } from "jose";
+import { linkOrphanSubscriptionsToUser } from "../linkSubscriptions";
 
 /**
  * Google OAuth Routes for Customer Authentication
@@ -33,7 +34,9 @@ interface GoogleUserInfo {
  * Build Google OAuth authorization URL
  */
 function buildGoogleAuthUrl(redirectPath: string): string {
-  const state = Buffer.from(JSON.stringify({ redirect: redirectPath, nonce: Date.now() })).toString("base64url");
+  const state = Buffer.from(
+    JSON.stringify({ redirect: redirectPath, nonce: Date.now() })
+  ).toString("base64url");
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", ENV.googleClientId);
@@ -50,7 +53,9 @@ function buildGoogleAuthUrl(redirectPath: string): string {
 /**
  * Exchange code for tokens
  */
-async function exchangeCodeForTokens(code: string): Promise<GoogleTokenResponse> {
+async function exchangeCodeForTokens(
+  code: string
+): Promise<GoogleTokenResponse> {
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -75,9 +80,12 @@ async function exchangeCodeForTokens(code: string): Promise<GoogleTokenResponse>
  * Get user info from Google
  */
 async function getGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo> {
-  const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const response = await fetch(
+    "https://www.googleapis.com/oauth2/v3/userinfo",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    }
+  );
 
   if (!response.ok) {
     const error = await response.text();
@@ -90,7 +98,11 @@ async function getGoogleUserInfo(accessToken: string): Promise<GoogleUserInfo> {
 /**
  * Create session token (JWT)
  */
-async function createSessionToken(openId: string, name: string, email: string): Promise<string> {
+async function createSessionToken(
+  openId: string,
+  name: string,
+  email: string
+): Promise<string> {
   const secretKey = new TextEncoder().encode(ENV.cookieSecret);
   const issuedAt = Date.now();
   const expiresInMs = ONE_YEAR_MS;
@@ -210,12 +222,31 @@ export function registerGoogleAuthRoutes(app: Express) {
         throw new Error("Failed to create/get user");
       }
 
+      // Post-Checkout: verwaiste Abos (userId 0) an dieses Konto binden,
+      // falls die Checkout-E-Mail übereinstimmt. Fehler dürfen den Login
+      // nie blockieren – nur loggen.
+      try {
+        await linkOrphanSubscriptionsToUser(user.id, userInfo.email);
+      } catch (linkErr) {
+        console.error(
+          "[Google OAuth] Fehler beim Binden verwaister Abos:",
+          linkErr
+        );
+      }
+
       // Create session
-      const sessionToken = await createSessionToken(openId, userInfo.name, userInfo.email);
+      const sessionToken = await createSessionToken(
+        openId,
+        userInfo.name,
+        userInfo.email
+      );
 
       // Set cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
 
       // Decode redirect from state
       const { redirect } = decodeState(state);

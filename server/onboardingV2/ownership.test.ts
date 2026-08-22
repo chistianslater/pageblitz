@@ -5,9 +5,14 @@ vi.mock("../db", () => ({
   getWebsiteByToken: vi.fn(),
   getSubscriptionByWebsiteId: vi.fn(),
 }));
+vi.mock("../linkSubscriptions", () => ({
+  linkOrphanSubscriptionsToUser: vi.fn().mockResolvedValue(0),
+}));
 import * as db from "../db";
+import { linkOrphanSubscriptionsToUser } from "../linkSubscriptions";
 import { loadStudioWebsite } from "./ownership";
 const mockedDb = vi.mocked(db);
+const mockedLink = vi.mocked(linkOrphanSubscriptionsToUser);
 
 const v2 = {
   version: 2,
@@ -60,14 +65,56 @@ describe("loadStudioWebsite", () => {
       id: 1,
       status: "active",
       websiteData: v2,
+      customerEmail: null,
     } as any);
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({ userId: 7 } as any);
     await expect(loadStudioWebsite("tok", null)).rejects.toBeInstanceOf(
       TRPCError
     );
-    await expect(loadStudioWebsite("tok", { id: 8 })).rejects.toMatchObject({
+    await expect(
+      loadStudioWebsite("tok", { id: 8, email: "fremd@example.com" })
+    ).rejects.toMatchObject({
       code: "FORBIDDEN",
     });
-    await expect(loadStudioWebsite("tok", { id: 7 })).resolves.toBeTruthy();
+    await expect(
+      loadStudioWebsite("tok", { id: 7, email: "besitzer@example.com" })
+    ).resolves.toBeTruthy();
+  });
+
+  test("verwaistes Abo (userId 0) + eingeloggter Nutzer mit gleicher E-Mail wie website.customerEmail → erlaubt, Abo wird gebunden", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 1,
+      status: "active",
+      websiteData: v2,
+      customerEmail: "Kunde@Example.com",
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 0,
+    } as any);
+
+    const result = await loadStudioWebsite("tok", {
+      id: 42,
+      email: " kunde@example.com ",
+    });
+
+    expect(result.doc?.stylePackId).toBe("werkbank");
+    expect(mockedLink).toHaveBeenCalledWith(42, " kunde@example.com ");
+  });
+
+  test("verwaistes Abo (userId 0) + eingeloggter Nutzer mit anderer E-Mail → FORBIDDEN, kein Binden", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 1,
+      status: "active",
+      websiteData: v2,
+      customerEmail: "kunde@example.com",
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 0,
+    } as any);
+
+    await expect(
+      loadStudioWebsite("tok", { id: 42, email: "andere@example.com" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedLink).not.toHaveBeenCalled();
   });
 });
