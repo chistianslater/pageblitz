@@ -100,11 +100,17 @@ export function StylePanel({
   const [busyId, setBusyId] = useState<PackId | null>(null);
   // Lokal nachgeführter Zustand statt der (ggf. veralteten) Prop: verhindert,
   // dass „Passt so" nach einem gerade erfolgreichen Wechsel noch das alte
-  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist. Ist ein
-  // KI-Chat-Vorschlag gesetzt, startet die Auswahl direkt darauf statt auf
-  // dem aktuell angewendeten Pack.
+  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist.
+  //
+  // Finding F4: startet IMMER auf `currentPackId`, auch wenn der KI-Chat
+  // einen anderen Pack vorschlägt (`preselectPackId`) — der Vorschlag wird
+  // in `StyleCandidateList` nur als Badge ("KI-Vorschlag") hervorgehoben,
+  // gilt aber nicht als aktiv/bestätigt, bevor der Nutzer ihn tatsächlich
+  // anklickt. Vorher setzte `preselectPackId ?? currentPackId` den Vorschlag
+  // sofort als "Aktuell", wodurch ein Klick auf „Passt so" ohne bewusste
+  // Auswahl den Vorschlag übernahm (Race zwischen Vorschlag und Bestätigung).
   const [activePackId, setActivePackId] = useState<PackId | null>(
-    preselectPackId ?? currentPackId
+    currentPackId
   );
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,

@@ -178,4 +178,17 @@ describe("CheckoutBar", () => {
     expect(match).not.toBeNull();
     expect(match![0]).not.toContain("disabled");
   });
+
+  test("Finding F3: Hinweistext differenziert Kontaktformular (sofort) von KI-Chat/Terminbuchung (nach Freischalten)", () => {
+    const html = renderWithTrpc(
+      <CheckoutBar
+        state={buildState()}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
+    );
+    expect(html).toContain(
+      "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv. Team folgt."
+    );
+  });
 });

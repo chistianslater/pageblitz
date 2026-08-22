@@ -1,7 +1,31 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AddonsList } from "./AddonsPanel";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
+import { trpc } from "@/lib/trpc";
+import { AddonsList, AddonsPanel } from "./AddonsPanel";
+
+/**
+ * AddonsPanel nutzt trpc.onboardingV2.updateAddons.useMutation() direkt im
+ * Component-Body — braucht denselben trpc/QueryClient-Wrapper wie
+ * LegalPanel.test.tsx/CheckoutBar.test.tsx, sonst wirft useMutation()
+ * außerhalb eines Providers. Die Mutation feuert nur bei .mutate(), nicht
+ * beim reinen Rendern — renderToStaticMarkup mit ungenutztem Client ist
+ * daher sicher.
+ */
+function renderWithTrpc(node: React.ReactElement): string {
+  const queryClient = new QueryClient();
+  const trpcClient = trpc.createClient({
+    links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  });
+  return renderToStaticMarkup(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+    </trpc.Provider>
+  );
+}
 
 describe("AddonsList", () => {
   test("Summe für gallery + menu jährlich zeigt 27,70 €", () => {
@@ -60,5 +84,20 @@ describe("AddonsList", () => {
     );
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('aria-pressed="false"');
+  });
+});
+
+describe("AddonsPanel", () => {
+  test("Finding F1: zeigt den Hinweistext zu Kontaktformular (sofort) vs. KI-Chat/Terminbuchung (nach Freischaltung)", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        addOns={{}}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Kontaktformular erscheint sofort in der Vorschau");
+    expect(html).toContain("Team folgt.");
   });
 });
