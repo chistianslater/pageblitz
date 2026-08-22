@@ -40,6 +40,7 @@ import { generateHomePrerender, buildHomeFaqSchema } from "../seo/homePage";
 import { outreachEmails } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { registerSsrRoutes } from "../ssr/routes";
+import { registerStudioDevSeed } from "../onboardingV2/devSeed";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -471,6 +472,9 @@ async function startServer() {
     res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateLandingPageHTML(ind, city));
   });
+
+  // ── Dev-Seed-Route (Nur Entwicklung) ───────────────────────────────────────
+  registerStudioDevSeed(app);
 
   // ── SSR-Routen (Dev-Preview + Kundenseiten-SSR hinter SSR_SITES-Flag) ───────
   // MUSS vor injectMetaTags registriert werden: injectMetaTags ruft nie next()
