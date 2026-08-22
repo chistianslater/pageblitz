@@ -19,9 +19,7 @@ import {
   updateBusiness,
 } from "./db";
 import { nanoid } from "nanoid";
-import { getHeroImageUrl, getIndustryColorScheme, getLayoutPool } from "./industryImages";
-import { getNextLayoutForIndustry } from "./db";
-import { invokeLLM } from "./_core/llm";
+import { shouldRequireAgeGate } from "@shared/ageGate";
 import { analyzeWebsite } from "./websiteAnalysis";
 
 // ── State file ────────────────────────────────────────────────────────────────
@@ -134,29 +132,6 @@ export const PIPELINE_CITIES: string[] = [
   "Mainz", "Kassel", "Hagen", "Hamm", "Saarbrücken", "Mülheim",
   "Potsdam", "Ludwigshafen", "Oldenburg", "Osnabrück", "Leverkusen",
 ];
-
-// ── Local helper: classify industry via LLM (mirrors routers.ts classifyIndustry) ──
-
-async function classifyIndustryLocal(category: string, businessName: string): Promise<string> {
-  try {
-    const prompt = `Klassifiziere dieses Unternehmen in eine der folgenden Branchen-Schlüsselwörter:
-beauty, restaurant, fitness, automotive, medical, legal, trades, retail, tech, education, hospitality, other
-
-Unternehmensname: ${businessName}
-Kategorie: ${category}
-
-Antworte NUR mit dem Schlüsselwort (z.B. "beauty").`;
-    const result = await invokeLLM({
-      messages: [{ role: "user", content: prompt }],
-      maxTokens: 10,
-    });
-    const key = result.trim().toLowerCase().replace(/[^a-z]/g, "");
-    const valid = ["beauty", "restaurant", "fitness", "automotive", "medical", "legal", "trades", "retail", "tech", "education", "hospitality"];
-    return valid.includes(key) ? key : "other";
-  } catch {
-    return "other";
-  }
-}
 
 function slugifyLocal(text: string): string {
   return text.toLowerCase()
@@ -421,12 +396,6 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
         if (!business || !business.email) continue;
 
         const category = business.category || "Dienstleistung";
-        const industryKey = await classifyIndustryLocal(category, business.name);
-        const colorScheme = getIndustryColorScheme(category, business.name, industryKey);
-        const { pool: layoutPool } = getLayoutPool(category, business.name, industryKey);
-        const layoutStyle = await getNextLayoutForIndustry(industryKey, layoutPool);
-        const heroImageUrl = getHeroImageUrl(category, business.name, industryKey);
-
         const slug = slugifyLocal(business.name) + "-" + nanoid(4);
         const previewToken = nanoid(32);
 
@@ -435,12 +404,10 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
           slug,
           status: "preview",
           websiteData: null,
-          colorScheme,
           industry: category,
           previewToken,
           addons: [],
-          heroImageUrl,
-          layoutStyle,
+          requiresAgeGate: shouldRequireAgeGate(category, business.name),
         });
 
         const jobId = await createGenerationJob({

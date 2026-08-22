@@ -53,8 +53,10 @@ export async function resolveV2Images(
 }
 
 /**
- * v2-Generierungspfad (siehe runWebsiteGeneration in routers.ts — delegiert
- * seit dem Cutover, Plan B4a, vollständig an runWebsiteGenerationV2Job):
+ * v2-Generierungspfad (aufgerufen von runWebsiteGenerationV2Job unten;
+ * routers.ts' website.generate/outreach.queueBusinesses und
+ * outreachPipeline.ts rufen seit Plan B4b direkt runWebsiteGenerationV2Job
+ * auf, kein separater Wrapper mehr):
  * Pack per Rotation wählen, Inhalte vom LLM holen
  * (zod-validiert, genau 1 Retry, kein stiller Fallback), als websiteData
  * persistieren (gleiche JSON-Spalte wie v1) und den SSR-Cache für den Slug
@@ -92,10 +94,11 @@ export async function runWebsiteGenerationV2(
 }
 
 /**
- * Eigenständiger v2-Job (Studio/onboardingV2.ensureGeneration, seit dem
- * Cutover auch der einzige Generierungspfad für runWebsiteGeneration in
- * routers.ts): immer der v2-Pfad, kein Flag mehr. Fehler landen im Job
- * (status "failed" + Meldung) statt als unbehandelte Rejection.
+ * Eigenständiger v2-Job (Studio/onboardingV2.ensureGeneration,
+ * website.generate, outreach.queueBusinesses, outreachPipeline.ts —
+ * seit Plan B4b der einzige Generierungspfad im gesamten Repo): immer der
+ * v2-Pfad, kein Flag mehr. Fehler landen im Job (status "failed" +
+ * Meldung) statt als unbehandelte Rejection.
  */
 export async function runWebsiteGenerationV2Job(
   jobId: number,

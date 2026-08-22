@@ -147,7 +147,9 @@ export default function WebsitesPage() {
 
   const generateMutation = trpc.website.generate.useMutation({
     onSuccess: () => {
-      toast.success("Website erfolgreich generiert!");
+      toast.success(
+        "Generierung gestartet — die Website erscheint in Kürze in der Liste"
+      );
       setGeneratingId(null);
       utils.website.list.invalidate();
       utils.business.list.invalidate();

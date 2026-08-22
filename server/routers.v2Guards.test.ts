@@ -26,6 +26,7 @@ vi.mock("./db", async importOriginal => {
     ...actual,
     getWebsiteById: vi.fn(),
     getWebsiteByToken: vi.fn(),
+    getWebsiteByBusinessId: vi.fn(),
     updateWebsite: vi.fn(),
     getWebsitesByUserId: vi.fn(),
     getOnboardingByWebsiteId: vi.fn(),
@@ -33,6 +34,8 @@ vi.mock("./db", async importOriginal => {
     getBusinessById: vi.fn(),
     listTemplateUploadsByPool: vi.fn(),
     getNextLayoutForIndustry: vi.fn(),
+    createGeneratedWebsite: vi.fn(),
+    createGenerationJob: vi.fn(),
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -47,15 +50,28 @@ vi.mock("./onboardingUpload", () => ({
 // Content-Generierung aufgerufen (zwei separate Calls in website.regenerate)
 // — echte Netzwerk-Aufrufe an das LLM sind in Unit-Tests nicht zulässig.
 vi.mock("./_core/llm", () => ({ invokeLLM: vi.fn() }));
+// runWebsiteGenerationV2Job stößt die Hintergrund-Pipeline an (nicht
+// awaited von website.generate) — in Unit-Tests gemockt, damit kein echter
+// LLM-/DB-Hintergrundlauf nach Testende weiterläuft. resolveV2Images bleibt
+// real (importOriginal), da website.regenerate es unverändert nutzt.
+vi.mock("./generationV2/runJob", async importOriginal => {
+  const actual = await importOriginal<typeof import("./generationV2/runJob")>();
+  return {
+    ...actual,
+    runWebsiteGenerationV2Job: vi.fn(),
+  };
+});
 
 import { appRouter } from "./routers";
 import * as db from "./db";
 import { invalidateSsrCache } from "./ssr/routes";
 import { invokeLLM } from "./_core/llm";
+import { runWebsiteGenerationV2Job } from "./generationV2/runJob";
 
 const mockedDb = vi.mocked(db);
 const mockedInvalidateSsrCache = vi.mocked(invalidateSsrCache);
 const mockedInvokeLLM = vi.mocked(invokeLLM);
+const mockedRunWebsiteGenerationV2Job = vi.mocked(runWebsiteGenerationV2Job);
 
 function createPublicContext(): TrpcContext {
   return {
@@ -249,6 +265,55 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(mockedDb.getBusinessById).not.toHaveBeenCalled();
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+});
+
+describe("website.generate — v2-Job statt synchroner v1-Generierung (Task 4)", () => {
+  test("legt Preview-Website + Job an und startet die v2-Pipeline", async () => {
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+      category: "Schreiner",
+      placeId: "p1",
+    } as any);
+    mockedDb.getWebsiteByBusinessId.mockResolvedValue(undefined as any);
+    mockedDb.createGeneratedWebsite.mockResolvedValue(42 as any);
+    mockedDb.createGenerationJob.mockResolvedValue(99 as any);
+    mockedRunWebsiteGenerationV2Job.mockResolvedValue(undefined);
+
+    const caller = appRouter.createCaller(createAdminContext());
+    const res = await caller.website.generate({ businessId: 7 });
+
+    expect(res).toMatchObject({ websiteId: 42, jobId: 99 });
+    expect(mockedDb.createGeneratedWebsite).toHaveBeenCalledWith(
+      expect.objectContaining({
+        businessId: 7,
+        status: "preview",
+        websiteData: null,
+      })
+    );
+    expect(mockedDb.createGeneratedWebsite.mock.calls[0][0]).not.toHaveProperty(
+      "layoutStyle"
+    );
+    expect(mockedRunWebsiteGenerationV2Job).toHaveBeenCalledWith(99, 42);
+  });
+
+  test("CONFLICT, wenn bereits eine Website für dieses Business existiert", async () => {
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+      category: "Schreiner",
+      placeId: "p1",
+    } as any);
+    mockedDb.getWebsiteByBusinessId.mockResolvedValue(baseWebsiteRow());
+
+    const caller = appRouter.createCaller(createAdminContext());
+    await expect(
+      caller.website.generate({ businessId: 7 })
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+    });
+    expect(mockedDb.createGeneratedWebsite).not.toHaveBeenCalled();
   });
 });
 
