@@ -2,7 +2,7 @@
   "version": "5",
   "dialect": "mysql",
   "id": "cbd1f5bc-ea4d-4604-8fe3-04c70b12b6a6",
-  "prevId": "a01a7494-88cd-4840-a64e-691ce851396b",
+  "prevId": "db55a29a-e42c-4155-8e63-1655c2432609",
   "tables": {
     "businesses": {
       "name": "businesses",

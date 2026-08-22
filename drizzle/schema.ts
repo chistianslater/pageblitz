@@ -194,6 +194,11 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   // Section visibility & order (from hideSections drag-and-drop step)
   sectionOrder: json("sectionOrder"), // string[] – user's custom section order
   hiddenSections: json("hiddenSections"), // string[] – sections hidden by user
+  // Studio (Onboarding v2): Bestätigungs-Flags, die sich nicht aus dem
+  // Dokument ableiten lassen — { styleConfirmed?, textsReviewed?, addonsReviewed? }.
+  // Alles andere (Fotos/Angebot/Rechtliches) wird aus websiteData bzw. den
+  // legal*-Spalten abgeleitet (shared/onboardingV2/checklist.ts).
+  studioProgress: json("studioProgress"),
   completedAt: bigint("completedAt", { mode: "number" }),
   createdAt: bigint("createdAt", { mode: "number" }).notNull(),
   updatedAt: bigint("updatedAt", { mode: "number" }).notNull(),
