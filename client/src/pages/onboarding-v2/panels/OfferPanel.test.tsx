@@ -99,6 +99,37 @@ describe("OfferEditor", () => {
     expect(html).toContain("Vorspeisen");
     expect(html).toContain("Suppe");
   });
+
+  test("Felder tragen maxLength passend zu OfferPatchSchema (Finding I2)", () => {
+    const servicesHtml = renderToStaticMarkup(
+      <OfferEditor
+        value={{
+          mode: "services",
+          headline: "Leistungen",
+          items: [{ title: "Beratung" }],
+        }}
+        onChange={() => {}}
+      />
+    );
+    expect(servicesHtml).toContain('maxLength="80"'); // Überschrift + Titel
+    expect(servicesHtml).toContain('maxLength="300"'); // Einleitung
+    expect(servicesHtml).toContain('maxLength="240"'); // Beschreibung
+    expect(servicesHtml).toContain('maxLength="40"'); // Preis
+
+    const menuHtml = renderToStaticMarkup(
+      <OfferEditor
+        value={{
+          mode: "menu",
+          categories: [
+            { name: "Vorspeisen", items: [{ name: "Suppe", price: "5 €" }] },
+          ],
+        }}
+        onChange={() => {}}
+      />
+    );
+    expect(menuHtml).toContain('maxLength="60"'); // Kategoriename
+    expect(menuHtml).toContain('maxLength="200"'); // Positions-Beschreibung
+  });
 });
 
 describe("validateOffer", () => {

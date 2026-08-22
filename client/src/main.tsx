@@ -1,3 +1,5 @@
+import "@shared/zodLocale";
+
 // ── Defensive Node-Patches gegen Translate/Extension-Interferenzen ─────────
 // Browser-Übersetzer (Google Translate) und manche Extensions (Grammarly,
 // Password-Manager) manipulieren DOM-Text-Knoten direkt. React's reconciler

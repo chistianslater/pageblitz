@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "@shared/zodLocale";
 import compression from "compression";
 import express from "express";
 import { createServer } from "http";

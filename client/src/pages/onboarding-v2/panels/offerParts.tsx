@@ -137,6 +137,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
           id="pb-offer-services-headline"
           type="text"
           className="pb-studio-input"
+          maxLength={80}
           value={value.headline}
           aria-invalid={value.headline.trim() === "" ? "true" : undefined}
           onChange={e => onChange({ ...value, headline: e.target.value })}
@@ -147,6 +148,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
         <textarea
           id="pb-offer-intro"
           className="pb-studio-textarea"
+          maxLength={300}
           value={value.intro ?? ""}
           onChange={e => onChange({ ...value, intro: e.target.value })}
         />
@@ -158,6 +160,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
             type="text"
             className="pb-studio-input"
             placeholder="Titel"
+            maxLength={80}
             value={item.title}
             aria-invalid={item.title.trim() === "" ? "true" : undefined}
             onChange={e => updateItem(i, { title: e.target.value })}
@@ -167,6 +170,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
             type="text"
             className="pb-studio-input"
             placeholder="Beschreibung (optional)"
+            maxLength={240}
             value={item.description ?? ""}
             onChange={e => updateItem(i, { description: e.target.value })}
           />
@@ -175,6 +179,7 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
             type="text"
             className="pb-studio-input"
             placeholder="Preis (optional)"
+            maxLength={40}
             value={item.price ?? ""}
             onChange={e => updateItem(i, { price: e.target.value })}
           />
@@ -280,6 +285,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
           id="pb-offer-categories-headline"
           type="text"
           className="pb-studio-input"
+          maxLength={80}
           value={value.headline ?? ""}
           onChange={e => onChange({ ...value, headline: e.target.value })}
         />
@@ -292,6 +298,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
               type="text"
               className="pb-studio-input"
               placeholder="Kategoriename"
+              maxLength={60}
               value={category.name}
               aria-invalid={category.name.trim() === "" ? "true" : undefined}
               onChange={e => updateCategoryName(ci, e.target.value)}
@@ -313,6 +320,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
                 type="text"
                 className="pb-studio-input"
                 placeholder="Name"
+                maxLength={80}
                 value={item.name}
                 aria-invalid={item.name.trim() === "" ? "true" : undefined}
                 onChange={e => updateItem(ci, ii, { name: e.target.value })}
@@ -322,6 +330,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
                 type="text"
                 className="pb-studio-input"
                 placeholder="Beschreibung (optional)"
+                maxLength={200}
                 value={item.description ?? ""}
                 onChange={e =>
                   updateItem(ci, ii, { description: e.target.value })
@@ -332,6 +341,7 @@ function CategoriesEditor({ value, onChange }: CategoriesEditorProps) {
                 type="text"
                 className="pb-studio-input"
                 placeholder="Preis"
+                maxLength={40}
                 value={item.price}
                 aria-invalid={item.price.trim() === "" ? "true" : undefined}
                 onChange={e => updateItem(ci, ii, { price: e.target.value })}
