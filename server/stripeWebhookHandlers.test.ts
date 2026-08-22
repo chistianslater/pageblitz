@@ -130,7 +130,9 @@ describe("handleCheckoutCompleted", () => {
     const deps = makeDeps({ updateWebsite });
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    await expect(handleCheckoutCompleted(fakeSession(), deps)).resolves.toBeUndefined();
+    await expect(
+      handleCheckoutCompleted(fakeSession(), deps)
+    ).resolves.toBeUndefined();
 
     // createSubscription darf nur EINMAL laufen — ein 500er hier würde
     // Stripe zum Retry des gesamten Events verleiten und damit zu einer
