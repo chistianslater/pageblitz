@@ -17,6 +17,7 @@ vi.mock("../db", async importOriginal => {
     updateWebsite: vi.fn().mockResolvedValue(undefined),
     getGenerationJobByWebsiteId: vi.fn(),
     createGenerationJob: vi.fn().mockResolvedValue(501),
+    createOnboarding: vi.fn().mockResolvedValue(999),
   };
 });
 vi.mock("../generationV2/runJob", () => ({
@@ -79,6 +80,35 @@ describe("onboardingV2.getState", () => {
     expect(s.checklist.find(i => i.id === "legal")?.status).toBe("open");
     expect(s.checkoutReady).toBe(false);
     expect(s.job).toBeNull();
+    expect(s.legacy).toBe(false);
+  });
+});
+
+describe("onboardingV2 — Legacy-Dokument (v1)", () => {
+  beforeEach(() => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "preview",
+      businessId: 7,
+      websiteData: { hero: {} },
+      customerEmail: null,
+    } as any);
+  });
+  test("getState: doc null, legacy true, kein Polling-relevanter Job", async () => {
+    const s = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.getState({ token: "tok" });
+    expect(s.doc).toBeNull();
+    expect(s.legacy).toBe(true);
+  });
+  test("ensureGeneration: BAD_REQUEST, kein neuer Job", async () => {
+    await expect(
+      appRouter
+        .createCaller(ctx())
+        .onboardingV2.ensureGeneration({ token: "tok" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
   });
 });
 
@@ -128,6 +158,23 @@ describe("onboardingV2.ensureGeneration", () => {
       .onboardingV2.ensureGeneration({ token: "tok" });
     expect(r).toEqual({ jobId: 77, status: "processing" });
     expect(runWebsiteGenerationV2Job).not.toHaveBeenCalled();
+  });
+  test("zwei gleichzeitige Aufrufe → In-Flight-Lock verhindert Doppelstart", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "preview",
+      businessId: 7,
+      websiteData: null,
+    } as any);
+    const caller = appRouter.createCaller(ctx());
+    const [a, b] = await Promise.all([
+      caller.onboardingV2.ensureGeneration({ token: "tok" }),
+      caller.onboardingV2.ensureGeneration({ token: "tok" }),
+    ]);
+    expect(mockedDb.createGenerationJob).toHaveBeenCalledTimes(1);
+    expect(a.jobId).toBe(b.jobId);
+    expect(a.jobId).toBe(501);
   });
 });
 
@@ -183,5 +230,21 @@ describe("onboardingV2.selectStylePack", () => {
         .createCaller(ctx())
         .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+  test("ohne Onboarding-Row → legt Row mit studioProgress an, statt zu updaten", async () => {
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
+    const s = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" });
+    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        status: "in_progress",
+        stepCurrent: 0,
+        studioProgress: { styleConfirmed: true },
+      })
+    );
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+    expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
   });
 });

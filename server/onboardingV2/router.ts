@@ -3,6 +3,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import {
   createGenerationJob,
+  createOnboarding,
   getBusinessById,
   getGenerationJobByWebsiteId,
   getOnboardingByWebsiteId,
@@ -24,6 +25,7 @@ import {
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
 import { applyStylePack, parsePackId } from "./applyPatch";
 import { loadStudioWebsite, type StudioWebsite } from "./ownership";
+import { withEnsureLock } from "./ensureLock";
 
 export interface StudioJob {
   id: number;
@@ -39,6 +41,8 @@ export interface StudioState {
   category: string;
   stylePackId: PackId | null;
   doc: WebsiteDataV2 | null;
+  /** true = websiteData ist ein v1-Dokument; Studio zeigt eine Meldung statt Generierungs-Screen (Finding #3). */
+  legacy: boolean;
   job: StudioJob | null;
   checklist: ChecklistItem[];
   checkoutReady: boolean;
@@ -60,7 +64,7 @@ async function buildState(
   loaded: StudioWebsite,
   progressOverride?: StudioProgress
 ): Promise<StudioState> {
-  const { website, doc } = loaded;
+  const { website, doc, hasLegacyDoc } = loaded;
   const [business, onboarding, job] = await Promise.all([
     getBusinessById(website.businessId),
     getOnboardingByWebsiteId(website.id),
@@ -82,6 +86,7 @@ async function buildState(
     category: doc?.businessCategory ?? business?.category ?? "",
     stylePackId: doc?.stylePackId ?? null,
     doc,
+    legacy: hasLegacyDoc,
     job: job
       ? {
           id: job.id,
@@ -107,16 +112,33 @@ function requireDoc(loaded: StudioWebsite): WebsiteDataV2 {
   return loaded.doc;
 }
 
+/**
+ * Websites ohne onboarding_responses-Zeile (z. B. per Admin/Outreach
+ * angelegt) hätten sonst kein Ziel für das UPDATE und würden den Haken beim
+ * nächsten Laden wieder verlieren (Finding #5) — deshalb bei fehlender Zeile
+ * eine anlegen statt nur zu updaten.
+ */
 async function mergeStudioProgress(
   websiteId: number,
   patch: StudioProgress
 ): Promise<StudioProgress> {
   const onboarding = await getOnboardingByWebsiteId(websiteId);
   const next = { ...parseStudioProgress(onboarding?.studioProgress), ...patch };
-  await updateOnboarding(websiteId, {
-    studioProgress: next,
-    updatedAt: Date.now(),
-  });
+  if (onboarding) {
+    await updateOnboarding(websiteId, {
+      studioProgress: next,
+      updatedAt: Date.now(),
+    });
+  } else {
+    await createOnboarding({
+      websiteId,
+      status: "in_progress",
+      stepCurrent: 0,
+      studioProgress: next,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  }
   return next;
 }
 
@@ -127,34 +149,49 @@ export const onboardingV2Router = router({
   }),
 
   /**
-   * Idempotent: v2-Dokument da → "completed" ohne neuen Job; aktiver Job →
-   * zurückgeben; sonst neuen Job anlegen und den v2-Runner im Hintergrund
-   * starten (Fehler landen im Job, nicht im Request).
+   * Idempotent: v2-Dokument da → "completed" ohne neuen Job; v1-Dokument →
+   * BAD_REQUEST (kein Überschreiben eines Legacy-Dokuments, Finding #3);
+   * aktiver Job → zurückgeben; sonst neuen Job anlegen und den v2-Runner im
+   * Hintergrund starten (Fehler landen im Job, nicht im Request). Der
+   * Job-Anlegen-Zweig läuft hinter einem In-Flight-Lock pro websiteId, damit
+   * zwei parallele Aufrufe nicht zwei Jobs erzeugen (Finding #4).
    */
   ensureGeneration: publicProcedure
     .input(tokenInput)
     .mutation(async ({ input, ctx }) => {
-      const { website, doc } = await loadStudioWebsite(input.token, ctx.user);
-      if (doc) return { jobId: null, status: "completed" as const };
-      const existing = await getGenerationJobByWebsiteId(website.id);
-      if (
-        existing &&
-        (existing.status === "pending" || existing.status === "processing")
-      ) {
-        return { jobId: existing.id, status: existing.status };
-      }
-      const jobId = await createGenerationJob({
-        websiteId: website.id,
-        status: "pending",
-        progress: 0,
-      });
-      runWebsiteGenerationV2Job(jobId, website.id).catch(err =>
-        console.error(
-          `[onboardingV2] Job ${jobId} unerwartet abgebrochen:`,
-          err
-        )
+      const { website, doc, hasLegacyDoc } = await loadStudioWebsite(
+        input.token,
+        ctx.user
       );
-      return { jobId, status: "pending" as const };
+      if (doc) return { jobId: null, status: "completed" as const };
+      if (hasLegacyDoc) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Diese Website nutzt noch das alte Format und kann im Studio nicht bearbeitet werden.",
+        });
+      }
+      return withEnsureLock(website.id, async () => {
+        const existing = await getGenerationJobByWebsiteId(website.id);
+        if (
+          existing &&
+          (existing.status === "pending" || existing.status === "processing")
+        ) {
+          return { jobId: existing.id, status: existing.status };
+        }
+        const jobId = await createGenerationJob({
+          websiteId: website.id,
+          status: "pending",
+          progress: 0,
+        });
+        runWebsiteGenerationV2Job(jobId, website.id).catch(err =>
+          console.error(
+            `[onboardingV2] Job ${jobId} unerwartet abgebrochen:`,
+            err
+          )
+        );
+        return { jobId, status: "pending" as const };
+      });
     }),
 
   getStyleCandidates: publicProcedure
@@ -191,7 +228,11 @@ export const onboardingV2Router = router({
       invalidateSsrCache(loaded.website.slug);
       return buildState(
         input.token,
-        { website: { ...loaded.website, websiteData: next as any }, doc: next },
+        {
+          website: { ...loaded.website, websiteData: next as any },
+          doc: next,
+          hasLegacyDoc: false,
+        },
         mergedProgress
       );
     }),
