@@ -15,6 +15,7 @@ import { withEnsureLock } from "./ensureLock";
 import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
 import { contentProcedures } from "./routerContent";
 import { commerceProcedures } from "./routerCommerce";
+import { aiProcedures } from "./routerAi";
 
 const coreProcedures = {
   getState: publicProcedure.input(tokenInput).query(async ({ input, ctx }) => {
@@ -102,4 +103,5 @@ export const onboardingV2Router = router({
   ...coreProcedures,
   ...contentProcedures,
   ...commerceProcedures,
+  ...aiProcedures,
 });

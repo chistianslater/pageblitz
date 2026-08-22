@@ -386,10 +386,10 @@ export async function suggestOffer(args: {
 }
 
 /**
- * Prozesslokales Rate-Limit gegen KI-Kostenexplosion: max. 30
- * Vorschlags-Aufrufe pro Website und rollierender Stunde. Bewusst ohne
- * Persistenz (Instanz-Neustart setzt zurück) — reicht für den Zweck, ein
- * einzelnes Studio-Fenster nicht mit KI-Aufrufen zu fluten.
+ * Prozesslokales Rate-Limit gegen KI-Kostenexplosion: pro Website, Bucket
+ * (z. B. "suggest", "aiEdit") und rollierender Stunde ein eigenes Kontingent.
+ * Bewusst ohne Persistenz (Instanz-Neustart setzt zurück) — reicht für den
+ * Zweck, ein einzelnes Studio-Fenster nicht mit KI-Aufrufen zu fluten.
  */
 interface QuotaEntry {
   count: number;
@@ -398,18 +398,26 @@ interface QuotaEntry {
 
 const QUOTA_WINDOW_MS = 60 * 60 * 1000;
 const QUOTA_LIMIT = 30;
-const suggestQuota = new Map<number, QuotaEntry>();
+const quota = new Map<string, QuotaEntry>();
 
-export function assertSuggestQuota(
+/**
+ * Generalisiertes Rate-Limit: eigenes Kontingent je (bucket, websiteId).
+ * Genutzt von `assertSuggestQuota` unten (bucket "suggest") und von
+ * `server/onboardingV2/aiEdit.ts` (bucket "aiEdit", Limit 20/h).
+ */
+export function assertQuota(
+  bucket: string,
   websiteId: number,
+  limit: number,
   now: number = Date.now()
 ): void {
-  const entry = suggestQuota.get(websiteId);
+  const key = `${bucket}:${websiteId}`;
+  const entry = quota.get(key);
   if (!entry || now - entry.windowStart >= QUOTA_WINDOW_MS) {
-    suggestQuota.set(websiteId, { count: 1, windowStart: now });
+    quota.set(key, { count: 1, windowStart: now });
     return;
   }
-  if (entry.count >= QUOTA_LIMIT) {
+  if (entry.count >= limit) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
       message: "Zu viele KI-Anfragen — bitte in einer Stunde erneut.",
@@ -418,7 +426,14 @@ export function assertSuggestQuota(
   entry.count += 1;
 }
 
-/** Nur für Tests: setzt das prozesslokale Rate-Limit zurück. */
+export function assertSuggestQuota(
+  websiteId: number,
+  now: number = Date.now()
+): void {
+  assertQuota("suggest", websiteId, QUOTA_LIMIT, now);
+}
+
+/** Nur für Tests: setzt das prozesslokale Rate-Limit (alle Buckets) zurück. */
 export function resetSuggestQuotaForTests(): void {
-  suggestQuota.clear();
+  quota.clear();
 }
