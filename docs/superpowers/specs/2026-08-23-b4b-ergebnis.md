@@ -101,3 +101,13 @@ Grep-Basis: `grep -rn "<Spalte>" server client shared --include=*.ts --include=*
 - Demo-Rechtsseiten (`/demo/:pack/impressum|datenschutz`) fallen auf SPA/404 durch.
 - a11y-/Perf-Pass, `prefersMenu`, Team-Panel, Unterseiten-Add-on (Spec §2.8, aufgeschoben).
 - `server/contrast.test.ts`-Erwartungen an `getContrastColor()` korrigieren (kein Env-Fail, echte Wertabweichung).
+
+## Nachtrag Final-Review (f829bf1)
+
+Fixwelle nach dem Gesamt-Review: tote Dateien `client/src/components/AIChatBox.tsx`, `client/src/components/SkeletonOverlay.tsx`, `client/src/lib/designTokens.ts`, `client/src/lib/layoutUtils.ts`, `server/_core/imageGeneration.ts` gelöscht; tote Importe (`ENV`, `invokeLLM`, `getOutreachEmailByWebsiteId`) aus `server/routers.ts`; veraltete Kommentare (`VariantPreviewPage`, `PremiumLayoutsV2`) korrigiert.
+
+Zusätzliche B4c-Punkte aus dem Gesamt-Review:
+- `onboarding.regenerateLegalPages` ist `publicProcedure` mit Schreibzugriff auf beliebige `websiteId` und liefert kein `regenerated`-Feld → `LegalPage` zeigt immer den „unvollständig“-Hinweis (tsc-Altfehler `LegalPage.tsx:27/31`). Auth-Gate prüfen, `regenerated: true` zurückgeben oder Client anpassen.
+- `website.get` per Slug migriert `colorScheme` nicht (nur `customer.getMyWebsites`) → `LegalPage` im CSR-Fallback für v2-Sites immer Fallback-Blau; entfällt mit der Umstellung auf die Pack-Palette.
+- Vorbestehend tote Dateien (nicht durch B4b): `GoogleRatingBadge.tsx`, `IndustryIcon.tsx` + `shared/industryIcons.ts`, `ManusDialog.tsx`, `Map.tsx`, `hooks/useAnimations.ts`, `lib/industryStats.ts`, `server/_core/dataApi.ts`, `server/_core/voiceTranscription.ts`; tote Exporte `server/legalGenerator.ts patchWebsiteData`, `lifecycle.resolveSeedByPreviewToken`; ungenutzte Importe `countBusinesses` (routers.ts), `like`/Typen in db.ts. Einmalig `npx knip` erwägen.
+- `onboarding_responses`-v1-Inhaltsspalten werden nur noch konditional in `db.createOnboarding` gespreadet → Spread entfernen, dann droppen; `businessName`/`businessCategory` behalten.
