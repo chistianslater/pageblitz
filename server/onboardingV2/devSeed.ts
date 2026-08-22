@@ -23,7 +23,15 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
     return;
   }
   const pack = typeof req.query.pack === "string" ? req.query.pack : "werkbank";
-  const fixture = req.query.fixture === "minimal" ? "minimal" : "full";
+  // "features" aktiviert alle drei Add-ons im Dokument (siehe
+  // getFixture/DEMO_FEATURES) — damit zeigt die Studio-Live-Preview
+  // (/preview-ssr/:token) die Inseln (Kontaktformular, Chat-/Termin-FABs).
+  const fixture =
+    req.query.fixture === "minimal"
+      ? "minimal"
+      : req.query.fixture === "features"
+        ? "features"
+        : "full";
   if (!(PACK_IDS as readonly string[]).includes(pack)) {
     res.status(400).send(`Unbekanntes Pack: "${pack}"`);
     return;

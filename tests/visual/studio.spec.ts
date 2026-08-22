@@ -170,6 +170,65 @@ test.describe("Studio", () => {
     );
   });
 
+  test("KI-Chat Diff: Senden → Vorschlag → Übernehmen", async ({
+    page,
+    request,
+  }) => {
+    // PB_LLM_MOCK=1 (siehe playwright.config.ts webServer.command) macht
+    // aiEdit ohne echten LLM-Aufruf deterministisch — mockAiEditResponse
+    // (server/onboardingV2/aiEdit.ts) hängt der Hero-Headline ein "✓" an
+    // und liefert dafür immer einen nicht-leeren Diff zurück, unabhängig
+    // vom gesendeten Text.
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // Auf den KI-Chat-Bereich scoped, statt einer globalen Rollen-Suche: die
+    // Checkliste enthält Buttons mit langem, verkettetem Accessible-Namen
+    // (Titel + Hinweistext, siehe Checklist.tsx) und ein `getByRole("button",
+    // { name: "Senden" })` ohne Scope trifft dort per Substring-Match einen
+    // Checklisten-Eintrag statt (nur) den KI-Chat-Button (strict-mode
+    // violation).
+    const aiChat = page.locator(".pb-studio-ai");
+    await aiChat
+      .getByLabel("Was soll anders sein?")
+      .fill("Mach die Überschrift knackiger");
+    await Promise.all([
+      page.waitForResponse(
+        res => res.url().includes("onboardingV2.aiEdit") && res.ok()
+      ),
+      aiChat.getByRole("button", { name: "Senden" }).click(),
+    ]);
+
+    const diffList = page.locator(".pb-studio-ai-diff");
+    await expect(diffList).toBeVisible();
+
+    await Promise.all([
+      page.waitForResponse(
+        res => res.url().includes("onboardingV2.applyAiEdit") && res.ok()
+      ),
+      aiChat.getByRole("button", { name: "Übernehmen" }).click(),
+    ]);
+
+    // Vorschlag ist übernommen: Diff-Karte verschwindet, keine Fehlermeldung
+    // hängt vom vorherigen Senden/Übernehmen zurück (Review-Fund
+    // Fix-Runde 1, siehe AiChat.tsx `busy`-Kommentar).
+    await expect(diffList).toHaveCount(0);
+    await expect(page.locator(".pb-studio-ai [role='alert']")).toHaveCount(0);
+
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator(".pb-studio-rail")).toHaveScreenshot(
+      "studio-ai-chat-desktop.png",
+      { animations: "disabled" }
+    );
+  });
+
   test("Checkout-Flow: Rechtliches → Checkout-bereit → Reload", async ({
     page,
     request,

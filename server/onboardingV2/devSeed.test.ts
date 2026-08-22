@@ -94,4 +94,19 @@ describe("/dev/studio-seed", () => {
       (await request(app()).get("/dev/studio-seed?pack=disco")).status
     ).toBe(400);
   });
+  test("fixture=features: Slug trägt Fixture-Kennung, Dokument bekommt aktive Add-ons", async () => {
+    mockedDb.getWebsiteBySlug.mockResolvedValue(undefined);
+    const res = await request(app()).get(
+      "/dev/studio-seed?pack=werkbank&fixture=features"
+    );
+    expect(res.status).toBe(302);
+    expect(mockedDb.createGeneratedWebsite).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: "studio-seed-werkbank-features",
+        websiteData: expect.objectContaining({
+          features: { contactForm: true, aiChat: true, booking: true },
+        }),
+      })
+    );
+  });
 });

@@ -146,8 +146,9 @@ export function AddonsPanel({
     >
       <AddonsList value={value} onToggle={handleToggle} interval="yearly" />
       <p style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
-        KI-Chat und Terminbuchung werden nach der Freischaltung aktiviert; Team
-        folgt.
+        Kontaktformular erscheint sofort in der Vorschau; KI-Chat &amp;
+        Terminbuchung werden nach der Freischaltung aktiv (die Vorschau zeigt
+        schon jetzt die Buttons). Team folgt.
       </p>
       {updateAddons.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
