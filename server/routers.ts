@@ -157,7 +157,7 @@ import {
 } from "./generationV2/runJob";
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
-import { mapGmbOpeningHoursToV2 } from "./generationV2/gmbOpeningHours";
+import { buildV2GenerationFacts } from "./generationV2/facts";
 import { PACK_IDS, WebsiteDataV2Schema } from "@shared/siteContract/schema";
 import { SECTION_TYPES } from "@shared/siteContract/types";
 import type {
@@ -1644,16 +1644,13 @@ function getFallbackWebsiteData(
 /**
  * Ab Cutover (Plan B4a) läuft die Generierung ausschließlich über den
  * v2-Pfad — kein Feature-Flag mehr im Sinne einer Laufzeit-Umschaltung.
- * `V1_BODY_DISABLED` ist eine reine Doku-/Struktur-Konstante (kein Env-Var,
- * keine Bedingung, die je anders ausgewertet wird): ein einfacher `return`
- * vor dem v1-Rumpf würde ihn für TypeScript als unreachable markieren, was
- * die CFG-basierte Null-Narrowing für `website`/`business` im Rumpf abschaltet
- * (bestätigter tsc-Effekt) und dutzende neue TS18048-Fehler erzeugen würde,
- * ohne dass der Rumpf jemals wieder ausgeführt wird. Der `if`-Umweg hält den
- * Rumpf für den Checker "erreichbar" (normale Typprüfung) und läuft trotzdem
- * nie — `runWebsiteGenerationV2Job` hat dieselbe Job-Semantik/Signatur wie
- * diese Funktion, die als schmaler Wrapper bestehen bleibt, damit bestehende
- * Aufrufer (`selfService.generateWebsiteAsync`, `outreach.queueBusinesses`,
+ * `V1_BODY_DISABLED` ist eine reine Doku-/Struktur-Konstante statt eines
+ * nackten `return` vor dem v1-Rumpf: der `if`-Umweg hält den Rumpf für den
+ * Type-Checker erreichbar (normale Typprüfung, keine Unreachable-/
+ * Narrowing-Diagnostik) und läuft trotzdem nie — `runWebsiteGenerationV2Job`
+ * hat dieselbe Job-Semantik/Signatur wie diese Funktion, die als schmaler
+ * Wrapper bestehen bleibt, damit bestehende Aufrufer
+ * (`selfService.generateWebsiteAsync`, `outreach.queueBusinesses`,
  * `pipelineGenerationBridge.ts`) unverändert bleiben. Der v1-Rumpf wird in
  * Plan B4b gelöscht.
  */
@@ -3418,9 +3415,10 @@ export const appRouter = router({
     // v2-Regenerierung (Task 3, Cutover): gleiche Content-Pipeline wie die
     // Erstgenerierung (server/generationV2) statt der alten LLM-Prompt-Pipeline
     // hier inline — Pack-Rotation über selectPack, echte GMB-/Stock-Bilder über
-    // resolveV2Images, Fakten (Kontakt/Rating) werden NACH der Schema-Validierung
-    // gemergt (siehe generateSiteContent.ts). Neuer Slug + Token: der bisherige
-    // Preview-Link wird ungültig (Hinweistext in WebsitesPage.tsx).
+    // resolveV2Images, Fakten-Mapping über buildV2GenerationFacts (geteilt mit
+    // runWebsiteGenerationV2 in generationV2/runJob.ts, siehe dort). Neuer
+    // Slug + Token: der bisherige Preview-Link wird ungültig (Hinweistext in
+    // WebsitesPage.tsx).
     regenerate: adminProcedure
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
@@ -3440,37 +3438,25 @@ export const appRouter = router({
         const category = business.category || "Dienstleistung";
         const industryKey = await classifyIndustry(category, business.name);
         const packId = await selectPack(category, industryKey);
+        const businessForFacts = {
+          ...business,
+          openingHours: business.openingHours as string[] | null,
+        };
         const images = await resolveV2Images(
-          { placeId: business.placeId, name: business.name },
+          businessForFacts,
           category,
           industryKey
         );
-        const rating = business.rating ? parseFloat(business.rating) : NaN;
         const newSlug = slugify(business.name) + "-" + nanoid(4);
 
         const websiteData = await generateSiteContent({
           packId,
-          business: {
-            name: business.name,
+          ...buildV2GenerationFacts(
+            businessForFacts,
             category,
-            city: business.searchRegion || undefined,
-          },
-          facts: {
-            slug: newSlug,
-            businessCategory: category,
-            ...(Number.isFinite(rating)
-              ? { google: { rating, reviewCount: business.reviewCount || 0 } }
-              : {}),
-            contact: {
-              phone: business.phone || undefined,
-              email: business.email || undefined,
-              city: business.searchRegion || undefined,
-              openingHours: mapGmbOpeningHoursToV2(
-                business.openingHours as string[] | null
-              ),
-            },
-            images,
-          },
+            newSlug,
+            images
+          ),
         });
 
         const newPreviewToken = nanoid(32);

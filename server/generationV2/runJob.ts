@@ -10,7 +10,7 @@ import { getGmbPhotos } from "../gmbPhotos";
 import { getGalleryImages, getHeroImageUrl } from "../industryImages";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
-import { mapGmbOpeningHoursToV2 } from "./gmbOpeningHours";
+import { buildV2GenerationFacts } from "./facts";
 
 export interface V2JobBusiness {
   name: string;
@@ -73,34 +73,9 @@ export async function runWebsiteGenerationV2(
   await updateGenerationJob(jobId, { progress: 50 });
 
   const images = await resolveV2Images(business, category, industryKey);
-  const rating = business.rating ? parseFloat(business.rating) : NaN;
   const websiteData = await generateSiteContent({
     packId,
-    business: {
-      name: business.name,
-      category,
-      city: business.searchRegion || undefined,
-    },
-    facts: {
-      slug: website.slug,
-      businessCategory: category,
-      ...(Number.isFinite(rating)
-        ? { google: { rating, reviewCount: business.reviewCount || 0 } }
-        : {}),
-      contact: {
-        phone: business.phone || undefined,
-        email: business.email || undefined,
-        // business.address ist ein unstrukturierter Freitext-Fund (GMB-Adresse,
-        // Tabelle "businesses" hat kein street/zip/city) — die v2-ContactSchema
-        // erwartet street/zip/city getrennt. Ohne strukturierte Trennung wird
-        // hier bewusst NUR die Stadt aus searchRegion übernommen; street/zip
-        // bleiben leer, bis der Onboarding-Legal-Schritt (applyOnboardingToV2)
-        // sie mit echten, vom Nutzer bestätigten Werten füllt.
-        city: business.searchRegion || undefined,
-        openingHours: mapGmbOpeningHoursToV2(business.openingHours),
-      },
-      images,
-    },
+    ...buildV2GenerationFacts(business, category, website.slug, images),
   });
 
   await updateGenerationJob(jobId, { progress: 90 });

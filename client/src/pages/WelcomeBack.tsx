@@ -31,7 +31,7 @@ export default function WelcomeBack() {
       const { websiteId: _wid, previewToken } = await captureEmailMutation.mutateAsync({
         email: seedQuery.data.email,
       });
-      navigate(`/preview/${previewToken}/onboarding`);
+      navigate(`/onboarding/${previewToken}`);
     } catch (e: any) {
       setError(e?.message || "Etwas ist schiefgelaufen. Bitte versuch es in ein paar Minuten erneut.");
       setCreating(false);

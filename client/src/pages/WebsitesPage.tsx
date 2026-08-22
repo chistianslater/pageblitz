@@ -976,10 +976,10 @@ function ExternalWebsitesTab({
                             variant="outline"
                             size="sm"
                             asChild
-                            title="Onboarding-Chat öffnen – Inhalte/Bilder/Steps weiter bearbeiten"
+                            title="Im Studio bearbeiten"
                           >
                             <a
-                              href={`/preview/${w.previewToken}/onboarding`}
+                              href={`/onboarding/${w.previewToken}`}
                               target="_blank"
                               rel="noopener"
                             >
