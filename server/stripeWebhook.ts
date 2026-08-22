@@ -51,7 +51,9 @@ export function registerStripeWebhook(app: Express) {
 
       // Handle test events
       if (event.id.startsWith("evt_test_")) {
-        console.log("[Webhook] Test event detected, returning verification response");
+        console.log(
+          "[Webhook] Test event detected, returning verification response"
+        );
         return res.json({ verified: true });
       }
 
@@ -75,9 +77,14 @@ export function registerStripeWebhook(app: Express) {
             const subscription = event.data.object as Stripe.Subscription;
             const sub = await getSubscriptionByStripeId(subscription.id);
             if (sub) {
-              await updateSubscription(sub.id, { status: "canceled", updatedAt: Date.now() });
+              await updateSubscription(sub.id, {
+                status: "canceled",
+                updatedAt: Date.now(),
+              });
               await updateWebsite(sub.websiteId, { status: "inactive" });
-              console.log(`[Webhook] Subscription cancelled for website ${sub.websiteId}`);
+              console.log(
+                `[Webhook] Subscription cancelled for website ${sub.websiteId}`
+              );
             }
             break;
           }
@@ -90,9 +97,12 @@ export function registerStripeWebhook(app: Express) {
               let periodEnd: number | undefined;
               let cancelAtPeriodEnd = false;
               try {
-                const freshSub = await stripeCompat.subscriptions.retrieve(subscription.id);
+                const freshSub = await stripeCompat.subscriptions.retrieve(
+                  subscription.id
+                );
                 periodEnd = (freshSub as any).current_period_end;
-                cancelAtPeriodEnd = (freshSub as any).cancel_at_period_end === true;
+                cancelAtPeriodEnd =
+                  (freshSub as any).cancel_at_period_end === true;
               } catch (_) {}
 
               // Map Stripe status to local status
@@ -116,28 +126,47 @@ export function registerStripeWebhook(app: Express) {
                 updatedAt: Date.now(),
               });
 
-              if (newStatus === "active" || newStatus === "canceling" || newStatus === "trialing") {
+              if (
+                newStatus === "active" ||
+                newStatus === "canceling" ||
+                newStatus === "trialing"
+              ) {
                 const website = await getWebsiteById(sub.websiteId);
                 if (website?.customerEmail) {
-                  await updateWebsite(sub.websiteId, { status: "active", captureStatus: "converted" });
+                  await updateWebsite(sub.websiteId, {
+                    status: "active",
+                    captureStatus: "converted",
+                  });
                 } else {
-                  console.warn(`[Webhook] Skipping activation for website ${sub.websiteId}: no customerEmail`);
+                  console.warn(
+                    `[Webhook] Skipping activation for website ${sub.websiteId}: no customerEmail`
+                  );
                 }
               }
 
-              console.log(`[Webhook] Subscription updated for website ${sub.websiteId}: ${newStatus}${cancelAtPeriodEnd ? " (cancel_at_period_end)" : ""}`);
+              console.log(
+                `[Webhook] Subscription updated for website ${sub.websiteId}: ${newStatus}${cancelAtPeriodEnd ? " (cancel_at_period_end)" : ""}`
+              );
             }
             break;
           }
 
           case "invoice.payment_failed": {
             const invoice = event.data.object as any;
-            const subscriptionId = typeof invoice.subscription === "string" ? invoice.subscription : null;
+            const subscriptionId =
+              typeof invoice.subscription === "string"
+                ? invoice.subscription
+                : null;
             if (subscriptionId) {
               const sub = await getSubscriptionByStripeId(subscriptionId);
               if (sub) {
-                await updateSubscription(sub.id, { status: "past_due", updatedAt: Date.now() });
-                console.log(`[Webhook] Payment failed for website ${sub.websiteId}`);
+                await updateSubscription(sub.id, {
+                  status: "past_due",
+                  updatedAt: Date.now(),
+                });
+                console.log(
+                  `[Webhook] Payment failed for website ${sub.websiteId}`
+                );
               }
             }
             break;
