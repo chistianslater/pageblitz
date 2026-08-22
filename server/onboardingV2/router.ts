@@ -3,147 +3,20 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import {
   createGenerationJob,
-  createOnboarding,
   getBusinessById,
   getGenerationJobByWebsiteId,
-  getOnboardingByWebsiteId,
-  updateOnboarding,
-  updateWebsite,
 } from "../db";
 import { runWebsiteGenerationV2Job } from "../generationV2/runJob";
-import { invalidateSsrCache } from "../ssr/routes";
-import { assertV2SafeWrite } from "../v2WriteGuard";
 import { getConstitution } from "../../shared/stylePacks";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
-import {
-  deriveChecklistState,
-  isCheckoutReady,
-  parseStudioProgress,
-  type ChecklistItem,
-  type StudioProgress,
-} from "../../shared/onboardingV2/checklist";
-import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
 import { applyStylePack, parsePackId } from "./applyPatch";
-import { loadStudioWebsite, type StudioWebsite } from "./ownership";
+import { loadStudioWebsite } from "./ownership";
 import { withEnsureLock } from "./ensureLock";
-
-export interface StudioJob {
-  id: number;
-  status: "pending" | "processing" | "completed" | "failed";
-  progress: number;
-  error: string | null;
-}
-
-export interface StudioState {
-  websiteId: number;
-  token: string;
-  businessName: string;
-  category: string;
-  stylePackId: PackId | null;
-  doc: WebsiteDataV2 | null;
-  /** true = websiteData ist ein v1-Dokument; Studio zeigt eine Meldung statt Generierungs-Screen (Finding #3). */
-  legacy: boolean;
-  job: StudioJob | null;
-  checklist: ChecklistItem[];
-  checkoutReady: boolean;
-  customerEmail: string | null;
-}
+import { buildState, persistDoc, requireDoc } from "./state";
 
 const tokenInput = z.object({ token: z.string().min(1) });
 
-/**
- * Baut den vollständigen Studio-Zustand — eine Quelle der Wahrheit für Client-Reloads (Spec §6).
- *
- * `progressOverride` erlaubt es Aufrufern, die gerade erst geschriebenen
- * studioProgress-Werte direkt zu übergeben, statt sie per Extra-Query neu zu
- * lesen (vermeidet einen unnötigen Read-after-Write und macht den Rückgabewert
- * unabhängig davon, ob die DB den Write bereits sichtbar committed hat).
- */
-async function buildState(
-  token: string,
-  loaded: StudioWebsite,
-  progressOverride?: StudioProgress
-): Promise<StudioState> {
-  const { website, doc, hasLegacyDoc } = loaded;
-  const [business, onboarding, job] = await Promise.all([
-    getBusinessById(website.businessId),
-    getOnboardingByWebsiteId(website.id),
-    getGenerationJobByWebsiteId(website.id),
-  ]);
-  const checklist = deriveChecklistState(doc, {
-    legalOwner: onboarding?.legalOwner,
-    legalEmail: onboarding?.legalEmail,
-    legalStreet: onboarding?.legalStreet,
-    legalZip: onboarding?.legalZip,
-    legalCity: onboarding?.legalCity,
-    legalPhone: onboarding?.legalPhone,
-    studioProgress:
-      progressOverride ?? parseStudioProgress(onboarding?.studioProgress),
-  });
-  return {
-    websiteId: website.id,
-    token,
-    businessName: doc?.businessName ?? business?.name ?? "Dein Unternehmen",
-    category: doc?.businessCategory ?? business?.category ?? "",
-    stylePackId: doc?.stylePackId ?? null,
-    doc,
-    legacy: hasLegacyDoc,
-    job: job
-      ? {
-          id: job.id,
-          status: job.status,
-          progress: job.progress,
-          error: job.error ?? null,
-        }
-      : null,
-    checklist,
-    checkoutReady: isCheckoutReady(checklist, !!website.customerEmail),
-    customerEmail: website.customerEmail ?? null,
-  };
-}
-
-function requireDoc(loaded: StudioWebsite): WebsiteDataV2 {
-  if (!loaded.doc) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message:
-        "Die Website wurde noch nicht erstellt — bitte die Generierung abwarten.",
-    });
-  }
-  return loaded.doc;
-}
-
-/**
- * Websites ohne onboarding_responses-Zeile (z. B. per Admin/Outreach
- * angelegt) hätten sonst kein Ziel für das UPDATE und würden den Haken beim
- * nächsten Laden wieder verlieren (Finding #5) — deshalb bei fehlender Zeile
- * eine anlegen statt nur zu updaten.
- */
-async function mergeStudioProgress(
-  websiteId: number,
-  patch: StudioProgress
-): Promise<StudioProgress> {
-  const onboarding = await getOnboardingByWebsiteId(websiteId);
-  const next = { ...parseStudioProgress(onboarding?.studioProgress), ...patch };
-  if (onboarding) {
-    await updateOnboarding(websiteId, {
-      studioProgress: next,
-      updatedAt: Date.now(),
-    });
-  } else {
-    await createOnboarding({
-      websiteId,
-      status: "in_progress",
-      stepCurrent: 0,
-      studioProgress: next,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-  }
-  return next;
-}
-
-export const onboardingV2Router = router({
+const coreProcedures = {
   getState: publicProcedure.input(tokenInput).query(async ({ input, ctx }) => {
     const loaded = await loadStudioWebsite(input.token, ctx.user);
     return buildState(input.token, loaded);
@@ -217,24 +90,12 @@ export const onboardingV2Router = router({
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
       const next = applyStylePack(doc, packId);
-      assertV2SafeWrite(loaded.website.websiteData, next);
       // layoutStyle nur als Kompatibilitäts-Spiegel für Admin-Listen; v2-Renderer lesen stylePackId.
-      await updateWebsite(loaded.website.id, {
-        websiteData: next as any,
-        layoutStyle: packId,
+      return persistDoc(input.token, loaded, next, {
+        progress: { styleConfirmed: true },
+        extra: { layoutStyle: packId },
       });
-      const mergedProgress = await mergeStudioProgress(loaded.website.id, {
-        styleConfirmed: true,
-      });
-      invalidateSsrCache(loaded.website.slug);
-      return buildState(
-        input.token,
-        {
-          website: { ...loaded.website, websiteData: next as any },
-          doc: next,
-          hasLegacyDoc: false,
-        },
-        mergedProgress
-      );
     }),
-});
+};
+
+export const onboardingV2Router = router({ ...coreProcedures });

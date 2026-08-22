@@ -82,6 +82,49 @@ describe("onboardingV2.getState", () => {
     expect(s.job).toBeNull();
     expect(s.legacy).toBe(false);
   });
+
+  test("liefert legal (E-Mail aus customerEmail vorbelegt), addOns, uploadedPhotos, openingHours", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "preview",
+      businessId: 7,
+      customerEmail: "kunde@x.de",
+      websiteData: {
+        ...v2,
+        sections: [
+          ...v2.sections,
+          { type: "contact", openingHours: [{ day: "Mo", hours: "9–17" }] },
+        ],
+      },
+    } as any);
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      websiteId: 42,
+      legalOwner: "Max",
+      legalEmail: null,
+      addOnGallery: true,
+      photoUrls: ["https://u/1.jpg"],
+    } as any);
+    const s = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.getState({ token: "tok" });
+    expect(s.legal).toMatchObject({
+      legalOwner: "Max",
+      legalEmail: "kunde@x.de",
+      legalPhone: "",
+    });
+    expect(s.addOns).toEqual({
+      contactForm: false,
+      gallery: true,
+      menu: false,
+      pricelist: false,
+      aiChat: false,
+      booking: false,
+      team: false,
+    });
+    expect(s.uploadedPhotos).toEqual(["https://u/1.jpg"]);
+    expect(s.openingHours).toEqual([{ day: "Mo", hours: "9–17" }]);
+  });
 });
 
 describe("onboardingV2 — Legacy-Dokument (v1)", () => {
