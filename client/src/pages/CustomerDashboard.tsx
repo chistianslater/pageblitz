@@ -334,7 +334,14 @@ export default function CustomerDashboard() {
     myWebsites.find(e => e.website.id === selectedWebsiteId) || myWebsites[0];
   const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as any;
-  const previewToken = (website as any).previewToken as string;
+  // Null-Guard (Final-Review Minor, Abschluss-Fixwelle B): previewToken kann
+  // fehlen (z. B. nach manueller DB-Korrektur) — ohne Guard rendern die
+  // Studio-Links `/onboarding/undefined` statt eines funktionierenden Links
+  // oder eines Hinweises.
+  const previewToken = ((website as any).previewToken as
+    | string
+    | null
+    | undefined) ?? null;
   // Sync contactEmail – useEffect is above early returns to satisfy Rules of Hooks
   const storedContactEmail = (website as any).contactEmail as
     | string
@@ -464,13 +471,23 @@ export default function CustomerDashboard() {
               Website öffnen
             </a>
           )}
-          <a
-            href={`/onboarding/${previewToken}`}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
-          >
-            <Sparkles className="w-4 h-4" />
-            Im Studio bearbeiten
-          </a>
+          {previewToken ? (
+            <a
+              href={`/onboarding/${previewToken}`}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+            >
+              <Sparkles className="w-4 h-4" />
+              Im Studio bearbeiten
+            </a>
+          ) : (
+            <span
+              title="Kein Studio-Zugang gefunden — bitte Support kontaktieren."
+              className="flex items-center gap-2 bg-slate-700/60 text-slate-400 text-sm px-4 py-2 rounded-xl cursor-not-allowed"
+            >
+              <Sparkles className="w-4 h-4" />
+              Studio nicht verfügbar
+            </span>
+          )}
           <a
             href="/my-account"
             className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-xl transition-colors"
@@ -599,14 +616,19 @@ export default function CustomerDashboard() {
         {/* Tab Content */}
         <div className="flex-1 min-w-0 px-4 lg:px-6 py-4 lg:py-6">
           {/* Preview Tab */}
-          {activeTab === "preview" && (
-            <PreviewTab
-              slug={website.slug}
-              status={website.status}
-              previewToken={previewToken}
-              reloadKey={previewKey}
-            />
-          )}
+          {activeTab === "preview" &&
+            (previewToken ? (
+              <PreviewTab
+                slug={website.slug}
+                status={website.status}
+                previewToken={previewToken}
+                reloadKey={previewKey}
+              />
+            ) : (
+              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 text-slate-400 text-sm">
+                Kein Studio-Zugang gefunden — bitte Support kontaktieren.
+              </div>
+            ))}
 
           {/* Settings Tab */}
           {activeTab === "settings" && (
@@ -679,7 +701,11 @@ export default function CustomerDashboard() {
                 <Sparkles className="w-4 h-4 text-pink-400" />
                 Add-ons
               </h2>
-              {onboardingData !== undefined || onboardingDataError ? (
+              {!previewToken ? (
+                <div className="text-slate-400 text-sm">
+                  Kein Studio-Zugang gefunden — bitte Support kontaktieren.
+                </div>
+              ) : onboardingData !== undefined || onboardingDataError ? (
                 <AddonsTab
                   websiteId={website.id}
                   website={website}
@@ -711,7 +737,6 @@ export default function CustomerDashboard() {
           {activeTab === "appointments" && (
             <AppointmentsTab
               websiteId={website.id}
-              website={website}
               onGoToAddons={() => setActiveTab("addons")}
             />
           )}
@@ -1477,14 +1502,21 @@ export default function CustomerDashboard() {
                       erscheinen Impressum und Datenschutzerklärung sofort in
                       der Vorschau.
                     </p>
-                    <a
-                      href={`/onboarding/${previewToken}?panel=legal`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
-                    >
-                      Im Studio ausfüllen →
-                    </a>
+                    {previewToken ? (
+                      <a
+                        href={`/onboarding/${previewToken}?panel=legal`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                      >
+                        Im Studio ausfüllen →
+                      </a>
+                    ) : (
+                      <p className="text-slate-500 text-xs">
+                        Kein Studio-Zugang gefunden — bitte Support
+                        kontaktieren.
+                      </p>
+                    )}
                     <button
                       onClick={() => refetch()}
                       className="w-full py-2 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"

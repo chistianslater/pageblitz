@@ -167,7 +167,15 @@ export function registerChatRoutes(app: Express) {
         .where(eq(generatedWebsites.slug, slug))
         .limit(1);
 
-      if (!website || !website.addOnAiChat) {
+      // Eine Quelle der Wahrheit ist die Spalte addOnAiChat NICHT mehr allein
+      // (Final-Review Befund 4): v2-Dokumente können den Chat auch nur über
+      // websiteData.features.aiChat freigeschaltet haben (z. B. wenn der
+      // Studio-Schreibpfad die Spalte noch nicht nachgezogen hatte, oder für
+      // v1-Kompatibilität umgekehrt). Beide Quellen ODER-verknüpft, damit
+      // keine der beiden für sich allein den Widget-Zugriff sperrt.
+      const featuresAiChat =
+        (website?.websiteData as any)?.features?.aiChat === true;
+      if (!website || (!website.addOnAiChat && !featuresAiChat)) {
         return res.status(404).json({ error: "chat_not_available" });
       }
 

@@ -4,6 +4,7 @@ import { updateWebsite } from "../db";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
 import { applyOnboardingToV2 } from "../onboardingV2Patch";
 import { applyFeatures } from "./applyPatch";
+import { applyFeatureFlags } from "./applyFeatures";
 import {
   AddonsPatchSchema,
   LegalPatchSchema,
@@ -134,14 +135,44 @@ export const commerceProcedures = {
       });
 
       if (loaded.doc) {
-        const next = applyFeatures(loaded.doc, {
+        const featurePatch = {
           contactForm: addOns.contactForm,
           aiChat: addOns.aiChat,
           booking: addOns.booking,
+        };
+        // Eine Quelle der Wahrheit (Final-Review Befund 4): applyFeatureFlags
+        // schreibt websiteData.features.* UND die Spalten addOnAiChat/
+        // addOnBooking auf generatedWebsites in einem Write (inkl. Guard +
+        // SSR-Cache-Invalidierung) — vorher schrieb dieser Pfad nur
+        // `features`, die Spalte blieb stehen und `/api/chat/:slug/message`
+        // (chatRoutes.ts, gatet auf die Spalte) antwortete 404, obwohl das
+        // Widget laut `features.aiChat` sichtbar war.
+        await applyFeatureFlags(loaded.website.id, featurePatch);
+        // applyFeatures ist pur/deterministisch — dieselbe Berechnung hier
+        // (statt eines zweiten DB-Reads) baut den Response-State exakt so,
+        // wie applyFeatureFlags ihn gerade persistiert hat.
+        const next = applyFeatures(loaded.doc, featurePatch);
+        const progress = await mergeStudioProgress(loaded.website.id, {
+          addonsReviewed: true,
         });
-        return persistDoc(input.token, loaded, next, {
-          progress: { addonsReviewed: true },
-        });
+        return buildState(
+          input.token,
+          {
+            ...loaded,
+            website: {
+              ...loaded.website,
+              websiteData: next as any,
+              ...(addOns.aiChat !== undefined
+                ? { addOnAiChat: addOns.aiChat }
+                : {}),
+              ...(addOns.booking !== undefined
+                ? { addOnBooking: addOns.booking }
+                : {}),
+            },
+            doc: next,
+          },
+          progress
+        );
       }
 
       const progress = await mergeStudioProgress(loaded.website.id, {

@@ -25,6 +25,7 @@ vi.mock("./db", async importOriginal => {
   return {
     ...actual,
     getWebsiteById: vi.fn(),
+    getWebsiteByToken: vi.fn(),
     updateWebsite: vi.fn(),
     getWebsitesByUserId: vi.fn(),
     getOnboardingByWebsiteId: vi.fn(),
@@ -234,7 +235,12 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
     // alten Inline-LLM-Prompt-Pipeline — selectPack ruft intern
     // getNextLayoutForIndustry, generateSiteContent ruft intern llmComplete
     // (== der hier gemockte invokeLLM).
-    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
+    // status: "preview" explizit, damit dieser Test den LLM-Validierungspfad
+    // prüft statt vorzeitig am Regenerate-Status-Guard (Abschluss-Fixwelle B)
+    // zu scheitern.
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "preview" })
+    );
     mockedDb.getBusinessById.mockResolvedValue({
       id: 7,
       name: "Schreinerei Brandt",
@@ -282,6 +288,144 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
     await expect(caller.website.regenerate({ websiteId: 42 })).rejects.toThrow(
       TRPCError
     );
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("website.regenerate auf verkaufter Website (status !== preview) → BAD_REQUEST, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "sold" })
+    );
+
+    const caller = appRouter.createCaller(createAdminContext());
+    await expect(
+      caller.website.regenerate({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.getBusinessById).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+});
+
+describe("website.get — Token-Leak geschlossen (Final-Review Befund 2)", () => {
+  test("Abfrage per id → previewToken/customerEmail/contactEmail/Stripe-IDs NICHT in der Antwort", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({
+        previewToken: "secret-token-abc",
+        customerEmail: "kundin@example.com",
+        contactEmail: "kontakt@example.com",
+        stripeSessionId: "cs_test_123",
+        stripeSubscriptionId: "sub_test_123",
+      })
+    );
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+    } as any);
+
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.website.get({ id: 42 });
+
+    expect(result.website.previewToken).toBeFalsy();
+    expect((result.website as any).customerEmail).toBeFalsy();
+    expect((result.website as any).contactEmail).toBeFalsy();
+    expect((result.website as any).stripeSessionId).toBeFalsy();
+    expect((result.website as any).stripeSubscriptionId).toBeFalsy();
+    // Öffentliche Felder bleiben erhalten
+    expect(result.website.slug).toBe("schreinerei-brandt");
+    expect(result.website.websiteData).toBeTruthy();
+  });
+
+  test("Abfrage per token → previewToken bleibt erhalten (Aufrufer kennt ihn bereits)", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue(
+      baseWebsiteRow({
+        previewToken: "secret-token-abc",
+        customerEmail: "kundin@example.com",
+      })
+    );
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+    } as any);
+
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.website.get({ token: "secret-token-abc" });
+
+    expect(result.website.previewToken).toBe("secret-token-abc");
+    expect((result.website as any).customerEmail).toBe("kundin@example.com");
+  });
+});
+
+describe("customer.updateAddons — eine Quelle der Wahrheit (Final-Review Befund 4)", () => {
+  test("aiChat=false → Spalte addOnAiChat UND websiteData.features.aiChat werden zurückgesetzt", async () => {
+    const ownedWebsite = baseWebsiteRow({
+      websiteData: { ...v2Doc(), features: { aiChat: true } },
+    });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null, business: null },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.updateAddons({
+      websiteId: 42,
+      addOns: { aiChat: false },
+    });
+
+    expect(result.success).toBe(true);
+    const [id, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect(id).toBe(42);
+    expect((patch as any).addOnAiChat).toBe(false);
+    expect((patch as any).websiteData.features).toBeUndefined();
+  });
+
+  test("contactForm=true → websiteData.features.contactForm gesetzt (vorher: nur onboarding_responses, Insel blieb ungegatet)", async () => {
+    const ownedWebsite = baseWebsiteRow({ websiteData: v2Doc() });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null, business: null },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await caller.customer.updateAddons({
+      websiteId: 42,
+      addOns: { contactForm: true },
+    });
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnContactForm: true })
+    );
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).websiteData.features).toEqual({
+      contactForm: true,
+    });
+  });
+
+  test("weder contactForm noch aiChat übergeben → applyFeatureFlags nicht aufgerufen, kein websiteData-Write", async () => {
+    const ownedWebsite = baseWebsiteRow({ websiteData: v2Doc() });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null, business: null },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await caller.customer.updateAddons({
+      websiteId: 42,
+      addOns: { calendlyUrl: "https://calendly.com/x" },
+    });
+
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("fremde Website (nicht in getWebsitesByUserId) → FORBIDDEN, kein Write", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([] as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.updateAddons({
+        websiteId: 42,
+        addOns: { aiChat: true },
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });

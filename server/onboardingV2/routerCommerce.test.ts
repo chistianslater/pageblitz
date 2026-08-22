@@ -15,6 +15,12 @@ vi.mock("../db", async importOriginal => {
   return {
     ...actual,
     getWebsiteByToken: vi.fn(),
+    // applyFeatureFlags (server/onboardingV2/applyFeatures.ts, genutzt von
+    // onboardingV2.updateAddons) lädt die Website zusätzlich per id — ohne
+    // Mock würde die echte getWebsiteById gegen die (in Tests nicht
+    // konfigurierte) DB laufen und `undefined` liefern, wodurch der
+    // Feature-Write in applyFeatureFlags still übersprungen würde.
+    getWebsiteById: vi.fn(),
     getSubscriptionByWebsiteId: vi.fn(),
     getBusinessById: vi.fn(),
     getGenerationJobByWebsiteId: vi.fn(),
@@ -98,6 +104,14 @@ beforeEach(() => {
   };
 
   mockedDb.getWebsiteByToken.mockResolvedValue({
+    id: 42,
+    slug: "preview-brandt",
+    status: "preview",
+    businessId: 7,
+    websiteData: v2,
+    customerEmail: null,
+  } as any);
+  mockedDb.getWebsiteById.mockResolvedValue({
     id: 42,
     slug: "preview-brandt",
     status: "preview",

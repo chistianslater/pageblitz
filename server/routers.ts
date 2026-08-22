@@ -148,6 +148,7 @@ import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
 import { applyOnboardingToV2 } from "./onboardingV2Patch";
 import { onboardingV2Router } from "./onboardingV2/router";
+import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
 import { assertV2SafeWrite } from "./v2WriteGuard";
 import { classifyIndustry } from "./industryClassifier";
 import { getGmbPhotos } from "./gmbPhotos";
@@ -3428,6 +3429,14 @@ export const appRouter = router({
             code: "NOT_FOUND",
             message: "Website not found",
           });
+        // Verkaufte/aktive Websites werden nicht neu erstellt — Regenerierung
+        // würde bezahlten Kundinnen ihre bearbeiteten Inhalte überschreiben.
+        // Nur Preview-Websites (vor dem Checkout) dürfen neu generiert werden.
+        if (website.status !== "preview")
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Verkaufte Websites werden nicht neu erstellt",
+          });
         const business = await getBusinessById(website.businessId);
         if (!business)
           throw new TRPCError({
@@ -3557,6 +3566,12 @@ export const appRouter = router({
       .query(async ({ input }) => {
         let website;
         let redirectToSlug: string | null = null;
+        // Auflösung per id/slug hat Vorrang vor token (bestehende Priorität,
+        // unverändert) — resolvedByToken hält fest, ob die Website tatsächlich
+        // über den (bereits vom Aufrufer bekannten) Token gefunden wurde, denn
+        // NUR dann darf previewToken/customerEmail unten in der Antwort
+        // erhalten bleiben (kein neues Geheimnis preisgegeben).
+        let resolvedByToken = false;
         if (input.id) website = await getWebsiteById(input.id);
         else if (input.slug) {
           website = await getWebsiteBySlug(input.slug);
@@ -3568,12 +3583,34 @@ export const appRouter = router({
               redirectToSlug = byFormer.slug;
             }
           }
-        } else if (input.token) website = await getWebsiteByToken(input.token);
+        } else if (input.token) {
+          website = await getWebsiteByToken(input.token);
+          resolvedByToken = true;
+        }
         if (!website)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Website not found",
           });
+
+        // Token-Leak schließen (Abschluss-Fixwelle B, Final-Review Befund 2):
+        // previewToken ist der De-facto-Zugangsschlüssel zum Studio, customerEmail/
+        // contactEmail/stripeSessionId/stripeSubscriptionId sind PII bzw. interne
+        // Stripe-IDs. Bei Abfrage per id/slug (öffentliche Aufrufer: SitePage,
+        // LegalPage, VariantPreviewPage) werden diese Felder nicht zurückgegeben.
+        // Bei Abfrage per token ist der Token dem Aufrufer bereits bekannt (er hat
+        // ihn geschickt) — kein zusätzliches Geheimnis wird preisgegeben.
+        if (!resolvedByToken) {
+          website = {
+            ...website,
+            previewToken: null,
+            customerEmail: null,
+            contactEmail: null,
+            stripeSessionId: null,
+            stripeSubscriptionId: null,
+          } as typeof website;
+        }
+
         const business = await getBusinessById(website.businessId);
 
         // Inject ID into websiteData for stable randomization seed in frontend
@@ -5530,11 +5567,12 @@ Kontext: ${input.context}`,
         const _db = await getDb();
         if (!_db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        // Enable/disable add-on
-        await _db
-          .update(generatedWebsites)
-          .set({ addOnBooking: input.enabled })
-          .where(eqDrizzle(generatedWebsites.id, input.websiteId));
+        // Enable/disable add-on. Eine Quelle der Wahrheit (Final-Review
+        // Befund 4, Abschluss-Fixwelle B): derselbe Bug wie bei
+        // contactForm/aiChat — ein direktes Schreiben der Spalte
+        // addOnBooking allein hätte websiteData.features.booking nicht
+        // nachgezogen, die v2-Inseln (SiteIslands.tsx) gaten aber darauf.
+        await applyFeatureFlags(input.websiteId, { booking: input.enabled });
 
         // Upsert settings
         const [existing] = await _db
@@ -5787,10 +5825,27 @@ Kontext: ${input.context}`,
           updatedAt: Date.now(),
         });
 
-        // AI Chat add-ons: write directly to generated_websites
-        const chatUpdate: Record<string, any> = {};
+        // Eine Quelle der Wahrheit (Final-Review Befund 4, Abschluss-Fixwelle
+        // B): vorher schrieb dieser Pfad nur onboarding_responses bzw. die
+        // Spalte addOnAiChat direkt — die v2-Inseln (SiteIslands.tsx) gaten
+        // aber ausschließlich auf websiteData.features.* → ein Toggle "aus"
+        // im Dashboard hatte keine Wirkung, Formular/Widget blieben live.
+        // Nur tatsächlich übergebene Keys weiterreichen (nicht explizit
+        // `undefined` mitschicken — applyFeatures/applyPatch.ts würde ein
+        // vorhandenes Feature sonst durch Überschreiben mit `undefined`
+        // ungewollt deaktivieren, siehe Object-Spread-Semantik dort).
+        const featurePatch: { contactForm?: boolean; aiChat?: boolean } = {};
+        if (input.addOns.contactForm !== undefined)
+          featurePatch.contactForm = input.addOns.contactForm;
         if (input.addOns.aiChat !== undefined)
-          chatUpdate.addOnAiChat = input.addOns.aiChat;
+          featurePatch.aiChat = input.addOns.aiChat;
+        if (Object.keys(featurePatch).length > 0) {
+          await applyFeatureFlags(input.websiteId, featurePatch);
+        }
+
+        // Übrige Chat-Einstellungen: kein Feature-Flag, kein SSR-Gating —
+        // direkt auf generated_websites.
+        const chatUpdate: Record<string, any> = {};
         if (input.addOns.calendly !== undefined)
           chatUpdate.addOnCalendly = input.addOns.calendly;
         if (input.addOns.calendlyUrl !== undefined)

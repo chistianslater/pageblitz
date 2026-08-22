@@ -14,7 +14,6 @@ import {
 
 interface AppointmentsTabProps {
   websiteId: number;
-  website: any;
   onGoToAddons: () => void;
 }
 
