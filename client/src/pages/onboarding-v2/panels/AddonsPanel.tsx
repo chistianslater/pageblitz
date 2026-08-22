@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { AddonsPatch } from "@shared/onboardingV2/patches";
 import {
+  ADDON_KEYS,
   ADDON_NAMES,
   addonPrice,
+  BOOKABLE_ADDON_KEYS,
   calcTotalCents,
   formatEuro,
+  sanitizeAddOns,
   type AddOnFlags,
   type AddOnKey,
   type BillingInterval,
@@ -16,26 +19,15 @@ import { PanelFrame } from "./PanelFrame";
  * Bindbare Add-ons (Controller-Ruling zu Task 10): aiChat, booking und team
  * lassen sich erst ab Plan B3 aktivieren, weil der Zahlungs-Webhook sie
  * heute noch nicht freischaltet. Bis dahin: Zeile gesperrt ("bald
- * verfügbar"), Preis ausgegraut, nie in der Summe.
+ * verfügbar"), Preis ausgegraut, nie in der Summe. `BOOKABLE_ADDON_KEYS`
+ * und `sanitizeAddOns` kommen aus @shared/pricing (Finding I1) — dieselbe
+ * Quelle der Wahrheit wie der Server (routerCommerce.ts), damit UI-Sperre
+ * und serverseitige Ablehnung nie auseinanderlaufen können.
  */
-const TOGGLEABLE_KEYS: AddOnKey[] = [
-  "contactForm",
-  "gallery",
-  "menu",
-  "pricelist",
-];
-const COMING_SOON_KEYS: AddOnKey[] = ["aiChat", "booking", "team"];
-
-/**
- * Blendet nicht-bindbare Add-ons aus einem AddOnFlags-Objekt aus, bevor es
- * in `calcTotalCents` einfließt oder an den Server geschickt wird — auch
- * defensiv, falls `value` (z. B. aus altem State) eines der gesperrten
- * Flags auf true stehen hat. Von CheckoutBar wiederverwendet, damit beide
- * Summen exakt dieselbe Regel anwenden.
- */
-export function sanitizeAddOns(value: AddOnFlags): AddOnFlags {
-  return Object.fromEntries(TOGGLEABLE_KEYS.map(k => [k, !!value[k]]));
-}
+const TOGGLEABLE_KEYS: readonly AddOnKey[] = BOOKABLE_ADDON_KEYS;
+const COMING_SOON_KEYS: AddOnKey[] = ADDON_KEYS.filter(
+  k => !BOOKABLE_ADDON_KEYS.includes(k)
+);
 
 interface AddonsListProps {
   value: AddOnFlags;

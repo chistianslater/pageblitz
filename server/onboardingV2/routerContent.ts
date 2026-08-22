@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import {
@@ -30,6 +31,9 @@ import type { SectionOf } from "../../shared/siteContract/types";
  * diese darf kein GMB-Foto-Abruf versucht werden.
  */
 const SYNTHETIC_PLACE_ID_PREFIXES = ["self-", "email-"];
+
+/** Obergrenze für eigene Fotouploads pro Website (Finding I4) — verhindert unbegrenztes Storage-Wachstum über einen einzelnen Onboarding-Token. */
+const MAX_UPLOADED_PHOTOS = 30;
 
 function isRealPlaceId(placeId: string | null | undefined): placeId is string {
   return (
@@ -99,6 +103,12 @@ export const contentProcedures = {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const onboarding = await getOnboardingByWebsiteId(loaded.website.id);
       const uploaded = readPhotoUrls(onboarding);
+      if (uploaded.length >= MAX_UPLOADED_PHOTOS) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Maximal 30 eigene Fotos pro Website.",
+        });
+      }
       const { url } = await uploadPhotoToStorage(
         input.imageData,
         input.mimeType,

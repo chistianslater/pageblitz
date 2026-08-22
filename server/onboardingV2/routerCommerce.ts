@@ -7,6 +7,12 @@ import {
   AddonsPatchSchema,
   LegalPatchSchema,
 } from "../../shared/onboardingV2/patches";
+import {
+  ADDON_KEYS,
+  ADDON_NAMES,
+  BOOKABLE_ADDON_KEYS,
+  sanitizeAddOns,
+} from "../../shared/pricing";
 import { z } from "zod";
 import { loadStudioWebsite } from "./ownership";
 import {
@@ -18,6 +24,14 @@ import {
   upsertOnboarding,
 } from "./state";
 import { createStudioCheckoutSession } from "./checkout";
+
+/** Nicht buchbare Extras (Finding I1) — dieselbe Menge wie BOOKABLE_ADDON_KEYS, nur invertiert. */
+const LOCKED_ADDON_KEYS = ADDON_KEYS.filter(
+  k => !BOOKABLE_ADDON_KEYS.includes(k)
+);
+const LOCKED_ADDON_MESSAGE = `Diese Extras sind noch nicht buchbar: ${LOCKED_ADDON_KEYS.map(
+  k => ADDON_NAMES[k]
+).join(", ")}.`;
 
 /**
  * Kommerz-Prozeduren des Studios: Rechtliches (Impressum/Datenschutz +
@@ -83,12 +97,25 @@ export const commerceProcedures = {
       });
     }),
 
-  /** Persistiert die Extras-Flags — kein Dokument-Write, nur Checkliste/Progress. */
+  /**
+   * Persistiert die Extras-Flags — kein Dokument-Write, nur
+   * Checkliste/Progress. Nicht buchbare Extras (aiChat/booking/team, siehe
+   * BOOKABLE_ADDON_KEYS) werden serverseitig hart abgelehnt (Finding I1) —
+   * das Client-UI sperrt sie zwar bereits, aber ein direkter API-Aufruf
+   * darf sie nicht durchlassen.
+   */
   updateAddons: publicProcedure
     .input(tokenInput.extend({ addOns: AddonsPatchSchema }))
     .mutation(async ({ input, ctx }) => {
-      const loaded = await loadStudioWebsite(input.token, ctx.user);
       const { addOns } = input;
+      if (LOCKED_ADDON_KEYS.some(k => addOns[k])) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: LOCKED_ADDON_MESSAGE,
+        });
+      }
+
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
 
       await upsertOnboarding(loaded.website.id, {
         addOnContactForm: addOns.contactForm,
@@ -109,7 +136,11 @@ export const commerceProcedures = {
    * Speichert die Kunden-E-Mail (Checkout-Voraussetzung neben Rechtliches)
    * und stößt die Lifecycle-Mail-Sequenz an — analog zu
    * `selfService.saveCustomerEmail`. Mail-Fehler dürfen den Request nicht
-   * blockieren, deshalb nur geloggt.
+   * blockieren, deshalb nur geloggt. Die Lifecycle-/Welcome-Mails laufen nur
+   * an, wenn sich die E-Mail gegenüber dem gespeicherten Stand tatsächlich
+   * ändert (Finding I3) — sonst würde ein erneuter Aufruf mit derselben
+   * Adresse (z. B. nach einem Reload oder Doppelklick) die Willkommensmail
+   * ein zweites Mal verschicken.
    */
   setCustomerEmail: publicProcedure
     .input(
@@ -121,6 +152,9 @@ export const commerceProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const { email, marketingConsent } = input;
+      const normalize = (value: string) => value.trim().toLowerCase();
+      const emailChanged =
+        normalize(loaded.website.customerEmail ?? "") !== normalize(email);
 
       await updateWebsite(loaded.website.id, {
         customerEmail: email,
@@ -129,6 +163,13 @@ export const commerceProcedures = {
           ? { marketingConsent: true, marketingConsentAt: Date.now() }
           : {}),
       });
+
+      if (!emailChanged) {
+        return buildState(input.token, {
+          ...loaded,
+          website: { ...loaded.website, customerEmail: email },
+        });
+      }
 
       try {
         const { scheduleInitialLifecycleEmails, sendImmediateWelcomeEmail } =
@@ -183,7 +224,11 @@ export const commerceProcedures = {
         origin,
         token: input.token,
         billingInterval: input.billingInterval,
-        addOns: state.addOns,
+        // sanitizeAddOns statt state.addOns direkt: eine veraltete DB-Zeile
+        // mit aiChat/booking/team=true (z. B. aus der Zeit vor Finding I1)
+        // darf weder in die Preis-Summe noch in die Stripe-Metadaten
+        // einfließen (Finding I1).
+        addOns: sanitizeAddOns(state.addOns),
       });
 
       await updateWebsite(state.websiteId, {

@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { ZodError } from "zod";
 import type { TrpcContext } from "../_core/context";
+import { formatZodTrpcMessage } from "../_core/trpc";
+import { LegalPatchSchema } from "../../shared/onboardingV2/patches";
 
 vi.hoisted(() => {
   process.env.STRIPE_SECRET_KEY ||= "sk_test_dummy_for_unit_tests";
@@ -160,6 +163,32 @@ describe("onboardingV2.updateLegal", () => {
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
+
+  /**
+   * Finding I2: die tRPC-`errorFormatter` (server/_core/trpc.ts) formatiert
+   * ZodError-Ursachen deutsch statt den rohen JSON-Issues-String
+   * durchzureichen. `appRouter.createCaller` (wie in allen Tests dieser
+   * Datei) ruft Prozeduren jedoch direkt auf und durchläuft die
+   * `errorFormatter` NICHT — die läuft erst am HTTP-Adapter
+   * (createExpressMiddleware/resolveResponse), der hier nicht getestet
+   * wird. Deshalb zwei Ebenen: (1) der reale HTTP-Pfad bleibt bei
+   * BAD_REQUEST, wie gehabt; (2) die Formatierungslogik selbst wird direkt
+   * gegen einen echten ZodError aus LegalPatchSchema geprüft.
+   */
+  test("PLZ ungültig → formatZodTrpcMessage liefert deutsche Meldung ohne JSON-Klammern", () => {
+    const result = LegalPatchSchema.safeParse({ ...legal, legalZip: "1234" });
+    expect(result.success).toBe(false);
+    const message = formatZodTrpcMessage(result.error as ZodError);
+
+    // Keine rohe JSON-Serialisierung der Issues (kein führendes "[{" bzw.
+    // kein serialisiertes "code"-Feld) — genau das war vor I2 der Fehler.
+    expect(message).not.toMatch(/^\s*\[/);
+    expect(message).not.toContain('"code"');
+    expect(message).not.toContain('"origin"');
+    // Deutsche zod-Meldung statt "Invalid string: must match pattern …".
+    expect(message.toLowerCase()).not.toContain("invalid");
+    expect(message).toMatch(/ungültig|muster|zeichen/i);
+  });
 });
 
 describe("onboardingV2.updateAddons", () => {
@@ -171,7 +200,7 @@ describe("onboardingV2.updateAddons", () => {
         gallery: false,
         menu: false,
         pricelist: false,
-        aiChat: true,
+        aiChat: false,
         booking: false,
         team: false,
       },
@@ -181,13 +210,52 @@ describe("onboardingV2.updateAddons", () => {
       42,
       expect.objectContaining({
         addOnContactForm: true,
-        addOnAiChat: true,
+        addOnAiChat: false,
         addOnGallery: false,
       })
     );
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-    expect(s.addOns.aiChat).toBe(true);
+    expect(s.addOns.contactForm).toBe(true);
     expect(s.checklist.find(i => i.id === "addons")?.status).toBe("done");
+  });
+
+  test("aiChat=true → BAD_REQUEST, kein Write (Finding I1: nicht buchbar)", async () => {
+    await expect(
+      caller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: {
+          contactForm: false,
+          gallery: false,
+          menu: false,
+          pricelist: false,
+          aiChat: true,
+          booking: false,
+          team: false,
+        },
+      })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Diese Extras sind noch nicht buchbar: KI-Chat, Terminbuchung, Team.",
+    });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
+  test("booking oder team=true → ebenfalls BAD_REQUEST", async () => {
+    await expect(
+      caller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: {
+          contactForm: false,
+          gallery: false,
+          menu: false,
+          pricelist: false,
+          aiChat: false,
+          booking: true,
+          team: false,
+        },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
   });
 });
 
@@ -241,6 +309,50 @@ describe("onboardingV2.setCustomerEmail", () => {
       email: "kunde@x.de",
     });
     expect(s.customerEmail).toBe("kunde@x.de");
+  });
+
+  test("zweiter Aufruf mit gleicher E-Mail → sendImmediateWelcomeEmail nicht aufgerufen (Finding I3)", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+
+    const s = await caller().onboardingV2.setCustomerEmail({
+      token: "tok",
+      email: "kunde@x.de",
+    });
+
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ customerEmail: "kunde@x.de" })
+    );
+    expect(s.customerEmail).toBe("kunde@x.de");
+    expect(mockedLifecycle.sendImmediateWelcomeEmail).not.toHaveBeenCalled();
+    expect(
+      mockedLifecycle.scheduleInitialLifecycleEmails
+    ).not.toHaveBeenCalled();
+  });
+
+  test("gleiche E-Mail nur mit anderer Groß-/Kleinschreibung/Leerzeichen → ebenfalls kein erneuter Mailversand", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+
+    await caller().onboardingV2.setCustomerEmail({
+      token: "tok",
+      email: "  Kunde@X.de  ".trim(),
+    });
+
+    expect(mockedLifecycle.sendImmediateWelcomeEmail).not.toHaveBeenCalled();
   });
 });
 
@@ -311,6 +423,47 @@ describe("onboardingV2.createCheckout", () => {
         status: "completed",
         completedAt: expect.any(Number),
         updatedAt: expect.any(Number),
+      })
+    );
+  });
+
+  test("gespeichertes aiChat=true (veraltete DB-Zeile) → Stripe-Session ohne aiChat (Finding I1)", async () => {
+    onboardingRow = {
+      ...onboardingRow,
+      legalOwner: "Max Brandt",
+      legalStreet: "Weg 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+      legalEmail: "m@b.de",
+      legalPhone: "0231 1",
+      // Simuliert einen alten DB-Stand, der über updateAddons nicht mehr
+      // erreichbar ist (I1 blockt das serverseitig) — createCheckout muss
+      // trotzdem sicher sein, falls die Spalte anderweitig noch true steht.
+      addOnAiChat: true,
+      addOnGallery: true,
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+
+    await caller().onboardingV2.createCheckout({
+      token: "tok",
+      billingInterval: "yearly",
+    });
+
+    expect(mockedCheckout.createStudioCheckoutSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        addOns: expect.objectContaining({
+          gallery: true,
+          aiChat: false,
+          booking: false,
+          team: false,
+        }),
       })
     );
   });

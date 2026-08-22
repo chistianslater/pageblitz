@@ -132,6 +132,30 @@ describe("onboardingV2.uploadPhoto", () => {
       })
     );
   });
+
+  test("30 Fotos bereits hochgeladen → BAD_REQUEST, kein Upload (Finding I4)", async () => {
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      websiteId: 42,
+      photoUrls: Array.from(
+        { length: 30 },
+        (_, i) => `https://u/${i + 1}.jpg`
+      ),
+    } as any);
+    const { uploadPhoto } = await import("../onboardingUpload");
+
+    await expect(
+      caller().onboardingV2.uploadPhoto({
+        token: "tok",
+        imageData: "data:image/jpeg;base64,AAAA",
+        mimeType: "image/jpeg",
+      })
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Maximal 30 eigene Fotos pro Website.",
+    });
+    expect(uploadPhoto).not.toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
 });
 
 describe("onboardingV2.setImages / updateTexts / updateOffer", () => {

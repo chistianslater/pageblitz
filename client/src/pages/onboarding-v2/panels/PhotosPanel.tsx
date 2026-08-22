@@ -11,6 +11,10 @@ import { PhotoGrid, PhotoTargetPicker, type PhotoTarget } from "./photoParts";
 // clientseitig akzeptierte Datei am Server abgelehnt wird.
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const MAX_GALLERY_PHOTOS = 12;
+// Deckt sich mit MAX_UPLOADED_PHOTOS in server/onboardingV2/routerContent.ts
+// (Finding I4) — Upload-Button wird gesperrt, bevor der Server ohnehin
+// ablehnen würde.
+const MAX_UPLOADED_PHOTOS = 30;
 const ACCEPTED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 type AcceptedMime = (typeof ACCEPTED_MIME_TYPES)[number];
 
@@ -144,6 +148,8 @@ export function PhotosPanel({
     }
   };
 
+  const uploadedCount = sources.data?.uploaded.length ?? 0;
+  const uploadLimitReached = uploadedCount >= MAX_UPLOADED_PHOTOS;
   const busy = upload.isPending || setImages.isPending;
   const hasExistingGallery = !!gallerySection;
   // Bei Ziel "Galerie" ohne Auswahl UND ohne bestehende Galerie ist "leer
@@ -260,7 +266,7 @@ export function PhotosPanel({
             className="pb-studio-btn"
             data-variant="ghost"
             style={
-              upload.isPending
+              upload.isPending || uploadLimitReached
                 ? { opacity: 0.45, cursor: "not-allowed" }
                 : undefined
             }
@@ -270,11 +276,16 @@ export function PhotosPanel({
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleFileChange}
-              disabled={upload.isPending}
+              disabled={upload.isPending || uploadLimitReached}
               style={{ display: "none" }}
             />
           </label>
           {upload.isPending && <p>Lade hoch …</p>}
+          {uploadLimitReached && (
+            <p style={{ color: "var(--st-muted)" }}>
+              Maximal 30 eigene Fotos erreicht.
+            </p>
+          )}
           {uploadError && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
               {uploadError}
