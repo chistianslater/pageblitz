@@ -3,6 +3,7 @@ import { publicProcedure } from "../_core/trpc";
 import { updateWebsite } from "../db";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
 import { applyOnboardingToV2 } from "../onboardingV2Patch";
+import { applyFeatures } from "./applyPatch";
 import {
   AddonsPatchSchema,
   LegalPatchSchema,
@@ -29,9 +30,12 @@ import { createStudioCheckoutSession } from "./checkout";
 const LOCKED_ADDON_KEYS = ADDON_KEYS.filter(
   k => !BOOKABLE_ADDON_KEYS.includes(k)
 );
-const LOCKED_ADDON_MESSAGE = `Diese Extras sind noch nicht buchbar: ${LOCKED_ADDON_KEYS.map(
-  k => ADDON_NAMES[k]
-).join(", ")}.`;
+const LOCKED_ADDON_MESSAGE =
+  LOCKED_ADDON_KEYS.length === 1
+    ? `Dieses Extra ist noch nicht buchbar: ${ADDON_NAMES[LOCKED_ADDON_KEYS[0]]}.`
+    : `Diese Extras sind noch nicht buchbar: ${LOCKED_ADDON_KEYS.map(
+        k => ADDON_NAMES[k]
+      ).join(", ")}.`;
 
 /**
  * Kommerz-Prozeduren des Studios: Rechtliches (Impressum/Datenschutz +
@@ -98,11 +102,13 @@ export const commerceProcedures = {
     }),
 
   /**
-   * Persistiert die Extras-Flags — kein Dokument-Write, nur
-   * Checkliste/Progress. Nicht buchbare Extras (aiChat/booking/team, siehe
-   * BOOKABLE_ADDON_KEYS) werden serverseitig hart abgelehnt (Finding I1) —
-   * das Client-UI sperrt sie zwar bereits, aber ein direkter API-Aufruf
-   * darf sie nicht durchlassen.
+   * Persistiert die Extras-Flags in onboarding_responses (Checkliste/
+   * Progress) und spiegelt die freischaltbaren Extras (contactForm/aiChat/
+   * booking) als `features` ins v2-Dokument, damit SSR-Inseln sofort
+   * reagieren können, sobald die Extras gebucht sind. Nicht buchbare Extras
+   * (aktuell nur team, siehe BOOKABLE_ADDON_KEYS) werden serverseitig hart
+   * abgelehnt (Finding I1) — das Client-UI sperrt sie zwar bereits, aber
+   * ein direkter API-Aufruf darf sie nicht durchlassen.
    */
   updateAddons: publicProcedure
     .input(tokenInput.extend({ addOns: AddonsPatchSchema }))
@@ -126,6 +132,18 @@ export const commerceProcedures = {
         addOnBooking: addOns.booking,
         addOnTeam: addOns.team,
       });
+
+      if (loaded.doc) {
+        const next = applyFeatures(loaded.doc, {
+          contactForm: addOns.contactForm,
+          aiChat: addOns.aiChat,
+          booking: addOns.booking,
+        });
+        return persistDoc(input.token, loaded, next, {
+          progress: { addonsReviewed: true },
+        });
+      }
+
       const progress = await mergeStudioProgress(loaded.website.id, {
         addonsReviewed: true,
       });

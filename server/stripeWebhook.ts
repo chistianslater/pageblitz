@@ -14,6 +14,7 @@ import {
   getSubscriptionByStripeId,
   getUserByEmail,
 } from "./db";
+import { handleCheckoutCompleted } from "./stripeWebhookHandlers";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-02-25.clover",
@@ -58,102 +59,15 @@ export function registerStripeWebhook(app: Express) {
         switch (event.type) {
           case "checkout.session.completed": {
             const session = event.data.object as Stripe.Checkout.Session;
-            const websiteId = parseInt(session.metadata?.websiteId || "0");
-            if (!websiteId) break;
-
-            const website = await getWebsiteById(websiteId);
-            if (!website) break;
-
-            // Parse addOns and billingInterval from metadata
-            const rawAddOns = session.metadata?.addOns ? JSON.parse(session.metadata.addOns) : {};
-            const billingInterval: "monthly" | "yearly" =
-              session.metadata?.billingInterval === "monthly" ? "monthly" : "yearly";
-
-            // Normalize addOns – support both old and new format
-            const addOns = {
-              contactForm: rawAddOns.contactForm ?? rawAddOns.features?.contactForm ?? false,
-              gallery:     rawAddOns.gallery     ?? rawAddOns.features?.gallery     ?? false,
-              menu:        rawAddOns.menu        ?? rawAddOns.features?.menu        ?? false,
-              pricelist:   rawAddOns.pricelist   ?? rawAddOns.features?.pricelist   ?? false,
-            };
-
-            // Create subscription record
-            const subscriptionId = typeof session.subscription === "string"
-              ? session.subscription
-              : (session.subscription as any)?.id || null;
-
-            // Fetch currentPeriodEnd from Stripe subscription (use compat client for period fields)
-            let currentPeriodEnd: number | undefined;
-            if (subscriptionId) {
-              try {
-                const stripeSub = await stripeCompat.subscriptions.retrieve(subscriptionId);
-                currentPeriodEnd = (stripeSub as any).current_period_end;
-              } catch (e) {
-                console.warn("[Webhook] Could not fetch subscription period end:", e);
-              }
-            }
-
-            // Resolve userId: prefer metadata, fallback to customer_email lookup
-            let userId = parseInt(session.metadata?.userId || "0") || 0;
-            if (userId === 0 && session.customer_email) {
-              const userByEmail = await getUserByEmail(session.customer_email);
-              if (userByEmail) {
-                userId = userByEmail.id;
-                console.log(`[Webhook] Resolved userId ${userId} from customer_email ${session.customer_email}`);
-              }
-            }
-
-            // Determine actual status from Stripe (trial vs. immediately active)
-            let subStatus: "active" | "trialing" = "active";
-            if (subscriptionId) {
-              try {
-                const stripeSub = await stripeCompat.subscriptions.retrieve(subscriptionId);
-                if ((stripeSub as any).status === "trialing") subStatus = "trialing";
-              } catch (_) {}
-            }
-
-            await createSubscription({
-              websiteId,
-              userId,
-              stripeSubscriptionId: subscriptionId,
-              stripeCustomerId: typeof session.customer === "string" ? session.customer : null,
-              status: subStatus,
-              plan: "base",
-              billingInterval,
-              addOns,
-              currentPeriodEnd,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
+            await handleCheckoutCompleted(session, {
+              createOnboarding,
+              getOnboardingByWebsiteId,
+              getWebsiteById,
+              updateWebsite,
+              createSubscription,
+              getUserByEmail,
+              stripeCompat,
             });
-
-            // Start onboarding if not already started
-            const existingOnboarding = await getOnboardingByWebsiteId(websiteId);
-            if (!existingOnboarding) {
-              await createOnboarding({
-                websiteId,
-                status: "in_progress",
-                stepCurrent: 0,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              });
-            }
-
-            // Mark website as sold/pending onboarding
-            await updateWebsite(websiteId, {
-              status: "sold",
-              onboardingStatus: "pending",
-              captureStatus: "converted",
-            });
-
-            // Lifecycle-Emails canceln (Kunde hat konvertiert)
-            try {
-              const { cancelLifecycleEmails } = await import("./_core/lifecycleScheduler");
-              await cancelLifecycleEmails(websiteId, "converted");
-            } catch (err) {
-              console.warn("[Webhook] Failed to cancel lifecycle emails:", err);
-            }
-
-            console.log(`[Webhook] Checkout completed for website ${websiteId}`);
             break;
           }
 

@@ -16,13 +16,13 @@ import {
 import { PanelFrame } from "./PanelFrame";
 
 /**
- * Bindbare Add-ons (Controller-Ruling zu Task 10): aiChat, booking und team
- * lassen sich erst ab Plan B3 aktivieren, weil der Zahlungs-Webhook sie
- * heute noch nicht freischaltet. Bis dahin: Zeile gesperrt ("bald
- * verfügbar"), Preis ausgegraut, nie in der Summe. `BOOKABLE_ADDON_KEYS`
- * und `sanitizeAddOns` kommen aus @shared/pricing (Finding I1) — dieselbe
- * Quelle der Wahrheit wie der Server (routerCommerce.ts), damit UI-Sperre
- * und serverseitige Ablehnung nie auseinanderlaufen können.
+ * Bindbare Add-ons: Seit Plan B3 schaltet der Zahlungs-Webhook auch KI-Chat
+ * und Terminbuchung frei, sie zählen also mit in Preis und Summe. Team
+ * bleibt gesperrt ("bald verfügbar") — das Team-Panel fehlt noch.
+ * `BOOKABLE_ADDON_KEYS` und `sanitizeAddOns` kommen aus @shared/pricing
+ * (Finding I1) — dieselbe Quelle der Wahrheit wie der Server
+ * (routerCommerce.ts), damit UI-Sperre und serverseitige Ablehnung nie
+ * auseinanderlaufen können.
  */
 const TOGGLEABLE_KEYS: readonly AddOnKey[] = BOOKABLE_ADDON_KEYS;
 const COMING_SOON_KEYS: AddOnKey[] = ADDON_KEYS.filter(
@@ -110,9 +110,9 @@ export function AddonsPanel({
       gallery: !!value.gallery,
       menu: !!value.menu,
       pricelist: !!value.pricelist,
-      // Nie true senden — diese drei sind vor Plan B3 nicht buchbar.
-      aiChat: false,
-      booking: false,
+      aiChat: !!value.aiChat,
+      booking: !!value.booking,
+      // Nie true senden — Team bleibt vorerst nicht buchbar (Team-Panel fehlt).
       team: false,
     };
     updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
@@ -146,8 +146,8 @@ export function AddonsPanel({
     >
       <AddonsList value={value} onToggle={handleToggle} interval="yearly" />
       <p style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
-        KI-Chat, Terminbuchung und Team sind bald verfügbar — sobald sie
-        freigeschaltet sind, kannst du sie hier aktivieren.
+        KI-Chat und Terminbuchung werden nach der Freischaltung aktiviert;
+        Team folgt.
       </p>
       {updateAddons.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>

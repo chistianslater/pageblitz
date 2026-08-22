@@ -192,7 +192,7 @@ describe("onboardingV2.updateLegal", () => {
 });
 
 describe("onboardingV2.updateAddons", () => {
-  test("Flags persistiert, addonsReviewed, kein Dokument-Write", async () => {
+  test("Flags persistiert, addonsReviewed, Dokument-Write mit features.contactForm=true", async () => {
     const s = await caller().onboardingV2.updateAddons({
       token: "tok",
       addOns: {
@@ -214,34 +214,58 @@ describe("onboardingV2.updateAddons", () => {
         addOnGallery: false,
       })
     );
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        websiteData: expect.objectContaining({
+          features: expect.objectContaining({ contactForm: true }),
+        }),
+      })
+    );
     expect(s.addOns.contactForm).toBe(true);
+    expect(s.doc!.features?.contactForm).toBe(true);
     expect(s.checklist.find(i => i.id === "addons")?.status).toBe("done");
   });
 
-  test("aiChat=true → BAD_REQUEST, kein Write (Finding I1: nicht buchbar)", async () => {
-    await expect(
-      caller().onboardingV2.updateAddons({
-        token: "tok",
-        addOns: {
-          contactForm: false,
-          gallery: false,
-          menu: false,
-          pricelist: false,
-          aiChat: true,
-          booking: false,
-          team: false,
-        },
-      })
-    ).rejects.toMatchObject({
-      code: "BAD_REQUEST",
-      message:
-        "Diese Extras sind noch nicht buchbar: KI-Chat, Terminbuchung, Team.",
+  test("aiChat=true → OK, Dokument features.aiChat=true (seit Plan B3 buchbar)", async () => {
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: false,
+        menu: false,
+        pricelist: false,
+        aiChat: true,
+        booking: false,
+        team: false,
+      },
     });
-    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnAiChat: true })
+    );
+    expect(s.doc!.features?.aiChat).toBe(true);
   });
 
-  test("booking oder team=true → ebenfalls BAD_REQUEST", async () => {
+  test("booking=true → OK (seit Plan B3 buchbar)", async () => {
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: false,
+        menu: false,
+        pricelist: false,
+        aiChat: false,
+        booking: true,
+        team: false,
+      },
+    });
+
+    expect(s.doc!.features?.booking).toBe(true);
+  });
+
+  test("team=true → BAD_REQUEST, kein Write (Team bleibt gesperrt)", async () => {
     await expect(
       caller().onboardingV2.updateAddons({
         token: "tok",
@@ -251,11 +275,14 @@ describe("onboardingV2.updateAddons", () => {
           menu: false,
           pricelist: false,
           aiChat: false,
-          booking: true,
-          team: false,
+          booking: false,
+          team: true,
         },
       })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Dieses Extra ist noch nicht buchbar: Team.",
+    });
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
   });
 });
@@ -428,7 +455,7 @@ describe("onboardingV2.createCheckout", () => {
     );
   });
 
-  test("gespeichertes aiChat=true (veraltete DB-Zeile) → Stripe-Session ohne aiChat (Finding I1)", async () => {
+  test("gespeichertes team=true (veraltete DB-Zeile) → Stripe-Session ohne team (Finding I1)", async () => {
     onboardingRow = {
       ...onboardingRow,
       legalOwner: "Max Brandt",
@@ -440,8 +467,12 @@ describe("onboardingV2.createCheckout", () => {
       // Simuliert einen alten DB-Stand, der über updateAddons nicht mehr
       // erreichbar ist (I1 blockt das serverseitig) — createCheckout muss
       // trotzdem sicher sein, falls die Spalte anderweitig noch true steht.
+      // aiChat/booking sind seit Plan B3 buchbar und dürfen durchgereicht
+      // werden — nur team bleibt gesperrt.
       addOnAiChat: true,
+      addOnBooking: true,
       addOnGallery: true,
+      addOnTeam: true,
     };
     mockedDb.getWebsiteByToken.mockResolvedValue({
       id: 42,
@@ -461,8 +492,8 @@ describe("onboardingV2.createCheckout", () => {
       expect.objectContaining({
         addOns: expect.objectContaining({
           gallery: true,
-          aiChat: false,
-          booking: false,
+          aiChat: true,
+          booking: true,
           team: false,
         }),
       })

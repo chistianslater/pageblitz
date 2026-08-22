@@ -31,7 +31,7 @@ describe("pricing", () => {
     for (const k of ADDON_KEYS) expect(ADDON_NAMES[k]).toBeTruthy();
   });
 
-  test("sanitizeAddOns setzt aiChat/booking/team auf false, bindbare Keys bleiben unverändert", () => {
+  test("sanitizeAddOns setzt team auf false, bindbare Keys (inkl. aiChat/booking) bleiben unverändert", () => {
     const result = sanitizeAddOns({
       contactForm: true,
       gallery: false,
@@ -44,8 +44,8 @@ describe("pricing", () => {
       gallery: false,
       menu: false,
       pricelist: false,
-      aiChat: false,
-      booking: false,
+      aiChat: true,
+      booking: true,
       team: false,
     });
   });
@@ -62,12 +62,14 @@ describe("pricing", () => {
     });
   });
 
-  test("BOOKABLE_ADDON_KEYS enthält genau die vier buchbaren Extras", () => {
+  test("BOOKABLE_ADDON_KEYS enthält alle Extras außer team", () => {
     expect(BOOKABLE_ADDON_KEYS).toEqual([
       "contactForm",
       "gallery",
       "menu",
       "pricelist",
+      "aiChat",
+      "booking",
     ]);
   });
 });

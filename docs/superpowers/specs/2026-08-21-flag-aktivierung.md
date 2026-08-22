@@ -282,15 +282,18 @@ des Studios sind folgende Punkte zu beachten:
 6. **Studio-Checkout nutzt denselben Webhook wie der alte Funnel.** `createStudioCheckoutSession`
    (`server/onboardingV2/checkout.ts`) baut dieselben Stripe-Metadaten (`websiteId`, `userId`,
    `billingInterval`, `addOns` als JSON, `totalAmount`) wie das bestehende
-   `checkout.createSession` in `server/routers.ts` — `stripeWebhook.ts` muss dafür **nicht**
-   angepasst werden. Von den Add-ons sind im Studio aktuell nur `contactForm`, `gallery`, `menu`
-   und `pricelist` buchbar (`BOOKABLE_ADDON_KEYS` in `shared/pricing.ts`); `aiChat`, `booking` und
-   `team` gelten als "Coming Soon" (`COMING_SOON_KEYS` in
-   `client/src/pages/onboarding-v2/panels/AddonsPanel.tsx`, clientseitig gesperrt). Serverseitig ist
-   das seit dem Final-Review-Fix (Finding I1, `server/onboardingV2/routerCommerce.ts`) hart
-   erzwungen: `updateAddons` lehnt jeden Request mit einem der drei gesperrten Flags auf `true` mit
+   `checkout.createSession` in `server/routers.ts`. Seit Plan B3 (Task 2) normalisiert der Webhook
+   (`server/stripeWebhookHandlers.ts`, `handleCheckoutCompleted`) alle 7 Add-on-Keys und schaltet
+   sie nach Zahlung frei — sowohl als Website-Flags (`addOnAiChat`/`addOnBooking`/`addOnTeam`) als
+   auch, für v2-Dokumente, als `features` im Dokument. Von den Add-ons ist im Studio nur `team`
+   nicht buchbar (`BOOKABLE_ADDON_KEYS` in `shared/pricing.ts` enthält seitdem auch `aiChat` und
+   `booking`); `team` gilt weiterhin als "Coming Soon" (`COMING_SOON_KEYS` in
+   `client/src/pages/onboarding-v2/panels/AddonsPanel.tsx`, clientseitig gesperrt, da das
+   Team-Panel noch fehlt). Serverseitig ist das seit dem Final-Review-Fix (Finding I1,
+   `server/onboardingV2/routerCommerce.ts`) hart
+   erzwungen: `updateAddons` lehnt jeden Request mit `team` auf `true` mit
    `BAD_REQUEST` ab (kein Write), und `createCheckout` schickt `sanitizeAddOns(state.addOns)` an
-   Stripe — eine veraltete DB-Zeile mit z. B. `addOnAiChat=true` kann sich also nicht mehr in Preis
+   Stripe — eine veraltete DB-Zeile mit z. B. `addOnTeam=true` kann sich also nicht mehr in Preis
    oder Metadaten einschleichen.
 
    **E-Mail-Dedupe (Finding I3).** `setCustomerEmail` verschickt die Willkommens-/Lifecycle-Mails
