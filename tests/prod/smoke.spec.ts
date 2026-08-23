@@ -21,10 +21,31 @@ interface SmokePage {
    * Wird zusätzlich zu ALLOWED_CONSOLE_ERROR_PATTERNS geprüft.
    */
   extraAllowedConsolePatterns?: RegExp[];
+  /**
+   * Beleg, dass React wirklich gemountet hat (nicht nur der Server-Prerender
+   * sichtbar ist): CSS-Selektor, der erst nach dem Client-Mount im DOM steht.
+   * Seit Plan B6 Task 8 mountet `/` erst nach dem First Paint — ein stiller
+   * Ausfall des Mount-Gates wäre ohne diese Assertion unsichtbar.
+   */
+  mountedSelector?: string;
 }
 
 const SMOKE_PAGES: SmokePage[] = [
-  { path: "/", label: "Landingpage" },
+  {
+    path: "/",
+    label: "Landingpage",
+    // Die React-Landing setzt `.lp` auf ihr Wurzelelement; der Prerender
+    // (#prerender) wird beim Mount ersetzt.
+    mountedSelector: ".lp",
+  },
+  // Seit Plan B6 Task 8 lazy geladene Routen (eigene Chunks) — Lehre aus
+  // Hotfix 9875dd9: Chunk-Fehler zeigt nur der Prod-Build.
+  { path: "/impressum", label: "Impressum (lazy Chunk)" },
+  { path: "/datenschutz", label: "Datenschutz (lazy Chunk)" },
+  {
+    path: "/diese-route-gibt-es-nicht",
+    label: "Unbekannte Route → NotFound (lazy Chunk)",
+  },
   { path: "/start", label: "Start (GMB-Suche)" },
   {
     path: "/my-website",
@@ -181,6 +202,17 @@ for (const smokePage of SMOKE_PAGES) {
         chunkResponse.status(),
         `Chunk ${url} (referenziert von ${smokePage.path}) antwortet nicht mit 200`
       ).toBe(200);
+    }
+
+    if (smokePage.mountedSelector) {
+      await expect(
+        page.locator(smokePage.mountedSelector).first(),
+        `React hat auf ${smokePage.path} nicht gemountet (Selektor ${smokePage.mountedSelector} fehlt)`
+      ).toBeVisible({ timeout: 15_000 });
+      await expect(
+        page.locator("#prerender"),
+        "Server-Prerender wurde nach dem React-Mount nicht ersetzt"
+      ).toHaveCount(0);
     }
 
     const bodyText = await page.evaluate(() => document.body.innerText.trim());
