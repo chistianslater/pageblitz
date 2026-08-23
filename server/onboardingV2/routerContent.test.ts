@@ -13,6 +13,7 @@ vi.mock("../db", async importOriginal => {
     getSubscriptionByWebsiteId: vi.fn(),
     getBusinessById: vi.fn(),
     getOnboardingByWebsiteId: vi.fn(),
+    getGenerationJobByWebsiteId: vi.fn(),
     updateOnboarding: vi.fn().mockResolvedValue(undefined),
     updateWebsite: vi.fn().mockResolvedValue(undefined),
     createOnboarding: vi.fn().mockResolvedValue(999),
@@ -25,14 +26,16 @@ vi.mock("../onboardingUpload", () => ({
     .mockResolvedValue({ url: "https://cdn/x.jpg", key: "k" }),
 }));
 vi.mock("../gmbPhotos", () => ({
-  getGmbPhotos: vi.fn().mockResolvedValue(["https://g/1.jpg"]),
+  mirrorGmbPhotosToR2: vi
+    .fn()
+    .mockResolvedValue(["https://media.pageblitz.de/website-42/gmb-a.jpg"]),
 }));
 vi.mock("../_core/llm", () => ({ invokeLLM: vi.fn() }));
 
 import { appRouter } from "../routers";
 import * as db from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
-import { getGmbPhotos } from "../gmbPhotos";
+import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { invokeLLM } from "../_core/llm";
 import { resetSuggestQuotaForTests } from "./suggest";
 const mockedDb = vi.mocked(db);
@@ -60,6 +63,10 @@ const v2 = {
 beforeEach(() => {
   vi.clearAllMocks();
   resetSuggestQuotaForTests();
+  vi.mocked(mirrorGmbPhotosToR2).mockResolvedValue([
+    "https://media.pageblitz.de/website-42/gmb-a.jpg",
+  ]);
+  mockedDb.getGenerationJobByWebsiteId.mockResolvedValue(undefined as any);
   mockedDb.getWebsiteByToken.mockResolvedValue({
     id: 42,
     slug: "preview-brandt",
@@ -82,7 +89,7 @@ beforeEach(() => {
 });
 
 describe("onboardingV2.getPhotoSources", () => {
-  test("liefert gmb (nur echte placeId), stock und uploaded", async () => {
+  test("liefert gmb (nur echte placeId, gespiegelte R2-URLs), stock und uploaded", async () => {
     mockedDb.getBusinessById.mockResolvedValue({
       id: 7,
       name: "Brandt",
@@ -94,9 +101,83 @@ describe("onboardingV2.getPhotoSources", () => {
       photoUrls: ["https://u/1.jpg"],
     } as any);
     const r = await caller().onboardingV2.getPhotoSources({ token: "tok" });
-    expect(r.gmb).toEqual(["https://g/1.jpg"]);
+    expect(r.gmb).toEqual(["https://media.pageblitz.de/website-42/gmb-a.jpg"]);
+    expect(mirrorGmbPhotosToR2).toHaveBeenCalledWith("ChIJabc", 42, 7);
     expect(r.stock.length).toBeGreaterThan(0);
     expect(r.uploaded).toEqual(["https://u/1.jpg"]);
+  });
+
+  test("Key-Leak geschlossen: keine key=-/Google-Photo-URL in der Rückgabe (Plan B7 Task 3)", async () => {
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Brandt",
+      category: "Tischler",
+      placeId: "ChIJabc",
+    } as any);
+    const r = await caller().onboardingV2.getPhotoSources({ token: "tok" });
+    for (const url of [...r.gmb, ...r.stock, ...r.uploaded]) {
+      expect(url).not.toContain("key=");
+      expect(url).not.toContain("maps.googleapis.com");
+    }
+  });
+
+  test("bereits gespiegelte R2-URLs im Dokument → Cache, keine erneute Spiegelung", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: {
+        ...v2,
+        sections: [
+          {
+            type: "hero",
+            headline: "H",
+            imageUrl: "https://media.pageblitz.de/website-42/gmb-hero.jpg",
+          },
+          {
+            type: "gallery",
+            images: [
+              {
+                url: "https://media.pageblitz.de/website-42/gmb-hero.jpg",
+                alt: "1",
+              },
+              {
+                url: "https://media.pageblitz.de/website-42/gmb-2.jpg",
+                alt: "2",
+              },
+            ],
+          },
+          { type: "contact" },
+        ],
+      },
+      customerEmail: null,
+    } as any);
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Brandt",
+      category: "Tischler",
+      placeId: "ChIJabc",
+    } as any);
+    const r = await caller().onboardingV2.getPhotoSources({ token: "tok" });
+    // Hero zuerst (Dokument-Reihenfolge), dedupliziert, keine Neu-Spiegelung.
+    expect(r.gmb).toEqual([
+      "https://media.pageblitz.de/website-42/gmb-hero.jpg",
+      "https://media.pageblitz.de/website-42/gmb-2.jpg",
+    ]);
+    expect(mirrorGmbPhotosToR2).not.toHaveBeenCalled();
+  });
+
+  test("Spiegelung liefert nichts (z. B. R2/Netz-Fehler) → gmb leer statt Key-URLs", async () => {
+    vi.mocked(mirrorGmbPhotosToR2).mockResolvedValue([]);
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Brandt",
+      category: "Tischler",
+      placeId: "ChIJabc",
+    } as any);
+    const r = await caller().onboardingV2.getPhotoSources({ token: "tok" });
+    expect(r.gmb).toEqual([]);
   });
 
   test("self-placeId → gmb leer ohne Google-Aufruf", async () => {
@@ -108,7 +189,7 @@ describe("onboardingV2.getPhotoSources", () => {
     } as any);
     const r = await caller().onboardingV2.getPhotoSources({ token: "tok" });
     expect(r.gmb).toEqual([]);
-    expect(getGmbPhotos).not.toHaveBeenCalled();
+    expect(mirrorGmbPhotosToR2).not.toHaveBeenCalled();
   });
 });
 
@@ -396,5 +477,58 @@ describe("onboardingV2.suggestTexts / suggestOffer", () => {
     await expect(
       caller().onboardingV2.suggestTexts({ token: "tok", field: "headline" })
     ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
+  });
+});
+
+describe("Generierungs-Gate (Plan B7 Nachfix): Patches während laufender Generierung", () => {
+  const GATE_MESSAGE = "Die Website wird gerade erstellt — einen Moment bitte.";
+
+  test("updateTexts während processing → BAD_REQUEST, kein Write", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "processing",
+      progress: 55,
+      error: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.updateTexts({
+        token: "tok",
+        patch: { headline: "Neu" },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("setImages während pending → BAD_REQUEST, kein Write", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "pending",
+      progress: 0,
+      error: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.setImages({
+        token: "tok",
+        patch: { hero: "https://x/neu.jpg" },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("nach completed → updateTexts läuft normal durch", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "completed",
+      progress: 100,
+      error: null,
+    } as any);
+    const s = await caller().onboardingV2.updateTexts({
+      token: "tok",
+      patch: { headline: "Neu" },
+    });
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+    expect(s.doc?.sections.find(x => x.type === "hero")).toMatchObject({
+      headline: "Neu",
+    });
   });
 });

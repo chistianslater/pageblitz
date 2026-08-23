@@ -7,7 +7,7 @@ import {
   getOnboardingByWebsiteId,
   updateOnboarding,
 } from "../db";
-import { getGmbPhotos } from "../gmbPhotos";
+import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getIndustryImages } from "../industryImages";
 import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
 import {
@@ -58,6 +58,37 @@ function readPhotoUrls(
     : [];
 }
 
+/**
+ * Bereits nach R2 gespiegelte GMB-Fotos aus dem Dokument (Key-Muster
+ * `website-<id>/gmb-…`, siehe r2Upload.ts/gmbPhotos.ts) — Cache fürs
+ * Fotos-Panel: was die Generierung schon gespiegelt hat, wird nicht erneut
+ * heruntergeladen und doppelt nach R2 hochgeladen. Reihenfolge = Dokument-
+ * Reihenfolge (Hero zuerst, wie von resolveV2Images geschrieben).
+ */
+function collectMirroredGmbPhotos(doc: unknown, websiteId: number): string[] {
+  const marker = `/website-${websiteId}/gmb-`;
+  const found: string[] = [];
+  const seen = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (typeof value === "string") {
+      if (value.includes(marker) && !seen.has(value)) {
+        seen.add(value);
+        found.push(value);
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+    if (value && typeof value === "object") {
+      Object.values(value).forEach(walk);
+    }
+  };
+  walk(doc);
+  return found;
+}
+
 /** Stadt für Vorschlags-Prompts — steht (wie readOpeningHours in state.ts) in der contact-Sektion des Dokuments. */
 function readCity(doc: { sections: { type: string }[] }): string | undefined {
   const contact = doc.sections.find(
@@ -77,7 +108,15 @@ const TextFieldSchema = z.enum([
 const OfferModeSchema = z.enum(["services", "menu", "pricelist"]);
 
 export const contentProcedures = {
-  /** Fotoquellen für das Bilder-Panel: Google-My-Business, kuratierte Stockbilder, bereits hochgeladene Fotos. */
+  /**
+   * Fotoquellen für das Bilder-Panel: Google-My-Business, kuratierte
+   * Stockbilder, bereits hochgeladene Fotos. GMB-Fotos kommen NIE als rohe
+   * Google-Photo-URL (die trägt den Places-API-Key als `key=`-Parameter und
+   * würde über einen Bilder-Patch im Dokument landen — Key-Leak, Plan B7
+   * Task 3): bereits gespiegelte R2-URLs aus dem Dokument werden
+   * wiederverwendet, sonst wird bei Bedarf über `mirrorGmbPhotosToR2`
+   * gespiegelt; scheitert die Spiegelung eines Fotos, entfällt das Foto.
+   */
   getPhotoSources: publicProcedure
     .input(tokenInput)
     .query(async ({ input, ctx }) => {
@@ -86,9 +125,16 @@ export const contentProcedures = {
         getBusinessById(loaded.website.businessId),
         getOnboardingByWebsiteId(loaded.website.id),
       ]);
-      const gmb = isRealPlaceId(business?.placeId)
-        ? await getGmbPhotos(business.placeId, 7)
-        : [];
+      const mirroredInDoc = collectMirroredGmbPhotos(
+        loaded.doc,
+        loaded.website.id
+      );
+      const gmb =
+        mirroredInDoc.length > 0
+          ? mirroredInDoc
+          : isRealPlaceId(business?.placeId)
+            ? await mirrorGmbPhotosToR2(business.placeId, loaded.website.id, 7)
+            : [];
       const { hero, gallery } = getIndustryImages(
         business?.category ?? "",
         business?.name ?? ""
@@ -146,7 +192,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ patch: ImagesPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       return persistDoc(input.token, loaded, applyImages(doc, input.patch));
     }),
 
@@ -154,7 +200,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ patch: TextsPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       return persistDoc(input.token, loaded, applyTexts(doc, input.patch), {
         progress: { textsReviewed: true },
       });
@@ -164,7 +210,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ offer: OfferPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       return persistDoc(input.token, loaded, applyOffer(doc, input.offer));
     }),
 
@@ -184,7 +230,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ patch: PagesPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       let base = doc;
       let extra: { addOnSubpages?: boolean } = {};
       if (input.patch.pages.length > 0 && doc.addOns?.subpages !== true) {
@@ -202,7 +248,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ field: TextFieldSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       assertSuggestQuota(loaded.website.id);
       const business = await getBusinessById(loaded.website.businessId);
       const variants = await suggestTextVariants({
@@ -220,7 +266,7 @@ export const contentProcedures = {
     .input(tokenInput.extend({ mode: OfferModeSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       assertSuggestQuota(loaded.website.id);
       const business = await getBusinessById(loaded.website.businessId);
       const offer = await suggestOfferVariants({
