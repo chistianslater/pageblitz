@@ -5,6 +5,12 @@ import { PACK_IDS } from "@shared/siteContract/types";
 import { getConstitution } from "@shared/stylePacks";
 import { PackShowcase } from "./PackShowcase";
 
+// Interaktions-Verhalten des Vorschau-Modals (Backdrop-Klick schließt,
+// Tab-Fokusfalle springt am Rand um) wird HIER bewusst nicht getestet:
+// vitest.config.ts läuft mit `environment: "node"` (kein happy-dom/jsdom),
+// dieses Modul rendert nur statisches Markup via `renderToStaticMarkup`
+// ohne DOM/Event-Handling. Diese Fälle stehen als echte Interaktionstests
+// in `tests/visual/landing.spec.ts` (Playwright, echter Browser).
 describe("PackShowcase", () => {
   const html = renderToStaticMarkup(<PackShowcase isDark={true} />);
 

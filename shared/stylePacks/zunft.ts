@@ -64,16 +64,14 @@ export const ZUNFT: PackConstitution = {
     },
     {
       name: "Siegelgold",
-      // War #B98A2F — die Preistafel (pb-zf-price) nutzt diese Farbe
-      // entgegen dem "nie als Textfläche"-Hinweis doch als Textfarbe; Kontrast
-      // gegen die Leinensack-Fläche lag bei nur 2,7:1 (axe color-contrast,
-      // B4c Task 7 a11y-Pass). #7A5818 (dunkleres, gedeckteres Gold) erreicht
-      // ≥4,5:1. Modul-Fix statt Verfassungs-Kommentar entfernen war nicht
-      // Teil dieses Tasks (siehe Bericht).
+      // War #B98A2F — als Preis-Textfarbe in .pb-zf-price (siehe usage
+      // unten) lag der Kontrast gegen die Leinensack-Fläche bei nur 2,7:1
+      // (axe color-contrast, B4c Task 7 a11y-Pass). #7A5818 (dunkleres,
+      // gedeckteres Gold) erreicht ≥4,5:1.
       hex: "#7A5818",
       role: "accent-2",
       usage:
-        "Ornament-Bordüre, Punktlinien-Preise in der Preistafel — nie als Textfläche.",
+        "Ornament-Bordüre, Preis-Textfarbe in der Preistafel (.pb-zf-price) — sonst nie als große Textfläche.",
     },
     {
       name: "Mehlweiß",

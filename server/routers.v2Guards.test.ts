@@ -240,6 +240,40 @@ describe("Zentraler Write-Guard (C-3)", () => {
     expect(result).toEqual({ success: true, regenerated: true });
     expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
   });
+
+  test("onboarding.regenerateLegalPages als eingeloggter Nutzer ohne passende Subscription (anderer userId) → FORBIDDEN, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
+    // Subscription existiert, gehört aber einem anderen Nutzer (websiteId
+    // stimmt, userId nicht) — isSubscriptionOwner muss false bleiben.
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      id: 1,
+      websiteId: 42,
+      userId: 999,
+    } as any);
+
+    const caller = appRouter.createCaller(createUserContext(2));
+    await expect(
+      caller.onboarding.regenerateLegalPages({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedDb.getOnboardingByWebsiteId).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("onboarding.regenerateLegalPages als eingeloggter Nutzer ohne jede Subscription (getSubscriptionByWebsiteId → null) → FORBIDDEN, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue(undefined as any);
+
+    const caller = appRouter.createCaller(createUserContext(2));
+    await expect(
+      caller.onboarding.regenerateLegalPages({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedDb.getOnboardingByWebsiteId).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
 });
 
 describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", () => {
