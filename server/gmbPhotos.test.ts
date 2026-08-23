@@ -130,4 +130,118 @@ describe("mirrorGmbPhotosToR2", () => {
     expect(deps.fetchImpl).not.toHaveBeenCalled();
     expect(deps.upload).not.toHaveBeenCalled();
   });
+
+  test("hängender Google-Download läuft nach 12 s in den Timeout → Foto überspringen, Rest kommt durch", async () => {
+    vi.useFakeTimers();
+    try {
+      const deps = makeDeps({
+        fetchImpl: vi.fn(
+          (url: string, init?: RequestInit) =>
+            new Promise<Response>((resolve, reject) => {
+              if (url === GOOGLE_URL_2) {
+                // Hängt für immer — nur der AbortController beendet den Fetch.
+                init?.signal?.addEventListener("abort", () =>
+                  reject(new DOMException("Aborted", "AbortError"))
+                );
+                return;
+              }
+              resolve(okImageResponse());
+            })
+        ) as unknown as typeof fetch,
+      });
+      const pending = mirrorGmbPhotosToR2("ChIJabc", 42, 8, deps);
+      await vi.advanceTimersByTimeAsync(12_001);
+      const urls = await pending;
+      expect(urls).toHaveLength(2);
+      expect(deps.upload).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("begrenzte Parallelität: max. 3 Downloads gleichzeitig, schneller als sequentiell, Reihenfolge stabil", async () => {
+    vi.useFakeTimers();
+    try {
+      const sixUrls = Array.from(
+        { length: 6 },
+        (_, i) =>
+          `https://maps.googleapis.com/maps/api/place/photo?photo_reference=r${i + 1}&key=SECRET`
+      );
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const deps = makeDeps({
+        getPhotos: vi.fn().mockResolvedValue(sixUrls),
+        fetchImpl: vi.fn(
+          (url: string) =>
+            new Promise<Response>(resolve => {
+              inFlight += 1;
+              maxInFlight = Math.max(maxInFlight, inFlight);
+              setTimeout(() => {
+                inFlight -= 1;
+                resolve(okImageResponse());
+              }, 100);
+            })
+        ) as unknown as typeof fetch,
+        upload: vi.fn(async (_data, _mime, _websiteId, _prefix) => {
+          // R2-URL trägt die photo_reference des zuletzt gefetchten Fotos
+          // nicht — Reihenfolge wird über die Upload-Aufrufsfolge geprüft.
+          return {
+            url: `https://media.pageblitz.de/website-42/gmb-slot.jpg`,
+            key: "k",
+          };
+        }),
+      });
+      const pending = mirrorGmbPhotosToR2("ChIJabc", 42, 8, deps);
+      // Sequentiell bräuchten 6 Fotos à 100 ms 600 ms — mit 3er-Pool reichen 200 ms.
+      await vi.advanceTimersByTimeAsync(200);
+      const urls = await pending;
+      expect(urls).toHaveLength(6);
+      expect(maxInFlight).toBe(3);
+      // Downloads starten in Eingabe-Reihenfolge (Pool zieht Index für Index).
+      const fetched = vi
+        .mocked(deps.fetchImpl)
+        .mock.calls.map(call => call[0] as string);
+      expect(fetched).toEqual(sixUrls);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test("Ergebnis-Reihenfolge folgt der Eingabe, auch wenn spätere Fotos früher fertig sind", async () => {
+    vi.useFakeTimers();
+    try {
+      // Foto 1 braucht 300 ms, Foto 2/3 sind sofort fertig — die R2-URLs
+      // müssen trotzdem in Eingabe-Reihenfolge zurückkommen (Foto 1 = Hero).
+      const deps = makeDeps({
+        fetchImpl: vi.fn(
+          (url: string) =>
+            new Promise<Response>(resolve => {
+              const delay = url === GOOGLE_URL_1 ? 300 : 0;
+              setTimeout(() => resolve(okImageResponse()), delay);
+            })
+        ) as unknown as typeof fetch,
+        upload: vi.fn(async (base64: string) => {
+          // Jeder Upload bekommt eine URL, die die Fertigstellungs-Nummer
+          // trägt — würde die Reihenfolge kippen, stünde Foto 1 nicht vorn.
+          const n = vi.mocked(deps.upload).mock.calls.length;
+          return {
+            url: `https://media.pageblitz.de/website-42/gmb-done-${n}.jpg`,
+            key: "k",
+          };
+        }),
+      });
+      const pending = mirrorGmbPhotosToR2("ChIJabc", 42, 8, deps);
+      await vi.advanceTimersByTimeAsync(301);
+      const urls = await pending;
+      // Fertigstellung: Foto 2 (done-1), Foto 3 (done-2), Foto 1 (done-3) —
+      // Position 0 gehört trotzdem Foto 1.
+      expect(urls).toEqual([
+        "https://media.pageblitz.de/website-42/gmb-done-3.jpg",
+        "https://media.pageblitz.de/website-42/gmb-done-1.jpg",
+        "https://media.pageblitz.de/website-42/gmb-done-2.jpg",
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

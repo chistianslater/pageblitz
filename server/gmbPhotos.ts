@@ -49,6 +49,10 @@ export async function getGmbPhotos(
 
 /** Obergrenze pro gespiegeltem Foto (Google liefert bei maxwidth=1600 deutlich weniger). */
 const MAX_MIRRORED_PHOTO_BYTES = 10 * 1024 * 1024;
+/** Timeout pro Foto-Download (Muster wie server/gmb/siteCrawl.ts) — hängende Google-Antworten überspringen das Foto statt den Job zu blockieren. */
+const PHOTO_FETCH_TIMEOUT_MS = 12_000;
+/** Max. gleichzeitige Foto-Spiegelungen — begrenzt parallel statt sequentiell, damit der Zeitmaschinen-Zwischenstand nicht auf 8 serielle Downloads wartet. */
+const MIRROR_CONCURRENCY = 3;
 
 export type MirrorGmbPhotosDeps = {
   /** Foto-URL-Beschaffung (Default: `getGmbPhotos`) — in Tests mocken. */
@@ -70,8 +74,11 @@ export type MirrorGmbPhotosDeps = {
  * fehl → leeres Ergebnis → der Aufrufer fällt auf Branchen-Stockbilder
  * zurück (statt jemals eine Key-URL zu verwenden).
  *
- * Bewusst sequentiell: erhält die GMB-Foto-Reihenfolge (Foto 1 = Hero,
- * Foto 2 = Über uns) deterministisch und schont Google-/R2-Limits.
+ * Begrenzte Parallelität (MIRROR_CONCURRENCY) statt sequentiell: die
+ * Bild-Phase des Jobs verzögert sonst den Zeitmaschinen-Zwischenstand um
+ * 8 serielle Downloads. Die Ergebnis-Reihenfolge bleibt trotzdem stabil
+ * (Foto 1 = Hero, Foto 2 = Über uns): jedes Ergebnis landet an seiner
+ * Eingabe-Position, übersprungene Fotos werden erst am Ende herausgefiltert.
  */
 export async function mirrorGmbPhotosToR2(
   placeId: string,
@@ -94,31 +101,54 @@ export async function mirrorGmbPhotosToR2(
     return [];
   }
 
-  const mirrored: string[] = [];
-  for (const googleUrl of googleUrls) {
+  /** Spiegelt genau EIN Foto — `null` = überspringen (Fehler/Timeout/Nicht-Bild), wirft nie. */
+  const mirrorOne = async (googleUrl: string): Promise<string | null> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), PHOTO_FETCH_TIMEOUT_MS);
     try {
-      const response = await fetchImpl(googleUrl);
-      if (!response.ok) continue;
+      const response = await fetchImpl(googleUrl, {
+        signal: controller.signal,
+      });
+      if (!response.ok) return null;
       const mime =
         response.headers.get("content-type")?.split(";")[0]?.trim() ||
         "image/jpeg";
-      if (!mime.startsWith("image/")) continue;
+      if (!mime.startsWith("image/")) return null;
       const buffer = Buffer.from(await response.arrayBuffer());
       if (buffer.length === 0 || buffer.length > MAX_MIRRORED_PHOTO_BYTES)
-        continue;
+        return null;
       const { url } = await upload(
         buffer.toString("base64"),
         mime,
         websiteId,
         "gmb"
       );
-      mirrored.push(url);
+      return url;
     } catch (err) {
       console.warn(
         `[GMB Fotos] Spiegelung eines Fotos übersprungen (Website ${websiteId}):`,
         err
       );
+      return null;
+    } finally {
+      clearTimeout(timer);
     }
-  }
-  return mirrored;
+  };
+
+  // Worker-Pool: max. MIRROR_CONCURRENCY Fotos gleichzeitig, Ergebnis je
+  // Eingabe-Position — Reihenfolge unabhängig von der Fertigstellung.
+  const results: (string | null)[] = new Array(googleUrls.length).fill(null);
+  let nextIndex = 0;
+  const workers = Array.from(
+    { length: Math.min(MIRROR_CONCURRENCY, googleUrls.length) },
+    async () => {
+      for (;;) {
+        const index = nextIndex++;
+        if (index >= googleUrls.length) return;
+        results[index] = await mirrorOne(googleUrls[index]);
+      }
+    }
+  );
+  await Promise.all(workers);
+  return results.filter((url): url is string => url !== null);
 }
