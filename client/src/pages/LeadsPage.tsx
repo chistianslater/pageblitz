@@ -3,12 +3,42 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
-  Mail, Loader2, ArrowRight, CheckCircle, ShoppingCart, AlertTriangle, Users,
-  TrendingUp, Eye, ExternalLink, ChevronRight, BarChart3
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Mail,
+  Loader2,
+  ArrowRight,
+  CheckCircle,
+  ShoppingCart,
+  AlertTriangle,
+  Users,
+  TrendingUp,
+  Eye,
+  ExternalLink,
+  ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -66,7 +96,7 @@ const FUNNEL_STEPS = [
   },
 ] as const;
 
-type CaptureStatus = typeof FUNNEL_STEPS[number]["key"];
+type CaptureStatus = (typeof FUNNEL_STEPS)[number]["key"];
 
 function getStepConfig(key: string) {
   return FUNNEL_STEPS.find(s => s.key === key) ?? FUNNEL_STEPS[0];
@@ -77,14 +107,19 @@ export default function LeadsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [updateDialogLead, setUpdateDialogLead] = useState<any | null>(null);
   const [newStatus, setNewStatus] = useState<CaptureStatus>("email_captured");
-  const [progressWebsiteId, setProgressWebsiteId] = useState<number | null>(null);
+  const [progressWebsiteId, setProgressWebsiteId] = useState<number | null>(
+    null
+  );
 
-  const { data: funnelData, isLoading: funnelLoading } = trpc.leads.funnel.useQuery();
-  const { data: leadsData, isLoading: leadsLoading } = trpc.leads.list.useQuery({
-    limit: 100,
-    offset: 0,
-    captureStatus: statusFilter === "all" ? undefined : statusFilter,
-  });
+  const { data: funnelData, isLoading: funnelLoading } =
+    trpc.leads.funnel.useQuery();
+  const { data: leadsData, isLoading: leadsLoading } = trpc.leads.list.useQuery(
+    {
+      limit: 100,
+      offset: 0,
+      captureStatus: statusFilter === "all" ? undefined : statusFilter,
+    }
+  );
 
   const updateStatusMutation = trpc.leads.updateStatus.useMutation({
     onSuccess: () => {
@@ -93,21 +128,26 @@ export default function LeadsPage() {
       utils.leads.list.invalidate();
       utils.leads.funnel.invalidate();
     },
-    onError: (err) => toast.error("Fehler: " + err.message),
+    onError: err => toast.error("Fehler: " + err.message),
   });
 
   const total = funnelData?.total ?? 0;
   const converted = funnelData?.converted ?? 0;
-  const conversionRate = total > 0 ? ((converted / total) * 100).toFixed(1) : "0.0";
+  const conversionRate =
+    total > 0 ? ((converted / total) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+        <h1
+          className="text-3xl font-bold tracking-tight"
+          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+        >
           Lead-Funnel
         </h1>
         <p className="text-muted-foreground mt-1">
-          Externe Leads aus der Landing Page – von E-Mail-Erfassung bis zur Conversion.
+          Externe Leads aus der Landing Page – von E-Mail-Erfassung bis zur
+          Conversion.
         </p>
       </div>
 
@@ -120,7 +160,9 @@ export default function LeadsPage() {
                 <Users className="h-5 w-5 text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{funnelLoading ? "…" : total}</p>
+                <p className="text-2xl font-bold">
+                  {funnelLoading ? "…" : total}
+                </p>
                 <p className="text-xs text-muted-foreground">Gesamt-Leads</p>
               </div>
             </div>
@@ -133,7 +175,9 @@ export default function LeadsPage() {
                 <ShoppingCart className="h-5 w-5 text-emerald-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{funnelLoading ? "…" : converted}</p>
+                <p className="text-2xl font-bold">
+                  {funnelLoading ? "…" : converted}
+                </p>
                 <p className="text-xs text-muted-foreground">Konvertiert</p>
               </div>
             </div>
@@ -146,7 +190,9 @@ export default function LeadsPage() {
                 <TrendingUp className="h-5 w-5 text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{funnelLoading ? "…" : `${conversionRate}%`}</p>
+                <p className="text-2xl font-bold">
+                  {funnelLoading ? "…" : `${conversionRate}%`}
+                </p>
                 <p className="text-xs text-muted-foreground">Conversion-Rate</p>
               </div>
             </div>
@@ -169,34 +215,47 @@ export default function LeadsPage() {
             </div>
           ) : (
             <div className="flex items-stretch gap-2 overflow-x-auto pb-2">
-              {FUNNEL_STEPS.filter(s => s.key !== "abandoned").map((step, idx, arr) => {
-                const count = (funnelData as any)?.[step.key] ?? 0;
-                const prevCount = idx > 0 ? ((funnelData as any)?.[arr[idx - 1].key] ?? 0) : total;
-                const dropRate = prevCount > 0 ? (((prevCount - count) / prevCount) * 100).toFixed(0) : "0";
-                const Icon = step.icon;
-                return (
-                  <div key={step.key} className="flex items-center gap-2 flex-1 min-w-[140px]">
-                    <button
-                      onClick={() => setStatusFilter(step.key)}
-                      className={`flex-1 p-4 rounded-lg border ${step.bg} ${step.border} hover:opacity-80 transition-opacity text-left`}
+              {FUNNEL_STEPS.filter(s => s.key !== "abandoned").map(
+                (step, idx, arr) => {
+                  const count = (funnelData as any)?.[step.key] ?? 0;
+                  const prevCount =
+                    idx > 0
+                      ? ((funnelData as any)?.[arr[idx - 1].key] ?? 0)
+                      : total;
+                  const dropRate =
+                    prevCount > 0
+                      ? (((prevCount - count) / prevCount) * 100).toFixed(0)
+                      : "0";
+                  const Icon = step.icon;
+                  return (
+                    <div
+                      key={step.key}
+                      className="flex items-center gap-2 flex-1 min-w-[140px]"
                     >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon className={`h-4 w-4 ${step.color}`} />
-                        <span className={`text-xs font-medium ${step.color}`}>{step.label}</span>
-                      </div>
-                      <p className="text-2xl font-bold">{count}</p>
-                      {idx > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          -{dropRate}% Drop
-                        </p>
+                      <button
+                        onClick={() => setStatusFilter(step.key)}
+                        className={`flex-1 p-4 rounded-lg border ${step.bg} ${step.border} hover:opacity-80 transition-opacity text-left`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className={`h-4 w-4 ${step.color}`} />
+                          <span className={`text-xs font-medium ${step.color}`}>
+                            {step.label}
+                          </span>
+                        </div>
+                        <p className="text-2xl font-bold">{count}</p>
+                        {idx > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            -{dropRate}% Drop
+                          </p>
+                        )}
+                      </button>
+                      {idx < arr.length - 1 && (
+                        <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
                       )}
-                    </button>
-                    {idx < arr.length - 1 && (
-                      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                    )}
-                  </div>
-                );
-              })}
+                    </div>
+                  );
+                }
+              )}
               {/* Abandoned separately */}
               <div className="flex items-center gap-2 min-w-[140px]">
                 <div className="w-px h-8 bg-border mx-1" />
@@ -206,9 +265,13 @@ export default function LeadsPage() {
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-4 w-4 text-red-400" />
-                    <span className="text-xs font-medium text-red-400">Abgebrochen</span>
+                    <span className="text-xs font-medium text-red-400">
+                      Abgebrochen
+                    </span>
                   </div>
-                  <p className="text-2xl font-bold">{funnelData?.abandoned ?? 0}</p>
+                  <p className="text-2xl font-bold">
+                    {funnelData?.abandoned ?? 0}
+                  </p>
                 </button>
               </div>
             </div>
@@ -235,12 +298,18 @@ export default function LeadsPage() {
                 <SelectContent>
                   <SelectItem value="all">Alle Status</SelectItem>
                   {FUNNEL_STEPS.map(s => (
-                    <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
+                    <SelectItem key={s.key} value={s.key}>
+                      {s.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {statusFilter !== "all" && (
-                <Button variant="outline" size="sm" onClick={() => setStatusFilter("all")}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                >
                   Zurücksetzen
                 </Button>
               )}
@@ -256,7 +325,10 @@ export default function LeadsPage() {
             <div className="text-center py-12 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-30" />
               <p>Noch keine externen Leads vorhanden.</p>
-              <p className="text-sm mt-1">Leads entstehen wenn Besucher ihre E-Mail auf der Landing Page eingeben.</p>
+              <p className="text-sm mt-1">
+                Leads entstehen wenn Besucher ihre E-Mail auf der Landing Page
+                eingeben.
+              </p>
             </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
@@ -280,14 +352,20 @@ export default function LeadsPage() {
                           <div className="flex items-center gap-2">
                             <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             <span className="font-medium text-sm">
-                              {lead.customerEmail || <span className="text-muted-foreground italic">Keine E-Mail</span>}
+                              {lead.customerEmail || (
+                                <span className="text-muted-foreground italic">
+                                  Keine E-Mail
+                                </span>
+                              )}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm font-medium">{lead.slug}</div>
                           {lead.industry && (
-                            <div className="text-xs text-muted-foreground">{lead.industry}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {lead.industry}
+                            </div>
                           )}
                         </TableCell>
                         <TableCell>
@@ -303,12 +381,20 @@ export default function LeadsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={() => setProgressWebsiteId(lead.id)}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setProgressWebsiteId(lead.id)}
+                            >
                               <BarChart3 className="h-3 w-3 mr-1" /> Fortschritt
                             </Button>
                             {lead.previewToken && (
                               <Button variant="outline" size="sm" asChild>
-                                <a href={`/preview/${lead.previewToken}`} target="_blank" rel="noopener">
+                                <a
+                                  href={`/preview/${lead.previewToken}`}
+                                  target="_blank"
+                                  rel="noopener"
+                                >
                                   <Eye className="h-3 w-3 mr-1" /> Preview
                                 </a>
                               </Button>
@@ -318,7 +404,9 @@ export default function LeadsPage() {
                               size="sm"
                               onClick={() => {
                                 setUpdateDialogLead(lead);
-                                setNewStatus(lead.captureStatus as CaptureStatus);
+                                setNewStatus(
+                                  lead.captureStatus as CaptureStatus
+                                );
                               }}
                             >
                               Status ändern
@@ -336,22 +424,36 @@ export default function LeadsPage() {
       </Card>
 
       {/* Status Update Dialog */}
-      <Dialog open={!!updateDialogLead} onOpenChange={(open) => { if (!open) setUpdateDialogLead(null); }}>
+      <Dialog
+        open={!!updateDialogLead}
+        onOpenChange={open => {
+          if (!open) setUpdateDialogLead(null);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Lead-Status ändern</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Status für <span className="font-medium text-foreground">{updateDialogLead?.customerEmail || updateDialogLead?.slug}</span> ändern.
+              Status für{" "}
+              <span className="font-medium text-foreground">
+                {updateDialogLead?.customerEmail || updateDialogLead?.slug}
+              </span>{" "}
+              ändern.
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <Select value={newStatus} onValueChange={(v) => setNewStatus(v as CaptureStatus)}>
+            <Select
+              value={newStatus}
+              onValueChange={v => setNewStatus(v as CaptureStatus)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {FUNNEL_STEPS.map(s => (
-                  <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
+                  <SelectItem key={s.key} value={s.key}>
+                    {s.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -363,7 +465,10 @@ export default function LeadsPage() {
             <Button
               onClick={() => {
                 if (updateDialogLead) {
-                  updateStatusMutation.mutate({ id: updateDialogLead.id, captureStatus: newStatus });
+                  updateStatusMutation.mutate({
+                    id: updateDialogLead.id,
+                    captureStatus: newStatus,
+                  });
                 }
               }}
               disabled={updateStatusMutation.isPending}
@@ -379,13 +484,18 @@ export default function LeadsPage() {
         </DialogContent>
       </Dialog>
       {/* Progress Dialog */}
-      <Dialog open={progressWebsiteId !== null} onOpenChange={() => setProgressWebsiteId(null)}>
+      <Dialog
+        open={progressWebsiteId !== null}
+        onOpenChange={() => setProgressWebsiteId(null)}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Onboarding-Fortschritt</DialogTitle>
             <DialogDescription>Erreichte Steps dieses Users</DialogDescription>
           </DialogHeader>
-          {progressWebsiteId && <StepProgressDetail websiteId={progressWebsiteId} />}
+          {progressWebsiteId && (
+            <StepProgressDetail websiteId={progressWebsiteId} />
+          )}
         </DialogContent>
       </Dialog>
     </div>
@@ -393,25 +503,50 @@ export default function LeadsPage() {
 }
 
 function StepProgressDetail({ websiteId }: { websiteId: number }) {
-  const { data: events, isLoading } = trpc.onboarding.getStepEvents.useQuery({ websiteId });
+  const { data: events, isLoading } = trpc.onboarding.getStepEvents.useQuery({
+    websiteId,
+  });
 
-  if (isLoading) return <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>;
-  if (!events || events.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Keine Step-Daten vorhanden.</p>;
+  if (isLoading)
+    return (
+      <div className="flex justify-center py-6">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  if (!events || events.length === 0)
+    return (
+      <p className="text-sm text-muted-foreground text-center py-6">
+        Keine Step-Daten vorhanden.
+      </p>
+    );
 
   return (
     <div className="space-y-1.5 max-h-[400px] overflow-y-auto">
       {events.map((ev: any, i: number) => (
-        <div key={ev.id} className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30">
+        <div
+          key={ev.id}
+          className="flex items-center gap-3 py-2 px-3 rounded-lg bg-muted/30"
+        >
           <div className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">{STEP_LABELS[ev.step] || ev.step}</p>
+            <p className="text-sm font-medium">
+              {STEP_LABELS[ev.step] || ev.step}
+            </p>
             <p className="text-[10px] text-muted-foreground">
-              {new Date(ev.createdAt).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              {new Date(ev.createdAt).toLocaleString("de-DE", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           </div>
-          <span className="text-[10px] text-muted-foreground">Step {ev.stepIndex + 1}</span>
+          <span className="text-[10px] text-muted-foreground">
+            Step {ev.stepIndex + 1}
+          </span>
         </div>
       ))}
     </div>
@@ -472,7 +607,8 @@ function StepFunnel() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-6 text-sm">
-            Noch keine Step-Daten. Daten werden gesammelt sobald User das Onboarding durchlaufen.
+            Noch keine Step-Daten. Daten werden gesammelt sobald User das
+            Onboarding durchlaufen.
           </p>
         </CardContent>
       </Card>
@@ -488,14 +624,19 @@ function StepFunnel() {
           <TrendingUp className="h-5 w-5 text-primary" />
           Onboarding-Steps (Detail)
         </CardTitle>
-        <p className="text-xs text-muted-foreground">Wie viele User erreichen welchen Schritt?</p>
+        <p className="text-xs text-muted-foreground">
+          Wie viele User erreichen welchen Schritt?
+        </p>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
           {steps.map((step: any, i: number) => {
             const pct = maxCount > 0 ? (step.count / maxCount) * 100 : 0;
             const prevCount = i > 0 ? steps[i - 1].count : step.count;
-            const dropPct = prevCount > 0 ? (((prevCount - step.count) / prevCount) * 100).toFixed(0) : "0";
+            const dropPct =
+              prevCount > 0
+                ? (((prevCount - step.count) / prevCount) * 100).toFixed(0)
+                : "0";
             return (
               <div key={step.step} className="flex items-center gap-3">
                 <div className="w-32 text-xs text-right text-muted-foreground truncate shrink-0">
@@ -506,7 +647,8 @@ function StepFunnel() {
                     className="h-full rounded-sm transition-all duration-500"
                     style={{
                       width: `${pct}%`,
-                      backgroundColor: pct > 60 ? '#22c55e' : pct > 30 ? '#f59e0b' : '#ef4444',
+                      backgroundColor:
+                        pct > 60 ? "#22c55e" : pct > 30 ? "#f59e0b" : "#ef4444",
                     }}
                   />
                   <span className="absolute inset-0 flex items-center px-2 text-xs font-semibold">
@@ -514,7 +656,9 @@ function StepFunnel() {
                   </span>
                 </div>
                 {i > 0 && Number(dropPct) > 0 && (
-                  <span className="text-xs text-red-400 w-14 text-right shrink-0">-{dropPct}%</span>
+                  <span className="text-xs text-red-400 w-14 text-right shrink-0">
+                    -{dropPct}%
+                  </span>
                 )}
               </div>
             );
