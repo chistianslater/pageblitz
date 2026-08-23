@@ -124,13 +124,17 @@ außerhalb der Migration selbst, siehe Task-4-Report):
 - Tabelle `template_uploads` komplett entfernt (Templates-Cluster war bereits
   in B4b tot, siehe `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`).
 
-**Bewusst NICHT gedroppt:** `onboarding_responses.addOnTeamData` — Team-Panel
-im Studio ist auf Plan B5 verschoben (Add-on `team` ist im Kaufprozess
-gesperrt), die Spalte wird gebraucht, sobald das Panel gebaut wird. Alle
-übrigen `addOn*`-, `legal*`-, `chat*`-, `photoUrls`-, `openingHours`- und
-`headlineFont`-Spalten sowie `businessName`/`businessCategory`/
-`studioProgress` bleiben unverändert (Behalten-Liste, s. Plan
-`2026-08-23-onboarding-v2-b4c-polish.md`).
+**Damals bewusst NICHT gedroppt, seit Migration 0028 erledigt:**
+`onboarding_responses.addOnTeamData` — zum Zeitpunkt von 0027 war das
+Team-Panel im Studio auf Plan B5 verschoben (Add-on `team` im Kaufprozess
+gesperrt), die Spalte wurde noch gebraucht. Mit Plan B5 (Team-Add-on
+buchbar, Inhalt lebt als Sektion `team` im v2-Dokument statt in der Spalte)
+ist auch diese Spalte überflüssig geworden und wurde mit Migration 0028
+(siehe unten) gedroppt — `onboarding_responses.addOnTeamData` existiert
+nicht mehr. Alle übrigen `addOn*`-, `legal*`-, `chat*`-, `photoUrls`-,
+`openingHours`- und `headlineFont`-Spalten sowie `businessName`/
+`businessCategory`/`studioProgress` bleiben unverändert (Behalten-Liste, s.
+Plan `2026-08-23-onboarding-v2-b4c-polish.md`).
 
 Prod-Ablauf (nach Merge, mit Nutzer-Freigabe, **nicht** eigenständig
 ausführen) — **Expand/Contract-Reihenfolge, in dieser Abfolge**: erst der
@@ -165,6 +169,48 @@ Dump gehen verloren, sofern nicht vorher separat gesichert). Da Schritt 1 vor
 dem Backup läuft, ist die Zeitspanne mit diesem Risiko auf "Backup bis
 Migration" begrenzt, nicht "Deploy bis Migration". Ohne Backup ist die
 Migration nicht reversibel (`DROP COLUMN`/`DROP TABLE`).
+
+### Migration 0028 — `onboarding_responses.addOnTeamData` entfernt (B5 Task 1, destruktiv)
+
+`drizzle/0028_drop_addon_team_data.sql` droppt die letzte verbliebene
+`addOnTeamData`-Spalte (`generated_websites.addOnTeamData` wurde bereits mit
+0027 gedroppt, `onboarding_responses.addOnTeamData` war zu dem Zeitpunkt
+bewusst noch behalten worden, siehe 0027-Kommentar oben). Grund: Team-Inhalt
+lebt seit Plan B5 als Sektion `team` im v2-Dokument
+(`websiteData.sections`, `server/onboardingV2/applyPatch.ts` `applyTeam`),
+nicht mehr in einer eigenen DB-Spalte. Referenz-Check bestätigt keine
+verbleibenden Lese-/Schreibstellen (`grep -rn addOnTeamData client server
+shared` → 0 Treffer außerhalb der Migration selbst). Lokal eingespielt und
+verifiziert (`SHOW COLUMNS` → Spalte weg, `addOnTeam`-Flag-Spalte bleibt).
+
+Prod-Ablauf (nach Merge, mit Nutzer-Freigabe, **nicht** eigenständig
+ausführen) — dieselbe Expand/Contract-Reihenfolge wie bei 0027: erst der
+neue Code deployen (schreibt/liest `addOnTeamData` bereits nicht mehr, die
+Spalte darf also noch existieren), erst danach Backup und Drop:
+
+```bash
+ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95
+cd /root/pageblitz
+
+# 1) Neuer Code zuerst - verträgt die Spalte noch (liest/schreibt sie nicht mehr)
+git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz
+
+# 2) Backup danach - erst wenn der neue Code läuft
+mysqldump -u<user> -p<pw> pageblitz onboarding_responses \
+  > backup-0028-$(date +%F).sql
+
+# 3) Migration zuletzt
+mysql -u<user> -p<pw> pageblitz < drizzle/0028_drop_addon_team_data.sql
+```
+
+Rollback: `backup-0028-<datum>.sql` enthält einen Voll-Dump von
+`onboarding_responses` zum Backup-Zeitpunkt; ein Rückspielen überschreibt
+damit — wie bei 0027 — jede Zeile, die zwischen Backup und Rückspielung neu
+angelegt oder geändert wurde. Ohne Backup ist die Migration nicht reversibel.
+
+**Stand:** Migration ist zum Zeitpunkt dieses Dokuments **noch nicht** in
+Prod ausgeführt — offen bis Merge + Freigabe (siehe
+`docs/superpowers/specs/2026-08-23-b5-ergebnis.md`).
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
@@ -281,14 +327,114 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   `websiteData.features` (`contactForm`, `aiChat`, `booking`), sofern das
   Dokument ein valides v2-Dokument ist.
 - Add-on-Keys: `shared/pricing.ts`, `AddOnKey` = `contactForm`, `gallery`,
-  `menu`, `pricelist`, `aiChat`, `booking`, `team` (`ADDON_KEYS`). Buchbar
-  sind aktuell alle außer `team` (`BOOKABLE_ADDON_KEYS`); `team` gilt als
-  "Coming Soon".
+  `menu`, `pricelist`, `aiChat`, `booking`, `team` (`ADDON_KEYS`). Seit Plan
+  B5 sind **alle sieben** Keys buchbar (`BOOKABLE_ADDON_KEYS` = `ADDON_KEYS`,
+  kein gesperrter Key mehr).
 
-## 7. Tests & Gates
+### Add-ons: Team (seit Plan B5)
 
-- `npx vitest run` — Stand dieses Dokuments (750 grün + bekannte Fails, keine
-  neuen gegenüber der vorherigen Baseline):
+- Preis 3,90 €/Monat, wie Galerie/Menü/Preisliste (`shared/pricing.ts`,
+  `ADDON_PRICES.team`).
+- Inhalt lebt als Sektion `team` im v2-Dokument (`TeamSchema`,
+  `shared/siteContract/schema.ts`; `members[{name, role?, imageUrl?}]`, max.
+  12), nicht als eigene DB-Spalte — `onboarding_responses.addOnTeamData` ist
+  seit Migration 0028 (§3) gedroppt.
+- Pflege im Studio-Extras-Panel (`AddonsPanel.tsx`): Schalter wie die
+  anderen Add-ons, bei aktivem Team erscheint sofort (schon bei aktivem
+  lokalen Toggle-Entwurf, nicht erst nach "Speichern") der Unterbereich
+  "Team pflegen" (`TeamEditor.tsx`) — Mitglieder hinzufügen/entfernen/
+  sortieren, Foto über denselben Upload-/Stockfoto-Weg wie das Fotos-Panel.
+  Eigene Mutation `onboardingV2.updateTeam`, unabhängig von der
+  Add-on-Flag-Mutation `onboardingV2.updateAddons`.
+- **Abschalt-Verhalten weicht bewusst von der Galerie ab:** Wird das
+  Team-Add-on in `updateAddons` deaktiviert, entfernt der Server aktiv die
+  `team`-Sektion aus dem Dokument (`applyTeam(doc, { members: [] })`) —
+  sonst bliebe eine gebuchte, aber nicht mehr abgerechnete Team-Sektion auf
+  der Live-Website sichtbar. Die **Galerie** macht das nicht: ihre Sektion
+  wird ausschließlich über das Fotos-Panel verwaltet und bleibt beim
+  Abschalten des `gallery`-Add-ons unverändert im Dokument stehen (Pack
+  rendert `case "gallery"` unabhängig vom Flag). Diese Inkonsistenz ist
+  bekannt und bewusst nicht in B5 vereinheitlicht (siehe §9, B6-Liste).
+- Dashboard-Add-ons-Tab (`AddonsTab.tsx`) zeigt Team wie Galerie
+  (Kauf-/Aktiv-Zustand, Link ins Studio-Extras-Panel).
+
+## 7. Fonts & Performance
+
+- **v1-Font-Rest entfernt (B5 Task 5):** `client/src/index.css` importierte
+  bis dahin 23 Google-Font-Familien (`@import url(...)`, v1-Layout-Rest,
+  render-blocking) sowie vier tote `.font-clash`/`.font-satoshi`/
+  `.font-outfit`/`.font-tenor`-Klassen mit 0 Verwendungen im Repo — beides
+  entfernt. v2 braucht sitewide nur Inter (Body) und Space Grotesk
+  (Überschriften), im Studio zusätzlich Fraunces und Instrument Sans.
+- **Ladestrategie `client/index.html`:** Inter + Plus Jakarta Sans bleiben
+  blockierend (App-Shell-First-Paint). Space Grotesk, Fraunces und
+  Instrument Sans laufen als async Preload (`preload as=style` +
+  `onload`-Swap + `noscript`-Fallback) — **bewusst nicht blockierend**:
+  ein erster Versuch, Space Grotesk in die blockierende Zeile zu legen,
+  zeigte in Lighthouse (Lantern-Simulation) eine LCP-Regression von 3,1 s
+  auf 6,4 s, obwohl die reale Trace-Insight nur ~1,3 s bis zum
+  LCP-Element zeigte — Lighthouses simulierte Lantern-Metrik behandelt
+  eine früh im `<head>` entdeckte Font-Datei offenbar als Teil des
+  kritischen Pfads, auch mit `font-display: swap`. **Merksatz:**
+  blockierende Font-Links früh im `<head>` verschlechtern die simulierte
+  LCP-Messung überproportional — neue Studio-/Pack-Fonts async laden, nicht
+  blockierend, sofern sie nicht Body-Text auf der Landingpage selbst
+  betreffen. Konsequenz akzeptiert: Fraunces/Instrument Sans im Studio
+  können kurz als Fallback-Font aufblitzen, bis der async Preload greift
+  (FOUT) — bewusst in Kauf genommen, da das Studio ein interner
+  Editor-Kontext ist (kein LCP-kritischer erster Eindruck wie die
+  Landingpage) und die Alternative (blockierend) die gemessene Regression
+  oben verursacht.
+- **CSR-Fallback (`client/src/pages/SitePage.tsx`):** lädt die Pack-Fonts
+  der jeweiligen Website zur Laufzeit aus der Pack-Verfassung
+  (`packFontHrefs(packId)` in `client/src/lib/packFonts.ts`, Pendant zu
+  `buildFontsUrl` im SSR-Head `server/ssr/renderSite.tsx` — zwei
+  unabhängige kleine Implementierungen statt eines Server-Imports im
+  Client-Bundle). Betrifft nur den reinen CSR-Pfad (`WebsiteRenderer` ohne
+  SSR); `/preview-ssr/:token` und `/demo/:pack` bringen ihre Pack-Fonts
+  bereits über den SSR-Head mit.
+  - **Bekannter Doppel-Request:** Bei einer Client-Navigation zwischen zwei
+    Websites mit teils überlappenden Pack-Fonts (z. B. klarwerk → patina
+    über `AccountPage`) fordert der CSR-Fallback dieselbe Google-Fonts-
+    Familie zweimal an (kein Abgleich mit bereits im Head vorhandenen
+    `<link>`s). Kein Regressionsrisiko (Browser-Cache greift), aber
+    unnötiger Request — offen für B6 (siehe §9).
+- **Chunking (B5 Task 6):** `LandingPage` bleibt **eager** in
+  `client/src/App.tsx` (ein `lazy()`-Versuch zeigte eine LCP-Regression von
+  3,2 s auf 5,6 s — die zusätzliche Netzwerk-Rundreise für den
+  Chunk-`import()` kostet auf `/` mehr, als das kleinere Entry-Bundle
+  einspart, da `/` den Landing-Chunk ohnehin sofort braucht); `StartPage`,
+  `SitePage`, `LegalPage` sind lazy. `TooltipProvider` wurde **ersatzlos aus
+  `App.tsx` entfernt** (nicht verschoben) — einziger Konsument ist
+  `client/src/components/ui/sidebar.tsx`, das bereits einen eigenen
+  `TooltipProvider` mitbringt; der App-Root-Provider war vollständig
+  redundant. `vite.config.ts` trennt `vendor-tanstack` von `vendor-radix`
+  (`manualChunks`); framer-motion läuft über `LazyMotion`/`m` statt
+  `motion.*` in Landing/PackShowcase (Feature-Set wird noch synchron
+  importiert, kein Async-Loader — nächster möglicher Hebel, siehe §9).
+- **Lighthouse mobil `/` (Produktions-Build, Port 3011, `throttlingMethod:
+  simulate`) — Gesamtverlauf über B5:**
+
+  | Metrik | vor B5 (Task 5 Start) | nach Task 5 (Fonts) | nach Task 6 (Chunking) |
+  |---|---|---|---|
+  | JS auf `/` (gzip) | 306 kB | 306 kB (unverändert, Task-5-Scope) | ~245 kB |
+  | LCP | 3,1 s | 3,2 s | 2,7–3,0 s |
+  | Performance-Score | 0,84 | 0,79–0,84 | 0,89–0,92 |
+
+  **Budgets weiterhin verfehlt** (LCP mobil < 2,5 s, JS auf `/` < 150 kB
+  gzip) — dokumentierte Restursachen: `vendor-react` (~61 kB gzip, nicht
+  ohne React-Alternative reduzierbar), `vendor-motion` (~43 kB gzip, echter
+  Async-Loader für `LazyMotion` wäre der nächste Schritt), `vendor-radix`
+  (~38 kB gzip, hängt ausschließlich an `Button`s `Slot`-Nutzung — ein
+  Slot-freier Button würde das vollständig aus dem Landing-Pfad lösen,
+  siehe §9), sowie Third-Party-Skripte außerhalb des App-Bundles (Google
+  Tag Manager ~185 KB Transfer, Rybbit-Analytics ~11,7 KB) und
+  render-blocking Haupt-CSS-Bundle + Inter/Plus-Jakarta-Fonts-Link.
+
+## 8. Tests & Gates
+
+- `npx vitest run` — Stand dieses Dokuments (821 grün + bekannte Fails,
+  keine neuen gegenüber der vorherigen Baseline):
   - `server/resend.test.ts` — 2 Fälle (kein `RESEND_API_KEY` gesetzt, echter
     Env-Fail).
   - Zwei Suiten ohne `STRIPE_SECRET_KEY` (`server/auth.logout.test.ts`,
@@ -297,31 +443,34 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
     Umgebung, in manchen Setups (Secret gesetzt) grün.
   - `server/contrast.test.ts` gibt es nicht mehr (B4c Task 2 —
     `shared/colorContrast.ts` mit der gesamten v1-Farbkette gelöscht, siehe
-    §8) — die Env-Fail-Liste ist dadurch gegenüber dem Stand vor B4c um 4
+    §9) — die Env-Fail-Liste ist dadurch gegenüber dem Stand vor B4c um 4
     Fälle geschrumpft.
 - `npm run check` (`tsc --noEmit`) — Stand dieses Dokuments **0 Fehler**
-  (B4c-Abschluss, siehe §8; Baseline zu Beginn von B4c war 21, vor B4a 73).
-  Gate bleibt trotzdem "keine neuen Fehler" statt eines festen Sollwerts —
-  vor jedem Merge gegen den Stand auf `main` vergleichen.
-- Playwright-Specs unter `tests/visual/`: `packs.spec.ts`, `studio.spec.ts`,
-  `islands.spec.ts`, `landing.spec.ts`, `startpage-to-studio.spec.ts`,
-  `a11y.spec.ts` (neu, B4c Task 7). Baselines liegen als
-  `tests/visual/<spec>-snapshots/*.png` daneben. Läuft auf `PORT=3005`, nie
-  auf Port 3000. Vor dem Lauf `npm run build:islands` (Inseln-Bundle wird
-  nicht automatisch gebaut).
+  (seit B4c-Abschluss durchgehend, siehe §9; Baseline zu Beginn von B4c war
+  21, vor B4a 73). Gate bleibt trotzdem "keine neuen Fehler" statt eines
+  festen Sollwerts — vor jedem Merge gegen den Stand auf `main` vergleichen.
+- `npm run build` — grün (Stand dieses Dokuments).
+- Playwright-Specs unter `tests/visual/`: `packs.spec.ts` (98/98),
+  `studio.spec.ts` (9/9, +1 seit B5 Task 2 — Team-Add-on-Szenario),
+  `islands.spec.ts` (4/4), `landing.spec.ts` (4/4), `startpage-to-studio.spec.ts`
+  (1/1), `a11y.spec.ts` (29/29, +5 seit B4c — Dashboard + Dark-Mode, siehe
+  unten). Baselines liegen als `tests/visual/<spec>-snapshots/*.png`
+  daneben. Läuft auf `PORT=3005`, nie auf Port 3000. Vor dem Lauf `npm run
+  build:islands` (Inseln-Bundle wird nicht automatisch gebaut).
   - `a11y.spec.ts` prüft mit `@axe-core/playwright` gegen `/`
-    (Desktop/Mobile/Cookie-Banner-Variante), `/demo/:pack` für alle 14 Style
-    Packs sowie die Studio-Checkliste und alle 6 Panels: **0
-    `critical`/`serious`**-Funde (Spec §2.7/§4). Das Dashboard
-    (`/my-website`) ist bewusst `test.skip` — es hängt an einer echten
-    Session (`CustomerRoute`), für die es keinen Dev-Bypass gibt; eine
-    Test-Login-Infrastruktur dafür ist auf B5 verschoben (siehe §8).
+    (Desktop/Mobile/Cookie-Banner-Variante, **plus seit B5 Task 4 je eine
+    Dark-Mode-Variante Desktop/Mobile** über `localStorage["lp-theme"] =
+    "dark"`), `/demo/:pack` für alle 14 Style Packs, die Studio-Checkliste
+    und alle 6 Panels, **sowie seit B5 Task 4 das eingeloggte Dashboard**
+    (Übersicht, Add-ons-Tab, Anfragen-Tab, Login über
+    `/dev/dashboard-seed`, §5) — **0 `critical`/`serious`**-Funde
+    (Spec §2.7/§4), **keine Skips mehr**.
   - `packs.spec.ts` — Toleranz/Farbassertion siehe `packs.spec.ts` selbst
     (der pauschale Pixel-Diff-Schwellenwert bildet nicht jede
     Palette-Änderung zuverlässig ab; Details im Testfile-Kommentar statt
     hier dupliziert).
 
-## 8. Offen / Nächste Schritte
+## 9. Offen / Nächste Schritte
 
 **Plan B4b ist erledigt** (siehe §1) — der v1-Code laut Inventar
 (`.superpowers/b4-inventar.md`) ist entfernt: Chat, v1-Layouts/-Renderer,
@@ -338,28 +487,76 @@ statische Vorschaubilder umgestellt, a11y-Pass (axe) mit Kontrastfixes und
 gebracht. Details, Messwerte und Rulings:
 `docs/superpowers/specs/2026-08-23-b4c-ergebnis.md`.
 
-**Offene Punkte → Plan B5 ("Features" + Politur-Rest):**
-- Team-Panel (Add-on `team` buchbar machen — `onboarding_responses.addOnTeamData`
-  bleibt bis dahin bestehen) und Unterseiten-Add-on (`features.subpages[]`) —
-  bewusst nicht in B4c, brauchen Produktentscheidungen (Spec §3).
-- Admin `WebsitesPage.tsx` zeigt den Pack der Website aktuell gar nicht an;
-  `AdminCheckoutDialog` zeigt noch ein veraltetes 79-€-Pricing und zählt keine
-  Unterseiten.
-- Test-Login-Infrastruktur für das Dashboard (`/my-website`), damit
-  `a11y.spec.ts`/E2E-Flows auch den eingeloggten Kundenbereich abdecken
-  können (aktuell `test.skip`, siehe §7).
-- Dark-Mode-a11y der Landingpage (`/`) — axe prüft bisher nur den
-  Default-Light-Zustand.
-- JS-Budget von `/` (~306 kB gzip, Budget 150 kB) ist weiterhin verfehlt.
-  Größte Hebel laut Task-6-Analyse: `TooltipProvider`/Radix aus dem
-  App-Root-Entry lösen; `LandingPage`/`StartPage`/`SitePage`/`LegalPage` per
-  `lazy()`/Route-Split laden statt eager zu importieren; `framer-motion`
-  über `LazyMotion` statt der vollen Bundle-Variante einbinden. Größter
-  LCP-Hebel laut Lighthouse-Render-Blocking-Analyse: `client/src/index.css:38`
-  bindet 25 Google-Font-Familien render-blocking ein (v1-Rest, v2 nutzt nur
-  einen Bruchteil davon) — Aufräumen auf die tatsächlich genutzten Familien.
-- `umamiWebsiteId as any` in `server/routers.ts` (~Z. 2716) — Admin-Statistik
-  liefert aktuell `null` statt echter Umami-Daten.
+**Plan B5 ist erledigt** (Stand `df1dd88` + Fixwelle/Fixwelle 2, siehe
+`docs/superpowers/specs/2026-08-23-b5-ergebnis.md`) — Team-Add-on buchbar
+und im Studio pflegbar (§Add-ons, §3 Migration 0028), Admin-Website-Liste
+zeigt Pack + Studio-Link, veralteter 79-€-`CheckoutDialog` entfernt,
+Dev-Dashboard-Seed + a11y-Abdeckung für Dashboard und Dark-Mode (§5, §8),
+v1-Font-Rest entfernt, Landing-Chunking (§7). **Nicht erreicht:**
+Kundenstatistik liefert weiterhin keine echten Werte (siehe B6-Liste
+unten), Lighthouse-Budgets (LCP < 2,5 s, JS < 150 kB gzip) bleiben verfehlt
+(§7 — deutliche Verbesserung, aber kein Zielerreichen).
+
+**Offene Punkte → Plan B6:**
+- **Unterseiten-Add-on** (`pages[]` im Vertrag, SSR `/site/:slug/:page`,
+  Navigation in allen 14 Packs, Panel, Preis) — größter Einzelposten,
+  bewusst aus B5 ausgeschlossen (eigene Spec).
+- **Kundenstatistik liefert weiterhin `null` (Erfolgskriterium NICHT
+  erfüllt):** B5 Task 3 hat nur den `umamiWebsiteId as any`-Cast in
+  `server/routers.ts` entfernt (Lesezugriff war schon immer typkorrekt
+  möglich) — geschrieben wird die Spalte im v2-Pfad aber **nirgends**.
+  `registerUmamiWebsite` existierte nur in den v1-Prozeduren und wurde mit
+  diesen in Plan B4b gelöscht; `server/umami.ts` exportiert seither nur noch
+  `getUmamiStats` (liest), keine Registrierungsfunktion mehr. `customer.
+  getAnalytics` liefert für jede v2-Website also weiterhin `null`, nicht weil
+  der Typ falsch war, sondern weil `umamiWebsiteId` nie gesetzt wird. Für B6:
+  Umami-Provisionierung im v2-Pfad ergänzen (z. B. im Stripe-Webhook bei
+  Aktivierung, analog zur alten v1-Registrierung).
+- **Add-on-Konsistenz über drei Quellen:** `onboarding_responses.addOn*`,
+  `subscriptions.addOns` (JSON) und `generatedWebsites.addOn*` können
+  auseinanderlaufen — ein Studio-Toggle nach Checkout (`updateAddons`)
+  ändert nur die DB-Flags, berührt aber nicht das Stripe-Abo (keine
+  Preis-/Rechnungsänderung). Modell/Ablauf für B6 klären (welche Quelle ist
+  maßgeblich, wann synchronisieren).
+- **Galerie-Abschalt-Inkonsistenz** (§Add-ons oben): Team entfernt seine
+  Sektion beim Abschalten aktiv, die Galerie nicht — Designfrage
+  hide-vs-remove für B6 einheitlich klären; `PhotosPanel.tsx` erlaubt
+  Galerie-Pflege unabhängig vom Add-on-Flag.
+- **gusto-Generierung erzeugt Speisekarte ohne Add-on:** das `gusto`-Pack
+  legt bei der Website-Generierung offenbar eine `menu`-Sektion an, ohne
+  dass `addOnMenu` gebucht/gesetzt ist — dieselbe Flag-vs-Sektion-Klasse von
+  Bug wie beim Team-Ruling, noch nicht systematisch für alle Packs/Add-ons
+  geprüft.
+- **Perf-Hebel aus B5 Task 6, nicht umgesetzt** (Details/Zahlen §7):
+  - Slot-freier `Button` (eigene `asChild`-Implementierung statt
+    `@radix-ui/react-slot`) — einziger Grund, warum `vendor-radix`
+    (~38 kB gzip) weiterhin auf `/` lädt.
+  - `LazyMotion` mit echtem Async-Loader (`features={() =>
+    import('framer-motion').then(m => m.domAnimation)}`) statt des aktuell
+    synchron importierten Feature-Sets.
+  - `modulepreload` für den Landing-Chunk als Alternative zu `LandingPage`
+    eager im Entry — könnte die Rundreise vermeiden, die einen `lazy()`-
+    Versuch in Task 6 scheitern ließ (LCP-Regression 3,2 s → 5,6 s), ohne
+    den vollen Entry-Bundle-Nachteil zu behalten; nicht in B5 untersucht.
+  - Self-hosted/Subset-Fonts statt Google-Fonts-CDN-Requests.
+  - Third-Party-Skripte (Google Tag Manager ~185 KB, Rybbit-Analytics
+    ~11,7 KB) — größter Einzelposten der Gesamt-Seitenlast, außerhalb des
+    App-Bundles.
+  - Doppel-Request für Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne
+    vollen Reload (§7).
+- **Pack-Identität** (werkbank/marktplatz/schimmer, Ruling B5 Task 6: keine
+  Rückänderung, siehe `2026-08-23-b5-ergebnis.md`): eine zweite
+  Palettenfarbe `accent-text` (getrennt vom CTA-Hintergrund-Akzent) wäre
+  die saubere Lösung, um Original-Signalfarben für CTAs zurückzuholen, ohne
+  die bestehenden Text-auf-Hell-Stellen (Preis, Akzentwort, Zitat-Autor
+  u. a.) unter 4,5:1 zu drücken — Schema-Änderung an `PackConstitution`
+  über alle 14 Packs, nicht in B5 umgesetzt.
+- `client/src/pages/admin/websitesPageLogic.ts` (`packNameFor`) schlägt
+  aktuell direkt in `STYLE_PACKS` nach (volles Verfassungs-Modul) statt in
+  der schlanken `shared/stylePacks/summary.ts` (`PACK_SUMMARY`, seit B5
+  Task 6 für den Landing-Pfad eingeführt) — für die Admin-Seite unkritisch
+  (kein Bundle-Budget dort), aber inkonsistent mit dem neuen Muster; bei
+  Gelegenheit angleichen.
 - `packs/zunft/css.ts` `.pb-zf-price` nutzt die Rolle "Siegelgold" entgegen
   dem eigenen Verfassungskommentar ("nie als Textfläche") als Textfarbe
   (Kontrast seit B4c Task 7 behoben, Rollen-Doku/Verwendung laufen aber
@@ -367,3 +564,6 @@ gebracht. Details, Messwerte und Rulings:
 - `server/contrast.test.ts` existiert nicht mehr (Farbkette komplett entfernt
   in B4c Task 2) — der ursprüngliche Punkt "Testerwartungen korrigieren" ist
   damit gegenstandslos.
+- **Admin:** keine offenen B6-Punkte aus B5 (Pack-Anzeige/Studio-Link/
+  CheckoutDialog-Entfernung erledigt; Statistik-Punkt siehe oben, dort unter
+  "Kundenstatistik" statt hier separat geführt).

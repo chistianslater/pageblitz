@@ -50,3 +50,22 @@ Das v2-Produkt um das bereits im Vertrag und in allen 14 Packs vorhandene **Team
 3. Unterseiten wirklich nach B6 (Empfehlung: ja — größter Einzelposten, eigene Spec).
 4. Pack-Identität (2.4): zurück zur Original-Signalfarbe mit dunklem CTA-Text, wenn kontrastkonform (Empfehlung: ja für werkbank/marktplatz/schimmer).
 5. Admin-CheckoutDialog ersatzlos entfernen (Empfehlung) oder an `shared/pricing.ts` anbinden?
+
+---
+
+**Stand B5, `df1dd88`:** Umgesetzt wie in §5 empfohlen (alle fünf Punkte wie
+vorgeschlagen entschieden). §2.1/§2.2/§2.5/§2.6 vollständig erfüllt;
+§2.3 (Performance) mit dokumentierter Restlücke — Lighthouse-Budgets (LCP
+mobil < 2,5 s, JS auf `/` < 150 kB gzip) bleiben trotz messbarer
+Verbesserung (JS 306 → ~245 kB gzip, LCP 3,2 → 2,7–3,0 s) verfehlt; §2.4
+(Pack-Identität) mit Ruling **gegen** Punkt 4 oben: werkbank/marktplatz/
+schimmer erfüllen isoliert den CTA-Kontrast, scheitern aber an der
+zweiten Bedingung (Akzent wird bei allen dreien zusätzlich als
+Text-auf-Hell-Kleintext genutzt, dort nur 2,6–3,0:1) — keine Rückänderung.
+§4-Erfolgskriterien: Team-Add-on ✅, Admin-Pack-Anzeige/Studio-Link/
+CheckoutDialog-Entfernung ✅, **Kundenstatistik ❌** (Task 3 hat nur den
+Typ-Cast entfernt, `umamiWebsiteId` wird im v2-Pfad nirgends geschrieben —
+B6), Lighthouse-Budgets ❌ (verbessert, nicht erreicht), a11y-Dashboard +
+Dark-Mode ✅ (29/29, keine Skips), alle Gates grün/tsc 0 ✅. Details,
+Messwerte, Rulings und vollständige B6-Liste:
+`docs/superpowers/specs/2026-08-23-b5-ergebnis.md`.
