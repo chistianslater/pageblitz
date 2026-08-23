@@ -16,6 +16,20 @@ describe("GenerationScreen", () => {
     );
     expect(html).toContain("Schreinerei Brandt");
     expect(html).toContain('aria-valuenow="30"');
+    // 30 = Bilder-Phase (Stufen aus runJob.ts: 25–54 Bilder, 55–89 Texte)
+    expect(html).toContain("Bilder");
+  });
+
+  test("Phase Texte ab Fortschritt 55", () => {
+    const html = renderToStaticMarkup(
+      <GenerationScreen
+        businessName="Schreinerei Brandt"
+        progress={60}
+        status="processing"
+        error={null}
+        onRetry={() => {}}
+      />
+    );
     expect(html).toContain("Texte");
   });
   test("failed → Fehlermeldung + Erneut-versuchen-Button", () => {

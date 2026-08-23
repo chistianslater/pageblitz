@@ -70,15 +70,19 @@ async function runWebsiteGenerationV2(
   category: string,
   industryKey: string
 ): Promise<void> {
+  const t0 = Date.now();
   await updateGenerationJob(jobId, { progress: 30 });
   const packId = await selectPack(category, industryKey);
-  await updateGenerationJob(jobId, { progress: 50 });
-
+  // Fortschrittsstufen sind an GenerationScreen.PHASES gekoppelt:
+  // 30–54 „Bilder werden gesetzt", 55–89 „Texte entstehen", ≥ 90 „Vorschau".
   const images = await resolveV2Images(business, category, industryKey);
+  const tImages = Date.now();
+  await updateGenerationJob(jobId, { progress: 55 });
   const websiteData = await generateSiteContent({
     packId,
     ...buildV2GenerationFacts(business, category, website.slug, images),
   });
+  const tLlm = Date.now();
 
   await updateGenerationJob(jobId, { progress: 90 });
   await updateWebsite(website.id, { websiteData: websiteData as any });
@@ -89,7 +93,7 @@ async function runWebsiteGenerationV2(
     result: { success: true, alreadyGenerated: false, usedFallback: false },
   });
   console.log(
-    `[Generation Job ${jobId}] Completed (v2) for website ${website.id}, pack=${packId}`
+    `[Generation Job ${jobId}] Completed (v2) for website ${website.id}, pack=${packId} — Bilder ${tImages - t0} ms, Texte ${tLlm - tImages} ms, gesamt ${Date.now() - t0} ms`
   );
 }
 

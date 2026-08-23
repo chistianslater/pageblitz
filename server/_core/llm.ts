@@ -66,7 +66,15 @@ export type InvokeParams = {
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
   response_format?: ResponseFormat;
+  /** Harte Obergrenze je HTTP-Aufruf (Default DEFAULT_LLM_TIMEOUT_MS); Timeout zählt als Fallback-Grund. */
+  timeoutMs?: number;
+  /** Backup-Modell (schnell) zuerst versuchen, Primär nur als Rückfall — für latenzkritische Pfade (v2-Generierung). */
+  preferBackup?: boolean;
 };
+
+export const DEFAULT_LLM_TIMEOUT_MS = 90_000;
+/** Backup-Modell: gemini-2.0-flash ist bei Google abgeschaltet (404 seit 2026-08) — konfigurierbar, Default gemini-3.5-flash (~5 s für 1k Tokens, gemessen 2026-08-23). */
+export const BACKUP_LLM_MODEL = process.env.BACKUP_LLM_MODEL || "gemini-3.5-flash";
 
 export type ToolCall = {
   id: string;
@@ -293,9 +301,9 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
 
   // Detect Kimi/Moonshot API (primary only)
   const isKimi = !useBackup && (ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn"));
-  // Backup model: gemini-2.0-flash (cheap, fast, reliable)
+  // Backup model: BACKUP_LLM_MODEL (gemini-3.5-flash; gemini-2.0-flash existiert nicht mehr)
   // Primary Kimi-Modell: kimi-k2.5 (schneller als k2.6 bei vergleichbarer Qualität)
-  const model = useBackup ? "gemini-2.0-flash" : (isKimi ? "kimi-k2.5" : "gemini-2.5-flash");
+  const model = useBackup ? BACKUP_LLM_MODEL : (isKimi ? "kimi-k2.5" : "gemini-2.5-flash");
   const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
   const payload: Record<string, unknown> = {
@@ -325,14 +333,28 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(useBackup), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  const timeoutMs = params.timeoutMs ?? DEFAULT_LLM_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(resolveApiUrl(useBackup), {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      throw new Error(`LLM timeout after ${timeoutMs}ms (${model})`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -347,18 +369,30 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
+  const hasBackup = !!(ENV.backupApiUrl && ENV.backupApiKey);
+  if (params.preferBackup && hasBackup) {
+    // Schneller Pfad zuerst (v2-Generierung); Primär nur als Rückfall.
+    try {
+      return await callLLM(params, true);
+    } catch (err: any) {
+      console.warn(`[LLM] Backup-Modell (${BACKUP_LLM_MODEL}) fehlgeschlagen, Rückfall auf Primär: ${String(err?.message ?? err).slice(0, 160)}`);
+      return await callLLM(params, false);
+    }
+  }
+
   try {
     return await callLLM(params, false);
   } catch (err: any) {
     const msg = err?.message ?? "";
+    const isTimeout = msg.includes("LLM timeout");
     const is429 = msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many") || msg.includes("engine_overloaded");
     const is404 = msg.includes("404") || msg.includes("Not found") || msg.includes("not_found") || msg.includes("Model not found");
     const is5xx = /\b5\d{2}\b/.test(msg) || msg.includes("Internal Server Error") || msg.includes("Bad Gateway") || msg.includes("Service Unavailable");
     const isAuth = msg.includes("Permission denied") || msg.includes("401") || msg.includes("403") || msg.includes("Invalid API key");
-    const shouldFallback = is429 || is404 || is5xx || isAuth;
-    if (shouldFallback && ENV.backupApiUrl && ENV.backupApiKey) {
-      const reason = is429 ? "rate-limited (429)" : is404 ? "model 404" : is5xx ? "server error (5xx)" : "auth error";
-      console.warn(`[LLM] Primary API ${reason}, retrying with backup model (gemini-2.0-flash)...`);
+    const shouldFallback = is429 || is404 || is5xx || isAuth || isTimeout;
+    if (shouldFallback && hasBackup) {
+      const reason = isTimeout ? "timeout" : is429 ? "rate-limited (429)" : is404 ? "model 404" : is5xx ? "server error (5xx)" : "auth error";
+      console.warn(`[LLM] Primary API ${reason}, retrying with backup model (${BACKUP_LLM_MODEL})...`);
       return await callLLM(params, true);
     }
     throw err;

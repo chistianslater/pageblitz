@@ -1,11 +1,15 @@
 import React from "react";
 
+// Reihenfolge entspricht den Fortschrittsstufen des Jobs (runJob.ts):
+// 0–24 Stil, 25–54 Bilder, 55–89 Texte (LLM, längster Schritt), 90+ Vorschau.
 const PHASES = [
   "Stil wird gewählt",
-  "Texte entstehen",
   "Bilder werden gesetzt",
+  "Texte entstehen",
   "Vorschau wird gebaut",
 ] as const;
+const PHASE_BOUNDS = [0, 25, 55, 90, 101] as const;
+const LONG_WAIT_MS = 60_000;
 
 interface GenerationScreenProps {
   businessName: string;
@@ -25,10 +29,19 @@ export function GenerationScreen({
   onRetry,
   retrying = false,
 }: GenerationScreenProps) {
-  const phase =
-    PHASES[
-      Math.min(PHASES.length - 1, Math.floor((progress / 100) * PHASES.length))
-    ];
+  const phaseIndex = Math.max(
+    0,
+    PHASE_BOUNDS.findIndex((b, i) => progress >= b && progress < PHASE_BOUNDS[i + 1])
+  );
+  const phase = PHASES[Math.min(PHASES.length - 1, phaseIndex)];
+  const [elapsedMs, setElapsedMs] = React.useState(0);
+  React.useEffect(() => {
+    if (status === "failed") return;
+    const start = Date.now();
+    const id = window.setInterval(() => setElapsedMs(Date.now() - start), 1000);
+    return () => window.clearInterval(id);
+  }, [status]);
+  const longWait = status !== "failed" && elapsedMs >= LONG_WAIT_MS;
   return (
     <section className="pb-studio-gen" aria-live="polite">
       <div>
@@ -64,7 +77,10 @@ export function GenerationScreen({
               <span style={{ width: `${Math.max(4, progress)}%` }} />
             </div>
             <p style={{ color: "var(--st-muted)" }}>
-              {phase} — etwa eine Minute.
+              {phase} — meist unter einer Minute.
+              {longWait
+                ? " Dauert gerade etwas länger, wir sind noch dran …"
+                : ""}
             </p>
           </>
         )}
