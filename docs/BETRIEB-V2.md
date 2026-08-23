@@ -65,7 +65,10 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
   ungehashten Namen `site-islands.js`.
 - `npm run check` — `tsc --noEmit`.
 - `npm run test` — `vitest run`.
-- `npm run test:visual` / `test:visual:update` — Playwright.
+- `npm run test:visual` / `test:visual:update` — Playwright (Projekt `dev`,
+  Server auf 3005).
+- `npm run test:prod` — Playwright-Smoke gegen den echten Produktions-Build
+  (Projekt `prod`, Server auf 3012) — Details §8.
 - `npm run build:previews` (`scripts/build-pack-previews.mjs`) — rendert
   `/demo/<pack>` für alle 14 Style Packs zu je einem statischen WebP unter
   `client/public/pack-previews/<pack>.webp` (~800×500, ≤ 80 KB), das
@@ -469,6 +472,39 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
     (der pauschale Pixel-Diff-Schwellenwert bildet nicht jede
     Palette-Änderung zuverlässig ab; Details im Testfile-Kommentar statt
     hier dupliziert).
+- **Prod-Smoke-Gate (seit Plan B6 Task 1)** — `npm run test:prod`
+  (= `PW_PROJECT=prod playwright test --project=prod`), Spec:
+  `tests/prod/smoke.spec.ts`. Warum: Hotfix 9875dd9 (eigene
+  Radix/TanStack-Chunks im Rollup-Chunking → zirkuläre Chunk-Abhängigkeit →
+  `Cannot read properties of undefined (reading 'forwardRef')`, schwarze
+  Seite auf `/start`, `/onboarding/:token`, `/my-website`) wäre von KEINEM
+  `tests/visual/*`-Spec gefangen worden — die laufen alle gegen Vite Dev
+  (kein Rollup-Chunking, kein `vite build`). Der Prod-Smoke baut stattdessen
+  echt (`npm run build`) und startet `dist/index.js` mit
+  `NODE_ENV=production` auf **Port 3012** (nie 3000/3005), lädt `/`,
+  `/start`, `/my-website`, `/demo/werkbank`, `/onboarding/<ungültiger
+  Token>` und `/site/does-not-exist` und prüft je Seite: keine `pageerror`,
+  keine unerwarteten `console.error` (Drittanbieter/Font-Domains und
+  generische Ressourcen-404s außer Scripts sind erlaubt — siehe
+  `ALLOWED_CONSOLE_ERROR_PATTERNS` im Spec), `document.body.innerText` nicht
+  leer (fängt genau die „schwarze Seite"), kein unersetztes `%VITE_` im
+  ausgelieferten HTML, und jeder im HTML deklarierte
+  `<script type="module">`/`<link rel="modulepreload">`-Chunk antwortet mit
+  200.
+  - **Playwright-Projekte**: `playwright.config.ts` definiert seit Task 1
+    zwei Projekte, `dev` (`tests/visual/**`, Server auf 3005, bisheriges
+    Verhalten unverändert) und `prod` (`tests/prod/**`, Server auf 3012) —
+    aber Playwright startet grundsätzlich **jeden** `webServer`-Eintrag bei
+    **jedem** Lauf, unabhängig vom gewählten `--project`. Damit
+    `npx playwright test tests/visual/x.spec.ts` (und `npm run test:visual`)
+    nicht bei jedem Aufruf zusätzlich den kompletten Prod-Build anstößt,
+    schaltet die Env-Variable `PW_PROJECT=prod` beides um: nur dann wird das
+    `prod`-Projekt + der Prod-`webServer` in die Config aufgenommen; ohne die
+    Variable (Default) bleibt es beim bisherigen `dev`-Projekt + Dev-Server.
+    `npm run test:prod` setzt `PW_PROJECT=prod` automatisch. Snapshot-Pfade
+    bleiben dabei unverändert (`snapshotPathTemplate` ohne Projektnamen-
+    Segment), damit bestehende `tests/visual/*-snapshots/*.png`-Baselines
+    durch die Einführung der `projects`-Konfiguration nicht ungültig werden.
 
 ## 9. Offen / Nächste Schritte
 

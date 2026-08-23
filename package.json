@@ -12,8 +12,9 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots",
+    "test:visual": "playwright test --project=dev",
+    "test:visual:update": "playwright test --project=dev --update-snapshots",
+    "test:prod": "PW_PROJECT=prod playwright test --project=prod",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {
