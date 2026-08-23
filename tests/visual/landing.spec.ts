@@ -61,21 +61,25 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene statische Vorschaubilder",
   // sporadisch im waitForFunction unten (Timeout statt Pixel-Diff).
   await page.evaluate(() => {
     document
-      .querySelectorAll<HTMLImageElement>('img[src^="/pack-previews/"]')
+      .querySelectorAll<HTMLImageElement>(
+        '#showcase img[src^="/pack-previews/"]'
+      )
       .forEach(img => {
         img.loading = "eager";
       });
   });
 
-  // Alle 14 statischen Pack-Vorschaubilder müssen tatsächlich fertig
-  // geladen sein, bevor der Screenshot entsteht (complete + naturalWidth >
+  // Alle 14 statischen Pack-Vorschaubilder der Sektion müssen tatsächlich
+  // fertig geladen sein, bevor der Screenshot entsteht (auf `#showcase`
+  // eingegrenzt: der Hero-Studio-Rahmen zeigt ebenfalls ein
+  // `/pack-previews/`-Bild, das hier nicht mitzählt) (complete + naturalWidth >
   // 0 statt nur `complete`, da ein Bild mit 404 ebenfalls "complete" wird,
   // aber naturalWidth 0 behält).
   await page.waitForFunction(
     () => {
       const images = Array.from(
         document.querySelectorAll<HTMLImageElement>(
-          'img[src^="/pack-previews/"]'
+          '#showcase img[src^="/pack-previews/"]'
         )
       );
       return (

@@ -130,9 +130,9 @@ export default function PageblitzCookieBanner() {
               <div className="flex-1">
                 <p className="text-xs font-medium text-white">
                   Notwendig{" "}
-                  <span className="text-white/30 font-normal ml-1">– immer aktiv</span>
+                  <span className="text-white/60 font-normal ml-1">– immer aktiv</span>
                 </p>
-                <p className="text-xs text-white/40 mt-0.5">
+                <p className="text-xs text-white/60 mt-0.5">
                   Session-Verwaltung, Authentifizierung, CSRF-Schutz. Rybbit (cookielos, keine Einwilligung nötig).
                 </p>
               </div>
@@ -161,9 +161,9 @@ export default function PageblitzCookieBanner() {
                   <div className="flex-1">
                     <p className="text-xs font-medium text-white">
                       {cat.label}{" "}
-                      <span className="text-white/30 font-normal">– {cat.tools}</span>
+                      <span className="text-white/60 font-normal">– {cat.tools}</span>
                     </p>
-                    <p className="text-xs text-white/40 mt-0.5">{cat.description}</p>
+                    <p className="text-xs text-white/60 mt-0.5">{cat.description}</p>
                   </div>
                 </label>
               );
@@ -175,7 +175,7 @@ export default function PageblitzCookieBanner() {
         <div className="px-5 pb-5 flex flex-col sm:flex-row items-center gap-2">
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors order-3 sm:order-1 sm:mr-auto"
+            className="flex items-center gap-1 text-xs text-white/70 hover:text-white transition-colors order-3 sm:order-1 sm:mr-auto"
           >
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             {expanded ? "Weniger" : "Einstellungen anpassen"}

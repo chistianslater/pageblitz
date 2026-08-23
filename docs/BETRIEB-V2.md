@@ -456,14 +456,14 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 - Playwright-Specs unter `tests/visual/`: `packs.spec.ts` (98/98),
   `studio.spec.ts` (9/9, +1 seit B5 Task 2 — Team-Add-on-Szenario),
   `islands.spec.ts` (4/4), `landing.spec.ts` (4/4), `startpage-to-studio.spec.ts`
-  (1/1), `a11y.spec.ts` (29/29, +5 seit B4c — Dashboard + Dark-Mode, siehe
-  unten). Baselines liegen als `tests/visual/<spec>-snapshots/*.png`
+  (1/1), `a11y.spec.ts` (27/27 seit dem Landing-Redesign — Dashboard ja, Dark-Mode
+  entfallen, siehe unten). Baselines liegen als `tests/visual/<spec>-snapshots/*.png`
   daneben. Läuft auf `PORT=3005`, nie auf Port 3000. Vor dem Lauf `npm run
   build:islands` (Inseln-Bundle wird nicht automatisch gebaut).
   - `a11y.spec.ts` prüft mit `@axe-core/playwright` gegen `/`
-    (Desktop/Mobile/Cookie-Banner-Variante, **plus seit B5 Task 4 je eine
-    Dark-Mode-Variante Desktop/Mobile** über `localStorage["lp-theme"] =
-    "dark"`), `/demo/:pack` für alle 14 Style Packs, die Studio-Checkliste
+    (Desktop/Mobile/Cookie-Banner-Variante; die Dark-Mode-Varianten aus B5
+    Task 4 entfielen mit dem Landing-Redesign 2026-08-23 — „/" ist seither
+    nur noch hell, kein `lp-theme` mehr), `/demo/:pack` für alle 14 Style Packs, die Studio-Checkliste
     und alle 6 Panels, **sowie seit B5 Task 4 das eingeloggte Dashboard**
     (Übersicht, Add-ons-Tab, Anfragen-Tab, Login über
     `/dev/dashboard-seed`, §5) — **0 `critical`/`serious`**-Funde
