@@ -6,7 +6,12 @@ import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { trpc } from "@/lib/trpc";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { AddonsList, AddonsPanel, teamFromDoc } from "./AddonsPanel";
+import {
+  AddonsList,
+  AddonsPanel,
+  pagesFromDoc,
+  teamFromDoc,
+} from "./AddonsPanel";
 
 const blankDoc: WebsiteDataV2 = {
   version: 2,
@@ -151,6 +156,69 @@ describe("AddonsPanel", () => {
     expect(html).toContain('value="Anna Beispiel"');
     expect(html).toContain('value="Meisterin"');
     expect(html).toContain(">Übernehmen<");
+  });
+});
+
+describe("AddonsPanel — Unterseiten (Plan B6, Task 5)", () => {
+  const docWithPage: WebsiteDataV2 = {
+    ...blankDoc,
+    pages: [
+      {
+        slug: "leistungen-im-detail",
+        title: "Leistungen im Detail",
+        seo: { title: "Leistungen im Detail", description: "" },
+        sections: [{ type: "pageHeader", title: "Leistungen im Detail" }],
+      },
+    ],
+  };
+
+  test("Unterseiten-Extra ist buchbar (Schalter + 3,90 €)", () => {
+    const html = renderToStaticMarkup(
+      <AddonsList
+        value={{ subpages: true }}
+        onToggle={() => {}}
+        interval="yearly"
+      />
+    );
+    expect(html).toContain("Unterseiten");
+    // 19,90 € Basis (jährlich) + 3,90 € Unterseiten.
+    expect(html).toContain("23,80 €");
+  });
+
+  test("Unterseiten inaktiv → kein Unterseiten-Unterbereich", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={docWithPage}
+        addOns={{ subpages: false }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).not.toContain("Unterseiten pflegen");
+    expect(html).not.toContain('aria-label="Seitentitel Seite 1"');
+  });
+
+  test("Unterseiten aktiv → Unterbereich mit vorhandener Seite und Übernehmen-Button", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={docWithPage}
+        addOns={{ subpages: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Unterseiten pflegen");
+    expect(html).toContain('aria-label="Seitentitel Seite 1"');
+    expect(html).toContain('value="Leistungen im Detail"');
+    expect(html).toContain('value="leistungen-im-detail"');
+    expect(html).toContain(">Übernehmen<");
+  });
+
+  test("pagesFromDoc liest pages[] bzw. liefert eine leere Liste", () => {
+    expect(pagesFromDoc(docWithPage)).toEqual(docWithPage.pages);
+    expect(pagesFromDoc(blankDoc)).toEqual([]);
   });
 });
 

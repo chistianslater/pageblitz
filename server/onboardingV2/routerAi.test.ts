@@ -127,6 +127,33 @@ describe("onboardingV2.aiEdit", () => {
     );
   });
 
+  test("pageSlug wird an proposeAiEdit durchgereicht (Unterseiten-Scope, Plan B6 Task 5)", async () => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "content",
+      next: nextDoc as any,
+      diff: [],
+    });
+    await caller().onboardingV2.aiEdit({
+      token: "tok",
+      message: "Mach die Einleitung knackiger",
+      pageSlug: "leistungen-im-detail",
+    });
+    expect(mockedProposeAiEdit).toHaveBeenCalledWith(
+      expect.objectContaining({ pageSlug: "leistungen-im-detail" })
+    );
+  });
+
+  test("ungültiger pageSlug (Großbuchstaben) → BAD_REQUEST vom Input-Schema, kein LLM", async () => {
+    await expect(
+      caller().onboardingV2.aiEdit({
+        token: "tok",
+        message: "Mach die Einleitung knackiger",
+        pageSlug: "Nicht Gültig",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedProposeAiEdit).not.toHaveBeenCalled();
+  });
+
   test("kind=style → packId/name/reason, kein Write", async () => {
     mockedProposeAiEdit.mockResolvedValue({
       kind: "style",

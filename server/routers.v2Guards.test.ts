@@ -36,6 +36,7 @@ vi.mock("./db", async importOriginal => {
     createGeneratedWebsite: vi.fn(),
     createGenerationJob: vi.fn(),
     getSubscriptionByWebsiteId: vi.fn(),
+    updateSubscription: vi.fn(),
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -426,6 +427,58 @@ describe("website.get — Token-Leak geschlossen (Final-Review Befund 2)", () =>
 
     expect(result.website.previewToken).toBe("secret-token-abc");
     expect((result.website as any).customerEmail).toBe("kundin@example.com");
+  });
+});
+
+describe("customer.purchaseAddon — subpages (Plan B6 Task 5)", () => {
+  test("subpages → subscriptions.addOns.subpages=true UND Spalte addOnSubpages + features.subpages (applyFeatureFlags)", async () => {
+    const ownedWebsite = baseWebsiteRow({ websiteData: v2Doc() });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      {
+        website: ownedWebsite,
+        subscription: { id: 9, stripeSubscriptionId: null, addOns: {} },
+        business: null,
+      },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.purchaseAddon({
+      websiteId: 42,
+      addonKey: "subpages",
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ addOns: { subpages: true } })
+    );
+    const [id, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect(id).toBe(42);
+    expect((patch as any).addOnSubpages).toBe(true);
+    expect((patch as any).websiteData.features).toEqual({ subpages: true });
+  });
+
+  test("subpages bereits gebucht → alreadyOwned, kein Write", async () => {
+    const ownedWebsite = baseWebsiteRow({ websiteData: v2Doc() });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      {
+        website: ownedWebsite,
+        subscription: {
+          id: 9,
+          stripeSubscriptionId: null,
+          addOns: { subpages: true },
+        },
+        business: null,
+      },
+    ] as any);
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.purchaseAddon({
+      websiteId: 42,
+      addonKey: "subpages",
+    });
+    expect(result).toEqual({ success: true, alreadyOwned: true });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });
 

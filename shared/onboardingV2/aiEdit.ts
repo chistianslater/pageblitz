@@ -1,6 +1,12 @@
 import { z } from "zod";
-import { PACK_IDS, SectionV2Schema } from "../siteContract/schema";
+import {
+  PACK_IDS,
+  PageSectionSchema,
+  SectionV2Schema,
+} from "../siteContract/schema";
 import type {
+  Page,
+  PageSection,
   SectionType,
   SectionV2,
   WebsiteDataV2,
@@ -39,6 +45,24 @@ export const AiEditResponseSchema = z.discriminatedUnion("kind", [
 
 type AiEditResponse = z.infer<typeof AiEditResponseSchema>;
 
+/**
+ * Dasselbe Antwortschema für den Unterseiten-Scope (Plan B6 Task 5,
+ * `pageSlug` im KI-Chat): "content" trägt dann `Page.seo` + `Page.sections`
+ * (PageSectionSchema — pageHeader erlaubt, hero/team/cta nicht), style/reject
+ * unverändert.
+ */
+export const AiPageEditResponseSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("content"),
+      seo: z.object({ title: z.string(), description: z.string() }).strict(),
+      sections: z.array(PageSectionSchema).min(1),
+    })
+    .strict(),
+  AiEditResponseSchema.options[1],
+  AiEditResponseSchema.options[2],
+]);
+
 /** Ein einzelner Vorher/Nachher-Eintrag für die Diff-Vorschau im KI-Chat. */
 export interface AiDiffEntry {
   path: string;
@@ -59,10 +83,8 @@ const SECTION_LABELS: Record<SectionType, string> = {
   pricelist: "Preisliste",
   team: "Team",
   cta: "CTA",
-  // pageHeader existiert nur in Page.sections, nicht in den hier verglichenen
-  // Startseiten-Sektionen (diffDocuments arbeitet auf doc.sections) —
-  // Platzhalter für Exhaustivität von Record<SectionType, string>; die
-  // Unterseiten-KI-Chat-Diffs (Task 5) bekommen einen eigenen Vergleich.
+  // pageHeader existiert nur in Page.sections (Unterseiten) — diffPages
+  // vergleicht sie mit demselben Feld-Mechanismus wie diffDocuments.
   pageHeader: "Kopfzeile",
 };
 
@@ -88,6 +110,7 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
   pricelist: { headline: "Überschrift" },
   team: { headline: "Überschrift" },
   cta: { headline: "Überschrift", ctaText: "Button-Text" },
+  pageHeader: { title: "Titel", intro: "Einleitung" },
 };
 
 interface ArrayFieldSpec {
@@ -149,21 +172,28 @@ function pushIfChanged(
   if (b !== a) entries.push({ path, label, before: b, after: a });
 }
 
+/** Gemeinsame Form von Startseite (WebsiteDataV2) und Unterseite (Page) für den Diff: SEO + Sektionsliste. */
+interface DiffableContent {
+  seo: { title: string; description: string };
+  sections: (SectionV2 | PageSection)[];
+}
+
 function diffSeo(
-  before: WebsiteDataV2,
-  after: WebsiteDataV2,
-  entries: AiDiffEntry[]
+  before: DiffableContent,
+  after: DiffableContent,
+  entries: AiDiffEntry[],
+  prefix: string
 ): void {
   pushIfChanged(
     entries,
-    "seo.title",
+    `${prefix}seo.title`,
     "SEO – Titel",
     before.seo.title,
     after.seo.title
   );
   pushIfChanged(
     entries,
-    "seo.description",
+    `${prefix}seo.description`,
     "SEO – Beschreibung",
     before.seo.description,
     after.seo.description
@@ -174,14 +204,15 @@ function diffScalarFields(
   type: SectionType,
   before: Record<string, unknown>,
   after: Record<string, unknown>,
-  entries: AiDiffEntry[]
+  entries: AiDiffEntry[],
+  prefix: string
 ): void {
   const fields = SCALAR_FIELDS[type];
   if (!fields) return;
   for (const [field, label] of Object.entries(fields)) {
     pushIfChanged(
       entries,
-      `sections.${type}.${field}`,
+      `${prefix}sections.${type}.${field}`,
       `${SECTION_LABELS[type]} – ${label}`,
       before[field],
       after[field]
@@ -193,7 +224,8 @@ function diffArrayField(
   type: SectionType,
   before: Record<string, unknown>,
   after: Record<string, unknown>,
-  entries: AiDiffEntry[]
+  entries: AiDiffEntry[],
+  prefix: string
 ): void {
   const spec = ARRAY_FIELDS[type];
   if (spec) {
@@ -209,7 +241,7 @@ function diffArrayField(
       if (!b || !a) {
         pushIfChanged(
           entries,
-          `sections.${type}.${spec.field}[${i}]`,
+          `${prefix}sections.${type}.${spec.field}[${i}]`,
           itemLabel,
           b,
           a
@@ -219,7 +251,7 @@ function diffArrayField(
       for (const [field, label] of Object.entries(spec.subfields)) {
         pushIfChanged(
           entries,
-          `sections.${type}.${spec.field}[${i}].${field}`,
+          `${prefix}sections.${type}.${spec.field}[${i}].${field}`,
           `${itemLabel} – ${label}`,
           b[field],
           a[field]
@@ -233,7 +265,7 @@ function diffArrayField(
   if (listField) {
     pushIfChanged(
       entries,
-      `sections.${type}.${listField}`,
+      `${prefix}sections.${type}.${listField}`,
       `${SECTION_LABELS[type]} – Liste`,
       before[listField],
       after[listField]
@@ -253,13 +285,30 @@ export function diffDocuments(
   before: WebsiteDataV2,
   after: WebsiteDataV2
 ): AiDiffEntry[] {
-  const entries: AiDiffEntry[] = [];
-  diffSeo(before, after, entries);
+  return diffContent(before, after, "");
+}
 
-  const beforeByType = new Map<SectionType, SectionV2>(
+/**
+ * Pure: Diff einer Unterseite (Plan B6 Task 5, KI-Chat mit `pageSlug`) —
+ * derselbe feldweise Vergleich wie diffDocuments, nur mit Pfad-Präfix
+ * `pages.<slug>.` und der zusätzlichen Kopfzeilen-Sektion (pageHeader).
+ */
+export function diffPages(before: Page, after: Page): AiDiffEntry[] {
+  return diffContent(before, after, `pages.${before.slug}.`);
+}
+
+function diffContent(
+  before: DiffableContent,
+  after: DiffableContent,
+  prefix: string
+): AiDiffEntry[] {
+  const entries: AiDiffEntry[] = [];
+  diffSeo(before, after, entries, prefix);
+
+  const beforeByType = new Map<SectionType, SectionV2 | PageSection>(
     before.sections.map(s => [s.type, s])
   );
-  const afterByType = new Map<SectionType, SectionV2>(
+  const afterByType = new Map<SectionType, SectionV2 | PageSection>(
     after.sections.map(s => [s.type, s])
   );
   // Array.from statt for-of/Spread über Map/Set — vermeidet
@@ -276,7 +325,7 @@ export function diffDocuments(
     const label = SECTION_LABELS[type];
     if (b && !a) {
       entries.push({
-        path: `sections.${type}`,
+        path: `${prefix}sections.${type}`,
         label: `${label} – Entfernt`,
         before: JSON.stringify(b),
         after: "",
@@ -285,7 +334,7 @@ export function diffDocuments(
     }
     if (!b && a) {
       entries.push({
-        path: `sections.${type}`,
+        path: `${prefix}sections.${type}`,
         label: `${label} – Neu`,
         before: "",
         after: JSON.stringify(a),
@@ -295,8 +344,8 @@ export function diffDocuments(
     if (!b || !a) continue;
     const bRecord = b as unknown as Record<string, unknown>;
     const aRecord = a as unknown as Record<string, unknown>;
-    diffScalarFields(type, bRecord, aRecord, entries);
-    diffArrayField(type, bRecord, aRecord, entries);
+    diffScalarFields(type, bRecord, aRecord, entries, prefix);
+    diffArrayField(type, bRecord, aRecord, entries, prefix);
   }
 
   return entries;

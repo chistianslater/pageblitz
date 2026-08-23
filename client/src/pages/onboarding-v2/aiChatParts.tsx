@@ -34,6 +34,24 @@ export function canSendMessage({
   );
 }
 
+/** Unterseite, auf die sich der KI-Chat gerade bezieht (Vorschau-Leiste in StudioPage.tsx). */
+export interface AiChatPageScope {
+  slug: string;
+  title: string;
+}
+
+/**
+ * Reiner Hinweistext unter dem Eingabefeld: ohne Scope der allgemeine
+ * Hinweis, mit Scope der Bezug auf die gewählte Unterseite — damit klar ist,
+ * dass der Wunsch nicht die Startseite ändert.
+ */
+export function aiScopeHint(page?: AiChatPageScope): string {
+  if (page) {
+    return `Bezieht sich auf die Unterseite „${page.title}“ (wie in der Vorschau gewählt) — Kontaktdaten und Rechtliches änderst du in den Panels.`;
+  }
+  return "Inhalte & Texte — Kontaktdaten und Rechtliches änderst du in den Panels.";
+}
+
 interface AiDiffListProps {
   diff: AiDiffEntry[];
 }

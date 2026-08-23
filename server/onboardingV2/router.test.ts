@@ -123,6 +123,7 @@ describe("onboardingV2.getState", () => {
       aiChat: false,
       booking: false,
       team: false,
+      subpages: false,
     });
     expect(s.uploadedPhotos).toEqual(["https://u/1.jpg"]);
     expect(s.openingHours).toEqual([{ day: "Mo", hours: "9–17" }]);

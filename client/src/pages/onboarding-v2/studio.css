@@ -159,6 +159,15 @@
   background: var(--st-ink);
   color: var(--st-surface);
 }
+/* Vorschau-Leiste „Startseite | <Unterseiten…>“ über dem iframe (Plan B6
+   Task 5) — nur sichtbar, wenn das Unterseiten-Extra aktiv ist und Seiten
+   existieren; bis zu 6 Einträge, deshalb umbrechend statt abgeschnitten. */
+.pb-studio-pagebar {
+  flex-wrap: wrap;
+  align-self: flex-start;
+  max-width: 100%;
+  border-radius: 18px;
+}
 .pb-studio-btn {
   font: inherit;
   font-weight: 600;

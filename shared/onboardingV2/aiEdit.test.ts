@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../siteContract/types";
-import { AiEditResponseSchema, diffDocuments } from "./aiEdit";
+import {
+  AiEditResponseSchema,
+  AiPageEditResponseSchema,
+  diffDocuments,
+  diffPages,
+} from "./aiEdit";
+import type { Page } from "../siteContract/types";
 
 const baseDoc: WebsiteDataV2 = {
   version: 2,
@@ -159,5 +165,87 @@ describe("diffDocuments", () => {
       ),
     };
     expect(diffDocuments(baseDoc, after)).toEqual([]);
+  });
+});
+
+describe("AiPageEditResponseSchema (Unterseiten-Scope, Plan B6 Task 5)", () => {
+  test("akzeptiert content mit pageHeader/services, lehnt hero ab", () => {
+    expect(
+      AiPageEditResponseSchema.safeParse({
+        kind: "content",
+        seo: { title: "t", description: "d" },
+        sections: [
+          { type: "pageHeader", title: "T" },
+          { type: "services", headline: "L", items: [{ title: "A" }] },
+        ],
+      }).success
+    ).toBe(true);
+    expect(
+      AiPageEditResponseSchema.safeParse({
+        kind: "content",
+        seo: { title: "t", description: "d" },
+        sections: [{ type: "hero", headline: "H" }],
+      }).success
+    ).toBe(false);
+  });
+});
+
+describe("diffPages", () => {
+  const before: Page = {
+    slug: "leistungen-im-detail",
+    title: "Leistungen im Detail",
+    seo: { title: "Leistungen", description: "Alles" },
+    sections: [
+      { type: "pageHeader", title: "Leistungen im Detail", intro: "Kurz." },
+      {
+        type: "services",
+        headline: "Leistungen",
+        items: [{ title: "Möbelbau", description: "Nach Maß" }],
+      },
+      { type: "contact", phone: "0231 1" },
+    ],
+  };
+
+  test("Kopfzeilen-Titel und Einleitung → Einträge mit Seiten-Pfad und Label 'Kopfzeile – …'", () => {
+    const after: Page = {
+      ...before,
+      sections: [
+        {
+          type: "pageHeader",
+          title: "Leistungen im Detail ✨",
+          intro: "Knackig.",
+        },
+        before.sections[1],
+        before.sections[2],
+      ],
+    };
+    const diff = diffPages(before, after);
+    expect(diff).toEqual([
+      {
+        path: "pages.leistungen-im-detail.sections.pageHeader.title",
+        label: "Kopfzeile – Titel",
+        before: "Leistungen im Detail",
+        after: "Leistungen im Detail ✨",
+      },
+      {
+        path: "pages.leistungen-im-detail.sections.pageHeader.intro",
+        label: "Kopfzeile – Einleitung",
+        before: "Kurz.",
+        after: "Knackig.",
+      },
+    ]);
+  });
+
+  test("SEO der Seite → 'SEO – Titel' mit Seiten-Pfad; unverändert → leer", () => {
+    const after: Page = { ...before, seo: { ...before.seo, title: "Neu" } };
+    expect(diffPages(before, after)).toEqual([
+      {
+        path: "pages.leistungen-im-detail.seo.title",
+        label: "SEO – Titel",
+        before: "Leistungen",
+        after: "Neu",
+      },
+    ]);
+    expect(diffPages(before, before)).toEqual([]);
   });
 });

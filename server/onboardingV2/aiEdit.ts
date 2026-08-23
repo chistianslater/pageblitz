@@ -3,14 +3,20 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
-import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type {
+  PackId,
+  Page,
+  WebsiteDataV2,
+} from "../../shared/siteContract/types";
 import {
   AiEditResponseSchema,
+  AiPageEditResponseSchema,
   diffDocuments,
+  diffPages,
   type AiDiffEntry,
 } from "../../shared/onboardingV2/aiEdit";
 import { assertQuota } from "./suggest";
-import { restoreFacts } from "./aiEditFacts";
+import { restoreFacts, restorePageFacts } from "./aiEditFacts";
 import { AI_EDIT_SYSTEM_PROMPT, buildAiEditPrompt } from "./aiEditPrompt";
 
 /**
@@ -130,12 +136,46 @@ function isLlmMockEnabled(): boolean {
   );
 }
 
-function mockAiEditResponse(doc: WebsiteDataV2): ProposeAiEditResult {
+function mockAiEditResponse(
+  doc: WebsiteDataV2,
+  page?: Page
+): ProposeAiEditResult {
+  if (page) {
+    const sections = page.sections.map(s =>
+      s.type === "pageHeader" ? { ...s, title: `${s.title} ✓` } : s
+    );
+    const nextPage: Page = { ...page, sections };
+    const next = WebsiteDataV2Schema.parse(replacePage(doc, nextPage));
+    return { kind: "content", next, diff: diffPages(page, nextPage) };
+  }
   const sections = doc.sections.map(s =>
     s.type === "hero" ? { ...s, headline: `${s.headline} ✓` } : s
   );
   const next = WebsiteDataV2Schema.parse({ ...doc, sections });
   return { kind: "content", next, diff: diffDocuments(doc, next) };
+}
+
+/** Ersetzt die Page mit demselben Slug im Dokument — alle anderen Pages und die Startseite bleiben unverändert. */
+function replacePage(doc: WebsiteDataV2, nextPage: Page): WebsiteDataV2 {
+  return {
+    ...doc,
+    pages: (doc.pages ?? []).map(p =>
+      p.slug === nextPage.slug ? nextPage : p
+    ),
+  };
+}
+
+/** Unterseiten-Scope: Page zum Slug — unbekannter Slug ist ein Client-Fehler (BAD_REQUEST), kein LLM-Aufruf. */
+function requirePage(doc: WebsiteDataV2, pageSlug: string): Page {
+  const page = doc.pages?.find(p => p.slug === pageSlug);
+  if (!page) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Diese Unterseite gibt es nicht (mehr) — bitte die Vorschau neu laden.",
+    });
+  }
+  return page;
 }
 
 /**
@@ -148,12 +188,24 @@ export async function proposeAiEdit(args: {
   doc: WebsiteDataV2;
   message: string;
   category: string;
+  /**
+   * Unterseiten-Scope (Plan B6 Task 5): die KI bearbeitet `pages[i].seo` +
+   * `pages[i].sections` statt der Startseite — gleiche Whitelist
+   * (PageSectionSchema), gleiche Fakten-Restauration (restorePageFacts),
+   * gleicher Retry. Startseite und übrige Pages bleiben byteidentisch.
+   */
+  pageSlug?: string;
 }): Promise<ProposeAiEditResult> {
+  const page =
+    args.pageSlug !== undefined
+      ? requirePage(args.doc, args.pageSlug)
+      : undefined;
+
   if (isLlmMockEnabled()) {
-    return mockAiEditResponse(args.doc);
+    return mockAiEditResponse(args.doc, page);
   }
 
-  const prompt = buildAiEditPrompt(args);
+  const prompt = buildAiEditPrompt({ ...args, page });
 
   return withAiEditRetry(async () => {
     const response = await invokeLLM({
@@ -168,8 +220,23 @@ export async function proposeAiEdit(args: {
     const json = JSON.parse(text);
     const raw = RawAiEditResponseSchema.parse(json);
     const mapped = mapRawToAiEditResponse(raw);
-    const parsed = AiEditResponseSchema.parse(mapped);
 
+    if (page) {
+      const parsed = AiPageEditResponseSchema.parse(mapped);
+      if (parsed.kind !== "content") return parsed;
+      const nextPage = restorePageFacts(page, {
+        seo: parsed.seo,
+        sections: parsed.sections,
+      });
+      const next = WebsiteDataV2Schema.parse(replacePage(args.doc, nextPage));
+      return {
+        kind: "content" as const,
+        next,
+        diff: diffPages(page, nextPage),
+      };
+    }
+
+    const parsed = AiEditResponseSchema.parse(mapped);
     if (parsed.kind !== "content") return parsed;
 
     const restored = restoreFacts(args.doc, {

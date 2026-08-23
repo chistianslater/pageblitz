@@ -132,7 +132,7 @@ describe("TeamPatchSchema", () => {
 });
 
 describe("AddonsPatchSchema", () => {
-  test("akzeptiert alle sieben bekannten Flags", () => {
+  test("akzeptiert alle acht bekannten Flags", () => {
     const result = AddonsPatchSchema.safeParse({
       contactForm: true,
       gallery: false,
@@ -141,6 +141,7 @@ describe("AddonsPatchSchema", () => {
       aiChat: true,
       booking: false,
       team: false,
+      subpages: false,
     });
     expect(result.success).toBe(true);
   });
@@ -154,6 +155,7 @@ describe("AddonsPatchSchema", () => {
       aiChat: true,
       booking: false,
       team: false,
+      subpages: false,
       extra: true,
     });
     expect(result.success).toBe(false);

@@ -1,7 +1,11 @@
 import { getConstitution } from "../../shared/stylePacks";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { PACK_IDS } from "../../shared/siteContract/schema";
-import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type {
+  PackId,
+  Page,
+  WebsiteDataV2,
+} from "../../shared/siteContract/types";
 
 export const AI_EDIT_SYSTEM_PROMPT =
   "Du bist ein KI-Assistent, der Kundenwünsche zu einer bestehenden Kleinunternehmer-Website interpretiert und ausschließlich als valides JSON beantwortest, ohne Markdown, ohne Erklärung.";
@@ -40,6 +44,8 @@ export function buildAiEditPrompt(args: {
   doc: WebsiteDataV2;
   message: string;
   category: string;
+  /** Unterseiten-Scope (Plan B6 Task 5): Inhalt = Page.seo + Page.sections statt der Startseite. */
+  page?: Page;
 }): string {
   const constitution = getConstitution(args.doc.stylePackId);
   const candidateIds = buildStyleCandidateIds(args.category);
@@ -47,9 +53,15 @@ export function buildAiEditPrompt(args: {
     const c = getConstitution(id);
     return `- ${id}: ${c.name} — ${c.essence}`;
   });
+  const scope = args.page
+    ? `die Unterseite „${args.page.title}“ (Pfad /${args.page.slug}) seiner Website`
+    : `seine Website`;
+  const content = args.page
+    ? { seo: args.page.seo, sections: args.page.sections }
+    : { seo: args.doc.seo, sections: args.doc.sections };
 
   return [
-    `Der Kunde äußert folgenden Wunsch für seine Website: "${args.message}"`,
+    `Der Kunde äußert folgenden Wunsch für ${scope}: "${args.message}"`,
     ``,
     `## Tonalität (aktuelles Style Pack: ${constitution.name})`,
     constitution.essence,
@@ -63,8 +75,10 @@ export function buildAiEditPrompt(args: {
     `- Erfinde oder ändere niemals Rechtstexte (Impressum/Datenschutz).`,
     `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`,
     ``,
-    `## Aktueller Inhalt (SEO + Sektionen, als JSON)`,
-    JSON.stringify({ seo: args.doc.seo, sections: args.doc.sections }),
+    args.page
+      ? `## Aktueller Inhalt der Unterseite (SEO + Sektionen, als JSON)`
+      : `## Aktueller Inhalt (SEO + Sektionen, als JSON)`,
+    JSON.stringify(content),
     ``,
     `## Wie antworten`,
     `Antworte mit GENAU EINEM der drei folgenden JSON-Formate:`,

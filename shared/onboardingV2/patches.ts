@@ -131,6 +131,10 @@ export const AddonsPatchSchema = z
     aiChat: z.boolean(),
     booking: z.boolean(),
     team: z.boolean(),
+    // Unterseiten (Plan B6 Task 5): wie team ein Abrechnungs-Flag
+    // (onboarding_responses.addOnSubpages); der Inhalt kommt über
+    // PagesPatchSchema/updatePages.
+    subpages: z.boolean(),
   })
   .strict();
 

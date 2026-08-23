@@ -4,7 +4,7 @@ import type { PackId } from "@shared/siteContract/types";
 import { useStudioState } from "./useStudioState";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
-import { PreviewFrame } from "./PreviewFrame";
+import { PreviewFrame, previewPath } from "./PreviewFrame";
 import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
@@ -15,7 +15,11 @@ import { AddonsPanel } from "./panels/AddonsPanel";
 import { CheckoutBar } from "./CheckoutBar";
 import { LiveCard } from "./LiveCard";
 import { LegacyCard } from "./LegacyCard";
-import { deriveGenerationStatus } from "./studioLogic";
+import {
+  deriveGenerationStatus,
+  derivePreviewTabs,
+  resolvePreviewSlug,
+} from "./studioLogic";
 import { parsePanelParam, withPanelParam } from "./studioUrl";
 import "./studio.css";
 
@@ -38,6 +42,11 @@ export default function StudioPage({ token }: { token: string }) {
   };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
+  // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
+  // Startseite. Der gewählte Slug wird bei jedem Render gegen die aktuell
+  // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
+  // fällt auf die Startseite zurück, kein eigener Effekt nötig.
+  const [previewSlugState, setPreviewSlug] = useState<string | null>(null);
   // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
   // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
   const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
@@ -113,6 +122,19 @@ export default function StudioPage({ token }: { token: string }) {
       </div>
     );
   }
+
+  const previewTabs = derivePreviewTabs(
+    state.doc.pages,
+    !!state.addOns.subpages
+  );
+  const previewSlug = resolvePreviewSlug(previewTabs, previewSlugState);
+  const previewPage =
+    previewSlug === null
+      ? undefined
+      : state.doc.pages?.find(p => p.slug === previewSlug);
+  const aiChatPage = previewPage
+    ? { slug: previewPage.slug, title: previewPage.title }
+    : undefined;
 
   return (
     <div className="pb-studio">
@@ -221,6 +243,7 @@ export default function StudioPage({ token }: { token: string }) {
                 }}
                 onOpenStylePanel={openStylePanelWithSuggestion}
                 onOpenPanel={setActiveId}
+                page={aiChatPage}
               />
               {state.status !== "preview" ? (
                 <LiveCard slug={state.slug} status={state.status} />
@@ -255,17 +278,36 @@ export default function StudioPage({ token }: { token: string }) {
             <a
               className="pb-studio-btn"
               data-variant="ghost"
-              href={`/preview-ssr/${token}`}
+              href={previewPath(token, previewSlug ?? undefined)}
               target="_blank"
               rel="noreferrer"
             >
               In neuem Tab öffnen
             </a>
           </div>
+          {previewTabs.length > 1 && (
+            <div
+              className="pb-studio-seg pb-studio-pagebar"
+              role="group"
+              aria-label="Vorschau-Seite"
+            >
+              {previewTabs.map(t => (
+                <button
+                  key={t.slug ?? "__home"}
+                  type="button"
+                  aria-pressed={previewSlug === t.slug}
+                  onClick={() => setPreviewSlug(t.slug)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          )}
           <PreviewFrame
             token={token}
             version={studio.previewVersion}
             device={device}
+            pageSlug={previewSlug ?? undefined}
           />
         </main>
       </div>

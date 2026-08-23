@@ -217,6 +217,7 @@ describe("onboardingV2.updateAddons", () => {
         aiChat: false,
         booking: false,
         team: false,
+        subpages: false,
       },
     });
 
@@ -252,6 +253,7 @@ describe("onboardingV2.updateAddons", () => {
         aiChat: true,
         booking: false,
         team: false,
+        subpages: false,
       },
     });
 
@@ -273,6 +275,7 @@ describe("onboardingV2.updateAddons", () => {
         aiChat: false,
         booking: true,
         team: false,
+        subpages: false,
       },
     });
 
@@ -290,6 +293,7 @@ describe("onboardingV2.updateAddons", () => {
         aiChat: false,
         booking: false,
         team: true,
+        subpages: false,
       },
     });
 
@@ -301,6 +305,29 @@ describe("onboardingV2.updateAddons", () => {
     // Einschalten legt keine leere Team-Sektion an — die entsteht erst über
     // updateTeam mit dem ersten Mitglied.
     expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
+  });
+
+  test("subpages=true → OK, addOnSubpages gesetzt, Dokument unverändert (Plan B6 Task 5: Inhalt kommt über updatePages)", async () => {
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: false,
+        menu: false,
+        pricelist: false,
+        aiChat: false,
+        booking: false,
+        team: false,
+        subpages: true,
+      },
+    });
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnSubpages: true })
+    );
+    expect(s.addOns.subpages).toBe(true);
+    expect(s.doc!.pages).toBeUndefined();
   });
 
   test("team: true→false entfernt eine vorhandene Team-Sektion aus dem Dokument", async () => {
@@ -339,6 +366,7 @@ describe("onboardingV2.updateAddons", () => {
         aiChat: false,
         booking: false,
         team: false,
+        subpages: false,
       },
     });
 

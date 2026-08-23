@@ -123,6 +123,10 @@ export async function buildState(
     aiChat: onboarding?.addOnAiChat ?? false,
     booking: onboarding?.addOnBooking ?? false,
     team: onboarding?.addOnTeam ?? false,
+    // onboarding_responses.addOnSubpages ist eine json-Spalte (v1-Altlast
+    // „string[] Seitentitel“), seit Plan B6 Task 2 als Boolean-Flag
+    // wiederverwendet — nur ein echtes `true` zählt, ein altes Array nicht.
+    subpages: onboarding?.addOnSubpages === true,
   };
   const legal: StudioLegal = {
     legalOwner: onboarding?.legalOwner ?? "",

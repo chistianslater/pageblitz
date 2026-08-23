@@ -3,7 +3,13 @@ import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { AiDiffEntry } from "@shared/onboardingV2/aiEdit";
 import type { PackId } from "@shared/siteContract/types";
-import { AiDiffList, AiStyleCard, canSendMessage } from "./aiChatParts";
+import {
+  AiDiffList,
+  AiStyleCard,
+  aiScopeHint,
+  canSendMessage,
+  type AiChatPageScope,
+} from "./aiChatParts";
 
 /** Spec §5: Verlauf der letzten 5 Anfragen im Component-State, kein Storage. */
 const MAX_HISTORY = 5;
@@ -30,6 +36,12 @@ interface AiChatProps {
   onOpenStylePanel: (packId: PackId) => void;
   /** Ablehnung mit Rechtliches-/Kontakt-Bezug — öffnet das passende Panel. */
   onOpenPanel: (id: ChecklistItemId) => void;
+  /**
+   * Unterseiten-Scope (Plan B6 Task 5): die gerade in der Vorschau gewählte
+   * Unterseite — der Wunsch wird dann auf deren Sektionen angewandt
+   * (`aiEdit` mit `pageSlug`), nicht auf die Startseite.
+   */
+  page?: AiChatPageScope;
 }
 
 /**
@@ -43,6 +55,7 @@ export function AiChat({
   onApplied,
   onOpenStylePanel,
   onOpenPanel,
+  page,
 }: AiChatProps) {
   const [message, setMessage] = useState("");
   // Verlauf der letzten 5 Anfragen (Spec §5) — bewusst nur als schmale
@@ -78,7 +91,7 @@ export function AiChat({
     if (!canSend) return;
     const trimmed = message.trim();
     aiEdit.mutate(
-      { token, message: trimmed },
+      { token, message: trimmed, ...(page ? { pageSlug: page.slug } : {}) },
       {
         onSuccess: outcome => {
           const exchange: AiExchange = {
@@ -162,10 +175,7 @@ export function AiChat({
           </button>
         </div>
       </div>
-      <p className="pb-studio-ai-hint">
-        Inhalte &amp; Texte — Kontaktdaten und Rechtliches änderst du in den
-        Panels.
-      </p>
+      <p className="pb-studio-ai-hint">{aiScopeHint(page)}</p>
       {aiEdit.error && (
         <p role="alert" className="pb-studio-ai-error">
           {aiEdit.error.message}

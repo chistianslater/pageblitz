@@ -1,5 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { computeRefetchInterval, deriveGenerationStatus } from "./studioLogic";
+import {
+  computeRefetchInterval,
+  deriveGenerationStatus,
+  derivePreviewTabs,
+  resolvePreviewSlug,
+} from "./studioLogic";
+import type { Page } from "@shared/siteContract/types";
 
 describe("deriveGenerationStatus", () => {
   test("ensureError (Mutation selbst fehlgeschlagen) → failed mit dessen Meldung, auch ohne Job", () => {
@@ -120,5 +126,48 @@ describe("computeRefetchInterval", () => {
         legacy: true,
       })
     ).toBe(false);
+  });
+});
+
+describe("derivePreviewTabs / resolvePreviewSlug (Vorschau-Leiste, Plan B6 Task 5)", () => {
+  const pages: Page[] = [
+    {
+      slug: "leistungen-im-detail",
+      title: "Leistungen im Detail",
+      navLabel: "Leistungen",
+      seo: { title: "t", description: "d" },
+      sections: [{ type: "pageHeader", title: "T" }],
+    },
+    {
+      slug: "ueber-uns",
+      title: "Über uns",
+      seo: { title: "t", description: "d" },
+      sections: [{ type: "pageHeader", title: "T" }],
+    },
+  ];
+
+  test("Extra aktiv + Seiten → Startseite + je Seite ein Eintrag (navLabel vor Titel)", () => {
+    expect(derivePreviewTabs(pages, true)).toEqual([
+      { slug: null, label: "Startseite" },
+      { slug: "leistungen-im-detail", label: "Leistungen" },
+      { slug: "ueber-uns", label: "Über uns" },
+    ]);
+  });
+
+  test("Extra inaktiv oder keine Seiten → nur Startseite", () => {
+    expect(derivePreviewTabs(pages, false)).toEqual([
+      { slug: null, label: "Startseite" },
+    ]);
+    expect(derivePreviewTabs(undefined, true)).toEqual([
+      { slug: null, label: "Startseite" },
+    ]);
+    expect(derivePreviewTabs([], true)).toHaveLength(1);
+  });
+
+  test("resolvePreviewSlug: bekannter Slug bleibt, entfernter fällt auf Startseite zurück", () => {
+    const tabs = derivePreviewTabs(pages, true);
+    expect(resolvePreviewSlug(tabs, "ueber-uns")).toBe("ueber-uns");
+    expect(resolvePreviewSlug(tabs, "weg")).toBeNull();
+    expect(resolvePreviewSlug(tabs, null)).toBeNull();
   });
 });

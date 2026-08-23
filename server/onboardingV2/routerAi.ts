@@ -24,7 +24,18 @@ const PROPOSAL_EXPIRED_MESSAGE =
  */
 export const aiProcedures = {
   aiEdit: publicProcedure
-    .input(tokenInput.extend({ message: z.string().min(3).max(500) }))
+    .input(
+      tokenInput.extend({
+        message: z.string().min(3).max(500),
+        // Unterseiten-Scope (Plan B6 Task 5): Slug der gerade in der
+        // Vorschau gewählten Unterseite — Format wie PageSchema.slug; ob die
+        // Seite existiert, prüft proposeAiEdit (BAD_REQUEST).
+        pageSlug: z
+          .string()
+          .regex(/^[a-z0-9-]{2,40}$/)
+          .optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
@@ -37,6 +48,7 @@ export const aiProcedures = {
         doc,
         message: input.message,
         category,
+        ...(input.pageSlug !== undefined ? { pageSlug: input.pageSlug } : {}),
       });
 
       if (result.kind === "content") {

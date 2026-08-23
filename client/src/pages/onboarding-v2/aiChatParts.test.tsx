@@ -1,7 +1,12 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AiDiffList, AiStyleCard, canSendMessage } from "./aiChatParts";
+import {
+  AiDiffList,
+  AiStyleCard,
+  aiScopeHint,
+  canSendMessage,
+} from "./aiChatParts";
 
 describe("canSendMessage", () => {
   const base = {
@@ -78,5 +83,20 @@ describe("AiStyleCard", () => {
     expect(html).toContain("Werkbank");
     expect(html).toContain("Passt besser zu einem Handwerksbetrieb.");
     expect(html).toContain(">Ansehen<");
+  });
+});
+
+describe("aiScopeHint (Unterseiten-Scope, Plan B6 Task 5)", () => {
+  test("ohne Scope: allgemeiner Hinweis", () => {
+    expect(aiScopeHint()).toContain("Inhalte & Texte");
+    expect(aiScopeHint()).not.toContain("Unterseite");
+  });
+
+  test("mit Scope: nennt die gewählte Unterseite", () => {
+    const hint = aiScopeHint({
+      slug: "leistungen-im-detail",
+      title: "Leistungen im Detail",
+    });
+    expect(hint).toContain("Unterseite „Leistungen im Detail“");
   });
 });

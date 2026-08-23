@@ -4,6 +4,8 @@
  * tRPC-/React-Query-Testharness unit-testbar bleibt (Findings #1/#2).
  */
 
+import type { Page } from "@shared/siteContract/types";
+
 type JobStatus = "pending" | "processing" | "completed" | "failed";
 
 interface StudioJobLike {
@@ -86,4 +88,43 @@ export function computeRefetchInterval(
   if (data?.legacy) return jobActive ? 1500 : false;
   const running = !data?.doc && (!job || jobActive);
   return running ? 1500 : false;
+}
+
+/** Eintrag der Vorschau-Leiste über dem iframe (Plan B6 Task 5): Startseite oder eine Unterseite. */
+export interface PreviewTab {
+  /** `null` = Startseite. */
+  slug: string | null;
+  label: string;
+}
+
+/**
+ * Reine Ableitung der Vorschau-Leiste „Startseite | <Pages…>“: nur wenn das
+ * Unterseiten-Extra aktiv ist UND Seiten existieren, gibt es Unterseiten-
+ * Einträge (Add-on-Inhalt — ohne Flag bleibt nur die Startseite, wie das
+ * Gating in Task 6 es auch für Nav/Render vorsieht). Label = navLabel,
+ * sonst Titel.
+ */
+export function derivePreviewTabs(
+  pages: Page[] | undefined,
+  subpagesActive: boolean
+): PreviewTab[] {
+  const home: PreviewTab = { slug: null, label: "Startseite" };
+  if (!subpagesActive || !pages || pages.length === 0) return [home];
+  return [
+    home,
+    ...pages.map(p => ({ slug: p.slug, label: p.navLabel || p.title })),
+  ];
+}
+
+/**
+ * Reine Ableitung: welcher Slug ist nach einem Refetch noch gültig? Eine
+ * gewählte Unterseite, die inzwischen entfernt oder ausgeblendet wurde,
+ * fällt auf die Startseite (`null`) zurück statt ein 404 im iframe zu zeigen.
+ */
+export function resolvePreviewSlug(
+  tabs: PreviewTab[],
+  wanted: string | null
+): string | null {
+  if (wanted === null) return null;
+  return tabs.some(t => t.slug === wanted) ? wanted : null;
 }

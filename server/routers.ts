@@ -2542,6 +2542,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
             "aiChat",
             "booking",
             "team",
+            "subpages",
           ]),
         })
       )
@@ -2607,6 +2608,13 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
               .set({ addOnBooking: true })
               .where(eqDrizzle(generatedWebsites.id, input.websiteId));
           }
+        }
+        if (input.addonKey === "subpages") {
+          // Unterseiten (Plan B6 Task 5): Spalte addOnSubpages + features.
+          // subpages in einem Write (wie applyFeatureFlags es für
+          // aiChat/booking im Studio-Pfad tut) — der Inhalt (pages[])
+          // wird im Studio gepflegt (onboardingV2.updatePages).
+          await applyFeatureFlags(input.websiteId, { subpages: true });
         }
 
         return { success: true };

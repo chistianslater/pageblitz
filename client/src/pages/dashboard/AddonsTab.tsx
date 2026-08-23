@@ -15,8 +15,16 @@ import { studioPanelHref } from "./StudioCard";
 
 // Team gehört seit Plan B5 Task 2 zu den Inhalts-Add-ons: Kauf hier wie
 // Galerie/Speisekarte/Preisliste, Pflege der Mitglieder im Studio
-// ("Team pflegen"-Unterbereich im Extras-Panel, AddonsPanel.tsx).
-type ContentAddonKey = "gallery" | "menu" | "pricelist" | "team";
+// ("Team pflegen"-Unterbereich im Extras-Panel, AddonsPanel.tsx). Seit
+// Plan B6 Task 5 ebenso Unterseiten ("Unterseiten pflegen", PagesEditor.tsx).
+type ContentAddonKey = "gallery" | "menu" | "pricelist" | "team" | "subpages";
+const CONTENT_ADDON_KEYS: ContentAddonKey[] = [
+  "gallery",
+  "menu",
+  "pricelist",
+  "team",
+  "subpages",
+];
 type AddonKey = ContentAddonKey | "contactForm";
 
 const CONTENT_ADDON_LABELS: Record<
@@ -45,6 +53,12 @@ const CONTENT_ADDON_LABELS: Record<
     name: "Team-Vorstellung",
     icon: "👥",
     hint: "Team-Mitglieder mit Foto und Rolle vorstellen.",
+    priceLabel: "+3,90 €/Mon",
+  },
+  subpages: {
+    name: "Unterseiten",
+    icon: "📄",
+    hint: "Bis zu 5 zusätzliche Seiten mit eigener Adresse und Navigation.",
     priceLabel: "+3,90 €/Mon",
   },
 };
@@ -149,53 +163,51 @@ export function AddonsTab({
       {!activeDetail && (
         <div className="space-y-3">
           {/* Inhalts-Add-ons: Kauf hier, Pflege im Studio */}
-          {(["gallery", "menu", "pricelist", "team"] as ContentAddonKey[]).map(
-            key => {
-              const meta = CONTENT_ADDON_LABELS[key];
-              const purchased = !!purchasedAddOns[key];
-              return (
-                <div
-                  key={key}
-                  className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${purchased ? "border-slate-600/50" : "border-slate-700/30"}`}
-                >
-                  <div className="p-4 flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0 text-lg">
-                      {meta.icon}
+          {CONTENT_ADDON_KEYS.map(key => {
+            const meta = CONTENT_ADDON_LABELS[key];
+            const purchased = !!purchasedAddOns[key];
+            return (
+              <div
+                key={key}
+                className={`bg-slate-800/60 rounded-2xl border transition-all duration-200 ${purchased ? "border-slate-600/50" : "border-slate-700/30"}`}
+              >
+                <div className="p-4 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center flex-shrink-0 text-lg">
+                    {meta.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-white font-semibold text-sm">
+                        {meta.name}
+                      </span>
+                      <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
+                        {meta.priceLabel}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-white font-semibold text-sm">
-                          {meta.name}
-                        </span>
-                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 font-medium">
-                          {meta.priceLabel}
-                        </span>
-                      </div>
-                      <p className="text-slate-400 text-xs">{meta.hint}</p>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {purchased ? (
-                        <a
-                          href={studioPanelHref(previewToken, "addons")}
-                          className="flex items-center gap-1.5 text-xs bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap hover:bg-emerald-600/30"
-                        >
-                          Aktiv · Im Studio bearbeiten
-                        </a>
-                      ) : (
-                        <button
-                          onClick={() => setConfirmAddon(key)}
-                          className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
-                        >
-                          <Lock className="w-3 h-3" />
-                          Freischalten
-                        </button>
-                      )}
-                    </div>
+                    <p className="text-slate-400 text-xs">{meta.hint}</p>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {purchased ? (
+                      <a
+                        href={studioPanelHref(previewToken, "addons")}
+                        className="flex items-center gap-1.5 text-xs bg-emerald-600/20 border border-emerald-500/40 text-emerald-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap hover:bg-emerald-600/30"
+                      >
+                        Aktiv · Im Studio bearbeiten
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmAddon(key)}
+                        className="flex items-center gap-1.5 text-xs bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/40 text-blue-300 px-3 py-1.5 rounded-lg font-medium transition-all whitespace-nowrap"
+                      >
+                        <Lock className="w-3 h-3" />
+                        Freischalten
+                      </button>
+                    )}
                   </div>
                 </div>
-              );
-            }
-          )}
+              </div>
+            );
+          })}
 
           {/* ── Kontaktformular ── */}
           <div

@@ -180,6 +180,162 @@ describe("proposeAiEdit — kind=content", () => {
   });
 });
 
+describe("proposeAiEdit — Unterseiten-Scope (pageSlug, Plan B6 Task 5)", () => {
+  const docWithPage: WebsiteDataV2 = {
+    ...doc,
+    pages: [
+      {
+        slug: "leistungen-im-detail",
+        title: "Leistungen im Detail",
+        seo: { title: "Leistungen im Detail", description: "Alles im Detail." },
+        sections: [
+          {
+            type: "pageHeader",
+            title: "Leistungen im Detail",
+            intro: "Ein Blick auf unser Angebot.",
+          },
+          {
+            type: "services",
+            headline: "Leistungen",
+            items: [{ title: "Möbelbau", description: "Nach Maß" }],
+          },
+          {
+            type: "about",
+            headline: "Werkstatt",
+            body: "Seit 1990.",
+            imageUrl: "/page-about.jpg",
+          },
+          { type: "contact", headline: "Kontakt", phone: "0231 123456" },
+        ],
+      },
+    ],
+  };
+
+  test("ändert nur die Sektionen der Unterseite, restauriert Fakten (about.imageUrl, contact), Startseite bleibt unverändert", async () => {
+    const candidate = [
+      {
+        type: "pageHeader",
+        title: "Leistungen im Detail ✨",
+        intro: "Ein genauer Blick auf unser Angebot.",
+      },
+      {
+        type: "services",
+        headline: "Unsere Leistungen",
+        items: [{ title: "Möbelbau", description: "Nach Maß" }],
+      },
+      {
+        type: "about",
+        headline: "Werkstatt",
+        body: "Seit 1990 in Dortmund.",
+        imageUrl: "https://boese-quelle/x.jpg",
+      },
+      { type: "contact", headline: "Kontakt", phone: "000" },
+    ];
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmContentResponse(candidate, {
+        title: "Leistungen im Detail",
+        description: "Alles im Detail.",
+      })
+    );
+
+    const result = await proposeAiEdit({
+      doc: docWithPage,
+      message: "Mach die Einleitung knackiger",
+      category: "Tischler",
+      pageSlug: "leistungen-im-detail",
+    });
+
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") throw new Error("unreachable");
+    // Startseite unverändert
+    expect(result.next.sections).toEqual(docWithPage.sections);
+    expect(result.next.seo).toEqual(docWithPage.seo);
+    const page = result.next.pages![0];
+    expect(page.slug).toBe("leistungen-im-detail");
+    expect(page.sections[0]).toMatchObject({
+      type: "pageHeader",
+      title: "Leistungen im Detail ✨",
+      intro: "Ein genauer Blick auf unser Angebot.",
+    });
+    const about = page.sections.find(s => s.type === "about") as any;
+    expect(about.body).toBe("Seit 1990 in Dortmund.");
+    expect(about.imageUrl).toBe("/page-about.jpg");
+    const contact = page.sections.find(s => s.type === "contact") as any;
+    expect(contact.phone).toBe("0231 123456");
+    // Diff bezieht sich auf die Unterseite
+    expect(result.diff.some(d => d.label.includes("Kopfzeile"))).toBe(true);
+    expect(
+      result.diff.some(d => d.path.startsWith("pages.leistungen-im-detail"))
+    ).toBe(true);
+    expect(result.diff.some(d => d.path.includes("contact"))).toBe(false);
+    // Prompt enthält den Seitenkontext, nicht die Startseiten-Sektionen
+    const prompt = vi.mocked(invokeLLM).mock.calls[0][0].messages[1]
+      .content as string;
+    expect(prompt).toContain("Unterseite");
+    expect(prompt).toContain("Leistungen im Detail");
+    expect(prompt).toContain('"pageHeader"');
+    expect(prompt).not.toContain('"hero"');
+  });
+
+  test("KI liefert Startseiten-Sektionstyp (hero) für eine Unterseite → Retry, dann TRPCError", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmContentResponse([{ type: "hero", headline: "X" }], {
+        title: "t",
+        description: "d",
+      })
+    );
+    await expect(
+      proposeAiEdit({
+        doc: docWithPage,
+        message: "x",
+        category: "Tischler",
+        pageSlug: "leistungen-im-detail",
+      })
+    ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("unbekannter pageSlug → BAD_REQUEST ohne LLM-Aufruf", async () => {
+    await expect(
+      proposeAiEdit({
+        doc: docWithPage,
+        message: "x",
+        category: "Tischler",
+        pageSlug: "gibt-es-nicht",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(invokeLLM).not.toHaveBeenCalled();
+  });
+
+  test("kind=style bleibt auch im Unterseiten-Scope möglich", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              kind: "style",
+              content: null,
+              packId: "salon-noir",
+              reason: "Edler.",
+            }),
+          },
+        },
+      ],
+    } as any);
+    const result = await proposeAiEdit({
+      doc: docWithPage,
+      message: "dunkler",
+      category: "Tischler",
+      pageSlug: "leistungen-im-detail",
+    });
+    expect(result).toEqual({
+      kind: "style",
+      packId: "salon-noir",
+      reason: "Edler.",
+    });
+  });
+});
+
 describe("proposeAiEdit — kind=style", () => {
   test("liefert Pack-Vorschlag ohne Dokument-Änderung", async () => {
     vi.mocked(invokeLLM).mockResolvedValue({

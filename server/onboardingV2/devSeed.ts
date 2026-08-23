@@ -69,6 +69,11 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
         // Seed-Slug hängen und der Extras-Reiter würde bereits "Aktiv"
         // statt "Hinzufügen" zeigen.
         addOnTeam: false,
+        // Gleiches Muster für Unterseiten (Plan B6 Task 5):
+        // onboardingV2.updatePages setzt addOnSubpages, sobald Seiten
+        // gespeichert werden — ohne Reset bliebe der Extras-Schalter nach
+        // dem Playwright-Unterseiten-Test (studio.spec.ts) auf „Aktiv“.
+        addOnSubpages: false,
         updatedAt: Date.now(),
       });
     else

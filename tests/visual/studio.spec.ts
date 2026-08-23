@@ -375,4 +375,94 @@ test.describe("Studio", () => {
       timeout: 15000,
     });
   });
+
+  test("Extras-Panel: Unterseiten einschalten → „Leistungen im Detail“ anlegen → Vorlage Leistungen → Übernehmen → Vorschau-Leiste zeigt Seite → iframe enthält Titel", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    // fixture=minimal statt full: die "full"-Fixture bringt seit Plan B6
+    // Task 2 bereits eine Demo-Unterseite mit genau diesem Slug mit
+    // (leistungen-im-detail) — hier soll die Seite aber frisch angelegt
+    // werden, wie der Plan es für diesen Test beschreibt. Eigener Seed-Slug
+    // (studio-seed-werkbank-minimal), kollidiert nicht mit den übrigen Tests.
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=minimal&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // Ohne aktives Unterseiten-Extra gibt es keine Vorschau-Leiste (Add-on-Inhalt).
+    await expect(
+      page.getByRole("group", { name: "Vorschau-Seite" })
+    ).toHaveCount(0);
+
+    await page
+      .getByRole("button", { name: /Extras/ })
+      .first()
+      .click();
+    const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
+    await expect(addonsPanel).toBeVisible();
+
+    const subpagesRow = addonsPanel
+      .locator(".pb-studio-addon-list li")
+      .filter({ hasText: "Unterseiten" });
+    await subpagesRow.getByRole("button", { name: "Hinzufügen" }).click();
+    await expect(
+      subpagesRow.getByRole("button", { name: "Aktiv" })
+    ).toBeVisible();
+    await expect(
+      addonsPanel.getByRole("heading", {
+        name: "Unterseiten pflegen",
+        level: 3,
+      })
+    ).toBeVisible();
+
+    await addonsPanel
+      .getByLabel("Titel der neuen Seite")
+      .fill("Leistungen im Detail");
+    await addonsPanel.getByRole("button", { name: "Seite anlegen" }).click();
+    // Slug-Vorschlag aus dem Titel (pagesLogic.slugFromTitle), editierbar.
+    await expect(addonsPanel.getByLabel("Pfad Seite 1")).toHaveValue(
+      "leistungen-im-detail"
+    );
+
+    await addonsPanel
+      .getByLabel("Vorlage Seite 1")
+      .selectOption("services-detail");
+    await addonsPanel
+      .getByRole("button", { name: "Sektion hinzufügen" })
+      .click();
+    // Die Vorlage startet mit einer leeren Leistungs-Zeile — Pflichtfeld
+    // (validatePages), sonst bleibt "Übernehmen" gesperrt.
+    await addonsPanel
+      .getByLabel("Titel Zeile 1 Sektion 2 Seite 1")
+      .fill("Erstberatung");
+
+    await Promise.all([
+      page.waitForResponse(
+        res => res.url().includes("onboardingV2.updatePages") && res.ok()
+      ),
+      addonsPanel.getByRole("button", { name: "Übernehmen" }).click(),
+    ]);
+
+    // updatePages setzt addOnSubpages → Vorschau-Leiste „Startseite | Seite“
+    // erscheint über dem iframe (StudioPage.tsx, derivePreviewTabs).
+    const pagebar = page.getByRole("group", { name: "Vorschau-Seite" });
+    await expect(pagebar).toBeVisible();
+    await expect(
+      pagebar.getByRole("button", { name: "Startseite" })
+    ).toHaveAttribute("aria-pressed", "true");
+    await pagebar.getByRole("button", { name: "Leistungen im Detail" }).click();
+
+    const preview = page.frameLocator(
+      'iframe[title="Live-Vorschau deiner Website"]'
+    );
+    await expect(
+      preview.getByRole("heading", { level: 1, name: "Leistungen im Detail" })
+    ).toBeVisible({ timeout: 15000 });
+    await expect(preview.getByText("Erstberatung")).toBeVisible();
+  });
 });

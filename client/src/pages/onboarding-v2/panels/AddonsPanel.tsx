@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import type { AddonsPatch, TeamPatch } from "@shared/onboardingV2/patches";
-import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
+import type {
+  AddonsPatch,
+  PagesPatch,
+  TeamPatch,
+} from "@shared/onboardingV2/patches";
+import type {
+  Page,
+  SectionOf,
+  WebsiteDataV2,
+} from "@shared/siteContract/types";
 import {
   ADDON_KEYS,
   ADDON_NAMES,
@@ -17,16 +25,18 @@ import {
 import { PanelFrame } from "./PanelFrame";
 import { TeamEditor } from "./TeamEditor";
 import { validateTeam, type TeamValue } from "./teamLogic";
+import { PagesEditor } from "./PagesEditor";
+import { syncLinkedSections, validatePages } from "./pagesLogic";
 
 /**
  * Bindbare Add-ons: Seit Plan B3 schaltet der Zahlungs-Webhook auch KI-Chat
- * und Terminbuchung frei, seit Plan B5 zusätzlich Team — alle sieben Extras
- * zählen damit in Preis und Summe. `BOOKABLE_ADDON_KEYS` und `sanitizeAddOns`
+ * und Terminbuchung frei, seit Plan B5 zusätzlich Team, seit Plan B6
+ * Unterseiten — alle acht Extras zählen damit in Preis und Summe. `BOOKABLE_ADDON_KEYS` und `sanitizeAddOns`
  * kommen aus @shared/pricing (Finding I1) — dieselbe Quelle der Wahrheit wie
  * der Server (routerCommerce.ts), damit UI-Sperre und serverseitige
  * Ablehnung nie auseinanderlaufen können. `COMING_SOON_KEYS` bleibt als
- * generischer Mechanismus stehen — seit Plan B5 Task 2 sind alle sieben
- * Extras buchbar, die Liste ist also aktuell leer (keine Zeile rendert).
+ * generischer Mechanismus stehen — seit Plan B6 sind alle acht Extras
+ * buchbar, die Liste ist also aktuell leer (keine Zeile rendert).
  */
 const TOGGLEABLE_KEYS: readonly AddOnKey[] = BOOKABLE_ADDON_KEYS;
 const COMING_SOON_KEYS: AddOnKey[] = ADDON_KEYS.filter(
@@ -43,6 +53,11 @@ export function teamFromDoc(doc: WebsiteDataV2): TeamValue {
     ...(team.headline !== undefined ? { headline: team.headline } : {}),
     members: team.members,
   };
+}
+
+/** Reine Ableitung: vorhandene Unterseiten (`pages[]`) → Entwurf; ohne Feld eine leere Liste (analog teamFromDoc). */
+export function pagesFromDoc(doc: WebsiteDataV2): Page[] {
+  return doc.pages ?? [];
 }
 
 interface AddonsListProps {
@@ -115,12 +130,16 @@ export function AddonsPanel({
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   const [team, setTeam] = useState<TeamValue>(() => teamFromDoc(doc));
+  const [pages, setPages] = useState<Page[]>(() => pagesFromDoc(doc));
 
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const updateTeam = trpc.onboardingV2.updateTeam.useMutation();
+  const updatePages = trpc.onboardingV2.updatePages.useMutation();
   const busy = updateAddons.isPending;
   const teamBusy = updateTeam.isPending;
+  const pagesBusy = updatePages.isPending;
   const teamErrors = validateTeam(team.members);
+  const pagesErrors = validatePages(pages);
 
   const handleToggle = (key: AddOnKey) => {
     setValue(prev => ({ ...prev, [key]: !prev[key] }));
@@ -141,8 +160,19 @@ export function AddonsPanel({
       // getrennten Verwaltungsort von Galerie-Flag (hier) und
       // Galerie-Inhalt (Fotos-Panel).
       team: !!value.team,
+      // Unterseiten (Plan B6 Task 5) wie Team: Schalter = Abrechnungs-Flag
+      // `addOnSubpages`, die Seiten selbst pflegt der Unterbereich
+      // "Unterseiten pflegen" (eigene Mutation onboardingV2.updatePages).
+      subpages: !!value.subpages,
     };
     updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
+  };
+
+  // Kontakt/Galerie auf Unterseiten spiegeln die Startseite — vor dem
+  // Speichern aus dem aktuellen Dokument auffrischen (pagesLogic.ts).
+  const handlePagesSave = () => {
+    const patch: PagesPatch = { pages: syncLinkedSections(pages, doc) };
+    updatePages.mutate({ token, patch }, { onSuccess: onApplied });
   };
 
   const handleTeamSave = () => {
@@ -209,6 +239,27 @@ export function AddonsPanel({
           {updateTeam.error && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
               {updateTeam.error.message}
+            </p>
+          )}
+        </div>
+      )}
+      {value.subpages && (
+        <div className="pb-studio-rows">
+          <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
+            Unterseiten pflegen
+          </h3>
+          <PagesEditor value={pages} onChange={setPages} doc={doc} />
+          <button
+            type="button"
+            className="pb-studio-btn"
+            disabled={pagesBusy || pagesErrors.length > 0}
+            onClick={handlePagesSave}
+          >
+            {pagesBusy ? "Bitte warten…" : "Übernehmen"}
+          </button>
+          {updatePages.error && (
+            <p role="alert" style={{ color: "var(--st-warn)" }}>
+              {updatePages.error.message}
             </p>
           )}
         </div>

@@ -1,8 +1,13 @@
 import type {
+  Page,
+  PageSection,
   SectionOf,
   SectionV2,
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
+
+/** Startseiten- oder Unterseiten-Sektion — die Fakten-Restauration arbeitet für beide gleich. */
+type AnySection = SectionV2 | PageSection;
 
 /**
  * Fakten-Garantie für den KI-Chat: die KI darf Sektionstypen weder erfinden
@@ -11,10 +16,10 @@ import type {
  * denselben Prompt, der die Regel explizit nennt).
  */
 function assertSameSectionTypeSet(
-  original: WebsiteDataV2,
-  candidateSections: SectionV2[]
+  originalSections: AnySection[],
+  candidateSections: AnySection[]
 ): void {
-  const originalTypes = new Set(original.sections.map(s => s.type));
+  const originalTypes = new Set<string>(originalSections.map(s => s.type));
   for (const section of candidateSections) {
     if (!originalTypes.has(section.type)) {
       throw new Error(
@@ -31,9 +36,9 @@ function assertSameSectionTypeSet(
  * sie ausschließlich aus Fakten besteht.
  */
 function restoreSectionFacts(
-  original: SectionV2,
-  candidate: SectionV2
-): SectionV2 {
+  original: AnySection,
+  candidate: AnySection
+): AnySection {
   if (candidate.type !== original.type) return original;
 
   switch (original.type) {
@@ -115,16 +120,46 @@ export function restoreFacts(
   original: WebsiteDataV2,
   candidate: { seo: WebsiteDataV2["seo"]; sections: SectionV2[] }
 ): WebsiteDataV2 {
-  assertSameSectionTypeSet(original, candidate.sections);
+  const sections = restoreSectionList(
+    original.sections,
+    candidate.sections
+  ) as SectionV2[];
+  return { ...original, seo: candidate.seo, sections };
+}
 
-  const candidateByType = new Map(candidate.sections.map(s => [s.type, s]));
+/**
+ * Fakten-Garantie für eine Unterseite (Plan B6 Task 5, KI-Chat mit
+ * `pageSlug`): dieselben Regeln wie `restoreFacts`, angewandt auf
+ * `Page.sections` (contact 1:1 aus dem Original, about/gallery-Bilder
+ * zurückkopiert, pageHeader hat keine Fakten). Slug/Titel/navLabel der Seite
+ * bleiben unverändert — die KI bearbeitet nur SEO + Sektionstexte.
+ */
+export function restorePageFacts(
+  original: Page,
+  candidate: { seo: Page["seo"]; sections: PageSection[] }
+): Page {
+  const sections = restoreSectionList(
+    original.sections,
+    candidate.sections
+  ) as PageSection[];
+  return { ...original, seo: candidate.seo, sections };
+}
 
-  const sections = original.sections.map(originalSection => {
+/** Gemeinsamer Kern von restoreFacts/restorePageFacts — Reihenfolge und Sektions-Set folgen strikt dem Original. */
+function restoreSectionList(
+  originalSections: AnySection[],
+  candidateSections: AnySection[]
+): AnySection[] {
+  assertSameSectionTypeSet(originalSections, candidateSections);
+
+  const candidateByType = new Map<string, AnySection>(
+    candidateSections.map(s => [s.type, s])
+  );
+
+  return originalSections.map(originalSection => {
     if (originalSection.type === "contact") return originalSection;
     const candidateSection = candidateByType.get(originalSection.type);
     if (!candidateSection) return originalSection;
     return restoreSectionFacts(originalSection, candidateSection);
   });
-
-  return { ...original, seo: candidate.seo, sections };
 }
