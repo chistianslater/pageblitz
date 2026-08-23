@@ -51,7 +51,13 @@ export default defineConfig({
         // nach Hydration, FABs reagieren nicht). PB_LLM_MOCK=1 aktiviert den
         // deterministischen KI-Chat-Mock (server/onboardingV2/aiEdit.ts,
         // non-production-only) für die "KI-Chat Diff"-Baseline in studio.spec.ts.
-        command: "npm run build:islands && PORT=3005 PB_LLM_MOCK=1 npm run dev",
+        // PB_V2_PHASE_DELAY_MS verlangsamt NUR den Generierungs-Job
+        // (server/generationV2/runJob.ts, non-production-only), damit die
+        // Zeitmaschinen-Zustände (Skeleton → Zwischenstand → fertig) im
+        // E2E-Test deterministisch sichtbar sind — mit dem LLM-Mock wäre der
+        // Job sonst in Millisekunden fertig und die Asserts würden flaken.
+        command:
+          "npm run build:islands && PORT=3005 PB_LLM_MOCK=1 PB_V2_PHASE_DELAY_MS=2000 npm run dev",
         url: "http://localhost:3005/dev/site-preview?pack=werkbank&fixture=minimal",
         reuseExistingServer: false,
         timeout: 90_000,

@@ -18,6 +18,7 @@ import { LegacyCard } from "./LegacyCard";
 import {
   deriveGenerationStatus,
   derivePreviewTabs,
+  generationInProgress,
   resolvePreviewSlug,
 } from "./studioLogic";
 import { parsePanelParam, withPanelParam } from "./studioUrl";
@@ -102,7 +103,10 @@ export default function StudioPage({ token }: { token: string }) {
       </div>
     );
   }
-  if (!state.doc) {
+  // Zeitmaschine (Plan B7 Task 4): Während ein Job läuft, existiert bereits
+  // der Zwischenstand (state.doc) — der Generierungs-Screen bleibt trotzdem
+  // sichtbar und zeigt ihn im Vorschau-iframe, bis der Job fertig ist.
+  if (!state.doc || generationInProgress(state.job)) {
     const job = state.job;
     const { status, error } = deriveGenerationStatus({
       hasDoc: !!state.doc,
@@ -113,6 +117,9 @@ export default function StudioPage({ token }: { token: string }) {
       <div className="pb-studio">
         <GenerationScreen
           businessName={state.businessName}
+          token={token}
+          packId={state.stylePackId}
+          hasDoc={!!state.doc}
           progress={job?.progress ?? 5}
           status={status}
           error={error ?? studio.error}
@@ -314,6 +321,10 @@ export default function StudioPage({ token }: { token: string }) {
             version={studio.previewVersion}
             device={device}
             pageSlug={previewSlug ?? undefined}
+            // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
+            // in dieser Sitzung beobachteten Generierung faden die Sektionen
+            // des fertigen Stands ein — nur bis zum ersten Patch (version 0).
+            reveal={studio.justGenerated && studio.previewVersion === 0}
           />
         </main>
       </div>

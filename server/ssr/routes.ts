@@ -43,7 +43,10 @@ const siteMissCache = new Map<string, number>();
  * nutzen: Ein nicht gecachter, aber existierender Unterseiten-Pfad darf nie
  * das 404-HTML eines anderen Pfads bekommen (Final-Review B6 Task 3).
  */
-const sitePagesCache = new Map<string, { pageSlugs: Set<string>; at: number }>();
+const sitePagesCache = new Map<
+  string,
+  { pageSlugs: Set<string>; at: number }
+>();
 
 /** Obergrenze pro Cache — verhindert unbegrenztes Wachstum (kein TTL-Sweep, nur Read-Eviction bisher). */
 const MAX_CACHE_ENTRIES = 500;
@@ -194,6 +197,11 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       basePath,
       slug: website.slug,
       site: { chatWelcomeMessage: website.chatWelcomeMessage },
+      // Zeitmaschine (Plan B7 Task 4): Der GenerationScreen hängt ?reveal=1
+      // an, damit die Sektionen des frisch geschriebenen (Zwischen-)Stands
+      // sichtbar einfaden. Nur diese Preview-Route kennt den Parameter —
+      // Kundenseiten-SSR bleibt ohne Einblendungs-CSS.
+      sectionReveal: req.query.reveal === "1",
     });
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     res.setHeader("Cache-Control", "no-store");

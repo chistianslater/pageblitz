@@ -86,8 +86,23 @@ export function computeRefetchInterval(
   const jobActive =
     !!job && (job.status === "pending" || job.status === "processing");
   if (data?.legacy) return jobActive ? 1500 : false;
-  const running = !data?.doc && (!job || jobActive);
+  // Aktiver Job pollt IMMER weiter — seit dem Zeitmaschinen-Zwischenstand
+  // (Plan B7 Task 4) existiert das Dokument schon während der Generierung;
+  // ohne diese Bedingung würde das Polling nach dem Interim-Write stoppen
+  // und der finale Stand nie ankommen.
+  const running = jobActive || (!data?.doc && !job);
   return running ? 1500 : false;
+}
+
+/**
+ * Läuft gerade eine Generierung? Seit dem Zeitmaschinen-Zwischenstand
+ * (Plan B7 Task 4) reicht `!doc` als Kriterium für den Generierungs-Screen
+ * nicht mehr — während des Jobs existiert bereits ein (Platzhalter-)
+ * Dokument. StudioPage zeigt den GenerationScreen daher, solange der Job
+ * aktiv ist ODER kein Dokument existiert.
+ */
+export function generationInProgress(job: StudioJobLike | null): boolean {
+  return !!job && (job.status === "pending" || job.status === "processing");
 }
 
 /** Eintrag der Vorschau-Leiste über dem iframe (Plan B6 Task 5): Startseite oder eine Unterseite. */

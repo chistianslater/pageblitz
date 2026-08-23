@@ -24,8 +24,13 @@ vi.mock("./generateSiteContent", () => ({ generateSiteContent: vi.fn() }));
 import * as db from "../db";
 import { getGmbPhotos } from "../gmbPhotos";
 import { invalidateSsrCache } from "../ssr/routes";
+import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { generateSiteContent } from "./generateSiteContent";
-import { resolveV2Images, runWebsiteGenerationV2Job } from "./runJob";
+import {
+  buildInterimV2Doc,
+  resolveV2Images,
+  runWebsiteGenerationV2Job,
+} from "./runJob";
 
 const mockedDb = vi.mocked(db);
 const mockedPhotos = vi.mocked(getGmbPhotos);
@@ -124,6 +129,82 @@ describe("runWebsiteGenerationV2Job", () => {
     await runWebsiteGenerationV2Job(99, 42);
     expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
+  test("Zwischenstand nach der Bild-Phase: schema-valides Interim-Doc mit Bildern + deutschen Platzhaltertexten wird persistiert und der SSR-Cache invalidiert, BEVOR das LLM läuft (Zeitmaschine, Task 4)", async () => {
+    mockedPhotos.mockResolvedValue(["https://g/1.jpg", "https://g/2.jpg"]);
+    await runWebsiteGenerationV2Job(99, 42);
+
+    // Zwei Dokument-Writes: erst Interim, dann final.
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(2);
+    const interim = mockedDb.updateWebsite.mock.calls[0][1].websiteData as any;
+    expect(WebsiteDataV2Schema.safeParse(interim).success).toBe(true);
+    expect(interim.stylePackId).toBe("werkbank");
+    expect(interim.businessName).toBe("Schreinerei Brandt");
+    expect(interim.businessCategory).toBe("Tischler");
+    const hero = interim.sections.find((s: any) => s.type === "hero");
+    expect(hero.headline).toBe("Schreinerei Brandt");
+    expect(hero.subheadline).toMatch(/entstehen/);
+    expect(hero.imageUrl).toBe("https://g/1.jpg");
+    const about = interim.sections.find((s: any) => s.type === "about");
+    expect(about.imageUrl).toBe("https://g/2.jpg");
+    expect(JSON.stringify(interim).toLowerCase()).not.toContain("lorem");
+
+    // Interim-Write + Cache-Invalidierung liegen VOR dem LLM-Aufruf.
+    expect(mockedDb.updateWebsite.mock.invocationCallOrder[0]).toBeLessThan(
+      mockedGen.mock.invocationCallOrder[0]
+    );
+    expect(invalidateSsrCache).toHaveBeenCalledTimes(2);
+    expect(
+      vi.mocked(invalidateSsrCache).mock.invocationCallOrder[0]
+    ).toBeLessThan(mockedGen.mock.invocationCallOrder[0]);
+
+    // Finaler Write überschreibt den Zwischenstand mit dem LLM-Dokument.
+    expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
+      websiteData: doc,
+    });
+  });
+
+  test("buildInterimV2Doc ist auch ohne Bilder schema-valide (assertV2SafeWrite-konform)", () => {
+    const interim = buildInterimV2Doc(
+      "werkbank",
+      "Schreinerei Brandt",
+      "Tischler",
+      "preview-brandt",
+      {}
+    );
+    expect(WebsiteDataV2Schema.safeParse(interim).success).toBe(true);
+  });
+
+  test("LLM-Fehler NACH dem Zwischenstand: vorheriges websiteData wird wiederhergestellt (hier: null), Cache invalidiert, Job failed", async () => {
+    mockedPhotos.mockResolvedValue(["https://g/1.jpg"]);
+    mockedGen.mockRejectedValue(new Error("LLM kaputt"));
+    await runWebsiteGenerationV2Job(99, 42);
+
+    // Write 1 = Interim, Write 2 = Restore des Ausgangszustands (kein Doc).
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(2);
+    expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
+      websiteData: null,
+    });
+    expect(invalidateSsrCache).toHaveBeenCalledTimes(2);
+    expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(99, {
+      status: "failed",
+      error: "LLM kaputt",
+    });
+  });
+
+  test("LLM-Fehler bei Regenerierung: das zuvor gespeicherte v2-Dokument wird wiederhergestellt statt genullt", async () => {
+    const previous = { ...doc, businessName: "Alter Stand" };
+    mockedDb.getWebsiteById.mockResolvedValue({
+      ...website,
+      websiteData: previous,
+    } as any);
+    mockedPhotos.mockResolvedValue([]);
+    mockedGen.mockRejectedValue(new Error("LLM kaputt"));
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
+      websiteData: previous,
+    });
   });
 
   test("Fehler → Job failed mit Meldung, kein Throw nach außen", async () => {

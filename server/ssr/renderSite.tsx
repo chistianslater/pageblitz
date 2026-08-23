@@ -54,6 +54,15 @@ export interface RenderSiteOptions {
    */
   islandsMode?: "live" | "preview";
   /**
+   * Zeitmaschinen-Warte-UX (Plan B7 Task 4): true → die Sektionen der Seite
+   * faden per CSS nacheinander ein (kompositor-freundlich: nur opacity/
+   * transform; `prefers-reduced-motion` → statisch). NUR die Studio-
+   * Vorschau (`/preview-ssr/:token?reveal=1`, gesetzt vom
+   * GenerationScreen) übergibt das — die Live-Site bleibt ohne
+   * Einblendungs-CSS.
+   */
+  sectionReveal?: boolean;
+  /**
    * Umami-Website-ID (Plan B6 Task 7): gesetzt → cookieloses Tracking-Script
    * (`<script defer src=… data-website-id=…>`) im <head> jeder Seite
    * (Start, Unterseiten, Impressum/Datenschutz). Der Aufrufer übergibt sie
@@ -248,6 +257,7 @@ function renderPageHtml(
   const head = [
     renderPageHead(data, page, canonicalUrl, opts.origin),
     analyticsTag(opts),
+    sectionRevealTag(opts),
   ]
     .filter(Boolean)
     .join("\n");
@@ -285,6 +295,30 @@ ${bodyParts.join("\n")}
 /** Umami-Script-Tag für den <head> oder "" (siehe RenderSiteOptions). */
 function analyticsTag(opts: RenderSiteOptions): string {
   return opts.umamiWebsiteId ? umamiScriptTag(opts.umamiWebsiteId) : "";
+}
+
+/**
+ * Einblendungs-CSS für die Zeitmaschinen-Vorschau (RenderSiteOptions.
+ * sectionReveal): jede Sektion fadet mit kleinem Versatz nacheinander ein.
+ * Alle 14 Pack-Module rendern ihre Inhalte als `<section>`-Elemente —
+ * der generische Selektor greift daher packübergreifend. Nur opacity/
+ * transform (kompositor-freundlich); `prefers-reduced-motion` bekommt den
+ * statischen Endzustand (kein `from`-Frame ohne Animation, da `both` nur
+ * innerhalb der Animation wirkt).
+ */
+const SECTION_REVEAL_STYLE = `<style>@media (prefers-reduced-motion: no-preference){
+.pb-site section{animation:pb-reveal 0.7s cubic-bezier(0.16,1,0.3,1) both}
+.pb-site section:nth-of-type(2){animation-delay:.12s}
+.pb-site section:nth-of-type(3){animation-delay:.24s}
+.pb-site section:nth-of-type(4){animation-delay:.36s}
+.pb-site section:nth-of-type(5){animation-delay:.48s}
+.pb-site section:nth-of-type(n+6){animation-delay:.6s}
+@keyframes pb-reveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+}</style>`;
+
+/** Einblendungs-Style-Tag für den <head> oder "" (siehe RenderSiteOptions). */
+function sectionRevealTag(opts: RenderSiteOptions): string {
+  return opts.sectionReveal ? SECTION_REVEAL_STYLE : "";
 }
 
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
@@ -410,7 +444,11 @@ export function renderSiteHtml(
   // ein Slug vorhanden) — sonst würde der Bundle-Tag geladen, obwohl gar
   // keine Insel im Markup steht.
   const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
-  const head = [renderHead(data, canonicalUrl, opts.origin), analyticsTag(opts)]
+  const head = [
+    renderHead(data, canonicalUrl, opts.origin),
+    analyticsTag(opts),
+    sectionRevealTag(opts),
+  ]
     .filter(Boolean)
     .join("\n");
   const body = renderToStaticMarkup(

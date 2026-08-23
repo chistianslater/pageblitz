@@ -60,11 +60,28 @@ test.describe("StartPage → Studio", () => {
     // Navigation ins Studio: /onboarding/<previewToken>
     await page.waitForURL(/\/onboarding\/[^/]+$/, { timeout: 15_000 });
 
-    // Generierungs-Screen (GenerationScreen.tsx): Kicker + Business-Name als h1.
+    // Zeitmaschine (Plan B7 Task 4), Zwischenassert VOR dem Warten auf den
+    // Endzustand: Solange der Job den Zwischenstand noch nicht geschrieben
+    // hat, zeigt der Vorschau-Bereich den Pack-Skeleton (schimmernde
+    // Platzhalterblöcke). PB_V2_PHASE_DELAY_MS (playwright.config.ts)
+    // verlangsamt die Job-Phasen, damit dieser Zustand deterministisch
+    // sichtbar ist statt in Millisekunden vorbeizuhuschen.
+    await expect(page.locator(".pb-studio-skeleton")).toBeVisible();
+
+    // Generierungs-Screen (GenerationScreen.tsx): Kicker + Business-Name als
+    // h1 + laufender Fortschrittsbalken.
     await expect(page.getByText("Deine Website entsteht")).toBeVisible();
     await expect(
       page.getByRole("heading", { level: 1, name: businessName })
     ).toBeVisible();
+    await expect(page.getByRole("progressbar")).toBeVisible();
+
+    // Sobald der Job den Zwischenstand persistiert hat (nach der Bild-Phase),
+    // lädt der Generierungs-Screen die echte Vorschau als iframe mit
+    // Sektions-Einblendung (?reveal=1, server/ssr/renderSite.tsx).
+    await expect(
+      page.locator('iframe[title="Vorschau deiner entstehenden Website"]')
+    ).toBeVisible({ timeout: 15_000 });
 
     // Mit PB_LLM_MOCK=1 (playwright.config.ts) läuft die v2-Generierung ohne
     // echten LLM-Aufruf durch (deterministisches Fixture-Dokument, siehe
@@ -73,5 +90,10 @@ test.describe("StartPage → Studio", () => {
     await expect(
       page.getByRole("button", { name: /Stil/ }).first()
     ).toBeVisible({ timeout: 30_000 });
+
+    // Endzustand: das Studio zeigt die fertige Vorschau (PreviewFrame).
+    await expect(
+      page.locator('iframe[title="Live-Vorschau deiner Website"]')
+    ).toBeVisible();
   });
 });

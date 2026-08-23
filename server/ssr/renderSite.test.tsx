@@ -33,6 +33,23 @@ describe("renderSiteHtml", () => {
   });
 });
 
+describe("renderSiteHtml — Sektions-Einblendung (sectionReveal, Zeitmaschine Task 4)", () => {
+  test("sectionReveal: true → Einblendungs-CSS (Keyframes + prefers-reduced-motion-Guard) im Head", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://brandt.pageblitz.de",
+      sectionReveal: true,
+    });
+    expect(html).toContain("pb-reveal");
+    expect(html).toContain("prefers-reduced-motion");
+  });
+  test("ohne sectionReveal (Live-Site-Default) → kein Einblendungs-CSS", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).not.toContain("pb-reveal");
+  });
+});
+
 describe("renderSiteHtml — og:image", () => {
   test("Hero mit imageUrl → og:image absolut (origin präfixiert) + twitter:card=summary_large_image", () => {
     const { html } = renderSiteHtml(getFixture("werkbank", "full"), {

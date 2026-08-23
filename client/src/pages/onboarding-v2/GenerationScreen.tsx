@@ -1,18 +1,33 @@
 import React from "react";
+import { getConstitution, toCssVars } from "@shared/stylePacks";
+import type { PackId } from "@shared/siteContract/types";
+import {
+  PHASES,
+  PHASE_BOUNDS,
+  PHASE_EXPECTED_MS,
+  approach,
+  phaseIndexFor,
+  progressAt,
+} from "./generationProgress";
 
-// Reihenfolge entspricht den Fortschrittsstufen des Jobs (runJob.ts):
-// 0–24 Stil, 25–54 Bilder, 55–89 Texte (LLM, längster Schritt), 90+ Vorschau.
-const PHASES = [
-  "Stil wird gewählt",
-  "Bilder werden gesetzt",
-  "Texte entstehen",
-  "Vorschau wird gebaut",
-] as const;
-const PHASE_BOUNDS = [0, 25, 55, 90, 101] as const;
 const LONG_WAIT_MS = 60_000;
 
 interface GenerationScreenProps {
   businessName: string;
+  /** previewToken — Basis der Vorschau-URL `/preview-ssr/<token>`. */
+  token: string;
+  /**
+   * Pack des (Zwischen-)Dokuments (state.stylePackId) — färbt den Skeleton
+   * in den Pack-Farben; `null`, solange der Job das Pack noch nicht in einem
+   * persistierten Stand verraten hat (dann neutrale Studio-Farben).
+   */
+  packId: PackId | null;
+  /**
+   * true, sobald der Job den Zeitmaschinen-Zwischenstand geschrieben hat
+   * (state.doc vorhanden) — dann lädt das iframe die echte Vorschau und die
+   * Sektionen faden ein (?reveal=1, siehe server/ssr/renderSite.tsx).
+   */
+  hasDoc: boolean;
   progress: number;
   status: "pending" | "processing" | "failed";
   error: string | null;
@@ -21,19 +36,47 @@ interface GenerationScreenProps {
   retrying?: boolean;
 }
 
+/**
+ * Skelett der entstehenden Website: Canvas-Hintergrund + schimmernde
+ * Platzhalterblöcke in den Pack-Farben (CSS-only, `prefers-reduced-motion`
+ * → statisch, siehe studio.css). Liegt unter dem iframe und bleibt sichtbar,
+ * bis die echte Vorschau geladen ist.
+ */
+function PackSkeleton({ packId }: { packId: PackId | null }) {
+  const style = React.useMemo(
+    () =>
+      packId
+        ? (toCssVars(getConstitution(packId)) as React.CSSProperties)
+        : undefined,
+    [packId]
+  );
+  return (
+    <div className="pb-studio-skeleton" aria-hidden="true" style={style}>
+      <span className="pb-sk-block pb-sk-nav" />
+      <span className="pb-sk-block pb-sk-headline" />
+      <span className="pb-sk-block pb-sk-line" />
+      <span className="pb-sk-block pb-sk-cta" />
+      <div className="pb-sk-grid">
+        <span className="pb-sk-block" />
+        <span className="pb-sk-block" />
+        <span className="pb-sk-block" />
+      </div>
+    </div>
+  );
+}
+
 export function GenerationScreen({
   businessName,
+  token,
+  packId,
+  hasDoc,
   progress,
   status,
   error,
   onRetry,
   retrying = false,
 }: GenerationScreenProps) {
-  const phaseIndex = Math.max(
-    0,
-    PHASE_BOUNDS.findIndex((b, i) => progress >= b && progress < PHASE_BOUNDS[i + 1])
-  );
-  const phase = PHASES[Math.min(PHASES.length - 1, phaseIndex)];
+  const phase = PHASES[phaseIndexFor(progress)];
   const [elapsedMs, setElapsedMs] = React.useState(0);
   React.useEffect(() => {
     if (status === "failed") return;
@@ -42,9 +85,65 @@ export function GenerationScreen({
     return () => window.clearInterval(id);
   }, [status]);
   const longWait = status !== "failed" && elapsedMs >= LONG_WAIT_MS;
+
+  // Kontinuierlicher Fortschrittsbalken (Zeitmaschine, Task 4): Der Server
+  // meldet nur grobe Stufen; zwischen zwei Stufen läuft der Balken per
+  // requestAnimationFrame asymptotisch gegen die Phasen-Obergrenze
+  // (progressAt) und gleitet bei Phasenwechseln weich nach (approach) —
+  // er steht nie. Breite direkt am DOM (kein Re-Render pro Frame);
+  // aria-valuenow nur bei ganzzahliger Änderung.
+  const barRef = React.useRef<HTMLSpanElement>(null);
+  const shownRef = React.useRef(Math.max(0, progress));
+  const anchorRef = React.useRef({ from: progress, startedAt: 0 });
+  const [ariaNow, setAriaNow] = React.useState(Math.round(progress));
+  React.useEffect(() => {
+    anchorRef.current = {
+      from: Math.max(progress, shownRef.current),
+      startedAt: performance.now(),
+    };
+  }, [progress]);
+  React.useEffect(() => {
+    if (status === "failed") return;
+    let raf = 0;
+    let last = performance.now();
+    let lastAria = -1;
+    const tick = (now: number) => {
+      const { from, startedAt } = anchorRef.current;
+      const idx = phaseIndexFor(from);
+      const target = progressAt(
+        now,
+        startedAt,
+        from,
+        PHASE_BOUNDS[idx + 1],
+        PHASE_EXPECTED_MS[idx]
+      );
+      shownRef.current = approach(shownRef.current, target, now - last);
+      last = now;
+      if (barRef.current) {
+        barRef.current.style.width = `${Math.max(4, shownRef.current)}%`;
+      }
+      const rounded = Math.round(shownRef.current);
+      if (rounded !== lastAria) {
+        lastAria = rounded;
+        setAriaNow(rounded);
+      }
+      raf = window.requestAnimationFrame(tick);
+    };
+    raf = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(raf);
+  }, [status]);
+
+  const [frameLoaded, setFrameLoaded] = React.useState(false);
+  // `?reveal=1` schaltet die Sektions-Einblendung im SSR-HTML frei (nur
+  // Preview-Modus, siehe handlePreviewSsr); `v=interim` bustet etwaige
+  // Browser-Caches — das iframe mountet genau einmal, sobald der
+  // Zwischenstand da ist (der Finalstand lädt nach Jobende im normalen
+  // Studio-PreviewFrame, ebenfalls mit Einblendung).
+  const frameSrc = `/preview-ssr/${token}?reveal=1&v=interim`;
+
   return (
     <section className="pb-studio-gen" aria-live="polite">
-      <div>
+      <div className="pb-studio-gen-inner">
         <p className="pb-studio-kicker">Deine Website entsteht</p>
         <h1 className="pb-studio-title">{businessName}</h1>
         {status === "failed" ? (
@@ -72,9 +171,12 @@ export function GenerationScreen({
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={progress}
+              aria-valuenow={ariaNow}
             >
-              <span style={{ width: `${Math.max(4, progress)}%` }} />
+              <span
+                ref={barRef}
+                style={{ width: `${Math.max(4, progress)}%` }}
+              />
             </div>
             <p style={{ color: "var(--st-muted)" }}>
               {phase} — meist unter einer Minute.
@@ -82,6 +184,20 @@ export function GenerationScreen({
                 ? " Dauert gerade etwas länger, wir sind noch dran …"
                 : ""}
             </p>
+            <div
+              className="pb-studio-gen-preview"
+              data-frame-loaded={frameLoaded || undefined}
+            >
+              <PackSkeleton packId={packId} />
+              {hasDoc ? (
+                <iframe
+                  src={frameSrc}
+                  title="Vorschau deiner entstehenden Website"
+                  loading="eager"
+                  onLoad={() => setFrameLoaded(true)}
+                />
+              ) : null}
+            </div>
           </>
         )}
       </div>

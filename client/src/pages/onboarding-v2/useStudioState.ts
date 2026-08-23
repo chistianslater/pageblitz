@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { computeRefetchInterval } from "./studioLogic";
+import { computeRefetchInterval, generationInProgress } from "./studioLogic";
 
 export function useStudioState(token: string) {
   const [previewVersion, setPreviewVersion] = useState(0);
@@ -23,6 +23,16 @@ export function useStudioState(token: string) {
     }
   );
   const kicked = useRef(false);
+  // Wurde in DIESER Sitzung eine laufende Generierung beobachtet? Dann fadet
+  // der erste PreviewFrame-Load nach Jobende die Sektionen ein (Zeitmaschine,
+  // Plan B7 Task 4 — `reveal` in StudioPage/PreviewFrame). Ref statt State:
+  // der Übergang Job-aktiv → fertig löst ohnehin einen Daten-Re-Render aus.
+  const sawGeneration = useRef(false);
+  useEffect(() => {
+    if (query.data && generationInProgress(query.data.job)) {
+      sawGeneration.current = true;
+    }
+  }, [query.data]);
   useEffect(() => {
     if (kicked.current || !query.data || query.data.doc || query.data.legacy)
       return;
@@ -60,5 +70,6 @@ export function useStudioState(token: string) {
     forceRegenerate,
     previewVersion,
     bumpPreview,
+    justGenerated: sawGeneration.current,
   };
 }

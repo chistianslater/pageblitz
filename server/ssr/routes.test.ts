@@ -684,6 +684,22 @@ describe("SSR routes", () => {
       expect(res.text).toContain('data-welcome="Willkommen in der Vorschau!"');
     });
 
+    test("?reveal=1 → Einblendungs-CSS im HTML; ohne Parameter nicht (Zeitmaschine, Task 4)", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      const withReveal = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?reveal=1"
+      );
+      expect(withReveal.status).toBe(200);
+      expect(withReveal.text).toContain("pb-reveal");
+      const without = await request(app).get("/preview-ssr/abcdefghabcdefgh");
+      expect(without.text).not.toContain("pb-reveal");
+    });
+
     test("Rechtsseite ohne Inhalt → 404", async () => {
       (getWebsiteByToken as Mock).mockResolvedValue({
         id: 1,

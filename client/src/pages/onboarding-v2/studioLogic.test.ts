@@ -79,6 +79,28 @@ describe("computeRefetchInterval", () => {
       false
     );
   });
+  test("Zwischenstand-Dokument + aktiver Job → pollt weiter (Zeitmaschine, Task 4)", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: { a: 1 },
+        job: { status: "processing" },
+      })
+    ).toBe(1500);
+    expect(
+      computeRefetchInterval(false, {
+        doc: { a: 1 },
+        job: { status: "pending" },
+      })
+    ).toBe(1500);
+  });
+  test("Dokument + abgeschlossener Job → stoppt", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: { a: 1 },
+        job: { status: "completed" },
+      })
+    ).toBe(false);
+  });
   test("Job failed/completed ohne Dokument → stoppt (kein sinnloses Weiterpollen)", () => {
     expect(
       computeRefetchInterval(false, { doc: null, job: { status: "failed" } })
@@ -169,5 +191,24 @@ describe("derivePreviewTabs / resolvePreviewSlug (Vorschau-Leiste, Plan B6 Task 
     expect(resolvePreviewSlug(tabs, "ueber-uns")).toBe("ueber-uns");
     expect(resolvePreviewSlug(tabs, "weg")).toBeNull();
     expect(resolvePreviewSlug(tabs, null)).toBeNull();
+  });
+});
+
+describe("generationInProgress", () => {
+  test("pending/processing → true; completed/failed/null → false", async () => {
+    const { generationInProgress } = await import("./studioLogic");
+    expect(
+      generationInProgress({ status: "pending", progress: 0, error: null })
+    ).toBe(true);
+    expect(
+      generationInProgress({ status: "processing", progress: 30, error: null })
+    ).toBe(true);
+    expect(
+      generationInProgress({ status: "completed", progress: 100, error: null })
+    ).toBe(false);
+    expect(
+      generationInProgress({ status: "failed", progress: 30, error: "x" })
+    ).toBe(false);
+    expect(generationInProgress(null)).toBe(false);
   });
 });
