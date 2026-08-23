@@ -1,6 +1,6 @@
 # Spec: Plan B4c — Polish & Konsolidierung nach dem Cutover
 
-**Datum:** 2026-08-23 · **Status:** Entwurf zur Freigabe · **Grundlage:** Cutover-Spec §2.8 (aufgeschobene Punkte), B4b-Ergebnis (`2026-08-23-b4b-ergebnis.md` inkl. Nachtrag), Spec B §7.4/§8.4/§8.5/§9.
+**Datum:** 2026-08-23 · **Status:** verbindlich (freigegeben 2026-08-23, alle vier Entscheidungen §5 wie empfohlen) · **Grundlage:** Cutover-Spec §2.8 (aufgeschobene Punkte), B4b-Ergebnis (`2026-08-23-b4b-ergebnis.md` inkl. Nachtrag), Spec B §7.4/§8.4/§8.5/§9.
 
 ## 1. Ziel
 Das v2-System nach der Löschung (main 0b1257f) technisch sauber ziehen: letzte v1-Reste (Farbkette, DB-Spalten, tote Dateien) weg, bekannte Lücken schließen (Rechtsseiten-Auth, Test-Erwartungen, SSR-Pfade), a11y/Perf auf ein messbares Niveau bringen. **Keine neuen Produkt-Features** — Team-Panel, Unterseiten-Add-on und Dashboard-Redesign bekommen einen eigenen Plan (B5), weil sie Produktentscheidungen brauchen (siehe §3/§5).
