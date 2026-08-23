@@ -281,3 +281,49 @@ export async function handleSubscriptionAddOnsUpdated(
     `[Webhook] Add-ons aus Subscription-Items übernommen (Website ${sub.websiteId}): ${changed.join(", ")}`
   );
 }
+
+/**
+ * Abhängigkeiten für `handleWebsiteActivation` — db-Funktionen + die Umami-
+ * Provisionierung (server/umamiProvisioning.ts) als Dep, damit der Handler
+ * ohne DB/Netz testbar bleibt.
+ */
+export interface WebsiteActivationDeps {
+  getWebsiteById: typeof Db.getWebsiteById;
+  updateWebsite: typeof Db.updateWebsite;
+  /** Umami-Registrierung (idempotent, wirft nie) — provisionUmamiForWebsite. */
+  provisionUmami: (websiteId: number) => Promise<string | null>;
+}
+
+/**
+ * Aktivierungs-Teil von `customer.subscription.updated` (Status active/
+ * canceling/trialing): schaltet die Website auf `active` + `captureStatus:
+ * converted` — nur wenn eine customerEmail hinterlegt ist (sonst kein
+ * Besitzer, siehe Setup-Flow) — und stößt danach die Umami-Provisionierung
+ * an (Plan B6 Task 7). Ein Fehler der Provisionierung bricht die
+ * Aktivierung nicht ab (Log), damit Stripe den Webhook nicht retried.
+ */
+export async function handleWebsiteActivation(
+  websiteId: number,
+  deps: WebsiteActivationDeps
+): Promise<"activated" | "skipped"> {
+  const website = await deps.getWebsiteById(websiteId);
+  if (!website?.customerEmail) {
+    console.warn(
+      `[Webhook] Skipping activation for website ${websiteId}: no customerEmail`
+    );
+    return "skipped";
+  }
+  await deps.updateWebsite(websiteId, {
+    status: "active",
+    captureStatus: "converted",
+  });
+  try {
+    await deps.provisionUmami(websiteId);
+  } catch (err) {
+    console.warn(
+      `[Webhook] Umami-Provisionierung nach Aktivierung fehlgeschlagen (Website ${websiteId}):`,
+      err
+    );
+  }
+  return "activated";
+}

@@ -243,7 +243,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `HUNTER_API_KEY` | E-Mail-Recherche (Outreach) |
 | `UNSPLASH_ACCESS_KEY` | Stock-Bilder |
 | `SSR_SITES` | `"off"` deaktiviert Kundenseiten-SSR (Client rendert dann selbst) |
-| `UMAMI_URL` / `UMAMI_USERNAME` / `UMAMI_PASSWORD` | Analytics |
+| `UMAMI_API_URL` (oder `UMAMI_URL`) / `UMAMI_API_TOKEN` (oder `UMAMI_USERNAME` + `UMAMI_PASSWORD`) / `UMAMI_SCRIPT_URL` | Kundenstatistik (Umami, §6 „Kundenstatistik") — alle optional; ohne Konfiguration keine Registrierung/Statistik, Aktivierung läuft trotzdem |
 | `BACKUP_API_URL` / `BACKUP_API_KEY` | Backup-Trigger |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `OWNER_OPEN_ID` | Admin-Zugang |
 | `OAUTH_SERVER_URL` / `VITE_APP_ID` / `BUILT_IN_FORGE_API_URL` / `BUILT_IN_FORGE_API_KEY` | Plattform-/Build-Infrastruktur |
@@ -360,6 +360,46 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   bekannt und bewusst nicht in B5 vereinheitlicht (siehe §9, B6-Liste).
 - Dashboard-Add-ons-Tab (`AddonsTab.tsx`) zeigt Team wie Galerie
   (Kauf-/Aktiv-Zustand, Link ins Studio-Extras-Panel).
+
+### Kundenstatistik: Umami (seit Plan B6 Task 7)
+
+- **Provisionierung bei Aktivierung:** sobald eine Website `status: "active"`
+  bekommt — `customer.setLive` (Setup-Flow), Admin-Prozeduren
+  (`website.updateStatus`, `customer.setWebsiteActive`,
+  `createTestSubscription`, `unlockAllAddons`) oder Stripe-Webhook
+  `customer.subscription.updated` (`handleWebsiteActivation` in
+  `server/stripeWebhookHandlers.ts`) — ruft der Code
+  `provisionUmamiForWebsite(websiteId)` (`server/umamiProvisioning.ts`):
+  `registerUmamiWebsite(name, domain)` (`server/umami.ts`, `POST
+  /api/websites`, Name = `businessName` des Dokuments, Domain =
+  `<slug>.pageblitz.de`) → `generatedWebsites.umamiWebsiteId` → SSR-Cache
+  des Slugs invalidiert. **Idempotent** (vorhandene ID → kein zweiter
+  Aufruf) und **fehlertolerant** (nie ein Throw; Umami nicht konfiguriert/
+  nicht erreichbar → Log, Aktivierung läuft durch). Eine spätere
+  Slug-Änderung aktualisiert die Domain in Umami nicht (nur Anzeige;
+  Tracking hängt an der ID).
+- **Tracking-Script** `<script defer src="<UMAMI_SCRIPT_URL>"
+  data-website-id="…">` — cookielos, daher **ohne Consent** (Spec B6 §5.6);
+  Hinweis „Reichweitenmessung (Umami)" in der Datenschutz-Vorlage
+  (`server/legalGenerator.ts`, Art. 6 Abs. 1 lit. f, keine Cookies, IP nicht
+  gespeichert). Nur für **aktive** Sites **mit ID**: SSR-Head (Start,
+  Unterseiten, Impressum/Datenschutz — `renderSiteHtml({ umamiWebsiteId })`,
+  Gate in `server/ssr/routes.ts`) und CSR (`website.get` liefert `umami:
+  { websiteId, scriptUrl } | null`, `SitePage.tsx` hängt das Script an).
+  Demo (`/demo/:pack`), Preview (`/preview-ssr`) und nicht aktive Sites
+  bekommen kein Script.
+- **Statistik im Dashboard:** `customer.getAnalytics` → `getUmamiStats(id)`
+  (30 Tage: Seitenaufrufe, Besucher, Absprungrate, Verweildauer);
+  Kunden-Dashboard Tab „Statistiken“.
+- **Env:** `UMAMI_API_URL` (bevorzugt) oder `UMAMI_URL` = Basis-URL der
+  Instanz (Prod: `https://analytics.pageblitz.de`, läuft als pm2-Prozess
+  `umami`); Auth per `UMAMI_API_TOKEN` (Bearer — einmal über `POST
+  /api/auth/login` erzeugen) oder, wie bisher auf Prod, `UMAMI_USERNAME` +
+  `UMAMI_PASSWORD` (Login-Token 12 h gecacht); `UMAMI_SCRIPT_URL` optional
+  (Default `<API-URL>/script.js`, ganz ohne Konfiguration
+  `https://analytics.pageblitz.de/script.js`). Prod braucht für Task 7
+  **keine** neuen Variablen — die bestehenden `UMAMI_URL`/`UMAMI_USERNAME`/
+  `UMAMI_PASSWORD` reichen.
 
 ## 7. Fonts & Performance
 

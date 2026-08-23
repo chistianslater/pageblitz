@@ -315,3 +315,37 @@ describe("legalGenerator - XSS Prevention", () => {
     });
   });
 });
+
+describe("generateDatenschutz — Reichweitenmessung mit Umami (Plan B6 Task 7)", () => {
+  const html = generateDatenschutz({
+    businessName: "Schreinerei Brandt",
+    legalOwner: "Max Brandt",
+    legalStreet: "Holzweg 1",
+    legalZip: "44135",
+    legalCity: "Dortmund",
+    legalEmail: "info@brandt.de",
+  });
+
+  it("enthält einen eigenen Absatz zur Reichweitenmessung mit Umami", () => {
+    expect(html).toContain("Reichweitenmessung");
+    expect(html).toContain("Umami");
+  });
+
+  it("nennt die DSGVO-Eckpunkte: cookielos, keine personenbezogenen Daten, IP anonymisiert, Art. 6 Abs. 1 lit. f", () => {
+    const section = html.slice(html.indexOf("Reichweitenmessung"));
+    expect(section).toMatch(/ohne Cookies|keine Cookies/);
+    expect(section).toMatch(/keine personenbezogenen Daten/);
+    expect(section).toMatch(
+      /IP-Adresse[^.]*(anonymisiert|gekürzt|nicht gespeichert)/
+    );
+    expect(section).toContain("Art. 6 Abs. 1 lit. f DSGVO");
+  });
+
+  it("Absatz steht im Abschnitt Datenerfassung, vor dem Google-Maps-Abschnitt", () => {
+    const idx = html.indexOf("Reichweitenmessung");
+    expect(idx).toBeGreaterThan(
+      html.indexOf("Datenerfassung auf dieser Website")
+    );
+    expect(idx).toBeLessThan(html.indexOf("Google Maps"));
+  });
+});

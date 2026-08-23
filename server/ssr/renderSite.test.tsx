@@ -395,3 +395,47 @@ describe("renderSiteHtml — SSR-Inseln", () => {
     expect(html.match(/\.pb-island-form\{/g)).toHaveLength(1);
   });
 });
+
+describe("renderSiteHtml — Umami-Script (Plan B6 Task 7, cookielos)", () => {
+  const data = getFixture("werkbank", "full");
+  const origin = "https://brandt.pageblitz.de";
+
+  test("ohne umamiWebsiteId: kein Umami-Script im Head (Demo/Preview/inaktiv)", () => {
+    const { html } = renderSiteHtml(data, { origin });
+    expect(html).not.toContain("data-website-id");
+    expect(html).not.toContain("script.js");
+  });
+
+  test("mit umamiWebsiteId: <script defer src=… data-website-id=…> im <head>, Startseite", () => {
+    const { html } = renderSiteHtml(data, {
+      origin,
+      umamiWebsiteId: "umami-uuid-1",
+    });
+    const head = html.slice(0, html.indexOf("</head>"));
+    expect(head).toMatch(
+      /<script defer src="[^"]+\/script\.js" data-website-id="umami-uuid-1"><\/script>/
+    );
+    // genau einmal, keine Cookies/Consent-Logik
+    expect(html.match(/data-website-id/g)?.length).toBe(1);
+  });
+
+  test("mit umamiWebsiteId: auch auf Unterseite und Rechtsseite im Head", () => {
+    const page = renderSiteHtml(data, {
+      origin,
+      pathname: "/leistungen-im-detail",
+      umamiWebsiteId: "umami-uuid-1",
+    });
+    expect(page.status).toBe(200);
+    expect(page.html.slice(0, page.html.indexOf("</head>"))).toContain(
+      'data-website-id="umami-uuid-1"'
+    );
+    const legal = renderSiteHtml(data, {
+      origin,
+      pathname: "/impressum",
+      umamiWebsiteId: "umami-uuid-1",
+    });
+    expect(legal.html.slice(0, legal.html.indexOf("</head>"))).toContain(
+      'data-website-id="umami-uuid-1"'
+    );
+  });
+});

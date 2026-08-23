@@ -94,7 +94,8 @@ import { TRPCError } from "@trpc/server";
 import { submitContactRequest } from "./contactSubmit";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz } from "./legalGenerator";
-import { getUmamiStats } from "./umami";
+import { getUmamiScriptUrl, getUmamiStats } from "./umami";
+import { provisionUmamiForWebsite } from "./umamiProvisioning";
 import { shouldRequireAgeGate } from "@shared/ageGate";
 import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
@@ -1405,7 +1406,18 @@ export const appRouter = router({
             website.showBranding !== false;
         }
 
-        return { website, business, redirectToSlug };
+        // Umami-Tracking (Plan B6 Task 7): nur aktive Sites mit registrierter
+        // ID — dieselbe Bedingung wie im SSR-Head (server/ssr/routes.ts);
+        // SitePage.tsx (CSR-Pfad) bindet das cookielose Script damit ein.
+        const umami =
+          website.status === "active" && website.umamiWebsiteId
+            ? {
+                websiteId: website.umamiWebsiteId,
+                scriptUrl: getUmamiScriptUrl(),
+              }
+            : null;
+
+        return { website, business, redirectToSlug, umami };
       }),
 
     updateStatus: adminProcedure
@@ -1417,6 +1429,7 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         await updateWebsite(input.id, { status: input.status });
+        if (input.status === "active") await provisionUmamiForWebsite(input.id);
         return { success: true };
       }),
 
@@ -2434,6 +2447,9 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
           status: "active",
           captureStatus: "converted",
         });
+        // Umami-Provisionierung bei Aktivierung (Plan B6 Task 7) —
+        // idempotent, wirft nie; ein Fehler hält die Aktivierung nicht auf.
+        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
 
@@ -2631,6 +2647,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
       .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ input }) => {
         await updateWebsite(input.websiteId, { status: "active" });
+        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
     createTestSubscription: adminProcedure
@@ -2654,6 +2671,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
           });
         }
         await updateWebsite(input.websiteId, { status: "active" });
+        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
 
@@ -2699,6 +2717,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
             updatedAt: Date.now(),
           });
         }
+        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
 

@@ -605,6 +605,11 @@ async function handleCustomerSiteSsr(
       basePath: siteRequest.basePath,
       slug: website.slug,
       site: { chatWelcomeMessage: website.chatWelcomeMessage },
+      // Cookieloses Umami-Tracking nur für aktive Sites mit registrierter
+      // ID (Plan B6 Task 7; ID kommt aus server/umamiProvisioning.ts, die
+      // nach dem Write den Cache hier invalidiert).
+      umamiWebsiteId:
+        website.status === "active" ? website.umamiWebsiteId : null,
     });
     siteHtmlCache.set(cacheKey, { html, status, at: now });
     capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);

@@ -240,6 +240,44 @@ describe("SSR routes", () => {
       expect(res.text).toContain('id="leistungen"');
     });
 
+    test("Umami-Script nur bei status active UND umamiWebsiteId (Plan B6 Task 7)", async () => {
+      invalidateSsrCache("schreinerei-brandt-dortmund");
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "schreinerei-brandt-dortmund",
+        status: "active",
+        umamiWebsiteId: "umami-uuid-1",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      const active = await request(app).get(
+        "/site/schreinerei-brandt-dortmund"
+      );
+      expect(active.status).toBe(200);
+      expect(active.text).toContain('data-website-id="umami-uuid-1"');
+      expect(active.text).toMatch(/<script defer src="[^"]+script\.js"/);
+
+      invalidateSsrCache("schreinerei-brandt-dortmund");
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "schreinerei-brandt-dortmund",
+        status: "sold",
+        umamiWebsiteId: "umami-uuid-1",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const sold = await request(app).get("/site/schreinerei-brandt-dortmund");
+      expect(sold.status).toBe(200);
+      expect(sold.text).not.toContain("data-website-id");
+
+      invalidateSsrCache("schreinerei-brandt-dortmund");
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "schreinerei-brandt-dortmund",
+        status: "active",
+        umamiWebsiteId: null,
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const noId = await request(app).get("/site/schreinerei-brandt-dortmund");
+      expect(noId.status).toBe(200);
+      expect(noId.text).not.toContain("data-website-id");
+    });
     test("SSR_SITES=off → Middleware ruft next(), SPA-Fallback antwortet", async () => {
       process.env.SSR_SITES = "off";
       (getWebsiteBySlug as Mock).mockResolvedValue({

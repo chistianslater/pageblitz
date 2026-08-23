@@ -29,21 +29,24 @@ export default function SitePage({ forceSlug, pageSlug }: SitePageProps = {}) {
     { enabled: !!effectiveSlug, staleTime: 0, refetchOnMount: "always" }
   );
 
-  const umamiWebsiteId = (data?.website as any)?.umamiWebsiteId as
-    | string
-    | null
-    | undefined;
+  // ── Umami-Tracking (CSR-Pfad, Plan B6 Task 7) ───────────────────────────
+  // Der Server liefert `umami` NUR für aktive Sites mit registrierter ID
+  // (website.get in server/routers.ts — dieselbe Bedingung wie der SSR-Head
+  // in server/ssr/routes.ts); Script-URL kommt aus der Server-Env
+  // (UMAMI_SCRIPT_URL). Cookielos, daher ohne Consent; idempotent über die
+  // Element-ID, damit Refetches (staleTime: 0) kein zweites Script anlegen.
+  const umamiWebsiteId = data?.umami?.websiteId ?? null;
+  const umamiScriptUrl = data?.umami?.scriptUrl ?? null;
   useEffect(() => {
-    if (!umamiWebsiteId) return;
+    if (!umamiWebsiteId || !umamiScriptUrl) return;
     if (document.getElementById("pb-umami-script")) return;
     const s = document.createElement("script");
     s.id = "pb-umami-script";
-    s.async = true;
     s.defer = true;
-    s.src = "https://analytics.pageblitz.de/script.js";
+    s.src = umamiScriptUrl;
     s.setAttribute("data-website-id", umamiWebsiteId);
     document.head.appendChild(s);
-  }, [umamiWebsiteId]);
+  }, [umamiWebsiteId, umamiScriptUrl]);
 
   // ── Pack-Fonts (CSR-Fallback) ────────────────────────────────────────────
   // `server/ssr/renderSite.tsx` baut den Fonts-<link> nur im SSR-Head. Wird

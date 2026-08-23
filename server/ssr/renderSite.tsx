@@ -12,6 +12,7 @@ import type {
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
 import { getIslandsBundlePath } from "./islandsBundle";
 import { pageForPathname } from "../../client/src/components/site/engine";
+import { umamiScriptTag } from "../umami";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -52,6 +53,15 @@ export interface RenderSiteOptions {
    * nichts absenden kann (siehe `SiteIslands` für die Preview-Semantik).
    */
   islandsMode?: "live" | "preview";
+  /**
+   * Umami-Website-ID (Plan B6 Task 7): gesetzt → cookieloses Tracking-Script
+   * (`<script defer src=… data-website-id=…>`) im <head> jeder Seite
+   * (Start, Unterseiten, Impressum/Datenschutz). Der Aufrufer übergibt sie
+   * NUR für aktive Kundenseiten mit registrierter ID
+   * (server/ssr/routes.ts) — Demo, Preview und nicht aktive Sites bleiben
+   * ohne Script.
+   */
+  umamiWebsiteId?: string | null;
 }
 
 export interface RenderSiteResult {
@@ -235,7 +245,12 @@ function renderPageHtml(
   opts: RenderSiteOptions
 ): RenderSiteResult {
   const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
-  const head = renderPageHead(data, page, canonicalUrl, opts.origin);
+  const head = [
+    renderPageHead(data, page, canonicalUrl, opts.origin),
+    analyticsTag(opts),
+  ]
+    .filter(Boolean)
+    .join("\n");
   const body = renderToStaticMarkup(
     <SiteRenderer
       data={data}
@@ -265,6 +280,11 @@ ${bodyParts.join("\n")}
 </body>
 </html>`;
   return { html, status: 200 };
+}
+
+/** Umami-Script-Tag für den <head> oder "" (siehe RenderSiteOptions). */
+function analyticsTag(opts: RenderSiteOptions): string {
+  return opts.umamiWebsiteId ? umamiScriptTag(opts.umamiWebsiteId) : "";
 }
 
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
@@ -308,7 +328,8 @@ function renderLegalPage(
   canonicalUrl: string,
   title: string,
   bodyHtml: string | undefined,
-  basePath: string
+  basePath: string,
+  opts: RenderSiteOptions
 ): RenderSiteResult {
   const hasContent = Boolean(bodyHtml && bodyHtml.trim().length > 0);
   const content = hasContent
@@ -319,7 +340,7 @@ function renderLegalPage(
   const html = `<!doctype html>
 <html lang="de">
 <head>
-${renderLegalHead(data, canonicalUrl, title)}
+${[renderLegalHead(data, canonicalUrl, title), analyticsTag(opts)].filter(Boolean).join("\n")}
 <style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
 </head>
 <body>
@@ -352,7 +373,8 @@ export function renderSiteHtml(
       canonicalUrl,
       "Impressum",
       data.legal?.impressumHtml,
-      basePath
+      basePath,
+      opts
     );
   }
   if (pathname === "/datenschutz") {
@@ -361,7 +383,8 @@ export function renderSiteHtml(
       canonicalUrl,
       "Datenschutz",
       data.legal?.datenschutzHtml,
-      basePath
+      basePath,
+      opts
     );
   }
 
@@ -381,7 +404,9 @@ export function renderSiteHtml(
   // ein Slug vorhanden) — sonst würde der Bundle-Tag geladen, obwohl gar
   // keine Insel im Markup steht.
   const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
-  const head = renderHead(data, canonicalUrl, opts.origin);
+  const head = [renderHead(data, canonicalUrl, opts.origin), analyticsTag(opts)]
+    .filter(Boolean)
+    .join("\n");
   const body = renderToStaticMarkup(
     <SiteRenderer
       data={data}

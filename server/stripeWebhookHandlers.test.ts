@@ -3,8 +3,10 @@ import type Stripe from "stripe";
 import {
   handleCheckoutCompleted,
   handleSubscriptionAddOnsUpdated,
+  handleWebsiteActivation,
   type CheckoutCompletedDeps,
   type SubscriptionUpdatedDeps,
+  type WebsiteActivationDeps,
 } from "./stripeWebhookHandlers";
 
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -463,5 +465,73 @@ describe("handleSubscriptionAddOnsUpdated (customer.subscription.updated, Plan B
       handleSubscriptionAddOnsUpdated(fakeSubscription(["price_gallery"]), deps)
     ).resolves.toBeUndefined();
     expect(deps.updateSubscription).toHaveBeenCalled();
+  });
+});
+
+describe("handleWebsiteActivation (customer.subscription.updated → Website aktiv, Plan B6 Task 7)", () => {
+  function makeActivationDeps(
+    website: Record<string, unknown> | undefined,
+    overrides: Partial<WebsiteActivationDeps> = {}
+  ): WebsiteActivationDeps {
+    return {
+      getWebsiteById: vi.fn().mockResolvedValue(website) as any,
+      updateWebsite: vi.fn().mockResolvedValue(undefined) as any,
+      provisionUmami: vi.fn().mockResolvedValue("umami-1"),
+      ...overrides,
+    };
+  }
+
+  test("Website mit customerEmail → status active + captureStatus converted, danach Umami-Provisionierung", async () => {
+    const deps = makeActivationDeps({
+      id: 42,
+      slug: "brandt",
+      customerEmail: "kunde@x.de",
+    });
+
+    const result = await handleWebsiteActivation(42, deps);
+
+    expect(result).toBe("activated");
+    expect(deps.updateWebsite).toHaveBeenCalledWith(42, {
+      status: "active",
+      captureStatus: "converted",
+    });
+    expect(deps.provisionUmami).toHaveBeenCalledWith(42);
+    // Reihenfolge: erst aktiv schalten, dann registrieren
+    const updateOrder = (deps.updateWebsite as any).mock.invocationCallOrder[0];
+    const provisionOrder = (deps.provisionUmami as any).mock
+      .invocationCallOrder[0];
+    expect(updateOrder).toBeLessThan(provisionOrder);
+  });
+
+  test("ohne customerEmail → skipped, kein Write, keine Provisionierung", async () => {
+    const deps = makeActivationDeps({ id: 42, slug: "brandt" });
+
+    const result = await handleWebsiteActivation(42, deps);
+
+    expect(result).toBe("skipped");
+    expect(deps.updateWebsite).not.toHaveBeenCalled();
+    expect(deps.provisionUmami).not.toHaveBeenCalled();
+  });
+
+  test("Provisionierung wirft → Aktivierung bleibt bestehen, Handler wirft nicht", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const deps = makeActivationDeps(
+      { id: 42, slug: "brandt", customerEmail: "kunde@x.de" },
+      { provisionUmami: vi.fn().mockRejectedValue(new Error("umami down")) }
+    );
+
+    await expect(handleWebsiteActivation(42, deps)).resolves.toBe("activated");
+    expect(deps.updateWebsite).toHaveBeenCalledWith(42, {
+      status: "active",
+      captureStatus: "converted",
+    });
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  test("unbekannte Website → skipped", async () => {
+    const deps = makeActivationDeps(undefined);
+    await expect(handleWebsiteActivation(99, deps)).resolves.toBe("skipped");
+    expect(deps.updateWebsite).not.toHaveBeenCalled();
   });
 });

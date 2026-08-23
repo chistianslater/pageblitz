@@ -37,6 +37,7 @@ vi.mock("./db", async importOriginal => {
     createGenerationJob: vi.fn(),
     getSubscriptionByWebsiteId: vi.fn(),
     updateSubscription: vi.fn(),
+    canActivateWebsite: vi.fn(),
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -65,7 +66,16 @@ vi.mock("./generationV2/runJob", async importOriginal => {
 });
 // getUmamiStats ruft echtes Umami-Backend per fetch() auf — in Unit-Tests
 // gemockt (customer.getAnalytics, B5 Task 3: umamiWebsiteId-Statistik).
-vi.mock("./umami", () => ({ getUmamiStats: vi.fn() }));
+vi.mock("./umami", () => ({
+  getUmamiStats: vi.fn(),
+  getUmamiScriptUrl: vi.fn(() => "https://analytics.example.de/script.js"),
+}));
+// Umami-Provisionierung (Plan B6 Task 7) läuft bei jeder Aktivierung — in
+// Unit-Tests gemockt, die Registrierungs-/Write-Logik ist in
+// umamiProvisioning.test.ts.
+vi.mock("./umamiProvisioning", () => ({
+  provisionUmamiForWebsite: vi.fn().mockResolvedValue(null),
+}));
 
 import { appRouter } from "./routers";
 import * as stripeAddonsModule from "./stripeAddons";
@@ -75,8 +85,10 @@ import { invalidateSsrCache } from "./ssr/routes";
 import { invokeLLM } from "./_core/llm";
 import { runWebsiteGenerationV2Job } from "./generationV2/runJob";
 import { getUmamiStats } from "./umami";
+import { provisionUmamiForWebsite } from "./umamiProvisioning";
 
 const mockedDb = vi.mocked(db);
+const mockedProvisionUmami = vi.mocked(provisionUmamiForWebsite);
 const mockedInvalidateSsrCache = vi.mocked(invalidateSsrCache);
 const mockedInvokeLLM = vi.mocked(invokeLLM);
 const mockedRunWebsiteGenerationV2Job = vi.mocked(runWebsiteGenerationV2Job);
@@ -640,5 +652,95 @@ describe("customer.getAnalytics — Statistik liest umamiWebsiteId (B5 Task 3)",
       caller.customer.getAnalytics({ websiteId: 42 })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockedGetUmamiStats).not.toHaveBeenCalled();
+  });
+});
+
+describe("Umami-Provisionierung bei Aktivierung (Plan B6 Task 7)", () => {
+  test("customer.setLive → status active, danach provisionUmamiForWebsite(websiteId)", async () => {
+    const ownedWebsite = baseWebsiteRow({ status: "sold" });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null },
+    ] as any);
+    mockedDb.canActivateWebsite.mockResolvedValue({ ok: true });
+
+    const caller = appRouter.createCaller(createUserContext());
+    await caller.customer.setLive({ websiteId: 42 });
+
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {
+      status: "active",
+      captureStatus: "converted",
+    });
+    expect(mockedProvisionUmami).toHaveBeenCalledWith(42);
+    const updateOrder = mockedDb.updateWebsite.mock.invocationCallOrder[0];
+    const provisionOrder = mockedProvisionUmami.mock.invocationCallOrder[0];
+    expect(updateOrder).toBeLessThan(provisionOrder);
+  });
+
+  test("customer.setLive: Aktivierung nicht erlaubt → PRECONDITION_FAILED, keine Provisionierung", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: baseWebsiteRow({ status: "sold" }), subscription: null },
+    ] as any);
+    mockedDb.canActivateWebsite.mockResolvedValue({
+      ok: false,
+      reason: "Kein Abonnement vorhanden",
+    });
+
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.setLive({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    expect(mockedProvisionUmami).not.toHaveBeenCalled();
+  });
+
+  test("website.updateStatus (Admin) → active provisioniert, inactive nicht", async () => {
+    const caller = appRouter.createCaller(createAdminContext());
+    await caller.website.updateStatus({ id: 42, status: "active" });
+    expect(mockedProvisionUmami).toHaveBeenCalledWith(42);
+
+    mockedProvisionUmami.mockClear();
+    await caller.website.updateStatus({ id: 42, status: "inactive" });
+    expect(mockedProvisionUmami).not.toHaveBeenCalled();
+  });
+
+  test("customer.setWebsiteActive (Admin) → provisioniert", async () => {
+    const caller = appRouter.createCaller(createAdminContext());
+    await caller.customer.setWebsiteActive({ websiteId: 42 });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {
+      status: "active",
+    });
+    expect(mockedProvisionUmami).toHaveBeenCalledWith(42);
+  });
+});
+
+describe("website.get — Umami-Einbindung nur für aktive Sites mit ID (Plan B6 Task 7)", () => {
+  beforeEach(() => {
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schreinerei Brandt",
+    } as any);
+  });
+
+  test("status active + umamiWebsiteId → umami { websiteId, scriptUrl }", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "active", umamiWebsiteId: "umami-42" })
+    );
+    const caller = appRouter.createCaller(createPublicContext());
+    const result = await caller.website.get({ id: 42 });
+    expect(result.umami).toEqual({
+      websiteId: "umami-42",
+      scriptUrl: "https://analytics.example.de/script.js",
+    });
+  });
+
+  test("status sold mit ID → umami null; active ohne ID → umami null", async () => {
+    const caller = appRouter.createCaller(createPublicContext());
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "sold", umamiWebsiteId: "umami-42" })
+    );
+    expect((await caller.website.get({ id: 42 })).umami).toBeNull();
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "active", umamiWebsiteId: null })
+    );
+    expect((await caller.website.get({ id: 42 })).umami).toBeNull();
   });
 });

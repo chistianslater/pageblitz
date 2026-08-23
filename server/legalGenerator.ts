@@ -200,6 +200,10 @@ export function generateDatenschutz(data: LegalData): string {
   <h3>Cookies</h3>
   <p>Diese Website verwendet ausschließlich technisch notwendige Cookies, die für den Betrieb der Website erforderlich sind. Es werden keine Tracking- oder Werbe-Cookies eingesetzt. Notwendige Cookies werden auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gesetzt.</p>
 
+  <h3>Reichweitenmessung (Umami)</h3>
+  <p>Zur Auswertung der Nutzung dieser Website setzen wir die datenschutzfreundliche Analysesoftware Umami ein, die auf Servern in der Europäischen Union betrieben wird. Umami arbeitet ohne Cookies und ohne vergleichbare Kennungen im Browser; es werden keine personenbezogenen Daten erhoben und keine Nutzerprofile gebildet. Erfasst werden ausschließlich aggregierte Angaben wie aufgerufene Seiten, Referrer, Browsertyp, Gerätetyp und ungefähre Herkunftsregion. Die IP-Adresse wird nicht gespeichert, sondern nur flüchtig und anonymisiert zur Berechnung der Besucherzahl verwendet; ein Rückschluss auf einzelne Personen ist nicht möglich.</p>
+  <p><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der statistischen Auswertung und Verbesserung unseres Online-Angebots). Da weder auf Endgeräte zugegriffen noch personenbezogene Daten verarbeitet werden, ist keine Einwilligung erforderlich. Weitere Informationen: <a href="https://umami.is/privacy" target="_blank" rel="noopener">umami.is/privacy</a>.</p>
+
   ${
     data.legalPhone || data.legalEmail
       ? `

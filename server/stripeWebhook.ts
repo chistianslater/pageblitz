@@ -17,8 +17,10 @@ import {
 import {
   handleCheckoutCompleted,
   handleSubscriptionAddOnsUpdated,
+  handleWebsiteActivation,
 } from "./stripeWebhookHandlers";
 import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
+import { provisionUmamiForWebsite } from "./umamiProvisioning";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-02-25.clover",
@@ -135,17 +137,13 @@ export function registerStripeWebhook(app: Express) {
                 newStatus === "canceling" ||
                 newStatus === "trialing"
               ) {
-                const website = await getWebsiteById(sub.websiteId);
-                if (website?.customerEmail) {
-                  await updateWebsite(sub.websiteId, {
-                    status: "active",
-                    captureStatus: "converted",
-                  });
-                } else {
-                  console.warn(
-                    `[Webhook] Skipping activation for website ${sub.websiteId}: no customerEmail`
-                  );
-                }
+                // Website aktiv schalten + Umami-Provisionierung (Plan B6
+                // Task 7) — Logik in stripeWebhookHandlers.ts, testbar.
+                await handleWebsiteActivation(sub.websiteId, {
+                  getWebsiteById,
+                  updateWebsite,
+                  provisionUmami: provisionUmamiForWebsite,
+                });
               }
 
               console.log(
