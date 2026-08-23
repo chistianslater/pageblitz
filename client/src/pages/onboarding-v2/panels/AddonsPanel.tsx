@@ -17,12 +17,12 @@ import { PanelFrame } from "./PanelFrame";
 
 /**
  * Bindbare Add-ons: Seit Plan B3 schaltet der Zahlungs-Webhook auch KI-Chat
- * und Terminbuchung frei, sie zählen also mit in Preis und Summe. Team
- * bleibt gesperrt ("bald verfügbar") — das Team-Panel fehlt noch.
- * `BOOKABLE_ADDON_KEYS` und `sanitizeAddOns` kommen aus @shared/pricing
- * (Finding I1) — dieselbe Quelle der Wahrheit wie der Server
- * (routerCommerce.ts), damit UI-Sperre und serverseitige Ablehnung nie
- * auseinanderlaufen können.
+ * und Terminbuchung frei, seit Plan B5 zusätzlich Team — alle sieben Extras
+ * zählen damit in Preis und Summe. `BOOKABLE_ADDON_KEYS` und `sanitizeAddOns`
+ * kommen aus @shared/pricing (Finding I1) — dieselbe Quelle der Wahrheit wie
+ * der Server (routerCommerce.ts), damit UI-Sperre und serverseitige
+ * Ablehnung nie auseinanderlaufen können. `COMING_SOON_KEYS` bleibt als
+ * generischer Mechanismus stehen, ist aktuell aber leer.
  */
 const TOGGLEABLE_KEYS: readonly AddOnKey[] = BOOKABLE_ADDON_KEYS;
 const COMING_SOON_KEYS: AddOnKey[] = ADDON_KEYS.filter(
@@ -112,8 +112,12 @@ export function AddonsPanel({
       pricelist: !!value.pricelist,
       aiChat: !!value.aiChat,
       booking: !!value.booking,
-      // Nie true senden — Team bleibt vorerst nicht buchbar (Team-Panel fehlt).
-      team: false,
+      // Team ist seit Plan B5 buchbar (BOOKABLE_ADDON_KEYS, @shared/pricing)
+      // — der eigentliche Mitglieder-Editor ("Team pflegen") folgt in
+      // Plan B5 Task 2; bis dahin schaltet dieser Wert nur das Flag, ohne
+      // eine leere Sektion anzulegen (server/onboardingV2/applyPatch.ts,
+      // applyTeam).
+      team: !!value.team,
     };
     updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
   };

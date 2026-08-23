@@ -108,6 +108,31 @@ describe("handleCheckoutCompleted", () => {
     );
   });
 
+  test("Checkout mit team: true → addOnTeam: true auf generatedWebsites (Plan B5)", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({
+        metadata: {
+          websiteId: "42",
+          userId: "7",
+          billingInterval: "yearly",
+          addOns: JSON.stringify({ team: true }),
+        },
+      }),
+      deps
+    );
+
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        addOns: expect.objectContaining({ team: true }),
+      })
+    );
+    expect(deps.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnTeam: true })
+    );
+  });
+
   test("v2-Dokument: features.aiChat wird gesetzt, Cache invalidiert", async () => {
     const deps = makeDeps();
     await handleCheckoutCompleted(fakeSession(), deps);

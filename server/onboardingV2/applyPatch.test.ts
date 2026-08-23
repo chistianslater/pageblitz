@@ -1,10 +1,12 @@
 import { describe, expect, test } from "vitest";
+import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
   applyFeatures,
   applyImages,
   applyOffer,
   applyStylePack,
+  applyTeam,
   applyTexts,
   parsePackId,
 } from "./applyPatch";
@@ -80,6 +82,73 @@ describe("applyImages", () => {
         s => s.type === "about"
       )
     ).toBe(false);
+  });
+});
+
+describe("applyTeam", () => {
+  test("2 Mitglieder → Sektion team mit members im Dokument, nach about eingefügt, Schema-valide", () => {
+    const next = applyTeam(docFull, {
+      headline: "Unser Team",
+      members: [
+        { name: "Anna Beispiel", role: "Meisterin" },
+        { name: "Ben Beispiel" },
+      ],
+    });
+    expect(next.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "about",
+      "team",
+      "contact",
+    ]);
+    const team = next.sections.find(s => s.type === "team") as any;
+    expect(team.headline).toBe("Unser Team");
+    expect(team.members).toEqual([
+      { name: "Anna Beispiel", role: "Meisterin" },
+      { name: "Ben Beispiel" },
+    ]);
+    expect(() => WebsiteDataV2Schema.parse(next)).not.toThrow();
+  });
+
+  test("Mitglieder leer → vorhandene Sektion wird entfernt", () => {
+    const withTeam = applyTeam(docFull, {
+      members: [{ name: "Anna Beispiel" }],
+    });
+    expect(withTeam.sections.some(s => s.type === "team")).toBe(true);
+    const removed = applyTeam(withTeam, { members: [] });
+    expect(removed.sections.some(s => s.type === "team")).toBe(false);
+    expect(removed.sections.map(s => s.type)).toEqual(
+      docFull.sections.map(s => s.type)
+    );
+  });
+
+  test("members: [] ohne vorhandene Sektion ist ein No-op", () => {
+    const next = applyTeam(docFull, { members: [] });
+    expect(next.sections.map(s => s.type)).toEqual(
+      docFull.sections.map(s => s.type)
+    );
+  });
+
+  test("vorhandene Sektion wird ersetzt (Position bleibt), andere Sektionen unverändert", () => {
+    const withTeam = applyTeam(docFull, {
+      headline: "Unser Team",
+      members: [{ name: "Anna Beispiel" }],
+    });
+    const next = applyTeam(withTeam, { members: [{ name: "Ben Beispiel" }] });
+    expect(next.sections.map(s => s.type)).toEqual(
+      withTeam.sections.map(s => s.type)
+    );
+    const team = next.sections.find(s => s.type === "team") as any;
+    expect(team.members).toEqual([{ name: "Ben Beispiel" }]);
+    // Ohne neue headline im Patch bleibt die vorhandene erhalten.
+    expect(team.headline).toBe("Unser Team");
+    const others = next.sections.filter(s => s.type !== "team");
+    expect(others).toEqual(withTeam.sections.filter(s => s.type !== "team"));
+  });
+
+  test("mutiert das Original nicht", () => {
+    applyTeam(docFull, { members: [{ name: "Anna" }] });
+    expect(docFull.sections.some(s => s.type === "team")).toBe(false);
   });
 });
 

@@ -3,11 +3,13 @@ import { publicProcedure } from "../_core/trpc";
 import { updateWebsite } from "../db";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
 import { applyOnboardingToV2 } from "../onboardingV2Patch";
-import { applyFeatures } from "./applyPatch";
+import { applyFeatures, applyTeam } from "./applyPatch";
 import { applyFeatureFlags } from "./applyFeatures";
+import { assertV2SafeWrite } from "../v2WriteGuard";
 import {
   AddonsPatchSchema,
   LegalPatchSchema,
+  TeamPatchSchema,
 } from "../../shared/onboardingV2/patches";
 import {
   ADDON_KEYS,
@@ -107,9 +109,20 @@ export const commerceProcedures = {
    * Progress) und spiegelt die freischaltbaren Extras (contactForm/aiChat/
    * booking) als `features` ins v2-Dokument, damit SSR-Inseln sofort
    * reagieren können, sobald die Extras gebucht sind. Nicht buchbare Extras
-   * (aktuell nur team, siehe BOOKABLE_ADDON_KEYS) werden serverseitig hart
+   * (siehe BOOKABLE_ADDON_KEYS — aktuell keine) werden serverseitig hart
    * abgelehnt (Finding I1) — das Client-UI sperrt sie zwar bereits, aber
    * ein direkter API-Aufruf darf sie nicht durchlassen.
+   *
+   * Team ist anders als contactForm/aiChat/booking kein reines Feature-Flag,
+   * sondern lebt als eigene Sektion im Dokument (wie die Galerie in
+   * `applyImages`) — der Inhalt kommt über `updateTeam`. Beim Abschalten
+   * (`team: false`) wird die Sektion hier entfernt (`applyTeam(doc,
+   * { members: [] })`); beim Einschalten wird keine leere Sektion angelegt,
+   * die entsteht erst mit dem ersten über `updateTeam` gespeicherten
+   * Mitglied. Diese Änderung wird VOR `applyFeatureFlags` geschrieben, weil
+   * der Helfer die Website selbst frisch aus der DB lädt (siehe
+   * applyFeatures.ts) — sonst würde er mit dem noch ungeänderten Dokument
+   * überschreiben und die entfernte Sektion käme zurück.
    */
   updateAddons: publicProcedure
     .input(tokenInput.extend({ addOns: AddonsPatchSchema }))
@@ -135,6 +148,18 @@ export const commerceProcedures = {
       });
 
       if (loaded.doc) {
+        let baseDoc = loaded.doc;
+        if (
+          addOns.team === false &&
+          baseDoc.sections.some(s => s.type === "team")
+        ) {
+          baseDoc = applyTeam(baseDoc, { members: [] });
+          assertV2SafeWrite(loaded.website.websiteData, baseDoc);
+          await updateWebsite(loaded.website.id, {
+            websiteData: baseDoc as any,
+          });
+        }
+
         const featurePatch = {
           contactForm: addOns.contactForm,
           aiChat: addOns.aiChat,
@@ -151,7 +176,7 @@ export const commerceProcedures = {
         // applyFeatures ist pur/deterministisch — dieselbe Berechnung hier
         // (statt eines zweiten DB-Reads) baut den Response-State exakt so,
         // wie applyFeatureFlags ihn gerade persistiert hat.
-        const next = applyFeatures(loaded.doc, featurePatch);
+        const next = applyFeatures(baseDoc, featurePatch);
         const progress = await mergeStudioProgress(loaded.website.id, {
           addonsReviewed: true,
         });
@@ -179,6 +204,21 @@ export const commerceProcedures = {
         addonsReviewed: true,
       });
       return buildState(input.token, loaded, progress);
+    }),
+
+  /**
+   * Speichert die Team-Mitglieder (Extras-Panel-Unterbereich "Team
+   * pflegen"). Wie `updateOffer`: Dokument laden → `applyTeam` (Sektion
+   * anlegen/ersetzen/entfernen) → persistieren. Das Add-on-Flag selbst wird
+   * separat über `updateAddons` gesetzt/entfernt — diese Prozedur pflegt
+   * nur den Inhalt der bereits (oder noch nicht) aktivierten Sektion.
+   */
+  updateTeam: publicProcedure
+    .input(tokenInput.extend({ patch: TeamPatchSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = requireDoc(loaded);
+      return persistDoc(input.token, loaded, applyTeam(doc, input.patch));
     }),
 
   /**

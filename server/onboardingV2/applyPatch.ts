@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import type {
   ImagesPatch,
   OfferPatch,
+  TeamPatch,
   TextsPatch,
 } from "../../shared/onboardingV2/patches";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
@@ -101,6 +102,37 @@ export function applyImages(
             gallery
           );
     }
+  }
+  return WebsiteDataV2Schema.parse({ ...doc, sections });
+}
+
+/**
+ * Pure: verwaltet die Team-Sektion (analog zur Galerie in `applyImages`).
+ * `members: []` entfernt eine vorhandene Sektion; sonst wird sie ersetzt
+ * (Position bleibt) oder neu angelegt (nach "about", sonst vor "contact",
+ * sonst ans Ende — siehe `insertAfter`).
+ */
+export function applyTeam(doc: WebsiteDataV2, p: TeamPatch): WebsiteDataV2 {
+  const existing = doc.sections.find(s => s.type === "team") as
+    | SectionOf<"team">
+    | undefined;
+  const without = doc.sections.filter(s => s.type !== "team");
+  let sections: SectionV2[];
+  if (p.members.length === 0) sections = without;
+  else {
+    const headline = p.headline !== undefined ? p.headline : existing?.headline;
+    const team: SectionOf<"team"> = {
+      type: "team",
+      ...(headline !== undefined ? { headline } : {}),
+      members: p.members,
+    };
+    sections = existing
+      ? doc.sections.map(s => (s.type === "team" ? team : s))
+      : insertAfter(
+          without,
+          without.some(s => s.type === "about") ? "about" : null,
+          team
+        );
   }
   return WebsiteDataV2Schema.parse({ ...doc, sections });
 }

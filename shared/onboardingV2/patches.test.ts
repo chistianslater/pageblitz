@@ -4,6 +4,7 @@ import {
   ImagesPatchSchema,
   LegalPatchSchema,
   OfferPatchSchema,
+  TeamPatchSchema,
   TextsPatchSchema,
 } from "./patches";
 
@@ -78,6 +79,53 @@ describe("LegalPatchSchema", () => {
       legalCity: "Berlin",
       legalEmail: "max@example.com",
       legalPhone: "0123456789",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("TeamPatchSchema", () => {
+  test("akzeptiert Mitglieder mit Name (Pflicht), Rolle/Foto optional", () => {
+    const result = TeamPatchSchema.safeParse({
+      headline: "Unser Team",
+      members: [
+        { name: "Anna Beispiel", role: "Meisterin" },
+        { name: "Ben Beispiel", imageUrl: "https://x/b.jpg" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  test("akzeptiert leere Mitgliederliste (Sektion wird beim Anwenden entfernt)", () => {
+    const result = TeamPatchSchema.safeParse({ members: [] });
+    expect(result.success).toBe(true);
+  });
+
+  test("lehnt Mitglied ohne Namen ab", () => {
+    const result = TeamPatchSchema.safeParse({
+      members: [{ name: "" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  test("lehnt mehr als 12 Mitglieder ab", () => {
+    const result = TeamPatchSchema.safeParse({
+      members: Array.from({ length: 13 }, (_, i) => ({ name: `M${i}` })),
+    });
+    expect(result.success).toBe(false);
+  });
+
+  test("lehnt javascript:-URL im Foto ab", () => {
+    const result = TeamPatchSchema.safeParse({
+      members: [{ name: "Anna", imageUrl: "javascript:alert(1)" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  test("lehnt Fremdfeld ab (strict)", () => {
+    const result = TeamPatchSchema.safeParse({
+      members: [{ name: "Anna" }],
+      extra: true,
     });
     expect(result.success).toBe(false);
   });

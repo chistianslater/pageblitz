@@ -279,25 +279,136 @@ describe("onboardingV2.updateAddons", () => {
     expect(s.doc!.features?.booking).toBe(true);
   });
 
-  test("team=true → BAD_REQUEST, kein Write (Team bleibt gesperrt)", async () => {
-    await expect(
-      caller().onboardingV2.updateAddons({
-        token: "tok",
-        addOns: {
-          contactForm: false,
-          gallery: false,
-          menu: false,
-          pricelist: false,
-          aiChat: false,
-          booking: false,
-          team: true,
-        },
-      })
-    ).rejects.toMatchObject({
-      code: "BAD_REQUEST",
-      message: "Dieses Extra ist noch nicht buchbar: Team.",
+  test("team=true → OK, addOnTeam gesetzt, keine leere Sektion angelegt (seit Plan B5 buchbar)", async () => {
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: false,
+        menu: false,
+        pricelist: false,
+        aiChat: false,
+        booking: false,
+        team: true,
+      },
     });
-    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnTeam: true })
+    );
+    expect(s.addOns.team).toBe(true);
+    // Einschalten legt keine leere Team-Sektion an — die entsteht erst über
+    // updateTeam mit dem ersten Mitglied.
+    expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
+  });
+
+  test("team: true→false entfernt eine vorhandene Team-Sektion aus dem Dokument", async () => {
+    const v2WithTeam = {
+      ...v2,
+      sections: [
+        ...v2.sections,
+        { type: "team", members: [{ name: "Anna Beispiel" }] },
+      ],
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2WithTeam,
+      customerEmail: null,
+    } as any);
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2WithTeam,
+      customerEmail: null,
+    } as any);
+    onboardingRow = { ...onboardingRow, addOnTeam: true };
+
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: false,
+        menu: false,
+        pricelist: false,
+        aiChat: false,
+        booking: false,
+        team: false,
+      },
+    });
+
+    expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnTeam: false })
+    );
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        websiteData: expect.objectContaining({
+          sections: expect.not.arrayContaining([
+            expect.objectContaining({ type: "team" }),
+          ]),
+        }),
+      })
+    );
+  });
+});
+
+describe("onboardingV2.updateTeam", () => {
+  test("unbekannter Token → NOT_FOUND (Ownership wie die anderen update*-Prozeduren)", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue(undefined as any);
+
+    await expect(
+      caller().onboardingV2.updateTeam({
+        token: "fremd",
+        patch: { members: [{ name: "Anna" }] },
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("legt Team-Sektion mit Mitgliedern an und persistiert", async () => {
+    const s = await caller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: {
+        headline: "Unser Team",
+        members: [
+          { name: "Anna Beispiel", role: "Meisterin" },
+          { name: "Ben Beispiel" },
+        ],
+      },
+    });
+
+    const team = s.doc!.sections.find(x => x.type === "team") as any;
+    expect(team.headline).toBe("Unser Team");
+    expect(team.members).toEqual([
+      { name: "Anna Beispiel", role: "Meisterin" },
+      { name: "Ben Beispiel" },
+    ]);
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        websiteData: expect.objectContaining({
+          sections: expect.arrayContaining([
+            expect.objectContaining({ type: "team" }),
+          ]),
+        }),
+      })
+    );
+  });
+
+  test("members: [] entfernt die Sektion wieder", async () => {
+    const s = await caller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: { members: [] },
+    });
+    expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
   });
 });
 
@@ -501,7 +612,7 @@ describe("onboardingV2.createCheckout", () => {
     );
   });
 
-  test("gespeichertes team=true (veraltete DB-Zeile) → Stripe-Session ohne team (Finding I1)", async () => {
+  test("gespeichertes team=true → Stripe-Session mit team (seit Plan B5 buchbar)", async () => {
     onboardingRow = {
       ...onboardingRow,
       legalOwner: "Max Brandt",
@@ -510,11 +621,10 @@ describe("onboardingV2.createCheckout", () => {
       legalCity: "Dortmund",
       legalEmail: "m@b.de",
       legalPhone: "0231 1",
-      // Simuliert einen alten DB-Stand, der über updateAddons nicht mehr
-      // erreichbar ist (I1 blockt das serverseitig) — createCheckout muss
-      // trotzdem sicher sein, falls die Spalte anderweitig noch true steht.
-      // aiChat/booking sind seit Plan B3 buchbar und dürfen durchgereicht
-      // werden — nur team bleibt gesperrt.
+      // aiChat/booking sind seit Plan B3, team seit Plan B5 buchbar — alle
+      // drei dürfen unverändert an Stripe durchgereicht werden
+      // (sanitizeAddOns lässt nur noch tatsächlich gesperrte Extras aus,
+      // aktuell keine).
       addOnAiChat: true,
       addOnBooking: true,
       addOnGallery: true,
@@ -540,7 +650,7 @@ describe("onboardingV2.createCheckout", () => {
           gallery: true,
           aiChat: true,
           booking: true,
-          team: false,
+          team: true,
         }),
       })
     );

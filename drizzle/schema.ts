@@ -214,9 +214,9 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   addOnBooking: boolean("addOnBooking").default(false),
   // AI Chat Add-on
   addOnAiChat: boolean("addOnAiChat").default(false),
-  // Team Add-on
+  // Team Add-on — Inhalt lebt seit Plan B5 in websiteData.sections[team]
+  // (server/onboardingV2/applyPatch.ts, applyTeam), nicht mehr hier.
   addOnTeam: boolean("addOnTeam").default(false),
-  addOnTeamData: json("addOnTeamData"), // Array of team members
   addOnCalendly: boolean("addOnCalendly").default(false),
   calendlyUrl: varchar("calendlyUrl", { length: 512 }),
   chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),

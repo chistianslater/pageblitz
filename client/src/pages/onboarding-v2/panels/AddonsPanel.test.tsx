@@ -42,7 +42,7 @@ describe("AddonsList", () => {
     expect(html).toContain("27,70 €");
   });
 
-  test("team ist als 'bald verfügbar' gesperrt und zählt nie in die Summe", () => {
+  test("team ist seit Plan B5 buchbar, umschaltbar und zählt in die Summe", () => {
     const html = renderToStaticMarkup(
       <AddonsList
         value={{ team: true }}
@@ -50,14 +50,13 @@ describe("AddonsList", () => {
         interval="yearly"
       />
     );
+    // Keine "bald verfügbar"-Zeile mehr — alle sieben Extras sind buchbar
+    // (BOOKABLE_ADDON_KEYS, @shared/pricing).
     const lockedMatches = html.match(/bald verfügbar/g) ?? [];
-    expect(lockedMatches.length).toBe(1);
-    // Nur Basispreis — team darf nicht mitzählen, obwohl `value` es
-    // (defensiv getestet) auf true stehen hat.
-    expect(html).toContain("19,90 €");
-
-    const disabledMatches = html.match(/disabled=""/g) ?? [];
-    expect(disabledMatches.length).toBe(1);
+    expect(lockedMatches.length).toBe(0);
+    // 19,90 € Basis (jährlich) + 3,90 € Team.
+    expect(html).toContain("23,80 €");
+    expect(html).toContain('aria-pressed="true"');
   });
 
   test("aiChat und booking sind seit Plan B3 buchbar, umschaltbar und zählen in die Summe", () => {
@@ -71,7 +70,7 @@ describe("AddonsList", () => {
     // 19,90 € Basis + 9,90 € KI-Chat + 4,90 € Terminbuchung = 34,70 €.
     expect(html).toContain("34,70 €");
     const lockedMatches = html.match(/bald verfügbar/g) ?? [];
-    expect(lockedMatches.length).toBe(1); // nur team
+    expect(lockedMatches.length).toBe(0); // keine gesperrten Extras mehr
   });
 
   test("bindbare Add-ons sind umschaltbar und als aktiv markiert", () => {

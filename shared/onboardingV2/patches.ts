@@ -105,6 +105,23 @@ export const LegalPatchSchema = z
   })
   .strict();
 
+export const TeamPatchSchema = z
+  .object({
+    headline: z.string().max(80).optional(),
+    members: z
+      .array(
+        z
+          .object({
+            name: z.string().min(1).max(80),
+            role: z.string().max(80).optional(),
+            imageUrl: SafeUrlSchema.optional(),
+          })
+          .strict()
+      )
+      .max(12),
+  })
+  .strict();
+
 export const AddonsPatchSchema = z
   .object({
     contactForm: z.boolean(),
@@ -121,4 +138,5 @@ export type ImagesPatch = z.infer<typeof ImagesPatchSchema>;
 export type TextsPatch = z.infer<typeof TextsPatchSchema>;
 export type OfferPatch = z.infer<typeof OfferPatchSchema>;
 export type LegalPatch = z.infer<typeof LegalPatchSchema>;
+export type TeamPatch = z.infer<typeof TeamPatchSchema>;
 export type AddonsPatch = z.infer<typeof AddonsPatchSchema>;
