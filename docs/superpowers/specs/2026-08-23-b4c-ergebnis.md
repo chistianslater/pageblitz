@@ -1,6 +1,6 @@
 # B4c-Ergebnis: Polish & Konsolidierung
 
-**Datum:** 2026-08-23 · **Plan:** `docs/superpowers/plans/2026-08-23-onboarding-v2-b4c-polish.md` · **Spec:** `docs/superpowers/specs/2026-08-23-b4c-polish-design.md` · **Basis:** B4b (main `0b1257f`) · **Endstand:** `onboarding-v2` `e0da646` (+ Fixwelle 2, siehe unten).
+**Datum:** 2026-08-23 · **Plan:** `docs/superpowers/plans/2026-08-23-onboarding-v2-b4c-polish.md` · **Spec:** `docs/superpowers/specs/2026-08-23-b4c-polish-design.md` · **Basis:** B4b (main `0b1257f`) · **Endstand:** `onboarding-v2` `331879c` (Fixwelle 2 enthalten).
 
 ## Ziel und Umfang
 
@@ -26,7 +26,7 @@ Polish-Charakter von B4c gesprengt hätten.
 | 8 — Abschluss/Doku | dieser Commit | `BETRIEB-V2.md`, dieses Dokument | — |
 | Fixwelle (Review-Nacharbeit) | `0eeb08b` | Modal-Tests (Backdrop/Tab-Wrap), Negativtest `regenerateLegalPages` „eingeloggt ohne Abo", tote `vite.config`-Chunk-Matcher, zunft-Kommentar | 5 Dateien, +135/−9 |
 | Koordinator-Fix (tsc 17→0) | `e0da646` | `tsconfig target: ES2022` (10 Zielfehler), Booking-/Chat-Owner-Mail-Join-Bugfix (`subscriptions.websiteId` statt nicht existenter `generatedWebsites.subscriptionId`), Checkout-Default, `useAuth`-QueryClient, GMB-Typen | 7 Dateien, +22/−36 |
-| Fixwelle 2 (Final-Review-Nacharbeit) | siehe `git log` (Hash trägt der Koordinator nach) | Pack-Vorschauen/Demo-SVGs/marktplatz-Shadow an Task-7-Farben angleichen, `prefersMenu` auf gusto/zunft korrigieren, `usePanelFocus` Esc-Verhalten (verwarf Entwürfe), `regenerateLegalPages`-Token-Pfad entfernt (Ownership-Check reicht), `packs.spec.ts`-Farbassertion ergänzt | — |
+| Fixwelle 2 (Final-Review-Nacharbeit) | `331879c` | Pack-Vorschauen/Demo-SVGs/marktplatz-Shadow an Task-7-Farben angleichen, `prefersMenu` auf gusto/zunft korrigieren, `usePanelFocus` Esc-Verhalten (verwarf Entwürfe), `regenerateLegalPages`-Token-Pfad entfernt (Ownership-Check reicht), `packs.spec.ts`-Farbassertion (14 Tests) + Toleranz 0,003 ergänzt | 27 Dateien (SVGs, WebPs, Baselines, Code) |
 | Chores (Prettier-Sweeps) | `71ebf07`, `45d8bf8` | Formatierungs-Commits für Dateien, die der Hook außerhalb der eigentlichen Task-Edits reformatiert hatte (`LeadsPage.tsx`, `vite.config.ts`) | +219/−75, +26/−7 |
 
 ## Gates vorher/nachher
