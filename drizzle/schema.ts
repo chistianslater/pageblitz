@@ -43,6 +43,8 @@ export const businesses = mysqlTable("businesses", {
   reviewCount: int("reviewCount").default(0),
   googleReviews: json("googleReviews"),
   openingHours: json("openingHours"),
+  // Plan B7: Editorial Summary aus dem GMB-Tiefenabruf (Migration 0030)
+  editorialSummary: text("editorialSummary"),
   lat: decimal("lat", { precision: 10, scale: 7 }),
   lng: decimal("lng", { precision: 10, scale: 7 }),
   socialMedia: json("socialMedia"),

@@ -98,7 +98,7 @@ export default function StartPage() {
   const [gmbSearchRegion, setGmbSearchRegion] = useState("");
   const [gmbSearchResults, setGmbSearchResults] = useState<Array<{
     placeId: string; name: string; address: string; phone: string | null;
-    rating: number | null; reviewCount: number; category: string; website: string | null;
+    rating: number | null; reviewCount: number; category: string | null; website: string | null;
     openingHours?: string[];
   }>>([]);
   const [gmbSearchLoading, setGmbSearchLoading] = useState(false);

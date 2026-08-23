@@ -112,6 +112,8 @@ import {
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { buildV2GenerationFacts } from "./generationV2/facts";
+import { fetchGmbDetails, persistGmbDetails } from "./gmb/details";
+import { resolveGmbCategory } from "./gmb/category";
 import { buildStudioUrl } from "./_core/lifecycleScheduler";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -127,29 +129,6 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
-}
-
-// Generic Google Places types that apply to virtually every business – not useful as category
-const GENERIC_GMB_TYPES = new Set([
-  "establishment",
-  "point_of_interest",
-  "local_business",
-  "store",
-  "food",
-  "premise",
-  "political",
-  "geocode",
-  "route",
-]);
-
-/**
- * Pick the most specific category from a Google Places `types` array.
- * Filters out generic catch-all types and returns a human-readable string.
- */
-function extractGmbCategory(types?: string[]): string | null {
-  if (!types?.length) return null;
-  const specific = types.find(t => !GENERIC_GMB_TYPES.has(t));
-  return specific ? specific.replace(/_/g, " ") : null;
 }
 
 /**
@@ -375,19 +354,9 @@ export const appRouter = router({
 
         const detailedResults = [];
         for (const place of allPlaces) {
-          try {
-            const details = await makeRequest<PlaceDetailsResult>(
-              "/maps/api/place/details/json",
-              {
-                place_id: place.place_id,
-                fields:
-                  "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews",
-                language: "de",
-              }
-            );
-            const hasWebsite = !!details.result?.website;
-            const category = extractGmbCategory(place.types) || input.query;
-            const websiteUrl = details.result?.website || null;
+          const details = await fetchGmbDetails(place.place_id);
+          if (details) {
+            const hasWebsite = !!details.website;
             const leadType:
               | "no_website"
               | "outdated_website"
@@ -396,25 +365,23 @@ export const appRouter = router({
 
             detailedResults.push({
               placeId: place.place_id,
-              name: details.result?.name || place.name,
-              address:
-                details.result?.formatted_address || place.formatted_address,
-              phone: details.result?.formatted_phone_number || null,
-              website: websiteUrl,
-              rating: details.result?.rating || place.rating || null,
-              reviewCount:
-                details.result?.user_ratings_total ||
-                place.user_ratings_total ||
-                0,
-              category,
+              name: details.name || place.name,
+              address: details.formattedAddress || place.formatted_address,
+              phone: details.phone,
+              website: details.website,
+              rating: details.rating ?? place.rating ?? null,
+              reviewCount: details.reviewCount ?? place.user_ratings_total ?? 0,
+              // Kategorie-Kette (nie Firmenname/Suchbegriff) — null = unbekannt
+              category: details.category,
+              editorialSummary: details.editorialSummary,
               lat: place.geometry?.location?.lat,
               lng: place.geometry?.location?.lng,
-              openingHours: details.result?.opening_hours?.weekday_text || [],
+              openingHours: details.openingHours ?? [],
               hasWebsite,
               leadType,
-              reviews: details.result?.reviews || [],
+              reviews: details.reviews,
             });
-          } catch {
+          } else {
             detailedResults.push({
               placeId: place.place_id,
               name: place.name,
@@ -423,12 +390,19 @@ export const appRouter = router({
               website: null,
               rating: place.rating || null,
               reviewCount: place.user_ratings_total || 0,
-              category: extractGmbCategory(place.types) || input.query,
+              category: resolveGmbCategory({ types: place.types }),
+              editorialSummary: null,
               lat: place.geometry?.location?.lat,
               lng: place.geometry?.location?.lng,
-              openingHours: [],
+              openingHours: [] as string[],
               hasWebsite: false,
               leadType: "no_website" as const,
+              reviews: [] as Array<{
+                author_name: string;
+                rating: number;
+                text: string;
+                time: number;
+              }>,
             });
           }
         }
@@ -706,42 +680,29 @@ export const appRouter = router({
               if (seenPlaceIds.has(place.place_id)) continue;
               seenPlaceIds.add(place.place_id);
 
-              try {
-                const details = await makeRequest<PlaceDetailsResult>(
-                  "/maps/api/place/details/json",
-                  {
-                    place_id: place.place_id,
-                    fields:
-                      "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours,types,reviews",
-                    language: "de",
-                  }
-                );
-                const hasWebsite = !!details.result?.website;
+              const details = await fetchGmbDetails(place.place_id);
+              if (details) {
+                const hasWebsite = !!details.website;
                 allDetailedResults.push({
                   placeId: place.place_id,
-                  name: details.result?.name || place.name,
-                  address:
-                    details.result?.formatted_address ||
-                    place.formatted_address,
-                  phone: details.result?.formatted_phone_number || null,
-                  website: details.result?.website || null,
-                  rating: details.result?.rating || place.rating || null,
+                  name: details.name || place.name,
+                  address: details.formattedAddress || place.formatted_address,
+                  phone: details.phone,
+                  website: details.website,
+                  rating: details.rating ?? place.rating ?? null,
                   reviewCount:
-                    details.result?.user_ratings_total ||
-                    place.user_ratings_total ||
-                    0,
-                  category: extractGmbCategory(place.types) || input.query,
+                    details.reviewCount ?? place.user_ratings_total ?? 0,
+                  category: details.category,
+                  editorialSummary: details.editorialSummary,
                   lat: place.geometry?.location?.lat,
                   lng: place.geometry?.location?.lng,
-                  openingHours:
-                    details.result?.opening_hours?.weekday_text || [],
+                  openingHours: details.openingHours ?? [],
                   hasWebsite,
                   leadType: hasWebsite ? "unknown" : "no_website",
-                  reviews: details.result?.reviews || [],
+                  reviews: details.reviews,
                 });
-              } catch {
-                /* skip failed detail lookups */
               }
+              /* fetchGmbDetails liefert null bei Fehlern → Place überspringen */
             }
           } catch {
             /* skip failed district searches */
@@ -776,32 +737,21 @@ export const appRouter = router({
         const detailedResults = [];
         const limitedResults = placesResult.results.slice(0, 5);
         for (const place of limitedResults) {
-          try {
-            const details = await makeRequest<PlaceDetailsResult>(
-              "/maps/api/place/details/json",
-              {
-                place_id: place.place_id,
-                fields:
-                  "name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,types",
-                language: "de",
-              }
-            );
-            const category = extractGmbCategory(place.types) || input.query;
+          const details = await fetchGmbDetails(place.place_id);
+          if (details) {
             detailedResults.push({
               placeId: place.place_id,
-              name: details.result?.name || place.name,
-              address:
-                details.result?.formatted_address || place.formatted_address,
-              phone: details.result?.formatted_phone_number || null,
-              website: details.result?.website || null,
-              rating: details.result?.rating || place.rating || null,
-              reviewCount:
-                details.result?.user_ratings_total ||
-                place.user_ratings_total ||
-                0,
-              category,
+              name: details.name || place.name,
+              address: details.formattedAddress || place.formatted_address,
+              phone: details.phone,
+              website: details.website,
+              rating: details.rating ?? place.rating ?? null,
+              reviewCount: details.reviewCount ?? place.user_ratings_total ?? 0,
+              // Kategorie-Kette (nie Firmenname/Suchbegriff) — null = unbekannt
+              category: details.category,
+              openingHours: details.openingHours ?? [],
             });
-          } catch {
+          } else {
             detailedResults.push({
               placeId: place.place_id,
               name: place.name,
@@ -810,7 +760,8 @@ export const appRouter = router({
               website: null,
               rating: place.rating || null,
               reviewCount: place.user_ratings_total || 0,
-              category: extractGmbCategory(place.types) || input.query,
+              category: resolveGmbCategory({ types: place.types }),
+              openingHours: [] as string[],
             });
           }
         }
@@ -876,7 +827,8 @@ export const appRouter = router({
               website: z.string().nullable().optional(),
               rating: z.number().nullable().optional(),
               reviewCount: z.number().optional(),
-              category: z.string().optional(),
+              category: z.string().nullable().optional(),
+              editorialSummary: z.string().nullable().optional(),
               lat: z.number().optional(),
               lng: z.number().optional(),
               openingHours: z.array(z.string()).optional(),
@@ -921,6 +873,7 @@ export const appRouter = router({
             rating: r.rating?.toString() || null,
             reviewCount: r.reviewCount || 0,
             category: r.category || null,
+            editorialSummary: r.editorialSummary || null,
             lat: r.lat?.toString() || null,
             lng: r.lng?.toString() || null,
             openingHours: r.openingHours || [],
@@ -2863,6 +2816,22 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
           rating: input.rating || null,
           reviewCount: input.reviewCount || null,
         });
+
+        // GMB-Tiefenabruf beim Anlegen mit echtem Place (Plan B7 Task 1):
+        // Website, Öffnungszeiten, Reviews, Editorial Summary und die
+        // Kategorie-Kette (nie der Firmenname) landen idempotent im Business.
+        // Fehler dürfen den Start nie blockieren.
+        if (input.placeId && !input.placeId.startsWith("self-")) {
+          try {
+            const details = await fetchGmbDetails(input.placeId);
+            if (details) await persistGmbDetails(businessId, details);
+          } catch (err) {
+            console.warn(
+              "[selfService.start] GMB-Tiefenabruf fehlgeschlagen:",
+              err
+            );
+          }
+        }
 
         // Create a preview website.
         // Wichtig: captureStatus nur setzen, wenn auch wirklich eine customerEmail aufgelöst werden konnte.
