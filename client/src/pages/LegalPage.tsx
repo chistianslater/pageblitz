@@ -4,6 +4,7 @@ import { Loader2, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { pickLegalHtml } from "@/lib/legalHtml";
+import { getPackAccent } from "@/lib/packAccent";
 
 export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
@@ -19,6 +20,16 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
     { enabled: !!slug }
   );
   const website = data?.website;
+
+  // Regenerieren-Button nur für eingeloggte Besitzer: Query schlägt ohne
+  // Login mit UNAUTHORIZED fehl (retry: false verhindert unnötige Retries),
+  // der Fehler wird stillschweigend ignoriert — anonyme Besucher:innen
+  // sehen einfach keinen Button statt eines Fehlers.
+  const { data: myWebsites } = trpc.customer.getMyWebsites.useQuery(undefined, {
+    retry: false,
+  });
+  const isOwner =
+    !!website?.id && !!myWebsites?.some(row => row.website.id === website.id);
 
   const regenerateMutation = trpc.onboarding.regenerateLegalPages.useMutation({
     onSuccess: result => {
@@ -63,8 +74,7 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   }
 
   const websiteData = website.websiteData as any;
-  const colorScheme = (website as any).colorScheme as any;
-  const primaryColor = colorScheme?.primary || "#2563eb";
+  const primaryColor = getPackAccent(websiteData?.stylePackId);
   const businessName =
     websiteData?.businessName || (data as any)?.business?.name || "";
 
@@ -130,19 +140,23 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
               <li>Die rechtlichen Daten (Eigentümer, E-Mail) fehlen</li>
               <li>Es ein technischer Fehler aufgetreten ist</li>
             </ul>
-            <button
-              onClick={handleRegenerate}
-              disabled={isRegenerating}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white disabled:opacity-50 transition-colors"
-              style={{ backgroundColor: primaryColor }}
-            >
-              {isRegenerating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              {isRegenerating ? "Wird generiert..." : "Seite jetzt generieren"}
-            </button>
+            {isOwner && (
+              <button
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-white disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {isRegenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                {isRegenerating
+                  ? "Wird generiert..."
+                  : "Seite jetzt generieren"}
+              </button>
+            )}
           </div>
         ) : (
           <div className="bg-white rounded-2xl shadow-sm overflow-hidden">

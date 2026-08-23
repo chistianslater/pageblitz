@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { getConstitution } from "@shared/stylePacks";
 import { PACK_IDS, type PackId } from "@shared/siteContract/types";
+import { getPackAccent } from "@/lib/packAccent";
 
 interface PackShowcaseProps {
   isDark: boolean;
@@ -10,12 +11,6 @@ interface PackShowcaseProps {
 
 /** Feste Anzeigereihenfolge — deckungsgleich mit `PACK_IDS` (siehe `shared/siteContract/schema.ts`). */
 const PACK_ORDER: readonly PackId[] = PACK_IDS;
-
-/** Akzentfarbe der Verfassung — trägt die tatsächliche Pack-Identität in die Karte (Punkt + Hover-Rahmen), statt einer generischen Deko-Farbe. */
-function getAccentColor(packId: PackId): string {
-  const accent = getConstitution(packId).palette.find(c => c.role === "accent");
-  return accent?.hex ?? "#a3e635";
-}
 
 interface PackCardProps {
   packId: PackId;
@@ -26,7 +21,7 @@ interface PackCardProps {
 
 function PackCard({ packId, index, isDark, animate }: PackCardProps) {
   const constitution = getConstitution(packId);
-  const accent = getAccentColor(packId);
+  const accent = getPackAccent(packId);
   const demoHref = `/demo/${packId}`;
 
   return (

@@ -35,6 +35,7 @@ vi.mock("./db", async importOriginal => {
     getNextLayoutForIndustry: vi.fn(),
     createGeneratedWebsite: vi.fn(),
     createGenerationJob: vi.fn(),
+    getSubscriptionByWebsiteId: vi.fn(),
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -152,7 +153,23 @@ beforeEach(() => {
 });
 
 describe("Zentraler Write-Guard (C-3)", () => {
-  test("onboarding.regenerateLegalPages auf v2-Website schreibt nach websiteData.legal.* statt top-level", async () => {
+  test("onboarding.regenerateLegalPages ohne Token/Login (anonym) → FORBIDDEN, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
+
+    const caller = appRouter.createCaller(createPublicContext());
+    await expect(
+      caller.onboarding.regenerateLegalPages({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedDb.getOnboardingByWebsiteId).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("onboarding.regenerateLegalPages mit passendem previewToken (Studio-Kontext) schreibt nach websiteData.legal.* statt top-level", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
       legalOwner: "Max Brandt",
       legalEmail: "info@brandt.de",
@@ -160,15 +177,15 @@ describe("Zentraler Write-Guard (C-3)", () => {
       legalZip: "44135",
       legalCity: "Dortmund",
     } as any);
-    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.updateWebsite.mockResolvedValue(undefined as any);
 
     const caller = appRouter.createCaller(createPublicContext());
     const result = await caller.onboarding.regenerateLegalPages({
       websiteId: 42,
+      token: "correct-token",
     });
 
-    expect(result.success).toBe(true);
+    expect(result).toEqual({ success: true, regenerated: true });
     expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
     const [, patch] = mockedDb.updateWebsite.mock.calls[0];
     const writtenWebsiteData = (patch as any).websiteData;
@@ -178,6 +195,55 @@ describe("Zentraler Write-Guard (C-3)", () => {
     expect(writtenWebsiteData.impressumHtml).toBeUndefined();
     expect(writtenWebsiteData.datenschutzHtml).toBeUndefined();
     expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
+  });
+
+  test("onboarding.regenerateLegalPages im Admin-Kontext (kein Token nötig) schreibt erfolgreich", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      legalOwner: "Max Brandt",
+      legalEmail: "info@brandt.de",
+      legalStreet: "Hauptstraße 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+    } as any);
+    mockedDb.updateWebsite.mockResolvedValue(undefined as any);
+
+    const caller = appRouter.createCaller(createAdminContext());
+    const result = await caller.onboarding.regenerateLegalPages({
+      websiteId: 42,
+    });
+
+    expect(result).toEqual({ success: true, regenerated: true });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
+  });
+
+  test("onboarding.regenerateLegalPages als eingeloggter Abo-Inhaber (ohne Token) schreibt erfolgreich", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ previewToken: "correct-token" })
+    );
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      id: 1,
+      websiteId: 42,
+      userId: 2,
+    } as any);
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
+      legalOwner: "Max Brandt",
+      legalEmail: "info@brandt.de",
+      legalStreet: "Hauptstraße 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+    } as any);
+    mockedDb.updateWebsite.mockResolvedValue(undefined as any);
+
+    const caller = appRouter.createCaller(createUserContext(2));
+    const result = await caller.onboarding.regenerateLegalPages({
+      websiteId: 42,
+    });
+
+    expect(result).toEqual({ success: true, regenerated: true });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
   });
 });
 

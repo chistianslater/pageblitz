@@ -1918,22 +1918,45 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
         return searchStockPhotos(input.query, input.page, input.perPage);
       }),
 
-    // Regenerate legal pages (Impressum & Datenschutz) after legal data changes
+    // Regenerate legal pages (Impressum & Datenschutz) after legal data changes.
+    // Zugriff (Spec §2.3): Admin, Studio-Kontext (passender previewToken)
+    // oder eingeloggter Abo-Inhaber — sonst FORBIDDEN. Bleibt publicProcedure,
+    // weil der anonyme Studio-Kontext (Token statt Login) erlaubt sein muss.
     regenerateLegalPages: publicProcedure
-      .input(z.object({ websiteId: z.number() }))
-      .mutation(async ({ input }) => {
-        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
-        if (!onboarding)
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Onboarding nicht gefunden",
-          });
-
+      .input(z.object({ websiteId: z.number(), token: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website)
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Website nicht gefunden",
+          });
+
+        const isAdmin = ctx.user?.role === "admin";
+        const hasValidToken =
+          !!input.token &&
+          !!website.previewToken &&
+          input.token === website.previewToken;
+        let isSubscriptionOwner = false;
+        if (!isAdmin && !hasValidToken && ctx.user) {
+          const subscription = await getSubscriptionByWebsiteId(
+            input.websiteId
+          );
+          isSubscriptionOwner =
+            !!subscription && subscription.userId === ctx.user.id;
+        }
+        if (!isAdmin && !hasValidToken && !isSubscriptionOwner) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Kein Zugriff auf diese Website.",
+          });
+        }
+
+        const onboarding = await getOnboardingByWebsiteId(input.websiteId);
+        if (!onboarding)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Onboarding nicht gefunden",
           });
 
         // Only regenerate if we have the minimum required legal data
@@ -1994,11 +2017,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
         });
         if (websiteData.version === 2) invalidateSsrCache(website.slug);
 
-        return {
-          success: true,
-          impressumHtml: !!impressumHtml,
-          datenschutzHtml: !!datenschutzHtml,
-        };
+        return { success: true as const, regenerated: true as const };
       }),
   }),
 
