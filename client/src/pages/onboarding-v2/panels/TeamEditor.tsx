@@ -49,7 +49,8 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
   const upload = trpc.onboardingV2.uploadPhoto.useMutation();
   const errors = validateTeam(members);
 
-  const setMembers = (next: TeamMember[]) => onChange({ headline, members: next });
+  const setMembers = (next: TeamMember[]) =>
+    onChange({ headline, members: next });
 
   const handlePhotoPicked = (index: number, url: string) => {
     setMembers(updateMember(members, index, { imageUrl: url }));
@@ -85,7 +86,8 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
           }
         );
       };
-      reader.onerror = () => setUploadError("Datei konnte nicht gelesen werden.");
+      reader.onerror = () =>
+        setUploadError("Datei konnte nicht gelesen werden.");
       reader.readAsDataURL(file);
     };
 
@@ -165,9 +167,7 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
               type="button"
               className="pb-studio-btn"
               data-variant="ghost"
-              onClick={() =>
-                setPhotoRowIndex(photoRowIndex === i ? null : i)
-              }
+              onClick={() => setPhotoRowIndex(photoRowIndex === i ? null : i)}
             >
               {member.imageUrl ? "Foto ändern" : "Foto wählen"}
             </button>

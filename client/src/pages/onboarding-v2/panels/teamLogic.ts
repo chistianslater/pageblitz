@@ -23,7 +23,10 @@ export function addMember(members: TeamMember[]): TeamMember[] {
 }
 
 /** Reine Funktion: entfernt das Mitglied an `index`. */
-export function removeMember(members: TeamMember[], index: number): TeamMember[] {
+export function removeMember(
+  members: TeamMember[],
+  index: number
+): TeamMember[] {
   return members.filter((_, i) => i !== index);
 }
 

@@ -36,7 +36,11 @@ const twoMembers: TeamValue = {
 describe("TeamEditor", () => {
   test("rendert Name- und Rolle-Felder für vorhandene Mitglieder", () => {
     const html = renderWithTrpc(
-      <TeamEditor token={"t".repeat(32)} value={twoMembers} onChange={() => {}} />
+      <TeamEditor
+        token={"t".repeat(32)}
+        value={twoMembers}
+        onChange={() => {}}
+      />
     );
     expect(html).toContain('value="Anna Beispiel"');
     expect(html).toContain('value="Meisterin"');
@@ -45,18 +49,30 @@ describe("TeamEditor", () => {
 
   test("rendert Hinzufügen/Entfernen/Sortieren-Buttons mit aria-label je Zeile", () => {
     const html = renderWithTrpc(
-      <TeamEditor token={"t".repeat(32)} value={twoMembers} onChange={() => {}} />
+      <TeamEditor
+        token={"t".repeat(32)}
+        value={twoMembers}
+        onChange={() => {}}
+      />
     );
     expect(html).toContain("Mitglied hinzufügen");
-    expect(html).toContain("aria-label=\"‚Anna Beispiel‘ nach oben verschieben\"");
-    expect(html).toContain("aria-label=\"‚Anna Beispiel‘ nach unten verschieben\"");
-    expect(html).toContain("aria-label=\"‚Anna Beispiel‘ entfernen\"");
+    expect(html).toContain(
+      'aria-label="‚Anna Beispiel‘ nach oben verschieben"'
+    );
+    expect(html).toContain(
+      'aria-label="‚Anna Beispiel‘ nach unten verschieben"'
+    );
+    expect(html).toContain('aria-label="‚Anna Beispiel‘ entfernen"');
     expect(html).toContain("Foto wählen");
   });
 
   test("erstes Mitglied hat den 'nach oben'-Button deaktiviert, letztes den 'nach unten'-Button", () => {
     const html = renderWithTrpc(
-      <TeamEditor token={"t".repeat(32)} value={twoMembers} onChange={() => {}} />
+      <TeamEditor
+        token={"t".repeat(32)}
+        value={twoMembers}
+        onChange={() => {}}
+      />
     );
     expect(html).toContain(
       'aria-label="‚Anna Beispiel‘ nach oben verschieben" disabled=""'
@@ -75,7 +91,7 @@ describe("TeamEditor", () => {
       />
     );
     expect(html).toContain("Noch keine Mitglieder");
-    expect(html).not.toContain("aria-label=\"Name\"");
+    expect(html).not.toContain('aria-label="Name"');
   });
 
   test("leerer Name erzeugt eine Fehlermeldung mit Positionsangabe", () => {
@@ -92,7 +108,11 @@ describe("TeamEditor", () => {
 
   test("gültige Mitglieder erzeugen keine Fehlermeldung", () => {
     const html = renderWithTrpc(
-      <TeamEditor token={"t".repeat(32)} value={twoMembers} onChange={() => {}} />
+      <TeamEditor
+        token={"t".repeat(32)}
+        value={twoMembers}
+        onChange={() => {}}
+      />
     );
     // Kein role="alert" außerhalb evtl. Upload-Fehler (hier nicht gerendert).
     expect(html).not.toContain('role="alert"');

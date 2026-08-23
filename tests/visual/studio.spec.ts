@@ -330,7 +330,10 @@ test.describe("Studio", () => {
     await page.goto(`/onboarding/${token}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    await page.getByRole("button", { name: /Extras/ }).first().click();
+    await page
+      .getByRole("button", { name: /Extras/ })
+      .first()
+      .click();
     const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
     await expect(addonsPanel).toBeVisible();
 
