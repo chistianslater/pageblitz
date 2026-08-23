@@ -36,9 +36,21 @@ export const MORGENLICHT: PackConstitution = {
     },
     {
       name: "Salbei",
+      // Als FLÄCHE/CTA unkritisch; als KLEINTEXT auf Morgen nur 4,49:1 →
+      // dafür gibt es den dunkleren Textton `accent-text` (Tiefsalbei).
       hex: "#2E7E78",
       role: "accent",
       usage: "CTA, Akzentwort, Chips-Text — override-fähig für Praxisfarben.",
+    },
+    {
+      name: "Tiefsalbei",
+      // Dunkleres Salbei für Kleintext (B6-`accent-text`-System wie
+      // werkbank/marktplatz/schimmer): 5,90:1 auf Morgen, 6,32:1 auf Weiß,
+      // 5,10:1 auf Lind — überall ≥ 4,5:1 (u. a. „Öffnungszeiten"-h3 im
+      // Kontakt-Block, Welle-0-Kontrastfix systematisiert).
+      hex: "#256A64",
+      role: "accent-text",
+      usage: "Salbei als Text auf hellem Grund (Mikro-Überschriften).",
     },
     {
       name: "Weiß",

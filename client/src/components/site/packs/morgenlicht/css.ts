@@ -48,7 +48,7 @@ export const MORGENLICHT_CSS = `
 .pb-ml-contact address{font-style:normal}
 .pb-ml-contact p{margin-bottom:10px}
 .pb-ml-hours-block{max-width:380px}
-.pb-ml-hours-block h3{font-family:var(--pb-font-display);font-weight:800;font-size:13px;letter-spacing:.03em;color:var(--pb-ink);margin-bottom:8px}
+.pb-ml-hours-block h3{font-family:var(--pb-font-display);font-weight:800;font-size:13px;letter-spacing:.03em;color:var(--pb-accent-text);margin-bottom:8px}
 .pb-ml-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-ml-hours td{padding:8px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
 .pb-ml-hours tr:last-child td{border-bottom:none}
