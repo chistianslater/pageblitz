@@ -159,8 +159,11 @@ function PageCard({
       </div>
       {page.sections.map((section, si) => {
         const sectionLabel = sectionWhere(index, si);
+        // Key = Sektionstyp: je Seite eindeutig (addSectionFromTemplate lehnt
+        // Doppelte ab), bleibt beim Verschieben an der Sektion — anders als
+        // der Index, der den Mini-Editor an der Position festhalten würde.
         return (
-          <div className="pb-studio-cat" key={si}>
+          <div className="pb-studio-cat" key={section.type}>
             <div className="pb-studio-team-actions">
               <span style={{ flex: 1, fontWeight: 600, fontSize: "0.9rem" }}>
                 {PAGE_SECTION_LABELS[section.type]}
@@ -285,6 +288,11 @@ export function PagesEditor({ value, onChange, doc }: PagesEditorProps) {
         </p>
       )}
       {value.map((page, i) => (
+        // Bewusst Index als Key: der Slug wird in der Karte selbst editiert
+        // (Remount bei jedem Tastendruck → Fokusverlust) und kann beim Tippen
+        // vorübergehend doppelt sein; Pages haben keine stabile ID. Die
+        // Eingaben sind controlled — beim Verschieben bleibt nur die lokale
+        // Vorlagen-Auswahl der Karte an der Position hängen.
         <PageCard
           key={i}
           page={page}

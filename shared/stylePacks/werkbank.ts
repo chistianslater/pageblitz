@@ -73,7 +73,10 @@ export const WERKBANK: PackConstitution = {
       usage: "Signal als Text auf hellem Grund (Akzentwort, Index, Hover).",
     },
     {
-      name: "Kohle",
+      // Bewusst derselbe Hex wie `ink` („Kohle"): die Rolle braucht einen
+      // eigenen Eintrag (toCssVars → --pb-accent-contrast), der Name
+      // unterscheidet ihn in Summary/Palette-Listen von der Text-Kohle.
+      name: "Kohle (Text auf Signal)",
       // Text auf Signal: Weiß erreichte nur 3,33:1, Kohle 5,29:1 — gilt für
       // den Hero-CTA und die Insel-Buttons (Kontaktformular, Chat, Buchung).
       hex: "#191919",

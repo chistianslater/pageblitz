@@ -76,6 +76,16 @@ export function diffAddOnFlags(
  * Verkaufte Websites ohne Stripe-Subscription (Admin-/Testfreischaltung,
  * `setWebsiteActive`) bekommen keinen Sync — es gibt nichts abzurechnen;
  * die Flags werden trotzdem geschrieben (geloggt).
+ *
+ * Bekannte Lücke (Final-Review B6, dokumentiert in docs/BETRIEB-V2.md §6
+ * „Add-on-Konsistenz"): `subscriptions.addOns` wird hier, in
+ * `customer.purchaseAddon` (server/routers.ts) und in
+ * `handleSubscriptionAddOnsUpdated` (server/stripeWebhookHandlers.ts) per
+ * Read-Modify-Write ohne Sperre/Versionsspalte geschrieben. Zwei zeitgleiche
+ * Schreiber können sich gegenseitig überschreiben (Lost Update) — selten und
+ * selbstheilend, weil der nächste `customer.subscription.updated` den Stand
+ * wieder aus den Stripe-Items ableitet. Bewusst nicht behoben; Fix wäre eine
+ * Transaktion (`SELECT … FOR UPDATE`) oder eine optimistische Version.
  */
 export async function commitAddOnFlags(
   loaded: StudioWebsite,

@@ -5,6 +5,7 @@ import type {
   SectionOf,
   WebsiteDataV2,
 } from "@shared/siteContract/types";
+import { PAGE_CONTACT_DEFAULT_HEADLINE } from "@/components/site/engine";
 import { isReservedSlug } from "./pagesValidation";
 
 export { validatePages } from "./pagesValidation";
@@ -173,10 +174,18 @@ function findSection<T extends WebsiteDataV2["sections"][number]["type"]>(
   return doc.sections.find((s): s is SectionOf<T> => s.type === type);
 }
 
-/** Kontakt-Sektion für eine Unterseite: Fakten 1:1 von der Startseite, Überschrift "Kontakt" als Standard. */
+/**
+ * Kontakt-Sektion für eine Unterseite: Fakten 1:1 von der Startseite,
+ * Überschrift `PAGE_CONTACT_DEFAULT_HEADLINE` („Kontakt") als Standard —
+ * dieselbe wie beim Live-Rendern in engine.ts `linkPageSections`, das die
+ * Startseiten-Überschrift bewusst NICHT übernimmt.
+ */
 function contactFromDoc(doc: WebsiteDataV2): PageSectionOf<"contact"> {
   const contact = findSection(doc, "contact");
-  return { ...(contact ?? { type: "contact" }), headline: "Kontakt" };
+  return {
+    ...(contact ?? { type: "contact" }),
+    headline: PAGE_CONTACT_DEFAULT_HEADLINE,
+  };
 }
 
 function buildTemplateSection(
@@ -272,6 +281,12 @@ export function moveSection(
  * Kontaktdaten" / "nutzt die Galerie-Bilder" im Editor). Fehlt auf der
  * Startseite die Galerie, bleibt die Seiten-Galerie unverändert (die
  * Sektion braucht laut Schema mindestens ein Bild).
+ *
+ * Gegenstück zu engine.ts `linkPageSections`: das Rendering liest Kontakt/
+ * Galerie ohnehin live aus der Startseite; die hier geschriebene Kopie
+ * bleibt bewusst als Fallback im Dokument (Startseite ohne Pendant, ältere
+ * Leser) und hält dieselbe Standard-Überschrift
+ * (`PAGE_CONTACT_DEFAULT_HEADLINE`).
  */
 export function syncLinkedSections(pages: Page[], doc: WebsiteDataV2): Page[] {
   const gallery = findSection(doc, "gallery");

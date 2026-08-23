@@ -314,14 +314,17 @@ export function PageSectionEditor({
       return (
         <Hint>
           Kontakt übernimmt die Kontaktdaten deiner Startseite (Telefon, E-Mail,
-          Adresse, Öffnungszeiten) — zu ändern im Panel „Rechtliches“.
+          Adresse, Öffnungszeiten) — zu ändern im Panel „Rechtliches“. Die
+          Unterseite zeigt sie auch dann, wenn die Kontakt-Sektion auf der
+          Startseite ausgeblendet ist.
         </Hint>
       );
     case "gallery":
       return (
         <Hint>
           Galerie nutzt die Galerie-Bilder deiner Startseite — zu ändern im
-          Panel „Fotos“.
+          Panel „Fotos“. Die Unterseite zeigt sie auch dann, wenn die Galerie
+          auf der Startseite ausgeblendet ist.
         </Hint>
       );
     case "testimonials":

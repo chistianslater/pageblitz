@@ -289,6 +289,18 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       phone: "0201 1",
     });
     expect(linked[0]).toBe(pageSections[0]);
+    // Ohne eigene Überschrift: Standard „Kontakt" wie die Studio-Kopie
+    // (pagesLogic contactFromDoc), NICHT die Startseiten-Überschrift.
+    const homeWithHeadline: WebsiteDataV2 = {
+      ...home,
+      sections: [
+        { type: "hero", headline: "H" },
+        { type: "contact", headline: "So erreichst du uns", city: "Essen" },
+      ],
+    };
+    expect(
+      linkPageSections(homeWithHeadline, [{ type: "contact", city: "Alt" }])
+    ).toEqual([{ type: "contact", headline: "Kontakt", city: "Essen" }]);
     // Startseite ohne Galerie/Kontakt → Seiten-Kopie bleibt unverändert.
     const bare: WebsiteDataV2 = {
       ...base,

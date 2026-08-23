@@ -211,9 +211,17 @@ Rollback: `backup-0028-<datum>.sql` enthält einen Voll-Dump von
 damit — wie bei 0027 — jede Zeile, die zwischen Backup und Rückspielung neu
 angelegt oder geändert wurde. Ohne Backup ist die Migration nicht reversibel.
 
-**Stand:** Migration ist zum Zeitpunkt dieses Dokuments **noch nicht** in
-Prod ausgeführt — offen bis Merge + Freigabe (siehe
-`docs/superpowers/specs/2026-08-23-b5-ergebnis.md`).
+**Stand:** Migration 0028 ist seit 2026-08-23 in Prod ausgeführt (Backup
+`/root/backups/backup-0028-*.sql.gz`).
+
+### Migration 0029 — `generated_websites.addOnSubpages` (B6 Task 2, additiv)
+
+`drizzle/0029_add_on_subpages.sql`:
+`ALTER TABLE generated_websites ADD COLUMN addOnSubpages boolean DEFAULT
+false;` — Spiegel von `websiteData.features.subpages` wie `addOnAiChat`/
+`addOnBooking`/`addOnTeam` (schneller Live-Check in `server/ssr/routes.ts`).
+Additiv, idempotent auf leerer Spalte, kein Backup-Ritual nötig; auf Prod
+nach dem Deploy einspielen: `mysql -uroot -p pageblitz < drizzle/0029_add_on_subpages.sql`.
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
@@ -305,6 +313,23 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
   des SPA-Fallbacks — nur Asset-artige Pfade (Dateiendung, Regex
   `/\.[a-z0-9]+$/i`) und unbekannte Slugs gehen weiterhin an `next()`
   (Static-Middleware/SPA).
+- **Unterseiten (seit Plan B6):** `/site/:slug/<page.slug>` bzw.
+  `<slug>.pageblitz.de/<page.slug>` für jede Page in `websiteData.pages[]`
+  (`PageSchema`: Slug `^[a-z0-9-]{2,40}$`, reservierte Slugs
+  `RESERVED_PAGE_SLUGS` verboten, max. 5 Seiten, 1–8 Sektionen aus
+  `PageSectionSchema` inkl. `pageHeader`) — **nur wenn das Add-on gebucht
+  ist** (`websiteData.addOns.subpages`, siehe §6 „Add-on-Konsistenz");
+  sonst SSR-404. Engine: `client/src/components/site/engine.ts`
+  (`visiblePages`, `pageForPathname`, `buildNavItems` + `applyNavLabels` —
+  jedes Pack behält seine eigene Nav-Wortwahl —, `linkPageSections`:
+  Kontakt/Galerie auf Unterseiten werden beim Rendern aus der Startseite
+  gelesen). Cache: `siteHtmlCache` je Pfad, `sitePagesCache` (Liste der
+  sichtbaren Page-Slugs je Site, damit der geteilte 404-Eintrag nie eine
+  echte, noch nicht gerenderte Unterseite abfängt), `invalidateSsrCache(slug)`
+  löscht per Prefix alle Pfade. Vorschau/Demo: `/preview-ssr/:token/:page`,
+  `/demo/:pack/:page` (Fixture „full" hat je Pack eine Beispielseite
+  `leistungen-im-detail`). CSR-Notbremse: `/site/:slug/:page` → `SitePage`
+  mit `pageSlug`.
 - **Inseln-Endpunkte**:
   - Kontakt: `POST /api/site/:slug/contact` (`server/contactSubmit.ts`).
   - KI-Chat: `POST /api/chat/:slug/message` (`server/_core/chatRoutes.ts`).
@@ -349,17 +374,60 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   sortieren, Foto über denselben Upload-/Stockfoto-Weg wie das Fotos-Panel.
   Eigene Mutation `onboardingV2.updateTeam`, unabhängig von der
   Add-on-Flag-Mutation `onboardingV2.updateAddons`.
-- **Abschalt-Verhalten weicht bewusst von der Galerie ab:** Wird das
-  Team-Add-on in `updateAddons` deaktiviert, entfernt der Server aktiv die
-  `team`-Sektion aus dem Dokument (`applyTeam(doc, { members: [] })`) —
-  sonst bliebe eine gebuchte, aber nicht mehr abgerechnete Team-Sektion auf
-  der Live-Website sichtbar. Die **Galerie** macht das nicht: ihre Sektion
-  wird ausschließlich über das Fotos-Panel verwaltet und bleibt beim
-  Abschalten des `gallery`-Add-ons unverändert im Dokument stehen (Pack
-  rendert `case "gallery"` unabhängig vom Flag). Diese Inkonsistenz ist
-  bekannt und bewusst nicht in B5 vereinheitlicht (siehe §9, B6-Liste).
+- **Abschalt-Verhalten (seit Plan B6 vereinheitlicht):** Wird ein Add-on
+  deaktiviert, bleibt die Sektion im Dokument und wird nur nicht mehr
+  gerendert (Gating über `websiteData.addOns`, siehe „Add-on-Konsistenz"
+  unten) — das aktive Löschen der Team-Sektion aus B5 entfällt; Team und
+  Galerie verhalten sich gleich.
 - Dashboard-Add-ons-Tab (`AddonsTab.tsx`) zeigt Team wie Galerie
   (Kauf-/Aktiv-Zustand, Link ins Studio-Extras-Panel).
+
+### Add-on-Konsistenz, Gating & Stripe-Sync (seit Plan B6 Task 6)
+
+- **Eine Quelle der Wahrheit:** `websiteData.addOns` (strict,
+  `SiteAddOnsSchema`: gallery/menu/pricelist/team/subpages) + `features`
+  (Inseln) im Dokument und `subscriptions.addOns` (Abrechnung) sind
+  maßgeblich; `onboarding_responses.addOn*` ist **nur Entwurf vor dem
+  Checkout**. `buildState()` liefert `addOns` nach dem Checkout aus
+  `subscriptions.addOns` (Fallback Dokument), davor aus dem Entwurf.
+  `applyFeatureFlags` schreibt `features` + `addOns` + Spalten
+  (`addOnAiChat`/`addOnBooking`/`addOnTeam`/`addOnSubpages`) in einem Write.
+- **Ausblenden statt löschen:** nicht gebuchte Sektionen (`gallery`, `menu`,
+  `pricelist`, `team`) und Unterseiten bleiben im Dokument, werden aber
+  nirgends gerendert (`visibleSections`/`visiblePages`/`visiblePageSections`
+  in `engine.ts` — SSR, CSR, Vorschau, Demo, Nav). Das frühere aktive
+  Löschen der Team-Sektion beim Abschalten (B5, siehe oben) entfällt damit.
+  `PhotosPanel` pflegt die Galerie nur bei gebuchtem Add-on (sonst Hinweis +
+  Schalter); Gastro-Packs (`prefersMenu`) bekommen die Speisekarte als
+  vorausgewähltes Add-on (Preis sichtbar, abwählbar).
+- **Stripe-Sync nach Checkout:** Studio-Toggle (`onboardingV2.updateAddons`,
+  `updateTeam`/`updatePages` setzen ihr Flag mit) → `commitAddOnFlags`
+  (`server/onboardingV2/addOnFlags.ts`): Diff gegen `subscriptions.addOns`,
+  nur geänderte Keys → `syncSubscriptionAddOns` (`server/stripeAddons.ts`,
+  Subscription-Items je Add-on über Price-IDs aus Env
+  `STRIPE_PRICE_ADDON_<KEY>` = `ADDON_PRICE_ENV_KEYS` in `shared/pricing.ts`,
+  `proration_behavior: "create_prorations"`) → erst danach DB-Write; Fehler
+  → BAD_REQUEST „Add-on-Änderung konnte nicht abgerechnet werden", nichts
+  geschrieben. Checkout legt je Add-on eine eigene Position an. Webhook
+  `customer.subscription.updated` (`handleSubscriptionAddOnsUpdated`) zieht
+  Änderungen aus dem Billing-Portal/Stripe-Dashboard in `subscriptions.addOns`
+  + Dokument nach. Dashboard `customer.purchaseAddon` nutzt denselben Sync.
+  **Prod-Voraussetzung:** alle acht `STRIPE_PRICE_ADDON_*` gesetzt (monatliche
+  Brutto-Preise aus `shared/pricing.ts`: 3,90 € / KI-Chat 9,90 € / Buchung
+  4,90 €), Webhook-Endpoint liefert `customer.subscription.updated`; ohne
+  Env schlägt der Sync mit klarer Meldung fehl (Flags bleiben unverändert).
+- **Bekannte Lücke — Lost Update auf `subscriptions.addOns`:** drei
+  Schreiber machen ein Read-Modify-Write auf dasselbe JSON ohne Sperre/
+  Versionsspalte — `commitAddOnFlags` (Studio), `customer.purchaseAddon`
+  (Dashboard) und `handleSubscriptionAddOnsUpdated` (Webhook). Laufen zwei
+  davon zeitgleich (z. B. Studio-Toggle während der Webhook zum vorigen
+  Toggle eintrifft), kann der spätere Write die Änderung des früheren
+  überschreiben. Selten (ein Kunde, wenige Klicks) und **selbstheilend**:
+  der nächste `customer.subscription.updated` leitet den Stand wieder aus
+  den Stripe-Items ab und schreibt nur die Differenz; Stripe bleibt die
+  Abrechnungswahrheit. Bewusst nicht in B6 behoben (Transaktion/`SELECT …
+  FOR UPDATE` oder optimistische Version wären der Fix); Hinweis steht auch
+  als Kommentar an `commitAddOnFlags` (`server/onboardingV2/addOnFlags.ts`).
 
 ### Kundenstatistik: Umami (seit Plan B6 Task 7)
 
@@ -382,7 +450,12 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   data-website-id="…">` — cookielos, daher **ohne Consent** (Spec B6 §5.6);
   Hinweis „Reichweitenmessung (Umami)" in der Datenschutz-Vorlage
   (`server/legalGenerator.ts`, Art. 6 Abs. 1 lit. f, keine Cookies, IP nicht
-  gespeichert). Nur für **aktive** Sites **mit ID**: SSR-Head (Start,
+  gespeichert). Der Absatz erscheint nur bei **neu generierten bzw.
+  regenerierten** Rechtsseiten; bestehende Dokumente behalten ihren
+  Datenschutztext, bis sie neu erzeugt werden (Studio → Rechtliches →
+  „Speichern" regeneriert Impressum + Datenschutz; alternativ
+  `onboarding.regenerateLegalPages` von der Rechtsseite aus als Besitzer/
+  Admin). Nur für **aktive** Sites **mit ID**: SSR-Head (Start,
   Unterseiten, Impressum/Datenschutz — `renderSiteHtml({ umamiWebsiteId })`,
   Gate in `server/ssr/routes.ts`) und CSR (`website.get` liefert `umami:
   { websiteId, scriptUrl } | null`, `SitePage.tsx` hängt das Script an).

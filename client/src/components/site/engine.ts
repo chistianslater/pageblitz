@@ -96,12 +96,25 @@ export function visiblePageSections(
 }
 
 /**
+ * Standard-Überschrift der Kontakt-Sektion auf Unterseiten — gemeinsam mit
+ * pagesLogic.ts `contactFromDoc` (Studio-Kopie beim Speichern), damit Kopie
+ * und Live-Verknüpfung dieselbe Überschrift zeigen.
+ */
+export const PAGE_CONTACT_DEFAULT_HEADLINE = "Kontakt";
+
+/**
  * Verknüpfte Sektionen auf Unterseiten (Plan B6 Task 5/6): Kontakt und
  * Galerie „übernehmen" laut Studio-Editor die Startseite — statt die beim
  * Speichern erzeugte Kopie (pagesLogic.ts `syncLinkedSections`) altern zu
  * lassen, liest das Rendering hier die aktuellen Startseiten-Fakten/-Bilder;
- * nur die Seiten-Überschrift bleibt aus der Page. Ohne Startseiten-Pendant
- * bleibt die gespeicherte Kopie. Pure, mutiert nichts.
+ * nur die Seiten-Überschrift bleibt aus der Page (ohne eigene Überschrift
+ * `PAGE_CONTACT_DEFAULT_HEADLINE`, wie die Studio-Kopie — nicht die
+ * Startseiten-Überschrift). Ohne Startseiten-Pendant bleibt die gespeicherte
+ * Kopie (Fallback). Pure, mutiert nichts.
+ *
+ * Gegenstück zu pagesLogic.ts `syncLinkedSections`/`contactFromDoc`: die
+ * Kopie im Dokument ist bewusst erhalten (Fallback für Dokumente ohne
+ * Startseiten-Pendant), das Rendering überschreibt sie hier live.
  */
 export function linkPageSections(
   doc: WebsiteDataV2,
@@ -117,9 +130,7 @@ export function linkPageSections(
     if (section.type === "contact" && homeContact) {
       return {
         ...homeContact,
-        ...(section.headline !== undefined
-          ? { headline: section.headline }
-          : {}),
+        headline: section.headline ?? PAGE_CONTACT_DEFAULT_HEADLINE,
       } as PageSection;
     }
     if (

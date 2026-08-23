@@ -270,13 +270,6 @@ export function applyAddOns(
 }
 
 /**
- * Pure: verteilt die acht Add-on-Flags (shared/pricing.ts) auf
- * `features` (FEATURE_ADDON_KEYS) und `addOns` (SECTION_ADDON_KEYS) — nur
- * tatsächlich übergebene Keys werden geschrieben. Eine Berechnung für alle
- * Schreibpfade (Studio-Extras, Checkout-Webhook, Subscription-Update,
- * Dashboard-Kauf), damit Dokument und Abrechnung denselben Stand zeigen.
- */
-/**
  * Pure Umkehrung von `applyAddOnFlags`: liest alle acht Add-on-Flags aus dem
  * Dokument (`features` für FEATURE_ADDON_KEYS, `addOns` für
  * SECTION_ADDON_KEYS; subpages steht in beiden — true, sobald eines gesetzt
@@ -298,6 +291,13 @@ export function addOnFlagsFromDoc(doc: WebsiteDataV2): Required<AddOnFlags> {
   return result;
 }
 
+/**
+ * Pure: verteilt die acht Add-on-Flags (shared/pricing.ts) auf
+ * `features` (FEATURE_ADDON_KEYS) und `addOns` (SECTION_ADDON_KEYS) — nur
+ * tatsächlich übergebene Keys werden geschrieben. Eine Berechnung für alle
+ * Schreibpfade (Studio-Extras, Checkout-Webhook, Subscription-Update,
+ * Dashboard-Kauf), damit Dokument und Abrechnung denselben Stand zeigen.
+ */
 export function applyAddOnFlags(
   doc: WebsiteDataV2,
   flags: AddOnFlags
