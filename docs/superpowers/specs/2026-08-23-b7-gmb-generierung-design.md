@@ -50,3 +50,12 @@ StartPage-Redesign, Dashboard-Optik, GMB-Kategorien-Buttons im Studio (Backlog),
 3. Website-Crawl der bestehenden Betriebs-Website als Faktenquelle (nur Startseite, robots-konform) — ok? (Empfehlung: ja — größter Hebel gegen falsche Branche.)
 4. Kategorie-Rückfrage im Studio, wenn GMB nichts Belastbares liefert (ein Schritt vor der Generierung) — ok? (Empfehlung: ja, selten nötig.)
 5. Feintuning-Verfahren wie §2.4 (Katalog + deine Markierungen + meine Fixliste, Wellen) — ok?
+
+---
+
+**Stand B7, `c172493`+:** Alle §2-Punkte umgesetzt (Tasks 1–5 + Fixwellen +
+Feinschliff-Wellen 0–3 + StartPage im Studio-Look); §4-Erfolgskriterien ✅
+(Schau-&-Horch-Fall als E2E-Regressionstest; echte Prod-Regenerierung beim
+Deploy). Gates: tsc 0, vitest grün (nur Env-Fails), Playwright dev 162/162 +
+47/47, prod 9/9 ×2. Details, Rulings, Deploy-Schritte:
+`docs/superpowers/specs/2026-08-23-b7-ergebnis.md`.

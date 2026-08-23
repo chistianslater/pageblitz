@@ -223,6 +223,12 @@ false;` — Spiegel von `websiteData.features.subpages` wie `addOnAiChat`/
 Additiv, idempotent auf leerer Spalte, kein Backup-Ritual nötig; auf Prod
 nach dem Deploy einspielen: `mysql -uroot -p pageblitz < drizzle/0029_add_on_subpages.sql`.
 
+### Migration 0030 — `businesses.editorialSummary` (B7 Task 1, additiv)
+
+`drizzle/0030_business_editorial_summary.sql`: `ALTER TABLE businesses ADD
+COLUMN editorialSummary text;` — Teil des GMB-Tiefenabrufs (§6a). Additiv,
+auf Prod nach dem Deploy: `mysql -uroot -p pageblitz < drizzle/0030_business_editorial_summary.sql`.
+
 ## 4. Umgebungsvariablen & Mock-Flags
 
 `PB_LLM_MOCK=1` (nur wenn zusätzlich `NODE_ENV !== "production"`): überspringt
@@ -428,6 +434,47 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   Abrechnungswahrheit. Bewusst nicht in B6 behoben (Transaktion/`SELECT …
   FOR UPDATE` oder optimistische Version wären der Fix); Hinweis steht auch
   als Kommentar an `commitAddOnFlags` (`server/onboardingV2/addOnFlags.ts`).
+
+### GMB-Wahrheit & Erstgenerierung (seit Plan B7)
+
+- **GMB-Tiefenabruf** (`server/gmb/details.ts`): beim Auswählen/Anlegen eines
+  Business werden Website, Öffnungszeiten, bis 8 Reviews (Feld-Picking, keine
+  Profil-URLs), Editorial Summary, Adress-Komponenten und die **Kategorie**
+  persistiert. Kategorie-Kette (`server/gmb/category.ts`): Places-v1
+  `primaryTypeDisplayName` (de, generische Namen ausgeschlossen) → DE-Mapping
+  spezifischer `types` (~68) → `null` — **nie der Firmenname/Suchbegriff**.
+  Bei `null` fragt das Studio vor der Generierung nach („Was macht dein
+  Betrieb?", `CategoryStep`); `runJob`-Fallback bleibt „Dienstleistung".
+- **Website-Crawl** (`server/gmb/siteCrawl.ts`): existiert eine Betriebs-Website,
+  fließt deren Startseite (robots-konform, 10 s/200 kB, SSRF-gehärtet inkl.
+  IPv6-mapped, Redirects ≤ 3 same-host) als Faktenquelle in den Prompt
+  (`facts.existingSite`, als Fremdinhalt gerahmt). DNS-Rebinding-Restrisiko im
+  Modul-Docstring dokumentiert.
+- **Erstgenerierung** (`server/generationV2/`): Stadt/PLZ/Straße deterministisch
+  aus der GMB-Adresse (`server/gmb/address.ts`); 6–8 Sektionen — Testimonials
+  aus echten Google-Reviews (≥ 4★, max 3, „Vorname N.", deterministisch in
+  `mergeFacts`, nie vom LLM formuliert), Galerie aus GMB-Fotos (≥ 3),
+  FAQ, Kontakt mit Öffnungszeiten; `factGuard.ts` korrigiert nach dem LLM
+  halluzinierte Städte (~80er-Liste, Slug/Kontakt ausgenommen) und erzwingt
+  bei Branchen-Widerspruch genau einen Retry. Regressions-E2E:
+  `server/generationV2/schauHorch.e2e.test.ts` (realer Prod-Fehlerfall).
+- **GMB-Fotos nur über R2** (`mirrorGmbPhotosToR2`, `server/gmbPhotos.ts`):
+  Google-Photo-URLs (enthalten den API-Key!) verlassen den Server nicht mehr —
+  weder im Dokument noch im Studio-Fotos-Panel (`getPhotoSources`); Download
+  mit 12 s-Timeout, 3 parallel, Einzel-Fehler überspringen. Bestandsdokumente
+  von vor B7 können noch Google-URLs enthalten (null zahlende Kunden;
+  Regenerierung erzeugt saubere URLs).
+- **Zeitmaschinen-Warte-UX**: der Job schreibt nach der Bild-Phase einen
+  schema-validen Zwischenstand (Marker `isInterimV2Doc`), die Studio-Vorschau
+  zeigt Pack-Skeleton → Zwischenstand → final (Sektions-Reveal nur auf
+  `/preview-ssr?reveal=1`, nie auf Live-Sites); Fortschrittsbalken läuft
+  kontinuierlich. Während `pending|processing` sind Checkout und alle
+  Studio-Patches serverseitig gesperrt (BAD_REQUEST); `ensureGeneration`
+  erkennt liegengebliebene Interim-Docs (failed Job) und startet neu.
+  Dev-Bremse `PB_V2_PHASE_DELAY_MS` (non-production, für E2E).
+- **Pack-Feinschliff**: Regelwerk `docs/superpowers/specs/2026-08-23-b7-feinschliff-regeln.md`
+  (R1 sticky Nav … R6 Unterseiten) + Wellen 0–3 (alle P1/P2 der Fixliste);
+  StartPage und Studio-Chrome im Studio-Look.
 
 ### Kundenstatistik: Umami (seit Plan B6 Task 7)
 
