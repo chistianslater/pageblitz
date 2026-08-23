@@ -21,22 +21,39 @@ import { SEO_INDUSTRIES } from "./landingPages";
 import { escapeHtml } from "./metaInjection";
 
 const STEPS = [
-  { n: "01", title: "Link eingeben", desc: "Füge deinen Google My Business Link ein oder starte manuell." },
-  { n: "02", title: "KI analysiert", desc: "Unsere KI liest deine Daten und erstellt passende Inhalte." },
-  { n: "03", title: "Anpassen", desc: "Ändere Texte, Farben und Bilder im Chat-Interface." },
-  { n: "04", title: "Veröffentlichen", desc: "Mit einem Klick ist deine Website live." },
+  {
+    n: "01",
+    title: "Firmenname eingeben – oder Google-Profil übernehmen",
+    desc: "Du hast ein Google-Unternehmensprofil? Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen. Kein Abtippen, kein Aufwand.",
+  },
+  {
+    n: "02",
+    title: "Stil wählen",
+    desc: "Aus 14 Stilwelten schlägt Pageblitz passende vor. Du wählst den Look, der zu dir passt – Typografie, Farben und Layout sind fertig abgestimmt, deine Inhalte bleiben gleich.",
+  },
+  {
+    n: "03",
+    title: "Texte und Bilder prüfen",
+    desc: "Die Checkliste führt dich durch Fotos, Texte, Angebot, Rechtliches und Extras. Die KI schreibt die Texte passend zu deiner Branche – du änderst, was dir nicht gefällt.",
+  },
+  {
+    n: "04",
+    title: "Freischalten – und live",
+    desc: "Mit einem Klick ist deine Website online: unter deiner Domain oder einer kostenlosen .pageblitz.de-Adresse. Hosting und SSL sind dabei.",
+  },
 ];
 
-// Muss zeilengleich zur Vergleichstabelle in LandingPage.tsx sein.
+// Muss zeilengleich zur Vergleichstabelle in client/src/components/landing/Pricing.tsx sein.
 const COMPARISON: Array<[string, string, string]> = [
   ["Einmalige Kosten", "2.000 – 8.000 €", "0 €"],
-  ["Zeit bis zur fertigen Website", "4 – 12 Wochen", "3 Minuten"],
-  ["Monatliche Kosten", "50 – 150 € Hosting & Wartung", "19,90 €*"],
+  ["Zeit bis zur Website", "4 – 12 Wochen", "3 Minuten"],
+  ["Monatliche Kosten", "50 – 150 € Hosting & Wartung", "ab 19,90 €"],
   ["Änderungen & Updates", "Stundenabrechnung (~80 €/h)", "Inklusive"],
-  ["Vertragslaufzeit", "Oft 12–24 Monate", "1 Monat"],
+  ["Vertragslaufzeit", "Oft 12–24 Monate", "Monatlich kündbar"],
+  ["DSGVO & Impressum", "Meist extra", "Automatisch inklusive"],
 ];
 
-// Muss der Leistungsliste im Pricing-Block von LandingPage.tsx entsprechen.
+// Muss der Leistungsliste (INCLUDED) in client/src/components/landing/Pricing.tsx entsprechen.
 const PLAN_FEATURES = [
   "KI-generierte Website",
   "SSL-Zertifikat",
@@ -51,7 +68,7 @@ export function buildHomeFaqSchema(): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: HOME_FAQ_ITEMS.map((f) => ({
+    mainEntity: HOME_FAQ_ITEMS.map(f => ({
       "@type": "Question",
       name: f.q,
       acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -68,35 +85,35 @@ export function buildHomeFaqSchema(): string {
 export function generateHomePrerender(): string {
   const industryLinks = Object.values(SEO_INDUSTRIES)
     .map(
-      (i) =>
+      i =>
         `<a href="/website-erstellen/${i.slug}" style="color:#4d7c0f;text-decoration:none;font-size:.875rem">Website für ${escapeHtml(i.displayName)}</a>`
     )
     .join("\n        ");
 
   const steps = STEPS.map(
-    (s) =>
-      `<div style="display:flex;gap:1.5rem"><div style="color:#d6d3d1;font-size:.875rem;padding-top:.25rem">${s.n}</div><div><h3 style="font-size:1.125rem;font-weight:500;margin:0 0 .5rem;color:#111827">${escapeHtml(s.title)}</h3><p style="font-size:.875rem;line-height:1.6;color:#6b7280;margin:0">${escapeHtml(s.desc)}</p></div></div>`
+    s =>
+      `<div style="display:flex;gap:1.5rem"><div style="color:#d6d3d1;font-size:.875rem;padding-top:.25rem">${s.n}</div><div><h3 style="font-size:1.125rem;font-weight:500;margin:0 0 .5rem;color:#1d1a17">${escapeHtml(s.title)}</h3><p style="font-size:.875rem;line-height:1.6;color:#6b645b;margin:0">${escapeHtml(s.desc)}</p></div></div>`
   ).join("\n        ");
 
   const comparison = COMPARISON.map(
     ([label, agency, pb]) =>
-      `<tr><td style="padding:.875rem 1rem;color:#6b7280;border-top:1px solid #e7e5e4">${escapeHtml(label)}</td><td style="padding:.875rem 1rem;color:#6b7280;border-top:1px solid #e7e5e4">${escapeHtml(agency)}</td><td style="padding:.875rem 1rem;color:#111827;font-weight:600;border-top:1px solid #e7e5e4">${escapeHtml(pb)}</td></tr>`
+      `<tr><td style="padding:.875rem 1rem;color:#6b645b;border-top:1px solid #d9d2c5">${escapeHtml(label)}</td><td style="padding:.875rem 1rem;color:#6b645b;border-top:1px solid #d9d2c5">${escapeHtml(agency)}</td><td style="padding:.875rem 1rem;color:#1d1a17;font-weight:600;border-top:1px solid #d9d2c5">${escapeHtml(pb)}</td></tr>`
   ).join("\n          ");
 
   const faqs = HOME_FAQ_ITEMS.map(
-    (f) =>
-      `<div style="border-top:1px solid #e7e5e4;padding:1.25rem 0"><h3 style="font-size:1rem;font-weight:600;margin:0 0 .5rem;color:#111827">${escapeHtml(f.q)}</h3><p style="margin:0;color:#6b7280;line-height:1.7;font-size:.9375rem">${escapeHtml(f.a)}</p></div>`
+    f =>
+      `<div style="border-top:1px solid #d9d2c5;padding:1.25rem 0"><h3 style="font-size:1rem;font-weight:600;margin:0 0 .5rem;color:#1d1a17">${escapeHtml(f.q)}</h3><p style="margin:0;color:#6b645b;line-height:1.7;font-size:.9375rem">${escapeHtml(f.a)}</p></div>`
   ).join("\n        ");
 
-  return `<div id="prerender" style="background:#fafaf9;color:#111827;font-family:'Plus Jakarta Sans',Inter,system-ui,sans-serif;min-height:100vh">
+  return `<div id="prerender" style="background:#f3efe7;color:#1d1a17;font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh">
   <div style="max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem">
 
     <header style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 4rem">
       <span style="font-size:1.25rem;font-weight:700;letter-spacing:-.02em">Pageblitz</span>
-      <nav style="display:flex;gap:1.5rem;font-size:.875rem;color:#6b7280">
-        <a href="/website-erstellen" style="color:#6b7280;text-decoration:none">Branchen</a>
-        <a href="/login" style="color:#6b7280;text-decoration:none">Login</a>
-        <a href="/start" style="color:#111827;text-decoration:none;font-weight:600">Gratis starten</a>
+      <nav style="display:flex;gap:1.5rem;font-size:.875rem;color:#6b645b">
+        <a href="/website-erstellen" style="color:#6b645b;text-decoration:none">Branchen</a>
+        <a href="/login" style="color:#6b645b;text-decoration:none">Login</a>
+        <a href="/start" style="color:#1d1a17;text-decoration:none;font-weight:600">Gratis starten</a>
       </nav>
     </header>
 
@@ -110,11 +127,11 @@ export function generateHomePrerender(): string {
       <form action="/start" method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;max-width:32rem;margin:0 0 1rem">
         <input type="text" name="name" placeholder="Wie heißt dein Unternehmen?" aria-label="Unternehmensname"
                autocomplete="organization"
-               style="flex:1 1 16rem;height:3.5rem;padding:0 1.25rem;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:1rem;color:#111827"/>
+               style="flex:1 1 16rem;height:3.5rem;padding:0 1.25rem;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:1rem;color:#1d1a17"/>
         <button type="submit"
-                style="height:3.5rem;padding:0 2rem;border:0;border-radius:999px;background:#111827;color:#fff;font-size:1rem;font-weight:600;cursor:pointer">Website erstellen</button>
+                style="height:3.5rem;padding:0 2rem;border:0;border-radius:999px;background:#1d1a17;color:#fff;font-size:1rem;font-weight:600;cursor:pointer">Website erstellen</button>
       </form>
-      <p style="font-size:.875rem;color:#6b7280;margin:0">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</p>
+      <p style="font-size:.875rem;color:#6b645b;margin:0">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</p>
     </section>
 
     <section style="padding:4rem 0">
@@ -126,9 +143,9 @@ export function generateHomePrerender(): string {
 
     <section style="padding:4rem 0">
       <h2 style="font-size:1.75rem;font-weight:600;letter-spacing:-.02em;margin:0 0 .75rem">Ein Preis. Alles inklusive.</h2>
-      <p style="color:#6b7280;margin:0 0 2rem">19,90 €/Monat bei jährlicher Zahlung, 24,90 €/Monat bei monatlicher Zahlung. Die ersten 7 Tage sind kostenlos.</p>
+      <p style="color:#6b645b;margin:0 0 2rem">19,90 €/Monat bei jährlicher Zahlung, 24,90 €/Monat bei monatlicher Zahlung. Die ersten 7 Tage sind kostenlos.</p>
       <ul style="margin:0;padding-left:1.25rem;color:#4b5563;line-height:2;max-width:60ch">
-        ${PLAN_FEATURES.map((f) => `<li>${escapeHtml(f)}</li>`).join("\n        ")}
+        ${PLAN_FEATURES.map(f => `<li>${escapeHtml(f)}</li>`).join("\n        ")}
       </ul>
     </section>
 
@@ -155,14 +172,14 @@ export function generateHomePrerender(): string {
       </div>
     </section>
 
-    <section style="padding:3rem 0;border-top:1px solid #e7e5e4">
+    <section style="padding:3rem 0;border-top:1px solid #d9d2c5">
       <h2 style="font-size:1rem;font-weight:600;margin:0 0 1.25rem;color:#374151">Website erstellen – nach Branche</h2>
       <div style="display:flex;flex-wrap:wrap;gap:.75rem 1.5rem">
         ${industryLinks}
       </div>
     </section>
 
-    <footer style="padding:2rem 0;border-top:1px solid #e7e5e4;font-size:.875rem;color:#9ca3af">
+    <footer style="padding:2rem 0;border-top:1px solid #d9d2c5;font-size:.875rem;color:#9ca3af">
       <p style="margin:0">© ${new Date().getFullYear()} Pageblitz · <a href="/impressum" style="color:#9ca3af">Impressum</a> · <a href="/datenschutz" style="color:#9ca3af">Datenschutz</a></p>
     </footer>
 
