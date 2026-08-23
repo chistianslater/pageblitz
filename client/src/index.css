@@ -35,7 +35,14 @@ body {
   50%        { background-position: 100% 50%; }
 }
 /* ──────────────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@400;500&family=Bebas+Neue&family=Bricolage+Grotesque:wght@400;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;700&family=DM+Serif+Display:ital,wght@0,400;1,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Jost:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Nunito:wght@400;600;700;800&family=Oswald:wght@400;500;600&family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;700&family=Rajdhani:wght@400;500;600&family=Source+Sans+3:wght@400;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono&family=Syne:wght@700;800&display=swap');
+/* Der frühere @import hier lud 23 Google-Font-Familien (v1-Layout-Rest, seit
+   B4b entfernt) blockierend mit — nur Inter/Plus Jakarta Sans (App-Body) und
+   Space Grotesk (Überschriften, siehe @layer base unten) werden außerhalb
+   der v2-Style-Packs tatsächlich gebraucht. Diese drei lädt jetzt
+   `client/index.html` (Inter/Plus Jakarta Sans blockierend, Space Grotesk
+   async); Fraunces/Instrument Sans (nur Studio, `onboarding-v2/studio.css`)
+   ebenfalls async dort. v2-Packs bringen ihre Fonts selbst mit (SSR-Head aus
+   der Verfassung, CSR-Fallback über `client/src/lib/packFonts.ts`). */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -302,12 +309,6 @@ body {
   pointer-events: none;
   z-index: 50;
 }
-
-/* Typography Classes */
-.font-clash { font-family: 'Clash Display', sans-serif; }
-.font-satoshi { font-family: 'Satoshi', sans-serif; }
-.font-outfit { font-family: 'Outfit', sans-serif; }
-.font-tenor { font-family: 'Tenor Sans', sans-serif; }
 
 /* Gradient Mesh Utilities */
 .mesh-gradient-1 {

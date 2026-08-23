@@ -6,6 +6,7 @@ import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
 import { parseV2 } from "@/components/site/isV2";
+import { packFontHrefs } from "@/lib/packFonts";
 
 export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const params = useParams<{ slug: string }>();
@@ -31,6 +32,28 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
     s.setAttribute("data-website-id", umamiWebsiteId);
     document.head.appendChild(s);
   }, [umamiWebsiteId]);
+
+  // ── Pack-Fonts (CSR-Fallback) ────────────────────────────────────────────
+  // `server/ssr/renderSite.tsx` baut den Fonts-<link> nur im SSR-Head. Wird
+  // die Kundenseite stattdessen client-seitig innerhalb der SPA gerendert
+  // (dieser Pfad hier), fehlen die Pack-Fonts sonst ganz — WebsiteRenderer/
+  // SiteRenderer rendert nur Markup+CSS, keine <head>-Tags. Idempotent über
+  // `data-pb-pack-font`, damit erneute Fetches (staleTime: 0) keine
+  // Duplikate anlegen; kein Cleanup beim Unmount, damit Zurück-Navigation
+  // nicht kurz auf den Fallback-Font zurückfällt.
+  useEffect(() => {
+    if (!data?.website) return;
+    const v2 = parseV2(data.website.websiteData);
+    if (!v2) return;
+    for (const href of packFontHrefs(v2.stylePackId)) {
+      if (document.querySelector(`link[data-pb-pack-font="${href}"]`)) continue;
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      link.setAttribute("data-pb-pack-font", href);
+      document.head.appendChild(link);
+    }
+  }, [data?.website]);
 
   // Redirect if the slug was a former (old preview) slug
   useEffect(() => {
