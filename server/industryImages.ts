@@ -3,12 +3,7 @@
  * This file acts as a server-side wrapper for the shared configuration.
  */
 
-import {
-  INDUSTRY_IMAGES,
-  INDUSTRY_COLORS,
-  type IndustryImageSet,
-} from "@shared/industryImages";
-import { withOnColors, type ColorScheme } from "@shared/layoutConfig";
+import { INDUSTRY_IMAGES, type IndustryImageSet } from "@shared/industryImages";
 
 export { INDUSTRY_IMAGES, type IndustryImageSet };
 
@@ -92,60 +87,4 @@ export function getGalleryImages(
 ): string[] {
   const imageSet = getIndustryImages(category, businessName, industryKey);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
-}
-
-/**
- * Industry-specific color palettes.
- * Returns a ColorScheme object matching the industry's visual identity.
- */
-export function getIndustryColorScheme(
-  category: string,
-  businessName: string = "",
-  industryKey?: string
-): ColorScheme {
-  const key = industryKey || getIndustryKey(category, businessName);
-  const palettes = INDUSTRY_COLORS[key] || INDUSTRY_COLORS.default;
-
-  // Hash the business name to pick a consistent palette from the options
-  let hash = 0;
-  for (let i = 0; i < businessName.length; i++) {
-    hash = (hash << 5) - hash + businessName.charCodeAt(i);
-    hash |= 0;
-  }
-  const idx = Math.abs(hash) % palettes.length;
-  return withOnColors(palettes[idx]);
-}
-
-function getIndustryKey(category: string, businessName: string): string {
-  const combined = `${category} ${businessName}`.toLowerCase();
-  for (const [key, imageSet] of Object.entries(INDUSTRY_IMAGES)) {
-    if (imageSet.keywords.some(kw => combined.includes(kw))) {
-      return key;
-    }
-  }
-  return "default";
-}
-
-/**
- * Returns a contrast color (#0f172a or #f8fafc) for a given hex color.
- * Re-exported here for backwards compatibility with routers.ts imports.
- */
-export function getContrastColor(hexColor: string): string {
-  if (!hexColor || typeof hexColor !== "string") return "#f8fafc";
-  const hex = hexColor.replace("#", "");
-  if (hex.length !== 3 && hex.length !== 6) return "#f8fafc";
-  const r = parseInt(
-    hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2),
-    16
-  );
-  const g = parseInt(
-    hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4),
-    16
-  );
-  const b = parseInt(
-    hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6),
-    16
-  );
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 160 ? "#0f172a" : "#f8fafc";
 }

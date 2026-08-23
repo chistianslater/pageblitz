@@ -93,7 +93,6 @@ import {
 import { notifyOwner } from "./_core/notification";
 import { TRPCError } from "@trpc/server";
 import { submitContactRequest } from "./contactSubmit";
-import { getIndustryColorScheme } from "./industryImages";
 import { analyzeWebsite } from "./websiteAnalysis";
 import { generateImpressum, generateDatenschutz } from "./legalGenerator";
 import { getUmamiStats } from "./umami";
@@ -2058,19 +2057,6 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
                 "[getMyWebsites] Could not fetch Stripe subscription period:",
                 e
               );
-            }
-          }
-          // Auto-migrate: if colorScheme is missing, reconstruct from industry and save
-          if (!row.website.colorScheme) {
-            try {
-              const cs = getIndustryColorScheme(
-                row.website.industry || "default",
-                business?.name || ""
-              );
-              await updateWebsite(row.website.id, { colorScheme: cs });
-              (row.website as any).colorScheme = cs;
-            } catch (e) {
-              console.warn("[getMyWebsites] colorScheme migration failed:", e);
             }
           }
           // Inject ID into websiteData for stable randomization seed in frontend
