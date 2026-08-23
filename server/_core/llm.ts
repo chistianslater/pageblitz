@@ -19,7 +19,12 @@ export type FileContent = {
   type: "file_url";
   file_url: {
     url: string;
-    mime_type?: "audio/mpeg" | "audio/wav" | "application/pdf" | "audio/mp4" | "video/mp4" ;
+    mime_type?:
+      | "audio/mpeg"
+      | "audio/wav"
+      | "application/pdf"
+      | "audio/mp4"
+      | "video/mp4";
   };
 };
 
@@ -74,7 +79,8 @@ export type InvokeParams = {
 
 export const DEFAULT_LLM_TIMEOUT_MS = 90_000;
 /** Backup-Modell: gemini-2.0-flash ist bei Google abgeschaltet (404 seit 2026-08) — konfigurierbar, Default gemini-3.5-flash (~5 s für 1k Tokens, gemessen 2026-08-23). */
-export const BACKUP_LLM_MODEL = process.env.BACKUP_LLM_MODEL || "gemini-3.5-flash";
+export const BACKUP_LLM_MODEL =
+  process.env.BACKUP_LLM_MODEL || "gemini-3.5-flash";
 
 export type ToolCall = {
   id: string;
@@ -222,7 +228,9 @@ const resolveApiUrl = (useBackup = false) => {
     const backupUrl = ENV.backupApiUrl?.trim();
     if (backupUrl) {
       const base = backupUrl.replace(/\/$/, "");
-      return base.includes("/v1") ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+      return base.includes("/v1")
+        ? `${base}/chat/completions`
+        : `${base}/v1/chat/completions`;
     }
   }
   if (ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0) {
@@ -287,7 +295,10 @@ const normalizeResponseFormat = ({
   };
 };
 
-async function callLLM(params: InvokeParams, useBackup: boolean): Promise<InvokeResult> {
+async function callLLM(
+  params: InvokeParams,
+  useBackup: boolean
+): Promise<InvokeResult> {
   const {
     messages,
     tools,
@@ -300,10 +311,17 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
   } = params;
 
   // Detect Kimi/Moonshot API (primary only)
-  const isKimi = !useBackup && (ENV.forgeApiUrl?.includes("moonshot.ai") || ENV.forgeApiUrl?.includes("moonshot.cn"));
+  const isKimi =
+    !useBackup &&
+    (ENV.forgeApiUrl?.includes("moonshot.ai") ||
+      ENV.forgeApiUrl?.includes("moonshot.cn"));
   // Backup model: BACKUP_LLM_MODEL (gemini-3.5-flash; gemini-2.0-flash existiert nicht mehr)
   // Primary Kimi-Modell: kimi-k2.5 (schneller als k2.6 bei vergleichbarer Qualität)
-  const model = useBackup ? BACKUP_LLM_MODEL : (isKimi ? "kimi-k2.5" : "gemini-2.5-flash");
+  const model = useBackup
+    ? BACKUP_LLM_MODEL
+    : isKimi
+      ? "kimi-k2.5"
+      : "gemini-2.5-flash";
   const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
   const payload: Record<string, unknown> = {
@@ -315,7 +333,10 @@ async function callLLM(params: InvokeParams, useBackup: boolean): Promise<Invoke
     payload.tools = tools;
   }
 
-  const normalizedToolChoice = normalizeToolChoice(toolChoice || tool_choice, tools);
+  const normalizedToolChoice = normalizeToolChoice(
+    toolChoice || tool_choice,
+    tools
+  );
   if (normalizedToolChoice) {
     payload.tool_choice = normalizedToolChoice;
   }
@@ -375,7 +396,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     try {
       return await callLLM(params, true);
     } catch (err: any) {
-      console.warn(`[LLM] Backup-Modell (${BACKUP_LLM_MODEL}) fehlgeschlagen, Rückfall auf Primär: ${String(err?.message ?? err).slice(0, 160)}`);
+      console.warn(
+        `[LLM] Backup-Modell (${BACKUP_LLM_MODEL}) fehlgeschlagen, Rückfall auf Primär: ${String(err?.message ?? err).slice(0, 160)}`
+      );
       return await callLLM(params, false);
     }
   }
@@ -385,14 +408,40 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } catch (err: any) {
     const msg = err?.message ?? "";
     const isTimeout = msg.includes("LLM timeout");
-    const is429 = msg.includes("429") || msg.includes("overloaded") || msg.includes("Too Many") || msg.includes("engine_overloaded");
-    const is404 = msg.includes("404") || msg.includes("Not found") || msg.includes("not_found") || msg.includes("Model not found");
-    const is5xx = /\b5\d{2}\b/.test(msg) || msg.includes("Internal Server Error") || msg.includes("Bad Gateway") || msg.includes("Service Unavailable");
-    const isAuth = msg.includes("Permission denied") || msg.includes("401") || msg.includes("403") || msg.includes("Invalid API key");
+    const is429 =
+      msg.includes("429") ||
+      msg.includes("overloaded") ||
+      msg.includes("Too Many") ||
+      msg.includes("engine_overloaded");
+    const is404 =
+      msg.includes("404") ||
+      msg.includes("Not found") ||
+      msg.includes("not_found") ||
+      msg.includes("Model not found");
+    const is5xx =
+      /\b5\d{2}\b/.test(msg) ||
+      msg.includes("Internal Server Error") ||
+      msg.includes("Bad Gateway") ||
+      msg.includes("Service Unavailable");
+    const isAuth =
+      msg.includes("Permission denied") ||
+      msg.includes("401") ||
+      msg.includes("403") ||
+      msg.includes("Invalid API key");
     const shouldFallback = is429 || is404 || is5xx || isAuth || isTimeout;
     if (shouldFallback && hasBackup) {
-      const reason = isTimeout ? "timeout" : is429 ? "rate-limited (429)" : is404 ? "model 404" : is5xx ? "server error (5xx)" : "auth error";
-      console.warn(`[LLM] Primary API ${reason}, retrying with backup model (${BACKUP_LLM_MODEL})...`);
+      const reason = isTimeout
+        ? "timeout"
+        : is429
+          ? "rate-limited (429)"
+          : is404
+            ? "model 404"
+            : is5xx
+              ? "server error (5xx)"
+              : "auth error";
+      console.warn(
+        `[LLM] Primary API ${reason}, retrying with backup model (${BACKUP_LLM_MODEL})...`
+      );
       return await callLLM(params, true);
     }
     throw err;
