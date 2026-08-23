@@ -6,6 +6,7 @@ export const ZUNFT_CSS = `
 .pb-zf-nav-links{display:flex;align-items:center;gap:20px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--pb-muted);flex-wrap:wrap}
 .pb-zf-nav-links a{transition:color .15s}
 .pb-zf-nav-links a:hover,.pb-zf-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-zf-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-zf-logo{font-family:var(--pb-font-display);font-weight:600;font-size:17px;color:var(--pb-accent);letter-spacing:.03em;padding:0 10px}
 .pb-zf-rule2{width:180px;height:5px;margin:22px auto 0;border-top:1px solid var(--pb-ink);border-bottom:1px solid var(--pb-ink)}
 .pb-zf-hero{padding:52px 32px 60px;text-align:center;overflow:visible}
@@ -60,4 +61,7 @@ export const ZUNFT_CSS = `
 .pb-zf-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-zf-footer a:hover,.pb-zf-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:720px){.pb-zf-nav{gap:14px}.pb-zf-nav-links{gap:12px}.pb-zf-contact{grid-template-columns:1fr}}
+.pb-zf-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-zf-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-zf-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

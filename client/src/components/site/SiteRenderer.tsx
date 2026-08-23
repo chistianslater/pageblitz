@@ -6,12 +6,7 @@ import type {
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
-import {
-  buildNavItems,
-  pageContentSections,
-  pageForPathname,
-  pageHeaderSection,
-} from "./engine";
+import { buildNavItems, pageContentSections, pageForPathname } from "./engine";
 
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
@@ -79,13 +74,16 @@ export const SiteRenderer: React.FC<{
   );
   const navItems = buildNavItems(effectiveData, { pathname, basePath });
   const currentPage = pageForPathname(effectiveData, pathname);
-  // Solange die 14 Pack-Module noch nicht auf `sections`/`pageTitle`
-  // umgestellt sind (Task 4), rendert eine Unterseite über dasselbe
-  // `mod.Page` wie die Startseite — nur mit den Page-Sektionen anstelle der
-  // Startseiten-Sektionen (siehe pageContentSections: dieselben Zod-Schemas,
-  // strukturell kompatibler Cast). `pageHeader` ist darin NICHT enthalten
-  // (kein Startseiten-Sektionstyp) und bekommt bis Task 4 einen generischen
-  // Fallback direkt hier.
+  // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
+  // nur mit den Page-Sektionen anstelle der Startseiten-Sektionen (siehe
+  // pageContentSections: dieselben Zod-Schemas, strukturell kompatibler
+  // Cast). `pageHeader` ist darin NICHT enthalten (kein Startseiten-
+  // Sektionstyp); seit Task 4 rendern alle 14 Pack-Module `pageHeader` aus
+  // dem `sections`-Prop selbst (siehe `case "pageHeader"` in jedem
+  // Pack-Modul) — ein zusätzlicher generischer Fallback HIER würde die
+  // Kopfzeile doppelt rendern (zwei <h1>, a11y-Regression) und entfällt
+  // deshalb bewusst; `moduleParity.test.ts` sichert ab, dass kein Pack
+  // `pageHeader` vergisst.
   const pageRenderData = currentPage
     ? {
         ...effectiveData,
@@ -94,28 +92,12 @@ export const SiteRenderer: React.FC<{
         hiddenSections: undefined,
       }
     : effectiveData;
-  const header = currentPage ? pageHeaderSection(currentPage) : null;
   return (
     <div
       className={`pb-site pb-${effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
     >
       <style dangerouslySetInnerHTML={{ __html: mod.css }} />
-      {header && (
-        <header
-          className="pb-page-header-fallback"
-          style={{
-            padding: "3rem 1.25rem",
-            textAlign: "center",
-            color: "var(--pb-ink)",
-          }}
-        >
-          <h1>{header.title}</h1>
-          {header.intro && (
-            <p style={{ color: "var(--pb-muted)" }}>{header.intro}</p>
-          )}
-        </header>
-      )}
       <mod.Page
         data={pageRenderData}
         basePath={basePath}

@@ -7,6 +7,7 @@ export const KANZLEI_CSS = `
 .pb-kz-nav-links{display:flex;align-items:center;gap:20px;margin-left:auto}
 .pb-kz-nav-links a{transition:color .15s}
 .pb-kz-nav-links a:hover,.pb-kz-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-kz-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-kz-idx{position:absolute;right:32px;top:86px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-accent);text-align:right;line-height:1.9}
 .pb-kz-watermark{position:absolute;right:20px;bottom:-40px;font-family:"Source Serif 4",serif;font-size:200px;color:var(--pb-accent);opacity:.07;line-height:1;pointer-events:none}
 .pb-kz-eyebrow{font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.1em;color:var(--pb-accent);margin-bottom:14px;text-transform:uppercase}
@@ -54,4 +55,7 @@ export const KANZLEI_CSS = `
 .pb-kz-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-kz-footer a:hover,.pb-kz-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:720px){.pb-kz-idx{display:none}.pb-kz-facts{flex-direction:column;gap:14px}.pb-kz-facts div{border-right:none;margin-right:0;padding-right:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav{flex-wrap:wrap;row-gap:10px}.pb-kz-nav-links{flex-wrap:wrap;margin-left:0}}
+.pb-kz-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-kz-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-kz-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

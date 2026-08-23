@@ -6,6 +6,7 @@ export const VERVE_CSS = `
 .pb-vv-nav-links{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;flex-wrap:wrap}
 .pb-vv-nav-links a{transition:color .15s}
 .pb-vv-nav-links a:hover,.pb-vv-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-vv-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-verve a[href^="tel:"],.pb-verve a[href^="mailto:"]{color:var(--pb-ink);border-bottom:2px solid var(--pb-accent);padding-bottom:1px}
 .pb-verve a[href^="tel:"]:hover,.pb-verve a[href^="mailto:"]:hover{color:var(--pb-accent)}
 .pb-vv-hero{position:relative;padding:36px 28px 76px;overflow:hidden}
@@ -55,4 +56,7 @@ export const VERVE_CSS = `
 .pb-vv-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-vv-footer a:hover,.pb-vv-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:640px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-nav{flex-wrap:wrap;row-gap:8px}.pb-vv-nav-links{margin-left:0}}
+.pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-vv-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

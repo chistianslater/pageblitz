@@ -1,11 +1,18 @@
 import React from "react";
 import type {
+  PageSection,
+  PageSectionOf,
   SectionOf,
   SectionType,
   SectionV2,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import { orderedSections, SECTION_ANCHORS } from "../../engine";
+import {
+  buildNavItems,
+  orderedSections,
+  SECTION_ANCHORS,
+  type NavItem,
+} from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { VERVE_CSS } from "./css";
 
@@ -86,7 +93,9 @@ function buildStats(
   return stats;
 }
 
-function renderSection(section: SectionV2): React.ReactNode {
+function renderSection(
+  section: SectionV2 | PageSectionOf<"pageHeader">
+): React.ReactNode {
   switch (section.type) {
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
@@ -302,6 +311,14 @@ function renderSection(section: SectionV2): React.ReactNode {
         </section>
       );
     }
+    case "pageHeader": {
+      return (
+        <header className="pb-vv-page-header" key={section.type}>
+          <h1>{section.title}</h1>
+          {section.intro && <p>{section.intro}</p>}
+        </header>
+      );
+    }
     default: {
       const exhaustive: never = section;
       return exhaustive;
@@ -313,9 +330,13 @@ const VervePage: React.FC<{
   data: WebsiteDataV2;
   basePath: string;
   now: Date;
-}> = ({ data, basePath, now }) => {
-  const sections = orderedSections(data);
-  const navSections = sections.filter(s => s.type !== "hero");
+  navItems?: NavItem[];
+  pageTitle?: string;
+  sections?: PageSection[];
+}> = ({ data, basePath, now, navItems, sections: pageSections }) => {
+  const sections: (SectionV2 | PageSectionOf<"pageHeader">)[] =
+    pageSections ?? orderedSections(data);
+  const navList = navItems ?? buildNavItems(data, { pathname: "/", basePath });
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
@@ -335,9 +356,13 @@ const VervePage: React.FC<{
       <nav className="pb-vv-nav">
         <span className="pb-vv-logo">{renderLogo(data)}</span>
         <div className="pb-vv-nav-links">
-          {navSections.map(s => (
-            <a key={s.type} href={`#${SECTION_ANCHORS[s.type]}`}>
-              {FALLBACK_TITLES[s.type] ?? s.type}
+          {navList.map(item => (
+            <a
+              key={item.key}
+              href={item.href}
+              aria-current={item.current ? "page" : undefined}
+            >
+              {item.label}
             </a>
           ))}
         </div>

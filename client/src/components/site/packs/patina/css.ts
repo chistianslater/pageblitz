@@ -6,6 +6,7 @@ export const PATINA_CSS = `
 .pb-pa-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;flex-wrap:wrap}
 .pb-pa-nav-links a{transition:color .15s}
 .pb-pa-nav-links a:hover,.pb-pa-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-pa-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-pa-hero{position:relative;padding:56px 32px 88px;overflow:hidden}
 .pb-pa-init{position:absolute;right:-10px;top:-40px;font-family:var(--pb-font-display);font-style:italic;font-weight:600;font-size:300px;line-height:1;color:color-mix(in srgb, var(--pb-accent) 8%, transparent);pointer-events:none;user-select:none}
 .pb-pa-grid{position:relative;display:grid;grid-template-columns:1.2fr 1fr;gap:44px;align-items:center;z-index:1}
@@ -58,4 +59,7 @@ export const PATINA_CSS = `
 .pb-pa-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-pa-footer a:hover,.pb-pa-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:720px){.pb-pa-init{font-size:150px;top:-14px}.pb-pa-grid{grid-template-columns:1fr}.pb-pa-pics{height:220px;margin-top:26px}.pb-pa-note{bottom:-24px}.pb-pa-contact{grid-template-columns:1fr}.pb-pa-nav{flex-wrap:wrap;row-gap:10px}}
+.pb-pa-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-pa-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-pa-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

@@ -6,6 +6,7 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-nav-links{display:flex;align-items:center;gap:20px;margin-left:auto;flex-wrap:wrap}
 .pb-mp-nav-links a{transition:color .15s}
 .pb-mp-nav-links a:hover,.pb-mp-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-mp-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-mp-hero{position:relative;overflow:hidden;padding:20px 32px 96px;background-image:radial-gradient(color-mix(in srgb, var(--pb-accent-2) 55%, transparent) 2px,transparent 2.5px),radial-gradient(color-mix(in srgb, var(--pb-accent) 42%, transparent) 2px,transparent 2.5px);background-size:90px 90px,120px 120px;background-position:0 0,45px 60px}
 .pb-mp-hero-inner{position:relative;max-width:1180px;margin:0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:28px}
 .pb-mp-card{position:relative;z-index:2;background:var(--pb-surface);border-radius:var(--pb-radius-card);padding:34px 36px 38px;margin-top:26px;flex:0 1 620px;transform:rotate(-1.2deg);box-shadow:0 6px 0 var(--pb-line)}
@@ -57,4 +58,7 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-mp-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-mp-footer a:hover,.pb-mp-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
+.pb-mp-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-mp-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-mp-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

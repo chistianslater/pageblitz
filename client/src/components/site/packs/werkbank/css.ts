@@ -3,6 +3,7 @@ export const WERKBANK_CSS = `
 .pb-werkbank a{color:inherit;text-decoration:none}
 .pb-wb-nav-links a{transition:color .15s}
 .pb-wb-nav-links a:hover,.pb-wb-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-wb-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-werkbank a[href^="tel:"],.pb-werkbank a[href^="mailto:"]{color:var(--pb-ink);border-bottom:2px solid var(--pb-accent);padding-bottom:1px}
 .pb-werkbank a[href^="tel:"]:hover,.pb-werkbank a[href^="mailto:"]:hover{color:var(--pb-accent)}
 .pb-wb-rail{position:fixed;left:0;top:0;bottom:0;width:56px;background:var(--pb-ink);color:var(--pb-canvas);display:flex;align-items:center;justify-content:center;z-index:40}
@@ -33,4 +34,7 @@ export const WERKBANK_CSS = `
 .pb-wb-hours td:first-child{font-family:var(--pb-font-utility);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pb-wb-hours td:last-child{text-align:right;color:var(--pb-muted)}
 @media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}.pb-wb-nav{flex-wrap:wrap;row-gap:8px}.pb-wb-nav-links{flex-wrap:wrap;margin-left:0}}
+.pb-wb-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-wb-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-wb-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

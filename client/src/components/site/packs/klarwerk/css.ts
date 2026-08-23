@@ -6,6 +6,7 @@ export const KLARWERK_CSS = `
 .pb-kw-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;font-size:13.5px;font-weight:500}
 .pb-kw-nav-links a{transition:color .15s}
 .pb-kw-nav-links a:hover,.pb-kw-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-kw-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-klarwerk a.pb-kw-nav-cta{background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:9px 18px;font-weight:600;font-size:13px;transition:opacity .15s}
 .pb-kw-nav-cta:hover,.pb-kw-nav-cta:focus-visible{opacity:.85}
 .pb-kw-hero{padding:64px 32px 8px;max-width:900px}
@@ -60,4 +61,7 @@ export const KLARWERK_CSS = `
   .pb-kw-nav-links{flex-wrap:wrap;margin-left:0}
   .pb-kw-contact{grid-template-columns:1fr}
 }
+.pb-kw-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-kw-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-kw-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

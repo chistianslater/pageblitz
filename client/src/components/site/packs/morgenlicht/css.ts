@@ -6,6 +6,7 @@ export const MORGENLICHT_CSS = `
 .pb-ml-nav-links{display:flex;align-items:center;gap:18px;margin-left:auto;flex-wrap:wrap}
 .pb-ml-nav-links a{transition:color .15s}
 .pb-ml-nav-links a:hover,.pb-ml-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-ml-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-morgenlicht a.pb-ml-nav-cta{background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:8px 18px;font-size:12px;font-weight:700;transition:opacity .15s;flex-shrink:0}
 .pb-ml-nav-cta:hover,.pb-ml-nav-cta:focus-visible{opacity:.85}
 .pb-ml-hero{position:relative;padding:56px 24px 48px;overflow:hidden}
@@ -57,4 +58,7 @@ export const MORGENLICHT_CSS = `
 .pb-ml-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-ml-footer a:hover,.pb-ml-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:640px){.pb-ml-blob{opacity:.3}.pb-ml-float{display:none}.pb-ml-contact{grid-template-columns:1fr}.pb-ml-nav{flex-wrap:wrap;row-gap:10px;border-radius:20px}.pb-ml-nav-links{margin-left:0}}
+.pb-ml-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
+.pb-ml-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
+.pb-ml-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
 `;

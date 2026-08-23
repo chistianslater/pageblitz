@@ -144,6 +144,31 @@ test.describe("A11y (axe): Demo-Seiten je Pack", () => {
   }
 });
 
+/**
+ * Stichprobe (Plan B6, Task 4): die neue pageHeader-Sektion + Nav-Umstellung
+ * auf `buildNavItems` (inkl. `aria-current`) landet in allen 14 Packs
+ * identisch (siehe `moduleParity.test.ts` für die vitest-Abdeckung aller
+ * 14). Hier reichen 3 strukturell unterschiedliche Packs als E2E-Stichprobe
+ * (axe braucht echtes Rendering/Layout, das vitest+renderToStaticMarkup
+ * nicht prüft): werkbank (einspaltige Nav), gusto (links/rechts-geteilte
+ * Nav, siehe packs/gusto/index.tsx), kanzlei (links/rechts-geteilte Nav +
+ * zusätzlicher Hero-CTA-Link im selben Nav-Container).
+ */
+test.describe("A11y (axe): Demo-Unterseiten je Pack (Stichprobe)", () => {
+  for (const pack of ["werkbank", "gusto", "kanzlei"] as const) {
+    test(`/demo/${pack}/leistungen-im-detail`, async ({ page }) => {
+      await skipCookieBanner(page);
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.goto(`/demo/${pack}/leistungen-im-detail`);
+      await page.waitForLoadState("networkidle");
+      await expectNoSeriousViolations(
+        page,
+        `/demo/${pack}/leistungen-im-detail`
+      );
+    });
+  }
+});
+
 const PANEL_IDS: ChecklistItemId[] = [
   "style",
   "photos",

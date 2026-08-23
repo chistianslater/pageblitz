@@ -85,7 +85,7 @@ describe("SiteRenderer", () => {
     });
   });
 
-  describe("pathname / Unterseiten (Plan B6, Task 3)", () => {
+  describe("pathname / Unterseiten (Plan B6, Task 3 + Task 4: pageHeader im Pack)", () => {
     const dataWithPage: WebsiteDataV2 = {
       ...data,
       sections: [
@@ -123,11 +123,16 @@ describe("SiteRenderer", () => {
       expect(html).not.toContain("Ein genauerer Blick.");
     });
 
-    test("pathname einer bekannten Page rendert den generischen pageHeader-Fallback (Titel + Intro)", () => {
+    test("pathname einer bekannten Page rendert den pageHeader des Packs (Titel + Intro) — seit Task 4 im Pack-Modul selbst, kein SiteRenderer-Fallback mehr", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer data={dataWithPage} pathname="/leistungen-im-detail" />
       );
-      expect(html).toContain("pb-page-header-fallback");
+      // werkbank rendert die pageHeader-Sektion selbst (Klasse
+      // pb-wb-page-header, siehe packs/werkbank/index.tsx) — der generische
+      // Fallback in SiteRenderer wurde entfernt (Task 4), sonst gäbe es zwei
+      // <h1> (a11y-Regression).
+      expect(html).toContain('<header class="pb-wb-page-header">');
+      expect(html.match(/<h1/g)).toHaveLength(1);
       expect(html).toContain("Leistungen im Detail");
       expect(html).toContain("Ein genauerer Blick.");
     });
@@ -142,15 +147,15 @@ describe("SiteRenderer", () => {
       expect(html).not.toContain("Hallo Welt");
     });
 
-    test("unbekannter pathname (keine Page) rendert die Startseite, kein Fallback-Header", () => {
+    test("unbekannter pathname (keine Page) rendert die Startseite, kein Page-Header", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer data={dataWithPage} pathname="/nicht-vorhanden" />
       );
       expect(html).toContain("Hallo Welt");
-      expect(html).not.toContain("pb-page-header-fallback");
+      expect(html).not.toContain('<header class="pb-wb-page-header">');
     });
 
-    test("Page ohne eigene pageHeader-Sektion → kein Fallback-Header", () => {
+    test("Page ohne eigene pageHeader-Sektion → kein Page-Header", () => {
       const withoutHeader: WebsiteDataV2 = {
         ...dataWithPage,
         pages: [
@@ -169,7 +174,7 @@ describe("SiteRenderer", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer data={withoutHeader} pathname="/leistungen-im-detail" />
       );
-      expect(html).not.toContain("pb-page-header-fallback");
+      expect(html).not.toContain('<header class="pb-wb-page-header">');
     });
   });
 });

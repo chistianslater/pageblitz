@@ -1,11 +1,18 @@
 import React from "react";
 import type {
+  PageSection,
+  PageSectionOf,
   SectionOf,
   SectionType,
   SectionV2,
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
-import { orderedSections, SECTION_ANCHORS } from "../../engine";
+import {
+  buildNavItems,
+  orderedSections,
+  SECTION_ANCHORS,
+  type NavItem,
+} from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { ATELIER_CSS } from "./css";
 
@@ -62,7 +69,9 @@ function buildIndexLabel(
   return `N° 01 — Aus der Serie „${first}“`;
 }
 
-function renderSection(section: SectionV2): React.ReactNode {
+function renderSection(
+  section: SectionV2 | PageSectionOf<"pageHeader">
+): React.ReactNode {
   switch (section.type) {
     case "hero":
       return null; // eigenständig als Masthead + Cover gerendert
@@ -286,6 +295,14 @@ function renderSection(section: SectionV2): React.ReactNode {
         </section>
       );
     }
+    case "pageHeader": {
+      return (
+        <header className="pb-at-page-header" key={section.type}>
+          <h1>{section.title}</h1>
+          {section.intro && <p>{section.intro}</p>}
+        </header>
+      );
+    }
     default: {
       const exhaustive: never = section;
       return exhaustive;
@@ -297,9 +314,13 @@ const AtelierPage: React.FC<{
   data: WebsiteDataV2;
   basePath: string;
   now: Date;
-}> = ({ data, basePath, now }) => {
-  const sections = orderedSections(data);
-  const navSections = sections.filter(s => s.type !== "hero");
+  navItems?: NavItem[];
+  pageTitle?: string;
+  sections?: PageSection[];
+}> = ({ data, basePath, now, navItems, sections: pageSections }) => {
+  const sections: (SectionV2 | PageSectionOf<"pageHeader">)[] =
+    pageSections ?? orderedSections(data);
+  const navList = navItems ?? buildNavItems(data, { pathname: "/", basePath });
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const contact = sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
@@ -315,9 +336,13 @@ const AtelierPage: React.FC<{
     <div className="pb-atelier">
       <nav className="pb-at-nav">
         <div className="pb-at-nav-links">
-          {navSections.map(s => (
-            <a key={s.type} href={`#${SECTION_ANCHORS[s.type]}`}>
-              {FALLBACK_TITLES[s.type] ?? s.type}
+          {navList.map(item => (
+            <a
+              key={item.key}
+              href={item.href}
+              aria-current={item.current ? "page" : undefined}
+            >
+              {item.label}
             </a>
           ))}
         </div>

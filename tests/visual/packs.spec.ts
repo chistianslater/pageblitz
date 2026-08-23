@@ -48,6 +48,30 @@ for (const pack of PACKS)
     }
 
 /**
+ * Unterseiten-Baselines (Plan B6, Task 4): je Pack ein Desktop-Screenshot
+ * der Demo-Unterseite `/demo/<pack>/leistungen-im-detail` (Fixture "full",
+ * Route seit Task 3 verfügbar — `handleDemoPageRoute`). Nur Desktop (nicht
+ * alle drei Viewports wie oben), weil der Brief explizit "Desktop-
+ * Screenshot" verlangt: die Unterseite teilt Nav/Footer/CSS 1:1 mit der
+ * Startseite (dort bereits an allen drei Breakpoints abgedeckt), neu ist
+ * hier nur der `pageHeader`-Block + der zusätzliche Seiten-Link mit
+ * `aria-current` in der Nav — das reicht ein Breakpoint, um eine visuelle
+ * Regression zu fangen.
+ */
+for (const pack of PACKS)
+  test(`${pack} Unterseite "leistungen-im-detail" desktop`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/demo/${pack}/leistungen-im-detail`);
+    await page.waitForLoadState("networkidle");
+    await expect(page).toHaveScreenshot(
+      `${pack}-leistungen-im-detail-desktop.png`,
+      { fullPage: true, maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO }
+    );
+  });
+
+/**
  * Deterministische Farbassertion je Pack (B4c Final-Review-Fixwelle 2):
  * Screenshot-Diffs allein verschlucken Farbabweichungen unterhalb der
  * Pixel-Ratio-Schwelle (siehe Task-7-Bericht). Diese Tests prüfen den
