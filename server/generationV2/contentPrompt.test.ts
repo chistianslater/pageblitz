@@ -64,3 +64,43 @@ describe("buildContentPrompt", () => {
     );
   });
 });
+
+describe("buildContentPrompt — Fakten-Kontext B7 Task 3", () => {
+  const base = {
+    constitution: getConstitution("werkbank"),
+    business: {
+      name: "Schreinerei Brandt",
+      category: "Schreinerei" as string,
+      city: "Dortmund",
+    },
+    sections: ["hero", "services", "about", "faq", "contact"] as const,
+  };
+
+  test("editorialSummary erscheint als Google-Beschreibung im Geschäfts-Block; ohne bleibt die Zeile weg", () => {
+    const withSummary = buildContentPrompt({
+      ...base,
+      sections: [...base.sections],
+      editorialSummary: "Inhabergeführte Schreinerei seit 1990.",
+    });
+    expect(withSummary).toContain(
+      "Google-Beschreibung: Inhabergeführte Schreinerei seit 1990."
+    );
+    const without = buildContentPrompt({
+      ...base,
+      sections: [...base.sections],
+    });
+    expect(without).not.toContain("Google-Beschreibung:");
+  });
+
+  test("Sektions-Soll: services und faq verlangen 4–6 Einträge", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    expect(p).toMatch(/"services".*4–6 Einträge/);
+    expect(p).toMatch(/"faq".*4–6 Einträge/);
+  });
+
+  test("Verbot gegen halluzinierte Stadt/Branche steht im Prompt", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    expect(p).toContain("Nenne niemals eine andere Stadt als die genannte.");
+    expect(p).toContain("niemals aus dem Firmennamen");
+  });
+});

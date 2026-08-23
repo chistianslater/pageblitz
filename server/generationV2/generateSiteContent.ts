@@ -30,8 +30,22 @@ interface GenerateSiteContentFacts {
     city?: string;
     openingHours?: { day: string; hours: string }[];
   };
-  /** Deterministische Bild-URLs (GMB/Stock), nie vom LLM; nur gesetzt, wenn die Sektion existiert. */
-  images?: { hero?: string; about?: string };
+  /**
+   * Deterministische Bild-URLs (GMB via R2 / Stock), nie vom LLM.
+   * `gallery` (≥ 3 R2-gespiegelte GMB-Fotos, Spec §2.2) erzeugt/ersetzt die
+   * gallery-Sektion; fehlt sie (oder < 3), wird eine etwaige LLM-Galerie
+   * gestrippt — die Galerie zeigt nur echte Betriebs-Fotos.
+   */
+  images?: { hero?: string; about?: string; gallery?: string[] };
+  /**
+   * Deterministische Testimonials aus echten Google-Reviews
+   * (`selectTestimonialReviews` in facts.ts, Spec §2.2): setzt/ersetzt die
+   * testimonials-Sektion vollständig — das LLM formuliert NIE Bewertungen.
+   * Leeres Array = keine belastbaren Reviews → Sektion wird gestrippt.
+   */
+  reviews?: { author: string; text: string; rating: number }[];
+  /** Googles Editorial Summary — reiner Prompt-Kontext, landet nie im Dokument. */
+  editorialSummary?: string;
   /**
    * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
    * `server/gmb/siteCrawl.ts`): Faktenquelle für Leistungen/Selbstbeschreibung
@@ -46,19 +60,70 @@ export interface GenerateSiteContentArgs {
   packId: PackId;
   business: { name: string; category: string; city?: string };
   facts?: GenerateSiteContentFacts;
+  /**
+   * Fakten-Korrektur-Hinweis des Halluzinations-Guards (factGuard.ts):
+   * wird beim Branchen-Retry als eigener Prompt-Abschnitt angehängt.
+   */
+  retryHint?: string;
 }
 
+/**
+ * Sektions-Soll der Erstgenerierung (Plan B7 Task 3, Spec §2.2): das LLM
+ * schreibt hero, services (4–6), about, faq (4–6) und contact — testimonials
+ * (echte Google-Reviews) und gallery (GMB-Fotos via R2) entstehen
+ * deterministisch in mergeFacts, nie vom LLM. Ziel: 6–8 Sektionen.
+ */
 const DEFAULT_SECTIONS: SectionType[] = [
   "hero",
   "services",
   "about",
+  "faq",
   "contact",
 ];
 /** Gastro-Packs (aktuell nur "gusto") bekommen eine Speisekarte statt Leistungen. */
-const MENU_SECTIONS: SectionType[] = ["hero", "menu", "about", "contact"];
+const MENU_SECTIONS: SectionType[] = [
+  "hero",
+  "menu",
+  "about",
+  "faq",
+  "contact",
+];
 
 function resolveSections(packId: PackId): SectionType[] {
   return packId === "gusto" ? MENU_SECTIONS : DEFAULT_SECTIONS;
+}
+
+/** Galerie erst ab so vielen echten Fotos (Spec §2.2: „wenn ≥ 3 brauchbare"). */
+const MIN_GALLERY_IMAGES = 3;
+
+/**
+ * Ersetzt eine vorhandene Sektion gleichen Typs oder fügt sie nach der
+ * letzten der `afterTypes`-Sektionen ein (Fallback: vor contact, sonst ans
+ * Ende) — hält die kanonische Reihenfolge hero → services/menu → about →
+ * gallery → testimonials → faq → contact ein.
+ */
+function upsertSection(
+  sections: WebsiteDataV2["sections"],
+  section: WebsiteDataV2["sections"][number],
+  afterTypes: SectionType[]
+): WebsiteDataV2["sections"] {
+  const existingIndex = sections.findIndex(s => s.type === section.type);
+  if (existingIndex >= 0) {
+    return sections.map((s, i) => (i === existingIndex ? section : s));
+  }
+  let insertAt = -1;
+  sections.forEach((s, i) => {
+    if (afterTypes.includes(s.type)) insertAt = i;
+  });
+  if (insertAt === -1) {
+    const contactIndex = sections.findIndex(s => s.type === "contact");
+    insertAt = contactIndex >= 0 ? contactIndex - 1 : sections.length - 1;
+  }
+  return [
+    ...sections.slice(0, insertAt + 1),
+    section,
+    ...sections.slice(insertAt + 1),
+  ];
 }
 
 type AttemptResult =
@@ -170,6 +235,63 @@ function mergeFacts(
         return { ...s, imageUrl: about };
       return s;
     });
+
+    // Galerie deterministisch aus echten GMB-Fotos (R2-URLs, Spec §2.2):
+    // ≥ 3 Fotos → Sektion setzen/ersetzen; sonst wird auch eine vom LLM
+    // (regelwidrig) gelieferte Galerie gestrippt — nie Fantasie-/Stock-URLs
+    // als „Einblicke in den Betrieb".
+    const gallery = facts.images.gallery;
+    if (gallery && gallery.length >= MIN_GALLERY_IMAGES) {
+      const existing = sections.find(s => s.type === "gallery") as
+        | SectionOf<"gallery">
+        | undefined;
+      const gallerySection: SectionOf<"gallery"> = {
+        type: "gallery",
+        headline: existing?.headline ?? "Einblicke",
+        images: gallery.map((url, i) => ({
+          url,
+          alt: `${data.businessName} – Eindruck ${i + 1}`,
+        })),
+      };
+      sections = upsertSection(sections, gallerySection, [
+        "about",
+        "menu",
+        "services",
+        "hero",
+      ]);
+    } else {
+      sections = sections.filter(s => s.type !== "gallery");
+    }
+  }
+
+  // Testimonials deterministisch aus echten Google-Reviews (Spec §2.2):
+  // facts.reviews setzt/ersetzt die Sektion VOLLSTÄNDIG — das LLM formuliert
+  // nie Bewertungen. Leeres Array = keine belastbaren Reviews → eine vom LLM
+  // erfundene testimonials-Sektion wird gestrippt.
+  if (facts.reviews !== undefined) {
+    if (facts.reviews.length > 0) {
+      const existing = sections.find(s => s.type === "testimonials") as
+        | SectionOf<"testimonials">
+        | undefined;
+      const testimonialSection: SectionOf<"testimonials"> = {
+        type: "testimonials",
+        headline: existing?.headline ?? "Das sagen unsere Kunden",
+        items: facts.reviews.map(r => ({
+          author: r.author,
+          text: r.text,
+          rating: r.rating,
+        })),
+      };
+      sections = upsertSection(sections, testimonialSection, [
+        "gallery",
+        "about",
+        "menu",
+        "services",
+        "hero",
+      ]);
+    } else {
+      sections = sections.filter(s => s.type !== "testimonials");
+    }
   }
 
   return {
@@ -233,8 +355,17 @@ function mockSiteContent(
  * Preisliste/Team/Unterseiten entstehen erst im Studio.
  */
 function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
-  if (!data.sections.some(s => s.type === "menu")) return data;
-  return { ...data, addOns: { ...(data.addOns ?? {}), menu: true } };
+  // Galerie-Analogie (Plan B7 Task 3): eine bei der Generierung aus echten
+  // GMB-Fotos entstandene gallery-Sektion ist ohne `addOns.gallery` unsichtbar
+  // (Gating in client/src/components/site/engine.ts) — deshalb wird das
+  // Add-on wie beim Gastro-Menü als Entwurfs-Flag vorausgewählt; runJob
+  // spiegelt es nach onboarding_responses (Extras-Panel „Aktiv", abwählbar).
+  const defaults: NonNullable<WebsiteDataV2["addOns"]> = {
+    ...(data.sections.some(s => s.type === "menu") ? { menu: true } : {}),
+    ...(data.sections.some(s => s.type === "gallery") ? { gallery: true } : {}),
+  };
+  if (Object.keys(defaults).length === 0) return data;
+  return { ...data, addOns: { ...(data.addOns ?? {}), ...defaults } };
 }
 
 /**
@@ -254,7 +385,7 @@ function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
 export async function generateSiteContent(
   args: GenerateSiteContentArgs
 ): Promise<WebsiteDataV2> {
-  const { packId, business, facts } = args;
+  const { packId, business, facts, retryHint } = args;
 
   if (isLlmMockEnabled()) {
     return mockSiteContent(packId, business, facts);
@@ -262,12 +393,21 @@ export async function generateSiteContent(
 
   const constitution = getConstitution(packId);
   const sections = resolveSections(packId);
-  const prompt = buildContentPrompt({
+  const basePrompt = buildContentPrompt({
     constitution,
     business,
     sections,
     ...(facts?.existingSite ? { existingSite: facts.existingSite } : {}),
+    ...(facts?.editorialSummary
+      ? { editorialSummary: facts.editorialSummary }
+      : {}),
   });
+  // Fakten-Korrektur des Guards (factGuard.ts, genau ein Retry) als eigener
+  // Abschnitt — bewusst NACH dem regulären Prompt, damit der Hinweis die
+  // letzte Instruktion ist.
+  const prompt = retryHint
+    ? `${basePrompt}\n\n## Faktenkorrektur\n${retryHint}`
+    : basePrompt;
 
   const first = await attempt(prompt, packId, business.name);
   const result = first.ok

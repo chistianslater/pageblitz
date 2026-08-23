@@ -517,3 +517,213 @@ describe("generateSiteContent — PB_LLM_MOCK (Task 3, LLM-Mock für die Generie
     vi.resetModules();
   });
 });
+
+describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Plan B7 Task 3)", () => {
+  const baseAnswer = {
+    seo: { title: "Schreinerei Brandt – Dortmund", description: "Möbelbau." },
+    sections: [
+      { type: "hero", headline: "Massarbeit." },
+      {
+        type: "services",
+        headline: "Leistungen",
+        items: [{ title: "Möbelbau" }],
+      },
+      { type: "about", headline: "Über uns", body: "Seit 1990." },
+      {
+        type: "faq",
+        headline: "Fragen",
+        items: [{ question: "Wie lange?", answer: "4 Wochen." }],
+      },
+      { type: "contact", city: "Dortmund" },
+    ],
+  };
+
+  test("Sektions-Soll im Prompt: hero, services (4–6), about, faq (4–6), contact — testimonials/gallery werden NICHT vom LLM angefragt", async () => {
+    const fn = vi.fn().mockResolvedValue(JSON.stringify(baseAnswer));
+    vi.doMock("./llmClient", () => ({ llmComplete: fn }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "X", category: "Schreinerei" },
+    });
+    const prompt = fn.mock.calls[0][0] as string;
+    expect(prompt).toContain(`- "faq"`);
+    expect(prompt).toMatch(/"services".*4–6 Einträge/);
+    expect(prompt).toMatch(/"faq".*4–6 Einträge/);
+    expect(prompt).not.toContain(`- "testimonials"`);
+    expect(prompt).not.toContain(`- "gallery"`);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("Testimonials kommen deterministisch aus facts.reviews — eine vom LLM erfundene testimonials-Sektion wird vollständig ersetzt", async () => {
+    const invented = {
+      ...baseAnswer,
+      sections: [
+        ...baseAnswer.sections,
+        {
+          type: "testimonials",
+          headline: "Stimmen",
+          items: [{ author: "Erfundene Person", text: "Frei halluziniert." }],
+        },
+      ],
+    };
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(JSON.stringify(invented)),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+      facts: {
+        reviews: [
+          { author: "Anna B.", text: "Top Arbeit.", rating: 5 },
+          { author: "Carla", text: "Gerne wieder.", rating: 4 },
+        ],
+      },
+    });
+    const testimonials = d.sections.find(s => s.type === "testimonials") as any;
+    expect(testimonials.items).toEqual([
+      { author: "Anna B.", text: "Top Arbeit.", rating: 5 },
+      { author: "Carla", text: "Gerne wieder.", rating: 4 },
+    ]);
+    expect(testimonials.headline).toBe("Stimmen");
+    expect(JSON.stringify(d)).not.toContain("Erfundene Person");
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("facts.reviews leer → auch eine vom LLM erfundene testimonials-Sektion wird gestrippt", async () => {
+    const invented = {
+      ...baseAnswer,
+      sections: [
+        ...baseAnswer.sections,
+        {
+          type: "testimonials",
+          items: [{ author: "Erfunden", text: "Nie passiert." }],
+        },
+      ],
+    };
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(JSON.stringify(invented)),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "X", category: "Schreinerei" },
+      facts: { reviews: [] },
+    });
+    expect(d.sections.some(s => s.type === "testimonials")).toBe(false);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("Galerie aus GMB-Fotos: ≥ 3 R2-URLs → gallery-Sektion mit Alt-Texten + addOns.gallery=true (Entwurfs-Flag wie Gastro-Menü)", async () => {
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(JSON.stringify(baseAnswer)),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+      facts: {
+        reviews: [{ author: "Anna B.", text: "Top.", rating: 5 }],
+        images: {
+          hero: "https://media.pageblitz.de/h.jpg",
+          gallery: [
+            "https://media.pageblitz.de/1.jpg",
+            "https://media.pageblitz.de/2.jpg",
+            "https://media.pageblitz.de/3.jpg",
+          ],
+        },
+      },
+    });
+    const gallery = d.sections.find(s => s.type === "gallery") as any;
+    expect(gallery.images).toHaveLength(3);
+    expect(gallery.images[0]).toEqual({
+      url: "https://media.pageblitz.de/1.jpg",
+      alt: "Schreinerei Brandt – Eindruck 1",
+    });
+    expect(d.addOns?.gallery).toBe(true);
+    // Kanonische Reihenfolge: … about → gallery → testimonials → faq → contact
+    expect(d.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "about",
+      "gallery",
+      "testimonials",
+      "faq",
+      "contact",
+    ]);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("Galerie-Schwelle: < 3 Fotos → keine gallery-Sektion, kein addOns.gallery; LLM-Galerie wird gestrippt", async () => {
+    const invented = {
+      ...baseAnswer,
+      sections: [
+        ...baseAnswer.sections,
+        {
+          type: "gallery",
+          images: [{ url: "https://fantasie.example/x.jpg", alt: "?" }],
+        },
+      ],
+    };
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(JSON.stringify(invented)),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "X", category: "Schreinerei" },
+      facts: {
+        images: {
+          gallery: [
+            "https://media.pageblitz.de/1.jpg",
+            "https://media.pageblitz.de/2.jpg",
+          ],
+        },
+      },
+    });
+    expect(d.sections.some(s => s.type === "gallery")).toBe(false);
+    expect(d.addOns?.gallery).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("facts.editorialSummary landet als Google-Beschreibung im Prompt, nie im Dokument", async () => {
+    const fn = vi.fn().mockResolvedValue(JSON.stringify(baseAnswer));
+    vi.doMock("./llmClient", () => ({ llmComplete: fn }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "X", category: "Schreinerei" },
+      facts: { editorialSummary: "Inhabergeführte Schreinerei seit 1990." },
+    });
+    expect(fn.mock.calls[0][0]).toContain(
+      "Google-Beschreibung: Inhabergeführte Schreinerei seit 1990."
+    );
+    expect(JSON.stringify(d)).not.toContain("Inhabergeführte Schreinerei");
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("retryHint (Fakten-Guard) wird als Abschnitt „Faktenkorrektur“ an den Prompt gehängt", async () => {
+    const fn = vi.fn().mockResolvedValue(JSON.stringify(baseAnswer));
+    vi.doMock("./llmClient", () => ({ llmComplete: fn }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "X", category: "Werbeagentur" },
+      retryHint: "Der Betrieb ist eine Werbeagentur, keine Optik-Firma.",
+    });
+    const prompt = fn.mock.calls[0][0] as string;
+    expect(prompt).toContain("## Faktenkorrektur");
+    expect(prompt).toContain(
+      "Der Betrieb ist eine Werbeagentur, keine Optik-Firma."
+    );
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+});

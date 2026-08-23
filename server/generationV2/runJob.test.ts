@@ -15,17 +15,32 @@ vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 vi.mock("../industryClassifier", () => ({
   classifyIndustry: vi.fn().mockResolvedValue("handwerk"),
 }));
-vi.mock("../gmbPhotos", () => ({ getGmbPhotos: vi.fn() }));
+// Seit Plan B7 Task 3 spiegelt der Job GMB-Fotos nach R2 (Key-Leak
+// geschlossen) — resolveV2Images nutzt mirrorGmbPhotosToR2 statt getGmbPhotos.
+vi.mock("../gmbPhotos", () => ({ mirrorGmbPhotosToR2: vi.fn() }));
+vi.mock("../gmb/siteCrawl", () => ({ crawlExistingSite: vi.fn() }));
 vi.mock("./selectPack", () => ({
   selectPack: vi.fn().mockResolvedValue("werkbank"),
 }));
 vi.mock("./generateSiteContent", () => ({ generateSiteContent: vi.fn() }));
+// Fakten-Guard hier als Passthrough gemockt (eigene Tests in
+// factGuard.test.ts) — einzelne Tests lassen ihn gezielt werfen, um zu
+// beweisen, dass er INNERHALB des try/restore-Blocks läuft.
+vi.mock("./factGuard", async importOriginal => {
+  const original = await importOriginal<typeof import("./factGuard")>();
+  return {
+    buildGuardContextText: original.buildGuardContextText,
+    guardGeneratedContent: vi.fn(async (doc: unknown) => doc),
+  };
+});
 
 import * as db from "../db";
-import { getGmbPhotos } from "../gmbPhotos";
+import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
+import { crawlExistingSite } from "../gmb/siteCrawl";
 import { invalidateSsrCache } from "../ssr/routes";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { generateSiteContent } from "./generateSiteContent";
+import { guardGeneratedContent } from "./factGuard";
 import {
   buildInterimV2Doc,
   resolveV2Images,
@@ -33,8 +48,14 @@ import {
 } from "./runJob";
 
 const mockedDb = vi.mocked(db);
-const mockedPhotos = vi.mocked(getGmbPhotos);
+const mockedMirror = vi.mocked(mirrorGmbPhotosToR2);
+const mockedCrawl = vi.mocked(crawlExistingSite);
 const mockedGen = vi.mocked(generateSiteContent);
+const mockedGuard = vi.mocked(guardGeneratedContent);
+
+const R2_1 = "https://media.pageblitz.de/website-42/gmb-1.jpg";
+const R2_2 = "https://media.pageblitz.de/website-42/gmb-2.jpg";
+const R2_3 = "https://media.pageblitz.de/website-42/gmb-3.jpg";
 
 const website = { id: 42, slug: "preview-brandt", businessId: 7 };
 const business = {
@@ -49,6 +70,9 @@ const business = {
   reviewCount: 12,
   openingHours: ["Montag: 08:00–17:00"],
   placeId: "ChIJabc",
+  website: null,
+  googleReviews: null,
+  editorialSummary: null,
 };
 const doc = {
   version: 2 as const,
@@ -63,39 +87,71 @@ beforeEach(() => {
   mockedDb.getWebsiteById.mockResolvedValue(website as any);
   mockedDb.getBusinessById.mockResolvedValue(business as any);
   mockedGen.mockResolvedValue(doc);
+  mockedCrawl.mockResolvedValue(null);
+  mockedGuard.mockImplementation(async d => d as any);
 });
 
 describe("resolveV2Images", () => {
-  test("GMB-Fotos haben Vorrang: Foto 1 = Hero, Foto 2 = Über uns", async () => {
-    mockedPhotos.mockResolvedValue([
-      "https://g/1.jpg",
-      "https://g/2.jpg",
-      "https://g/3.jpg",
-    ]);
+  test("gespiegelte GMB-Fotos haben Vorrang: Foto 1 = Hero, Foto 2 = Über uns; ab 3 Fotos zusätzlich Galerie", async () => {
+    mockedMirror.mockResolvedValue([R2_1, R2_2, R2_3]);
     await expect(
-      resolveV2Images({ placeId: "ChIJabc", name: "X" }, "Tischler", "handwerk")
-    ).resolves.toEqual({ hero: "https://g/1.jpg", about: "https://g/2.jpg" });
+      resolveV2Images(
+        { placeId: "ChIJabc", name: "X" },
+        "Tischler",
+        "handwerk",
+        42
+      )
+    ).resolves.toEqual({
+      hero: R2_1,
+      about: R2_2,
+      gallery: [R2_1, R2_2, R2_3],
+    });
+    expect(mockedMirror).toHaveBeenCalledWith("ChIJabc", 42, 8);
   });
-  test("self-Place-IDs fragen Google gar nicht erst, Branchen-Stock greift", async () => {
+  test("unter 3 gespiegelten Fotos keine Galerie (Spec §2.2)", async () => {
+    mockedMirror.mockResolvedValue([R2_1, R2_2]);
+    await expect(
+      resolveV2Images(
+        { placeId: "ChIJabc", name: "X" },
+        "Tischler",
+        "handwerk",
+        42
+      )
+    ).resolves.toEqual({ hero: R2_1, about: R2_2 });
+  });
+  test("self-Place-IDs fragen Google gar nicht erst, Branchen-Stock greift (ohne Galerie)", async () => {
     const result = await resolveV2Images(
       { placeId: "self-abc", name: "X" },
       "Tischler",
-      "handwerk"
+      "handwerk",
+      42
     );
-    expect(mockedPhotos).not.toHaveBeenCalled();
+    expect(mockedMirror).not.toHaveBeenCalled();
     expect(result.hero).toMatch(/^https?:\/\//);
+    expect(result.gallery).toBeUndefined();
+  });
+  test("Spiegelung liefert nichts (z. B. R2 nicht konfiguriert) → Stock-Fallback statt Google-URL", async () => {
+    mockedMirror.mockResolvedValue([]);
+    const result = await resolveV2Images(
+      { placeId: "ChIJabc", name: "X" },
+      "Tischler",
+      "handwerk",
+      42
+    );
+    expect(result.hero).toMatch(/^https?:\/\//);
+    expect(JSON.stringify(result)).not.toContain("maps.googleapis.com");
   });
 });
 
 describe("runWebsiteGenerationV2Job", () => {
   test("lädt Website+Business, übergibt Fakten+Bilder, persistiert, invalidiert Cache, schließt Job ab", async () => {
-    mockedPhotos.mockResolvedValue(["https://g/1.jpg"]);
+    mockedMirror.mockResolvedValue([R2_1]);
     await runWebsiteGenerationV2Job(99, 42);
 
     expect(mockedGen).toHaveBeenCalledTimes(1);
     const args = mockedGen.mock.calls[0][0];
     expect(args.packId).toBe("werkbank");
-    expect(args.facts?.images).toEqual({ hero: "https://g/1.jpg" });
+    expect(args.facts?.images).toEqual({ hero: R2_1 });
     expect(args.facts?.contact?.phone).toBe("0231 123");
     expect(args.facts?.contact?.openingHours).toEqual([
       { day: "Montag", hours: "08:00–17:00" },
@@ -111,8 +167,76 @@ describe("runWebsiteGenerationV2Job", () => {
       result: { success: true, alreadyGenerated: false, usedFallback: false },
     });
   });
+
+  test("Key-Leak-Regression (Plan B7 Task 3): kein `key=` und kein maps.googleapis.com in irgendeinem persistierten Dokument", async () => {
+    mockedMirror.mockResolvedValue([R2_1, R2_2, R2_3]);
+    mockedDb.getBusinessById.mockResolvedValue({
+      ...business,
+      googleReviews: [
+        { author_name: "Anna Beispiel", rating: 5, text: "Top!", time: 1 },
+      ],
+    } as any);
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.updateWebsite.mock.calls.length).toBeGreaterThan(0);
+    for (const call of mockedDb.updateWebsite.mock.calls) {
+      const persisted = JSON.stringify(call[1].websiteData ?? "");
+      expect(persisted).not.toContain("key=");
+      expect(persisted).not.toContain("maps.googleapis.com");
+    }
+    // Auch die Fakten für das LLM enthalten nur R2-URLs.
+    const args = mockedGen.mock.calls[0][0];
+    expect(JSON.stringify(args.facts?.images)).not.toContain("key=");
+  });
+
+  test("Website-Crawl (Task 2/3): business.website wird gecrawlt und als existingSite in die Fakten gereicht; ohne Website kein Crawl", async () => {
+    mockedMirror.mockResolvedValue([]);
+    mockedDb.getBusinessById.mockResolvedValue({
+      ...business,
+      website: "https://www.brandt-schreinerei.de",
+    } as any);
+    mockedCrawl.mockResolvedValue({
+      title: "Schreinerei Brandt",
+      text: "Möbel nach Maß aus Dortmund.",
+    });
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedCrawl).toHaveBeenCalledWith(
+      "https://www.brandt-schreinerei.de"
+    );
+    const args = mockedGen.mock.calls[0][0];
+    expect(args.facts?.existingSite).toEqual({
+      title: "Schreinerei Brandt",
+      text: "Möbel nach Maß aus Dortmund.",
+    });
+
+    vi.clearAllMocks();
+    mockedDb.getWebsiteById.mockResolvedValue(website as any);
+    mockedDb.getBusinessById.mockResolvedValue(business as any);
+    mockedGen.mockResolvedValue(doc);
+    mockedGuard.mockImplementation(async d => d as any);
+    mockedMirror.mockResolvedValue([]);
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedCrawl).not.toHaveBeenCalled();
+  });
+
+  test("Fakten-Guard läuft nach der LLM-Phase und sein Ergebnis wird persistiert", async () => {
+    mockedMirror.mockResolvedValue([]);
+    const corrected = { ...doc, businessName: "Korrigiert" };
+    mockedGuard.mockResolvedValue(corrected as any);
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedGuard).toHaveBeenCalledTimes(1);
+    const guardFacts = mockedGuard.mock.calls[0][1];
+    expect(guardFacts).toMatchObject({
+      businessName: "Schreinerei Brandt",
+      category: "Tischler",
+      city: "Dortmund",
+    });
+    expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
+      websiteData: corrected,
+    });
+  });
+
   test("Add-on-Defaults aus dem Dokument (addOns.menu der Gastro-Generierung) werden als Entwurfs-Flags in onboarding_responses gespiegelt (Plan B6 Task 6)", async () => {
-    mockedPhotos.mockResolvedValue([]);
+    mockedMirror.mockResolvedValue([]);
     mockedGen.mockResolvedValue({ ...doc, addOns: { menu: true } });
     await runWebsiteGenerationV2Job(99, 42);
     expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
@@ -124,15 +248,24 @@ describe("runWebsiteGenerationV2Job", () => {
     );
   });
 
+  test("addOns.gallery (GMB-Foto-Galerie der Generierung) wird ebenfalls als Entwurfs-Flag gespiegelt", async () => {
+    mockedMirror.mockResolvedValue([]);
+    mockedGen.mockResolvedValue({ ...doc, addOns: { gallery: true } });
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({ websiteId: 42, addOnGallery: true })
+    );
+  });
+
   test("ohne addOns im Dokument keine Onboarding-Schreibung", async () => {
-    mockedPhotos.mockResolvedValue([]);
+    mockedMirror.mockResolvedValue([]);
     await runWebsiteGenerationV2Job(99, 42);
     expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
   });
 
   test("Zwischenstand nach der Bild-Phase: schema-valides Interim-Doc mit Bildern + deutschen Platzhaltertexten wird persistiert und der SSR-Cache invalidiert, BEVOR das LLM läuft (Zeitmaschine, Task 4)", async () => {
-    mockedPhotos.mockResolvedValue(["https://g/1.jpg", "https://g/2.jpg"]);
+    mockedMirror.mockResolvedValue([R2_1, R2_2]);
     await runWebsiteGenerationV2Job(99, 42);
 
     // Zwei Dokument-Writes: erst Interim, dann final.
@@ -145,9 +278,9 @@ describe("runWebsiteGenerationV2Job", () => {
     const hero = interim.sections.find((s: any) => s.type === "hero");
     expect(hero.headline).toBe("Schreinerei Brandt");
     expect(hero.subheadline).toMatch(/entstehen/);
-    expect(hero.imageUrl).toBe("https://g/1.jpg");
+    expect(hero.imageUrl).toBe(R2_1);
     const about = interim.sections.find((s: any) => s.type === "about");
-    expect(about.imageUrl).toBe("https://g/2.jpg");
+    expect(about.imageUrl).toBe(R2_2);
     expect(JSON.stringify(interim).toLowerCase()).not.toContain("lorem");
 
     // Interim-Write + Cache-Invalidierung liegen VOR dem LLM-Aufruf.
@@ -177,7 +310,7 @@ describe("runWebsiteGenerationV2Job", () => {
   });
 
   test("LLM-Fehler NACH dem Zwischenstand: vorheriges websiteData wird wiederhergestellt (hier: null), Cache invalidiert, Job failed", async () => {
-    mockedPhotos.mockResolvedValue(["https://g/1.jpg"]);
+    mockedMirror.mockResolvedValue([R2_1]);
     mockedGen.mockRejectedValue(new Error("LLM kaputt"));
     await runWebsiteGenerationV2Job(99, 42);
 
@@ -193,13 +326,27 @@ describe("runWebsiteGenerationV2Job", () => {
     });
   });
 
+  test("Guard-Fehler NACH dem Zwischenstand (neuer Await, Task-4-Review-Regel): Restore + Job failed — kein liegengebliebenes Platzhalter-Dokument", async () => {
+    mockedMirror.mockResolvedValue([R2_1]);
+    mockedGuard.mockRejectedValue(new Error("Guard kaputt"));
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(2);
+    expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
+      websiteData: null,
+    });
+    expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(99, {
+      status: "failed",
+      error: "Guard kaputt",
+    });
+  });
+
   test("LLM-Fehler bei Regenerierung: das zuvor gespeicherte v2-Dokument wird wiederhergestellt statt genullt", async () => {
     const previous = { ...doc, businessName: "Alter Stand" };
     mockedDb.getWebsiteById.mockResolvedValue({
       ...website,
       websiteData: previous,
     } as any);
-    mockedPhotos.mockResolvedValue([]);
+    mockedMirror.mockResolvedValue([]);
     mockedGen.mockRejectedValue(new Error("LLM kaputt"));
     await runWebsiteGenerationV2Job(99, 42);
     expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
@@ -208,7 +355,7 @@ describe("runWebsiteGenerationV2Job", () => {
   });
 
   test("Fehler → Job failed mit Meldung, kein Throw nach außen", async () => {
-    mockedPhotos.mockResolvedValue([]);
+    mockedMirror.mockResolvedValue([]);
     mockedGen.mockRejectedValue(new Error("LLM kaputt"));
     await expect(runWebsiteGenerationV2Job(99, 42)).resolves.toBeUndefined();
     expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(99, {

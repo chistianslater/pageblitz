@@ -6,6 +6,11 @@ export interface ContentPromptArgs {
   business: { name: string; category: string; city?: string };
   sections: SectionType[];
   /**
+   * Googles Editorial Summary des Places (Spec §2.1) — kurzer redaktioneller
+   * Beschreibungstext, reiner Fakten-Kontext für den Prompt.
+   */
+  editorialSummary?: string;
+  /**
    * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
    * `server/gmb/siteCrawl.ts`) — reine Faktenquelle für den Prompt,
    * landet NIE im Dokument. Fehlt das Feld, fehlt der Abschnitt.
@@ -22,12 +27,12 @@ export interface ContentPromptArgs {
  */
 const SECTION_FIELD_DOC: Record<SectionType, string> = {
   hero: `"headline" (Pflicht), "subheadline" (optional), "ctaText" (optional, z. B. "Jetzt anfragen") — KEINE "ctaHref", KEINE "imageUrl"`,
-  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional), "price" (optional) }] (mind. 1 Eintrag)`,
+  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional), "price" (optional) }] (4–6 Einträge)`,
   about: `"headline" (Pflicht), "body" (Pflicht, 2–4 Sätze) — KEINE "imageUrl"`,
   gallery: `"headline" (optional) — KEINE "images" (werden systemseitig gesetzt)`,
   testimonials: `"headline" (optional), "items": [{ "author" (Pflicht), "text" (Pflicht), "rating" (optional, 1–5) }] (mind. 1 Eintrag)`,
   contact: `"headline" (optional), "phone" (optional), "email" (optional), "street" (optional), "zip" (optional), "city" (optional), "openingHours": [{ "day", "hours" }] (optional)`,
-  faq: `"headline" (optional), "items": [{ "question" (Pflicht), "answer" (Pflicht) }] (mind. 1 Eintrag)`,
+  faq: `"headline" (optional), "items": [{ "question" (Pflicht), "answer" (Pflicht) }] (4–6 Einträge)`,
   menu: `"headline" (optional), "categories": [{ "name" (Pflicht), "items": [{ "name" (Pflicht), "description" (optional), "price" (Pflicht) }] (mind. 1) }] (mind. 1 Kategorie)`,
   pricelist: `"headline" (optional), "categories": [{ "name" (Pflicht), "items": [{ "name" (Pflicht), "description" (optional), "price" (Pflicht) }] (mind. 1) }] (mind. 1 Kategorie)`,
   team: `"headline" (optional), "members": [{ "name" (Pflicht), "role" (optional) }] (mind. 1 Eintrag) — KEINE "imageUrl"`,
@@ -47,12 +52,14 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
  * (Farben, Fonts) — die kommen ausschließlich aus der Verfassung, nie vom LLM.
  */
 export function buildContentPrompt(args: ContentPromptArgs): string {
-  const { constitution, business, sections, existingSite } = args;
+  const { constitution, business, sections, existingSite, editorialSummary } =
+    args;
 
   const factLines = [
     `Name: ${business.name}`,
     `Kategorie: ${business.category}`,
     business.city ? `Stadt: ${business.city}` : null,
+    editorialSummary ? `Google-Beschreibung: ${editorialSummary}` : null,
   ].filter((line): line is string => Boolean(line));
 
   // Bestehende Website als Faktenquelle (Spec §2.1 „Das macht der Betrieb
@@ -96,6 +103,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     ...constitution.llmHints.dont.map(rule => `- ${rule}`),
     `- keine Bild-URLs, keine Links — ctaHref weglassen`,
     `- Erfinde niemals Telefonnummern, E-Mail-Adressen, Straßen oder Öffnungszeiten — die contact-Sektion enthält höchstens city.`,
+    `- Nenne niemals eine andere Stadt als die genannte. Leite die Branche niemals aus dem Firmennamen ab — nutze ausschließlich Kategorie, Google-Beschreibung und bestehende Website.`,
     ``,
     `## Antwortformat`,
     `Antworte mit einem JSON-Objekt mit GENAU zwei Top-Level-Feldern: "seo" und "sections". Keine weiteren Top-Level-Felder — insbesondere KEIN "version", KEIN "stylePackId", KEIN "businessName" (die setzt das System).`,

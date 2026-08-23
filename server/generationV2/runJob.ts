@@ -6,11 +6,14 @@ import {
 } from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
 import { classifyIndustry } from "../industryClassifier";
-import { getGmbPhotos } from "../gmbPhotos";
+import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getGalleryImages, getHeroImageUrl } from "../industryImages";
+import { crawlExistingSite } from "../gmb/siteCrawl";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
 import { buildV2GenerationFacts } from "./facts";
+import { buildGuardContextText, guardGeneratedContent } from "./factGuard";
+import type { GmbReview } from "../gmb/details";
 import { upsertOnboarding } from "../onboardingV2/state";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { SECTION_ADDON_KEYS } from "../../shared/pricing";
@@ -63,11 +66,23 @@ export interface V2JobBusiness {
   reviewCount: number | null;
   openingHours: string[] | null;
   placeId: string | null;
+  /** Bestehende Betriebs-Website (GMB-Feld, Task 1 persistiert) — Quelle für den Fakten-Crawl. */
+  website: string | null;
+  /** Persistierte rohe Google-Reviews (max 8, persistGmbDetails) — Quelle der Testimonials. */
+  googleReviews: GmbReview[] | null;
+  /** Googles Editorial Summary — reiner Prompt-Kontext, landet nie im Dokument. */
+  editorialSummary: string | null;
 }
 
 export interface V2Images {
   hero?: string;
   about?: string;
+  /**
+   * Nach R2 gespiegelte GMB-Fotos für die Galerie-Sektion (Spec §2.2: nur
+   * gesetzt, wenn ≥ 3 brauchbare Fotos existieren; ausschließlich R2-URLs,
+   * nie Google-URLs mit API-Key).
+   */
+  gallery?: string[];
 }
 
 /**
@@ -133,22 +148,43 @@ async function devPhasePause(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/** Max. GMB-Fotos pro Job (Spec §2.1: „photos bis 8"). */
+const MAX_GMB_PHOTOS = 8;
+/** Galerie nur, wenn mindestens so viele brauchbare GMB-Fotos existieren (Spec §2.2). */
+const MIN_GALLERY_PHOTOS = 3;
+
 /**
  * Bilder kommen NIE vom LLM: echte GMB-Fotos zuerst (Foto 1 = Hero, Foto 2 =
- * Über uns), sonst Branchen-Stock aus industryImages. "self-…"-Place-IDs sind
- * Platzhalter ohne Google-Eintrag — dort wird Google gar nicht erst gefragt.
+ * Über uns, ab ≥ 3 Fotos zusätzlich alle als Galerie), sonst Branchen-Stock
+ * aus industryImages (ohne Galerie — die Galerie zeigt nur echte Betriebs-
+ * Fotos, nie Stock). "self-…"-Place-IDs sind Platzhalter ohne Google-Eintrag
+ * — dort wird Google gar nicht erst gefragt.
+ *
+ * Key-Leak geschlossen (Plan B7 Task 3): GMB-Fotos werden über
+ * `mirrorGmbPhotosToR2` serverseitig geladen und nach R2 gespiegelt — ins
+ * Dokument gelangen ausschließlich R2-URLs, nie die Google-Photo-URL mit
+ * `key=`. Schlägt die Spiegelung fehl (z. B. R2 nicht konfiguriert), greift
+ * der Stock-Fallback statt jemals einer Key-URL.
  */
 export async function resolveV2Images(
   business: { placeId: string | null; name: string },
   category: string,
-  industryKey: string
+  industryKey: string,
+  websiteId: number
 ): Promise<V2Images> {
   const gmb =
     business.placeId && !business.placeId.startsWith("self-")
-      ? await getGmbPhotos(business.placeId, 3)
+      ? await mirrorGmbPhotosToR2(business.placeId, websiteId, MAX_GMB_PHOTOS)
       : [];
   if (gmb.length > 0) {
-    return { hero: gmb[0], ...(gmb[1] ? { about: gmb[1] } : {}) };
+    return {
+      hero: gmb[0],
+      ...(gmb[1] ? { about: gmb[1] } : {}),
+      // Die Galerie zeigt alle Betriebs-Fotos (inkl. Hero/About-Motiv) —
+      // wie auf echten Betriebs-Websites üblich; unter 3 Fotos wäre eine
+      // Galerie zu dünn und entfällt (Spec §2.2).
+      ...(gmb.length >= MIN_GALLERY_PHOTOS ? { gallery: gmb } : {}),
+    };
   }
   const hero = getHeroImageUrl(category, business.name, industryKey);
   const gallery = getGalleryImages(category, business.name, industryKey);
@@ -179,7 +215,18 @@ async function runWebsiteGenerationV2(
   // Fortschrittsstufen sind an generationProgress.PHASES gekoppelt:
   // 30–54 „Bilder werden gesetzt", 55–89 „Texte entstehen", ≥ 90 „Vorschau".
   await devPhasePause();
-  const images = await resolveV2Images(business, category, industryKey);
+  // Website-Crawl parallel zur Bild-Phase (Plan B7 Task 2/3):
+  // `crawlExistingSite` rejected nie (jeder Fehler → null), das Promise darf
+  // deshalb unbeaufsichtigt neben der Bild-Phase laufen.
+  const existingSitePromise = business.website
+    ? crawlExistingSite(business.website)
+    : Promise.resolve(null);
+  const images = await resolveV2Images(
+    business,
+    category,
+    industryKey,
+    website.id
+  );
   const tImages = Date.now();
 
   // Zeitmaschine (Task 4): Zwischenstand mit Bildern + Platzhaltertexten
@@ -201,10 +248,35 @@ async function runWebsiteGenerationV2(
 
   let websiteData: WebsiteDataV2;
   try {
-    websiteData = await generateSiteContent({
-      packId,
-      ...buildV2GenerationFacts(business, category, website.slug, images),
-    });
+    // WICHTIG: ALLES zwischen Interim- und Final-Write (Crawl-Await, LLM,
+    // Fakten-Guard inkl. seines LLM-Retrys) muss in DIESEM try laufen —
+    // sonst überlebt bei einem Fehler das Platzhalter-Dokument und
+    // ensureGeneration hielte die Website für fertig generiert.
+    const existingSite = await existingSitePromise;
+    const factArgs = buildV2GenerationFacts(
+      business,
+      category,
+      website.slug,
+      images,
+      existingSite
+    );
+    websiteData = await generateSiteContent({ packId, ...factArgs });
+    // Halluzinations-Guard (Spec §2.2): fremde Stadt deterministisch
+    // korrigieren; harter Branchen-Widerspruch → genau ein LLM-Retry mit
+    // explizitem Hinweis, danach akzeptieren.
+    websiteData = await guardGeneratedContent(
+      websiteData,
+      {
+        businessName: business.name,
+        city: factArgs.facts?.contact?.city,
+        category,
+        contextText: buildGuardContextText(
+          business.editorialSummary,
+          existingSite
+        ),
+      },
+      hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
+    );
   } catch (err) {
     // Der Zwischenstand darf einen Fehlschlag nicht überleben: sonst sähe
     // ensureGeneration ein (Platzhalter-)Dokument und würde nie neu
@@ -259,7 +331,11 @@ export async function runWebsiteGenerationV2Job(
     await runWebsiteGenerationV2(
       jobId,
       website,
-      { ...business, openingHours: business.openingHours as string[] | null },
+      {
+        ...business,
+        openingHours: business.openingHours as string[] | null,
+        googleReviews: business.googleReviews as GmbReview[] | null,
+      },
       category,
       industryKey
     );

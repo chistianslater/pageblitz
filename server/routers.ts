@@ -112,6 +112,12 @@ import {
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { buildV2GenerationFacts } from "./generationV2/facts";
+import {
+  buildGuardContextText,
+  guardGeneratedContent,
+} from "./generationV2/factGuard";
+import { crawlExistingSite } from "./gmb/siteCrawl";
+import type { GmbReview } from "./gmb/details";
 import { fetchGmbDetails, persistGmbDetails } from "./gmb/details";
 import { resolveGmbCategory } from "./gmb/category";
 import { buildStudioUrl } from "./_core/lifecycleScheduler";
@@ -1188,23 +1194,45 @@ export const appRouter = router({
         const businessForFacts = {
           ...business,
           openingHours: business.openingHours as string[] | null,
+          googleReviews: business.googleReviews as GmbReview[] | null,
         };
-        const images = await resolveV2Images(
-          businessForFacts,
-          category,
-          industryKey
-        );
-        const newSlug = slugify(business.name) + "-" + nanoid(4);
-
-        const websiteData = await generateSiteContent({
-          packId,
-          ...buildV2GenerationFacts(
+        // Wie in runJob.ts (Plan B7 Task 3): Fotos werden nach R2 gespiegelt
+        // (nie Google-URLs mit key= im Dokument), die bestehende Betriebs-
+        // Website ist Faktenquelle, der Fakten-Guard korrigiert Stadt/Branche.
+        const [images, existingSite] = await Promise.all([
+          resolveV2Images(
             businessForFacts,
             category,
-            newSlug,
-            images
+            industryKey,
+            input.websiteId
           ),
-        });
+          business.website
+            ? crawlExistingSite(business.website)
+            : Promise.resolve(null),
+        ]);
+        const newSlug = slugify(business.name) + "-" + nanoid(4);
+
+        const factArgs = buildV2GenerationFacts(
+          businessForFacts,
+          category,
+          newSlug,
+          images,
+          existingSite
+        );
+        let websiteData = await generateSiteContent({ packId, ...factArgs });
+        websiteData = await guardGeneratedContent(
+          websiteData,
+          {
+            businessName: business.name,
+            city: factArgs.facts?.contact?.city,
+            category,
+            contextText: buildGuardContextText(
+              business.editorialSummary,
+              existingSite
+            ),
+          },
+          hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
+        );
 
         const newPreviewToken = nanoid(32);
         // Defensiv: generateSiteContent liefert bereits schema-valide v2-Daten,
