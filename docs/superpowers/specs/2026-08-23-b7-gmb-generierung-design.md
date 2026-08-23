@@ -1,6 +1,6 @@
 # Spec-Entwurf: Plan B7 — GMB-Wahrheit, vollständige Erstgenerierung, Warte-UX, Pack-Feintuning
 
-**Datum:** 2026-08-23 · **Status:** ENTWURF (wartet auf Freigabe) · **Anlass:** User-Feedback nach B6-Livegang: (1) Packs von der Richtung passend, im Detail nicht feingetunt (Positionierung, Aufteilung, Bilder); (2) Wartezeit der Generierung braucht „Zeitmaschinen-Effekt" + bewegten Fortschrittsbalken; (3) System nutzt GMB nicht wirklich — SCHAU & HORCH bekam Texte über „Optik und Akustik"; (4) Erstwebsite wirkt leer/verloren.
+**Datum:** 2026-08-23 · **Status:** verbindlich (freigegeben 2026-08-23, „Das passt" — §5 alle wie empfohlen; „Zeitmaschine" = sichtbarer Aufbau der Website) · **Anlass:** User-Feedback nach B6-Livegang: (1) Packs von der Richtung passend, im Detail nicht feingetunt (Positionierung, Aufteilung, Bilder); (2) Wartezeit der Generierung braucht „Zeitmaschinen-Effekt" + bewegten Fortschrittsbalken; (3) System nutzt GMB nicht wirklich — SCHAU & HORCH bekam Texte über „Optik und Akustik"; (4) Erstwebsite wirkt leer/verloren.
 
 ## 0. Diagnose (auf Prod verifiziert, Website 491 „SCHAU & HORCH")
 
