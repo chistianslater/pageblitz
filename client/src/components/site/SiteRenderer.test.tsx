@@ -84,4 +84,92 @@ describe("SiteRenderer", () => {
       expect(html).toContain("pb-site pb-werkbank");
     });
   });
+
+  describe("pathname / Unterseiten (Plan B6, Task 3)", () => {
+    const dataWithPage: WebsiteDataV2 = {
+      ...data,
+      sections: [
+        { type: "hero", headline: "Hallo Welt" },
+        { type: "services", headline: "Leistungen", items: [{ title: "A" }] },
+      ],
+      pages: [
+        {
+          slug: "leistungen-im-detail",
+          title: "Leistungen im Detail",
+          seo: { title: "Leistungen im Detail", description: "Details." },
+          sections: [
+            {
+              type: "pageHeader",
+              title: "Leistungen im Detail",
+              intro: "Ein genauerer Blick.",
+            },
+            {
+              type: "services",
+              headline: "Leistungen",
+              items: [{ title: "B" }],
+            },
+          ],
+        },
+      ],
+    };
+
+    beforeEach(() => {
+      PACK_MODULES.werkbank = REAL_WERKBANK_MODULE;
+    });
+
+    test("ohne pathname (Default) rendert weiterhin die Startseite", () => {
+      const html = renderToStaticMarkup(<SiteRenderer data={dataWithPage} />);
+      expect(html).toContain("Hallo Welt");
+      expect(html).not.toContain("Ein genauerer Blick.");
+    });
+
+    test("pathname einer bekannten Page rendert den generischen pageHeader-Fallback (Titel + Intro)", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={dataWithPage} pathname="/leistungen-im-detail" />
+      );
+      expect(html).toContain("pb-page-header-fallback");
+      expect(html).toContain("Leistungen im Detail");
+      expect(html).toContain("Ein genauerer Blick.");
+    });
+
+    test("pathname einer bekannten Page rendert die Page-Sektionen statt der Startseiten-Sektionen", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={dataWithPage} pathname="/leistungen-im-detail" />
+      );
+      // "B" (Page-Service) statt "A" (Startseiten-Service) — Hero (nur
+      // Startseite) fehlt.
+      expect(html).toContain(">B<");
+      expect(html).not.toContain("Hallo Welt");
+    });
+
+    test("unbekannter pathname (keine Page) rendert die Startseite, kein Fallback-Header", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={dataWithPage} pathname="/nicht-vorhanden" />
+      );
+      expect(html).toContain("Hallo Welt");
+      expect(html).not.toContain("pb-page-header-fallback");
+    });
+
+    test("Page ohne eigene pageHeader-Sektion → kein Fallback-Header", () => {
+      const withoutHeader: WebsiteDataV2 = {
+        ...dataWithPage,
+        pages: [
+          {
+            ...dataWithPage.pages![0],
+            sections: [
+              {
+                type: "services",
+                headline: "Leistungen",
+                items: [{ title: "B" }],
+              },
+            ],
+          },
+        ],
+      };
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={withoutHeader} pathname="/leistungen-im-detail" />
+      );
+      expect(html).not.toContain("pb-page-header-fallback");
+    });
+  });
 });

@@ -181,6 +181,19 @@ function Router() {
           <Route path="/datenschutz">
             {() => <LegalPage forceSlug={customerSlug} />}
           </Route>
+          {/* Unterseiten-Add-on (Plan B6, Task 3): ein einzelnes Segment
+              hinter der Subdomain-Root ist entweder die Startseite ("/",
+              page === undefined) oder eine Unterseite ("/<slug>"). Die
+              tatsächliche Existenz der Page prüft SitePage selbst
+              (pageForPathname) und rendert sonst einen 404-Platzhalter. */}
+          <Route path="/:page?">
+            {params => (
+              <SitePage forceSlug={customerSlug} pageSlug={params.page} />
+            )}
+          </Route>
+          {/* Fallback für tiefer verschachtelte, garantiert ungültige Pfade
+              (z. B. "/a/b") — rendert wie vor Task 3 die Startseite statt
+              eines leeren Screens. */}
           <Route>{() => <SitePage forceSlug={customerSlug} />}</Route>
         </Switch>
       </Suspense>
@@ -216,6 +229,15 @@ function Router() {
         </Route>
         <Route path="/site/:slug/datenschutz">
           {params => <LegalPage key={params.slug} />}
+        </Route>
+        {/* Unterseiten-Add-on (Plan B6, Task 3): muss NACH den beiden
+            Legal-Routen stehen, sonst würde dieses generische Muster
+            "impressum"/"datenschutz" auch abfangen (wouter matcht die erste
+            passende Route in Deklarationsreihenfolge). */}
+        <Route path="/site/:slug/:page">
+          {params => (
+            <SitePage key={`${params.slug}-${params.page}`} pageSlug={params.page} />
+          )}
         </Route>
         {/* Legacy-Chat-Onboarding → Studio (Task 3, Cutover-Redirects) */}
         <Route path="/preview/:token/onboarding">

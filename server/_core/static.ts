@@ -77,7 +77,12 @@ const SPA_ROUTES: RegExp[] = [
   // Liste nie — nur die Onboarding-Unterroute bleibt eine SPA-Route
   // (Redirect-Komponente auf /onboarding/:token, Task 3, Cutover-Redirects).
   /^\/preview\/[^/]+\/onboarding$/,
-  /^\/site\/[^/]+(\/(impressum|datenschutz))?$/,
+  // Seit Plan B6 (Task 3) auch Unterseiten-Slugs (nicht mehr nur
+  // impressum/datenschutz) — die tatsächliche Existenz der Page prüft die
+  // SSR-Middleware bzw. die Client-Route (SitePage), hier reicht die
+  // Pfadform, damit ein Reload/Direktaufruf von der SPA statt einem echten
+  // 404 bedient wird.
+  /^\/site\/[^/]+(\/[a-z0-9-]+)?$/,
   /^\/websites\/\d+\/onboarding$/,
   // Studio (v2 Onboarding/Editor) — Direktaufruf/Reload muss von der SPA
   // bedient werden statt einem 404, siehe client/src/App.tsx "/onboarding/:token".

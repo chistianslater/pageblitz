@@ -6,6 +6,12 @@ import type {
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
+import {
+  buildNavItems,
+  pageContentSections,
+  pageForPathname,
+  pageHeaderSection,
+} from "./engine";
 
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
@@ -40,6 +46,14 @@ export const SiteRenderer: React.FC<{
    * (Dashboard, Editor, ...) explizit auf "preview".
    */
   islandsMode?: "live" | "preview";
+  /**
+   * Aktueller Pfad relativ zur Kundenseite ("/" für die Startseite,
+   * "/<slug>" für eine Unterseite aus `data.pages`) — Plan B6, Task 3.
+   * `undefined` verhält sich wie "/" (Startseite, unverändertes Verhalten
+   * vor Task 3). Bestimmt, ob eine Unterseite statt der Startseite gerendert
+   * wird und geht in `buildNavItems` ein (Anker-Präfix, `current`-Flag).
+   */
+  pathname?: string;
 }> = ({
   data,
   basePath = "",
@@ -48,6 +62,7 @@ export const SiteRenderer: React.FC<{
   slug = "",
   site,
   islandsMode,
+  pathname = "/",
 }) => {
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
@@ -62,13 +77,53 @@ export const SiteRenderer: React.FC<{
     getConstitution(effectiveData.stylePackId),
     effectiveData.colorOverrides
   );
+  const navItems = buildNavItems(effectiveData, { pathname, basePath });
+  const currentPage = pageForPathname(effectiveData, pathname);
+  // Solange die 14 Pack-Module noch nicht auf `sections`/`pageTitle`
+  // umgestellt sind (Task 4), rendert eine Unterseite über dasselbe
+  // `mod.Page` wie die Startseite — nur mit den Page-Sektionen anstelle der
+  // Startseiten-Sektionen (siehe pageContentSections: dieselben Zod-Schemas,
+  // strukturell kompatibler Cast). `pageHeader` ist darin NICHT enthalten
+  // (kein Startseiten-Sektionstyp) und bekommt bis Task 4 einen generischen
+  // Fallback direkt hier.
+  const pageRenderData = currentPage
+    ? {
+        ...effectiveData,
+        sections: pageContentSections(currentPage),
+        sectionOrder: undefined,
+        hiddenSections: undefined,
+      }
+    : effectiveData;
+  const header = currentPage ? pageHeaderSection(currentPage) : null;
   return (
     <div
       className={`pb-site pb-${effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
     >
       <style dangerouslySetInnerHTML={{ __html: mod.css }} />
-      <mod.Page data={effectiveData} basePath={basePath} now={now} />
+      {header && (
+        <header
+          className="pb-page-header-fallback"
+          style={{
+            padding: "3rem 1.25rem",
+            textAlign: "center",
+            color: "var(--pb-ink)",
+          }}
+        >
+          <h1>{header.title}</h1>
+          {header.intro && (
+            <p style={{ color: "var(--pb-muted)" }}>{header.intro}</p>
+          )}
+        </header>
+      )}
+      <mod.Page
+        data={pageRenderData}
+        basePath={basePath}
+        now={now}
+        navItems={navItems}
+        pageTitle={currentPage?.title}
+        sections={currentPage?.sections}
+      />
       <SiteIslands
         data={effectiveData}
         slug={slug}

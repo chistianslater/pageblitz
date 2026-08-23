@@ -6,9 +6,21 @@ import AgeGate from "@/components/AgeGate";
 import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
 import { parseV2 } from "@/components/site/isV2";
+import { pageForPathname } from "@/components/site/engine";
 import { packFontHrefs } from "@/lib/packFonts";
 
-export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
+interface SitePageProps {
+  forceSlug?: string;
+  /**
+   * Slug einer Unterseite (`data.pages[]`) — Plan B6, Task 3. Kommt entweder
+   * aus der Route `/site/:slug/:page` (Pfadform) oder aus dem
+   * `:page?`-Segment der Subdomain-Route (App.tsx). `undefined` rendert die
+   * Startseite (unverändertes Verhalten vor Task 3).
+   */
+  pageSlug?: string;
+}
+
+export default function SitePage({ forceSlug, pageSlug }: SitePageProps = {}) {
   const params = useParams<{ slug: string }>();
   const effectiveSlug = forceSlug ?? params.slug ?? "";
 
@@ -160,6 +172,32 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
   const business = data.business;
   const primaryColor = "#111111";
 
+  // Unterseiten-Add-on (Plan B6, Task 3): CSR-Fallback für /site/:slug/:page
+  // bzw. die Subdomain-Form. `pageSlug` kommt aus der Route (App.tsx); ist
+  // das Dokument ein gültiges v2-Dokument und hat KEINE Page mit diesem Slug,
+  // rendert ein 404-Platzhalter statt der Startseite — sonst würde ein
+  // Tippfehler in einem geteilten Link stillschweigend die Startseite zeigen.
+  const pathname = pageSlug ? `/${pageSlug}` : undefined;
+  const v2ForPageCheck = pageSlug ? parseV2(w.websiteData) : null;
+  const pageExists =
+    !pageSlug || !v2ForPageCheck || pageForPathname(v2ForPageCheck, pathname!) !== null;
+
+  if (pageSlug && v2ForPageCheck && !pageExists) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+          <h1 className="text-xl font-bold mt-4 text-gray-900">
+            Seite nicht gefunden
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Diese Unterseite existiert nicht (mehr).
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* FSK-18 Age-Gate: Self-Declaration vor dem Site-Content, wenn die
@@ -173,6 +211,7 @@ export default function SitePage({ forceSlug }: { forceSlug?: string } = {}) {
         slug={effectiveSlug}
         islandsMode="live"
         site={{ chatWelcomeMessage: w.chatWelcomeMessage ?? null }}
+        pathname={pathname}
       />
       <CookieBanner slug={effectiveSlug} primaryColor={primaryColor} />
     </>

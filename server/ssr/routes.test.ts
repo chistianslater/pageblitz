@@ -127,11 +127,16 @@ describe("SSR routes", () => {
       expect(datenschutz.text).toContain("Datenschutz");
     });
 
-    test("/demo/:pack/<unbekannte Unterseite> matcht keine Route → SPA-Fallback (404)", async () => {
+    // Seit Plan B6 (Task 3) matcht /demo/:pack/:page([a-z0-9-]+) auch
+    // unbekannte Unterseiten (handleDemoPageRoute) — die Route antwortet
+    // jetzt selbst mit einem generischen 404 statt next()/SPA-Fallback (vor
+    // Task 3 gab es für dieses Pfadmuster gar keine Route).
+    test("/demo/:pack/<unbekannte Unterseite> → eigenes 404, Parameter nicht reflektiert", async () => {
       const app = buildAppWithFallback();
       const res = await request(app).get("/demo/werkbank/foo");
       expect(res.status).toBe(404);
-      expect(res.text).toBe("SPA-Fallback");
+      expect(res.text).toBe("Unbekannte Seite");
+      expect(res.text).not.toContain("foo");
     });
 
     test("/demo/<unbekanntes Pack>/impressum → 404, Body reflektiert den Parameter NICHT", async () => {
@@ -161,6 +166,51 @@ describe("SSR routes", () => {
       const app = buildAppWithFallback();
       await request(app).get("/demo/kanzlei");
       expect(getWebsiteBySlug).not.toHaveBeenCalled();
+    });
+
+    describe("Demo-Unterseite /demo/:pack/:page (Plan B6, Task 3)", () => {
+      test("bekannte Fixture-Page → 200, noindex, 1h-Cache, enthält den Page-Titel", async () => {
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          "/demo/werkbank/leistungen-im-detail"
+        );
+        expect(res.status).toBe(200);
+        expect(res.headers["x-robots-tag"]).toBe("noindex, nofollow");
+        expect(res.headers["cache-control"]).toBe("public, max-age=3600");
+        expect(res.text).toContain("Leistungen im Detail");
+      });
+
+      test("unbekannte Page → 404, Body reflektiert den Parameter NICHT", async () => {
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          "/demo/werkbank/%3Cscript%3E"
+        );
+        expect(res.status).toBe(404);
+        expect(res.text).not.toContain("<script");
+      });
+
+      test("unbekanntes Pack → 404, Body reflektiert den Parameter NICHT", async () => {
+        const app = buildAppWithFallback();
+        const res = await request(app).get("/demo/disco/leistungen-im-detail");
+        expect(res.status).toBe(404);
+        expect(res.text).toBe("Unbekanntes Pack");
+        expect(res.text).not.toContain("disco");
+      });
+
+      test("Legal-Segmente (impressum/datenschutz) laufen weiterhin über handleDemoLegalRoute, nicht über die Page-Route", async () => {
+        const app = buildAppWithFallback();
+        const res = await request(app).get("/demo/werkbank/impressum");
+        expect(res.status).toBe(200);
+        expect(res.text).toContain("Impressum");
+        expect(res.text).not.toContain("Leistungen im Detail");
+      });
+
+      test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
+        (getWebsiteBySlug as Mock).mockReset();
+        const app = buildAppWithFallback();
+        await request(app).get("/demo/werkbank/leistungen-im-detail");
+        expect(getWebsiteBySlug).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -288,6 +338,101 @@ describe("SSR routes", () => {
       expect(resC.status).toBe(404);
       expect(resC.text).toContain("Neuer Name GmbH");
       expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+    });
+
+    describe("Unterseiten (pages[], Plan B6 Task 3)", () => {
+      test("bekannte Unterseite (/site/:slug/<page-slug>) → 200, Page-SEO im <head>, Canonical auf den Page-Pfad", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-page",
+          websiteData: fixture,
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get(`/site/brandt-page/${page.slug}`);
+        expect(res.status).toBe(200);
+        expect(res.text).toContain(`<title>${page.seo.title}</title>`);
+        expect(res.text).toContain(`rel="canonical" href="`);
+        expect(res.text).toMatch(
+          new RegExp(`rel="canonical" href="[^"]*/${page.slug}"`)
+        );
+      });
+
+      test("Startseite und Unterseite cachen getrennt (eigener Cache-Key je Pfad) — je Pfad nur EIN DB-Call", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-page-cache",
+          websiteData: fixture,
+        });
+        const app = buildAppWithFallback();
+        const home = await request(app).get("/site/brandt-page-cache");
+        const page1 = await request(app).get(
+          `/site/brandt-page-cache/${page.slug}`
+        );
+        const page2 = await request(app).get(
+          `/site/brandt-page-cache/${page.slug}`
+        );
+        expect(home.status).toBe(200);
+        expect(page1.status).toBe(200);
+        expect(page2.status).toBe(200);
+        // 1x Startseite + 1x Unterseite — der zweite Aufruf der Unterseite
+        // kommt aus dem (eigenen, pfadspezifischen) Cache-Eintrag.
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+      });
+
+      test("invalidateSsrCache() löscht per Prefix-Scan auch eine bereits gecachte Unterseite", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-page-invalidate",
+          websiteData: fixture,
+        });
+        const app = buildAppWithFallback();
+        const first = await request(app).get(
+          `/site/brandt-page-invalidate/${page.slug}`
+        );
+        expect(first.status).toBe(200);
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+
+        invalidateSsrCache("brandt-page-invalidate");
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-page-invalidate",
+          websiteData: { ...fixture, businessName: "Neuer Name GmbH" },
+        });
+        const second = await request(app).get(
+          `/site/brandt-page-invalidate/${page.slug}`
+        );
+        expect(second.status).toBe(200);
+        expect(second.text).toContain("Neuer Name GmbH");
+        // Ohne Invalidation käme die zweite Antwort aus dem (jetzt veralteten)
+        // Cache-Eintrag der Unterseite und würde erneut den alten Namen
+        // zeigen — ein neuer DB-Call beweist, dass der Page-Cache-Eintrag
+        // tatsächlich gelöscht wurde.
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+      });
+
+      test("invalidateSsrCache() für einen Slug löscht NICHT den Cache eines Slugs mit demselben Präfix (z. B. 'foo' vs. 'foobar')", async () => {
+        const fixture = getFixture("werkbank", "full");
+        (getWebsiteBySlug as Mock).mockImplementation(async (slug: string) => ({
+          slug,
+          websiteData: fixture,
+        }));
+        const app = buildAppWithFallback();
+        await request(app).get("/site/prefixtest");
+        await request(app).get("/site/prefixtestextra");
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+
+        invalidateSsrCache("prefixtest");
+        // "prefixtestextra" darf NICHT betroffen sein — ein zweiter Request
+        // muss weiterhin aus dem Cache kommen (kein zusätzlicher DB-Call).
+        await request(app).get("/site/prefixtestextra");
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+
+        // "prefixtest" selbst wurde invalidiert → neuer DB-Call.
+        await request(app).get("/site/prefixtest");
+        expect(getWebsiteBySlug).toHaveBeenCalledTimes(3);
+      });
     });
 
     test("Asset-artiger Pfad (Dateiendung) unter v2-Site → next(), SPA-Fallback, kein DB-Zugriff", async () => {
@@ -457,6 +602,39 @@ describe("SSR routes", () => {
         "/preview-ssr/abcdefghabcdefgh/impressum"
       );
       expect(res.status).toBe(404);
+    });
+
+    describe("Unterseiten (pages[], Plan B6 Task 3)", () => {
+      test("/preview-ssr/:token/:page — bekannte Unterseite → 200, noindex, no-store, Page-Titel im HTML", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        (getWebsiteByToken as Mock).mockResolvedValue({
+          id: 1,
+          slug: "s",
+          websiteData: fixture,
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          `/preview-ssr/abcdefghabcdefgh/${page.slug}`
+        );
+        expect(res.status).toBe(200);
+        expect(res.headers["x-robots-tag"]).toContain("noindex");
+        expect(res.headers["cache-control"]).toContain("no-store");
+        expect(res.text).toContain(`<title>${page.seo.title}</title>`);
+      });
+
+      test("/preview-ssr/:token/:page — unbekannte Unterseite → 404", async () => {
+        (getWebsiteByToken as Mock).mockResolvedValue({
+          id: 1,
+          slug: "s",
+          websiteData: getFixture("werkbank", "full"),
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          "/preview-ssr/abcdefghabcdefgh/nicht-vorhanden"
+        );
+        expect(res.status).toBe(404);
+      });
     });
 
     test("?pack=kanzlei rendert die Inhalte im anderen Pack, ohne zu persistieren", async () => {

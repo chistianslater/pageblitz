@@ -4,9 +4,14 @@ import { SiteRenderer } from "../../client/src/components/site/SiteRenderer";
 import "../../client/src/components/site/packs/index";
 import { getConstitution } from "../../shared/stylePacks";
 import type { FontSpec } from "../../shared/stylePacks";
-import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type {
+  Page,
+  SectionOf,
+  WebsiteDataV2,
+} from "../../shared/siteContract/types";
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
 import { getIslandsBundlePath } from "./islandsBundle";
+import { pageForPathname } from "../../client/src/components/site/engine";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -170,6 +175,98 @@ function renderHead(
   return tags.join("\n");
 }
 
+/**
+ * Meta/Canonical/OG-Kopf für eine Unterseite (Plan B6, Task 3): Titel/
+ * Beschreibung kommen aus `page.seo` statt `data.seo`, `og:image` fällt auf
+ * das Startseiten-Hero-Bild zurück (Unterseiten haben kein eigenes
+ * Hero-Bild). Kein LocalBusiness-JSON-LD hier — das bleibt eine
+ * Startseiten-Angelegenheit (Google erwartet das Structured-Data-Markup
+ * primär auf der Hauptseite).
+ */
+function renderPageHead(
+  data: WebsiteDataV2,
+  page: Page,
+  canonicalUrl: string,
+  origin: string
+): string {
+  const constitution = getConstitution(data.stylePackId);
+  const fontsUrl = buildFontsUrl([
+    constitution.type.display,
+    constitution.type.body,
+    constitution.type.utility,
+  ]);
+  const heroImageSrc = findHero(data)?.imageUrl;
+  const tags = [
+    '<meta charset="utf-8" />',
+    '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+    `<title>${esc(page.seo.title)}</title>`,
+    `<meta name="description" content="${esc(page.seo.description)}" />`,
+    `<link rel="canonical" href="${esc(canonicalUrl)}" />`,
+    `<meta property="og:title" content="${esc(page.seo.title)}" />`,
+    `<meta property="og:description" content="${esc(page.seo.description)}" />`,
+    '<meta property="og:type" content="website" />',
+  ];
+  if (heroImageSrc) {
+    const ogImage = toAbsoluteUrl(origin, heroImageSrc);
+    tags.push(`<meta property="og:image" content="${esc(ogImage)}" />`);
+    tags.push('<meta name="twitter:card" content="summary_large_image" />');
+  }
+  tags.push(
+    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
+    `<link rel="stylesheet" href="${esc(fontsUrl)}" />`
+  );
+  return tags.join("\n");
+}
+
+/**
+ * Rendert eine Unterseite (`data.pages[]`) statt der Startseite — gleiche
+ * HTML-Hülle wie der Startseiten-Zweig unten, nur mit Page-Kopf
+ * (`renderPageHead`) und `pathname` an `SiteRenderer` durchgereicht, damit
+ * dort die Page-Sektionen statt der Startseiten-Sektionen rendern (siehe
+ * SiteRenderer.tsx).
+ */
+function renderPageHtml(
+  data: WebsiteDataV2,
+  page: Page,
+  canonicalUrl: string,
+  pathname: string,
+  basePath: string,
+  opts: RenderSiteOptions
+): RenderSiteResult {
+  const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
+  const head = renderPageHead(data, page, canonicalUrl, opts.origin);
+  const body = renderToStaticMarkup(
+    <SiteRenderer
+      data={data}
+      basePath={basePath}
+      now={opts.now}
+      slug={opts.slug}
+      site={opts.site}
+      islandsMode={opts.islandsMode}
+      pathname={pathname}
+    />
+  );
+  const canvasColor = getCanvasColor(data.stylePackId);
+  const bodyParts = [body];
+  if (includeIslands) {
+    bodyParts.push(
+      `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
+    );
+  }
+  const html = `<!doctype html>
+<html lang="de">
+<head>
+${head}
+<style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
+</head>
+<body>
+${bodyParts.join("\n")}
+</body>
+</html>`;
+  return { html, status: 200 };
+}
+
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
 function getCanvasColor(packId: string): string {
   try {
@@ -266,6 +363,18 @@ export function renderSiteHtml(
       data.legal?.datenschutzHtml,
       basePath
     );
+  }
+
+  // Unterseite (Plan B6, Task 3): jeder andere Pfad, der zu `data.pages[]`
+  // passt, rendert die Page statt der Startseite. Ein Pfad ohne Treffer
+  // (inkl. "/") fällt auf den Startseiten-Zweig unten durch — Aufrufer
+  // (server/ssr/routes.ts) prüfen die Pfad-Gültigkeit selbst und rufen
+  // renderSiteHtml nur mit bekannten Pfaden auf.
+  if (pathname !== "/") {
+    const page = pageForPathname(data, pathname);
+    if (page) {
+      return renderPageHtml(data, page, canonicalUrl, pathname, basePath, opts);
+    }
   }
 
   // Deckt sich mit SiteIslands' eigener Render-Bedingung (Features aktiv UND

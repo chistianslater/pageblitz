@@ -3,8 +3,13 @@ import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
-import { PACK_IDS, type PackId } from "../../shared/siteContract/types";
+import {
+  PACK_IDS,
+  type PackId,
+  type WebsiteDataV2,
+} from "../../shared/siteContract/types";
 import { getWebsiteBySlug, getWebsiteByToken } from "../db";
+import { pageForPathname } from "../../client/src/components/site/engine";
 
 /** Mirror of getCustomerSubdomain() in client/src/App.tsx:109-115 — server-side Host-Erkennung. */
 const RESERVED_SUBDOMAINS = ["www", "api", "analytics", "admin", "mail", "ftp"];
@@ -43,32 +48,30 @@ function capCacheSize<V>(cache: Map<string, V>, max: number): void {
 }
 
 /**
- * Diese Pfade werden auf v2-Kundenseiten voll SSR-gerendert (Startseite,
- * Rechtsseiten). Andere Unterpfade unter einer bekannten v2-Site bekommen ein
+ * Diese Pfade sind IMMER bekannt, unabhängig vom geladenen Dokument
+ * (Startseite, Rechtsseiten). Seit Plan B6 (Task 3) kommen dynamisch die
+ * Slugs aus `data.pages[]` dazu — siehe `isKnownSitePathname` — deshalb kann
+ * "bekannt" nicht mehr rein aus dem Pfad ohne geladenes Dokument entschieden
+ * werden. Andere Unterpfade unter einer bekannten v2-Site bekommen ein
  * eigenes SSR-404 (siehe `handleCustomerSiteSsr`) statt next() — nur
  * Asset-artige Pfade (Dateiendung) und unbekannte Slugs gehen weiterhin an
  * next(), damit Static-Middleware/SPA-Fallback greifen kann.
  */
-const SSR_ALLOWED_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
+const STATIC_SITE_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
+
+/**
+ * Ist `pathname` für dieses Dokument bekannt — entweder statisch (Startseite,
+ * Rechtsseiten) oder eine Unterseite aus `data.pages[]` (Plan B6, Task 3).
+ */
+function isKnownSitePathname(data: WebsiteDataV2, pathname: string): boolean {
+  return (
+    STATIC_SITE_PATHNAMES.has(pathname) ||
+    pageForPathname(data, pathname) !== null
+  );
+}
 
 /** Pfade mit Dateiendung (Favicons, Bilder, robots.txt, ...) sind nie SSR-Sache. */
 const ASSET_PATHNAME_RE = /\.[a-z0-9]+$/i;
-
-/**
- * Löscht alle SSR-Cache-Einträge für einen Slug — beide Pfadformen ("sub:"
- * für kunde.pageblitz.de/..., "path:" für pageblitz.de/site/<slug>/...) und
- * alle SSR_ALLOWED_PATHNAMES — sowie den Negative-Cache-Eintrag. Wird nach
- * jeder (Re-)Generierung aufgerufen, damit Kunden ihre neue Website sofort
- * sehen statt bis zu 60s (CACHE_TTL_MS) auf den TTL-Ablauf zu warten.
- */
-export function invalidateSsrCache(slug: string): void {
-  const key = slug.toLowerCase();
-  siteMissCache.delete(key);
-  for (const pathname of [...SSR_ALLOWED_PATHNAMES, NOT_FOUND_CACHE_PATH]) {
-    siteHtmlCache.delete(`sub:${key}${pathname}`);
-    siteHtmlCache.delete(`path:${key}${pathname}`);
-  }
-}
 
 /**
  * Pseudo-Pfad für den 404-Cache-Eintrag einer v2-Site: EIN Eintrag je Slug
@@ -77,6 +80,45 @@ export function invalidateSsrCache(slug: string): void {
  * ein NUL-Zeichen und kann daher nie mit einem echten Request-Pfad kollidieren.
  */
 const NOT_FOUND_CACHE_PATH = "\u0000404";
+
+/**
+ * Löscht alle SSR-Cache-Einträge für einen Slug per Prefix-Scan — beide
+ * Pfadformen ("sub:" für kunde.pageblitz.de/..., "path:" für
+ * pageblitz.de/site/<slug>/...), jede gecachte Unterseite UND den
+ * NOT_FOUND_CACHE_PATH-Eintrag. Seit Plan B6 (Task 3) sind Unterseiten
+ * dynamisch (`data.pages[]`) — eine feste Pfad-Liste (wie vorher
+ * SSR_ALLOWED_PATHNAMES) reicht daher nicht mehr; ein Scan über die
+ * tatsächlichen Cache-Keys trifft immer alle Einträge des Slugs, egal welche
+ * Pfade gerade gecacht sind. `matchesSlugPrefix` prüft eine echte
+ * Segmentgrenze ("/" oder das NUL-Zeichen) direkt nach dem Slug, damit der
+ * Slug "foo" nicht versehentlich Einträge von "foobar" mitlöscht. Wird nach
+ * jeder (Re-)Generierung aufgerufen, damit Kunden ihre neue Website sofort
+ * sehen statt bis zu 60s (CACHE_TTL_MS) auf den TTL-Ablauf zu warten.
+ */
+function matchesSlugPrefix(
+  cacheKey: string,
+  cacheKeyPrefix: string,
+  slug: string
+): boolean {
+  const base = `${cacheKeyPrefix}${slug}`;
+  return (
+    cacheKey.startsWith(`${base}/`) ||
+    cacheKey.startsWith(`${base}${NOT_FOUND_CACHE_PATH}`)
+  );
+}
+
+export function invalidateSsrCache(slug: string): void {
+  const key = slug.toLowerCase();
+  siteMissCache.delete(key);
+  for (const cacheKey of Array.from(siteHtmlCache.keys())) {
+    if (
+      matchesSlugPrefix(cacheKey, "sub:", key) ||
+      matchesSlugPrefix(cacheKey, "path:", key)
+    ) {
+      siteHtmlCache.delete(cacheKey);
+    }
+  }
+}
 
 function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
@@ -88,14 +130,15 @@ function isFixtureKind(
   return value === "full" || value === "minimal" || value === "features";
 }
 
-/** Nur diese Pfade werden in der Studio-Preview SSR-gerendert. */
-const PREVIEW_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
-
 /**
  * Studio-Live-Preview: rendert das gespeicherte v2-Dokument per previewToken
  * (Zugangsgeheimnis, nanoid 32) — ungecacht (jeder Patch soll sofort sichtbar
  * sein), noindex, optional mit Pack-Override (?pack=) für Stil-Kandidaten.
- * Der Override verändert NIE das gespeicherte Dokument.
+ * Der Override verändert NIE das gespeicherte Dokument. Seit Plan B6 (Task 3)
+ * ist die Pfad-Gültigkeit vom Dokument abhängig (`data.pages[]`), deshalb
+ * wird erst geladen und geparst, dann der Pfad gegen `isKnownSitePathname`
+ * geprüft — anders als vorher (statische `PREVIEW_PATHNAMES`, vor dem
+ * Token-Lookup geprüft) reicht ein rein statischer Pfad-Check nicht mehr.
  */
 async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
   // Express-Regex-Route (siehe registerSsrRoutes): params[0] = Token, params[1] = Restpfad
@@ -104,10 +147,6 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
     typeof req.params[1] === "string" && req.params[1].length > 0
       ? req.params[1]
       : "/";
-  if (!PREVIEW_PATHNAMES.has(pathname)) {
-    res.status(404).send("Vorschau-Seite nicht gefunden");
-    return;
-  }
   const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
   if (packParam && !isKnownPackId(packParam)) {
     // Bewusst OHNE den Parameter im Body zu reflektieren — ein Query-Wert wie
@@ -125,6 +164,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
     const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
     if (!parsed.success) {
       res.status(404).send("Noch keine Website im neuen Format");
+      return;
+    }
+    if (!isKnownSitePathname(parsed.data, pathname)) {
+      res.status(404).send("Vorschau-Seite nicht gefunden");
       return;
     }
     const data = packParam
@@ -368,10 +411,72 @@ function handleDemoLegalRoute(req: Request, res: Response): void {
 }
 
 /**
+ * Demo-Unterseiten (`/demo/:pack/:page`, Plan B6 Task 3): rendert eine Page
+ * aus der "full"-Fixture des Packs (jede "full"-Fixture hat seit Task 2 die
+ * Demo-Page `leistungen-im-detail`). Muss NACH `handleDemoLegalRoute`
+ * registriert werden — deren Pfad-Segment ist auf die Literale
+ * "impressum"/"datenschutz" beschränkt, matcht also nie hierher, aber ohne
+ * diese Reihenfolge würde ein generisches `:page([a-z0-9-]+)` VOR der
+ * spezifischeren Route auch "impressum"/"datenschutz" abfangen und die
+ * Legal-Sonderbehandlung (DEMO_LEGAL_NOTICE) übergehen. Unbekannte Pages
+ * (Pack ohne diese Page, oder Tippfehler) → 404, Parameter nicht reflektiert
+ * (wie die übrigen Demo-Routen).
+ */
+function handleDemoPageRoute(req: Request, res: Response): void {
+  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
+  const pageParam = typeof req.params.page === "string" ? req.params.page : "";
+  if (!isKnownPackId(packParam)) {
+    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe handleDemoRoute).
+    res.status(404).type("text/plain").send("Unbekanntes Pack");
+    return;
+  }
+  try {
+    const data = getFixture(packParam, "full");
+    const page = pageForPathname(data, `/${pageParam}`);
+    if (!page) {
+      res.status(404).type("text/plain").send("Unbekannte Seite");
+      return;
+    }
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const basePath = `/demo/${packParam}`;
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath,
+      pathname: `/${page.slug}`,
+      slug: "demo",
+      site: {},
+      islandsMode: "preview",
+      // Gleiches feste Datum wie handleDemoRoute — siehe Kommentar dort.
+      now: new Date("2026-08-19T10:00:00"),
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Demo-Unterseite-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
+/**
  * Kundenseiten-SSR hinter Flag: rendert `websiteData` server-seitig, wenn
  * `SSR_SITES !== "off"` UND das geladene Dokument gegen WebsiteDataV2Schema
  * validiert. Andernfalls `next()` — das bestehende SPA-Verhalten bleibt
  * unverändert (Client rendert Legacy-Websites und SSR_SITES=off weiterhin selbst).
+ *
+ * Reihenfolge seit Plan B6 (Task 3): Slug auflösen → Website laden (mit
+ * Cache-Kurzschluss davor) → Pfad gegen `/`, Legal UND `data.pages[]` prüfen
+ * → sonst 404. Vorher konnte "bekannter Pfad" rein aus der URL entschieden
+ * werden (statische Liste); seit Unterseiten dynamisch sind, braucht die
+ * Entscheidung das geladene Dokument. Der Cache-Lookup vor dem DB-Call prüft
+ * trotzdem weiterhin ZUERST den exakten Pfad-Cache-Eintrag und — nur für
+ * nicht-statische Pfade — zusätzlich den geteilten `notFoundCacheKey`
+ * (EIN 404-Eintrag je Slug, siehe `invalidateSsrCache`): das hält das
+ * bestehende Verhalten "beliebige Fantasiepfade auf einem bekannten Slug
+ * kosten nach dem ersten Mal keinen weiteren DB-Call" bei, ohne einer
+ * echten (aber noch nicht gecachten) Unterseite fälschlich zu antworten —
+ * für `/` und Legal-Pfade wird der geteilte 404-Eintrag nie geprüft, die
+ * sind immer bekannt.
  */
 async function handleCustomerSiteSsr(
   req: Request,
@@ -389,10 +494,11 @@ async function handleCustomerSiteSsr(
     return;
   }
 
-  const isKnownPathname = SSR_ALLOWED_PATHNAMES.has(siteRequest.pathname);
-  if (!isKnownPathname && ASSET_PATHNAME_RE.test(siteRequest.pathname)) {
+  if (ASSET_PATHNAME_RE.test(siteRequest.pathname)) {
     // Asset-artige Pfade (Favicon, Bilder, robots.txt, ...) sind nie SSR-Sache
-    // — next() lässt Static-Middleware/SPA-Fallback ran.
+    // — next() lässt Static-Middleware/SPA-Fallback ran. Unabhängig von
+    // "bekannt", weil weder die statischen Pfade noch gültige Page-Slugs
+    // (siehe PageSchema-Regex) je einen Punkt enthalten.
     next();
     return;
   }
@@ -404,13 +510,14 @@ async function handleCustomerSiteSsr(
     return;
   }
 
+  const isStaticPathname = STATIC_SITE_PATHNAMES.has(siteRequest.pathname);
   const cacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${siteRequest.pathname}`;
   const notFoundCacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${NOT_FOUND_CACHE_PATH}`;
 
   try {
-    const cached = siteHtmlCache.get(
-      isKnownPathname ? cacheKey : notFoundCacheKey
-    );
+    const cached =
+      siteHtmlCache.get(cacheKey) ??
+      (isStaticPathname ? undefined : siteHtmlCache.get(notFoundCacheKey));
     if (cached && now - cached.at < CACHE_TTL_MS) {
       if (cached.robotsNoindex) {
         res.setHeader("X-Robots-Tag", "noindex");
@@ -435,11 +542,12 @@ async function handleCustomerSiteSsr(
       return;
     }
 
-    if (!isKnownPathname) {
+    if (!isStaticPathname && pageForPathname(parsed.data, siteRequest.pathname) === null) {
       // Bekannte v2-Site, aber unbekannter Unterpfad (z. B. Tippfehler in
-      // einem geteilten Link) → eigenes SSR-404 statt SPA-Fallback. Website
-      // wird dafür geladen (gleiche Cache-Nutzung wie beim Seitenrender oben,
-      // negativer Cache für unbekannte Slugs bleibt unverändert).
+      // einem geteilten Link oder eine nicht (mehr) existierende Unterseite)
+      // → eigenes SSR-404 statt SPA-Fallback. Website wird dafür geladen
+      // (gleiche Cache-Nutzung wie beim Seitenrender oben, negativer Cache
+      // für unbekannte Slugs bleibt unverändert).
       const html = renderNotFoundHtml({
         businessName: parsed.data.businessName,
         homeHref: siteRequest.basePath || "/",
@@ -479,6 +587,8 @@ export function registerSsrRoutes(app: Express): void {
     "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",
     handleDemoLegalRoute
   );
+  // Muss NACH der Legal-Route stehen — siehe Kommentar bei handleDemoPageRoute.
+  app.get("/demo/:pack([a-z0-9-]+)/:page([a-z0-9-]+)", handleDemoPageRoute);
   app.get("/demo/:pack([a-z0-9-]+)", handleDemoRoute);
   app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
     void handlePreviewSsr(req, res);

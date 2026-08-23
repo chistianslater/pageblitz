@@ -12,6 +12,12 @@ interface WebsiteRendererProps {
   islandsMode?: "live" | "preview";
   /** Website-Zeilenfelder außerhalb des Dokuments (z. B. `chatWelcomeMessage` für die KI-Chat-Insel). */
   site?: { chatWelcomeMessage?: string | null };
+  /**
+   * Aktueller Pfad relativ zur Kundenseite ("/" oder "/<page-slug>") — Plan
+   * B6, Task 3. Reicht 1:1 an `SiteRenderer` durch (siehe dort für die
+   * Page-Auflösung); `undefined` verhält sich wie "/" (Startseite).
+   */
+  pathname?: string;
 }
 
 /**
@@ -24,6 +30,7 @@ export default function WebsiteRenderer({
   packOverride,
   islandsMode,
   site,
+  pathname,
 }: WebsiteRendererProps) {
   const v2 = parseV2(websiteData);
   if (!v2) {
@@ -38,6 +45,7 @@ export default function WebsiteRenderer({
       slug={slug}
       islandsMode={islandsMode}
       site={site}
+      pathname={pathname}
     />
   );
 }

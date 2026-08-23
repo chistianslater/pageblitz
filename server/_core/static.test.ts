@@ -58,4 +58,27 @@ describe("isSpaRoute", () => {
   test("Entfernte Route /variant-preview wird nicht mehr erkannt", () => {
     expect(isSpaRoute("/variant-preview")).toBe(false);
   });
+
+  // Plan B6, Task 3: /site/:slug/:page (Unterseiten-Add-on) — der Regex
+  // erkennt jede einzelne Slug-artige Unterroute (nicht nur impressum/
+  // datenschutz), die tatsächliche Existenz der Page prüft die SSR-
+  // Middleware bzw. SitePage clientseitig.
+  test("/site/:slug (Startseite einer Kundenseite) wird erkannt", () => {
+    expect(isSpaRoute("/site/schreinerei-brandt")).toBe(true);
+  });
+
+  test("/site/:slug/impressum und /site/:slug/datenschutz bleiben erkannt", () => {
+    expect(isSpaRoute("/site/schreinerei-brandt/impressum")).toBe(true);
+    expect(isSpaRoute("/site/schreinerei-brandt/datenschutz")).toBe(true);
+  });
+
+  test("/site/:slug/<page-slug> (Unterseite) wird erkannt", () => {
+    expect(isSpaRoute("/site/schreinerei-brandt/leistungen-im-detail")).toBe(
+      true
+    );
+  });
+
+  test("/site/:slug/<verschachtelter Pfad> (zwei Segmente) wird NICHT erkannt", () => {
+    expect(isSpaRoute("/site/schreinerei-brandt/a/b")).toBe(false);
+  });
 });

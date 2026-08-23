@@ -178,6 +178,83 @@ describe("renderSiteHtml — Escaping", () => {
   });
 });
 
+describe("renderSiteHtml — Unterseiten (pages[], Plan B6 Task 3)", () => {
+  test("bekannter Page-Pfad → 200, Kopf aus page.seo statt data.seo, Canonical auf den Page-Pfad", () => {
+    const data = getFixture("werkbank", "full");
+    const page = data.pages![0];
+    const { html, status } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: `/${page.slug}`,
+    });
+    expect(status).toBe(200);
+    expect(html).toContain(`<title>${page.seo.title}</title>`);
+    expect(html).toContain(
+      `<meta name="description" content="${page.seo.description}" />`
+    );
+    expect(html).toContain(
+      `rel="canonical" href="https://brandt.pageblitz.de/${page.slug}"`
+    );
+    // Kein Startseiten-SEO-Titel im <title> (Regression: Page-Modus rendert
+    // nicht versehentlich die Startseite).
+    expect(html).not.toContain(`<title>${data.seo.title}</title>`);
+  });
+
+  test("og:image fällt auf das Startseiten-Hero-Bild zurück (Unterseiten haben kein eigenes)", () => {
+    const data = getFixture("werkbank", "full");
+    const page = data.pages![0];
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: `/${page.slug}`,
+    });
+    expect(html).toContain(
+      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.svg" />'
+    );
+  });
+
+  test("Body enthält die Page-Sektionen (pageHeader-Fallback + services), nicht die Startseiten-Sektionen", () => {
+    const data = getFixture("werkbank", "full");
+    const page = data.pages![0];
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: `/${page.slug}`,
+    });
+    expect(html).toContain(page.title);
+    // Die Hero-Sektion (id="start", nur auf der Startseite vorhanden) fehlt
+    // im Page-Modus — die Page-Sektionen ersetzen die Startseiten-Sektionen.
+    expect(html).not.toContain('id="start"');
+  });
+
+  test("kein LocalBusiness-JSON-LD im Page-Modus (bleibt Startseiten-Sache)", () => {
+    const data = getFixture("werkbank", "full");
+    const page = data.pages![0];
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: `/${page.slug}`,
+    });
+    expect(html).not.toContain('"@type":"LocalBusiness"');
+  });
+
+  test("Pfad ohne Treffer in pages[] (und ungleich \"/\") fällt auf den Startseiten-Render zurück", () => {
+    const data = getFixture("werkbank", "full");
+    const { html, status } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/nicht-vorhanden",
+    });
+    expect(status).toBe(200);
+    expect(html).toContain(`<title>${data.seo.title}</title>`);
+  });
+
+  test("Dokument ohne pages[] → jeder Nicht-Legal-Pfad rendert weiterhin die Startseite", () => {
+    const data = { ...getFixture("werkbank", "full"), pages: undefined };
+    const { html, status } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: "/irgendwas",
+    });
+    expect(status).toBe(200);
+    expect(html).toContain(`<title>${data.seo.title}</title>`);
+  });
+});
+
 describe("renderSiteHtml — SSR-Inseln", () => {
   test("Bundle-Tag und Inseln-CSS fehlen, wenn keine Features aktiv sind (Fixture full)", () => {
     const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
