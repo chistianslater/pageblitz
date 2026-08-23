@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
 
+const STAGE_PACKS: ReadonlyArray<{ id: string; name: string }> = [
+  { id: "werkbank", name: "Werkbank" },
+  { id: "patina", name: "Patina" },
+  { id: "kanzlei", name: "Kanzlei" },
+  { id: "gusto", name: "Gusto" },
+];
+
 /**
  * Stilisierter Studio-Rahmen für den Hero: links die echte Checkliste des
  * Studios (Titel/Hinweise wie `shared/onboardingV2/checklist.ts`, Reihenfolge
@@ -158,6 +165,38 @@ export function StudioFrame() {
         <p className="text-[0.75rem] text-lp-muted">
           Stil: <span className="text-lp-ink">Werkbank</span> · 1 von 14
         </p>
+        {/* Stil-Wechsel wie im Studio (Stil-Panel): vier der 14 Packs als
+            Miniaturen, das aktive mit Akzentrahmen — füllt die Bühne unter dem
+            Desktop-Rahmen mit echtem Material statt Leerraum. */}
+        <ul
+          className="mt-auto grid grid-cols-4 gap-2 border-t border-lp-line pt-3"
+          aria-label="Weitere Style Packs"
+        >
+          {STAGE_PACKS.map(pack => (
+            <li key={pack.id} className="min-w-0">
+              <span
+                className={`block overflow-hidden rounded-[6px] border bg-white ${
+                  pack.id === "werkbank"
+                    ? "border-lp-accent ring-1 ring-lp-accent"
+                    : "border-lp-line"
+                }`}
+              >
+                <img
+                  src={`/pack-previews/${pack.id}.webp`}
+                  width={320}
+                  height={200}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className="block aspect-[16/10] w-full object-cover object-top"
+                />
+              </span>
+              <span className="mt-1 block truncate text-[0.7rem] text-lp-muted">
+                {pack.name}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
