@@ -1,7 +1,7 @@
 export const KLARWERK_CSS = `
 .pb-klarwerk{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-klarwerk a{color:inherit;text-decoration:none}
-.pb-kw-nav{display:flex;align-items:center;gap:20px;padding:20px 32px;border-bottom:1px solid var(--pb-line)}
+.pb-kw-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:20px 32px;border-bottom:1px solid var(--pb-line)}
 .pb-kw-logo{font-family:var(--pb-font-display);font-weight:700;font-size:15px}
 .pb-kw-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;font-size:13.5px;font-weight:500}
 .pb-kw-nav-links a{transition:color .15s}
@@ -37,6 +37,13 @@ export const KLARWERK_CSS = `
 .pb-kw-service span.price{margin-left:auto;font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;color:var(--pb-muted);flex-shrink:0;padding-left:12px}
 .pb-kw-about-img{width:100%;max-width:420px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--pb-radius-card);display:block;margin-bottom:22px}
 .pb-kw-about p{max-width:64ch}
+.pb-kw-about-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:center}
+.pb-kw-about-grid>p:only-child{grid-column:1/-1}
+.pb-kw-about-grid .pb-kw-about-img{max-width:100%;margin-bottom:0}
+.pb-kw-quotes{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.pb-kw-quotes .pb-kw-quote{margin-bottom:0}
+.pb-kw-quotes .pb-kw-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:720px}
+.pb-kw-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;align-items:start}
 .pb-kw-quote{padding:20px 22px;background:var(--pb-surface);border-radius:var(--pb-radius-card);margin-bottom:18px}
 .pb-kw-quote p{font-size:15px;max-width:52ch}
 .pb-kw-quote footer{margin-top:10px;font-size:12.5px;color:var(--pb-muted)}
@@ -46,8 +53,12 @@ export const KLARWERK_CSS = `
 .pb-kw-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px}
 .pb-kw-contact address{font-style:normal}
 .pb-kw-contact p{margin-bottom:8px}
+.pb-kw-contact{align-items:start}
+.pb-kw-hours-block{max-width:380px}
+.pb-kw-hours-block h3{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pb-accent);margin-bottom:8px}
 .pb-kw-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-kw-hours td{padding:6px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
+.pb-kw-hours tr:last-child td{border-bottom:none}
 .pb-kw-hours td:first-child{font-weight:500;color:var(--pb-muted)}
 .pb-kw-hours td:last-child{text-align:right}
 .pb-kw-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
@@ -60,6 +71,10 @@ export const KLARWERK_CSS = `
   .pb-kw-nav{flex-wrap:wrap;row-gap:10px}
   .pb-kw-nav-links{flex-wrap:wrap;margin-left:0}
   .pb-kw-contact{grid-template-columns:1fr}
+  .pb-kw-about-grid{grid-template-columns:1fr;gap:20px}
+  .pb-kw-about-grid .pb-kw-about-img{order:-1;max-height:55vw}
+  .pb-kw-quotes{grid-template-columns:1fr}
+  .pb-kw-faq-grid{grid-template-columns:1fr}
 }
 .pb-kw-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-kw-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

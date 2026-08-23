@@ -2,7 +2,7 @@ export const KANZLEI_CSS = `
 .pb-kanzlei{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-kanzlei a{color:inherit;text-decoration:none}
 .pb-kz-grid{background-image:linear-gradient(90deg,var(--pb-line) 1px,transparent 1px);background-size:25% 100%;background-position:14px 0}
-.pb-kz-nav{display:flex;align-items:center;gap:20px;padding:20px 32px;border-bottom:1px solid var(--pb-ink);font-size:13px;font-weight:500}
+.pb-kz-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:20px 32px;border-bottom:1px solid var(--pb-ink);font-size:13px;font-weight:500}
 .pb-kz-logo{font-weight:700;font-family:var(--pb-font-display)}
 .pb-kz-nav-links{display:flex;align-items:center;gap:20px;margin-left:auto}
 .pb-kz-nav-links a{transition:color .15s}
@@ -36,11 +36,18 @@ export const KANZLEI_CSS = `
 .pb-kz-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-kz-faq strong{display:block;font-weight:600;margin-bottom:6px}
 .pb-kz-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}
-.pb-kz-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.pb-kz-about-grid{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:48px;align-items:start}
+.pb-kz-about-grid>p:only-child{grid-column:1/-1}
+.pb-kz-about-grid p{max-width:64ch}
+.pb-kz-about-img{width:100%;aspect-ratio:3/2;object-fit:cover;border:1px solid var(--pb-line);filter:saturate(.7);display:block}
+.pb-kz-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .pb-kz-contact address{font-style:normal}
 .pb-kz-contact p{margin-bottom:8px}
+.pb-kz-hours-block{max-width:380px}
+.pb-kz-hours-block h3{font-family:var(--pb-font-utility);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--pb-accent);margin-bottom:8px}
 .pb-kz-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-kz-hours td{padding:6px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
+.pb-kz-hours tr:last-child td{border-bottom:none}
 .pb-kz-hours td:first-child{font-family:var(--pb-font-utility);text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-kz-hours td:last-child{text-align:right}
 .pb-kz-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
@@ -54,7 +61,7 @@ export const KANZLEI_CSS = `
 .pb-kz-footer{border-top:1px solid var(--pb-ink);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-kz-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-kz-footer a:hover,.pb-kz-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-kz-idx{display:none}.pb-kz-facts{flex-direction:column;gap:14px}.pb-kz-facts div{border-right:none;margin-right:0;padding-right:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav{flex-wrap:wrap;row-gap:10px}.pb-kz-nav-links{flex-wrap:wrap;margin-left:0}}
+@media(max-width:720px){.pb-kz-idx{display:none}.pb-kz-facts{flex-direction:column;gap:14px}.pb-kz-facts div{border-right:none;margin-right:0;padding-right:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav{flex-wrap:wrap;row-gap:10px}.pb-kz-nav-links{flex-wrap:wrap;margin-left:0}.pb-kz-about-grid{grid-template-columns:1fr;gap:20px}.pb-kz-about-img{order:-1;max-height:55vw}}
 .pb-kz-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-kz-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-kz-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

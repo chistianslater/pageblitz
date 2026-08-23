@@ -131,15 +131,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          {section.imageUrl && (
-            <img
-              className="pb-kw-about-img"
-              src={section.imageUrl}
-              alt=""
-              loading="lazy"
-            />
-          )}
-          <p>{section.body}</p>
+          <div className="pb-kw-about-grid">
+            <p>{section.body}</p>
+            {section.imageUrl && (
+              <img
+                className="pb-kw-about-img"
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+              />
+            )}
+          </div>
         </section>
       );
     }
@@ -169,15 +171,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-kw-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <div className="pb-kw-quotes">
+            {section.items.map(item => (
+              <blockquote className="pb-kw-quote" key={item.author}>
+                <p>„{item.text}“</p>
+                <footer>
+                  {item.author}
+                  {item.rating ? ` · ${item.rating}/5` : ""}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }
@@ -212,16 +216,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-kw-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-kw-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-kw-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>
@@ -236,12 +243,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <div className="pb-kw-faq" key={item.question}>
-              <strong>{item.question}</strong>
-              <p>{item.answer}</p>
-            </div>
-          ))}
+          <div className="pb-kw-faq-grid">
+            {section.items.map(item => (
+              <div className="pb-kw-faq" key={item.question}>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+              </div>
+            ))}
+          </div>
         </section>
       );
     }
@@ -395,35 +404,41 @@ const KlarwerkPage: React.FC<{
           )}
         </section>
       )}
-      <div className="pb-kw-bento">
-        {facts.length > 0 && (
-          <div className="pb-kw-term">
-            {facts.map(f => (
-              <div key={f.cmd}>
-                <span className="dim">$</span> {f.cmd}
-                <br />
-                <span className="dim">→</span> {f.out}
-              </div>
-            ))}
+      {/* Bento-Band (Terminal + Kennzahlen) nur auf der Startseite (Q1, B7
+          Welle 0): auf Unterseiten muss der pageHeader das erste Element
+          nach der Nav sein — Terminal-Zeilen wie „2 aktiv" vor dem
+          Seitentitel wirken wie ein Bug. */}
+      {hero && (
+        <div className="pb-kw-bento">
+          {facts.length > 0 && (
+            <div className="pb-kw-term">
+              {facts.map(f => (
+                <div key={f.cmd}>
+                  <span className="dim">$</span> {f.cmd}
+                  <br />
+                  <span className="dim">→</span> {f.out}
+                </div>
+              ))}
+            </div>
+          )}
+          {facts[0] && (
+            <div className="pb-kw-cell hi">
+              <b>{facts[0].value}</b>
+              {facts[0].label}
+            </div>
+          )}
+          {facts[1] && (
+            <div className="pb-kw-cell">
+              <b>{facts[1].value}</b>
+              {facts[1].label}
+            </div>
+          )}
+          <div className="pb-kw-status">
+            <span className="dot" aria-hidden="true" />
+            Alle Systeme betriebsbereit
           </div>
-        )}
-        {facts[0] && (
-          <div className="pb-kw-cell hi">
-            <b>{facts[0].value}</b>
-            {facts[0].label}
-          </div>
-        )}
-        {facts[1] && (
-          <div className="pb-kw-cell">
-            <b>{facts[1].value}</b>
-            {facts[1].label}
-          </div>
-        )}
-        <div className="pb-kw-status">
-          <span className="dot" aria-hidden="true" />
-          Alle Systeme betriebsbereit
         </div>
-      </div>
+      )}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

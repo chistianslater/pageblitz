@@ -166,15 +166,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-vv-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <div className="pb-vv-quotes">
+            {section.items.map(item => (
+              <blockquote className="pb-vv-quote" key={item.author}>
+                <p>„{item.text}“</p>
+                <footer>
+                  {item.author}
+                  {item.rating ? ` · ${item.rating}/5` : ""}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }
@@ -206,16 +208,19 @@ function renderSection(
             </address>
           )}
           {section.openingHours && section.openingHours.length > 0 && (
-            <table className="pb-vv-hours">
-              <tbody>
-                {section.openingHours.map(oh => (
-                  <tr key={oh.day}>
-                    <td>{oh.day}</td>
-                    <td>{oh.hours}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="pb-vv-hours-block">
+              <h3>Öffnungszeiten</h3>
+              <table className="pb-vv-hours">
+                <tbody>
+                  {section.openingHours.map(oh => (
+                    <tr key={oh.day}>
+                      <td>{oh.day}</td>
+                      <td>{oh.hours}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </section>
       );
@@ -229,12 +234,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <div className="pb-vv-faq" key={item.question}>
-              <strong>{item.question}</strong>
-              <p>{item.answer}</p>
-            </div>
-          ))}
+          <div className="pb-vv-faq-grid">
+            {section.items.map(item => (
+              <div className="pb-vv-faq" key={item.question}>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+              </div>
+            ))}
+          </div>
         </section>
       );
     }

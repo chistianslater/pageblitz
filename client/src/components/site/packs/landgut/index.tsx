@@ -199,16 +199,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-lg-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-lg-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-lg-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>
@@ -361,31 +364,36 @@ const LandgutPage: React.FC<{
         </div>
       </nav>
       {hero && (
-        <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
-          <div className="pb-lg-grid">
-            <div className="pb-lg-copy">
-              {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-lg-sub">{hero.subheadline}</p>
-              )}
-              {hero.ctaText && (
-                <a className="pb-lg-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
-              )}
-            </div>
-            <div className="pb-lg-rows" aria-hidden="true">
-              <div className="pb-lg-row r1">
-                <span className="pb-lg-row-label">{ROW_LABEL}</span>
+        <>
+          <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
+            <div className="pb-lg-grid">
+              <div className="pb-lg-copy">
+                {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-lg-sub">{hero.subheadline}</p>
+                )}
+                {hero.ctaText && (
+                  <a className="pb-lg-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
               </div>
-              <div className="pb-lg-row r2" />
-              <div className="pb-lg-row r3" />
+              <div className="pb-lg-rows" aria-hidden="true">
+                <div className="pb-lg-row r1">
+                  <span className="pb-lg-row-label">{ROW_LABEL}</span>
+                </div>
+                <div className="pb-lg-row r2" />
+                <div className="pb-lg-row r3" />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+          {/* Saison-Ticker nur auf der Startseite (Q1, B7 Welle 0): auf
+              Unterseiten muss der pageHeader das erste Element nach der
+              Nav sein — ein Laufband davor wirkt kontextlos. */}
+          {buildTicker(services)}
+        </>
       )}
-      {buildTicker(services)}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

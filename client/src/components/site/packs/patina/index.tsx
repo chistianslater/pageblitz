@@ -95,13 +95,15 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p>{section.intro}</p>}
-          {section.items.map(item => (
-            <div className="pb-pa-service" key={item.title}>
-              <strong>{item.title}</strong>
-              {item.description && <p>{item.description}</p>}
-              {item.price && <p>{item.price}</p>}
-            </div>
-          ))}
+          <div className="pb-pa-services-grid">
+            {section.items.map(item => (
+              <div className="pb-pa-service" key={item.title}>
+                <strong>{item.title}</strong>
+                {item.description && <p>{item.description}</p>}
+                {item.price && <p>{item.price}</p>}
+              </div>
+            ))}
+          </div>
         </section>
       );
     }
@@ -143,15 +145,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-pa-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <div className="pb-pa-quotes">
+            {section.items.map(item => (
+              <blockquote className="pb-pa-quote" key={item.author}>
+                <p>„{item.text}“</p>
+                <footer>
+                  {item.author}
+                  {item.rating ? ` · ${item.rating}/5` : ""}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }
@@ -186,16 +190,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-pa-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-pa-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-pa-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>
@@ -210,12 +217,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <div className="pb-pa-faq" key={item.question}>
-              <strong>{item.question}</strong>
-              <p>{item.answer}</p>
-            </div>
-          ))}
+          <div className="pb-pa-faq-grid">
+            {section.items.map(item => (
+              <div className="pb-pa-faq" key={item.question}>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+              </div>
+            ))}
+          </div>
         </section>
       );
     }

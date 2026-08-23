@@ -1,7 +1,7 @@
 export const MARKTPLATZ_CSS = `
 .pb-marktplatz{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-marktplatz a{color:inherit;text-decoration:none}
-.pb-mp-nav{display:flex;align-items:center;gap:20px;padding:22px 32px;position:relative;z-index:5;font-size:14px;font-weight:700}
+.pb-mp-nav{display:flex;align-items:center;gap:20px;padding:22px 32px;position:sticky;top:0;z-index:40;background:var(--pb-canvas);border-bottom:1px solid var(--pb-line);font-size:14px;font-weight:700}
 .pb-mp-logo{font-family:var(--pb-font-display);font-weight:800;font-size:19px;color:var(--pb-accent-text)}
 .pb-mp-nav-links{display:flex;align-items:center;gap:20px;margin-left:auto;flex-wrap:wrap}
 .pb-mp-nav-links a{transition:color .15s}
@@ -44,11 +44,14 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-faq strong{color:var(--pb-accent-text)}
 .pb-mp-gallery img{width:100%;height:210px;object-fit:cover;border-radius:var(--pb-radius-card);display:block}
 .pb-mp-team img{width:100%;height:180px;object-fit:cover;border-radius:var(--pb-radius-card);margin-bottom:10px}
-.pb-mp-contact{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.pb-mp-contact{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
 .pb-mp-contact address{font-style:normal}
 .pb-mp-contact p{margin-bottom:8px}
+.pb-mp-hours-block{max-width:380px}
+.pb-mp-hours-block h3{font-family:var(--pb-font-display);font-weight:800;font-size:14px;color:var(--pb-accent-text);margin-bottom:8px}
 .pb-mp-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-mp-hours td{padding:7px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
+.pb-mp-hours tr:last-child td{border-bottom:none}
 .pb-mp-hours td:first-child{font-weight:700}
 .pb-mp-hours td:last-child{text-align:right}
 @media(max-width:720px){.pb-mp-contact{grid-template-columns:1fr}}

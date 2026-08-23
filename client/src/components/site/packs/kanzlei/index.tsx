@@ -131,22 +131,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          {section.imageUrl && (
-            <img
-              src={section.imageUrl}
-              alt=""
-              loading="lazy"
-              style={{
-                width: "100%",
-                maxWidth: "480px",
-                border: "1px solid var(--pb-line)",
-                filter: "saturate(.7)",
-                marginBottom: "20px",
-                display: "block",
-              }}
-            />
-          )}
-          <p style={{ maxWidth: "64ch" }}>{section.body}</p>
+          <div className="pb-kz-about-grid">
+            <p>{section.body}</p>
+            {section.imageUrl && (
+              <img
+                className="pb-kz-about-img"
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+              />
+            )}
+          </div>
         </section>
       );
     }
@@ -219,16 +214,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-kz-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-kz-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-kz-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>
@@ -408,7 +406,11 @@ const KanzleiPage: React.FC<{
           {hero.subheadline && <p>{hero.subheadline}</p>}
         </section>
       )}
-      {facts.length > 0 && (
+      {/* Kennzahlen-Band nur auf der Startseite (Q1, B7 Welle 0): auf
+          Unterseiten muss der pageHeader das erste Element nach der Nav
+          sein — ein Stats-Band vor dem Seitentitel wirkt wie eine
+          kontextlose Zählung. */}
+      {hero && facts.length > 0 && (
         <div className="pb-kz-facts">
           {facts.map((fact, i) => (
             <div key={fact.label + i}>

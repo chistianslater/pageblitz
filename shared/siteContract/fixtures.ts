@@ -983,7 +983,9 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "NOIR Haarstudio wurde 2016 in der Maxvorstadt gegründet — mit dem Anspruch, Friseurhandwerk wie ein Handwerk zu behandeln, nicht wie eine schnelle Dienstleistung. Jeder Schnitt beginnt mit einer ausführlichen Beratung, jede Farbe wird individuell gemischt. Unser kleines Team aus erfahrenen Stylisten arbeitet in ruhigem Tempo, mit Champagner statt Filterkaffee und einem Blick fürs Detail, der auch nach dem Termin noch hält.",
-      imageUrl: "/demo/salon-noir-hero.webp",
+      // Q5 (B7 Welle 0): eigenes Motiv statt Hero-Duplikat — Hero/Über-uns
+      // ziehen disjunkte Assets.
+      imageUrl: "/demo/salon-noir-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -1230,8 +1232,11 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
           alt: "Gitarrenunterricht in kleiner Gruppe",
         },
         {
-          url: "/demo/marktplatz-detail-2.webp",
-          alt: "Kinder beim gemeinsamen Musizieren",
+          // Q5 (B7 Welle 0): Drachen/Segelboot-Illustration (detail-2) war
+          // branchenfremd für eine Musikschule — ersetzt durch das
+          // Instrumente-Motiv detail-3 (Xylophon/Flöte).
+          url: "/demo/marktplatz-detail-3.webp",
+          alt: "Xylophon und Blockflöte im Unterrichtsraum",
         },
       ],
     },
@@ -1523,20 +1528,18 @@ const ATELIER_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über das Studio",
       body: "Studio Lenz arbeitet seit 2016 in Leipzig-Plagwitz — an der Schnittstelle aus Reportage und Porträt. Kein Blitzlichtgewitter, keine gestellten Posen: Jede Serie entsteht aus Beobachtung, nicht aus Regie. Auftraggeber sind Menschen, die ein ehrliches Bild von sich wollen, und Marken, die genug haben von Stockfotografie. Entwickelt, sortiert und ausgewählt wird jede Serie von Hand — analog gedacht, digital umgesetzt.",
-      imageUrl: "/demo/atelier-detail-1.webp",
+      // Q5 (B7 Welle 0): das branchenfremde Architektur-Reißbrett
+      // (atelier-detail-1) ist aus der Demo raus — stattdessen der
+      // Leuchttisch mit Fotoprints (detail-3), passend zum Studio-Text.
+      imageUrl: "/demo/atelier-detail-3.webp",
     },
     {
       type: "gallery",
       headline: "Galerie",
+      // Q5 (B7 Welle 0): Hero-, Über-uns- und Galerie-Assets sind
+      // disjunkt — bei nur 3 nutzbaren Assets wird die Galerie gekürzt
+      // statt gedoppelt (Reißbrett-Motiv detail-1 entfällt komplett).
       images: [
-        {
-          url: "/demo/atelier-hero.webp",
-          alt: "Porträt in Streiflicht, Studio Lenz Leipzig",
-        },
-        {
-          url: "/demo/atelier-detail-1.webp",
-          alt: "Reportage-Moment auf einer Hochzeit",
-        },
         {
           url: "/demo/atelier-detail-2.webp",
           alt: "Markenshooting mit reduzierter Kulisse",
@@ -1844,7 +1847,9 @@ const VERVE_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Studio PULS wurde 2019 in Essen gegründet — aus der Überzeugung, dass Training kein Zufallsprodukt sein sollte. Jedes Programm beginnt mit einer Standortbestimmung, jeder Fortschritt wird gemessen, nicht geraten. Unser Team aus lizenzierten Trainern arbeitet in kleinen Gruppen oder 1:1, mit klaren Zielen und einem Plan, der sich an deinen Alltag anpasst — nicht umgekehrt.",
-      imageUrl: "/demo/verve-hero.webp",
+      // Q5 (B7 Welle 0): eigenes Motiv statt Hero-Duplikat — Hero/Über-uns
+      // ziehen disjunkte Assets.
+      imageUrl: "/demo/verve-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -2211,14 +2216,13 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
     {
       type: "gallery",
       headline: "Galerie",
+      // Q5 (B7 Welle 0): detail-1 hängt bereits in der Studio-Sektion —
+      // die Galerie zieht disjunkte Assets (bei nur 3 Assets auf 2 Bilder
+      // gekürzt statt gedoppelt).
       images: [
         {
           url: "/demo/schimmer-hero.webp",
           alt: "Heller Behandlungsraum im Studio Lumière",
-        },
-        {
-          url: "/demo/schimmer-detail-1.webp",
-          alt: "Kosmetikbehandlung im Detail",
         },
         {
           url: "/demo/schimmer-detail-2.webp",

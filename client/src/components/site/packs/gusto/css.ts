@@ -2,7 +2,7 @@ export const GUSTO_CSS = `
 .pb-gusto{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.65;overflow-x:clip}
 .pb-gusto a{color:inherit;text-decoration:none}
 .pb-gu-frame{position:relative;margin:14px;border:1px solid color-mix(in srgb, var(--pb-accent) 50%, transparent);outline:1px solid color-mix(in srgb, var(--pb-accent) 25%, transparent);outline-offset:4px}
-.pb-gu-nav{display:flex;align-items:center;justify-content:center;gap:28px;padding:26px 24px;border-bottom:1px solid var(--pb-line);flex-wrap:wrap}
+.pb-gu-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;justify-content:center;gap:28px;padding:26px 24px;border-bottom:1px solid var(--pb-line);flex-wrap:wrap}
 .pb-gu-nav-links{display:flex;align-items:center;gap:22px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;flex-wrap:wrap}
 .pb-gu-nav-links a{transition:color .15s}
 .pb-gu-nav-links a:hover,.pb-gu-nav-links a:focus-visible{color:var(--pb-accent)}
@@ -48,11 +48,14 @@ export const GUSTO_CSS = `
 .pb-gu-member img{width:100%;height:200px;object-fit:cover;filter:brightness(.55) saturate(1.1);border:1px solid var(--pb-line);margin-bottom:12px}
 .pb-gu-member strong{display:block;font-weight:700}
 .pb-gu-member p{color:var(--pb-muted);font-size:13px}
-.pb-gu-contact{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:640px;margin:0 auto;text-align:left}
+.pb-gu-contact{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:640px;margin:0 auto;text-align:left;align-items:start}
 .pb-gu-contact address{font-style:normal}
 .pb-gu-contact p{margin-bottom:8px}
+.pb-gu-hours-block{max-width:380px}
+.pb-gu-hours-block h3{font-family:var(--pb-font-display);font-style:italic;font-size:15px;letter-spacing:.02em;color:var(--pb-accent);margin-bottom:8px;text-align:left;font-weight:500}
 .pb-gu-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-gu-hours td{padding:7px 0;border-bottom:1px dotted var(--pb-line);font-size:13px}
+.pb-gu-hours tr:last-child td{border-bottom:none}
 .pb-gu-hours td:first-child{text-transform:uppercase;letter-spacing:.06em;color:var(--pb-muted);font-size:11px}
 .pb-gu-hours td:last-child{text-align:right}
 .pb-gu-cta-card p{max-width:46ch;margin:0 auto 22px;color:var(--pb-muted)}
@@ -61,7 +64,7 @@ export const GUSTO_CSS = `
 .pb-gu-footer{padding:32px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-gu-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-gu-footer a:hover,.pb-gu-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-gu-plate{display:none}.pb-gu-nav{gap:16px}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}}
+@media(max-width:720px){.pb-gu-plate{display:none}.pb-gu-nav{gap:10px 14px;padding:16px 18px}.pb-gu-logo{order:-1;flex-basis:100%;text-align:center}.pb-gu-nav-links{display:contents}.pb-gu-nav-links a{font-size:10.5px}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}}
 .pb-gu-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-gu-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-gu-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

@@ -128,15 +128,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          {section.imageUrl && (
-            <img
-              src={section.imageUrl}
-              alt=""
-              loading="lazy"
-              className="pb-fd-about-image"
-            />
-          )}
-          <p style={{ maxWidth: "64ch" }}>{section.body}</p>
+          <div className="pb-fd-about-grid">
+            <p>{section.body}</p>
+            {section.imageUrl && (
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                className="pb-fd-about-image"
+              />
+            )}
+          </div>
         </section>
       );
     }
@@ -209,16 +211,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-fd-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-fd-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-fd-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>

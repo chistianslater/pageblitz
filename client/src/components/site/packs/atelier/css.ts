@@ -1,7 +1,7 @@
 export const ATELIER_CSS = `
 .pb-atelier{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-atelier a{color:inherit;text-decoration:none}
-.pb-at-nav{display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:14px 28px;font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--pb-line)}
+.pb-at-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;justify-content:flex-end;gap:18px;padding:14px 28px;font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--pb-line)}
 .pb-at-nav-links{display:flex;flex-wrap:wrap;gap:18px}
 .pb-at-nav-links a{transition:color .15s}
 .pb-at-nav-links a:hover,.pb-at-nav-links a:focus-visible{color:var(--pb-accent)}
@@ -30,16 +30,22 @@ export const ATELIER_CSS = `
 .pb-at-service span.price{margin-left:auto;font-family:var(--pb-font-utility);font-size:12px;color:var(--pb-muted);flex-shrink:0;padding-left:12px}
 .pb-at-about-img{width:100%;max-width:420px;aspect-ratio:4/3;object-fit:cover;border:1px solid var(--pb-line);display:block;margin-bottom:24px}
 .pb-at-about p{max-width:64ch}
+.pb-at-about-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:44px;align-items:center}
+.pb-at-about-grid>p:only-child{grid-column:1/-1}
+.pb-at-about-grid .pb-at-about-img{max-width:100%;aspect-ratio:3/2;margin-bottom:0}
 .pb-at-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:var(--pb-line)}
 .pb-at-gallery img{width:100%;height:240px;object-fit:cover;display:block;background:var(--pb-canvas)}
 .pb-at-quote{padding:22px 0 22px 22px;border-left:3px solid var(--pb-accent);margin-bottom:24px}
 .pb-at-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:19px;max-width:52ch}
 .pb-at-quote footer{margin-top:12px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-muted);text-transform:uppercase;letter-spacing:.03em}
-.pb-at-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.pb-at-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .pb-at-contact address{font-style:normal}
 .pb-at-contact p{margin-bottom:8px}
+.pb-at-hours-block{max-width:380px}
+.pb-at-hours-block h3{font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--pb-accent);margin-bottom:8px}
 .pb-at-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-at-hours td{padding:6px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
+.pb-at-hours tr:last-child td{border-bottom:none}
 .pb-at-hours td:first-child{font-family:var(--pb-font-utility);text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-at-hours td:last-child{text-align:right}
 .pb-at-footer{border-top:3px solid var(--pb-ink);padding:32px 28px;font-size:12px;color:var(--pb-muted);font-family:var(--pb-font-utility)}
@@ -52,6 +58,8 @@ export const ATELIER_CSS = `
   .pb-at-img{min-height:220px}
   .pb-at-nav{justify-content:flex-start}
   .pb-at-contact{grid-template-columns:1fr}
+  .pb-at-about-grid{grid-template-columns:1fr;gap:20px}
+  .pb-at-about-grid .pb-at-about-img{order:-1;max-height:55vw}
 }
 .pb-at-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-at-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

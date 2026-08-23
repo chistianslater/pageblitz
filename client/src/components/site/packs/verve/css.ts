@@ -1,7 +1,7 @@
 export const VERVE_CSS = `
 .pb-verve{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip;position:relative}
 .pb-verve a{color:inherit;text-decoration:none}
-.pb-vv-nav{display:flex;align-items:center;gap:20px;padding:20px 28px;position:relative;z-index:3}
+.pb-vv-nav{display:flex;align-items:center;gap:20px;padding:20px 28px;position:sticky;top:0;z-index:40;background:var(--pb-canvas);border-bottom:1px solid var(--pb-line)}
 .pb-vv-logo{font-family:var(--pb-font-display);font-size:20px;letter-spacing:.04em;color:var(--pb-accent);text-transform:uppercase;white-space:nowrap}
 .pb-vv-nav-links{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;flex-wrap:wrap}
 .pb-vv-nav-links a{transition:color .15s}
@@ -36,9 +36,15 @@ export const VERVE_CSS = `
 .pb-vv-about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
 .pb-vv-about img{width:100%;display:block;border-left:4px solid var(--pb-accent)}
 .pb-vv-about p{color:var(--pb-ink);max-width:60ch;min-width:0}
+.pb-vv-quotes{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.pb-vv-quotes .pb-vv-quote{margin-bottom:0;max-width:none}
+.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:translateY(14px)}
+.pb-vv-quotes .pb-vv-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:64ch}
 .pb-vv-quote{background:var(--pb-surface);padding:22px;margin-bottom:16px;border-left:3px solid var(--pb-accent);max-width:56ch}
 .pb-vv-quote p{font-size:15px}
 .pb-vv-quote footer{margin-top:12px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-vv-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;align-items:start}
+.pb-vv-faq-grid .pb-vv-faq{max-width:none}
 .pb-vv-faq{max-width:60ch;margin:0 0 20px;border-bottom:1px solid var(--pb-line);padding-bottom:18px}
 .pb-vv-faq strong{display:block;font-family:var(--pb-font-display);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px;font-size:16px}
 .pb-vv-faq p{color:var(--pb-muted);font-size:14px}
@@ -48,14 +54,17 @@ export const VERVE_CSS = `
 .pb-vv-member img{width:100%;height:200px;object-fit:cover;border-left:4px solid var(--pb-accent);margin-bottom:12px}
 .pb-vv-member strong{display:block;font-family:var(--pb-font-display);text-transform:uppercase;letter-spacing:.02em}
 .pb-vv-member p{color:var(--pb-muted);font-size:13px}
+.pb-vv-hours-block{max-width:640px;margin-top:18px}
+.pb-vv-hours-block h3{margin:0 0 4px}
 .pb-vv-hours{width:100%;border-collapse:collapse;margin-top:6px}
+.pb-vv-hours tr:last-child td{border-bottom:none}
 .pb-vv-hours td{padding:8px 0;border-bottom:1px solid var(--pb-line);font-size:14px}
 .pb-vv-hours td:first-child{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pb-vv-hours td:last-child{text-align:right;color:var(--pb-muted)}
 .pb-vv-footer{padding:32px 28px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line)}
 .pb-vv-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-vv-footer a:hover,.pb-vv-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:640px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-nav{flex-wrap:wrap;row-gap:8px}.pb-vv-nav-links{margin-left:0}}
+@media(max-width:640px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-nav{flex-wrap:wrap;row-gap:8px}.pb-vv-nav-links{margin-left:0}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
 .pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-vv-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

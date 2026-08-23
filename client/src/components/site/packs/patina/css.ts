@@ -1,7 +1,7 @@
 export const PATINA_CSS = `
 .pb-patina{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-patina a{color:inherit;text-decoration:none}
-.pb-pa-nav{display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
+.pb-pa-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
 .pb-pa-logo{font-family:var(--pb-font-display);font-weight:600;font-size:16px}
 .pb-pa-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;flex-wrap:wrap}
 .pb-pa-nav-links a{transition:color .15s}
@@ -26,21 +26,29 @@ export const PATINA_CSS = `
 .pb-pa-note{position:absolute;left:0;bottom:-6px;font-family:var(--pb-font-display);font-style:italic;font-size:14px;color:var(--pb-muted);transform:rotate(-4deg);max-width:70%}
 .pb-pa-section{padding:72px 32px;border-top:1px solid var(--pb-line)}
 .pb-pa-section h2{font-family:var(--pb-font-display);font-weight:600;font-style:italic;font-size:clamp(1.6rem,2.6vw,2.2rem);margin-bottom:26px}
+.pb-pa-services-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;align-items:start}
 .pb-pa-service{padding:18px 0;border-bottom:1px dashed var(--pb-line)}
 .pb-pa-service strong{font-family:var(--pb-font-display);font-weight:600;font-size:16px}
 .pb-pa-service p{margin-top:4px;color:var(--pb-muted);font-size:14px;max-width:56ch}
 .pb-pa-about p{max-width:64ch}
+.pb-pa-quotes{display:grid;grid-template-columns:1fr 1fr;gap:22px 56px;align-items:start}
+.pb-pa-quotes .pb-pa-quote{margin-bottom:0}
+.pb-pa-quotes .pb-pa-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:64ch}
 .pb-pa-quote{padding:20px 0 20px 22px;border-left:2px solid var(--pb-accent);margin-bottom:22px}
 .pb-pa-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:16px;max-width:52ch}
 .pb-pa-quote footer{margin-top:10px;font-size:12px;color:var(--pb-muted)}
+.pb-pa-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;align-items:start}
 .pb-pa-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-pa-faq strong{display:block;font-family:var(--pb-font-display);font-weight:600;margin-bottom:6px}
 .pb-pa-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}
-.pb-pa-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.pb-pa-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .pb-pa-contact address{font-style:normal}
 .pb-pa-contact p{margin-bottom:8px}
+.pb-pa-hours-block{max-width:380px}
+.pb-pa-hours-block h3{font-family:var(--pb-font-display);font-style:italic;font-weight:600;font-size:15px;color:var(--pb-accent);margin-bottom:8px}
 .pb-pa-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-pa-hours td{padding:6px 0;border-bottom:1px dashed var(--pb-line);font-size:13px}
+.pb-pa-hours tr:last-child td{border-bottom:none}
 .pb-pa-hours td:first-child{text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-pa-hours td:last-child{text-align:right}
 .pb-pa-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
@@ -58,7 +66,7 @@ export const PATINA_CSS = `
 .pb-pa-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-pa-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-pa-footer a:hover,.pb-pa-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-pa-init{font-size:150px;top:-14px}.pb-pa-grid{grid-template-columns:1fr}.pb-pa-pics{height:220px;margin-top:26px}.pb-pa-note{bottom:-24px}.pb-pa-contact{grid-template-columns:1fr}.pb-pa-nav{flex-wrap:wrap;row-gap:10px}}
+@media(max-width:720px){.pb-pa-init{font-size:150px;top:-14px}.pb-pa-grid{grid-template-columns:1fr}.pb-pa-pics{height:220px;margin-top:26px}.pb-pa-note{bottom:-24px}.pb-pa-contact{grid-template-columns:1fr}.pb-pa-nav{flex-wrap:wrap;row-gap:10px}.pb-pa-services-grid{grid-template-columns:1fr}.pb-pa-quotes{grid-template-columns:1fr;gap:22px}.pb-pa-faq-grid{grid-template-columns:1fr}}
 .pb-pa-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-pa-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-pa-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

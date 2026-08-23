@@ -2,7 +2,7 @@ export const ZUNFT_CSS = `
 .pb-zunft{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-zunft a{color:inherit;text-decoration:none}
 .pb-zf-borde{border-bottom:1px solid var(--pb-accent-2);padding:9px 0;color:var(--pb-accent-2);font-size:9px;letter-spacing:.9em;text-align:center;overflow:hidden;white-space:nowrap}
-.pb-zf-nav{display:flex;align-items:center;justify-content:center;gap:24px;padding:22px 24px;flex-wrap:wrap}
+.pb-zf-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);border-bottom:1px solid var(--pb-line);display:flex;align-items:center;justify-content:center;gap:24px;padding:22px 24px;flex-wrap:wrap}
 .pb-zf-nav-links{display:flex;align-items:center;gap:20px;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--pb-muted);flex-wrap:wrap}
 .pb-zf-nav-links a{transition:color .15s}
 .pb-zf-nav-links a:hover,.pb-zf-nav-links a:focus-visible{color:var(--pb-accent)}
@@ -47,11 +47,14 @@ export const ZUNFT_CSS = `
 .pb-zf-member img{width:100%;height:200px;object-fit:cover;border:1px solid var(--pb-line);margin-bottom:12px}
 .pb-zf-member strong{display:block;font-weight:600}
 .pb-zf-member p{color:var(--pb-muted);font-size:13px}
-.pb-zf-contact{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:640px;margin:0 auto;text-align:left}
+.pb-zf-contact{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:640px;margin:0 auto;text-align:left;align-items:start}
 .pb-zf-contact address{font-style:normal}
 .pb-zf-contact p{margin-bottom:8px}
+.pb-zf-hours-block{max-width:380px}
+.pb-zf-hours-block h3{font-family:var(--pb-font-display);font-style:italic;font-weight:600;font-size:15px;color:var(--pb-accent);margin-bottom:8px;text-align:left}
 .pb-zf-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-zf-hours td{padding:7px 0;border-bottom:1px dotted var(--pb-accent-2);font-size:13px}
+.pb-zf-hours tr:last-child td{border-bottom:none}
 .pb-zf-hours td:first-child{text-transform:uppercase;letter-spacing:.06em;color:var(--pb-muted);font-size:11px}
 .pb-zf-hours td:last-child{text-align:right}
 .pb-zf-cta-card p{max-width:46ch;margin:0 auto 22px;color:var(--pb-muted)}
@@ -60,7 +63,7 @@ export const ZUNFT_CSS = `
 .pb-zf-footer{padding:32px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-zf-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-zf-footer a:hover,.pb-zf-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-zf-nav{gap:14px}.pb-zf-nav-links{gap:12px}.pb-zf-contact{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-zf-nav{gap:8px 14px;padding:16px 18px}.pb-zf-logo{order:-1;flex-basis:100%;text-align:center}.pb-zf-nav-links{display:contents}.pb-zf-nav-links a{font-size:10px}.pb-zf-contact{grid-template-columns:1fr}}
 .pb-zf-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-zf-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-zf-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

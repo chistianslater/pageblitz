@@ -1,7 +1,7 @@
 export const LANDGUT_CSS = `
 .pb-landgut{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-landgut a{color:inherit;text-decoration:none}
-.pb-lg-nav{display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
+.pb-lg-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
 .pb-lg-logo{font-family:var(--pb-font-display);font-weight:500;font-size:16px}
 .pb-lg-nav-links{display:flex;align-items:center;gap:22px;margin-left:auto;flex-wrap:wrap}
 .pb-lg-nav-links a{transition:color .15s}
@@ -38,11 +38,14 @@ export const LANDGUT_CSS = `
 .pb-lg-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-lg-faq strong{display:block;font-family:var(--pb-font-display);font-weight:500;margin-bottom:6px}
 .pb-lg-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}
-.pb-lg-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.pb-lg-contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .pb-lg-contact address{font-style:normal}
 .pb-lg-contact p{margin-bottom:8px}
+.pb-lg-hours-block{max-width:380px}
+.pb-lg-hours-block h3{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:15px;color:var(--pb-accent);margin-bottom:8px}
 .pb-lg-hours{width:100%;border-collapse:collapse;margin-top:4px}
 .pb-lg-hours td{padding:6px 0;border-bottom:1px dashed var(--pb-line);font-size:13px}
+.pb-lg-hours tr:last-child td{border-bottom:none}
 .pb-lg-hours td:first-child{text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-lg-hours td:last-child{text-align:right}
 .pb-lg-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}

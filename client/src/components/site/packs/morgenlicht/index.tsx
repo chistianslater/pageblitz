@@ -143,6 +143,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           <div className="pb-ml-about">
+            <p>{section.body}</p>
             {section.imageUrl && (
               <img
                 className="pb-ml-about-img"
@@ -151,7 +152,6 @@ function renderSection(
                 loading="lazy"
               />
             )}
-            <p>{section.body}</p>
           </div>
         </section>
       );
@@ -227,16 +227,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-ml-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-ml-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-ml-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>

@@ -173,16 +173,19 @@ function renderSection(
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
-              <table className="pb-sn-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="pb-sn-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-sn-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </section>
@@ -220,14 +223,20 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.categories.map(cat => (
-            <div className="pb-sn-price-category" key={cat.name}>
-              <h3>{cat.name}</h3>
-              {cat.items.map(item => (
-                <PriceRow key={item.name} name={item.name} price={item.price} />
-              ))}
-            </div>
-          ))}
+          <div className="pb-sn-price-grid">
+            {section.categories.map(cat => (
+              <div className="pb-sn-price-category" key={cat.name}>
+                <h3>{cat.name}</h3>
+                {cat.items.map(item => (
+                  <PriceRow
+                    key={item.name}
+                    name={item.name}
+                    price={item.price}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         </section>
       );
     }
