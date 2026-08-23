@@ -141,7 +141,7 @@ export default function LeadsPage() {
       <div>
         <h1
           className="text-3xl font-bold tracking-tight"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+          style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
         >
           Lead-Funnel
         </h1>

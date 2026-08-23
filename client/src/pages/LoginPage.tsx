@@ -49,7 +49,7 @@ export default function LoginPage() {
             <Zap className="h-8 w-8 text-primary" />
             <span
               className="text-3xl font-extrabold tracking-tight"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
             >
               Page<span className="text-primary">blitz</span>
             </span>

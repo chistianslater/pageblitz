@@ -84,11 +84,10 @@
     <meta name="theme-color" content="#18181b" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- App-Body-Fonts (blocking – needed for first paint of app shell):
-         Inter/Plus Jakarta Sans. v2-Style-Packs bringen ihre eigenen Fonts
-         mit (SSR-Head aus der Pack-Verfassung bzw. client/src/lib/packFonts.ts
-         im CSR-Fallback). -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Eine Schrift für das ganze System (Landing, Studio, Dashboard): Space Grotesk,
+         blocking für den ersten Paint. v2-Style-Packs bringen ihre eigenen Fonts mit
+         (SSR-Head aus der Pack-Verfassung bzw. client/src/lib/packFonts.ts im CSR-Fallback). -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <!-- Google Consent Mode v2 – defaults BEFORE any gtag config -->
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -110,9 +109,6 @@
     <!-- Rybbit Analytics (cookieless, no consent required) -->
     <script src="https://app.rybbit.io/api/script.js" data-site-id="2ea5c59b5deb" defer></script>
     <!-- GA4, Clarity, Meta Pixel are loaded dynamically after cookie consent (see consent.ts) -->
-    <!-- Überschriften-/Studio-Fonts – async/non-blocking, damit sie nicht auf dem kritischen Rendering-Pfad des ersten Paints liegen: Space Grotesk (h1–h6 sitewide, siehe client/src/index.css @layer base; fällt bis zum Laden auf Inter zurück, font-display: swap) + Fraunces/Instrument Sans (nur der Studio-Editor, onboarding-v2/studio.css --st-display/--st-ui). Der frühere riesige Preload hier lud 20+ v1-Layout-Familien (v1 seit B4b entfernt) + Fontshare Clash Display/Satoshi (0 Verwendungen) mit. -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" /></noscript>
   </head>
 
   <body>

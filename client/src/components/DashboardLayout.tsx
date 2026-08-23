@@ -90,7 +90,7 @@ export default function DashboardLayout({
               <Zap className="h-8 w-8 text-primary" />
               <span
                 className="text-3xl font-extrabold tracking-tight"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
               >
                 Page<span className="text-primary">blitz</span>
               </span>
@@ -211,7 +211,7 @@ function DashboardLayoutContent({
                   <Zap className="h-5 w-5 text-primary shrink-0" />
                   <span
                     className="font-bold tracking-tight truncate"
-                    style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
                   >
                     Page<span className="text-primary">blitz</span>
                   </span>

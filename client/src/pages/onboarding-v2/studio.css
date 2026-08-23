@@ -7,8 +7,9 @@
   --st-accent: #1f5f4b; /* tiefes Grün: "erledigt"/Aktion */
   --st-accent-ink: #ffffff;
   --st-warn: #a4441f;
-  --st-display: "Fraunces", Georgia, serif;
-  --st-ui: "Instrument Sans", "Inter", system-ui, sans-serif;
+  /* Eine Schrift für das ganze System (Landing + Studio + Dashboard): Space Grotesk. */
+  --st-display: "Space Grotesk", system-ui, sans-serif;
+  --st-ui: "Space Grotesk", system-ui, sans-serif;
   --st-space: clamp(1rem, 0.8rem + 1vw, 1.75rem);
   min-height: 100dvh;
   background: var(--st-canvas);
