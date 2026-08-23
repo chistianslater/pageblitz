@@ -85,7 +85,49 @@ describe("buildV2GenerationFacts", () => {
   });
 
   test("images werden unverändert durchgereicht (leeres Objekt bleibt leer)", () => {
-    const result = buildV2GenerationFacts(baseBusiness(), "Schreinerei", "slug", {});
+    const result = buildV2GenerationFacts(
+      baseBusiness(),
+      "Schreinerei",
+      "slug",
+      {}
+    );
     expect(result.facts?.images).toEqual({});
+  });
+
+  test("existingSite (Website-Crawl) wird in facts durchgereicht (Plan B7 Task 2)", () => {
+    const result = buildV2GenerationFacts(
+      baseBusiness(),
+      "Schreinerei",
+      "slug",
+      {},
+      {
+        title: "Schreinerei Brandt — Möbel nach Maß",
+        description: "Massivholzmöbel aus Dortmund.",
+        text: "Wir bauen Einbauschränke, Küchen und Einzelmöbel.",
+      }
+    );
+    expect(result.facts?.existingSite).toEqual({
+      title: "Schreinerei Brandt — Möbel nach Maß",
+      description: "Massivholzmöbel aus Dortmund.",
+      text: "Wir bauen Einbauschränke, Küchen und Einzelmöbel.",
+    });
+  });
+
+  test("ohne existingSite (Crawl fehlgeschlagen/keine Website) bleibt facts.existingSite weg", () => {
+    const withNull = buildV2GenerationFacts(
+      baseBusiness(),
+      "Schreinerei",
+      "slug",
+      {},
+      null
+    );
+    expect(withNull.facts?.existingSite).toBeUndefined();
+    const withoutArg = buildV2GenerationFacts(
+      baseBusiness(),
+      "Schreinerei",
+      "slug",
+      {}
+    );
+    expect(withoutArg.facts?.existingSite).toBeUndefined();
   });
 });

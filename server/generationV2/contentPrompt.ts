@@ -5,6 +5,12 @@ export interface ContentPromptArgs {
   constitution: PackConstitution;
   business: { name: string; category: string; city?: string };
   sections: SectionType[];
+  /**
+   * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
+   * `server/gmb/siteCrawl.ts`) — reine Faktenquelle für den Prompt,
+   * landet NIE im Dokument. Fehlt das Feld, fehlt der Abschnitt.
+   */
+  existingSite?: { title?: string; description?: string; text?: string };
 }
 
 /**
@@ -41,13 +47,30 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
  * (Farben, Fonts) — die kommen ausschließlich aus der Verfassung, nie vom LLM.
  */
 export function buildContentPrompt(args: ContentPromptArgs): string {
-  const { constitution, business, sections } = args;
+  const { constitution, business, sections, existingSite } = args;
 
   const factLines = [
     `Name: ${business.name}`,
     `Kategorie: ${business.category}`,
     business.city ? `Stadt: ${business.city}` : null,
   ].filter((line): line is string => Boolean(line));
+
+  // Bestehende Website als Faktenquelle (Spec §2.1 „Das macht der Betrieb
+  // wirklich"): nur aufnehmen, wenn der Crawl tatsächlich Inhalt geliefert hat.
+  const siteLines =
+    existingSite &&
+    (existingSite.title || existingSite.description || existingSite.text)
+      ? [
+          ``,
+          `## Bestehende Website des Betriebs`,
+          `Faktenquelle für Leistungen und Selbstbeschreibung — KEIN Stil- oder Textvorbild. Erfinde nichts, was weder hier noch in den GMB-Daten steht.`,
+          ...(existingSite.title ? [`Titel: ${existingSite.title}`] : []),
+          ...(existingSite.description
+            ? [`Beschreibung: ${existingSite.description}`]
+            : []),
+          ...(existingSite.text ? [`Text: ${existingSite.text}`] : []),
+        ]
+      : [];
 
   const sectionDocs = sections
     .map(
@@ -60,6 +83,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     ``,
     `## Geschäft`,
     factLines.join("\n"),
+    ...siteLines,
     ``,
     `## Tonalität`,
     constitution.essence,

@@ -28,4 +28,36 @@ describe("buildContentPrompt", () => {
       "Erfinde niemals Telefonnummern, E-Mail-Adressen, Straßen oder Öffnungszeiten — die contact-Sektion enthält höchstens city."
     );
   });
+  test("ohne existingSite kein Website-Abschnitt", () => {
+    expect(p).not.toContain("Bestehende Website des Betriebs");
+  });
+  test("existingSite wird als Faktenquelle-Abschnitt gerendert (kein Stil-Vorbild, nichts erfinden)", () => {
+    const withSite = buildContentPrompt({
+      constitution: getConstitution("werkbank"),
+      business: {
+        name: "SCHAU & HORCH",
+        category: "Werbeagentur",
+        city: "Bocholt",
+      },
+      sections: ["hero", "services", "about", "contact"],
+      existingSite: {
+        title: "SCHAU & HORCH — Strategische Markenberatung",
+        description: "Markenberatung in Bocholt.",
+        text: "Wir entwickeln Markenstrategien und Corporate Design.",
+      },
+    });
+    expect(withSite).toContain("## Bestehende Website des Betriebs");
+    expect(withSite).toContain(
+      "Faktenquelle für Leistungen und Selbstbeschreibung"
+    );
+    expect(withSite).toContain("KEIN Stil- oder Textvorbild");
+    expect(withSite).toContain(
+      "Erfinde nichts, was weder hier noch in den GMB-Daten steht."
+    );
+    expect(withSite).toContain("SCHAU & HORCH — Strategische Markenberatung");
+    expect(withSite).toContain("Markenberatung in Bocholt.");
+    expect(withSite).toContain(
+      "Wir entwickeln Markenstrategien und Corporate Design."
+    );
+  });
 });

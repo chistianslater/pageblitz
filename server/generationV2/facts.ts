@@ -1,5 +1,6 @@
 import { mapGmbOpeningHoursToV2 } from "./gmbOpeningHours";
 import type { GenerateSiteContentArgs } from "./generateSiteContent";
+import type { ExistingSiteFacts } from "../gmb/siteCrawl";
 import type { V2Images, V2JobBusiness } from "./runJob";
 
 /**
@@ -19,7 +20,15 @@ export function buildV2GenerationFacts(
   business: V2JobBusiness,
   category: string,
   slug: string,
-  images: V2Images
+  images: V2Images,
+  /**
+   * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
+   * `crawlExistingSite` in `server/gmb/siteCrawl.ts`). Optional: `null`/
+   * `undefined` (keine Website, Crawl fehlgeschlagen) lässt das Feld weg —
+   * dann fehlt auch der Prompt-Abschnitt. Nur eine Prompt-Faktenquelle,
+   * landet nie im Dokument.
+   */
+  existingSite?: ExistingSiteFacts | null
 ): Pick<GenerateSiteContentArgs, "business" | "facts"> {
   const rating = business.rating ? parseFloat(business.rating) : NaN;
   return {
@@ -47,6 +56,7 @@ export function buildV2GenerationFacts(
         openingHours: mapGmbOpeningHoursToV2(business.openingHours),
       },
       images,
+      ...(existingSite ? { existingSite } : {}),
     },
   };
 }

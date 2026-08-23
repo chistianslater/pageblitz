@@ -32,6 +32,14 @@ interface GenerateSiteContentFacts {
   };
   /** Deterministische Bild-URLs (GMB/Stock), nie vom LLM; nur gesetzt, wenn die Sektion existiert. */
   images?: { hero?: string; about?: string };
+  /**
+   * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
+   * `server/gmb/siteCrawl.ts`): Faktenquelle für Leistungen/Selbstbeschreibung
+   * im LLM-Prompt — wird NICHT ins Dokument gemergt (mergeFacts ignoriert es),
+   * sondern nur in buildContentPrompt gereicht. Fehlt das Feld, fehlt der
+   * Prompt-Abschnitt.
+   */
+  existingSite?: { title?: string; description?: string; text?: string };
 }
 
 export interface GenerateSiteContentArgs {
@@ -254,7 +262,12 @@ export async function generateSiteContent(
 
   const constitution = getConstitution(packId);
   const sections = resolveSections(packId);
-  const prompt = buildContentPrompt({ constitution, business, sections });
+  const prompt = buildContentPrompt({
+    constitution,
+    business,
+    sections,
+    ...(facts?.existingSite ? { existingSite: facts.existingSite } : {}),
+  });
 
   const first = await attempt(prompt, packId, business.name);
   const result = first.ok

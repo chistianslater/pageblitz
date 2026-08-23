@@ -470,4 +470,50 @@ describe("generateSiteContent — PB_LLM_MOCK (Task 3, LLM-Mock für die Generie
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });
+
+  test("facts.existingSite landet als Faktenquelle-Abschnitt im Prompt (Plan B7 Task 2)", async () => {
+    const llmComplete = vi.fn().mockResolvedValue(good);
+    vi.doMock("./llmClient", () => ({ llmComplete }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    await generateSiteContent({
+      packId: "werkbank",
+      business: {
+        name: "SCHAU & HORCH",
+        category: "Werbeagentur",
+        city: "Bocholt",
+      },
+      facts: {
+        existingSite: {
+          title: "SCHAU & HORCH — Strategische Markenberatung",
+          description: "Markenberatung und Werbeagentur in Bocholt.",
+          text: "Wir entwickeln Markenstrategien, Corporate Design und Websites.",
+        },
+      },
+    });
+    const prompt = llmComplete.mock.calls[0][0] as string;
+    expect(prompt).toContain("Bestehende Website des Betriebs");
+    expect(prompt).toContain("KEIN Stil- oder Textvorbild");
+    expect(prompt).toContain("SCHAU & HORCH — Strategische Markenberatung");
+    expect(prompt).toContain("Markenberatung und Werbeagentur in Bocholt.");
+    expect(prompt).toContain(
+      "Wir entwickeln Markenstrategien, Corporate Design und Websites."
+    );
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("ohne facts.existingSite fehlt der Abschnitt im Prompt komplett", async () => {
+    const llmComplete = vi.fn().mockResolvedValue(good);
+    vi.doMock("./llmClient", () => ({ llmComplete }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+      facts: { slug: "schreinerei-brandt" },
+    });
+    const prompt = llmComplete.mock.calls[0][0] as string;
+    expect(prompt).not.toContain("Bestehende Website des Betriebs");
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
 });
