@@ -42,6 +42,13 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
   return data.businessName;
 }
 
+/** Ergänzt das Euro-Zeichen, wenn der Preis nackt ist („ab 45" → „ab 45 €"). */
+function formatPrice(price: string): string {
+  const trimmed = price.trim();
+  if (/€|eur/i.test(trimmed) || !/\d/.test(trimmed)) return trimmed;
+  return `${trimmed} €`;
+}
+
 /** Eine Preiszeile: Name links, Preis in Champagner rechts. */
 function PriceRow({
   name,
@@ -53,7 +60,7 @@ function PriceRow({
   return (
     <div className="pb-sn-price-row">
       <span>{name}</span>
-      <span className="pb-sn-price">{price}</span>
+      <span className="pb-sn-price">{formatPrice(price)}</span>
     </div>
   );
 }
@@ -79,7 +86,7 @@ function renderSection(
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
                 {item.price && (
-                  <span className="pb-sn-price">{item.price}</span>
+                  <span className="pb-sn-price">{formatPrice(item.price)}</span>
                 )}
               </div>
             ))}

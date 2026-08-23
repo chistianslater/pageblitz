@@ -2216,14 +2216,10 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
     {
       type: "gallery",
       headline: "Galerie",
-      // Q5 (B7 Welle 0): detail-1 hängt bereits in der Studio-Sektion —
-      // die Galerie zieht disjunkte Assets (bei nur 3 Assets auf 2 Bilder
-      // gekürzt statt gedoppelt).
+      // Q5/B7 Welle 1: der Hero zeigt jetzt schimmer-hero.webp als Bildanker —
+      // die Galerie behält nur das disjunkte Asset (detail-1 hängt in der
+      // Studio-Sektion); bei nur 3 Assets 1 breite Platte statt Dopplung.
       images: [
-        {
-          url: "/demo/schimmer-hero.webp",
-          alt: "Heller Behandlungsraum im Studio Lumière",
-        },
         {
           url: "/demo/schimmer-detail-2.webp",
           alt: "Wartebereich im Studio Lumière",

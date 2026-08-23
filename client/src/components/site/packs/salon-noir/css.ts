@@ -12,7 +12,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-hero-inner{position:relative;display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:32px}
 .pb-sn-copy{position:relative;z-index:2;min-width:0}
 .pb-sn-eyebrow{letter-spacing:.3em;text-transform:uppercase;font-size:10px;color:var(--pb-accent);margin:0 0 16px}
-.pb-sn-hero h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:var(--pb-hero-size);line-height:1.08;letter-spacing:-.01em;max-width:12ch;width:fit-content;margin:0 -56px 0 auto}
+.pb-sn-hero h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:var(--pb-hero-size);line-height:1.08;letter-spacing:-.01em;max-width:14ch;margin:0}
 .pb-sn-sub{margin-top:18px;color:var(--pb-muted);font-size:15px;max-width:44ch}
 .pb-salon-noir a.pb-sn-cta{display:inline-block;margin-top:28px;border:1px solid var(--pb-accent);color:var(--pb-accent);background:transparent;padding:13px 30px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .15s,color .15s}
 .pb-sn-cta:hover,.pb-sn-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
@@ -27,7 +27,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-card p{color:var(--pb-muted);font-size:14px}
 .pb-sn-price{color:var(--pb-accent);font-weight:500;font-size:13px;letter-spacing:.04em;display:inline-block;margin-top:10px;white-space:nowrap}
 .pb-sn-about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-.pb-sn-about img{width:100%;border:1px solid color-mix(in srgb, var(--pb-accent) 40%, transparent);display:block}
+.pb-sn-about img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid color-mix(in srgb, var(--pb-accent) 40%, transparent);display:block}
 .pb-sn-about p{color:var(--pb-ink);max-width:60ch;min-width:0}
 .pb-sn-quote{max-width:56ch;margin:0 0 26px;padding:0 0 0 18px;border-left:2px solid var(--pb-accent)}
 .pb-sn-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:16px}
@@ -65,7 +65,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-footer{padding:32px 40px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-sn-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-sn-footer a:hover,.pb-sn-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-sn-frame{inset:8px}.pb-sn-nav{gap:8px 14px;padding:16px 18px}.pb-sn-logo{order:-1;flex-basis:100%;text-align:center;letter-spacing:.18em;font-size:13px}.pb-sn-nav-links{display:contents}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:48px 20px 56px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-hero h1{max-width:14ch;width:auto;margin:0}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-sn-frame{inset:8px}.pb-sn-nav{gap:8px 14px;padding:16px 18px}.pb-sn-logo{order:-1;flex-basis:100%;text-align:center;letter-spacing:.18em;font-size:13px}.pb-sn-nav-links{display:contents}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:48px 20px 56px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
 .pb-sn-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-sn-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-sn-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

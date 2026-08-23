@@ -96,7 +96,8 @@ function buildMarquee(
 
 function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">,
-  servicesSection: SectionOf<"services"> | undefined
+  servicesSection: SectionOf<"services"> | undefined,
+  hasPageHeader: boolean
 ): React.ReactNode {
   switch (section.type) {
     case "hero": {
@@ -147,7 +148,7 @@ function renderSection(
           className="pb-wb-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          {!hasPageHeader && <h2>{section.headline}</h2>}
           {section.items.map((item, i) => (
             <div className="pb-wb-service" key={item.title}>
               <span className="idx">{String(i + 1).padStart(2, "0")}</span>
@@ -158,8 +159,8 @@ function renderSection(
                     {item.description}
                   </p>
                 )}
-                {item.price && <span>{item.price}</span>}
               </div>
+              {item.price && <span className="price">{item.price}</span>}
             </div>
           ))}
         </section>
@@ -198,7 +199,10 @@ function renderSection(
           <h2>{title}</h2>
           <div className="pb-wb-gallery">
             {section.images.map(img => (
-              <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+              <figure key={img.url}>
+                <img src={img.url} alt={img.alt} loading="lazy" />
+                {img.alt && <figcaption>{img.alt}</figcaption>}
+              </figure>
             ))}
           </div>
         </section>
@@ -397,6 +401,7 @@ const WerkbankPage: React.FC<{
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
+  const hasPageHeader = sections.some(s => s.type === "pageHeader");
   const railText = buildRailText(data, contact?.city);
   const year = now.getFullYear();
 
@@ -420,7 +425,9 @@ const WerkbankPage: React.FC<{
             ))}
           </div>
         </nav>
-        {sections.map(section => renderSection(section, services))}
+        {sections.map(section =>
+          renderSection(section, services, hasPageHeader)
+        )}
         <footer className="pb-wb-footer">
           <p>
             {data.businessName} · © {year} {data.businessName}

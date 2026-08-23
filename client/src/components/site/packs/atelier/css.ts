@@ -13,7 +13,7 @@ export const ATELIER_CSS = `
 .pb-at-cover{display:grid;grid-template-columns:1.5fr 1fr;gap:0;border-bottom:3px solid var(--pb-line)}
 .pb-at-img{position:relative;min-height:280px;background:var(--pb-ink);border-right:1px solid var(--pb-line);overflow:hidden}
 .pb-at-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.pb-at-caption{position:absolute;left:18px;bottom:16px;right:18px;margin:0;font-family:var(--pb-font-display);font-style:italic;font-size:clamp(1.4rem,3vw,2rem);color:var(--pb-accent-contrast);line-height:1.1;text-shadow:0 2px 12px rgba(0,0,0,.35)}
+.pb-at-caption{position:absolute;left:0;bottom:24px;margin:0;max-width:min(80%,18ch);background:var(--pb-ink);color:var(--pb-canvas);padding:12px 20px;font-family:var(--pb-font-display);font-style:italic;font-size:clamp(1.3rem,2.6vw,1.8rem);line-height:1.15}
 .pb-at-capcol{padding:22px 24px 26px 24px;display:flex;flex-direction:column;gap:16px}
 .pb-at-idx{font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.04em;color:var(--pb-accent);text-transform:uppercase}
 .pb-at-capcol p{font-size:13px;color:var(--pb-muted);line-height:1.6}
@@ -33,8 +33,9 @@ export const ATELIER_CSS = `
 .pb-at-about-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:44px;align-items:center}
 .pb-at-about-grid>p:only-child{grid-column:1/-1}
 .pb-at-about-grid .pb-at-about-img{max-width:100%;aspect-ratio:3/2;margin-bottom:0}
-.pb-at-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:var(--pb-line)}
-.pb-at-gallery img{width:100%;height:240px;object-fit:cover;display:block;background:var(--pb-canvas)}
+.pb-at-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px;background:var(--pb-line);border:1px solid var(--pb-line)}
+.pb-at-gallery:has(img:only-child){max-width:980px}
+.pb-at-gallery img{width:100%;aspect-ratio:3/2;object-fit:cover;display:block;background:var(--pb-canvas)}
 .pb-at-quote{padding:22px 0 22px 22px;border-left:3px solid var(--pb-accent);margin-bottom:24px}
 .pb-at-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:19px;max-width:52ch}
 .pb-at-quote footer{margin-top:12px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-muted);text-transform:uppercase;letter-spacing:.03em}

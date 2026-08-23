@@ -81,7 +81,8 @@ function buildNote(
 }
 
 function renderSection(
-  section: SectionV2 | PageSectionOf<"pageHeader">
+  section: SectionV2 | PageSectionOf<"pageHeader">,
+  heroArchSrc: string | undefined
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
@@ -108,6 +109,9 @@ function renderSection(
       );
     }
     case "about": {
+      const showImage = Boolean(
+        section.imageUrl && section.imageUrl !== heroArchSrc
+      );
       return (
         <section
           id={SECTION_ANCHORS.about}
@@ -115,7 +119,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <p>{section.body}</p>
+          <div className="pb-pa-about-grid">
+            <p>{section.body}</p>
+            {showImage && (
+              <img
+                className="pb-pa-about-img"
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+              />
+            )}
+          </div>
         </section>
       );
     }
@@ -333,6 +347,11 @@ const PatinaPage: React.FC<{
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
+  const gallery = sections.find(
+    (s): s is SectionOf<"gallery"> => s.type === "gallery"
+  );
+  const archSrc = gallery?.images[0]?.url ?? about?.imageUrl;
+  const heroArchSrc = hero ? archSrc : undefined;
   const eyebrow = [data.businessCategory, contact?.city]
     .filter((v): v is string => Boolean(v))
     .join(" · ");
@@ -385,6 +404,7 @@ const PatinaPage: React.FC<{
                   ))}
                 </p>
               )}
+              {note && <p className="pb-pa-note">{note}</p>}
               {hero.ctaText && (
                 <a className="pb-pa-cta" href={hero.ctaHref ?? "#kontakt"}>
                   {hero.ctaText}
@@ -405,19 +425,16 @@ const PatinaPage: React.FC<{
                 className="pb-pa-arch a2"
                 aria-hidden="true"
                 style={
-                  about?.imageUrl
-                    ? { backgroundImage: `url(${about.imageUrl})` }
-                    : undefined
+                  archSrc ? { backgroundImage: `url(${archSrc})` } : undefined
                 }
               />
-              {note && <p className="pb-pa-note">{note}</p>}
             </div>
           </div>
         </section>
       )}
       {sections
         .filter(s => s.type !== "hero")
-        .map(section => renderSection(section))}
+        .map(section => renderSection(section, heroArchSrc))}
       <footer className="pb-pa-footer">
         <p>
           {data.businessName} · © {year} {data.businessName}

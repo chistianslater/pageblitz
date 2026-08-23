@@ -350,28 +350,48 @@ const SchimmerPage: React.FC<{
             <div className="pb-sc-orb pb-sc-orb-2" />
             <div className="pb-sc-orb pb-sc-orb-3" />
           </div>
-          <div className="pb-sc-ring" aria-hidden="true" />
-          {firstService && (
-            <div className="pb-sc-chip">Neu: {firstService.title}</div>
+          {!hero.imageUrl && (
+            <>
+              <div className="pb-sc-ring" aria-hidden="true" />
+              {firstService && (
+                <div className="pb-sc-chip">Neu: {firstService.title}</div>
+              )}
+            </>
           )}
-          <div className="pb-sc-glass">
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p>{hero.subheadline}</p>}
-            <div className="pb-sc-cta-row">
-              {hero.ctaText && (
-                <a className="pb-sc-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
-              )}
-              {services && (
-                <a
-                  className="pb-sc-ghost"
-                  href={`#${SECTION_ANCHORS.services}`}
-                >
-                  Mehr erfahren
-                </a>
-              )}
+          <div className="pb-sc-hero-grid">
+            <div className="pb-sc-glass">
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && <p>{hero.subheadline}</p>}
+              <div className="pb-sc-cta-row">
+                {hero.ctaText && (
+                  <a className="pb-sc-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+                {services && (
+                  <a
+                    className="pb-sc-ghost"
+                    href={`#${SECTION_ANCHORS.services}`}
+                  >
+                    Mehr erfahren
+                  </a>
+                )}
+              </div>
             </div>
+            {hero.imageUrl && (
+              <div className="pb-sc-hero-img">
+                <div className="pb-sc-ring" aria-hidden="true" />
+                <img
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+                {firstService && (
+                  <div className="pb-sc-chip">Neu: {firstService.title}</div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       )}
