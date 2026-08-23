@@ -209,8 +209,7 @@ export default defineConfig(({ command }) => ({
           // minimale Implementierung ersetzen), das ist außerhalb des
           // Task-6-Dateisatzes (Bericht: Task-6-Ergebnis, Budget-Abschnitt).
           if (id.includes("node_modules/@radix-ui/")) return "vendor-radix";
-          if (id.includes("node_modules/@tanstack/"))
-            return "vendor-tanstack";
+          if (id.includes("node_modules/@tanstack/")) return "vendor-tanstack";
           if (
             id.includes("node_modules/stripe") ||
             id.includes("node_modules/@stripe/")
