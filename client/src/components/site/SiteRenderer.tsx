@@ -6,7 +6,13 @@ import type {
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
-import { buildNavItems, pageContentSections, pageForPathname } from "./engine";
+import {
+  buildNavItems,
+  linkPageSections,
+  pageContentSections,
+  pageForPathname,
+  visiblePageSections,
+} from "./engine";
 
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
@@ -84,14 +90,34 @@ export const SiteRenderer: React.FC<{
   // Kopfzeile doppelt rendern (zwei <h1>, a11y-Regression) und entfällt
   // deshalb bewusst; `moduleParity.test.ts` sichert ab, dass kein Pack
   // `pageHeader` vergisst.
-  const pageRenderData = currentPage
-    ? {
-        ...effectiveData,
-        sections: pageContentSections(currentPage),
-        sectionOrder: undefined,
-        hiddenSections: undefined,
-      }
-    : effectiveData;
+  //
+  // Add-on-Gating (Plan B6 Task 6): `currentPage` ist nur gesetzt, wenn
+  // `addOns.subpages` gebucht ist (pageForPathname → visiblePages); die
+  // Page-Sektionen laufen durch dasselbe Gating wie die Startseite
+  // (visiblePageSections: Galerie/Speisekarte/Preisliste ohne Add-on werden
+  // auch auf Unterseiten nicht gerendert). Startseiten-Sektionen gatet
+  // `orderedSections` (engine.ts) in jedem Pack-Modul selbst.
+  // Kontakt/Galerie auf Unterseiten lesen die Startseite (linkPageSections)
+  // — der Editor verspricht „übernimmt die Kontaktdaten"/„nutzt die
+  // Galerie-Bilder", also darf die gespeicherte Kopie nie veralten.
+  const pageSections = currentPage
+    ? linkPageSections(
+        effectiveData,
+        visiblePageSections(effectiveData, currentPage)
+      )
+    : undefined;
+  const pageRenderData =
+    currentPage && pageSections
+      ? {
+          ...effectiveData,
+          sections: pageContentSections({
+            ...currentPage,
+            sections: pageSections,
+          }),
+          sectionOrder: undefined,
+          hiddenSections: undefined,
+        }
+      : effectiveData;
   return (
     <div
       className={`pb-site pb-${effectiveData.stylePackId}`}
@@ -104,7 +130,7 @@ export const SiteRenderer: React.FC<{
         now={now}
         navItems={navItems}
         pageTitle={currentPage?.title}
-        sections={currentPage?.sections}
+        sections={pageSections}
       />
       <SiteIslands
         data={effectiveData}

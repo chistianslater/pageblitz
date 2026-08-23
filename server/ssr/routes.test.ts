@@ -402,6 +402,40 @@ describe("SSR routes", () => {
         expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
       });
 
+      test("Unterseite ohne gebuchtes addOns.subpages → SSR-404 (Gating, Plan B6 Task 6), Startseite weiterhin 200 ohne Page-Link", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        const { subpages: _s, ...rest } = fixture.addOns ?? {};
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-ungebucht",
+          websiteData: { ...fixture, addOns: rest },
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          `/site/brandt-ungebucht/${page.slug}`
+        );
+        expect(res.status).toBe(404);
+        expect(res.headers["x-robots-tag"]).toBe("noindex");
+        expect(res.text).not.toContain(`<title>${page.seo.title}</title>`);
+        const home = await request(app).get("/site/brandt-ungebucht");
+        expect(home.status).toBe(200);
+        expect(home.text).not.toContain(`/brandt-ungebucht/${page.slug}"`);
+      });
+
+      test("nicht gebuchte Galerie (addOns.gallery fehlt) erscheint nicht im ausgelieferten HTML", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const { gallery: _g, ...rest } = fixture.addOns ?? {};
+        (getWebsiteBySlug as Mock).mockResolvedValue({
+          slug: "brandt-ohne-galerie",
+          websiteData: { ...fixture, addOns: rest },
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get("/site/brandt-ohne-galerie");
+        expect(res.status).toBe(200);
+        expect(res.text).not.toContain('id="galerie"');
+        expect(res.text).toContain('id="leistungen"');
+      });
+
       test("invalidateSsrCache() löscht per Prefix-Scan auch eine bereits gecachte Unterseite", async () => {
         const fixture = getFixture("werkbank", "full");
         const page = fixture.pages![0];
@@ -642,6 +676,22 @@ describe("SSR routes", () => {
         expect(res.headers["x-robots-tag"]).toContain("noindex");
         expect(res.headers["cache-control"]).toContain("no-store");
         expect(res.text).toContain(`<title>${page.seo.title}</title>`);
+      });
+
+      test("/preview-ssr/:token/:page — Unterseite ohne gebuchtes addOns.subpages → 404 (gleiches Gating wie Kundenseite)", async () => {
+        const fixture = getFixture("werkbank", "full");
+        const page = fixture.pages![0];
+        const { subpages: _s, ...rest } = fixture.addOns ?? {};
+        (getWebsiteByToken as Mock).mockResolvedValue({
+          slug: "brandt",
+          websiteData: { ...fixture, addOns: rest },
+          chatWelcomeMessage: null,
+        });
+        const app = buildAppWithFallback();
+        const res = await request(app).get(
+          `/preview-ssr/${"t".repeat(32)}/${page.slug}`
+        );
+        expect(res.status).toBe(404);
       });
 
       test("/preview-ssr/:token/:page — unbekannte Unterseite → 404", async () => {

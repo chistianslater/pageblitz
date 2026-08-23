@@ -11,6 +11,44 @@ import { getGalleryImages, getHeroImageUrl } from "../industryImages";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
 import { buildV2GenerationFacts } from "./facts";
+import { upsertOnboarding } from "../onboardingV2/state";
+import { SECTION_ADDON_KEYS } from "../../shared/pricing";
+import type { InsertOnboardingResponse } from "../../drizzle/schema";
+import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+
+/** Entwurfs-Flags in onboarding_responses je Sektions-Add-on (wie server/onboardingV2/addOnFlags.ts). */
+const ONBOARDING_ADDON_COLUMNS: Record<
+  (typeof SECTION_ADDON_KEYS)[number],
+  keyof InsertOnboardingResponse
+> = {
+  gallery: "addOnGallery",
+  menu: "addOnMenu",
+  pricelist: "addOnPricelist",
+  team: "addOnTeam",
+  subpages: "addOnSubpages",
+};
+
+/**
+ * Spiegelt die vom Generator gesetzten Add-on-Defaults (aktuell nur
+ * `addOns.menu` für Gastro, siehe generateSiteContent.ts
+ * withGeneratedAddOnDefaults; im Mock-Pfad die Fixture-addOns) als
+ * Entwurfs-Flags nach onboarding_responses — so zeigt das Extras-Panel
+ * „Aktiv", die Checkout-Summe enthält das Extra, und der Kunde kann es
+ * abwählen (Plan B6 Task 6, Spec §5.5). Ohne `addOns` kein Write.
+ */
+async function mirrorGeneratedAddOns(
+  websiteId: number,
+  doc: WebsiteDataV2
+): Promise<void> {
+  const patch: Partial<InsertOnboardingResponse> = {};
+  for (const key of SECTION_ADDON_KEYS) {
+    if (doc.addOns?.[key] === true) {
+      (patch as Record<string, unknown>)[ONBOARDING_ADDON_COLUMNS[key]] = true;
+    }
+  }
+  if (Object.keys(patch).length === 0) return;
+  await upsertOnboarding(websiteId, patch);
+}
 
 export interface V2JobBusiness {
   name: string;
@@ -86,6 +124,7 @@ async function runWebsiteGenerationV2(
 
   await updateGenerationJob(jobId, { progress: 90 });
   await updateWebsite(website.id, { websiteData: websiteData as any });
+  await mirrorGeneratedAddOns(website.id, websiteData);
   invalidateSsrCache(website.slug);
   await updateGenerationJob(jobId, {
     status: "completed",

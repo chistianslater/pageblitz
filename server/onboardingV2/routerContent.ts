@@ -16,7 +16,14 @@ import {
   PagesPatchSchema,
   TextsPatchSchema,
 } from "../../shared/onboardingV2/patches";
-import { applyImages, applyOffer, applyPages, applyTexts } from "./applyPatch";
+import {
+  applyAddOnFlags,
+  applyImages,
+  applyOffer,
+  applyPages,
+  applyTexts,
+} from "./applyPatch";
+import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
 import {
@@ -164,20 +171,30 @@ export const contentProcedures = {
   /**
    * Speichert die Unterseiten (Add-on `subpages`, Extras-Panel-Unterbereich
    * „Unterseiten", Task 5). Wie `updateTeam` (routerCommerce.ts): Flag folgt
-   * Inhalt — sobald tatsächlich mindestens eine Page gespeichert wird,
-   * setzen wir `addOnSubpages` in onboarding_responses selbst, unabhängig
-   * davon, ob der Kunde vorher über das Extras-Toggle ging. Das Abschalten
-   * läuft ausschließlich über `updateAddons` (routerCommerce.ts, Task 6).
+   * Inhalt — sobald tatsächlich mindestens eine Page gespeichert wird und
+   * `addOns.subpages` noch nicht gebucht ist, ziehen wir das Flag mit
+   * (`commitAddOnFlags`: onboarding_responses, nach dem Checkout Stripe +
+   * subscriptions.addOns — Fehler → BAD_REQUEST ohne Dokument-Write) und
+   * schreiben `addOns.subpages`/`features.subpages` + Spalte `addOnSubpages`
+   * im selben persistDoc-Write — sonst wären die neuen Seiten unsichtbar
+   * (Gating in engine.ts `visiblePages`, Task 6). Das Abschalten läuft
+   * ausschließlich über `updateAddons` (routerCommerce.ts).
    */
   updatePages: publicProcedure
     .input(tokenInput.extend({ patch: PagesPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
-      if (input.patch.pages.length > 0) {
-        await upsertOnboarding(loaded.website.id, { addOnSubpages: true });
+      let base = doc;
+      let extra: { addOnSubpages?: boolean } = {};
+      if (input.patch.pages.length > 0 && doc.addOns?.subpages !== true) {
+        await commitAddOnFlags(loaded, { subpages: true });
+        base = applyAddOnFlags(doc, { subpages: true });
+        extra = { addOnSubpages: true };
       }
-      return persistDoc(input.token, loaded, applyPages(doc, input.patch));
+      return persistDoc(input.token, loaded, applyPages(base, input.patch), {
+        extra,
+      });
     }),
 
   /** KI-Vorschlag für ein Textfeld — persistiert nichts, der User bestätigt über updateTexts. */

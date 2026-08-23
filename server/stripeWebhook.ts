@@ -14,7 +14,11 @@ import {
   getSubscriptionByStripeId,
   getUserByEmail,
 } from "./db";
-import { handleCheckoutCompleted } from "./stripeWebhookHandlers";
+import {
+  handleCheckoutCompleted,
+  handleSubscriptionAddOnsUpdated,
+} from "./stripeWebhookHandlers";
+import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2026-02-25.clover",
@@ -147,6 +151,16 @@ export function registerStripeWebhook(app: Express) {
               console.log(
                 `[Webhook] Subscription updated for website ${sub.websiteId}: ${newStatus}${cancelAtPeriodEnd ? " (cancel_at_period_end)" : ""}`
               );
+
+              // Add-on-Stand aus den Subscription-Items nachziehen (Plan B6
+              // Task 6) — Items können sich durch den Studio-Sync
+              // (server/stripeAddons.ts), das Billing-Portal oder das
+              // Stripe-Dashboard geändert haben.
+              await handleSubscriptionAddOnsUpdated(subscription, {
+                getSubscriptionByStripeId,
+                updateSubscription,
+                applyFeatureFlags,
+              });
             }
             break;
           }

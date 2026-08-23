@@ -117,6 +117,12 @@ interface AddonsPanelProps {
   token: string;
   doc: WebsiteDataV2;
   addOns: AddOnFlags;
+  /**
+   * true nach dem Checkout (website.status !== "preview"): Änderungen an den
+   * Extras werden sofort über Stripe abgerechnet (Plan B6 Task 6,
+   * server/onboardingV2/addOnFlags.ts) — das Panel sagt das vorher an.
+   */
+  live?: boolean;
   onApplied: () => void;
   onClose: () => void;
 }
@@ -125,6 +131,7 @@ export function AddonsPanel({
   token,
   doc,
   addOns,
+  live = false,
   onApplied,
   onClose,
 }: AddonsPanelProps) {
@@ -215,8 +222,17 @@ export function AddonsPanel({
       <p style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
         Kontaktformular erscheint sofort in der Vorschau; KI-Chat &amp;
         Terminbuchung werden nach der Freischaltung aktiv (die Vorschau zeigt
-        schon jetzt die Buttons).
+        schon jetzt die Buttons). Nicht gebuchte Inhalte (Galerie, Speisekarte,
+        Preisliste, Team, Unterseiten) bleiben gespeichert und werden nur
+        ausgeblendet.
       </p>
+      {live && (
+        <p style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
+          Deine Website ist freigeschaltet: Änderungen an den Extras werden beim
+          Speichern sofort über dein Abo anteilig abgerechnet bzw.
+          gutgeschrieben.
+        </p>
+      )}
       {updateAddons.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateAddons.error.message}

@@ -123,9 +123,13 @@ export default function StudioPage({ token }: { token: string }) {
     );
   }
 
+  // Vorschau-Leiste gatet wie SSR/Nav auf das Dokument-Feld `addOns.subpages`
+  // (Plan B6 Task 6) — updateAddons/updatePages schreiben es zusammen mit
+  // dem Onboarding-Flag, so zeigt die Leiste genau die Seiten, die
+  // /preview-ssr auch ausliefert.
   const previewTabs = derivePreviewTabs(
     state.doc.pages,
-    !!state.addOns.subpages
+    state.doc.addOns?.subpages === true
   );
   const previewSlug = resolvePreviewSlug(previewTabs, previewSlugState);
   const previewPage =
@@ -180,6 +184,7 @@ export default function StudioPage({ token }: { token: string }) {
             <PhotosPanel
               token={token}
               doc={state.doc}
+              addOns={state.addOns}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();
@@ -222,6 +227,7 @@ export default function StudioPage({ token }: { token: string }) {
               token={token}
               doc={state.doc}
               addOns={state.addOns}
+              live={state.status !== "preview"}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

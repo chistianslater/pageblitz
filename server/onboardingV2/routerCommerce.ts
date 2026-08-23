@@ -3,9 +3,9 @@ import { publicProcedure } from "../_core/trpc";
 import { updateWebsite } from "../db";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
 import { applyOnboardingToV2 } from "../onboardingV2Patch";
-import { applyFeatures, applyTeam } from "./applyPatch";
+import { applyAddOnFlags, applyTeam } from "./applyPatch";
 import { applyFeatureFlags } from "./applyFeatures";
-import { assertV2SafeWrite } from "../v2WriteGuard";
+import { commitAddOnFlags } from "./addOnFlags";
 import {
   AddonsPatchSchema,
   LegalPatchSchema,
@@ -27,6 +27,7 @@ import {
   tokenInput,
   upsertOnboarding,
 } from "./state";
+import type { AddOnFlags } from "../../shared/pricing";
 import { createStudioCheckoutSession } from "./checkout";
 
 /** Nicht buchbare Extras (Finding I1) — dieselbe Menge wie BOOKABLE_ADDON_KEYS, nur invertiert. */
@@ -105,24 +106,22 @@ export const commerceProcedures = {
     }),
 
   /**
-   * Persistiert die Extras-Flags in onboarding_responses (Checkliste/
-   * Progress) und spiegelt die freischaltbaren Extras (contactForm/aiChat/
-   * booking) als `features` ins v2-Dokument, damit SSR-Inseln sofort
-   * reagieren können, sobald die Extras gebucht sind. Nicht buchbare Extras
-   * (siehe BOOKABLE_ADDON_KEYS — aktuell keine) werden serverseitig hart
-   * abgelehnt (Finding I1) — das Client-UI sperrt sie zwar bereits, aber
-   * ein direkter API-Aufruf darf sie nicht durchlassen.
+   * Persistiert die Extras-Flags (Plan B6 Task 6, eine Quelle der Wahrheit):
+   * `commitAddOnFlags` schreibt onboarding_responses (Entwurf/Checkout-
+   * Summe) und — nach dem Checkout — zuerst die Stripe-Subscription-Items
+   * plus `subscriptions.addOns` (Stripe-Fehler → BAD_REQUEST, nichts wird
+   * geschrieben); danach spiegelt `applyFeatureFlags` alle acht Flags ins
+   * Dokument (`features` für contactForm/aiChat/booking/subpages, `addOns`
+   * für gallery/menu/pricelist/team/subpages) plus Spalten, in EINEM
+   * Write inkl. SSR-Cache-Invalidierung.
    *
-   * Team ist anders als contactForm/aiChat/booking kein reines Feature-Flag,
-   * sondern lebt als eigene Sektion im Dokument (wie die Galerie in
-   * `applyImages`) — der Inhalt kommt über `updateTeam`. Beim Abschalten
-   * (`team: false`) wird die Sektion hier entfernt (`applyTeam(doc,
-   * { members: [] })`); beim Einschalten wird keine leere Sektion angelegt,
-   * die entsteht erst mit dem ersten über `updateTeam` gespeicherten
-   * Mitglied. Diese Änderung wird VOR `applyFeatureFlags` geschrieben, weil
-   * der Helfer die Website selbst frisch aus der DB lädt (siehe
-   * applyFeatures.ts) — sonst würde er mit dem noch ungeänderten Dokument
-   * überschreiben und die entfernte Sektion käme zurück.
+   * Nicht gebuchter Inhalt wird NICHT mehr gelöscht (Spec B6 §5.4): Team-
+   * Sektion, Galerie, Speisekarte, Preisliste und `pages[]` bleiben im
+   * Dokument und werden über `addOns` nur ausgeblendet (engine.ts
+   * `visibleSections`/`visiblePages`) — ein erneutes Einschalten bringt den
+   * Inhalt ohne Datenverlust zurück. Nicht buchbare Extras (siehe
+   * BOOKABLE_ADDON_KEYS — aktuell keine) werden serverseitig hart
+   * abgelehnt (Finding I1).
    */
   updateAddons: publicProcedure
     .input(tokenInput.extend({ addOns: AddonsPatchSchema }))
@@ -139,59 +138,15 @@ export const commerceProcedures = {
       }
 
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-
-      await upsertOnboarding(loaded.website.id, {
-        addOnContactForm: addOns.contactForm,
-        addOnGallery: addOns.gallery,
-        addOnMenu: addOns.menu,
-        addOnPricelist: addOns.pricelist,
-        addOnAiChat: addOns.aiChat,
-        addOnBooking: addOns.booking,
-        addOnTeam: addOns.team,
-        // Unterseiten (Plan B6 Task 5) wie Team: nur das Abrechnungs-Flag;
-        // der Inhalt (pages[]) kommt über updatePages (routerContent.ts),
-        // Gating/Ausblenden nicht gebuchter Seiten macht Task 6.
-        addOnSubpages: addOns.subpages,
-      });
+      const flags: AddOnFlags = { ...addOns };
+      await commitAddOnFlags(loaded, flags);
 
       if (loaded.doc) {
-        let baseDoc = loaded.doc;
-        if (
-          addOns.team === false &&
-          baseDoc.sections.some(s => s.type === "team")
-        ) {
-          baseDoc = applyTeam(baseDoc, { members: [] });
-          assertV2SafeWrite(loaded.website.websiteData, baseDoc);
-          await updateWebsite(loaded.website.id, {
-            websiteData: baseDoc as any,
-          });
-          // Dieser Write invalidiert die SSR-Cache selbst NICHT — er ist
-          // darauf angewiesen, dass der nachfolgende applyFeatureFlags-Aufruf
-          // (unten) invalidateSsrCache() ausführt (siehe applyFeatures.ts).
-          // Reihenfolge nicht umbauen: würde applyFeatureFlags vor diesem
-          // Block laufen, würde die Cache-Invalidierung vor der entfernten
-          // Team-Sektion feuern, und Besucher bekämen bis zum nächsten
-          // Cache-Miss weiterhin die alte (mit Team-Sektion) ausgelieferte
-          // Seite.
-        }
-
-        const featurePatch = {
-          contactForm: addOns.contactForm,
-          aiChat: addOns.aiChat,
-          booking: addOns.booking,
-        };
-        // Eine Quelle der Wahrheit (Final-Review Befund 4): applyFeatureFlags
-        // schreibt websiteData.features.* UND die Spalten addOnAiChat/
-        // addOnBooking auf generatedWebsites in einem Write (inkl. Guard +
-        // SSR-Cache-Invalidierung) — vorher schrieb dieser Pfad nur
-        // `features`, die Spalte blieb stehen und `/api/chat/:slug/message`
-        // (chatRoutes.ts, gatet auf die Spalte) antwortete 404, obwohl das
-        // Widget laut `features.aiChat` sichtbar war.
-        await applyFeatureFlags(loaded.website.id, featurePatch);
-        // applyFeatures ist pur/deterministisch — dieselbe Berechnung hier
+        await applyFeatureFlags(loaded.website.id, flags);
+        // applyAddOnFlags ist pur/deterministisch — dieselbe Berechnung hier
         // (statt eines zweiten DB-Reads) baut den Response-State exakt so,
         // wie applyFeatureFlags ihn gerade persistiert hat.
-        const next = applyFeatures(baseDoc, featurePatch);
+        const next = applyAddOnFlags(loaded.doc, flags);
         const progress = await mergeStudioProgress(loaded.website.id, {
           addonsReviewed: true,
         });
@@ -202,12 +157,10 @@ export const commerceProcedures = {
             website: {
               ...loaded.website,
               websiteData: next as any,
-              ...(addOns.aiChat !== undefined
-                ? { addOnAiChat: addOns.aiChat }
-                : {}),
-              ...(addOns.booking !== undefined
-                ? { addOnBooking: addOns.booking }
-                : {}),
+              addOnAiChat: addOns.aiChat,
+              addOnBooking: addOns.booking,
+              addOnTeam: addOns.team,
+              addOnSubpages: addOns.subpages,
             },
             doc: next,
           },
@@ -226,22 +179,34 @@ export const commerceProcedures = {
    * pflegen"). Wie `updateOffer`: Dokument laden → `applyTeam` (Sektion
    * anlegen/ersetzen/entfernen) → persistieren. Das Add-on-Flag wird primär
    * über `updateAddons` gesetzt/entfernt — sobald hier aber tatsächlich
-   * Mitglieder gespeichert werden (Inhalt existiert), setzen wir
-   * `addOnTeam` zusätzlich selbst, damit `startCheckout` weiter unten
-   * (`sanitizeAddOns(state.addOns)`) Team mitberechnet, auch wenn der Kunde
-   * nie über das Extras-Panel-Toggle ging, sondern direkt Mitglieder
-   * anlegte. Beim Leeren (`members: []`) bleibt das Flag unverändert — das
-   * Abschalten läuft ausschließlich über `updateAddons`.
+   * Mitglieder gespeichert werden (Inhalt existiert) und `addOns.team` noch
+   * nicht gebucht ist, ziehen wir das Flag mit (`commitAddOnFlags` +
+   * `addOns.team` im Dokument), damit die Sektion sichtbar ist und
+   * `createCheckout` (`sanitizeAddOns(state.addOns)`) Team mitberechnet,
+   * auch wenn der Kunde nie über das Extras-Panel-Toggle ging. Beim Leeren
+   * (`members: []`) bleibt das Flag unverändert — das Abschalten läuft
+   * ausschließlich über `updateAddons`.
    */
   updateTeam: publicProcedure
     .input(tokenInput.extend({ patch: TeamPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
-      if (input.patch.members.length > 0) {
-        await upsertOnboarding(loaded.website.id, { addOnTeam: true });
+      let base = doc;
+      let extra: { addOnTeam?: boolean } = {};
+      if (input.patch.members.length > 0 && doc.addOns?.team !== true) {
+        // Inhalt ohne gebuchtes Add-on wäre unsichtbar (Gating über
+        // addOns.team, Plan B6 Task 6) — deshalb Flag mitziehen: Entwurf/
+        // Stripe/Subscription über commitAddOnFlags (nach dem Checkout löst
+        // das die Abrechnung aus; Fehler → BAD_REQUEST, kein Dokument-Write),
+        // Dokument + Spalte addOnTeam im selben persistDoc-Write.
+        await commitAddOnFlags(loaded, { team: true });
+        base = applyAddOnFlags(doc, { team: true });
+        extra = { addOnTeam: true };
       }
-      return persistDoc(input.token, loaded, applyTeam(doc, input.patch));
+      return persistDoc(input.token, loaded, applyTeam(base, input.patch), {
+        extra,
+      });
     }),
 
   /**

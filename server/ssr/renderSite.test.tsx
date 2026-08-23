@@ -255,6 +255,75 @@ describe("renderSiteHtml — Unterseiten (pages[], Plan B6 Task 3)", () => {
   });
 });
 
+describe("renderSiteHtml — Add-on-Gating (Plan B6 Task 6)", () => {
+  const full = getFixture("werkbank", "full");
+  const opts = { origin: "https://brandt.pageblitz.de" };
+
+  test("Fixture full (alle addOns gebucht) rendert die Galerie samt Anker", () => {
+    const { html } = renderSiteHtml(full, opts);
+    expect(html).toContain('id="galerie"');
+    expect(html).toContain('href="#galerie"');
+  });
+
+  test("ohne addOns.gallery fehlt die Galerie im HTML (Sektion bleibt im Dokument) — inkl. Nav-Anker", () => {
+    const { gallery: _g, ...rest } = full.addOns ?? {};
+    const { html, status } = renderSiteHtml({ ...full, addOns: rest }, opts);
+    expect(status).toBe(200);
+    expect(html).not.toContain('id="galerie"');
+    expect(html).not.toContain('href="#galerie"');
+    // Freie Sektionen bleiben.
+    expect(html).toContain('id="leistungen"');
+    expect(full.sections.some(s => s.type === "gallery")).toBe(true);
+  });
+
+  test("ohne addOns.subpages: Page-Link fehlt in der Nav, Page-Pfad rendert die Startseite (Route liefert 404, siehe routes.test)", () => {
+    const { subpages: _s, ...rest } = full.addOns ?? {};
+    const data = { ...full, addOns: rest };
+    const page = full.pages![0];
+    const home = renderSiteHtml(data, opts);
+    expect(home.html).not.toContain(`href="/${page.slug}"`);
+    const onPage = renderSiteHtml(data, {
+      ...opts,
+      pathname: `/${page.slug}`,
+    });
+    expect(onPage.html).toContain(`<title>${full.seo.title}</title>`);
+    expect(onPage.html).not.toContain(`<title>${page.seo.title}</title>`);
+  });
+
+  test("Unterseite: nicht gebuchte Galerie-Sektion auf der Page wird ebenfalls ausgeblendet, pageHeader bleibt", () => {
+    const page = {
+      slug: "einblicke",
+      title: "Einblicke",
+      seo: { title: "Einblicke", description: "Bilder." },
+      sections: [
+        { type: "pageHeader" as const, title: "Einblicke-Kopf" },
+        {
+          type: "gallery" as const,
+          headline: "Unterseiten-Galerie",
+          images: [{ url: "https://x/g.jpg", alt: "g" }],
+        },
+      ],
+    };
+    const data = {
+      ...full,
+      pages: [page],
+      addOns: { subpages: true },
+    };
+    const { html, status } = renderSiteHtml(data, {
+      ...opts,
+      pathname: "/einblicke",
+    });
+    expect(status).toBe(200);
+    expect(html).toContain("Einblicke-Kopf");
+    expect(html).not.toContain("Unterseiten-Galerie");
+    const booked = renderSiteHtml(
+      { ...data, addOns: { subpages: true, gallery: true } },
+      { ...opts, pathname: "/einblicke" }
+    );
+    expect(booked.html).toContain("Unterseiten-Galerie");
+  });
+});
+
 describe("renderSiteHtml — SSR-Inseln", () => {
   test("Bundle-Tag und Inseln-CSS fehlen, wenn keine Features aktiv sind (Fixture full)", () => {
     const { html } = renderSiteHtml(getFixture("werkbank", "full"), {

@@ -272,6 +272,41 @@ describe("onboardingV2.updatePages", () => {
     );
   });
 
+  test("mit Pages → addOns.subpages + features.subpages im Dokument und Spalte addOnSubpages (sonst blieben die Seiten unsichtbar, Plan B6 Task 6)", async () => {
+    const s = await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [page] },
+    });
+    expect(s.doc!.addOns).toEqual({ subpages: true });
+    expect(s.doc!.features).toEqual({ subpages: true });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        addOnSubpages: true,
+        websiteData: expect.objectContaining({ addOns: { subpages: true } }),
+      })
+    );
+  });
+
+  test("bereits gebucht (addOns.subpages=true) → kein erneuter Flag-Write, nur Pages", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: { ...v2, addOns: { subpages: true } },
+      customerEmail: null,
+    } as any);
+    await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [page] },
+    });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnSubpages: expect.anything() })
+    );
+  });
+
   test("pages: [] → kein Flag-Write", async () => {
     await caller().onboardingV2.updatePages({
       token: "tok",

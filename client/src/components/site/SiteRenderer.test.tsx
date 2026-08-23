@@ -92,6 +92,9 @@ describe("SiteRenderer", () => {
         { type: "hero", headline: "Hallo Welt" },
         { type: "services", headline: "Leistungen", items: [{ title: "A" }] },
       ],
+      // Unterseiten sind Add-on-Inhalt (Plan B6 Task 6): ohne
+      // `addOns.subpages` rendert SiteRenderer die Startseite.
+      addOns: { subpages: true },
       pages: [
         {
           slug: "leistungen-im-detail",
@@ -145,6 +148,16 @@ describe("SiteRenderer", () => {
       // Startseite) fehlt.
       expect(html).toContain(">B<");
       expect(html).not.toContain("Hallo Welt");
+    });
+
+    test("Page vorhanden, aber addOns.subpages nicht gebucht → Startseite statt Page (Gating, Plan B6 Task 6)", () => {
+      const { addOns: _a, ...ungated } = dataWithPage;
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={ungated} pathname="/leistungen-im-detail" />
+      );
+      expect(html).toContain("Hallo Welt");
+      expect(html).not.toContain('<header class="pb-wb-page-header">');
+      expect(html).not.toContain('href="/leistungen-im-detail"');
     });
 
     test("unbekannter pathname (keine Page) rendert die Startseite, kein Page-Header", () => {

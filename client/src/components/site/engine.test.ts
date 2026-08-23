@@ -1,13 +1,19 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
 import {
+  ADDON_GATED_SECTION_TYPES,
   applyNavLabels,
   buildNavItems,
+  isSectionBooked,
+  linkPageSections,
   orderedSections,
   pageContentSections,
   pageForPathname,
   pageHeaderSection,
   SECTION_ANCHORS,
+  visiblePages,
+  visiblePageSections,
+  visibleSections,
 } from "./engine";
 
 const base: WebsiteDataV2 = {
@@ -22,8 +28,11 @@ const base: WebsiteDataV2 = {
   ],
 };
 
+// Seit Plan B6 Task 6 sind Unterseiten Add-on-Inhalt: ohne
+// `addOns.subpages: true` werden sie weder aufgelöst noch verlinkt.
 const withPages: WebsiteDataV2 = {
   ...base,
+  addOns: { subpages: true },
   pages: [
     {
       slug: "leistungen-im-detail",
@@ -98,6 +107,229 @@ describe("pageForPathname", () => {
   });
   test("kein pages[] im Dokument → immer null", () => {
     expect(pageForPathname(base, "/leistungen-im-detail")).toBeNull();
+  });
+  test("pages[] vorhanden, aber addOns.subpages nicht gebucht → null (Gating, Plan B6 Task 6)", () => {
+    const { addOns: _a, ...ungated } = withPages;
+    expect(pageForPathname(ungated, "/leistungen-im-detail")).toBeNull();
+    expect(
+      pageForPathname(
+        { ...ungated, addOns: { gallery: true } },
+        "/leistungen-im-detail"
+      )
+    ).toBeNull();
+  });
+});
+
+describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () => {
+  const gatedDoc: WebsiteDataV2 = {
+    ...base,
+    sections: [
+      { type: "hero", headline: "H" },
+      { type: "services", headline: "L", items: [{ title: "A" }] },
+      { type: "about", headline: "Ü", body: "B" },
+      {
+        type: "gallery",
+        headline: "G",
+        images: [{ url: "https://x/g.jpg", alt: "g" }],
+      },
+      {
+        type: "menu",
+        headline: "M",
+        categories: [{ name: "K", items: [{ name: "Gericht", price: "9 €" }] }],
+      },
+      {
+        type: "pricelist",
+        headline: "P",
+        categories: [
+          { name: "K", items: [{ name: "Leistung", price: "9 €" }] },
+        ],
+      },
+      { type: "team", headline: "T", members: [{ name: "Anna" }] },
+      { type: "contact", city: "Dortmund" },
+    ],
+  };
+  const GATED = ["gallery", "menu", "pricelist", "team"] as const;
+  const FREE = ["hero", "services", "about", "contact"] as const;
+
+  test("ADDON_GATED_SECTION_TYPES bildet genau gallery/menu/pricelist/team auf ihr Add-on ab", () => {
+    expect(ADDON_GATED_SECTION_TYPES).toEqual({
+      gallery: "gallery",
+      menu: "menu",
+      pricelist: "pricelist",
+      team: "team",
+    });
+  });
+
+  test("ohne addOns: gebuchte Sektionstypen werden ausgeblendet, freie bleiben (Dokument bleibt unverändert)", () => {
+    const types = visibleSections(gatedDoc).map(s => s.type);
+    expect(types).toEqual([...FREE.slice(0, 3), "contact"]);
+    // Kein Datenverlust: das Dokument selbst behält alle Sektionen.
+    expect(gatedDoc.sections).toHaveLength(8);
+  });
+
+  test("Matrix: je Add-on genau eine Sektion sichtbar; andere gebuchte bleiben aus", () => {
+    for (const key of GATED) {
+      const doc: WebsiteDataV2 = { ...gatedDoc, addOns: { [key]: true } };
+      const types = visibleSections(doc).map(s => s.type);
+      for (const other of GATED) {
+        expect(types.includes(other)).toBe(other === key);
+      }
+      for (const free of FREE) expect(types).toContain(free);
+      expect(isSectionBooked(doc, key)).toBe(true);
+    }
+  });
+
+  test("alle addOns true → alle Sektionen sichtbar, Reihenfolge wie im Dokument; orderedSections hält den Hero vorn und respektiert das Gating", () => {
+    const doc: WebsiteDataV2 = {
+      ...gatedDoc,
+      addOns: { gallery: true, menu: true, pricelist: true, team: true },
+    };
+    expect(visibleSections(doc).map(s => s.type)).toEqual(
+      gatedDoc.sections.map(s => s.type)
+    );
+    const partly: WebsiteDataV2 = {
+      ...gatedDoc,
+      addOns: { team: true },
+      sectionOrder: ["contact", "team", "services", "hero"],
+    };
+    expect(orderedSections(partly).map(s => s.type)).toEqual([
+      "hero",
+      "contact",
+      "team",
+      "services",
+      "about",
+    ]);
+  });
+
+  test("hiddenSections greift weiterhin zusätzlich zum Gating", () => {
+    const doc: WebsiteDataV2 = {
+      ...gatedDoc,
+      addOns: { gallery: true },
+      hiddenSections: ["gallery"],
+    };
+    expect(visibleSections(doc).map(s => s.type)).not.toContain("gallery");
+  });
+
+  test("freie Sektionstypen sind nie gebucht-abhängig", () => {
+    for (const free of FREE) expect(isSectionBooked(base, free)).toBe(true);
+    expect(isSectionBooked(base, "faq")).toBe(true);
+    expect(isSectionBooked(base, "testimonials")).toBe(true);
+    expect(isSectionBooked(base, "cta")).toBe(true);
+  });
+
+  test("visiblePages: nur mit addOns.subpages; sonst leer — und buildNavItems verlinkt dann keine Seiten", () => {
+    expect(visiblePages(withPages).map(p => p.slug)).toEqual([
+      "leistungen-im-detail",
+      "ueber-das-team",
+    ]);
+    const { addOns: _a, ...ungated } = withPages;
+    expect(visiblePages(ungated)).toEqual([]);
+    expect(visiblePages(base)).toEqual([]);
+    const items = buildNavItems(ungated, { pathname: "/", basePath: "" });
+    expect(items.some(i => i.key.startsWith("page-"))).toBe(false);
+    // Auf einer (nicht gebuchten) Unterseiten-URL bleibt die Nav die der
+    // Startseite (kein Anker-Präfix, kein current).
+    const onPage = buildNavItems(ungated, {
+      pathname: "/leistungen-im-detail",
+      basePath: "",
+    });
+    expect(onPage.map(i => i.href)).toEqual(["#kontakt", "#leistungen"]);
+  });
+
+  test("Nav-Anker folgen dem Gating: ausgeblendete Galerie bekommt keinen Anker", () => {
+    const items = buildNavItems(
+      { ...gatedDoc, addOns: { team: true } },
+      { pathname: "/", basePath: "" }
+    );
+    expect(items.map(i => i.key)).toEqual([
+      "anchor-services",
+      "anchor-about",
+      "anchor-team",
+      "anchor-contact",
+    ]);
+  });
+
+  test("linkPageSections: Kontakt/Galerie auf Unterseiten lesen beim Rendern die Startseite (Fakten/Bilder), Überschrift der Seite bleibt; ohne Startseiten-Pendant bleibt die Kopie", () => {
+    const home: WebsiteDataV2 = {
+      ...base,
+      addOns: { subpages: true, gallery: true },
+      sections: [
+        { type: "hero", headline: "H" },
+        {
+          type: "gallery",
+          headline: "Einblicke",
+          images: [{ url: "https://x/neu.jpg", alt: "neu" }],
+        },
+        { type: "contact", city: "Essen", phone: "0201 1" },
+      ],
+    };
+    const pageSections = [
+      { type: "pageHeader" as const, title: "Seite" },
+      {
+        type: "gallery" as const,
+        headline: "Seiten-Galerie",
+        images: [{ url: "https://x/alt.jpg", alt: "alt" }],
+      },
+      {
+        type: "contact" as const,
+        headline: "So erreichst du uns",
+        city: "Dortmund",
+      },
+    ];
+    const linked = linkPageSections(home, pageSections);
+    expect(linked[1]).toEqual({
+      type: "gallery",
+      headline: "Seiten-Galerie",
+      images: [{ url: "https://x/neu.jpg", alt: "neu" }],
+    });
+    expect(linked[2]).toEqual({
+      type: "contact",
+      headline: "So erreichst du uns",
+      city: "Essen",
+      phone: "0201 1",
+    });
+    expect(linked[0]).toBe(pageSections[0]);
+    // Startseite ohne Galerie/Kontakt → Seiten-Kopie bleibt unverändert.
+    const bare: WebsiteDataV2 = {
+      ...base,
+      sections: [{ type: "hero", headline: "H" }],
+    };
+    expect(linkPageSections(bare, pageSections)).toEqual(pageSections);
+    // Eingabe unverändert.
+    expect(pageSections[1].images[0]!.url).toBe("https://x/alt.jpg");
+  });
+
+  test("visiblePageSections: pageHeader bleibt, gebuchte Typen auf Unterseiten folgen demselben Gating", () => {
+    const page = {
+      slug: "galerie-seite",
+      title: "Galerie",
+      seo: { title: "Galerie", description: "Bilder." },
+      sections: [
+        { type: "pageHeader" as const, title: "Galerie" },
+        {
+          type: "gallery" as const,
+          headline: "G",
+          images: [{ url: "https://x/g.jpg", alt: "g" }],
+        },
+        { type: "contact" as const, city: "Dortmund" },
+      ],
+    };
+    const docOff: WebsiteDataV2 = { ...base, addOns: { subpages: true } };
+    expect(visiblePageSections(docOff, page).map(s => s.type)).toEqual([
+      "pageHeader",
+      "contact",
+    ]);
+    const docOn: WebsiteDataV2 = {
+      ...base,
+      addOns: { subpages: true, gallery: true },
+    };
+    expect(visiblePageSections(docOn, page).map(s => s.type)).toEqual([
+      "pageHeader",
+      "gallery",
+      "contact",
+    ]);
+    // Unverändertes Eingabeobjekt.
+    expect(page.sections).toHaveLength(3);
   });
 });
 

@@ -28,9 +28,16 @@ vi.mock("../db", async importOriginal => {
     updateOnboarding: vi.fn(),
     updateWebsite: vi.fn().mockResolvedValue(undefined),
     createOnboarding: vi.fn(),
+    updateSubscription: vi.fn().mockResolvedValue(undefined),
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
+// Stripe-Sync nach dem Checkout (Plan B6 Task 6) — hier nur prüfen, WANN er
+// aufgerufen wird und wie der Router auf Fehler reagiert; die Item-Logik
+// selbst ist in server/stripeAddons.test.ts abgedeckt.
+vi.mock("../stripeAddons", () => ({
+  syncSubscriptionAddOns: vi.fn().mockResolvedValue({ added: [], removed: [] }),
+}));
 vi.mock("../_core/lifecycleScheduler", () => ({
   sendImmediateWelcomeEmail: vi.fn(),
   scheduleInitialLifecycleEmails: vi.fn(),
@@ -49,6 +56,8 @@ import { appRouter } from "../routers";
 import * as db from "../db";
 import * as lifecycleScheduler from "../_core/lifecycleScheduler";
 import * as checkoutModule from "./checkout";
+import * as stripeAddons from "../stripeAddons";
+const mockedStripeAddons = vi.mocked(stripeAddons);
 const mockedDb = vi.mocked(db);
 const mockedLifecycle = vi.mocked(lifecycleScheduler);
 const mockedCheckout = vi.mocked(checkoutModule);
@@ -60,6 +69,14 @@ const ctx = (): TrpcContext => ({
 });
 
 const caller = () => appRouter.createCaller(ctx());
+
+/** Eingeloggter Abo-Inhaber (userId 5) — nach dem Checkout verlangt loadStudioWebsite den Besitzer. */
+const ownerCtx = (): TrpcContext => ({
+  user: { id: 5, email: "k@x.de" } as any,
+  req: { protocol: "https", headers: {} } as any,
+  res: {} as any,
+});
+const ownerCaller = () => appRouter.createCaller(ownerCtx());
 
 const v2 = {
   version: 2,
@@ -83,6 +100,11 @@ let onboardingRow: Record<string, unknown> | undefined;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockedStripeAddons.syncSubscriptionAddOns.mockResolvedValue({
+    added: [],
+    removed: [],
+  });
+  mockedDb.getSubscriptionByWebsiteId.mockResolvedValue(undefined as any);
   onboardingRow = {
     websiteId: 42,
     studioProgress: null,
@@ -330,9 +352,10 @@ describe("onboardingV2.updateAddons", () => {
     expect(s.doc!.pages).toBeUndefined();
   });
 
-  test("team: true→false entfernt eine vorhandene Team-Sektion aus dem Dokument", async () => {
+  test("team: true→false blendet nur aus: addOns.team weg, Team-Sektion bleibt im Dokument (Plan B6 Task 6: ausblenden statt löschen)", async () => {
     const v2WithTeam = {
       ...v2,
+      addOns: { team: true, gallery: true },
       sections: [
         ...v2.sections,
         { type: "team", members: [{ name: "Anna Beispiel" }] },
@@ -354,13 +377,13 @@ describe("onboardingV2.updateAddons", () => {
       websiteData: v2WithTeam,
       customerEmail: null,
     } as any);
-    onboardingRow = { ...onboardingRow, addOnTeam: true };
+    onboardingRow = { ...onboardingRow, addOnTeam: true, addOnGallery: true };
 
     const s = await caller().onboardingV2.updateAddons({
       token: "tok",
       addOns: {
         contactForm: false,
-        gallery: false,
+        gallery: true,
         menu: false,
         pricelist: false,
         aiChat: false,
@@ -370,21 +393,166 @@ describe("onboardingV2.updateAddons", () => {
       },
     });
 
-    expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
+    expect(s.doc!.sections.some(x => x.type === "team")).toBe(true);
+    expect(s.doc!.addOns).toEqual({ gallery: true });
     expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
       42,
       expect.objectContaining({ addOnTeam: false })
     );
-    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
-      42,
-      expect.objectContaining({
-        websiteData: expect.objectContaining({
-          sections: expect.not.arrayContaining([
-            expect.objectContaining({ type: "team" }),
-          ]),
-        }),
-      })
-    );
+    // Genau EIN Dokument-Write (applyFeatureFlags), kein separates
+    // Sektion-Entfernen mehr.
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnTeam).toBe(false);
+    expect(
+      (patch as any).websiteData.sections.some((x: any) => x.type === "team")
+    ).toBe(true);
+    expect((patch as any).websiteData.addOns).toEqual({ gallery: true });
+  });
+
+  test("gallery/menu/pricelist/subpages landen als addOns im Dokument, contactForm/aiChat/booking als features — ein Write (Plan B6 Task 6)", async () => {
+    const s = await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: true,
+        gallery: true,
+        menu: false,
+        pricelist: true,
+        aiChat: false,
+        booking: false,
+        team: false,
+        subpages: true,
+      },
+    });
+    expect(s.doc!.addOns).toEqual({
+      gallery: true,
+      pricelist: true,
+      subpages: true,
+    });
+    expect(s.doc!.features).toEqual({ contactForm: true, subpages: true });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnSubpages).toBe(true);
+    expect((patch as any).websiteData.addOns).toEqual({
+      gallery: true,
+      pricelist: true,
+      subpages: true,
+    });
+  });
+
+  test("vor dem Checkout (status preview): KEIN Stripe-Sync, subscriptions unangetastet", async () => {
+    await caller().onboardingV2.updateAddons({
+      token: "tok",
+      addOns: {
+        contactForm: false,
+        gallery: true,
+        menu: false,
+        pricelist: false,
+        aiChat: false,
+        booking: false,
+        team: false,
+        subpages: false,
+      },
+    });
+    expect(mockedStripeAddons.syncSubscriptionAddOns).not.toHaveBeenCalled();
+    expect(mockedDb.updateSubscription).not.toHaveBeenCalled();
+  });
+
+  describe("nach dem Checkout (status !== preview): Studio-Toggle löst den Stripe-Sync aus (Spec B6 §5.3)", () => {
+    const soldWebsite = {
+      id: 42,
+      slug: "brandt",
+      status: "active",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "k@x.de",
+    };
+    const allOff = {
+      contactForm: false,
+      gallery: false,
+      menu: false,
+      pricelist: false,
+      aiChat: false,
+      booking: false,
+      team: false,
+      subpages: false,
+    };
+
+    beforeEach(() => {
+      mockedDb.getWebsiteByToken.mockResolvedValue(soldWebsite as any);
+      mockedDb.getWebsiteById.mockResolvedValue(soldWebsite as any);
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        userId: 5,
+        stripeSubscriptionId: "sub_live_1",
+        addOns: { contactForm: true },
+      } as any);
+    });
+
+    test("Sync mit allen acht Flags, danach subscriptions.addOns + Onboarding-Flags + Dokument", async () => {
+      const s = await ownerCaller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: { ...allOff, gallery: true, team: true },
+      });
+      expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledWith(
+        "sub_live_1",
+        { ...allOff, gallery: true, team: true }
+      );
+      expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+        9,
+        expect.objectContaining({
+          addOns: { ...allOff, gallery: true, team: true },
+        })
+      );
+      expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+        42,
+        expect.objectContaining({ addOnGallery: true, addOnTeam: true })
+      );
+      expect(s.doc!.addOns).toEqual({ gallery: true, team: true });
+      expect(s.doc!.features).toBeUndefined();
+    });
+
+    test("Stripe-Fehler → BAD_REQUEST „Add-on-Änderung konnte nicht abgerechnet werden“, KEIN Write (Flags/Dokument/Subscription unverändert)", async () => {
+      mockedStripeAddons.syncSubscriptionAddOns.mockRejectedValue(
+        new Error("card_declined")
+      );
+      await expect(
+        ownerCaller().onboardingV2.updateAddons({
+          token: "tok",
+          addOns: { ...allOff, gallery: true },
+        })
+      ).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: expect.stringContaining(
+          "Add-on-Änderung konnte nicht abgerechnet werden"
+        ),
+      });
+      expect(mockedDb.updateSubscription).not.toHaveBeenCalled();
+      expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+      expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
+      expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    });
+
+    test("verkauft, aber Subscription ohne Stripe-ID (Admin-/Testfreischaltung, createTestSubscription) → kein Sync, Flags + subscriptions.addOns werden trotzdem geschrieben", async () => {
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        userId: 5,
+        stripeSubscriptionId: null,
+        addOns: null,
+      } as any);
+      const s = await ownerCaller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: { ...allOff, gallery: true },
+      });
+      expect(mockedStripeAddons.syncSubscriptionAddOns).not.toHaveBeenCalled();
+      expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+        9,
+        expect.objectContaining({ addOns: { ...allOff, gallery: true } })
+      );
+      expect(s.doc!.addOns).toEqual({ gallery: true });
+    });
   });
 });
 
@@ -437,6 +605,70 @@ describe("onboardingV2.updateTeam", () => {
       patch: { members: [] },
     });
     expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
+  });
+
+  test("mit Mitgliedern → addOns.team=true im Dokument + Spalte addOnTeam (sonst bliebe die neue Sektion unsichtbar, Plan B6 Task 6)", async () => {
+    const s = await caller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: { members: [{ name: "Anna Beispiel" }] },
+    });
+    expect(s.doc!.addOns).toEqual({ team: true });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        addOnTeam: true,
+        websiteData: expect.objectContaining({ addOns: { team: true } }),
+      })
+    );
+    // Vor dem Checkout kein Stripe-Sync.
+    expect(mockedStripeAddons.syncSubscriptionAddOns).not.toHaveBeenCalled();
+  });
+
+  test("nach dem Checkout: erstes Mitglied ohne gebuchtes Team-Add-on → Stripe-Sync für team, Fehler → BAD_REQUEST ohne Dokument-Write", async () => {
+    const sold = {
+      id: 42,
+      slug: "brandt",
+      status: "active",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "k@x.de",
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue(sold as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      id: 9,
+      websiteId: 42,
+      userId: 5,
+      stripeSubscriptionId: "sub_live_1",
+      addOns: {},
+    } as any);
+    await ownerCaller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: { members: [{ name: "Anna Beispiel" }] },
+    });
+    expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledWith(
+      "sub_live_1",
+      { team: true }
+    );
+
+    vi.clearAllMocks();
+    mockedDb.getWebsiteByToken.mockResolvedValue(sold as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      id: 9,
+      websiteId: 42,
+      userId: 5,
+      stripeSubscriptionId: "sub_live_1",
+      addOns: {},
+    } as any);
+    mockedStripeAddons.syncSubscriptionAddOns.mockRejectedValue(
+      new Error("boom")
+    );
+    await expect(
+      ownerCaller().onboardingV2.updateTeam({
+        token: "tok",
+        patch: { members: [{ name: "Anna Beispiel" }] },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
   test("mit Mitgliedern → setzt addOnTeam=true (Flag folgt Inhalt, unabhängig vom Extras-Toggle)", async () => {

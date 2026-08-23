@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { PhotoGrid, PhotoTargetPicker } from "./photoParts";
+import { GalleryAddonNotice, PhotoGrid, PhotoTargetPicker } from "./photoParts";
 
 describe("PhotoGrid", () => {
   test("rendert Buttons mit aria-pressed für ausgewählte Fotos", () => {
@@ -63,5 +63,30 @@ describe("PhotoTargetPicker", () => {
     expect(html).not.toContain("Über uns");
     expect(html).toContain("Hero");
     expect(html).toContain("Galerie");
+  });
+});
+
+describe("GalleryAddonNotice (Plan B6 Task 6: Galerie nur bei gebuchtem Add-on pflegen)", () => {
+  test("zeigt Hinweis mit Preis und den Aktivieren-Schalter", () => {
+    const html = renderToStaticMarkup(
+      <GalleryAddonNotice onActivate={() => {}} busy={false} error={null} />
+    );
+    expect(html).toContain("Bildergalerie");
+    expect(html).toContain("3,90 €");
+    expect(html).toContain(">Galerie aktivieren<");
+    expect(html).not.toContain('role="alert"');
+  });
+
+  test("busy sperrt den Schalter, Fehler erscheint als role=alert", () => {
+    const html = renderToStaticMarkup(
+      <GalleryAddonNotice
+        onActivate={() => {}}
+        busy
+        error="Add-on-Änderung konnte nicht abgerechnet werden."
+      />
+    );
+    expect(html).toContain("disabled");
+    expect(html).toContain('role="alert"');
+    expect(html).toContain("nicht abgerechnet");
   });
 });

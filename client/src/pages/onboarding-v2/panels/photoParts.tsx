@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { addonPrice, formatEuro } from "@shared/pricing";
 
 export type PhotoTarget = "hero" | "about" | "gallery";
 
@@ -35,6 +36,49 @@ export function PhotoTargetPicker({
           {TARGET_LABELS[t]}
         </button>
       ))}
+    </div>
+  );
+}
+
+interface GalleryAddonNoticeProps {
+  onActivate: () => void;
+  busy: boolean;
+  error: string | null;
+}
+
+/**
+ * Reine Darstellung (Plan B6 Task 6): Die Galerie ist Add-on-Inhalt — ohne
+ * gebuchtes `addOns.gallery` wird sie nicht gerendert (engine.ts), deshalb
+ * zeigt das Fotos-Panel statt des Galerie-Rasters diesen Hinweis mit dem
+ * Schalter, der das Extra über `onboardingV2.updateAddons` aktiviert (nach
+ * dem Checkout inkl. Stripe-Abrechnung, Fehler erscheint hier als Alert).
+ */
+export function GalleryAddonNotice({
+  onActivate,
+  busy,
+  error,
+}: GalleryAddonNoticeProps) {
+  return (
+    <div className="pb-studio-rows" data-testid="gallery-addon-notice">
+      <p style={{ color: "var(--st-muted)" }}>
+        Die Bildergalerie ist ein Extra ({formatEuro(addonPrice("gallery"))}
+        /Monat). Aktiviere es, um Galerie-Fotos auszuwählen — die Fotos
+        erscheinen erst dann auf deiner Website.
+      </p>
+      <button
+        type="button"
+        className="pb-studio-btn"
+        data-variant="ghost"
+        disabled={busy}
+        onClick={onActivate}
+      >
+        {busy ? "Bitte warten…" : "Galerie aktivieren"}
+      </button>
+      {error && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

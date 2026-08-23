@@ -5,9 +5,11 @@
  * über einen echten Express-Request.
  */
 import type Stripe from "stripe";
-import { applyFeatures } from "./onboardingV2/applyPatch";
+import { applyAddOnFlags } from "./onboardingV2/applyPatch";
+import type { applyFeatureFlags as ApplyFeatureFlags } from "./onboardingV2/applyFeatures";
 import { assertV2SafeWrite } from "./v2WriteGuard";
 import { invalidateSsrCache } from "./ssr/routes";
+import { addOnsFromSubscriptionItems } from "./stripeAddons";
 import { ADDON_KEYS, type AddOnFlags, type AddOnKey } from "../shared/pricing";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type * as Db from "./db";
@@ -30,8 +32,9 @@ export interface CheckoutCompletedDeps {
 
 /**
  * Normalisiert die rohen Add-on-Metadaten aus der Checkout-Session auf alle
- * 7 Add-on-Keys (Default false). Bleibt abwärtskompatibel zum alten
- * `{ features: { … } }`-Format, das vor Plan B3 verschickt wurde.
+ * Add-on-Keys aus ADDON_KEYS (aktuell acht, Default false). Bleibt
+ * abwärtskompatibel zum alten `{ features: { … } }`-Format, das vor Plan B3
+ * verschickt wurde.
  */
 function normalizeAddOns(rawAddOns: any): Record<AddOnKey, boolean> {
   return Object.fromEntries(
@@ -44,10 +47,12 @@ function normalizeAddOns(rawAddOns: any): Record<AddOnKey, boolean> {
 
 /**
  * Verarbeitet `checkout.session.completed`: legt das Subscription-Record an,
- * markiert die Website als verkauft, setzt die Add-on-Flags (inkl. der drei
- * Website-Spalten addOnAiChat/addOnBooking/addOnTeam) und spiegelt die
- * freischaltbaren Extras (contactForm/aiChat/booking) als `features` ins
- * v2-Dokument, falls eines existiert. v1-Dokumente bleiben unangetastet.
+ * markiert die Website als verkauft, setzt die Add-on-Flags (inkl. der
+ * Website-Spalten addOnAiChat/addOnBooking/addOnTeam/addOnSubpages) und
+ * spiegelt alle acht Add-ons ins v2-Dokument — contactForm/aiChat/booking/
+ * subpages als `features`, gallery/menu/pricelist/team/subpages als
+ * `addOns` (Gating-Quelle für Sektionen/Unterseiten, Plan B6 Task 6) —
+ * falls eines existiert. v1-Dokumente bleiben unangetastet.
  */
 export async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
@@ -176,7 +181,7 @@ export async function handleCheckoutCompleted(
     addOnSubpages: !!addOns.subpages,
   });
 
-  // v2-Dokument: freischaltbare Extras als `features` spiegeln. Eigener
+  // v2-Dokument: alle Add-on-Flags als `features`/`addOns` spiegeln. Eigener
   // try/catch: Subscription und "sold"-Status stehen an dieser Stelle
   // bereits fest — ein Fehler hier (Guard, DB, Cache) darf den Webhook
   // NICHT mit 500 fehlschlagen lassen, sonst retried Stripe das gesamte
@@ -184,16 +189,11 @@ export async function handleCheckoutCompleted(
   // doppelte Subscription-Zeile). `assertV2SafeWrite` bleibt trotzdem
   // stehen — sie ist der zentrale Schutz gegen ein korrumpierendes
   // v2-Dokument (siehe v2WriteGuard.ts) und soll defensiv bleiben, auch
-  // wenn `applyFeatures` selbst schon schema-valide baut.
+  // wenn `applyAddOnFlags` selbst schon schema-valide baut.
   try {
     const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
     if (parsed.success) {
-      const next = applyFeatures(parsed.data, {
-        contactForm: !!addOns.contactForm,
-        aiChat: !!addOns.aiChat,
-        booking: !!addOns.booking,
-        subpages: !!addOns.subpages,
-      });
+      const next = applyAddOnFlags(parsed.data, addOns);
       assertV2SafeWrite(website.websiteData, next);
       await deps.updateWebsite(websiteId, { websiteData: next as any });
       invalidateSsrCache(website.slug);
@@ -216,4 +216,68 @@ export async function handleCheckoutCompleted(
   }
 
   console.log(`[Webhook] Checkout completed for website ${websiteId}`);
+}
+
+/**
+ * Abhängigkeiten für `handleSubscriptionAddOnsUpdated` — db-Funktionen +
+ * der Dokument-Schreiber als Deps, damit der Handler ohne DB testbar ist.
+ */
+export interface SubscriptionUpdatedDeps {
+  getSubscriptionByStripeId: typeof Db.getSubscriptionByStripeId;
+  updateSubscription: typeof Db.updateSubscription;
+  applyFeatureFlags: typeof ApplyFeatureFlags;
+  /** Env-Quelle für die Add-on-Price-IDs (Default process.env). */
+  env?: NodeJS.ProcessEnv;
+}
+
+/**
+ * Add-on-Teil von `customer.subscription.updated` (Plan B6 Task 6): leitet
+ * aus den Subscription-Items den gebuchten Stand ab (nur Add-ons mit
+ * konfigurierter Price-ID, siehe server/stripeAddons.ts) und zieht
+ * `subscriptions.addOns` sowie Dokument (`features`/`addOns`) + Spalten
+ * nach — so bleiben Stripe, Dashboard und Rendering auch dann konsistent,
+ * wenn Items außerhalb des Studios geändert wurden (Billing-Portal,
+ * Stripe-Dashboard, Retry eines fehlgeschlagenen Studio-Syncs). Ohne
+ * Änderung kein Write; ohne konfigurierte Price-IDs nichts ableitbar (keine
+ * falschen false-Flags). Der Status-/Laufzeit-Teil des Events bleibt in
+ * server/stripeWebhook.ts.
+ */
+export async function handleSubscriptionAddOnsUpdated(
+  subscription: Stripe.Subscription,
+  deps: SubscriptionUpdatedDeps
+): Promise<void> {
+  const sub = await deps.getSubscriptionByStripeId(subscription.id);
+  if (!sub) return;
+  const items = subscription.items?.data ?? [];
+  const derived = addOnsFromSubscriptionItems(items, deps.env ?? process.env);
+  if (Object.keys(derived).length === 0) return;
+
+  const current = normalizeAddOns(sub.addOns);
+  const changed = (Object.keys(derived) as AddOnKey[]).filter(
+    key => current[key] !== derived[key]
+  );
+  if (changed.length === 0) return;
+
+  const changedFlags: AddOnFlags = Object.fromEntries(
+    changed.map(key => [key, derived[key]])
+  );
+  const stored =
+    sub.addOns && typeof sub.addOns === "object"
+      ? (sub.addOns as Record<string, unknown>)
+      : {};
+  await deps.updateSubscription(sub.id, {
+    addOns: { ...stored, ...changedFlags },
+    updatedAt: Date.now(),
+  });
+  try {
+    await deps.applyFeatureFlags(sub.websiteId, changedFlags);
+  } catch (err) {
+    console.warn(
+      `[Webhook] Add-on-Dokument-Write nach subscription.updated fehlgeschlagen (Website ${sub.websiteId}):`,
+      err
+    );
+  }
+  console.log(
+    `[Webhook] Add-ons aus Subscription-Items übernommen (Website ${sub.websiteId}): ${changed.join(", ")}`
+  );
 }

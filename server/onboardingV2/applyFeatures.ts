@@ -2,8 +2,8 @@ import { getWebsiteById, updateWebsite } from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
-import { applyFeatures } from "./applyPatch";
-import type { SiteFeatures } from "../../shared/siteContract/types";
+import { applyAddOnFlags } from "./applyPatch";
+import type { AddOnFlags } from "../../shared/pricing";
 
 /**
  * Eine Quelle der Wahrheit für Add-on-Aktivierung (Final-Review Befund 4,
@@ -32,12 +32,21 @@ import type { SiteFeatures } from "../../shared/siteContract/types";
  * ausschließlich `features.contactForm`, eine Spalte wäre eine zweite
  * (überflüssige) Quelle der Wahrheit.
  *
- * v1-Dokumente (kein `features`-Feld im Schema) bekommen nur die Spalten
- * geschrieben — `websiteData` bleibt unangetastet.
+ * Seit Plan B6 Task 6 nimmt der Helper alle acht Add-on-Flags
+ * (shared/pricing.ts `AddOnFlags`): contactForm/aiChat/booking/subpages
+ * landen in `features`, gallery/menu/pricelist/team/subpages in `addOns`
+ * (Gating-Quelle für Sektionen/Unterseiten, siehe `applyAddOnFlags` in
+ * applyPatch.ts) — plus die Spalten addOnAiChat/addOnBooking/addOnTeam/
+ * addOnSubpages, alles in EINEM `updateWebsite`. Nur übergebene Keys werden
+ * angefasst. Nicht gebuchte Sektionen/Pages bleiben im Dokument stehen
+ * (ausblenden statt löschen, Spec B6 §5.4).
+ *
+ * v1-Dokumente (kein `features`/`addOns`-Feld im Schema) bekommen nur die
+ * Spalten geschrieben — `websiteData` bleibt unangetastet.
  */
 export async function applyFeatureFlags(
   websiteId: number,
-  patch: SiteFeatures
+  patch: AddOnFlags
 ): Promise<void> {
   const website = await getWebsiteById(websiteId);
   if (!website) return;
@@ -45,10 +54,15 @@ export async function applyFeatureFlags(
   const columnPatch: {
     addOnAiChat?: boolean;
     addOnBooking?: boolean;
+    addOnTeam?: boolean;
     addOnSubpages?: boolean;
   } = {};
   if (patch.aiChat !== undefined) columnPatch.addOnAiChat = patch.aiChat;
   if (patch.booking !== undefined) columnPatch.addOnBooking = patch.booking;
+  // addOnTeam (Plan B5/B6): Spalte auf generatedWebsites, die der
+  // Checkout-Webhook ebenfalls schreibt — hier mitziehen, damit
+  // Studio-Toggle und Webhook denselben Stand hinterlassen.
+  if (patch.team !== undefined) columnPatch.addOnTeam = patch.team;
   // subpages wie aiChat/booking: Spalte generatedWebsites.addOnSubpages
   // (Migration 0029) spiegelt features.subpages — dieselbe Kette wie oben
   // beschrieben (contactForm hat bewusst keine Spalte, subpages schon,
@@ -58,7 +72,7 @@ export async function applyFeatureFlags(
 
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
   if (parsed.success) {
-    const next = applyFeatures(parsed.data, patch);
+    const next = applyAddOnFlags(parsed.data, patch);
     assertV2SafeWrite(website.websiteData, next);
     await updateWebsite(websiteId, {
       ...columnPatch,

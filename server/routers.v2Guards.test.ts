@@ -40,6 +40,11 @@ vi.mock("./db", async importOriginal => {
   };
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
+// Stripe-Item-Sync (Plan B6 Task 6) — customer.purchaseAddon nutzt dieselbe
+// Kette wie der Studio-Toggle; die Item-Logik ist in stripeAddons.test.ts.
+vi.mock("./stripeAddons", () => ({
+  syncSubscriptionAddOns: vi.fn().mockResolvedValue({ added: [], removed: [] }),
+}));
 vi.mock("./onboardingUpload", () => ({
   uploadPhoto: vi.fn(),
 }));
@@ -63,6 +68,8 @@ vi.mock("./generationV2/runJob", async importOriginal => {
 vi.mock("./umami", () => ({ getUmamiStats: vi.fn() }));
 
 import { appRouter } from "./routers";
+import * as stripeAddonsModule from "./stripeAddons";
+const mockedStripeAddons = vi.mocked(stripeAddonsModule);
 import * as db from "./db";
 import { invalidateSsrCache } from "./ssr/routes";
 import { invokeLLM } from "./_core/llm";
@@ -457,6 +464,44 @@ describe("customer.purchaseAddon — subpages (Plan B6 Task 5)", () => {
     expect(id).toBe(42);
     expect((patch as any).addOnSubpages).toBe(true);
     expect((patch as any).websiteData.features).toEqual({ subpages: true });
+  });
+
+  test("mit Stripe-Subscription: syncSubscriptionAddOns(key: true) + Dokument addOns/features; Stripe-Fehler → BAD_REQUEST ohne Write", async () => {
+    const ownedWebsite = baseWebsiteRow({ websiteData: v2Doc() });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      {
+        website: ownedWebsite,
+        subscription: { id: 9, stripeSubscriptionId: "sub_live", addOns: {} },
+        business: null,
+      },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+    const caller = appRouter.createCaller(createUserContext());
+    await caller.customer.purchaseAddon({ websiteId: 42, addonKey: "team" });
+    expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledWith(
+      "sub_live",
+      { team: true }
+    );
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnTeam).toBe(true);
+    expect((patch as any).websiteData.addOns).toEqual({ team: true });
+
+    vi.clearAllMocks();
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      {
+        website: ownedWebsite,
+        subscription: { id: 9, stripeSubscriptionId: "sub_live", addOns: {} },
+        business: null,
+      },
+    ] as any);
+    mockedStripeAddons.syncSubscriptionAddOns.mockRejectedValueOnce(
+      new Error("price missing")
+    );
+    await expect(
+      caller.customer.purchaseAddon({ websiteId: 42, addonKey: "aiChat" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateSubscription).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
   test("subpages bereits gebucht → alreadyOwned, kein Write", async () => {

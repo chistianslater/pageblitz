@@ -19,6 +19,29 @@ describe("fixtures", () => {
       "services",
     ]);
   });
+  describe("Add-on-Gating (Plan B6 Task 6): jede Fixture bucht die Add-ons, deren Sektionen sie enthält", () => {
+    const GATED: Record<string, "gallery" | "menu" | "pricelist" | "team"> = {
+      gallery: "gallery",
+      menu: "menu",
+      pricelist: "pricelist",
+      team: "team",
+    };
+    for (const packId of PACK_IDS) {
+      for (const kind of ["full", "minimal"] as const) {
+        test(`${packId}-${kind}: keine Sektion ohne gebuchtes Add-on (sonst würde sie nicht gerendert und Baselines kippen)`, () => {
+          const d = getFixture(packId, kind);
+          for (const s of d.sections) {
+            const addOn = GATED[s.type];
+            if (addOn) expect(d.addOns?.[addOn]).toBe(true);
+          }
+          if (d.pages && d.pages.length > 0) {
+            expect(d.addOns?.subpages).toBe(true);
+          }
+        });
+      }
+    }
+  });
+
   test("Pack ohne Fixture wirft", () => {
     // absichtlich ungültige ID, damit der Test auch nach Plan B/C stabil bleibt
     expect(() => getFixture("nicht-existent" as never, "full")).toThrow(

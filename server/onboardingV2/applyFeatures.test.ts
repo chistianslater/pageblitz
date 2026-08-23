@@ -114,6 +114,86 @@ describe("applyFeatureFlags — v2-Dokument", () => {
   });
 });
 
+describe("applyFeatureFlags — Sektions-Add-ons (Plan B6 Task 6)", () => {
+  test("gallery/menu/pricelist/team landen als websiteData.addOns, team zusätzlich als Spalte addOnTeam — ein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 42,
+      slug: "schreinerei-brandt",
+      websiteData: v2Doc,
+    } as any);
+
+    await applyFeatureFlags(42, {
+      gallery: true,
+      menu: false,
+      pricelist: true,
+      team: true,
+    });
+
+    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnTeam).toBe(true);
+    expect((patch as any).websiteData.addOns).toEqual({
+      gallery: true,
+      pricelist: true,
+      team: true,
+    });
+    expect((patch as any).websiteData.features).toBeUndefined();
+    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
+  });
+
+  test("subpages schreibt features.subpages UND addOns.subpages UND die Spalte addOnSubpages", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 42,
+      slug: "schreinerei-brandt",
+      websiteData: v2Doc,
+    } as any);
+
+    await applyFeatureFlags(42, { subpages: true });
+
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnSubpages).toBe(true);
+    expect((patch as any).websiteData.features).toEqual({ subpages: true });
+    expect((patch as any).websiteData.addOns).toEqual({ subpages: true });
+  });
+
+  test("team: false entfernt nur das Flag — die Team-Sektion bleibt im Dokument (ausblenden statt löschen)", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 42,
+      slug: "schreinerei-brandt",
+      websiteData: {
+        ...v2Doc,
+        addOns: { team: true, gallery: true },
+        sections: [
+          ...v2Doc.sections,
+          { type: "team", members: [{ name: "Anna" }] },
+        ],
+      },
+    } as any);
+
+    await applyFeatureFlags(42, { team: false });
+
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnTeam).toBe(false);
+    expect((patch as any).websiteData.addOns).toEqual({ gallery: true });
+    expect(
+      (patch as any).websiteData.sections.some((s: any) => s.type === "team")
+    ).toBe(true);
+  });
+
+  test("v1-Website: team/subpages schreiben nur ihre Spalten, gallery/menu/pricelist nichts", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 43,
+      slug: "alte-website",
+      websiteData: { businessName: "Alt" },
+    } as any);
+
+    await applyFeatureFlags(43, { gallery: true, team: true });
+
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect(patch).toEqual({ addOnTeam: true });
+  });
+});
+
 describe("applyFeatureFlags — v1-Dokument", () => {
   test("v1-Website: websiteData bleibt unangetastet, nur die Spalten werden geschrieben", async () => {
     const v1Doc = { businessName: "Alt", sections: [] };

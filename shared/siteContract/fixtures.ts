@@ -714,6 +714,11 @@ const GUSTO_MINIMAL: WebsiteDataV2 = {
   slug: "trattoria-lucia-berlin-charlottenburg",
   businessCategory: "Trattoria",
   tagline: "Ein Tisch. Ein Abend. Italien.",
+  // Die Speisekarte ist Add-on-Inhalt (Plan B6 Task 6, Gating über
+  // `addOns.menu` in engine.ts) — „minimal" für ein Gastro-Pack heißt
+  // Hero + Speisekarte + Kontakt, deshalb ist das Menü-Add-on hier gebucht
+  // (Spec B6 §5.5: Gastro-Packs haben das Menü vorausgewählt).
+  addOns: { menu: true },
   sections: [
     {
       type: "hero",
@@ -2081,6 +2086,10 @@ const ZUNFT_MINIMAL: WebsiteDataV2 = {
   slug: "baeckerei-steinofen-augsburg",
   businessCategory: "Bäckerei",
   tagline: "Brot braucht Zeit.",
+  // Sortiment = Preisliste = Add-on-Inhalt (Plan B6 Task 6, Gating über
+  // `addOns.pricelist`) — ohne dieses Flag hätte die Minimal-Seite kein
+  // Angebot; die Baseline bleibt damit unverändert.
+  addOns: { pricelist: true },
   sections: [
     {
       type: "hero",

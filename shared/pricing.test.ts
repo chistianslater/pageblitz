@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest";
 import {
   ADDON_KEYS,
   ADDON_NAMES,
+  ADDON_PRICE_ENV_KEYS,
   addonPrice,
   BOOKABLE_ADDON_KEYS,
   calcTotalCents,
+  FEATURE_ADDON_KEYS,
   formatEuro,
   PRICING,
   sanitizeAddOns,
+  SECTION_ADDON_KEYS,
 } from "./pricing";
 
 describe("pricing", () => {
@@ -80,5 +83,41 @@ describe("pricing", () => {
 
   test("addonPrice(subpages) ist der pauschale Add-on-Preis (3,90 €)", () => {
     expect(addonPrice("subpages")).toBe(390);
+  });
+
+  test("ADDON_PRICE_ENV_KEYS: je Add-on genau eine Env-Variable STRIPE_PRICE_ADDON_<KEY> (Plan B6 Task 6, Stripe-Sync)", () => {
+    expect(Object.keys(ADDON_PRICE_ENV_KEYS).sort()).toEqual(
+      [...ADDON_KEYS].sort()
+    );
+    for (const key of ADDON_KEYS) {
+      expect(ADDON_PRICE_ENV_KEYS[key]).toMatch(/^STRIPE_PRICE_ADDON_[A-Z_]+$/);
+    }
+    expect(ADDON_PRICE_ENV_KEYS.contactForm).toBe(
+      "STRIPE_PRICE_ADDON_CONTACT_FORM"
+    );
+    expect(ADDON_PRICE_ENV_KEYS.aiChat).toBe("STRIPE_PRICE_ADDON_AI_CHAT");
+    // Eindeutig — zwei Add-ons dürfen nie dieselbe Env-Variable teilen.
+    expect(new Set(Object.values(ADDON_PRICE_ENV_KEYS)).size).toBe(
+      ADDON_KEYS.length
+    );
+  });
+
+  test("SECTION_ADDON_KEYS (Dokument-addOns) und FEATURE_ADDON_KEYS (Dokument-features) decken zusammen alle acht Keys ab", () => {
+    expect(SECTION_ADDON_KEYS).toEqual([
+      "gallery",
+      "menu",
+      "pricelist",
+      "team",
+      "subpages",
+    ]);
+    expect(FEATURE_ADDON_KEYS).toEqual([
+      "contactForm",
+      "aiChat",
+      "booking",
+      "subpages",
+    ]);
+    expect(new Set([...SECTION_ADDON_KEYS, ...FEATURE_ADDON_KEYS]).size).toBe(
+      ADDON_KEYS.length
+    );
   });
 });

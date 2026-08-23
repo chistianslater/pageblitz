@@ -818,7 +818,17 @@ export async function createOnboarding(
     ...(data.addOnPricelistData
       ? { addOnPricelistData: data.addOnPricelistData as unknown as object }
       : {}),
-    ...(data.addOnSubpages
+    // Boolean-Flags mit `!== undefined` statt Truthy-Guard, sonst ginge ein
+    // explizites `false` (Studio-Toggle aus) beim Anlegen der Zeile verloren
+    // (Review-Fund Plan B6 Task 2). aiChat/booking/team fehlten hier bislang
+    // ganz — upsertOnboarding (server/onboardingV2/state.ts) legt die Zeile
+    // für Websites ohne Onboarding an und hätte diese Flags verworfen.
+    ...(data.addOnAiChat !== undefined && { addOnAiChat: data.addOnAiChat }),
+    ...(data.addOnBooking !== undefined && {
+      addOnBooking: data.addOnBooking,
+    }),
+    ...(data.addOnTeam !== undefined && { addOnTeam: data.addOnTeam }),
+    ...(data.addOnSubpages !== undefined
       ? { addOnSubpages: data.addOnSubpages as unknown as object }
       : {}),
     ...(data.studioProgress

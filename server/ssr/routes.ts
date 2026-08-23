@@ -9,7 +9,10 @@ import {
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { getWebsiteBySlug, getWebsiteByToken } from "../db";
-import { pageForPathname } from "../../client/src/components/site/engine";
+import {
+  pageForPathname,
+  visiblePages,
+} from "../../client/src/components/site/engine";
 
 /** Mirror of getCustomerSubdomain() in client/src/App.tsx:109-115 — server-side Host-Erkennung. */
 const RESERVED_SUBDOMAINS = ["www", "api", "analytics", "admin", "mail", "ftp"];
@@ -69,7 +72,8 @@ const STATIC_SITE_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
 
 /**
  * Ist `pathname` für dieses Dokument bekannt — entweder statisch (Startseite,
- * Rechtsseiten) oder eine Unterseite aus `data.pages[]` (Plan B6, Task 3).
+ * Rechtsseiten) oder eine gebuchte Unterseite aus `data.pages[]` (Plan B6,
+ * Task 3; Gating über `addOns.subpages` seit Task 6, siehe `pageForPathname`).
  */
 function isKnownSitePathname(data: WebsiteDataV2, pathname: string): boolean {
   return (
@@ -560,8 +564,11 @@ async function handleCustomerSiteSsr(
       return;
     }
 
+    // Nur gebuchte Unterseiten zählen als bekannt (visiblePages gatet über
+    // addOns.subpages — dieselbe Quelle wie pageForPathname/buildNavItems,
+    // Plan B6 Task 6); ohne Add-on ist jede Page-URL ein 404.
     sitePagesCache.set(siteRequest.slug, {
-      pageSlugs: new Set((parsed.data.pages ?? []).map(p => p.slug)),
+      pageSlugs: new Set(visiblePages(parsed.data).map(p => p.slug)),
       at: now,
     });
     capCacheSize(sitePagesCache, MAX_CACHE_ENTRIES);

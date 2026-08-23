@@ -5,7 +5,7 @@ vi.hoisted(() => {
 });
 
 import { createStudioCheckoutSession } from "./checkout";
-import { calcTotalCents } from "@shared/pricing";
+import { addonPrice, calcTotalCents, PRICING } from "@shared/pricing";
 
 function fakeStripe(
   overrides: Partial<{ url: string | null; id: string }> = {}
@@ -29,21 +29,74 @@ const baseArgs = {
 };
 
 describe("createStudioCheckoutSession", () => {
-  test("erzeugt Session mit korrektem unit_amount (calcTotalCents)", async () => {
+  test("Basis-Position + je aktivem Add-on eine eigene Position; Summe der Positionen = calcTotalCents (Plan B6 Task 6: Items je Add-on für den Stripe-Sync)", async () => {
     const { stripe, create } = fakeStripe();
-    const result = await createStudioCheckoutSession(baseArgs, stripe);
+    const result = await createStudioCheckoutSession(baseArgs, stripe, {});
 
     const expectedTotal = calcTotalCents("yearly", baseArgs.addOns);
     const call = create.mock.calls[0][0];
-    expect(call.line_items[0].price_data.unit_amount).toBe(expectedTotal);
+    expect(call.line_items).toHaveLength(2);
+    expect(call.line_items[0].price_data.unit_amount).toBe(PRICING.base.yearly);
+    expect(call.line_items[0].price_data.product_data.name).toBe(
+      "Pageblitz – Brandt Tischlerei"
+    );
+    // Ohne Env-Price-ID: Ad-hoc-price_data je Add-on (Brutto, monatlich).
+    expect(call.line_items[1].price_data.unit_amount).toBe(
+      addonPrice("gallery")
+    );
+    expect(call.line_items[1].price_data.product_data.name).toBe(
+      "Pageblitz Add-on: Bildergalerie"
+    );
+    expect(call.line_items[1].price_data.recurring).toEqual({
+      interval: "month",
+    });
+    expect(call.line_items[1].price_data.tax_behavior).toBe("inclusive");
+    expect(call.line_items[1].quantity).toBe(1);
+    const sum = call.line_items.reduce(
+      (acc: number, item: any) => acc + item.price_data.unit_amount,
+      0
+    );
+    expect(sum).toBe(expectedTotal);
     expect(result.totalCents).toBe(expectedTotal);
     expect(result.url).toBe("https://stripe/s");
     expect(result.sessionId).toBe("cs_1");
   });
 
+  test("mit Env-Price-ID (STRIPE_PRICE_ADDON_<KEY>) wird das Add-on als `price`-Position angelegt — identifizierbar für Sync und Webhook", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(
+      { ...baseArgs, addOns: { gallery: true, team: true } },
+      stripe,
+      { STRIPE_PRICE_ADDON_GALLERY: "price_gallery_live" }
+    );
+    const call = create.mock.calls[0][0];
+    expect(call.line_items).toHaveLength(3);
+    expect(call.line_items[1]).toEqual({
+      price: "price_gallery_live",
+      quantity: 1,
+    });
+    // Team ohne Env → Fallback auf price_data (Checkout darf nie an
+    // fehlender Env scheitern).
+    expect(call.line_items[2].price_data.unit_amount).toBe(addonPrice("team"));
+  });
+
+  test("ohne aktive Add-ons nur die Basis-Position", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(
+      { ...baseArgs, addOns: {}, billingInterval: "monthly" },
+      stripe,
+      {}
+    );
+    const call = create.mock.calls[0][0];
+    expect(call.line_items).toHaveLength(1);
+    expect(call.line_items[0].price_data.unit_amount).toBe(
+      PRICING.base.monthly
+    );
+  });
+
   test("Metadaten exakt wie checkout.createSession (Webhook-kompatibel)", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe);
+    await createStudioCheckoutSession(baseArgs, stripe, {});
 
     const call = create.mock.calls[0][0];
     expect(call.metadata.websiteId).toBe("42");
@@ -75,7 +128,7 @@ describe("createStudioCheckoutSession", () => {
 
   test("success_url, cancel_url, mode, trial, tax_behavior, customer_email", async () => {
     const { stripe, create } = fakeStripe();
-    await createStudioCheckoutSession(baseArgs, stripe);
+    await createStudioCheckoutSession(baseArgs, stripe, {});
 
     const call = create.mock.calls[0][0];
     expect(call.success_url).toBe(

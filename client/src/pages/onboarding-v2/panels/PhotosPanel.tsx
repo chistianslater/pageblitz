@@ -2,8 +2,15 @@ import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
+import { sanitizeAddOns, type AddOnFlags } from "@shared/pricing";
+import type { AddonsPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
-import { PhotoGrid, PhotoTargetPicker, type PhotoTarget } from "./photoParts";
+import {
+  GalleryAddonNotice,
+  PhotoGrid,
+  PhotoTargetPicker,
+  type PhotoTarget,
+} from "./photoParts";
 
 // Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
 // (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
@@ -27,6 +34,14 @@ type SourceTab = "gmb" | "stock" | "upload";
 interface PhotosPanelProps {
   token: string;
   doc: WebsiteDataV2;
+  /**
+   * Entwurfs-Flags aus dem Studio-State (onboarding_responses) — nötig, um
+   * den Galerie-Schalter als vollständigen `AddonsPatch` (alle acht Flags,
+   * strict) an `onboardingV2.updateAddons` zu schicken. Optional, weil
+   * ältere Aufrufer/Tests das Panel ohne Flags rendern (dann gilt: alles
+   * aus, nur gallery wird eingeschaltet).
+   */
+  addOns?: AddOnFlags;
   onApplied: () => void;
   onClose: () => void;
 }
@@ -34,6 +49,7 @@ interface PhotosPanelProps {
 export function PhotosPanel({
   token,
   doc,
+  addOns = {},
   onApplied,
   onClose,
 }: PhotosPanelProps) {
@@ -64,6 +80,19 @@ export function PhotosPanel({
   const sources = trpc.onboardingV2.getPhotoSources.useQuery({ token });
   const upload = trpc.onboardingV2.uploadPhoto.useMutation();
   const setImages = trpc.onboardingV2.setImages.useMutation();
+  const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
+
+  // Galerie ist Add-on-Inhalt (Plan B6 Task 6): Gating-Quelle ist
+  // `doc.addOns.gallery` (dieselbe wie SSR/CSR, engine.ts). Ohne Add-on
+  // zeigt das Ziel „Galerie" den Hinweis + Schalter statt des Rasters.
+  const galleryBooked = doc.addOns?.gallery === true;
+  const activateGallery = () => {
+    const patch: AddonsPatch = {
+      ...(sanitizeAddOns(addOns) as Required<AddOnFlags>),
+      gallery: true,
+    };
+    updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
+  };
 
   const selected =
     target === "hero"
@@ -161,10 +190,11 @@ export function PhotosPanel({
     target === "gallery" && galleryUrls.length === 0 && hasExistingGallery;
   const canApply =
     target === "gallery"
-      ? !galleryWouldDeleteExisting
+      ? galleryBooked && !galleryWouldDeleteExisting
       : target === "hero"
         ? !!heroUrl
         : !!aboutUrl;
+  const galleryLocked = target === "gallery" && !galleryBooked;
 
   const removeGallery = () => {
     setImages.mutate(
@@ -206,118 +236,129 @@ export function PhotosPanel({
         onTarget={setTarget}
         hasAbout={hasAbout}
       />
-      <div
-        className="pb-studio-seg pb-studio-src-tabs"
-        role="group"
-        aria-label="Fotoquelle"
-      >
-        <button
-          type="button"
-          aria-pressed={sourceTab === "gmb"}
-          onClick={() => setSourceTab("gmb")}
-        >
-          Google-Fotos
-        </button>
-        <button
-          type="button"
-          aria-pressed={sourceTab === "stock"}
-          onClick={() => setSourceTab("stock")}
-        >
-          Stockbilder
-        </button>
-        <button
-          type="button"
-          aria-pressed={sourceTab === "upload"}
-          onClick={() => setSourceTab("upload")}
-        >
-          Hochladen
-        </button>
-      </div>
-      {sources.isLoading && <p>Lade Fotos …</p>}
-      {sources.error && (
-        <p role="alert" style={{ color: "var(--st-warn)" }}>
-          {sources.error.message}
-        </p>
-      )}
-      {sourceTab === "gmb" && sources.data && (
-        <PhotoGrid
-          photos={sources.data.gmb}
-          selected={selected}
-          onPick={handlePick}
-          emptyText="Keine Google-Fotos gefunden."
+      {galleryLocked && (
+        <GalleryAddonNotice
+          onActivate={activateGallery}
+          busy={updateAddons.isPending}
+          error={updateAddons.error?.message ?? null}
         />
       )}
-      {sourceTab === "stock" && sources.data && (
+      {!galleryLocked && (
         <>
-          <PhotoGrid
-            photos={sources.data.stock}
-            selected={selected}
-            onPick={handlePick}
-            emptyText="Keine Vorschläge gefunden."
-          />
-          <StockPhotoSearch
-            onSelect={handlePick}
-            selectedUrl={target !== "gallery" ? selected[0] : undefined}
-            defaultQuery={doc.businessCategory ?? ""}
-          />
-        </>
-      )}
-      {sourceTab === "upload" && (
-        <>
-          <label
-            className="pb-studio-btn"
-            data-variant="ghost"
-            style={
-              upload.isPending || uploadLimitReached
-                ? { opacity: 0.45, cursor: "not-allowed" }
-                : undefined
-            }
+          <div
+            className="pb-studio-seg pb-studio-src-tabs"
+            role="group"
+            aria-label="Fotoquelle"
           >
-            Foto auswählen
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileChange}
-              disabled={upload.isPending || uploadLimitReached}
-              style={{ display: "none" }}
-            />
-          </label>
-          {upload.isPending && <p>Lade hoch …</p>}
-          {uploadLimitReached && (
-            <p style={{ color: "var(--st-muted)" }}>
-              Maximal 30 eigene Fotos erreicht.
-            </p>
-          )}
-          {uploadError && (
+            <button
+              type="button"
+              aria-pressed={sourceTab === "gmb"}
+              onClick={() => setSourceTab("gmb")}
+            >
+              Google-Fotos
+            </button>
+            <button
+              type="button"
+              aria-pressed={sourceTab === "stock"}
+              onClick={() => setSourceTab("stock")}
+            >
+              Stockbilder
+            </button>
+            <button
+              type="button"
+              aria-pressed={sourceTab === "upload"}
+              onClick={() => setSourceTab("upload")}
+            >
+              Hochladen
+            </button>
+          </div>
+          {sources.isLoading && <p>Lade Fotos …</p>}
+          {sources.error && (
             <p role="alert" style={{ color: "var(--st-warn)" }}>
-              {uploadError}
+              {sources.error.message}
             </p>
           )}
-          {sources.data && (
+          {sourceTab === "gmb" && sources.data && (
             <PhotoGrid
-              photos={sources.data.uploaded}
+              photos={sources.data.gmb}
               selected={selected}
               onPick={handlePick}
-              emptyText="Noch keine eigenen Fotos hochgeladen."
+              emptyText="Keine Google-Fotos gefunden."
             />
           )}
+          {sourceTab === "stock" && sources.data && (
+            <>
+              <PhotoGrid
+                photos={sources.data.stock}
+                selected={selected}
+                onPick={handlePick}
+                emptyText="Keine Vorschläge gefunden."
+              />
+              <StockPhotoSearch
+                onSelect={handlePick}
+                selectedUrl={target !== "gallery" ? selected[0] : undefined}
+                defaultQuery={doc.businessCategory ?? ""}
+              />
+            </>
+          )}
+          {sourceTab === "upload" && (
+            <>
+              <label
+                className="pb-studio-btn"
+                data-variant="ghost"
+                style={
+                  upload.isPending || uploadLimitReached
+                    ? { opacity: 0.45, cursor: "not-allowed" }
+                    : undefined
+                }
+              >
+                Foto auswählen
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileChange}
+                  disabled={upload.isPending || uploadLimitReached}
+                  style={{ display: "none" }}
+                />
+              </label>
+              {upload.isPending && <p>Lade hoch …</p>}
+              {uploadLimitReached && (
+                <p style={{ color: "var(--st-muted)" }}>
+                  Maximal 30 eigene Fotos erreicht.
+                </p>
+              )}
+              {uploadError && (
+                <p role="alert" style={{ color: "var(--st-warn)" }}>
+                  {uploadError}
+                </p>
+              )}
+              {sources.data && (
+                <PhotoGrid
+                  photos={sources.data.uploaded}
+                  selected={selected}
+                  onPick={handlePick}
+                  emptyText="Noch keine eigenen Fotos hochgeladen."
+                />
+              )}
+            </>
+          )}
+          {galleryWouldDeleteExisting && (
+            <div>
+              <p style={{ color: "var(--st-warn)" }}>
+                Mindestens ein Foto wählen — oder die Galerie bewusst leeren.
+              </p>
+              <button
+                type="button"
+                className="pb-studio-btn"
+                data-variant="ghost"
+                disabled={busy}
+                onClick={removeGallery}
+              >
+                Galerie entfernen
+              </button>
+            </div>
+          )}
         </>
-      )}
-      {galleryWouldDeleteExisting && (
-        <div>
-          <p style={{ color: "var(--st-warn)" }}>
-            Mindestens ein Foto wählen — oder die Galerie bewusst leeren.
-          </p>
-          <button
-            type="button"
-            className="pb-studio-btn"
-            data-variant="ghost"
-            disabled={busy}
-            onClick={removeGallery}
-          >
-            Galerie entfernen
-          </button>
-        </div>
       )}
       {setImages.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>

@@ -100,6 +100,8 @@ import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
 import { onboardingV2Router } from "./onboardingV2/router";
 import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
+import { readSubscriptionAddOns } from "./onboardingV2/addOnFlags";
+import { syncSubscriptionAddOns } from "./stripeAddons";
 import { assertV2SafeWrite } from "./v2WriteGuard";
 import { classifyIndustry } from "./industryClassifier";
 import {
@@ -2557,65 +2559,49 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
           });
 
         // Guard: prevent double-charging if add-on is already active
-        const currentAddOns =
-          (row.subscription.addOns as Record<string, any>) || {};
-        const alreadyActive =
-          currentAddOns[input.addonKey] === true ||
-          currentAddOns.features?.[input.addonKey] === true;
-        if (alreadyActive) {
+        const currentAddOns = readSubscriptionAddOns(row.subscription.addOns);
+        if (currentAddOns[input.addonKey] === true) {
           return { success: true, alreadyOwned: true };
         }
 
+        // Stripe-Subscription-Item über die Env-Price-ID anlegen (Plan B6
+        // Task 6, server/stripeAddons.ts — dieselbe Kette wie der Studio-
+        // Toggle nach dem Checkout). Vorher wurde hier je Kauf ein Ad-hoc-
+        // Preis erzeugt, den weder Sync noch Webhook wiedererkennen konnten.
         const stripeSubscriptionId = row.subscription.stripeSubscriptionId;
         if (stripeSubscriptionId) {
-          // tax_behavior "inclusive" = Preis ist Brutto inkl. MwSt.
-          const price = await stripe.prices.create({
-            currency: "eur",
-            unit_amount: addonPrice(input.addonKey),
-            recurring: { interval: "month" },
-            product_data: {
-              name: `Pageblitz Add-on: ${ADDON_NAMES[input.addonKey]}`,
-            },
-            tax_behavior: "inclusive",
-          } as any);
-
-          await stripe.subscriptionItems.create({
-            subscription: stripeSubscriptionId,
-            price: price.id,
-            quantity: 1,
-            proration_behavior: "create_prorations",
-          } as any);
+          try {
+            await syncSubscriptionAddOns(stripeSubscriptionId, {
+              [input.addonKey]: true,
+            });
+          } catch (err) {
+            console.error(
+              `[customer.purchaseAddon] Stripe-Sync fehlgeschlagen (Website ${input.websiteId}, ${input.addonKey}):`,
+              err
+            );
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message:
+                "Add-on-Änderung konnte nicht abgerechnet werden. Bitte später erneut versuchen oder den Support kontaktieren.",
+            });
+          }
         }
 
         // Update addOns record in DB
-        const newAddOns = { ...currentAddOns, [input.addonKey]: true };
+        const stored =
+          row.subscription.addOns && typeof row.subscription.addOns === "object"
+            ? (row.subscription.addOns as Record<string, unknown>)
+            : {};
         await updateSubscription(row.subscription.id, {
-          addOns: newAddOns,
+          addOns: { ...stored, [input.addonKey]: true },
           updatedAt: Date.now(),
         });
 
-        // Auto-enable the feature on the website
-        const _db = await getDb();
-        if (_db) {
-          if (input.addonKey === "aiChat") {
-            await _db
-              .update(generatedWebsites)
-              .set({ addOnAiChat: true })
-              .where(eqDrizzle(generatedWebsites.id, input.websiteId));
-          } else if (input.addonKey === "booking") {
-            await _db
-              .update(generatedWebsites)
-              .set({ addOnBooking: true })
-              .where(eqDrizzle(generatedWebsites.id, input.websiteId));
-          }
-        }
-        if (input.addonKey === "subpages") {
-          // Unterseiten (Plan B6 Task 5): Spalte addOnSubpages + features.
-          // subpages in einem Write (wie applyFeatureFlags es für
-          // aiChat/booking im Studio-Pfad tut) — der Inhalt (pages[])
-          // wird im Studio gepflegt (onboardingV2.updatePages).
-          await applyFeatureFlags(input.websiteId, { subpages: true });
-        }
+        // Eine Quelle der Wahrheit: Dokument (`features`/`addOns`) + Spalten
+        // (addOnAiChat/addOnBooking/addOnTeam/addOnSubpages) in einem Write
+        // — vorher liefen aiChat/booking hier über ein Roh-UPDATE ohne
+        // `features`-Spiegelung (Fund Task 5).
+        await applyFeatureFlags(input.websiteId, { [input.addonKey]: true });
 
         return { success: true };
       }),

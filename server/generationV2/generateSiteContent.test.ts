@@ -302,6 +302,48 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
+  test("Gastro-Default (Plan B6 Task 6, Spec §5.5): Speisekarte im Ergebnis → addOns.menu=true (vorausgewählt, sichtbar); ohne Speisekarte kein addOns", async () => {
+    const gastro = JSON.stringify({
+      seo: { title: "Trattoria", description: "Italienisch in Berlin." },
+      sections: [
+        { type: "hero", headline: "Buon appetito" },
+        {
+          type: "menu",
+          headline: "Speisekarte",
+          categories: [
+            { name: "Pasta", items: [{ name: "Tagliatelle", price: "12 €" }] },
+          ],
+        },
+        { type: "contact", city: "Berlin" },
+      ],
+    });
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(gastro),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "gusto",
+      business: { name: "Trattoria", category: "Restaurant", city: "Berlin" },
+      facts: { slug: "trattoria" },
+    });
+    expect(d.addOns).toEqual({ menu: true });
+    expect(d.sections.some(s => s.type === "menu")).toBe(true);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(good),
+    }));
+    const mod = await import("./generateSiteContent");
+    const plain = await mod.generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+    });
+    expect(plain.addOns).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
   test("nach zweitem Fehlschlag: Throw, kein Fallback", async () => {
     vi.doMock("./llmClient", () => ({
       llmComplete: vi.fn().mockResolvedValue("{kaputt"),

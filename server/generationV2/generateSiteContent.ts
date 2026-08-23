@@ -216,6 +216,20 @@ function mockSiteContent(
 }
 
 /**
+ * Gastro-Default (Plan B6 Task 6, Spec §5.5): enthält das generierte
+ * Dokument eine Speisekarte (Gastro-Packs, `MENU_SECTIONS`), ist das
+ * Menü-Add-on im Entwurf vorausgewählt — `addOns.menu: true` macht die
+ * Sektion sichtbar (Gating in client/src/components/site/engine.ts), runJob
+ * spiegelt das Flag in onboarding_responses (Extras-Panel „Aktiv", Preis im
+ * Checkout, abwählbar). Ohne Speisekarte bleibt `addOns` leer — Galerie/
+ * Preisliste/Team/Unterseiten entstehen erst im Studio.
+ */
+function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
+  if (!data.sections.some(s => s.type === "menu")) return data;
+  return { ...data, addOns: { ...(data.addOns ?? {}), menu: true } };
+}
+
+/**
  * Erzeugt die v2-Website-Inhalte per LLM: Prompt bauen → llmComplete →
  * JSON.parse → deterministische Envelope-Felder mergen → zod-Validierung.
  * Bei Fehler GENAU EIN Retry mit angehängter Fehlermeldung; scheitert auch
@@ -258,10 +272,10 @@ export async function generateSiteContent(
   }
 
   if (!facts) {
-    return result.data;
+    return withGeneratedAddOnDefaults(result.data);
   }
 
-  const merged = mergeFacts(result.data, facts);
+  const merged = withGeneratedAddOnDefaults(mergeFacts(result.data, facts));
   const revalidated = WebsiteDataV2Schema.safeParse(merged);
   if (!revalidated.success) {
     throw new Error(

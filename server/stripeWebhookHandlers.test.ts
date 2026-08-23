@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import type Stripe from "stripe";
 import {
   handleCheckoutCompleted,
+  handleSubscriptionAddOnsUpdated,
   type CheckoutCompletedDeps,
+  type SubscriptionUpdatedDeps,
 } from "./stripeWebhookHandlers";
 
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
@@ -164,6 +166,22 @@ describe("handleCheckoutCompleted", () => {
       42,
       expect.objectContaining({ addOnTeam: true })
     );
+  });
+
+  test("Checkout mit gallery: true → addOns.gallery im Dokument (Gating-Quelle, Plan B6 Task 6), aiChat als feature — ein websiteData-Write", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(fakeSession(), deps); // addOns: aiChat + gallery
+
+    const websiteDataCalls = (deps.updateWebsite as any).mock.calls.filter(
+      (call: any[]) => "websiteData" in call[1]
+    );
+    expect(websiteDataCalls).toHaveLength(1);
+    expect(websiteDataCalls[0][1].websiteData.addOns).toEqual({
+      gallery: true,
+    });
+    expect(websiteDataCalls[0][1].websiteData.features).toEqual({
+      aiChat: true,
+    });
   });
 
   test("v2-Dokument: features.aiChat wird gesetzt, Cache invalidiert", async () => {
@@ -356,5 +374,94 @@ describe("handleCheckoutCompleted", () => {
       expect.any(Error)
     );
     warnSpy.mockRestore();
+  });
+});
+
+describe("handleSubscriptionAddOnsUpdated (customer.subscription.updated, Plan B6 Task 6)", () => {
+  const env: NodeJS.ProcessEnv = {
+    STRIPE_PRICE_ADDON_GALLERY: "price_gallery",
+    STRIPE_PRICE_ADDON_TEAM: "price_team",
+  };
+  function fakeSubscription(priceIds: string[]): Stripe.Subscription {
+    return {
+      id: "sub_1",
+      items: {
+        data: priceIds.map((id, i) => ({ id: `si_${i}`, price: { id } })),
+      },
+    } as unknown as Stripe.Subscription;
+  }
+  function makeSubDeps(
+    overrides: Partial<SubscriptionUpdatedDeps> = {}
+  ): SubscriptionUpdatedDeps {
+    return {
+      getSubscriptionByStripeId: vi.fn().mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        addOns: { contactForm: true, gallery: false, team: true },
+      }),
+      updateSubscription: vi.fn().mockResolvedValue(undefined),
+      applyFeatureFlags: vi.fn().mockResolvedValue(undefined),
+      env,
+      ...overrides,
+    };
+  }
+
+  test("leitet den Add-on-Stand aus den Items ab (nur konfigurierte Keys), schreibt subscriptions.addOns gemergt + Dokument/Spalten", async () => {
+    const deps = makeSubDeps();
+    await handleSubscriptionAddOnsUpdated(
+      fakeSubscription(["price_base", "price_gallery"]),
+      deps
+    );
+    expect(deps.updateSubscription).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({
+        addOns: { contactForm: true, gallery: true, team: false },
+      })
+    );
+    expect(deps.applyFeatureFlags).toHaveBeenCalledWith(42, {
+      gallery: true,
+      team: false,
+    });
+  });
+
+  test("unverändert → kein Write", async () => {
+    const deps = makeSubDeps();
+    await handleSubscriptionAddOnsUpdated(
+      fakeSubscription(["price_base", "price_team"]),
+      deps
+    );
+    expect(deps.updateSubscription).not.toHaveBeenCalled();
+    expect(deps.applyFeatureFlags).not.toHaveBeenCalled();
+  });
+
+  test("unbekannte Subscription → kein Write", async () => {
+    const deps = makeSubDeps({
+      getSubscriptionByStripeId: vi.fn().mockResolvedValue(undefined),
+    });
+    await handleSubscriptionAddOnsUpdated(
+      fakeSubscription(["price_gallery"]),
+      deps
+    );
+    expect(deps.updateSubscription).not.toHaveBeenCalled();
+  });
+
+  test("keine Price-IDs konfiguriert → nichts ableitbar, kein Write (keine falschen false-Flags)", async () => {
+    const deps = makeSubDeps({ env: {} });
+    await handleSubscriptionAddOnsUpdated(
+      fakeSubscription(["price_base"]),
+      deps
+    );
+    expect(deps.updateSubscription).not.toHaveBeenCalled();
+    expect(deps.applyFeatureFlags).not.toHaveBeenCalled();
+  });
+
+  test("Dokument-Write-Fehler bricht den Handler nicht ab (Subscription-Stand steht bereits)", async () => {
+    const deps = makeSubDeps({
+      applyFeatureFlags: vi.fn().mockRejectedValue(new Error("db down")),
+    });
+    await expect(
+      handleSubscriptionAddOnsUpdated(fakeSubscription(["price_gallery"]), deps)
+    ).resolves.toBeUndefined();
+    expect(deps.updateSubscription).toHaveBeenCalled();
   });
 });

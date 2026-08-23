@@ -4,6 +4,7 @@ import type {
   PageSectionOf,
   SectionType,
   SectionV2,
+  SiteAddOns,
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
 
@@ -27,9 +28,116 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
   pageHeader: "seite",
 };
 
+// ─── Plan B6, Task 6: Add-on-Gating (eine Quelle der Wahrheit) ──────────────
+
+/**
+ * Sektionstypen, die nur gerendert werden, wenn das zugehörige Add-on im
+ * Dokument gebucht ist (`doc.addOns.<key> === true`, siehe
+ * `SiteAddOnsSchema` in shared/siteContract/schema.ts). Nicht gebuchter
+ * Inhalt bleibt im Dokument (kein Datenverlust — Spec B6 §2.2/§5.4
+ * „ausblenden statt löschen"), wird aber weder von SSR noch CSR noch in der
+ * Navigation ausgegeben. Alle anderen Typen (hero/services/about/contact/
+ * faq/testimonials/cta) sind frei. Feature-Inseln (Kontaktformular,
+ * KI-Chat, Buchung) gaten unverändert über `features` (SiteIslands.tsx).
+ */
+export const ADDON_GATED_SECTION_TYPES: Partial<
+  Record<SectionType, keyof SiteAddOns>
+> = {
+  gallery: "gallery",
+  menu: "menu",
+  pricelist: "pricelist",
+  team: "team",
+};
+
+/** true, wenn der Sektionstyp frei ist oder sein Add-on im Dokument gebucht wurde. */
+export function isSectionBooked(
+  doc: WebsiteDataV2,
+  type: SectionType
+): boolean {
+  const addOn = ADDON_GATED_SECTION_TYPES[type];
+  if (!addOn) return true;
+  return doc.addOns?.[addOn] === true;
+}
+
+/**
+ * Startseiten-Sektionen in Dokument-Reihenfolge ohne `hiddenSections` und
+ * ohne nicht gebuchte Add-on-Sektionen. Gemeinsame Basis für
+ * `orderedSections` (Pack-Renderer, SSR + CSR) und `buildNavItems`, damit
+ * Navigation und Inhalt nie auseinanderlaufen.
+ */
+export function visibleSections(doc: WebsiteDataV2): SectionV2[] {
+  const hidden = new Set(doc.hiddenSections ?? []);
+  return doc.sections.filter(
+    s => !hidden.has(s.type) && isSectionBooked(doc, s.type)
+  );
+}
+
+/**
+ * Unterseiten sind Add-on-Inhalt (`subpages`): ohne `doc.addOns.subpages`
+ * liefert das eine leere Liste — `pages[]` bleibt trotzdem im Dokument.
+ * Einzige Quelle für SSR-Route (server/ssr/routes.ts), Navigation und
+ * Studio-Vorschau-Leiste.
+ */
+export function visiblePages(doc: WebsiteDataV2): Page[] {
+  if (doc.addOns?.subpages !== true) return [];
+  return doc.pages ?? [];
+}
+
+/**
+ * Sektionen einer Unterseite nach demselben Gating wie die Startseite
+ * (`pageHeader` ist immer frei). `hiddenSections` gilt nur für die
+ * Startseite und wird hier bewusst nicht angewendet.
+ */
+export function visiblePageSections(
+  doc: WebsiteDataV2,
+  page: Page
+): PageSection[] {
+  return page.sections.filter(s => isSectionBooked(doc, s.type));
+}
+
+/**
+ * Verknüpfte Sektionen auf Unterseiten (Plan B6 Task 5/6): Kontakt und
+ * Galerie „übernehmen" laut Studio-Editor die Startseite — statt die beim
+ * Speichern erzeugte Kopie (pagesLogic.ts `syncLinkedSections`) altern zu
+ * lassen, liest das Rendering hier die aktuellen Startseiten-Fakten/-Bilder;
+ * nur die Seiten-Überschrift bleibt aus der Page. Ohne Startseiten-Pendant
+ * bleibt die gespeicherte Kopie. Pure, mutiert nichts.
+ */
+export function linkPageSections(
+  doc: WebsiteDataV2,
+  sections: PageSection[]
+): PageSection[] {
+  const homeContact = doc.sections.find(
+    (s): s is Extract<SectionV2, { type: "contact" }> => s.type === "contact"
+  );
+  const homeGallery = doc.sections.find(
+    (s): s is Extract<SectionV2, { type: "gallery" }> => s.type === "gallery"
+  );
+  return sections.map(section => {
+    if (section.type === "contact" && homeContact) {
+      return {
+        ...homeContact,
+        ...(section.headline !== undefined
+          ? { headline: section.headline }
+          : {}),
+      } as PageSection;
+    }
+    if (
+      section.type === "gallery" &&
+      homeGallery &&
+      homeGallery.images.length > 0
+    ) {
+      return {
+        ...section,
+        images: homeGallery.images.map(img => ({ ...img })),
+      } as PageSection;
+    }
+    return section;
+  });
+}
+
 export function orderedSections(data: WebsiteDataV2): SectionV2[] {
-  const hidden = new Set(data.hiddenSections ?? []);
-  const visible = data.sections.filter(s => !hidden.has(s.type));
+  const visible = visibleSections(data);
   const order = data.sectionOrder;
   const rank = (t: SectionType): number => {
     if (t === "hero") return -1; // Hero immer zuerst
@@ -77,7 +185,9 @@ const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
  * Löst einen Pfad ("/leistungen-im-detail" oder "leistungen-im-detail") auf
  * die passende Unterseite im Dokument auf. `null` für die Startseite ("/",
  * "") oder einen Pfad, der zu keiner `pages[]`-Page passt (inkl. Legal-Pfade
- * — die haben keine eigene `Page`, siehe server/ssr/routes.ts).
+ * — die haben keine eigene `Page`, siehe server/ssr/routes.ts). Seit Plan
+ * B6 Task 6 zählt nur, was `visiblePages` liefert: ohne gebuchtes
+ * `addOns.subpages` ist jede Page-URL unbekannt (SSR → 404, CSR → Fallback).
  */
 export function pageForPathname(
   doc: WebsiteDataV2,
@@ -85,7 +195,7 @@ export function pageForPathname(
 ): Page | null {
   const slug = pathname.split("?")[0]?.replace(/^\/+|\/+$/g, "") ?? "";
   if (!slug) return null;
-  return doc.pages?.find(p => p.slug === slug) ?? null;
+  return visiblePages(doc).find(p => p.slug === slug) ?? null;
 }
 
 /**
@@ -109,7 +219,7 @@ export function buildNavItems(
       label: SECTION_NAV_LABELS[s.type] ?? s.type,
       sectionType: s.type,
     }));
-  const pageItems: NavItem[] = (doc.pages ?? []).map(p => ({
+  const pageItems: NavItem[] = visiblePages(doc).map(p => ({
     key: `page-${p.slug}`,
     href: `${opts.basePath}/${p.slug}`,
     label: p.navLabel ?? p.title,

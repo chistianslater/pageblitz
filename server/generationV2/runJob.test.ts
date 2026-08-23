@@ -5,6 +5,11 @@ vi.mock("../db", () => ({
   getBusinessById: vi.fn(),
   updateGenerationJob: vi.fn().mockResolvedValue(undefined),
   updateWebsite: vi.fn().mockResolvedValue(undefined),
+  // upsertOnboarding (server/onboardingV2/state.ts) für die Spiegelung der
+  // generierten Add-on-Defaults (Plan B6 Task 6, Gastro-Speisekarte).
+  getOnboardingByWebsiteId: vi.fn().mockResolvedValue(undefined),
+  updateOnboarding: vi.fn().mockResolvedValue(undefined),
+  createOnboarding: vi.fn().mockResolvedValue(1),
 }));
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 vi.mock("../industryClassifier", () => ({
@@ -101,6 +106,26 @@ describe("runWebsiteGenerationV2Job", () => {
       result: { success: true, alreadyGenerated: false, usedFallback: false },
     });
   });
+  test("Add-on-Defaults aus dem Dokument (addOns.menu der Gastro-Generierung) werden als Entwurfs-Flags in onboarding_responses gespiegelt (Plan B6 Task 6)", async () => {
+    mockedPhotos.mockResolvedValue([]);
+    mockedGen.mockResolvedValue({ ...doc, addOns: { menu: true } });
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({ websiteId: 42, addOnMenu: true })
+    );
+    expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(
+      99,
+      expect.objectContaining({ status: "completed" })
+    );
+  });
+
+  test("ohne addOns im Dokument keine Onboarding-Schreibung", async () => {
+    mockedPhotos.mockResolvedValue([]);
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
   test("Fehler → Job failed mit Meldung, kein Throw nach außen", async () => {
     mockedPhotos.mockResolvedValue([]);
     mockedGen.mockRejectedValue(new Error("LLM kaputt"));

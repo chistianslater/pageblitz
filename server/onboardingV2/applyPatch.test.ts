@@ -2,6 +2,8 @@ import { describe, expect, test } from "vitest";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
+  applyAddOnFlags,
+  applyAddOns,
   applyFeatures,
   applyImages,
   applyOffer,
@@ -270,6 +272,60 @@ describe("applyFeatures", () => {
   test("Ergebnis validiert gegen das Schema", () => {
     const next = applyFeatures(docFull, { booking: true });
     expect(next.version).toBe(2);
+  });
+});
+
+describe("applyAddOns (Plan B6 Task 6)", () => {
+  test("setzt ein Sektions-Add-on, mutiert das Original nicht", () => {
+    const next = applyAddOns(docFull, { gallery: true });
+    expect(next.addOns).toEqual({ gallery: true });
+    expect(docFull.addOns).toBeUndefined();
+  });
+
+  test("mergt zusätzliche Add-ons; false entfernt den Key; ohne aktives Add-on verschwindet das Objekt", () => {
+    const a = applyAddOns(docFull, { gallery: true, team: true });
+    const b = applyAddOns(a, { team: false, subpages: true });
+    expect(b.addOns).toEqual({ gallery: true, subpages: true });
+    const c = applyAddOns(b, { gallery: false, subpages: false });
+    expect(c.addOns).toBeUndefined();
+    expect("addOns" in c).toBe(false);
+  });
+
+  test("Sektionen/Pages bleiben beim Abschalten im Dokument (ausblenden statt löschen)", () => {
+    const withTeam: WebsiteDataV2 = {
+      ...docFull,
+      addOns: { team: true },
+      sections: [
+        ...docFull.sections,
+        { type: "team", members: [{ name: "Anna" }] },
+      ],
+    };
+    const off = applyAddOns(withTeam, { team: false });
+    expect(off.sections.some(s => s.type === "team")).toBe(true);
+    expect(off.addOns).toBeUndefined();
+  });
+
+  test("applyAddOnFlags verteilt die acht Add-on-Flags auf features (contactForm/aiChat/booking/subpages) und addOns (gallery/menu/pricelist/team/subpages)", () => {
+    const next = applyAddOnFlags(docFull, {
+      contactForm: true,
+      gallery: true,
+      menu: false,
+      pricelist: false,
+      aiChat: false,
+      booking: true,
+      team: false,
+      subpages: true,
+    });
+    expect(next.features).toEqual({
+      contactForm: true,
+      booking: true,
+      subpages: true,
+    });
+    expect(next.addOns).toEqual({ gallery: true, subpages: true });
+    // Nur übergebene Keys werden angefasst.
+    const partial = applyAddOnFlags(next, { gallery: false });
+    expect(partial.features).toEqual(next.features);
+    expect(partial.addOns).toEqual({ subpages: true });
   });
 });
 

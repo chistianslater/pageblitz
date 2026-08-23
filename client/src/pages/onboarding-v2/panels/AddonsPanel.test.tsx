@@ -159,6 +159,66 @@ describe("AddonsPanel", () => {
   });
 });
 
+describe("AddonsPanel — Add-on-Konsistenz (Plan B6, Task 6)", () => {
+  test("vor dem Checkout: kein Abrechnungshinweis", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{}}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).not.toContain("anteilig abgerechnet");
+  });
+
+  test("nach dem Checkout (live): Hinweis, dass Änderungen sofort (anteilig) über Stripe abgerechnet werden", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{}}
+        live
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("anteilig abgerechnet");
+  });
+
+  test("Gastro-Default: die Speisekarte kommt mit addOns.menu aus der Generierung → Schalter steht auf „Aktiv“, Preis zählt in die Summe", () => {
+    const gusto: WebsiteDataV2 = {
+      ...blankDoc,
+      stylePackId: "gusto",
+      addOns: { menu: true },
+      sections: [
+        ...blankDoc.sections,
+        {
+          type: "menu",
+          headline: "Speisekarte",
+          categories: [{ name: "Pasta", items: [{ name: "T", price: "1" }] }],
+        },
+      ],
+    };
+    // state.addOns (onboarding_responses) wird von runJob gespiegelt; hier
+    // den Zustand direkt übergeben, wie ihn StudioPage liefert.
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={gusto}
+        addOns={{ menu: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    const menuRow = html.split("Speisekarte")[1] ?? "";
+    expect(menuRow).toContain(">Aktiv<");
+    // 19,90 € Basis (jährlich) + 3,90 € Speisekarte.
+    expect(html).toContain("23,80 €");
+  });
+});
+
 describe("AddonsPanel — Unterseiten (Plan B6, Task 5)", () => {
   const docWithPage: WebsiteDataV2 = {
     ...blankDoc,

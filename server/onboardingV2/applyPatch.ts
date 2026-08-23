@@ -13,9 +13,15 @@ import {
   type SectionOf,
   type SectionType,
   type SectionV2,
+  type SiteAddOns,
   type SiteFeatures,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
+import {
+  FEATURE_ADDON_KEYS,
+  SECTION_ADDON_KEYS,
+  type AddOnFlags,
+} from "../../shared/pricing";
 
 export function parsePackId(value: string): PackId {
   if ((PACK_IDS as readonly string[]).includes(value)) return value as PackId;
@@ -236,4 +242,48 @@ export function applyFeatures(
   const next: WebsiteDataV2 =
     Object.keys(active).length > 0 ? { ...rest, features: active } : rest;
   return WebsiteDataV2Schema.parse(next);
+}
+
+/**
+ * Pure: mergt Sektions-Add-ons (gallery/menu/pricelist/team/subpages) als
+ * `addOns` ins Dokument — dieselbe Semantik wie `applyFeatures`: nur `true`
+ * wird gespeichert, `false` entfernt den Key, ohne aktives Add-on verschwindet
+ * das Objekt. Die zugehörigen Sektionen/`pages[]` bleiben unangetastet
+ * (Plan B6 Task 6: ausblenden statt löschen — das Gating macht
+ * `visibleSections`/`visiblePages` in client/src/components/site/engine.ts).
+ */
+export function applyAddOns(
+  doc: WebsiteDataV2,
+  patch: Partial<SiteAddOns>
+): WebsiteDataV2 {
+  const merged: SiteAddOns = { ...(doc.addOns ?? {}), ...patch };
+  const active = Object.fromEntries(
+    Object.entries(merged).filter(([, value]) => value === true)
+  ) as SiteAddOns;
+  const { addOns: _currentAddOns, ...rest } = doc;
+  const next: WebsiteDataV2 =
+    Object.keys(active).length > 0 ? { ...rest, addOns: active } : rest;
+  return WebsiteDataV2Schema.parse(next);
+}
+
+/**
+ * Pure: verteilt die acht Add-on-Flags (shared/pricing.ts) auf
+ * `features` (FEATURE_ADDON_KEYS) und `addOns` (SECTION_ADDON_KEYS) — nur
+ * tatsächlich übergebene Keys werden geschrieben. Eine Berechnung für alle
+ * Schreibpfade (Studio-Extras, Checkout-Webhook, Subscription-Update,
+ * Dashboard-Kauf), damit Dokument und Abrechnung denselben Stand zeigen.
+ */
+export function applyAddOnFlags(
+  doc: WebsiteDataV2,
+  flags: AddOnFlags
+): WebsiteDataV2 {
+  const features: SiteFeatures = {};
+  for (const key of FEATURE_ADDON_KEYS) {
+    if (flags[key] !== undefined) features[key] = flags[key];
+  }
+  const addOns: Partial<SiteAddOns> = {};
+  for (const key of SECTION_ADDON_KEYS) {
+    if (flags[key] !== undefined) addOns[key] = flags[key];
+  }
+  return applyAddOns(applyFeatures(doc, features), addOns);
 }

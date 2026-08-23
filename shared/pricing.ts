@@ -57,6 +57,54 @@ export function addonPrice(key: AddOnKey): number {
 export type AddOnFlags = Partial<Record<AddOnKey, boolean>>;
 
 /**
+ * Add-ons, die im v2-Dokument als `addOns.<key>` gespiegelt werden und das
+ * Rendering von Sektionen/Unterseiten gaten (Plan B6 Task 6; Gating in
+ * client/src/components/site/engine.ts, Schema `SiteAddOnsSchema`).
+ */
+export const SECTION_ADDON_KEYS = [
+  "gallery",
+  "menu",
+  "pricelist",
+  "team",
+  "subpages",
+] as const satisfies readonly AddOnKey[];
+export type SectionAddOnKey = (typeof SECTION_ADDON_KEYS)[number];
+
+/**
+ * Add-ons, die im v2-Dokument als `features.<key>` gespiegelt werden
+ * (Inseln/Verhaltens-Flags, `FeaturesSchema`). `subpages` steht bewusst in
+ * beiden Listen: `features.subpages` ist das Flag seit Task 2,
+ * `addOns.subpages` die Gating-Quelle seit Task 6 — beide werden immer
+ * zusammen geschrieben (server/onboardingV2/applyFeatures.ts).
+ */
+export const FEATURE_ADDON_KEYS = [
+  "contactForm",
+  "aiChat",
+  "booking",
+  "subpages",
+] as const satisfies readonly AddOnKey[];
+export type FeatureAddOnKey = (typeof FEATURE_ADDON_KEYS)[number];
+
+/**
+ * Env-Variablen mit den Stripe-Price-IDs je Add-on (monatlich wiederkehrend,
+ * EUR, Brutto/`tax_behavior: inclusive`) — Quelle für den Stripe-Sync nach
+ * dem Checkout (server/stripeAddons.ts) und für die Add-on-Positionen der
+ * Checkout-Session (server/onboardingV2/checkout.ts). Fehlt eine Variable,
+ * bricht der Sync mit einer klaren Meldung ab; der Checkout fällt auf
+ * Ad-hoc-`price_data` zurück. Siehe `.env.example`.
+ */
+export const ADDON_PRICE_ENV_KEYS: Record<AddOnKey, string> = {
+  contactForm: "STRIPE_PRICE_ADDON_CONTACT_FORM",
+  gallery: "STRIPE_PRICE_ADDON_GALLERY",
+  menu: "STRIPE_PRICE_ADDON_MENU",
+  pricelist: "STRIPE_PRICE_ADDON_PRICELIST",
+  aiChat: "STRIPE_PRICE_ADDON_AI_CHAT",
+  booking: "STRIPE_PRICE_ADDON_BOOKING",
+  team: "STRIPE_PRICE_ADDON_TEAM",
+  subpages: "STRIPE_PRICE_ADDON_SUBPAGES",
+};
+
+/**
  * Add-ons, die tatsächlich buchbar sind. Seit Plan B3 aktiviert der
  * Zahlungs-Webhook (`stripeWebhook.ts`/`stripeWebhookHandlers.ts`) auch
  * KI-Chat und Terminbuchung, seit Plan B5 zusätzlich Team (Team-Panel im
