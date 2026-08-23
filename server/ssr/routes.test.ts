@@ -10,7 +10,7 @@ vi.mock("../db", () => ({
 }));
 
 // Import nach vi.mock, damit der Mock vor dem ersten Aufruf von registerSsrRoutes greift.
-import { registerSsrRoutes } from "./routes";
+import { invalidateSsrCache, registerSsrRoutes } from "./routes";
 import { getWebsiteBySlug, getWebsiteByToken } from "../db";
 
 /** App mit SSR-Routen + einem SPA-Fallback-Stand-in (statt echter Vite-/serveStatic-Middleware). */
@@ -265,6 +265,29 @@ describe("SSR routes", () => {
       expect(res2.status).toBe(404);
       expect(res2.headers["x-robots-tag"]).toContain("noindex");
       expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+    });
+
+    test("404-Cache ist je Slug (nicht je Pfad) und wird von invalidateSsrCache() geleert", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt-404-invalidate",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      await request(app).get("/site/brandt-404-invalidate/pfad-a");
+      const resB = await request(app).get("/site/brandt-404-invalidate/pfad-b");
+      expect(resB.status).toBe(404);
+      // zweiter Fantasiepfad kommt aus demselben Slug-Eintrag → kein neuer DB-Zugriff
+      expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+
+      invalidateSsrCache("brandt-404-invalidate");
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt-404-invalidate",
+        websiteData: { ...getFixture("werkbank", "full"), businessName: "Neuer Name GmbH" },
+      });
+      const resC = await request(app).get("/site/brandt-404-invalidate/pfad-a");
+      expect(resC.status).toBe(404);
+      expect(resC.text).toContain("Neuer Name GmbH");
+      expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
     });
 
     test("Asset-artiger Pfad (Dateiendung) unter v2-Site → next(), SPA-Fallback, kein DB-Zugriff", async () => {

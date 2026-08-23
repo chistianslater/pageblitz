@@ -64,11 +64,19 @@ const ASSET_PATHNAME_RE = /\.[a-z0-9]+$/i;
 export function invalidateSsrCache(slug: string): void {
   const key = slug.toLowerCase();
   siteMissCache.delete(key);
-  for (const pathname of SSR_ALLOWED_PATHNAMES) {
+  for (const pathname of [...SSR_ALLOWED_PATHNAMES, NOT_FOUND_CACHE_PATH]) {
     siteHtmlCache.delete(`sub:${key}${pathname}`);
     siteHtmlCache.delete(`path:${key}${pathname}`);
   }
 }
+
+/**
+ * Pseudo-Pfad für den 404-Cache-Eintrag einer v2-Site: EIN Eintrag je Slug
+ * (statt je unbekanntem Pfad), damit invalidateSsrCache() ihn mitlöscht und
+ * beliebige Fantasiepfade den Cache nicht fluten können. Der Wert enthält
+ * ein NUL-Zeichen und kann daher nie mit einem echten Request-Pfad kollidieren.
+ */
+const NOT_FOUND_CACHE_PATH = "\u0000404";
 
 function isKnownPackId(value: string): value is PackId {
   return (PACK_IDS as readonly string[]).includes(value);
@@ -397,9 +405,12 @@ async function handleCustomerSiteSsr(
   }
 
   const cacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${siteRequest.pathname}`;
+  const notFoundCacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${NOT_FOUND_CACHE_PATH}`;
 
   try {
-    const cached = siteHtmlCache.get(cacheKey);
+    const cached = siteHtmlCache.get(
+      isKnownPathname ? cacheKey : notFoundCacheKey
+    );
     if (cached && now - cached.at < CACHE_TTL_MS) {
       if (cached.robotsNoindex) {
         res.setHeader("X-Robots-Tag", "noindex");
@@ -433,7 +444,7 @@ async function handleCustomerSiteSsr(
         businessName: parsed.data.businessName,
         homeHref: siteRequest.basePath || "/",
       });
-      siteHtmlCache.set(cacheKey, {
+      siteHtmlCache.set(notFoundCacheKey, {
         html,
         status: 404,
         at: now,
