@@ -147,9 +147,9 @@ describe("SSR routes", () => {
       expect(res.text).not.toContain("disco");
     });
 
-    test("statische Fixture-Assets unter /demo/* (z. B. .svg) matchen die Route nicht — fallen auf die nachfolgende Middleware durch (Regressionsfund: client/public/demo/*.svg wurde vorher von dieser Route abgefangen)", async () => {
+    test("statische Fixture-Assets unter /demo/* (z. B. .svg) matchen die Route nicht — fallen auf die nachfolgende Middleware durch (Regressionsfund: client/public/demo/*.webp wurde vorher von dieser Route abgefangen)", async () => {
       const app = buildAppWithOkFallback();
-      const res = await request(app).get("/demo/werkbank-hero.svg");
+      const res = await request(app).get("/demo/werkbank-hero.webp");
       expect(res.status).toBe(200);
       expect(res.text).toBe("OK-Fallback");
     });

@@ -93,7 +93,7 @@ const WERKBANK_FULL: WebsiteDataV2 = {
         "Schreinerei Brandt fertigt Möbel, Einbauten und Restaurierungen in Dortmund — von Hand, auf Maß, für die Ewigkeit gedacht.",
       ctaText: "Projekt anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/werkbank-hero.svg",
+      imageUrl: "/demo/werkbank-hero.webp",
     },
     {
       type: "services",
@@ -130,22 +130,22 @@ const WERKBANK_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Seit 2004 fertigt die Schreinerei Brandt in Dortmund Möbel und Einbauten aus massivem Holz. Was als Zwei-Mann-Werkstatt begann, ist heute ein Team aus fünf Handwerkern mit eigener Lehrwerkstatt für den Nachwuchs. Wir arbeiten mit heimischen Hölzern, planen jedes Stück gemeinsam mit dem Kunden vor Ort und liefern nur, was wir selbst in unserem eigenen Zuhause stehen hätten. Kein Katalog, keine Massenware, kein Ablauf von der Stange — jedes Projekt beginnt mit einem persönlichen Vor-Ort-Termin und endet mit einem Stück, das Generationen überstehen soll.",
-      imageUrl: "/demo/werkbank-about.jpg",
+      imageUrl: "/demo/werkbank-detail-2.webp",
     },
     {
       type: "gallery",
       headline: "Projekte",
       images: [
         {
-          url: "/demo/werkbank-hero.svg",
+          url: "/demo/werkbank-hero.webp",
           alt: "Massivholztisch in einer Dortmunder Altbauwohnung",
         },
         {
-          url: "/demo/werkbank-detail-1.svg",
+          url: "/demo/werkbank-detail-1.webp",
           alt: "Maßgefertigter Einbauschrank aus Eiche",
         },
         {
-          url: "/demo/werkbank-detail-2.svg",
+          url: "/demo/werkbank-detail-2.webp",
           alt: "Restauriertes Sideboard aus den 1960ern",
         },
       ],
@@ -214,7 +214,7 @@ const WERKBANK_MINIMAL: WebsiteDataV2 = {
         "Schreinerei Brandt fertigt Möbel und Einbauten in Dortmund — auf Maß, von Hand.",
       ctaText: "Projekt anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/werkbank-hero.svg",
+      imageUrl: "/demo/werkbank-hero.webp",
     },
     {
       type: "services",
@@ -293,6 +293,7 @@ const KANZLEI_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Roth & Weber berät seit 1998 mit Sitz in Köln Unternehmen, Freiberufler und Selbstständige in allen Fragen der Steuer- und Rechnungslegung. Vier Partner und ein zwölfköpfiges Team betreuen aktuell mehr als 250 laufende Mandate — von der Einzelfirma bis zum mittelständischen Betrieb. Der Anspruch bleibt über alle Mandate gleich: klare Fristen, nachvollziehbare Zahlen und ein fester Ansprechpartner statt wechselnder Sachbearbeiter. Digitale Belegerfassung und persönliche Beratung schließen sich dabei nicht aus, sondern ergänzen sich.",
+      imageUrl: "/demo/kanzlei-hero.webp",
     },
     {
       type: "testimonials",
@@ -424,7 +425,7 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
         "Moderne Zahnmedizin in Hamburg-Eppendorf — gründlich erklärt, sanft behandelt.",
       ctaText: "Online Termin buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/morgenlicht-hero.svg",
+      imageUrl: "/demo/morgenlicht-hero.webp",
     },
     {
       type: "services",
@@ -459,6 +460,7 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Die Praxis Dr. Sommer liegt seit 2011 mitten in Hamburg-Eppendorf und begleitet Familien über Generationen. Sechs Behandler und ein zehnköpfiges Team kümmern sich um Prophylaxe, Implantologie und Kinderzahnheilkunde — mit dem Anspruch, jede Behandlung verständlich zu erklären, bevor sie beginnt. Wer Angst vor dem Zahnarztbesuch hat, bekommt bei uns extra Zeit und eine eigene Sprechstunde. Digitale Röntgentechnik, moderne Materialien und ein helles, ruhiges Raumkonzept sorgen dafür, dass sich der Besuch nicht nach Praxis, sondern nach gutem Empfang anfühlt.",
+      imageUrl: "/demo/morgenlicht-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -540,7 +542,7 @@ const MORGENLICHT_MINIMAL: WebsiteDataV2 = {
         "Moderne Zahnmedizin in Hamburg-Eppendorf — gründlich erklärt, sanft behandelt.",
       ctaText: "Online Termin buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/morgenlicht-hero.svg",
+      imageUrl: "/demo/morgenlicht-hero.webp",
     },
     {
       type: "services",
@@ -591,7 +593,7 @@ const GUSTO_FULL: WebsiteDataV2 = {
         "Trattoria Lucia bringt Berlin-Charlottenburg seit 2013 Rezepte aus der Emilia-Romagna — hausgemachte Pasta, langsam geschmort, mit Herz serviert.",
       ctaText: "Tisch reservieren",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/gusto-hero.svg",
+      imageUrl: "/demo/gusto-hero.webp",
     },
     {
       type: "menu",
@@ -646,7 +648,7 @@ const GUSTO_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Unsere Geschichte",
       body: "Trattoria Lucia trägt den Namen unserer Großmutter, die in Modena eine kleine Küche führte und niemanden ungegessen gehen ließ. 2013 haben wir ihre Rezepte mit nach Charlottenburg gebracht: Pasta von Hand gerollt, Ragù, das acht Stunden zieht, und ein Weinregal, das nur Betriebe aus der Emilia-Romagna führt. Geöffnet wird jeden Abend derselbe Anspruch — als säße Nonna Lucia selbst am Herd.",
-      imageUrl: "/demo/gusto-hero.svg",
+      imageUrl: "/demo/gusto-hero.webp",
     },
     {
       type: "testimonials",
@@ -669,15 +671,15 @@ const GUSTO_FULL: WebsiteDataV2 = {
       headline: "Impressionen",
       images: [
         {
-          url: "/demo/gusto-hero.svg",
+          url: "/demo/gusto-hero.webp",
           alt: "Gedeckter Tisch im warmen Abendlicht der Trattoria",
         },
         {
-          url: "/demo/gusto-detail-1.svg",
+          url: "/demo/gusto-detail-1.webp",
           alt: "Hausgemachte Tagliatelle mit Ragù",
         },
         {
-          url: "/demo/gusto-detail-2.svg",
+          url: "/demo/gusto-detail-2.webp",
           alt: "Weinregal mit Flaschen aus der Emilia-Romagna",
         },
       ],
@@ -720,7 +722,7 @@ const GUSTO_MINIMAL: WebsiteDataV2 = {
         "Trattoria Lucia bringt Berlin-Charlottenburg Rezepte aus der Emilia-Romagna.",
       ctaText: "Tisch reservieren",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/gusto-hero.svg",
+      imageUrl: "/demo/gusto-hero.webp",
     },
     {
       type: "menu",
@@ -777,7 +779,7 @@ const PATINA_FULL: WebsiteDataV2 = {
         "Ganzheitliche Begleitung für Körper und Kopf — in einer Praxis, in der Sie kein Fall sind, sondern ein Mensch.",
       ctaText: "Erstgespräch vereinbaren",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/patina-hero.svg",
+      imageUrl: "/demo/patina-hero.webp",
     },
     {
       type: "services",
@@ -809,7 +811,7 @@ const PATINA_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über mich",
       body: "Annelie Voss führt ihre Naturheilpraxis seit 2014 am Lorettoberg in Freiburg. Ausgebildet in Traditioneller Chinesischer Medizin und Ernährungsberatung, begleitet sie Menschen, die ihrem Körper wieder zuhören möchten — bei Erschöpfung, Verdauungsthemen oder auf der Suche nach mehr Ruhe im Alltag. Jede Behandlung beginnt mit einem ausführlichen Gespräch, nicht mit einem Rezept. Die Praxis liegt in einem Altbau mit Blick auf den Schwarzwald, bewusst klein gehalten, damit Zeit bleibt — für Sie, für Fragen, für das, was zwischen den Zeilen mitschwingt.",
-      imageUrl: "/demo/patina-detail-1.svg",
+      imageUrl: "/demo/patina-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -889,7 +891,7 @@ const PATINA_MINIMAL: WebsiteDataV2 = {
       subheadline: "Ganzheitliche Begleitung für Körper und Kopf in Freiburg.",
       ctaText: "Erstgespräch vereinbaren",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/patina-hero.svg",
+      imageUrl: "/demo/patina-hero.webp",
     },
     {
       type: "services",
@@ -940,7 +942,7 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
         "NOIR Haarstudio verbindet Schnitt, Farbe und Pflege auf Ateliers-Niveau — mitten in der Münchner Maxvorstadt.",
       ctaText: "Termin buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/salon-noir-hero.svg",
+      imageUrl: "/demo/salon-noir-hero.webp",
     },
     {
       type: "services",
@@ -976,7 +978,7 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "NOIR Haarstudio wurde 2016 in der Maxvorstadt gegründet — mit dem Anspruch, Friseurhandwerk wie ein Handwerk zu behandeln, nicht wie eine schnelle Dienstleistung. Jeder Schnitt beginnt mit einer ausführlichen Beratung, jede Farbe wird individuell gemischt. Unser kleines Team aus erfahrenen Stylisten arbeitet in ruhigem Tempo, mit Champagner statt Filterkaffee und einem Blick fürs Detail, der auch nach dem Termin noch hält.",
-      imageUrl: "/demo/salon-noir-hero.svg",
+      imageUrl: "/demo/salon-noir-hero.webp",
     },
     {
       type: "testimonials",
@@ -1075,7 +1077,7 @@ const SALON_NOIR_MINIMAL: WebsiteDataV2 = {
       subheadline: "Schnitt, Farbe und Pflege auf Ateliers-Niveau in München.",
       ctaText: "Termin buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/salon-noir-hero.svg",
+      imageUrl: "/demo/salon-noir-hero.webp",
     },
     {
       type: "services",
@@ -1128,7 +1130,7 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
         "Klavier, Gitarre, Gesang und Schlagzeug für Kinder und Erwachsene — mitten in Nürnberg.",
       ctaText: "Schnupperstunde buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/marktplatz-hero.svg",
+      imageUrl: "/demo/marktplatz-hero.webp",
     },
     {
       type: "services",
@@ -1166,7 +1168,7 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Die Musikschule Tonleiter gibt es seit 2011 im Herzen von Nürnberg. Zwölf Lehrkräfte unterrichten hier vom ersten Ton bis zur Bühnenreife — in kleinen Gruppen oder ganz allein, immer im Tempo, das passt. Kein Notenlese-Zwang, keine Vorspiel-Angst: bei uns darf Musik zuerst Spaß machen, dann perfekt werden.",
-      imageUrl: "/demo/marktplatz-detail-1.svg",
+      imageUrl: "/demo/marktplatz-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -1215,15 +1217,15 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
       headline: "Einblicke",
       images: [
         {
-          url: "/demo/marktplatz-hero.svg",
+          url: "/demo/marktplatz-hero.webp",
           alt: "Übungsraum mit Klavier",
         },
         {
-          url: "/demo/marktplatz-detail-1.svg",
+          url: "/demo/marktplatz-detail-1.webp",
           alt: "Gitarrenunterricht in kleiner Gruppe",
         },
         {
-          url: "/demo/marktplatz-detail-2.svg",
+          url: "/demo/marktplatz-detail-2.webp",
           alt: "Kinder beim gemeinsamen Musizieren",
         },
       ],
@@ -1269,7 +1271,7 @@ const MARKTPLATZ_MINIMAL: WebsiteDataV2 = {
         "Klavier, Gitarre und Gesang in Nürnberg — die erste Stunde ist gratis.",
       ctaText: "Schnupperstunde buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/marktplatz-hero.svg",
+      imageUrl: "/demo/marktplatz-hero.webp",
     },
     {
       type: "services",
@@ -1322,7 +1324,7 @@ const LANDGUT_FULL: WebsiteDataV2 = {
         "Regionale Stauden, Kräuter und Beratung, die mitdenkt — seit drei Generationen.",
       ctaText: "Saison entdecken",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/landgut-hero.svg",
+      imageUrl: "/demo/landgut-hero.webp",
     },
     {
       type: "services",
@@ -1356,7 +1358,7 @@ const LANDGUT_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Die Gärtnerei Grünholz wird seit drei Generationen von der Familie Grünholz in Ravensburg geführt. Was als kleine Staudengärtnerei begann, ist heute ein Betrieb mit eigener Baumschule und einem Team, das den Boden hier kennt wie kaum jemand sonst. Wir setzen auf regionale Sorten, ehrliche Beratung und Pflanzen, die wirklich zum jeweiligen Standort passen — vom schattigen Hinterhof bis zum sonnigen Balkon. Wer bei uns kauft, bekommt keine Massenware, sondern etwas, das mit Absicht gezogen wurde.",
-      imageUrl: "/demo/landgut-detail-1.svg",
+      imageUrl: "/demo/landgut-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -1384,15 +1386,15 @@ const LANDGUT_FULL: WebsiteDataV2 = {
       headline: "Impressionen",
       images: [
         {
-          url: "/demo/landgut-hero.svg",
+          url: "/demo/landgut-hero.webp",
           alt: "Pflanzreihen mit Stauden in der Gärtnerei Grünholz",
         },
         {
-          url: "/demo/landgut-detail-1.svg",
+          url: "/demo/landgut-detail-1.webp",
           alt: "Kräutertöpfe im Verkaufsbereich",
         },
         {
-          url: "/demo/landgut-detail-2.svg",
+          url: "/demo/landgut-detail-2.webp",
           alt: "Frisch gepflanzte Baumschule bei Sonnenaufgang",
         },
       ],
@@ -1434,7 +1436,7 @@ const LANDGUT_MINIMAL: WebsiteDataV2 = {
       subheadline: "Regionale Stauden, Kräuter und Beratung aus Ravensburg.",
       ctaText: "Saison entdecken",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/landgut-hero.svg",
+      imageUrl: "/demo/landgut-hero.webp",
     },
     {
       type: "services",
@@ -1485,7 +1487,7 @@ const ATELIER_FULL: WebsiteDataV2 = {
         "Keine Posen, keine Filter. Momente, wie sie passieren — für Menschen und Marken, die echt aussehen wollen.",
       ctaText: "Portfolio ansehen",
       ctaHref: "#galerie",
-      imageUrl: "/demo/atelier-hero.svg",
+      imageUrl: "/demo/atelier-hero.webp",
     },
     {
       type: "services",
@@ -1516,22 +1518,22 @@ const ATELIER_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über das Studio",
       body: "Studio Lenz arbeitet seit 2016 in Leipzig-Plagwitz — an der Schnittstelle aus Reportage und Porträt. Kein Blitzlichtgewitter, keine gestellten Posen: Jede Serie entsteht aus Beobachtung, nicht aus Regie. Auftraggeber sind Menschen, die ein ehrliches Bild von sich wollen, und Marken, die genug haben von Stockfotografie. Entwickelt, sortiert und ausgewählt wird jede Serie von Hand — analog gedacht, digital umgesetzt.",
-      imageUrl: "/demo/atelier-detail-1.svg",
+      imageUrl: "/demo/atelier-detail-1.webp",
     },
     {
       type: "gallery",
       headline: "Galerie",
       images: [
         {
-          url: "/demo/atelier-hero.svg",
+          url: "/demo/atelier-hero.webp",
           alt: "Porträt in Streiflicht, Studio Lenz Leipzig",
         },
         {
-          url: "/demo/atelier-detail-1.svg",
+          url: "/demo/atelier-detail-1.webp",
           alt: "Reportage-Moment auf einer Hochzeit",
         },
         {
-          url: "/demo/atelier-detail-2.svg",
+          url: "/demo/atelier-detail-2.webp",
           alt: "Markenshooting mit reduzierter Kulisse",
         },
       ],
@@ -1589,7 +1591,7 @@ const ATELIER_MINIMAL: WebsiteDataV2 = {
         "Keine Posen, keine Filter — ehrliche Porträt- und Markenfotografie in Leipzig.",
       ctaText: "Portfolio ansehen",
       ctaHref: "#galerie",
-      imageUrl: "/demo/atelier-hero.svg",
+      imageUrl: "/demo/atelier-hero.webp",
     },
     {
       type: "services",
@@ -1637,7 +1639,7 @@ const KLARWERK_FULL: WebsiteDataV2 = {
         "Nordwind IT betreut Unternehmen in Kiel und Umgebung — Server, Cloud und Sicherheit aus einer Hand, ohne Rätselraten.",
       ctaText: "Beratung anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/klarwerk-hero.svg",
+      imageUrl: "/demo/klarwerk-hero.webp",
     },
     {
       type: "services",
@@ -1674,7 +1676,7 @@ const KLARWERK_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Nordwind IT betreut seit 2012 kleine und mittlere Unternehmen in Kiel und Schleswig-Holstein. Statt Tickets in eine Warteschlange zu werfen, kennt unser sechsköpfiges Team jedes betreute System persönlich — von der Steuerkanzlei bis zum Handwerksbetrieb. Der Anspruch bleibt einfach: Systeme laufen, bevor jemand merkt, dass sie ausfallen könnten. Pauschalpreise statt Stundenzettel, feste Ansprechpartner statt Callcenter.",
-      imageUrl: "/demo/klarwerk-detail-1.svg",
+      imageUrl: "/demo/klarwerk-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -1750,7 +1752,7 @@ const KLARWERK_MINIMAL: WebsiteDataV2 = {
         "Nordwind IT betreut Unternehmen in Kiel — Server, Cloud und Sicherheit aus einer Hand.",
       ctaText: "Beratung anfragen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/klarwerk-hero.svg",
+      imageUrl: "/demo/klarwerk-hero.webp",
     },
     {
       type: "services",
@@ -1803,7 +1805,7 @@ const VERVE_FULL: WebsiteDataV2 = {
         "Personal Training in Essen — Kraft, Ausdauer und ein Plan, der zu deinem Leben passt.",
       ctaText: "Probetraining sichern",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/verve-hero.svg",
+      imageUrl: "/demo/verve-hero.webp",
     },
     {
       type: "services",
@@ -1837,7 +1839,7 @@ const VERVE_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Studio PULS wurde 2019 in Essen gegründet — aus der Überzeugung, dass Training kein Zufallsprodukt sein sollte. Jedes Programm beginnt mit einer Standortbestimmung, jeder Fortschritt wird gemessen, nicht geraten. Unser Team aus lizenzierten Trainern arbeitet in kleinen Gruppen oder 1:1, mit klaren Zielen und einem Plan, der sich an deinen Alltag anpasst — nicht umgekehrt.",
-      imageUrl: "/demo/verve-hero.svg",
+      imageUrl: "/demo/verve-hero.webp",
     },
     {
       type: "testimonials",
@@ -1921,7 +1923,7 @@ const VERVE_MINIMAL: WebsiteDataV2 = {
       subheadline: "Personal Training in Essen — messbarer Fortschritt.",
       ctaText: "Probetraining sichern",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/verve-hero.svg",
+      imageUrl: "/demo/verve-hero.webp",
     },
     {
       type: "services",
@@ -1970,7 +1972,7 @@ const ZUNFT_FULL: WebsiteDataV2 = {
         "48 Stunden Teigruhe, Natursauerteig und ein Steinofen, der seit vier Generationen glüht.",
       ctaText: "Unser Sortiment",
       ctaHref: "#preise",
-      imageUrl: "/demo/zunft-hero.svg",
+      imageUrl: "/demo/zunft-hero.webp",
     },
     {
       type: "pricelist",
@@ -2032,7 +2034,7 @@ const ZUNFT_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Unsere Geschichte",
       body: "Seit 1927 backt unsere Familie in Augsburg mit Natursauerteig, der über Jahrzehnte weitergegeben wurde. Vier Generationen haben den Steinofen gehütet, der bis heute mit Holz befeuert wird. Jeder Laib bekommt 48 Stunden Zeit zum Reifen — keine Abkürzungen, keine Backmischungen. Was hier entsteht, schmeckt man: langsam gemachtes Brot für Menschen, die genau das noch wollen.",
-      imageUrl: "/demo/zunft-detail-1.svg",
+      imageUrl: "/demo/zunft-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -2086,7 +2088,7 @@ const ZUNFT_MINIMAL: WebsiteDataV2 = {
       subheadline: "Natursauerteig und ein Steinofen in Augsburg.",
       ctaText: "Unser Sortiment",
       ctaHref: "#preise",
-      imageUrl: "/demo/zunft-hero.svg",
+      imageUrl: "/demo/zunft-hero.webp",
     },
     {
       type: "pricelist",
@@ -2136,7 +2138,7 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
         "Kosmetik und apparative Ästhetik in Wiesbaden — mit ehrlicher Beratung statt Behandlungs-Baukasten.",
       ctaText: "Behandlung buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/schimmer-hero.svg",
+      imageUrl: "/demo/schimmer-hero.webp",
     },
     {
       type: "services",
@@ -2174,7 +2176,7 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Studio",
       body: "Studio Lumière liegt im Herzen von Wiesbaden und steht seit 2017 für Kosmetik, die zuhört, bevor sie behandelt. Statt eines starren Menüs entwickeln wir gemeinsam eine Pflege, die zu deiner Haut und deinem Alltag passt. Apparative Ästhetik und klassische Kosmetik ergänzen sich hier zu einem Ergebnis, das man sieht — und einer Stunde, die man spürt.",
-      imageUrl: "/demo/schimmer-detail-1.svg",
+      imageUrl: "/demo/schimmer-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -2202,15 +2204,15 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
       headline: "Galerie",
       images: [
         {
-          url: "/demo/schimmer-hero.svg",
+          url: "/demo/schimmer-hero.webp",
           alt: "Heller Behandlungsraum im Studio Lumière",
         },
         {
-          url: "/demo/schimmer-detail-1.svg",
+          url: "/demo/schimmer-detail-1.webp",
           alt: "Kosmetikbehandlung im Detail",
         },
         {
-          url: "/demo/schimmer-detail-2.svg",
+          url: "/demo/schimmer-detail-2.webp",
           alt: "Wartebereich im Studio Lumière",
         },
       ],
@@ -2251,7 +2253,7 @@ const SCHIMMER_MINIMAL: WebsiteDataV2 = {
       subheadline: "Kosmetik und apparative Ästhetik in Wiesbaden.",
       ctaText: "Behandlung buchen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/schimmer-hero.svg",
+      imageUrl: "/demo/schimmer-hero.webp",
     },
     {
       type: "services",
@@ -2304,7 +2306,7 @@ const FUNDAMENT_FULL: WebsiteDataV2 = {
         "Immobilienvermittlung in Münster — diskret, marktkundig, mit Handschlagqualität seit drei Generationen.",
       ctaText: "Immobilie bewerten lassen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/fundament-hero.svg",
+      imageUrl: "/demo/fundament-hero.webp",
     },
     {
       type: "services",
@@ -2337,7 +2339,7 @@ const FUNDAMENT_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Unsere Geschichte",
       body: "Seit 1962 vermittelt unsere Familie Immobilien in Münster und Umgebung — über drei Generationen hinweg. Was mit einer kleinen Kanzlei am Prinzipalmarkt begann, ist heute ein Büro mit festem Netzwerk aus Gutachtern, Notaren und Handwerkern. Wir verkaufen keine Objekte, wir vermitteln Werte: mit Marktkenntnis, Diskretion und der Ruhe, die eine Entscheidung dieser Tragweite verdient.",
-      imageUrl: "/demo/fundament-detail-1.svg",
+      imageUrl: "/demo/fundament-detail-1.webp",
     },
     {
       type: "testimonials",
@@ -2418,7 +2420,7 @@ const FUNDAMENT_MINIMAL: WebsiteDataV2 = {
       subheadline: "Immobilienvermittlung in Münster mit Handschlagqualität.",
       ctaText: "Immobilie bewerten lassen",
       ctaHref: "#kontakt",
-      imageUrl: "/demo/fundament-hero.svg",
+      imageUrl: "/demo/fundament-hero.webp",
     },
     {
       type: "services",
