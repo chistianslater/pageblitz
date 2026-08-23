@@ -57,17 +57,22 @@ vi.mock("./generationV2/runJob", async importOriginal => {
     runWebsiteGenerationV2Job: vi.fn(),
   };
 });
+// getUmamiStats ruft echtes Umami-Backend per fetch() auf — in Unit-Tests
+// gemockt (customer.getAnalytics, B5 Task 3: umamiWebsiteId-Statistik).
+vi.mock("./umami", () => ({ getUmamiStats: vi.fn() }));
 
 import { appRouter } from "./routers";
 import * as db from "./db";
 import { invalidateSsrCache } from "./ssr/routes";
 import { invokeLLM } from "./_core/llm";
 import { runWebsiteGenerationV2Job } from "./generationV2/runJob";
+import { getUmamiStats } from "./umami";
 
 const mockedDb = vi.mocked(db);
 const mockedInvalidateSsrCache = vi.mocked(invalidateSsrCache);
 const mockedInvokeLLM = vi.mocked(invokeLLM);
 const mockedRunWebsiteGenerationV2Job = vi.mocked(runWebsiteGenerationV2Job);
+const mockedGetUmamiStats = vi.mocked(getUmamiStats);
 
 function createPublicContext(): TrpcContext {
   return {
@@ -497,5 +502,45 @@ describe("customer.updateAddons — eine Quelle der Wahrheit (Final-Review Befun
       })
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+});
+
+describe("customer.getAnalytics — Statistik liest umamiWebsiteId (B5 Task 3)", () => {
+  test("umamiWebsiteId gesetzt → getUmamiStats wird mit der ID aufgerufen", async () => {
+    const ownedWebsite = baseWebsiteRow({ umamiWebsiteId: "umami-42" });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null },
+    ] as any);
+    const fakeStats = { pageviews: 12, visitors: 5 };
+    mockedGetUmamiStats.mockResolvedValue(fakeStats as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.getAnalytics({ websiteId: 42 });
+
+    expect(mockedGetUmamiStats).toHaveBeenCalledWith("umami-42");
+    expect(result).toEqual(fakeStats);
+  });
+
+  test("kein umamiWebsiteId → null, getUmamiStats wird nicht aufgerufen", async () => {
+    const ownedWebsite = baseWebsiteRow({ umamiWebsiteId: null });
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null },
+    ] as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.getAnalytics({ websiteId: 42 });
+
+    expect(mockedGetUmamiStats).not.toHaveBeenCalled();
+    expect(result).toBeNull();
+  });
+
+  test("fremde Website (nicht in getWebsitesByUserId) → FORBIDDEN", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([] as any);
+
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.getAnalytics({ websiteId: 42 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedGetUmamiStats).not.toHaveBeenCalled();
   });
 });

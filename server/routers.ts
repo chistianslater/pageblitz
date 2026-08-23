@@ -2718,10 +2718,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
             code: "FORBIDDEN",
             message: "Keine Berechtigung",
           });
-        const umamiWebsiteId = (owned.website as any).umamiWebsiteId as
-          | string
-          | null
-          | undefined;
+        const umamiWebsiteId = owned.website.umamiWebsiteId;
         if (!umamiWebsiteId) return null;
         const stats = await getUmamiStats(umamiWebsiteId);
         return stats;

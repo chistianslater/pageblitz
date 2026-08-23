@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { packNameFor, studioHrefFor } from "./admin/websitesPageLogic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +24,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -45,8 +44,6 @@ import {
   RefreshCw,
   Sparkles,
   AlertTriangle,
-  ShoppingCart,
-  CreditCard,
   Trash2,
   XCircle,
   CheckCircle,
@@ -605,6 +602,7 @@ function AdminWebsitesTab({
                   </TableHead>
                   <TableHead>Unternehmen</TableHead>
                   <TableHead>Branche</TableHead>
+                  <TableHead>Pack</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Erstellt</TableHead>
                   <TableHead className="text-right">Aktionen</TableHead>
@@ -635,6 +633,9 @@ function AdminWebsitesTab({
                     </TableCell>
                     <TableCell className="text-sm">
                       {w.industry || "–"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {packNameFor(w.websiteData)}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -673,7 +674,23 @@ function AdminWebsitesTab({
                             <ExternalLink className="h-3 w-3 mr-1" /> Live
                           </a>
                         </Button>
-                        <CheckoutDialog website={w} />
+                        {studioHrefFor(w.previewToken) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            title="Im Studio öffnen"
+                          >
+                            <a
+                              href={studioHrefFor(w.previewToken)!}
+                              target="_blank"
+                              rel="noopener"
+                            >
+                              <Pencil className="h-3 w-3 mr-1" /> Im Studio
+                              öffnen
+                            </a>
+                          </Button>
+                        )}
                         <ActivateWebsiteButton website={w} />
                         <TestSubscriptionButton website={w} />
                         <UnlockAllAddonsButton website={w} />
@@ -889,6 +906,7 @@ function ExternalWebsitesTab({
                   </TableHead>
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
+                  <TableHead>Pack</TableHead>
                   <TableHead>Funnel-Status</TableHead>
                   <TableHead>Website-Status</TableHead>
                   <TableHead>Erstellt</TableHead>
@@ -929,6 +947,9 @@ function ExternalWebsitesTab({
                     </TableCell>
                     <TableCell className="text-sm">
                       {w.industry || "–"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {packNameFor(w.websiteData)}
                     </TableCell>
                     <TableCell>
                       {(() => {
@@ -973,7 +994,7 @@ function ExternalWebsitesTab({
                             </a>
                           </Button>
                         )}
-                        {w.previewToken && (
+                        {studioHrefFor(w.previewToken) && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -981,7 +1002,7 @@ function ExternalWebsitesTab({
                             title="Im Studio bearbeiten"
                           >
                             <a
-                              href={`/onboarding/${w.previewToken}`}
+                              href={studioHrefFor(w.previewToken)!}
                               target="_blank"
                               rel="noopener"
                             >
@@ -1178,130 +1199,6 @@ function RegenerateDialog({ website }: { website: any }) {
                 Jetzt neu generieren
               </>
             )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function CheckoutDialog({ website }: { website: any }) {
-  const [open, setOpen] = useState(false);
-  const [gallery, setGallery] = useState(false);
-  const [contactForm, setContactForm] = useState(false);
-
-  const checkoutMutation = trpc.checkout.createSession.useMutation({
-    onSuccess: data => {
-      setOpen(false);
-      toast.info("Weiterleitung zu Stripe...");
-      window.open(data.url, "_blank");
-    },
-    onError: err => toast.error("Fehler: " + err.message),
-  });
-
-  const totalMonthly = 79 + (gallery ? 4.9 : 0);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
-          disabled={website.status === "active"}
-        >
-          <CreditCard className="h-3 w-3 mr-1" />
-          {website.status === "active" ? "Aktiv" : "Kaufen"}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5 text-emerald-400" /> Website kaufen
-          </DialogTitle>
-          <DialogDescription>
-            Wähle dein Paket für{" "}
-            <span className="font-medium text-foreground">
-              {website.business?.name}
-            </span>
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Basis-Paket</p>
-                <p className="text-sm text-muted-foreground">
-                  1-seitige Website, Impressum & Datenschutz
-                </p>
-              </div>
-              <span className="text-xl font-bold text-emerald-400">79€/Mo</span>
-            </div>
-          </div>
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              Add-ons
-            </p>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div>
-                <Label
-                  htmlFor="gallery-toggle"
-                  className="font-medium cursor-pointer"
-                >
-                  Bildergalerie
-                </Label>
-                <p className="text-xs text-muted-foreground">+4,90€/Monat</p>
-              </div>
-              <Switch
-                id="gallery-toggle"
-                checked={gallery}
-                onCheckedChange={setGallery}
-              />
-            </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div>
-                <Label
-                  htmlFor="form-toggle"
-                  className="font-medium cursor-pointer"
-                >
-                  Kontaktformular
-                </Label>
-                <p className="text-xs text-muted-foreground">Inklusive</p>
-              </div>
-              <Switch
-                id="form-toggle"
-                checked={contactForm}
-                onCheckedChange={setContactForm}
-              />
-            </div>
-          </div>
-          <div className="p-4 rounded-lg bg-muted/50 border border-border flex justify-between items-center">
-            <span className="font-semibold">Gesamt</span>
-            <span className="text-2xl font-bold">
-              {totalMonthly.toFixed(2).replace(".", ",")}€/Mo
-            </span>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Abbrechen
-          </Button>
-          <Button
-            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() =>
-              checkoutMutation.mutate({
-                websiteId: website.id,
-                addOns: { gallery, contactForm },
-              })
-            }
-            disabled={checkoutMutation.isPending}
-          >
-            {checkoutMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <CreditCard className="h-4 w-4 mr-2" />
-            )}
-            Jetzt kaufen
           </Button>
         </DialogFooter>
       </DialogContent>
