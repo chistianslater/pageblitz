@@ -121,8 +121,14 @@ export function buildNavItems(
  * shared/siteContract/schema.ts), deshalb ein eigener Zugriff statt über
  * `orderedSections`.
  */
-export function pageHeaderSection(page: Page): PageSectionOf<"pageHeader"> | null {
-  return page.sections.find((s): s is PageSectionOf<"pageHeader"> => s.type === "pageHeader") ?? null;
+export function pageHeaderSection(
+  page: Page
+): PageSectionOf<"pageHeader"> | null {
+  return (
+    page.sections.find(
+      (s): s is PageSectionOf<"pageHeader"> => s.type === "pageHeader"
+    ) ?? null
+  );
 }
 
 /**

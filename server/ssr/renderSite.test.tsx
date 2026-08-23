@@ -234,7 +234,7 @@ describe("renderSiteHtml — Unterseiten (pages[], Plan B6 Task 3)", () => {
     expect(html).not.toContain('"@type":"LocalBusiness"');
   });
 
-  test("Pfad ohne Treffer in pages[] (und ungleich \"/\") fällt auf den Startseiten-Render zurück", () => {
+  test('Pfad ohne Treffer in pages[] (und ungleich "/") fällt auf den Startseiten-Render zurück', () => {
     const data = getFixture("werkbank", "full");
     const { html, status } = renderSiteHtml(data, {
       origin: "https://brandt.pageblitz.de",

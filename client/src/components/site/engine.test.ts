@@ -29,7 +29,11 @@ const withPages: WebsiteDataV2 = {
       title: "Leistungen im Detail",
       seo: { title: "Leistungen im Detail", description: "Details." },
       sections: [
-        { type: "pageHeader", title: "Leistungen im Detail", intro: "Mehr dazu." },
+        {
+          type: "pageHeader",
+          title: "Leistungen im Detail",
+          intro: "Mehr dazu.",
+        },
         { type: "services", headline: "Leistungen", items: [{ title: "A" }] },
         { type: "contact", city: "Dortmund" },
       ],
@@ -39,7 +43,9 @@ const withPages: WebsiteDataV2 = {
       title: "Über das Team",
       navLabel: "Team",
       seo: { title: "Über das Team", description: "Wer wir sind." },
-      sections: [{ type: "about", headline: "Team", body: "Wir sind ein Team." }],
+      sections: [
+        { type: "about", headline: "Team", body: "Wir sind ein Team." },
+      ],
     },
   ],
 };
@@ -71,7 +77,7 @@ describe("orderedSections", () => {
 });
 
 describe("pageForPathname", () => {
-  test("Startseite (\"/\") → null", () => {
+  test('Startseite ("/") → null', () => {
     expect(pageForPathname(withPages, "/")).toBeNull();
   });
   test("leerer Pfad → null", () => {
@@ -112,9 +118,9 @@ describe("buildNavItems", () => {
       "Leistungen im Detail",
       "Team",
     ]);
-    expect(items.every(i => i.current === undefined || i.current === false)).toBe(
-      true
-    );
+    expect(
+      items.every(i => i.current === undefined || i.current === false)
+    ).toBe(true);
   });
   test("Unterseite → Anker zeigen mit Präfix zurück zur Startseite, eigener Page-Link ist current", () => {
     const items = buildNavItems(withPages, {

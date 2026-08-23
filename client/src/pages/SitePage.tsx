@@ -180,7 +180,9 @@ export default function SitePage({ forceSlug, pageSlug }: SitePageProps = {}) {
   const pathname = pageSlug ? `/${pageSlug}` : undefined;
   const v2ForPageCheck = pageSlug ? parseV2(w.websiteData) : null;
   const pageExists =
-    !pageSlug || !v2ForPageCheck || pageForPathname(v2ForPageCheck, pathname!) !== null;
+    !pageSlug ||
+    !v2ForPageCheck ||
+    pageForPathname(v2ForPageCheck, pathname!) !== null;
 
   if (pageSlug && v2ForPageCheck && !pageExists) {
     return (

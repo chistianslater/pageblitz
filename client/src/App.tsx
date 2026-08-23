@@ -236,7 +236,10 @@ function Router() {
             passende Route in Deklarationsreihenfolge). */}
         <Route path="/site/:slug/:page">
           {params => (
-            <SitePage key={`${params.slug}-${params.page}`} pageSlug={params.page} />
+            <SitePage
+              key={`${params.slug}-${params.page}`}
+              pageSlug={params.page}
+            />
           )}
         </Route>
         {/* Legacy-Chat-Onboarding → Studio (Task 3, Cutover-Redirects) */}
