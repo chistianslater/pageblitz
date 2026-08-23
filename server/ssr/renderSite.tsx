@@ -364,8 +364,14 @@ export function renderSiteHtml(
   opts: RenderSiteOptions
 ): RenderSiteResult {
   const pathname = opts.pathname ?? "/";
-  const canonicalUrl = `${opts.origin}${pathname}`;
   const basePath = opts.basePath ?? "";
+  // Canonical muss die tatsächliche Adresse der Seite sein — in der Pfadform
+  // (/site/:slug) also inklusive basePath, sonst zeigt z. B.
+  // /site/<slug>/impressum kanonisch auf pageblitz.de/impressum (Final-Review
+  // B6, Teil A). Startseite: basePath oder "/" ohne doppelten Slash.
+  const canonicalUrl = `${opts.origin}${basePath}${
+    pathname === "/" ? (basePath ? "" : "/") : pathname
+  }`;
 
   if (pathname === "/impressum") {
     return renderLegalPage(

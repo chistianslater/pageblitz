@@ -439,3 +439,48 @@ describe("renderSiteHtml — Umami-Script (Plan B6 Task 7, cookielos)", () => {
     );
   });
 });
+
+describe("renderSiteHtml — canonical in der Pfadform (/site/:slug, Final-Review B6)", () => {
+  const data = getFixture("werkbank", "full");
+  const origin = "https://pageblitz.de";
+  const basePath = "/site/schreinerei-brandt";
+
+  test("Startseite: canonical = origin + basePath (ohne Slash am Ende)", () => {
+    const { html } = renderSiteHtml(data, { origin, basePath, pathname: "/" });
+    expect(html).toContain(`rel="canonical" href="${origin}${basePath}"`);
+  });
+
+  test("Unterseite und Rechtsseite tragen den basePath im canonical", () => {
+    const page = data.pages![0]!;
+    const sub = renderSiteHtml(data, {
+      origin,
+      basePath,
+      pathname: `/${page.slug}`,
+    });
+    expect(sub.html).toContain(
+      `rel="canonical" href="${origin}${basePath}/${page.slug}"`
+    );
+    const legal = renderSiteHtml(data, {
+      origin,
+      basePath,
+      pathname: "/impressum",
+    });
+    expect(legal.html).toContain(
+      `rel="canonical" href="${origin}${basePath}/impressum"`
+    );
+    expect(legal.html).not.toContain(
+      `rel="canonical" href="${origin}/impressum"`
+    );
+  });
+
+  test("Subdomain-Form (basePath leer) bleibt unverändert", () => {
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      basePath: "",
+      pathname: "/",
+    });
+    expect(html).toContain(
+      'rel="canonical" href="https://brandt.pageblitz.de/"'
+    );
+  });
+});
