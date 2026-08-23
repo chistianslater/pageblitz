@@ -213,7 +213,7 @@ export async function mergeStudioProgress(
 
 /**
  * Persistiert ein neues v2-Dokument entlang der immer gleichen Kette: Guard →
- * updateWebsite (+ optionale Extra-Spalten wie layoutStyle) → optionaler
+ * updateWebsite (+ optionale Extra-Spalten, z. B. hasLegalPages) → optionaler
  * Progress-Merge → Cache-Invalidierung → neu gebauter State. Bündelt das
  * Pattern, das vorher in jeder schreibenden Prozedur einzeln stand.
  */

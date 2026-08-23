@@ -104,10 +104,8 @@ const coreProcedures = {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
       const next = applyStylePack(doc, packId);
-      // layoutStyle nur als Kompatibilitäts-Spiegel für Admin-Listen; v2-Renderer lesen stylePackId.
       return persistDoc(input.token, loaded, next, {
         progress: { styleConfirmed: true },
-        extra: { layoutStyle: packId },
       });
     }),
 };

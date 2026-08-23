@@ -74,17 +74,12 @@ export const generatedWebsites = mysqlTable("generated_websites", {
     .default("preview")
     .notNull(),
   websiteData: json("websiteData"),
-  colorScheme: json("colorScheme"),
   industry: varchar("industry", { length: 255 }),
   previewToken: varchar("previewToken", { length: 100 }).unique(),
   stripeSessionId: varchar("stripeSessionId", { length: 255 }),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
   paidAt: timestamp("paidAt"),
   addons: json("addons"),
-  heroImageUrl: text("heroImageUrl"),
-  aboutImageUrl: text("aboutImageUrl"),
-  layoutStyle: varchar("layoutStyle", { length: 50 }).default("classic"),
-  layoutVersion: int("layoutVersion").notNull().default(1),
   // Onboarding & subscription state
   onboardingStatus: mysqlEnum("onboardingStatus", [
     "pending",
@@ -112,8 +107,6 @@ export const generatedWebsites = mysqlTable("generated_websites", {
     "converted",
     "abandoned",
   ]),
-  // Contact form configuration
-  contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
   // Contact form: custom recipient email (overrides business.email if set)
   contactEmail: varchar("contactEmail", { length: 320 }),
   // Former slug — set when the user changes their slug so old URLs can redirect
@@ -124,7 +117,6 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   addOnBooking: boolean("addOnBooking").default(false),
   addOnAiChat: boolean("addOnAiChat").default(false),
   addOnTeam: boolean("addOnTeam").default(false),
-  addOnTeamData: json("addOnTeamData"), // Array of team members
   addOnCalendly: boolean("addOnCalendly").default(false),
   calendlyUrl: varchar("calendlyUrl", { length: 512 }),
   // AI Chat usage tracking
@@ -194,19 +186,7 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   // Business info
   businessCategory: varchar("businessCategory", { length: 255 }),
   businessName: varchar("businessName", { length: 255 }),
-  tagline: varchar("tagline", { length: 255 }),
-  description: text("description"),
-  foundedYear: int("foundedYear"),
-  teamSize: varchar("teamSize", { length: 50 }),
-  // USP & services
-  usp: text("usp"),
-  topServices: json("topServices"), // [{ title, description }]
-  targetAudience: text("targetAudience"),
-  faqItems: json("faqItems"), // [{ question, answer }]
   // Media
-  logoUrl: varchar("logoUrl", { length: 1024 }),
-  heroPhotoUrl: text("heroPhotoUrl"),
-  aboutPhotoUrl: text("aboutPhotoUrl"),
   photoUrls: json("photoUrls"), // string[]
   // Legal data
   legalOwner: varchar("legalOwner", { length: 255 }),
@@ -221,10 +201,6 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   legalRegister: varchar("legalRegister", { length: 255 }),
   legalRegisterCourt: varchar("legalRegisterCourt", { length: 255 }),
   legalResponsible: varchar("legalResponsible", { length: 255 }),
-  // Brand colors
-  brandColor: varchar("brandColor", { length: 20 }),
-  brandSecondaryColor: varchar("brandSecondaryColor", { length: 20 }),
-  colorScheme: json("colorScheme"),
   headlineFont: varchar("headlineFont", { length: 100 }),
   // Add-ons
   addOnContactForm: boolean("addOnContactForm").default(false),
@@ -246,11 +222,6 @@ export const onboardingResponses = mysqlTable("onboarding_responses", {
   chatWelcomeMessage: varchar("chatWelcomeMessage", { length: 512 }),
   chatUsageCount: int("chatUsageCount").default(0),
   chatUsageResetAt: timestamp("chatUsageResetAt"),
-  // Contact form configuration
-  contactFormFields: json("contactFormFields"), // [{ id, label, placeholder, type, required, options }]
-  // Section visibility & order (from hideSections drag-and-drop step)
-  sectionOrder: json("sectionOrder"), // string[] – user's custom section order
-  hiddenSections: json("hiddenSections"), // string[] – sections hidden by user
   // Studio (Onboarding v2): Bestätigungs-Flags, die sich nicht aus dem
   // Dokument ableiten lassen — { styleConfirmed?, textsReviewed?, addonsReviewed? }.
   // Alles andere (Fotos/Angebot/Rechtliches) wird aus websiteData bzw. den
@@ -435,26 +406,6 @@ export const reactivationSeeds = mysqlTable("reactivation_seeds", {
 
 export type ReactivationSeed = typeof reactivationSeeds.$inferSelect;
 export type InsertReactivationSeed = typeof reactivationSeeds.$inferInsert;
-
-export const templateUploads = mysqlTable("template_uploads", {
-  id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
-  industry: varchar("industry", { length: 100 }).notNull().default("other"),
-  industries: text("industries"),
-  layoutPool: varchar("layoutPool", { length: 50 }).notNull().default("clean"),
-  aiIndustries: text("aiIndustries"),
-  aiLayoutPool: varchar("aiLayoutPool", { length: 50 }),
-  aiConfidence: varchar("aiConfidence", { length: 20 }),
-  aiReason: text("aiReason"),
-  status: varchar("status", { length: 20 }).notNull().default("pending"),
-  imageUrl: text("imageUrl").notNull(),
-  fileKey: varchar("fileKey", { length: 500 }).notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type TemplateUpload = typeof templateUploads.$inferSelect;
-export type InsertTemplateUpload = typeof templateUploads.$inferInsert;
 
 export const layoutCounters = mysqlTable("layout_counters", {
   industryKey: varchar("industryKey", { length: 100 }).primaryKey(),

@@ -2453,9 +2453,9 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
     // `server/onboardingV2/routerCommerce.ts`) — der v1-Pfad, der hier
     // Galerie-/Menü-/Preislisten-Sektionen direkt in `websiteData` schrieb,
     // ist mit dem Dashboard-Umbau (Task 4, Cutover-Spec §2) entfallen. Die
-    // Feldkonfiguration des Kontaktformulars (`contactFormFields`) ist damit
-    // ebenfalls entfallen — die v2-Kontaktformular-Insel akzeptiert ohnehin
-    // keine benutzerdefinierten Felder (siehe `ContactFormIsland.tsx`).
+    // frei konfigurierbaren Kontaktformular-Felder sind damit ebenfalls
+    // entfallen — die v2-Kontaktformular-Insel akzeptiert ohnehin keine
+    // benutzerdefinierten Felder (siehe `ContactFormIsland.tsx`).
     updateAddons: protectedProcedure
       .input(
         z.object({

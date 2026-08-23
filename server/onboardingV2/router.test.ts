@@ -293,14 +293,13 @@ describe("onboardingV2.getStyleCandidates", () => {
 });
 
 describe("onboardingV2.selectStylePack", () => {
-  test("persistiert Pack + layoutStyle, setzt styleConfirmed, invalidiert Cache, gibt neuen State", async () => {
+  test("persistiert Pack, setzt styleConfirmed, invalidiert Cache, gibt neuen State", async () => {
     const s = await appRouter
       .createCaller(ctx())
       .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" });
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
       42,
       expect.objectContaining({
-        layoutStyle: "kanzlei",
         websiteData: expect.objectContaining({ stylePackId: "kanzlei" }),
       })
     );

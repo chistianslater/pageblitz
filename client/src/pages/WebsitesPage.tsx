@@ -1850,7 +1850,6 @@ function ProgressButton({ websiteId }: { websiteId: number }) {
     businessName: "Unternehmensname",
     addressingMode: "Ansprache",
     brandLogo: "Logo",
-    colorScheme: "Farben",
     heroPhoto: "Hauptbild",
     aboutPhoto: "Über-uns-Bild",
     headlineFont: "Schriftart",

@@ -75,7 +75,7 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
 ## 3. Datenbank / Migrationen
 
 - Handgeschriebene SQL-Migrationen sind Konvention seit `0013_*` (aktuell bis
-  `0026_subscription_checkout_email.sql`, davor `0025_studio_progress.sql`).
+  `0027_drop_v1_columns.sql`, davor `0026_subscription_checkout_email.sql`).
   Es gibt **kein** `drizzle/README`; `npx drizzle-kit generate` **nicht**
   verwenden — das Journal (`drizzle/meta/_journal.json`) ist seit `0012` nicht
   fortgeschrieben, ein `generate`-Lauf würde gegen einen veralteten Snapshot
@@ -92,6 +92,48 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
   gestoppt). Schema-Abgleich lokal per `npx drizzle-kit push --force`
   (spiegelt das aktuelle `drizzle/schema.ts` direkt, unabhängig vom
   veralteten Journal — Alternative zum Abspielen aller `NNNN_*.sql` von Hand).
+  Ohne lokalen `mysql`-Client: `docker exec -i pageblitz-mysql mysql -uroot
+  -proot pageblitz < drizzle/NNNN_*.sql`.
+
+### Migration 0027 — v1-Spalten/Tabellen entfernt (B4c Task 4, destruktiv)
+
+`drizzle/0027_drop_v1_columns.sql` droppt die zuletzt nur noch von der v1-
+Chat-Onboarding-Strecke geschriebenen Spalten (Referenz-Check: 0 Code-Treffer
+außerhalb der Migration selbst, siehe Task-4-Report):
+
+- `generated_websites`: `colorScheme`, `heroImageUrl`, `aboutImageUrl`,
+  `layoutStyle`, `layoutVersion`, `contactFormFields`, `addOnTeamData`.
+- `onboarding_responses`: `tagline`, `description`, `foundedYear`, `teamSize`,
+  `usp`, `topServices`, `targetAudience`, `faqItems`, `logoUrl`,
+  `heroPhotoUrl`, `aboutPhotoUrl`, `brandColor`, `brandSecondaryColor`,
+  `sectionOrder`, `hiddenSections`, `colorScheme`, `contactFormFields`.
+- Tabelle `template_uploads` komplett entfernt (Templates-Cluster war bereits
+  in B4b tot, siehe `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`).
+
+**Bewusst NICHT gedroppt:** `onboarding_responses.addOnTeamData` — Team-Panel
+im Studio ist auf Plan B5 verschoben (Add-on `team` ist im Kaufprozess
+gesperrt), die Spalte wird gebraucht, sobald das Panel gebaut wird. Alle
+übrigen `addOn*`-, `legal*`-, `chat*`-, `photoUrls`-, `openingHours`- und
+`headlineFont`-Spalten sowie `businessName`/`businessCategory`/
+`studioProgress` bleiben unverändert (Behalten-Liste, s. Plan
+`2026-08-23-onboarding-v2-b4c-polish.md`).
+
+Prod-Ablauf (nach Merge, mit Nutzer-Freigabe, **nicht** eigenständig
+ausführen):
+
+```bash
+ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95
+cd /root/pageblitz
+mysqldump -u<user> -p<pw> pageblitz generated_websites onboarding_responses template_uploads \
+  > backup-0027-$(date +%F).sql
+mysql -u<user> -p<pw> pageblitz < drizzle/0027_drop_v1_columns.sql
+git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz
+```
+
+Rollback: Spalten aus `backup-0027-<datum>.sql` zurückspielen (Tabellen
+`CREATE TABLE`+`INSERT` aus dem Dump, `template_uploads` komplett aus dem
+Dump). Ohne Backup ist die Migration nicht reversibel (`DROP COLUMN`/
+`DROP TABLE`).
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
@@ -228,23 +270,18 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 v1-Generierungsrumpf, Templates-Cluster, v1-`onboarding.*`/`selfService.*`.
 Details: `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`.
 
-**Plan B4c (Politur, offen):**
-- DB-Spalten-Drops (siehe `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`
-  für den aktuellen Referenz-Stand je Spalte): `generatedWebsites.layoutStyle`
-  und `.layoutVersion` werden weiterhin aktiv von `server/onboardingV2/devSeed.ts`
-  (Dev/Test-Seed) und `.layoutStyle` zusätzlich als Admin-Listen-Kompatibilitäts-
-  spiegel von `server/onboardingV2/router.ts` geschrieben — vor einem Drop
-  prüfen, ob diese Schreibpfade noch gebraucht werden. `.aboutImageUrl` hat
-  aktuell 0 Referenzen außerhalb des Schemas und könnte ohne weitere
-  Vorarbeit gedroppt werden. `.colorScheme` ist load-bearing für
-  `LegalPage.tsx` (liest die Akzentfarbe) und den Auto-Migrationspfad in
-  `customer.getMyWebsites` (`server/routers.ts`) — Drop erst nach Umstellung
-  der LegalPage-Farbe auf die v2-Pack-Palette möglich (s. u.).
-  `template_uploads` ist komplett unreferenziert und droppbar.
-- LegalPage-Akzentfarbe aus der v2-Pack-Palette statt aus der
-  `colorScheme`-Spalte ableiten; danach `customer.getMyWebsites`-
-  Migrationsblock, `getIndustryColorScheme` (`server/industryImages.ts`) und
-  `withOnColors`/`ColorScheme` (`shared/layoutConfig.ts`) entfernen.
+**Plan B4c (Politur, teilweise erledigt):**
+- ~~DB-Spalten-Drops~~ Erledigt (B4c Task 4, Migration 0027 — siehe §3): alle
+  v1-Inhaltsspalten aus `generated_websites`/`onboarding_responses` sowie die
+  Tabelle `template_uploads` sind gedroppt, Schema und lokale DB stimmen
+  überein. `onboarding_responses.addOnTeamData` bleibt bewusst bestehen (Team-
+  Panel → B5).
+- ~~LegalPage-Akzentfarbe aus der v2-Pack-Palette statt aus der
+  `colorScheme`-Spalte ableiten~~ Erledigt (B4c Task 1+2): `LegalPage.tsx`
+  liest die Akzentfarbe über `getPackAccent()` aus der Pack-Verfassung; der
+  `customer.getMyWebsites`-Migrationsblock, `getIndustryColorScheme`
+  (`server/industryImages.ts`) und `withOnColors`/`ColorScheme`
+  (`shared/layoutConfig.ts`, `shared/colorContrast.ts`) sind entfernt.
 - ~~`SSR_ALLOWED_PATHNAMES` (o. ä. Allowlist für Unterseiten) prüfen, ob
   zusätzliche v2-Unterseiten-Pfade fehlen.~~ Erledigt (B4c Task 5): unbekannte
   Unterpfade einer bekannten v2-Site liefern jetzt ein eigenes SSR-404 statt

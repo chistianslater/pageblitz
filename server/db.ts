@@ -787,19 +787,6 @@ export async function createOnboarding(
     // Only include other fields if they are provided
     ...(data.businessCategory && { businessCategory: data.businessCategory }),
     ...(data.businessName && { businessName: data.businessName }),
-    ...(data.tagline && { tagline: data.tagline }),
-    ...(data.description && { description: data.description }),
-    ...(data.foundedYear && { foundedYear: data.foundedYear }),
-    ...(data.teamSize && { teamSize: data.teamSize }),
-    ...(data.usp && { usp: data.usp }),
-    ...(data.topServices
-      ? { topServices: data.topServices as unknown as object }
-      : {}),
-    ...(data.targetAudience ? { targetAudience: data.targetAudience } : {}),
-    ...(data.faqItems ? { faqItems: data.faqItems as unknown as object } : {}),
-    ...(data.logoUrl && { logoUrl: data.logoUrl }),
-    ...(data.heroPhotoUrl && { heroPhotoUrl: data.heroPhotoUrl }),
-    ...(data.aboutPhotoUrl && { aboutPhotoUrl: data.aboutPhotoUrl }),
     ...(data.photoUrls
       ? { photoUrls: data.photoUrls as unknown as object }
       : {}),
@@ -816,13 +803,6 @@ export async function createOnboarding(
       legalRegisterCourt: data.legalRegisterCourt,
     }),
     ...(data.legalResponsible && { legalResponsible: data.legalResponsible }),
-    ...(data.brandColor && { brandColor: data.brandColor }),
-    ...(data.brandSecondaryColor && {
-      brandSecondaryColor: data.brandSecondaryColor,
-    }),
-    ...(data.colorScheme
-      ? { colorScheme: data.colorScheme as unknown as object }
-      : {}),
     ...(data.headlineFont && { headlineFont: data.headlineFont }),
     ...(data.addOnContactForm !== undefined && {
       addOnContactForm: data.addOnContactForm,

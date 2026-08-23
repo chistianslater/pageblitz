@@ -425,7 +425,6 @@ const STEP_LABELS: Record<string, string> = {
   businessName: "Firmenname",
   addressingMode: "Du/Sie",
   brandLogo: "Logo",
-  colorScheme: "Farbschema",
   heroPhoto: "Hauptbild",
   aboutPhoto: "Über-uns-Bild",
   headlineFont: "Schriftart",

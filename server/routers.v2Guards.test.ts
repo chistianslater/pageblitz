@@ -138,7 +138,6 @@ function baseWebsiteRow(overrides: Record<string, unknown> = {}) {
     slug: "schreinerei-brandt",
     status: "active",
     websiteData: v2Doc(),
-    colorScheme: {},
     industry: "Schreinerei",
     ...overrides,
   } as any;
@@ -352,9 +351,6 @@ describe("website.generate — v2-Job statt synchroner v1-Generierung (Task 4)",
         status: "preview",
         websiteData: null,
       })
-    );
-    expect(mockedDb.createGeneratedWebsite.mock.calls[0][0]).not.toHaveProperty(
-      "layoutStyle"
     );
     expect(mockedRunWebsiteGenerationV2Job).toHaveBeenCalledWith(99, 42);
   });

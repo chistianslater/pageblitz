@@ -145,7 +145,7 @@ function renderHead(
     constitution.type.utility,
   ]);
   const jsonLd = buildLocalBusinessJsonLd(data);
-  const heroImageUrl = findHero(data)?.imageUrl;
+  const heroImageSrc = findHero(data)?.imageUrl;
   const tags = [
     '<meta charset="utf-8" />',
     '<meta name="viewport" content="width=device-width, initial-scale=1" />',
@@ -156,8 +156,8 @@ function renderHead(
     `<meta property="og:description" content="${esc(data.seo.description)}" />`,
     '<meta property="og:type" content="website" />',
   ];
-  if (heroImageUrl) {
-    const ogImage = toAbsoluteUrl(origin, heroImageUrl);
+  if (heroImageSrc) {
+    const ogImage = toAbsoluteUrl(origin, heroImageSrc);
     tags.push(`<meta property="og:image" content="${esc(ogImage)}" />`);
     tags.push('<meta name="twitter:card" content="summary_large_image" />');
   }

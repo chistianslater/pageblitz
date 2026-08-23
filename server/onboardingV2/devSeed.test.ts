@@ -40,7 +40,6 @@ describe("/dev/studio-seed", () => {
       expect.objectContaining({
         slug: "studio-seed-kanzlei-full",
         status: "preview",
-        layoutVersion: 2,
       })
     );
     expect(mockedDb.createOnboarding).toHaveBeenCalled();

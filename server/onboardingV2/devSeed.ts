@@ -49,7 +49,6 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
     // Business-Felder werden nicht aktualisiert – sie sind Fixture-unabhängig
     await updateWebsite(websiteId, {
       websiteData: doc as any,
-      layoutStyle: packId,
       status: "preview",
       previewToken: token,
     });
@@ -96,8 +95,6 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
       source: "external",
       customerEmail: null,
       captureStatus: "onboarding_started",
-      layoutVersion: 2,
-      layoutStyle: packId,
       websiteData: doc as any,
     });
     await createOnboarding({

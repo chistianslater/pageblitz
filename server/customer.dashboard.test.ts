@@ -31,7 +31,6 @@ describe("Customer Dashboard - getWebsitesByUserId", () => {
       status: "active",
       businessId: 10,
       websiteData: { businessName: "Test GmbH" },
-      colorScheme: { primary: "#3B82F6", secondary: "#F1F5F9" },
     };
     const mockSubscription = {
       id: 1,
@@ -47,29 +46,6 @@ describe("Customer Dashboard - getWebsitesByUserId", () => {
     expect(result).toHaveLength(1);
     expect(result[0].website.slug).toBe("test-website");
     expect(result[0].subscription.status).toBe("active");
-  });
-});
-
-describe("Customer Dashboard - color scheme patching", () => {
-  it("patches primary color correctly", () => {
-    const colorScheme: Record<string, string> = { primary: "#000000", secondary: "#FFFFFF" };
-    const brandColor = "#3B82F6";
-    colorScheme.primary = brandColor;
-    expect(colorScheme.primary).toBe("#3B82F6");
-  });
-
-  it("patches secondary color correctly", () => {
-    const colorScheme: Record<string, string> = { primary: "#3B82F6", secondary: "#FFFFFF" };
-    const brandSecondaryColor = "#F1F5F9";
-    colorScheme.secondary = brandSecondaryColor;
-    expect(colorScheme.secondary).toBe("#F1F5F9");
-  });
-
-  it("preserves other color scheme fields when patching", () => {
-    const colorScheme: Record<string, string> = { primary: "#000", secondary: "#FFF", accent: "#FF0000", text: "#111" };
-    colorScheme.primary = "#3B82F6";
-    expect(colorScheme.accent).toBe("#FF0000");
-    expect(colorScheme.text).toBe("#111");
   });
 });
 
@@ -100,7 +76,9 @@ describe("Customer Dashboard - createTestSubscription logic", () => {
 
     await db.updateSubscriptionByWebsiteId(5, { userId: 42 });
 
-    expect(db.updateSubscriptionByWebsiteId).toHaveBeenCalledWith(5, { userId: 42 });
+    expect(db.updateSubscriptionByWebsiteId).toHaveBeenCalledWith(5, {
+      userId: 42,
+    });
   });
 });
 
