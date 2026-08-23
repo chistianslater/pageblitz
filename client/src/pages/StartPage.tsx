@@ -1,76 +1,127 @@
 import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { trackConversion } from "@/lib/tracking";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { Globe, Zap, ArrowRight, CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle,
+  Loader2,
+  AlertCircle,
+  ChevronRight,
+  Search,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { CATEGORY_GROUPS } from "@shared/gmbCategories";
+import { BlitzMark, textLink, PRICE_YEARLY } from "@/components/landing/primitives";
 
 type Step = "choice" | "manual" | "gmb";
 
+// ── Studio-Look-Bausteine (Tokens `--lp-*` aus client/src/index.css) ────────
+
+const FIELD =
+  "h-12 w-full rounded-full border border-lp-line bg-white px-5 text-[1rem] text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent focus-visible:outline-2 disabled:opacity-50";
+
+const CTA =
+  "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-lp-accent text-[0.95rem] font-medium text-lp-accent-ink transition-[background-color,color,transform] duration-200 hover:bg-[#174a3b] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100";
+
 // ─────────────────────────── CategoryPicker ─────────────────────────────────
 
-function CategoryPicker({ selected, onSelect, isDark }: { selected: string; onSelect: (cat: string) => void; isDark: boolean }) {
+function CategoryPicker({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (cat: string) => void;
+}) {
   const [search, setSearch] = useState("");
   const filtered = search.trim()
-    ? CATEGORY_GROUPS.flatMap((g) =>
-        g.categories.filter((c) => c.toLowerCase().includes(search.toLowerCase()))
+    ? CATEGORY_GROUPS.flatMap(g =>
+        g.categories.filter(c =>
+          c.toLowerCase().includes(search.toLowerCase())
+        )
       )
     : null;
   return (
     <div className="flex flex-col gap-2">
       <div className="relative">
+        <label htmlFor="category-search" className="sr-only">
+          Branche
+        </label>
         <input
+          id="category-search"
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           placeholder="Branche suchen oder eintippen…"
-          className={`w-full ${isDark ? "bg-slate-700/60 border-slate-600/50 text-slate-200 placeholder-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder-gray-500 shadow-sm"} border text-sm px-3 py-2 pr-8 rounded-xl focus:outline-none focus:border-lime-500 focus:ring-1 focus:ring-lime-500/30 transition-all`}
+          className={`${FIELD} h-11 pr-11 text-[0.95rem]`}
         />
         {search && (
-          <button onClick={() => setSearch("")} className={`absolute right-2 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} transition-colors`} aria-label="Suche löschen">✕</button>
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-lp-muted transition-colors hover:text-lp-ink"
+            aria-label="Suche löschen"
+          >
+            <X className="h-4 w-4" aria-hidden="true" />
+          </button>
         )}
       </div>
       {filtered !== null ? (
-        <div className={`max-h-52 overflow-y-auto rounded-xl border ${isDark ? "border-slate-700/50 bg-slate-800/60 divide-slate-700/40" : "border-gray-200 bg-white divide-gray-100"} divide-y`}>
+        <div className="max-h-52 overflow-y-auto rounded-2xl border border-lp-line bg-lp-surface divide-y divide-lp-line">
           {filtered.length === 0 ? (
-            <div className="px-3 py-3 flex items-center justify-between gap-2">
-              <span className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm`}>Keine Treffer – Branche trotzdem übernehmen?</span>
-              <button onClick={() => onSelect(search.trim())} className="text-xs bg-lime-600 hover:bg-lime-500 text-gray-900 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0">Übernehmen</button>
+            <div className="flex items-center justify-between gap-3 px-4 py-3">
+              <span className="text-sm text-lp-muted">
+                Keine Treffer – Branche trotzdem übernehmen?
+              </span>
+              <button
+                onClick={() => onSelect(search.trim())}
+                className="flex-shrink-0 rounded-full bg-lp-accent px-3.5 py-1.5 text-xs font-medium text-lp-accent-ink transition-colors hover:bg-[#174a3b]"
+              >
+                Übernehmen
+              </button>
             </div>
           ) : (
-            filtered.map((cat) => (
-              <button key={cat} onClick={() => onSelect(cat)}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+            filtered.map(cat => (
+              <button
+                key={cat}
+                onClick={() => onSelect(cat)}
+                className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
                   selected === cat
-                    ? isDark ? "bg-lime-600/30 text-white" : "bg-lime-50 text-lime-700"
-                    : isDark ? "text-slate-200 hover:bg-slate-700/60 hover:text-white" : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                }`}>{cat}</button>
+                    ? "bg-lp-accent text-lp-accent-ink"
+                    : "text-lp-ink hover:bg-lp-canvas"
+                }`}
+              >
+                {cat}
+              </button>
             ))
           )}
         </div>
       ) : (
-        <div className={`max-h-64 overflow-y-auto rounded-xl border ${isDark ? "border-slate-700/50 bg-slate-800/60 divide-slate-700/40" : "border-gray-200 bg-white divide-gray-100"} divide-y`}>
-          {CATEGORY_GROUPS.map((group) => (
+        <div className="max-h-64 overflow-y-auto rounded-2xl border border-lp-line bg-lp-surface divide-y divide-lp-line">
+          {CATEGORY_GROUPS.map(group => (
             <details key={group.group} className="group">
-              <summary className={`flex items-center gap-2 px-3 py-2 cursor-pointer select-none ${isDark ? "text-slate-300 hover:text-white hover:bg-slate-700/40" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"} transition-colors text-xs font-semibold uppercase tracking-wide`}>
+              <summary className="flex cursor-pointer select-none items-center gap-2 px-4 py-2.5 text-xs font-medium uppercase tracking-[0.12em] text-lp-muted transition-colors hover:text-lp-ink">
                 <span>{group.icon}</span>
                 <span className="flex-1">{group.group}</span>
-                <span className={`${isDark ? "text-slate-500" : "text-gray-400"} group-open:rotate-90 transition-transform text-[10px]`}>▶</span>
+                <ChevronRight
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 text-lp-muted transition-transform group-open:rotate-90"
+                />
               </summary>
-              <div className="flex flex-wrap gap-1.5 px-3 pb-2 pt-1">
-                {group.categories.map((cat) => (
-                  <button key={cat} onClick={() => onSelect(cat)}
-                    className={`text-xs border px-2.5 py-1.5 rounded-lg transition-all ${
+              <div className="flex flex-wrap gap-1.5 px-4 pb-3 pt-1">
+                {group.categories.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => onSelect(cat)}
+                    className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                       selected === cat
-                        ? "bg-lime-600/40 border-lime-500/60 text-white"
-                        : isDark
-                          ? "bg-slate-700/60 hover:bg-lime-600/30 border-slate-600/50 hover:border-lime-500/50 text-slate-200 hover:text-white"
-                          : "bg-gray-100 hover:bg-lime-50 border-gray-200 hover:border-lime-500/50 text-gray-700 hover:text-gray-900"
-                    }`}>{cat}</button>
+                        ? "border-lp-accent bg-lp-accent text-lp-accent-ink"
+                        : "border-lp-line bg-white text-lp-ink hover:border-lp-accent"
+                    }`}
+                  >
+                    {cat}
+                  </button>
                 ))}
               </div>
             </details>
@@ -82,10 +133,6 @@ function CategoryPicker({ selected, onSelect, isDark }: { selected: string; onSe
 }
 
 export default function StartPage() {
-  // Seit dem Studio-Redesign der Landingpage (2026-08-23) gibt es keinen
-  // `lp-theme`-Umschalter mehr; die Seite ist immer hell. Der Dark-Zweig in
-  // den Klassen unten bleibt vorerst stehen (Minor, > 60 Stellen).
-  const isDark = false;
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("choice");
 
@@ -214,163 +261,204 @@ export default function StartPage() {
     }
   };
 
-  // ── Container class ───────────────────────────────────────────────────────
-  const outerCard = `w-full max-w-md rounded-2xl p-8 ${isDark ? "bg-slate-800/60 backdrop-blur border border-slate-700/50 shadow-2xl" : "bg-white border border-gray-200 shadow-lg"}`;
-
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center px-4 py-8 ${isDark ? "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" : "bg-stone-50"}`}>
-
-      {/* Logo */}
-      <div className="mb-10 flex flex-col items-center gap-2">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-lime-500 to-lime-600 flex items-center justify-center shadow-xl shadow-lime-500/30">
-          <Zap className="w-7 h-7 text-white" />
+    <div className="lp flex min-h-screen flex-col bg-lp-canvas text-lp-ink">
+      <main className="mx-auto flex w-full max-w-[34rem] flex-1 flex-col px-5 pt-10 pb-12 sm:pt-14">
+        {/* Logo-Zeile */}
+        <div className="flex items-center gap-2.5 border-b border-lp-line pb-6">
+          <BlitzMark />
+          <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
+            Pageblitz
+          </span>
         </div>
-        <span className={`${isDark ? "text-white" : "text-gray-900"} font-bold text-2xl tracking-tight`}>Pageblitz</span>
-        <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm text-center max-w-xs`}>
-          Deine professionelle Website in wenigen Minuten – automatisch aus deinen Daten.
-        </p>
-      </div>
-
-      {/* Card */}
-      <div className={outerCard}>
 
         {/* ── Choice ── */}
         {step === "choice" && (
-          <>
-            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1 text-center`}>
+          <div className="pt-10">
+            <p className="lp-kicker mb-4">Website erstellen</p>
+            <h1 className="text-[2rem] leading-[1.05] tracking-[-0.02em]">
               Wie möchtest du starten?
             </h1>
-            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm text-center mb-6`}>
+            <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
               Mit deinem Google My Business-Profil geht es am schnellsten.
             </p>
 
             {isAuthenticated && user?.email && (
-              <div className="flex items-center gap-2 mb-6 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className={`${isDark ? "text-emerald-300" : "text-emerald-600"} text-sm`}>{user.email}</span>
-              </div>
+              <p className="mt-5 inline-flex items-center gap-2 text-sm text-lp-muted">
+                <CheckCircle
+                  className="h-4 w-4 shrink-0 text-lp-accent"
+                  aria-hidden="true"
+                />
+                Angemeldet als {user.email}
+              </p>
             )}
 
-            <div className="space-y-3">
+            <div className="mt-8 space-y-3">
               <button
                 onClick={() => { setStep("gmb"); try { (window as any).clarity?.("event", "start_gmb"); } catch {} }}
-                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${isDark ? "border-lime-500/40 bg-lime-500/10 hover:bg-lime-500/20" : "border-lime-500/50 bg-lime-50 hover:bg-lime-100"} hover:border-lime-500/60 transition-all text-left group`}
+                className="group flex w-full items-center gap-4 rounded-2xl border border-lp-line bg-lp-surface p-5 text-left transition-colors hover:border-lp-accent"
               >
-                <div className={`w-10 h-10 rounded-lg ${isDark ? "bg-lime-500/20" : "bg-lime-100"} flex items-center justify-center flex-shrink-0`}>
-                  <Globe className={`w-5 h-5 ${isDark ? "text-lime-400" : "text-lime-600"}`} />
-                </div>
                 <div className="flex-1">
-                  <div className={`${isDark ? "text-white" : "text-gray-900"} font-semibold text-sm`}>Mit Google My Business starten</div>
-                  <div className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>Daten werden automatisch übernommen – schnellster Weg</div>
+                  <div className="flex items-center gap-2 font-medium text-lp-ink">
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-1.5 w-1.5 rounded-full bg-lp-accent"
+                    />
+                    Mit Google My Business starten
+                  </div>
+                  <div className="mt-1 text-sm text-lp-muted">
+                    Daten werden automatisch übernommen – schnellster Weg
+                  </div>
                 </div>
-                <ArrowRight className={`w-4 h-4 ${isDark ? "text-lime-400" : "text-lime-600"} group-hover:translate-x-1 transition-transform`} />
+                <ArrowRight
+                  className="h-4 w-4 shrink-0 text-lp-muted transition-[color,transform] group-hover:translate-x-1 group-hover:text-lp-accent"
+                  aria-hidden="true"
+                />
               </button>
 
               <button
                 onClick={() => setStep("manual")}
-                className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 ${isDark ? "border-slate-600/40 bg-slate-700/30 hover:bg-slate-700/50 hover:border-slate-600/60" : "border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300"} transition-all text-left group`}
+                className="group flex w-full items-center gap-4 rounded-2xl border border-lp-line bg-lp-surface p-5 text-left transition-colors hover:border-lp-accent"
               >
-                <div className={`w-10 h-10 rounded-lg ${isDark ? "bg-slate-600/30" : "bg-gray-100"} flex items-center justify-center flex-shrink-0`}>
-                  <Zap className={`w-5 h-5 ${isDark ? "text-slate-400" : "text-gray-500"}`} />
-                </div>
                 <div className="flex-1">
-                  <div className={`${isDark ? "text-white" : "text-gray-900"} font-semibold text-sm`}>Ohne Google My Business starten</div>
-                  <div className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>Unternehmensname und Branche eingeben</div>
+                  <div className="font-medium text-lp-ink">
+                    Ohne Google My Business starten
+                  </div>
+                  <div className="mt-1 text-sm text-lp-muted">
+                    Unternehmensname und Branche eingeben
+                  </div>
                 </div>
-                <ArrowRight className={`w-4 h-4 ${isDark ? "text-slate-400" : "text-gray-500"} group-hover:translate-x-1 transition-transform`} />
+                <ArrowRight
+                  className="h-4 w-4 shrink-0 text-lp-muted transition-[color,transform] group-hover:translate-x-1 group-hover:text-lp-accent"
+                  aria-hidden="true"
+                />
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── Manual ── */}
         {step === "manual" && (
-          <>
-            <button
-              onClick={() => setStep("choice")}
-              className={`${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm mb-5 flex items-center gap-1 transition-colors`}
-            >
+          <div className="pt-10">
+            <button onClick={() => setStep("choice")} className={`${textLink} text-sm`}>
               ← Zurück
             </button>
 
-            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1`}>Dein Unternehmen</h1>
-            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm mb-5`}>
+            <h1 className="mt-6 text-[2rem] leading-[1.05] tracking-[-0.02em]">
+              Dein Unternehmen
+            </h1>
+            <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
               Kurz zwei Infos – dann zeigen wir dir passende Design-Vorlagen.
             </p>
 
-            <div className="space-y-3">
-              <Input
-                autoFocus
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                placeholder="Unternehmensname"
-                className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12`}
-              />
+            <div className="mt-8 space-y-3">
+              <div>
+                <label htmlFor="manual-business-name" className="sr-only">
+                  Unternehmensname
+                </label>
+                <input
+                  id="manual-business-name"
+                  autoFocus
+                  type="text"
+                  value={businessName}
+                  onChange={e => setBusinessName(e.target.value)}
+                  placeholder="Unternehmensname"
+                  autoComplete="organization"
+                  className={FIELD}
+                />
+              </div>
 
               {/* Selected category badge */}
               {category && (
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${isDark ? "bg-lime-500/10 border-lime-500/20" : "bg-lime-50 border-lime-200"} border`}>
-                  <CheckCircle className={`w-3.5 h-3.5 ${isDark ? "text-lime-400" : "text-lime-600"} shrink-0`} />
-                  <span className={`${isDark ? "text-lime-300" : "text-lime-700"} text-sm`}>{category}</span>
-                  <button onClick={() => setCategory("")} className={`ml-auto ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} text-xs`}>✕</button>
+                <div className="flex items-center gap-2 rounded-full border border-lp-line bg-lp-surface px-4 py-2.5">
+                  <CheckCircle
+                    className="h-4 w-4 shrink-0 text-lp-accent"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm text-lp-ink">{category}</span>
+                  <button
+                    onClick={() => setCategory("")}
+                    className="ml-auto text-lp-muted transition-colors hover:text-lp-ink"
+                    aria-label="Branche entfernen"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
                 </div>
               )}
               {/* Category picker */}
               {!category && (
-                <CategoryPicker selected={category} onSelect={setCategory} isDark={isDark} />
+                <CategoryPicker selected={category} onSelect={setCategory} />
               )}
 
-              <Button
+              <button
                 onClick={handleManualStart}
                 disabled={!businessName.trim() || !category.trim() || isLoading}
-                className="w-full h-12 disabled:opacity-40 font-semibold rounded-xl text-gray-900 shadow-md"
-                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
+                className={CTA}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />Wird vorbereitet…</div>
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    Wird vorbereitet…
+                  </>
                 ) : (
-                  <div className="flex items-center gap-2"><CheckCircle className="w-4 h-4" />Jetzt starten</div>
+                  <>
+                    Jetzt starten
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </>
                 )}
-              </Button>
+              </button>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── GMB Search ── */}
         {step === "gmb" && (
-          <>
+          <div className="pt-10">
             <button
               onClick={() => { setStep("choice"); setResolvedInfo(null); setGmbSearchResults([]); setGmbSearchQuery(""); }}
-              className={`${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm mb-5 flex items-center gap-1 transition-colors`}
+              className={`${textLink} text-sm`}
             >
               ← Zurück
             </button>
 
-            <h1 className={`${isDark ? "text-white" : "text-gray-900"} text-2xl font-bold mb-1`}>
+            <h1 className="mt-6 text-[2rem] leading-[1.05] tracking-[-0.02em]">
               Dein Unternehmen bei Google
             </h1>
-            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm mb-5`}>
+            <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
               Suche deinen Betrieb – wir übernehmen alle Infos automatisch.
             </p>
 
-            <div className="space-y-4">
+            <div className="mt-8 space-y-4">
               {/* Search inputs */}
               <div className="flex flex-col gap-2">
-                <Input
-                  autoFocus
-                  value={gmbSearchQuery}
-                  onChange={(e) => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
-                  onKeyDown={(e) => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
-                  placeholder="Unternehmensname"
-                  className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12 w-full`}
-                  disabled={gmbSearchLoading || isLoading}
-                />
+                <div>
+                  <label htmlFor="gmb-business-name" className="sr-only">
+                    Unternehmensname
+                  </label>
+                  <input
+                    id="gmb-business-name"
+                    autoFocus
+                    type="text"
+                    value={gmbSearchQuery}
+                    onChange={e => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
+                    onKeyDown={e => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
+                    placeholder="Unternehmensname"
+                    autoComplete="organization"
+                    className={FIELD}
+                    disabled={gmbSearchLoading || isLoading}
+                  />
+                </div>
 
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Input
+                    <label htmlFor="gmb-region" className="sr-only">
+                      Stadt (optional)
+                    </label>
+                    <input
+                      id="gmb-region"
+                      type="text"
                       value={gmbSearchRegion}
-                      onChange={(e) => {
+                      onChange={e => {
                         const val = e.target.value;
                         setGmbSearchRegion(val);
                         setShowCitySuggestions(true);
@@ -386,7 +474,7 @@ export default function StartPage() {
                           setCitySuggestions([]);
                         }
                       }}
-                      onKeyDown={(e) => {
+                      onKeyDown={e => {
                         if (e.key === "Enter" && !gmbSearchLoading) {
                           setShowCitySuggestions(false);
                           handleGmbSearch();
@@ -396,16 +484,16 @@ export default function StartPage() {
                       onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
                       onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
                       placeholder="Stadt (optional)"
-                      className={`${isDark ? "bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500" : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 shadow-sm"} h-12 w-full`}
+                      className={FIELD}
                       disabled={gmbSearchLoading || isLoading}
                     />
                     {showCitySuggestions && citysuggestions.length > 0 && (
-                      <div className={`absolute top-full left-0 right-0 mt-1 z-50 ${isDark ? "bg-slate-800 border-slate-600" : "bg-white border-gray-200"} border rounded-xl shadow-xl overflow-hidden`}>
-                        {citysuggestions.map((s) => (
+                      <div className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-2xl border border-lp-line bg-lp-surface shadow-[0_16px_32px_-16px_rgba(29,26,23,0.3)]">
+                        {citysuggestions.map(s => (
                           <button
                             key={s.placeId}
                             type="button"
-                            onMouseDown={(e) => e.preventDefault()}
+                            onMouseDown={e => e.preventDefault()}
                             onClick={() => {
                               const cityName = s.label.split(",")[0].trim();
                               setGmbSearchRegion(cityName);
@@ -413,7 +501,7 @@ export default function StartPage() {
                               setShowCitySuggestions(false);
                               if (gmbSearchQuery.trim() && !gmbSearchLoading) handleGmbSearch();
                             }}
-                            className={`w-full text-left px-3 py-2.5 text-sm ${isDark ? "text-slate-200 hover:bg-slate-700" : "text-gray-700 hover:bg-gray-50"} transition-colors`}
+                            className="w-full px-4 py-2.5 text-left text-sm text-lp-ink transition-colors hover:bg-lp-canvas"
                           >
                             {s.label}
                           </button>
@@ -421,124 +509,158 @@ export default function StartPage() {
                       </div>
                     )}
                   </div>
-                  <Button
+                  <button
                     onClick={handleGmbSearch}
                     disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
-                    className="h-12 px-5 bg-lime-500 hover:bg-lime-400 text-gray-900 rounded-xl flex-shrink-0"
+                    aria-label="Suchen"
+                    className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lp-accent text-lp-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#174a3b] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100"
                   >
                     {gmbSearchLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                      <Search className="h-4 w-4" aria-hidden="true" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               </div>
 
               {/* Search results */}
               {gmbSearchResults.length > 0 && !resolvedInfo && (
-                <div className="space-y-2">
-                  <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs`}>
-                    {gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden:
+                <div>
+                  <p className="lp-kicker">
+                    {gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden
                   </p>
-                  {gmbSearchResults.map((result) => (
-                    <button
-                      key={result.placeId}
-                      disabled={isLoading}
-                      onClick={() => {
-                        setResolvedInfo({
-                          businessName: result.name,
-                          placeId: result.placeId,
-                          address: result.address,
-                          phone: result.phone,
-                          category: result.category,
-                          reviews: [],
-                          openingHours: result.openingHours || [],
-                          rating: result.rating ? String(result.rating) : null,
-                          reviewCount: result.reviewCount,
-                        });
-                        setGmbSearchResults([]);
-                      }}
-                      className={`w-full flex items-start gap-3 p-3 rounded-xl border ${isDark ? "border-slate-600/50 bg-slate-700/40 hover:border-lime-500/60 hover:bg-lime-500/10" : "border-gray-200 bg-gray-50 hover:border-lime-500/60 hover:bg-lime-50"} transition-all text-left`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"} truncate`}>{result.name}</p>
-                        <p className={`text-xs ${isDark ? "text-slate-400" : "text-gray-500"} truncate`}>{result.address.split(",").slice(0, 2).join(",")}</p>
-                        {result.rating && (
-                          <p className="text-xs text-amber-400 mt-0.5">★ {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)</p>
-                        )}
-                      </div>
-                      <ArrowRight className={`w-4 h-4 ${isDark ? "text-slate-500" : "text-gray-400"} flex-shrink-0 mt-0.5`} />
-                    </button>
-                  ))}
+                  <ul className="mt-3 space-y-2">
+                    {gmbSearchResults.map(result => (
+                      <li key={result.placeId}>
+                        <button
+                          disabled={isLoading}
+                          onClick={() => {
+                            setResolvedInfo({
+                              businessName: result.name,
+                              placeId: result.placeId,
+                              address: result.address,
+                              phone: result.phone,
+                              category: result.category,
+                              reviews: [],
+                              openingHours: result.openingHours || [],
+                              rating: result.rating ? String(result.rating) : null,
+                              reviewCount: result.reviewCount,
+                            });
+                            setGmbSearchResults([]);
+                          }}
+                          className="group flex w-full items-start gap-3 rounded-2xl border border-lp-line bg-lp-surface p-4 text-left transition-colors hover:border-lp-accent disabled:opacity-50"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-medium text-lp-ink">{result.name}</p>
+                            <p className="mt-0.5 truncate text-sm text-lp-muted">
+                              {result.address.split(",").slice(0, 2).join(",")}
+                            </p>
+                            {result.rating && (
+                              <p className="mt-1 text-xs text-lp-muted">
+                                <span aria-hidden="true" className="text-lp-accent">★</span>{" "}
+                                {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)
+                              </p>
+                            )}
+                          </div>
+                          <ArrowRight
+                            className="mt-1 h-4 w-4 shrink-0 text-lp-muted transition-[color,transform] group-hover:translate-x-1 group-hover:text-lp-accent"
+                            aria-hidden="true"
+                          />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
               {/* No results */}
               {!gmbSearchLoading && gmbSearchResults.length === 0 && gmbSearchPublicMutation.isSuccess && !resolvedInfo && (
-                <div className={`p-3 rounded-lg ${isDark ? "bg-amber-900/30 border-amber-700/50" : "bg-amber-50 border-amber-200"} border flex items-start gap-2`}>
-                  <AlertCircle className={`w-4 h-4 ${isDark ? "text-amber-400" : "text-amber-600"} mt-0.5 flex-shrink-0`} />
-                  <p className={`${isDark ? "text-amber-400" : "text-amber-600"} text-sm`}>Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.</p>
+                <div className="flex items-start gap-2.5 rounded-2xl border border-lp-line bg-lp-surface p-4">
+                  <AlertCircle
+                    className="mt-0.5 h-4 w-4 shrink-0 text-lp-warn"
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm text-lp-ink">
+                    Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.
+                  </p>
                 </div>
               )}
 
               {/* Selected business confirmation */}
               {resolvedInfo && (
-                <div className={`p-4 rounded-xl ${isDark ? "bg-emerald-500/10 border-emerald-500/30" : "bg-emerald-50 border-emerald-200"} border`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-                    <span className={`${isDark ? "text-emerald-400" : "text-emerald-600"} text-sm font-semibold`}>Unternehmen ausgewählt</span>
+                <div className="rounded-2xl border border-lp-accent bg-lp-surface p-5">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle
+                      className="h-4 w-4 shrink-0 text-lp-accent"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium text-lp-accent">
+                      Unternehmen ausgewählt
+                    </span>
                     <button
                       onClick={() => setResolvedInfo(null)}
-                      className={`ml-auto ${isDark ? "text-slate-500 hover:text-slate-300" : "text-gray-400 hover:text-gray-600"} text-xs`}
+                      className={`${textLink} ml-auto text-xs`}
                     >
                       Ändern
                     </button>
                   </div>
-                  <p className={`${isDark ? "text-white" : "text-gray-900"} font-semibold`}>{resolvedInfo.businessName}</p>
+                  <p className="mt-2 font-medium text-lp-ink">{resolvedInfo.businessName}</p>
                   {resolvedInfo.address && (
-                    <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-xs mt-0.5`}>{resolvedInfo.address.split(",").slice(0, 2).join(",")}</p>
+                    <p className="mt-0.5 text-sm text-lp-muted">
+                      {resolvedInfo.address.split(",").slice(0, 2).join(",")}
+                    </p>
                   )}
                 </div>
               )}
 
               {/* CTA */}
-              <Button
+              <button
                 onClick={handleStartWithResolved}
                 disabled={!resolvedInfo || isLoading}
-                className="w-full h-12 disabled:opacity-40 font-semibold rounded-xl text-gray-900 shadow-md"
-                style={{ background: "linear-gradient(135deg, #a3e635 0%, #84cc16 100%)" }}
+                className={CTA}
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     Wird vorbereitet…
-                  </div>
+                  </>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
+                  <>
                     Jetzt starten
-                  </div>
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </>
                 )}
-              </Button>
-
-              <button
-                onClick={() => setStep("manual")}
-                disabled={isLoading}
-                className={`w-full ${isDark ? "text-slate-400 hover:text-white" : "text-gray-500 hover:text-gray-900"} text-sm transition-colors py-2`}
-              >
-                Mein Unternehmen ist nicht dabei – manuell eingeben →
               </button>
-            </div>
-          </>
-        )}
-      </div>
 
-      <p className={`${isDark ? "text-slate-600" : "text-gray-400"} text-xs mt-8 text-center`}>
-        7 Tage gratis · danach 19,90 €/Monat · Jederzeit kündbar
-      </p>
+              <p className="text-center">
+                <button
+                  onClick={() => setStep("manual")}
+                  disabled={isLoading}
+                  className={`${textLink} text-sm disabled:opacity-50`}
+                >
+                  Mein Unternehmen ist nicht dabei – manuell eingeben →
+                </button>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Fußzeile: wie die Landing-TrustLine */}
+        <footer className="mt-auto pt-14">
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-lp-line pt-5 text-[0.9rem] text-lp-muted">
+            {["7 Tage gratis", `Danach ${PRICE_YEARLY}/Monat`, "Jederzeit kündbar"].map(item => (
+              <li key={item} className="inline-flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-1.5 w-1.5 rounded-full bg-lp-accent"
+                />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </footer>
+      </main>
     </div>
   );
 }
