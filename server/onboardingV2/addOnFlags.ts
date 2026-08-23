@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { getSubscriptionByWebsiteId, updateSubscription } from "../db";
 import { syncSubscriptionAddOns } from "../stripeAddons";
+import { readSubscriptionAddOns } from "../subscriptionAddOns";
 import {
   ADDON_KEYS,
   type AddOnFlags,
@@ -9,6 +10,11 @@ import {
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { StudioWebsite } from "./ownership";
 import { upsertOnboarding } from "./state";
+
+// Re-Export für bestehende Aufrufer (server/routers.ts customer.purchaseAddon);
+// die Funktion selbst lebt in server/subscriptionAddOns.ts (kein Import-Zyklus
+// mit state.ts, das sie für den Studio-State nach dem Checkout braucht).
+export { readSubscriptionAddOns };
 
 /** Spalten in onboarding_responses je Add-on (Entwurfs-Flags vor dem Checkout, Checkout-Summe). */
 const ONBOARDING_COLUMNS: Record<AddOnKey, keyof InsertOnboardingResponse> = {
@@ -27,20 +33,21 @@ const ONBOARDING_COLUMNS: Record<AddOnKey, keyof InsertOnboardingResponse> = {
 export const ADDON_BILLING_ERROR_MESSAGE =
   "Add-on-Änderung konnte nicht abgerechnet werden. Bitte später erneut versuchen oder den Support kontaktieren.";
 
-/** Liest ein gespeichertes subscriptions.addOns-JSON tolerant (alte `{ features: {…} }`-Form inklusive). */
-export function readSubscriptionAddOns(raw: unknown): AddOnFlags {
-  const record =
-    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const nested =
-    record.features && typeof record.features === "object"
-      ? (record.features as Record<string, unknown>)
-      : {};
-  const result: AddOnFlags = {};
+/**
+ * Pure: Keys aus `next`, deren Wert vom Ist-Stand `current` abweicht
+ * (fehlend in `current` zählt als false). Nur diese gehen an Stripe.
+ */
+export function diffAddOnFlags(
+  current: AddOnFlags,
+  next: AddOnFlags
+): AddOnFlags {
+  const changed: AddOnFlags = {};
   for (const key of ADDON_KEYS) {
-    const value = record[key] ?? nested[key];
-    if (value === true || value === false) result[key] = value;
+    const value = next[key];
+    if (value === undefined) continue;
+    if ((current[key] === true) !== value) changed[key] = value;
   }
-  return result;
+  return changed;
 }
 
 /**
@@ -51,6 +58,15 @@ export function readSubscriptionAddOns(raw: unknown): AddOnFlags {
  * `subscriptions.addOns`. Reihenfolge bewusst: schlägt Stripe fehl, wird
  * NICHTS geschrieben und der Aufrufer bekommt BAD_REQUEST
  * (`ADDON_BILLING_ERROR_MESSAGE`); Flags und Dokument bleiben unverändert.
+ *
+ * Nach dem Checkout ist `subscriptions.addOns` der Ist-Stand (Review-Fund
+ * B6 Task 6): an Stripe gehen NUR die Keys, die sich gegenüber diesem
+ * Ist-Stand tatsächlich ändern. Ein vom Dashboard (`customer.purchaseAddon`)
+ * oder per Webhook (Billing-Portal) gebuchtes Add-on wird damit nicht still
+ * storniert, nur weil ein vollständiger `AddonsPatch` es nicht erwähnt hat
+ * — abgewählt wird nur, was der Client explizit gegen den gesehenen
+ * Ist-Stand (`buildState().addOns` liest ihn aus derselben Quelle) auf
+ * false setzt. Ohne Änderung kein Stripe-Aufruf und kein Subscription-Write.
  *
  * Das Dokument selbst (`features`/`addOns` + Spalten auf generatedWebsites)
  * schreibt der Aufrufer im Anschluss (applyFeatureFlags bzw. persistDoc mit
@@ -68,27 +84,35 @@ export async function commitAddOnFlags(
   const websiteId = loaded.website.id;
   if (loaded.website.status !== "preview") {
     const subscription = await getSubscriptionByWebsiteId(websiteId);
+    const current = readSubscriptionAddOns(subscription?.addOns);
+    const changed = diffAddOnFlags(current, flags);
+    const hasChanges = Object.keys(changed).length > 0;
     if (subscription?.stripeSubscriptionId) {
-      try {
-        await syncSubscriptionAddOns(subscription.stripeSubscriptionId, flags);
-      } catch (err) {
-        console.error(
-          `[onboardingV2] Stripe-Add-on-Sync fehlgeschlagen (Website ${websiteId}):`,
-          err
-        );
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: ADDON_BILLING_ERROR_MESSAGE,
-        });
+      if (hasChanges) {
+        try {
+          await syncSubscriptionAddOns(
+            subscription.stripeSubscriptionId,
+            changed
+          );
+        } catch (err) {
+          console.error(
+            `[onboardingV2] Stripe-Add-on-Sync fehlgeschlagen (Website ${websiteId}):`,
+            err
+          );
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: ADDON_BILLING_ERROR_MESSAGE,
+          });
+        }
       }
     } else {
       console.warn(
         `[onboardingV2] Website ${websiteId} ist verkauft, hat aber keine Stripe-Subscription — Add-on-Flags ohne Abrechnung geschrieben.`
       );
     }
-    if (subscription) {
+    if (subscription && hasChanges) {
       await updateSubscription(subscription.id, {
-        addOns: { ...readSubscriptionAddOns(subscription.addOns), ...flags },
+        addOns: { ...current, ...flags },
         updatedAt: Date.now(),
       });
     }

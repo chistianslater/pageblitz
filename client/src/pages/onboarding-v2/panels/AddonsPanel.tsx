@@ -60,6 +60,30 @@ export function pagesFromDoc(doc: WebsiteDataV2): Page[] {
   return doc.pages ?? [];
 }
 
+/**
+ * Pure: zieht den lokalen Entwurf nach, wenn sich der Server-Stand
+ * (`addOns`-Prop aus dem Studio-State) zwischen zwei Renders geändert hat —
+ * nach dem Checkout kommt er aus `subscriptions.addOns`, wo auch Dashboard-
+ * Kauf und Stripe-Webhook hinschreiben (Review-Fund B6 Task 6). Nur die
+ * geänderten Keys werden übernommen; alles, was der Nutzer im Panel bereits
+ * umgeschaltet hat, bleibt. Ohne Änderung kommt der Entwurf unverändert
+ * (gleiche Referenz) zurück. Fehlende Keys zählen als false.
+ */
+export function reconcileAddOnDraft(
+  draft: AddOnFlags,
+  prevServer: AddOnFlags,
+  nextServer: AddOnFlags
+): AddOnFlags {
+  let next: AddOnFlags | null = null;
+  for (const key of ADDON_KEYS) {
+    const before = prevServer[key] === true;
+    const after = nextServer[key] === true;
+    if (before === after) continue;
+    next = { ...(next ?? draft), [key]: after };
+  }
+  return next ?? draft;
+}
+
 interface AddonsListProps {
   value: AddOnFlags;
   onToggle: (k: AddOnKey) => void;
@@ -116,6 +140,13 @@ export function AddonsList({ value, onToggle, interval }: AddonsListProps) {
 interface AddonsPanelProps {
   token: string;
   doc: WebsiteDataV2;
+  /**
+   * Server-Stand der Flags (`state.addOns`): vor dem Checkout der Entwurf
+   * aus onboarding_responses, danach `subscriptions.addOns` bzw. das
+   * Dokument (server/onboardingV2/state.ts `resolveAddOns`). Der lokale
+   * Entwurf startet hiervon und folgt Änderungen der Prop
+   * (`reconcileAddOnDraft`).
+   */
   addOns: AddOnFlags;
   /**
    * true nach dem Checkout (website.status !== "preview"): Änderungen an den
@@ -136,6 +167,16 @@ export function AddonsPanel({
   onClose,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
+  // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
+  // sich (Reload des Studio-States nach Dashboard-Kauf/Webhook/eigenem
+  // Speichern), wird der Entwurf während des Renders nachgezogen (React-
+  // Muster „State an Prop-Änderung anpassen“, kein Effekt nötig).
+  const [syncedFrom, setSyncedFrom] = useState<AddOnFlags>(addOns);
+  if (syncedFrom !== addOns) {
+    setSyncedFrom(addOns);
+    const reconciled = reconcileAddOnDraft(value, syncedFrom, addOns);
+    if (reconciled !== value) setValue(reconciled);
+  }
   const [team, setTeam] = useState<TeamValue>(() => teamFromDoc(doc));
   const [pages, setPages] = useState<Page[]>(() => pagesFromDoc(doc));
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
+  addOnFlagsFromDoc,
   applyAddOnFlags,
   applyAddOns,
   applyFeatures,
@@ -326,6 +327,30 @@ describe("applyAddOns (Plan B6 Task 6)", () => {
     const partial = applyAddOnFlags(next, { gallery: false });
     expect(partial.features).toEqual(next.features);
     expect(partial.addOns).toEqual({ subpages: true });
+  });
+
+  test("addOnFlagsFromDoc ist die Umkehrung von applyAddOnFlags: liest alle acht Flags aus features/addOns (fehlend → false)", () => {
+    const flags = {
+      contactForm: true,
+      gallery: true,
+      menu: false,
+      pricelist: false,
+      aiChat: false,
+      booking: true,
+      team: false,
+      subpages: true,
+    };
+    expect(addOnFlagsFromDoc(applyAddOnFlags(docFull, flags))).toEqual(flags);
+    expect(addOnFlagsFromDoc(docFull)).toEqual({
+      contactForm: false,
+      gallery: false,
+      menu: false,
+      pricelist: false,
+      aiChat: false,
+      booking: false,
+      team: false,
+      subpages: false,
+    });
   });
 });
 

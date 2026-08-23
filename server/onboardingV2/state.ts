@@ -5,11 +5,17 @@ import {
   getBusinessById,
   getGenerationJobByWebsiteId,
   getOnboardingByWebsiteId,
+  getSubscriptionByWebsiteId,
   updateOnboarding,
   updateWebsite,
 } from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
+import {
+  completeAddOnFlags,
+  readSubscriptionAddOns,
+} from "../subscriptionAddOns";
 import { assertV2SafeWrite } from "../v2WriteGuard";
+import { addOnFlagsFromDoc } from "./applyPatch";
 import {
   deriveChecklistState,
   isCheckoutReady,
@@ -18,6 +24,7 @@ import {
   type StudioProgress,
 } from "../../shared/onboardingV2/checklist";
 import type { AddOnFlags } from "../../shared/pricing";
+import type { OnboardingResponse } from "../../drizzle/schema";
 import type {
   PackId,
   SectionOf,
@@ -86,6 +93,55 @@ function readOpeningHours(
   return contact?.openingHours ?? [];
 }
 
+/** Entwurfs-Flags aus onboarding_responses (vor dem Checkout: Extras-Panel + Checkout-Summe). */
+function draftAddOns(
+  onboarding: OnboardingResponse | null | undefined
+): Required<AddOnFlags> {
+  return {
+    contactForm: onboarding?.addOnContactForm ?? false,
+    gallery: onboarding?.addOnGallery ?? false,
+    menu: onboarding?.addOnMenu ?? false,
+    pricelist: onboarding?.addOnPricelist ?? false,
+    aiChat: onboarding?.addOnAiChat ?? false,
+    booking: onboarding?.addOnBooking ?? false,
+    team: onboarding?.addOnTeam ?? false,
+    // onboarding_responses.addOnSubpages ist eine json-Spalte (v1-Altlast
+    // „string[] Seitentitel“), seit Plan B6 Task 2 als Boolean-Flag
+    // wiederverwendet — nur ein echtes `true` zählt, ein altes Array nicht.
+    subpages: onboarding?.addOnSubpages === true,
+  };
+}
+
+/**
+ * Quelle der Add-on-Flags im Studio-State (Spec B6 §2.2, Review-Fund B6
+ * Task 6): VOR dem Checkout der Entwurf in onboarding_responses; NACH dem
+ * Checkout (`status !== "preview"`, dieselbe Bedingung wie
+ * `commitAddOnFlags`) der Ist-Stand `subscriptions.addOns` — dort schreiben
+ * auch Dashboard-Kauf (`customer.purchaseAddon`) und Webhook
+ * (`customer.subscription.updated`) hin, der Entwurf nicht. Liegt kein
+ * addOns-JSON am Abo (Admin-/Testfreischaltung, `createTestSubscription`),
+ * gilt das Dokument (`features`/`addOns`); ohne v2-Dokument bleibt nur der
+ * Entwurf. So sieht das Extras-Panel denselben Stand, den der Sync als
+ * Ausgangsbasis nimmt — ein nicht erwähntes, aber gebuchtes Add-on kann
+ * nicht mehr still storniert werden.
+ */
+export function resolveAddOns(input: {
+  isLive: boolean;
+  subscriptionAddOns: unknown;
+  doc: WebsiteDataV2 | null;
+  onboarding: OnboardingResponse | null | undefined;
+}): Required<AddOnFlags> {
+  if (!input.isLive) return draftAddOns(input.onboarding);
+  if (
+    input.subscriptionAddOns &&
+    typeof input.subscriptionAddOns === "object"
+  ) {
+    return completeAddOnFlags(readSubscriptionAddOns(input.subscriptionAddOns));
+  }
+  if (input.doc) return addOnFlagsFromDoc(input.doc);
+  return draftAddOns(input.onboarding);
+}
+
 /**
  * Baut den vollständigen Studio-Zustand — eine Quelle der Wahrheit für Client-Reloads (Spec §6).
  *
@@ -100,10 +156,12 @@ export async function buildState(
   progressOverride?: StudioProgress
 ): Promise<StudioState> {
   const { website, doc, hasLegacyDoc } = loaded;
-  const [business, onboarding, job] = await Promise.all([
+  const isLive = website.status !== "preview";
+  const [business, onboarding, job, subscription] = await Promise.all([
     getBusinessById(website.businessId),
     getOnboardingByWebsiteId(website.id),
     getGenerationJobByWebsiteId(website.id),
+    isLive ? getSubscriptionByWebsiteId(website.id) : Promise.resolve(null),
   ]);
   const checklist = deriveChecklistState(doc, {
     legalOwner: onboarding?.legalOwner,
@@ -115,19 +173,12 @@ export async function buildState(
     studioProgress:
       progressOverride ?? parseStudioProgress(onboarding?.studioProgress),
   });
-  const addOns: AddOnFlags = {
-    contactForm: onboarding?.addOnContactForm ?? false,
-    gallery: onboarding?.addOnGallery ?? false,
-    menu: onboarding?.addOnMenu ?? false,
-    pricelist: onboarding?.addOnPricelist ?? false,
-    aiChat: onboarding?.addOnAiChat ?? false,
-    booking: onboarding?.addOnBooking ?? false,
-    team: onboarding?.addOnTeam ?? false,
-    // onboarding_responses.addOnSubpages ist eine json-Spalte (v1-Altlast
-    // „string[] Seitentitel“), seit Plan B6 Task 2 als Boolean-Flag
-    // wiederverwendet — nur ein echtes `true` zählt, ein altes Array nicht.
-    subpages: onboarding?.addOnSubpages === true,
-  };
+  const addOns = resolveAddOns({
+    isLive,
+    subscriptionAddOns: subscription?.addOns,
+    doc,
+    onboarding,
+  });
   const legal: StudioLegal = {
     legalOwner: onboarding?.legalOwner ?? "",
     legalStreet: onboarding?.legalStreet ?? "",

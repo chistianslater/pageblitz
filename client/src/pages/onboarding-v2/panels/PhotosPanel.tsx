@@ -35,11 +35,15 @@ interface PhotosPanelProps {
   token: string;
   doc: WebsiteDataV2;
   /**
-   * Entwurfs-Flags aus dem Studio-State (onboarding_responses) — nötig, um
-   * den Galerie-Schalter als vollständigen `AddonsPatch` (alle acht Flags,
-   * strict) an `onboardingV2.updateAddons` zu schicken. Optional, weil
-   * ältere Aufrufer/Tests das Panel ohne Flags rendern (dann gilt: alles
-   * aus, nur gallery wird eingeschaltet).
+   * Add-on-Flags aus dem Studio-State (`state.addOns`: vor dem Checkout der
+   * Entwurf aus onboarding_responses, danach der Ist-Stand aus
+   * subscriptions.addOns bzw. dem Dokument, server/onboardingV2/state.ts
+   * `resolveAddOns`) — nötig, um den Galerie-Schalter als vollständigen
+   * `AddonsPatch` (alle acht Flags, strict) an `onboardingV2.updateAddons`
+   * zu schicken. Wird bei jedem Klick direkt aus der Prop gelesen (kein
+   * lokaler Entwurf), ist also nie älter als der zuletzt geladene State.
+   * Optional, weil ältere Aufrufer/Tests das Panel ohne Flags rendern
+   * (dann gilt: alles aus, nur gallery wird eingeschaltet).
    */
   addOns?: AddOnFlags;
   onApplied: () => void;

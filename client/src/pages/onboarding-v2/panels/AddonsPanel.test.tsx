@@ -10,6 +10,7 @@ import {
   AddonsList,
   AddonsPanel,
   pagesFromDoc,
+  reconcileAddOnDraft,
   teamFromDoc,
 } from "./AddonsPanel";
 
@@ -292,5 +293,38 @@ describe("teamFromDoc", () => {
 
   test("ohne Team-Sektion → leere Mitgliederliste", () => {
     expect(teamFromDoc(blankDoc)).toEqual({ members: [] });
+  });
+});
+
+describe("reconcileAddOnDraft (Review-Fund B6 Task 6: frisch geladener Stand überschreibt keinen alten Entwurf)", () => {
+  const allOff = {
+    contactForm: false,
+    gallery: false,
+    menu: false,
+    pricelist: false,
+    aiChat: false,
+    booking: false,
+    team: false,
+    subpages: false,
+  };
+
+  test("Server-Stand unverändert → Entwurf bleibt exakt erhalten (gleiche Referenz)", () => {
+    const draft = { ...allOff, team: true };
+    expect(reconcileAddOnDraft(draft, allOff, { ...allOff })).toBe(draft);
+  });
+
+  test("Server-Stand ändert gallery (z. B. Dashboard-Kauf/Webhook) → Entwurf übernimmt gallery, unberührte Entwurfs-Toggles bleiben", () => {
+    const draft = { ...allOff, team: true };
+    const next = reconcileAddOnDraft(draft, allOff, {
+      ...allOff,
+      gallery: true,
+    });
+    expect(next).toEqual({ ...allOff, team: true, gallery: true });
+    expect(draft.gallery).toBe(false);
+  });
+
+  test("Server-Stand nimmt gallery zurück → Entwurf folgt; fehlende Keys zählen als false", () => {
+    const draft = { ...allOff, gallery: true };
+    expect(reconcileAddOnDraft(draft, { gallery: true }, {})).toEqual(allOff);
   });
 });

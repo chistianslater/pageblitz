@@ -440,6 +440,15 @@ describe("onboardingV2.updateAddons", () => {
     });
   });
 
+  test("vor dem Checkout (status preview): getState liefert die Entwurfs-Flags aus onboarding_responses (kein Subscription-Lookup)", async () => {
+    onboardingRow = { ...onboardingRow, addOnGallery: true, addOnMenu: true };
+    const s = await caller().onboardingV2.getState({ token: "tok" });
+    expect(s.addOns.gallery).toBe(true);
+    expect(s.addOns.menu).toBe(true);
+    expect(s.addOns.team).toBe(false);
+    expect(mockedDb.getSubscriptionByWebsiteId).not.toHaveBeenCalled();
+  });
+
   test("vor dem Checkout (status preview): KEIN Stripe-Sync, subscriptions unangetastet", async () => {
     await caller().onboardingV2.updateAddons({
       token: "tok",
@@ -490,14 +499,16 @@ describe("onboardingV2.updateAddons", () => {
       } as any);
     });
 
-    test("Sync mit allen acht Flags, danach subscriptions.addOns + Onboarding-Flags + Dokument", async () => {
+    test("Sync nur mit den gegenüber subscriptions.addOns geänderten Keys, danach subscriptions.addOns + Onboarding-Flags + Dokument", async () => {
       const s = await ownerCaller().onboardingV2.updateAddons({
         token: "tok",
         addOns: { ...allOff, gallery: true, team: true },
       });
+      // Ist-Stand { contactForm: true } → geändert sind contactForm (aus),
+      // gallery (an), team (an); die übrigen fünf bleiben unerwähnt.
       expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledWith(
         "sub_live_1",
-        { ...allOff, gallery: true, team: true }
+        { contactForm: false, gallery: true, team: true }
       );
       expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
         9,
@@ -532,6 +543,74 @@ describe("onboardingV2.updateAddons", () => {
       expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
       expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
       expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    });
+
+    test("Review-Fund: Dashboard-Kauf (subscriptions.addOns.gallery=true) → Studio speichert ohne Galerie-Änderung → Galerie bleibt gebucht, kein Sync für gallery", async () => {
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        userId: 5,
+        stripeSubscriptionId: "sub_live_1",
+        addOns: { contactForm: true, gallery: true },
+      } as any);
+      // Der Client hat den Ist-Stand gesehen (getState liefert nach dem
+      // Checkout subscriptions.addOns) und schickt gallery=true unverändert
+      // mit — nur team kommt neu dazu.
+      const s = await ownerCaller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: { ...allOff, contactForm: true, gallery: true, team: true },
+      });
+      expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledTimes(
+        1
+      );
+      expect(mockedStripeAddons.syncSubscriptionAddOns).toHaveBeenCalledWith(
+        "sub_live_1",
+        { team: true }
+      );
+      expect(mockedDb.updateSubscription).toHaveBeenCalledWith(
+        9,
+        expect.objectContaining({
+          addOns: expect.objectContaining({ gallery: true, team: true }),
+        })
+      );
+      expect(s.addOns.gallery).toBe(true);
+      expect(s.doc!.addOns).toEqual({ gallery: true, team: true });
+    });
+
+    test("Review-Fund: getState liefert nach dem Checkout die Flags aus subscriptions.addOns, nicht aus dem veralteten Entwurf in onboarding_responses", async () => {
+      // Entwurf (vor dem Checkout) kennt die Galerie nicht — Dashboard-Kauf
+      // und Webhook schreiben nur Subscription + Dokument.
+      onboardingRow = { ...onboardingRow, addOnGallery: false };
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        userId: 5,
+        stripeSubscriptionId: "sub_live_1",
+        addOns: { contactForm: true, gallery: true },
+      } as any);
+      const s = await ownerCaller().onboardingV2.getState({ token: "tok" });
+      expect(s.addOns).toEqual({ ...allOff, contactForm: true, gallery: true });
+    });
+
+    test("verkauft, Subscription ohne addOns-JSON (createTestSubscription) → Flags aus dem Dokument (features/addOns), nicht aus onboarding_responses", async () => {
+      onboardingRow = { ...onboardingRow, addOnGallery: true };
+      mockedDb.getWebsiteByToken.mockResolvedValue({
+        ...soldWebsite,
+        websiteData: {
+          ...v2,
+          features: { contactForm: true },
+          addOns: { team: true },
+        },
+      } as any);
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        id: 9,
+        websiteId: 42,
+        userId: 5,
+        stripeSubscriptionId: null,
+        addOns: null,
+      } as any);
+      const s = await ownerCaller().onboardingV2.getState({ token: "tok" });
+      expect(s.addOns).toEqual({ ...allOff, contactForm: true, team: true });
     });
 
     test("verkauft, aber Subscription ohne Stripe-ID (Admin-/Testfreischaltung, createTestSubscription) → kein Sync, Flags + subscriptions.addOns werden trotzdem geschrieben", async () => {

@@ -18,9 +18,12 @@ import {
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import {
+  ADDON_KEYS,
   FEATURE_ADDON_KEYS,
   SECTION_ADDON_KEYS,
   type AddOnFlags,
+  type FeatureAddOnKey,
+  type SectionAddOnKey,
 } from "../../shared/pricing";
 
 export function parsePackId(value: string): PackId {
@@ -273,6 +276,28 @@ export function applyAddOns(
  * Schreibpfade (Studio-Extras, Checkout-Webhook, Subscription-Update,
  * Dashboard-Kauf), damit Dokument und Abrechnung denselben Stand zeigen.
  */
+/**
+ * Pure Umkehrung von `applyAddOnFlags`: liest alle acht Add-on-Flags aus dem
+ * Dokument (`features` für FEATURE_ADDON_KEYS, `addOns` für
+ * SECTION_ADDON_KEYS; subpages steht in beiden — true, sobald eines gesetzt
+ * ist). Fehlende Keys → false. Genutzt von `buildState`, wenn nach dem
+ * Checkout kein `subscriptions.addOns`-JSON vorliegt (Admin-/Test-
+ * Freischaltung): dann ist das Dokument die Wahrheit (Spec B6 §2.2).
+ */
+export function addOnFlagsFromDoc(doc: WebsiteDataV2): Required<AddOnFlags> {
+  const result = {} as Required<AddOnFlags>;
+  for (const key of ADDON_KEYS) {
+    const fromFeatures =
+      (FEATURE_ADDON_KEYS as readonly string[]).includes(key) &&
+      doc.features?.[key as FeatureAddOnKey] === true;
+    const fromAddOns =
+      (SECTION_ADDON_KEYS as readonly string[]).includes(key) &&
+      doc.addOns?.[key as SectionAddOnKey] === true;
+    result[key] = fromFeatures || fromAddOns;
+  }
+  return result;
+}
+
 export function applyAddOnFlags(
   doc: WebsiteDataV2,
   flags: AddOnFlags
