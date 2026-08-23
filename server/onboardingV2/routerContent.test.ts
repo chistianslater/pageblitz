@@ -210,6 +210,98 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
   });
 });
 
+describe("onboardingV2.updatePages", () => {
+  const page = {
+    slug: "leistungen-im-detail",
+    title: "Leistungen im Detail",
+    seo: { title: "Leistungen im Detail", description: "Alle Leistungen." },
+    sections: [{ type: "pageHeader", title: "Leistungen im Detail" }],
+  };
+
+  test("unbekannter Token → NOT_FOUND (Ownership wie die anderen update*-Prozeduren)", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue(undefined as any);
+
+    await expect(
+      caller().onboardingV2.updatePages({
+        token: "fremd",
+        patch: { pages: [page] },
+      })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("ungültiger Patch (reservierter Slug) → BAD_REQUEST, kein Write", async () => {
+    await expect(
+      caller().onboardingV2.updatePages({
+        token: "tok",
+        patch: { pages: [{ ...page, slug: "impressum" }] },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("legt eine Page an und persistiert hinter Guard", async () => {
+    const s = await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [page] },
+    });
+
+    expect(s.doc!.pages).toEqual([page]);
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        websiteData: expect.objectContaining({
+          pages: expect.arrayContaining([
+            expect.objectContaining({ slug: "leistungen-im-detail" }),
+          ]),
+        }),
+      })
+    );
+    expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
+  });
+
+  test("mit Pages → setzt addOnSubpages=true (Flag folgt Inhalt, wie updateTeam/addOnTeam)", async () => {
+    await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [page] },
+    });
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnSubpages: true })
+    );
+  });
+
+  test("pages: [] → kein Flag-Write", async () => {
+    await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [] },
+    });
+
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnSubpages: expect.anything() })
+    );
+  });
+
+  test("pages: [] entfernt vorhandene Pages wieder", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: { ...v2, pages: [page] },
+      customerEmail: null,
+    } as any);
+
+    const s = await caller().onboardingV2.updatePages({
+      token: "tok",
+      patch: { pages: [] },
+    });
+    expect(s.doc!.pages).toBeUndefined();
+  });
+});
+
 describe("onboardingV2.suggestTexts / suggestOffer", () => {
   test("suggestTexts liefert 3 Varianten vom LLM, persistiert nichts", async () => {
     vi.mocked(invokeLLM).mockResolvedValue({

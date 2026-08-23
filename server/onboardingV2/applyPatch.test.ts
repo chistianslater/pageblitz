@@ -5,6 +5,7 @@ import {
   applyFeatures,
   applyImages,
   applyOffer,
+  applyPages,
   applyStylePack,
   applyTeam,
   applyTexts,
@@ -269,5 +270,50 @@ describe("applyFeatures", () => {
   test("Ergebnis validiert gegen das Schema", () => {
     const next = applyFeatures(docFull, { booking: true });
     expect(next.version).toBe(2);
+  });
+});
+
+const page = {
+  slug: "leistungen-im-detail",
+  title: "Leistungen im Detail",
+  seo: { title: "Leistungen im Detail", description: "Alle Leistungen." },
+  sections: [{ type: "pageHeader" as const, title: "Leistungen im Detail" }],
+};
+
+describe("applyPages", () => {
+  test("setzt pages, mutiert das Original nicht, Rest bleibt identisch", () => {
+    const next = applyPages(docFull, { pages: [page] });
+    expect(next.pages).toEqual([page]);
+    expect(docFull.pages).toBeUndefined();
+    expect(next.sections).toEqual(docFull.sections);
+  });
+
+  test("pages: [] auf einem Dokument ohne pages ist ein No-op (kein leeres Array im Dokument)", () => {
+    const next = applyPages(docFull, { pages: [] });
+    expect("pages" in next).toBe(false);
+  });
+
+  test("pages: [] entfernt vorhandene Pages wieder", () => {
+    const withPages = applyPages(docFull, { pages: [page] });
+    const removed = applyPages(withPages, { pages: [] });
+    expect("pages" in removed).toBe(false);
+  });
+
+  test("ersetzt vorhandene Pages komplett (keine Merge-Logik je Page)", () => {
+    const withOne = applyPages(docFull, { pages: [page] });
+    const secondPage = { ...page, slug: "ueber-uns-detail", title: "Über uns" };
+    const withTwo = applyPages(withOne, { pages: [secondPage] });
+    expect(withTwo.pages).toEqual([secondPage]);
+  });
+
+  test("Ergebnis validiert gegen das Schema (ungültiger Slug wirft)", () => {
+    expect(() =>
+      applyPages(docFull, { pages: [{ ...page, slug: "Ungültig!" }] })
+    ).toThrow();
+  });
+
+  test("mutiert das Original nicht", () => {
+    applyPages(docFull, { pages: [page] });
+    expect(docFull.pages).toBeUndefined();
   });
 });

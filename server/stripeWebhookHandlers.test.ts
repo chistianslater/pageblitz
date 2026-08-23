@@ -77,7 +77,7 @@ beforeEach(() => {
 });
 
 describe("handleCheckoutCompleted", () => {
-  test("normalisiert alle 7 Add-on-Keys, legt Subscription an, setzt Website-Status", async () => {
+  test("normalisiert alle 8 Add-on-Keys, legt Subscription an, setzt Website-Status", async () => {
     const deps = makeDeps();
     await handleCheckoutCompleted(fakeSession(), deps);
 
@@ -92,6 +92,7 @@ describe("handleCheckoutCompleted", () => {
           aiChat: true,
           booking: false,
           team: false,
+          subpages: false,
         },
       })
     );
@@ -104,8 +105,40 @@ describe("handleCheckoutCompleted", () => {
         addOnAiChat: true,
         addOnBooking: false,
         addOnTeam: false,
+        addOnSubpages: false,
       })
     );
+  });
+
+  test("Checkout mit subpages: true → features.subpages + addOnSubpages-Spalte gesetzt (Plan B6)", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({
+        metadata: {
+          websiteId: "42",
+          userId: "7",
+          billingInterval: "yearly",
+          addOns: JSON.stringify({ subpages: true }),
+        },
+      }),
+      deps
+    );
+
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        addOns: expect.objectContaining({ subpages: true }),
+      })
+    );
+    expect(deps.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnSubpages: true })
+    );
+    const websiteDataCall = (deps.updateWebsite as any).mock.calls.find(
+      (call: any[]) => "websiteData" in call[1]
+    );
+    expect(websiteDataCall![1].websiteData.features).toEqual({
+      subpages: true,
+    });
   });
 
   test("Checkout mit team: true → addOnTeam: true auf generatedWebsites (Plan B5)", async () => {
@@ -314,6 +347,7 @@ describe("handleCheckoutCompleted", () => {
           aiChat: false,
           booking: false,
           team: false,
+          subpages: false,
         },
       })
     );

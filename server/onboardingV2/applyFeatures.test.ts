@@ -98,6 +98,20 @@ describe("applyFeatureFlags — v2-Dokument", () => {
     expect((patch as any).addOnAiChat).toBe(false);
     expect((patch as any).websiteData.features).toBeUndefined();
   });
+
+  test("subpages wie aiChat/booking: schreibt websiteData.features.subpages UND die Spalte addOnSubpages (Plan B6)", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue({
+      id: 42,
+      slug: "schreinerei-brandt",
+      websiteData: v2Doc,
+    } as any);
+
+    await applyFeatureFlags(42, { subpages: true });
+
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).addOnSubpages).toBe(true);
+    expect((patch as any).websiteData.features).toEqual({ subpages: true });
+  });
 });
 
 describe("applyFeatureFlags — v1-Dokument", () => {

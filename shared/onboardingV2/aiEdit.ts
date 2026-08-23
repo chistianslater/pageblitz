@@ -59,6 +59,11 @@ const SECTION_LABELS: Record<SectionType, string> = {
   pricelist: "Preisliste",
   team: "Team",
   cta: "CTA",
+  // pageHeader existiert nur in Page.sections, nicht in den hier verglichenen
+  // Startseiten-Sektionen (diffDocuments arbeitet auf doc.sections) —
+  // Platzhalter für Exhaustivität von Record<SectionType, string>; die
+  // Unterseiten-KI-Chat-Diffs (Task 5) bekommen einen eigenen Vergleich.
+  pageHeader: "Kopfzeile",
 };
 
 /**

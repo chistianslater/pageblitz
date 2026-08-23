@@ -23,7 +23,8 @@ export type AddOnKey =
   | "pricelist"
   | "aiChat"
   | "booking"
-  | "team";
+  | "team"
+  | "subpages";
 
 export const ADDON_KEYS: readonly AddOnKey[] = [
   "contactForm",
@@ -33,6 +34,7 @@ export const ADDON_KEYS: readonly AddOnKey[] = [
   "aiChat",
   "booking",
   "team",
+  "subpages",
 ];
 
 export const ADDON_NAMES: Record<AddOnKey, string> = {
@@ -43,6 +45,7 @@ export const ADDON_NAMES: Record<AddOnKey, string> = {
   aiChat: "KI-Chat",
   booking: "Terminbuchung",
   team: "Team",
+  subpages: "Unterseiten",
 };
 
 export function addonPrice(key: AddOnKey): number {
@@ -58,10 +61,12 @@ export type AddOnFlags = Partial<Record<AddOnKey, boolean>>;
  * Zahlungs-Webhook (`stripeWebhook.ts`/`stripeWebhookHandlers.ts`) auch
  * KI-Chat und Terminbuchung, seit Plan B5 zusätzlich Team (Team-Panel im
  * Studio-Extras-Bereich, siehe `server/onboardingV2/routerCommerce.ts`
- * `updateTeam`). Aktuell sind damit alle sieben Add-ons buchbar — diese
- * Liste bleibt trotzdem die einzige Quelle der Wahrheit, falls künftig
- * wieder ein Extra gesperrt werden muss. Weder Client noch Server dürfen
- * gesperrte Add-ons in Preis oder Persistenz einfließen lassen (Finding I1).
+ * `updateTeam`), seit Plan B6 zusätzlich Unterseiten (`subpages`,
+ * `onboardingV2.updatePages`). Aktuell sind damit alle acht Add-ons buchbar
+ * — diese Liste bleibt trotzdem die einzige Quelle der Wahrheit, falls
+ * künftig wieder ein Extra gesperrt werden muss. Weder Client noch Server
+ * dürfen gesperrte Add-ons in Preis oder Persistenz einfließen lassen
+ * (Finding I1).
  */
 export const BOOKABLE_ADDON_KEYS: readonly AddOnKey[] = [
   "contactForm",
@@ -71,10 +76,11 @@ export const BOOKABLE_ADDON_KEYS: readonly AddOnKey[] = [
   "aiChat",
   "booking",
   "team",
+  "subpages",
 ];
 
 /**
- * Setzt alle nicht buchbaren Add-on-Flags (aktuell keine — alle sieben Keys
+ * Setzt alle nicht buchbaren Add-on-Flags (aktuell keine — alle acht Keys
  * sind buchbar, siehe BOOKABLE_ADDON_KEYS) auf false — einzige Quelle der
  * Wahrheit für Client (AddonsPanel/CheckoutBar) und Server (routerCommerce),
  * damit weder eine veraltete DB-Zeile noch ein manipulierter Request

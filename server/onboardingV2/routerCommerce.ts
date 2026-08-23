@@ -128,7 +128,16 @@ export const commerceProcedures = {
     .input(tokenInput.extend({ addOns: AddonsPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const { addOns } = input;
-      if (LOCKED_ADDON_KEYS.some(k => addOns[k])) {
+      // Cast: AddOnKey (shared/pricing.ts) umfasst seit Plan B6 auch
+      // "subpages", das (noch) kein Feld von AddonsPatchSchema ist — das
+      // Extras-Panel-Toggle dafür kommt mit Task 5/6. LOCKED_ADDON_KEYS ist
+      // zur Laufzeit leer (alle Add-ons sind aktuell buchbar), das `some`
+      // ist also ein No-op, solange sich daran nichts ändert.
+      if (
+        LOCKED_ADDON_KEYS.some(
+          k => (addOns as Record<string, boolean | undefined>)[k]
+        )
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: LOCKED_ADDON_MESSAGE,

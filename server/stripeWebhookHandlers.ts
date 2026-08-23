@@ -173,6 +173,7 @@ export async function handleCheckoutCompleted(
     addOnAiChat: !!addOns.aiChat,
     addOnBooking: !!addOns.booking,
     addOnTeam: !!addOns.team,
+    addOnSubpages: !!addOns.subpages,
   });
 
   // v2-Dokument: freischaltbare Extras als `features` spiegeln. Eigener
@@ -191,6 +192,7 @@ export async function handleCheckoutCompleted(
         contactForm: !!addOns.contactForm,
         aiChat: !!addOns.aiChat,
         booking: !!addOns.booking,
+        subpages: !!addOns.subpages,
       });
       assertV2SafeWrite(website.websiteData, next);
       await deps.updateWebsite(websiteId, { websiteData: next as any });

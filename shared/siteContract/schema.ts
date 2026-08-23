@@ -29,6 +29,38 @@ export const SECTION_TYPES = [
   "pricelist",
   "team",
   "cta",
+  // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
+  // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
+  // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
+  // Pack-Renderern (client/src/components/site/packs/*/index.tsx) unverändert
+  // bleiben. Trotzdem Teil von SECTION_TYPES/SectionType, weil mehrere
+  // Record<SectionType, …>-Karten (SECTION_ANCHORS, SECTION_FIELD_DOC,
+  // SECTION_LABELS) exhaustiv über SectionType sind und Task 3/4/5 diesen
+  // Wert dort brauchen.
+  "pageHeader",
+] as const;
+
+/**
+ * Slugs, die eine Unterseite NICHT belegen darf — Kollisionen mit
+ * bestehenden Routen (Legal-Seiten, System-/Admin-Pfade, reservierte
+ * Subdomain-Segmente). Siehe server/ssr/routes.ts (Task 3) für die
+ * tatsächliche Routenauflösung.
+ */
+export const RESERVED_PAGE_SLUGS = [
+  "impressum",
+  "datenschutz",
+  "start",
+  "api",
+  "preview",
+  "preview-ssr",
+  "onboarding",
+  "demo",
+  "site",
+  "admin",
+  "my-website",
+  "my-account",
+  "login",
+  "dev",
 ] as const;
 
 const PackIdSchema = z.enum(PACK_IDS);
@@ -53,6 +85,24 @@ export const FeaturesSchema = z
     contactForm: z.boolean().optional(),
     aiChat: z.boolean().optional(),
     booking: z.boolean().optional(),
+    subpages: z.boolean().optional(),
+  })
+  .strict();
+
+/**
+ * Sektions-Add-ons (Gating-Quelle für Task 6, `visibleSections` in
+ * client/src/components/site/engine.ts): steuert, ob eine bereits im
+ * Dokument vorhandene Sektion/Page tatsächlich gerendert wird. Getrennt von
+ * `FeaturesSchema`, weil diese Add-ons an Inhalt (Sektionen/`pages`) hängen,
+ * nicht an reine Verhaltens-Flags (Kontaktformular, KI-Chat, Buchung).
+ */
+export const SiteAddOnsSchema = z
+  .object({
+    gallery: z.boolean().optional(),
+    menu: z.boolean().optional(),
+    pricelist: z.boolean().optional(),
+    team: z.boolean().optional(),
+    subpages: z.boolean().optional(),
   })
   .strict();
 
@@ -206,6 +256,66 @@ export const SectionV2Schema = z.discriminatedUnion("type", [
   CtaSchema,
 ]);
 
+/**
+ * Kopfzeile einer Unterseite (Titel + Einleitung, ohne CTA) — nur innerhalb
+ * von `Page.sections` gültig, siehe PageSectionSchema. Bewusst NICHT Teil
+ * von SectionV2Schema (Startseiten-Sektionen), siehe Kommentar bei
+ * SECTION_TYPES.
+ */
+const PageHeaderSchema = z
+  .object({
+    type: z.literal("pageHeader"),
+    title: z.string().min(1).max(60),
+    intro: z.string().max(300).optional(),
+  })
+  .strict();
+
+/**
+ * Erlaubte Sektionstypen innerhalb einer Unterseite (`Page.sections`) — eine
+ * Teilmenge von SectionV2Schema (ohne hero/team/cta, die auf der Startseite
+ * bleiben) plus die neue Kopfzeile `pageHeader`. Referenziert dieselben
+ * Sektions-Schemas wie SectionV2Schema, damit Inhalte identisch validiert
+ * werden — nur die Menge der erlaubten Typen unterscheidet sich.
+ */
+export const PageSectionSchema = z.discriminatedUnion("type", [
+  PageHeaderSchema,
+  ServicesSchema,
+  AboutSchema,
+  GallerySchema,
+  FaqSchema,
+  ContactSchema,
+  TestimonialsSchema,
+  PricelistSchema,
+  MenuSchema,
+]);
+
+/**
+ * Eine Unterseite des Add-ons `subpages` (Spec §2.1): eigene Route im SSR
+ * (`/<slug>`), eigene SEO-Metadaten, 1–8 Sektionen aus PageSectionSchema.
+ * `slug` ist reserviert-geprüft hier (Einzel-Slug); Eindeutigkeit über alle
+ * Pages eines Dokuments prüft WebsiteDataV2Schema (Refine unten).
+ */
+export const PageSchema = z
+  .object({
+    slug: z
+      .string()
+      .regex(/^[a-z0-9-]{2,40}$/, "ungültiger Slug")
+      .refine(
+        slug => !(RESERVED_PAGE_SLUGS as readonly string[]).includes(slug),
+        { message: "Dieser Slug ist reserviert." }
+      ),
+    title: z.string().min(1).max(60),
+    navLabel: z.string().max(24).optional(),
+    seo: z
+      .object({
+        title: z.string().max(70),
+        description: z.string().max(160),
+      })
+      .strict(),
+    sections: z.array(PageSectionSchema).min(1).max(8),
+  })
+  .strict();
+
 export const WebsiteDataV2Schema = z
   .object({
     version: z.literal(2),
@@ -223,6 +333,9 @@ export const WebsiteDataV2Schema = z
     sections: z.array(SectionV2Schema).min(1),
     sectionOrder: z.array(SectionTypeSchema).optional(),
     hiddenSections: z.array(SectionTypeSchema).optional(),
+    // Unterseiten-Add-on (Spec §2.1): max. 5 Pages, Slugs müssen eindeutig
+    // sein (Refine unten) — Schreiben nur über PagesPatchSchema/applyPages.
+    pages: z.array(PageSchema).max(5).optional(),
     seo: z.object({ title: z.string(), description: z.string() }).strict(),
     footerNote: z.string().optional(),
     google: z
@@ -249,5 +362,14 @@ export const WebsiteDataV2Schema = z
       .record(z.string(), z.string().regex(/^#[0-9a-fA-F]{3,8}$/))
       .optional(),
     features: FeaturesSchema.optional(),
+    addOns: SiteAddOnsSchema.optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    doc => {
+      if (!doc.pages) return true;
+      const slugs = doc.pages.map(p => p.slug);
+      return new Set(slugs).size === slugs.length;
+    },
+    { message: "Seiten-Slugs müssen eindeutig sein.", path: ["pages"] }
+  );

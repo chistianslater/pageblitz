@@ -33,6 +33,9 @@ describe("orderedSections", () => {
   test("Anker sind deutsch und vollständig", () => {
     expect(SECTION_ANCHORS.services).toBe("leistungen");
     expect(SECTION_ANCHORS.about).toBe("ueber-uns");
-    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(11);
+    // Seit Plan B6 zusätzlich "pageHeader" (nur innerhalb Page.sections
+    // gültig, siehe schema.ts) — Platzhalter für die Exhaustivität von
+    // Record<SectionType, string>, echte Unterseiten-Navigation baut Task 3.
+    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(12);
   });
 });

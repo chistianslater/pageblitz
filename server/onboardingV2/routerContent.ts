@@ -13,11 +13,12 @@ import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
 import {
   ImagesPatchSchema,
   OfferPatchSchema,
+  PagesPatchSchema,
   TextsPatchSchema,
 } from "../../shared/onboardingV2/patches";
-import { applyImages, applyOffer, applyTexts } from "./applyPatch";
+import { applyImages, applyOffer, applyPages, applyTexts } from "./applyPatch";
 import { loadStudioWebsite } from "./ownership";
-import { persistDoc, requireDoc, tokenInput } from "./state";
+import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
 import {
   assertSuggestQuota,
   suggestOffer as suggestOfferVariants,
@@ -158,6 +159,25 @@ export const contentProcedures = {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
       return persistDoc(input.token, loaded, applyOffer(doc, input.offer));
+    }),
+
+  /**
+   * Speichert die Unterseiten (Add-on `subpages`, Extras-Panel-Unterbereich
+   * „Unterseiten", Task 5). Wie `updateTeam` (routerCommerce.ts): Flag folgt
+   * Inhalt — sobald tatsächlich mindestens eine Page gespeichert wird,
+   * setzen wir `addOnSubpages` in onboarding_responses selbst, unabhängig
+   * davon, ob der Kunde vorher über das Extras-Toggle ging. Das Abschalten
+   * läuft ausschließlich über `updateAddons` (routerCommerce.ts, Task 6).
+   */
+  updatePages: publicProcedure
+    .input(tokenInput.extend({ patch: PagesPatchSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = requireDoc(loaded);
+      if (input.patch.pages.length > 0) {
+        await upsertOnboarding(loaded.website.id, { addOnSubpages: true });
+      }
+      return persistDoc(input.token, loaded, applyPages(doc, input.patch));
     }),
 
   /** KI-Vorschlag für ein Textfeld — persistiert nichts, der User bestätigt über updateTexts. */

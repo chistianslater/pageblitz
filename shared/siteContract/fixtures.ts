@@ -10,8 +10,73 @@ type StoredFixtureKind = "full" | "minimal";
 type FixtureKind = StoredFixtureKind | "features";
 type FixtureSet = Record<StoredFixtureKind, WebsiteDataV2>;
 
-/** Demo-Werte für die "features"-Fixture-Variante (alle drei Add-ons aktiv). */
-const DEMO_FEATURES = { contactForm: true, aiChat: true, booking: true };
+/**
+ * Demo-Werte für die "features"-Fixture-Variante (alle Feature-Flags aktiv,
+ * inkl. `subpages` seit Plan B6 — wie aiChat/booking ein reines Flag, siehe
+ * shared/siteContract/schema.ts FeaturesSchema).
+ */
+const DEMO_FEATURES = {
+  contactForm: true,
+  aiChat: true,
+  booking: true,
+  subpages: true,
+};
+
+/**
+ * Demo-Unterseite für die "full"-Fixtures aller 14 Packs (Plan B6 Task 2).
+ * Bewusst identisch über alle Packs — solange kein Pack `pages` auswertet
+ * (Task 3/4), ändert sich am Rendering nichts, daher bleiben die
+ * Playwright-Baselines von `packs.spec.ts` für "full" unverändert (siehe
+ * Task-Kommentar im Plan). Task 3 baut daraus die SSR/CSR-Route
+ * `/leistungen-im-detail`, Task 4 die Navigation in den Packs.
+ */
+const DEMO_PAGES: NonNullable<WebsiteDataV2["pages"]> = [
+  {
+    slug: "leistungen-im-detail",
+    title: "Leistungen im Detail",
+    seo: {
+      title: "Leistungen im Detail",
+      description:
+        "Alle Leistungen im Überblick — mit Details zu Umfang, Ablauf und Preisen.",
+    },
+    sections: [
+      {
+        type: "pageHeader",
+        title: "Leistungen im Detail",
+        intro: "Ein genauerer Blick auf unser Angebot, Schritt für Schritt.",
+      },
+      {
+        type: "services",
+        headline: "Leistungen",
+        items: [
+          {
+            title: "Erstberatung",
+            description: "Persönliches Gespräch vor Ort oder online.",
+          },
+          {
+            title: "Umsetzung",
+            description: "Planung, Ausführung und Abnahme aus einer Hand.",
+          },
+        ],
+      },
+      { type: "contact", headline: "Kontakt" },
+    ],
+  },
+];
+
+/**
+ * Demo-Add-ons für die "full"-Fixtures (Plan B6 Task 2): alle Sektions-
+ * Add-ons aktiv, damit die vorhandenen Sektionen (Galerie/Menü/Preisliste/
+ * Team, je nach Pack) und die Demo-Page sichtbar bleiben, sobald Task 6 das
+ * Gating (`visibleSections`) auf `addOns` umstellt.
+ */
+const DEMO_ADD_ONS: NonNullable<WebsiteDataV2["addOns"]> = {
+  gallery: true,
+  menu: true,
+  pricelist: true,
+  team: true,
+  subpages: true,
+};
 
 const WERKBANK_FULL: WebsiteDataV2 = {
   version: 2,
@@ -130,6 +195,8 @@ const WERKBANK_FULL: WebsiteDataV2 = {
   },
   footerNote: "Schreinerei Brandt · Dortmund · seit 2004",
   google: { rating: 4.9, reviewCount: 87 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const WERKBANK_MINIMAL: WebsiteDataV2 = {
@@ -288,6 +355,8 @@ const KANZLEI_FULL: WebsiteDataV2 = {
   },
   footerNote: "Roth & Weber Steuerberater · Köln · seit 1998",
   google: { rating: 4.8, reviewCount: 41 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const KANZLEI_MINIMAL: WebsiteDataV2 = {
@@ -452,6 +521,8 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
   },
   footerNote: "Zahnarztpraxis Dr. Sommer · Hamburg-Eppendorf · seit 2011",
   google: { rating: 4.9, reviewCount: 128 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const MORGENLICHT_MINIMAL: WebsiteDataV2 = {
@@ -630,6 +701,8 @@ const GUSTO_FULL: WebsiteDataV2 = {
   },
   footerNote: "Trattoria Lucia · Berlin-Charlottenburg · seit 2013",
   google: { rating: 4.7, reviewCount: 213 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const GUSTO_MINIMAL: WebsiteDataV2 = {
@@ -798,6 +871,8 @@ const PATINA_FULL: WebsiteDataV2 = {
   },
   footerNote: "Naturheilpraxis Annelie Voss · Freiburg · seit 2014",
   google: { rating: 4.9, reviewCount: 54 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const PATINA_MINIMAL: WebsiteDataV2 = {
@@ -982,6 +1057,8 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
   },
   footerNote: "NOIR Haarstudio · München-Maxvorstadt · seit 2016",
   google: { rating: 4.8, reviewCount: 167 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const SALON_NOIR_MINIMAL: WebsiteDataV2 = {
@@ -1173,6 +1250,8 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
   },
   footerNote: "Musikschule Tonleiter · Nürnberg · seit 2011",
   google: { rating: 4.9, reviewCount: 89 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const MARKTPLATZ_MINIMAL: WebsiteDataV2 = {
@@ -1337,6 +1416,8 @@ const LANDGUT_FULL: WebsiteDataV2 = {
   },
   footerNote: "Gärtnerei Grünholz · Ravensburg · seit drei Generationen",
   google: { rating: 4.8, reviewCount: 73 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const LANDGUT_MINIMAL: WebsiteDataV2 = {
@@ -1489,6 +1570,8 @@ const ATELIER_FULL: WebsiteDataV2 = {
   },
   footerNote: "Studio Lenz · Leipzig · seit 2016",
   google: { rating: 5.0, reviewCount: 31 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const ATELIER_MINIMAL: WebsiteDataV2 = {
@@ -1648,6 +1731,8 @@ const KLARWERK_FULL: WebsiteDataV2 = {
   },
   footerNote: "Nordwind IT · Kiel · seit 2012",
   google: { rating: 4.9, reviewCount: 44 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const KLARWERK_MINIMAL: WebsiteDataV2 = {
@@ -1818,6 +1903,8 @@ const VERVE_FULL: WebsiteDataV2 = {
   },
   footerNote: "Studio PULS · Essen · seit 2019",
   google: { rating: 5.0, reviewCount: 61 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const VERVE_MINIMAL: WebsiteDataV2 = {
@@ -1981,6 +2068,8 @@ const ZUNFT_FULL: WebsiteDataV2 = {
   },
   footerNote: "Bäckerei Steinofen · Augsburg · seit 1927",
   google: { rating: 4.9, reviewCount: 212 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const ZUNFT_MINIMAL: WebsiteDataV2 = {
@@ -2144,6 +2233,8 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
   },
   footerNote: "Studio Lumière · Wiesbaden · seit 2017",
   google: { rating: 4.9, reviewCount: 97 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const SCHIMMER_MINIMAL: WebsiteDataV2 = {
@@ -2309,6 +2400,8 @@ const FUNDAMENT_FULL: WebsiteDataV2 = {
   },
   footerNote: "Falk & Partner Immobilien · Münster · seit 1962",
   google: { rating: 4.8, reviewCount: 58 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
 };
 
 const FUNDAMENT_MINIMAL: WebsiteDataV2 = {

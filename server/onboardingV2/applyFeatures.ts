@@ -42,9 +42,19 @@ export async function applyFeatureFlags(
   const website = await getWebsiteById(websiteId);
   if (!website) return;
 
-  const columnPatch: { addOnAiChat?: boolean; addOnBooking?: boolean } = {};
+  const columnPatch: {
+    addOnAiChat?: boolean;
+    addOnBooking?: boolean;
+    addOnSubpages?: boolean;
+  } = {};
   if (patch.aiChat !== undefined) columnPatch.addOnAiChat = patch.aiChat;
   if (patch.booking !== undefined) columnPatch.addOnBooking = patch.booking;
+  // subpages wie aiChat/booking: Spalte generatedWebsites.addOnSubpages
+  // (Migration 0029) spiegelt features.subpages — dieselbe Kette wie oben
+  // beschrieben (contactForm hat bewusst keine Spalte, subpages schon,
+  // weil server/ssr/routes.ts (Task 3) die Spalte für den schnellen
+  // Live-Check ohne Dokument-Parse braucht, analog addOnTeam/addOnAiChat).
+  if (patch.subpages !== undefined) columnPatch.addOnSubpages = patch.subpages;
 
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
   if (parsed.success) {

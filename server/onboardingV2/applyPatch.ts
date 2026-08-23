@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import type {
   ImagesPatch,
   OfferPatch,
+  PagesPatch,
   TeamPatch,
   TextsPatch,
 } from "../../shared/onboardingV2/patches";
@@ -142,6 +143,20 @@ export function applyTeam(doc: WebsiteDataV2, p: TeamPatch): WebsiteDataV2 {
         );
   }
   return WebsiteDataV2Schema.parse({ ...doc, sections });
+}
+
+/**
+ * Pure: ersetzt die Unterseiten (`pages`) komplett — wie `applyTeam` für die
+ * Team-Sektion, aber auf Dokument-Ebene statt einer Sektion: `pages: []`
+ * entfernt das Feld (kein leeres Array im Dokument), sonst wird `pages`
+ * 1:1 durch den Patch ersetzt (keine Merge-Logik je Page — das Studio
+ * schickt immer den vollständigen Stand, siehe `PagesEditor`, Task 5).
+ */
+export function applyPages(doc: WebsiteDataV2, p: PagesPatch): WebsiteDataV2 {
+  const { pages: _current, ...rest } = doc;
+  const next: WebsiteDataV2 =
+    p.pages.length > 0 ? { ...rest, pages: p.pages } : rest;
+  return WebsiteDataV2Schema.parse(next);
 }
 
 /** Pure: aktualisiert Hero-/About-Texte und die SEO-Metadaten (nur übergebene Felder). */

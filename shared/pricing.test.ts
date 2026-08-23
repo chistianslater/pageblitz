@@ -31,13 +31,14 @@ describe("pricing", () => {
     for (const k of ADDON_KEYS) expect(ADDON_NAMES[k]).toBeTruthy();
   });
 
-  test("sanitizeAddOns lässt alle buchbaren Keys (inkl. team seit Plan B5) unverändert", () => {
+  test("sanitizeAddOns lässt alle buchbaren Keys (inkl. team seit Plan B5, subpages seit Plan B6) unverändert", () => {
     const result = sanitizeAddOns({
       contactForm: true,
       gallery: false,
       aiChat: true,
       booking: true,
       team: true,
+      subpages: true,
     });
     expect(result).toEqual({
       contactForm: true,
@@ -47,6 +48,7 @@ describe("pricing", () => {
       aiChat: true,
       booking: true,
       team: true,
+      subpages: true,
     });
   });
 
@@ -59,10 +61,11 @@ describe("pricing", () => {
       aiChat: false,
       booking: false,
       team: false,
+      subpages: false,
     });
   });
 
-  test("BOOKABLE_ADDON_KEYS enthält alle sieben Extras (seit Plan B5 auch team)", () => {
+  test("BOOKABLE_ADDON_KEYS enthält alle acht Extras (seit Plan B5 team, seit Plan B6 subpages)", () => {
     expect(BOOKABLE_ADDON_KEYS).toEqual([
       "contactForm",
       "gallery",
@@ -71,6 +74,11 @@ describe("pricing", () => {
       "aiChat",
       "booking",
       "team",
+      "subpages",
     ]);
+  });
+
+  test("addonPrice(subpages) ist der pauschale Add-on-Preis (3,90 €)", () => {
+    expect(addonPrice("subpages")).toBe(390);
   });
 });

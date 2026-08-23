@@ -26,14 +26,31 @@ describe("fixtures", () => {
     );
   });
 
-  describe("features-Fixture (full + alle Add-ons aktiv)", () => {
+  describe("features-Fixture (full + alle Feature-Flags aktiv)", () => {
     for (const packId of PACK_IDS) {
-      test(`${packId}-features validiert gegen Schema und hat alle drei Add-ons aktiv`, () => {
+      test(`${packId}-features validiert gegen Schema und hat alle vier Feature-Flags aktiv (inkl. subpages seit Plan B6)`, () => {
         const d = WebsiteDataV2Schema.parse(getFixture(packId, "features"));
         expect(d.features).toEqual({
           contactForm: true,
           aiChat: true,
           booking: true,
+          subpages: true,
+        });
+      });
+    }
+  });
+
+  describe("full-Fixture — Unterseiten-Add-on (Plan B6)", () => {
+    for (const packId of PACK_IDS) {
+      test(`${packId}-full hat eine Page "leistungen-im-detail" und alle Sektions-Add-ons aktiv`, () => {
+        const d = WebsiteDataV2Schema.parse(getFixture(packId, "full"));
+        expect(d.pages?.map(p => p.slug)).toEqual(["leistungen-im-detail"]);
+        expect(d.addOns).toEqual({
+          gallery: true,
+          menu: true,
+          pricelist: true,
+          team: true,
+          subpages: true,
         });
       });
     }

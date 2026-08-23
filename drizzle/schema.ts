@@ -117,6 +117,10 @@ export const generatedWebsites = mysqlTable("generated_websites", {
   addOnBooking: boolean("addOnBooking").default(false),
   addOnAiChat: boolean("addOnAiChat").default(false),
   addOnTeam: boolean("addOnTeam").default(false),
+  // Plan B6: Unterseiten-Add-on — spiegelt websiteData.features.subpages
+  // (server/onboardingV2/applyFeatures.ts applyFeatureFlags), analog
+  // addOnAiChat/addOnBooking/addOnTeam. Migration 0029.
+  addOnSubpages: boolean("addOnSubpages").default(false),
   addOnCalendly: boolean("addOnCalendly").default(false),
   calendlyUrl: varchar("calendlyUrl", { length: 512 }),
   // AI Chat usage tracking

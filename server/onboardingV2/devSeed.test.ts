@@ -103,7 +103,12 @@ describe("/dev/studio-seed", () => {
       expect.objectContaining({
         slug: "studio-seed-werkbank-features",
         websiteData: expect.objectContaining({
-          features: { contactForm: true, aiChat: true, booking: true },
+          features: {
+            contactForm: true,
+            aiChat: true,
+            booking: true,
+            subpages: true,
+          },
         }),
       })
     );

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SafeUrlSchema } from "../siteContract/schema";
+import { PageSchema, SafeUrlSchema } from "../siteContract/schema";
 
 /**
  * Patch-Schemas für die Onboarding-v2-Panels (Bilder, Texte, Angebot,
@@ -134,9 +134,23 @@ export const AddonsPatchSchema = z
   })
   .strict();
 
+/**
+ * Patch für das Unterseiten-Add-on (Extras-Panel-Unterbereich „Unterseiten",
+ * server/onboardingV2/routerContent.ts `updatePages`, wie `updateTeam` für
+ * die Team-Sektion): ersetzt `pages` komplett, `[]` entfernt das Feld
+ * (`applyPages`, server/onboardingV2/applyPatch.ts). `PageSchema` prüft
+ * Slug-Format/reservierte Slugs/Sektions-Whitelist je Page; die Obergrenze
+ * hier verdoppelt `WebsiteDataV2Schema.pages` (max 5), damit ein zu langer
+ * Patch schon am Panel-Schema statt erst am Dokument-Schema scheitert.
+ */
+export const PagesPatchSchema = z
+  .object({ pages: z.array(PageSchema).max(5) })
+  .strict();
+
 export type ImagesPatch = z.infer<typeof ImagesPatchSchema>;
 export type TextsPatch = z.infer<typeof TextsPatchSchema>;
 export type OfferPatch = z.infer<typeof OfferPatchSchema>;
 export type LegalPatch = z.infer<typeof LegalPatchSchema>;
 export type TeamPatch = z.infer<typeof TeamPatchSchema>;
 export type AddonsPatch = z.infer<typeof AddonsPatchSchema>;
+export type PagesPatch = z.infer<typeof PagesPatchSchema>;

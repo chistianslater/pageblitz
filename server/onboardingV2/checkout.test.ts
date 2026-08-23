@@ -61,6 +61,7 @@ describe("createStudioCheckoutSession", () => {
       aiChat: false,
       booking: false,
       team: false,
+      subpages: false,
     });
   });
 

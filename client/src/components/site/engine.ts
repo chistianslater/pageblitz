@@ -16,6 +16,12 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
   pricelist: "preise",
   team: "team",
   cta: "anfrage",
+  // pageHeader existiert nur innerhalb Page.sections (siehe schema.ts,
+  // PageSectionSchema), niemals in der Startseiten-`sections`-Liste, die
+  // dieser Anker-Karte zugrunde liegt — Wert wird praktisch nie gelesen.
+  // Platzhalter für die Exhaustivität von Record<SectionType, string>;
+  // echte Unterseiten-Navigation baut Task 3 in buildNavItems.
+  pageHeader: "seite",
 };
 
 export function orderedSections(data: WebsiteDataV2): SectionV2[] {
