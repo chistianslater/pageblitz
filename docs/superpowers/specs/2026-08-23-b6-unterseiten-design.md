@@ -49,3 +49,14 @@ Das letzte angekündigte Add-on — **Unterseiten** — als echtes Produkt liefe
 4. Nicht gebuchte Sektionen **ausblenden statt löschen** (Empfehlung; Team-Verhalten angleichen).
 5. Gastro-Packs: Menü-Add-on im Studio **vorausgewählt** statt Menü kostenlos (Empfehlung).
 6. Umami cookielos **ohne Consent** einbinden, Hinweis in der Datenschutz-Vorlage (Empfehlung: ja).
+
+---
+
+**Stand B6, `8558a84`+:** Alle §2-Punkte umgesetzt, §5 wie empfohlen (1–6).
+§4-Erfolgskriterien: Unterseiten ✅, Add-on-Konsistenz ✅ (dokumentierte
+Lost-Update-Lücke, selbstheilend), Kundenstatistik ✅, Lighthouse mobil `/`
+**LCP 1,8 s / JS ~134 kB gzip ✅** (erstmals beide Budgets), tsc 0 / alle
+Gates grün ✅. Zusätzlich (Zuruf während der Ausführung): Landingpage-Neubau
+im Studio-Look, Space Grotesk als einzige Systemschrift, 42 echte Bilder für
+die 14 Demo-Packs. Details, Rulings, Prod-Deploy-Schritte:
+`docs/superpowers/specs/2026-08-23-b6-ergebnis.md`.

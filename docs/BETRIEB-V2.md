@@ -711,49 +711,22 @@ unten), Lighthouse-Budgets (LCP < 2,5 s, JS < 150 kB gzip) blieben in B5
 verfehlt (§7 — deutliche Verbesserung, aber kein Zielerreichen; **seit B6
 Task 8 erreicht**, §7.1: LCP mobil 1,8 s, JS ~134 kB gzip).
 
-**Offene Punkte → Plan B6:**
-- **Unterseiten-Add-on** (`pages[]` im Vertrag, SSR `/site/:slug/:page`,
-  Navigation in allen 14 Packs, Panel, Preis) — größter Einzelposten,
-  bewusst aus B5 ausgeschlossen (eigene Spec).
-- **Kundenstatistik liefert weiterhin `null` (Erfolgskriterium NICHT
-  erfüllt):** B5 Task 3 hat nur den `umamiWebsiteId as any`-Cast in
-  `server/routers.ts` entfernt (Lesezugriff war schon immer typkorrekt
-  möglich) — geschrieben wird die Spalte im v2-Pfad aber **nirgends**.
-  `registerUmamiWebsite` existierte nur in den v1-Prozeduren und wurde mit
-  diesen in Plan B4b gelöscht; `server/umami.ts` exportiert seither nur noch
-  `getUmamiStats` (liest), keine Registrierungsfunktion mehr. `customer.
-  getAnalytics` liefert für jede v2-Website also weiterhin `null`, nicht weil
-  der Typ falsch war, sondern weil `umamiWebsiteId` nie gesetzt wird. Für B6:
-  Umami-Provisionierung im v2-Pfad ergänzen (z. B. im Stripe-Webhook bei
-  Aktivierung, analog zur alten v1-Registrierung).
-- **Add-on-Konsistenz über drei Quellen:** `onboarding_responses.addOn*`,
-  `subscriptions.addOns` (JSON) und `generatedWebsites.addOn*` können
-  auseinanderlaufen — ein Studio-Toggle nach Checkout (`updateAddons`)
-  ändert nur die DB-Flags, berührt aber nicht das Stripe-Abo (keine
-  Preis-/Rechnungsänderung). Modell/Ablauf für B6 klären (welche Quelle ist
-  maßgeblich, wann synchronisieren).
-- **Galerie-Abschalt-Inkonsistenz** (§Add-ons oben): Team entfernt seine
-  Sektion beim Abschalten aktiv, die Galerie nicht — Designfrage
-  hide-vs-remove für B6 einheitlich klären; `PhotosPanel.tsx` erlaubt
-  Galerie-Pflege unabhängig vom Add-on-Flag.
-- **gusto-Generierung erzeugt Speisekarte ohne Add-on:** das `gusto`-Pack
-  legt bei der Website-Generierung offenbar eine `menu`-Sektion an, ohne
-  dass `addOnMenu` gebucht/gesetzt ist — dieselbe Flag-vs-Sektion-Klasse von
-  Bug wie beim Team-Ruling, noch nicht systematisch für alle Packs/Add-ons
-  geprüft.
-- **Perf-Hebel aus B5 Task 6** — in B6 Task 8 umgesetzt (§7.1): Radix/
-  framer-motion raus aus `/`, self-hosted Font, Third-Party nach Idle,
-  `modulepreload`-Alternative geprüft und verworfen (Kommentar `App.tsx`).
-  Offen bleibt nur der Doppel-Request für Pack-Fonts im CSR-Fallback bei
-  Website-Wechsel ohne vollen Reload (§7) sowie die in §7.1 genannten
-  Restursachen (vendor-react, Haupt-CSS, tRPC-Bootstrap am Root).
-- **Pack-Identität** (werkbank/marktplatz/schimmer, Ruling B5 Task 6: keine
-  Rückänderung, siehe `2026-08-23-b5-ergebnis.md`): eine zweite
-  Palettenfarbe `accent-text` (getrennt vom CTA-Hintergrund-Akzent) wäre
-  die saubere Lösung, um Original-Signalfarben für CTAs zurückzuholen, ohne
-  die bestehenden Text-auf-Hell-Stellen (Preis, Akzentwort, Zitat-Autor
-  u. a.) unter 4,5:1 zu drücken — Schema-Änderung an `PackConstitution`
-  über alle 14 Packs, nicht in B5 umgesetzt.
+**Plan B6 ist erledigt** (Stand siehe `docs/superpowers/specs/2026-08-23-b6-ergebnis.md`)
+— Unterseiten-Add-on (`pages[]`, SSR-Routen, Nav in 14 Packs, Studio-Editor,
+3,90 €), Add-on-Konsistenz (Gating über `websiteData.addOns`, ausblenden statt
+löschen, Stripe-Sync nach Checkout, §6), Kundenstatistik (Umami-Provisionierung,
+§6), Perf-Budgets erreicht (§7.1), `accent-text` in den Verfassungen, Prod-Smoke
+als Gate (§8); parallel Landingpage-Neubau im Studio-Look, Space Grotesk als
+einzige Systemschrift, echte Bilder für alle 14 Demo-Packs.
+
+**Offen nach B6 (Backlog):**
+- Lost-Update-Fenster auf `subscriptions.addOns` (§6, dokumentiert, selbstheilend).
+- Doppel-Request Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne Reload (§7).
+- Perf-Restursachen (§7.1: vendor-react, Haupt-CSS, tRPC-Bootstrap am Root).
+- Umami: Slug-Änderung aktualisiert die Umami-Domain nicht; Doppel-Registrierung
+  bei zwei gleichzeitigen Aktivierungen möglich (harmlos).
+- `StartPage.tsx` (kein Studio-Look, liest evtl. noch `lp-theme`), Dashboard-Optik,
+  GMB-Kategorien/Stadt-Autocomplete, Blog/SEO-Inhalte (Memory-Backlog).
 - `client/src/pages/admin/websitesPageLogic.ts` (`packNameFor`) schlägt
   aktuell direkt in `STYLE_PACKS` nach (volles Verfassungs-Modul) statt in
   der schlanken `shared/stylePacks/summary.ts` (`PACK_SUMMARY`, seit B5
