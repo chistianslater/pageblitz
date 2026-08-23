@@ -39,7 +39,7 @@ describe("renderSiteHtml — og:image", () => {
       origin: "https://brandt.pageblitz.de",
     });
     expect(html).toContain(
-      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.svg" />'
+      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.webp" />'
     );
     expect(html).toContain(
       '<meta name="twitter:card" content="summary_large_image" />'
@@ -207,7 +207,7 @@ describe("renderSiteHtml — Unterseiten (pages[], Plan B6 Task 3)", () => {
       pathname: `/${page.slug}`,
     });
     expect(html).toContain(
-      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.svg" />'
+      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.webp" />'
     );
   });
 

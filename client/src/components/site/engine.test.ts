@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
 import {
+  applyNavLabels,
   buildNavItems,
   orderedSections,
   pageContentSections,
@@ -159,5 +160,33 @@ describe("pageHeaderSection / pageContentSections", () => {
       "services",
       "contact",
     ]);
+  });
+});
+
+describe("applyNavLabels", () => {
+  test("ersetzt nur Anker-Labels (sectionType gesetzt), Page-Links bleiben; mutiert nichts", () => {
+    const items = [
+      {
+        key: "anchor-testimonials",
+        href: "#bewertungen",
+        label: "Bewertungen",
+        sectionType: "testimonials" as const,
+      },
+      {
+        key: "anchor-faq",
+        href: "#faq",
+        label: "FAQ",
+        sectionType: "faq" as const,
+      },
+      { key: "page-x", href: "/x", label: "Bewertungen", current: true },
+    ];
+    const out = applyNavLabels(items, { testimonials: "Mandantenstimmen" });
+    expect(out.map(i => i.label)).toEqual([
+      "Mandantenstimmen",
+      "FAQ",
+      "Bewertungen",
+    ]);
+    expect(items[0]!.label).toBe("Bewertungen");
+    expect(out[2]).toBe(items[2]);
   });
 });

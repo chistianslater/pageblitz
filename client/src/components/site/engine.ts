@@ -47,16 +47,18 @@ export type NavItem = {
   href: string;
   label: string;
   current?: boolean;
+  /** Nur bei Sektions-Ankern gesetzt — erlaubt Packs, ihre eigene Beschriftung zu verwenden (`applyNavLabels`). */
+  sectionType?: SectionType;
 };
 
 /**
- * Generische Nav-Beschriftungen für Sektions-Anker — dieselben Wörter, die
- * bislang in jedem der 14 Pack-Module als eigenes `FALLBACK_TITLES` dupliziert
- * waren (dort: `FALLBACK_TITLES[s.type] ?? s.type`, NICHT `section.headline`
- * — die Nav-Beschriftung ignoriert Headline-Overrides bewusst, nur die
- * Sektions-Überschrift (h2) nutzt sie). `buildNavItems` übernimmt exakt
- * dasselbe Verhalten, damit Task 4 (Umstellung der Packs auf `buildNavItems`)
- * keine sichtbare Änderung an der Startseiten-Navigation verursacht.
+ * Generische Nav-Beschriftungen für Sektions-Anker — nur Default. Die 14
+ * Pack-Module haben je eigene Wortwahl (`FALLBACK_TITLES`: kanzlei
+ * „Mandantenstimmen", landgut „Sortiment", gusto „Impressionen" …) und
+ * ersetzen die Default-Labels der Anker-Items über `applyNavLabels`, damit
+ * die Startseiten-Navigation exakt so bleibt wie vor Plan B6 (Review-Fund
+ * Task 4). Wie bisher ignoriert die Nav-Beschriftung Headline-Overrides
+ * (`section.headline` nutzt nur die h2).
  */
 const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -105,6 +107,7 @@ export function buildNavItems(
       key: `anchor-${s.type}`,
       href: `${anchorPrefix}#${SECTION_ANCHORS[s.type]}`,
       label: SECTION_NAV_LABELS[s.type] ?? s.type,
+      sectionType: s.type,
     }));
   const pageItems: NavItem[] = (doc.pages ?? []).map(p => ({
     key: `page-${p.slug}`,
@@ -113,6 +116,22 @@ export function buildNavItems(
     current: currentPage?.slug === p.slug,
   }));
   return [...anchorItems, ...pageItems];
+}
+
+/**
+ * Ersetzt die Default-Labels der Sektions-Anker durch die Pack-eigene
+ * Wortwahl (`FALLBACK_TITLES` des Moduls); Page-Links bleiben unverändert.
+ * Liefert neue Objekte, mutiert nichts.
+ */
+export function applyNavLabels(
+  items: NavItem[],
+  labels: Partial<Record<SectionType, string>>
+): NavItem[] {
+  return items.map(item =>
+    item.sectionType && labels[item.sectionType]
+      ? { ...item, label: labels[item.sectionType] as string }
+      : item
+  );
 }
 
 /**

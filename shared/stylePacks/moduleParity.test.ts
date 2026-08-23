@@ -121,3 +121,29 @@ describe("Style-Pack-Registrierung — pageHeader + navItems auf Unterseiten (Pl
     });
   }
 });
+
+/**
+ * Review-Fund Task 4: `buildNavItems` liefert generische Anker-Labels
+ * („Bewertungen", „Leistungen", „Galerie", „Preise"); jedes Pack hat aber
+ * eigene Wortwahl und ersetzt sie über `applyNavLabels` — die Startseiten-
+ * Navigation muss exakt so bleiben wie vor Plan B6. Stichproben mit Labels,
+ * die sich vom generischen Default unterscheiden.
+ */
+describe("Pack-eigene Nav-Labels bleiben erhalten (applyNavLabels)", () => {
+  const samples: Array<[Parameters<typeof getFixture>[0], string, string]> = [
+    ["kanzlei", "Mandantenstimmen", "Bewertungen"],
+    ["landgut", "Sortiment", "Leistungen"],
+    ["gusto", "Impressionen", "Galerie"],
+  ];
+  for (const [packId, ownLabel, genericLabel] of samples) {
+    test(`${packId}: Nav zeigt „${ownLabel}" statt generisch „${genericLabel}"`, () => {
+      const data = getFixture(packId, "full");
+      const html = renderToStaticMarkup(
+        React.createElement(SiteRenderer, { data, pathname: "/" })
+      );
+      const nav = html.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
+      expect(nav).toContain(`>${ownLabel}<`);
+      expect(nav).not.toContain(`>${genericLabel}<`);
+    });
+  }
+});

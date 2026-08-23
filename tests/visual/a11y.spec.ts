@@ -151,8 +151,8 @@ test.describe("A11y (axe): Demo-Seiten je Pack", () => {
  * 14). Hier reichen 3 strukturell unterschiedliche Packs als E2E-Stichprobe
  * (axe braucht echtes Rendering/Layout, das vitest+renderToStaticMarkup
  * nicht prüft): werkbank (einspaltige Nav), gusto (links/rechts-geteilte
- * Nav, siehe packs/gusto/index.tsx), kanzlei (links/rechts-geteilte Nav +
- * zusätzlicher Hero-CTA-Link im selben Nav-Container).
+ * Nav, siehe packs/gusto/index.tsx), kanzlei (einspaltige Nav + zusätzlicher
+ * Hero-CTA-Link im selben Nav-Container).
  */
 test.describe("A11y (axe): Demo-Unterseiten je Pack (Stichprobe)", () => {
   for (const pack of ["werkbank", "gusto", "kanzlei"] as const) {

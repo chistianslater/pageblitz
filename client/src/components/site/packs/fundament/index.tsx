@@ -8,6 +8,7 @@ import type {
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
 import {
+  applyNavLabels,
   buildNavItems,
   orderedSections,
   SECTION_ANCHORS,
@@ -336,7 +337,10 @@ const FundamentPage: React.FC<{
 }> = ({ data, basePath, now, navItems, sections: pageSections }) => {
   const sections: (SectionV2 | PageSectionOf<"pageHeader">)[] =
     pageSections ?? orderedSections(data);
-  const navList = navItems ?? buildNavItems(data, { pathname: "/", basePath });
+  const navList = applyNavLabels(
+    navItems ?? buildNavItems(data, { pathname: "/", basePath }),
+    FALLBACK_TITLES
+  );
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"

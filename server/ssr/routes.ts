@@ -321,7 +321,7 @@ const DEMO_CACHE_CONTROL = "public, max-age=3600";
  *
  * Route-Regex `:pack([a-z0-9-]+)` matcht NUR Pack-ID-artige Segmente — ein
  * Segment mit Punkt/Großbuchstaben/Sonderzeichen (z. B. eine statische Datei
- * wie `/demo/werkbank-hero.svg` unter `client/public/demo/`) matcht diese
+ * wie `/demo/werkbank-hero.webp` unter `client/public/demo/`) matcht diese
  * Route gar nicht erst und fällt automatisch auf die nachfolgende Static-/
  * SPA-Middleware durch (Regressionsfund: die Fixture-Bilder der Demo-Seiten
  * selbst liegen unter genau diesem Pfadpräfix). Rechtsseiten
