@@ -35,15 +35,16 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene statische Vorschaubilder",
 
   await page.goto("/");
 
-  // Blendet die fixe Navbar (client/src/pages/LandingPage.tsx `Navbar`,
-  // `<motion.nav className="fixed top-0 ...">`) und — als Absicherung, falls
-  // die Einwilligung aus skipCookieBanner() doch nicht greift — das
-  // Cookie-Banner (`PageblitzCookieBanner`, `fixed bottom-0 ...`) aus, bevor
-  // der Screenshot entsteht: beide sind fixed-positioniert und würden sonst
-  // je nach Scroll-/Render-Timing über die Showcase-Baseline ragen.
+  // Blendet die sticky Navigation (client/src/components/landing/
+  // LandingNav.tsx, `<header className="sticky top-0 ...">`) und — als
+  // Absicherung, falls die Einwilligung aus skipCookieBanner() doch nicht
+  // greift — das Cookie-Banner (`PageblitzCookieBanner`, `fixed bottom-0 ...`)
+  // aus, bevor der Screenshot entsteht: beide liegen über dem Inhalt und
+  // würden sonst je nach Scroll-/Render-Timing über die Showcase-Baseline
+  // ragen.
   await page.addStyleTag({
     content:
-      "nav, .fixed.top-0, .fixed.bottom-0 { visibility: hidden !important; }",
+      "header, nav, .fixed.top-0, .fixed.bottom-0 { visibility: hidden !important; }",
   });
 
   const showcase = page.locator("#showcase");

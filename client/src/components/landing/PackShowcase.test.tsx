@@ -12,7 +12,7 @@ import { PackShowcase } from "./PackShowcase";
 // ohne DOM/Event-Handling. Diese Fälle stehen als echte Interaktionstests
 // in `tests/visual/landing.spec.ts` (Playwright, echter Browser).
 describe("PackShowcase", () => {
-  const html = renderToStaticMarkup(<PackShowcase isDark={true} />);
+  const html = renderToStaticMarkup(<PackShowcase />);
 
   test("rendert genau 14 Karten (eine je Style Pack), als <article> mit aria-label", () => {
     const articleCount = (html.match(/<article/g) ?? []).length;

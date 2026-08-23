@@ -1,23 +1,22 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
 import { PACK_SUMMARY, type PackSummary } from "@shared/stylePacks/summary";
 import type { PackId } from "@shared/siteContract/types";
-
-interface PackShowcaseProps {
-  isDark: boolean;
-}
+import { textLink } from "./primitives";
 
 interface PackCardProps {
   summary: PackSummary;
   index: number;
-  isDark: boolean;
-  animate: boolean;
   onOpen: (packId: PackId, trigger: HTMLElement) => void;
 }
 
-function PackCard({ summary, index, isDark, animate, onOpen }: PackCardProps) {
+/**
+ * Eine Zelle im Hairline-Raster: Vorschaubild, darunter Nummer, Akzentpunkt,
+ * Name, Essenz und „Ansehen". Kein Karten-Schatten, keine Eingangsanimation —
+ * das Raster selbst ist die Struktur.
+ */
+function PackCard({ summary, index, onOpen }: PackCardProps) {
   const { id: packId, name, essence, accent } = summary;
 
   function handleOpen(event: React.MouseEvent<HTMLButtonElement>): void {
@@ -25,24 +24,15 @@ function PackCard({ summary, index, isDark, animate, onOpen }: PackCardProps) {
   }
 
   return (
-    <m.article
+    <article
       aria-label={`${name}: ${essence}`}
-      initial={animate ? { opacity: 0, y: 24 } : undefined}
-      whileInView={animate ? { opacity: 1, y: 0 } : undefined}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ delay: (index % 4) * 0.06, duration: 0.5 }}
-      className={`group relative rounded-2xl border overflow-hidden transition-colors duration-300 ${
-        isDark
-          ? "border-white/10 bg-white/[0.03] hover:border-white/25"
-          : "border-gray-200 bg-white hover:border-gray-300 shadow-sm hover:shadow-md"
-      }`}
+      className="group flex flex-col bg-lp-canvas"
     >
       <button
         type="button"
         onClick={handleOpen}
         aria-label={`Live-Vorschau ${name} öffnen`}
-        className="relative block w-full aspect-[16/10] overflow-hidden bg-white border-b text-left cursor-zoom-in"
-        style={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "#e5e7eb" }}
+        className="relative block w-full cursor-zoom-in overflow-hidden border-b border-lp-line bg-white text-left focus-visible:outline-offset-[-2px]"
       >
         <img
           src={`/pack-previews/${packId}.webp`}
@@ -51,52 +41,39 @@ function PackCard({ summary, index, isDark, animate, onOpen }: PackCardProps) {
           loading="lazy"
           decoding="async"
           alt={`Vorschau Style Pack ${name}`}
-          className="absolute inset-0 w-full h-full object-cover object-top"
-        />
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-          style={{ boxShadow: `inset 0 0 0 2px ${accent}` }}
-          aria-hidden="true"
+          className="block aspect-[16/10] w-full object-cover object-top transition-transform duration-700 [transition-timing-function:var(--lp-ease)] group-hover:scale-[1.02]"
         />
       </button>
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-1.5">
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3 flex items-center justify-between">
           <span
-            className={`text-xs font-mono tabular-nums ${isDark ? "text-white/50" : "text-gray-600"}`}
+            className="text-[0.75rem] tabular-nums text-lp-muted"
             aria-hidden="true"
           >
             {String(index + 1).padStart(2, "0")}
           </span>
           <span
-            className="w-3 h-3 rounded-full shrink-0 mt-1"
+            className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: accent }}
             aria-hidden="true"
           />
         </div>
-        <h3
-          className={`font-semibold text-lg mb-1.5 ${isDark ? "text-white" : "text-gray-900"}`}
-        >
+        <h3 className="text-[1.2rem] leading-tight tracking-[-0.01em]">
           {name}
         </h3>
-        <p
-          className={`text-sm leading-relaxed mb-4 min-h-[2.5rem] ${isDark ? "text-white/50" : "text-gray-600"}`}
-        >
+        <p className="mt-1.5 mb-4 flex-1 text-[0.9rem] leading-[1.55] text-lp-muted">
           {essence}
         </p>
         <button
           type="button"
           onClick={handleOpen}
-          className={`inline-flex items-center gap-1 text-sm font-medium transition-colors ${
-            isDark
-              ? "text-lime-300 hover:text-lime-200"
-              : "text-lime-700 hover:text-lime-600"
-          }`}
+          className={`${textLink} self-start text-[0.9rem]`}
         >
           Ansehen
-          <ArrowUpRight className="w-3.5 h-3.5" />
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
-    </m.article>
+    </article>
   );
 }
 
@@ -110,16 +87,11 @@ interface PreviewModalProps {
 
 /**
  * Modal für die Live-Vorschau eines Packs — lädt `/demo/<pack>` erst beim
- * Öffnen (kein vorab geladenes iframe wie im alten Showcase). Eigene
- * Fokusfalle statt `@radix-ui/react-dialog`/`ui/dialog.tsx`: Letzteres ist
- * auf das Dashboard-Farbschema (`--background`-Token, siehe `index.css`)
- * zugeschnitten und würde auf der hell/dunkel umschaltbaren Landingpage
- * (`isDark`-Prop statt CSS-Variablen-Theming) nicht passen. Struktur folgt
- * dem bereits vorhandenen, SSR-sicheren Insel-Panel-Muster
- * (`BookingIsland.tsx`/`ChatIsland.tsx`: `createPortal` nur mit
- * `document`-Check, Escape schließt, Fokus-Rückgabe an den Auslöser) und
- * ergänzt eine echte Tab-Fokusfalle, die dort für ein FAB-Panel nicht nötig
- * war.
+ * Öffnen. Eigene Fokusfalle statt `ui/dialog.tsx` (das ist auf das
+ * Dashboard-Farbschema zugeschnitten). Struktur folgt dem SSR-sicheren
+ * Insel-Panel-Muster (`BookingIsland.tsx`/`ChatIsland.tsx`: `createPortal`
+ * nur mit `document`-Check, Escape schließt, Fokus-Rückgabe an den Auslöser)
+ * plus echte Tab-Fokusfalle.
  */
 function PreviewModal({ packId, onClose }: PreviewModalProps) {
   const titleId = useId();
@@ -174,7 +146,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
 
   const modal = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-8"
+      className="lp fixed inset-0 z-[100] flex items-center justify-center bg-lp-ink/60 p-4 sm:p-8"
       onMouseDown={event => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -184,11 +156,11 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface shadow-[0_40px_80px_-40px_rgba(29,26,23,0.6)]"
         style={{ height: "min(85vh, 720px)" }}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-3">
-          <h3 id={titleId} className="font-semibold text-gray-900">
+        <div className="flex items-center justify-between gap-4 border-b border-lp-line px-5 py-3">
+          <h3 id={titleId} className="font-medium">
             {name}
           </h3>
           <div className="flex items-center gap-4">
@@ -196,26 +168,26 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
               href={demoHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-medium text-lime-700 hover:text-lime-600"
+              className={`${textLink} text-[0.9rem]`}
             >
               In neuem Tab öffnen
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
             </a>
             <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
               aria-label="Vorschau schließen"
-              className="rounded-full p-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              className="rounded-full p-1.5 text-lp-muted transition-colors hover:bg-lp-canvas hover:text-lp-ink"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
         <iframe
           src={demoHref}
           title={`Live-Vorschau: ${name}`}
-          className="w-full flex-1 border-0"
+          className="w-full flex-1 border-0 bg-white"
         />
       </div>
     </div>
@@ -227,19 +199,15 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
 }
 
 /**
- * Zeigt alle 14 Style Packs als Grid — je Karte ein statisches Vorschaubild
- * (`client/public/pack-previews/<pack>.webp`, erzeugt von
- * `scripts/build-pack-previews.mjs` via `npm run build:previews`). Klick auf
- * Bild oder „Ansehen" öffnet die Live-Demo (`/demo/<pack>`) in einem Modal
- * statt — wie vorher — 14 sofort ladende iframes gleichzeitig zu rendern
- * (Landingpage-LCP/JS-Gewicht, siehe Task-6-Bericht).
- * Ersetzt den alten v1-Showcase (`WebsiteShowcase`/`LivePreviewCard`), der
- * feste Demo-Daten der (in B4b entfernten) v1-Layouts gerendert hat.
+ * Zeigt alle 14 Style Packs als Hairline-Raster — je Zelle ein statisches
+ * Vorschaubild (`client/public/pack-previews/<pack>.webp`, erzeugt von
+ * `scripts/build-pack-previews.mjs` via `npm run build:previews`). Die erste
+ * Zelle trägt die Sektionsüberschrift, damit das Raster bei 3 Spalten (1+14)
+ * und bei 2/4 Spalten (2+14, Intro doppelt breit) ohne Lücke aufgeht. Klick
+ * auf Bild oder „Ansehen" öffnet die Live-Demo (`/demo/<pack>`) im Modal
+ * statt 14 iframes sofort zu laden (Landingpage-LCP/JS-Gewicht).
  */
-export function PackShowcase({ isDark }: PackShowcaseProps) {
-  const prefersReducedMotion = useReducedMotion();
-  const animate = !prefersReducedMotion;
-
+export function PackShowcase() {
   const [openPackId, setOpenPackId] = useState<PackId | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
@@ -255,50 +223,38 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
   }, []);
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <section id="showcase" className="py-32 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 mb-12">
-          <m.p
-            initial={animate ? { opacity: 0, y: 20 } : undefined}
-            whileInView={animate ? { opacity: 1, y: 0 } : undefined}
-            viewport={{ once: true }}
-            className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
-          >
-            14 Stilwelten
-          </m.p>
-          <m.h2
-            initial={animate ? { opacity: 0, y: 20 } : undefined}
-            whileInView={animate ? { opacity: 1, y: 0 } : undefined}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className={`text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
-          >
-            Ein Look für jedes Handwerk.
-          </m.h2>
-          <p
-            className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
-          >
-            Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
-            Typografie, Farben und Layout passend zur Branche. Du wählst den
-            Stil, der zu dir passt, deine Inhalte bleiben gleich.
-          </p>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <section
+      id="showcase"
+      aria-labelledby="lp-showcase-heading"
+      className="lp-section border-t border-lp-line"
+    >
+      <div className="lp-container">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border border-lp-line bg-lp-line sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex flex-col justify-between gap-8 bg-lp-canvas p-6 sm:col-span-2 sm:p-8 lg:col-span-1 xl:col-span-2">
+            <div>
+              <p className="lp-kicker mb-4">14 Stilwelten</p>
+              <h2 id="lp-showcase-heading" className="lp-h2">
+                Ein Look für jedes Handwerk.
+              </h2>
+            </div>
+            <p className="max-w-[30rem] text-[1rem] leading-[1.6] text-lp-muted">
+              Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
+              Typografie, Farben und Layout passend zur Branche. Du wählst den
+              Stil, der zu dir passt, deine Inhalte bleiben gleich.
+            </p>
+          </div>
           {PACK_SUMMARY.map((summary, index) => (
             <PackCard
               key={summary.id}
               summary={summary}
               index={index}
-              isDark={isDark}
-              animate={animate}
               onOpen={handleOpen}
             />
           ))}
         </div>
+      </div>
 
-        <PreviewModal packId={openPackId} onClose={handleClose} />
-      </section>
-    </LazyMotion>
+      <PreviewModal packId={openPackId} onClose={handleClose} />
+    </section>
   );
 }

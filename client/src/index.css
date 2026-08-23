@@ -17,23 +17,6 @@ body {
   max-width: 100%;
 }
 
-/* ── Animated gradient backgrounds (LandingPage sections) ──────────────── */
-@keyframes gradient-orb-drift {
-  0%,  100% { transform: translate(0px,   0px) scale(1);    }
-  25%        { transform: translate(45px, -35px) scale(1.08); }
-  50%        { transform: translate(-30px, 25px) scale(0.95); }
-  75%        { transform: translate(20px,  40px) scale(1.04); }
-}
-@keyframes gradient-orb-drift-alt {
-  0%,  100% { transform: translate(0px,   0px) scale(1);    }
-  25%        { transform: translate(-45px, 20px) scale(1.06); }
-  50%        { transform: translate(35px, -30px) scale(0.96); }
-  75%        { transform: translate(-20px,-40px) scale(1.02); }
-}
-@keyframes gradient-text-shimmer {
-  0%,  100% { background-position: 0%   50%; }
-  50%        { background-position: 100% 50%; }
-}
 /* ──────────────────────────────────────────────────────────────────────── */
 /* Der frühere @import hier lud 23 Google-Font-Familien (v1-Layout-Rest, seit
    B4b entfernt) blockierend mit. Seit dem Relaunch-Design (2026-08-23) gibt es
@@ -83,6 +66,16 @@ body {
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: 'Space Grotesk', system-ui, sans-serif;
   --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  /* Landingpage-Tokens (`--lp-*`, siehe unten) als Tailwind-Farben:
+     bg-lp-canvas, text-lp-ink, border-lp-line, … */
+  --color-lp-canvas: var(--lp-canvas);
+  --color-lp-surface: var(--lp-surface);
+  --color-lp-ink: var(--lp-ink);
+  --color-lp-muted: var(--lp-muted);
+  --color-lp-line: var(--lp-line);
+  --color-lp-accent: var(--lp-accent);
+  --color-lp-accent-ink: var(--lp-accent-ink);
+  --color-lp-warn: var(--lp-warn);
 }
 
 :root {
@@ -375,117 +368,116 @@ body {
 .aspect-hero    { aspect-ratio: 16 / 10; }
 .aspect-about   { aspect-ratio: 4  /  5; }
 
-/* ── Landing Page Light/Dark Mode ──────────────────────────────────────── */
-
-/* Root transition – only colour properties so framer-motion is unaffected */
-.lp-root {
-  transition:
-    background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-    color             0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Light-mode root */
-[data-lp-theme="light"].lp-root { background-color: #f3f4f6; color: #111827; }
-
-/* ── Text ── */
-[data-lp-theme="light"] .text-white            { color: #111827;              transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/80        { color: rgba(17,24,39,0.82);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/70        { color: rgba(17,24,39,0.75);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/60        { color: rgba(17,24,39,0.68);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/50        { color: rgba(17,24,39,0.58);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/40        { color: rgba(17,24,39,0.48);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/35        { color: rgba(17,24,39,0.42);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/30        { color: rgba(17,24,39,0.35);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .text-white\/20        { color: rgba(17,24,39,0.22);  transition: color 0.5s ease; }
-[data-lp-theme="light"] .hover\:text-white:hover { color: #111827; }
-
-/* ── Signal-Buttons (violet) behalten IMMER weißen Text ──
-   Muss NACH den text-white-Overrides stehen, damit gleiche Spezifität (0,2,0)
-   die spätere Regel gewinnt */
-[data-lp-theme="light"] .bg-violet-950 { color: white; }
-[data-lp-theme="light"] .bg-violet-900 { color: white; }
-[data-lp-theme="light"] .hover\:bg-violet-900:hover { color: white; }
-
-/* ── Borders ── */
-[data-lp-theme="light"] .border-white\/5  { border-color: rgba(0,0,0,0.06);  transition: border-color 0.5s ease; }
-[data-lp-theme="light"] .border-white\/8  { border-color: rgba(0,0,0,0.08);  transition: border-color 0.5s ease; }
-[data-lp-theme="light"] .border-white\/10 { border-color: rgba(0,0,0,0.09);  transition: border-color 0.5s ease; }
-[data-lp-theme="light"] .border-white\/20 { border-color: rgba(0,0,0,0.12);  transition: border-color 0.5s ease; }
-
-/* ── Backgrounds ── */
-[data-lp-theme="light"] .bg-white\/\[0\.015\]           { background-color: rgba(0,0,0,0.02);  transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .bg-white\/\[0\.02\]            { background-color: rgba(0,0,0,0.025); transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .bg-white\/\[0\.03\]            { background-color: rgba(0,0,0,0.03);  transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .bg-white\/5                    { background-color: rgba(0,0,0,0.04);  transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .bg-white\/10                   { background-color: rgba(0,0,0,0.06);  transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .hover\:bg-white\/5:hover       { background-color: rgba(0,0,0,0.04); }
-[data-lp-theme="light"] .hover\:bg-white\/\[0\.06\]:hover { background-color: rgba(0,0,0,0.04); }
-[data-lp-theme="light"] .bg-\[\#0a0a0a\]               { background-color: #f3f4f6; transition: background-color 0.5s ease; }
-[data-lp-theme="light"] .bg-\[\#0a0a0a\]\/95           { background-color: rgba(243,244,246,0.97); transition: background-color 0.5s ease; }
 .aspect-square-sm { aspect-ratio: 1 / 1; }
 
-/* ── Button Shimmer / Highlight Sweep ──────────────────────────────────── */
-/* Works on both dark (white) and violet buttons — uses a blue-tinted shimmer
-   that is visible as a bright sweep on dark violet and as a cool shine on white */
-.btn-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-.btn-shimmer::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -80%;
-  width: 50%;
-  height: 200%;
-  background: linear-gradient(
-    105deg,
-    transparent 20%,
-    rgba(212, 255, 0, 0.30) 50%,
-    transparent 80%
-  );
-  transform: skewX(-20deg);
-  pointer-events: none;
-}
-.btn-shimmer:hover::before {
-  animation: btn-shine 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-@keyframes btn-shine {
-  from { left: -80%; }
-  to   { left: 130%; }
-}
 
-/* ── Nav CTA Button: kontinuierlicher Shimmer-Loop + Glow-Puls ─────────── */
-.btn-nav-cta {
-  position: relative;
+/* ── Landingpage (Studio-Look, 2026-08-23) ─────────────────────────────────
+   Gleiche Welt wie client/src/pages/onboarding-v2/studio.css (--st-*): warmes
+   Papier, Hairlines, eine Schrift, ein Grün. Hell ohne Umschalter —
+   prefers-color-scheme wird bewusst ignoriert. Tokens hier, Layout in
+   client/src/components/landing/*.tsx per Tailwind-Klassen (bg-lp-canvas …). */
+.lp {
+  --lp-canvas: #f3efe7;
+  --lp-surface: #fbf9f4;
+  --lp-ink: #1d1a17;
+  --lp-muted: #6b645b;
+  --lp-line: #d9d2c5;
+  --lp-accent: #1f5f4b;
+  --lp-accent-ink: #ffffff;
+  --lp-warn: #a4441f;
+  --lp-font: "Space Grotesk", system-ui, sans-serif;
+  --lp-section: clamp(4rem, 3rem + 5vw, 9rem);
+  --lp-gutter: clamp(1.25rem, 4vw, 3rem);
+  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--lp-font);
+  background: var(--lp-canvas);
+  color: var(--lp-ink);
+  -webkit-font-smoothing: antialiased;
+  accent-color: var(--lp-accent);
+  caret-color: var(--lp-accent);
+}
+.lp ::selection {
+  background: color-mix(in oklab, var(--lp-accent) 22%, transparent);
+}
+.lp h1, .lp h2, .lp h3, .lp h4 {
+  font-family: var(--lp-font);
+  font-weight: 500;
+  text-wrap: balance;
+}
+.lp :focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 2px;
+}
+.lp-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--lp-gutter);
+}
+.lp-section {
+  padding-block: var(--lp-section);
+  scroll-margin-top: 4.5rem;
+}
+.lp-kicker {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lp-muted);
+}
+.lp-h1 {
+  font-size: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+/* Hero-H1 teilt sich die Zeile mit dem Studio-Rahmen (6/12) — eine Stufe kleiner. */
+.lp-h1--hero {
+  font-size: clamp(2.5rem, 1.25rem + 3.4vw, 4.75rem);
+}
+.lp-h2 {
+  font-size: clamp(1.9rem, 1.1rem + 2.2vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.lp-num {
+  font-size: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
+  line-height: 1;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--lp-muted);
+}
+/* Hero-Studio-Rahmen: Checkliste füllt sich (einziger erklärender Moment). */
+.lp-check-num {
+  transition: color 400ms var(--lp-ease);
+}
+.lp-check-mark {
+  transform: scale(0.6);
+  opacity: 0;
+  transition:
+    transform 400ms var(--lp-ease),
+    opacity 300ms var(--lp-ease);
+}
+[data-status="done"] .lp-check-mark {
+  transform: scale(1);
+  opacity: 1;
+}
+/* FAQ-Accordion: Höhe über grid-template-rows animieren (kein JS-Messen). */
+.lp-acc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--lp-ease);
+}
+.lp-acc-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.lp-acc-panel > div {
   overflow: hidden;
-  animation: nav-cta-glow 3.5s ease-in-out infinite;
 }
-.btn-nav-cta::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -80%;
-  width: 45%;
-  height: 200%;
-  background: linear-gradient(
-    105deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.50) 50%,
-    transparent 80%
-  );
-  transform: skewX(-20deg);
-  pointer-events: none;
-  animation: nav-cta-shine 3.5s ease-in-out infinite;
-}
-@keyframes nav-cta-shine {
-  0%, 30%   { left: -80%; opacity: 0; }
-  35%       { opacity: 1; }
-  55%, 100% { left: 130%; opacity: 0; }
-}
-@keyframes nav-cta-glow {
-  0%, 100% { box-shadow: 0 0 12px 0px rgba(163, 230, 53, 0.35), 0 4px 14px rgba(0,0,0,0.25); }
-  50%      { box-shadow: 0 0 22px 4px rgba(163, 230, 53, 0.55), 0 4px 18px rgba(0,0,0,0.30); }
+@media (prefers-reduced-motion: reduce) {
+  .lp *, .lp *::before, .lp *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -13,9 +13,9 @@ const PRIMARY = "#a3e635"; // Pageblitz neon lime
 export default function LandingPageChatWidget() {
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
-  const isDark =
-    typeof window !== "undefined" &&
-    localStorage.getItem("lp-theme") === "dark";
+  // Die Landingpage ist seit dem Studio-Redesign (2026-08-23) immer hell —
+  // kein `lp-theme`-Toggle mehr; das Panel bleibt in seiner hellen Variante.
+  const isDark = false;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -162,8 +162,12 @@ export default function LandingPageChatWidget() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         onClick={() => (open ? setOpen(false) : openChat())}
-        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-gray-900 transition-all"
-        style={{ background: PRIMARY, boxShadow: `0 8px 32px ${PRIMARY}60` }}
+        className="fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full flex items-center justify-center text-white transition-all"
+        style={{
+          // Trigger in den Landing-Tokens (Accent-Grün, weiche Tiefe statt Glow).
+          background: "#1f5f4b",
+          boxShadow: "0 12px 28px -12px rgba(29,26,23,0.5)",
+        }}
         aria-label="Chat öffnen"
       >
         <AnimatePresence mode="wait">

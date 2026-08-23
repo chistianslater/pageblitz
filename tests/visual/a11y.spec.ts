@@ -27,17 +27,11 @@ async function skipCookieBanner(page: Page): Promise<void> {
   );
 }
 
-// `LandingPage` initialisiert `isDark` aus `localStorage["lp-theme"]`
-// (Standard: hell, "dark" nur nach explizitem Toggle) — analog zu
-// `skipCookieBanner` setzt dieser Helfer den Zustand VOR der Navigation per
-// `addInitScript`, damit die Seite bereits im ersten Render dunkel startet
-// (`data-lp-theme="dark"` auf `.lp-root`) statt erst nach einem Klick auf
-// den Theme-Toggle-Button.
-async function setDarkTheme(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    window.localStorage.setItem("lp-theme", "dark");
-  });
-}
+// Kein Dark-Mode-Helfer mehr: Seit dem Studio-Redesign der Landingpage
+// (2026-08-23, docs/superpowers/specs/2026-08-23-landing-redesign-brief.md)
+// ist "/" ausschließlich hell — kein Toggle, kein `localStorage["lp-theme"]`,
+// `prefers-color-scheme` wird ignoriert. Die früheren Dark-Mode-Varianten
+// dieses Specs (Desktop/Mobile) entfallen damit ersatzlos.
 
 /**
  * Läuft axe-core gegen die aktuelle Seite und schlägt fehl, sobald ein
@@ -100,35 +94,6 @@ test.describe("A11y (axe): Landingpage", () => {
       page,
       "/ (Desktop 1280, Cookie-Banner sichtbar)"
     );
-  });
-
-  // Dark-Mode-Variante (Spec §2.5): `isDark` kommt aus `localStorage["lp-theme"]`
-  // (siehe `setDarkTheme` oben) — Kontrastfixes bei Funden gehören in die
-  // Dark-Klassen von LandingPage.tsx/PackShowcase.tsx, nicht in die Light-Variante.
-  test("/ Desktop 1280 Dark Mode", async ({ page }) => {
-    await skipCookieBanner(page);
-    await setDarkTheme(page);
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(".lp-root")).toHaveAttribute(
-      "data-lp-theme",
-      "dark"
-    );
-    await expectNoSeriousViolations(page, "/ (Desktop 1280, Dark Mode)");
-  });
-
-  test("/ Mobile 390 Dark Mode", async ({ page }) => {
-    await skipCookieBanner(page);
-    await setDarkTheme(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(".lp-root")).toHaveAttribute(
-      "data-lp-theme",
-      "dark"
-    );
-    await expectNoSeriousViolations(page, "/ (Mobile 390, Dark Mode)");
   });
 });
 
@@ -207,6 +172,31 @@ test.describe("A11y (axe): Studio", () => {
       await expectNoSeriousViolations(page, `Studio Panel "${panel}"`);
     });
   }
+
+  // Stichprobe (Plan B6 Task 5): Extras-Panel MIT aufgeklapptem
+  // Unterseiten-Editor (PagesEditor.tsx — Seitenkarte, Mini-Editoren für
+  // pageHeader/services, Kontakt-Hinweis, Vorlagen-Select) und der
+  // Vorschau-Leiste „Startseite | Seite“ über dem iframe. Die "full"-Fixture
+  // bringt eine Demo-Unterseite mit, der Schalter blendet den Editor ein.
+  test("Panel ?panel=addons mit Unterseiten-Editor", async ({ page }) => {
+    await skipCookieBanner(page);
+    const token = await seedStudioToken(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(`/onboarding/${token}?panel=addons`);
+    const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
+    await expect(addonsPanel).toBeVisible();
+    await addonsPanel
+      .locator(".pb-studio-addon-list li")
+      .filter({ hasText: "Unterseiten" })
+      .getByRole("button", { name: "Hinzufügen" })
+      .click();
+    await expect(addonsPanel.getByLabel("Seitentitel Seite 1")).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    await expectNoSeriousViolations(
+      page,
+      'Studio Panel "addons" mit Unterseiten-Editor'
+    );
+  });
 });
 
 /**
