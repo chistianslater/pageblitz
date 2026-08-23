@@ -1,6 +1,6 @@
 # Spec: Plan B5 — Team-Add-on, Admin-Reste, Performance-Hebel
 
-**Datum:** 2026-08-23 · **Status:** Entwurf zur Freigabe · **Grundlage:** B4c-Ergebnis (`2026-08-23-b4c-ergebnis.md`, B5-Liste), B4c-Spec §3, Spec B §4/§9 (Team-Sektion, Add-ons), `shared/pricing.ts`.
+**Datum:** 2026-08-23 · **Status:** verbindlich (freigegeben 2026-08-23, Entscheidungen §5 wie empfohlen) · **Grundlage:** B4c-Ergebnis (`2026-08-23-b4c-ergebnis.md`, B5-Liste), B4c-Spec §3, Spec B §4/§9 (Team-Sektion, Add-ons), `shared/pricing.ts`.
 
 ## 1. Ziel
 Das v2-Produkt um das bereits im Vertrag und in allen 14 Packs vorhandene **Team-Add-on** vervollständigen (Studio-Panel, buchbar, Webhook), die letzten **Admin-Altlasten** bereinigen (Pack-Anzeige, veralteter 79-€-CheckoutDialog, Statistik-Bug) und die in B4c gemessenen **Performance-Hebel** der Landingpage ziehen (Fonts, Chunking), plus die kleinen Nachzügler aus den Reviews. **Unterseiten-Add-on** ist bewusst **nicht** enthalten (eigene Spec B6 — Vertragsänderung `pages[]`, SSR-Routen, Navigation in 14 Packs, Preis/Seitentypen).
