@@ -32,7 +32,7 @@ import type { StudioWebsite } from "./ownership";
 /** Gemeinsames Input-Schema aller Studio-Prozeduren: der previewToken (Spec §6). */
 export const tokenInput = z.object({ token: z.string().min(1) });
 
-export interface StudioJob {
+interface StudioJob {
   id: number;
   status: "pending" | "processing" | "completed" | "failed";
   progress: number;

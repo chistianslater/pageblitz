@@ -24,17 +24,17 @@ const ADS_ID = "AW-16545728698";
 // Replace with individual labels from Google Ads Conversion Actions.
 // Until then, the existing "Registrierung" label is used as fallback.
 const ADS_LABELS: Record<string, string | null> = {
-  form_start:         "24hCCMT9wI8cELqRz9E9",  // Existing "Registrierung" — demote to Secondary
-  qualify_lead:       null,  // TODO: Create in Google Ads, paste label here
-  close_convert_lead: null,  // TODO: Create in Google Ads, paste label here
-  purchase:           null,  // TODO: Create in Google Ads, paste label here
+  form_start: "24hCCMT9wI8cELqRz9E9", // Existing "Registrierung" — demote to Secondary
+  qualify_lead: null, // TODO: Create in Google Ads, paste label here
+  close_convert_lead: null, // TODO: Create in Google Ads, paste label here
+  purchase: null, // TODO: Create in Google Ads, paste label here
 };
 
 const EVENT_VALUES: Record<string, number> = {
-  form_start:         1,
-  qualify_lead:       5,
+  form_start: 1,
+  qualify_lead: 5,
   close_convert_lead: 50,
-  purchase:           240,
+  purchase: 240,
 };
 
 type ConversionEvent =
@@ -49,7 +49,10 @@ type ConversionEvent =
  * GA4: fires the event name directly (matches pre-configured Key Events).
  * Google Ads: fires gtag('event','conversion',{send_to:...}) if a label exists.
  */
-export function trackConversion(event: ConversionEvent, customValue?: number): void {
+export function trackConversion(
+  event: ConversionEvent,
+  customValue?: number
+): void {
   const g = (window as any).gtag;
   if (typeof g !== "function") return;
 
@@ -71,17 +74,4 @@ export function trackConversion(event: ConversionEvent, customValue?: number): v
       currency: "EUR",
     });
   }
-}
-
-/**
- * Track individual onboarding step progression (GA4 only, secondary signal).
- */
-export function trackFunnelStep(stepName: string, stepIndex: number): void {
-  const g = (window as any).gtag;
-  if (typeof g !== "function") return;
-
-  g("event", "onboarding_step", {
-    step_name: stepName,
-    step_index: stepIndex,
-  });
 }

@@ -390,7 +390,7 @@ const ZunftPage: React.FC<{
   );
 };
 
-export const ZUNFT_MODULE: PackModule = {
+const ZUNFT_MODULE: PackModule = {
   id: "zunft",
   css: ZUNFT_CSS,
   Page: ZunftPage,

@@ -37,7 +37,7 @@ export const AiEditResponseSchema = z.discriminatedUnion("kind", [
     .strict(),
 ]);
 
-export type AiEditResponse = z.infer<typeof AiEditResponseSchema>;
+type AiEditResponse = z.infer<typeof AiEditResponseSchema>;
 
 /** Ein einzelner Vorher/Nachher-Eintrag für die Diff-Vorschau im KI-Chat. */
 export interface AiDiffEntry {

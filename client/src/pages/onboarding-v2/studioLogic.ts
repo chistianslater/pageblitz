@@ -4,15 +4,15 @@
  * tRPC-/React-Query-Testharness unit-testbar bleibt (Findings #1/#2).
  */
 
-export type JobStatus = "pending" | "processing" | "completed" | "failed";
+type JobStatus = "pending" | "processing" | "completed" | "failed";
 
-export interface StudioJobLike {
+interface StudioJobLike {
   status: JobStatus;
   progress: number;
   error: string | null;
 }
 
-export type GenerationStatus = "pending" | "processing" | "failed";
+type GenerationStatus = "pending" | "processing" | "failed";
 
 export interface GenerationStatusInput {
   hasDoc: boolean;

@@ -7,7 +7,7 @@ export type ChecklistItemId =
   | "offer"
   | "legal"
   | "addons";
-export type ChecklistStatus = "done" | "open";
+type ChecklistStatus = "done" | "open";
 
 export interface StudioProgress {
   styleConfirmed?: boolean;

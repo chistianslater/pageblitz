@@ -40,10 +40,6 @@ vi.mock("./db", async importOriginal => {
 });
 vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 vi.mock("./onboardingUpload", () => ({
-  uploadLogo: vi.fn().mockResolvedValue({
-    url: "https://cdn.example.com/logo.png",
-    key: "logo.png",
-  }),
   uploadPhoto: vi.fn(),
 }));
 // invokeLLM wird von classifyIndustry() UND der eigentlichen Regenerate-

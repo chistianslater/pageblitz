@@ -86,17 +86,25 @@ export function generateImpressum(data: LegalData): string {
   <p>E-Mail: <a href="mailto:${esc(data.legalEmail)}">${esc(data.legalEmail)}</a></p>
   ${validWebsiteUrl ? `<p>Website: <a href="${esc(validWebsiteUrl)}" target="_blank">${esc(validWebsiteUrl)}</a></p>` : ""}
 
-  ${data.legalVatId ? `
+  ${
+    data.legalVatId
+      ? `
   <h2>Umsatzsteuer-ID</h2>
   <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:</p>
   <p>${esc(data.legalVatId)}</p>
-  ` : ""}
+  `
+      : ""
+  }
 
-  ${data.legalRegister ? `
+  ${
+    data.legalRegister
+      ? `
   <h2>Handelsregister</h2>
   <p>Registernummer: ${esc(data.legalRegister)}</p>
   ${data.legalRegisterCourt ? `<p>Registergericht: ${esc(data.legalRegisterCourt)}</p>` : ""}
-  ` : ""}
+  `
+      : ""
+  }
 
   <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
   <p>${responsible}</p>
@@ -192,11 +200,15 @@ export function generateDatenschutz(data: LegalData): string {
   <h3>Cookies</h3>
   <p>Diese Website verwendet ausschließlich technisch notwendige Cookies, die für den Betrieb der Website erforderlich sind. Es werden keine Tracking- oder Werbe-Cookies eingesetzt. Notwendige Cookies werden auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO gesetzt.</p>
 
-  ${data.legalPhone || data.legalEmail ? `
+  ${
+    data.legalPhone || data.legalEmail
+      ? `
   <h3>Kontaktformular und Kontaktaufnahme</h3>
   <p>Wenn Sie uns per Kontaktformular oder E-Mail Anfragen zukommen lassen, werden Ihre Angaben inklusive der von Ihnen angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall von Rückfragen gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.</p>
   <p>Die Verarbeitung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO, sofern Ihre Anfrage mit der Erfüllung eines Vertrags zusammenhängt, oder auf Grundlage unserer berechtigten Interessen (Art. 6 Abs. 1 lit. f DSGVO). Die Daten werden gelöscht, sobald sie für die Erreichung des Zweckes ihrer Erhebung nicht mehr erforderlich sind, spätestens jedoch nach 6 Monaten.</p>
-  ` : ""}
+  `
+      : ""
+  }
 
   <h2>5. Google Maps</h2>
   <p>Diese Website nutzt über einen Link den Kartendienst Google Maps der Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Wenn Sie auf den Adresslink klicken, werden Sie zu Google Maps weitergeleitet. Dabei kann Google Daten über Ihre Nutzung verarbeiten. Weitere Informationen finden Sie in der Datenschutzerklärung von Google: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">https://policies.google.com/privacy</a>.</p>
@@ -224,150 +236,4 @@ export function generateDatenschutz(data: LegalData): string {
 </body>
 </html>
 `.trim();
-}
-
-/**
- * Patches website HTML/JSON data with real onboarding data.
- * Replaces placeholder text and Unsplash image URLs with real content.
- */
-export function patchWebsiteData(
-  websiteData: any,
-  onboarding: {
-    businessName?: string | null;
-    tagline?: string | null;
-    description?: string | null;
-    usp?: string | null;
-    targetAudience?: string | null;
-    topServices?: any;
-    addOnMenuData?: any;
-    addOnPricelistData?: any;
-    addOnContactForm?: boolean;
-    logoUrl?: string | null;
-    photoUrls?: any;
-  }
-): any {
-  if (!websiteData) return websiteData;
-
-  const patched = JSON.parse(JSON.stringify(websiteData)); // deep clone
-
-  // Patch hero section
-  if (patched.hero) {
-    if (onboarding.businessName) patched.hero.headline = onboarding.businessName;
-    if (onboarding.tagline) patched.hero.subheadline = onboarding.tagline;
-    if (onboarding.description) patched.hero.description = onboarding.description;
-    // Replace hero image with first uploaded photo
-    const photos = Array.isArray(onboarding.photoUrls) ? onboarding.photoUrls : [];
-    if (photos.length > 0) {
-      patched.hero.imageUrl = photos[0];
-      patched.heroImageUrl = photos[0];
-    }
-  }
-
-  // Patch logo
-  if (onboarding.logoUrl) {
-    patched.logoUrl = onboarding.logoUrl;
-    if (patched.navbar) patched.navbar.logoUrl = onboarding.logoUrl;
-  }
-
-  // Patch about section
-  if (patched.about) {
-    if (onboarding.description) patched.about.text = onboarding.description;
-    if (onboarding.usp) patched.about.usp = onboarding.usp;
-    const photos = Array.isArray(onboarding.photoUrls) ? onboarding.photoUrls : [];
-    if (photos.length > 1) patched.about.imageUrl = photos[1];
-  }
-
-  // Patch CTA section
-  if (onboarding.targetAudience) {
-    const ctaSection = patched.sections?.find((s: any) => s.type === "cta");
-    if (ctaSection) {
-      ctaSection.content = onboarding.targetAudience;
-    }
-  }
-
-  // Patch services
-  if (patched.services && onboarding.topServices) {
-    const services = Array.isArray(onboarding.topServices)
-      ? onboarding.topServices
-      : typeof onboarding.topServices === "string"
-        ? onboarding.topServices.split(",").map((s: string) => ({ title: s.trim(), description: "" }))
-        : [];
-    if (services.length > 0) {
-      patched.services.items = services.map((s: any, i: number) => ({
-        ...((patched.services.items || [])[i] || {}),
-        title: typeof s === "string" ? s : s.title || s,
-        description: typeof s === "object" ? s.description || "" : "",
-      }));
-    }
-  }
-
-  // Patch menu & pricelist
-  if (onboarding.addOnMenuData?.categories) {
-    patched.addOnMenuData = onboarding.addOnMenuData;
-    const filledCategories = (onboarding.addOnMenuData.categories || []).filter((c: any) => (c.name || "").trim() || (c.items || []).some((i: any) => (i.name || "").trim()));
-    if (filledCategories.length > 0) {
-      if (!patched.sections) patched.sections = [];
-      patched.sections.push({
-        type: "menu",
-        headline: onboarding.addOnMenuData.headline || "Unsere Speisekarte",
-        items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
-          title: i.name,
-          description: i.description,
-          price: i.price,
-          category: c.name
-        })))
-      });
-    }
-  }
-  if (onboarding.addOnPricelistData?.categories) {
-    patched.addOnPricelistData = onboarding.addOnPricelistData;
-    const filledCategories = (onboarding.addOnPricelistData.categories || []).filter((c: any) => (c.name || "").trim() || (c.items || []).some((i: any) => (i.name || "").trim()));
-    if (filledCategories.length > 0) {
-      if (!patched.sections) patched.sections = [];
-      patched.sections.push({
-        type: "pricelist",
-        headline: onboarding.addOnPricelistData.headline || "Unsere Preise",
-        items: filledCategories.flatMap((c: any) => (c.items || []).filter((i: any) => (i.name || "").trim()).map((i: any) => ({
-          title: i.name,
-          price: i.price,
-          category: c.name
-        })))
-      });
-    }
-  }
-
-  // Ensure contact section exists if addon is active
-  if (onboarding.addOnContactForm !== false && !patched.sections?.some((s: any) => s.type === "contact")) {
-    if (!patched.sections) patched.sections = [];
-    patched.sections.push({
-      type: "contact",
-      headline: "Kontakt",
-      content: "Wir freuen uns auf Ihre Nachricht.",
-      ctaText: "Jetzt Nachricht senden"
-    });
-  }
-
-  // Patch gallery section
-  if (onboarding.photoUrls && Array.isArray(onboarding.photoUrls) && onboarding.photoUrls.length > 0) {
-    const gallerySection = patched.sections?.find((s: any) => s.type === "gallery");
-    if (gallerySection) {
-      gallerySection.items = onboarding.photoUrls.map((url: string) => ({ imageUrl: url }));
-      gallerySection.images = onboarding.photoUrls; // Fallback
-    }
-  }
-
-  // Replace remaining Unsplash URLs with uploaded photos
-  const photos = Array.isArray(onboarding.photoUrls) ? onboarding.photoUrls : [];
-  if (photos.length > 0) {
-    const patchedStr = JSON.stringify(patched).replace(
-      /https:\/\/images\.unsplash\.com\/[^"]+/g,
-      (match) => {
-        const idx = Math.floor(Math.random() * photos.length);
-        return photos[idx] || match;
-      }
-    );
-    return JSON.parse(patchedStr);
-  }
-
-  return patched;
 }

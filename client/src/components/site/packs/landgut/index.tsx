@@ -374,7 +374,7 @@ const LandgutPage: React.FC<{
   );
 };
 
-export const LANDGUT_MODULE: PackModule = {
+const LANDGUT_MODULE: PackModule = {
   id: "landgut",
   css: LANDGUT_CSS,
   Page: LandgutPage,

@@ -406,7 +406,7 @@ const KanzleiPage: React.FC<{
   );
 };
 
-export const KANZLEI_MODULE: PackModule = {
+const KANZLEI_MODULE: PackModule = {
   id: "kanzlei",
   css: KANZLEI_CSS,
   Page: KanzleiPage,

@@ -6,7 +6,7 @@
  * Rybbit läuft cookielos ohne Einwilligung.
  */
 
-export const CONSENT_KEY = "pageblitz_site_consent_v1";
+const CONSENT_KEY = "pageblitz_site_consent_v1";
 
 export type ConsentData = {
   /** Google Analytics 4 + Microsoft Clarity */
@@ -58,7 +58,7 @@ export function initConsent(): void {
 }
 
 /** Skripte entsprechend der Einwilligung dynamisch ins DOM injizieren. */
-export function loadConsentedScripts(consent: ConsentData): void {
+function loadConsentedScripts(consent: ConsentData): void {
   if (consent.analytics) {
     injectGoogleAnalytics();
     injectMicrosoftClarity();
@@ -134,7 +134,8 @@ function injectMicrosoftClarity(): void {
 
   const s = document.createElement("script");
   s.id = "pb-clarity-script";
-  s.textContent = `(function(c,l,a,r,i,t,y){` +
+  s.textContent =
+    `(function(c,l,a,r,i,t,y){` +
     `c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};` +
     `t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;` +
     `y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);` +
@@ -157,11 +158,11 @@ function injectMetaPixel(): void {
         (fbq.queue = fbq.queue || []).push(args);
       }
     };
-    fbq.push    = fbq;
-    fbq.loaded  = true;
+    fbq.push = fbq;
+    fbq.loaded = true;
     fbq.version = "2.0";
-    fbq.queue   = [];
-    w.fbq  = fbq;
+    fbq.queue = [];
+    w.fbq = fbq;
     w._fbq = fbq;
   }
 
@@ -170,9 +171,9 @@ function injectMetaPixel(): void {
 
   // 3. Load fbevents.js via a plain <script src> – reliable in all browsers
   const s = document.createElement("script");
-  s.id    = "pb-meta-pixel";
+  s.id = "pb-meta-pixel";
   s.async = true;
-  s.src   = "https://connect.facebook.net/en_US/fbevents.js";
+  s.src = "https://connect.facebook.net/en_US/fbevents.js";
   document.head.appendChild(s);
   // PageView is fired by trackMetaPageView() via App.tsx route-change effect
 }

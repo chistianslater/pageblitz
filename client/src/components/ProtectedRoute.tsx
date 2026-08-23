@@ -9,7 +9,11 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
-export function ProtectedRoute({ children, fallback, requireAdmin = false }: ProtectedRouteProps) {
+function ProtectedRoute({
+  children,
+  fallback,
+  requireAdmin = false,
+}: ProtectedRouteProps) {
   const { user, loading, isAuthenticated } = useAuth({
     redirectOnUnauthenticated: !fallback,
     redirectPath: "/login",

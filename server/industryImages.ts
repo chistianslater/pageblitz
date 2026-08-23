@@ -5,8 +5,6 @@
 
 import { INDUSTRY_IMAGES, type IndustryImageSet } from "@shared/industryImages";
 
-export { INDUSTRY_IMAGES, type IndustryImageSet };
-
 /**
  * Find the best matching image set for a given industry/category string.
  * Also checks business name for keywords.

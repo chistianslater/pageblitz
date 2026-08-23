@@ -1,8 +1,8 @@
 // Preconfigured storage helpers for Manus WebDev templates
 // Uses R2 if configured, otherwise falls back to the Biz-provided storage proxy
 
-import { ENV } from './_core/env';
-import { uploadImageToR2 } from './r2Upload';
+import { ENV } from "./_core/env";
+import { uploadImageToR2 } from "./r2Upload";
 
 type StorageConfig = { baseUrl: string; apiKey: string };
 
@@ -30,25 +30,6 @@ function buildUploadUrl(baseUrl: string, relKey: string): URL {
   const url = new URL("v1/storage/upload", ensureTrailingSlash(cleanBaseUrl));
   url.searchParams.set("path", normalizeKey(relKey));
   return url;
-}
-
-async function buildDownloadUrl(
-  baseUrl: string,
-  relKey: string,
-  apiKey: string
-): Promise<string> {
-  // Remove trailing v1/ from baseUrl if present to avoid double v1/v1/
-  const cleanBaseUrl = baseUrl.replace(/\/v1\/?$/, "");
-  const downloadApiUrl = new URL(
-    "v1/storage/downloadUrl",
-    ensureTrailingSlash(cleanBaseUrl)
-  );
-  downloadApiUrl.searchParams.set("path", normalizeKey(relKey));
-  const response = await fetch(downloadApiUrl, {
-    method: "GET",
-    headers: buildAuthHeaders(apiKey),
-  });
-  return (await response.json()).url;
 }
 
 function ensureTrailingSlash(value: string): string {
@@ -100,7 +81,10 @@ export async function storagePut(
       console.log("[Storage] R2 upload successful:", result.url);
       return result;
     } catch (error) {
-      console.error("[Storage] R2 upload failed, falling back to proxy:", error);
+      console.error(
+        "[Storage] R2 upload failed, falling back to proxy:",
+        error
+      );
       // Fall through to proxy upload
     }
   }
@@ -130,13 +114,4 @@ export async function storagePut(
   const url = (await response.json()).url;
   console.log("[Storage] Upload successful:", url);
   return { key, url };
-}
-
-export async function storageGet(relKey: string): Promise<{ key: string; url: string; }> {
-  const { baseUrl, apiKey } = getStorageConfig();
-  const key = normalizeKey(relKey);
-  return {
-    key,
-    url: await buildDownloadUrl(baseUrl, key, apiKey),
-  };
 }

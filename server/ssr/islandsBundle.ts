@@ -48,8 +48,3 @@ function readManifestFileName(): string {
     return DEFAULT_BUNDLE_FILE;
   }
 }
-
-/** Nur für Tests: setzt den Prozess-Cache zurück, damit ein Test ein frisches Manifest lesen kann. */
-export function __resetIslandsBundleCacheForTests(): void {
-  cachedFileName = null;
-}

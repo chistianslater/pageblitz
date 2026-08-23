@@ -386,7 +386,7 @@ const FundamentPage: React.FC<{
   );
 };
 
-export const FUNDAMENT_MODULE: PackModule = {
+const FUNDAMENT_MODULE: PackModule = {
   id: "fundament",
   css: FUNDAMENT_CSS,
   Page: FundamentPage,

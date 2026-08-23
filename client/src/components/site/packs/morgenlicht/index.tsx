@@ -434,7 +434,7 @@ const MorgenlichtPage: React.FC<{
   );
 };
 
-export const MORGENLICHT_MODULE: PackModule = {
+const MORGENLICHT_MODULE: PackModule = {
   id: "morgenlicht",
   css: MORGENLICHT_CSS,
   Page: MorgenlichtPage,

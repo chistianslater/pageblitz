@@ -12,7 +12,7 @@ export interface ChatMessage {
 
 /** Wie viele Nachrichten maximal im Verlauf gehalten werden — deckt sich mit
  * dem Server-Trim in `server/_core/chatRoutes.ts` (`messages.slice(-15)`). */
-export const CHAT_HISTORY_LIMIT = 15;
+const CHAT_HISTORY_LIMIT = 15;
 
 export const CHAT_FALLBACK_WELCOME = "Hallo! Wie kann ich helfen?";
 export const CHAT_ERROR_LOCKED = "Der Chat ist nach der Freischaltung aktiv.";

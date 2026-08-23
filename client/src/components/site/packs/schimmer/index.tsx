@@ -360,7 +360,7 @@ const SchimmerPage: React.FC<{
   );
 };
 
-export const SCHIMMER_MODULE: PackModule = {
+const SCHIMMER_MODULE: PackModule = {
   id: "schimmer",
   css: SCHIMMER_CSS,
   Page: SchimmerPage,

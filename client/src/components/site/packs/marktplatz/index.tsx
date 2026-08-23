@@ -407,7 +407,7 @@ const MarktplatzPage: React.FC<{
   );
 };
 
-export const MARKTPLATZ_MODULE: PackModule = {
+const MARKTPLATZ_MODULE: PackModule = {
   id: "marktplatz",
   css: MARKTPLATZ_CSS,
   Page: MarktplatzPage,

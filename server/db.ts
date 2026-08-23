@@ -1,13 +1,4 @@
-import {
-  eq,
-  desc,
-  sql,
-  and,
-  like,
-  gte,
-  isNotNull,
-  notInArray,
-} from "drizzle-orm";
+import { eq, desc, sql, and, gte, isNotNull, notInArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import crypto from "crypto";
 import {
@@ -235,15 +226,6 @@ export async function listBusinesses(limit = 50, offset = 0) {
     .orderBy(desc(businesses.createdAt))
     .limit(limit)
     .offset(offset);
-}
-
-export async function countBusinesses() {
-  const db = await getDb();
-  if (!db) return 0;
-  const result = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(businesses);
-  return result[0]?.count ?? 0;
 }
 
 export async function updateBusiness(

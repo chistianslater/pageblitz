@@ -18,7 +18,7 @@ import { llmComplete } from "./llmClient";
  * contentPrompt.ts, Verbotszeile), aber der Merge ist die harte Garantie:
  * Telefonnummern/E-Mails/Straßen kommen ausschließlich von hier.
  */
-export interface GenerateSiteContentFacts {
+interface GenerateSiteContentFacts {
   slug?: string;
   businessCategory?: string;
   google?: { rating: number; reviewCount: number };

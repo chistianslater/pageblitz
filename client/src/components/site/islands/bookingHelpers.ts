@@ -5,7 +5,7 @@
  * (nicht importiert — reines Client-Modul, keine Server-Abhängigkeit).
  */
 
-export interface DaySchedule {
+interface DaySchedule {
   enabled: boolean;
   start: string; // "HH:MM"
   end: string; // "HH:MM"

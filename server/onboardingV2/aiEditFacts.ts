@@ -10,7 +10,7 @@ import type {
  * Verstoß löst in `proposeAiEdit` einen Retry aus (der zweite Versuch bekommt
  * denselben Prompt, der die Regel explizit nennt).
  */
-export function assertSameSectionTypeSet(
+function assertSameSectionTypeSet(
   original: WebsiteDataV2,
   candidateSections: SectionV2[]
 ): void {

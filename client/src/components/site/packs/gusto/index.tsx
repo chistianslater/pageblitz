@@ -368,7 +368,7 @@ const GustoPage: React.FC<{
   );
 };
 
-export const GUSTO_MODULE: PackModule = {
+const GUSTO_MODULE: PackModule = {
   id: "gusto",
   css: GUSTO_CSS,
   Page: GustoPage,

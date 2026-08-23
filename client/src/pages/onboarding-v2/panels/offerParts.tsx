@@ -86,7 +86,7 @@ interface ModeSegmentProps {
 }
 
 /** Reine Darstellung: Segmented Control Leistungen / Speisekarte / Preisliste. */
-export function ModeSegment({ mode, onSelect }: ModeSegmentProps) {
+function ModeSegment({ mode, onSelect }: ModeSegmentProps) {
   return (
     <div className="pb-studio-seg" role="group" aria-label="Angebotstyp">
       {MODES.map(m => (

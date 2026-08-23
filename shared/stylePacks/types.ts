@@ -1,6 +1,6 @@
 import type { PackId } from "../siteContract/types";
 
-export type PaletteRole =
+type PaletteRole =
   | "canvas"
   | "surface"
   | "ink"
@@ -10,7 +10,7 @@ export type PaletteRole =
   | "accent-contrast"
   | "accent-2";
 
-export interface PaletteColor {
+interface PaletteColor {
   name: string;
   hex: string;
   role: PaletteRole;
@@ -24,7 +24,7 @@ export interface FontSpec {
   /** Family-Teil der Google-Fonts-css2-URL, z. B. "Inter:wght@400;700" */
   googleCss: string;
 }
-export interface TypeScale {
+interface TypeScale {
   basePx: number;
   ratio: number;
   heroClamp: string;

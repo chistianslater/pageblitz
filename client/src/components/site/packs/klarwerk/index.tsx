@@ -412,7 +412,7 @@ const KlarwerkPage: React.FC<{
   );
 };
 
-export const KLARWERK_MODULE: PackModule = {
+const KLARWERK_MODULE: PackModule = {
   id: "klarwerk",
   css: KLARWERK_CSS,
   Page: KlarwerkPage,

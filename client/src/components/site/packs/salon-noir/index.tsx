@@ -356,7 +356,7 @@ const SalonNoirPage: React.FC<{
   );
 };
 
-export const SALON_NOIR_MODULE: PackModule = {
+const SALON_NOIR_MODULE: PackModule = {
   id: "salon-noir",
   css: SALON_NOIR_CSS,
   Page: SalonNoirPage,

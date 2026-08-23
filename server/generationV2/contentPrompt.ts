@@ -14,7 +14,7 @@ export interface ContentPromptArgs {
  * darf keine URLs vom LLM verlangen, sonst riskiert SafeUrlSchema
  * Fantasie-URLs. Bilder/Links werden systemseitig gesetzt, nicht vom LLM.
  */
-export const SECTION_FIELD_DOC: Record<SectionType, string> = {
+const SECTION_FIELD_DOC: Record<SectionType, string> = {
   hero: `"headline" (Pflicht), "subheadline" (optional), "ctaText" (optional, z. B. "Jetzt anfragen") — KEINE "ctaHref", KEINE "imageUrl"`,
   services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional), "price" (optional) }] (mind. 1 Eintrag)`,
   about: `"headline" (Pflicht), "body" (Pflicht, 2–4 Sätze) — KEINE "imageUrl"`,

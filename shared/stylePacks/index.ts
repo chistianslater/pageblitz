@@ -15,7 +15,7 @@ import { ZUNFT } from "./zunft";
 import { SCHIMMER } from "./schimmer";
 import { FUNDAMENT } from "./fundament";
 
-export type { PackConstitution, PaletteColor, FontSpec } from "./types";
+export type { PackConstitution, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
 
 export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {

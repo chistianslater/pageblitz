@@ -7,7 +7,7 @@ import {
   WebsiteDataV2Schema,
 } from "./schema";
 
-export { PACK_IDS, SECTION_TYPES };
+export { PACK_IDS };
 export type PackId = (typeof PACK_IDS)[number];
 export type SectionType = (typeof SECTION_TYPES)[number];
 export type SectionV2 = z.infer<typeof SectionV2Schema>;

@@ -2,7 +2,7 @@ import React from "react";
 import type { AiDiffEntry } from "@shared/onboardingV2/aiEdit";
 
 /** Deckt sich mit dem Server-Schema (`z.string().min(3)`, server/onboardingV2/router.ts aiEdit-Input). */
-export const MIN_AI_MESSAGE_LENGTH = 3;
+const MIN_AI_MESSAGE_LENGTH = 3;
 
 export interface SendGuardState {
   text: string;

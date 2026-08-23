@@ -19,7 +19,6 @@ import {
   upsertBusiness,
   getBusinessById,
   listBusinesses,
-  countBusinesses,
   updateBusiness,
   getBusinessIdsWithWebsite,
   createGeneratedWebsite,
@@ -3258,39 +3257,6 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
           businessName: seed.businessName,
           businessCategory: seed.businessCategory,
           googlePlaceId: seed.googlePlaceId,
-        };
-      }),
-
-    /**
-     * Prüft, ob es zu einem (gelöschten) previewToken einen Reactivation-Seed gibt.
-     * War früher für die Umleitung auf die Welcome-Back-Seite gedacht, wenn die
-     * Website nicht mehr existiert (Aufrufer: das inzwischen entfernte
-     * OnboardingChat.tsx, Plan B4b). Aktuell ohne Client-Aufrufer — nicht Teil
-     * dieses Tasks, daher nicht gelöscht.
-     */
-    resolveSeedByPreviewToken: publicProcedure
-      .input(z.object({ previewToken: z.string() }))
-      .query(async ({ input }) => {
-        const { getDb } = await import("./db");
-        const { reactivationSeeds } = await import("../drizzle/schema");
-        const { eq, desc } = await import("drizzle-orm");
-        const db = await getDb();
-        if (!db) return { found: false as const };
-        const rows = await db
-          .select()
-          .from(reactivationSeeds)
-          .where(eq(reactivationSeeds.originalPreviewToken, input.previewToken))
-          .orderBy(desc(reactivationSeeds.createdAt))
-          .limit(1);
-        const seed = rows[0];
-        if (!seed) return { found: false as const };
-        // Abgelaufene oder bereits genutzte Seeds gelten als "nicht verfügbar"
-        const usable = !seed.usedAt && seed.expiresAt > new Date();
-        return {
-          found: true as const,
-          usable,
-          token: seed.token,
-          businessName: seed.businessName,
         };
       }),
 

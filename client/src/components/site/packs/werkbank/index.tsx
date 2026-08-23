@@ -399,7 +399,7 @@ const WerkbankPage: React.FC<{
   );
 };
 
-export const WERKBANK_MODULE: PackModule = {
+const WERKBANK_MODULE: PackModule = {
   id: "werkbank",
   css: WERKBANK_CSS,
   Page: WerkbankPage,

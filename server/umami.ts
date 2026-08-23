@@ -21,38 +21,16 @@ async function getToken(): Promise<string | null> {
     const res = await fetch(`${UMAMI_URL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: UMAMI_USERNAME, password: UMAMI_PASSWORD }),
+      body: JSON.stringify({
+        username: UMAMI_USERNAME,
+        password: UMAMI_PASSWORD,
+      }),
     });
     if (!res.ok) return null;
-    const data = await res.json() as { token: string };
+    const data = (await res.json()) as { token: string };
     cachedToken = data.token;
     tokenExpiry = Date.now() + 12 * 60 * 60 * 1000; // 12 hours
     return cachedToken;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Register a new website in Umami and return its websiteId.
- * Returns null if Umami is not configured or the request fails.
- */
-export async function registerUmamiWebsite(name: string, domain: string): Promise<string | null> {
-  const token = await getToken();
-  if (!token) return null;
-
-  try {
-    const res = await fetch(`${UMAMI_URL}/api/websites`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, domain }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json() as { id: string };
-    return data.id;
   } catch {
     return null;
   }
@@ -79,7 +57,7 @@ export async function getUmamiStats(websiteId: string): Promise<{
       { headers: { Authorization: `Bearer ${token}` } }
     );
     if (!res.ok) return null;
-    const data = await res.json() as {
+    const data = (await res.json()) as {
       pageviews: { value: number };
       visitors: { value: number };
       bounces: { value: number };
@@ -91,7 +69,8 @@ export async function getUmamiStats(websiteId: string): Promise<{
       pageviews: data.pageviews?.value ?? 0,
       visitors,
       bounceRate: visitors > 0 ? Math.round((bounces / visitors) * 100) : 0,
-      avgDuration: visitors > 0 ? Math.round((data.totaltime?.value ?? 0) / visitors) : 0,
+      avgDuration:
+        visitors > 0 ? Math.round((data.totaltime?.value ?? 0) / visitors) : 0,
     };
   } catch {
     return null;

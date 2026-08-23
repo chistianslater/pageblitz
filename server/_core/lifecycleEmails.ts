@@ -56,7 +56,11 @@ const footer = (unsubscribeLink: string) => `
 const footerText = (unsubscribeLink: string) =>
   `\n\n---\nPageblitz - Websites für Kleinunternehmen\nKeine weiteren Erinnerungen: ${unsubscribeLink}\n`;
 
-const wrap = (eyebrow: string, inner: string, unsubscribeLink: string) => `<!DOCTYPE html>
+const wrap = (
+  eyebrow: string,
+  inner: string,
+  unsubscribeLink: string
+) => `<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="utf-8">
@@ -132,14 +136,18 @@ const secondaryLink = (text: string, href: string) => `
     </p>`;
 
 // Helper: Text-Fragment "für X" nur rendern, wenn echter Business-Name vorhanden
-const forBiz = (bn: string) => (bn && bn !== "deine Website" ? ` für <strong>${bn}</strong>` : "");
+const forBiz = (bn: string) =>
+  bn && bn !== "deine Website" ? ` für <strong>${bn}</strong>` : "";
 
 // ── Email 1: +2h Nudge ──────────────────────────────────────────────────────
 function reminder2h(d: LifecycleEmailData): TemplateOutput {
-  const subject = d.businessName && d.businessName !== "deine Website"
-    ? `Deine Website für ${d.businessName} wartet auf dich`
-    : "Deine Website wartet auf dich";
-  const html = wrap("Erinnerung", `
+  const subject =
+    d.businessName && d.businessName !== "deine Website"
+      ? `Deine Website für ${d.businessName} wartet auf dich`
+      : "Deine Website wartet auf dich";
+  const html = wrap(
+    "Erinnerung",
+    `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       ich bin Christian, einer der Gr&uuml;nder von Pageblitz. Mir ist aufgefallen, dass deine Website${forBiz(d.businessName)} schon fast fertig ist &ndash; dir fehlen nur noch ein paar Klicks.
@@ -151,8 +159,13 @@ function reminder2h(d: LifecycleEmailData): TemplateOutput {
       Falls du Fragen hast, irgendwo h&auml;ngst <strong>oder ein technisches Problem aufgetaucht ist</strong> (Seite hat nicht geladen, Bild ging nicht hoch, irgendwas hakt): Antworte einfach auf diese Mail. Ich lese jede pers&ouml;nlich &ndash; und wenn etwas technisch nicht funktioniert, k&uuml;mmern wir uns sofort.
     </p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-  `, d.unsubscribeLink);
-  const forBizText = d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : "";
+  `,
+    d.unsubscribeLink
+  );
+  const forBizText =
+    d.businessName && d.businessName !== "deine Website"
+      ? ` für ${d.businessName}`
+      : "";
   const text = `${greeting(d.firstName)}
 
 ich bin Christian, einer der Gründer von Pageblitz. Mir ist aufgefallen, dass deine Website${forBizText} schon fast fertig ist – dir fehlen nur noch ein paar Klicks.
@@ -172,7 +185,9 @@ Christian${footerText(d.unsubscribeLink)}`;
 // ── Email 2: +24h Hilfe anbieten + Verlängerung ─────────────────────────────
 function reminder24h(d: LifecycleEmailData): TemplateOutput {
   const subject = "Brauchst du Hilfe mit deiner Website?";
-  const html = wrap("Kann ich helfen?", `
+  const html = wrap(
+    "Kann ich helfen?",
+    `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       gestern hast du angefangen, deine Website${forBiz(d.businessName)} zu bauen. Sie wartet noch auf dich &ndash; reserviert f&uuml;r dich bis morgen fr&uuml;h.
@@ -190,7 +205,9 @@ function reminder24h(d: LifecycleEmailData): TemplateOutput {
     ${primaryCta("Website jetzt fertigstellen", d.resumeLink)}
     ${d.extendLink ? secondaryLink("Ich brauche noch 24 Stunden mehr Zeit", d.extendLink) : ""}
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-  `, d.unsubscribeLink);
+  `,
+    d.unsubscribeLink
+  );
   const text = `${greeting(d.firstName)}
 
 gestern hast du angefangen, deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen. Sie wartet noch auf dich – reserviert für dich bis morgen früh.
@@ -215,7 +232,9 @@ Christian${footerText(d.unsubscribeLink)}`;
 function reminderFinal(d: LifecycleEmailData): TemplateOutput {
   if (d.wasExtended) {
     const subject = "Morgen früh wird dein Entwurf gelöscht";
-    const html = wrap("Allerletzter Aufruf", `
+    const html = wrap(
+      "Allerletzter Aufruf",
+      `
       <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
       <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
         du hast dir nochmal extra Zeit genommen, um deine Website${forBiz(d.businessName)} fertigzustellen. Die l&auml;uft jetzt in wenigen Stunden ab.
@@ -227,7 +246,9 @@ function reminderFinal(d: LifecycleEmailData): TemplateOutput {
         Falls dich etwas Konkretes abh&auml;lt &ndash; auch technische Probleme z&auml;hlen dazu (Seite l&auml;dt nicht, Bilder fehlen, etwas funktioniert nicht): schreib mir. Ich antworte normalerweise innerhalb einer Stunde und wir kriegen das gefixt.
       </p>
       <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-    `, d.unsubscribeLink);
+    `,
+      d.unsubscribeLink
+    );
     const text = `${greeting(d.firstName)}
 
 du hast dir nochmal extra Zeit genommen, um deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} fertigzustellen. Die läuft jetzt in wenigen Stunden ab.
@@ -246,7 +267,9 @@ Christian${footerText(d.unsubscribeLink)}`;
 
   // Erster Final-Aufruf (ohne vorherige Extension)
   const subject = "Letzter Aufruf: Deine Website läuft bald ab";
-  const html = wrap("Letzter Aufruf", `
+  const html = wrap(
+    "Letzter Aufruf",
+    `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       kurze Info: Dein Website-Entwurf${forBiz(d.businessName)} l&auml;uft in wenigen Stunden ab. Danach m&uuml;ssen wir ihn leider l&ouml;schen, damit unser Server nicht &uuml;berquillt.
@@ -254,16 +277,22 @@ Christian${footerText(d.unsubscribeLink)}`;
     <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
     <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
     ${primaryCta("Weiter zur Website", d.resumeLink)}
-    ${d.extendLink ? `
+    ${
+      d.extendLink
+        ? `
     <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>2. Nochmal 24 Stunden Zeit nehmen:</strong></p>
     ${secondaryLink("Reservierung verl&auml;ngern", d.extendLink)}
-    ` : ""}
+    `
+        : ""
+    }
     <p style="margin: 24px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
       Wenn gerade einfach nicht der richtige Moment ist: Das ist okay. Du kannst jederzeit einen neuen Entwurf starten. Aber alles, was du schon eingegeben hast, w&auml;re dann weg.
     </p>
     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Bei Fragen oder wenn etwas technisch nicht funktioniert (Seite l&auml;dt nicht, Bilder fehlen): einfach auf diese Mail antworten. Ich antworte schnell und wir kriegen das gefixt.</p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-  `, d.unsubscribeLink);
+  `,
+    d.unsubscribeLink
+  );
   const text = `${greeting(d.firstName)}
 
 kurze Info: Dein Website-Entwurf${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} läuft in wenigen Stunden ab. Danach müssen wir ihn leider löschen, damit unser Server nicht überquillt.
@@ -288,7 +317,9 @@ function freshStart7d(d: LifecycleEmailData): TemplateOutput {
     ? `Willst du es nochmal versuchen, ${d.firstName}?`
     : "Willst du es nochmal versuchen?";
   const welcomeLink = d.welcomeBackLink || d.resumeLink;
-  const html = wrap("Frischer Start", `
+  const html = wrap(
+    "Frischer Start",
+    `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       vor einer Woche hast du angefangen, eine Website${forBiz(d.businessName)} zu bauen &ndash; und dann ging das Leben dazwischen. Kenn ich.
@@ -301,7 +332,9 @@ function freshStart7d(d: LifecycleEmailData): TemplateOutput {
       Wenn Pageblitz gerade nicht passt, ist das auch okay. Kein Druck. Du bekommst von mir nach dieser Mail keine weitere automatisch.
     </p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-  `, d.unsubscribeLink);
+  `,
+    d.unsubscribeLink
+  );
   const text = `${greeting(d.firstName)}
 
 vor einer Woche hast du angefangen, eine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen – und dann ging das Leben dazwischen. Kenn ich.
@@ -320,7 +353,9 @@ Christian${footerText(d.unsubscribeLink)}`;
 // ── Welcome-Link (sofort beim Email-Capture, transactional, nicht scheduled) ──
 export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
   const subject = "Dein Link zu deiner Pageblitz-Website";
-  const html = wrap("Dein Link", `
+  const html = wrap(
+    "Dein Link",
+    `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
       hier ist dein pers&ouml;nlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` f&uuml;r <strong>${d.businessName}</strong>` : ""}:
@@ -333,7 +368,9 @@ export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
       Falls du Fragen hast: einfach auf diese Mail antworten.
     </p>
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
-  `, d.unsubscribeLink);
+  `,
+    d.unsubscribeLink
+  );
   const text = `${greeting(d.firstName)}
 
 hier ist dein persönlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""}:
@@ -349,21 +386,27 @@ Christian${footerText(d.unsubscribeLink)}`;
   return { subject, html, text };
 }
 
-const TEMPLATES: Record<LifecycleEmailType, (d: LifecycleEmailData) => TemplateOutput> = {
+const TEMPLATES: Record<
+  LifecycleEmailType,
+  (d: LifecycleEmailData) => TemplateOutput
+> = {
   reminder_2h: reminder2h,
   reminder_24h: reminder24h,
   reminder_final: reminderFinal,
   fresh_start_7d: freshStart7d,
 };
 
-export function renderLifecycleEmail(type: LifecycleEmailType, data: LifecycleEmailData): TemplateOutput {
+function renderLifecycleEmail(
+  type: LifecycleEmailType,
+  data: LifecycleEmailData
+): TemplateOutput {
   return TEMPLATES[type](data);
 }
 
 export async function sendLifecycleEmail(
   type: LifecycleEmailType,
   to: string,
-  data: LifecycleEmailData,
+  data: LifecycleEmailData
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   const { subject, html, text } = renderLifecycleEmail(type, data);
   return sendEmail({

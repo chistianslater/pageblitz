@@ -63,7 +63,7 @@ export async function resolveV2Images(
  * invalidieren, damit die neue Seite sofort sichtbar ist statt bis zu
  * CACHE_TTL_MS (60s) auf den TTL-Ablauf zu warten.
  */
-export async function runWebsiteGenerationV2(
+async function runWebsiteGenerationV2(
   jobId: number,
   website: { id: number; slug: string },
   business: V2JobBusiness,

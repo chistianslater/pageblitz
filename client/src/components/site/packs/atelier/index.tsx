@@ -376,7 +376,7 @@ const AtelierPage: React.FC<{
   );
 };
 
-export const ATELIER_MODULE: PackModule = {
+const ATELIER_MODULE: PackModule = {
   id: "atelier",
   css: ATELIER_CSS,
   Page: AtelierPage,

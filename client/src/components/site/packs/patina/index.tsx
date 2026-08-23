@@ -394,7 +394,7 @@ const PatinaPage: React.FC<{
   );
 };
 
-export const PATINA_MODULE: PackModule = {
+const PATINA_MODULE: PackModule = {
   id: "patina",
   css: PATINA_CSS,
   Page: PatinaPage,

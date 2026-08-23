@@ -404,7 +404,7 @@ const VervePage: React.FC<{
   );
 };
 
-export const VERVE_MODULE: PackModule = {
+const VERVE_MODULE: PackModule = {
   id: "verve",
   css: VERVE_CSS,
   Page: VervePage,
