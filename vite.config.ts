@@ -208,8 +208,12 @@ export default defineConfig(({ command }) => ({
           // einen Slot-freien Button (Radix `asChild` durch eine eigene,
           // minimale Implementierung ersetzen), das ist außerhalb des
           // Task-6-Dateisatzes (Bericht: Task-6-Ergebnis, Budget-Abschnitt).
-          if (id.includes("node_modules/@radix-ui/")) return "vendor-radix";
-          if (id.includes("node_modules/@tanstack/")) return "vendor-tanstack";
+          // HOTFIX (2026-08-23): eigene Chunks für @radix-ui/@tanstack erzeugten im
+          // Produktions-Build eine zirkuläre Chunk-Abhängigkeit — vendor-radix
+          // wertete `React.forwardRef` aus, bevor vendor-react initialisiert war
+          // ("Cannot read properties of undefined (reading 'forwardRef')",
+          // schwarze Seite auf /start, /onboarding/:token, /my-website). Rollup
+          // entscheidet für diese Pakete wieder selbst (keine Zyklen).
           if (
             id.includes("node_modules/stripe") ||
             id.includes("node_modules/@stripe/")
