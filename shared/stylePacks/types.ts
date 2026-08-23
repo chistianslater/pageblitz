@@ -35,6 +35,13 @@ export interface PackConstitution {
   name: string;
   essence: string;
   industries: string[];
+  /**
+   * Gastro-Packs (industries enthalten Restaurant/Café/Bäckerei/Bar/Imbiss/
+   * Catering/Konditorei/Eisdiele o. ä.): Angebot-Panel startet im
+   * Speisekarten- statt Leistungen-Modus, wenn noch keine Angebots-Sektion
+   * mit Inhalt existiert (siehe OfferPanel.offerFromDoc, B4c Task 7).
+   */
+  prefersMenu?: boolean;
   theme: "light" | "dark";
   palette: PaletteColor[];
   type: {

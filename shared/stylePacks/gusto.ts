@@ -13,6 +13,9 @@ export const GUSTO: PackConstitution = {
     "catering",
     "bistro",
   ],
+  // Gastro-Pack (Restaurant/Bar/Bistro/Catering) — Angebot-Panel startet im
+  // Speisekarten-Modus (B4c Task 7, siehe PackConstitution.prefersMenu).
+  prefersMenu: true,
   theme: "dark",
   palette: [
     {

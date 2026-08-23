@@ -64,6 +64,31 @@ describe("offerFromDoc", () => {
       items: [{ title: "" }],
     });
   });
+
+  test("ohne Angebots-Sektion + Gastro-Pack (prefersMenu) → leerer Speisekarten-Entwurf", () => {
+    const noOfferGastro: WebsiteDataV2 = {
+      ...docWithServices,
+      stylePackId: "gusto",
+      sections: [{ type: "hero", headline: "H" }],
+    };
+    expect(offerFromDoc(noOfferGastro)).toEqual({
+      mode: "menu",
+      categories: [{ name: "", items: [{ name: "", price: "" }] }],
+    });
+  });
+
+  test("ohne Angebots-Sektion + Nicht-Gastro-Pack → weiterhin leerer Leistungen-Entwurf", () => {
+    const noOfferNonGastro: WebsiteDataV2 = {
+      ...docWithServices,
+      stylePackId: "kanzlei",
+      sections: [{ type: "hero", headline: "H" }],
+    };
+    expect(offerFromDoc(noOfferNonGastro)).toEqual({
+      mode: "services",
+      headline: "Leistungen",
+      items: [{ title: "" }],
+    });
+  });
 });
 
 describe("OfferEditor", () => {

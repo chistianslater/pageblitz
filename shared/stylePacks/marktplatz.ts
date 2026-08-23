@@ -16,6 +16,11 @@ export const MARKTPLATZ: PackConstitution = {
     "hundesalon",
     "fahrschule",
   ],
+  // Enthält "eisdiele" (Gastro-Begriff) — Angebot-Panel startet im
+  // Speisekarten-Modus (B4c Task 7, siehe PackConstitution.prefersMenu).
+  // Betrifft alle Branchen dieses Packs einheitlich (kein Branchen-Split
+  // innerhalb eines Packs vorgesehen).
+  prefersMenu: true,
   theme: "light",
   palette: [
     {
@@ -40,7 +45,11 @@ export const MARKTPLATZ: PackConstitution = {
     },
     {
       name: "Koralle",
-      hex: "#FF6B57",
+      // War #FF6B57 — als Text auf Weiß/Vanille UND als CTA-Fläche (weißer
+      // Text darauf) lag der Kontrast bei nur ~2,8:1 (axe color-contrast,
+      // B4c Task 7 a11y-Pass). #C4442E (dunkleres, weiterhin warmes
+      // Korallrot) erreicht ≥4,5:1 in beiden Richtungen.
+      hex: "#C4442E",
       role: "accent",
       locked: true,
       usage: "CTA, Akzentwort, Umrandungen — nie flächig über 24px hinaus.",

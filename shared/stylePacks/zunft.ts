@@ -15,6 +15,10 @@ export const ZUNFT: PackConstitution = {
     "brennerei",
     "hofkaese",
   ],
+  // Gastro-Pack (Bäckerei/Konditorei/Metzgerei — Produkte über Theke/
+  // Vitrine) — Angebot-Panel startet im Speisekarten-Modus (B4c Task 7,
+  // siehe PackConstitution.prefersMenu).
+  prefersMenu: true,
   theme: "light",
   palette: [
     {
@@ -37,7 +41,10 @@ export const ZUNFT: PackConstitution = {
     },
     {
       name: "Kornstaub",
-      hex: "#7A6A52",
+      // War #7A6A52 — Sekundärtext auf der Leinensack-Fläche (Preistafel)
+      // lag bei nur 4,1:1 (axe color-contrast, B4c Task 7 a11y-Pass).
+      // #6C5C46 ist minimal dunkler, ≥4,5:1.
+      hex: "#6C5C46",
       role: "muted",
       usage: "Sekundärtext, Nav-Links.",
     },
@@ -57,7 +64,13 @@ export const ZUNFT: PackConstitution = {
     },
     {
       name: "Siegelgold",
-      hex: "#B98A2F",
+      // War #B98A2F — die Preistafel (pb-zf-price) nutzt diese Farbe
+      // entgegen dem "nie als Textfläche"-Hinweis doch als Textfarbe; Kontrast
+      // gegen die Leinensack-Fläche lag bei nur 2,7:1 (axe color-contrast,
+      // B4c Task 7 a11y-Pass). #7A5818 (dunkleres, gedeckteres Gold) erreicht
+      // ≥4,5:1. Modul-Fix statt Verfassungs-Kommentar entfernen war nicht
+      // Teil dieses Tasks (siehe Bericht).
+      hex: "#7A5818",
       role: "accent-2",
       usage:
         "Ornament-Bordüre, Punktlinien-Preise in der Preistafel — nie als Textfläche.",

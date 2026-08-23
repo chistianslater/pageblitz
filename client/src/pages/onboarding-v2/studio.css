@@ -426,7 +426,12 @@
   color: var(--st-muted);
 }
 .pb-studio-addon-price[data-muted="true"] {
-  opacity: 0.6;
+  /* War opacity:0.6 — zusammen mit --st-muted fiel der Kontrast des
+     Preises für gesperrte ("bald verfügbar") Add-ons unter 4,5:1 (axe
+     color-contrast, B4c Task 7 a11y-Pass). Der "bald verfügbar"-Button
+     signalisiert den gesperrten Zustand bereits eindeutig — der Preis
+     selbst bleibt lesbar. */
+  opacity: 1;
 }
 .pb-studio-addon-total {
   font-weight: 600;

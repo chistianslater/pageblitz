@@ -53,7 +53,11 @@ export const WERKBANK: PackConstitution = {
     },
     {
       name: "Signal",
-      hex: "#FF4D00",
+      // War #FF4D00 (Neon-Orange) — Kontrast gegen Beton-Canvas (#E8E6E1) und
+      // Weiß-auf-Signal (CTA) lag bei nur ~2,7:1/3,3:1 (axe color-contrast,
+      // B4c Task 7 a11y-Pass). #A83600 (dunkleres Rostorange) hält die
+      // Signalfarben-Identität, erreicht aber ≥4,5:1 in beiden Richtungen.
+      hex: "#A83600",
       role: "accent",
       locked: true,
       usage: "CTA, Akzentwort, Bild-Border — nie großflächig.",

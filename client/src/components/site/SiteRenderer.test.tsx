@@ -32,7 +32,9 @@ describe("SiteRenderer", () => {
     const html = renderToStaticMarkup(<SiteRenderer data={data} />);
     expect(html).toContain("Probe");
     expect(html).toContain(".pb-test{color:red}");
-    expect(html).toContain("--pb-accent:#FF4D00");
+    // Signal-Akzent von werkbank wurde in B4c Task 7 (a11y-Pass) von
+    // #FF4D00 auf #A83600 gedunkelt (Kontrast gegen Canvas/CTA war <4,5:1).
+    expect(html).toContain("--pb-accent:#A83600");
   });
   test("wirft verständlich bei nicht registriertem Pack-Modul", () => {
     delete PACK_MODULES.werkbank;

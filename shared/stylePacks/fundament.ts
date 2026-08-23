@@ -48,7 +48,10 @@ export const FUNDAMENT: PackConstitution = {
     },
     {
       name: "Messing",
-      hex: "#A8894C",
+      // War #A8894C — Leistungsindex-Nummern (.idx) auf Weiß lagen bei nur
+      // 3,3:1 (axe color-contrast, B4c Task 7 a11y-Pass). #7A5F2E (dunkleres
+      // Bronze/Messing) erreicht ≥4,5:1.
+      hex: "#7A5F2E",
       role: "accent",
       locked: true,
       usage:

@@ -104,6 +104,8 @@ export function LegalPanel({
     <PanelFrame
       step="Schritt 5"
       title="Rechtliches"
+      panelId="legal"
+      onClose={onClose}
       intro="Pflichtangaben für Impressum und Datenschutz — beides wird daraus automatisch erzeugt."
       footer={
         <>

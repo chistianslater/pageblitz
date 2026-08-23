@@ -91,6 +91,8 @@ export function TextsPanel({
     <PanelFrame
       step="Schritt 3"
       title="Texte prüfen"
+      panelId="texts"
+      onClose={onClose}
       intro="Überschriften, Über-uns-Text und SEO-Angaben — bei Bedarf mit KI-Vorschlägen."
       footer={
         <>

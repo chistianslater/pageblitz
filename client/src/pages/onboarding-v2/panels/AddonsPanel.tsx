@@ -122,6 +122,8 @@ export function AddonsPanel({
     <PanelFrame
       step="Schritt 6"
       title="Extras wählen"
+      panelId="addons"
+      onClose={onClose}
       intro="Zusätzliche Bausteine für deine Website — jederzeit änderbar."
       footer={
         <>

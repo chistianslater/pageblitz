@@ -177,6 +177,8 @@ export function PhotosPanel({
     <PanelFrame
       step="Schritt 2"
       title="Fotos wählen"
+      panelId="photos"
+      onClose={onClose}
       intro="Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload."
       footer={
         <>

@@ -43,7 +43,11 @@ export const SCHIMMER: PackConstitution = {
     },
     {
       name: "Rosé",
-      hex: "#D4749C",
+      // War #D4749C — CTA-Fläche (weißer Text) und Preistext auf Weiß lagen
+      // bei nur ~3,1:1 (axe color-contrast, B4c Task 7 a11y-Pass). #A8517A
+      // (dunkleres, gedeckteres Rosé/Mauve) erreicht ≥4,5:1 in beiden
+      // Richtungen und bleibt override-fähig für Studio-Farben.
+      hex: "#A8517A",
       role: "accent",
       usage:
         "Akzentwort, CTA-Fläche, Zierring-Detail — override-fähig für Studio-Farben.",

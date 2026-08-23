@@ -49,7 +49,10 @@ export const PATINA: PackConstitution = {
     },
     {
       name: "Terrakotta",
-      hex: "#B05A36",
+      // War #B05A36 — Kontrast gegen Pergament-Canvas nur 4,4:1 (axe
+      // color-contrast, B4c Task 7 a11y-Pass), knapp unter 4,5:1. #A8532F
+      // ist minimal dunkler, gleiche Terrakotta-Identität, ≥4,5:1.
+      hex: "#A8532F",
       role: "accent",
       locked: true,
       usage:

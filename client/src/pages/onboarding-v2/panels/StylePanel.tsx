@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
+import { usePanelFocus } from "./usePanelFocus";
 
 interface Candidate {
   id: PackId;
@@ -166,12 +167,23 @@ export function StylePanel({
   };
 
   const busy = busyId !== null;
+  // Fokus-Management wie PanelFrame (siehe usePanelFocus): StylePanel nutzt
+  // PanelFrame nicht (eigenes Layout mit Kandidaten-Grid statt Formularfeldern),
+  // bekommt aber dieselbe Behandlung — Fokus auf die Überschrift beim Öffnen,
+  // Esc schließt (wie "Passt so"/Zurück), Fokus-Rückgabe an den Checklisten-
+  // Eintrag beim Schließen.
+  const headingRef = usePanelFocus("style", onClose);
 
   return (
     <section className="pb-studio-panel" aria-label="Stil wählen">
       <div>
         <p className="pb-studio-kicker">Schritt 1</p>
-        <h2 className="pb-studio-title" style={{ fontSize: "1.4rem" }}>
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="pb-studio-title"
+          style={{ fontSize: "1.4rem" }}
+        >
           Welcher Stil passt zu dir?
         </h2>
         <p style={{ color: "var(--st-muted)" }}>

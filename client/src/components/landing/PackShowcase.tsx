@@ -67,7 +67,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
       <div className="p-5">
         <div className="flex items-start justify-between gap-3 mb-1.5">
           <span
-            className={`text-xs font-mono tabular-nums ${isDark ? "text-white/30" : "text-gray-400"}`}
+            className={`text-xs font-mono tabular-nums ${isDark ? "text-white/30" : "text-gray-600"}`}
             aria-hidden="true"
           >
             {String(index + 1).padStart(2, "0")}
@@ -84,7 +84,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
           {constitution.name}
         </h3>
         <p
-          className={`text-sm leading-relaxed mb-4 min-h-[2.5rem] ${isDark ? "text-white/50" : "text-gray-500"}`}
+          className={`text-sm leading-relaxed mb-4 min-h-[2.5rem] ${isDark ? "text-white/50" : "text-gray-600"}`}
         >
           {constitution.essence}
         </p>
@@ -211,7 +211,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
               type="button"
               onClick={onClose}
               aria-label="Vorschau schließen"
-              className="rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              className="rounded-full p-1.5 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
             >
               <X className="w-4 h-4" />
             </button>
@@ -266,7 +266,7 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
           initial={animate ? { opacity: 0, y: 20 } : undefined}
           whileInView={animate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true }}
-          className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-400"}`}
+          className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
         >
           14 Stilwelten
         </motion.p>
@@ -280,7 +280,7 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
           Ein Look für jedes Handwerk.
         </motion.h2>
         <p
-          className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-500"}`}
+          className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
         >
           Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
           Typografie, Farben und Layout passend zur Branche. Du wählst den Stil,

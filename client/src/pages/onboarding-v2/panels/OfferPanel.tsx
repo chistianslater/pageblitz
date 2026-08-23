@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
+import { FALLBACK_PACK, getConstitution } from "@shared/stylePacks";
 import { PanelFrame } from "./PanelFrame";
 import {
   OfferEditor,
@@ -12,7 +13,16 @@ import {
 
 export { OfferEditor, validateOffer };
 
-/** Reine Ableitung: bestehende Angebots-Sektion (services/menu/pricelist) → Patch; ohne Sektion ein leerer Leistungen-Entwurf. */
+/**
+ * Reine Ableitung: bestehende Angebots-Sektion (services/menu/pricelist) →
+ * Patch; ohne Sektion ein leerer Entwurf. Der Startmodus des leeren
+ * Entwurfs richtet sich nach der Pack-Verfassung: Gastro-Packs
+ * (`prefersMenu: true`, z. B. gusto/zunft/marktplatz — siehe
+ * shared/stylePacks/types.ts) starten im Speisekarten- statt
+ * Leistungen-Modus (B4c Task 7). Unbekannte/nicht registrierte Pack-IDs
+ * fallen auf FALLBACK_PACK zurück (kein prefersMenu → Leistungen), analog
+ * zu client/src/lib/packAccent.ts.
+ */
 export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
   const services = doc.sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
@@ -47,7 +57,13 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
       categories: pricelist.categories,
     };
   }
-  return blankOffer("services");
+  let constitution;
+  try {
+    constitution = getConstitution(doc.stylePackId);
+  } catch {
+    constitution = getConstitution(FALLBACK_PACK);
+  }
+  return blankOffer(constitution.prefersMenu ? "menu" : "services");
 }
 
 interface OfferPanelProps {
@@ -117,6 +133,8 @@ export function OfferPanel({
     <PanelFrame
       step="Schritt 4"
       title="Angebot pflegen"
+      panelId="offer"
+      onClose={onClose}
       intro="Leistungen, Speisekarte oder Preisliste — wähle den passenden Typ und pflege die Positionen."
       footer={
         <>

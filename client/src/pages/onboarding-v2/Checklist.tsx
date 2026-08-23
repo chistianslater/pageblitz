@@ -17,6 +17,7 @@ export function Checklist({ items, activeId, onSelect }: ChecklistProps) {
         <li key={item.id}>
           <button
             type="button"
+            id={`pb-checklist-${item.id}`}
             className="pb-studio-check-item"
             data-status={item.status}
             aria-current={activeId === item.id ? "step" : undefined}
