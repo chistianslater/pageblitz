@@ -1,5 +1,6 @@
 import type { Express, NextFunction, Request, Response } from "express";
 import { renderSiteHtml } from "./renderSite";
+import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { PACK_IDS, type PackId } from "../../shared/siteContract/types";
@@ -14,6 +15,8 @@ interface CacheEntry {
   html: string;
   status: number;
   at: number;
+  /** true für die SSR-404-Seite unbekannter Unterpfade — Header muss auch bei Cache-Treffern gesetzt werden. */
+  robotsNoindex?: boolean;
 }
 const siteHtmlCache = new Map<string, CacheEntry>();
 
@@ -39,8 +42,17 @@ function capCacheSize<V>(cache: Map<string, V>, max: number): void {
   }
 }
 
-/** Nur diese Pfade werden auf v2-Kundenseiten SSR-gerendert; alles andere ist next() (Catch-All entscheidet). */
+/**
+ * Diese Pfade werden auf v2-Kundenseiten voll SSR-gerendert (Startseite,
+ * Rechtsseiten). Andere Unterpfade unter einer bekannten v2-Site bekommen ein
+ * eigenes SSR-404 (siehe `handleCustomerSiteSsr`) statt next() — nur
+ * Asset-artige Pfade (Dateiendung) und unbekannte Slugs gehen weiterhin an
+ * next(), damit Static-Middleware/SPA-Fallback greifen kann.
+ */
 const SSR_ALLOWED_PATHNAMES = new Set(["/", "/impressum", "/datenschutz"]);
+
+/** Pfade mit Dateiendung (Favicons, Bilder, robots.txt, ...) sind nie SSR-Sache. */
+const ASSET_PATHNAME_RE = /\.[a-z0-9]+$/i;
 
 /**
  * Löscht alle SSR-Cache-Einträge für einen Slug — beide Pfadformen ("sub:"
@@ -252,9 +264,10 @@ const DEMO_CACHE_CONTROL = "public, max-age=3600";
  * wie `/demo/werkbank-hero.svg` unter `client/public/demo/`) matcht diese
  * Route gar nicht erst und fällt automatisch auf die nachfolgende Static-/
  * SPA-Middleware durch (Regressionsfund: die Fixture-Bilder der Demo-Seiten
- * selbst liegen unter genau diesem Pfadpräfix). Aus demselben Grund matchen
- * auch Rechtsseiten (`/demo/:pack/impressum|datenschutz`) nicht und fallen
- * auf die SPA durch — 404 dort ist laut Spec in Ordnung.
+ * selbst liegen unter genau diesem Pfadpräfix). Rechtsseiten
+ * (`/demo/:pack/impressum|datenschutz`) haben eine eigene Route
+ * (`handleDemoLegalRoute` weiter unten), weil sie ein zweites Pfadsegment
+ * brauchen und dieses Regex nur ein Segment matcht.
  */
 function handleDemoRoute(req: Request, res: Response): void {
   const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
@@ -293,6 +306,60 @@ function handleDemoRoute(req: Request, res: Response): void {
 }
 
 /**
+ * Platzhalter-Rechtstext für die Pack-Demo: Fixtures haben absichtlich kein
+ * `legal`-Feld (keine echte Firma dahinter, siehe `shared/siteContract/fixtures.ts`)
+ * — dieser Hinweistext ersetzt die echten Rechtstexte NUR für die
+ * Demo-Route, damit die Footer-Links in der Demo funktionieren statt 404 zu
+ * liefern.
+ */
+const DEMO_LEGAL_NOTICE =
+  "<p>Dies ist eine Demo-Seite ohne echtes Unternehmen. Echte Rechtstexte (Impressum, Datenschutz) werden automatisch erzeugt, sobald für ein Unternehmen eine Website erstellt wird.</p>";
+
+/**
+ * Demo-Rechtsseiten (`/demo/:pack/impressum` und `/demo/:pack/datenschutz`):
+ * rendert die Fixture wie `handleDemoRoute`, überschreibt aber `legal` mit
+ * `DEMO_LEGAL_NOTICE`, damit die Footer-Links der Demo-Seite (Impressum/
+ * Datenschutz) auf echten Inhalt statt 404 treffen. Gleiches
+ * Caching/Robots-Verhalten wie `/demo/:pack` (öffentlich, cachebar, noindex).
+ */
+function handleDemoLegalRoute(req: Request, res: Response): void {
+  const packParam = typeof req.params.pack === "string" ? req.params.pack : "";
+  const pageParam = typeof req.params.page === "string" ? req.params.page : "";
+  if (!isKnownPackId(packParam)) {
+    // Bewusst OHNE den Parameter im Body zu reflektieren (siehe handleDemoRoute).
+    res.status(404).type("text/plain").send("Unbekanntes Pack");
+    return;
+  }
+  try {
+    const fixture = getFixture(packParam, "full");
+    const data = {
+      ...fixture,
+      legal: {
+        impressumHtml: DEMO_LEGAL_NOTICE,
+        datenschutzHtml: DEMO_LEGAL_NOTICE,
+      },
+    };
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const basePath = `/demo/${packParam}`;
+    const pathname =
+      pageParam === "datenschutz" ? "/datenschutz" : "/impressum";
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath,
+      pathname,
+      slug: "demo",
+      site: {},
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Demo-Rechtsseite-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
+/**
  * Kundenseiten-SSR hinter Flag: rendert `websiteData` server-seitig, wenn
  * `SSR_SITES !== "off"` UND das geladene Dokument gegen WebsiteDataV2Schema
  * validiert. Andernfalls `next()` — das bestehende SPA-Verhalten bleibt
@@ -313,11 +380,11 @@ async function handleCustomerSiteSsr(
     next();
     return;
   }
-  // Nur Startseite + Rechtsseiten werden SSR-gerendert. Alles andere (unbekannte
-  // Pfade, Assets, Favicon, robots.txt, ...) geht an next() — sonst würde jeder
-  // unbekannte Pfad 200 + die Startseite mit selbstreferenzierendem Canonical
-  // bekommen.
-  if (!SSR_ALLOWED_PATHNAMES.has(siteRequest.pathname)) {
+
+  const isKnownPathname = SSR_ALLOWED_PATHNAMES.has(siteRequest.pathname);
+  if (!isKnownPathname && ASSET_PATHNAME_RE.test(siteRequest.pathname)) {
+    // Asset-artige Pfade (Favicon, Bilder, robots.txt, ...) sind nie SSR-Sache
+    // — next() lässt Static-Middleware/SPA-Fallback ran.
     next();
     return;
   }
@@ -334,6 +401,9 @@ async function handleCustomerSiteSsr(
   try {
     const cached = siteHtmlCache.get(cacheKey);
     if (cached && now - cached.at < CACHE_TTL_MS) {
+      if (cached.robotsNoindex) {
+        res.setHeader("X-Robots-Tag", "noindex");
+      }
       res.status(cached.status).type("html").send(cached.html);
       return;
     }
@@ -351,6 +421,27 @@ async function handleCustomerSiteSsr(
       siteMissCache.set(siteRequest.slug, now + NEGATIVE_CACHE_TTL_MS);
       capCacheSize(siteMissCache, MAX_CACHE_ENTRIES);
       next();
+      return;
+    }
+
+    if (!isKnownPathname) {
+      // Bekannte v2-Site, aber unbekannter Unterpfad (z. B. Tippfehler in
+      // einem geteilten Link) → eigenes SSR-404 statt SPA-Fallback. Website
+      // wird dafür geladen (gleiche Cache-Nutzung wie beim Seitenrender oben,
+      // negativer Cache für unbekannte Slugs bleibt unverändert).
+      const html = renderNotFoundHtml({
+        businessName: parsed.data.businessName,
+        homeHref: siteRequest.basePath || "/",
+      });
+      siteHtmlCache.set(cacheKey, {
+        html,
+        status: 404,
+        at: now,
+        robotsNoindex: true,
+      });
+      capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);
+      res.setHeader("X-Robots-Tag", "noindex");
+      res.status(404).type("html").send(html);
       return;
     }
 
@@ -373,6 +464,10 @@ async function handleCustomerSiteSsr(
 
 export function registerSsrRoutes(app: Express): void {
   app.get("/dev/site-preview", handleDevPreview);
+  app.get(
+    "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",
+    handleDemoLegalRoute
+  );
   app.get("/demo/:pack([a-z0-9-]+)", handleDemoRoute);
   app.get(/^\/preview-ssr\/([A-Za-z0-9_-]{16,64})(\/.*)?$/, (req, res) => {
     void handlePreviewSsr(req, res);

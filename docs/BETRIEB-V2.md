@@ -148,12 +148,20 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
 - **Demo-Route**: `/demo/:pack` (Regex `[a-z0-9-]+`, nur bekannte Pack-IDs),
   rendert Fixture `"full"` des Packs, `X-Robots-Tag: noindex, nofollow`,
   `Cache-Control: public, max-age=3600`; `/demo/:pack/impressum|datenschutz`
-  matcht die Route nicht (fällt auf SPA/404 durch — laut Spec ok).
+  rendert dieselbe Fixture mit einem festen Platzhalter-Rechtstext
+  (`DEMO_LEGAL_NOTICE` in `server/ssr/routes.ts`, Fixtures haben kein
+  `legal`-Feld) — gleiches `noindex, nofollow`/`Cache-Control` wie `/demo/:pack`.
 - **Dev-Vorschau**: `/dev/site-preview?pack=&fixture=full|minimal|features` —
   nur außerhalb `production` (404 sonst).
 - **Kunden-Sites**: `/site/:slug` (Pfadform) und Subdomain
   `<slug>.pageblitz.de` (`getCustomerSubdomainFromHost`) — beide über
-  `handleCustomerSiteSsr` in `server/ssr/routes.ts`.
+  `handleCustomerSiteSsr` in `server/ssr/routes.ts`. Startseite + Rechtsseiten
+  (`SSR_ALLOWED_PATHNAMES`: `/`, `/impressum`, `/datenschutz`) werden voll
+  gerendert; jeder andere Unterpfad einer bekannten v2-Site liefert ein
+  eigenes SSR-404 (`server/ssr/notFoundPage.ts`, `X-Robots-Tag: noindex`) statt
+  des SPA-Fallbacks — nur Asset-artige Pfade (Dateiendung, Regex
+  `/\.[a-z0-9]+$/i`) und unbekannte Slugs gehen weiterhin an `next()`
+  (Static-Middleware/SPA).
 - **Inseln-Endpunkte**:
   - Kontakt: `POST /api/site/:slug/contact` (`server/contactSubmit.ts`).
   - KI-Chat: `POST /api/chat/:slug/message` (`server/_core/chatRoutes.ts`).
@@ -237,12 +245,15 @@ Details: `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`.
   `colorScheme`-Spalte ableiten; danach `customer.getMyWebsites`-
   Migrationsblock, `getIndustryColorScheme` (`server/industryImages.ts`) und
   `withOnColors`/`ColorScheme` (`shared/layoutConfig.ts`) entfernen.
-- `SSR_ALLOWED_PATHNAMES` (o. ä. Allowlist für Unterseiten) prüfen, ob
-  zusätzliche v2-Unterseiten-Pfade fehlen.
+- ~~`SSR_ALLOWED_PATHNAMES` (o. ä. Allowlist für Unterseiten) prüfen, ob
+  zusätzliche v2-Unterseiten-Pfade fehlen.~~ Erledigt (B4c Task 5): unbekannte
+  Unterpfade einer bekannten v2-Site liefern jetzt ein eigenes SSR-404 statt
+  des SPA-Fallbacks, siehe §5.
 - Landing-Perf: `/demo/:pack`-Showcase lädt 14 Packs als iframes — Ladezeit-
   Optimierung offen.
-- Demo-Rechtsseiten (`/demo/:pack/impressum|datenschutz`) fallen aktuell auf
-  SPA/404 durch — laut Spec akzeptiert, aber als offener Punkt vermerkt.
+- ~~Demo-Rechtsseiten (`/demo/:pack/impressum|datenschutz`) fallen aktuell auf
+  SPA/404 durch — laut Spec akzeptiert, aber als offener Punkt vermerkt.~~
+  Erledigt (B4c Task 5): eigene Route mit Platzhalter-Rechtstext, siehe §5.
 - a11y-/Perf-Pass (Studio, Kundenseiten).
 - `prefersMenu`, Team-Panel (`addOnTeamData`-Spalte bleibt bis dahin),
   Unterseiten-Add-on — laut Spec §2.8 aufgeschoben.

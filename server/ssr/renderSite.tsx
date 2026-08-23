@@ -55,7 +55,7 @@ export interface RenderSiteResult {
 }
 
 /** Schützt interpolierte Strings vor HTML-Injection (&, <, >, "). */
-function esc(value: string): string {
+export function esc(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -76,6 +76,23 @@ function findContact(data: WebsiteDataV2): SectionOf<"contact"> | undefined {
   return data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
   );
+}
+
+function findHero(data: WebsiteDataV2): SectionOf<"hero"> | undefined {
+  return data.sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
+}
+
+/**
+ * Macht eine Bild-URL absolut, falls sie root-relativ ist ("/foo.png") —
+ * `og:image` muss laut Open-Graph-Spec eine absolute URL sein, `SafeUrlSchema`
+ * (siehe `shared/siteContract/schema.ts`) erlaubt aber auch root-relative
+ * Pfade und Anker. Anker (`#...`) sind für ein Bildfeld nicht sinnvoll und
+ * kommen bei `imageUrl` in der Praxis nicht vor; sie würden hier zu einer
+ * (harmlosen, aber unbrauchbaren) `<origin>#...`-URL.
+ */
+function toAbsoluteUrl(origin: string, url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${origin}${url.startsWith("/") ? url : `/${url}`}`;
 }
 
 function buildLocalBusinessJsonLd(data: WebsiteDataV2): string {
@@ -116,7 +133,11 @@ function buildLocalBusinessJsonLd(data: WebsiteDataV2): string {
  * durch `renderSiteHtml` laufen) dieselben gestylten Inseln bekommen wie das
  * SSR-HTML — eine Quelle statt zwei, die auseinanderlaufen können.
  */
-function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
+function renderHead(
+  data: WebsiteDataV2,
+  canonicalUrl: string,
+  origin: string
+): string {
   const constitution = getConstitution(data.stylePackId);
   const fontsUrl = buildFontsUrl([
     constitution.type.display,
@@ -124,7 +145,8 @@ function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
     constitution.type.utility,
   ]);
   const jsonLd = buildLocalBusinessJsonLd(data);
-  return [
+  const heroImageUrl = findHero(data)?.imageUrl;
+  const tags = [
     '<meta charset="utf-8" />',
     '<meta name="viewport" content="width=device-width, initial-scale=1" />',
     `<title>${esc(data.seo.title)}</title>`,
@@ -133,11 +155,19 @@ function renderHead(data: WebsiteDataV2, canonicalUrl: string): string {
     `<meta property="og:title" content="${esc(data.seo.title)}" />`,
     `<meta property="og:description" content="${esc(data.seo.description)}" />`,
     '<meta property="og:type" content="website" />',
+  ];
+  if (heroImageUrl) {
+    const ogImage = toAbsoluteUrl(origin, heroImageUrl);
+    tags.push(`<meta property="og:image" content="${esc(ogImage)}" />`);
+    tags.push('<meta name="twitter:card" content="summary_large_image" />');
+  }
+  tags.push(
     '<link rel="preconnect" href="https://fonts.googleapis.com" />',
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
     `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
-    `<script type="application/ld+json">${jsonLd}</script>`,
-  ].join("\n");
+    `<script type="application/ld+json">${jsonLd}</script>`
+  );
+  return tags.join("\n");
 }
 
 /** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
@@ -242,7 +272,7 @@ export function renderSiteHtml(
   // ein Slug vorhanden) — sonst würde der Bundle-Tag geladen, obwohl gar
   // keine Insel im Markup steht.
   const includeIslands = hasActiveFeatures(data) && Boolean(opts.slug);
-  const head = renderHead(data, canonicalUrl);
+  const head = renderHead(data, canonicalUrl, opts.origin);
   const body = renderToStaticMarkup(
     <SiteRenderer
       data={data}

@@ -33,6 +33,53 @@ describe("renderSiteHtml", () => {
   });
 });
 
+describe("renderSiteHtml — og:image", () => {
+  test("Hero mit imageUrl → og:image absolut (origin präfixiert) + twitter:card=summary_large_image", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).toContain(
+      '<meta property="og:image" content="https://brandt.pageblitz.de/demo/werkbank-hero.svg" />'
+    );
+    expect(html).toContain(
+      '<meta name="twitter:card" content="summary_large_image" />'
+    );
+  });
+
+  test("Hero mit bereits absoluter imageUrl bleibt unverändert", () => {
+    const base = getFixture("werkbank", "full");
+    const data = {
+      ...base,
+      sections: base.sections.map(s =>
+        s.type === "hero"
+          ? { ...s, imageUrl: "https://cdn.example.com/hero.jpg" }
+          : s
+      ),
+    };
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).toContain(
+      '<meta property="og:image" content="https://cdn.example.com/hero.jpg" />'
+    );
+  });
+
+  test("Hero ohne imageUrl → kein og:image-Tag, kein twitter:card-Tag", () => {
+    const base = getFixture("werkbank", "full");
+    const data = {
+      ...base,
+      sections: base.sections.map(s =>
+        s.type === "hero" ? { ...s, imageUrl: undefined } : s
+      ),
+    };
+    const { html } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).not.toContain('property="og:image"');
+    expect(html).not.toContain('name="twitter:card"');
+  });
+});
+
 describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
   test("pathname /impressum mit gefülltem impressumHtml rendert den Legal-Inhalt + Zurück-Link, nicht die Hauptseite, Status 200", () => {
     const data = {

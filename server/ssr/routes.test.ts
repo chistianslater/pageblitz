@@ -112,11 +112,34 @@ describe("SSR routes", () => {
       expect(res.text).not.toContain("<script");
     });
 
-    test("Rechtsseiten unter /demo/:pack/* matchen die Route nicht → SPA-Fallback (404)", async () => {
+    test("Rechtsseiten unter /demo/:pack/impressum|datenschutz → 200, noindex/nofollow, 1h-Cache, enthält den Seitentitel", async () => {
       const app = buildAppWithFallback();
-      const res = await request(app).get("/demo/werkbank/impressum");
+      const impressum = await request(app).get("/demo/werkbank/impressum");
+      expect(impressum.status).toBe(200);
+      expect(impressum.headers["x-robots-tag"]).toBe("noindex, nofollow");
+      expect(impressum.headers["cache-control"]).toContain("public");
+      expect(impressum.headers["cache-control"]).toContain("max-age=3600");
+      expect(impressum.text).toContain("Impressum");
+
+      const datenschutz = await request(app).get("/demo/werkbank/datenschutz");
+      expect(datenschutz.status).toBe(200);
+      expect(datenschutz.headers["x-robots-tag"]).toBe("noindex, nofollow");
+      expect(datenschutz.text).toContain("Datenschutz");
+    });
+
+    test("/demo/:pack/<unbekannte Unterseite> matcht keine Route → SPA-Fallback (404)", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/werkbank/foo");
       expect(res.status).toBe(404);
       expect(res.text).toBe("SPA-Fallback");
+    });
+
+    test("/demo/<unbekanntes Pack>/impressum → 404, Body reflektiert den Parameter NICHT", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get("/demo/disco/impressum");
+      expect(res.status).toBe(404);
+      expect(res.text).toBe("Unbekanntes Pack");
+      expect(res.text).not.toContain("disco");
     });
 
     test("statische Fixture-Assets unter /demo/* (z. B. .svg) matchen die Route nicht — fallen auf die nachfolgende Middleware durch (Regressionsfund: client/public/demo/*.svg wurde vorher von dieser Route abgefangen)", async () => {
@@ -205,8 +228,9 @@ describe("SSR routes", () => {
       expect(res.text).toBe("SPA-Fallback");
     });
 
-    test("unbekannter Pfad auf v2-Site (/irgendwas) → next(), SPA-Fallback antwortet, NICHT 200-SSR", async () => {
+    test("unbekannter Pfad auf v2-Site (/irgendwas) → eigenes SSR-404 (nicht SPA-Fallback), NICHT 200-SSR der Startseite", async () => {
       (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "schreinerei-brandt-dortmund",
         websiteData: getFixture("werkbank", "full"),
       });
 
@@ -216,7 +240,60 @@ describe("SSR routes", () => {
       );
 
       expect(res.status).toBe(404);
+      expect(res.text).not.toBe("SPA-Fallback");
+      expect(res.type).toBe("text/html");
+      expect(res.headers["x-robots-tag"]).toContain("noindex");
+      expect(res.text).toContain("Schreinerei Brandt");
+      expect(res.text).not.toContain('id="leistungen"');
+    });
+
+    test("unbekannter Pfad auf v2-Site: zweiter Request auf denselben Pfad kommt aus dem Cache, Header bleibt erhalten", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt-404-cache-check",
+        websiteData: getFixture("werkbank", "full"),
+      });
+
+      const app = buildAppWithFallback();
+      const res1 = await request(app).get(
+        "/site/brandt-404-cache-check/irgendwas"
+      );
+      const res2 = await request(app).get(
+        "/site/brandt-404-cache-check/irgendwas"
+      );
+
+      expect(res1.status).toBe(404);
+      expect(res2.status).toBe(404);
+      expect(res2.headers["x-robots-tag"]).toContain("noindex");
+      expect(getWebsiteBySlug).toHaveBeenCalledTimes(1);
+    });
+
+    test("Asset-artiger Pfad (Dateiendung) unter v2-Site → next(), SPA-Fallback, kein DB-Zugriff", async () => {
+      const app = buildAppWithFallback();
+      const res = await request(app).get(
+        "/site/brandt-404-asset-check/favicon.ico"
+      );
+
+      expect(res.status).toBe(404);
       expect(res.text).toBe("SPA-Fallback");
+      expect(getWebsiteBySlug).not.toHaveBeenCalled();
+    });
+
+    test("/impressum mit legal-Inhalt bleibt weiterhin 200 (Regression zum neuen 404-Zweig)", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt-impressum-mit-inhalt",
+        websiteData: {
+          ...getFixture("werkbank", "full"),
+          legal: { impressumHtml: "<p>Firma XY, Musterstraße 1</p>" },
+        },
+      });
+
+      const app = buildAppWithFallback();
+      const res = await request(app).get(
+        "/site/brandt-impressum-mit-inhalt/impressum"
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.text).toContain("<p>Firma XY, Musterstraße 1</p>");
     });
 
     test("/impressum ohne legal-Inhalt → Status 404 mit 'nicht gefunden'-Text", async () => {
