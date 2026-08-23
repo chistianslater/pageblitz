@@ -148,54 +148,19 @@ beforeEach(() => {
 });
 
 describe("Zentraler Write-Guard (C-3)", () => {
-  test("onboarding.regenerateLegalPages ohne Token/Login (anonym) → FORBIDDEN, kein Write", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
+  test("onboarding.regenerateLegalPages ohne Login (anonym) → UNAUTHORIZED, kein Write", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
 
     const caller = appRouter.createCaller(createPublicContext());
     await expect(
       caller.onboarding.regenerateLegalPages({ websiteId: 42 })
-    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     expect(mockedDb.getOnboardingByWebsiteId).not.toHaveBeenCalled();
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("onboarding.regenerateLegalPages mit passendem previewToken (Studio-Kontext) schreibt nach websiteData.legal.* statt top-level", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
-    mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
-      legalOwner: "Max Brandt",
-      legalEmail: "info@brandt.de",
-      legalStreet: "Hauptstraße 1",
-      legalZip: "44135",
-      legalCity: "Dortmund",
-    } as any);
-    mockedDb.updateWebsite.mockResolvedValue(undefined as any);
-
-    const caller = appRouter.createCaller(createPublicContext());
-    const result = await caller.onboarding.regenerateLegalPages({
-      websiteId: 42,
-      token: "correct-token",
-    });
-
-    expect(result).toEqual({ success: true, regenerated: true });
-    expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
-    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
-    const writtenWebsiteData = (patch as any).websiteData;
-    expect(writtenWebsiteData.legal?.impressumHtml).toBeTruthy();
-    expect(writtenWebsiteData.legal?.datenschutzHtml).toBeTruthy();
-    // v1-only Top-Level-Felder dürfen NICHT in websiteData landen (strict schema)
-    expect(writtenWebsiteData.impressumHtml).toBeUndefined();
-    expect(writtenWebsiteData.datenschutzHtml).toBeUndefined();
-    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
-  });
-
-  test("onboarding.regenerateLegalPages im Admin-Kontext (kein Token nötig) schreibt erfolgreich", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
+  test("onboarding.regenerateLegalPages im Admin-Kontext schreibt nach websiteData.legal.* statt top-level", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue({
       legalOwner: "Max Brandt",
       legalEmail: "info@brandt.de",
@@ -212,12 +177,18 @@ describe("Zentraler Write-Guard (C-3)", () => {
 
     expect(result).toEqual({ success: true, regenerated: true });
     expect(mockedDb.updateWebsite).toHaveBeenCalledTimes(1);
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    const writtenWebsiteData = (patch as any).websiteData;
+    expect(writtenWebsiteData.legal?.impressumHtml).toBeTruthy();
+    expect(writtenWebsiteData.legal?.datenschutzHtml).toBeTruthy();
+    // v1-only Top-Level-Felder dürfen NICHT in websiteData landen (strict schema)
+    expect(writtenWebsiteData.impressumHtml).toBeUndefined();
+    expect(writtenWebsiteData.datenschutzHtml).toBeUndefined();
+    expect(mockedInvalidateSsrCache).toHaveBeenCalledWith("schreinerei-brandt");
   });
 
-  test("onboarding.regenerateLegalPages als eingeloggter Abo-Inhaber (ohne Token) schreibt erfolgreich", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
+  test("onboarding.regenerateLegalPages als eingeloggter Abo-Inhaber schreibt erfolgreich", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
       id: 1,
       websiteId: 42,
@@ -242,9 +213,7 @@ describe("Zentraler Write-Guard (C-3)", () => {
   });
 
   test("onboarding.regenerateLegalPages als eingeloggter Nutzer ohne passende Subscription (anderer userId) → FORBIDDEN, kein Write", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     // Subscription existiert, gehört aber einem anderen Nutzer (websiteId
     // stimmt, userId nicht) — isSubscriptionOwner muss false bleiben.
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
@@ -262,9 +231,7 @@ describe("Zentraler Write-Guard (C-3)", () => {
   });
 
   test("onboarding.regenerateLegalPages als eingeloggter Nutzer ohne jede Subscription (getSubscriptionByWebsiteId → null) → FORBIDDEN, kein Write", async () => {
-    mockedDb.getWebsiteById.mockResolvedValue(
-      baseWebsiteRow({ previewToken: "correct-token" })
-    );
+    mockedDb.getWebsiteById.mockResolvedValue(baseWebsiteRow());
     mockedDb.getSubscriptionByWebsiteId.mockResolvedValue(undefined as any);
 
     const caller = appRouter.createCaller(createUserContext(2));

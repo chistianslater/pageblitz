@@ -15,5 +15,5 @@
   <circle cx="980" cy="740" r="70" fill="#E7C8F5" />
 
   <!-- Rosé-Zierring um den zentrischen Stapel -->
-  <circle cx="600" cy="420" r="280" fill="none" stroke="#D4749C" stroke-width="3" />
+  <circle cx="600" cy="420" r="280" fill="none" stroke="#A8517A" stroke-width="3" />
 </svg>

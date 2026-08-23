@@ -3,18 +3,18 @@
   <rect x="0" y="0" width="1200" height="900" fill="#FFF8EC" />
 
   <!-- Drei gleichmäßig verteilte "Köpfe" als Kreise, Bonbon-Palette -->
-  <circle cx="280" cy="420" r="140" fill="#FF6B57" />
+  <circle cx="280" cy="420" r="140" fill="#C4442E" />
   <circle cx="600" cy="340" r="160" fill="#FFC838" />
   <circle cx="920" cy="420" r="140" fill="#3E8E7E" />
 
   <!-- Notenwert-Andeutung als Dreiecke darüber -->
   <polygon points="280,220 340,320 220,320" fill="#3E8E7E" />
-  <polygon points="600,140 670,260 530,260" fill="#FF6B57" />
+  <polygon points="600,140 670,260 530,260" fill="#C4442E" />
   <polygon points="920,220 980,320 860,320" fill="#FFC838" />
 
   <!-- Konfetti-Streuung am unteren Rand -->
   <circle cx="150" cy="740" r="24" fill="#FFC838" />
-  <circle cx="420" cy="800" r="18" fill="#FF6B57" />
+  <circle cx="420" cy="800" r="18" fill="#C4442E" />
   <circle cx="760" cy="780" r="22" fill="#3E8E7E" />
-  <circle cx="1040" cy="720" r="16" fill="#FF6B57" />
+  <circle cx="1040" cy="720" r="16" fill="#C4442E" />
 </svg>

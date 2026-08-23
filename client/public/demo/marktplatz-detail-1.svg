@@ -13,7 +13,7 @@
   <rect x="780" y="560" width="18" height="110" fill="#262133" />
 
   <!-- Bonbon-Formen darüber -->
-  <circle cx="300" cy="260" r="150" fill="#FF6B57" />
+  <circle cx="300" cy="260" r="150" fill="#C4442E" />
   <polygon points="820,120 940,340 700,340" fill="#FFC838" />
   <circle cx="960" cy="300" r="90" fill="#3E8E7E" />
   <circle cx="140" cy="420" r="40" fill="#FFC838" />

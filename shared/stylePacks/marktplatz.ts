@@ -16,11 +16,6 @@ export const MARKTPLATZ: PackConstitution = {
     "hundesalon",
     "fahrschule",
   ],
-  // Enthält "eisdiele" (Gastro-Begriff) — Angebot-Panel startet im
-  // Speisekarten-Modus (B4c Task 7, siehe PackConstitution.prefersMenu).
-  // Betrifft alle Branchen dieses Packs einheitlich (kein Branchen-Split
-  // innerhalb eines Packs vorgesehen).
-  prefersMenu: true,
   theme: "light",
   palette: [
     {

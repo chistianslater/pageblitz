@@ -17,5 +17,5 @@
   <circle cx="900" cy="570" r="112" fill="#C9A468" />
 
   <!-- Siegelgold-Ring um den mittleren Laib -->
-  <circle cx="620" cy="600" r="200" fill="none" stroke="#B98A2F" stroke-width="4" />
+  <circle cx="620" cy="600" r="200" fill="none" stroke="#7A5818" stroke-width="4" />
 </svg>

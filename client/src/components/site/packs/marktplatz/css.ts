@@ -14,8 +14,8 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-accent-word{position:relative;display:inline-block;color:var(--pb-accent)}
 .pb-mp-squiggle{position:absolute;left:0;right:0;bottom:-10px;width:100%;height:10px;overflow:visible}
 .pb-mp-sub{margin-top:14px;color:var(--pb-muted);font-size:15px;max-width:44ch}
-.pb-marktplatz a.pb-mp-cta{display:inline-block;margin-top:24px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-family:var(--pb-font-display);font-weight:800;font-size:14.5px;box-shadow:0 4px 0 #D94A37;transition:transform .15s}
-.pb-mp-cta:hover,.pb-mp-cta:focus-visible{transform:translateY(2px);box-shadow:0 2px 0 #D94A37}
+.pb-marktplatz a.pb-mp-cta{display:inline-block;margin-top:24px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-family:var(--pb-font-display);font-weight:800;font-size:14.5px;box-shadow:0 4px 0 color-mix(in srgb, var(--pb-accent) 80%, black);transition:transform .15s}
+.pb-mp-cta:hover,.pb-mp-cta:focus-visible{transform:translateY(2px);box-shadow:0 2px 0 color-mix(in srgb, var(--pb-accent) 80%, black)}
 .pb-mp-photo-wrap{position:relative;flex:0 1 280px;min-width:150px;margin-top:14px}
 .pb-mp-photo{position:relative;z-index:1;display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--pb-radius-card);transform:rotate(3deg);box-shadow:0 6px 0 var(--pb-line)}
 .pb-mp-sticker{position:absolute;font-family:var(--pb-font-display);z-index:3;text-align:center;white-space:nowrap}

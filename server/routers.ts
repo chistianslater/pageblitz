@@ -1924,11 +1924,13 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
       }),
 
     // Regenerate legal pages (Impressum & Datenschutz) after legal data changes.
-    // Zugriff (Spec §2.3): Admin, Studio-Kontext (passender previewToken)
-    // oder eingeloggter Abo-Inhaber — sonst FORBIDDEN. Bleibt publicProcedure,
-    // weil der anonyme Studio-Kontext (Token statt Login) erlaubt sein muss.
-    regenerateLegalPages: publicProcedure
-      .input(z.object({ websiteId: z.number(), token: z.string().optional() }))
+    // Zugriff (Spec §2.3, verschärft in B4c Final-Review-Fixwelle 2): nur
+    // Admin oder eingeloggter Abo-Inhaber — kein anonymer Token-Pfad mehr
+    // (der previewToken-Zweig hatte keinen Client-Aufrufer und war
+    // schwächer als die Ownership-Prüfung; siehe Final-Review). Deshalb
+    // protectedProcedure statt publicProcedure.
+    regenerateLegalPages: protectedProcedure
+      .input(z.object({ websiteId: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website)
@@ -1937,20 +1939,16 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
             message: "Website nicht gefunden",
           });
 
-        const isAdmin = ctx.user?.role === "admin";
-        const hasValidToken =
-          !!input.token &&
-          !!website.previewToken &&
-          input.token === website.previewToken;
+        const isAdmin = ctx.user.role === "admin";
         let isSubscriptionOwner = false;
-        if (!isAdmin && !hasValidToken && ctx.user) {
+        if (!isAdmin) {
           const subscription = await getSubscriptionByWebsiteId(
             input.websiteId
           );
           isSubscriptionOwner =
             !!subscription && subscription.userId === ctx.user.id;
         }
-        if (!isAdmin && !hasValidToken && !isSubscriptionOwner) {
+        if (!isAdmin && !isSubscriptionOwner) {
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Kein Zugriff auf diese Website.",

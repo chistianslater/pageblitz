@@ -13,7 +13,7 @@
   <circle cx="600" cy="450" r="170" fill="#EDE3CE" />
 
   <!-- Siegelgold-Ring wie ein Zunft-Siegel -->
-  <circle cx="600" cy="450" r="270" fill="none" stroke="#B98A2F" stroke-width="4" />
+  <circle cx="600" cy="450" r="270" fill="none" stroke="#7A5818" stroke-width="4" />
 
   <!-- Einschnitte im Laib, hart -->
   <rect x="592" y="220" width="16" height="140" fill="#2A2118" />

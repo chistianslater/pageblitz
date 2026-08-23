@@ -25,7 +25,24 @@ import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
  * `onClose={() => setActiveId(null)}`) — als Dependency würde das den Effekt
  * bei jedem Tastenanschlag in einem Formularfeld neu ausführen und dabei
  * ungewollt den Fokus zurückreißen (Cleanup läuft bei jedem Re-Run).
+ *
+ * Esc wird ignoriert, wenn der Tastendruck aus einem Eingabefeld
+ * (input/textarea/select/[contenteditable]) kommt oder Teil einer IME-
+ * Komposition ist (`isComposing`) — sonst würde Esc beim Abbrechen einer
+ * IME-Eingabe oder beim Verlassen eines Formularfelds versehentlich das
+ * ganze Panel schließen und einen ungespeicherten Entwurf verwerfen (B4c
+ * Final Review Fixwelle 2).
  */
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tag = target.tagName;
+  return (
+    tag === "INPUT" ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    target.isContentEditable
+  );
+}
 export function usePanelFocus(
   panelId: ChecklistItemId,
   onClose: () => void
@@ -38,10 +55,11 @@ export function usePanelFocus(
     headingRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCloseRef.current();
-      }
+      if (event.key !== "Escape") return;
+      if (event.isComposing) return;
+      if (isEditableTarget(event.target)) return;
+      event.preventDefault();
+      onCloseRef.current();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => {
