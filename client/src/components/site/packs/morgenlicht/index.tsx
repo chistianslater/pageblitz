@@ -125,9 +125,11 @@ function renderSection(
               <div className="pb-ml-card" key={item.title}>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
-                {item.price && (
-                  <span className="pb-ml-price">{item.price}</span>
-                )}
+                {/* B7 (P3): „auf Anfrage" als Fallback-Preiszeile, damit alle
+                    Karten einer Reihe auf derselben Unterkante enden. */}
+                <span className="pb-ml-price">
+                  {item.price ?? "auf Anfrage"}
+                </span>
               </div>
             ))}
           </div>
@@ -454,9 +456,17 @@ const MorgenlichtPage: React.FC<{
         .map(section => renderSection(section))}
       <footer className="pb-ml-footer">
         <p>
-          {data.businessName} · © {year} {data.businessName}
+          © {year} {data.businessName}
         </p>
-        {data.footerNote && <p>{data.footerNote}</p>}
+        {/* Q6 (B7): Zeile 1 nennt den Namen bereits — fuehrendes
+            „{Name} · “ aus der Notiz kuerzen (→ „Stadt · seit Jahr“). */}
+        {data.footerNote && (
+          <p>
+            {data.footerNote.startsWith(`${data.businessName} · `)
+              ? data.footerNote.slice(data.businessName.length + 3)
+              : data.footerNote}
+          </p>
+        )}
         <p>
           <a href={`${basePath}/impressum`}>Impressum</a> ·{" "}
           <a href={`${basePath}/datenschutz`}>Datenschutz</a>

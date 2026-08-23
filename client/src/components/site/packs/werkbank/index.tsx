@@ -430,9 +430,17 @@ const WerkbankPage: React.FC<{
         )}
         <footer className="pb-wb-footer">
           <p>
-            {data.businessName} · © {year} {data.businessName}
+            © {year} {data.businessName}
           </p>
-          {data.footerNote && <p>{data.footerNote}</p>}
+          {/* Q6 (B7): Zeile 1 nennt den Namen bereits — fuehrendes
+              „{Name} · “ aus der Notiz kuerzen (→ „Stadt · seit Jahr“). */}
+          {data.footerNote && (
+            <p>
+              {data.footerNote.startsWith(`${data.businessName} · `)
+                ? data.footerNote.slice(data.businessName.length + 3)
+                : data.footerNote}
+            </p>
+          )}
           <p>
             <a href={`${basePath}/impressum`}>Impressum</a> ·{" "}
             <a href={`${basePath}/datenschutz`}>Datenschutz</a>

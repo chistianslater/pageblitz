@@ -42,7 +42,8 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-quote p{font-size:15px}
 .pb-mp-quote footer{margin-top:12px;font-weight:700;font-family:var(--pb-font-display);font-size:13px;color:var(--pb-accent-text)}
 .pb-mp-faq strong{color:var(--pb-accent-text)}
-.pb-mp-gallery img{width:100%;height:210px;object-fit:cover;border-radius:var(--pb-radius-card);display:block}
+.pb-mp-gallery img{width:100%;height:210px;object-fit:cover;border-radius:var(--pb-radius-card);display:block;box-shadow:0 6px 0 var(--pb-line)}
+.pb-mp-gallery img:only-child{max-width:720px;height:auto;aspect-ratio:3/2;margin:0 auto}
 .pb-mp-team img{width:100%;height:180px;object-fit:cover;border-radius:var(--pb-radius-card);margin-bottom:10px}
 .pb-mp-contact{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start}
 .pb-mp-contact address{font-style:normal}

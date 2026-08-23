@@ -1221,19 +1221,15 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
     {
       type: "gallery",
       headline: "Einblicke",
+      // Q5 (B7 Welle 3): Galerie-Kachel 1 war ein Duplikat des Hero-Bilds,
+      // Kachel 2 ein Duplikat des Über-uns-Bilds. Mit nur 3 branchen-
+      // tauglichen Assets (hero, detail-1, detail-3; detail-2 = Drachen ist
+      // branchenfremd, Welle 0) gilt das Wellen-Muster „kürzen statt
+      // doppeln": eine breite Einzel-Platte (detail-3, Xylophon/Flöte) —
+      // Hero/Über-uns/Galerie sind damit vollständig disjunkt. Echte Seiten
+      // bekommen hier GMB-Fotos.
       images: [
         {
-          url: "/demo/marktplatz-hero.webp",
-          alt: "Übungsraum mit Klavier",
-        },
-        {
-          url: "/demo/marktplatz-detail-1.webp",
-          alt: "Gitarrenunterricht in kleiner Gruppe",
-        },
-        {
-          // Q5 (B7 Welle 0): Drachen/Segelboot-Illustration (detail-2) war
-          // branchenfremd für eine Musikschule — ersetzt durch das
-          // Instrumente-Motiv detail-3 (Xylophon/Flöte).
           url: "/demo/marktplatz-detail-3.webp",
           alt: "Xylophon und Blockflöte im Unterrichtsraum",
         },
