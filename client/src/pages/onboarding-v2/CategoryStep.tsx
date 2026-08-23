@@ -39,6 +39,19 @@ export function CategoryStep({
     if (canSubmit) onSubmit(value.trim());
   };
 
+  // Fokusverlust schließt die Vorschlagsliste (Task-5-Review, Minor):
+  // Blur auf dem Combobox-Container mit relatedTarget-Check — wandert der
+  // Fokus INNERHALB des Containers (theoretisch), bleibt die Liste offen;
+  // der Klick auf eine Option läuft ohnehin über onMouseDown/preventDefault
+  // und löst gar keinen Blur aus.
+  const onFieldBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+      return;
+    }
+    setOpen(false);
+    setActiveIndex(-1);
+  };
+
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       if (!listVisible) return;
@@ -69,7 +82,7 @@ export function CategoryStep({
           Für {businessName} konnten wir die Branche nicht sicher erkennen.
           Wähle sie aus oder tippe sie frei ein — daraus entsteht deine Website.
         </p>
-        <div className="pb-studio-cat-field">
+        <div className="pb-studio-cat-field" onBlur={onFieldBlur}>
           <label htmlFor="pb-cat-input">Branche</label>
           <input
             id="pb-cat-input"

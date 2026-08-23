@@ -11,6 +11,26 @@ import {
 } from "./generationProgress";
 
 const LONG_WAIT_MS = 60_000;
+/** Update-Intervall des Fortschrittsbalkens bei `prefers-reduced-motion: reduce` — grobe Schritte statt rAF-Animation. */
+const REDUCED_MOTION_TICK_MS = 1_000;
+
+/**
+ * `prefers-reduced-motion: reduce` beobachten (Muster wie
+ * client/src/components/landing/StudioFrame.tsx) — der Fortschrittsbalken
+ * ersetzt dann den rAF-Loop durch grobe 1-Sekunden-Updates, konsistent zum
+ * Skeleton/Reveal, die per CSS-Media-Query ebenfalls statisch werden.
+ */
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
 
 interface GenerationScreenProps {
   businessName: string;
@@ -102,36 +122,57 @@ export function GenerationScreen({
       startedAt: performance.now(),
     };
   }, [progress]);
+  const reducedMotion = usePrefersReducedMotion();
   React.useEffect(() => {
     if (status === "failed") return;
-    let raf = 0;
-    let last = performance.now();
     let lastAria = -1;
-    const tick = (now: number) => {
+    const applyProgress = (value: number) => {
+      if (barRef.current) {
+        barRef.current.style.width = `${Math.max(4, value)}%`;
+      }
+      const rounded = Math.round(value);
+      if (rounded !== lastAria) {
+        lastAria = rounded;
+        setAriaNow(rounded);
+      }
+    };
+    const targetAt = (now: number) => {
       const { from, startedAt } = anchorRef.current;
       const idx = phaseIndexFor(from);
-      const target = progressAt(
+      return progressAt(
         now,
         startedAt,
         from,
         PHASE_BOUNDS[idx + 1],
         PHASE_EXPECTED_MS[idx]
       );
-      shownRef.current = approach(shownRef.current, target, now - last);
+    };
+    if (reducedMotion) {
+      // Reduzierte Bewegung: grobe 1-Sekunden-Schritte direkt auf den
+      // Zielwert (kein Easing, keine Dauer-Animation) — der Balken bleibt
+      // informativ, ohne zu „laufen".
+      const update = () => {
+        shownRef.current = Math.max(
+          shownRef.current,
+          targetAt(performance.now())
+        );
+        applyProgress(shownRef.current);
+      };
+      update();
+      const id = window.setInterval(update, REDUCED_MOTION_TICK_MS);
+      return () => window.clearInterval(id);
+    }
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      shownRef.current = approach(shownRef.current, targetAt(now), now - last);
       last = now;
-      if (barRef.current) {
-        barRef.current.style.width = `${Math.max(4, shownRef.current)}%`;
-      }
-      const rounded = Math.round(shownRef.current);
-      if (rounded !== lastAria) {
-        lastAria = rounded;
-        setAriaNow(rounded);
-      }
+      applyProgress(shownRef.current);
       raf = window.requestAnimationFrame(tick);
     };
     raf = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(raf);
-  }, [status]);
+  }, [status, reducedMotion]);
 
   const [frameLoaded, setFrameLoaded] = React.useState(false);
   // `?reveal=1` schaltet die Sektions-Einblendung im SSR-HTML frei (nur

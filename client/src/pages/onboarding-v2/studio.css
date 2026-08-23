@@ -205,7 +205,9 @@
   display: block;
   height: 100%;
   background: var(--st-accent);
-  transition: width 400ms ease;
+  /* Keine width-Transition: die Glättung übernimmt der rAF-Loop in
+     GenerationScreen.tsx (approach/progressAt) — eine CSS-Transition
+     obendrauf würde dem Easing hinterherlaufen und es verfälschen. */
 }
 .pb-studio-gen-inner {
   width: 100%;
