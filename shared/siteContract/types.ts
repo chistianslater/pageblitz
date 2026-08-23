@@ -1,7 +1,10 @@
 import type { z } from "zod";
-import {
+// Nur Typ-Importe aus schema.ts: dieses Modul bleibt zur Laufzeit zod-frei,
+// damit `PACK_IDS`-Konsumenten (shared/stylePacks/summary.ts → Landing-
+// Chunk) zod nicht mitladen (B6 Task 8). SECTION_TYPES wird unten per
+// `typeof` verwendet, daher reicht der Typ-Import.
+import type {
   FeaturesSchema,
-  PACK_IDS,
   PageSchema,
   PageSectionSchema,
   SECTION_TYPES,
@@ -9,6 +12,7 @@ import {
   SiteAddOnsSchema,
   WebsiteDataV2Schema,
 } from "./schema";
+import { PACK_IDS } from "./packIds";
 
 export { PACK_IDS };
 export type PackId = (typeof PACK_IDS)[number];

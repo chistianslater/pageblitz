@@ -1,4 +1,7 @@
-import "@shared/zodLocale";
+// HINWEIS: kein `import "@shared/zodLocale"` mehr hier — die deutsche zod-
+// Locale wird von shared/siteContract/schema.ts (Ursprung aller Client-
+// Schemas) gesetzt; ein Import an dieser Stelle zog zod (~57 kB) in den
+// Entry-Chunk jeder Route, auch "/" (B6 Task 8).
 
 // ── Defensive Node-Patches gegen Translate/Extension-Interferenzen ─────────
 // Browser-Übersetzer (Google Translate) und manche Extensions (Grammarly,
@@ -189,10 +192,56 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
+function mountApp() {
+  createRoot(document.getElementById("root")!).render(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+
+// ── Prerender zuerst malen, dann mounten (B6 Task 8) ───────────────────────
+// "/" kommt mit einem serverseitigen HTML-Prerender in #root
+// (server/seo/homePage.ts). Ohne Verzögerung ersetzt React ihn, BEVOR der
+// Browser den ersten Frame präsentiert hat (Modulskript läuft direkt nach
+// dem Parsen) — Chrome verwirft LCP-Kandidaten, deren Element vor der
+// Frame-Präsentation wieder aus dem DOM fliegt, und der gemessene LCP (Hero-
+// H1) rutschte so hinter JS-Download + Hydration (Lighthouse mobil ~2,9 s
+// statt ~FCP). Daher: mounten, sobald der Browser den First Contentful Paint
+// GEMELDET hat (PerformanceObserver "paint" — die Meldung kommt erst nach
+// der Präsentation, der Prerender-H1 ist dann als LCP-Kandidat registriert;
+// er hat exakt die Typografie der React-Fassung, siehe homePage.ts, sodass
+// React beim Mount keinen größeren Kandidaten erzeugt). Fallback 150 ms bzw.
+// sofort, wenn der Browser keine paint-Einträge kennt. Nur mit Prerender —
+// alle anderen Routen mounten sofort wie bisher. Ein bereits gemeldeter FCP
+// (langsames JS, Prerender längst sichtbar) kommt per `buffered: true`
+// sofort an → kein künstlicher Verzug.
+function mountAfterFirstPaint() {
+  let mounted = false;
+  const mountOnce = () => {
+    if (mounted) return;
+    mounted = true;
+    mountApp();
+  };
+  try {
+    const observer = new PerformanceObserver(list => {
+      if (list.getEntriesByName("first-contentful-paint").length > 0) {
+        observer.disconnect();
+        mountOnce();
+      }
+    });
+    observer.observe({ type: "paint", buffered: true });
+  } catch {
+    mountOnce();
+    return;
+  }
+  setTimeout(mountOnce, 150);
+}
+
+if (document.getElementById("prerender")) {
+  mountAfterFirstPaint();
+} else {
+  mountApp();
+}

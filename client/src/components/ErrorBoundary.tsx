@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { AlertTriangle, RotateCcw, Home } from "lucide-react";
 import { Component, ErrorInfo, ReactNode } from "react";
 
@@ -74,18 +73,18 @@ class ErrorBoundary extends Component<Props, State> {
               Hoppla, etwas ist schiefgegangen
             </h2>
             <p className="text-sm text-slate-600 mb-6 text-center leading-relaxed">
-              Wir haben den Fehler automatisch protokolliert und schauen ihn uns an.
-              Versuche die Seite neu zu laden oder zurück zur Startseite zu gehen.
+              Wir haben den Fehler automatisch protokolliert und schauen ihn uns
+              an. Versuche die Seite neu zu laden oder zurück zur Startseite zu
+              gehen.
             </p>
 
             <div className="flex gap-2 w-full">
               <button
                 onClick={() => window.location.reload()}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl",
-                  "bg-indigo-600 text-white font-medium",
-                  "hover:bg-indigo-500 transition-colors cursor-pointer"
-                )}
+                // Bewusst ohne cn(): der ErrorBoundary sitzt am App-Root und
+                // war der einzige Grund, warum clsx + tailwind-merge (~25 kB
+                // unminifiziert) im Entry-Chunk von "/" lagen (B6 Task 8).
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-500 transition-colors cursor-pointer"
               >
                 <RotateCcw size={16} />
                 Neu laden

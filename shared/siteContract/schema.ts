@@ -1,21 +1,13 @@
+// Deutsche zod-Fehlermeldungen global aktivieren, BEVOR irgendein Schema
+// dieses Moduls validiert — seit B6 Task 8 hier statt in client/src/main.tsx
+// (dort zog der Import zod in den Entry-Chunk jeder Route, auch "/", das
+// kein zod braucht). Server-Einstiege importieren zodLocale zusätzlich
+// selbst; z.config ist idempotent.
+import "../zodLocale";
 import { z } from "zod";
+import { PACK_IDS } from "./packIds";
 
-export const PACK_IDS = [
-  "werkbank",
-  "patina",
-  "kanzlei",
-  "salon-noir",
-  "morgenlicht",
-  "marktplatz",
-  "gusto",
-  "landgut",
-  "atelier",
-  "klarwerk",
-  "verve",
-  "zunft",
-  "schimmer",
-  "fundament",
-] as const;
+export { PACK_IDS };
 
 export const SECTION_TYPES = [
   "hero",

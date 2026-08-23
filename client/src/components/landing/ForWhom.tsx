@@ -18,12 +18,18 @@ interface Tile {
   span: "wide" | "narrow";
 }
 
+// Bilder: eigene 4:3-Ableitungen (960×720, ~25–45 kB) der Demo-Hero-Fotos
+// unter client/public/landing/ — vorher wurden die 1600×1067-Originale
+// (~50–105 kB je Bild, ~350 kB gesamt) aus client/public/demo/ geladen, obwohl
+// die Kacheln höchstens ~450 px breit gerendert werden (B6 Task 8). Erzeugt
+// mit: magick demo/<pack>-hero.webp -gravity center -crop 4:3 +repage
+//      -resize 960x720 -define webp:method=6 -quality 74 landing/forwhom-<pack>.webp
 const TILES: Tile[] = [
   {
     packId: "werkbank",
     industry: "Handwerk",
     examples: "Schreinerei, Elektro, Sanitär, Bau",
-    image: "/demo/werkbank-hero.webp",
+    image: "/landing/forwhom-werkbank.webp",
     alt: "Schreiner hobelt ein Werkstück in seiner Werkstatt",
     span: "wide",
   },
@@ -31,7 +37,7 @@ const TILES: Tile[] = [
     packId: "kanzlei",
     industry: "Kanzlei & Beratung",
     examples: "Steuerberatung, Anwaltskanzlei, Coaching",
-    image: "/demo/kanzlei-hero.webp",
+    image: "/landing/forwhom-kanzlei.webp",
     alt: "Ruhiger Schreibtisch einer Kanzlei mit Lampe und Akten",
     span: "narrow",
   },
@@ -39,7 +45,7 @@ const TILES: Tile[] = [
     packId: "gusto",
     industry: "Gastronomie",
     examples: "Restaurant, Café, Bistro, Weinbar",
-    image: "/demo/gusto-hero.webp",
+    image: "/landing/forwhom-gusto.webp",
     alt: "Angerichteter Teller im Kerzenlicht eines Restaurants",
     span: "narrow",
   },
@@ -47,7 +53,7 @@ const TILES: Tile[] = [
     packId: "morgenlicht",
     industry: "Praxis & Wellness",
     examples: "Physiotherapie, Kosmetik, Heilpraktik, Studio",
-    image: "/demo/morgenlicht-hero.webp",
+    image: "/landing/forwhom-morgenlicht.webp",
     alt: "Heller Empfangsbereich einer Praxis mit Pflanzen",
     span: "wide",
   },
@@ -94,8 +100,8 @@ export function ForWhom() {
                     <img
                       src={tile.image}
                       alt={tile.alt}
-                      width={1600}
-                      height={1067}
+                      width={960}
+                      height={720}
                       loading="lazy"
                       decoding="async"
                       className="aspect-[4/3] w-full object-cover transition-transform duration-700 [transition-timing-function:var(--lp-ease)] group-hover:scale-[1.03]"

@@ -474,6 +474,70 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   Tag Manager ~185 KB Transfer, Rybbit-Analytics ~11,7 KB) und
   render-blocking Haupt-CSS-Bundle + Inter/Plus-Jakarta-Fonts-Link.
 
+### 7.1 Stand nach B6 Task 8 (Perf-Rest Landingpage, 2026-08-23)
+
+Die Landingpage wurde zwischen B5 und B6 neu gebaut (Brief
+`2026-08-23-landing-redesign-brief.md`, nur noch Space Grotesk, kein
+Dark-Mode). Task 8 hat auf dieser Basis gemessen (Produktions-Build, Port
+3011, Lighthouse 13.4 `throttlingMethod: simulate`, 2 Läufe mobil + 1 Desktop):
+
+| Metrik | vorher (HEAD c377b70) | nachher |
+|---|---|---|
+| Performance-Score mobil | 0,76–0,77 | 0,99 |
+| FCP mobil | 2,7 s | 1,65 s |
+| **LCP mobil** | **5,2–5,3 s** | **1,80 s** (Budget < 2,5 s ✅) |
+| TBT / CLS mobil | 14 ms / 0,026 | 13–15 ms / 0,000 |
+| Score / LCP Desktop | 0,98 / 1,05 s | 1,00 / 0,66 s |
+| JS auf `/` (gzip, eigene Origin, inkl. Idle-Nachlader) | 197 kB (Entry 98 + react 61 + motion 38) | **~134 kB** (Entry 51 + react 61 + sonner 11 + Cookie-Banner/Chat/Icons ~11) — Budget < 150 kB ✅; kritischer Pfad nur Entry + react = 112 kB |
+| CSS (gzip) | 25,6 kB | 26,1 kB (+@font-face, Chat-Keyframes) |
+| Fonts | 22 kB von fonts.gstatic.com (+ CSS von fonts.googleapis.com, zwei fremde Origins im kritischen Pfad) | 22 kB self-hosted, `preload` |
+| Bilder „Für wen" | 4 × 1600px-Demo-Heros, 352 kB | 4 × 960×720-Ableitungen, 137 kB |
+| Third-Party (gtag.js 181 kB + Rybbit 11 kB) | async/defer im `<head>`, im LCP-Pfad | nach `load` + `requestIdleCallback` |
+
+Was umgesetzt wurde (Details in den Kommentaren der jeweiligen Dateien):
+
+- **Fonts self-hosted:** `client/public/fonts/space-grotesk-latin-wght.woff2`
+  (Variable-Font, wght 300–700, latin-Subset, OFL — README/Lizenz im Ordner)
+  statt Google-Fonts-Link; `@font-face` (`swap`, `unicode-range`) in
+  `client/src/index.css`, `<link rel="preload" as="font">` in
+  `client/index.html`, `preconnect`s entfernt; `server/_core/static.ts`
+  liefert `/fonts` mit 1 Jahr `immutable` (Datei bei Update umbenennen).
+  Studio/Dashboard/Admin referenzieren die Familie per Name → automatisch
+  mit versorgt. Pack-Fonts der Kundenseiten bleiben Google Fonts (SSR-Head /
+  `packFonts.ts`). Eine Abweichung vom Plan (3 statische Schnitte): die eine
+  Variable-Datei ist kleiner als 3 statische und braucht nur einen Preload.
+- **Prerender ist der LCP:** `server/seo/homePage.ts` rendert den Hero-H1 jetzt
+  in exakt der Typografie von `.lp-h1--hero` (Container wie `.lp-container`),
+  und `client/src/main.tsx` mountet React auf `/` erst, nachdem der Browser
+  den First Contentful Paint **gemeldet** hat (PerformanceObserver `paint`,
+  Fallback 150 ms). Hintergrund: Chrome verwirft LCP-Kandidaten, deren Element
+  vor der Frame-Präsentation aus dem DOM fliegt — vorher ersetzte React den
+  Prerender, bevor er je gemalt war, und der gemessene LCP hing am gesamten
+  JS-Download (5,2 s simuliert). Jetzt LCP = FCP (Hero-H1 des Prerenders);
+  die React-Fassung ist gleich groß und erzeugt keinen neuen Kandidaten.
+- **Entry-Chunk nur noch Bootstrap + Landing:** zod raus (`PACK_IDS` in
+  zod-freiem `shared/siteContract/packIds.ts`, `types.ts` nur Typ-Importe,
+  `zodLocale` wird von `schema.ts` statt `main.tsx` importiert), Toaster
+  (sonner), Cookie-Banner, NotFound, Impressum/Datenschutz lazy in
+  `App.tsx`, `ErrorBoundary` ohne `cn()` (tailwind-merge/clsx raus),
+  framer-motion komplett vom Landing-Pfad: `LandingPageChatWidget` animiert
+  per CSS (`.pb-chat-*` in `animations.css`) und lädt erst nach Idle/
+  Interaktion (`DeferredChatWidget` in `LandingPage.tsx`). Kein Radix-Code
+  im Entry (verifiziert per grep im gebauten Chunk; Slot-freier Button war
+  nicht nötig — die neue Landing nutzt `ui/button.tsx` gar nicht mehr).
+  `LandingPage` bleibt eager (Begründung im Kommentar in `App.tsx`).
+- **Third-Party nach Idle:** gtag.js + Rybbit werden in `client/index.html`
+  per Inline-Loader nach `load` + `requestIdleCallback` (Timeout 1,5 s)
+  eingefügt; `gtag()`-Stub + Consent-Mode-Defaults bleiben synchron, damit
+  frühe Aufrufe queuen. GA4/Clarity/Meta Pixel unverändert erst nach Consent.
+- **Restursachen** (bewusst offen): `vendor-react` ~61 kB gzip; Haupt-CSS
+  ~26 kB gzip (Tailwind-Utilities der ganzen App in einem Bundle — FCP-Hebel,
+  bräuchte CSS-Splitting); tRPC/react-query/superjson (~28 kB gzip) am
+  App-Root, obwohl `/` keinen tRPC-Call macht; sonner lädt auf jeder Route
+  lazy-sofort (10 kB) — Toasts, die vor dem Mount des Toasters abgesetzt
+  werden, gingen verloren (sonner queued nicht), deshalb nicht idle-verzögert.
+  Doppel-Request Pack-Fonts im CSR-Fallback (siehe oben) unverändert.
+
 ## 8. Tests & Gates
 
 - `npx vitest run` — Stand dieses Dokuments (821 grün + bekannte Fails,
@@ -570,8 +634,9 @@ zeigt Pack + Studio-Link, veralteter 79-€-`CheckoutDialog` entfernt,
 Dev-Dashboard-Seed + a11y-Abdeckung für Dashboard und Dark-Mode (§5, §8),
 v1-Font-Rest entfernt, Landing-Chunking (§7). **Nicht erreicht:**
 Kundenstatistik liefert weiterhin keine echten Werte (siehe B6-Liste
-unten), Lighthouse-Budgets (LCP < 2,5 s, JS < 150 kB gzip) bleiben verfehlt
-(§7 — deutliche Verbesserung, aber kein Zielerreichen).
+unten), Lighthouse-Budgets (LCP < 2,5 s, JS < 150 kB gzip) blieben in B5
+verfehlt (§7 — deutliche Verbesserung, aber kein Zielerreichen; **seit B6
+Task 8 erreicht**, §7.1: LCP mobil 1,8 s, JS ~134 kB gzip).
 
 **Offene Punkte → Plan B6:**
 - **Unterseiten-Add-on** (`pages[]` im Vertrag, SSR `/site/:slug/:page`,
@@ -603,23 +668,12 @@ unten), Lighthouse-Budgets (LCP < 2,5 s, JS < 150 kB gzip) bleiben verfehlt
   dass `addOnMenu` gebucht/gesetzt ist — dieselbe Flag-vs-Sektion-Klasse von
   Bug wie beim Team-Ruling, noch nicht systematisch für alle Packs/Add-ons
   geprüft.
-- **Perf-Hebel aus B5 Task 6, nicht umgesetzt** (Details/Zahlen §7):
-  - Slot-freier `Button` (eigene `asChild`-Implementierung statt
-    `@radix-ui/react-slot`) — einziger Grund, warum `vendor-radix`
-    (~38 kB gzip) weiterhin auf `/` lädt.
-  - `LazyMotion` mit echtem Async-Loader (`features={() =>
-    import('framer-motion').then(m => m.domAnimation)}`) statt des aktuell
-    synchron importierten Feature-Sets.
-  - `modulepreload` für den Landing-Chunk als Alternative zu `LandingPage`
-    eager im Entry — könnte die Rundreise vermeiden, die einen `lazy()`-
-    Versuch in Task 6 scheitern ließ (LCP-Regression 3,2 s → 5,6 s), ohne
-    den vollen Entry-Bundle-Nachteil zu behalten; nicht in B5 untersucht.
-  - Self-hosted/Subset-Fonts statt Google-Fonts-CDN-Requests.
-  - Third-Party-Skripte (Google Tag Manager ~185 KB, Rybbit-Analytics
-    ~11,7 KB) — größter Einzelposten der Gesamt-Seitenlast, außerhalb des
-    App-Bundles.
-  - Doppel-Request für Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne
-    vollen Reload (§7).
+- **Perf-Hebel aus B5 Task 6** — in B6 Task 8 umgesetzt (§7.1): Radix/
+  framer-motion raus aus `/`, self-hosted Font, Third-Party nach Idle,
+  `modulepreload`-Alternative geprüft und verworfen (Kommentar `App.tsx`).
+  Offen bleibt nur der Doppel-Request für Pack-Fonts im CSR-Fallback bei
+  Website-Wechsel ohne vollen Reload (§7) sowie die in §7.1 genannten
+  Restursachen (vendor-react, Haupt-CSS, tRPC-Bootstrap am Root).
 - **Pack-Identität** (werkbank/marktplatz/schimmer, Ruling B5 Task 6: keine
   Rückänderung, siehe `2026-08-23-b5-ergebnis.md`): eine zweite
   Palettenfarbe `accent-text` (getrennt vom CTA-Hintergrund-Akzent) wäre

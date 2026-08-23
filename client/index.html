@@ -82,13 +82,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="theme-color" content="#18181b" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Eine Schrift für das ganze System (Landing, Studio, Dashboard): Space Grotesk,
-         blocking für den ersten Paint. v2-Style-Packs bringen ihre eigenen Fonts mit
-         (SSR-Head aus der Pack-Verfassung bzw. client/src/lib/packFonts.ts im CSR-Fallback). -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <!-- Google Consent Mode v2 – defaults BEFORE any gtag config -->
+         self-hosted (B6 Task 8) — eine Variable-Font-Datei (wght 300–700, Subset latin,
+         22 kB) aus client/public/fonts/, @font-face mit font-display: swap in
+         client/src/index.css. Preload, damit der Browser sie nicht erst nach dem
+         CSS-Parse entdeckt (kein Google-Fonts-Request mehr auf "/"). v2-Style-Packs
+         bringen ihre eigenen Fonts mit (SSR-Head aus der Pack-Verfassung bzw.
+         client/src/lib/packFonts.ts im CSR-Fallback). -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/space-grotesk-latin-wght.woff2" crossorigin />
+    <!-- Google Consent Mode v2 – defaults BEFORE any gtag config. Der gtag-Stub
+         steht synchron hier, damit frühe gtag()-Aufrufe (consent.ts, tracking.ts)
+         in dataLayer landen, bevor gtag.js geladen ist. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -99,16 +103,41 @@
         analytics_storage: 'denied',
         wait_for_update: 500
       });
-    </script>
-    <!-- Google Ads Conversion Tracking (AW-16545728698) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16545728698"></script>
-    <script>
       gtag('js', new Date());
       gtag('config', 'AW-16545728698');
     </script>
-    <!-- Rybbit Analytics (cookieless, no consent required) -->
-    <script src="https://app.rybbit.io/api/script.js" data-site-id="2ea5c59b5deb" defer></script>
-    <!-- GA4, Clarity, Meta Pixel are loaded dynamically after cookie consent (see consent.ts) -->
+    <!-- Third-Party-Skripte erst NACH dem ersten Paint (B6 Task 8): Google Ads
+         gtag.js (AW-16545728698, ~180 KB) und Rybbit Analytics (cookielos) wurden
+         vorher als async/defer im <head> angefordert und konkurrierten auf dem
+         mobilen Netz mit CSS/Font/JS um Bandbreite (Lighthouse: im LCP-Pfad).
+         Jetzt: nach `load` + requestIdleCallback (Fallback 1,5 s). Conversions
+         gehen nicht verloren — gtag() queued in dataLayer, bis gtag.js da ist;
+         Rybbit zählt den Pageview beim Laden. GA4, Clarity, Meta Pixel laden
+         weiterhin erst nach Cookie-Einwilligung (client/src/lib/consent.ts). -->
+    <script>
+      (function () {
+        function loadThirdParty() {
+          var g = document.createElement('script');
+          g.async = true;
+          g.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16545728698';
+          document.head.appendChild(g);
+          var r = document.createElement('script');
+          r.defer = true;
+          r.src = 'https://app.rybbit.io/api/script.js';
+          r.setAttribute('data-site-id', '2ea5c59b5deb');
+          document.head.appendChild(r);
+        }
+        function schedule() {
+          if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(loadThirdParty, { timeout: 1500 });
+          } else {
+            setTimeout(loadThirdParty, 1500);
+          }
+        }
+        if (document.readyState === 'complete') schedule();
+        else window.addEventListener('load', schedule, { once: true });
+      })();
+    </script>
   </head>
 
   <body>

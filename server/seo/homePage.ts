@@ -105,8 +105,15 @@ export function generateHomePrerender(): string {
       `<div style="border-top:1px solid #d9d2c5;padding:1.25rem 0"><h3 style="font-size:1rem;font-weight:600;margin:0 0 .5rem;color:#1d1a17">${escapeHtml(f.q)}</h3><p style="margin:0;color:#6b645b;line-height:1.7;font-size:.9375rem">${escapeHtml(f.a)}</p></div>`
   ).join("\n        ");
 
-  return `<div id="prerender" style="background:#f3efe7;color:#1d1a17;font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh">
-  <div style="max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem">
+  // Container-Breite/-Padding und die H1-Typografie spiegeln exakt
+  // `.lp-container` und `.lp-h1 .lp-h1--hero` aus client/src/index.css: Der
+  // Prerender-H1 ist damit der LCP-Kandidat der Seite (erster Paint), und
+  // die React-Fassung derselben Überschrift ist beim Mount nicht größer —
+  // sonst wanderte der gemessene LCP hinter JS-Download+Hydration (Lighthouse
+  // mobil: LCP 5,2 s statt ~FCP, B6 Task 8). Bei Änderungen an den
+  // lp-Tokens hier mitziehen.
+  return `<div id="prerender" style="background:#f3efe7;color:#1d1a17;font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased">
+  <div style="max-width:1200px;margin:0 auto;padding:2rem clamp(1.25rem,4vw,3rem) 4rem">
 
     <header style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 4rem">
       <span style="font-size:1.25rem;font-weight:700;letter-spacing:-.02em">Pageblitz</span>
@@ -119,7 +126,7 @@ export function generateHomePrerender(): string {
 
     <section>
       <p style="display:inline-block;background:#ecfccb;border:1px solid #d9f99d;color:#3f6212;border-radius:999px;padding:.5rem 1rem;font-size:.875rem;margin:0 0 2rem">Webagentur kostet 3.000 €+ – Pageblitz ab 19,90 €/Monat</p>
-      <h1 style="font-size:clamp(2.25rem,6vw,3.75rem);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin:0 0 1.5rem;max-width:15ch">Deine professionelle Website in 3 Minuten.</h1>
+      <h1 style="font-size:clamp(2.5rem,1.25rem + 3.4vw,4.75rem);font-weight:500;letter-spacing:-.02em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance">Deine professionelle Website in 3 Minuten.</h1>
       <p style="font-size:1.125rem;line-height:1.7;color:#4b5563;max-width:52ch;margin:0 0 2rem">Kein Webdesigner. Kein monatelanges Warten. Kein 4-stelliges Budget. Pageblitz erstellt deine Website automatisch – du musst nur dein Business beschreiben.</p>
       <!-- Echtes GET-Formular: funktioniert identisch zum React-Hero, aber auch
            ganz ohne JavaScript. /start liest ?name= aus und springt direkt in

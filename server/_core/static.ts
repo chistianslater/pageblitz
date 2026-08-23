@@ -22,6 +22,18 @@ export function serveStatic(app: Express) {
     })
   );
 
+  // Self-hosted Fonts (client/public/fonts, B6 Task 8): Dateiname ist nicht
+  // gehasht, aber versioniert (bei Font-Update umbenennen, siehe dortige
+  // README.md) → ebenfalls 1 Jahr immutable, damit Rückkehrer die 22-kB-
+  // Space-Grotesk-Datei nicht alle 5 Minuten neu validieren.
+  app.use(
+    "/fonts",
+    express.static(path.join(distPath, "fonts"), {
+      maxAge: "1y",
+      immutable: true,
+    })
+  );
+
   // All other static files (index.html, favicon, etc.) → short cache
   app.use(
     express.static(distPath, {

@@ -225,3 +225,68 @@
   from { opacity: 0; transform: translate(-50%, -8px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* --- Landing-Chat-Widget (client/src/components/LandingPageChatWidget.tsx) ---
+   Ersetzt seit B6 Task 8 die framer-motion-Animationen des Widgets (einziger
+   framer-Konsument der Landingpage) — damit lädt "/" kein vendor-motion mehr.
+   Nur Einblend-/Zustandsanimationen, keine Exit-Animationen. --- */
+@keyframes pbChatPop {
+  from { opacity: 0; transform: translateY(12px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pbChatFabIn {
+  from { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pbChatWindowIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pbChatRise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pbChatDot {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+.pb-chat-pop {
+  animation: pbChatPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Wie vorher: der Button erscheint 2 s nach dem Mount des Widgets. */
+.pb-chat-fab {
+  animation: pbChatFabIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2s both;
+  transition: transform 0.2s ease;
+}
+.pb-chat-fab:hover { transform: scale(1.08); }
+.pb-chat-fab:active { transform: scale(0.94); }
+/* Icon-Wechsel: beide Icons liegen übereinander, data-open blendet um. */
+.pb-chat-fab-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.pb-chat-fab-icon--close { opacity: 0; transform: rotate(-90deg); }
+.pb-chat-fab-icon--open  { opacity: 1; transform: rotate(0deg); }
+.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--close { opacity: 1; transform: rotate(0deg); }
+.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--open  { opacity: 0; transform: rotate(90deg); }
+.pb-chat-window {
+  animation: pbChatWindowIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.pb-chat-rise {
+  animation: pbChatRise 0.3s ease-out both;
+}
+.pb-chat-dot {
+  animation: pbChatDot 0.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-chat-pop, .pb-chat-fab, .pb-chat-window, .pb-chat-rise, .pb-chat-dot {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
+  .pb-chat-fab-icon { transition: none; }
+}

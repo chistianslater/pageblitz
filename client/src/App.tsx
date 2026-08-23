@@ -1,9 +1,6 @@
-import { Toaster } from "@/components/ui/sonner";
-import NotFound from "@/pages/NotFound";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
-import PageblitzCookieBanner from "./components/PageblitzCookieBanner";
 import {
   initConsent,
   trackMetaPageView,
@@ -11,9 +8,24 @@ import {
 } from "./lib/consent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import LandingPage from "./pages/LandingPage";
-import PageblitzImpressum from "./pages/PageblitzImpressum";
-import PageblitzDatenschutz from "./pages/PageblitzDatenschutz";
 import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
+
+// ── App-Shell-Teile, die "/" nicht für den ersten Paint braucht (B6 Task 8) ──
+// Toaster (sonner, ~34 kB unminifiziert) wird nur von Dashboard/Studio/Admin
+// per `toast()` gefüttert — die Landingpage zeigt nie einen Toast. Das Cookie-
+// Banner blendet sich ohnehin erst nach dem Mount ein; NotFound und die beiden
+// Rechtstexte (Datenschutz allein ~28 kB) waren eager im Entry und damit auf
+// JEDER Route mit dabei. Alle vier laden jetzt als eigene Chunks — der Entry-
+// Chunk von "/" ist ausschließlich Bootstrap + Landing.
+const Toaster = lazy(() =>
+  import("@/components/ui/sonner").then(m => ({ default: m.Toaster }))
+);
+const PageblitzCookieBanner = lazy(
+  () => import("./components/PageblitzCookieBanner")
+);
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const PageblitzImpressum = lazy(() => import("./pages/PageblitzImpressum"));
+const PageblitzDatenschutz = lazy(() => import("./pages/PageblitzDatenschutz"));
 
 // ── Lazy-loaded pages (not needed on first paint) ─────────────────────────────
 // StartPage/SitePage/LegalPage waren bis Task 6 eager importiert und zwangen
@@ -29,6 +41,13 @@ import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
 // keinen Netto-Vorteil (die Route braucht den Chunk ohnehin sofort), nur den
 // Nachteil der zusätzlichen Rundreise — anders als bei Start/Site/Legal, die
 // auf "/" gar nicht gebraucht werden.
+// B6 Task 8 hat die Alternative "lazy(Landing) + <link rel=modulepreload>"
+// geprüft und verworfen: Vite kann den gehashten Landing-Chunk nicht in die
+// statische index.html preloaden (nur ein eigenes Build-Plugin könnte den
+// Hash eintragen), und der Gewinn wäre null — "/" braucht den Chunk sofort,
+// der Entry-Chunk besteht seit Task 8 ohnehin nur noch aus Bootstrap
+// (tRPC/react-query/superjson/wouter) + Landing (~51 kB gzip), alles andere
+// (Toaster, Cookie-Banner, NotFound, Rechtstexte, Chat-Widget) lädt lazy.
 const StartPage = lazy(() => import("./pages/StartPage"));
 const SitePage = lazy(() => import("./pages/SitePage"));
 const LegalPage = lazy(() => import("./pages/LegalPage"));
@@ -312,7 +331,11 @@ function AppContent() {
     <>
       <ScrollToTop />
       <Router />
-      {!isCustomerSite && <PageblitzCookieBanner />}
+      {!isCustomerSite && (
+        <Suspense fallback={null}>
+          <PageblitzCookieBanner />
+        </Suspense>
+      )}
     </>
   );
 }
@@ -321,7 +344,12 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <Toaster />
+        {/* Lazy (s. o.): eigener Suspense-Rahmen ohne Fallback, damit ein
+            noch ladender Toaster-Chunk nie den Seiteninhalt durch den
+            PageLoader ersetzt. */}
+        <Suspense fallback={null}>
+          <Toaster />
+        </Suspense>
         <AppContent />
       </ThemeProvider>
     </ErrorBoundary>
