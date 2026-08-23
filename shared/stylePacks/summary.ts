@@ -16,8 +16,10 @@ export interface PackSummary {
  * Typografie/Decor/Hero-Spezifikation, ~2000 Zeilen) laden muss, nur um vier
  * Felder pro Pack anzuzeigen (Task 6, Performance-Hebel Chunking).
  *
- * Bei Änderungen an Name/Essenz/Akzentfarbe einer Verfassung muss dieser
- * Eintrag manuell nachgezogen werden — `summary.test.ts` prüft jeden Eintrag
+ * `accent` ist der Flächen-Akzent (Rolle `accent`, Akzentpunkt der Karte) —
+ * nicht der Kleintext-Ton `accent-text` (werkbank/marktplatz/schimmer, B6
+ * Task 9). Bei Änderungen an Name/Essenz/Akzentfarbe einer Verfassung muss
+ * dieser Eintrag manuell nachgezogen werden — `summary.test.ts` prüft jeden Eintrag
  * gegen `STYLE_PACKS`/`getConstitution` und schlägt fehl, sobald beide
  * Quellen auseinanderlaufen. Reihenfolge = `PACK_IDS`.
  */
@@ -27,7 +29,7 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
     name: "Werkbank",
     essence:
       "Beton, Stahl und eine Signalfarbe — Typografie wie ein Werkstück.",
-    accent: "#A83600",
+    accent: "#FF4D00",
   },
   {
     id: "patina",
@@ -61,7 +63,7 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
     name: "Marktplatz",
     essence:
       "Bonbonfarben, runde fette Buchstaben, Sticker — Freude ab der ersten Sekunde.",
-    accent: "#C4442E",
+    accent: "#FF6B57",
   },
   {
     id: "gusto",
@@ -108,7 +110,7 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
     id: "schimmer",
     name: "Schimmer",
     essence: "Perlmutt-Verläufe auf hellem Grund — leicht, modern, feminin.",
-    accent: "#A8517A",
+    accent: "#D4749C",
   },
   {
     id: "fundament",

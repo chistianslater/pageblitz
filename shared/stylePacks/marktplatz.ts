@@ -40,14 +40,25 @@ export const MARKTPLATZ: PackConstitution = {
     },
     {
       name: "Koralle",
-      // War #FF6B57 — als Text auf Weiß/Vanille UND als CTA-Fläche (weißer
-      // Text darauf) lag der Kontrast bei nur ~2,8:1 (axe color-contrast,
-      // B4c Task 7 a11y-Pass). #C4442E (dunkleres, weiterhin warmes
-      // Korallrot) erreicht ≥4,5:1 in beiden Richtungen.
-      hex: "#C4442E",
+      // Original-Koralle (B6 Task 9 zurückgeholt, B4c hatte auf #C4442E
+      // gedunkelt). Nur als FLÄCHE/RAND: CTA-Hintergrund (Tinte-Text darauf
+      // 5,56:1), gestrichelte Sticker-Umrandung, Konfetti-Punkte — nie als
+      // Text auf Vanille/Weiß (dort nur 2,65:1/2,80:1 → `accent-text`).
+      hex: "#FF6B57",
       role: "accent",
       locked: true,
-      usage: "CTA, Akzentwort, Umrandungen — nie flächig über 24px hinaus.",
+      usage:
+        "CTA-Fläche, Umrandungen, Konfetti — nie flächig über 24px hinaus, nie als Text auf hellem Grund.",
+    },
+    {
+      name: "Ziegel",
+      // Dunkler Korall-Ton für Kleintext auf Vanille (4,72:1) / Weiß (4,98:1):
+      // Logo, Eyebrow, Hero-Akzentwort, Preis, Zitat-Autor, FAQ-Frage, Hover.
+      hex: "#C4442E",
+      role: "accent-text",
+      locked: true,
+      usage:
+        "Koralle als Text auf hellem Grund (Logo, Akzentwort, Preis, Hover).",
     },
     {
       name: "Sonne",
@@ -56,10 +67,12 @@ export const MARKTPLATZ: PackConstitution = {
       usage: "Sticker-Pille, Kritzel-Unterstreichung.",
     },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Tinte",
+      // Text auf Koralle: Weiß erreichte nur 2,80:1, Tinte 5,56:1 — gilt für
+      // den Hero-CTA und die Insel-Buttons (Kontaktformular, Chat, Buchung).
+      hex: "#262133",
       role: "accent-contrast",
-      usage: "Text auf Koralle.",
+      usage: "Text auf Koralle (CTA, Insel-Buttons).",
     },
   ],
   type: {

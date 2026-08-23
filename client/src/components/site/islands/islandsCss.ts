@@ -37,7 +37,7 @@ export const islandsCss = `
 .pb-island-privacy{font-size:12px;color:var(--pb-muted);margin:0}
 .pb-island-privacy a{color:var(--pb-ink);text-decoration:underline}
 .pb-island-status{font-size:14px;margin-top:4px}
-.pb-island-status[data-state="success"]{color:var(--pb-accent)}
+.pb-island-status[data-state="success"]{color:var(--pb-accent-text)}
 .pb-island-status[data-state="error"]{color:#b3261e}
 .pb-island-status[data-state="info"]{color:var(--pb-muted);font-size:12px}
 .pb-island--fab{position:fixed;right:20px;bottom:20px;z-index:60}

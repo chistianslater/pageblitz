@@ -64,4 +64,24 @@ describe("toCssVars", () => {
       "#FF4D00"
     );
   });
+  test("--pb-accent-text fällt ohne Paletteneintrag auf --pb-accent zurück", () => {
+    expect(toCssVars(mini)["--pb-accent-text"]).toBe("#FF4D00");
+  });
+  test("--pb-accent-text nutzt den accent-text-Paletteneintrag, wenn vorhanden", () => {
+    const withText: PackConstitution = {
+      ...mini,
+      palette: [
+        ...mini.palette,
+        {
+          name: "Rost",
+          hex: "#A83600",
+          role: "accent-text",
+          usage: "Kleintext",
+        },
+      ],
+    };
+    const v = toCssVars(withText);
+    expect(v["--pb-accent"]).toBe("#FF4D00");
+    expect(v["--pb-accent-text"]).toBe("#A83600");
+  });
 });

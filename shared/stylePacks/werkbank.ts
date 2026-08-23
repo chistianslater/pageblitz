@@ -53,20 +53,32 @@ export const WERKBANK: PackConstitution = {
     },
     {
       name: "Signal",
-      // War #FF4D00 (Neon-Orange) — Kontrast gegen Beton-Canvas (#E8E6E1) und
-      // Weiß-auf-Signal (CTA) lag bei nur ~2,7:1/3,3:1 (axe color-contrast,
-      // B4c Task 7 a11y-Pass). #A83600 (dunkleres Rostorange) hält die
-      // Signalfarben-Identität, erreicht aber ≥4,5:1 in beiden Richtungen.
-      hex: "#A83600",
+      // Original-Neon-Orange (B6 Task 9 zurückgeholt, B4c hatte auf #A83600
+      // gedunkelt). Nur als FLÄCHE/RAND: CTA-Hintergrund (Kohle-Text darauf
+      // 5,29:1), Foto-/Galerie-Border, Marquee-Wort auf Kohle (5,29:1) —
+      // nie als Text auf Beton/Putz (dort nur 2,67:1/2,97:1 → `accent-text`).
+      hex: "#FF4D00",
       role: "accent",
       locked: true,
-      usage: "CTA, Akzentwort, Bild-Border — nie großflächig.",
+      usage:
+        "CTA-Fläche, Bild-Border, Marquee-Wort auf Kohle — nie großflächig, nie als Text auf hellem Grund.",
     },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Rost",
+      // Dunkler Signal-Ton für Kleintext auf Beton (5,27:1) / Putz (5,88:1):
+      // Hero-Akzentwort, Index-Nummern, Nav-/Link-Hover.
+      hex: "#A83600",
+      role: "accent-text",
+      locked: true,
+      usage: "Signal als Text auf hellem Grund (Akzentwort, Index, Hover).",
+    },
+    {
+      name: "Kohle",
+      // Text auf Signal: Weiß erreichte nur 3,33:1, Kohle 5,29:1 — gilt für
+      // den Hero-CTA und die Insel-Buttons (Kontaktformular, Chat, Buchung).
+      hex: "#191919",
       role: "accent-contrast",
-      usage: "Text auf Signal/Kohle.",
+      usage: "Text auf Signal (CTA, Insel-Buttons).",
     },
   ],
   type: {

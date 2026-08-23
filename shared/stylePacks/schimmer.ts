@@ -43,14 +43,24 @@ export const SCHIMMER: PackConstitution = {
     },
     {
       name: "Rosé",
-      // War #D4749C — CTA-Fläche (weißer Text) und Preistext auf Weiß lagen
-      // bei nur ~3,1:1 (axe color-contrast, B4c Task 7 a11y-Pass). #A8517A
-      // (dunkleres, gedeckteres Rosé/Mauve) erreicht ≥4,5:1 in beiden
-      // Richtungen und bleibt override-fähig für Studio-Farben.
-      hex: "#A8517A",
+      // Original-Rosé (B6 Task 9 zurückgeholt, B4c hatte auf #A8517A
+      // gedunkelt). Nur als FLÄCHE/RAND: CTA-Hintergrund (Tinte-Text darauf
+      // 5,24:1), Hover-Rahmen — nie als Text auf Perlmutt/Weiß/Glaskarte
+      // (dort nur 2,93:1/3,10:1/3,01:1 → `accent-text`). Override-fähig für
+      // Studio-Farben (nicht locked).
+      hex: "#D4749C",
       role: "accent",
       usage:
-        "Akzentwort, CTA-Fläche, Zierring-Detail — override-fähig für Studio-Farben.",
+        "CTA-Fläche, Hover-Rahmen — nie als Text auf hellem Grund; override-fähig für Studio-Farben.",
+    },
+    {
+      name: "Mauve",
+      // Dunkler Rosé-Ton für Kleintext auf Perlmutt (4,82:1) / Weiß (5,09:1) /
+      // Glaskarte (4,96:1): Hero-Akzentwort, Preis, Speisekarten-Rubrik, Hover.
+      hex: "#A8517A",
+      role: "accent-text",
+      usage:
+        "Rosé als Text auf hellem Grund (Akzentwort, Preis, Rubrik, Hover).",
     },
     {
       name: "Lilac",
@@ -59,10 +69,12 @@ export const SCHIMMER: PackConstitution = {
       usage: "Orb-Töne, Zierring-Rahmen — nie als Textfläche.",
     },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Tinte",
+      // Text auf Rosé: Weiß erreichte nur 3,10:1, Tinte 5,24:1 — gilt für
+      // den Hero-CTA und die Insel-Buttons (Kontaktformular, Chat, Buchung).
+      hex: "#241E2A",
       role: "accent-contrast",
-      usage: "Text auf Rosé.",
+      usage: "Text auf Rosé (CTA, Insel-Buttons).",
     },
   ],
   type: {

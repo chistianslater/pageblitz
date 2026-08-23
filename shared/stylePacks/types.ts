@@ -8,6 +8,15 @@ type PaletteRole =
   | "line"
   | "accent"
   | "accent-contrast"
+  /**
+   * Dunklerer Ton des Akzents für KLEINTEXT auf hellem Grund (Preis,
+   * Akzentwort, Index, Hover-Farbe) — optional. Packs, deren Akzent als
+   * Fläche (CTA-Hintergrund, Rand, Marquee) identitätsprägend, als Text auf
+   * Canvas/Surface aber < 4,5:1 ist (werkbank/marktplatz/schimmer, B5 §2.4),
+   * definieren hier den Textton; `toCssVars` emittiert `--pb-accent-text`
+   * und fällt ohne Eintrag auf `--pb-accent` zurück (B6 Task 9).
+   */
+  | "accent-text"
   | "accent-2";
 
 interface PaletteColor {

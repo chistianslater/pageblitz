@@ -89,6 +89,10 @@ for (const pack of PACKS)
  *   `.pb-atelier{color:var(--pb-ink)}` und hat `border-bottom:var(--pb-ink)`;
  *   fundament: `.pb-fd-cta{background:var(--pb-ink)}`) — hier wird explizit
  *   gegen den `ink`-Paletteneintrag geprüft, nicht gegen `accent`.
+ * - `werkbank`, `marktplatz`, `schimmer` (B6 Task 9, `accent-text`): der
+ *   Original-Flächen-Akzent ist zurück (CTA-Hintergrund = `accent`), der
+ *   CTA-Text ist `ink` (≥ 4,5:1 auf dem Akzent; Weiß wäre < 3,4:1) —
+ *   `textRole` prüft zusätzlich die `color` des CTAs gegen `ink`.
  */
 const CTA_COLOR_CHECKS: Record<
   PackId,
@@ -96,12 +100,15 @@ const CTA_COLOR_CHECKS: Record<
     selector: string;
     prop: "background-color" | "color";
     role: "accent" | "ink";
+    /** Zusätzliche Prüfung der Textfarbe (`color`) des CTAs gegen diese Rolle. */
+    textRole?: "ink";
   }
 > = {
   werkbank: {
     selector: "a.pb-wb-cta",
     prop: "background-color",
     role: "accent",
+    textRole: "ink",
   },
   kanzlei: { selector: "a.pb-kz-link", prop: "color", role: "accent" },
   morgenlicht: {
@@ -116,6 +123,7 @@ const CTA_COLOR_CHECKS: Record<
     selector: "a.pb-mp-cta",
     prop: "background-color",
     role: "accent",
+    textRole: "ink",
   },
   landgut: {
     selector: "a.pb-lg-cta",
@@ -134,6 +142,7 @@ const CTA_COLOR_CHECKS: Record<
     selector: "a.pb-sc-cta",
     prop: "background-color",
     role: "accent",
+    textRole: "ink",
   },
   fundament: { selector: "a.pb-fd-cta", prop: "background-color", role: "ink" },
 };
@@ -175,5 +184,19 @@ for (const pack of PACKS) {
     );
 
     expect(rgbStringToHex(computed)).toBe(paletteEntry.hex.toLowerCase());
+
+    if (check.textRole) {
+      const textEntry = constitution.palette.find(
+        p => p.role === check.textRole
+      );
+      if (!textEntry)
+        throw new Error(
+          `Pack "${pack}" hat keinen Paletteneintrag mit role "${check.textRole}"`
+        );
+      const textColor = await cta.evaluate(el =>
+        getComputedStyle(el).getPropertyValue("color")
+      );
+      expect(rgbStringToHex(textColor)).toBe(textEntry.hex.toLowerCase());
+    }
   });
 }
