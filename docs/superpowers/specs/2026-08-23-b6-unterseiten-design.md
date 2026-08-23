@@ -1,6 +1,6 @@
 # Spec: Plan B6 — Unterseiten-Add-on, Add-on-Konsistenz, Statistik, Perf-Rest
 
-**Datum:** 2026-08-23 · **Status:** Entwurf zur Freigabe · **Grundlage:** B5-Ergebnis (`2026-08-23-b5-ergebnis.md`, B6-Liste), Spec B §4/§9 („Unterseiten = Plan-Inhalt mit eigener Route im SSR"), `shared/pricing.ts`, `shared/siteContract/schema.ts`, `server/ssr/routes.ts`, `client/src/components/site/engine.ts`.
+**Datum:** 2026-08-23 · **Status:** verbindlich (freigegeben 2026-08-23, Entscheidungen §5 wie empfohlen; zusätzlich: Prod-Build-Smoke-Spec als Gate) · **Grundlage:** B5-Ergebnis (`2026-08-23-b5-ergebnis.md`, B6-Liste), Spec B §4/§9 („Unterseiten = Plan-Inhalt mit eigener Route im SSR"), `shared/pricing.ts`, `shared/siteContract/schema.ts`, `server/ssr/routes.ts`, `client/src/components/site/engine.ts`.
 
 ## 1. Ziel
 Das letzte angekündigte Add-on — **Unterseiten** — als echtes Produkt liefern (Vertrag, SSR-Routen, Navigation in allen 14 Packs, Studio-Panel, Preis), dabei die **Add-on-Logik auf eine Quelle der Wahrheit** bringen (Flag ⇔ Inhalt ⇔ Abrechnung; Galerie/Menü/Team gleich behandelt), die **Kundenstatistik** wieder zum Laufen bringen (Umami-Provisionierung im v2-Pfad) und die verbliebenen **Perf-Hebel** ziehen. Kein Dashboard-Redesign.
