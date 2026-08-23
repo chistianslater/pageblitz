@@ -64,7 +64,7 @@ interface CheckoutBarProps {
 }
 
 const ADDON_SETUP_NOTE =
-  "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv. Team folgt.";
+  "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv.";
 
 /** Bewusst einfach gehalten — nur ein Client-seitiger Vorab-Check vor dem Request, die eigentliche Validierung übernimmt der Server (z.string().email()). */
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

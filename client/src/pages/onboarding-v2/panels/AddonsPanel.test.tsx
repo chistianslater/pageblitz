@@ -5,7 +5,28 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { trpc } from "@/lib/trpc";
-import { AddonsList, AddonsPanel } from "./AddonsPanel";
+import type { WebsiteDataV2 } from "@shared/siteContract/types";
+import { AddonsList, AddonsPanel, teamFromDoc } from "./AddonsPanel";
+
+const blankDoc: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "werkbank",
+  businessName: "Handwerk GmbH",
+  seo: { title: "t", description: "d" },
+  sections: [{ type: "hero", headline: "H" }],
+};
+
+const docWithTeam: WebsiteDataV2 = {
+  ...blankDoc,
+  sections: [
+    ...blankDoc.sections,
+    {
+      type: "team",
+      headline: "Unser Team",
+      members: [{ name: "Anna Beispiel", role: "Meisterin" }],
+    },
+  ],
+};
 
 /**
  * AddonsPanel nutzt trpc.onboardingV2.updateAddons.useMutation() direkt im
@@ -91,12 +112,57 @@ describe("AddonsPanel", () => {
     const html = renderWithTrpc(
       <AddonsPanel
         token={"t".repeat(32)}
+        doc={blankDoc}
         addOns={{}}
         onApplied={() => {}}
         onClose={() => {}}
       />
     );
     expect(html).toContain("Kontaktformular erscheint sofort in der Vorschau");
-    expect(html).toContain("Team folgt.");
+    // Team ist seit Plan B5 Task 2 kein "folgt später"-Hinweis mehr, sondern
+    // buchbar und pflegbar — der veraltete Satz ist entfernt.
+    expect(html).not.toContain("Team folgt.");
+  });
+
+  test("Team-Extra inaktiv → kein 'Team pflegen'-Unterbereich", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{ team: false }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).not.toContain("Team pflegen");
+  });
+
+  test("Team-Extra aktiv → 'Team pflegen'-Unterbereich mit vorhandenen Mitgliedern und Übernehmen-Button", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={docWithTeam}
+        addOns={{ team: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Team pflegen");
+    expect(html).toContain('value="Anna Beispiel"');
+    expect(html).toContain('value="Meisterin"');
+    expect(html).toContain(">Übernehmen<");
+  });
+});
+
+describe("teamFromDoc", () => {
+  test("liest bestehende Team-Sektion", () => {
+    expect(teamFromDoc(docWithTeam)).toEqual({
+      headline: "Unser Team",
+      members: [{ name: "Anna Beispiel", role: "Meisterin" }],
+    });
+  });
+
+  test("ohne Team-Sektion → leere Mitgliederliste", () => {
+    expect(teamFromDoc(blankDoc)).toEqual({ members: [] });
   });
 });

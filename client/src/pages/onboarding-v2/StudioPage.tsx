@@ -198,6 +198,7 @@ export default function StudioPage({ token }: { token: string }) {
           ) : activeId === "addons" ? (
             <AddonsPanel
               token={token}
+              doc={state.doc}
               addOns={state.addOns}
               onApplied={() => {
                 studio.refetch();

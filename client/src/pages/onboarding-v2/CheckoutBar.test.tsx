@@ -58,6 +58,20 @@ describe("CheckoutSummary", () => {
     expect(yearly).toContain("2 Monate gratis");
     expect(monthly).not.toContain("2 Monate gratis");
   });
+
+  test("Team zählt seit Plan B5 Task 2 in die Gesamtsumme mit", () => {
+    const html = renderToStaticMarkup(
+      <CheckoutSummary
+        interval="yearly"
+        addOns={{ team: true }}
+        ready={false}
+        hasEmail={false}
+        missing={[]}
+      />
+    );
+    // 19,90 € Basis (jährlich) + 3,90 € Team.
+    expect(html).toContain("23,80 €");
+  });
 });
 
 /** Minimaler StudioState-Fixture — nur die Felder, die CheckoutBar liest. */
@@ -190,7 +204,7 @@ describe("CheckoutBar", () => {
       />
     );
     expect(html).toContain(
-      "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv. Team folgt."
+      "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv."
     );
   });
 });

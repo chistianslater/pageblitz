@@ -316,4 +316,58 @@ test.describe("Studio", () => {
         .getByRole("button", { name: "Website freischalten" })
     ).toBeEnabled();
   });
+
+  test("Extras-Panel: Team einschalten → Mitglied anlegen → Übernehmen → Vorschau zeigt Mitglied", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    await page.getByRole("button", { name: /Extras/ }).first().click();
+    const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
+    await expect(addonsPanel).toBeVisible();
+
+    // Team-Extra einschalten (nur lokaler Entwurf — die eigentliche
+    // Freischaltung des Abrechnungs-Flags läuft über den separaten
+    // "Speichern"-Button, siehe AddonsPanel.tsx handleSave). Der
+    // "Team pflegen"-Unterbereich blendet sich unabhängig davon sofort ein
+    // (Finding: value.team steuert die Sichtbarkeit, nicht der persistierte
+    // addOns-Stand).
+    const teamRow = addonsPanel
+      .locator(".pb-studio-addon-list li")
+      .filter({ hasText: "Team" });
+    await teamRow.getByRole("button", { name: "Hinzufügen" }).click();
+    await expect(teamRow.getByRole("button", { name: "Aktiv" })).toBeVisible();
+
+    await expect(
+      addonsPanel.getByRole("heading", { name: "Team pflegen", level: 3 })
+    ).toBeVisible();
+
+    await addonsPanel
+      .getByRole("button", { name: "Mitglied hinzufügen" })
+      .click();
+    await addonsPanel.getByLabel("Name").fill("Anna Beispiel");
+    await addonsPanel.getByLabel("Rolle (optional)").fill("Meisterin");
+
+    await Promise.all([
+      page.waitForResponse(
+        res => res.url().includes("onboardingV2.updateTeam") && res.ok()
+      ),
+      addonsPanel.getByRole("button", { name: "Übernehmen" }).click(),
+    ]);
+
+    const preview = page.frameLocator(
+      'iframe[title="Live-Vorschau deiner Website"]'
+    );
+    await expect(preview.getByText("Anna Beispiel")).toBeVisible({
+      timeout: 15000,
+    });
+  });
 });

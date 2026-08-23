@@ -6,7 +6,6 @@ import {
   Mail,
   CalendarDays,
   MessageSquare,
-  Users,
   Lock,
   Loader2,
 } from "lucide-react";
@@ -14,7 +13,10 @@ import { BookingAddonSection } from "./BookingAddonSection";
 import { AiChatAddonSection } from "./AiChatAddonSection";
 import { studioPanelHref } from "./StudioCard";
 
-type ContentAddonKey = "gallery" | "menu" | "pricelist";
+// Team gehört seit Plan B5 Task 2 zu den Inhalts-Add-ons: Kauf hier wie
+// Galerie/Speisekarte/Preisliste, Pflege der Mitglieder im Studio
+// ("Team pflegen"-Unterbereich im Extras-Panel, AddonsPanel.tsx).
+type ContentAddonKey = "gallery" | "menu" | "pricelist" | "team";
 type AddonKey = ContentAddonKey | "contactForm";
 
 const CONTENT_ADDON_LABELS: Record<
@@ -37,6 +39,12 @@ const CONTENT_ADDON_LABELS: Record<
     name: "Preisliste",
     icon: "💶",
     hint: "Deine Leistungen mit Preisen auflisten.",
+    priceLabel: "+3,90 €/Mon",
+  },
+  team: {
+    name: "Team-Vorstellung",
+    icon: "👥",
+    hint: "Team-Mitglieder mit Foto und Rolle vorstellen.",
     priceLabel: "+3,90 €/Mon",
   },
 };
@@ -141,7 +149,9 @@ export function AddonsTab({
       {!activeDetail && (
         <div className="space-y-3">
           {/* Inhalts-Add-ons: Kauf hier, Pflege im Studio */}
-          {(["gallery", "menu", "pricelist"] as ContentAddonKey[]).map(key => {
+          {(
+            ["gallery", "menu", "pricelist", "team"] as ContentAddonKey[]
+          ).map(key => {
             const meta = CONTENT_ADDON_LABELS[key];
             const purchased = !!purchasedAddOns[key];
             return (
@@ -299,28 +309,6 @@ export function AddonsTab({
               </div>
               <span className="text-xs text-slate-400 flex-shrink-0">
                 {purchasedAddOns["aiChat"] ? "Einstellungen →" : "Details →"}
-              </span>
-            </div>
-          </div>
-
-          {/* ── Team (bald verfügbar) ── */}
-          <div className="bg-slate-800/60 rounded-2xl border border-slate-700/30 opacity-60">
-            <div className="p-4 flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-amber-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-white font-semibold text-sm">
-                    Team-Vorstellung
-                  </span>
-                </div>
-                <p className="text-slate-400 text-xs">
-                  Team-Mitglieder mit Foto und Rolle vorstellen — folgt bald.
-                </p>
-              </div>
-              <span className="text-xs text-slate-500 flex-shrink-0">
-                bald verfügbar
               </span>
             </div>
           </div>
