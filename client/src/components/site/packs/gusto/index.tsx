@@ -53,6 +53,17 @@ function OrnamentDivider(): React.ReactElement {
   );
 }
 
+/**
+ * Nackte Zahlen bekommen ein €-Zeichen („14" → „14 €", „ab 12" → „ab 12 €");
+ * Texte ohne Ziffer („auf Anfrage") und vorhandene €/EUR bleiben unverändert.
+ * Gleiches Muster wie salon-noir — Konsistenz mit den hellen Packs.
+ */
+function formatPrice(price: string): string {
+  const trimmed = price.trim();
+  if (/€|eur/i.test(trimmed) || !/\d/.test(trimmed)) return trimmed;
+  return `${trimmed} €`;
+}
+
 /** Eine Punktlinien-Menüzeile: Name … gepunktete Füllung … Preis in Gold. */
 function MenuRow({
   name,
@@ -65,7 +76,7 @@ function MenuRow({
     <div className="pb-gu-menu">
       <span>{name}</span>
       <i />
-      <span className="pb-gu-price">{price}</span>
+      <span className="pb-gu-price">{formatPrice(price)}</span>
     </div>
   );
 }
@@ -91,7 +102,7 @@ function renderSection(
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
                 {item.price && (
-                  <span className="pb-gu-price">{item.price}</span>
+                  <span className="pb-gu-price">{formatPrice(item.price)}</span>
                 )}
               </div>
             ))}
@@ -320,7 +331,13 @@ const GustoPage: React.FC<{
   const navRight = navList.slice(half);
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const menu = sections.find((s): s is SectionOf<"menu"> => s.type === "menu");
-  const previewItems = menu?.categories[0]?.items.slice(0, 3) ?? [];
+  /* Menü-Vorschau als Highlights: je Kategorie das erste Gericht (max. 3) —
+     statt der ersten drei Zeilen der ersten Kategorie, die den Anfang der
+     direkt folgenden Speisekarte 1:1 duplizierten (B7 Welle 2). Die
+     Punktlinien-Signatur bleibt. */
+  const previewItems = (
+    menu?.categories.map(cat => cat.items[0]).filter(Boolean) ?? []
+  ).slice(0, 3);
   const year = now.getFullYear();
 
   return (

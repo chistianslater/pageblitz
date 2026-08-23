@@ -667,13 +667,12 @@ const GUSTO_FULL: WebsiteDataV2 = {
       ],
     },
     {
+      /* Q5 (B7 Welle 2): gusto-hero.webp hängt bereits in „Unsere
+         Geschichte" (und als Teller-Kreis im Hero) — aus der Galerie
+         genommen, damit kein Motiv doppelt in voller Größe erscheint. */
       type: "gallery",
       headline: "Impressionen",
       images: [
-        {
-          url: "/demo/gusto-hero.webp",
-          alt: "Gedeckter Tisch im warmen Abendlicht der Trattoria",
-        },
         {
           url: "/demo/gusto-detail-1.webp",
           alt: "Hausgemachte Tagliatelle mit Ragù",
@@ -1392,17 +1391,14 @@ const LANDGUT_FULL: WebsiteDataV2 = {
       ],
     },
     {
+      /* Q5 (B7 Welle 2): landgut-hero.webp füllt jetzt den Hero-Bogen,
+         landgut-detail-1.webp hängt im Über-uns — beide aus der Galerie
+         genommen, damit kein Motiv doppelt erscheint (3 Assets, 4 Slots:
+         Galerie wird zur breiten Einzel-Bogenplatte, wie atelier/schimmer
+         in Welle 0/1). */
       type: "gallery",
       headline: "Impressionen",
       images: [
-        {
-          url: "/demo/landgut-hero.webp",
-          alt: "Pflanzreihen mit Stauden in der Gärtnerei Grünholz",
-        },
-        {
-          url: "/demo/landgut-detail-1.webp",
-          alt: "Kräutertöpfe im Verkaufsbereich",
-        },
         {
           url: "/demo/landgut-detail-2.webp",
           alt: "Frisch gepflanzte Baumschule bei Sonnenaufgang",

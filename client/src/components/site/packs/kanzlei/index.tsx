@@ -87,7 +87,10 @@ function buildFacts(
     });
   }
   if (data.google) {
-    facts.push({ value: `★ ${formatRating(data.google.rating)}`, label: "" });
+    facts.push({
+      value: `★ ${formatRating(data.google.rating)}`,
+      label: "Google-Bewertung",
+    });
     facts.push({
       value: String(data.google.reviewCount),
       label: "Bewertungen",
@@ -109,17 +112,25 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
-          {section.items.map((item, i) => (
-            <div className="pb-kz-service" key={item.title}>
-              <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{item.title}</strong>
-                {item.description && <p>{item.description}</p>}
-              </div>
-              {item.price && <span>{item.price}</span>}
+          {/* Zweispalter (R2, B7 Welle 2): h2 in der linken Rasterhälfte,
+              alle Items an einer gemeinsamen Kante rechts der 50%-Rasterlinie
+              — vorher schob ein zu breiter span-Selektor jede Zeile
+              unterschiedlich weit nach rechts (ausgefranste Treppe). */}
+          <div className="pb-kz-services-grid">
+            <h2>{section.headline}</h2>
+            <div className="pb-kz-services-list">
+              {section.items.map((item, i) => (
+                <div className="pb-kz-service" key={item.title}>
+                  <span className="idx">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    {item.description && <p>{item.description}</p>}
+                  </div>
+                  {item.price && <span className="price">{item.price}</span>}
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </section>
       );
     }
@@ -275,7 +286,7 @@ function renderSection(
                       {item.description}
                     </p>
                   )}
-                  <span>{item.price}</span>
+                  <span className="price">{item.price}</span>
                 </div>
               ))}
             </div>

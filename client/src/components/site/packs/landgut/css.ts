@@ -17,7 +17,8 @@ export const LANDGUT_CSS = `
 .pb-landgut a.pb-lg-cta{display:inline-block;margin-top:26px;background:var(--pb-accent);color:var(--pb-accent-contrast);padding:13px 28px;border-radius:var(--pb-radius-button);font-weight:600;font-size:13.5px;transition:opacity .15s}
 .pb-lg-cta:hover,.pb-lg-cta:focus-visible{opacity:.85}
 .pb-lg-rows{display:flex;align-items:flex-end;gap:12px;height:280px}
-.pb-lg-row{flex:1;position:relative;border-radius:120px 120px 0 0;min-width:0}
+.pb-lg-row{flex:1;position:relative;border-radius:120px 120px 0 0;min-width:0;overflow:hidden}
+.pb-lg-row-img{width:100%;height:100%;object-fit:cover;display:block}
 .pb-lg-row.r1{height:100%;background:#41593A}
 .pb-lg-row.r2{height:62%;background:#C9BC8F}
 .pb-lg-row.r3{height:82%;background:#8FA872}
@@ -49,6 +50,7 @@ export const LANDGUT_CSS = `
 .pb-lg-hours td:first-child{text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-lg-hours td:last-child{text-align:right}
 .pb-lg-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.pb-lg-gallery img:only-child{max-width:720px}
 .pb-lg-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
 .pb-lg-member .pb-lg-arch-img{height:200px;margin-bottom:10px}
 .pb-lg-member strong{display:block;font-family:var(--pb-font-display);font-weight:500}

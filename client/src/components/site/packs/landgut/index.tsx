@@ -379,9 +379,24 @@ const LandgutPage: React.FC<{
                   </a>
                 )}
               </div>
+              {/* Pflanzreihen-Bögen (B7 Welle 2): der höchste Bogen trägt
+                  das Hero-Foto in der Bogen-Maske (imageTreatment der
+                  Verfassung), die beiden kleineren bleiben Farbflächen als
+                  Rhythmus. Ohne Hero-Bild greift die bisherige Komposition
+                  mit dem SAISON-Label — auf dem Foto wäre es unlesbar. */}
               <div className="pb-lg-rows" aria-hidden="true">
                 <div className="pb-lg-row r1">
-                  <span className="pb-lg-row-label">{ROW_LABEL}</span>
+                  {hero.imageUrl ? (
+                    <img
+                      className="pb-lg-row-img"
+                      src={hero.imageUrl}
+                      alt=""
+                      loading="eager"
+                      fetchPriority="high"
+                    />
+                  ) : (
+                    <span className="pb-lg-row-label">{ROW_LABEL}</span>
+                  )}
                 </div>
                 <div className="pb-lg-row r2" />
                 <div className="pb-lg-row r3" />

@@ -105,18 +105,28 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
-          {section.intro && <p className="pb-fd-intro">{section.intro}</p>}
-          {section.items.map((item, i) => (
-            <div className="pb-fd-service" key={item.title}>
-              <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{item.title}</strong>
-                {item.description && <p>{item.description}</p>}
-              </div>
-              {item.price && <span>{item.price}</span>}
+          {/* Zweispalter (R2, B7 Welle 2): Überschrift + Intro links, alle
+              Items an einer gemeinsamen Kante rechts — vorher schob ein zu
+              breiter span-Selektor jede Zeile unterschiedlich weit nach
+              rechts (ausgefranste Treppe, linke Hälfte leer). */}
+          <div className="pb-fd-services-grid">
+            <div>
+              <h2>{section.headline}</h2>
+              {section.intro && <p className="pb-fd-intro">{section.intro}</p>}
             </div>
-          ))}
+            <div>
+              {section.items.map((item, i) => (
+                <div className="pb-fd-service" key={item.title}>
+                  <span className="idx">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{item.title}</strong>
+                    {item.description && <p>{item.description}</p>}
+                  </div>
+                  {item.price && <span className="price">{item.price}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
       );
     }
@@ -272,7 +282,7 @@ function renderSection(
                       {item.description}
                     </p>
                   )}
-                  <span>{item.price}</span>
+                  <span className="price">{item.price}</span>
                 </div>
               ))}
             </div>

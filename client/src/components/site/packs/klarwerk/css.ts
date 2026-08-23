@@ -16,7 +16,7 @@ export const KLARWERK_CSS = `
 .pb-kw-hero p{margin-top:20px;max-width:56ch;color:var(--pb-muted);font-size:16px}
 .pb-klarwerk a.pb-kw-hero-cta{display:inline-block;margin-top:28px;background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:13px 26px;font-weight:600;font-size:14.5px;transition:opacity .15s}
 .pb-kw-hero-cta:hover,.pb-kw-hero-cta:focus-visible{opacity:.85}
-.pb-kw-bento{display:grid;grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:auto auto;gap:16px;padding:40px 32px 64px;max-width:1040px}
+.pb-kw-bento{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;gap:16px;padding:40px 32px 64px;max-width:1176px}
 .pb-kw-term{grid-row:span 2;background:var(--pb-ink);border-radius:var(--pb-radius-card);padding:20px 22px;font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;line-height:2;color:#7EE787;overflow:hidden}
 .pb-kw-term .dim{color:var(--pb-muted)}
 .pb-kw-term div{white-space:pre-wrap;word-break:break-word}
@@ -39,7 +39,7 @@ export const KLARWERK_CSS = `
 .pb-kw-about p{max-width:64ch}
 .pb-kw-about-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:center}
 .pb-kw-about-grid>p:only-child{grid-column:1/-1}
-.pb-kw-about-grid .pb-kw-about-img{max-width:100%;margin-bottom:0}
+.pb-kw-about-grid .pb-kw-about-img{max-width:100%;margin-bottom:0;object-fit:contain;background:var(--pb-surface);padding:28px;box-sizing:border-box}
 .pb-kw-quotes{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 .pb-kw-quotes .pb-kw-quote{margin-bottom:0}
 .pb-kw-quotes .pb-kw-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:720px}
