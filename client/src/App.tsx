@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
@@ -12,14 +11,27 @@ import {
 } from "./lib/consent";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import LandingPage from "./pages/LandingPage";
-import SitePage from "./pages/SitePage";
-import LegalPage from "./pages/LegalPage";
-import StartPage from "./pages/StartPage";
 import PageblitzImpressum from "./pages/PageblitzImpressum";
 import PageblitzDatenschutz from "./pages/PageblitzDatenschutz";
 import { AdminRoute, CustomerRoute } from "./components/ProtectedRoute";
 
 // ── Lazy-loaded pages (not needed on first paint) ─────────────────────────────
+// StartPage/SitePage/LegalPage waren bis Task 6 eager importiert und zwangen
+// dadurch JEDE Route (auch "/admin", "/onboarding/:token", ...) dazu, ihren
+// Code mitzuladen. lazy() gibt jeder dieser Routen ihren eigenen Chunk.
+// LandingPage bleibt bewusst eager: ein erster Messversuch mit lazy(Landing)
+// zeigte eine deutliche LCP-Regression auf "/" (Lighthouse mobil 3,2 s →
+// 5,6 s, Task-6-Bericht) — React.lazy() fügt für "/" selbst eine zusätzliche
+// Netzwerk-Rundreise ein (Entry laden+parsen+ausführen, ERST DANACH wird der
+// dynamische import() der Landing-Chunk-URL überhaupt entdeckt; Vite kann für
+// client-seitig zur Laufzeit gewählte lazy()-Routen kein modulepreload in die
+// statische index.html schreiben). Für "/" selbst bringt lazy(Landing) also
+// keinen Netto-Vorteil (die Route braucht den Chunk ohnehin sofort), nur den
+// Nachteil der zusätzlichen Rundreise — anders als bei Start/Site/Legal, die
+// auf "/" gar nicht gebraucht werden.
+const StartPage = lazy(() => import("./pages/StartPage"));
+const SitePage = lazy(() => import("./pages/SitePage"));
+const LegalPage = lazy(() => import("./pages/LegalPage"));
 const DashboardLayout = lazy(() => import("./components/DashboardLayout"));
 const Home = lazy(() => import("./pages/Home"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
@@ -156,18 +168,22 @@ function Router() {
   void location; // used for reactivity only
 
   // Subdomain routing: schau-horch.pageblitz.de → render site directly
+  // SitePage/LegalPage sind lazy() (Task 6) → Suspense-Boundary nötig, sonst
+  // wirft React "component suspended while rendering, but no fallback".
   const customerSlug = getCustomerSubdomain();
   if (customerSlug) {
     return (
-      <Switch>
-        <Route path="/impressum">
-          {() => <LegalPage forceSlug={customerSlug} />}
-        </Route>
-        <Route path="/datenschutz">
-          {() => <LegalPage forceSlug={customerSlug} />}
-        </Route>
-        <Route>{() => <SitePage forceSlug={customerSlug} />}</Route>
-      </Switch>
+      <Suspense key={location} fallback={<PageLoader />}>
+        <Switch>
+          <Route path="/impressum">
+            {() => <LegalPage forceSlug={customerSlug} />}
+          </Route>
+          <Route path="/datenschutz">
+            {() => <LegalPage forceSlug={customerSlug} />}
+          </Route>
+          <Route>{() => <SitePage forceSlug={customerSlug} />}</Route>
+        </Switch>
+      </Suspense>
     );
   }
 
@@ -280,10 +296,8 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <AppContent />
-        </TooltipProvider>
+        <Toaster />
+        <AppContent />
       </ThemeProvider>
     </ErrorBoundary>
   );

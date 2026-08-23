@@ -1,37 +1,32 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { LazyMotion, domAnimation, m, useReducedMotion } from "framer-motion";
 import { ArrowUpRight, X } from "lucide-react";
-import { getConstitution } from "@shared/stylePacks";
-import { PACK_IDS, type PackId } from "@shared/siteContract/types";
-import { getPackAccent } from "@/lib/packAccent";
+import { PACK_SUMMARY, type PackSummary } from "@shared/stylePacks/summary";
+import type { PackId } from "@shared/siteContract/types";
 
 interface PackShowcaseProps {
   isDark: boolean;
 }
 
-/** Feste Anzeigereihenfolge — deckungsgleich mit `PACK_IDS` (siehe `shared/siteContract/schema.ts`). */
-const PACK_ORDER: readonly PackId[] = PACK_IDS;
-
 interface PackCardProps {
-  packId: PackId;
+  summary: PackSummary;
   index: number;
   isDark: boolean;
   animate: boolean;
   onOpen: (packId: PackId, trigger: HTMLElement) => void;
 }
 
-function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
-  const constitution = getConstitution(packId);
-  const accent = getPackAccent(packId);
+function PackCard({ summary, index, isDark, animate, onOpen }: PackCardProps) {
+  const { id: packId, name, essence, accent } = summary;
 
   function handleOpen(event: React.MouseEvent<HTMLButtonElement>): void {
     onOpen(packId, event.currentTarget);
   }
 
   return (
-    <motion.article
-      aria-label={`${constitution.name}: ${constitution.essence}`}
+    <m.article
+      aria-label={`${name}: ${essence}`}
       initial={animate ? { opacity: 0, y: 24 } : undefined}
       whileInView={animate ? { opacity: 1, y: 0 } : undefined}
       viewport={{ once: true, margin: "-40px" }}
@@ -45,7 +40,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
       <button
         type="button"
         onClick={handleOpen}
-        aria-label={`Live-Vorschau ${constitution.name} öffnen`}
+        aria-label={`Live-Vorschau ${name} öffnen`}
         className="relative block w-full aspect-[16/10] overflow-hidden bg-white border-b text-left cursor-zoom-in"
         style={{ borderColor: isDark ? "rgba(255,255,255,0.08)" : "#e5e7eb" }}
       >
@@ -55,7 +50,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
           height={500}
           loading="lazy"
           decoding="async"
-          alt={`Vorschau Style Pack ${constitution.name}`}
+          alt={`Vorschau Style Pack ${name}`}
           className="absolute inset-0 w-full h-full object-cover object-top"
         />
         <div
@@ -81,12 +76,12 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
         <h3
           className={`font-semibold text-lg mb-1.5 ${isDark ? "text-white" : "text-gray-900"}`}
         >
-          {constitution.name}
+          {name}
         </h3>
         <p
           className={`text-sm leading-relaxed mb-4 min-h-[2.5rem] ${isDark ? "text-white/50" : "text-gray-600"}`}
         >
-          {constitution.essence}
+          {essence}
         </p>
         <button
           type="button"
@@ -101,7 +96,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
           <ArrowUpRight className="w-3.5 h-3.5" />
         </button>
       </div>
-    </motion.article>
+    </m.article>
   );
 }
 
@@ -174,7 +169,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
 
   if (!packId) return null;
 
-  const constitution = getConstitution(packId);
+  const name = PACK_SUMMARY.find(p => p.id === packId)?.name ?? packId;
   const demoHref = `/demo/${packId}`;
 
   const modal = (
@@ -194,7 +189,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
       >
         <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-3">
           <h3 id={titleId} className="font-semibold text-gray-900">
-            {constitution.name}
+            {name}
           </h3>
           <div className="flex items-center gap-4">
             <a
@@ -219,7 +214,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
         </div>
         <iframe
           src={demoHref}
-          title={`Live-Vorschau: ${constitution.name}`}
+          title={`Live-Vorschau: ${name}`}
           className="w-full flex-1 border-0"
         />
       </div>
@@ -260,48 +255,50 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
   }, []);
 
   return (
-    <section id="showcase" className="py-32 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 mb-12">
-        <motion.p
-          initial={animate ? { opacity: 0, y: 20 } : undefined}
-          whileInView={animate ? { opacity: 1, y: 0 } : undefined}
-          viewport={{ once: true }}
-          className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
-        >
-          14 Stilwelten
-        </motion.p>
-        <motion.h2
-          initial={animate ? { opacity: 0, y: 20 } : undefined}
-          whileInView={animate ? { opacity: 1, y: 0 } : undefined}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className={`text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
-        >
-          Ein Look für jedes Handwerk.
-        </motion.h2>
-        <p
-          className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
-        >
-          Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
-          Typografie, Farben und Layout passend zur Branche. Du wählst den Stil,
-          der zu dir passt, deine Inhalte bleiben gleich.
-        </p>
-      </div>
+    <LazyMotion features={domAnimation} strict>
+      <section id="showcase" className="py-32 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 mb-12">
+          <m.p
+            initial={animate ? { opacity: 0, y: 20 } : undefined}
+            whileInView={animate ? { opacity: 1, y: 0 } : undefined}
+            viewport={{ once: true }}
+            className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
+          >
+            14 Stilwelten
+          </m.p>
+          <m.h2
+            initial={animate ? { opacity: 0, y: 20 } : undefined}
+            whileInView={animate ? { opacity: 1, y: 0 } : undefined}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className={`text-3xl md:text-4xl font-semibold tracking-tight max-w-2xl transition-colors duration-500 ${isDark ? "text-white" : "text-gray-900"}`}
+          >
+            Ein Look für jedes Handwerk.
+          </m.h2>
+          <p
+            className={`mt-4 max-w-xl text-base transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
+          >
+            Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
+            Typografie, Farben und Layout passend zur Branche. Du wählst den
+            Stil, der zu dir passt, deine Inhalte bleiben gleich.
+          </p>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {PACK_ORDER.map((packId, index) => (
-          <PackCard
-            key={packId}
-            packId={packId}
-            index={index}
-            isDark={isDark}
-            animate={animate}
-            onOpen={handleOpen}
-          />
-        ))}
-      </div>
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {PACK_SUMMARY.map((summary, index) => (
+            <PackCard
+              key={summary.id}
+              summary={summary}
+              index={index}
+              isDark={isDark}
+              animate={animate}
+              onOpen={handleOpen}
+            />
+          ))}
+        </div>
 
-      <PreviewModal packId={openPackId} onClose={handleClose} />
-    </section>
+        <PreviewModal packId={openPackId} onClose={handleClose} />
+      </section>
+    </LazyMotion>
   );
 }

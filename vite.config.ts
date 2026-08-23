@@ -187,11 +187,30 @@ export default defineConfig(({ command }) => ({
             return "vendor-react";
           if (id.includes("node_modules/framer-motion/"))
             return "vendor-motion";
-          if (
-            id.includes("node_modules/@radix-ui/") ||
-            id.includes("node_modules/@tanstack/")
-          )
-            return "vendor-ui";
+          // Getrennt von @tanstack: react-query wird am App-Root
+          // (QueryClientProvider, main.tsx) für tRPC gebraucht und lädt
+          // daher auf JEDER Route mit, Radix nur dort, wo Dialog/Dropdown/
+          // Tooltip/etc. tatsächlich verwendet werden (Dashboard/Admin/
+          // Studio) — ein gemeinsamer Chunk hätte die Landingpage gezwungen,
+          // das komplette Radix-Bundle mitzuladen, nur weil react-query
+          // daran hing (Task 6, B4c-Review-Befund).
+          // Versuch geprüft, react-slot (die einzige Radix-Abhängigkeit von
+          // `ui/button.tsx`, genutzt von Landing/StartPage) aus vendor-radix
+          // auszuschließen (eigener manualChunks-Zweig, der `undefined`
+          // zurückgibt) — ohne Effekt: `@radix-ui/react-slot` wird intern
+          // auch von anderen Radix-Primitiven (Dialog/DropdownMenu/...)
+          // verwendet, die selbst in vendor-radix liegen; Rollup dedupliziert
+          // das gemeinsame Modul dann in genau diesen Chunk, unabhängig vom
+          // manualChunks-Rückgabewert für das Modul selbst (verifiziert:
+          // identischer Chunk-Hash mit/ohne Ausschluss-Zweig). vendor-radix
+          // bleibt dadurch ein Preload auf "/" (Button→Slot), obwohl die
+          // Landingpage sonst kein Radix nutzt — echte Isolation bräuchte
+          // einen Slot-freien Button (Radix `asChild` durch eine eigene,
+          // minimale Implementierung ersetzen), das ist außerhalb des
+          // Task-6-Dateisatzes (Bericht: Task-6-Ergebnis, Budget-Abschnitt).
+          if (id.includes("node_modules/@radix-ui/")) return "vendor-radix";
+          if (id.includes("node_modules/@tanstack/"))
+            return "vendor-tanstack";
           if (
             id.includes("node_modules/stripe") ||
             id.includes("node_modules/@stripe/")

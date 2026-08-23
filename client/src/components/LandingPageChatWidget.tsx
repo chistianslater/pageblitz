@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, ArrowRight, Zap } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -13,7 +13,9 @@ const PRIMARY = "#a3e635"; // Pageblitz neon lime
 export default function LandingPageChatWidget() {
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
-  const isDark = typeof window !== "undefined" && localStorage.getItem("lp-theme") === "dark";
+  const isDark =
+    typeof window !== "undefined" &&
+    localStorage.getItem("lp-theme") === "dark";
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,11 +26,12 @@ export default function LandingPageChatWidget() {
   const sessionId = useRef<string>(
     typeof sessionStorage !== "undefined"
       ? sessionStorage.getItem("pb_lp_session") ||
-        (() => {
-          const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
-          sessionStorage.setItem("pb_lp_session", id);
-          return id;
-        })()
+          (() => {
+            const id =
+              Math.random().toString(36).slice(2) + Date.now().toString(36);
+            sessionStorage.setItem("pb_lp_session", id);
+            return id;
+          })()
       : "anon"
   );
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -67,7 +70,10 @@ export default function LandingPageChatWidget() {
     setInput("");
     setErrorMsg(null);
 
-    const newMessages: Message[] = [...messages, { role: "user", content: text }];
+    const newMessages: Message[] = [
+      ...messages,
+      { role: "user", content: text },
+    ];
     setMessages(newMessages);
     setLoading(true);
 
@@ -75,15 +81,19 @@ export default function LandingPageChatWidget() {
       const resp = await fetch("/api/landing-chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages, sessionId: sessionId.current }),
+        body: JSON.stringify({
+          messages: newMessages,
+          sessionId: sessionId.current,
+        }),
       });
 
       if (resp.status === 429) {
-        setMessages((prev) => [
+        setMessages(prev => [
           ...prev,
           {
             role: "assistant",
-            content: "Du hast heute schon viele Fragen gestellt – komm gerne morgen wieder oder starte direkt kostenlos! 😊",
+            content:
+              "Du hast heute schon viele Fragen gestellt – komm gerne morgen wieder oder starte direkt kostenlos! 😊",
           },
         ]);
         return;
@@ -91,13 +101,22 @@ export default function LandingPageChatWidget() {
 
       if (!resp.ok) throw new Error("server_error");
 
-      const data = (await resp.json()) as { content: string; leadCaptured: boolean };
-      setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
+      const data = (await resp.json()) as {
+        content: string;
+        leadCaptured: boolean;
+      };
+      setMessages(prev => [
+        ...prev,
+        { role: "assistant", content: data.content },
+      ]);
       if (data.leadCaptured) setLeadCaptured(true);
     } catch {
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
-        { role: "assistant", content: "Ups – da lief etwas schief. Bitte versuche es nochmal! 🙏" },
+        {
+          role: "assistant",
+          content: "Ups – da lief etwas schief. Bitte versuche es nochmal! 🙏",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -116,7 +135,7 @@ export default function LandingPageChatWidget() {
       {/* Proactive bubble */}
       <AnimatePresence>
         {proactiveVisible && !open && (
-          <motion.button
+          <m.button
             initial={{ opacity: 0, y: 12, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.9 }}
@@ -128,13 +147,15 @@ export default function LandingPageChatWidget() {
             <p className="text-gray-900 text-sm font-medium leading-snug">
               Hast du Fragen zu Pageblitz?
             </p>
-            <p className="text-gray-500 text-xs mt-0.5">Ich beantworte sie gerne! 👋</p>
-          </motion.button>
+            <p className="text-gray-500 text-xs mt-0.5">
+              Ich beantworte sie gerne! 👋
+            </p>
+          </m.button>
         )}
       </AnimatePresence>
 
       {/* Floating Button */}
-      <motion.button
+      <m.button
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 2, type: "spring", stiffness: 260, damping: 20 }}
@@ -147,21 +168,33 @@ export default function LandingPageChatWidget() {
       >
         <AnimatePresence mode="wait">
           {open ? (
-            <motion.span key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <m.span
+              key="close"
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <X className="w-6 h-6" />
-            </motion.span>
+            </m.span>
           ) : (
-            <motion.span key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+            <m.span
+              key="open"
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
               <MessageCircle className="w-6 h-6" />
-            </motion.span>
+            </m.span>
           )}
         </AnimatePresence>
-      </motion.button>
+      </m.button>
 
       {/* Chat Window */}
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 24, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
@@ -178,7 +211,9 @@ export default function LandingPageChatWidget() {
                 <Zap className="w-5 h-5 text-gray-900" />
               </div>
               <div>
-                <div className="text-gray-900 font-semibold text-sm leading-tight">Mika · Pageblitz</div>
+                <div className="text-gray-900 font-semibold text-sm leading-tight">
+                  Mika · Pageblitz
+                </div>
                 <div className="text-gray-700 text-xs flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
                   Online · antwortet sofort
@@ -200,7 +235,9 @@ export default function LandingPageChatWidget() {
                     className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                       msg.role === "user"
                         ? "text-gray-900 rounded-br-sm"
-                        : isDark ? "bg-white/8 text-white/90 rounded-bl-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                        : isDark
+                          ? "bg-white/8 text-white/90 rounded-bl-sm"
+                          : "bg-gray-100 text-gray-800 rounded-bl-sm"
                     }`}
                     style={msg.role === "user" ? { background: PRIMARY } : {}}
                   >
@@ -212,13 +249,19 @@ export default function LandingPageChatWidget() {
               {/* Typing indicator */}
               {loading && (
                 <div className="flex justify-start">
-                  <div className={`rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center ${isDark ? "bg-white/8" : "bg-gray-100"}`}>
-                    {[0, 1, 2].map((i) => (
-                      <motion.span
+                  <div
+                    className={`rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center ${isDark ? "bg-white/8" : "bg-gray-100"}`}
+                  >
+                    {[0, 1, 2].map(i => (
+                      <m.span
                         key={i}
                         className={`w-1.5 h-1.5 rounded-full ${isDark ? "bg-white/40" : "bg-gray-400"}`}
                         animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          delay: i * 0.15,
+                        }}
                       />
                     ))}
                   </div>
@@ -227,13 +270,18 @@ export default function LandingPageChatWidget() {
 
               {/* CTA-Card (erscheint nach Bot-Empfehlung, Chat bleibt aktiv) */}
               {leadCaptured && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-xl p-3.5 border text-center"
-                  style={{ background: `${PRIMARY}18`, borderColor: `${PRIMARY}40` }}
+                  style={{
+                    background: `${PRIMARY}18`,
+                    borderColor: `${PRIMARY}40`,
+                  }}
                 >
-                  <p className="text-white/70 text-xs mb-2.5 font-medium">✨ Starte jetzt kostenlos – in 3 Minuten live</p>
+                  <p className="text-white/70 text-xs mb-2.5 font-medium">
+                    ✨ Starte jetzt kostenlos – in 3 Minuten live
+                  </p>
                   <button
                     onClick={() => navigate("/start?billing=yearly")}
                     className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-gray-900 transition-all hover:brightness-110 active:scale-95"
@@ -242,7 +290,7 @@ export default function LandingPageChatWidget() {
                     7 Tage gratis – keine Kreditkarte
                     <ArrowRight className="w-4 h-4" />
                   </button>
-                </motion.div>
+                </m.div>
               )}
 
               {errorMsg && (
@@ -260,7 +308,7 @@ export default function LandingPageChatWidget() {
               <textarea
                 ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Frage stellen…"
@@ -282,7 +330,7 @@ export default function LandingPageChatWidget() {
             >
               Lieber direkt per E-Mail? hello@pageblitz.de
             </a>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>
