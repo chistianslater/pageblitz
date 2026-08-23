@@ -7,7 +7,10 @@ import {
   getGenerationJobByWebsiteId,
   updateBusiness,
 } from "../db";
-import { runWebsiteGenerationV2Job } from "../generationV2/runJob";
+import {
+  isInterimV2Doc,
+  runWebsiteGenerationV2Job,
+} from "../generationV2/runJob";
 import { getConstitution } from "../../shared/stylePacks";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { applyStylePack, parsePackId } from "./applyPatch";
@@ -72,7 +75,19 @@ const coreProcedures = {
         input.token,
         ctx.user
       );
-      if (doc) return { jobId: null, status: "completed" as const };
+      if (doc) {
+        // Liegengebliebener Zwischenstand (Plan B7 Nachfix): Crashen Job
+        // oder Restore zwischen Interim- und Final-Write, bleibt das
+        // Platzhalter-Dokument liegen — ohne diese Prüfung meldete der
+        // Retry "completed" und regenerierte nie. Nur die Kombination
+        // failed Job + Interim-Marker startet neu; ein echtes Dokument
+        // (auch neben einem alten failed Job) bleibt unangetastet.
+        const job = await getGenerationJobByWebsiteId(website.id);
+        if (job?.status === "failed" && isInterimV2Doc(doc)) {
+          return startGenerationJob(website.id);
+        }
+        return { jobId: null, status: "completed" as const };
+      }
       if (hasLegacyDoc) {
         if (!input.force) {
           throw new TRPCError({
@@ -161,7 +176,7 @@ const coreProcedures = {
     .mutation(async ({ input, ctx }) => {
       const packId = parsePackId(input.packId);
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       const next = applyStylePack(doc, packId);
       return persistDoc(input.token, loaded, next, {
         progress: { styleConfirmed: true },

@@ -10,7 +10,12 @@ import {
   takeProposal,
 } from "./aiEdit";
 import { loadStudioWebsite } from "./ownership";
-import { persistDoc, requireDoc, tokenInput } from "./state";
+import {
+  assertNotGenerating,
+  persistDoc,
+  requireDoc,
+  tokenInput,
+} from "./state";
 
 const PROPOSAL_EXPIRED_MESSAGE =
   "Der Vorschlag ist abgelaufen — bitte erneut anfragen.";
@@ -38,7 +43,7 @@ export const aiProcedures = {
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       assertAiEditQuota(loaded.website.id);
 
       const business = await getBusinessById(loaded.website.businessId);
@@ -75,6 +80,9 @@ export const aiProcedures = {
     .input(tokenInput.extend({ proposalId: z.string().min(1) }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
+      // Gleiche Sperre wie requireDoc (aiEdit): kein Übernehmen in ein
+      // Dokument, das der laufende Generierungs-Job gleich überschreibt.
+      await assertNotGenerating(loaded.website.id);
       const next = takeProposal(input.proposalId, loaded.website.id);
       if (!next) {
         throw new TRPCError({

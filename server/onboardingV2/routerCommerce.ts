@@ -20,6 +20,7 @@ import {
 import { z } from "zod";
 import { loadStudioWebsite } from "./ownership";
 import {
+  assertNotGenerating,
   buildState,
   mergeStudioProgress,
   persistDoc,
@@ -58,7 +59,7 @@ export const commerceProcedures = {
     .input(tokenInput.extend({ legal: LegalPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       const { legal } = input;
 
       await upsertOnboarding(loaded.website.id, {
@@ -138,6 +139,9 @@ export const commerceProcedures = {
       }
 
       const loaded = await loadStudioWebsite(input.token, ctx.user);
+      // Gleiche Sperre wie requireDoc: während der Generierung wäre der
+      // Dokument-Zweig unten ein Write auf das Interim-Platzhalter-Dokument.
+      await assertNotGenerating(loaded.website.id);
       const flags: AddOnFlags = { ...addOns };
       await commitAddOnFlags(loaded, flags);
 
@@ -191,7 +195,7 @@ export const commerceProcedures = {
     .input(tokenInput.extend({ patch: TeamPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = requireDoc(loaded);
+      const doc = await requireDoc(loaded);
       let base = doc;
       let extra: { addOnTeam?: boolean } = {};
       if (input.patch.members.length > 0 && doc.addOns?.team !== true) {
@@ -295,7 +299,7 @@ export const commerceProcedures = {
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      requireDoc(loaded);
+      await requireDoc(loaded);
       const state = await buildState(input.token, loaded);
 
       if (!state.checkoutReady) {

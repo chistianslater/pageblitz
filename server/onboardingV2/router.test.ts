@@ -21,14 +21,22 @@ vi.mock("../db", async importOriginal => {
     createOnboarding: vi.fn().mockResolvedValue(999),
   };
 });
-vi.mock("../generationV2/runJob", () => ({
-  runWebsiteGenerationV2Job: vi.fn().mockResolvedValue(undefined),
-}));
+vi.mock("../generationV2/runJob", async importOriginal => {
+  const actual =
+    await importOriginal<typeof import("../generationV2/runJob")>();
+  return {
+    ...actual,
+    runWebsiteGenerationV2Job: vi.fn().mockResolvedValue(undefined),
+  };
+});
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 
 import { appRouter } from "../routers";
 import * as db from "../db";
-import { runWebsiteGenerationV2Job } from "../generationV2/runJob";
+import {
+  buildInterimV2Doc,
+  runWebsiteGenerationV2Job,
+} from "../generationV2/runJob";
 import { invalidateSsrCache } from "../ssr/routes";
 const mockedDb = vi.mocked(db);
 
@@ -222,6 +230,49 @@ describe("onboardingV2.ensureGeneration", () => {
     expect(r.status).toBe("completed");
     expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
   });
+  test("liegengebliebenes Interim-Doc + failed Job → neuer Job statt fälschlich completed (Plan B7 Nachfix)", async () => {
+    // Crash/Restore-Fehler zwischen Interim- und Final-Write: das
+    // Platzhalter-Dokument liegt noch in websiteData, der Job ist failed.
+    const interim = buildInterimV2Doc("werkbank", "Brandt", "Tischler", "s", {
+      hero: "https://media.pageblitz.de/website-42/gmb-1.jpg",
+    });
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "preview",
+      businessId: 7,
+      websiteData: interim,
+    } as any);
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "failed",
+      progress: 55,
+      error: "Server neu gestartet",
+    } as any);
+    const r = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.ensureGeneration({ token: "tok" });
+    expect(r).toEqual({ jobId: 501, status: "pending" });
+    expect(mockedDb.createGenerationJob).toHaveBeenCalledWith({
+      websiteId: 42,
+      status: "pending",
+      progress: 0,
+    });
+    expect(runWebsiteGenerationV2Job).toHaveBeenCalledWith(501, 42);
+  });
+  test("echtes v2-Dokument + alter failed Job → completed, kein neuer Job (kein Überschreiben)", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "failed",
+      progress: 30,
+      error: "früherer Fehlschlag",
+    } as any);
+    const r = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.ensureGeneration({ token: "tok" });
+    expect(r.status).toBe("completed");
+    expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+  });
   test("kein v2-Dokument + kein aktiver Job → neuer Job, v2-Runner gestartet", async () => {
     mockedDb.getWebsiteByToken.mockResolvedValue({
       id: 42,
@@ -379,12 +430,10 @@ describe("onboardingV2 — Kategorie-Rückfrage (Plan B7 Task 5)", () => {
   describe("setCategory", () => {
     test("persistiert getrimmte Kategorie und startet die Generierung", async () => {
       seedNeedsCategory();
-      const r = await appRouter
-        .createCaller(ctx())
-        .onboardingV2.setCategory({
-          token: "tok",
-          category: "  Werbeagentur  ",
-        });
+      const r = await appRouter.createCaller(ctx()).onboardingV2.setCategory({
+        token: "tok",
+        category: "  Werbeagentur  ",
+      });
       expect(mockedDb.updateBusiness).toHaveBeenCalledWith(7, {
         category: "Werbeagentur",
       });

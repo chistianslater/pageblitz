@@ -86,6 +86,27 @@ export interface V2Images {
 }
 
 /**
+ * Deterministische SEO-Beschreibung des Zeitmaschinen-Zwischenstands —
+ * EINZIGE Quelle für `buildInterimV2Doc` UND `isInterimV2Doc`: der Marker
+ * reist im Dokument selbst mit (kein Schema-Feld, keine zweite Wahrheit in
+ * der DB) und erkennt ein liegengebliebenes Platzhalter-Dokument auch nach
+ * Crash/Restore-Fehler zwischen Interim- und Final-Write.
+ */
+const INTERIM_SEO_DESCRIPTION = "Diese Website wird gerade erstellt.";
+
+/**
+ * Ist `doc` der Zeitmaschinen-Zwischenstand (Platzhalter aus
+ * `buildInterimV2Doc`)? Ein final generiertes Dokument trägt nie exakt
+ * diese SEO-Beschreibung (der Interim-Write ist die einzige Quelle des
+ * Satzes). Genutzt von `ensureGeneration` (server/onboardingV2/router.ts):
+ * failed Job + Interim-Doc ⇒ Retry startet einen neuen Job statt
+ * fälschlich "completed" zu melden.
+ */
+export function isInterimV2Doc(doc: WebsiteDataV2): boolean {
+  return doc.seo.description === INTERIM_SEO_DESCRIPTION;
+}
+
+/**
  * Zwischenstand für die Zeitmaschinen-Warte-UX (Plan B7 Task 4, Spec §2.3):
  * direkt nach der Bild-Phase persistiert runJob dieses schema-valide
  * v2-Dokument (Bilder gesetzt, kurze neutrale deutsche Platzhaltertexte —
@@ -109,7 +130,7 @@ export function buildInterimV2Doc(
     slug,
     seo: {
       title: businessName,
-      description: "Diese Website wird gerade erstellt.",
+      description: INTERIM_SEO_DESCRIPTION,
     },
     sections: [
       {
@@ -243,15 +264,16 @@ async function runWebsiteGenerationV2(
   assertV2SafeWrite(previousWebsiteData, interim);
   await updateWebsite(website.id, { websiteData: interim as any });
   invalidateSsrCache(website.slug);
-  await updateGenerationJob(jobId, { progress: 55 });
-  await devPhasePause();
 
   let websiteData: WebsiteDataV2;
   try {
-    // WICHTIG: ALLES zwischen Interim- und Final-Write (Crawl-Await, LLM,
-    // Fakten-Guard inkl. seines LLM-Retrys) muss in DIESEM try laufen —
-    // sonst überlebt bei einem Fehler das Platzhalter-Dokument und
-    // ensureGeneration hielte die Website für fertig generiert.
+    // WICHTIG: ALLES zwischen Interim- und Final-Write (Progress-Update,
+    // Dev-Pause, Crawl-Await, LLM, Fakten-Guard inkl. seines LLM-Retrys)
+    // muss in DIESEM try laufen — sonst überlebt bei einem Fehler das
+    // Platzhalter-Dokument und ensureGeneration hielte die Website für
+    // fertig generiert.
+    await updateGenerationJob(jobId, { progress: 55 });
+    await devPhasePause();
     const existingSite = await existingSitePromise;
     const factArgs = buildV2GenerationFacts(
       business,

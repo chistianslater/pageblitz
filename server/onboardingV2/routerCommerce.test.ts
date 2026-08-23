@@ -1020,3 +1020,122 @@ describe("onboardingV2.createCheckout", () => {
     );
   });
 });
+
+describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufender Generierung", () => {
+  const GATE_MESSAGE = "Die Website wird gerade erstellt — einen Moment bitte.";
+
+  test("createCheckout während processing → BAD_REQUEST, kein Stripe-Aufruf", async () => {
+    // Voll checkout-fähiger Zustand — es darf ausschließlich das Gate greifen.
+    onboardingRow = {
+      ...onboardingRow,
+      legalOwner: "Max Brandt",
+      legalStreet: "Weg 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+      legalEmail: "m@b.de",
+      legalPhone: "0231 1",
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "processing",
+      progress: 55,
+      error: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
+    expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("createCheckout nach completed → { url } wie gehabt", async () => {
+    onboardingRow = {
+      ...onboardingRow,
+      legalOwner: "Max Brandt",
+      legalStreet: "Weg 1",
+      legalZip: "44135",
+      legalCity: "Dortmund",
+      legalEmail: "m@b.de",
+      legalPhone: "0231 1",
+    };
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: v2,
+      customerEmail: "kunde@x.de",
+    } as any);
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "completed",
+      progress: 100,
+      error: null,
+    } as any);
+    const result = await caller().onboardingV2.createCheckout({
+      token: "tok",
+      billingInterval: "yearly",
+    });
+    expect(result).toEqual({ url: "https://stripe/session" });
+  });
+
+  test("updateAddons während processing → BAD_REQUEST, keine Flag-Writes", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "pending",
+      progress: 0,
+      error: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.updateAddons({
+        token: "tok",
+        addOns: {
+          contactForm: false,
+          gallery: true,
+          menu: false,
+          pricelist: false,
+          aiChat: false,
+          booking: false,
+          team: false,
+          subpages: false,
+        },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
+  test("updateLegal während processing → BAD_REQUEST, kein Dokument-Write", async () => {
+    mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+      id: 77,
+      status: "processing",
+      progress: 55,
+      error: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.updateLegal({
+        token: "tok",
+        legal: {
+          legalOwner: "Max Brandt",
+          legalStreet: "Weg 1",
+          legalZip: "44135",
+          legalCity: "Dortmund",
+          legalEmail: "m@b.de",
+          legalPhone: "0231 1",
+        },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+});

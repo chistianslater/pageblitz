@@ -229,7 +229,36 @@ export async function buildState(
   };
 }
 
-export function requireDoc(loaded: StudioWebsite): WebsiteDataV2 {
+/**
+ * Serverseitiges Gate während laufender Generierung (Plan B7 Nachfix,
+ * Task-4-Review): Seit dem Zeitmaschinen-Zwischenstand existiert schon
+ * WÄHREND des Jobs ein schema-valides (Platzhalter-)Dokument — Checkout und
+ * Patch-Mutationen dürfen darauf nicht arbeiten (der finale Write würde
+ * jede Änderung überschreiben, ein Checkout verkaufte Platzhaltertexte).
+ * Dieselbe Quelle wie der Client (`generationInProgress` in
+ * studioLogic.ts / `StudioState.job`): der jüngste generation_job der
+ * Website mit Status pending|processing.
+ */
+export async function assertNotGenerating(websiteId: number): Promise<void> {
+  const job = await getGenerationJobByWebsiteId(websiteId);
+  if (job && (job.status === "pending" || job.status === "processing")) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Die Website wird gerade erstellt — einen Moment bitte.",
+    });
+  }
+}
+
+/**
+ * Dokument-Pflicht + Generierungs-Gate für alle schreibenden/kommerziellen
+ * Studio-Prozeduren: ohne v2-Dokument BAD_REQUEST, während eines laufenden
+ * Generierungs-Jobs ebenfalls BAD_REQUEST (s. `assertNotGenerating`) — das
+ * Interim-Platzhalter-Dokument ist zwar schema-valide, aber weder patch-
+ * noch checkout-fähig.
+ */
+export async function requireDoc(
+  loaded: StudioWebsite
+): Promise<WebsiteDataV2> {
   if (!loaded.doc) {
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -237,6 +266,7 @@ export function requireDoc(loaded: StudioWebsite): WebsiteDataV2 {
         "Die Website wurde noch nicht erstellt — bitte die Generierung abwarten.",
     });
   }
+  await assertNotGenerating(loaded.website.id);
   return loaded.doc;
 }
 
