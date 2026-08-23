@@ -61,6 +61,14 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
         legalStreet: null,
         legalZip: null,
         legalCity: null,
+        // addOnTeam wird seit Plan B5 auch außerhalb von updateAddons
+        // gesetzt (onboardingV2.updateTeam schreibt es mit, sobald
+        // Mitglieder existieren, siehe routerCommerce.ts) — ohne Reset
+        // bliebe das Flag nach einem Playwright-Testlauf, der Mitglieder
+        // anlegt, für den nächsten Lauf gegen denselben deterministischen
+        // Seed-Slug hängen und der Extras-Reiter würde bereits "Aktiv"
+        // statt "Hinzufügen" zeigen.
+        addOnTeam: false,
         updatedAt: Date.now(),
       });
     else

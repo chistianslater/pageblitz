@@ -312,8 +312,8 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.members.map(member => (
-            <div className="pb-wb-service" key={member.name}>
+          {section.members.map((member, i) => (
+            <div className="pb-wb-service" key={`${i}-${member.name}`}>
               {member.imageUrl && (
                 <img src={member.imageUrl} alt="" loading="lazy" />
               )}

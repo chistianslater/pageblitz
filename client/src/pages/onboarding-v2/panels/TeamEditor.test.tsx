@@ -47,6 +47,20 @@ describe("TeamEditor", () => {
     expect(html).toContain('value="Bert Muster"');
   });
 
+  test("nummeriert die Name-/Rolle-aria-labels je Zeile (Screenreader unterscheidet Mitglieder)", () => {
+    const html = renderWithTrpc(
+      <TeamEditor
+        token={"t".repeat(32)}
+        value={twoMembers}
+        onChange={() => {}}
+      />
+    );
+    expect(html).toContain('aria-label="Name Mitglied 1"');
+    expect(html).toContain('aria-label="Rolle Mitglied 1 (optional)"');
+    expect(html).toContain('aria-label="Name Mitglied 2"');
+    expect(html).toContain('aria-label="Rolle Mitglied 2 (optional)"');
+  });
+
   test("rendert Hinzufügen/Entfernen/Sortieren-Buttons mit aria-label je Zeile", () => {
     const html = renderWithTrpc(
       <TeamEditor

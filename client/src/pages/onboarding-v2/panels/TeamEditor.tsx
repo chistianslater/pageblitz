@@ -139,7 +139,7 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
             )}
             <div className="pb-studio-team-fields">
               <input
-                aria-label="Name"
+                aria-label={`Name Mitglied ${i + 1}`}
                 type="text"
                 className="pb-studio-input"
                 placeholder="Name"
@@ -151,7 +151,7 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
                 }
               />
               <input
-                aria-label="Rolle (optional)"
+                aria-label={`Rolle Mitglied ${i + 1} (optional)`}
                 type="text"
                 className="pb-studio-input"
                 placeholder="Rolle (optional)"

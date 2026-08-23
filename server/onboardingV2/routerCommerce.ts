@@ -217,15 +217,23 @@ export const commerceProcedures = {
   /**
    * Speichert die Team-Mitglieder (Extras-Panel-Unterbereich "Team
    * pflegen"). Wie `updateOffer`: Dokument laden → `applyTeam` (Sektion
-   * anlegen/ersetzen/entfernen) → persistieren. Das Add-on-Flag selbst wird
-   * separat über `updateAddons` gesetzt/entfernt — diese Prozedur pflegt
-   * nur den Inhalt der bereits (oder noch nicht) aktivierten Sektion.
+   * anlegen/ersetzen/entfernen) → persistieren. Das Add-on-Flag wird primär
+   * über `updateAddons` gesetzt/entfernt — sobald hier aber tatsächlich
+   * Mitglieder gespeichert werden (Inhalt existiert), setzen wir
+   * `addOnTeam` zusätzlich selbst, damit `startCheckout` weiter unten
+   * (`sanitizeAddOns(state.addOns)`) Team mitberechnet, auch wenn der Kunde
+   * nie über das Extras-Panel-Toggle ging, sondern direkt Mitglieder
+   * anlegte. Beim Leeren (`members: []`) bleibt das Flag unverändert — das
+   * Abschalten läuft ausschließlich über `updateAddons`.
    */
   updateTeam: publicProcedure
     .input(tokenInput.extend({ patch: TeamPatchSchema }))
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = requireDoc(loaded);
+      if (input.patch.members.length > 0) {
+        await upsertOnboarding(loaded.website.id, { addOnTeam: true });
+      }
       return persistDoc(input.token, loaded, applyTeam(doc, input.patch));
     }),
 

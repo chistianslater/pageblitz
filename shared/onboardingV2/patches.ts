@@ -107,7 +107,7 @@ export const LegalPatchSchema = z
 
 export const TeamPatchSchema = z
   .object({
-    headline: z.string().max(80).optional(),
+    headline: z.string().trim().max(80).optional(),
     members: z
       .array(
         z

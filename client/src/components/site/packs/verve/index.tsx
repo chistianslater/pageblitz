@@ -271,8 +271,8 @@ function renderSection(section: SectionV2): React.ReactNode {
         >
           <h2>{title}</h2>
           <div className="pb-vv-team">
-            {section.members.map(member => (
-              <div className="pb-vv-member" key={member.name}>
+            {section.members.map((member, i) => (
+              <div className="pb-vv-member" key={`${i}-${member.name}`}>
                 {member.imageUrl && (
                   <img src={member.imageUrl} alt="" loading="lazy" />
                 )}

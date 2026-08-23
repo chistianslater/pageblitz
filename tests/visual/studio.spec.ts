@@ -356,8 +356,10 @@ test.describe("Studio", () => {
     await addonsPanel
       .getByRole("button", { name: "Mitglied hinzufügen" })
       .click();
-    await addonsPanel.getByLabel("Name").fill("Anna Beispiel");
-    await addonsPanel.getByLabel("Rolle (optional)").fill("Meisterin");
+    await addonsPanel.getByLabel("Name Mitglied 1").fill("Anna Beispiel");
+    await addonsPanel
+      .getByLabel("Rolle Mitglied 1 (optional)")
+      .fill("Meisterin");
 
     await Promise.all([
       page.waitForResponse(

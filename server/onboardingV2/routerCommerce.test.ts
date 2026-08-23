@@ -410,6 +410,31 @@ describe("onboardingV2.updateTeam", () => {
     });
     expect(s.doc!.sections.some(x => x.type === "team")).toBe(false);
   });
+
+  test("mit Mitgliedern → setzt addOnTeam=true (Flag folgt Inhalt, unabhängig vom Extras-Toggle)", async () => {
+    const s = await caller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: { members: [{ name: "Anna Beispiel" }] },
+    });
+
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnTeam: true })
+    );
+    expect(s.addOns.team).toBe(true);
+  });
+
+  test("members: [] → kein Flag-Write (Abschalten läuft ausschließlich über updateAddons)", async () => {
+    await caller().onboardingV2.updateTeam({
+      token: "tok",
+      patch: { members: [] },
+    });
+
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnTeam: expect.anything() })
+    );
+  });
 });
 
 describe("onboardingV2.setCustomerEmail", () => {

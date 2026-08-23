@@ -120,7 +120,14 @@ export function applyTeam(doc: WebsiteDataV2, p: TeamPatch): WebsiteDataV2 {
   let sections: SectionV2[];
   if (p.members.length === 0) sections = without;
   else {
-    const headline = p.headline !== undefined ? p.headline : existing?.headline;
+    // Wie applyOffer: eine leere/nur-Leerzeichen-Überschrift im Patch wird
+    // nicht als Sektionswert übernommen, sonst würde `section.headline ??
+    // FALLBACK_TITLES.team` (Pack-Renderer) sie nicht als "fehlt" erkennen
+    // (`??` fällt nur bei null/undefined zurück, nicht bei "").
+    const headline =
+      p.headline !== undefined
+        ? p.headline.trim() || undefined
+        : existing?.headline;
     const team: SectionOf<"team"> = {
       type: "team",
       ...(headline !== undefined ? { headline } : {}),

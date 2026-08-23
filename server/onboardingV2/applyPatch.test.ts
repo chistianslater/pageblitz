@@ -150,6 +150,36 @@ describe("applyTeam", () => {
     applyTeam(docFull, { members: [{ name: "Anna" }] });
     expect(docFull.sections.some(s => s.type === "team")).toBe(false);
   });
+
+  test("leere/nur-Leerzeichen-Überschrift im Patch → Sektion ohne headline (Renderer-Fallback greift)", () => {
+    const withEmpty = applyTeam(docFull, {
+      headline: "",
+      members: [{ name: "Anna Beispiel" }],
+    });
+    const team = withEmpty.sections.find(s => s.type === "team") as any;
+    expect(team.headline).toBeUndefined();
+    expect("headline" in team).toBe(false);
+
+    const withWhitespace = applyTeam(docFull, {
+      headline: "   ",
+      members: [{ name: "Anna Beispiel" }],
+    });
+    const team2 = withWhitespace.sections.find(s => s.type === "team") as any;
+    expect(team2.headline).toBeUndefined();
+  });
+
+  test("leere Überschrift löscht eine vorhandene Überschrift (statt sie zu behalten)", () => {
+    const withHeadline = applyTeam(docFull, {
+      headline: "Unser Team",
+      members: [{ name: "Anna Beispiel" }],
+    });
+    const cleared = applyTeam(withHeadline, {
+      headline: "",
+      members: [{ name: "Anna Beispiel" }],
+    });
+    const team = cleared.sections.find(s => s.type === "team") as any;
+    expect(team.headline).toBeUndefined();
+  });
 });
 
 describe("applyTexts", () => {
