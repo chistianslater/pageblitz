@@ -158,6 +158,14 @@ export const commerceProcedures = {
           await updateWebsite(loaded.website.id, {
             websiteData: baseDoc as any,
           });
+          // Dieser Write invalidiert die SSR-Cache selbst NICHT — er ist
+          // darauf angewiesen, dass der nachfolgende applyFeatureFlags-Aufruf
+          // (unten) invalidateSsrCache() ausführt (siehe applyFeatures.ts).
+          // Reihenfolge nicht umbauen: würde applyFeatureFlags vor diesem
+          // Block laufen, würde die Cache-Invalidierung vor der entfernten
+          // Team-Sektion feuern, und Besucher bekämen bis zum nächsten
+          // Cache-Miss weiterhin die alte (mit Team-Sektion) ausgelieferte
+          // Seite.
         }
 
         const featurePatch = {

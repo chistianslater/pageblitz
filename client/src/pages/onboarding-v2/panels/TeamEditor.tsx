@@ -5,6 +5,7 @@ import {
   MAX_TEAM_MEMBERS,
   addMember,
   moveMember,
+  nextPhotoRowIndex,
   removeMember,
   updateMember,
   validateTeam,
@@ -47,7 +48,7 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
   const [photoRowIndex, setPhotoRowIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const upload = trpc.onboardingV2.uploadPhoto.useMutation();
-  const errors = validateTeam(members);
+  const errors = validateTeam(members, headline);
 
   const setMembers = (next: TeamMember[]) =>
     onChange({ headline, members: next });
@@ -177,7 +178,10 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
               data-variant="ghost"
               aria-label={`${memberLabel(member, i)} nach oben verschieben`}
               disabled={i === 0}
-              onClick={() => setMembers(moveMember(members, i, "up"))}
+              onClick={() => {
+                setMembers(moveMember(members, i, "up"));
+                setPhotoRowIndex(nextPhotoRowIndex(photoRowIndex, "move", i));
+              }}
             >
               ↑
             </button>
@@ -187,7 +191,10 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
               data-variant="ghost"
               aria-label={`${memberLabel(member, i)} nach unten verschieben`}
               disabled={i === members.length - 1}
-              onClick={() => setMembers(moveMember(members, i, "down"))}
+              onClick={() => {
+                setMembers(moveMember(members, i, "down"));
+                setPhotoRowIndex(nextPhotoRowIndex(photoRowIndex, "move", i));
+              }}
             >
               ↓
             </button>
@@ -196,7 +203,10 @@ export function TeamEditor({ token, value, onChange }: TeamEditorProps) {
               className="pb-studio-btn"
               data-variant="ghost"
               aria-label={`${memberLabel(member, i)} entfernen`}
-              onClick={() => setMembers(removeMember(members, i))}
+              onClick={() => {
+                setMembers(removeMember(members, i));
+                setPhotoRowIndex(nextPhotoRowIndex(photoRowIndex, "remove", i));
+              }}
             >
               Entfernen
             </button>

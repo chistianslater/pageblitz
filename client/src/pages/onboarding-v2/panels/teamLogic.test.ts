@@ -3,6 +3,7 @@ import {
   MAX_TEAM_MEMBERS,
   addMember,
   moveMember,
+  nextPhotoRowIndex,
   removeMember,
   updateMember,
   validateTeam,
@@ -102,6 +103,26 @@ describe("moveMember", () => {
   });
 });
 
+describe("nextPhotoRowIndex", () => {
+  test("Foto-Picker bleibt geschlossen, wenn er schon geschlossen war (move)", () => {
+    expect(nextPhotoRowIndex(null, "move", 1)).toBeNull();
+  });
+
+  test("Foto-Picker bleibt geschlossen, wenn er schon geschlossen war (remove)", () => {
+    expect(nextPhotoRowIndex(null, "remove", 0)).toBeNull();
+  });
+
+  test("Umsortieren schließt einen offenen Foto-Picker (auch bei anderer Zeile)", () => {
+    expect(nextPhotoRowIndex(2, "move", 0)).toBeNull();
+    expect(nextPhotoRowIndex(0, "move", 0)).toBeNull();
+  });
+
+  test("Entfernen schließt einen offenen Foto-Picker (auch bei anderer Zeile)", () => {
+    expect(nextPhotoRowIndex(2, "remove", 0)).toBeNull();
+    expect(nextPhotoRowIndex(0, "remove", 0)).toBeNull();
+  });
+});
+
 describe("validateTeam", () => {
   test("leerer Name → Fehlermeldung mit Positionsangabe", () => {
     const members: TeamMember[] = [{ name: "Anna" }, { name: "  " }];
@@ -115,5 +136,60 @@ describe("validateTeam", () => {
 
   test("leere Liste → keine Fehler", () => {
     expect(validateTeam([])).toEqual([]);
+  });
+
+  test("Name über 80 Zeichen → Fehlermeldung wie TeamPatchSchema", () => {
+    const members: TeamMember[] = [{ name: "A".repeat(81) }];
+    expect(validateTeam(members)).toEqual([
+      "Name bei Mitglied 1 ist zu lang (max. 80 Zeichen).",
+    ]);
+  });
+
+  test("Rolle über 80 Zeichen → Fehlermeldung wie TeamPatchSchema", () => {
+    const members: TeamMember[] = [{ name: "Anna", role: "R".repeat(81) }];
+    expect(validateTeam(members)).toEqual([
+      "Rolle bei Mitglied 1 ist zu lang (max. 80 Zeichen).",
+    ]);
+  });
+
+  test("Überschrift über 80 Zeichen → Fehlermeldung wie TeamPatchSchema", () => {
+    const members: TeamMember[] = [{ name: "Anna" }];
+    expect(validateTeam(members, "H".repeat(81))).toEqual([
+      "Überschrift ist zu lang (max. 80 Zeichen).",
+    ]);
+  });
+
+  test("unsichere imageUrl (javascript:) → Fehlermeldung wie SafeUrlSchema", () => {
+    const members: TeamMember[] = [
+      { name: "Anna", imageUrl: "javascript:alert(1)" },
+    ];
+    expect(validateTeam(members)).toEqual([
+      "Foto-URL bei Mitglied 1 ist ungültig.",
+    ]);
+  });
+
+  test("https-imageUrl ist gültig → keine Fehler", () => {
+    const members: TeamMember[] = [
+      { name: "Anna", imageUrl: "https://example.com/foto.jpg" },
+    ];
+    expect(validateTeam(members)).toEqual([]);
+  });
+
+  test("relative imageUrl (/uploads/...) ist gültig → keine Fehler", () => {
+    const members: TeamMember[] = [
+      { name: "Anna", imageUrl: "/uploads/foto.jpg" },
+    ];
+    expect(validateTeam(members)).toEqual([]);
+  });
+
+  test("mehrere Verstöße gleichzeitig ergeben mehrere Meldungen", () => {
+    const members: TeamMember[] = [
+      { name: "" },
+      { name: "Bert", role: "R".repeat(81) },
+    ];
+    expect(validateTeam(members)).toEqual([
+      "Name fehlt bei Mitglied 1.",
+      "Rolle bei Mitglied 2 ist zu lang (max. 80 Zeichen).",
+    ]);
   });
 });
