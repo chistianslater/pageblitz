@@ -23,7 +23,7 @@ async function skipCookieBanner(page: Page): Promise<void> {
   );
 }
 
-test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
+test("Landingpage: Style-Pack-Showcase zeigt geladene statische Vorschaubilder", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -54,42 +54,70 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene Demo-iframes", async ({
   // zum Laden anstoßen, die unteren Karten blieben ungeladen.
   await showcase.scrollIntoViewIfNeeded();
   await showcase.locator("article").last().scrollIntoViewIfNeeded();
-  // Zusätzlich alle Demo-iframes auf eager umstellen: der Lazy-Loading-
+  // Zusätzlich alle Vorschaubilder auf eager umstellen: der Lazy-Loading-
   // Schwellenwert des Browsers ist beim schnellen Durchscrollen nicht
-  // garantiert für jede Karte ausgelöst worden — ohne das hing der Test
+  // garantiert für jedes Bild ausgelöst worden — ohne das hing der Test
   // sporadisch im waitForFunction unten (Timeout statt Pixel-Diff).
   await page.evaluate(() => {
     document
-      .querySelectorAll<HTMLIFrameElement>('iframe[src^="/demo/"]')
-      .forEach(frame => {
-        frame.loading = "eager";
+      .querySelectorAll<HTMLImageElement>('img[src^="/pack-previews/"]')
+      .forEach(img => {
+        img.loading = "eager";
       });
   });
 
-  // Alle 14 Pack-Demo-iframes müssen tatsächlich fertig geladen sein, bevor
-  // der Screenshot entsteht — sonst zeigt die Baseline leere/teilweise
-  // geladene Karten je nach Netzwerk-Timing (ein einzelnes waitForResponse
-  // auf "irgendein /demo/" reichte nicht: die ersten Karten sind meist
-  // deutlich früher fertig als die letzten).
+  // Alle 14 statischen Pack-Vorschaubilder müssen tatsächlich fertig
+  // geladen sein, bevor der Screenshot entsteht (complete + naturalWidth >
+  // 0 statt nur `complete`, da ein Bild mit 404 ebenfalls "complete" wird,
+  // aber naturalWidth 0 behält).
   await page.waitForFunction(
     () => {
-      const frames = Array.from(
-        document.querySelectorAll<HTMLIFrameElement>('iframe[src^="/demo/"]')
+      const images = Array.from(
+        document.querySelectorAll<HTMLImageElement>(
+          'img[src^="/pack-previews/"]'
+        )
       );
       return (
-        frames.length === 14 &&
-        frames.every(
-          frame =>
-            frame.contentDocument?.readyState === "complete" &&
-            (frame.contentDocument.body?.children.length ?? 0) > 0
-        )
+        images.length === 14 &&
+        images.every(img => img.complete && img.naturalWidth > 0)
       );
     },
     undefined,
-    // 14 SSR-Renderings auf dem tsx-Dev-Server (ohne Cache) brauchen auf
-    // langsamen Maschinen deutlich länger als 20 s.
-    { timeout: 60_000 }
+    { timeout: 30_000 }
   );
 
   await expect(showcase).toHaveScreenshot("pack-showcase.png");
+});
+
+test("Landingpage: Klick auf eine Pack-Karte öffnet die Live-Vorschau im Modal mit Fokusfalle", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await skipCookieBanner(page);
+
+  await page.goto("/");
+
+  const showcase = page.locator("#showcase");
+  await showcase.scrollIntoViewIfNeeded();
+
+  const firstCard = showcase.locator("article").first();
+  await firstCard.getByRole("button", { name: "Ansehen" }).click();
+
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  // Das iframe wird erst beim Öffnen des Modals geladen, nicht vorher.
+  await expect(dialog.locator("iframe")).toHaveCount(1);
+
+  // Fokus liegt beim Öffnen auf dem Schließen-Button (Anfang der Fokusfalle).
+  await expect(
+    page.getByRole("button", { name: "Vorschau schließen" })
+  ).toBeFocused();
+
+  // Esc schließt das Modal und gibt den Fokus an den Auslöser zurück.
+  await page.keyboard.press("Escape");
+  await expect(dialog).not.toBeVisible();
+  await expect(
+    firstCard.getByRole("button", { name: "Ansehen" })
+  ).toBeFocused();
 });

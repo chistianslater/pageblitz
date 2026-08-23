@@ -14,28 +14,40 @@ describe("PackShowcase", () => {
     expect(articleCount).toBe(14);
   });
 
-  test("jede Karte verlinkt/lädt die öffentliche Demo-Route /demo/<pack> und zeigt Name + Essenz", () => {
+  test("jede Karte zeigt das statische Vorschaubild (client/public/pack-previews/<pack>.webp) sowie Name + Essenz", () => {
     for (const packId of PACK_IDS) {
       const constitution = getConstitution(packId);
-      expect(html).toContain(`/demo/${packId}`);
+      expect(html).toContain(`/pack-previews/${packId}.webp`);
       expect(html).toContain(constitution.name);
       expect(html).toContain(constitution.essence);
     }
   });
 
-  test("iframes sind lazy, nicht fokussierbar und klickunempfindlich (dekorative Vorschau)", () => {
+  test("Vorschaubilder sind lazy, mit async decoding und expliziten Maßen (kein Layout-Shift)", () => {
+    const imgCount = (html.match(/<img\b/g) ?? []).length;
+    expect(imgCount).toBe(14);
     expect(html).toContain('loading="lazy"');
-    expect(html).toMatch(/<iframe[^>]*tabindex="-1"/);
-    expect(html).toContain("pointer-events-none");
+    expect(html).toContain('decoding="async"');
+    expect(html).toContain('width="800"');
+    expect(html).toContain('height="500"');
   });
 
-  test("kein interaktives <iframe> innerhalb des <a>-Links (gültiges HTML, iframe liegt dekorativ daneben)", () => {
-    expect(html).not.toMatch(/<a\b[^>]*>(?:(?!<\/a>)[\s\S])*<iframe/);
+  test("kein <iframe> im Initialrender (Live-Demo lädt erst im Modal nach Klick)", () => {
+    expect(html).not.toContain("<iframe");
   });
 
-  test("'Ansehen'-Link öffnet in neuem Tab mit sicherem rel-Attribut", () => {
-    expect(html).toContain('target="_blank"');
-    expect(html).toContain('rel="noopener noreferrer"');
+  test("jede Karte hat einen Öffnen-Button (Bild) und einen 'Ansehen'-Button, die Live-Vorschau öffnen — kein sofortiges target=_blank auf der Karte selbst", () => {
+    for (const packId of PACK_IDS) {
+      const constitution = getConstitution(packId);
+      expect(html).toContain(
+        `aria-label="Live-Vorschau ${constitution.name} öffnen"`
+      );
+    }
+    const ansehenCount = (html.match(/>Ansehen</g) ?? []).length;
+    expect(ansehenCount).toBe(14);
+    // "Ansehen" ist ein Button, kein <a target="_blank"> mehr — das Öffnen
+    // in neuem Tab passiert jetzt nur noch über den Link im Modal.
+    expect(html).not.toContain('target="_blank"');
   });
 
   test("Heading-Hierarchie: genau ein <h2> (Sektionsüberschrift), Kicker ist kein Heading, Karten nutzen <h3> (kein Sprung h2→h4)", () => {
