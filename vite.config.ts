@@ -56,7 +56,7 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
   const logPath = path.join(LOG_DIR, `${source}.log`);
 
   // Format entries with timestamps
-  const lines = entries.map((entry) => {
+  const lines = entries.map(entry => {
     const ts = new Date().toISOString();
     return `[${ts}] ${JSON.stringify(entry)}`;
   });
@@ -132,7 +132,7 @@ function vitePluginManusDebugCollector(): Plugin {
         }
 
         let body = "";
-        req.on("data", (chunk) => {
+        req.on("data", chunk => {
           body += chunk.toString();
         });
 
@@ -179,11 +179,30 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/") || id.includes("node_modules/scheduler/")) return "vendor-react";
-          if (id.includes("node_modules/framer-motion/")) return "vendor-motion";
-          if (id.includes("node_modules/@radix-ui/") || id.includes("node_modules/@tanstack/")) return "vendor-ui";
-          if (id.includes("node_modules/stripe") || id.includes("node_modules/@stripe/")) return "vendor-stripe";
-          if (id.includes("/components/layouts/PremiumLayoutsV2") || (id.includes("/components/layouts/") && !id.includes("WebsiteRenderer"))) return "layouts";
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/scheduler/")
+          )
+            return "vendor-react";
+          if (id.includes("node_modules/framer-motion/"))
+            return "vendor-motion";
+          if (
+            id.includes("node_modules/@radix-ui/") ||
+            id.includes("node_modules/@tanstack/")
+          )
+            return "vendor-ui";
+          if (
+            id.includes("node_modules/stripe") ||
+            id.includes("node_modules/@stripe/")
+          )
+            return "vendor-stripe";
+          if (
+            id.includes("/components/layouts/PremiumLayoutsV2") ||
+            (id.includes("/components/layouts/") &&
+              !id.includes("WebsiteRenderer"))
+          )
+            return "layouts";
         },
       },
     },
