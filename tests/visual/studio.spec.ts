@@ -465,4 +465,55 @@ test.describe("Studio", () => {
     ).toBeVisible({ timeout: 15000 });
     await expect(preview.getByText("Erstberatung")).toBeVisible();
   });
+
+  test("Kategorie-Rückfrage: Seed ohne Branche → „Was macht dein Betrieb?“ → Vorschlag wählen → Generierung startet → Studio (Task 5)", async ({
+    page,
+    request,
+  }) => {
+    // Der Test enthält eine echte v2-Generierung (mit PB_LLM_MOCK, aber
+    // durch PB_V2_PHASE_DELAY_MS künstlich verlangsamt) — das Standard-
+    // Timeout von 30 s ist dafür zu knapp bemessen.
+    test.slow();
+    await skipCookieBanner(page);
+    // Eigener Seed-Slug (studio-seed-werkbank-nocategory) mit Website OHNE
+    // Dokument und Business ohne Kategorie — der einzige Zustand, in dem die
+    // Rückfrage erscheint (state.needsCategory, server/onboardingV2/state.ts).
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&needsCategory=1&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+
+    // Der Schritt erscheint statt des Generierungs-Screens; ensureGeneration
+    // wurde nicht gekickt (useStudioState prüft needsCategory).
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Was macht dein Betrieb?" })
+    ).toBeVisible();
+    const input = page.getByRole("combobox", { name: "Branche" });
+    const weiter = page.getByRole("button", { name: "Weiter" });
+    await expect(weiter).toBeDisabled();
+
+    // Tippen filtert die Vorschlagsliste (shared/gmbCategories.ts); Klick
+    // übernimmt den Vorschlag ins Feld. "Schreiner" kommt in der Liste genau
+    // einmal vor (wie im StartPage-Test) und ist als Mock-Generierungs-
+    // Kategorie im E2E bereits erprobt (startpage-to-studio.spec.ts).
+    await input.fill("Schreiner");
+    await page.getByRole("option", { name: "Schreiner" }).click();
+    await expect(input).toHaveValue("Schreiner");
+    await weiter.click();
+
+    // setCategory persistiert die Branche und startet den v2-Job — die
+    // Zeitmaschine (Task 4) übernimmt, danach das fertige Studio (mit
+    // PB_LLM_MOCK=1 + PB_V2_PHASE_DELAY_MS aus playwright.config.ts).
+    await expect(page.getByText("Deine Website entsteht")).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(
+      page.getByRole("button", { name: /Stil/ }).first()
+    ).toBeVisible({ timeout: 60_000 });
+    await expect(
+      page.locator('iframe[title="Live-Vorschau deiner Website"]')
+    ).toBeVisible();
+  });
 });

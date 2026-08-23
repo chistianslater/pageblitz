@@ -112,6 +112,32 @@ describe("computeRefetchInterval", () => {
       })
     ).toBe(false);
   });
+  test("Kategorie-Rückfrage (needsCategory) ohne aktiven Job → kein Polling (Task 5)", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: null,
+        needsCategory: true,
+      })
+    ).toBe(false);
+    // Alter, abgeschlossener Job (z. B. zurückgesetzter Seed) ändert nichts.
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "completed" },
+        needsCategory: true,
+      })
+    ).toBe(false);
+  });
+  test("needsCategory mit aktivem Job → pollt (setCategory hat die Generierung gestartet)", () => {
+    expect(
+      computeRefetchInterval(false, {
+        doc: null,
+        job: { status: "pending" },
+        needsCategory: true,
+      })
+    ).toBe(1500);
+  });
   test("legacy-Dokument ohne Job → kein Polling", () => {
     expect(
       computeRefetchInterval(false, { doc: null, job: null, legacy: true })

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
 import { useStudioState } from "./useStudioState";
+import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { PreviewFrame, previewPath } from "./PreviewFrame";
@@ -99,6 +100,24 @@ export default function StudioPage({ token }: { token: string }) {
           onRegenerate={studio.forceRegenerate}
           pending={studio.retrying}
           error={studio.ensureError}
+        />
+      </div>
+    );
+  }
+  // Kategorie-Rückfrage (Plan B7 Task 5): Liefert GMB keine belastbare
+  // Branche (needsCategory), erscheint VOR der Zeitmaschine der Schritt
+  // „Was macht dein Betrieb?" — ensureGeneration startet nicht (Server
+  // lehnt ab, useStudioState kickt gar nicht erst); setCategory persistiert
+  // die Branche und stößt die Generierung an. Läuft wider Erwarten schon
+  // ein Job, hat der Generierungs-Screen Vorrang.
+  if (state.needsCategory && !generationInProgress(state.job)) {
+    return (
+      <div className="pb-studio">
+        <CategoryStep
+          businessName={state.businessName}
+          onSubmit={studio.submitCategory}
+          pending={studio.categoryPending}
+          error={studio.categoryError}
         />
       </div>
     );

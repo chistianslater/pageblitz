@@ -5,6 +5,7 @@ import {
   createGenerationJob,
   getBusinessById,
   getGenerationJobByWebsiteId,
+  updateBusiness,
 } from "../db";
 import { runWebsiteGenerationV2Job } from "../generationV2/runJob";
 import { getConstitution } from "../../shared/stylePacks";
@@ -16,6 +17,35 @@ import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
 import { contentProcedures } from "./routerContent";
 import { commerceProcedures } from "./routerCommerce";
 import { aiProcedures } from "./routerAi";
+
+/**
+ * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
+ * hinter dem In-Flight-Lock pro websiteId (Finding #4), ein bereits
+ * laufender Job wird zurückgegeben statt doppelt gestartet. Geteilt von
+ * ensureGeneration und setCategory (Plan B7 Task 5).
+ */
+function startGenerationJob(
+  websiteId: number
+): Promise<{ jobId: number; status: "pending" | "processing" }> {
+  return withEnsureLock(websiteId, async () => {
+    const existing = await getGenerationJobByWebsiteId(websiteId);
+    if (
+      existing &&
+      (existing.status === "pending" || existing.status === "processing")
+    ) {
+      return { jobId: existing.id, status: existing.status };
+    }
+    const jobId = await createGenerationJob({
+      websiteId,
+      status: "pending",
+      progress: 0,
+    });
+    runWebsiteGenerationV2Job(jobId, websiteId).catch(err =>
+      console.error(`[onboardingV2] Job ${jobId} unerwartet abgebrochen:`, err)
+    );
+    return { jobId, status: "pending" as const };
+  });
+}
 
 const coreProcedures = {
   getState: publicProcedure.input(tokenInput).query(async ({ input, ctx }) => {
@@ -59,27 +89,56 @@ const coreProcedures = {
           });
         }
       }
-      return withEnsureLock(website.id, async () => {
-        const existing = await getGenerationJobByWebsiteId(website.id);
-        if (
-          existing &&
-          (existing.status === "pending" || existing.status === "processing")
-        ) {
-          return { jobId: existing.id, status: existing.status };
+      // Kategorie-Rückfrage (Plan B7 Task 5, Spec §2.1): Ohne belastbare
+      // Branche startet die Generierung nicht automatisch — der Client zeigt
+      // zuerst „Was macht dein Betrieb?" und setCategory startet den Job.
+      // Nur für frische Previews ohne jedes Dokument; die Legacy-
+      // Regenerierung (force) bleibt unberührt, dort fängt runJob den
+      // Leerfall mit dem Fallback „Dienstleistung" ab.
+      if (!hasLegacyDoc) {
+        const business = await getBusinessById(website.businessId);
+        if (!(business?.category ?? "").trim()) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Bitte gib zuerst an, was dein Betrieb macht — dann erstellen wir deine Website.",
+          });
         }
-        const jobId = await createGenerationJob({
-          websiteId: website.id,
-          status: "pending",
-          progress: 0,
+      }
+      return startGenerationJob(website.id);
+    }),
+
+  /**
+   * Kategorie-Rückfrage (Plan B7 Task 5, Spec §2.1): Liefert die GMB-Kette
+   * (Task 1) keine belastbare Branche, bleibt `businesses.category` leer und
+   * das Studio fragt vor der Generierung nach. Diese Mutation persistiert
+   * die Antwort und startet anschließend denselben Job wie ensureGeneration
+   * (idempotent, In-Flight-Lock). Ownership wie überall über
+   * loadStudioWebsite.
+   */
+  setCategory: publicProcedure
+    .input(tokenInput.extend({ category: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const category = input.category.trim();
+      if (category.length < 2 || category.length > 60) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Bitte gib an, was dein Betrieb macht (2–60 Zeichen).",
         });
-        runWebsiteGenerationV2Job(jobId, website.id).catch(err =>
-          console.error(
-            `[onboardingV2] Job ${jobId} unerwartet abgebrochen:`,
-            err
-          )
-        );
-        return { jobId, status: "pending" as const };
-      });
+      }
+      const { website, doc, hasLegacyDoc } = await loadStudioWebsite(
+        input.token,
+        ctx.user
+      );
+      if (doc || hasLegacyDoc) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Die Website wurde bereits erstellt — die Branche kannst du hier nicht mehr ändern.",
+        });
+      }
+      await updateBusiness(website.businessId, { category });
+      return startGenerationJob(website.id);
     }),
 
   getStyleCandidates: publicProcedure

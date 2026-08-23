@@ -7,6 +7,7 @@ import {
   createOnboarding,
   getOnboardingByWebsiteId,
   getWebsiteBySlug,
+  updateBusiness,
   updateOnboarding,
   updateWebsite,
   upsertBusiness,
@@ -37,8 +38,17 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
     return;
   }
   const packId = pack as PackId;
-  const slug = `studio-seed-${packId}-${fixture}`;
-  const doc = { ...getFixture(packId, fixture), slug };
+  // Variante ohne Branche (Plan B7 Task 5): Website OHNE Dokument + Business
+  // mit leerer Kategorie → das Studio zeigt die Kategorie-Rückfrage
+  // („Was macht dein Betrieb?") vor der Generierung. `pack`/`fixture`
+  // liefern hier nur den Business-Namen; eigener Slug + eigene placeId,
+  // damit die normalen Seeds (geteiltes Business pro Pack) unberührt bleiben.
+  const needsCategory = req.query.needsCategory === "1";
+  const slug = needsCategory
+    ? `studio-seed-${packId}-nocategory`
+    : `studio-seed-${packId}-${fixture}`;
+  const fixtureDoc = getFixture(packId, fixture);
+  const doc = needsCategory ? null : { ...fixtureDoc, slug };
 
   let websiteId: number;
   let token: string;
@@ -52,6 +62,13 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
       status: "preview",
       previewToken: token,
     });
+    // Ausnahme nocategory-Variante: Der vorige Testlauf hat die Kategorie
+    // über onboardingV2.setCategory gesetzt (und die Generierung das
+    // Dokument geschrieben) — beides muss für den nächsten Lauf zurück auf
+    // den Ausgangszustand (Kategorie leer, Dokument oben bereits genullt).
+    if (needsCategory) {
+      await updateBusiness(existing.businessId, { category: "" });
+    }
     const onboarding = await getOnboardingByWebsiteId(websiteId);
     if (onboarding)
       await updateOnboarding(websiteId, {
@@ -86,10 +103,12 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
       });
   } else {
     const businessId = await upsertBusiness({
-      name: doc.businessName,
+      name: fixtureDoc.businessName,
       slug,
-      placeId: `self-studio-seed-${packId}`,
-      category: doc.businessCategory ?? "",
+      placeId: needsCategory
+        ? `self-studio-seed-${packId}-nocategory`
+        : `self-studio-seed-${packId}`,
+      category: needsCategory ? "" : (fixtureDoc.businessCategory ?? ""),
       address: "",
       phone: "",
       email: null,

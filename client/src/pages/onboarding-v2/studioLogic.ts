@@ -62,6 +62,8 @@ export interface RefetchIntervalDataLike {
   job: { status: JobStatus } | null;
   /** true = websiteData ist ein v1-Dokument; Studio zeigt eine Meldung statt Generierungs-Screen — es entsteht nie ein v2-Job, also nie Polling (Finding #3). */
   legacy?: boolean;
+  /** true = Kategorie-Rückfrage aktiv (Plan B7 Task 5) — bis der Nutzer die Branche wählt, ändert sich serverseitig nichts, also kein Polling. */
+  needsCategory?: boolean;
 }
 
 /**
@@ -86,6 +88,10 @@ export function computeRefetchInterval(
   const jobActive =
     !!job && (job.status === "pending" || job.status === "processing");
   if (data?.legacy) return jobActive ? 1500 : false;
+  // Kategorie-Rückfrage (Plan B7 Task 5): Solange der Nutzer die Branche
+  // noch nicht gewählt hat, startet kein Job — Polling wäre Leerlauf.
+  // Nach setCategory stößt der manuelle Refetch das Polling wieder an.
+  if (data?.needsCategory && !jobActive) return false;
   // Aktiver Job pollt IMMER weiter — seit dem Zeitmaschinen-Zwischenstand
   // (Plan B7 Task 4) existiert das Dokument schon während der Generierung;
   // ohne diese Bedingung würde das Polling nach dem Interim-Write stoppen

@@ -15,6 +15,7 @@ vi.mock("../db", async importOriginal => {
     getOnboardingByWebsiteId: vi.fn(),
     updateOnboarding: vi.fn().mockResolvedValue(undefined),
     updateWebsite: vi.fn().mockResolvedValue(undefined),
+    updateBusiness: vi.fn().mockResolvedValue(undefined),
     getGenerationJobByWebsiteId: vi.fn(),
     createGenerationJob: vi.fn().mockResolvedValue(501),
     createOnboarding: vi.fn().mockResolvedValue(999),
@@ -276,6 +277,177 @@ describe("onboardingV2.ensureGeneration", () => {
     expect(mockedDb.createGenerationJob).toHaveBeenCalledTimes(1);
     expect(a.jobId).toBe(b.jobId);
     expect(a.jobId).toBe(501);
+  });
+});
+
+describe("onboardingV2 — Kategorie-Rückfrage (Plan B7 Task 5)", () => {
+  /** Frische Preview ohne Dokument, deren Business keine Kategorie hat. */
+  function seedNeedsCategory() {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "preview",
+      businessId: 7,
+      websiteData: null,
+      customerEmail: null,
+    } as any);
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Schau und Horch",
+      category: null,
+    } as any);
+  }
+
+  describe("getState.needsCategory", () => {
+    test("kein Dokument + leere Kategorie → true", async () => {
+      seedNeedsCategory();
+      const s = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.getState({ token: "tok" });
+      expect(s.needsCategory).toBe(true);
+      // Whitespace-Kategorie zählt ebenfalls als leer.
+      mockedDb.getBusinessById.mockResolvedValue({
+        id: 7,
+        name: "X",
+        category: "   ",
+      } as any);
+      const s2 = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.getState({ token: "tok" });
+      expect(s2.needsCategory).toBe(true);
+    });
+    test("kein Dokument, aber Kategorie vorhanden → false", async () => {
+      seedNeedsCategory();
+      mockedDb.getBusinessById.mockResolvedValue({
+        id: 7,
+        name: "Brandt",
+        category: "Tischler",
+      } as any);
+      const s = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.getState({ token: "tok" });
+      expect(s.needsCategory).toBe(false);
+    });
+    test("v2-Dokument vorhanden → false, auch bei leerer Kategorie (nach der Generierung ist die Frage sinnlos)", async () => {
+      mockedDb.getBusinessById.mockResolvedValue({
+        id: 7,
+        name: "Brandt",
+        category: null,
+      } as any);
+      const s = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.getState({ token: "tok" });
+      expect(s.needsCategory).toBe(false);
+    });
+    test("Legacy-Dokument (v1) → false (keine Sackgasse vor der LegacyCard)", async () => {
+      mockedDb.getWebsiteByToken.mockResolvedValue({
+        id: 42,
+        slug: "s",
+        status: "preview",
+        businessId: 7,
+        websiteData: { hero: {} },
+        customerEmail: null,
+      } as any);
+      mockedDb.getBusinessById.mockResolvedValue({
+        id: 7,
+        name: "Brandt",
+        category: null,
+      } as any);
+      const s = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.getState({ token: "tok" });
+      expect(s.needsCategory).toBe(false);
+    });
+  });
+
+  describe("ensureGeneration bei needsCategory", () => {
+    test("kein Auto-Start: BAD_REQUEST mit deutscher Meldung, kein Job", async () => {
+      seedNeedsCategory();
+      await expect(
+        appRouter
+          .createCaller(ctx())
+          .onboardingV2.ensureGeneration({ token: "tok" })
+      ).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: expect.stringContaining("was dein Betrieb macht"),
+      });
+      expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+      expect(runWebsiteGenerationV2Job).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("setCategory", () => {
+    test("persistiert getrimmte Kategorie und startet die Generierung", async () => {
+      seedNeedsCategory();
+      const r = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.setCategory({
+          token: "tok",
+          category: "  Werbeagentur  ",
+        });
+      expect(mockedDb.updateBusiness).toHaveBeenCalledWith(7, {
+        category: "Werbeagentur",
+      });
+      expect(r).toEqual({ jobId: 501, status: "pending" });
+      expect(runWebsiteGenerationV2Job).toHaveBeenCalledWith(501, 42);
+    });
+    test("bereits laufender Job → wird zurückgegeben, kein Doppelstart", async () => {
+      seedNeedsCategory();
+      mockedDb.getGenerationJobByWebsiteId.mockResolvedValue({
+        id: 88,
+        status: "processing",
+        progress: 20,
+        error: null,
+      } as any);
+      const r = await appRouter
+        .createCaller(ctx())
+        .onboardingV2.setCategory({ token: "tok", category: "Werbeagentur" });
+      expect(r).toEqual({ jobId: 88, status: "processing" });
+      expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+    });
+    test("Validierung: zu kurz / zu lang → BAD_REQUEST mit deutscher Meldung, nichts persistiert", async () => {
+      seedNeedsCategory();
+      for (const category of ["F", "  x ", "A".repeat(61)]) {
+        await expect(
+          appRouter
+            .createCaller(ctx())
+            .onboardingV2.setCategory({ token: "tok", category })
+        ).rejects.toMatchObject({
+          code: "BAD_REQUEST",
+          message: expect.stringContaining("2–60 Zeichen"),
+        });
+      }
+      expect(mockedDb.updateBusiness).not.toHaveBeenCalled();
+      expect(mockedDb.createGenerationJob).not.toHaveBeenCalled();
+    });
+    test("v2-Dokument vorhanden → BAD_REQUEST, keine Änderung", async () => {
+      await expect(
+        appRouter
+          .createCaller(ctx())
+          .onboardingV2.setCategory({ token: "tok", category: "Werbeagentur" })
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(mockedDb.updateBusiness).not.toHaveBeenCalled();
+    });
+    test("Ownership: verkaufte Website + fremder Nutzer → FORBIDDEN", async () => {
+      mockedDb.getWebsiteByToken.mockResolvedValue({
+        id: 42,
+        slug: "s",
+        status: "sold",
+        businessId: 7,
+        websiteData: null,
+        customerEmail: null,
+      } as any);
+      mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+        userId: 9,
+        checkoutEmail: null,
+      } as any);
+      await expect(
+        appRouter
+          .createCaller(ctx())
+          .onboardingV2.setCategory({ token: "tok", category: "Werbeagentur" })
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(mockedDb.updateBusiness).not.toHaveBeenCalled();
+    });
   });
 });
 

@@ -70,6 +70,16 @@ export interface StudioState {
   /** website.slug — ergibt die öffentliche URL `https://<slug>.pageblitz.de` im Live-Modus. */
   slug: string;
   job: StudioJob | null;
+  /**
+   * true = die Business-Kategorie ist leer/null (GMB-Kette aus Plan B7
+   * Task 1 ergab nichts Belastbares) UND es existiert noch kein v2-Dokument
+   * — das Studio zeigt dann die Kategorie-Rückfrage „Was macht dein
+   * Betrieb?" vor der Generierung (Plan B7 Task 5, Spec §2.1). Nach der
+   * Generierung (Dokument vorhanden) ist die Frage sinnlos; Legacy-Websites
+   * (v1) sind ausgenommen, damit die Legacy-Regenerierung nicht in einer
+   * Sackgasse endet (dort fängt runJob den Leerfall mit „Dienstleistung" ab).
+   */
+  needsCategory: boolean;
   checklist: ChecklistItem[];
   checkoutReady: boolean;
   customerEmail: string | null;
@@ -206,6 +216,7 @@ export async function buildState(
           error: job.error ?? null,
         }
       : null,
+    needsCategory: !doc && !hasLegacyDoc && !(business?.category ?? "").trim(),
     checklist,
     checkoutReady: isCheckoutReady(checklist, !!website.customerEmail),
     customerEmail: website.customerEmail ?? null,

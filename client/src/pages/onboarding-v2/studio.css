@@ -724,3 +724,75 @@
   border-color: var(--st-accent);
   border-style: dashed;
 }
+
+/* Kategorie-Rückfrage vor der Generierung (Plan B7 Task 5): „Was macht dein
+   Betrieb?" — Suchfeld als Combobox mit Vorschlagsliste im Studio-Look. */
+.pb-studio-cat {
+  max-width: 34rem;
+}
+.pb-studio-cat-hint {
+  color: var(--st-muted);
+  margin-top: 0.75rem;
+}
+.pb-studio-cat-field {
+  position: relative;
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.pb-studio-cat-field label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--st-muted);
+  margin-bottom: 0.4rem;
+}
+.pb-studio-cat-field input {
+  width: 100%;
+  font: inherit;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--st-line);
+  border-radius: 0.6rem;
+  background: var(--st-surface);
+  color: var(--st-ink);
+}
+.pb-studio-cat-field input:focus {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 1px;
+  border-color: var(--st-accent);
+}
+.pb-studio-cat-list {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0.25rem;
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  z-index: 5;
+  background: var(--st-surface);
+  border: 1px solid var(--st-line);
+  border-radius: 0.6rem;
+  box-shadow: 0 10px 28px rgb(29 26 23 / 14%);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.pb-studio-cat-list [role="option"] {
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+.pb-studio-cat-list [role="option"]:hover,
+.pb-studio-cat-list [role="option"][data-active] {
+  background: var(--st-canvas);
+}
+.pb-studio-cat-list [role="option"][data-active] {
+  outline: 2px solid var(--st-accent);
+  outline-offset: -2px;
+}
+.pb-studio-cat-error {
+  color: var(--st-warn);
+  margin-top: 1rem;
+}
+.pb-studio-cat-submit {
+  margin-top: 1.5rem;
+}

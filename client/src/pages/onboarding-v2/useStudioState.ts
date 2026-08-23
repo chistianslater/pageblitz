@@ -34,7 +34,16 @@ export function useStudioState(token: string) {
     }
   }, [query.data]);
   useEffect(() => {
-    if (kicked.current || !query.data || query.data.doc || query.data.legacy)
+    // needsCategory: Der Server lehnt ensureGeneration ohne Branche ab
+    // (Plan B7 Task 5) — der Auto-Kick unterbleibt, bis setCategory die
+    // Kategorie persistiert und die Generierung selbst gestartet hat.
+    if (
+      kicked.current ||
+      !query.data ||
+      query.data.doc ||
+      query.data.legacy ||
+      query.data.needsCategory
+    )
       return;
     kicked.current = true;
     ensure.mutate({ token }, { onSuccess: () => query.refetch() });
@@ -59,6 +68,21 @@ export function useStudioState(token: string) {
     ensure.mutate({ token, force: true }, { onSuccess: () => query.refetch() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ensure, token]);
+  // Kategorie-Rückfrage (Plan B7 Task 5): persistiert die Branche und
+  // startet serverseitig die Generierung — danach zeigt der Refetch den
+  // laufenden Job und StudioPage wechselt zum Generierungs-Screen.
+  const setCategory = trpc.onboardingV2.setCategory.useMutation();
+  const submitCategory = useCallback(
+    (category: string) => {
+      ensureFailedRef.current = false;
+      setCategory.mutate(
+        { token, category },
+        { onSuccess: () => query.refetch() }
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setCategory, token]
+  );
   return {
     state: query.data,
     isLoading: query.isLoading,
@@ -71,5 +95,8 @@ export function useStudioState(token: string) {
     previewVersion,
     bumpPreview,
     justGenerated: sawGeneration.current,
+    submitCategory,
+    categoryPending: setCategory.isPending,
+    categoryError: setCategory.error?.message ?? null,
   };
 }

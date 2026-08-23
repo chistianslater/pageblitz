@@ -87,6 +87,7 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
     status: "preview",
     slug: "testfirma",
     job: null,
+    needsCategory: false,
     checklist: [
       {
         id: "style",
