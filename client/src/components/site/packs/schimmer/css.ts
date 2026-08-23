@@ -9,6 +9,10 @@ export const SCHIMMER_CSS = `
 .pb-sc-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-sc-hero{position:relative;z-index:1;padding:64px 24px 80px;overflow:visible}
 .pb-sc-hero-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:center;max-width:1200px}
+/* Ohne Hero-Bild (hero.imageUrl optional) darf die rechte 5fr-Spalte nicht
+   leer bleiben (Review-Fund W1): einziges Kind → Glaskarte über beide
+   Spalten, begrenzte Breite. */
+.pb-sc-hero-grid>.pb-sc-glass:only-child{grid-column:1/-1;max-width:640px}
 .pb-sc-orbs{position:absolute;z-index:0;pointer-events:none}
 .pb-sc-orbs-tr{top:-64px;right:-80px}
 .pb-sc-orbs-bl{bottom:-56px;left:-80px}

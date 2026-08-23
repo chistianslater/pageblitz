@@ -13,6 +13,11 @@ export const SALON_NOIR_CSS = `
 .pb-sn-copy{position:relative;z-index:2;min-width:0}
 .pb-sn-eyebrow{letter-spacing:.3em;text-transform:uppercase;font-size:10px;color:var(--pb-accent);margin:0 0 16px}
 .pb-sn-hero h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:var(--pb-hero-size);line-height:1.08;letter-spacing:-.01em;max-width:14ch;margin:0}
+/* Signatur "headline-image-overlap" (Verfassung): kontrollierte Überlappung der
+   kursiven Headline ins Bild-Panel — begrenzt (64px) und nur auf breiten
+   Viewports, damit die Welle-1-Ausrichtung (linksbündig auf Eyebrow-Kante)
+   erhalten bleibt; z-index über dem Panel, unter Nav/Inseln. */
+@media(min-width:1160px){.pb-sn-hero h1{position:relative;z-index:2;margin-right:-64px;max-width:16ch}}
 .pb-sn-sub{margin-top:18px;color:var(--pb-muted);font-size:15px;max-width:44ch}
 .pb-salon-noir a.pb-sn-cta{display:inline-block;margin-top:28px;border:1px solid var(--pb-accent);color:var(--pb-accent);background:transparent;padding:13px 30px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .15s,color .15s}
 .pb-sn-cta:hover,.pb-sn-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
