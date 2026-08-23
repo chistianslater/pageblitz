@@ -2062,7 +2062,7 @@ const ZUNFT_FULL: WebsiteDataV2 = {
       street: "Zunftgasse 6",
       zip: "86150",
       city: "Augsburg",
-      openingHours: [{ day: "Di–Sa", hours: "ab 6:00 Uhr" }],
+      openingHours: [{ day: "Di–Fr", hours: "6:00 – 13:00 Uhr" }, { day: "Sa", hours: "6:00 – 12:30 Uhr" }],
     },
   ],
   seo: {
@@ -2117,7 +2117,7 @@ const ZUNFT_MINIMAL: WebsiteDataV2 = {
       street: "Zunftgasse 6",
       zip: "86150",
       city: "Augsburg",
-      openingHours: [{ day: "Di–Sa", hours: "ab 6:00 Uhr" }],
+      openingHours: [{ day: "Di–Fr", hours: "6:00 – 13:00 Uhr" }, { day: "Sa", hours: "6:00 – 12:30 Uhr" }],
     },
   ],
   seo: {
