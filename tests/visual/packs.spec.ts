@@ -68,21 +68,49 @@ for (const pack of PACKS)
  */
 const CTA_COLOR_CHECKS: Record<
   PackId,
-  { selector: string; prop: "background-color" | "color"; role: "accent" | "ink" }
+  {
+    selector: string;
+    prop: "background-color" | "color";
+    role: "accent" | "ink";
+  }
 > = {
-  werkbank: { selector: "a.pb-wb-cta", prop: "background-color", role: "accent" },
+  werkbank: {
+    selector: "a.pb-wb-cta",
+    prop: "background-color",
+    role: "accent",
+  },
   kanzlei: { selector: "a.pb-kz-link", prop: "color", role: "accent" },
-  morgenlicht: { selector: "a.pb-ml-cta", prop: "background-color", role: "accent" },
+  morgenlicht: {
+    selector: "a.pb-ml-cta",
+    prop: "background-color",
+    role: "accent",
+  },
   gusto: { selector: "a.pb-gu-cta", prop: "background-color", role: "accent" },
   patina: { selector: "a.pb-pa-cta", prop: "background-color", role: "accent" },
   "salon-noir": { selector: "a.pb-sn-cta", prop: "color", role: "accent" },
-  marktplatz: { selector: "a.pb-mp-cta", prop: "background-color", role: "accent" },
-  landgut: { selector: "a.pb-lg-cta", prop: "background-color", role: "accent" },
+  marktplatz: {
+    selector: "a.pb-mp-cta",
+    prop: "background-color",
+    role: "accent",
+  },
+  landgut: {
+    selector: "a.pb-lg-cta",
+    prop: "background-color",
+    role: "accent",
+  },
   atelier: { selector: "a.pb-at-lnk", prop: "color", role: "ink" },
-  klarwerk: { selector: "a.pb-kw-hero-cta", prop: "background-color", role: "accent" },
+  klarwerk: {
+    selector: "a.pb-kw-hero-cta",
+    prop: "background-color",
+    role: "accent",
+  },
   verve: { selector: "a.pb-vv-cta", prop: "background-color", role: "accent" },
   zunft: { selector: "a.pb-zf-cta", prop: "background-color", role: "accent" },
-  schimmer: { selector: "a.pb-sc-cta", prop: "background-color", role: "accent" },
+  schimmer: {
+    selector: "a.pb-sc-cta",
+    prop: "background-color",
+    role: "accent",
+  },
   fundament: { selector: "a.pb-fd-cta", prop: "background-color", role: "ink" },
 };
 
@@ -102,14 +130,18 @@ function rgbStringToHex(rgb: string): string {
 
 for (const pack of PACKS) {
   const check = CTA_COLOR_CHECKS[pack];
-  test(`${pack}: Hero-CTA-Farbe entspricht Verfassung (${check.role})`, async ({ page }) => {
+  test(`${pack}: Hero-CTA-Farbe entspricht Verfassung (${check.role})`, async ({
+    page,
+  }) => {
     await page.goto(`/dev/site-preview?pack=${pack}&fixture=full`);
     await page.waitForLoadState("networkidle");
 
     const constitution = getConstitution(pack);
     const paletteEntry = constitution.palette.find(p => p.role === check.role);
     if (!paletteEntry)
-      throw new Error(`Pack "${pack}" hat keinen Paletteneintrag mit role "${check.role}"`);
+      throw new Error(
+        `Pack "${pack}" hat keinen Paletteneintrag mit role "${check.role}"`
+      );
 
     const cta = page.locator(check.selector).first();
     await expect(cta).toBeVisible();
