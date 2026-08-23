@@ -66,6 +66,20 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
 - `npm run check` — `tsc --noEmit`.
 - `npm run test` — `vitest run`.
 - `npm run test:visual` / `test:visual:update` — Playwright.
+- `npm run build:previews` (`scripts/build-pack-previews.mjs`) — rendert
+  `/demo/<pack>` für alle 14 Style Packs zu je einem statischen WebP unter
+  `client/public/pack-previews/<pack>.webp` (~800×500, ≤ 80 KB), das
+  `PackShowcase.tsx` auf der Landingpage statt eines sofort geladenen iframes
+  zeigt (Live-Demo öffnet sich per Klick in einem Modal). Braucht einen
+  laufenden Server unter `PREVIEW_BASE_URL` (Default `http://localhost:3005`)
+  — startet selbst keinen, analog zu `build:islands`:
+  ```bash
+  PORT=3005 npm run dev   # Terminal 1
+  npm run build:previews  # Terminal 2
+  ```
+  Nach jeder Änderung an einer Pack-Verfassung (Palette, Fixture-Daten) neu
+  laufen lassen und die erzeugten WebPs mitcommitten — sonst zeigt die
+  Landingpage veraltete Vorschaubilder.
 - Lokaler Dev-Server baut das Inseln-Bundle **nicht** automatisch — vor
   Playwright-Läufen oder manuellem Testen der Kundenseiten-Vorschau einmal
   `npm run build:islands` ausführen.
@@ -119,21 +133,38 @@ gesperrt), die Spalte wird gebraucht, sobald das Panel gebaut wird. Alle
 `2026-08-23-onboarding-v2-b4c-polish.md`).
 
 Prod-Ablauf (nach Merge, mit Nutzer-Freigabe, **nicht** eigenständig
-ausführen):
+ausführen) — **Expand/Contract-Reihenfolge, in dieser Abfolge**: erst der
+neue Code (verträgt die alten Spalten noch, liest/schreibt sie aber nicht
+mehr), erst danach das Backup und der Drop. Ein Drop vor dem Deploy würde den
+noch laufenden alten Prozess brechen, falls der zwischen Backup und Migration
+noch eine der Spalten anfasst; in dieser Reihenfolge ist der Code beim Drop
+bereits spaltenunabhängig:
 
 ```bash
 ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95
 cd /root/pageblitz
+
+# 1) Neuer Code zuerst - verträgt die alten Spalten (liest/schreibt sie nicht mehr)
+git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz
+
+# 2) Backup danach - erst wenn der neue Code läuft, nicht mehr während des alten
 mysqldump -u<user> -p<pw> pageblitz generated_websites onboarding_responses template_uploads \
   > backup-0027-$(date +%F).sql
+
+# 3) Migration zuletzt
 mysql -u<user> -p<pw> pageblitz < drizzle/0027_drop_v1_columns.sql
-git fetch origin && git reset --hard origin/main && npm run build && pm2 restart pageblitz
 ```
 
-Rollback: Spalten aus `backup-0027-<datum>.sql` zurückspielen (Tabellen
-`CREATE TABLE`+`INSERT` aus dem Dump, `template_uploads` komplett aus dem
-Dump). Ohne Backup ist die Migration nicht reversibel (`DROP COLUMN`/
-`DROP TABLE`).
+Rollback: `backup-0027-<datum>.sql` enthält Voll-Dumps der drei Tabellen
+(`CREATE TABLE`+`INSERT`, `template_uploads` komplett). Ein Rückspielen
+(`mysql ... < backup-0027-<datum>.sql`) stellt die **ganzen Tabellen** aus
+dem Dump-Zeitpunkt wieder her — nicht nur die gedroppten Spalten — und
+**überschreibt damit jede Zeile, die zwischen Backup und Rückspielung neu
+angelegt oder geändert wurde** (neue Websites/Onboarding-Antworten seit dem
+Dump gehen verloren, sofern nicht vorher separat gesichert). Da Schritt 1 vor
+dem Backup läuft, ist die Zeitspanne mit diesem Risiko auf "Backup bis
+Migration" begrenzt, nicht "Deploy bis Migration". Ohne Backup ist die
+Migration nicht reversibel (`DROP COLUMN`/`DROP TABLE`).
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
@@ -235,33 +266,39 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 
 ## 7. Tests & Gates
 
-- `npx vitest run` — Stand dieses Dokuments (755 grün, 6 bekannte Fails):
-  - `server/contrast.test.ts` — 4 Fälle. **Keine Env-Abhängigkeit**, sondern
-    eine echte Wertabweichung: `getContrastColor()` (`shared/colorContrast.ts`,
-    genutzt von `server/industryImages.ts` `getIndustryColorScheme`) liefert
-    Slate-Töne (`#0f172a`/`#f8fafc`), der Test erwartet reines
-    `#000000`/`#ffffff`. Vorbestehend, unabhängig von Plan B4b entstanden —
-    Korrektur der Testerwartungen ist B4c-Kandidat (s. u.).
+- `npx vitest run` — Stand dieses Dokuments (750 grün + bekannte Fails, keine
+  neuen gegenüber der vorherigen Baseline):
   - `server/resend.test.ts` — 2 Fälle (kein `RESEND_API_KEY` gesetzt, echter
     Env-Fail).
   - Zwei Suiten ohne `STRIPE_SECRET_KEY` (`server/auth.logout.test.ts`,
     `server/pageblitz.test.ts`) brechen beim Import ab (`new Stripe(...)` in
     `server/onboardingV2/checkout.ts`) — abhängig von der lokalen
     Umgebung, in manchen Setups (Secret gesetzt) grün.
-- `npm run check` (`tsc --noEmit`) — hat pre-existing Fehler unabhängig von
-  diesem Plan; Gate ist "keine neuen Fehler", nicht "null Fehler". Zahl hier
-  bewusst nicht als Sollwert festgeschrieben (verändert sich mit jedem
-  Commit) — vor jedem Merge gegen den Stand auf `main` vergleichen.
+  - `server/contrast.test.ts` gibt es nicht mehr (B4c Task 2 —
+    `shared/colorContrast.ts` mit der gesamten v1-Farbkette gelöscht, siehe
+    §8) — die Env-Fail-Liste ist dadurch gegenüber dem Stand vor B4c um 4
+    Fälle geschrumpft.
+- `npm run check` (`tsc --noEmit`) — Stand dieses Dokuments **0 Fehler**
+  (B4c-Abschluss, siehe §8; Baseline zu Beginn von B4c war 21, vor B4a 73).
+  Gate bleibt trotzdem "keine neuen Fehler" statt eines festen Sollwerts —
+  vor jedem Merge gegen den Stand auf `main` vergleichen.
 - Playwright-Specs unter `tests/visual/`: `packs.spec.ts`, `studio.spec.ts`,
-  `islands.spec.ts`, `landing.spec.ts`, `startpage-to-studio.spec.ts`.
-  Baselines liegen als `tests/visual/<spec>-snapshots/*.png` daneben
-  (`packs.spec.ts-snapshots/`, `studio.spec.ts-snapshots/`,
-  `islands.spec.ts-snapshots/` sind zum Zeitpunkt dieses Dokuments befüllt;
-  `landing.spec.ts` und `startpage-to-studio.spec.ts` sind neu aus diesem
-  Plan und brauchen ggf. einen `--update-snapshots`-Lauf, falls ihre
-  Snapshot-Ordner noch fehlen). Läuft auf `PORT=3005`, nie auf Port 3000.
-  Vor dem Lauf `npm run build:islands` (Inseln-Bundle wird nicht automatisch
-  gebaut).
+  `islands.spec.ts`, `landing.spec.ts`, `startpage-to-studio.spec.ts`,
+  `a11y.spec.ts` (neu, B4c Task 7). Baselines liegen als
+  `tests/visual/<spec>-snapshots/*.png` daneben. Läuft auf `PORT=3005`, nie
+  auf Port 3000. Vor dem Lauf `npm run build:islands` (Inseln-Bundle wird
+  nicht automatisch gebaut).
+  - `a11y.spec.ts` prüft mit `@axe-core/playwright` gegen `/`
+    (Desktop/Mobile/Cookie-Banner-Variante), `/demo/:pack` für alle 14 Style
+    Packs sowie die Studio-Checkliste und alle 6 Panels: **0
+    `critical`/`serious`**-Funde (Spec §2.7/§4). Das Dashboard
+    (`/my-website`) ist bewusst `test.skip` — es hängt an einer echten
+    Session (`CustomerRoute`), für die es keinen Dev-Bypass gibt; eine
+    Test-Login-Infrastruktur dafür ist auf B5 verschoben (siehe §8).
+  - `packs.spec.ts` — Toleranz/Farbassertion siehe `packs.spec.ts` selbst
+    (der pauschale Pixel-Diff-Schwellenwert bildet nicht jede
+    Palette-Änderung zuverlässig ab; Details im Testfile-Kommentar statt
+    hier dupliziert).
 
 ## 8. Offen / Nächste Schritte
 
@@ -270,29 +307,42 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
 v1-Generierungsrumpf, Templates-Cluster, v1-`onboarding.*`/`selfService.*`.
 Details: `docs/superpowers/specs/2026-08-23-b4b-ergebnis.md`.
 
-**Plan B4c (Politur, teilweise erledigt):**
-- ~~DB-Spalten-Drops~~ Erledigt (B4c Task 4, Migration 0027 — siehe §3): alle
-  v1-Inhaltsspalten aus `generated_websites`/`onboarding_responses` sowie die
-  Tabelle `template_uploads` sind gedroppt, Schema und lokale DB stimmen
-  überein. `onboarding_responses.addOnTeamData` bleibt bewusst bestehen (Team-
-  Panel → B5).
-- ~~LegalPage-Akzentfarbe aus der v2-Pack-Palette statt aus der
-  `colorScheme`-Spalte ableiten~~ Erledigt (B4c Task 1+2): `LegalPage.tsx`
-  liest die Akzentfarbe über `getPackAccent()` aus der Pack-Verfassung; der
-  `customer.getMyWebsites`-Migrationsblock, `getIndustryColorScheme`
-  (`server/industryImages.ts`) und `withOnColors`/`ColorScheme`
-  (`shared/layoutConfig.ts`, `shared/colorContrast.ts`) sind entfernt.
-- ~~`SSR_ALLOWED_PATHNAMES` (o. ä. Allowlist für Unterseiten) prüfen, ob
-  zusätzliche v2-Unterseiten-Pfade fehlen.~~ Erledigt (B4c Task 5): unbekannte
-  Unterpfade einer bekannten v2-Site liefern jetzt ein eigenes SSR-404 statt
-  des SPA-Fallbacks, siehe §5.
-- Landing-Perf: `/demo/:pack`-Showcase lädt 14 Packs als iframes — Ladezeit-
-  Optimierung offen.
-- ~~Demo-Rechtsseiten (`/demo/:pack/impressum|datenschutz`) fallen aktuell auf
-  SPA/404 durch — laut Spec akzeptiert, aber als offener Punkt vermerkt.~~
-  Erledigt (B4c Task 5): eigene Route mit Platzhalter-Rechtstext, siehe §5.
-- a11y-/Perf-Pass (Studio, Kundenseiten).
-- `prefersMenu`, Team-Panel (`addOnTeamData`-Spalte bleibt bis dahin),
-  Unterseiten-Add-on — laut Spec §2.8 aufgeschoben.
-- `server/contrast.test.ts`-Erwartungen an `getContrastColor()` korrigieren
-  (§7).
+**Plan B4c ist erledigt** — v1-Farbkette (`colorScheme`, `layoutConfig`,
+`colorContrast`) entfernt, v1-DB-Spalten + `template_uploads` gedroppt
+(Migration 0027, siehe §3), Rechtsseiten-Regenerierung auf Besitzer/Admin
+abgesichert, toter Code per `knip` entfernt, SSR-404 für unbekannte
+Kundenpfade + Demo-Rechtsseiten + `og:image`, Landingpage-Showcase auf
+statische Vorschaubilder umgestellt, a11y-Pass (axe) mit Kontrastfixes und
+`prefersMenu` für die Gastro-Packs. tsc-Baseline von 21 (Start B4c) auf **0**
+gebracht. Details, Messwerte und Rulings:
+`docs/superpowers/specs/2026-08-23-b4c-ergebnis.md`.
+
+**Offene Punkte → Plan B5 ("Features" + Politur-Rest):**
+- Team-Panel (Add-on `team` buchbar machen — `onboarding_responses.addOnTeamData`
+  bleibt bis dahin bestehen) und Unterseiten-Add-on (`features.subpages[]`) —
+  bewusst nicht in B4c, brauchen Produktentscheidungen (Spec §3).
+- Admin `WebsitesPage.tsx` zeigt den Pack der Website aktuell gar nicht an;
+  `AdminCheckoutDialog` zeigt noch ein veraltetes 79-€-Pricing und zählt keine
+  Unterseiten.
+- Test-Login-Infrastruktur für das Dashboard (`/my-website`), damit
+  `a11y.spec.ts`/E2E-Flows auch den eingeloggten Kundenbereich abdecken
+  können (aktuell `test.skip`, siehe §7).
+- Dark-Mode-a11y der Landingpage (`/`) — axe prüft bisher nur den
+  Default-Light-Zustand.
+- JS-Budget von `/` (~306 kB gzip, Budget 150 kB) ist weiterhin verfehlt.
+  Größte Hebel laut Task-6-Analyse: `TooltipProvider`/Radix aus dem
+  App-Root-Entry lösen; `LandingPage`/`StartPage`/`SitePage`/`LegalPage` per
+  `lazy()`/Route-Split laden statt eager zu importieren; `framer-motion`
+  über `LazyMotion` statt der vollen Bundle-Variante einbinden. Größter
+  LCP-Hebel laut Lighthouse-Render-Blocking-Analyse: `client/src/index.css:38`
+  bindet 25 Google-Font-Familien render-blocking ein (v1-Rest, v2 nutzt nur
+  einen Bruchteil davon) — Aufräumen auf die tatsächlich genutzten Familien.
+- `umamiWebsiteId as any` in `server/routers.ts` (~Z. 2716) — Admin-Statistik
+  liefert aktuell `null` statt echter Umami-Daten.
+- `packs/zunft/css.ts` `.pb-zf-price` nutzt die Rolle "Siegelgold" entgegen
+  dem eigenen Verfassungskommentar ("nie als Textfläche") als Textfarbe
+  (Kontrast seit B4c Task 7 behoben, Rollen-Doku/Verwendung laufen aber
+  auseinander).
+- `server/contrast.test.ts` existiert nicht mehr (Farbkette komplett entfernt
+  in B4c Task 2) — der ursprüngliche Punkt "Testerwartungen korrigieren" ist
+  damit gegenstandslos.

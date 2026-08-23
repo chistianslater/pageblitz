@@ -52,6 +52,13 @@ Das v2-System nach der Löschung (main 0b1257f) technisch sauber ziehen: letzte 
 - Alle bestehenden Playwright-Baselines grün (Kontrast-Anpassungen mit neuen Baselines).
 - tsc ≤ 10 Altfehler.
 
+**Stand B4c, `e0da646`+:** grep-Kriterium ✅ (Ausnahme `addOnTeamData`
+bewusst, Team-Panel → B5); knip ✅ mit dokumentierten Ausnahmen; axe ✅ (0
+critical/serious, Dashboard `test.skip`); Lighthouse ❌ (LCP 3,1 s statt
+< 2,5 s, JS ~306 kB statt < 150 kB gzip, pre-existing/App.tsx-Chunking →
+B5); Playwright-Baselines ✅; tsc ✅ **0** (deutlich unter dem Ziel ≤ 10).
+Details, Messwerte und Rulings: `docs/superpowers/specs/2026-08-23-b4c-ergebnis.md`.
+
 ## 5. Offene Entscheidungen (bitte absegnen)
 1. B4c ohne Team-Panel/Unterseiten — beides nach B5 (Empfehlung: ja, sonst vermischt sich Aufräumen mit Produktdesign).
 2. DB-Drops in B4c tatsächlich ausführen (inkl. Prod-Migration mit Backup) oder nur Code-seitig vorbereiten und Drop bis nach den ersten Kunden warten? Empfehlung: ausführen — null zahlende Kunden, Backup reicht.
