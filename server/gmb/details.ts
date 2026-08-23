@@ -192,7 +192,15 @@ export async function fetchGmbDetails(
       ? result.opening_hours.weekday_text
       : null,
     editorialSummary,
-    reviews: (result.reviews ?? []).slice(0, MAX_REVIEWS),
+    // Bewusstes Feld-Picking: die Legacy-API liefert pro Review zusätzlich
+    // author_url/profile_photo_url — die persistieren wir NICHT (Datenminimierung,
+    // Review-Fund B7 Task 1); angezeigt wird später ohnehin nur Vorname + Sterne.
+    reviews: (result.reviews ?? []).slice(0, MAX_REVIEWS).map(r => ({
+      author_name: r.author_name,
+      rating: r.rating,
+      text: r.text,
+      time: r.time,
+    })),
     photoReferences: (result.photos ?? [])
       .slice(0, MAX_PHOTOS)
       .map(p => p.photo_reference),

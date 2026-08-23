@@ -2820,17 +2820,21 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
         // GMB-Tiefenabruf beim Anlegen mit echtem Place (Plan B7 Task 1):
         // Website, Öffnungszeiten, Reviews, Editorial Summary und die
         // Kategorie-Kette (nie der Firmenname) landen idempotent im Business.
-        // Fehler dürfen den Start nie blockieren.
+        // Fire-and-forget (Review-Fund B7 Task 1): weder Fehler NOCH Latenz
+        // eines hängenden Google-Calls dürfen den öffentlichen Start-Endpunkt
+        // blockieren — der Generierungs-Job liest die persistierten Daten
+        // später ohnehin frisch (persistGmbDetails ist idempotent).
         if (input.placeId && !input.placeId.startsWith("self-")) {
-          try {
-            const details = await fetchGmbDetails(input.placeId);
-            if (details) await persistGmbDetails(businessId, details);
-          } catch (err) {
-            console.warn(
-              "[selfService.start] GMB-Tiefenabruf fehlgeschlagen:",
-              err
-            );
-          }
+          void fetchGmbDetails(input.placeId)
+            .then(details =>
+              details ? persistGmbDetails(businessId, details) : undefined
+            )
+            .catch(err => {
+              console.warn(
+                "[selfService.start] GMB-Tiefenabruf fehlgeschlagen:",
+                err
+              );
+            });
         }
 
         // Create a preview website.
