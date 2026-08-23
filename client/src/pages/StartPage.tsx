@@ -14,7 +14,11 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { CATEGORY_GROUPS } from "@shared/gmbCategories";
-import { BlitzMark, textLink, PRICE_YEARLY } from "@/components/landing/primitives";
+import {
+  BlitzMark,
+  textLink,
+  PRICE_YEARLY,
+} from "@/components/landing/primitives";
 
 type Step = "choice" | "manual" | "gmb";
 
@@ -38,9 +42,7 @@ function CategoryPicker({
   const [search, setSearch] = useState("");
   const filtered = search.trim()
     ? CATEGORY_GROUPS.flatMap(g =>
-        g.categories.filter(c =>
-          c.toLowerCase().includes(search.toLowerCase())
-        )
+        g.categories.filter(c => c.toLowerCase().includes(search.toLowerCase()))
       )
     : null;
   return (
@@ -143,19 +145,35 @@ export default function StartPage() {
   // GMB step
   const [gmbSearchQuery, setGmbSearchQuery] = useState("");
   const [gmbSearchRegion, setGmbSearchRegion] = useState("");
-  const [gmbSearchResults, setGmbSearchResults] = useState<Array<{
-    placeId: string; name: string; address: string; phone: string | null;
-    rating: number | null; reviewCount: number; category: string | null; website: string | null;
-    openingHours?: string[];
-  }>>([]);
+  const [gmbSearchResults, setGmbSearchResults] = useState<
+    Array<{
+      placeId: string;
+      name: string;
+      address: string;
+      phone: string | null;
+      rating: number | null;
+      reviewCount: number;
+      category: string | null;
+      website: string | null;
+      openingHours?: string[];
+    }>
+  >([]);
   const [gmbSearchLoading, setGmbSearchLoading] = useState(false);
-  const [citysuggestions, setCitySuggestions] = useState<Array<{ label: string; placeId: string }>>([]);
+  const [citysuggestions, setCitySuggestions] = useState<
+    Array<{ label: string; placeId: string }>
+  >([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const cityDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [resolvedInfo, setResolvedInfo] = useState<{
-    businessName: string | null; placeId: string | null; address: string | null;
-    phone: string | null; category: string | null; reviews: any[];
-    openingHours: string[]; rating: string | null; reviewCount: number | null;
+    businessName: string | null;
+    placeId: string | null;
+    address: string | null;
+    phone: string | null;
+    category: string | null;
+    reviews: any[];
+    openingHours: string[];
+    rating: string | null;
+    reviewCount: number | null;
   } | null>(null);
   const [, navigate] = useLocation();
 
@@ -177,7 +195,9 @@ export default function StartPage() {
   const didPrefill = useRef(false);
   useEffect(() => {
     if (didPrefill.current) return;
-    const name = new URLSearchParams(window.location.search).get("name")?.trim();
+    const name = new URLSearchParams(window.location.search)
+      .get("name")
+      ?.trim();
     if (!name) return;
     didPrefill.current = true;
 
@@ -187,13 +207,17 @@ export default function StartPage() {
     setGmbSearchLoading(true);
     gmbSearchPublicMutation
       .mutateAsync({ query: name })
-      .then((res) => {
+      .then(res => {
         setGmbSearchResults(res.results);
         if (res.results.length === 0) {
-          toast.info("Kein Google-Eintrag gefunden – such nochmal oder starte ohne.");
+          toast.info(
+            "Kein Google-Eintrag gefunden – such nochmal oder starte ohne."
+          );
         }
       })
-      .catch(() => toast.error("Suche fehlgeschlagen – bitte nochmal versuchen."))
+      .catch(() =>
+        toast.error("Suche fehlgeschlagen – bitte nochmal versuchen.")
+      )
       .finally(() => setGmbSearchLoading(false));
     // Nur beim ersten Mount; didPrefill schützt zusätzlich gegen StrictMode.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -202,7 +226,10 @@ export default function StartPage() {
   // ── Manual → Start ────────────────────────────────────────────────────────
   const handleManualStart = async () => {
     if (!businessName.trim() || !category.trim()) return;
-    try { (window as any).clarity?.("event", "start_manual"); (window as any).clarity?.("set", "start_category", category); } catch {}
+    try {
+      (window as any).clarity?.("event", "start_manual");
+      (window as any).clarity?.("set", "start_category", category);
+    } catch {}
     try {
       const data = await startMutation.mutateAsync({
         businessName: businessName.trim(),
@@ -231,7 +258,8 @@ export default function StartPage() {
         region: gmbSearchRegion.trim() || undefined,
       });
       setGmbSearchResults(res.results);
-      if (res.results.length === 0) toast.info("Keine Ergebnisse – versuche es mit einem anderen Begriff.");
+      if (res.results.length === 0)
+        toast.info("Keine Ergebnisse – versuche es mit einem anderen Begriff.");
     } finally {
       setGmbSearchLoading(false);
     }
@@ -248,8 +276,12 @@ export default function StartPage() {
         category: resolvedInfo.category || undefined,
         customerEmail: user?.email || undefined,
         source: "external",
-        googleReviews: resolvedInfo.reviews.length > 0 ? resolvedInfo.reviews : undefined,
-        openingHours: resolvedInfo.openingHours.length > 0 ? resolvedInfo.openingHours : undefined,
+        googleReviews:
+          resolvedInfo.reviews.length > 0 ? resolvedInfo.reviews : undefined,
+        openingHours:
+          resolvedInfo.openingHours.length > 0
+            ? resolvedInfo.openingHours
+            : undefined,
         rating: resolvedInfo.rating || undefined,
         reviewCount: resolvedInfo.reviewCount || undefined,
       });
@@ -295,7 +327,12 @@ export default function StartPage() {
 
             <div className="mt-8 space-y-3">
               <button
-                onClick={() => { setStep("gmb"); try { (window as any).clarity?.("event", "start_gmb"); } catch {} }}
+                onClick={() => {
+                  setStep("gmb");
+                  try {
+                    (window as any).clarity?.("event", "start_gmb");
+                  } catch {}
+                }}
                 className="group flex w-full items-center gap-4 rounded-2xl border border-lp-line bg-lp-surface p-5 text-left transition-colors hover:border-lp-accent"
               >
                 <div className="flex-1">
@@ -340,7 +377,10 @@ export default function StartPage() {
         {/* ── Manual ── */}
         {step === "manual" && (
           <div className="pt-10">
-            <button onClick={() => setStep("choice")} className={`${textLink} text-sm`}>
+            <button
+              onClick={() => setStep("choice")}
+              className={`${textLink} text-sm`}
+            >
               ← Zurück
             </button>
 
@@ -397,7 +437,10 @@ export default function StartPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                     Wird vorbereitet…
                   </>
                 ) : (
@@ -415,7 +458,12 @@ export default function StartPage() {
         {step === "gmb" && (
           <div className="pt-10">
             <button
-              onClick={() => { setStep("choice"); setResolvedInfo(null); setGmbSearchResults([]); setGmbSearchQuery(""); }}
+              onClick={() => {
+                setStep("choice");
+                setResolvedInfo(null);
+                setGmbSearchResults([]);
+                setGmbSearchQuery("");
+              }}
               className={`${textLink} text-sm`}
             >
               ← Zurück
@@ -440,8 +488,16 @@ export default function StartPage() {
                     autoFocus
                     type="text"
                     value={gmbSearchQuery}
-                    onChange={e => { setGmbSearchQuery(e.target.value); setGmbSearchResults([]); setResolvedInfo(null); }}
-                    onKeyDown={e => e.key === "Enter" && !gmbSearchLoading && handleGmbSearch()}
+                    onChange={e => {
+                      setGmbSearchQuery(e.target.value);
+                      setGmbSearchResults([]);
+                      setResolvedInfo(null);
+                    }}
+                    onKeyDown={e =>
+                      e.key === "Enter" &&
+                      !gmbSearchLoading &&
+                      handleGmbSearch()
+                    }
                     placeholder="Unternehmensname"
                     autoComplete="organization"
                     className={FIELD}
@@ -462,13 +518,19 @@ export default function StartPage() {
                         const val = e.target.value;
                         setGmbSearchRegion(val);
                         setShowCitySuggestions(true);
-                        if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+                        if (cityDebounceRef.current)
+                          clearTimeout(cityDebounceRef.current);
                         if (val.trim().length >= 2) {
                           cityDebounceRef.current = setTimeout(async () => {
                             try {
-                              const res = await autocompleteCityMutation.mutateAsync({ input: val.trim() });
+                              const res =
+                                await autocompleteCityMutation.mutateAsync({
+                                  input: val.trim(),
+                                });
                               setCitySuggestions(res.suggestions);
-                            } catch { /* ignore */ }
+                            } catch {
+                              /* ignore */
+                            }
                           }, 300);
                         } else {
                           setCitySuggestions([]);
@@ -481,8 +543,13 @@ export default function StartPage() {
                         }
                         if (e.key === "Escape") setShowCitySuggestions(false);
                       }}
-                      onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
-                      onFocus={() => citysuggestions.length > 0 && setShowCitySuggestions(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowCitySuggestions(false), 150)
+                      }
+                      onFocus={() =>
+                        citysuggestions.length > 0 &&
+                        setShowCitySuggestions(true)
+                      }
                       placeholder="Stadt (optional)"
                       className={FIELD}
                       disabled={gmbSearchLoading || isLoading}
@@ -499,7 +566,8 @@ export default function StartPage() {
                               setGmbSearchRegion(cityName);
                               setCitySuggestions([]);
                               setShowCitySuggestions(false);
-                              if (gmbSearchQuery.trim() && !gmbSearchLoading) handleGmbSearch();
+                              if (gmbSearchQuery.trim() && !gmbSearchLoading)
+                                handleGmbSearch();
                             }}
                             className="w-full px-4 py-2.5 text-left text-sm text-lp-ink transition-colors hover:bg-lp-canvas"
                           >
@@ -511,12 +579,17 @@ export default function StartPage() {
                   </div>
                   <button
                     onClick={handleGmbSearch}
-                    disabled={!gmbSearchQuery.trim() || gmbSearchLoading || isLoading}
+                    disabled={
+                      !gmbSearchQuery.trim() || gmbSearchLoading || isLoading
+                    }
                     aria-label="Suchen"
                     className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lp-accent text-lp-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#174a3b] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100"
                   >
                     {gmbSearchLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      <Loader2
+                        className="h-4 w-4 animate-spin"
+                        aria-hidden="true"
+                      />
                     ) : (
                       <Search className="h-4 w-4" aria-hidden="true" />
                     )}
@@ -528,7 +601,8 @@ export default function StartPage() {
               {gmbSearchResults.length > 0 && !resolvedInfo && (
                 <div>
                   <p className="lp-kicker">
-                    {gmbSearchResults.length} Ergebnis{gmbSearchResults.length !== 1 ? "se" : ""} gefunden
+                    {gmbSearchResults.length} Ergebnis
+                    {gmbSearchResults.length !== 1 ? "se" : ""} gefunden
                   </p>
                   <ul className="mt-3 space-y-2">
                     {gmbSearchResults.map(result => (
@@ -544,7 +618,9 @@ export default function StartPage() {
                               category: result.category,
                               reviews: [],
                               openingHours: result.openingHours || [],
-                              rating: result.rating ? String(result.rating) : null,
+                              rating: result.rating
+                                ? String(result.rating)
+                                : null,
                               reviewCount: result.reviewCount,
                             });
                             setGmbSearchResults([]);
@@ -552,14 +628,22 @@ export default function StartPage() {
                           className="group flex w-full items-start gap-3 rounded-2xl border border-lp-line bg-lp-surface p-4 text-left transition-colors hover:border-lp-accent disabled:opacity-50"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-lp-ink">{result.name}</p>
+                            <p className="truncate font-medium text-lp-ink">
+                              {result.name}
+                            </p>
                             <p className="mt-0.5 truncate text-sm text-lp-muted">
                               {result.address.split(",").slice(0, 2).join(",")}
                             </p>
                             {result.rating && (
                               <p className="mt-1 text-xs text-lp-muted">
-                                <span aria-hidden="true" className="text-lp-accent">★</span>{" "}
-                                {result.rating.toFixed(1)} ({result.reviewCount} Bewertungen)
+                                <span
+                                  aria-hidden="true"
+                                  className="text-lp-accent"
+                                >
+                                  ★
+                                </span>{" "}
+                                {result.rating.toFixed(1)} ({result.reviewCount}{" "}
+                                Bewertungen)
                               </p>
                             )}
                           </div>
@@ -575,17 +659,21 @@ export default function StartPage() {
               )}
 
               {/* No results */}
-              {!gmbSearchLoading && gmbSearchResults.length === 0 && gmbSearchPublicMutation.isSuccess && !resolvedInfo && (
-                <div className="flex items-start gap-2.5 rounded-2xl border border-lp-line bg-lp-surface p-4">
-                  <AlertCircle
-                    className="mt-0.5 h-4 w-4 shrink-0 text-lp-warn"
-                    aria-hidden="true"
-                  />
-                  <p className="text-sm text-lp-ink">
-                    Kein Treffer – versuche einen anderen Begriff oder ergänze die Stadt.
-                  </p>
-                </div>
-              )}
+              {!gmbSearchLoading &&
+                gmbSearchResults.length === 0 &&
+                gmbSearchPublicMutation.isSuccess &&
+                !resolvedInfo && (
+                  <div className="flex items-start gap-2.5 rounded-2xl border border-lp-line bg-lp-surface p-4">
+                    <AlertCircle
+                      className="mt-0.5 h-4 w-4 shrink-0 text-lp-warn"
+                      aria-hidden="true"
+                    />
+                    <p className="text-sm text-lp-ink">
+                      Kein Treffer – versuche einen anderen Begriff oder ergänze
+                      die Stadt.
+                    </p>
+                  </div>
+                )}
 
               {/* Selected business confirmation */}
               {resolvedInfo && (
@@ -605,7 +693,9 @@ export default function StartPage() {
                       Ändern
                     </button>
                   </div>
-                  <p className="mt-2 font-medium text-lp-ink">{resolvedInfo.businessName}</p>
+                  <p className="mt-2 font-medium text-lp-ink">
+                    {resolvedInfo.businessName}
+                  </p>
                   {resolvedInfo.address && (
                     <p className="mt-0.5 text-sm text-lp-muted">
                       {resolvedInfo.address.split(",").slice(0, 2).join(",")}
@@ -622,7 +712,10 @@ export default function StartPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                     Wird vorbereitet…
                   </>
                 ) : (
@@ -649,7 +742,11 @@ export default function StartPage() {
         {/* Fußzeile: wie die Landing-TrustLine */}
         <footer className="mt-auto pt-14">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-lp-line pt-5 text-[0.9rem] text-lp-muted">
-            {["7 Tage gratis", `Danach ${PRICE_YEARLY}/Monat`, "Jederzeit kündbar"].map(item => (
+            {[
+              "7 Tage gratis",
+              `Danach ${PRICE_YEARLY}/Monat`,
+              "Jederzeit kündbar",
+            ].map(item => (
               <li key={item} className="inline-flex items-center gap-2">
                 <span
                   aria-hidden="true"
