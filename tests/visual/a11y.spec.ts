@@ -27,6 +27,18 @@ async function skipCookieBanner(page: Page): Promise<void> {
   );
 }
 
+// `LandingPage` initialisiert `isDark` aus `localStorage["lp-theme"]`
+// (Standard: hell, "dark" nur nach explizitem Toggle) — analog zu
+// `skipCookieBanner` setzt dieser Helfer den Zustand VOR der Navigation per
+// `addInitScript`, damit die Seite bereits im ersten Render dunkel startet
+// (`data-lp-theme="dark"` auf `.lp-root`) statt erst nach einem Klick auf
+// den Theme-Toggle-Button.
+async function setDarkTheme(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    window.localStorage.setItem("lp-theme", "dark");
+  });
+}
+
 /**
  * Läuft axe-core gegen die aktuelle Seite und schlägt fehl, sobald ein
  * "critical"- oder "serious"-Fund existiert (Spec §2.7/§4: 0 critical/
@@ -89,6 +101,35 @@ test.describe("A11y (axe): Landingpage", () => {
       "/ (Desktop 1280, Cookie-Banner sichtbar)"
     );
   });
+
+  // Dark-Mode-Variante (Spec §2.5): `isDark` kommt aus `localStorage["lp-theme"]`
+  // (siehe `setDarkTheme` oben) — Kontrastfixes bei Funden gehören in die
+  // Dark-Klassen von LandingPage.tsx/PackShowcase.tsx, nicht in die Light-Variante.
+  test("/ Desktop 1280 Dark Mode", async ({ page }) => {
+    await skipCookieBanner(page);
+    await setDarkTheme(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator(".lp-root")).toHaveAttribute(
+      "data-lp-theme",
+      "dark"
+    );
+    await expectNoSeriousViolations(page, "/ (Desktop 1280, Dark Mode)");
+  });
+
+  test("/ Mobile 390 Dark Mode", async ({ page }) => {
+    await skipCookieBanner(page);
+    await setDarkTheme(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator(".lp-root")).toHaveAttribute(
+      "data-lp-theme",
+      "dark"
+    );
+    await expectNoSeriousViolations(page, "/ (Mobile 390, Dark Mode)");
+  });
 });
 
 test.describe("A11y (axe): Demo-Seiten je Pack", () => {
@@ -144,19 +185,42 @@ test.describe("A11y (axe): Studio", () => {
 });
 
 /**
- * Dashboard `/my-website` ist bewusst NICHT Teil dieser Spec: Der Route ist
- * über `CustomerRoute` (client/src/components/ProtectedRoute.tsx) an eine
- * echte Session gebunden. Es gibt weder einen Dev-Bypass-Endpunkt noch eine
- * Test-Route, die eine Session-Cookie direkt setzt — der einzige reguläre
- * Weg ist der Magic-Link-Flow (`server/_core/magicLinkAuth.ts`:
- * POST /api/auth/magic-link → E-Mail mit Token → GET
- * /api/auth/magic-link/verify?token=...). Das würde einen echten Kunden mit
- * aktivem Abo + generierter Website UND direkten DB-Zugriff aus dem
- * Playwright-Test heraus voraussetzen (Token aus `magic_link_tokens` lesen,
- * da kein Mail-Fang im Testsetup existiert) — eine eigene Fixture/Route nur
- * für diese eine a11y-Prüfung wäre eine neue Testinfrastruktur-Investition,
- * die über den Rahmen dieses Polish-Tasks hinausgeht (kein neues
- * Produkt-Feature, aber neue Test-Login-Infrastruktur). Bewusste Lücke,
- * siehe Task-7-Bericht — Nachtrag für B5/Testinfrastruktur.
+ * Dashboard `/my-website`: Login läuft über `/dev/dashboard-seed`
+ * (`server/onboardingV2/devDashboardSeed.ts`, nur außerhalb `production`) —
+ * legt Kunde + aktives Abo + aktive Website an und setzt das Session-Cookie
+ * genau wie der Magic-Link-Verify (`issueSessionCookie`, geteilt mit
+ * `server/_core/magicLinkAuth.ts`). `page.goto(...)` (ohne `json=1`) folgt
+ * dem Redirect auf `/my-website` im selben Browser-Kontext, wodurch das
+ * Cookie dort landet, bevor `CustomerRoute` die Session prüft.
  */
-test.skip("Dashboard /my-website — kein stabiler Test-Login-Weg, siehe Kommentar oben", () => {});
+async function seedDashboardSession(page: Page): Promise<void> {
+  await page.goto("/dev/dashboard-seed?pack=werkbank&fixture=full");
+  await page.waitForLoadState("networkidle");
+}
+
+test.describe("A11y (axe): Dashboard", () => {
+  test("Übersicht", async ({ page }) => {
+    await skipCookieBanner(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await seedDashboardSession(page);
+    await expectNoSeriousViolations(page, "Dashboard Übersicht");
+  });
+
+  test("Add-ons-Tab", async ({ page }) => {
+    await skipCookieBanner(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await seedDashboardSession(page);
+    await page.goto("/my-website?tab=addons");
+    await page.waitForLoadState("networkidle");
+    await expectNoSeriousViolations(page, "Dashboard Add-ons-Tab");
+  });
+
+  test("Anfragen-Tab", async ({ page }) => {
+    await skipCookieBanner(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await seedDashboardSession(page);
+    await page.goto("/my-website?tab=submissions");
+    await page.waitForLoadState("networkidle");
+    await expectNoSeriousViolations(page, "Dashboard Anfragen-Tab");
+  });
+});

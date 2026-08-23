@@ -226,6 +226,27 @@ ist aus `process.env.*`-Vorkommen in `server/` und `shared/` erhoben.
   `legal`-Feld) — gleiches `noindex, nofollow`/`Cache-Control` wie `/demo/:pack`.
 - **Dev-Vorschau**: `/dev/site-preview?pack=&fixture=full|minimal|features` —
   nur außerhalb `production` (404 sonst).
+- **Dev-Seeds** (beide nur außerhalb `production`, 404 sonst — legen keine
+  Zeilen in Prod an):
+  - `/dev/studio-seed?pack=&fixture=full|minimal|features[&json=1]`
+    (`server/onboardingV2/devSeed.ts`) — legt eine v2-Preview-Website aus
+    einer Fixture an (oder setzt sie zurück, Slug `studio-seed-<pack>-<fixture>`
+    ist idempotent) und leitet ins Studio (`/onboarding/<token>`); `json=1`
+    liefert `{ token, websiteId }` statt Redirect. Macht Studio-Checkliste
+    und -Panels ohne LLM-Lauf testbar (`tests/visual/studio.spec.ts`,
+    `a11y.spec.ts`).
+  - `/dev/dashboard-seed?pack=&fixture=full|minimal|features[&json=1]`
+    (`server/onboardingV2/devDashboardSeed.ts`) — legt einen Kunden
+    (`dev-dashboard@example.test`) mit aktiver Website (Slug
+    `dev-dashboard-<pack>`) und aktivem Abo an (beides idempotent: ein
+    zweiter Aufruf findet User per E-Mail und Website per Slug wieder statt
+    Duplikate anzulegen) und setzt das Session-Cookie über denselben Helfer
+    wie der Magic-Link-Verify (`issueSessionCookie`, geteilt in
+    `server/_core/magicLinkAuth.ts`); leitet auf `/my-website`, `json=1`
+    liefert `{ websiteId, slug, previewToken }`. Einziger Weg, das
+    Dashboard (`CustomerRoute`-geschützt) ohne echten Stripe-Checkout und
+    Magic-Link-Mailversand aus Playwright heraus zu erreichen
+    (`a11y.spec.ts` deckt Übersicht, Add-ons-Tab, Anfragen-Tab ab).
 - **Kunden-Sites**: `/site/:slug` (Pfadform) und Subdomain
   `<slug>.pageblitz.de` (`getCustomerSubdomainFromHost`) — beide über
   `handleCustomerSiteSsr` in `server/ssr/routes.ts`. Startseite + Rechtsseiten

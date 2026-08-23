@@ -45,6 +45,8 @@ export function PreviewTab({
               href={`/site/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Website in neuem Tab öffnen"
+              title="Website in neuem Tab öffnen"
               className="text-slate-400 hover:text-white"
             >
               <ExternalLink className="w-4 h-4" />

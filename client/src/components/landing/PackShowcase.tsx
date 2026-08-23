@@ -67,7 +67,7 @@ function PackCard({ packId, index, isDark, animate, onOpen }: PackCardProps) {
       <div className="p-5">
         <div className="flex items-start justify-between gap-3 mb-1.5">
           <span
-            className={`text-xs font-mono tabular-nums ${isDark ? "text-white/30" : "text-gray-600"}`}
+            className={`text-xs font-mono tabular-nums ${isDark ? "text-white/50" : "text-gray-600"}`}
             aria-hidden="true"
           >
             {String(index + 1).padStart(2, "0")}
@@ -266,7 +266,7 @@ export function PackShowcase({ isDark }: PackShowcaseProps) {
           initial={animate ? { opacity: 0, y: 20 } : undefined}
           whileInView={animate ? { opacity: 1, y: 0 } : undefined}
           viewport={{ once: true }}
-          className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+          className={`text-sm font-medium uppercase tracking-widest mb-3 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
         >
           14 Stilwelten
         </motion.p>

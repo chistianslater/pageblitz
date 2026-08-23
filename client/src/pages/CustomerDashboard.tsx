@@ -463,7 +463,7 @@ export default function CustomerDashboard() {
               href={`https://${website.slug}.pageblitz.de`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm px-4 py-2 rounded-xl transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
               Website öffnen

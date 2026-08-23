@@ -43,6 +43,7 @@ import { outreachEmails } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { registerSsrRoutes } from "../ssr/routes";
 import { registerStudioDevSeed } from "../onboardingV2/devSeed";
+import { registerDashboardDevSeed } from "../onboardingV2/devDashboardSeed";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -477,8 +478,9 @@ async function startServer() {
     res.type("text/html").send(generateLandingPageHTML(ind, city));
   });
 
-  // ── Dev-Seed-Route (Nur Entwicklung) ───────────────────────────────────────
+  // ── Dev-Seed-Routen (Nur Entwicklung) ───────────────────────────────────────
   registerStudioDevSeed(app);
+  registerDashboardDevSeed(app);
 
   // ── SSR-Inseln-Bundle (statisch) ────────────────────────────────────────────
   // Muss vor registerSsrRoutes() stehen: /islands/<name>.<hash>.js wird von

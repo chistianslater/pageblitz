@@ -12,7 +12,7 @@ const APP_URL = process.env.APP_URL || "https://pageblitz.de";
 /**
  * Create JWT session token – same pattern as googleAuth.ts
  */
-async function createSessionToken(
+export async function createSessionToken(
   openId: string,
   name: string,
   email: string
@@ -31,6 +31,29 @@ async function createSessionToken(
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setExpirationTime(expirationSeconds)
     .sign(secretKey);
+}
+
+/**
+ * Setzt das Session-Cookie für einen (bereits in der DB vorhandenen) User —
+ * exakt der Cookie-Weg des Magic-Link-Verify unten, aber als Helfer, damit
+ * andere Login-Wege (z. B. `server/onboardingV2/devDashboardSeed.ts`) ihn
+ * teilen statt Token-Erzeugung + Cookie-Optionen zu duplizieren.
+ */
+export async function issueSessionCookie(
+  req: Request,
+  res: Response,
+  user: { openId: string; name: string | null; email: string | null }
+): Promise<void> {
+  const sessionToken = await createSessionToken(
+    user.openId,
+    user.name ?? user.email ?? user.openId,
+    user.email ?? ""
+  );
+  const cookieOptions = getSessionCookieOptions(req);
+  res.cookie(COOKIE_NAME, sessionToken, {
+    ...cookieOptions,
+    maxAge: ONE_YEAR_MS,
+  });
 }
 
 export function registerMagicLinkAuthRoutes(app: Express) {
@@ -160,15 +183,10 @@ export function registerMagicLinkAuthRoutes(app: Express) {
         }
 
         // Session-Cookie setzen
-        const sessionToken = await createSessionToken(
-          user.openId,
-          user.name ?? email,
-          email
-        );
-        const cookieOptions = getSessionCookieOptions(req);
-        res.cookie(COOKIE_NAME, sessionToken, {
-          ...cookieOptions,
-          maxAge: ONE_YEAR_MS,
+        await issueSessionCookie(req, res, {
+          openId: user.openId,
+          name: user.name ?? email,
+          email,
         });
 
         // Weiterleiten

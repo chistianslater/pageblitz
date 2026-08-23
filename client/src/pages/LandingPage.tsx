@@ -241,7 +241,7 @@ const FaqSection = ({ isDark }: { isDark: boolean }) => {
       <div className="max-w-2xl mx-auto px-6">
         <div className="text-center mb-14">
           <p
-            className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+            className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
           >
             FAQ
           </p>
@@ -268,11 +268,11 @@ const FaqSection = ({ isDark }: { isDark: boolean }) => {
                 </span>
                 {openIndex === i ? (
                   <ChevronUp
-                    className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                    className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                   />
                 ) : (
                   <ChevronDown
-                    className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                    className={`w-4 h-4 shrink-0 ml-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                   />
                 )}
               </button>
@@ -369,7 +369,7 @@ const StatItem = ({
         {displayValue}
       </div>
       <div
-        className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+        className={`text-sm transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
       >
         {stat.label}
       </div>
@@ -871,7 +871,7 @@ export default function LandingPage() {
                       autoComplete="organization"
                       className={`flex-1 h-14 px-5 rounded-full text-base outline-none border transition-all duration-300 ${
                         isDark
-                          ? "bg-white/[0.06] border-white/15 text-white placeholder:text-white/40 focus:border-lime-400/60 focus:bg-white/[0.09]"
+                          ? "bg-white/[0.06] border-white/15 text-white placeholder:text-white/60 focus:border-lime-400/60 focus:bg-white/[0.09]"
                           : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-600 shadow-sm focus:border-lime-500 focus:shadow-md"
                       }`}
                     />
@@ -1053,7 +1053,7 @@ export default function LandingPage() {
 
           <div className="text-center mt-12">
             <p
-              className={`text-sm mb-6 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+              className={`text-sm mb-6 transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
             >
               … und viele mehr. Wenn du ein lokales Unternehmen hast, ist
               Pageblitz für dich.
@@ -1107,7 +1107,7 @@ export default function LandingPage() {
             <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
           <p
-            className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+            className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
           >
             7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar
           </p>
@@ -1197,7 +1197,7 @@ export default function LandingPage() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <span
-                  className={`text-xs ${isDark ? "text-white/30" : "text-slate-400"}`}
+                  className={`text-xs ${isDark ? "text-white/50" : "text-slate-400"}`}
                 >
                   7 Tage kostenlos testen · danach 19,90 €/Mo.
                 </span>
@@ -1216,7 +1216,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
             >
               Warum Pageblitz?
             </motion.h2>
@@ -1311,7 +1311,7 @@ export default function LandingPage() {
           <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Button>
         <p
-          className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+          className={`text-xs mt-3 transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
         >
           7 Tage gratis · danach 19,90 €/Mo. · Jederzeit kündbar
         </p>
@@ -1325,7 +1325,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
               <p
-                className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
               >
                 Der Ablauf
               </p>
@@ -1360,7 +1360,7 @@ export default function LandingPage() {
                 ].map((item, i) => (
                   <div key={i} className="flex gap-6 group">
                     <div
-                      className={`text-sm font-medium pt-1 transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-600"}`}
+                      className={`text-sm font-medium pt-1 transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
                     >
                       {item.step}
                     </div>
@@ -1371,7 +1371,7 @@ export default function LandingPage() {
                         {item.title}
                       </h4>
                       <p
-                        className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                        className={`text-sm leading-relaxed transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                       >
                         {item.desc}
                       </p>
@@ -1430,14 +1430,14 @@ export default function LandingPage() {
                         {s.label}
                       </div>
                       <div
-                        className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                        className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                       >
                         {s.sub}
                       </div>
                     </div>
                     {i < 3 && (
                       <div
-                        className={`ml-auto text-xs transition-colors duration-500 ${isDark ? "text-white/20" : "text-gray-600"}`}
+                        className={`ml-auto text-xs transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
                       >
                         →
                       </div>
@@ -1481,7 +1481,7 @@ export default function LandingPage() {
                         Jetzt kostenlos starten
                       </div>
                       <div
-                        className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                        className={`text-xs font-mono mt-0.5 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                       >
                         7 Tage gratis testen · dann 19,90 €/Mo.
                       </div>
@@ -1621,7 +1621,7 @@ export default function LandingPage() {
                 <ArrowRight className="w-4 h-4" />
               </motion.button>
               <p
-                className={`mt-3 text-xs transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+                className={`mt-3 text-xs transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
               >
                 Im Basis-Paket wählbar · 7 Tage gratis testen
               </p>
@@ -1945,7 +1945,7 @@ export default function LandingPage() {
                       {t.name}
                     </div>
                     <div
-                      className={`text-xs transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                      className={`text-xs transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                     >
                       {t.role}
                     </div>
@@ -1973,7 +1973,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <p
-              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
             >
               Preise
             </p>
@@ -2031,13 +2031,13 @@ export default function LandingPage() {
                       {billingYearly ? "19,90€" : "24,90€"}
                     </span>
                     <span
-                      className={`transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                      className={`transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                     >
                       /Monat
                     </span>
                   </div>
                   <p
-                    className={`text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                    className={`text-sm transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
                   >
                     {billingYearly
                       ? "Jährliche Abrechnung · Jederzeit kündbar."
@@ -2070,7 +2070,7 @@ export default function LandingPage() {
                   className={`rounded-2xl p-5 mb-8 border transition-colors duration-500 ${isDark ? "bg-white/[0.03] border-white/8" : "bg-gray-50 border-gray-200"}`}
                 >
                   <p
-                    className={`text-xs font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-600"}`}
+                    className={`text-xs font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/55" : "text-gray-600"}`}
                   >
                     Optionale Add-ons
                   </p>
@@ -2119,7 +2119,7 @@ export default function LandingPage() {
                           {label}
                         </span>
                         <span
-                          className={`text-xs font-medium transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-600"}`}
+                          className={`text-xs font-medium transition-colors duration-500 ${isDark ? "text-white/55" : "text-gray-600"}`}
                         >
                           {price}
                         </span>
@@ -2139,7 +2139,7 @@ export default function LandingPage() {
                   7 Tage gratis starten
                 </Button>
                 <p
-                  className={`text-center text-xs mt-4 transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+                  className={`text-center text-xs mt-4 transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
                 >
                   7 Tage gratis · danach{" "}
                   {billingYearly ? "19,90 €/Mo. (jährlich)" : "24,90 €/Mo."} ·
@@ -2156,7 +2156,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-14">
             <p
-              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+              className={`text-sm font-medium uppercase tracking-widest mb-4 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
             >
               Vergleich
             </p>
@@ -2166,7 +2166,7 @@ export default function LandingPage() {
               Pageblitz vs. Webagentur
             </h2>
             <p
-              className={`mt-4 text-base transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+              className={`mt-4 text-base transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
             >
               Warum immer mehr Kleinunternehmer auf KI statt auf Agenturen
               setzen.
@@ -2180,7 +2180,7 @@ export default function LandingPage() {
               className={`grid grid-cols-3 px-8 py-5 transition-colors duration-500 ${isDark ? "bg-white/5" : "bg-gray-50"}`}
             >
               <div
-                className={`text-sm font-medium uppercase tracking-wider transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                className={`text-sm font-medium uppercase tracking-wider transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
               ></div>
               <div className="text-center">
                 <span
@@ -2250,7 +2250,7 @@ export default function LandingPage() {
                   {row.label}
                 </div>
                 <div
-                  className={`text-center text-sm self-center transition-colors duration-500 ${isDark ? "text-white/35" : "text-gray-600"}`}
+                  className={`text-center text-sm self-center transition-colors duration-500 ${isDark ? "text-white/55" : "text-gray-600"}`}
                 >
                   {row.agency}
                 </div>
@@ -2276,7 +2276,7 @@ export default function LandingPage() {
                 </span>
                 {billingYearly && (
                   <span
-                    className={`block text-xs mt-1 ${isDark ? "text-white/30" : "text-gray-600"}`}
+                    className={`block text-xs mt-1 ${isDark ? "text-white/50" : "text-gray-600"}`}
                   >
                     * bei jährlicher Zahlung · 24,90 €/Mo. bei monatlicher
                     Abrechnung
@@ -2324,7 +2324,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
           >
             Jetzt loslegen
           </motion.p>
@@ -2384,7 +2384,7 @@ export default function LandingPage() {
             ].map(t => (
               <div
                 key={t}
-                className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+                className={`flex items-center gap-2 text-sm transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
               >
                 <CheckCircle2 className="w-4 h-4 text-green-400/60" />
                 {t}
@@ -2408,7 +2408,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto px-6">
           <h2
-            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/40" : "text-gray-600"}`}
+            className={`text-sm font-medium uppercase tracking-widest mb-6 transition-colors duration-500 ${isDark ? "text-white/60" : "text-gray-600"}`}
           >
             Website erstellen – nach Branche
           </h2>
@@ -2447,20 +2447,20 @@ export default function LandingPage() {
             </span>
           </div>
           <div
-            className={`text-sm transition-colors duration-500 ${isDark ? "text-white/30" : "text-gray-600"}`}
+            className={`text-sm transition-colors duration-500 ${isDark ? "text-white/50" : "text-gray-600"}`}
           >
             © 2026 Pageblitz. Alle Rechte vorbehalten.
           </div>
           <div className="flex gap-6 text-sm">
             <a
               href="/impressum"
-              className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
+              className={`transition-colors ${isDark ? "text-white/60 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
             >
               Impressum
             </a>
             <a
               href="/datenschutz"
-              className={`transition-colors ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
+              className={`transition-colors ${isDark ? "text-white/60 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
             >
               Datenschutz
             </a>
@@ -2470,7 +2470,7 @@ export default function LandingPage() {
                   new Event("pageblitz:open-cookie-settings")
                 )
               }
-              className={`transition-colors cursor-pointer bg-transparent border-none p-0 ${isDark ? "text-white/40 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
+              className={`transition-colors cursor-pointer bg-transparent border-none p-0 ${isDark ? "text-white/60 hover:text-white/80" : "text-gray-600 hover:text-gray-700"}`}
             >
               Cookie Einstellungen
             </button>
