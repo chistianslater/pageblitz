@@ -182,9 +182,7 @@ describe("SSR routes", () => {
 
       test("unbekannte Page → 404, Body reflektiert den Parameter NICHT", async () => {
         const app = buildAppWithFallback();
-        const res = await request(app).get(
-          "/demo/werkbank/%3Cscript%3E"
-        );
+        const res = await request(app).get("/demo/werkbank/%3Cscript%3E");
         expect(res.status).toBe(404);
         expect(res.text).not.toContain("<script");
       });
@@ -332,12 +330,35 @@ describe("SSR routes", () => {
       invalidateSsrCache("brandt-404-invalidate");
       (getWebsiteBySlug as Mock).mockResolvedValue({
         slug: "brandt-404-invalidate",
-        websiteData: { ...getFixture("werkbank", "full"), businessName: "Neuer Name GmbH" },
+        websiteData: {
+          ...getFixture("werkbank", "full"),
+          businessName: "Neuer Name GmbH",
+        },
       });
       const resC = await request(app).get("/site/brandt-404-invalidate/pfad-a");
       expect(resC.status).toBe(404);
       expect(resC.text).toContain("Neuer Name GmbH");
       expect(getWebsiteBySlug).toHaveBeenCalledTimes(2);
+    });
+
+    test("geteilter 404-Cache liefert NIE eine existierende, noch nicht gerenderte Unterseite als 404 (Final-Review B6 Task 3)", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "brandt-404-vs-page",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      const app = buildAppWithFallback();
+      // 1) Tippfehler-Pfad → 404 (geteilter Slug-Eintrag wird befüllt)
+      const typo = await request(app).get("/site/brandt-404-vs-page/tippfehler-pfad");
+      expect(typo.status).toBe(404);
+      // 2) echte Unterseite, noch nie gerendert → MUSS 200 + Page-Inhalt liefern
+      const page = await request(app).get("/site/brandt-404-vs-page/leistungen-im-detail");
+      expect(page.status).toBe(200);
+      expect(page.text).toContain("Leistungen im Detail");
+      // 3) weiterer Tippfehler → 404 aus dem Cache, kein neuer DB-Zugriff nötig
+      const calls = (getWebsiteBySlug as Mock).mock.calls.length;
+      const typo2 = await request(app).get("/site/brandt-404-vs-page/noch-ein-tippfehler");
+      expect(typo2.status).toBe(404);
+      expect((getWebsiteBySlug as Mock).mock.calls.length).toBe(calls);
     });
 
     describe("Unterseiten (pages[], Plan B6 Task 3)", () => {

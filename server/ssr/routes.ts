@@ -33,6 +33,14 @@ const siteHtmlCache = new Map<string, CacheEntry>();
  */
 const NEGATIVE_CACHE_TTL_MS = 60_000;
 const siteMissCache = new Map<string, number>();
+/**
+ * Bekannte Unterseiten-Slugs je Website-Slug (Key = slug lowercase), gesetzt
+ * bei jedem erfolgreichen Dokument-Load. Dient NUR dazu, den geteilten
+ * 404-Cache-Eintrag (NOT_FOUND_CACHE_PATH) für dynamische Pfade gefahrlos zu
+ * nutzen: Ein nicht gecachter, aber existierender Unterseiten-Pfad darf nie
+ * das 404-HTML eines anderen Pfads bekommen (Final-Review B6 Task 3).
+ */
+const sitePagesCache = new Map<string, { pageSlugs: Set<string>; at: number }>();
 
 /** Obergrenze pro Cache — verhindert unbegrenztes Wachstum (kein TTL-Sweep, nur Read-Eviction bisher). */
 const MAX_CACHE_ENTRIES = 500;
@@ -110,6 +118,7 @@ function matchesSlugPrefix(
 export function invalidateSsrCache(slug: string): void {
   const key = slug.toLowerCase();
   siteMissCache.delete(key);
+  sitePagesCache.delete(key);
   for (const cacheKey of Array.from(siteHtmlCache.keys())) {
     if (
       matchesSlugPrefix(cacheKey, "sub:", key) ||
@@ -515,9 +524,18 @@ async function handleCustomerSiteSsr(
   const notFoundCacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${NOT_FOUND_CACHE_PATH}`;
 
   try {
+    // Geteilter 404-Eintrag nur, wenn wir sicher wissen, dass der Pfad KEINE
+    // existierende Unterseite ist (Pages-Liste des Dokuments bekannt und
+    // Pfad nicht enthalten). Unbekannte Pages-Liste → Dokument laden.
+    const knownPages = sitePagesCache.get(siteRequest.slug);
+    const maySkipViaNotFound =
+      !isStaticPathname &&
+      knownPages !== undefined &&
+      now - knownPages.at < CACHE_TTL_MS &&
+      !knownPages.pageSlugs.has(siteRequest.pathname.replace(/^\//, ""));
     const cached =
       siteHtmlCache.get(cacheKey) ??
-      (isStaticPathname ? undefined : siteHtmlCache.get(notFoundCacheKey));
+      (maySkipViaNotFound ? siteHtmlCache.get(notFoundCacheKey) : undefined);
     if (cached && now - cached.at < CACHE_TTL_MS) {
       if (cached.robotsNoindex) {
         res.setHeader("X-Robots-Tag", "noindex");
@@ -542,7 +560,16 @@ async function handleCustomerSiteSsr(
       return;
     }
 
-    if (!isStaticPathname && pageForPathname(parsed.data, siteRequest.pathname) === null) {
+    sitePagesCache.set(siteRequest.slug, {
+      pageSlugs: new Set((parsed.data.pages ?? []).map(p => p.slug)),
+      at: now,
+    });
+    capCacheSize(sitePagesCache, MAX_CACHE_ENTRIES);
+
+    if (
+      !isStaticPathname &&
+      pageForPathname(parsed.data, siteRequest.pathname) === null
+    ) {
       // Bekannte v2-Site, aber unbekannter Unterpfad (z. B. Tippfehler in
       // einem geteilten Link oder eine nicht (mehr) existierende Unterseite)
       // → eigenes SSR-404 statt SPA-Fallback. Website wird dafür geladen
