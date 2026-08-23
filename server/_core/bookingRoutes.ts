@@ -86,7 +86,7 @@ async function getOwnerEmail(websiteId: number): Promise<{ email: string | null;
     const [row] = await db
       .select({ email: users.email, businessName: businesses.name })
       .from(generatedWebsites)
-      .innerJoin(subscriptions, eq(subscriptions.id, generatedWebsites.subscriptionId as any))
+      .innerJoin(subscriptions, eq(subscriptions.websiteId, generatedWebsites.id))
       .innerJoin(users, eq(users.id, subscriptions.userId as any))
       .innerJoin(businesses, eq(businesses.id, generatedWebsites.businessId as any))
       .where(eq(generatedWebsites.id, websiteId))

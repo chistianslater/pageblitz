@@ -1187,7 +1187,6 @@ function RegenerateDialog({ website }: { website: any }) {
 
 function CheckoutDialog({ website }: { website: any }) {
   const [open, setOpen] = useState(false);
-  const [subpages, setSubpages] = useState(0);
   const [gallery, setGallery] = useState(false);
   const [contactForm, setContactForm] = useState(false);
 
@@ -1200,7 +1199,7 @@ function CheckoutDialog({ website }: { website: any }) {
     onError: err => toast.error("Fehler: " + err.message),
   });
 
-  const totalMonthly = 79 + subpages * 9.9 + (gallery ? 4.9 : 0);
+  const totalMonthly = 79 + (gallery ? 4.9 : 0);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -1243,33 +1242,6 @@ function CheckoutDialog({ website }: { website: any }) {
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
               Add-ons
             </p>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
-              <div>
-                <Label className="font-medium cursor-pointer">
-                  Unterseiten
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  +9,90€/Monat pro Seite
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSubpages(Math.max(0, subpages - 1))}
-                >
-                  -
-                </Button>
-                <span className="w-6 text-center font-medium">{subpages}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSubpages(subpages + 1)}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border">
               <div>
                 <Label
@@ -1319,7 +1291,7 @@ function CheckoutDialog({ website }: { website: any }) {
             onClick={() =>
               checkoutMutation.mutate({
                 websiteId: website.id,
-                addOns: { subpages, gallery, contactForm },
+                addOns: { gallery, contactForm },
               })
             }
             disabled={checkoutMutation.isPending}

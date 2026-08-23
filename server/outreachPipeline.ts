@@ -402,7 +402,11 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
         }
 
         const r = details?.result;
-        const category = extractGmbCategory(place.types || r?.types || []);
+        const category = extractGmbCategory(
+          (place as { types?: string[] }).types ||
+            (r as { types?: string[] } | undefined)?.types ||
+            []
+        );
         const websiteUrl = r?.website || null;
 
         // ── Website quality analysis ──────────────────────────────────────────

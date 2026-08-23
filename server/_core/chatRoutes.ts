@@ -104,7 +104,7 @@ async function sendLeadNotification(
       .from(generatedWebsites)
       .innerJoin(
         subscriptions,
-        eq(subscriptions.id, generatedWebsites.subscriptionId as any)
+        eq(subscriptions.websiteId, generatedWebsites.id)
       )
       .innerJoin(users, eq(users.id, subscriptions.userId as any))
       .innerJoin(

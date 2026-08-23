@@ -1824,7 +1824,14 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
               aiChat: z.boolean().default(false),
               booking: z.boolean().default(false),
             })
-            .default({}),
+            .default({
+              contactForm: false,
+              gallery: false,
+              menu: false,
+              pricelist: false,
+              aiChat: false,
+              booking: false,
+            }),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -1857,7 +1864,7 @@ Diese E-Mail wurde von Christian Slater, Gründer von Pageblitz, gesendet.<br>
               price_data: {
                 currency: "eur",
                 product_data: {
-                  name: `Pageblitz – ${website.businessName || (website.websiteData as any)?.businessName || "Deine Website"}`,
+                  name: `Pageblitz – ${(website.websiteData as any)?.businessName || "Deine Website"}`,
                   description,
                 },
                 unit_amount: totalAmount,
