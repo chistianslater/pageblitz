@@ -17,8 +17,15 @@
  * an der Landingpage diese Datei mitziehen.
  */
 import { HOME_FAQ_ITEMS } from "../../shared/faq";
+import { PRICING, formatEuro } from "../../shared/pricing";
 import { SEO_INDUSTRIES } from "./landingPages";
 import { escapeHtml } from "./metaInjection";
+
+// Einzige Preisquelle ist shared/pricing.ts (wie PRICE_YEARLY/PRICE_MONTHLY in
+// client/src/components/landing/primitives.tsx) — Prerender und React-Landing
+// dürfen hier nicht auseinanderlaufen (Cloaking-Risiko, siehe Kopfkommentar).
+const PRICE_YEARLY = formatEuro(PRICING.base.yearly); // „19,90 €"
+const PRICE_MONTHLY = formatEuro(PRICING.base.monthly); // „24,90 €"
 
 const STEPS = [
   {
@@ -47,7 +54,7 @@ const STEPS = [
 const COMPARISON: Array<[string, string, string]> = [
   ["Einmalige Kosten", "2.000 – 8.000 €", "0 €"],
   ["Zeit bis zur Website", "4 – 12 Wochen", "3 Minuten"],
-  ["Monatliche Kosten", "50 – 150 € Hosting & Wartung", "ab 19,90 €"],
+  ["Monatliche Kosten", "50 – 150 € Hosting & Wartung", `ab ${PRICE_YEARLY}`],
   ["Änderungen & Updates", "Stundenabrechnung (~80 €/h)", "Inklusive"],
   ["Vertragslaufzeit", "Oft 12–24 Monate", "Monatlich kündbar"],
   ["DSGVO & Impressum", "Meist extra", "Automatisch inklusive"],
@@ -125,7 +132,7 @@ export function generateHomePrerender(): string {
     </header>
 
     <section>
-      <p style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#6b645b;margin:0 0 2rem">Webagentur kostet 3.000 €+ · Pageblitz ab 19,90 €/Monat</p>
+      <p style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#6b645b;margin:0 0 2rem">Webagentur kostet 3.000 €+ · Pageblitz ab ${PRICE_YEARLY}/Monat</p>
       <h1 style="font-size:clamp(2.5rem,1.25rem + 3.4vw,4.75rem);font-weight:500;letter-spacing:-.02em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance">Deine professionelle Website in 3 Minuten.</h1>
       <p style="font-size:1.1rem;line-height:1.6;color:#6b645b;max-width:30rem;margin:1.5rem 0 2rem">Kein Webdesigner, kein monatelanges Warten, kein vierstelliges Budget. Pageblitz erstellt deine Website automatisch – du musst nur dein Unternehmen beschreiben.</p>
       <!-- Echtes GET-Formular: funktioniert identisch zum React-Hero, aber auch
@@ -138,7 +145,7 @@ export function generateHomePrerender(): string {
         <button type="submit"
                 style="height:3.5rem;padding:0 2rem;border:0;border-radius:999px;background:#1f5f4b;color:#fff;font-size:1rem;font-weight:600;cursor:pointer">Website erstellen</button>
       </form>
-      <p style="font-size:.9rem;color:#6b645b;margin:0">7 Tage gratis · Danach ab 19,90 €/Monat · Monatlich kündbar</p>
+      <p style="font-size:.9rem;color:#6b645b;margin:0">7 Tage gratis · Danach ab ${PRICE_YEARLY}/Monat · Monatlich kündbar</p>
     </section>
 
     <section style="padding:4rem 0">
@@ -150,7 +157,7 @@ export function generateHomePrerender(): string {
 
     <section style="padding:4rem 0">
       <h2 style="font-size:1.75rem;font-weight:600;letter-spacing:-.02em;margin:0 0 .75rem">Ein Preis. Alles inklusive.</h2>
-      <p style="color:#6b645b;margin:0 0 2rem">19,90 €/Monat bei jährlicher Zahlung, 24,90 €/Monat bei monatlicher Zahlung. Die ersten 7 Tage sind kostenlos.</p>
+      <p style="color:#6b645b;margin:0 0 2rem">${PRICE_YEARLY}/Monat bei jährlicher Zahlung, ${PRICE_MONTHLY}/Monat bei monatlicher Zahlung. Die ersten 7 Tage sind kostenlos.</p>
       <ul style="margin:0;padding-left:1.25rem;color:#4b5563;line-height:2;max-width:60ch">
         ${PLAN_FEATURES.map(f => `<li>${escapeHtml(f)}</li>`).join("\n        ")}
       </ul>

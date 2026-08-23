@@ -3,6 +3,12 @@ import { SEO_INDUSTRY_LINKS } from "../shared/seoIndustryLinks";
 import { HOME_FAQ_ITEMS } from "../shared/faq";
 import { DE_CITIES, SEO_INDUSTRIES, generateLandingPageHTML } from "./seo/landingPages";
 import { generateHomePrerender, buildHomeFaqSchema } from "./seo/homePage";
+import {
+  PRICING,
+  addonPrice,
+  ADDON_KEYS,
+  formatEuro,
+} from "../shared/pricing";
 
 describe("SEO_INDUSTRY_LINKS bleibt deckungsgleich mit SEO_INDUSTRIES", () => {
   it("enthält exakt dieselben Slugs", () => {
@@ -66,6 +72,32 @@ describe("Home-Prerender", () => {
     for (const faq of HOME_FAQ_ITEMS) {
       expect(schema.mainEntity.some((e: { name: string }) => e.name === faq.q)).toBe(true);
       expect(html).toContain(faq.q);
+    }
+  });
+
+  it("nennt die Basispreise aus shared/pricing.ts (Jahres- und Monatsabrechnung)", () => {
+    expect(html).toContain(`${formatEuro(PRICING.base.yearly)}/Monat`);
+    expect(html).toContain(`${formatEuro(PRICING.base.monthly)}/Monat`);
+  });
+
+  it("enthält keine anderen „€/Monat“-Preise als die aus shared/pricing.ts", () => {
+    // Fängt den Fall, dass jemand im Prerender (oder in shared/faq.ts, die
+    // der Prerender mit ausliefert) einen Preis hart eintippt, der von der
+    // Preisquelle abweicht — Prerender und React-Landing müssen wortgleich
+    // bleiben (Cloaking-Risiko, Kopfkommentar in server/seo/homePage.ts).
+    const allowed = new Set<string>([
+      formatEuro(PRICING.base.yearly),
+      formatEuro(PRICING.base.monthly),
+      ...ADDON_KEYS.map(k => formatEuro(addonPrice(k))),
+    ]);
+    const found = Array.from(html.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2} €)\s*\/\s*Monat/g)).map(
+      m => m[1]
+    );
+    expect(found.length).toBeGreaterThan(0);
+    for (const price of found) {
+      expect(allowed.has(price), `Unbekannter Monatspreis im Prerender: ${price}`).toBe(
+        true
+      );
     }
   });
 });

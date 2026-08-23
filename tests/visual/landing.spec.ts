@@ -27,9 +27,10 @@ test("Landingpage: Style-Pack-Showcase zeigt geladene statische Vorschaubilder",
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  // Deterministische Baseline: PackShowcase überspringt die framer-motion
-  // Fade-in-Animation der Karten komplett, wenn reduced motion aktiv ist
-  // (siehe PackShowcase.tsx `animate`) — kein Timing-abhängiges Warten nötig.
+  // Deterministische Baseline: Die Landingpage nutzt kein framer-motion mehr
+  // (B6 Task 8); verbleibende CSS-Transitions/-Animationen werden über die
+  // globale `prefers-reduced-motion`-Regel (`.lp *`, client/src/index.css)
+  // auf 0,01 ms gekürzt — kein Timing-abhängiges Warten nötig.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await skipCookieBanner(page);
 

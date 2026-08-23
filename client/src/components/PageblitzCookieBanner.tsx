@@ -79,32 +79,57 @@ export default function PageblitzCookieBanner() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5"
+      // pointer-events-none auf dem vollbreiten Wrapper: sonst fängt die
+      // transparente Fläche links/rechts neben dem Panel alle Klicks ab —
+      // der Chat-Button unten rechts (LandingPageChatWidget) war bei
+      // sichtbarem Banner nicht anklickbar. Das Panel selbst schaltet sie
+      // wieder ein.
+      className="fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5 pointer-events-none"
       role="dialog"
       aria-modal="true"
       aria-label="Cookie-Einstellungen"
+      style={{ fontFamily: "var(--lp-font)" }}
     >
-      <div className="max-w-2xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-[#0f1117]/95 backdrop-blur-xl">
+      {/* Studio-Look (Landing-Tokens `--lp-*` aus client/src/index.css):
+          helle Surface, Hairline-Rahmen, Ink-Text, ein Grün — kein Dark-Panel,
+          kein Neon-Lime. Der Banner ist global (auch /start, Dashboard). */}
+      <div
+        className="max-w-2xl mx-auto rounded-2xl overflow-hidden border pointer-events-auto"
+        style={{
+          background: "var(--lp-surface)",
+          borderColor: "var(--lp-line)",
+          color: "var(--lp-ink)",
+          boxShadow: "0 24px 48px -24px rgba(29,26,23,0.35)",
+        }}
+      >
         {/* Header */}
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
-              style={{ backgroundColor: 'var(--pb-brand-dim)' }}>
-              <Cookie className="w-4.5 h-4.5" style={{ width: 18, height: 18, color: 'var(--pb-brand)' }} />
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{
+                background: "var(--lp-accent)",
+                color: "var(--lp-accent-ink)",
+              }}
+            >
+              <Cookie style={{ width: 18, height: 18 }} />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-sm font-semibold text-white mb-1">
+              <h2 className="text-sm font-semibold mb-1">
                 Cookies & Datenschutz
               </h2>
-              <p className="text-xs text-white/50 leading-relaxed">
+              <p
+                className="text-xs leading-relaxed"
+                style={{ color: "var(--lp-muted)" }}
+              >
                 Wir nutzen Cookies, um Pageblitz zu verbessern. Notwendige Cookies (Session, Auth)
                 sind immer aktiv.{" "}
                 <a
                   href="/datenschutz"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:brightness-125 underline inline-flex items-center gap-0.5 transition-colors"
-                  style={{ color: 'var(--pb-brand)' }}
+                  className="underline underline-offset-2 inline-flex items-center gap-0.5 hover:opacity-80 transition-opacity"
+                  style={{ color: "var(--lp-accent)" }}
                 >
                   Datenschutzerklärung
                   <ExternalLink className="w-3 h-3" />
@@ -116,23 +141,38 @@ export default function PageblitzCookieBanner() {
 
         {/* Expandable categories */}
         {expanded && (
-          <div className="px-5 pb-4 space-y-2 border-t border-white/8 pt-4">
+          <div
+            className="px-5 pb-4 space-y-2 border-t pt-4"
+            style={{ borderColor: "var(--lp-line)" }}
+          >
             {/* Necessary – always on */}
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-white/4 border border-white/8">
+            <div
+              className="flex items-start gap-3 p-3 rounded-xl border"
+              style={{
+                borderColor: "var(--lp-line)",
+                background: "var(--lp-canvas)",
+              }}
+            >
               <div className="flex-shrink-0 mt-0.5">
-                <div className="w-4 h-4 rounded border-2 flex items-center justify-center"
-                  style={{ borderColor: 'var(--pb-brand)', backgroundColor: 'var(--pb-brand)' }}>
-                  <svg className="w-2.5 h-2.5" style={{ color: 'var(--pb-brand-text)' }} viewBox="0 0 10 10" fill="none">
+                <div
+                  className="w-4 h-4 rounded border-2 flex items-center justify-center"
+                  style={{
+                    borderColor: "var(--lp-accent)",
+                    backgroundColor: "var(--lp-accent)",
+                    color: "var(--lp-accent-ink)",
+                  }}
+                >
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                     <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
               </div>
               <div className="flex-1">
-                <p className="text-xs font-medium text-white">
+                <p className="text-xs font-medium">
                   Notwendig{" "}
-                  <span className="text-white/60 font-normal ml-1">– immer aktiv</span>
+                  <span className="font-normal ml-1" style={{ color: "var(--lp-muted)" }}>– immer aktiv</span>
                 </p>
-                <p className="text-xs text-white/60 mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: "var(--lp-muted)" }}>
                   Session-Verwaltung, Authentifizierung, CSRF-Schutz. Rybbit (cookielos, keine Einwilligung nötig).
                 </p>
               </div>
@@ -147,7 +187,8 @@ export default function PageblitzCookieBanner() {
               return (
                 <label
                   key={cat.id}
-                  className="flex items-start gap-3 p-3 rounded-xl border border-white/8 cursor-pointer hover:bg-white/4 transition-colors"
+                  className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors hover:bg-lp-canvas"
+                  style={{ borderColor: "var(--lp-line)" }}
                 >
                   <div className="flex-shrink-0 mt-0.5">
                     <input
@@ -155,15 +196,15 @@ export default function PageblitzCookieBanner() {
                       checked={checked}
                       onChange={toggle}
                       className="w-4 h-4 rounded cursor-pointer"
-                      style={{ accentColor: 'var(--pb-brand)' }}
+                      style={{ accentColor: "var(--lp-accent)" }}
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-white">
+                    <p className="text-xs font-medium">
                       {cat.label}{" "}
-                      <span className="text-white/60 font-normal">– {cat.tools}</span>
+                      <span className="font-normal" style={{ color: "var(--lp-muted)" }}>– {cat.tools}</span>
                     </p>
-                    <p className="text-xs text-white/60 mt-0.5">{cat.description}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--lp-muted)" }}>{cat.description}</p>
                   </div>
                 </label>
               );
@@ -175,7 +216,8 @@ export default function PageblitzCookieBanner() {
         <div className="px-5 pb-5 flex flex-col sm:flex-row items-center gap-2">
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="flex items-center gap-1 text-xs text-white/70 hover:text-white transition-colors order-3 sm:order-1 sm:mr-auto"
+            className="flex items-center gap-1 text-xs underline-offset-2 hover:underline transition-colors order-3 sm:order-1 sm:mr-auto"
+            style={{ color: "var(--lp-muted)" }}
           >
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             {expanded ? "Weniger" : "Einstellungen anpassen"}
@@ -183,7 +225,8 @@ export default function PageblitzCookieBanner() {
 
           <button
             onClick={handleNecessaryOnly}
-            className="w-full sm:w-auto order-2 px-4 py-2 rounded-xl border border-white/12 text-xs font-medium text-white/60 hover:text-white/90 hover:border-white/20 transition-colors"
+            className="w-full sm:w-auto order-2 px-4 py-2 rounded-full border text-xs font-medium transition-colors hover:bg-lp-canvas"
+            style={{ borderColor: "var(--lp-line)", color: "var(--lp-ink)" }}
           >
             Nur notwendige
           </button>
@@ -191,16 +234,16 @@ export default function PageblitzCookieBanner() {
           {expanded ? (
             <button
               onClick={handleSaveCustom}
-              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
-              style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}
+              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-full text-xs font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "var(--lp-accent)", color: "var(--lp-accent-ink)" }}
             >
               Auswahl speichern
             </button>
           ) : (
             <button
               onClick={handleAcceptAll}
-              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-xl text-xs font-semibold transition-colors"
-              style={{ backgroundColor: 'var(--pb-brand)', color: 'var(--pb-brand-text)' }}
+              className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-full text-xs font-semibold transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "var(--lp-accent)", color: "var(--lp-accent-ink)" }}
             >
               Alle akzeptieren
             </button>

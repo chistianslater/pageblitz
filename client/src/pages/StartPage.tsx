@@ -82,7 +82,10 @@ function CategoryPicker({ selected, onSelect, isDark }: { selected: string; onSe
 }
 
 export default function StartPage() {
-  const isDark = typeof window !== "undefined" && localStorage.getItem("lp-theme") === "dark";
+  // Seit dem Studio-Redesign der Landingpage (2026-08-23) gibt es keinen
+  // `lp-theme`-Umschalter mehr; die Seite ist immer hell. Der Dark-Zweig in
+  // den Klassen unten bleibt vorerst stehen (Minor, > 60 Stellen).
+  const isDark = false;
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("choice");
 

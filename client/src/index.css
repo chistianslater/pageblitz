@@ -2,11 +2,32 @@
 @import "tw-animate-css";
 
 :root {
+  /* Altes Neon-Lime-Branding. Auf der Landingpage und in globalen
+     Chrome-Elementen (Cookie-Banner, Chat-Widget) seit dem Studio-Redesign
+     (2026-08-23) nicht mehr in Gebrauch — einziger verbliebener Konsument ist
+     das Hilfe-Widget im Kunden-Dashboard (client/src/components/HelpWidget.tsx,
+     Checkbox + Datenschutz-Link). Bleibt, bis das Dashboard nachzieht. */
   --pb-brand: #a3e635;
   --pb-brand-hover: #84cc16;
   --pb-brand-dim: rgba(163, 230, 53, 0.15);
   --pb-brand-glow: rgba(163, 230, 53, 0.35);
   --pb-brand-text: #0a0a0a;
+
+  /* Landing-/Studio-Tokens (`--lp-*`, Brief docs/superpowers/specs/
+     2026-08-23-landing-redesign-brief.md). Global definiert statt nur auf
+     `.lp`, weil der Cookie-Banner (App.tsx, außerhalb der Landingpage,
+     auch auf /start und im Dashboard) denselben Studio-Look trägt; `.lp`
+     (unten) setzt darauf Schrift, Canvas und Ink für die Landingpage selbst. */
+  --lp-canvas: #f3efe7;
+  --lp-surface: #fbf9f4;
+  --lp-ink: #1d1a17;
+  --lp-muted: #6b645b;
+  --lp-line: #d9d2c5;
+  --lp-accent: #1f5f4b;
+  --lp-accent-ink: #ffffff;
+  --lp-warn: #a4441f;
+  --lp-font: "Space Grotesk", system-ui, sans-serif;
+  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html,
@@ -389,21 +410,13 @@ body {
 /* ── Landingpage (Studio-Look, 2026-08-23) ─────────────────────────────────
    Gleiche Welt wie client/src/pages/onboarding-v2/studio.css (--st-*): warmes
    Papier, Hairlines, eine Schrift, ein Grün. Hell ohne Umschalter —
-   prefers-color-scheme wird bewusst ignoriert. Tokens hier, Layout in
-   client/src/components/landing/*.tsx per Tailwind-Klassen (bg-lp-canvas …). */
+   prefers-color-scheme wird bewusst ignoriert. Farb-Tokens in :root (oben),
+   Layout in client/src/components/landing/*.tsx per Tailwind-Klassen
+   (bg-lp-canvas …). */
 .lp {
-  --lp-canvas: #f3efe7;
-  --lp-surface: #fbf9f4;
-  --lp-ink: #1d1a17;
-  --lp-muted: #6b645b;
-  --lp-line: #d9d2c5;
-  --lp-accent: #1f5f4b;
-  --lp-accent-ink: #ffffff;
-  --lp-warn: #a4441f;
-  --lp-font: "Space Grotesk", system-ui, sans-serif;
+  /* Farb-/Schrift-Tokens stehen in :root (oben); hier nur Layout-Maße. */
   --lp-section: clamp(4rem, 3rem + 5vw, 9rem);
   --lp-gutter: clamp(1.25rem, 4vw, 3rem);
-  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
   font-family: var(--lp-font);
   background: var(--lp-canvas);
   color: var(--lp-ink);

@@ -7,7 +7,23 @@ interface Message {
   content: string;
 }
 
-const PRIMARY = "#a3e635"; // Pageblitz neon lime
+/**
+ * Farben ausschließlich aus den Landing-Tokens (`--lp-*`, client/src/index.css,
+ * Brief docs/superpowers/specs/2026-08-23-landing-redesign-brief.md): das
+ * Widget wird in LandingPage.tsx innerhalb von `<div class="lp">` gemountet,
+ * die Custom Properties erben also auch in die fixed positionierten Teile.
+ * Kein Neon-Lime, keine Verläufe, keine dunklen Flächen — Hairlines statt
+ * Schatten, ein Grün (Accent #1f5f4b, auf Weiß ≈ 7:1).
+ */
+const LP = {
+  canvas: "var(--lp-canvas)",
+  surface: "var(--lp-surface)",
+  ink: "var(--lp-ink)",
+  muted: "var(--lp-muted)",
+  line: "var(--lp-line)",
+  accent: "var(--lp-accent)",
+  accentInk: "var(--lp-accent-ink)",
+} as const;
 
 /**
  * Bewegung komplett in CSS (`.pb-chat-*` in client/src/animations.css) statt
@@ -25,8 +41,7 @@ export default function LandingPageChatWidget() {
   const [, navigate] = useLocation();
   const [open, setOpen] = useState(false);
   // Die Landingpage ist seit dem Studio-Redesign (2026-08-23) immer hell —
-  // kein `lp-theme`-Toggle mehr; das Panel bleibt in seiner hellen Variante.
-  const isDark = false;
+  // kein `lp-theme`-Toggle mehr, das Panel hat nur noch die helle Variante.
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -147,13 +162,20 @@ export default function LandingPageChatWidget() {
       {proactiveVisible && !open && (
         <button
           onClick={openChat}
-          className="pb-chat-pop fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 shadow-xl border border-gray-200 cursor-pointer"
-          style={{ background: "white" }}
+          className="pb-chat-pop fixed bottom-24 right-6 z-[9990] max-w-[240px] text-left rounded-2xl px-4 py-3 border cursor-pointer"
+          style={{
+            background: LP.surface,
+            borderColor: LP.line,
+            boxShadow: "0 12px 28px -16px rgba(29,26,23,0.35)",
+          }}
         >
-          <p className="text-gray-900 text-sm font-medium leading-snug">
+          <p
+            className="text-sm font-medium leading-snug"
+            style={{ color: LP.ink }}
+          >
             Hast du Fragen zu Pageblitz?
           </p>
-          <p className="text-gray-500 text-xs mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: LP.muted }}>
             Ich beantworte sie gerne! 👋
           </p>
         </button>
@@ -162,10 +184,11 @@ export default function LandingPageChatWidget() {
       {/* Floating Button */}
       <button
         onClick={() => (open ? setOpen(false) : openChat())}
-        className="pb-chat-fab fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full flex items-center justify-center text-white"
+        className="pb-chat-fab fixed bottom-6 right-6 z-[9991] w-14 h-14 rounded-full flex items-center justify-center"
         style={{
           // Trigger in den Landing-Tokens (Accent-Grün, weiche Tiefe statt Glow).
-          background: "#1f5f4b",
+          background: LP.accent,
+          color: LP.accentInk,
           boxShadow: "0 12px 28px -12px rgba(29,26,23,0.5)",
         }}
         aria-label={open ? "Chat schließen" : "Chat öffnen"}
@@ -189,33 +212,47 @@ export default function LandingPageChatWidget() {
       {/* Chat Window */}
       {open && (
         <div
-          className={`pb-chat-window fixed bottom-24 right-6 z-[9990] w-[340px] max-h-[520px] flex flex-col rounded-2xl overflow-hidden shadow-2xl ${isDark ? "border border-white/10" : "border border-gray-200"}`}
-          style={{ background: isDark ? "#111118" : "#ffffff" }}
+          className="pb-chat-window fixed bottom-24 right-6 z-[9990] w-[340px] max-h-[520px] flex flex-col rounded-2xl overflow-hidden border"
+          style={{
+            background: LP.surface,
+            borderColor: LP.line,
+            color: LP.ink,
+            boxShadow: "0 24px 48px -24px rgba(29,26,23,0.35)",
+          }}
         >
-          {/* Header */}
+          {/* Header: Surface, Ink-Text, Hairline darunter — kein farbiger Balken */}
           <div
-            className="flex items-center gap-3 px-4 py-3.5 shrink-0"
-            style={{ background: PRIMARY }}
+            className="flex items-center gap-3 px-4 py-3.5 shrink-0 border-b"
+            style={{ borderColor: LP.line }}
           >
-            <div className="w-9 h-9 rounded-full bg-black/15 flex items-center justify-center shrink-0">
-              <Zap className="w-5 h-5 text-gray-900" />
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: LP.accent, color: LP.accentInk }}
+            >
+              <Zap className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-gray-900 font-semibold text-sm leading-tight">
+              <div
+                className="font-semibold text-sm leading-tight"
+                style={{ color: LP.ink }}
+              >
                 Mika · Pageblitz
               </div>
-              <div className="text-gray-700 text-xs flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse" />
+              <div
+                className="text-xs flex items-center gap-1.5"
+                style={{ color: LP.muted }}
+              >
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: LP.accent }}
+                />
                 Online · antwortet sofort
               </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div
-            className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0"
-            style={{ background: isDark ? "#111118" : "#ffffff" }}
-          >
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0">
             {messages.map((msg, i) => (
               <div
                 key={i}
@@ -223,13 +260,13 @@ export default function LandingPageChatWidget() {
               >
                 <div
                   className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "text-gray-900 rounded-br-sm"
-                      : isDark
-                        ? "bg-white/8 text-white/90 rounded-bl-sm"
-                        : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                    msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"
                   }`}
-                  style={msg.role === "user" ? { background: PRIMARY } : {}}
+                  style={
+                    msg.role === "user"
+                      ? { background: LP.accent, color: LP.accentInk }
+                      : { background: LP.canvas, color: LP.ink }
+                  }
                 >
                   {msg.content}
                 </div>
@@ -240,13 +277,17 @@ export default function LandingPageChatWidget() {
             {loading && (
               <div className="flex justify-start">
                 <div
-                  className={`rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center ${isDark ? "bg-white/8" : "bg-gray-100"}`}
+                  className="rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center"
+                  style={{ background: LP.canvas }}
                 >
                   {[0, 1, 2].map(i => (
                     <span
                       key={i}
-                      className={`pb-chat-dot w-1.5 h-1.5 rounded-full ${isDark ? "bg-white/40" : "bg-gray-400"}`}
-                      style={{ animationDelay: `${i * 0.15}s` }}
+                      className="pb-chat-dot w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background: LP.muted,
+                        animationDelay: `${i * 0.15}s`,
+                      }}
                     />
                   ))}
                 </div>
@@ -257,18 +298,18 @@ export default function LandingPageChatWidget() {
             {leadCaptured && (
               <div
                 className="pb-chat-rise rounded-xl p-3.5 border text-center"
-                style={{
-                  background: `${PRIMARY}18`,
-                  borderColor: `${PRIMARY}40`,
-                }}
+                style={{ background: LP.canvas, borderColor: LP.line }}
               >
-                <p className="text-white/70 text-xs mb-2.5 font-medium">
+                <p
+                  className="text-xs mb-2.5 font-medium"
+                  style={{ color: LP.muted }}
+                >
                   ✨ Starte jetzt kostenlos – in 3 Minuten live
                 </p>
                 <button
                   onClick={() => navigate("/start?billing=yearly")}
-                  className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-lg text-sm font-semibold text-gray-900 transition-all hover:brightness-110 active:scale-95"
-                  style={{ background: PRIMARY }}
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-full text-sm font-semibold transition-all hover:brightness-110 active:scale-95"
+                  style={{ background: LP.accent, color: LP.accentInk }}
                 >
                   7 Tage gratis – keine Kreditkarte
                   <ArrowRight className="w-4 h-4" />
@@ -277,7 +318,12 @@ export default function LandingPageChatWidget() {
             )}
 
             {errorMsg && (
-              <p className="text-red-400 text-xs text-center">{errorMsg}</p>
+              <p
+                className="text-xs text-center"
+                style={{ color: "var(--lp-warn)" }}
+              >
+                {errorMsg}
+              </p>
             )}
 
             <div ref={bottomRef} />
@@ -285,8 +331,8 @@ export default function LandingPageChatWidget() {
 
           {/* Input */}
           <div
-            className={`px-3 py-3 border-t flex items-end gap-2 shrink-0 ${isDark ? "border-white/8" : "border-gray-200"}`}
-            style={{ background: isDark ? "#111118" : "#ffffff" }}
+            className="px-3 py-3 border-t flex items-end gap-2 shrink-0"
+            style={{ borderColor: LP.line }}
           >
             <textarea
               ref={inputRef}
@@ -295,21 +341,23 @@ export default function LandingPageChatWidget() {
               onKeyDown={handleKeyDown}
               rows={1}
               placeholder="Frage stellen…"
-              className={`flex-1 resize-none text-sm rounded-xl px-3 py-2.5 outline-none border transition-colors min-h-[40px] max-h-[100px] ${isDark ? "bg-white/8 text-white placeholder-white/30 border-white/10 focus:border-white/25" : "bg-gray-50 text-gray-900 placeholder-gray-400 border-gray-200 focus:border-lime-500"}`}
+              className="flex-1 resize-none text-sm rounded-xl px-3 py-2.5 outline-none border transition-colors min-h-[40px] max-h-[100px] bg-lp-canvas text-lp-ink placeholder:text-lp-muted border-lp-line focus:border-lp-accent"
               style={{ lineHeight: "1.4" }}
             />
             <button
               onClick={sendMessage}
               disabled={!input.trim() || loading}
-              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-30"
-              style={{ background: PRIMARY }}
+              aria-label="Nachricht senden"
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+              style={{ background: LP.accent, color: LP.accentInk }}
             >
-              <Send className="w-4 h-4 text-white" />
+              <Send className="w-4 h-4" />
             </button>
           </div>
           <a
             href="mailto:hello@pageblitz.de"
-            className={`block text-center text-[10px] mt-1.5 transition-colors ${isDark ? "text-white/30 hover:text-white/60" : "text-gray-400 hover:text-gray-600"}`}
+            className="block text-center text-[10px] pb-2 transition-colors hover:underline"
+            style={{ color: LP.muted }}
           >
             Lieber direkt per E-Mail? hello@pageblitz.de
           </a>
