@@ -4,7 +4,7 @@ import { Loader2, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 import { pickLegalHtml } from "@/lib/legalHtml";
-import { getPackAccent } from "@/lib/packAccent";
+import { getPackAccent, getPackAccentText } from "@/lib/packAccent";
 
 export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
   const [location] = useLocation();
@@ -75,6 +75,8 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
 
   const websiteData = website.websiteData as any;
   const primaryColor = getPackAccent(websiteData?.stylePackId);
+  // Link-Text auf Weiß braucht ≥ 4,5:1 — Flächen-Akzent reicht dafür nicht immer.
+  const linkColor = getPackAccentText(websiteData?.stylePackId);
   const businessName =
     websiteData?.businessName || (data as any)?.business?.name || "";
 
@@ -172,7 +174,7 @@ export default function LegalPage({ forceSlug }: { forceSlug?: string } = {}) {
               .legal-content h2 { font-size: 1.15rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.6rem; color: #222; }
               .legal-content h3 { font-size: 1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.4rem; color: #333; }
               .legal-content p  { margin-bottom: 0.75rem; }
-              .legal-content a  { color: ${primaryColor}; text-decoration: underline; }
+              .legal-content a  { color: ${linkColor}; text-decoration: underline; }
               .legal-content a:hover { opacity: 0.8; }
               .legal-content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; list-style: disc; }
               @media (max-width: 640px) {
