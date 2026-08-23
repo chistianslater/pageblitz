@@ -256,6 +256,20 @@ describe("crawlExistingSite", () => {
     "http://[::1]/",
     "http://[fc00::1]/",
     "http://[fd12:3456::1]/",
+    "http://[fe80::1]/",
+    // IPv4-mapped IPv6 (::ffff:0:0/96) — Node's URL normalisiert die
+    // Dotted-Form zu Hex ([::ffff:7f00:1]); beide Formen müssen fallen.
+    "http://[::ffff:127.0.0.1]/",
+    "http://[::ffff:169.254.169.254]/",
+    "http://[::ffff:a9fe:a9fe]/",
+    "http://[::ffff:10.0.0.1]/",
+    // IPv4-compat (::/96)
+    "http://[::127.0.0.1]/",
+    // NAT64 (64:ff9b::/96) mit eingebettetem 127.0.0.1
+    "http://[64:ff9b::7f00:1]/",
+    // CGNAT 100.64.0.0/10
+    "http://100.64.0.1/",
+    "http://100.127.255.255/",
   ])("SSRF: %s wird ohne jeden fetch abgelehnt", async url => {
     const fetchImpl = makeFetch({});
     const result = await crawlExistingSite(url, {
@@ -327,6 +341,144 @@ describe("crawlExistingSite", () => {
       resolveIps: publicDns(),
     });
     expect(result).toBeNull();
+  });
+
+  test("SSRF: öffentliche IPv6-Adresse wird NICHT abgelehnt (fetch findet statt)", async () => {
+    const fetchImpl = makeFetch({});
+    await crawlExistingSite("http://[2001:db8::1]/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(fetchImpl).toHaveBeenCalled();
+  });
+
+  test("SSRF: öffentliche IPv4 im CGNAT-Nachbarbereich (100.128.x) bleibt erlaubt", async () => {
+    const fetchImpl = makeFetch({});
+    await crawlExistingSite("http://100.128.0.1/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(fetchImpl).toHaveBeenCalled();
+  });
+
+  test("SSRF: DNS liefert IPv4-mapped IPv6 auf Metadaten-IP → null, kein fetch", async () => {
+    const fetchImpl = makeFetch({});
+    const resolveIps = vi.fn(async () => ["::ffff:169.254.169.254"]);
+    const result = await crawlExistingSite("https://tarnung.de/", {
+      fetchImpl,
+      resolveIps,
+    });
+    expect(result).toBeNull();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  test("übergroße robots.txt wird beim Lesen gekappt (Stream abgebrochen), Crawl läuft weiter", async () => {
+    // 64-kB-Chunks; ein Disallow käme erst weit hinter der 200-kB-Kappung.
+    const chunk = new TextEncoder().encode(
+      "# Füllkommentar ohne Regeln\n".repeat(2_400)
+    );
+    let pulls = 0;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls++;
+        if (pulls > 1_000) {
+          controller.enqueue(
+            new TextEncoder().encode("User-agent: *\nDisallow: /\n")
+          );
+          controller.close();
+          return;
+        }
+        controller.enqueue(chunk);
+      },
+    });
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () =>
+        new Response(stream, { status: 200 }),
+      "https://example.de/": () => htmlResponse(SIMPLE_HTML),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result?.title).toContain("Müller Metallbau");
+    // Kappung: nach ~200 kB ist Schluss, der Stream wird nie leergelesen.
+    expect(pulls).toBeLessThan(20);
+  });
+
+  test("robots.txt Disallow: /* (Wildcard) sperrt konservativ alles → null", async () => {
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () =>
+        new Response("User-agent: *\nDisallow: /*", { status: 200 }),
+      "https://example.de/": () => htmlResponse(SIMPLE_HTML),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result).toBeNull();
+    const calledUrls = fetchImpl.mock.calls.map(c => String(c[0]));
+    expect(calledUrls).toEqual(["https://example.de/robots.txt"]);
+  });
+
+  test("robots.txt Disallow: /admin* (Wildcard) wird konservativ als Komplett-Sperre behandelt → null", async () => {
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () =>
+        new Response("User-agent: *\nDisallow: /admin*", { status: 200 }),
+      "https://example.de/": () => htmlResponse(SIMPLE_HTML),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result).toBeNull();
+  });
+
+  test("leeres Disallow (erlaubt alles) → Crawl läuft", async () => {
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () =>
+        new Response("User-agent: *\nDisallow:", { status: 200 }),
+      "https://example.de/": () => htmlResponse(SIMPLE_HTML),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result?.title).toContain("Müller Metallbau");
+  });
+
+  test("überlange Title/Description werden auf 300/500 Zeichen an der Wortgrenze gekappt", async () => {
+    const longTitle = "Titelwort ".repeat(60).trim(); // 599 Zeichen
+    const longDescription = "Beschreibungswort ".repeat(60).trim(); // > 500 Zeichen
+    const html = `<html><head><title>${longTitle}</title><meta name="description" content="${longDescription}"></head><body><p>Inhalt</p></body></html>`;
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () => new Response("", { status: 404 }),
+      "https://example.de/": () => htmlResponse(html),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result?.title?.length ?? 0).toBeLessThanOrEqual(300);
+    expect(result?.title).toMatch(/Titelwort$/);
+    expect(result?.description?.length ?? 0).toBeLessThanOrEqual(500);
+    expect(result?.description).toMatch(/Beschreibungswort$/);
+  });
+
+  test("sichtbarer Text wird an der Wortgrenze gekappt (letztes Wort vollständig)", async () => {
+    const html =
+      "<html><head><title>Lang</title></head><body><p>" +
+      "Inhaltswort ".repeat(500) +
+      "</p></body></html>";
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () => new Response("", { status: 404 }),
+      "https://example.de/": () => htmlResponse(html),
+    });
+    const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result?.text?.length ?? 0).toBeLessThanOrEqual(2_000);
+    expect(result?.text).toMatch(/Inhaltswort$/);
   });
 
   test("Seite ohne verwertbaren Inhalt (leer) → null", async () => {

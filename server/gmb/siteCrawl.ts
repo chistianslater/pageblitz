@@ -9,16 +9,33 @@
  * - Nur http/https, nur Standard-Ports (80/443).
  * - SSRF-Schutz: Hostname wird per DNS aufgelöst; private/link-local/
  *   loopback-Ziele (localhost, 127.x, 10.x, 172.16–31.x, 192.168.x,
- *   169.254.x, ::1, fc00::/7, fe80::/10) werden abgelehnt — auch als
- *   Redirect-Ziel.
+ *   169.254.x, CGNAT 100.64.0.0/10, ::/::1, fc00::/7, fe80::/10) werden
+ *   abgelehnt — auch als Redirect-Ziel. IPv6-Adressen werden expandiert
+ *   geprüft; IPv4-mapped (::ffff:0:0/96), IPv4-compat (::/96) und NAT64
+ *   (64:ff9b::/96) werden auf ihren eingebetteten IPv4-Teil reduziert und
+ *   gegen dieselben v4-Sperrlisten geprüft (deckt auch die von Node's URL
+ *   erzeugte Hex-Normalform wie `[::ffff:7f00:1]` ab).
  * - Redirects: max. 3, nur derselbe Host oder seine www-Variante.
- * - Timeout 10 s gesamt, Lesen hart bei 200 kB gekappt, kein Cookie/Auth.
+ * - Timeout 10 s gesamt, Lesen hart bei 200 kB gekappt (Seite UND
+ *   robots.txt), kein Cookie/Auth.
  * - JEDER Fehler → `null`, nie Throw: die Generierung läuft ohne Crawl weiter.
+ *
+ * Bewusst akzeptiertes Restrisiko — DNS-Rebinding (TOCTOU): der DNS-Lookup
+ * für die SSRF-Prüfung und der Lookup, den `fetch` intern macht, sind zwei
+ * getrennte Auflösungen. Ein Angreifer-DNS mit TTL 0 könnte zwischen beiden
+ * die Antwort von einer öffentlichen auf eine private IP wechseln. Der
+ * saubere Fix wäre IP-Pinning über einen eigenen undici-Agent (Lookup einmal
+ * machen, Socket auf genau diese IP verbinden, Host-Header beibehalten) —
+ * für die aktuelle Bedrohungslage (die gecrawlte URL ist die vom Betrieb
+ * selbst hinterlegte GMB-Website, kein frei wählbarer User-Input) ist das
+ * Fenster klein genug, dass wir es dokumentieren statt es zu schließen.
+ * Redirect-Ziele werden immerhin je Hop erneut geprüft.
  *
  * HTTP-Client und DNS-Resolver sind per deps injizierbar (Stil wie
  * `details.ts`) — Tests machen keine echten Netzwerk-Calls.
  */
 import { lookup } from "node:dns/promises";
+import { isIPv6 } from "node:net";
 
 export type ExistingSiteFacts = {
   title?: string;
@@ -38,6 +55,8 @@ export type SiteCrawlDeps = {
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_BODY_BYTES = 200 * 1024;
 const MAX_TEXT_CHARS = 2_000;
+const MAX_TITLE_CHARS = 300;
+const MAX_DESCRIPTION_CHARS = 500;
 const MAX_REDIRECTS = 3;
 /** "" = kein expliziter Port in der URL (Standard-Port des Schemas). */
 const ALLOWED_PORTS = new Set(["", "80", "443"]);
@@ -62,21 +81,100 @@ function isForbiddenIpv4(ip: string): boolean {
   if (a === 172 && b >= 16 && b <= 31) return true; // privat
   if (a === 192 && b === 168) return true; // privat
   if (a === 169 && b === 254) return true; // link-local (Cloud-Metadaten!)
+  if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT 100.64.0.0/10
+  return false;
+}
+
+/**
+ * Expandiert eine IPv6-Adresse zu ihren 8 Hextets (als Zahlen 0–0xffff).
+ * Unterstützt `::`-Kompression und ein eingebettetes dotted-IPv4-Suffix
+ * (`::ffff:127.0.0.1`). `null` bei jeder nicht parsebaren Form.
+ */
+function expandIpv6(ip: string): number[] | null {
+  let s = ip.trim().toLowerCase();
+  const zone = s.indexOf("%");
+  if (zone >= 0) s = s.slice(0, zone);
+  // Eingebettetes dotted-IPv4-Suffix → zwei Hextets.
+  const v4 = /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(s);
+  if (v4) {
+    const octets = v4[1].split(".").map(Number);
+    if (octets.some(o => !Number.isInteger(o) || o > 255)) return null;
+    const hi = ((octets[0] << 8) | octets[1]).toString(16);
+    const lo = ((octets[2] << 8) | octets[3]).toString(16);
+    s = s.slice(0, -v4[1].length) + `${hi}:${lo}`;
+  }
+  let head: string[];
+  let tail: string[];
+  const gap = s.indexOf("::");
+  if (gap >= 0) {
+    if (s.indexOf("::", gap + 1) >= 0) return null; // mehr als ein "::"
+    head = s.slice(0, gap).split(":").filter(Boolean);
+    tail = s
+      .slice(gap + 2)
+      .split(":")
+      .filter(Boolean);
+    if (head.length + tail.length > 7) return null;
+  } else {
+    head = s.split(":");
+    tail = [];
+    if (head.length !== 8) return null;
+  }
+  const groups = [
+    ...head,
+    ...Array<string>(8 - head.length - tail.length).fill("0"),
+    ...tail,
+  ];
+  const hextets = groups.map(g =>
+    /^[0-9a-f]{1,4}$/.test(g) ? parseInt(g, 16) : Number.NaN
+  );
+  return hextets.some(Number.isNaN) ? null : hextets;
+}
+
+/** Extrahiert die in den letzten 32 Bit eingebettete IPv4-Adresse. */
+function embeddedIpv4(hextets: number[]): string {
+  const hi = hextets[6];
+  const lo = hextets[7];
+  return `${hi >> 8}.${hi & 0xff}.${lo >> 8}.${lo & 0xff}`;
+}
+
+/**
+ * IPv6-Prüfung über die expandierte Form: IPv4-mapped (::ffff:0:0/96),
+ * IPv4-compat (::/96, inkl. `::`/`::1`) und NAT64 (64:ff9b::/96) werden auf
+ * den eingebetteten IPv4-Teil reduziert; dazu ULA fc00::/7 und link-local
+ * fe80::/10. Nicht parsebar → verboten.
+ */
+function isForbiddenIpv6(ip: string): boolean {
+  const h = expandIpv6(ip);
+  if (!h) return true; // nicht parsebar → als unsicher behandeln
+  if (h[0] === 0 && h[1] === 0 && h[2] === 0 && h[3] === 0 && h[4] === 0) {
+    if (h[5] === 0xffff) return isForbiddenIpv4(embeddedIpv4(h)); // IPv4-mapped
+    if (h[5] === 0) {
+      // ::/96 (IPv4-compat) — deckt auch `::` (unspecified) und `::1`
+      // (loopback) ab: eingebettet 0.0.0.0 bzw. 0.0.0.1 → a === 0 → verboten.
+      return isForbiddenIpv4(embeddedIpv4(h));
+    }
+  }
+  if (
+    h[0] === 0x64 &&
+    h[1] === 0xff9b &&
+    h[2] === 0 &&
+    h[3] === 0 &&
+    h[4] === 0 &&
+    h[5] === 0
+  ) {
+    return isForbiddenIpv4(embeddedIpv4(h)); // NAT64 64:ff9b::/96
+  }
+  if ((h[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 (ULA)
+  if ((h[0] & 0xffc0) === 0xfe80) return true; // fe80::/10 link-local
   return false;
 }
 
 /** Prüft eine einzelne IP (v4 oder v6) gegen private/link-local/loopback-Bereiche. */
 function isForbiddenIp(ip: string): boolean {
-  const lower = ip.trim().toLowerCase();
-  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(lower);
-  if (mapped) return isForbiddenIpv4(mapped[1]);
-  if (lower.includes(":")) {
-    if (lower === "::" || lower === "::1") return true; // unspecified, loopback
-    if (lower.startsWith("fc") || lower.startsWith("fd")) return true; // fc00::/7 (ULA)
-    if (/^fe[89ab]/.test(lower)) return true; // fe80::/10 link-local
-    return false;
-  }
-  return isForbiddenIpv4(lower);
+  const bare = ip.trim().replace(/^\[|\]$/g, "");
+  if (isIPv6(bare)) return isForbiddenIpv6(bare);
+  if (bare.includes(":")) return true; // sieht aus wie IPv6, parst aber nicht → unsicher
+  return isForbiddenIpv4(bare);
 }
 
 /**
@@ -113,7 +211,10 @@ function isSameHostOrWwwVariant(a: string, b: string): boolean {
 /**
  * Minimaler robots.txt-Parser: sammelt die `Disallow`-Präfixe aller Gruppen,
  * deren `User-agent`-Zeilen `*` enthalten. `Allow`-Regeln werden bewusst
- * ignoriert (konservativ: ein Disallow-Präfix gewinnt immer).
+ * ignoriert (konservativ: ein Disallow-Präfix gewinnt immer). Disallow-Werte
+ * mit Wildcard-Syntax (`*` oder `$`) können als Präfix nicht korrekt
+ * ausgewertet werden — sie werden konservativ als Komplett-Sperre (`"/"`)
+ * behandelt: im Zweifel crawlen wir NICHT.
  */
 export function parseRobotsDisallow(body: string): string[] {
   const disallow: string[] = [];
@@ -136,7 +237,9 @@ export function parseRobotsDisallow(body: string): string[] {
     } else if (field === "disallow" || field === "allow") {
       inRuleBlock = true;
       if (field === "disallow" && value && currentAgents.includes("*")) {
-        disallow.push(value);
+        // Wildcard-Syntax (`*`/`$`) ist mit Präfix-Matching nicht abbildbar
+        // → konservativ alles sperren.
+        disallow.push(/[*$]/.test(value) ? "/" : value);
       }
     }
   }
@@ -163,8 +266,10 @@ async function fetchRobotsRules(
       headers: CRAWL_HEADERS,
     });
     if (!response.ok) return [];
-    const body = await response.text();
-    return parseRobotsDisallow(body.slice(0, MAX_BODY_BYTES));
+    // Gleiche 200-kB-Kappung wie beim Seiten-Body (Stream wird nach dem
+    // Limit abgebrochen); nicht lesbar/zu groß angekündigt → keine Regeln.
+    const body = await readBodyLimited(response);
+    return body === null ? [] : parseRobotsDisallow(body);
   } catch {
     return [];
   }
@@ -280,11 +385,25 @@ function normalizeWhitespace(input: string): string {
   return input.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Kappt auf `maxChars`, aber an der Wortgrenze: das letzte Wort bleibt
+ * vollständig. Ohne Leerzeichen im Fenster wird hart geschnitten.
+ */
+function truncateAtWordBoundary(input: string, maxChars: number): string {
+  if (input.length <= maxChars) return input;
+  const slice = input.slice(0, maxChars);
+  const lastSpace = slice.lastIndexOf(" ");
+  return (lastSpace > 0 ? slice.slice(0, lastSpace) : slice).trimEnd();
+}
+
 /** Title, Meta-Description und sichtbaren Text aus dem HTML ziehen. */
 function extractSiteFacts(html: string): ExistingSiteFacts | null {
   const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
   const title = titleMatch
-    ? normalizeWhitespace(decodeEntities(titleMatch[1]))
+    ? truncateAtWordBoundary(
+        normalizeWhitespace(decodeEntities(titleMatch[1])),
+        MAX_TITLE_CHARS
+      )
     : "";
 
   const metaTag = /<meta\b[^>]*name\s*=\s*["']description["'][^>]*>/i.exec(
@@ -294,7 +413,10 @@ function extractSiteFacts(html: string): ExistingSiteFacts | null {
     ? /content\s*=\s*("([^"]*)"|'([^']*)')/i.exec(metaTag[0])
     : null;
   const description = contentMatch
-    ? normalizeWhitespace(decodeEntities(contentMatch[2] ?? contentMatch[3]))
+    ? truncateAtWordBoundary(
+        normalizeWhitespace(decodeEntities(contentMatch[2] ?? contentMatch[3])),
+        MAX_DESCRIPTION_CHARS
+      )
     : "";
 
   // Unsichtbares/Navigatorisches raus: script/style/noscript/nav/footer
@@ -306,8 +428,8 @@ function extractSiteFacts(html: string): ExistingSiteFacts | null {
       " "
     )
     .replace(/<[^>]+>/g, " ");
-  const text = normalizeWhitespace(decodeEntities(visible)).slice(
-    0,
+  const text = truncateAtWordBoundary(
+    normalizeWhitespace(decodeEntities(visible)),
     MAX_TEXT_CHARS
   );
 
