@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { PACK_SUMMARY, type PackSummary } from "@shared/stylePacks/summary";
 import type { PackId } from "@shared/siteContract/types";
-import { textLink } from "./primitives";
+import { SectionHead, textLink } from "./primitives";
 
 interface PackCardProps {
   summary: PackSummary;
@@ -26,7 +26,7 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
   return (
     <article
       aria-label={`${name}: ${essence}`}
-      className="group flex flex-col bg-lp-canvas"
+      className="group flex w-[15rem] shrink-0 snap-start flex-col overflow-hidden rounded-[10px] border border-lp-line bg-lp-canvas sm:w-[17rem]"
     >
       <button
         type="button"
@@ -199,17 +199,21 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
 }
 
 /**
- * Zeigt alle 14 Style Packs als Hairline-Raster — je Zelle ein statisches
- * Vorschaubild (`client/public/pack-previews/<pack>.webp`, erzeugt von
- * `scripts/build-pack-previews.mjs` via `npm run build:previews`). Die erste
- * Zelle trägt die Sektionsüberschrift, damit das Raster bei 3 Spalten (1+14)
- * und bei 2/4 Spalten (2+14, Intro doppelt breit) ohne Lücke aufgeht. Klick
- * auf Bild oder „Ansehen" öffnet die Live-Demo (`/demo/<pack>`) im Modal
- * statt 14 iframes sofort zu laden (Landingpage-LCP/JS-Gewicht).
+ * Zeigt alle 14 Style Packs als horizontal scrollbares Karussell — je Karte
+ * ein statisches Vorschaubild (`client/public/pack-previews/<pack>.webp`,
+ * erzeugt von `scripts/build-pack-previews.mjs` via `npm run build:previews`).
+ * Der sichtbare Ausschnitt zeigt bewusst nur wenige Karten auf einmal (die
+ * Sammlung soll mit der Zeit wachsen, ohne dass die Sektion "voller" wirkt);
+ * Pfeiltasten scrollen seitenweise, native Scroll-Snap hält Karten am Rand
+ * ausgerichtet. Klick auf Bild oder „Ansehen" öffnet die Live-Demo
+ * (`/demo/<pack>`) im Modal statt 14 iframes sofort zu laden (LCP/JS-Gewicht).
  */
 export function PackShowcase() {
   const [openPackId, setOpenPackId] = useState<PackId | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(true);
 
   const handleOpen = useCallback((packId: PackId, trigger: HTMLElement) => {
     triggerRef.current = trigger;
@@ -222,6 +226,26 @@ export function PackShowcase() {
     triggerRef.current = null;
   }, []);
 
+  const updateScrollState = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanScrollPrev(el.scrollLeft > 4);
+    setCanScrollNext(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+  }, [updateScrollState]);
+
+  function scrollByPage(direction: 1 | -1): void {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({
+      left: direction * el.clientWidth * 0.85,
+      behavior: "smooth",
+    });
+  }
+
   return (
     <section
       id="showcase"
@@ -229,20 +253,40 @@ export function PackShowcase() {
       className="lp-section border-t border-lp-line"
     >
       <div className="lp-container">
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border border-lp-line bg-lp-line sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div className="flex flex-col justify-between gap-8 bg-lp-canvas p-6 sm:col-span-2 sm:p-8 lg:col-span-1 xl:col-span-2">
-            <div>
-              <p className="lp-kicker mb-4">14 Stilwelten</p>
-              <h2 id="lp-showcase-heading" className="lp-h2">
-                Ein Look für jedes Handwerk.
-              </h2>
-            </div>
-            <p className="max-w-[30rem] text-[1rem] leading-[1.6] text-lp-muted">
-              Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit —
-              Typografie, Farben und Layout passend zur Branche. Du wählst den
-              Stil, der zu dir passt, deine Inhalte bleiben gleich.
-            </p>
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <SectionHead
+            id="lp-showcase-heading"
+            kicker="Stilwelten"
+            title="Ein Look für jede Branche."
+            text="Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit — Typografie, Farben und Layout passend zur Branche. Du wählst den Stil, der zu dir passt, deine Inhalte bleiben gleich."
+          />
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              onClick={() => scrollByPage(-1)}
+              disabled={!canScrollPrev}
+              aria-label="Vorherige Stile"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollByPage(1)}
+              disabled={!canScrollNext}
+              aria-label="Weitere Stile"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronRight className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
+        </div>
+
+        <div
+          ref={scrollerRef}
+          onScroll={updateScrollState}
+          className="pb-carousel-track mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2"
+        >
           {PACK_SUMMARY.map((summary, index) => (
             <PackCard
               key={summary.id}

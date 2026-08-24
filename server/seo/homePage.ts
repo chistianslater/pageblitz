@@ -36,7 +36,7 @@ const STEPS = [
   {
     n: "02",
     title: "Stil wählen",
-    desc: "Aus 14 Stilwelten schlägt Pageblitz passende vor. Du wählst den Look, der zu dir passt – Typografie, Farben und Layout sind fertig abgestimmt, deine Inhalte bleiben gleich.",
+    desc: "Pageblitz schlägt passende Stile für deine Branche vor. Du wählst den Look, der zu dir passt – Typografie, Farben und Layout sind fertig abgestimmt, deine Inhalte bleiben gleich.",
   },
   {
     n: "03",

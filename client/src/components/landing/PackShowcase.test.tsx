@@ -61,10 +61,18 @@ describe("PackShowcase", () => {
     const h3Count = (html.match(/<h3[ >]/g) ?? []).length;
     const h4Count = (html.match(/<h4[ >]/g) ?? []).length;
     expect(h2Count).toBe(1);
-    expect(html).toContain(">Ein Look für jedes Handwerk.<");
+    expect(html).toContain(">Ein Look für jede Branche.<");
     expect(h3Count).toBe(14);
     expect(h4Count).toBe(0);
-    // Kicker "14 Stilwelten" ist bewusst kein Heading (Label, nicht Struktur).
-    expect(html).not.toMatch(/<h[1-6][^>]*>14 Stilwelten</);
+    // Kicker "Stilwelten" ist bewusst kein Heading (Label, nicht Struktur) —
+    // und nennt bewusst keine Anzahl, die Sammlung wächst mit der Zeit.
+    expect(html).not.toMatch(/<h[1-6][^>]*>Stilwelten</);
+    expect(html).not.toMatch(/\d+\s*Stilwelten/);
+  });
+
+  test("Karten sitzen in einem horizontal scrollbaren Karussell (Scroll-Snap), nicht in einem Grid mit fester Spaltenzahl", () => {
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("snap-x");
+    expect(html).not.toContain("grid-cols");
   });
 });

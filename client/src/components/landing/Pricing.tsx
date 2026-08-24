@@ -124,42 +124,39 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             · jederzeit kündbar.
           </p>
 
-          <ul className="mt-8 grid sm:grid-cols-2 sm:gap-x-8">
-            {INCLUDED.map(item => (
-              <li
-                key={item}
-                className="flex items-start gap-3 border-t border-lp-line py-3 text-[0.95rem]"
-              >
-                <Check
-                  className="mt-1 h-4 w-4 shrink-0 text-lp-accent"
-                  strokeWidth={2.5}
-                  aria-hidden="true"
-                />
-                {item}
-              </li>
-            ))}
-          </ul>
-
-          <h3 className="mt-10 text-[1rem] font-medium">Extras nach Bedarf</h3>
-          <table className="mt-3 w-full border-collapse text-[0.95rem]">
-            <caption className="sr-only">Optionale Add-ons und Preise</caption>
-            <thead className="sr-only">
-              <tr>
-                <th scope="col">Add-on</th>
-                <th scope="col">Preis pro Monat</th>
-              </tr>
-            </thead>
-            <tbody>
-              {BOOKABLE_ADDON_KEYS.map(key => (
-                <tr key={key} className="border-t border-lp-line last:border-b">
-                  <td className="py-2.5 pr-4">{ADDON_NAMES[key]}</td>
-                  <td className="py-2.5 text-right tabular-nums text-lp-muted">
-                    + {formatEuro(addonPrice(key))}/Monat
-                  </td>
-                </tr>
+          <div className="mt-10 rounded-[14px] border border-lp-line bg-lp-surface p-6 sm:p-7">
+            <h3 className="lp-kicker">Inklusive</h3>
+            <ul className="mt-3 grid sm:grid-cols-2 sm:gap-x-8">
+              {INCLUDED.map(item => (
+                <li
+                  key={item}
+                  className="flex items-start gap-3 border-t border-lp-line py-3 text-[0.95rem]"
+                >
+                  <Check
+                    className="mt-1 h-4 w-4 shrink-0 text-lp-accent"
+                    strokeWidth={2.5}
+                    aria-hidden="true"
+                  />
+                  {item}
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+
+            <h3 className="lp-kicker mt-8">Extras nach Bedarf</h3>
+            <ul className="mt-3 grid sm:grid-cols-2 sm:gap-x-8">
+              {BOOKABLE_ADDON_KEYS.map(key => (
+                <li
+                  key={key}
+                  className="flex items-baseline justify-between gap-3 border-t border-lp-line py-2.5 text-[0.9rem]"
+                >
+                  <span>{ADDON_NAMES[key]}</span>
+                  <span className="shrink-0 tabular-nums text-lp-muted">
+                    + {formatEuro(addonPrice(key))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <button
