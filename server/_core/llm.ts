@@ -78,6 +78,15 @@ export type InvokeParams = {
 };
 
 export const DEFAULT_LLM_TIMEOUT_MS = 90_000;
+/**
+ * Output-Budget, wenn der Aufrufer kein maxTokens/max_tokens setzt. Primär
+ * läuft kimi-k2.5, ein Reasoning-Modell: reasoning_tokens zählen mit ins
+ * max_tokens-Budget. 4096 reichte dort nicht — die Antwort wurde mitten im
+ * JSON abgeschnitten (finish_reason=length, "Unexpected end of JSON input"
+ * in aiEdit/suggest). 16384 deckt Reasoning + volles Website-Doc ab
+ * (Endpoint-Akzeptanz gegen Moonshot verifiziert 2026-08-24).
+ */
+export const DEFAULT_LLM_MAX_TOKENS = 16384;
 /** Backup-Modell: gemini-2.0-flash ist bei Google abgeschaltet (404 seit 2026-08) — konfigurierbar, Default gemini-3.5-flash (~5 s für 1k Tokens, gemessen 2026-08-23). */
 export const BACKUP_LLM_MODEL =
   process.env.BACKUP_LLM_MODEL || "gemini-3.5-flash";
@@ -341,7 +350,8 @@ async function callLLM(
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 4096;
+  payload.max_tokens =
+    params.maxTokens ?? params.max_tokens ?? DEFAULT_LLM_MAX_TOKENS;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,

@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { invokeLLM } from "../_core/llm";
+import { invokeLLM, type InvokeResult } from "../_core/llm";
 import {
   getConstitution,
   type PackConstitution,
@@ -53,6 +53,23 @@ const TEXT_SUGGESTION_SYSTEM_PROMPT =
 
 const OFFER_SUGGESTION_SYSTEM_PROMPT =
   "Du bist ein Experte für Angebotsstrukturen lokaler Unternehmenswebsites in Deutschland. Antworte immer mit validem JSON, ohne Markdown, ohne Erklärung.";
+
+/**
+ * Extrahiert den JSON-Text aus der LLM-Antwort. Läuft das Modell ins
+ * max_tokens-Limit (finish_reason=length), ist der Content abgeschnitten —
+ * statt eines kryptischen JSON-SyntaxError wird die eigentliche Ursache
+ * geworfen, damit Logs/Retry klar sagen, was passiert ist.
+ */
+function extractJsonText(response: InvokeResult): string {
+  const choice = response.choices?.[0];
+  if (choice?.finish_reason === "length") {
+    throw new Error(
+      "LLM-Antwort abgeschnitten (finish_reason=length) — max_tokens-Budget erschöpft."
+    );
+  }
+  const raw = choice?.message?.content;
+  return typeof raw === "string" ? raw : "";
+}
 
 /** Ein Versuch + genau ein Retry (Spec: „genau 1 Retry, dann Fehler"). */
 const MAX_SUGGESTION_ATTEMPTS = 2;
@@ -176,9 +193,7 @@ export async function suggestTextVariants(args: {
         },
       },
     });
-    const rawContent = response.choices?.[0]?.message?.content;
-    const text = typeof rawContent === "string" ? rawContent : "";
-    const json = JSON.parse(text);
+    const json = JSON.parse(extractJsonText(response));
     const { variants } = VariantsResponseSchema.parse(json);
     return variants.map(variant =>
       clampToLength(variant, FIELD_MAX_LENGTH[args.field])
@@ -376,9 +391,10 @@ export async function suggestOffer(args: {
       ],
       response_format: responseFormat,
     });
-    const rawContent = response.choices?.[0]?.message?.content;
-    const text = typeof rawContent === "string" ? rawContent : "";
-    const json = JSON.parse(text) as Record<string, unknown>;
+    const json = JSON.parse(extractJsonText(response)) as Record<
+      string,
+      unknown
+    >;
     const offer = OfferPatchSchema.parse({ ...json, mode: args.mode });
     assertOfferCounts(offer);
     return offer;

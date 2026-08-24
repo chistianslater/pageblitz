@@ -215,7 +215,15 @@ export async function proposeAiEdit(args: {
       ],
       response_format: AI_EDIT_RESPONSE_FORMAT,
     });
-    const rawContent = response.choices?.[0]?.message?.content;
+    const choice = response.choices?.[0];
+    if (choice?.finish_reason === "length") {
+      // Abgeschnittenes JSON würde sonst als kryptischer SyntaxError im
+      // Retry-Log landen — so ist die Ursache (max_tokens erschöpft) klar.
+      throw new Error(
+        "LLM-Antwort abgeschnitten (finish_reason=length) — max_tokens-Budget erschöpft."
+      );
+    }
+    const rawContent = choice?.message?.content;
     const text = typeof rawContent === "string" ? rawContent : "";
     const json = JSON.parse(text);
     const raw = RawAiEditResponseSchema.parse(json);
