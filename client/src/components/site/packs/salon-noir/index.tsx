@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
 import { SALON_NOIR_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -355,6 +356,7 @@ const SalonNoirPage: React.FC<{
             </a>
           ))}
         </div>
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">

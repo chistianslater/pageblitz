@@ -65,7 +65,7 @@ export const GUSTO_CSS = `
 .pb-gu-footer{padding:32px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-gu-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-gu-footer a:hover,.pb-gu-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-gu-plate{display:none}.pb-gu-nav{gap:10px 14px;padding:16px 18px}.pb-gu-logo{order:-1;flex-basis:100%;text-align:center}.pb-gu-nav-links{display:contents}.pb-gu-nav-links a{font-size:10.5px}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}}
+@media(max-width:720px){.pb-gu-plate{display:none}.pb-gu-nav{padding:14px 18px}.pb-gu-nav-links{display:none}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}.pb-gu-hero{padding:40px 20px 40px}}
 .pb-gu-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line);text-align:center}
 .pb-gu-page-header h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-gu-page-header p{margin:16px auto 0;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

@@ -25,7 +25,8 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-sticker.outline{right:2%;bottom:2%;background:var(--pb-surface);border:2px dashed var(--pb-accent);border-radius:var(--pb-radius-button);padding:9px 13px;font-weight:700;font-size:11.5px;color:var(--pb-accent-text);transform:rotate(4deg)}
 .pb-mp-scallop{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:2;background:radial-gradient(circle at 12px -6px,transparent 16px,var(--pb-canvas) 17px);background-size:44px 32px}
 @media(min-width:641px) and (max-width:860px){.pb-mp-hero-inner{gap:16px}.pb-mp-card{flex-basis:58%;padding:26px 24px 28px}.pb-mp-photo-wrap{flex-basis:30%;margin-top:10px}.pb-mp-sticker.pill{font-size:10px;padding:13px 14px;box-shadow:0 2px 0 #E0A81C}.pb-mp-sticker.ink{font-size:9.5px;padding:8px 11px}.pb-mp-sticker.outline{font-size:9px;padding:7px 10px}}
-@media(max-width:640px){.pb-mp-hero{padding:16px 20px 40px}.pb-mp-hero-inner{display:block}.pb-mp-card{max-width:100%;flex-basis:auto;padding:26px 24px 28px}.pb-mp-photo-wrap,.pb-mp-sticker{display:none}.pb-mp-nav{padding:18px 20px;flex-wrap:wrap;row-gap:10px}}
+@media(max-width:720px){.pb-mp-nav-links{display:none}}
+@media(max-width:720px){.pb-mp-hero{padding:16px 20px 40px}.pb-mp-hero-inner{display:block}.pb-mp-card{max-width:100%;flex-basis:auto;padding:26px 24px 28px}.pb-mp-photo-wrap,.pb-mp-sticker{display:none}.pb-mp-nav{padding:18px 20px}}
 .pb-mp-section{padding:64px 32px;max-width:1180px;margin:0 auto}
 .pb-mp-section h2{font-family:var(--pb-font-display);font-weight:800;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:24px}
 .pb-mp-intro{color:var(--pb-muted);margin-bottom:24px;max-width:56ch}

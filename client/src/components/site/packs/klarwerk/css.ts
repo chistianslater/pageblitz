@@ -64,12 +64,11 @@ export const KLARWERK_CSS = `
 .pb-kw-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-kw-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-kw-footer a:hover,.pb-kw-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:640px){
+@media(max-width:720px){.pb-kw-nav-links{display:none}}
+@media(max-width:720px){
   .pb-kw-bento{grid-template-columns:1fr}
   .pb-kw-term{grid-row:auto}
   .pb-kw-status{grid-column:auto}
-  .pb-kw-nav{flex-wrap:wrap;row-gap:10px}
-  .pb-kw-nav-links{flex-wrap:wrap;margin-left:0}
   .pb-kw-contact{grid-template-columns:1fr}
   .pb-kw-about-grid{grid-template-columns:1fr;gap:20px}
   .pb-kw-about-grid .pb-kw-about-img{order:-1;max-height:55vw}

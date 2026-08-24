@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
 import { ATELIER_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -355,6 +356,7 @@ const AtelierPage: React.FC<{
             </a>
           ))}
         </div>
+      <MobileNav items={navList} />
       </nav>
       <header className="pb-at-masthead-wrap">
         <div className="pb-at-masthead">

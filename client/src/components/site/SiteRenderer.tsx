@@ -6,6 +6,7 @@ import type {
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
+import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import {
   buildNavItems,
   linkPageSections,
@@ -123,7 +124,11 @@ export const SiteRenderer: React.FC<{
       className={`pb-site pb-${effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
     >
-      <style dangerouslySetInnerHTML={{ __html: mod.css }} />
+      {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
+          für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts. */}
+      <style
+        dangerouslySetInnerHTML={{ __html: mod.css + "\n" + MOBILE_NAV_CSS }}
+      />
       <mod.Page
         data={pageRenderData}
         basePath={basePath}

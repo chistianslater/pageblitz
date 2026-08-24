@@ -64,8 +64,8 @@ export const LANDGUT_CSS = `
 .pb-lg-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-lg-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-lg-footer a:hover,.pb-lg-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-lg-about{grid-template-columns:1fr}.pb-lg-contact{grid-template-columns:1fr}.pb-lg-nav{flex-wrap:wrap;row-gap:10px}}
-@media(max-width:640px){.pb-lg-rows{display:none}.pb-lg-grid{grid-template-columns:1fr}.pb-lg-copy{padding-bottom:0}.pb-lg-ticker{margin-top:26px}}
+@media(max-width:720px){.pb-lg-about{grid-template-columns:1fr}.pb-lg-contact{grid-template-columns:1fr}.pb-lg-nav-links{display:none}}
+@media(max-width:720px){.pb-lg-rows{display:none}.pb-lg-grid{grid-template-columns:1fr}.pb-lg-copy{padding-bottom:0}.pb-lg-ticker{margin-top:26px}}
 .pb-lg-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-lg-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-lg-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

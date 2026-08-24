@@ -64,7 +64,8 @@ export const VERVE_CSS = `
 .pb-vv-footer{padding:32px 28px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line)}
 .pb-vv-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-vv-footer a:hover,.pb-vv-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:640px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-nav{flex-wrap:wrap;row-gap:8px}.pb-vv-nav-links{margin-left:0}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-vv-nav-links{display:none}}
+@media(max-width:720px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
 .pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-vv-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

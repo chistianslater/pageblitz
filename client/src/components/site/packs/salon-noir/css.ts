@@ -70,7 +70,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-footer{padding:32px 40px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-sn-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-sn-footer a:hover,.pb-sn-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-sn-frame{inset:8px}.pb-sn-nav{gap:8px 14px;padding:16px 18px}.pb-sn-logo{order:-1;flex-basis:100%;text-align:center;letter-spacing:.18em;font-size:13px}.pb-sn-nav-links{display:contents}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:48px 20px 56px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-sn-frame{inset:8px}.pb-sn-nav{padding:14px 18px}.pb-sn-nav-links{display:none}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:40px 20px 44px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
 .pb-sn-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-sn-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-sn-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

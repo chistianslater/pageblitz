@@ -77,7 +77,7 @@ export const VERVE: PackConstitution = {
     scale: {
       basePx: 16,
       ratio: 1.25,
-      heroClamp: "clamp(2.6rem, 8vw, 5.2rem)",
+      heroClamp: "clamp(2.3rem, 8vw, 5.2rem)",
     },
   },
   shape: {

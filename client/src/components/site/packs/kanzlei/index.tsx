@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
 import { KANZLEI_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -395,6 +396,14 @@ const KanzleiPage: React.FC<{
             </a>
           )}
         </div>
+        <MobileNav
+          items={navList}
+          cta={
+            hero?.ctaText
+              ? { label: hero.ctaText, href: hero.ctaHref ?? "#kontakt" }
+              : undefined
+          }
+        />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">

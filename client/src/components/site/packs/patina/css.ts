@@ -70,7 +70,7 @@ export const PATINA_CSS = `
 .pb-pa-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-pa-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-pa-footer a:hover,.pb-pa-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-pa-init{font-size:120px;top:4px;right:8px}.pb-pa-grid{grid-template-columns:1fr}.pb-pa-pics{height:220px;margin-top:26px;margin-bottom:24px}.pb-pa-about-grid{grid-template-columns:1fr;gap:20px}.pb-pa-about-grid>p:only-child{columns:1}.pb-pa-about-img{order:-1;max-height:55vw;aspect-ratio:3/2}.pb-pa-contact{grid-template-columns:1fr}.pb-pa-nav{flex-wrap:wrap;row-gap:10px}.pb-pa-services-grid{grid-template-columns:1fr}.pb-pa-quotes{grid-template-columns:1fr;gap:22px}.pb-pa-faq-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-pa-init{font-size:120px;top:4px;right:8px}.pb-pa-hero{padding:36px 20px 44px}.pb-pa-grid{grid-template-columns:1fr}.pb-pa-pics{height:150px;margin-top:18px;margin-bottom:14px}.pb-pa-about-grid{grid-template-columns:1fr;gap:20px}.pb-pa-about-grid>p:only-child{columns:1}.pb-pa-about-img{order:-1;max-height:55vw;aspect-ratio:3/2}.pb-pa-contact{grid-template-columns:1fr}.pb-pa-nav-links{display:none}.pb-pa-services-grid{grid-template-columns:1fr}.pb-pa-quotes{grid-template-columns:1fr;gap:22px}.pb-pa-faq-grid{grid-template-columns:1fr}}
 .pb-pa-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-pa-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-pa-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

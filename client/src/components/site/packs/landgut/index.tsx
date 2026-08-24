@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
 import { LANDGUT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -362,6 +363,7 @@ const LandgutPage: React.FC<{
             </a>
           ))}
         </div>
+      <MobileNav items={navList} />
       </nav>
       {hero && (
         <>

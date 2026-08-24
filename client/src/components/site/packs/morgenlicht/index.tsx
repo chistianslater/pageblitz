@@ -15,6 +15,7 @@ import {
   type NavItem,
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
 import { MORGENLICHT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -396,6 +397,14 @@ const MorgenlichtPage: React.FC<{
             {hero.ctaText}
           </a>
         )}
+        <MobileNav
+          items={navList}
+          cta={
+            hero?.ctaText
+              ? { label: hero.ctaText, href: hero.ctaHref ?? "#kontakt" }
+              : undefined
+          }
+        />
       </nav>
       {hero && (
         <>

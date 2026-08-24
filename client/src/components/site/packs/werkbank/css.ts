@@ -48,7 +48,7 @@ export const WERKBANK_CSS = `
 .pb-wb-hours tr:last-child td{border-bottom:none}
 .pb-wb-hours td:first-child{font-family:var(--pb-font-utility);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pb-wb-hours td:last-child{text-align:right;color:var(--pb-muted)}
-@media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}.pb-wb-nav{flex-wrap:wrap;row-gap:8px}.pb-wb-nav-links{flex-wrap:wrap;margin-left:0}.pb-wb-about{grid-template-columns:1fr;gap:20px}.pb-wb-about-img{order:-1;max-height:55vw}}
+@media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}.pb-wb-nav-links{display:none}.pb-wb-about{grid-template-columns:1fr;gap:20px}.pb-wb-about-img{order:-1;max-height:55vw}}
 .pb-wb-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-wb-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-wb-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}
