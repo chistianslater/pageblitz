@@ -88,6 +88,8 @@ interface StylePanelProps {
   onClose: () => void;
   /** Aus dem KI-Chat übergebenes Pack ("Ansehen" auf einer Stil-Karte) — vorausgewählt und hervorgehoben, notfalls als zusätzlicher erster Kandidat eingeblendet. */
   preselectPackId?: PackId;
+  /** Geführter Modus (Studio-Wizard): „Passt so" bestätigt und springt zum nächsten Schritt statt nur zu schließen. */
+  onNext?: () => void;
 }
 
 export function StylePanel({
@@ -96,6 +98,7 @@ export function StylePanel({
   onApplied,
   onClose,
   preselectPackId,
+  onNext,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
@@ -159,10 +162,14 @@ export function StylePanel({
   const pick = (id: PackId) => applyPack(id);
 
   const confirm = () => {
+    // Geführter Modus: nach erfolgreicher Bestätigung direkt zum nächsten
+    // Schritt (onNext) statt nur zu schließen — ohne Wizard wie bisher
+    // einfach zumachen (onClose).
+    const after = onNext ?? onClose;
     if (activePackId) {
-      applyPack(activePackId, onClose);
+      applyPack(activePackId, after);
     } else {
-      onClose();
+      after();
     }
   };
 
@@ -231,7 +238,11 @@ export function StylePanel({
           disabled={busy}
           onClick={confirm}
         >
-          {busy ? "Bitte warten…" : "Passt so"}
+          {busy
+            ? "Bitte warten…"
+            : onNext
+              ? "Passt so — weiter"
+              : "Passt so"}
         </button>
       </div>
     </section>

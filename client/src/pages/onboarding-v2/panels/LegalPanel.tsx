@@ -47,6 +47,8 @@ interface LegalPanelProps {
   token: string;
   initial: StudioLegal;
   openingHours: { day: string; hours: string }[];
+  /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
+  onNext?: () => void;
   onApplied: () => void;
   onClose: () => void;
 }
@@ -78,6 +80,7 @@ export function LegalPanel({
   openingHours,
   onApplied,
   onClose,
+  onNext,
 }: LegalPanelProps) {
   const {
     register,
@@ -97,7 +100,15 @@ export function LegalPanel({
   const busy = updateLegal.isPending;
 
   const submit = handleSubmit(values => {
-    updateLegal.mutate({ token, legal: values }, { onSuccess: onApplied });
+    updateLegal.mutate(
+      { token, legal: values },
+      {
+        onSuccess: () => {
+          onApplied();
+          onNext?.();
+        },
+      }
+    );
   });
 
   return (
@@ -115,7 +126,7 @@ export function LegalPanel({
             data-variant="ghost"
             onClick={onClose}
           >
-            Fertig
+            Schließen
           </button>
           <button
             type="button"
@@ -123,7 +134,11 @@ export function LegalPanel({
             disabled={busy}
             onClick={submit}
           >
-            {busy ? "Bitte warten…" : "Speichern"}
+            {busy
+              ? "Bitte warten…"
+              : onNext
+                ? "Speichern & weiter"
+                : "Speichern"}
           </button>
         </>
       }

@@ -37,7 +37,7 @@ export function Checklist({ items, activeId, onSelect }: ChecklistProps) {
                 ? "Erledigt"
                 : item.required
                   ? "Pflicht"
-                  : ""}
+                  : "Optional"}
             </span>
           </button>
         </li>

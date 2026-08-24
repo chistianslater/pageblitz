@@ -5,6 +5,7 @@
  */
 
 import type { Page } from "@shared/siteContract/types";
+import type { ChecklistItem } from "@shared/onboardingV2/checklist";
 
 type JobStatus = "pending" | "processing" | "completed" | "failed";
 
@@ -148,4 +149,62 @@ export function resolvePreviewSlug(
 ): string | null {
   if (wanted === null) return null;
   return tabs.some(t => t.slug === wanted) ? wanted : null;
+}
+
+// ── Geführter Modus (Wizard) ────────────────────────────────────────────
+// Der Wizard führt in fester Reihenfolge durch die Pflicht-nahen Panels
+// und endet im Veröffentlichen-Schritt. Extras (addons) sind bewusst
+// außen vor — optional, frei über die Übersicht erreichbar.
+
+export const WIZARD_PANEL_STEPS = [
+  "style",
+  "photos",
+  "texts",
+  "offer",
+  "legal",
+] as const;
+
+export type WizardPanelStep = (typeof WIZARD_PANEL_STEPS)[number];
+/** "publish" = Abschluss-Schritt (Checkout), kein Panel. */
+export type WizardStep = WizardPanelStep | "publish";
+
+/** Anzeige-Titel je Schritt (WizardBar). */
+export const WIZARD_STEP_TITLES: Record<WizardStep, string> = {
+  style: "Stil wählen",
+  photos: "Fotos wählen",
+  texts: "Texte prüfen",
+  offer: "Angebot pflegen",
+  legal: "Rechtliches",
+  publish: "Website freischalten",
+};
+
+/** Gesamtzahl der sichtbaren Wizard-Schritte (5 Panels + Veröffentlichen). */
+export const WIZARD_TOTAL_STEPS = WIZARD_PANEL_STEPS.length + 1;
+
+/**
+ * Nächster Wizard-Schritt, abgeleitet aus der Checkliste (pure, reload-
+ * sicher). Mit `current`: der erste offene Schritt NACH dem aktuellen;
+ * gab es keinen, der erste offene überhaupt; sind alle Panels erledigt,
+ * "publish". So funktioniert „Weiter" auch mit der noch nicht neu
+ * geladenen (veralteten) Checkliste direkt nach einem Speichern.
+ */
+export function nextWizardStep(
+  items: ChecklistItem[],
+  current?: WizardPanelStep
+): WizardStep {
+  const isOpen = (id: WizardPanelStep) =>
+    items.find(i => i.id === id)?.status !== "done";
+  if (current) {
+    const idx = WIZARD_PANEL_STEPS.indexOf(current);
+    const after = WIZARD_PANEL_STEPS.slice(idx + 1).find(isOpen);
+    if (after) return after;
+  }
+  const firstOpen = WIZARD_PANEL_STEPS.find(isOpen);
+  return firstOpen ?? "publish";
+}
+
+/** 1-basierter Index für „Schritt X von N" (publish = letzter). */
+export function wizardStepNumber(step: WizardStep): number {
+  if (step === "publish") return WIZARD_TOTAL_STEPS;
+  return WIZARD_PANEL_STEPS.indexOf(step) + 1;
 }

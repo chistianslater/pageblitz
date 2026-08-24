@@ -44,11 +44,19 @@ describe("deriveChecklistState", () => {
       "addons",
     ]);
   });
-  test("ohne Dokument ist alles offen außer addons", () => {
+  test("ohne Dokument und ohne Fortschritt ist alles offen (addons ehrlich)", () => {
     const items = deriveChecklistState(null, {});
-    expect(items.filter(i => i.status === "done").map(i => i.id)).toEqual([
-      "addons",
-    ]);
+    expect(items.filter(i => i.status === "done")).toEqual([]);
+  });
+  test("addons done erst nach addonsReviewed-Flag", () => {
+    expect(
+      deriveChecklistState(null, {}).find(i => i.id === "addons")?.status
+    ).toBe("open");
+    expect(
+      deriveChecklistState(null, {
+        studioProgress: { addonsReviewed: true },
+      }).find(i => i.id === "addons")?.status
+    ).toBe("done");
   });
   test("photos done sobald hero.imageUrl gesetzt", () => {
     const withImg = {

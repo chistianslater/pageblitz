@@ -71,6 +71,8 @@ interface OfferPanelProps {
   doc: WebsiteDataV2;
   onApplied: () => void;
   onClose: () => void;
+  /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
+  onNext?: () => void;
 }
 
 export function OfferPanel({
@@ -78,6 +80,7 @@ export function OfferPanel({
   doc,
   onApplied,
   onClose,
+  onNext,
 }: OfferPanelProps) {
   const initial = offerFromDoc(doc);
   // Ein Entwurf pro Modus im lokalen State (Ambiguität #2 der Task-Vorgabe):
@@ -122,7 +125,15 @@ export function OfferPanel({
   };
 
   const handleSave = () => {
-    updateOffer.mutate({ token, offer: value }, { onSuccess: onApplied });
+    updateOffer.mutate(
+      { token, offer: value },
+      {
+        onSuccess: () => {
+          onApplied();
+          onNext?.();
+        },
+      }
+    );
   };
 
   const busy = updateOffer.isPending;
@@ -144,7 +155,7 @@ export function OfferPanel({
             data-variant="ghost"
             onClick={onClose}
           >
-            Fertig
+            Schließen
           </button>
           <button
             type="button"
@@ -152,7 +163,11 @@ export function OfferPanel({
             disabled={busy || errors.length > 0}
             onClick={handleSave}
           >
-            {busy ? "Bitte warten…" : "Speichern"}
+            {busy
+              ? "Bitte warten…"
+              : onNext
+                ? "Speichern & weiter"
+                : "Speichern"}
           </button>
         </>
       }

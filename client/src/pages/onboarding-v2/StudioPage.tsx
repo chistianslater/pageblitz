@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
 import { useStudioState } from "./useStudioState";
 import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
+import { WizardBar } from "./WizardBar";
 import { PreviewFrame, previewPath } from "./PreviewFrame";
 import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
@@ -20,7 +21,12 @@ import {
   deriveGenerationStatus,
   derivePreviewTabs,
   generationInProgress,
+  nextWizardStep,
   resolvePreviewSlug,
+  WIZARD_PANEL_STEPS,
+  WIZARD_STEP_TITLES,
+  type WizardPanelStep,
+  type WizardStep,
 } from "./studioLogic";
 import { parsePanelParam, withPanelParam } from "./studioUrl";
 import "./studio.css";
@@ -62,6 +68,53 @@ export default function StudioPage({ token }: { token: string }) {
   const closeStylePanel = () => {
     setActiveId(null);
     setPreselectPackId(undefined);
+  };
+
+  // ── Geführter Modus (Wizard) ─────────────────────────────────────────
+  // Startet einmal pro Browser-Session automatisch (nur vor dem Kauf) und
+  // führt Stil → Fotos → Texte → Angebot → Rechtliches → Veröffentlichen.
+  // „Übersicht" beendet jederzeit in den freien Modus; der Fortschritt
+  // lebt ausschließlich in der Checkliste (pure Ableitung, reload-sicher).
+  const wizardDismissedKey = `pb-wizard-dismissed:${token}`;
+  const [wizardActive, setWizardActive] = useState(false);
+
+  useEffect(() => {
+    const state = studio.state;
+    if (!state || state.status !== "preview" || wizardActive) return;
+    if (sessionStorage.getItem(wizardDismissedKey) === "1") return;
+    setWizardActive(true);
+    if (!activeId) {
+      const step = nextWizardStep(state.checklist);
+      if (step !== "publish") setActiveId(step);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studio.state]);
+
+  const exitWizard = () => {
+    setWizardActive(false);
+    sessionStorage.setItem(wizardDismissedKey, "1");
+    setPreselectPackId(undefined);
+    setActiveId(null);
+  };
+
+  // „Weiter" in einem Panel: nächster offener Schritt; ist keiner mehr
+  // offen, landet der Wizard im Veröffentlichen-Schritt (activeId null).
+  const goNext = () => {
+    if (!studio.state) return;
+    const next = nextWizardStep(
+      studio.state.checklist,
+      (activeId ?? undefined) as WizardPanelStep | undefined
+    );
+    setPreselectPackId(undefined);
+    setActiveId(next === "publish" ? null : next);
+  };
+
+  const resumeWizard = () => {
+    sessionStorage.removeItem(wizardDismissedKey);
+    setWizardActive(true);
+    if (!studio.state) return;
+    const step = nextWizardStep(studio.state.checklist);
+    setActiveId(step === "publish" ? null : step);
   };
 
   if (studio.isLoading && !studio.state)
@@ -166,6 +219,23 @@ export default function StudioPage({ token }: { token: string }) {
     ? { slug: previewPage.slug, title: previewPage.title }
     : undefined;
 
+  // Wizard-Ableitungen fürs Rendering: aktiver Schritt (Panel oder
+  // "publish" bei geschlossenem Panel) + Fortschritt (erledigte Schritte).
+  const activeIsWizardStep =
+    activeId !== null &&
+    (WIZARD_PANEL_STEPS as readonly string[]).includes(activeId);
+  const wizardStep: WizardStep = activeIsWizardStep
+    ? (activeId as WizardPanelStep)
+    : "publish";
+  const wizardDoneCount = WIZARD_PANEL_STEPS.filter(
+    id => state.checklist.find(i => i.id === id)?.status === "done"
+  ).length;
+  const wizardOpenCount = WIZARD_PANEL_STEPS.length - wizardDoneCount;
+  // Panels bekommen im Wizard „Weiter"/„Schließen = Übersicht" verdrahtet.
+  const panelNext = wizardActive ? goNext : undefined;
+  const panelClose = (panelId: ChecklistItemId | null) =>
+    wizardActive ? exitWizard() : setActiveId(panelId);
+
   return (
     <div className="pb-studio">
       <div className="pb-studio-layout" data-tab={tab}>
@@ -194,6 +264,13 @@ export default function StudioPage({ token }: { token: string }) {
               Vorschau
             </button>
           </div>
+          {wizardActive && (activeId === null || activeIsWizardStep) && (
+            <WizardBar
+              step={wizardStep}
+              doneCount={wizardDoneCount}
+              onExit={exitWizard}
+            />
+          )}
           {activeId === "style" ? (
             <StylePanel
               token={token}
@@ -204,7 +281,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={closeStylePanel}
+              onClose={wizardActive ? exitWizard : closeStylePanel}
+              onNext={panelNext}
             />
           ) : activeId === "photos" ? (
             <PhotosPanel
@@ -215,7 +293,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={() => panelClose(null)}
+              onNext={panelNext}
             />
           ) : activeId === "texts" ? (
             <TextsPanel
@@ -225,7 +304,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={() => panelClose(null)}
+              onNext={panelNext}
             />
           ) : activeId === "offer" ? (
             <OfferPanel
@@ -235,7 +315,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={() => panelClose(null)}
+              onNext={panelNext}
             />
           ) : activeId === "legal" ? (
             <LegalPanel
@@ -246,7 +327,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={() => panelClose(null)}
+              onNext={panelNext}
             />
           ) : activeId === "addons" ? (
             <AddonsPanel
@@ -260,8 +342,43 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => setActiveId(null)}
             />
+          ) : wizardActive ? (
+            // Wizard-Abschluss („publish"): Fokus liegt auf dem Freischalten,
+            // deshalb hier bewusst keine Checkliste/KI-Ablenkung.
+            <>
+              <p className="pb-studio-wizard-note">
+                {wizardOpenCount > 0
+                  ? `Fast geschafft — noch ${wizardOpenCount} optionale${wizardOpenCount === 1 ? "r" : ""} Schritt${wizardOpenCount === 1 ? "" : "e"} offen. Zum Freischalten genügen Rechtliches und deine E-Mail-Adresse.`
+                  : "Alle Schritte erledigt — jetzt nur noch freischalten."}
+              </p>
+              {state.status !== "preview" ? (
+                <LiveCard slug={state.slug} status={state.status} />
+              ) : (
+                <CheckoutBar
+                  state={state}
+                  token={token}
+                  onStateChanged={studio.refetch}
+                />
+              )}
+            </>
           ) : (
             <>
+              {state.status === "preview" && (
+                <div className="pb-studio-wizard-card">
+                  <p>
+                    {wizardOpenCount > 0
+                      ? `Noch ${wizardOpenCount} von ${WIZARD_PANEL_STEPS.length + 1} Schritten bis zur fertigen Website.`
+                      : `Alles bereit — letzter Schritt: ${WIZARD_STEP_TITLES.publish}.`}
+                  </p>
+                  <button
+                    type="button"
+                    className="pb-studio-btn"
+                    onClick={resumeWizard}
+                  >
+                    Geführt weiter
+                  </button>
+                </div>
+              )}
               <Checklist
                 items={state.checklist}
                 activeId={activeId}

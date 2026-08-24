@@ -798,3 +798,70 @@
 .pb-studio-cat-submit {
   margin-top: 1.5rem;
 }
+
+/* ── Geführter Modus (Wizard) ─────────────────────────────────────── */
+.pb-studio-wizard {
+  border: 1px solid var(--st-line);
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--st-canvas);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.pb-studio-wizard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.pb-studio-wizard-top .pb-studio-kicker {
+  margin: 0;
+}
+.pb-studio-wizard-top .pb-studio-btn {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+}
+.pb-studio-wizard-title {
+  margin: 0;
+  font-family: var(--st-display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.pb-studio-wizard-progress {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--st-line);
+  overflow: hidden;
+}
+.pb-studio-wizard-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--st-accent);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+.pb-studio-wizard-note {
+  color: var(--st-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+}
+.pb-studio-wizard-card {
+  border: 1px solid var(--st-line);
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--st-canvas);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.pb-studio-wizard-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--st-ink);
+}
+.pb-studio-wizard-card .pb-studio-btn {
+  align-self: flex-start;
+}

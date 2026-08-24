@@ -233,11 +233,11 @@ export function AddonsPanel({
 
   return (
     <PanelFrame
-      step="Schritt 6"
+      step="Optional"
       title="Extras wählen"
       panelId="addons"
       onClose={onClose}
-      intro="Zusätzliche Bausteine für deine Website — jederzeit änderbar."
+      intro="Zusätzliche Bausteine für deine Website — jederzeit änderbar, kein Pflichtschritt."
       footer={
         <>
           <button
@@ -246,7 +246,7 @@ export function AddonsPanel({
             data-variant="ghost"
             onClick={onClose}
           >
-            Fertig
+            Schließen
           </button>
           <button
             type="button"

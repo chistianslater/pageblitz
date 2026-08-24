@@ -3,9 +3,14 @@ import {
   computeRefetchInterval,
   deriveGenerationStatus,
   derivePreviewTabs,
+  nextWizardStep,
   resolvePreviewSlug,
+  WIZARD_PANEL_STEPS,
+  WIZARD_TOTAL_STEPS,
+  wizardStepNumber,
 } from "./studioLogic";
 import type { Page } from "@shared/siteContract/types";
+import type { ChecklistItem } from "@shared/onboardingV2/checklist";
 
 describe("deriveGenerationStatus", () => {
   test("ensureError (Mutation selbst fehlgeschlagen) → failed mit dessen Meldung, auch ohne Job", () => {
@@ -236,5 +241,72 @@ describe("generationInProgress", () => {
       generationInProgress({ status: "failed", progress: 30, error: "x" })
     ).toBe(false);
     expect(generationInProgress(null)).toBe(false);
+  });
+});
+
+// ── Geführter Modus (Wizard) ─────────────────────────────────────────────
+
+function item(
+  id: string,
+  status: "done" | "open"
+): ChecklistItem {
+  return {
+    id: id as ChecklistItem["id"],
+    title: id,
+    hint: "",
+    status,
+    required: id === "legal",
+  };
+}
+
+function checklistWith(
+  done: (typeof WIZARD_PANEL_STEPS)[number][]
+): ChecklistItem[] {
+  return WIZARD_PANEL_STEPS.map(id =>
+    item(id, done.includes(id) ? "done" : "open")
+  );
+}
+
+describe("nextWizardStep", () => {
+  test("ohne current: erster offene Schritt in fester Reihenfolge", () => {
+    expect(nextWizardStep(checklistWith([]))).toBe("style");
+    expect(nextWizardStep(checklistWith(["style"]))).toBe("photos");
+  });
+  test("alle Panels erledigt → publish", () => {
+    expect(nextWizardStep(checklistWith([...WIZARD_PANEL_STEPS]))).toBe(
+      "publish"
+    );
+  });
+  test("mit current: nächster offener Schritt NACH current (veraltete Checkliste: style noch open)", () => {
+    // Direkt nach dem Speichern von "style" ist die Checkliste evtl. noch
+    // alt (style open) — der Wizard darf dann nicht zurückspringen.
+    expect(nextWizardStep(checklistWith([]), "style")).toBe("photos");
+  });
+  test("mit current legal und nur style offen → zurück zu style, nicht publish", () => {
+    expect(
+      nextWizardStep(
+        checklistWith(["photos", "texts", "offer", "legal"]),
+        "legal"
+      )
+    ).toBe("style");
+  });
+  test("mit current und alles danach done, aber davor offen → erster offener von vorn", () => {
+    expect(
+      nextWizardStep(checklistWith(["texts", "offer", "legal"]), "texts")
+    ).toBe("style");
+  });
+  test("mit current und alles done → publish", () => {
+    expect(
+      nextWizardStep(checklistWith([...WIZARD_PANEL_STEPS]), "legal")
+    ).toBe("publish");
+  });
+});
+
+describe("wizardStepNumber", () => {
+  test("1-basiert, publish ist der letzte Schritt", () => {
+    expect(wizardStepNumber("style")).toBe(1);
+    expect(wizardStepNumber("legal")).toBe(5);
+    expect(wizardStepNumber("publish")).toBe(WIZARD_TOTAL_STEPS);
+    expect(WIZARD_TOTAL_STEPS).toBe(6);
   });
 });

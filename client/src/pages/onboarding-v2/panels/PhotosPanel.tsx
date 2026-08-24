@@ -3,7 +3,10 @@ import { trpc } from "@/lib/trpc";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import { sanitizeAddOns, type AddOnFlags } from "@shared/pricing";
-import type { AddonsPatch } from "@shared/onboardingV2/patches";
+import type {
+  AddonsPatch,
+  ImagesPatch,
+} from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
 import {
   GalleryAddonNotice,
@@ -48,6 +51,12 @@ interface PhotosPanelProps {
   addOns?: AddOnFlags;
   onApplied: () => void;
   onClose: () => void;
+  /**
+   * Geführter Modus (Studio-Wizard): zeigt einen „Weiter"-Button, der zum
+   * nächsten Schritt springt. Nichts zu speichern — jede Auswahl wird
+   * sofort übernommen (Auto-Apply, siehe handlePick).
+   */
+  onNext?: () => void;
 }
 
 export function PhotosPanel({
@@ -56,6 +65,7 @@ export function PhotosPanel({
   addOns = {},
   onApplied,
   onClose,
+  onNext,
 }: PhotosPanelProps) {
   const heroSection = doc.sections.find(
     (s): s is SectionOf<"hero"> => s.type === "hero"
@@ -67,6 +77,7 @@ export function PhotosPanel({
     (s): s is SectionOf<"gallery"> => s.type === "gallery"
   );
   const hasAbout = !!aboutSection;
+  const hasExistingGallery = !!gallerySection;
 
   const [target, setTarget] = useState<PhotoTarget>("hero");
   const [sourceTab, setSourceTab] = useState<SourceTab>("gmb");
@@ -109,15 +120,49 @@ export function PhotosPanel({
           : []
         : galleryUrls;
 
+  /**
+   * Sofort-Übernahme (Studio-Befund „Bilder nicht in Echtzeit"): jede
+   * Auswahl wird direkt per setImages persistiert; onApplied bumped die
+   * Vorschau. Der lokale State bleibt dabei führend fürs Panel, die
+   * Vorschau folgt nach dem Refetch. Ein laufender Patch blockiert weitere
+   * Klicks (kein Lost-Update durch parallele Galerie-Patches); schlägt der
+   * Patch fehl, rollt der State auf den Dokumentstand zurück.
+   */
+  const applyImages = (patch: ImagesPatch, rollback: () => void) => {
+    setImages.mutate(
+      { token, patch },
+      { onSuccess: onApplied, onError: rollback }
+    );
+  };
+
   const handlePick = (url: string) => {
-    if (target === "hero") setHeroUrl(url);
-    else if (target === "about") setAboutUrl(url);
-    else
-      setGalleryUrls(prev => {
-        if (prev.includes(url)) return prev.filter(u => u !== url);
-        if (prev.length >= MAX_GALLERY_PHOTOS) return prev;
-        return [...prev, url];
-      });
+    if (upload.isPending || setImages.isPending) return;
+    if (target === "hero") {
+      const prev = heroUrl;
+      if (prev === url) return;
+      setHeroUrl(url);
+      applyImages({ hero: url }, () => setHeroUrl(prev));
+    } else if (target === "about") {
+      const prev = aboutUrl;
+      if (prev === url) return;
+      setAboutUrl(url);
+      applyImages({ about: url }, () => setAboutUrl(prev));
+    } else {
+      const prev = galleryUrls;
+      let next: string[];
+      if (prev.includes(url)) next = prev.filter(u => u !== url);
+      else if (prev.length >= MAX_GALLERY_PHOTOS) return;
+      else next = [...prev, url];
+      setGalleryUrls(next);
+      // Schutz bleibt: Abwahl des letzten Fotos bei bestehender Galerie
+      // wird NICHT sofort gepatcht — das Leeren verlangt weiterhin den
+      // expliziten „Galerie entfernen"-Button unten.
+      if (next.length === 0 && hasExistingGallery) return;
+      applyImages(
+        { gallery: next.map(u => ({ url: u, alt: doc.businessName })) },
+        () => setGalleryUrls(prev)
+      );
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,49 +200,15 @@ export function PhotosPanel({
     reader.readAsDataURL(file);
   };
 
-  const handleApply = () => {
-    if (target === "hero") {
-      if (!heroUrl) return;
-      setImages.mutate(
-        { token, patch: { hero: heroUrl } },
-        { onSuccess: onApplied }
-      );
-    } else if (target === "about") {
-      if (!aboutUrl) return;
-      setImages.mutate(
-        { token, patch: { about: aboutUrl } },
-        { onSuccess: onApplied }
-      );
-    } else {
-      setImages.mutate(
-        {
-          token,
-          patch: {
-            gallery: galleryUrls.map(url => ({ url, alt: doc.businessName })),
-          },
-        },
-        { onSuccess: onApplied }
-      );
-    }
-  };
-
   const uploadedCount = sources.data?.uploaded.length ?? 0;
   const uploadLimitReached = uploadedCount >= MAX_UPLOADED_PHOTOS;
   const busy = upload.isPending || setImages.isPending;
-  const hasExistingGallery = !!gallerySection;
-  // Bei Ziel "Galerie" ohne Auswahl UND ohne bestehende Galerie ist "leer
-  // übernehmen" ein No-op (keine Sektion vorhanden) und erlaubt. Existiert
-  // bereits eine Galerie, würde ein leerer Patch sie stillschweigend löschen
-  // — das verlangt die explizite "Galerie entfernen"-Aktion unten statt eines
-  // versehentlichen Klicks auf "Übernehmen".
+  // Abwahl des letzten Galerie-Fotos bei bestehender Galerie: wird bewusst
+  // NICHT auto-gepatcht (handlePick), sondern verlangt die explizite
+  // „Galerie entfernen"-Aktion — ein versehentlicher Klick soll nie die
+  // ganze Sektion löschen.
   const galleryWouldDeleteExisting =
     target === "gallery" && galleryUrls.length === 0 && hasExistingGallery;
-  const canApply =
-    target === "gallery"
-      ? galleryBooked && !galleryWouldDeleteExisting
-      : target === "hero"
-        ? !!heroUrl
-        : !!aboutUrl;
   const galleryLocked = target === "gallery" && !galleryBooked;
 
   const removeGallery = () => {
@@ -213,7 +224,7 @@ export function PhotosPanel({
       title="Fotos wählen"
       panelId="photos"
       onClose={onClose}
-      intro="Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload."
+      intro="Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload. Jede Auswahl wird sofort übernommen, die Vorschau aktualisiert sich automatisch."
       footer={
         <>
           <button
@@ -222,16 +233,18 @@ export function PhotosPanel({
             data-variant="ghost"
             onClick={onClose}
           >
-            Fertig
+            Schließen
           </button>
-          <button
-            type="button"
-            className="pb-studio-btn"
-            disabled={busy || !canApply}
-            onClick={handleApply}
-          >
-            {busy ? "Bitte warten…" : "Übernehmen"}
-          </button>
+          {onNext && (
+            <button
+              type="button"
+              className="pb-studio-btn"
+              disabled={busy}
+              onClick={onNext}
+            >
+              {busy ? "Bitte warten…" : "Weiter"}
+            </button>
+          )}
         </>
       }
     >

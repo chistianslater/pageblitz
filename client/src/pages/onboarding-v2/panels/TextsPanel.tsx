@@ -42,6 +42,8 @@ interface TextsPanelProps {
   doc: WebsiteDataV2;
   onApplied: () => void;
   onClose: () => void;
+  /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
+  onNext?: () => void;
 }
 
 export function TextsPanel({
@@ -49,6 +51,7 @@ export function TextsPanel({
   doc,
   onApplied,
   onClose,
+  onNext,
 }: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
@@ -80,7 +83,12 @@ export function TextsPanel({
   const handleSave = () => {
     updateTexts.mutate(
       { token, patch: diffTexts(base, values) },
-      { onSuccess: onApplied }
+      {
+        onSuccess: () => {
+          onApplied();
+          onNext?.();
+        },
+      }
     );
   };
 
@@ -102,7 +110,7 @@ export function TextsPanel({
             data-variant="ghost"
             onClick={onClose}
           >
-            Fertig
+            Schließen
           </button>
           <button
             type="button"
@@ -110,7 +118,11 @@ export function TextsPanel({
             disabled={busy || errors.length > 0}
             onClick={handleSave}
           >
-            {busy ? "Bitte warten…" : "Speichern"}
+            {busy
+              ? "Bitte warten…"
+              : onNext
+                ? "Speichern & weiter"
+                : "Speichern"}
           </button>
         </>
       }

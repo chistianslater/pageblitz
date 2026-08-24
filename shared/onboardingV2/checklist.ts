@@ -127,7 +127,10 @@ export function deriveChecklistState(
     texts: progress.textsReviewed ? "done" : "open",
     offer: hasOffer(doc) ? "done" : "open",
     legal: legalComplete(answers) ? "done" : "open",
-    addons: "done",
+    // Ehrlich statt hardcoded "done" (Studio-Flow-Befund): Extras gelten
+    // erst als erledigt, wenn das Panel einmal gespeichert wurde —
+    // blockiert den Checkout aber nie (required bleibt false).
+    addons: progress.addonsReviewed ? "done" : "open",
   };
   return CHECKLIST_ORDER.map(id => ({
     id,
