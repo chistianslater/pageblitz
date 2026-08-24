@@ -38,7 +38,9 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
       await page.evaluate(() => document.fonts.ready);
       await expect(page).toHaveScreenshot(
         `islands-werkbank-features-${name}.png`,
-        { fullPage: true }
+        // MOTION_CSS-Scroll-Reveals (motionCss.ts) deterministisch
+        // einfrieren — fullPage-Screenshots scrollen intern.
+        { fullPage: true, animations: "disabled" }
       );
     });
   }

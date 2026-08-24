@@ -17,6 +17,8 @@ import { FUNDAMENT } from "./fundament";
 
 export type { PackConstitution, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
+export { FONT_PAIRS, getFontPair } from "./fontPairs";
+export type { FontPair } from "./fontPairs";
 
 export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   werkbank: WERKBANK,

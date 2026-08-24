@@ -246,10 +246,7 @@ describe("generationInProgress", () => {
 
 // ── Geführter Modus (Wizard) ─────────────────────────────────────────────
 
-function item(
-  id: string,
-  status: "done" | "open"
-): ChecklistItem {
+function item(id: string, status: "done" | "open"): ChecklistItem {
   return {
     id: id as ChecklistItem["id"],
     title: id,

@@ -42,6 +42,31 @@ export function applyStylePack(
   return WebsiteDataV2Schema.parse({ ...doc, stylePackId: packId });
 }
 
+/**
+ * Pure: Studio-Theme-Editor (2026-08-24) — Akzent-Override und/oder
+ * kuratierte Schriftpaarung. `null` entfernt die jeweilige Wahl (zurück
+ * zur Pack-Standardfarbe/-schrift), `undefined` lässt sie unangetastet.
+ * Die fontPairId ist router-seitig bereits gegen FONT_PAIRS validiert.
+ */
+export function applyTheme(
+  doc: WebsiteDataV2,
+  patch: { accent?: string | null; fontPairId?: string | null }
+): WebsiteDataV2 {
+  const next: WebsiteDataV2 = { ...doc };
+  if (patch.accent !== undefined) {
+    const overrides = { ...(doc.colorOverrides ?? {}) };
+    if (patch.accent === null) delete overrides.accent;
+    else overrides.accent = patch.accent;
+    if (Object.keys(overrides).length > 0) next.colorOverrides = overrides;
+    else delete next.colorOverrides;
+  }
+  if (patch.fontPairId !== undefined) {
+    if (patch.fontPairId === null) delete next.fontPairId;
+    else next.fontPairId = patch.fontPairId;
+  }
+  return WebsiteDataV2Schema.parse(next);
+}
+
 /** Angebots-Sektionstypen: es darf immer nur eine davon existieren. */
 const OFFER_TYPES = new Set<SectionType>(["services", "menu", "pricelist"]);
 

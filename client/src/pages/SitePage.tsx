@@ -60,7 +60,7 @@ export default function SitePage({ forceSlug, pageSlug }: SitePageProps = {}) {
     if (!data?.website) return;
     const v2 = parseV2(data.website.websiteData);
     if (!v2) return;
-    for (const href of packFontHrefs(v2.stylePackId)) {
+    for (const href of packFontHrefs(v2.stylePackId, v2.fontPairId)) {
       if (document.querySelector(`link[data-pb-pack-font="${href}"]`)) continue;
       const link = document.createElement("link");
       link.rel = "stylesheet";

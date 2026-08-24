@@ -59,10 +59,45 @@ describe("toCssVars", () => {
   test("Override greift bei nicht gesperrter Farbe", () => {
     expect(toCssVars(mini, { ink: "#222222" })["--pb-ink"]).toBe("#222222");
   });
-  test("Override wird bei locked-Farbe ignoriert", () => {
+  test("Kunden-Akzent-Override schlägt locked (Studio-Theme-Editor)", () => {
+    // Bewusste Kundenwahl > Pack-Lock bei `accent` (siehe toCssVars.ts) —
+    // sonst wäre „Ich wähle Rot, nichts passiert" für Packs mit locked
+    // Akzent (z. B. werkbank) unerklärbar.
     expect(toCssVars(mini, { accent: "#00FF00" })["--pb-accent"]).toBe(
-      "#FF4D00"
+      "#00FF00"
     );
+  });
+  test("Override wird bei locked Nicht-Akzent-Farbe weiterhin ignoriert", () => {
+    const lockedInk: PackConstitution = {
+      ...mini,
+      palette: mini.palette.map(p =>
+        p.role === "ink" ? { ...p, locked: true } : p
+      ),
+    };
+    expect(toCssVars(lockedInk, { ink: "#222222" })["--pb-ink"]).toBe(
+      "#191919"
+    );
+  });
+  test("Schriftpaar ersetzt display/body, utility bleibt pack-seitig", () => {
+    const pair = {
+      display: {
+        family: "Lora",
+        fallback: "Georgia, serif",
+        googleCss: "Lora:ital,wght@0,500;1,500",
+      },
+      body: {
+        family: "Karla",
+        fallback: "system-ui, sans-serif",
+        googleCss: "Karla:wght@400;500",
+      },
+    };
+    const v = toCssVars(mini, undefined, pair);
+    expect(v["--pb-font-display"]).toBe('"Lora", Georgia, serif');
+    expect(v["--pb-font-body"]).toBe('"Karla", system-ui, sans-serif');
+  });
+  test("ohne Schriftpaar bleiben die Pack-Fonts", () => {
+    const v = toCssVars(mini, undefined, null);
+    expect(v["--pb-font-display"]).toBe('"Archivo Black", sans-serif');
   });
   test("--pb-accent-text fällt ohne Paletteneintrag auf --pb-accent zurück", () => {
     expect(toCssVars(mini)["--pb-accent-text"]).toBe("#FF4D00");

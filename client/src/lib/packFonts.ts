@@ -1,4 +1,4 @@
-import { getConstitution } from "@shared/stylePacks";
+import { getConstitution, getFontPair } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 
 /**
@@ -13,11 +13,15 @@ import type { PackId } from "@shared/siteContract/types";
  * URL, damit Aufrufer unabhängig von der internen Bündelung einfach über
  * `<link>`-Tags iterieren können.
  */
-export function packFontHrefs(packId: PackId): string[] {
+export function packFontHrefs(packId: PackId, fontPairId?: string): string[] {
   const constitution = getConstitution(packId);
+  // Gewählte Schriftpaarung (Studio-Theme-Editor) ersetzt display/body —
+  // dieselbe Ersetzung wie toCssVars/fontsForDoc im SSR, damit CSR-Vorschau
+  // und Live-Seite identisch aussehen.
+  const pair = getFontPair(fontPairId);
   const fonts = [
-    constitution.type.display,
-    constitution.type.body,
+    pair?.display ?? constitution.type.display,
+    pair?.body ?? constitution.type.body,
     constitution.type.utility,
   ].filter((f): f is NonNullable<typeof f> => Boolean(f));
 

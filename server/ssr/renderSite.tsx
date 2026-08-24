@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SiteRenderer } from "../../client/src/components/site/SiteRenderer";
 import "../../client/src/components/site/packs/index";
-import { getConstitution } from "../../shared/stylePacks";
+import { getConstitution, getFontPair } from "../../shared/stylePacks";
 import type { FontSpec } from "../../shared/stylePacks";
 import type {
   Page,
@@ -96,6 +96,22 @@ function buildFontsUrl(fonts: (FontSpec | undefined)[]): string {
   return `https://fonts.googleapis.com/css2?${families}&display=swap`;
 }
 
+/**
+ * Fonts eines Dokuments: Pack-Verfassung, wobei eine gewählte Schriftpaarung
+ * (WebsiteDataV2.fontPairId, Studio-Theme-Editor) display/body ersetzt —
+ * dieselbe Ersetzung wie in `toCssVars`, damit Head-Link und gerenderte
+ * CSS-Variablen nie auseinanderlaufen. CSR-Pendant: packFontHrefs.
+ */
+function fontsForDoc(data: WebsiteDataV2): (FontSpec | undefined)[] {
+  const constitution = getConstitution(data.stylePackId);
+  const pair = getFontPair(data.fontPairId);
+  return [
+    pair?.display ?? constitution.type.display,
+    pair?.body ?? constitution.type.body,
+    constitution.type.utility,
+  ];
+}
+
 function findContact(data: WebsiteDataV2): SectionOf<"contact"> | undefined {
   return data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
@@ -162,12 +178,7 @@ function renderHead(
   canonicalUrl: string,
   origin: string
 ): string {
-  const constitution = getConstitution(data.stylePackId);
-  const fontsUrl = buildFontsUrl([
-    constitution.type.display,
-    constitution.type.body,
-    constitution.type.utility,
-  ]);
+  const fontsUrl = buildFontsUrl(fontsForDoc(data));
   const jsonLd = buildLocalBusinessJsonLd(data);
   const heroImageSrc = findHero(data)?.imageUrl;
   const tags = [
@@ -208,12 +219,7 @@ function renderPageHead(
   canonicalUrl: string,
   origin: string
 ): string {
-  const constitution = getConstitution(data.stylePackId);
-  const fontsUrl = buildFontsUrl([
-    constitution.type.display,
-    constitution.type.body,
-    constitution.type.utility,
-  ]);
+  const fontsUrl = buildFontsUrl(fontsForDoc(data));
   const heroImageSrc = findHero(data)?.imageUrl;
   const tags = [
     '<meta charset="utf-8" />',

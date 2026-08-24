@@ -353,6 +353,15 @@ export const WebsiteDataV2Schema = z
     colorOverrides: z
       .record(z.string(), z.string().regex(/^#[0-9a-fA-F]{3,8}$/))
       .optional(),
+    // Studio-Theme-Editor (2026-08-24): kuratierte Schriftpaar-ID aus
+    // shared/stylePacks/fontPairs.ts. SICHERHEIT: Der Wert ist nur ein
+    // Lookup-Key (getFontPair) und landet nie als CSS-Wert im Dokument —
+    // trotzdem enges Format, damit kein Freitext in die DB wandert.
+    fontPairId: z
+      .string()
+      .regex(/^[a-z0-9-]+$/)
+      .max(40)
+      .optional(),
     features: FeaturesSchema.optional(),
     addOns: SiteAddOnsSchema.optional(),
   })

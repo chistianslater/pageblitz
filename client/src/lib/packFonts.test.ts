@@ -45,6 +45,7 @@ describe("packFontHrefs", () => {
           },
         },
       }),
+      getFontPair: () => null,
     }));
     const { packFontHrefs } = await import("./packFonts");
 
@@ -79,6 +80,7 @@ describe("packFontHrefs", () => {
           },
         },
       }),
+      getFontPair: () => null,
     }));
     const { packFontHrefs } = await import("./packFonts");
 
@@ -89,5 +91,18 @@ describe("packFontHrefs", () => {
 
     vi.doUnmock("@shared/stylePacks");
     vi.resetModules();
+  });
+
+  test("fontPairId ersetzt display/body-Familien, utility bleibt pack-seitig", async () => {
+    const { packFontHrefs } = await import("./packFonts");
+    // Ohne Override: werkbank lädt Archivo Black + Inter (+ Space Mono).
+    const plain = packFontHrefs("werkbank");
+    expect(plain[0]).toContain("family=Archivo+Black");
+    // Mit Paar „klassisch" (Lora + Karla): beide ersetzt, Space Mono bleibt.
+    const paired = packFontHrefs("werkbank", "klassisch");
+    expect(paired[0]).toContain("family=Lora");
+    expect(paired[0]).toContain("family=Karla");
+    expect(paired[0]).toContain("family=Space+Mono");
+    expect(paired[0]).not.toContain("family=Archivo+Black");
   });
 });

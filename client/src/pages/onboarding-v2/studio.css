@@ -865,3 +865,99 @@
 .pb-studio-wizard-card .pb-studio-btn {
   align-self: flex-start;
 }
+
+/* ── Theme-Editor (Farben & Schriften, 2026-08-24) ─────────────────────── */
+.pb-studio-theme {
+  border-top: 1px solid var(--st-line);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.pb-studio-theme-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.pb-studio-theme-hint {
+  margin: 0;
+  color: var(--st-muted);
+  font-size: 0.9rem;
+}
+.pb-studio-theme-label {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--st-ink);
+}
+.pb-studio-theme-swatches,
+.pb-studio-theme-fonts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.pb-studio-theme-swatch,
+.pb-studio-theme-font {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--st-line);
+  border-radius: 0.6rem;
+  background: var(--st-canvas);
+  cursor: pointer;
+  font: inherit;
+  color: var(--st-ink);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.pb-studio-theme-swatch:hover,
+.pb-studio-theme-font:hover {
+  border-color: var(--st-accent);
+}
+.pb-studio-theme-swatch[data-active],
+.pb-studio-theme-font[data-active] {
+  border-color: var(--st-accent);
+  box-shadow: 0 0 0 1px var(--st-accent);
+}
+.pb-studio-theme-swatch:disabled,
+.pb-studio-theme-font:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.pb-studio-theme-dot {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 1px solid rgb(0 0 0 / 0.12);
+}
+.pb-studio-theme-swatch-name {
+  font-size: 0.72rem;
+  color: var(--st-muted);
+}
+.pb-studio-theme-custom input[type="color"] {
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.pb-studio-theme-font {
+  align-items: flex-start;
+  min-width: 8.5rem;
+}
+.pb-studio-theme-font-name {
+  font-size: 1rem;
+}
+.pb-studio-theme-font-vibe {
+  font-size: 0.75rem;
+  color: var(--st-muted);
+}
+.pb-studio-theme-warn {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--st-warn);
+}

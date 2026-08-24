@@ -42,7 +42,15 @@ for (const pack of PACKS)
         await page.waitForLoadState("networkidle"); // Fonts geladen
         await expect(page).toHaveScreenshot(
           `${pack}-${fixture}-${vp.name}.png`,
-          { fullPage: true, maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO }
+          {
+            fullPage: true,
+            maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO,
+            // MOTION_CSS (motionCss.ts) animiert Sektionen per
+            // animation-timeline:view() — fullPage-Screenshots scrollen
+            // intern und würden die Reveals mitten im Lauf einfangen.
+            // "disabled" springt deterministisch zum Endzustand (sichtbar).
+            animations: "disabled",
+          }
         );
       });
     }
@@ -67,7 +75,12 @@ for (const pack of PACKS)
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveScreenshot(
       `${pack}-leistungen-im-detail-desktop.png`,
-      { fullPage: true, maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO }
+      {
+        fullPage: true,
+        maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO,
+        // Wie oben: MOTION_CSS-Scroll-Reveals deterministisch einfrieren.
+        animations: "disabled",
+      }
     );
   });
 

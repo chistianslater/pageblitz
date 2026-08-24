@@ -1,5 +1,9 @@
 import React from "react";
-import { getConstitution, toCssVars } from "../../../../shared/stylePacks";
+import {
+  getConstitution,
+  getFontPair,
+  toCssVars,
+} from "../../../../shared/stylePacks";
 import type {
   PackId,
   WebsiteDataV2,
@@ -7,6 +11,7 @@ import type {
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
+import { MOTION_CSS } from "./motionCss";
 import {
   buildNavItems,
   linkPageSections,
@@ -77,7 +82,8 @@ export const SiteRenderer: React.FC<{
     );
   const vars = toCssVars(
     getConstitution(effectiveData.stylePackId),
-    effectiveData.colorOverrides
+    effectiveData.colorOverrides,
+    getFontPair(effectiveData.fontPairId)
   );
   const navItems = buildNavItems(effectiveData, { pathname, basePath });
   const currentPage = pageForPathname(effectiveData, pathname);
@@ -125,9 +131,13 @@ export const SiteRenderer: React.FC<{
       style={vars as React.CSSProperties}
     >
       {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
-          für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts. */}
+          für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts.
+          MOTION_CSS danach: dezente Scroll-Reveals/Hover-Feedback aller
+          Packs aus einer Quelle (siehe motionCss.ts). */}
       <style
-        dangerouslySetInnerHTML={{ __html: mod.css + "\n" + MOBILE_NAV_CSS }}
+        dangerouslySetInnerHTML={{
+          __html: mod.css + "\n" + MOBILE_NAV_CSS + "\n" + MOTION_CSS,
+        }}
       />
       <mod.Page
         data={pageRenderData}

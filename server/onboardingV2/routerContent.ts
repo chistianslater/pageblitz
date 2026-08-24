@@ -22,7 +22,9 @@ import {
   applyOffer,
   applyPages,
   applyTexts,
+  applyTheme,
 } from "./applyPatch";
+import { getFontPair } from "../../shared/stylePacks";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
@@ -204,6 +206,40 @@ export const contentProcedures = {
       return persistDoc(input.token, loaded, applyTexts(doc, input.patch), {
         progress: { textsReviewed: true },
       });
+    }),
+
+  /**
+   * Studio-Theme-Editor (2026-08-24): Akzentfarbe und/oder kuratierte
+   * Schriftpaarung. `null` setzt die jeweilige Wahl auf den Pack-Standard
+   * zurück, Weglassen lässt sie unverändert. fontPairId ist gegen die
+   * kuratierte Liste (shared/stylePacks/fontPairs.ts) validiert, accent
+   * gegen das Hex-Format (Schema-Invariante: nur Hex, kein CSS-Freitext).
+   */
+  updateTheme: publicProcedure
+    .input(
+      tokenInput.extend({
+        accent: z
+          .string()
+          .regex(/^#[0-9a-fA-F]{6}$/)
+          .nullish(),
+        fontPairId: z
+          .string()
+          .regex(/^[a-z0-9-]+$/)
+          .max(40)
+          .nullish()
+          .refine(id => id == null || getFontPair(id) != null, {
+            message: "Unbekannte Schriftpaarung.",
+          }),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      return persistDoc(
+        input.token,
+        loaded,
+        applyTheme(doc, { accent: input.accent, fontPairId: input.fontPairId })
+      );
     }),
 
   updateOffer: publicProcedure

@@ -3,10 +3,7 @@ import { trpc } from "@/lib/trpc";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import { sanitizeAddOns, type AddOnFlags } from "@shared/pricing";
-import type {
-  AddonsPatch,
-  ImagesPatch,
-} from "@shared/onboardingV2/patches";
+import type { AddonsPatch, ImagesPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
 import {
   GalleryAddonNotice,

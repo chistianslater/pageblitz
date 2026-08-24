@@ -277,6 +277,8 @@ export default function StudioPage({ token }: { token: string }) {
               currentPackId={state.stylePackId}
               category={state.category}
               preselectPackId={preselectPackId}
+              accent={state.doc?.colorOverrides?.accent ?? null}
+              fontPairId={state.doc?.fontPairId ?? null}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

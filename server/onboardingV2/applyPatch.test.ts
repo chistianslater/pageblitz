@@ -12,6 +12,7 @@ import {
   applyStylePack,
   applyTeam,
   applyTexts,
+  applyTheme,
   parsePackId,
 } from "./applyPatch";
 
@@ -35,6 +36,36 @@ describe("applyStylePack", () => {
     expect(next.stylePackId).toBe("kanzlei");
     expect(doc.stylePackId).toBe("werkbank");
     expect(next.sections).toEqual(doc.sections);
+  });
+});
+
+describe("applyTheme", () => {
+  test("setzt Akzent-Override und Schriftpaar, mutiert das Original nicht", () => {
+    const next = applyTheme(doc, { accent: "#1D3FBF", fontPairId: "elegant" });
+    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
+    expect(next.fontPairId).toBe("elegant");
+    expect(doc.colorOverrides).toBeUndefined();
+    expect(doc.fontPairId).toBeUndefined();
+  });
+  test("null entfernt die Wahl; leere Overrides fallen ganz weg", () => {
+    const themed = applyTheme(doc, {
+      accent: "#1D3FBF",
+      fontPairId: "modern",
+    });
+    const cleared = applyTheme(themed, { accent: null, fontPairId: null });
+    expect(cleared.colorOverrides).toBeUndefined();
+    expect(cleared.fontPairId).toBeUndefined();
+  });
+  test("undefined lässt die jeweilige Wahl unangetastet", () => {
+    const themed = applyTheme(doc, { accent: "#1D3FBF" });
+    const next = applyTheme(themed, { fontPairId: "klassisch" });
+    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
+    expect(next.fontPairId).toBe("klassisch");
+  });
+  test("lehnt Nicht-Hex-Akzent ab (Schema-Invariante: kein CSS-Freitext)", () => {
+    expect(() =>
+      applyTheme(doc, { accent: "red;background:url(x)" })
+    ).toThrow();
   });
 });
 

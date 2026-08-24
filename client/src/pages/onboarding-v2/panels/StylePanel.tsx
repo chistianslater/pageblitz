@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 import { usePanelFocus } from "./usePanelFocus";
+import { ThemeEditor } from "./ThemeEditor";
 
 interface Candidate {
   id: PackId;
@@ -90,6 +91,10 @@ interface StylePanelProps {
   preselectPackId?: PackId;
   /** Geführter Modus (Studio-Wizard): „Passt so" bestätigt und springt zum nächsten Schritt statt nur zu schließen. */
   onNext?: () => void;
+  /** Gespeicherter Akzent-Override (doc.colorOverrides?.accent) — Theme-Editor. */
+  accent?: string | null;
+  /** Gespeicherte Schriftpaar-ID (doc.fontPairId) — Theme-Editor. */
+  fontPairId?: string | null;
 }
 
 export function StylePanel({
@@ -99,6 +104,8 @@ export function StylePanel({
   onClose,
   preselectPackId,
   onNext,
+  accent = null,
+  fontPairId = null,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
@@ -222,6 +229,16 @@ export function StylePanel({
           {select.error.message}
         </p>
       )}
+      {/* Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung als
+          Feinschliff UNTER der Stil-Wahl — gehört thematisch zu Schritt 1,
+          ohne die Checkliste/Wizard-Reihenfolge aufzublähen. */}
+      <ThemeEditor
+        token={token}
+        packId={activePackId}
+        accent={accent}
+        fontPairId={fontPairId}
+        onApplied={onApplied}
+      />
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <button
           type="button"
@@ -238,11 +255,7 @@ export function StylePanel({
           disabled={busy}
           onClick={confirm}
         >
-          {busy
-            ? "Bitte warten…"
-            : onNext
-              ? "Passt so — weiter"
-              : "Passt so"}
+          {busy ? "Bitte warten…" : onNext ? "Passt so — weiter" : "Passt so"}
         </button>
       </div>
     </section>
