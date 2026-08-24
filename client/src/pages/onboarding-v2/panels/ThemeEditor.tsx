@@ -97,8 +97,10 @@ export function ThemeEditor({
     document.head.appendChild(link);
   }, []);
 
-  const save = (patch: { accent?: string | null; fontPairId?: string | null }) =>
-    updateTheme.mutate({ token, ...patch }, { onSuccess: onApplied });
+  const save = (patch: {
+    accent?: string | null;
+    fontPairId?: string | null;
+  }) => updateTheme.mutate({ token, ...patch }, { onSuccess: onApplied });
 
   const pickAccent = (hex: string | null) => {
     setLocalAccent(hex);
@@ -201,8 +203,8 @@ export function ThemeEditor({
       </div>
       {weakContrast && (
         <p className="pb-studio-theme-warn" role="status">
-          Diese Farbe liegt sehr nah am Hintergrund — Buttons und
-          Hervorhebungen wirken schwach.
+          Diese Farbe liegt sehr nah am Hintergrund — Buttons und Hervorhebungen
+          wirken schwach.
         </p>
       )}
 

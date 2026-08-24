@@ -15,7 +15,7 @@ interface PanelFrameProps {
   onClose: () => void;
 }
 
-/** Gemeinsame Chrome aller Studio-Panels: Kopf (Kicker + Titel + Intro), Body, Fuß mit Buttons. */
+/** Gemeinsame Chrome aller Studio-Panels: Kopf (Rückweg + Kicker + Titel + Intro), Body, Fuß mit Buttons. */
 export function PanelFrame({
   step,
   title,
@@ -29,6 +29,17 @@ export function PanelFrame({
   return (
     <section className="pb-studio-panel" aria-label={title}>
       <div>
+        {/* Sichtbarer Rückweg (Studio-UI-Audit P3, 2026-08-24): Esc schließt
+            schon immer (usePanelFocus), war aber unsichtbar — im freien
+            Modus ohne Wizard-Leiste fehlte sonst jede Orientierung. */}
+        <button
+          type="button"
+          className="pb-studio-back"
+          onClick={onClose}
+          aria-label="Zurück zur Übersicht"
+        >
+          ‹ Übersicht
+        </button>
         <p className="pb-studio-kicker">{step}</p>
         <h2
           ref={headingRef}
@@ -41,9 +52,9 @@ export function PanelFrame({
         {intro && <p style={{ color: "var(--st-muted)" }}>{intro}</p>}
       </div>
       {children}
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-        {footer}
-      </div>
+      {/* Sticky (P2): Die Hauptaktion bleibt auch bei langem Panel-Inhalt
+          (z. B. Fotos-Grid) ohne Scrollen erreichbar. */}
+      <div className="pb-studio-panel-foot">{footer}</div>
     </section>
   );
 }

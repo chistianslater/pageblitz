@@ -191,6 +191,15 @@ export function StylePanel({
   return (
     <section className="pb-studio-panel" aria-label="Stil wählen">
       <div>
+        {/* Sichtbarer Rückweg wie in PanelFrame (Studio-UI-Audit P3). */}
+        <button
+          type="button"
+          className="pb-studio-back"
+          onClick={onClose}
+          aria-label="Zurück zur Übersicht"
+        >
+          ‹ Übersicht
+        </button>
         <p className="pb-studio-kicker">Schritt 1</p>
         <h2
           ref={headingRef}
@@ -229,17 +238,11 @@ export function StylePanel({
           {select.error.message}
         </p>
       )}
-      {/* Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung als
-          Feinschliff UNTER der Stil-Wahl — gehört thematisch zu Schritt 1,
-          ohne die Checkliste/Wizard-Reihenfolge aufzublähen. */}
-      <ThemeEditor
-        token={token}
-        packId={activePackId}
-        accent={accent}
-        fontPairId={fontPairId}
-        onApplied={onApplied}
-      />
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+      {/* Hauptaktionen DIREKT nach der Stil-Wahl (Studio-UI-Audit P1):
+          vorher lagen sie nach dem Theme-Editor am Ende einer langen
+          Scrollstrecke. Sticky, damit sie auch bei aufgeklapptem
+          Feinschliff erreichbar bleiben. */}
+      <div className="pb-studio-panel-foot">
         <button
           type="button"
           className="pb-studio-btn"
@@ -258,6 +261,20 @@ export function StylePanel({
           {busy ? "Bitte warten…" : onNext ? "Passt so — weiter" : "Passt so"}
         </button>
       </div>
+      {/* Feinschliff hinter Aufklapper (P1): Akzentfarbe + Schriftpaarung
+          sind eine zweite, kleinere Entscheidungsebene und sollen die
+          Stil-Wahl nicht verdrängen. Natives details = tastaturbedienbar
+          ohne eigenen State. */}
+      <details className="pb-studio-theme-toggle">
+        <summary>Feinschliff: Farben &amp; Schriften anpassen</summary>
+        <ThemeEditor
+          token={token}
+          packId={activePackId}
+          accent={accent}
+          fontPairId={fontPairId}
+          onApplied={onApplied}
+        />
+      </details>
     </section>
   );
 }

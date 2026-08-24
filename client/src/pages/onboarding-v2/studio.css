@@ -866,10 +866,54 @@
   align-self: flex-start;
 }
 
-/* ── Theme-Editor (Farben & Schriften, 2026-08-24) ─────────────────────── */
-.pb-studio-theme {
+/* ── Panel-Chrome (Studio-UI-Audit P2/P3, 2026-08-24) ──────────────────── */
+/* Sticky-Fuß: Hauptaktion („Speichern & weiter" o. ä.) bleibt bei langem
+   Panel-Inhalt ohne Scrollen erreichbar. Die Rail scrollt nicht separat —
+   sticky bezieht sich aufs Dokument und klebt am Viewport-Boden, solange
+   das Panel im Fluss läuft. */
+.pb-studio-panel-foot {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0 0.2rem;
+  background: var(--st-surface);
   border-top: 1px solid var(--st-line);
-  padding-top: 1rem;
+}
+/* Sichtbarer Rückweg im Panel-Kopf (Esc existiert, war aber unsichtbar). */
+.pb-studio-back {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.35rem;
+  color: var(--st-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.pb-studio-back:hover {
+  color: var(--st-accent);
+}
+
+/* ── Theme-Editor (Farben & Schriften, 2026-08-24) ─────────────────────── */
+/* Aufklapper (P1): Der Feinschliff ist eine zweite Entscheidungsebene und
+   bleibt standardmäßig eingeklappt, damit die Stil-Wahl das Panel prägt. */
+.pb-studio-theme-toggle {
+  border-top: 1px solid var(--st-line);
+  padding-top: 0.75rem;
+}
+.pb-studio-theme-toggle > summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--st-ink);
+}
+.pb-studio-theme-toggle[open] > summary {
+  margin-bottom: 0.75rem;
+}
+.pb-studio-theme {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;

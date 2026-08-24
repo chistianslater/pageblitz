@@ -87,6 +87,20 @@ async function waitForFirstStockPhoto(page: Page): Promise<void> {
 }
 
 test.describe("Studio", () => {
+  // Wizard-Autostart im Test aus (Studio-UI-Audit, 2026-08-24): Der
+  // geführte Modus startet einmal pro Browser-Session automatisch und
+  // öffnet das erste offene Panel — die Checklisten-Übersicht, auf die die
+  // Panel-Klicks zielen, verschwindet dann. Ob der Klick die Übersicht noch
+  // erwischt, war eine Race (flaky, Timeout bei /Rechtliches/ u. a.). Das
+  // dismissed-Flag wird gesetzt, sobald die Token-URL feststeht
+  // (addInitScript läuft vor dem ersten App-Script im Dokument).
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      const m = window.location.pathname.match(/\/onboarding\/([^/]+)/);
+      if (m) window.sessionStorage.setItem(`pb-wizard-dismissed:${m[1]}`, "1");
+    });
+  });
+
   for (const vp of VIEWPORTS) {
     test(`Checkliste + Preview ${vp.name}`, async ({ page, request }) => {
       await skipCookieBanner(page);
@@ -268,9 +282,9 @@ test.describe("Studio", () => {
     ]);
 
     // LegalPanel schließt sich nicht selbst (onApplied refetcht nur) —
-    // "Fertig" bringt uns zurück zur Checkliste (Finding: StudioPage.tsx
-    // ruft onClose nur explizit über den Fertig-Button auf).
-    await legalPanel.getByRole("button", { name: "Fertig" }).click();
+    // "Schließen" (PanelFrame-Footer, Ghost-Button) bringt uns zurück zur
+    // Checkliste. (Hieß bis zum Wizard-Umbau "Fertig".)
+    await legalPanel.getByRole("button", { name: "Schließen" }).click();
 
     const legalItem = page.getByRole("button", { name: /Rechtliches/ }).first();
     await expect(legalItem).toHaveAttribute("data-status", "done");
