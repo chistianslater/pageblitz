@@ -16,14 +16,39 @@ import { SectionHead, textLink } from "./primitives";
  * Dialog aus der Features-Vorschau. Bei UI-Änderungen neu erzeugen
  * (Kommentar analog StudioProof.tsx).
  */
+/** Chat-Beweis als Strukturzeichnung statt Screenshot (User-Feedback
+    2026-08-25: der hochskalierte Rail-Screenshot war unscharf und zeigte
+    wieder dasselbe Pack). Neutrale Beispiel-Texte, kein Pack-Bezug. */
+function ChatSketch() {
+  return (
+    <div
+      className="lps-sketch"
+      role="img"
+      aria-label="Schema des KI-Chats: Wunsch eintippen, Vorschlag prüfen, mit einem Klick übernehmen"
+    >
+      <div className="lps-chat">
+        <p className="lps-msg-user">„Mach die Überschrift knackiger"</p>
+        <div className="lps-diff">
+          <span className="lps-diff-label">Überschrift wird ersetzt</span>
+          <span className="lps-diff-old">Willkommen auf unserer Website</span>
+          <span className="lps-diff-new">Handwerk mit Handschrift — seit 2004.</span>
+          <span className="lps-diff-actions">
+            <i>Verwerfen</i>
+            <b>Übernehmen</b>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const FEATURES = [
   {
     id: "ki-chat",
     kicker: "KI-Chat · Extra",
     title: "Sag deiner Website, was sie ändern soll.",
     text: '„Mach die Überschrift kürzer" — fertig. Texte, Farben und Bilder passt die KI auf Zuruf an. Kein Technik-Wissen, keine Warteschleife beim Dienstleister, keine Rechnung pro Änderung.',
-    src: "/feature-shots/ki-chat.webp",
-    alt: "KI-Chat im Pageblitz Studio: Vorschlag für eine neue Überschrift mit Übernehmen-Button",
+    sketch: "chat" as const,
     wide: false,
   },
   {
@@ -32,7 +57,7 @@ const FEATURES = [
     title: "Deine Arbeiten verdienen eine Bühne.",
     text: "Projekte, Referenzen, Impressionen: deine Fotos in einer Galerie, die auf dem Handy genauso gut aussieht — mit Großansicht per Klick. Wer sieht, was du kannst, fragt an.",
     src: "/feature-shots/galerie.webp",
-    alt: "Galerie-Sektion einer Pageblitz-Website: drei Projektfotos einer Schreinerei mit Bildunterschriften",
+    alt: "Galerie-Sektion einer Pageblitz-Website im Stil Gusto: vier Gerichte-Fotos mit Bildunterschriften",
     wide: true,
   },
   {
@@ -68,19 +93,23 @@ export function FeatureShowcase() {
               <div
                 className={`lg:col-span-7 ${index % 2 === 1 ? "lg:order-2" : ""}`}
               >
-                <div className="overflow-hidden rounded-[12px] border border-lp-line bg-white shadow-[0_24px_48px_-28px_rgba(29,26,23,0.35)]">
-                  <img
-                    src={feature.src}
-                    alt={feature.alt}
-                    loading="lazy"
-                    decoding="async"
-                    className={`w-full object-cover ${
-                      feature.wide
-                        ? "aspect-[16/10] object-top"
-                        : "aspect-[16/10] object-left-top"
-                    }`}
-                  />
-                </div>
+                {"sketch" in feature && feature.sketch === "chat" ? (
+                  <ChatSketch />
+                ) : (
+                  <div className="overflow-hidden rounded-[12px] border border-lp-line bg-white shadow-[0_24px_48px_-28px_rgba(29,26,23,0.35)]">
+                    <img
+                      src={"src" in feature ? feature.src : undefined}
+                      alt={"alt" in feature ? feature.alt : ""}
+                      loading="lazy"
+                      decoding="async"
+                      className={`w-full object-cover ${
+                        feature.wide
+                          ? "aspect-[16/10] object-top"
+                          : "aspect-[16/10] object-left-top"
+                      }`}
+                    />
+                  </div>
+                )}
               </div>
               <div
                 className={`lg:col-span-5 ${index % 2 === 1 ? "lg:order-1" : ""}`}
