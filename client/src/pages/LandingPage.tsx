@@ -6,6 +6,7 @@ import { ProofBar } from "@/components/landing/ProofBar";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { StudioProof } from "@/components/landing/StudioProof";
 import { PackShowcase } from "@/components/landing/PackShowcase";
 import { Pricing } from "@/components/landing/Pricing";
 import { TrustSection } from "@/components/landing/TrustSection";
@@ -149,6 +150,10 @@ export default function LandingPage() {
         <ProblemSection billingYearly={billingYearly} />
         <ForWhom />
         <HowItWorks billingYearly={billingYearly} />
+        {/* „Beweis statt Behauptung" (User-Entscheid 2026-08-25): Nach dem
+            erklärten Ablauf das echte Werkzeug zeigen — echte Studio-
+            Screenshots statt Illustrationen. */}
+        <StudioProof billingYearly={billingYearly} />
         <PackShowcase />
         <Pricing
           billingYearly={billingYearly}
