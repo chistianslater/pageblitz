@@ -92,7 +92,8 @@ export function HowItWorks() {
           ))}
         </dl>
         <p className="mt-6 text-[0.95rem] text-lp-muted">
-          KI-Chat und Terminbuchung gibt es als Extras –{" "}
+          KI-Chat für deine Website-Besucher und Terminbuchung gibt es als
+          Extras –{" "}
           <a href="#pricing" className={textLink}>
             zu den Preisen
           </a>

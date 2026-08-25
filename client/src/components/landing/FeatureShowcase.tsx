@@ -15,27 +15,31 @@ import { SectionHead, textLink } from "./primitives";
  * Wiederholung der Hero-Website, kein Pflegeproblem bei neuen Templates.
  * Die Sektion liegt als dunkle Kontrastbühne zwischen hellen Inhaltsblöcken.
  */
-/** Chat-Beweis als Strukturzeichnung statt Screenshot (User-Feedback
-    2026-08-25: der hochskalierte Rail-Screenshot war unscharf und zeigte
-    wieder dasselbe Pack). Neutrale Beispiel-Texte, kein Pack-Bezug. */
+/** KI-Kundenchat als Strukturzeichnung: Besucherfrage → automatische
+    Antwort → Anfrage. Bewusst NICHT der Studio-KI-Chat zur Bearbeitung der
+    Website — diese zwei Funktionen wurden im ersten Entwurf verwechselt
+    (User-Korrektur 2026-08-25). */
 function ChatSketch() {
   return (
     <div
       className="lps-sketch"
       role="img"
-      aria-label="Schema des KI-Chats: Wunsch eintippen, Vorschlag prüfen, mit einem Klick übernehmen"
+      aria-label="Schema des KI-Chats: Ein Website-Besucher stellt eine Frage und erhält sofort eine Antwort"
     >
       <div className="lps-chat">
-        <p className="lps-msg-user">„Mach die Überschrift knackiger"</p>
-        <div className="lps-diff">
-          <span className="lps-diff-label">Überschrift wird ersetzt</span>
-          <span className="lps-diff-old">Willkommen auf unserer Website</span>
-          <span className="lps-diff-new">Handwerk mit Handschrift — seit 2004.</span>
-          <span className="lps-diff-actions">
-            <i>Verwerfen</i>
-            <b>Übernehmen</b>
-          </span>
-        </div>
+        <span className="lps-chat-title">Chat mit deinem Betrieb</span>
+        <p className="lps-msg-assistant">
+          Hallo! Wie kann ich Ihnen helfen?
+        </p>
+        <p className="lps-msg-user">Bieten Sie auch Reparaturen an?</p>
+        <p className="lps-msg-assistant">
+          Ja – wir reparieren Möbel und Türen. Möchten Sie direkt eine Anfrage
+          senden?
+        </p>
+        <span className="lps-chat-input">
+          Nachricht schreiben …
+          <b>↑</b>
+        </span>
       </div>
     </div>
   );
@@ -97,10 +101,10 @@ const FEATURES = [
   {
     id: "ki-chat",
     kicker: "KI-Chat · Extra",
-    title: "Sag deiner Website, was sie ändern soll.",
-    text: "Texte, Farben und Bilder passt die KI auf Zuruf an – ohne Technik-Wissen oder Warteschleife.",
+    title: "Antwortet deinen Kunden. Rund um die Uhr.",
+    text: "Besucher fragen nach Leistungen, Preisen oder Öffnungszeiten und erhalten sofort eine passende Antwort.",
     Diagram: ChatSketch,
-    proof: "Wunsch schreiben → Änderung prüfen → übernehmen.",
+    proof: "Frage stellen → Antwort erhalten → Anfrage senden.",
   },
   {
     id: "galerie",

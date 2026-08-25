@@ -66,7 +66,7 @@ const PLAN_FEATURES = [
   "SSL-Zertifikat",
   "DSGVO-konformer Datenschutz & Impressum",
   "Premium Cloud Hosting",
-  "Änderungen jederzeit per Chat",
+  "Website-Inhalte jederzeit mit Studio-KI ändern",
   "Chat-Support",
 ];
 

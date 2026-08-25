@@ -26,7 +26,7 @@ const TRUST_ITEMS = [
   {
     icon: FileCheck,
     title: "Deine Inhalte gehören dir",
-    text: "Texte, Fotos und Daten stammen von dir — und bleiben deins. Änderungen jederzeit per Chat, ohne Technik-Kenntnisse.",
+    text: "Texte, Fotos und Daten stammen von dir — und bleiben deins. Änderungen machst du jederzeit im Studio, auf Wunsch mit KI-Unterstützung.",
   },
   {
     icon: RefreshCcw,

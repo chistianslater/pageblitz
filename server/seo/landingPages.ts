@@ -2177,7 +2177,7 @@ ${localSectionHtml}
           <li>SSL-Zertifikat</li>
           <li>DSGVO-konformer Datenschutz &amp; Impressum</li>
           <li>Premium Cloud Hosting</li>
-          <li>Änderungen jederzeit per Chat</li>
+          <li>Website-Inhalte jederzeit mit Studio-KI ändern</li>
           <li>Chat-Support</li>
         </ul>
         <div class="pricing-addon-box">
