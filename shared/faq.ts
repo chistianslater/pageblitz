@@ -21,6 +21,14 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
     a: "Nein. Pageblitz ist für Menschen ohne IT-Kenntnisse gemacht. Du beantwortest ein paar Fragen über dein Unternehmen – den Rest erledigt die KI.",
   },
   {
+    q: "Muss ich zum Testen eine Kreditkarte angeben?",
+    a: "Nein. Du erstellst deine Website und siehst dir die fertige Vorschau an, ohne irgendetwas zu bezahlen. Erst wenn du sie dauerhaft freischalten möchtest, beginnt die kostenlose Testwoche – und auch die endet automatisch, wenn du nichts tust.",
+  },
+  {
+    q: "Was, wenn mir das Ergebnis nicht gefällt?",
+    a: "Dann zahlst du nichts. Du siehst deine fertige Website immer zuerst in der Vorschau – erst wenn sie dir gefällt, entscheidest du dich fürs Freischalten. Ohne Risiko, ohne Verpflichtung.",
+  },
+  {
     q: "Was passiert nach den 7 Tagen?",
     a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
   },

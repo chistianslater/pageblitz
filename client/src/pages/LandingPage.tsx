@@ -2,11 +2,14 @@ import { lazy, Suspense, useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/LandingHero";
+import { ProofBar } from "@/components/landing/ProofBar";
+import { ProblemSection } from "@/components/landing/ProblemSection";
 import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { PackShowcase } from "@/components/landing/PackShowcase";
 import { Pricing } from "@/components/landing/Pricing";
 import { Faq } from "@/components/landing/Faq";
+import { StickyCta } from "@/components/landing/StickyCta";
 import {
   FinalCta,
   IndustryLinks,
@@ -138,6 +141,11 @@ export default function LandingPage() {
           onChange={setHeroBusinessName}
           onSubmit={handleHeroStart}
         />
+        {/* Conversion-Pass 2026-08-25: Belege (ProofBar) und Problem-
+            Aktivierung stehen vor den Branchen-Kacheln — erst Vertrauen
+            und Dringlichkeit aufbauen, dann das Produkt zeigen. */}
+        <ProofBar />
+        <ProblemSection billingYearly={billingYearly} />
         <ForWhom />
         <HowItWorks billingYearly={billingYearly} />
         <PackShowcase />
@@ -154,6 +162,7 @@ export default function LandingPage() {
         <IndustryLinks />
       </main>
       <LandingFooter />
+      <StickyCta billingYearly={billingYearly} />
       <DeferredChatWidget />
     </div>
   );

@@ -20,11 +20,16 @@ export function FinalCta(props: FinalCtaProps) {
         <div className="lg:col-span-6">
           <p className="lp-kicker mb-4">Jetzt loslegen</p>
           <h2 id="lp-final-heading" className="lp-h1">
-            Deine Website wartet.
+            Erst sehen. Dann entscheiden.
           </h2>
+          {/* Risiko-Umkehr als Schlusswort (Conversion-Pass 2026-08-25):
+              Der letzte Zweifel vor dem Absprung ist das Ergebnis-Risiko —
+              die Antwort: die Vorschau kostet nichts und verpflichtet zu
+              nichts. */}
           <p className="mt-6 max-w-[32rem] text-[1.1rem] leading-[1.6] text-lp-muted">
-            Kein Webdesigner, kein technisches Wissen. Nur dein Unternehmen –
-            professionell online in 3 Minuten.
+            Deine fertige Website liegt in 3 Minuten vor dir — kostenlos und
+            unverbindlich. Gefällt sie dir nicht, hat dich der Blick nichts
+            gekostet. Gefällt sie dir, ist sie mit einem Klick live.
           </p>
         </div>
         <div className="lg:col-span-6">

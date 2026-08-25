@@ -574,6 +574,55 @@ html.lp-reveal-on .lp-section.lp-in {
   transform: none;
 }
 
+/* ── Conversion-Motion (2026-08-25) ───────────────────────────────────────
+   Gestaffelter Hero-Einstieg + Sticky-CTA-Slide. Alles nur unter
+   no-preference; bei reduce steht jeder Endzustand sofort (die Sticky-
+   Leiste ist ohnehin transform-gesteuert sichtbar/unsichtbar). */
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-rise {
+    animation: lp-rise 0.55s var(--lp-ease) both;
+  }
+  .lp-rise-2 {
+    animation-delay: 0.08s;
+  }
+  .lp-rise-3 {
+    animation-delay: 0.16s;
+  }
+  .lp-rise-4 {
+    animation-delay: 0.24s;
+  }
+  .lp-rise-5 {
+    animation-delay: 0.34s;
+  }
+  .lp-rise-6 {
+    animation-delay: 0.2s;
+  }
+}
+/* Sticky Bottom-CTA (mobil): Verstecken/Zeigen läuft über transform,
+   damit die Leiste auch ohne Motion-Präferenz korrekt aus dem Weg ist;
+   nur das Gleiten selbst ist gegatet. */
+.lp-sticky-cta {
+  transform: translateY(110%);
+}
+.lp-sticky-cta--on {
+  transform: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lp-sticky-cta {
+    transition: transform 0.3s var(--lp-ease);
+  }
+}
+
 /* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der
    Scroll-Bereich selbst bleibt per Touch/Trackpad/Tastatur (Pfeil-Buttons)
    bedienbar. */
