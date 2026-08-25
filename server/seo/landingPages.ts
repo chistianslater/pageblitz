@@ -30,9 +30,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "friseur",
     displayName: "Friseur",
     title: "Website für Friseur erstellen",
-    h1Template: "KI-Website für deinen Friseursalon{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Friseursalon{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Friseure ab 19,90 €/Monat. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – sofort online.",
+      "Professionelle Website für Friseure ab 19,90 €/Monat. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.",
     keywords: ["Website Friseur", "Friseursalon Website erstellen", "Homepage Friseur"],
     features: [
       {
@@ -75,7 +75,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "restaurant",
     displayName: "Restaurant",
     title: "Website für Restaurant erstellen",
-    h1Template: "KI-Website für dein Restaurant{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Restaurant{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Restaurants ab 19,90 €/Monat. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.",
     keywords: ["Website Restaurant", "Restaurant Website erstellen", "Homepage Gastronomie"],
@@ -120,9 +120,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "handwerk",
     displayName: "Handwerker",
     title: "Website für Handwerker erstellen",
-    h1Template: "KI-Website für deinen Handwerksbetrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Handwerksbetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Handwerker ab 19,90 €/Monat. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, sofort online.",
+      "Professionelle Website für Handwerker ab 19,90 €/Monat. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.",
     keywords: ["Website Handwerker", "Handwerksbetrieb Website erstellen", "Homepage Handwerk"],
     features: [
       {
@@ -165,7 +165,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "zahnarzt",
     displayName: "Zahnarzt",
     title: "Website für Zahnarztpraxis erstellen",
-    h1Template: "KI-Website für deine Zahnarztpraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Zahnarztpraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Zahnarztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.",
     keywords: ["Website Zahnarzt", "Zahnarztpraxis Website erstellen", "Homepage Zahnarzt"],
@@ -210,9 +210,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "kosmetik",
     displayName: "Kosmetikstudio",
     title: "Website für Kosmetikstudio erstellen",
-    h1Template: "KI-Website für dein Kosmetikstudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Kosmetikstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Kosmetikerinnen ab 19,90 €/Monat. Behandlungen, Preise, Galerie und Terminanfrage – sofort online.",
+      "Professionelle Website für Kosmetikerinnen ab 19,90 €/Monat. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Kosmetikstudio", "Kosmetikerin Website erstellen", "Homepage Kosmetik"],
     features: [
       {
@@ -255,9 +255,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "fitness",
     displayName: "Fitnessstudio",
     title: "Website für Fitnessstudio erstellen",
-    h1Template: "KI-Website für dein Fitnessstudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Fitnessstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Fitnessstudios und Personal Trainer ab 19,90 €/Monat. Kurspläne, Mitgliedschaft, Fotos – sofort online.",
+      "Professionelle Website für Fitnessstudios und Personal Trainer ab 19,90 €/Monat. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.",
     keywords: ["Website Fitnessstudio", "Personal Trainer Website erstellen", "Homepage Gym"],
     features: [
       {
@@ -300,9 +300,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "arzt",
     displayName: "Arztpraxis",
     title: "Website für Arztpraxis erstellen",
-    h1Template: "KI-Website für deine Arztpraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Arztpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Arztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und sofort online.",
+      "Professionelle Website für Arztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Öffnungszeiten – DSGVO-konform und als Vorschau in 3 Minuten.",
     keywords: ["Website Arztpraxis", "Arzt Website erstellen", "Homepage Arzt"],
     features: [
       {
@@ -345,9 +345,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "immobilien",
     displayName: "Immobilienmakler",
     title: "Website für Immobilienmakler erstellen",
-    h1Template: "KI-Website für deinen Immobilienmakler-Betrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Immobilienmakler-Betrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Immobilienmakler ab 19,90 €/Monat. Referenzobjekte, Kontaktformular, Über-Mich – sofort online.",
+      "Professionelle Website für Immobilienmakler ab 19,90 €/Monat. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.",
     keywords: ["Website Immobilienmakler", "Makler Website erstellen", "Homepage Immobilien"],
     features: [
       {
@@ -390,7 +390,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "rechtsanwalt",
     displayName: "Rechtsanwalt",
     title: "Website für Anwaltskanzlei erstellen",
-    h1Template: "KI-Website für deine Anwaltskanzlei{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Anwaltskanzlei{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Rechtsanwälte ab 19,90 €/Monat. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.",
     keywords: ["Website Rechtsanwalt", "Anwaltskanzlei Website erstellen", "Homepage Anwalt"],
@@ -435,9 +435,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "steuerberater",
     displayName: "Steuerberater",
     title: "Website für Steuerberater erstellen",
-    h1Template: "KI-Website für deine Steuerkanzlei{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Steuerkanzlei{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Steuerberater ab 19,90 €/Monat. Leistungen, Team, Kontaktformular – DSGVO-konform und sofort online.",
+      "Professionelle Website für Steuerberater ab 19,90 €/Monat. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.",
     keywords: ["Website Steuerberater", "Steuerkanzlei Website erstellen", "Homepage Steuerberater"],
     features: [
       {
@@ -480,9 +480,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "fotograf",
     displayName: "Fotograf",
     title: "Website für Fotografen erstellen",
-    h1Template: "KI-Website für dein Fotostudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Portfolio-Website für Fotografen ab 19,90 €/Monat. Portfolio-Galerie, Preisliste, Buchungsanfrage – sofort online.",
+      "Professionelle Portfolio-Website für Fotografen ab 19,90 €/Monat. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Fotograf", "Fotografen Website erstellen", "Portfolio Website Fotograf"],
     features: [
       {
@@ -525,9 +525,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "physiotherapie",
     displayName: "Physiotherapeut",
     title: "Website für Physiotherapeut erstellen",
-    h1Template: "KI-Website für deine Physiopraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Physiopraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Physiotherapeuten ab 19,90 €/Monat. Behandlungen, Team, Online-Terminanfrage – sofort online.",
+      "Professionelle Website für Physiotherapeuten ab 19,90 €/Monat. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Physiotherapeut", "Physiopraxis Website erstellen", "Physiotherapie Homepage"],
     features: [
       {
@@ -570,9 +570,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "nagelstudio",
     displayName: "Nagelstudio",
     title: "Website für Nagelstudio erstellen",
-    h1Template: "KI-Website für dein Nagelstudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Nagelstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Nagelstudios ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – sofort online und ohne Technik.",
+      "Professionelle Website für Nagelstudios ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.",
     keywords: ["Website Nagelstudio", "Nagelstylistin Website erstellen", "Nail Art Homepage"],
     features: [
       {
@@ -615,9 +615,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "baeckerei",
     displayName: "Bäckerei",
     title: "Website für Bäckerei erstellen",
-    h1Template: "KI-Website für deine Bäckerei{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Bäckerei{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Bäckereien und Konditoreien ab 19,90 €/Monat. Angebote, Öffnungszeiten, Sonderbestellungen – sofort online.",
+      "Professionelle Website für Bäckereien und Konditoreien ab 19,90 €/Monat. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.",
     keywords: ["Website Bäckerei", "Bäckerei Homepage erstellen", "Konditorei Website"],
     features: [
       {
@@ -660,9 +660,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "reinigung",
     displayName: "Reinigungsservice",
     title: "Website für Reinigungsservice erstellen",
-    h1Template: "KI-Website für deinen Reinigungsservice{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Reinigungsservice{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Reinigungsunternehmen ab 19,90 €/Monat. Leistungen, Angebote, Kontaktformular – sofort online.",
+      "Professionelle Website für Reinigungsunternehmen ab 19,90 €/Monat. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.",
     keywords: ["Website Reinigungsservice", "Reinigungsunternehmen Website erstellen", "Hausreinigung Homepage"],
     features: [
       {
@@ -705,9 +705,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hundesalon",
     displayName: "Hundesalon",
     title: "Website für Hundesalon erstellen",
-    h1Template: "KI-Website für deinen Hundesalon{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Hundesalon{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hundesalons und Tierpfleger ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – sofort online.",
+      "Professionelle Website für Hundesalons und Tierpfleger ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Hundesalon", "Tierpfleger Website erstellen", "Hundefriseur Homepage"],
     features: [
       {
@@ -750,9 +750,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "musikschule",
     displayName: "Musikschule",
     title: "Website für Musikschule erstellen",
-    h1Template: "KI-Website für deine Musikschule{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Musikschule{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Musikschulen und Musiklehrer ab 19,90 €/Monat. Kurse, Instrumente, Schnupperstunde – sofort online.",
+      "Professionelle Website für Musikschulen und Musiklehrer ab 19,90 €/Monat. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.",
     keywords: ["Website Musikschule", "Musiklehrer Website erstellen", "Musikunterricht Homepage"],
     features: [
       {
@@ -795,9 +795,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "elektriker",
     displayName: "Elektriker",
     title: "Website für Elektriker erstellen",
-    h1Template: "KI-Website für deinen Elektrobetrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Elektrobetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Elektriker ab 19,90 €/Monat. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – sofort online.",
+      "Professionelle Website für Elektriker ab 19,90 €/Monat. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.",
     keywords: ["Website Elektriker", "Elektriker Website erstellen", "Homepage Elektrobetrieb"],
     features: [
       {
@@ -828,7 +828,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "maler",
     displayName: "Malerbetrieb",
     title: "Website für Malerbetrieb erstellen",
-    h1Template: "KI-Website für deinen Malerbetrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Malerbetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Malerbetriebe ab 19,90 €/Monat. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.",
     keywords: ["Website Maler", "Malerbetrieb Website erstellen", "Homepage Malermeister"],
@@ -861,9 +861,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "klempner",
     displayName: "Klempner",
     title: "Website für Klempner erstellen",
-    h1Template: "KI-Website für deinen Klempnerbetrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Klempnerbetrieb{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Klempner ab 19,90 €/Monat. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – sofort online.",
+      "Professionelle Website für Klempner ab 19,90 €/Monat. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.",
     keywords: ["Website Klempner", "Klempner Website erstellen", "Homepage Sanitärbetrieb"],
     features: [
       {
@@ -894,7 +894,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "gaertner",
     displayName: "Gärtner",
     title: "Website für Gärtner erstellen",
-    h1Template: "KI-Website für deinen Gärtnereibetrieb{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Gärtnereibetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Gärtner ab 19,90 €/Monat. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.",
     keywords: ["Website Gärtner", "Gärtnerei Website erstellen", "Homepage Gartenservice"],
@@ -927,9 +927,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "tierarzt",
     displayName: "Tierarzt",
     title: "Website für Tierarzt erstellen",
-    h1Template: "KI-Website für deine Tierarztpraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Tierarztpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Tierarztpraxen ab 19,90 €/Monat. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – sofort online.",
+      "Professionelle Website für Tierarztpraxen ab 19,90 €/Monat. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.",
     keywords: ["Website Tierarzt", "Tierarztpraxis Website erstellen", "Homepage Veterinär"],
     features: [
       {
@@ -960,7 +960,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "apotheke",
     displayName: "Apotheke",
     title: "Website für Apotheke erstellen",
-    h1Template: "KI-Website für deine Apotheke{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Apotheke{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Apotheken ab 19,90 €/Monat. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.",
     keywords: ["Website Apotheke", "Apotheke Website erstellen", "Homepage Apotheke"],
@@ -993,9 +993,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "yogastudio",
     displayName: "Yogastudio",
     title: "Website für Yogastudio erstellen",
-    h1Template: "KI-Website für dein Yogastudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Yogastudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Yogastudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – sofort online.",
+      "Professionelle Website für Yogastudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Yogastudio", "Yogastudio Website erstellen", "Homepage Yoga"],
     features: [
       {
@@ -1026,7 +1026,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "fahrschule",
     displayName: "Fahrschule",
     title: "Website für Fahrschule erstellen",
-    h1Template: "KI-Website für deine Fahrschule{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Fahrschule{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Fahrschulen ab 19,90 €/Monat. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.",
     keywords: ["Website Fahrschule", "Fahrschule Website erstellen", "Homepage Fahrlehrer"],
@@ -1059,9 +1059,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "kfz-werkstatt",
     displayName: "Kfz-Werkstatt",
     title: "Website für Kfz-Werkstatt erstellen",
-    h1Template: "KI-Website für deine Kfz-Werkstatt{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Kfz-Werkstatt{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Kfz-Werkstätten ab 19,90 €/Monat. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – sofort online.",
+      "Professionelle Website für Kfz-Werkstätten ab 19,90 €/Monat. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.",
     keywords: ["Website Kfz-Werkstatt", "Autowerkstatt Website erstellen", "Homepage Kfz-Betrieb"],
     features: [
       {
@@ -1092,9 +1092,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "schluesseldienst",
     displayName: "Schlüsseldienst",
     title: "Website für Schlüsseldienst erstellen",
-    h1Template: "KI-Website für deinen Schlüsseldienst{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Schlüsseldienst{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Schlüsseldienste ab 19,90 €/Monat. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – sofort online.",
+      "Professionelle Website für Schlüsseldienste ab 19,90 €/Monat. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.",
     keywords: ["Website Schlüsseldienst", "Schlüsseldienst Website erstellen", "Homepage Schlüsselnotdienst"],
     features: [
       {
@@ -1125,7 +1125,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "architekt",
     displayName: "Architekt",
     title: "Website für Architekt erstellen",
-    h1Template: "KI-Website für dein Architekturbüro{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Architekturbüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Architekturbüros ab 19,90 €/Monat. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.",
     keywords: ["Website Architekt", "Architekturbüro Website erstellen", "Homepage Architekt"],
@@ -1158,9 +1158,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "innenarchitekt",
     displayName: "Innenarchitekt",
     title: "Website für Innenarchitekt erstellen",
-    h1Template: "KI-Website für dein Innenarchitekturbüro{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Innenarchitekturbüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Innenarchitekten ab 19,90 €/Monat. Mit Designportfolio, Leistungsübersicht und Kontaktformular – sofort online.",
+      "Professionelle Website für Innenarchitekten ab 19,90 €/Monat. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.",
     keywords: ["Website Innenarchitekt", "Innenarchitektur Website erstellen", "Homepage Raumgestaltung"],
     features: [
       {
@@ -1191,9 +1191,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "buchhaltung",
     displayName: "Buchhaltungsbüro",
     title: "Website für Buchhaltungsbüro erstellen",
-    h1Template: "KI-Website für dein Buchhaltungsbüro{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Buchhaltungsbüro{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Buchhaltungsbüros ab 19,90 €/Monat. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – sofort online.",
+      "Professionelle Website für Buchhaltungsbüros ab 19,90 €/Monat. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.",
     keywords: ["Website Buchhaltung", "Buchhaltungsbüro Website erstellen", "Homepage Buchhalter"],
     features: [
       {
@@ -1224,9 +1224,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "logopaedie",
     displayName: "Logopädie",
     title: "Website für Logopädie erstellen",
-    h1Template: "KI-Website für deine Logopädiepraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Logopädiepraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Logopädiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – sofort online.",
+      "Professionelle Website für Logopädiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.",
     keywords: ["Website Logopädie", "Logopädie Praxis Website", "Homepage Logopäde"],
     features: [
       {
@@ -1257,9 +1257,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "ergotherapie",
     displayName: "Ergotherapie",
     title: "Website für Ergotherapie erstellen",
-    h1Template: "KI-Website für deine Ergotherapiepraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Ergotherapiepraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Ergotherapiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Patienteninfos und Kontaktformular – sofort online.",
+      "Professionelle Website für Ergotherapiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.",
     keywords: ["Website Ergotherapie", "Ergotherapie Praxis Website", "Homepage Ergotherapeut"],
     features: [
       {
@@ -1290,9 +1290,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hebamme",
     displayName: "Hebamme",
     title: "Website für Hebamme erstellen",
-    h1Template: "KI-Website für deine Hebammenpraxis{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deine Hebammenpraxis{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hebammen ab 19,90 €/Monat. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – sofort online.",
+      "Professionelle Website für Hebammen ab 19,90 €/Monat. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.",
     keywords: ["Website Hebamme", "Hebamme Website erstellen", "Homepage Hebammenpraxis"],
     features: [
       {
@@ -1323,9 +1323,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "pilates",
     displayName: "Pilatesstudio",
     title: "Website für Pilatesstudio erstellen",
-    h1Template: "KI-Website für dein Pilatesstudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Pilatesstudio{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Pilatesstudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – sofort online.",
+      "Professionelle Website für Pilatesstudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.",
     keywords: ["Website Pilatesstudio", "Pilates Studio Website erstellen", "Homepage Pilates"],
     features: [
       {
@@ -1356,7 +1356,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "reisebuero",
     displayName: "Reisebüro",
     title: "Website für Reisebüro erstellen",
-    h1Template: "KI-Website für dein Reisebüro{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Reisebüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Reisebüros ab 19,90 €/Monat. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.",
     keywords: ["Website Reisebüro", "Reisebüro Website erstellen", "Homepage Reisevermittlung"],
@@ -1389,9 +1389,9 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hausreinigung",
     displayName: "Hausreinigung",
     title: "Website für Hausreinigung erstellen",
-    h1Template: "KI-Website für deinen Hausreinigungsservice{city} – in 3 Minuten online",
+    h1Template: "KI-Website für deinen Hausreinigungsservice{city} – Vorschau in 3 Minuten",
     description:
-      "Professionelle Website für Hausreinigungsservices ab 19,90 €/Monat. Mit Leistungsübersicht, Preisangaben und Kontaktformular – sofort online.",
+      "Professionelle Website für Hausreinigungsservices ab 19,90 €/Monat. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.",
     keywords: ["Website Hausreinigung", "Reinigungsservice Website erstellen", "Homepage Haushaltsreinigung"],
     features: [
       {
@@ -1422,7 +1422,7 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "fotostudio",
     displayName: "Fotostudio",
     title: "Website für Fotostudio erstellen",
-    h1Template: "KI-Website für dein Fotostudio{city} – in 3 Minuten online",
+    h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Fotostudios ab 19,90 €/Monat. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.",
     keywords: ["Website Fotostudio", "Fotograf Website erstellen", "Homepage Fotografen"],
@@ -1800,6 +1800,101 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
   .features,.addons,.pricing,.faq,.steps,.comparison,.preview-section{padding:3rem 0}
   .stats{padding:2rem 0}
 }
+
+/* ── Pageblitz Studio Skin (2026-08-25) ─────────────────────────────────
+   Branchen-Landingpages teilen jetzt Palette, Typografie, Hairlines und
+   Kartenlogik mit der Startseite. Die branchenspezifischen Akzentfarben
+   bleiben ausschließlich INNERHALB der Website-Vorschau (.mw-*) erhalten:
+   dort demonstrieren sie das Ergebnis; die Pageblitz-Verkaufsoberfläche
+   selbst bleibt konsistent Papier/Ink/Grün. */
+@font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url("/fonts/space-grotesk-latin-wght.woff2") format("woff2")}
+body{font-family:"Space Grotesk",system-ui,sans-serif;color:#1d1a17;background:#f7f5f1}
+.container{max-width:1200px}
+nav{background:rgba(253,252,250,.94);border-color:#ddd6c9;padding:.75rem 0}
+.logo{color:#1d1a17;font-weight:500}
+.nav-cta,.btn-primary,.pricing-badge{background:#1f5f4b!important;color:#fff!important;box-shadow:none!important}
+.nav-cta:hover,.btn-primary:hover{background:#174a3b!important;opacity:1}
+.hero{background:#f7f5f1;color:#1d1a17;padding:5rem 0 4.5rem;border-bottom:1px solid #ddd6c9}
+.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(31,95,75,.09),transparent)}
+.hero-orb{display:none}
+.hero-badge{background:#fdfcfa;border-color:#ddd6c9;color:#6b645b;font-weight:500}
+.hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#1d1a17;font-weight:500;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03}
+.hero p{color:#6b645b}
+.hero-trust{color:#6b645b}
+.btn-primary{font-weight:600}
+.stats{background:#fdfcfa;border-color:#ddd6c9}
+.stat-value{color:#1d1a17;font-weight:500}
+.stat-label{color:#6b645b}
+.steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:#ddd6c9}
+.section-label{color:#1f5f4b;font-weight:500}
+.section-title{color:#1d1a17;font-weight:500;font-size:clamp(1.9rem,3vw,3rem)}
+.section-sub,.local-intro{color:#6b645b}
+.steps-grid{gap:1rem}
+.step{text-align:left;border-top:1px solid #ddd6c9;padding:1.5rem 0}
+.step-num{margin:0 0 1.25rem;background:#fdfcfa;border-color:#ddd6c9;color:#1f5f4b}
+.step h3,.feature-card h3,.addon-card h4{color:#1d1a17}
+.step p,.feature-card p,.addon-card p{color:#6b645b}
+.feature-card,.addon-card{background:#fdfcfa;border-color:#ddd6c9;border-radius:12px}
+.feature-card:hover,.addon-card:hover{background:#fff;border-color:#bdb5a7}
+.feature-icon{background:#eef5f1;border-color:#cddfd7}
+.addon-price{background:#eef5f1;border-color:#cddfd7;color:#1f5f4b}
+.addon-expand-btn{background:transparent;border-color:#bdb5a7;color:#1d1a17}
+.addon-expand-btn:hover{background:#fdfcfa;color:#1d1a17}
+.pricing-wrapper{max-width:560px}
+.pricing-card{background:#fdfcfa;border-color:#ddd6c9;border-radius:18px;box-shadow:0 28px 60px -42px rgba(29,26,23,.55)}
+.pricing-name,.pricing-note,.pricing-note-bottom{color:#6b645b}
+.pricing-price{color:#1d1a17;font-weight:500}
+.pricing-price span{color:#6b645b}
+.pricing-features li{color:#1d1a17;border-color:#ddd6c9}
+.pricing-features li::before{color:#1f5f4b}
+.pricing-addon-box{background:#f7f5f1;border-color:#ddd6c9}
+.pricing-addon-label,.pricing-addon-row span:last-child{color:#6b645b}
+.pricing-addon-row span:first-child{color:#1d1a17}
+.pricing-cta{background:#1f5f4b!important;color:#fff!important}
+.pricing-cta:hover{background:#174a3b!important}
+.billing-toggle{background:#fdfcfa;border-color:#ddd6c9}
+.billing-btn{color:#6b645b}
+.billing-btn.active{background:#1d1a17;color:#f7f5f1;box-shadow:none}
+.billing-save{background:#eef5f1;color:#1f5f4b}
+.comp-table{background:#fdfcfa;border-color:#ddd6c9;border-radius:14px}
+.comp-header{background:#f7f5f1}
+.comp-header div{color:#6b645b}
+.comp-header div:first-child{color:#6b645b}
+.comp-header div:last-child{color:#1f5f4b;background:#eef5f1}
+.comp-row{border-color:#ddd6c9}
+.comp-row:nth-child(even){background:#faf8f4}
+.comp-row div{color:#6b645b}
+.comp-row div:first-child{color:#1d1a17}
+.comp-row div:last-child{color:#1f5f4b;background:#eef5f1}
+details{background:#fdfcfa;border-color:#ddd6c9;border-radius:10px}
+details[open]{border-color:#bdb5a7}
+summary{color:#1d1a17}
+summary::after{color:#6b645b}
+.faq-answer{color:#6b645b}
+.cta-banner{background:#1d1a17}
+.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(31,95,75,.18),transparent)}
+.cta-banner h2{color:#f7f5f1;font-weight:500}
+.cta-banner p,.cta-note{color:#c7c0b4}
+.industries,.cities{border-color:#ddd6c9;background:#fdfcfa}
+.industries h3,.cities h3{color:#6b645b}
+.industry-link,.city-link{background:#f7f5f1;border-color:#ddd6c9;color:#6b645b}
+.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#1f5f4b;color:#1f5f4b;background:#eef5f1}
+footer{background:#1d1a17;color:#9f988d;border-color:#1d1a17}
+footer a{color:#c7c0b4}
+.mock-browser{background:#fff;box-shadow:0 28px 60px -36px rgba(29,26,23,.5),0 0 0 1px #ddd6c9}
+.mock-chrome,.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
+.mock-url,.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
+@media(max-width:768px){
+  .nav-cta{padding:.55rem .85rem;font-size:.75rem;white-space:nowrap}
+  .comp-table{display:block;overflow:visible}
+  .comp-header{display:none}
+  .comp-row{display:grid;grid-template-columns:1fr 1fr;padding:0}
+  .comp-row div{padding:.85rem 1rem;text-align:left}
+  .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid #ddd6c9;background:#f7f5f1}
+  .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b645b}
+  .comp-row div:nth-child(2)::before{content:"Webagentur"}
+  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#1f5f4b}
+}
 `.trim();
 
 // ── Schema.org helpers ────────────────────────────────────────────────────────
@@ -2005,9 +2100,7 @@ export function generateLandingPageHTML(
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(metaDesc)}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/space-grotesk-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <script type="application/ld+json">${buildFaqSchema(pageFaqs)}</script>
   <script type="application/ld+json">${buildWebPageSchema(title, metaDesc, canonical)}</script>
   <script type="application/ld+json">${buildBreadcrumbSchema(industry, city)}</script>
@@ -2021,7 +2114,7 @@ export function generateLandingPageHTML(
       <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
       Pageblitz
     </a>
-    <a class="nav-cta" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc)">Website erstellen ✦</a>
+    <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>
   </div>
 </nav>
 
@@ -2029,10 +2122,10 @@ export function generateLandingPageHTML(
   <div class="hero-orb orb-tl"></div>
   <div class="hero-orb orb-br"></div>
   <div class="container" style="position:relative;z-index:1;text-align:center">
-    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
+    <div class="hero-badge">Pageblitz · Vorschau in 3 Minuten</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>
-    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
+    <a class="btn-primary" href="https://pageblitz.de/start">Website kostenlos erstellen</a>
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
@@ -2044,10 +2137,10 @@ export function generateLandingPageHTML(
 <div class="stats">
   <div class="container">
     <div class="stats-grid">
-      <div><div class="stat-value">1.200+</div><div class="stat-label">Websites erstellt</div></div>
-      <div><div class="stat-value">3 Min.</div><div class="stat-label">Durchschnittliche Zeit</div></div>
-      <div><div class="stat-value">97%</div><div class="stat-label">Zufriedene Kunden</div></div>
-      <div><div class="stat-value">19,90€</div><div class="stat-label">Pro Monat</div></div>
+      <div><div class="stat-value">3 Min.</div><div class="stat-label">Bis zur Vorschau</div></div>
+      <div><div class="stat-value">14</div><div class="stat-label">Stilwelten</div></div>
+      <div><div class="stat-value">0 €</div><div class="stat-label">Einrichtungskosten</div></div>
+      <div><div class="stat-value">19,90 €</div><div class="stat-label">Pro Monat</div></div>
     </div>
   </div>
 </div>
@@ -2184,7 +2277,7 @@ ${localSectionHtml}
           <div class="pricing-addon-label">Optionale Add-ons für ${escapeHtml(industry.displayName)}</div>
           ${pricingAddonsHtml}
         </div>
-        <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">7 Tage gratis starten</a>
+        <a class="pricing-cta" href="https://pageblitz.de/start" style="background:${style.accent};color:#fff">Website kostenlos erstellen</a>
         <div class="pricing-note-bottom" id="note-bottom-monthly" style="display:none">7 Tage gratis · danach 24,90 €/Mo. · Jederzeit kündbar</div>
         <div class="pricing-note-bottom" id="note-bottom-yearly">7 Tage gratis · danach 19,90 €/Mo. (238,80 €/Jahr) · Jederzeit kündbar</div>
       </div>
@@ -2227,8 +2320,8 @@ ${localSectionHtml}
 <section class="cta-banner">
   <div class="container">
     <h2>Jetzt ${escapeHtml(industry.displayName)}-Website erstellen${escapeHtml(cityStr)}</h2>
-    <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">7 Tage gratis starten</a>
+    <p>Vorschau in 3 Minuten. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage komplett gratis.</p>
+    <a class="btn-primary" href="https://pageblitz.de/start" style="background:linear-gradient(135deg,${style.accent},${style.accent}cc);box-shadow:0 4px 24px ${style.accent}40">Website kostenlos erstellen</a>
     <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
   </div>
 </section>
@@ -2280,11 +2373,11 @@ export function generateOverviewHTML(): string {
 
   const overviewCss = SHARED_CSS + `
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
-.industry-card{display:flex;flex-direction:column;align-items:center;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.75rem 1.25rem;text-align:center;transition:all .2s;color:#fff}
-.industry-card:hover{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.04);transform:translateY(-2px)}
+.industry-card{display:flex;flex-direction:column;align-items:center;background:#fdfcfa;border:1px solid #ddd6c9;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:all .2s;color:#1d1a17}
+.industry-card:hover{border-color:#1f5f4b;background:#fff;transform:translateY(-2px)}
 .industry-card .icon{font-size:2rem;margin-bottom:.75rem}
-.industry-card h3{font-size:.9375rem;font-weight:600;color:#fff;margin-bottom:.375rem}
-.industry-card p{font-size:.8125rem;color:rgba(255,255,255,.4);line-height:1.5}
+.industry-card h3{font-size:.9375rem;font-weight:600;color:#1d1a17;margin-bottom:.375rem}
+.industry-card p{font-size:.8125rem;color:#6b645b;line-height:1.5}
 `;
 
   const industryCardsHtml = Object.values(SEO_INDUSTRIES)
@@ -2303,7 +2396,7 @@ export function generateOverviewHTML(): string {
         name: "Wie erstelle ich eine Website für mein Unternehmen?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Mit Pageblitz in 3 Schritten: Branche wählen, Unternehmensdaten eingeben, fertige Website erhalten. In 3 Minuten online.",
+          text: "Mit Pageblitz in 3 Schritten: Branche wählen, Unternehmensdaten eingeben, fertige Website erhalten. Vorschau in 3 Minuten.",
         },
       },
       {
@@ -2340,9 +2433,7 @@ export function generateOverviewHTML(): string {
   <meta property="og:type" content="website">
   <meta property="og:locale" content="de_DE">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/space-grotesk-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
   <script type="application/ld+json">${faqSchema}</script>
   <style>${overviewCss}</style>
 </head>
@@ -2354,16 +2445,16 @@ export function generateOverviewHTML(): string {
       <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
       Pageblitz
     </a>
-    <a class="nav-cta" href="https://pageblitz.de/start">Website erstellen ✦</a>
+    <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>
   </div>
 </nav>
 
 <section class="hero">
   <div class="container">
-    <div class="hero-badge">⚡ KI-generiert · In 3 Minuten online</div>
+    <div class="hero-badge">Pageblitz · Vorschau in 3 Minuten</div>
     <h1>Website erstellen für dein Unternehmen – in 3 Minuten</h1>
     <p>Die KI erstellt deine professionelle Website automatisch. Branche wählen, Daten eingeben – fertig. Ab 19,90 €/Monat.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <a class="btn-primary" href="https://pageblitz.de/start">Website kostenlos erstellen</a>
     <div class="hero-trust">
       <span>✓ Keine Kreditkarte nötig</span>
       <span>✓ Keine Einrichtungsgebühr</span>
@@ -2376,7 +2467,7 @@ export function generateOverviewHTML(): string {
   <div class="container">
     <p class="section-label">Branchen</p>
     <h2 class="section-title">Wähle deine Branche</h2>
-    <p class="section-sub">Über 17 spezialisierte Branchen – professionell, DSGVO-konform, sofort online.</p>
+    <p class="section-sub">Über 17 spezialisierte Branchen – professionell, DSGVO-konform, als Vorschau in 3 Minuten.</p>
     <div class="overview-grid">
     ${industryCardsHtml}
     </div>
@@ -2386,8 +2477,8 @@ export function generateOverviewHTML(): string {
 <section class="cta-banner">
   <div class="container">
     <h2>Jetzt Website erstellen – 7 Tage gratis</h2>
-    <p>In 3 Minuten online. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage gratis testen.</p>
-    <a class="btn-primary" href="https://pageblitz.de/start">7 Tage gratis starten</a>
+    <p>Vorschau in 3 Minuten. KI-generiert. Ab 19,90 €/Monat – die ersten 7 Tage gratis testen.</p>
+    <a class="btn-primary" href="https://pageblitz.de/start">Website kostenlos erstellen</a>
     <div class="cta-note">Keine Kreditkarte nötig · Keine Einrichtungsgebühr · Jederzeit kündbar</div>
   </div>
 </section>

@@ -50,12 +50,39 @@ describe("Städte-Seiten sind keine Duplikate mehr", () => {
   });
 });
 
+describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
+  const html = generateLandingPageHTML(SEO_INDUSTRIES.restaurant);
+
+  it("nutzt die Studio-Palette und die selbst gehostete Space Grotesk", () => {
+    expect(html).toContain('url("/fonts/space-grotesk-latin-wght.woff2")');
+    expect(html).toContain("background:#f7f5f1");
+    expect(html).toContain("background:#1f5f4b!important");
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).not.toContain("Plus+Jakarta+Sans");
+  });
+
+  it("zeigt nur belegbare Produktfakten statt erfundener Erfolgszahlen", () => {
+    expect(html).not.toContain("1.200+");
+    expect(html).not.toContain("97%");
+    expect(html).toContain("14");
+    expect(html).toContain("Stilwelten");
+    expect(html).toContain("0 €");
+    expect(html).toContain("Einrichtungskosten");
+  });
+
+  it("verspricht eine Vorschau statt sofortiger Veröffentlichung", () => {
+    expect(html).toContain("Vorschau in 3 Minuten");
+    expect(html).not.toContain("3 Minuten online");
+    expect(html).not.toContain("sofort online");
+  });
+});
+
 describe("Home-Prerender", () => {
   const html = generateHomePrerender();
 
   it("liefert die H1 als echtes HTML aus", () => {
     expect(html).toContain("<h1");
-    expect(html).toContain("Deine professionelle Website in 3 Minuten.");
+    expect(html).toContain("Deine Vorschau. In 3 Minuten fertig.");
   });
 
   it("verlinkt jede Branchenseite", () => {
