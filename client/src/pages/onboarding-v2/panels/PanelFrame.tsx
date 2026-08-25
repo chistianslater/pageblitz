@@ -44,17 +44,16 @@ export function PanelFrame({
           {step} · {title}
         </span>
       </div>
-      <div>
-        <p className="pb-studio-kicker">{step}</p>
-        <h2
-          ref={headingRef}
-          tabIndex={-1}
-          className="pb-studio-title"
-          style={{ fontSize: "1.4rem" }}
-        >
+      {/* Typografische Ordnung (User-Feedback 2026-08-25): Der Schritt
+          steht bereits in der sticky Kopfleiste — kein doppelter Kicker
+          mehr darunter. Abstände/Hierarchie über .pb-studio-panel-intro
+          statt Inline-Styles (der Tailwind-Reset entfernt Absatz-Abstände,
+          ohne Klasse klebte alles aneinander). */}
+      <div className="pb-studio-panel-intro">
+        <h2 ref={headingRef} tabIndex={-1} className="pb-studio-title">
           {title}
         </h2>
-        {intro && <p style={{ color: "var(--st-muted)" }}>{intro}</p>}
+        {intro && <p>{intro}</p>}
       </div>
       {children}
       {/* Sticky (P2): Die Hauptaktion bleibt auch bei langem Panel-Inhalt

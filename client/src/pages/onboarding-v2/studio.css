@@ -375,7 +375,10 @@
 .pb-studio-panel {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  /* Mehr Luft zwischen den Panel-Abschnitten (2026-08-25): 1rem wirkte
+     gequetscht, die Abschnitte waren ohne Linien nicht voneinander zu
+     unterscheiden. */
+  gap: 1.35rem;
 }
 .pb-studio-cands {
   display: grid;
@@ -943,17 +946,31 @@
   background: var(--st-surface);
   border-top: 1px solid var(--st-line);
 }
-/* Programmatischer Panel-Fokus (usePanelFocus) soll für MAUS-Nutzer
-   keinen Chrome-Fokusring um die Überschrift malen (wirkte wie ein
-   Markierungs-Fehler, User-Feedback 2026-08-25) — Tastatur-Nutzer
-   bekommen weiterhin einen sichtbaren Ring via :focus-visible. */
-.pb-studio-panel .pb-studio-title:focus:not(:focus-visible) {
+/* Programmatischer Panel-Fokus (usePanelFocus) soll NIE einen sichtbaren
+   Ring um die Überschrift malen (User-Feedback 2026-08-25: erst Chromes
+   blauer Default, dann unser grüner :focus-visible-Ring). Die Überschrift
+   ist kein bedienbares Element — der Fokus ist nur ein Screenreader-/
+   Kontext-Anker beim Panel-Wechsel, ein sichtbarer Ring wäre hier
+   Dekoration ohne Funktion. */
+.pb-studio-panel .pb-studio-title:focus {
   outline: none;
 }
-.pb-studio-panel .pb-studio-title:focus-visible {
-  outline: 2px solid var(--st-accent);
-  outline-offset: 3px;
-  border-radius: 2px;
+
+/* Typografische Ordnung im Panel-Kopf (2026-08-25): klarer Rhythmus
+   statt Aneinanderkleben (Tailwind-Reset entfernt Absatz-Abstände). */
+.pb-studio-panel-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.pb-studio-panel-intro .pb-studio-title {
+  font-size: 1.5rem;
+}
+.pb-studio-panel-intro p {
+  margin: 0;
+  color: var(--st-muted);
+  max-width: 34rem;
+  line-height: 1.55;
 }
 
 /* Rückweg als deutliche Pill (vorher: unauffälliger Textlink). */
