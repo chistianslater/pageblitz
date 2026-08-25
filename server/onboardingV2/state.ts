@@ -15,6 +15,7 @@ import {
   readSubscriptionAddOns,
 } from "../subscriptionAddOns";
 import { assertV2SafeWrite } from "../v2WriteGuard";
+import { parseGmbAddress } from "../gmb/address";
 import { addOnFlagsFromDoc } from "./applyPatch";
 import {
   deriveChecklistState,
@@ -103,6 +104,50 @@ function readOpeningHours(
   return contact?.openingHours ?? [];
 }
 
+/**
+ * Vorbefüllung der Impressum-Felder aus bereits vorhandenen GMB-Daten
+ * (User-Frage 2026-08-25): Straße/PLZ/Ort/Telefon landen über die
+ * Generierung längst im Dokument (contact-Sektion) bzw. per
+ * persistGmbDetails im Business — bei v2-Nutzer:innen, die das
+ * v1-Onboarding-Formular nie ausgefüllt haben, blieben die Legal-Felder
+ * trotzdem komplett leer. Kette pro Feld: explizite Eingabe
+ * (onboarding_responses) > Dokument (contact) > Business (GMB-Tiefe).
+ * Leere Strings zählen als „nicht vorhanden" und fallen durch.
+ *
+ * Bewusst NUR Vorbefüllung: Wirksam fürs Impressum wird der Stand erst
+ * über updateLegal — die bewusste Bestätigung im Rechtliches-Panel
+ * bleibt Pflicht (Checkliste zählt weiter nur die gespeicherten Felder).
+ * E-Mail und USt-IdNr. liefert GMB nie (E-Mail fällt wie bisher auf die
+ * Kunden-E-Mail zurück, USt-IdNr. bleibt leer).
+ */
+export function resolveLegalPrefill(input: {
+  onboarding: OnboardingResponse | null | undefined;
+  doc: WebsiteDataV2 | null;
+  businessName: string;
+  businessAddress?: string | null;
+  businessPhone?: string | null;
+  customerEmail: string | null;
+}): StudioLegal {
+  const { onboarding, doc } = input;
+  const contact = doc?.sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const parsedAddress = parseGmbAddress(null, input.businessAddress);
+  return {
+    legalOwner: onboarding?.legalOwner || input.businessName || "",
+    legalStreet:
+      onboarding?.legalStreet || contact?.street || parsedAddress.street || "",
+    legalZip: onboarding?.legalZip || contact?.zip || parsedAddress.zip || "",
+    legalCity:
+      onboarding?.legalCity || contact?.city || parsedAddress.city || "",
+    legalEmail:
+      onboarding?.legalEmail || input.customerEmail || contact?.email || "",
+    legalPhone:
+      onboarding?.legalPhone || contact?.phone || input.businessPhone || "",
+    legalVatId: onboarding?.legalVatId ?? "",
+  };
+}
+
 /** Entwurfs-Flags aus onboarding_responses (vor dem Checkout: Extras-Panel + Checkout-Summe). */
 function draftAddOns(
   onboarding: OnboardingResponse | null | undefined
@@ -189,15 +234,14 @@ export async function buildState(
     doc,
     onboarding,
   });
-  const legal: StudioLegal = {
-    legalOwner: onboarding?.legalOwner ?? "",
-    legalStreet: onboarding?.legalStreet ?? "",
-    legalZip: onboarding?.legalZip ?? "",
-    legalCity: onboarding?.legalCity ?? "",
-    legalEmail: onboarding?.legalEmail ?? website.customerEmail ?? "",
-    legalPhone: onboarding?.legalPhone ?? "",
-    legalVatId: onboarding?.legalVatId ?? "",
-  };
+  const legal = resolveLegalPrefill({
+    onboarding,
+    doc,
+    businessName: doc?.businessName ?? business?.name ?? "",
+    businessAddress: business?.address,
+    businessPhone: business?.phone,
+    customerEmail: website.customerEmail ?? null,
+  });
   return {
     websiteId: website.id,
     token,

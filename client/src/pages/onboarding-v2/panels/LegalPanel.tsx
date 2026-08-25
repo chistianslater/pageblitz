@@ -41,6 +41,10 @@ const FIELDS: TextFieldConfig[] = [
  */
 const FIELD_HINTS: Partial<Record<TextFieldConfig["name"], string>> = {
   legalZip: "5-stellige Postleitzahl, nur Ziffern.",
+  // Vorbefüllt mit dem (GMB-)Firmennamen — rechtlich gehört bei
+  // Einzelunternehmen die Person dazu (2026-08-25).
+  legalOwner:
+    "Vorbefüllt mit dem Firmennamen — bei Einzelunternehmen bitte Vor- und Nachname eintragen, bei Gesellschaften die Firma inkl. Rechtsform.",
 };
 
 interface LegalPanelProps {
