@@ -1,6 +1,4 @@
-import { ArrowRight } from "lucide-react";
-import { useLocation } from "wouter";
-import { SectionHead, pillPrimary, startHref } from "./primitives";
+import { SectionHead } from "./primitives";
 
 /**
  * „Dein Studio" als Strukturzeichnungen (2026-08-25, User-Feedback:
@@ -84,8 +82,7 @@ const CARDS = [
   },
 ] as const;
 
-export function StudioProof({ billingYearly }: { billingYearly: boolean }) {
-  const [, navigate] = useLocation();
+export function StudioProof() {
   return (
     <section
       aria-labelledby="lp-studio-proof-heading"
@@ -113,19 +110,10 @@ export function StudioProof({ billingYearly }: { billingYearly: boolean }) {
             </figure>
           ))}
         </div>
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate(startHref(billingYearly))}
-            className={pillPrimary}
-          >
-            Selbst ausprobieren — kostenlos
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <span className="text-[0.85rem] text-lp-muted">
-            Dein Studio sieht dann so aus — mit deinem Unternehmen darin.
-          </span>
-        </div>
+        <p className="mt-8 max-w-[42rem] border-t border-lp-line pt-4 text-[0.9rem] text-lp-muted">
+          Keine versteckten Menüs, kein leeres Dashboard: Du siehst immer den
+          nächsten Schritt und daneben sofort das Ergebnis.
+        </p>
       </div>
     </section>
   );

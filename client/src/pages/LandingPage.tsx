@@ -156,7 +156,7 @@ export default function LandingPage() {
         {/* „Beweis statt Behauptung" (User-Entscheid 2026-08-25): Nach dem
             erklärten Ablauf das echte Werkzeug zeigen — echte Studio-
             Screenshots statt Illustrationen. */}
-        <StudioProof billingYearly={billingYearly} />
+        <StudioProof />
         <PackShowcase />
         {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
             verkaufen das Abo indirekt, bevor der Preis fällt. */}

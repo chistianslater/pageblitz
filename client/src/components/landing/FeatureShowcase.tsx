@@ -2,19 +2,18 @@ import { SectionHead, textLink } from "./primitives";
 
 /**
  * Feature-Bühnen (Conversion-Pass 2, User-Entscheid 2026-08-25, „C"):
- * Die emotional stärksten Extras bekommen echte Screenshot-Beweise statt
- * nur eines Preislisten-Eintrags — Snaplove-Prinzip „Beweis statt
- * Behauptung". Platziert VOR dem Preis: Sie verkaufen das Abo indirekt
- * („das kann deine Website alles"), nicht die Extras direkt.
+ * Die emotional stärksten Extras bekommen systematische Funktionsschemata
+ * statt eines wilden Mixes aus Screenshot, Crop und Diagramm. Jede Karte
+ * folgt derselben Hierarchie: Kicker → Strukturzeichnung → Nutzen → kurzer
+ * Beleg. Das wirkt hochwertiger und macht die Sektion deutlich kürzer.
  *
  * Bewusst nur drei von acht Extras — der Rest bleibt Preisliste, sonst
  * wird die Seite zur Tapete und das Hauptziel (kostenlose Vorschau)
  * verdünnt.
  *
- * Quellen der Shots (client/public/feature-shots/): ki-chat = Studio-
- * Test-Baseline, galerie = Werkbank-Demo-Sektion, buchung = Buchungs-
- * Dialog aus der Features-Vorschau. Bei UI-Änderungen neu erzeugen
- * (Kommentar analog StudioProof.tsx).
+ * Alle Zeichnungen sind pack-neutral und CSS-basiert: immer scharf, keine
+ * Wiederholung der Hero-Website, kein Pflegeproblem bei neuen Templates.
+ * Die Sektion liegt als dunkle Kontrastbühne zwischen hellen Inhaltsblöcken.
  */
 /** Chat-Beweis als Strukturzeichnung statt Screenshot (User-Feedback
     2026-08-25: der hochskalierte Rail-Screenshot war unscharf und zeigte
@@ -42,32 +41,82 @@ function ChatSketch() {
   );
 }
 
+function GallerySketch() {
+  return (
+    <div
+      className="lps-sketch"
+      role="img"
+      aria-label="Schema einer Bildergalerie mit vier Bildern und geöffneter Großansicht"
+    >
+      <div className="lps-gallery">
+        {[0, 1, 2, 3].map(i => (
+          <span key={i} className={`lps-gallery-img tone-${i + 1}`} />
+        ))}
+        <span className="lps-lightbox">
+          <i className="lps-lightbox-img" />
+          <b>×</b>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function BookingSketch() {
+  return (
+    <div
+      className="lps-sketch"
+      role="img"
+      aria-label="Schema einer Terminbuchung mit Kalender, Uhrzeiten und bestätigtem Termin"
+    >
+      <div className="lps-booking">
+        <div className="lps-calendar">
+          <span className="lps-cal-head" />
+          <div className="lps-cal-grid">
+            {Array.from({ length: 21 }, (_, i) => (
+              <i
+                key={i}
+                data-active={i === 11 || undefined}
+                data-muted={i < 3 || undefined}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="lps-slots">
+          <span className="lps-slot-label" />
+          <i>09:00</i>
+          <i data-active>10:30</i>
+          <i>12:00</i>
+          <b>Termin bestätigen</b>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const FEATURES = [
   {
     id: "ki-chat",
     kicker: "KI-Chat · Extra",
     title: "Sag deiner Website, was sie ändern soll.",
     text: '„Mach die Überschrift kürzer" — fertig. Texte, Farben und Bilder passt die KI auf Zuruf an. Kein Technik-Wissen, keine Warteschleife beim Dienstleister, keine Rechnung pro Änderung.',
-    sketch: "chat" as const,
-    wide: false,
+    Diagram: ChatSketch,
+    proof: "Wunsch schreiben → Änderung prüfen → übernehmen.",
   },
   {
     id: "galerie",
     kicker: "Bildergalerie · Extra",
     title: "Deine Arbeiten verdienen eine Bühne.",
     text: "Projekte, Referenzen, Impressionen: deine Fotos in einer Galerie, die auf dem Handy genauso gut aussieht — mit Großansicht per Klick. Wer sieht, was du kannst, fragt an.",
-    src: "/feature-shots/galerie.webp",
-    alt: "Galerie-Sektion einer Pageblitz-Website im Stil Gusto: vier Gerichte-Fotos mit Bildunterschriften",
-    wide: true,
+    Diagram: GallerySketch,
+    proof: "Bilder antippen → groß ansehen → direkt anfragen.",
   },
   {
     id: "buchung",
     kicker: "Terminbuchung · Extra",
     title: "Kunden buchen, während du arbeitest.",
     text: "Deine Kunden wählen den passenden Zeitslot selbst — direkt auf deiner Website. Weniger Telefonate, mehr Termine, kein Hin und Her.",
-    src: "/feature-shots/buchung.webp",
-    alt: "Online-Terminbuchung auf einer Pageblitz-Website: Auswahl von Datum, Uhrzeit und Dauer",
-    wide: true,
+    Diagram: BookingSketch,
+    proof: "Tag wählen → Uhrzeit auswählen → Termin bestätigt.",
   },
 ] as const;
 
@@ -75,54 +124,30 @@ export function FeatureShowcase() {
   return (
     <section
       aria-labelledby="lp-features-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-feature-dark"
     >
       <div className="lp-container">
         <SectionHead
           id="lp-features-heading"
           kicker="Kann mehr"
           title="Deine Website ist kein Plakat. Sie arbeitet."
-          text="Drei der stärksten Extras — echt gezeigt, nicht versprochen. Alle Extras sind jederzeit zubuch- und kündbar."
+          text="Drei der stärksten Extras — systematisch erklärt. Alle Extras sind jederzeit zubuch- und kündbar."
         />
-        <div className="mt-14 flex flex-col gap-16 lg:gap-20">
-          {FEATURES.map((feature, index) => (
-            <div
-              key={feature.id}
-              className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12"
-            >
-              <div
-                className={`lg:col-span-7 ${index % 2 === 1 ? "lg:order-2" : ""}`}
-              >
-                {"sketch" in feature && feature.sketch === "chat" ? (
-                  <ChatSketch />
-                ) : (
-                  <div className="overflow-hidden rounded-[12px] border border-lp-line bg-white shadow-[0_24px_48px_-28px_rgba(29,26,23,0.35)]">
-                    <img
-                      src={"src" in feature ? feature.src : undefined}
-                      alt={"alt" in feature ? feature.alt : ""}
-                      loading="lazy"
-                      decoding="async"
-                      className={`w-full object-cover ${
-                        feature.wide
-                          ? "aspect-[16/10] object-top"
-                          : "aspect-[16/10] object-left-top"
-                      }`}
-                    />
-                  </div>
-                )}
-              </div>
-              <div
-                className={`lg:col-span-5 ${index % 2 === 1 ? "lg:order-1" : ""}`}
-              >
-                <p className="lp-kicker mb-3">{feature.kicker}</p>
-                <h3 className="text-[clamp(1.5rem,1.2rem+1.2vw,2rem)] leading-[1.15] tracking-[-0.015em]">
-                  {feature.title}
-                </h3>
-                <p className="mt-4 max-w-[30rem] text-[1rem] leading-[1.65] text-lp-muted">
-                  {feature.text}
-                </p>
-              </div>
-            </div>
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {FEATURES.map(feature => (
+            <article key={feature.id} className="flex flex-col">
+              <p className="lp-kicker mb-3">{feature.kicker}</p>
+              <feature.Diagram />
+              <h3 className="mt-5 text-[1.35rem] leading-[1.15] tracking-[-0.015em]">
+                {feature.title}
+              </h3>
+              <p className="mt-3 flex-1 text-[0.95rem] leading-[1.6] text-lp-muted">
+                {feature.text}
+              </p>
+              <p className="mt-4 border-t border-lp-line pt-3 text-[0.82rem] font-medium text-lp-accent">
+                {feature.proof}
+              </p>
+            </article>
           ))}
         </div>
         <p className="mt-12 text-[0.95rem] text-lp-muted">

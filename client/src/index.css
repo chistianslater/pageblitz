@@ -1059,6 +1059,162 @@ html.lp-reveal-on .lp-section.lp-in {
   background: var(--lp-accent);
   color: var(--lp-accent-ink);
 }
+/* Galerie-Schema: ruhiges 2×2-Raster, darüber eine fokussierte Lightbox. */
+.lps-gallery {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4%;
+  min-height: 0;
+}
+.lps-gallery-img {
+  border-radius: 6px;
+  background: #dfe8e3;
+}
+.lps-gallery-img.tone-2 {
+  background: #e7ddcf;
+}
+.lps-gallery-img.tone-3 {
+  background: #d9d3c8;
+}
+.lps-gallery-img.tone-4 {
+  background: #cbdcd4;
+}
+.lps-lightbox {
+  position: absolute;
+  inset: 13% 9%;
+  border-radius: 9px;
+  padding: 5%;
+  background: rgba(29, 26, 23, 0.92);
+  box-shadow: 0 18px 35px -20px rgba(29, 26, 23, 0.65);
+}
+.lps-lightbox-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  background:
+    linear-gradient(145deg, transparent 45%, rgba(31, 95, 75, 0.45) 46% 56%, transparent 57%),
+    #e7ddcf;
+}
+.lps-lightbox b {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+/* Buchungs-Schema: Kalender links, Slots rechts, gleicher Kartenrahmen wie
+   Chat/Galerie — keine externe UI-/Pack-Anmutung. */
+.lps-booking {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 5%;
+  min-height: 0;
+}
+.lps-calendar,
+.lps-slots {
+  border: 1px solid var(--lp-line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 8%;
+  min-width: 0;
+  overflow: hidden;
+}
+.lps-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 10%;
+}
+.lps-cal-head,
+.lps-slot-label {
+  display: block;
+  height: 7px;
+  width: 58%;
+  border-radius: 99px;
+  background: var(--lp-ink);
+}
+.lps-cal-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6%;
+  min-height: 0;
+}
+.lps-cal-grid i {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: var(--lp-canvas);
+}
+.lps-cal-grid i[data-muted] {
+  opacity: 0.4;
+}
+.lps-cal-grid i[data-active] {
+  background: var(--lp-accent);
+  box-shadow: 0 0 0 3px rgba(31, 95, 75, 0.14);
+}
+.lps-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 7%;
+}
+.lps-slots i {
+  font-style: normal;
+  font-size: 0.72rem;
+  text-align: center;
+  border: 1px solid var(--lp-line);
+  border-radius: 999px;
+  padding: 0.3rem;
+}
+.lps-slots i[data-active] {
+  border-color: var(--lp-accent);
+  color: var(--lp-accent);
+  background: #eef5f1;
+}
+.lps-slots b {
+  margin-top: auto;
+  border-radius: 999px;
+  padding: 0.38rem 0.5rem;
+  background: var(--lp-accent);
+  color: var(--lp-accent-ink);
+  font-size: 0.68rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Dunkle Feature-Bühne: trennt die drei „arbeitenden" Funktionen sichtbar
+   von Template-/Studio-Beweisen und bricht die helle Seitenmonotonie.
+   Zeichnungen bleiben als helle technische Karten erhalten. */
+.lp-feature-dark {
+  background: var(--lp-ink);
+  color: var(--lp-canvas);
+}
+.lp-feature-dark .lp-h2,
+.lp-feature-dark h3 {
+  color: var(--lp-canvas);
+}
+.lp-feature-dark .lp-kicker {
+  color: #9db8ac;
+}
+.lp-feature-dark .text-lp-muted {
+  color: #c7c0b4;
+}
+.lp-feature-dark .border-lp-line {
+  border-color: rgba(221, 214, 201, 0.2);
+}
+.lp-feature-dark .lps-sketch {
+  color: var(--lp-ink);
+  background: var(--lp-surface);
+  border-color: rgba(221, 214, 201, 0.35);
+}
+.lp-feature-dark a.text-lp-accent,
+.lp-feature-dark .text-lp-accent {
+  color: #70b69d;
+}
 
 /* Dunkler Schluss-CTA (2026-08-25, User-Feedback „Creme zu brav/zu häufig"):
    ein einziger tiefer Kontrast-Block am Seitenende bricht die helle
