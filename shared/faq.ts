@@ -29,6 +29,14 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
     a: "Dann zahlst du nichts. Du siehst deine fertige Website immer zuerst in der Vorschau – erst wenn sie dir gefällt, entscheidest du dich fürs Freischalten. Ohne Risiko, ohne Verpflichtung.",
   },
   {
+    q: "Brauche ich einen Webdesigner oder eine Agentur?",
+    a: "Nein. Pageblitz ersetzt genau das: Die KI erstellt Texte, Aufbau und Design passend zu deiner Branche, das Studio führt dich durch die letzten Schritte. Agentur-Ergebnis ohne Agentur-Budget – und Änderungen machst du später selbst, per Chat.",
+  },
+  {
+    q: "Werde ich mit meiner Website bei Google gefunden?",
+    a: "Ja. Jede Pageblitz-Website kommt mit SEO-Grundlagen: saubere Seitentitel und -Beschreibungen, strukturierte Daten für lokale Unternehmen, schnelle Ladezeiten und mobiloptimiertes Design. Dein Google-Unternehmensprofil kannst du direkt verbinden.",
+  },
+  {
     q: "Was passiert nach den 7 Tagen?",
     a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
   },

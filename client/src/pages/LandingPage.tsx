@@ -8,6 +8,7 @@ import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { PackShowcase } from "@/components/landing/PackShowcase";
 import { Pricing } from "@/components/landing/Pricing";
+import { TrustSection } from "@/components/landing/TrustSection";
 import { Faq } from "@/components/landing/Faq";
 import { StickyCta } from "@/components/landing/StickyCta";
 import {
@@ -153,6 +154,10 @@ export default function LandingPage() {
           billingYearly={billingYearly}
           onBillingChange={setBillingYearly}
         />
+        {/* Vertrauens-Bühne nach dem Preis, vor der FAQ (Referenz:
+            snaplove.de) — wer den Preis gesehen hat, braucht als Nächstes
+            Sicherheit, nicht noch mehr Features. */}
+        <TrustSection />
         <Faq />
         <FinalCta
           value={heroBusinessName}
