@@ -313,6 +313,21 @@
 .pb-studio-tabs {
   display: none;
 }
+@media (min-width: 1024px) {
+  /* Rail und Stage scrollen intern statt mit dem Dokument (2026-08-25):
+     Panel-Kopfleiste und -Fuß (position:sticky) beziehen sich damit
+     zuverlässig auf die Rail — unabhängig von globalem Body-Overflow —
+     und die Vorschau bleibt beim Scrollen des Panels stehen. */
+  .pb-studio-layout {
+    height: 100dvh;
+  }
+  .pb-studio-rail {
+    overflow-y: auto;
+  }
+  .pb-studio-stage {
+    overflow-y: auto;
+  }
+}
 @media (max-width: 1023px) {
   .pb-studio-layout {
     grid-template-columns: 1fr;

@@ -33,8 +33,15 @@
 html,
 body {
   scroll-behavior: smooth;
-  /* Prevent horizontal overflow / sideways scroll on mobile */
+  /* Prevent horizontal overflow / sideways scroll on mobile.
+     2026-08-25: hidden → clip. overflow-x:hidden erzwingt per CSS-Spec
+     overflow-y:auto und macht den Body damit zum Scroll-Container —
+     position:sticky bezog sich dann auf den Body statt den Viewport und
+     klebte nicht (Studio-Panel-Kopf/-Fuß). clip schneidet ab, ohne einen
+     Scroll-Container zu erzeugen; die hidden-Zeile davor bleibt als
+     Fallback für Browser ohne clip-Support stehen. */
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
