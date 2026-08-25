@@ -22,12 +22,24 @@
   min-height: 100dvh;
 }
 .pb-studio-rail {
-  padding: var(--st-space);
+  /* Kein vertikales Padding auf der Rail selbst (2026-08-25): Die Rail ist
+     seit dem internen Scrollen der Sticky-Bezug für Panel-Kopf/-Fuß, und
+     Sticky-Insets beziehen sich auf die Content-Box — ein Rail-Padding
+     ließ beim Kleben eine Lücke von genau --st-space über der Kopfleiste
+     bzw. unter dem Fuß. Stattdessen tragen erstes/letztes Kind den
+     Abstand nach außen. */
+  padding: 0 var(--st-space);
   border-right: 1px solid var(--st-line);
   background: var(--st-surface);
   display: flex;
   flex-direction: column;
   gap: var(--st-space);
+}
+.pb-studio-rail > :first-child {
+  margin-top: var(--st-space);
+}
+.pb-studio-rail > :last-child {
+  margin-bottom: var(--st-space);
 }
 .pb-studio-stage {
   position: relative;
@@ -883,8 +895,11 @@
 
 /* ── Panel-Chrome (Studio-UI-Audit P2/P3, 2026-08-24; verschärft 2026-08-25) ── */
 /* Sticky-Kopfleiste: Rückweg + Schritt bleiben beim Scrollen sichtbar.
-   Negative Ränder ziehen die Leiste bündig an die Rail-Kanten (die Rail
-   trägt das Padding), damit sie wie eine echte Kopfzeile wirkt. */
+   Keine negativen Vertikal-Margins — bei sticky klebt die Margin-Box an
+   der Grenze, eine negative margin-top ließe die Leiste um genau diesen
+   Betrag UNTER dem Rand kleben (sichtbare Lücke, User-Feedback
+   2026-08-25). Seitlich negative Ränder ziehen sie bündig an die
+   Rail-Kanten. */
 .pb-studio-panel-head {
   position: sticky;
   top: 0;
@@ -892,7 +907,7 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin: calc(-1 * var(--st-space)) calc(-1 * var(--st-space)) 0;
+  margin: 0 calc(-1 * var(--st-space));
   padding: 0.55rem var(--st-space);
   background: var(--st-surface);
   border-bottom: 1px solid var(--st-line);
