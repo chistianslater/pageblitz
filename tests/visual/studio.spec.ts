@@ -99,6 +99,10 @@ test.describe("Studio", () => {
       const m = window.location.pathname.match(/\/onboarding\/([^/]+)/);
       if (m) window.sessionStorage.setItem(`pb-wizard-dismissed:${m[1]}`, "1");
     });
+    // Reveal-Script (siteEnhancer.ts) in den Vorschau-/Thumbnail-iframes
+    // deterministisch aus — sonst hängt die Sichtbarkeit der Sektionen vom
+    // IntersectionObserver-Timing ab (flaky Rail-Screenshots).
+    await page.emulateMedia({ reducedMotion: "reduce" });
   });
 
   for (const vp of VIEWPORTS) {
@@ -240,6 +244,42 @@ test.describe("Studio", () => {
     await expect(page.locator(".pb-studio-rail")).toHaveScreenshot(
       "studio-ai-chat-desktop.png",
       { animations: "disabled" }
+    );
+  });
+
+  test("Texte: KI-Vorschlag liefert Chips und übernimmt ins Feld", async ({
+    page,
+    request,
+  }) => {
+    // PB_LLM_MOCK=1 (webServer.command) deckt seit 2026-08-25 auch
+    // suggestTexts ab — deterministische Mock-Varianten statt echtem LLM.
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    await page.getByRole("button", { name: /Texte/ }).first().click();
+    const textsPanel = page.getByRole("region", { name: "Texte prüfen" });
+    await expect(textsPanel).toBeVisible();
+
+    // Erster „KI-Vorschlag"-Button gehört zur Überschrift (Feldreihenfolge
+    // in textsParts.tsx FIELDS).
+    await textsPanel
+      .getByRole("button", { name: "KI-Vorschlag" })
+      .first()
+      .click();
+    const chips = textsPanel.getByRole("group", {
+      name: "Vorschläge für Überschrift",
+    });
+    await expect(chips.getByRole("button")).toHaveCount(3);
+
+    await chips.getByRole("button").first().click();
+    await expect(textsPanel.locator("#pb-texts-headline")).toHaveValue(
+      "Mock-Vorschlag A für headline"
     );
   });
 

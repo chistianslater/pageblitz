@@ -181,13 +181,22 @@ export function OfferPanel({
       >
         {suggesting ? "Wird vorgeschlagen…" : "KI-Vorschlag"}
       </button>
-      {hint && <p style={{ color: "var(--st-accent)" }}>{hint}</p>}
-      <OfferEditor value={value} onChange={handleChange} />
+      {/* Feedback direkt am Button (2026-08-25): Der KI-Request braucht
+          spürbar Zeit; Fehler landeten vorher unter dem Editor außerhalb
+          des sichtbaren Bereichs — wirkte wie „nichts passiert". */}
+      {suggesting && (
+        <p role="status" style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
+          Die KI stellt einen Vorschlag zusammen — das kann bis zu 30
+          Sekunden dauern …
+        </p>
+      )}
       {suggestOffer.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {suggestOffer.error.message}
         </p>
       )}
+      {hint && <p style={{ color: "var(--st-accent)" }}>{hint}</p>}
+      <OfferEditor value={value} onChange={handleChange} />
       {updateOffer.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateOffer.error.message}

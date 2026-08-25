@@ -38,6 +38,12 @@ for (const pack of PACKS)
     for (const vp of VIEWPORTS) {
       test(`${pack} ${fixture} ${vp.name}`, async ({ page }) => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
+        // SITE_ENHANCER_JS (siteEnhancer.ts) versteckt Sektionen per
+        // IntersectionObserver bis zum Hereinscrollen — fullPage-
+        // Screenshots würden Sektionen unterhalb des Folds unsichtbar
+        // einfangen. reduced-motion lässt das Script die versteckende
+        // Klasse gar nicht erst setzen: alles statisch sichtbar.
+        await page.emulateMedia({ reducedMotion: "reduce" });
         await page.goto(`/dev/site-preview?pack=${pack}&fixture=${fixture}`);
         await page.waitForLoadState("networkidle"); // Fonts geladen
         await expect(page).toHaveScreenshot(
@@ -45,10 +51,6 @@ for (const pack of PACKS)
           {
             fullPage: true,
             maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO,
-            // MOTION_CSS (motionCss.ts) animiert Sektionen per
-            // animation-timeline:view() — fullPage-Screenshots scrollen
-            // intern und würden die Reveals mitten im Lauf einfangen.
-            // "disabled" springt deterministisch zum Endzustand (sichtbar).
             animations: "disabled",
           }
         );
@@ -71,6 +73,8 @@ for (const pack of PACKS)
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
+    // Wie oben: Reveal-Script über reduced-motion deterministisch aus.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(`/demo/${pack}/leistungen-im-detail`);
     await page.waitForLoadState("networkidle");
     await expect(page).toHaveScreenshot(
@@ -78,7 +82,6 @@ for (const pack of PACKS)
       {
         fullPage: true,
         maxDiffPixelRatio: PACKS_MAX_DIFF_PIXEL_RATIO,
-        // Wie oben: MOTION_CSS-Scroll-Reveals deterministisch einfrieren.
         animations: "disabled",
       }
     );
@@ -213,3 +216,32 @@ for (const pack of PACKS) {
     }
   });
 }
+
+/**
+ * Galerie-Lightbox (siteEnhancer.ts, 2026-08-25): Klick auf ein Galerie-
+ * Bild öffnet die Großansicht (role=dialog), Pfeile blättern, Esc
+ * schließt. reduced-motion nur, damit die Reveal-Logik die Galerie nicht
+ * erst einblenden muss — die Lightbox selbst ist davon unabhängig.
+ */
+test("Galerie-Lightbox: öffnen, blättern, schließen", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/dev/site-preview?pack=werkbank&fixture=full");
+  await page.waitForLoadState("networkidle");
+
+  const firstImage = page.locator(".pb-site #galerie img").first();
+  await firstImage.scrollIntoViewIfNeeded();
+  await firstImage.click();
+
+  const lightbox = page.getByRole("dialog", { name: "Bildansicht" });
+  await expect(lightbox).toBeVisible();
+  const firstSrc = await page.locator(".pb-lb-img").getAttribute("src");
+  expect(firstSrc).toBeTruthy();
+
+  await page.getByRole("button", { name: "Nächstes Bild" }).click();
+  const secondSrc = await page.locator(".pb-lb-img").getAttribute("src");
+  expect(secondSrc).not.toBe(firstSrc);
+
+  await page.keyboard.press("Escape");
+  await expect(lightbox).toBeHidden();
+});

@@ -10,6 +10,7 @@ import type {
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
+import { SITE_ENHANCER_JS } from "../../client/src/components/site/siteEnhancer";
 import { getIslandsBundlePath } from "./islandsBundle";
 import { pageForPathname } from "../../client/src/components/site/engine";
 import { umamiScriptTag } from "../umami";
@@ -279,7 +280,7 @@ function renderPageHtml(
     />
   );
   const canvasColor = getCanvasColor(data.stylePackId);
-  const bodyParts = [body];
+  const bodyParts = [body, siteEnhancerTag()];
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
@@ -301,6 +302,16 @@ ${bodyParts.join("\n")}
 /** Umami-Script-Tag für den <head> oder "" (siehe RenderSiteOptions). */
 function analyticsTag(opts: RenderSiteOptions): string {
   return opts.umamiWebsiteId ? umamiScriptTag(opts.umamiWebsiteId) : "";
+}
+
+/**
+ * Inline-Script für Scroll-Reveals + Galerie-Lightbox (2026-08-25) —
+ * läuft auf JEDER Kundenseite, auch ohne gebuchte Add-ons (das Islands-
+ * Bundle lädt nur bei Features). Inline statt eigenem Asset: kein
+ * zusätzlicher Request, kein Caching-/Versionierungs-Problem.
+ */
+function siteEnhancerTag(): string {
+  return `<script>${SITE_ENHANCER_JS}</script>`;
 }
 
 /**
@@ -469,7 +480,7 @@ export function renderSiteHtml(
   );
 
   const canvasColor = getCanvasColor(data.stylePackId);
-  const bodyParts = [body];
+  const bodyParts = [body, siteEnhancerTag()];
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`

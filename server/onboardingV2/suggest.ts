@@ -156,6 +156,47 @@ function buildTextVariantPrompt(
  * Feldlänge geklemmt. Nutzt die llmHints der Style-Pack-Verfassung des
  * Dokuments, damit der Vorschlag zur Tonalität des gewählten Packs passt.
  */
+/**
+ * PB_LLM_MOCK=1 (nicht-produktiv): deterministische Vorschläge ohne LLM —
+ * deckt sich mit dem Mock in aiEdit.ts/generateSiteContent.ts und macht
+ * den KI-Vorschlag-Flow in Dev-Server und Playwright testbar (2026-08-25;
+ * suggest.ts hatte bisher als einziger KI-Pfad keinen Mock).
+ */
+function mockTextVariants(field: TextField): string[] {
+  return [
+    `Mock-Vorschlag A für ${field}`,
+    `Mock-Vorschlag B für ${field}`,
+    `Mock-Vorschlag C für ${field}`,
+  ];
+}
+
+function mockOffer(mode: OfferSuggestionMode): OfferPatch {
+  if (mode === "services") {
+    return OfferPatchSchema.parse({
+      mode,
+      headline: "Unsere Leistungen",
+      items: Array.from({ length: 6 }, (_, i) => ({
+        title: `Leistung ${i + 1}`,
+        description: `Mock-Beschreibung ${i + 1}`,
+      })),
+    });
+  }
+  return OfferPatchSchema.parse({
+    mode,
+    categories: Array.from({ length: 3 }, (_, c) => ({
+      name: `Kategorie ${c + 1}`,
+      items: Array.from({ length: 3 }, (_, i) => ({
+        name: `Position ${c + 1}.${i + 1}`,
+        description: "Mock",
+        price: "ab 10 €",
+      })),
+    })),
+  });
+}
+
+const LLM_MOCK_ACTIVE =
+  process.env.PB_LLM_MOCK === "1" && process.env.NODE_ENV !== "production";
+
 export async function suggestTextVariants(args: {
   field: TextField;
   doc: WebsiteDataV2;
@@ -163,6 +204,7 @@ export async function suggestTextVariants(args: {
   category: string;
   city?: string;
 }): Promise<string[]> {
+  if (LLM_MOCK_ACTIVE) return mockTextVariants(args.field);
   const constitution = getConstitution(args.doc.stylePackId);
   const prompt = buildTextVariantPrompt(args, constitution);
 
@@ -380,6 +422,7 @@ export async function suggestOffer(args: {
   businessName: string;
   category: string;
 }): Promise<OfferPatch> {
+  if (LLM_MOCK_ACTIVE) return mockOffer(args.mode);
   const prompt = buildOfferPrompt(args);
   const responseFormat = buildOfferResponseFormat(args.mode);
 

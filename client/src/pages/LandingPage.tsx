@@ -87,6 +87,35 @@ export default function LandingPage() {
   const [billingYearly, setBillingYearly] = useState(true);
   const [heroBusinessName, setHeroBusinessName] = useState("");
 
+  // Scroll-Reveal per IntersectionObserver (2026-08-25): Die CSS-only
+  // Variante mit `animation-timeline: view()` lief in Safari < 26 und
+  // älterem Firefox schlicht nicht — dort blieb die Seite komplett
+  // statisch. Die versteckende Klasse `lp-reveal-on` wird nur per JS
+  // gesetzt (kein JS = alles sichtbar); bei prefers-reduced-motion:
+  // reduce bleibt die Seite statisch.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
+    if (!("IntersectionObserver" in window)) return;
+    document.documentElement.classList.add("lp-reveal-on");
+    const io = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("lp-in");
+            io.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.05 }
+    );
+    document.querySelectorAll(".lp-section").forEach(el => io.observe(el));
+    return () => {
+      io.disconnect();
+      document.documentElement.classList.remove("lp-reveal-on");
+    };
+  }, []);
+
   // Einstieg direkt im Hero: Wer den Firmennamen eintippt, überspringt auf
   // /start den Auswahl-Screen ("Wie möchtest du starten?"). Leeres Feld ist
   // erlaubt und führt auf den bisherigen Weg.

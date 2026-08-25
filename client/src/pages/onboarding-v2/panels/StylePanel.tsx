@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
-import { usePanelFocus } from "./usePanelFocus";
+import { PanelFrame } from "./PanelFrame";
 import { ThemeEditor } from "./ThemeEditor";
 
 interface Candidate {
@@ -181,42 +181,42 @@ export function StylePanel({
   };
 
   const busy = busyId !== null;
-  // Fokus-Management wie PanelFrame (siehe usePanelFocus): StylePanel nutzt
-  // PanelFrame nicht (eigenes Layout mit Kandidaten-Grid statt Formularfeldern),
-  // bekommt aber dieselbe Behandlung — Fokus auf die Überschrift beim Öffnen,
-  // Esc schließt (wie "Passt so"/Zurück), Fokus-Rückgabe an den Checklisten-
-  // Eintrag beim Schließen.
-  const headingRef = usePanelFocus("style", onClose);
 
+  // Seit 2026-08-25 nutzt auch das Stil-Panel den PanelFrame (sticky
+  // Kopfleiste mit Rückweg, sticky Fuß mit den Hauptaktionen) — vorher
+  // Sonderlayout ohne die gemeinsame Panel-Chrome.
   return (
-    <section className="pb-studio-panel" aria-label="Stil wählen">
-      <div>
-        {/* Sichtbarer Rückweg wie in PanelFrame (Studio-UI-Audit P3). */}
-        <button
-          type="button"
-          className="pb-studio-back"
-          onClick={onClose}
-          aria-label="Zurück zur Übersicht"
-        >
-          ‹ Übersicht
-        </button>
-        <p className="pb-studio-kicker">Schritt 1</p>
-        <h2
-          ref={headingRef}
-          tabIndex={-1}
-          className="pb-studio-title"
-          style={{ fontSize: "1.4rem" }}
-        >
-          Welcher Stil passt zu dir?
-        </h2>
-        <p style={{ color: "var(--st-muted)" }}>
-          Deine Inhalte bleiben gleich — nur der Look wechselt. Du kannst
-          jederzeit zurück.
-        </p>
-        {preselectPackId && (
-          <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
-        )}
-      </div>
+    <PanelFrame
+      step="Schritt 1"
+      title="Welcher Stil passt zu dir?"
+      panelId="style"
+      onClose={onClose}
+      intro="Deine Inhalte bleiben gleich — nur der Look wechselt. Du kannst jederzeit zurück."
+      footer={
+        <>
+          <button
+            type="button"
+            className="pb-studio-btn"
+            data-variant="ghost"
+            disabled={busy}
+            onClick={() => setRound(r => r + 1)}
+          >
+            Andere zeigen
+          </button>
+          <button
+            type="button"
+            className="pb-studio-btn"
+            disabled={busy}
+            onClick={confirm}
+          >
+            {busy ? "Bitte warten…" : onNext ? "Passt so — weiter" : "Passt so"}
+          </button>
+        </>
+      }
+    >
+      {preselectPackId && (
+        <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
+      )}
       {candidates.isLoading && <p>Lade Vorschläge …</p>}
       {candidates.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
@@ -238,33 +238,11 @@ export function StylePanel({
           {select.error.message}
         </p>
       )}
-      {/* Hauptaktionen DIREKT nach der Stil-Wahl (Studio-UI-Audit P1):
-          vorher lagen sie nach dem Theme-Editor am Ende einer langen
-          Scrollstrecke. Sticky, damit sie auch bei aufgeklapptem
-          Feinschliff erreichbar bleiben. */}
-      <div className="pb-studio-panel-foot">
-        <button
-          type="button"
-          className="pb-studio-btn"
-          data-variant="ghost"
-          disabled={busy}
-          onClick={() => setRound(r => r + 1)}
-        >
-          Andere zeigen
-        </button>
-        <button
-          type="button"
-          className="pb-studio-btn"
-          disabled={busy}
-          onClick={confirm}
-        >
-          {busy ? "Bitte warten…" : onNext ? "Passt so — weiter" : "Passt so"}
-        </button>
-      </div>
       {/* Feinschliff hinter Aufklapper (P1): Akzentfarbe + Schriftpaarung
           sind eine zweite, kleinere Entscheidungsebene und sollen die
           Stil-Wahl nicht verdrängen. Natives details = tastaturbedienbar
-          ohne eigenen State. */}
+          ohne eigenen State. Die Hauptaktionen bleiben dank Sticky-Fuß
+          auch bei aufgeklapptem Feinschliff erreichbar. */}
       <details className="pb-studio-theme-toggle">
         <summary>Feinschliff: Farben &amp; Schriften anpassen</summary>
         <ThemeEditor
@@ -275,6 +253,6 @@ export function StylePanel({
           onApplied={onApplied}
         />
       </details>
-    </section>
+    </PanelFrame>
   );
 }

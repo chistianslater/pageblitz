@@ -59,17 +59,29 @@ export function TextsPanel({
   const [variants, setVariants] = useState<
     Partial<Record<TextField, string[]>>
   >({});
+  // Fehler der KI-Vorschläge feldgebunden statt am Panel-Ende (User-
+  // Feedback 2026-08-25: „Klick, und ich sehe nichts" — die Fehlermeldung
+  // renderte weit unterhalb des geklickten Felds außerhalb des sichtbaren
+  // Bereichs).
+  const [suggestError, setSuggestError] = useState<{
+    field: TextField;
+    message: string;
+  } | null>(null);
 
   const updateTexts = trpc.onboardingV2.updateTexts.useMutation();
   const suggestTexts = trpc.onboardingV2.suggestTexts.useMutation();
 
   const handleSuggest = (field: TextField) => {
     setSuggesting(field);
+    setSuggestError(null);
     suggestTexts.mutate(
       { token, field },
       {
         onSuccess: result => {
           setVariants(prev => ({ ...prev, [field]: result.variants }));
+        },
+        onError: err => {
+          setSuggestError({ field, message: err.message });
         },
         onSettled: () => setSuggesting(null),
       }
@@ -134,12 +146,8 @@ export function TextsPanel({
         suggesting={suggesting}
         variants={variants}
         onPickVariant={handlePickVariant}
+        suggestError={suggestError}
       />
-      {suggestTexts.error && (
-        <p role="alert" style={{ color: "var(--st-warn)" }}>
-          {suggestTexts.error.message}
-        </p>
-      )}
       {updateTexts.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateTexts.error.message}

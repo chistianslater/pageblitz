@@ -25,7 +25,11 @@ export function PhotoTargetPicker({
     ? ["hero", "about", "gallery"]
     : ["hero", "gallery"];
   return (
-    <div className="pb-studio-seg" role="group" aria-label="Ziel wählen">
+    <div
+      className="pb-studio-seg pb-studio-seg--fill"
+      role="group"
+      aria-label="Ziel wählen"
+    >
       {targets.map(t => (
         <button
           key={t}

@@ -94,6 +94,8 @@ interface TextsFormProps {
   suggesting: TextField | null;
   variants: Partial<Record<TextField, string[]>>;
   onPickVariant: (field: TextField, value: string) => void;
+  /** Fehler der letzten KI-Anfrage, feldgebunden (wird direkt am Feld gezeigt, nicht am Panel-Ende). */
+  suggestError?: { field: TextField; message: string } | null;
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -104,6 +106,7 @@ export function TextsForm({
   suggesting,
   variants,
   onPickVariant,
+  suggestError = null,
 }: TextsFormProps) {
   const errors = validateTexts(values);
   return (
@@ -179,6 +182,25 @@ export function TextsForm({
               >
                 {isSuggesting ? "Wird vorgeschlagen…" : "KI-Vorschlag"}
               </button>
+            )}
+            {/* Sichtbares Feedback direkt am Feld (2026-08-25): Der KI-
+                Request braucht spürbar Zeit (Reasoning-Modell) — ohne
+                Hinweis wirkte der Klick wirkungslos; Fehler landeten
+                vorher unbemerkt am Panel-Ende. */}
+            {isSuggesting && (
+              <p
+                className="pb-studio-suggest-status"
+                role="status"
+                style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}
+              >
+                Die KI schreibt drei Vorschläge — das kann bis zu 30 Sekunden
+                dauern …
+              </p>
+            )}
+            {suggestField && suggestError?.field === suggestField && (
+              <p role="alert" style={{ color: "var(--st-warn)" }}>
+                {suggestError.message}
+              </p>
             )}
             {fieldVariants && fieldVariants.length > 0 && (
               <div

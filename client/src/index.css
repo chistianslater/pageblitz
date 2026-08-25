@@ -547,30 +547,24 @@ body {
 }
 
 /* Dezenter Scroll-Reveal der Landing-Sektionen (Stilrichtung „dezent-
-   professionell", User-Entscheid 2026-08-24): native scroll-driven
-   Animation, off-main-thread, ohne JS. Nur unter no-preference — bei
-   `reduce` greift obige 0,01ms-Kürzung, der Reveal ist faktisch aus (so
-   bleibt auch landing.spec.ts mit reducedMotion-Emulation stabil). Ohne
-   `animation-timeline`-Support (ältere Browser) bleibt alles statisch
-   sichtbar — kein JS-Fallback nötig. Kurve: bestehender --lp-ease-Token. */
-@keyframes lp-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+   professionell", User-Entscheid 2026-08-24). Seit 2026-08-25 per
+   IntersectionObserver in LandingPage.tsx statt `animation-timeline:
+   view()` — die native scroll-driven Variante existiert in Safari < 26 /
+   älterem Firefox nicht, dort blieb die Seite komplett statisch. Die
+   versteckende Klasse `lp-reveal-on` setzt nur JS (kein JS = alles
+   sichtbar); bei `reduce` setzt der Effekt sie nicht und obige
+   0,01ms-Kürzung fängt Reste ab (landing.spec.ts emuliert reduce).
+   Kurve: bestehender --lp-ease-Token. */
+html.lp-reveal-on .lp-section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s var(--lp-ease),
+    transform 0.6s var(--lp-ease);
 }
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .lp-section {
-      animation: lp-reveal 0.6s var(--lp-ease) both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 30%;
-    }
-  }
+html.lp-reveal-on .lp-section.lp-in {
+  opacity: 1;
+  transform: none;
 }
 
 /* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der

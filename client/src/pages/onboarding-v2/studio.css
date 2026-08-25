@@ -866,7 +866,29 @@
   align-self: flex-start;
 }
 
-/* ── Panel-Chrome (Studio-UI-Audit P2/P3, 2026-08-24) ──────────────────── */
+/* ── Panel-Chrome (Studio-UI-Audit P2/P3, 2026-08-24; verschärft 2026-08-25) ── */
+/* Sticky-Kopfleiste: Rückweg + Schritt bleiben beim Scrollen sichtbar.
+   Negative Ränder ziehen die Leiste bündig an die Rail-Kanten (die Rail
+   trägt das Padding), damit sie wie eine echte Kopfzeile wirkt. */
+.pb-studio-panel-head {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: calc(-1 * var(--st-space)) calc(-1 * var(--st-space)) 0;
+  padding: 0.55rem var(--st-space);
+  background: var(--st-surface);
+  border-bottom: 1px solid var(--st-line);
+}
+.pb-studio-panel-head-meta {
+  font-size: 0.8rem;
+  color: var(--st-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 /* Sticky-Fuß: Hauptaktion („Speichern & weiter" o. ä.) bleibt bei langem
    Panel-Inhalt ohne Scrollen erreichbar. Die Rail scrollt nicht separat —
    sticky bezieht sich aufs Dokument und klebt am Viewport-Boden, solange
@@ -874,27 +896,50 @@
 .pb-studio-panel-foot {
   position: sticky;
   bottom: 0;
+  z-index: 6;
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  padding: 0.6rem 0 0.2rem;
+  margin: 0 calc(-1 * var(--st-space));
+  padding: 0.6rem var(--st-space);
   background: var(--st-surface);
   border-top: 1px solid var(--st-line);
 }
-/* Sichtbarer Rückweg im Panel-Kopf (Esc existiert, war aber unsichtbar). */
+/* Rückweg als deutliche Pill (vorher: unauffälliger Textlink). */
 .pb-studio-back {
-  align-self: flex-start;
-  background: none;
-  border: 0;
-  padding: 0;
-  margin: 0 0 0.35rem;
-  color: var(--st-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--st-line);
+  border-radius: 999px;
+  background: var(--st-surface);
+  color: var(--st-ink);
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 .pb-studio-back:hover {
-  color: var(--st-accent);
+  border-color: var(--st-ink);
+}
+
+/* Segmented Controls, die die volle Panel-Breite ausfüllen und ihre Tabs
+   gleichmäßig verteilen (Fotos-Panel: Ziel + Quelle, 2026-08-25) — vorher
+   inline-flex mit inhaltsbreiten Buttons, dadurch umbrechende, schiefe
+   Zeilen („Google-Fotos" zweizeilig). */
+.pb-studio-seg--fill {
+  display: flex;
+  width: 100%;
+}
+.pb-studio-seg--fill button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.35rem 0.3rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  text-align: center;
 }
 
 /* ── Theme-Editor (Farben & Schriften, 2026-08-24) ─────────────────────── */

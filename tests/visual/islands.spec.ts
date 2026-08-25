@@ -30,6 +30,10 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
   for (const [name, vp] of Object.entries(VIEWPORTS)) {
     test(`Dev-Preview mit Features ${name}`, async ({ page }) => {
       await page.setViewportSize(vp);
+      // Reveal-Script (siteEnhancer.ts) über reduced-motion deterministisch
+      // aus — sonst blieben Sektionen unterhalb des Folds im fullPage-
+      // Screenshot unsichtbar.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
       await page.waitForLoadState("networkidle");
       await waitForContactIslandMounted(page);
@@ -38,8 +42,6 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
       await page.evaluate(() => document.fonts.ready);
       await expect(page).toHaveScreenshot(
         `islands-werkbank-features-${name}.png`,
-        // MOTION_CSS-Scroll-Reveals (motionCss.ts) deterministisch
-        // einfrieren — fullPage-Screenshots scrollen intern.
         { fullPage: true, animations: "disabled" }
       );
     });

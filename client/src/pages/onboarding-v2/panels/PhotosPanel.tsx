@@ -260,7 +260,7 @@ export function PhotosPanel({
       {!galleryLocked && (
         <>
           <div
-            className="pb-studio-seg pb-studio-src-tabs"
+            className="pb-studio-seg pb-studio-seg--fill pb-studio-src-tabs"
             role="group"
             aria-label="Fotoquelle"
           >

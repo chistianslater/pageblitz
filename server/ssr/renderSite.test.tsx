@@ -1,6 +1,7 @@
 // server/ssr/renderSite.test.tsx
 import { describe, expect, test } from "vitest";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { SITE_ENHANCER_JS } from "../../client/src/components/site/siteEnhancer";
 import { renderSiteHtml } from "./renderSite";
 
 describe("renderSiteHtml", () => {
@@ -47,6 +48,35 @@ describe("renderSiteHtml — Sektions-Einblendung (sectionReveal, Zeitmaschine T
       origin: "https://brandt.pageblitz.de",
     });
     expect(html).not.toContain("pb-reveal");
+  });
+});
+
+describe("renderSiteHtml — Site-Enhancer (Scroll-Reveal + Galerie-Lightbox, 2026-08-25)", () => {
+  test("bettet das Enhancer-Script auf der Startseite ein (auch ohne Add-ons)", () => {
+    const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://brandt.pageblitz.de",
+    });
+    expect(html).toContain("IntersectionObserver");
+    expect(html).toContain("pb-io-on");
+    expect(html).toContain("pb-lb");
+  });
+  test("bettet das Enhancer-Script auch auf Unterseiten ein", () => {
+    const data = getFixture("werkbank", "full");
+    const page = data.pages![0];
+    const { html, status } = renderSiteHtml(data, {
+      origin: "https://brandt.pageblitz.de",
+      pathname: `/${page.slug}`,
+    });
+    expect(status).toBe(200);
+    expect(html).toContain("IntersectionObserver");
+  });
+  test("Enhancer-Script ist syntaktisch valides JavaScript und spaltet das Dokument nicht", () => {
+    // new Function parst ohne auszuführen — fängt Syntaxfehler im
+    // handgeschriebenen Script-String, die sonst erst im Browser stumm
+    // wären (kein Reveal, keine Lightbox, kein Konsolen-Blick des Kunden).
+    expect(() => new Function(SITE_ENHANCER_JS)).not.toThrow();
+    // Ein rohes "</script>" im Inline-JS würde das HTML-Dokument spalten.
+    expect(SITE_ENHANCER_JS).not.toContain("</script>");
   });
 });
 
