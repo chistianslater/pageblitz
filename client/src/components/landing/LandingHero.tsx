@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
-import { StudioFrame } from "./StudioFrame";
+import { HeroBuild } from "./HeroBuild";
 import { Kicker, PRICE_YEARLY, pillPrimary } from "./primitives";
 
 export interface HeroFormProps {
@@ -122,7 +122,10 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
         <TrustLine className="lp-rise lp-rise-5 mt-8 border-t border-lp-line pt-5" />
       </div>
       <div className="lg:col-span-7 lp-rise lp-rise-6">
-        <StudioFrame />
+        {/* Wireframe-Aufbau statt fertiger Template-Vorschau (User-Brief
+            2026-08-25): Der Besucher sieht das Ergebnis ENTSTEHEN — das
+            ist der Beweis für „in 3 Minuten", kein fertiges Template. */}
+        <HeroBuild />
       </div>
     </section>
   );

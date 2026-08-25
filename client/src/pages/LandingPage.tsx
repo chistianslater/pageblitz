@@ -32,9 +32,10 @@ import {
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender
  * kommen serverseitig aus server/seo/homePage.ts (Quelle: shared/faq.ts).
  *
- * Die Seite selbst animiert nur die Hero-Checkliste (CSS, StudioFrame.tsx);
- * framer-motion braucht nur der Chat-Widget — der lädt lazy (s. u.) und
- * bringt sein eigenes `LazyMotion` mit Async-Feature-Loader mit.
+ * Die Seite selbst animiert die Hero-Bühne (HeroBuild.tsx: Wireframe-
+ * Aufbau → fertige Website, Timer + CSS-Transitions); framer-motion
+ * braucht nur der Chat-Widget — der lädt lazy (s. u.) und bringt sein
+ * eigenes `LazyMotion` mit Async-Feature-Loader mit.
  */
 
 const LandingPageChatWidget = lazy(

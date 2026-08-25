@@ -16,12 +16,18 @@
      2026-08-23-landing-redesign-brief.md). Global definiert statt nur auf
      `.lp`, weil der Cookie-Banner (App.tsx, außerhalb der Landingpage,
      auch auf /start und im Dashboard) denselben Studio-Look trägt; `.lp`
-     (unten) setzt darauf Schrift, Canvas und Ink für die Landingpage selbst. */
-  --lp-canvas: #f3efe7;
-  --lp-surface: #fbf9f4;
+     (unten) setzt darauf Schrift, Canvas und Ink für die Landingpage
+     selbst.
+     2026-08-25 (User-Feedback „Creme zu brav/zu häufig gesehen"): Canvas
+     heller und weniger gelb (#f7f5f1 statt #f3efe7), Surface fast weiß —
+     weniger „Papier", mehr klare Fläche; Wärme kommt jetzt aus Ink/Line
+     und der dunklen Kontrast-Sektion (FinalCta). Dieselben Werte liegen
+     im shadcn-Token-Block (:root, Token-Switch) — dort mitgepflegt. */
+  --lp-canvas: #f7f5f1;
+  --lp-surface: #fdfcfa;
   --lp-ink: #1d1a17;
   --lp-muted: #6b645b;
-  --lp-line: #d9d2c5;
+  --lp-line: #ddd6c9;
   --lp-accent: #1f5f4b;
   --lp-accent-ink: #ffffff;
   --lp-warn: #a4441f;
@@ -130,35 +136,35 @@ body {
   --radius: 0.625rem;
   --primary: #1f5f4b;
   --primary-foreground: #ffffff;
-  --background: #f3efe7;
+  --background: #f7f5f1;
   --foreground: #1d1a17;
-  --card: #fbf9f4;
+  --card: #fdfcfa;
   --card-foreground: #1d1a17;
-  --popover: #fbf9f4;
+  --popover: #fdfcfa;
   --popover-foreground: #1d1a17;
-  --secondary: #eae3d6;
+  --secondary: #eee9df;
   --secondary-foreground: #1d1a17;
-  --muted: #eae3d6;
+  --muted: #eee9df;
   --muted-foreground: #6b645b;
-  --accent: #e2dac9;
+  --accent: #e6dfd2;
   --accent-foreground: #1d1a17;
   --destructive: #a4441f;
   --destructive-foreground: #ffffff;
-  --border: #d9d2c5;
-  --input: #d9d2c5;
+  --border: #ddd6c9;
+  --input: #ddd6c9;
   --ring: #1f5f4b;
   --chart-1: #1f5f4b;
   --chart-2: #b08d2f;
   --chart-3: #a4441f;
   --chart-4: #6b645b;
   --chart-5: #33534a;
-  --sidebar: #fbf9f4;
+  --sidebar: #fdfcfa;
   --sidebar-foreground: #1d1a17;
   --sidebar-primary: #1f5f4b;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eae3d6;
+  --sidebar-accent: #eee9df;
   --sidebar-accent-foreground: #1d1a17;
-  --sidebar-border: #d9d2c5;
+  --sidebar-border: #ddd6c9;
   --sidebar-ring: #1f5f4b;
 }
 
@@ -578,6 +584,199 @@ html.lp-reveal-on .lp-section.lp-in {
   transform: none;
 }
 
+/* ── HeroBuild (2026-08-25): Wireframe baut sich auf → fertige Website ──
+   Phasen/Timer in HeroBuild.tsx; hier nur Optik + Transitions. Blöcke
+   erscheinen über data-on, der CTA färbt sich über data-accent, das
+   fertige Bild fadet über data-on darüber. Bei reduced-motion setzt die
+   Komponente das finale Bild sofort (keine Timer). */
+.lpb {
+  border: 1px solid var(--lp-line);
+  border-radius: 14px;
+  background: var(--lp-surface);
+  overflow: hidden;
+  box-shadow: 0 24px 48px -28px rgba(29, 26, 23, 0.45);
+}
+.lpb-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--lp-line);
+}
+.lpb-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--lp-line);
+}
+.lpb-url {
+  margin-left: 0.5rem;
+  flex: 1;
+  max-width: 16rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: var(--lp-canvas);
+  border: 1px solid var(--lp-line);
+  color: var(--lp-muted);
+  font-size: 0.68rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.7rem;
+}
+.lpb-stage {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  background: #fff;
+}
+.lpb-wire {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4.5%;
+  padding: 4.5%;
+}
+.lpb-nav,
+.lpb-hero-text .lpb-bar,
+.lpb-cta,
+.lpb-imgblock,
+.lpb-cards {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.5s var(--lp-ease),
+    transform 0.5s var(--lp-ease),
+    background-color 0.45s ease;
+}
+.lpb-nav[data-on],
+.lpb-bar[data-on],
+.lpb-cta[data-on],
+.lpb-imgblock[data-on],
+.lpb-cards[data-on] {
+  opacity: 1;
+  transform: none;
+}
+.lpb[data-resetting] .lpb-nav,
+.lpb[data-resetting] .lpb-bar,
+.lpb[data-resetting] .lpb-cta,
+.lpb[data-resetting] .lpb-imgblock,
+.lpb[data-resetting] .lpb-cards,
+.lpb[data-resetting] .lpb-final {
+  transition-duration: 0.3s;
+}
+.lpb-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.lpb-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--lp-ink);
+}
+.lpb-link {
+  width: 34px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--lp-line);
+}
+.lpb-navcta {
+  margin-left: auto;
+  width: 54px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--lp-line);
+}
+.lpb-wire[data-accent] .lpb-navcta {
+  background: var(--lp-accent);
+}
+.lpb-hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 5%;
+  min-height: 0;
+}
+.lpb-hero-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+.lpb-bar {
+  display: block;
+  border-radius: 6px;
+  background: var(--lp-line);
+}
+.lpb-h1a {
+  height: clamp(18px, 2.4vw, 30px);
+  width: 92%;
+}
+.lpb-h1b {
+  height: clamp(18px, 2.4vw, 30px);
+  width: 62%;
+}
+.lpb-sub {
+  height: 11px;
+  width: 74%;
+  background: #e9e2d4;
+  margin-top: 0.35rem;
+}
+.lpb-cta {
+  width: 104px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--lp-line);
+  margin-top: 0.6rem;
+}
+.lpb-wire[data-accent] .lpb-cta {
+  background: var(--lp-accent);
+}
+.lpb-imgblock {
+  border-radius: 10px;
+  background: #ece5d8;
+  min-height: 0;
+}
+.lpb-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4%;
+  height: 22%;
+}
+.lpb-card {
+  border-radius: 8px;
+  background: #ece5d8;
+}
+.lpb-final {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  transform: scale(1.025);
+  transition:
+    opacity 0.9s var(--lp-ease),
+    transform 0.9s var(--lp-ease);
+}
+.lpb-final[data-on] {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lpb-nav,
+  .lpb-bar,
+  .lpb-cta,
+  .lpb-imgblock,
+  .lpb-cards,
+  .lpb-final {
+    transition: none;
+  }
+}
+
 /* ── Conversion-Motion (2026-08-25) ───────────────────────────────────────
    Gestaffelter Hero-Einstieg + Sticky-CTA-Slide. Alles nur unter
    no-preference; bei reduce steht jeder Endzustand sofort (die Sticky-
@@ -625,6 +824,31 @@ html.lp-reveal-on .lp-section.lp-in {
   .lp-sticky-cta {
     transition: transform 0.3s var(--lp-ease);
   }
+}
+
+/* Dunkler Schluss-CTA (2026-08-25, User-Feedback „Creme zu brav/zu häufig"):
+   ein einziger tiefer Kontrast-Block am Seitenende bricht die helle
+   Monotonie, ohne die Identität zu kippen. Overrides nur innerhalb der
+   Sektion; Buttons/Akzente bekommen ein helleres Grün für ausreichenden
+   Kontrast auf Ink. */
+.lp-final-dark {
+  background: var(--lp-ink);
+  color: var(--lp-canvas);
+}
+.lp-final-dark .lp-h1 {
+  color: var(--lp-canvas);
+}
+.lp-final-dark .lp-kicker {
+  color: #9db8ac;
+}
+.lp-final-dark .text-lp-muted {
+  color: #c7c0b4;
+}
+.lp-final-dark .bg-lp-accent {
+  background-color: #2e7d64;
+}
+.lp-final-dark .bg-lp-accent:hover {
+  background-color: #379176;
 }
 
 /* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der

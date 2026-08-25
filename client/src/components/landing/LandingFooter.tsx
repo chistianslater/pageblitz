@@ -9,12 +9,13 @@ interface FinalCtaProps {
   onSubmit: (event: FormEvent) => void;
 }
 
-/** Schluss: dieselbe Einstiegsfrage wie im Hero, gleicher Handler. */
+/** Schluss: dieselbe Einstiegsfrage wie im Hero, gleicher Handler. Seit
+    2026-08-25 als dunkler Kontrast-Block (lp-final-dark, siehe index.css). */
 export function FinalCta(props: FinalCtaProps) {
   return (
     <section
       aria-labelledby="lp-final-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-final-dark"
     >
       <div className="lp-container grid gap-10 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-6">
