@@ -2,24 +2,23 @@ import { useEffect, useState } from "react";
 
 /**
  * Hero-Bühne (2026-08-25, User-Brief: „Wireframe, das sich Schritt für
- * Schritt aufbaut, wie ursprünglich — und am Ende eine coole fertige
- * Website"): Ein Browser-Rahmen, in dem sich ein neutrales Wireframe
- * Block für Block aufbaut (Navigation → Headline → Subline → CTA → Bild
- * → Karten), der CTA als erster Farb-Akzent grün wird, dann fadet die
- * echte fertige Website (Werkbank-Vorschau) darüber ein. Hold, Loop.
+ * Schritt aufbaut — und am Ende eine coole fertige Website"). Runde 2:
+ * Das Wireframe liegt jetzt in GEOMETRIE UND FARBEN der Ziel-Website
+ * (Werkbank: Kohle-Hero #191919, Putz-Balken, Signal #FF4D00), damit der
+ * Crossfade glaubwürdig als „Verwandlung" liest — gleiche Zonen, gleiche
+ * Proportionen, dann werden nacheinander die Werkbank-Akzente gelegt
+ * (dritte Headline-Zeile wird Signal, die Fotokante bekommt den
+ * Signal-Border), erst dann fadet das echte Screenshot darüber.
  *
- * Ersetzt im Hero den StudioFrame (stilisierte Studio-Nachbildung): Der
- * Besucher soll das ERGEBNIS entstehen sehen, nicht das Werkzeug.
- *
- * Mechanik wie StudioFrame (Timer-Phasen + CSS-Transitions statt
- * Keyframe-Kaskaden — reduced-motion-fähig und testbar). Bei
- * `prefers-reduced-motion: reduce`: sofort die fertige Website, statisch.
+ * Aufbau: Nav/Hero-Schale → Headline-Zeilen → Subline → Foto-Band →
+ * Karten → Akzent-Phase → Crossfade → Hold → Loop. Mechanik wie
+ * gehabt (Timer-Phasen + CSS-Transitions); bei `prefers-reduced-motion:
+ * reduce` steht sofort die fertige Website (keine Timer).
  */
 
-/** Wireframe-Schritte in Aufbau-Reihenfolge. */
 const BUILD_STEPS = 6;
 const STEP_MS = 620;
-const ACCENT_MS = 700;
+const ACCENT_MS = 750;
 const FINAL_FADE_MS = 900;
 const HOLD_MS = 4600;
 const RESET_FADE_MS = 500;
@@ -54,11 +53,9 @@ export function HeroBuild() {
       switch (current.kind) {
         case "build":
           if (current.step < BUILD_STEPS) {
-            setPhase({ kind: "build", step: current.step + 1 });
-            timer = setTimeout(
-              () => advance({ kind: "build", step: current.step + 1 }),
-              STEP_MS
-            );
+            const next = current.step + 1;
+            setPhase({ kind: "build", step: next });
+            timer = setTimeout(() => advance({ kind: "build", step: next }), STEP_MS);
           } else {
             setPhase({ kind: "accent" });
             timer = setTimeout(() => advance({ kind: "accent" }), ACCENT_MS);
@@ -96,7 +93,7 @@ export function HeroBuild() {
     <div
       className="lpb"
       role="img"
-      aria-label="Animation: Ein Website-Wireframe baut sich Schritt für Schritt auf und wird zur fertigen Website"
+      aria-label="Animation: Ein Website-Wireframe baut sich Schritt für Schritt auf und verwandelt sich in die fertige Website"
       data-resetting={resetting || undefined}
     >
       {/* Browser-Chrome */}
@@ -108,25 +105,27 @@ export function HeroBuild() {
       </div>
 
       <div className="lpb-stage">
-        {/* Wireframe-Ebene */}
+        {/* Wireframe in Werkbank-Geometrie: dunkle Hero-Zone oben,
+            Foto-Band, helle Karten-Zone — Positionen folgen dem finalen
+            Screenshot, damit der Crossfade als Verwandlung liest. */}
         <div className="lpb-wire" data-accent={isAccent || undefined}>
-          <div className="lpb-nav" data-on={buildStep >= 1 || undefined}>
-            <span className="lpb-logo" />
-            <span className="lpb-link" />
-            <span className="lpb-link" />
-            <span className="lpb-link" />
-            <span className="lpb-navcta" />
-          </div>
-          <div className="lpb-hero">
-            <div className="lpb-hero-text">
-              <span className="lpb-bar lpb-h1a" data-on={buildStep >= 2 || undefined} />
-              <span className="lpb-bar lpb-h1b" data-on={buildStep >= 2 || undefined} />
-              <span className="lpb-bar lpb-sub" data-on={buildStep >= 3 || undefined} />
-              <span className="lpb-cta" data-on={buildStep >= 4 || undefined} />
+          <div className="lpb-herozone" data-on={buildStep >= 1 || undefined}>
+            <div className="lpb-nav">
+              <span className="lpb-logo" />
+              <span className="lpb-link" />
+              <span className="lpb-link" />
+              <span className="lpb-link" />
             </div>
-            <span className="lpb-imgblock" data-on={buildStep >= 5 || undefined} />
+            <div className="lpb-hlines">
+              <span className="lpb-bar lpb-h1a" data-on={buildStep >= 2 || undefined} />
+              <span className="lpb-bar lpb-h1b" data-on={buildStep >= 3 || undefined} />
+              <span className="lpb-bar lpb-h1c" data-on={buildStep >= 4 || undefined} />
+              <span className="lpb-bar lpb-sub" data-on={buildStep >= 4 || undefined} />
+            </div>
           </div>
-          <div className="lpb-cards" data-on={buildStep >= 6 || undefined}>
+          <div className="lpb-band" data-on={buildStep >= 5 || undefined} />
+          <div className="lpb-cardzone" data-on={buildStep >= 6 || undefined}>
+            <span className="lpb-card" />
             <span className="lpb-card" />
             <span className="lpb-card" />
             <span className="lpb-card" />

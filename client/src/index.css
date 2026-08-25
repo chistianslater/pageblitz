@@ -510,9 +510,14 @@ body {
   line-height: 1.02;
   letter-spacing: -0.02em;
 }
-/* Hero-H1 teilt sich die Zeile mit dem Studio-Rahmen (6/12) — eine Stufe kleiner. */
+/* Hero-H1 teilt sich die Zeile mit der HeroBuild-Bühne (5/12-Spalte).
+   2026-08-25: kleiner + kürzere Zeilen (Copy mit festem Umbruch) — die
+   lange Zeile „Deine professionelle …" überragte bei 1024–1300px die
+   Grid-Spalte und ragte sichtbar in die Bühne (Grid-Items schrumpfen
+   nicht unter ihre Inhaltsbreite). */
 .lp-h1--hero {
-  font-size: clamp(2.5rem, 1.25rem + 3.4vw, 4.75rem);
+  font-size: clamp(2.4rem, 1.15rem + 2.9vw, 4.25rem);
+  overflow-wrap: break-word;
 }
 .lp-h2 {
   font-size: clamp(1.9rem, 1.1rem + 2.2vw, 3rem);
@@ -625,22 +630,21 @@ html.lp-reveal-on .lp-section.lp-in {
 }
 .lpb-stage {
   position: relative;
-  aspect-ratio: 16 / 11;
-  background: #fff;
+  /* Gleiches Seitenverhältnis wie das Ziel-Screenshot (800×500), damit
+     der Crossfade deckt statt beschneidet. */
+  aspect-ratio: 16 / 10;
+  background: #191919;
 }
 .lpb-wire {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 4.5%;
-  padding: 4.5%;
 }
-.lpb-nav,
-.lpb-hero-text .lpb-bar,
-.lpb-cta,
-.lpb-imgblock,
-.lpb-cards {
+.lpb-herozone,
+.lpb-bar,
+.lpb-band,
+.lpb-cardzone {
   opacity: 0;
   transform: translateY(12px);
   transition:
@@ -648,21 +652,29 @@ html.lp-reveal-on .lp-section.lp-in {
     transform 0.5s var(--lp-ease),
     background-color 0.45s ease;
 }
-.lpb-nav[data-on],
+.lpb-herozone[data-on],
 .lpb-bar[data-on],
-.lpb-cta[data-on],
-.lpb-imgblock[data-on],
-.lpb-cards[data-on] {
+.lpb-band[data-on],
+.lpb-cardzone[data-on] {
   opacity: 1;
   transform: none;
 }
-.lpb[data-resetting] .lpb-nav,
+.lpb[data-resetting] .lpb-herozone,
 .lpb[data-resetting] .lpb-bar,
-.lpb[data-resetting] .lpb-cta,
-.lpb[data-resetting] .lpb-imgblock,
-.lpb[data-resetting] .lpb-cards,
+.lpb[data-resetting] .lpb-band,
+.lpb[data-resetting] .lpb-cardzone,
 .lpb[data-resetting] .lpb-final {
   transition-duration: 0.3s;
+}
+/* Werkbank-Geometrie: dunkle Hero-Zone (Kohle) mit Nav + gestaffelter
+   Headline, Foto-Band mit Signal-Kante, helle Karten-Zone (Beton). */
+.lpb-herozone {
+  height: 58%;
+  background: #191919;
+  padding: 4% 5%;
+  display: flex;
+  flex-direction: column;
+  gap: 12%;
 }
 .lpb-nav {
   display: flex;
@@ -672,82 +684,76 @@ html.lp-reveal-on .lp-section.lp-in {
 .lpb-logo {
   width: 20px;
   height: 20px;
-  border-radius: 6px;
-  background: var(--lp-ink);
+  border-radius: 5px;
+  background: #f4f2ee;
 }
 .lpb-link {
   width: 34px;
   height: 8px;
   border-radius: 99px;
-  background: var(--lp-line);
+  background: #4a4844;
 }
-.lpb-navcta {
-  margin-left: auto;
-  width: 54px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--lp-line);
-}
-.lpb-wire[data-accent] .lpb-navcta {
-  background: var(--lp-accent);
-}
-.lpb-hero {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 5%;
-  min-height: 0;
-}
-.lpb-hero-text {
+.lpb-hlines {
+  margin-top: auto;
+  margin-bottom: 4%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.65rem;
-  min-width: 0;
+  gap: 0.55rem;
 }
 .lpb-bar {
   display: block;
-  border-radius: 6px;
-  background: var(--lp-line);
+  border-radius: 3px;
+  background: #f4f2ee;
 }
 .lpb-h1a {
-  height: clamp(18px, 2.4vw, 30px);
-  width: 92%;
+  height: clamp(16px, 2.2vw, 28px);
+  width: 78%;
 }
 .lpb-h1b {
-  height: clamp(18px, 2.4vw, 30px);
-  width: 62%;
+  height: clamp(16px, 2.2vw, 28px);
+  width: 56%;
+}
+/* Dritte Headline-Zeile: das Werkbank-Akzentwort („Punkt.") — bekommt in
+   der Akzent-Phase Signal #FF4D00, wie im echten Pack. */
+.lpb-h1c {
+  height: clamp(16px, 2.2vw, 28px);
+  width: 34%;
+  background: #cfccc5;
+}
+.lpb-wire[data-accent] .lpb-h1c {
+  background: #ff4d00;
 }
 .lpb-sub {
-  height: 11px;
-  width: 74%;
-  background: #e9e2d4;
-  margin-top: 0.35rem;
+  height: 10px;
+  width: 66%;
+  background: #4a4844;
+  margin-top: 0.5rem;
 }
-.lpb-cta {
-  width: 104px;
-  height: 30px;
-  border-radius: 999px;
-  background: var(--lp-line);
-  margin-top: 0.6rem;
+.lpb-band {
+  flex: 1;
+  background: #7d756a;
+  border-left: 6px solid transparent;
 }
-.lpb-wire[data-accent] .lpb-cta {
-  background: var(--lp-accent);
+/* imageTreatment des Packs: „8px Signal-Border links" — in der
+   Akzent-Phase. */
+.lpb-wire[data-accent] .lpb-band {
+  border-left-color: #ff4d00;
 }
-.lpb-imgblock {
-  border-radius: 10px;
-  background: #ece5d8;
-  min-height: 0;
-}
-.lpb-cards {
+.lpb-cardzone {
+  height: 24%;
+  background: #e8e6e1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4%;
-  height: 22%;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2.5%;
+  padding: 3% 5%;
 }
 .lpb-card {
-  border-radius: 8px;
-  background: #ece5d8;
+  border-radius: 6px;
+  background: #f4f2ee;
+  border-top: 3px solid #cfccc5;
+}
+.lpb-wire[data-accent] .lpb-card {
+  border-top-color: #ff4d00;
 }
 .lpb-final {
   position: absolute;
@@ -767,11 +773,10 @@ html.lp-reveal-on .lp-section.lp-in {
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .lpb-nav,
+  .lpb-herozone,
   .lpb-bar,
-  .lpb-cta,
-  .lpb-imgblock,
-  .lpb-cards,
+  .lpb-band,
+  .lpb-cardzone,
   .lpb-final {
     transition: none;
   }

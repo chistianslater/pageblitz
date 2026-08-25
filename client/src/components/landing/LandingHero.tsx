@@ -105,16 +105,18 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
           Webagentur kostet 3.000 €+ · Pageblitz ab {PRICE_YEARLY}/Monat
         </Kicker>
         <h1 id="lp-hero-heading" className="lp-h1 lp-h1--hero lp-rise lp-rise-2">
-          Deine professionelle Website in 3&nbsp;Minuten.
+          Deine Website.
+          <br />
+          In 3&nbsp;Minuten live.
         </h1>
         {/* Problem-Aktivierung vor der Lösung (Conversion-Pass 2026-08-25):
             Der Verlust-Frame („Mitbewerber") schafft die Dringlichkeit, die
             der reine Feature-Text nicht hatte. */}
         <p className="lp-rise lp-rise-3 mt-6 max-w-[30rem] text-[1.1rem] leading-[1.6] text-lp-muted">
           Deine Kunden suchen dich heute bei Google — ohne eigene Website
-          finden sie deine Mitbewerber. Pageblitz erstellt deine Website
-          automatisch aus deinem Google-Profil: kein Webdesigner, kein Warten,
-          kein vierstelliges Budget.
+          finden sie deine Mitbewerber. Pageblitz baut sie automatisch aus
+          deinem Google-Profil: kein Webdesigner, kein Warten, kein
+          vierstelliges Budget.
         </p>
         <div className="lp-rise lp-rise-4 mt-8">
           <HeroForm {...props} idPrefix="hero" size="lg" />
