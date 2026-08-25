@@ -57,8 +57,8 @@ export function HeroForm({
           häufigsten Einwände — Kosten, Kreditkarte, Ergebnis-Risiko —
           werden beantwortet, bevor sie entstehen. */}
       <p className="mt-3 text-[0.85rem] text-lp-muted">
-        7 Tage gratis · Keine Kreditkarte nötig · Erst das Ergebnis sehen,
-        dann entscheiden
+        Direkt nach der Eingabe siehst du deine fertige Vorschau —
+        kostenlos, ohne Kreditkarte, ohne Anmeldung.
       </p>
     </div>
   );
@@ -94,7 +94,10 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
       aria-labelledby="lp-hero-heading"
       className="lp-container grid items-center gap-12 pt-10 pb-16 lg:min-h-[calc(100svh-4.25rem)] lg:grid-cols-12 lg:gap-10 lg:pt-4 lg:pb-20"
     >
-      <div className="lg:col-span-6">
+      {/* 5/7 statt 6/6 (Conversion-Pass 2): das Ergebnis (deine Website im
+          Frame) bekommt die dominante Fläche, die Argumentation die
+          schmalere — Besucher kaufen das Ergebnis, nicht das Werkzeug. */}
+      <div className="lg:col-span-5">
         {/* Gestaffelter Einstieg (lp-rise-*, CSS in index.css): Kicker →
             Headline → Subline → Formular → Vertrauenszeile — führt den
             Blick in genau dieser Reihenfolge zum CTA. */}
@@ -118,7 +121,7 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
         </div>
         <TrustLine className="lp-rise lp-rise-5 mt-8 border-t border-lp-line pt-5" />
       </div>
-      <div className="lg:col-span-6 lp-rise lp-rise-6">
+      <div className="lg:col-span-7 lp-rise lp-rise-6">
         <StudioFrame />
       </div>
     </section>

@@ -74,7 +74,7 @@ export function StudioFrame() {
 
   return (
     <div
-      className="grid overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface lg:grid-cols-[12.5rem_1fr]"
+      className="grid overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface lg:grid-cols-[10rem_1fr]"
       aria-label="Vorschau des Pageblitz-Studios: Checkliste und Website-Vorschau"
       role="img"
     >

@@ -343,7 +343,11 @@ function AppContent() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider defaultTheme="dark">
+      {/* Token-Switch 2026-08-25: Die App startet nicht mehr im dunklen
+          Template-Theme — die Studio-Palette (Papier/Grün) gilt jetzt
+          global. toggleTheme wird nirgends aufgerufen, der .dark-Block in
+          index.css ist damit toter Bestand und greift nie. */}
+      <ThemeProvider defaultTheme="light">
         {/* Lazy (s. o.): eigener Suspense-Rahmen ohne Fallback, damit ein
             noch ladender Toaster-Chunk nie den Seiteninhalt durch den
             PageLoader ersetzt. */}

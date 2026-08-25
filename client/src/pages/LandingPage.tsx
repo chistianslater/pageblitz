@@ -8,8 +8,10 @@ import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { StudioProof } from "@/components/landing/StudioProof";
 import { PackShowcase } from "@/components/landing/PackShowcase";
+import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { Pricing } from "@/components/landing/Pricing";
 import { TrustSection } from "@/components/landing/TrustSection";
+import { Testimonials } from "@/components/landing/Testimonials";
 import { Faq } from "@/components/landing/Faq";
 import { StickyCta } from "@/components/landing/StickyCta";
 import {
@@ -155,6 +157,9 @@ export default function LandingPage() {
             Screenshots statt Illustrationen. */}
         <StudioProof billingYearly={billingYearly} />
         <PackShowcase />
+        {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
+            verkaufen das Abo indirekt, bevor der Preis fällt. */}
+        <FeatureShowcase />
         <Pricing
           billingYearly={billingYearly}
           onBillingChange={setBillingYearly}
@@ -163,6 +168,9 @@ export default function LandingPage() {
             snaplove.de) — wer den Preis gesehen hat, braucht als Nächstes
             Sicherheit, nicht noch mehr Features. */}
         <TrustSection />
+        {/* Rendert nichts, solange keine echten Stimmen eingetragen sind
+            (Testimonials.tsx) — Struktur bereit für P3. */}
+        <Testimonials />
         <Faq />
         <FinalCta
           value={heroBusinessName}
