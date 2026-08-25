@@ -164,7 +164,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
               onClick={() => navigate(startHref(billingYearly))}
               className={`${pillPrimary} h-14 px-8 text-[1rem]`}
             >
-              7 Tage gratis starten
+              Website kostenlos erstellen
             </button>
             <span className="text-[0.85rem] text-lp-muted">
               Keine Einrichtungsgebühr · keine Mindestlaufzeit

@@ -45,7 +45,7 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
               onClick={() => navigate(startHref(billingYearly))}
               className={pillPrimary}
             >
-              Das ändern — kostenlos starten
+              Website kostenlos erstellen
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>

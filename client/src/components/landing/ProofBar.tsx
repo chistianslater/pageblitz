@@ -69,7 +69,8 @@ function CountUp({ target }: { target: number }) {
 }
 
 interface ProofItem {
-  target: number;
+  target?: number;
+  value?: string;
   suffix: string;
   label: string;
 }
@@ -83,7 +84,11 @@ export function ProofBar() {
       suffix: "",
       label: "Branchen mit eigener Vorlage",
     },
-    { target: 0, suffix: " €", label: "Einrichtungskosten" },
+    {
+      value: "Keine",
+      suffix: "",
+      label: "Kreditkarte für die Vorschau",
+    },
   ];
   return (
     <section
@@ -97,7 +102,11 @@ export function ProofBar() {
               {item.label}
             </dt>
             <dd className="order-1 text-[clamp(2.25rem,1.6rem+2.4vw,3.5rem)] leading-none tracking-[-0.02em]">
-              <CountUp target={item.target} />
+              {item.target !== undefined ? (
+                <CountUp target={item.target} />
+              ) : (
+                item.value
+              )}
               {item.suffix}
             </dd>
           </div>

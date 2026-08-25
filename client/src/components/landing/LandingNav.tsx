@@ -107,7 +107,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             onClick={goStart}
             className={`${pillInk} !h-10 px-5 text-[0.9rem]`}
           >
-            Website erstellen
+            Kostenlos erstellen
           </button>
         </div>
 
@@ -157,7 +157,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             onClick={goStart}
             className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
           >
-            Website erstellen
+            Website kostenlos erstellen
           </button>
         </div>
       </div>

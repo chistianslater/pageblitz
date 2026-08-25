@@ -28,9 +28,9 @@ export function FinalCta(props: FinalCtaProps) {
               die Antwort: die Vorschau kostet nichts und verpflichtet zu
               nichts. */}
           <p className="mt-6 max-w-[32rem] text-[1.1rem] leading-[1.6] text-lp-muted">
-            Deine fertige Website liegt in 3 Minuten vor dir — kostenlos und
+            Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos und
             unverbindlich. Gefällt sie dir nicht, hat dich der Blick nichts
-            gekostet. Gefällt sie dir, ist sie mit einem Klick live.
+            gekostet. Gefällt sie dir, schaltest du sie mit einem Klick live.
           </p>
         </div>
         <div className="lg:col-span-6">

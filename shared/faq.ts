@@ -29,16 +29,12 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
     a: "Dann zahlst du nichts. Du siehst deine fertige Website immer zuerst in der Vorschau – erst wenn sie dir gefällt, entscheidest du dich fürs Freischalten. Ohne Risiko, ohne Verpflichtung.",
   },
   {
-    q: "Brauche ich einen Webdesigner oder eine Agentur?",
-    a: "Nein. Pageblitz ersetzt genau das: Die KI erstellt Texte, Aufbau und Design passend zu deiner Branche, das Studio führt dich durch die letzten Schritte. Agentur-Ergebnis ohne Agentur-Budget – und Änderungen machst du später selbst, per Chat.",
-  },
-  {
     q: "Werde ich mit meiner Website bei Google gefunden?",
     a: "Ja. Jede Pageblitz-Website kommt mit SEO-Grundlagen: saubere Seitentitel und -Beschreibungen, strukturierte Daten für lokale Unternehmen, schnelle Ladezeiten und mobiloptimiertes Design. Dein Google-Unternehmensprofil kannst du direkt verbinden.",
   },
   {
     q: "Was passiert nach den 7 Tagen?",
-    a: "Nach dem kostenlosen Testzeitraum kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert. Wenn du nicht weiter machen möchtest, kannst du einfach kündigen.",
+    a: "Danach kostet Pageblitz 19,90 €/Monat bei jährlicher Zahlung oder 24,90 €/Monat bei monatlicher Zahlung. Du wirst vorher per E-Mail erinnert und kannst jederzeit direkt im Account kündigen – ohne Mindestlaufzeit oder Gebühren.",
   },
   {
     q: "Kann ich meine eigene Domain verwenden?",
@@ -47,13 +43,5 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
   {
     q: "Kann ich die Texte und Bilder später ändern?",
     a: "Ja, jederzeit. Schreib einfach im Chat was du ändern möchtest – z. B. „Ändere die Headline auf …“ oder „Füge diese Leistung hinzu“. Keine Programmierkenntnisse nötig.",
-  },
-  {
-    q: "Wie sieht meine Website aus?",
-    a: "Pageblitz erstellt eine moderne, mobiloptimierte Website passend zu deiner Branche. Du kannst die Farben, Schriften und Layouts anpassen. Scroll nach oben und sieh dir die Beispiele an.",
-  },
-  {
-    q: "Wie läuft die Kündigung ab?",
-    a: "Ganz einfach: Schreibe uns eine E-Mail oder kündige direkt in deinem Account. Keine Mindestlaufzeiten, keine Kündigungsgebühren.",
   },
 ];

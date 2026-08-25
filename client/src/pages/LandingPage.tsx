@@ -140,7 +140,9 @@ export default function LandingPage() {
   return (
     <div className="lp min-h-screen">
       <LandingNav billingYearly={billingYearly} />
-      <main>
+      {/* Mobiler Sticky-CTA braucht unten Freiraum, sonst überdeckt er die
+          letzten Footer-/SEO-Links (Audit 2026-08-25). */}
+      <main className="pb-24 md:pb-0">
         <LandingHero
           value={heroBusinessName}
           onChange={setHeroBusinessName}
@@ -151,13 +153,12 @@ export default function LandingPage() {
             und Dringlichkeit aufbauen, dann das Produkt zeigen. */}
         <ProofBar />
         <ProblemSection billingYearly={billingYearly} />
+        {/* Erst „Was muss ich tun?", dann „Passt das zu meiner Branche?"
+            — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
+        <HowItWorks />
         <ForWhom />
-        <HowItWorks billingYearly={billingYearly} />
-        {/* „Beweis statt Behauptung" (User-Entscheid 2026-08-25): Nach dem
-            erklärten Ablauf das echte Werkzeug zeigen — echte Studio-
-            Screenshots statt Illustrationen. */}
+        {/* Systematische Studio-Struktur statt wiederholtem Pack-Screenshot. */}
         <StudioProof />
-        <PackShowcase />
         {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
             verkaufen das Abo indirekt, bevor der Preis fällt. */}
         <FeatureShowcase />
@@ -165,6 +166,10 @@ export default function LandingPage() {
           billingYearly={billingYearly}
           onBillingChange={setBillingYearly}
         />
+        {/* Alle 14 Stilwelten erst nach dem Preis: Branchenbeispiele oben
+            reichen zur Orientierung, das Karussell dient später als
+            Design-Vertiefung statt dritte Pack-Bühne in Folge. */}
+        <PackShowcase />
         {/* Vertrauens-Bühne nach dem Preis, vor der FAQ (Referenz:
             snaplove.de) — wer den Preis gesehen hat, braucht als Nächstes
             Sicherheit, nicht noch mehr Features. */}
@@ -172,13 +177,15 @@ export default function LandingPage() {
         {/* Rendert nichts, solange keine echten Stimmen eingetragen sind
             (Testimonials.tsx) — Struktur bereit für P3. */}
         <Testimonials />
+        {/* SEO-Branchenlinks vor FAQ/Schluss-CTA; der dunkle FinalCta bleibt
+            damit der letzte inhaltliche Moment der Seite. */}
+        <IndustryLinks />
         <Faq />
         <FinalCta
           value={heroBusinessName}
           onChange={setHeroBusinessName}
           onSubmit={handleHeroStart}
         />
-        <IndustryLinks />
       </main>
       <LandingFooter />
       <StickyCta billingYearly={billingYearly} />

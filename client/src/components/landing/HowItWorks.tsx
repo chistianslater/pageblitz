@@ -1,6 +1,4 @@
-import { ArrowRight } from "lucide-react";
-import { useLocation } from "wouter";
-import { SectionHead, pillPrimary, startHref, textLink } from "./primitives";
+import { SectionHead, textLink } from "./primitives";
 
 /**
  * „So funktioniert's": vier nummerierte Schritte in der Checklisten-Optik des
@@ -11,19 +9,19 @@ import { SectionHead, pillPrimary, startHref, textLink } from "./primitives";
 const STEPS = [
   {
     title: "Firmenname eingeben – oder Google-Profil übernehmen",
-    text: "Du hast ein Google-Unternehmensprofil? Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen. Kein Abtippen, kein Aufwand.",
+    text: "Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen.",
   },
   {
     title: "Stil wählen",
-    text: "Pageblitz schlägt passende Stile für deine Branche vor. Du wählst den Look, der zu dir passt – Typografie, Farben und Layout sind fertig abgestimmt, deine Inhalte bleiben gleich.",
+    text: "Du wählst aus passenden, fertig abgestimmten Stilwelten für deine Branche.",
   },
   {
     title: "Texte und Bilder prüfen",
-    text: "Die Checkliste führt dich durch Fotos, Texte, Angebot, Rechtliches und Extras. Die KI schreibt die Texte passend zu deiner Branche – du änderst, was dir nicht gefällt.",
+    text: "Die Checkliste führt durch Fotos, Texte, Angebot und Rechtliches; die KI hilft beim Formulieren.",
   },
   {
     title: "Freischalten – und live",
-    text: "Mit einem Klick ist deine Website online: unter deiner Domain oder einer kostenlosen .pageblitz.de-Adresse. Hosting und SSL sind dabei.",
+    text: "Gefällt dir die Vorschau, schaltest du sie mit einem Klick unter deiner Domain frei.",
   },
 ] as const;
 
@@ -37,25 +35,12 @@ const INCLUDED = [
     "Die Website passt sich automatisch an – ohne dein Zutun.",
   ],
   [
-    "Bei Google gefunden",
-    "SEO-Grundlagen, strukturierte Daten und schnelle Ladezeiten.",
-  ],
-  [
-    "Kein Anwalt nötig",
-    "Impressum, Datenschutz und Cookie-Banner werden erzeugt.",
-  ],
-  [
     "Eigene Domain",
     "Bestehende Domain verbinden oder .pageblitz.de-Subdomain nutzen.",
   ],
-  [
-    "Änderungen per Chat",
-    "Texte, Farben und Bilder jederzeit anpassen – ohne Technik.",
-  ],
 ] as const;
 
-export function HowItWorks({ billingYearly }: { billingYearly: boolean }) {
-  const [, navigate] = useLocation();
+export function HowItWorks() {
   return (
     <section
       id="ablauf"
@@ -70,19 +55,6 @@ export function HowItWorks({ billingYearly }: { billingYearly: boolean }) {
             title="Vier Schritte. Eine Checkliste. Keine Technik."
             text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
           />
-          <div className="mt-8 flex flex-col items-start gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(startHref(billingYearly))}
-              className={pillPrimary}
-            >
-              Jetzt GMB-Daten importieren
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <p className="text-[0.85rem] text-lp-muted">
-              7 Tage gratis testen · jederzeit kündbar
-            </p>
-          </div>
         </div>
 
         <ol className="lg:col-span-8">

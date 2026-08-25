@@ -70,7 +70,7 @@ export function StickyCta({ billingYearly }: { billingYearly: boolean }) {
           onClick={() => navigate(startHref(billingYearly))}
           className={`${pillPrimary} !h-11 shrink-0 px-5 text-[0.9rem]`}
         >
-          Jetzt starten
+          Kostenlos erstellen
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
