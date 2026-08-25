@@ -340,6 +340,11 @@
     overflow-y: auto;
   }
 }
+/* Mobiler Rückweg aus der Vorschau (2026-08-25): nur mobil und nur im
+   Vorschau-Tab sichtbar — desktop bleibt die Stage unverändert. */
+.pb-studio-mobilebar {
+  display: none;
+}
 @media (max-width: 1023px) {
   .pb-studio-layout {
     grid-template-columns: 1fr;
@@ -356,6 +361,9 @@
   }
   .pb-studio-layout[data-tab="edit"] .pb-studio-stage {
     display: none;
+  }
+  .pb-studio-layout[data-tab="preview"] .pb-studio-mobilebar {
+    display: flex;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -935,6 +943,19 @@
   background: var(--st-surface);
   border-top: 1px solid var(--st-line);
 }
+/* Programmatischer Panel-Fokus (usePanelFocus) soll für MAUS-Nutzer
+   keinen Chrome-Fokusring um die Überschrift malen (wirkte wie ein
+   Markierungs-Fehler, User-Feedback 2026-08-25) — Tastatur-Nutzer
+   bekommen weiterhin einen sichtbaren Ring via :focus-visible. */
+.pb-studio-panel .pb-studio-title:focus:not(:focus-visible) {
+  outline: none;
+}
+.pb-studio-panel .pb-studio-title:focus-visible {
+  outline: 2px solid var(--st-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
 /* Rückweg als deutliche Pill (vorher: unauffälliger Textlink). */
 .pb-studio-back {
   display: inline-flex;

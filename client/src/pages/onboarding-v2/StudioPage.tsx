@@ -409,6 +409,20 @@ export default function StudioPage({ token }: { token: string }) {
           )}
         </aside>
         <main className="pb-studio-stage">
+          {/* Mobiler Rückweg (2026-08-25): Auf dem Smartphone blendet der
+              Vorschau-Tab die Rail komplett aus — der Tab-Umschalter liegt
+              aber IN der Rail, es gab also keinen Weg zurück zu den
+              Einstellungen. Diese Leiste ist nur mobil und nur im
+              Vorschau-Tab sichtbar. */}
+          <div className="pb-studio-mobilebar">
+            <button
+              type="button"
+              className="pb-studio-back"
+              onClick={() => setTab("edit")}
+            >
+              ‹ Bearbeiten
+            </button>
+          </div>
           <div className="pb-studio-toolbar">
             <div className="pb-studio-seg" aria-label="Gerät">
               <button

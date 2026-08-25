@@ -247,6 +247,36 @@ test.describe("Studio", () => {
     );
   });
 
+  test("Mobil: Vorschau-Tab bietet Rückweg zum Bearbeiten (2026-08-25)", async ({
+    page,
+    request,
+  }) => {
+    // Regression: Der Tab-Umschalter liegt in der Rail, die im Vorschau-
+    // Tab komplett ausgeblendet wird — ohne die mobilebar kam man mobil
+    // nicht mehr zu den Einstellungen zurück (Sackgasse).
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    // In die Vorschau wechseln → Rail verschwindet, Rückweg erscheint.
+    await page.getByRole("button", { name: "Vorschau" }).click();
+    await expect(page.locator(".pb-studio-rail")).toBeHidden();
+    const backButton = page.getByRole("button", { name: "‹ Bearbeiten" });
+    await expect(backButton).toBeVisible();
+
+    // Zurück → Rail mit Checkliste wieder da.
+    await backButton.click();
+    await expect(page.locator(".pb-studio-rail")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Stil/ }).first()
+    ).toBeVisible();
+  });
+
   test("Texte: KI-Vorschlag liefert Chips und übernimmt ins Feld", async ({
     page,
     request,
