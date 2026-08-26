@@ -29,6 +29,7 @@
  */
 export const MOTION_CSS = `
 .pb-site{--pb-ease-out:cubic-bezier(0.23,1,0.32,1);--pb-dur-fast:.18s;--pb-dur-reveal:.6s;--pb-hero-dur:.45s;--pb-hero-y:14px;--pb-hero-scale:1;--pb-reveal-x:0px;--pb-reveal-y:24px;--pb-reveal-scale:1;--pb-reveal-blur:0px}
+.pb-site :is(section,header)[id]{scroll-margin-top:clamp(76px,10vw,132px)}
 @keyframes pb-hero-in{from{opacity:0;transform:translate3d(0,var(--pb-hero-y),0) scale(var(--pb-hero-scale))}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){
 html{scroll-behavior:smooth}

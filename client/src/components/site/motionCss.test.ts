@@ -22,4 +22,10 @@ describe("pack-spezifische Motion-Grundlage", () => {
     expect(MOTION_CSS).toContain("prefers-reduced-motion:reduce");
     expect(MOTION_CSS).not.toContain("transition:all");
   });
+
+  test("hält Sprungziele unter sticky Navigationen sichtbar", () => {
+    expect(MOTION_CSS).toContain(
+      ":is(section,header)[id]{scroll-margin-top:"
+    );
+  });
 });

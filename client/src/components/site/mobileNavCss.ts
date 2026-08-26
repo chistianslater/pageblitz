@@ -4,16 +4,17 @@
  * (Dashboard/Editor-Vorschau) garantiert dieselbe mobile Navigation
  * bekommen: eine Quelle statt 14 Pack-Kopien, die auseinanderlaufen.
  *
- * 720px ist der packübergreifende Mobil-Breakpoint (Audit P3 — vorher
- * uneinheitlich 640/720px); die Packs blenden ihre Inline-Links unter
- * 720px selbst aus (`.pb-XX-nav-links{display:none}` im Pack-CSS).
+ * 840px ist der packübergreifende Touch-/Tablet-Breakpoint. Unterhalb davon
+ * reichen die langen deutschen Navigationslabels in keinem Pack zuverlässig
+ * für 44px-Touchziele; die Packs blenden ihre Inline-Links deshalb ebenfalls
+ * spätestens bei 840px aus (`.pb-XX-nav-links{display:none}` im Pack-CSS).
  * Schrift/Transform der Panel-Links erben vom umgebenden Pack-Nav
  * (uppercase/letter-spacing bleiben Pack-Identität), nur Größe und
  * Touch-Targets werden hier vereinheitlicht.
  */
 export const MOBILE_NAV_CSS = `
 .pb-mnav{display:none}
-@media(max-width:720px){
+@media(max-width:840px){
 .pb-mnav{display:block;position:relative;margin-left:auto;flex-shrink:0}
 .pb-mnav-toggle{box-sizing:border-box;list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--pb-line);border-radius:var(--pb-radius-button);background:var(--pb-canvas);color:var(--pb-ink);-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .pb-mnav-toggle::-webkit-details-marker{display:none}
