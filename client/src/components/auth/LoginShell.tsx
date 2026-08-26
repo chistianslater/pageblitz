@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import React, { type ReactNode } from "react";
 import { Wordmark } from "@/components/landing/primitives";
 
 interface LoginShellProps {
