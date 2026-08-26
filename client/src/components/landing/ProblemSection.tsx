@@ -1,13 +1,17 @@
 import { ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
-import { SectionHead, pillPrimary, startHref } from "./primitives";
+import { Kicker, pillPrimary, startHref } from "./primitives";
 
 /**
  * Problem-Aktivierung (Conversion-Pass 2026-08-25): Die Seite startete
  * bisher sofort mit der Lösung — ohne den Schmerz ist das Angebot
  * beliebig. Drei konkrete Verlust-Szenarien, bewusst ohne erfundene
  * Statistiken (unangreifbare Formulierungen), dann direkt der Ausweg
- * per CTA. Liegt zwischen Hero/Proof und den Branchen-Kacheln.
+ * per CTA.
+ *
+ * Layout-Revision 2026-08-26: breite Headline + drei eigenständige Karten
+ * statt 4/8-Kopf + nummerierter Liste. Diese Formel gehört bereits dem
+ * folgenden Ablauf und ließ beide Sektionen wie Duplikate aussehen.
  */
 const LOSSES = [
   {
@@ -29,44 +33,50 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
   return (
     <section
       aria-labelledby="lp-problem-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section border-y border-lp-line bg-[#eee9df]"
     >
-      <div className="lp-container grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-4">
-          <SectionHead
-            id="lp-problem-heading"
-            kicker="Ohne Website"
-            title="Jeden Tag suchen Kunden — und wählen einen anderen."
-            text="Nicht weil die Arbeit schlechter ist. Sondern weil sie dich online nicht finden."
-          />
-          <div className="mt-8">
+      <div className="lp-container">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
+          <div className="lg:col-span-8">
+            <Kicker className="mb-4">Ohne Website</Kicker>
+            <h2 id="lp-problem-heading" className="lp-h2 max-w-[46rem]">
+              Jeden Tag suchen Kunden — und wählen einen anderen.
+            </h2>
+          </div>
+          <div className="lg:col-span-4">
+            <p className="max-w-[30rem] text-[1.05rem] leading-[1.6] text-lp-muted">
+              Nicht weil deine Arbeit schlechter ist. Sondern weil neue Kunden
+              sie online nicht sehen.
+            </p>
             <button
               type="button"
               onClick={() => navigate(startHref(billingYearly))}
-              className={pillPrimary}
+              className={`${pillPrimary} mt-6`}
             >
               Website kostenlos erstellen
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
-        <ol className="lg:col-span-8">
+
+        <ol className="mt-12 grid gap-4 md:grid-cols-3">
           {LOSSES.map((loss, index) => (
             <li
               key={loss.title}
-              className="grid grid-cols-[2.5rem_1fr] gap-4 border-t border-lp-line py-6 last:border-b sm:grid-cols-[3.5rem_1fr] sm:gap-6"
+              className="flex min-h-[15rem] flex-col rounded-[12px] border border-lp-line bg-lp-surface p-6"
             >
-              <span className="lp-num" aria-hidden="true">
+              <span
+                className="text-[2.5rem] leading-none tracking-[-0.03em] text-lp-accent/35"
+                aria-hidden="true"
+              >
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <div className="max-w-[40rem]">
-                <h3 className="text-[1.2rem] leading-snug tracking-[-0.01em] sm:text-[1.35rem]">
-                  {loss.title}
-                </h3>
-                <p className="mt-2 text-[0.95rem] leading-[1.6] text-lp-muted">
-                  {loss.text}
-                </p>
-              </div>
+              <h3 className="mt-auto pt-8 text-[1.2rem] leading-snug tracking-[-0.01em]">
+                {loss.title}
+              </h3>
+              <p className="mt-3 text-[0.92rem] leading-[1.6] text-lp-muted">
+                {loss.text}
+              </p>
             </li>
           ))}
         </ol>
