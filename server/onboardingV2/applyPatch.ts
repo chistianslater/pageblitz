@@ -19,6 +19,7 @@ import {
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { deriveDesignProfile } from "../../shared/siteContract/designProfile";
+import { collectInlineTextTargets } from "../../shared/onboardingV2/inlineText";
 import {
   ADDON_KEYS,
   FEATURE_ADDON_KEYS,
@@ -83,6 +84,47 @@ export function applyTheme(
   if (patch.designProfile !== undefined) {
     next.designProfile = patch.designProfile;
   }
+  return WebsiteDataV2Schema.parse(next);
+}
+
+/**
+ * Direkte Vorschau-Bearbeitung: ausschließlich Pfade, die aus dem aktuellen
+ * Dokument selbst als sichtbare Textziele abgeleitet wurden. Kein freier
+ * JSON-Patch, keine URLs/SEO/Legal-Felder.
+ */
+export function applyInlineText(
+  doc: WebsiteDataV2,
+  path: string,
+  rawValue: string
+): WebsiteDataV2 {
+  const target = collectInlineTextTargets(doc).find(item => item.path === path);
+  if (!target) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Dieser Text kann nicht direkt bearbeitet werden.",
+    });
+  }
+  const value = rawValue.trim();
+  if (!value || value.length > target.maxLength) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: `Bitte gib einen Text mit maximal ${target.maxLength} Zeichen ein.`,
+    });
+  }
+
+  const next = structuredClone(doc) as WebsiteDataV2;
+  const segments = path.split(".");
+  let cursor: any = next;
+  for (let i = 0; i < segments.length - 1; i += 1) {
+    cursor = cursor[segments[i]];
+    if (cursor === undefined || cursor === null) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Textstelle nicht mehr vorhanden.",
+      });
+    }
+  }
+  cursor[segments[segments.length - 1]] = value;
   return WebsiteDataV2Schema.parse(next);
 }
 

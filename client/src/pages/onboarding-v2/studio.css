@@ -217,6 +217,43 @@
   padding: var(--st-space);
   text-align: center;
 }
+/* ── Initialer Design-Gate ─────────────────────────────────────────────── */
+.pb-design-gate {
+  min-height: 100dvh;
+}
+.pb-design-gate-brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem var(--st-space);
+  border-bottom: 1px solid var(--st-line);
+  background: var(--st-surface);
+}
+.pb-design-gate-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-bottom: 0.25rem;
+}
+.pb-design-gate-copy p {
+  margin: 0;
+  color: var(--st-muted);
+  line-height: 1.55;
+}
+/* Vor dem Studio gibt es noch keine Übersicht; die gemeinsame Panel-Chrome
+   bleibt später im regulären Studio sichtbar. */
+.pb-design-gate .pb-studio-panel-head {
+  display: none;
+}
+.pb-design-gate .pb-studio-panel-intro {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .pb-design-gate .pb-studio-layout {
+    height: calc(100dvh - 3.25rem);
+  }
+}
 .pb-studio-gen-bar {
   height: 6px;
   width: min(420px, 80vw);
@@ -622,6 +659,55 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+}
+.pb-studio-suggest-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--st-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+.pb-studio-suggest-pencil {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 1.4rem;
+  height: 0.8rem;
+  flex: 0 0 auto;
+}
+.pb-studio-suggest-pencil i {
+  display: block;
+  width: 3px;
+  border-radius: 99px;
+  background: var(--st-accent);
+  animation: pb-suggest-write 0.9s ease-in-out infinite alternate;
+}
+.pb-studio-suggest-pencil i:nth-child(1) {
+  height: 45%;
+}
+.pb-studio-suggest-pencil i:nth-child(2) {
+  height: 100%;
+  animation-delay: 0.14s;
+}
+.pb-studio-suggest-pencil i:nth-child(3) {
+  height: 68%;
+  animation-delay: 0.28s;
+}
+@keyframes pb-suggest-write {
+  from {
+    opacity: 0.3;
+    transform: scaleY(0.45);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-studio-suggest-pencil i {
+    animation: none;
+  }
 }
 .pb-studio-chip {
   font: inherit;

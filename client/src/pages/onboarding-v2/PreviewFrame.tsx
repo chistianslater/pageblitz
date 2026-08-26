@@ -1,5 +1,6 @@
 import React from "react";
 import type { PackId } from "@shared/siteContract/types";
+import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 
 interface PreviewFrameProps {
   token: string;
@@ -16,46 +17,10 @@ interface PreviewFrameProps {
    */
   reveal?: boolean;
   /** Aktuelle Dokumenttexte zum robusten Auffinden im pack-spezifischen DOM. */
-  inlineTexts?: Partial<Record<InlineTextField, string>>;
+  inlineTargets?: InlineTextTarget[];
   /** Speichert direkte Änderungen aus dem Preview-iframe. */
-  onInlineTextEdit?: (field: InlineTextField, value: string) => void;
+  onInlineTextEdit?: (path: string, value: string) => void;
 }
-
-export type InlineTextField =
-  | "headline"
-  | "subheadline"
-  | "aboutHeadline"
-  | "aboutBody";
-
-const INLINE_TARGETS: Record<
-  InlineTextField,
-  { scope: string; selector: string; maxLength: number; multiline: boolean }
-> = {
-  headline: {
-    scope: "#start",
-    selector: "h1",
-    maxLength: 120,
-    multiline: false,
-  },
-  subheadline: {
-    scope: "#start",
-    selector: "p",
-    maxLength: 240,
-    multiline: false,
-  },
-  aboutHeadline: {
-    scope: "#ueber-uns",
-    selector: "h2",
-    maxLength: 120,
-    multiline: false,
-  },
-  aboutBody: {
-    scope: "#ueber-uns",
-    selector: "p",
-    maxLength: 2000,
-    multiline: true,
-  },
-};
 
 export function normalizeInlineText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -75,7 +40,7 @@ export function PreviewFrame({
   packOverride,
   pageSlug,
   reveal,
-  inlineTexts,
+  inlineTargets,
   onInlineTextEdit,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
@@ -87,7 +52,7 @@ export function PreviewFrame({
   const enableInlineEditing = (
     iframe: React.SyntheticEvent<HTMLIFrameElement>
   ) => {
-    if (!inlineTexts || !onInlineTextEdit || pageSlug) return;
+    if (!inlineTargets || !onInlineTextEdit || pageSlug) return;
     const doc = iframe.currentTarget.contentDocument;
     if (!doc) return;
 
@@ -100,57 +65,77 @@ export function PreviewFrame({
     `;
     doc.head.appendChild(style);
 
-    for (const [field, currentValue] of Object.entries(inlineTexts) as Array<
-      [InlineTextField, string]
-    >) {
-      if (!currentValue) continue;
-      const config = INLINE_TARGETS[field];
-      const scope = doc.querySelector(config.scope);
+    const candidateSelector =
+      "h1,h2,h3,h4,p,strong,span,a,button,summary,figcaption,blockquote,footer,address,td,th,li";
+    for (const targetConfig of inlineTargets) {
+      const scope = doc.querySelector(targetConfig.scope);
       if (!scope) continue;
       const candidates = Array.from(
-        scope.querySelectorAll<HTMLElement>(config.selector)
+        scope.querySelectorAll<HTMLElement>(candidateSelector)
       );
-      const normalizedCurrent = normalizeInlineText(currentValue);
-      const target =
-        candidates.find(
-          el => normalizeInlineText(el.innerText) === normalizedCurrent
-        ) ?? (candidates.length === 1 ? candidates[0] : null);
-      if (!target) continue;
+      const normalizedCurrent = normalizeInlineText(targetConfig.value);
+      const matches = candidates.filter(el => {
+        const text = normalizeInlineText(el.innerText);
+        if (text === normalizedCurrent) return true;
+        // Testimonials/Autoren tragen typografische Anführungszeichen,
+        // Gedankenstrich oder Rating direkt um den eigentlichen Wert.
+        return (
+          text.includes(normalizedCurrent) &&
+          text.length <= normalizedCurrent.length + 20
+        );
+      });
 
-      target.setAttribute("contenteditable", "plaintext-only");
-      target.setAttribute("data-pb-inline-edit", field);
-      target.setAttribute("title", "Klicken und direkt bearbeiten");
-      target.setAttribute("spellcheck", "true");
-      let original = target.innerText;
+      for (const target of matches) {
+        // Keine Container zusätzlich editierbar machen, wenn ein Kind bereits
+        // denselben Text präziser repräsentiert.
+        if (
+          Array.from(target.children).some(
+            child =>
+              normalizeInlineText((child as HTMLElement).innerText).includes(
+                normalizedCurrent
+              )
+          )
+        )
+          continue;
 
-      target.addEventListener("focus", () => {
-        original = target.innerText;
-      });
-      target.addEventListener("paste", event => {
-        event.preventDefault();
-        const text = event.clipboardData?.getData("text/plain") ?? "";
-        doc.execCommand("insertText", false, text);
-      });
-      target.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
+        target.setAttribute("contenteditable", "plaintext-only");
+        target.setAttribute("data-pb-inline-edit", targetConfig.path);
+        target.setAttribute("title", "Klicken und direkt bearbeiten");
+        target.setAttribute("spellcheck", "true");
+        let original = target.innerText;
+
+        target.addEventListener("click", event => {
+          if (target.tagName === "A") event.preventDefault();
+        });
+        target.addEventListener("focus", () => {
+          original = target.innerText;
+        });
+        target.addEventListener("paste", event => {
           event.preventDefault();
-          target.innerText = original;
-          target.blur();
-        } else if (event.key === "Enter" && !config.multiline) {
-          event.preventDefault();
-          target.blur();
-        }
-      });
-      target.addEventListener("blur", () => {
-        const value = target.innerText.trim();
-        if (!value || value.length > config.maxLength) {
-          target.innerText = original;
-          return;
-        }
-        if (normalizeInlineText(value) !== normalizeInlineText(original)) {
-          onInlineTextEdit(field, value);
-        }
-      });
+          const text = event.clipboardData?.getData("text/plain") ?? "";
+          doc.execCommand("insertText", false, text);
+        });
+        target.addEventListener("keydown", event => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            target.innerText = original;
+            target.blur();
+          } else if (event.key === "Enter" && !targetConfig.multiline) {
+            event.preventDefault();
+            target.blur();
+          }
+        });
+        target.addEventListener("blur", () => {
+          const value = target.innerText.trim();
+          if (!value || value.length > targetConfig.maxLength) {
+            target.innerText = original;
+            return;
+          }
+          if (normalizeInlineText(value) !== normalizeInlineText(original)) {
+            onInlineTextEdit(targetConfig.path, value);
+          }
+        });
+      }
     }
   };
   return (

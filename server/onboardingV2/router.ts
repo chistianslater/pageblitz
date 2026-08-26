@@ -172,15 +172,24 @@ const coreProcedures = {
     }),
 
   selectStylePack: publicProcedure
-    .input(tokenInput.extend({ packId: z.string() }))
+    .input(
+      tokenInput.extend({
+        packId: z.string(),
+        /** Erst „Passt so" bestätigt den Gate/Checklist-Schritt. */
+        confirm: z.boolean().optional().default(false),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const packId = parsePackId(input.packId);
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
       const next = applyStylePack(doc, packId);
-      return persistDoc(input.token, loaded, next, {
-        progress: { styleConfirmed: true },
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        next,
+        input.confirm ? { progress: { styleConfirmed: true } } : undefined
+      );
     }),
 };
 

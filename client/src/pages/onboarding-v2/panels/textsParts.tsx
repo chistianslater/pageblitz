@@ -191,14 +191,20 @@ export function TextsForm({
                 Hinweis wirkte der Klick wirkungslos; Fehler landeten
                 vorher unbemerkt am Panel-Ende. */}
             {isSuggesting && (
-              <p
+              <div
                 className="pb-studio-suggest-status"
                 role="status"
-                style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}
               >
-                Die KI schreibt drei Vorschläge — meist dauert das nur wenige
-                Sekunden …
-              </p>
+                <span className="pb-studio-suggest-pencil" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+                <span>
+                  Die KI schreibt drei Vorschläge — meist dauert das nur wenige
+                  Sekunden …
+                </span>
+              </div>
             )}
             {suggestField && suggestError?.field === suggestField && (
               <p role="alert" style={{ color: "var(--st-warn)" }}>

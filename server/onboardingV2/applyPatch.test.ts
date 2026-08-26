@@ -7,6 +7,7 @@ import {
   applyAddOns,
   applyFeatures,
   applyImages,
+  applyInlineText,
   applyOffer,
   applyPages,
   applyStylePack,
@@ -84,6 +85,30 @@ describe("applyTheme", () => {
     const next = applyTheme(doc, { designProfile });
     expect(next.designProfile).toEqual(designProfile);
     expect(doc.designProfile).toBeUndefined();
+  });
+});
+
+describe("applyInlineText", () => {
+  test("ändert nur einen aus dem Dokument abgeleiteten sichtbaren Pfad", () => {
+    const next = applyInlineText(
+      docFull,
+      "sections.1.items.0.title",
+      "Neue Leistung"
+    );
+    const services = next.sections.find(s => s.type === "services");
+    expect(services?.items[0].title).toBe("Neue Leistung");
+    expect(
+      (docFull.sections.find(s => s.type === "services") as any).items[0].title
+    ).toBe("A");
+  });
+
+  test("weist freie/unsichtbare Pfade und leere Texte zurück", () => {
+    expect(() =>
+      applyInlineText(docFull, "seo.title", "Manipuliert")
+    ).toThrow(/nicht direkt bearbeitet/);
+    expect(() =>
+      applyInlineText(docFull, "sections.1.items.0.title", "   ")
+    ).toThrow(/maximal/);
   });
 });
 

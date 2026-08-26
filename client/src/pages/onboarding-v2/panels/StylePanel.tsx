@@ -159,10 +159,14 @@ export function StylePanel({
   // Bestätigungs-Mutation überholt/überschrieben wird.
   const select = trpc.onboardingV2.selectStylePack.useMutation();
 
-  const applyPack = (id: PackId, onSuccessExtra?: () => void) => {
+  const applyPack = (
+    id: PackId,
+    onSuccessExtra?: () => void,
+    confirm = false
+  ) => {
     setBusyId(id);
     select.mutate(
-      { token, packId: id },
+      { token, packId: id, confirm },
       {
         onSettled: () => setBusyId(null),
         onSuccess: () => {
@@ -182,7 +186,7 @@ export function StylePanel({
     // einfach zumachen (onClose).
     const after = onNext ?? onClose;
     if (activePackId) {
-      applyPack(activePackId, after);
+      applyPack(activePackId, after, true);
     } else {
       after();
     }

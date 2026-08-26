@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
-import type { TextsPatch } from "@shared/onboardingV2/patches";
+import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
 import { useStudioState } from "./useStudioState";
 import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
@@ -11,7 +11,6 @@ import { WizardBar } from "./WizardBar";
 import {
   PreviewFrame,
   previewPath,
-  type InlineTextField,
 } from "./PreviewFrame";
 import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
@@ -61,7 +60,8 @@ export default function StudioPage({ token }: { token: string }) {
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
   // fällt auf die Startseite zurück, kein eigener Effekt nötig.
   const [previewSlugState, setPreviewSlug] = useState<string | null>(null);
-  const inlineUpdateTexts = trpc.onboardingV2.updateTexts.useMutation();
+  const inlineUpdateText =
+    trpc.onboardingV2.updateInlineText.useMutation();
   // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
   // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
   const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
@@ -88,6 +88,10 @@ export default function StudioPage({ token }: { token: string }) {
   useEffect(() => {
     const state = studio.state;
     if (!state || state.status !== "preview" || wizardActive) return;
+    // Der initiale Design-Gate läuft VOR dem Studio-Wizard. Solange die
+    // Richtung nicht bestätigt ist, darf der Wizard nicht parallel das
+    // Stil-Panel öffnen; nach Bestätigung startet er direkt bei Fotos.
+    if (state.checklist.find(i => i.id === "style")?.status !== "done") return;
     if (sessionStorage.getItem(wizardDismissedKey) === "1") return;
     setWizardActive(true);
     if (!activeId) {
@@ -210,6 +214,75 @@ export default function StudioPage({ token }: { token: string }) {
     );
   }
 
+  const styleConfirmed =
+    state.checklist.find(item => item.id === "style")?.status === "done";
+
+  // Initialer Design-Gate: Erst die wichtigste visuelle Entscheidung, dann
+  // das eigentliche Studio. Die gleiche StylePanel-Komponente bleibt später
+  // über die Checkliste erreichbar — eine Quelle für Auswahl/Theme-Logik.
+  if (state.status === "preview" && !styleConfirmed) {
+    return (
+      <div className="pb-studio pb-design-gate">
+        <header className="pb-design-gate-brand">
+          <p className="pb-studio-kicker">Pageblitz</p>
+          <strong>{state.businessName}</strong>
+        </header>
+        <div className="pb-studio-layout">
+          <aside className="pb-studio-rail">
+            <div className="pb-design-gate-copy">
+              <p className="pb-studio-kicker">Dein Design</p>
+              <h1 className="pb-studio-title">Gefällt dir diese Richtung?</h1>
+              <p>
+                Wähle einen anderen Ausgangspunkt oder passe direkt Aufbau,
+                Farbe und Schrift an. Danach geht es mit Fotos und Inhalten im
+                Studio weiter.
+              </p>
+            </div>
+            <StylePanel
+              token={token}
+              currentPackId={state.stylePackId}
+              category={state.category}
+              accent={state.doc.colorOverrides?.accent ?? null}
+              fontPairId={state.doc.fontPairId ?? null}
+              designProfile={state.doc.designProfile ?? null}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => {}}
+              onNext={() => studio.refetch()}
+            />
+          </aside>
+          <main className="pb-studio-stage">
+            <div className="pb-studio-toolbar">
+              <div className="pb-studio-seg" aria-label="Gerät">
+                <button
+                  type="button"
+                  aria-pressed={device === "desktop"}
+                  onClick={() => setDevice("desktop")}
+                >
+                  Desktop
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={device === "mobile"}
+                  onClick={() => setDevice("mobile")}
+                >
+                  Mobil
+                </button>
+              </div>
+            </div>
+            <PreviewFrame
+              token={token}
+              version={studio.previewVersion}
+              device={device}
+            />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   // Vorschau-Leiste gatet wie SSR/Nav auf das Dokument-Feld `addOns.subpages`
   // (Plan B6 Task 6) — updateAddons/updatePages schreiben es zusammen mit
   // dem Onboarding-Flag, so zeigt die Leiste genau die Seiten, die
@@ -226,20 +299,11 @@ export default function StudioPage({ token }: { token: string }) {
   const aiChatPage = previewPage
     ? { slug: previewPage.slug, title: previewPage.title }
     : undefined;
-  const heroSection = state.doc.sections.find(s => s.type === "hero");
-  const aboutSection = state.doc.sections.find(s => s.type === "about");
-  const inlineTexts =
-    previewSlug === null
-      ? {
-          headline: heroSection?.headline,
-          subheadline: heroSection?.subheadline,
-          aboutHeadline: aboutSection?.headline,
-          aboutBody: aboutSection?.body,
-        }
-      : undefined;
-  const applyInlineText = (field: InlineTextField, value: string) => {
-    inlineUpdateTexts.mutate(
-      { token, patch: { [field]: value } as TextsPatch },
+  const inlineTargets =
+    previewSlug === null ? collectInlineTextTargets(state.doc) : undefined;
+  const applyInlineText = (path: string, value: string) => {
+    inlineUpdateText.mutate(
+      { token, path, value },
       {
         onSuccess: () => {
           studio.refetch();
@@ -483,14 +547,14 @@ export default function StudioPage({ token }: { token: string }) {
           </div>
           {previewSlug === null && (
             <p className="pb-studio-inline-hint">
-              Tipp: Überschrift und Über-uns-Text kannst du direkt in der
-              Vorschau anklicken und bearbeiten.
+              Tipp: Texte in der Vorschau kannst du direkt anklicken und
+              bearbeiten.
             </p>
           )}
-          {inlineUpdateTexts.error && (
+          {inlineUpdateText.error && (
             <p role="alert" className="pb-studio-inline-error">
               Änderung konnte nicht gespeichert werden:{" "}
-              {inlineUpdateTexts.error.message}
+              {inlineUpdateText.error.message}
             </p>
           )}
           {previewTabs.length > 1 && (
@@ -516,7 +580,7 @@ export default function StudioPage({ token }: { token: string }) {
             version={studio.previewVersion}
             device={device}
             pageSlug={previewSlug ?? undefined}
-            inlineTexts={inlineTexts}
+            inlineTargets={inlineTargets}
             onInlineTextEdit={applyInlineText}
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen

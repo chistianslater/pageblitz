@@ -146,6 +146,53 @@ test.describe("Studio", () => {
     );
   });
 
+  test("Initialer Design-Gate: Richtung + Feinschliff bestätigen → Studio startet bei Fotos", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&designGate=1&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    // Globaler Test-beforeEach deaktiviert den Wizard für Screenshot-
+    // Determinismus; dieser Flow-Test braucht bewusst den echten Erststart.
+    await page.evaluate(
+      key => sessionStorage.removeItem(key),
+      `pb-wizard-dismissed:${token}`
+    );
+
+    await expect(
+      page.getByRole("heading", { name: "Gefällt dir diese Richtung?" })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("group", { name: "Designrichtungen" })
+    ).toBeVisible();
+    await page
+      .getByText("Aufbau, Farben & Schriften anpassen", { exact: true })
+      .click();
+    await expect(page.getByText("Seitenaufbau", { exact: true })).toBeVisible();
+    await expect(page.getByText("Akzentfarbe", { exact: true })).toBeVisible();
+    await expect(page.getByText("Schriften", { exact: true })).toBeVisible();
+
+    await Promise.all([
+      page.waitForResponse(
+        res =>
+          res.url().includes("onboardingV2.selectStylePack") && res.ok()
+      ),
+      page.getByRole("button", { name: "Passt so — weiter" }).click(),
+    ]);
+
+    await expect(
+      page.getByRole("heading", { name: "Gefällt dir diese Richtung?" })
+    ).toBeHidden();
+    await expect(
+      page.getByRole("region", { name: "Fotos wählen" })
+    ).toBeVisible();
+  });
+
   test("Rechtliches-Panel desktop", async ({ page, request }) => {
     await skipCookieBanner(page);
     const seed = await request.get(
@@ -349,7 +396,7 @@ test.describe("Studio", () => {
     await Promise.all([
       page.waitForResponse(
         res =>
-          res.url().includes("onboardingV2.updateTexts") && res.ok()
+          res.url().includes("onboardingV2.updateInlineText") && res.ok()
       ),
       // Klick außerhalb des iframes löst blur + Persistenz aus.
       page.getByRole("button", { name: "Desktop" }).click(),

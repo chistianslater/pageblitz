@@ -44,8 +44,11 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
   // liefern hier nur den Business-Namen; eigener Slug + eigene placeId,
   // damit die normalen Seeds (geteiltes Business pro Pack) unberührt bleiben.
   const needsCategory = req.query.needsCategory === "1";
+  const designGate = req.query.designGate === "1";
   const slug = needsCategory
     ? `studio-seed-${packId}-nocategory`
+    : designGate
+      ? `studio-seed-${packId}-${fixture}-designgate`
     : `studio-seed-${packId}-${fixture}`;
   const fixtureDoc = getFixture(packId, fixture);
   const doc = needsCategory ? null : { ...fixtureDoc, slug };
@@ -72,7 +75,8 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
     const onboarding = await getOnboardingByWebsiteId(websiteId);
     if (onboarding)
       await updateOnboarding(websiteId, {
-        studioProgress: {},
+        studioProgress:
+          needsCategory || designGate ? {} : { styleConfirmed: true },
         legalOwner: null,
         legalEmail: null,
         legalStreet: null,
@@ -98,6 +102,8 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
         websiteId,
         status: "in_progress",
         stepCurrent: 0,
+        studioProgress:
+          needsCategory || designGate ? {} : { styleConfirmed: true },
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
@@ -133,6 +139,8 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
       websiteId,
       status: "in_progress",
       stepCurrent: 0,
+      studioProgress:
+        needsCategory || designGate ? {} : { styleConfirmed: true },
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });

@@ -19,6 +19,7 @@ import {
 import {
   applyAddOnFlags,
   applyImages,
+  applyInlineText,
   applyOffer,
   applyPages,
   applyTexts,
@@ -207,6 +208,26 @@ export const contentProcedures = {
       return persistDoc(input.token, loaded, applyTexts(doc, input.patch), {
         progress: { textsReviewed: true },
       });
+    }),
+
+  updateInlineText: publicProcedure
+    .input(
+      tokenInput.extend({
+        path: z
+          .string()
+          .regex(/^sections\.\d+\.[a-zA-Z0-9.]+$/)
+          .max(160),
+        value: z.string().min(1).max(2000),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      return persistDoc(
+        input.token,
+        loaded,
+        applyInlineText(doc, input.path, input.value)
+      );
     }),
 
   /**

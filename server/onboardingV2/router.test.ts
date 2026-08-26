@@ -518,7 +518,11 @@ describe("onboardingV2.selectStylePack", () => {
   test("persistiert Pack, setzt styleConfirmed, invalidiert Cache, gibt neuen State", async () => {
     const s = await appRouter
       .createCaller(ctx())
-      .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" });
+      .onboardingV2.selectStylePack({
+        token: "tok",
+        packId: "kanzlei",
+        confirm: true,
+      });
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
       42,
       expect.objectContaining({
@@ -532,6 +536,18 @@ describe("onboardingV2.selectStylePack", () => {
     expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
     expect(s.stylePackId).toBe("kanzlei");
     expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
+  });
+  test("bloßes Ansehen einer Richtung persistiert Pack, aber bestätigt den Gate nicht", async () => {
+    const s = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.selectStylePack({
+        token: "tok",
+        packId: "kanzlei",
+        confirm: false,
+      });
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+    expect(s.checklist.find(i => i.id === "style")?.status).toBe("open");
   });
   test("unbekanntes Pack → BAD_REQUEST; ohne v2-Dokument → BAD_REQUEST", async () => {
     await expect(
@@ -556,7 +572,11 @@ describe("onboardingV2.selectStylePack", () => {
     mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
     const s = await appRouter
       .createCaller(ctx())
-      .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" });
+      .onboardingV2.selectStylePack({
+        token: "tok",
+        packId: "kanzlei",
+        confirm: true,
+      });
     expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
       expect.objectContaining({
         websiteId: 42,

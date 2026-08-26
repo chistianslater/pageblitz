@@ -67,7 +67,7 @@ describe("/dev/studio-seed", () => {
     );
     expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
       42,
-      expect.objectContaining({ studioProgress: {} })
+      expect.objectContaining({ studioProgress: { styleConfirmed: true } })
     );
   });
   test("vorhanden aber ohne previewToken: erzeugt Token, updated Website, keine Neuanlage", async () => {
