@@ -98,6 +98,7 @@ interface TextsFormProps {
   suggestError?: { field: TextField; message: string } | null;
   /** Feld, dessen gewählter Vorschlag gerade gespeichert wird. */
   applyingVariant?: TextField | null;
+  onFieldFocus?: (field: keyof TextsPatch) => void;
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -110,6 +111,7 @@ export function TextsForm({
   onPickVariant,
   suggestError = null,
   applyingVariant = null,
+  onFieldFocus,
 }: TextsFormProps) {
   const errors = validateTexts(values);
   return (
@@ -155,6 +157,7 @@ export function TextsForm({
                 maxLength={field.maxLength}
                 value={value}
                 aria-invalid={isInvalid ? "true" : undefined}
+                onFocus={() => onFieldFocus?.(field.key)}
                 onChange={e =>
                   onChange({ ...values, [field.key]: e.target.value })
                 }
@@ -167,6 +170,7 @@ export function TextsForm({
                 maxLength={field.maxLength}
                 value={value}
                 aria-invalid={isInvalid ? "true" : undefined}
+                onFocus={() => onFieldFocus?.(field.key)}
                 onChange={e =>
                   onChange({ ...values, [field.key]: e.target.value })
                 }

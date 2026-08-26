@@ -42,11 +42,23 @@ export default function StudioPage({ token }: { token: string }) {
   const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(() =>
     parsePanelParam(window.location.search)
   );
+  const [previewFocusAnchor, setPreviewFocusAnchor] = useState<string | null>(
+    "start"
+  );
   // Spiegelt jede Panel-Änderung per history.replaceState in die URL (Task 2,
   // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
   // Query-Parameter bleiben erhalten (studioUrl.withPanelParam).
   const setActiveId = (id: ChecklistItemId | null) => {
     setActiveIdState(id);
+    const anchorByPanel: Partial<Record<ChecklistItemId, string>> = {
+      style: "start",
+      photos: "start",
+      texts: "start",
+      offer: "leistungen",
+      legal: "kontakt",
+      addons: "kontakt",
+    };
+    if (id && anchorByPanel[id]) setPreviewFocusAnchor(anchorByPanel[id]!);
     const nextSearch = withPanelParam(window.location.search, id);
     window.history.replaceState(
       null,
@@ -349,6 +361,7 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => panelClose(null)}
               onNext={panelNext}
+              onPreviewFocus={setPreviewFocusAnchor}
             />
           ) : activeId === "texts" ? (
             <TextsPanel
@@ -360,6 +373,7 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => panelClose(null)}
               onNext={panelNext}
+              onPreviewFocus={setPreviewFocusAnchor}
             />
           ) : activeId === "offer" ? (
             <OfferPanel
@@ -371,6 +385,7 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => panelClose(null)}
               onNext={panelNext}
+              onPreviewFocus={setPreviewFocusAnchor}
             />
           ) : activeId === "legal" ? (
             <LegalPanel
@@ -396,6 +411,7 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={() => panelClose(null)}
               onNext={panelNext}
+              onPreviewFocus={setPreviewFocusAnchor}
             />
           ) : wizardActive ? (
             // Wizard-Abschluss („publish"): Fokus liegt auf dem Freischalten,
@@ -540,6 +556,7 @@ export default function StudioPage({ token }: { token: string }) {
             pageSlug={previewSlug ?? undefined}
             inlineTargets={inlineTargets}
             onInlineTextEdit={applyInlineText}
+            focusAnchor={previewFocusAnchor}
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).

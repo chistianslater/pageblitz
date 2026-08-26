@@ -44,6 +44,7 @@ interface TextsPanelProps {
   onClose: () => void;
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
   onNext?: () => void;
+  onPreviewFocus?: (anchor: string) => void;
 }
 
 export function TextsPanel({
@@ -52,6 +53,7 @@ export function TextsPanel({
   onApplied,
   onClose,
   onNext,
+  onPreviewFocus,
 }: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
@@ -165,6 +167,16 @@ export function TextsPanel({
         onPickVariant={handlePickVariant}
         suggestError={suggestError}
         applyingVariant={applyingVariant}
+        onFieldFocus={field => {
+          if (
+            field === "headline" ||
+            field === "subheadline" ||
+            field === "ctaText"
+          )
+            onPreviewFocus?.("start");
+          if (field === "aboutHeadline" || field === "aboutBody")
+            onPreviewFocus?.("ueber-uns");
+        }}
       />
       {updateTexts.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>

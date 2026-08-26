@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId } from "@shared/siteContract/types";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 
@@ -20,6 +20,8 @@ interface PreviewFrameProps {
   inlineTargets?: InlineTextTarget[];
   /** Speichert direkte Änderungen aus dem Preview-iframe. */
   onInlineTextEdit?: (path: string, value: string) => void;
+  /** Sektionsanker, der beim Bearbeiten rechts sichtbar sein soll. */
+  focusAnchor?: string | null;
 }
 
 export function normalizeInlineText(value: string): string {
@@ -42,16 +44,49 @@ export function PreviewFrame({
   reveal,
   inlineTargets,
   onInlineTextEdit,
+  focusAnchor,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
   if (packOverride) params.set("pack", packOverride);
   if (reveal) params.set("reveal", "1");
   params.set("v", String(version)); // Cache-Bust nach jedem Patch (Server ist ohnehin no-store)
   const src = `${previewPath(token, pageSlug)}?${params.toString()}`;
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  const scrollToFocus = useCallback(() => {
+    if (!focusAnchor) return;
+    const doc = iframeRef.current?.contentDocument;
+    const target = doc?.getElementById(focusAnchor);
+    if (!target) return;
+    const reduceMotion =
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    target.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "center",
+    });
+    if (!reduceMotion && typeof target.animate === "function") {
+      target.animate(
+        [
+          { outline: "2px solid rgba(31,95,75,0)", outlineOffset: "10px" },
+          { outline: "2px solid rgba(31,95,75,.75)", outlineOffset: "6px" },
+          { outline: "2px solid rgba(31,95,75,0)", outlineOffset: "10px" },
+        ],
+        { duration: 900, easing: "ease-out" }
+      );
+    }
+  }, [focusAnchor]);
+
+  useEffect(() => {
+    // Panel-/Feldwechsel nach bereits geladenem iframe.
+    const id = window.setTimeout(scrollToFocus, 60);
+    return () => window.clearTimeout(id);
+  }, [scrollToFocus, src]);
 
   const enableInlineEditing = (
     iframe: React.SyntheticEvent<HTMLIFrameElement>
   ) => {
+    // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
+    window.setTimeout(scrollToFocus, 80);
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;
     const doc = iframe.currentTarget.contentDocument;
     if (!doc) return;
@@ -141,6 +176,7 @@ export function PreviewFrame({
   return (
     <div className="pb-studio-device" data-device={device}>
       <iframe
+        ref={iframeRef}
         key={src}
         src={src}
         title="Live-Vorschau deiner Website"

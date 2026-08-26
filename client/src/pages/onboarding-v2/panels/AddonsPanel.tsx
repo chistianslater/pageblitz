@@ -236,6 +236,7 @@ interface AddonsPanelProps {
   onClose: () => void;
   /** Geführter Modus: nach Prüfung weiter zum Freischalten. */
   onNext?: () => void;
+  onPreviewFocus?: (anchor: string) => void;
 }
 
 export function AddonsPanel({
@@ -246,6 +247,7 @@ export function AddonsPanel({
   onApplied,
   onClose,
   onNext,
+  onPreviewFocus,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
@@ -272,6 +274,17 @@ export function AddonsPanel({
 
   const handleToggle = (key: AddOnKey) => {
     setValue(prev => ({ ...prev, [key]: !prev[key] }));
+    const anchor: Record<AddOnKey, string> = {
+      contactForm: "kontakt",
+      gallery: "galerie",
+      menu: "speisekarte",
+      pricelist: "preisliste",
+      aiChat: "kontakt",
+      booking: "kontakt",
+      team: "team",
+      subpages: "leistungen",
+    };
+    onPreviewFocus?.(anchor[key]);
   };
 
   const handleSave = () => {

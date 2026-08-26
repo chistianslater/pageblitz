@@ -54,6 +54,7 @@ interface PhotosPanelProps {
    * sofort übernommen (Auto-Apply, siehe handlePick).
    */
   onNext?: () => void;
+  onPreviewFocus?: (anchor: string) => void;
 }
 
 export function PhotosPanel({
@@ -63,6 +64,7 @@ export function PhotosPanel({
   onApplied,
   onClose,
   onNext,
+  onPreviewFocus,
 }: PhotosPanelProps) {
   const heroSection = doc.sections.find(
     (s): s is SectionOf<"hero"> => s.type === "hero"
@@ -247,7 +249,16 @@ export function PhotosPanel({
     >
       <PhotoTargetPicker
         target={target}
-        onTarget={setTarget}
+        onTarget={nextTarget => {
+          setTarget(nextTarget);
+          onPreviewFocus?.(
+            nextTarget === "hero"
+              ? "start"
+              : nextTarget === "about"
+                ? "ueber-uns"
+                : "galerie"
+          );
+        }}
         hasAbout={hasAbout}
       />
       {galleryLocked && (

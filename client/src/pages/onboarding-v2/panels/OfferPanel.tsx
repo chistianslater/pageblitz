@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
@@ -73,6 +73,7 @@ interface OfferPanelProps {
   onClose: () => void;
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
   onNext?: () => void;
+  onPreviewFocus?: (anchor: string) => void;
 }
 
 export function OfferPanel({
@@ -81,6 +82,7 @@ export function OfferPanel({
   onApplied,
   onClose,
   onNext,
+  onPreviewFocus,
 }: OfferPanelProps) {
   const initial = offerFromDoc(doc);
   // Ein Entwurf pro Modus im lokalen State (Ambiguität #2 der Task-Vorgabe):
@@ -93,6 +95,15 @@ export function OfferPanel({
   });
   const [mode, setMode] = useState<OfferMode>(initial.mode);
   const [hint, setHint] = useState<string | null>(null);
+  useEffect(() => {
+    onPreviewFocus?.(
+      mode === "services"
+        ? "leistungen"
+        : mode === "menu"
+          ? "speisekarte"
+          : "preisliste"
+    );
+  }, [mode, onPreviewFocus]);
 
   const value = drafts[mode];
 

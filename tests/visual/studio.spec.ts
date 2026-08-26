@@ -421,6 +421,33 @@ test.describe("Studio", () => {
     ).toContainText("Direkt in der Vorschau geändert");
   });
 
+  test("Feldfokus im Textpanel scrollt Vorschau zur passenden Sektion", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await page.getByRole("button", { name: /Texte/ }).first().click();
+
+    const panel = page.getByRole("region", { name: "Texte prüfen" });
+    await panel.getByLabel("Über-uns-Text").focus();
+    await page.waitForTimeout(700); // smooth scroll im iframe
+
+    const inViewport = await page
+      .frameLocator(".pb-studio-device iframe")
+      .locator("#ueber-uns")
+      .evaluate(element => {
+        const rect = element.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+      });
+    expect(inViewport).toBe(true);
+  });
+
   test("Checkout-Flow: Rechtliches → Checkout-bereit → Reload", async ({
     page,
     request,
