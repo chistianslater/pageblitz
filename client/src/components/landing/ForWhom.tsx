@@ -67,8 +67,9 @@ export function ForWhom() {
             </h2>
           </div>
           <p className="max-w-[30rem] text-[1.05rem] leading-[1.6] text-lp-muted lg:col-span-4">
-            Kein Baukasten-Look für alle. Jede Stilwelt übersetzt Branche,
-            Haltung und Angebot in eine eigene Website.
+            Kein Einheitslook: Pageblitz verbindet deine Inhalte mit einer
+            kuratierten Designrichtung und passt Farben, Schrift und
+            Bildwirkung an deinen Betrieb an.
           </p>
         </div>
 

@@ -96,7 +96,7 @@ export function AiStyleCard({ name, reason, onView }: AiStyleCardProps) {
   return (
     <div className="pb-studio-ai-style-card">
       <p>
-        Stil-Vorschlag: <strong>{name}</strong> — {reason}
+        Designrichtung: <strong>{name}</strong> — {reason}
       </p>
       <button
         type="button"

@@ -388,7 +388,8 @@ export default function StartPage() {
               Dein Unternehmen
             </h1>
             <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
-              Kurz zwei Infos – dann zeigen wir dir passende Design-Vorlagen.
+              Zwei kurze Angaben – dann erstellt Pageblitz deine erste
+              Vorschau.
             </p>
 
             <div className="mt-8 space-y-3">

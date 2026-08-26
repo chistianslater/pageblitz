@@ -64,8 +64,8 @@ describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
   it("zeigt nur belegbare Produktfakten statt erfundener Erfolgszahlen", () => {
     expect(html).not.toContain("1.200+");
     expect(html).not.toContain("97%");
-    expect(html).toContain("14");
-    expect(html).toContain("Stilwelten");
+    expect(html).toContain("Flexibel");
+    expect(html).toContain("Design &amp; Aufbau");
     expect(html).toContain("0 €");
     expect(html).toContain("Einrichtungskosten");
   });

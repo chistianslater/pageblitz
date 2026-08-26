@@ -6,7 +6,7 @@ import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
  * Seite hatte bis hierhin keinerlei Belege — für die skeptische
  * Zielgruppe (lokale Betriebe) ist das der Conversion-Killer schlechthin.
  *
- * Bewusst NUR verifizierbare Produkt-Fakten (3 Minuten, 14 Stilwelten,
+ * Bewusst NUR verifizierbare Produkt-Fakten (3 Minuten, Design-Flexibilität,
  * Branchenabdeckung aus SEO_INDUSTRY_LINKS, 0 € Einrichtung) — keine
  * erfundenen Kundenzahlen oder Testimonials (wettbewerbsrechtlich
  * angreifbar). Echte Bewertungen können später nachgereicht werden.
@@ -78,11 +78,15 @@ interface ProofItem {
 export function ProofBar() {
   const items: ProofItem[] = [
     { target: 3, suffix: " Min.", label: "bis zur fertigen Vorschau" },
-    { target: 14, suffix: "", label: "handgefertigte Stilwelten" },
+    {
+      value: "Flexibel",
+      suffix: "",
+      label: "Farben, Schriften und Aufbau",
+    },
     {
       target: SEO_INDUSTRY_LINKS.length,
       suffix: "",
-      label: "Branchen mit eigener Vorlage",
+      label: "Branchenwissen integriert",
     },
     {
       value: "Keine",

@@ -2138,7 +2138,7 @@ export function generateLandingPageHTML(
   <div class="container">
     <div class="stats-grid">
       <div><div class="stat-value">3 Min.</div><div class="stat-label">Bis zur Vorschau</div></div>
-      <div><div class="stat-value">14</div><div class="stat-label">Stilwelten</div></div>
+      <div><div class="stat-value">Flexibel</div><div class="stat-label">Design &amp; Aufbau</div></div>
       <div><div class="stat-value">0 €</div><div class="stat-label">Einrichtungskosten</div></div>
       <div><div class="stat-value">19,90 €</div><div class="stat-label">Pro Monat</div></div>
     </div>

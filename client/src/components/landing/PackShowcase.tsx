@@ -256,9 +256,9 @@ export function PackShowcase() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <SectionHead
             id="lp-showcase-heading"
-            kicker="Stilwelten"
-            title="Ein Look für jede Branche."
-            text="Jedes Paket bringt eine eigene, fertig abgestimmte Optik mit — Typografie, Farben und Layout passend zur Branche. Du wählst den Stil, der zu dir passt, deine Inhalte bleiben gleich."
+            kicker="Designrichtungen"
+            title="Welche Richtung passt zu deinem Betrieb?"
+            text="Diese Richtungen sind professionelle Ausgangspunkte, keine fertigen Vorlagen. Deine Inhalte, Farben, Schriften und Bilder formen daraus deine Website."
           />
           <div className="flex shrink-0 gap-2">
             <button

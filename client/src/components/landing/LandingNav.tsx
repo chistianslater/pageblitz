@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Wordmark, pillInk, startHref } from "./primitives";
 
 const NAV_LINKS = [
-  { label: "Vorlagen", href: "#showcase" },
+  { label: "Design", href: "#showcase" },
   { label: "Ablauf", href: "#ablauf" },
   { label: "Preise", href: "#pricing" },
   { label: "FAQ", href: "#faq" },

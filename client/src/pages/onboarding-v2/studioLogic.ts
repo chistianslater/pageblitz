@@ -170,7 +170,7 @@ export type WizardStep = WizardPanelStep | "publish";
 
 /** Anzeige-Titel je Schritt (WizardBar). */
 export const WIZARD_STEP_TITLES: Record<WizardStep, string> = {
-  style: "Stil wählen",
+  style: "Designrichtung",
   photos: "Fotos wählen",
   texts: "Texte prüfen",
   offer: "Angebot pflegen",

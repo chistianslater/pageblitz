@@ -12,8 +12,8 @@ const STEPS = [
     text: "Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen.",
   },
   {
-    title: "Stil wählen",
-    text: "Du wählst aus passenden, fertig abgestimmten Stilwelten für deine Branche.",
+    title: "Designrichtung bestimmen",
+    text: "Pageblitz startet mit einer kuratierten Richtung; Farben, Schriften und Bildwirkung passt du anschließend an.",
   },
   {
     title: "Texte und Bilder prüfen",

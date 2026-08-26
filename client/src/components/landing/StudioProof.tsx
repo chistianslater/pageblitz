@@ -4,7 +4,7 @@ import { SectionHead } from "./primitives";
  * „Dein Studio" als Strukturzeichnungen (2026-08-25, User-Feedback:
  * Beispiel-Screenshots waren unscharf + zeigten wieder dasselbe Pack wie
  * der Hero). Statt Rasterbildern zeichnen drei CSS-Schemata das PRINZIP:
- * Übersicht (Checkliste + Live-Vorschau), Stil wählen (drei Kandidaten,
+ * Übersicht (Checkliste + Live-Vorschau), Designrichtung (drei Kandidaten,
  * einer aktiv), Fotos wählen (Grid mit Auswahl). Vorteile: immer scharf,
  * kein Pack-Bezug, altert nicht mit UI-Änderungen.
  *
@@ -72,7 +72,7 @@ const CARDS = [
   },
   {
     Diagram: DiagramStyle,
-    title: "Stil wählen mit echten Inhalten",
+    title: "Designrichtung mit eigenen Inhalten",
     text: "Drei Vorschläge pro Runde — jeder Look sofort mit deinen Texten und Fotos, nicht mit Platzhaltern.",
   },
   {

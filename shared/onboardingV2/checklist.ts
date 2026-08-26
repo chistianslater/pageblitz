@@ -45,8 +45,8 @@ export const CHECKLIST_ORDER = [
 
 const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
   style: {
-    title: "Stil",
-    hint: "Passt der Look? Du kannst zwischen passenden Stilen wechseln.",
+    title: "Designrichtung",
+    hint: "Wähle einen professionellen Ausgangspunkt und passe ihn anschließend an.",
   },
   photos: {
     title: "Fotos",

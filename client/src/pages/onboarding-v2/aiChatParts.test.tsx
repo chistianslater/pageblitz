@@ -79,7 +79,7 @@ describe("AiStyleCard", () => {
         onView={() => {}}
       />
     );
-    expect(html).toContain("Stil-Vorschlag");
+    expect(html).toContain("Designrichtung");
     expect(html).toContain("Werkbank");
     expect(html).toContain("Passt besser zu einem Handwerksbetrieb.");
     expect(html).toContain(">Ansehen<");

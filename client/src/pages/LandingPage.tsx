@@ -166,7 +166,7 @@ export default function LandingPage() {
           billingYearly={billingYearly}
           onBillingChange={setBillingYearly}
         />
-        {/* Alle 14 Stilwelten erst nach dem Preis: Branchenbeispiele oben
+        {/* Alle Designrichtungen erst nach dem Preis: Branchenbeispiele oben
             reichen zur Orientierung, das Karussell dient später als
             Design-Vertiefung statt dritte Pack-Bühne in Folge. */}
         <PackShowcase />

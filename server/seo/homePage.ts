@@ -35,8 +35,8 @@ const STEPS = [
   },
   {
     n: "02",
-    title: "Stil wählen",
-    desc: "Pageblitz schlägt passende Stile für deine Branche vor. Du wählst den Look, der zu dir passt – Typografie, Farben und Layout sind fertig abgestimmt, deine Inhalte bleiben gleich.",
+    title: "Designrichtung bestimmen",
+    desc: "Pageblitz startet mit einer kuratierten Designrichtung. Farben, Schriften und Bildwirkung passt du anschließend an deinen Betrieb an.",
   },
   {
     n: "03",
