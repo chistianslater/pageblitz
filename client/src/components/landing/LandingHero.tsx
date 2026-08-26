@@ -11,6 +11,8 @@ export interface HeroFormProps {
   idPrefix: string;
   /** Größere Variante für den Hero, kompaktere für den Schluss-CTA. */
   size?: "lg" | "md";
+  /** Hero braucht in der schmalen 5/12-Spalte einen klaren Stack. */
+  layout?: "inline" | "stacked";
 }
 
 /**
@@ -24,6 +26,7 @@ export function HeroForm({
   onSubmit,
   idPrefix,
   size = "lg",
+  layout = "inline",
 }: HeroFormProps) {
   const inputId = `${idPrefix}-business-name`;
   const h = size === "lg" ? "h-14" : "h-12";
@@ -31,23 +34,46 @@ export function HeroForm({
     <div className="w-full max-w-[36rem]">
       <form
         onSubmit={onSubmit}
-        className="flex w-full flex-col gap-3 sm:flex-row"
+        className={`flex w-full flex-col gap-3 ${
+          layout === "inline" ? "sm:flex-row" : ""
+        }`}
       >
-        <label htmlFor={inputId} className="sr-only">
-          Unternehmensname
-        </label>
-        <input
-          id={inputId}
-          type="text"
-          value={value}
-          onChange={event => onChange(event.target.value)}
-          placeholder="Wie heißt dein Unternehmen?"
-          autoComplete="organization"
-          className={`${h} w-full min-w-0 shrink-0 sm:w-auto sm:flex-1 rounded-full border border-lp-line bg-white px-4 sm:px-5 text-[1rem] text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent focus-visible:outline-2`}
-        />
+        <div
+          className={
+            layout === "inline"
+              ? "min-w-0 flex-1"
+              : "flex w-full flex-col gap-2"
+          }
+        >
+          <label
+            htmlFor={inputId}
+            className={
+              layout === "stacked"
+                ? "text-[0.88rem] font-medium text-lp-ink"
+                : "sr-only"
+            }
+          >
+            Wie heißt dein Unternehmen?
+          </label>
+          <input
+            id={inputId}
+            type="text"
+            value={value}
+            onChange={event => onChange(event.target.value)}
+            placeholder={
+              layout === "stacked"
+                ? "z. B. Schreinerei Brandt"
+                : "Wie heißt dein Unternehmen?"
+            }
+            autoComplete="organization"
+            className={`${h} w-full min-w-0 rounded-full border border-lp-line bg-white px-4 text-[1rem] text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent focus-visible:outline-2 sm:px-5`}
+          />
+        </div>
         <button
           type="submit"
-          className={`${pillPrimary} ${h} shrink-0 px-7 ${size === "lg" ? "text-[1rem]" : ""}`}
+          className={`${pillPrimary} ${h} shrink-0 px-7 ${
+            layout === "stacked" ? "w-full" : ""
+          } ${size === "lg" ? "text-[1rem]" : ""}`}
         >
         Website kostenlos erstellen
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -118,7 +144,12 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
           Wartezeit oder vierstelliges Budget.
         </p>
         <div className="lp-rise lp-rise-4 mt-8">
-          <HeroForm {...props} idPrefix="hero" size="lg" />
+          <HeroForm
+            {...props}
+            idPrefix="hero"
+            size="lg"
+            layout="stacked"
+          />
         </div>
         <TrustLine className="lp-rise lp-rise-5 mt-8 border-t border-lp-line pt-5" />
       </div>
