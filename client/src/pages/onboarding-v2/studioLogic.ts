@@ -201,7 +201,14 @@ export function nextWizardStep(
     const after = WIZARD_PANEL_STEPS.slice(idx + 1).find(isOpen);
     if (after) return after;
   }
-  const firstOpen = WIZARD_PANEL_STEPS.find(isOpen);
+  // Direkt nach erfolgreichem Speichern ist die Parent-Checkliste noch einen
+  // Render lang veraltet und markiert `current` weiterhin als offen. Beim
+  // Fallback darf genau dieser Schritt nicht erneut gewählt werden — sonst
+  // braucht „Speichern & weiter" einen zweiten Klick (besonders sichtbar bei
+  // Rechtliches, wenn Extras bereits geprüft sind).
+  const firstOpen = WIZARD_PANEL_STEPS.find(
+    id => id !== current && isOpen(id)
+  );
   return firstOpen ?? "publish";
 }
 

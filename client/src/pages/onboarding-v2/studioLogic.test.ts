@@ -308,6 +308,14 @@ describe("nextWizardStep", () => {
       nextWizardStep(checklistWith([...WIZARD_PANEL_STEPS]), "legal")
     ).toBe("publish");
   });
+  test("aktuell gespeicherter Schritt ist als einziger noch stale-offen → nicht wiederholen", () => {
+    expect(
+      nextWizardStep(
+        checklistWith(["style", "photos", "texts", "offer", "addons"]),
+        "legal"
+      )
+    ).toBe("publish");
+  });
 });
 
 describe("wizardStepNumber", () => {
