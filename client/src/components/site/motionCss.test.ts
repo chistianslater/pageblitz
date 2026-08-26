@@ -28,4 +28,10 @@ describe("pack-spezifische Motion-Grundlage", () => {
       ":is(section,header)[id]{scroll-margin-top:"
     );
   });
+
+  test("animiert Lightbox und Bildwechsel in beide Richtungen", () => {
+    expect(MOTION_CSS).toContain(".pb-lb.pb-lb-open");
+    expect(MOTION_CSS).toContain(".pb-lb-img.pb-lb-changing");
+    expect(MOTION_CSS).toContain("visibility .28s step-end");
+  });
 });
