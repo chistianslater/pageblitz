@@ -105,9 +105,9 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
           Webagentur: 2.000–8.000 € · Pageblitz ab {PRICE_YEARLY}/Monat
         </Kicker>
         <h1 id="lp-hero-heading" className="lp-h1 lp-h1--hero lp-rise lp-rise-2">
-          Deine Vorschau.
+          Deine Website
           <br />
-          In 3&nbsp;Minuten fertig.
+          in 3&nbsp;Minuten fertig.
         </h1>
         {/* Problem-Aktivierung vor der Lösung (Conversion-Pass 2026-08-25):
             Der Verlust-Frame („Mitbewerber") schafft die Dringlichkeit, die

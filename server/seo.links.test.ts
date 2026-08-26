@@ -82,7 +82,7 @@ describe("Home-Prerender", () => {
 
   it("liefert die H1 als echtes HTML aus", () => {
     expect(html).toContain("<h1");
-    expect(html).toContain("Deine Vorschau. In 3 Minuten fertig.");
+    expect(html).toContain("Deine Website in 3 Minuten fertig.");
   });
 
   it("verlinkt jede Branchenseite", () => {

@@ -139,7 +139,7 @@ export function generateHomePrerender(): string {
 
     <section>
       <p style="font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#6b645b;margin:0 0 2rem">Webagentur kostet 3.000 €+ · Pageblitz ab ${PRICE_YEARLY}/Monat</p>
-      <h1 style="font-size:clamp(2.5rem,1.25rem + 3.4vw,4.25rem);font-weight:500;letter-spacing:-.02em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance">Deine Vorschau. In 3 Minuten fertig.</h1>
+      <h1 style="font-size:clamp(2.5rem,1.25rem + 3.4vw,4.25rem);font-weight:500;letter-spacing:-.02em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance">Deine Website in 3 Minuten fertig.</h1>
       <p style="font-size:1.1rem;line-height:1.6;color:#6b645b;max-width:30rem;margin:1.5rem 0 2rem">Kein Webdesigner, kein monatelanges Warten, kein vierstelliges Budget. Pageblitz erstellt deine Website automatisch – du musst nur dein Unternehmen beschreiben.</p>
       <!-- Echtes GET-Formular: funktioniert identisch zum React-Hero, aber auch
            ganz ohne JavaScript. /start liest ?name= aus und springt direkt in
