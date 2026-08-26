@@ -27,6 +27,11 @@ describe("isSpaRoute", () => {
     expect(isSpaRoute("/")).toBe(true);
   });
 
+  test("Design-Review kann direkt und mit Trailing Slash geöffnet werden", () => {
+    expect(isSpaRoute("/design-review")).toBe(true);
+    expect(isSpaRoute("/design-review/")).toBe(true);
+  });
+
   test("unbekannter Pfad wird nicht erkannt", () => {
     expect(isSpaRoute("/gibtsnicht-xyz")).toBe(false);
   });
