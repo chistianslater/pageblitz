@@ -80,15 +80,26 @@ function buildMarquee(
 ): React.ReactNode {
   if (!services || services.items.length === 0) return null;
   const titles = services.items.map(item => item.title);
-  const repeated = [...titles, ...titles, ...titles];
-  return (
-    <div className="pb-wb-marquee">
-      {repeated.map((title, i) => (
+  const renderGroup = (copy: number): React.ReactNode => (
+    <span
+      className="pb-wb-marquee-group"
+      aria-hidden={copy === 1 ? "true" : undefined}
+      key={copy}
+    >
+      {[...titles, ...titles].map((title, i) => (
         <React.Fragment key={`${title}-${i}`}>
-          {i > 0 && <em>✕</em>}
-          {title}
+          <span>{title}</span>
+          <em>✕</em>
         </React.Fragment>
       ))}
+    </span>
+  );
+  return (
+    <div className="pb-wb-marquee" aria-label={titles.join(" · ")}>
+      <div className="pb-wb-marquee-track">
+        {renderGroup(0)}
+        {renderGroup(1)}
+      </div>
     </div>
   );
 }

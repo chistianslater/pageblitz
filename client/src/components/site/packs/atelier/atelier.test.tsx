@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { ATELIER_CSS } from "./css";
 
 describe("Pack atelier", () => {
   test("Verfassung registriert, Signatur enthält Masthead + Rot-Index", () => {
@@ -41,6 +42,22 @@ describe("Pack atelier", () => {
     expect(html).not.toContain(".pb-at-meta span:last-child{display:none}");
     expect(html).toContain("@media(prefers-reduced-motion:reduce)");
     expect(html).toContain(".pb-at-gallery figure:hover img");
+    expect(ATELIER_CSS).toContain("animation:none!important");
+  });
+
+  test("Seitenwechsel-Reveal und sticky Editorial Index bleiben pack-spezifisch", () => {
+    expect(ATELIER_CSS).toContain("@keyframes pb-at-page-turn");
+    expect(ATELIER_CSS).toContain("@keyframes pb-at-folio-in");
+    expect(ATELIER_CSS).toContain("clip-path:inset(0 100% 0 0)");
+    expect(ATELIER_CSS).toContain(
+      ".pb-at-index-section .pb-at-section-head{position:sticky"
+    );
+  });
+
+  test("MobileNav übernimmt am Tablet-Breakpoint und Hover ist pointer-spezifisch", () => {
+    expect(ATELIER_CSS).toContain("@media(max-width:840px)");
+    expect(ATELIER_CSS).toContain(".pb-at-nav-links{display:none}");
+    expect(ATELIER_CSS).toContain("@media(hover:hover) and (pointer:fine)");
   });
 
   test("genau eine h1 — Masthead ist kein h1, die Hero-Headline ist die h1", () => {

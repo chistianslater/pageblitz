@@ -42,8 +42,26 @@ describe("Pack schimmer", () => {
   test("Lichtblenden-/Fokus-Motion ist reduced-motion-kompatibel", () => {
     expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-focus-in");
     expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-crop-in");
+    expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-scan");
     expect(SCHIMMER_CSS).toContain("clip-path:inset");
     expect(SCHIMMER_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(SCHIMMER_CSS).toContain("animation:none!important");
+  });
+
+  test("Protocol-Index ist sticky und Tablet-Crops bleiben begrenzt", () => {
+    expect(SCHIMMER_CSS).toContain(
+      ".pb-sc-services .pb-sc-section-head{position:sticky"
+    );
+    expect(SCHIMMER_CSS).toContain(
+      "@media(max-width:1100px) and (min-width:841px)"
+    );
+    expect(SCHIMMER_CSS).toContain("height:min(54vw,560px)");
+  });
+
+  test("MobileNav übernimmt bei 840px und Hover bleibt pointer-spezifisch", () => {
+    expect(SCHIMMER_CSS).toContain("@media(max-width:840px)");
+    expect(SCHIMMER_CSS).toContain(".pb-sc-nav-links{display:none}");
+    expect(SCHIMMER_CSS).toContain("@media(hover:hover) and (pointer:fine)");
   });
 
   test("genau eine h1", () => {

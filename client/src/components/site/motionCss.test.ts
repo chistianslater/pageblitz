@@ -7,10 +7,10 @@ describe("pack-spezifische Motion-Grundlage", () => {
       "--pb-hero-dur",
       "--pb-hero-y",
       "--pb-hero-scale",
-      "--pb-reveal-x",
-      "--pb-reveal-y",
-      "--pb-reveal-scale",
-      "--pb-reveal-blur",
+      "--pb-enter-x",
+      "--pb-enter-y",
+      "--pb-enter-scale",
+      "--pb-enter-blur",
     ]) {
       expect(MOTION_CSS).toContain(token);
     }

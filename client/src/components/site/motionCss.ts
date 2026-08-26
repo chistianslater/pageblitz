@@ -4,7 +4,7 @@
  * animieren.
  *
  * Der gemeinsame Default bleibt „dezent-professionell", ist seit
- * Design-System 3.0 aber über `--pb-reveal-*`/`--pb-hero-*` pro Pack
+ * Design-System 3.0 aber über `--pb-enter-*`/`--pb-hero-*` pro Pack
  * modulierbar. So teilen sich die Richtungen robuste Infrastruktur, ohne
  * dieselbe wahrgenommene Bewegungssprache zu haben:
  * - Default: Sektionen faden/sliden 24px in 600ms ein.
@@ -28,7 +28,7 @@
  * auf echten Zeigegeräten (`hover: hover`).
  */
 export const MOTION_CSS = `
-.pb-site{--pb-ease-out:cubic-bezier(0.23,1,0.32,1);--pb-dur-fast:.18s;--pb-dur-reveal:.6s;--pb-hero-dur:.45s;--pb-hero-y:14px;--pb-hero-scale:1;--pb-reveal-x:0px;--pb-reveal-y:24px;--pb-reveal-scale:1;--pb-reveal-blur:0px}
+.pb-site{--pb-ease-out:cubic-bezier(0.23,1,0.32,1);--pb-dur-fast:.18s;--pb-dur-enter:.6s;--pb-hero-dur:.45s;--pb-hero-y:14px;--pb-hero-scale:1;--pb-enter-x:0px;--pb-enter-y:24px;--pb-enter-scale:1;--pb-enter-blur:0px}
 .pb-site :is(section,header)[id]{scroll-margin-top:clamp(76px,10vw,132px)}
 @keyframes pb-hero-in{from{opacity:0;transform:translate3d(0,var(--pb-hero-y),0) scale(var(--pb-hero-scale))}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){
@@ -36,7 +36,7 @@ html{scroll-behavior:smooth}
 .pb-site h1{animation:pb-hero-in var(--pb-hero-dur) var(--pb-ease-out) both}
 .pb-site a[class*="-cta"]:active,.pb-site a[class*="-btn"]:active,.pb-site button[class*="-btn"]:active{transform:scale(.98)}
 }
-html.pb-io-on .pb-site section{opacity:0;transform:translate3d(var(--pb-reveal-x),var(--pb-reveal-y),0) scale(var(--pb-reveal-scale));filter:blur(var(--pb-reveal-blur));transition:opacity var(--pb-dur-reveal) var(--pb-ease-out),transform var(--pb-dur-reveal) var(--pb-ease-out),filter var(--pb-dur-reveal) var(--pb-ease-out)}
+html.pb-io-on .pb-site section{opacity:0;transform:translate3d(var(--pb-enter-x),var(--pb-enter-y),0) scale(var(--pb-enter-scale));filter:blur(var(--pb-enter-blur));transition:opacity var(--pb-dur-enter) var(--pb-ease-out),transform var(--pb-dur-enter) var(--pb-ease-out),filter var(--pb-dur-enter) var(--pb-ease-out)}
 html.pb-io-on .pb-site section.pb-in{opacity:1;transform:none;filter:none}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
 .pb-site a[class*="-cta"],.pb-site a[class*="-btn"]{transition:transform var(--pb-dur-fast) var(--pb-ease-out),color .15s ease,background-color .15s ease,border-color .15s ease}

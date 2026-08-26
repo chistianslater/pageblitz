@@ -15,6 +15,8 @@ describe("Site Enhancer Lightbox", () => {
     expect(SITE_ENHANCER_JS).toContain("Math.abs(dx)>50");
     expect(SITE_ENHANCER_JS).toContain('e.key==="ArrowRight"');
     expect(SITE_ENHANCER_JS).toContain('e.key==="Tab"');
+    expect(SITE_ENHANCER_JS).toContain('e.key==="Enter"||e.key===" "');
+    expect(SITE_ENHANCER_JS).toContain('setAttribute("role","button")');
   });
 
   test("bleibt valides Inline-JavaScript", () => {

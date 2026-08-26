@@ -42,8 +42,20 @@ describe("Pack gusto", () => {
 
   test("Crop-/Reveal-Motion ist transformbasiert und reduced-motion-kompatibel", () => {
     expect(GUSTO_CSS).toContain("@keyframes pb-gu-crop");
+    expect(GUSTO_CSS).toContain("32s cubic-bezier");
     expect(GUSTO_CSS).toContain("transform:scale");
+    expect(GUSTO_CSS).toContain("@keyframes pb-gu-menu-line");
+    expect(GUSTO_CSS).toContain("clip-path:inset");
     expect(GUSTO_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(GUSTO_CSS).toContain("animation:none!important");
+  });
+
+  test("mobile Quick Actions sind bottom-safe sticky und Navigation schließt bei 840px", () => {
+    expect(GUSTO_CSS).toContain("@media(max-width:840px)");
+    expect(GUSTO_CSS).toContain(".pb-gu-quick{position:sticky;bottom:0");
+    expect(GUSTO_CSS).toContain("env(safe-area-inset-bottom)");
+    expect(GUSTO_CSS).toContain(".pb-gu-nav-links{display:none}");
+    expect(GUSTO_CSS).toContain("@media(hover:hover) and (pointer:fine)");
   });
 
   test("Menü-Sektion rendert Kategorienamen und Preise aus der Fixture", () => {

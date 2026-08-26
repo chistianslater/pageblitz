@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
 import "../index"; // registriert alle Pack-Module
 import { SiteRenderer } from "../../SiteRenderer";
+import { WERKBANK_CSS } from "./css";
 
 const data: WebsiteDataV2 = {
   version: 2,
@@ -58,9 +59,13 @@ describe("Pack werkbank", () => {
       expect(html).toContain(`id="${id}"`);
     }
   });
-  test("Signatur-Elemente vorhanden (Rail + Marquee)", () => {
+  test("Signatur-Elemente vorhanden (Rail + nahtlos gedoppelter Marquee-Track)", () => {
     expect(html).toContain("pb-wb-rail");
     expect(html).toContain("pb-wb-marquee");
+    expect(html.match(/class="pb-wb-marquee-group"/g)).toHaveLength(2);
+    expect(WERKBANK_CSS).toContain(".pb-wb-marquee-track");
+    expect(WERKBANK_CSS).toContain("@keyframes pb-wb-marquee");
+    expect(WERKBANK_CSS).toContain("transform:translateX(-50%)");
   });
   test("Tactile-Industrial-DOM bildet Arbeitsfolge, Material und Werkstücke", () => {
     expect(html).toContain("pb-wb-process-list");
@@ -80,13 +85,26 @@ describe("Pack werkbank", () => {
     expect(html).not.toContain(".pb-wb-photo{display:none}");
     expect(html).toContain(".pb-wb-gallery{grid-template-columns:1fr");
     expect(html).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(WERKBANK_CSS).toContain("animation:none!important");
     expect(html).toContain(".pb-wb-gallery figure:hover img{transform:none");
   });
-  test("Leistungsheadline bleibt in ihrer Spalte und stapelt auf Tablet", () => {
+  test("Process-Heading ist desktop-sticky und MobileNav übernimmt inklusive 768px", () => {
     expect(html).toContain(
       ".pb-wb-process .pb-wb-section-head h2{font-size:clamp(2.4rem,3.6vw,4.6rem)"
     );
-    expect(html).toContain("@media(max-width:960px) and (min-width:721px)");
+    expect(WERKBANK_CSS).toContain(
+      ".pb-wb-process .pb-wb-section-head{position:sticky"
+    );
+    expect(WERKBANK_CSS).toContain(
+      "@media(max-width:960px) and (min-width:841px)"
+    );
+    expect(WERKBANK_CSS).toContain("@media(max-width:840px)");
+    expect(WERKBANK_CSS).toContain(".pb-wb-nav-links{display:none}");
+  });
+  test("technische Indizes und Messlinien setzen sich gestaffelt", () => {
+    expect(WERKBANK_CSS).toContain("@keyframes pb-wb-index-set");
+    expect(WERKBANK_CSS).toContain("@keyframes pb-wb-gauge");
+    expect(WERKBANK_CSS).toContain("animation-delay:.2s");
   });
   test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
     const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/);
