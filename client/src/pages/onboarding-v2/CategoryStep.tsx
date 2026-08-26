@@ -3,6 +3,8 @@ import { filterCategorySuggestions } from "./categoryLogic";
 
 interface CategoryStepProps {
   businessName: string;
+  /** Von Google/GMB erkannte Kategorie — wird immer vor Generierung bestätigt. */
+  initialCategory?: string;
   /** Trimmt der Aufrufer nicht — die Komponente übergibt bereits getrimmt. */
   onSubmit: (category: string) => void;
   /** setCategory-Mutation läuft — Button sperren, Doppel-Submit vermeiden. */
@@ -19,11 +21,12 @@ interface CategoryStepProps {
  */
 export function CategoryStep({
   businessName,
+  initialCategory = "",
   onSubmit,
   pending,
   error,
 }: CategoryStepProps) {
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState(initialCategory);
   const [open, setOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
   const suggestions = open ? filterCategorySuggestions(value) : [];
@@ -79,8 +82,19 @@ export function CategoryStep({
         <p className="pb-studio-kicker">Bevor es losgeht</p>
         <h1 className="pb-studio-title">Was macht dein Betrieb?</h1>
         <p className="pb-studio-cat-hint">
-          Für {businessName} konnten wir die Branche nicht sicher erkennen.
-          Wähle sie aus oder tippe sie frei ein — daraus entsteht deine Website.
+          {initialCategory ? (
+            <>
+              Wir haben <strong>{initialCategory}</strong> erkannt. Passt das zu{" "}
+              {businessName}? Bestätige die Branche oder korrigiere sie — erst
+              danach entsteht deine Website.
+            </>
+          ) : (
+            <>
+              Für {businessName} konnten wir die Branche nicht sicher erkennen.
+              Wähle sie aus oder tippe sie frei ein — daraus entsteht deine
+              Website.
+            </>
+          )}
         </p>
         <div className="pb-studio-cat-field" onBlur={onFieldBlur}>
           <label htmlFor="pb-cat-input">Branche</label>
@@ -144,7 +158,11 @@ export function CategoryStep({
           onClick={submit}
           disabled={!canSubmit}
         >
-          {pending ? "Wird gespeichert …" : "Weiter"}
+          {pending
+            ? "Wird gespeichert …"
+            : initialCategory
+              ? "Branche bestätigen & Website erstellen"
+              : "Weiter"}
         </button>
       </div>
     </section>

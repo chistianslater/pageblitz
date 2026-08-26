@@ -46,6 +46,14 @@ describe("CategoryStep", () => {
     expect(html).toContain("Wird gespeichert …");
   });
 
+  test("erkannte Branche wird vorbefüllt und muss bestätigt werden", () => {
+    const html = render({ initialCategory: "IT-Dienstleister" });
+    expect(html).toContain('value="IT-Dienstleister"');
+    expect(html).toContain("Wir haben");
+    expect(html).toContain("Branche bestätigen &amp; Website erstellen");
+    expect(html).not.toMatch(/<button[^>]*disabled[^>]*>Branche best/);
+  });
+
   test("error → role=alert mit deutscher Meldung", () => {
     const html = render({ error: "Bitte gib an, was dein Betrieb macht." });
     expect(html).toContain('role="alert"');

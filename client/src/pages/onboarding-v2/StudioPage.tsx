@@ -168,6 +168,7 @@ export default function StudioPage({ token }: { token: string }) {
       <div className="pb-studio">
         <CategoryStep
           businessName={state.businessName}
+          initialCategory={state.category}
           onSubmit={studio.submitCategory}
           pending={studio.categoryPending}
           error={studio.categoryError}

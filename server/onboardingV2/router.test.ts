@@ -367,7 +367,7 @@ describe("onboardingV2 — Kategorie-Rückfrage (Plan B7 Task 5)", () => {
         .onboardingV2.getState({ token: "tok" });
       expect(s2.needsCategory).toBe(true);
     });
-    test("kein Dokument, aber Kategorie vorhanden → false", async () => {
+    test("kein Dokument, erkannte Kategorie vorhanden → true (Bestätigung vor Generierung)", async () => {
       seedNeedsCategory();
       mockedDb.getBusinessById.mockResolvedValue({
         id: 7,
@@ -377,7 +377,7 @@ describe("onboardingV2 — Kategorie-Rückfrage (Plan B7 Task 5)", () => {
       const s = await appRouter
         .createCaller(ctx())
         .onboardingV2.getState({ token: "tok" });
-      expect(s.needsCategory).toBe(false);
+      expect(s.needsCategory).toBe(true);
     });
     test("v2-Dokument vorhanden → false, auch bei leerer Kategorie (nach der Generierung ist die Frage sinnlos)", async () => {
       mockedDb.getBusinessById.mockResolvedValue({

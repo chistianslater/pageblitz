@@ -97,6 +97,7 @@ export function GenerationScreen({
   retrying = false,
 }: GenerationScreenProps) {
   const phase = PHASES[phaseIndexFor(progress)];
+  const textPhase = progress >= 55 && progress < 90;
   const [elapsedMs, setElapsedMs] = React.useState(0);
   React.useEffect(() => {
     if (status === "failed") return;
@@ -238,6 +239,24 @@ export function GenerationScreen({
                   onLoad={() => setFrameLoaded(true)}
                 />
               ) : null}
+              {textPhase && (
+                <div className="pb-gen-writing" role="status">
+                  <div className="pb-gen-writing-head">
+                    <span className="pb-gen-writing-pulse" aria-hidden="true" />
+                    <strong>Deine Texte entstehen</strong>
+                  </div>
+                  <div className="pb-gen-writing-lines" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <div className="pb-gen-writing-tags" aria-hidden="true">
+                    <span>Überschrift</span>
+                    <span>Leistungen</span>
+                    <span>Über uns</span>
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}

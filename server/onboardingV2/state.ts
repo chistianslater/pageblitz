@@ -260,7 +260,12 @@ export async function buildState(
           error: job.error ?? null,
         }
       : null,
-    needsCategory: !doc && !hasLegacyDoc && !(business?.category ?? "").trim(),
+    // Jede automatisch erkannte Branche wird VOR der Erstgenerierung vom
+    // Nutzer bestätigt. Vorher übersprangen wir den Schritt bei jedem
+    // nicht-leeren GMB-Wert — ein falsches „IT"-Label wählte dadurch sofort
+    // eine unpassende Designrichtung. Während der Job läuft hat der
+    // GenerationScreen Vorrang; mit finalem Doc verschwindet die Rückfrage.
+    needsCategory: !doc && !hasLegacyDoc,
     checklist,
     checkoutReady: isCheckoutReady(checklist, !!website.customerEmail),
     customerEmail: website.customerEmail ?? null,

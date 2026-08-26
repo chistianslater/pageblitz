@@ -33,6 +33,14 @@ describe("GenerationScreen", () => {
   test("Phase Texte ab Fortschritt 55", () => {
     const html = render({ progress: 60 });
     expect(html).toContain("Texte");
+    expect(html).toContain("Deine Texte entstehen");
+    expect(html).toContain("pb-gen-writing-lines");
+    expect(html).toContain("Überschrift");
+  });
+
+  test("Schreibanimation erscheint nur in der Textphase", () => {
+    expect(render({ progress: 30 })).not.toContain("pb-gen-writing");
+    expect(render({ progress: 90 })).not.toContain("pb-gen-writing");
   });
 
   test("ohne Zwischenstand: Pack-Skeleton sichtbar, kein Vorschau-iframe (Zeitmaschine, Task 4)", () => {
