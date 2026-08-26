@@ -16,8 +16,8 @@ const PANEL_META: Record<
   { label: string; hint: string; icon: ReactNode }
 > = {
   style: {
-    label: "Stil",
-    hint: "Look & Farben wechseln",
+    label: "Designrichtung",
+    hint: "Aufbau, Farben & Schriften",
     icon: <Palette className="w-4 h-4" />,
   },
   photos: {
@@ -80,7 +80,8 @@ export function StudioCard({ previewToken }: StudioCardProps) {
         </a>
       </div>
       <p className="text-slate-400 text-xs mb-4">
-        Stil, Texte, Fotos und Angebot bearbeitest du direkt im Studio — die
+        Designrichtung, Texte, Fotos und Angebot bearbeitest du direkt im
+        Studio — die
         Änderungen erscheinen sofort in der Vorschau.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

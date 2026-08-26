@@ -11,9 +11,9 @@
  */
 
 // Reihenfolge entspricht den Fortschrittsstufen des Jobs (runJob.ts):
-// 0–24 Stil, 25–54 Bilder, 55–89 Texte (LLM, längster Schritt), 90+ Vorschau.
+// 0–24 Designrichtung, 25–54 Bilder, 55–89 Texte (LLM), 90+ Vorschau.
 export const PHASES = [
-  "Stil wird gewählt",
+  "Designrichtung wird bestimmt",
   "Bilder werden gesetzt",
   "Texte entstehen",
   "Vorschau wird gebaut",

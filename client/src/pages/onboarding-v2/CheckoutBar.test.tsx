@@ -91,7 +91,7 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
     checklist: [
       {
         id: "style",
-        title: "Stil",
+        title: "Designrichtung",
         hint: "",
         status: "done",
         required: false,

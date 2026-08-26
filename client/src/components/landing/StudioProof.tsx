@@ -38,7 +38,11 @@ function DiagramOverview() {
 
 function DiagramStyle() {
   return (
-    <div className="lps-sketch" role="img" aria-label="Schema der Stil-Auswahl: drei Karten, die mittlere ist ausgewählt">
+    <div
+      className="lps-sketch"
+      role="img"
+      aria-label="Schema der Designrichtungs-Auswahl: drei Karten, die mittlere ist ausgewählt"
+    >
       <div className="lps-styles">
         {[0, 1, 2].map(i => (
           <div key={i} className="lps-style-card" data-active={i === 1 || undefined}>

@@ -40,7 +40,7 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
           height={500}
           loading="lazy"
           decoding="async"
-          alt={`Vorschau Style Pack ${name}`}
+          alt={`Vorschau Designrichtung ${name}`}
           className="block aspect-[16/10] w-full object-cover object-top transition-transform duration-700 [transition-timing-function:var(--lp-ease)] group-hover:scale-[1.02]"
         />
       </button>
@@ -265,7 +265,7 @@ export function PackShowcase() {
               type="button"
               onClick={() => scrollByPage(-1)}
               disabled={!canScrollPrev}
-              aria-label="Vorherige Stile"
+              aria-label="Vorherige Designrichtungen"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -274,7 +274,7 @@ export function PackShowcase() {
               type="button"
               onClick={() => scrollByPage(1)}
               disabled={!canScrollNext}
-              aria-label="Weitere Stile"
+              aria-label="Weitere Designrichtungen"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4" aria-hidden="true" />

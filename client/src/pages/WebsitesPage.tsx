@@ -602,7 +602,7 @@ function AdminWebsitesTab({
                   </TableHead>
                   <TableHead>Unternehmen</TableHead>
                   <TableHead>Branche</TableHead>
-                  <TableHead>Pack</TableHead>
+                  <TableHead>Designrichtung</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Erstellt</TableHead>
                   <TableHead className="text-right">Aktionen</TableHead>
@@ -906,7 +906,7 @@ function ExternalWebsitesTab({
                   </TableHead>
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
-                  <TableHead>Pack</TableHead>
+                  <TableHead>Designrichtung</TableHead>
                   <TableHead>Funnel-Status</TableHead>
                   <TableHead>Website-Status</TableHead>
                   <TableHead>Erstellt</TableHead>

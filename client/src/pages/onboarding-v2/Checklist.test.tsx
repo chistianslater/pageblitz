@@ -14,7 +14,9 @@ describe("Checklist", () => {
       <Checklist items={items} activeId="photos" onSelect={() => {}} />
     );
     expect(html.match(/class="[^"]*pb-studio-check-item/g)).toHaveLength(6);
-    expect(html.indexOf("Stil")).toBeLessThan(html.indexOf("Rechtliches"));
+    expect(html.indexOf("Designrichtung")).toBeLessThan(
+      html.indexOf("Rechtliches")
+    );
     expect(html).toContain('data-status="done"');
     expect(html).toContain('aria-current="step"');
     expect(html).toContain("Pflicht");
