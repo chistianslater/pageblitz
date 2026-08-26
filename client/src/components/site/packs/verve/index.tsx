@@ -378,7 +378,7 @@ const VervePage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-vv-hero">
@@ -426,6 +426,14 @@ const VervePage: React.FC<{
             )}
           </div>
         </section>
+      )}
+      {hero?.ctaText && (
+        <aside className="pb-vv-trial-sticky" aria-label="Probetraining">
+          <span>Bereit für Bewegung?</span>
+          <a href={hero.ctaHref ?? "#kontakt"}>
+            {hero.ctaText} <span aria-hidden="true">↗</span>
+          </a>
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")

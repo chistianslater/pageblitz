@@ -63,7 +63,21 @@ export const ZUNFT_CSS = `
 .pb-zf-footer{padding:32px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-zf-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-zf-footer a:hover,.pb-zf-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-zf-nav{padding:14px 18px}.pb-zf-nav-links{display:none}.pb-zf-contact{grid-template-columns:1fr}}
+.pb-zf-order-sticky{position:sticky;bottom:14px;z-index:30;display:flex;align-items:center;gap:14px;width:max-content;max-width:calc(100% - 32px);margin:0 auto 16px;padding:9px 16px;background:var(--pb-canvas);border:1px solid var(--pb-accent-2);box-shadow:0 9px 26px rgba(45,30,20,.13);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.pb-zf-order-sticky>span{color:var(--pb-accent-2)}
+.pb-zf-order-sticky a{border-bottom:1px solid var(--pb-accent)}
+@media(prefers-reduced-motion:no-preference){
+  .pb-zf-stamp{animation:pb-zf-seal .7s cubic-bezier(.2,.8,.25,1) both}
+  .pb-zf-rule2{animation:pb-zf-origin .8s .1s ease-out both}
+  .pb-zf-tafel-item{animation:pb-zf-row .4s ease-out both}
+  .pb-zf-tafel-item:nth-child(2){animation-delay:.06s}.pb-zf-tafel-item:nth-child(3){animation-delay:.12s}.pb-zf-tafel-item:nth-child(4){animation-delay:.18s}
+}
+@keyframes pb-zf-seal{from{transform:rotate(-24deg) scale(.7);opacity:0}to{transform:rotate(12deg) scale(1);opacity:.85}}
+@keyframes pb-zf-origin{from{transform:scaleX(0);opacity:0}to{transform:scaleX(1);opacity:1}}
+@keyframes pb-zf-row{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+@media(pointer:fine){.pb-zf-order-sticky a:hover{color:var(--pb-accent)}}
+@media(prefers-reduced-motion:reduce){.pb-zunft *,.pb-zunft *::before,.pb-zunft *::after{animation:none!important;transition:none!important}}
+@media(max-width:840px){.pb-zf-nav{padding:14px 18px}.pb-zf-nav-links{display:none}.pb-zf-contact{grid-template-columns:1fr}}
 .pb-zf-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-zf-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-zf-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

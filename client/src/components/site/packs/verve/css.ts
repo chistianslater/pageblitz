@@ -64,7 +64,21 @@ export const VERVE_CSS = `
 .pb-vv-footer{padding:32px 28px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line)}
 .pb-vv-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-vv-footer a:hover,.pb-vv-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-vv-nav-links{display:none}}
+.pb-vv-trial-sticky{position:sticky;bottom:14px;z-index:30;display:flex;align-items:center;gap:16px;width:max-content;max-width:calc(100% - 32px);margin:0 16px 16px auto;padding:8px 8px 8px 15px;background:var(--pb-ink);border:1px solid var(--pb-accent);box-shadow:8px 8px 0 var(--pb-accent);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.pb-verve .pb-vv-trial-sticky a{padding:10px 14px;background:var(--pb-accent);color:var(--pb-accent-contrast);font-family:var(--pb-font-display)}
+@media(prefers-reduced-motion:no-preference){
+  .pb-vv-hero h1>span:first-child{animation:pb-vv-snap .38s cubic-bezier(.2,.9,.3,1) both}
+  .pb-vv-block{animation:pb-vv-block .42s .08s cubic-bezier(.2,.9,.3,1) both}
+  .pb-vv-tape{animation:pb-vv-tape .45s .18s cubic-bezier(.2,.9,.3,1) both}
+  .pb-vv-panel{animation:pb-vv-panel .5s ease-out both}
+}
+@keyframes pb-vv-snap{from{transform:translateX(-28px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pb-vv-block{from{transform:translateX(34px) skewX(-6deg);clip-path:inset(0 100% 0 0)}to{transform:skewX(-6deg);clip-path:inset(0)}}
+@keyframes pb-vv-tape{from{transform:translateX(48px) rotate(-8deg);opacity:0}to{transform:rotate(-8deg);opacity:1}}
+@keyframes pb-vv-panel{from{clip-path:inset(0 0 100% 0);opacity:.4}to{clip-path:inset(0);opacity:1}}
+@media(pointer:fine){.pb-verve .pb-vv-trial-sticky a:hover{transform:translate(-2px,-2px)}}
+@media(prefers-reduced-motion:reduce){.pb-verve *,.pb-verve *::before,.pb-verve *::after{animation:none!important;transition:none!important}}
+@media(max-width:840px){.pb-vv-nav-links{display:none}}
 @media(max-width:720px){.pb-vv-ghost{display:none}.pb-vv-copy{max-width:100%;order:1}.pb-vv-stats{margin-top:24px}.pb-vv-hero{display:flex;flex-direction:column;padding:28px 20px 36px}.pb-vv-panel{position:relative;right:auto;top:auto;order:2;width:calc(100% + 28px);height:auto;aspect-ratio:16/10;margin:36px -8px 0 0;transform:skewX(-3deg);display:block}.pb-vv-tape{position:relative;right:auto;bottom:auto;order:3;align-self:flex-end;margin:-18px -10px 0 0;transform:rotate(-4deg);font-size:11px;padding:7px 20px;display:block}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
 .pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

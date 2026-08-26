@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { VERVE_CSS } from "./css";
 
 const NOW = new Date("2026-08-21T10:00:00");
 
@@ -24,6 +25,16 @@ describe("Pack verve", () => {
     expect(html).toContain("pb-vv-ghost");
     expect(html).toContain("pb-vv-tape");
     expect(html).toContain("pb-vv-panel");
+  });
+
+  test("kurze Typo-/Tape-Motion und sticky Probetraining erfüllen den Vertrag", () => {
+    expect(html).toContain("pb-vv-trial-sticky");
+    expect(VERVE_CSS).toContain("@keyframes pb-vv-snap");
+    expect(VERVE_CSS).toContain("@keyframes pb-vv-tape");
+    expect(VERVE_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(VERVE_CSS).toContain("@media(pointer:fine)");
+    expect(VERVE_CSS).toContain("@media(max-width:840px)");
+    expect(VERVE_CSS).not.toMatch(/pb-vv-(?:snap|tape)[^}]*infinite/);
   });
 
   test("Services-Sektion rendert Programme und Preise aus der Fixture", () => {

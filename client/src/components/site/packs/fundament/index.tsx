@@ -379,7 +379,7 @@ const FundamentPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-fd-hero">
@@ -414,6 +414,20 @@ const FundamentPage: React.FC<{
             />
           )}
         </section>
+      )}
+      {(data.google || sections.some(s => s.type === "contact")) && (
+        <aside
+          className="pb-fd-contact-sticky"
+          aria-label="Bewertung und Kontakt"
+        >
+          {data.google && (
+            <span>
+              <b>★ {formatRating(data.google.rating)}</b>
+              {data.google.reviewCount} Bewertungen
+            </span>
+          )}
+          <a href="#kontakt">Kontakt aufnehmen →</a>
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")

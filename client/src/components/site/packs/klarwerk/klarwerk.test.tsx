@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { KLARWERK_CSS } from "./css";
 
 describe("Pack klarwerk", () => {
   test("Verfassung registriert, Signatur enthält Bento + Terminal-Zelle", () => {
@@ -40,6 +41,16 @@ describe("Pack klarwerk", () => {
 
   test("Status-Zelle zeigt Betriebsbereitschaft", () => {
     expect(html).toContain("Alle Systeme betriebsbereit");
+  });
+
+  test("Status-/Cursor-Motion und sticky Utility erfüllen den Responsive-Vertrag", () => {
+    expect(html).toContain("pb-kw-cursor");
+    expect(html).toContain("pb-kw-utility-sticky");
+    expect(KLARWERK_CSS).toContain("@keyframes pb-kw-check");
+    expect(KLARWERK_CSS).toContain("@keyframes pb-kw-cursor");
+    expect(KLARWERK_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(KLARWERK_CSS).toContain("@media(pointer:fine)");
+    expect(KLARWERK_CSS).toContain("@media(max-width:840px)");
   });
 
   test("ohne google-Daten fehlt die Bewertungs-Kennzahl, Terminal bleibt bestehen (fehlende Zellen weggelassen)", () => {

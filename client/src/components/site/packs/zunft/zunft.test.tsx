@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { ZUNFT_CSS } from "./css";
 
 const NOW = new Date("2026-08-21T10:00:00");
 
@@ -24,6 +25,16 @@ describe("Pack zunft", () => {
     expect(html).toContain("pb-zf-borde");
     expect(html).toContain("pb-zf-stamp");
     expect(html).toContain("pb-zf-tafel");
+  });
+
+  test("Siegel-/Herkunftsmotion, Preisrhythmus und sticky Aktion erfüllen den Vertrag", () => {
+    expect(html).toContain("pb-zf-order-sticky");
+    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-seal");
+    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-origin");
+    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-row");
+    expect(ZUNFT_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(ZUNFT_CSS).toContain("@media(pointer:fine)");
+    expect(ZUNFT_CSS).toContain("@media(max-width:840px)");
   });
 
   test("Preistafel-Sektion rendert Kategorienamen und Preise aus der Fixture", () => {

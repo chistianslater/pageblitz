@@ -353,6 +353,12 @@ const ZunftPage: React.FC<{
   const previewItems = priceSection?.categories[0]?.items.slice(0, 2) ?? [];
   const year = extractYear(data.footerNote);
   const yearNow = now.getFullYear();
+  const contact = sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const routeQuery = contact
+    ? [contact.street, contact.zip, contact.city].filter(Boolean).join(" ")
+    : "";
 
   return (
     <div className="pb-zunft">
@@ -410,6 +416,26 @@ const ZunftPage: React.FC<{
             </a>
           )}
         </section>
+      )}
+      {(hero?.ctaText || routeQuery) && (
+        <aside
+          className="pb-zf-order-sticky"
+          aria-label="Vorbestellen und Route"
+        >
+          <span aria-hidden="true">◆</span>
+          {hero?.ctaText && (
+            <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
+          )}
+          {routeQuery && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(routeQuery)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Route ↗
+            </a>
+          )}
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")

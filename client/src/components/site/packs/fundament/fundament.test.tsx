@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { FUNDAMENT_CSS } from "./css";
 
 describe("Pack fundament", () => {
   test("Verfassung registriert, Signatur enthält Katasterraster + Grenz-Overlap", () => {
@@ -24,6 +25,16 @@ describe("Pack fundament", () => {
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');
+  });
+  test("Grundriss-Motion, sticky Kontakt und Clipping-Vertrag für 768/390", () => {
+    expect(html).toContain("pb-fd-contact-sticky");
+    expect(FUNDAMENT_CSS).toContain("@keyframes pb-fd-plan");
+    expect(FUNDAMENT_CSS).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(FUNDAMENT_CSS).toContain("@media(pointer:fine)");
+    expect(FUNDAMENT_CSS).toContain("@media(max-width:840px)");
+    expect(FUNDAMENT_CSS).toContain("@media(max-width:390px)");
+    expect(FUNDAMENT_CSS).toContain("width:calc(100% - 64px)");
+    expect(FUNDAMENT_CSS).toContain("box-sizing:border-box");
   });
   test("minimal-Fixture rendert ohne Wurf", () => {
     expect(() =>

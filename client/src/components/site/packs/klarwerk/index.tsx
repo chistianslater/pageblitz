@@ -426,6 +426,7 @@ const KlarwerkPage: React.FC<{
                   <span className="dim">$</span> {f.cmd}
                   <br />
                   <span className="dim">→</span> {f.out}
+                  <span className="pb-kw-cursor" aria-hidden="true" />
                 </div>
               ))}
             </div>
@@ -447,6 +448,16 @@ const KlarwerkPage: React.FC<{
             Alle Systeme betriebsbereit
           </div>
         </div>
+      )}
+      {hero?.ctaText && (
+        <aside className="pb-kw-utility-sticky" aria-label="Schnellzugriff">
+          <span>
+            <i aria-hidden="true">✓</i> Status: bereit
+          </span>
+          <a href={hero.ctaHref ?? "#kontakt"}>
+            {hero.ctaText} <span aria-hidden="true">→</span>
+          </a>
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")

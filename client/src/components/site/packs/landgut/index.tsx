@@ -59,21 +59,31 @@ function renderHeadline(headline: string): React.ReactNode {
   );
 }
 
-/** Service-Titel 3× wiederholt, getrennt durch ◦ — der Saison-Ticker unter dem Hero. */
+/** Zwei identische Gruppen ergeben eine nahtlose, ruhige Saison-Schleife. */
 function buildTicker(
   services: SectionOf<"services"> | undefined
 ): React.ReactNode {
   if (!services || services.items.length === 0) return null;
   const titles = services.items.map(item => item.title);
-  const repeated = [...titles, ...titles, ...titles];
-  return (
-    <div className="pb-lg-ticker">
-      {repeated.map((title, i) => (
-        <React.Fragment key={`${title}-${i}`}>
-          {i > 0 && <em aria-hidden="true">◦</em>}
-          {title}
+  const group = (copy: number) => (
+    <span
+      className="pb-lg-ticker-group"
+      aria-hidden={copy === 1 ? "true" : undefined}
+    >
+      {titles.map((title, i) => (
+        <React.Fragment key={`${title}-${copy}-${i}`}>
+          <span>{title}</span>
+          <em aria-hidden="true">◦</em>
         </React.Fragment>
       ))}
+    </span>
+  );
+  return (
+    <div className="pb-lg-ticker" aria-label={`Saison: ${titles.join(", ")}`}>
+      <div className="pb-lg-ticker-track">
+        {group(0)}
+        {group(1)}
+      </div>
     </div>
   );
 }
@@ -347,6 +357,9 @@ const LandgutPage: React.FC<{
     .filter((v): v is string => Boolean(v))
     .join(" · ");
   const year = now.getFullYear();
+  const routeQuery = contact
+    ? [contact.street, contact.zip, contact.city].filter(Boolean).join(" ")
+    : "";
 
   return (
     <div className="pb-landgut">
@@ -363,7 +376,7 @@ const LandgutPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <>
@@ -410,6 +423,24 @@ const LandgutPage: React.FC<{
               Nav sein — ein Laufband davor wirkt kontextlos. */}
           {buildTicker(services)}
         </>
+      )}
+      {contact && (
+        <aside className="pb-lg-visit-sticky" aria-label="Besuch planen">
+          <span>
+            <b>Besuch</b>
+            {contact.openingHours?.[0]?.hours ?? contact.city}
+          </span>
+          <a href="#kontakt">Details</a>
+          {routeQuery && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(routeQuery)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Route ↗
+            </a>
+          )}
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")
