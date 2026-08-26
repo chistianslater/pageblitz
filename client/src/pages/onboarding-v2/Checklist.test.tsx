@@ -21,4 +21,23 @@ describe("Checklist", () => {
     expect(html).toContain('aria-current="step"');
     expect(html).toContain("Pflicht");
   });
+
+  test("aktivierte Extras erscheinen als eigene anklickbare Unter-Steps", () => {
+    const items = deriveChecklistState(null, {
+      studioProgress: { addonsReviewed: true },
+    });
+    const html = renderToStaticMarkup(
+      <Checklist
+        items={items}
+        activeId={null}
+        onSelect={() => {}}
+        activeAddOns={["aiChat", "booking"]}
+        onSelectAddOn={() => {}}
+      />
+    );
+    expect(html).toContain('aria-label="Aktive Extras"');
+    expect(html).toContain("KI-Chat");
+    expect(html).toContain("Terminbuchung");
+    expect(html.match(/>Aktiv</g)).toHaveLength(2);
+  });
 });

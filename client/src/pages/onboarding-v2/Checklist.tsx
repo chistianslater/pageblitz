@@ -3,14 +3,26 @@ import type {
   ChecklistItem,
   ChecklistItemId,
 } from "@shared/onboardingV2/checklist";
+import {
+  ADDON_NAMES,
+  type AddOnKey,
+} from "@shared/pricing";
 
 interface ChecklistProps {
   items: ChecklistItem[];
   activeId: ChecklistItemId | null;
   onSelect: (id: ChecklistItemId) => void;
+  activeAddOns?: AddOnKey[];
+  onSelectAddOn?: (key: AddOnKey) => void;
 }
 
-export function Checklist({ items, activeId, onSelect }: ChecklistProps) {
+export function Checklist({
+  items,
+  activeId,
+  onSelect,
+  activeAddOns = [],
+  onSelectAddOn,
+}: ChecklistProps) {
   return (
     <ol className="pb-studio-check" aria-label="Checkliste">
       {items.map((item, index) => (
@@ -40,6 +52,22 @@ export function Checklist({ items, activeId, onSelect }: ChecklistProps) {
                   : "Optional"}
             </span>
           </button>
+          {item.id === "addons" && activeAddOns.length > 0 && (
+            <ul className="pb-studio-addon-steps" aria-label="Aktive Extras">
+              {activeAddOns.map(key => (
+                <li key={key}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectAddOn?.(key)}
+                  >
+                    <span aria-hidden="true">↳</span>
+                    {ADDON_NAMES[key]}
+                    <small>Aktiv</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </li>
       ))}
     </ol>

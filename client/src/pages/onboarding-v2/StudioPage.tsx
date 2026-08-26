@@ -3,6 +3,10 @@ import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
+import {
+  BOOKABLE_ADDON_KEYS,
+  type AddOnKey,
+} from "@shared/pricing";
 import { useStudioState } from "./useStudioState";
 import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
@@ -42,6 +46,7 @@ export default function StudioPage({ token }: { token: string }) {
   const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(() =>
     parsePanelParam(window.location.search)
   );
+  const [addonFocus, setAddonFocus] = useState<AddOnKey | null>(null);
   const [previewFocusAnchor, setPreviewFocusAnchor] = useState<string | null>(
     "start"
   );
@@ -49,6 +54,7 @@ export default function StudioPage({ token }: { token: string }) {
   // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
   // Query-Parameter bleiben erhalten (studioUrl.withPanelParam).
   const setActiveId = (id: ChecklistItemId | null) => {
+    if (id !== "addons") setAddonFocus(null);
     setActiveIdState(id);
     const anchorByPanel: Partial<Record<ChecklistItemId, string>> = {
       style: "start",
@@ -413,6 +419,7 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              initialFocusKey={addonFocus}
             />
           ) : wizardActive ? (
             // Wizard-Abschluss („publish"): Fokus liegt auf dem Freischalten,
@@ -454,7 +461,17 @@ export default function StudioPage({ token }: { token: string }) {
               <Checklist
                 items={state.checklist}
                 activeId={activeId}
-                onSelect={setActiveId}
+                onSelect={id => {
+                  if (id === "addons") setAddonFocus(null);
+                  setActiveId(id);
+                }}
+                activeAddOns={BOOKABLE_ADDON_KEYS.filter(
+                  key => state.addOns[key] === true
+                )}
+                onSelectAddOn={key => {
+                  setAddonFocus(key);
+                  setActiveId("addons");
+                }}
               />
               <AiChat
                 token={token}

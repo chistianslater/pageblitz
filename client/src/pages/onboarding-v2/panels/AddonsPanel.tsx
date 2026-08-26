@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Bot,
   CalendarDays,
@@ -153,10 +153,16 @@ interface AddonsListProps {
   value: AddOnFlags;
   onToggle: (k: AddOnKey) => void;
   interval: BillingInterval;
+  focusKey?: AddOnKey | null;
 }
 
 /** Reine Darstellung: Schalter je bindbarem Add-on mit Preis, gesperrte "bald verfügbar"-Zeilen, Gesamtsumme inkl. Basispreis. */
-export function AddonsList({ value, onToggle, interval }: AddonsListProps) {
+export function AddonsList({
+  value,
+  onToggle,
+  interval,
+  focusKey = null,
+}: AddonsListProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(value));
   const activeCount = TOGGLEABLE_KEYS.filter(key => value[key]).length;
   return (
@@ -168,8 +174,10 @@ export function AddonsList({ value, onToggle, interval }: AddonsListProps) {
           const active = value[key] === true;
           return (
             <li
+              id={`pb-addon-${key}`}
               className="pb-studio-addon-card"
               data-active={active || undefined}
+              data-focused={focusKey === key || undefined}
               key={key}
             >
               <div className="pb-studio-addon-card-head">
@@ -238,6 +246,8 @@ interface AddonsPanelProps {
   /** Geführter Modus: nach Prüfung weiter zum Freischalten. */
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
+  /** Klick auf einen aktiven Extra-Step: Karte direkt anspringen. */
+  initialFocusKey?: AddOnKey | null;
 }
 
 export function AddonsPanel({
@@ -250,6 +260,7 @@ export function AddonsPanel({
   onClose,
   onNext,
   onPreviewFocus,
+  initialFocusKey = null,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
@@ -288,6 +299,16 @@ export function AddonsPanel({
   const pagesBusy = updatePages.isPending;
   const teamErrors = validateTeam(team.members);
   const pagesErrors = validatePages(pages);
+
+  useEffect(() => {
+    if (!initialFocusKey) return;
+    const id = window.requestAnimationFrame(() => {
+      document
+        .getElementById(`pb-addon-${initialFocusKey}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [initialFocusKey]);
 
   const handleToggle = (key: AddOnKey) => {
     setValue(prev => ({ ...prev, [key]: !prev[key] }));
@@ -414,7 +435,12 @@ export function AddonsPanel({
         </>
       }
     >
-      <AddonsList value={value} onToggle={handleToggle} interval="yearly" />
+      <AddonsList
+        value={value}
+        onToggle={handleToggle}
+        interval="yearly"
+        focusKey={initialFocusKey}
+      />
       {(quickHeadingSettings.length > 0 ||
         value.aiChat ||
         value.booking) && (

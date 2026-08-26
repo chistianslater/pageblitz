@@ -124,6 +124,37 @@
 .pb-studio-check-item[data-status="done"] .pb-studio-check-flag {
   color: var(--st-accent);
 }
+.pb-studio-addon-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0.5rem 2.9rem;
+}
+.pb-studio-addon-steps button {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.45rem 0;
+  border: 0;
+  border-top: 1px solid var(--st-line);
+  background: transparent;
+  color: var(--st-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+.pb-studio-addon-steps button:hover {
+  color: var(--st-ink);
+}
+.pb-studio-addon-steps small {
+  color: var(--st-accent);
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .pb-studio-device {
   flex: 1;
   min-height: 60dvh;
@@ -1256,6 +1287,20 @@
   background: color-mix(in srgb, var(--st-accent) 6%, var(--st-canvas));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-accent) 30%, transparent);
 }
+.pb-studio-addon-card[data-focused] {
+  animation: pb-addon-focus 1.1s ease-out both;
+}
+@keyframes pb-addon-focus {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--st-accent) 55%, transparent);
+  }
+  45% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--st-accent) 22%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-accent) 30%, transparent);
+  }
+}
 .pb-studio-addon-card-head {
   display: flex;
   align-items: center;
@@ -1409,6 +1454,12 @@
   }
   .pb-studio-addon-settings-head {
     flex-direction: column;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-studio-addon-card[data-focused] {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--st-accent);
   }
 }
 .pb-studio-checkbox {
