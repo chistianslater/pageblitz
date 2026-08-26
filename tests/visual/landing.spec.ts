@@ -216,3 +216,42 @@ test("Landingpage: Tab-Fokusfalle im Modal springt vom letzten zum ersten fokuss
   });
   await expect(lastFocusable).toBeFocused();
 });
+
+test("Landingpage mobil: Burger-Menü öffnet als viewport-festes Dialog-Portal", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await skipCookieBanner(page);
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  const menu = page.getByRole("dialog", { name: "Navigation" });
+  await expect(menu).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Design" })).toBeFocused();
+
+  const box = await menu.boundingBox();
+  expect(box?.y).toBe(68);
+  expect(box?.height).toBe(776);
+
+  await page.getByRole("button", { name: "Menü schließen" }).click();
+  await expect(menu).toHaveCount(0);
+});
+
+test("Landingpage mobil: Sticky-CTA verschwindet vollständig am Schluss-CTA", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await skipCookieBanner(page);
+  await page.goto("/");
+
+  const stickyCta = page.locator(".lp-sticky-cta");
+  await page.locator("#pricing").scrollIntoViewIfNeeded();
+  await expect(stickyCta).toHaveClass(/lp-sticky-cta--on/);
+  await expect(stickyCta).toHaveCSS("visibility", "visible");
+
+  await page.locator("#lp-final-heading").scrollIntoViewIfNeeded();
+  await expect(stickyCta).not.toHaveClass(/lp-sticky-cta--on/);
+  await expect(stickyCta).toHaveCSS("visibility", "hidden");
+  await expect(stickyCta).toHaveCSS("pointer-events", "none");
+});
