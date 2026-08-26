@@ -41,6 +41,22 @@ export const WERKBANK_CSS = `
 .pb-wb-gallery figure{margin:0}
 .pb-wb-gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-left:8px solid var(--pb-accent);display:block}
 .pb-wb-gallery figcaption{margin-top:8px;font-family:var(--pb-font-utility);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
+/* Design-System 2.0: Untersektionen bekommen dieselbe redaktionelle
+   Konsequenz wie der Hero statt generischer Vollbreitenlisten. */
+.pb-wb-section#leistungen{display:grid;grid-template-columns:minmax(170px,.72fr) minmax(0,2fr);column-gap:clamp(28px,5vw,72px);align-items:start}
+.pb-wb-section#leistungen>h2{position:sticky;top:92px;grid-column:1;grid-row:1/span 20;margin:0}
+.pb-wb-section#leistungen>.pb-wb-service{grid-column:2}
+.pb-wb-section#ueber-uns{background:var(--pb-ink);color:var(--pb-canvas);border-top:8px solid var(--pb-accent)}
+.pb-wb-section#ueber-uns h2{color:var(--pb-accent)}
+.pb-wb-section#ueber-uns p{font-size:clamp(1rem,1.5vw,1.25rem);line-height:1.7}
+.pb-wb-section#ueber-uns .pb-wb-about-img{border-left-color:var(--pb-accent)}
+.pb-wb-gallery{grid-template-columns:repeat(12,minmax(0,1fr));gap:clamp(8px,1.4vw,18px);align-items:start}
+.pb-wb-gallery figure:nth-child(4n+1){grid-column:span 7}
+.pb-wb-gallery figure:nth-child(4n+2){grid-column:span 5;margin-top:clamp(24px,6vw,72px)}
+.pb-wb-gallery figure:nth-child(4n+3){grid-column:span 5}
+.pb-wb-gallery figure:nth-child(4n+4){grid-column:span 7;margin-top:clamp(10px,3vw,38px)}
+.pb-wb-gallery figure:nth-child(odd) img{aspect-ratio:4/3}
+.pb-wb-gallery figure:nth-child(even) img{aspect-ratio:3/4}
 .pb-wb-hours-block{max-width:640px;margin-top:22px}
 .pb-wb-hours-block h3{font-family:var(--pb-font-display);text-transform:uppercase;font-size:15px;letter-spacing:.04em;margin:0}
 .pb-wb-hours{width:100%;max-width:640px;border-collapse:collapse;margin-top:12px}
@@ -48,7 +64,25 @@ export const WERKBANK_CSS = `
 .pb-wb-hours tr:last-child td{border-bottom:none}
 .pb-wb-hours td:first-child{font-family:var(--pb-font-utility);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .pb-wb-hours td:last-child{text-align:right;color:var(--pb-muted)}
-@media(max-width:720px){.pb-wb-rail{display:none}.pb-wb-main{margin-left:0}.pb-wb-photo{display:none}.pb-wb-nav-links{display:none}.pb-wb-about{grid-template-columns:1fr;gap:20px}.pb-wb-about-img{order:-1;max-height:55vw}}
+@media(max-width:720px){
+  .pb-wb-rail{position:relative;left:auto;top:auto;bottom:auto;width:100%;height:28px;justify-content:flex-start;padding:0 18px}
+  .pb-wb-rail b{writing-mode:horizontal-tb;transform:none;font-size:9px;letter-spacing:.22em}
+  .pb-wb-main{margin-left:0}
+  .pb-wb-nav-links{display:none}
+  .pb-wb-hero{display:flex;flex-direction:column;padding:32px 18px 42px}
+  .pb-wb-hero h1{font-size:clamp(3rem,16vw,5.4rem);max-width:10ch}
+  .pb-wb-photo{position:relative;right:auto;top:auto;width:calc(100% + 36px);height:auto;aspect-ratio:4/3;margin:32px -18px -42px;clip-path:polygon(10% 0,100% 0,100% 100%,0 100%);border-left:6px solid var(--pb-accent);display:block;order:4}
+  .pb-wb-marquee{transform:rotate(-1deg);margin:0;padding:10px 0;font-size:12px}
+  .pb-wb-section{padding:52px 18px}
+  .pb-wb-section#leistungen{display:block}
+  .pb-wb-section#leistungen>h2{position:static;margin-bottom:24px}
+  .pb-wb-about{grid-template-columns:1fr;gap:24px}
+  .pb-wb-about-img{order:-1;max-height:none}
+  .pb-wb-gallery{grid-template-columns:1fr 1fr}
+  .pb-wb-gallery figure:nth-child(n){grid-column:auto;margin-top:0}
+  .pb-wb-gallery figure:nth-child(n) img{aspect-ratio:4/3}
+  .pb-wb-gallery figure:first-child{grid-column:1/-1}
+}
 .pb-wb-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-wb-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-wb-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

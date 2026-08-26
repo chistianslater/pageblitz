@@ -9,7 +9,7 @@ export const KANZLEI_CSS = `
 .pb-kz-nav-links a:hover,.pb-kz-nav-links a:focus-visible{color:var(--pb-accent)}
 .pb-kz-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-kz-idx{position:absolute;right:32px;top:86px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-accent);text-align:right;line-height:1.9}
-.pb-kz-watermark{position:absolute;right:20px;bottom:-40px;font-family:"Source Serif 4",serif;font-size:200px;color:var(--pb-accent);opacity:.07;line-height:1;pointer-events:none}
+.pb-kz-watermark{position:absolute;right:20px;bottom:-40px;font-family:var(--pb-font-display);font-size:200px;color:var(--pb-accent);opacity:.07;line-height:1;pointer-events:none}
 .pb-kz-eyebrow{font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.1em;color:var(--pb-accent);margin-bottom:14px;text-transform:uppercase}
 .pb-kz-hero{position:relative;padding:64px 32px 48px;overflow:hidden}
 .pb-kz-hero h1{font-family:var(--pb-font-display);font-weight:600;font-size:var(--pb-hero-size);letter-spacing:-.035em;line-height:1.0;max-width:14ch}
@@ -52,8 +52,11 @@ export const KANZLEI_CSS = `
 .pb-kz-hours tr:last-child td{border-bottom:none}
 .pb-kz-hours td:first-child{font-family:var(--pb-font-utility);text-transform:uppercase;letter-spacing:.04em;color:var(--pb-muted)}
 .pb-kz-hours td:last-child{text-align:right}
-.pb-kz-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.pb-kz-gallery img{width:100%;height:200px;object-fit:cover;filter:saturate(.7);border:1px solid var(--pb-line);display:block}
+.pb-kz-gallery{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.pb-kz-gallery img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;filter:saturate(.7);border:1px solid var(--pb-line);display:block}
+.pb-kz-gallery img:nth-child(3n+1){grid-column:span 7}
+.pb-kz-gallery img:nth-child(3n+2){grid-column:span 5;margin-top:48px}
+.pb-kz-gallery img:nth-child(3n+3){grid-column:4/span 6}
 .pb-kz-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px}
 .pb-kz-member img{width:100%;height:180px;object-fit:cover;filter:saturate(.7);border:1px solid var(--pb-line);margin-bottom:10px}
 .pb-kz-member strong{display:block;font-weight:600}
@@ -63,7 +66,7 @@ export const KANZLEI_CSS = `
 .pb-kz-footer{border-top:1px solid var(--pb-ink);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-kz-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-kz-footer a:hover,.pb-kz-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-kz-idx{display:none}.pb-kz-facts{grid-template-columns:1fr}.pb-kz-facts div{padding-right:0}.pb-kz-services-grid{grid-template-columns:1fr}.pb-kz-services-grid h2{margin-bottom:14px}.pb-kz-services-list{padding-left:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav-links{display:none}.pb-kz-about-grid{grid-template-columns:1fr;gap:20px}.pb-kz-about-img{order:-1;max-height:55vw}}
+@media(max-width:720px){.pb-kz-idx{display:block;right:18px;top:18px;font-size:9px}.pb-kz-hero{padding:78px 20px 42px}.pb-kz-facts{grid-template-columns:1fr 1fr}.pb-kz-facts div{padding:14px 10px 0;border-right:1px solid var(--pb-line)}.pb-kz-services-grid{grid-template-columns:1fr}.pb-kz-services-grid h2{margin-bottom:14px}.pb-kz-services-list{padding-left:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav-links{display:none}.pb-kz-about-grid{grid-template-columns:1fr;gap:20px}.pb-kz-about-img{order:-1;max-height:55vw}.pb-kz-gallery{grid-template-columns:1fr 1fr;gap:8px}.pb-kz-gallery img:nth-child(n){grid-column:auto;margin-top:0}.pb-kz-gallery img:first-child{grid-column:1/-1}}
 .pb-kz-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-kz-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-kz-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

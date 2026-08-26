@@ -385,15 +385,17 @@ const VervePage: React.FC<{
           <div className="pb-vv-ghost" aria-hidden="true">
             {ghostText}
           </div>
-          <div
-            className="pb-vv-panel"
-            aria-hidden="true"
-            style={
-              hero.imageUrl
-                ? { backgroundImage: `url(${hero.imageUrl})` }
-                : undefined
-            }
-          />
+          {hero.imageUrl ? (
+            <img
+              className="pb-vv-panel"
+              src={hero.imageUrl}
+              alt=""
+              loading="eager"
+              fetchPriority="high"
+            />
+          ) : (
+            <div className="pb-vv-panel" aria-hidden="true" />
+          )}
           <div className="pb-vv-tape" aria-hidden="true">
             {tapeText}
           </div>

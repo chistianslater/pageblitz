@@ -52,15 +52,41 @@ export const ATELIER_CSS = `
 .pb-at-footer{border-top:3px solid var(--pb-ink);padding:32px 28px;font-size:12px;color:var(--pb-muted);font-family:var(--pb-font-utility)}
 .pb-at-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-at-footer a:hover,.pb-at-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
+/* Design-System 2.0: Broadsheet-Rhythmus statt wiederholter Listen/Grids. */
+.pb-at-section#leistungen{display:grid;grid-template-columns:minmax(180px,4fr) minmax(0,8fr);column-gap:clamp(32px,6vw,88px);align-items:start}
+.pb-at-section#leistungen>h2{position:sticky;top:76px;grid-column:1;grid-row:1/span 20;margin:0;font-size:clamp(2.4rem,5vw,5.5rem);line-height:.92}
+.pb-at-section#leistungen>.pb-at-service{grid-column:2}
+.pb-at-section#leistungen>.pb-at-service .idx{font-size:clamp(1rem,2vw,1.45rem)}
+.pb-at-section#ueber-uns{background:var(--pb-surface)}
+.pb-at-section#ueber-uns>h2{max-width:8ch;font-size:clamp(2.8rem,6vw,6rem);line-height:.9}
+.pb-at-about-grid p{font-size:clamp(1rem,1.5vw,1.25rem);line-height:1.75}
+.pb-at-gallery{grid-template-columns:repeat(12,minmax(0,1fr));gap:3px}
+.pb-at-gallery img:nth-child(6n+1){grid-column:span 8;aspect-ratio:16/10}
+.pb-at-gallery img:nth-child(6n+2){grid-column:span 4;aspect-ratio:3/4}
+.pb-at-gallery img:nth-child(6n+3){grid-column:span 5;aspect-ratio:4/5}
+.pb-at-gallery img:nth-child(6n+4){grid-column:span 7;aspect-ratio:16/10}
+.pb-at-gallery img:nth-child(6n+5){grid-column:span 7;aspect-ratio:16/10}
+.pb-at-gallery img:nth-child(6n+6){grid-column:span 5;aspect-ratio:4/5}
 @media(max-width:720px){.pb-at-nav-links{display:none}}
 @media(max-width:720px){
-  .pb-at-meta{flex-direction:column;gap:6px}
-  .pb-at-meta span:last-child{display:none}
+  .pb-at-masthead-wrap{padding:16px 18px 0}
+  .pb-at-masthead{font-size:clamp(2.7rem,15vw,4.6rem)}
+  .pb-at-meta{flex-wrap:nowrap;gap:24px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+  .pb-at-meta span{flex:0 0 auto}
   .pb-at-cover{grid-template-columns:1fr}
-  .pb-at-img{min-height:220px}
+  .pb-at-img{min-height:65vw;border-right:0}
+  .pb-at-caption{bottom:16px;max-width:85%;font-size:clamp(1.5rem,8vw,2.35rem)}
+  .pb-at-capcol{padding:20px 18px 28px}
+  .pb-at-section{padding:52px 18px}
+  .pb-at-section#leistungen{display:block}
+  .pb-at-section#leistungen>h2{position:static;margin-bottom:28px;font-size:clamp(2.7rem,14vw,4.5rem)}
   .pb-at-contact{grid-template-columns:1fr}
   .pb-at-about-grid{grid-template-columns:1fr;gap:20px}
   .pb-at-about-grid .pb-at-about-img{order:-1;max-height:55vw}
+  .pb-at-section#ueber-uns>h2{font-size:clamp(2.8rem,15vw,4.8rem)}
+  .pb-at-gallery{grid-template-columns:1fr 1fr}
+  .pb-at-gallery img:nth-child(n){grid-column:auto;aspect-ratio:4/3}
+  .pb-at-gallery img:first-child{grid-column:1/-1;aspect-ratio:16/10}
 }
 .pb-at-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-at-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

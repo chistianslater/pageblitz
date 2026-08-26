@@ -48,6 +48,12 @@ describe("Pack werkbank", () => {
     expect(html).toContain("pb-wb-rail");
     expect(html).toContain("pb-wb-marquee");
   });
+  test("Design-System 2.0: Mobile behält Foto/Rail, Untersektionen haben eigene Komposition", () => {
+    expect(html).not.toContain(".pb-wb-photo{display:none}");
+    expect(html).toContain(".pb-wb-section#leistungen{display:grid");
+    expect(html).toContain(".pb-wb-section#ueber-uns{background:var(--pb-ink)");
+    expect(html).toContain(".pb-wb-gallery figure:nth-child(4n+1)");
+  });
   test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
     const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/);
     expect(h1Match).not.toBeNull();

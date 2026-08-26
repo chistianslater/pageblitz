@@ -11,7 +11,7 @@ export const VERVE_CSS = `
 .pb-verve a[href^="tel:"]:hover,.pb-verve a[href^="mailto:"]:hover{color:var(--pb-accent)}
 .pb-vv-hero{position:relative;padding:36px 28px 76px;overflow:hidden}
 .pb-vv-ghost{position:absolute;left:-20px;top:70px;font-family:var(--pb-font-display);font-size:150px;line-height:.82;color:transparent;-webkit-text-stroke:1px var(--pb-line);white-space:nowrap;pointer-events:none;text-transform:uppercase;z-index:0}
-.pb-vv-panel{position:absolute;right:-40px;top:56px;width:36%;height:66%;background:linear-gradient(200deg,var(--pb-surface),var(--pb-canvas) 70%);background-size:cover;background-position:center;transform:skewX(-6deg);border-left:4px solid var(--pb-accent);z-index:1}
+.pb-vv-panel{position:absolute;right:-40px;top:56px;width:36%;height:66%;background:linear-gradient(200deg,var(--pb-surface),var(--pb-canvas) 70%);object-fit:cover;transform:skewX(-6deg);border-left:4px solid var(--pb-accent);z-index:1}
 .pb-vv-copy{position:relative;z-index:2;max-width:62%}
 .pb-vv-hero h1{font-family:var(--pb-font-display);font-size:var(--pb-hero-size);line-height:.9;text-transform:uppercase;margin:0}
 .pb-vv-hero h1 span{display:block}
@@ -65,7 +65,7 @@ export const VERVE_CSS = `
 .pb-vv-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-vv-footer a:hover,.pb-vv-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 @media(max-width:720px){.pb-vv-nav-links{display:none}}
-@media(max-width:720px){.pb-vv-ghost{display:none}.pb-vv-panel{display:none}.pb-vv-tape{display:none}.pb-vv-copy{max-width:100%}.pb-vv-stats{margin-top:24px}.pb-vv-hero{padding:28px 20px 48px}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-vv-ghost{display:none}.pb-vv-copy{max-width:100%;order:1}.pb-vv-stats{margin-top:24px}.pb-vv-hero{display:flex;flex-direction:column;padding:28px 20px 36px}.pb-vv-panel{position:relative;right:auto;top:auto;order:2;width:calc(100% + 28px);height:auto;aspect-ratio:16/10;margin:36px -8px 0 0;transform:skewX(-3deg);display:block}.pb-vv-tape{position:relative;right:auto;bottom:auto;order:3;align-self:flex-end;margin:-18px -10px 0 0;transform:rotate(-4deg);font-size:11px;padding:7px 20px;display:block}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
 .pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-vv-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

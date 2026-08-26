@@ -22,6 +22,12 @@ describe("Pack atelier", () => {
     expect(html).toContain("pb-at-meta");
     expect(html).toContain("pb-at-idx");
   });
+  test("Design-System 2.0: Broadsheet-Services, asymmetrische Galerie und mobile Meta bleiben erhalten", () => {
+    expect(html).toContain(".pb-at-section#leistungen{display:grid");
+    expect(html).toContain(".pb-at-gallery img:nth-child(6n+1)");
+    expect(html).toContain(".pb-at-meta{flex-wrap:nowrap");
+    expect(html).not.toContain(".pb-at-meta span:last-child{display:none}");
+  });
 
   test("genau eine h1 — Masthead ist kein h1, die Hero-Headline ist die h1", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);

@@ -394,15 +394,17 @@ const GustoPage: React.FC<{
                 {hero.ctaText}
               </a>
             )}
-            <div
-              className="pb-gu-plate"
-              aria-hidden="true"
-              style={
-                hero.imageUrl
-                  ? { backgroundImage: `url(${hero.imageUrl})` }
-                  : undefined
-              }
-            />
+            {hero.imageUrl ? (
+              <img
+                className="pb-gu-plate"
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+            ) : (
+              <div className="pb-gu-plate" aria-hidden="true" />
+            )}
           </section>
         )}
         {sections

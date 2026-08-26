@@ -21,8 +21,8 @@ export const GUSTO_CSS = `
 .pb-gu-menu{display:flex;align-items:baseline;gap:8px;padding:7px 0}
 .pb-gu-menu i{flex:1;border-bottom:1px dotted var(--pb-line);font-style:normal}
 .pb-gu-price{color:var(--pb-accent);font-weight:700;font-size:13px;white-space:nowrap}
-.pb-gu-plate{position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:200px;height:200px;border-radius:50%;background-color:var(--pb-line);background-size:cover;background-position:center;filter:brightness(.4) saturate(1.15);border:10px solid var(--pb-surface);outline:2px solid var(--pb-accent);outline-offset:-2px;z-index:3}
-@media(max-width:1160px){.pb-gu-plate{display:none}}
+.pb-gu-plate{position:absolute;right:-12px;top:50%;transform:translateY(-50%);width:200px;height:200px;border-radius:50%;background-color:var(--pb-line);object-fit:cover;filter:brightness(.72) saturate(1.08);border:10px solid var(--pb-surface);outline:2px solid var(--pb-accent);outline-offset:-2px;z-index:3}
+@media(max-width:1160px) and (min-width:721px){.pb-gu-plate{width:150px;height:150px;opacity:.72}}
 .pb-gu-section{padding:64px 32px;border-top:1px solid var(--pb-line);text-align:center}
 .pb-gu-section h2{font-family:var(--pb-font-display);font-style:italic;font-weight:500;letter-spacing:-.01em;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:30px}
 .pb-gu-intro{color:var(--pb-muted);margin:0 auto 30px;max-width:46ch}
@@ -31,7 +31,7 @@ export const GUSTO_CSS = `
 .pb-gu-card strong{display:block;font-weight:700;margin-bottom:8px;font-size:15px}
 .pb-gu-card p{color:var(--pb-muted);font-size:14px}
 .pb-gu-about{max-width:56ch;margin:0 auto}
-.pb-gu-about img{width:100%;max-width:420px;aspect-ratio:3/2;object-fit:cover;filter:brightness(.55) saturate(1.1);border:1px solid var(--pb-line);margin:0 auto 26px;display:block}
+.pb-gu-about img{width:100%;max-width:520px;aspect-ratio:16/10;object-fit:cover;filter:brightness(.8) saturate(1.05);border:1px solid var(--pb-line);margin:0 auto 26px;display:block}
 .pb-gu-about p{color:var(--pb-ink);text-align:left}
 .pb-gu-menu-category{max-width:520px;margin:0 auto 36px;text-align:left}
 .pb-gu-menu-category h3{font-family:var(--pb-font-display);font-style:italic;font-size:15px;letter-spacing:.02em;color:var(--pb-accent);margin-bottom:14px;text-align:center}
@@ -44,7 +44,7 @@ export const GUSTO_CSS = `
 .pb-gu-faq strong{display:block;font-family:var(--pb-font-display);font-style:italic;font-weight:500;margin-bottom:6px}
 .pb-gu-faq p{color:var(--pb-muted);font-size:14px}
 .pb-gu-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.pb-gu-gallery img{width:100%;height:220px;object-fit:cover;filter:brightness(.5) saturate(1.1);border:1px solid var(--pb-line);display:block}
+.pb-gu-gallery img{width:100%;height:260px;object-fit:cover;filter:brightness(.78) saturate(1.08);border:1px solid var(--pb-line);display:block}
 .pb-gu-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;text-align:left}
 .pb-gu-member img{width:100%;height:200px;object-fit:cover;filter:brightness(.55) saturate(1.1);border:1px solid var(--pb-line);margin-bottom:12px}
 .pb-gu-member strong{display:block;font-weight:700}
@@ -65,7 +65,7 @@ export const GUSTO_CSS = `
 .pb-gu-footer{padding:32px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-gu-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-gu-footer a:hover,.pb-gu-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-gu-plate{display:none}.pb-gu-nav{padding:14px 18px}.pb-gu-nav-links{display:none}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}.pb-gu-hero{padding:40px 20px 40px}}
+@media(max-width:720px){.pb-gu-nav{padding:14px 18px}.pb-gu-nav-links{display:none}.pb-gu-contact{grid-template-columns:1fr}.pb-gu-frame{margin:8px}.pb-gu-hero{padding:40px 20px 28px}.pb-gu-plate{position:relative;right:auto;top:auto;transform:none;width:min(70vw,240px);height:min(70vw,240px);margin:32px auto -88px;display:block;opacity:1}.pb-gu-hero + .pb-gu-section{padding-top:126px}.pb-gu-gallery{grid-template-columns:1fr 1fr;gap:8px}.pb-gu-gallery img{height:auto;aspect-ratio:4/3}}
 .pb-gu-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line);text-align:center}
 .pb-gu-page-header h1{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-gu-page-header p{margin:16px auto 0;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

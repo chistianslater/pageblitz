@@ -409,15 +409,17 @@ const MorgenlichtPage: React.FC<{
       {hero && (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
-            <div
-              className="pb-ml-blob"
-              aria-hidden="true"
-              style={
-                hero.imageUrl
-                  ? { backgroundImage: `url(${hero.imageUrl})` }
-                  : undefined
-              }
-            />
+            {hero.imageUrl ? (
+              <img
+                className="pb-ml-blob"
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+            ) : (
+              <div className="pb-ml-blob" aria-hidden="true" />
+            )}
             {todaysHours && (
               <div className="pb-ml-float f1">
                 <b>Heute geöffnet</b>

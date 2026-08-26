@@ -85,11 +85,11 @@ describe("SiteRenderer", () => {
       expect(html).toContain("pb-site pb-werkbank");
     });
 
-    test("bestehendes Dokument ohne Profil trägt rückwärtskompatible Default-Attribute", () => {
+    test("bestehendes Dokument ohne Profil nutzt ausschließlich handgestaltete Pack-Defaults", () => {
       const html = renderToStaticMarkup(<SiteRenderer data={data} />);
-      expect(html).toContain('data-pb-hero="split"');
-      expect(html).toContain('data-pb-services="list"');
-      expect(html).toContain('data-pb-density="airy"');
+      expect(html).not.toContain("data-pb-hero=");
+      expect(html).not.toContain("data-pb-services=");
+      expect(html).not.toContain("data-pb-density=");
     });
 
     test("persistiertes Profil landet als Kompositionsattribute am Site-Root", () => {
