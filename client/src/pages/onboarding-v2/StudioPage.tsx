@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
+import type { TextsPatch } from "@shared/onboardingV2/patches";
 import { useStudioState } from "./useStudioState";
 import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { WizardBar } from "./WizardBar";
-import { PreviewFrame, previewPath } from "./PreviewFrame";
+import {
+  PreviewFrame,
+  previewPath,
+  type InlineTextField,
+} from "./PreviewFrame";
 import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
@@ -55,6 +61,7 @@ export default function StudioPage({ token }: { token: string }) {
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
   // fällt auf die Startseite zurück, kein eigener Effekt nötig.
   const [previewSlugState, setPreviewSlug] = useState<string | null>(null);
+  const inlineUpdateTexts = trpc.onboardingV2.updateTexts.useMutation();
   // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
   // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
   const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
@@ -219,6 +226,28 @@ export default function StudioPage({ token }: { token: string }) {
   const aiChatPage = previewPage
     ? { slug: previewPage.slug, title: previewPage.title }
     : undefined;
+  const heroSection = state.doc.sections.find(s => s.type === "hero");
+  const aboutSection = state.doc.sections.find(s => s.type === "about");
+  const inlineTexts =
+    previewSlug === null
+      ? {
+          headline: heroSection?.headline,
+          subheadline: heroSection?.subheadline,
+          aboutHeadline: aboutSection?.headline,
+          aboutBody: aboutSection?.body,
+        }
+      : undefined;
+  const applyInlineText = (field: InlineTextField, value: string) => {
+    inlineUpdateTexts.mutate(
+      { token, patch: { [field]: value } as TextsPatch },
+      {
+        onSuccess: () => {
+          studio.refetch();
+          studio.bumpPreview();
+        },
+      }
+    );
+  };
 
   // Wizard-Ableitungen fürs Rendering: aktiver Schritt (Panel oder
   // "publish" bei geschlossenem Panel) + Fortschritt (erledigte Schritte).
@@ -452,6 +481,18 @@ export default function StudioPage({ token }: { token: string }) {
               In neuem Tab öffnen
             </a>
           </div>
+          {previewSlug === null && (
+            <p className="pb-studio-inline-hint">
+              Tipp: Überschrift und Über-uns-Text kannst du direkt in der
+              Vorschau anklicken und bearbeiten.
+            </p>
+          )}
+          {inlineUpdateTexts.error && (
+            <p role="alert" className="pb-studio-inline-error">
+              Änderung konnte nicht gespeichert werden:{" "}
+              {inlineUpdateTexts.error.message}
+            </p>
+          )}
           {previewTabs.length > 1 && (
             <div
               className="pb-studio-seg pb-studio-pagebar"
@@ -475,6 +516,8 @@ export default function StudioPage({ token }: { token: string }) {
             version={studio.previewVersion}
             device={device}
             pageSlug={previewSlug ?? undefined}
+            inlineTexts={inlineTexts}
+            onInlineTextEdit={applyInlineText}
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).

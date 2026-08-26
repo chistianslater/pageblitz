@@ -180,6 +180,18 @@
   max-width: 100%;
   border-radius: 18px;
 }
+.pb-studio-inline-hint {
+  margin: 0;
+  color: var(--st-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.pb-studio-inline-error {
+  margin: 0;
+  color: var(--st-warn);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
 .pb-studio-btn {
   font: inherit;
   font-weight: 600;
@@ -624,6 +636,14 @@
 }
 .pb-studio-chip:hover {
   border-color: var(--st-accent);
+}
+.pb-studio-chip[aria-pressed="true"] {
+  border-color: var(--st-accent);
+  background: color-mix(in srgb, var(--st-accent) 10%, var(--st-canvas));
+}
+.pb-studio-chip:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 .pb-studio-chip:focus-visible {
   outline: 2px solid var(--st-accent);

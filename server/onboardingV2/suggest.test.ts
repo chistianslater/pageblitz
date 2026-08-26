@@ -52,6 +52,15 @@ describe("suggestTextVariants", () => {
       })
     ).resolves.toEqual(["A", "B", "C"]);
     expect(invokeLLM).toHaveBeenCalledTimes(1);
+    expect(invokeLLM).toHaveBeenCalledWith(
+      expect.objectContaining({
+        preferBackup: true,
+        backupTimeoutMs: 20_000,
+        primaryTimeoutMs: 75_000,
+        reasoningEffort: "low",
+        maxTokens: 2_048,
+      })
+    );
   });
 
   test("ungültiges JSON → ein Retry, dann Fehler", async () => {

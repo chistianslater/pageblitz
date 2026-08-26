@@ -130,9 +130,12 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
-    await page.getByRole("button", { name: /Stil/ }).first().click();
+    await page
+      .getByRole("button", { name: /Designrichtung/ })
+      .first()
+      .click();
     await expect(
-      page.getByRole("group", { name: "Stil-Kandidaten" })
+      page.getByRole("group", { name: "Designrichtungen" })
     ).toBeVisible();
     await page.waitForLoadState("networkidle");
     await waitForStyleThumbnails(page);
@@ -273,7 +276,7 @@ test.describe("Studio", () => {
     await backButton.click();
     await expect(page.locator(".pb-studio-rail")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Stil/ }).first()
+      page.getByRole("button", { name: /Designrichtung/ }).first()
     ).toBeVisible();
   });
 
@@ -307,10 +310,58 @@ test.describe("Studio", () => {
     });
     await expect(chips.getByRole("button")).toHaveCount(3);
 
-    await chips.getByRole("button").first().click();
+    await Promise.all([
+      page.waitForResponse(
+        res =>
+          res.url().includes("onboardingV2.updateTexts") && res.ok()
+      ),
+      chips.getByRole("button").first().click(),
+    ]);
     await expect(textsPanel.locator("#pb-texts-headline")).toHaveValue(
       "Mock-Vorschlag A für headline"
     );
+    await expect(
+      page.frameLocator(".pb-studio-device iframe").locator("#start h1")
+    ).toContainText("Mock-Vorschlag A für headline");
+  });
+
+  test("Texte direkt in der Vorschau bearbeiten → Blur speichert und lädt Preview neu", async ({
+    page,
+    request,
+  }) => {
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/onboarding/${token}`);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    const preview = page.frameLocator(".pb-studio-device iframe");
+    const headline = preview.locator("#start h1");
+    await expect(headline).toHaveAttribute(
+      "title",
+      "Klicken und direkt bearbeiten"
+    );
+    await headline.fill("Direkt in der Vorschau geändert");
+
+    await Promise.all([
+      page.waitForResponse(
+        res =>
+          res.url().includes("onboardingV2.updateTexts") && res.ok()
+      ),
+      // Klick außerhalb des iframes löst blur + Persistenz aus.
+      page.getByRole("button", { name: "Desktop" }).click(),
+    ]);
+
+    // onApplied bumpPreview remountet das iframe; persistierter Text muss im
+    // neuen SSR-Dokument wieder erscheinen.
+    await expect(
+      page
+        .frameLocator(".pb-studio-device iframe")
+        .locator("#start h1")
+    ).toContainText("Direkt in der Vorschau geändert");
   });
 
   test("Checkout-Flow: Rechtliches → Checkout-bereit → Reload", async ({
@@ -594,7 +645,7 @@ test.describe("Studio", () => {
       timeout: 15_000,
     });
     await expect(
-      page.getByRole("button", { name: /Stil/ }).first()
+      page.getByRole("button", { name: /Designrichtung/ }).first()
     ).toBeVisible({ timeout: 60_000 });
     await expect(
       page.locator('iframe[title="Live-Vorschau deiner Website"]')

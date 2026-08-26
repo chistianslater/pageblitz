@@ -91,6 +91,23 @@ describe("TextsForm", () => {
     expect(html).toContain("Variante C");
   });
 
+  test("markiert gewählten Vorschlag und zeigt direkten Preview-Status", () => {
+    const html = renderToStaticMarkup(
+      <TextsForm
+        values={{ headline: "Variante B" }}
+        onChange={() => {}}
+        onSuggest={() => {}}
+        suggesting={null}
+        variants={{ headline: ["Variante A", "Variante B", "Variante C"] }}
+        onPickVariant={() => {}}
+        applyingVariant="headline"
+      />
+    );
+    expect(html).toContain('aria-pressed="true"');
+    expect(html).toContain("in der Vorschau aktualisiert");
+    expect(html).toContain('disabled=""');
+  });
+
   test("zeigt keinen KI-Vorschlag-Button für CTA-Text und Über-uns-Überschrift", () => {
     const html = renderToStaticMarkup(
       <TextsForm

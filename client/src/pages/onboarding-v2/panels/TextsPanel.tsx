@@ -56,6 +56,9 @@ export function TextsPanel({
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
   const [suggesting, setSuggesting] = useState<TextField | null>(null);
+  const [applyingVariant, setApplyingVariant] = useState<TextField | null>(
+    null
+  );
   const [variants, setVariants] = useState<
     Partial<Record<TextField, string[]>>
   >({});
@@ -89,7 +92,21 @@ export function TextsPanel({
   };
 
   const handlePickVariant = (field: TextField, value: string) => {
+    if (updateTexts.isPending) return;
+    const previous = values[field];
     setValues(prev => ({ ...prev, [field]: value }));
+    setApplyingVariant(field);
+    // Vorschlag-Klick ist eine bewusste Auswahl: sofort persistieren und
+    // Preview remounten, statt einen zweiten „Speichern"-Klick zu verlangen.
+    updateTexts.mutate(
+      { token, patch: { [field]: value } },
+      {
+        onSuccess: onApplied,
+        onError: () =>
+          setValues(prev => ({ ...prev, [field]: previous })),
+        onSettled: () => setApplyingVariant(null),
+      }
+    );
   };
 
   const handleSave = () => {
@@ -147,6 +164,7 @@ export function TextsPanel({
         variants={variants}
         onPickVariant={handlePickVariant}
         suggestError={suggestError}
+        applyingVariant={applyingVariant}
       />
       {updateTexts.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>

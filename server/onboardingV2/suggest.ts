@@ -210,6 +210,13 @@ export async function suggestTextVariants(args: {
 
   return withSuggestionRetry(async () => {
     const response = await invokeLLM({
+      // Kleine Variantenantworten brauchen kein langes Reasoning-Modell als
+      // ersten Pfad. Gemini-Backup zuerst; Kimi K3 nur als Fallback.
+      preferBackup: true,
+      backupTimeoutMs: 20_000,
+      primaryTimeoutMs: 75_000,
+      reasoningEffort: "low",
+      maxTokens: 2_048,
       messages: [
         { role: "system", content: TEXT_SUGGESTION_SYSTEM_PROMPT },
         { role: "user", content: prompt },
@@ -428,6 +435,11 @@ export async function suggestOffer(args: {
 
   return withSuggestionRetry(async () => {
     const response = await invokeLLM({
+      preferBackup: true,
+      backupTimeoutMs: 25_000,
+      primaryTimeoutMs: 90_000,
+      reasoningEffort: "low",
+      maxTokens: 4_096,
       messages: [
         { role: "system", content: OFFER_SUGGESTION_SYSTEM_PROMPT },
         { role: "user", content: prompt },

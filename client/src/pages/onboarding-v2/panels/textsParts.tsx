@@ -96,6 +96,8 @@ interface TextsFormProps {
   onPickVariant: (field: TextField, value: string) => void;
   /** Fehler der letzten KI-Anfrage, feldgebunden (wird direkt am Feld gezeigt, nicht am Panel-Ende). */
   suggestError?: { field: TextField; message: string } | null;
+  /** Feld, dessen gewählter Vorschlag gerade gespeichert wird. */
+  applyingVariant?: TextField | null;
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -107,6 +109,7 @@ export function TextsForm({
   variants,
   onPickVariant,
   suggestError = null,
+  applyingVariant = null,
 }: TextsFormProps) {
   const errors = validateTexts(values);
   return (
@@ -193,8 +196,8 @@ export function TextsForm({
                 role="status"
                 style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}
               >
-                Die KI schreibt drei Vorschläge — das kann bis zu 30 Sekunden
-                dauern …
+                Die KI schreibt drei Vorschläge — meist dauert das nur wenige
+                Sekunden …
               </p>
             )}
             {suggestField && suggestError?.field === suggestField && (
@@ -213,6 +216,8 @@ export function TextsForm({
                     key={i}
                     type="button"
                     className="pb-studio-chip"
+                    aria-pressed={value === variant}
+                    disabled={applyingVariant !== null}
                     onClick={() =>
                       onPickVariant(suggestField as TextField, variant)
                     }
@@ -221,6 +226,14 @@ export function TextsForm({
                   </button>
                 ))}
               </div>
+            )}
+            {suggestField && applyingVariant === suggestField && (
+              <p
+                role="status"
+                style={{ color: "var(--st-accent)", fontSize: "0.82rem" }}
+              >
+                Wird übernommen und in der Vorschau aktualisiert …
+              </p>
             )}
           </div>
         );
