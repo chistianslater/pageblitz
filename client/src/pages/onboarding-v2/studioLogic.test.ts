@@ -282,15 +282,26 @@ describe("nextWizardStep", () => {
   test("mit current legal und nur style offen → zurück zu style, nicht publish", () => {
     expect(
       nextWizardStep(
-        checklistWith(["photos", "texts", "offer", "legal"]),
+        checklistWith(["photos", "texts", "offer", "legal", "addons"]),
         "legal"
       )
     ).toBe("style");
   });
   test("mit current und alles danach done, aber davor offen → erster offener von vorn", () => {
     expect(
-      nextWizardStep(checklistWith(["texts", "offer", "legal"]), "texts")
+      nextWizardStep(
+        checklistWith(["texts", "offer", "legal", "addons"]),
+        "texts"
+      )
     ).toBe("style");
+  });
+  test("nach Rechtliches folgt der optionale Extras-Schritt", () => {
+    expect(
+      nextWizardStep(
+        checklistWith(["style", "photos", "texts", "offer", "legal"]),
+        "legal"
+      )
+    ).toBe("addons");
   });
   test("mit current und alles done → publish", () => {
     expect(
@@ -303,7 +314,8 @@ describe("wizardStepNumber", () => {
   test("1-basiert, publish ist der letzte Schritt", () => {
     expect(wizardStepNumber("style")).toBe(1);
     expect(wizardStepNumber("legal")).toBe(5);
+    expect(wizardStepNumber("addons")).toBe(6);
     expect(wizardStepNumber("publish")).toBe(WIZARD_TOTAL_STEPS);
-    expect(WIZARD_TOTAL_STEPS).toBe(6);
+    expect(WIZARD_TOTAL_STEPS).toBe(7);
   });
 });

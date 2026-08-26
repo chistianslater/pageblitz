@@ -153,8 +153,8 @@ export function resolvePreviewSlug(
 
 // ── Geführter Modus (Wizard) ────────────────────────────────────────────
 // Der Wizard führt in fester Reihenfolge durch die Pflicht-nahen Panels
-// und endet im Veröffentlichen-Schritt. Extras (addons) sind bewusst
-// außen vor — optional, frei über die Übersicht erreichbar.
+// und endet im Veröffentlichen-Schritt. Extras sind ein eigener erklärender
+// Schritt, bleiben aber vollständig optional.
 
 export const WIZARD_PANEL_STEPS = [
   "style",
@@ -162,6 +162,7 @@ export const WIZARD_PANEL_STEPS = [
   "texts",
   "offer",
   "legal",
+  "addons",
 ] as const;
 
 export type WizardPanelStep = (typeof WIZARD_PANEL_STEPS)[number];
@@ -175,10 +176,11 @@ export const WIZARD_STEP_TITLES: Record<WizardStep, string> = {
   texts: "Texte prüfen",
   offer: "Angebot pflegen",
   legal: "Rechtliches",
+  addons: "Extras wählen",
   publish: "Website freischalten",
 };
 
-/** Gesamtzahl der sichtbaren Wizard-Schritte (5 Panels + Veröffentlichen). */
+/** Gesamtzahl der sichtbaren Wizard-Schritte (6 Panels + Veröffentlichen). */
 export const WIZARD_TOTAL_STEPS = WIZARD_PANEL_STEPS.length + 1;
 
 /**

@@ -110,6 +110,8 @@ describe("AddonsList", () => {
     );
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('aria-pressed="false"');
+    expect(html).toContain("Weniger Hürden bis zur Anfrage");
+    expect(html).toContain("pb-studio-addon-icon");
   });
 });
 
@@ -214,7 +216,7 @@ describe("AddonsPanel — Add-on-Konsistenz (Plan B6, Task 6)", () => {
       />
     );
     const menuRow = html.split("Speisekarte")[1] ?? "";
-    expect(menuRow).toContain(">Aktiv<");
+    expect(menuRow).toContain(">Ausgewählt<");
     // 19,90 € Basis (jährlich) + 3,90 € Speisekarte.
     expect(html).toContain("23,80 €");
   });

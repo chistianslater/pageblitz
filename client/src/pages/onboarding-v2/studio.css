@@ -1170,19 +1170,60 @@
   gap: 0.5rem;
   flex-wrap: wrap;
 }
-.pb-studio-addon-list {
+.pb-studio-addon-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.pb-studio-addon-grid {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+.pb-studio-addon-card {
   display: flex;
+  min-width: 0;
   flex-direction: column;
+  padding: 0.85rem;
+  border: 1px solid var(--st-line);
+  border-radius: 12px;
+  background: var(--st-canvas);
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease;
+}
+.pb-studio-addon-card[data-active] {
+  border-color: var(--st-accent);
+  background: color-mix(in srgb, var(--st-accent) 6%, var(--st-canvas));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-accent) 30%, transparent);
+}
+.pb-studio-addon-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
 }
-.pb-studio-addon-name {
-  font-weight: 600;
+.pb-studio-addon-icon {
+  display: grid;
+  width: 2.15rem;
+  height: 2.15rem;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--st-surface);
+  color: var(--st-accent);
+}
+.pb-studio-addon-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke-width: 1.8;
 }
 .pb-studio-addon-price {
   color: var(--st-muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 .pb-studio-addon-price[data-muted="true"] {
   /* War opacity:0.6 — zusammen mit --st-muted fiel der Kontrast des
@@ -1192,10 +1233,66 @@
      selbst bleibt lesbar. */
   opacity: 1;
 }
-.pb-studio-addon-total {
+.pb-studio-addon-card h3 {
+  margin: 0.8rem 0 0;
+  font-size: 1rem;
   font-weight: 600;
+}
+.pb-studio-addon-card p {
+  margin: 0.4rem 0 0;
+  color: var(--st-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.pb-studio-addon-benefit {
+  margin-top: 0.55rem;
+  color: var(--st-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.pb-studio-addon-toggle {
+  width: 100%;
+  margin-top: auto;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--st-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--st-ink);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pb-studio-addon-toggle[aria-pressed="true"] {
+  border-color: var(--st-accent);
+  background: var(--st-accent);
+  color: var(--st-accent-ink);
+}
+.pb-studio-addon-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   border-top: 1px solid var(--st-line);
   padding-top: 0.75rem;
+  font-size: 0.82rem;
+}
+.pb-studio-addon-total span:last-child {
+  white-space: nowrap;
+}
+@media (min-width: 1024px) {
+  .pb-studio-layout:has(.pb-studio-addon-grid) {
+    grid-template-columns: minmax(460px, 560px) 1fr;
+  }
+}
+@media (max-width: 520px) {
+  .pb-studio-addon-grid {
+    grid-template-columns: 1fr;
+  }
+  .pb-studio-addon-total {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .pb-studio-checkbox {
   display: flex;

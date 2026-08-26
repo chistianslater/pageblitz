@@ -80,7 +80,8 @@ export default function StudioPage({ token }: { token: string }) {
 
   // ── Geführter Modus (Wizard) ─────────────────────────────────────────
   // Startet einmal pro Browser-Session automatisch (nur vor dem Kauf) und
-  // führt Stil → Fotos → Texte → Angebot → Rechtliches → Veröffentlichen.
+  // führt Design → Fotos → Texte → Angebot → Rechtliches → Extras →
+  // Veröffentlichen.
   // „Übersicht" beendet jederzeit in den freien Modus; der Fortschritt
   // lebt ausschließlich in der Checkliste (pure Ableitung, reload-sicher).
   const wizardDismissedKey = `pb-wizard-dismissed:${token}`;
@@ -393,7 +394,8 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => setActiveId(null)}
+              onClose={() => panelClose(null)}
+              onNext={panelNext}
             />
           ) : wizardActive ? (
             // Wizard-Abschluss („publish"): Fokus liegt auf dem Freischalten,

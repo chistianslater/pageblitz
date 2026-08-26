@@ -1,4 +1,15 @@
 import React, { useState } from "react";
+import {
+  Bot,
+  CalendarDays,
+  Files,
+  Images,
+  MessageSquareText,
+  ReceiptText,
+  UsersRound,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import type {
   AddonsPatch,
@@ -42,6 +53,60 @@ const TOGGLEABLE_KEYS: readonly AddOnKey[] = BOOKABLE_ADDON_KEYS;
 const COMING_SOON_KEYS: AddOnKey[] = ADDON_KEYS.filter(
   k => !BOOKABLE_ADDON_KEYS.includes(k)
 );
+
+const ADDON_META: Record<
+  AddOnKey,
+  { icon: LucideIcon; description: string; benefit: string }
+> = {
+  contactForm: {
+    icon: MessageSquareText,
+    description:
+      "Besucher senden dir strukturierte Anfragen direkt über deine Website.",
+    benefit: "Weniger Hürden bis zur Anfrage",
+  },
+  gallery: {
+    icon: Images,
+    description:
+      "Zeige Projekte, Räume, Arbeiten oder Impressionen in einer Bildergalerie.",
+    benefit: "Arbeit sichtbar beweisen",
+  },
+  menu: {
+    icon: UtensilsCrossed,
+    description:
+      "Pflege Speisen, Kategorien, Beschreibungen und Preise übersichtlich.",
+    benefit: "Angebot direkt verständlich",
+  },
+  pricelist: {
+    icon: ReceiptText,
+    description:
+      "Veröffentliche Leistungen und Preise transparent in eigenen Kategorien.",
+    benefit: "Weniger Rückfragen zu Preisen",
+  },
+  aiChat: {
+    icon: Bot,
+    description:
+      "Der KI-Chat beantwortet Besucherfragen zu deinem Betrieb rund um die Uhr.",
+    benefit: "Interessenten sofort abholen",
+  },
+  booking: {
+    icon: CalendarDays,
+    description:
+      "Kunden wählen selbst einen freien Termin – ohne Telefon und Hin und Her.",
+    benefit: "Termine auch außerhalb der Öffnungszeiten",
+  },
+  team: {
+    icon: UsersRound,
+    description:
+      "Stelle Mitarbeiter mit Name, Rolle und Foto als eigene Sektion vor.",
+    benefit: "Persönlichkeit und Vertrauen",
+  },
+  subpages: {
+    icon: Files,
+    description:
+      "Ergänze eigene Seiten für Leistungen, Über uns oder weitere Themen.",
+    benefit: "Mehr Raum für wichtige Inhalte",
+  },
+};
 
 /** Reine Ableitung: bestehende Team-Sektion → Entwurf; ohne Sektion eine leere Mitgliederliste (analog offerFromDoc in OfferPanel.tsx). */
 export function teamFromDoc(doc: WebsiteDataV2): TeamValue {
@@ -93,46 +158,59 @@ interface AddonsListProps {
 /** Reine Darstellung: Schalter je bindbarem Add-on mit Preis, gesperrte "bald verfügbar"-Zeilen, Gesamtsumme inkl. Basispreis. */
 export function AddonsList({ value, onToggle, interval }: AddonsListProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(value));
+  const activeCount = TOGGLEABLE_KEYS.filter(key => value[key]).length;
   return (
-    <div className="pb-studio-rows">
-      <ul className="pb-studio-addon-list" aria-label="Extras">
-        {TOGGLEABLE_KEYS.map(key => (
-          <li className="pb-studio-row" key={key}>
-            <span className="pb-studio-addon-name">{ADDON_NAMES[key]}</span>
-            <span className="pb-studio-addon-price">
-              {formatEuro(addonPrice(key))}
-            </span>
-            <button
-              type="button"
-              className="pb-studio-btn"
-              data-variant="ghost"
-              aria-pressed={!!value[key]}
-              onClick={() => onToggle(key)}
+    <div className="pb-studio-addon-wrap">
+      <ul className="pb-studio-addon-grid" aria-label="Extras">
+        {TOGGLEABLE_KEYS.map(key => {
+          const meta = ADDON_META[key];
+          const Icon = meta.icon;
+          const active = value[key] === true;
+          return (
+            <li
+              className="pb-studio-addon-card"
+              data-active={active || undefined}
+              key={key}
             >
-              {value[key] ? "Aktiv" : "Hinzufügen"}
-            </button>
-          </li>
-        ))}
+              <div className="pb-studio-addon-card-head">
+                <span className="pb-studio-addon-icon">
+                  <Icon aria-hidden="true" />
+                </span>
+                <span className="pb-studio-addon-price">
+                  + {formatEuro(addonPrice(key))}/Monat
+                </span>
+              </div>
+              <h3>{ADDON_NAMES[key]}</h3>
+              <p>{meta.description}</p>
+              <span className="pb-studio-addon-benefit">{meta.benefit}</span>
+              <button
+                type="button"
+                className="pb-studio-addon-toggle"
+                aria-pressed={active}
+                onClick={() => onToggle(key)}
+              >
+                {active ? "Ausgewählt" : "Hinzufügen"}
+              </button>
+            </li>
+          );
+        })}
         {COMING_SOON_KEYS.map(key => (
-          <li className="pb-studio-row" key={key} data-locked="true">
-            <span className="pb-studio-addon-name">{ADDON_NAMES[key]}</span>
-            <span className="pb-studio-addon-price" data-muted="true">
-              {formatEuro(addonPrice(key))}
-            </span>
-            <button
-              type="button"
-              className="pb-studio-btn"
-              data-variant="ghost"
-              disabled
-            >
-              bald verfügbar
-            </button>
+          <li className="pb-studio-addon-card" key={key} data-locked="true">
+            <h3>{ADDON_NAMES[key]}</h3>
+            <p>Bald verfügbar.</p>
           </li>
         ))}
       </ul>
-      <p className="pb-studio-addon-total">
-        Gesamt: <strong>{formatEuro(total)}</strong>/Monat
-      </p>
+      <div className="pb-studio-addon-total">
+        <span>
+          {activeCount === 0
+            ? "Keine Extras ausgewählt"
+            : `${activeCount} Extra${activeCount === 1 ? "" : "s"} ausgewählt`}
+        </span>
+        <span>
+          Gesamt: <strong>{formatEuro(total)}</strong>/Monat
+        </span>
+      </div>
     </div>
   );
 }
@@ -156,6 +234,8 @@ interface AddonsPanelProps {
   live?: boolean;
   onApplied: () => void;
   onClose: () => void;
+  /** Geführter Modus: nach Prüfung weiter zum Freischalten. */
+  onNext?: () => void;
 }
 
 export function AddonsPanel({
@@ -165,6 +245,7 @@ export function AddonsPanel({
   live = false,
   onApplied,
   onClose,
+  onNext,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
@@ -213,7 +294,15 @@ export function AddonsPanel({
       // "Unterseiten pflegen" (eigene Mutation onboardingV2.updatePages).
       subpages: !!value.subpages,
     };
-    updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
+    updateAddons.mutate(
+      { token, addOns: patch },
+      {
+        onSuccess: () => {
+          onApplied();
+          onNext?.();
+        },
+      }
+    );
   };
 
   // Kontakt/Galerie auf Unterseiten spiegeln die Startseite — vor dem
@@ -233,11 +322,11 @@ export function AddonsPanel({
 
   return (
     <PanelFrame
-      step="Optional"
+      step="Schritt 6 · optional"
       title="Extras wählen"
       panelId="addons"
       onClose={onClose}
-      intro="Zusätzliche Bausteine für deine Website — jederzeit änderbar, kein Pflichtschritt."
+      intro="Mach aus deiner Website ein Werkzeug: mehr Anfragen, direkte Termine und mehr Raum für deine Inhalte. Du kannst alles später ändern."
       footer={
         <>
           <button
@@ -254,7 +343,11 @@ export function AddonsPanel({
             disabled={busy}
             onClick={handleSave}
           >
-            {busy ? "Bitte warten…" : "Speichern"}
+            {busy
+              ? "Bitte warten…"
+              : onNext
+                ? "Auswahl speichern & weiter"
+                : "Speichern"}
           </button>
         </>
       }
