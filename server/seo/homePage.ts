@@ -17,7 +17,13 @@
  * an der Landingpage diese Datei mitziehen.
  */
 import { HOME_FAQ_ITEMS } from "../../shared/faq";
-import { PRICING, formatEuro } from "../../shared/pricing";
+import {
+  ADDON_NAMES,
+  BOOKABLE_ADDON_KEYS,
+  PRICING,
+  addonPrice,
+  formatEuro,
+} from "../../shared/pricing";
 import { SEO_INDUSTRIES } from "./landingPages";
 import { escapeHtml } from "./metaInjection";
 
@@ -161,6 +167,16 @@ export function generateHomePrerender(): string {
       <ul style="margin:0;padding-left:1.25rem;color:#4b5563;line-height:2;max-width:60ch">
         ${PLAN_FEATURES.map(f => `<li>${escapeHtml(f)}</li>`).join("\n        ")}
       </ul>
+      <div style="margin-top:2rem;max-width:42rem;border:1px solid #ddd6c9;border-radius:12px;background:#f7f5f1;padding:1.25rem">
+        <h3 style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;margin:0 0 .5rem">Optionale Extras</h3>
+        <p style="font-size:.85rem;color:#6b645b;margin:0 0 1rem">Nur auswählen, was dein Betrieb wirklich braucht.</p>
+        <ul style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1.5rem;list-style:none;margin:0;padding:0">
+          ${BOOKABLE_ADDON_KEYS.map(
+            key =>
+              `<li style="display:flex;justify-content:space-between;gap:.75rem;border-top:1px solid #ddd6c9;padding:.6rem 0;font-size:.85rem"><span>${escapeHtml(ADDON_NAMES[key])}</span><span style="color:#6b645b;white-space:nowrap">+ ${escapeHtml(formatEuro(addonPrice(key)))}</span></li>`
+          ).join("\n          ")}
+        </ul>
+      </div>
     </section>
 
     <section style="padding:4rem 0">

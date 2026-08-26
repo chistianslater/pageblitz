@@ -1,4 +1,15 @@
-import { Check } from "lucide-react";
+import {
+  Bot,
+  CalendarDays,
+  Check,
+  Files,
+  Images,
+  MessageSquareText,
+  ReceiptText,
+  UsersRound,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react";
 import { useLocation } from "wouter";
 import {
   ADDON_NAMES,
@@ -6,6 +17,7 @@ import {
   addonPrice,
   formatEuro,
   PRICING,
+  type AddOnKey,
 } from "@shared/pricing";
 import {
   PRICE_MONTHLY,
@@ -24,6 +36,18 @@ const INCLUDED = [
   "Website-Inhalte jederzeit mit Studio-KI ändern",
   "Chat-Support",
 ];
+
+/** Hochwertige, konsistente Line-Icons statt Plattform-/OS-Emojis. */
+const ADDON_ICONS: Record<AddOnKey, LucideIcon> = {
+  contactForm: MessageSquareText,
+  gallery: Images,
+  menu: UtensilsCrossed,
+  pricelist: ReceiptText,
+  aiChat: Bot,
+  booking: CalendarDays,
+  team: UsersRound,
+  subpages: Files,
+};
 
 // Vergleichszeilen wie im Prerender (server/seo/homePage.ts COMPARISON).
 const COMPARISON: Array<[string, string, string]> = [
@@ -142,6 +166,44 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             ))}
           </ul>
 
+          {/* Restaurant-Seiten-Prinzip: Add-ons transparent in einer
+              nachgeordneten Box INNERHALB des Angebots statt als lose
+              Preisliste unterhalb. Icons aus Lucide, keine Emojis. */}
+          <div className="mt-7 rounded-[12px] border border-lp-line bg-lp-canvas p-5">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="lp-kicker">Optionale Extras</h3>
+                <p className="mt-1.5 text-[0.82rem] text-lp-muted">
+                  Nur auswählen, was dein Betrieb wirklich braucht.
+                </p>
+              </div>
+              <span className="text-[0.72rem] text-lp-muted">
+                Jederzeit anpassbar
+              </span>
+            </div>
+            <ul className="mt-4 grid gap-x-6 sm:grid-cols-2">
+              {BOOKABLE_ADDON_KEYS.map(key => {
+                const Icon = ADDON_ICONS[key];
+                return (
+                  <li
+                    key={key}
+                    className="flex items-center gap-2.5 border-t border-lp-line py-2.5 text-[0.84rem]"
+                  >
+                    <Icon
+                      className="h-4 w-4 shrink-0 text-lp-accent"
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 flex-1">{ADDON_NAMES[key]}</span>
+                    <span className="shrink-0 tabular-nums text-lp-muted">
+                      + {formatEuro(addonPrice(key))}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
           <button
             type="button"
             onClick={() => navigate(startHref(billingYearly))}
@@ -153,34 +215,6 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             Vorschau ohne Kreditkarte · 7 Tage gratis · danach jederzeit
             kündbar
           </p>
-        </div>
-
-        {/* Extras transparent, aber visuell nachgeordnet. */}
-        <div className="mx-auto mt-10 max-w-[56rem]">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="lp-kicker">Extras nach Bedarf</p>
-              <p className="mt-2 text-[0.9rem] text-lp-muted">
-                Nur dazubuchen, was deine Website wirklich braucht.
-              </p>
-            </div>
-            <span className="text-[0.8rem] text-lp-muted">
-              Jederzeit zu- und abbuchbar
-            </span>
-          </div>
-          <ul className="mt-4 grid gap-x-6 sm:grid-cols-2 lg:grid-cols-4">
-            {BOOKABLE_ADDON_KEYS.map(key => (
-              <li
-                key={key}
-                className="flex items-baseline justify-between gap-3 border-t border-lp-line py-3 text-[0.88rem]"
-              >
-                <span>{ADDON_NAMES[key]}</span>
-                <span className="shrink-0 tabular-nums text-lp-muted">
-                  + {formatEuro(addonPrice(key))}
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
 
         {/* Vergleich als eigenständiger rationaler Beweis nach dem Angebot. */}
