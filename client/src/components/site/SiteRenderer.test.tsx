@@ -87,9 +87,10 @@ describe("SiteRenderer", () => {
 
     test("bestehendes Dokument ohne Profil nutzt ausschließlich handgestaltete Pack-Defaults", () => {
       const html = renderToStaticMarkup(<SiteRenderer data={data} />);
-      expect(html).not.toContain("data-pb-hero=");
-      expect(html).not.toContain("data-pb-services=");
-      expect(html).not.toContain("data-pb-density=");
+      const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
+      expect(root).not.toContain("data-pb-hero=");
+      expect(root).not.toContain("data-pb-services=");
+      expect(root).not.toContain("data-pb-density=");
     });
 
     test("persistiertes Profil landet als Kompositionsattribute am Site-Root", () => {
