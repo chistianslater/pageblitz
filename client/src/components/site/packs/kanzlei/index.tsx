@@ -405,6 +405,22 @@ const KanzleiPage: React.FC<{
           }
         />
       </nav>
+      {navList.length > 0 && (
+        <aside className="pb-kz-section-index" aria-label="Seitenindex">
+          <span>Fachgebiete</span>
+          <div>
+            {navList.map((item, i) => (
+              <a
+                key={item.key}
+                href={item.href}
+                aria-current={item.current ? "page" : undefined}
+              >
+                {String(i + 1).padStart(2, "0")} {item.label}
+              </a>
+            ))}
+          </div>
+        </aside>
+      )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
           <div className="pb-kz-watermark" aria-hidden="true">

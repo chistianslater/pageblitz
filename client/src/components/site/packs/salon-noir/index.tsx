@@ -358,6 +358,12 @@ const SalonNoirPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
+      {hero?.ctaText && (
+        <aside className="pb-sn-booking" aria-label="Terminbuchung">
+          <span>Ihr Termin</span>
+          <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
+        </aside>
+      )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
           <div className="pb-sn-hero-inner">

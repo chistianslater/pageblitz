@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { MARKTPLATZ_CSS } from "./css";
 
 describe("Pack marktplatz", () => {
   test("Verfassung registriert, Signatur enthält Sticker + Kritzel-Unterstreichung", () => {
@@ -36,5 +37,18 @@ describe("Pack marktplatz", () => {
       <SiteRenderer data={{ ...data, hiddenSections: ["about"] }} />
     );
     expect(h).not.toContain('id="ueber-uns"');
+  });
+
+  test("Sticker-Stagger, Sticky-Schnupper-CTA und Mobile-Illustration", () => {
+    expect(html).toContain('class="pb-mp-trial-cta"');
+    expect(MARKTPLATZ_CSS).toContain("@keyframes pb-mp-guide-in");
+    expect(MARKTPLATZ_CSS).toContain(".pb-mp-sticker.outline{animation-delay:");
+    expect(MARKTPLATZ_CSS).toContain("@media(max-width:840px)");
+    expect(MARKTPLATZ_CSS).toContain(
+      ".pb-mp-photo-wrap{display:block;width:min(72%,280px)"
+    );
+    expect(MARKTPLATZ_CSS).toContain("prefers-reduced-motion:reduce");
+    expect(MARKTPLATZ_CSS).toContain("(pointer:fine)");
+    expect(MARKTPLATZ_CSS).not.toContain("infinite");
   });
 });

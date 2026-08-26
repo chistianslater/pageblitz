@@ -375,8 +375,25 @@ const PatinaPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
+      {navList.length > 0 && (
+        <aside className="pb-pa-chapters" aria-label="Kapitel">
+          <span>Kapitel</span>
+          <div>
+            {navList.map((item, i) => (
+              <a
+                key={item.key}
+                href={item.href}
+                aria-current={item.current ? "page" : undefined}
+              >
+                {String(i + 1).padStart(2, "0")}
+                <span className="pb-pa-chapter-label">{item.label}</span>
+              </a>
+            ))}
+          </div>
+        </aside>
+      )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-pa-hero">
           <div className="pb-pa-init" aria-hidden="true">

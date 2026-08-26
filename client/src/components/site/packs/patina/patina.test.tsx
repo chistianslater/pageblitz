@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { PATINA_CSS } from "./css";
 
 describe("Pack patina", () => {
   test("Verfassung registriert, Signatur enthält Initial-Wasserzeichen + Bogen-Bilder", () => {
@@ -35,5 +36,15 @@ describe("Pack patina", () => {
       <SiteRenderer data={{ ...data, hiddenSections: ["about"] }} />
     );
     expect(h).not.toContain('id="ueber-uns"');
+  });
+
+  test("Papierseiten-Reveal und Sticky-Kapitelmarke sind responsiv", () => {
+    expect(html).toContain('class="pb-pa-chapters"');
+    expect(PATINA_CSS).toContain("@keyframes pb-pa-page-turn");
+    expect(PATINA_CSS).toContain("scroll-margin-top");
+    expect(PATINA_CSS).toContain("@media(max-width:840px)");
+    expect(PATINA_CSS).toContain("prefers-reduced-motion:reduce");
+    expect(PATINA_CSS).toContain("(pointer:fine)");
+    expect(PATINA_CSS).not.toContain("infinite");
   });
 });

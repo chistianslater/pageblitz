@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { KANZLEI_CSS } from "./css";
 
 describe("Pack kanzlei", () => {
   test("Verfassung registriert, Signatur enthält Raster + Mono-Index", () => {
@@ -23,5 +24,15 @@ describe("Pack kanzlei", () => {
   });
   test("Kennzahlen-Leiste rendert", () => {
     expect(html).toContain("pb-kz-facts");
+  });
+  test("Raster-Motion, Sticky-Index und responsive Motion-Fallbacks", () => {
+    expect(html).toContain('class="pb-kz-section-index"');
+    expect(KANZLEI_CSS).toContain("@keyframes pb-kz-grid-build");
+    expect(KANZLEI_CSS).toContain("position:sticky");
+    expect(KANZLEI_CSS).toContain("scroll-margin-top");
+    expect(KANZLEI_CSS).toContain("@media(max-width:840px)");
+    expect(KANZLEI_CSS).toContain("prefers-reduced-motion:reduce");
+    expect(KANZLEI_CSS).toContain("(pointer:fine)");
+    expect(KANZLEI_CSS).not.toContain("infinite");
   });
 });

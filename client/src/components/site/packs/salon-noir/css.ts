@@ -5,7 +5,7 @@ export const SALON_NOIR_CSS = `
 .pb-sn-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;justify-content:center;gap:28px;padding:26px 40px;border-bottom:1px solid var(--pb-line);flex-wrap:wrap}
 .pb-sn-nav-links{display:flex;align-items:center;gap:20px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;flex-wrap:wrap;color:var(--pb-muted)}
 .pb-sn-nav-links a{transition:color .15s}
-.pb-sn-nav-links a:hover,.pb-sn-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-sn-nav-links a:focus-visible{color:var(--pb-accent)}
 .pb-sn-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-sn-logo{font-family:var(--pb-font-display);font-style:italic;font-weight:500;letter-spacing:.3em;text-transform:uppercase;font-size:15px;padding:0 8px;white-space:nowrap}
 .pb-sn-hero{position:relative;padding:64px 40px 72px}
@@ -20,7 +20,7 @@ export const SALON_NOIR_CSS = `
 @media(min-width:1160px){.pb-sn-hero h1{position:relative;z-index:2;margin-right:-64px;max-width:16ch}}
 .pb-sn-sub{margin-top:18px;color:var(--pb-muted);font-size:15px;max-width:44ch}
 .pb-salon-noir a.pb-sn-cta{display:inline-block;margin-top:28px;border:1px solid var(--pb-accent);color:var(--pb-accent);background:transparent;padding:13px 30px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;transition:background .15s,color .15s}
-.pb-sn-cta:hover,.pb-sn-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
+.pb-sn-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
 .pb-sn-photo{position:relative;z-index:1;aspect-ratio:3/4;background-color:var(--pb-surface);background-size:cover;background-position:center;border:1px solid color-mix(in srgb, var(--pb-accent) 45%, transparent)}
 .pb-sn-vert{position:absolute;right:14px;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--pb-muted);white-space:nowrap;pointer-events:none;margin:0}
 .pb-sn-section{padding:64px 40px;border-top:1px solid var(--pb-line)}
@@ -66,11 +66,19 @@ export const SALON_NOIR_CSS = `
 .pb-sn-hours td:last-child{text-align:right}
 .pb-sn-cta-card p{max-width:46ch;margin:0 0 22px;color:var(--pb-muted)}
 .pb-salon-noir a[href^="tel:"],.pb-salon-noir a[href^="mailto:"]{color:var(--pb-ink);border-bottom:1px solid var(--pb-line);padding-bottom:1px;transition:border-color .15s,color .15s}
-.pb-salon-noir a[href^="tel:"]:hover,.pb-salon-noir a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}
+.pb-salon-noir a[href^="tel:"]:focus-visible,.pb-salon-noir a[href^="mailto:"]:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 .pb-sn-footer{padding:32px 40px;font-size:12px;color:var(--pb-muted);border-top:1px solid var(--pb-line);text-align:center}
 .pb-sn-footer a{border-bottom:1px solid var(--pb-line)}
-.pb-sn-footer a:hover,.pb-sn-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-sn-frame{inset:8px}.pb-sn-nav{padding:14px 18px}.pb-sn-nav-links{display:none}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:40px 20px 44px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
+.pb-sn-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
+.pb-sn-booking{position:sticky;top:80px;z-index:32;margin:12px 32px 0 auto;width:fit-content;display:flex;align-items:center;gap:16px;padding:8px 9px 8px 16px;border:1px solid color-mix(in srgb,var(--pb-accent) 55%,transparent);background:var(--pb-canvas);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-sn-booking a{padding:8px 14px;background:var(--pb-accent);color:var(--pb-accent-contrast)}
+.pb-sn-section,.pb-sn-hero{scroll-margin-top:138px}
+@media(hover:hover) and (pointer:fine){.pb-sn-nav-links a:hover{color:var(--pb-accent)}.pb-sn-cta:hover{background:var(--pb-accent);color:var(--pb-accent-contrast)}.pb-salon-noir a[href^="tel:"]:hover,.pb-salon-noir a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}.pb-sn-footer a:hover{color:var(--pb-accent);border-color:var(--pb-accent)}.pb-sn-booking a:hover{opacity:.82}}
+@media(prefers-reduced-motion:no-preference){.pb-sn-frame{animation:pb-sn-gold-sweep 2.8s cubic-bezier(.35,0,.15,1) both}.pb-sn-photo{animation:pb-sn-mat-in 1.4s .4s ease-out both}}
+@keyframes pb-sn-gold-sweep{from{clip-path:polygon(0 0,0 0,0 0,0 0)}to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
+@keyframes pb-sn-mat-in{from{clip-path:inset(8%);opacity:.2;transform:scale(.985)}to{clip-path:inset(0);opacity:1;transform:none}}
+@media(max-width:840px){.pb-sn-frame{inset:8px}.pb-sn-nav{padding:14px 18px}.pb-sn-nav-links{display:none}.pb-salon-noir .pb-mnav{display:block;position:relative;margin-left:auto;flex-shrink:0}.pb-salon-noir .pb-mnav-toggle{box-sizing:border-box;list-style:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--pb-line);border-radius:var(--pb-radius-button);background:var(--pb-canvas);color:var(--pb-ink)}.pb-salon-noir .pb-mnav-toggle::-webkit-details-marker{display:none}.pb-salon-noir .pb-mnav-icon{display:flex;flex-direction:column;gap:5px;width:20px}.pb-salon-noir .pb-mnav-icon span{display:block;height:2px;background:currentColor}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(1){transform:translateY(7px) rotate(45deg)}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(2){opacity:0}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}.pb-salon-noir .pb-mnav-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:80;display:flex;flex-direction:column;min-width:min(264px,84vw);padding:6px;background:var(--pb-canvas);border:1px solid var(--pb-line)}.pb-salon-noir .pb-mnav-panel a{display:flex;align-items:center;min-height:44px;padding:8px 14px;font-size:17px}.pb-sn-booking{top:81px;margin-inline:20px;max-width:calc(100% - 40px)}.pb-sn-section,.pb-sn-hero{scroll-margin-top:140px}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:40px 20px 44px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-contact{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.pb-salon-noir *,.pb-salon-noir *::before,.pb-salon-noir *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .pb-sn-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-sn-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-sn-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

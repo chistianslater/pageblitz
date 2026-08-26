@@ -382,7 +382,7 @@ const MarktplatzPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
@@ -423,6 +423,12 @@ const MarktplatzPage: React.FC<{
           </div>
           <div className="pb-mp-scallop" aria-hidden="true" />
         </section>
+      )}
+      {hero?.ctaText && (
+        <aside className="pb-mp-trial-cta" aria-label="Schnupperstunde">
+          <span>Neugierig?</span>
+          <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
+        </aside>
       )}
       {sections
         .filter(s => s.type !== "hero")

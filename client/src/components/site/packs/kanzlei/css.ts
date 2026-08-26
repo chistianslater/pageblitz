@@ -6,7 +6,7 @@ export const KANZLEI_CSS = `
 .pb-kz-logo{font-weight:700;font-family:var(--pb-font-display)}
 .pb-kz-nav-links{display:flex;align-items:center;gap:20px;margin-left:auto}
 .pb-kz-nav-links a{transition:color .15s}
-.pb-kz-nav-links a:hover,.pb-kz-nav-links a:focus-visible{color:var(--pb-accent)}
+.pb-kz-nav-links a:focus-visible{color:var(--pb-accent)}
 .pb-kz-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-kz-idx{position:absolute;right:32px;top:86px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-accent);text-align:right;line-height:1.9}
 .pb-kz-watermark{position:absolute;right:20px;bottom:-40px;font-family:var(--pb-font-display);font-size:200px;color:var(--pb-accent);opacity:.07;line-height:1;pointer-events:none}
@@ -19,9 +19,9 @@ export const KANZLEI_CSS = `
 .pb-kz-facts div{padding:14px 14px 0 28px;font-size:12px;color:var(--pb-muted)}
 .pb-kz-facts b{display:block;font-size:19px;color:var(--pb-ink);font-weight:600;letter-spacing:-.02em}
 .pb-kanzlei a.pb-kz-link{color:var(--pb-accent);font-weight:600;text-decoration:none;border-bottom:2px solid var(--pb-accent);padding-bottom:1px;transition:opacity .15s}
-.pb-kz-link:hover,.pb-kz-link:focus-visible{opacity:.7}
+.pb-kz-link:focus-visible{opacity:.7}
 .pb-kanzlei a[href^="tel:"],.pb-kanzlei a[href^="mailto:"]{color:var(--pb-ink);border-bottom:1px solid var(--pb-line);padding-bottom:1px;transition:border-color .15s,color .15s}
-.pb-kanzlei a[href^="tel:"]:hover,.pb-kanzlei a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}
+.pb-kanzlei a[href^="tel:"]:focus-visible,.pb-kanzlei a[href^="mailto:"]:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
 .pb-kz-section{padding:72px 32px;border-top:1px solid var(--pb-line);position:relative}
 .pb-kz-section h2{font-family:var(--pb-font-display);font-weight:600;letter-spacing:-.02em;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:26px}
 .pb-kz-services-grid{display:grid;grid-template-columns:1fr 1fr;align-items:start}
@@ -65,8 +65,20 @@ export const KANZLEI_CSS = `
 .pb-kz-menu-category h3{font-family:var(--pb-font-utility);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--pb-accent);margin-bottom:10px}
 .pb-kz-footer{border-top:1px solid var(--pb-ink);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-kz-footer a{border-bottom:1px solid var(--pb-line)}
-.pb-kz-footer a:hover,.pb-kz-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-@media(max-width:720px){.pb-kz-idx{display:block;right:18px;top:18px;font-size:9px}.pb-kz-hero{padding:78px 20px 42px}.pb-kz-facts{grid-template-columns:1fr 1fr}.pb-kz-facts div{padding:14px 10px 0;border-right:1px solid var(--pb-line)}.pb-kz-services-grid{grid-template-columns:1fr}.pb-kz-services-grid h2{margin-bottom:14px}.pb-kz-services-list{padding-left:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-nav-links{display:none}.pb-kz-about-grid{grid-template-columns:1fr;gap:20px}.pb-kz-about-img{order:-1;max-height:55vw}.pb-kz-gallery{grid-template-columns:1fr 1fr;gap:8px}.pb-kz-gallery img:nth-child(n){grid-column:auto;margin-top:0}.pb-kz-gallery img:first-child{grid-column:1/-1}}
+.pb-kz-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
+.pb-kz-section-index{position:sticky;top:67px;z-index:32;display:flex;align-items:center;gap:24px;padding:9px 32px;background:color-mix(in srgb,var(--pb-canvas) 94%,transparent);border-bottom:1px solid var(--pb-line);font-family:var(--pb-font-utility);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.pb-kz-section-index>span{color:var(--pb-accent);font-weight:700}
+.pb-kz-section-index>div{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none}
+.pb-kz-section-index a{white-space:nowrap;color:var(--pb-muted)}
+.pb-kz-section-index a:focus-visible,.pb-kz-section-index a[aria-current="page"]{color:var(--pb-ink)}
+.pb-kz-section,.pb-kz-hero{scroll-margin-top:112px}
+.pb-kz-hero::before{content:"";position:absolute;inset:18px 0 auto;height:42%;pointer-events:none;opacity:.28;background:linear-gradient(90deg,transparent 24.9%,var(--pb-accent) 25%,transparent 25.1%,transparent 49.9%,var(--pb-accent) 50%,transparent 50.1%,transparent 74.9%,var(--pb-accent) 75%,transparent 75.1%)}
+@media(hover:hover) and (pointer:fine){.pb-kz-nav-links a:hover{color:var(--pb-accent)}.pb-kz-link:hover{opacity:.7}.pb-kanzlei a[href^="tel:"]:hover,.pb-kanzlei a[href^="mailto:"]:hover{color:var(--pb-accent);border-color:var(--pb-accent)}.pb-kz-footer a:hover{color:var(--pb-accent);border-color:var(--pb-accent)}.pb-kz-section-index a:hover{color:var(--pb-ink)}}
+@media(prefers-reduced-motion:no-preference){.pb-kz-hero::before{animation:pb-kz-grid-build 1.4s cubic-bezier(.2,.75,.25,1) both}.pb-kz-hero h1,.pb-kz-eyebrow{animation:pb-kz-copy-in .65s .35s ease-out both}}
+@keyframes pb-kz-grid-build{from{clip-path:inset(0 100% 0 0);opacity:0}to{clip-path:inset(0);opacity:.28}}
+@keyframes pb-kz-copy-in{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@media(max-width:840px){.pb-kz-nav-links{display:none}.pb-kanzlei .pb-mnav{display:block;position:relative;margin-left:auto;flex-shrink:0}.pb-kanzlei .pb-mnav-toggle{box-sizing:border-box;list-style:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--pb-line);border-radius:var(--pb-radius-button);background:var(--pb-canvas);color:var(--pb-ink)}.pb-kanzlei .pb-mnav-toggle::-webkit-details-marker{display:none}.pb-kanzlei .pb-mnav-icon{display:flex;flex-direction:column;gap:5px;width:20px}.pb-kanzlei .pb-mnav-icon span{display:block;height:2px;background:currentColor}.pb-kanzlei .pb-mnav[open] .pb-mnav-icon span:nth-child(1){transform:translateY(7px) rotate(45deg)}.pb-kanzlei .pb-mnav[open] .pb-mnav-icon span:nth-child(2){opacity:0}.pb-kanzlei .pb-mnav[open] .pb-mnav-icon span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}.pb-kanzlei .pb-mnav-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:80;display:flex;flex-direction:column;min-width:min(264px,84vw);padding:6px;background:var(--pb-canvas);border:1px solid var(--pb-line)}.pb-kanzlei .pb-mnav-panel a{display:flex;align-items:center;min-height:44px;padding:8px 14px;font-size:17px}.pb-kz-section-index{top:85px;padding-inline:20px}.pb-kz-section,.pb-kz-hero{scroll-margin-top:136px}.pb-kz-idx{display:block;right:18px;top:18px;font-size:9px}.pb-kz-hero{padding:78px 20px 42px}.pb-kz-facts{grid-template-columns:1fr 1fr}.pb-kz-facts div{padding:14px 10px 0;border-right:1px solid var(--pb-line)}.pb-kz-services-grid{grid-template-columns:1fr}.pb-kz-services-grid h2{margin-bottom:14px}.pb-kz-services-list{padding-left:0}.pb-kz-contact{grid-template-columns:1fr}.pb-kz-about-grid{grid-template-columns:1fr;gap:20px}.pb-kz-about-img{order:-1;max-height:55vw}.pb-kz-gallery{grid-template-columns:1fr 1fr;gap:8px}.pb-kz-gallery img:nth-child(n){grid-column:auto;margin-top:0}.pb-kz-gallery img:first-child{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.pb-kanzlei *,.pb-kanzlei *::before,.pb-kanzlei *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .pb-kz-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-kz-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-kz-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

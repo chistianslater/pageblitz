@@ -5,6 +5,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { MORGENLICHT_CSS } from "./css";
 
 // Mittwoch, deckt sich mit dem Fixture-Öffnungszeitenbereich "Mo–Fr".
 const WEDNESDAY = new Date("2026-08-19T10:00:00");
@@ -48,5 +49,14 @@ describe("Pack morgenlicht", () => {
       );
       expect(satHtml).not.toContain("Heute geöffnet");
     });
+  });
+  test("Fokus-Motion, Sticky-Praxisinfo und Mobile-Badge-Fallbacks", () => {
+    expect(html).toContain('class="pb-ml-practice-dock"');
+    expect(MORGENLICHT_CSS).toContain("@keyframes pb-ml-focus");
+    expect(MORGENLICHT_CSS).toContain("overflow-wrap:anywhere");
+    expect(MORGENLICHT_CSS).toContain("@media(max-width:840px)");
+    expect(MORGENLICHT_CSS).toContain("prefers-reduced-motion:reduce");
+    expect(MORGENLICHT_CSS).toContain("(pointer:fine)");
+    expect(MORGENLICHT_CSS).not.toContain("infinite");
   });
 });

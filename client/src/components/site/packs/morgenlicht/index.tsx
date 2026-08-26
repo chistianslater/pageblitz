@@ -406,6 +406,18 @@ const MorgenlichtPage: React.FC<{
           }
         />
       </nav>
+      {(hero?.ctaText || todaysHours || contact?.city) && (
+        <aside className="pb-ml-practice-dock" aria-label="Praxisinformation">
+          <span>
+            {todaysHours
+              ? `Heute ${todaysHours}`
+              : (contact?.city ?? "Praxisinformation")}
+          </span>
+          {hero?.ctaText && (
+            <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
+          )}
+        </aside>
+      )}
       {hero && (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
