@@ -74,28 +74,39 @@ const LegacyWebsiteRedirect = lazy(
   () => import("./pages/onboarding-v2/LegacyWebsiteRedirect")
 );
 
-function PageLoader() {
+function PageLoader({ inline = false }: { inline?: boolean }) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-slate-950">
-      <svg
-        className="w-8 h-8 animate-spin text-blue-500"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        />
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8v8z"
-        />
-      </svg>
+    <div
+      className={`${inline ? "h-64" : "fixed inset-0 min-h-screen"} flex items-center justify-center bg-lp-canvas p-6 text-lp-ink`}
+      role="status"
+      aria-label="Pageblitz wird geladen"
+    >
+      <div className="w-full max-w-[18rem]">
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="grid h-9 w-9 place-items-center rounded-[7px] bg-lp-ink text-lg font-semibold text-lp-canvas"
+          >
+            ↯
+          </span>
+          <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
+            Pageblitz
+          </span>
+        </div>
+        <p className="lp-kicker mt-8">Einen Moment</p>
+        <p className="mt-2 text-[0.95rem] text-lp-muted">
+          Dein Studio wird vorbereitet …
+        </p>
+        <div className="mt-5 grid grid-cols-3 gap-1.5" aria-hidden="true">
+          {[0, 1, 2].map(index => (
+            <span
+              key={index}
+              className="h-1 animate-pulse rounded-full bg-lp-accent motion-reduce:animate-none"
+              style={{ animationDelay: `${index * 180}ms` }}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -109,29 +120,7 @@ function AdminSwitch() {
   return (
     <Suspense
       key={location}
-      fallback={
-        <div className="flex items-center justify-center h-64">
-          <svg
-            className="w-8 h-8 animate-spin text-blue-500"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8z"
-            />
-          </svg>
-        </div>
-      }
+      fallback={<PageLoader inline />}
     >
       <Switch>
         <Route path="/admin" component={Home} />

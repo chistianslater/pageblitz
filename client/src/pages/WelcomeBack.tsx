@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Clock, ArrowRight, Sparkles } from "lucide-react";
+import { Clock, ArrowRight } from "lucide-react";
 
 export default function WelcomeBack() {
   const [, navigate] = useLocation();
@@ -40,15 +40,15 @@ export default function WelcomeBack() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-8 text-center">
-          <h1 className="text-xl font-semibold text-slate-900 mb-2">Kein Token angegeben</h1>
-          <p className="text-slate-600 text-sm mb-6">
+      <div className="flex min-h-screen items-center justify-center bg-lp-canvas p-6 text-lp-ink">
+        <div className="w-full max-w-md rounded-[14px] border border-lp-line bg-lp-surface p-8 text-center">
+          <h1 className="mb-2 text-xl font-semibold">Kein Token angegeben</h1>
+          <p className="mb-6 text-sm text-lp-muted">
             Diese Seite erreichst du nur über einen Link aus deiner Email.
           </p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors"
+            className="rounded-full bg-lp-accent px-6 py-3 font-medium text-lp-accent-ink transition-colors hover:bg-[#174a3b]"
           >
             Zur Startseite
           </button>
@@ -59,26 +59,40 @@ export default function WelcomeBack() {
 
   if (seedQuery.isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="text-slate-500">Lade deine Daten…</div>
+      <div className="flex min-h-screen items-center justify-center bg-lp-canvas p-6 text-lp-ink">
+        <div className="w-full max-w-[18rem]" role="status">
+          <div className="flex items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-[7px] bg-lp-ink text-lg font-semibold text-lp-canvas">
+              ↯
+            </span>
+            <span className="font-medium">Pageblitz</span>
+          </div>
+          <p className="lp-kicker mt-8">Einen Moment</p>
+          <p className="mt-2 text-sm text-lp-muted">Deine Daten werden geladen …</p>
+          <div className="mt-5 grid grid-cols-3 gap-1.5" aria-hidden="true">
+            <span className="h-1 animate-pulse rounded-full bg-lp-accent motion-reduce:animate-none" />
+            <span className="h-1 animate-pulse rounded-full bg-lp-accent [animation-delay:180ms] motion-reduce:animate-none" />
+            <span className="h-1 animate-pulse rounded-full bg-lp-accent [animation-delay:360ms] motion-reduce:animate-none" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (seedQuery.error || !seedQuery.data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-sm max-w-md w-full p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4">
+      <div className="flex min-h-screen items-center justify-center bg-lp-canvas p-6 text-lp-ink">
+        <div className="w-full max-w-md rounded-[14px] border border-lp-line bg-lp-surface p-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#f4e8df] text-lp-warn">
             <Clock className="w-6 h-6" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-900 mb-2">Link nicht mehr gültig</h1>
-          <p className="text-slate-600 text-sm mb-6">
+          <h1 className="mb-2 text-xl font-semibold">Link nicht mehr gültig</h1>
+          <p className="mb-6 text-sm text-lp-muted">
             {seedQuery.error?.message || "Dieser Link ist abgelaufen oder wurde bereits benutzt."}
           </p>
           <button
             onClick={() => navigate("/")}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors"
+            className="rounded-full bg-lp-accent px-6 py-3 font-medium text-lp-accent-ink transition-colors hover:bg-[#174a3b]"
           >
             Neuen Entwurf starten
           </button>
@@ -93,19 +107,23 @@ export default function WelcomeBack() {
     rawBusinessName && !rawBusinessName.startsWith("Lead ") ? rawBusinessName : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-violet-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl shadow-xl max-w-lg w-full p-8 sm:p-10">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white flex items-center justify-center mb-6">
-          <Sparkles className="w-6 h-6" />
+    <div className="flex min-h-screen items-center justify-center bg-lp-canvas p-6 text-lp-ink">
+      <div className="w-full max-w-lg rounded-[16px] border border-lp-line bg-lp-surface p-8 shadow-[0_28px_60px_-42px_rgba(29,26,23,0.55)] sm:p-10">
+        <div className="mb-7 flex items-center gap-2.5">
+          <span className="grid h-10 w-10 place-items-center rounded-[7px] bg-lp-ink text-xl font-semibold text-lp-canvas">
+            ↯
+          </span>
+          <span className="font-medium">Pageblitz</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-3 leading-tight">
+        <p className="lp-kicker mb-3">Schön, dass du wieder da bist</p>
+        <h1 className="mb-3 text-2xl font-semibold leading-tight tracking-[-0.02em] sm:text-3xl">
           Willkommen zurück!
         </h1>
-        <p className="text-slate-600 text-base leading-relaxed mb-6">
+        <p className="mb-6 text-base leading-relaxed text-lp-muted">
           {businessName ? (
             <>
-              Vor einer Woche hast du angefangen, eine Website für <strong className="text-slate-900">{businessName}</strong> zu
+              Vor einer Woche hast du angefangen, eine Website für <strong className="text-lp-ink">{businessName}</strong> zu
               bauen. Deine Daten haben wir noch &ndash; in 60 Sekunden bauen wir dir einen frischen Entwurf.
             </>
           ) : (
@@ -115,19 +133,19 @@ export default function WelcomeBack() {
           )}
         </p>
 
-        <div className="bg-slate-50 rounded-xl p-4 mb-6">
-          <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Email-Adresse</p>
-          <p className="text-sm text-slate-900 font-medium">{email}</p>
+        <div className="mb-6 rounded-[10px] border border-lp-line bg-lp-canvas p-4">
+          <p className="mb-1 text-xs uppercase tracking-wide text-lp-muted">E-Mail-Adresse</p>
+          <p className="text-sm font-medium">{email}</p>
         </div>
 
         {error && (
-          <p className="text-red-600 text-sm mb-4">{error}</p>
+          <p className="mb-4 text-sm text-lp-warn">{error}</p>
         )}
 
         <button
           onClick={handleStart}
           disabled={creating}
-          className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl font-semibold text-base transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-lp-accent py-4 text-base font-semibold text-lp-accent-ink transition-colors hover:bg-[#174a3b] disabled:opacity-60"
         >
           {creating ? "Baue neuen Entwurf…" : (
             <>
@@ -139,7 +157,7 @@ export default function WelcomeBack() {
 
         <button
           onClick={() => navigate("/")}
-          className="w-full mt-3 py-3 text-slate-500 hover:text-slate-700 text-sm transition-colors"
+          className="mt-3 w-full py-3 text-sm text-lp-muted transition-colors hover:text-lp-ink"
         >
           Nein, vielleicht später
         </button>

@@ -16,7 +16,7 @@ const REDUCED_MOTION_TICK_MS = 1_000;
 
 /**
  * `prefers-reduced-motion: reduce` beobachten (Muster wie
- * client/src/components/landing/StudioFrame.tsx) — der Fortschrittsbalken
+ * client/src/components/landing/HeroBuild.tsx) — der Fortschrittsbalken
  * ersetzt dann den rAF-Loop durch grobe 1-Sekunden-Updates, konsistent zum
  * Skeleton/Reveal, die per CSS-Media-Query ebenfalls statisch werden.
  */
