@@ -22,6 +22,8 @@ interface PreviewFrameProps {
   onInlineTextEdit?: (path: string, value: string) => void;
   /** Sektionsanker, der beim Bearbeiten rechts sichtbar sein soll. */
   focusAnchor?: string | null;
+  /** Meldet das geladene iframe z. B. für Scroll-Weiterleitung im Splash. */
+  onIframeReady?: (iframe: HTMLIFrameElement) => void;
 }
 
 export function normalizeInlineText(value: string): string {
@@ -45,6 +47,7 @@ export function PreviewFrame({
   inlineTargets,
   onInlineTextEdit,
   focusAnchor,
+  onIframeReady,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
   if (packOverride) params.set("pack", packOverride);
@@ -85,6 +88,7 @@ export function PreviewFrame({
   const enableInlineEditing = (
     iframe: React.SyntheticEvent<HTMLIFrameElement>
   ) => {
+    onIframeReady?.(iframe.currentTarget);
     // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
     window.setTimeout(scrollToFocus, 80);
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;

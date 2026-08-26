@@ -187,6 +187,14 @@ test.describe("Studio", () => {
       .getByRole("button", { name: "Schriftauswahl schließen" })
       .click();
 
+    const previewFrame = page.frameLocator(".pb-design-center iframe");
+    const scrollBefore = await previewFrame.locator("html").evaluate(() => scrollY);
+    await page.locator(".pb-design-swipe-surface").hover();
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(200);
+    const scrollAfter = await previewFrame.locator("html").evaluate(() => scrollY);
+    expect(scrollAfter).toBeGreaterThan(scrollBefore);
+
     await Promise.all([
       page.waitForResponse(
         res =>

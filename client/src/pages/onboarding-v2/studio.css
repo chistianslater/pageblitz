@@ -287,9 +287,9 @@
 .pb-design-swipe-surface {
   position: absolute;
   z-index: 4;
-  inset: 3.25rem 0 3.8rem;
+  inset: 3.25rem 14px 3.8rem 0;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
 }
 .pb-design-swipe-surface:active {
   cursor: grabbing;

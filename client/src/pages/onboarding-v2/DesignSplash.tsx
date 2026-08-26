@@ -42,7 +42,12 @@ export function DesignSplash({
   const [activePackId, setActivePackId] = useState(currentPackId);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [busyId, setBusyId] = useState<PackId | null>(null);
-  const pointerStart = React.useRef<number | null>(null);
+  const pointerGesture = React.useRef<{
+    x: number;
+    y: number;
+    lastY: number;
+  } | null>(null);
+  const previewIframe = React.useRef<HTMLIFrameElement | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right"
   );
@@ -205,6 +210,9 @@ export function DesignSplash({
               version={previewVersion}
               device={device}
               packOverride={activePackId}
+              onIframeReady={iframe => {
+                previewIframe.current = iframe;
+              }}
             />
             <DesignQuickControls
               token={token}
@@ -216,20 +224,50 @@ export function DesignSplash({
             <div
               className="pb-design-swipe-surface"
               aria-hidden="true"
+              onWheel={event => {
+                event.preventDefault();
+                previewIframe.current?.contentWindow?.scrollBy(
+                  0,
+                  event.deltaY
+                );
+              }}
               onPointerDown={event => {
-                pointerStart.current = event.clientX;
+                pointerGesture.current = {
+                  x: event.clientX,
+                  y: event.clientY,
+                  lastY: event.clientY,
+                };
                 event.currentTarget.setPointerCapture(event.pointerId);
               }}
+              onPointerMove={event => {
+                const gesture = pointerGesture.current;
+                if (!gesture) return;
+                const totalX = event.clientX - gesture.x;
+                const totalY = event.clientY - gesture.y;
+                // Nur überwiegend vertikale Bewegung an die Website
+                // weiterreichen. Horizontale Bewegung bleibt für den Swipe.
+                if (Math.abs(totalY) > Math.abs(totalX)) {
+                  const deltaY = gesture.lastY - event.clientY;
+                  previewIframe.current?.contentWindow?.scrollBy(0, deltaY);
+                  gesture.lastY = event.clientY;
+                }
+              }}
               onPointerUp={event => {
-                if (pointerStart.current === null) return;
-                const delta = event.clientX - pointerStart.current;
-                pointerStart.current = null;
-                if (Math.abs(delta) < 45) return;
-                if (delta > 0 && previous) pick(previous.id, "left");
-                if (delta < 0 && next) pick(next.id, "right");
+                const gesture = pointerGesture.current;
+                if (!gesture) return;
+                const deltaX = event.clientX - gesture.x;
+                const deltaY = event.clientY - gesture.y;
+                pointerGesture.current = null;
+                if (
+                  Math.abs(deltaX) < 45 ||
+                  Math.abs(deltaX) <= Math.abs(deltaY)
+                )
+                  return;
+                if (deltaX > 0 && previous) pick(previous.id, "left");
+                if (deltaX < 0 && next) pick(next.id, "right");
               }}
               onPointerCancel={() => {
-                pointerStart.current = null;
+                pointerGesture.current = null;
               }}
             />
             <button
