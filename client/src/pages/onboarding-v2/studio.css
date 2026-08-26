@@ -390,8 +390,9 @@
 }
 .pb-design-quick {
   position: absolute;
-  top: 3.65rem;
+  top: auto;
   right: 0.75rem;
+  bottom: 4.65rem;
   z-index: 8;
   width: auto;
   margin: 0;
@@ -445,8 +446,9 @@
 .pb-design-fan {
   position: absolute;
   z-index: 20;
-  top: calc(100% + 0.55rem);
+  top: auto;
   right: 0;
+  bottom: calc(100% + 0.55rem);
   width: min(32rem, calc(100vw - 2rem));
   padding: 0.8rem;
   border: 1px solid var(--st-line);
@@ -457,16 +459,16 @@
 }
 .pb-design-fan[data-kind="color"] {
   right: 0;
-  transform-origin: top right;
+  transform-origin: bottom right;
 }
 .pb-design-fan[data-kind="font"] {
   right: 0;
-  transform-origin: top right;
+  transform-origin: bottom right;
 }
 @keyframes pb-design-fan-open {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.94);
+    transform: translateY(8px) scale(0.94);
   }
   to {
     opacity: 1;
@@ -570,7 +572,9 @@
 }
 .pb-design-confirm {
   display: flex;
-  min-width: min(100%, 22rem);
+  width: min(100%, 22rem);
+  min-width: 0;
+  justify-content: center;
   margin: 0.8rem auto 0;
 }
 .pb-design-error {
