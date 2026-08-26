@@ -165,28 +165,27 @@ test.describe("Studio", () => {
     );
 
     await expect(
-      page.getByRole("heading", { name: "Gefällt dir diese Richtung?" })
+      page.getByRole("heading", { name: /Gefällt dir das Design/ })
     ).toBeVisible();
     await expect(
-      page.getByRole("group", { name: "Designrichtungen" })
-    ).toBeVisible();
-    await page
-      .getByText("Aufbau, Farben & Schriften anpassen", { exact: true })
-      .click();
-    await expect(page.getByText("Seitenaufbau", { exact: true })).toBeVisible();
+      page.getByRole("button", { name: /als Designrichtung verwenden/ })
+    ).toHaveCount(2);
     await expect(page.getByText("Akzentfarbe", { exact: true })).toBeVisible();
     await expect(page.getByText("Schriften", { exact: true })).toBeVisible();
+    await expect(page.getByText("Seitenaufbau", { exact: true })).toHaveCount(
+      0
+    );
 
     await Promise.all([
       page.waitForResponse(
         res =>
           res.url().includes("onboardingV2.selectStylePack") && res.ok()
       ),
-      page.getByRole("button", { name: "Passt so — weiter" }).click(),
+      page.getByRole("button", { name: "Dieses Design verwenden" }).click(),
     ]);
 
     await expect(
-      page.getByRole("heading", { name: "Gefällt dir diese Richtung?" })
+      page.getByRole("heading", { name: /Gefällt dir das Design/ })
     ).toBeHidden();
     await expect(
       page.getByRole("region", { name: "Fotos wählen" })

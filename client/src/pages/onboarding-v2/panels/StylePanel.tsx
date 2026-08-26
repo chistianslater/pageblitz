@@ -20,7 +20,6 @@ interface StyleCandidateListProps {
   onPick: (id: PackId) => void;
   /** Vom KI-Chat vorgeschlagenes Pack — bekommt eine "KI-Vorschlag"-Badge. */
   preselectPackId?: PackId | null;
-  layout?: "stack" | "carousel";
 }
 
 export function StyleCandidateList({
@@ -30,12 +29,10 @@ export function StyleCandidateList({
   busyId,
   onPick,
   preselectPackId = null,
-  layout = "stack",
 }: StyleCandidateListProps) {
   return (
     <div
       className="pb-studio-cands"
-      data-layout={layout}
       role="group"
       aria-label="Designrichtungen"
     >
@@ -105,8 +102,6 @@ interface StylePanelProps {
   fontPairId?: string | null;
   /** Gespeichertes Kompositionsprofil innerhalb der Designrichtung. */
   designProfile?: DesignProfile | null;
-  /** Vorgeschalteter Splash: Swipe-Karten + Theme direkt sichtbar. */
-  gateMode?: boolean;
 }
 
 export function StylePanel({
@@ -119,7 +114,6 @@ export function StylePanel({
   accent = null,
   fontPairId = null,
   designProfile = null,
-  gateMode = false,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
@@ -140,7 +134,6 @@ export function StylePanel({
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
-    count: gateMode ? 3 : 2,
   });
   // Der KI-Vorschlag muss immer sichtbar sein, auch wenn er nicht unter den
   // Kandidaten der aktuellen Runde ist — Name/Essenz kommen dann direkt aus
@@ -243,29 +236,22 @@ export function StylePanel({
         </p>
       )}
       {displayCandidates.length > 0 && (
-        <>
-          {gateMode && (
-            <p className="pb-design-swipe-hint" aria-hidden="true">
-              Wischen, um weitere Richtungen zu sehen →
-            </p>
-          )}
-          <StyleCandidateList
-            token={token}
-            candidates={displayCandidates}
-            currentPackId={activePackId}
-            busyId={busyId}
-            onPick={pick}
-            preselectPackId={preselectPackId}
-            layout={gateMode ? "carousel" : "stack"}
-          />
-        </>
+        <StyleCandidateList
+          token={token}
+          candidates={displayCandidates}
+          currentPackId={activePackId}
+          busyId={busyId}
+          onPick={pick}
+          preselectPackId={preselectPackId}
+        />
       )}
       {select.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {select.error.message}
         </p>
       )}
-      {gateMode ? (
+      <details className="pb-studio-theme-toggle">
+        <summary>Aufbau, Farben &amp; Schriften anpassen</summary>
         <ThemeEditor
           token={token}
           packId={activePackId}
@@ -273,21 +259,8 @@ export function StylePanel({
           fontPairId={fontPairId}
           designProfile={designProfile}
           onApplied={onApplied}
-          showLayoutControls={false}
         />
-      ) : (
-        <details className="pb-studio-theme-toggle">
-          <summary>Aufbau, Farben &amp; Schriften anpassen</summary>
-          <ThemeEditor
-            token={token}
-            packId={activePackId}
-            accent={accent}
-            fontPairId={fontPairId}
-            designProfile={designProfile}
-            onApplied={onApplied}
-          />
-        </details>
-      )}
+      </details>
     </PanelFrame>
   );
 }

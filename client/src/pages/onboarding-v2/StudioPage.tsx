@@ -8,6 +8,7 @@ import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { WizardBar } from "./WizardBar";
+import { DesignSplash } from "./DesignSplash";
 import {
   PreviewFrame,
   previewPath,
@@ -222,65 +223,20 @@ export default function StudioPage({ token }: { token: string }) {
   // über die Checkliste erreichbar — eine Quelle für Auswahl/Theme-Logik.
   if (state.status === "preview" && !styleConfirmed) {
     return (
-      <div className="pb-studio pb-design-gate">
-        <header className="pb-design-gate-brand">
-          <p className="pb-studio-kicker">Pageblitz</p>
-          <strong>{state.businessName}</strong>
-        </header>
-        <div className="pb-studio-layout">
-          <aside className="pb-studio-rail">
-            <div className="pb-design-gate-copy">
-              <p className="pb-studio-kicker">Dein Design</p>
-              <h1 className="pb-studio-title">Gefällt dir diese Richtung?</h1>
-              <p>
-                Wische durch die Designrichtungen und passe bei Bedarf direkt
-                Farbe und Schrift an. Danach geht es mit Fotos und Inhalten im
-                Studio weiter.
-              </p>
-            </div>
-            <StylePanel
-              token={token}
-              currentPackId={state.stylePackId}
-              category={state.category}
-              accent={state.doc.colorOverrides?.accent ?? null}
-              fontPairId={state.doc.fontPairId ?? null}
-              designProfile={state.doc.designProfile ?? null}
-              gateMode
-              onApplied={() => {
-                studio.refetch();
-                studio.bumpPreview();
-              }}
-              onClose={() => {}}
-              onNext={() => studio.refetch()}
-            />
-          </aside>
-          <main className="pb-studio-stage">
-            <div className="pb-studio-toolbar">
-              <div className="pb-studio-seg" aria-label="Gerät">
-                <button
-                  type="button"
-                  aria-pressed={device === "desktop"}
-                  onClick={() => setDevice("desktop")}
-                >
-                  Desktop
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={device === "mobile"}
-                  onClick={() => setDevice("mobile")}
-                >
-                  Mobil
-                </button>
-              </div>
-            </div>
-            <PreviewFrame
-              token={token}
-              version={studio.previewVersion}
-              device={device}
-            />
-          </main>
-        </div>
-      </div>
+      <DesignSplash
+        token={token}
+        businessName={state.businessName}
+        currentPackId={state.doc.stylePackId}
+        accent={state.doc.colorOverrides?.accent ?? null}
+        fontPairId={state.doc.fontPairId ?? null}
+        designProfile={state.doc.designProfile ?? null}
+        previewVersion={studio.previewVersion}
+        onApplied={() => {
+          studio.refetch();
+          studio.bumpPreview();
+        }}
+        onConfirmed={() => studio.refetch()}
+      />
     );
   }
 

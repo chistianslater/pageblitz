@@ -75,25 +75,4 @@ describe("StylePanel", () => {
     expect(html).toContain("Seitenaufbau");
     expect(html).toContain("Mosaik");
   });
-
-  test("Gate-Modus zeigt Swipe-Karten und Farben/Schriften offen, aber keine Layoutdetails", () => {
-    const html = renderWithTrpc(
-      <StylePanel
-        token={"t".repeat(32)}
-        currentPackId="werkbank"
-        category="handwerk"
-        preselectPackId="kanzlei"
-        gateMode
-        onApplied={() => {}}
-        onClose={() => {}}
-        onNext={() => {}}
-      />
-    );
-    expect(html).toContain('data-layout="carousel"');
-    expect(html).toContain("Wischen, um weitere Richtungen");
-    expect(html).toContain("Farben &amp; Schriften");
-    expect(html).toContain("Akzentfarbe");
-    expect(html).not.toContain("Seitenaufbau");
-    expect(html).not.toContain("<details");
-  });
 });
