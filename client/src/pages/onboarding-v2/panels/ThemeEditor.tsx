@@ -12,6 +12,7 @@ import {
   DESIGN_DENSITIES,
   IMAGE_TREATMENTS,
 } from "@shared/siteContract/designProfile";
+import { ACCENT_CHOICES } from "../themeChoices";
 
 /**
  * Studio-Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung unabhängig
@@ -20,20 +21,6 @@ import {
  * der 14 Packs. Wie das Fotos-Panel gilt Auto-Apply: jede Wahl speichert
  * sofort (updateTheme) und bumped über onApplied die Live-Vorschau.
  */
-
-/** Kuratierte Akzente — allesamt erprobte Pack-Farben (shared/stylePacks). */
-const ACCENT_CHOICES: readonly { hex: string; name: string }[] = [
-  { hex: "#1D3FBF", name: "Royal" },
-  { hex: "#2E7E78", name: "Teal" },
-  { hex: "#4A6741", name: "Blattgrün" },
-  { hex: "#5E1F22", name: "Bordeaux" },
-  { hex: "#E0301E", name: "Signalrot" },
-  { hex: "#FF4D00", name: "Orange" },
-  { hex: "#A8532F", name: "Terrakotta" },
-  { hex: "#C99B4A", name: "Gold" },
-  { hex: "#D4749C", name: "Rosa" },
-  { hex: "#7A5F2E", name: "Bronze" },
-];
 
 /** WCAG-Relative-Luminanz eines #rrggbb-Hexwerts. */
 function relLuminance(hex: string): number {

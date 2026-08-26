@@ -170,11 +170,22 @@ test.describe("Studio", () => {
     await expect(
       page.getByRole("button", { name: /als Designrichtung verwenden/ })
     ).toHaveCount(2);
-    await expect(page.getByText("Akzentfarbe", { exact: true })).toBeVisible();
-    await expect(page.getByText("Schriften", { exact: true })).toBeVisible();
+    await expect(page.getByText("Schrift", { exact: true })).toBeVisible();
     await expect(page.getByText("Seitenaufbau", { exact: true })).toHaveCount(
       0
     );
+    await page.getByRole("button", { name: /Farbe/ }).click();
+    await expect(
+      page.getByText("Akzentfarbe", { exact: true })
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Farbauswahl schließen" }).click();
+    await page.getByRole("button", { name: /Schrift/ }).click();
+    await expect(
+      page.getByText("Schriftkombination", { exact: true })
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Schriftauswahl schließen" })
+      .click();
 
     await Promise.all([
       page.waitForResponse(

@@ -3,9 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
-import type { DesignProfile } from "@shared/siteContract/designProfile";
 import { PreviewFrame } from "./PreviewFrame";
-import { ThemeEditor } from "./panels/ThemeEditor";
+import { DesignQuickControls } from "./DesignQuickControls";
 
 interface Candidate {
   id: PackId;
@@ -19,7 +18,6 @@ interface DesignSplashProps {
   currentPackId: PackId;
   accent?: string | null;
   fontPairId?: string | null;
-  designProfile?: DesignProfile | null;
   previewVersion: number;
   onApplied: () => void;
   onConfirmed: () => void;
@@ -36,7 +34,6 @@ export function DesignSplash({
   currentPackId,
   accent = null,
   fontPairId = null,
-  designProfile = null,
   previewVersion,
   onApplied,
   onConfirmed,
@@ -45,6 +42,10 @@ export function DesignSplash({
   const [activePackId, setActivePackId] = useState(currentPackId);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [busyId, setBusyId] = useState<PackId | null>(null);
+  const pointerStart = React.useRef<number | null>(null);
+  const [slideDirection, setSlideDirection] = useState<"left" | "right">(
+    "right"
+  );
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
@@ -81,9 +82,10 @@ export function DesignSplash({
   const previous = alternative(-1);
   const next = alternative(1);
 
-  const pick = (packId: PackId) => {
+  const pick = (packId: PackId, direction: "left" | "right" = "right") => {
     if (busyId || packId === activePackId) return;
     const before = activePackId;
+    setSlideDirection(direction);
     setActivePackId(packId);
     setBusyId(packId);
     select.mutate(
@@ -119,7 +121,7 @@ export function DesignSplash({
         type="button"
         className="pb-design-side"
         data-side={side}
-        onClick={() => pick(candidate.id)}
+        onClick={() => pick(candidate.id, side)}
         disabled={busyId !== null}
         aria-label={`${candidate.name} als Designrichtung verwenden`}
       >
@@ -171,12 +173,16 @@ export function DesignSplash({
 
         <div className="pb-design-stage">
           {sideCard(previous, "left")}
-          <div className="pb-design-center">
+          <div
+            className="pb-design-center"
+            data-enter={slideDirection}
+            key={activePackId}
+          >
             <div className="pb-design-center-label">
               <button
                 type="button"
                 aria-label="Vorherige Designrichtung"
-                onClick={() => previous && pick(previous.id)}
+                onClick={() => previous && pick(previous.id, "left")}
                 disabled={!previous || busyId !== null}
               >
                 <ChevronLeft aria-hidden="true" />
@@ -188,7 +194,7 @@ export function DesignSplash({
               <button
                 type="button"
                 aria-label="Nächste Designrichtung"
-                onClick={() => next && pick(next.id)}
+                onClick={() => next && pick(next.id, "right")}
                 disabled={!next || busyId !== null}
               >
                 <ChevronRight aria-hidden="true" />
@@ -199,6 +205,25 @@ export function DesignSplash({
               version={previewVersion}
               device={device}
               packOverride={activePackId}
+            />
+            <div
+              className="pb-design-swipe-surface"
+              aria-hidden="true"
+              onPointerDown={event => {
+                pointerStart.current = event.clientX;
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerUp={event => {
+                if (pointerStart.current === null) return;
+                const delta = event.clientX - pointerStart.current;
+                pointerStart.current = null;
+                if (Math.abs(delta) < 45) return;
+                if (delta > 0 && previous) pick(previous.id, "left");
+                if (delta < 0 && next) pick(next.id, "right");
+              }}
+              onPointerCancel={() => {
+                pointerStart.current = null;
+              }}
             />
           </div>
           {sideCard(next, "right")}
@@ -213,17 +238,13 @@ export function DesignSplash({
           Weitere Designrichtungen laden
         </button>
 
-        <div className="pb-design-theme">
-          <ThemeEditor
-            token={token}
-            packId={activePackId}
-            accent={accent}
-            fontPairId={fontPairId}
-            designProfile={designProfile}
-            onApplied={onApplied}
-            showLayoutControls={false}
-          />
-        </div>
+        <DesignQuickControls
+          token={token}
+          packId={activePackId}
+          accent={accent}
+          fontPairId={fontPairId}
+          onApplied={onApplied}
+        />
 
         {(select.error || candidates.error) && (
           <p role="alert" className="pb-design-error">

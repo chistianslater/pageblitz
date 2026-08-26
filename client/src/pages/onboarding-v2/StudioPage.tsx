@@ -229,7 +229,6 @@ export default function StudioPage({ token }: { token: string }) {
         currentPackId={state.doc.stylePackId}
         accent={state.doc.colorOverrides?.accent ?? null}
         fontPairId={state.doc.fontPairId ?? null}
-        designProfile={state.doc.designProfile ?? null}
         previewVersion={studio.previewVersion}
         onApplied={() => {
           studio.refetch();
