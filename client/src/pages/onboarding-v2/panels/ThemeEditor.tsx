@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { FONT_PAIRS, getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
@@ -345,7 +346,10 @@ export function ThemeEditor({
             onChange={e => pickCustom(e.target.value)}
             aria-label="Eigene Akzentfarbe wählen"
           />
-          <span className="pb-studio-theme-swatch-name">Eigene</span>
+          <span className="pb-studio-theme-color-wheel" aria-hidden="true">
+            <Plus />
+          </span>
+          <span className="pb-studio-theme-swatch-name">Eigene Farbe</span>
         </label>
       </div>
       {weakContrast && (

@@ -178,6 +178,9 @@ test.describe("Studio", () => {
     await expect(
       page.getByText("Akzentfarbe", { exact: true })
     ).toBeVisible();
+    await expect(
+      page.getByText("Eigene Farbe", { exact: true })
+    ).toBeVisible();
     await page.getByRole("button", { name: "Farbauswahl schließen" }).click();
     await page.getByRole("button", { name: /Schrift/ }).click();
     await expect(

@@ -536,6 +536,59 @@
   color: white;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
 }
+.pb-design-custom-color {
+  position: relative;
+  display: inline-flex;
+  height: 2.2rem;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.7rem 0.25rem 0.25rem;
+  border: 1px solid var(--st-line);
+  border-radius: 999px;
+  background: var(--st-canvas);
+  color: var(--st-ink);
+  cursor: pointer;
+}
+.pb-design-custom-color input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.pb-design-color-wheel,
+.pb-studio-theme-color-wheel {
+  display: grid;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 999px;
+  background: conic-gradient(
+    #e0301e,
+    #ffb000,
+    #4a9b51,
+    #2e7e78,
+    #1d3fbf,
+    #d4749c,
+    #e0301e
+  );
+  box-shadow: 0 0 0 1px var(--st-line);
+  color: white;
+}
+.pb-design-color-wheel svg,
+.pb-studio-theme-color-wheel svg {
+  width: 0.8rem;
+  height: 0.8rem;
+  stroke-width: 3;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+}
+.pb-design-custom-color strong {
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
 .pb-design-fan-fonts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1799,13 +1852,16 @@
   font-size: 0.72rem;
   color: var(--st-muted);
 }
+.pb-studio-theme-custom {
+  position: relative;
+  min-width: 5.2rem;
+}
 .pb-studio-theme-custom input[type="color"] {
-  width: 1.4rem;
-  height: 1.4rem;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
   cursor: pointer;
 }
 .pb-studio-theme-font {

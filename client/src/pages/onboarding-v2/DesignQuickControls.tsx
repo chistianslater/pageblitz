@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Palette, Type, X } from "lucide-react";
+import { Check, Palette, Plus, Type, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import {
   FONT_PAIRS,
@@ -153,13 +153,20 @@ export function DesignQuickControls({
                     </button>
                   );
                 })}
-                <label className="pb-design-fan-color" title="Eigene Farbe">
+                <label
+                  className="pb-design-custom-color"
+                  title="Eigene Farbe wählen"
+                >
                   <input
                     type="color"
                     value={localAccent ?? directionAccent}
                     onChange={event => chooseAccent(event.target.value)}
                     aria-label="Eigene Akzentfarbe"
                   />
+                  <span className="pb-design-color-wheel" aria-hidden="true">
+                    <Plus />
+                  </span>
+                  <strong>Eigene Farbe</strong>
                 </label>
               </div>
             </div>
