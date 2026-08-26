@@ -69,6 +69,7 @@ const BusinessesPage = lazy(() => import("./pages/BusinessesPage"));
 const WelcomeBack = lazy(() => import("./pages/WelcomeBack"));
 const ErrorsPage = lazy(() => import("./pages/ErrorsPage"));
 const LifecyclePage = lazy(() => import("./pages/LifecyclePage"));
+const DesignReviewPage = lazy(() => import("./pages/DesignReviewPage"));
 const StudioPage = lazy(() => import("./pages/onboarding-v2/StudioPage"));
 const LegacyWebsiteRedirect = lazy(
   () => import("./pages/onboarding-v2/LegacyWebsiteRedirect")
@@ -225,6 +226,7 @@ function Router() {
         <Route path="/impressum" component={PageblitzImpressum} />
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
+        <Route path="/design-review" component={DesignReviewPage} />
         <Route path="/welcome-back" component={WelcomeBack} />
         {/* /preview/:token wird serverseitig (302) auf /onboarding/:token weitergeleitet
             (siehe server/ssr/routes.ts, registerSsrRoutes) — läuft nie hier ein,
