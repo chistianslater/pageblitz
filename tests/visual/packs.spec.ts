@@ -100,12 +100,13 @@ for (const pack of PACKS)
  *   (`background:var(--pb-accent)`) → `background-color` gegen `accent`.
  * - `kanzlei` und `salon-noir` rendern den CTA als reinen Textlink/Outline
  *   mit `color:var(--pb-accent)` im Ruhezustand → `color` gegen `accent`.
- * - `atelier` und `fundament` färben den CTA im Ruhezustand NICHT mit
+ * - `atelier`, `gusto`, `schimmer` und `fundament` färben den CTA im
+ *   Ruhezustand NICHT mit
  *   `accent`, sondern mit `ink` (atelier: `.pb-at-lnk` erbt `color` von
  *   `.pb-atelier{color:var(--pb-ink)}` und hat `border-bottom:var(--pb-ink)`;
  *   fundament: `.pb-fd-cta{background:var(--pb-ink)}`) — hier wird explizit
  *   gegen den `ink`-Paletteneintrag geprüft, nicht gegen `accent`.
- * - `werkbank`, `marktplatz`, `schimmer` (B6 Task 9, `accent-text`): der
+ * - `werkbank`, `marktplatz` (B6 Task 9, `accent-text`): der
  *   Original-Flächen-Akzent ist zurück (CTA-Hintergrund = `accent`), der
  *   CTA-Text ist `ink` (≥ 4,5:1 auf dem Akzent; Weiß wäre < 3,4:1) —
  *   `textRole` prüft zusätzlich die `color` des CTAs gegen `ink`.
@@ -132,7 +133,7 @@ const CTA_COLOR_CHECKS: Record<
     prop: "background-color",
     role: "accent",
   },
-  gusto: { selector: "a.pb-gu-cta", prop: "background-color", role: "accent" },
+  gusto: { selector: "a.pb-gu-cta", prop: "color", role: "ink" },
   patina: { selector: "a.pb-pa-cta", prop: "background-color", role: "accent" },
   "salon-noir": { selector: "a.pb-sn-cta", prop: "color", role: "accent" },
   marktplatz: {
@@ -157,8 +158,7 @@ const CTA_COLOR_CHECKS: Record<
   schimmer: {
     selector: "a.pb-sc-cta",
     prop: "background-color",
-    role: "accent",
-    textRole: "ink",
+    role: "ink",
   },
   fundament: { selector: "a.pb-fd-cta", prop: "background-color", role: "ink" },
 };
