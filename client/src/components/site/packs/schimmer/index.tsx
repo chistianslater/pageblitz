@@ -43,8 +43,9 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
   return data.businessName;
 }
 
-/** Letztes Wort der Headline als Akzentwort (em, Gewicht 600, solides Rosé). */
-function renderHeadline(headline: string): React.ReactNode {
+/** Letztes Wort der Headline als warmer Serifenkontrast. */
+function renderHeadline(headline: string | undefined): React.ReactNode {
+  if (!headline) return null;
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -53,6 +54,21 @@ function renderHeadline(headline: string): React.ReactNode {
     <>
       {rest} <em>{last}</em>
     </>
+  );
+}
+
+function LabLabel({
+  index,
+  children,
+}: {
+  index: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <p className="pb-sc-label">
+      <span>{index}</span>
+      {children}
+    </p>
   );
 }
 
@@ -66,20 +82,26 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.services}
-          className="pb-sc-section"
+          className="pb-sc-section pb-sc-services"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
-          {section.intro && <p className="pb-sc-intro">{section.intro}</p>}
-          <div className="pb-sc-grid">
-            {section.items.map(item => (
-              <div className="pb-sc-card" key={item.title}>
+          <header className="pb-sc-section-head">
+            <LabLabel index="01">Behandlungsprotokolle</LabLabel>
+            <h2>{renderHeadline(section.headline)}</h2>
+            {section.intro && <p className="pb-sc-intro">{section.intro}</p>}
+          </header>
+          <div className="pb-sc-protocols">
+            {section.items.map((item, index) => (
+              <article className="pb-sc-protocol" key={item.title}>
+                <span className="pb-sc-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
                 {item.price && (
                   <span className="pb-sc-price">{item.price}</span>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -90,20 +112,26 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.about}
-          className="pb-sc-section"
+          className="pb-sc-section pb-sc-about-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <LabLabel index="02">Hautwissen, menschlich</LabLabel>
           <div className="pb-sc-about">
             {section.imageUrl && (
-              <img
-                className="pb-sc-about-img"
-                src={section.imageUrl}
-                alt=""
-                loading="lazy"
-              />
+              <figure className="pb-sc-about-media">
+                <img
+                  className="pb-sc-about-img"
+                  src={section.imageUrl}
+                  alt=""
+                  loading="lazy"
+                />
+                <span aria-hidden="true">Materialstudie / 02</span>
+              </figure>
             )}
-            <p>{section.body}</p>
+            <div className="pb-sc-about-copy">
+              <h2>{renderHeadline(title)}</h2>
+              <p>{section.body}</p>
+            </div>
           </div>
         </section>
       );
@@ -113,13 +141,21 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.gallery}
-          className="pb-sc-section"
+          className="pb-sc-section pb-sc-gallery-section"
           key={section.type}
         >
-          <h2>{title}</h2>
-          <div className="pb-sc-grid pb-sc-gallery">
-            {section.images.map(img => (
-              <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+          <header className="pb-sc-section-head">
+            <LabLabel index="03">Licht, Textur, Ergebnis</LabLabel>
+            <h2>{renderHeadline(title)}</h2>
+          </header>
+          <div className="pb-sc-gallery">
+            {section.images.map((img, index) => (
+              <figure key={img.url}>
+                <img src={img.url} alt={img.alt} loading="lazy" />
+                <figcaption>
+                  Fokus {String(index + 1).padStart(2, "0")}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>
@@ -130,20 +166,23 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.testimonials}
-          className="pb-sc-section"
+          className="pb-sc-section pb-sc-testimonials"
           key={section.type}
         >
-          <h2>{title}</h2>
-          <div className="pb-sc-grid">
-            {section.items.map(item => (
-              <blockquote className="pb-sc-card pb-sc-quote" key={item.author}>
-                <p>„{item.text}“</p>
-                <footer>
-                  {item.author}
-                  {item.rating ? ` · ${item.rating}/5` : ""}
-                </footer>
-              </blockquote>
-            ))}
+          <LabLabel index="04">Beobachtungen</LabLabel>
+          <div className="pb-sc-testimonial-layout">
+            <h2>{renderHeadline(title)}</h2>
+            <div className="pb-sc-quotes">
+              {section.items.map(item => (
+                <blockquote className="pb-sc-quote" key={item.author}>
+                  <p>„{item.text}“</p>
+                  <footer>
+                    {item.author}
+                    {item.rating ? ` · ${item.rating}/5` : ""}
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
           </div>
         </section>
       );
@@ -154,10 +193,18 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.contact}
-          className="pb-sc-section"
+          className="pb-sc-section pb-sc-contact-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <div className="pb-sc-contact-title">
+            <LabLabel index="05">Persönliche Analyse</LabLabel>
+            <h2>{renderHeadline(title)}</h2>
+            {section.phone && (
+              <a className="pb-sc-cta" href={`tel:${section.phone}`}>
+                Termin vereinbaren
+              </a>
+            )}
+          </div>
           <div className="pb-sc-contact">
             <address>
               {section.phone && (
@@ -338,30 +385,17 @@ const SchimmerPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sc-hero">
-          <div className="pb-sc-orbs pb-sc-orbs-tr" aria-hidden="true">
-            <div className="pb-sc-orb pb-sc-orb-1" />
-            <div className="pb-sc-orb pb-sc-orb-2" />
-            <div className="pb-sc-orb pb-sc-orb-3" />
+          <div className="pb-sc-aperture" aria-hidden="true">
+            <span />
+            <span />
           </div>
-          <div className="pb-sc-orbs pb-sc-orbs-bl" aria-hidden="true">
-            <div className="pb-sc-orb pb-sc-orb-1" />
-            <div className="pb-sc-orb pb-sc-orb-2" />
-            <div className="pb-sc-orb pb-sc-orb-3" />
-          </div>
-          {!hero.imageUrl && (
-            <>
-              <div className="pb-sc-ring" aria-hidden="true" />
-              {firstService && (
-                <div className="pb-sc-chip">Neu: {firstService.title}</div>
-              )}
-            </>
-          )}
           <div className="pb-sc-hero-grid">
-            <div className="pb-sc-glass">
+            <div className="pb-sc-hero-copy">
+              <LabLabel index="L/01">Studio für Haut &amp; Ästhetik</LabLabel>
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && <p>{hero.subheadline}</p>}
               <div className="pb-sc-cta-row">
@@ -379,19 +413,26 @@ const SchimmerPage: React.FC<{
                   </a>
                 )}
               </div>
+              {firstService && (
+                <p className="pb-sc-current">
+                  <span>Aktueller Fokus</span>
+                  {firstService.title}
+                </p>
+              )}
             </div>
             {hero.imageUrl && (
               <div className="pb-sc-hero-img">
-                <div className="pb-sc-ring" aria-hidden="true" />
                 <img
                   src={hero.imageUrl}
                   alt=""
                   loading="eager"
                   fetchPriority="high"
                 />
-                {firstService && (
-                  <div className="pb-sc-chip">Neu: {firstService.title}</div>
-                )}
+                <div className="pb-sc-focus-mark" aria-hidden="true">
+                  <span />
+                  <span />
+                </div>
+                <p aria-hidden="true">Makro / Lichtstudie 01</p>
               </div>
             )}
           </div>

@@ -5,11 +5,12 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { getConstitution } from "../../../../../../shared/stylePacks";
 import "../index";
 import { SiteRenderer } from "../../SiteRenderer";
+import { GUSTO_CSS } from "./css";
 
 const NOW = new Date("2026-08-19T10:00:00");
 
 describe("Pack gusto", () => {
-  test("Verfassung registriert, theme dark, Signatur enthält Doppelrahmen + Punktlinien-Menü", () => {
+  test("Verfassung bleibt unter der kompatiblen Pack-ID registriert", () => {
     const c = getConstitution("gusto");
     expect(c.theme).toBe("dark");
     expect(c.signature.decor).toContain("double-frame");
@@ -20,9 +21,29 @@ describe("Pack gusto", () => {
     <SiteRenderer data={getFixture("gusto", "full")} now={NOW} />
   );
 
-  test("Signatur-Klassen (Doppelrahmen, Punktlinien-Menü) rendern", () => {
+  test("Cinematic-Menu-Signatur rendert Doppelrahmen, Food-Bühne und Schnellzugriff", () => {
     expect(html).toContain("pb-gu-frame");
+    expect(html).toContain("pb-gu-hero-media");
+    expect(html).toContain("pb-gu-hero-shade");
     expect(html).toContain("pb-gu-menu");
+    expect(html).toContain("pb-gu-quick");
+    expect(html).toContain("Speisekarte");
+    expect(html).toContain("Reservieren");
+    expect(html).toContain("Route");
+  });
+
+  test("redaktionelle Sektionen und filmische Galerie sind strukturell eigenständig", () => {
+    expect(html).toContain("pb-gu-service-list");
+    expect(html).toContain("pb-gu-story");
+    expect(html).toContain("pb-gu-film");
+    expect(html).toContain("pb-gu-reservation");
+    expect(html).toContain("Szene 01");
+  });
+
+  test("Crop-/Reveal-Motion ist transformbasiert und reduced-motion-kompatibel", () => {
+    expect(GUSTO_CSS).toContain("@keyframes pb-gu-crop");
+    expect(GUSTO_CSS).toContain("transform:scale");
+    expect(GUSTO_CSS).toContain("@media(prefers-reduced-motion:reduce)");
   });
 
   test("Menü-Sektion rendert Kategorienamen und Preise aus der Fixture", () => {

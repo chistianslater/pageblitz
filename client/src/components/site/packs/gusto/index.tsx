@@ -82,6 +82,21 @@ function MenuRow({
   );
 }
 
+function SectionKicker({
+  index,
+  children,
+}: {
+  index: string;
+  children: React.ReactNode;
+}): React.ReactElement {
+  return (
+    <p className="pb-gu-kicker">
+      <span>{index}</span>
+      {children}
+    </p>
+  );
+}
+
 function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
@@ -92,20 +107,28 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.services}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-services"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
-          {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
-          <div className="pb-gu-grid">
-            {section.items.map(item => (
-              <div className="pb-gu-card" key={item.title}>
-                <strong>{item.title}</strong>
-                {item.description && <p>{item.description}</p>}
+          <header className="pb-gu-section-head">
+            <SectionKicker index="01">Aus der Küche</SectionKicker>
+            <h2>{section.headline}</h2>
+            {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
+          </header>
+          <div className="pb-gu-service-list">
+            {section.items.map((item, index) => (
+              <article className="pb-gu-service-row" key={item.title}>
+                <span className="pb-gu-index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  {item.description && <p>{item.description}</p>}
+                </div>
                 {item.price && (
                   <span className="pb-gu-price">{formatPrice(item.price)}</span>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </section>
@@ -115,15 +138,26 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.about}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-story"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <SectionKicker index="02">Gastgeber &amp; Herkunft</SectionKicker>
           <div className="pb-gu-about">
             {section.imageUrl && (
-              <img src={section.imageUrl} alt="" loading="lazy" />
+              <figure>
+                <img src={section.imageUrl} alt="" loading="lazy" />
+                <figcaption>
+                  Ein Tisch. Eine Küche. Viele Geschichten.
+                </figcaption>
+              </figure>
             )}
-            <p>{section.body}</p>
+            <div className="pb-gu-about-copy">
+              <h2>{section.headline}</h2>
+              <p>{section.body}</p>
+              <span className="pb-gu-signature" aria-hidden="true">
+                Gastgeber aus Leidenschaft
+              </span>
+            </div>
           </div>
         </section>
       );
@@ -133,13 +167,21 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.gallery}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-film"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <header className="pb-gu-section-head">
+            <SectionKicker index="03">Ein Abend in Bildern</SectionKicker>
+            <h2>{title}</h2>
+          </header>
           <div className="pb-gu-gallery">
-            {section.images.map(img => (
-              <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+            {section.images.map((img, index) => (
+              <figure key={img.url}>
+                <img src={img.url} alt={img.alt} loading="lazy" />
+                <figcaption aria-hidden="true">
+                  Szene {String(index + 1).padStart(2, "0")}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>
@@ -150,19 +192,24 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.testimonials}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-voices"
           key={section.type}
         >
-          <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-gu-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <SectionKicker index="04">Nachklang</SectionKicker>
+          <div className="pb-gu-voices-grid">
+            <h2>{title}</h2>
+            <div>
+              {section.items.map(item => (
+                <blockquote className="pb-gu-quote" key={item.author}>
+                  <p>„{item.text}“</p>
+                  <footer>
+                    {item.author}
+                    {item.rating ? ` · ${item.rating}/5` : ""}
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
+          </div>
         </section>
       );
     }
@@ -172,10 +219,18 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.contact}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-reservation"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <div className="pb-gu-reservation-title">
+            <SectionKicker index="05">Ihr Tisch wartet</SectionKicker>
+            <h2>{title}</h2>
+            {section.phone && (
+              <a className="pb-gu-cta" href={`tel:${section.phone}`}>
+                Jetzt reservieren
+              </a>
+            )}
+          </div>
           <div className="pb-gu-contact">
             <address>
               {section.phone && (
@@ -194,6 +249,16 @@ function renderSection(
                   {section.street && addressLine && <br />}
                   {addressLine && <span>{addressLine}</span>}
                 </p>
+              )}
+              {(section.street || addressLine) && (
+                <a
+                  className="pb-gu-route"
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    [section.street, addressLine].filter(Boolean).join(" ")
+                  )}`}
+                >
+                  Route öffnen ↗
+                </a>
               )}
             </address>
             {section.openingHours && section.openingHours.length > 0 && (
@@ -243,21 +308,29 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS[section.type]}
-          className="pb-gu-section"
+          className="pb-gu-section pb-gu-menu-section"
           key={section.type}
         >
-          <h2>{title}</h2>
-          {section.categories.map(cat => (
-            <div className="pb-gu-menu-category" key={cat.name}>
-              <h3>{cat.name}</h3>
-              {cat.items.map(item => (
-                <div className="pb-gu-menu-item" key={item.name}>
-                  <MenuRow name={item.name} price={item.price} />
-                  {item.description && <p>{item.description}</p>}
-                </div>
-              ))}
-            </div>
-          ))}
+          <header className="pb-gu-section-head">
+            <SectionKicker index="Menü">In Akten serviert</SectionKicker>
+            <h2>{title}</h2>
+          </header>
+          <div className="pb-gu-menu-columns">
+            {section.categories.map((cat, index) => (
+              <div className="pb-gu-menu-category" key={cat.name}>
+                <p className="pb-gu-index">
+                  Akt {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3>{cat.name}</h3>
+                {cat.items.map(item => (
+                  <div className="pb-gu-menu-item" key={item.name}>
+                    <MenuRow name={item.name} price={item.price} />
+                    {item.description && <p>{item.description}</p>}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </section>
       );
     }
@@ -332,6 +405,12 @@ const GustoPage: React.FC<{
   const navRight = navList.slice(half);
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const menu = sections.find((s): s is SectionOf<"menu"> => s.type === "menu");
+  const contact = sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const routeQuery = contact
+    ? [contact.street, contact.zip, contact.city].filter(Boolean).join(" ")
+    : "";
   /* Menü-Vorschau als Highlights: je Kategorie das erste Gericht (max. 3) —
      statt der ersten drei Zeilen der ersten Kategorie, die den Anfang der
      direkt folgenden Speisekarte 1:1 duplizierten (B7 Welle 2). Die
@@ -372,14 +451,38 @@ const GustoPage: React.FC<{
         </nav>
         {hero && (
           <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
-            {data.businessCategory && (
-              <p className="pb-gu-eyebrow">{data.businessCategory}</p>
-            )}
-            <h1>{hero.headline}</h1>
-            {hero.subheadline && <p>{hero.subheadline}</p>}
-            <OrnamentDivider />
+            <div className="pb-gu-hero-media" aria-hidden="true">
+              {hero.imageUrl && (
+                <img
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              )}
+            </div>
+            <div className="pb-gu-hero-shade" aria-hidden="true" />
+            <div className="pb-gu-hero-copy">
+              {data.businessCategory && (
+                <p className="pb-gu-eyebrow">{data.businessCategory}</p>
+              )}
+              <h1>{hero.headline}</h1>
+              {hero.subheadline && (
+                <p className="pb-gu-subline">{hero.subheadline}</p>
+              )}
+              <OrnamentDivider />
+              {hero.ctaText && (
+                <a className="pb-gu-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+            </div>
             {previewItems.length > 0 && (
-              <div className="pb-gu-menu-preview">
+              <aside
+                className="pb-gu-menu-preview"
+                aria-label="Auszug aus der Karte"
+              >
+                <p className="pb-gu-preview-label">Heute empfohlen</p>
                 {previewItems.map(item => (
                   <MenuRow
                     key={item.name}
@@ -387,24 +490,23 @@ const GustoPage: React.FC<{
                     price={item.price}
                   />
                 ))}
-              </div>
+              </aside>
             )}
-            {hero.ctaText && (
-              <a className="pb-gu-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
+            <nav className="pb-gu-quick" aria-label="Schnellzugriff">
+              {menu && <a href={`#${SECTION_ANCHORS.menu}`}>Speisekarte</a>}
+              <a href="#kontakt">Reservieren</a>
+              <a
+                href={
+                  routeQuery
+                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        routeQuery
+                      )}`
+                    : "#kontakt"
+                }
+              >
+                Route
               </a>
-            )}
-            {hero.imageUrl ? (
-              <img
-                className="pb-gu-plate"
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
-              />
-            ) : (
-              <div className="pb-gu-plate" aria-hidden="true" />
-            )}
+            </nav>
           </section>
         )}
         {sections
