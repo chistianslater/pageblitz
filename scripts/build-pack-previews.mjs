@@ -33,6 +33,20 @@ const OUTPUT_HEIGHT = 500; // deckungsgleich mit dem 16/10-Kartenraster in PackS
 const MAX_BYTES = 80 * 1024;
 const START_QUALITY = 80;
 const MIN_QUALITY = 40;
+const requestedPackIds = (process.env.PREVIEW_PACK_IDS ?? "")
+  .split(",")
+  .map(value => value.trim())
+  .filter(Boolean);
+const unknownPackIds = requestedPackIds.filter(id => !PACK_IDS.includes(id));
+if (unknownPackIds.length > 0) {
+  throw new Error(
+    `Unbekannte PREVIEW_PACK_IDS: ${unknownPackIds.join(", ")}`
+  );
+}
+const previewPackIds =
+  requestedPackIds.length > 0
+    ? PACK_IDS.filter(id => requestedPackIds.includes(id))
+    : PACK_IDS;
 
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -94,7 +108,7 @@ async function buildPreview(browser, packId) {
 const browser = await chromium.launch();
 const results = [];
 try {
-  for (const packId of PACK_IDS) {
+  for (const packId of previewPackIds) {
     results.push(await buildPreview(browser, packId));
   }
 } finally {
@@ -111,6 +125,6 @@ if (oversized.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `[build-pack-previews] ${results.length}/${PACK_IDS.length} Vorschaubilder erzeugt, alle ≤ ${(MAX_BYTES / 1024).toFixed(0)} KB.`
+    `[build-pack-previews] ${results.length}/${previewPackIds.length} angeforderte Vorschaubilder erzeugt, alle ≤ ${(MAX_BYTES / 1024).toFixed(0)} KB.`
   );
 }
