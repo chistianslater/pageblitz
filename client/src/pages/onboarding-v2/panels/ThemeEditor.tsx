@@ -61,6 +61,8 @@ interface ThemeEditorProps {
   fontPairId: string | null;
   /** Kompositionsprofil innerhalb der Designrichtung. */
   designProfile?: DesignProfile | null;
+  /** Splash zeigt nur Farbe/Schrift; Layoutdetails bleiben im Studio. */
+  showLayoutControls?: boolean;
   onApplied: () => void;
 }
 
@@ -70,6 +72,7 @@ export function ThemeEditor({
   accent,
   fontPairId,
   designProfile = null,
+  showLayoutControls = true,
   onApplied,
 }: ThemeEditorProps) {
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
@@ -163,20 +166,24 @@ export function ThemeEditor({
 
   return (
     <div className="pb-studio-theme">
-      <h3 className="pb-studio-theme-title">Aufbau, Farben &amp; Schriften</h3>
+      <h3 className="pb-studio-theme-title">
+        {showLayoutControls ? "Aufbau, Farben & Schriften" : "Farben & Schriften"}
+      </h3>
       <p className="pb-studio-theme-hint">
         Feinschliff für die gewählte Designrichtung — jede Auswahl wird sofort
         übernommen.
       </p>
 
-      <p className="pb-studio-theme-label" id="pb-theme-layout-label">
-        Seitenaufbau
-      </p>
-      <div
-        className="pb-studio-theme-layouts"
-        role="group"
-        aria-labelledby="pb-theme-layout-label"
-      >
+      {showLayoutControls && (
+        <>
+          <p className="pb-studio-theme-label" id="pb-theme-layout-label">
+            Seitenaufbau
+          </p>
+          <div
+            className="pb-studio-theme-layouts"
+            role="group"
+            aria-labelledby="pb-theme-layout-label"
+          >
         <label className="pb-studio-theme-layout">
           <span>Hero</span>
           <select
@@ -283,7 +290,9 @@ export function ThemeEditor({
             <option value="bleed">Flächig</option>
           </select>
         </label>
-      </div>
+          </div>
+        </>
+      )}
 
       <p className="pb-studio-theme-label" id="pb-theme-accent-label">
         Akzentfarbe

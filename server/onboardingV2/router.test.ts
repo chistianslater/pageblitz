@@ -512,6 +512,16 @@ describe("onboardingV2.getStyleCandidates", () => {
       essence: expect.any(String),
     });
   });
+  test("Design-Splash kann 3 Kandidaten zum Swipen anfordern", async () => {
+    const r = await appRouter
+      .createCaller(ctx())
+      .onboardingV2.getStyleCandidates({
+        token: "tok",
+        round: 0,
+        count: 3,
+      });
+    expect(r.candidates).toHaveLength(3);
+  });
 });
 
 describe("onboardingV2.selectStylePack", () => {

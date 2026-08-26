@@ -531,6 +531,26 @@
   display: grid;
   gap: 0.85rem;
 }
+.pb-design-swipe-hint {
+  margin: 0 0 -0.35rem;
+  color: var(--st-muted);
+  font-size: 0.78rem;
+}
+.pb-studio-cands[data-layout="carousel"] {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--st-line) transparent;
+  padding: 2px 2px 0.55rem;
+}
+.pb-studio-cands[data-layout="carousel"] .pb-studio-cand {
+  flex: 0 0 min(88%, 21rem);
+  scroll-snap-align: start;
+}
 .pb-studio-cand {
   display: grid;
   gap: 0.5rem;

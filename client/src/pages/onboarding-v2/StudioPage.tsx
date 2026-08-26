@@ -233,7 +233,7 @@ export default function StudioPage({ token }: { token: string }) {
               <p className="pb-studio-kicker">Dein Design</p>
               <h1 className="pb-studio-title">Gefällt dir diese Richtung?</h1>
               <p>
-                Wähle einen anderen Ausgangspunkt oder passe direkt Aufbau,
+                Wische durch die Designrichtungen und passe bei Bedarf direkt
                 Farbe und Schrift an. Danach geht es mit Fotos und Inhalten im
                 Studio weiter.
               </p>
@@ -245,6 +245,7 @@ export default function StudioPage({ token }: { token: string }) {
               accent={state.doc.colorOverrides?.accent ?? null}
               fontPairId={state.doc.fontPairId ?? null}
               designProfile={state.doc.designProfile ?? null}
+              gateMode
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

@@ -157,12 +157,21 @@ const coreProcedures = {
     }),
 
   getStyleCandidates: publicProcedure
-    .input(tokenInput.extend({ round: z.number().int().min(0).default(0) }))
+    .input(
+      tokenInput.extend({
+        round: z.number().int().min(0).default(0),
+        count: z.union([z.literal(2), z.literal(3)]).optional().default(2),
+      })
+    )
     .query(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const business = await getBusinessById(loaded.website.businessId);
       const category = loaded.doc?.businessCategory ?? business?.category ?? "";
-      const candidates = getV2VariantCandidates(category, input.round).map(
+      const candidates = getV2VariantCandidates(
+        category,
+        input.round,
+        input.count
+      ).map(
         id => {
           const c = getConstitution(id);
           return { id, name: c.name, essence: c.essence };

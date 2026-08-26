@@ -16,6 +16,14 @@ describe("getV2VariantCandidates", () => {
     }
   });
 
+  test("Splash-Modus liefert genau 3 swipebare Kandidaten", () => {
+    for (let round = 0; round < 5; round++) {
+      expect(
+        getV2VariantCandidates("schreinerei", round, 3)
+      ).toHaveLength(3);
+    }
+  });
+
   test("Runde 0 enthält den Branchen-Primärmatch an erster Stelle", () => {
     const [primary] = getPackPool("schreinerei");
     expect(getV2VariantCandidates("schreinerei", 0)[0]).toBe(primary);
