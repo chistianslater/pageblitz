@@ -9,7 +9,7 @@ vi.mock("./env", () => ({
   },
 }));
 
-import { BACKUP_LLM_MODEL, invokeLLM } from "./llm";
+import { BACKUP_LLM_MODEL, PRIMARY_KIMI_MODEL, invokeLLM } from "./llm";
 
 const okResponse = (content: string) =>
   new Response(JSON.stringify({ choices: [{ message: { content } }] }), {
@@ -18,14 +18,22 @@ const okResponse = (content: string) =>
   });
 
 describe("invokeLLM — Backup/Timeout", () => {
-  const calls: { url: string; model: string }[] = [];
+  const calls: {
+    url: string;
+    model: string;
+    reasoningEffort?: string;
+  }[] = [];
   beforeEach(() => {
     calls.length = 0;
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string, init: RequestInit) => {
         const body = JSON.parse(String(init.body));
-        calls.push({ url, model: body.model });
+        calls.push({
+          url,
+          model: body.model,
+          reasoningEffort: body.reasoning_effort,
+        });
         if (url.includes("googleapis")) return okResponse("backup-ok");
         if (init.signal) {
           // Primär: simuliert langsamen Aufruf, der auf Abbruch reagiert
@@ -63,5 +71,16 @@ describe("invokeLLM — Backup/Timeout", () => {
     const res = await invokeLLM({ messages: [{ role: "user", content: "x" }], timeoutMs: 5_000 });
     expect(res.choices[0].message.content).toBe("primary-ok");
     expect(calls).toHaveLength(1);
+  });
+
+  test("Primärmodell ist Kimi K3 und erhält reasoning_effort", async () => {
+    await invokeLLM({
+      messages: [{ role: "user", content: "x" }],
+      primaryTimeoutMs: 5_000,
+      reasoningEffort: "low",
+    });
+    expect(calls[0].model).toBe(PRIMARY_KIMI_MODEL);
+    expect(calls[0].model).toBe("kimi-k3");
+    expect(calls[0].reasoningEffort).toBe("low");
   });
 });

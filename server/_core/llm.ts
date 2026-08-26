@@ -73,6 +73,11 @@ export type InvokeParams = {
   response_format?: ResponseFormat;
   /** Harte Obergrenze je HTTP-Aufruf (Default DEFAULT_LLM_TIMEOUT_MS); Timeout zählt als Fallback-Grund. */
   timeoutMs?: number;
+  /** Modell-spezifische Timeouts; überschreiben timeoutMs für den jeweiligen Pfad. */
+  primaryTimeoutMs?: number;
+  backupTimeoutMs?: number;
+  /** Kimi-K3 Thinking-Aufwand (K3 denkt immer; low reduziert Latenz). */
+  reasoningEffort?: "low" | "high" | "max";
   /** Backup-Modell (schnell) zuerst versuchen, Primär nur als Rückfall — für latenzkritische Pfade (v2-Generierung). */
   preferBackup?: boolean;
 };
@@ -90,6 +95,9 @@ export const DEFAULT_LLM_MAX_TOKENS = 16384;
 /** Backup-Modell: gemini-2.0-flash ist bei Google abgeschaltet (404 seit 2026-08) — konfigurierbar, Default gemini-3.5-flash (~5 s für 1k Tokens, gemessen 2026-08-23). */
 export const BACKUP_LLM_MODEL =
   process.env.BACKUP_LLM_MODEL || "gemini-3.5-flash";
+/** Offizieller Moonshot-Modellname; per ENV rückrollbar ohne Code-Deploy. */
+export const PRIMARY_KIMI_MODEL =
+  process.env.PRIMARY_LLM_MODEL || "kimi-k3";
 
 export type ToolCall = {
   id: string;
@@ -325,11 +333,12 @@ async function callLLM(
     (ENV.forgeApiUrl?.includes("moonshot.ai") ||
       ENV.forgeApiUrl?.includes("moonshot.cn"));
   // Backup model: BACKUP_LLM_MODEL (gemini-3.5-flash; gemini-2.0-flash existiert nicht mehr)
-  // Primary Kimi-Modell: kimi-k2.5 (schneller als k2.6 bei vergleichbarer Qualität)
+  // Primary Kimi-Modell: offiziell `kimi-k3`, über PRIMARY_LLM_MODEL
+  // rückrollbar (z. B. kimi-k2.5), ohne neuen Build.
   const model = useBackup
     ? BACKUP_LLM_MODEL
     : isKimi
-      ? "kimi-k2.5"
+      ? PRIMARY_KIMI_MODEL
       : "gemini-2.5-flash";
   const apiKey = useBackup ? ENV.backupApiKey : ENV.forgeApiKey;
 
@@ -363,8 +372,13 @@ async function callLLM(
   if (normalizedResponseFormat) {
     payload.response_format = normalizedResponseFormat;
   }
+  if (isKimi && params.reasoningEffort) {
+    payload.reasoning_effort = params.reasoningEffort;
+  }
 
-  const timeoutMs = params.timeoutMs ?? DEFAULT_LLM_TIMEOUT_MS;
+  const timeoutMs = useBackup
+    ? (params.backupTimeoutMs ?? params.timeoutMs ?? DEFAULT_LLM_TIMEOUT_MS)
+    : (params.primaryTimeoutMs ?? params.timeoutMs ?? DEFAULT_LLM_TIMEOUT_MS);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   let response: Response;

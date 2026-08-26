@@ -1,5 +1,4 @@
 import { invokeLLM } from "../_core/llm";
-import { ENV } from "../_core/env";
 
 /**
  * Dünner Wrapper um die vorhandene LLM-Infrastruktur (server/_core/llm.ts,
@@ -10,22 +9,38 @@ import { ENV } from "../_core/env";
  */
 /**
  * v2-Generierung ist latenzkritisch (Studio-Ziel ≤ 90 s): Standard ist das
- * schnelle Backup-Modell (BACKUP_LLM_MODEL, ~5–10 s) mit 45 s Timeout und
- * Rückfall auf das Primärmodell (Kimi, gemessen ~20 s je 1k Tokens, bei
- * ganzen Websites 2–3 min). `PB_GENERATION_LLM=primary` erzwingt Primär.
+ * schnelle Backup-Modell mit 45 s Timeout und Rückfall auf Kimi K3.
+ * WICHTIG: Backup- und Primärpfad brauchen getrennte Budgets. Vorher wurde
+ * derselbe 45-s-Wert an den Kimi-Fallback durchgereicht — exakt der gemeldete
+ * Produktionsfehler „LLM timeout after 45000ms (kimi-k2.5)".
+ * `PB_GENERATION_LLM=primary` erzwingt Primär.
  */
 const PREFER_FAST_MODEL = process.env.PB_GENERATION_LLM !== "primary";
-const HAS_BACKUP = !!(ENV.backupApiUrl && ENV.backupApiKey);
-// Mit Backup: kurzer Timeout (Rückfall ist schnell); ohne Backup darf das
-// Primärmodell länger brauchen, sonst schlüge jede Generierung fehl.
-const GENERATION_TIMEOUT_MS =
-  Number(process.env.PB_GENERATION_LLM_TIMEOUT_MS) ||
-  (HAS_BACKUP ? 45_000 : 150_000);
+const BACKUP_TIMEOUT_MS =
+  Number(process.env.PB_GENERATION_BACKUP_TIMEOUT_MS) || 45_000;
+export function resolvePrimaryGenerationTimeout(raw: unknown): number {
+  const configured = Number(raw);
+  return Math.max(
+    Number.isFinite(configured) && configured > 0 ? configured : 180_000,
+    120_000
+  );
+}
+// Alt-Deployments könnten PB_GENERATION_LLM_TIMEOUT_MS=45000 gesetzt haben.
+// Für ein Reasoning-Modell ist das kein sinnvoller Primärwert; hart auf
+// mindestens 120 s klemmen, Default K3 = 180 s.
+const PRIMARY_TIMEOUT_MS = resolvePrimaryGenerationTimeout(
+  process.env.PB_GENERATION_PRIMARY_TIMEOUT_MS ??
+    process.env.PB_GENERATION_LLM_TIMEOUT_MS
+);
 
 export async function llmComplete(prompt: string): Promise<string> {
   const response = await invokeLLM({
     preferBackup: PREFER_FAST_MODEL,
-    timeoutMs: GENERATION_TIMEOUT_MS,
+    backupTimeoutMs: BACKUP_TIMEOUT_MS,
+    primaryTimeoutMs: PRIMARY_TIMEOUT_MS,
+    // K3 denkt immer. Für strukturierten Website-Text reicht „low" und hält
+    // die Antwortzeit deutlich unter dem Default „max".
+    reasoningEffort: "low",
     messages: [
       {
         role: "system",
