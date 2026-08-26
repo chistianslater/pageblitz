@@ -196,6 +196,24 @@ describe("CheckoutBar", () => {
     expect(match![0]).not.toContain("disabled");
   });
 
+  test("Impressums-E-Mail wird als änderbarer Account-Vorschlag vorbefüllt", () => {
+    const html = renderWithTrpc(
+      <CheckoutBar
+        state={buildState({
+          legal: {
+            ...buildState().legal,
+            legalEmail: "impressum@beispiel.de",
+          },
+        })}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
+    );
+    expect(html).toContain('value="impressum@beispiel.de"');
+    expect(html).toContain("E-Mail-Adresse für deinen Account");
+    expect(html).toContain("Aus dem Impressum vorgeschlagen");
+  });
+
   test("Finding F3: Hinweistext differenziert Kontaktformular (sofort) von KI-Chat/Terminbuchung (nach Freischalten)", () => {
     const html = renderWithTrpc(
       <CheckoutBar

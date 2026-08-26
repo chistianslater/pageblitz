@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   PRICING,
@@ -81,11 +81,24 @@ export function CheckoutBar({
 }: CheckoutBarProps) {
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>("yearly");
-  const [email, setEmail] = useState("");
+  const suggestedEmail =
+    state.customerEmail ?? state.legal.legalEmail?.trim() ?? "";
+  const [email, setEmail] = useState(suggestedEmail);
+  const [emailTouched, setEmailTouched] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
 
   const saveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
   const checkout = trpc.onboardingV2.createCheckout.useMutation();
+
+  // LegalPanel und CheckoutBar wechseln im Wizard nacheinander. Der Checkout
+  // kann einen Render vor dem Parent-Refetch erscheinen; sobald der neue
+  // Studio-State eintrifft, den Impressumswert nachziehen — aber nur, solange
+  // der Nutzer das Account-Feld noch nicht selbst bearbeitet/geleert hat.
+  useEffect(() => {
+    if (!emailTouched && !state.customerEmail) {
+      setEmail(state.legal.legalEmail?.trim() ?? "");
+    }
+  }, [emailTouched, state.customerEmail, state.legal.legalEmail]);
 
   // Aus der Checkliste abgeleitet statt hartkodiert auf "legal" (Finding
   // F3) — deckt automatisch jeden künftigen Pflichtpunkt ab, ohne
@@ -147,14 +160,26 @@ export function CheckoutBar({
       />
       {!state.customerEmail && (
         <div className="pb-studio-field">
-          <label htmlFor="pb-checkout-email">E-Mail-Adresse</label>
+          <label htmlFor="pb-checkout-email">
+            E-Mail-Adresse für deinen Account
+          </label>
           <input
             id="pb-checkout-email"
             type="email"
             className="pb-studio-input"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            autoComplete="email"
+            onChange={e => {
+              setEmailTouched(true);
+              setEmail(e.target.value);
+            }}
           />
+          {state.legal.legalEmail && (
+            <span className="pb-studio-field-hint">
+              Aus dem Impressum vorgeschlagen — du kannst die Adresse ändern
+              oder löschen.
+            </span>
+          )}
           <label className="pb-studio-checkbox">
             <input
               type="checkbox"

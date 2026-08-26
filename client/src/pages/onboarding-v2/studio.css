@@ -1026,6 +1026,11 @@
   color: var(--st-muted);
   align-self: flex-end;
 }
+.pb-studio-field-hint {
+  color: var(--st-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
 .pb-studio-chips {
   display: flex;
   flex-wrap: wrap;
