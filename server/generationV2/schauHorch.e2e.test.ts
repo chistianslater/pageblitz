@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 vi.mock("../db", () => ({
   getWebsiteById: vi.fn(),
   getBusinessById: vi.fn(),
+  listWebsites: vi.fn().mockResolvedValue([]),
   updateGenerationJob: vi.fn().mockResolvedValue(undefined),
   updateWebsite: vi.fn().mockResolvedValue(undefined),
   getOnboardingByWebsiteId: vi.fn().mockResolvedValue(undefined),

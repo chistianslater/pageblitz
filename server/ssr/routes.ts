@@ -8,6 +8,7 @@ import {
   type PackId,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
+import { deriveDesignProfile } from "../../shared/siteContract/designProfile";
 import { getWebsiteBySlug, getWebsiteByToken } from "../db";
 import {
   pageForPathname,
@@ -187,7 +188,19 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       return;
     }
     const data = packParam
-      ? { ...parsed.data, stylePackId: packParam as PackId }
+      ? {
+          ...parsed.data,
+          stylePackId: packParam as PackId,
+          // Richtungs-Kandidat zeigt bereits die Komposition, die beim
+          // Übernehmen persistiert wird — kein visueller Sprung zwischen
+          // Mini-Preview und Auswahl.
+          designProfile: deriveDesignProfile({
+            stylePackId: packParam,
+            businessName: parsed.data.businessName,
+            businessCategory: parsed.data.businessCategory,
+            sections: parsed.data.sections,
+          }),
+        }
       : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const basePath = `/preview-ssr/${token}`;
@@ -301,7 +314,30 @@ function handleDevPreview(req: Request, res: Response): void {
   }
 
   try {
-    const data = getFixture(packParam, fixtureParam);
+    const fixture = getFixture(packParam, fixtureParam);
+    // Dev-only Variantenvorschau für Visual-/Manuelltests:
+    // ?variant=0..31 leitet dasselbe Profil ab wie die Generierung.
+    const variantRaw =
+      typeof req.query.variant === "string" ? req.query.variant : "";
+    const variant =
+      variantRaw !== "" && /^\d{1,2}$/.test(variantRaw)
+        ? Math.min(31, Number(variantRaw))
+        : null;
+    const data =
+      variant === null
+        ? fixture
+        : {
+            ...fixture,
+            designProfile: deriveDesignProfile(
+              {
+                stylePackId: fixture.stylePackId,
+                businessName: fixture.businessName,
+                businessCategory: fixture.businessCategory,
+                sections: fixture.sections,
+              },
+              variant
+            ),
+          };
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     // fixes Datum für deterministische Visual-Baselines (nur Dev-Preview,
     // Kundenseiten-SSR unten bleibt bei Echtzeit).

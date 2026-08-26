@@ -13,6 +13,7 @@ import type {
   WebsiteDataV2Schema,
 } from "./schema";
 import { PACK_IDS } from "./packIds";
+export type { DesignProfile } from "./designProfile";
 
 export { PACK_IDS };
 export type PackId = (typeof PACK_IDS)[number];

@@ -58,6 +58,17 @@ describe("SSR routes", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('data-welcome="Willkommen in der Demo!"');
   });
+  test("dev-preview kann ein deterministisches Designprofil per variant ableiten", async () => {
+    const app = express();
+    registerSsrRoutes(app);
+    const res = await request(app).get(
+      "/dev/site-preview?pack=werkbank&fixture=full&variant=1"
+    );
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('data-pb-services="grid"');
+    expect(res.text).toContain('data-pb-about="image-left"');
+    expect(res.text).toContain('data-pb-gallery="filmstrip"');
+  });
 
   test("unbekanntes Pack → 400 mit Meldung", async () => {
     const app = express();

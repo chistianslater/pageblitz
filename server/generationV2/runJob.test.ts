@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 vi.mock("../db", () => ({
   getWebsiteById: vi.fn(),
   getBusinessById: vi.fn(),
+  listWebsites: vi.fn().mockResolvedValue([]),
   updateGenerationJob: vi.fn().mockResolvedValue(undefined),
   updateWebsite: vi.fn().mockResolvedValue(undefined),
   // upsertOnboarding (server/onboardingV2/state.ts) für die Spiegelung der
@@ -43,9 +44,11 @@ import { generateSiteContent } from "./generateSiteContent";
 import { guardGeneratedContent } from "./factGuard";
 import {
   buildInterimV2Doc,
+  collectOccupiedDesignFingerprints,
   resolveV2Images,
   runWebsiteGenerationV2Job,
 } from "./runJob";
+import { DEFAULT_DESIGN_PROFILE } from "../../shared/siteContract/designProfile";
 
 const mockedDb = vi.mocked(db);
 const mockedMirror = vi.mocked(mirrorGmbPhotosToR2);
@@ -56,6 +59,30 @@ const mockedGuard = vi.mocked(guardGeneratedContent);
 const R2_1 = "https://media.pageblitz.de/website-42/gmb-1.jpg";
 const R2_2 = "https://media.pageblitz.de/website-42/gmb-2.jpg";
 const R2_3 = "https://media.pageblitz.de/website-42/gmb-3.jpg";
+
+describe("collectOccupiedDesignFingerprints", () => {
+  test("berücksichtigt nur schema-valide Profile derselben Branche", () => {
+    const sameCategory = {
+      ...doc,
+      businessCategory: "Tischler",
+      designProfile: DEFAULT_DESIGN_PROFILE,
+    };
+    const otherCategory = {
+      ...sameCategory,
+      businessCategory: "Restaurant",
+    };
+    const result = collectOccupiedDesignFingerprints(
+      [
+        { websiteData: sameCategory },
+        { websiteData: otherCategory },
+        { websiteData: { kaputt: true } },
+      ],
+      "tischler"
+    );
+    expect(result.size).toBe(1);
+    expect([...result][0]).toContain("werkbank|split|list");
+  });
+});
 
 const website = { id: 42, slug: "preview-brandt", businessId: 7 };
 const business = {
@@ -158,7 +185,10 @@ describe("runWebsiteGenerationV2Job", () => {
     ]);
     expect(args.facts?.google).toEqual({ rating: 4.8, reviewCount: 12 });
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {
-      websiteData: doc,
+      websiteData: expect.objectContaining({
+        ...doc,
+        designProfile: expect.any(Object),
+      }),
     });
     expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
     expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(99, {
@@ -166,6 +196,42 @@ describe("runWebsiteGenerationV2Job", () => {
       progress: 100,
       result: { success: true, alreadyGenerated: false, usedFallback: false },
     });
+  });
+
+  test("Regenerierung bewahrt ein bereits bestätigtes Designprofil", async () => {
+    mockedMirror.mockResolvedValue([]);
+    const existingProfile = {
+      ...DEFAULT_DESIGN_PROFILE,
+      heroLayout: "centered" as const,
+      servicesLayout: "featured" as const,
+      seed: 77,
+    };
+    mockedDb.getWebsiteById.mockResolvedValue({
+      ...website,
+      websiteData: { ...doc, designProfile: existingProfile },
+    } as any);
+
+    await runWebsiteGenerationV2Job(99, 42);
+
+    const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
+      .websiteData as any;
+    expect(finalDoc.designProfile).toEqual(existingProfile);
+    expect(mockedDb.listWebsites).not.toHaveBeenCalled();
+  });
+
+  test("Fehler der optionalen Kollisionsprüfung blockiert die Generierung nicht", async () => {
+    mockedMirror.mockResolvedValue([]);
+    mockedDb.listWebsites.mockRejectedValueOnce(new Error("DB kurz weg"));
+
+    await runWebsiteGenerationV2Job(99, 42);
+
+    expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(
+      99,
+      expect.objectContaining({ status: "completed" })
+    );
+    const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
+      .websiteData as any;
+    expect(finalDoc.designProfile).toBeDefined();
   });
 
   test("Key-Leak-Regression (Plan B7 Task 3): kein `key=` und kein maps.googleapis.com in irgendeinem persistierten Dokument", async () => {
@@ -231,7 +297,10 @@ describe("runWebsiteGenerationV2Job", () => {
       city: "Dortmund",
     });
     expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
-      websiteData: corrected,
+      websiteData: expect.objectContaining({
+        ...corrected,
+        designProfile: expect.any(Object),
+      }),
     });
   });
 
@@ -294,7 +363,10 @@ describe("runWebsiteGenerationV2Job", () => {
 
     // Finaler Write überschreibt den Zwischenstand mit dem LLM-Dokument.
     expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
-      websiteData: doc,
+      websiteData: expect.objectContaining({
+        ...doc,
+        designProfile: expect.any(Object),
+      }),
     });
   });
 

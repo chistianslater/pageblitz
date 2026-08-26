@@ -91,7 +91,35 @@ function matchesWord(token: string, industry: string): boolean {
   return false;
 }
 
-/** Primär-Pack zuerst; unbekannte Branchen → [FALLBACK_PACK]. */
+/**
+ * Ästhetisch kompatible Nachbarn je Designrichtung. Der direkte Branchen-
+ * Match bleibt erster Vorschlag; Nachbarn verhindern aber die frühere
+ * 1:1-Zuordnung „Branche = Template" (Schreinerei immer Werkbank usw.).
+ *
+ * Die Gruppen folgen Formsprache/Informationsdichte, nicht Branchenklischees:
+ * z. B. kann ein Handwerksbetrieb auch die reduzierte Richtung Fundament
+ * oder die traditionelle Richtung Zunft wählen.
+ */
+const DIRECTION_NEIGHBORS: Record<PackId, readonly PackId[]> = {
+  werkbank: ["fundament", "zunft", "klarwerk"],
+  kanzlei: ["klarwerk", "atelier", "fundament"],
+  morgenlicht: ["schimmer", "klarwerk", "patina"],
+  gusto: ["landgut", "patina", "zunft"],
+  patina: ["landgut", "schimmer", "atelier"],
+  "salon-noir": ["schimmer", "patina", "atelier"],
+  marktplatz: ["verve", "klarwerk", "atelier"],
+  landgut: ["zunft", "patina", "gusto"],
+  atelier: ["kanzlei", "klarwerk", "patina"],
+  klarwerk: ["kanzlei", "atelier", "morgenlicht"],
+  verve: ["marktplatz", "klarwerk", "werkbank"],
+  zunft: ["landgut", "werkbank", "patina"],
+  schimmer: ["morgenlicht", "salon-noir", "patina"],
+  fundament: ["werkbank", "kanzlei", "zunft"],
+};
+
+const MIN_DIRECTION_POOL_SIZE = 3;
+
+/** Direkte Branchen-Matches zuerst, danach kompatible Richtungen; min. 3. */
 export function getPackPool(categoryKey: string): PackId[] {
   const tokens = tokenize(transliterate(categoryKey));
   const pool = (Object.values(STYLE_PACKS) as PackConstitution[])
@@ -102,5 +130,13 @@ export function getPackPool(categoryKey: string): PackId[] {
       })
     )
     .map(c => c.id);
-  return pool.length > 0 ? pool : [FALLBACK_PACK];
+  const base = pool.length > 0 ? pool : [FALLBACK_PACK];
+  const expanded = [...base];
+  for (const primary of base) {
+    for (const neighbor of DIRECTION_NEIGHBORS[primary]) {
+      if (!expanded.includes(neighbor)) expanded.push(neighbor);
+      if (expanded.length >= MIN_DIRECTION_POOL_SIZE) return expanded;
+    }
+  }
+  return expanded;
 }

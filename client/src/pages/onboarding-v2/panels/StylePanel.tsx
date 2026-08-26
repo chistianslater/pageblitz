@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
+import type { DesignProfile } from "@shared/siteContract/designProfile";
 import { PanelFrame } from "./PanelFrame";
 import { ThemeEditor } from "./ThemeEditor";
 
@@ -30,7 +31,11 @@ export function StyleCandidateList({
   preselectPackId = null,
 }: StyleCandidateListProps) {
   return (
-    <div className="pb-studio-cands" role="group" aria-label="Stil-Kandidaten">
+    <div
+      className="pb-studio-cands"
+      role="group"
+      aria-label="Designrichtungen"
+    >
       {candidates.map(c => {
         const isCurrent = c.id === currentPackId;
         const isPreselected = c.id === preselectPackId;
@@ -39,7 +44,7 @@ export function StyleCandidateList({
           ? "Aktuell"
           : isBusy
             ? "Wird übernommen…"
-            : "Diesen Stil wählen";
+            : "Diese Richtung verwenden";
         return (
           <div
             key={c.id}
@@ -95,6 +100,8 @@ interface StylePanelProps {
   accent?: string | null;
   /** Gespeicherte Schriftpaar-ID (doc.fontPairId) — Theme-Editor. */
   fontPairId?: string | null;
+  /** Gespeichertes Kompositionsprofil innerhalb der Designrichtung. */
+  designProfile?: DesignProfile | null;
 }
 
 export function StylePanel({
@@ -106,6 +113,7 @@ export function StylePanel({
   onNext,
   accent = null,
   fontPairId = null,
+  designProfile = null,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
@@ -188,10 +196,10 @@ export function StylePanel({
   return (
     <PanelFrame
       step="Schritt 1"
-      title="Welcher Stil passt zu dir?"
+      title="Welche Designrichtung passt zu deinem Betrieb?"
       panelId="style"
       onClose={onClose}
-      intro="Deine Inhalte bleiben gleich — nur der Look wechselt. Du kannst jederzeit zurück."
+      intro="Die Richtung ist dein Ausgangspunkt. Inhalte, Farben, Schriften und Bilder machen daraus deine Website."
       footer={
         <>
           <button
@@ -201,7 +209,7 @@ export function StylePanel({
             disabled={busy}
             onClick={() => setRound(r => r + 1)}
           >
-            Andere zeigen
+            Andere Richtungen
           </button>
           <button
             type="button"
@@ -244,12 +252,13 @@ export function StylePanel({
           ohne eigenen State. Die Hauptaktionen bleiben dank Sticky-Fuß
           auch bei aufgeklapptem Feinschliff erreichbar. */}
       <details className="pb-studio-theme-toggle">
-        <summary>Feinschliff: Farben &amp; Schriften anpassen</summary>
+        <summary>Aufbau, Farben &amp; Schriften anpassen</summary>
         <ThemeEditor
           token={token}
           packId={activePackId}
           accent={accent}
           fontPairId={fontPairId}
+          designProfile={designProfile}
           onApplied={onApplied}
         />
       </details>

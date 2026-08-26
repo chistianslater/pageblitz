@@ -10,6 +10,7 @@ import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
   PACK_IDS,
   type PackId,
+  type DesignProfile,
   type SectionOf,
   type SectionType,
   type SectionV2,
@@ -17,6 +18,7 @@ import {
   type SiteFeatures,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
+import { deriveDesignProfile } from "../../shared/siteContract/designProfile";
 import {
   ADDON_KEYS,
   FEATURE_ADDON_KEYS,
@@ -30,7 +32,7 @@ export function parsePackId(value: string): PackId {
   if ((PACK_IDS as readonly string[]).includes(value)) return value as PackId;
   throw new TRPCError({
     code: "BAD_REQUEST",
-    message: `Unbekanntes Style-Pack: "${value}"`,
+    message: `Unbekannte Designrichtung: "${value}"`,
   });
 }
 
@@ -39,7 +41,17 @@ export function applyStylePack(
   doc: WebsiteDataV2,
   packId: PackId
 ): WebsiteDataV2 {
-  return WebsiteDataV2Schema.parse({ ...doc, stylePackId: packId });
+  const designProfile = deriveDesignProfile({
+    stylePackId: packId,
+    businessName: doc.businessName,
+    businessCategory: doc.businessCategory,
+    sections: doc.sections,
+  });
+  return WebsiteDataV2Schema.parse({
+    ...doc,
+    stylePackId: packId,
+    designProfile,
+  });
 }
 
 /**
@@ -50,7 +62,11 @@ export function applyStylePack(
  */
 export function applyTheme(
   doc: WebsiteDataV2,
-  patch: { accent?: string | null; fontPairId?: string | null }
+  patch: {
+    accent?: string | null;
+    fontPairId?: string | null;
+    designProfile?: DesignProfile;
+  }
 ): WebsiteDataV2 {
   const next: WebsiteDataV2 = { ...doc };
   if (patch.accent !== undefined) {
@@ -63,6 +79,9 @@ export function applyTheme(
   if (patch.fontPairId !== undefined) {
     if (patch.fontPairId === null) delete next.fontPairId;
     else next.fontPairId = patch.fontPairId;
+  }
+  if (patch.designProfile !== undefined) {
+    next.designProfile = patch.designProfile;
   }
   return WebsiteDataV2Schema.parse(next);
 }

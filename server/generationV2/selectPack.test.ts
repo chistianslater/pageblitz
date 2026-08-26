@@ -29,14 +29,17 @@ describe("selectPack", () => {
     vi.resetModules();
   });
 
-  test("unbekannte Branche: Rotation bekommt den Fallback-Pool", async () => {
+  test("unbekannte Branche: Rotation bekommt Fallback als erste von drei Richtungen", async () => {
     const fn = vi.fn(async (_industryKey: string, pool: string[]) => pool[0]);
     vi.doMock("../db", () => ({ getNextLayoutForIndustry: fn }));
     const { selectPack } = await import("./selectPack");
 
     const result = await selectPack("unbekannte-branche", "default");
 
-    expect(fn).toHaveBeenCalledWith("default", [FALLBACK_PACK]);
+    expect(fn).toHaveBeenCalledWith(
+      "default",
+      getPackPool("unbekannte-branche")
+    );
     expect(result).toBe(FALLBACK_PACK);
 
     vi.doUnmock("../db");

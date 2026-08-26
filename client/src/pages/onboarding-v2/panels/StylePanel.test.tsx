@@ -71,6 +71,8 @@ describe("StylePanel", () => {
     // … aber NICHT als "Aktuell" — das darf erst nach einem echten Klick
     // passieren, nicht schon beim bloßen Öffnen des Panels mit Vorschlag.
     expect(html).not.toContain("Aktuell");
-    expect(html).toContain("Diesen Stil wählen");
+    expect(html).toContain("Diese Richtung verwenden");
+    expect(html).toContain("Seitenaufbau");
+    expect(html).toContain("Mosaik");
   });
 });

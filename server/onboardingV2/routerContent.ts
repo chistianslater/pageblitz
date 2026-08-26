@@ -25,6 +25,7 @@ import {
   applyTheme,
 } from "./applyPatch";
 import { getFontPair } from "../../shared/stylePacks";
+import { DesignProfileSchema } from "../../shared/siteContract/schema";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
@@ -209,8 +210,8 @@ export const contentProcedures = {
     }),
 
   /**
-   * Studio-Theme-Editor (2026-08-24): Akzentfarbe und/oder kuratierte
-   * Schriftpaarung. `null` setzt die jeweilige Wahl auf den Pack-Standard
+   * Studio-Design-Editor: Akzentfarbe, kuratierte Schriftpaarung und/oder
+   * Kompositionsprofil. `null` setzt Farbe/Schrift auf den Richtungsstandard
    * zurück, Weglassen lässt sie unverändert. fontPairId ist gegen die
    * kuratierte Liste (shared/stylePacks/fontPairs.ts) validiert, accent
    * gegen das Hex-Format (Schema-Invariante: nur Hex, kein CSS-Freitext).
@@ -230,6 +231,7 @@ export const contentProcedures = {
           .refine(id => id == null || getFontPair(id) != null, {
             message: "Unbekannte Schriftpaarung.",
           }),
+        designProfile: DesignProfileSchema.optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -238,7 +240,11 @@ export const contentProcedures = {
       return persistDoc(
         input.token,
         loaded,
-        applyTheme(doc, { accent: input.accent, fontPairId: input.fontPairId })
+        applyTheme(doc, {
+          accent: input.accent,
+          fontPairId: input.fontPairId,
+          designProfile: input.designProfile,
+        })
       );
     }),
 

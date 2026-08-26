@@ -1,5 +1,6 @@
 import {
   getBusinessById,
+  listWebsites,
   getWebsiteById,
   updateGenerationJob,
   updateWebsite,
@@ -20,6 +21,10 @@ import { SECTION_ADDON_KEYS } from "../../shared/pricing";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
+import {
+  deriveDistinctDesignProfile,
+  designFingerprint,
+} from "../../shared/siteContract/designProfile";
 
 /** Entwurfs-Flags in onboarding_responses je Sektions-Add-on (wie server/onboardingV2/addOnFlags.ts). */
 const ONBOARDING_ADDON_COLUMNS: Record<
@@ -175,6 +180,37 @@ const MAX_GMB_PHOTOS = 8;
 const MIN_GALLERY_PHOTOS = 3;
 
 /**
+ * Fingerprints der zuletzt erzeugten Websites derselben Branche. Alte
+ * Dokumente ohne Designprofil werden ignoriert (sie behalten bewusst den
+ * rückwärtskompatiblen Default-Aufbau).
+ */
+export function collectOccupiedDesignFingerprints(
+  rows: Array<{ websiteData?: unknown }>,
+  category: string
+): Set<string> {
+  const normalizedCategory = category.trim().toLowerCase();
+  const occupied = new Set<string>();
+  for (const row of rows) {
+    const parsed = WebsiteDataV2Schema.safeParse(row.websiteData);
+    if (!parsed.success || !parsed.data.designProfile) continue;
+    if (
+      (parsed.data.businessCategory ?? "").trim().toLowerCase() !==
+      normalizedCategory
+    )
+      continue;
+    occupied.add(
+      designFingerprint({
+        stylePackId: parsed.data.stylePackId,
+        profile: parsed.data.designProfile,
+        fontPairId: parsed.data.fontPairId,
+        accent: parsed.data.colorOverrides?.accent,
+      })
+    );
+  }
+  return occupied;
+}
+
+/**
  * Bilder kommen NIE vom LLM: echte GMB-Fotos zuerst (Foto 1 = Hero, Foto 2 =
  * Über uns, ab ≥ 3 Fotos zusätzlich alle als Galerie), sonst Branchen-Stock
  * aus industryImages (ohne Galerie — die Galerie zeigt nur echte Betriebs-
@@ -299,6 +335,47 @@ async function runWebsiteGenerationV2(
       },
       hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
     );
+    // Komposition wird erst aus dem finalen Inhalt abgeleitet (Anzahl
+    // Leistungen/Bilder/Sektionen). Gegen die jüngsten Websites derselben
+    // Branche prüfen, damit nicht zweimal dieselbe sichtbare Kombination
+    // aus Richtung + Layout + Bildbehandlung entsteht.
+    const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
+    let designProfile = previousParsed.success
+      ? previousParsed.data.designProfile
+      : undefined;
+    if (!designProfile) {
+      let occupied = new Set<string>();
+      try {
+        const recentWebsites = await listWebsites(200, 0);
+        occupied = collectOccupiedDesignFingerprints(
+          recentWebsites,
+          category
+        );
+      } catch (err) {
+        // Individualisierung ist wichtig, darf aber nie die eigentliche
+        // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die
+        // Ableitung durch Betriebsname/Kategorie trotzdem deterministisch.
+        console.warn(
+          "[DesignProfile] Kollisionsprüfung nicht verfügbar, nutze deterministische Ableitung:",
+          err
+        );
+      }
+      designProfile = deriveDistinctDesignProfile(
+        {
+          stylePackId: packId,
+          businessName: websiteData.businessName,
+          businessCategory: websiteData.businessCategory,
+          sections: websiteData.sections,
+          fontPairId: websiteData.fontPairId,
+          accent: websiteData.colorOverrides?.accent,
+        },
+        occupied
+      );
+    }
+    websiteData = WebsiteDataV2Schema.parse({
+      ...websiteData,
+      designProfile,
+    });
   } catch (err) {
     // Der Zwischenstand darf einen Fehlschlag nicht überleben: sonst sähe
     // ensureGeneration ein (Platzhalter-)Dokument und würde nie neu

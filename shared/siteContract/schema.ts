@@ -6,6 +6,14 @@
 import "../zodLocale";
 import { z } from "zod";
 import { PACK_IDS } from "./packIds";
+import {
+  ABOUT_LAYOUTS,
+  DESIGN_DENSITIES,
+  GALLERY_LAYOUTS,
+  HERO_LAYOUTS,
+  IMAGE_TREATMENTS,
+  SERVICES_LAYOUTS,
+} from "./designProfile";
 
 export { PACK_IDS };
 
@@ -308,6 +316,20 @@ export const PageSchema = z
   })
   .strict();
 
+/** Kompositionsprofil innerhalb einer kuratierten Designrichtung. */
+export const DesignProfileSchema = z
+  .object({
+    version: z.literal(1),
+    heroLayout: z.enum(HERO_LAYOUTS),
+    servicesLayout: z.enum(SERVICES_LAYOUTS),
+    aboutLayout: z.enum(ABOUT_LAYOUTS),
+    galleryLayout: z.enum(GALLERY_LAYOUTS),
+    density: z.enum(DESIGN_DENSITIES),
+    imageTreatment: z.enum(IMAGE_TREATMENTS),
+    seed: z.number().int().min(0).max(0xffffffff),
+  })
+  .strict();
+
 export const WebsiteDataV2Schema = z
   .object({
     version: z.literal(2),
@@ -362,6 +384,10 @@ export const WebsiteDataV2Schema = z
       .regex(/^[a-z0-9-]+$/)
       .max(40)
       .optional(),
+    // Optional für vollständige Rückwärtskompatibilität: bestehende Websites
+    // ohne Profil rendern über DEFAULT_DESIGN_PROFILE unverändert. Neu
+    // generierte/angepasste Websites persistieren das Profil.
+    designProfile: DesignProfileSchema.optional(),
     features: FeaturesSchema.optional(),
     addOns: SiteAddOnsSchema.optional(),
   })

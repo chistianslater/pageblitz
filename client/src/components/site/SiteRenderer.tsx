@@ -12,6 +12,11 @@ import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import { MOTION_CSS } from "./motionCss";
+import { DESIGN_PROFILE_CSS } from "./designProfileCss";
+import {
+  DEFAULT_DESIGN_PROFILE,
+  deriveDesignProfile,
+} from "../../../../shared/siteContract/designProfile";
 import {
   buildNavItems,
   linkPageSections,
@@ -26,10 +31,10 @@ export const SiteRenderer: React.FC<{
   now?: Date;
   /**
    * Erzwingt ein anderes registriertes Pack für die Darstellung (Variant-
-   * Picker-Preview) — Inhalte (`data`) bleiben unverändert, nur die
-   * Verfassung + das Renderer-Modul wechseln. Ein nicht registrierter
-   * Override wird ignoriert; dann bleibt der gespeicherte `data.stylePackId`
-   * aktiv.
+   * Picker-Preview) — Inhalte (`data`) bleiben unverändert; Verfassung,
+   * Renderer-Modul und die für diese Richtung deterministisch abgeleitete
+   * Komposition wechseln. Ein nicht registrierter Override wird ignoriert;
+   * dann bleibt der gespeicherte `data.stylePackId` aktiv.
    */
   packOverride?: PackId;
   /**
@@ -73,7 +78,16 @@ export const SiteRenderer: React.FC<{
 }) => {
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
-      ? { ...data, stylePackId: packOverride }
+      ? {
+          ...data,
+          stylePackId: packOverride,
+          designProfile: deriveDesignProfile({
+            stylePackId: packOverride,
+            businessName: data.businessName,
+            businessCategory: data.businessCategory,
+            sections: data.sections,
+          }),
+        }
       : data;
   const mod = PACK_MODULES[effectiveData.stylePackId];
   if (!mod)
@@ -85,6 +99,10 @@ export const SiteRenderer: React.FC<{
     effectiveData.colorOverrides,
     getFontPair(effectiveData.fontPairId)
   );
+  // Bestehende Dokumente ohne Profil bleiben exakt beim bisherigen Aufbau.
+  // Nur neu generierte bzw. im Studio angepasste Websites tragen Varianten.
+  const designProfile =
+    effectiveData.designProfile ?? DEFAULT_DESIGN_PROFILE;
   const navItems = buildNavItems(effectiveData, { pathname, basePath });
   const currentPage = pageForPathname(effectiveData, pathname);
   // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
@@ -129,6 +147,12 @@ export const SiteRenderer: React.FC<{
     <div
       className={`pb-site pb-${effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
+      data-pb-hero={designProfile.heroLayout}
+      data-pb-services={designProfile.servicesLayout}
+      data-pb-about={designProfile.aboutLayout}
+      data-pb-gallery={designProfile.galleryLayout}
+      data-pb-density={designProfile.density}
+      data-pb-image={designProfile.imageTreatment}
     >
       {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
           für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts.
@@ -136,7 +160,14 @@ export const SiteRenderer: React.FC<{
           Packs aus einer Quelle (siehe motionCss.ts). */}
       <style
         dangerouslySetInnerHTML={{
-          __html: mod.css + "\n" + MOBILE_NAV_CSS + "\n" + MOTION_CSS,
+          __html:
+            mod.css +
+            "\n" +
+            MOBILE_NAV_CSS +
+            "\n" +
+            MOTION_CSS +
+            "\n" +
+            DESIGN_PROFILE_CSS,
         }}
       />
       <mod.Page

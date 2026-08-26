@@ -84,6 +84,40 @@ describe("SiteRenderer", () => {
       const html = renderToStaticMarkup(<SiteRenderer data={data} />);
       expect(html).toContain("pb-site pb-werkbank");
     });
+
+    test("bestehendes Dokument ohne Profil trägt rückwärtskompatible Default-Attribute", () => {
+      const html = renderToStaticMarkup(<SiteRenderer data={data} />);
+      expect(html).toContain('data-pb-hero="split"');
+      expect(html).toContain('data-pb-services="list"');
+      expect(html).toContain('data-pb-density="airy"');
+    });
+
+    test("persistiertes Profil landet als Kompositionsattribute am Site-Root", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer
+          data={{
+            ...data,
+            designProfile: {
+              version: 1,
+              heroLayout: "centered",
+              servicesLayout: "grid",
+              aboutLayout: "image-left",
+              galleryLayout: "mosaic",
+              density: "compact",
+              imageTreatment: "framed",
+              seed: 42,
+            },
+          }}
+        />
+      );
+      expect(html).toContain('data-pb-hero="centered"');
+      expect(html).toContain('data-pb-services="grid"');
+      expect(html).toContain('data-pb-about="image-left"');
+      expect(html).toContain('data-pb-gallery="mosaic"');
+      expect(html).toContain('data-pb-density="compact"');
+      expect(html).toContain('data-pb-image="framed"');
+      expect(html).toContain('data-pb-services="grid"] #leistungen');
+    });
   });
 
   describe("pathname / Unterseiten (Plan B6, Task 3 + Task 4: pageHeader im Pack)", () => {

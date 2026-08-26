@@ -1046,6 +1046,31 @@
   font-weight: 600;
   color: var(--st-ink);
 }
+.pb-studio-theme-layouts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.pb-studio-theme-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--st-muted);
+}
+.pb-studio-theme-layout .pb-studio-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.55rem;
+  color: var(--st-ink);
+  background: var(--st-canvas);
+}
+@media (max-width: 380px) {
+  .pb-studio-theme-layouts {
+    grid-template-columns: 1fr;
+  }
+}
 .pb-studio-theme-swatches,
 .pb-studio-theme-fonts {
   display: flex;

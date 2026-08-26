@@ -27,13 +27,16 @@ const doc: WebsiteDataV2 = {
 describe("parsePackId", () => {
   test("kennt registrierte IDs, wirft BAD_REQUEST sonst", () => {
     expect(parsePackId("kanzlei")).toBe("kanzlei");
-    expect(() => parsePackId("disco")).toThrowError(/Unbekanntes Style-Pack/);
+    expect(() => parsePackId("disco")).toThrowError(
+      /Unbekannte Designrichtung/
+    );
   });
 });
 describe("applyStylePack", () => {
   test("setzt stylePackId, mutiert das Original nicht, Rest bleibt identisch", () => {
     const next = applyStylePack(doc, "kanzlei");
     expect(next.stylePackId).toBe("kanzlei");
+    expect(next.designProfile).toBeDefined();
     expect(doc.stylePackId).toBe("werkbank");
     expect(next.sections).toEqual(doc.sections);
   });
@@ -66,6 +69,21 @@ describe("applyTheme", () => {
     expect(() =>
       applyTheme(doc, { accent: "red;background:url(x)" })
     ).toThrow();
+  });
+  test("setzt ein schema-valides Kompositionsprofil", () => {
+    const designProfile = {
+      version: 1 as const,
+      heroLayout: "centered" as const,
+      servicesLayout: "grid" as const,
+      aboutLayout: "image-left" as const,
+      galleryLayout: "mosaic" as const,
+      density: "compact" as const,
+      imageTreatment: "framed" as const,
+      seed: 42,
+    };
+    const next = applyTheme(doc, { designProfile });
+    expect(next.designProfile).toEqual(designProfile);
+    expect(doc.designProfile).toBeUndefined();
   });
 });
 

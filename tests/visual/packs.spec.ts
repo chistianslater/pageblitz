@@ -245,3 +245,33 @@ test("Galerie-Lightbox: öffnen, blättern, schließen", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(lightbox).toBeHidden();
 });
+
+test("Designprofil-Variante verändert Komposition ohne Pack-Wechsel", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(
+    "/dev/site-preview?pack=werkbank&fixture=full&variant=1"
+  );
+  const site = page.locator(".pb-site");
+  await expect(site).toHaveAttribute("data-pb-services", "grid");
+  await expect(site).toHaveAttribute("data-pb-about", "image-left");
+  await expect(site).toHaveAttribute("data-pb-gallery", "filmstrip");
+  await expect(site).toHaveAttribute("data-pb-image", "framed");
+
+  // Sichtbare Wirkung statt nur Datenattribute: Leistungen werden zum
+  // 2-Spalten-Raster, das Über-uns-Bild steht links, die Galerie horizontal.
+  const servicesDisplay = await page
+    .locator("#leistungen")
+    .evaluate(el => getComputedStyle(el).display);
+  expect(servicesDisplay).toBe("grid");
+  const aboutImageOrder = await page
+    .locator("#ueber-uns img")
+    .evaluate(el => getComputedStyle(el).order);
+  expect(aboutImageOrder).toBe("-1");
+  const galleryOverflow = await page
+    .locator("#galerie > div")
+    .evaluate(el => getComputedStyle(el).overflowX);
+  expect(galleryOverflow).toBe("auto");
+});

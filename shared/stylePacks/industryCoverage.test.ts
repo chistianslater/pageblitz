@@ -15,10 +15,10 @@ import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
  * Ästhetik passen — neben den bereits vorhandenen Einträgen
  * hausmeisterservice/umzug/dienstleistung).
  *
- * Für ALLE anderen Branchen darf klarwerk NICHT im Pool auftauchen — sonst
- * wäre die Zuordnung nur der leere-Pool-Fallback und keine echte
- * Branchen-Zuordnung. Lücken werden durch Ergänzen der `industries`-Arrays
- * der Verfassungen geschlossen, NICHT durch Aufweichen dieses Tests.
+ * Seit Designrichtungen statt 1:1-Branchen-Templates kommuniziert werden,
+ * enthält jeder Pool kompatible Nachbarn. Klarwerk darf daher als Nachbar
+ * auftauchen; entscheidend ist der ERSTE Eintrag: Er muss der echte direkte
+ * Branchenmatch sein (außer bei den dokumentierten Klarwerk-Primärfällen).
  */
 const KLARWERK_PRIMARY_EXCEPTIONS = new Set([
   "reinigung",
@@ -42,12 +42,12 @@ describe("Style-Pack-Registrierung — Branchen-Vollabdeckung (SEO_INDUSTRIES)",
         : `${key}: echte Nicht-Fallback-Zuordnung`,
       () => {
         const pool = getPackPool(key);
-        expect(pool.length).toBeGreaterThan(0);
+        expect(pool.length).toBeGreaterThanOrEqual(3);
 
         if (isKlarwerkPrimary) {
-          expect(pool).toContain(FALLBACK_PACK);
+          expect(pool[0]).toBe(FALLBACK_PACK);
         } else {
-          expect(pool).not.toContain(FALLBACK_PACK);
+          expect(pool[0]).not.toBe(FALLBACK_PACK);
         }
       }
     );

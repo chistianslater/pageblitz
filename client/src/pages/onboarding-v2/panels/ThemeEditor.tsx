@@ -2,6 +2,16 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { FONT_PAIRS, getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
+import type { DesignProfile } from "@shared/siteContract/designProfile";
+import {
+  DEFAULT_DESIGN_PROFILE,
+  HERO_LAYOUTS,
+  SERVICES_LAYOUTS,
+  ABOUT_LAYOUTS,
+  GALLERY_LAYOUTS,
+  DESIGN_DENSITIES,
+  IMAGE_TREATMENTS,
+} from "@shared/siteContract/designProfile";
 
 /**
  * Studio-Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung unabhängig
@@ -49,6 +59,8 @@ interface ThemeEditorProps {
   accent: string | null;
   /** Gespeicherte Schriftpaar-ID (doc.fontPairId). */
   fontPairId: string | null;
+  /** Kompositionsprofil innerhalb der Designrichtung. */
+  designProfile?: DesignProfile | null;
   onApplied: () => void;
 }
 
@@ -57,13 +69,24 @@ export function ThemeEditor({
   packId,
   accent,
   fontPairId,
+  designProfile = null,
   onApplied,
 }: ThemeEditorProps) {
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
   // Optimistisch: Chips zeigen die Wahl sofort, der Server-Refetch folgt.
   const [localAccent, setLocalAccent] = useState(accent);
   const [localPairId, setLocalPairId] = useState(fontPairId);
+  const [localProfile, setLocalProfile] = useState<DesignProfile>(
+    designProfile ?? DEFAULT_DESIGN_PROFILE
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Beim Wechsel der Designrichtung leitet der Server ein neues Profil ab.
+  // StylePanel bleibt dabei gemountet; deshalb den lokalen Editor-Zustand
+  // nach dem Parent-Refetch explizit synchronisieren.
+  useEffect(() => {
+    setLocalProfile(designProfile ?? DEFAULT_DESIGN_PROFILE);
+  }, [designProfile]);
 
   const packAccent = useMemo(() => {
     if (!packId) return null;
@@ -100,6 +123,7 @@ export function ThemeEditor({
   const save = (patch: {
     accent?: string | null;
     fontPairId?: string | null;
+    designProfile?: DesignProfile;
   }) => updateTheme.mutate({ token, ...patch }, { onSuccess: onApplied });
 
   const pickAccent = (hex: string | null) => {
@@ -119,6 +143,17 @@ export function ThemeEditor({
     save({ fontPairId: id });
   };
 
+  const pickProfile = <
+    K extends keyof Omit<DesignProfile, "version" | "seed">,
+  >(
+    key: K,
+    value: DesignProfile[K]
+  ) => {
+    const next = { ...localProfile, [key]: value };
+    setLocalProfile(next);
+    save({ designProfile: next });
+  };
+
   const busy = updateTheme.isPending;
   // Ehrlicher Hinweis statt Blockade: Akzent fast unsichtbar auf dem
   // Pack-Hintergrund (Buttons würden „verschwinden"). Schwelle 1,6:1 —
@@ -128,11 +163,127 @@ export function ThemeEditor({
 
   return (
     <div className="pb-studio-theme">
-      <h3 className="pb-studio-theme-title">Farben &amp; Schriften</h3>
+      <h3 className="pb-studio-theme-title">Aufbau, Farben &amp; Schriften</h3>
       <p className="pb-studio-theme-hint">
-        Feinschliff für den gewählten Stil — jede Auswahl wird sofort
+        Feinschliff für die gewählte Designrichtung — jede Auswahl wird sofort
         übernommen.
       </p>
+
+      <p className="pb-studio-theme-label" id="pb-theme-layout-label">
+        Seitenaufbau
+      </p>
+      <div
+        className="pb-studio-theme-layouts"
+        role="group"
+        aria-labelledby="pb-theme-layout-label"
+      >
+        <label className="pb-studio-theme-layout">
+          <span>Hero</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.heroLayout}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "heroLayout",
+                e.target.value as (typeof HERO_LAYOUTS)[number]
+              )
+            }
+          >
+            <option value="split">Bild &amp; Text</option>
+            <option value="centered">Zentriert</option>
+            <option value="compact">Kompakt</option>
+          </select>
+        </label>
+        <label className="pb-studio-theme-layout">
+          <span>Leistungen</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.servicesLayout}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "servicesLayout",
+                e.target.value as (typeof SERVICES_LAYOUTS)[number]
+              )
+            }
+          >
+            <option value="list">Liste</option>
+            <option value="grid">Raster</option>
+            <option value="featured">Hervorgehoben</option>
+          </select>
+        </label>
+        <label className="pb-studio-theme-layout">
+          <span>Über uns</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.aboutLayout}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "aboutLayout",
+                e.target.value as (typeof ABOUT_LAYOUTS)[number]
+              )
+            }
+          >
+            <option value="image-left">Bild links</option>
+            <option value="image-right">Bild rechts</option>
+          </select>
+        </label>
+        <label className="pb-studio-theme-layout">
+          <span>Galerie</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.galleryLayout}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "galleryLayout",
+                e.target.value as (typeof GALLERY_LAYOUTS)[number]
+              )
+            }
+          >
+            <option value="grid">Raster</option>
+            <option value="mosaic">Mosaik</option>
+            <option value="filmstrip">Filmstreifen</option>
+          </select>
+        </label>
+        <label className="pb-studio-theme-layout">
+          <span>Abstände</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.density}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "density",
+                e.target.value as (typeof DESIGN_DENSITIES)[number]
+              )
+            }
+          >
+            <option value="airy">Großzügig</option>
+            <option value="compact">Kompakt</option>
+          </select>
+        </label>
+        <label className="pb-studio-theme-layout">
+          <span>Bildwirkung</span>
+          <select
+            className="pb-studio-input"
+            value={localProfile.imageTreatment}
+            disabled={busy}
+            onChange={e =>
+              pickProfile(
+                "imageTreatment",
+                e.target.value as (typeof IMAGE_TREATMENTS)[number]
+              )
+            }
+          >
+            <option value="natural">Natürlich</option>
+            <option value="framed">Gerahmt</option>
+            <option value="bleed">Flächig</option>
+          </select>
+        </label>
+      </div>
 
       <p className="pb-studio-theme-label" id="pb-theme-accent-label">
         Akzentfarbe
@@ -148,14 +299,14 @@ export function ThemeEditor({
           data-active={localAccent === null ? "true" : undefined}
           disabled={busy}
           onClick={() => pickAccent(null)}
-          title="Stilfarbe"
-          aria-label="Stilfarbe (Standard des Stils)"
+          title="Farbe der Designrichtung"
+          aria-label="Farbe der Designrichtung (Standard)"
         >
           <span
             className="pb-studio-theme-dot"
             style={{ background: packAccent ?? "var(--st-line)" }}
           />
-          <span className="pb-studio-theme-swatch-name">Stilfarbe</span>
+          <span className="pb-studio-theme-swatch-name">Richtungsfarbe</span>
         </button>
         {ACCENT_CHOICES.map(c => (
           <button
@@ -223,8 +374,10 @@ export function ThemeEditor({
           disabled={busy}
           onClick={() => pickPair(null)}
         >
-          <span className="pb-studio-theme-font-name">Stil-Schriften</span>
-          <span className="pb-studio-theme-font-vibe">Standard des Stils</span>
+          <span className="pb-studio-theme-font-name">
+            Schriften der Richtung
+          </span>
+          <span className="pb-studio-theme-font-vibe">Standard</span>
         </button>
         {FONT_PAIRS.map(p => (
           <button
