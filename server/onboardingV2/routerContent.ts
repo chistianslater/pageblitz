@@ -18,6 +18,7 @@ import {
 } from "../../shared/onboardingV2/patches";
 import {
   applyAddOnFlags,
+  applyAddonHeadings,
   applyImages,
   applyInlineText,
   applyOffer,
@@ -228,6 +229,38 @@ export const contentProcedures = {
         loaded,
         applyInlineText(doc, input.path, input.value)
       );
+    }),
+
+  updateAddonSettings: publicProcedure
+    .input(
+      tokenInput.extend({
+        headings: z
+          .object({
+            contact: z.string().max(120).optional(),
+            gallery: z.string().max(120).optional(),
+            menu: z.string().max(120).optional(),
+            pricelist: z.string().max(120).optional(),
+          })
+          .strict()
+          .optional(),
+        chatWelcomeMessage: z.string().max(512).nullish(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      const next = input.headings
+        ? applyAddonHeadings(doc, input.headings)
+        : doc;
+      return persistDoc(input.token, loaded, next, {
+        extra:
+          input.chatWelcomeMessage !== undefined
+            ? {
+                chatWelcomeMessage:
+                  input.chatWelcomeMessage?.trim() || null,
+              }
+            : undefined,
+      });
     }),
 
   /**

@@ -226,6 +226,7 @@ interface AddonsPanelProps {
    * (`reconcileAddOnDraft`).
    */
   addOns: AddOnFlags;
+  chatWelcomeMessage?: string | null;
   /**
    * true nach dem Checkout (website.status !== "preview"): Änderungen an den
    * Extras werden sofort über Stripe abgerechnet (Plan B6 Task 6,
@@ -243,6 +244,7 @@ export function AddonsPanel({
   token,
   doc,
   addOns,
+  chatWelcomeMessage = null,
   live = false,
   onApplied,
   onClose,
@@ -262,11 +264,26 @@ export function AddonsPanel({
   }
   const [team, setTeam] = useState<TeamValue>(() => teamFromDoc(doc));
   const [pages, setPages] = useState<Page[]>(() => pagesFromDoc(doc));
+  const readHeadline = (
+    type: "contact" | "gallery" | "menu" | "pricelist"
+  ) => {
+    const section = doc.sections.find(item => item.type === type);
+    return section && "headline" in section ? (section.headline ?? "") : "";
+  };
+  const [headings, setHeadings] = useState({
+    contact: readHeadline("contact"),
+    gallery: readHeadline("gallery"),
+    menu: readHeadline("menu"),
+    pricelist: readHeadline("pricelist"),
+  });
+  const [chatWelcome, setChatWelcome] = useState(chatWelcomeMessage ?? "");
 
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const updateTeam = trpc.onboardingV2.updateTeam.useMutation();
   const updatePages = trpc.onboardingV2.updatePages.useMutation();
-  const busy = updateAddons.isPending;
+  const updateAddonSettings =
+    trpc.onboardingV2.updateAddonSettings.useMutation();
+  const busy = updateAddons.isPending || updateAddonSettings.isPending;
   const teamBusy = updateTeam.isPending;
   const pagesBusy = updatePages.isPending;
   const teamErrors = validateTeam(team.members);
@@ -287,7 +304,7 @@ export function AddonsPanel({
     onPreviewFocus?.(anchor[key]);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const patch: AddonsPatch = {
       contactForm: !!value.contactForm,
       gallery: !!value.gallery,
@@ -307,15 +324,20 @@ export function AddonsPanel({
       // "Unterseiten pflegen" (eigene Mutation onboardingV2.updatePages).
       subpages: !!value.subpages,
     };
-    updateAddons.mutate(
-      { token, addOns: patch },
-      {
-        onSuccess: () => {
-          onApplied();
-          onNext?.();
-        },
-      }
-    );
+    try {
+      // Sequenziell statt Promise.all: beide Mutationen schreiben dasselbe
+      // websiteData-Dokument und sollen sich nie gegenseitig überschreiben.
+      await updateAddons.mutateAsync({ token, addOns: patch });
+      await updateAddonSettings.mutateAsync({
+        token,
+        headings,
+        chatWelcomeMessage: value.aiChat ? chatWelcome : undefined,
+      });
+      onApplied();
+      onNext?.();
+    } catch {
+      // Fehler werden direkt an den jeweiligen Mutationskarten angezeigt.
+    }
   };
 
   // Kontakt/Galerie auf Unterseiten spiegeln die Startseite — vor dem
@@ -332,6 +354,33 @@ export function AddonsPanel({
     };
     updateTeam.mutate({ token, patch }, { onSuccess: onApplied });
   };
+
+  const quickHeadingSettings = [
+    {
+      addOn: "contactForm" as const,
+      section: "contact" as const,
+      label: "Überschrift im Kontaktbereich",
+    },
+    {
+      addOn: "gallery" as const,
+      section: "gallery" as const,
+      label: "Überschrift der Galerie",
+    },
+    {
+      addOn: "menu" as const,
+      section: "menu" as const,
+      label: "Überschrift der Speisekarte",
+    },
+    {
+      addOn: "pricelist" as const,
+      section: "pricelist" as const,
+      label: "Überschrift der Preisliste",
+    },
+  ].filter(
+    setting =>
+      value[setting.addOn] &&
+      doc.sections.some(section => section.type === setting.section)
+  );
 
   return (
     <PanelFrame
@@ -366,6 +415,66 @@ export function AddonsPanel({
       }
     >
       <AddonsList value={value} onToggle={handleToggle} interval="yearly" />
+      {(quickHeadingSettings.length > 0 ||
+        value.aiChat ||
+        value.booking) && (
+        <section className="pb-studio-addon-settings">
+          <div className="pb-studio-addon-settings-head">
+            <div>
+              <p className="pb-studio-kicker">Schnelleinstellungen</p>
+              <h3>Direkt für den Start anpassen</h3>
+            </div>
+            <span>Alles später änderbar</span>
+          </div>
+          <div className="pb-studio-addon-settings-grid">
+            {quickHeadingSettings.map(setting => (
+              <label key={setting.section} className="pb-studio-field">
+                <span>{setting.label}</span>
+                <input
+                  type="text"
+                  className="pb-studio-input"
+                  value={headings[setting.section]}
+                  maxLength={120}
+                  onChange={event =>
+                    setHeadings(current => ({
+                      ...current,
+                      [setting.section]: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+            ))}
+            {value.aiChat && (
+              <label className="pb-studio-field">
+                <span>Begrüßung im KI-Chat</span>
+                <input
+                  type="text"
+                  className="pb-studio-input"
+                  value={chatWelcome}
+                  maxLength={512}
+                  placeholder="Hallo! Wie kann ich Ihnen helfen?"
+                  onChange={event => setChatWelcome(event.target.value)}
+                />
+              </label>
+            )}
+            {value.booking && (
+              <div className="pb-studio-addon-dashboard-note">
+                <CalendarDays aria-hidden="true" />
+                <div>
+                  <strong>Terminbuchung</strong>
+                  <p>
+                    Dauer, freie Zeiten, Puffer und Benachrichtigungsadresse
+                    stellst du nach der Freischaltung im Kunden-Dashboard ein.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+          <p className="pb-studio-addon-later">
+            Du kannst nachher alles noch im Kunden-Dashboard bearbeiten.
+          </p>
+        </section>
+      )}
       <p style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
         Kontaktformular erscheint sofort in der Vorschau; KI-Chat &amp;
         Terminbuchung werden nach der Freischaltung aktiv (die Vorschau zeigt
@@ -385,8 +494,13 @@ export function AddonsPanel({
           {updateAddons.error.message}
         </p>
       )}
+      {updateAddonSettings.error && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {updateAddonSettings.error.message}
+        </p>
+      )}
       {value.team && (
-        <div className="pb-studio-rows">
+        <div className="pb-studio-rows pb-studio-addon-settings">
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Team pflegen
           </h3>
@@ -407,7 +521,7 @@ export function AddonsPanel({
         </div>
       )}
       {value.subpages && (
-        <div className="pb-studio-rows">
+        <div className="pb-studio-rows pb-studio-addon-settings">
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Unterseiten pflegen
           </h3>

@@ -132,6 +132,35 @@ describe("AddonsPanel", () => {
     expect(html).not.toContain("Team folgt.");
   });
 
+  test("aktive Extras zeigen gepolsterte Quick-Settings und Dashboard-Hinweis", () => {
+    const docWithContact: WebsiteDataV2 = {
+      ...blankDoc,
+      sections: [
+        ...blankDoc.sections,
+        { type: "contact", headline: "Kontakt" },
+      ],
+    };
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={docWithContact}
+        addOns={{ contactForm: true, aiChat: true, booking: true }}
+        chatWelcomeMessage="Hallo! Wie kann ich helfen?"
+        onApplied={() => {}}
+        onClose={() => {}}
+        onNext={() => {}}
+      />
+    );
+    expect(html).toContain("Schnelleinstellungen");
+    expect(html).toContain('value="Kontakt"');
+    expect(html).toContain('value="Hallo! Wie kann ich helfen?"');
+    expect(html).toContain("Dauer, freie Zeiten, Puffer");
+    expect(html).toContain(
+      "Du kannst nachher alles noch im Kunden-Dashboard bearbeiten."
+    );
+    expect(html).toContain("Auswahl speichern &amp; weiter");
+  });
+
   test("Team-Extra inaktiv → kein 'Team pflegen'-Unterbereich", () => {
     const html = renderWithTrpc(
       <AddonsPanel

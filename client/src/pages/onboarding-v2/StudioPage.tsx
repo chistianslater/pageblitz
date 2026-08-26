@@ -404,6 +404,7 @@ export default function StudioPage({ token }: { token: string }) {
               token={token}
               doc={state.doc}
               addOns={state.addOns}
+              chatWelcomeMessage={state.chatWelcomeMessage ?? null}
               live={state.status !== "preview"}
               onApplied={() => {
                 studio.refetch();

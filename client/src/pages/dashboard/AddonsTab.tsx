@@ -128,6 +128,15 @@ export function AddonsTab({
 
   return (
     <div className="space-y-4">
+      <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3">
+        <p className="text-sm font-medium text-emerald-300">
+          Du kannst nachher alles noch bearbeiten.
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-400">
+          Inhalte pflegst du jederzeit im Studio; weitergehende Einstellungen
+          für KI-Chat und Terminbuchung findest du hier im Kunden-Dashboard.
+        </p>
+      </div>
       {/* ── DETAIL VIEW ────────────────────────────────────────────────── */}
       {activeDetail && (
         <div className="space-y-5">

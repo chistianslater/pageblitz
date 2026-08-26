@@ -88,6 +88,7 @@ export interface StudioState {
   addOns: AddOnFlags;
   uploadedPhotos: string[];
   openingHours: { day: string; hours: string }[];
+  chatWelcomeMessage?: string | null;
 }
 
 /**
@@ -275,6 +276,7 @@ export async function buildState(
       ? (onboarding.photoUrls as string[])
       : [],
     openingHours: readOpeningHours(doc),
+    chatWelcomeMessage: website.chatWelcomeMessage ?? null,
   };
 }
 
@@ -384,7 +386,11 @@ export async function persistDoc(
     token,
     {
       ...loaded,
-      website: { ...loaded.website, websiteData: next as any },
+      website: {
+        ...loaded.website,
+        ...(opts.extra ?? {}),
+        websiteData: next as any,
+      },
       doc: next,
     },
     progress

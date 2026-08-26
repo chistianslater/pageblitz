@@ -128,6 +128,35 @@ export function applyInlineText(
   return WebsiteDataV2Schema.parse(next);
 }
 
+export type AddonHeadingType =
+  | "contact"
+  | "gallery"
+  | "menu"
+  | "pricelist";
+
+/** Optionale Überschriften für bereits vorhandene Extra-/Kontaktsektionen. */
+export function applyAddonHeadings(
+  doc: WebsiteDataV2,
+  headings: Partial<Record<AddonHeadingType, string>>
+): WebsiteDataV2 {
+  const sections = doc.sections.map(section => {
+    if (
+      section.type !== "contact" &&
+      section.type !== "gallery" &&
+      section.type !== "menu" &&
+      section.type !== "pricelist"
+    )
+      return section;
+    if (!(section.type in headings)) return section;
+    const value = headings[section.type]?.trim();
+    const next = { ...section };
+    if (value) next.headline = value;
+    else delete next.headline;
+    return next;
+  });
+  return WebsiteDataV2Schema.parse({ ...doc, sections });
+}
+
 /** Angebots-Sektionstypen: es darf immer nur eine davon existieren. */
 const OFFER_TYPES = new Set<SectionType>(["services", "menu", "pricelist"]);
 

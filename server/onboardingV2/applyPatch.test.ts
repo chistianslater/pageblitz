@@ -4,6 +4,7 @@ import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
   addOnFlagsFromDoc,
   applyAddOnFlags,
+  applyAddonHeadings,
   applyAddOns,
   applyFeatures,
   applyImages,
@@ -109,6 +110,21 @@ describe("applyInlineText", () => {
     expect(() =>
       applyInlineText(docFull, "sections.1.items.0.title", "   ")
     ).toThrow(/maximal/);
+  });
+});
+
+describe("applyAddonHeadings", () => {
+  test("setzt und entfernt optionale Überschriften vorhandener Sektionen", () => {
+    const set = applyAddonHeadings(docFull, {
+      contact: "Schreib uns",
+    });
+    const contact = set.sections.find(section => section.type === "contact");
+    expect(contact?.headline).toBe("Schreib uns");
+    const cleared = applyAddonHeadings(set, { contact: "" });
+    const clearedContact = cleared.sections.find(
+      section => section.type === "contact"
+    );
+    expect(clearedContact?.headline).toBeUndefined();
   });
 });
 

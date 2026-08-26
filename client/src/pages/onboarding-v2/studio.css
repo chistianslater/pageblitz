@@ -1336,6 +1336,61 @@
 .pb-studio-addon-total span:last-child {
   white-space: nowrap;
 }
+.pb-studio-addon-settings {
+  padding: clamp(0.9rem, 2vw, 1.15rem);
+  border: 1px solid var(--st-line);
+  border-radius: 12px;
+  background: var(--st-canvas);
+}
+.pb-studio-addon-settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+.pb-studio-addon-settings-head h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+}
+.pb-studio-addon-settings-head > span {
+  color: var(--st-accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pb-studio-addon-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.pb-studio-addon-dashboard-note {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--st-line);
+  border-radius: 9px;
+  background: var(--st-surface);
+}
+.pb-studio-addon-dashboard-note > svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: var(--st-accent);
+}
+.pb-studio-addon-dashboard-note p,
+.pb-studio-addon-later {
+  margin: 0.25rem 0 0;
+  color: var(--st-muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+.pb-studio-addon-later {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--st-line);
+  text-align: center;
+}
 @media (min-width: 1024px) {
   .pb-studio-layout:has(.pb-studio-addon-grid) {
     grid-template-columns: minmax(460px, 560px) 1fr;
@@ -1347,6 +1402,12 @@
   }
   .pb-studio-addon-total {
     align-items: flex-start;
+    flex-direction: column;
+  }
+  .pb-studio-addon-settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .pb-studio-addon-settings-head {
     flex-direction: column;
   }
 }
