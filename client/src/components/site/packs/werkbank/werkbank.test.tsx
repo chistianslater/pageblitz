@@ -82,6 +82,12 @@ describe("Pack werkbank", () => {
     expect(html).toContain("@media(prefers-reduced-motion:reduce)");
     expect(html).toContain(".pb-wb-gallery figure:hover img{transform:none");
   });
+  test("Leistungsheadline bleibt in ihrer Spalte und stapelt auf Tablet", () => {
+    expect(html).toContain(
+      ".pb-wb-process .pb-wb-section-head h2{font-size:clamp(2.4rem,3.6vw,4.6rem)"
+    );
+    expect(html).toContain("@media(max-width:960px) and (min-width:721px)");
+  });
   test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
     const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/);
     expect(h1Match).not.toBeNull();
