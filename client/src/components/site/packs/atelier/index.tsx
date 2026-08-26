@@ -31,8 +31,6 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   cta: "Anfrage",
 };
 
-const MUTED_STYLE: React.CSSProperties = { color: "var(--pb-muted)" };
-
 /** Erstes 4-stelliges Jahr (19xx/20xx) aus footerNote — für die EST.-Meta-Angabe. */
 function extractYear(footerNote: string | undefined): string | undefined {
   if (!footerNote) return undefined;
@@ -81,20 +79,30 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.services}
-          className="pb-at-section"
+          className="pb-at-section pb-at-index-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
-          {section.items.map((item, i) => (
-            <div className="pb-at-service" key={item.title}>
-              <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{item.title}</strong>
-                {item.description && <p>{item.description}</p>}
-              </div>
-              {item.price && <span className="price">{item.price}</span>}
-            </div>
-          ))}
+          <header className="pb-at-section-head">
+            <span>Index / Projekte &amp; Leistungen</span>
+            <h2>{section.headline}</h2>
+          </header>
+          <div className="pb-at-project-index">
+            {section.items.map((item, i) => (
+              <article className="pb-at-service" key={item.title}>
+                <span className="idx" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3>{item.title}</h3>
+                  {item.description && <p>{item.description}</p>}
+                </div>
+                {item.price && <span className="price">{item.price}</span>}
+                <span className="pb-at-shift" aria-hidden="true">
+                  ↗
+                </span>
+              </article>
+            ))}
+          </div>
         </section>
       );
     }
@@ -105,16 +113,30 @@ function renderSection(
           className="pb-at-section pb-at-about"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <header className="pb-at-section-head">
+            <span>Essay / Haltung</span>
+            <h2>{section.headline}</h2>
+          </header>
           <div className="pb-at-about-grid">
-            <p>{section.body}</p>
+            <div className="pb-at-about-copy">
+              <span className="pb-at-dropcap" aria-hidden="true">
+                A
+              </span>
+              <p>{section.body}</p>
+              <small>
+                Ein fortlaufendes Archiv von Ideen, Material und Praxis.
+              </small>
+            </div>
             {section.imageUrl && (
-              <img
-                className="pb-at-about-img"
-                src={section.imageUrl}
-                alt=""
-                loading="lazy"
-              />
+              <figure>
+                <img
+                  className="pb-at-about-img"
+                  src={section.imageUrl}
+                  alt=""
+                  loading="lazy"
+                />
+                <figcaption>Abb. 01 / Studioansicht</figcaption>
+              </figure>
             )}
           </div>
         </section>
@@ -125,13 +147,24 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.gallery}
-          className="pb-at-section"
+          className="pb-at-section pb-at-portfolio"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <header className="pb-at-section-head">
+            <span>Portfolio / Auswahl</span>
+            <h2>{title}</h2>
+          </header>
           <div className="pb-at-gallery">
-            {section.images.map(img => (
-              <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
+            {section.images.map((img, i) => (
+              <figure key={img.url}>
+                <div className="pb-at-gallery-image">
+                  <img src={img.url} alt={img.alt} loading="lazy" />
+                </div>
+                <figcaption>
+                  <b>{String(i + 1).padStart(2, "0")}</b>
+                  <span>{img.alt || "Ohne Titel"}</span>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </section>
@@ -142,19 +175,27 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.testimonials}
-          className="pb-at-section"
+          className="pb-at-section pb-at-voices"
           key={section.type}
         >
-          <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-at-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <header className="pb-at-section-head">
+            <span>Korrespondenz / Stimmen</span>
+            <h2>{title}</h2>
+          </header>
+          <div className="pb-at-voice-pages">
+            {section.items.map((item, i) => (
+              <blockquote className="pb-at-quote" key={item.author}>
+                <span className="pb-at-folio" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <p>„{item.text}“</p>
+                <footer>
+                  <b>{item.author}</b>
+                  {item.rating && <span>Bewertung {item.rating}/5</span>}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }
@@ -164,24 +205,30 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.contact}
-          className="pb-at-section"
+          className="pb-at-section pb-at-contact-page"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <header className="pb-at-section-head">
+            <span>Impressum / Gespräch</span>
+            <h2>{title}</h2>
+          </header>
           <div className="pb-at-contact">
             <address>
               {section.phone && (
-                <p>
-                  <a href={`tel:${section.phone}`}>{section.phone}</a>
-                </p>
+                <a href={`tel:${section.phone}`}>
+                  <small>Telefon</small>
+                  {section.phone}
+                </a>
               )}
               {section.email && (
-                <p>
-                  <a href={`mailto:${section.email}`}>{section.email}</a>
-                </p>
+                <a href={`mailto:${section.email}`}>
+                  <small>E-Mail</small>
+                  {section.email}
+                </a>
               )}
               {(section.street || addressLine) && (
                 <p>
+                  <small>Adresse</small>
                   {section.street && <span>{section.street}</span>}
                   {section.street && addressLine && <br />}
                   {addressLine && <span>{addressLine}</span>}
@@ -249,7 +296,7 @@ function renderSection(
                   <div>
                     <strong>{item.name}</strong>
                     {item.description && (
-                      <p style={MUTED_STYLE}>{item.description}</p>
+                      <p className="muted">{item.description}</p>
                     )}
                   </div>
                   <span className="price">{item.price}</span>
@@ -281,7 +328,7 @@ function renderSection(
               )}
               <div>
                 <strong>{member.name}</strong>
-                {member.role && <p style={MUTED_STYLE}>{member.role}</p>}
+                {member.role && <p className="muted">{member.role}</p>}
               </div>
             </div>
           ))}
@@ -356,9 +403,13 @@ const AtelierPage: React.FC<{
             </a>
           ))}
         </div>
-      <MobileNav items={navList} />
+        <MobileNav items={navList} />
       </nav>
       <header className="pb-at-masthead-wrap">
+        <div className="pb-at-edition" aria-hidden="true">
+          <span>Living Editorial Index</span>
+          <span>Vol. {String(year).slice(-2)}</span>
+        </div>
         <div className="pb-at-masthead">
           {data.businessName}
           <span className="dot">.</span>

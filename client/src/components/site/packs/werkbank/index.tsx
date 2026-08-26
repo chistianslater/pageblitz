@@ -31,8 +31,6 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   cta: "Anfrage",
 };
 
-const MUTED_STYLE: React.CSSProperties = { color: "var(--pb-muted)" };
-
 /**
  * Verteilt eine Headline an Wortgrenzen auf 2 (genau 2 Wörter) oder immer 3
  * Zeilen (≥ 3 Wörter, damit stets eine Outline-Mittelzeile entsteht — das
@@ -146,24 +144,33 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.services}
-          className="pb-wb-section"
+          className="pb-wb-section pb-wb-process"
           key={section.type}
         >
-          {!hasPageHeader && <h2>{section.headline}</h2>}
-          {section.items.map((item, i) => (
-            <div className="pb-wb-service" key={item.title}>
-              <span className="idx">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{item.title}</strong>
-                {item.description && (
-                  <p className="muted" style={MUTED_STYLE}>
-                    {item.description}
-                  </p>
-                )}
-              </div>
-              {item.price && <span className="price">{item.price}</span>}
-            </div>
-          ))}
+          <header className="pb-wb-section-head">
+            <span className="pb-wb-kicker">
+              Arbeitsfolge / 01—{String(section.items.length).padStart(2, "0")}
+            </span>
+            {!hasPageHeader && <h2>{section.headline}</h2>}
+            <p>Planung · Material · Fertigung</p>
+          </header>
+          <div className="pb-wb-process-list">
+            {section.items.map((item, i) => (
+              <article className="pb-wb-service" key={item.title}>
+                <span className="idx" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="pb-wb-service-copy">
+                  <span className="pb-wb-step">Arbeitsschritt</span>
+                  <h3>{item.title}</h3>
+                  {item.description && (
+                    <p className="muted">{item.description}</p>
+                  )}
+                </div>
+                {item.price && <span className="price">{item.price}</span>}
+              </article>
+            ))}
+          </div>
         </section>
       );
     }
@@ -171,19 +178,31 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.about}
-          className="pb-wb-section"
+          className="pb-wb-section pb-wb-material"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <header className="pb-wb-section-head">
+            <span className="pb-wb-kicker">Material / Haltung</span>
+            <h2>{section.headline}</h2>
+          </header>
           <div className="pb-wb-about">
-            <p>{section.body}</p>
+            <div className="pb-wb-about-copy">
+              <span className="pb-wb-cross" aria-hidden="true">
+                +
+              </span>
+              <p>{section.body}</p>
+              <small>Entworfen und gefertigt mit Substanz.</small>
+            </div>
             {section.imageUrl && (
-              <img
-                className="pb-wb-about-img"
-                src={section.imageUrl}
-                alt=""
-                loading="lazy"
-              />
+              <figure className="pb-wb-about-figure">
+                <img
+                  className="pb-wb-about-img"
+                  src={section.imageUrl}
+                  alt=""
+                  loading="lazy"
+                />
+                <figcaption>Materialstudie / Werkbank</figcaption>
+              </figure>
             )}
           </div>
         </section>
@@ -194,15 +213,26 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.gallery}
-          className="pb-wb-section"
+          className="pb-wb-section pb-wb-workpieces"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <header className="pb-wb-section-head">
+            <span className="pb-wb-kicker">Ausgewählte Werkstücke</span>
+            <h2>{title}</h2>
+          </header>
           <div className="pb-wb-gallery">
-            {section.images.map(img => (
+            {section.images.map((img, i) => (
               <figure key={img.url}>
-                <img src={img.url} alt={img.alt} loading="lazy" />
-                {img.alt && <figcaption>{img.alt}</figcaption>}
+                <div className="pb-wb-image-frame">
+                  <img src={img.url} alt={img.alt} loading="lazy" />
+                  <span aria-hidden="true">
+                    W/{String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <figcaption>
+                  <b>Werkstück {String(i + 1).padStart(2, "0")}</b>
+                  {img.alt && <span>{img.alt}</span>}
+                </figcaption>
               </figure>
             ))}
           </div>
@@ -214,19 +244,27 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.testimonials}
-          className="pb-wb-section"
+          className="pb-wb-section pb-wb-proof"
           key={section.type}
         >
-          <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote key={item.author}>
-              <p>„{item.text}“</p>
-              <footer style={MUTED_STYLE}>
-                — {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <header className="pb-wb-section-head">
+            <span className="pb-wb-kicker">Belastungsprobe</span>
+            <h2>{title}</h2>
+          </header>
+          <div className="pb-wb-proof-grid">
+            {section.items.map((item, i) => (
+              <blockquote key={item.author}>
+                <span className="pb-wb-quote-index" aria-hidden="true">
+                  /{String(i + 1).padStart(2, "0")}
+                </span>
+                <p>„{item.text}“</p>
+                <footer>
+                  <b>{item.author}</b>
+                  {item.rating && <span>{item.rating}/5 geprüft</span>}
+                </footer>
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }
@@ -236,42 +274,55 @@ function renderSection(
       return (
         <section
           id={SECTION_ANCHORS.contact}
-          className="pb-wb-section"
+          className="pb-wb-section pb-wb-contact-sheet"
           key={section.type}
         >
-          <h2>{title}</h2>
-          {section.phone && (
-            <p>
-              <a href={`tel:${section.phone}`}>{section.phone}</a>
-            </p>
-          )}
-          {section.email && (
-            <p>
-              <a href={`mailto:${section.email}`}>{section.email}</a>
-            </p>
-          )}
-          {(section.street || addressLine) && (
-            <address>
-              {section.street && <span>{section.street}</span>}
-              {section.street && addressLine && <br />}
-              {addressLine && <span>{addressLine}</span>}
-            </address>
-          )}
-          {section.openingHours && section.openingHours.length > 0 && (
-            <div className="pb-wb-hours-block">
-              <h3>Öffnungszeiten</h3>
-              <table className="pb-wb-hours">
-                <tbody>
-                  {section.openingHours.map(oh => (
-                    <tr key={oh.day}>
-                      <td>{oh.day}</td>
-                      <td>{oh.hours}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <header className="pb-wb-contact-head">
+            <span className="pb-wb-kicker">Projektaufnahme / Kontakt</span>
+            <h2>{title}</h2>
+            <span className="pb-wb-contact-mark" aria-hidden="true">
+              ↘
+            </span>
+          </header>
+          <div className="pb-wb-contact-grid">
+            <div className="pb-wb-contact-links">
+              {section.phone && (
+                <a href={`tel:${section.phone}`}>
+                  <small>Telefon</small>
+                  {section.phone}
+                </a>
+              )}
+              {section.email && (
+                <a href={`mailto:${section.email}`}>
+                  <small>E-Mail</small>
+                  {section.email}
+                </a>
+              )}
+              {(section.street || addressLine) && (
+                <address>
+                  <small>Werkstatt</small>
+                  {section.street && <span>{section.street}</span>}
+                  {section.street && addressLine && <br />}
+                  {addressLine && <span>{addressLine}</span>}
+                </address>
+              )}
             </div>
-          )}
+            {section.openingHours && section.openingHours.length > 0 && (
+              <div className="pb-wb-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-wb-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </section>
       );
     }
@@ -314,9 +365,7 @@ function renderSection(
                 <div className="pb-wb-service" key={item.name}>
                   <strong>{item.name}</strong>
                   {item.description && (
-                    <span className="muted" style={MUTED_STYLE}>
-                      {item.description}
-                    </span>
+                    <span className="muted">{item.description}</span>
                   )}
                   <span>{item.price}</span>
                 </div>
@@ -342,11 +391,7 @@ function renderSection(
               )}
               <div>
                 <strong>{member.name}</strong>
-                {member.role && (
-                  <p className="muted" style={MUTED_STYLE}>
-                    {member.role}
-                  </p>
-                )}
+                {member.role && <p className="muted">{member.role}</p>}
               </div>
             </div>
           ))}

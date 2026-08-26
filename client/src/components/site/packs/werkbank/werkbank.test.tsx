@@ -12,6 +12,7 @@ const data: WebsiteDataV2 = {
   businessCategory: "Schreinerei",
   tagline: "Massarbeit seit 2004",
   seo: { title: "t", description: "d" },
+  addOns: { gallery: true },
   sections: [
     {
       type: "hero",
@@ -25,10 +26,23 @@ const data: WebsiteDataV2 = {
     },
     { type: "about", headline: "Über uns", body: "Seit 2004 in Dortmund." },
     {
+      type: "gallery",
+      headline: "Werkstücke",
+      images: [{ url: "/tisch.jpg", alt: "Esstisch aus Eiche" }],
+    },
+    {
+      type: "testimonials",
+      headline: "Stimmen",
+      items: [
+        { text: "Präzise bis ins Detail.", author: "M. Kern", rating: 5 },
+      ],
+    },
+    {
       type: "contact",
       phone: "0231 1",
       email: "post@brandt.de",
       city: "Dortmund",
+      openingHours: [{ day: "Montag", hours: "08:00–17:00" }],
     },
   ],
 };
@@ -48,11 +62,25 @@ describe("Pack werkbank", () => {
     expect(html).toContain("pb-wb-rail");
     expect(html).toContain("pb-wb-marquee");
   });
-  test("Design-System 2.0: Mobile behält Foto/Rail, Untersektionen haben eigene Komposition", () => {
+  test("Tactile-Industrial-DOM bildet Arbeitsfolge, Material und Werkstücke", () => {
+    expect(html).toContain("pb-wb-process-list");
+    expect(html).toContain("Arbeitsfolge / 01—02");
+    expect(html).toContain("pb-wb-material");
+    expect(html).toContain("pb-wb-image-frame");
+    expect(html).toContain("W/01");
+    expect(html).toContain("Werkstück 01");
+  });
+  test("Testimonials und Kontakt sind charakteristische Prüf- und Projektblöcke", () => {
+    expect(html).toContain("pb-wb-proof-grid");
+    expect(html).toContain("Belastungsprobe");
+    expect(html).toContain("pb-wb-contact-sheet");
+    expect(html).toContain("Projektaufnahme / Kontakt");
+  });
+  test("mobile Inhalte bleiben sichtbar und Motion respektiert reduced motion", () => {
     expect(html).not.toContain(".pb-wb-photo{display:none}");
-    expect(html).toContain(".pb-wb-section#leistungen{display:grid");
-    expect(html).toContain(".pb-wb-section#ueber-uns{background:var(--pb-ink)");
-    expect(html).toContain(".pb-wb-gallery figure:nth-child(4n+1)");
+    expect(html).toContain(".pb-wb-gallery{grid-template-columns:1fr");
+    expect(html).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(html).toContain(".pb-wb-gallery figure:hover img{transform:none");
   });
   test("Outline-Mittelzeile bei der Fixture-Headline vorhanden (3-Wort-Headline)", () => {
     const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/);
