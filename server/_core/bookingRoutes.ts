@@ -10,6 +10,12 @@ import {
 } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { sendEmail } from "./email";
+import {
+  emailFooter,
+  emailInfoPanel,
+  emailPrimaryButton,
+  wrapPageblitzEmail,
+} from "./emailDesign";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface DaySchedule {
@@ -309,19 +315,22 @@ export function registerBookingRoutes(app: Express) {
       // Send confirmation to visitor (non-blocking)
       sendEmail({
         to: email.trim().toLowerCase(),
-        subject: `✅ Terminbestätigung: ${appointmentTitle} am ${formattedDate}`,
-        html: `
-          <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px">
-            <h2 style="color:#1e293b;margin-bottom:4px">Dein Termin ist bestätigt!</h2>
-            <p style="color:#64748b;margin-top:0">Hallo ${name}, dein Termin wurde erfolgreich gebucht.</p>
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
-              <p style="margin:0 0 8px;font-size:18px;font-weight:600;color:#1e293b">${appointmentTitle}</p>
-              <p style="margin:0 0 4px;color:#475569">📅 ${formattedDate}</p>
-              <p style="margin:0;color:#475569">🕐 ${time} Uhr</p>
-            </div>
-            <p style="color:#64748b;font-size:14px">Falls du den Termin nicht wahrnehmen kannst, kannst du ihn <a href="${cancelUrl}" style="color:#ef4444">hier absagen</a>.</p>
-            <p style="color:#94a3b8;font-size:12px;margin-top:32px">Diese Bestätigung wurde automatisch gesendet.</p>
-          </div>`,
+        subject: `Terminbestätigung: ${appointmentTitle} am ${formattedDate}`,
+        html: wrapPageblitzEmail({
+          eyebrow: "Terminbestätigung",
+          content: `
+            <h1 style="color:#1d1a17;font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 10px;">Dein Termin ist best&auml;tigt.</h1>
+            <p style="color:#3f3a34;font-size:15px;line-height:1.65;margin:0;">Hallo ${name}, dein Termin wurde erfolgreich gebucht.</p>
+            ${emailInfoPanel(
+              appointmentTitle,
+              `<strong>${formattedDate}</strong><br>${time} Uhr`
+            )}
+            <p style="color:#3f3a34;font-size:14px;line-height:1.65;margin:0;">Du kannst den Termin nicht wahrnehmen? <a href="${cancelUrl}" style="color:#a4441f;">Termin absagen</a>.</p>
+          `,
+          footer: emailFooter({
+            note: "Diese Best&auml;tigung wurde automatisch gesendet.",
+          }),
+        }),
       }).catch(() => {});
 
       // Notify owner (non-blocking)
@@ -330,21 +339,25 @@ export function registerBookingRoutes(app: Express) {
         if (!notifyTo) return;
         sendEmail({
           to: notifyTo,
-          subject: `📅 Neuer Termin: ${name} – ${formattedDate} ${time} Uhr`,
-          html: `
-            <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px">
-              <h2 style="color:#1e293b;margin-bottom:4px">Neuer Termin gebucht!</h2>
-              <p style="color:#64748b;margin-top:0">Auf deiner Website "${businessName}" wurde ein neuer Termin gebucht.</p>
-              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
-                <p style="margin:0 0 8px"><strong>Leistung:</strong> ${appointmentTitle}</p>
-                <p style="margin:0 0 8px"><strong>Datum:</strong> ${formattedDate}, ${time} Uhr</p>
-                <p style="margin:0 0 8px"><strong>Name:</strong> ${name}</p>
-                <p style="margin:0 0 8px"><strong>E-Mail:</strong> <a href="mailto:${email}">${email}</a></p>
-                ${phone ? `<p style="margin:0 0 8px"><strong>Telefon:</strong> ${phone}</p>` : ""}
-                ${message ? `<p style="margin:0"><strong>Nachricht:</strong> ${message}</p>` : ""}
-              </div>
-              <p style="color:#94a3b8;font-size:12px;margin-top:32px">Gesendet von Pageblitz · <a href="https://pageblitz.de/my-website" style="color:#6366f1">Alle Termine ansehen</a></p>
-            </div>`,
+          subject: `Neuer Termin: ${name} – ${formattedDate} ${time} Uhr`,
+          html: wrapPageblitzEmail({
+            eyebrow: "Neue Terminbuchung",
+            content: `
+              <h1 style="color:#1d1a17;font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 10px;">Ein neuer Termin wurde gebucht.</h1>
+              <p style="color:#3f3a34;font-size:15px;line-height:1.65;margin:0;">Auf der Website von <strong>${businessName}</strong> ist eine neue Buchung eingegangen.</p>
+              ${emailInfoPanel(
+                "Termindetails",
+                `<p style="margin:0 0 6px;"><strong>Leistung:</strong> ${appointmentTitle}</p><p style="margin:0 0 6px;"><strong>Datum:</strong> ${formattedDate}, ${time} Uhr</p><p style="margin:0 0 6px;"><strong>Name:</strong> ${name}</p><p style="margin:0 0 6px;"><strong>E-Mail:</strong> <a href="mailto:${email}" style="color:#1f5f4b;">${email}</a></p>${phone ? `<p style="margin:0 0 6px;"><strong>Telefon:</strong> ${phone}</p>` : ""}${message ? `<p style="margin:0;"><strong>Nachricht:</strong> ${message}</p>` : ""}`
+              )}
+              ${emailPrimaryButton(
+                "Alle Termine ansehen",
+                "https://pageblitz.de/my-website"
+              )}
+            `,
+            footer: emailFooter({
+              note: "Gesendet von deiner Pageblitz-Website",
+            }),
+          }),
         }).catch(() => {});
 
         // Mark as notified

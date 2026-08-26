@@ -304,12 +304,12 @@ async function startServer() {
     ) => `<!DOCTYPE html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · Pageblitz</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 40px 16px; color: #18181b; }
-  .card { max-width: 520px; margin: 0 auto; background: #fff; border-radius: 14px; padding: 40px 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f7f5f1; margin: 0; padding: 40px 16px; color: #1d1a17; }
+  .card { max-width: 520px; margin: 0 auto; background: #fdfcfa; border: 1px solid #ddd6c9; border-radius: 14px; padding: 40px 32px; }
   h1 { font-size: 22px; margin: 0 0 16px 0; }
-  p { font-size: 15px; line-height: 1.6; color: #374151; margin: 0 0 16px 0; }
-  a.cta { display: inline-block; margin-top: 16px; background: #4f46e5; color: #fff; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; }
-  .logo { font-size: 18px; font-weight: 700; color: #4f46e5; margin-bottom: 24px; }
+  p { font-size: 15px; line-height: 1.6; color: #3f3a34; margin: 0 0 16px 0; }
+  a.cta { display: inline-block; margin-top: 16px; background: #1f5f4b; color: #fff; padding: 12px 24px; border-radius: 999px; text-decoration: none; font-weight: 600; font-size: 15px; }
+  .logo { font-size: 18px; font-weight: 600; color: #1d1a17; margin-bottom: 24px; }
 </style></head><body>
   <div class="card">
     <div class="logo">Pageblitz</div>

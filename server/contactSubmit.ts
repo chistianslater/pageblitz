@@ -9,6 +9,12 @@ import {
   getOnboardingByWebsiteId,
 } from "./db";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
+import {
+  emailFooter,
+  emailInfoPanel,
+  emailPrimaryButton,
+  wrapPageblitzEmail,
+} from "./_core/emailDesign";
 
 // ── Gemeinsame Logik: tRPC (`contact.submit`) + REST (`/api/site/:slug/contact`) ──
 //
@@ -52,36 +58,28 @@ function buildOwnerNotificationHtml(input: {
   const email = esc(input.email);
   const phone = input.phone ? esc(input.phone) : undefined;
   const message = esc(input.message);
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f5; margin: 0; padding: 32px 16px;">
-  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <div style="background: #18181b; padding: 28px 32px;">
-      <p style="color: #a1a1aa; font-size: 12px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.08em;">Neue Kontaktanfrage</p>
-      <h1 style="color: #ffffff; font-size: 22px; font-weight: 600; margin: 0;">${businessName}</h1>
-    </div>
-    <div style="padding: 32px;">
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px; width: 30%;">Name</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px; font-weight: 500;">${name}</td></tr>
-        <tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">E-Mail</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"><a href="mailto:${email}" style="color: #6366f1; font-size: 14px; text-decoration: none;">${email}</a></td></tr>
-        ${phone ? `<tr><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #71717a; font-size: 13px;">Telefon</td><td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #18181b; font-size: 14px;">${phone}</td></tr>` : ""}
-      </table>
-      <div style="margin-top: 24px; background: #f9f9f9; border-radius: 8px; padding: 20px;">
-        <p style="color: #71717a; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.06em;">Nachricht</p>
-        <p style="color: #18181b; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
-      </div>
-      <div style="margin-top: 24px; text-align: center;">
-        <a href="mailto:${email}?subject=Re: Kontaktanfrage" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 8px;">Direkt antworten</a>
-      </div>
-    </div>
-    <div style="padding: 20px 32px; border-top: 1px solid #f0f0f0; text-align: center;">
-      <p style="color: #a1a1aa; font-size: 12px; margin: 0;">Gesendet via <a href="https://pageblitz.de" style="color: #6366f1; text-decoration: none;">pageblitz.de</a></p>
-    </div>
-  </div>
-</body>
-</html>`;
+  const rows = `
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="width:30%;padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;font-weight:600;">${name}</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">E-Mail</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;"><a href="mailto:${email}" style="color:#1f5f4b;font-size:14px;text-decoration:none;">${email}</a></td></tr>
+      ${phone ? `<tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Telefon</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;">${phone}</td></tr>` : ""}
+    </table>`;
+  return wrapPageblitzEmail({
+    eyebrow: "Neue Kontaktanfrage",
+    content: `
+      <h1 style="color:#1d1a17;font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 20px;">${businessName}</h1>
+      ${rows}
+      ${emailInfoPanel(
+        "Nachricht",
+        `<p style="margin:0;white-space:pre-wrap;">${message}</p>`
+      )}
+      ${emailPrimaryButton(
+        "Direkt antworten",
+        `mailto:${email}?subject=Re: Kontaktanfrage`
+      )}
+    `,
+    footer: emailFooter({ note: "Gesendet über das Pageblitz Kontaktformular" }),
+  });
 }
 
 /**

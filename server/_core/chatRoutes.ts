@@ -10,6 +10,12 @@ import {
 import { eq } from "drizzle-orm";
 import { invokeLLM } from "./llm";
 import { sendEmail } from "./email";
+import {
+  emailFooter,
+  emailInfoPanel,
+  emailPrimaryButton,
+  wrapPageblitzEmail,
+} from "./emailDesign";
 
 // ── In-memory IP rate limiter ────────────────────────────────────────────────
 const ipRateMap = new Map<string, { count: number; resetAt: number }>();
@@ -126,19 +132,24 @@ async function sendLeadNotification(
 
     await sendEmail({
       to: row.userEmail,
-      subject: `🎯 Neuer Lead von deiner Website – ${lead.visitorName || "Unbekannt"}`,
-      html: `
-        <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px">
-          <h2 style="color:#1e293b;margin-bottom:4px">Neuer Lead!</h2>
-          <p style="color:#64748b;margin-top:0">Jemand hat auf deiner Website "${row.businessName}" Interesse signalisiert.</p>
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
-            <p style="margin:0 0 8px"><strong>Name:</strong> ${lead.visitorName || "–"}</p>
-            <p style="margin:0 0 8px"><strong>Kontakt:</strong> ${contactLine || "–"}</p>
-            ${lead.summary ? `<p style="margin:0"><strong>Anliegen:</strong> ${lead.summary}</p>` : ""}
-          </div>
-          <p style="color:#64748b;font-size:14px">Melde dich am besten zeitnah – der Lead ist frisch!</p>
-          <p style="color:#94a3b8;font-size:12px;margin-top:32px">Gesendet von deiner Pageblitz-Website · <a href="https://pageblitz.de/my-website" style="color:#6366f1">Alle Leads ansehen</a></p>
-        </div>`,
+      subject: `Neue Website-Anfrage – ${lead.visitorName || "Unbekannt"}`,
+      html: wrapPageblitzEmail({
+        eyebrow: "Neue Anfrage über den KI-Chat",
+        content: `
+          <h1 style="color:#1d1a17;font-size:22px;font-weight:600;letter-spacing:-.02em;margin:0 0 10px;">Ein neuer Kontakt wartet.</h1>
+          <p style="color:#3f3a34;font-size:15px;line-height:1.65;margin:0;">Jemand hat auf der Website von <strong>${row.businessName}</strong> Interesse signalisiert.</p>
+          ${emailInfoPanel(
+            "Kontaktdaten",
+            `<p style="margin:0 0 6px;"><strong>Name:</strong> ${lead.visitorName || "–"}</p><p style="margin:0 0 6px;"><strong>Kontakt:</strong> ${contactLine || "–"}</p>${lead.summary ? `<p style="margin:0;"><strong>Anliegen:</strong> ${lead.summary}</p>` : ""}`
+          )}
+          <p style="color:#3f3a34;font-size:14px;line-height:1.65;margin:0;">Melde dich am besten zeitnah, solange die Anfrage frisch ist.</p>
+          ${emailPrimaryButton(
+            "Alle Anfragen ansehen",
+            "https://pageblitz.de/my-website"
+          )}
+        `,
+        footer: emailFooter({ note: "Gesendet von deiner Pageblitz-Website" }),
+      }),
     });
   } catch (e) {
     console.warn("[chat] lead notification failed:", e);

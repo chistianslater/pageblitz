@@ -1,4 +1,9 @@
 import { sendEmail } from "./email";
+import {
+  emailFooter,
+  emailPrimaryButton,
+  wrapPageblitzEmail,
+} from "./emailDesign";
 
 const LIFECYCLE_FROM = "Christian von Pageblitz <christian@pageblitz.de>";
 const LIFECYCLE_REPLY_TO = "christian@pageblitz.de";
@@ -45,14 +50,6 @@ export const FRESH_START_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
 const greeting = (firstName?: string | null) =>
   firstName ? `Hey ${firstName},` : "Hey,";
 
-const footer = (unsubscribeLink: string) => `
-    <div style="background: #f9fafb; border-top: 1px solid #f0f0f0; padding: 20px 32px; text-align: center;">
-      <p style="color: #9ca3af; font-size: 11px; line-height: 1.6; margin: 0;">
-        Pageblitz &middot; Websites f&uuml;r Kleinunternehmen<br>
-        <a href="${unsubscribeLink}" style="color: #9ca3af; text-decoration: underline;">Keine weiteren Erinnerungen</a>
-      </p>
-    </div>`;
-
 const footerText = (unsubscribeLink: string) =>
   `\n\n---\nPageblitz - Websites für Kleinunternehmen\nKeine weiteren Erinnerungen: ${unsubscribeLink}\n`;
 
@@ -60,79 +57,18 @@ const wrap = (
   eyebrow: string,
   inner: string,
   unsubscribeLink: string
-) => `<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-</head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #18181b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f4f4f5;">
-    <tr>
-      <td align="center" style="padding: 32px 16px;">
-        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="max-width: 560px; width: 100%; background-color: #ffffff; border-radius: 12px;">
-          <!-- Header -->
-          <tr>
-            <td style="background-color: #18181b; border-radius: 12px 12px 0 0; padding: 28px 32px;">
-              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                <tr>
-                  <td style="padding-right: 10px; vertical-align: middle;">
-                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" bgcolor="#ffffff" style="background-color: #ffffff; border-radius: 8px; width: 32px; height: 32px;">
-                      <tr>
-                        <td width="32" height="32" align="center" style="font-size: 18px; line-height: 32px;">⚡</td>
-                      </tr>
-                    </table>
-                  </td>
-                  <td style="vertical-align: middle; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #ffffff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px;">
-                    Page<span style="color: #818cf8;">blitz</span>
-                  </td>
-                </tr>
-              </table>
-              <p style="color: #a1a1aa; font-size: 11px; margin: 12px 0 0 0; text-transform: uppercase; letter-spacing: 0.08em; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">${eyebrow}</p>
-            </td>
-          </tr>
-          <!-- Body -->
-          <tr>
-            <td style="padding: 32px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-              ${inner}
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="background-color: #f9fafb; border-top: 1px solid #f0f0f0; border-radius: 0 0 12px 12px; padding: 20px 32px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-              <p style="color: #9ca3af; font-size: 11px; line-height: 1.6; margin: 0;">
-                Pageblitz &middot; Websites f&uuml;r Kleinunternehmen<br>
-                <a href="${unsubscribeLink}" style="color: #9ca3af; text-decoration: underline;">Keine weiteren Erinnerungen</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+) =>
+  wrapPageblitzEmail({
+    eyebrow,
+    content: inner,
+    footer: emailFooter({ unsubscribeLink }),
+  });
 
-// Bulletproof Button – full-width wrapper verhindert Text-Floating, inner table hält Button-Breite
-const primaryCta = (text: string, href: string) => `
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 24px 0;">
-      <tr>
-        <td align="left">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-            <tr>
-              <td align="center" bgcolor="#4f46e5" style="background-color: #4f46e5; border-radius: 10px;">
-                <a href="${href}" target="_blank" style="display: inline-block; padding: 14px 32px; color: #ffffff; font-size: 15px; font-weight: 600; line-height: 1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-decoration: none; border-radius: 10px;">${text}</a>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>`;
+const primaryCta = emailPrimaryButton;
 
 const secondaryLink = (text: string, href: string) => `
-    <p style="margin: 12px 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-      <a href="${href}" style="color: #6b7280; text-decoration: underline;">${text}</a>
+    <p style="margin:12px 0 0;font-size:14px;line-height:1.5;color:#6b645b;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <a href="${href}" style="color:#1f5f4b;text-decoration:underline;">${text}</a>
     </p>`;
 
 // Helper: Text-Fragment "für X" nur rendern, wenn echter Business-Name vorhanden
@@ -148,17 +84,17 @@ function reminder2h(d: LifecycleEmailData): TemplateOutput {
   const html = wrap(
     "Erinnerung",
     `
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       ich bin Christian, einer der Gr&uuml;nder von Pageblitz. Mir ist aufgefallen, dass deine Website${forBiz(d.businessName)} schon fast fertig ist &ndash; dir fehlen nur noch ein paar Klicks.
     </p>
-    <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Mach hier weiter, wo du aufgeh&ouml;rt hast:</p>
+    <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Mach hier weiter, wo du aufgeh&ouml;rt hast:</p>
     ${primaryCta("Website fertigstellen", d.resumeLink)}
-    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Das dauert wirklich nur 2&ndash;3 Minuten. Versprochen.</p>
-    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">Das dauert wirklich nur 2&ndash;3 Minuten. Versprochen.</p>
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Falls du Fragen hast, irgendwo h&auml;ngst <strong>oder ein technisches Problem aufgetaucht ist</strong> (Seite hat nicht geladen, Bild ging nicht hoch, irgendwas hakt): Antworte einfach auf diese Mail. Ich lese jede pers&ouml;nlich &ndash; und wenn etwas technisch nicht funktioniert, k&uuml;mmern wir uns sofort.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
@@ -188,23 +124,23 @@ function reminder24h(d: LifecycleEmailData): TemplateOutput {
   const html = wrap(
     "Kann ich helfen?",
     `
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       gestern hast du angefangen, deine Website${forBiz(d.businessName)} zu bauen. Sie wartet noch auf dich &ndash; reserviert f&uuml;r dich bis morgen fr&uuml;h.
     </p>
-    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
-    <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 15px; line-height: 1.8; color: #374151;">
+    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
+    <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 15px; line-height: 1.8; color: #3f3a34;">
       <li><strong>Ein technisches Problem</strong> (Seite hat nicht geladen, Bild ging nicht hoch, etwas hakt)</li>
       <li>Kein gutes Foto vom Laden / der Arbeit</li>
       <li>Unsicher, was man reinschreiben soll</li>
       <li>Kurz keine Zeit und dann vergessen</li>
     </ul>
-    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Falls dich eines davon betrifft &ndash; kein Problem. Antworte einfach auf diese Mail, und ich helfe dir pers&ouml;nlich weiter. Speziell wenn technisch etwas nicht funktioniert hat: <strong>bitte schreib mir</strong>, das wollen wir wissen und sofort beheben. Texte und Fotos bekommen wir auch gemeinsam hin.
     </p>
     ${primaryCta("Website jetzt fertigstellen", d.resumeLink)}
     ${d.extendLink ? secondaryLink("Ich brauche noch 24 Stunden mehr Zeit", d.extendLink) : ""}
-    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
@@ -235,17 +171,17 @@ function reminderFinal(d: LifecycleEmailData): TemplateOutput {
     const html = wrap(
       "Allerletzter Aufruf",
       `
-      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+      <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
         du hast dir nochmal extra Zeit genommen, um deine Website${forBiz(d.businessName)} fertigzustellen. Die l&auml;uft jetzt in wenigen Stunden ab.
       </p>
-      <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Wenn du bis dahin nichts tust, ist der Entwurf weg.</p>
+      <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Wenn du bis dahin nichts tust, ist der Entwurf weg.</p>
       ${primaryCta("Jetzt fertigstellen", d.resumeLink)}
       ${d.extendLink ? secondaryLink("Ich brauche noch mehr Zeit", d.extendLink) : ""}
-      <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;">
+      <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
         Falls dich etwas Konkretes abh&auml;lt &ndash; auch technische Probleme z&auml;hlen dazu (Seite l&auml;dt nicht, Bilder fehlen, etwas funktioniert nicht): schreib mir. Ich antworte normalerweise innerhalb einer Stunde und wir kriegen das gefixt.
       </p>
-      <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+      <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
     `,
       d.unsubscribeLink
     );
@@ -270,26 +206,26 @@ Christian${footerText(d.unsubscribeLink)}`;
   const html = wrap(
     "Letzter Aufruf",
     `
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       kurze Info: Dein Website-Entwurf${forBiz(d.businessName)} l&auml;uft in wenigen Stunden ab. Danach m&uuml;ssen wir ihn leider l&ouml;schen, damit unser Server nicht &uuml;berquillt.
     </p>
-    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #374151;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
-    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
+    <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
+    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #3f3a34;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
     ${primaryCta("Weiter zur Website", d.resumeLink)}
     ${
       d.extendLink
         ? `
-    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;"><strong>2. Nochmal 24 Stunden Zeit nehmen:</strong></p>
+    <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #3f3a34;"><strong>2. Nochmal 24 Stunden Zeit nehmen:</strong></p>
     ${secondaryLink("Reservierung verl&auml;ngern", d.extendLink)}
     `
         : ""
     }
-    <p style="margin: 24px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 24px 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Wenn gerade einfach nicht der richtige Moment ist: Das ist okay. Du kannst jederzeit einen neuen Entwurf starten. Aber alles, was du schon eingegeben hast, w&auml;re dann weg.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">Bei Fragen oder wenn etwas technisch nicht funktioniert (Seite l&auml;dt nicht, Bilder fehlen): einfach auf diese Mail antworten. Ich antworte schnell und wir kriegen das gefixt.</p>
-    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">Bei Fragen oder wenn etwas technisch nicht funktioniert (Seite l&auml;dt nicht, Bilder fehlen): einfach auf diese Mail antworten. Ich antworte schnell und wir kriegen das gefixt.</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
@@ -320,18 +256,18 @@ function freshStart7d(d: LifecycleEmailData): TemplateOutput {
   const html = wrap(
     "Frischer Start",
     `
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       vor einer Woche hast du angefangen, eine Website${forBiz(d.businessName)} zu bauen &ndash; und dann ging das Leben dazwischen. Kenn ich.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       Der alte Entwurf ist inzwischen gel&ouml;scht, aber das Gute ist: Deine Daten haben wir noch &ndash; in 60 Sekunden baue ich dir einen frischen Entwurf. Ein Klick, und es geht los:
     </p>
     ${primaryCta("Neuen Entwurf bauen", welcomeLink)}
-    <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 16px 0 0 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Wenn Pageblitz gerade nicht passt, ist das auch okay. Kein Druck. Du bekommst von mir nach dieser Mail keine weitere automatisch.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
@@ -356,18 +292,18 @@ export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
   const html = wrap(
     "Dein Link",
     `
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #18181b;">${greeting(d.firstName)}</p>
-    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
+    <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
       hier ist dein pers&ouml;nlicher Link zu deiner Website-Vorschau${d.businessName && d.businessName !== "deine Website" ? ` f&uuml;r <strong>${d.businessName}</strong>` : ""}:
     </p>
     ${primaryCta("Website bearbeiten", d.resumeLink)}
-    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Speicher dir diese Mail oder den Link als Lesezeichen &ndash; so kommst du jederzeit zur&uuml;ck und machst dort weiter, wo du aufgeh&ouml;rt hast.
     </p>
-    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #374151;">
+    <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Falls du Fragen hast: einfach auf diese Mail antworten.
     </p>
-    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #18181b;">Viele Gr&uuml;&szlig;e<br>Christian</p>
+    <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
@@ -396,7 +332,7 @@ const TEMPLATES: Record<
   fresh_start_7d: freshStart7d,
 };
 
-function renderLifecycleEmail(
+export function renderLifecycleEmail(
   type: LifecycleEmailType,
   data: LifecycleEmailData
 ): TemplateOutput {
