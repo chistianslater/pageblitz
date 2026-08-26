@@ -117,7 +117,33 @@ describe("SiteRenderer", () => {
       expect(html).toContain('data-pb-gallery="mosaic"');
       expect(html).toContain('data-pb-density="compact"');
       expect(html).toContain('data-pb-image="framed"');
-      expect(html).toContain('data-pb-services="grid"] #leistungen');
+      expect(html).not.toContain(
+        '.pb-site[data-pb-services="grid"] #leistungen'
+      );
+    });
+
+    test("generische Profilvarianten bleiben für nicht kuratierte Packs aktiv", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer
+          data={{
+            ...data,
+            stylePackId: "kanzlei",
+            designProfile: {
+              version: 1,
+              heroLayout: "centered",
+              servicesLayout: "grid",
+              aboutLayout: "image-left",
+              galleryLayout: "mosaic",
+              density: "compact",
+              imageTreatment: "framed",
+              seed: 42,
+            },
+          }}
+        />
+      );
+      expect(html).toContain(
+        '.pb-site[data-pb-services="grid"] #leistungen'
+      );
     });
   });
 
