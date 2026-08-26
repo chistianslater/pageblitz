@@ -108,9 +108,10 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
   },
   {
     id: "schimmer",
-    name: "Schimmer",
-    essence: "Perlmutt-Verläufe auf hellem Grund — leicht, modern, feminin.",
-    accent: "#D4749C",
+    name: "Lichtlabor",
+    essence:
+      "Editoriale Präzision, Makrofotografie und warmes Karmin — Beauty ohne Klischees.",
+    accent: "#A4493D",
   },
   {
     id: "fundament",

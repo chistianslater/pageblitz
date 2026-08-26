@@ -2,8 +2,9 @@ import type { PackConstitution } from "./types";
 
 export const SCHIMMER: PackConstitution = {
   id: "schimmer",
-  name: "Schimmer",
-  essence: "Perlmutt-Verläufe auf hellem Grund — leicht, modern, feminin.",
+  name: "Lichtlabor",
+  essence:
+    "Editoriale Präzision, Makrofotografie und warmes Karmin — Beauty ohne Klischees.",
   industries: [
     "kosmetikstudio",
     "kosmetik",
@@ -17,107 +18,100 @@ export const SCHIMMER: PackConstitution = {
   theme: "light",
   palette: [
     {
-      name: "Perlmutt",
-      hex: "#FDF7FA",
+      name: "Laborpapier",
+      hex: "#F4F2EF",
       role: "canvas",
       usage: "Seitengrund.",
     },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Porzellan",
+      hex: "#FFFDFC",
       role: "surface",
       usage: "Karten, Glaskarte-Grundton.",
     },
-    { name: "Tinte", hex: "#241E2A", role: "ink", usage: "Text." },
+    { name: "Graphit", hex: "#1C1B1A", role: "ink", usage: "Text." },
     {
-      name: "Rauchflieder",
-      hex: "#6E6377",
+      name: "Mineralgrau",
+      hex: "#68635F",
       role: "muted",
       usage: "Sekundärtext.",
     },
     {
-      name: "Puderrand",
-      hex: "#E5D5DE",
+      name: "Kalklinie",
+      hex: "#D8D3CE",
       role: "line",
       usage: "Hairlines, Ghost-Pill-Rahmen.",
     },
     {
-      name: "Rosé",
-      // Original-Rosé (B6 Task 9 zurückgeholt, B4c hatte auf #A8517A
-      // gedunkelt). Nur als FLÄCHE/RAND: CTA-Hintergrund (Tinte-Text darauf
-      // 5,24:1), Hover-Rahmen — nie als Text auf Perlmutt/Weiß/Glaskarte
-      // (dort nur 2,93:1/3,10:1/3,01:1 → `accent-text`). Override-fähig für
-      // Studio-Farben (nicht locked).
-      hex: "#D4749C",
+      name: "Karmin",
+      hex: "#A4493D",
       role: "accent",
       usage:
-        "CTA-Fläche, Hover-Rahmen — nie als Text auf hellem Grund; override-fähig für Studio-Farben.",
+        "Präzise CTA-Fläche und editoriale Markierung; override-fähig für Studio-Farben.",
     },
     {
-      name: "Mauve",
-      // Dunkler Rosé-Ton für Kleintext auf Perlmutt (4,82:1) / Weiß (5,09:1) /
-      // Glaskarte (4,96:1): Hero-Akzentwort, Preis, Speisekarten-Rubrik, Hover.
-      hex: "#A8517A",
+      name: "Oxid",
+      hex: "#87372F",
       role: "accent-text",
       usage:
-        "Rosé als Text auf hellem Grund (Akzentwort, Preis, Rubrik, Hover).",
+        "Akzentwort, Preis, Rubrik und Hover auf hellem Grund.",
     },
     {
-      name: "Lilac",
-      hex: "#8B6CE8",
+      name: "Hautlicht",
+      hex: "#D9B8A7",
       role: "accent-2",
-      usage: "Orb-Töne, Zierring-Rahmen — nie als Textfläche.",
+      usage: "Warme Medienfläche und feine Markierungen — nie als Kleintext.",
     },
     {
-      name: "Tinte",
-      // Text auf Rosé: Weiß erreichte nur 3,10:1, Tinte 5,24:1 — gilt für
-      // den Hero-CTA und die Insel-Buttons (Kontaktformular, Chat, Buchung).
-      hex: "#241E2A",
+      name: "Porzellan",
+      hex: "#FFFDFC",
       role: "accent-contrast",
-      usage: "Text auf Rosé (CTA, Insel-Buttons).",
+      usage: "Text auf Karmin (CTA, Insel-Buttons).",
     },
   ],
   type: {
     display: {
-      family: "Outfit",
-      weights: [300, 600],
-      fallback: "system-ui, sans-serif",
-      googleCss: "Outfit:wght@300;600",
+      family: "DM Serif Display",
+      weights: [400],
+      fallback: "Georgia, serif",
+      googleCss: "DM+Serif+Display",
     },
     body: {
-      family: "Outfit",
-      weights: [400],
+      family: "Manrope",
+      weights: [400, 500, 600],
       fallback: "system-ui, sans-serif",
-      googleCss: "Outfit:wght@400",
+      googleCss: "Manrope:wght@400;500;600",
     },
     scale: {
       basePx: 16,
       ratio: 1.2,
-      heroClamp: "clamp(2.2rem, 4.8vw, 3.8rem)",
+      heroClamp: "clamp(3rem, 7.2vw, 6.8rem)",
     },
   },
   shape: {
-    radiusCard: "24px",
+    radiusCard: "2px",
     radiusButton: "999px",
     buttonStyle: "pill",
     density: "airy",
   },
   signature: {
-    hero: "Zwei Positionen flacher, konzentrischer Pastell-Orbs hinter dem Inhalt + dünner Lilac-Zierring + rotierter Glas-Chip mit der ersten Leistung + Glaskarte (Weiß-Transparenz, Blur, weicher Schatten) trägt Headline (Gewicht 300, Akzentwort Gewicht 600 solide Rosé), Fließtext und Pill-CTA + Ghost-Pill",
-    decor: ["flat-orbs", "glass-card", "accent-ring", "glass-chip"],
+    hero:
+      "Editorialer Beauty-Hero aus monumentaler Serifentypografie, präzisem Laborindex und großem Makrobild; eine warme Karmin-Markierung setzt den Fokus.",
+    decor: ["editorial-index", "macro-crop", "light-scan", "hairline-grid"],
     imageTreatment:
-      "weich, hell, randlos in Bildkacheln — Tiefe kommt aus Orbs und Glaskarte, nicht aus Bildmasken",
+      "große, scharfe Makro-Crops von Haut, Textur, Material und Händen; warmes Seitenlicht statt Beauty-Stock und Weichzeichner",
   },
   llmHints: {
     do: [
-      "leicht und einladend, wie eine Auszeit",
+      "warm, präzise und erwachsen statt verspielt",
       "Ich-Perspektive der Behandlung (was die Kundin erlebt)",
-      "konkrete Ergebnisse und Ablauf beschreiben statt Versprechen",
+      "Behandlungsablauf, Dauer, Preis und verwendete Produkte konkret benennen",
     ],
     dont: [
       "Heilversprechen oder medizinische Wirkaussagen",
       "Vorher-Nachher-Übertreibungen",
       "Fachjargon ohne Erklärung",
+      "Rosa-Wellness-Klischees, Perlmutt-Orbs oder Glassmorphism",
     ],
   },
 };

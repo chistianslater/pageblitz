@@ -3,9 +3,12 @@
  * es wie MOBILE_NAV_CSS an das Pack-CSS, damit SSR und CSR identisch
  * animieren.
  *
- * Stilrichtung „dezent-professionell" (User-Entscheid 2026-08-24):
- * - Sektionen faden/sliden beim Hereinscrollen sanft ein (24px, 600ms).
- * - Die Hero-Headline fadet einmalig beim Laden ein (450ms).
+ * Der gemeinsame Default bleibt „dezent-professionell", ist seit
+ * Design-System 3.0 aber über `--pb-reveal-*`/`--pb-hero-*` pro Pack
+ * modulierbar. So teilen sich die Richtungen robuste Infrastruktur, ohne
+ * dieselbe wahrgenommene Bewegungssprache zu haben:
+ * - Default: Sektionen faden/sliden 24px in 600ms ein.
+ * - Default: Die Hero-Headline fadet einmalig in 450ms ein.
  * - CTAs/Buttons heben sich bei Hover 2px und geben Press-Feedback (.98).
  * - Anker-Navigation scrollt weich (scroll-behavior: smooth).
  *
@@ -25,15 +28,15 @@
  * auf echten Zeigegeräten (`hover: hover`).
  */
 export const MOTION_CSS = `
-.pb-site{--pb-ease-out:cubic-bezier(0.23,1,0.32,1);--pb-dur-fast:.18s;--pb-dur-reveal:.6s}
-@keyframes pb-hero-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pb-site{--pb-ease-out:cubic-bezier(0.23,1,0.32,1);--pb-dur-fast:.18s;--pb-dur-reveal:.6s;--pb-hero-dur:.45s;--pb-hero-y:14px;--pb-hero-scale:1;--pb-reveal-x:0px;--pb-reveal-y:24px;--pb-reveal-scale:1;--pb-reveal-blur:0px}
+@keyframes pb-hero-in{from{opacity:0;transform:translate3d(0,var(--pb-hero-y),0) scale(var(--pb-hero-scale))}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){
 html{scroll-behavior:smooth}
-.pb-site h1{animation:pb-hero-in .45s var(--pb-ease-out) both}
+.pb-site h1{animation:pb-hero-in var(--pb-hero-dur) var(--pb-ease-out) both}
 .pb-site a[class*="-cta"]:active,.pb-site a[class*="-btn"]:active,.pb-site button[class*="-btn"]:active{transform:scale(.98)}
 }
-html.pb-io-on .pb-site section{opacity:0;transform:translateY(24px);transition:opacity var(--pb-dur-reveal) var(--pb-ease-out),transform var(--pb-dur-reveal) var(--pb-ease-out)}
-html.pb-io-on .pb-site section.pb-in{opacity:1;transform:none}
+html.pb-io-on .pb-site section{opacity:0;transform:translate3d(var(--pb-reveal-x),var(--pb-reveal-y),0) scale(var(--pb-reveal-scale));filter:blur(var(--pb-reveal-blur));transition:opacity var(--pb-dur-reveal) var(--pb-ease-out),transform var(--pb-dur-reveal) var(--pb-ease-out),filter var(--pb-dur-reveal) var(--pb-ease-out)}
+html.pb-io-on .pb-site section.pb-in{opacity:1;transform:none;filter:none}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
 .pb-site a[class*="-cta"],.pb-site a[class*="-btn"]{transition:transform var(--pb-dur-fast) var(--pb-ease-out),color .15s ease,background-color .15s ease,border-color .15s ease}
 .pb-site a[class*="-cta"]:hover,.pb-site a[class*="-btn"]:hover{transform:translateY(-2px)}
