@@ -820,14 +820,30 @@ html.lp-reveal-on .lp-section.lp-in {
    damit die Leiste auch ohne Motion-Präferenz korrekt aus dem Weg ist;
    nur das Gleiten selbst ist gegatet. */
 .lp-sticky-cta {
-  transform: translateY(110%);
+  transform: translate3d(
+    0,
+    calc(100% + env(safe-area-inset-bottom, 0px)),
+    0
+  );
+  visibility: hidden;
+  pointer-events: none;
+  will-change: transform;
 }
 .lp-sticky-cta--on {
-  transform: none;
+  transform: translate3d(0, 0, 0);
+  visibility: visible;
+  pointer-events: auto;
 }
 @media (prefers-reduced-motion: no-preference) {
   .lp-sticky-cta {
-    transition: transform 0.3s var(--lp-ease);
+    transition:
+      transform 0.3s var(--lp-ease),
+      visibility 0s linear 0.3s;
+  }
+  .lp-sticky-cta--on {
+    transition:
+      transform 0.3s var(--lp-ease),
+      visibility 0s;
   }
 }
 

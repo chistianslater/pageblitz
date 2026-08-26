@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
 import { Wordmark, pillInk, startHref } from "./primitives";
@@ -52,6 +53,48 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
     close();
     navigate(startHref(billingYearly));
   };
+
+  const mobileMenu = isOpen ? (
+    <div
+      id="lp-mobile-menu"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navigation"
+      className="fixed inset-x-0 bottom-0 top-[4.25rem] z-[45] overflow-y-auto overscroll-contain bg-lp-canvas md:hidden"
+    >
+      <div className="lp-container flex min-h-full flex-col pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+        {NAV_LINKS.map((link, index) => (
+          <a
+            key={link.href}
+            ref={index === 0 ? firstLinkRef : undefined}
+            href={link.href}
+            onClick={close}
+            className="border-b border-lp-line py-5 text-[1.6rem] font-medium tracking-[-0.01em] text-lp-ink"
+          >
+            {link.label}
+          </a>
+        ))}
+        <a
+          href="/login"
+          onClick={event => {
+            event.preventDefault();
+            close();
+            navigate("/login");
+          }}
+          className="border-b border-lp-line py-5 text-[1.1rem] text-lp-muted"
+        >
+          Anmelden
+        </a>
+        <button
+          type="button"
+          onClick={goStart}
+          className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
+        >
+          Website kostenlos erstellen
+        </button>
+      </div>
+    </div>
+  ) : null;
 
   return (
     <header
@@ -124,43 +167,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
         </button>
       </nav>
 
-      <div
-        id="lp-mobile-menu"
-        hidden={!isOpen}
-        className="fixed inset-x-0 bottom-0 top-[4.25rem] z-40 overflow-y-auto bg-lp-canvas md:hidden"
-      >
-        <div className="lp-container flex flex-col pt-4 pb-10">
-          {NAV_LINKS.map((link, index) => (
-            <a
-              key={link.href}
-              ref={index === 0 ? firstLinkRef : undefined}
-              href={link.href}
-              onClick={close}
-              className="border-b border-lp-line py-5 text-[1.6rem] font-medium tracking-[-0.01em] text-lp-ink"
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href="/login"
-            onClick={event => {
-              event.preventDefault();
-              close();
-              navigate("/login");
-            }}
-            className="border-b border-lp-line py-5 text-[1.1rem] text-lp-muted"
-          >
-            Anmelden
-          </a>
-          <button
-            type="button"
-            onClick={goStart}
-            className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
-          >
-            Website kostenlos erstellen
-          </button>
-        </div>
-      </div>
+      {mobileMenu && createPortal(mobileMenu, document.body)}
     </header>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 import { pillPrimary, startHref } from "./primitives";
@@ -19,7 +19,6 @@ export function StickyCta({ billingYearly }: { billingYearly: boolean }) {
   const [, navigate] = useLocation();
   const [visible, setVisible] = useState(false);
   const [atFinalCta, setAtFinalCta] = useState(false);
-  const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const hero = document.querySelector<HTMLElement>(".lp-h1--hero");
@@ -49,7 +48,6 @@ export function StickyCta({ billingYearly }: { billingYearly: boolean }) {
   const show = visible && !atFinalCta;
   return (
     <div
-      ref={barRef}
       aria-hidden={!show}
       className={`lp-sticky-cta fixed inset-x-0 bottom-0 z-40 border-t border-lp-line bg-lp-surface/95 backdrop-blur-[2px] md:hidden ${
         show ? "lp-sticky-cta--on" : ""
