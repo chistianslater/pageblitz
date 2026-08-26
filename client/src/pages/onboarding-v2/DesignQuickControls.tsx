@@ -100,6 +100,7 @@ export function DesignQuickControls({
             type="button"
             className="pb-design-quick-trigger"
             aria-expanded={open === "color"}
+            aria-label={`Farbe anpassen – ${activeColor}`}
             onClick={() => setOpen(value => (value === "color" ? null : "color"))}
           >
             <Palette aria-hidden="true" />
@@ -170,6 +171,7 @@ export function DesignQuickControls({
             type="button"
             className="pb-design-quick-trigger"
             aria-expanded={open === "font"}
+            aria-label={`Schrift anpassen – ${activeFont}`}
             onClick={() => setOpen(value => (value === "font" ? null : "font"))}
           >
             <Type aria-hidden="true" />

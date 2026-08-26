@@ -206,6 +206,13 @@ export function DesignSplash({
               device={device}
               packOverride={activePackId}
             />
+            <DesignQuickControls
+              token={token}
+              packId={activePackId}
+              accent={accent}
+              fontPairId={fontPairId}
+              onApplied={onApplied}
+            />
             <div
               className="pb-design-swipe-surface"
               aria-hidden="true"
@@ -225,6 +232,14 @@ export function DesignSplash({
                 pointerStart.current = null;
               }}
             />
+            <button
+              type="button"
+              className="pb-studio-btn pb-design-confirm"
+              onClick={confirm}
+              disabled={busyId !== null}
+            >
+              {busyId ? "Wird übernommen …" : "Dieses Design verwenden"}
+            </button>
           </div>
           {sideCard(next, "right")}
         </div>
@@ -238,27 +253,11 @@ export function DesignSplash({
           Weitere Designrichtungen laden
         </button>
 
-        <DesignQuickControls
-          token={token}
-          packId={activePackId}
-          accent={accent}
-          fontPairId={fontPairId}
-          onApplied={onApplied}
-        />
-
         {(select.error || candidates.error) && (
           <p role="alert" className="pb-design-error">
             {select.error?.message ?? candidates.error?.message}
           </p>
         )}
-        <button
-          type="button"
-          className="pb-studio-btn pb-design-confirm"
-          onClick={confirm}
-          disabled={busyId !== null}
-        >
-          {busyId ? "Wird übernommen …" : "Dieses Design verwenden"}
-        </button>
       </div>
     </section>
   );
