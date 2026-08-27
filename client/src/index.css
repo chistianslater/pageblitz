@@ -825,11 +825,7 @@ html.lp-reveal-on .lp-section.lp-in {
    damit die Leiste auch ohne Motion-Präferenz korrekt aus dem Weg ist;
    nur das Gleiten selbst ist gegatet. */
 .lp-sticky-cta {
-  transform: translate3d(
-    0,
-    calc(100% + env(safe-area-inset-bottom, 0px)),
-    0
-  );
+  transform: translate3d(0, calc(100% + env(safe-area-inset-bottom, 0px)), 0);
   visibility: hidden;
   pointer-events: none;
   will-change: transform;
@@ -1111,7 +1107,12 @@ html.lp-reveal-on .lp-section.lp-in {
   height: 100%;
   border-radius: 5px;
   background:
-    linear-gradient(145deg, transparent 45%, rgba(31, 95, 75, 0.45) 46% 56%, transparent 57%),
+    linear-gradient(
+      145deg,
+      transparent 45%,
+      rgba(31, 95, 75, 0.45) 46% 56%,
+      transparent 57%
+    ),
     #e7ddcf;
 }
 .lps-lightbox b {

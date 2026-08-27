@@ -51,16 +51,39 @@ function Section({ title, icon, children }: SectionProps) {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    active: { label: "Aktiv", cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-    trialing: { label: "Testphase", cls: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
-    canceling: { label: "Gekündigt", cls: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-    canceled: { label: "Abgelaufen", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
-    past_due: { label: "Zahlung ausstehend", cls: "bg-red-500/20 text-red-300 border-red-500/40" },
-    incomplete: { label: "Unvollständig", cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" },
+    active: {
+      label: "Aktiv",
+      cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+    },
+    trialing: {
+      label: "Testphase",
+      cls: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+    },
+    canceling: {
+      label: "Gekündigt",
+      cls: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+    },
+    canceled: {
+      label: "Abgelaufen",
+      cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+    },
+    past_due: {
+      label: "Zahlung ausstehend",
+      cls: "bg-red-500/20 text-red-300 border-red-500/40",
+    },
+    incomplete: {
+      label: "Unvollständig",
+      cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+    },
   };
-  const { label, cls } = map[status] || { label: status, cls: "bg-slate-500/20 text-slate-400 border-slate-500/40" };
+  const { label, cls } = map[status] || {
+    label: status,
+    cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+  };
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full border ${cls}`}
+    >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       {label}
     </span>
@@ -73,7 +96,9 @@ export default function AccountPage() {
   const reduceMotion = useReducedMotion();
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
-  const [activeTab, setActiveTab] = useState<"profile" | "subscription" | "security">("profile");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "subscription" | "security"
+  >("profile");
 
   // Profile editing state
   const [editingProfile, setEditingProfile] = useState(false);
@@ -92,7 +117,7 @@ export default function AccountPage() {
       toast.success("Profil aktualisiert");
       setEditingProfile(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Fehler beim Aktualisieren");
     },
   });
@@ -105,25 +130,24 @@ export default function AccountPage() {
       setConfirmPassword("");
       setPasswordError(null);
     },
-    onError: (error) => {
+    onError: error => {
       setPasswordError(error.message || "Fehler beim Ändern des Passworts");
     },
   });
 
-  const billingPortalMutation = trpc.customer.createBillingPortalSession.useMutation({
-    onSuccess: (data) => {
-      window.location.href = data.url;
-    },
-    onError: (error) => {
-      toast.error(error.message || "Fehler beim Öffnen des Kundenportals");
-    },
-  });
+  const billingPortalMutation =
+    trpc.customer.createBillingPortalSession.useMutation({
+      onSuccess: data => {
+        window.location.href = data.url;
+      },
+      onError: error => {
+        toast.error(error.message || "Fehler beim Öffnen des Kundenportals");
+      },
+    });
 
   // Fetch user's websites and subscriptions
-  const { data: myWebsites, isLoading: websitesLoading } = trpc.customer.getMyWebsites.useQuery(
-    undefined,
-    { enabled: !!user }
-  );
+  const { data: myWebsites, isLoading: websitesLoading } =
+    trpc.customer.getMyWebsites.useQuery(undefined, { enabled: !!user });
 
   const handleSaveProfile = () => {
     updateProfileMutation.mutate({ name, email });
@@ -171,8 +195,13 @@ export default function AccountPage() {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center text-white">
-          <p className="mb-4">Bitte melde dich an, um deinen Account zu verwalten.</p>
-          <Button onClick={() => navigate("/login")} className="bg-blue-600 hover:bg-blue-500">
+          <p className="mb-4">
+            Bitte melde dich an, um deinen Account zu verwalten.
+          </p>
+          <Button
+            onClick={() => navigate("/login")}
+            className="bg-blue-600 hover:bg-blue-500"
+          >
             Zum Login
           </Button>
         </div>
@@ -183,24 +212,29 @@ export default function AccountPage() {
   // Get subscription info from first website (if any)
   const subscription = myWebsites?.[0]?.subscription;
   const website = myWebsites?.[0]?.website;
-  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing" || subscription?.status === "canceling";
+  const hasActiveSubscription =
+    subscription?.status === "active" ||
+    subscription?.status === "trialing" ||
+    subscription?.status === "canceling";
   const isCanceling = subscription?.status === "canceling";
 
   // Compute active paid add-ons from subscription.addOns (supports both storage formats)
   const subAddOns = (subscription?.addOns ?? {}) as Record<string, any>;
   const ADDON_INFO: Record<string, { label: string; priceCents: number }> = {
     contactForm: { label: "Kontaktformular", priceCents: 390 },
-    gallery:     { label: "Bildergalerie",   priceCents: 390 },
-    menu:        { label: "Speisekarte",     priceCents: 390 },
-    pricelist:   { label: "Preisliste",      priceCents: 390 },
-    aiChat:      { label: "KI-Chat",         priceCents: 990 },
-    booking:     { label: "Terminbuchung",   priceCents: 490 },
+    gallery: { label: "Bildergalerie", priceCents: 390 },
+    menu: { label: "Speisekarte", priceCents: 390 },
+    pricelist: { label: "Preisliste", priceCents: 390 },
+    aiChat: { label: "KI-Chat", priceCents: 990 },
+    booking: { label: "Terminbuchung", priceCents: 490 },
   };
-  const activeAddOns = (Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>).filter(
-    (k) => subAddOns[k] === true || subAddOns.features?.[k] === true
-  );
+  const activeAddOns = (
+    Object.keys(ADDON_INFO) as Array<keyof typeof ADDON_INFO>
+  ).filter(k => subAddOns[k] === true || subAddOns.features?.[k] === true);
   const BASE_PRICE_CENTS = 1990; // Monatsabo-Basis (Brutto inkl. MwSt.)
-  const totalCents = BASE_PRICE_CENTS + activeAddOns.reduce((sum, k) => sum + ADDON_INFO[k].priceCents, 0);
+  const totalCents =
+    BASE_PRICE_CENTS +
+    activeAddOns.reduce((sum, k) => sum + ADDON_INFO[k].priceCents, 0);
   const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
 
   return (
@@ -233,16 +267,24 @@ export default function AccountPage() {
             <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-6">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-16 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-2xl font-bold">
-                  {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
+                  {user.name?.charAt(0).toUpperCase() ||
+                    user.email?.charAt(0).toUpperCase() ||
+                    "U"}
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-white font-semibold truncate">{user.name || "Unbenannt"}</h2>
-                  <p className="text-slate-400 text-sm truncate">{user.email}</p>
+                  <h2 className="text-white font-semibold truncate">
+                    {user.name || "Unbenannt"}
+                  </h2>
+                  <p className="text-slate-400 text-sm truncate">
+                    {user.email}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <Shield className="w-3.5 h-3.5" />
-                <span className="capitalize">{isGoogleUser ? "Google" : "E-Mail"} Login</span>
+                <span className="capitalize">
+                  {isGoogleUser ? "Google" : "E-Mail"} Login
+                </span>
               </div>
             </div>
 
@@ -259,7 +301,9 @@ export default function AccountPage() {
               <button
                 onClick={() => setActiveTab("profile")}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  activeTab === "profile" ? "bg-blue-600/20 text-blue-400" : "text-slate-300 hover:bg-slate-700/50"
+                  activeTab === "profile"
+                    ? "bg-blue-600/20 text-blue-400"
+                    : "text-slate-300 hover:bg-slate-700/50"
                 }`}
               >
                 <User className="w-5 h-5" />
@@ -268,19 +312,25 @@ export default function AccountPage() {
               <button
                 onClick={() => setActiveTab("subscription")}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  activeTab === "subscription" ? "bg-blue-600/20 text-blue-400" : "text-slate-300 hover:bg-slate-700/50"
+                  activeTab === "subscription"
+                    ? "bg-blue-600/20 text-blue-400"
+                    : "text-slate-300 hover:bg-slate-700/50"
                 }`}
               >
                 <CreditCard className="w-5 h-5" />
                 <span className="font-medium">Abonnement</span>
                 {hasActiveSubscription && (
-                  <span className={`ml-auto w-2 h-2 rounded-full ${isCanceling ? "bg-amber-400" : "bg-emerald-500"}`} />
+                  <span
+                    className={`ml-auto w-2 h-2 rounded-full ${isCanceling ? "bg-amber-400" : "bg-emerald-500"}`}
+                  />
                 )}
               </button>
               <button
                 onClick={() => setActiveTab("security")}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                  activeTab === "security" ? "bg-blue-600/20 text-blue-400" : "text-slate-300 hover:bg-slate-700/50"
+                  activeTab === "security"
+                    ? "bg-blue-600/20 text-blue-400"
+                    : "text-slate-300 hover:bg-slate-700/50"
                 }`}
               >
                 <Lock className="w-5 h-5" />
@@ -301,24 +351,31 @@ export default function AccountPage() {
           <div className="space-y-6">
             {activeTab === "profile" && (
               <>
-                <Section title="Persönliche Daten" icon={<User className="w-5 h-5 text-blue-400" />}>
+                <Section
+                  title="Persönliche Daten"
+                  icon={<User className="w-5 h-5 text-blue-400" />}
+                >
                   {editingProfile ? (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm text-slate-400 mb-2">Name</label>
+                        <label className="block text-sm text-slate-400 mb-2">
+                          Name
+                        </label>
                         <Input
                           value={name}
-                          onChange={(e) => setName(e.target.value)}
+                          onChange={e => setName(e.target.value)}
                           className="bg-slate-700/50 border-slate-600 text-white"
                           placeholder="Dein Name"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-slate-400 mb-2">E-Mail</label>
+                        <label className="block text-sm text-slate-400 mb-2">
+                          E-Mail
+                        </label>
                         <Input
                           type="email"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
+                          onChange={e => setEmail(e.target.value)}
                           className="bg-slate-700/50 border-slate-600 text-white"
                           placeholder="deine@email.de"
                         />
@@ -354,22 +411,32 @@ export default function AccountPage() {
                           <User className="w-4 h-4 text-slate-500" />
                           <span className="text-slate-400 text-sm">Name</span>
                         </div>
-                        <span className="text-white">{user.name || "Nicht angegeben"}</span>
+                        <span className="text-white">
+                          {user.name || "Nicht angegeben"}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between py-3 border-b border-slate-700/50">
                         <div className="flex items-center gap-3">
                           <Mail className="w-4 h-4 text-slate-500" />
                           <span className="text-slate-400 text-sm">E-Mail</span>
                         </div>
-                        <span className="text-white">{user.email || "Nicht angegeben"}</span>
+                        <span className="text-white">
+                          {user.email || "Nicht angegeben"}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between py-3">
                         <div className="flex items-center gap-3">
                           <Calendar className="w-4 h-4 text-slate-500" />
-                          <span className="text-slate-400 text-sm">Mitglied seit</span>
+                          <span className="text-slate-400 text-sm">
+                            Mitglied seit
+                          </span>
                         </div>
                         <span className="text-white">
-                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString("de-DE") : "Unbekannt"}
+                          {user.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString(
+                                "de-DE"
+                              )
+                            : "Unbekannt"}
                         </span>
                       </div>
                       <Button
@@ -384,11 +451,18 @@ export default function AccountPage() {
                 </Section>
 
                 {/* Account Info */}
-                <Section title="Account-Informationen" icon={<Package className="w-5 h-5 text-blue-400" />}>
+                <Section
+                  title="Account-Informationen"
+                  icon={<Package className="w-5 h-5 text-blue-400" />}
+                >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between py-2">
-                      <span className="text-slate-400 text-sm">Anmeldemethode</span>
-                      <span className="text-white capitalize">{isGoogleUser ? "Google" : "E-Mail"}</span>
+                      <span className="text-slate-400 text-sm">
+                        Anmeldemethode
+                      </span>
+                      <span className="text-white capitalize">
+                        {isGoogleUser ? "Google" : "E-Mail"}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-slate-400 text-sm">Rolle</span>
@@ -398,7 +472,9 @@ export default function AccountPage() {
                     </div>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-slate-400 text-sm">Websites</span>
-                      <span className="text-white">{myWebsites?.length || 0}</span>
+                      <span className="text-white">
+                        {myWebsites?.length || 0}
+                      </span>
                     </div>
                   </div>
                 </Section>
@@ -408,15 +484,23 @@ export default function AccountPage() {
             {activeTab === "subscription" && (
               <>
                 {/* Current Subscription */}
-                <Section title="Aktuelles Abonnement" icon={<CreditCard className="w-5 h-5 text-blue-400" />}>
+                <Section
+                  title="Aktuelles Abonnement"
+                  icon={<CreditCard className="w-5 h-5 text-blue-400" />}
+                >
                   {websitesLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
                     </div>
                   ) : !myWebsites || myWebsites.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-slate-400 mb-4">Du hast noch keine aktive Website.</p>
-                      <Button onClick={() => navigate("/start")} className="bg-blue-600 hover:bg-blue-500">
+                      <p className="text-slate-400 mb-4">
+                        Du hast noch keine aktive Website.
+                      </p>
+                      <Button
+                        onClick={() => navigate("/start")}
+                        className="bg-blue-600 hover:bg-blue-500"
+                      >
                         Website gratis erstellen
                       </Button>
                     </div>
@@ -427,35 +511,63 @@ export default function AccountPage() {
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h3 className="text-white font-semibold text-lg">
-                              Pageblitz{activeAddOns.length > 0 ? ` + ${activeAddOns.length} Add-on${activeAddOns.length > 1 ? "s" : ""}` : ""}
+                              Pageblitz
+                              {activeAddOns.length > 0
+                                ? ` + ${activeAddOns.length} Add-on${activeAddOns.length > 1 ? "s" : ""}`
+                                : ""}
                             </h3>
-                            <p className="text-slate-400 text-sm">Alle Preise inkl. MwSt.</p>
+                            <p className="text-slate-400 text-sm">
+                              Alle Preise inkl. MwSt.
+                            </p>
                           </div>
-                          <StatusBadge status={subscription?.status || "incomplete"} />
+                          <StatusBadge
+                            status={subscription?.status || "incomplete"}
+                          />
                         </div>
 
                         {/* Itemized breakdown */}
                         <div className="space-y-2 mb-4">
                           {/* Base plan */}
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-slate-300">Basis-Paket (Jahresabo)</span>
-                            <span className="text-white font-semibold">19,90 €/Mo</span>
+                            <span className="text-slate-300">
+                              Basis-Paket (Jahresabo)
+                            </span>
+                            <span className="text-white font-semibold">
+                              19,90 €/Mo
+                            </span>
                           </div>
                           {/* Active add-ons */}
-                          {activeAddOns.map((key) => (
-                            <div key={key} className="flex items-center justify-between text-sm">
+                          {activeAddOns.map(key => (
+                            <div
+                              key={key}
+                              className="flex items-center justify-between text-sm"
+                            >
                               <div className="flex items-center gap-2">
-                                <span className="text-slate-300">{ADDON_INFO[key].label}</span>
-                                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">Aktiv</span>
+                                <span className="text-slate-300">
+                                  {ADDON_INFO[key].label}
+                                </span>
+                                <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full">
+                                  Aktiv
+                                </span>
                               </div>
-                              <span className="text-emerald-400 font-semibold">+{(ADDON_INFO[key].priceCents / 100).toFixed(2).replace(".", ",")} €/Mo</span>
+                              <span className="text-emerald-400 font-semibold">
+                                +
+                                {(ADDON_INFO[key].priceCents / 100)
+                                  .toFixed(2)
+                                  .replace(".", ",")}{" "}
+                                €/Mo
+                              </span>
                             </div>
                           ))}
                           {/* Total – only if add-ons active */}
                           {activeAddOns.length > 0 && (
                             <div className="flex items-center justify-between text-sm border-t border-slate-700/60 pt-2 mt-2">
-                              <span className="text-white font-bold">Gesamt</span>
-                              <span className="text-white font-bold">{totalStr} €/Mo</span>
+                              <span className="text-white font-bold">
+                                Gesamt
+                              </span>
+                              <span className="text-white font-bold">
+                                {totalStr} €/Mo
+                              </span>
                             </div>
                           )}
                         </div>
@@ -464,14 +576,20 @@ export default function AccountPage() {
                           <div className="space-y-2 text-sm border-t border-slate-700/40 pt-3 mt-1">
                             <div className="flex items-center gap-2 text-emerald-400">
                               <CheckCircle className="w-4 h-4" />
-                              <span>Website aktiv: {website?.slug}.pageblitz.de</span>
+                              <span>
+                                Website aktiv: {website?.slug}.pageblitz.de
+                              </span>
                             </div>
                             <div className="flex items-center gap-2 text-slate-400">
                               <Calendar className="w-4 h-4" />
                               <span>
-                                {isCanceling ? "Läuft ab am: " : "Nächste Zahlung: "}
+                                {isCanceling
+                                  ? "Läuft ab am: "
+                                  : "Nächste Zahlung: "}
                                 {subscription?.currentPeriodEnd
-                                  ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
+                                  ? new Date(
+                                      subscription.currentPeriodEnd * 1000
+                                    ).toLocaleDateString("de-DE")
                                   : "Unbekannt"}
                               </span>
                             </div>
@@ -483,10 +601,13 @@ export default function AccountPage() {
                           <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                             <AlertCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                             <p className="text-sm text-amber-300">
-                              Dein Abo wurde gekündigt. Deine Website bleibt bis zum{" "}
+                              Dein Abo wurde gekündigt. Deine Website bleibt bis
+                              zum{" "}
                               <strong>
                                 {subscription?.currentPeriodEnd
-                                  ? new Date(subscription.currentPeriodEnd * 1000).toLocaleDateString("de-DE")
+                                  ? new Date(
+                                      subscription.currentPeriodEnd * 1000
+                                    ).toLocaleDateString("de-DE")
                                   : "Periodenende"}
                               </strong>{" "}
                               online und wird danach automatisch deaktiviert.
@@ -518,7 +639,11 @@ export default function AccountPage() {
                             variant="outline"
                             className="border-red-500/50 text-red-400 hover:bg-red-500/10"
                             disabled={billingPortalMutation.isPending}
-                            onClick={() => billingPortalMutation.mutate({ websiteId: website!.id })}
+                            onClick={() =>
+                              billingPortalMutation.mutate({
+                                websiteId: website!.id,
+                              })
+                            }
                           >
                             {billingPortalMutation.isPending ? (
                               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -532,28 +657,38 @@ export default function AccountPage() {
                     </div>
                   )}
                 </Section>
-
               </>
             )}
 
             {activeTab === "security" && (
-              <Section title="Sicherheit" icon={<Shield className="w-5 h-5 text-blue-400" />}>
+              <Section
+                title="Sicherheit"
+                icon={<Shield className="w-5 h-5 text-blue-400" />}
+              >
                 {isGoogleUser ? (
                   <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                       <CheckCircle className="w-6 h-6 text-emerald-400" />
-                      <h3 className="text-white font-semibold">Google-Authentifizierung aktiv</h3>
+                      <h3 className="text-white font-semibold">
+                        Google-Authentifizierung aktiv
+                      </h3>
                     </div>
                     <p className="text-slate-300 text-sm mb-4">
-                      Du meldest dich über Google an. Dein Account ist durch Googles Sicherheitsinfrastruktur geschützt.
+                      Du meldest dich über Google an. Dein Account ist durch
+                      Googles Sicherheitsinfrastruktur geschützt.
                     </p>
                     <div className="text-sm text-slate-400">
-                      <p>Für Passwort-Änderungen besuche deine Google-Kontoeinstellungen.</p>
+                      <p>
+                        Für Passwort-Änderungen besuche deine
+                        Google-Kontoeinstellungen.
+                      </p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <h3 className="text-white font-medium mb-4">Passwort ändern</h3>
+                    <h3 className="text-white font-medium mb-4">
+                      Passwort ändern
+                    </h3>
 
                     {passwordError && (
                       <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -563,36 +698,49 @@ export default function AccountPage() {
                     )}
 
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">Aktuelles Passwort</label>
+                      <label className="block text-sm text-slate-400 mb-2">
+                        Aktuelles Passwort
+                      </label>
                       <Input
                         type="password"
                         value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        onChange={e => setCurrentPassword(e.target.value)}
                         className="bg-slate-700/50 border-slate-600 text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">Neues Passwort</label>
+                      <label className="block text-sm text-slate-400 mb-2">
+                        Neues Passwort
+                      </label>
                       <Input
                         type="password"
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onChange={e => setNewPassword(e.target.value)}
                         className="bg-slate-700/50 border-slate-600 text-white"
                       />
-                      <p className="text-xs text-slate-500 mt-1">Mindestens 8 Zeichen</p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Mindestens 8 Zeichen
+                      </p>
                     </div>
                     <div>
-                      <label className="block text-sm text-slate-400 mb-2">Passwort bestätigen</label>
+                      <label className="block text-sm text-slate-400 mb-2">
+                        Passwort bestätigen
+                      </label>
                       <Input
                         type="password"
                         value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={e => setConfirmPassword(e.target.value)}
                         className="bg-slate-700/50 border-slate-600 text-white"
                       />
                     </div>
                     <Button
                       onClick={handleChangePassword}
-                      disabled={changePasswordMutation.isPending || !currentPassword || !newPassword || !confirmPassword}
+                      disabled={
+                        changePasswordMutation.isPending ||
+                        !currentPassword ||
+                        !newPassword ||
+                        !confirmPassword
+                      }
                       className="mt-2 bg-blue-600 hover:bg-blue-500"
                     >
                       {changePasswordMutation.isPending ? (
