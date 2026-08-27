@@ -12,6 +12,7 @@ import {
 import { BookingAddonSection } from "./BookingAddonSection";
 import { AiChatAddonSection } from "./AiChatAddonSection";
 import { ContactFormAddonSection } from "./ContactFormAddonSection";
+import { ADDON_EDITORS } from "@shared/onboardingV2/addonEditors";
 import { studioPanelHref } from "./StudioCard";
 
 type ContentAddonKey = "gallery" | "menu" | "pricelist" | "team" | "subpages";
@@ -178,7 +179,11 @@ export function AddonsTab({
                   <div className="flex flex-shrink-0 items-center gap-3">
                     {purchased ? (
                       <a
-                        href={studioPanelHref(previewToken, "addons")}
+                        href={studioPanelHref(
+                          previewToken,
+                          ADDON_EDITORS[key].panel,
+                          key
+                        )}
                         className="whitespace-nowrap rounded-lg border border-lp-accent/30 bg-lp-accent/10 px-3 py-1.5 text-xs font-medium text-lp-accent transition-colors hover:bg-lp-accent/15"
                       >
                         Aktiv · Im Studio bearbeiten

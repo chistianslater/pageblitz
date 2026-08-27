@@ -38,6 +38,28 @@ describe("Checklist", () => {
     expect(html).toContain('aria-label="Aktive Extras"');
     expect(html).toContain("KI-Chat");
     expect(html).toContain("Terminbuchung");
-    expect(html.match(/>Aktiv</g)).toHaveLength(2);
+    expect(html.match(/>Bearbeiten</g)).toHaveLength(2);
+    expect(html).toContain("Begrüßung anpassen");
+  });
+
+  test("Galerie-Extra zeigt Bearbeiten-Hinweis und Erledigt-Status", () => {
+    const items = deriveChecklistState(null, {
+      studioProgress: { addonsReviewed: true },
+    });
+    const html = renderToStaticMarkup(
+      <Checklist
+        items={items}
+        activeId={null}
+        onSelect={() => {}}
+        activeAddOns={["gallery"]}
+        extraFocus="gallery"
+        extraDone={{ gallery: true }}
+        onSelectAddOn={() => {}}
+      />
+    );
+    expect(html).toContain("Bildergalerie");
+    expect(html).toContain("Fotos hochladen, löschen und sortieren");
+    expect(html).toContain(">Erledigt<");
+    expect(html).toContain('aria-current="step"');
   });
 });

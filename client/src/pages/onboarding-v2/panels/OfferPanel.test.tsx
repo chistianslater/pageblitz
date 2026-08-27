@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { OfferEditor, offerFromDoc, validateOffer } from "./OfferPanel";
+import { OfferEditor, offerFromDoc, offerDraftsFromDoc, validateOffer } from "./OfferPanel";
 
 const docWithServices: WebsiteDataV2 = {
   version: 2,
@@ -88,6 +88,38 @@ describe("offerFromDoc", () => {
       headline: "Leistungen",
       items: [{ title: "" }],
     });
+  });
+});
+
+describe("offerDraftsFromDoc", () => {
+  test("hält Speisekarte neben Leistungen, damit Extra-Klick nicht leer startet", () => {
+    const both: WebsiteDataV2 = {
+      ...docWithServices,
+      sections: [
+        { type: "hero", headline: "H" },
+        {
+          type: "services",
+          headline: "Leistungen",
+          items: [{ title: "Beratung" }],
+        },
+        {
+          type: "menu",
+          headline: "Karte",
+          categories: [
+            { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
+          ],
+        },
+      ],
+    };
+    const drafts = offerDraftsFromDoc(both);
+    expect(drafts.services.mode).toBe("services");
+    if (drafts.services.mode === "services") {
+      expect(drafts.services.items[0]?.title).toBe("Beratung");
+    }
+    expect(drafts.menu.mode).toBe("menu");
+    if (drafts.menu.mode === "menu") {
+      expect(drafts.menu.categories[0]?.name).toBe("Pizza");
+    }
   });
 });
 

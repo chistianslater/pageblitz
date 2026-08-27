@@ -155,6 +155,13 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+.pb-studio-addon-steps .pb-studio-check-hint {
+  font-size: 0.72rem;
+  margin-top: 0.1rem;
+}
+.pb-studio-addon-steps button[aria-current="step"] {
+  color: var(--st-ink);
+}
 .pb-studio-device {
   flex: 1;
   min-height: 60dvh;
@@ -1052,6 +1059,31 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
+}
+.pb-studio-gallery-selected {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.pb-studio-gallery-selected-item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.45rem;
+  border: 1px solid var(--st-line);
+  border-radius: 12px;
+  background: var(--st-canvas);
+}
+.pb-studio-gallery-selected-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
 }
 .pb-studio-photo {
   position: relative;

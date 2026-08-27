@@ -9,7 +9,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CHECKLIST_ORDER } from "@shared/onboardingV2/checklist";
-import { withPanelParam } from "@/pages/onboarding-v2/studioUrl";
+import { withStudioParams } from "@/pages/onboarding-v2/studioUrl";
+import type { AddOnKey } from "@shared/pricing";
 
 const PANEL_META: Record<
   (typeof CHECKLIST_ORDER)[number],
@@ -47,13 +48,14 @@ const PANEL_META: Record<
   },
 };
 
-/** Baut den Deep-Link ins Studio für einen Checklisten-Bereich. Reine
- * Funktion — separat testbar ohne Rendering (Studio-Link-Bau). */
+/** Baut den Deep-Link ins Studio für einen Checklisten-Bereich, optional
+ * direkt in den Extra-Editor (`?extra=gallery` usw.). */
 export function studioPanelHref(
   previewToken: string,
-  panel: (typeof CHECKLIST_ORDER)[number]
+  panel: (typeof CHECKLIST_ORDER)[number],
+  extra?: AddOnKey
 ): string {
-  return `/onboarding/${previewToken}${withPanelParam("", panel)}`;
+  return `/onboarding/${previewToken}${withStudioParams("", panel, extra ?? null)}`;
 }
 
 interface StudioCardProps {
@@ -63,7 +65,7 @@ interface StudioCardProps {
 /** "Im Studio bearbeiten"-Karte: Inhalte, Design und Rechtstexte werden seit
  * dem v2-Cutover ausschließlich im Studio gepflegt (Cutover-Spec §2) — das
  * Dashboard verlinkt nur noch dorthin, je Checklisten-Bereich per
- * `?panel=<id>`-Deep-Link (siehe `withPanelParam`, StudioPage.tsx). */
+ * `?panel=<id>`-Deep-Link (siehe `withStudioParams`, StudioPage.tsx). */
 export function StudioCard({ previewToken }: StudioCardProps) {
   return (
     <div className="bg-lp-surface border border-lp-line rounded-2xl p-5">

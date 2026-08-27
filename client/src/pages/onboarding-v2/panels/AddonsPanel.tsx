@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { motionSafeScrollBehavior } from "@/lib/motion";
+import { ADDON_EDITORS } from "@shared/onboardingV2/addonEditors";
 import type {
   AddonsPatch,
   PagesPatch,
@@ -247,8 +248,13 @@ interface AddonsPanelProps {
   /** Geführter Modus: nach Prüfung weiter zum Freischalten. */
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
-  /** Klick auf einen aktiven Extra-Step: Karte direkt anspringen. */
+  /** Klick auf einen aktiven Extra-Step: Editor bzw. Karte direkt anspringen. */
   initialFocusKey?: AddOnKey | null;
+  /**
+   * Gebuchte Inhalts-Extras (Galerie, Speisekarte, Preisliste) können aus
+   * diesem Panel ins echte Inhaltspanel wechseln.
+   */
+  onOpenExtraEditor?: (key: AddOnKey) => void;
 }
 
 export function AddonsPanel({
@@ -262,6 +268,7 @@ export function AddonsPanel({
   onNext,
   onPreviewFocus,
   initialFocusKey = null,
+  onOpenExtraEditor,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
@@ -303,13 +310,15 @@ export function AddonsPanel({
 
   useEffect(() => {
     if (!initialFocusKey) return;
+    const editorId = ADDON_EDITORS[initialFocusKey].editorDomId;
     const id = window.requestAnimationFrame(() => {
-      document
-        .getElementById(`pb-addon-${initialFocusKey}`)
-        ?.scrollIntoView({
-          behavior: motionSafeScrollBehavior(),
-          block: "center",
-        });
+      const target =
+        (editorId ? document.getElementById(editorId) : null) ??
+        document.getElementById(`pb-addon-${initialFocusKey}`);
+      target?.scrollIntoView({
+        behavior: motionSafeScrollBehavior(),
+        block: "center",
+      });
     });
     return () => window.cancelAnimationFrame(id);
   }, [initialFocusKey]);
@@ -445,9 +454,50 @@ export function AddonsPanel({
         interval="yearly"
         focusKey={initialFocusKey}
       />
+      {onOpenExtraEditor &&
+        (value.gallery || value.menu || value.pricelist) && (
+          <section className="pb-studio-addon-settings">
+            <div className="pb-studio-addon-settings-head">
+              <div>
+                <p className="pb-studio-kicker">Inhalte</p>
+                <h3>Gebuchte Extras pflegen</h3>
+              </div>
+            </div>
+            <div className="pb-studio-rows">
+              {value.gallery && (
+                <button
+                  type="button"
+                  className="pb-studio-btn"
+                  onClick={() => onOpenExtraEditor("gallery")}
+                >
+                  Bildergalerie bearbeiten
+                </button>
+              )}
+              {value.menu && (
+                <button
+                  type="button"
+                  className="pb-studio-btn"
+                  onClick={() => onOpenExtraEditor("menu")}
+                >
+                  Speisekarte bearbeiten
+                </button>
+              )}
+              {value.pricelist && (
+                <button
+                  type="button"
+                  className="pb-studio-btn"
+                  onClick={() => onOpenExtraEditor("pricelist")}
+                >
+                  Preisliste bearbeiten
+                </button>
+              )}
+            </div>
+          </section>
+        )}
       {(quickHeadingSettings.length > 0 ||
         value.aiChat ||
-        value.booking) && (
+        value.booking ||
+        value.contactForm) && (
         <section className="pb-studio-addon-settings">
           <div className="pb-studio-addon-settings-head">
             <div>
@@ -458,7 +508,11 @@ export function AddonsPanel({
           </div>
           <div className="pb-studio-addon-settings-grid">
             {quickHeadingSettings.map(setting => (
-              <label key={setting.section} className="pb-studio-field">
+              <label
+                key={setting.section}
+                id={`pb-addon-editor-${setting.addOn}`}
+                className="pb-studio-field"
+              >
                 <span>{setting.label}</span>
                 <input
                   type="text"
@@ -474,8 +528,24 @@ export function AddonsPanel({
                 />
               </label>
             ))}
+            {value.contactForm &&
+              !quickHeadingSettings.some(s => s.addOn === "contactForm") && (
+                <div
+                  id="pb-addon-editor-contactForm"
+                  className="pb-studio-addon-dashboard-note"
+                >
+                  <MessageSquareText aria-hidden="true" />
+                  <div>
+                    <strong>Kontaktformular</strong>
+                    <p>
+                      Empfänger, Felder und Bestätigungstext stellst du im
+                      Kundenbereich ein.
+                    </p>
+                  </div>
+                </div>
+              )}
             {value.aiChat && (
-              <label className="pb-studio-field">
+              <label id="pb-addon-editor-aiChat" className="pb-studio-field">
                 <span>Begrüßung im KI-Chat</span>
                 <input
                   type="text"
@@ -488,7 +558,10 @@ export function AddonsPanel({
               </label>
             )}
             {value.booking && (
-              <div className="pb-studio-addon-dashboard-note">
+              <div
+                id="pb-addon-editor-booking"
+                className="pb-studio-addon-dashboard-note"
+              >
                 <CalendarDays aria-hidden="true" />
                 <div>
                   <strong>Terminbuchung</strong>
@@ -530,7 +603,10 @@ export function AddonsPanel({
         </p>
       )}
       {value.team && (
-        <div className="pb-studio-rows pb-studio-addon-settings">
+        <div
+          id="pb-addon-editor-team"
+          className="pb-studio-rows pb-studio-addon-settings"
+        >
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Team pflegen
           </h3>
@@ -551,7 +627,10 @@ export function AddonsPanel({
         </div>
       )}
       {value.subpages && (
-        <div className="pb-studio-rows pb-studio-addon-settings">
+        <div
+          id="pb-addon-editor-subpages"
+          className="pb-studio-rows pb-studio-addon-settings"
+        >
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Unterseiten pflegen
           </h3>

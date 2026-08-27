@@ -66,6 +66,52 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
   return blankOffer(constitution.prefersMenu ? "menu" : "services");
 }
 
+/**
+ * Entwürfe für alle drei Angebots-Modi — Speisekarte und Preisliste bleiben
+ * erhalten, auch wenn gerade eine Leistungen-Sektion aktiv ist. Extra-Klick
+ * auf „Speisekarte" darf nicht mit einem leeren Entwurf starten, nur weil
+ * `offerFromDoc` Leistungen bevorzugt.
+ */
+export function offerDraftsFromDoc(
+  doc: WebsiteDataV2
+): Record<OfferMode, OfferPatch> {
+  const services = doc.sections.find(
+    (s): s is SectionOf<"services"> => s.type === "services"
+  );
+  const menu = doc.sections.find(
+    (s): s is SectionOf<"menu"> => s.type === "menu"
+  );
+  const pricelist = doc.sections.find(
+    (s): s is SectionOf<"pricelist"> => s.type === "pricelist"
+  );
+  return {
+    services: services
+      ? {
+          mode: "services",
+          headline: services.headline,
+          ...(services.intro !== undefined ? { intro: services.intro } : {}),
+          items: services.items,
+        }
+      : blankOffer("services"),
+    menu: menu
+      ? {
+          mode: "menu",
+          ...(menu.headline !== undefined ? { headline: menu.headline } : {}),
+          categories: menu.categories,
+        }
+      : blankOffer("menu"),
+    pricelist: pricelist
+      ? {
+          mode: "pricelist",
+          ...(pricelist.headline !== undefined
+            ? { headline: pricelist.headline }
+            : {}),
+          categories: pricelist.categories,
+        }
+      : blankOffer("pricelist"),
+  };
+}
+
 interface OfferPanelProps {
   token: string;
   doc: WebsiteDataV2;
@@ -74,6 +120,8 @@ interface OfferPanelProps {
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
+  /** Deep-Link aus Extra Speisekarte/Preisliste. */
+  initialMode?: OfferMode;
 }
 
 export function OfferPanel({
@@ -83,17 +131,13 @@ export function OfferPanel({
   onClose,
   onNext,
   onPreviewFocus,
+  initialMode,
 }: OfferPanelProps) {
   const initial = offerFromDoc(doc);
-  // Ein Entwurf pro Modus im lokalen State (Ambiguität #2 der Task-Vorgabe):
-  // Moduswechsel im Editor verwirft nichts — beim Zurückwechseln steht der
-  // zuletzt bearbeitete Entwurf für diesen Modus wieder da.
-  const [drafts, setDrafts] = useState<Record<OfferMode, OfferPatch>>({
-    services: initial.mode === "services" ? initial : blankOffer("services"),
-    menu: initial.mode === "menu" ? initial : blankOffer("menu"),
-    pricelist: initial.mode === "pricelist" ? initial : blankOffer("pricelist"),
-  });
-  const [mode, setMode] = useState<OfferMode>(initial.mode);
+  const [drafts, setDrafts] = useState<Record<OfferMode, OfferPatch>>(() =>
+    offerDraftsFromDoc(doc)
+  );
+  const [mode, setMode] = useState<OfferMode>(initialMode ?? initial.mode);
   const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
     onPreviewFocus?.(
@@ -154,7 +198,13 @@ export function OfferPanel({
   return (
     <PanelFrame
       step="Schritt 4"
-      title="Angebot pflegen"
+      title={
+        initialMode === "menu"
+          ? "Speisekarte pflegen"
+          : initialMode === "pricelist"
+            ? "Preisliste pflegen"
+            : "Angebot pflegen"
+      }
       panelId="offer"
       onClose={onClose}
       intro="Leistungen, Speisekarte oder Preisliste — wähle den passenden Typ und pflege die Positionen."

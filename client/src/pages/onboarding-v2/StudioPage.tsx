@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { ADDON_EDITORS, addonContentDone } from "@shared/onboardingV2/addonEditors";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
@@ -38,24 +39,34 @@ import {
   type WizardPanelStep,
   type WizardStep,
 } from "./studioLogic";
-import { parsePanelParam, withPanelParam } from "./studioUrl";
+import { resolveStudioLocation, withStudioParams } from "./studioUrl";
 import "./studio.css";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
-  const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(() =>
-    parsePanelParam(window.location.search)
+  const initialLocation = resolveStudioLocation(window.location.search);
+  const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(
+    () => initialLocation.panel
   );
-  const [addonFocus, setAddonFocus] = useState<AddOnKey | null>(null);
+  const [addonFocus, setAddonFocus] = useState<AddOnKey | null>(
+    () => initialLocation.extra
+  );
   const [previewFocusAnchor, setPreviewFocusAnchor] = useState<string | null>(
-    "start"
+    initialLocation.extra
+      ? ADDON_EDITORS[initialLocation.extra].previewAnchor
+      : "start"
   );
   // Spiegelt jede Panel-Änderung per history.replaceState in die URL (Task 2,
   // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
-  // Query-Parameter bleiben erhalten (studioUrl.withPanelParam).
-  const setActiveId = (id: ChecklistItemId | null) => {
-    if (id !== "addons") setAddonFocus(null);
+  // Query-Parameter bleiben erhalten (studioUrl.withStudioParams). Extra-Klick
+  // (Galerie, Speisekarte, …) setzt `?extra=` und öffnet das Inhaltspanel.
+  const setActiveId = (
+    id: ChecklistItemId | null,
+    extra: AddOnKey | null = null
+  ) => {
+    setAddonFocus(extra);
     setActiveIdState(id);
+    const editor = extra ? ADDON_EDITORS[extra] : null;
     const anchorByPanel: Partial<Record<ChecklistItemId, string>> = {
       style: "start",
       photos: "start",
@@ -64,8 +75,9 @@ export default function StudioPage({ token }: { token: string }) {
       legal: "kontakt",
       addons: "kontakt",
     };
-    if (id && anchorByPanel[id]) setPreviewFocusAnchor(anchorByPanel[id]!);
-    const nextSearch = withPanelParam(window.location.search, id);
+    if (editor) setPreviewFocusAnchor(editor.previewAnchor);
+    else if (id && anchorByPanel[id]) setPreviewFocusAnchor(anchorByPanel[id]!);
+    const nextSearch = withStudioParams(window.location.search, id, extra);
     window.history.replaceState(
       null,
       "",
@@ -368,6 +380,7 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              initialTarget={addonFocus === "gallery" ? "gallery" : undefined}
             />
           ) : activeId === "texts" ? (
             <TextsPanel
@@ -392,6 +405,11 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              initialMode={
+                addonFocus === "menu" || addonFocus === "pricelist"
+                  ? addonFocus
+                  : undefined
+              }
             />
           ) : activeId === "legal" ? (
             <LegalPanel
@@ -420,6 +438,10 @@ export default function StudioPage({ token }: { token: string }) {
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
               initialFocusKey={addonFocus}
+              onOpenExtraEditor={key => {
+                const editor = ADDON_EDITORS[key];
+                setActiveId(editor.panel, key);
+              }}
             />
           ) : wizardActive ? (
             // Wizard-Abschluss („publish"): Fokus liegt auf dem Freischalten,
@@ -461,16 +483,24 @@ export default function StudioPage({ token }: { token: string }) {
               <Checklist
                 items={state.checklist}
                 activeId={activeId}
-                onSelect={id => {
-                  if (id === "addons") setAddonFocus(null);
-                  setActiveId(id);
-                }}
+                onSelect={id => setActiveId(id)}
                 activeAddOns={BOOKABLE_ADDON_KEYS.filter(
                   key => state.addOns[key] === true
                 )}
+                extraFocus={addonFocus}
+                extraDone={Object.fromEntries(
+                  BOOKABLE_ADDON_KEYS.filter(
+                    key => state.addOns[key] === true
+                  ).map(key => [
+                    key,
+                    addonContentDone(key, state.doc, {
+                      chatWelcomeMessage: state.chatWelcomeMessage,
+                    }),
+                  ])
+                )}
                 onSelectAddOn={key => {
-                  setAddonFocus(key);
-                  setActiveId("addons");
+                  const editor = ADDON_EDITORS[key];
+                  setActiveId(editor.panel, key);
                 }}
               />
               <AiChat

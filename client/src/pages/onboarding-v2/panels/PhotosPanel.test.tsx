@@ -1,7 +1,12 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { GalleryAddonNotice, PhotoGrid, PhotoTargetPicker } from "./photoParts";
+import {
+  GalleryAddonNotice,
+  PhotoGrid,
+  PhotoTargetPicker,
+  SelectedGalleryList,
+} from "./photoParts";
 
 describe("PhotoGrid", () => {
   test("rendert Buttons mit aria-pressed für ausgewählte Fotos", () => {
@@ -88,5 +93,32 @@ describe("GalleryAddonNotice (Plan B6 Task 6: Galerie nur bei gebuchtem Add-on p
     expect(html).toContain("disabled");
     expect(html).toContain('role="alert"');
     expect(html).toContain("nicht abgerechnet");
+  });
+});
+
+describe("SelectedGalleryList", () => {
+  test("leere Liste erklärt Upload und Auswahl", () => {
+    const html = renderToStaticMarkup(
+      <SelectedGalleryList urls={[]} onMove={() => {}} onRemove={() => {}} />
+    );
+    expect(html).toContain("Noch keine Galerie-Fotos");
+    expect(html).not.toContain('aria-label="Galerie-Fotos"');
+  });
+
+  test("zeigt Reihenfolge, Pfeile und Entfernen", () => {
+    const html = renderToStaticMarkup(
+      <SelectedGalleryList
+        urls={["https://example.com/a.jpg", "https://example.com/b.jpg"]}
+        onMove={() => {}}
+        onRemove={() => {}}
+      />
+    );
+    expect(html).toContain('aria-label="Galerie-Fotos"');
+    expect(html).toContain("Foto 1");
+    expect(html).toContain("Foto 2");
+    expect(html).toContain("nach oben verschieben");
+    expect(html).toContain("nach unten verschieben");
+    expect(html).toContain("entfernen");
+    expect(html).toContain("disabled");
   });
 });

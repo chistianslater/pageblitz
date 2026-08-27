@@ -12,6 +12,9 @@ describe("studioPanelHref", () => {
     expect(studioPanelHref("tok123", "legal")).toBe(
       "/onboarding/tok123?panel=legal"
     );
+    expect(studioPanelHref("tok123", "photos", "gallery")).toBe(
+      "/onboarding/tok123?panel=photos&extra=gallery"
+    );
   });
 
   test("funktioniert für jeden Checklisten-Bereich (kein toter Link)", () => {

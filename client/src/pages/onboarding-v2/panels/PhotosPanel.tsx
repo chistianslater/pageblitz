@@ -5,10 +5,12 @@ import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import { sanitizeAddOns, type AddOnFlags } from "@shared/pricing";
 import type { AddonsPatch, ImagesPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
+import { moveGalleryImage, removeGalleryImage, MAX_GALLERY_PHOTOS } from "./galleryLogic";
 import {
   GalleryAddonNotice,
   PhotoGrid,
   PhotoTargetPicker,
+  SelectedGalleryList,
   type PhotoTarget,
 } from "./photoParts";
 
@@ -17,7 +19,6 @@ import {
 // 5 MB clientseitig lässt Luft für den Data-URL-Overhead, damit keine
 // clientseitig akzeptierte Datei am Server abgelehnt wird.
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-const MAX_GALLERY_PHOTOS = 12;
 // Deckt sich mit MAX_UPLOADED_PHOTOS in server/onboardingV2/routerContent.ts
 // (Finding I4) — Upload-Button wird gesperrt, bevor der Server ohnehin
 // ablehnen würde.
@@ -55,6 +56,11 @@ interface PhotosPanelProps {
    */
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
+  /**
+   * Deep-Link aus einem gebuchten Extra (Checkliste `?extra=gallery`):
+   * startet direkt im Galerie-Ziel statt beim Hero.
+   */
+  initialTarget?: PhotoTarget;
 }
 
 export function PhotosPanel({
@@ -65,6 +71,7 @@ export function PhotosPanel({
   onClose,
   onNext,
   onPreviewFocus,
+  initialTarget = "hero",
 }: PhotosPanelProps) {
   const heroSection = doc.sections.find(
     (s): s is SectionOf<"hero"> => s.type === "hero"
@@ -78,7 +85,7 @@ export function PhotosPanel({
   const hasAbout = !!aboutSection;
   const hasExistingGallery = !!gallerySection;
 
-  const [target, setTarget] = useState<PhotoTarget>("hero");
+  const [target, setTarget] = useState<PhotoTarget>(initialTarget);
   const [sourceTab, setSourceTab] = useState<SourceTab>("gmb");
   const [heroUrl, setHeroUrl] = useState<string | null>(
     heroSection?.imageUrl ?? null
@@ -164,6 +171,31 @@ export function PhotosPanel({
     }
   };
 
+  const persistGallery = (prev: string[], next: string[]) => {
+    if (next.length === 0 && hasExistingGallery) return;
+    applyImages(
+      { gallery: next.map(u => ({ url: u, alt: doc.businessName })) },
+      () => setGalleryUrls(prev)
+    );
+  };
+
+  const handleMoveGallery = (index: number, direction: "up" | "down") => {
+    if (upload.isPending || setImages.isPending) return;
+    const prev = galleryUrls;
+    const next = moveGalleryImage(prev, index, direction);
+    if (next === prev) return;
+    setGalleryUrls(next);
+    persistGallery(prev, next);
+  };
+
+  const handleRemoveGallery = (index: number) => {
+    if (upload.isPending || setImages.isPending) return;
+    const prev = galleryUrls;
+    const next = removeGalleryImage(prev, index);
+    setGalleryUrls(next);
+    persistGallery(prev, next);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -220,10 +252,14 @@ export function PhotosPanel({
   return (
     <PanelFrame
       step="Schritt 2"
-      title="Fotos wählen"
+      title={initialTarget === "gallery" ? "Bildergalerie" : "Fotos wählen"}
       panelId="photos"
       onClose={onClose}
-      intro="Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload. Jede Auswahl wird sofort übernommen, die Vorschau aktualisiert sich automatisch."
+      intro={
+        initialTarget === "gallery"
+          ? "Lade Galerie-Fotos hoch, entferne sie oder sortiere sie mit den Pfeilen. Jede Änderung wird sofort übernommen."
+          : "Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload. Jede Auswahl wird sofort übernommen, die Vorschau aktualisiert sich automatisch."
+      }
       footer={
         <>
           <button
@@ -266,6 +302,14 @@ export function PhotosPanel({
           onActivate={activateGallery}
           busy={updateAddons.isPending}
           error={updateAddons.error?.message ?? null}
+        />
+      )}
+      {!galleryLocked && target === "gallery" && (
+        <SelectedGalleryList
+          urls={galleryUrls}
+          onMove={handleMoveGallery}
+          onRemove={handleRemoveGallery}
+          busy={busy}
         />
       )}
       {!galleryLocked && (

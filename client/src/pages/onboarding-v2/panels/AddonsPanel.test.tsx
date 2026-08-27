@@ -188,6 +188,36 @@ describe("AddonsPanel", () => {
     expect(html).toContain('value="Anna Beispiel"');
     expect(html).toContain('value="Meisterin"');
     expect(html).toContain(">Übernehmen<");
+    expect(html).toContain('id="pb-addon-editor-team"');
+  });
+
+  test("gebuchte Galerie zeigt Sprung in den Foto-Editor", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{ gallery: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+        onOpenExtraEditor={() => {}}
+      />
+    );
+    expect(html).toContain("Gebuchte Extras pflegen");
+    expect(html).toContain("Bildergalerie bearbeiten");
+  });
+
+  test("KI-Chat und Terminbuchung tragen Scroll-Anker für Extra-Klicks", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{ aiChat: true, booking: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain('id="pb-addon-editor-aiChat"');
+    expect(html).toContain('id="pb-addon-editor-booking"');
   });
 });
 
@@ -306,6 +336,7 @@ describe("AddonsPanel — Unterseiten (Plan B6, Task 5)", () => {
     expect(html).toContain('value="Leistungen im Detail"');
     expect(html).toContain('value="leistungen-im-detail"');
     expect(html).toContain(">Übernehmen<");
+    expect(html).toContain('id="pb-addon-editor-subpages"');
   });
 
   test("pagesFromDoc liest pages[] bzw. liefert eine leere Liste", () => {

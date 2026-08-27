@@ -138,3 +138,73 @@ export function PhotoGrid({
     </div>
   );
 }
+
+interface SelectedGalleryListProps {
+  urls: string[];
+  onMove: (index: number, direction: "up" | "down") => void;
+  onRemove: (index: number) => void;
+  busy?: boolean;
+}
+
+/**
+ * Ausgewählte Galerie-Fotos zum Sortieren und Entfernen — ergänzt das
+ * Bibliotheks-Raster (hinzufügen per Klick) um die echte Reihenfolge, die
+ * `setImages` persistiert.
+ */
+export function SelectedGalleryList({
+  urls,
+  onMove,
+  onRemove,
+  busy = false,
+}: SelectedGalleryListProps) {
+  if (urls.length === 0) {
+    return (
+      <p className="pb-studio-gallery-empty" style={{ color: "var(--st-muted)" }}>
+        Noch keine Galerie-Fotos. Lade eigene Bilder hoch oder wähle sie
+        unten aus Google-Fotos bzw. Stockbildern.
+      </p>
+    );
+  }
+  return (
+    <ol className="pb-studio-gallery-selected" aria-label="Galerie-Fotos">
+      {urls.map((url, index) => (
+        <li key={`${url}-${index}`} className="pb-studio-gallery-selected-item">
+          <img src={url} alt={`Galerie-Foto ${index + 1}`} />
+          <span>Foto {index + 1}</span>
+          <div className="pb-studio-team-actions">
+            <button
+              type="button"
+              className="pb-studio-btn"
+              data-variant="ghost"
+              aria-label={`Foto ${index + 1} nach oben verschieben`}
+              disabled={busy || index === 0}
+              onClick={() => onMove(index, "up")}
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              className="pb-studio-btn"
+              data-variant="ghost"
+              aria-label={`Foto ${index + 1} nach unten verschieben`}
+              disabled={busy || index === urls.length - 1}
+              onClick={() => onMove(index, "down")}
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              className="pb-studio-btn"
+              data-variant="ghost"
+              aria-label={`Foto ${index + 1} entfernen`}
+              disabled={busy}
+              onClick={() => onRemove(index)}
+            >
+              Entfernen
+            </button>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
