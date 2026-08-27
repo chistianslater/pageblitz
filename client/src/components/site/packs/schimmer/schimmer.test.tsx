@@ -40,9 +40,11 @@ describe("Pack schimmer", () => {
   });
 
   test("Lichtblenden-/Fokus-Motion ist reduced-motion-kompatibel", () => {
+    expect(html).toContain("pb-sc-scan-line");
     expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-focus-in");
     expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-crop-in");
     expect(SCHIMMER_CSS).toContain("@keyframes pb-sc-scan");
+    expect(SCHIMMER_CSS).toContain(".pb-sc-scan-line{");
     expect(SCHIMMER_CSS).toContain("clip-path:inset");
     expect(SCHIMMER_CSS).toContain("@media(prefers-reduced-motion:reduce)");
     expect(SCHIMMER_CSS).toContain("animation:none!important");

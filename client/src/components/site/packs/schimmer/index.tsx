@@ -431,6 +431,7 @@ const SchimmerPage: React.FC<{
                 <div className="pb-sc-focus-mark" aria-hidden="true">
                   <span />
                   <span />
+                  <i className="pb-sc-scan-line" />
                 </div>
                 <p aria-hidden="true">Makro / Lichtstudie 01</p>
               </div>

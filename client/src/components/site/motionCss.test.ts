@@ -2,11 +2,8 @@ import { describe, expect, test } from "vitest";
 import { MOTION_CSS } from "./motionCss";
 
 describe("pack-spezifische Motion-Grundlage", () => {
-  test("stellt Hero- und Reveal-Achsen als überschreibbare Variablen bereit", () => {
+  test("stellt Reveal-Achsen als überschreibbare Variablen bereit", () => {
     for (const token of [
-      "--pb-hero-dur",
-      "--pb-hero-y",
-      "--pb-hero-scale",
       "--pb-enter-x",
       "--pb-enter-y",
       "--pb-enter-scale",
@@ -14,6 +11,12 @@ describe("pack-spezifische Motion-Grundlage", () => {
     ]) {
       expect(MOTION_CSS).toContain(token);
     }
+  });
+
+  test("überlässt den Hero dem Pack und revealed erst folgende Sektionen", () => {
+    expect(MOTION_CSS).toContain("section:not(:first-of-type)");
+    expect(MOTION_CSS).not.toContain("pb-hero-in");
+    expect(MOTION_CSS).not.toContain(".pb-site h1{animation:");
   });
 
   test("animiert nur performante visuelle Eigenschaften und respektiert Reduced Motion", () => {

@@ -4,7 +4,9 @@
  * den React-Islands, die nur bei gebuchten Add-ons laden). Zwei Aufgaben
  * (User-Feedback 2026-08-25):
  *
- * 1. Scroll-Reveal: Sektionen faden beim Hereinscrollen ein. Läuft über
+ * 1. Scroll-Reveal: Sektionen nach dem Hero faden beim Hereinscrollen ein.
+ *    Der Hero bleibt ausgenommen, damit seine pack-eigene Eingangsmotion
+ *    sichtbar abläuft und nicht mit einer zweiten Transformation konkurriert. Läuft über
  *    IntersectionObserver statt `animation-timeline: view()`, weil die
  *    native scroll-driven Variante in Safari < 26 / älterem Firefox nicht
  *    existiert und dort schlicht nichts animierte. Die versteckende Klasse
@@ -26,7 +28,7 @@ var d=document,de=d.documentElement,reduced=matchMedia("(prefers-reduced-motion:
 if(!reduced&&"IntersectionObserver" in window){
 de.classList.add("pb-io-on");
 var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("pb-in");io.unobserve(en.target)}})},{rootMargin:"0px 0px -8% 0px",threshold:0.05});
-d.querySelectorAll(".pb-site section").forEach(function(s){io.observe(s)});
+d.querySelectorAll(".pb-site section:not(:first-of-type)").forEach(function(s){io.observe(s)});
 }
 var imgs=Array.prototype.slice.call(d.querySelectorAll(".pb-site #galerie img"));
 if(!imgs.length)return;
