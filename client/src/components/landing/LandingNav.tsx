@@ -161,7 +161,12 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             <X className="h-6 w-6" />
           </button>
         </div>
-        <div className="lp-container flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+        <div
+          className="lp-container flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]"
+          onClick={event => {
+            if (event.target === event.currentTarget) close();
+          }}
+        >
           {NAV_LINKS.map(link => (
             <a
               key={link.href}

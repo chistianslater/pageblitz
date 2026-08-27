@@ -283,6 +283,12 @@ test("Landingpage mobil: Menü schließt nach Scrollen, per Link, Escape und gib
   await expect(menu).toBeVisible();
   await menu.getByRole("button", { name: "Menü schließen" }).click();
   await expect(menu).toHaveCount(0);
+
+  // Leere Fläche unter den Links (kein Kind-Target) schließt wie ein Backdrop.
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  await expect(menu).toBeVisible();
+  await page.mouse.click(195, 780);
+  await expect(menu).toHaveCount(0);
 });
 
 test("Landingpage mobil: Sticky-CTA verschwindet vollständig am Schluss-CTA", async ({
