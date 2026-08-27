@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BookingFormFields } from "./BookingFormFields";
 import { BookingDateStep, BookingSlotStep } from "./BookingSteps";
+import { trapTabKey } from "./focusTrap";
 import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 import {
   buildDateOptions,
@@ -247,6 +248,7 @@ export const BookingIsland: React.FC<{
       aria-modal="true"
       aria-label={title}
       hidden={!open}
+      onKeyDown={event => trapTabKey(event, event.currentTarget)}
     >
       <div className="pb-island-panel-header">
         <span>{title}</span>

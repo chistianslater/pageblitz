@@ -7,6 +7,7 @@ import {
   trimHistory,
   type ChatMessage,
 } from "./chatHelpers";
+import { trapTabKey } from "./focusTrap";
 import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 
 /**
@@ -160,6 +161,7 @@ export const ChatIsland: React.FC<{
       aria-modal="true"
       aria-label={title}
       hidden={!open}
+      onKeyDown={event => trapTabKey(event, event.currentTarget)}
     >
       <div className="pb-island-panel-header">
         <span>{title}</span>
