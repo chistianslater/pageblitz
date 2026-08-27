@@ -832,6 +832,24 @@ const PATINA_FULL: WebsiteDataV2 = {
       imageUrl: "/demo/patina-detail-1.webp",
     },
     {
+      type: "gallery",
+      headline: "Einblicke in die Praxis",
+      images: [
+        {
+          url: "/demo/patina-detail-2.webp",
+          alt: "Ruhige Behandlung in der Naturheilpraxis",
+        },
+        {
+          url: "/demo/patina-detail-3.webp",
+          alt: "Persönliches Erstgespräch mit Annelie Voss",
+        },
+        {
+          url: "/demo/patina-detail-4.webp",
+          alt: "Heilpflanzen und traditionelle Arbeitsmaterialien",
+        },
+      ],
+    },
+    {
       type: "testimonials",
       headline: "Was Klienten sagen",
       items: [

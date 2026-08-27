@@ -24,6 +24,18 @@ describe("Pack patina", () => {
     expect(html).toContain("pb-pa-note");
   });
 
+  test("zeigt eine eigenständige fotografische Praxis-Serie", () => {
+    for (const asset of [
+      "patina-hero.webp",
+      "patina-detail-1.webp",
+      "patina-detail-2.webp",
+      "patina-detail-3.webp",
+      "patina-detail-4.webp",
+    ]) {
+      expect(html).toContain(asset);
+    }
+  });
+
   test("genau eine h1, deutsche Anker leistungen + kontakt", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain('id="leistungen"');
