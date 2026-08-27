@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { HelpCircle, X, Send, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
 
 interface Message {
@@ -8,6 +8,7 @@ interface Message {
 }
 
 export default function HelpWidget({ websiteId }: { websiteId?: number }) {
+  const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -28,8 +29,10 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [messages, loading, reduceMotion]);
 
   const sendMessage = async (text?: string) => {
     const msg = (text || input).trim();
@@ -96,12 +99,16 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
       <AnimatePresence>
         {!open && (
           <motion.button
-            initial={{ scale: 0, opacity: 0 }}
+            initial={reduceMotion ? false : { scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.94 }}
+            exit={reduceMotion ? undefined : { scale: 0, opacity: 0 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 260, damping: 20 }
+            }
+            whileHover={reduceMotion ? undefined : { scale: 1.08 }}
+            whileTap={reduceMotion ? undefined : { scale: 0.94 }}
             onClick={() => setOpen(true)}
             className="fixed bottom-6 right-6 z-[9980] w-12 h-12 rounded-full bg-slate-700 border border-slate-600 shadow-xl flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-600 transition-colors"
             aria-label="Hilfe"
@@ -115,10 +122,16 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={
+              reduceMotion ? false : { opacity: 0, y: 20, scale: 0.95 }
+            }
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            exit={
+              reduceMotion
+                ? undefined
+                : { opacity: 0, y: 20, scale: 0.95 }
+            }
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
             className="fixed bottom-6 right-6 z-[9981] w-[360px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-80px)] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Header */}
@@ -252,9 +265,9 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                     <div className="flex justify-start">
                       <div className="bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm">
                         <div className="flex gap-1">
-                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "0ms" }} />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "150ms" }} />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "300ms" }} />
                         </div>
                       </div>
                     </div>
@@ -291,7 +304,7 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                       disabled={!input.trim() || loading}
                       className="w-10 h-10 rounded-xl bg-lime-500 hover:bg-lime-400 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
                     >
-                      {loading ? <Loader2 className="w-4 h-4 text-gray-900 animate-spin" /> : <Send className="w-4 h-4 text-gray-900" />}
+                      {loading ? <Loader2 className="w-4 h-4 text-gray-900 animate-spin motion-reduce:animate-none" /> : <Send className="w-4 h-4 text-gray-900" />}
                     </button>
                   </div>
                   <button

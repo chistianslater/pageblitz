@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 // ── Components ───────────────────────────────────────────
 
@@ -70,6 +70,7 @@ function StatusBadge({ status }: { status: string }) {
 // ── Main Component ───────────────────────────────────────
 
 export default function AccountPage() {
+  const reduceMotion = useReducedMotion();
   const { user, loading: authLoading, logout } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"profile" | "subscription" | "security">("profile");
@@ -221,8 +222,9 @@ export default function AccountPage() {
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.3 }}
           className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6"
         >
           {/* Sidebar */}

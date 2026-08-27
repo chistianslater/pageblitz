@@ -1,266 +1,101 @@
-/* ============================================================
-   PAGEBLITZ ANIMATION SYSTEM
-   Premium scroll-reveal, page-load, hover, and navbar effects
-   ============================================================ */
-
-/* --- Scroll-Reveal Base State --- */
-[data-reveal] {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-reveal="left"] {
-  opacity: 0;
-  transform: translateX(-32px);
-  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-reveal="right"] {
-  opacity: 0;
-  transform: translateX(32px);
-  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-[data-reveal="scale"] {
-  opacity: 0;
-  transform: scale(0.94);
-  transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* --- Revealed State --- */
-[data-reveal].revealed,
-[data-reveal="left"].revealed,
-[data-reveal="right"].revealed,
-[data-reveal="scale"].revealed {
-  opacity: 1;
-  transform: none;
-}
-
-/* --- Page-Load Hero Animations --- */
-@keyframes heroFadeUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes heroFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes heroScaleUp {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-.hero-animate-badge {
-  animation: heroFadeIn 0.5s ease-out both;
-  animation-delay: 0.05s;
-}
-
-.hero-animate-headline {
-  animation: heroFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.15s;
-}
-
-.hero-animate-sub {
-  animation: heroFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.28s;
-}
-
-.hero-animate-cta {
-  animation: heroFadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.42s;
-}
-
-.hero-animate-image {
-  animation: heroScaleUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.3s;
-}
-
-.hero-animate-nav {
-  animation: heroFadeIn 0.4s ease-out both;
-  animation-delay: 0s;
-}
-
-/* --- Navbar Scroll Effect --- */
-.nav-scrolled {
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
-  transition: backdrop-filter 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* --- Premium Button Hover --- */
-.btn-premium {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-}
-
-.btn-premium:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-}
-
-.btn-premium:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-/* --- Premium Card Hover --- */
-.card-premium {
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
-}
-
-.card-premium:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-}
-
-/* --- Image Hover Zoom --- */
-.img-zoom {
-  overflow: hidden;
-}
-
-.img-zoom img {
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.img-zoom:hover img {
-  transform: scale(1.05);
-}
-
-/* --- Animated Underline Link --- */
-.link-underline {
-  position: relative;
-  text-decoration: none;
-}
-
-.link-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1.5px;
-  background: currentColor;
-  transition: width 0.25s ease-out;
-}
-
-.link-underline:hover::after {
-  width: 100%;
-}
-
-/* --- Stagger Delay Utilities --- */
-.delay-0   { transition-delay: 0ms !important; }
-.delay-50  { transition-delay: 50ms !important; }
-.delay-100 { transition-delay: 100ms !important; }
-.delay-150 { transition-delay: 150ms !important; }
-.delay-200 { transition-delay: 200ms !important; }
-.delay-250 { transition-delay: 250ms !important; }
-.delay-300 { transition-delay: 300ms !important; }
-.delay-400 { transition-delay: 400ms !important; }
-
-/* --- Background Gradient Animation --- */
-@keyframes moveHorizontal {
-  "0%": {
-    transform: "translateX(-50%) translateY(-10%)";
-  }
-  "50%": {
-    transform: "translateX(50%) translateY(10%)";
-  }
-  "100%": {
-    transform: "translateX(-50%) translateY(-10%)";
-  }
-}
-
-@keyframes moveInCircle {
-  "0%": {
-    transform: "rotate(0deg)";
-  }
-  "50%": {
-    transform: "rotate(180deg)";
-  }
-  "100%": {
-    transform: "rotate(360deg)";
-  }
-}
-
-@keyframes moveVertical {
-  "0%": {
-    transform: "translateY(-50%)";
-  }
-  "50%": {
-    transform: "translateY(50%)";
-  }
-  "100%": {
-    transform: "translateY(-50%)";
-  }
-}
-
-.animate-first {
-  animation: moveVertical 30s ease infinite;
-}
-
-.animate-second {
-  animation: moveInCircle 20s reverse infinite;
-}
-
-.animate-third {
-  animation: moveInCircle 40s linear infinite;
-}
-
-.animate-fourth {
-  animation: moveHorizontal 40s ease infinite;
-}
-
-.animate-fifth {
-  animation: moveInCircle 20s ease infinite;
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translate(-50%, -8px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
-}
-
-/* --- Landing-Chat-Widget (client/src/components/LandingPageChatWidget.tsx) ---
-   Ersetzt seit B6 Task 8 die framer-motion-Animationen des Widgets (einziger
-   framer-Konsument der Landingpage) — damit lädt "/" kein vendor-motion mehr.
-   Nur Einblend-/Zustandsanimationen, keine Exit-Animationen. --- */
+/* Landing-Chat-Widget (client/src/components/LandingPageChatWidget.tsx)
+   CSS statt Framer Motion, damit "/" kein vendor-motion lädt. */
 @keyframes pbChatPop {
-  from { opacity: 0; transform: translateY(12px) scale(0.9); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
+
 @keyframes pbChatFabIn {
-  from { opacity: 0; transform: scale(0); }
-  60%  { opacity: 1; transform: scale(1.08); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
+
 @keyframes pbChatWindowIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
+
 @keyframes pbChatRise {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 @keyframes pbChatDot {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
-.pb-chat-pop {
-  animation: pbChatPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+@media (prefers-reduced-motion: no-preference) {
+  .pb-chat-pop {
+    animation: pbChatPop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Der Button erscheint 2 s nach dem Mount des Widgets. */
+  .pb-chat-fab {
+    animation: pbChatFabIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2s both;
+    transition: transform 0.2s ease;
+  }
+
+  .pb-chat-fab:hover {
+    transform: scale(1.08);
+  }
+
+  .pb-chat-fab:active {
+    transform: scale(0.94);
+  }
+
+  .pb-chat-fab-icon {
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .pb-chat-window {
+    animation: pbChatWindowIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .pb-chat-rise {
+    animation: pbChatRise 0.3s ease-out both;
+  }
+
+  .pb-chat-dot {
+    animation: pbChatDot 0.6s ease-in-out infinite;
+  }
 }
-/* Wie vorher: der Button erscheint 2 s nach dem Mount des Widgets. */
-.pb-chat-fab {
-  animation: pbChatFabIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2s both;
-  transition: transform 0.2s ease;
-}
-.pb-chat-fab:hover { transform: scale(1.08); }
-.pb-chat-fab:active { transform: scale(0.94); }
+
 /* Icon-Wechsel: beide Icons liegen übereinander, data-open blendet um. */
 .pb-chat-fab-icon {
   position: absolute;
@@ -268,25 +103,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
-.pb-chat-fab-icon--close { opacity: 0; transform: rotate(-90deg); }
-.pb-chat-fab-icon--open  { opacity: 1; transform: rotate(0deg); }
-.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--close { opacity: 1; transform: rotate(0deg); }
-.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--open  { opacity: 0; transform: rotate(90deg); }
-.pb-chat-window {
-  animation: pbChatWindowIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+.pb-chat-fab-icon--close {
+  opacity: 0;
+  transform: rotate(-90deg);
 }
-.pb-chat-rise {
-  animation: pbChatRise 0.3s ease-out both;
+
+.pb-chat-fab-icon--open {
+  opacity: 1;
+  transform: rotate(0deg);
 }
-.pb-chat-dot {
-  animation: pbChatDot 0.6s ease-in-out infinite;
+
+.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--close {
+  opacity: 1;
+  transform: rotate(0deg);
 }
-@media (prefers-reduced-motion: reduce) {
-  .pb-chat-pop, .pb-chat-fab, .pb-chat-window, .pb-chat-rise, .pb-chat-dot {
-    animation-duration: 0.01ms;
-    animation-delay: 0s;
-  }
-  .pb-chat-fab-icon { transition: none; }
+
+.pb-chat-fab[data-open="true"] .pb-chat-fab-icon--open {
+  opacity: 0;
+  transform: rotate(90deg);
 }
