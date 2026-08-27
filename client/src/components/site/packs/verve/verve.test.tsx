@@ -27,6 +27,17 @@ describe("Pack verve", () => {
     expect(html).toContain("pb-vv-panel");
   });
 
+  test("zeigt eine echte Trainings-Fotostrecke", () => {
+    for (const asset of [
+      "verve-hero.webp",
+      "verve-detail-1.webp",
+      "verve-detail-2.webp",
+      "verve-detail-3.webp",
+    ]) {
+      expect(html).toContain(asset);
+    }
+  });
+
   test("kurze Typo-/Tape-Motion und sticky Probetraining erfüllen den Vertrag", () => {
     expect(html).toContain("pb-vv-trial-sticky");
     expect(VERVE_CSS).toContain("@keyframes pb-vv-snap");

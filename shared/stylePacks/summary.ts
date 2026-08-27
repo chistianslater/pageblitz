@@ -55,8 +55,8 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
     id: "morgenlicht",
     name: "Morgenlicht",
     essence:
-      "Helles Salbeigrün, runde Formen, viel Luft — beruhigend wie ein guter Empfang.",
-    accent: "#2E7E78",
+      "Warmes Morgenlicht, Naturmaterialien und ruhige Serifentypografie — Praxisgefühl wie Premium-Wellness.",
+    accent: "#76664C",
   },
   {
     id: "marktplatz",

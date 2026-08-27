@@ -48,8 +48,8 @@ export const VERVE_CSS = `
 .pb-vv-faq{max-width:60ch;margin:0 0 20px;border-bottom:1px solid var(--pb-line);padding-bottom:18px}
 .pb-vv-faq strong{display:block;font-family:var(--pb-font-display);text-transform:uppercase;letter-spacing:.02em;margin-bottom:6px;font-size:16px}
 .pb-vv-faq p{color:var(--pb-muted);font-size:14px}
-.pb-vv-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.pb-vv-gallery img{width:100%;height:220px;object-fit:cover;border-left:4px solid var(--pb-accent);display:block}
+.pb-vv-gallery{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(12px,2vw,28px);align-items:start}
+.pb-vv-gallery figure{margin:0}.pb-vv-gallery figure:nth-child(2){margin-top:clamp(38px,6vw,90px)}.pb-vv-gallery img{width:100%;height:clamp(320px,43vw,620px);object-fit:cover;border-left:6px solid var(--pb-accent);display:block;filter:saturate(.82) contrast(1.08)}
 .pb-vv-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:22px}
 .pb-vv-member img{width:100%;height:200px;object-fit:cover;border-left:4px solid var(--pb-accent);margin-bottom:12px}
 .pb-vv-member strong{display:block;font-family:var(--pb-font-display);text-transform:uppercase;letter-spacing:.02em}
@@ -78,7 +78,7 @@ export const VERVE_CSS = `
 @keyframes pb-vv-panel{from{clip-path:inset(0 0 100% 0);opacity:.4}to{clip-path:inset(0);opacity:1}}
 @media(pointer:fine){.pb-verve .pb-vv-trial-sticky a:hover{transform:translate(-2px,-2px)}}
 @media(prefers-reduced-motion:reduce){.pb-verve *,.pb-verve *::before,.pb-verve *::after{animation:none!important;transition:none!important}}
-@media(max-width:840px){.pb-vv-nav-links{display:none}}
+@media(max-width:840px){.pb-vv-nav-links{display:none}.pb-vv-gallery{grid-template-columns:1fr}.pb-vv-gallery figure:nth-child(2){margin-top:0}.pb-vv-gallery img{height:auto;aspect-ratio:4/3}}
 @media(max-width:720px){.pb-vv-ghost{display:none}.pb-vv-copy{max-width:100%;order:1}.pb-vv-stats{margin-top:24px}.pb-vv-hero{display:flex;flex-direction:column;padding:28px 20px 36px}.pb-vv-panel{position:relative;right:auto;top:auto;order:2;width:calc(100% + 28px);height:auto;aspect-ratio:16/10;margin:36px -8px 0 0;transform:skewX(-3deg);display:block}.pb-vv-tape{position:relative;right:auto;bottom:auto;order:3;align-self:flex-end;margin:-18px -10px 0 0;transform:rotate(-4deg);font-size:11px;padding:7px 20px;display:block}.pb-vv-section{padding:44px 20px}.pb-vv-about{grid-template-columns:1fr}.pb-vv-quotes{grid-template-columns:1fr}.pb-vv-quotes .pb-vv-quote:nth-child(even){transform:none}.pb-vv-faq-grid{grid-template-columns:1fr}}
 .pb-vv-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-vv-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

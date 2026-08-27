@@ -31,6 +31,16 @@ describe("Pack atelier", () => {
     expect(html).toContain("pb-at-gallery-image");
     expect(html).toMatch(/<figcaption><b>01<\/b><span>/);
   });
+  test("zeigt Hero, Porträt, Markenshooting und Kontaktabzüge als Fotostrecke", () => {
+    for (const asset of [
+      "atelier-hero.webp",
+      "atelier-detail-1.webp",
+      "atelier-detail-2.webp",
+      "atelier-detail-3.webp",
+    ]) {
+      expect(html).toContain(asset);
+    }
+  });
   test("Stimmen und Kontakt rendern als redaktionelle Seiten", () => {
     expect(html).toContain("pb-at-voice-pages");
     expect(html).toContain("pb-at-folio");

@@ -4,7 +4,7 @@ export const MORGENLICHT: PackConstitution = {
   id: "morgenlicht",
   name: "Morgenlicht",
   essence:
-    "Helles Salbeigrün, runde Formen, viel Luft — beruhigend wie ein guter Empfang.",
+    "Warmes Morgenlicht, Naturmaterialien und ruhige Serifentypografie — Praxisgefühl wie Premium-Wellness.",
   industries: [
     "zahnarzt",
     "arzt",
@@ -19,38 +19,32 @@ export const MORGENLICHT: PackConstitution = {
   ],
   theme: "light",
   palette: [
-    { name: "Morgen", hex: "#F4F8F7", role: "canvas", usage: "Seitengrund." },
+    { name: "Elfenbein", hex: "#F5F0E8", role: "canvas", usage: "Seitengrund." },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Porzellan",
+      hex: "#FFFCF7",
       role: "surface",
       usage: "Karten, Pillen-Nav.",
     },
-    { name: "Tanne", hex: "#1C2B29", role: "ink", usage: "Text." },
-    { name: "Nebel", hex: "#5C6E6B", role: "muted", usage: "Sekundärtext." },
+    { name: "Espresso", hex: "#2C2722", role: "ink", usage: "Text." },
+    { name: "Taupe", hex: "#74695F", role: "muted", usage: "Sekundärtext." },
     {
-      name: "Lind",
-      hex: "#DCEAE7",
+      name: "Leinen",
+      hex: "#DED2C3",
       role: "line",
       usage: "Bänder, sanfte Flächen, Chips.",
     },
     {
-      name: "Salbei",
-      // Als FLÄCHE/CTA unkritisch; als KLEINTEXT auf Morgen nur 4,49:1 →
-      // dafür gibt es den dunkleren Textton `accent-text` (Tiefsalbei).
-      hex: "#2E7E78",
+      name: "Bronze",
+      hex: "#76664C",
       role: "accent",
-      usage: "CTA, Akzentwort, Chips-Text — override-fähig für Praxisfarben.",
+      usage: "CTA, Akzentwort und feine Metalltöne.",
     },
     {
-      name: "Tiefsalbei",
-      // Dunkleres Salbei für Kleintext (B6-`accent-text`-System wie
-      // werkbank/marktplatz/schimmer): 5,90:1 auf Morgen, 6,32:1 auf Weiß,
-      // 5,10:1 auf Lind — überall ≥ 4,5:1 (u. a. „Öffnungszeiten"-h3 im
-      // Kontakt-Block, Welle-0-Kontrastfix systematisiert).
-      hex: "#256A64",
+      name: "Dunkelbronze",
+      hex: "#625239",
       role: "accent-text",
-      usage: "Salbei als Text auf hellem Grund (Mikro-Überschriften).",
+      usage: "Bronze als barrierefreier Kleintext auf hellem Grund.",
     },
     {
       name: "Weiß",
@@ -61,34 +55,34 @@ export const MORGENLICHT: PackConstitution = {
   ],
   type: {
     display: {
-      family: "Plus Jakarta Sans",
-      weights: [800],
-      fallback: "system-ui, sans-serif",
-      googleCss: "Plus+Jakarta+Sans:wght@800",
+      family: "Cormorant Garamond",
+      weights: [500, 600],
+      fallback: "Georgia, serif",
+      googleCss: "Cormorant+Garamond:wght@500;600",
     },
     body: {
-      family: "Plus Jakarta Sans",
-      weights: [400, 600],
+      family: "Manrope",
+      weights: [400, 500, 600],
       fallback: "system-ui, sans-serif",
-      googleCss: "Plus+Jakarta+Sans:wght@400;600",
+      googleCss: "Manrope:wght@400;500;600",
     },
     scale: {
       basePx: 16,
       ratio: 1.2,
-      heroClamp: "clamp(2.2rem, 4.8vw, 3.6rem)",
+      heroClamp: "clamp(3.4rem, 7vw, 7.2rem)",
     },
   },
   shape: {
-    radiusCard: "18px",
+    radiusCard: "8px",
     radiusButton: "999px",
     buttonStyle: "pill",
     density: "airy",
   },
   signature: {
-    hero: "Pillen-Nav als schwebende Leiste + organischer Bild-Blob rechts + 2 schwebende Info-Karten (Öffnungszeiten, Google-Rating) + Wellen-Übergang in Lind-Band mit Leistungs-Chips",
-    decor: ["pill-nav", "image-blob", "float-cards", "wave-divider"],
+    hero: "Transluzente Pillen-Nav + bildfüllende Wellness-Fotografie rechts + großzügige Serifentypografie + zwei zurückhaltende Praxis-Karten",
+    decor: ["pill-nav", "wellness-photo", "serif-editorial", "float-cards"],
     imageTreatment:
-      "weich, hell, im Blob (border-radius:58% 42% 55% 45%/55% 48% 52% 45%)",
+      "warmes Tageslicht, Naturmaterialien, entsättigt und ruhig; große asymmetrische Bögen statt verspielter Blobs",
   },
   llmHints: {
     do: [

@@ -41,8 +41,8 @@ export const ZUNFT_CSS = `
 .pb-zf-faq{max-width:56ch;margin:0 auto 20px;text-align:left;border-bottom:1px solid var(--pb-line);padding-bottom:18px}
 .pb-zf-faq strong{display:block;font-family:var(--pb-font-display);font-weight:600;margin-bottom:6px}
 .pb-zf-faq p{color:var(--pb-muted);font-size:14px}
-.pb-zf-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.pb-zf-gallery img{width:100%;height:220px;object-fit:cover;border:1px solid var(--pb-line);display:block}
+.pb-zf-gallery{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(16px,3vw,42px);align-items:start}
+.pb-zf-gallery figure{margin:0}.pb-zf-gallery figure:nth-child(2){margin-top:clamp(42px,7vw,110px)}.pb-zf-gallery img{width:100%;height:clamp(320px,43vw,620px);object-fit:cover;border:1px solid var(--pb-line);display:block;filter:saturate(.8) sepia(.08) contrast(1.04)}
 .pb-zf-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;text-align:left}
 .pb-zf-member img{width:100%;height:200px;object-fit:cover;border:1px solid var(--pb-line);margin-bottom:12px}
 .pb-zf-member strong{display:block;font-weight:600}
@@ -77,7 +77,7 @@ export const ZUNFT_CSS = `
 @keyframes pb-zf-row{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media(pointer:fine){.pb-zf-order-sticky a:hover{color:var(--pb-accent)}}
 @media(prefers-reduced-motion:reduce){.pb-zunft *,.pb-zunft *::before,.pb-zunft *::after{animation:none!important;transition:none!important}}
-@media(max-width:840px){.pb-zf-nav{padding:14px 18px}.pb-zf-nav-links{display:none}.pb-zf-contact{grid-template-columns:1fr}}
+@media(max-width:840px){.pb-zf-nav{padding:14px 18px}.pb-zf-nav-links{display:none}.pb-zf-gallery{grid-template-columns:1fr}.pb-zf-gallery figure:nth-child(2){margin-top:0}.pb-zf-gallery img{height:auto;aspect-ratio:4/3}.pb-zf-contact{grid-template-columns:1fr}}
 .pb-zf-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-zf-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-zf-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

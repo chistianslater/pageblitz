@@ -463,6 +463,20 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
       imageUrl: "/demo/morgenlicht-detail-1.webp",
     },
     {
+      type: "gallery",
+      headline: "Räume zum Ankommen",
+      images: [
+        {
+          url: "/demo/morgenlicht-detail-2.webp",
+          alt: "Warmer Empfangsbereich der Praxis Dr. Sommer",
+        },
+        {
+          url: "/demo/morgenlicht-detail-3.webp",
+          alt: "Ruhig arrangierte Instrumente und natürliche Materialien",
+        },
+      ],
+    },
+    {
       type: "testimonials",
       headline: "Was Patienten sagen",
       items: [
@@ -982,9 +996,21 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "NOIR Haarstudio wurde 2016 in der Maxvorstadt gegründet — mit dem Anspruch, Friseurhandwerk wie ein Handwerk zu behandeln, nicht wie eine schnelle Dienstleistung. Jeder Schnitt beginnt mit einer ausführlichen Beratung, jede Farbe wird individuell gemischt. Unser kleines Team aus erfahrenen Stylisten arbeitet in ruhigem Tempo, mit Champagner statt Filterkaffee und einem Blick fürs Detail, der auch nach dem Termin noch hält.",
-      // Q5 (B7 Welle 0): eigenes Motiv statt Hero-Duplikat — Hero/Über-uns
-      // ziehen disjunkte Assets.
       imageUrl: "/demo/salon-noir-detail-1.webp",
+    },
+    {
+      type: "gallery",
+      headline: "Im Atelier",
+      images: [
+        {
+          url: "/demo/salon-noir-detail-2.webp",
+          alt: "Die Stylingplätze des NOIR Haarstudios",
+        },
+        {
+          url: "/demo/salon-noir-detail-3.webp",
+          alt: "Glänzendes Balayage-Ergebnis im NOIR Haarstudio",
+        },
+      ],
     },
     {
       type: "testimonials",
@@ -1520,21 +1546,19 @@ const ATELIER_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über das Studio",
       body: "Studio Lenz arbeitet seit 2016 in Leipzig-Plagwitz — an der Schnittstelle aus Reportage und Porträt. Kein Blitzlichtgewitter, keine gestellten Posen: Jede Serie entsteht aus Beobachtung, nicht aus Regie. Auftraggeber sind Menschen, die ein ehrliches Bild von sich wollen, und Marken, die genug haben von Stockfotografie. Entwickelt, sortiert und ausgewählt wird jede Serie von Hand — analog gedacht, digital umgesetzt.",
-      // Q5 (B7 Welle 0): das branchenfremde Architektur-Reißbrett
-      // (atelier-detail-1) ist aus der Demo raus — stattdessen der
-      // Leuchttisch mit Fotoprints (detail-3), passend zum Studio-Text.
       imageUrl: "/demo/atelier-detail-3.webp",
     },
     {
       type: "gallery",
       headline: "Galerie",
-      // Q5 (B7 Welle 0): Hero-, Über-uns- und Galerie-Assets sind
-      // disjunkt — bei nur 3 nutzbaren Assets wird die Galerie gekürzt
-      // statt gedoppelt (Reißbrett-Motiv detail-1 entfällt komplett).
       images: [
         {
+          url: "/demo/atelier-detail-1.webp",
+          alt: "Natürliches Porträt am Atelierfenster",
+        },
+        {
           url: "/demo/atelier-detail-2.webp",
-          alt: "Markenshooting mit reduzierter Kulisse",
+          alt: "Markenshooting für eine Keramik-Kollektion",
         },
       ],
     },
@@ -1839,9 +1863,21 @@ const VERVE_FULL: WebsiteDataV2 = {
       type: "about",
       headline: "Über uns",
       body: "Studio PULS wurde 2019 in Essen gegründet — aus der Überzeugung, dass Training kein Zufallsprodukt sein sollte. Jedes Programm beginnt mit einer Standortbestimmung, jeder Fortschritt wird gemessen, nicht geraten. Unser Team aus lizenzierten Trainern arbeitet in kleinen Gruppen oder 1:1, mit klaren Zielen und einem Plan, der sich an deinen Alltag anpasst — nicht umgekehrt.",
-      // Q5 (B7 Welle 0): eigenes Motiv statt Hero-Duplikat — Hero/Über-uns
-      // ziehen disjunkte Assets.
       imageUrl: "/demo/verve-detail-1.webp",
+    },
+    {
+      type: "gallery",
+      headline: "Training in Bewegung",
+      images: [
+        {
+          url: "/demo/verve-detail-2.webp",
+          alt: "Coach und Athlet beim persönlichen Fortschritts-Check",
+        },
+        {
+          url: "/demo/verve-detail-3.webp",
+          alt: "Athletin beim Battle-Rope-Training",
+        },
+      ],
     },
     {
       type: "testimonials",
@@ -2037,6 +2073,20 @@ const ZUNFT_FULL: WebsiteDataV2 = {
       headline: "Unsere Geschichte",
       body: "Seit 1927 backt unsere Familie in Augsburg mit Natursauerteig, der über Jahrzehnte weitergegeben wurde. Vier Generationen haben den Steinofen gehütet, der bis heute mit Holz befeuert wird. Jeder Laib bekommt 48 Stunden Zeit zum Reifen — keine Abkürzungen, keine Backmischungen. Was hier entsteht, schmeckt man: langsam gemachtes Brot für Menschen, die genau das noch wollen.",
       imageUrl: "/demo/zunft-detail-1.webp",
+    },
+    {
+      type: "gallery",
+      headline: "Aus unserer Backstube",
+      images: [
+        {
+          url: "/demo/zunft-detail-2.webp",
+          alt: "Sauerteig wird von Hand zu einem Laib geformt",
+        },
+        {
+          url: "/demo/zunft-detail-3.webp",
+          alt: "Zwei Generationen arbeiten gemeinsam am Backtisch",
+        },
+      ],
     },
     {
       type: "testimonials",

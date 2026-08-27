@@ -13,18 +13,21 @@ const WEDNESDAY = new Date("2026-08-19T10:00:00");
 const SATURDAY = new Date("2026-08-22T10:00:00");
 
 describe("Pack morgenlicht", () => {
-  test("Verfassung registriert, Signatur enthält Blob + Schwebekarten", () => {
+  test("Verfassung registriert warme Wellness-Fotografie + Schwebekarten", () => {
     const c = getConstitution("morgenlicht");
-    expect(c.signature.decor).toContain("image-blob");
+    expect(c.signature.decor).toContain("wellness-photo");
+    expect(c.signature.decor).toContain("serif-editorial");
     expect(c.signature.decor).toContain("float-cards");
   });
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("morgenlicht", "full")} now={WEDNESDAY} />
   );
-  test("Signatur-Klassen (Blob, Floats, Welle) rendern", () => {
+  test("Signatur-Klassen und fotografische Galerie rendern", () => {
     expect(html).toContain("pb-ml-blob");
     expect(html).toContain("pb-ml-float");
-    expect(html).toContain("pb-ml-wave");
+    expect(html).toContain("pb-ml-gallery");
+    expect(html).toContain("morgenlicht-detail-2.webp");
+    expect(html).toContain("morgenlicht-detail-3.webp");
   });
   test("genau eine h1, deutsche Anker leistungen + kontakt", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);

@@ -27,6 +27,17 @@ describe("Pack zunft", () => {
     expect(html).toContain("pb-zf-tafel");
   });
 
+  test("zeigt eine echte handwerkliche Backstuben-Fotostrecke", () => {
+    for (const asset of [
+      "zunft-hero.webp",
+      "zunft-detail-1.webp",
+      "zunft-detail-2.webp",
+      "zunft-detail-3.webp",
+    ]) {
+      expect(html).toContain(asset);
+    }
+  });
+
   test("Siegel-/Herkunftsmotion, Preisrhythmus und sticky Aktion erfüllen den Vertrag", () => {
     expect(html).toContain("pb-zf-order-sticky");
     expect(ZUNFT_CSS).toContain("@keyframes pb-zf-seal");

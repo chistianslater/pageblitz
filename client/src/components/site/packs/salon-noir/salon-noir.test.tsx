@@ -26,6 +26,13 @@ describe("Pack salon-noir", () => {
     expect(html).toContain("pb-sn-vert");
   });
 
+  test("zeigt eine eigenständige fotografische Salon-Serie", () => {
+    expect(html).toContain("salon-noir-hero.webp");
+    expect(html).toContain("salon-noir-detail-1.webp");
+    expect(html).toContain("salon-noir-detail-2.webp");
+    expect(html).toContain("salon-noir-detail-3.webp");
+  });
+
   test("Preisliste rendert Kategorienamen und Preise aus der Fixture", () => {
     const fixture = getFixture("salon-noir", "full");
     const pricelistSection = fixture.sections.find(s => s.type === "pricelist");
