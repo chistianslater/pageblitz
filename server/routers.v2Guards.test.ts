@@ -797,3 +797,61 @@ describe("Admin-Testwerkzeuge bleiben auf die eigene Demo begrenzt", () => {
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });
+
+describe("customer.updateContactFormConfig / updateChatConfig", () => {
+  test("fremde Website → FORBIDDEN, kein Write", async () => {
+    mockedDb.getWebsitesByUserId.mockResolvedValue([] as any);
+    const caller = appRouter.createCaller(createUserContext());
+    await expect(
+      caller.customer.updateContactFormConfig({
+        websiteId: 42,
+        config: { nameLabel: "Name" },
+      })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("Owner schreibt contactFormConfig ins v2-Dokument", async () => {
+    const ownedWebsite = baseWebsiteRow();
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null, business: null },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.updateContactFormConfig({
+      websiteId: 42,
+      config: {
+        nameLabel: "Ihr Name",
+        phoneEnabled: false,
+        customFields: [{ id: "firma", label: "Firma", required: true }],
+      },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.config).toEqual({
+      nameLabel: "Ihr Name",
+      phoneEnabled: false,
+      customFields: [{ id: "firma", label: "Firma", required: true }],
+    });
+    const [, patch] = mockedDb.updateWebsite.mock.calls[0];
+    expect((patch as any).websiteData.contactFormConfig).toEqual(result.config);
+  });
+
+  test("Owner schreibt chatConfig extraKnowledge", async () => {
+    const ownedWebsite = baseWebsiteRow();
+    mockedDb.getWebsitesByUserId.mockResolvedValue([
+      { website: ownedWebsite, subscription: null, business: null },
+    ] as any);
+    mockedDb.getWebsiteById.mockResolvedValue(ownedWebsite);
+
+    const caller = appRouter.createCaller(createUserContext());
+    const result = await caller.customer.updateChatConfig({
+      websiteId: 42,
+      config: { extraKnowledge: "Dienstags geschlossen." },
+    });
+    expect(result.config).toEqual({
+      extraKnowledge: "Dienstags geschlossen.",
+    });
+  });
+});

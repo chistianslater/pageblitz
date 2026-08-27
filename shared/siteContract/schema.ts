@@ -89,6 +89,43 @@ export const FeaturesSchema = z
   })
   .strict();
 
+export const ContactFormConfigSchema = z
+  .object({
+    nameLabel: z.string().min(1).max(80).optional(),
+    emailLabel: z.string().min(1).max(80).optional(),
+    phoneEnabled: z.boolean().optional(),
+    phoneRequired: z.boolean().optional(),
+    phoneLabel: z.string().min(1).max(80).optional(),
+    messageLabel: z.string().min(1).max(80).optional(),
+    submitLabel: z.string().min(1).max(80).optional(),
+    successMessage: z.string().min(1).max(240).optional(),
+    customFields: z
+      .array(
+        z
+          .object({
+            id: z.string().regex(/^[a-z][a-z0-9-]{0,39}$/),
+            label: z.string().min(1).max(80),
+            required: z.boolean().optional(),
+          })
+          .strict()
+      )
+      .max(3)
+      .optional(),
+  })
+  .strict();
+
+/**
+ * Betriebs-Einstellungen für den KI-Chat (Dashboard, nicht Studio-Inhalt).
+ * extraKnowledge landet im System-Prompt; notificationEmail überschreibt
+ * die Account-E-Mail für Lead-Benachrichtigungen.
+ */
+export const ChatConfigSchema = z
+  .object({
+    extraKnowledge: z.string().min(1).max(2000).optional(),
+    notificationEmail: z.string().email().max(320).optional(),
+  })
+  .strict();
+
 /**
  * Sektions-Add-ons (Gating-Quelle für Task 6, `visibleSections` in
  * client/src/components/site/engine.ts): steuert, ob eine bereits im
@@ -390,6 +427,8 @@ export const WebsiteDataV2Schema = z
     designProfile: DesignProfileSchema.optional(),
     features: FeaturesSchema.optional(),
     addOns: SiteAddOnsSchema.optional(),
+    contactFormConfig: ContactFormConfigSchema.optional(),
+    chatConfig: ChatConfigSchema.optional(),
   })
   .strict()
   .refine(

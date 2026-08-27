@@ -102,6 +102,11 @@ import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
 import { onboardingV2Router } from "./onboardingV2/router";
 import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
+import { applyChatConfig, applyContactFormConfig } from "./customerAddonConfig";
+import {
+  ChatConfigSchema,
+  ContactFormConfigSchema,
+} from "../shared/siteContract/schema";
 import { readSubscriptionAddOns } from "./onboardingV2/addOnFlags";
 import { syncSubscriptionAddOns } from "./stripeAddons";
 import { assertV2SafeWrite } from "./v2WriteGuard";
@@ -2463,10 +2468,9 @@ export const appRouter = router({
     // ausschließlich im Studio gepflegt (`onboardingV2.updateAddons`,
     // `server/onboardingV2/routerCommerce.ts`) — der v1-Pfad, der hier
     // Galerie-/Menü-/Preislisten-Sektionen direkt in `websiteData` schrieb,
-    // ist mit dem Dashboard-Umbau (Task 4, Cutover-Spec §2) entfallen. Die
-    // frei konfigurierbaren Kontaktformular-Felder sind damit ebenfalls
-    // entfallen — die v2-Kontaktformular-Insel akzeptiert ohnehin keine
-    // benutzerdefinierten Felder (siehe `ContactFormIsland.tsx`).
+    // ist mit dem Dashboard-Umbau (Task 4, Cutover-Spec §2) entfallen.
+    // Formularfelder/Empfänger und KI-Chat-Wissen liegen in
+    // `updateContactFormConfig` / `updateChatConfig`.
     updateAddons: protectedProcedure
       .input(
         z.object({
@@ -2686,8 +2690,7 @@ export const appRouter = router({
         ) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message:
-              "Test-Add-ons sind nur für die eigene Admin-Demo erlaubt.",
+            message: "Test-Add-ons sind nur für die eigene Admin-Demo erlaubt.",
           });
         }
         // Enable all add-ons on the website row
@@ -2767,6 +2770,47 @@ export const appRouter = router({
           contactEmail: input.contactEmail || null,
         } as any);
         return { success: true };
+      }),
+
+    updateContactFormConfig: protectedProcedure
+      .input(
+        z.object({
+          websiteId: z.number(),
+          config: ContactFormConfigSchema,
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find(r => r.website.id === input.websiteId);
+        if (!owned)
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Website gehört nicht zu deinem Account",
+          });
+        const config = await applyContactFormConfig(
+          input.websiteId,
+          input.config
+        );
+        return { success: true, config };
+      }),
+
+    updateChatConfig: protectedProcedure
+      .input(
+        z.object({
+          websiteId: z.number(),
+          config: ChatConfigSchema,
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find(r => r.website.id === input.websiteId);
+        if (!owned)
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Website gehört nicht zu deinem Account",
+          });
+        const config = await applyChatConfig(input.websiteId, input.config);
+        return { success: true, config };
       }),
 
     updateShowBranding: protectedProcedure

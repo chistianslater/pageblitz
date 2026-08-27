@@ -242,4 +242,43 @@ describe("WebsiteDataV2Schema", () => {
       expect(() => WebsiteDataV2Schema.parse(ok)).not.toThrow();
     });
   });
+
+  describe("contactFormConfig / chatConfig", () => {
+    test("akzeptiert Formular-Overrides inkl. Custom-Feldern", () => {
+      const ok = {
+        ...valid,
+        contactFormConfig: {
+          nameLabel: "Ihr Name",
+          phoneEnabled: false,
+          customFields: [{ id: "firma", label: "Firma", required: true }],
+        },
+      };
+      expect(WebsiteDataV2Schema.parse(ok).contactFormConfig?.nameLabel).toBe(
+        "Ihr Name"
+      );
+    });
+
+    test("lehnt Custom-Feld ohne Kleinbuchstaben-ID ab", () => {
+      const bad = {
+        ...valid,
+        contactFormConfig: {
+          customFields: [{ id: "Firma", label: "Firma" }],
+        },
+      };
+      expect(() => WebsiteDataV2Schema.parse(bad)).toThrow();
+    });
+
+    test("akzeptiert chatConfig mit Wissen und Empfänger", () => {
+      const ok = {
+        ...valid,
+        chatConfig: {
+          extraKnowledge: "Parken hinter dem Haus.",
+          notificationEmail: "leads@example.de",
+        },
+      };
+      expect(WebsiteDataV2Schema.parse(ok).chatConfig?.notificationEmail).toBe(
+        "leads@example.de"
+      );
+    });
+  });
 });

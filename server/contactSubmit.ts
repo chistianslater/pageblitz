@@ -52,17 +52,26 @@ function buildOwnerNotificationHtml(input: {
   email: string;
   phone?: string;
   message: string;
+  customFields?: Record<string, string>;
 }): string {
   const businessName = esc(input.businessName);
   const name = esc(input.name);
   const email = esc(input.email);
   const phone = input.phone ? esc(input.phone) : undefined;
   const message = esc(input.message);
+  const customRows = Object.entries(input.customFields ?? {})
+    .filter(([, value]) => value.trim().length > 0)
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">${esc(label)}</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;">${esc(value)}</td></tr>`
+    )
+    .join("");
   const rows = `
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
       <tr><td style="width:30%;padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;font-weight:600;">${name}</td></tr>
       <tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">E-Mail</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;"><a href="mailto:${email}" style="color:#1f5f4b;font-size:14px;text-decoration:none;">${email}</a></td></tr>
       ${phone ? `<tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Telefon</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;">${phone}</td></tr>` : ""}
+      ${customRows}
     </table>`;
   return wrapPageblitzEmail({
     eyebrow: "Neue Kontaktanfrage",
@@ -78,7 +87,9 @@ function buildOwnerNotificationHtml(input: {
         `mailto:${email}?subject=Re: Kontaktanfrage`
       )}
     `,
-    footer: emailFooter({ note: "Gesendet über das Pageblitz Kontaktformular" }),
+    footer: emailFooter({
+      note: "Gesendet über das Pageblitz Kontaktformular",
+    }),
   });
 }
 
@@ -185,6 +196,7 @@ export async function submitContactRequest(
         email: input.email,
         phone: input.phone,
         message: input.message,
+        customFields: input.customFields,
       }),
     }).catch(() => {
       /* non-critical */
@@ -295,7 +307,21 @@ function statusForTrpcCode(code: string): number {
 
 export function registerContactRoutes(app: Express): void {
   app.post("/api/site/:slug/contact", async (req: Request, res: Response) => {
-    const parsed = contactRouteSchema.safeParse(req.body ?? {});
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const customFromNames = Object.fromEntries(
+      Object.entries(body)
+        .filter(
+          ([key, value]) =>
+            key.startsWith("custom-") && typeof value === "string"
+        )
+        .map(([key, value]) => [key.slice("custom-".length), String(value)])
+    );
+    const parsed = contactRouteSchema.safeParse({
+      ...body,
+      customFields:
+        (body.customFields as Record<string, string> | undefined) ??
+        (Object.keys(customFromNames).length > 0 ? customFromNames : undefined),
+    });
     if (!parsed.success) {
       respondError(req, res, 400, INVALID_INPUT_MESSAGE);
       return;

@@ -1,0 +1,18 @@
+.pb-dash {
+  min-height: 100dvh;
+  background: var(--lp-canvas);
+  color: var(--lp-ink);
+  font-family: var(--lp-font);
+}
+.pb-dash-mark {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 7px;
+  background: var(--lp-ink);
+  color: var(--lp-canvas);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
+}

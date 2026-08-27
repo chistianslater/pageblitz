@@ -30,14 +30,14 @@ export function PreviewTab({
   return (
     <div className="space-y-4">
       <StudioCard previewToken={previewToken} />
-      <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3">
+      <div className="bg-lp-surface border border-lp-line rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-lp-line flex items-center gap-3">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500/60" />
             <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
             <div className="w-3 h-3 rounded-full bg-green-500/60" />
           </div>
-          <div className="flex-1 bg-slate-700/60 rounded-lg px-3 py-1 text-slate-400 text-xs font-mono">
+          <div className="flex-1 bg-lp-canvas rounded-lg px-3 py-1 text-lp-muted text-xs font-mono">
             {slug}.pageblitz.de
           </div>
           {status === "active" && (
@@ -47,7 +47,7 @@ export function PreviewTab({
               rel="noopener noreferrer"
               aria-label="Website in neuem Tab öffnen"
               title="Website in neuem Tab öffnen"
-              className="text-slate-400 hover:text-white"
+              className="text-lp-muted hover:text-lp-ink"
             >
               <ExternalLink className="w-4 h-4" />
             </a>

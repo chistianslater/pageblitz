@@ -3,6 +3,7 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { ContactFormIsland } from "../components/site/islands/ContactFormIsland";
 import { ChatIsland } from "../components/site/islands/ChatIsland";
 import { BookingIsland } from "../components/site/islands/BookingIsland";
+import type { ContactFormConfig } from "@shared/siteContract/types";
 
 /**
  * Hydration-Entry für die SSR-Inseln. Wird nur geladen, wenn
@@ -32,6 +33,15 @@ function readSlug(el: Element): string {
   return el.getAttribute("data-slug") ?? "";
 }
 
+function readContactConfig(el: Element): ContactFormConfig | undefined {
+  try {
+    const raw = el.getAttribute("data-config");
+    return raw ? (JSON.parse(raw) as ContactFormConfig) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function hydrateContactIslands(): void {
   document.querySelectorAll('[data-island="contact"]').forEach(el => {
     const target = el.getAttribute("data-target");
@@ -41,7 +51,14 @@ function hydrateContactIslands(): void {
     }
     const slug = readSlug(el);
     const basePath = el.getAttribute("data-base-path") ?? "";
-    hydrateRoot(el, <ContactFormIsland slug={slug} basePath={basePath} />);
+    hydrateRoot(
+      el,
+      <ContactFormIsland
+        slug={slug}
+        basePath={basePath}
+        config={readContactConfig(el)}
+      />
+    );
   });
 }
 

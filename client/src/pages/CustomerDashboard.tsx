@@ -29,6 +29,7 @@ import { AddonsTab } from "@/pages/dashboard/AddonsTab";
 import { ChatLeadsTab } from "@/pages/dashboard/ChatLeadsTab";
 import { AppointmentsTab } from "@/pages/dashboard/AppointmentsTab";
 import { PreviewTab } from "@/pages/dashboard/PreviewTab";
+import "./dashboard/customer.css";
 
 // ── Types ───────────────────────────────────────────
 type Tab =
@@ -46,24 +47,24 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     active: {
       label: "Aktiv",
-      cls: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+      cls: "bg-lp-accent/10 text-lp-accent border-lp-accent/30",
     },
     preview: {
       label: "Vorschau",
-      cls: "bg-blue-500/20 text-blue-300 border-blue-500/40",
+      cls: "bg-lp-accent/10 text-lp-accent border-lp-accent/40",
     },
     sold: {
       label: "Verkauft",
-      cls: "bg-violet-500/20 text-violet-300 border-violet-500/40",
+      cls: "bg-lp-accent/10 text-lp-accent border-lp-accent/40",
     },
     inactive: {
       label: "Inaktiv",
-      cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+      cls: "bg-lp-canvas text-lp-muted border-lp-line",
     },
   };
   const { label, cls } = map[status] || {
     label: status,
-    cls: "bg-slate-500/20 text-slate-400 border-slate-500/40",
+    cls: "bg-lp-canvas text-lp-muted border-lp-line",
   };
   return (
     <span
@@ -91,8 +92,8 @@ function StepChip({
       disabled={done}
       className={`flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border transition-all ${
         done
-          ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10 cursor-default"
-          : "border-blue-400/40 text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 cursor-pointer"
+          ? "border-lp-accent/30 text-lp-accent bg-lp-accent/10 cursor-default"
+          : "border-lp-line text-lp-ink bg-lp-surface hover:bg-lp-canvas cursor-pointer"
       }`}
     >
       {done ? "✓" : "○"} {label}
@@ -294,26 +295,26 @@ export default function CustomerDashboard() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-lp-accent" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center text-white max-w-sm mx-auto px-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mx-auto mb-6">
-            <Globe className="w-8 h-8 text-white" />
+      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+        <div className="text-center text-lp-ink max-w-sm mx-auto px-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-lp-accent to-lp-ink flex items-center justify-center mx-auto mb-6">
+            <Globe className="w-8 h-8 text-lp-ink" />
           </div>
           <h1 className="text-2xl font-bold mb-3">Meine Website</h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-lp-muted mb-6">
             Melde dich an, um deine Website zu verwalten.
           </p>
           <a
             href={getLoginUrl()}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+            className="inline-flex items-center gap-2 bg-lp-accent hover:bg-lp-accent/90 text-white px-6 py-3 rounded-xl font-medium transition-colors"
           >
             Anmelden
           </a>
@@ -325,19 +326,19 @@ export default function CustomerDashboard() {
   if (!myWebsites || myWebsites.length === 0) {
     const isAdmin = user.role === "admin";
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center text-white max-w-md mx-auto px-6">
-          <div className="w-16 h-16 rounded-2xl bg-slate-700 flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+        <div className="text-center text-lp-ink max-w-md mx-auto px-6">
+          <div className="w-16 h-16 rounded-2xl bg-lp-canvas flex items-center justify-center mx-auto mb-6">
             {isAdmin ? (
-              <Sparkles className="w-8 h-8 text-blue-300" />
+              <Sparkles className="w-8 h-8 text-lp-accent" />
             ) : (
-              <Globe className="w-8 h-8 text-slate-400" />
+              <Globe className="w-8 h-8 text-lp-muted" />
             )}
           </div>
           <h1 className="text-2xl font-bold mb-3">
             {isAdmin ? "Kundenbackend testen" : "Keine Website gefunden"}
           </h1>
-          <p className="text-slate-400 mb-6">
+          <p className="text-lp-muted mb-6">
             {isAdmin
               ? "Lege eine isolierte Demo-Website für deinen Admin-Account an. Du kannst danach alle Kundenfunktionen ausprobieren, ohne echte Kundendaten zu verändern."
               : "Du hast noch keine aktive Website. Erstelle jetzt deine erste Website!"}
@@ -348,7 +349,7 @@ export default function CustomerDashboard() {
                 type="button"
                 onClick={() => ensureAdminDemoMutation.mutate()}
                 disabled={ensureAdminDemoMutation.isPending}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-xl bg-lp-accent px-6 py-3 font-medium text-white transition-colors hover:bg-lp-accent/90 disabled:cursor-wait disabled:opacity-60"
               >
                 {ensureAdminDemoMutation.isPending && (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -359,7 +360,7 @@ export default function CustomerDashboard() {
               </button>
               <a
                 href="/admin"
-                className="text-sm text-slate-400 underline underline-offset-4 hover:text-white"
+                className="text-sm text-lp-muted underline underline-offset-4 hover:text-lp-ink"
               >
                 Zurück zum Adminbereich
               </a>
@@ -367,7 +368,7 @@ export default function CustomerDashboard() {
           ) : (
             <a
               href="/start"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+              className="inline-flex items-center gap-2 bg-lp-accent hover:bg-lp-accent/90 text-white px-6 py-3 rounded-xl font-medium transition-colors"
             >
               Website gratis erstellen
             </a>
@@ -475,19 +476,19 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash">
       {/* Header */}
-      <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-lp-line bg-lp-surface/90 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
           <div className="flex items-center gap-3 flex-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-              <Globe className="w-4.5 h-4.5 text-white" />
+            <div className="pb-dash-mark" aria-hidden="true">
+              ↯
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg leading-tight">
+              <h1 className="text-lp-ink font-bold text-lg leading-tight">
                 Meine Website
               </h1>
-              <p className="text-slate-400 text-xs">
+              <p className="text-lp-muted text-xs">
                 Verwalte und bearbeite deine Website
               </p>
             </div>
@@ -496,7 +497,7 @@ export default function CustomerDashboard() {
             <select
               value={selectedWebsiteId || myWebsites[0].website.id}
               onChange={e => setSelectedWebsiteId(Number(e.target.value))}
-              className="bg-slate-700 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none"
+              className="bg-lp-canvas text-lp-ink text-sm px-3 py-2 rounded-lg border border-lp-line outline-none"
             >
               {myWebsites.map(e => (
                 <option key={e.website.id} value={e.website.id}>
@@ -511,7 +512,7 @@ export default function CustomerDashboard() {
               href={`https://${website.slug}.pageblitz.de`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-lp-accent hover:bg-lp-accent/90 text-white text-sm px-4 py-2 rounded-xl transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
               Website öffnen
@@ -520,7 +521,7 @@ export default function CustomerDashboard() {
           {previewToken ? (
             <a
               href={`/onboarding/${previewToken}`}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-lp-accent hover:bg-lp-accent/90 text-white text-sm px-4 py-2 rounded-xl transition-colors"
             >
               <Sparkles className="w-4 h-4" />
               Im Studio bearbeiten
@@ -528,7 +529,7 @@ export default function CustomerDashboard() {
           ) : (
             <span
               title="Kein Studio-Zugang gefunden — bitte Support kontaktieren."
-              className="flex items-center gap-2 bg-slate-700/60 text-slate-400 text-sm px-4 py-2 rounded-xl cursor-not-allowed"
+              className="flex items-center gap-2 bg-lp-canvas text-lp-muted text-sm px-4 py-2 rounded-xl cursor-not-allowed"
             >
               <Sparkles className="w-4 h-4" />
               Studio nicht verfügbar
@@ -536,7 +537,7 @@ export default function CustomerDashboard() {
           )}
           <a
             href="/my-account"
-            className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white text-sm px-4 py-2 rounded-xl transition-colors"
+            className="flex items-center gap-2 bg-lp-canvas hover:bg-lp-canvas text-lp-ink text-sm px-4 py-2 rounded-xl transition-colors"
           >
             <User className="w-4 h-4" />
             Mein Konto
@@ -547,13 +548,13 @@ export default function CustomerDashboard() {
       {isAdminDemo && (
         <div className="border-b border-amber-400/30 bg-amber-400/10">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5">
-            <p className="text-sm text-amber-100">
+            <p className="text-sm text-amber-900">
               <strong>Admin-Demo:</strong> Diese Website ist deine isolierte
               Testumgebung. Änderungen betreffen keine Kunden.
             </p>
             <a
               href="/admin"
-              className="text-sm font-medium text-amber-200 underline underline-offset-4 hover:text-white"
+              className="text-sm font-medium text-amber-800 underline underline-offset-4 hover:text-lp-ink"
             >
               Zurück zum Adminbereich
             </a>
@@ -563,15 +564,15 @@ export default function CustomerDashboard() {
 
       {/* ── Setup-Checkliste Banner (sticky, direkt unter dem Header) ── */}
       {!allDone && !setupOpen && (
-        <div className="sticky top-[65px] z-10 bg-gradient-to-r from-blue-900/95 to-indigo-900/95 backdrop-blur-sm border-b border-blue-500/30 shadow-lg shadow-blue-950/20">
+        <div className="sticky top-[65px] z-10 bg-lp-accent/10 backdrop-blur-sm border-b border-lp-accent/20">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2 mr-1">
               <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-              <span className="text-white text-xs font-semibold">
+              <span className="text-lp-ink text-xs font-semibold">
                 Website einrichten
               </span>
             </div>
-            <div className="w-px h-4 bg-blue-400/30" />
+            <div className="w-px h-4 bg-lp-accent/30" />
             <StepChip
               done={slugDone}
               label="Subdomain"
@@ -610,7 +611,7 @@ export default function CustomerDashboard() {
                           : 2
                 )
               }
-              className="ml-auto text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+              className="ml-auto text-xs bg-lp-accent text-white hover:bg-lp-accent/90 px-3 py-1.5 rounded-lg font-medium transition-colors"
             >
               Einrichten →
             </button>
@@ -619,7 +620,7 @@ export default function CustomerDashboard() {
       )}
 
       {/* Mobile Tab Navigation (icon + label, scrollable) */}
-      <div className="lg:hidden border-b border-slate-700/50 bg-slate-900/50 overflow-x-auto scrollbar-hide">
+      <div className="lg:hidden border-b border-lp-line bg-lp-surface overflow-x-auto scrollbar-hide">
         <div className="flex px-2 min-w-max">
           {tabs.map(tab => (
             <button
@@ -630,14 +631,14 @@ export default function CustomerDashboard() {
               }}
               className={`flex flex-col items-center gap-0.5 px-3 py-2.5 text-[10px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "text-blue-400 border-blue-400"
-                  : "text-slate-500 border-transparent hover:text-white"
+                  ? "text-lp-accent border-lp-accent"
+                  : "text-lp-muted border-transparent hover:text-lp-ink"
               }`}
             >
               <span className="[&>svg]:w-4 [&>svg]:h-4">{tab.icon}</span>
               {tab.label}
               {tab.badge && tab.badge > 0 ? (
-                <span className="absolute mt-[-2px] ml-3 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-bold leading-none">
+                <span className="absolute mt-[-2px] ml-3 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-lp-ink text-[9px] font-bold leading-none">
                   {tab.badge > 99 ? "99+" : tab.badge}
                 </span>
               ) : null}
@@ -649,7 +650,7 @@ export default function CustomerDashboard() {
       {/* Main layout: sidebar (desktop) + content */}
       <div className="flex flex-1 min-h-0">
         {/* Desktop Sidebar */}
-        <nav className="hidden lg:flex flex-col w-52 flex-shrink-0 bg-slate-900/40 border-r border-slate-700/50 min-h-[calc(100vh-120px)]">
+        <nav className="hidden lg:flex flex-col w-52 flex-shrink-0 bg-lp-surface border-r border-lp-line min-h-[calc(100vh-120px)]">
           <div className="p-3 space-y-0.5">
             {tabs.map(tab => (
               <button
@@ -660,14 +661,14 @@ export default function CustomerDashboard() {
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-left ${
                   activeTab === tab.id
-                    ? "bg-blue-500/15 text-blue-400"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                    ? "bg-lp-accent/10 text-lp-accent"
+                    : "text-lp-muted hover:text-lp-ink hover:bg-lp-surface"
                 }`}
               >
                 {tab.icon}
                 <span className="flex-1">{tab.label}</span>
                 {tab.badge && tab.badge > 0 && (
-                  <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  <span className="bg-rose-500 text-lp-ink text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                     {tab.badge > 99 ? "99+" : tab.badge}
                   </span>
                 )}
@@ -688,7 +689,7 @@ export default function CustomerDashboard() {
                 reloadKey={previewKey}
               />
             ) : (
-              <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 text-slate-400 text-sm">
+              <div className="bg-lp-surface border border-lp-line rounded-2xl p-5 text-lp-muted text-sm">
                 Kein Studio-Zugang gefunden — bitte Support kontaktieren.
               </div>
             ))}
@@ -704,12 +705,12 @@ export default function CustomerDashboard() {
 
               {/* Pageblitz Branding */}
               {subscription && (
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                  <h2 className="text-white font-semibold flex items-center gap-2 mb-1">
-                    <Globe className="w-4 h-4 text-slate-400" />
+                <div className="bg-lp-surface border border-lp-line rounded-2xl p-5">
+                  <h2 className="text-lp-ink font-semibold flex items-center gap-2 mb-1">
+                    <Globe className="w-4 h-4 text-lp-muted" />
                     Pageblitz-Branding
                   </h2>
-                  <p className="text-slate-400 text-xs mb-4">
+                  <p className="text-lp-muted text-xs mb-4">
                     Steuere, ob ein kleiner Hinweis auf Pageblitz im Footer
                     deiner Website erscheint.
                   </p>
@@ -727,7 +728,7 @@ export default function CustomerDashboard() {
                         }}
                       />
                       <div
-                        className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? "bg-blue-600" : "bg-slate-600"}`}
+                        className={`w-10 h-6 rounded-full transition-colors ${(website as any).showBranding !== false ? "bg-lp-accent" : "bg-lp-line"}`}
                         onClick={() => {
                           const current =
                             (website as any).showBranding !== false;
@@ -743,10 +744,10 @@ export default function CustomerDashboard() {
                       </div>
                     </div>
                     <div>
-                      <span className="text-white text-sm font-medium">
+                      <span className="text-lp-ink text-sm font-medium">
                         Pageblitz-Branding im Footer anzeigen
                       </span>
-                      <p className="text-slate-400 text-xs mt-0.5">
+                      <p className="text-lp-muted text-xs mt-0.5">
                         Zeigt einen kleinen "Erstellt mit Pageblitz"-Link im
                         Footer deiner Website.
                       </p>
@@ -759,13 +760,13 @@ export default function CustomerDashboard() {
 
           {/* Add-ons Tab */}
           {activeTab === "addons" && (
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-              <h2 className="text-white font-semibold flex items-center gap-2 mb-5">
-                <Sparkles className="w-4 h-4 text-pink-400" />
+            <div className="bg-lp-surface border border-lp-line rounded-2xl p-5">
+              <h2 className="text-lp-ink font-semibold flex items-center gap-2 mb-5">
+                <Sparkles className="w-4 h-4 text-lp-accent" />
                 Add-ons
               </h2>
               {!previewToken ? (
-                <div className="text-slate-400 text-sm">
+                <div className="text-lp-muted text-sm">
                   Kein Studio-Zugang gefunden — bitte Support kontaktieren.
                 </div>
               ) : onboardingData !== undefined || onboardingDataError ? (
@@ -778,10 +779,11 @@ export default function CustomerDashboard() {
                   purchasedAddOns={
                     (subscription?.addOns ?? {}) as Record<string, boolean>
                   }
+                  businessEmail={business?.email}
                 />
               ) : (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                  <Loader2 className="w-5 h-5 animate-spin text-lp-muted" />
                 </div>
               )}
             </div>
@@ -809,7 +811,7 @@ export default function CustomerDashboard() {
             <div className="space-y-6">
               {analyticsLoading ? (
                 <div className="flex items-center justify-center h-40">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-lp-accent" />
                 </div>
               ) : analyticsStats ? (
                 <>
@@ -819,15 +821,15 @@ export default function CustomerDashboard() {
                         label: "Seitenaufrufe",
                         value: analyticsStats.pageviews.toLocaleString("de-DE"),
                         icon: (
-                          <MousePointerClick className="w-5 h-5 text-blue-400" />
+                          <MousePointerClick className="w-5 h-5 text-lp-accent" />
                         ),
-                        color: "text-blue-400",
+                        color: "text-lp-accent",
                       },
                       {
                         label: "Besucher",
                         value: analyticsStats.visitors.toLocaleString("de-DE"),
-                        icon: <Users className="w-5 h-5 text-violet-400" />,
-                        color: "text-violet-400",
+                        icon: <Users className="w-5 h-5 text-lp-accent" />,
+                        color: "text-lp-accent",
                       },
                       {
                         label: "Absprungrate",
@@ -844,27 +846,27 @@ export default function CustomerDashboard() {
                     ].map(stat => (
                       <div
                         key={stat.label}
-                        className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5"
+                        className="bg-lp-surface border border-lp-line rounded-2xl p-5"
                       >
                         <div className="flex items-center gap-2 mb-3">
                           {stat.icon}
-                          <span className="text-slate-400 text-xs font-medium uppercase tracking-wider">
+                          <span className="text-lp-muted text-xs font-medium uppercase tracking-wider">
                             {stat.label}
                           </span>
                         </div>
                         <div className={`text-3xl font-bold ${stat.color}`}>
                           {stat.value}
                         </div>
-                        <div className="text-slate-500 text-xs mt-1">
+                        <div className="text-lp-muted text-xs mt-1">
                           Letzte 30 Tage
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5">
-                    <p className="text-slate-400 text-sm">
+                  <div className="bg-lp-surface border border-lp-line rounded-2xl p-5">
+                    <p className="text-lp-muted text-sm">
                       Diese Statistiken werden von{" "}
-                      <span className="text-white font-medium">
+                      <span className="text-lp-ink font-medium">
                         Umami Analytics
                       </span>{" "}
                       erfasst – cookielos, DSGVO-konform, keine persönlichen
@@ -873,12 +875,12 @@ export default function CustomerDashboard() {
                   </div>
                 </>
               ) : (
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
-                  <BarChart2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">
+                <div className="bg-lp-surface border border-lp-line rounded-2xl p-10 text-center">
+                  <BarChart2 className="w-12 h-12 text-lp-muted mx-auto mb-4" />
+                  <h3 className="text-lp-ink font-semibold mb-2">
                     Noch keine Statistiken verfügbar
                   </h3>
-                  <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  <p className="text-lp-muted text-sm max-w-sm mx-auto">
                     Analytics werden aktiviert, sobald deine Website live ist
                     und die ersten Besucher kommen.
                   </p>
@@ -891,50 +893,50 @@ export default function CustomerDashboard() {
           {activeTab === "domain" && website && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-white text-lg font-semibold">
+                <h2 className="text-lp-ink text-lg font-semibold">
                   Domain & Adresse
                 </h2>
-                <p className="text-slate-400 text-sm mt-0.5">
+                <p className="text-lp-muted text-sm mt-0.5">
                   Verwalte die Web-Adresse deiner Website.
                 </p>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Subdomain */}
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 space-y-4">
+                <div className="bg-lp-surface border border-lp-line rounded-2xl p-5 space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center shrink-0">
-                      <Globe className="w-4 h-4 text-blue-400" />
+                    <div className="w-8 h-8 rounded-lg bg-lp-accent/15 flex items-center justify-center shrink-0">
+                      <Globe className="w-4 h-4 text-lp-accent" />
                     </div>
                     <div>
-                      <p className="text-white text-sm font-semibold">
+                      <p className="text-lp-ink text-sm font-semibold">
                         Pageblitz-Subdomain
                       </p>
-                      <p className="text-slate-400 text-xs">
+                      <p className="text-lp-muted text-xs">
                         Kostenlos inklusive
                       </p>
                     </div>
                   </div>
 
                   {/* Current URL display */}
-                  <div className="flex items-center gap-2 bg-slate-900/60 rounded-xl px-4 py-2.5 border border-slate-700/50">
-                    <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                  <div className="flex items-center gap-2 bg-lp-canvas rounded-xl px-4 py-2.5 border border-lp-line">
+                    <Globe className="w-3.5 h-3.5 text-lp-muted shrink-0" />
                     <a
                       href={`https://${website.slug}.pageblitz.de`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 text-sm font-mono transition-colors truncate"
+                      className="text-lp-accent hover:text-lp-accent text-sm font-mono transition-colors truncate"
                     >
                       {website.slug}.pageblitz.de
                     </a>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 text-lp-muted ml-auto shrink-0" />
                   </div>
 
                   {/* Slug change */}
                   <div className="space-y-2">
-                    <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                    <label className="text-lp-muted text-xs font-medium uppercase tracking-wide">
                       Subdomain ändern
                     </label>
-                    <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                    <div className="flex items-center gap-2 bg-lp-canvas border border-lp-line rounded-xl px-4 py-3 focus-within:border-lp-accent transition-colors">
                       <input
                         type="text"
                         value={domainTabSlugInput || website.slug}
@@ -947,9 +949,9 @@ export default function CustomerDashboard() {
                               .replace(/^-+/, "")
                           );
                         }}
-                        className="flex-1 bg-transparent text-white outline-none text-sm font-mono"
+                        className="flex-1 bg-transparent text-lp-ink outline-none text-sm font-mono"
                       />
-                      <span className="text-slate-400 text-sm whitespace-nowrap">
+                      <span className="text-lp-muted text-sm whitespace-nowrap">
                         .pageblitz.de
                       </span>
                     </div>
@@ -958,9 +960,9 @@ export default function CustomerDashboard() {
                         <p
                           className={`text-xs flex items-center gap-1.5 ${
                             domainSlugChecking
-                              ? "text-slate-400"
+                              ? "text-lp-muted"
                               : domainSlugCheck?.available
-                                ? "text-emerald-400"
+                                ? "text-lp-accent"
                                 : "text-red-400"
                           }`}
                         >
@@ -972,7 +974,7 @@ export default function CustomerDashboard() {
                         </p>
                       )}
                     {domainTabSlugSaved && (
-                      <p className="text-xs text-emerald-400 flex items-center gap-1">
+                      <p className="text-xs text-lp-accent flex items-center gap-1">
                         ✓ Subdomain gespeichert
                       </p>
                     )}
@@ -994,7 +996,7 @@ export default function CustomerDashboard() {
                         setDomainTabSlugSaved(true);
                         toast.success("Subdomain gespeichert");
                       }}
-                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-lp-accent hover:bg-lp-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-lp-ink transition-colors"
                     >
                       {updateSlugMutation.isPending
                         ? "Speichern..."
@@ -1004,33 +1006,33 @@ export default function CustomerDashboard() {
                 </div>
 
                 {/* Custom Domain */}
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl overflow-hidden">
+                <div className="bg-lp-surface border border-lp-line rounded-2xl overflow-hidden">
                   <button
                     onClick={() => setShowCustomDomainInfo(v => !v)}
-                    className="w-full flex items-center gap-3 p-5 text-left hover:bg-slate-700/20 transition-colors"
+                    className="w-full flex items-center gap-3 p-5 text-left hover:bg-lp-canvas transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
-                      <ExternalLink className="w-4 h-4 text-violet-400" />
+                    <div className="w-8 h-8 rounded-lg bg-lp-accent/15 flex items-center justify-center shrink-0">
+                      <ExternalLink className="w-4 h-4 text-lp-accent" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-white text-sm font-semibold">
+                      <p className="text-lp-ink text-sm font-semibold">
                         Eigene Domain verbinden
                       </p>
-                      <p className="text-slate-400 text-xs">
+                      <p className="text-lp-muted text-xs">
                         z.B. www.mein-unternehmen.de
                       </p>
                     </div>
                     <ChevronDown
-                      className={`w-4 h-4 text-slate-500 transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 text-lp-muted transition-transform ${showCustomDomainInfo ? "rotate-180" : ""}`}
                     />
                   </button>
                   {showCustomDomainInfo && (
-                    <div className="px-5 pb-5 space-y-3 border-t border-slate-700/50 pt-4">
-                      <p className="text-slate-300 text-sm">
+                    <div className="px-5 pb-5 space-y-3 border-t border-lp-line pt-4">
+                      <p className="text-lp-ink/80 text-sm">
                         Setze diesen CNAME-Eintrag bei deinem Domain-Anbieter
                         (IONOS, Strato, GoDaddy, etc.):
                       </p>
-                      <div className="space-y-2 bg-slate-900/60 rounded-xl p-4">
+                      <div className="space-y-2 bg-lp-canvas rounded-xl p-4">
                         {[
                           { label: "Typ", value: "CNAME" },
                           { label: "Name", value: "www" },
@@ -1041,10 +1043,10 @@ export default function CustomerDashboard() {
                             key={label}
                             className="flex items-center justify-between"
                           >
-                            <span className="text-slate-500 text-xs w-12">
+                            <span className="text-lp-muted text-xs w-12">
                               {label}
                             </span>
-                            <span className="text-white text-xs font-mono bg-slate-800 px-3 py-1 rounded-lg">
+                            <span className="text-lp-ink text-xs font-mono bg-lp-surface px-3 py-1 rounded-lg">
                               {value}
                             </span>
                           </div>
@@ -1056,7 +1058,7 @@ export default function CustomerDashboard() {
                           sie wirksam sind.
                         </p>
                       </div>
-                      <p className="text-slate-500 text-xs">
+                      <p className="text-lp-muted text-xs">
                         Nach dem Setzen des CNAME-Eintrags melde dich beim
                         Support — wir schalten die Domain für dich frei.
                       </p>
@@ -1073,12 +1075,12 @@ export default function CustomerDashboard() {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-white text-lg font-semibold">
+                  <h2 className="text-lp-ink text-lg font-semibold">
                     {showArchivedSubmissions
                       ? "Archivierte Anfragen"
                       : "Kontaktanfragen"}
                   </h2>
-                  <p className="text-slate-400 text-sm mt-0.5">
+                  <p className="text-lp-muted text-sm mt-0.5">
                     {submissionsData?.submissions.length ?? 0}{" "}
                     {showArchivedSubmissions ? "archivierte" : "aktive"}{" "}
                     Anfragen
@@ -1096,7 +1098,7 @@ export default function CustomerDashboard() {
                     className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${
                       showArchivedSubmissions
                         ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
-                        : "bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600"
+                        : "bg-lp-surface border-lp-line text-lp-muted hover:text-lp-ink hover:border-lp-ink/30"
                     }`}
                   >
                     <Layers className="w-3.5 h-3.5" />
@@ -1104,8 +1106,8 @@ export default function CustomerDashboard() {
                   </button>
                   {/* Custom recipient email */}
                   {!showArchivedSubmissions && (
-                    <div className="flex items-center gap-2 bg-slate-800/60 border border-slate-700/50 rounded-xl px-3 py-2">
-                      <Mail className="w-4 h-4 text-slate-500 shrink-0" />
+                    <div className="flex items-center gap-2 bg-lp-surface border border-lp-line rounded-xl px-3 py-2">
+                      <Mail className="w-4 h-4 text-lp-muted shrink-0" />
                       <input
                         type="email"
                         value={contactEmailInput}
@@ -1113,7 +1115,7 @@ export default function CustomerDashboard() {
                         placeholder={
                           business?.email || "Empfänger-E-Mail eintragen..."
                         }
-                        className="bg-transparent text-sm text-white placeholder-slate-500 outline-none w-48"
+                        className="bg-transparent text-sm text-lp-ink placeholder:text-lp-muted outline-none w-48"
                       />
                       <button
                         onClick={() =>
@@ -1123,7 +1125,7 @@ export default function CustomerDashboard() {
                           })
                         }
                         disabled={updateContactEmailMutation.isPending}
-                        className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap disabled:opacity-50"
+                        className="text-xs font-medium text-lp-accent hover:text-lp-accent transition-colors whitespace-nowrap disabled:opacity-50"
                       >
                         {contactEmailSaved ? "✓ Gespeichert" : "Speichern"}
                       </button>
@@ -1134,17 +1136,17 @@ export default function CustomerDashboard() {
 
               {submissionsLoading ? (
                 <div className="flex justify-center py-16">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+                  <Loader2 className="w-6 h-6 animate-spin text-lp-accent" />
                 </div>
               ) : !submissionsData?.submissions.length ? (
-                <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-12 text-center">
-                  <MessageSquare className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">
+                <div className="bg-lp-surface border border-lp-line rounded-2xl p-12 text-center">
+                  <MessageSquare className="w-12 h-12 text-lp-muted mx-auto mb-4" />
+                  <h3 className="text-lp-ink font-semibold mb-2">
                     {showArchivedSubmissions
                       ? "Keine archivierten Anfragen"
                       : "Noch keine Anfragen"}
                   </h3>
-                  <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                  <p className="text-lp-muted text-sm max-w-sm mx-auto">
                     {showArchivedSubmissions
                       ? "Archivierte Anfragen erscheinen hier."
                       : "Wenn Besucher das Kontaktformular auf deiner Website ausfüllen, erscheinen die Anfragen hier."}
@@ -1158,12 +1160,12 @@ export default function CustomerDashboard() {
                     return (
                       <div
                         key={sub.id}
-                        className={`bg-slate-800/60 border rounded-2xl p-5 transition-colors ${
+                        className={`bg-lp-surface border rounded-2xl p-5 transition-colors ${
                           showArchivedSubmissions
-                            ? "border-slate-700/30 opacity-75"
+                            ? "border-lp-line/70 opacity-75"
                             : isUnread
-                              ? "border-blue-500/40 bg-slate-800/80"
-                              : "border-slate-700/50"
+                              ? "border-lp-accent/40 bg-lp-surface"
+                              : "border-lp-line"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-4">
@@ -1172,10 +1174,10 @@ export default function CustomerDashboard() {
                               {isUnread && !showArchivedSubmissions && (
                                 <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
                               )}
-                              <span className="text-white font-semibold truncate">
+                              <span className="text-lp-ink font-semibold truncate">
                                 {sub.name}
                               </span>
-                              <span className="text-slate-400 text-xs shrink-0">
+                              <span className="text-lp-muted text-xs shrink-0">
                                 {new Date(sub.createdAt).toLocaleDateString(
                                   "de-DE",
                                   {
@@ -1191,7 +1193,7 @@ export default function CustomerDashboard() {
                             <div className="flex flex-wrap gap-3 mb-3">
                               <a
                                 href={`mailto:${sub.email}`}
-                                className="flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                                className="flex items-center gap-1.5 text-lp-accent hover:text-lp-accent text-sm transition-colors"
                               >
                                 <Mail className="w-3.5 h-3.5" />
                                 {sub.email}
@@ -1199,23 +1201,42 @@ export default function CustomerDashboard() {
                               {sub.phone && (
                                 <a
                                   href={`tel:${sub.phone}`}
-                                  className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm transition-colors"
+                                  className="flex items-center gap-1.5 text-lp-muted hover:text-lp-ink text-sm transition-colors"
                                 >
                                   <Phone className="w-3.5 h-3.5" />
                                   {sub.phone}
                                 </a>
                               )}
                             </div>
-                            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
+                            <p className="text-lp-ink/80 text-sm leading-relaxed whitespace-pre-wrap line-clamp-3">
                               {sub.message}
                             </p>
+                            {typeof sub.customFields === "object" &&
+                            sub.customFields &&
+                            !Array.isArray(sub.customFields)
+                              ? Object.entries(
+                                  sub.customFields as Record<string, unknown>
+                                ).map(([label, value]) =>
+                                  String(value ?? "").trim() ? (
+                                    <p
+                                      key={label}
+                                      className="mt-2 text-xs text-lp-muted"
+                                    >
+                                      <span className="font-medium text-lp-ink">
+                                        {label}:
+                                      </span>{" "}
+                                      {String(value)}
+                                    </p>
+                                  ) : null
+                                )
+                              : null}
                           </div>
                           <div className="flex flex-col items-end gap-2 shrink-0">
                             {!showArchivedSubmissions ? (
                               <>
                                 <a
                                   href={`mailto:${sub.email}?subject=Re: Kontaktanfrage`}
-                                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+                                  className="flex items-center gap-1.5 bg-lp-accent hover:bg-lp-accent/90 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                   <Mail className="w-3 h-3" />
                                   Antworten
@@ -1227,7 +1248,7 @@ export default function CustomerDashboard() {
                                         submissionId: sub.id,
                                       })
                                     }
-                                    className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
+                                    className="text-lp-muted hover:text-lp-ink/80 text-xs transition-colors"
                                   >
                                     Als gelesen markieren
                                   </button>
@@ -1240,7 +1261,7 @@ export default function CustomerDashboard() {
                                     })
                                   }
                                   disabled={archiveMutation.isPending}
-                                  className="flex items-center gap-1 text-slate-500 hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
+                                  className="flex items-center gap-1 text-lp-muted hover:text-amber-400 text-xs transition-colors disabled:opacity-40"
                                   title="Archivieren"
                                 >
                                   <Layers className="w-3.5 h-3.5" />
@@ -1264,7 +1285,7 @@ export default function CustomerDashboard() {
                                 </button>
                                 {isDeleting ? (
                                   <div className="flex items-center gap-1.5">
-                                    <span className="text-xs text-slate-400">
+                                    <span className="text-xs text-lp-muted">
                                       Sicher?
                                     </span>
                                     <button
@@ -1280,7 +1301,7 @@ export default function CustomerDashboard() {
                                     </button>
                                     <button
                                       onClick={() => setDeleteConfirmId(null)}
-                                      className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                      className="text-xs text-lp-muted hover:text-lp-ink/80 transition-colors"
                                     >
                                       Abbrechen
                                     </button>
@@ -1288,7 +1309,7 @@ export default function CustomerDashboard() {
                                 ) : (
                                   <button
                                     onClick={() => setDeleteConfirmId(sub.id)}
-                                    className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                                    className="flex items-center gap-1 text-lp-muted hover:text-red-400 text-xs transition-colors"
                                     title="Endgültig löschen"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -1313,21 +1334,21 @@ export default function CustomerDashboard() {
 
       {/* ── Setup-Modal ── */}
       {setupOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lp-ink/50 backdrop-blur-sm">
+          <div className="bg-lp-surface border border-lp-line rounded-2xl w-full max-w-md shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+            <div className="flex items-center justify-between p-6 border-b border-lp-line">
               <div>
-                <h2 className="text-white font-bold text-lg">
+                <h2 className="text-lp-ink font-bold text-lg">
                   Website einrichten
                 </h2>
-                <p className="text-slate-400 text-sm mt-0.5">
+                <p className="text-lp-muted text-sm mt-0.5">
                   Schritt {setupStepIdx + 1} von {addOns.contactForm ? 4 : 3}
                 </p>
               </div>
               <button
                 onClick={() => setSetupOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors p-1"
+                className="text-lp-muted hover:text-lp-ink transition-colors p-1"
               >
                 ✕
               </button>
@@ -1338,18 +1359,18 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🌐</div>
-                  <h3 className="text-white font-semibold text-lg">
+                  <h3 className="text-lp-ink font-semibold text-lg">
                     Deine Website-Adresse
                   </h3>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <p className="text-lp-muted text-sm mt-1">
                     Wähle eine einfache, einprägsame Adresse für deine Website.
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                  <label className="text-lp-muted text-xs font-medium uppercase tracking-wide">
                     Subdomain
                   </label>
-                  <div className="flex items-center gap-2 bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 focus-within:border-blue-500 transition-colors">
+                  <div className="flex items-center gap-2 bg-lp-canvas border border-lp-line rounded-xl px-4 py-3 focus-within:border-lp-accent transition-colors">
                     <input
                       type="text"
                       value={slugInput}
@@ -1362,10 +1383,10 @@ export default function CustomerDashboard() {
                         )
                       }
                       placeholder={suggestedSlug || "mein-unternehmen"}
-                      className="flex-1 bg-transparent text-white outline-none text-sm"
+                      className="flex-1 bg-transparent text-lp-ink outline-none text-sm"
                       autoFocus
                     />
-                    <span className="text-slate-400 text-sm whitespace-nowrap">
+                    <span className="text-lp-muted text-sm whitespace-nowrap">
                       .pageblitz.de
                     </span>
                   </div>
@@ -1373,9 +1394,9 @@ export default function CustomerDashboard() {
                     <p
                       className={`text-xs flex items-center gap-1.5 ${
                         slugChecking
-                          ? "text-slate-400"
+                          ? "text-lp-muted"
                           : slugCheck?.available
-                            ? "text-emerald-400"
+                            ? "text-lp-accent"
                             : "text-red-400"
                       }`}
                     >
@@ -1387,7 +1408,7 @@ export default function CustomerDashboard() {
                     </p>
                   )}
                   {slugInput.length > 0 && slugInput.length < 3 && (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-lp-muted">
                       Mindestens 3 Zeichen
                     </p>
                   )}
@@ -1395,7 +1416,7 @@ export default function CustomerDashboard() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setSetupOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                    className="flex-1 py-2.5 rounded-xl text-sm text-lp-muted hover:text-lp-ink border border-lp-line hover:border-lp-ink/40 transition-colors"
                   >
                     Später
                   </button>
@@ -1412,7 +1433,7 @@ export default function CustomerDashboard() {
                       });
                       setSetupStepIdx(1);
                     }}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-lp-accent hover:bg-lp-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-lp-ink transition-colors"
                   >
                     {updateSlugMutation.isPending
                       ? "Speichern..."
@@ -1420,10 +1441,10 @@ export default function CustomerDashboard() {
                   </button>
                 </div>
                 {/* Eigene Domain – subtiler Accordion-Hinweis */}
-                <div className="border-t border-slate-700/50 pt-3 mt-1">
+                <div className="border-t border-lp-line pt-3 mt-1">
                   <button
                     onClick={() => setShowDomainHint(v => !v)}
-                    className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-300 transition-colors w-full text-left"
+                    className="flex items-center gap-2 text-xs text-lp-muted hover:text-lp-ink/80 transition-colors w-full text-left"
                   >
                     <span>🔗</span>
                     <span>
@@ -1434,8 +1455,8 @@ export default function CustomerDashboard() {
                     />
                   </button>
                   {showDomainHint && (
-                    <div className="mt-3 bg-slate-900 rounded-xl p-4 space-y-2">
-                      <p className="text-slate-300 text-xs font-medium mb-2">
+                    <div className="mt-3 bg-lp-canvas rounded-xl p-4 space-y-2">
+                      <p className="text-lp-ink/80 text-xs font-medium mb-2">
                         CNAME-Eintrag bei deinem DNS-Anbieter setzen:
                       </p>
                       {[
@@ -1445,17 +1466,15 @@ export default function CustomerDashboard() {
                       ].map(({ label, value }) => (
                         <div
                           key={label}
-                          className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-1.5"
+                          className="flex items-center justify-between bg-lp-surface rounded-lg px-3 py-1.5"
                         >
-                          <span className="text-slate-400 text-xs">
-                            {label}
-                          </span>
-                          <span className="text-white text-xs font-mono">
+                          <span className="text-lp-muted text-xs">{label}</span>
+                          <span className="text-lp-ink text-xs font-mono">
                             {value}
                           </span>
                         </div>
                       ))}
-                      <p className="text-slate-500 text-xs text-center pt-1">
+                      <p className="text-lp-muted text-xs text-center pt-1">
                         DNS-Änderungen können bis zu 24h dauern
                       </p>
                     </div>
@@ -1469,16 +1488,16 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">📧</div>
-                  <h3 className="text-white font-semibold text-lg">
+                  <h3 className="text-lp-ink font-semibold text-lg">
                     Kontaktformular-E-Mail
                   </h3>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <p className="text-lp-muted text-sm mt-1">
                     Wohin sollen Kundenanfragen aus deinem Kontaktformular
                     gesendet werden?
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-slate-400 text-xs font-medium uppercase tracking-wide">
+                  <label className="text-lp-muted text-xs font-medium uppercase tracking-wide">
                     Empfänger-E-Mail
                   </label>
                   <input
@@ -1490,7 +1509,7 @@ export default function CustomerDashboard() {
                       setContactEmailInput((e.target as HTMLInputElement).value)
                     }
                     placeholder="deine@email.de"
-                    className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-lp-canvas border border-lp-line rounded-xl px-4 py-3 text-lp-ink text-sm outline-none focus:border-lp-accent transition-colors"
                     autoComplete="off"
                     autoFocus
                     id="setup-contact-email"
@@ -1499,7 +1518,7 @@ export default function CustomerDashboard() {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => setSetupStepIdx(2)}
-                    className="flex-1 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                    className="flex-1 py-2.5 rounded-xl text-sm text-lp-muted hover:text-lp-ink border border-lp-line hover:border-lp-ink/40 transition-colors"
                   >
                     Überspringen
                   </button>
@@ -1523,7 +1542,7 @@ export default function CustomerDashboard() {
                         /* onError handler shows toast */
                       }
                     }}
-                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-lp-accent hover:bg-lp-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-lp-ink transition-colors"
                   >
                     {updateContactEmailMutation.isPending
                       ? "Speichern..."
@@ -1538,29 +1557,29 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-4">
                   <div className="text-4xl mb-3">📋</div>
-                  <h3 className="text-white font-semibold text-lg">
+                  <h3 className="text-lp-ink font-semibold text-lg">
                     Impressum & Datenschutz
                   </h3>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <p className="text-lp-muted text-sm mt-1">
                     Gesetzlich vorgeschrieben. Gib den Namen des Inhabers an –
                     dauert 30 Sekunden.
                   </p>
                 </div>
                 {legalDone ? (
                   <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-                    <span className="text-emerald-400 text-xl">✓</span>
+                    <span className="text-lp-accent text-xl">✓</span>
                     <div>
-                      <p className="text-emerald-400 text-sm font-medium">
+                      <p className="text-lp-accent text-sm font-medium">
                         Impressum & Datenschutz hinterlegt
                       </p>
-                      <p className="text-slate-400 text-xs mt-0.5">
+                      <p className="text-lp-muted text-xs mt-0.5">
                         Erreichbar unter /impressum und /datenschutz
                       </p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-slate-400 text-sm">
+                    <p className="text-lp-muted text-sm">
                       Die Impressum-Angaben trägst du im Studio ein — dort
                       erscheinen Impressum und Datenschutzerklärung sofort in
                       der Vorschau.
@@ -1570,19 +1589,19 @@ export default function CustomerDashboard() {
                         href={`/onboarding/${previewToken}?panel=legal`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-medium bg-lp-accent hover:bg-lp-accent/90 text-white transition-colors"
                       >
                         Im Studio ausfüllen →
                       </a>
                     ) : (
-                      <p className="text-slate-500 text-xs">
+                      <p className="text-lp-muted text-xs">
                         Kein Studio-Zugang gefunden — bitte Support
                         kontaktieren.
                       </p>
                     )}
                     <button
                       onClick={() => refetch()}
-                      className="w-full py-2 rounded-xl text-sm text-slate-400 hover:text-white border border-slate-600 hover:border-slate-500 transition-colors"
+                      className="w-full py-2 rounded-xl text-sm text-lp-muted hover:text-lp-ink border border-lp-line hover:border-lp-ink/40 transition-colors"
                     >
                       Ich hab's erledigt – aktualisieren
                     </button>
@@ -1594,7 +1613,7 @@ export default function CustomerDashboard() {
                       onClick={() =>
                         setSetupStepIdx(addOns.contactForm ? 3 : 2)
                       }
-                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors"
+                      className="w-full py-2.5 rounded-xl text-sm font-medium bg-lp-accent hover:bg-lp-accent/90 text-white transition-colors"
                     >
                       Weiter →
                     </button>
@@ -1608,14 +1627,14 @@ export default function CustomerDashboard() {
               <div className="p-6 space-y-4">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-3">🚀</div>
-                  <h3 className="text-white font-semibold text-lg">
+                  <h3 className="text-lp-ink font-semibold text-lg">
                     Deine Website ist bereit!
                   </h3>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <p className="text-lp-muted text-sm mt-1">
                     Schalte deine Website jetzt live. Sie wird öffentlich
                     erreichbar unter:
                   </p>
-                  <p className="text-blue-400 text-sm font-mono mt-2">
+                  <p className="text-lp-accent text-sm font-mono mt-2">
                     {website.slug}.pageblitz.de
                   </p>
                 </div>
@@ -1629,7 +1648,7 @@ export default function CustomerDashboard() {
                   ].map(({ label, done }) => (
                     <div
                       key={label}
-                      className={`flex items-center gap-2 text-sm ${done ? "text-emerald-400" : "text-amber-400"}`}
+                      className={`flex items-center gap-2 text-sm ${done ? "text-lp-accent" : "text-amber-400"}`}
                     >
                       <span>{done ? "✓" : "⚠"}</span>
                       <span>{label}</span>
@@ -1647,7 +1666,7 @@ export default function CustomerDashboard() {
                   onClick={() =>
                     setLiveMutation.mutateAsync({ websiteId: website.id })
                   }
-                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-all shadow-lg shadow-emerald-900/30"
+                  className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-lp-ink transition-all shadow-lg shadow-emerald-900/30"
                 >
                   {setLiveMutation.isPending
                     ? "Wird live geschaltet..."
@@ -1667,7 +1686,7 @@ export default function CustomerDashboard() {
                         ? "bg-blue-400 w-4"
                         : i < setupStepIdx
                           ? "bg-emerald-400"
-                          : "bg-slate-600"
+                          : "bg-lp-line"
                     }`}
                   />
                 )

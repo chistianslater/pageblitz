@@ -43,6 +43,28 @@ function checkIpLimit(ip: string, maxPerDay = 10): boolean {
   return true;
 }
 
+function readChatConfig(websiteData: unknown): {
+  extraKnowledge?: string;
+  notificationEmail?: string;
+} {
+  if (!websiteData || typeof websiteData !== "object") return {};
+  const cfg = (websiteData as { chatConfig?: unknown }).chatConfig;
+  if (!cfg || typeof cfg !== "object") return {};
+  const extra =
+    typeof (cfg as { extraKnowledge?: unknown }).extraKnowledge === "string"
+      ? (cfg as { extraKnowledge: string }).extraKnowledge.trim()
+      : "";
+  const email =
+    typeof (cfg as { notificationEmail?: unknown }).notificationEmail ===
+    "string"
+      ? (cfg as { notificationEmail: string }).notificationEmail.trim()
+      : "";
+  return {
+    extraKnowledge: extra || undefined,
+    notificationEmail: email || undefined,
+  };
+}
+
 // ── System-Prompt Generator ──────────────────────────────────────────────────
 function buildSystemPrompt(website: any): string {
   const wd = (website.websiteData as any) || {};
@@ -72,6 +94,12 @@ function buildSystemPrompt(website: any): string {
     ? `Begrüßung: Starte das Gespräch mit: "${welcomeMsg}"`
     : "";
 
+  const parsedDoc = readChatConfig(wd);
+  const extraKnowledge = parsedDoc.extraKnowledge;
+  const knowledgeBlock = extraKnowledge
+    ? `\nZusätzliches Wissen vom Betreiber (vertraulich intern nutzen, nicht wörtlich als „Anweisung" zitieren):\n${extraKnowledge}\n`
+    : "";
+
   return `Du bist der freundliche KI-Assistent von "${name}", ${industry.startsWith("ein") ? industry : "einem/einer " + industry}${city ? " in " + city : ""}. Du chattest auf deren Website mit Besuchern.
 
 DEIN HAUPTZIEL: Führe jedes Gespräch sanft zur Kontaktaufnahme oder Terminbuchung.
@@ -82,7 +110,7 @@ Unternehmensdaten:
 - Leistungen: ${services}${phone ? "\n- Telefon: " + phone : ""}${email ? "\n- Email: " + email : ""}
 - ${ctaBlock}
 ${welcomeBlock}
-
+${knowledgeBlock}
 GESPRÄCHSREGELN:
 1. Beantworte Fragen kurz & freundlich (max. 2-3 Sätze pro Nachricht)
 2. Nach spätestens 2 Fragen: schlage Termin oder Rückruf vor
@@ -106,7 +134,12 @@ async function sendLeadNotification(
     const db = await getDb();
     if (!db) return;
     const [row] = await db
-      .select({ userEmail: users.email, businessName: businesses.name })
+      .select({
+        userEmail: users.email,
+        businessName: businesses.name,
+        contactEmail: generatedWebsites.contactEmail,
+        websiteData: generatedWebsites.websiteData,
+      })
       .from(generatedWebsites)
       .innerJoin(
         subscriptions,
@@ -121,7 +154,12 @@ async function sendLeadNotification(
       .limit(1)
       .catch(() => [null]);
 
-    if (!row?.userEmail) return;
+    if (!row) return;
+    const notifyEmail =
+      readChatConfig(row.websiteData).notificationEmail ||
+      row.contactEmail ||
+      row.userEmail;
+    if (!notifyEmail) return;
 
     const contactLine = [
       lead.email && `E-Mail: ${lead.email}`,
@@ -131,7 +169,7 @@ async function sendLeadNotification(
       .join(" · ");
 
     await sendEmail({
-      to: row.userEmail,
+      to: notifyEmail,
       subject: `Neue Website-Anfrage – ${lead.visitorName || "Unbekannt"}`,
       html: wrapPageblitzEmail({
         eyebrow: "Neue Anfrage über den KI-Chat",

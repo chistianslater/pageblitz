@@ -77,11 +77,13 @@ export const SiteIslands: React.FC<{
           data-slug={slug}
           data-target="#kontakt"
           data-base-path={basePath}
+          data-config={JSON.stringify(data.contactFormConfig ?? {})}
         >
           <ContactFormIsland
             slug={slug}
             basePath={basePath}
             disabled={isPreview}
+            config={data.contactFormConfig}
           />
         </div>
       )}

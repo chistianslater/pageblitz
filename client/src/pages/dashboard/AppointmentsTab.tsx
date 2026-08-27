@@ -52,7 +52,7 @@ export function AppointmentsTab({
   if (bookingLoading)
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-lp-accent" />
       </div>
     );
 
@@ -64,32 +64,32 @@ export function AppointmentsTab({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-white text-lg font-semibold flex items-center gap-2">
-          <CalendarCheck className="w-5 h-5 text-blue-400" />
+        <h2 className="text-lp-ink text-lg font-semibold flex items-center gap-2">
+          <CalendarCheck className="w-5 h-5 text-lp-accent" />
           Termine
           {appts.length > 0 && (
-            <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-lp-accent text-lp-ink text-xs font-bold px-2 py-0.5 rounded-full">
               {appts.length}
             </span>
           )}
         </h2>
-        <p className="text-slate-400 text-sm mt-0.5">
+        <p className="text-lp-muted text-sm mt-0.5">
           Eingehende Buchungen von deiner Website.
         </p>
       </div>
 
       {!enabled ? (
-        <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
-          <CalendarDays className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-white font-medium mb-1">
+        <div className="bg-lp-surface border border-lp-line rounded-2xl p-10 text-center">
+          <CalendarDays className="w-10 h-10 text-lp-muted mx-auto mb-3" />
+          <p className="text-lp-ink font-medium mb-1">
             Terminbuchung nicht aktiv
           </p>
-          <p className="text-slate-400 text-sm mb-4">
+          <p className="text-lp-muted text-sm mb-4">
             Aktiviere das Add-on, um Buchungen entgegenzunehmen.
           </p>
           <button
             onClick={onGoToAddons}
-            className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
+            className="text-sm font-medium text-lp-accent hover:text-lp-accent transition-colors"
           >
             → Zu den Add-ons
           </button>
@@ -97,11 +97,11 @@ export function AppointmentsTab({
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold flex items-center gap-2">
-              <CalendarCheck className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-lp-ink font-semibold flex items-center gap-2">
+              <CalendarCheck className="w-4 h-4 text-lp-accent" />
               Kommende Termine
               {appts.length > 0 && (
-                <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-lp-accent text-lp-ink text-xs font-bold px-2 py-0.5 rounded-full">
                   {appts.length}
                 </span>
               )}
@@ -110,15 +110,15 @@ export function AppointmentsTab({
 
           {appointmentsLoading ? (
             <div className="flex items-center justify-center h-32">
-              <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+              <Loader2 className="w-5 h-5 animate-spin text-lp-accent" />
             </div>
           ) : appts.length === 0 ? (
-            <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-10 text-center">
-              <Calendar className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <p className="text-white font-medium mb-1">
+            <div className="bg-lp-surface border border-lp-line rounded-2xl p-10 text-center">
+              <Calendar className="w-10 h-10 text-lp-muted mx-auto mb-3" />
+              <p className="text-lp-ink font-medium mb-1">
                 Keine kommenden Termine
               </p>
-              <p className="text-slate-400 text-sm">
+              <p className="text-lp-muted text-sm">
                 Wenn Besucher einen Termin buchen, erscheint er hier.
               </p>
             </div>
@@ -129,15 +129,15 @@ export function AppointmentsTab({
                 return (
                   <div
                     key={a.id}
-                    className={`bg-slate-800/60 border rounded-xl p-4 flex items-start justify-between gap-4 ${
+                    className={`bg-lp-surface border rounded-xl p-4 flex items-start justify-between gap-4 ${
                       a.status === "cancelled"
-                        ? "border-slate-700/30 opacity-60"
-                        : "border-slate-700/50"
+                        ? "border-lp-line/70 opacity-60"
+                        : "border-lp-line"
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-white font-medium text-sm">
+                        <span className="text-lp-ink font-medium text-sm">
                           {a.visitorName}
                         </span>
                         <span
@@ -145,7 +145,7 @@ export function AppointmentsTab({
                             a.status === "cancelled"
                               ? "bg-red-500/10 text-red-400 border-red-500/30"
                               : a.status === "confirmed"
-                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                ? "bg-emerald-500/10 text-lp-accent border-emerald-500/30"
                                 : "bg-amber-500/10 text-amber-400 border-amber-500/30"
                           }`}
                         >
@@ -156,7 +156,7 @@ export function AppointmentsTab({
                               : "Ausstehend"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 text-blue-300 text-sm mb-1">
+                      <div className="flex items-center gap-1.5 text-lp-accent text-sm mb-1">
                         <Calendar className="w-3.5 h-3.5" />
                         {new Date(
                           a.appointmentDate + "T12:00:00"
@@ -172,7 +172,7 @@ export function AppointmentsTab({
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mt-1">
                         <a
                           href={`mailto:${a.email}`}
-                          className="text-slate-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                          className="text-lp-muted hover:text-lp-accent transition-colors flex items-center gap-1"
                         >
                           <Mail className="w-3.5 h-3.5" />
                           {a.email}
@@ -180,7 +180,7 @@ export function AppointmentsTab({
                         {a.phone && (
                           <a
                             href={`tel:${a.phone}`}
-                            className="text-slate-400 hover:text-green-300 transition-colors flex items-center gap-1"
+                            className="text-lp-muted hover:text-green-300 transition-colors flex items-center gap-1"
                           >
                             <Phone className="w-3.5 h-3.5" />
                             {a.phone}
@@ -188,7 +188,7 @@ export function AppointmentsTab({
                         )}
                       </div>
                       {a.message && (
-                        <p className="text-slate-400 text-xs mt-1.5 leading-relaxed">
+                        <p className="text-lp-muted text-xs mt-1.5 leading-relaxed">
                           {a.message}
                         </p>
                       )}
@@ -197,7 +197,7 @@ export function AppointmentsTab({
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         {isCancelling ? (
                           <div className="flex flex-col items-end gap-2 min-w-[200px]">
-                            <p className="text-xs text-slate-400 self-start">
+                            <p className="text-xs text-lp-muted self-start">
                               Nachricht an Kunden (optional):
                             </p>
                             <textarea
@@ -205,7 +205,7 @@ export function AppointmentsTab({
                               onChange={e => setCancelMessage(e.target.value)}
                               placeholder="z.B. Ich bin leider erkrankt und melde mich bald..."
                               rows={2}
-                              className="w-full bg-slate-700/60 text-white text-xs px-2.5 py-2 rounded-lg border border-slate-600 outline-none resize-none placeholder-slate-500 focus:border-red-500/60"
+                              className="w-full bg-lp-canvas text-lp-ink text-xs px-2.5 py-2 rounded-lg border border-lp-line outline-none resize-none placeholder:text-lp-muted focus:border-red-500/60"
                             />
                             <div className="flex items-center gap-2">
                               <button
@@ -232,7 +232,7 @@ export function AppointmentsTab({
                                   setCancelConfirmId(null);
                                   setCancelMessage("");
                                 }}
-                                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                                className="text-xs text-lp-muted hover:text-lp-ink/80 transition-colors"
                               >
                                 Abbrechen
                               </button>
@@ -241,7 +241,7 @@ export function AppointmentsTab({
                         ) : (
                           <button
                             onClick={() => setCancelConfirmId(a.id)}
-                            className="flex items-center gap-1 text-slate-500 hover:text-red-400 text-xs transition-colors"
+                            className="flex items-center gap-1 text-lp-muted hover:text-red-400 text-xs transition-colors"
                           >
                             <CalendarX className="w-3.5 h-3.5" />
                             Absagen
@@ -261,7 +261,7 @@ export function AppointmentsTab({
               setShowPast(v => !v);
               if (!showPast) refetchPast();
             }}
-            className="flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+            className="flex items-center gap-2 text-lp-muted hover:text-lp-ink/80 text-sm transition-colors"
           >
             <ChevronDown
               className={`w-4 h-4 transition-transform ${showPast ? "rotate-180" : ""}`}
@@ -279,14 +279,14 @@ export function AppointmentsTab({
                 .map((a: any) => (
                   <div
                     key={a.id}
-                    className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-3 flex items-center gap-3"
+                    className="bg-lp-canvas border border-lp-line/70 rounded-xl p-3 flex items-center gap-3"
                   >
-                    <Calendar className="w-4 h-4 text-slate-500 flex-shrink-0" />
+                    <Calendar className="w-4 h-4 text-lp-muted flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-slate-300 text-sm font-medium">
+                      <span className="text-lp-ink/80 text-sm font-medium">
                         {a.visitorName}
                       </span>
-                      <span className="text-slate-500 text-xs ml-2">
+                      <span className="text-lp-muted text-xs ml-2">
                         {new Date(
                           a.appointmentDate + "T12:00:00"
                         ).toLocaleDateString("de-DE", {
@@ -298,7 +298,7 @@ export function AppointmentsTab({
                       </span>
                     </div>
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-slate-400"}`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${a.status === "cancelled" ? "text-red-400" : "text-lp-muted"}`}
                     >
                       {a.status === "cancelled" ? "Abgesagt" : "Erledigt"}
                     </span>

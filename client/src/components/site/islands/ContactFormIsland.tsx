@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import type { ContactFormConfig } from "../../../../../shared/siteContract/types";
 
 type SubmitState = "idle" | "busy" | "success" | "error";
 
@@ -39,7 +40,8 @@ export const ContactFormIsland: React.FC<{
   slug: string;
   basePath?: string;
   disabled?: boolean;
-}> = ({ slug, basePath = "", disabled = false }) => {
+  config?: ContactFormConfig;
+}> = ({ slug, basePath = "", disabled = false, config }) => {
   const [state, setState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState(GENERIC_ERROR_MESSAGE);
   const actionUrl = `/api/site/${slug}/contact`;
@@ -57,6 +59,12 @@ export const ContactFormIsland: React.FC<{
     if (disabled) return;
     const form = event.currentTarget;
     const formData = new FormData(form);
+    const customFields = Object.fromEntries(
+      (config?.customFields ?? []).map(field => [
+        field.label,
+        String(formData.get(`custom-${field.id}`) ?? ""),
+      ])
+    );
     setState("busy");
     try {
       const res = await fetch(actionUrl, {
@@ -70,6 +78,7 @@ export const ContactFormIsland: React.FC<{
           email: formData.get("email"),
           phone: formData.get("phone") || undefined,
           message: formData.get("message"),
+          customFields,
           website_url: formData.get("website_url") ?? "",
         }),
       });
@@ -91,7 +100,7 @@ export const ContactFormIsland: React.FC<{
   if (state === "success") {
     return (
       <p className="pb-island-status" data-state="success" role="status">
-        {SUCCESS_MESSAGE}
+        {config?.successMessage ?? SUCCESS_MESSAGE}
       </p>
     );
   }
@@ -105,19 +114,38 @@ export const ContactFormIsland: React.FC<{
       onSubmit={handleSubmit}
     >
       <label>
-        Name
+        {config?.nameLabel ?? "Name"}
         <input type="text" name="name" required autoComplete="name" />
       </label>
       <label>
-        E-Mail
+        {config?.emailLabel ?? "E-Mail"}
         <input type="email" name="email" required autoComplete="email" />
       </label>
+      {config?.phoneEnabled !== false && (
+        <label>
+          {config?.phoneLabel ??
+            (config?.phoneRequired ? "Telefon" : "Telefon (optional)")}
+          <input
+            type="tel"
+            name="phone"
+            autoComplete="tel"
+            required={config?.phoneRequired}
+          />
+        </label>
+      )}
+      {(config?.customFields ?? []).map(field => (
+        <label key={field.id}>
+          {field.label}
+          <input
+            type="text"
+            name={`custom-${field.id}`}
+            required={field.required}
+            maxLength={255}
+          />
+        </label>
+      ))}
       <label>
-        Telefon (optional)
-        <input type="tel" name="phone" autoComplete="tel" />
-      </label>
-      <label>
-        Nachricht
+        {config?.messageLabel ?? "Nachricht"}
         <textarea name="message" required rows={5} />
       </label>
       <div className="pb-island-honeypot" aria-hidden="true">
@@ -155,7 +183,9 @@ export const ContactFormIsland: React.FC<{
         className="pb-island-submit"
         disabled={state === "busy" || disabled}
       >
-        {state === "busy" ? "Wird gesendet…" : "Nachricht senden"}
+        {state === "busy"
+          ? "Wird gesendet…"
+          : (config?.submitLabel ?? "Nachricht senden")}
       </button>
       {disabled && (
         <p className="pb-island-status" data-state="info">

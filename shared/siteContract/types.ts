@@ -4,6 +4,8 @@ import type { z } from "zod";
 // Chunk) zod nicht mitladen (B6 Task 8). SECTION_TYPES wird unten per
 // `typeof` verwendet, daher reicht der Typ-Import.
 import type {
+  ChatConfigSchema,
+  ContactFormConfigSchema,
   FeaturesSchema,
   PageSchema,
   PageSectionSchema,
@@ -23,6 +25,8 @@ export type WebsiteDataV2 = z.infer<typeof WebsiteDataV2Schema>;
 export type SectionOf<T extends SectionType> = Extract<SectionV2, { type: T }>;
 export type SiteFeatures = z.infer<typeof FeaturesSchema>;
 export type SiteAddOns = z.infer<typeof SiteAddOnsSchema>;
+export type ContactFormConfig = z.infer<typeof ContactFormConfigSchema>;
+export type ChatConfig = z.infer<typeof ChatConfigSchema>;
 /** Sektion innerhalb einer Unterseite (Page.sections) — siehe PageSectionSchema. */
 export type PageSection = z.infer<typeof PageSectionSchema>;
 export type PageSectionOf<T extends PageSection["type"]> = Extract<
