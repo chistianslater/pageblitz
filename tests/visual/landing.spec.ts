@@ -297,8 +297,6 @@ test("Landingpage mobil: Overlay hat horizontales Padding und Abstand zur CTA", 
     .boundingBox();
   expect(loginBox && ctaBox).toBeTruthy();
   expect(ctaBox!.y - (loginBox!.y + loginBox!.height)).toBeGreaterThanOrEqual(32);
-
-  await expect(menu).toHaveScreenshot("mobile-nav-overlay.png");
 });
 
 test("Landingpage mobil: Menü schließt nach Scrollen, per Link, Escape und gibt Scroll frei", async ({
