@@ -10,7 +10,8 @@
  * - Default: Sektionen faden/sliden 24px in 600ms ein.
  * - Hero-Motion gehört dem jeweiligen Pack; die geteilte Schicht greift
  *   dort nicht ein und kann die authored Motion daher nicht überschreiben.
- * - CTAs/Buttons heben sich bei Hover 2px und geben Press-Feedback (.98).
+ * - CTA-Transformationen gehören dem Pack, damit Schrägen, Druck- und
+ *   Lift-Effekte nicht durch eine spätere globale Regel überschrieben werden.
  * - Anker-Navigation scrollt weich (scroll-behavior: smooth).
  *
  * Scroll-Reveals laufen über SITE_ENHANCER_JS (IntersectionObserver in
@@ -33,14 +34,9 @@ export const MOTION_CSS = `
 .pb-site :is(section,header)[id]{scroll-margin-top:clamp(76px,10vw,132px)}
 @media (prefers-reduced-motion:no-preference){
 html{scroll-behavior:smooth}
-.pb-site a[class*="-cta"]:active,.pb-site a[class*="-btn"]:active,.pb-site button[class*="-btn"]:active{transform:scale(.98)}
 }
 html.pb-io-on .pb-site section:not(:first-of-type){opacity:0;transform:translate3d(var(--pb-enter-x),var(--pb-enter-y),0) scale(var(--pb-enter-scale));filter:blur(var(--pb-enter-blur));transition:opacity var(--pb-dur-enter) var(--pb-ease-out),transform var(--pb-dur-enter) var(--pb-ease-out),filter var(--pb-dur-enter) var(--pb-ease-out)}
 html.pb-io-on .pb-site section:not(:first-of-type).pb-in{opacity:1;transform:none;filter:none}
-@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
-.pb-site a[class*="-cta"],.pb-site a[class*="-btn"]{transition:transform var(--pb-dur-fast) var(--pb-ease-out),color .15s ease,background-color .15s ease,border-color .15s ease}
-.pb-site a[class*="-cta"]:hover,.pb-site a[class*="-btn"]:hover{transform:translateY(-2px)}
-}
 /* ── Lightbox (Galerie, 2026-08-25) — Markup baut SITE_ENHANCER_JS zur
    Laufzeit; ohne JS kein Zoom-Cursor und keine Klick-Falle. ── */
 html.pb-lb-on .pb-site #galerie img{cursor:zoom-in}

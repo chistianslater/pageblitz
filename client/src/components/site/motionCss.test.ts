@@ -19,6 +19,12 @@ describe("pack-spezifische Motion-Grundlage", () => {
     expect(MOTION_CSS).not.toContain(".pb-site h1{animation:");
   });
 
+  test("überschreibt keine pack-spezifischen CTA-Transformationen", () => {
+    expect(MOTION_CSS).not.toContain('[class*="-cta"]:hover');
+    expect(MOTION_CSS).not.toContain('[class*="-cta"]:active');
+    expect(MOTION_CSS).not.toContain('[class*="-btn"]:hover');
+  });
+
   test("animiert nur performante visuelle Eigenschaften und respektiert Reduced Motion", () => {
     expect(MOTION_CSS).toContain("translate3d");
     expect(MOTION_CSS).toContain("prefers-reduced-motion:no-preference");
