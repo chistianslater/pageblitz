@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, ArrowRight, Zap } from "lucide-react";
 import { useLocation } from "wouter";
+import { motionSafeScrollBehavior } from "@/lib/motion";
 
 interface Message {
   role: "user" | "assistant";
@@ -72,7 +73,9 @@ export default function LandingPageChatWidget() {
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    bottomRef.current?.scrollIntoView({
+      behavior: motionSafeScrollBehavior(),
+    });
   }, [messages, loading]);
 
   const openChat = useCallback(() => {
@@ -243,7 +246,7 @@ export default function LandingPageChatWidget() {
                 style={{ color: LP.muted }}
               >
                 <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  className="w-1.5 h-1.5 rounded-full animate-pulse motion-reduce:animate-none"
                   style={{ background: LP.accent }}
                 />
                 Online · antwortet sofort

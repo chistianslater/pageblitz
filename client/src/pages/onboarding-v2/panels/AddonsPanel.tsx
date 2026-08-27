@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { motionSafeScrollBehavior } from "@/lib/motion";
 import type {
   AddonsPatch,
   PagesPatch,
@@ -305,7 +306,10 @@ export function AddonsPanel({
     const id = window.requestAnimationFrame(() => {
       document
         .getElementById(`pb-addon-${initialFocusKey}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        ?.scrollIntoView({
+          behavior: motionSafeScrollBehavior(),
+          block: "center",
+        });
     });
     return () => window.cancelAnimationFrame(id);
   }, [initialFocusKey]);

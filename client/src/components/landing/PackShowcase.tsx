@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { ArrowUpRight, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { PACK_SUMMARY, type PackSummary } from "@shared/stylePacks/summary";
 import type { PackId } from "@shared/siteContract/types";
+import { motionSafeScrollBehavior } from "@/lib/motion";
 import { SectionHead, textLink } from "./primitives";
 
 interface PackCardProps {
@@ -242,7 +243,7 @@ export function PackShowcase() {
     if (!el) return;
     el.scrollBy({
       left: direction * el.clientWidth * 0.85,
-      behavior: "smooth",
+      behavior: motionSafeScrollBehavior(),
     });
   }
 

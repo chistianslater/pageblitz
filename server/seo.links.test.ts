@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { SEO_INDUSTRY_LINKS } from "../shared/seoIndustryLinks";
 import { HOME_FAQ_ITEMS } from "../shared/faq";
-import { DE_CITIES, SEO_INDUSTRIES, generateLandingPageHTML } from "./seo/landingPages";
+import {
+  DE_CITIES,
+  SEO_INDUSTRIES,
+  generateLandingPageHTML,
+  generateOverviewHTML,
+} from "./seo/landingPages";
 import { generateHomePrerender, buildHomeFaqSchema } from "./seo/homePage";
 import {
   PRICING,
@@ -74,6 +79,16 @@ describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
     expect(html).toContain("Vorschau in 3 Minuten");
     expect(html).not.toContain("3 Minuten online");
     expect(html).not.toContain("sofort online");
+  });
+
+  it("begrenzt Hover-Motion und respektiert Reduced Motion", () => {
+    expect(html).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(html).toContain("@media(hover:none),(pointer:coarse)");
+    expect(html).not.toContain("transition:all");
+
+    const overview = generateOverviewHTML();
+    expect(overview).toContain("@media(prefers-reduced-motion:reduce)");
+    expect(overview).not.toContain("transition:all");
   });
 });
 

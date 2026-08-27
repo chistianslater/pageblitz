@@ -37,7 +37,6 @@
 
 html,
 body {
-  scroll-behavior: smooth;
   /* Prevent horizontal overflow / sideways scroll on mobile.
      2026-08-25: hidden → clip. overflow-x:hidden erzwingt per CSS-Spec
      overflow-y:auto und macht den Body damit zum Scroll-Container —
@@ -48,6 +47,13 @@ body {
   overflow-x: hidden;
   overflow-x: clip;
   max-width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html,
+  body {
+    scroll-behavior: smooth;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────── */
@@ -568,7 +574,7 @@ body {
   .lp *::before,
   .lp *::after {
     transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    animation: none !important;
     scroll-behavior: auto !important;
   }
 }
