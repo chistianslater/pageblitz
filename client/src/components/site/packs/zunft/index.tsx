@@ -392,6 +392,15 @@ const ZunftPage: React.FC<{
       <DoubleRule />
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-zf-hero">
+          {hero.imageUrl && (
+            <img
+              className="pb-zf-hero-photo"
+              src={hero.imageUrl}
+              alt=""
+              loading="eager"
+              fetchPriority="high"
+            />
+          )}
           <h1 className="pb-zf-headline">
             {renderHeadline(hero.headline)}
             {year && (
