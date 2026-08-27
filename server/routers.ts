@@ -2640,7 +2640,19 @@ export const appRouter = router({
       }),
     createTestSubscription: adminProcedure
       .input(z.object({ websiteId: z.number(), userId: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        const website = await getWebsiteById(input.websiteId);
+        const expectedSlug = `admin-demo-${ctx.user.id}`;
+        if (
+          input.userId !== ctx.user.id ||
+          !website ||
+          website.slug !== expectedSlug
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Test-Abos sind nur für die eigene Admin-Demo erlaubt.",
+          });
+        }
         // Check if subscription already exists
         const existing = await getSubscriptionByWebsiteId(input.websiteId);
         if (existing) {
@@ -2659,13 +2671,25 @@ export const appRouter = router({
           });
         }
         await updateWebsite(input.websiteId, { status: "active" });
-        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
 
     unlockAllAddons: adminProcedure
       .input(z.object({ websiteId: z.number(), userId: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        const website = await getWebsiteById(input.websiteId);
+        const expectedSlug = `admin-demo-${ctx.user.id}`;
+        if (
+          input.userId !== ctx.user.id ||
+          !website ||
+          website.slug !== expectedSlug
+        ) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Test-Add-ons sind nur für die eigene Admin-Demo erlaubt.",
+          });
+        }
         // Enable all add-ons on the website row
         await updateWebsite(input.websiteId, {
           status: "active",
@@ -2705,7 +2729,6 @@ export const appRouter = router({
             updatedAt: Date.now(),
           });
         }
-        await provisionUmamiForWebsite(input.websiteId);
         return { success: true };
       }),
 

@@ -37,6 +37,8 @@ vi.mock("./db", async importOriginal => {
     createGenerationJob: vi.fn(),
     getSubscriptionByWebsiteId: vi.fn(),
     updateSubscription: vi.fn(),
+    updateSubscriptionByWebsiteId: vi.fn(),
+    createSubscription: vi.fn(),
     canActivateWebsite: vi.fn(),
   };
 });
@@ -742,5 +744,56 @@ describe("website.get — Umami-Einbindung nur für aktive Sites mit ID (Plan B6
       baseWebsiteRow({ status: "active", umamiWebsiteId: null })
     );
     expect((await caller.website.get({ id: 42 })).umami).toBeNull();
+  });
+});
+
+describe("Admin-Testwerkzeuge bleiben auf die eigene Demo begrenzt", () => {
+  test("createTestSubscription weist echte Kunden-Websites ab", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ slug: "echter-kunde" })
+    );
+    const caller = appRouter.createCaller(createAdminContext(1));
+
+    await expect(
+      caller.customer.createTestSubscription({ websiteId: 42, userId: 1 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    expect(mockedDb.updateSubscriptionByWebsiteId).not.toHaveBeenCalled();
+    expect(mockedDb.createSubscription).not.toHaveBeenCalled();
+  });
+
+  test("createTestSubscription erlaubt nur die eigene Admin-Demo", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ slug: "admin-demo-1" })
+    );
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue(undefined);
+    const caller = appRouter.createCaller(createAdminContext(1));
+
+    await caller.customer.createTestSubscription({
+      websiteId: 42,
+      userId: 1,
+    });
+
+    expect(mockedDb.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        userId: 1,
+        status: "active",
+      })
+    );
+    expect(mockedProvisionUmami).not.toHaveBeenCalled();
+  });
+
+  test("unlockAllAddons weist fremde User-ID auch bei eigener Demo ab", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ slug: "admin-demo-1" })
+    );
+    const caller = appRouter.createCaller(createAdminContext(1));
+
+    await expect(
+      caller.customer.unlockAllAddons({ websiteId: 42, userId: 2 })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });

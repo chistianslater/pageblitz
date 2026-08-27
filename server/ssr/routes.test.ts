@@ -599,6 +599,23 @@ describe("SSR routes", () => {
       );
     });
 
+    test("Admin-Demo-Websites sind noindex und laden kein Umami-Tracking", async () => {
+      (getWebsiteBySlug as Mock).mockResolvedValue({
+        slug: "admin-demo-5",
+        status: "active",
+        umamiWebsiteId: "umami-demo-id",
+        websiteData: getFixture("werkbank", "features"),
+      });
+
+      const res = await request(buildAppWithFallback()).get(
+        "/site/admin-demo-5"
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.headers["x-robots-tag"]).toContain("noindex");
+      expect(res.text).not.toContain("umami-demo-id");
+    });
+
     test("/site/FOO (uppercase) und /site/foo treffen denselben Cache-Eintrag — zweiter Request löst keinen weiteren DB-Call aus", async () => {
       (getWebsiteBySlug as Mock).mockResolvedValue({
         websiteData: getFixture("werkbank", "full"),

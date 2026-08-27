@@ -568,6 +568,7 @@ async function handleCustomerSiteSsr(
   }
 
   const isStaticPathname = STATIC_SITE_PATHNAMES.has(siteRequest.pathname);
+  const isAdminDemo = siteRequest.slug.startsWith("admin-demo-");
   const cacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${siteRequest.pathname}`;
   const notFoundCacheKey = `${siteRequest.cacheKeyPrefix}${siteRequest.slug}${NOT_FOUND_CACHE_PATH}`;
 
@@ -653,10 +654,20 @@ async function handleCustomerSiteSsr(
       // ID (Plan B6 Task 7; ID kommt aus server/umamiProvisioning.ts, die
       // nach dem Write den Cache hier invalidiert).
       umamiWebsiteId:
-        website.status === "active" ? website.umamiWebsiteId : null,
+        website.status === "active" && !isAdminDemo
+          ? website.umamiWebsiteId
+          : null,
     });
-    siteHtmlCache.set(cacheKey, { html, status, at: now });
+    siteHtmlCache.set(cacheKey, {
+      html,
+      status,
+      at: now,
+      robotsNoindex: isAdminDemo,
+    });
     capCacheSize(siteHtmlCache, MAX_CACHE_ENTRIES);
+    if (isAdminDemo) {
+      res.setHeader("X-Robots-Tag", "noindex");
+    }
     res.status(status).type("html").send(html);
   } catch (err) {
     console.error("[SSR] Kundenseiten-Render fehlgeschlagen:", err);
