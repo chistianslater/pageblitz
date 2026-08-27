@@ -244,6 +244,63 @@ test("Landingpage mobil: Burger-Menü öffnet als viewport-festes Dialog-Portal"
   await expect(page.getByRole("button", { name: "Menü öffnen" })).toBeFocused();
 });
 
+test("Landingpage mobil: Overlay hat horizontales Padding und Abstand zur CTA", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await skipCookieBanner(page);
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  const menu = page.getByRole("dialog", { name: "Navigation" });
+  await expect(menu).toBeVisible();
+
+  const gutters = menu.locator(".lp-mobile-menu-gutter");
+  await expect(gutters).toHaveCount(2);
+
+  for (let i = 0; i < 2; i++) {
+    const pads = await gutters.nth(i).evaluate(el => {
+      const style = getComputedStyle(el);
+      return {
+        left: parseFloat(style.paddingLeft),
+        right: parseFloat(style.paddingRight),
+      };
+    });
+    expect(pads.left, `gutter ${i} padding-left`).toBeGreaterThanOrEqual(24);
+    expect(pads.right, `gutter ${i} padding-right`).toBeGreaterThanOrEqual(24);
+  }
+
+  const wordmark = await menu
+    .getByRole("link", { name: "Pageblitz – Startseite" })
+    .boundingBox();
+  expect(wordmark?.x).toBeGreaterThanOrEqual(20);
+
+  const firstLink = menu.getByRole("link", { name: "Design" });
+  const firstBox = await firstLink.boundingBox();
+  expect(firstBox?.x).toBeGreaterThanOrEqual(20);
+
+  const headerBox = await gutters.first().boundingBox();
+  expect(firstBox && headerBox).toBeTruthy();
+  expect(firstBox!.y - (headerBox!.y + headerBox!.height)).toBeGreaterThanOrEqual(
+    20
+  );
+
+  const closeBox = await menu
+    .getByRole("button", { name: "Menü schließen" })
+    .boundingBox();
+  expect(closeBox).toBeTruthy();
+  expect(closeBox!.x + closeBox!.width).toBeLessThanOrEqual(390 - 16);
+
+  const loginBox = await menu.getByRole("link", { name: "Anmelden" }).boundingBox();
+  const ctaBox = await menu
+    .getByRole("button", { name: "Website kostenlos erstellen" })
+    .boundingBox();
+  expect(loginBox && ctaBox).toBeTruthy();
+  expect(ctaBox!.y - (loginBox!.y + loginBox!.height)).toBeGreaterThanOrEqual(32);
+
+  await expect(menu).toHaveScreenshot("mobile-nav-overlay.png");
+});
+
 test("Landingpage mobil: Menü schließt nach Scrollen, per Link, Escape und gibt Scroll frei", async ({
   page,
 }) => {

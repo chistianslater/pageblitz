@@ -21,6 +21,8 @@ const NAV_LINKS = [
  * hebt position:sticky auf — nach dem Scrollen lag das Header-X damit
  * außerhalb des Viewports und das Menü ließ sich nicht mehr schließen.
  * Escape, Link-Tap, Overlay-X und Body-Scroll-Lock (iOS: position:fixed).
+ * Horizontales Padding über `.lp-mobile-menu-gutter` (nicht `.lp-container`):
+ * das Portal liegt außerhalb von `.lp`, wo `--lp-gutter` früher nicht galt.
  */
 export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
   const [, navigate] = useLocation();
@@ -130,6 +132,8 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
     };
 
   const mobileMenu =
+    // Eigenes Gutter statt `.lp-container`: Portal hängt an document.body,
+    // außerhalb von `.lp` — dort war `--lp-gutter` undefined und Padding 0.
     isOpen && typeof document !== "undefined" ? (
       <div
         ref={dialogRef}
@@ -139,7 +143,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
         aria-label="Navigation"
         className="fixed inset-0 z-[100] flex flex-col bg-lp-canvas md:hidden"
       >
-        <div className="lp-container flex h-[4.25rem] shrink-0 items-center justify-between border-b border-lp-line">
+        <div className="lp-mobile-menu-gutter flex h-[4.25rem] shrink-0 items-center justify-between border-b border-lp-line">
           <a
             href="/"
             className="rounded-md"
@@ -156,13 +160,13 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             type="button"
             onClick={() => close()}
             aria-label="Menü schließen"
-            className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
         <div
-          className="lp-container flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]"
+          className="lp-mobile-menu-gutter flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-6 pb-[max(2.5rem,env(safe-area-inset-bottom))]"
           onClick={event => {
             if (event.target === event.currentTarget) close();
           }}
@@ -190,7 +194,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
           <button
             type="button"
             onClick={goStart}
-            className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
+            className={`${pillInk} mt-10 h-14 w-full text-[1.05rem]`}
           >
             Website kostenlos erstellen
           </button>

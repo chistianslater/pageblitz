@@ -26,4 +26,21 @@ describe("LandingNav", () => {
     expect(html).toContain('href="#faq"');
     expect(html).toContain('href="/login"');
   });
+
+  test("Overlay-Markup im Source nutzt eigenes Gutter, nicht lp-container", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join } = await import("node:path");
+    const { fileURLToPath } = await import("node:url");
+    const src = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "LandingNav.tsx"),
+      "utf8"
+    );
+    const overlay = src.slice(
+      src.indexOf('id="lp-mobile-menu"'),
+      src.indexOf("sticky top-0")
+    );
+    expect(overlay).toContain("lp-mobile-menu-gutter");
+    expect(overlay).not.toContain("lp-container");
+    expect(overlay).not.toContain("-mr-2");
+  });
 });

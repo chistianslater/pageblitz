@@ -33,6 +33,10 @@
   --lp-warn: #a4441f;
   --lp-font: "Space Grotesk", system-ui, sans-serif;
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Layout-Gutter global: `.lp-container` und Portale (Mobile-Nav auf
+     document.body, Cookie-Banner) sitzen außerhalb von `.lp`. Nur dort
+     definiert war `padding-inline: var(--lp-gutter)` ungültig → 0. */
+  --lp-gutter: clamp(1.25rem, 4vw, 3rem);
 }
 
 html,
@@ -474,9 +478,9 @@ body {
    Layout in client/src/components/landing/*.tsx per Tailwind-Klassen
    (bg-lp-canvas …). */
 .lp {
-  /* Farb-/Schrift-Tokens stehen in :root (oben); hier nur Layout-Maße. */
+  /* Farb-/Schrift-Tokens und --lp-gutter stehen in :root (oben); hier
+     nur sektionsspezifische Layout-Maße. */
   --lp-section: clamp(4rem, 3rem + 5vw, 9rem);
-  --lp-gutter: clamp(1.25rem, 4vw, 3rem);
   font-family: var(--lp-font);
   background: var(--lp-canvas);
   color: var(--lp-ink);
@@ -503,7 +507,7 @@ body {
   width: 100%;
   max-width: 1200px;
   margin-inline: auto;
-  padding-inline: var(--lp-gutter);
+  padding-inline: var(--lp-gutter, 1.5rem);
 }
 .lp-section {
   padding-block: var(--lp-section);
@@ -870,6 +874,20 @@ html.lp-nav-open .pb-chat-window {
 html.lp-nav-open,
 html.lp-nav-open body {
   overscroll-behavior: none;
+}
+/* Overlay-Portal auf document.body: eigenes Gutter inkl. Safe-Area, unabhängig
+   davon ob --lp-gutter vererbt wird. 1.5rem ≈ 24px — komfortabel bei ~390px. */
+#lp-mobile-menu {
+  padding-top: env(safe-area-inset-top, 0px);
+  font-family: var(--lp-font);
+}
+#lp-mobile-menu :focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 2px;
+}
+.lp-mobile-menu-gutter {
+  padding-inline-start: max(1.5rem, env(safe-area-inset-left, 0px));
+  padding-inline-end: max(1.5rem, env(safe-area-inset-right, 0px));
 }
 
 /* ── Strukturzeichnungen (2026-08-25): StudioProof-Diagramme + Chat-Skizze ──
