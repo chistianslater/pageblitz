@@ -381,6 +381,7 @@ export default function CustomerDashboard() {
     myWebsites.find(e => e.website.id === selectedWebsiteId) || myWebsites[0];
   const { website, business, subscription } = selectedEntry;
   const websiteData = website.websiteData as any;
+  const isAdminDemo = subscription?.plan === "admin-demo";
   // Null-Guard (Final-Review Minor, Abschluss-Fixwelle B): previewToken kann
   // fehlen (z. B. nach manueller DB-Korrektur) — ohne Guard rendern die
   // Studio-Links `/onboarding/undefined` statt eines funktionierenden Links
@@ -542,6 +543,23 @@ export default function CustomerDashboard() {
           </a>
         </div>
       </header>
+
+      {isAdminDemo && (
+        <div className="border-b border-amber-400/30 bg-amber-400/10">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5">
+            <p className="text-sm text-amber-100">
+              <strong>Admin-Demo:</strong> Diese Website ist deine isolierte
+              Testumgebung. Änderungen betreffen keine Kunden.
+            </p>
+            <a
+              href="/admin"
+              className="text-sm font-medium text-amber-200 underline underline-offset-4 hover:text-white"
+            >
+              Zurück zum Adminbereich
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* ── Setup-Checkliste Banner (sticky, direkt unter dem Header) ── */}
       {!allDone && !setupOpen && (
