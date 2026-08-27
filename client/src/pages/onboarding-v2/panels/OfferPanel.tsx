@@ -112,6 +112,17 @@ export function offerDraftsFromDoc(
   };
 }
 
+/**
+ * Extra-Klick auf Speisekarte/Preisliste gewinnt gegen `offerFromDoc`, das
+ * eine vorhandene Leistungen-Sektion bevorzugt.
+ */
+export function initialOfferMode(
+  doc: WebsiteDataV2,
+  requested?: OfferMode
+): OfferMode {
+  return requested ?? offerFromDoc(doc).mode;
+}
+
 interface OfferPanelProps {
   token: string;
   doc: WebsiteDataV2;
@@ -133,11 +144,12 @@ export function OfferPanel({
   onPreviewFocus,
   initialMode,
 }: OfferPanelProps) {
-  const initial = offerFromDoc(doc);
   const [drafts, setDrafts] = useState<Record<OfferMode, OfferPatch>>(() =>
     offerDraftsFromDoc(doc)
   );
-  const [mode, setMode] = useState<OfferMode>(initialMode ?? initial.mode);
+  const [mode, setMode] = useState<OfferMode>(() =>
+    initialOfferMode(doc, initialMode)
+  );
   const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
     onPreviewFocus?.(

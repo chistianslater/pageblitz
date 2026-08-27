@@ -113,6 +113,50 @@ describe("AddonsList", () => {
     expect(html).toContain("Weniger Hürden bis zur Anfrage");
     expect(html).toContain("pb-studio-addon-icon");
   });
+
+  test("gebuchte Speisekarte: Bearbeiten ist die Hauptaktion, Toggle bleibt sekundär", () => {
+    const html = renderToStaticMarkup(
+      <AddonsList
+        value={{ menu: true, gallery: true }}
+        onToggle={() => {}}
+        interval="yearly"
+        onEditExtra={() => {}}
+      />
+    );
+    expect(html).toContain('data-open-extra="menu"');
+    expect(html).toContain('data-edit-kind="openPanel"');
+    expect(html).toContain('data-open-extra="gallery"');
+    expect(html).toContain(">Bearbeiten<");
+    expect(html).toContain(">Ausgewählt<");
+    expect(html).toContain('data-has-editor="true"');
+  });
+
+  test("ungebuchtes Extra hat keinen Bearbeiten-Button, nur Hinzufügen", () => {
+    const html = renderToStaticMarkup(
+      <AddonsList
+        value={{ menu: false }}
+        onToggle={() => {}}
+        interval="yearly"
+        onEditExtra={() => {}}
+      />
+    );
+    expect(html).not.toContain('data-open-extra="menu"');
+    expect(html).toContain(">Hinzufügen<");
+    expect(html).not.toContain(">Bearbeiten<");
+  });
+
+  test("gebuchtes Team: Bearbeiten scrollt zum Editor, nicht zum Kauf-Toggle", () => {
+    const html = renderToStaticMarkup(
+      <AddonsList
+        value={{ team: true }}
+        onToggle={() => {}}
+        interval="yearly"
+        onEditExtra={() => {}}
+      />
+    );
+    expect(html).toContain('data-open-extra="team"');
+    expect(html).toContain('data-edit-kind="scrollEditor"');
+  });
 });
 
 describe("AddonsPanel", () => {
@@ -189,6 +233,8 @@ describe("AddonsPanel", () => {
     expect(html).toContain('value="Meisterin"');
     expect(html).toContain(">Übernehmen<");
     expect(html).toContain('id="pb-addon-editor-team"');
+    expect(html).toContain('data-open-extra="team"');
+    expect(html).toContain('data-edit-kind="scrollEditor"');
   });
 
   test("gebuchte Galerie zeigt Sprung in den Foto-Editor", () => {
@@ -204,6 +250,52 @@ describe("AddonsPanel", () => {
     );
     expect(html).toContain("Gebuchte Extras pflegen");
     expect(html).toContain("Bildergalerie bearbeiten");
+    expect(html).toContain('data-open-extra="gallery"');
+    expect(html).toContain('data-edit-kind="openPanel"');
+  });
+
+  test("gebuchte Speisekarte in der Übersicht öffnet den Speisekarten-Editor", () => {
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={blankDoc}
+        addOns={{ menu: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+        onOpenExtraEditor={() => {}}
+      />
+    );
+    expect(html).toContain('data-open-extra="menu"');
+    expect(html).toContain('data-edit-kind="openPanel"');
+    expect(html).toContain("Speisekarte bearbeiten");
+    expect(html).toContain(">Bearbeiten<");
+  });
+
+  test("Galerie-Überschrift in den Extras nutzt keinen Editor-Anker — der liegt im Foto-Panel", () => {
+    const docWithGallery: WebsiteDataV2 = {
+      ...blankDoc,
+      sections: [
+        ...blankDoc.sections,
+        {
+          type: "gallery",
+          headline: "Impressionen",
+          images: [{ url: "https://x/1.jpg", alt: "A" }],
+        },
+      ],
+    };
+    const html = renderWithTrpc(
+      <AddonsPanel
+        token={"t".repeat(32)}
+        doc={docWithGallery}
+        addOns={{ gallery: true }}
+        onApplied={() => {}}
+        onClose={() => {}}
+        onOpenExtraEditor={() => {}}
+      />
+    );
+    expect(html).toContain('id="pb-addon-heading-gallery"');
+    expect(html).not.toContain('id="pb-addon-editor-gallery"');
+    expect(html).toContain('data-open-extra="gallery"');
   });
 
   test("KI-Chat und Terminbuchung tragen Scroll-Anker für Extra-Klicks", () => {
@@ -218,6 +310,9 @@ describe("AddonsPanel", () => {
     );
     expect(html).toContain('id="pb-addon-editor-aiChat"');
     expect(html).toContain('id="pb-addon-editor-booking"');
+    expect(html).toContain('data-open-extra="aiChat"');
+    expect(html).toContain('data-open-extra="booking"');
+    expect(html).toContain('data-edit-kind="scrollEditor"');
   });
 });
 
@@ -337,6 +432,8 @@ describe("AddonsPanel — Unterseiten (Plan B6, Task 5)", () => {
     expect(html).toContain('value="leistungen-im-detail"');
     expect(html).toContain(">Übernehmen<");
     expect(html).toContain('id="pb-addon-editor-subpages"');
+    expect(html).toContain('data-open-extra="subpages"');
+    expect(html).toContain('data-edit-kind="scrollEditor"');
   });
 
   test("pagesFromDoc liest pages[] bzw. liefert eine leere Liste", () => {

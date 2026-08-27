@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { OfferEditor, offerFromDoc, offerDraftsFromDoc, validateOffer } from "./OfferPanel";
+import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, validateOffer } from "./OfferPanel";
 
 const docWithServices: WebsiteDataV2 = {
   version: 2,
@@ -120,6 +120,31 @@ describe("offerDraftsFromDoc", () => {
     if (drafts.menu.mode === "menu") {
       expect(drafts.menu.categories[0]?.name).toBe("Pizza");
     }
+  });
+
+  test("initialOfferMode: Speisekarte gewinnt gegen vorhandene Leistungen-Sektion", () => {
+    const both: WebsiteDataV2 = {
+      ...docWithServices,
+      sections: [
+        { type: "hero", headline: "H" },
+        {
+          type: "services",
+          headline: "Leistungen",
+          items: [{ title: "Beratung" }],
+        },
+        {
+          type: "menu",
+          headline: "Karte",
+          categories: [
+            { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
+          ],
+        },
+      ],
+    };
+    expect(offerFromDoc(both).mode).toBe("services");
+    expect(initialOfferMode(both, "menu")).toBe("menu");
+    expect(initialOfferMode(both, "pricelist")).toBe("pricelist");
+    expect(initialOfferMode(both)).toBe("services");
   });
 });
 

@@ -61,5 +61,28 @@ describe("Checklist", () => {
     expect(html).toContain("Fotos hochladen, löschen und sortieren");
     expect(html).toContain(">Erledigt<");
     expect(html).toContain('aria-current="step"');
+    expect(html).toContain('data-extra-key="gallery"');
+    expect(html).toContain('data-open-panel="photos"');
+  });
+
+  test("Speisekarte-Unterpunkt öffnet das Angebot, nicht nur die Extras-Übersicht", () => {
+    const items = deriveChecklistState(null, {
+      studioProgress: { addonsReviewed: true },
+    });
+    const html = renderToStaticMarkup(
+      <Checklist
+        items={items}
+        activeId={null}
+        onSelect={() => {}}
+        activeAddOns={["menu", "pricelist", "team"]}
+        onSelectAddOn={() => {}}
+      />
+    );
+    expect(html).toContain('data-extra-key="menu"');
+    expect(html).toContain('data-open-panel="offer"');
+    expect(html).toContain('data-extra-key="pricelist"');
+    expect(html).toContain('data-extra-key="team"');
+    expect(html).toContain('data-open-panel="addons"');
+    expect(html).toContain("Gerichte, Kategorien und Preise pflegen");
   });
 });

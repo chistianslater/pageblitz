@@ -68,6 +68,8 @@ export function Checklist({
                     <button
                       type="button"
                       title={ADDON_EDITORS[key].hint}
+                      data-extra-key={key}
+                      data-open-panel={ADDON_EDITORS[key].panel}
                       aria-current={extraFocus === key ? "step" : undefined}
                       onClick={() => onSelectAddOn?.(key)}
                     >

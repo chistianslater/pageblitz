@@ -4,6 +4,7 @@ import type { WebsiteDataV2 } from "../siteContract/types";
 import {
   ADDON_EDITORS,
   addonContentDone,
+  extraEditIntent,
   isAddOnKey,
 } from "./addonEditors";
 
@@ -33,6 +34,33 @@ describe("ADDON_EDITORS", () => {
     expect(ADDON_EDITORS.team.panel).toBe("addons");
     expect(ADDON_EDITORS.team.editorDomId).toBe("pb-addon-editor-team");
     expect(ADDON_EDITORS.subpages.editorDomId).toBe("pb-addon-editor-subpages");
+  });
+
+  test("extraEditIntent: Speisekarte öffnet Angebot, Team scrollt zum Editor", () => {
+    expect(extraEditIntent("menu")).toEqual({
+      kind: "openPanel",
+      panel: "offer",
+      extra: "menu",
+    });
+    expect(extraEditIntent("gallery")).toEqual({
+      kind: "openPanel",
+      panel: "photos",
+      extra: "gallery",
+    });
+    expect(extraEditIntent("pricelist")).toEqual({
+      kind: "openPanel",
+      panel: "offer",
+      extra: "pricelist",
+    });
+    expect(extraEditIntent("team")).toEqual({
+      kind: "scrollEditor",
+      editorDomId: "pb-addon-editor-team",
+      extra: "team",
+    });
+    expect(extraEditIntent("subpages").kind).toBe("scrollEditor");
+    expect(extraEditIntent("contactForm").kind).toBe("scrollEditor");
+    expect(extraEditIntent("aiChat").kind).toBe("scrollEditor");
+    expect(extraEditIntent("booking").kind).toBe("scrollEditor");
   });
 });
 

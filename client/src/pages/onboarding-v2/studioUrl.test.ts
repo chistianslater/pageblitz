@@ -75,6 +75,20 @@ describe("parseExtraParam / withStudioParams / resolveStudioLocation", () => {
       extra: "gallery",
     });
   });
+  test("Speisekarte-Deep-Link öffnet das Angebots-Panel, nicht die Extras-Übersicht", () => {
+    expect(resolveStudioLocation("?extra=menu")).toEqual({
+      panel: "offer",
+      extra: "menu",
+    });
+    expect(resolveStudioLocation("?panel=addons&extra=menu")).toEqual({
+      panel: "offer",
+      extra: "menu",
+    });
+    expect(resolveStudioLocation("?extra=team")).toEqual({
+      panel: "addons",
+      extra: "team",
+    });
+  });
   test("ohne extra gilt das panel", () => {
     expect(resolveStudioLocation("?panel=legal")).toEqual({
       panel: "legal",

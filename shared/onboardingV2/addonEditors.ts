@@ -76,6 +76,27 @@ export function isAddOnKey(value: string): value is AddOnKey {
   return (ADDON_KEYS as readonly string[]).includes(value);
 }
 
+export type ExtraEditIntent =
+  | { kind: "openPanel"; panel: ChecklistItemId; extra: AddOnKey }
+  | { kind: "scrollEditor"; editorDomId: string; extra: AddOnKey };
+
+/**
+ * Was ein Klick auf ein gebuchtes Extra tun soll: Galerie/Speisekarte/
+ * Preisliste öffnen ihr Inhaltspanel; Team, Unterseiten, Formular, Chat
+ * und Buchung bleiben in den Extras und scrollen zum Editor-Block.
+ */
+export function extraEditIntent(key: AddOnKey): ExtraEditIntent {
+  const editor = ADDON_EDITORS[key];
+  if (editor.editorDomId) {
+    return {
+      kind: "scrollEditor",
+      editorDomId: editor.editorDomId,
+      extra: key,
+    };
+  }
+  return { kind: "openPanel", panel: editor.panel, extra: key };
+}
+
 export interface AddonContentContext {
   chatWelcomeMessage?: string | null;
 }

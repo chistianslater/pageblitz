@@ -12,7 +12,10 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { motionSafeScrollBehavior } from "@/lib/motion";
-import { ADDON_EDITORS } from "@shared/onboardingV2/addonEditors";
+import {
+  ADDON_EDITORS,
+  extraEditIntent,
+} from "@shared/onboardingV2/addonEditors";
 import type {
   AddonsPatch,
   PagesPatch,
@@ -156,6 +159,11 @@ interface AddonsListProps {
   onToggle: (k: AddOnKey) => void;
   interval: BillingInterval;
   focusKey?: AddOnKey | null;
+  /**
+   * Gebuchtes Extra: Klick auf Karte/Titel/Bearbeiten öffnet den Inhalt
+   * statt nur den Kauf-Toggle umzuschalten.
+   */
+  onEditExtra?: (k: AddOnKey) => void;
 }
 
 /** Reine Darstellung: Schalter je bindbarem Add-on mit Preis, gesperrte "bald verfügbar"-Zeilen, Gesamtsumme inkl. Basispreis. */
@@ -164,6 +172,7 @@ export function AddonsList({
   onToggle,
   interval,
   focusKey = null,
+  onEditExtra,
 }: AddonsListProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(value));
   const activeCount = TOGGLEABLE_KEYS.filter(key => value[key]).length;
@@ -174,13 +183,30 @@ export function AddonsList({
           const meta = ADDON_META[key];
           const Icon = meta.icon;
           const active = value[key] === true;
+          const canEdit = active && !!onEditExtra;
+          const editKind = extraEditIntent(key).kind;
           return (
             <li
               id={`pb-addon-${key}`}
               className="pb-studio-addon-card"
               data-active={active || undefined}
               data-focused={focusKey === key || undefined}
+              data-has-editor={canEdit || undefined}
               key={key}
+              onClick={
+                canEdit
+                  ? event => {
+                      if (
+                        (event.target as HTMLElement).closest(
+                          ".pb-studio-addon-toggle"
+                        )
+                      ) {
+                        return;
+                      }
+                      onEditExtra?.(key);
+                    }
+                  : undefined
+              }
             >
               <div className="pb-studio-addon-card-head">
                 <span className="pb-studio-addon-icon">
@@ -193,14 +219,33 @@ export function AddonsList({
               <h3>{ADDON_NAMES[key]}</h3>
               <p>{meta.description}</p>
               <span className="pb-studio-addon-benefit">{meta.benefit}</span>
-              <button
-                type="button"
-                className="pb-studio-addon-toggle"
-                aria-pressed={active}
-                onClick={() => onToggle(key)}
-              >
-                {active ? "Ausgewählt" : "Hinzufügen"}
-              </button>
+              <div className="pb-studio-addon-actions">
+                {canEdit && (
+                  <button
+                    type="button"
+                    className="pb-studio-addon-edit"
+                    data-open-extra={key}
+                    data-edit-kind={editKind}
+                    onClick={event => {
+                      event.stopPropagation();
+                      onEditExtra?.(key);
+                    }}
+                  >
+                    Bearbeiten
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="pb-studio-addon-toggle"
+                  aria-pressed={active}
+                  onClick={event => {
+                    event.stopPropagation();
+                    onToggle(key);
+                  }}
+                >
+                  {active ? "Ausgewählt" : "Hinzufügen"}
+                </button>
+              </div>
             </li>
           );
         })}
@@ -296,6 +341,8 @@ export function AddonsPanel({
     pricelist: readHeadline("pricelist"),
   });
   const [chatWelcome, setChatWelcome] = useState(chatWelcomeMessage ?? "");
+  const [cardFocusKey, setCardFocusKey] = useState<AddOnKey | null>(null);
+  const focusKey = cardFocusKey ?? initialFocusKey;
 
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const updateTeam = trpc.onboardingV2.updateTeam.useMutation();
@@ -307,6 +354,10 @@ export function AddonsPanel({
   const pagesBusy = updatePages.isPending;
   const teamErrors = validateTeam(team.members);
   const pagesErrors = validatePages(pages);
+
+  useEffect(() => {
+    setCardFocusKey(null);
+  }, [initialFocusKey]);
 
   useEffect(() => {
     if (!initialFocusKey) return;
@@ -322,6 +373,26 @@ export function AddonsPanel({
     });
     return () => window.cancelAnimationFrame(id);
   }, [initialFocusKey]);
+
+  const scrollToAddonEditor = (key: AddOnKey) => {
+    const intent = extraEditIntent(key);
+    if (intent.kind !== "scrollEditor") return;
+    const target = document.getElementById(intent.editorDomId);
+    target?.scrollIntoView({
+      behavior: motionSafeScrollBehavior(),
+      block: "center",
+    });
+  };
+
+  const handleEditExtra = (key: AddOnKey) => {
+    const intent = extraEditIntent(key);
+    if (intent.kind === "openPanel") {
+      onOpenExtraEditor?.(key);
+      return;
+    }
+    setCardFocusKey(key);
+    scrollToAddonEditor(key);
+  };
 
   const handleToggle = (key: AddOnKey) => {
     setValue(prev => ({ ...prev, [key]: !prev[key] }));
@@ -452,7 +523,8 @@ export function AddonsPanel({
         value={value}
         onToggle={handleToggle}
         interval="yearly"
-        focusKey={initialFocusKey}
+        focusKey={focusKey}
+        onEditExtra={handleEditExtra}
       />
       {onOpenExtraEditor &&
         (value.gallery || value.menu || value.pricelist) && (
@@ -510,8 +582,18 @@ export function AddonsPanel({
             {quickHeadingSettings.map(setting => (
               <label
                 key={setting.section}
-                id={`pb-addon-editor-${setting.addOn}`}
+                id={
+                  extraEditIntent(setting.addOn).kind === "scrollEditor"
+                    ? `pb-addon-editor-${setting.addOn}`
+                    : `pb-addon-heading-${setting.addOn}`
+                }
                 className="pb-studio-field"
+                data-focused={
+                  extraEditIntent(setting.addOn).kind === "scrollEditor" &&
+                  focusKey === setting.addOn
+                    ? true
+                    : undefined
+                }
               >
                 <span>{setting.label}</span>
                 <input
@@ -533,6 +615,9 @@ export function AddonsPanel({
                 <div
                   id="pb-addon-editor-contactForm"
                   className="pb-studio-addon-dashboard-note"
+                  data-focused={
+                    focusKey === "contactForm" ? true : undefined
+                  }
                 >
                   <MessageSquareText aria-hidden="true" />
                   <div>
@@ -545,7 +630,11 @@ export function AddonsPanel({
                 </div>
               )}
             {value.aiChat && (
-              <label id="pb-addon-editor-aiChat" className="pb-studio-field">
+              <label
+                id="pb-addon-editor-aiChat"
+                className="pb-studio-field"
+                data-focused={focusKey === "aiChat" ? true : undefined}
+              >
                 <span>Begrüßung im KI-Chat</span>
                 <input
                   type="text"
@@ -561,6 +650,7 @@ export function AddonsPanel({
               <div
                 id="pb-addon-editor-booking"
                 className="pb-studio-addon-dashboard-note"
+                data-focused={focusKey === "booking" ? true : undefined}
               >
                 <CalendarDays aria-hidden="true" />
                 <div>
@@ -606,6 +696,7 @@ export function AddonsPanel({
         <div
           id="pb-addon-editor-team"
           className="pb-studio-rows pb-studio-addon-settings"
+          data-focused={focusKey === "team" ? true : undefined}
         >
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Team pflegen
@@ -630,6 +721,7 @@ export function AddonsPanel({
         <div
           id="pb-addon-editor-subpages"
           className="pb-studio-rows pb-studio-addon-settings"
+          data-focused={focusKey === "subpages" ? true : undefined}
         >
           <h3 style={{ fontSize: "1rem", fontWeight: 600, margin: 0 }}>
             Unterseiten pflegen

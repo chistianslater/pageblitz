@@ -104,9 +104,12 @@ export function PhotosPanel({
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
 
   // Galerie ist Add-on-Inhalt (Plan B6 Task 6): Gating-Quelle ist
-  // `doc.addOns.gallery` (dieselbe wie SSR/CSR, engine.ts). Ohne Add-on
-  // zeigt das Ziel „Galerie" den Hinweis + Schalter statt des Rasters.
-  const galleryBooked = doc.addOns?.gallery === true;
+  // `doc.addOns.gallery` (dieselbe wie SSR/CSR, engine.ts). Der Studio-
+  // State (`addOns`-Prop) gilt zusätzlich — Dashboard-Kauf schreibt zuerst
+  // ins Abo, und Extra-Klick darf den Editor nicht hinter dem Hinweis
+  // verstecken, nur weil das Dokument noch nachzieht.
+  const galleryBooked =
+    doc.addOns?.gallery === true || addOns.gallery === true;
   const activateGallery = () => {
     const patch: AddonsPatch = {
       ...(sanitizeAddOns(addOns) as Required<AddOnFlags>),

@@ -1319,8 +1319,14 @@
   background: color-mix(in srgb, var(--st-accent) 6%, var(--st-canvas));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--st-accent) 30%, transparent);
 }
-.pb-studio-addon-card[data-focused] {
+.pb-studio-addon-card[data-focused],
+.pb-studio-addon-settings[data-focused],
+.pb-studio-field[data-focused],
+.pb-studio-addon-dashboard-note[data-focused] {
   animation: pb-addon-focus 1.1s ease-out both;
+}
+.pb-studio-addon-card[data-has-editor] {
+  cursor: pointer;
 }
 @keyframes pb-addon-focus {
   0% {
@@ -1383,6 +1389,26 @@
   font-size: 0.72rem;
   font-weight: 600;
 }
+.pb-studio-addon-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 0.7rem;
+}
+.pb-studio-addon-edit {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--st-accent);
+  border-radius: 999px;
+  background: var(--st-accent);
+  color: var(--st-accent-ink);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
 .pb-studio-addon-toggle {
   width: 100%;
   margin-top: auto;
@@ -1400,6 +1426,13 @@
   border-color: var(--st-accent);
   background: var(--st-accent);
   color: var(--st-accent-ink);
+}
+.pb-studio-addon-card[data-has-editor] .pb-studio-addon-toggle {
+  margin-top: 0;
+}
+.pb-studio-addon-card[data-has-editor] .pb-studio-addon-toggle[aria-pressed="true"] {
+  background: transparent;
+  color: var(--st-ink);
 }
 .pb-studio-addon-total {
   display: flex;
@@ -1489,7 +1522,10 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pb-studio-addon-card[data-focused] {
+  .pb-studio-addon-card[data-focused],
+  .pb-studio-addon-settings[data-focused],
+  .pb-studio-field[data-focused],
+  .pb-studio-addon-dashboard-note[data-focused] {
     animation: none;
     box-shadow: 0 0 0 2px var(--st-accent);
   }
