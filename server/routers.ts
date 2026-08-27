@@ -69,6 +69,7 @@ import {
   deleteChatTranscriptById,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
+import { ensureAdminDemoWebsite } from "./adminDemoWebsite";
 import {
   chatLeads,
   generatedWebsites,
@@ -2027,6 +2028,10 @@ export const appRouter = router({
   // ── Self-Service: Start without GMB ────────────────────────────────
   // ── Customer Dashboard ──────────────────────────────
   customer: router({
+    ensureAdminDemoWebsite: adminProcedure.mutation(async ({ ctx }) => {
+      return ensureAdminDemoWebsite(ctx.user);
+    }),
+
     getMyWebsites: protectedProcedure.query(async ({ ctx }) => {
       const userId = ctx.user.id;
       const rows = await getWebsitesByUserId(userId);
