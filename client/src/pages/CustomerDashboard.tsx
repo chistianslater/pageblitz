@@ -128,6 +128,21 @@ export default function CustomerDashboard() {
     isLoading,
     refetch,
   } = trpc.customer.getMyWebsites.useQuery(undefined, { enabled: !!user });
+  const ensureAdminDemoMutation =
+    trpc.customer.ensureAdminDemoWebsite.useMutation({
+      onSuccess: async result => {
+        setSelectedWebsiteId(result.websiteId);
+        await refetch();
+        toast.success(
+          result.created
+            ? "Deine Kundenbackend-Demo ist bereit."
+            : "Kundenbackend-Demo geöffnet."
+        );
+      },
+      onError: error => {
+        toast.error(`Demo konnte nicht angelegt werden: ${error.message}`);
+      },
+    });
 
   const { data: onboardingData, isError: onboardingDataError } =
     trpc.customer.getOnboardingData.useQuery(
@@ -308,23 +323,55 @@ export default function CustomerDashboard() {
   }
 
   if (!myWebsites || myWebsites.length === 0) {
+    const isAdmin = user.role === "admin";
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center text-white max-w-sm mx-auto px-6">
+        <div className="text-center text-white max-w-md mx-auto px-6">
           <div className="w-16 h-16 rounded-2xl bg-slate-700 flex items-center justify-center mx-auto mb-6">
-            <Globe className="w-8 h-8 text-slate-400" />
+            {isAdmin ? (
+              <Sparkles className="w-8 h-8 text-blue-300" />
+            ) : (
+              <Globe className="w-8 h-8 text-slate-400" />
+            )}
           </div>
-          <h1 className="text-2xl font-bold mb-3">Keine Website gefunden</h1>
+          <h1 className="text-2xl font-bold mb-3">
+            {isAdmin ? "Kundenbackend testen" : "Keine Website gefunden"}
+          </h1>
           <p className="text-slate-400 mb-6">
-            Du hast noch keine aktive Website. Erstelle jetzt deine erste
-            Website!
+            {isAdmin
+              ? "Lege eine isolierte Demo-Website für deinen Admin-Account an. Du kannst danach alle Kundenfunktionen ausprobieren, ohne echte Kundendaten zu verändern."
+              : "Du hast noch keine aktive Website. Erstelle jetzt deine erste Website!"}
           </p>
-          <a
-            href="/start"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
-          >
-            Website gratis erstellen
-          </a>
+          {isAdmin ? (
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => ensureAdminDemoMutation.mutate()}
+                disabled={ensureAdminDemoMutation.isPending}
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-wait disabled:opacity-60"
+              >
+                {ensureAdminDemoMutation.isPending && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
+                {ensureAdminDemoMutation.isPending
+                  ? "Demo wird vorbereitet…"
+                  : "Demo-Website anlegen"}
+              </button>
+              <a
+                href="/admin"
+                className="text-sm text-slate-400 underline underline-offset-4 hover:text-white"
+              >
+                Zurück zum Adminbereich
+              </a>
+            </div>
+          ) : (
+            <a
+              href="/start"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+            >
+              Website gratis erstellen
+            </a>
+          )}
         </div>
       </div>
     );

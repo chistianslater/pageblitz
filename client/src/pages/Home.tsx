@@ -1,6 +1,16 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, Mail, BarChart3, Building2, Eye, CheckCircle, ShoppingCart, Zap } from "lucide-react";
+import {
+  Globe,
+  Mail,
+  BarChart3,
+  Building2,
+  Eye,
+  CheckCircle,
+  ShoppingCart,
+  Zap,
+  UserRoundCog,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
@@ -77,7 +87,13 @@ export default function Home() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <QuickAction
+              title="Kundenbackend testen"
+              description="Eigene Demo-Website wie ein Kunde verwalten"
+              href="/my-website"
+              icon={<UserRoundCog className="h-5 w-5" />}
+            />
             <QuickAction
               title="Unternehmen suchen"
               description="Finde Unternehmen ohne Website über Google Maps"

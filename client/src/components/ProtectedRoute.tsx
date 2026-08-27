@@ -16,7 +16,7 @@ function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading, isAuthenticated } = useAuth({
     redirectOnUnauthenticated: !fallback,
-    redirectPath: "/login",
+    redirectPath: requireAdmin ? "/admin-login" : "/login",
   });
   const [, navigate] = useLocation();
 
@@ -25,7 +25,7 @@ function ProtectedRoute({
     if (loading) return;
     if (!isAuthenticated) return;
     if (requireAdmin && user?.role !== "admin") {
-      navigate("/login?error=unauthorized");
+      navigate("/admin-login?error=unauthorized");
     }
   }, [user, loading, isAuthenticated, requireAdmin, navigate]);
 
