@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
+import { trapTabKey } from "@/components/site/islands/focusTrap";
 import { Wordmark, pillInk, startHref } from "./primitives";
 
 const NAV_LINKS = [
@@ -13,15 +14,22 @@ const NAV_LINKS = [
 
 /**
  * Sticky Navigation: transparent auf dem Canvas, nach dem ersten Scrollen
- * Surface mit Hairline. Mobile: Vollflächen-Menü (aria-expanded/-controls,
- * Escape schließt, Fokus geht zurück auf den Auslöser, Body scrollt nicht).
+ * Surface mit Hairline.
+ *
+ * Mobile: Vollflächen-Dialog per Portal auf document.body. Der Close-Button
+ * sitzt IM Overlay (nicht im sticky Header). `overflow:hidden` am Body
+ * hebt position:sticky auf — nach dem Scrollen lag das Header-X damit
+ * außerhalb des Viewports und das Menü ließ sich nicht mehr schließen.
+ * Escape, Link-Tap, Overlay-X und Body-Scroll-Lock (iOS: position:fixed).
  */
 export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
   const [, navigate] = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
-  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const afterCloseRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 24);
@@ -31,74 +39,165 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const onChange = () => {
+      if (mq.matches) setIsOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    firstLinkRef.current?.focus();
+
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyCss = body.style.cssText;
+    const pageRoot = document.querySelector(".lp");
+    const prevInert =
+      pageRoot instanceof HTMLElement ? pageRoot.inert : false;
+
+    html.classList.add("lp-nav-open");
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    // iOS scrollt trotz overflow:hidden weiter; position:fixed friert die
+    // Seite ein, ohne dass der sticky Header aus dem Viewport rutscht
+    // (Close liegt ohnehin im Overlay).
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = `-${scrollX}px`;
+    body.style.right = "0";
+    body.style.width = "100%";
+    if (pageRoot instanceof HTMLElement) pageRoot.inert = true;
+
+    closeRef.current?.focus({ preventScroll: true });
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setIsOpen(false);
-        toggleRef.current?.focus();
+        return;
       }
+      const dialog = dialogRef.current;
+      if (dialog) trapTabKey(event, dialog);
     };
     window.addEventListener("keydown", onKeyDown);
+
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
+      html.classList.remove("lp-nav-open");
+      html.style.overflow = prevHtmlOverflow;
+      body.style.cssText = prevBodyCss;
+      if (pageRoot instanceof HTMLElement) pageRoot.inert = prevInert;
+      window.scrollTo(scrollX, scrollY);
+      const after = afterCloseRef.current;
+      afterCloseRef.current = null;
+      after?.();
+      if (!after) {
+        toggleRef.current?.focus({ preventScroll: true });
+      }
     };
   }, [isOpen]);
 
-  const close = () => setIsOpen(false);
+  const close = useCallback(
+    (after?: () => void) => {
+      if (!isOpen) {
+        after?.();
+        return;
+      }
+      afterCloseRef.current = after ?? null;
+      setIsOpen(false);
+    },
+    [isOpen]
+  );
+
   const goStart = () => {
-    close();
-    navigate(startHref(billingYearly));
+    close(() => navigate(startHref(billingYearly)));
   };
 
-  const mobileMenu = isOpen ? (
-    <div
-      id="lp-mobile-menu"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Navigation"
-      className="fixed inset-x-0 bottom-0 top-[4.25rem] z-[45] overflow-y-auto overscroll-contain bg-lp-canvas md:hidden"
-    >
-      <div className="lp-container flex min-h-full flex-col pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
-        {NAV_LINKS.map((link, index) => (
+  const goHash =
+    (href: (typeof NAV_LINKS)[number]["href"]) =>
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      const id = href.slice(1);
+      close(() => {
+        document.getElementById(id)?.scrollIntoView();
+        history.replaceState(null, "", href);
+      });
+    };
+
+  const mobileMenu =
+    isOpen && typeof document !== "undefined" ? (
+      <div
+        ref={dialogRef}
+        id="lp-mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation"
+        className="fixed inset-0 z-[100] flex flex-col bg-lp-canvas md:hidden"
+      >
+        <div className="lp-container flex h-[4.25rem] shrink-0 items-center justify-between border-b border-lp-line">
           <a
-            key={link.href}
-            ref={index === 0 ? firstLinkRef : undefined}
-            href={link.href}
-            onClick={close}
-            className="border-b border-lp-line py-5 text-[1.6rem] font-medium tracking-[-0.01em] text-lp-ink"
+            href="/"
+            className="rounded-md"
+            aria-label="Pageblitz – Startseite"
+            onClick={event => {
+              event.preventDefault();
+              close(() => window.scrollTo({ top: 0 }));
+            }}
           >
-            {link.label}
+            <Wordmark />
           </a>
-        ))}
-        <a
-          href="/login"
-          onClick={event => {
-            event.preventDefault();
-            close();
-            navigate("/login");
-          }}
-          className="border-b border-lp-line py-5 text-[1.1rem] text-lp-muted"
-        >
-          Anmelden
-        </a>
-        <button
-          type="button"
-          onClick={goStart}
-          className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
-        >
-          Website kostenlos erstellen
-        </button>
+          <button
+            ref={closeRef}
+            type="button"
+            onClick={() => close()}
+            aria-label="Menü schließen"
+            className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        <div className="lp-container flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain pt-4 pb-[max(2.5rem,env(safe-area-inset-bottom))]">
+          {NAV_LINKS.map(link => (
+            <a
+              key={link.href}
+              href={link.href}
+              onClick={goHash(link.href)}
+              className="border-b border-lp-line py-5 text-[1.6rem] font-medium tracking-[-0.01em] text-lp-ink"
+            >
+              {link.label}
+            </a>
+          ))}
+          <a
+            href="/login"
+            onClick={event => {
+              event.preventDefault();
+              close(() => navigate("/login"));
+            }}
+            className="border-b border-lp-line py-5 text-[1.1rem] text-lp-muted"
+          >
+            Anmelden
+          </a>
+          <button
+            type="button"
+            onClick={goStart}
+            className={`${pillInk} mt-8 h-14 w-full text-[1.05rem]`}
+          >
+            Website kostenlos erstellen
+          </button>
+        </div>
       </div>
-    </div>
-  ) : null;
+    ) : null;
 
   return (
     <header
       className={`sticky top-0 z-50 transition-[background-color,border-color] duration-300 ${
+        isOpen ? "invisible" : ""
+      } ${
         isScrolled || isOpen
           ? "border-b border-lp-line bg-lp-surface/95 backdrop-blur-[2px]"
           : "border-b border-transparent bg-transparent"
@@ -167,7 +266,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
         </button>
       </nav>
 
-      {mobileMenu && createPortal(mobileMenu, document.body)}
+      {mobileMenu ? createPortal(mobileMenu, document.body) : null}
     </header>
   );
 }

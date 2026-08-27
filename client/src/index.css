@@ -857,6 +857,20 @@ html.lp-reveal-on .lp-section.lp-in {
       visibility 0s;
   }
 }
+/* Offene Mobile-Nav (LandingNav): Chat-FAB (z-9991) und Sticky-CTA (z-40)
+   liegen sonst über bzw. unter dem Menü und fangen Taps. Cookie-Banner
+   bleibt bewusst darüber (Einwilligung). */
+html.lp-nav-open .lp-sticky-cta,
+html.lp-nav-open .pb-chat-fab,
+html.lp-nav-open .pb-chat-pop,
+html.lp-nav-open .pb-chat-window {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.lp-nav-open,
+html.lp-nav-open body {
+  overscroll-behavior: none;
+}
 
 /* ── Strukturzeichnungen (2026-08-25): StudioProof-Diagramme + Chat-Skizze ──
    Reine CSS-Schemata statt Raster-Screenshots (User-Feedback: Shots waren

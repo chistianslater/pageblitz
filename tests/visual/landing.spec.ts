@@ -227,13 +227,61 @@ test("Landingpage mobil: Burger-Menü öffnet als viewport-festes Dialog-Portal"
   await page.getByRole("button", { name: "Menü öffnen" }).click();
   const menu = page.getByRole("dialog", { name: "Navigation" });
   await expect(menu).toBeVisible();
-  await expect(menu.getByRole("link", { name: "Design" })).toBeFocused();
+  // Close sitzt im Overlay (nicht im sticky Header) und bekommt den Fokus,
+  // ohne dass iOS die Seite zum ersten Link scrollt.
+  await expect(
+    menu.getByRole("button", { name: "Menü schließen" })
+  ).toBeFocused();
 
   const box = await menu.boundingBox();
-  expect(box?.y).toBe(68);
-  expect(box?.height).toBe(776);
+  expect(box?.x).toBe(0);
+  expect(box?.y).toBe(0);
+  expect(box?.width).toBe(390);
+  expect(box?.height).toBe(844);
 
-  await page.getByRole("button", { name: "Menü schließen" }).click();
+  await menu.getByRole("button", { name: "Menü schließen" }).click();
+  await expect(menu).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Menü öffnen" })).toBeFocused();
+});
+
+test("Landingpage mobil: Menü schließt nach Scrollen, per Link, Escape und gibt Scroll frei", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await skipCookieBanner(page);
+  await page.goto("/");
+
+  // Reproduktion: nach dem Scrollen hebt overflow:hidden am Body
+  // position:sticky auf — das Header-X lag dann außerhalb des Viewports.
+  await page.evaluate(() => window.scrollTo(0, 600));
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  const menu = page.getByRole("dialog", { name: "Navigation" });
+  await expect(menu).toBeVisible();
+  await expect(
+    menu.getByRole("button", { name: "Menü schließen" })
+  ).toBeVisible();
+
+  await menu.getByRole("link", { name: "Preise" }).click();
+  await expect(menu).toHaveCount(0);
+  await expect(page.locator("#pricing")).toBeInViewport();
+
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  await expect(menu).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+
+  const bodyLocked = await page.evaluate(
+    () => document.body.style.position === "fixed"
+  );
+  expect(bodyLocked).toBe(false);
+  const navOpenClass = await page.evaluate(() =>
+    document.documentElement.classList.contains("lp-nav-open")
+  );
+  expect(navOpenClass).toBe(false);
+
+  await page.getByRole("button", { name: "Menü öffnen" }).click();
+  await expect(menu).toBeVisible();
+  await menu.getByRole("button", { name: "Menü schließen" }).click();
   await expect(menu).toHaveCount(0);
 });
 
