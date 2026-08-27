@@ -27,7 +27,9 @@ describe("pack-spezifische Motion-Grundlage", () => {
   });
 
   test("hält Sprungziele unter sticky Navigationen sichtbar", () => {
-    expect(MOTION_CSS).toContain(":is(section,header)[id]{scroll-margin-top:");
+    expect(MOTION_CSS).toContain(
+      ":is(section,header)[id]{scroll-margin-top:"
+    );
   });
 
   test("animiert Lightbox und Bildwechsel in beide Richtungen", () => {

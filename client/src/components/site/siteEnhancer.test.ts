@@ -3,7 +3,9 @@ import { SITE_ENHANCER_JS } from "./siteEnhancer";
 
 describe("Site Enhancer Lightbox", () => {
   test("lässt den Hero aus dem Scroll-Reveal heraus", () => {
-    expect(SITE_ENHANCER_JS).toContain(".pb-site section:not(:first-of-type)");
+    expect(SITE_ENHANCER_JS).toContain(
+      '.pb-site section:not(:first-of-type)'
+    );
   });
 
   test("hat einen animierbaren Open-/Close-Lifecycle", () => {

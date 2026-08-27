@@ -1,13 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import {
-  HelpCircle,
-  X,
-  Send,
-  Loader2,
-  ArrowLeft,
-  CheckCircle,
-} from "lucide-react";
+import { HelpCircle, X, Send, Loader2, ArrowLeft, CheckCircle } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -29,9 +22,7 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
   const [ticketLoading, setTicketLoading] = useState(false);
   const [msgCount, setMsgCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const sessionId = useRef(
-    sessionStorage.getItem("pb_support_session") || crypto.randomUUID()
-  );
+  const sessionId = useRef(sessionStorage.getItem("pb_support_session") || crypto.randomUUID());
 
   useEffect(() => {
     sessionStorage.setItem("pb_support_session", sessionId.current);
@@ -52,46 +43,26 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
     const updated = [...messages, userMsg];
     setMessages(updated);
     setLoading(true);
-    setMsgCount(c => c + 1);
+    setMsgCount((c) => c + 1);
 
     try {
       const res = await fetch("/api/support-chat/message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: updated,
-          sessionId: sessionId.current,
-          websiteId,
-        }),
+        body: JSON.stringify({ messages: updated, sessionId: sessionId.current, websiteId }),
       });
 
       if (res.status === 429) {
-        setMessages(prev => [
-          ...prev,
-          {
-            role: "assistant",
-            content:
-              "Du hast das Nachrichtenlimit erreicht. Bitte schreibe uns direkt eine E-Mail.",
-          },
-        ]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "Du hast das Nachrichtenlimit erreicht. Bitte schreibe uns direkt eine E-Mail." }]);
         setShowTicketForm(true);
         return;
       }
 
       const data = await res.json();
-      setMessages(prev => [
-        ...prev,
-        { role: "assistant", content: data.content },
-      ]);
+      setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
       if (data.showSupportForm) setShowTicketForm(true);
     } catch {
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Verbindungsfehler. Bitte versuche es erneut.",
-        },
-      ]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Verbindungsfehler. Bitte versuche es erneut." }]);
     } finally {
       setLoading(false);
     }
@@ -151,9 +122,15 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 20, scale: 0.95 }}
+            initial={
+              reduceMotion ? false : { opacity: 0, y: 20, scale: 0.95 }
+            }
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: 20, scale: 0.95 }}
+            exit={
+              reduceMotion
+                ? undefined
+                : { opacity: 0, y: 20, scale: 0.95 }
+            }
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
             className="fixed bottom-6 right-6 z-[9981] w-[360px] max-w-[calc(100vw-48px)] h-[500px] max-h-[calc(100vh-80px)] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
           >
@@ -164,18 +141,11 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                   <HelpCircle className="w-4 h-4 text-lime-400" />
                 </div>
                 <div>
-                  <div className="text-white text-sm font-semibold leading-tight">
-                    Hilfe & Support
-                  </div>
-                  <div className="text-slate-400 text-xs">
-                    Frag mich alles zu Pageblitz
-                  </div>
+                  <div className="text-white text-sm font-semibold leading-tight">Hilfe & Support</div>
+                  <div className="text-slate-400 text-xs">Frag mich alles zu Pageblitz</div>
                 </div>
               </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-white p-1 transition-colors"
-              >
+              <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-white p-1 transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -183,27 +153,20 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
             {showTicketForm && !ticketSent ? (
               /* Ticket form */
               <div className="flex-1 flex flex-col p-4 gap-3 overflow-y-auto">
-                <button
-                  onClick={() => setShowTicketForm(false)}
-                  className="flex items-center gap-1 text-slate-400 hover:text-white text-xs transition-colors self-start"
-                >
+                <button onClick={() => setShowTicketForm(false)} className="flex items-center gap-1 text-slate-400 hover:text-white text-xs transition-colors self-start">
                   <ArrowLeft className="w-3 h-3" /> Zurück zum Chat
                 </button>
-                <h3 className="text-white text-sm font-semibold">
-                  Direkt an unser Team schreiben
-                </h3>
-                <p className="text-slate-400 text-xs">
-                  Wir melden uns schnellstmöglich bei dir.
-                </p>
+                <h3 className="text-white text-sm font-semibold">Direkt an unser Team schreiben</h3>
+                <p className="text-slate-400 text-xs">Wir melden uns schnellstmöglich bei dir.</p>
                 <input
                   value={ticketName}
-                  onChange={e => setTicketName(e.target.value)}
+                  onChange={(e) => setTicketName(e.target.value)}
                   placeholder="Dein Name (optional)"
                   className="bg-slate-800 border border-slate-600 text-white text-sm px-3 py-2.5 rounded-xl placeholder-slate-500 outline-none focus:border-lime-500 transition-colors"
                 />
                 <input
                   value={ticketEmail}
-                  onChange={e => setTicketEmail(e.target.value)}
+                  onChange={(e) => setTicketEmail(e.target.value)}
                   placeholder="Deine E-Mail-Adresse *"
                   type="email"
                   required
@@ -211,7 +174,7 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                 />
                 <textarea
                   value={ticketMessage}
-                  onChange={e => setTicketMessage(e.target.value)}
+                  onChange={(e) => setTicketMessage(e.target.value)}
                   placeholder="Beschreibe dein Anliegen... *"
                   rows={4}
                   required
@@ -221,31 +184,18 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                   <input
                     type="checkbox"
                     checked={ticketPrivacy}
-                    onChange={e => setTicketPrivacy(e.target.checked)}
+                    onChange={(e) => setTicketPrivacy(e.target.checked)}
                     className="mt-0.5 shrink-0 w-4 h-4 rounded cursor-pointer"
-                    style={{ accentColor: "var(--pb-brand)" }}
+                    style={{ accentColor: 'var(--pb-brand)' }}
                   />
                   <span className="text-slate-400 text-xs leading-relaxed">
                     Ich stimme der Verarbeitung meiner Daten gemäß der{" "}
-                    <a
-                      href="/datenschutz"
-                      target="_blank"
-                      className="underline underline-offset-2 hover:brightness-125"
-                      style={{ color: "var(--pb-brand)" }}
-                    >
-                      Datenschutzerklärung
-                    </a>{" "}
-                    zu. *
+                    <a href="/datenschutz" target="_blank" className="underline underline-offset-2 hover:brightness-125" style={{ color: 'var(--pb-brand)' }}>Datenschutzerklärung</a> zu. *
                   </span>
                 </label>
                 <button
                   onClick={sendTicket}
-                  disabled={
-                    !ticketEmail.trim() ||
-                    !ticketMessage.trim() ||
-                    !ticketPrivacy ||
-                    ticketLoading
-                  }
+                  disabled={!ticketEmail.trim() || !ticketMessage.trim() || !ticketPrivacy || ticketLoading}
                   className="bg-lime-500 hover:bg-lime-400 text-gray-900 font-semibold text-sm py-2.5 rounded-xl transition-colors disabled:opacity-40"
                 >
                   {ticketLoading ? "Wird gesendet..." : "Nachricht senden"}
@@ -257,17 +207,10 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                 <div className="w-14 h-14 rounded-full bg-lime-500/20 flex items-center justify-center">
                   <CheckCircle className="w-7 h-7 text-lime-400" />
                 </div>
-                <h3 className="text-white font-semibold">
-                  Nachricht gesendet!
-                </h3>
-                <p className="text-slate-400 text-sm">
-                  Wir melden uns so schnell wie möglich bei dir.
-                </p>
+                <h3 className="text-white font-semibold">Nachricht gesendet!</h3>
+                <p className="text-slate-400 text-sm">Wir melden uns so schnell wie möglich bei dir.</p>
                 <button
-                  onClick={() => {
-                    setTicketSent(false);
-                    setShowTicketForm(false);
-                  }}
+                  onClick={() => { setTicketSent(false); setShowTicketForm(false); }}
                   className="text-slate-400 hover:text-white text-xs mt-2 transition-colors"
                 >
                   Zurück zum Chat
@@ -283,19 +226,15 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                         <HelpCircle className="w-6 h-6 text-lime-400" />
                       </div>
                       <div>
-                        <p className="text-white text-sm font-medium mb-1">
-                          Wie kann ich dir helfen?
-                        </p>
-                        <p className="text-slate-500 text-xs">
-                          Frag mich zu Layouts, Bildern, Preisen, Add-Ons...
-                        </p>
+                        <p className="text-white text-sm font-medium mb-1">Wie kann ich dir helfen?</p>
+                        <p className="text-slate-500 text-xs">Frag mich zu Layouts, Bildern, Preisen, Add-Ons...</p>
                       </div>
                       <div className="space-y-1.5">
                         {[
                           "Wie lade ich mein Logo hoch?",
                           "Was kosten die Add-Ons?",
                           "Kann ich meine Farben ändern?",
-                        ].map(q => (
+                        ].map((q) => (
                           <button
                             key={q}
                             onClick={() => sendMessage(q)}
@@ -309,10 +248,7 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                   )}
 
                   {messages.map((msg, i) => (
-                    <div
-                      key={i}
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                       <div
                         className={`max-w-[85%] text-sm leading-relaxed px-3.5 py-2.5 rounded-2xl ${
                           msg.role === "user"
@@ -329,18 +265,9 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                     <div className="flex justify-start">
                       <div className="bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-sm">
                         <div className="flex gap-1">
-                          <div
-                            className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none"
-                            style={{ animationDelay: "0ms" }}
-                          />
-                          <div
-                            className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none"
-                            style={{ animationDelay: "150ms" }}
-                          />
-                          <div
-                            className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none"
-                            style={{ animationDelay: "300ms" }}
-                          />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "0ms" }} />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "150ms" }} />
+                          <div className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: "300ms" }} />
                         </div>
                       </div>
                     </div>
@@ -366,10 +293,8 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                   <div className="flex gap-2">
                     <input
                       value={input}
-                      onChange={e => setInput(e.target.value)}
-                      onKeyDown={e =>
-                        e.key === "Enter" && !e.shiftKey && sendMessage()
-                      }
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                       placeholder="Deine Frage..."
                       disabled={loading}
                       className="flex-1 bg-slate-800 text-white text-sm px-3 py-2.5 rounded-xl placeholder-slate-500 outline-none border border-slate-700 focus:border-lime-500 transition-colors disabled:opacity-50"
@@ -379,11 +304,7 @@ export default function HelpWidget({ websiteId }: { websiteId?: number }) {
                       disabled={!input.trim() || loading}
                       className="w-10 h-10 rounded-xl bg-lime-500 hover:bg-lime-400 flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
                     >
-                      {loading ? (
-                        <Loader2 className="w-4 h-4 text-gray-900 animate-spin motion-reduce:animate-none" />
-                      ) : (
-                        <Send className="w-4 h-4 text-gray-900" />
-                      )}
+                      {loading ? <Loader2 className="w-4 h-4 text-gray-900 animate-spin motion-reduce:animate-none" /> : <Send className="w-4 h-4 text-gray-900" />}
                     </button>
                   </div>
                   <button
