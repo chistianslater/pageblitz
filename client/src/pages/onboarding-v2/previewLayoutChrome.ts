@@ -9,6 +9,18 @@ export type PreviewLayoutField =
   | "aboutLayout"
   | "galleryLayout";
 
+/** Nur bewusst gesetzte Sektionslayouts — ungesetzte Felder bleiben Pack-Default. */
+export type LayoutOverlay = Partial<Record<PreviewLayoutField, string>>;
+
+export interface LayoutChromeOptions {
+  /**
+   * Overlay-Modus (Design-Review): nur diese Felder als `data-pb-*` setzen.
+   * Leeres Objekt = Buttons anzeigen, Pack-Komposition unverändert.
+   */
+  overlay?: LayoutOverlay;
+  onOverlayChange?: (overlay: LayoutOverlay) => void;
+}
+
 export interface PreviewLayoutOption {
   value: string;
   label: string;
@@ -83,6 +95,7 @@ export const LAYOUT_GRID_ICON_HTML = `<span class="pb-preview-layout-icon" aria-
 const CHROME_MARK = "data-pb-layout-chrome";
 const STYLE_MARK = "data-pb-layout-style";
 const workingProfiles = new WeakMap<Document, DesignProfile>();
+const overlayState = new WeakMap<Document, LayoutOverlay>();
 const placedChrome = new WeakMap<
   Document,
   { host: HTMLElement; chrome: HTMLElement }[]
@@ -124,6 +137,23 @@ export function applyProfileAttrs(
   site.setAttribute("data-pb-gallery", profile.galleryLayout);
   site.setAttribute("data-pb-density", profile.density);
   site.setAttribute("data-pb-image", profile.imageTreatment);
+}
+
+type AttrTarget = {
+  setAttribute: (name: string, value: string) => void;
+  removeAttribute: (name: string) => void;
+};
+
+/** Setzt nur gewählte Overlay-Felder; der Rest fällt aufs Pack-CSS zurück. */
+export function applyLayoutOverlay(
+  site: AttrTarget,
+  overlay: LayoutOverlay
+): void {
+  for (const section of PREVIEW_LAYOUT_SECTIONS) {
+    const value = overlay[section.field];
+    if (value) site.setAttribute(section.attr, value);
+    else site.removeAttribute(section.attr);
+  }
 }
 
 /**
@@ -183,13 +213,16 @@ function currentValue(
   return profile[field];
 }
 
-function syncPressed(root: ParentNode, profile: DesignProfile): void {
+function syncPressed(
+  root: ParentNode,
+  currentOf: (field: PreviewLayoutField) => string
+): void {
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const chrome = root.querySelector(
       `[data-pb-layout-field="${section.field}"]`
     );
     if (!chrome) continue;
-    const current = currentValue(profile, section.field);
+    const current = currentOf(section.field);
     chrome
       .querySelectorAll<HTMLButtonElement>("[data-pb-layout-option]")
       .forEach(button => {
@@ -201,6 +234,19 @@ function syncPressed(root: ParentNode, profile: DesignProfile): void {
         );
       });
   }
+}
+
+function isOverlayMode(doc: Document, options?: LayoutChromeOptions): boolean {
+  return options?.overlay !== undefined || overlayState.has(doc);
+}
+
+function currentOfDoc(doc: Document, field: PreviewLayoutField): string {
+  const overlay = overlayState.get(doc);
+  if (overlay) return overlay[field] ?? "";
+  return currentValue(
+    workingProfiles.get(doc) ?? DEFAULT_DESIGN_PROFILE,
+    field
+  );
 }
 
 function closeMenus(root: ParentNode): void {
@@ -260,21 +306,27 @@ function prefersFineHover(doc: Document): boolean {
 
 /**
  * Kleine Layout-Buttons rechts in Hero/Leistungen/Über uns/Galerie.
- * Nur Studio-PreviewFrame (same-origin iframe), nicht auf der Live-Seite.
- * `position:fixed` im iframe, z-index unter der Pack-Navigation (40), Top
- * unter der gemessenen Sticky-Nav — so bleibt der Button im Viewport, ohne
- * die Nav zu überdecken. overflow:hidden der Hero-Sektionen stört nicht,
- * weil der Chrome am `body` hängt.
+ * Studio-PreviewFrame und Design-Review (same-origin iframe), nicht auf
+ * der Live-Kundenseite. `position:fixed` im iframe, z-index unter der
+ * Pack-Navigation (40). Overlay-Modus setzt nur bewusst gewählte Felder,
+ * damit Pack-Defaults im Design-Review unangetastet bleiben.
  */
 export function enablePreviewLayoutChrome(
   doc: Document,
   profile: DesignProfile | null | undefined,
-  onPick: (next: DesignProfile) => void
+  onPick: (next: DesignProfile) => void,
+  options?: LayoutChromeOptions
 ): void {
   const resolved = profile ?? DEFAULT_DESIGN_PROFILE;
   const site = doc.querySelector<HTMLElement>(".pb-site");
   if (!site) return;
   workingProfiles.set(doc, resolved);
+  const overlayMode = isOverlayMode(doc, options);
+  if (overlayMode) {
+    overlayState.set(doc, {
+      ...(options?.overlay ?? overlayState.get(doc) ?? {}),
+    });
+  }
 
   if (!doc.head.querySelector(`style[${STYLE_MARK}]`)) {
     const style = doc.createElement("style");
@@ -283,14 +335,19 @@ export function enablePreviewLayoutChrome(
     doc.head.appendChild(style);
   }
 
+  const applyDoc = () => {
+    if (overlayMode) applyLayoutOverlay(site, overlayState.get(doc) ?? {});
+    else applyProfileAttrs(site, workingProfiles.get(doc) ?? resolved);
+    syncPressed(doc, field => currentOfDoc(doc, field));
+  };
+
   if (doc.documentElement.hasAttribute(CHROME_MARK)) {
-    applyProfileAttrs(site, resolved);
-    syncPressed(doc, resolved);
+    applyDoc();
     placeChrome(doc);
     return;
   }
   doc.documentElement.setAttribute(CHROME_MARK, "");
-  applyProfileAttrs(site, resolved);
+  applyDoc();
 
   const placed: { host: HTMLElement; chrome: HTMLElement }[] = [];
   const fineHover = prefersFineHover(doc);
@@ -301,7 +358,7 @@ export function enablePreviewLayoutChrome(
     const wrap = doc.createElement("div");
     wrap.innerHTML = renderLayoutChromeHtml(
       section,
-      currentValue(resolved, section.field)
+      currentOfDoc(doc, section.field)
     );
     const chrome = wrap.firstElementChild as HTMLElement | null;
     if (!chrome) continue;
@@ -349,12 +406,21 @@ export function enablePreviewLayoutChrome(
       event.preventDefault();
       event.stopPropagation();
       const value = button.getAttribute("data-pb-layout-option");
-      const current = currentValue(
-        workingProfiles.get(doc) ?? DEFAULT_DESIGN_PROFILE,
-        section.field
-      );
+      const current = currentOfDoc(doc, section.field);
       if (!value || value === current) {
         setOpen(false);
+        return;
+      }
+      if (overlayState.has(doc)) {
+        const overlay = {
+          ...(overlayState.get(doc) ?? {}),
+          [section.field]: value,
+        };
+        overlayState.set(doc, overlay);
+        applyLayoutOverlay(site, overlay);
+        syncPressed(doc, field => currentOfDoc(doc, field));
+        setOpen(false);
+        options?.onOverlayChange?.(overlay);
         return;
       }
       const working = {
@@ -363,7 +429,7 @@ export function enablePreviewLayoutChrome(
       } as DesignProfile;
       workingProfiles.set(doc, working);
       applyProfileAttrs(site, working);
-      syncPressed(doc, working);
+      syncPressed(doc, field => currentOfDoc(doc, field));
       setOpen(false);
       onPick(working);
     });

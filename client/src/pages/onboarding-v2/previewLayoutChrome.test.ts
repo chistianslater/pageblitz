@@ -3,6 +3,7 @@ import { DEFAULT_DESIGN_PROFILE } from "@shared/siteContract/designProfile";
 import {
   LAYOUT_GRID_ICON_HTML,
   PREVIEW_LAYOUT_SECTIONS,
+  applyLayoutOverlay,
   applyProfileAttrs,
   chromeViewportTop,
   renderLayoutChromeHtml,
@@ -71,6 +72,27 @@ describe("applyProfileAttrs", () => {
     expect(attrs["data-pb-gallery"]).toBe("mosaic");
     expect(attrs["data-pb-services"]).toBe("list");
     expect(attrs["data-pb-about"]).toBe("image-right");
+  });
+});
+
+describe("applyLayoutOverlay", () => {
+  test("setzt nur gewählte Felder und räumt den Rest weg", () => {
+    const attrs: Record<string, string> = {
+      "data-pb-hero": "split",
+      "data-pb-services": "list",
+    };
+    applyLayoutOverlay(
+      {
+        setAttribute: (name, value) => {
+          attrs[name] = value;
+        },
+        removeAttribute: name => {
+          delete attrs[name];
+        },
+      },
+      { heroLayout: "centered" }
+    );
+    expect(attrs).toEqual({ "data-pb-hero": "centered" });
   });
 });
 
