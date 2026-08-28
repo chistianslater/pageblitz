@@ -16,6 +16,8 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { VERVE_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 
@@ -111,7 +113,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p className="pb-vv-intro">{section.intro}</p>}
-          <div className="pb-vv-grid">
+          <div className="pb-vv-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
               <div className="pb-vv-card" key={item.title}>
                 <strong>{item.title}</strong>
@@ -133,9 +135,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-vv-about">
+          <div className="pb-vv-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <img src={section.imageUrl} alt="" loading="lazy" />
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              />
             )}
             <p>{section.body}</p>
           </div>
@@ -151,7 +158,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-vv-gallery">
+          <div
+            className="pb-vv-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -389,6 +399,7 @@ const VervePage: React.FC<{
           {hero.imageUrl ? (
             <img
               className="pb-vv-panel"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
               src={hero.imageUrl}
               alt=""
               loading="eager"
@@ -400,7 +411,7 @@ const VervePage: React.FC<{
           <div className="pb-vv-tape" aria-hidden="true">
             {tapeText}
           </div>
-          <div className="pb-vv-copy">
+          <div className="pb-vv-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <h1 aria-label={hero.headline}>
               <span aria-hidden="true">{line1}</span>
               {line2 && (

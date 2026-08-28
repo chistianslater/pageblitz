@@ -16,6 +16,7 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GUSTO_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 
@@ -115,7 +116,10 @@ function renderSection(
             <h2>{section.headline}</h2>
             {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
           </header>
-          <div className="pb-gu-service-list">
+          <div
+            className="pb-gu-service-list"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, index) => (
               <article className="pb-gu-service-row" key={item.title}>
                 <span className="pb-gu-index">
@@ -142,9 +146,9 @@ function renderSection(
           key={section.type}
         >
           <SectionKicker index="02">{FALLBACK_TITLES.about}</SectionKicker>
-          <div className="pb-gu-about">
+          <div className="pb-gu-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <figure>
+              <figure data-pb-slot={LAYOUT_SLOT.aboutMedia}>
                 <img src={section.imageUrl} alt="" loading="lazy" />
               </figure>
             )}
@@ -168,7 +172,10 @@ function renderSection(
             <SectionKicker index="03">{FALLBACK_TITLES.gallery}</SectionKicker>
             <h2>{title}</h2>
           </header>
-          <div className="pb-gu-gallery">
+          <div
+            className="pb-gu-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, index) => (
               <figure key={img.url}>
                 <img src={img.url} alt={img.alt} loading="lazy" />
@@ -309,7 +316,10 @@ function renderSection(
             <SectionKicker index="06">{fallback}</SectionKicker>
             <h2>{title}</h2>
           </header>
-          <div className="pb-gu-menu-columns">
+          <div
+            className="pb-gu-menu-columns"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.categories.map((cat, index) => (
               <div className="pb-gu-menu-category" key={cat.name}>
                 <p className="pb-gu-index">
@@ -449,7 +459,11 @@ const GustoPage: React.FC<{
         </nav>
         {hero && (
           <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
-            <div className="pb-gu-hero-media" aria-hidden="true">
+            <div
+              className="pb-gu-hero-media"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
+              aria-hidden="true"
+            >
               {hero.imageUrl && (
                 <img
                   src={hero.imageUrl}
@@ -460,7 +474,10 @@ const GustoPage: React.FC<{
               )}
             </div>
             <div className="pb-gu-hero-shade" aria-hidden="true" />
-            <div className="pb-gu-hero-copy">
+            <div
+              className="pb-gu-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
               {data.businessCategory && (
                 <p className="pb-gu-eyebrow">{data.businessCategory}</p>
               )}

@@ -117,12 +117,10 @@ describe("SiteRenderer", () => {
       expect(html).toContain('data-pb-gallery="mosaic"');
       expect(html).toContain('data-pb-density="compact"');
       expect(html).toContain('data-pb-image="framed"');
-      expect(html).not.toContain(
-        '.pb-site[data-pb-services="grid"] #leistungen'
-      );
+      expect(html).toContain('[data-pb-slot="services-items"]');
     });
 
-    test("generische Profilvarianten bleiben für nicht kuratierte Packs aktiv", () => {
+    test("Profilvarianten greifen in jedem Pack, auch in handkuratierten", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer
           data={{
@@ -141,9 +139,7 @@ describe("SiteRenderer", () => {
           }}
         />
       );
-      expect(html).toContain(
-        '.pb-site[data-pb-services="grid"] #leistungen'
-      );
+      expect(html).toContain('.pb-site[data-pb-services="grid"] #leistungen');
     });
   });
 

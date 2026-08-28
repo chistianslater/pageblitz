@@ -16,6 +16,7 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { SCHIMMER_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 
@@ -82,7 +83,10 @@ function renderSection(
             <h2>{renderHeadline(section.headline)}</h2>
             {section.intro && <p className="pb-sc-intro">{section.intro}</p>}
           </header>
-          <div className="pb-sc-protocols">
+          <div
+            className="pb-sc-protocols"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, index) => (
               <article className="pb-sc-protocol" key={item.title}>
                 <span className="pb-sc-number">
@@ -108,9 +112,12 @@ function renderSection(
           key={section.type}
         >
           <LabLabel index="02">{FALLBACK_TITLES.about}</LabLabel>
-          <div className="pb-sc-about">
+          <div className="pb-sc-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <figure className="pb-sc-about-media">
+              <figure
+                className="pb-sc-about-media"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              >
                 <img
                   className="pb-sc-about-img"
                   src={section.imageUrl}
@@ -140,7 +147,10 @@ function renderSection(
             <LabLabel index="03">{FALLBACK_TITLES.gallery}</LabLabel>
             <h2>{renderHeadline(title)}</h2>
           </header>
-          <div className="pb-sc-gallery">
+          <div
+            className="pb-sc-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, index) => (
               <figure key={img.url}>
                 <img src={img.url} alt={img.alt} loading="lazy" />
@@ -385,8 +395,11 @@ const SchimmerPage: React.FC<{
             <span />
             <span />
           </div>
-          <div className="pb-sc-hero-grid">
-            <div className="pb-sc-hero-copy">
+          <div className="pb-sc-hero-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+            <div
+              className="pb-sc-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
               <LabLabel index="L/01">
                 {data.businessCategory ?? data.businessName}
               </LabLabel>
@@ -415,7 +428,10 @@ const SchimmerPage: React.FC<{
               )}
             </div>
             {hero.imageUrl && (
-              <div className="pb-sc-hero-img">
+              <div
+                className="pb-sc-hero-img"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
                 <img
                   src={hero.imageUrl}
                   alt=""

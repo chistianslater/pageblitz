@@ -22,14 +22,6 @@ import {
   visiblePageSections,
 } from "./engine";
 
-/** Packs, deren Komposition vollständig im eigenen DOM/CSS kuratiert wird. */
-export const AUTHORED_COMPOSITION_PACKS: readonly PackId[] = [
-  "werkbank",
-  "atelier",
-  "gusto",
-  "schimmer",
-];
-
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
   basePath?: string;
@@ -105,12 +97,9 @@ export const SiteRenderer: React.FC<{
     getFontPair(effectiveData.fontPairId)
   );
   // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
-  // Pack-Defaults. Generische Variantenattribute würden sonst selbst den
-  // Default durch eine gemeinsame CSS-Schicht homogenisieren.
+  // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS
+  // die Komposition in allen 14 Packs über data-pb-slot.
   const designProfile = effectiveData.designProfile;
-  const usesAuthoredComposition = AUTHORED_COMPOSITION_PACKS.includes(
-    effectiveData.stylePackId
-  );
   const navItems = buildNavItems(effectiveData, { pathname, basePath });
   const currentPage = pageForPathname(effectiveData, pathname);
   // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
@@ -174,7 +163,7 @@ export const SiteRenderer: React.FC<{
             MOBILE_NAV_CSS +
             "\n" +
             MOTION_CSS +
-            (usesAuthoredComposition ? "" : "\n" + DESIGN_PROFILE_CSS),
+            (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
         }}
       />
       <mod.Page
