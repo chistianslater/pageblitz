@@ -2,11 +2,13 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { STYLE_PACKS } from "@shared/stylePacks";
+import { PACK_IDS } from "@shared/siteContract/packIds";
 import { getFixture } from "../../../../shared/siteContract/fixtures";
 import type { DesignProfile } from "../../../../shared/siteContract/designProfile";
 import type { PackId } from "../../../../shared/siteContract/types";
 import { SiteRenderer } from "./SiteRenderer";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
+import { packLayoutRules } from "./packLayoutCss";
 import "./packs/index";
 
 const PROFILE: DesignProfile = {
@@ -93,5 +95,45 @@ describe("Designprofil-Layout in allen Packs", () => {
     expect(root).toContain('data-pb-hero-mobile="image-first"');
     expect(root).toContain('data-pb-services-mobile="list"');
     expect(root).not.toContain("data-pb-about-mobile=");
+  });
+
+  test("jedes Pack hat Feinjustierung für centered und image-first", () => {
+    for (const packId of PACK_IDS) {
+      expect(DESIGN_PROFILE_CSS).toContain(
+        `.pb-site.pb-${packId}[data-pb-hero="centered"] #start`
+      );
+      expect(DESIGN_PROFILE_CSS).toContain(
+        `.pb-site.pb-${packId}[data-pb-hero="image-first"] #start`
+      );
+      expect(DESIGN_PROFILE_CSS).toContain(
+        `.pb-site.pb-${packId}[data-pb-hero-mobile="centered"] #start`
+      );
+    }
+  });
+
+  test("Overlay-Packs ziehen Foto, Shade und Absolut-Ebenen in den Fluss", () => {
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-wb-photo");
+    expect(DESIGN_PROFILE_CSS).toContain("clip-path:none");
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-gu-hero-shade");
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-fd-panel");
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-vv-ghost");
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-ml-blob");
+    expect(DESIGN_PROFILE_CSS).toContain("display:contents");
+    expect(DESIGN_PROFILE_CSS).toContain(".pb-lg-rows");
+  });
+
+  test("packLayoutRules unterscheidet Desktop-Attribut und Mobil-Fallback", () => {
+    const desktop = packLayoutRules("desktop");
+    const mobile = packLayoutRules("mobile");
+    expect(desktop).toContain(
+      '.pb-site.pb-werkbank[data-pb-hero="centered"] #start'
+    );
+    expect(desktop).not.toContain("data-pb-hero-mobile");
+    expect(mobile).toContain(
+      '.pb-site.pb-werkbank[data-pb-hero-mobile="centered"] #start'
+    );
+    expect(mobile).toContain(
+      '.pb-site.pb-werkbank:not([data-pb-hero-mobile])[data-pb-hero="centered"] #start'
+    );
   });
 });

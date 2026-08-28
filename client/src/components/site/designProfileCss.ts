@@ -12,6 +12,8 @@
  * nicht mehr — das war nur kleinere Typo, keine eigene Komposition.
  */
 
+import { packLayoutRules } from "./packLayoutCss";
+
 const SLOT = {
   heroSplit: '[data-pb-slot="hero-split"]',
   heroCopy: '[data-pb-slot="hero-copy"]',
@@ -144,10 +146,12 @@ export const DESIGN_PROFILE_CSS = `
 
 @media(min-width:721px){
 ${layoutRules(ATTR, undefined, "desktop")}
+${packLayoutRules("desktop")}
 }
 
 @media(max-width:720px){
 ${layoutRules(ATTR_MOBILE, undefined, "mobile")}
 ${layoutRules(ATTR, ATTR_MOBILE, "mobile")}
+${packLayoutRules("mobile")}
 }
 `;
