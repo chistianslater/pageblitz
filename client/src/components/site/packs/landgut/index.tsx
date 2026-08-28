@@ -17,9 +17,10 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LANDGUT_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Sortiment",
+  services: "Leistungen",
   about: "Über uns",
   gallery: "Impressionen",
   testimonials: "Was Kund:innen sagen",
@@ -32,7 +33,7 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
 };
 
 /** Statisches Versal-Label unter dem höchsten Pflanzreihen-Bogen. */
-const ROW_LABEL = "SAISON";
+const ROW_LABEL = "";
 
 function renderLogo(data: WebsiteDataV2): React.ReactNode {
   if (data.logo?.kind === "font") {
@@ -79,7 +80,7 @@ function buildTicker(
     </span>
   );
   return (
-    <div className="pb-lg-ticker" aria-label={`Saison: ${titles.join(", ")}`}>
+    <div className="pb-lg-ticker" aria-label={titles.join(", ")}>
       <div className="pb-lg-ticker-track">
         {group(0)}
         {group(1)}
@@ -425,9 +426,9 @@ const LandgutPage: React.FC<{
         </>
       )}
       {contact && (
-        <aside className="pb-lg-visit-sticky" aria-label="Besuch planen">
+        <aside className="pb-lg-visit-sticky" aria-label={PACK_UI.contact}>
           <span>
-            <b>Besuch</b>
+            <b>{PACK_UI.contact}</b>
             {contact.openingHours?.[0]?.hours ?? contact.city}
           </span>
           <a href="#kontakt">Details</a>

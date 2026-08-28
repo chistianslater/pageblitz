@@ -160,10 +160,11 @@ function renderSection(
         >
           <header className="pb-wb-section-head">
             <span className="pb-wb-kicker">
-              Arbeitsfolge / 01—{String(section.items.length).padStart(2, "0")}
+              {FALLBACK_TITLES.services} / 01—
+              {String(section.items.length).padStart(2, "0")}
             </span>
             {!hasPageHeader && <h2>{section.headline}</h2>}
-            <p>Planung · Material · Fertigung</p>
+            {section.intro && <p>{section.intro}</p>}
           </header>
           <div className="pb-wb-process-list">
             {section.items.map((item, i) => (
@@ -172,7 +173,6 @@ function renderSection(
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="pb-wb-service-copy">
-                  <span className="pb-wb-step">Arbeitsschritt</span>
                   <h3>{item.title}</h3>
                   {item.description && (
                     <p className="muted">{item.description}</p>
@@ -193,7 +193,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-wb-section-head">
-            <span className="pb-wb-kicker">Material / Haltung</span>
+            <span className="pb-wb-kicker">{FALLBACK_TITLES.about}</span>
             <h2>{section.headline}</h2>
           </header>
           <div className="pb-wb-about">
@@ -202,7 +202,6 @@ function renderSection(
                 +
               </span>
               <p>{section.body}</p>
-              <small>Entworfen und gefertigt mit Substanz.</small>
             </div>
             {section.imageUrl && (
               <figure className="pb-wb-about-figure">
@@ -212,7 +211,6 @@ function renderSection(
                   alt=""
                   loading="lazy"
                 />
-                <figcaption>Materialstudie / Werkbank</figcaption>
               </figure>
             )}
           </div>
@@ -228,7 +226,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-wb-section-head">
-            <span className="pb-wb-kicker">Ausgewählte Werkstücke</span>
+            <span className="pb-wb-kicker">{FALLBACK_TITLES.gallery}</span>
             <h2>{title}</h2>
           </header>
           <div className="pb-wb-gallery">
@@ -241,7 +239,7 @@ function renderSection(
                   </span>
                 </div>
                 <figcaption>
-                  <b>Werkstück {String(i + 1).padStart(2, "0")}</b>
+                  <b>{String(i + 1).padStart(2, "0")}</b>
                   {img.alt && <span>{img.alt}</span>}
                 </figcaption>
               </figure>
@@ -259,7 +257,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-wb-section-head">
-            <span className="pb-wb-kicker">Belastungsprobe</span>
+            <span className="pb-wb-kicker">{FALLBACK_TITLES.testimonials}</span>
             <h2>{title}</h2>
           </header>
           <div className="pb-wb-proof-grid">
@@ -289,7 +287,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-wb-contact-head">
-            <span className="pb-wb-kicker">Projektaufnahme / Kontakt</span>
+            <span className="pb-wb-kicker">{FALLBACK_TITLES.contact}</span>
             <h2>{title}</h2>
             <span className="pb-wb-contact-mark" aria-hidden="true">
               ↘
@@ -311,7 +309,7 @@ function renderSection(
               )}
               {(section.street || addressLine) && (
                 <address>
-                  <small>Werkstatt</small>
+                  <small>Adresse</small>
                   {section.street && <span>{section.street}</span>}
                   {section.street && addressLine && <br />}
                   {addressLine && <span>{addressLine}</span>}

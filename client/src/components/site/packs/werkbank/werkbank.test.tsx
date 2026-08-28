@@ -67,19 +67,19 @@ describe("Pack werkbank", () => {
     expect(WERKBANK_CSS).toContain("@keyframes pb-wb-marquee");
     expect(WERKBANK_CSS).toContain("transform:translateX(-50%)");
   });
-  test("Tactile-Industrial-DOM bildet Arbeitsfolge, Material und Werkstücke", () => {
+  test("Tactile-Industrial-DOM bildet Leistungen, Material und Galerie", () => {
     expect(html).toContain("pb-wb-process-list");
-    expect(html).toContain("Arbeitsfolge / 01—02");
+    expect(html).toContain("Leistungen / 01—");
     expect(html).toContain("pb-wb-material");
     expect(html).toContain("pb-wb-image-frame");
     expect(html).toContain("W/01");
-    expect(html).toContain("Werkstück 01");
   });
-  test("Testimonials und Kontakt sind charakteristische Prüf- und Projektblöcke", () => {
+  test("Testimonials und Kontakt nutzen neutrale Kickers", () => {
     expect(html).toContain("pb-wb-proof-grid");
-    expect(html).toContain("Belastungsprobe");
+    expect(html).toContain("Stimmen");
     expect(html).toContain("pb-wb-contact-sheet");
-    expect(html).toContain("Projektaufnahme / Kontakt");
+    expect(html).not.toContain("Belastungsprobe");
+    expect(html).not.toContain("Projektaufnahme");
   });
   test("mobile Inhalte bleiben sichtbar und Motion respektiert reduced motion", () => {
     expect(html).not.toContain(".pb-wb-photo{display:none}");

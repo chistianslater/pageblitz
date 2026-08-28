@@ -25,8 +25,8 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   testimonials: "Was Kunden sagen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
-  menu: "Sortiment",
-  pricelist: "Sortiment",
+  menu: "Speisekarte",
+  pricelist: "Preise",
   team: "Team",
   cta: "Anfrage",
 };
@@ -429,7 +429,7 @@ const ZunftPage: React.FC<{
       {(hero?.ctaText || routeQuery) && (
         <aside
           className="pb-zf-order-sticky"
-          aria-label="Vorbestellen und Route"
+          aria-label="Kontakt und Route"
         >
           <span aria-hidden="true">◆</span>
           {hero?.ctaText && (

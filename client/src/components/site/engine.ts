@@ -172,12 +172,9 @@ export type NavItem = {
 
 /**
  * Generische Nav-Beschriftungen für Sektions-Anker — nur Default. Die 14
- * Pack-Module haben je eigene Wortwahl (`FALLBACK_TITLES`: kanzlei
- * „Kundenstimmen", landgut „Sortiment", gusto „Impressionen" …) und
- * ersetzen die Default-Labels der Anker-Items über `applyNavLabels`, damit
- * die Startseiten-Navigation exakt so bleibt wie vor Plan B6 (Review-Fund
- * Task 4). Wie bisher ignoriert die Nav-Beschriftung Headline-Overrides
- * (`section.headline` nutzt nur die h2).
+ * Pack-Module nutzen branchenneutrale Namen (`GENERIC_TITLES` / lokale
+ * Synonyme wie gusto „Impressionen") und ersetzen die Default-Labels der
+ * Anker-Items über `applyNavLabels`. Keine Branchen-Stimme in der Nav.
  */
 const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
   services: "Leistungen",

@@ -17,12 +17,13 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { MORGENLICHT_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
   about: "Über uns",
   gallery: "Galerie",
-  testimonials: "Patientenstimmen",
+  testimonials: "Stimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Speisekarte",
@@ -407,11 +408,11 @@ const MorgenlichtPage: React.FC<{
         />
       </nav>
       {(hero?.ctaText || todaysHours || contact?.city) && (
-        <aside className="pb-ml-practice-dock" aria-label="Praxisinformation">
+        <aside className="pb-ml-practice-dock" aria-label={PACK_UI.contact}>
           <span>
             {todaysHours
               ? `Heute ${todaysHours}`
-              : (contact?.city ?? "Praxisinformation")}
+              : (contact?.city ?? PACK_UI.contact)}
           </span>
           {hero?.ctaText && (
             <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>

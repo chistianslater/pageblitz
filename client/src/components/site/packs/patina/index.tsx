@@ -19,10 +19,10 @@ import { MobileNav } from "../../MobileNav";
 import { PATINA_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Behandlungen",
+  services: "Leistungen",
   about: "Über mich",
   gallery: "Impressionen",
-  testimonials: "Was Klienten sagen",
+  testimonials: "Stimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Angebot",
