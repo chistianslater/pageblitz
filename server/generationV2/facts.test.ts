@@ -55,12 +55,36 @@ describe("buildV2GenerationFacts", () => {
       city: "Dortmund",
     });
     expect(result.facts?.contact?.openingHours).toEqual([
-      { day: "Montag", hours: "09:00–17:00 Uhr" },
+      { day: "Mo–Fr", hours: "09:00–17:00" },
     ]);
     expect(result.facts?.images).toEqual({
       hero: "https://cdn/hero.jpg",
       about: "https://cdn/about.jpg",
     });
+  });
+
+  test("vollständige GMB-Woche bleibt erhalten", () => {
+    const result = buildV2GenerationFacts(
+      baseBusiness({
+        openingHours: [
+          "Montag: 08:00–17:00 Uhr",
+          "Dienstag: 08:00–17:00 Uhr",
+          "Mittwoch: 08:00–17:00 Uhr",
+          "Donnerstag: 08:00–17:00 Uhr",
+          "Freitag: 08:00–17:00 Uhr",
+        ],
+      }),
+      "Schreinerei",
+      "slug",
+      {}
+    );
+    expect(result.facts?.contact?.openingHours).toEqual([
+      { day: "Montag", hours: "08:00–17:00 Uhr" },
+      { day: "Dienstag", hours: "08:00–17:00 Uhr" },
+      { day: "Mittwoch", hours: "08:00–17:00 Uhr" },
+      { day: "Donnerstag", hours: "08:00–17:00 Uhr" },
+      { day: "Freitag", hours: "08:00–17:00 Uhr" },
+    ]);
   });
 
   test("Stadt/Straße/PLZ kommen deterministisch aus parseGmbAddress(business.address) — Bocholt-Fall der Spec (§0)", () => {

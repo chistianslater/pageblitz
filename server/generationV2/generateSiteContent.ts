@@ -2,6 +2,7 @@ import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { isTrustedPlaceholderGallery } from "../../shared/onboardingV2/placeholderImages";
+import { withPlaceholderOpeningHours } from "../../shared/onboardingV2/openingHours";
 import type {
   PackId,
   SectionOf,
@@ -216,12 +217,10 @@ function mergeFacts(
       ...(street !== undefined ? { street } : {}),
       ...(zip !== undefined ? { zip } : {}),
       ...(city !== undefined ? { city } : {}),
-      // Öffnungszeiten kommen NUR aus facts (GMB oder Mo–Fr-Platzhalter
-      // aus resolveOpeningHours), niemals vom LLM: liefert facts.contact
-      // keine, werden vom LLM erfundene Zeiten aus `existing` bewusst
-      // GESTRIPPT statt übernommen — sonst könnte das Modell Öffnungszeiten
-      // frei erfinden (Halluzination).
-      ...(openingHours !== undefined ? { openingHours } : {}),
+      // Öffnungszeiten kommen NUR aus facts (GMB) oder dem Mo–Fr-Platzhalter —
+      // niemals vom LLM. Ein einzelner „Montag"-Eintrag gilt als Stub
+      // (Modell-Default), nicht als echte GMB-Woche.
+      openingHours: withPlaceholderOpeningHours(openingHours),
     };
     sections =
       existingIndex >= 0
@@ -234,10 +233,8 @@ function mergeFacts(
     // Nur setzen, nie leeren: fehlende GMB-/Stock-URLs dürfen vorhandene
     // Pack-Platzhalter (z. B. /demo/… aus dem LLM-Mock) nicht ausreißen.
     sections = sections.map(s => {
-      if (s.type === "hero" && hero)
-        return { ...s, imageUrl: hero };
-      if (s.type === "about" && about)
-        return { ...s, imageUrl: about };
+      if (s.type === "hero" && hero) return { ...s, imageUrl: hero };
+      if (s.type === "about" && about) return { ...s, imageUrl: about };
       return s;
     });
 
@@ -310,6 +307,19 @@ function mergeFacts(
   };
 }
 
+/** Mo–Fr-Platzhalter auf jeder contact-Sektion, wenn Zeiten fehlen oder nur „Montag" sind. */
+function withContactHourPlaceholders(data: WebsiteDataV2): WebsiteDataV2 {
+  let changed = false;
+  const sections = data.sections.map(section => {
+    if (section.type !== "contact") return section;
+    const openingHours = withPlaceholderOpeningHours(section.openingHours);
+    if (openingHours === section.openingHours) return section;
+    changed = true;
+    return { ...section, openingHours };
+  });
+  return changed ? { ...data, sections } : data;
+}
+
 /**
  * Nur nicht-produktiv aktivierbar (Playwright/E2E, siehe playwright.config.ts) —
  * macht die Generierung ohne LLM-API-Key/Netzwerk lauffähig, indem statt eines
@@ -346,7 +356,9 @@ function mockSiteContent(
     seo: { ...fixture.seo, title: business.name },
   };
   const merged = facts ? mergeFacts(base, facts) : base;
-  const withDefaults = withGeneratedAddOnDefaults(merged);
+  const withDefaults = withGeneratedAddOnDefaults(
+    withContactHourPlaceholders(merged)
+  );
   const revalidated = WebsiteDataV2Schema.safeParse(withDefaults);
   if (!revalidated.success) {
     throw new Error(
@@ -432,10 +444,12 @@ export async function generateSiteContent(
   }
 
   if (!facts) {
-    return withGeneratedAddOnDefaults(result.data);
+    return withGeneratedAddOnDefaults(withContactHourPlaceholders(result.data));
   }
 
-  const merged = withGeneratedAddOnDefaults(mergeFacts(result.data, facts));
+  const merged = withGeneratedAddOnDefaults(
+    withContactHourPlaceholders(mergeFacts(result.data, facts))
+  );
   const revalidated = WebsiteDataV2Schema.safeParse(merged);
   if (!revalidated.success) {
     throw new Error(

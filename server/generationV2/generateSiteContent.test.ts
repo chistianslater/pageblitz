@@ -212,7 +212,7 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
-  test("facts.contact.openingHours ersetzt Öffnungszeiten aus facts", async () => {
+  test("Montag-Stub in facts wird zum Mo–Fr-Platzhalter", async () => {
     const llmAnswer = JSON.stringify({
       seo: { title: "Schreinerei Brandt", description: "Möbelbau." },
       sections: [
@@ -240,7 +240,7 @@ describe("generateSiteContent", () => {
     });
     const contact = d.sections.find(s => s.type === "contact") as any;
     expect(contact.openingHours).toEqual([
-      { day: "Montag", hours: "09:00–17:00 Uhr" },
+      { day: "Mo–Fr", hours: "09:00–17:00" },
     ]);
     vi.doUnmock("./llmClient");
     vi.resetModules();
@@ -280,7 +280,7 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
-  test("Halluzinations-Schutz: LLM erfindet openingHours, facts liefern keine → wird gestrippt", async () => {
+  test("Halluzinations-Schutz: LLM erfindet openingHours, facts liefern keine → Mo–Fr-Platzhalter", async () => {
     const llmAnswerWithHallucinatedHours = JSON.stringify({
       seo: { title: "Schreinerei Brandt", description: "Möbelbau." },
       sections: [
@@ -312,7 +312,9 @@ describe("generateSiteContent", () => {
       },
     });
     const contact = d.sections.find(s => s.type === "contact") as any;
-    expect(contact.openingHours).toBeUndefined();
+    expect(contact.openingHours).toEqual([
+      { day: "Mo–Fr", hours: "09:00–17:00" },
+    ]);
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });
