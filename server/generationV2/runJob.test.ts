@@ -95,7 +95,13 @@ const business = {
   address: null,
   rating: "4.8",
   reviewCount: 12,
-  openingHours: ["Montag: 08:00–17:00"],
+  openingHours: [
+    "Montag: 08:00–17:00",
+    "Dienstag: 08:00–17:00",
+    "Mittwoch: 08:00–17:00",
+    "Donnerstag: 08:00–17:00",
+    "Freitag: 08:00–17:00",
+  ],
   placeId: "ChIJabc",
   website: null,
   googleReviews: null,
@@ -191,6 +197,10 @@ describe("runWebsiteGenerationV2Job", () => {
     expect(args.facts?.contact?.phone).toBe("0231 123");
     expect(args.facts?.contact?.openingHours).toEqual([
       { day: "Montag", hours: "08:00–17:00" },
+      { day: "Dienstag", hours: "08:00–17:00" },
+      { day: "Mittwoch", hours: "08:00–17:00" },
+      { day: "Donnerstag", hours: "08:00–17:00" },
+      { day: "Freitag", hours: "08:00–17:00" },
     ]);
     expect(args.facts?.google).toEqual({ rating: 4.8, reviewCount: 12 });
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {

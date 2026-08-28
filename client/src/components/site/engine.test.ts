@@ -77,6 +77,24 @@ describe("orderedSections", () => {
     };
     expect(orderedSections(d).map(s => s.type)).toEqual(["hero", "services"]);
   });
+  test("einzelner Montag-Stub wird als Mo–Fr-Platzhalter gerendert", () => {
+    const d: WebsiteDataV2 = {
+      ...base,
+      sections: [
+        { type: "hero", headline: "H" },
+        {
+          type: "contact",
+          city: "Dortmund",
+          openingHours: [{ day: "Montag", hours: "09:00–17:00" }],
+        },
+      ],
+    };
+    const contact = orderedSections(d).find(s => s.type === "contact");
+    expect(contact).toMatchObject({
+      type: "contact",
+      openingHours: [{ day: "Mo–Fr", hours: "09:00–17:00" }],
+    });
+  });
   test("Anker sind deutsch und vollständig", () => {
     expect(SECTION_ANCHORS.services).toBe("leistungen");
     expect(SECTION_ANCHORS.about).toBe("ueber-uns");
@@ -295,6 +313,7 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       headline: "So erreichst du uns",
       city: "Essen",
       phone: "0201 1",
+      openingHours: [{ day: "Mo–Fr", hours: "09:00–17:00" }],
     });
     expect(linked[0]).toBe(pageSections[0]);
     // Ohne eigene Überschrift: Standard „Kontakt" wie die Studio-Kopie
@@ -308,7 +327,14 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
     };
     expect(
       linkPageSections(homeWithHeadline, [{ type: "contact", city: "Alt" }])
-    ).toEqual([{ type: "contact", headline: "Kontakt", city: "Essen" }]);
+    ).toEqual([
+      {
+        type: "contact",
+        headline: "Kontakt",
+        city: "Essen",
+        openingHours: [{ day: "Mo–Fr", hours: "09:00–17:00" }],
+      },
+    ]);
     // Startseite ohne Galerie/Kontakt → Seiten-Kopie bleibt unverändert.
     const bare: WebsiteDataV2 = {
       ...base,
