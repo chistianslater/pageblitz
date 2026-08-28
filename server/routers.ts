@@ -126,6 +126,11 @@ import { crawlExistingSite } from "./gmb/siteCrawl";
 import type { GmbReview } from "./gmb/details";
 import { fetchGmbDetails, persistGmbDetails } from "./gmb/details";
 import { resolveGmbCategory } from "./gmb/category";
+import {
+  reverseGeocodeCity,
+  searchAutocompleteCity,
+  searchGmbPublic,
+} from "./startSearch";
 import { buildStudioUrl } from "./_core/lifecycleScheduler";
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -727,81 +732,39 @@ export const appRouter = router({
         };
       }),
 
-    // User-facing GMB search (no admin required)
+    // User-facing GMB search (no admin required). Optional lat/lng bias —
+    // Roh-GPS nur an Places, nicht persistiert.
     gmbSearchPublic: publicProcedure
       .input(
         z.object({
           query: z.string().min(1),
           region: z.string().optional(),
+          lat: z.number().gte(-90).lte(90).optional(),
+          lng: z.number().gte(-180).lte(180).optional(),
         })
       )
-      .mutation(async ({ input }) => {
-        const searchQuery = input.region
-          ? `${input.query} in ${input.region}`
-          : input.query;
-        const placesResult = await makeRequest<PlacesSearchResult>(
-          "/maps/api/place/textsearch/json",
-          { query: searchQuery, language: "de" }
-        );
-        if (placesResult.status !== "OK" || !placesResult.results?.length) {
-          return { results: [], total: 0 };
-        }
-        const detailedResults = [];
-        const limitedResults = placesResult.results.slice(0, 5);
-        for (const place of limitedResults) {
-          const details = await fetchGmbDetails(place.place_id);
-          if (details) {
-            detailedResults.push({
-              placeId: place.place_id,
-              name: details.name || place.name,
-              address: details.formattedAddress || place.formatted_address,
-              phone: details.phone,
-              website: details.website,
-              rating: details.rating ?? place.rating ?? null,
-              reviewCount: details.reviewCount ?? place.user_ratings_total ?? 0,
-              // Kategorie-Kette (nie Firmenname/Suchbegriff) — null = unbekannt
-              category: details.category,
-              openingHours: details.openingHours ?? [],
-            });
-          } else {
-            detailedResults.push({
-              placeId: place.place_id,
-              name: place.name,
-              address: place.formatted_address,
-              phone: null,
-              website: null,
-              rating: place.rating || null,
-              reviewCount: place.user_ratings_total || 0,
-              category: resolveGmbCategory({ types: place.types }),
-              openingHours: [] as string[],
-            });
-          }
-        }
-        return { results: detailedResults, total: detailedResults.length };
-      }),
+      .mutation(({ input }) => searchGmbPublic(input)),
 
     // City autocomplete for StartPage – server-side to keep API key private
     autocompleteCity: publicProcedure
-      .input(z.object({ input: z.string().min(2) }))
-      .mutation(async ({ input }) => {
-        const result = await makeRequest<{
-          status: string;
-          predictions: Array<{ description: string; place_id: string }>;
-        }>("/maps/api/place/autocomplete/json", {
-          input: input.input,
-          types: "(cities)",
-          language: "de",
-          components: "country:de|country:at|country:ch",
-        });
-        if (result.status !== "OK" || !result.predictions?.length)
-          return { suggestions: [] };
-        return {
-          suggestions: result.predictions.slice(0, 6).map(p => ({
-            label: p.description,
-            placeId: p.place_id,
-          })),
-        };
-      }),
+      .input(
+        z.object({
+          input: z.string().min(2),
+          lat: z.number().gte(-90).lte(90).optional(),
+          lng: z.number().gte(-180).lte(180).optional(),
+        })
+      )
+      .mutation(({ input }) => searchAutocompleteCity(input)),
+
+    // Stadt aus Koordinaten für den Start-Stadtpicker (kein Speichern).
+    reverseGeocodeCity: publicProcedure
+      .input(
+        z.object({
+          lat: z.number().gte(-90).lte(90),
+          lng: z.number().gte(-180).lte(180),
+        })
+      )
+      .mutation(({ input }) => reverseGeocodeCity(input)),
 
     // New: Analyze a specific website for age and quality
     analyzeWebsite: adminProcedure
