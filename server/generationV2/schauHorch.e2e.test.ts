@@ -279,13 +279,13 @@ describe("SCHAU & HORCH — Ende-zu-Ende (Plan B7 Task 3, Spec §4)", () => {
       },
     ]);
 
-    // Galerie aus den 4 gespiegelten GMB-Fotos, Add-on als Entwurfs-Flag.
+    // Galerie aus den 4 gespiegelten GMB-Fotos bleibt im Dokument;
+    // das Extra wird nicht vorausgewählt (kein Entwurfs-Flag, kein
+    // onboarding_responses-Write für Galerie).
     const gallery = doc.sections.find((s: any) => s.type === "gallery");
     expect(gallery.images.map((i: any) => i.url)).toEqual(R2_PHOTOS);
-    expect(doc.addOns?.gallery).toBe(true);
-    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
-      expect.objectContaining({ websiteId: 491, addOnGallery: true })
-    );
+    expect(doc.addOns?.gallery).not.toBe(true);
+    expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
 
     // Kontakt: echte GMB-Fakten inkl. Öffnungszeiten und geparster Adresse.
     const contact = doc.sections.find((s: any) => s.type === "contact");

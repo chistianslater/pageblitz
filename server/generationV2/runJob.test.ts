@@ -342,6 +342,28 @@ describe("runWebsiteGenerationV2Job", () => {
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
   });
 
+  test("Galerie-Sektion ohne addOns.gallery wird nicht als Extra nach onboarding_responses gespiegelt", async () => {
+    mockedMirror.mockResolvedValue([]);
+    mockedGen.mockResolvedValue({
+      ...doc,
+      sections: [
+        ...doc.sections,
+        {
+          type: "gallery" as const,
+          headline: "Einblicke",
+          images: [
+            { url: "/demo/a.webp", alt: "a" },
+            { url: "/demo/b.webp", alt: "b" },
+            { url: "/demo/c.webp", alt: "c" },
+          ],
+        },
+      ],
+    });
+    await runWebsiteGenerationV2Job(99, 42);
+    expect(mockedDb.createOnboarding).not.toHaveBeenCalled();
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+  });
+
   test("Zwischenstand nach der Bild-Phase: schema-valides Interim-Doc mit Bildern + deutschen Platzhaltertexten wird persistiert und der SSR-Cache invalidiert, BEVOR das LLM läuft (Zeitmaschine, Task 4)", async () => {
     mockedMirror.mockResolvedValue([R2_1, R2_2]);
     await runWebsiteGenerationV2Job(99, 42);
@@ -361,7 +383,7 @@ describe("runWebsiteGenerationV2Job", () => {
     expect(about.imageUrl).toBe(R2_2);
     const gallery = interim.sections.find((s: any) => s.type === "gallery");
     expect(gallery.images.length).toBeGreaterThanOrEqual(3);
-    expect(interim.addOns?.gallery).toBe(true);
+    expect(interim.addOns?.gallery).not.toBe(true);
     expect(JSON.stringify(interim).toLowerCase()).not.toContain("lorem");
 
     // Interim-Write + Cache-Invalidierung liegen VOR dem LLM-Aufruf.

@@ -326,6 +326,12 @@ function isLlmMockEnabled(): boolean {
  * Packs: Business-Name aus `business` überschreibt den Fixture-Namen, `facts`
  * wird genau wie im echten LLM-Pfad NACH der (impliziten, da Fixtures bereits
  * schema-valide sind) Validierung gemergt und revalidiert.
+ *
+ * Fixture-`addOns` (DEMO_ADD_ONS: alle Extras an, damit Pack-Vorschauen
+ * Galerie/Menü/Team zeigen) gehören nicht auf eine frisch generierte
+ * Kunden-Website — sonst wäre z. B. Galerie im Mock-Pfad automatisch
+ * gebucht. Dieselbe Default-Regel wie im LLM-Pfad: nur Menü, wenn eine
+ * Speisekarte im Dokument steht.
  */
 function mockSiteContent(
   packId: PackId,
@@ -333,15 +339,15 @@ function mockSiteContent(
   facts: GenerateSiteContentFacts | undefined
 ): WebsiteDataV2 {
   const fixture = getFixture(packId, "full");
+  const { addOns: _demoAddOns, ...fixtureWithoutAddOns } = fixture;
   const base: WebsiteDataV2 = {
-    ...fixture,
+    ...fixtureWithoutAddOns,
     businessName: business.name,
     seo: { ...fixture.seo, title: business.name },
   };
-  if (!facts) return base;
-
-  const merged = mergeFacts(base, facts);
-  const revalidated = WebsiteDataV2Schema.safeParse(merged);
+  const merged = facts ? mergeFacts(base, facts) : base;
+  const withDefaults = withGeneratedAddOnDefaults(merged);
+  const revalidated = WebsiteDataV2Schema.safeParse(withDefaults);
   if (!revalidated.success) {
     throw new Error(
       "Mock-Fixture nach Fakten-Merge ungültig: " + revalidated.error.message
@@ -351,25 +357,22 @@ function mockSiteContent(
 }
 
 /**
- * Gastro-Default (Plan B6 Task 6, Spec §5.5): enthält das generierte
- * Dokument eine Speisekarte (Gastro-Packs, `MENU_SECTIONS`), ist das
- * Menü-Add-on im Entwurf vorausgewählt — `addOns.menu: true` macht die
- * Sektion sichtbar (Gating in client/src/components/site/engine.ts), runJob
- * spiegelt das Flag in onboarding_responses (Extras-Panel „Aktiv", Preis im
- * Checkout, abwählbar). Ohne Speisekarte bleibt `addOns` leer — Galerie/
- * Preisliste/Team/Unterseiten entstehen erst im Studio.
+ * Add-on-Defaults der Erstgenerierung (Plan B6 Task 6, Spec §5.5):
+ * enthält das Dokument eine Speisekarte (Gastro-Packs, `MENU_SECTIONS` /
+ * `prefersMenu`), ist das Menü-Extra im Entwurf vorausgewählt —
+ * `addOns.menu: true` macht die Sektion sichtbar (Gating in engine.ts),
+ * runJob spiegelt das Flag in onboarding_responses (Extras-Panel „Aktiv",
+ * Preis im Checkout, abwählbar).
+ *
+ * Galerie-/Preislisten-/Team-/Unterseiten-Extras bleiben aus, auch wenn
+ * die Sektion schon Platzhalter- oder GMB-Fotos trägt: der Inhalt darf
+ * im Dokument stehen (Hero/About/Galerie wirken vollständig), gebucht
+ * wird das Extra erst nach explizitem Toggle. Eine gallery-Sektion ohne
+ * `addOns.gallery` bleibt durch engine.ts unsichtbar — das ist gewollt.
  */
 function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
-  // Galerie-Analogie (Plan B7 Task 3 / Platzhalter-Fix): eine bei der
-  // Generierung entstandene gallery-Sektion (GMB oder Stock-Defaults) ist
-  // ohne `addOns.gallery` unsichtbar (Gating in engine.ts) — deshalb wird
-  // das Add-on wie beim Gastro-Menü als Entwurfs-Flag vorausgewählt.
-  const defaults: NonNullable<WebsiteDataV2["addOns"]> = {
-    ...(data.sections.some(s => s.type === "menu") ? { menu: true } : {}),
-    ...(data.sections.some(s => s.type === "gallery") ? { gallery: true } : {}),
-  };
-  if (Object.keys(defaults).length === 0) return data;
-  return { ...data, addOns: { ...(data.addOns ?? {}), ...defaults } };
+  if (!data.sections.some(s => s.type === "menu")) return data;
+  return { ...data, addOns: { ...(data.addOns ?? {}), menu: true } };
 }
 
 /**

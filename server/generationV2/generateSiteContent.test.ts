@@ -378,6 +378,47 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
+  test("Galerie-Sektion ohne User-Toggle lässt addOns.gallery aus; Gastro-Menü bleibt vorausgewählt", async () => {
+    const gastroWithGallery = JSON.stringify({
+      seo: { title: "Trattoria", description: "Italienisch in Berlin." },
+      sections: [
+        { type: "hero", headline: "Buon appetito" },
+        {
+          type: "menu",
+          headline: "Speisekarte",
+          categories: [
+            { name: "Pasta", items: [{ name: "Tagliatelle", price: "12 €" }] },
+          ],
+        },
+        {
+          type: "gallery",
+          headline: "Einblicke",
+          images: [
+            { url: "/demo/gusto-hero.webp", alt: "Saal" },
+            { url: "/demo/gusto-detail-1.webp", alt: "Tisch" },
+            { url: "/demo/gusto-detail-2.webp", alt: "Küche" },
+          ],
+        },
+        { type: "contact", city: "Berlin" },
+      ],
+    });
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(gastroWithGallery),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "gusto",
+      business: { name: "Trattoria", category: "Restaurant" },
+      facts: { images: {} },
+    });
+    expect(d.sections.some(s => s.type === "gallery")).toBe(true);
+    expect(d.sections.some(s => s.type === "menu")).toBe(true);
+    expect(d.addOns).toEqual({ menu: true });
+    expect(d.addOns?.gallery).not.toBe(true);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
   test("nach zweitem Fehlschlag: Throw, kein Fallback", async () => {
     vi.doMock("./llmClient", () => ({
       llmComplete: vi.fn().mockResolvedValue("{kaputt"),
@@ -478,6 +519,55 @@ describe("generateSiteContent — PB_LLM_MOCK (Task 3, LLM-Mock für die Generie
     expect(d.businessName).toBe("Falk & Partner");
     expect(d.seo.title).toBe("Falk & Partner");
     expect(d.slug).toBe("falk-partner");
+    // Fixture-DEMO_ADD_ONS dürfen nicht auf die generierte Website
+    // durchschlagen — kein Extra vorausgewählt.
+    expect(d.addOns?.gallery).not.toBe(true);
+    expect(d.addOns?.team).not.toBe(true);
+    expect(d.addOns?.subpages).not.toBe(true);
+    process.env.PB_LLM_MOCK = prevMock;
+    process.env.NODE_ENV = prevEnv;
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("PB_LLM_MOCK=1 Werkbank: Galerie-Sektion bleibt, Extra bleibt aus", async () => {
+    vi.doMock("./llmClient", () => ({ llmComplete: vi.fn() }));
+    const prevMock = process.env.PB_LLM_MOCK;
+    const prevEnv = process.env.NODE_ENV;
+    process.env.PB_LLM_MOCK = "1";
+    process.env.NODE_ENV = "test";
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+    });
+    expect(d.sections.some(s => s.type === "gallery")).toBe(true);
+    expect(d.addOns?.gallery).not.toBe(true);
+    expect(d.addOns).toBeUndefined();
+    process.env.PB_LLM_MOCK = prevMock;
+    process.env.NODE_ENV = prevEnv;
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("PB_LLM_MOCK=1 Gusto: Menü-Extra bleibt vorausgewählt, Galerie-Extra nicht", async () => {
+    vi.doMock("./llmClient", () => ({ llmComplete: vi.fn() }));
+    const prevMock = process.env.PB_LLM_MOCK;
+    const prevEnv = process.env.NODE_ENV;
+    process.env.PB_LLM_MOCK = "1";
+    process.env.NODE_ENV = "test";
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "gusto",
+      business: { name: "Trattoria Lucia", category: "Restaurant" },
+    });
+    expect(d.sections.some(s => s.type === "menu")).toBe(true);
+    expect(d.sections.some(s => s.type === "gallery")).toBe(true);
+    expect(d.addOns?.menu).toBe(true);
+    expect(d.addOns?.gallery).not.toBe(true);
+    expect(d.addOns?.pricelist).not.toBe(true);
+    expect(d.addOns?.team).not.toBe(true);
+    expect(d.addOns?.subpages).not.toBe(true);
     process.env.PB_LLM_MOCK = prevMock;
     process.env.NODE_ENV = prevEnv;
     vi.doUnmock("./llmClient");
@@ -652,7 +742,7 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
     vi.resetModules();
   });
 
-  test("Galerie aus GMB-Fotos: ≥ 3 R2-URLs → gallery-Sektion mit Alt-Texten + addOns.gallery=true (Entwurfs-Flag wie Gastro-Menü)", async () => {
+  test("Galerie aus GMB-Fotos: ≥ 3 R2-URLs → gallery-Sektion mit Alt-Texten, Extra bleibt aus (nicht wie Gastro-Menü vorausgewählt)", async () => {
     vi.doMock("./llmClient", () => ({
       llmComplete: vi.fn().mockResolvedValue(JSON.stringify(baseAnswer)),
     }));
@@ -678,7 +768,7 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
       url: "https://media.pageblitz.de/1.jpg",
       alt: "Schreinerei Brandt – Eindruck 1",
     });
-    expect(d.addOns?.gallery).toBe(true);
+    expect(d.addOns?.gallery).not.toBe(true);
     // Kanonische Reihenfolge: … about → gallery → testimonials → faq → contact
     expect(d.sections.map(s => s.type)).toEqual([
       "hero",
@@ -788,7 +878,7 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
       "/demo/werkbank-detail-1.webp",
       "/demo/werkbank-detail-2.webp",
     ]);
-    expect(d.addOns?.gallery).toBe(true);
+    expect(d.addOns?.gallery).not.toBe(true);
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });

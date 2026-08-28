@@ -41,10 +41,12 @@ const ONBOARDING_ADDON_COLUMNS: Record<
 /**
  * Spiegelt die vom Generator gesetzten Add-on-Defaults (aktuell nur
  * `addOns.menu` für Gastro, siehe generateSiteContent.ts
- * withGeneratedAddOnDefaults; im Mock-Pfad die Fixture-addOns) als
- * Entwurfs-Flags nach onboarding_responses — so zeigt das Extras-Panel
- * „Aktiv", die Checkout-Summe enthält das Extra, und der Kunde kann es
- * abwählen (Plan B6 Task 6, Spec §5.5). Ohne `addOns` kein Write.
+ * withGeneratedAddOnDefaults) als Entwurfs-Flags nach
+ * onboarding_responses — so zeigt das Extras-Panel „Aktiv", die
+ * Checkout-Summe enthält das Extra, und der Kunde kann es abwählen
+ * (Plan B6 Task 6, Spec §5.5). Galerie/Preisliste/Team/Unterseiten
+ * werden nicht vorausgewählt, auch wenn die Sektion schon Platzhalter-
+ * oder GMB-Fotos trägt. Ohne `addOns` kein Write.
  */
 async function mirrorGeneratedAddOns(
   websiteId: number,
@@ -167,9 +169,9 @@ export function buildInterimV2Doc(
           ]
         : []),
     ],
-    ...(images.gallery && images.gallery.length >= MIN_GALLERY_PHOTOS
-      ? { addOns: { gallery: true } }
-      : {}),
+    // Galerie-Fotos dürfen im Zwischenstand stehen (Hero/About/Galerie
+    // wirken vollständig). Das Extra bleibt aus — engine.ts blendet die
+    // Sektion ohne `addOns.gallery` aus, bis der Kunde sie bucht.
   };
   // Harte Garantie statt Annahme: der Zwischenstand MUSS dem Vertrag genügen
   // (SSR-Preview und assertV2SafeWrite verlassen sich darauf).
