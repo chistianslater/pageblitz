@@ -184,7 +184,9 @@ export default function StudioPage({ token }: { token: string }) {
       onStay={() => {
         setActiveId(null);
         requestAnimationFrame(() => {
-          document.getElementById("pb-checkout-email")?.focus();
+          const field = document.getElementById("pb-checkout-email");
+          field?.focus();
+          field?.scrollIntoView({ block: "center", behavior: "smooth" });
         });
       }}
     />
