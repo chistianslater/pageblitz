@@ -28,7 +28,7 @@ describe("Pack gusto", () => {
     expect(html).toContain("pb-gu-menu");
     expect(html).toContain("pb-gu-quick");
     expect(html).toContain("Speisekarte");
-    expect(html).toContain("Reservieren");
+    expect(html).toContain("Tisch reservieren");
     expect(html).toContain("Route");
   });
 
@@ -37,7 +37,6 @@ describe("Pack gusto", () => {
     expect(html).toContain("pb-gu-story");
     expect(html).toContain("pb-gu-film");
     expect(html).toContain("pb-gu-reservation");
-    expect(html).toContain("Szene 01");
   });
 
   test("Crop-/Reveal-Motion ist transformbasiert und reduced-motion-kompatibel", () => {
@@ -78,36 +77,31 @@ describe("Pack gusto", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
   });
 
-  test("Restaurant-Stimme bleibt bei Trattoria: Tisch reservieren", () => {
-    expect(html).toContain("Ihr Tisch wartet");
-    expect(html).toContain("Jetzt reservieren");
-    expect(html).not.toContain("Wir erwarten Sie");
+  test("Kontakt-Kicker ist branchenneutral, CTA kommt aus dem Dokument", () => {
+    expect(html).not.toContain("Ihr Tisch wartet");
+    expect(html).not.toContain("Jetzt reservieren");
+    expect(html).toContain("Tisch reservieren");
+    expect(html).toContain("Kontakt");
   });
 
-  test("Hotel auf Gusto: Kontakt-Kicker ohne Tisch-Reservierung", () => {
+  test("Hotel auf Gusto: kein Gastro-Kicker im Layout", () => {
     const base = getFixture("gusto", "full");
     const hotel = {
       ...base,
       businessCategory: "Hotel",
       businessName: "Hotel Lucia",
-      sections: [
-        ...base.sections.filter(s => s.type !== "services"),
-        {
-          type: "services" as const,
-          headline: "Für Gäste",
-          items: [{ title: "Zimmer" }],
-        },
-      ],
+      sections: base.sections.map(section =>
+        section.type === "hero"
+          ? { ...section, ctaText: "Zimmer anfragen" }
+          : section
+      ),
     };
     const hotelHtml = renderToStaticMarkup(
       <SiteRenderer data={hotel} now={NOW} />
     );
-    expect(hotelHtml).toContain("Wir erwarten Sie");
-    expect(hotelHtml).toContain("Jetzt anfragen");
-    expect(hotelHtml).toContain("Für Ihren Aufenthalt");
-    expect(hotelHtml).toContain("Einblicke ins Haus");
     expect(hotelHtml).not.toContain("Ihr Tisch wartet");
     expect(hotelHtml).not.toContain("Jetzt reservieren");
     expect(hotelHtml).not.toContain("Aus der Küche");
+    expect(hotelHtml).toContain("Zimmer anfragen");
   });
 });
