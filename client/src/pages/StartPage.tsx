@@ -14,11 +14,24 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { CATEGORY_GROUPS } from "@shared/gmbCategories";
+import { formatDistanceKm, type LatLng } from "@shared/geo";
+import {
+  readGeolocationPermission,
+  requestBrowserGeolocation,
+  type GeoPermission,
+} from "@/lib/browserGeolocation";
 import {
   BlitzMark,
   textLink,
   PRICE_YEARLY,
 } from "@/components/landing/primitives";
+import { StandortControl } from "./StandortControl";
+import {
+  geoFallbackMessage,
+  shouldAutoUseLocation,
+  standortControlMode,
+  type GeoUiStatus,
+} from "./startLocation";
 
 type Step = "choice" | "manual" | "gmb";
 
@@ -156,8 +169,12 @@ export default function StartPage() {
       category: string | null;
       website: string | null;
       openingHours?: string[];
+      distanceKm?: number | null;
     }>
   >([]);
+  const [geoPermission, setGeoPermission] = useState<GeoPermission>("unknown");
+  const [geoStatus, setGeoStatus] = useState<GeoUiStatus>("idle");
+  const coordsRef = useRef<LatLng | null>(null);
   const [gmbSearchLoading, setGmbSearchLoading] = useState(false);
   const [citysuggestions, setCitySuggestions] = useState<
     Array<{ label: string; placeId: string }>
@@ -180,7 +197,68 @@ export default function StartPage() {
   // ── Mutations ─────────────────────────────────────────────────────────────
   const gmbSearchPublicMutation = trpc.search.gmbSearchPublic.useMutation();
   const autocompleteCityMutation = trpc.search.autocompleteCity.useMutation();
+  const reverseGeocodeCityMutation =
+    trpc.search.reverseGeocodeCity.useMutation();
   const startMutation = trpc.selfService.start.useMutation();
+
+  const setOrigin = (next: LatLng | null) => {
+    coordsRef.current = next;
+  };
+
+  const applyGrantedCoords = async (
+    origin: LatLng
+  ): Promise<string | undefined> => {
+    setOrigin(origin);
+    setGeoStatus("ready");
+    try {
+      const city = await reverseGeocodeCityMutation.mutateAsync({
+        lat: origin.lat,
+        lng: origin.lng,
+      });
+      if (city.city) {
+        setGmbSearchRegion(prev => (prev.trim() ? prev : city.city!));
+      }
+      return city.city ?? undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const ensureLocationIfGranted = async (): Promise<{
+    origin: LatLng | null;
+    city: string | undefined;
+  }> => {
+    if (coordsRef.current) {
+      return { origin: coordsRef.current, city: undefined };
+    }
+    const permission = await readGeolocationPermission();
+    setGeoPermission(permission);
+    if (!shouldAutoUseLocation(permission)) {
+      return { origin: null, city: undefined };
+    }
+    setGeoStatus("requesting");
+    const geo = await requestBrowserGeolocation();
+    if (geo.status !== "granted") {
+      setGeoStatus(geo.status === "denied" ? "denied" : "unavailable");
+      return { origin: null, city: undefined };
+    }
+    const city = await applyGrantedCoords(geo.coords);
+    return { origin: geo.coords, city };
+  };
+
+  const runGmbSearch = (
+    query: string,
+    region?: string,
+    origin?: LatLng | null
+  ) => {
+    const o = origin ?? coordsRef.current;
+    return gmbSearchPublicMutation.mutateAsync({
+      query,
+      region: region?.trim() || undefined,
+      lat: o?.lat,
+      lng: o?.lng,
+    });
+  };
 
   const isLoading = startMutation.isPending;
 
@@ -205,20 +283,22 @@ export default function StartPage() {
     setGmbSearchQuery(name);
     setStep("gmb");
     setGmbSearchLoading(true);
-    gmbSearchPublicMutation
-      .mutateAsync({ query: name })
-      .then(res => {
+    void (async () => {
+      try {
+        const { origin, city } = await ensureLocationIfGranted();
+        const res = await runGmbSearch(name, city, origin);
         setGmbSearchResults(res.results);
         if (res.results.length === 0) {
           toast.info(
             "Kein Google-Eintrag gefunden – such nochmal oder starte ohne."
           );
         }
-      })
-      .catch(() =>
-        toast.error("Suche fehlgeschlagen – bitte nochmal versuchen.")
-      )
-      .finally(() => setGmbSearchLoading(false));
+      } catch {
+        toast.error("Suche fehlgeschlagen – bitte nochmal versuchen.");
+      } finally {
+        setGmbSearchLoading(false);
+      }
+    })();
     // Nur beim ersten Mount; didPrefill schützt zusätzlich gegen StrictMode.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -253,13 +333,49 @@ export default function StartPage() {
     setGmbSearchResults([]);
     setResolvedInfo(null);
     try {
-      const res = await gmbSearchPublicMutation.mutateAsync({
-        query: q,
-        region: gmbSearchRegion.trim() || undefined,
-      });
+      const res = await runGmbSearch(q, gmbSearchRegion.trim() || undefined);
       setGmbSearchResults(res.results);
       if (res.results.length === 0)
         toast.info("Keine Ergebnisse – versuche es mit einem anderen Begriff.");
+    } finally {
+      setGmbSearchLoading(false);
+    }
+  };
+
+  const handleUseStandort = async () => {
+    setGeoStatus("requesting");
+    const geo = await requestBrowserGeolocation();
+    if (geo.status !== "granted") {
+      setGeoStatus(geo.status === "denied" ? "denied" : "unavailable");
+      if (geo.status === "denied") setGeoPermission("denied");
+      toast.info(
+        geoFallbackMessage(
+          geo.status === "denied"
+            ? "denied"
+            : geo.status === "timeout" || geo.status === "unsupported"
+              ? geo.status
+              : "unavailable"
+        )
+      );
+      return;
+    }
+    const city = await applyGrantedCoords(geo.coords);
+    const q = gmbSearchQuery.trim();
+    if (!q) return;
+    setGmbSearchLoading(true);
+    setGmbSearchResults([]);
+    setResolvedInfo(null);
+    try {
+      const res = await runGmbSearch(
+        q,
+        city || gmbSearchRegion.trim() || undefined,
+        geo.coords
+      );
+      setGmbSearchResults(res.results);
+      if (res.results.length === 0)
+        toast.info("Keine Ergebnisse – versuche es mit einem anderen Begriff.");
+    } catch {
+      toast.error("Suche fehlgeschlagen – bitte nochmal versuchen.");
     } finally {
       setGmbSearchLoading(false);
     }
@@ -329,6 +445,7 @@ export default function StartPage() {
               <button
                 onClick={() => {
                   setStep("gmb");
+                  void ensureLocationIfGranted();
                   try {
                     (window as any).clarity?.("event", "start_gmb");
                   } catch {}
@@ -474,7 +591,8 @@ export default function StartPage() {
               Dein Unternehmen bei Google
             </h1>
             <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
-              Suche deinen Betrieb – wir übernehmen alle Infos automatisch.
+              Suche deinen Betrieb – Stadt oder Standort helfen uns, den
+              richtigen Eintrag in der Nähe zu finden.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -527,6 +645,8 @@ export default function StartPage() {
                               const res =
                                 await autocompleteCityMutation.mutateAsync({
                                   input: val.trim(),
+                                  lat: coordsRef.current?.lat,
+                                  lng: coordsRef.current?.lng,
                                 });
                               setCitySuggestions(res.suggestions);
                             } catch {
@@ -596,14 +716,22 @@ export default function StartPage() {
                     )}
                   </button>
                 </div>
+                <StandortControl
+                  mode={standortControlMode(geoPermission, geoStatus)}
+                  onClick={() => void handleUseStandort()}
+                  disabled={gmbSearchLoading || isLoading}
+                />
               </div>
 
               {/* Search results */}
               {gmbSearchResults.length > 0 && !resolvedInfo && (
                 <div>
                   <p className="lp-kicker">
-                    {gmbSearchResults.length} Ergebnis
-                    {gmbSearchResults.length !== 1 ? "se" : ""} gefunden
+                    {gmbSearchResults.some(r => r.distanceKm != null)
+                      ? `${gmbSearchResults.length} Treffer in deiner Nähe`
+                      : `${gmbSearchResults.length} Ergebnis${
+                          gmbSearchResults.length !== 1 ? "se" : ""
+                        } gefunden`}
                   </p>
                   <ul className="mt-3 space-y-2">
                     {gmbSearchResults.map(result => (
@@ -635,16 +763,26 @@ export default function StartPage() {
                             <p className="mt-0.5 truncate text-sm text-lp-muted">
                               {result.address.split(",").slice(0, 2).join(",")}
                             </p>
-                            {result.rating && (
+                            {(result.distanceKm != null || result.rating) && (
                               <p className="mt-1 text-xs text-lp-muted">
-                                <span
-                                  aria-hidden="true"
-                                  className="text-lp-accent"
-                                >
-                                  ★
-                                </span>{" "}
-                                {result.rating.toFixed(1)} ({result.reviewCount}{" "}
-                                Bewertungen)
+                                {result.distanceKm != null &&
+                                  formatDistanceKm(result.distanceKm) && (
+                                    <span className="mr-2 text-lp-accent">
+                                      {formatDistanceKm(result.distanceKm)}
+                                    </span>
+                                  )}
+                                {result.rating ? (
+                                  <>
+                                    <span
+                                      aria-hidden="true"
+                                      className="text-lp-accent"
+                                    >
+                                      ★
+                                    </span>{" "}
+                                    {result.rating.toFixed(1)} (
+                                    {result.reviewCount} Bewertungen)
+                                  </>
+                                ) : null}
                               </p>
                             )}
                           </div>
