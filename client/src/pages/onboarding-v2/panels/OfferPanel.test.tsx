@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, previewAnchorForOfferMode, validateOffer } from "./OfferPanel";
+import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, previewAnchorForOfferMode, offerPanelCopy, validateOffer } from "./OfferPanel";
 
 const docWithServices: WebsiteDataV2 = {
   version: 2,
@@ -156,8 +156,18 @@ describe("previewAnchorForOfferMode", () => {
   });
 });
 
+describe("offerPanelCopy", () => {
+  test("Extra-Speisekarte erklärt sich als eigenen Bereich, nicht als Angebotstyp", () => {
+    expect(offerPanelCopy("menu").title).toBe("Speisekarte pflegen");
+    expect(offerPanelCopy("menu").intro).toMatch(/Basispaket/);
+    expect(offerPanelCopy("pricelist").title).toBe("Preisliste pflegen");
+    expect(offerPanelCopy("services").title).toBe("Leistungen pflegen");
+    expect(offerPanelCopy("services").intro).toMatch(/Extras/);
+  });
+});
+
 describe("OfferEditor", () => {
-  test("zeigt das Modus-Segment und eine Zeile im Leistungen-Modus", () => {
+  test("Leistungen-Editor hat keinen Typ-Wechsel zu Speisekarte oder Preisliste", () => {
     const html = renderToStaticMarkup(
       <OfferEditor
         value={{
@@ -168,13 +178,13 @@ describe("OfferEditor", () => {
         onChange={() => {}}
       />
     );
-    expect(html).toContain("Leistungen");
-    expect(html).toContain("Speisekarte");
-    expect(html).toContain("Preisliste");
     expect(html).toContain("Beratung");
+    expect(html).not.toContain("Angebotstyp");
+    expect(html).not.toContain(">Speisekarte<");
+    expect(html).not.toContain(">Preisliste<");
   });
 
-  test("zeigt Kategorien-Editor im Speisekarten-Modus", () => {
+  test("Speisekarten-Editor hat keinen Tab zu Leistungen oder Preisliste", () => {
     const html = renderToStaticMarkup(
       <OfferEditor
         value={{
@@ -188,6 +198,9 @@ describe("OfferEditor", () => {
     );
     expect(html).toContain("Vorspeisen");
     expect(html).toContain("Suppe");
+    expect(html).not.toContain("Angebotstyp");
+    expect(html).not.toContain(">Leistungen<");
+    expect(html).not.toContain(">Preisliste<");
   });
 
   test("Felder tragen maxLength passend zu OfferPatchSchema (Finding I2)", () => {

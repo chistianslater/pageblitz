@@ -276,7 +276,7 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("updateOffer menu ersetzt services", async () => {
+  test("updateOffer menu lässt Leistungen stehen (Basis vs. Extra)", async () => {
     const s = await caller().onboardingV2.updateOffer({
       token: "tok",
       offer: {
@@ -287,7 +287,7 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
       },
     });
     expect(s.doc!.sections.map(x => x.type)).toContain("menu");
-    expect(s.doc!.sections.map(x => x.type)).not.toContain("services");
+    expect(s.doc!.sections.map(x => x.type)).toContain("services");
   });
 
   test("updateOffer menu setzt addOns.menu (sonst bleibt die Speisekarte in der Vorschau unsichtbar)", async () => {

@@ -3,14 +3,6 @@ import type { OfferPatch } from "@shared/onboardingV2/patches";
 
 export type OfferMode = OfferPatch["mode"];
 
-const MODE_LABELS: Record<OfferMode, string> = {
-  services: "Leistungen",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
-};
-
-const MODES: OfferMode[] = ["services", "menu", "pricelist"];
-
 /** Deckt sich mit den Grenzen in shared/onboardingV2/patches.ts (OfferPatchSchema). */
 const MAX_LIST_ITEMS = 12;
 const MAX_CATEGORY_ITEMS = 40;
@@ -78,29 +70,6 @@ function replaceAt<T>(list: T[], index: number, value: T): T[] {
 }
 function removeAt<T>(list: T[], index: number): T[] {
   return list.filter((_, i) => i !== index);
-}
-
-interface ModeSegmentProps {
-  mode: OfferMode;
-  onSelect: (mode: OfferMode) => void;
-}
-
-/** Reine Darstellung: Segmented Control Leistungen / Speisekarte / Preisliste. */
-function ModeSegment({ mode, onSelect }: ModeSegmentProps) {
-  return (
-    <div className="pb-studio-seg" role="group" aria-label="Angebotstyp">
-      {MODES.map(m => (
-        <button
-          key={m}
-          type="button"
-          aria-pressed={mode === m}
-          onClick={() => onSelect(m)}
-        >
-          {MODE_LABELS[m]}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 type ServicesPatch = Extract<OfferPatch, { mode: "services" }>;
@@ -387,21 +356,15 @@ interface OfferEditorProps {
 }
 
 /**
- * Reine Darstellung: Modus-Segment (Leistungen | Speisekarte | Preisliste) +
- * passender Listen-Editor + Pflichtfeld-Hinweise. Ein Moduswechsel meldet
- * nur die neue, leere Form über onChange — das Elternpanel (OfferPanel)
- * merkt sich pro Modus den zuletzt bearbeiteten Entwurf und ersetzt den
- * leeren Wert ggf. dadurch.
+ * Listen-Editor für genau einen Angebotstyp. Kein Tab-Wechsel: Leistungen
+ * gehören zum Basispaket (Checkliste „Angebot"), Speisekarte und Preisliste
+ * sind eigene Extras — vermischte Tabs wirkten, als wären das derselbe
+ * Inhalt.
  */
 export function OfferEditor({ value, onChange }: OfferEditorProps) {
-  const handleModeSelect = (mode: OfferMode) => {
-    if (mode === value.mode) return;
-    onChange(blankOffer(mode));
-  };
   const errors = validateOffer(value);
   return (
     <div className="pb-studio-rows">
-      <ModeSegment mode={value.mode} onSelect={handleModeSelect} />
       {errors.length > 0 && (
         <ul
           role="alert"

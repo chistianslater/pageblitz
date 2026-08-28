@@ -135,6 +135,29 @@ export function previewAnchorForOfferMode(mode: OfferMode): string {
   return ADDON_EDITORS[mode].previewAnchor;
 }
 
+/** Titel/Intro zum festen Editor-Modus — kein Typ-Wechsel mehr im Panel. */
+export function offerPanelCopy(mode: OfferMode): { title: string; intro: string } {
+  if (mode === "menu") {
+    return {
+      title: "Speisekarte pflegen",
+      intro:
+        "Gerichte, Kategorien und Preise — so erscheint die Speisekarte auf der Website. Leistungen aus dem Basispaket und die Preisliste als Extra bleiben eigene Bereiche.",
+    };
+  }
+  if (mode === "pricelist") {
+    return {
+      title: "Preisliste pflegen",
+      intro:
+        "Kategorien und Preise — so erscheint die Preisliste auf der Website. Leistungen pflegst du unter Angebot, die Speisekarte ist ein eigenes Extra.",
+    };
+  }
+  return {
+    title: "Leistungen pflegen",
+    intro:
+      "Das sind die Leistungen aus deinem Basispaket. Speisekarte und Preisliste buchst du unter Extras — jeweils mit eigenem Editor.",
+  };
+}
+
 interface OfferPanelProps {
   token: string;
   doc: WebsiteDataV2;
@@ -163,30 +186,16 @@ export function OfferPanel({
   onPreviewFocus,
   initialMode,
 }: OfferPanelProps) {
-  const [drafts, setDrafts] = useState<Record<OfferMode, OfferPatch>>(() =>
-    offerDraftsFromDoc(doc)
-  );
-  const [mode, setMode] = useState<OfferMode>(() =>
+  const [mode] = useState<OfferMode>(() =>
     initialOfferMode(doc, initialMode)
+  );
+  const [value, setValue] = useState<OfferPatch>(
+    () => offerDraftsFromDoc(doc)[initialOfferMode(doc, initialMode)]
   );
   const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
     onPreviewFocus?.(previewAnchorForOfferMode(mode));
   }, [mode, onPreviewFocus]);
-
-  const value = drafts[mode];
-
-  // OfferEditor meldet bei einem Moduswechsel intern einen leeren Entwurf
-  // über onChange (siehe offerParts.tsx) — hier wird dieser Fall erkannt und
-  // stattdessen der gemerkte Entwurf für den neuen Modus aktiviert, statt
-  // ihn mit dem leeren Wert zu überschreiben.
-  const handleChange = (next: OfferPatch) => {
-    if (next.mode !== mode) {
-      setMode(next.mode);
-      return;
-    }
-    setDrafts(prev => ({ ...prev, [mode]: next }));
-  };
 
   const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
@@ -214,7 +223,7 @@ export function OfferPanel({
       { token, mode },
       {
         onSuccess: result => {
-          setDrafts(prev => ({ ...prev, [mode]: result.offer }));
+          setValue(result.offer);
           setHint("Vorschlag übernommen — Preise bitte prüfen.");
         },
       }
@@ -236,20 +245,15 @@ export function OfferPanel({
   const busy = updateOffer.isPending;
   const suggesting = suggestOffer.isPending;
   const errors = validateOffer(value);
+  const copy = offerPanelCopy(mode);
 
   return (
     <PanelFrame
       step="Schritt 4"
-      title={
-        initialMode === "menu"
-          ? "Speisekarte pflegen"
-          : initialMode === "pricelist"
-            ? "Preisliste pflegen"
-            : "Angebot pflegen"
-      }
+      title={copy.title}
       panelId="offer"
       onClose={onClose}
-      intro="Leistungen, Speisekarte oder Preisliste — wähle den passenden Typ und pflege die Positionen."
+      intro={copy.intro}
       footer={
         <>
           <button
@@ -299,7 +303,7 @@ export function OfferPanel({
         </p>
       )}
       {hint && <p style={{ color: "var(--st-accent)" }}>{hint}</p>}
-      <OfferEditor value={value} onChange={handleChange} />
+      <OfferEditor value={value} onChange={setValue} />
       {updateOffer.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateOffer.error.message}
