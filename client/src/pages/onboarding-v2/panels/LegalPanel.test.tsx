@@ -44,6 +44,13 @@ describe("legalDefaults", () => {
     expect(result).toEqual({ ...initial, openingHours });
     expect(result.legalEmail).toBe("kontakt@sonnenblick-cafe.de");
   });
+
+  test("leere Öffnungszeiten → Mo–Fr-Platzhalter", () => {
+    const result = legalDefaults(initial, []);
+    expect(result.openingHours).toEqual([
+      { day: "Mo–Fr", hours: "09:00–17:00" },
+    ]);
+  });
 });
 
 describe("LegalPanel", () => {
@@ -120,7 +127,7 @@ describe("LegalPanel", () => {
     expect(html).toContain("pb-studio-hours-row");
   });
 
-  test("ohne Öffnungszeiten wird keine Zeile gerendert, nur der 'Zeile hinzufügen'-Button", () => {
+  test("ohne GMB-Öffnungszeiten steht der Mo–Fr-Platzhalter als Zeile bereit", () => {
     const html = renderWithTrpc(
       <LegalPanel
         token={"t".repeat(32)}
@@ -130,7 +137,7 @@ describe("LegalPanel", () => {
         onClose={() => {}}
       />
     );
-    expect(html).not.toContain("pb-studio-hours-row");
+    expect(html).toContain("pb-studio-hours-row");
     expect(html).toContain("+ Zeile");
   });
 });

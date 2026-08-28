@@ -216,10 +216,11 @@ function mergeFacts(
       ...(street !== undefined ? { street } : {}),
       ...(zip !== undefined ? { zip } : {}),
       ...(city !== undefined ? { city } : {}),
-      // Öffnungszeiten kommen NUR aus facts (Business-Datensatz), niemals
-      // vom LLM: liefert facts.contact keine, werden vom LLM erfundene
-      // Zeiten aus `existing` bewusst GESTRIPPT statt übernommen — sonst
-      // könnte das Modell Öffnungszeiten frei erfinden (Halluzination).
+      // Öffnungszeiten kommen NUR aus facts (GMB oder Mo–Fr-Platzhalter
+      // aus resolveOpeningHours), niemals vom LLM: liefert facts.contact
+      // keine, werden vom LLM erfundene Zeiten aus `existing` bewusst
+      // GESTRIPPT statt übernommen — sonst könnte das Modell Öffnungszeiten
+      // frei erfinden (Halluzination).
       ...(openingHours !== undefined ? { openingHours } : {}),
     };
     sections =

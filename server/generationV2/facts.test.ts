@@ -96,7 +96,7 @@ describe("buildV2GenerationFacts", () => {
     expect(result.facts?.contact?.zip).toBeUndefined();
   });
 
-  test("leere Felder (kein Rating, keine Adresse, keine searchRegion, keine Öffnungszeiten) werden ausgelassen statt erfunden", () => {
+  test("leere Felder werden ausgelassen; fehlende Öffnungszeiten bekommen Mo–Fr-Platzhalter", () => {
     const result = buildV2GenerationFacts(
       baseBusiness({
         rating: null,
@@ -116,7 +116,9 @@ describe("buildV2GenerationFacts", () => {
     expect(result.facts?.contact?.phone).toBeUndefined();
     expect(result.facts?.contact?.email).toBeUndefined();
     expect(result.facts?.contact?.city).toBeUndefined();
-    expect(result.facts?.contact?.openingHours).toBeUndefined();
+    expect(result.facts?.contact?.openingHours).toEqual([
+      { day: "Mo–Fr", hours: "09:00–17:00" },
+    ]);
   });
 
   test("facts.reviews: echte Google-Reviews werden gefiltert durchgereicht (immer als Array, ggf. leer)", () => {

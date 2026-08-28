@@ -1,4 +1,4 @@
-import { mapGmbOpeningHoursToV2 } from "./gmbOpeningHours";
+import { resolveOpeningHours } from "./gmbOpeningHours";
 import { parseGmbAddress } from "../gmb/address";
 import type { GenerateSiteContentArgs } from "./generateSiteContent";
 import type { GmbReview } from "../gmb/details";
@@ -110,7 +110,7 @@ export function buildV2GenerationFacts(
         street: parsedAddress.street,
         zip: parsedAddress.zip,
         city,
-        openingHours: mapGmbOpeningHoursToV2(business.openingHours),
+        openingHours: resolveOpeningHours(business.openingHours),
       },
       // Immer als Array (ggf. leer): ein leeres Array heißt „es gibt keine
       // belastbaren Reviews" — mergeFacts strippt dann auch eine vom LLM

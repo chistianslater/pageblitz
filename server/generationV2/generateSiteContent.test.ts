@@ -246,6 +246,40 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
+  test("Platzhalter Mo–Fr aus facts, wenn GMB keine Zeiten liefert", async () => {
+    const llmAnswer = JSON.stringify({
+      seo: { title: "Schreinerei Brandt", description: "Möbelbau." },
+      sections: [
+        { type: "hero", headline: "Massarbeit." },
+        {
+          type: "services",
+          headline: "Leistungen",
+          items: [{ title: "Möbelbau" }],
+        },
+        { type: "contact", headline: "Kontakt", city: "Dortmund" },
+      ],
+    });
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(llmAnswer),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+      facts: {
+        contact: {
+          openingHours: [{ day: "Mo–Fr", hours: "09:00–17:00" }],
+        },
+      },
+    });
+    const contact = d.sections.find(s => s.type === "contact") as any;
+    expect(contact.openingHours).toEqual([
+      { day: "Mo–Fr", hours: "09:00–17:00" },
+    ]);
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
   test("Halluzinations-Schutz: LLM erfindet openingHours, facts liefern keine → wird gestrippt", async () => {
     const llmAnswerWithHallucinatedHours = JSON.stringify({
       seo: { title: "Schreinerei Brandt", description: "Möbelbau." },

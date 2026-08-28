@@ -6,6 +6,7 @@ import {
   LegalPatchSchema,
   type LegalPatch,
 } from "@shared/onboardingV2/patches";
+import { withPlaceholderOpeningHours } from "@shared/onboardingV2/openingHours";
 import type { StudioLegal } from "../../../../../server/onboardingV2/state";
 import { PanelFrame } from "./PanelFrame";
 
@@ -59,17 +60,21 @@ interface LegalPanelProps {
 
 /**
  * Baut den Startwert des Formulars aus den geladenen Kontaktdaten und
- * Öffnungszeiten (Finding I5). Als eigene, pure Funktion exportiert, weil
- * react-hook-forms `register()` uncontrolled Inputs per `ref` befüllt —
- * `defaultValues` taucht dadurch nie als `value`-Attribut im
- * server-gerenderten Markup auf (`renderToStaticMarkup` ruft keine Refs
- * auf), die Vorbelegung ist also nur über diese Funktion direkt testbar.
+ * Öffnungszeiten (Finding I5). Fehlen Zeiten (kein GMB), steht Mo–Fr als
+ * Platzhalter. Als eigene, pure Funktion exportiert, weil react-hook-forms
+ * `register()` uncontrolled Inputs per `ref` befüllt — `defaultValues`
+ * taucht dadurch nie als `value`-Attribut im server-gerenderten Markup auf
+ * (`renderToStaticMarkup` ruft keine Refs auf), die Vorbelegung ist also
+ * nur über diese Funktion direkt testbar.
  */
 export function legalDefaults(
   initial: StudioLegal,
   openingHours: { day: string; hours: string }[]
 ): LegalPatch {
-  return { ...initial, openingHours };
+  return {
+    ...initial,
+    openingHours: withPlaceholderOpeningHours(openingHours),
+  };
 }
 
 /**

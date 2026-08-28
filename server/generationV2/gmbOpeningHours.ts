@@ -1,3 +1,5 @@
+import { withPlaceholderOpeningHours } from "../../shared/onboardingV2/openingHours";
+
 /**
  * Mappt Googles `opening_hours.weekday_text` (Places API, per `language: "de"`
  * bereits deutsch lokalisiert, z.B. "Montag: 09:00–17:00 Uhr") auf die
@@ -17,4 +19,14 @@ export function mapGmbOpeningHoursToV2(
       hours: line.slice(sepIndex + 2),
     };
   });
+}
+
+/**
+ * GMB-Zeiten wenn vorhanden, sonst Mo–Fr-Platzhalter — damit Kontakt ohne
+ * Google-Profil nicht nur „Montag" oder leer dasteht.
+ */
+export function resolveOpeningHours(
+  weekdayText: string[] | null | undefined
+): { day: string; hours: string }[] {
+  return withPlaceholderOpeningHours(mapGmbOpeningHoursToV2(weekdayText));
 }
