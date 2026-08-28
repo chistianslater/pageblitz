@@ -22,8 +22,10 @@ import {
   REVIEW_STORAGE_KEY,
   VERDICT_LABELS,
   describeLayoutOverlay,
+  describePackLayouts,
   formatReviewExport,
   parsePackLayoutMap,
+  patchPackLayoutEntry,
   type PackLayoutMap,
   type Review,
   type Reviews,
@@ -94,6 +96,7 @@ function PreviewDialog({
     if (!doc) return;
     enablePreviewLayoutChrome(doc, null, () => {}, {
       overlay: overlayRef.current,
+      viewport,
       onOverlayChange: next => onOverlayChangeRef.current(next),
     });
   };
@@ -116,8 +119,12 @@ function PreviewDialog({
             </h2>
             <p className="mt-0.5 text-[0.75rem] text-lp-muted">
               {layoutSummary
-                ? layoutSummary
-                : "Layout-Button in der Vorschau: am Desktop per Hover auffächern."}
+                ? `${viewport === "mobile" ? "Mobil" : "Desktop"}: ${layoutSummary}`
+                : `Layout-Button in der Vorschau: du kuratierst gerade ${
+                    viewport === "mobile"
+                      ? "die Smartphone-Ansicht"
+                      : "die Desktop-Ansicht"
+                  }.`}
             </p>
           </div>
           <div
@@ -160,6 +167,7 @@ function PreviewDialog({
                 if (doc) {
                   enablePreviewLayoutChrome(doc, null, () => {}, {
                     overlay: {},
+                    viewport,
                     onOverlayChange: next => onOverlayChangeRef.current(next),
                   });
                 }
@@ -242,11 +250,16 @@ export default function DesignReviewPage() {
     }));
   };
 
-  const updateLayout = (packId: PackId, overlay: LayoutOverlay) => {
+  const updateLayout = (
+    packId: PackId,
+    viewport: Viewport,
+    overlay: LayoutOverlay
+  ) => {
     setLayouts(current => {
       const next = { ...current };
-      if (Object.keys(overlay).length === 0) delete next[packId];
-      else next[packId] = overlay;
+      const entry = patchPackLayoutEntry(current[packId], viewport, overlay);
+      if (!entry) delete next[packId];
+      else next[packId] = entry;
       return next;
     });
   };
@@ -318,9 +331,9 @@ export default function DesignReviewPage() {
             </h1>
           </div>
           <p className="max-w-[40rem] text-[1rem] leading-7 text-lp-muted">
-            Öffne jede Richtung als echte Website, prüfe Desktop und Mobil und
-            probiere die Sektions-Layouts direkt in der Vorschau. Notizen und
-            gewählte Layouts bleiben auf diesem Gerät gespeichert.
+            Öffne jede Richtung als echte Website. Desktop- und Mobil-Layouts
+            kuratierst du getrennt in der Vorschau — jedes Pack für sich.
+            Notizen und gewählte Layouts bleiben auf diesem Gerät gespeichert.
           </p>
         </div>
 
@@ -352,7 +365,7 @@ export default function DesignReviewPage() {
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {visiblePacks.map((pack, index) => {
             const review = reviewFor(pack.id);
-            const layoutSummary = describeLayoutOverlay(layouts[pack.id]);
+            const layoutSummary = describePackLayouts(layouts[pack.id]);
             return (
               <article
                 key={pack.id}
@@ -461,10 +474,10 @@ export default function DesignReviewPage() {
       <PreviewDialog
         packId={openPack}
         viewport={viewport}
-        overlay={openPack ? (layouts[openPack] ?? {}) : {}}
+        overlay={openPack ? (layouts[openPack]?.[viewport] ?? {}) : {}}
         onViewportChange={setViewport}
         onOverlayChange={overlay => {
-          if (openPack) updateLayout(openPack, overlay);
+          if (openPack) updateLayout(openPack, viewport, overlay);
         }}
         onClose={() => setOpenPack(null)}
       />

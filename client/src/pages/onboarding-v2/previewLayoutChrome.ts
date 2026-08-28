@@ -1,5 +1,12 @@
-import type { DesignProfile } from "@shared/siteContract/designProfile";
-import { DEFAULT_DESIGN_PROFILE } from "@shared/siteContract/designProfile";
+import type {
+  DesignProfile,
+  LayoutOverlay,
+  LayoutViewport,
+} from "@shared/siteContract/designProfile";
+import {
+  DEFAULT_DESIGN_PROFILE,
+  MOBILE_LAYOUT_FIELD,
+} from "@shared/siteContract/designProfile";
 import { DESIGN_PROFILE_CSS } from "@/components/site/designProfileCss";
 import { SECTION_ANCHORS } from "@/components/site/engine";
 
@@ -9,8 +16,7 @@ export type PreviewLayoutField =
   | "aboutLayout"
   | "galleryLayout";
 
-/** Nur bewusst gesetzte Sektionslayouts — ungesetzte Felder bleiben Pack-Default. */
-export type LayoutOverlay = Partial<Record<PreviewLayoutField, string>>;
+export type { LayoutOverlay, LayoutViewport };
 
 export interface LayoutChromeOptions {
   /**
@@ -19,6 +25,8 @@ export interface LayoutChromeOptions {
    */
   overlay?: LayoutOverlay;
   onOverlayChange?: (overlay: LayoutOverlay) => void;
+  /** Welche Viewport-Attribute geschrieben werden. Default: desktop. */
+  viewport?: LayoutViewport;
 }
 
 export interface PreviewLayoutOption {
@@ -96,6 +104,7 @@ const CHROME_MARK = "data-pb-layout-chrome";
 const STYLE_MARK = "data-pb-layout-style";
 const workingProfiles = new WeakMap<Document, DesignProfile>();
 const overlayState = new WeakMap<Document, LayoutOverlay>();
+const chromeViewport = new WeakMap<Document, LayoutViewport>();
 const placedChrome = new WeakMap<
   Document,
   { host: HTMLElement; chrome: HTMLElement }[]
@@ -127,8 +136,17 @@ const CHROME_CSS = `
 }
 `;
 
+type AttrTarget = {
+  setAttribute: (name: string, value: string) => void;
+  removeAttribute: (name: string) => void;
+};
+
+function mobileAttrName(attr: PreviewLayoutSection["attr"]): string {
+  return `${attr}-mobile`;
+}
+
 export function applyProfileAttrs(
-  site: { setAttribute: (name: string, value: string) => void },
+  site: AttrTarget,
   profile: DesignProfile
 ): void {
   site.setAttribute("data-pb-hero", profile.heroLayout);
@@ -137,22 +155,37 @@ export function applyProfileAttrs(
   site.setAttribute("data-pb-gallery", profile.galleryLayout);
   site.setAttribute("data-pb-density", profile.density);
   site.setAttribute("data-pb-image", profile.imageTreatment);
+  for (const section of PREVIEW_LAYOUT_SECTIONS) {
+    const mobileValue = profile[MOBILE_LAYOUT_FIELD[section.field]];
+    const attr = mobileAttrName(section.attr);
+    if (mobileValue) site.setAttribute(attr, mobileValue);
+    else site.removeAttribute(attr);
+  }
 }
 
-type AttrTarget = {
-  setAttribute: (name: string, value: string) => void;
-  removeAttribute: (name: string) => void;
-};
-
-/** Setzt nur gewählte Overlay-Felder; der Rest fällt aufs Pack-CSS zurück. */
+/**
+ * Overlay-Modus (Design-Review): nur den aktuellen Viewport setzen.
+ * Ungewählte Felder werden entfernt, damit das Pack-CSS Default bleibt.
+ * Desktop- und Mobil-Attribute bleiben unabhängig.
+ */
 export function applyLayoutOverlay(
   site: AttrTarget,
-  overlay: LayoutOverlay
+  overlay: LayoutOverlay,
+  viewport: LayoutViewport = "desktop"
 ): void {
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const value = overlay[section.field];
-    if (value) site.setAttribute(section.attr, value);
-    else site.removeAttribute(section.attr);
+    const desktopAttr = section.attr;
+    const mobileAttr = mobileAttrName(section.attr);
+    if (viewport === "mobile") {
+      site.removeAttribute(desktopAttr);
+      if (value) site.setAttribute(mobileAttr, value);
+      else site.removeAttribute(mobileAttr);
+    } else {
+      site.removeAttribute(mobileAttr);
+      if (value) site.setAttribute(desktopAttr, value);
+      else site.removeAttribute(desktopAttr);
+    }
   }
 }
 
@@ -176,10 +209,19 @@ export function chromeViewportTop(
   );
 }
 
+export function layoutChromeTitle(
+  section: PreviewLayoutSection,
+  viewport: LayoutViewport = "desktop"
+): string {
+  return viewport === "mobile" ? `${section.title} (Mobil)` : section.title;
+}
+
 export function renderLayoutChromeHtml(
   section: PreviewLayoutSection,
-  current: string
+  current: string,
+  viewport: LayoutViewport = "desktop"
 ): string {
+  const title = layoutChromeTitle(section, viewport);
   const options = section.options
     .map(
       option =>
@@ -190,10 +232,10 @@ export function renderLayoutChromeHtml(
     .join("");
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
     <button type="button" class="pb-preview-layout-btn" aria-expanded="false" aria-haspopup="true" aria-label="${escapeHtml(
-      section.title
+      title
     )}">${LAYOUT_GRID_ICON_HTML}<span>${escapeHtml(section.buttonLabel)}</span></button>
     <div class="pb-preview-layout-menu" role="group" aria-label="${escapeHtml(
-      section.title
+      title
     )}">${options}</div>
   </div>`;
 }
@@ -206,11 +248,36 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function viewportOf(doc: Document): LayoutViewport {
+  return chromeViewport.get(doc) ?? "desktop";
+}
+
 function currentValue(
   profile: DesignProfile,
-  field: PreviewLayoutField
+  field: PreviewLayoutField,
+  viewport: LayoutViewport
 ): string {
+  if (viewport === "mobile") {
+    return profile[MOBILE_LAYOUT_FIELD[field]] ?? "";
+  }
   return profile[field];
+}
+
+function syncChromeTitles(doc: Document): void {
+  const viewport = viewportOf(doc);
+  for (const section of PREVIEW_LAYOUT_SECTIONS) {
+    const chrome = doc.querySelector(
+      `[data-pb-layout-field="${section.field}"]`
+    );
+    if (!chrome) continue;
+    const title = layoutChromeTitle(section, viewport);
+    chrome
+      .querySelector(".pb-preview-layout-btn")
+      ?.setAttribute("aria-label", title);
+    chrome
+      .querySelector(".pb-preview-layout-menu")
+      ?.setAttribute("aria-label", title);
+  }
 }
 
 function syncPressed(
@@ -245,7 +312,8 @@ function currentOfDoc(doc: Document, field: PreviewLayoutField): string {
   if (overlay) return overlay[field] ?? "";
   return currentValue(
     workingProfiles.get(doc) ?? DEFAULT_DESIGN_PROFILE,
-    field
+    field,
+    viewportOf(doc)
   );
 }
 
@@ -320,6 +388,7 @@ export function enablePreviewLayoutChrome(
   const resolved = profile ?? DEFAULT_DESIGN_PROFILE;
   const site = doc.querySelector<HTMLElement>(".pb-site");
   if (!site) return;
+  chromeViewport.set(doc, options?.viewport ?? "desktop");
   workingProfiles.set(doc, resolved);
   const overlayMode = isOverlayMode(doc, options);
   if (overlayMode) {
@@ -336,9 +405,13 @@ export function enablePreviewLayoutChrome(
   }
 
   const applyDoc = () => {
-    if (overlayMode) applyLayoutOverlay(site, overlayState.get(doc) ?? {});
-    else applyProfileAttrs(site, workingProfiles.get(doc) ?? resolved);
+    if (overlayMode) {
+      applyLayoutOverlay(site, overlayState.get(doc) ?? {}, viewportOf(doc));
+    } else {
+      applyProfileAttrs(site, workingProfiles.get(doc) ?? resolved);
+    }
     syncPressed(doc, field => currentOfDoc(doc, field));
+    syncChromeTitles(doc);
   };
 
   if (doc.documentElement.hasAttribute(CHROME_MARK)) {
@@ -358,7 +431,8 @@ export function enablePreviewLayoutChrome(
     const wrap = doc.createElement("div");
     wrap.innerHTML = renderLayoutChromeHtml(
       section,
-      currentOfDoc(doc, section.field)
+      currentOfDoc(doc, section.field),
+      viewportOf(doc)
     );
     const chrome = wrap.firstElementChild as HTMLElement | null;
     if (!chrome) continue;
@@ -417,15 +491,19 @@ export function enablePreviewLayoutChrome(
           [section.field]: value,
         };
         overlayState.set(doc, overlay);
-        applyLayoutOverlay(site, overlay);
+        applyLayoutOverlay(site, overlay, viewportOf(doc));
         syncPressed(doc, field => currentOfDoc(doc, field));
         setOpen(false);
         options?.onOverlayChange?.(overlay);
         return;
       }
+      const key =
+        viewportOf(doc) === "mobile"
+          ? MOBILE_LAYOUT_FIELD[section.field]
+          : section.field;
       const working = {
         ...(workingProfiles.get(doc) ?? DEFAULT_DESIGN_PROFILE),
-        [section.field]: value,
+        [key]: value,
       } as DesignProfile;
       workingProfiles.set(doc, working);
       applyProfileAttrs(site, working);

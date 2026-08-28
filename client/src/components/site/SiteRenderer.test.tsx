@@ -118,6 +118,35 @@ describe("SiteRenderer", () => {
       expect(html).toContain('data-pb-density="compact"');
       expect(html).toContain('data-pb-image="framed"');
       expect(html).toContain('[data-pb-slot="services-items"]');
+      const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
+      expect(root).not.toContain("data-pb-hero-mobile=");
+    });
+
+    test("Mobil-Profil wird als eigenes Attribut am Site-Root ausgegeben", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer
+          data={{
+            ...data,
+            designProfile: {
+              version: 1,
+              heroLayout: "split",
+              servicesLayout: "list",
+              aboutLayout: "image-right",
+              galleryLayout: "grid",
+              density: "airy",
+              imageTreatment: "natural",
+              heroLayoutMobile: "centered",
+              galleryLayoutMobile: "filmstrip",
+              seed: 1,
+            },
+          }}
+        />
+      );
+      const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
+      expect(root).toContain('data-pb-hero="split"');
+      expect(root).toContain('data-pb-hero-mobile="centered"');
+      expect(root).toContain('data-pb-gallery-mobile="filmstrip"');
+      expect(root).not.toContain("data-pb-services-mobile=");
     });
 
     test("Profilvarianten greifen in jedem Pack, auch in handkuratierten", () => {

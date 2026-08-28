@@ -363,6 +363,10 @@ export const DesignProfileSchema = z
     galleryLayout: z.enum(GALLERY_LAYOUTS),
     density: z.enum(DESIGN_DENSITIES),
     imageTreatment: z.enum(IMAGE_TREATMENTS),
+    heroLayoutMobile: z.enum(HERO_LAYOUTS).optional(),
+    servicesLayoutMobile: z.enum(SERVICES_LAYOUTS).optional(),
+    aboutLayoutMobile: z.enum(ABOUT_LAYOUTS).optional(),
+    galleryLayoutMobile: z.enum(GALLERY_LAYOUTS).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();
