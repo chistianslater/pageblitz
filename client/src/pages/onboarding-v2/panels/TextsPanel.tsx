@@ -4,6 +4,8 @@ import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
 import { TextsForm, validateTexts, type TextField } from "./textsParts";
+import { DesignProfileLayoutPicker } from "./SectionLayoutPicker";
+import { useDesignProfileEditor } from "./useDesignProfileEditor";
 
 export { TextsForm, validateTexts };
 export type { TextField };
@@ -75,6 +77,17 @@ export function TextsPanel({
 
   const updateTexts = trpc.onboardingV2.updateTexts.useMutation();
   const suggestTexts = trpc.onboardingV2.suggestTexts.useMutation();
+  const {
+    localProfile,
+    pickProfile,
+    busy: profileBusy,
+    error: profileError,
+  } = useDesignProfileEditor({
+    token,
+    designProfile: doc.designProfile,
+    onApplied,
+  });
+  const hasAbout = doc.sections.some(s => s.type === "about");
 
   const handleSuggest = (field: TextField) => {
     setSuggesting(field);
@@ -132,7 +145,7 @@ export function TextsPanel({
       title="Texte prüfen"
       panelId="texts"
       onClose={onClose}
-      intro="Überschriften, Über-uns-Text und SEO-Angaben — bei Bedarf mit KI-Vorschlägen."
+      intro="Überschriften, Über-uns-Text und SEO-Angaben — plus das Layout der jeweiligen Sektion, bei Bedarf mit KI-Vorschlägen."
       footer={
         <>
           <button
@@ -167,6 +180,30 @@ export function TextsPanel({
         onPickVariant={handlePickVariant}
         suggestError={suggestError}
         applyingVariant={applyingVariant}
+        heroLayoutSlot={
+          <DesignProfileLayoutPicker
+            field="heroLayout"
+            profile={localProfile}
+            busy={profileBusy}
+            onPick={(key, value) => {
+              pickProfile(key, value);
+              onPreviewFocus?.("start");
+            }}
+          />
+        }
+        aboutLayoutSlot={
+          hasAbout ? (
+            <DesignProfileLayoutPicker
+              field="aboutLayout"
+              profile={localProfile}
+              busy={profileBusy}
+              onPick={(key, value) => {
+                pickProfile(key, value);
+                onPreviewFocus?.("ueber-uns");
+              }}
+            />
+          ) : null
+        }
         onFieldFocus={field => {
           if (
             field === "headline" ||
@@ -178,6 +215,11 @@ export function TextsPanel({
             onPreviewFocus?.("ueber-uns");
         }}
       />
+      {profileError && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {profileError.message}
+        </p>
+      )}
       {updateTexts.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateTexts.error.message}

@@ -15,6 +15,8 @@ import {
   SelectedGalleryList,
   type PhotoTarget,
 } from "./photoParts";
+import { DesignProfileLayoutPicker } from "./SectionLayoutPicker";
+import { useDesignProfileEditor } from "./useDesignProfileEditor";
 
 // Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
 // (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
@@ -99,6 +101,16 @@ export function PhotosPanel({
     gallerySection?.images.map(i => i.url) ?? []
   );
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const {
+    localProfile,
+    pickProfile,
+    busy: profileBusy,
+    error: profileError,
+  } = useDesignProfileEditor({
+    token,
+    designProfile: doc.designProfile,
+    onApplied,
+  });
 
   const sources = trpc.onboardingV2.getPhotoSources.useQuery({ token });
   const upload = trpc.onboardingV2.uploadPhoto.useMutation();
@@ -273,7 +285,7 @@ export function PhotosPanel({
       intro={
         initialTarget === "gallery"
           ? "Lade Galerie-Fotos hoch, entferne sie oder sortiere sie mit den Pfeilen. Jede Änderung wird sofort übernommen."
-          : "Wähle Fotos für Hero, Über uns und Galerie – aus Google-Fotos, Stockbildern oder eigenem Upload. Jede Auswahl wird sofort übernommen, die Vorschau aktualisiert sich automatisch."
+          : "Wähle Fotos für Hero, Über uns und Galerie — und das Layout der aktuellen Sektion. Jede Auswahl wird sofort übernommen."
       }
       footer={
         <>
@@ -312,6 +324,35 @@ export function PhotosPanel({
         }}
         hasAbout={hasAbout}
       />
+      {target === "hero" && (
+        <DesignProfileLayoutPicker
+          field="heroLayout"
+          profile={localProfile}
+          busy={profileBusy}
+          onPick={pickProfile}
+        />
+      )}
+      {target === "about" && (
+        <DesignProfileLayoutPicker
+          field="aboutLayout"
+          profile={localProfile}
+          busy={profileBusy}
+          onPick={pickProfile}
+        />
+      )}
+      {target === "gallery" && !galleryLocked && (
+        <DesignProfileLayoutPicker
+          field="galleryLayout"
+          profile={localProfile}
+          busy={profileBusy}
+          onPick={pickProfile}
+        />
+      )}
+      {profileError && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {profileError.message}
+        </p>
+      )}
       {galleryLocked && (
         <GalleryAddonNotice
           onActivate={activateGallery}

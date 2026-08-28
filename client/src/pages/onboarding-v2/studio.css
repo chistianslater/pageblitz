@@ -1965,6 +1965,38 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
 }
+.pb-studio-theme-rhythm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.pb-studio-section-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+.pb-studio-section-layout-label {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--st-ink);
+}
+.pb-studio-section-layout-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--st-muted);
+}
+.pb-studio-section-layout .pb-studio-seg {
+  width: 100%;
+}
+.pb-studio-section-layout .pb-studio-seg button {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.78rem;
+  padding: 0.42rem 0.45rem;
+  white-space: nowrap;
+}
 .pb-studio-theme-layout {
   display: flex;
   flex-direction: column;

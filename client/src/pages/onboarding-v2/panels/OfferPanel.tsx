@@ -16,6 +16,8 @@ import {
   validateOffer,
   type OfferMode,
 } from "./offerParts";
+import { DesignProfileLayoutPicker } from "./SectionLayoutPicker";
+import { useDesignProfileEditor } from "./useDesignProfileEditor";
 
 export { OfferEditor, validateOffer };
 
@@ -154,7 +156,7 @@ export function offerPanelCopy(mode: OfferMode): { title: string; intro: string 
   return {
     title: "Leistungen pflegen",
     intro:
-      "Das sind die Leistungen aus deinem Basispaket. Speisekarte und Preisliste buchst du unter Extras — jeweils mit eigenem Editor.",
+      "Das sind die Leistungen aus deinem Basispaket. Oben wählst du das Layout — Speisekarte und Preisliste buchst du unter Extras.",
   };
 }
 
@@ -200,6 +202,16 @@ export function OfferPanel({
   const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
+  const {
+    localProfile,
+    pickProfile,
+    busy: profileBusy,
+    error: profileError,
+  } = useDesignProfileEditor({
+    token,
+    designProfile: doc.designProfile,
+    onApplied,
+  });
 
   // Extra-Editor (Speisekarte/Preisliste): Flag sofort setzen, damit die
   // Vorschau zur Sektion scrollen kann — auch bevor der User im Editor
@@ -279,6 +291,19 @@ export function OfferPanel({
         </>
       }
     >
+      {mode === "services" && (
+        <DesignProfileLayoutPicker
+          field="servicesLayout"
+          profile={localProfile}
+          busy={profileBusy}
+          onPick={pickProfile}
+        />
+      )}
+      {profileError && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {profileError.message}
+        </p>
+      )}
       <button
         type="button"
         className="pb-studio-btn"

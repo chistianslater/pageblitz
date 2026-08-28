@@ -18,22 +18,22 @@ const PANEL_META: Record<
 > = {
   style: {
     label: "Designrichtung",
-    hint: "Aufbau, Farben & Schriften",
+    hint: "Farben & Schriften",
     icon: <Palette className="w-4 h-4" />,
   },
   photos: {
     label: "Fotos",
-    hint: "Bilder austauschen",
+    hint: "Bilder und Layouts",
     icon: <Image className="w-4 h-4" />,
   },
   texts: {
     label: "Texte",
-    hint: "Überschriften & Über-uns",
+    hint: "Überschriften, Über uns & Layout",
     icon: <Type className="w-4 h-4" />,
   },
   offer: {
     label: "Angebot",
-    hint: "Leistungen aus dem Basispaket",
+    hint: "Leistungen & Layout",
     icon: <ShoppingBag className="w-4 h-4" />,
   },
   legal: {

@@ -1,12 +1,19 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
+import { trpc } from "@/lib/trpc";
+import type { WebsiteDataV2 } from "@shared/siteContract/types";
+import { DEFAULT_DESIGN_PROFILE } from "@shared/siteContract/designProfile";
 import {
   GalleryAddonNotice,
   PhotoGrid,
   PhotoTargetPicker,
   SelectedGalleryList,
 } from "./photoParts";
+import { PhotosPanel } from "./PhotosPanel";
 
 describe("PhotoGrid", () => {
   test("rendert Buttons mit aria-pressed für ausgewählte Fotos", () => {
@@ -120,5 +127,64 @@ describe("SelectedGalleryList", () => {
     expect(html).toContain("nach unten verschieben");
     expect(html).toContain("entfernen");
     expect(html).toContain("disabled");
+  });
+});
+
+function renderWithTrpc(node: React.ReactElement): string {
+  const queryClient = new QueryClient();
+  const trpcClient = trpc.createClient({
+    links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  });
+  return renderToStaticMarkup(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+
+const photoDoc: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "werkbank",
+  businessName: "Brandt",
+  seo: { title: "t", description: "d" },
+  designProfile: { ...DEFAULT_DESIGN_PROFILE, heroLayout: "centered" },
+  sections: [
+    { type: "hero", headline: "Hallo" },
+    { type: "about", headline: "Über uns", body: "Text" },
+    { type: "gallery", images: [] },
+  ],
+};
+
+describe("PhotosPanel Layout-Varianten", () => {
+  test("Hero-Ziel zeigt Hero-Layout, nicht Galerie-Varianten", () => {
+    const html = renderWithTrpc(
+      <PhotosPanel
+        token={"t".repeat(32)}
+        doc={photoDoc}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Hero-Layout");
+    expect(html).toContain("Bild &amp; Text");
+    expect(html).toContain("Zentriert");
+    expect(html).not.toContain("Galerie-Layout");
+    expect(html).not.toContain("Mosaik");
+  });
+
+  test("Galerie-Extra zeigt Galerie-Layout, sobald das Extra aktiv ist", () => {
+    const html = renderWithTrpc(
+      <PhotosPanel
+        token={"t".repeat(32)}
+        doc={{ ...photoDoc, addOns: { gallery: true } }}
+        onApplied={() => {}}
+        onClose={() => {}}
+        initialTarget="gallery"
+      />
+    );
+    expect(html).toContain("Galerie-Layout");
+    expect(html).toContain("Mosaik");
+    expect(html).toContain("Filmstreifen");
+    expect(html).not.toContain("Hero-Layout");
   });
 });

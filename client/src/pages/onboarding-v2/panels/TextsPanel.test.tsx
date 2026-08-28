@@ -75,6 +75,29 @@ describe("TextsForm", () => {
     expect(html).toContain("12/70");
   });
 
+  test("setzt Layout-Slots vor Hero- und Über-uns-Feldern", () => {
+    const html = renderToStaticMarkup(
+      <TextsForm
+        values={{}}
+        onChange={() => {}}
+        onSuggest={() => {}}
+        suggesting={null}
+        variants={{}}
+        onPickVariant={() => {}}
+        heroLayoutSlot={<div>Hero-Layout</div>}
+        aboutLayoutSlot={<div>Über-uns-Layout</div>}
+      />
+    );
+    const heroIdx = html.indexOf("Hero-Layout");
+    const headlineIdx = html.indexOf("Überschrift");
+    const aboutIdx = html.indexOf("Über-uns-Layout");
+    const aboutHeadIdx = html.indexOf("Über-uns-Überschrift");
+    expect(heroIdx).toBeGreaterThan(-1);
+    expect(heroIdx).toBeLessThan(headlineIdx);
+    expect(aboutIdx).toBeGreaterThan(headlineIdx);
+    expect(aboutIdx).toBeLessThan(aboutHeadIdx);
+  });
+
   test("zeigt KI-Vorschlag-Chips, wenn Varianten für ein Feld vorhanden sind", () => {
     const html = renderToStaticMarkup(
       <TextsForm
