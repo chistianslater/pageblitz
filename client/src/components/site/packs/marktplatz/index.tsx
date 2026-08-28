@@ -16,6 +16,8 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { MARKTPLATZ_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -117,7 +119,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p className="pb-mp-intro">{section.intro}</p>}
-          <div className="pb-mp-grid">
+          <div className="pb-mp-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
               <div className="pb-mp-card-item" key={item.title}>
                 <strong>{item.title}</strong>
@@ -139,9 +141,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-mp-about">
+          <div className="pb-mp-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <img src={section.imageUrl} alt="" loading="lazy" />
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              />
             )}
             <p>{section.body}</p>
           </div>
@@ -157,7 +164,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-mp-grid pb-mp-gallery">
+          <div
+            className="pb-mp-grid pb-mp-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -386,8 +396,11 @@ const MarktplatzPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
-          <div className="pb-mp-hero-inner">
-            <div className="pb-mp-card">
+          <div
+            className="pb-mp-hero-inner"
+            data-pb-slot={LAYOUT_SLOT.heroSplit}
+          >
+            <div className="pb-mp-card" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {data.businessCategory && (
                 <p className="pb-mp-eyebrow">{data.businessCategory}</p>
               )}
@@ -402,7 +415,10 @@ const MarktplatzPage: React.FC<{
               )}
             </div>
             {hero.imageUrl && (
-              <div className="pb-mp-photo-wrap">
+              <div
+                className="pb-mp-photo-wrap"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
                 <img
                   className="pb-mp-photo"
                   src={hero.imageUrl}

@@ -16,6 +16,7 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { WERKBANK_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -140,6 +141,7 @@ function renderSection(
             {section.imageUrl && (
               <img
                 className="pb-wb-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
                 alt=""
                 src={section.imageUrl}
                 loading="eager"
@@ -165,7 +167,10 @@ function renderSection(
             {!hasPageHeader && <h2>{section.headline}</h2>}
             <p>Planung · Material · Fertigung</p>
           </header>
-          <div className="pb-wb-process-list">
+          <div
+            className="pb-wb-process-list"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, i) => (
               <article className="pb-wb-service" key={item.title}>
                 <span className="idx" aria-hidden="true">
@@ -196,7 +201,7 @@ function renderSection(
             <span className="pb-wb-kicker">Material / Haltung</span>
             <h2>{section.headline}</h2>
           </header>
-          <div className="pb-wb-about">
+          <div className="pb-wb-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <div className="pb-wb-about-copy">
               <span className="pb-wb-cross" aria-hidden="true">
                 +
@@ -205,7 +210,10 @@ function renderSection(
               <small>Entworfen und gefertigt mit Substanz.</small>
             </div>
             {section.imageUrl && (
-              <figure className="pb-wb-about-figure">
+              <figure
+                className="pb-wb-about-figure"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              >
                 <img
                   className="pb-wb-about-img"
                   src={section.imageUrl}
@@ -231,7 +239,10 @@ function renderSection(
             <span className="pb-wb-kicker">Ausgewählte Werkstücke</span>
             <h2>{title}</h2>
           </header>
-          <div className="pb-wb-gallery">
+          <div
+            className="pb-wb-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, i) => (
               <figure key={img.url}>
                 <div className="pb-wb-image-frame">

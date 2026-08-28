@@ -16,6 +16,7 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { ATELIER_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -86,7 +87,10 @@ function renderSection(
             <span>Index / Projekte &amp; Leistungen</span>
             <h2>{section.headline}</h2>
           </header>
-          <div className="pb-at-project-index">
+          <div
+            className="pb-at-project-index"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, i) => (
               <article className="pb-at-service" key={item.title}>
                 <span className="idx" aria-hidden="true">
@@ -117,7 +121,10 @@ function renderSection(
             <span>Essay / Haltung</span>
             <h2>{section.headline}</h2>
           </header>
-          <div className="pb-at-about-grid">
+          <div
+            className="pb-at-about-grid"
+            data-pb-slot={LAYOUT_SLOT.aboutGrid}
+          >
             <div className="pb-at-about-copy">
               <span className="pb-at-dropcap" aria-hidden="true">
                 A
@@ -128,7 +135,7 @@ function renderSection(
               </small>
             </div>
             {section.imageUrl && (
-              <figure>
+              <figure data-pb-slot={LAYOUT_SLOT.aboutMedia}>
                 <img
                   className="pb-at-about-img"
                   src={section.imageUrl}
@@ -154,7 +161,10 @@ function renderSection(
             <span>Portfolio / Auswahl</span>
             <h2>{title}</h2>
           </header>
-          <div className="pb-at-gallery">
+          <div
+            className="pb-at-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, i) => (
               <figure key={img.url}>
                 <div className="pb-at-gallery-image">
@@ -424,7 +434,7 @@ const AtelierPage: React.FC<{
       </header>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-at-cover">
-          <div className="pb-at-img">
+          <div className="pb-at-img" data-pb-slot={LAYOUT_SLOT.heroMedia}>
             {hero.imageUrl && (
               <img
                 src={hero.imageUrl}
@@ -435,7 +445,7 @@ const AtelierPage: React.FC<{
             )}
             <h1 className="pb-at-caption">{hero.headline}</h1>
           </div>
-          <div className="pb-at-capcol">
+          <div className="pb-at-capcol" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             {indexLabel && <span className="pb-at-idx">{indexLabel}</span>}
             {hero.subheadline && <p>{hero.subheadline}</p>}
             {hero.ctaText && (

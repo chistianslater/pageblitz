@@ -16,6 +16,8 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { SALON_NOIR_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -81,7 +83,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p className="pb-sn-intro">{section.intro}</p>}
-          <div className="pb-sn-grid">
+          <div className="pb-sn-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
               <div className="pb-sn-card" key={item.title}>
                 <strong>{item.title}</strong>
@@ -103,9 +105,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-sn-about">
+          <div className="pb-sn-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <img src={section.imageUrl} alt="" loading="lazy" />
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              />
             )}
             <p>{section.body}</p>
           </div>
@@ -121,7 +128,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-sn-gallery">
+          <div
+            className="pb-sn-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -366,8 +376,11 @@ const SalonNoirPage: React.FC<{
       )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
-          <div className="pb-sn-hero-inner">
-            <div className="pb-sn-copy">
+          <div
+            className="pb-sn-hero-inner"
+            data-pb-slot={LAYOUT_SLOT.heroSplit}
+          >
+            <div className="pb-sn-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {eyebrow && <p className="pb-sn-eyebrow">{eyebrow}</p>}
               <h1>{hero.headline}</h1>
               {hero.subheadline && (
@@ -381,6 +394,7 @@ const SalonNoirPage: React.FC<{
             </div>
             <div
               className="pb-sn-photo"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
               aria-hidden="true"
               style={
                 hero.imageUrl

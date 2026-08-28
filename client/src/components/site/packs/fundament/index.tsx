@@ -16,6 +16,8 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { FUNDAMENT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -115,7 +117,7 @@ function renderSection(
               <h2>{section.headline}</h2>
               {section.intro && <p className="pb-fd-intro">{section.intro}</p>}
             </div>
-            <div>
+            <div data-pb-slot={LAYOUT_SLOT.servicesItems}>
               {section.items.map((item, i) => (
                 <div className="pb-fd-service" key={item.title}>
                   <span className="idx">{String(i + 1).padStart(2, "0")}</span>
@@ -139,7 +141,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-fd-about-grid">
+          <div
+            className="pb-fd-about-grid"
+            data-pb-slot={LAYOUT_SLOT.aboutGrid}
+          >
             <p>{section.body}</p>
             {section.imageUrl && (
               <img
@@ -147,6 +152,7 @@ function renderSection(
                 alt=""
                 loading="lazy"
                 className="pb-fd-about-image"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
               />
             )}
           </div>
@@ -162,7 +168,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-fd-gallery">
+          <div
+            className="pb-fd-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -395,7 +404,7 @@ const FundamentPage: React.FC<{
               </div>
             )}
           </div>
-          <div className="pb-fd-content">
+          <div className="pb-fd-content" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <h1>{renderHeadline(hero.headline)}</h1>
             {hero.subheadline && <p>{hero.subheadline}</p>}
             {hero.ctaText && (
@@ -407,6 +416,7 @@ const FundamentPage: React.FC<{
           {hero.imageUrl && (
             <img
               className="pb-fd-photo"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
               alt=""
               src={hero.imageUrl}
               loading="eager"
