@@ -276,7 +276,7 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("updateOffer menu ersetzt services", async () => {
+  test("updateOffer menu lässt Leistungen stehen (Basis vs. Extra)", async () => {
     const s = await caller().onboardingV2.updateOffer({
       token: "tok",
       offer: {
@@ -287,7 +287,111 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
       },
     });
     expect(s.doc!.sections.map(x => x.type)).toContain("menu");
-    expect(s.doc!.sections.map(x => x.type)).not.toContain("services");
+    expect(s.doc!.sections.map(x => x.type)).toContain("services");
+  });
+
+  test("updateOffer menu setzt addOns.menu (sonst bleibt die Speisekarte in der Vorschau unsichtbar)", async () => {
+    const s = await caller().onboardingV2.updateOffer({
+      token: "tok",
+      offer: {
+        mode: "menu",
+        categories: [
+          { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
+        ],
+      },
+    });
+    expect(s.doc!.addOns).toEqual({ menu: true });
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnMenu: true })
+    );
+  });
+
+  test("updateOffer pricelist setzt addOns.pricelist", async () => {
+    const s = await caller().onboardingV2.updateOffer({
+      token: "tok",
+      offer: {
+        mode: "pricelist",
+        categories: [
+          { name: "Haare", items: [{ name: "Schnitt", price: "35 €" }] },
+        ],
+      },
+    });
+    expect(s.doc!.sections.map(x => x.type)).toContain("pricelist");
+    expect(s.doc!.addOns).toEqual({ pricelist: true });
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnPricelist: true })
+    );
+  });
+
+  test("updateOffer services lässt Add-on-Flags unangetastet", async () => {
+    await caller().onboardingV2.updateOffer({
+      token: "tok",
+      offer: {
+        mode: "services",
+        headline: "Leistungen",
+        items: [{ title: "Beratung" }],
+      },
+    });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnMenu: expect.anything() })
+    );
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnPricelist: expect.anything() })
+    );
+  });
+
+  test("updateOffer menu bei bereits gebuchtem Extra → kein erneuter Flag-Write", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: { ...v2, addOns: { menu: true } },
+      customerEmail: null,
+    } as any);
+    await caller().onboardingV2.updateOffer({
+      token: "tok",
+      offer: {
+        mode: "menu",
+        categories: [
+          { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
+        ],
+      },
+    });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnMenu: expect.anything() })
+    );
+  });
+
+  test("setImages gallery setzt addOns.gallery (Flag folgt Inhalt)", async () => {
+    const s = await caller().onboardingV2.setImages({
+      token: "tok",
+      patch: {
+        gallery: [{ url: "https://x/g.jpg", alt: "Einblick" }],
+      },
+    });
+    expect(s.doc!.addOns).toEqual({ gallery: true });
+    expect(s.doc!.sections.some(x => x.type === "gallery")).toBe(true);
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnGallery: true })
+    );
+  });
+
+  test("setImages nur Hero lässt Galerie-Flag unangetastet", async () => {
+    await caller().onboardingV2.setImages({
+      token: "tok",
+      patch: { hero: "https://x/h2.jpg" },
+    });
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ addOnGallery: expect.anything() })
+    );
   });
 });
 

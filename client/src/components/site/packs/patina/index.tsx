@@ -16,13 +16,14 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { PATINA_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Behandlungen",
+  services: "Leistungen",
   about: "Über mich",
   gallery: "Impressionen",
-  testimonials: "Was Klienten sagen",
+  testimonials: "Stimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Angebot",
@@ -97,7 +98,10 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p>{section.intro}</p>}
-          <div className="pb-pa-services-grid">
+          <div
+            className="pb-pa-services-grid"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map(item => (
               <div className="pb-pa-service" key={item.title}>
                 <strong>{item.title}</strong>
@@ -120,11 +124,15 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-pa-about-grid">
+          <div
+            className="pb-pa-about-grid"
+            data-pb-slot={LAYOUT_SLOT.aboutGrid}
+          >
             <p>{section.body}</p>
             {showImage && (
               <img
                 className="pb-pa-about-img"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
                 src={section.imageUrl}
                 alt=""
                 loading="lazy"
@@ -143,7 +151,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-pa-gallery">
+          <div
+            className="pb-pa-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -399,8 +410,8 @@ const PatinaPage: React.FC<{
           <div className="pb-pa-init" aria-hidden="true">
             {initialLetter(data.businessName)}
           </div>
-          <div className="pb-pa-grid">
-            <div className="pb-pa-copy">
+          <div className="pb-pa-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+            <div className="pb-pa-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {eyebrow && <p className="pb-pa-eyebrow">{eyebrow}</p>}
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && (
@@ -430,7 +441,7 @@ const PatinaPage: React.FC<{
                 </a>
               )}
             </div>
-            <div className="pb-pa-pics">
+            <div className="pb-pa-pics" data-pb-slot={LAYOUT_SLOT.heroMedia}>
               <div
                 className="pb-pa-arch a1"
                 aria-hidden="true"

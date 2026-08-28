@@ -16,6 +16,8 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { ZUNFT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -25,8 +27,8 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   testimonials: "Was Kunden sagen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
-  menu: "Sortiment",
-  pricelist: "Sortiment",
+  menu: "Speisekarte",
+  pricelist: "Preise",
   team: "Team",
   cta: "Anfrage",
 };
@@ -112,7 +114,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p className="pb-zf-intro">{section.intro}</p>}
-          <div className="pb-zf-grid">
+          <div className="pb-zf-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
               <div className="pb-zf-card" key={item.title}>
                 <strong>{item.title}</strong>
@@ -134,9 +136,14 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-zf-about">
+          <div className="pb-zf-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <img src={section.imageUrl} alt="" loading="lazy" />
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              />
             )}
             <p>{section.body}</p>
           </div>
@@ -152,7 +159,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-zf-gallery">
+          <div
+            className="pb-zf-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -395,6 +405,7 @@ const ZunftPage: React.FC<{
           {hero.imageUrl && (
             <img
               className="pb-zf-hero-photo"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
               src={hero.imageUrl}
               alt=""
               loading="eager"
@@ -429,7 +440,7 @@ const ZunftPage: React.FC<{
       {(hero?.ctaText || routeQuery) && (
         <aside
           className="pb-zf-order-sticky"
-          aria-label="Vorbestellen und Route"
+          aria-label="Kontakt und Route"
         >
           <span aria-hidden="true">◆</span>
           {hero?.ctaText && (

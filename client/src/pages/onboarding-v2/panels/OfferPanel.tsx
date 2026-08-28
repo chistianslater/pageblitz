@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
+import {
+  ADDON_EDITORS,
+  withAddOnEnabled,
+} from "@shared/onboardingV2/addonEditors";
+import { SECTION_ANCHORS } from "@/components/site/engine";
 import { FALLBACK_PACK, getConstitution } from "@shared/stylePacks";
+import type { AddOnFlags } from "@shared/pricing";
 import { PanelFrame } from "./PanelFrame";
 import {
   OfferEditor,
@@ -123,9 +129,44 @@ export function initialOfferMode(
   return requested ?? offerFromDoc(doc).mode;
 }
 
+/** Vorschau-Anker zum aktuellen Angebots-Modus — trifft engine.SECTION_ANCHORS. */
+export function previewAnchorForOfferMode(mode: OfferMode): string {
+  if (mode === "services") return SECTION_ANCHORS.services;
+  return ADDON_EDITORS[mode].previewAnchor;
+}
+
+/** Titel/Intro zum festen Editor-Modus — kein Typ-Wechsel mehr im Panel. */
+export function offerPanelCopy(mode: OfferMode): { title: string; intro: string } {
+  if (mode === "menu") {
+    return {
+      title: "Speisekarte pflegen",
+      intro:
+        "Gerichte, Kategorien und Preise — so erscheint die Speisekarte auf der Website. Leistungen aus dem Basispaket und die Preisliste als Extra bleiben eigene Bereiche.",
+    };
+  }
+  if (mode === "pricelist") {
+    return {
+      title: "Preisliste pflegen",
+      intro:
+        "Kategorien und Preise — so erscheint die Preisliste auf der Website. Leistungen pflegst du unter Angebot, die Speisekarte ist ein eigenes Extra.",
+    };
+  }
+  return {
+    title: "Leistungen pflegen",
+    intro:
+      "Das sind die Leistungen aus deinem Basispaket. Speisekarte und Preisliste buchst du unter Extras — jeweils mit eigenem Editor.",
+  };
+}
+
 interface OfferPanelProps {
   token: string;
   doc: WebsiteDataV2;
+  /**
+   * Server-Stand der Extras (`state.addOns`). Extra-Klick auf Speisekarte/
+   * Preisliste schaltet das Flag sofort mit ein, damit die Vorschau die
+   * Sektion zeigt — ohne Umweg über die Extras-Übersicht.
+   */
+  addOns?: AddOnFlags;
   onApplied: () => void;
   onClose: () => void;
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
@@ -138,45 +179,43 @@ interface OfferPanelProps {
 export function OfferPanel({
   token,
   doc,
+  addOns = {},
   onApplied,
   onClose,
   onNext,
   onPreviewFocus,
   initialMode,
 }: OfferPanelProps) {
-  const [drafts, setDrafts] = useState<Record<OfferMode, OfferPatch>>(() =>
-    offerDraftsFromDoc(doc)
-  );
-  const [mode, setMode] = useState<OfferMode>(() =>
+  const [mode] = useState<OfferMode>(() =>
     initialOfferMode(doc, initialMode)
+  );
+  const [value, setValue] = useState<OfferPatch>(
+    () => offerDraftsFromDoc(doc)[initialOfferMode(doc, initialMode)]
   );
   const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
-    onPreviewFocus?.(
-      mode === "services"
-        ? "leistungen"
-        : mode === "menu"
-          ? "speisekarte"
-          : "preisliste"
-    );
+    onPreviewFocus?.(previewAnchorForOfferMode(mode));
   }, [mode, onPreviewFocus]);
 
-  const value = drafts[mode];
+  const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
+  const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
+  const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
 
-  // OfferEditor meldet bei einem Moduswechsel intern einen leeren Entwurf
-  // über onChange (siehe offerParts.tsx) — hier wird dieser Fall erkannt und
-  // stattdessen der gemerkte Entwurf für den neuen Modus aktiviert, statt
-  // ihn mit dem leeren Wert zu überschreiben.
-  const handleChange = (next: OfferPatch) => {
-    if (next.mode !== mode) {
-      setMode(next.mode);
+  // Extra-Editor (Speisekarte/Preisliste): Flag sofort setzen, damit die
+  // Vorschau zur Sektion scrollen kann — auch bevor der User im Editor
+  // speichert. updateOffer zieht das Flag beim Speichern zusätzlich mit.
+  useEffect(() => {
+    if (initialMode !== "menu" && initialMode !== "pricelist") return;
+    if (doc.addOns?.[initialMode] === true || addOns[initialMode] === true) {
       return;
     }
-    setDrafts(prev => ({ ...prev, [mode]: next }));
-  };
-
-  const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
-  const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
+    updateAddons.mutate(
+      { token, addOns: withAddOnEnabled(addOns, initialMode) },
+      { onSuccess: onApplied }
+    );
+    // Nur beim Öffnen des Extra-Editors, nicht bei jedem Draft-Tastendruck.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSuggest = () => {
     setHint(null);
@@ -184,7 +223,7 @@ export function OfferPanel({
       { token, mode },
       {
         onSuccess: result => {
-          setDrafts(prev => ({ ...prev, [mode]: result.offer }));
+          setValue(result.offer);
           setHint("Vorschlag übernommen — Preise bitte prüfen.");
         },
       }
@@ -206,20 +245,15 @@ export function OfferPanel({
   const busy = updateOffer.isPending;
   const suggesting = suggestOffer.isPending;
   const errors = validateOffer(value);
+  const copy = offerPanelCopy(mode);
 
   return (
     <PanelFrame
       step="Schritt 4"
-      title={
-        initialMode === "menu"
-          ? "Speisekarte pflegen"
-          : initialMode === "pricelist"
-            ? "Preisliste pflegen"
-            : "Angebot pflegen"
-      }
+      title={copy.title}
       panelId="offer"
       onClose={onClose}
-      intro="Leistungen, Speisekarte oder Preisliste — wähle den passenden Typ und pflege die Positionen."
+      intro={copy.intro}
       footer={
         <>
           <button
@@ -269,7 +303,7 @@ export function OfferPanel({
         </p>
       )}
       {hint && <p style={{ color: "var(--st-accent)" }}>{hint}</p>}
-      <OfferEditor value={value} onChange={handleChange} />
+      <OfferEditor value={value} onChange={setValue} />
       {updateOffer.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateOffer.error.message}

@@ -16,10 +16,13 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { LANDGUT_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Sortiment",
+  services: "Leistungen",
   about: "Über uns",
   gallery: "Impressionen",
   testimonials: "Was Kund:innen sagen",
@@ -32,7 +35,7 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
 };
 
 /** Statisches Versal-Label unter dem höchsten Pflanzreihen-Bogen. */
-const ROW_LABEL = "SAISON";
+const ROW_LABEL = "";
 
 function renderLogo(data: WebsiteDataV2): React.ReactNode {
   if (data.logo?.kind === "font") {
@@ -79,7 +82,7 @@ function buildTicker(
     </span>
   );
   return (
-    <div className="pb-lg-ticker" aria-label={`Saison: ${titles.join(", ")}`}>
+    <div className="pb-lg-ticker" aria-label={titles.join(", ")}>
       <div className="pb-lg-ticker-track">
         {group(0)}
         {group(1)}
@@ -103,13 +106,15 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p>{section.intro}</p>}
-          {section.items.map(item => (
-            <div className="pb-lg-service" key={item.title}>
-              <strong>{item.title}</strong>
-              {item.description && <p>{item.description}</p>}
-              {item.price && <p>{item.price}</p>}
-            </div>
-          ))}
+          <div data-pb-slot={LAYOUT_SLOT.servicesItems}>
+            {section.items.map(item => (
+              <div className="pb-lg-service" key={item.title}>
+                <strong>{item.title}</strong>
+                {item.description && <p>{item.description}</p>}
+                {item.price && <p>{item.price}</p>}
+              </div>
+            ))}
+          </div>
         </section>
       );
     }
@@ -121,11 +126,12 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-lg-about">
+          <div className="pb-lg-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{section.body}</p>
             {section.imageUrl && (
               <img
                 className="pb-lg-arch-img"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
                 src={section.imageUrl}
                 alt=""
                 loading="lazy"
@@ -144,7 +150,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-lg-gallery">
+          <div
+            className="pb-lg-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img
                 className="pb-lg-arch-img"
@@ -381,8 +390,8 @@ const LandgutPage: React.FC<{
       {hero && (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
-            <div className="pb-lg-grid">
-              <div className="pb-lg-copy">
+            <div className="pb-lg-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+              <div className="pb-lg-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
                 {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
                 <h1>{renderHeadline(hero.headline)}</h1>
                 {hero.subheadline && (
@@ -399,7 +408,11 @@ const LandgutPage: React.FC<{
                   Verfassung), die beiden kleineren bleiben Farbflächen als
                   Rhythmus. Ohne Hero-Bild greift die bisherige Komposition
                   mit dem SAISON-Label — auf dem Foto wäre es unlesbar. */}
-              <div className="pb-lg-rows" aria-hidden="true">
+              <div
+                className="pb-lg-rows"
+                aria-hidden="true"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
                 <div className="pb-lg-row r1">
                   {hero.imageUrl ? (
                     <img
@@ -425,9 +438,9 @@ const LandgutPage: React.FC<{
         </>
       )}
       {contact && (
-        <aside className="pb-lg-visit-sticky" aria-label="Besuch planen">
+        <aside className="pb-lg-visit-sticky" aria-label={PACK_UI.contact}>
           <span>
-            <b>Besuch</b>
+            <b>{PACK_UI.contact}</b>
             {contact.openingHours?.[0]?.hours ?? contact.city}
           </span>
           <a href="#kontakt">Details</a>

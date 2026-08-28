@@ -157,8 +157,15 @@ export function applyAddonHeadings(
   return WebsiteDataV2Schema.parse({ ...doc, sections });
 }
 
-/** Angebots-Sektionstypen: es darf immer nur eine davon existieren. */
-const OFFER_TYPES = new Set<SectionType>(["services", "menu", "pricelist"]);
+/** Angebots-Sektionstypen. Leistungen (Basis) und Extra-Speisekarte/Preisliste dürfen nebeneinander stehen. */
+const OFFER_INSERT_AFTER: Record<
+  "services" | "menu" | "pricelist",
+  SectionType[]
+> = {
+  services: ["hero"],
+  menu: ["services", "hero"],
+  pricelist: ["menu", "services", "hero"],
+};
 
 /** Ersetzt jede Sektion vom Typ `type` durch das Ergebnis von `map`; andere Sektionen bleiben unverändert. */
 function replaceSection<T extends SectionType>(
@@ -312,13 +319,11 @@ export function applyTexts(doc: WebsiteDataV2, p: TextsPatch): WebsiteDataV2 {
   return WebsiteDataV2Schema.parse({ ...doc, sections, seo });
 }
 
-/** Pure: ersetzt alle Angebots-Sektionen (services/menu/pricelist) durch genau eine neue an derselben Position. */
+/** Pure: schreibt die Sektion des gewählten Typs. Andere Angebotstypen bleiben — Leistungen sind Basis, Speisekarte/Preisliste Extra. */
 export function applyOffer(
   doc: WebsiteDataV2,
   offer: OfferPatch
 ): WebsiteDataV2 {
-  const firstIdx = doc.sections.findIndex(s => OFFER_TYPES.has(s.type));
-  const without = doc.sections.filter(s => !OFFER_TYPES.has(s.type));
   const section: SectionV2 =
     offer.mode === "services"
       ? {
@@ -332,14 +337,27 @@ export function applyOffer(
           ...(offer.headline ? { headline: offer.headline } : {}),
           categories: offer.categories,
         };
+  const existingIdx = doc.sections.findIndex(s => s.type === section.type);
   let sections: SectionV2[];
-  if (firstIdx >= 0) {
-    const removedBefore = doc.sections
-      .slice(0, firstIdx)
-      .filter(s => OFFER_TYPES.has(s.type)).length;
-    const at = firstIdx - removedBefore;
-    sections = [...without.slice(0, at), section, ...without.slice(at)];
-  } else sections = insertAfter(without, "hero", section);
+  if (existingIdx >= 0) {
+    sections = doc.sections.map((s, i) => (i === existingIdx ? section : s));
+  } else {
+    sections = doc.sections;
+    let inserted = false;
+    for (const afterType of OFFER_INSERT_AFTER[offer.mode]) {
+      const idx = sections.findIndex(s => s.type === afterType);
+      if (idx >= 0) {
+        sections = [
+          ...sections.slice(0, idx + 1),
+          section,
+          ...sections.slice(idx + 1),
+        ];
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) sections = insertAfter(sections, null, section);
+  }
   return WebsiteDataV2Schema.parse({ ...doc, sections });
 }
 

@@ -16,19 +16,12 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { SCHIMMER_CSS } from "./css";
+import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Behandlungen",
-  about: "Studio",
-  gallery: "Galerie",
-  testimonials: "Stimmen",
-  contact: "Kontakt",
-  faq: "Häufige Fragen",
-  menu: "Karte",
-  pricelist: "Preise",
-  team: "Team",
-  cta: "Anfrage",
+  ...GENERIC_TITLES,
 };
 
 function renderLogo(data: WebsiteDataV2): React.ReactNode {
@@ -86,11 +79,14 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-sc-section-head">
-            <LabLabel index="01">Behandlungsprotokolle</LabLabel>
+            <LabLabel index="01">{FALLBACK_TITLES.services}</LabLabel>
             <h2>{renderHeadline(section.headline)}</h2>
             {section.intro && <p className="pb-sc-intro">{section.intro}</p>}
           </header>
-          <div className="pb-sc-protocols">
+          <div
+            className="pb-sc-protocols"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, index) => (
               <article className="pb-sc-protocol" key={item.title}>
                 <span className="pb-sc-number">
@@ -115,17 +111,20 @@ function renderSection(
           className="pb-sc-section pb-sc-about-section"
           key={section.type}
         >
-          <LabLabel index="02">Hautwissen, menschlich</LabLabel>
-          <div className="pb-sc-about">
+          <LabLabel index="02">{FALLBACK_TITLES.about}</LabLabel>
+          <div className="pb-sc-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <figure className="pb-sc-about-media">
+              <figure
+                className="pb-sc-about-media"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              >
                 <img
                   className="pb-sc-about-img"
                   src={section.imageUrl}
                   alt=""
                   loading="lazy"
                 />
-                <span aria-hidden="true">Materialstudie / 02</span>
+                <span aria-hidden="true">02</span>
               </figure>
             )}
             <div className="pb-sc-about-copy">
@@ -145,10 +144,13 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-sc-section-head">
-            <LabLabel index="03">Licht, Textur, Ergebnis</LabLabel>
+            <LabLabel index="03">{FALLBACK_TITLES.gallery}</LabLabel>
             <h2>{renderHeadline(title)}</h2>
           </header>
-          <div className="pb-sc-gallery">
+          <div
+            className="pb-sc-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, index) => (
               <figure key={img.url}>
                 <img src={img.url} alt={img.alt} loading="lazy" />
@@ -169,7 +171,7 @@ function renderSection(
           className="pb-sc-section pb-sc-testimonials"
           key={section.type}
         >
-          <LabLabel index="04">Beobachtungen</LabLabel>
+          <LabLabel index="04">{FALLBACK_TITLES.testimonials}</LabLabel>
           <div className="pb-sc-testimonial-layout">
             <h2>{renderHeadline(title)}</h2>
             <div className="pb-sc-quotes">
@@ -197,11 +199,11 @@ function renderSection(
           key={section.type}
         >
           <div className="pb-sc-contact-title">
-            <LabLabel index="05">Persönliche Analyse</LabLabel>
+            <LabLabel index="05">{FALLBACK_TITLES.contact}</LabLabel>
             <h2>{renderHeadline(title)}</h2>
             {section.phone && (
               <a className="pb-sc-cta" href={`tel:${section.phone}`}>
-                Termin vereinbaren
+                {PACK_UI.contact}
               </a>
             )}
           </div>
@@ -393,9 +395,14 @@ const SchimmerPage: React.FC<{
             <span />
             <span />
           </div>
-          <div className="pb-sc-hero-grid">
-            <div className="pb-sc-hero-copy">
-              <LabLabel index="L/01">Studio für Haut &amp; Ästhetik</LabLabel>
+          <div className="pb-sc-hero-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+            <div
+              className="pb-sc-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              <LabLabel index="L/01">
+                {data.businessCategory ?? data.businessName}
+              </LabLabel>
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && <p>{hero.subheadline}</p>}
               <div className="pb-sc-cta-row">
@@ -421,7 +428,10 @@ const SchimmerPage: React.FC<{
               )}
             </div>
             {hero.imageUrl && (
-              <div className="pb-sc-hero-img">
+              <div
+                className="pb-sc-hero-img"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
                 <img
                   src={hero.imageUrl}
                   alt=""
@@ -433,7 +443,7 @@ const SchimmerPage: React.FC<{
                   <span />
                   <i className="pb-sc-scan-line" />
                 </div>
-                <p aria-hidden="true">Makro / Lichtstudie 01</p>
+                <p aria-hidden="true">01</p>
               </div>
             )}
           </div>

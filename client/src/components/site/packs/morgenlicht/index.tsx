@@ -16,13 +16,16 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+
 import { MORGENLICHT_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
   about: "Über uns",
   gallery: "Galerie",
-  testimonials: "Patientenstimmen",
+  testimonials: "Stimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Speisekarte",
@@ -121,7 +124,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           {section.intro && <p className="pb-ml-intro">{section.intro}</p>}
-          <div className="pb-ml-grid">
+          <div className="pb-ml-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
               <div className="pb-ml-card" key={item.title}>
                 <strong>{item.title}</strong>
@@ -145,11 +148,12 @@ function renderSection(
           key={section.type}
         >
           <h2>{section.headline}</h2>
-          <div className="pb-ml-about">
+          <div className="pb-ml-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{section.body}</p>
             {section.imageUrl && (
               <img
                 className="pb-ml-about-img"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
                 src={section.imageUrl}
                 alt=""
                 loading="lazy"
@@ -168,7 +172,10 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-ml-grid pb-ml-gallery">
+          <div
+            className="pb-ml-grid pb-ml-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map(img => (
               <img key={img.url} src={img.url} alt={img.alt} loading="lazy" />
             ))}
@@ -407,11 +414,11 @@ const MorgenlichtPage: React.FC<{
         />
       </nav>
       {(hero?.ctaText || todaysHours || contact?.city) && (
-        <aside className="pb-ml-practice-dock" aria-label="Praxisinformation">
+        <aside className="pb-ml-practice-dock" aria-label={PACK_UI.contact}>
           <span>
             {todaysHours
               ? `Heute ${todaysHours}`
-              : (contact?.city ?? "Praxisinformation")}
+              : (contact?.city ?? PACK_UI.contact)}
           </span>
           {hero?.ctaText && (
             <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
@@ -424,6 +431,7 @@ const MorgenlichtPage: React.FC<{
             {hero.imageUrl ? (
               <img
                 className="pb-ml-blob"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
                 src={hero.imageUrl}
                 alt=""
                 loading="eager"

@@ -16,19 +16,14 @@ import {
 } from "../../engine";
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GUSTO_CSS } from "./css";
+import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Leistungen",
+  ...GENERIC_TITLES,
   about: "Unsere Geschichte",
   gallery: "Impressionen",
-  testimonials: "Was Gäste sagen",
-  contact: "Kontakt",
-  faq: "Häufige Fragen",
-  menu: "Speisekarte",
-  pricelist: "Preisliste",
-  team: "Team",
-  cta: "Anfrage",
 };
 
 function renderLogo(data: WebsiteDataV2): React.ReactNode {
@@ -97,8 +92,14 @@ function SectionKicker({
   );
 }
 
+interface GustoChrome {
+  contactCta: string;
+  contactHref: string;
+}
+
 function renderSection(
-  section: SectionV2 | PageSectionOf<"pageHeader">
+  section: SectionV2 | PageSectionOf<"pageHeader">,
+  chrome: GustoChrome
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
@@ -111,11 +112,14 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-gu-section-head">
-            <SectionKicker index="01">Aus der Küche</SectionKicker>
+            <SectionKicker index="01">{FALLBACK_TITLES.services}</SectionKicker>
             <h2>{section.headline}</h2>
             {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
           </header>
-          <div className="pb-gu-service-list">
+          <div
+            className="pb-gu-service-list"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.items.map((item, index) => (
               <article className="pb-gu-service-row" key={item.title}>
                 <span className="pb-gu-index">
@@ -141,22 +145,16 @@ function renderSection(
           className="pb-gu-section pb-gu-story"
           key={section.type}
         >
-          <SectionKicker index="02">Gastgeber &amp; Herkunft</SectionKicker>
-          <div className="pb-gu-about">
+          <SectionKicker index="02">{FALLBACK_TITLES.about}</SectionKicker>
+          <div className="pb-gu-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
-              <figure>
+              <figure data-pb-slot={LAYOUT_SLOT.aboutMedia}>
                 <img src={section.imageUrl} alt="" loading="lazy" />
-                <figcaption>
-                  Ein Tisch. Eine Küche. Viele Geschichten.
-                </figcaption>
               </figure>
             )}
             <div className="pb-gu-about-copy">
               <h2>{section.headline}</h2>
               <p>{section.body}</p>
-              <span className="pb-gu-signature" aria-hidden="true">
-                Gastgeber aus Leidenschaft
-              </span>
             </div>
           </div>
         </section>
@@ -171,15 +169,18 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-gu-section-head">
-            <SectionKicker index="03">Ein Abend in Bildern</SectionKicker>
+            <SectionKicker index="03">{FALLBACK_TITLES.gallery}</SectionKicker>
             <h2>{title}</h2>
           </header>
-          <div className="pb-gu-gallery">
+          <div
+            className="pb-gu-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
             {section.images.map((img, index) => (
               <figure key={img.url}>
                 <img src={img.url} alt={img.alt} loading="lazy" />
                 <figcaption aria-hidden="true">
-                  Szene {String(index + 1).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")}
                 </figcaption>
               </figure>
             ))}
@@ -195,7 +196,7 @@ function renderSection(
           className="pb-gu-section pb-gu-voices"
           key={section.type}
         >
-          <SectionKicker index="04">Nachklang</SectionKicker>
+          <SectionKicker index="04">{FALLBACK_TITLES.testimonials}</SectionKicker>
           <div className="pb-gu-voices-grid">
             <h2>{title}</h2>
             <div>
@@ -223,11 +224,11 @@ function renderSection(
           key={section.type}
         >
           <div className="pb-gu-reservation-title">
-            <SectionKicker index="05">Ihr Tisch wartet</SectionKicker>
+            <SectionKicker index="05">{FALLBACK_TITLES.contact}</SectionKicker>
             <h2>{title}</h2>
             {section.phone && (
               <a className="pb-gu-cta" href={`tel:${section.phone}`}>
-                Jetzt reservieren
+                {chrome.contactCta}
               </a>
             )}
           </div>
@@ -312,14 +313,17 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-gu-section-head">
-            <SectionKicker index="Menü">In Akten serviert</SectionKicker>
+            <SectionKicker index="06">{fallback}</SectionKicker>
             <h2>{title}</h2>
           </header>
-          <div className="pb-gu-menu-columns">
+          <div
+            className="pb-gu-menu-columns"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
             {section.categories.map((cat, index) => (
               <div className="pb-gu-menu-category" key={cat.name}>
                 <p className="pb-gu-index">
-                  Akt {String(index + 1).padStart(2, "0")}
+                  {String(index + 1).padStart(2, "0")}
                 </p>
                 <h3>{cat.name}</h3>
                 {cat.items.map(item => (
@@ -400,10 +404,14 @@ const GustoPage: React.FC<{
     navItems ?? buildNavItems(data, { pathname: "/", basePath }),
     FALLBACK_TITLES
   );
+  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
+  const chrome: GustoChrome = {
+    contactCta: hero?.ctaText?.trim() || PACK_UI.contact,
+    contactHref: hero?.ctaHref ?? "#kontakt",
+  };
   const half = Math.ceil(navList.length / 2);
   const navLeft = navList.slice(0, half);
   const navRight = navList.slice(half);
-  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const menu = sections.find((s): s is SectionOf<"menu"> => s.type === "menu");
   const contact = sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
@@ -451,7 +459,11 @@ const GustoPage: React.FC<{
         </nav>
         {hero && (
           <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
-            <div className="pb-gu-hero-media" aria-hidden="true">
+            <div
+              className="pb-gu-hero-media"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
+              aria-hidden="true"
+            >
               {hero.imageUrl && (
                 <img
                   src={hero.imageUrl}
@@ -462,7 +474,10 @@ const GustoPage: React.FC<{
               )}
             </div>
             <div className="pb-gu-hero-shade" aria-hidden="true" />
-            <div className="pb-gu-hero-copy">
+            <div
+              className="pb-gu-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
               {data.businessCategory && (
                 <p className="pb-gu-eyebrow">{data.businessCategory}</p>
               )}
@@ -480,9 +495,9 @@ const GustoPage: React.FC<{
             {previewItems.length > 0 && (
               <aside
                 className="pb-gu-menu-preview"
-                aria-label="Auszug aus der Karte"
+                aria-label={FALLBACK_TITLES.menu}
               >
-                <p className="pb-gu-preview-label">Heute empfohlen</p>
+                <p className="pb-gu-preview-label">{FALLBACK_TITLES.menu}</p>
                 {previewItems.map(item => (
                   <MenuRow
                     key={item.name}
@@ -494,7 +509,7 @@ const GustoPage: React.FC<{
             )}
             <nav className="pb-gu-quick" aria-label="Schnellzugriff">
               {menu && <a href={`#${SECTION_ANCHORS.menu}`}>Speisekarte</a>}
-              <a href="#kontakt">Reservieren</a>
+              <a href={chrome.contactHref}>{chrome.contactCta}</a>
               <a
                 href={
                   routeQuery
@@ -511,7 +526,7 @@ const GustoPage: React.FC<{
         )}
         {sections
           .filter(s => s.type !== "hero")
-          .map(section => renderSection(section))}
+          .map(section => renderSection(section, chrome))}
         <footer className="pb-gu-footer">
           <p>
             © {year} {data.businessName}

@@ -161,6 +161,19 @@ const HOSPITALITY_TOKENS = new Set([
   "accommodation",
 ]);
 
+/**
+ * Hotel, Pension, Lodge, B&B u. ä. — nicht Restaurant/Café.
+ * Packs wie Gusto (Gastro-Stimme) nutzen das, um Kickers nicht vom
+ * Tisch-Reservieren ins Zimmer-Willkommen kippen zu lassen.
+ */
+export function isLodgingCategory(
+  category: string | null | undefined
+): boolean {
+  if (!category?.trim()) return false;
+  const tokens = tokenize(transliterate(category));
+  return isHospitalityQuery(tokens, tokens.join(""));
+}
+
 function isHospitalityQuery(tokens: string[], compact: string): boolean {
   if (
     compact === "bb" ||

@@ -308,7 +308,7 @@ describe("applyTexts", () => {
 });
 
 describe("applyOffer", () => {
-  test("ersetzt services durch menu an gleicher Position", () => {
+  test("legt Speisekarte neben Leistungen an, statt sie zu ersetzen", () => {
     const next = applyOffer(docFull, {
       mode: "menu",
       categories: [
@@ -317,13 +317,14 @@ describe("applyOffer", () => {
     });
     expect(next.sections.map(s => s.type)).toEqual([
       "hero",
+      "services",
       "menu",
       "about",
       "contact",
     ]);
   });
 
-  test("ohne vorhandene Angebotssektion wird nach hero eingefügt; es bleibt genau eine Angebotssektion", () => {
+  test("ohne vorhandene Angebotssektion wird nach hero eingefügt; Extra-Typen bleiben eigene Sektionen", () => {
     const bare = {
       ...docFull,
       sections: [docFull.sections[0], docFull.sections[3]],
@@ -344,11 +345,38 @@ describe("applyOffer", () => {
         { name: "Haare", items: [{ name: "Schnitt", price: "25 €" }] },
       ],
     });
-    expect(
-      twice.sections.filter(s =>
-        ["services", "menu", "pricelist"].includes(s.type)
-      )
-    ).toHaveLength(1);
+    expect(twice.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "pricelist",
+      "contact",
+    ]);
+  });
+
+  test("erneutes Speichern derselben Speisekarte ersetzt nur diese Sektion", () => {
+    const withMenu = applyOffer(docFull, {
+      mode: "menu",
+      categories: [
+        { name: "Pizza", items: [{ name: "Margherita", price: "9 €" }] },
+      ],
+    });
+    const updated = applyOffer(withMenu, {
+      mode: "menu",
+      categories: [
+        { name: "Pasta", items: [{ name: "Aglio", price: "11 €" }] },
+      ],
+    });
+    expect(updated.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "menu",
+      "about",
+      "contact",
+    ]);
+    const menu = updated.sections.find(s => s.type === "menu") as {
+      categories: { name: string }[];
+    };
+    expect(menu.categories[0]?.name).toBe("Pasta");
   });
 });
 

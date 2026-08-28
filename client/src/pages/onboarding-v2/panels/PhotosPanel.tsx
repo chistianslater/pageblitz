@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import StockPhotoSearch from "@/components/StockPhotoSearch";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
-import { sanitizeAddOns, type AddOnFlags } from "@shared/pricing";
+import type { AddOnFlags } from "@shared/pricing";
 import type { AddonsPatch, ImagesPatch } from "@shared/onboardingV2/patches";
+import { withAddOnEnabled } from "@shared/onboardingV2/addonEditors";
+import { SECTION_ANCHORS } from "@/components/site/engine";
 import { PanelFrame } from "./PanelFrame";
 import { moveGalleryImage, removeGalleryImage, MAX_GALLERY_PHOTOS } from "./galleryLogic";
 import {
@@ -108,15 +110,25 @@ export function PhotosPanel({
   // State (`addOns`-Prop) gilt zusätzlich — Dashboard-Kauf schreibt zuerst
   // ins Abo, und Extra-Klick darf den Editor nicht hinter dem Hinweis
   // verstecken, nur weil das Dokument noch nachzieht.
-  const galleryBooked =
+  const openedAsGalleryExtra = initialTarget === "gallery";
+  const galleryPersisted =
     doc.addOns?.gallery === true || addOns.gallery === true;
+  const galleryBooked = openedAsGalleryExtra || galleryPersisted;
   const activateGallery = () => {
-    const patch: AddonsPatch = {
-      ...(sanitizeAddOns(addOns) as Required<AddOnFlags>),
-      gallery: true,
-    };
+    const patch: AddonsPatch = withAddOnEnabled(addOns, "gallery");
     updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
   };
+
+  // Extra-Klick auf Galerie: Flag sofort setzen, damit die Vorschau zur
+  // Sektion scrollen kann — analog Speisekarte im OfferPanel. Der Hinweis
+  // „Galerie aktivieren" bleibt für den normalen Fotos-Schritt.
+  useEffect(() => {
+    if (initialTarget !== "gallery") return;
+    if (galleryPersisted) return;
+    activateGallery();
+    // Nur beim Öffnen des Extra-Editors.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selected =
     target === "hero"
@@ -292,10 +304,10 @@ export function PhotosPanel({
           setTarget(nextTarget);
           onPreviewFocus?.(
             nextTarget === "hero"
-              ? "start"
+              ? SECTION_ANCHORS.hero
               : nextTarget === "about"
-                ? "ueber-uns"
-                : "galerie"
+                ? SECTION_ANCHORS.about
+                : SECTION_ANCHORS.gallery
           );
         }}
         hasAbout={hasAbout}
