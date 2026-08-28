@@ -29,9 +29,37 @@ export interface DesignProfile {
   galleryLayout: GalleryLayout;
   density: DesignDensity;
   imageTreatment: ImageTreatment;
+  /** Mobil-Layouts; fehlen sie, gilt die Desktop-Wahl auch auf dem Smartphone. */
+  heroLayoutMobile?: HeroLayout;
+  servicesLayoutMobile?: ServicesLayout;
+  aboutLayoutMobile?: AboutLayout;
+  galleryLayoutMobile?: GalleryLayout;
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }
+
+export type LayoutViewport = "desktop" | "mobile";
+
+export type SectionLayoutField =
+  | "heroLayout"
+  | "servicesLayout"
+  | "aboutLayout"
+  | "galleryLayout";
+
+export type LayoutOverlay = Partial<Record<SectionLayoutField, string>>;
+
+export const MOBILE_LAYOUT_FIELD: Record<
+  SectionLayoutField,
+  | "heroLayoutMobile"
+  | "servicesLayoutMobile"
+  | "aboutLayoutMobile"
+  | "galleryLayoutMobile"
+> = {
+  heroLayout: "heroLayoutMobile",
+  servicesLayout: "servicesLayoutMobile",
+  aboutLayout: "aboutLayoutMobile",
+  galleryLayout: "galleryLayoutMobile",
+};
 
 export const DEFAULT_DESIGN_PROFILE: DesignProfile = {
   version: 1,
@@ -127,9 +155,7 @@ export function deriveDesignProfile(
     galleryLayout,
     density:
       input.sections.length >= 7 || serviceCount >= 6 ? "compact" : "airy",
-    imageTreatment: hasImages
-      ? pick(IMAGE_TREATMENTS, seed, 5)
-      : "natural",
+    imageTreatment: hasImages ? pick(IMAGE_TREATMENTS, seed, 5) : "natural",
     seed,
   };
 }
@@ -152,6 +178,10 @@ export function designFingerprint(input: {
     p.servicesLayout,
     p.aboutLayout,
     p.galleryLayout,
+    p.heroLayoutMobile ?? "",
+    p.servicesLayoutMobile ?? "",
+    p.aboutLayoutMobile ?? "",
+    p.galleryLayoutMobile ?? "",
     p.density,
     p.imageTreatment,
     input.fontPairId ?? "pack-font",

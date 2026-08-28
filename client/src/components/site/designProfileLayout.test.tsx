@@ -63,4 +63,33 @@ describe("Designprofil-Layout in allen Packs", () => {
       '.pb-site [data-pb-slot="about-grid"]'
     );
   });
+
+  test("Desktop- und Mobil-Layouts sind getrennte Media-Queries", () => {
+    expect(DESIGN_PROFILE_CSS).toContain("@media(min-width:721px)");
+    expect(DESIGN_PROFILE_CSS).toContain("@media(max-width:720px)");
+    expect(DESIGN_PROFILE_CSS).toContain('[data-pb-hero-mobile="centered"]');
+    expect(DESIGN_PROFILE_CSS).toContain(
+      ":not([data-pb-hero-mobile])[data-pb-hero="
+    );
+  });
+
+  test("persistiertes Mobil-Profil landet als eigenes Attribut", () => {
+    const html = renderToStaticMarkup(
+      <SiteRenderer
+        data={{
+          ...getFixture("werkbank", "full"),
+          designProfile: {
+            ...PROFILE,
+            heroLayoutMobile: "compact",
+            servicesLayoutMobile: "list",
+          },
+        }}
+      />
+    );
+    const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
+    expect(root).toContain('data-pb-hero="centered"');
+    expect(root).toContain('data-pb-hero-mobile="compact"');
+    expect(root).toContain('data-pb-services-mobile="list"');
+    expect(root).not.toContain("data-pb-about-mobile=");
+  });
 });

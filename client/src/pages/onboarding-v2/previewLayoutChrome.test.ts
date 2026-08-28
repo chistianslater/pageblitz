@@ -6,8 +6,20 @@ import {
   applyLayoutOverlay,
   applyProfileAttrs,
   chromeViewportTop,
+  layoutChromeTitle,
   renderLayoutChromeHtml,
 } from "./previewLayoutChrome";
+
+function attrTarget(attrs: Record<string, string>) {
+  return {
+    setAttribute: (name: string, value: string) => {
+      attrs[name] = value;
+    },
+    removeAttribute: (name: string) => {
+      delete attrs[name];
+    },
+  };
+}
 
 describe("PREVIEW_LAYOUT_SECTIONS", () => {
   test("deckt Hero, Leistungen, Über uns und Galerie mit Anker und Varianten ab", () => {
@@ -37,6 +49,7 @@ describe("renderLayoutChromeHtml", () => {
       "centered"
     );
     expect(html).toContain("Hero-Layout");
+    expect(html).not.toContain("(Mobil)");
     expect(html).toContain("Bild &amp; Text");
     expect(html).toContain("Zentriert");
     expect(html).toContain(
@@ -55,23 +68,49 @@ describe("renderLayoutChromeHtml", () => {
     expect(html).toContain("<span>Layout</span>");
     expect(html).not.toMatch(/class="pb-preview-layout-menu"[^>]*\bhidden\b/);
   });
+
+  test("kennzeichnet Mobil-Layouts im Aria-Label", () => {
+    expect(layoutChromeTitle(PREVIEW_LAYOUT_SECTIONS[0]!, "mobile")).toBe(
+      "Hero-Layout (Mobil)"
+    );
+    const html = renderLayoutChromeHtml(
+      PREVIEW_LAYOUT_SECTIONS[0]!,
+      "centered",
+      "mobile"
+    );
+    expect(html).toContain("Hero-Layout (Mobil)");
+  });
 });
 
 describe("applyProfileAttrs", () => {
   test("schreibt alle data-pb-Layoutattribute", () => {
-    const attrs: Record<string, string> = {};
-    applyProfileAttrs(
-      { setAttribute: (name, value) => (attrs[name] = value) },
-      {
-        ...DEFAULT_DESIGN_PROFILE,
-        heroLayout: "compact",
-        galleryLayout: "mosaic",
-      }
-    );
+    const attrs: Record<string, string> = {
+      "data-pb-hero-mobile": "stale",
+    };
+    applyProfileAttrs(attrTarget(attrs), {
+      ...DEFAULT_DESIGN_PROFILE,
+      heroLayout: "compact",
+      galleryLayout: "mosaic",
+    });
     expect(attrs["data-pb-hero"]).toBe("compact");
     expect(attrs["data-pb-gallery"]).toBe("mosaic");
     expect(attrs["data-pb-services"]).toBe("list");
     expect(attrs["data-pb-about"]).toBe("image-right");
+    expect(attrs["data-pb-hero-mobile"]).toBeUndefined();
+  });
+
+  test("setzt Mobil-Attribute unabhängig vom Desktop", () => {
+    const attrs: Record<string, string> = {};
+    applyProfileAttrs(attrTarget(attrs), {
+      ...DEFAULT_DESIGN_PROFILE,
+      heroLayout: "split",
+      heroLayoutMobile: "centered",
+      servicesLayoutMobile: "grid",
+    });
+    expect(attrs["data-pb-hero"]).toBe("split");
+    expect(attrs["data-pb-hero-mobile"]).toBe("centered");
+    expect(attrs["data-pb-services-mobile"]).toBe("grid");
+    expect(attrs["data-pb-about-mobile"]).toBeUndefined();
   });
 });
 
@@ -80,19 +119,26 @@ describe("applyLayoutOverlay", () => {
     const attrs: Record<string, string> = {
       "data-pb-hero": "split",
       "data-pb-services": "list",
+      "data-pb-hero-mobile": "compact",
+    };
+    applyLayoutOverlay(attrTarget(attrs), { heroLayout: "centered" });
+    expect(attrs).toEqual({ "data-pb-hero": "centered" });
+  });
+
+  test("schreibt Mobil-Attribute und lässt Pack-Defaults auf dem Desktop", () => {
+    const attrs: Record<string, string> = {
+      "data-pb-hero": "split",
+      "data-pb-services": "list",
     };
     applyLayoutOverlay(
-      {
-        setAttribute: (name, value) => {
-          attrs[name] = value;
-        },
-        removeAttribute: name => {
-          delete attrs[name];
-        },
-      },
-      { heroLayout: "centered" }
+      attrTarget(attrs),
+      { heroLayout: "centered", servicesLayout: "grid" },
+      "mobile"
     );
-    expect(attrs).toEqual({ "data-pb-hero": "centered" });
+    expect(attrs).toEqual({
+      "data-pb-hero-mobile": "centered",
+      "data-pb-services-mobile": "grid",
+    });
   });
 });
 

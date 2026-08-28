@@ -78,9 +78,7 @@ describe("DesignProfile", () => {
     );
     expect(
       designFingerprint({ stylePackId: "werkbank", profile: next })
-    ).not.toBe(
-      designFingerprint({ stylePackId: "werkbank", profile: first })
-    );
+    ).not.toBe(designFingerprint({ stylePackId: "werkbank", profile: first }));
   });
 
   test("Hash ist stabil und Fingerprint ignoriert den reinen Seed", () => {
@@ -89,6 +87,22 @@ describe("DesignProfile", () => {
     const b = { ...DEFAULT_DESIGN_PROFILE, seed: 999 };
     expect(designFingerprint({ stylePackId: "werkbank", profile: a })).toBe(
       designFingerprint({ stylePackId: "werkbank", profile: b })
+    );
+  });
+
+  test("Mobil-Layouts gehören zum Fingerprint, Default hat keine Mobil-Felder", () => {
+    expect(DEFAULT_DESIGN_PROFILE.heroLayoutMobile).toBeUndefined();
+    const withMobile = {
+      ...DEFAULT_DESIGN_PROFILE,
+      heroLayoutMobile: "compact" as const,
+    };
+    expect(
+      designFingerprint({ stylePackId: "werkbank", profile: withMobile })
+    ).not.toBe(
+      designFingerprint({
+        stylePackId: "werkbank",
+        profile: DEFAULT_DESIGN_PROFILE,
+      })
     );
   });
 });

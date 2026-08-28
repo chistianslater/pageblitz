@@ -148,6 +148,10 @@ export const SiteRenderer: React.FC<{
       data-pb-services={designProfile?.servicesLayout}
       data-pb-about={designProfile?.aboutLayout}
       data-pb-gallery={designProfile?.galleryLayout}
+      data-pb-hero-mobile={designProfile?.heroLayoutMobile}
+      data-pb-services-mobile={designProfile?.servicesLayoutMobile}
+      data-pb-about-mobile={designProfile?.aboutLayoutMobile}
+      data-pb-gallery-mobile={designProfile?.galleryLayoutMobile}
       data-pb-density={designProfile?.density}
       data-pb-image={designProfile?.imageTreatment}
     >

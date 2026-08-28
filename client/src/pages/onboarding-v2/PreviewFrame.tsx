@@ -97,8 +97,10 @@ export function PreviewFrame({
     if (pageSlug || !onSectionLayout) return;
     const doc = iframeRef.current?.contentDocument;
     if (!doc?.documentElement.hasAttribute("data-pb-layout-chrome")) return;
-    enablePreviewLayoutChrome(doc, designProfile, onSectionLayout);
-  }, [designProfile, onSectionLayout, pageSlug]);
+    enablePreviewLayoutChrome(doc, designProfile, onSectionLayout, {
+      viewport: device,
+    });
+  }, [designProfile, onSectionLayout, pageSlug, device]);
 
   const enableInlineEditing = (
     iframe: React.SyntheticEvent<HTMLIFrameElement>
@@ -108,7 +110,9 @@ export function PreviewFrame({
     window.setTimeout(scrollToFocus, 80);
     const previewDoc = iframe.currentTarget.contentDocument;
     if (previewDoc && !pageSlug && onSectionLayout) {
-      enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout);
+      enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout, {
+        viewport: device,
+      });
     }
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;
     const doc = iframe.currentTarget.contentDocument;
@@ -147,11 +151,10 @@ export function PreviewFrame({
         // Keine Container zusätzlich editierbar machen, wenn ein Kind bereits
         // denselben Text präziser repräsentiert.
         if (
-          Array.from(target.children).some(
-            child =>
-              normalizeInlineText((child as HTMLElement).innerText).includes(
-                normalizedCurrent
-              )
+          Array.from(target.children).some(child =>
+            normalizeInlineText((child as HTMLElement).innerText).includes(
+              normalizedCurrent
+            )
           )
         )
           continue;
