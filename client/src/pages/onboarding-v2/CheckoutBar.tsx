@@ -181,8 +181,9 @@ export function CheckoutBar({
             </span>
           )}
           <p className="pb-studio-field-hint">
-            Ohne E-Mail wird deine Vorschau nach ein paar Tagen automatisch
-            gelöscht. Mit E-Mail kannst du später weitermachen.
+            Ohne E-Mail wird deine Vorschau nach 24 Stunden automatisch
+            gelöscht. Mit E-Mail bleibt sie sieben Tage und du kannst später
+            weitermachen.
           </p>
           <label className="pb-studio-checkbox">
             <input

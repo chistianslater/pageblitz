@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 
 export const LEAVE_WITHOUT_EMAIL = {
   banner:
-    "Ohne E-Mail wird deine Vorschau nach ein paar Tagen gelöscht. Hinterlasse sie, dann kannst du später weitermachen.",
+    "Ohne E-Mail wird deine Vorschau nach 24 Stunden gelöscht. Hinterlasse sie, dann kannst du sieben Tage weitermachen.",
   modalTitle: "Vorschau wirklich verlassen?",
   modalBody:
-    "Wenn du jetzt gehst, ohne eine E-Mail zu hinterlassen, wird diese Vorschau-Website gelöscht. Mit E-Mail kannst du später über einen Link weitermachen.",
+    "Wenn du jetzt gehst, ohne eine E-Mail zu hinterlassen, wird diese Vorschau-Website nach 24 Stunden gelöscht. Mit E-Mail bleibt sie sieben Tage und du bekommst einen Link zum Weitermachen.",
   stay: "E-Mail hinterlassen",
   leave: "Trotzdem verlassen",
 };

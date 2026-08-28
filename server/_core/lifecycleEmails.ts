@@ -31,19 +31,52 @@ interface TemplateOutput {
   text: string;
 }
 
-// Reservierungsdauer: 48h initial, 2× 24h Verlängerung möglich → max. 96h (4 Tage)
-export const INITIAL_RESERVATION_HOURS = 48;
-export const EXTENSION_HOURS = 24;
-export const MAX_EXTENSIONS = 2;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Fixe Offsets ab Email-Capture (für reminder_2h und reminder_24h).
-// reminder_final und fresh_start_7d werden dynamisch geplant (abhängig von reservedUntil bzw. Löschzeitpunkt).
+/** Mit E-Mail: Vorschau maximal 7 Tage, dann Löschung (nicht verlängerbar). */
+export const INITIAL_RESERVATION_HOURS = 7 * 24;
+export const EXTENSION_HOURS = 24;
+/** Keine Extra-Tage über die 7-Tage-Frist. */
+export const MAX_EXTENSIONS = 0;
+
+/**
+ * Offsets ab E-Mail-Capture. `reminder_2h` bleibt im Enum für alte Queues,
+ * wird für neue Captures nicht mehr geplant.
+ * Tag 4: „noch drei Tage“. Tag 6: 24h vor Ablauf („morgen“).
+ */
 export const FIXED_OFFSETS: Partial<Record<LifecycleEmailType, number>> = {
   reminder_2h: 2 * 60 * 60 * 1000,
-  reminder_24h: 24 * 60 * 60 * 1000,
+  reminder_24h: 4 * DAY_MS,
 };
-// "reminder_final" feuert 2h vor reservedUntil
-export const FINAL_WARNING_LEAD_MS = 2 * 60 * 60 * 1000;
+export const FINAL_WARNING_LEAD_MS = DAY_MS;
+
+export interface InitialLifecycleMail {
+  type: LifecycleEmailType;
+  scheduledFor: Date;
+}
+
+/** Reine Planung: Reservierung + die zwei Erinnerungen (Tag 4 und Tag 6). */
+export function initialLifecyclePlan(nowMs: number): {
+  reservedUntil: Date;
+  emails: InitialLifecycleMail[];
+} {
+  const reservedUntil = new Date(
+    nowMs + INITIAL_RESERVATION_HOURS * 60 * 60 * 1000
+  );
+  return {
+    reservedUntil,
+    emails: [
+      {
+        type: "reminder_24h",
+        scheduledFor: new Date(nowMs + FIXED_OFFSETS.reminder_24h!),
+      },
+      {
+        type: "reminder_final",
+        scheduledFor: new Date(reservedUntil.getTime() - FINAL_WARNING_LEAD_MS),
+      },
+    ],
+  };
+}
 // "fresh_start_7d" feuert 7 Tage nach Website-Löschung
 export const FRESH_START_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -118,15 +151,18 @@ Christian${footerText(d.unsubscribeLink)}`;
   return { subject, html, text };
 }
 
-// ── Email 2: +24h Hilfe anbieten + Verlängerung ─────────────────────────────
+// ── Email 2: Tag 4 — noch drei Tage ────────────────────────────────────────
 function reminder24h(d: LifecycleEmailData): TemplateOutput {
-  const subject = "Brauchst du Hilfe mit deiner Website?";
+  const subject =
+    d.businessName && d.businessName !== "deine Website"
+      ? `Noch drei Tage: Deine Website für ${d.businessName}`
+      : "Noch drei Tage: Deine Website-Vorschau";
   const html = wrap(
-    "Kann ich helfen?",
+    "Noch drei Tage",
     `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
-      gestern hast du angefangen, deine Website${forBiz(d.businessName)} zu bauen. Sie wartet noch auf dich &ndash; reserviert f&uuml;r dich bis morgen fr&uuml;h.
+      deine Website${forBiz(d.businessName)} ist fast fertig &ndash; die Vorschau bleibt noch <strong>drei Tage</strong> gespeichert. Danach l&ouml;schen wir sie, wenn sie nicht live geht.
     </p>
     <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Die h&auml;ufigsten Gr&uuml;nde, warum Leute an dieser Stelle stecken bleiben:</p>
     <ul style="margin: 0 0 16px 0; padding-left: 20px; font-size: 15px; line-height: 1.8; color: #3f3a34;">
@@ -139,14 +175,14 @@ function reminder24h(d: LifecycleEmailData): TemplateOutput {
       Falls dich eines davon betrifft &ndash; kein Problem. Antworte einfach auf diese Mail, und ich helfe dir pers&ouml;nlich weiter. Speziell wenn technisch etwas nicht funktioniert hat: <strong>bitte schreib mir</strong>, das wollen wir wissen und sofort beheben. Texte und Fotos bekommen wir auch gemeinsam hin.
     </p>
     ${primaryCta("Website jetzt fertigstellen", d.resumeLink)}
-    ${d.extendLink ? secondaryLink("Ich brauche noch 24 Stunden mehr Zeit", d.extendLink) : ""}
+    ${d.extendLink ? secondaryLink("Ich brauche noch mehr Zeit", d.extendLink) : ""}
     <p style="margin: 24px 0 0 0; font-size: 15px; line-height: 1.6; color: #1d1a17;">Viele Gr&uuml;&szlig;e<br>Christian</p>
   `,
     d.unsubscribeLink
   );
   const text = `${greeting(d.firstName)}
 
-gestern hast du angefangen, deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} zu bauen. Sie wartet noch auf dich – reserviert für dich bis morgen früh.
+deine Website${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} ist fast fertig – die Vorschau bleibt noch drei Tage gespeichert. Danach löschen wir sie, wenn sie nicht live geht.
 
 Die häufigsten Gründe, warum Leute an dieser Stelle stecken bleiben:
 - Ein technisches Problem (Seite hat nicht geladen, Bild ging nicht hoch, etwas hakt)
@@ -157,7 +193,7 @@ Die häufigsten Gründe, warum Leute an dieser Stelle stecken bleiben:
 Falls dich eines davon betrifft – kein Problem. Antworte einfach auf diese Mail, und ich helfe dir persönlich weiter. Speziell wenn technisch etwas nicht funktioniert hat: bitte schreib mir, das wollen wir wissen und sofort beheben.
 
 Website jetzt fertigstellen:
-${d.resumeLink}${d.extendLink ? `\n\nIch brauche noch 24 Stunden mehr Zeit:\n${d.extendLink}` : ""}
+${d.resumeLink}${d.extendLink ? `\n\nIch brauche noch mehr Zeit:\n${d.extendLink}` : ""}
 
 Viele Grüße
 Christian${footerText(d.unsubscribeLink)}`;
@@ -201,14 +237,14 @@ Christian${footerText(d.unsubscribeLink)}`;
     return { subject, html, text };
   }
 
-  // Erster Final-Aufruf (ohne vorherige Extension)
-  const subject = "Letzter Aufruf: Deine Website läuft bald ab";
+  // Erster Final-Aufruf: 24h vor Ablauf
+  const subject = "Morgen wird deine Vorschau gelöscht";
   const html = wrap(
-    "Letzter Aufruf",
+    "Morgen ist Schluss",
     `
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #1d1a17;">${greeting(d.firstName)}</p>
     <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">
-      kurze Info: Dein Website-Entwurf${forBiz(d.businessName)} l&auml;uft in wenigen Stunden ab. Danach m&uuml;ssen wir ihn leider l&ouml;schen, damit unser Server nicht &uuml;berquillt.
+      kurze Info: Dein Website-Entwurf${forBiz(d.businessName)} l&auml;uft <strong>morgen</strong> ab. Danach l&ouml;schen wir die Vorschau, damit unser Server nicht &uuml;berquillt.
     </p>
     <p style="margin: 16px 0 8px 0; font-size: 16px; line-height: 1.6; color: #3f3a34;">Wenn du ihn behalten willst, hast du zwei M&ouml;glichkeiten:</p>
     <p style="margin: 8px 0 0 0; font-size: 15px; line-height: 1.6; color: #3f3a34;"><strong>1. Jetzt fertigstellen</strong> (dauert wirklich nur wenige Minuten):</p>
@@ -231,7 +267,7 @@ Christian${footerText(d.unsubscribeLink)}`;
   );
   const text = `${greeting(d.firstName)}
 
-kurze Info: Dein Website-Entwurf${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} läuft in wenigen Stunden ab. Danach müssen wir ihn leider löschen, damit unser Server nicht überquillt.
+kurze Info: Dein Website-Entwurf${d.businessName && d.businessName !== "deine Website" ? ` für ${d.businessName}` : ""} läuft morgen ab. Danach löschen wir die Vorschau, damit unser Server nicht überquillt.
 
 Wenn du ihn behalten willst, hast du zwei Möglichkeiten:
 
@@ -298,7 +334,7 @@ export function renderWelcomeLinkEmail(d: LifecycleEmailData): TemplateOutput {
     </p>
     ${primaryCta("Website bearbeiten", d.resumeLink)}
     <p style="margin: 16px 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
-      Speicher dir diese Mail oder den Link als Lesezeichen &ndash; so kommst du jederzeit zur&uuml;ck und machst dort weiter, wo du aufgeh&ouml;rt hast.
+      Die Vorschau bleibt <strong>7 Tage</strong> gespeichert. Wir erinnern dich rechtzeitig, bevor sie gel&ouml;scht wird. Speicher dir diese Mail oder den Link als Lesezeichen.
     </p>
     <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #3f3a34;">
       Falls du Fragen hast: einfach auf diese Mail antworten.
@@ -313,7 +349,7 @@ hier ist dein persönlicher Link zu deiner Website-Vorschau${d.businessName && d
 
 ${d.resumeLink}
 
-Speicher dir diese Mail oder den Link als Lesezeichen – so kommst du jederzeit zurück und machst dort weiter, wo du aufgehört hast.
+Die Vorschau bleibt 7 Tage gespeichert. Wir erinnern dich rechtzeitig, bevor sie gelöscht wird. Speicher dir diese Mail oder den Link als Lesezeichen.
 
 Falls du Fragen hast: einfach auf diese Mail antworten.
 

@@ -213,7 +213,7 @@ describe("CheckoutBar", () => {
     expect(html).toContain("E-Mail-Adresse für deinen Account");
     expect(html).toContain("Aus dem Impressum vorgeschlagen");
     expect(html).toContain(
-      "Ohne E-Mail wird deine Vorschau nach ein paar Tagen automatisch gelöscht."
+      "Ohne E-Mail wird deine Vorschau nach 24 Stunden automatisch gelöscht."
     );
   });
 

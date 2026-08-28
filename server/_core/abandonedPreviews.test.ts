@@ -62,4 +62,16 @@ describe("isAbandonedPreviewWithoutEmail", () => {
       isAbandonedPreviewWithoutEmail(site({ createdAt: fresh }), now)
     ).toBe(false);
   });
+
+  test("TTL ist 24 Stunden, nicht eine Woche", () => {
+    expect(ABANDONED_PREVIEW_TTL_MS).toBe(24 * 60 * 60 * 1000);
+    const almost = new Date(now.getTime() - ABANDONED_PREVIEW_TTL_MS + 60_000);
+    const justOver = new Date(now.getTime() - ABANDONED_PREVIEW_TTL_MS - 1);
+    expect(
+      isAbandonedPreviewWithoutEmail(site({ createdAt: almost }), now)
+    ).toBe(false);
+    expect(
+      isAbandonedPreviewWithoutEmail(site({ createdAt: justOver }), now)
+    ).toBe(true);
+  });
 });

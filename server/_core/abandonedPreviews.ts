@@ -10,7 +10,8 @@ import { generatedWebsites } from "../../drizzle/schema";
  * Nur `status === "preview"` und ohne `paidAt`. Live/sold/active/inactive
  * bleiben unangetastet, auch wenn die E-Mail fehlt.
  */
-export const ABANDONED_PREVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** Ohne E-Mail kein Magic-Link — 24h reichen für denselben Besuch. */
+export const ABANDONED_PREVIEW_TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface AbandonedPreviewCandidate {
   id: number;

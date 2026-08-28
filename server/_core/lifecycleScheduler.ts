@@ -17,12 +17,12 @@ import {
   renderWelcomeLinkEmail,
   type LifecycleEmailType,
   type LifecycleEmailData,
-  FIXED_OFFSETS,
   FINAL_WARNING_LEAD_MS,
   FRESH_START_DELAY_MS,
   INITIAL_RESERVATION_HOURS,
   EXTENSION_HOURS,
   MAX_EXTENSIONS,
+  initialLifecyclePlan,
 } from "./lifecycleEmails";
 import { sendEmail } from "./email";
 
@@ -199,8 +199,8 @@ export async function sendImmediateWelcomeEmail(
 
 // ── Initial Scheduling bei Email-Capture ────────────────────────────────────
 /**
- * Plant die initialen Lifecycle-Mails (reminder_2h, reminder_24h, reminder_final)
- * und setzt reservedUntil auf +48h. Idempotent – doppelte Aufrufe überschreiben nicht.
+ * Plant die Erinnerungs-Mails (Tag 4 und 24h vor Ablauf) und setzt
+ * reservedUntil auf +7 Tage. Idempotent – doppelte Aufrufe überschreiben nicht.
  */
 export async function scheduleInitialLifecycleEmails(
   websiteId: number,
@@ -226,31 +226,13 @@ export async function scheduleInitialLifecycleEmails(
   }
 
   const now = Date.now();
-  const reservedUntil = new Date(
-    now + INITIAL_RESERVATION_HOURS * 60 * 60 * 1000
-  );
+  const { reservedUntil, emails: toInsert } = initialLifecyclePlan(now);
 
   // Reservierung setzen
   await db
     .update(generatedWebsites)
     .set({ reservedUntil, extensionsUsed: 0 })
     .where(eq(generatedWebsites.id, websiteId));
-
-  // Mails einplanen
-  const toInsert = [
-    {
-      type: "reminder_2h" as LifecycleEmailType,
-      scheduledFor: new Date(now + FIXED_OFFSETS.reminder_2h!),
-    },
-    {
-      type: "reminder_24h" as LifecycleEmailType,
-      scheduledFor: new Date(now + FIXED_OFFSETS.reminder_24h!),
-    },
-    {
-      type: "reminder_final" as LifecycleEmailType,
-      scheduledFor: new Date(reservedUntil.getTime() - FINAL_WARNING_LEAD_MS),
-    },
-  ];
 
   for (const row of toInsert) {
     try {

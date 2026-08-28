@@ -11,9 +11,9 @@ type StatusFilter = "any" | "scheduled" | "sent" | "cancelled" | "skipped" | "bo
 type TypeFilter = "any" | "reminder_2h" | "reminder_24h" | "reminder_final" | "fresh_start_7d";
 
 const TYPE_LABEL: Record<string, string> = {
-  reminder_2h: "Erinnerung +2h",
-  reminder_24h: "Hilfe +24h",
-  reminder_final: "Letzter Aufruf",
+  reminder_2h: "Erinnerung +2h (alt)",
+  reminder_24h: "Erinnerung Tag 4",
+  reminder_final: "Erinnerung: morgen löschen",
   fresh_start_7d: "Fresh Start +7d",
 };
 
@@ -150,9 +150,9 @@ export default function LifecyclePage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Alle Typen</SelectItem>
-                <SelectItem value="reminder_2h">Erinnerung +2h</SelectItem>
-                <SelectItem value="reminder_24h">Hilfe +24h</SelectItem>
-                <SelectItem value="reminder_final">Letzter Aufruf</SelectItem>
+                <SelectItem value="reminder_2h">Erinnerung +2h (alt)</SelectItem>
+                <SelectItem value="reminder_24h">Erinnerung Tag 4</SelectItem>
+                <SelectItem value="reminder_final">Erinnerung: morgen löschen</SelectItem>
                 <SelectItem value="fresh_start_7d">Fresh Start +7d</SelectItem>
               </SelectContent>
             </Select>
