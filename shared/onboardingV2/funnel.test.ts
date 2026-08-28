@@ -74,7 +74,7 @@ describe("aggregateStudioFunnel", () => {
     expect(opened.dropOffRate).toBe(1);
     expect(email?.count).toBe(12);
     expect(email?.dropOffCount).toBe(0);
-    expect(email?.dropOffRate).toBe(0);
+    expect(email?.dropOffRate).toBeNull();
   });
 
   test("leere Eingabe → alle Counts 0", () => {

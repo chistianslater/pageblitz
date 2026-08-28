@@ -17,31 +17,33 @@ vi.mock("../db", async importOriginal => {
   };
 });
 
-const funnelStats = {
-  steps: [
-    {
-      step: "landing_start" as const,
-      label: "Landing / Start",
-      count: 10,
+const { funnelStats } = vi.hoisted(() => ({
+  funnelStats: {
+    steps: [
+      {
+        step: "landing_start" as const,
+        label: "Landing / Start",
+        count: 10,
+        dropOffCount: 0,
+        dropOffRate: null,
+      },
+      {
+        step: "studio_opened" as const,
+        label: "Studio geöffnet",
+        count: 6,
+        dropOffCount: 4,
+        dropOffRate: 0.4,
+      },
+    ],
+    abandoned: {
+      step: "abandoned_preview" as const,
+      label: "Preview abgelaufen",
+      count: 2,
       dropOffCount: 0,
       dropOffRate: null,
     },
-    {
-      step: "studio_opened" as const,
-      label: "Studio geöffnet",
-      count: 6,
-      dropOffCount: 4,
-      dropOffRate: 0.4,
-    },
-  ],
-  abandoned: {
-    step: "abandoned_preview" as const,
-    label: "Preview abgelaufen",
-    count: 2,
-    dropOffCount: 0,
-    dropOffRate: null,
   },
-};
+}));
 
 vi.mock("./funnel", async importOriginal => {
   const actual = await importOriginal<typeof import("./funnel")>();
