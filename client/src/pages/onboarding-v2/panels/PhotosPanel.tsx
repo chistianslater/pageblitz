@@ -111,10 +111,9 @@ export function PhotosPanel({
   // ins Abo, und Extra-Klick darf den Editor nicht hinter dem Hinweis
   // verstecken, nur weil das Dokument noch nachzieht.
   const openedAsGalleryExtra = initialTarget === "gallery";
-  const galleryBooked =
-    openedAsGalleryExtra ||
-    doc.addOns?.gallery === true ||
-    addOns.gallery === true;
+  const galleryPersisted =
+    doc.addOns?.gallery === true || addOns.gallery === true;
+  const galleryBooked = openedAsGalleryExtra || galleryPersisted;
   const activateGallery = () => {
     const patch: AddonsPatch = withAddOnEnabled(addOns, "gallery");
     updateAddons.mutate({ token, addOns: patch }, { onSuccess: onApplied });
@@ -125,7 +124,7 @@ export function PhotosPanel({
   // „Galerie aktivieren" bleibt für den normalen Fotos-Schritt.
   useEffect(() => {
     if (initialTarget !== "gallery") return;
-    if (galleryBooked) return;
+    if (galleryPersisted) return;
     activateGallery();
     // Nur beim Öffnen des Extra-Editors.
     // eslint-disable-next-line react-hooks/exhaustive-deps
