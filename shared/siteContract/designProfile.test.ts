@@ -90,6 +90,21 @@ describe("DesignProfile", () => {
     );
   });
 
+  test("lange Headline erzwingt kein Kompakt-Hero mehr", () => {
+    const profile = deriveDesignProfile({
+      businessName: "Langtitel",
+      sections: [
+        {
+          type: "hero",
+          headline: "Massarbeit aus Holz für jedes Haus und jeden Raum.",
+          imageUrl: "https://example.com/hero.jpg",
+        },
+      ],
+    });
+    expect(profile.heroLayout).not.toBe("compact");
+    expect(["split", "centered", "image-first"]).toContain(profile.heroLayout);
+  });
+
   test("Mobil-Layouts gehören zum Fingerprint, Default hat keine Mobil-Felder", () => {
     expect(DEFAULT_DESIGN_PROFILE.heroLayoutMobile).toBeUndefined();
     const withMobile = {

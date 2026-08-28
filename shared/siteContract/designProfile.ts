@@ -7,7 +7,18 @@
  * DEFAULT_DESIGN_PROFILE exakt wie bisher (Rückwärtskompatibilität).
  */
 
-export const HERO_LAYOUTS = ["split", "centered", "compact"] as const;
+export const HERO_LAYOUTS = [
+  "split",
+  "centered",
+  "compact",
+  "image-first",
+] as const;
+/** Picker und Generator: compact bleibt nur für bestehende Profile gültig. */
+export const HERO_LAYOUT_CHOICES = [
+  "split",
+  "centered",
+  "image-first",
+] as const;
 export const SERVICES_LAYOUTS = ["list", "grid", "featured"] as const;
 export const ABOUT_LAYOUTS = ["image-left", "image-right"] as const;
 export const GALLERY_LAYOUTS = ["grid", "mosaic", "filmstrip"] as const;
@@ -131,9 +142,7 @@ export function deriveDesignProfile(
 
   const heroLayout: HeroLayout = !hero?.imageUrl
     ? "centered"
-    : (hero.headline?.length ?? 0) > 48
-      ? "compact"
-      : pick(HERO_LAYOUTS, seed, 1);
+    : pick(HERO_LAYOUT_CHOICES, seed, 1);
   const servicesLayout: ServicesLayout =
     serviceCount >= 5
       ? "grid"
