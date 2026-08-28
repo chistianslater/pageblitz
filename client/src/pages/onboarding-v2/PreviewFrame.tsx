@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId } from "@shared/siteContract/types";
+import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
+import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
 
 interface PreviewFrameProps {
   token: string;
@@ -22,6 +24,10 @@ interface PreviewFrameProps {
   onInlineTextEdit?: (path: string, value: string) => void;
   /** Sektionsanker, der beim Bearbeiten rechts sichtbar sein soll. */
   focusAnchor?: string | null;
+  /** Kompositionsprofil — Layout-Buttons in der Vorschau. */
+  designProfile?: DesignProfile | null;
+  /** Speichert ein in der Vorschau gewähltes Sektions-Layout. */
+  onSectionLayout?: (profile: DesignProfile) => void;
   /** Meldet das geladene iframe z. B. für Scroll-Weiterleitung im Splash. */
   onIframeReady?: (iframe: HTMLIFrameElement) => void;
 }
@@ -47,6 +53,8 @@ export function PreviewFrame({
   inlineTargets,
   onInlineTextEdit,
   focusAnchor,
+  designProfile,
+  onSectionLayout,
   onIframeReady,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
@@ -85,12 +93,23 @@ export function PreviewFrame({
     return () => window.clearTimeout(id);
   }, [scrollToFocus, src]);
 
+  useEffect(() => {
+    if (pageSlug || !onSectionLayout) return;
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc?.documentElement.hasAttribute("data-pb-layout-chrome")) return;
+    enablePreviewLayoutChrome(doc, designProfile, onSectionLayout);
+  }, [designProfile, onSectionLayout, pageSlug]);
+
   const enableInlineEditing = (
     iframe: React.SyntheticEvent<HTMLIFrameElement>
   ) => {
     onIframeReady?.(iframe.currentTarget);
     // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
     window.setTimeout(scrollToFocus, 80);
+    const previewDoc = iframe.currentTarget.contentDocument;
+    if (previewDoc && !pageSlug && onSectionLayout) {
+      enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout);
+    }
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;
     const doc = iframe.currentTarget.contentDocument;
     if (!doc) return;

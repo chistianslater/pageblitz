@@ -4,8 +4,8 @@
  * Pack-CSS bleibt die Designrichtung. Diese Schicht greift über
  * `data-pb-slot` (siehe layoutSlots.ts) und die SECTION_ANCHORS
  * (`#start`, `#leistungen`, `#speisekarte`, `#ueber-uns`, `#galerie`).
- * Jede Wahl im Theme-Editor muss in allen 14 Packs sichtbar sein —
- * auch in den früher ausgenommenen, handkuratierten Packs.
+ * Jede Wahl über die Layout-Buttons in der Studio-Vorschau muss in allen
+ * 14 Packs sichtbar sein — auch in den früher ausgenommenen, handkuratierten Packs.
  */
 
 const SLOT = {

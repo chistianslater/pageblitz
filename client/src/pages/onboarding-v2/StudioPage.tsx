@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { ADDON_EDITORS, addonContentDone } from "@shared/onboardingV2/addonEditors";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
+import type { DesignProfile } from "@shared/siteContract/designProfile";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
 import {
   BOOKABLE_ADDON_KEYS,
@@ -95,6 +96,16 @@ export default function StudioPage({ token }: { token: string }) {
   const [previewSlugState, setPreviewSlug] = useState<string | null>(null);
   const inlineUpdateText =
     trpc.onboardingV2.updateInlineText.useMutation();
+  const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
+  const applySectionLayout = useCallback(
+    (profile: DesignProfile) => {
+      updateTheme.mutate(
+        { token, designProfile: profile },
+        { onSuccess: () => studio.refetch() }
+      );
+    },
+    [token, updateTheme, studio]
+  );
   // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
   // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
   const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
@@ -591,14 +602,20 @@ export default function StudioPage({ token }: { token: string }) {
           </div>
           {previewSlug === null && (
             <p className="pb-studio-inline-hint">
-              Tipp: Texte in der Vorschau kannst du direkt anklicken und
-              bearbeiten.
+              Tipp: Texte kannst du direkt anklicken. Das Layout jeder Sektion
+              stellst du rechts in der Vorschau um.
             </p>
           )}
           {inlineUpdateText.error && (
             <p role="alert" className="pb-studio-inline-error">
               Änderung konnte nicht gespeichert werden:{" "}
               {inlineUpdateText.error.message}
+            </p>
+          )}
+          {updateTheme.error && (
+            <p role="alert" className="pb-studio-inline-error">
+              Layout konnte nicht gespeichert werden:{" "}
+              {updateTheme.error.message}
             </p>
           )}
           {previewTabs.length > 1 && (
@@ -627,6 +644,8 @@ export default function StudioPage({ token }: { token: string }) {
             inlineTargets={inlineTargets}
             onInlineTextEdit={applyInlineText}
             focusAnchor={previewFocusAnchor}
+            designProfile={state.doc.designProfile ?? null}
+            onSectionLayout={applySectionLayout}
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).

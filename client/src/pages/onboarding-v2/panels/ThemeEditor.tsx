@@ -6,10 +6,6 @@ import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import {
   DEFAULT_DESIGN_PROFILE,
-  HERO_LAYOUTS,
-  SERVICES_LAYOUTS,
-  ABOUT_LAYOUTS,
-  GALLERY_LAYOUTS,
   DESIGN_DENSITIES,
   IMAGE_TREATMENTS,
 } from "@shared/siteContract/designProfile";
@@ -17,10 +13,9 @@ import { ACCENT_CHOICES } from "../themeChoices";
 
 /**
  * Studio-Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung unabhängig
- * vom Stil-Pack wechseln. User-Entscheide: kuratierte Palette + optional
- * eigener Akzent per Farbwähler; kuratierte Schriftpaare aus dem Font-Pool
- * der 14 Packs. Wie das Fotos-Panel gilt Auto-Apply: jede Wahl speichert
- * sofort (updateTheme) und bumped über onApplied die Live-Vorschau.
+ * vom Stil-Pack wechseln. Sektionslayouts sitzen als Buttons in der
+ * Vorschau; hier bleiben seitenweite Abstände und Bildwirkung. Auto-Apply:
+ * jede Wahl speichert sofort (updateTheme).
  */
 
 /** WCAG-Relative-Luminanz eines #rrggbb-Hexwerts. */
@@ -155,94 +150,25 @@ export function ThemeEditor({
   return (
     <div className="pb-studio-theme">
       <h3 className="pb-studio-theme-title">
-        {showLayoutControls ? "Aufbau, Farben & Schriften" : "Farben & Schriften"}
+        {showLayoutControls
+          ? "Farben, Schriften & Abstände"
+          : "Farben & Schriften"}
       </h3>
       <p className="pb-studio-theme-hint">
-        Feinschliff für die gewählte Designrichtung — jede Auswahl wird sofort
-        übernommen.
+        Feinschliff für die gewählte Designrichtung — Sektionslayouts stellst
+        du rechts in der Vorschau um. Jede Auswahl wird sofort übernommen.
       </p>
 
       {showLayoutControls && (
         <>
-          <p className="pb-studio-theme-label" id="pb-theme-layout-label">
-            Seitenaufbau
+          <p className="pb-studio-theme-label" id="pb-theme-rhythm-label">
+            Abstände &amp; Bilder
           </p>
           <div
             className="pb-studio-theme-layouts"
             role="group"
-            aria-labelledby="pb-theme-layout-label"
+            aria-labelledby="pb-theme-rhythm-label"
           >
-        <label className="pb-studio-theme-layout">
-          <span>Hero</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.heroLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "heroLayout",
-                e.target.value as (typeof HERO_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="split">Bild &amp; Text</option>
-            <option value="centered">Zentriert</option>
-            <option value="compact">Kompakt</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Leistungen</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.servicesLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "servicesLayout",
-                e.target.value as (typeof SERVICES_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="list">Liste</option>
-            <option value="grid">Raster</option>
-            <option value="featured">Hervorgehoben</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Über uns</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.aboutLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "aboutLayout",
-                e.target.value as (typeof ABOUT_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="image-left">Bild links</option>
-            <option value="image-right">Bild rechts</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Galerie</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.galleryLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "galleryLayout",
-                e.target.value as (typeof GALLERY_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="grid">Raster</option>
-            <option value="mosaic">Mosaik</option>
-            <option value="filmstrip">Filmstreifen</option>
-          </select>
-        </label>
         <label className="pb-studio-theme-layout">
           <span>Abstände</span>
           <select
