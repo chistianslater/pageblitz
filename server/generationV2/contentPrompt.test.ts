@@ -112,4 +112,11 @@ describe("buildContentPrompt — Fakten-Kontext B7 Task 3", () => {
     expect(p).toContain("Nenne niemals eine andere Stadt als die genannte.");
     expect(p).toContain("niemals aus dem Firmennamen");
   });
+
+  test("Verbot gegen Pack-Klischees, die nicht zur Kategorie passen", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    expect(p).toContain("Formuliere ausschließlich zur genannten Kategorie.");
+    expect(p).toContain("Anwalt/Mandant/Klage");
+    expect(p).toContain("Quellcode/Tickets/Deploy");
+  });
 });

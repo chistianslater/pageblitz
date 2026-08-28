@@ -35,4 +35,18 @@ describe("Pack kanzlei", () => {
     expect(KANZLEI_CSS).toContain("(pointer:fine)");
     expect(KANZLEI_CSS).not.toContain("infinite");
   });
+
+  test("Chrome ist beratungstauglich, nicht nur Anwaltskanzlei", () => {
+    const c = getConstitution("kanzlei");
+    expect(c.signature.decor).toContain("frame-watermark");
+    expect(c.signature.decor).not.toContain("paragraph-watermark");
+    expect(html).toContain("pb-kz-watermark");
+    expect(html).not.toContain("§");
+    expect(html).toContain("Kundenstimmen");
+    expect(html).not.toContain("Mandantenstimmen");
+    expect(html).toContain("Übersicht");
+    expect(html).not.toContain("Fachgebiete");
+    expect(html).not.toContain("Mandant");
+    expect(html).not.toContain("Klage");
+  });
 });

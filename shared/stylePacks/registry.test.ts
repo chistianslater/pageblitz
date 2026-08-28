@@ -47,5 +47,9 @@ describe("stylePacks registry", () => {
     test("Sanitärinstallateur matched werkbank via sanitaer-Präfix (Länge ≥ 4)", () => {
       expect(getPackPool("Sanitärinstallateur")).toContain("werkbank");
     });
+    test("Anlageservice matched kanzlei (benachbarte B2B-Beratung)", () => {
+      expect(getPackPool("Anlageservice")[0]).toBe("kanzlei");
+      expect(getPackPool("Anlageberatung")[0]).toBe("kanzlei");
+    });
   });
 });

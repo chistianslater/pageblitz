@@ -13,6 +13,10 @@ export const KANZLEI: PackConstitution = {
     "finanzberater",
     "wirtschaftspruefer",
     "buchhaltung",
+    "anlageservice",
+    "anlageberatung",
+    "treuhand",
+    "wirtschaftsberatung",
   ],
   theme: "light",
   palette: [
@@ -92,8 +96,8 @@ export const KANZLEI: PackConstitution = {
     density: "airy",
   },
   signature: {
-    hero: "sichtbares Spaltenraster + Mono-Eyebrow + zweifarbige Display-Headline + Seiten-Index rechts oben + §-Wasserzeichen",
-    decor: ["column-grid", "mono-index", "paragraph-watermark", "facts-rule"],
+    hero: "sichtbares Spaltenraster + Mono-Eyebrow + zweifarbige Display-Headline + Seiten-Index rechts oben + Hairline-Rahmen als Wasserzeichen",
+    decor: ["column-grid", "mono-index", "frame-watermark", "facts-rule"],
     imageTreatment: "entsättigt, kühl, in Hairline-Rahmen, nie randlos",
   },
   llmHints: {
@@ -101,7 +105,14 @@ export const KANZLEI: PackConstitution = {
       "präzise, nüchterne Sprache",
       "Zahlen und Fakten nach vorn",
       "kurze Substantiv-Headlines (2–3 Wörter)",
+      "Vertrauen, Klarheit, Verbindlichkeit — seriöse Beratung, nicht Gerichtssaal",
+      "Wortwahl an die tatsächliche Kategorie koppeln (Anlage, Steuer, Recht, Unternehmensberatung)",
     ],
-    dont: ["Superlative", "Emotionalisierung", "Emojis oder Ausrufezeichen"],
+    dont: [
+      "Superlative",
+      "Emotionalisierung",
+      "Emojis oder Ausrufezeichen",
+      "Anwalt, Klage, Mandant, Kanzlei, Rechtsgebiet, Prozess — außer die Kategorie ist tatsächlich eine Rechts- oder Steuerkanzlei",
+    ],
   },
 };

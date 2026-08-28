@@ -253,11 +253,11 @@ const KANZLEI_FULL: WebsiteDataV2 = {
   businessName: "Roth & Weber Steuerberater",
   slug: "roth-weber-steuerberater-koeln",
   businessCategory: "Steuerberater",
-  tagline: "Klarheit in Zahlen.",
+  tagline: "Klarheit, die bleibt.",
   sections: [
     {
       type: "hero",
-      headline: "Klarheit in Zahlen.",
+      headline: "Klarheit, die bleibt.",
       subheadline:
         "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998 — präzise, verbindlich, ohne Umwege.",
       ctaText: "Erstgespräch anfragen",
@@ -292,16 +292,16 @@ const KANZLEI_FULL: WebsiteDataV2 = {
     {
       type: "about",
       headline: "Über uns",
-      body: "Roth & Weber berät seit 1998 mit Sitz in Köln Unternehmen, Freiberufler und Selbstständige in allen Fragen der Steuer- und Rechnungslegung. Vier Partner und ein zwölfköpfiges Team betreuen aktuell mehr als 250 laufende Mandate — von der Einzelfirma bis zum mittelständischen Betrieb. Der Anspruch bleibt über alle Mandate gleich: klare Fristen, nachvollziehbare Zahlen und ein fester Ansprechpartner statt wechselnder Sachbearbeiter. Digitale Belegerfassung und persönliche Beratung schließen sich dabei nicht aus, sondern ergänzen sich.",
+      body: "Roth & Weber berät seit 1998 mit Sitz in Köln Unternehmen, Freiberufler und Selbstständige in Steuer, Zahlen und Planung. Vier Partner und ein zwölfköpfiges Team betreuen aktuell mehr als 250 Unternehmen — von der Einzelfirma bis zum mittelständischen Betrieb. Der Anspruch bleibt für alle gleich: klare Fristen, nachvollziehbare Zahlen und ein fester Ansprechpartner statt wechselnder Sachbearbeiter. Digitale Abläufe und persönliche Beratung schließen sich dabei nicht aus, sondern ergänzen sich.",
       imageUrl: "/demo/kanzlei-hero.webp",
     },
     {
       type: "testimonials",
-      headline: "Was Mandanten sagen",
+      headline: "Was Kunden sagen",
       items: [
         {
           author: "Sabine Höttges, Höttges GmbH",
-          text: "Termine werden eingehalten, Rückfragen sind innerhalb eines Tages beantwortet. Genau das erwartet man von einer Steuerkanzlei.",
+          text: "Termine werden eingehalten, Rückfragen sind innerhalb eines Tages beantwortet. Genau das erwartet man von einer seriösen Beratung.",
           rating: 5,
         },
         {
@@ -328,7 +328,7 @@ const KANZLEI_FULL: WebsiteDataV2 = {
         {
           question: "Wie werden Fristen eingehalten?",
           answer:
-            "Jedes Mandat erhält einen festen Ansprechpartner und einen Fristenkalender, der Abgabetermine automatisch vorbereitet.",
+            "Jeder Kunde erhält einen festen Ansprechpartner und einen Fristenkalender, der Abgabetermine automatisch vorbereitet.",
         },
       ],
     },
@@ -366,11 +366,11 @@ const KANZLEI_MINIMAL: WebsiteDataV2 = {
   businessName: "Roth & Weber Steuerberater",
   slug: "roth-weber-steuerberater-koeln",
   businessCategory: "Steuerberater",
-  tagline: "Klarheit in Zahlen.",
+  tagline: "Klarheit, die bleibt.",
   sections: [
     {
       type: "hero",
-      headline: "Klarheit in Zahlen.",
+      headline: "Klarheit, die bleibt.",
       subheadline:
         "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998.",
       ctaText: "Erstgespräch anfragen",

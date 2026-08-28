@@ -75,12 +75,13 @@
   .m2 .a1{width:62%; height:100%; right:26%; background:linear-gradient(170deg,#D9A184,#B05A36 60%,#7C3A20)}
   .m2 .a2{width:46%; height:64%; right:0; bottom:0; background:linear-gradient(170deg,#E9D3AE,#C9A468 70%,#8F6C3A); box-shadow:-10px -10px 0 #FBF4E7}
   .m2 .note{position:absolute; left:0; bottom:-6px; font-family:'Fraunces',serif; font-style:italic; font-size:14px; color:#8A7A62; transform:rotate(-4deg)}
-  /* 03 KANZLEI — sichtbares Raster, Index, Paragraphen-Marke */
+  /* 03 KANZLEI — sichtbares Raster, Index, Hairline-Rahmen */
   .m3{background:#F7F7F4; color:#101012; font-family:'Inter Tight',sans-serif; padding:22px 28px 30px; background-image:linear-gradient(90deg,#EBEBE6 1px,transparent 1px); background-size:25% 100%; background-position:12px 0}
   .m3 .mnav{font-size:12px; font-weight:500; border-bottom:1px solid #101012; padding-bottom:14px}
   .m3 .logo{font-weight:700; font-size:14px}
   .m3 .idx{position:absolute; right:26px; top:74px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#1D3FBF; text-align:right; line-height:1.9}
-  .m3 .para{position:absolute; right:18px; bottom:-30px; font-family:'Source Serif 4',serif; font-size:190px; color:rgba(29,63,191,.07); line-height:1}
+  .m3 .para{position:absolute; right:22px; bottom:12px; width:110px; height:110px; border:1px solid rgba(29,63,191,.22); pointer-events:none}
+  .m3 .para::after{content:""; position:absolute; inset:12px; border:1px solid rgba(29,63,191,.22)}
   .m3 .mono{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:#1D3FBF; margin:44px 0 12px}
   .m3 h4{font-size:clamp(32px,5.4vw,56px); font-weight:600; letter-spacing:-.035em; line-height:.98; max-width:14ch}
   .m3 h4 span{color:#9C9C94}
@@ -180,7 +181,7 @@
   .m9 .capcol .n{font-family:'Space Mono',monospace; font-size:10.5px; color:#E0301E}
   .m9 .capcol p{font-size:12px; color:#555550; line-height:1.55}
   .m9 .capcol .lnk{font-family:'Space Mono',monospace; font-size:11.5px; font-weight:700; border-bottom:2px solid #0F0F0F; align-self:flex-start; padding-bottom:2px; margin-top:auto}
-  /* 10 KLARWERK — Bento mit Terminal-Zelle, Status */
+  /* 10 KLARWERK — Bento mit Kennzahlen-Panel, Status */
   .m10{background:#fff; color:#14171C; font-family:'Inter',sans-serif; padding:20px 26px 26px}
   .m10 .mnav{font-size:12.5px; font-weight:500}
   .m10 .logo{font-family:'Space Grotesk'; font-weight:700; font-size:14.5px}
@@ -189,8 +190,8 @@
   .m10 h4 em{font-style:normal; color:#3B5BFD}
   .m10 .bento{display:grid; grid-template-columns:1.3fr 1fr 1fr; grid-template-rows:auto auto; gap:10px; margin-top:22px}
   @media(max-width:640px){.m10 .bento{grid-template-columns:1fr}}
-  .m10 .term{grid-row:span 2; background:#14171C; border-radius:14px; padding:14px 16px; font-family:'Space Mono',monospace; font-size:10.5px; color:#7EE787; line-height:1.9}
-  .m10 .term .dim{color:#5B6472}
+  .m10 .term{grid-row:span 2; background:#14171C; border-radius:14px; padding:16px 18px; color:#9AA3B0; line-height:1.35; display:flex; flex-direction:column; justify-content:center; gap:12px}
+  .m10 .term b{display:block; font-family:'Space Grotesk'; font-size:20px; color:#fff; letter-spacing:-.03em}
   .m10 .cell{background:#F2F4F7; border-radius:14px; padding:13px 15px; font-size:11px; color:#5B6472}
   .m10 .cell b{display:block; font-family:'Space Grotesk'; font-size:18px; color:#14171C; letter-spacing:-.02em}
   .m10 .cell.hi{background:#3B5BFD; color:#C9D4FF}
@@ -322,20 +323,20 @@
   <section class="pack" id="p03"><aside>
     <div class="pack-num">03</div><h3>Kanzlei</h3>
     <p class="tag">Weißraum, Hairlines und ein tiefes Blau — Ordnung als Ästhetik.</p>
-    <p class="desc">Sichtbares Spaltenraster, Mono-Seitenindex, riesige Paragraphen-Marke als Wasserzeichen.</p>
+    <p class="desc">Sichtbares Spaltenraster, Mono-Seitenindex, Hairline-Rahmen als Wasserzeichen.</p>
     <div class="chips"><span>Steuerberatung</span><span>Recht</span><span>Beratung</span><span>Finanzen</span></div>
     <div class="dots"><i style="background:#F7F7F4"></i><i style="background:#101012"></i><i style="background:#1D3FBF"></i><i style="background:#D8D8D2"></i></div>
     <button class="strike-btn" data-target="p03">Streichen</button>
   </aside><div class="frame">
     <div class="bbar"><i></i><i></i><i></i><span class="url">roth-weber.pageblitz.de</span></div>
     <div class="mock m3">
-      <div class="para">§</div>
-      <div class="mnav"><span class="logo">Roth &amp; Weber</span><div class="links"><span>Leistungen</span><span>Kanzlei</span><span>Mandant werden</span></div></div>
-      <div class="idx">KANZLEI FÜR<br>STEUERRECHT<br>— 01 / 04</div>
+      <div class="para"></div>
+      <div class="mnav"><span class="logo">Roth &amp; Weber</span><div class="links"><span>Leistungen</span><span>Über uns</span><span>Gespräch anfragen</span></div></div>
+      <div class="idx">BERATUNG<br>KÖLN<br>— 01 / 04</div>
       <p class="mono">KÖLN · SEIT 1998</p>
-      <h4>Klarheit<br>in <span>Zahlen.</span></h4>
+      <h4>Klarheit,<br>die <span>bleibt.</span></h4>
       <div class="cols">
-        <div><b>250+</b>laufende Mandate</div>
+        <div><b>250+</b>betreute Unternehmen</div>
         <div><b>4 Partner</b>ein fester Ansprechpartner</div>
         <div><u>Erstgespräch anfragen →</u></div>
       </div>
@@ -480,7 +481,7 @@
   <section class="pack" id="p10"><aside>
     <div class="pack-num">10</div><h3>Klarwerk</h3>
     <p class="tag">Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.</p>
-    <p class="desc">Unregelmäßiges Bento mit Terminal-Zelle, Live-Status und Kennzahlen — Produkt-Ästhetik statt Broschüre.</p>
+    <p class="desc">Unregelmäßiges Bento mit Kennzahlen-Panel, Live-Status und Accent-Zellen — Produkt-Ästhetik statt Broschüre.</p>
     <div class="chips"><span>IT-Service</span><span>Agentur</span><span>Ingenieurbüro</span><span>Dienstleister</span></div>
     <div class="dots"><i style="background:#FFFFFF"></i><i style="background:#14171C"></i><i style="background:#3B5BFD"></i><i style="background:#F2F4F7"></i></div>
     <button class="strike-btn" data-target="p10">Streichen</button>
@@ -490,10 +491,10 @@
       <div class="mnav"><span class="logo">Nordwind IT</span><div class="links"><span>Leistungen</span><span>Referenzen</span><span>Support</span></div><span class="cta">Beratung</span></div>
       <h4>IT, die einfach <em>läuft.</em></h4>
       <div class="bento">
-        <div class="term"><span class="dim">$</span> backup --verify<br><span class="dim">→</span> 34/34 Systeme ok<br><span class="dim">$</span> uptime<br><span class="dim">→</span> 99,94 % (30 Tage)<br><span class="dim">$</span> tickets --offen<br><span class="dim">→</span> 0</div>
-        <div class="cell hi"><b>&lt; 2 h</b>Reaktionszeit werktags</div>
+        <div class="term"><b>4</b>Leistungen<br><b>★ 4,9</b>Google-Bewertung<br><b>44</b>Bewertungen</div>
+        <div class="cell hi"><b>unter 2 h</b>Rückmeldung werktags</div>
         <div class="cell"><b>80+</b>betreute Firmen in Kiel</div>
-        <div class="cell" style="grid-column:span 2"><span class="ok"></span>Alle Systeme betriebsbereit — zuletzt geprüft vor 4 Min.</div>
+        <div class="cell" style="grid-column:span 2"><span class="ok"></span>Heute für Sie da — Termine nach Vereinbarung</div>
       </div>
     </div>
   </div></section>

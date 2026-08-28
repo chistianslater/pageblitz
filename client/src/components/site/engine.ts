@@ -173,7 +173,7 @@ export type NavItem = {
 /**
  * Generische Nav-Beschriftungen für Sektions-Anker — nur Default. Die 14
  * Pack-Module haben je eigene Wortwahl (`FALLBACK_TITLES`: kanzlei
- * „Mandantenstimmen", landgut „Sortiment", gusto „Impressionen" …) und
+ * „Kundenstimmen", landgut „Sortiment", gusto „Impressionen" …) und
  * ersetzen die Default-Labels der Anker-Items über `applyNavLabels`, damit
  * die Startseiten-Navigation exakt so bleibt wie vor Plan B6 (Review-Fund
  * Task 4). Wie bisher ignoriert die Nav-Beschriftung Headline-Overrides

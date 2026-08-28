@@ -17,10 +17,9 @@ export const KLARWERK_CSS = `
 .pb-klarwerk a.pb-kw-hero-cta{display:inline-block;margin-top:28px;background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);padding:13px 26px;font-weight:600;font-size:14.5px;transition:opacity .15s}
 .pb-kw-hero-cta:hover,.pb-kw-hero-cta:focus-visible{opacity:.85}
 .pb-kw-bento{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;gap:16px;padding:40px 32px 64px;max-width:1176px}
-.pb-kw-term{grid-row:span 2;background:var(--pb-ink);border-radius:var(--pb-radius-card);padding:20px 22px;font-family:ui-monospace,SFMono-Regular,monospace;font-size:12.5px;line-height:2;color:#7EE787;overflow:hidden}
-.pb-kw-term .dim{color:var(--pb-muted)}
-.pb-kw-term div{white-space:pre-wrap;word-break:break-word}
-.pb-kw-cursor{display:inline-block;width:6px;height:1em;margin-left:4px;vertical-align:-.15em;background:#7EE787;opacity:0}
+.pb-kw-metric{grid-row:span 2;background:var(--pb-ink);border-radius:var(--pb-radius-card);padding:22px 24px;display:flex;flex-direction:column;justify-content:center;gap:18px;overflow:hidden}
+.pb-kw-metric div{font-size:13px;color:#9AA3B0}
+.pb-kw-metric b{display:block;font-family:var(--pb-font-display);font-weight:700;font-size:28px;letter-spacing:-.03em;color:#fff;margin-bottom:2px}
 .pb-kw-cell{background:var(--pb-surface);border-radius:var(--pb-radius-card);padding:18px 20px;font-size:13px;color:var(--pb-muted)}
 .pb-kw-cell b{display:block;font-family:var(--pb-font-display);font-weight:700;font-size:22px;color:var(--pb-ink);letter-spacing:-.02em;margin-bottom:4px}
 .pb-kw-cell.hi{background:var(--pb-accent);color:var(--pb-accent-contrast)}
@@ -65,26 +64,23 @@ export const KLARWERK_CSS = `
 .pb-kw-footer{border-top:1px solid var(--pb-line);padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-kw-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-kw-footer a:hover,.pb-kw-footer a:focus-visible{color:var(--pb-accent);border-color:var(--pb-accent)}
-.pb-kw-utility-sticky{position:sticky;bottom:14px;z-index:30;display:flex;align-items:center;gap:16px;width:max-content;max-width:calc(100% - 32px);margin:0 16px 16px auto;padding:8px 8px 8px 14px;background:var(--pb-ink);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-card);box-shadow:0 10px 30px rgba(0,0,0,.16);font-family:ui-monospace,SFMono-Regular,monospace;font-size:12px}
-.pb-kw-utility-sticky i{color:#7EE787;font-style:normal}
+.pb-kw-utility-sticky{position:sticky;bottom:14px;z-index:30;display:flex;align-items:center;gap:16px;width:max-content;max-width:calc(100% - 32px);margin:0 16px 16px auto;padding:8px 8px 8px 16px;background:var(--pb-ink);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-card);box-shadow:0 10px 30px rgba(0,0,0,.16);font-size:13px}
 .pb-klarwerk .pb-kw-utility-sticky a{padding:9px 13px;background:var(--pb-accent);color:var(--pb-accent-contrast);border-radius:var(--pb-radius-button);font-family:var(--pb-font-body);font-weight:600}
 @media(prefers-reduced-motion:no-preference){
-  .pb-kw-term div{animation:pb-kw-line .4s ease-out both}
-  .pb-kw-term div:nth-child(2){animation-delay:.12s}.pb-kw-term div:nth-child(3){animation-delay:.24s}
+  .pb-kw-metric div{animation:pb-kw-line .4s ease-out both}
+  .pb-kw-metric div:nth-child(2){animation-delay:.12s}.pb-kw-metric div:nth-child(3){animation-delay:.24s}
   .pb-kw-service .idx{animation:pb-kw-check .35s ease-out both}
   .pb-kw-status .dot{animation:pb-kw-status 1.2s ease-in-out 3}
-  .pb-kw-cursor{animation:pb-kw-cursor .65s steps(1,end) 4}
 }
 @keyframes pb-kw-line{from{transform:translateX(-10px);opacity:0}to{transform:none;opacity:1}}
 @keyframes pb-kw-check{from{clip-path:inset(0 100% 0 0);opacity:0}to{clip-path:inset(0);opacity:1}}
 @keyframes pb-kw-status{50%{transform:scale(1.45);opacity:.55}}
-@keyframes pb-kw-cursor{50%{opacity:1}}
 @media(pointer:fine){.pb-klarwerk .pb-kw-utility-sticky a:hover{filter:brightness(1.08)}}
 @media(prefers-reduced-motion:reduce){.pb-klarwerk *,.pb-klarwerk *::before,.pb-klarwerk *::after{animation:none!important;transition:none!important}}
 @media(max-width:840px){.pb-kw-nav-links{display:none}}
 @media(max-width:720px){
   .pb-kw-bento{grid-template-columns:1fr}
-  .pb-kw-term{grid-row:auto}
+  .pb-kw-metric{grid-row:auto}
   .pb-kw-status{grid-column:auto}
   .pb-kw-contact{grid-template-columns:1fr}
   .pb-kw-about-grid{grid-template-columns:1fr;gap:20px}

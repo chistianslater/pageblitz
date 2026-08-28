@@ -7,6 +7,7 @@ export const KLARWERK: PackConstitution = {
     "Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.",
   industries: [
     "it-service",
+    "it-dienstleister",
     "edv",
     "softwareentwicklung",
     "webdesign",
@@ -37,13 +38,13 @@ export const KLARWERK: PackConstitution = {
       name: "Tinte",
       hex: "#14171C",
       role: "ink",
-      usage: "Text, Terminal-Zellen-Grund.",
+      usage: "Text, Kennzahlen-Panel-Grund.",
     },
     {
       name: "Grau",
       hex: "#5B6472",
       role: "muted",
-      usage: "Sekundärtext, Terminal-Prompt-Dimming.",
+      usage: "Sekundärtext, gedämpfte Kennzahlen.",
     },
     {
       name: "Trennlinie",
@@ -90,10 +91,10 @@ export const KLARWERK: PackConstitution = {
     density: "normal",
   },
   signature: {
-    hero: "Nav mit gefülltem Accent-Button + Headline mit Akzentwort, gefolgt von unregelmäßigem Bento (hohe Terminal-Zelle mit $-Prompts/→-Ergebnissen, Accent-Kennzahl-Zelle, kleine Zelle, breite Status-Zelle mit grünem Punkt)",
+    hero: "Nav mit gefülltem Accent-Button + Headline mit Akzentwort, gefolgt von unregelmäßigem Bento (hohe Kennzahlen-Zelle, Accent-Kennzahl-Zelle, kleine Zelle, breite Status-Zelle mit Punkt)",
     decor: [
       "irregular-bento",
-      "terminal-cell",
+      "metric-panel",
       "status-dot",
       "accent-headline",
     ],
@@ -102,7 +103,7 @@ export const KLARWERK: PackConstitution = {
   },
   llmHints: {
     do: [
-      "klare, funktionale Sprache wie eine Produkt-UI",
+      "klare, funktionale Sprache",
       "konkrete Kennzahlen und Zeitangaben",
       "kurze, aktive Sätze",
     ],
@@ -110,6 +111,7 @@ export const KLARWERK: PackConstitution = {
       "Marketing-Superlative",
       "verspielte Emojis",
       "lange Schachtelsätze",
+      "Entwickler-Jargon (Deploy, Repo, Quellcode, Terminal, Tickets) — außer die Kategorie ist Softwareentwicklung",
     ],
   },
 };
