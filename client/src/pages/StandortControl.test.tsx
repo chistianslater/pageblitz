@@ -6,9 +6,7 @@ import { StandortControl } from "./StandortControl";
 describe("StandortControl", () => {
   test("hidden rendert nichts", () => {
     expect(
-      renderToStaticMarkup(
-        <StandortControl mode="hidden" onClick={() => {}} />
-      )
+      renderToStaticMarkup(<StandortControl mode="hidden" onClick={() => {}} />)
     ).toBe("");
   });
 

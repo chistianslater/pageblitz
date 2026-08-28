@@ -42,9 +42,7 @@ describe("geoFallbackMessage", () => {
     expect(geoFallbackMessage("unavailable")).toContain(
       "Standort nicht verfügbar"
     );
-    expect(geoFallbackMessage("timeout")).toContain(
-      "Standort nicht verfügbar"
-    );
+    expect(geoFallbackMessage("timeout")).toContain("Standort nicht verfügbar");
     expect(geoFallbackMessage("unsupported")).toContain(
       "Standort nicht verfügbar"
     );

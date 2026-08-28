@@ -98,10 +98,7 @@ export function placesLocationParams(
   return { location: `${lat},${lng}`, radius: radiusM };
 }
 
-export function originFromCoords(
-  lat?: number,
-  lng?: number
-): LatLng | null {
+export function originFromCoords(lat?: number, lng?: number): LatLng | null {
   if (!isValidLatLng(lat, lng)) return null;
   return { lat: lat as number, lng: lng as number };
 }
