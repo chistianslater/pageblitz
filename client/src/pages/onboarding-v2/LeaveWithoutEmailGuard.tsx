@@ -218,7 +218,9 @@ export function LeaveWithoutEmailGuard({
       return;
     }
     allowBackRef.current = true;
-    window.history.back();
+    // Ohne Referrer (Studio direkt geöffnet) zur Startseite, sonst zurück
+    // zur Herkunft — history.back() allein bleibt auf der Guard-URL.
+    window.location.assign(document.referrer || "/");
   };
 
   return (

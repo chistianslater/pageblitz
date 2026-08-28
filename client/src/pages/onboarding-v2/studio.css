@@ -2083,6 +2083,7 @@
   flex-direction: column;
   gap: 0.85rem;
   font-family: var(--st-ui, "Space Grotesk", system-ui, sans-serif);
+  box-shadow: 0 1.25rem 2.5rem rgba(29, 26, 23, 0.22);
 }
 .pb-studio-leave-modal-card h2 {
   margin: 0;
