@@ -6,6 +6,8 @@ import {
   addonContentDone,
   extraEditIntent,
   isAddOnKey,
+  isGatedSectionAddOn,
+  withAddOnEnabled,
 } from "./addonEditors";
 
 const base: WebsiteDataV2 = {
@@ -24,6 +26,13 @@ describe("ADDON_EDITORS", () => {
       );
       expect(ADDON_EDITORS[key].previewAnchor.length).toBeGreaterThan(0);
     }
+  });
+
+  test("Preisliste-Anker ist #preise, nicht ein erfundener Slug", () => {
+    expect(ADDON_EDITORS.pricelist.previewAnchor).toBe("preise");
+    expect(ADDON_EDITORS.menu.previewAnchor).toBe("speisekarte");
+    expect(ADDON_EDITORS.gallery.previewAnchor).toBe("galerie");
+    expect(ADDON_EDITORS.team.previewAnchor).toBe("team");
   });
 
   test("Galerie und Speisekarte/Preisliste öffnen Inhaltspanels, nicht den Kauf-Toggle", () => {
@@ -70,6 +79,30 @@ describe("isAddOnKey", () => {
     expect(isAddOnKey("booking")).toBe(true);
     expect(isAddOnKey("photos")).toBe(false);
     expect(isAddOnKey("")).toBe(false);
+  });
+});
+
+describe("withAddOnEnabled", () => {
+  test("schaltet nur den gewünschten Key ein und übernimmt den Rest", () => {
+    expect(withAddOnEnabled({ gallery: true }, "menu")).toEqual({
+      contactForm: false,
+      gallery: true,
+      menu: true,
+      pricelist: false,
+      aiChat: false,
+      booking: false,
+      team: false,
+      subpages: false,
+    });
+  });
+
+  test("isGatedSectionAddOn kennt nur Sektions-Extras", () => {
+    expect(isGatedSectionAddOn("menu")).toBe(true);
+    expect(isGatedSectionAddOn("gallery")).toBe(true);
+    expect(isGatedSectionAddOn("pricelist")).toBe(true);
+    expect(isGatedSectionAddOn("team")).toBe(true);
+    expect(isGatedSectionAddOn("aiChat")).toBe(false);
+    expect(isGatedSectionAddOn("subpages")).toBe(false);
   });
 });
 

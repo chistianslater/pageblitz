@@ -4,9 +4,15 @@
  * das Panel, in dem der Inhalt gepflegt wird (Galerie → Fotos, Speisekarte →
  * Angebot, Team → Extras-Editor, …).
  */
-import { ADDON_KEYS, type AddOnKey } from "../pricing";
+import {
+  ADDON_KEYS,
+  sanitizeAddOns,
+  type AddOnFlags,
+  type AddOnKey,
+} from "../pricing";
 import type { WebsiteDataV2 } from "../siteContract/types";
 import type { ChecklistItemId } from "./checklist";
+import type { AddonsPatch } from "./patches";
 
 export interface AddonEditorSpec {
   /** Checklisten-Panel, das den Inhalt dieses Extras trägt. */
@@ -36,7 +42,8 @@ export const ADDON_EDITORS: Record<AddOnKey, AddonEditorSpec> = {
   },
   pricelist: {
     panel: "offer",
-    previewAnchor: "preisliste",
+    // Muss SECTION_ANCHORS.pricelist in engine.ts treffen (`#preise`).
+    previewAnchor: "preise",
     editorDomId: null,
     hint: "Leistungen und Preise pflegen",
   },
@@ -74,6 +81,49 @@ export const ADDON_EDITORS: Record<AddOnKey, AddonEditorSpec> = {
 
 export function isAddOnKey(value: string): value is AddOnKey {
   return (ADDON_KEYS as readonly string[]).includes(value);
+}
+
+/**
+ * Sektions-Extras, die engine.ts erst rendert, wenn `doc.addOns.<key>`
+ * true ist. Inhalt (Speisekarte, Galerie, …) und Flag liefen bisher
+ * auseinander: Speichern im Extra-Editor schrieb nur den Inhalt, sichtbar
+ * wurde die Sektion erst nach Extras-Übersicht „Speichern".
+ */
+export const GATED_SECTION_ADDONS = [
+  "gallery",
+  "menu",
+  "pricelist",
+  "team",
+] as const satisfies readonly AddOnKey[];
+
+export type GatedSectionAddOn = (typeof GATED_SECTION_ADDONS)[number];
+
+export function isGatedSectionAddOn(key: AddOnKey): key is GatedSectionAddOn {
+  return (GATED_SECTION_ADDONS as readonly string[]).includes(key);
+}
+
+/**
+ * Vollständiger AddonsPatch, der `key` einschaltet und alle anderen Flags
+ * vom aktuellen Server-Stand übernimmt. Fürs Studio: Extra-Editor öffnen
+ * oder Inhalt speichern soll die Sektion sofort in der Vorschau zeigen,
+ * ohne den Umweg über die Extras-Übersicht.
+ */
+export function withAddOnEnabled(
+  current: AddOnFlags,
+  key: AddOnKey
+): AddonsPatch {
+  const next = sanitizeAddOns(current);
+  return {
+    contactForm: next.contactForm === true,
+    gallery: next.gallery === true,
+    menu: next.menu === true,
+    pricelist: next.pricelist === true,
+    aiChat: next.aiChat === true,
+    booking: next.booking === true,
+    team: next.team === true,
+    subpages: next.subpages === true,
+    [key]: true,
+  };
 }
 
 export type ExtraEditIntent =

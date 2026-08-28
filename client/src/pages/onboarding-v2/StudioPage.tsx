@@ -419,6 +419,7 @@ export default function StudioPage({ token }: { token: string }) {
             <OfferPanel
               token={token}
               doc={state.doc}
+              addOns={state.addOns}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
+import { ADDON_EDITORS } from "../../../../shared/onboardingV2/addonEditors";
 import {
   ADDON_GATED_SECTION_TYPES,
   applyNavLabels,
@@ -158,6 +159,13 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       pricelist: "pricelist",
       team: "team",
     });
+  });
+
+  test("Extra-Editor-Anker treffen die echten Sektions-IDs (sonst scrollt die Vorschau ins Leere)", () => {
+    expect(ADDON_EDITORS.gallery.previewAnchor).toBe(SECTION_ANCHORS.gallery);
+    expect(ADDON_EDITORS.menu.previewAnchor).toBe(SECTION_ANCHORS.menu);
+    expect(ADDON_EDITORS.pricelist.previewAnchor).toBe(SECTION_ANCHORS.pricelist);
+    expect(ADDON_EDITORS.team.previewAnchor).toBe(SECTION_ANCHORS.team);
   });
 
   test("ohne addOns: gebuchte Sektionstypen werden ausgeblendet, freie bleiben (Dokument bleibt unverändert)", () => {

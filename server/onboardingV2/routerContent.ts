@@ -198,7 +198,19 @@ export const contentProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      return persistDoc(input.token, loaded, applyImages(doc, input.patch));
+      // Wie updateTeam/updatePages: Flag folgt Inhalt, sonst bleibt die
+      // Galerie unsichtbar (engine.ts `visibleSections`), bis jemand in
+      // der Extras-Übersicht extra „Speichern" klickt.
+      let base = doc;
+      if (
+        input.patch.gallery &&
+        input.patch.gallery.length > 0 &&
+        doc.addOns?.gallery !== true
+      ) {
+        await commitAddOnFlags(loaded, { gallery: true });
+        base = applyAddOnFlags(doc, { gallery: true });
+      }
+      return persistDoc(input.token, loaded, applyImages(base, input.patch));
     }),
 
   updateTexts: publicProcedure
@@ -307,7 +319,19 @@ export const contentProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      return persistDoc(input.token, loaded, applyOffer(doc, input.offer));
+      // Speisekarte/Preisliste sind Add-on-Sektionen (engine.ts). Ohne
+      // `addOns.menu`/`addOns.pricelist` blendet die Vorschau sie aus —
+      // Speichern im Extra-Editor muss das Flag mitziehen, analog zu
+      // updateTeam/updatePages. Leistungen (`services`) bleiben frei.
+      let base = doc;
+      if (input.offer.mode === "menu" || input.offer.mode === "pricelist") {
+        const key = input.offer.mode;
+        if (doc.addOns?.[key] !== true) {
+          await commitAddOnFlags(loaded, { [key]: true });
+          base = applyAddOnFlags(doc, { [key]: true });
+        }
+      }
+      return persistDoc(input.token, loaded, applyOffer(base, input.offer));
     }),
 
   /**
