@@ -22,7 +22,7 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
   about: "Über uns",
   gallery: "Galerie",
-  testimonials: "Mandantenstimmen",
+  testimonials: "Kundenstimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Speisekarte",
@@ -407,7 +407,7 @@ const KanzleiPage: React.FC<{
       </nav>
       {navList.length > 0 && (
         <aside className="pb-kz-section-index" aria-label="Seitenindex">
-          <span>Fachgebiete</span>
+          <span>Übersicht</span>
           <div>
             {navList.map((item, i) => (
               <a
@@ -423,9 +423,7 @@ const KanzleiPage: React.FC<{
       )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
-          <div className="pb-kz-watermark" aria-hidden="true">
-            §
-          </div>
+          <div className="pb-kz-watermark" aria-hidden="true" />
           {idx.length > 0 && (
             <div className="pb-kz-idx">
               {idx.map((line, i) => (

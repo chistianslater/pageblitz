@@ -56,14 +56,12 @@ function formatRating(rating: number): string {
 interface BentoFact {
   value: string;
   label: string;
-  cmd: string;
-  out: string;
 }
 
 /**
- * Kennzahlen für Terminal-Zeilen und Bento-Zellen — aus services/google
- * abgeleitet. Fehlt eine Datenquelle, fällt der jeweilige Fact weg
- * (Terminal-Zeile UND zugehörige Zelle werden weggelassen).
+ * Kennzahlen für das Bento-Band — aus services/google abgeleitet.
+ * Fehlt eine Datenquelle, fällt der jeweilige Fact weg (Kennzahlen-Zelle
+ * UND zugehörige Fläche werden weggelassen).
  */
 function buildFacts(
   data: WebsiteDataV2,
@@ -75,8 +73,6 @@ function buildFacts(
     facts.push({
       value: String(count),
       label: count === 1 ? "Leistung" : "Leistungen",
-      cmd: "leistungen --list",
-      out: `${count} aktiv`,
     });
   }
   if (data.google) {
@@ -84,14 +80,10 @@ function buildFacts(
     facts.push({
       value: `★ ${rating}`,
       label: "Google-Bewertung",
-      cmd: "google --rating",
-      out: `★ ${rating}`,
     });
     facts.push({
       value: String(data.google.reviewCount),
       label: "Bewertungen",
-      cmd: "google --reviews",
-      out: `${data.google.reviewCount} Bewertungen`,
     });
   }
   return facts;
@@ -413,20 +405,18 @@ const KlarwerkPage: React.FC<{
           )}
         </section>
       )}
-      {/* Bento-Band (Terminal + Kennzahlen) nur auf der Startseite (Q1, B7
+      {/* Bento-Band (Kennzahlen) nur auf der Startseite (Q1, B7
           Welle 0): auf Unterseiten muss der pageHeader das erste Element
-          nach der Nav sein — Terminal-Zeilen wie „2 aktiv" vor dem
-          Seitentitel wirken wie ein Bug. */}
+          nach der Nav sein — Kennzahlen vor dem Seitentitel wirken wie
+          ein Bug. */}
       {hero && (
         <div className="pb-kw-bento">
           {facts.length > 0 && (
-            <div className="pb-kw-term">
+            <div className="pb-kw-metric">
               {facts.map(f => (
-                <div key={f.cmd}>
-                  <span className="dim">$</span> {f.cmd}
-                  <br />
-                  <span className="dim">→</span> {f.out}
-                  <span className="pb-kw-cursor" aria-hidden="true" />
+                <div key={f.label}>
+                  <b>{f.value}</b>
+                  {f.label}
                 </div>
               ))}
             </div>
@@ -445,15 +435,13 @@ const KlarwerkPage: React.FC<{
           )}
           <div className="pb-kw-status">
             <span className="dot" aria-hidden="true" />
-            Alle Systeme betriebsbereit
+            Heute für Sie da
           </div>
         </div>
       )}
       {hero?.ctaText && (
         <aside className="pb-kw-utility-sticky" aria-label="Schnellzugriff">
-          <span>
-            <i aria-hidden="true">✓</i> Status: bereit
-          </span>
+          <span>Direkt anfragen</span>
           <a href={hero.ctaHref ?? "#kontakt"}>
             {hero.ctaText} <span aria-hidden="true">→</span>
           </a>

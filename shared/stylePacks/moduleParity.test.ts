@@ -131,7 +131,7 @@ describe("Style-Pack-Registrierung — pageHeader + navItems auf Unterseiten (Pl
  */
 describe("Pack-eigene Nav-Labels bleiben erhalten (applyNavLabels)", () => {
   const samples: Array<[Parameters<typeof getFixture>[0], string, string]> = [
-    ["kanzlei", "Mandantenstimmen", "Bewertungen"],
+    ["kanzlei", "Kundenstimmen", "Bewertungen"],
     ["landgut", "Sortiment", "Leistungen"],
     ["gusto", "Impressionen", "Galerie"],
   ];

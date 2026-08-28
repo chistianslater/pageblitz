@@ -9,7 +9,8 @@ export const KANZLEI_CSS = `
 .pb-kz-nav-links a:focus-visible{color:var(--pb-accent)}
 .pb-kz-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:4px}
 .pb-kz-idx{position:absolute;right:32px;top:86px;font-family:var(--pb-font-utility);font-size:11px;color:var(--pb-accent);text-align:right;line-height:1.9}
-.pb-kz-watermark{position:absolute;right:20px;bottom:-40px;font-family:var(--pb-font-display);font-size:200px;color:var(--pb-accent);opacity:.07;line-height:1;pointer-events:none}
+.pb-kz-watermark{position:absolute;right:28px;bottom:-12px;width:168px;height:168px;border:1px solid var(--pb-accent);opacity:.14;pointer-events:none}
+.pb-kz-watermark::after{content:"";position:absolute;inset:18px;border:1px solid var(--pb-accent)}
 .pb-kz-eyebrow{font-family:var(--pb-font-utility);font-size:11px;letter-spacing:.1em;color:var(--pb-accent);margin-bottom:14px;text-transform:uppercase}
 .pb-kz-hero{position:relative;padding:64px 32px 48px;overflow:hidden}
 .pb-kz-hero h1{font-family:var(--pb-font-display);font-weight:600;font-size:var(--pb-hero-size);letter-spacing:-.035em;line-height:1.0;max-width:14ch}
