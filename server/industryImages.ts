@@ -18,6 +18,7 @@ export function getIndustryImages(
   businessName: string = "",
   industryKey?: string
 ): IndustryImageSet {
+  if (industryKey === "hotel") industryKey = "hospitality";
   if (industryKey && INDUSTRY_IMAGES[industryKey]) {
     return INDUSTRY_IMAGES[industryKey];
   }

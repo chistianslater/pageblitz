@@ -1,31 +1,17 @@
 import { describe, expect, test } from "vitest";
-import { getPackPool, FALLBACK_PACK } from "./index";
+import { getPackPool, packMatchesCategory } from "./index";
 import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
 
 /**
  * Branchen-Vollabdeckung: JEDE in server/seo/landingPages.ts registrierte
  * SEO-Branche muss über getPackPool() eine echte Style-Pack-Zuordnung
- * bekommen — nicht nur zufällig den leeren-Pool-Fallback.
+ * bekommen — der erste Eintrag muss die Kategorie direkt über `industries`
+ * treffen, nicht nur den leeren-Pool-Fallback auffüllen.
  *
- * FALLBACK_PACK ("klarwerk") ist gleichzeitig ein reguläres, eigenständiges
- * Pack mit eigenen `industries`-Einträgen. Das macht "echt vs. Fallback"
- * für klarwerk-Treffer mehrdeutig — deshalb die explizite Ausnahmenliste
- * unten: Branchen, deren korrekter Primär-Pack bewusst klarwerk ist
- * (generische Dienstleistungen, die zur "aufgeräumt wie gutes Werkzeug"-
- * Ästhetik passen — neben den bereits vorhandenen Einträgen
- * hausmeisterservice/umzug/dienstleistung).
- *
- * Seit Designrichtungen statt 1:1-Branchen-Templates kommuniziert werden,
- * enthält jeder Pool kompatible Nachbarn. Klarwerk darf daher als Nachbar
- * auftauchen; entscheidend ist der ERSTE Eintrag: Er muss der echte direkte
- * Branchenmatch sein (außer bei den dokumentierten Klarwerk-Primärfällen).
+ * FALLBACK_PACK ("werkbank") ist gleichzeitig ein reguläres Pack. Deshalb
+ * reicht „erster Eintrag != Fallback" nicht: Handwerk/Reinigung matchen
+ * werkbank zu Recht. Entscheidend ist packMatchesCategory().
  */
-const KLARWERK_PRIMARY_EXCEPTIONS = new Set([
-  "reinigung",
-  "hausreinigung",
-  "reisebuero",
-]);
-
 describe("Style-Pack-Registrierung — Branchen-Vollabdeckung (SEO_INDUSTRIES)", () => {
   const industryKeys = Object.keys(SEO_INDUSTRIES);
 
@@ -34,28 +20,13 @@ describe("Style-Pack-Registrierung — Branchen-Vollabdeckung (SEO_INDUSTRIES)",
   });
 
   for (const key of industryKeys) {
-    const isKlarwerkPrimary = KLARWERK_PRIMARY_EXCEPTIONS.has(key);
-
-    test(
-      isKlarwerkPrimary
-        ? `${key}: dokumentierte klarwerk-Primär-Zuordnung`
-        : `${key}: echte Nicht-Fallback-Zuordnung`,
-      () => {
-        const pool = getPackPool(key);
-        expect(pool.length).toBeGreaterThanOrEqual(3);
-
-        if (isKlarwerkPrimary) {
-          expect(pool[0]).toBe(FALLBACK_PACK);
-        } else {
-          expect(pool[0]).not.toBe(FALLBACK_PACK);
-        }
-      }
-    );
+    test(`${key}: echter direkter Branchenmatch`, () => {
+      const pool = getPackPool(key);
+      expect(pool.length).toBeGreaterThanOrEqual(3);
+      expect(
+        packMatchesCategory(pool[0], key),
+        `${key} → ${pool[0]} muss ein direkter Industry-Treffer sein`
+      ).toBe(true);
+    });
   }
-
-  test("Ausnahmenliste enthält nur Branchen, die tatsächlich in SEO_INDUSTRIES existieren", () => {
-    for (const key of KLARWERK_PRIMARY_EXCEPTIONS) {
-      expect(industryKeys).toContain(key);
-    }
-  });
 });

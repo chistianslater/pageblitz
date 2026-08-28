@@ -12,6 +12,12 @@ export const GUSTO: PackConstitution = {
     "bar",
     "catering",
     "bistro",
+    "cafe",
+    "kaffeehaus",
+    "pizzeria",
+    "pizza",
+    "imbiss",
+    "kneipe",
   ],
   // Gastro-Pack (Restaurant/Bar/Bistro/Catering) — Angebot-Panel startet im
   // Speisekarten-Modus (B4c Task 7, siehe PackConstitution.prefersMenu).

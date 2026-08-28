@@ -246,9 +246,13 @@ export const CATEGORY_GROUPS: Array<{
     icon: "🏨",
     categories: [
       "Hotel",
+      "Hotel garni",
+      "Boutique-Hotel",
+      "Boardinghouse",
       "Motel",
       "Pension",
       "Gästehaus",
+      "Gasthof",
       "Hostel",
       "Ferienwohnung",
       "Resort",

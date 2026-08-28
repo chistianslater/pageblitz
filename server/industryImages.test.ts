@@ -14,4 +14,18 @@ describe("buildStockFallbackImages", () => {
     expect(images.hero).toMatch(/^https?:\/\//);
     expect(images.gallery?.length).toBeGreaterThanOrEqual(3);
   });
+
+  test("Hotel / lodging nutzt Hospitality-Fotos, nicht das Default-Stock", () => {
+    const byCategory = buildStockFallbackImages("Hotel", "Seehotel");
+    const byKey = buildStockFallbackImages("Hotel", "Seehotel", "hotel");
+    const restaurant = buildStockFallbackImages(
+      "Restaurant",
+      "Trattoria",
+      "restaurant"
+    );
+    expect(byCategory.hero).toMatch(/^https:\/\/images\.unsplash\.com\//);
+    expect(byKey.hero).toBe(byCategory.hero);
+    expect(byCategory.hero).not.toBe(restaurant.hero);
+    expect(byCategory.gallery?.length).toBeGreaterThanOrEqual(3);
+  });
 });

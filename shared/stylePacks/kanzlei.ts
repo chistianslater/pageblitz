@@ -17,6 +17,7 @@ export const KANZLEI: PackConstitution = {
     "anlageberatung",
     "treuhand",
     "wirtschaftsberatung",
+    "beratung",
   ],
   theme: "light",
   palette: [

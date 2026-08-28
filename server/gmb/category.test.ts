@@ -42,6 +42,25 @@ describe("resolveGmbCategory", () => {
     );
   });
 
+  it("mappt Hotel- und Beherbergungs-Types, lodging hinter spezifischeren Types", () => {
+    expect(resolveGmbCategory({ types: ["hotel"] })).toBe("Hotel");
+    expect(resolveGmbCategory({ types: ["lodging"] })).toBe(
+      "Hotel & Unterkunft"
+    );
+    expect(
+      resolveGmbCategory({
+        types: ["lodging", "hotel", "point_of_interest", "establishment"],
+      })
+    ).toBe("Hotel");
+    expect(resolveGmbCategory({ types: ["bed_and_breakfast"] })).toBe(
+      "Pension"
+    );
+    expect(resolveGmbCategory({ types: ["extended_stay_hotel"] })).toBe(
+      "Boardinghouse"
+    );
+    expect(resolveGmbCategory({ types: ["guest_house"] })).toBe("Gästehaus");
+  });
+
   it("überspringt unbekannte spezifische Types und nimmt den nächsten gemappten", () => {
     expect(
       resolveGmbCategory({
@@ -63,6 +82,22 @@ describe("resolveGmbCategory", () => {
     expect(resolveGmbCategory({})).toBeNull();
     expect(resolveGmbCategory({ types: [] })).toBeNull();
     expect(resolveGmbCategory({ primaryTypeDisplayName: "  " })).toBeNull();
+  });
+
+  it("bevorzugt spezifische Beherbergungs-Types vor generischem lodging", () => {
+    expect(
+      resolveGmbCategory({
+        types: ["lodging", "hotel", "point_of_interest", "establishment"],
+      })
+    ).toBe("Hotel");
+    expect(
+      resolveGmbCategory({
+        types: ["lodging", "bed_and_breakfast", "establishment"],
+      })
+    ).toBe("Pension");
+    expect(resolveGmbCategory({ types: ["lodging"] })).toBe(
+      "Hotel & Unterkunft"
+    );
   });
 
   it("GENERIC_GMB_TYPES enthält die bekannten Catch-all-Types", () => {

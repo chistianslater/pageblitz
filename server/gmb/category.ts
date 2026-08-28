@@ -102,7 +102,15 @@ export const GMB_TYPE_LABELS_DE: Record<string, string> = {
   laundry: "Wäscherei & Textilreinigung",
   lawyer: "Rechtsanwaltskanzlei",
   locksmith: "Schlüsseldienst",
-  lodging: "Pension & Unterkunft",
+  lodging: "Hotel & Unterkunft",
+  hotel: "Hotel",
+  bed_and_breakfast: "Pension",
+  guest_house: "Gästehaus",
+  hostel: "Hostel",
+  motel: "Motel",
+  resort_hotel: "Resort",
+  extended_stay_hotel: "Boardinghouse",
+  inn: "Gasthof",
   manufacturer: "Hersteller",
   marketing_agency: "Marketingagentur",
   massage: "Massagepraxis",
@@ -147,6 +155,21 @@ export type ResolveGmbCategoryInput = {
 };
 
 /**
+ * Spezifische Beherbergungs-Types vor dem generischen `lodging` —
+ * Google liefert oft `["lodging", "hotel", ...]` (generisch zuerst).
+ */
+const PREFERRED_LODGING_TYPES = [
+  "hotel",
+  "extended_stay_hotel",
+  "resort_hotel",
+  "motel",
+  "bed_and_breakfast",
+  "guest_house",
+  "hostel",
+  "inn",
+] as const;
+
+/**
  * Kategorie-Kette: primaryTypeDisplayName → DE-Mapping spezifischer types
  * → `null`. Niemals Firmenname oder Suchbegriff.
  */
@@ -158,7 +181,14 @@ export function resolveGmbCategory(
     return displayName;
   }
 
-  for (const type of input.types ?? []) {
+  const types = input.types ?? [];
+  for (const preferred of PREFERRED_LODGING_TYPES) {
+    if (!types.includes(preferred)) continue;
+    const label = GMB_TYPE_LABELS_DE[preferred];
+    if (label) return label;
+  }
+
+  for (const type of types) {
     if (GENERIC_GMB_TYPES.has(type)) continue;
     const label = GMB_TYPE_LABELS_DE[type];
     if (label) return label;

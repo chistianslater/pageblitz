@@ -14,6 +14,14 @@ export const PATINA: PackConstitution = {
     "hofladen",
     "naturkosmetik",
     "pilates",
+    "hotel",
+    "boutique-hotel",
+    "boutiquehotel",
+    "boardinghouse",
+    "lodging",
+    "resort",
+    "unterkunft",
+    "lodge",
   ],
   theme: "light",
   palette: [
@@ -99,13 +107,15 @@ export const PATINA: PackConstitution = {
   llmHints: {
     do: [
       "warme, einladende Sprache in der Sie-Form",
-      "sinnliche, konkrete Naturbezüge statt Marketing-Floskeln",
+      "sinnliche, konkrete Bezüge zu Ort, Material und Atmosphäre statt Marketing-Floskeln",
       "kurze, ruhige Sätze wie ein persönliches Journal",
+      "Wortwahl an die tatsächliche Kategorie koppeln (Hotel, Pension, Praxis, Hofladen, Wellness)",
     ],
     dont: [
       "Heilversprechen oder medizinische Diagnosen",
       "Superlative und Ausrufezeichen",
       "Emojis",
+      "Heilpraktiker, Osteopathie, Massagepraxis — außer die Kategorie ist tatsächlich Heilkunde oder Wellness",
     ],
   },
 };
