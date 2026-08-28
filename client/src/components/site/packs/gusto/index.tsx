@@ -17,6 +17,7 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { GUSTO_CSS } from "./css";
+import { isLodgingCategory } from "@shared/stylePacks";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -97,8 +98,44 @@ function SectionKicker({
   );
 }
 
+/**
+ * Gusto ist Gastro-Pack, wird aber auch Hotels angeboten (Matching:
+ * Patina/Landgut/Gusto). Hardcodierte Tisch-/Küchen-Sätze wirken dort
+ * falsch — deshalb eine Lodging-Stimme neben der Restaurant-Stimme.
+ */
+interface GustoChrome {
+  servicesKicker: string;
+  aboutCaption: string;
+  galleryKicker: string;
+  contactKicker: string;
+  contactCta: string;
+  heroContact: string;
+}
+
+function gustoChrome(category: string | undefined): GustoChrome {
+  if (isLodgingCategory(category)) {
+    return {
+      servicesKicker: "Für Ihren Aufenthalt",
+      aboutCaption: "Ein Haus. Ein Gastgeber. Viele Geschichten.",
+      galleryKicker: "Einblicke ins Haus",
+      contactKicker: "Wir erwarten Sie",
+      contactCta: "Jetzt anfragen",
+      heroContact: "Kontakt",
+    };
+  }
+  return {
+    servicesKicker: "Aus der Küche",
+    aboutCaption: "Ein Tisch. Eine Küche. Viele Geschichten.",
+    galleryKicker: "Ein Abend in Bildern",
+    contactKicker: "Ihr Tisch wartet",
+    contactCta: "Jetzt reservieren",
+    heroContact: "Reservieren",
+  };
+}
+
 function renderSection(
-  section: SectionV2 | PageSectionOf<"pageHeader">
+  section: SectionV2 | PageSectionOf<"pageHeader">,
+  chrome: GustoChrome
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
@@ -111,7 +148,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-gu-section-head">
-            <SectionKicker index="01">Aus der Küche</SectionKicker>
+            <SectionKicker index="01">{chrome.servicesKicker}</SectionKicker>
             <h2>{section.headline}</h2>
             {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
           </header>
@@ -147,7 +184,7 @@ function renderSection(
               <figure>
                 <img src={section.imageUrl} alt="" loading="lazy" />
                 <figcaption>
-                  Ein Tisch. Eine Küche. Viele Geschichten.
+                  {chrome.aboutCaption}
                 </figcaption>
               </figure>
             )}
@@ -171,7 +208,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-gu-section-head">
-            <SectionKicker index="03">Ein Abend in Bildern</SectionKicker>
+            <SectionKicker index="03">{chrome.galleryKicker}</SectionKicker>
             <h2>{title}</h2>
           </header>
           <div className="pb-gu-gallery">
@@ -223,11 +260,11 @@ function renderSection(
           key={section.type}
         >
           <div className="pb-gu-reservation-title">
-            <SectionKicker index="05">Ihr Tisch wartet</SectionKicker>
+            <SectionKicker index="05">{chrome.contactKicker}</SectionKicker>
             <h2>{title}</h2>
             {section.phone && (
               <a className="pb-gu-cta" href={`tel:${section.phone}`}>
-                Jetzt reservieren
+                {chrome.contactCta}
               </a>
             )}
           </div>
@@ -400,6 +437,7 @@ const GustoPage: React.FC<{
     navItems ?? buildNavItems(data, { pathname: "/", basePath }),
     FALLBACK_TITLES
   );
+  const chrome = gustoChrome(data.businessCategory);
   const half = Math.ceil(navList.length / 2);
   const navLeft = navList.slice(0, half);
   const navRight = navList.slice(half);
@@ -494,7 +532,7 @@ const GustoPage: React.FC<{
             )}
             <nav className="pb-gu-quick" aria-label="Schnellzugriff">
               {menu && <a href={`#${SECTION_ANCHORS.menu}`}>Speisekarte</a>}
-              <a href="#kontakt">Reservieren</a>
+              <a href="#kontakt">{chrome.heroContact}</a>
               <a
                 href={
                   routeQuery
@@ -511,7 +549,7 @@ const GustoPage: React.FC<{
         )}
         {sections
           .filter(s => s.type !== "hero")
-          .map(section => renderSection(section))}
+          .map(section => renderSection(section, chrome))}
         <footer className="pb-gu-footer">
           <p>
             © {year} {data.businessName}

@@ -77,4 +77,37 @@ describe("Pack gusto", () => {
   test("genau eine h1", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
   });
+
+  test("Restaurant-Stimme bleibt bei Trattoria: Tisch reservieren", () => {
+    expect(html).toContain("Ihr Tisch wartet");
+    expect(html).toContain("Jetzt reservieren");
+    expect(html).not.toContain("Wir erwarten Sie");
+  });
+
+  test("Hotel auf Gusto: Kontakt-Kicker ohne Tisch-Reservierung", () => {
+    const base = getFixture("gusto", "full");
+    const hotel = {
+      ...base,
+      businessCategory: "Hotel",
+      businessName: "Hotel Lucia",
+      sections: [
+        ...base.sections.filter(s => s.type !== "services"),
+        {
+          type: "services" as const,
+          headline: "Für Gäste",
+          items: [{ title: "Zimmer" }],
+        },
+      ],
+    };
+    const hotelHtml = renderToStaticMarkup(
+      <SiteRenderer data={hotel} now={NOW} />
+    );
+    expect(hotelHtml).toContain("Wir erwarten Sie");
+    expect(hotelHtml).toContain("Jetzt anfragen");
+    expect(hotelHtml).toContain("Für Ihren Aufenthalt");
+    expect(hotelHtml).toContain("Einblicke ins Haus");
+    expect(hotelHtml).not.toContain("Ihr Tisch wartet");
+    expect(hotelHtml).not.toContain("Jetzt reservieren");
+    expect(hotelHtml).not.toContain("Aus der Küche");
+  });
 });
