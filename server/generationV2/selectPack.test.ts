@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { getPackPool, FALLBACK_PACK } from "../../shared/stylePacks";
+import { getPackPool } from "../../shared/stylePacks";
 
 describe("selectPack", () => {
   test("übergibt getPackPool(category) exakt an die Rotation", async () => {
@@ -40,7 +40,7 @@ describe("selectPack", () => {
       "default",
       getPackPool("unbekannte-branche")
     );
-    expect(result).toBe(FALLBACK_PACK);
+    expect(result).toBe(getPackPool("unbekannte-branche")[0]);
 
     vi.doUnmock("../db");
     vi.resetModules();

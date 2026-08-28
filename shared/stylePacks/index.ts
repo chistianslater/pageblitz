@@ -76,6 +76,16 @@ const CONFIDENT_SCORE = 100;
 const HOSPITALITY_FALLBACK: readonly PackId[] = ["patina", "landgut", "gusto"];
 
 /**
+ * Unbekannte/unsichere Branche: branchenneutrale Allround-Richtungen,
+ * die optisch fast überall tragen — nicht Handwerker-Packs (werkbank/zunft).
+ */
+export const NEUTRAL_FALLBACK: readonly PackId[] = [
+  "patina",
+  "fundament",
+  "morgenlicht",
+];
+
+/**
  * Deutsche Umlaute/ß → ASCII (ae/oe/ue/ss), danach restliche Akzente per NFD
  * abstreifen (Café → cafe). `&` fällt weg, damit "B&B" zu "bb" wird.
  */
@@ -267,6 +277,7 @@ function allowInPool(id: PackId, direct: PackId[]): boolean {
 
 function expandPool(direct: PackId[]): PackId[] {
   const expanded = [...direct];
+  if (expanded.length >= MIN_DIRECTION_POOL_SIZE) return expanded;
   for (const primary of direct) {
     for (const neighbor of DIRECTION_NEIGHBORS[primary] ?? []) {
       if (!allowInPool(neighbor, direct)) continue;
@@ -313,7 +324,7 @@ export function getPackPool(categoryKey: string): PackId[] {
     base = base.filter(id => !SELECTIVE_PACKS.has(id));
   }
   if (base.length === 0) {
-    base = hospitality ? [...HOSPITALITY_FALLBACK] : [FALLBACK_PACK];
+    base = hospitality ? [...HOSPITALITY_FALLBACK] : [...NEUTRAL_FALLBACK];
   }
 
   return expandPool(base);

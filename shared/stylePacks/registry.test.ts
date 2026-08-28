@@ -18,20 +18,23 @@ describe("stylePacks registry", () => {
     expect(c.palette.some(p => p.role === "accent")).toBe(true);
     expect(c.signature.decor.length).toBeGreaterThanOrEqual(2);
   });
-  test("unbekannte Branche fällt auf FALLBACK_PACK zurück", () => {
-    expect(getPackPool("unbekannte-branche")[0]).toBe(FALLBACK_PACK);
-    expect(getPackPool("unbekannte-branche")).toHaveLength(3);
+  test("unbekannte Branche fällt auf branchenneutrale Allround-Packs zurück", () => {
+    expect(getPackPool("unbekannte-branche")).toEqual([
+      "patina",
+      "fundament",
+      "morgenlicht",
+    ]);
   });
   test("FALLBACK_PACK ist werkbank, nicht klarwerk (kein IT-Generic)", () => {
     expect(FALLBACK_PACK).toBe("werkbank");
-    expect(getPackPool("unbekannte-branche")[0]).toBe("werkbank");
     expect(getPackPool("unbekannte-branche")[0]).not.toBe("klarwerk");
-    expect(getPackPool("Dienstleistung")[0]).toBe("werkbank");
     expect(getPackPool("Dienstleistung")[0]).not.toBe("klarwerk");
     const unknownTop = getPackPool("unbekannte-branche").slice(0, 3);
     for (const id of OFFICE_IT_PACKS) {
       expect(unknownTop).not.toContain(id);
     }
+    expect(unknownTop).not.toContain("werkbank");
+    expect(unknownTop).not.toContain("zunft");
   });
   test("Schreinerei landet bei werkbank", () => {
     expect(getPackPool("schreinerei")[0]).toBe("werkbank");

@@ -65,9 +65,13 @@ describe("Pack-Matching — Hospitality, Ranking, selektive Templates", () => {
     expect(top3("Handwerker")).not.toContain("klarwerk");
   });
 
-  test("unbekannte Branche: Fallback werkbank, Top-3 ohne neue Templates", () => {
+  test("unbekannte Branche: neutrale Allround-Packs, keine Handwerker-/neuen Templates", () => {
     expect(FALLBACK_PACK).toBe("werkbank");
-    expect(getPackPool("unbekannte-branche")[0]).toBe("werkbank");
+    expect(top3("unbekannte-branche")).toEqual([
+      "patina",
+      "fundament",
+      "morgenlicht",
+    ]);
     for (const id of SELECTIVE) {
       expect(top3("unbekannte-branche")).not.toContain(id);
     }
@@ -75,10 +79,16 @@ describe("Pack-Matching — Hospitality, Ranking, selektive Templates", () => {
 
   test("unsicherer Match füllt nicht Klarwerk/Kanzlei/Atelier als Top-3", () => {
     const pool = top3("irgendwas-unspezifisches-xyz");
-    expect(pool[0]).toBe("werkbank");
+    expect(pool).toEqual(["patina", "fundament", "morgenlicht"]);
     for (const id of SELECTIVE) {
       expect(pool).not.toContain(id);
     }
+  });
+
+  test("Hotel-Top-3 enthält weder werkbank noch zunft", () => {
+    const pool = top3("Hotel");
+    expect(pool).not.toContain("werkbank");
+    expect(pool).not.toContain("zunft");
   });
 
   test("IT-Service darf klarwerk als Primärmatch", () => {
