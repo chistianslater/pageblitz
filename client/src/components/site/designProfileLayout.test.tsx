@@ -71,6 +71,8 @@ describe("Designprofil-Layout in allen Packs", () => {
     expect(DESIGN_PROFILE_CSS).toContain(
       ":not([data-pb-hero-mobile])[data-pb-hero="
     );
+    expect(DESIGN_PROFILE_CSS).toContain('[data-pb-hero="image-first"]');
+    expect(DESIGN_PROFILE_CSS).toContain('[data-pb-hero-mobile="image-first"]');
   });
 
   test("persistiertes Mobil-Profil landet als eigenes Attribut", () => {
@@ -80,7 +82,7 @@ describe("Designprofil-Layout in allen Packs", () => {
           ...getFixture("werkbank", "full"),
           designProfile: {
             ...PROFILE,
-            heroLayoutMobile: "compact",
+            heroLayoutMobile: "image-first",
             servicesLayoutMobile: "list",
           },
         }}
@@ -88,7 +90,7 @@ describe("Designprofil-Layout in allen Packs", () => {
     );
     const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
     expect(root).toContain('data-pb-hero="centered"');
-    expect(root).toContain('data-pb-hero-mobile="compact"');
+    expect(root).toContain('data-pb-hero-mobile="image-first"');
     expect(root).toContain('data-pb-services-mobile="list"');
     expect(root).not.toContain("data-pb-about-mobile=");
   });

@@ -33,6 +33,16 @@ const FIELD_SHORT: Record<PreviewLayoutField, string> = {
   galleryLayout: "Galerie",
 };
 
+const LEGACY_LAYOUT_VALUES: Partial<
+  Record<PreviewLayoutField, readonly string[]>
+> = {
+  heroLayout: ["compact"],
+};
+
+const LEGACY_LAYOUT_LABELS: Record<string, string> = {
+  compact: "Kompakt",
+};
+
 function overlayEmpty(overlay: LayoutOverlay | undefined): boolean {
   return !overlay || Object.keys(overlay).length === 0;
 }
@@ -43,10 +53,11 @@ export function parseLayoutOverlay(raw: unknown): LayoutOverlay {
   const overlay: LayoutOverlay = {};
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const value = source[section.field];
-    if (
-      typeof value === "string" &&
-      section.options.some(option => option.value === value)
-    ) {
+    const allowed = [
+      ...section.options.map(option => option.value),
+      ...(LEGACY_LAYOUT_VALUES[section.field] ?? []),
+    ];
+    if (typeof value === "string" && allowed.includes(value)) {
       overlay[section.field] = value;
     }
   }
@@ -88,7 +99,9 @@ export function describeLayoutOverlay(
     const value = overlay[section.field];
     if (!value) return [];
     const label =
-      section.options.find(option => option.value === value)?.label ?? value;
+      section.options.find(option => option.value === value)?.label ??
+      LEGACY_LAYOUT_LABELS[value] ??
+      value;
     return [`${FIELD_SHORT[section.field]}: ${label}`];
   }).join(" · ");
 }

@@ -32,6 +32,8 @@ export interface LayoutChromeOptions {
 export interface PreviewLayoutOption {
   value: string;
   label: string;
+  /** Smartphone-Label, wenn die Komposition anders gelesen wird. */
+  mobileLabel?: string;
 }
 
 export interface PreviewLayoutSection {
@@ -55,9 +57,9 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     title: "Hero-Layout",
     buttonLabel: "Layout",
     options: [
-      { value: "split", label: "Bild & Text" },
+      { value: "split", label: "Bild & Text", mobileLabel: "Text oben" },
       { value: "centered", label: "Zentriert" },
-      { value: "compact", label: "Kompakt" },
+      { value: "image-first", label: "Bild oben" },
     ],
   },
   {
@@ -79,8 +81,8 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     title: "Über-uns-Layout",
     buttonLabel: "Layout",
     options: [
-      { value: "image-left", label: "Bild links" },
-      { value: "image-right", label: "Bild rechts" },
+      { value: "image-left", label: "Bild links", mobileLabel: "Bild oben" },
+      { value: "image-right", label: "Bild rechts", mobileLabel: "Bild unten" },
     ],
   },
   {
@@ -209,6 +211,15 @@ export function chromeViewportTop(
   );
 }
 
+export function layoutOptionLabel(
+  option: PreviewLayoutOption,
+  viewport: LayoutViewport = "desktop"
+): string {
+  return viewport === "mobile" && option.mobileLabel
+    ? option.mobileLabel
+    : option.label;
+}
+
 export function layoutChromeTitle(
   section: PreviewLayoutSection,
   viewport: LayoutViewport = "desktop"
@@ -227,7 +238,7 @@ export function renderLayoutChromeHtml(
       option =>
         `<button type="button" data-pb-layout-option="${option.value}" aria-pressed="${
           option.value === current ? "true" : "false"
-        }">${escapeHtml(option.label)}</button>`
+        }">${escapeHtml(layoutOptionLabel(option, viewport))}</button>`
     )
     .join("");
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
@@ -263,7 +274,7 @@ function currentValue(
   return profile[field];
 }
 
-function syncChromeTitles(doc: Document): void {
+function syncChromeCopy(doc: Document): void {
   const viewport = viewportOf(doc);
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const chrome = doc.querySelector(
@@ -277,6 +288,13 @@ function syncChromeTitles(doc: Document): void {
     chrome
       .querySelector(".pb-preview-layout-menu")
       ?.setAttribute("aria-label", title);
+    chrome
+      .querySelectorAll<HTMLButtonElement>("[data-pb-layout-option]")
+      .forEach(button => {
+        const value = button.getAttribute("data-pb-layout-option");
+        const option = section.options.find(item => item.value === value);
+        if (option) button.textContent = layoutOptionLabel(option, viewport);
+      });
   }
 }
 
@@ -411,7 +429,7 @@ export function enablePreviewLayoutChrome(
       applyProfileAttrs(site, workingProfiles.get(doc) ?? resolved);
     }
     syncPressed(doc, field => currentOfDoc(doc, field));
-    syncChromeTitles(doc);
+    syncChromeCopy(doc);
   };
 
   if (doc.documentElement.hasAttribute(CHROME_MARK)) {

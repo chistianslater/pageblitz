@@ -39,6 +39,9 @@ describe("PREVIEW_LAYOUT_SECTIONS", () => {
       expect(section.options.length).toBeGreaterThanOrEqual(2);
       expect(section.buttonLabel).toBe("Layout");
     }
+    expect(
+      PREVIEW_LAYOUT_SECTIONS[0]!.options.map(option => option.value)
+    ).toEqual(["split", "centered", "image-first"]);
   });
 });
 
@@ -52,6 +55,8 @@ describe("renderLayoutChromeHtml", () => {
     expect(html).not.toContain("(Mobil)");
     expect(html).toContain("Bild &amp; Text");
     expect(html).toContain("Zentriert");
+    expect(html).toContain("Bild oben");
+    expect(html).not.toContain("Kompakt");
     expect(html).toContain(
       'data-pb-layout-option="centered" aria-pressed="true"'
     );
@@ -79,6 +84,19 @@ describe("renderLayoutChromeHtml", () => {
       "mobile"
     );
     expect(html).toContain("Hero-Layout (Mobil)");
+    expect(html).toContain("Text oben");
+    expect(html).not.toContain("Bild &amp; Text");
+  });
+
+  test("benennt Über-uns auf dem Smartphone nach oben/unten", () => {
+    const html = renderLayoutChromeHtml(
+      PREVIEW_LAYOUT_SECTIONS[2]!,
+      "image-left",
+      "mobile"
+    );
+    expect(html).toContain("Bild oben");
+    expect(html).toContain("Bild unten");
+    expect(html).not.toContain("Bild links");
   });
 });
 
