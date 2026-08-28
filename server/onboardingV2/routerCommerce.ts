@@ -30,6 +30,7 @@ import {
 } from "./state";
 import type { AddOnFlags } from "../../shared/pricing";
 import { createStudioCheckoutSession } from "./checkout";
+import { recordStudioFunnelByToken } from "./funnel";
 
 /** Nicht buchbare Extras (Finding I1) — dieselbe Menge wie BOOKABLE_ADDON_KEYS, nur invertiert. */
 const LOCKED_ADDON_KEYS = ADDON_KEYS.filter(
@@ -103,6 +104,7 @@ export const commerceProcedures = {
 
       return persistDoc(input.token, loaded, next, {
         extra: { hasLegalPages: true },
+        funnelStep: "step_legal",
       });
     }),
 
@@ -154,7 +156,7 @@ export const commerceProcedures = {
         const progress = await mergeStudioProgress(loaded.website.id, {
           addonsReviewed: true,
         });
-        return buildState(
+        const state = await buildState(
           input.token,
           {
             ...loaded,
@@ -170,12 +172,24 @@ export const commerceProcedures = {
           },
           progress
         );
+        await recordStudioFunnelByToken(
+          input.token,
+          loaded.website.id,
+          "step_addons"
+        );
+        return state;
       }
 
       const progress = await mergeStudioProgress(loaded.website.id, {
         addonsReviewed: true,
       });
-      return buildState(input.token, loaded, progress);
+      const state = await buildState(input.token, loaded, progress);
+      await recordStudioFunnelByToken(
+        input.token,
+        loaded.website.id,
+        "step_addons"
+      );
+      return state;
     }),
 
   /**
@@ -258,6 +272,11 @@ export const commerceProcedures = {
           ? { marketingConsent: true, marketingConsentAt: Date.now() }
           : {}),
       });
+      await recordStudioFunnelByToken(
+        input.token,
+        loaded.website.id,
+        "email_captured"
+      );
 
       if (!emailChanged) {
         return buildState(input.token, {
@@ -335,6 +354,11 @@ export const commerceProcedures = {
         completedAt: Date.now(),
         updatedAt: Date.now(),
       });
+      await recordStudioFunnelByToken(
+        input.token,
+        state.websiteId,
+        "checkout_started"
+      );
 
       return { url };
     }),

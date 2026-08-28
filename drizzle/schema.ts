@@ -254,6 +254,32 @@ export const onboardingEvents = mysqlTable("onboarding_events", {
 export type OnboardingEvent = typeof onboardingEvents.$inferSelect;
 export type InsertOnboardingEvent = typeof onboardingEvents.$inferInsert;
 
+/**
+ * Studio-/Signup-Funnel (Landing → Studio-Checkliste → Checkout → Paid).
+ * sessionKey = sha256(Preview-Token) oder anonymes 64-Hex; kein PII.
+ * UNIQUE(sessionKey, step) hält das Tracking idempotent.
+ */
+export const studioFunnelEvents = mysqlTable(
+  "studio_funnel_events",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    websiteId: int("websiteId"),
+    sessionKey: varchar("sessionKey", { length: 64 }).notNull(),
+    step: varchar("step", { length: 40 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    sessionStepUnique: uniqueIndex("studio_funnel_session_step").on(
+      table.sessionKey,
+      table.step
+    ),
+    websiteLookup: index("studio_funnel_website").on(table.websiteId),
+    stepLookup: index("studio_funnel_step").on(table.step),
+  })
+);
+export type StudioFunnelEvent = typeof studioFunnelEvents.$inferSelect;
+export type InsertStudioFunnelEvent = typeof studioFunnelEvents.$inferInsert;
+
 export const outreachEmails = mysqlTable("outreach_emails", {
   id: int("id").autoincrement().primaryKey(),
   businessId: int("businessId").notNull(),

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { and, eq, inArray, lte, sql } from "drizzle-orm";
 import { getDb, deleteWebsite } from "../db";
+import { recordStudioFunnelEvent } from "../onboardingV2/funnel";
 import {
   generatedWebsites,
   lifecycleEmails,
@@ -658,7 +659,14 @@ export async function processExpiredReservations(): Promise<{
           });
       }
 
-      // 3. captureStatus auf 'abandoned' setzen, dann Website löschen
+      // 3. Funnel: Preview abgelaufen (vor dem Löschen, Token/Id noch da)
+      await recordStudioFunnelEvent({
+        websiteId: website.id,
+        token: website.previewToken,
+        step: "abandoned_preview",
+      });
+
+      // 4. captureStatus auf 'abandoned' setzen, dann Website löschen
       await db
         .update(generatedWebsites)
         .set({ captureStatus: "abandoned" })

@@ -20,6 +20,14 @@ vi.mock("../db", async importOriginal => {
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
+vi.mock("./funnel", async importOriginal => {
+  const actual = await importOriginal<typeof import("./funnel")>();
+  return {
+    ...actual,
+    recordStudioFunnelEvent: vi.fn().mockResolvedValue(true),
+    recordStudioFunnelByToken: vi.fn().mockResolvedValue(undefined),
+  };
+});
 vi.mock("../onboardingUpload", () => ({
   uploadPhoto: vi
     .fn()
@@ -35,6 +43,7 @@ vi.mock("../_core/llm", () => ({ invokeLLM: vi.fn() }));
 import { appRouter } from "../routers";
 import * as db from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
+import * as funnel from "./funnel";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { invokeLLM } from "../_core/llm";
 import { resetSuggestQuotaForTests } from "./suggest";
@@ -250,6 +259,11 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
     );
     expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
     expect((s.doc!.sections[0] as any).imageUrl).toBe("https://x/h.jpg");
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_photos"
+    );
   });
 
   test("updateTexts markiert texts als erledigt", async () => {
@@ -263,6 +277,11 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
       expect.objectContaining({
         studioProgress: expect.objectContaining({ textsReviewed: true }),
       })
+    );
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_texts"
     );
   });
 
@@ -288,6 +307,11 @@ describe("onboardingV2.setImages / updateTexts / updateOffer", () => {
     });
     expect(s.doc!.sections.map(x => x.type)).toContain("menu");
     expect(s.doc!.sections.map(x => x.type)).not.toContain("services");
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_offer"
+    );
   });
 });
 

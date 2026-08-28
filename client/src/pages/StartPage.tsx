@@ -19,6 +19,7 @@ import {
   textLink,
   PRICE_YEARLY,
 } from "@/components/landing/primitives";
+import { useTrackFunnelStep } from "@/pages/onboarding-v2/studioFunnel";
 
 type Step = "choice" | "manual" | "gmb";
 
@@ -137,6 +138,7 @@ function CategoryPicker({
 export default function StartPage() {
   const { user, isAuthenticated } = useAuth();
   const [step, setStep] = useState<Step>("choice");
+  useTrackFunnelStep("landing_start");
 
   // Manual step
   const [businessName, setBusinessName] = useState("");

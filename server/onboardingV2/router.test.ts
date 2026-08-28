@@ -30,6 +30,15 @@ vi.mock("../generationV2/runJob", async importOriginal => {
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
+vi.mock("./funnel", async importOriginal => {
+  const actual = await importOriginal<typeof import("./funnel")>();
+  return {
+    ...actual,
+    recordStudioFunnelEvent: vi.fn().mockResolvedValue(true),
+    recordStudioFunnelByToken: vi.fn().mockResolvedValue(undefined),
+    trackStudioFunnelFromClient: vi.fn().mockResolvedValue({ ok: true }),
+  };
+});
 
 import { appRouter } from "../routers";
 import * as db from "../db";
@@ -38,6 +47,7 @@ import {
   runWebsiteGenerationV2Job,
 } from "../generationV2/runJob";
 import { invalidateSsrCache } from "../ssr/routes";
+import * as funnel from "./funnel";
 const mockedDb = vi.mocked(db);
 
 const ctx = (): TrpcContext => ({
@@ -546,6 +556,11 @@ describe("onboardingV2.selectStylePack", () => {
     expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
     expect(s.stylePackId).toBe("kanzlei");
     expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_style"
+    );
   });
   test("bloßes Ansehen einer Richtung persistiert Pack, aber bestätigt den Gate nicht", async () => {
     const s = await appRouter
@@ -558,6 +573,7 @@ describe("onboardingV2.selectStylePack", () => {
     expect(mockedDb.updateWebsite).toHaveBeenCalled();
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
     expect(s.checklist.find(i => i.id === "style")?.status).toBe("open");
+    expect(funnel.recordStudioFunnelByToken).not.toHaveBeenCalled();
   });
   test("unbekanntes Pack → BAD_REQUEST; ohne v2-Dokument → BAD_REQUEST", async () => {
     await expect(

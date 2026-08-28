@@ -198,7 +198,9 @@ export const contentProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      return persistDoc(input.token, loaded, applyImages(doc, input.patch));
+      return persistDoc(input.token, loaded, applyImages(doc, input.patch), {
+        funnelStep: "step_photos",
+      });
     }),
 
   updateTexts: publicProcedure
@@ -208,6 +210,7 @@ export const contentProcedures = {
       const doc = await requireDoc(loaded);
       return persistDoc(input.token, loaded, applyTexts(doc, input.patch), {
         progress: { textsReviewed: true },
+        funnelStep: "step_texts",
       });
     }),
 
@@ -307,7 +310,9 @@ export const contentProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      return persistDoc(input.token, loaded, applyOffer(doc, input.offer));
+      return persistDoc(input.token, loaded, applyOffer(doc, input.offer), {
+        funnelStep: "step_offer",
+      });
     }),
 
   /**

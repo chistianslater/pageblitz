@@ -40,10 +40,12 @@ import {
   type WizardStep,
 } from "./studioLogic";
 import { resolveStudioLocation, withStudioParams } from "./studioUrl";
+import { useTrackFunnelStep } from "./studioFunnel";
 import "./studio.css";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
+  useTrackFunnelStep("studio_opened", token);
   const initialLocation = resolveStudioLocation(window.location.search);
   const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(
     () => initialLocation.panel

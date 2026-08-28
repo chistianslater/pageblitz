@@ -51,12 +51,21 @@ vi.mock("./checkout", () => ({
     totalCents: 2380,
   }),
 }));
+vi.mock("./funnel", async importOriginal => {
+  const actual = await importOriginal<typeof import("./funnel")>();
+  return {
+    ...actual,
+    recordStudioFunnelEvent: vi.fn().mockResolvedValue(true),
+    recordStudioFunnelByToken: vi.fn().mockResolvedValue(undefined),
+  };
+});
 
 import { appRouter } from "../routers";
 import * as db from "../db";
 import * as lifecycleScheduler from "../_core/lifecycleScheduler";
 import * as checkoutModule from "./checkout";
 import * as stripeAddons from "../stripeAddons";
+import * as funnel from "./funnel";
 const mockedStripeAddons = vi.mocked(stripeAddons);
 const mockedDb = vi.mocked(db);
 const mockedLifecycle = vi.mocked(lifecycleScheduler);
@@ -187,6 +196,11 @@ describe("onboardingV2.updateLegal", () => {
       expect.objectContaining({ hasLegalPages: true })
     );
     expect(s.checklist.find(i => i.id === "legal")?.status).toBe("done");
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_legal"
+    );
   });
 
   test("PLZ ungültig → BAD_REQUEST, kein Write", async () => {
@@ -262,6 +276,11 @@ describe("onboardingV2.updateAddons", () => {
     expect(s.addOns.contactForm).toBe(true);
     expect(s.doc!.features?.contactForm).toBe(true);
     expect(s.checklist.find(i => i.id === "addons")?.status).toBe("done");
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "step_addons"
+    );
   });
 
   test("aiChat=true → OK, Dokument features.aiChat=true (seit Plan B3 buchbar)", async () => {
@@ -799,6 +818,11 @@ describe("onboardingV2.setCustomerEmail", () => {
       42,
       "kunde@x.de"
     );
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "email_captured"
+    );
   });
 
   test("marketingConsent → Zeitstempel gesetzt", async () => {
@@ -973,6 +997,11 @@ describe("onboardingV2.createCheckout", () => {
         completedAt: expect.any(Number),
         updatedAt: expect.any(Number),
       })
+    );
+    expect(funnel.recordStudioFunnelByToken).toHaveBeenCalledWith(
+      "tok",
+      42,
+      "checkout_started"
     );
   });
 
