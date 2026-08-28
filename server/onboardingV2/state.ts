@@ -24,6 +24,8 @@ import {
   type ChecklistItem,
   type StudioProgress,
 } from "../../shared/onboardingV2/checklist";
+import type { StudioFunnelStep } from "../../shared/onboardingV2/funnel";
+import { recordStudioFunnelByToken } from "./funnel";
 import type { AddOnFlags } from "../../shared/pricing";
 import type { OnboardingResponse } from "../../drizzle/schema";
 import type {
@@ -371,6 +373,8 @@ export async function persistDoc(
   opts: {
     progress?: StudioProgress;
     extra?: Partial<InsertGeneratedWebsite>;
+    /** Checkliste/Panel gespeichert — einmal pro (session, step). */
+    funnelStep?: StudioFunnelStep;
   } = {}
 ): Promise<StudioState> {
   assertV2SafeWrite(loaded.website.websiteData, next);
@@ -382,7 +386,7 @@ export async function persistDoc(
     ? await mergeStudioProgress(loaded.website.id, opts.progress)
     : undefined;
   invalidateSsrCache(loaded.website.slug);
-  return buildState(
+  const state = await buildState(
     token,
     {
       ...loaded,
@@ -395,4 +399,8 @@ export async function persistDoc(
     },
     progress
   );
+  if (opts.funnelStep) {
+    await recordStudioFunnelByToken(token, loaded.website.id, opts.funnelStep);
+  }
+  return state;
 }

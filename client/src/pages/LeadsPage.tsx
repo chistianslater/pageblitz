@@ -41,6 +41,10 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  STUDIO_FUNNEL_LABELS,
+  type FunnelStepStat,
+} from "@shared/onboardingV2/funnel";
 
 // ── Funnel Step Config ──────────────────────────────────
 const FUNNEL_STEPS = [
@@ -147,7 +151,7 @@ export default function LeadsPage() {
         </h1>
         <p className="text-muted-foreground mt-1">
           Externe Leads aus der Landing Page – von E-Mail-Erfassung bis zur
-          Conversion.
+          Conversion. Darunter der Studio-Funnel: wo steigen Besucher aus?
         </p>
       </div>
 
@@ -281,6 +285,9 @@ export default function LeadsPage() {
 
       {/* Step-Level Funnel */}
       <StepFunnel />
+
+      {/* Studio-Funnel (Landing → Checkliste → Checkout) */}
+      <StudioFunnel />
 
       {/* Leads Table */}
       <Card className="bg-card border-border">
@@ -663,6 +670,118 @@ function StepFunnel() {
               </div>
             );
           })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function dropLabel(step: FunnelStepStat): string | null {
+  if (step.dropOffRate == null || step.dropOffCount <= 0) return null;
+  return `−${Math.round(step.dropOffRate * 100)}%`;
+}
+
+function StudioFunnel() {
+  const { data, isLoading } = trpc.stats.studioFunnel.useQuery();
+
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardContent className="pt-6 flex justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const steps = data?.steps ?? [];
+  const abandoned = data?.abandoned;
+  const hasAny = steps.some(s => s.count > 0) || (abandoned?.count ?? 0) > 0;
+
+  if (!hasAny) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Studio-Funnel
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-6 text-sm">
+            Noch keine Studio-Funnel-Daten. Counts entstehen bei /start, im
+            Studio (Checkliste) und beim Checkout — ohne extra PII.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxCount = Math.max(...steps.map(s => s.count), abandoned?.count ?? 0, 1);
+
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          Studio-Funnel
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Distinct Sessions je Schritt (Token-Hash oder anonymes Session-Key).
+          Drop-off gegen den vorherigen Schritt.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {steps.map(step => {
+            const pct = maxCount > 0 ? (step.count / maxCount) * 100 : 0;
+            const drop = dropLabel(step);
+            return (
+              <div key={step.step} className="flex items-center gap-3">
+                <div className="w-36 text-xs text-right text-muted-foreground truncate shrink-0">
+                  {step.label || STUDIO_FUNNEL_LABELS[step.step]}
+                </div>
+                <div className="flex-1 h-7 bg-muted/30 rounded-sm overflow-hidden relative">
+                  <div
+                    className="h-full rounded-sm transition-all duration-500"
+                    style={{
+                      width: `${pct}%`,
+                      backgroundColor:
+                        pct > 60 ? "#22c55e" : pct > 30 ? "#f59e0b" : "#ef4444",
+                    }}
+                  />
+                  <span className="absolute inset-0 flex items-center px-2 text-xs font-semibold">
+                    {step.count}
+                    {step.dropOffCount > 0 ? (
+                      <span className="ml-2 font-normal text-[10px] text-muted-foreground">
+                        −{step.dropOffCount}
+                      </span>
+                    ) : null}
+                  </span>
+                </div>
+                {drop ? (
+                  <span className="text-xs text-red-400 w-14 text-right shrink-0">
+                    {drop}
+                  </span>
+                ) : (
+                  <span className="w-14 shrink-0" />
+                )}
+              </div>
+            );
+          })}
+          {abandoned && abandoned.count > 0 && (
+            <div className="flex items-center gap-3 pt-2 border-t border-border">
+              <div className="w-36 text-xs text-right text-red-400 truncate shrink-0">
+                {abandoned.label}
+              </div>
+              <div className="flex-1 h-7 bg-red-500/10 rounded-sm overflow-hidden relative">
+                <span className="absolute inset-0 flex items-center px-2 text-xs font-semibold">
+                  {abandoned.count}
+                </span>
+              </div>
+              <span className="w-14 shrink-0" />
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

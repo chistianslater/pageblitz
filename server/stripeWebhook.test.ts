@@ -57,6 +57,9 @@ vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 vi.mock("./_core/lifecycleScheduler", () => ({
   cancelLifecycleEmails: vi.fn(),
 }));
+vi.mock("./onboardingV2/funnel", () => ({
+  recordStudioFunnelEvent: vi.fn().mockResolvedValue(true),
+}));
 
 import * as db from "./db";
 import { provisionUmamiForWebsite } from "./umamiProvisioning";

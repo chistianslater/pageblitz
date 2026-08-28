@@ -20,6 +20,11 @@ import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
 import { contentProcedures } from "./routerContent";
 import { commerceProcedures } from "./routerCommerce";
 import { aiProcedures } from "./routerAi";
+import { trackStudioFunnelFromClient } from "./funnel";
+import {
+  isStudioFunnelPublicStep,
+  STUDIO_FUNNEL_PUBLIC_STEPS,
+} from "../../shared/onboardingV2/funnel";
 
 /**
  * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
@@ -197,7 +202,9 @@ const coreProcedures = {
         input.token,
         loaded,
         next,
-        input.confirm ? { progress: { styleConfirmed: true } } : undefined
+        input.confirm
+          ? { progress: { styleConfirmed: true }, funnelStep: "step_style" }
+          : undefined
       );
     }),
 };
@@ -207,4 +214,31 @@ export const onboardingV2Router = router({
   ...contentProcedures,
   ...commerceProcedures,
   ...aiProcedures,
+
+  /**
+   * Client-Hook für Funnel-Steps. Ohne PII: Token wird serverseitig gehasht,
+   * Landing vor der Website sendet nur ein anonymes 64-Hex. Ungültiger Token
+   * oder unbekannter Step → no-op (Tracking darf die UX nicht stören).
+   * paid_or_live ist absichtlich nicht öffentlich.
+   */
+  trackFunnel: publicProcedure
+    .input(
+      z.object({
+        step: z.enum(STUDIO_FUNNEL_PUBLIC_STEPS),
+        token: z.string().min(1).max(100).optional(),
+        sessionKey: z
+          .string()
+          .regex(/^[a-f0-9]{64}$/)
+          .optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      if (!input.token && !input.sessionKey) {
+        return { ok: false as const };
+      }
+      if (!isStudioFunnelPublicStep(input.step)) {
+        return { ok: false as const };
+      }
+      return trackStudioFunnelFromClient(input);
+    }),
 });

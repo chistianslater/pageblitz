@@ -13,9 +13,13 @@ vi.mock("./ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 vi.mock("./_core/lifecycleScheduler", () => ({
   cancelLifecycleEmails: vi.fn(),
 }));
+vi.mock("./onboardingV2/funnel", () => ({
+  recordStudioFunnelEvent: vi.fn().mockResolvedValue(true),
+}));
 
 import { invalidateSsrCache } from "./ssr/routes";
 import { cancelLifecycleEmails } from "./_core/lifecycleScheduler";
+import { recordStudioFunnelEvent } from "./onboardingV2/funnel";
 const mockedInvalidateSsrCache = vi.mocked(invalidateSsrCache);
 const mockedCancelLifecycleEmails = vi.mocked(cancelLifecycleEmails);
 
@@ -110,6 +114,12 @@ describe("handleCheckoutCompleted", () => {
         addOnBooking: false,
         addOnTeam: false,
         addOnSubpages: false,
+      })
+    );
+    expect(recordStudioFunnelEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        step: "paid_or_live",
       })
     );
   });
@@ -496,6 +506,12 @@ describe("handleWebsiteActivation (customer.subscription.updated → Website akt
       captureStatus: "converted",
     });
     expect(deps.provisionUmami).toHaveBeenCalledWith(42);
+    expect(recordStudioFunnelEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        step: "paid_or_live",
+      })
+    );
     // Reihenfolge: erst aktiv schalten, dann registrieren
     const updateOrder = (deps.updateWebsite as any).mock.invocationCallOrder[0];
     const provisionOrder = (deps.provisionUmami as any).mock
@@ -511,6 +527,7 @@ describe("handleWebsiteActivation (customer.subscription.updated → Website akt
     expect(result).toBe("skipped");
     expect(deps.updateWebsite).not.toHaveBeenCalled();
     expect(deps.provisionUmami).not.toHaveBeenCalled();
+    expect(recordStudioFunnelEvent).not.toHaveBeenCalled();
   });
 
   test("Provisionierung wirft → Aktivierung bleibt bestehen, Handler wirft nicht", async () => {

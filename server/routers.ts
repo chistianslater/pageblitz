@@ -101,6 +101,7 @@ import { shouldRequireAgeGate } from "@shared/ageGate";
 import { searchStockPhotos } from "./_core/stockPhotos";
 import { invalidateSsrCache } from "./ssr/routes";
 import { onboardingV2Router } from "./onboardingV2/router";
+import { getStudioFunnelStats } from "./onboardingV2/funnel";
 import { applyFeatureFlags } from "./onboardingV2/applyFeatures";
 import { applyChatConfig, applyContactFormConfig } from "./customerAddonConfig";
 import {
@@ -261,6 +262,9 @@ export const appRouter = router({
     }),
     stepFunnel: adminProcedure.query(async () => {
       return getStepFunnelStats();
+    }),
+    studioFunnel: adminProcedure.query(async () => {
+      return getStudioFunnelStats();
     }),
     cleanup: adminProcedure
       .input(

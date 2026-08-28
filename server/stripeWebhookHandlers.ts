@@ -13,6 +13,7 @@ import { addOnsFromSubscriptionItems } from "./stripeAddons";
 import { ADDON_KEYS, type AddOnFlags, type AddOnKey } from "../shared/pricing";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type * as Db from "./db";
+import { recordStudioFunnelEvent } from "./onboardingV2/funnel";
 
 /**
  * Nur die db-Funktionen, die `handleCheckoutCompleted` tatsächlich braucht —
@@ -180,6 +181,11 @@ export async function handleCheckoutCompleted(
     addOnTeam: !!addOns.team,
     addOnSubpages: !!addOns.subpages,
   });
+  await recordStudioFunnelEvent({
+    websiteId,
+    token: website.previewToken,
+    step: "paid_or_live",
+  });
 
   // v2-Dokument: alle Add-on-Flags als `features`/`addOns` spiegeln. Eigener
   // try/catch: Subscription und "sold"-Status stehen an dieser Stelle
@@ -316,6 +322,11 @@ export async function handleWebsiteActivation(
   await deps.updateWebsite(websiteId, {
     status: "active",
     captureStatus: "converted",
+  });
+  await recordStudioFunnelEvent({
+    websiteId,
+    token: website.previewToken,
+    step: "paid_or_live",
   });
   try {
     await deps.provisionUmami(websiteId);
