@@ -15,6 +15,8 @@ import { motionSafeScrollBehavior } from "@/lib/motion";
 import {
   ADDON_EDITORS,
   extraEditIntent,
+  isGatedSectionAddOn,
+  withAddOnEnabled,
 } from "@shared/onboardingV2/addonEditors";
 import type {
   AddonsPatch,
@@ -385,10 +387,23 @@ export function AddonsPanel({
   };
 
   const handleEditExtra = (key: AddOnKey) => {
+    onPreviewFocus?.(ADDON_EDITORS[key].previewAnchor);
     const intent = extraEditIntent(key);
     if (intent.kind === "openPanel") {
+      // Flag zieht OfferPanel/PhotosPanel beim Öffnen selbst mit.
       onOpenExtraEditor?.(key);
       return;
+    }
+    // Team (Editor bleibt in den Extras): Flag sofort setzen, sonst bleibt
+    // die Sektion in der Vorschau unsichtbar bis Übersicht-Speichern.
+    if (
+      isGatedSectionAddOn(key) &&
+      !(addOns[key] === true && doc.addOns?.[key] === true)
+    ) {
+      updateAddons.mutate(
+        { token, addOns: withAddOnEnabled(addOns, key) },
+        { onSuccess: onApplied }
+      );
     }
     setCardFocusKey(key);
     scrollToAddonEditor(key);
@@ -396,17 +411,7 @@ export function AddonsPanel({
 
   const handleToggle = (key: AddOnKey) => {
     setValue(prev => ({ ...prev, [key]: !prev[key] }));
-    const anchor: Record<AddOnKey, string> = {
-      contactForm: "kontakt",
-      gallery: "galerie",
-      menu: "speisekarte",
-      pricelist: "preisliste",
-      aiChat: "kontakt",
-      booking: "kontakt",
-      team: "team",
-      subpages: "leistungen",
-    };
-    onPreviewFocus?.(anchor[key]);
+    onPreviewFocus?.(ADDON_EDITORS[key].previewAnchor);
   };
 
   const handleSave = async () => {

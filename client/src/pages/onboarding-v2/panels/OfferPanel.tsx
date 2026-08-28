@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
+import {
+  ADDON_EDITORS,
+  withAddOnEnabled,
+} from "@shared/onboardingV2/addonEditors";
+import { SECTION_ANCHORS } from "@/components/site/engine";
 import { FALLBACK_PACK, getConstitution } from "@shared/stylePacks";
+import type { AddOnFlags } from "@shared/pricing";
 import { PanelFrame } from "./PanelFrame";
 import {
   OfferEditor,
@@ -123,9 +129,21 @@ export function initialOfferMode(
   return requested ?? offerFromDoc(doc).mode;
 }
 
+/** Vorschau-Anker zum aktuellen Angebots-Modus — trifft engine.SECTION_ANCHORS. */
+export function previewAnchorForOfferMode(mode: OfferMode): string {
+  if (mode === "services") return SECTION_ANCHORS.services;
+  return ADDON_EDITORS[mode].previewAnchor;
+}
+
 interface OfferPanelProps {
   token: string;
   doc: WebsiteDataV2;
+  /**
+   * Server-Stand der Extras (`state.addOns`). Extra-Klick auf Speisekarte/
+   * Preisliste schaltet das Flag sofort mit ein, damit die Vorschau die
+   * Sektion zeigt — ohne Umweg über die Extras-Übersicht.
+   */
+  addOns?: AddOnFlags;
   onApplied: () => void;
   onClose: () => void;
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
@@ -138,6 +156,7 @@ interface OfferPanelProps {
 export function OfferPanel({
   token,
   doc,
+  addOns = {},
   onApplied,
   onClose,
   onNext,
@@ -152,13 +171,7 @@ export function OfferPanel({
   );
   const [hint, setHint] = useState<string | null>(null);
   useEffect(() => {
-    onPreviewFocus?.(
-      mode === "services"
-        ? "leistungen"
-        : mode === "menu"
-          ? "speisekarte"
-          : "preisliste"
-    );
+    onPreviewFocus?.(previewAnchorForOfferMode(mode));
   }, [mode, onPreviewFocus]);
 
   const value = drafts[mode];
@@ -176,7 +189,24 @@ export function OfferPanel({
   };
 
   const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
+  const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
+
+  // Extra-Editor (Speisekarte/Preisliste): Flag sofort setzen, damit die
+  // Vorschau zur Sektion scrollen kann — auch bevor der User im Editor
+  // speichert. updateOffer zieht das Flag beim Speichern zusätzlich mit.
+  useEffect(() => {
+    if (initialMode !== "menu" && initialMode !== "pricelist") return;
+    if (doc.addOns?.[initialMode] === true || addOns[initialMode] === true) {
+      return;
+    }
+    updateAddons.mutate(
+      { token, addOns: withAddOnEnabled(addOns, initialMode) },
+      { onSuccess: onApplied }
+    );
+    // Nur beim Öffnen des Extra-Editors, nicht bei jedem Draft-Tastendruck.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSuggest = () => {
     setHint(null);

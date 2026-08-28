@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, validateOffer } from "./OfferPanel";
+import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, previewAnchorForOfferMode, validateOffer } from "./OfferPanel";
 
 const docWithServices: WebsiteDataV2 = {
   version: 2,
@@ -145,6 +145,14 @@ describe("offerDraftsFromDoc", () => {
     expect(initialOfferMode(both, "menu")).toBe("menu");
     expect(initialOfferMode(both, "pricelist")).toBe("pricelist");
     expect(initialOfferMode(both)).toBe("services");
+  });
+});
+
+describe("previewAnchorForOfferMode", () => {
+  test("trifft die echten Sektions-IDs der Vorschau", () => {
+    expect(previewAnchorForOfferMode("services")).toBe("leistungen");
+    expect(previewAnchorForOfferMode("menu")).toBe("speisekarte");
+    expect(previewAnchorForOfferMode("pricelist")).toBe("preise");
   });
 });
 
