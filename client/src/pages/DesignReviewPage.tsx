@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowUpRight,
@@ -7,30 +7,45 @@ import {
   ExternalLink,
   MessageSquare,
   Monitor,
+  RotateCcw,
   Smartphone,
   X,
 } from "lucide-react";
 import { PACK_SUMMARY } from "@shared/stylePacks/summary";
 import type { PackId } from "@shared/siteContract/types";
+import {
+  enablePreviewLayoutChrome,
+  type LayoutOverlay,
+} from "./onboarding-v2/previewLayoutChrome";
+import {
+  LAYOUT_STORAGE_KEY,
+  REVIEW_STORAGE_KEY,
+  VERDICT_LABELS,
+  describeLayoutOverlay,
+  formatReviewExport,
+  parsePackLayoutMap,
+  type PackLayoutMap,
+  type Review,
+  type Reviews,
+  type Verdict,
+} from "./designReviewModel";
 
-type Verdict = "pending" | "approved" | "changes";
-type Review = { verdict: Verdict; note: string };
-type Reviews = Partial<Record<PackId, Review>>;
 type Filter = "all" | Verdict;
 type Viewport = "desktop" | "mobile";
 
-const STORAGE_KEY = "pageblitz_design_reviews_v1";
-
-const VERDICT_LABELS: Record<Verdict, string> = {
-  pending: "Unbewertet",
-  approved: "Passt",
-  changes: "Korrektur",
-};
-
 function readReviews(): Reviews {
   try {
-    const value = window.localStorage.getItem(STORAGE_KEY);
+    const value = window.localStorage.getItem(REVIEW_STORAGE_KEY);
     return value ? (JSON.parse(value) as Reviews) : {};
+  } catch {
+    return {};
+  }
+}
+
+function readLayouts(): PackLayoutMap {
+  try {
+    const value = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+    return value ? parsePackLayoutMap(JSON.parse(value)) : {};
   } catch {
     return {};
   }
@@ -39,14 +54,24 @@ function readReviews(): Reviews {
 function PreviewDialog({
   packId,
   viewport,
+  overlay,
   onViewportChange,
+  onOverlayChange,
   onClose,
 }: {
   packId: PackId | null;
   viewport: Viewport;
+  overlay: LayoutOverlay;
   onViewportChange: (viewport: Viewport) => void;
+  onOverlayChange: (overlay: LayoutOverlay) => void;
   onClose: () => void;
 }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const overlayRef = useRef(overlay);
+  overlayRef.current = overlay;
+  const onOverlayChangeRef = useRef(onOverlayChange);
+  onOverlayChangeRef.current = onOverlayChange;
+
   useEffect(() => {
     if (!packId) return;
     const previousOverflow = document.body.style.overflow;
@@ -63,6 +88,15 @@ function PreviewDialog({
 
   if (!packId) return null;
   const summary = PACK_SUMMARY.find(pack => pack.id === packId);
+  const layoutSummary = describeLayoutOverlay(overlay);
+  const attachChrome = (iframe: HTMLIFrameElement) => {
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+    enablePreviewLayoutChrome(doc, null, () => {}, {
+      overlay: overlayRef.current,
+      onOverlayChange: next => onOverlayChangeRef.current(next),
+    });
+  };
 
   return createPortal(
     <div
@@ -80,6 +114,11 @@ function PreviewDialog({
             <h2 className="truncate text-[1.05rem] font-medium text-lp-ink">
               {summary?.name ?? packId}
             </h2>
+            <p className="mt-0.5 text-[0.75rem] text-lp-muted">
+              {layoutSummary
+                ? layoutSummary
+                : "Layout-Button in der Vorschau: am Desktop per Hover auffächern."}
+            </p>
           </div>
           <div
             className="flex rounded-full border border-lp-line bg-lp-canvas p-1"
@@ -112,6 +151,25 @@ function PreviewDialog({
               <span className="hidden sm:inline">Mobil</span>
             </button>
           </div>
+          {layoutSummary ? (
+            <button
+              type="button"
+              onClick={() => {
+                onOverlayChange({});
+                const doc = iframeRef.current?.contentDocument;
+                if (doc) {
+                  enablePreviewLayoutChrome(doc, null, () => {}, {
+                    overlay: {},
+                    onOverlayChange: next => onOverlayChangeRef.current(next),
+                  });
+                }
+              }}
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-lp-line px-3 text-[0.82rem] text-lp-ink"
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Pack-Default</span>
+            </button>
+          ) : null}
           <a
             href={`/demo/${packId}`}
             target="_blank"
@@ -136,10 +194,12 @@ function PreviewDialog({
             style={{ width: viewport === "mobile" ? 390 : "100%" }}
           >
             <iframe
+              ref={iframeRef}
               key={`${packId}-${viewport}`}
               src={`/demo/${packId}`}
               title={`Live-Vorschau ${summary?.name ?? packId}`}
               className="h-full w-full border-0 bg-white"
+              onLoad={event => attachChrome(event.currentTarget)}
             />
           </div>
         </div>
@@ -151,15 +211,26 @@ function PreviewDialog({
 
 export default function DesignReviewPage() {
   const [reviews, setReviews] = useState<Reviews>({});
+  const [layouts, setLayouts] = useState<PackLayoutMap>({});
+  const [hydrated, setHydrated] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [openPack, setOpenPack] = useState<PackId | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => setReviews(readReviews()), []);
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
-  }, [reviews]);
+    setReviews(readReviews());
+    setLayouts(readLayouts());
+    setHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (!hydrated) return;
+    window.localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(reviews));
+  }, [reviews, hydrated]);
+  useEffect(() => {
+    if (!hydrated) return;
+    window.localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(layouts));
+  }, [layouts, hydrated]);
 
   const reviewFor = (packId: PackId): Review =>
     reviews[packId] ?? { verdict: "pending", note: "" };
@@ -169,6 +240,15 @@ export default function DesignReviewPage() {
       ...current,
       [packId]: { ...reviewFor(packId), ...current[packId], ...patch },
     }));
+  };
+
+  const updateLayout = (packId: PackId, overlay: LayoutOverlay) => {
+    setLayouts(current => {
+      const next = { ...current };
+      if (Object.keys(overlay).length === 0) delete next[packId];
+      else next[packId] = overlay;
+      return next;
+    });
   };
 
   const counts = useMemo(
@@ -188,20 +268,12 @@ export default function DesignReviewPage() {
   );
 
   const copyFeedback = async () => {
-    const entries = PACK_SUMMARY.map((pack, index) => {
-      const review = reviewFor(pack.id);
-      if (review.verdict === "pending" && !review.note.trim()) return null;
-      return [
-        `${String(index + 1).padStart(2, "0")} · ${pack.name} · ${VERDICT_LABELS[review.verdict]}`,
-        review.note.trim() || "Keine Anmerkung.",
-      ].join("\n");
-    }).filter(Boolean);
-    const text = [
-      "PAGEBLITZ DESIGN-REVIEW",
-      `Geprüft: ${PACK_SUMMARY.length - counts.pending}/${PACK_SUMMARY.length}`,
-      "",
-      entries.join("\n\n"),
-    ].join("\n");
+    const text = formatReviewExport({
+      packs: PACK_SUMMARY,
+      reviewFor,
+      layouts,
+      pendingCount: counts.pending,
+    });
     await navigator.clipboard.writeText(text);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1800);
@@ -247,8 +319,8 @@ export default function DesignReviewPage() {
           </div>
           <p className="max-w-[40rem] text-[1rem] leading-7 text-lp-muted">
             Öffne jede Richtung als echte Website, prüfe Desktop und Mobil und
-            notiere die gewünschten Änderungen direkt an der richtigen Karte.
-            Deine Angaben bleiben auf diesem Gerät gespeichert.
+            probiere die Sektions-Layouts direkt in der Vorschau. Notizen und
+            gewählte Layouts bleiben auf diesem Gerät gespeichert.
           </p>
         </div>
 
@@ -280,6 +352,7 @@ export default function DesignReviewPage() {
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {visiblePacks.map((pack, index) => {
             const review = reviewFor(pack.id);
+            const layoutSummary = describeLayoutOverlay(layouts[pack.id]);
             return (
               <article
                 key={pack.id}
@@ -325,6 +398,11 @@ export default function DesignReviewPage() {
                       <p className="mt-1 text-[0.88rem] leading-6 text-lp-muted">
                         {pack.essence}
                       </p>
+                      {layoutSummary ? (
+                        <p className="mt-2 text-[0.78rem] leading-5 text-lp-ink">
+                          {layoutSummary}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
 
@@ -357,7 +435,10 @@ export default function DesignReviewPage() {
 
                   <label className="mt-4 block">
                     <span className="mb-2 flex items-center gap-2 text-[0.76rem] font-medium text-lp-muted">
-                      <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+                      <MessageSquare
+                        className="h-3.5 w-3.5"
+                        aria-hidden="true"
+                      />
                       Korrektur oder Anmerkung
                     </span>
                     <textarea
@@ -380,7 +461,11 @@ export default function DesignReviewPage() {
       <PreviewDialog
         packId={openPack}
         viewport={viewport}
+        overlay={openPack ? (layouts[openPack] ?? {}) : {}}
         onViewportChange={setViewport}
+        onOverlayChange={overlay => {
+          if (openPack) updateLayout(openPack, overlay);
+        }}
         onClose={() => setOpenPack(null)}
       />
     </div>

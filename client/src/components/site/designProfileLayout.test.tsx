@@ -6,6 +6,7 @@ import { getFixture } from "../../../../shared/siteContract/fixtures";
 import type { DesignProfile } from "../../../../shared/siteContract/designProfile";
 import type { PackId } from "../../../../shared/siteContract/types";
 import { SiteRenderer } from "./SiteRenderer";
+import { DESIGN_PROFILE_CSS } from "./designProfileCss";
 import "./packs/index";
 
 const PROFILE: DesignProfile = {
@@ -52,5 +53,14 @@ describe("Designprofil-Layout in allen Packs", () => {
     );
     expect(html).not.toContain("data-pb-hero=");
     expect(html).not.toContain("[data-pb-services=");
+  });
+
+  test("About-Grid-CSS greift nur mit data-pb-about, damit Pack-Defaults im Overlay bleiben", () => {
+    expect(DESIGN_PROFILE_CSS).toContain(
+      '.pb-site[data-pb-about] [data-pb-slot="about-grid"]'
+    );
+    expect(DESIGN_PROFILE_CSS).not.toContain(
+      '.pb-site [data-pb-slot="about-grid"]'
+    );
   });
 });

@@ -51,8 +51,10 @@ export const DESIGN_PROFILE_CSS = `
 .pb-site[data-pb-services="featured"] #leistungen:not(:has(${SLOT.servicesItems}))>header,
 .pb-site[data-pb-services="featured"] #leistungen:not(:has(${SLOT.servicesItems}))>p{grid-column:1/-1}
 
-/* Über uns: Bild links/rechts über order am Media-Slot. */
-.pb-site ${SLOT.aboutGrid}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:center!important;gap:clamp(1.5rem,4vw,4rem)!important}
+/* Über uns: Bild links/rechts über order am Media-Slot.
+   Grid-Zwang nur mit data-pb-about, sonst bleiben Pack-Defaults unangetastet
+   (Design-Review-Overlay injiziert dieselbe CSS, bevor eine Wahl steht). */
+.pb-site[data-pb-about] ${SLOT.aboutGrid}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:center!important;gap:clamp(1.5rem,4vw,4rem)!important}
 .pb-site[data-pb-about="image-left"] ${SLOT.aboutMedia}{order:-1!important}
 .pb-site[data-pb-about="image-right"] ${SLOT.aboutMedia}{order:2!important}
 
@@ -75,7 +77,7 @@ export const DESIGN_PROFILE_CSS = `
 @media(max-width:720px){
 .pb-site[data-pb-services="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems},
 .pb-site[data-pb-services="featured"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems},
-.pb-site ${SLOT.aboutGrid}{grid-template-columns:1fr!important}
+.pb-site[data-pb-about] ${SLOT.aboutGrid}{grid-template-columns:1fr!important}
 .pb-site[data-pb-gallery="mosaic"] ${SLOT.galleryItems}{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .pb-site[data-pb-gallery="mosaic"] ${SLOT.galleryItems}>:first-child{grid-column:span 2!important;grid-row:auto!important}
 .pb-site[data-pb-gallery="filmstrip"] ${SLOT.galleryItems}{grid-auto-columns:82%!important}
