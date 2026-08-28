@@ -19,6 +19,7 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { SALON_NOIR_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -369,8 +370,7 @@ const SalonNoirPage: React.FC<{
         <MobileNav items={navList} />
       </nav>
       {hero?.ctaText && (
-        <aside className="pb-sn-booking" aria-label="Terminbuchung">
-          <span>Ihr Termin</span>
+        <aside className="pb-sn-booking" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
         </aside>
       )}

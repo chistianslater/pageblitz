@@ -26,7 +26,7 @@ describe("Pack atelier", () => {
   });
   test("Living-Editorial-DOM enthält Projektindex, Spread und nummerierte Bildstrecke", () => {
     expect(html).toContain("pb-at-project-index");
-    expect(html).toContain("Index / Projekte &amp; Leistungen");
+    expect(html).toContain("Leistungen");
     expect(html).toContain("pb-at-about-copy");
     expect(html).toContain("pb-at-gallery-image");
     expect(html).toMatch(/<figcaption><b>01<\/b><span>/);
@@ -45,7 +45,6 @@ describe("Pack atelier", () => {
     expect(html).toContain("pb-at-voice-pages");
     expect(html).toContain("pb-at-folio");
     expect(html).toContain("pb-at-contact-page");
-    expect(html).toContain("Impressum / Gespräch");
   });
   test("mobile Galerie bleibt vertikale Story und Motion ist reduziert", () => {
     expect(html).toContain(".pb-at-gallery{display:flex;flex-direction:column");

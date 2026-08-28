@@ -58,7 +58,7 @@ const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
   },
   offer: {
     title: "Angebot",
-    hint: "Leistungen, Speisekarte oder Preisliste pflegen.",
+    hint: "Leistungen aus dem Basispaket — Speisekarte und Preisliste liegen unter Extras.",
   },
   legal: {
     title: "Rechtliches",

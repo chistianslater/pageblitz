@@ -19,9 +19,10 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { MARKTPLATZ_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Kurse",
+  services: "Leistungen",
   about: "Über uns",
   gallery: "Einblicke",
   testimonials: "Stimmen",
@@ -97,10 +98,10 @@ function buildStickers(
 ): { pill: string; ink: string; outline: string } {
   const pill = data.tagline ?? "Jetzt entdecken";
   const price = services?.items.find(item => item.price)?.price;
-  const ink = price ?? data.businessCategory ?? "Für die ganze Familie";
+  const ink = price ?? data.businessCategory ?? data.businessName;
   const outline = contact?.city
-    ? `Mitten in ${contact.city}`
-    : (services?.items[1]?.title ?? "Ohne Vorkenntnisse");
+    ? contact.city
+    : (services?.items[1]?.title ?? data.businessCategory ?? data.businessName);
   return { pill, ink, outline };
 }
 
@@ -441,8 +442,7 @@ const MarktplatzPage: React.FC<{
         </section>
       )}
       {hero?.ctaText && (
-        <aside className="pb-mp-trial-cta" aria-label="Schnupperstunde">
-          <span>Neugierig?</span>
+        <aside className="pb-mp-trial-cta" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
         </aside>
       )}

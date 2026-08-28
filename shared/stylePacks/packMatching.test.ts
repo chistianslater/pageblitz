@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   FALLBACK_PACK,
   getPackPool,
+  isLodgingCategory,
   packMatchesCategory,
   SELECTIVE_PACKS,
 } from "./index";
@@ -108,5 +109,19 @@ describe("Pack-Matching — Hospitality, Ranking, selektive Templates", () => {
       "fundament",
       "zunft",
     ]);
+  });
+});
+
+describe("isLodgingCategory", () => {
+  test("Hotel und Pension ja, Restaurant und Café nein", () => {
+    expect(isLodgingCategory("Hotel")).toBe(true);
+    expect(isLodgingCategory("Boutique-Hotel")).toBe(true);
+    expect(isLodgingCategory("Pension")).toBe(true);
+    expect(isLodgingCategory("Gästehaus")).toBe(true);
+    expect(isLodgingCategory("Restaurant")).toBe(false);
+    expect(isLodgingCategory("Trattoria")).toBe(false);
+    expect(isLodgingCategory("Café")).toBe(false);
+    expect(isLodgingCategory("")).toBe(false);
+    expect(isLodgingCategory(undefined)).toBe(false);
   });
 });

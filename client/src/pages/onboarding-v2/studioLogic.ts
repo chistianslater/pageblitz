@@ -174,7 +174,7 @@ export const WIZARD_STEP_TITLES: Record<WizardStep, string> = {
   style: "Designrichtung",
   photos: "Fotos wählen",
   texts: "Texte prüfen",
-  offer: "Angebot pflegen",
+  offer: "Leistungen pflegen",
   legal: "Rechtliches",
   addons: "Extras wählen",
   publish: "Website freischalten",

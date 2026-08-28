@@ -33,7 +33,7 @@ const PANEL_META: Record<
   },
   offer: {
     label: "Angebot",
-    hint: "Leistungen, Speisekarte, Preise",
+    hint: "Leistungen aus dem Basispaket",
     icon: <ShoppingBag className="w-4 h-4" />,
   },
   legal: {

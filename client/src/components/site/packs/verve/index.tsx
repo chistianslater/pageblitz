@@ -19,12 +19,13 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { VERVE_CSS } from "./css";
+import { PACK_UI } from "../../packCopy";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
-  services: "Programme",
+  services: "Leistungen",
   about: "Über uns",
   gallery: "Galerie",
-  testimonials: "Was Mitglieder sagen",
+  testimonials: "Stimmen",
   contact: "Kontakt",
   faq: "Häufige Fragen",
   menu: "Angebot",
@@ -91,7 +92,7 @@ function buildStats(
     const count = services.items.length;
     stats.push({
       value: String(count),
-      label: count === 1 ? "Programm" : "Programme",
+      label: count === 1 ? "Leistung" : "Leistungen",
     });
   }
   return stats;
@@ -439,8 +440,7 @@ const VervePage: React.FC<{
         </section>
       )}
       {hero?.ctaText && (
-        <aside className="pb-vv-trial-sticky" aria-label="Probetraining">
-          <span>Bereit für Bewegung?</span>
+        <aside className="pb-vv-trial-sticky" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>
             {hero.ctaText} <span aria-hidden="true">↗</span>
           </a>

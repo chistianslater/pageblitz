@@ -84,7 +84,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-at-section-head">
-            <span>Index / Projekte &amp; Leistungen</span>
+            <span>{FALLBACK_TITLES.services}</span>
             <h2>{section.headline}</h2>
           </header>
           <div
@@ -118,7 +118,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-at-section-head">
-            <span>Essay / Haltung</span>
+            <span>{FALLBACK_TITLES.about}</span>
             <h2>{section.headline}</h2>
           </header>
           <div
@@ -130,9 +130,6 @@ function renderSection(
                 A
               </span>
               <p>{section.body}</p>
-              <small>
-                Ein fortlaufendes Archiv von Ideen, Material und Praxis.
-              </small>
             </div>
             {section.imageUrl && (
               <figure data-pb-slot={LAYOUT_SLOT.aboutMedia}>
@@ -142,7 +139,7 @@ function renderSection(
                   alt=""
                   loading="lazy"
                 />
-                <figcaption>Abb. 01 / Studioansicht</figcaption>
+                <figcaption>Abbildung 01</figcaption>
               </figure>
             )}
           </div>
@@ -158,7 +155,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-at-section-head">
-            <span>Portfolio / Auswahl</span>
+            <span>{FALLBACK_TITLES.gallery}</span>
             <h2>{title}</h2>
           </header>
           <div
@@ -189,7 +186,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-at-section-head">
-            <span>Korrespondenz / Stimmen</span>
+            <span>{FALLBACK_TITLES.testimonials}</span>
             <h2>{title}</h2>
           </header>
           <div className="pb-at-voice-pages">
@@ -219,7 +216,7 @@ function renderSection(
           key={section.type}
         >
           <header className="pb-at-section-head">
-            <span>Impressum / Gespräch</span>
+            <span>{FALLBACK_TITLES.contact}</span>
             <h2>{title}</h2>
           </header>
           <div className="pb-at-contact">
