@@ -99,6 +99,10 @@ interface TextsFormProps {
   /** Feld, dessen gewählter Vorschlag gerade gespeichert wird. */
   applyingVariant?: TextField | null;
   onFieldFocus?: (field: keyof TextsPatch) => void;
+  /** Layout-Varianten direkt an der Hero-Sektion (vor Überschrift). */
+  heroLayoutSlot?: React.ReactNode;
+  /** Layout-Varianten direkt an der Über-uns-Sektion. */
+  aboutLayoutSlot?: React.ReactNode;
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -112,6 +116,8 @@ export function TextsForm({
   suggestError = null,
   applyingVariant = null,
   onFieldFocus,
+  heroLayoutSlot,
+  aboutLayoutSlot,
 }: TextsFormProps) {
   const errors = validateTexts(values);
   return (
@@ -137,6 +143,12 @@ export function TextsForm({
         const fieldId = `pb-texts-${field.key}`;
         const suggestField = field.suggestField;
         const fieldVariants = suggestField ? variants[suggestField] : undefined;
+        const layoutSlot =
+          field.key === "headline"
+            ? heroLayoutSlot
+            : field.key === "aboutHeadline"
+              ? aboutLayoutSlot
+              : null;
         // Nur die eigene, gerade laufende Anfrage sperrt den eigenen Button —
         // andere Felder bleiben klickbar. Da alle Felder dieselbe Mutation-
         // Instanz teilen (TextsPanel), zeigt `suggesting` immer nur das
@@ -148,7 +160,9 @@ export function TextsForm({
         const isInvalid =
           !!field.required && raw !== undefined && raw.trim() === "";
         return (
-          <div className="pb-studio-field" key={field.key}>
+          <React.Fragment key={field.key}>
+            {layoutSlot}
+          <div className="pb-studio-field">
             <label htmlFor={fieldId}>{field.label}</label>
             {field.kind === "textarea" ? (
               <textarea
@@ -246,6 +260,7 @@ export function TextsForm({
               </p>
             )}
           </div>
+          </React.Fragment>
         );
       })}
     </div>

@@ -50,15 +50,15 @@ const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
   },
   photos: {
     title: "Fotos",
-    hint: "Eigene Fotos, Google-Fotos oder Stockbilder wählen.",
+    hint: "Fotos wählen und das Layout von Hero, Über uns und Galerie.",
   },
   texts: {
     title: "Texte",
-    hint: "Überschriften und Über-uns-Text prüfen oder anpassen.",
+    hint: "Überschriften, Über-uns-Text und das Layout der Sektionen.",
   },
   offer: {
     title: "Angebot",
-    hint: "Leistungen aus dem Basispaket — Speisekarte und Preisliste liegen unter Extras.",
+    hint: "Leistungen und ihr Layout — Speisekarte und Preisliste liegen unter Extras.",
   },
   legal: {
     title: "Rechtliches",

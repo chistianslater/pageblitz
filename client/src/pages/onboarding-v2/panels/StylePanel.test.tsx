@@ -72,7 +72,9 @@ describe("StylePanel", () => {
     // passieren, nicht schon beim bloßen Öffnen des Panels mit Vorschlag.
     expect(html).not.toContain("Aktuell");
     expect(html).toContain("Diese Richtung verwenden");
-    expect(html).toContain("Seitenaufbau");
-    expect(html).toContain("Mosaik");
+    expect(html).toContain("Abstände");
+    expect(html).toContain("Bildwirkung");
+    expect(html).not.toContain("Seitenaufbau");
+    expect(html).not.toContain("Mosaik");
   });
 });

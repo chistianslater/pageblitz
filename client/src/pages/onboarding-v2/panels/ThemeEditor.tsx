@@ -4,23 +4,16 @@ import { trpc } from "@/lib/trpc";
 import { FONT_PAIRS, getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
-import {
-  DEFAULT_DESIGN_PROFILE,
-  HERO_LAYOUTS,
-  SERVICES_LAYOUTS,
-  ABOUT_LAYOUTS,
-  GALLERY_LAYOUTS,
-  DESIGN_DENSITIES,
-  IMAGE_TREATMENTS,
-} from "@shared/siteContract/designProfile";
 import { ACCENT_CHOICES } from "../themeChoices";
+import { DENSITY_OPTIONS, IMAGE_TREATMENT_OPTIONS } from "./layoutOptions";
+import { SectionLayoutPicker } from "./SectionLayoutPicker";
+import { useDesignProfileEditor } from "./useDesignProfileEditor";
 
 /**
  * Studio-Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung unabhängig
- * vom Stil-Pack wechseln. User-Entscheide: kuratierte Palette + optional
- * eigener Akzent per Farbwähler; kuratierte Schriftpaare aus dem Font-Pool
- * der 14 Packs. Wie das Fotos-Panel gilt Auto-Apply: jede Wahl speichert
- * sofort (updateTheme) und bumped über onApplied die Live-Vorschau.
+ * vom Stil-Pack wechseln. Sektionslayouts (Hero/Leistungen/Über uns/Galerie)
+ * sitzen in den jeweiligen Studio-Schritten — hier bleiben nur seitenweite
+ * Abstände und Bildwirkung. Auto-Apply: jede Wahl speichert sofort.
  */
 
 /** WCAG-Relative-Luminanz eines #rrggbb-Hexwerts. */
@@ -49,7 +42,7 @@ interface ThemeEditorProps {
   fontPairId: string | null;
   /** Kompositionsprofil innerhalb der Designrichtung. */
   designProfile?: DesignProfile | null;
-  /** Splash zeigt nur Farbe/Schrift; Layoutdetails bleiben im Studio. */
+  /** Splash zeigt nur Farbe/Schrift; Abstände/Bildwirkung bleiben im Studio. */
   showLayoutControls?: boolean;
   onApplied: () => void;
 }
@@ -64,20 +57,15 @@ export function ThemeEditor({
   onApplied,
 }: ThemeEditorProps) {
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
+  const {
+    localProfile,
+    pickProfile,
+    busy: profileBusy,
+  } = useDesignProfileEditor({ token, designProfile, onApplied });
   // Optimistisch: Chips zeigen die Wahl sofort, der Server-Refetch folgt.
   const [localAccent, setLocalAccent] = useState(accent);
   const [localPairId, setLocalPairId] = useState(fontPairId);
-  const [localProfile, setLocalProfile] = useState<DesignProfile>(
-    designProfile ?? DEFAULT_DESIGN_PROFILE
-  );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Beim Wechsel der Designrichtung leitet der Server ein neues Profil ab.
-  // StylePanel bleibt dabei gemountet; deshalb den lokalen Editor-Zustand
-  // nach dem Parent-Refetch explizit synchronisieren.
-  useEffect(() => {
-    setLocalProfile(designProfile ?? DEFAULT_DESIGN_PROFILE);
-  }, [designProfile]);
 
   const packAccent = useMemo(() => {
     if (!packId) return null;
@@ -134,18 +122,7 @@ export function ThemeEditor({
     save({ fontPairId: id });
   };
 
-  const pickProfile = <
-    K extends keyof Omit<DesignProfile, "version" | "seed">,
-  >(
-    key: K,
-    value: DesignProfile[K]
-  ) => {
-    const next = { ...localProfile, [key]: value };
-    setLocalProfile(next);
-    save({ designProfile: next });
-  };
-
-  const busy = updateTheme.isPending;
+  const busy = updateTheme.isPending || profileBusy;
   // Ehrlicher Hinweis statt Blockade: Akzent fast unsichtbar auf dem
   // Pack-Hintergrund (Buttons würden „verschwinden"). Schwelle 1,6:1 —
   // darunter wirkt selbst eine große Fläche schwach.
@@ -155,129 +132,40 @@ export function ThemeEditor({
   return (
     <div className="pb-studio-theme">
       <h3 className="pb-studio-theme-title">
-        {showLayoutControls ? "Aufbau, Farben & Schriften" : "Farben & Schriften"}
+        {showLayoutControls
+          ? "Farben, Schriften & Abstände"
+          : "Farben & Schriften"}
       </h3>
       <p className="pb-studio-theme-hint">
-        Feinschliff für die gewählte Designrichtung — jede Auswahl wird sofort
-        übernommen.
+        Feinschliff für die gewählte Designrichtung — Layouts der einzelnen
+        Sektionen stellst du später Schritt für Schritt ein. Jede Auswahl
+        wird sofort übernommen.
       </p>
 
       {showLayoutControls && (
         <>
-          <p className="pb-studio-theme-label" id="pb-theme-layout-label">
-            Seitenaufbau
+          <p className="pb-studio-theme-label" id="pb-theme-rhythm-label">
+            Abstände &amp; Bilder
           </p>
           <div
-            className="pb-studio-theme-layouts"
+            className="pb-studio-theme-rhythm"
             role="group"
-            aria-labelledby="pb-theme-layout-label"
+            aria-labelledby="pb-theme-rhythm-label"
           >
-        <label className="pb-studio-theme-layout">
-          <span>Hero</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.heroLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "heroLayout",
-                e.target.value as (typeof HERO_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="split">Bild &amp; Text</option>
-            <option value="centered">Zentriert</option>
-            <option value="compact">Kompakt</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Leistungen</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.servicesLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "servicesLayout",
-                e.target.value as (typeof SERVICES_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="list">Liste</option>
-            <option value="grid">Raster</option>
-            <option value="featured">Hervorgehoben</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Über uns</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.aboutLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "aboutLayout",
-                e.target.value as (typeof ABOUT_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="image-left">Bild links</option>
-            <option value="image-right">Bild rechts</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Galerie</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.galleryLayout}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "galleryLayout",
-                e.target.value as (typeof GALLERY_LAYOUTS)[number]
-              )
-            }
-          >
-            <option value="grid">Raster</option>
-            <option value="mosaic">Mosaik</option>
-            <option value="filmstrip">Filmstreifen</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Abstände</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.density}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "density",
-                e.target.value as (typeof DESIGN_DENSITIES)[number]
-              )
-            }
-          >
-            <option value="airy">Großzügig</option>
-            <option value="compact">Kompakt</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Bildwirkung</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.imageTreatment}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "imageTreatment",
-                e.target.value as (typeof IMAGE_TREATMENTS)[number]
-              )
-            }
-          >
-            <option value="natural">Natürlich</option>
-            <option value="framed">Gerahmt</option>
-            <option value="bleed">Flächig</option>
-          </select>
-        </label>
+            <SectionLayoutPicker
+              label="Abstände"
+              options={DENSITY_OPTIONS}
+              value={localProfile.density}
+              disabled={busy}
+              onChange={value => pickProfile("density", value)}
+            />
+            <SectionLayoutPicker
+              label="Bildwirkung"
+              options={IMAGE_TREATMENT_OPTIONS}
+              value={localProfile.imageTreatment}
+              disabled={busy}
+              onChange={value => pickProfile("imageTreatment", value)}
+            />
           </div>
         </>
       )}

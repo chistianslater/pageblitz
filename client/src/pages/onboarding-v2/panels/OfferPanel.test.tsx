@@ -1,8 +1,21 @@
 import { describe, expect, test } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { httpBatchLink } from "@trpc/client";
+import superjson from "superjson";
+import { trpc } from "@/lib/trpc";
 import type { WebsiteDataV2 } from "@shared/siteContract/types";
-import { OfferEditor, offerFromDoc, offerDraftsFromDoc, initialOfferMode, previewAnchorForOfferMode, offerPanelCopy, validateOffer } from "./OfferPanel";
+import {
+  OfferEditor,
+  OfferPanel,
+  offerFromDoc,
+  offerDraftsFromDoc,
+  initialOfferMode,
+  previewAnchorForOfferMode,
+  offerPanelCopy,
+  validateOffer,
+} from "./OfferPanel";
 
 const docWithServices: WebsiteDataV2 = {
   version: 2,
@@ -298,5 +311,47 @@ describe("validateOffer", () => {
         ],
       })
     ).toEqual([]);
+  });
+});
+
+function renderWithTrpc(node: React.ReactElement): string {
+  const queryClient = new QueryClient();
+  const trpcClient = trpc.createClient({
+    links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  });
+  return renderToStaticMarkup(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{node}</QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+
+describe("OfferPanel Layout-Varianten", () => {
+  test("Leistungen-Editor zeigt Layout-Varianten", () => {
+    const html = renderWithTrpc(
+      <OfferPanel
+        token={"t".repeat(32)}
+        doc={docWithServices}
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Leistungen-Layout");
+    expect(html).toContain("Hervorgehoben");
+    expect(html).toContain("Raster");
+  });
+
+  test("Speisekarte-Editor zeigt kein Leistungen-Layout", () => {
+    const html = renderWithTrpc(
+      <OfferPanel
+        token={"t".repeat(32)}
+        doc={docWithServices}
+        onApplied={() => {}}
+        onClose={() => {}}
+        initialMode="menu"
+      />
+    );
+    expect(html).not.toContain("Leistungen-Layout");
+    expect(html).not.toContain("Hervorgehoben");
   });
 });

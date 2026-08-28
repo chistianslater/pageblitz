@@ -251,7 +251,7 @@ export function StylePanel({
         </p>
       )}
       <details className="pb-studio-theme-toggle">
-        <summary>Aufbau, Farben &amp; Schriften anpassen</summary>
+        <summary>Farben, Schriften &amp; Abstände anpassen</summary>
         <ThemeEditor
           token={token}
           packId={activePackId}
