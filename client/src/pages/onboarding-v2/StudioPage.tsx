@@ -26,6 +26,7 @@ import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
 import { CheckoutBar } from "./CheckoutBar";
+import { LeaveWithoutEmailGuard } from "./LeaveWithoutEmailGuard";
 import { LiveCard } from "./LiveCard";
 import { LegacyCard } from "./LegacyCard";
 import {
@@ -34,6 +35,7 @@ import {
   generationInProgress,
   nextWizardStep,
   resolvePreviewSlug,
+  shouldWarnOnLeave,
   WIZARD_PANEL_STEPS,
   WIZARD_STEP_TITLES,
   type WizardPanelStep,
@@ -176,6 +178,17 @@ export default function StudioPage({ token }: { token: string }) {
     );
 
   const { state } = studio;
+  const leaveGuard = (
+    <LeaveWithoutEmailGuard
+      armed={shouldWarnOnLeave(state.status, state.customerEmail)}
+      onStay={() => {
+        setActiveId(null);
+        requestAnimationFrame(() => {
+          document.getElementById("pb-checkout-email")?.focus();
+        });
+      }}
+    />
+  );
   // Verkauft/aktiv/inaktiv (alles außer "preview") → Live-Modus: keine
   // Checkout-Leiste mehr, Bearbeitung im Studio bleibt möglich (Spec §2.1).
   // Live-Modus/Status-Unterscheidung (LiveCard) direkt an der Verwendung
@@ -209,6 +222,7 @@ export default function StudioPage({ token }: { token: string }) {
   if (state.needsCategory && !generationInProgress(state.job)) {
     return (
       <div className="pb-studio">
+        {leaveGuard}
         <CategoryStep
           businessName={state.businessName}
           initialCategory={state.category}
@@ -231,6 +245,7 @@ export default function StudioPage({ token }: { token: string }) {
     });
     return (
       <div className="pb-studio">
+        {leaveGuard}
         <GenerationScreen
           businessName={state.businessName}
           token={token}
@@ -254,19 +269,22 @@ export default function StudioPage({ token }: { token: string }) {
   // über die Checkliste erreichbar — eine Quelle für Auswahl/Theme-Logik.
   if (state.status === "preview" && !styleConfirmed) {
     return (
-      <DesignSplash
-        token={token}
-        businessName={state.businessName}
-        currentPackId={state.doc.stylePackId}
-        accent={state.doc.colorOverrides?.accent ?? null}
-        fontPairId={state.doc.fontPairId ?? null}
-        previewVersion={studio.previewVersion}
-        onApplied={() => {
-          studio.refetch();
-          studio.bumpPreview();
-        }}
-        onConfirmed={() => studio.refetch()}
-      />
+      <>
+        {leaveGuard}
+        <DesignSplash
+          token={token}
+          businessName={state.businessName}
+          currentPackId={state.doc.stylePackId}
+          accent={state.doc.colorOverrides?.accent ?? null}
+          fontPairId={state.doc.fontPairId ?? null}
+          previewVersion={studio.previewVersion}
+          onApplied={() => {
+            studio.refetch();
+            studio.bumpPreview();
+          }}
+          onConfirmed={() => studio.refetch()}
+        />
+      </>
     );
   }
 
@@ -319,6 +337,7 @@ export default function StudioPage({ token }: { token: string }) {
 
   return (
     <div className="pb-studio">
+      {leaveGuard}
       <div className="pb-studio-layout" data-tab={tab}>
         <aside className="pb-studio-rail">
           <header>

@@ -659,7 +659,7 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
     vi.resetModules();
   });
 
-  test("Galerie-Schwelle: < 3 Fotos → keine gallery-Sektion, kein addOns.gallery; LLM-Galerie wird gestrippt", async () => {
+  test("Galerie-Schwelle: < 3 Fotos → LLM-Fantasie-Galerie wird gestrippt, kein addOns.gallery", async () => {
     const invented = {
       ...baseAnswer,
       sections: [
@@ -688,6 +688,73 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
     });
     expect(d.sections.some(s => s.type === "gallery")).toBe(false);
     expect(d.addOns?.gallery).toBeUndefined();
+    vi.doUnmock("./llmClient");
+    vi.resetModules();
+  });
+
+  test("leere GMB-/Stock-Galerie lässt Pack-Platzhalter in Hero/About/Galerie stehen", async () => {
+    const withPackPhotos = {
+      ...baseAnswer,
+      sections: [
+        {
+          type: "hero" as const,
+          headline: "Massarbeit.",
+          imageUrl: "/demo/werkbank-hero.webp",
+        },
+        {
+          type: "services" as const,
+          headline: "Leistungen",
+          items: [{ title: "Möbelbau" }],
+        },
+        {
+          type: "about" as const,
+          headline: "Über uns",
+          body: "Seit 1990.",
+          imageUrl: "/demo/werkbank-detail-2.webp",
+        },
+        {
+          type: "gallery" as const,
+          headline: "Einblicke",
+          images: [
+            { url: "/demo/werkbank-hero.webp", alt: "Werkstatt" },
+            { url: "/demo/werkbank-detail-1.webp", alt: "Detail" },
+            { url: "/demo/werkbank-detail-2.webp", alt: "Holz" },
+          ],
+        },
+        {
+          type: "faq" as const,
+          headline: "Fragen",
+          items: [{ question: "Wie lange?", answer: "4 Wochen." }],
+        },
+        { type: "contact" as const, city: "Dortmund" },
+      ],
+    };
+    vi.doMock("./llmClient", () => ({
+      llmComplete: vi.fn().mockResolvedValue(JSON.stringify(withPackPhotos)),
+    }));
+    const { generateSiteContent } = await import("./generateSiteContent");
+    const d = await generateSiteContent({
+      packId: "werkbank",
+      business: { name: "Schreinerei Brandt", category: "Schreinerei" },
+      facts: { images: {} },
+    });
+    const hero = d.sections.find(s => s.type === "hero") as {
+      imageUrl?: string;
+    };
+    const about = d.sections.find(s => s.type === "about") as {
+      imageUrl?: string;
+    };
+    const gallery = d.sections.find(s => s.type === "gallery") as {
+      images: { url: string }[];
+    };
+    expect(hero.imageUrl).toBe("/demo/werkbank-hero.webp");
+    expect(about.imageUrl).toBe("/demo/werkbank-detail-2.webp");
+    expect(gallery.images.map(i => i.url)).toEqual([
+      "/demo/werkbank-hero.webp",
+      "/demo/werkbank-detail-1.webp",
+      "/demo/werkbank-detail-2.webp",
+    ]);
+    expect(d.addOns?.gallery).toBe(true);
     vi.doUnmock("./llmClient");
     vi.resetModules();
   });

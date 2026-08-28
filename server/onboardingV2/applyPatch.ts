@@ -197,12 +197,14 @@ export function applyImages(
   patch: ImagesPatch
 ): WebsiteDataV2 {
   let sections = doc.sections;
-  if (patch.hero !== undefined)
+  // Leere Strings/fehlende URLs dürfen vorhandene Platzhalter nicht
+  // ausreißen — nur eine echte neue URL ersetzt Hero/About.
+  if (patch.hero)
     sections = replaceSection(sections, "hero", s => ({
       ...s,
       imageUrl: patch.hero,
     }));
-  if (patch.about !== undefined)
+  if (patch.about)
     sections = replaceSection(sections, "about", s => ({
       ...s,
       imageUrl: patch.about,

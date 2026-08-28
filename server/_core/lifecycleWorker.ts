@@ -1,4 +1,5 @@
 import { processPendingLifecycleEmails, processExpiredReservations } from "./lifecycleScheduler";
+import { deleteAbandonedPreviewSites } from "./abandonedPreviews";
 
 const TICK_INTERVAL_MS = 5 * 60 * 1000; // alle 5 Minuten
 const INITIAL_DELAY_MS = 60 * 1000; // erste Iteration nach 1 Min (Server warmup)
@@ -17,10 +18,12 @@ async function tick(): Promise<void> {
   try {
     const mails = await processPendingLifecycleEmails();
     const expired = await processExpiredReservations();
+    const abandoned = await deleteAbandonedPreviewSites();
     console.log(
       `[LifecycleWorker] Tick in ${Date.now() - start}ms: ` +
         `emails processed=${mails.processed} sent=${mails.sent} skipped=${mails.skipped}, ` +
-        `expired processed=${expired.processed} deleted=${expired.deleted}`,
+        `expired processed=${expired.processed} deleted=${expired.deleted}, ` +
+        `abandoned-no-email processed=${abandoned.processed} deleted=${abandoned.deleted}`,
     );
   } catch (err) {
     console.error("[LifecycleWorker] Tick error:", err);
@@ -51,8 +54,13 @@ export function stopLifecycleWorker(): void {
 }
 
 // Für Admin-Dashboard / manuelles Triggern
-export async function runLifecycleTickNow(): Promise<{ mails: any; expired: any }> {
+export async function runLifecycleTickNow(): Promise<{
+  mails: any;
+  expired: any;
+  abandoned: { processed: number; deleted: number };
+}> {
   const mails = await processPendingLifecycleEmails();
   const expired = await processExpiredReservations();
-  return { mails, expired };
+  const abandoned = await deleteAbandonedPreviewSites();
+  return { mails, expired, abandoned };
 }

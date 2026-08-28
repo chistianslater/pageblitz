@@ -1,6 +1,7 @@
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { isTrustedPlaceholderGallery } from "../../shared/onboardingV2/placeholderImages";
 import type {
   PackId,
   SectionOf,
@@ -31,10 +32,11 @@ interface GenerateSiteContentFacts {
     openingHours?: { day: string; hours: string }[];
   };
   /**
-   * Deterministische Bild-URLs (GMB via R2 / Stock), nie vom LLM.
-   * `gallery` (≥ 3 R2-gespiegelte GMB-Fotos, Spec §2.2) erzeugt/ersetzt die
-   * gallery-Sektion; fehlt sie (oder < 3), wird eine etwaige LLM-Galerie
-   * gestrippt — die Galerie zeigt nur echte Betriebs-Fotos.
+   * Deterministische Bild-URLs (GMB via R2 / Branchen-Stock), nie vom LLM.
+   * `gallery` mit ≥ 3 URLs erzeugt/ersetzt die Galerie-Sektion. Fehlt sie,
+   * bleiben vorhandene Pack-/Stock-Platzhalter stehen — nur LLM-Fantasie-
+   * Galerien (fremde Hosts) werden gestrippt, damit Hero/About/Galerie
+   * nicht auf leere/kaputte Sektionen zusammenfallen.
    */
   images?: { hero?: string; about?: string; gallery?: string[] };
   /**
@@ -228,23 +230,25 @@ function mergeFacts(
 
   if (facts.images) {
     const { hero, about } = facts.images;
+    // Nur setzen, nie leeren: fehlende GMB-/Stock-URLs dürfen vorhandene
+    // Pack-Platzhalter (z. B. /demo/… aus dem LLM-Mock) nicht ausreißen.
     sections = sections.map(s => {
-      if (s.type === "hero" && hero !== undefined)
+      if (s.type === "hero" && hero)
         return { ...s, imageUrl: hero };
-      if (s.type === "about" && about !== undefined)
+      if (s.type === "about" && about)
         return { ...s, imageUrl: about };
       return s;
     });
 
-    // Galerie deterministisch aus echten GMB-Fotos (R2-URLs, Spec §2.2):
-    // ≥ 3 Fotos → Sektion setzen/ersetzen; sonst wird auch eine vom LLM
-    // (regelwidrig) gelieferte Galerie gestrippt — nie Fantasie-/Stock-URLs
-    // als „Einblicke in den Betrieb".
+    // Galerie: ≥ 3 gelieferte URLs (GMB oder Stock) ersetzen die Sektion.
+    // Sonst bleiben Pack-/Stock-Platzhalter stehen. Nur eine vom LLM
+    // erfundene Galerie mit fremden Hosts wird gestrippt — nie die
+    // visuell vollständige Default-Galerie.
     const gallery = facts.images.gallery;
+    const existing = sections.find(s => s.type === "gallery") as
+      | SectionOf<"gallery">
+      | undefined;
     if (gallery && gallery.length >= MIN_GALLERY_IMAGES) {
-      const existing = sections.find(s => s.type === "gallery") as
-        | SectionOf<"gallery">
-        | undefined;
       const gallerySection: SectionOf<"gallery"> = {
         type: "gallery",
         headline: existing?.headline ?? "Einblicke",
@@ -259,7 +263,7 @@ function mergeFacts(
         "services",
         "hero",
       ]);
-    } else {
+    } else if (!isTrustedPlaceholderGallery(existing?.images ?? [])) {
       sections = sections.filter(s => s.type !== "gallery");
     }
   }
@@ -355,11 +359,10 @@ function mockSiteContent(
  * Preisliste/Team/Unterseiten entstehen erst im Studio.
  */
 function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
-  // Galerie-Analogie (Plan B7 Task 3): eine bei der Generierung aus echten
-  // GMB-Fotos entstandene gallery-Sektion ist ohne `addOns.gallery` unsichtbar
-  // (Gating in client/src/components/site/engine.ts) — deshalb wird das
-  // Add-on wie beim Gastro-Menü als Entwurfs-Flag vorausgewählt; runJob
-  // spiegelt es nach onboarding_responses (Extras-Panel „Aktiv", abwählbar).
+  // Galerie-Analogie (Plan B7 Task 3 / Platzhalter-Fix): eine bei der
+  // Generierung entstandene gallery-Sektion (GMB oder Stock-Defaults) ist
+  // ohne `addOns.gallery` unsichtbar (Gating in engine.ts) — deshalb wird
+  // das Add-on wie beim Gastro-Menü als Entwurfs-Flag vorausgewählt.
   const defaults: NonNullable<WebsiteDataV2["addOns"]> = {
     ...(data.sections.some(s => s.type === "menu") ? { menu: true } : {}),
     ...(data.sections.some(s => s.type === "gallery") ? { gallery: true } : {}),

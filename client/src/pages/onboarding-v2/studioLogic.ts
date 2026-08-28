@@ -217,3 +217,16 @@ export function wizardStepNumber(step: WizardStep): number {
   if (step === "publish") return WIZARD_TOTAL_STEPS;
   return WIZARD_PANEL_STEPS.indexOf(step) + 1;
 }
+
+/**
+ * Warnung beim Verlassen nur für Preview ohne wiederauffindbare E-Mail.
+ * Mit E-Mail kann die Kundin über Magic-Link/Dashboard zurück — kein
+ * Lösch-Hinweis. Live/sold/active nie warnen.
+ */
+export function shouldWarnOnLeave(
+  status: string | null | undefined,
+  customerEmail: string | null | undefined
+): boolean {
+  if (status !== "preview") return false;
+  return !customerEmail || customerEmail.trim().length === 0;
+}

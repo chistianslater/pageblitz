@@ -573,6 +573,10 @@ async function buildEmailData(
 /**
  * Löscht abgelaufene Website-Entwürfe (reservedUntil < now, nicht konvertiert, externer Lead).
  * Erstellt reactivation_seed + plant fresh_start_7d ein.
+ *
+ * Preview-Websites OHNE E-Mail haben nie ein reservedUntil (das wird erst
+ * bei Email-Capture gesetzt) — die räumt `deleteAbandonedPreviewSites`
+ * (abandonedPreviews.ts) über den Lifecycle-Worker auf.
  */
 export async function processExpiredReservations(): Promise<{
   processed: number;

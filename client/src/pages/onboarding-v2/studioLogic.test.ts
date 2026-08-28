@@ -5,6 +5,7 @@ import {
   derivePreviewTabs,
   nextWizardStep,
   resolvePreviewSlug,
+  shouldWarnOnLeave,
   WIZARD_PANEL_STEPS,
   WIZARD_TOTAL_STEPS,
   wizardStepNumber,
@@ -325,5 +326,19 @@ describe("wizardStepNumber", () => {
     expect(wizardStepNumber("addons")).toBe(6);
     expect(wizardStepNumber("publish")).toBe(WIZARD_TOTAL_STEPS);
     expect(WIZARD_TOTAL_STEPS).toBe(7);
+  });
+});
+
+describe("shouldWarnOnLeave", () => {
+  test("nur Preview ohne E-Mail", () => {
+    expect(shouldWarnOnLeave("preview", null)).toBe(true);
+    expect(shouldWarnOnLeave("preview", "  ")).toBe(true);
+    expect(shouldWarnOnLeave("preview", "")).toBe(true);
+  });
+  test("mit E-Mail oder nach dem Kauf keine Warnung", () => {
+    expect(shouldWarnOnLeave("preview", "kunde@example.com")).toBe(false);
+    expect(shouldWarnOnLeave("active", null)).toBe(false);
+    expect(shouldWarnOnLeave("sold", null)).toBe(false);
+    expect(shouldWarnOnLeave("inactive", "x@y.de")).toBe(false);
   });
 });

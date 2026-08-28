@@ -2060,3 +2060,66 @@
   font-size: 0.85rem;
   color: var(--st-warn);
 }
+
+/* Leave-ohne-E-Mail: persistenter Hinweis + In-App-Dialog.
+   `beforeunload` kann in Chrome keinen eigenen Text mehr zeigen.
+   Im Dokumentfluss (nicht fixed), damit Checkout und Design-Bestätigen
+   nicht überdeckt werden. */
+.pb-studio-leave-banner {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem var(--st-space, 1.25rem);
+  background: var(--st-surface, #fbf9f4);
+  color: var(--st-ink, #1d1a17);
+  border-bottom: 1px solid var(--st-line, #d9d2c5);
+  font-family: var(--st-ui, "Space Grotesk", system-ui, sans-serif);
+}
+.pb-studio-leave-banner p {
+  margin: 0;
+  flex: 1 1 16rem;
+  font-size: 0.9rem;
+  color: var(--st-ink);
+}
+.pb-studio-leave-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(29, 26, 23, 0.45);
+}
+.pb-studio-leave-modal-card {
+  width: min(28rem, 100%);
+  background: var(--st-surface, #fbf9f4);
+  color: var(--st-ink, #1d1a17);
+  border: 1px solid var(--st-line, #d9d2c5);
+  border-radius: 0.85rem;
+  padding: 1.25rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  font-family: var(--st-ui, "Space Grotesk", system-ui, sans-serif);
+}
+.pb-studio-leave-modal-card h2 {
+  margin: 0;
+  font-family: var(--st-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.pb-studio-leave-modal-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.pb-studio-leave-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}

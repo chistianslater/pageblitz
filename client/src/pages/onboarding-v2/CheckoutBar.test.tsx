@@ -212,6 +212,9 @@ describe("CheckoutBar", () => {
     expect(html).toContain('value="impressum@beispiel.de"');
     expect(html).toContain("E-Mail-Adresse für deinen Account");
     expect(html).toContain("Aus dem Impressum vorgeschlagen");
+    expect(html).toContain(
+      "Ohne E-Mail wird deine Vorschau nach ein paar Tagen automatisch gelöscht."
+    );
   });
 
   test("Finding F3: Hinweistext differenziert Kontaktformular (sofort) von KI-Chat/Terminbuchung (nach Freischalten)", () => {

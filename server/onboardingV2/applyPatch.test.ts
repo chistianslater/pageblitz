@@ -177,6 +177,27 @@ describe("applyImages", () => {
       )
     ).toBe(false);
   });
+
+  test("leere Quellen lassen vorhandene Hero-/About-Platzhalter stehen", () => {
+    const withPhotos = applyImages(docFull, {
+      hero: "https://x/h.jpg",
+      about: "https://x/a.jpg",
+    });
+    const untouched = applyImages(withPhotos, {});
+    expect((untouched.sections[0] as { imageUrl?: string }).imageUrl).toBe(
+      "https://x/h.jpg"
+    );
+    const about = untouched.sections.find(s => s.type === "about") as {
+      imageUrl?: string;
+    };
+    expect(about.imageUrl).toBe("https://x/a.jpg");
+    const galleryOnly = applyImages(withPhotos, {
+      gallery: [{ url: "https://x/g.jpg", alt: "a" }],
+    });
+    expect((galleryOnly.sections[0] as { imageUrl?: string }).imageUrl).toBe(
+      "https://x/h.jpg"
+    );
+  });
 });
 
 describe("applyTeam", () => {

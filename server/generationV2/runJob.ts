@@ -8,7 +8,7 @@ import {
 import { invalidateSsrCache } from "../ssr/routes";
 import { classifyIndustry } from "../industryClassifier";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
-import { getGalleryImages, getHeroImageUrl } from "../industryImages";
+import { buildStockFallbackImages } from "../industryImages";
 import { crawlExistingSite } from "../gmb/siteCrawl";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
@@ -83,9 +83,9 @@ export interface V2Images {
   hero?: string;
   about?: string;
   /**
-   * Nach R2 gespiegelte GMB-Fotos für die Galerie-Sektion (Spec §2.2: nur
-   * gesetzt, wenn ≥ 3 brauchbare Fotos existieren; ausschließlich R2-URLs,
-   * nie Google-URLs mit API-Key).
+   * Galerie-URLs: echte GMB-Fotos (R2) sobald ≥ 3 existieren, sonst
+   * Branchen-Stock als Platzhalter, damit die Website nie mit leerer
+   * Galerie-Sektion dasteht. Nie Google-URLs mit API-Key.
    */
   gallery?: string[];
 }
@@ -154,7 +154,22 @@ export function buildInterimV2Doc(
             },
           ]
         : []),
+      ...(images.gallery && images.gallery.length >= MIN_GALLERY_PHOTOS
+        ? [
+            {
+              type: "gallery" as const,
+              headline: "Einblicke",
+              images: images.gallery.map((url, i) => ({
+                url,
+                alt: `${businessName} – Eindruck ${i + 1}`,
+              })),
+            },
+          ]
+        : []),
     ],
+    ...(images.gallery && images.gallery.length >= MIN_GALLERY_PHOTOS
+      ? { addOns: { gallery: true } }
+      : {}),
   };
   // Harte Garantie statt Annahme: der Zwischenstand MUSS dem Vertrag genügen
   // (SSR-Preview und assertV2SafeWrite verlassen sich darauf).
@@ -212,10 +227,11 @@ export function collectOccupiedDesignFingerprints(
 
 /**
  * Bilder kommen NIE vom LLM: echte GMB-Fotos zuerst (Foto 1 = Hero, Foto 2 =
- * Über uns, ab ≥ 3 Fotos zusätzlich alle als Galerie), sonst Branchen-Stock
- * aus industryImages (ohne Galerie — die Galerie zeigt nur echte Betriebs-
- * Fotos, nie Stock). "self-…"-Place-IDs sind Platzhalter ohne Google-Eintrag
- * — dort wird Google gar nicht erst gefragt.
+ * Über uns, ab ≥ 3 Fotos zusätzlich alle als Galerie). Fehlen GMB-Fotos
+ * (kein Eintrag, self-Place-ID, Spiegelung leer), greift Branchen-Stock
+ * für Hero, Über uns UND Galerie — die Website sieht sofort vollständig
+ * aus statt mit leerem Hero/About/Galerie. Später gewählte Fotos ersetzen
+ * die Defaults (PhotosPanel Auto-Apply).
  *
  * Key-Leak geschlossen (Plan B7 Task 3): GMB-Fotos werden über
  * `mirrorGmbPhotosToR2` serverseitig geladen und nach R2 gespiegelt — ins
@@ -229,23 +245,20 @@ export async function resolveV2Images(
   industryKey: string,
   websiteId: number
 ): Promise<V2Images> {
+  const stock = buildStockFallbackImages(category, business.name, industryKey);
   const gmb =
     business.placeId && !business.placeId.startsWith("self-")
       ? await mirrorGmbPhotosToR2(business.placeId, websiteId, MAX_GMB_PHOTOS)
       : [];
-  if (gmb.length > 0) {
-    return {
-      hero: gmb[0],
-      ...(gmb[1] ? { about: gmb[1] } : {}),
-      // Die Galerie zeigt alle Betriebs-Fotos (inkl. Hero/About-Motiv) —
-      // wie auf echten Betriebs-Websites üblich; unter 3 Fotos wäre eine
-      // Galerie zu dünn und entfällt (Spec §2.2).
-      ...(gmb.length >= MIN_GALLERY_PHOTOS ? { gallery: gmb } : {}),
-    };
-  }
-  const hero = getHeroImageUrl(category, business.name, industryKey);
-  const gallery = getGalleryImages(category, business.name, industryKey);
-  return { hero, ...(gallery[0] ? { about: gallery[0] } : {}) };
+  if (gmb.length === 0) return stock;
+  const about = gmb[1] ?? stock.about;
+  const gallery =
+    gmb.length >= MIN_GALLERY_PHOTOS ? gmb : stock.gallery;
+  return {
+    hero: gmb[0],
+    ...(about ? { about } : {}),
+    ...(gallery ? { gallery } : {}),
+  };
 }
 
 /**

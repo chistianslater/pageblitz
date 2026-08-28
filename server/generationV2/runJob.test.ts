@@ -135,18 +135,22 @@ describe("resolveV2Images", () => {
     });
     expect(mockedMirror).toHaveBeenCalledWith("ChIJabc", 42, 8);
   });
-  test("unter 3 gespiegelten Fotos keine Galerie (Spec §2.2)", async () => {
+  test("unter 3 GMB-Fotos bleibt Stock-Galerie als Platzhalter", async () => {
     mockedMirror.mockResolvedValue([R2_1, R2_2]);
-    await expect(
-      resolveV2Images(
-        { placeId: "ChIJabc", name: "X" },
-        "Tischler",
-        "handwerk",
-        42
-      )
-    ).resolves.toEqual({ hero: R2_1, about: R2_2 });
+    const result = await resolveV2Images(
+      { placeId: "ChIJabc", name: "X" },
+      "Tischler",
+      "handwerk",
+      42
+    );
+    expect(result.hero).toBe(R2_1);
+    expect(result.about).toBe(R2_2);
+    expect(result.gallery?.length).toBeGreaterThanOrEqual(3);
+    expect(
+      result.gallery?.every(url => url.startsWith("https://images.unsplash.com"))
+    ).toBe(true);
   });
-  test("self-Place-IDs fragen Google gar nicht erst, Branchen-Stock greift (ohne Galerie)", async () => {
+  test("self-Place-IDs fragen Google gar nicht erst, Branchen-Stock füllt Hero/About/Galerie", async () => {
     const result = await resolveV2Images(
       { placeId: "self-abc", name: "X" },
       "Tischler",
@@ -155,7 +159,8 @@ describe("resolveV2Images", () => {
     );
     expect(mockedMirror).not.toHaveBeenCalled();
     expect(result.hero).toMatch(/^https?:\/\//);
-    expect(result.gallery).toBeUndefined();
+    expect(result.about).toMatch(/^https?:\/\//);
+    expect(result.gallery?.length).toBeGreaterThanOrEqual(3);
   });
   test("Spiegelung liefert nichts (z. B. R2 nicht konfiguriert) → Stock-Fallback statt Google-URL", async () => {
     mockedMirror.mockResolvedValue([]);
@@ -166,6 +171,8 @@ describe("resolveV2Images", () => {
       42
     );
     expect(result.hero).toMatch(/^https?:\/\//);
+    expect(result.about).toMatch(/^https?:\/\//);
+    expect(result.gallery?.length).toBeGreaterThanOrEqual(3);
     expect(JSON.stringify(result)).not.toContain("maps.googleapis.com");
   });
 });
@@ -178,7 +185,9 @@ describe("runWebsiteGenerationV2Job", () => {
     expect(mockedGen).toHaveBeenCalledTimes(1);
     const args = mockedGen.mock.calls[0][0];
     expect(args.packId).toBe("werkbank");
-    expect(args.facts?.images).toEqual({ hero: R2_1 });
+    expect(args.facts?.images?.hero).toBe(R2_1);
+    expect(args.facts?.images?.about).toMatch(/^https?:\/\//);
+    expect(args.facts?.images?.gallery?.length).toBeGreaterThanOrEqual(3);
     expect(args.facts?.contact?.phone).toBe("0231 123");
     expect(args.facts?.contact?.openingHours).toEqual([
       { day: "Montag", hours: "08:00–17:00" },
@@ -350,6 +359,9 @@ describe("runWebsiteGenerationV2Job", () => {
     expect(hero.imageUrl).toBe(R2_1);
     const about = interim.sections.find((s: any) => s.type === "about");
     expect(about.imageUrl).toBe(R2_2);
+    const gallery = interim.sections.find((s: any) => s.type === "gallery");
+    expect(gallery.images.length).toBeGreaterThanOrEqual(3);
+    expect(interim.addOns?.gallery).toBe(true);
     expect(JSON.stringify(interim).toLowerCase()).not.toContain("lorem");
 
     // Interim-Write + Cache-Invalidierung liegen VOR dem LLM-Aufruf.

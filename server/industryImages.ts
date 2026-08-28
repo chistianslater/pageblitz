@@ -86,3 +86,36 @@ export function getGalleryImages(
   const imageSet = getIndustryImages(category, businessName, industryKey);
   return imageSet.gallery || imageSet.hero.slice(0, 2);
 }
+
+/** Galerie erst ab so vielen Motiven — darunter wirkt die Sektion zu dünn. */
+const MIN_STOCK_GALLERY = 3;
+
+/**
+ * Branchen-Stock, wenn GMB/Upload leer sind: Hero, Über-uns und (ab 3
+ * Motiven) Galerie. Die Generierung bleibt so visuell vollständig, statt
+ * Hero/About/Galerie auf kaputte Leere zu strippen.
+ */
+export function buildStockFallbackImages(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): { hero: string; about?: string; gallery?: string[] } {
+  const imageSet = getIndustryImages(category, businessName, industryKey);
+  const unique: string[] = [];
+  for (const url of [
+    ...(imageSet.gallery ?? []),
+    ...imageSet.hero,
+    ...(imageSet.about ?? []),
+  ]) {
+    if (!unique.includes(url)) unique.push(url);
+  }
+  const hero = getHeroImageUrl(category, businessName, industryKey);
+  const about = unique.find(url => url !== hero) ?? unique[0] ?? hero;
+  return {
+    hero,
+    ...(about ? { about } : {}),
+    ...(unique.length >= MIN_STOCK_GALLERY
+      ? { gallery: unique.slice(0, 8) }
+      : {}),
+  };
+}
