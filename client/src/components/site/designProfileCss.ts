@@ -56,7 +56,7 @@ function heroMediaInFlow(
 ): string {
   return `
 ${h("hero")}="${variant}"] #start ${SLOT.heroMedia},
-${h("hero")}="${variant}"] #start ${SLOT.heroMedia} img{position:relative!important;inset:auto!important;right:auto!important;top:auto!important;left:auto!important;bottom:auto!important;width:${maxWidth}!important;max-width:100%!important;height:auto!important;max-height:min(32rem,62vh)!important;order:${order}!important;clip-path:none!important}
+${h("hero")}="${variant}"] #start ${SLOT.heroMedia} img{position:relative!important;inset:auto!important;right:auto!important;top:auto!important;left:auto!important;bottom:auto!important;width:${maxWidth}!important;max-width:100%!important;height:auto!important;max-height:min(32rem,62vh)!important;order:${order}!important;clip-path:none!important;margin:0!important}
 `;
 }
 
@@ -91,7 +91,7 @@ ${h("hero")}="centered"] #start :is(h1,p,a,.pb-pa-cta,.pb-wb-cta,.pb-gu-cta,.pb-
 ${heroMediaInFlow(h, "centered", "2", "min(100%,42rem)")}
 ${h("hero")}="centered"] #start ${SLOT.heroMedia}{margin-inline:auto!important}
 
-${h("hero")}="image-first"] #start{display:flex!important;flex-direction:column!important;min-height:auto!important;text-align:left!important}
+${h("hero")}="image-first"] #start{display:flex!important;flex-direction:column!important;min-height:auto!important;text-align:left!important;overflow:visible!important}
 ${h("hero")}="image-first"] #start ${SLOT.heroSplit}{display:flex!important;flex-direction:column!important;align-items:stretch!important;grid-template-columns:1fr!important;text-align:left!important;gap:clamp(1.25rem,3vw,2.25rem)!important}
 ${h("hero")}="image-first"] #start ${SLOT.heroCopy}{text-align:left!important;margin-inline:0!important;order:2!important;max-width:none}
 ${heroMediaInFlow(h, "image-first", "-1", "100%")}
