@@ -51,6 +51,15 @@ describe("legalDefaults", () => {
       { day: "Mo–Fr", hours: "09:00–17:00" },
     ]);
   });
+
+  test("nur Montag → Mo–Fr-Platzhalter", () => {
+    const result = legalDefaults(initial, [
+      { day: "Montag", hours: "09:00–17:00" },
+    ]);
+    expect(result.openingHours).toEqual([
+      { day: "Mo–Fr", hours: "09:00–17:00" },
+    ]);
+  });
 });
 
 describe("LegalPanel", () => {

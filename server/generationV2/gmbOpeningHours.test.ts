@@ -1,9 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PLACEHOLDER_OPENING_HOURS } from "../../shared/onboardingV2/openingHours";
-import {
-  mapGmbOpeningHoursToV2,
-  resolveOpeningHours,
-} from "./gmbOpeningHours";
+import { mapGmbOpeningHoursToV2, resolveOpeningHours } from "./gmbOpeningHours";
 
 describe("mapGmbOpeningHoursToV2", () => {
   test("splitet weekday_text am ersten ': '", () => {
@@ -34,5 +31,11 @@ describe("resolveOpeningHours", () => {
   test("ohne GMB → Mo–Fr-Platzhalter", () => {
     expect(resolveOpeningHours(null)).toEqual(PLACEHOLDER_OPENING_HOURS);
     expect(resolveOpeningHours([])).toEqual(PLACEHOLDER_OPENING_HOURS);
+  });
+
+  test("nur Montag (unvollständige GMB-/LLM-Zeile) → Mo–Fr-Platzhalter", () => {
+    expect(resolveOpeningHours(["Montag: 09:00–17:00 Uhr"])).toEqual(
+      PLACEHOLDER_OPENING_HOURS
+    );
   });
 });

@@ -18,6 +18,7 @@ import type { GmbReview } from "../gmb/details";
 import { upsertOnboarding } from "../onboardingV2/state";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { SECTION_ADDON_KEYS } from "../../shared/pricing";
+import { PLACEHOLDER_OPENING_HOURS } from "../../shared/onboardingV2/openingHours";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
@@ -168,6 +169,11 @@ export function buildInterimV2Doc(
             },
           ]
         : []),
+      {
+        type: "contact" as const,
+        headline: "Kontakt",
+        openingHours: PLACEHOLDER_OPENING_HOURS.map(entry => ({ ...entry })),
+      },
     ],
     // Galerie-Fotos dürfen im Zwischenstand stehen (Hero/About/Galerie
     // wirken vollständig). Das Extra bleibt aus — engine.ts blendet die
@@ -254,8 +260,7 @@ export async function resolveV2Images(
       : [];
   if (gmb.length === 0) return stock;
   const about = gmb[1] ?? stock.about;
-  const gallery =
-    gmb.length >= MIN_GALLERY_PHOTOS ? gmb : stock.gallery;
+  const gallery = gmb.length >= MIN_GALLERY_PHOTOS ? gmb : stock.gallery;
   return {
     hero: gmb[0],
     ...(about ? { about } : {}),
@@ -362,10 +367,7 @@ async function runWebsiteGenerationV2(
       let occupied = new Set<string>();
       try {
         const recentWebsites = await listWebsites(200, 0);
-        occupied = collectOccupiedDesignFingerprints(
-          recentWebsites,
-          category
-        );
+        occupied = collectOccupiedDesignFingerprints(recentWebsites, category);
       } catch (err) {
         // Individualisierung ist wichtig, darf aber nie die eigentliche
         // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die

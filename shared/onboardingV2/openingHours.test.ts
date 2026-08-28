@@ -23,4 +23,18 @@ describe("withPlaceholderOpeningHours", () => {
     ];
     expect(withPlaceholderOpeningHours(gmb)).toEqual(gmb);
   });
+
+  test("nur Montag (LLM-Stub) → Mo–Fr-Platzhalter", () => {
+    expect(
+      withPlaceholderOpeningHours([{ day: "Montag", hours: "09:00–17:00" }])
+    ).toEqual(PLACEHOLDER_OPENING_HOURS);
+    expect(
+      withPlaceholderOpeningHours([{ day: "Mo", hours: "08:00–17:00" }])
+    ).toEqual(PLACEHOLDER_OPENING_HOURS);
+  });
+
+  test("Mo–Fr-Bereich bleibt (kein Stub)", () => {
+    const range = [{ day: "Mo–Fr", hours: "09:00–17:00" }];
+    expect(withPlaceholderOpeningHours(range)).toEqual(range);
+  });
 });

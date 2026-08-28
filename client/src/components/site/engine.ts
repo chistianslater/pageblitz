@@ -7,6 +7,7 @@ import type {
   SiteAddOns,
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
+import { withPlaceholderOpeningHours } from "../../../../shared/onboardingV2/openingHours";
 
 export const SECTION_ANCHORS: Record<SectionType, string> = {
   hero: "start",
@@ -95,6 +96,15 @@ export function visiblePageSections(
   return page.sections.filter(s => isSectionBooked(doc, s.type));
 }
 
+function withDisplayOpeningHours<S extends SectionV2 | PageSection>(
+  section: S
+): S {
+  if (section.type !== "contact") return section;
+  const openingHours = withPlaceholderOpeningHours(section.openingHours);
+  if (openingHours === section.openingHours) return section;
+  return { ...section, openingHours };
+}
+
 /**
  * Standard-Überschrift der Kontakt-Sektion auf Unterseiten — gemeinsam mit
  * pagesLogic.ts `contactFromDoc` (Studio-Kopie beim Speichern), damit Kopie
@@ -128,9 +138,11 @@ export function linkPageSections(
   );
   return sections.map(section => {
     if (section.type === "contact" && homeContact) {
+      const hours = withPlaceholderOpeningHours(homeContact.openingHours);
       return {
         ...homeContact,
         headline: section.headline ?? PAGE_CONTACT_DEFAULT_HEADLINE,
+        openingHours: hours,
       } as PageSection;
     }
     if (
@@ -156,7 +168,9 @@ export function orderedSections(data: WebsiteDataV2): SectionV2[] {
     const i = order.indexOf(t);
     return i === -1 ? order.length : i;
   };
-  return [...visible].sort((a, b) => rank(a.type) - rank(b.type));
+  return [...visible]
+    .sort((a, b) => rank(a.type) - rank(b.type))
+    .map(withDisplayOpeningHours);
 }
 
 // ─── Plan B6, Task 3: Unterseiten-Navigation + Page-Auflösung ───────────────
