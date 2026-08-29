@@ -97,8 +97,7 @@ export default function LandingPage() {
   // gesetzt (kein JS = alles sichtbar); bei prefers-reduced-motion:
   // reduce bleibt die Seite statisch.
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-      return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (!("IntersectionObserver" in window)) return;
     document.documentElement.classList.add("lp-reveal-on");
     const io = new IntersectionObserver(

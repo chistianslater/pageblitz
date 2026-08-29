@@ -30,17 +30,14 @@ function ChatSketch() {
     >
       <div className="lps-chat">
         <span className="lps-chat-title">Chat mit deinem Betrieb</span>
-        <p className="lps-msg-assistant">
-          Hallo! Wie kann ich Ihnen helfen?
-        </p>
+        <p className="lps-msg-assistant">Hallo! Wie kann ich Ihnen helfen?</p>
         <p className="lps-msg-user">Bieten Sie auch Reparaturen an?</p>
         <p className="lps-msg-assistant">
           Ja – wir reparieren Möbel und Türen. Möchten Sie direkt eine Anfrage
           senden?
         </p>
         <span className="lps-chat-input">
-          Nachricht schreiben …
-          <b>↑</b>
+          Nachricht schreiben …<b>↑</b>
         </span>
       </div>
     </div>

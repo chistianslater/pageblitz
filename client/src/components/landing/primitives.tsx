@@ -14,7 +14,11 @@ import { PRICING, formatEuro } from "@shared/pricing";
  * Kontext, damit dieselbe Marke auf heller (/start, Login) und dunkler
  * Fläche (Landing) funktioniert.
  */
-export function BrandMark({ className = "h-6 w-auto" }: { className?: string }) {
+export function BrandMark({
+  className = "h-6 w-auto",
+}: {
+  className?: string;
+}) {
   return (
     <svg viewBox="480 380 1060 1360" aria-hidden="true" className={className}>
       <path

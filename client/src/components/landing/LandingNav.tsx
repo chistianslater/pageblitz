@@ -59,8 +59,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
     const prevHtmlOverflow = html.style.overflow;
     const prevBodyCss = body.style.cssText;
     const pageRoot = document.querySelector(".lp");
-    const prevInert =
-      pageRoot instanceof HTMLElement ? pageRoot.inert : false;
+    const prevInert = pageRoot instanceof HTMLElement ? pageRoot.inert : false;
 
     html.classList.add("lp-nav-open");
     html.style.overflow = "hidden";
@@ -266,7 +265,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
           aria-label={isOpen ? "Menü schließen" : "Menü öffnen"}
           aria-expanded={isOpen}
           aria-controls="lp-mobile-menu"
-            className="lp-press -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink md:hidden"
+          className="lp-press -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink md:hidden"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>

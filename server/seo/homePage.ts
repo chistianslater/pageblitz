@@ -91,7 +91,11 @@ const STEPS = [
 // Muss dem Anker-Block in client/src/components/landing/Pricing.tsx entsprechen.
 const ANCHORS: Array<[string, string, string]> = [
   ["Einmalig", "Agentur: 2.000–8.000 €", "Pageblitz: 0 €"],
-  ["Monatlich", "Agentur: 50–150 € Hosting & Wartung", `Pageblitz: ab ${PRICE_YEARLY}`],
+  [
+    "Monatlich",
+    "Agentur: 50–150 € Hosting & Wartung",
+    `Pageblitz: ab ${PRICE_YEARLY}`,
+  ],
   ["Zeit", "Agentur: 4–12 Wochen", "Pageblitz: 3 Minuten"],
 ];
 

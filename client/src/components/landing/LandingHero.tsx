@@ -132,9 +132,9 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
               <em className="not-italic text-lp-volt">in 3&nbsp;Minuten.</em>
             </h1>
             <p className="lp-rise lp-rise-2 mt-6 max-w-[30rem] text-[1.12rem] leading-[1.55] text-lp-muted">
-              Tipp deinen Firmennamen ein. Pageblitz holt Fotos, Bewertungen
-              und Öffnungszeiten aus deinem Google-Profil und baut daraus eine
-              echte Website.{" "}
+              Tipp deinen Firmennamen ein. Pageblitz holt Fotos, Bewertungen und
+              Öffnungszeiten aus deinem Google-Profil und baut daraus eine echte
+              Website.{" "}
               <strong className="font-semibold text-lp-ink">
                 Du siehst das Ergebnis, bevor du irgendetwas bezahlst.
               </strong>

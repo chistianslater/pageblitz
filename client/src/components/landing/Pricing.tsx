@@ -55,7 +55,11 @@ const ADDON_ICONS: Record<AddOnKey, LucideIcon> = {
  *  im selben Blickfeld wie der Preis statt als eigene Tabellen-Sektion.
  *  Muss inhaltlich zum Prerender passen (server/seo/homePage.ts). */
 const ANCHORS: Array<{ kicker: string; agency: string; us: string }> = [
-  { kicker: "Einmalig", agency: "Agentur: 2.000–8.000 €", us: "Pageblitz: 0 €" },
+  {
+    kicker: "Einmalig",
+    agency: "Agentur: 2.000–8.000 €",
+    us: "Pageblitz: 0 €",
+  },
   {
     kicker: "Monatlich",
     agency: "Agentur: 50–150 € Hosting & Wartung",
