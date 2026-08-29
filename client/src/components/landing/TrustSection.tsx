@@ -72,7 +72,11 @@ export function TrustSection() {
               <div className="flex items-center justify-between gap-4">
                 <p className="lp-kicker">{item.tag}</p>
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-lp-panel-2 text-lp-volt">
-                  <item.Icon className="h-5 w-5" strokeWidth={1.8} aria-hidden="true" />
+                  <item.Icon
+                    className="h-5 w-5"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
                 </span>
               </div>
               <h3 className="mt-4 text-[1.3rem] font-bold leading-[1.15] tracking-[-0.02em] text-lp-ink">

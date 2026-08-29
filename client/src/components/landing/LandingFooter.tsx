@@ -16,7 +16,7 @@ export function FinalCta(props: FinalCtaProps) {
   return (
     <section aria-labelledby="lp-final-heading" className="lp-section">
       <div className="lp-container">
-        <div className="relative rounded-3xl bg-lp-volt px-6 py-12 text-lp-volt-ink sm:px-10 lg:px-14 lg:py-16 xl:pr-[20rem]">
+        <div className="relative rounded-3xl bg-lp-volt px-6 py-12 text-lp-volt-ink sm:px-10 lg:px-14 lg:py-16 xl:pr-[24rem]">
           {/* Illustrative Persona (KI-generiert, Magnific 2026-08-29) — keine
               echte Kundin, daher bewusst ohne Namen oder Zitat. */}
           <img
@@ -25,26 +25,30 @@ export function FinalCta(props: FinalCtaProps) {
             aria-hidden="true"
             loading="lazy"
             decoding="async"
-            className="pointer-events-none absolute right-6 bottom-0 hidden h-[calc(100%+2.5rem)] w-auto select-none xl:block"
+            className="pointer-events-none absolute right-6 bottom-0 hidden h-[calc(100%+5.5rem)] w-auto select-none xl:block"
           />
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-6">
-              <h2 id="lp-final-heading" className="lp-h2">
-                Sehen kostet nichts.
-              </h2>
-              <p className="mt-5 max-w-[32rem] text-[1.08rem] leading-[1.55] text-lp-volt-ink/75">
-                Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos
-                und unverbindlich. Gefällt sie dir nicht, hat dich der Blick
-                nichts gekostet. Gefällt sie dir, schaltest du sie mit einem
-                Klick live.
-              </p>
+          <div className="max-w-[36rem]">
+            <h2 id="lp-final-heading" className="lp-h2">
+              Sehen kostet nichts.
+            </h2>
+            <p className="mt-5 max-w-[32rem] text-[1.08rem] leading-[1.55] text-lp-volt-ink/75">
+              Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos
+              und unverbindlich. Gefällt sie dir nicht, hat dich der Blick
+              nichts gekostet. Gefällt sie dir, schaltest du sie mit einem
+              Klick live.
+            </p>
+            <div className="mt-8">
+              <HeroForm
+                {...props}
+                idPrefix="final"
+                size="lg"
+                layout="stacked"
+                tone="volt"
+              />
             </div>
-            <div className="lg:col-span-6">
-              <HeroForm {...props} idPrefix="final" size="lg" tone="volt" />
-              <p className="mt-4 font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-volt-ink/65">
-                Kostenlos ansehen · keine Kreditkarte · monatlich kündbar
-              </p>
-            </div>
+            <p className="mt-4 font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-volt-ink/65">
+              Kostenlos ansehen · keine Kreditkarte · monatlich kündbar
+            </p>
           </div>
         </div>
       </div>

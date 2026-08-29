@@ -63,7 +63,8 @@ export default function PageblitzCookieBanner() {
       setVisible(true);
     };
     window.addEventListener("pageblitz:open-cookie-settings", handler);
-    return () => window.removeEventListener("pageblitz:open-cookie-settings", handler);
+    return () =>
+      window.removeEventListener("pageblitz:open-cookie-settings", handler);
   }, []);
 
   if (!visible) return null;
@@ -130,8 +131,8 @@ export default function PageblitzCookieBanner() {
                 className="text-xs leading-relaxed"
                 style={{ color: "var(--lp-muted)" }}
               >
-                Wir nutzen Cookies, um Pageblitz zu verbessern. Notwendige Cookies (Session, Auth)
-                sind immer aktiv.{" "}
+                Wir nutzen Cookies, um Pageblitz zu verbessern. Notwendige
+                Cookies (Session, Auth) sind immer aktiv.{" "}
                 <a
                   href="/datenschutz"
                   target="_blank"
@@ -170,27 +171,48 @@ export default function PageblitzCookieBanner() {
                     color: "var(--lp-accent-ink)",
                   }}
                 >
-                  <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-                    <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg
+                    className="w-2.5 h-2.5"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2 5l2.5 2.5L8 3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium">
                   Notwendig{" "}
-                  <span className="font-normal ml-1" style={{ color: "var(--lp-muted)" }}>– immer aktiv</span>
+                  <span
+                    className="font-normal ml-1"
+                    style={{ color: "var(--lp-muted)" }}
+                  >
+                    – immer aktiv
+                  </span>
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--lp-muted)" }}>
-                  Session-Verwaltung, Authentifizierung, CSRF-Schutz. Rybbit (cookielos, keine Einwilligung nötig).
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "var(--lp-muted)" }}
+                >
+                  Session-Verwaltung, Authentifizierung, CSRF-Schutz. Rybbit
+                  (cookielos, keine Einwilligung nötig).
                 </p>
               </div>
             </div>
 
-            {CATEGORIES.map((cat) => {
+            {CATEGORIES.map(cat => {
               const checked = cat.id === "analytics" ? analytics : marketing;
-              const toggle = cat.id === "analytics"
-                ? () => setAnalytics((v) => !v)
-                : () => setMarketing((v) => !v);
+              const toggle =
+                cat.id === "analytics"
+                  ? () => setAnalytics(v => !v)
+                  : () => setMarketing(v => !v);
 
               return (
                 <label
@@ -210,9 +232,19 @@ export default function PageblitzCookieBanner() {
                   <div className="flex-1">
                     <p className="text-xs font-medium">
                       {cat.label}{" "}
-                      <span className="font-normal" style={{ color: "var(--lp-muted)" }}>– {cat.tools}</span>
+                      <span
+                        className="font-normal"
+                        style={{ color: "var(--lp-muted)" }}
+                      >
+                        – {cat.tools}
+                      </span>
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: "var(--lp-muted)" }}>{cat.description}</p>
+                    <p
+                      className="text-xs mt-0.5"
+                      style={{ color: "var(--lp-muted)" }}
+                    >
+                      {cat.description}
+                    </p>
                   </div>
                 </label>
               );
@@ -223,11 +255,15 @@ export default function PageblitzCookieBanner() {
         {/* Actions */}
         <div className="px-5 pb-5 flex flex-col sm:flex-row items-center gap-2">
           <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => setExpanded(v => !v)}
             className="flex items-center gap-1 text-xs underline-offset-2 hover:underline transition-colors order-3 sm:order-1 sm:mr-auto"
             style={{ color: "var(--lp-muted)" }}
           >
-            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {expanded ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
             {expanded ? "Weniger" : "Einstellungen anpassen"}
           </button>
 
@@ -243,7 +279,10 @@ export default function PageblitzCookieBanner() {
             <button
               onClick={handleSaveCustom}
               className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-full text-xs font-semibold transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "var(--lp-accent)", color: "var(--lp-accent-ink)" }}
+              style={{
+                backgroundColor: "var(--lp-accent)",
+                color: "var(--lp-accent-ink)",
+              }}
             >
               Auswahl speichern
             </button>
@@ -251,7 +290,10 @@ export default function PageblitzCookieBanner() {
             <button
               onClick={handleAcceptAll}
               className="w-full sm:w-auto order-1 sm:order-3 px-4 py-2 rounded-full text-xs font-semibold transition-opacity hover:opacity-90"
-              style={{ backgroundColor: "var(--lp-accent)", color: "var(--lp-accent-ink)" }}
+              style={{
+                backgroundColor: "var(--lp-accent)",
+                color: "var(--lp-accent-ink)",
+              }}
             >
               Alle akzeptieren
             </button>

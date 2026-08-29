@@ -39,7 +39,7 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
         aria-hidden="true"
         loading="lazy"
         decoding="async"
-        className="pointer-events-none absolute right-[4vw] bottom-0 hidden h-[26rem] w-auto select-none xl:block"
+        className="pointer-events-none absolute right-[3vw] bottom-0 hidden h-[34rem] w-auto select-none xl:block"
       />
       <div className="lp-container">
         <Kicker className="mb-4">Ohne Website</Kicker>
