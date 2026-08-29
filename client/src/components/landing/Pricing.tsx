@@ -94,7 +94,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
     <section
       id="pricing"
       aria-labelledby="lp-pricing-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-band border-t border-lp-line"
     >
       <div className="lp-container">
         <div className="max-w-[44rem]">

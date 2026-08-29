@@ -27,7 +27,20 @@ const LOSSES = [
 export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
   const [, navigate] = useLocation();
   return (
-    <section aria-labelledby="lp-problem-heading" className="lp-section">
+    <section
+      aria-labelledby="lp-problem-heading"
+      className="lp-section lp-glowspot lp-glowspot--left"
+    >
+      {/* Illustrative Persona (KI-generiert, Magnific 2026-08-29) — steht
+          stellvertretend für den Betrieb, bewusst ohne Namen. */}
+      <img
+        src="/personas/handwerker.webp"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        className="pointer-events-none absolute right-[4vw] bottom-0 hidden h-[26rem] w-auto select-none xl:block"
+      />
       <div className="lp-container">
         <Kicker className="mb-4">Ohne Website</Kicker>
         <h2 id="lp-problem-heading" className="lp-h2 max-w-[24ch]">

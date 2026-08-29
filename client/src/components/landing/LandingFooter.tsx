@@ -16,7 +16,17 @@ export function FinalCta(props: FinalCtaProps) {
   return (
     <section aria-labelledby="lp-final-heading" className="lp-section">
       <div className="lp-container">
-        <div className="rounded-3xl bg-lp-volt px-6 py-12 text-lp-volt-ink sm:px-10 lg:px-14 lg:py-16">
+        <div className="relative rounded-3xl bg-lp-volt px-6 py-12 text-lp-volt-ink sm:px-10 lg:px-14 lg:py-16 xl:pr-[20rem]">
+          {/* Illustrative Persona (KI-generiert, Magnific 2026-08-29) — keine
+              echte Kundin, daher bewusst ohne Namen oder Zitat. */}
+          <img
+            src="/personas/gastgeberin.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            className="pointer-events-none absolute right-6 bottom-0 hidden h-[calc(100%+2.5rem)] w-auto select-none xl:block"
+          />
           <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-6">
               <h2 id="lp-final-heading" className="lp-h2">

@@ -763,6 +763,41 @@ html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(4) {
   }
 }
 
+/* Hintergrund-Rhythmus (2026-08-29): dezente Aufheller-Bänder und zwei
+   weitere weiche Glows lockern die lange Kohle-Fläche — bleibt bei der
+   einen Akzentfarbe, nur in homöopathischer Dosis. */
+.lp-band {
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.024) 14%,
+    rgba(255, 255, 255, 0.024) 86%,
+    transparent
+  );
+}
+.lp-glowspot {
+  position: relative;
+}
+.lp-glowspot::before {
+  content: "";
+  position: absolute;
+  top: 6%;
+  width: 52rem;
+  height: 38rem;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(204, 255, 0, 0.05),
+    transparent 62%
+  );
+}
+.lp-glowspot--left::before {
+  left: -14%;
+}
+.lp-glowspot--right::before {
+  right: -14%;
+}
+
 /* Cookie-Banner auf der dunklen Landing: gleiche Struktur, Nachtschicht-
    Tokens. Der Banner (Portal, außerhalb von .lp) liest --lp-*-Variablen —
    dieser Scope überschreibt sie nur dort, App-Seiten bleiben hell. */

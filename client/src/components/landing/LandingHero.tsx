@@ -1,7 +1,7 @@
 import React, { type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { HeroBuildLive } from "./HeroBuildLive";
-import { pillPrimary } from "./primitives";
+import { pillPrimary, textLink } from "./primitives";
 
 export interface HeroFormProps {
   value: string;
@@ -145,6 +145,13 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
               <HeroForm {...props} idPrefix="hero" size="lg" layout="stacked" />
             </div>
             <RiskLine className="lp-rise lp-rise-4 mt-4" />
+            {/* Reibungsfreier Sekundär-CTA (Snaplove-Muster „Live
+                ausprobieren"): erst gucken, ohne irgendetwas einzugeben. */}
+            <p className="lp-rise lp-rise-4 mt-5">
+              <a href="/demo/gusto" className={`${textLink} text-[0.95rem]`}>
+                Oder erst eine Live-Demo ansehen →
+              </a>
+            </p>
           </div>
           <div className="lp-rise lp-rise-5 lg:col-span-7">
             <div className="lp-hero-stage">

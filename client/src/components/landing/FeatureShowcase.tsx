@@ -162,7 +162,7 @@ export function FeatureShowcase() {
   return (
     <section
       aria-labelledby="lp-features-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-glowspot lp-glowspot--right border-t border-lp-line"
     >
       <div className="lp-container">
         <SectionHead

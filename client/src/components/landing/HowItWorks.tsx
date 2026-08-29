@@ -140,7 +140,7 @@ export function HowItWorks() {
     <section
       id="ablauf"
       aria-labelledby="lp-how-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-band border-t border-lp-line"
     >
       <div className="lp-container">
         <SectionHead
