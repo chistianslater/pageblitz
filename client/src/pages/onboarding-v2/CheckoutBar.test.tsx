@@ -170,7 +170,9 @@ function renderWithTrpc(node: React.ReactElement): string {
 }
 
 describe("CheckoutBar", () => {
-  test("'Website freischalten' ist deaktiviert, solange checkoutReady falsch ist", () => {
+  // Seit 2026-08-29 bewusst NICHT mehr deaktiviert: der Klick zeigt die
+  // offenen Pflichtpunkte an (siehe handleCheckout), statt stumm zu bleiben.
+  test("'Website freischalten' bleibt auch ohne checkoutReady klickbar", () => {
     const html = renderWithTrpc(
       <CheckoutBar
         state={buildState()}
@@ -180,7 +182,7 @@ describe("CheckoutBar", () => {
     );
     const match = html.match(/<button[^>]*>Website freischalten<\/button>/);
     expect(match).not.toBeNull();
-    expect(match![0]).toContain('disabled=""');
+    expect(match![0]).not.toContain("disabled");
   });
 
   test("'Website freischalten' ist aktiv, sobald checkoutReady wahr ist", () => {

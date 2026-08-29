@@ -6,7 +6,7 @@ import {
   LegalPatchSchema,
   type LegalPatch,
 } from "@shared/onboardingV2/patches";
-import { withPlaceholderOpeningHours } from "@shared/onboardingV2/openingHours";
+import { displayOpeningHours } from "@shared/onboardingV2/openingHours";
 import type { StudioLegal } from "../../../../../server/onboardingV2/state";
 import { PanelFrame } from "./PanelFrame";
 
@@ -60,8 +60,9 @@ interface LegalPanelProps {
 
 /**
  * Baut den Startwert des Formulars aus den geladenen Kontaktdaten und
- * Öffnungszeiten (Finding I5). Fehlen Zeiten (kein GMB), steht Mo–Fr als
- * Platzhalter. Als eigene, pure Funktion exportiert, weil react-hook-forms
+ * Öffnungszeiten (Finding I5). Ein einzelner „Montag"-Stub wird zu Mo–Fr;
+ * eine bewusst geleerte Liste bleibt leer (Kunde will keine Zeiten zeigen,
+ * User-Bug 2026-08-29). Als eigene, pure Funktion exportiert, weil react-hook-forms
  * `register()` uncontrolled Inputs per `ref` befüllt — `defaultValues`
  * taucht dadurch nie als `value`-Attribut im server-gerenderten Markup auf
  * (`renderToStaticMarkup` ruft keine Refs auf), die Vorbelegung ist also
@@ -73,7 +74,7 @@ export function legalDefaults(
 ): LegalPatch {
   return {
     ...initial,
-    openingHours: withPlaceholderOpeningHours(openingHours),
+    openingHours: displayOpeningHours(openingHours),
   };
 }
 
@@ -229,6 +230,12 @@ export function LegalPanel({
           >
             + Zeile
           </button>
+          {fields.length === 0 && (
+            <span style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}>
+              Keine Zeilen — auf deiner Website werden keine Öffnungszeiten
+              angezeigt.
+            </span>
+          )}
         </div>
       </div>
       {updateLegal.error && (

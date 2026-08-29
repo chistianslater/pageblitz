@@ -1,24 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { ADDON_EDITORS, addonContentDone } from "@shared/onboardingV2/addonEditors";
+import {
+  ADDON_EDITORS,
+  addonContentDone,
+} from "@shared/onboardingV2/addonEditors";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
-import {
-  BOOKABLE_ADDON_KEYS,
-  type AddOnKey,
-} from "@shared/pricing";
+import { BOOKABLE_ADDON_KEYS, type AddOnKey } from "@shared/pricing";
 import { useStudioState } from "./useStudioState";
 import { CategoryStep } from "./CategoryStep";
 import { GenerationScreen } from "./GenerationScreen";
 import { Checklist } from "./Checklist";
 import { WizardBar } from "./WizardBar";
 import { DesignSplash } from "./DesignSplash";
-import {
-  PreviewFrame,
-  previewPath,
-} from "./PreviewFrame";
+import { PreviewFrame, previewPath } from "./PreviewFrame";
 import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
@@ -94,8 +91,7 @@ export default function StudioPage({ token }: { token: string }) {
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
   // fällt auf die Startseite zurück, kein eigener Effekt nötig.
   const [previewSlugState, setPreviewSlug] = useState<string | null>(null);
-  const inlineUpdateText =
-    trpc.onboardingV2.updateInlineText.useMutation();
+  const inlineUpdateText = trpc.onboardingV2.updateInlineText.useMutation();
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
   // E-Mail-Erfassung direkt im Leave-Guard-Modal (2026-08-29): der frühere
   // Sprung zu #pb-checkout-email lief auf Screens ohne Checkout-Leiste ins

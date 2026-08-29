@@ -7,7 +7,7 @@ import type {
   SiteAddOns,
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
-import { withPlaceholderOpeningHours } from "../../../../shared/onboardingV2/openingHours";
+import { displayOpeningHours } from "../../../../shared/onboardingV2/openingHours";
 
 export const SECTION_ANCHORS: Record<SectionType, string> = {
   hero: "start",
@@ -100,7 +100,7 @@ function withDisplayOpeningHours<S extends SectionV2 | PageSection>(
   section: S
 ): S {
   if (section.type !== "contact") return section;
-  const openingHours = withPlaceholderOpeningHours(section.openingHours);
+  const openingHours = displayOpeningHours(section.openingHours);
   if (openingHours === section.openingHours) return section;
   return { ...section, openingHours };
 }
@@ -138,7 +138,7 @@ export function linkPageSections(
   );
   return sections.map(section => {
     if (section.type === "contact" && homeContact) {
-      const hours = withPlaceholderOpeningHours(homeContact.openingHours);
+      const hours = displayOpeningHours(homeContact.openingHours);
       return {
         ...homeContact,
         headline: section.headline ?? PAGE_CONTACT_DEFAULT_HEADLINE,

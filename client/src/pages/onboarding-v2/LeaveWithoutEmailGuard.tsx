@@ -48,7 +48,8 @@ export function isStudioStayHref(href: string): boolean {
 export function shouldInterceptLeaveClick(snap: LeaveClickSnapshot): boolean {
   if (snap.defaultPrevented) return false;
   if (snap.targetBlank || snap.download) return false;
-  if (snap.metaKey || snap.ctrlKey || snap.shiftKey || snap.altKey) return false;
+  if (snap.metaKey || snap.ctrlKey || snap.shiftKey || snap.altKey)
+    return false;
   if (!snap.href) return false;
   return !isStudioStayHref(snap.href);
 }

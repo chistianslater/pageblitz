@@ -113,14 +113,10 @@ describe("shouldInterceptLeaveClick / isStudioStayHref", () => {
 
   test("Studio-interne Ziele, neuer Tab und Modifier bleiben unbehelligt", () => {
     expect(
-      shouldInterceptLeaveClick(
-        outboundClick({ href: "/onboarding/tok123" })
-      )
+      shouldInterceptLeaveClick(outboundClick({ href: "/onboarding/tok123" }))
     ).toBe(false);
     expect(
-      shouldInterceptLeaveClick(
-        outboundClick({ href: "/preview-ssr/tok123" })
-      )
+      shouldInterceptLeaveClick(outboundClick({ href: "/preview-ssr/tok123" }))
     ).toBe(false);
     expect(
       shouldInterceptLeaveClick(outboundClick({ href: "#abschnitt" }))
@@ -132,7 +128,9 @@ describe("shouldInterceptLeaveClick / isStudioStayHref", () => {
       shouldInterceptLeaveClick(outboundClick({ href: "/", metaKey: true }))
     ).toBe(false);
     expect(
-      shouldInterceptLeaveClick(outboundClick({ href: "/", defaultPrevented: true }))
+      shouldInterceptLeaveClick(
+        outboundClick({ href: "/", defaultPrevented: true })
+      )
     ).toBe(false);
     expect(isStudioStayHref("mailto:kunde@x.de")).toBe(true);
   });

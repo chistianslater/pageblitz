@@ -95,6 +95,17 @@ describe("orderedSections", () => {
       openingHours: [{ day: "Mo–Fr", hours: "09:00–17:00" }],
     });
   });
+  test("bewusst geleerte Öffnungszeiten werden nicht wiederbelebt", () => {
+    const d: WebsiteDataV2 = {
+      ...base,
+      sections: [
+        { type: "hero", headline: "H" },
+        { type: "contact", city: "Dortmund", openingHours: [] },
+      ],
+    };
+    const contact = orderedSections(d).find(s => s.type === "contact");
+    expect(contact).toMatchObject({ type: "contact", openingHours: [] });
+  });
   test("Anker sind deutsch und vollständig", () => {
     expect(SECTION_ANCHORS.services).toBe("leistungen");
     expect(SECTION_ANCHORS.about).toBe("ueber-uns");

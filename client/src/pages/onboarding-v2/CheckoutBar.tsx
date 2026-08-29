@@ -122,7 +122,23 @@ export function CheckoutBar({
     );
   };
 
+  // Der Button bleibt IMMER klickbar (User-Feedback 2026-08-29): ein toter
+  // Button erklärt nichts. Bei offenen Pflichtpunkten zeigt der Klick die
+  // Liste als Warnung und springt ins E-Mail-Feld, statt stumm zu bleiben.
+  const [showMissing, setShowMissing] = useState(false);
+
+  useEffect(() => {
+    if (missing.length === 0) setShowMissing(false);
+  }, [missing.length]);
+
   const handleCheckout = () => {
+    if (!state.checkoutReady) {
+      setShowMissing(true);
+      if (!state.customerEmail) {
+        document.getElementById("pb-checkout-email")?.focus();
+      }
+      return;
+    }
     checkout.mutate(
       { token, billingInterval },
       {
@@ -217,10 +233,20 @@ export function CheckoutBar({
       <p style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}>
         {ADDON_SETUP_NOTE}
       </p>
+      {showMissing && missing.length > 0 && (
+        <div className="pb-studio-checkout-blockers" role="alert">
+          <p>Fast geschafft — dafür fehlt nur noch:</p>
+          <ul>
+            {missing.map(item => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <button
         type="button"
         className="pb-studio-btn"
-        disabled={!state.checkoutReady || checkout.isPending}
+        disabled={checkout.isPending}
         onClick={handleCheckout}
       >
         {checkout.isPending ? "Bitte warten…" : "Website freischalten"}

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   PLACEHOLDER_OPENING_HOURS,
+  displayOpeningHours,
   withPlaceholderOpeningHours,
 } from "./openingHours";
 
@@ -36,5 +37,23 @@ describe("withPlaceholderOpeningHours", () => {
   test("Mo–Fr-Bereich bleibt (kein Stub)", () => {
     const range = [{ day: "Mo–Fr", hours: "09:00–17:00" }];
     expect(withPlaceholderOpeningHours(range)).toEqual(range);
+  });
+});
+
+describe("displayOpeningHours (Render/Formular)", () => {
+  test("bewusst geleerte Liste bleibt leer", () => {
+    expect(displayOpeningHours([])).toEqual([]);
+  });
+
+  test("fehlende Zeiten und Montag-Stub werden weiter ersetzt", () => {
+    expect(displayOpeningHours(undefined)).toEqual(PLACEHOLDER_OPENING_HOURS);
+    expect(
+      displayOpeningHours([{ day: "Montag", hours: "09:00–17:00" }])
+    ).toEqual(PLACEHOLDER_OPENING_HOURS);
+  });
+
+  test("echte Zeiten bleiben unverändert", () => {
+    const real = [{ day: "Sa", hours: "10:00–14:00" }];
+    expect(displayOpeningHours(real)).toEqual(real);
   });
 });

@@ -1671,6 +1671,15 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .hero{background:#0a0a0a;color:#fff;padding:5rem 0 4rem;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% -5%,var(--orb,rgba(233,30,140,.1)),transparent);pointer-events:none}
 .hero-orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);opacity:.6}
+.hero-persona{position:absolute;bottom:0;right:max(1rem,calc((100% - 1100px)/2));height:min(82%,420px);width:auto;z-index:1;pointer-events:none;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))}
+.hero-copy{text-align:center}
+@media(max-width:1023px){.hero-persona{display:none}}
+@media(min-width:1024px){
+  .hero-copy{text-align:left;padding-right:22rem}
+  .hero-copy h1{text-align:left}
+  .hero-copy p{margin-left:0}
+  .hero-copy .hero-trust{justify-content:flex-start}
+}
 .orb-tl{width:500px;height:500px;top:-200px;left:-150px;background:var(--orb,rgba(233,30,140,.08))}
 .orb-br{width:400px;height:400px;bottom:-150px;right:-100px;background:var(--orb,rgba(233,30,140,.06))}
 .hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
@@ -2018,6 +2027,20 @@ function buildBreadcrumbSchema(industry: SeoIndustry, city?: SeoCity): string {
 
 // ── HTML generator ────────────────────────────────────────────────────────────
 
+
+// ── Hero-Personas (2026-08-29): pro Branche ein KI-Freisteller, in dem sich
+// die Zielgruppe wiederfindet. Drei Branchen nutzen die bestehenden
+// Landing-Personas, der Rest liegt unter /personas/seo/<slug>.webp
+// (640×960, WebP mit Alpha). Rein dekorativ → alt="" im Markup.
+const HERO_PERSONA_OVERRIDES: Record<string, string> = {
+  friseur: "/personas/friseurin.webp",
+  handwerk: "/personas/handwerker.webp",
+  restaurant: "/personas/gastgeberin.webp",
+};
+function heroPersonaSrc(slug: string): string {
+  return HERO_PERSONA_OVERRIDES[slug] ?? `/personas/seo/${slug}.webp`;
+}
+
 export function generateLandingPageHTML(
   industry: SeoIndustry,
   city?: SeoCity
@@ -2182,7 +2205,8 @@ export function generateLandingPageHTML(
 <section class="hero">
   <div class="hero-orb orb-tl"></div>
   <div class="hero-orb orb-br"></div>
-  <div class="container" style="position:relative;z-index:1;text-align:center">
+  <img class="hero-persona" src="${heroPersonaSrc(industry.slug)}" alt="" width="640" height="960" loading="eager" fetchpriority="high" aria-hidden="true"/>
+  <div class="container hero-copy" style="position:relative;z-index:1">
     <div class="hero-badge">Pageblitz · Vorschau in 3 Minuten</div>
     <h1>${escapeHtml(h1)}</h1>
     <p>${escapeHtml(industry.description)}</p>

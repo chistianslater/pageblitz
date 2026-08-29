@@ -25,3 +25,18 @@ export function withPlaceholderOpeningHours(
   }
   return PLACEHOLDER_OPENING_HOURS.map(entry => ({ ...entry }));
 }
+
+/**
+ * Render-/Formular-Variante (User-Bug 2026-08-29): eine BEWUSST geleerte
+ * Liste (`[]` — alle Zeilen im Studio entfernt) bleibt leer, damit Kunden
+ * ohne Öffnungszeiten-Anzeige auskommen. Nur fehlende (`undefined`/`null`)
+ * oder Stub-Zeiten (einzelner „Montag") bekommen weiterhin den
+ * Mo–Fr-Platzhalter. Die Generierung nutzt bewusst weiter
+ * `withPlaceholderOpeningHours`, damit neue Websites nie ohne Zeiten starten.
+ */
+export function displayOpeningHours(
+  hours: { day: string; hours: string }[] | null | undefined
+): { day: string; hours: string }[] {
+  if (hours && hours.length === 0) return hours;
+  return withPlaceholderOpeningHours(hours);
+}

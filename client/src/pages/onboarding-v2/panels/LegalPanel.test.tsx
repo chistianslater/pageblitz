@@ -45,11 +45,9 @@ describe("legalDefaults", () => {
     expect(result.legalEmail).toBe("kontakt@sonnenblick-cafe.de");
   });
 
-  test("leere Öffnungszeiten → Mo–Fr-Platzhalter", () => {
+  test("bewusst geleerte Öffnungszeiten bleiben leer (Kunde will keine Anzeige)", () => {
     const result = legalDefaults(initial, []);
-    expect(result.openingHours).toEqual([
-      { day: "Mo–Fr", hours: "09:00–17:00" },
-    ]);
+    expect(result.openingHours).toEqual([]);
   });
 
   test("nur Montag → Mo–Fr-Platzhalter", () => {
@@ -136,7 +134,10 @@ describe("LegalPanel", () => {
     expect(html).toContain("pb-studio-hours-row");
   });
 
-  test("ohne GMB-Öffnungszeiten steht der Mo–Fr-Platzhalter als Zeile bereit", () => {
+  // Frische Websites bekommen ihre Mo–Fr-Zeiten bereits bei der Generierung
+  // (withPlaceholderOpeningHours in generateSiteContent) — `[]` heißt im
+  // Studio seit 2026-08-29: bewusst entfernt, keine Anzeige gewünscht.
+  test("alle Zeilen entfernt → keine Zeile, aber Hinweis und + Zeile", () => {
     const html = renderWithTrpc(
       <LegalPanel
         token={"t".repeat(32)}
@@ -146,7 +147,8 @@ describe("LegalPanel", () => {
         onClose={() => {}}
       />
     );
-    expect(html).toContain("pb-studio-hours-row");
+    expect(html).not.toContain("pb-studio-hours-row");
     expect(html).toContain("+ Zeile");
+    expect(html).toContain("keine Öffnungszeiten");
   });
 });

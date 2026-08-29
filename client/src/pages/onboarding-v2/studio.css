@@ -237,18 +237,48 @@
   font-weight: 600;
   padding: 0.65rem 1.1rem;
   border-radius: 999px;
-  border: 1px solid var(--st-ink);
-  background: var(--st-ink);
-  color: var(--st-surface);
+  border: 1px solid var(--st-accent);
+  background: var(--st-accent);
+  color: var(--st-accent-ink);
   cursor: pointer;
+}
+.pb-studio-btn:hover:not(:disabled) {
+  background: #b3e600;
+  border-color: #b3e600;
 }
 .pb-studio-btn[data-variant="ghost"] {
   background: transparent;
+  border-color: var(--st-line);
   color: var(--st-ink);
+}
+.pb-studio-btn[data-variant="ghost"]:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
 }
 .pb-studio-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+/* Klick auf „Website freischalten" bei offenen Pflichtpunkten: erklärt,
+   was fehlt, statt den Button tot zu schalten. */
+.pb-studio-checkout-blockers {
+  border: 1px solid rgba(255, 157, 122, 0.5);
+  background: rgba(255, 157, 122, 0.08);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--st-ink);
+}
+.pb-studio-checkout-blockers p {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  color: var(--st-warn);
+}
+.pb-studio-checkout-blockers ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.pb-studio-checkout-blockers li {
+  margin: 0.15rem 0;
 }
 .pb-studio-gen {
   min-height: 100dvh;
