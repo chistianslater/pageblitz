@@ -1,12 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
+import { TriangleAlert, X } from "lucide-react";
 
 export const LEAVE_WITHOUT_EMAIL = {
-  modalTitle: "Vorschau wirklich verlassen?",
+  modalTitle: "Achtung — wenn du jetzt gehst, ist deine Website weg.",
   modalBody:
-    "Wenn du jetzt gehst, ohne eine E-Mail zu hinterlassen, wird diese Vorschau-Website nach 24 Stunden gelöscht. Mit E-Mail bleibt sie sieben Tage und du bekommst einen Link zum Weitermachen.",
-  stay: "E-Mail hinterlassen",
+    "Ohne E-Mail wird diese Vorschau nach 24 Stunden gelöscht — alles, was gerade entstanden ist, verschwindet. Mit E-Mail bleibt sie sieben Tage und du bekommst einen Link, um genau hier weiterzumachen.",
+  emailLabel: "Deine E-Mail-Adresse",
+  emailPlaceholder: "name@firma.de",
+  stay: "Website behalten",
   leave: "Trotzdem verlassen",
+  errorInvalid: "Bitte gib eine gültige E-Mail-Adresse ein.",
+  errorSave: "Speichern hat nicht geklappt — bitte versuch es noch einmal.",
 };
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export interface LeaveClickSnapshot {
   defaultPrevented: boolean;
@@ -48,35 +55,65 @@ export function shouldInterceptLeaveClick(snap: LeaveClickSnapshot): boolean {
 
 interface LeaveWithoutEmailDialogProps {
   open: boolean;
-  onStay: () => void;
+  /** Speichert die E-Mail (tRPC-Mutation via StudioPage); wirft bei Fehler. */
+  onSubmitEmail: (email: string) => Promise<void>;
   onLeave: () => void;
+  /** Einfach schließen: bleiben, ohne E-Mail und ohne zu verlassen. */
+  onDismiss: () => void;
 }
 
 /**
- * Alert-Dialog beim Verlassen: zwei klare Aktionen, kein Backdrop-Dismiss.
- * Escape = bleiben (E-Mail-Feld), nicht wegklicken.
+ * Alert-Dialog beim Verlassen: die E-Mail wird DIREKT HIER erfasst
+ * (User-Bug 2026-08-29: der frühere „E-Mail hinterlassen"-Button sprang zu
+ * einem Feld, das auf vielen Screens gar nicht existierte). Kein
+ * Backdrop-Dismiss; Escape springt ins E-Mail-Feld statt zu schließen.
  */
 export function LeaveWithoutEmailDialog({
   open,
-  onStay,
+  onSubmitEmail,
   onLeave,
+  onDismiss,
 }: LeaveWithoutEmailDialogProps) {
-  const stayRef = useRef<HTMLButtonElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    stayRef.current?.focus();
+    emailRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onStay();
+        onDismiss();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onStay]);
+  }, [open, onDismiss]);
 
   if (!open) return null;
+
+  const trimmed = email.trim();
+  const valid = EMAIL_RE.test(trimmed);
+
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (saving) return;
+    if (!valid) {
+      setError(LEAVE_WITHOUT_EMAIL.errorInvalid);
+      emailRef.current?.focus();
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await onSubmitEmail(trimmed);
+    } catch {
+      setError(LEAVE_WITHOUT_EMAIL.errorSave);
+      setSaving(false);
+    }
+  };
 
   return (
     <div
@@ -87,27 +124,59 @@ export function LeaveWithoutEmailDialog({
       aria-describedby="pb-leave-body"
     >
       <div className="pb-studio-leave-modal-card">
+        <button
+          type="button"
+          className="pb-studio-leave-modal-close"
+          aria-label="Schließen"
+          onClick={onDismiss}
+        >
+          <X aria-hidden="true" />
+        </button>
+        <span className="pb-studio-leave-modal-icon" aria-hidden="true">
+          <TriangleAlert />
+        </span>
         <h2 id="pb-leave-title">{LEAVE_WITHOUT_EMAIL.modalTitle}</h2>
         <p id="pb-leave-body">{LEAVE_WITHOUT_EMAIL.modalBody}</p>
-        <div className="pb-studio-leave-modal-actions">
-          <button
-            ref={stayRef}
-            type="button"
-            className="pb-studio-btn"
-            autoFocus
-            onClick={onStay}
-          >
-            {LEAVE_WITHOUT_EMAIL.stay}
-          </button>
-          <button
-            type="button"
-            className="pb-studio-btn"
-            data-variant="ghost"
-            onClick={onLeave}
-          >
-            {LEAVE_WITHOUT_EMAIL.leave}
-          </button>
-        </div>
+        <form className="pb-studio-leave-modal-form" onSubmit={submit}>
+          <label htmlFor="pb-leave-email">
+            {LEAVE_WITHOUT_EMAIL.emailLabel}
+          </label>
+          <input
+            ref={emailRef}
+            id="pb-leave-email"
+            type="email"
+            autoComplete="email"
+            placeholder={LEAVE_WITHOUT_EMAIL.emailPlaceholder}
+            value={email}
+            onChange={event => {
+              setEmail(event.target.value);
+              setError(null);
+            }}
+          />
+          {error && (
+            <p role="alert" className="pb-studio-leave-modal-error">
+              {error}
+            </p>
+          )}
+          <div className="pb-studio-leave-modal-actions">
+            <button
+              type="submit"
+              className="pb-studio-btn"
+              disabled={saving || trimmed.length === 0}
+            >
+              {saving ? "Wird gespeichert …" : LEAVE_WITHOUT_EMAIL.stay}
+            </button>
+            <button
+              type="button"
+              className="pb-studio-btn"
+              data-variant="ghost"
+              onClick={onLeave}
+              disabled={saving}
+            >
+              {LEAVE_WITHOUT_EMAIL.leave}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -115,7 +184,8 @@ export function LeaveWithoutEmailDialog({
 
 interface LeaveWithoutEmailGuardProps {
   armed: boolean;
-  onStay: () => void;
+  /** Speichert die E-Mail; bei Erfolg schließt der Guard das Modal. */
+  onSubmitEmail: (email: string) => Promise<void>;
   /**
    * Testhilfe / gesteuerter Open-State: Modal sofort offen, als hätte
    * jemand einen Outbound-Link geklickt. Produktion setzt das nicht.
@@ -139,7 +209,7 @@ type PendingLeave = { kind: "href"; href: string } | { kind: "back" };
  */
 export function LeaveWithoutEmailGuard({
   armed,
-  onStay,
+  onSubmitEmail,
   initialPendingHref = null,
 }: LeaveWithoutEmailGuardProps) {
   const [pending, setPending] = useState<PendingLeave | null>(() =>
@@ -226,11 +296,12 @@ export function LeaveWithoutEmailGuard({
   return (
     <LeaveWithoutEmailDialog
       open={pending !== null}
-      onStay={() => {
+      onSubmitEmail={async email => {
+        await onSubmitEmail(email);
         dismiss();
-        onStay();
       }}
       onLeave={confirmLeave}
+      onDismiss={dismiss}
     />
   );
 }

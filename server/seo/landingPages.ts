@@ -1518,6 +1518,56 @@ export const DE_CITIES: SeoCity[] = [
 
 // ── Per-industry visual style + relevant add-ons ─────────────────────────────
 
+
+// ── Icon-System (Relaunch 2026-08-29): Lucide-Linien-Icons statt OS-Emojis,
+// passend zur Startseite. Schlüssel ohne Variation Selector (FE0F);
+// unbekannte Emojis fallen auf das Funken-Icon zurück.
+const ICON_PATHS: Record<string, string> = {
+  "⚡": '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  "✂": '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/>',
+  "🖼": '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  "📅": '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  "📆": '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  "📍": '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  "🔧": '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  "🔩": '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  "📋": '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  "📝": '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  "✅": '<path d="M20 6 9 17l-5-5"/>',
+  "✓": '<path d="M20 6 9 17l-5-5"/>',
+  "📞": '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>',
+  "📷": '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  "📸": '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  "🔍": '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  "📱": '<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/>',
+  "👥": '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  "👤": '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  "🍽": '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+  "💶": '<path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>',
+  "💰": '<path d="M4 10h12"/><path d="M4 14h9"/><path d="M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12c0 4.4 3.5 8 7.8 8 2 0 3.8-.8 5.2-2"/>',
+  "🔒": '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  "🔑": '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
+  "🕐": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  "🌐": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  "🌍": '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  "✉": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  "📩": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  "📬": '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  "💛": '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+  "🚗": '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  "🏠": '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  "🌿": '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  "🎨": '<circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>',
+};
+const ICON_FALLBACK =
+  '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>';
+
+function iconSvg(emoji: string): string {
+  const key = emoji.replace(/[\uFE00-\uFE0F]/g, "").trim();
+  const body = ICON_PATHS[key] ?? ICON_FALLBACK;
+  return `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}
+
 interface IndustryStyle {
   accent: string;     // CTA + accent color
   heroBg: string;     // gradient for mock-browser hero
@@ -1844,7 +1894,10 @@ nav{background:rgba(19,19,22,.88);border-color:rgba(255,255,255,.09);padding:.75
 .step p,.feature-card p,.addon-card p{color:#a4a39d}
 .feature-card,.addon-card{background:#131316;border-color:rgba(255,255,255,.09);border-radius:12px}
 .feature-card:hover,.addon-card:hover{background:#1a1a1e;border-color:rgba(255,255,255,.22)}
-.feature-icon{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32)}
+.feature-icon{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32);color:#ccff00}
+.addon-icon{color:#ccff00}
+.pricing-addon-row svg{vertical-align:-4px;margin-right:.3rem;color:#ccff00}
+.mw-card-icon svg{width:16px;height:16px}
 .addon-price{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32);color:#ccff00}
 .addon-expand-btn{background:transparent;border-color:rgba(255,255,255,.22);color:#f2f1ee}
 .addon-expand-btn:hover{background:#131316;color:#f2f1ee}
@@ -2017,9 +2070,9 @@ export function generateLandingPageHTML(
     <h2 class="section-title">${escapeHtml(industry.displayName)}-Website in ${escapeHtml(city.name)}: worauf es hier ankommt</h2>
     <p class="local-intro">${escapeHtml(city.intro)}</p>
     <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">📍</div><h3>Sichtbar im Stadtteil</h3><p>Ob ${escapeHtml(d0)}, ${escapeHtml(d1)} oder ${escapeHtml(d2)} – deine Website nennt Stadtteil und Adresse genau dort, wo Google sie für die lokale Suche ausliest. Das entscheidet in ${escapeHtml(city.name)} mehr als jedes Werbebudget.</p></div>
-      <div class="feature-card"><div class="feature-icon">🔍</div><h3>„${escapeHtml(industry.displayName)} ${escapeHtml(city.name)}“</h3><p>Genau nach dieser Kombination sucht deine Kundschaft. Pageblitz setzt Titel, Überschriften und Meta-Angaben automatisch so, dass dein Betrieb für ${escapeHtml(industry.displayName.toLowerCase())}-Suchen in ${escapeHtml(city.name)} passend ausgezeichnet ist.</p></div>
-      <div class="feature-card"><div class="feature-icon">📱</div><h3>Unterwegs entschieden</h3><p>Lokale Suchen laufen fast immer über das Handy – oft direkt vor der Tür. Deine Seite lädt schnell, zeigt Öffnungszeiten und Route sofort und macht die Kontaktaufnahme zu einem Fingertipp.</p></div>
+      <div class="feature-card"><div class="feature-icon">${iconSvg("📍")}</div><h3>Sichtbar im Stadtteil</h3><p>Ob ${escapeHtml(d0)}, ${escapeHtml(d1)} oder ${escapeHtml(d2)} – deine Website nennt Stadtteil und Adresse genau dort, wo Google sie für die lokale Suche ausliest. Das entscheidet in ${escapeHtml(city.name)} mehr als jedes Werbebudget.</p></div>
+      <div class="feature-card"><div class="feature-icon">${iconSvg("🔍")}</div><h3>„${escapeHtml(industry.displayName)} ${escapeHtml(city.name)}“</h3><p>Genau nach dieser Kombination sucht deine Kundschaft. Pageblitz setzt Titel, Überschriften und Meta-Angaben automatisch so, dass dein Betrieb für ${escapeHtml(industry.displayName.toLowerCase())}-Suchen in ${escapeHtml(city.name)} passend ausgezeichnet ist.</p></div>
+      <div class="feature-card"><div class="feature-icon">${iconSvg("📱")}</div><h3>Unterwegs entschieden</h3><p>Lokale Suchen laufen fast immer über das Handy – oft direkt vor der Tür. Deine Seite lädt schnell, zeigt Öffnungszeiten und Route sofort und macht die Kontaktaufnahme zu einem Fingertipp.</p></div>
     </div>
   </div>
 </section>`
@@ -2031,7 +2084,7 @@ export function generateLandingPageHTML(
   // Industry-relevant add-ons
   const relevantAddons = getRelevantAddons(industry.slug);
   const addonsHtml = relevantAddons
-    .map((a, i) => `<div class="addon-card${i >= 3 ? ' addon-more' : ''}"><div class="addon-icon">${a.icon}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`)
+    .map((a, i) => `<div class="addon-card${i >= 3 ? ' addon-more' : ''}"><div class="addon-icon">${iconSvg(a.icon)}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`)
     .join("\n      ");
 
   const showExpandBtn = relevantAddons.length > 3;
@@ -2040,14 +2093,14 @@ export function generateLandingPageHTML(
   const pricingAddonsHtml = relevantAddons
     .map(
       (a) =>
-        `<div class="pricing-addon-row"><span>${a.icon} ${escapeHtml(a.title)}</span><span>${escapeHtml(a.price)}</span></div>`
+        `<div class="pricing-addon-row"><span>${iconSvg(a.icon)} ${escapeHtml(a.title)}</span><span>${escapeHtml(a.price)}</span></div>`
     )
     .join("\n          ");
 
   const featuresHtml = industry.features
     .map(
       (f) =>
-        `<div class="feature-card"><div class="feature-icon">${f.icon}</div><h3>${escapeHtml(f.title)}</h3><p>${escapeHtml(f.text)}</p></div>`
+        `<div class="feature-card"><div class="feature-icon">${iconSvg(f.icon)}</div><h3>${escapeHtml(f.title)}</h3><p>${escapeHtml(f.text)}</p></div>`
     )
     .join("\n      ");
 
@@ -2085,7 +2138,7 @@ export function generateLandingPageHTML(
   const mockCardsHtml = industry.features
     .slice(0, 3)
     .map(
-      (f) => `<div class="mw-card"><div class="mw-card-icon">${f.icon}</div><div class="mw-card-line1"></div><div class="mw-card-line2"></div></div>`
+      (f) => `<div class="mw-card"><div class="mw-card-icon">${iconSvg(f.icon)}</div><div class="mw-card-line1"></div><div class="mw-card-line2"></div></div>`
     )
     .join("\n          ");
 
@@ -2119,7 +2172,7 @@ export function generateLandingPageHTML(
 <nav>
   <div class="container nav-inner">
     <a class="logo" href="/">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
+      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#ccff00" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
       Pageblitz
     </a>
     <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>
@@ -2166,7 +2219,7 @@ export function generateLandingPageHTML(
           <div class="mock-dot g"></div>
         </div>
         <div class="mock-url">
-          <span>🔒</span>
+          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
           <span>${escapeHtml(mockUrl)}</span>
         </div>
       </div>
@@ -2383,7 +2436,8 @@ export function generateOverviewHTML(): string {
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
 .industry-card{display:flex;flex-direction:column;align-items:center;background:#fdfcfa;border:1px solid #ddd6c9;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:background-color .2s,border-color .2s,transform .2s;color:#1d1a17}
 .industry-card:hover{border-color:#1f5f4b;background:#fff;transform:translateY(-2px)}
-.industry-card .icon{font-size:2rem;margin-bottom:.75rem}
+.industry-card .icon{margin-bottom:.75rem;color:#ccff00}
+.industry-card .icon svg{width:28px;height:28px}
 .industry-card h3{font-size:.9375rem;font-weight:600;color:#1d1a17;margin-bottom:.375rem}
 .industry-card p{font-size:.8125rem;color:#6b645b;line-height:1.5}
 @media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){.industry-card{transition:none}.industry-card:hover{transform:none}}
@@ -2392,7 +2446,7 @@ export function generateOverviewHTML(): string {
   const industryCardsHtml = Object.values(SEO_INDUSTRIES)
     .map(
       (i) =>
-        `<a class="industry-card" href="/website-erstellen/${i.slug}"><div class="icon">${i.features[0]?.icon ?? "🌐"}</div><h3>${escapeHtml(i.displayName)}</h3><p>${escapeHtml(i.title)}</p></a>`
+        `<a class="industry-card" href="/website-erstellen/${i.slug}"><div class="icon">${iconSvg(i.features[0]?.icon ?? "🌐")}</div><h3>${escapeHtml(i.displayName)}</h3><p>${escapeHtml(i.title)}</p></a>`
     )
     .join("\n    ");
 
@@ -2451,7 +2505,7 @@ export function generateOverviewHTML(): string {
 <nav>
   <div class="container nav-inner">
     <a class="logo" href="/">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="flex-shrink:0"><rect width="32" height="32" rx="7" fill="#18181b"/><path d="M18 4L8 18h8l-2 10 12-14h-8l2-10z" fill="#fff"/></svg>
+      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#ccff00" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
       Pageblitz
     </a>
     <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>

@@ -117,10 +117,7 @@ export function DesignSplash({
     );
   };
 
-  const sideCard = (
-    candidate: Candidate | null,
-    side: "left" | "right"
-  ) =>
+  const sideCard = (candidate: Candidate | null, side: "left" | "right") =>
     candidate ? (
       <button
         type="button"
@@ -154,8 +151,8 @@ export function DesignSplash({
               Gefällt dir das Design für {businessName}?
             </h1>
             <p>
-              Wähle eine Richtung, passe Farbe und Schrift an und bestätige
-              erst dann den Einstieg ins Studio.
+              Wähle eine Richtung, passe Farbe und Schrift an und bestätige erst
+              dann den Einstieg ins Studio.
             </p>
           </div>
           <div className="pb-studio-seg" aria-label="Gerät">
@@ -226,10 +223,7 @@ export function DesignSplash({
               aria-hidden="true"
               onWheel={event => {
                 event.preventDefault();
-                previewIframe.current?.contentWindow?.scrollBy(
-                  0,
-                  event.deltaY
-                );
+                previewIframe.current?.contentWindow?.scrollBy(0, event.deltaY);
               }}
               onPointerDown={event => {
                 pointerGesture.current = {

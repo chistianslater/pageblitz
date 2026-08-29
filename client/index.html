@@ -3,6 +3,24 @@
 
   <head>
     <meta charset="UTF-8" />
+    <!-- Pre-Paint-Hintergrund (2026-08-29): dunkle Routen (Landing, Funnel,
+         Studio, Rechtsseiten) malen sofort Kohle statt kurz hell zu blitzen,
+         bevor React/CSS greifen. Synchron und winzig — bewusst VOR allem
+         anderen. -->
+    <script>
+      (function () {
+        var p = location.pathname;
+        var dark =
+          p === "/" ||
+          p.indexOf("/start") === 0 ||
+          p.indexOf("/onboarding") === 0 ||
+          p === "/impressum" ||
+          p === "/datenschutz";
+        document.documentElement.style.background = dark
+          ? "#0b0b0d"
+          : "#f3efe7";
+      })();
+    </script>
     <!-- Translate verhindern: schützt React vor DOM-Konflikten durch Google Translate u.a. Übersetzer -->
     <meta name="google" content="notranslate">
     <meta

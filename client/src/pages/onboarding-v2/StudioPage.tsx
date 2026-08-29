@@ -97,6 +97,10 @@ export default function StudioPage({ token }: { token: string }) {
   const inlineUpdateText =
     trpc.onboardingV2.updateInlineText.useMutation();
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
+  // E-Mail-Erfassung direkt im Leave-Guard-Modal (2026-08-29): der frühere
+  // Sprung zu #pb-checkout-email lief auf Screens ohne Checkout-Leiste ins
+  // Leere — jetzt speichert das Modal selbst.
+  const guardSaveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
   const applySectionLayout = useCallback(
     (profile: DesignProfile) => {
       updateTheme.mutate(
@@ -192,13 +196,9 @@ export default function StudioPage({ token }: { token: string }) {
   const leaveGuard = (
     <LeaveWithoutEmailGuard
       armed={shouldWarnOnLeave(state.status, state.customerEmail)}
-      onStay={() => {
-        setActiveId(null);
-        requestAnimationFrame(() => {
-          const field = document.getElementById("pb-checkout-email");
-          field?.focus();
-          field?.scrollIntoView({ block: "center", behavior: "smooth" });
-        });
+      onSubmitEmail={async email => {
+        await guardSaveEmail.mutateAsync({ token, email });
+        await studio.refetch();
       }}
     />
   );

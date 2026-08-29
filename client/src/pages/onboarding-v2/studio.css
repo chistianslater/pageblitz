@@ -1,12 +1,14 @@
 .pb-studio {
-  --st-canvas: #f3efe7; /* warmes Papier */
-  --st-surface: #fbf9f4;
-  --st-ink: #1d1a17;
-  --st-muted: #6b645b;
-  --st-line: #d9d2c5;
-  --st-accent: #1f5f4b; /* tiefes Grün: "erledigt"/Aktion */
-  --st-accent-ink: #ffffff;
-  --st-warn: #a4441f;
+  /* Nachtschicht (2026-08-29, User-Entscheid): das Studio folgt der
+     Landing — Kohle, EIN Volt-Akzent. Vorher Papier/Grün. */
+  --st-canvas: #0b0b0d;
+  --st-surface: #131316;
+  --st-ink: #f2f1ee;
+  --st-muted: #a4a39d;
+  --st-line: rgba(255, 255, 255, 0.14);
+  --st-accent: #ccff00;
+  --st-accent-ink: #0b0b0d;
+  --st-warn: #ff9d7a;
   /* Eine Schrift für das ganze System (Landing + Studio + Dashboard): Space Grotesk. */
   --st-display: "Space Grotesk", system-ui, sans-serif;
   --st-ui: "Space Grotesk", system-ui, sans-serif;
@@ -168,7 +170,7 @@
   border-radius: 14px;
   background: #fff;
   box-shadow:
-    0 30px 60px -30px rgba(29, 26, 23, 0.45),
+    0 30px 60px -30px rgba(0, 0, 0, 0.45),
     0 0 0 1px var(--st-line);
   overflow: hidden;
   margin: 0 auto;
@@ -392,7 +394,7 @@
   border: 1px solid var(--st-line);
   border-radius: 10px;
   background: #fff;
-  box-shadow: 0 18px 38px -28px rgba(29, 26, 23, 0.45);
+  box-shadow: 0 18px 38px -28px rgba(0, 0, 0, 0.45);
 }
 .pb-design-side-frame iframe {
   position: absolute;
@@ -492,7 +494,7 @@
   border: 1px solid var(--st-line);
   border-radius: 12px;
   background: var(--st-surface);
-  box-shadow: 0 24px 55px -28px rgba(29, 26, 23, 0.55);
+  box-shadow: 0 24px 55px -28px rgba(0, 0, 0, 0.55);
   animation: pb-design-fan-open 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .pb-design-fan[data-kind="color"] {
@@ -778,7 +780,7 @@
   border: 1px solid var(--st-line);
   border-radius: 10px;
   background: color-mix(in srgb, var(--st-surface) 94%, transparent);
-  box-shadow: 0 18px 40px -28px rgba(29, 26, 23, 0.55);
+  box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(8px);
   text-align: left;
 }
@@ -1129,7 +1131,7 @@
   padding: 0.6rem 0.75rem;
   border-radius: 8px;
   border: 1px solid var(--st-line);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--st-ink);
 }
 .pb-studio-input:focus-visible,
@@ -2166,34 +2168,131 @@
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(29, 26, 23, 0.55);
+  background: rgba(0, 0, 0, 0.72);
 }
+/* Nachtschicht-Karte (2026-08-29): das Modal erscheint über dunklen
+   Funnel-Screens UND der hellen Kundenvorschau — feste dunkle Markenfarben
+   statt geerbter Studio-Tokens. */
 .pb-studio-leave-modal-card {
-  width: min(28rem, 100%);
-  background: var(--st-surface, #fbf9f4);
-  color: var(--st-ink, #1d1a17);
-  border: 1px solid var(--st-line, #d9d2c5);
-  border-radius: 0.85rem;
-  padding: 1.25rem 1.35rem;
+  position: relative;
+  width: min(30rem, 100%);
+  background: #131316;
+  color: #f2f1ee;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.25rem;
+  padding: 1.5rem 1.6rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   font-family: var(--st-ui, "Space Grotesk", system-ui, sans-serif);
-  box-shadow: 0 1.25rem 2.5rem rgba(29, 26, 23, 0.22);
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
+}
+.pb-studio-leave-modal-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: grid;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a4a39d;
+  cursor: pointer;
+}
+.pb-studio-leave-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f2f1ee;
+}
+.pb-studio-leave-modal-close svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.pb-studio-leave-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 0.8rem;
+  background: rgba(204, 255, 0, 0.12);
+  color: #ccff00;
+}
+.pb-studio-leave-modal-icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
 }
 .pb-studio-leave-modal-card h2 {
   margin: 0;
-  font-family: var(--st-display);
-  font-size: 1.2rem;
-  font-weight: 500;
+  font-family: var(--st-display, "Space Grotesk", system-ui, sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .pb-studio-leave-modal-card p {
   margin: 0;
   font-size: 0.95rem;
-  line-height: 1.45;
+  line-height: 1.5;
+  color: #a4a39d;
+}
+.pb-studio-leave-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+.pb-studio-leave-modal-form label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7c7b76;
+}
+.pb-studio-leave-modal-form input {
+  font: inherit;
+  width: 100%;
+  padding: 0.8rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f2f1ee;
+}
+.pb-studio-leave-modal-form input::placeholder {
+  color: #7c7b76;
+}
+.pb-studio-leave-modal-form input:focus {
+  outline: 2px solid #ccff00;
+  outline-offset: 1px;
+  border-color: #ccff00;
+}
+.pb-studio-leave-modal-error {
+  color: #ff9d7a;
+  font-size: 0.85rem;
 }
 .pb-studio-leave-modal-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+.pb-studio-leave-modal-actions .pb-studio-btn {
+  background: #ccff00;
+  border-color: #ccff00;
+  color: #0b0b0d;
+  font-weight: 700;
+  padding: 0.75rem 1.3rem;
+}
+.pb-studio-leave-modal-actions .pb-studio-btn:hover:not(:disabled) {
+  background: #b3e600;
+  border-color: #b3e600;
+}
+.pb-studio-leave-modal-actions .pb-studio-btn[data-variant="ghost"] {
+  background: transparent;
+  border-color: transparent;
+  color: #a4a39d;
+  font-weight: 500;
+}
+.pb-studio-leave-modal-actions .pb-studio-btn[data-variant="ghost"]:hover:not(:disabled) {
+  color: #f2f1ee;
+  background: rgba(255, 255, 255, 0.06);
 }

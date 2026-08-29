@@ -29,7 +29,7 @@ describe("LeaveWithoutEmailGuard", () => {
   test("armed=false rendert nichts (keine Warnung mit E-Mail / nach Kauf)", () => {
     expect(shouldWarnOnLeave("preview", "kunde@x.de")).toBe(false);
     const html = renderToStaticMarkup(
-      <LeaveWithoutEmailGuard armed={false} onStay={() => {}} />
+      <LeaveWithoutEmailGuard armed={false} onSubmitEmail={async () => {}} />
     );
     expect(html).toBe("");
   });
@@ -37,7 +37,7 @@ describe("LeaveWithoutEmailGuard", () => {
   test("armed=true zeigt keinen dauerhaften Banner, solange niemand verlässt", () => {
     expect(shouldWarnOnLeave("preview", null)).toBe(true);
     const html = renderToStaticMarkup(
-      <LeaveWithoutEmailGuard armed onStay={() => {}} />
+      <LeaveWithoutEmailGuard armed onSubmitEmail={async () => {}} />
     );
     expect(html).toBe("");
     expect(html).not.toContain("pb-studio-leave-banner");
@@ -50,7 +50,7 @@ describe("LeaveWithoutEmailGuard", () => {
       <LeaveWithoutEmailGuard
         armed
         initialPendingHref="https://example.com/"
-        onStay={() => {}}
+        onSubmitEmail={async () => {}}
       />
     );
     expect(html).toContain('role="alertdialog"');
@@ -71,17 +71,28 @@ describe("LeaveWithoutEmailDialog", () => {
       renderToStaticMarkup(
         <LeaveWithoutEmailDialog
           open={false}
-          onStay={() => {}}
+          onSubmitEmail={async () => {}}
           onLeave={() => {}}
+          onDismiss={() => {}}
         />
       )
     ).toBe("");
     const html = renderToStaticMarkup(
-      <LeaveWithoutEmailDialog open onStay={() => {}} onLeave={() => {}} />
+      <LeaveWithoutEmailDialog
+        open
+        onSubmitEmail={async () => {}}
+        onLeave={() => {}}
+        onDismiss={() => {}}
+      />
     );
     expect(html).toContain('role="alertdialog"');
-    expect(html).toContain("E-Mail hinterlassen");
+    // E-Mail wird DIREKT im Modal erfasst (2026-08-29) …
+    expect(html).toContain('type="email"');
+    expect(html).toContain(LEAVE_WITHOUT_EMAIL.emailLabel);
+    expect(html).toContain(LEAVE_WITHOUT_EMAIL.stay);
     expect(html).toContain("Trotzdem verlassen");
+    // … und lässt sich per X auch einfach schließen.
+    expect(html).toContain('aria-label="Schließen"');
     expect(html).not.toContain("pb-studio-leave-banner");
   });
 });
