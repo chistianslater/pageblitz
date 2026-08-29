@@ -1,34 +1,15 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 /**
- * Hero-Bühne (2026-08-25, User-Brief: „Wireframe, das sich Schritt für
- * Schritt aufbaut — und am Ende eine coole fertige Website"). Runde 2:
- * Das Wireframe liegt jetzt in GEOMETRIE UND FARBEN der Ziel-Website
- * (Werkbank: Kohle-Hero #191919, Putz-Balken, Signal #FF4D00), damit der
- * Crossfade glaubwürdig als „Verwandlung" liest — gleiche Zonen, gleiche
- * Proportionen, dann werden nacheinander die Werkbank-Akzente gelegt
- * (dritte Headline-Zeile wird Signal, die Fotokante bekommt den
- * Signal-Border), erst dann fadet das echte Screenshot darüber.
+ * Hero-Bühne: LCP bleibt das Werkbank-Preview (`loading="eager"`). Sobald
+ * der Browser Luft hat, übernimmt ein Remotion-Player die Fläche — Loop
+ * startet auf demselben Screenshot, rewindet, baut die Werkbank-Site
+ * cinematic auf und wischt zurück ins Live-Bild.
  *
- * Aufbau: Nav/Hero-Schale → Headline-Zeilen → Subline → Foto-Band →
- * Karten → Akzent-Phase → Crossfade → Hold → Loop. Mechanik wie
- * gehabt (Timer-Phasen + CSS-Transitions); bei `prefers-reduced-motion:
- * reduce` steht sofort die fertige Website (keine Timer).
+ * `prefers-reduced-motion: reduce` bleibt beim statischen Preview.
  */
 
-const BUILD_STEPS = 6;
-const STEP_MS = 620;
-const ACCENT_MS = 750;
-const FINAL_FADE_MS = 900;
-const HOLD_MS = 4600;
-const RESET_FADE_MS = 500;
-
-type Phase =
-  | { kind: "build"; step: number }
-  | { kind: "accent" }
-  | { kind: "final" }
-  | { kind: "hold" }
-  | { kind: "reset" };
+const HeroFilmPlayer = lazy(() => import("./hero-film/HeroFilmPlayer"));
 
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false);
@@ -44,59 +25,41 @@ function usePrefersReducedMotion(): boolean {
 
 export function HeroBuild() {
   const reduced = usePrefersReducedMotion();
-  const [phase, setPhase] = useState<Phase>({ kind: "build", step: 0 });
+  const [filmReady, setFilmReady] = useState(false);
 
   useEffect(() => {
     if (reduced) return;
-    let timer: ReturnType<typeof setTimeout>;
-    const advance = (current: Phase) => {
-      switch (current.kind) {
-        case "build":
-          if (current.step < BUILD_STEPS) {
-            const next = current.step + 1;
-            setPhase({ kind: "build", step: next });
-            timer = setTimeout(() => advance({ kind: "build", step: next }), STEP_MS);
-          } else {
-            setPhase({ kind: "accent" });
-            timer = setTimeout(() => advance({ kind: "accent" }), ACCENT_MS);
-          }
-          break;
-        case "accent":
-          setPhase({ kind: "final" });
-          timer = setTimeout(() => advance({ kind: "final" }), FINAL_FADE_MS);
-          break;
-        case "final":
-          setPhase({ kind: "hold" });
-          timer = setTimeout(() => advance({ kind: "hold" }), HOLD_MS);
-          break;
-        case "hold":
-          setPhase({ kind: "reset" });
-          timer = setTimeout(() => advance({ kind: "reset" }), RESET_FADE_MS);
-          break;
-        case "reset":
-          setPhase({ kind: "build", step: 0 });
-          timer = setTimeout(() => advance({ kind: "build", step: 0 }), 60);
-          break;
-      }
+    let cancelled = false;
+    const arm = () => {
+      if (!cancelled) setFilmReady(true);
     };
-    timer = setTimeout(() => advance({ kind: "build", step: 0 }), 350);
-    return () => clearTimeout(timer);
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId: number | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (typeof w.requestIdleCallback === "function") {
+      idleId = w.requestIdleCallback(arm, { timeout: 900 });
+    } else {
+      timer = setTimeout(arm, 400);
+    }
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof w.cancelIdleCallback === "function")
+        w.cancelIdleCallback(idleId);
+      if (timer !== undefined) clearTimeout(timer);
+    };
   }, [reduced]);
 
-  const buildStep = phase.kind === "build" ? phase.step : BUILD_STEPS;
-  const isAccent =
-    phase.kind === "accent" || phase.kind === "final" || phase.kind === "hold";
-  const showFinal = phase.kind === "final" || phase.kind === "hold";
-  const resetting = phase.kind === "reset";
+  const showFilm = filmReady && !reduced;
 
   return (
     <div
       className="lpb"
       role="img"
-      aria-label="Animation: Ein Website-Wireframe baut sich Schritt für Schritt auf und verwandelt sich in die fertige Website"
-      data-resetting={resetting || undefined}
+      aria-label="Animation: Eine Werkbank-Website rewindet und baut sich Stück für Stück wieder auf — bis zur fertigen Live-Seite"
     >
-      {/* Browser-Chrome */}
       <div className="lpb-chrome" aria-hidden="true">
         <span className="lpb-dot" />
         <span className="lpb-dot" />
@@ -105,34 +68,6 @@ export function HeroBuild() {
       </div>
 
       <div className="lpb-stage">
-        {/* Wireframe in Werkbank-Geometrie: dunkle Hero-Zone oben,
-            Foto-Band, helle Karten-Zone — Positionen folgen dem finalen
-            Screenshot, damit der Crossfade als Verwandlung liest. */}
-        <div className="lpb-wire" data-accent={isAccent || undefined}>
-          <div className="lpb-herozone" data-on={buildStep >= 1 || undefined}>
-            <div className="lpb-nav">
-              <span className="lpb-logo" />
-              <span className="lpb-link" />
-              <span className="lpb-link" />
-              <span className="lpb-link" />
-            </div>
-            <div className="lpb-hlines">
-              <span className="lpb-bar lpb-h1a" data-on={buildStep >= 2 || undefined} />
-              <span className="lpb-bar lpb-h1b" data-on={buildStep >= 3 || undefined} />
-              <span className="lpb-bar lpb-h1c" data-on={buildStep >= 4 || undefined} />
-              <span className="lpb-bar lpb-sub" data-on={buildStep >= 4 || undefined} />
-            </div>
-          </div>
-          <div className="lpb-band" data-on={buildStep >= 5 || undefined} />
-          <div className="lpb-cardzone" data-on={buildStep >= 6 || undefined}>
-            <span className="lpb-card" />
-            <span className="lpb-card" />
-            <span className="lpb-card" />
-            <span className="lpb-card" />
-          </div>
-        </div>
-
-        {/* Fertige Website fadet darüber ein */}
         <img
           className="lpb-final"
           src="/pack-previews/werkbank.webp"
@@ -142,8 +77,12 @@ export function HeroBuild() {
           loading="eager"
           fetchPriority="high"
           decoding="async"
-          data-on={reduced || showFinal || undefined}
         />
+        {showFilm ? (
+          <Suspense fallback={null}>
+            <HeroFilmPlayer />
+          </Suspense>
+        ) : null}
       </div>
     </div>
   );

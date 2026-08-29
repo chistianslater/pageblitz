@@ -87,20 +87,6 @@ body {
     U+2215, U+FEFF, U+FFFD;
 }
 
-/* Landing-Display (nur `.lp`): Barlow Condensed 700, latin, self-hosted.
-   OFL, Quelle analog Space Grotesk (Google Fonts latin-Datei v13). */
-@font-face {
-  font-family: "Barlow Condensed";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/barlow-condensed-latin-700.woff2") format("woff2");
-  unicode-range:
-    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
-    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
-    U+2215, U+FEFF, U+FFFD;
-}
-
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -492,9 +478,9 @@ body {
 
 /* ── Landingpage (brutalist-editorial, 2026-08-29) ─────────────────────────
    Richtung: Refero „AI for Business" / Dayos — warmes Grau, Carbon-Schwarz,
-   oversized Condensed-Versalien, Mint/Gelb nur als Mikro-Akzent, flache
-   Flächen ohne Schatten. Tokens hier auf `.lp` begrenzt, damit Studio,
-   Dashboard und Cookie-Banner die Papier/Grün-Welt behalten. */
+   oversized Space-Grotesk-Versalien, Mint/Gelb nur als Mikro-Akzent, flache
+   Flächen ohne Schatten. Eine Schrift mit Studio/Dashboard (Space Grotesk);
+   Tokens hier auf `.lp` begrenzt, damit Studio die Papier/Grün-Welt behält. */
 .lp {
   --lp-canvas: #e5e5e5;
   --lp-surface: #ffffff;
@@ -503,7 +489,7 @@ body {
   --lp-line: #c6c6c6;
   --lp-accent: #000000;
   --lp-accent-ink: #ffffff;
-  --lp-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --lp-display: "Space Grotesk", system-ui, sans-serif;
   --lp-section: clamp(4.5rem, 3.2rem + 6vw, 9.5rem);
   font-family: var(--lp-font);
   background: var(--lp-canvas);
@@ -521,7 +507,7 @@ body {
   font-family: var(--lp-display);
   font-weight: 700;
   text-transform: uppercase;
-  line-height: 0.9;
+  line-height: 0.94;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
@@ -561,8 +547,8 @@ body {
   line-height: 1.2;
 }
 .lp-h1 {
-  font-size: clamp(3.1rem, 1.4rem + 7.2vw, 8.25rem);
-  line-height: 0.88;
+  font-size: clamp(2.7rem, 1.25rem + 5.6vw, 6.4rem);
+  line-height: 0.94;
   letter-spacing: -0.035em;
 }
 .lp-h1--hero {
@@ -570,23 +556,23 @@ body {
   overflow-wrap: break-word;
 }
 .lp-h2 {
-  font-size: clamp(2.15rem, 1.05rem + 3.4vw, 4.25rem);
-  line-height: 0.9;
-  letter-spacing: -0.03em;
+  font-size: clamp(1.85rem, 1.05rem + 2.7vw, 3.55rem);
+  line-height: 0.94;
+  letter-spacing: -0.04em;
 }
 .lp-num {
   font-family: var(--lp-display);
-  font-size: clamp(2.4rem, 1.4rem + 2.4vw, 4rem);
-  line-height: 0.85;
+  font-size: clamp(2.15rem, 1.3rem + 2vw, 3.5rem);
+  line-height: 0.88;
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   font-variant-numeric: tabular-nums;
   color: var(--lp-ink);
 }
 .lp-display {
   font-family: var(--lp-display);
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
 }
 /* Hero-Studio-Rahmen: Checkliste füllt sich (einziger erklärender Moment). */
 .lp-check-num {
@@ -646,11 +632,9 @@ html.lp-reveal-on .lp-section.lp-in {
   transform: none;
 }
 
-/* ── HeroBuild (2026-08-25): Wireframe baut sich auf → fertige Website ──
-   Phasen/Timer in HeroBuild.tsx; hier nur Optik + Transitions. Blöcke
-   erscheinen über data-on, der CTA färbt sich über data-accent, das
-   fertige Bild fadet über data-on darüber. Bei reduced-motion setzt die
-   Komponente das finale Bild sofort (keine Timer). */
+/* ── Hero-Bühne: Browser-Chrome + 16:10-Stage. Der Film läuft in
+   Remotion (hero-film/); Poster bleibt als LCP und Reduced-Motion-
+   Fallback darunter liegen. */
 .lpb {
   border: 0;
   border-radius: 32px;
@@ -687,130 +671,8 @@ html.lp-reveal-on .lp-section.lp-in {
 }
 .lpb-stage {
   position: relative;
-  /* Gleiches Seitenverhältnis wie das Ziel-Screenshot (800×500), damit
-     der Crossfade deckt statt beschneidet. */
   aspect-ratio: 16 / 10;
   background: #191919;
-}
-.lpb-wire {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-}
-.lpb-herozone,
-.lpb-bar,
-.lpb-band,
-.lpb-cardzone {
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 0.5s var(--lp-ease),
-    transform 0.5s var(--lp-ease),
-    background-color 0.45s ease;
-}
-.lpb-herozone[data-on],
-.lpb-bar[data-on],
-.lpb-band[data-on],
-.lpb-cardzone[data-on] {
-  opacity: 1;
-  transform: none;
-}
-.lpb[data-resetting] .lpb-herozone,
-.lpb[data-resetting] .lpb-bar,
-.lpb[data-resetting] .lpb-band,
-.lpb[data-resetting] .lpb-cardzone,
-.lpb[data-resetting] .lpb-final {
-  transition-duration: 0.3s;
-}
-/* Werkbank-Geometrie: dunkle Hero-Zone (Kohle) mit Nav + gestaffelter
-   Headline, Foto-Band mit Signal-Kante, helle Karten-Zone (Beton). */
-.lpb-herozone {
-  height: 58%;
-  background: #191919;
-  padding: 4% 5%;
-  display: flex;
-  flex-direction: column;
-  gap: 12%;
-}
-.lpb-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-.lpb-logo {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  background: #f4f2ee;
-}
-.lpb-link {
-  width: 34px;
-  height: 8px;
-  border-radius: 99px;
-  background: #4a4844;
-}
-.lpb-hlines {
-  margin-top: auto;
-  margin-bottom: 4%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-.lpb-bar {
-  display: block;
-  border-radius: 3px;
-  background: #f4f2ee;
-}
-.lpb-h1a {
-  height: clamp(16px, 2.2vw, 28px);
-  width: 78%;
-}
-.lpb-h1b {
-  height: clamp(16px, 2.2vw, 28px);
-  width: 56%;
-}
-/* Dritte Headline-Zeile: das Werkbank-Akzentwort („Punkt.") — bekommt in
-   der Akzent-Phase Signal #FF4D00, wie im echten Pack. */
-.lpb-h1c {
-  height: clamp(16px, 2.2vw, 28px);
-  width: 34%;
-  background: #cfccc5;
-}
-.lpb-wire[data-accent] .lpb-h1c {
-  background: #ff4d00;
-}
-.lpb-sub {
-  height: 10px;
-  width: 66%;
-  background: #4a4844;
-  margin-top: 0.5rem;
-}
-.lpb-band {
-  flex: 1;
-  background: #7d756a;
-  border-left: 6px solid transparent;
-}
-/* imageTreatment des Packs: „8px Signal-Border links" — in der
-   Akzent-Phase. */
-.lpb-wire[data-accent] .lpb-band {
-  border-left-color: #ff4d00;
-}
-.lpb-cardzone {
-  height: 24%;
-  background: #e8e6e1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2.5%;
-  padding: 3% 5%;
-}
-.lpb-card {
-  border-radius: 6px;
-  background: #f4f2ee;
-  border-top: 3px solid #cfccc5;
-}
-.lpb-wire[data-accent] .lpb-card {
-  border-top-color: #ff4d00;
 }
 .lpb-final {
   position: absolute;
@@ -819,24 +681,11 @@ html.lp-reveal-on .lp-section.lp-in {
   height: 100%;
   object-fit: cover;
   object-position: top;
-  opacity: 0;
-  transform: scale(1.025);
-  transition:
-    opacity 0.9s var(--lp-ease),
-    transform 0.9s var(--lp-ease);
 }
-.lpb-final[data-on] {
-  opacity: 1;
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .lpb-herozone,
-  .lpb-bar,
-  .lpb-band,
-  .lpb-cardzone,
-  .lpb-final {
-    transition: none;
-  }
+.lpb-player {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
 /* ── Conversion-Motion (2026-08-25) ───────────────────────────────────────

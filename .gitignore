@@ -2,6 +2,10 @@
 **/node_modules
 .pnpm-store/
 
+# Agent skills (local Remotion/Cursor skill trees, not app code)
+.agents/
+skills-lock.json
+
 # Build outputs
 dist/
 build/

@@ -22,18 +22,16 @@ import {
 
 /**
  * Landingpage „/" — brutalist-editorial Showroom (Refero „AI for Business"):
- * warmes Grau, Condensed-Versalien, Mint/Gelb nur als Mikro-Akzent. Tokens
- * `.lp`/`--lp-*` in client/src/index.css (Landing-Overrides, Studio bleibt
- * Papier/Grün). Sektionen unter client/src/components/landing/.
+ * warmes Grau, Space-Grotesk-Versalien, Mint/Gelb nur als Mikro-Akzent.
+ * Tokens `.lp`/`--lp-*` in client/src/index.css (Landing-Overrides, Studio
+ * bleibt Papier/Grün). Sektionen unter client/src/components/landing/.
  *
  * Meta/JSON-LD (Title, Description, OG, SoftwareApplication, Organization)
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender
  * kommen serverseitig aus server/seo/homePage.ts (Quelle: shared/faq.ts).
  *
- * Die Seite selbst animiert die Hero-Bühne (HeroBuild.tsx: Wireframe-
- * Aufbau → fertige Website, Timer + CSS-Transitions); framer-motion
- * braucht nur der Chat-Widget — der lädt lazy (s. u.) und bringt sein
- * eigenes `LazyMotion` mit Async-Feature-Loader mit.
+ * Die Hero-Bühne läuft als Remotion-Player (hero-film/, lazy, nicht im
+ * ersten Paint). Chat-Widget lädt ebenfalls lazy.
  */
 
 const LandingPageChatWidget = lazy(
