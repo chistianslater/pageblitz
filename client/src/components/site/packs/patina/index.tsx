@@ -17,6 +17,7 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
+import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { PATINA_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -173,12 +174,16 @@ function renderSection(
           <h2>{title}</h2>
           <div className="pb-pa-quotes">
             {section.items.map(item => (
-              <blockquote className="pb-pa-quote" key={item.author}>
-                <p>„{item.text}“</p>
-                <footer>
-                  {item.author}
-                  {item.rating ? ` · ${item.rating}/5` : ""}
-                </footer>
+              <blockquote
+                className="pb-pa-quote"
+                key={item.author}
+                {...REVIEW_READONLY}
+              >
+                <GoogleReviewBody
+                  author={item.author}
+                  text={item.text}
+                  rating={item.rating}
+                />
               </blockquote>
             ))}
           </div>

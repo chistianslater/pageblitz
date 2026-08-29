@@ -69,7 +69,12 @@ describe("Pack klarwerk", () => {
       <SiteRenderer data={withoutGoogle as typeof data} />
     );
     expect(h).toContain("pb-kw-metric");
-    expect(h).not.toContain("★");
+    const heroMetrics = h.slice(
+      h.indexOf('class="pb-kw-bento"'),
+      h.indexOf('id="leistungen"')
+    );
+    expect(heroMetrics).not.toContain("★");
+    expect(heroMetrics).not.toContain("Google-Bewertung");
   });
 
   test("versteckte Sektion wird nicht gerendert", () => {

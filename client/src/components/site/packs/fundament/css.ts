@@ -37,9 +37,11 @@ export const FUNDAMENT_CSS = `
 .pb-fd-about-grid>p:only-child{grid-column:1/-1}
 .pb-fd-about-grid p{max-width:64ch}
 .pb-fd-about-image{width:100%;max-width:520px;justify-self:end;display:block;border:1px solid var(--pb-line)}
-.pb-fd-quote{padding:20px 0 20px 22px;border-left:2px solid var(--pb-accent);margin-bottom:22px}
-.pb-fd-quote p{font-size:16px;max-width:52ch}
-.pb-fd-quote footer{margin-top:10px;font-size:12px;color:var(--pb-muted)}
+.pb-fd-quotes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.pb-fd-quote{margin:0;padding:24px 24px 22px;background:var(--pb-surface);border-left:3px solid var(--pb-accent)}
+.pb-fd-quote p{font-size:16px;line-height:1.5;max-width:42ch}
+.pb-fd-quote footer{margin-top:18px;font-size:12px;color:var(--pb-muted)}
+.pb-fd-quotes .pb-review-stars{margin-bottom:14px}
 .pb-fd-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-fd-faq strong{display:block;font-weight:600;margin-bottom:6px}
 .pb-fd-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}
@@ -80,6 +82,7 @@ export const FUNDAMENT_CSS = `
 @media(pointer:fine){.pb-fundament .pb-fd-contact-sticky a:hover{transform:translate(-2px,-2px)}}
 @media(prefers-reduced-motion:reduce){.pb-fundament *,.pb-fundament *::before,.pb-fundament *::after{animation:none!important;transition:none!important}}
 @media(max-width:840px){.pb-fd-nav-links{display:none}.pb-fd-hero{display:flex;flex-direction:column;min-height:0}.pb-fd-content{position:static;order:1;padding:28px 20px 16px}.pb-fd-photo{position:relative;left:auto;top:auto;order:2;width:min(58%,250px);max-width:100%;height:auto;margin:8px 20px -48px;box-shadow:10px 10px 0 var(--pb-ink);z-index:2}.pb-fd-panel{order:3;position:relative;right:auto;top:auto;bottom:auto;width:100%;height:auto;padding:48px 20px 16px}.pb-fd-stats{position:static;width:100%;display:flex;flex-direction:column;gap:0}.pb-fd-stats div{min-width:0;border-top:1px solid rgba(255,255,255,.25);padding-top:12px;margin-top:12px}.pb-fd-stats div:first-child{border-top:none;padding-top:0;margin-top:0}.pb-fd-stats b{font-size:19px}.pb-fd-contact{grid-template-columns:1fr}.pb-fd-section{padding:48px 20px}.pb-fd-services-grid{grid-template-columns:1fr;gap:0}.pb-fd-about-grid{grid-template-columns:1fr;gap:20px}.pb-fd-about-image{order:-1;justify-self:start;max-height:55vw;object-fit:contain;object-position:left}}
+@media(max-width:720px){.pb-fd-quotes{grid-template-columns:1fr}}
 @media(max-width:390px){.pb-fd-content,.pb-fd-section{padding-left:16px;padding-right:16px}.pb-fd-photo{margin-left:16px}.pb-fd-panel{padding-left:16px;padding-right:16px}.pb-fd-contact-sticky{max-width:calc(100% - 24px);margin-right:12px;gap:10px}}
 .pb-fd-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-fd-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

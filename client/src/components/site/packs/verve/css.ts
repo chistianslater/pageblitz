@@ -40,9 +40,10 @@ export const VERVE_CSS = `
 .pb-vv-quotes .pb-vv-quote{margin-bottom:0;max-width:none}
 .pb-vv-quotes .pb-vv-quote:nth-child(even){transform:translateY(14px)}
 .pb-vv-quotes .pb-vv-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:64ch}
-.pb-vv-quote{background:var(--pb-surface);padding:22px;margin-bottom:16px;border-left:3px solid var(--pb-accent);max-width:56ch}
-.pb-vv-quote p{font-size:15px}
-.pb-vv-quote footer{margin-top:12px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-vv-quote{display:flex;flex-direction:column;background:var(--pb-surface);padding:24px 24px 20px;margin-bottom:16px;border-left:3px solid var(--pb-accent);max-width:56ch;min-height:100%}
+.pb-vv-quote p{font-size:15.5px;line-height:1.5}
+.pb-vv-quote footer{margin-top:auto;padding-top:16px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-vv-quotes .pb-review-stars{margin-bottom:12px}
 .pb-vv-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;align-items:start}
 .pb-vv-faq-grid .pb-vv-faq{max-width:none}
 .pb-vv-faq{max-width:60ch;margin:0 0 20px;border-bottom:1px solid var(--pb-line);padding-bottom:18px}

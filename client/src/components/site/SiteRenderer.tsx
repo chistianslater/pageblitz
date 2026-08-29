@@ -12,6 +12,7 @@ import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import { MOTION_CSS } from "./motionCss";
+import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
 import { deriveDesignProfile } from "../../../../shared/siteContract/designProfile";
 import {
@@ -167,6 +168,8 @@ export const SiteRenderer: React.FC<{
             MOBILE_NAV_CSS +
             "\n" +
             MOTION_CSS +
+            "\n" +
+            REVIEW_CHROME_CSS +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
         }}
       />

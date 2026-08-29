@@ -44,9 +44,10 @@ export const KLARWERK_CSS = `
 .pb-kw-quotes .pb-kw-quote{margin-bottom:0}
 .pb-kw-quotes .pb-kw-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:720px}
 .pb-kw-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;align-items:start}
-.pb-kw-quote{padding:20px 22px;background:var(--pb-surface);border-radius:var(--pb-radius-card);margin-bottom:18px}
-.pb-kw-quote p{font-size:15px;max-width:52ch}
-.pb-kw-quote footer{margin-top:10px;font-size:12.5px;color:var(--pb-muted)}
+.pb-kw-quote{display:flex;flex-direction:column;padding:24px 24px 22px;background:var(--pb-surface);border-radius:var(--pb-radius-card);margin-bottom:18px;min-height:100%}
+.pb-kw-quote p{font-size:15.5px;line-height:1.55;max-width:46ch}
+.pb-kw-quote footer{margin-top:auto;padding-top:16px;font-size:12.5px;color:var(--pb-muted)}
+.pb-kw-quotes .pb-review-stars{margin-bottom:12px}
 .pb-kw-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-kw-faq strong{display:block;font-weight:600;margin-bottom:6px}
 .pb-kw-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}

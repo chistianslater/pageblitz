@@ -104,24 +104,9 @@ export function collectInlineTextTargets(
         );
         break;
       case "testimonials":
+        // Nur die Überschrift ist editierbar. Item-Text/Autor sind echte
+        // Google-Bewertungen und dürfen im Studio nicht umgeschrieben werden.
         add(sectionIndex, scope, "headline", section.headline, 120);
-        section.items.forEach((item, itemIndex) => {
-          add(
-            sectionIndex,
-            scope,
-            `items.${itemIndex}.text`,
-            item.text,
-            1000,
-            true
-          );
-          add(
-            sectionIndex,
-            scope,
-            `items.${itemIndex}.author`,
-            item.author,
-            120
-          );
-        });
         break;
       case "contact":
         add(sectionIndex, scope, "headline", section.headline, 120);

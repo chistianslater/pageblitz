@@ -36,6 +36,11 @@ export function normalizeInlineText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+/** Echte Google-Bewertungen (und andere gesperrte Hosts) nicht editierbar. */
+export function isInlineLocked(el: Element): boolean {
+  return Boolean(el.closest("[data-pb-readonly]"));
+}
+
 /** Pfad der Vorschau (Startseite oder Unterseite) — von PreviewFrame und "In neuem Tab öffnen" geteilt. */
 export function previewPath(token: string, pageSlug?: string): string {
   return pageSlug
@@ -158,6 +163,7 @@ export function PreviewFrame({
           )
         )
           continue;
+        if (isInlineLocked(target)) continue;
 
         target.setAttribute("contenteditable", "plaintext-only");
         target.setAttribute("data-pb-inline-edit", targetConfig.path);

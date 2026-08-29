@@ -111,6 +111,29 @@ describe("applyInlineText", () => {
       applyInlineText(docFull, "sections.1.items.0.title", "   ")
     ).toThrow(/maximal/);
   });
+
+  test("Google-Bewertungstext und -Autor lassen sich nicht patchen, Überschrift schon", () => {
+    const withReviews: WebsiteDataV2 = {
+      ...docFull,
+      sections: [
+        ...docFull.sections,
+        {
+          type: "testimonials",
+          headline: "Stimmen",
+          items: [{ author: "Anna B.", text: "Top Arbeit.", rating: 5 }],
+        },
+      ],
+    };
+    const next = applyInlineText(withReviews, "sections.4.headline", "Kunden");
+    const section = next.sections.find(s => s.type === "testimonials");
+    expect(section?.headline).toBe("Kunden");
+    expect(() =>
+      applyInlineText(withReviews, "sections.4.items.0.text", "Gefälscht")
+    ).toThrow(/nicht direkt bearbeitet/);
+    expect(() =>
+      applyInlineText(withReviews, "sections.4.items.0.author", "Ich")
+    ).toThrow(/nicht direkt bearbeitet/);
+  });
 });
 
 describe("applyAddonHeadings", () => {

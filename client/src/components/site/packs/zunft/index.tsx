@@ -18,6 +18,7 @@ import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
+import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { ZUNFT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -179,15 +180,21 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <blockquote className="pb-zf-quote" key={item.author}>
-              <p>„{item.text}“</p>
-              <footer>
-                {item.author}
-                {item.rating ? ` · ${item.rating}/5` : ""}
-              </footer>
-            </blockquote>
-          ))}
+          <div className="pb-zf-quotes">
+            {section.items.map(item => (
+              <blockquote
+                className="pb-zf-quote"
+                key={item.author}
+                {...REVIEW_READONLY}
+              >
+                <GoogleReviewBody
+                  author={item.author}
+                  text={item.text}
+                  rating={item.rating}
+                />
+              </blockquote>
+            ))}
+          </div>
         </section>
       );
     }

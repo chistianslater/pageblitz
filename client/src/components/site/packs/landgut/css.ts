@@ -35,9 +35,11 @@ export const LANDGUT_CSS = `
 .pb-lg-about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
 .pb-lg-about p{max-width:56ch}
 .pb-lg-arch-img{width:100%;height:280px;object-fit:cover;border-radius:120px 120px 16px 16px;display:block}
-.pb-lg-quote{padding:20px 0 20px 22px;border-left:2px solid var(--pb-accent);margin-bottom:22px}
-.pb-lg-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:16px;max-width:52ch}
-.pb-lg-quote footer{margin-top:10px;font-size:12px;color:var(--pb-muted)}
+.pb-lg-quotes{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pb-lg-quote{margin:0;padding:26px 24px 22px;background:var(--pb-surface);border-radius:var(--pb-radius-card) var(--pb-radius-card) 18px 18px;border-top:3px solid var(--pb-accent)}
+.pb-lg-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:17px;line-height:1.45;max-width:36ch}
+.pb-lg-quote footer{margin-top:18px;font-size:12px;color:var(--pb-muted)}
+.pb-lg-quotes .pb-review-stars{margin-bottom:14px}
 .pb-lg-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-lg-faq strong{display:block;font-family:var(--pb-font-display);font-weight:500;margin-bottom:6px}
 .pb-lg-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}
@@ -80,7 +82,7 @@ export const LANDGUT_CSS = `
 @media(pointer:fine){.pb-lg-visit-sticky a:hover{color:var(--pb-accent)}}
 @media(prefers-reduced-motion:reduce){.pb-landgut *,.pb-landgut *::before,.pb-landgut *::after{animation:none!important;transition:none!important}}
 @media(max-width:840px){.pb-lg-about{grid-template-columns:1fr}.pb-lg-contact{grid-template-columns:1fr}.pb-lg-nav-links{display:none}}
-@media(max-width:720px){.pb-lg-rows{display:none}.pb-lg-grid{grid-template-columns:1fr}.pb-lg-copy{padding-bottom:0}.pb-lg-ticker{margin-top:26px}}
+@media(max-width:720px){.pb-lg-rows{display:none}.pb-lg-grid{grid-template-columns:1fr}.pb-lg-copy{padding-bottom:0}.pb-lg-ticker{margin-top:26px}.pb-lg-quotes{grid-template-columns:1fr}}
 .pb-lg-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-lg-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}
 .pb-lg-page-header p{margin-top:16px;max-width:60ch;color:var(--pb-muted);font-family:var(--pb-font-body)}

@@ -38,9 +38,10 @@ export const PATINA_CSS = `
 .pb-pa-quotes{display:grid;grid-template-columns:1fr 1fr;gap:22px 56px;align-items:start}
 .pb-pa-quotes .pb-pa-quote{margin-bottom:0}
 .pb-pa-quotes .pb-pa-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:64ch}
-.pb-pa-quote{padding:20px 0 20px 22px;border-left:2px solid var(--pb-accent);margin-bottom:22px}
-.pb-pa-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:16px;max-width:52ch}
-.pb-pa-quote footer{margin-top:10px;font-size:12px;color:var(--pb-muted)}
+.pb-pa-quote{padding:8px 0 8px 22px;border-left:2px solid var(--pb-accent);margin-bottom:22px}
+.pb-pa-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:17px;line-height:1.45;max-width:36ch}
+.pb-pa-quote footer{margin-top:16px;font-size:12px;color:var(--pb-muted)}
+.pb-pa-quotes .pb-review-stars{margin-bottom:12px}
 .pb-pa-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;align-items:start}
 .pb-pa-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-pa-faq strong{display:block;font-family:var(--pb-font-display);font-weight:600;margin-bottom:6px}

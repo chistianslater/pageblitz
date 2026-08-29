@@ -328,6 +328,13 @@ export function PageSectionEditor({
         </Hint>
       );
     case "testimonials":
+      return (
+        <Hint>
+          Echte Google-Bewertungen werden unverändert übernommen — Text und
+          Name lassen sich nicht bearbeiten. Die Überschrift kannst du in der
+          Vorschau ändern.
+        </Hint>
+      );
     case "pricelist":
     case "menu":
       return (

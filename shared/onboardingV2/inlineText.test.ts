@@ -58,4 +58,28 @@ describe("collectInlineTextTargets", () => {
     expect(paths.some(path => path.includes("Href"))).toBe(false);
     expect(paths.some(path => path.includes("email"))).toBe(false);
   });
+
+  test("Google-Bewertungen: nur Überschrift, nie Text oder Autor", () => {
+    const withReviews: WebsiteDataV2 = {
+      ...doc,
+      sections: [
+        ...doc.sections,
+        {
+          type: "testimonials",
+          headline: "Stimmen",
+          items: [
+            {
+              author: "Martina Kessler",
+              text: "Der Einbauschrank passt auf den Millimeter.",
+              rating: 5,
+            },
+          ],
+        },
+      ],
+    };
+    const paths = collectInlineTextTargets(withReviews).map(t => t.path);
+    expect(paths).toContain("sections.5.headline");
+    expect(paths.some(path => path.includes("items.0.text"))).toBe(false);
+    expect(paths.some(path => path.includes("items.0.author"))).toBe(false);
+  });
 });
