@@ -87,6 +87,22 @@ body {
     U+2215, U+FEFF, U+FFFD;
 }
 
+/* JetBrains Mono (Landing „Nachtschicht", 2026-08-29): nur für UI-Chrome —
+   Kicker, Labels, URLs, Badges. Self-hosted wie Space Grotesk (Variable,
+   wght 400–500, Subset latin, 31 kB); kein Preload, da nicht im kritischen
+   Pfad des ersten Paints. */
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-latin-wght.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -140,6 +156,13 @@ body {
   --color-lp-warn: var(--lp-warn);
   --color-lp-mint: var(--lp-mint);
   --color-lp-volt: var(--lp-volt);
+  /* Nachtschicht-Tokens (Landing-Relaunch 2026-08-29) */
+  --color-lp-bg: var(--lp-bg);
+  --color-lp-panel: var(--lp-panel);
+  --color-lp-panel-2: var(--lp-panel-2);
+  --color-lp-faint: var(--lp-faint);
+  --color-lp-volt-ink: var(--lp-volt-ink);
+  --color-lp-live: var(--lp-live);
 }
 
 :root {
@@ -476,34 +499,45 @@ body {
   aspect-ratio: 1 / 1;
 }
 
-/* ── Landingpage (Apple-optical, 2026-08-29) ───────────────────────────────
-   Dieselbe Showroom-Sprache (Grau, Mint, Carbon) — Tracking/Leading nach
-   Schriftgröße, transluzentes Chrome, Press auf pointer-down. Tokens nur
-   auf `.lp`, Studio bleibt Papier/Grün. */
+/* ── Landingpage „Nachtschicht" (2026-08-29) ──────────────────────────────
+   Kohle-Bühne, EIN Volt-Akzent, Mono-Chrome, seltene schwere Schatten.
+   Spec: docs/superpowers/specs/2026-08-29-landing-relaunch-dark-volt-design.md
+   Tokens nur auf `.lp`, Studio bleibt Papier/Grün. */
 .lp {
-  --lp-canvas: #e5e5e5;
-  --lp-surface: #ffffff;
-  --lp-ink: #000000;
-  --lp-muted: #444444;
-  --lp-line: rgba(0, 0, 0, 0.08);
-  --lp-accent: #000000;
-  --lp-accent-ink: #ffffff;
+  --lp-bg: #0b0b0d;
+  --lp-panel: #131316;
+  --lp-panel-2: #1a1a1e;
+  --lp-ink: #f2f1ee;
+  --lp-muted: #a4a39d;
+  --lp-faint: #7c7b76;
+  --lp-line: rgba(255, 255, 255, 0.09);
+  --lp-volt: #ccff00;
+  --lp-volt-ink: #0b0b0d;
+  --lp-live: #22c55e;
+  --lp-glow: rgba(204, 255, 0, 0.08);
+  --lp-shadow-heavy: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
   --lp-display: "Space Grotesk", system-ui, sans-serif;
-  --lp-section: clamp(4.5rem, 3.2rem + 6vw, 9.5rem);
-  --lp-ease: cubic-bezier(0.23, 1, 0.32, 1);
-  font-family: var(--lp-font);
-  background: var(--lp-canvas);
+  --lp-mono: "JetBrains Mono", ui-monospace, monospace;
+  --lp-section: clamp(4.5rem, 3.2rem + 6vw, 9rem);
+  --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Übergangs-Aliase: bedienen noch nicht umgebaute Komponenten; werden in
+     Task 10 (toter Code) entfernt. */
+  --lp-canvas: var(--lp-bg);
+  --lp-surface: var(--lp-panel);
+  --lp-accent: var(--lp-volt);
+  --lp-accent-ink: var(--lp-volt-ink);
+  --lp-mint: var(--lp-volt);
+  font-family: var(--lp-display);
+  background: var(--lp-bg);
   color: var(--lp-ink);
-  line-height: 1.47;
-  letter-spacing: 0;
-  font-optical-sizing: auto;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  accent-color: var(--lp-ink);
-  caret-color: var(--lp-ink);
+  accent-color: var(--lp-volt);
+  caret-color: var(--lp-volt);
 }
 .lp ::selection {
-  background: var(--lp-mint);
-  color: #000;
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
 }
 .lp h1,
 .lp h2 {
@@ -532,20 +566,19 @@ body {
   padding-block: var(--lp-section);
   scroll-margin-top: 6rem;
 }
+/* Mono-Label statt Pill (Nachtschicht): Kicker sind UI-Chrome, keine Badges. */
 .lp-kicker {
   display: inline-flex;
   align-items: center;
   width: fit-content;
   margin: 0;
-  padding: 0.32rem 0.85rem;
-  border-radius: 64px;
-  background: var(--lp-mint);
-  color: #000;
+  font-family: var(--lp-mono);
   font-size: 0.72rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   line-height: 1.25;
+  color: var(--lp-volt);
 }
 .lp-h1 {
   font-size: clamp(2.55rem, 1.2rem + 5.2vw, 5.75rem);

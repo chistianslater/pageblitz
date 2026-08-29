@@ -2,30 +2,44 @@ import React, { type ReactNode } from "react";
 import { PRICING, formatEuro } from "@shared/pricing";
 
 /**
- * Gemeinsame Bausteine der Landingpage (Studio-Look): Marke, Kicker, CTA-
- * Pillen, Preis-Formatierung. Tokens/Klassen siehe `.lp` in
- * client/src/index.css.
+ * Gemeinsame Bausteine der Landingpage („Nachtschicht", 2026-08-29): Marke,
+ * Mono-Kicker, CTA-Pillen, Preis-Formatierung. Tokens/Klassen siehe `.lp` in
+ * client/src/index.css; Spec:
+ * docs/superpowers/specs/2026-08-29-landing-relaunch-dark-volt-design.md
  */
 
-/** Blitz-Marke: ein Pfad, Ink-Quadrat, keine Verläufe. */
-export function BlitzMark({ className = "h-8 w-8" }: { className?: string }) {
+/**
+ * Blitz-Zeichen (2026-08, kanonische Quelle:
+ * client/src/assets/pageblitz-mark.svg). Farbe über currentColor — erbt vom
+ * Kontext, damit dieselbe Marke auf heller (/start, Login) und dunkler
+ * Fläche (Landing) funktioniert.
+ */
+export function BrandMark({ className = "h-6 w-auto" }: { className?: string }) {
   return (
-    <span
-      aria-hidden="true"
-      className={`inline-flex shrink-0 items-center justify-center rounded-lg bg-lp-ink text-white ${className}`}
-    >
-      <svg viewBox="0 0 24 24" className="h-[58%] w-[58%]" fill="currentColor">
-        <path d="M13.6 2 4.8 13.4h6.1L9.6 22l9.6-12.2h-6.2z" />
-      </svg>
-    </span>
+    <svg viewBox="480 380 1060 1360" aria-hidden="true" className={className}>
+      <path
+        fill="currentColor"
+        d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1294.79 958.084 1331.89 976.795 1366.61 1010.88 C 1478.9 1121.11 1459.62 1301.55 1351.97 1407 C 1285.5 1472.11 1204.44 1502.52 1112.4 1510.63 C 1073.52 1514.06 1035.36 1513.71 996.612 1513.78 L 839.562 1514.08 C 846.848 1505 855.448 1495.2 863.339 1486.64 C 904.377 1442.12 943.124 1393.31 984.582 1349.42 C 1006.47 1348.51 1029.9 1350.03 1051.73 1348.85 C 1097.68 1346.62 1141.33 1328.1 1174.87 1296.62 C 1206.78 1266.12 1226.2 1225.4 1227.21 1181.02 C 1228.09 1142.18 1214.58 1105.44 1187.26 1077.71 C 1158.6 1048.61 1116.06 1032.84 1075.8 1030.81 C 1060.47 1030.04 1044.47 1030.57 1029 1030.58 L 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"
+      />
+    </svg>
   );
 }
 
-export function Wordmark({ className = "" }: { className?: string }) {
+/** Übergangs-Alias — Aufrufer außerhalb der Landing (LoginShell, StartPage,
+ *  StandortControl) migrieren separat. */
+export const BlitzMark = BrandMark;
+
+export function Wordmark({
+  className = "",
+  markClassName = "text-current",
+}: {
+  className?: string;
+  markClassName?: string;
+}) {
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <BlitzMark />
-      <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      <BrandMark className={`h-6 w-auto ${markClassName}`} />
+      <span className="text-[1.08rem] font-bold tracking-[-0.01em]">
         Pageblitz
       </span>
     </span>
@@ -42,16 +56,16 @@ export function Kicker({
   return <p className={`lp-kicker ${className}`}>{children}</p>;
 }
 
-/** Sektionskopf: Kicker + H2 + optionaler Text, linksbündig.
- *  `billboard` / `echo` sind Dayos-Sektionsmotive (größer, gestapelt). */
+/** Sektionskopf: Mono-Kicker + H2 + optionaler Text, linksbündig.
+ *  `billboard`/`echo` sind tote Dayos-Props — werden ignoriert und in
+ *  Task 10 des Relaunch-Plans komplett entfernt, sobald kein Aufrufer sie
+ *  mehr übergibt. */
 export function SectionHead({
   kicker,
   title,
   text,
   id,
   className = "",
-  billboard = false,
-  echo = false,
 }: {
   kicker?: string;
   title: ReactNode;
@@ -62,18 +76,13 @@ export function SectionHead({
   echo?: boolean;
 }) {
   return (
-    <div className={`${billboard ? "max-w-[54rem]" : "max-w-[44rem]"} ${className}`}>
+    <div className={`max-w-[44rem] ${className}`}>
       {kicker ? <Kicker className="mb-4">{kicker}</Kicker> : null}
-      <h2 id={id} className={billboard ? "lp-h2 lp-h2--billboard" : "lp-h2"}>
-        <span className="block">{title}</span>
-        {echo ? (
-          <span className="lp-echo" aria-hidden="true">
-            {title}
-          </span>
-        ) : null}
+      <h2 id={id} className="lp-h2">
+        {title}
       </h2>
       {text ? (
-        <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.5] text-lp-muted">
+        <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.55] text-lp-muted">
           {text}
         </p>
       ) : null}
@@ -82,15 +91,15 @@ export function SectionHead({
 }
 
 const PILL =
-  "lp-press inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-medium disabled:opacity-50";
+  "lp-press inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 text-[0.95rem] font-bold transition-transform disabled:opacity-50";
 
-export const pillPrimary = `${PILL} bg-lp-ink text-lp-canvas`;
-export const pillInk = `${PILL} bg-lp-ink text-lp-canvas`;
-export const pillGhost = `${PILL} border border-lp-ink/20 bg-white text-lp-ink`;
+/** Volt-CTA: die eine Akzentfarbe der Seite trägt die Handlung. */
+export const pillPrimary = `${PILL} bg-lp-volt text-lp-volt-ink shadow-[0_0_32px_-6px_rgba(204,255,0,.4)] hover:-translate-y-px`;
+export const pillInk = pillPrimary;
+export const pillGhost = `${PILL} border border-lp-line bg-transparent text-lp-ink hover:border-lp-volt`;
 
-/** Text-Link: Mint-Unterstreichung statt Studio-Grün. */
 export const textLink =
-  "inline-flex items-center gap-1 font-medium text-lp-ink underline decoration-[var(--lp-mint)] decoration-2 underline-offset-[0.22em] transition-colors hover:bg-[var(--lp-mint)]";
+  "inline-flex items-center gap-1 font-medium text-lp-ink underline decoration-[var(--lp-volt)] decoration-2 underline-offset-[0.22em] transition-colors hover:text-lp-volt";
 
 /** Preise nur aus shared/pricing.ts. */
 export const PRICE_YEARLY = formatEuro(PRICING.base.yearly); // „19,90 €"
