@@ -90,4 +90,36 @@ describe("Pack klarwerk", () => {
     );
     expect(h).not.toContain('id="ueber-uns"');
   });
+
+  test("Öffnungszeiten listen die Woche, nicht nur Montag", () => {
+    const start = html.indexOf('class="pb-kw-hours"');
+    const hours = html.slice(start, html.indexOf("</table>", start));
+    expect(hours).toContain("Montag");
+    expect(hours).toContain("Dienstag");
+    expect(hours).toContain("Mittwoch");
+    expect(hours).toContain("Donnerstag");
+    expect(hours).toContain("Freitag");
+  });
+
+  test("Montag-Stub wird als Mo–Fr-Platzhalter gerendert", () => {
+    const data = getFixture("klarwerk", "full");
+    const stubbed = {
+      ...data,
+      sections: data.sections.map(section =>
+        section.type === "contact"
+          ? {
+              ...section,
+              openingHours: [{ day: "Montag", hours: "09:00–17:00" }],
+            }
+          : section
+      ),
+    };
+    const h = renderToStaticMarkup(<SiteRenderer data={stubbed} />);
+    const hours = h.slice(
+      h.indexOf('class="pb-kw-hours"'),
+      h.indexOf("</table>", h.indexOf('class="pb-kw-hours"'))
+    );
+    expect(hours).toContain("Mo–Fr");
+    expect(hours).not.toContain(">Montag<");
+  });
 });
