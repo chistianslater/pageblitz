@@ -28,12 +28,7 @@ function q(
   return `.pb-site.pb-${pack}[${mobileAttr}="${variant}"]${rest},.pb-site.pb-${pack}:not([${mobileAttr}])[${attr}="${variant}"]${rest}`;
 }
 
-function hero(
-  pack: string,
-  variant: string,
-  mode: Mode,
-  rest = ""
-): string {
+function hero(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(pack, "data-pb-hero", "data-pb-hero-mobile", variant, mode, rest);
 }
 
@@ -65,12 +60,7 @@ function about(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(pack, "data-pb-about", "data-pb-about-mobile", variant, mode, rest);
 }
 
-function gallery(
-  pack: string,
-  variant: string,
-  mode: Mode,
-  rest = ""
-): string {
+function gallery(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(
     pack,
     "data-pb-gallery",

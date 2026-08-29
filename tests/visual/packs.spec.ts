@@ -257,9 +257,7 @@ test("Designprofil-Variante verändert Komposition ohne Pack-Wechsel", async ({
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto(
-    "/dev/site-preview?pack=werkbank&fixture=full&variant=1"
-  );
+  await page.goto("/dev/site-preview?pack=werkbank&fixture=full&variant=1");
   const site = page.locator(".pb-site");
   await expect(site).toHaveAttribute("data-pb-services", "grid");
   await expect(site).toHaveAttribute("data-pb-about", "image-left");

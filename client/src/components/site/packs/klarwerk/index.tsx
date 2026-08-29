@@ -450,7 +450,11 @@ const KlarwerkPage: React.FC<{
           {facts.map((f, i) => (
             <div
               className={
-                i === 0 ? "pb-kw-metric" : i === 1 ? "pb-kw-cell hi" : "pb-kw-cell"
+                i === 0
+                  ? "pb-kw-metric"
+                  : i === 1
+                    ? "pb-kw-cell hi"
+                    : "pb-kw-cell"
               }
               key={f.label}
             >
