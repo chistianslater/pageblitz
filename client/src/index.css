@@ -585,8 +585,12 @@ body {
   line-height: 1.04;
   letter-spacing: -0.028em;
 }
+/* Hero-H1 (Nachtschicht): längerer Satz als früher — kompakter Clamp
+   (Spec §2 Typografie) statt Riesengrad + ch-Kappung. */
 .lp-h1--hero {
-  max-width: 11.5ch;
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
   overflow-wrap: break-word;
 }
 .lp-h2 {
@@ -706,6 +710,49 @@ html.lp-reveal-on .lp-section {
 html.lp-reveal-on .lp-section.lp-in {
   opacity: 1;
   transform: none;
+}
+
+/* Hero-Rahmen: Glow oben rechts (einziger Glow des Viewports) und die
+   Panel-Fläche, auf der die Bühne rechts aus dem Viewport läuft. */
+.lp-hero-glow::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -12%;
+  width: 60rem;
+  height: 44rem;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, var(--lp-glow), transparent 62%);
+}
+.lp-hero-stage {
+  position: relative;
+  padding: 1.75rem 0 1.75rem 1.75rem;
+}
+.lp-hero-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0 -100vw 0 0;
+  background: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.015)
+  );
+  border: 1px solid var(--lp-line);
+  border-right: 0;
+  border-radius: 24px 0 0 24px;
+}
+.lp-hero-stage > * {
+  position: relative;
+}
+@media (max-width: 1023px) {
+  .lp-hero-stage {
+    padding: 1.25rem;
+  }
+  .lp-hero-stage::before {
+    inset: 0 calc(-1 * var(--lp-gutter, 1.25rem)) 0 0;
+    border-right: 1px solid var(--lp-line);
+    border-radius: 20px 0 0 20px;
+  }
 }
 
 /* ── Hero-Bühne „Website entsteht" (HeroBuildLive, Spec §3) ──────────────
