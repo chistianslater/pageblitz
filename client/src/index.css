@@ -476,24 +476,27 @@ body {
   aspect-ratio: 1 / 1;
 }
 
-/* ── Landingpage (brutalist-editorial, 2026-08-29) ─────────────────────────
-   Richtung: Refero „AI for Business" / Dayos — warmes Grau, Carbon-Schwarz,
-   oversized Space-Grotesk-Versalien, Mint/Gelb nur als Mikro-Akzent, flache
-   Flächen ohne Schatten. Eine Schrift mit Studio/Dashboard (Space Grotesk);
-   Tokens hier auf `.lp` begrenzt, damit Studio die Papier/Grün-Welt behält. */
+/* ── Landingpage (Apple-optical, 2026-08-29) ───────────────────────────────
+   Dieselbe Showroom-Sprache (Grau, Mint, Carbon) — Tracking/Leading nach
+   Schriftgröße, transluzentes Chrome, Press auf pointer-down. Tokens nur
+   auf `.lp`, Studio bleibt Papier/Grün. */
 .lp {
   --lp-canvas: #e5e5e5;
   --lp-surface: #ffffff;
   --lp-ink: #000000;
   --lp-muted: #444444;
-  --lp-line: #c6c6c6;
+  --lp-line: rgba(0, 0, 0, 0.08);
   --lp-accent: #000000;
   --lp-accent-ink: #ffffff;
   --lp-display: "Space Grotesk", system-ui, sans-serif;
   --lp-section: clamp(4.5rem, 3.2rem + 6vw, 9.5rem);
+  --lp-ease: cubic-bezier(0.23, 1, 0.32, 1);
   font-family: var(--lp-font);
   background: var(--lp-canvas);
   color: var(--lp-ink);
+  line-height: 1.47;
+  letter-spacing: 0;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   accent-color: var(--lp-ink);
   caret-color: var(--lp-ink);
@@ -506,9 +509,7 @@ body {
 .lp h2 {
   font-family: var(--lp-display);
   font-weight: 700;
-  text-transform: uppercase;
-  line-height: 0.94;
-  letter-spacing: -0.03em;
+  font-optical-sizing: auto;
   text-wrap: balance;
 }
 .lp h3,
@@ -542,48 +543,48 @@ body {
   color: #000;
   font-size: 0.72rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .lp-h1 {
-  font-size: clamp(2.7rem, 1.25rem + 5.6vw, 6.4rem);
-  line-height: 0.94;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.55rem, 1.2rem + 5.2vw, 5.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.028em;
 }
 .lp-h1--hero {
-  max-width: 14.5ch;
+  max-width: 11.5ch;
   overflow-wrap: break-word;
 }
 .lp-h2 {
-  font-size: clamp(1.85rem, 1.05rem + 2.7vw, 3.55rem);
-  line-height: 0.94;
-  letter-spacing: -0.04em;
+  font-size: clamp(1.75rem, 1.05rem + 2.3vw, 3.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
 }
 .lp-num {
   font-family: var(--lp-display);
-  font-size: clamp(2.15rem, 1.3rem + 2vw, 3.5rem);
-  line-height: 0.88;
+  font-size: clamp(2.05rem, 1.25rem + 1.8vw, 3.15rem);
+  line-height: 1;
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   font-variant-numeric: tabular-nums;
   color: var(--lp-ink);
 }
 .lp-display {
   font-family: var(--lp-display);
   font-weight: 700;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.03em;
 }
 /* Hero-Studio-Rahmen: Checkliste füllt sich (einziger erklärender Moment). */
 .lp-check-num {
   transition: color 400ms var(--lp-ease);
 }
 .lp-check-mark {
-  transform: scale(0.6);
+  transform: scale(0.92);
   opacity: 0;
   transition:
-    transform 400ms var(--lp-ease),
-    opacity 300ms var(--lp-ease);
+    transform 220ms var(--lp-ease),
+    opacity 180ms var(--lp-ease);
 }
 [data-status="done"] .lp-check-mark {
   transform: scale(1);
@@ -593,7 +594,7 @@ body {
 .lp-acc-panel {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 320ms var(--lp-ease);
+  transition: grid-template-rows 220ms var(--lp-ease);
 }
 .lp-acc-panel[data-open="true"] {
   grid-template-rows: 1fr;
@@ -622,10 +623,10 @@ body {
    Kurve: bestehender --lp-ease-Token. */
 html.lp-reveal-on .lp-section {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(8px);
   transition:
-    opacity 0.6s var(--lp-ease),
-    transform 0.6s var(--lp-ease);
+    opacity 0.4s var(--lp-ease),
+    transform 0.4s var(--lp-ease);
 }
 html.lp-reveal-on .lp-section.lp-in {
   opacity: 1;
@@ -688,6 +689,66 @@ html.lp-reveal-on .lp-section.lp-in {
   overflow: hidden;
 }
 
+/* ── Apple-Material + Press (emilkowalski/apple-design) ─────────────────── */
+.lp-nav-pill {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.lp-nav-pill[data-scrolled] {
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 1px 0 rgba(0, 0, 0, 0.04);
+}
+.lp-press {
+  transition:
+    transform 140ms var(--lp-ease),
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+.lp-press:active {
+  transform: scale(0.97);
+}
+.lp-zoom {
+  transition: transform 400ms var(--lp-ease);
+}
+.lp-nav-link {
+  transition: color 160ms ease, background-color 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lp-press.bg-lp-ink:hover,
+  .lp-press.bg-lp-accent:hover {
+    background-color: #2f2f2f;
+  }
+  .lp-nav-link:hover {
+    color: var(--lp-ink);
+    background: rgba(0, 0, 0, 0.04);
+  }
+  .group:hover .lp-zoom {
+    transform: scale(1.02);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .lp-nav-pill,
+  .lp-nav-pill[data-scrolled],
+  .lp-sticky-cta {
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+@media (prefers-contrast: more) {
+  .lp-nav-pill,
+  .lp-nav-pill[data-scrolled] {
+    background: #fff;
+    border: 1px solid #000;
+    backdrop-filter: none;
+  }
+}
+
 /* ── Conversion-Motion (2026-08-25) ───────────────────────────────────────
    Gestaffelter Hero-Einstieg + Sticky-CTA-Slide. Alles nur unter
    no-preference; bei reduce steht jeder Endzustand sofort (die Sticky-
@@ -695,7 +756,7 @@ html.lp-reveal-on .lp-section.lp-in {
 @keyframes lp-rise {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(8px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -704,28 +765,32 @@ html.lp-reveal-on .lp-section.lp-in {
 }
 @media (prefers-reduced-motion: no-preference) {
   .lp-rise {
-    animation: lp-rise 0.55s var(--lp-ease) both;
+    animation: lp-rise 0.38s var(--lp-ease) both;
   }
   .lp-rise-2 {
-    animation-delay: 0.08s;
+    animation-delay: 0.04s;
   }
   .lp-rise-3 {
-    animation-delay: 0.16s;
+    animation-delay: 0.08s;
   }
   .lp-rise-4 {
-    animation-delay: 0.24s;
+    animation-delay: 0.12s;
   }
   .lp-rise-5 {
-    animation-delay: 0.34s;
+    animation-delay: 0.16s;
   }
   .lp-rise-6 {
-    animation-delay: 0.2s;
+    animation-delay: 0.1s;
   }
 }
 /* Sticky Bottom-CTA (mobil): Verstecken/Zeigen läuft über transform,
    damit die Leiste auch ohne Motion-Präferenz korrekt aus dem Weg ist;
    nur das Gleiten selbst ist gegatet. */
 .lp-sticky-cta {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 -16px 28px rgba(229, 229, 229, 0.55);
   transform: translate3d(
     0,
     calc(100% + env(safe-area-inset-bottom, 0px)),

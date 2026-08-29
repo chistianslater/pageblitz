@@ -21,10 +21,9 @@ import {
 } from "@/components/landing/LandingFooter";
 
 /**
- * Landingpage „/" — brutalist-editorial Showroom (Refero „AI for Business"):
- * warmes Grau, Space-Grotesk-Versalien, Mint/Gelb nur als Mikro-Akzent.
- * Tokens `.lp`/`--lp-*` in client/src/index.css (Landing-Overrides, Studio
- * bleibt Papier/Grün). Sektionen unter client/src/components/landing/.
+ * Landingpage „/" — Showroom mit Apple-optical Type (Tracking nach Größe,
+ * keine Versalien-Schreie), transluzentem Chrome, Press-Feedback.
+ * Tokens `.lp`/`--lp-*` in client/src/index.css. Studio bleibt Papier/Grün.
  *
  * Meta/JSON-LD (Title, Description, OG, SoftwareApplication, Organization)
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender

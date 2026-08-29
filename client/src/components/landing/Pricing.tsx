@@ -104,7 +104,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             <div>
               <p className="lp-kicker">Pageblitz Website</p>
               <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-1">
-                <span className="lp-display text-[clamp(3.25rem,2.4rem+3vw,5.5rem)] leading-none uppercase">
+                <span className="lp-display text-[clamp(3.25rem,2.4rem+3vw,5.5rem)] leading-none">
                   {price}
                 </span>
                 <span className="pb-1.5 text-[0.95rem] text-lp-muted">

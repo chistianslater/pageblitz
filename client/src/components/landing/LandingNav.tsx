@@ -13,7 +13,8 @@ const NAV_LINKS = [
 ] as const;
 
 /**
- * Sticky Navigation: schwebende weiße Pill auf dem Canvas (Refero/Dayos).
+ * Sticky Navigation: transluzente Pill (backdrop-filter), Inhalt scrollt
+ * darunter. Gewicht nimmt beim Scrollen leicht zu.
  *
  * Mobile: Vollflächen-Dialog per Portal auf document.body. Der Close-Button
  * sitzt IM Overlay (nicht im sticky Header). `overflow:hidden` am Body
@@ -159,7 +160,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             type="button"
             onClick={() => close()}
             aria-label="Menü schließen"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink"
+            className="lp-press inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink"
           >
             <X className="h-6 w-6" />
           </button>
@@ -209,9 +210,8 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
     >
       <nav
         aria-label="Hauptnavigation"
-        className={`mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 rounded-[48px] px-4 sm:px-5 ${
-          isScrolled ? "bg-white" : "bg-white/80"
-        }`}
+        className="lp-nav-pill mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 rounded-[48px] px-4 sm:px-5"
+        data-scrolled={isScrolled || undefined}
       >
         <a
           href="/"
@@ -231,7 +231,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted transition-colors hover:text-lp-ink"
+                className="lp-nav-link rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted"
               >
                 {link.label}
               </a>
@@ -246,7 +246,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
               event.preventDefault();
               navigate("/login");
             }}
-            className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted transition-colors hover:text-lp-ink"
+            className="lp-nav-link rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted"
           >
             Anmelden
           </a>
@@ -266,7 +266,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
           aria-label={isOpen ? "Menü schließen" : "Menü öffnen"}
           aria-expanded={isOpen}
           aria-controls="lp-mobile-menu"
-          className="-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink md:hidden"
+            className="lp-press -mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full text-lp-ink md:hidden"
         >
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>

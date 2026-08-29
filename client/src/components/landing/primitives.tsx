@@ -25,7 +25,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
       <BlitzMark />
-      <span className="text-[1.05rem] font-medium tracking-[-0.02em]">
+      <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
         Pageblitz
       </span>
     </span>
@@ -63,7 +63,7 @@ export function SectionHead({
         {title}
       </h2>
       {text ? (
-        <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.6] text-lp-muted">
+        <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.5] text-lp-muted">
           {text}
         </p>
       ) : null}
@@ -72,11 +72,11 @@ export function SectionHead({
 }
 
 const PILL =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-medium transition-[background-color,color,border-color,transform] duration-200 active:scale-[0.98] disabled:opacity-50";
+  "lp-press inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-medium disabled:opacity-50";
 
-export const pillPrimary = `${PILL} bg-lp-ink text-lp-canvas hover:bg-[#2f2f2f]`;
-export const pillInk = `${PILL} bg-lp-ink text-lp-canvas hover:bg-[#2f2f2f]`;
-export const pillGhost = `${PILL} border border-lp-ink/20 bg-white text-lp-ink hover:border-lp-ink`;
+export const pillPrimary = `${PILL} bg-lp-ink text-lp-canvas`;
+export const pillInk = `${PILL} bg-lp-ink text-lp-canvas`;
+export const pillGhost = `${PILL} border border-lp-ink/20 bg-white text-lp-ink`;
 
 /** Text-Link: Mint-Unterstreichung statt Studio-Grün. */
 export const textLink =

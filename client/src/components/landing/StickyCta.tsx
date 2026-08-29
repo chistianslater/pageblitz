@@ -49,7 +49,7 @@ export function StickyCta({ billingYearly }: { billingYearly: boolean }) {
   return (
     <div
       aria-hidden={!show}
-      className={`lp-sticky-cta fixed inset-x-0 bottom-0 z-40 border-t border-lp-line bg-lp-surface/95 backdrop-blur-[2px] md:hidden ${
+      className={`lp-sticky-cta fixed inset-x-0 bottom-0 z-40 md:hidden ${
         show ? "lp-sticky-cta--on" : ""
       }`}
     >

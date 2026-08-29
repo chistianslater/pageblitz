@@ -90,7 +90,7 @@ export function ForWhom() {
                   height={500}
                   loading="lazy"
                   decoding="async"
-                  className="aspect-[16/10] w-full object-cover object-top transition-transform duration-700 [transition-timing-function:var(--lp-ease)] group-hover:scale-[1.025]"
+                  className="lp-zoom aspect-[16/10] w-full object-cover object-top"
                 />
               </a>
               <div className="mt-4 grid grid-cols-[2.25rem_1fr] gap-3 border-t border-lp-line pt-3">
