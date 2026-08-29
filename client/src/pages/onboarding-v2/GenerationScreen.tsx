@@ -184,7 +184,7 @@ export function GenerationScreen({
   const frameSrc = `/preview-ssr/${token}?reveal=1&v=interim`;
 
   return (
-    <section className="pb-studio-gen" aria-live="polite">
+    <section className="pb-studio-gen pb-studio-gen--dark" aria-live="polite">
       <div className="pb-studio-gen-inner">
         <p className="pb-studio-kicker">Deine Website entsteht</p>
         <h1 className="pb-studio-title">{businessName}</h1>

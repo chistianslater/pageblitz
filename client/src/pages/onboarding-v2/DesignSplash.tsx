@@ -145,7 +145,7 @@ export function DesignSplash({
     );
 
   return (
-    <section className="pb-studio pb-studio-gen pb-design-splash">
+    <section className="pb-studio pb-studio-gen pb-studio-gen--dark pb-design-splash">
       <div className="pb-design-splash-inner">
         <header className="pb-design-splash-head">
           <div>

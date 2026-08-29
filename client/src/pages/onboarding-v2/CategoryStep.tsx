@@ -77,7 +77,7 @@ export function CategoryStep({
   };
 
   return (
-    <section className="pb-studio-gen pb-studio-gen--dark">
+    <section className="pb-studio-gen pb-studio-gen--dark pb-studio-gen--startlike">
       <div className="pb-studio-gen-inner pb-studio-cat">
         <p className="pb-studio-kicker">Bevor es losgeht</p>
         <h1 className="pb-studio-title">Was macht dein Betrieb?</h1>
