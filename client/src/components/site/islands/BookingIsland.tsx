@@ -250,7 +250,14 @@ export const BookingIsland: React.FC<{
       aria-modal="true"
       aria-label={title}
       hidden={!open}
-      style={siteVars as React.CSSProperties}
+      style={
+        {
+          ...siteVars,
+          fontFamily:
+            siteVars["--pb-font-body"] ||
+            'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+        } as React.CSSProperties
+      }
       onKeyDown={event => trapTabKey(event, event.currentTarget)}
     >
       <div className="pb-island-panel-header">

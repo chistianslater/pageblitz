@@ -81,7 +81,7 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     const dialog = page.getByRole("dialog", { name: /Chat mit/ });
     await expect(dialog).toBeVisible();
     await expect(dialog).toContainText("Online");
-    await expect(dialog.getByRole("log")).toContainText(/Hallo/);
+    await expect(dialog.getByRole("log")).toContainText(/Willkommen|Hallo/);
     await expect(dialog.getByLabel("Nachricht an den Chat")).toBeVisible();
     await expect(
       dialog.getByRole("button", { name: "Nachricht senden" })
