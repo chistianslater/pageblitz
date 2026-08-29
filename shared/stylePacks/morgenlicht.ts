@@ -9,6 +9,9 @@ export const MORGENLICHT: PackConstitution = {
     "zahnarzt",
     "arzt",
     "physiotherapie",
+    // GMB/SEO-Kategorie heißt „Physiotherapeut" — ohne diesen Eintrag fiel
+    // die Branche in den Fallback-Pool (Abgleich 2026-08-29).
+    "physiotherapeut",
     "ergotherapie",
     "logopaedie",
     "psychotherapie",
