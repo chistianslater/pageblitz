@@ -7,13 +7,83 @@ import {
   trimHistory,
   type ChatMessage,
 } from "./chatHelpers";
+import { copySiteCssVars } from "./copySiteCssVars";
 import { trapTabKey } from "./focusTrap";
 import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 
+const ICON_PROPS = {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true as const,
+};
+
+function IconMessage(): React.ReactElement {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </svg>
+  );
+}
+
+function IconClose(): React.ReactElement {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function IconSend(): React.ReactElement {
+  return (
+    <svg {...ICON_PROPS}>
+      <path d="m22 2-7 20-4-9-9-4Z" />
+      <path d="M22 2 11 13" />
+    </svg>
+  );
+}
+
+function ChatFabButton({
+  disabled,
+  open,
+  panelId,
+  triggerRef,
+  onClick,
+}: {
+  disabled?: boolean;
+  open?: boolean;
+  panelId?: string;
+  triggerRef?: React.Ref<HTMLButtonElement>;
+  onClick?: () => void;
+}): React.ReactElement {
+  return (
+    <button
+      ref={triggerRef}
+      type="button"
+      className="pb-island-fab-btn pb-island-chat-fab"
+      aria-label="Chat"
+      aria-expanded={disabled ? undefined : open}
+      aria-controls={disabled ? undefined : panelId}
+      aria-disabled={disabled ? true : undefined}
+      disabled={disabled}
+      title={disabled ? "In der Vorschau nicht aktiv" : undefined}
+      onClick={onClick}
+    >
+      {open ? <IconClose /> : <IconMessage />}
+      <span className="pb-island-sr-only">Chat</span>
+    </button>
+  );
+}
+
 /**
- * KI-Chat-Insel: schwebender Button unten rechts öffnet ein Panel mit
- * Verlauf + Eingabe, das gegen die bestehende v1-Route
- * `POST /api/chat/:slug/message` chattet (unverändert, Body
+ * KI-Chat-Insel: runder Button unten rechts öffnet ein klassisches
+ * Chatfenster (Avatar-Header, Sprechblasen, Composer) gegen die bestehende
+ * v1-Route `POST /api/chat/:slug/message` (unverändert, Body
  * `{ messages, sessionId }`, Antwort `{ content, leadCaptured }`).
  *
  * Client-only Widget: `client/src/site-islands/main.tsx` hydratisiert per
@@ -40,6 +110,10 @@ import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
  * `window`-CustomEvent, wenn diese Insel öffnet; ist diese Insel offen und
  * die ANDERE Insel öffnet, schließt sie sich selbst (`closePanel`, inkl.
  * Fokus-Rückgabe an den eigenen Fab-Button).
+ *
+ * Das Panel wird nach `document.body` portaliert und verliert dadurch die
+ * Pack-Tokens von `.pb-site` — `copySiteCssVars` legt sie als Inline-Style
+ * auf das Fenster, plus Fallback-Schrift in `chatCss.ts`.
  */
 export const ChatIsland: React.FC<{
   slug: string;
@@ -54,6 +128,7 @@ export const ChatIsland: React.FC<{
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sessionId] = useState(getOrCreateSessionId);
+  const [siteVars] = useState<Record<string, string>>(() => copySiteCssVars());
   const inputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -78,7 +153,7 @@ export const ChatIsland: React.FC<{
   }, [messages, busy]);
 
   // Schließt das Panel und gibt den Fokus an den auslösenden Fab-Button
-  // zurück — sonst fällt der Fokus beim Schließen (Escape/„Schließen") auf
+  // zurück — sonst fällt der Fokus beim Schließen (Escape/X) auf
   // `document.body` und geht für Tastatur-/Screenreader-Nutzung verloren.
   function closePanel(): void {
     setOpen(false);
@@ -156,25 +231,43 @@ export const ChatIsland: React.FC<{
   const panel = (
     <div
       id={panelId}
-      className="pb-island-panel"
+      className="pb-island-panel pb-island-chat-panel"
       role="dialog"
       aria-modal="true"
       aria-label={title}
       hidden={!open}
+      style={
+        {
+          ...siteVars,
+          fontFamily:
+            siteVars["--pb-font-body"] ||
+            'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+        } as React.CSSProperties
+      }
       onKeyDown={event => trapTabKey(event, event.currentTarget)}
     >
-      <div className="pb-island-panel-header">
-        <span>{title}</span>
+      <div className="pb-island-chat-header">
+        <span className="pb-island-chat-avatar">
+          <IconMessage />
+        </span>
+        <div className="pb-island-chat-header-text">
+          <span className="pb-island-chat-title">{title}</span>
+          <span className="pb-island-chat-status">
+            <span className="pb-island-chat-status-dot" />
+            Online
+          </span>
+        </div>
         <button
           type="button"
-          className="pb-island-panel-close"
+          className="pb-island-chat-close"
           onClick={closePanel}
+          aria-label="Schließen"
         >
-          Schließen
+          <IconClose />
         </button>
       </div>
       <div
-        className="pb-island-panel-body"
+        className="pb-island-chat-body"
         role="log"
         aria-live="polite"
         ref={bodyRef}
@@ -187,9 +280,13 @@ export const ChatIsland: React.FC<{
         {busy && (
           <p
             className="pb-island-msg pb-island-msg--assistant pb-island-msg--busy"
-            aria-hidden="true"
+            aria-label="schreibt"
           >
-            …
+            <span className="pb-island-chat-dots" aria-hidden="true">
+              <span className="pb-island-chat-dot" />
+              <span className="pb-island-chat-dot" />
+              <span className="pb-island-chat-dot" />
+            </span>
           </p>
         )}
       </div>
@@ -198,55 +295,42 @@ export const ChatIsland: React.FC<{
           {error}
         </p>
       )}
-      <div className="pb-island-panel-input-row">
+      <div className="pb-island-chat-composer">
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleInputKeyDown}
-          placeholder="Deine Nachricht…"
+          placeholder="Nachricht schreiben…"
           disabled={busy}
           aria-label="Nachricht an den Chat"
         />
         <button
           type="button"
-          className="pb-island-panel-send"
+          className="pb-island-chat-send"
           onClick={() => void sendMessage()}
           disabled={busy || !input.trim()}
+          aria-label="Nachricht senden"
         >
-          Senden
+          <IconSend />
         </button>
       </div>
     </div>
   );
 
   if (disabled) {
-    return (
-      <button
-        type="button"
-        className="pb-island-fab-btn"
-        disabled
-        aria-disabled="true"
-        title="In der Vorschau nicht aktiv"
-      >
-        Chat
-      </button>
-    );
+    return <ChatFabButton disabled />;
   }
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className="pb-island-fab-btn"
-        aria-expanded={open}
-        aria-controls={panelId}
+      <ChatFabButton
+        open={open}
+        panelId={panelId}
+        triggerRef={triggerRef}
         onClick={() => (open ? closePanel() : openPanel())}
-      >
-        Chat
-      </button>
+      />
       {/*
         Portal statt verschachteltem Kind: `.pb-island--fab` (der Wurzelknoten
         dieser Insel, siehe SiteIslands.tsx) ist `position:fixed` und bekommt

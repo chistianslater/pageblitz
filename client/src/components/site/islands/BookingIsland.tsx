@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BookingFormFields } from "./BookingFormFields";
 import { BookingDateStep, BookingSlotStep } from "./BookingSteps";
+import { copySiteCssVars } from "./copySiteCssVars";
 import { trapTabKey } from "./focusTrap";
 import { notifyIslandOpened, subscribeToOtherIslandOpen } from "./islandEvents";
 import {
@@ -72,6 +73,7 @@ export const BookingIsland: React.FC<{
 
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const [siteVars] = useState<Record<string, string>>(() => copySiteCssVars());
 
   const title =
     settings?.title ||
@@ -248,6 +250,14 @@ export const BookingIsland: React.FC<{
       aria-modal="true"
       aria-label={title}
       hidden={!open}
+      style={
+        {
+          ...siteVars,
+          fontFamily:
+            siteVars["--pb-font-body"] ||
+            'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+        } as React.CSSProperties
+      }
       onKeyDown={event => trapTabKey(event, event.currentTarget)}
     >
       <div className="pb-island-panel-header">

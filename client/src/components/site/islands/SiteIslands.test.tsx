@@ -53,6 +53,7 @@ describe("SiteIslands", () => {
       <SiteIslands data={data} slug="brandt" />
     );
     expect(html).toMatch(/<style>[^<]*\.pb-island-form\{/);
+    expect(html).toContain(".pb-island-chat-panel{");
   });
 
   test("rendert nur die aktive Insel (nur contactForm)", () => {

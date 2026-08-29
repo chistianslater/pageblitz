@@ -1,4 +1,5 @@
 import { bookingCss } from "./bookingCss";
+import { chatCss } from "./chatCss";
 
 /**
  * Styles für die SSR-Inseln (Kontaktformular, KI-Chat, Terminbuchung).
@@ -18,13 +19,13 @@ import { bookingCss } from "./bookingCss";
  * `~`-Offset weiter oben sitzt — sonst über dem geöffneten Chat-Panel
  * liegen und dessen Senden-Button für Klicks blockieren.
  *
- * Die Terminbuchungs-Insel (`BookingIsland.tsx`) bringt ihre eigenen
- * Klassen (Datums-/Slot-Chips, Zusammenfassung) aus `bookingCss.ts` mit —
- * hier nur angehängt, damit `SiteIslands` weiterhin ein einziges
- * `<style>`-Tag rendert.
+ * Die Terminbuchungs-Insel (`BookingIsland.tsx`) und der KI-Chat
+ * (`ChatIsland.tsx`) bringen eigene Klassen aus `bookingCss.ts` /
+ * `chatCss.ts` mit — hier nur angehängt, damit `SiteIslands` weiterhin ein
+ * einziges `<style>`-Tag rendert.
  */
 export const islandsCss = `
-.pb-islands{font-family:var(--pb-font-body);color:var(--pb-ink)}
+.pb-islands{font-family:var(--pb-font-body,ui-sans-serif,system-ui,sans-serif);color:var(--pb-ink)}
 .pb-island-form{display:flex;flex-direction:column;gap:14px;max-width:520px}
 .pb-island-form label{display:flex;flex-direction:column;gap:6px;font-family:var(--pb-font-utility,var(--pb-font-body));font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;color:var(--pb-muted)}
 .pb-island-form input,.pb-island-form textarea{font-family:var(--pb-font-body);font-size:15px;padding:12px 14px;border:1px solid var(--pb-line);border-radius:var(--pb-radius-card);background:var(--pb-surface);color:var(--pb-ink)}
@@ -50,7 +51,7 @@ export const islandsCss = `
 .pb-island-fab-btn[aria-expanded="true"]{opacity:.85}
 .pb-island-fab-btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
 .pb-island-fab-btn:disabled:hover{transform:none}
-.pb-island-panel{position:fixed;right:20px;bottom:90px;width:min(360px,calc(100vw - 2rem));max-height:70vh;background:var(--pb-surface);color:var(--pb-ink);border:1px solid var(--pb-line);border-radius:var(--pb-radius-card);box-shadow:0 20px 60px rgba(0,0,0,.24);z-index:61;display:flex;flex-direction:column;overflow:hidden}
+.pb-island-panel{position:fixed;right:20px;bottom:90px;width:min(360px,calc(100vw - 2rem));max-height:70vh;background:var(--pb-surface);color:var(--pb-ink);font-family:var(--pb-font-body,ui-sans-serif,system-ui,sans-serif);border:1px solid var(--pb-line);border-radius:var(--pb-radius-card);box-shadow:0 20px 60px rgba(0,0,0,.24);z-index:61;display:flex;flex-direction:column;overflow:hidden}
 .pb-island-panel[hidden]{display:none}
 .pb-island-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--pb-line);font-family:var(--pb-font-utility,var(--pb-font-body));font-weight:700;font-size:14px}
 .pb-island-panel-close{background:none;border:none;color:var(--pb-muted);font-family:inherit;font-size:13px;cursor:pointer;padding:4px}
@@ -68,4 +69,5 @@ export const islandsCss = `
 .pb-island-panel-send:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:480px){.pb-island--fab{right:12px;bottom:12px}.pb-island--fab ~ .pb-island--fab{bottom:80px}.pb-island-panel{left:0;right:0;bottom:0;width:100%;max-width:none;max-height:80vh;border-radius:var(--pb-radius-card) var(--pb-radius-card) 0 0}}
 @media(prefers-reduced-motion:reduce){.pb-island-fab-button,.pb-island-fab-btn{transition:none}.pb-island-fab-button:hover,.pb-island-fab-button:focus-visible,.pb-island-fab-btn:hover,.pb-island-fab-btn:focus-visible{transform:none}}
-${bookingCss}`;
+${bookingCss}
+${chatCss}`;
