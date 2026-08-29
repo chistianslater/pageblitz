@@ -1675,10 +1675,10 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .hero-copy{text-align:center}
 @media(max-width:1023px){.hero-persona{display:none}}
 @media(min-width:1024px){
-  .hero-copy{text-align:left;padding-right:22rem}
-  .hero-copy h1{text-align:left}
-  .hero-copy p{margin-left:0}
-  .hero-copy .hero-trust{justify-content:flex-start}
+  .hero .hero-copy{text-align:left;padding-right:24rem}
+  .hero .hero-copy h1{text-align:left}
+  .hero .hero-copy p{margin-left:0;margin-right:0}
+  .hero .hero-copy .hero-trust{justify-content:flex-start}
 }
 .orb-tl{width:500px;height:500px;top:-200px;left:-150px;background:var(--orb,rgba(233,30,140,.08))}
 .orb-br{width:400px;height:400px;bottom:-150px;right:-100px;background:var(--orb,rgba(233,30,140,.06))}
