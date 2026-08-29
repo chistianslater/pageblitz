@@ -43,6 +43,7 @@ export default function HeroFilmPlayer() {
         spaceKeyToPlayOrPause={false}
         doubleClickToFullscreen={false}
         acknowledgeRemotionLicense
+        errorFallback={() => null}
         style={{ width: "100%", height: "100%" }}
       />
     </div>

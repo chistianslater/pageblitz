@@ -507,8 +507,8 @@ body {
   font-family: var(--lp-display);
   font-weight: 700;
   text-transform: uppercase;
-  line-height: 0.92;
-  letter-spacing: -0.04em;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 .lp h3,
@@ -548,8 +548,8 @@ body {
 }
 .lp-h1 {
   font-size: clamp(2.7rem, 1.25rem + 5.6vw, 6.4rem);
-  line-height: 0.92;
-  letter-spacing: -0.045em;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
 }
 .lp-h1--hero {
   max-width: 14.5ch;

@@ -530,9 +530,9 @@ function SiteBuild() {
           backgroundColor: KOHLE,
         }}
       >
-        <TypeLine name="H1a" text="Maßarbeit" top={48} delay={32} />
-        <TypeLine name="H1b" text="aus Holz." top={118} delay={46} outline />
-        <TypeLine name="H1c" text="Punkt." top={188} delay={62} accent />
+        <TypeLine name="H1a" text="Maßarbeit" top={48} delay={16} />
+        <TypeLine name="H1b" text="aus Holz." top={118} delay={28} outline />
+        <TypeLine name="H1c" text="Punkt." top={188} delay={42} accent />
         <Interactive.Div
           name="Sub"
           style={{
@@ -544,8 +544,8 @@ function SiteBuild() {
             fontFamily: BODY,
             fontSize: 16,
             lineHeight: 1.45,
-            opacity: interpolate(frame, [78, 92], [0, 1], clamp),
-            translate: interpolate(frame, [78, 96], ["0px 16px", "0px 0px"], {
+            opacity: interpolate(frame, [58, 72], [0, 1], clamp),
+            translate: interpolate(frame, [58, 76], ["0px 16px", "0px 0px"], {
               ...clamp,
               easing: Easing.spring(SPRING),
             }),
@@ -568,8 +568,8 @@ function SiteBuild() {
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            opacity: interpolate(frame, [88, 100], [0, 1], clamp),
-            scale: interpolate(frame, [88, 108], [0.8, 1], {
+            opacity: interpolate(frame, [68, 80], [0, 1], clamp),
+            scale: interpolate(frame, [68, 88], [0.8, 1], {
               ...clamp,
               easing: Easing.spring(PUNCH),
               output: "perceptual-scale",
@@ -591,11 +591,11 @@ function SiteBuild() {
           overflow: "hidden",
           clipPath: "polygon(18% 0, 100% 0, 100% 100%, 0 100%)",
           borderLeft: `10px solid ${SIGNAL}`,
-          translate: interpolate(frame, [96, 124], ["48% 0px", "0px 0px"], {
+          translate: interpolate(frame, [78, 106], ["48% 0%", "0% 0%"], {
             ...clamp,
             easing: Easing.spring(SPRING),
           }),
-          opacity: interpolate(frame, [96, 110], [0, 1], clamp),
+          opacity: interpolate(frame, [78, 92], [0, 1], clamp),
         }}
       >
         <CanvasImage
@@ -608,7 +608,7 @@ function SiteBuild() {
             width: "100%",
             height: "100%",
             filter: "saturate(0.72) contrast(1.08)",
-            scale: interpolate(frame, [96, 180], [1.16, 1], {
+            scale: interpolate(frame, [78, 160], [1.16, 1], {
               ...clamp,
               easing: Easing.bezier(0.16, 1, 0.3, 1),
               output: "perceptual-scale",
@@ -630,8 +630,8 @@ function SiteBuild() {
           rotate: "-1.5deg",
           overflow: "hidden",
           zIndex: 6,
-          opacity: interpolate(frame, [118, 132], [0, 1], clamp),
-          translate: interpolate(frame, [118, 138], ["0px 24px", "0px 0px"], {
+          opacity: interpolate(frame, [96, 110], [0, 1], clamp),
+          translate: interpolate(frame, [96, 116], ["0px 24px", "0px 0px"], {
             ...clamp,
             easing: Easing.spring(SPRING),
           }),
@@ -647,7 +647,7 @@ function SiteBuild() {
             whiteSpace: "nowrap",
             translate: interpolate(
               frame,
-              [118, 260],
+              [96, 240],
               ["0px 0px", "-520px 0px"],
               { easing: Easing.linear }
             ),
@@ -671,10 +671,10 @@ function SiteBuild() {
           gap: 12,
         }}
       >
-        <ServiceCard idx="01" title="Möbel" delay={128} />
-        <ServiceCard idx="02" title="Türen" delay={136} />
-        <ServiceCard idx="03" title="Einbauten" delay={144} />
-        <ServiceCard idx="04" title="Restauration" delay={152} />
+        <ServiceCard idx="01" title="Möbel" delay={108} />
+        <ServiceCard idx="02" title="Türen" delay={116} />
+        <ServiceCard idx="03" title="Einbauten" delay={124} />
+        <ServiceCard idx="04" title="Restauration" delay={132} />
       </Interactive.Div>
 
       <StatusChip />
