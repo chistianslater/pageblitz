@@ -4,7 +4,6 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { ProblemSection } from "@/components/landing/ProblemSection";
-import { ManifestoBand } from "@/components/landing/ManifestoBand";
 import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { StudioProof } from "@/components/landing/StudioProof";
@@ -147,7 +146,6 @@ export default function LandingPage() {
         {/* Belege und Problem zuerst, dann Dayos-Manifesto, dann Ablauf. */}
         <ProofBar />
         <ProblemSection billingYearly={billingYearly} />
-        <ManifestoBand />
         {/* Erst „Was muss ich tun?", dann „Passt das zu meiner Branche?"
             — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
         <HowItWorks />
