@@ -97,7 +97,9 @@ describe("Home-Prerender", () => {
 
   it("liefert die H1 als echtes HTML aus", () => {
     expect(html).toContain("<h1");
-    expect(html).toContain("Deine Website in 3 Minuten fertig.");
+    // Nachtschicht-Relaunch 2026-08-29: H1 mit Volt-<em> für „in 3 Minuten."
+    expect(html).toContain("Die fertige Website für deinen Betrieb");
+    expect(html).toContain("in 3 Minuten.");
   });
 
   it("verlinkt jede Branchenseite", () => {
