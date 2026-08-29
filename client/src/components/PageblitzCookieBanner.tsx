@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Cookie, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { getStoredConsent, saveConsent } from "@/lib/consent";
 
@@ -33,6 +34,11 @@ const CATEGORIES: Category[] = [
 ];
 
 export default function PageblitzCookieBanner() {
+  const [location] = useLocation();
+  // Die Landing "/" ist dunkel (Nachtschicht) — der globale Banner bekommt
+  // dort einen dunklen Token-Scope (.pb-cookie-dark in index.css); überall
+  // sonst (Start-Funnel, Dashboard) bleibt der helle Studio-Look.
+  const isDarkLanding = location === "/";
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
@@ -84,7 +90,9 @@ export default function PageblitzCookieBanner() {
       // der Chat-Button unten rechts (LandingPageChatWidget) war bei
       // sichtbarem Banner nicht anklickbar. Das Panel selbst schaltet sie
       // wieder ein.
-      className="fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5 pointer-events-none"
+      className={`fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5 pointer-events-none ${
+        isDarkLanding ? "pb-cookie-dark" : ""
+      }`}
       role="dialog"
       aria-modal="true"
       aria-label="Cookie-Einstellungen"

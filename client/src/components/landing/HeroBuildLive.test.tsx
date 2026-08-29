@@ -70,9 +70,8 @@ describe("HeroBuildLive (SSR)", () => {
     expect(html).toContain('role="img"');
     expect(html).toContain("aria-label=");
     expect(html).toContain('data-phase="1"');
-    expect(html).toContain("4,9 · 127 Bewertungen");
-    expect(html).toContain("brandt-schreinerei.pageblitz.de");
-    // CSS setzt die Demo-H1 uppercase; im Markup steht sie gemischt.
-    expect(html).toContain("Massarbeit");
+    expect(html).toContain("4,8 · 214 Bewertungen");
+    expect(html).toContain("trattoria-lucia.pageblitz.de");
+    expect(html).toContain("Ein Tisch.");
   });
 });

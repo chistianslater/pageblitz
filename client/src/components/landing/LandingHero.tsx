@@ -128,8 +128,10 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
               id="lp-hero-heading"
               className="lp-rise lp-rise-1 lp-h1 lp-h1--hero"
             >
-              Die fertige Website für deinen Betrieb —{" "}
-              <em className="not-italic text-lp-volt">in 3&nbsp;Minuten.</em>
+              Deine Website —{" "}
+              <em className="not-italic text-lp-volt">
+                Fertig in 3&nbsp;Minuten.
+              </em>
             </h1>
             <p className="lp-rise lp-rise-2 mt-6 max-w-[30rem] text-[1.12rem] leading-[1.55] text-lp-muted">
               Tipp deinen Firmennamen ein. Pageblitz holt Fotos, Bewertungen und

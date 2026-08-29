@@ -8,11 +8,12 @@ import React, { useEffect, useRef, useState } from "react";
  * über `data-phase="0…4"`) plus eine setTimeout-Timeline. Kein Bild im
  * LCP-Pfad — der Frame-Inhalt ist die Werkbank-Demo als HTML/CSS.
  *
- * Demo-Betrieb fiktiv („Schreinerei Brandt", wie die Werkbank-Demo);
- * die Chip-Zahlen sind Demo-Daten, kein Pageblitz-Eigenlob.
+ * Demo-Betrieb fiktiv („Trattoria Lucia", identisch zur Gusto-Demo in
+ * shared/siteContract/fixtures.ts); die Chip-Zahlen sind Demo-Daten,
+ * kein Pageblitz-Eigenlob.
  */
 
-export const DEMO_NAME = "Schreinerei Brandt";
+export const DEMO_NAME = "Trattoria Lucia";
 const TYPE_START = 420;
 const TYPE_MS = 55;
 
@@ -87,8 +88,8 @@ export function createHeroTimeline({
 }
 
 const CHIPS = [
-  "★ 4,9 · 127 Bewertungen",
-  "12 Fotos",
+  "★ 4,8 · 214 Bewertungen",
+  "18 Fotos",
   "Öffnungszeiten",
   "Adresse & Karte",
 ];
@@ -139,7 +140,7 @@ export function HeroBuildLive() {
       className="lpb"
       data-phase={phase}
       role="img"
-      aria-label="Animation: Aus dem Google-Profil der Schreinerei Brandt entsteht Schritt für Schritt eine fertige Website — bis sie live ist."
+      aria-label="Animation: Aus dem Google-Profil der Trattoria Lucia entsteht Schritt für Schritt eine fertige Restaurant-Website — bis sie live ist."
     >
       <div className="lpb-search" aria-hidden="true">
         <span className="lpb-g">G</span>
@@ -162,7 +163,7 @@ export function HeroBuildLive() {
           </span>
           <span className="lpb-url">
             <span className="lpb-u1">pageblitz.de/studio</span>
-            <span className="lpb-u2">brandt-schreinerei.pageblitz.de</span>
+            <span className="lpb-u2">trattoria-lucia.pageblitz.de</span>
           </span>
         </div>
         <div className="lpb-site">
@@ -173,25 +174,32 @@ export function HeroBuildLive() {
             <i />
           </div>
           <div className="lpb-snav">
-            <b>BRANDT.</b>
+            <b>Trattoria Lucia</b>
             <span>
-              <span>Arbeit</span>
-              <span>Werkstatt</span>
+              <span>Speisekarte</span>
+              <span>Abende</span>
               <span>Kontakt</span>
             </span>
           </div>
           <div className="lpb-shero">
             <div className="lpb-sh1">
-              <span className="lpb-l">Massarbeit</span>
-              <span className="lpb-l">aus Holz.</span>
-              <span className="lpb-l lpb-l-accent">Punkt.</span>
+              <span className="lpb-l">Ein Tisch.</span>
+              <span className="lpb-l">Ein Abend.</span>
+              <span className="lpb-l lpb-l-accent">Italien.</span>
             </div>
-            <div className="lpb-simg" />
+            <div className="lpb-simg">
+              <img
+                src="/demo/gusto-hero.webp"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
           </div>
           <div className="lpb-srow">
-            <span className="lpb-scta">Projekt anfragen</span>
+            <span className="lpb-scta">Tisch reservieren</span>
             <span className="lpb-sstars">
-              <b>★★★★★</b>&nbsp;4,9 bei Google
+              <b>★★★★★</b>&nbsp;4,8 bei Google
             </span>
           </div>
         </div>

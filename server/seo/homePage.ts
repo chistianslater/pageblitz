@@ -205,7 +205,7 @@ export function generateHomePrerender(): string {
     </header>
 
     <section>
-      <h1 style="font-size:clamp(2.5rem,5vw,4.2rem);font-weight:700;letter-spacing:-.03em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance;max-width:18ch">Die fertige Website für deinen Betrieb — <em style="font-style:normal;color:${C.volt}">in 3 Minuten.</em></h1>
+      <h1 style="font-size:clamp(2.5rem,5vw,4.2rem);font-weight:700;letter-spacing:-.03em;line-height:1.02;margin:0 0 1.5rem;text-wrap:balance;max-width:18ch">Deine Website — <em style="font-style:normal;color:${C.volt}">Fertig in 3 Minuten.</em></h1>
       <p style="font-size:1.1rem;line-height:1.55;color:${C.muted};max-width:30rem;margin:1.5rem 0 2rem">Tipp deinen Firmennamen ein. Pageblitz holt Fotos, Bewertungen und Öffnungszeiten aus deinem Google-Profil und baut daraus eine echte Website. <strong style="color:${C.ink}">Du siehst das Ergebnis, bevor du irgendetwas bezahlst.</strong></p>
       <!-- Echtes GET-Formular: funktioniert identisch zum React-Hero, aber auch
            ganz ohne JavaScript. /start liest ?name= aus und springt direkt in

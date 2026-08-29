@@ -263,6 +263,61 @@ export function PackShowcase() {
     updateScrollState();
   }, [updateScrollState]);
 
+  // Langsamer Autolauf (2026-08-29): das Karussell fährt von selbst durch
+  // die Richtungen (Ping-Pong statt hartem Rücksprung), pausiert bei
+  // Hover/Fokus, nach manueller Interaktion und bei Reduced Motion.
+  // Snap/Smooth werden für die Dauer des Laufs abgeschaltet, sonst kämpft
+  // scroll-snap-mandatory gegen die 0,4-px-Schritte.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.style.scrollBehavior = "auto";
+    el.style.scrollSnapType = "none";
+    let raf = 0;
+    let dir = 1;
+    let paused = false;
+    let resumeAt = 0;
+    const step = () => {
+      if (!paused && Date.now() >= resumeAt && !document.hidden) {
+        const max = el.scrollWidth - el.clientWidth;
+        if (max > 0) {
+          el.scrollLeft += dir * 0.4;
+          if (el.scrollLeft >= max - 1) dir = -1;
+          else if (el.scrollLeft <= 1) dir = 1;
+        }
+      }
+      raf = requestAnimationFrame(step);
+    };
+    const pause = () => {
+      paused = true;
+    };
+    const resume = () => {
+      paused = false;
+    };
+    const defer = () => {
+      resumeAt = Date.now() + 4000;
+    };
+    el.addEventListener("pointerenter", pause);
+    el.addEventListener("pointerleave", resume);
+    el.addEventListener("focusin", pause);
+    el.addEventListener("focusout", resume);
+    el.addEventListener("wheel", defer, { passive: true });
+    el.addEventListener("touchstart", defer, { passive: true });
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+      el.style.scrollBehavior = "";
+      el.style.scrollSnapType = "";
+      el.removeEventListener("pointerenter", pause);
+      el.removeEventListener("pointerleave", resume);
+      el.removeEventListener("focusin", pause);
+      el.removeEventListener("focusout", resume);
+      el.removeEventListener("wheel", defer);
+      el.removeEventListener("touchstart", defer);
+    };
+  }, []);
+
   function scrollByPage(direction: 1 | -1): void {
     const el = scrollerRef.current;
     if (!el) return;

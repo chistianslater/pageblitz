@@ -26,17 +26,26 @@ function ChatSketch() {
     <div
       className="lps-sketch"
       role="img"
-      aria-label="Schema des KI-Chats: Ein Website-Besucher stellt eine Frage und erhält sofort eine Antwort"
+      aria-label="Animation des KI-Chats: Ein Website-Besucher stellt eine Frage und erhält sofort eine Antwort"
     >
-      <div className="lps-chat">
-        <span className="lps-chat-title">Chat mit deinem Betrieb</span>
-        <p className="lps-msg-assistant">Hallo! Wie kann ich Ihnen helfen?</p>
-        <p className="lps-msg-user">Bieten Sie auch Reparaturen an?</p>
-        <p className="lps-msg-assistant">
+      <div className="lpx-stage">
+        <span className="lpx-chat-title">Chat mit deinem Betrieb</span>
+        <p className="lpx-msg lpx-msg-a lpx-w1">
+          Hallo! Wie kann ich Ihnen helfen?
+        </p>
+        <p className="lpx-msg lpx-msg-u lpx-w2">
+          Bieten Sie auch Reparaturen an?
+        </p>
+        <span className="lpx-typing lpx-wt" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+        </span>
+        <p className="lpx-msg lpx-msg-a lpx-w4">
           Ja – wir reparieren Möbel und Türen. Möchten Sie direkt eine Anfrage
           senden?
         </p>
-        <span className="lps-chat-input">
+        <span className="lpx-chat-input">
           Nachricht schreiben …<b>↑</b>
         </span>
       </div>
@@ -44,20 +53,40 @@ function ChatSketch() {
   );
 }
 
+const GALLERY_PHOTOS = [
+  "/demo/gusto-hero.webp",
+  "/demo/gusto-detail-1.webp",
+  "/demo/gusto-detail-2.webp",
+  "/demo/patina-detail-1.webp",
+];
+
 function GallerySketch() {
   return (
     <div
       className="lps-sketch"
       role="img"
-      aria-label="Schema einer Bildergalerie mit vier Bildern und geöffneter Großansicht"
+      aria-label="Animation einer Bildergalerie: vier Projektfotos, eines öffnet sich als Großansicht"
     >
-      <div className="lps-gallery">
-        {[0, 1, 2, 3].map(i => (
-          <span key={i} className={`lps-gallery-img tone-${i + 1}`} />
+      <div className="lpx-gal">
+        {/* Echte Fotos der Gusto-Demo (Trattoria Lucia) — dieselbe Bildwelt
+            wie die Hero-Animation, keine Platzhalterflächen. */}
+        {GALLERY_PHOTOS.map((src, i) => (
+          <span key={src + i} className="lpx-ph">
+            <img src={src} alt="" loading="lazy" decoding="async" />
+          </span>
         ))}
-        <span className="lps-lightbox">
-          <i className="lps-lightbox-img" />
-          <b>×</b>
+        <span className="lpx-lb">
+          <img
+            className="lpx-lb-img"
+            src="/demo/gusto-detail-1.webp"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+          <span className="lpx-lb-bar">
+            <span>Aus der Küche · 03/18</span>
+            <b>×</b>
+          </span>
         </span>
       </div>
     </div>
@@ -69,27 +98,22 @@ function BookingSketch() {
     <div
       className="lps-sketch"
       role="img"
-      aria-label="Schema einer Terminbuchung mit Kalender, Uhrzeiten und bestätigtem Termin"
+      aria-label="Animation einer Terminbuchung: Tag wählen, Uhrzeit auswählen, Termin bestätigt"
     >
-      <div className="lps-booking">
-        <div className="lps-calendar">
-          <span className="lps-cal-head" />
-          <div className="lps-cal-grid">
+      <div className="lpx-book">
+        <div className="lpx-cal">
+          <span className="lpx-cal-head" />
+          <div className="lpx-cal-grid">
             {Array.from({ length: 21 }, (_, i) => (
-              <i
-                key={i}
-                data-active={i === 11 || undefined}
-                data-muted={i < 3 || undefined}
-              />
+              <i key={i} className={i === 11 ? "lpx-cal-day" : undefined} />
             ))}
           </div>
         </div>
-        <div className="lps-slots">
-          <span className="lps-slot-label" />
-          <i>09:00</i>
-          <i data-active>10:30</i>
-          <i>12:00</i>
-          <b>Termin bestätigen</b>
+        <div className="lpx-slots">
+          <span className="lpx-slot">09:00</span>
+          <span className="lpx-slot lpx-slot-active">10:30</span>
+          <span className="lpx-slot">12:00</span>
+          <span className="lpx-confirm lpx-w4">Termin bestätigt ✓</span>
         </div>
       </div>
     </div>
@@ -147,27 +171,44 @@ export function FeatureShowcase() {
           title="Deine Website ist kein Plakat. Sie arbeitet."
           text="Drei der stärksten Extras — systematisch erklärt. Alle Extras sind jederzeit zubuch- und kündbar."
         />
-        <div className="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-8">
-          {FEATURES.map(feature => (
-            <article key={feature.id} className="flex flex-col">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <p className="lp-kicker">{feature.kicker}</p>
-                <span className="rounded-full border border-lp-line px-2.5 py-1 font-[family-name:var(--lp-mono)] text-[0.66rem] font-medium tracking-[0.04em] text-lp-muted">
-                  EXTRA · + {formatEuro(addonPrice(feature.addon))}
-                </span>
-              </div>
-              <h3 className="text-[1.35rem] font-bold leading-[1.15] tracking-[-0.02em] text-lp-ink">
-                {feature.title}
-              </h3>
-              <div className="mt-6">
+        {/* Jedes Extra bekommt eine eigene volle Bühne (User-Feedback
+            2026-08-29: „mehr Raum, hochwertiger"): Demo groß auf der einen,
+            Copy auf der anderen Seite, alternierend — Premium-Feature-Rhythmus
+            statt dreier gequetschter Spalten. */}
+        <div className="mt-14 flex flex-col gap-16 lg:mt-20 lg:gap-24">
+          {FEATURES.map((feature, index) => (
+            <article
+              key={feature.id}
+              className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14"
+            >
+              <div
+                className={`lg:col-span-6 xl:col-span-7 ${
+                  index % 2 === 1 ? "lg:order-2" : ""
+                }`}
+              >
                 <feature.Diagram />
               </div>
-              <p className="mt-5 flex-1 text-[0.98rem] leading-[1.5] text-lp-muted">
-                {feature.text}
-              </p>
-              <p className="mt-5 border-t border-lp-line pt-4 text-[0.85rem] font-medium text-lp-volt">
-                {feature.proof}
-              </p>
+              <div
+                className={`lg:col-span-6 xl:col-span-5 ${
+                  index % 2 === 1 ? "lg:order-1" : ""
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="lp-kicker">{feature.kicker}</p>
+                  <span className="rounded-full border border-lp-line px-2.5 py-1 font-[family-name:var(--lp-mono)] text-[0.66rem] font-medium tracking-[0.04em] text-lp-muted">
+                    EXTRA · + {formatEuro(addonPrice(feature.addon))}/Monat
+                  </span>
+                </div>
+                <h3 className="mt-4 max-w-[18ch] text-[clamp(1.6rem,2.6vw,2.2rem)] font-bold leading-[1.08] tracking-[-0.025em] text-lp-ink">
+                  {feature.title}
+                </h3>
+                <p className="mt-4 max-w-[28rem] text-[1.05rem] leading-[1.55] text-lp-muted">
+                  {feature.text}
+                </p>
+                <p className="mt-6 border-t border-lp-line pt-4 font-[family-name:var(--lp-mono)] text-[0.78rem] font-medium tracking-[0.02em] text-lp-volt">
+                  {feature.proof}
+                </p>
+              </div>
             </article>
           ))}
         </div>

@@ -17,7 +17,7 @@ function VisualSearch() {
         <span className="font-[family-name:var(--lp-mono)] text-[0.8rem] font-medium text-lp-volt">
           G
         </span>
-        <span className="h-2 w-2/3 rounded-full bg-[rgba(255,255,255,0.18)]" />
+        <span className="lph-line h-2 w-2/3 rounded-full" />
       </div>
     </div>
   );
@@ -32,7 +32,7 @@ function VisualStyles() {
           key={i}
           className={`h-14 w-12 rounded-lg border ${
             i === 1
-              ? "border-lp-volt bg-lp-panel-2"
+              ? "lph-select border-lp-volt bg-lp-panel-2"
               : "border-lp-line bg-lp-panel"
           }`}
         >
@@ -59,7 +59,7 @@ function VisualStudio() {
               className={`flex h-4 w-4 items-center justify-center rounded-full ${
                 done
                   ? "bg-[var(--lp-volt)] text-lp-volt-ink"
-                  : "border border-lp-line"
+                  : "lph-check border border-lp-line"
               }`}
             >
               {done ? (
@@ -84,10 +84,13 @@ function VisualLive() {
   return (
     <div className="flex h-full items-center justify-center gap-4 px-6">
       <span className="flex h-7 w-12 items-center rounded-full bg-[var(--lp-volt)] px-1">
-        <span className="ml-auto block h-5 w-5 rounded-full bg-lp-volt-ink" />
+        <span className="lph-knob ml-auto block h-5 w-5 rounded-full bg-lp-volt-ink" />
       </span>
       <span className="inline-flex items-center gap-2 font-[family-name:var(--lp-mono)] text-[0.72rem] font-medium tracking-[0.06em] text-lp-ink">
-        <span className="h-2 w-2 rounded-full bg-lp-live" aria-hidden="true" />
+        <span
+          className="lph-pulse h-2 w-2 rounded-full bg-lp-live"
+          aria-hidden="true"
+        />
         LIVE
       </span>
     </div>
@@ -147,7 +150,7 @@ export function HowItWorks() {
           text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
         />
 
-        <ol className="mt-12 grid gap-5 md:grid-cols-2">
+        <ol className="lp-stagger-slow mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {STEPS.map((step, index) => (
             <li
               key={step.title}

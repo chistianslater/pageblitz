@@ -663,6 +663,118 @@ html.lp-reveal-on .lp-section.lp-in {
   opacity: 1;
   transform: none;
 }
+/* Kinder-Stagger (2026-08-29, „generell animiert"): Karten und Bühnen
+   laufen dem Sektions-Reveal leicht versetzt hinterher. Nur unter
+   lp-reveal-on (kein JS/Reduced Motion = alles sofort sichtbar). */
+html.lp-reveal-on .lp-section li,
+html.lp-reveal-on .lp-section article {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.55s var(--lp-ease),
+    transform 0.55s var(--lp-ease);
+}
+html.lp-reveal-on .lp-section.lp-in li,
+html.lp-reveal-on .lp-section.lp-in article {
+  opacity: 1;
+  transform: none;
+}
+html.lp-reveal-on .lp-section.lp-in li:nth-child(2),
+html.lp-reveal-on .lp-section.lp-in article:nth-child(2) {
+  transition-delay: 70ms;
+}
+html.lp-reveal-on .lp-section.lp-in li:nth-child(3),
+html.lp-reveal-on .lp-section.lp-in article:nth-child(3) {
+  transition-delay: 140ms;
+}
+html.lp-reveal-on .lp-section.lp-in li:nth-child(4),
+html.lp-reveal-on .lp-section.lp-in article:nth-child(4) {
+  transition-delay: 210ms;
+}
+html.lp-reveal-on .lp-section.lp-in li:nth-child(5) {
+  transition-delay: 280ms;
+}
+html.lp-reveal-on .lp-section.lp-in li:nth-child(n + 6) {
+  transition-delay: 340ms;
+}
+/* Langsamer Stagger für die Vier-Schritte-Reihe: die Sequenz IST der
+   Inhalt, also deutlich sichtbar nacheinander. */
+html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(2) {
+  transition-delay: 180ms;
+}
+html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(3) {
+  transition-delay: 360ms;
+}
+html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(4) {
+  transition-delay: 540ms;
+}
+/* Mini-Visual-Loops der Vier Schritte (lph-*): kleine, ruhige Bewegungen,
+   die den jeweiligen Schritt erklären. Nur unter no-preference. */
+.lph-line {
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.14) 30%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0.14) 70%
+  );
+  background-size: 220% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lph-line {
+    animation: lpb-shimmer 1.6s linear infinite;
+  }
+  .lph-select {
+    animation: lph-select 4s var(--lp-ease) infinite;
+  }
+  .lph-check {
+    animation: lph-check 4s ease infinite;
+  }
+  .lph-knob {
+    animation: lph-knob 3.2s var(--lp-ease) infinite;
+  }
+  .lph-pulse {
+    animation: lph-pulse 1.6s ease infinite;
+  }
+}
+@keyframes lph-select {
+  0%, 35% { transform: none; box-shadow: none; }
+  45%, 80% { transform: translateY(-3px); box-shadow: 0 0 0 3px rgba(204, 255, 0, 0.15); }
+  90%, 100% { transform: none; box-shadow: none; }
+}
+@keyframes lph-check {
+  0%, 55% { border-color: var(--lp-line); transform: none; }
+  62% { transform: scale(1.25); }
+  66%, 88% { border-color: var(--lp-volt); transform: none; }
+  96%, 100% { border-color: var(--lp-line); }
+}
+@keyframes lph-knob {
+  0%, 18% { transform: translateX(-1.25rem); }
+  32%, 100% { transform: none; }
+}
+@keyframes lph-pulse {
+  50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.22); }
+}
+/* Hover-Lift für Hairline-Karten — Motion, die Interaktivität erklärt. */
+@media (hover: hover) and (pointer: fine) {
+  .lp li[class*="border-lp-line"]:hover,
+  .lp article[class*="border-lp-line"]:hover {
+    transform: translateY(-3px);
+    border-color: rgba(204, 255, 0, 0.35);
+  }
+}
+
+/* Cookie-Banner auf der dunklen Landing: gleiche Struktur, Nachtschicht-
+   Tokens. Der Banner (Portal, außerhalb von .lp) liest --lp-*-Variablen —
+   dieser Scope überschreibt sie nur dort, App-Seiten bleiben hell. */
+.pb-cookie-dark {
+  --lp-surface: #131316;
+  --lp-canvas: #1a1a1e;
+  --lp-ink: #f2f1ee;
+  --lp-muted: #a4a39d;
+  --lp-line: rgba(255, 255, 255, 0.12);
+  --lp-accent: #ccff00;
+  --lp-accent-ink: #0b0b0d;
+}
 
 /* Hero-Rahmen: Glow oben rechts (einziger Glow des Viewports) und die
    Panel-Fläche, auf der die Bühne rechts aus dem Viewport läuft. */
@@ -872,10 +984,10 @@ html.lp-reveal-on .lp-section.lp-in {
 .lpb[data-phase="4"] .lpb-u2 {
   display: inline;
 }
-/* Die entstehende Kundenwebsite (Werkbank-Demo als HTML/CSS). */
+/* Die entstehende Kundenwebsite (Gusto-Demo »Trattoria Lucia« als HTML/CSS). */
 .lpb-site {
-  background: #191612;
-  color: #efe9df;
+  background: #171009;
+  color: #f2e8d8;
   padding: 0 0 1.1rem;
   position: relative;
   overflow: hidden;
@@ -884,7 +996,7 @@ html.lp-reveal-on .lp-section.lp-in {
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: #24201a;
+  background: #221709;
   padding: 1rem 1.1rem;
   display: flex;
   flex-direction: column;
@@ -895,7 +1007,7 @@ html.lp-reveal-on .lp-section.lp-in {
 .lpb-skel i {
   display: block;
   border-radius: 5px;
-  background: linear-gradient(100deg, #2e2922 30%, #3a342b 50%, #2e2922 70%);
+  background: linear-gradient(100deg, #2d2012 30%, #3a2a17 50%, #2d2012 70%);
   background-size: 220% 100%;
   animation: lpb-shimmer 1.4s linear infinite;
 }
@@ -933,18 +1045,22 @@ html.lp-reveal-on .lp-section.lp-in {
   font-size: 0.66rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  border-bottom: 1px solid rgba(239, 233, 223, 0.14);
+  border-bottom: 1px solid rgba(242, 232, 216, 0.14);
   transform: translateY(-110%);
   transition: transform 0.5s var(--lp-ease);
 }
 .lpb-snav b {
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 .lpb-snav > span {
   display: flex;
   gap: 0.9rem;
-  color: rgba(239, 233, 223, 0.65);
+  color: rgba(242, 232, 216, 0.65);
 }
 .lpb[data-phase="3"] .lpb-snav,
 .lpb[data-phase="4"] .lpb-snav {
@@ -959,11 +1075,12 @@ html.lp-reveal-on .lp-section.lp-in {
   align-items: center;
 }
 .lpb-sh1 {
-  font-weight: 700;
-  font-size: clamp(1.1rem, 2vw, 1.7rem);
-  line-height: 0.98;
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(1.15rem, 2.1vw, 1.8rem);
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 .lpb-l {
   display: block;
@@ -971,7 +1088,7 @@ html.lp-reveal-on .lp-section.lp-in {
   transition: clip-path 0.55s var(--lp-ease);
 }
 .lpb-l-accent {
-  color: #e05e1b;
+  color: #c99b4a;
 }
 .lpb[data-phase="3"] .lpb-l,
 .lpb[data-phase="4"] .lpb-l {
@@ -989,9 +1106,8 @@ html.lp-reveal-on .lp-section.lp-in {
 .lpb-simg {
   aspect-ratio: 4 / 3.1;
   border-radius: 8px;
-  background:
-    radial-gradient(120% 90% at 20% 10%, rgba(255, 255, 255, 0.16), transparent 45%),
-    linear-gradient(155deg, #8a5a2e 0%, #6e4522 38%, #4c2f18 72%, #33200f 100%);
+  overflow: hidden;
+  background: #35180a;
   position: relative;
   opacity: 0;
   transform: scale(1.06);
@@ -999,17 +1115,11 @@ html.lp-reveal-on .lp-section.lp-in {
     opacity 0.7s ease 0.55s,
     transform 0.9s var(--lp-ease) 0.55s;
 }
-.lpb-simg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  background: repeating-linear-gradient(
-    92deg,
-    rgba(0, 0, 0, 0.14) 0 7px,
-    transparent 7px 15px
-  );
-  mix-blend-mode: multiply;
+.lpb-simg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .lpb[data-phase="3"] .lpb-simg,
 .lpb[data-phase="4"] .lpb-simg {
@@ -1024,8 +1134,8 @@ html.lp-reveal-on .lp-section.lp-in {
 }
 .lpb-scta {
   padding: 0.45rem 0.9rem;
-  background: #e05e1b;
-  color: #fff;
+  background: #c99b4a;
+  color: #241505;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -1039,7 +1149,7 @@ html.lp-reveal-on .lp-section.lp-in {
 .lpb-sstars {
   font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(239, 233, 223, 0.85);
+  color: rgba(242, 232, 216, 0.85);
   opacity: 0;
   transform: translateY(8px);
   transition:
@@ -1047,7 +1157,7 @@ html.lp-reveal-on .lp-section.lp-in {
     transform 0.4s ease 1s;
 }
 .lpb-sstars b {
-  color: #f5b52e;
+  color: #c99b4a;
   letter-spacing: 0.1em;
 }
 .lpb[data-phase="3"] .lpb-scta,
@@ -1266,9 +1376,9 @@ html.lp-nav-open body {
    unscharf und zeigten wieder dasselbe Pack wie der Hero). Immer scharf,
    pack-neutral, altern nicht mit UI-Änderungen. */
 .lps-sketch {
-  border: 0;
-  border-radius: 32px;
-  background: var(--lp-surface);
+  border: 1px solid var(--lp-line);
+  border-radius: 24px;
+  background: var(--lp-panel);
   aspect-ratio: 4 / 3;
   padding: 7%;
   display: flex;
@@ -1306,193 +1416,293 @@ html.lp-nav-open body {
   border-color: var(--lp-accent);
   background: #dce8e2;
 }
-/* Chat-Skizze (FeatureShowcase): Frage-Blase + Diff-Karte */
-.lps-chat {
+/* ── Extras-Demos (lpx-*, 2026-08-29): drei animierte Loops im
+   Nachtschicht-Stil. Gemeinsamer 9-s-Zyklus, nur transform/opacity;
+   Basiswerte = Endzustände, bei prefers-reduced-motion steht alles. */
+.lpx-stage {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.5rem;
-  height: 100%;
+  gap: 0.55rem;
+  min-height: 0;
 }
-.lps-chat-title {
-  align-self: stretch;
+/* Chat */
+.lpx-chat-title {
+  font-family: var(--lp-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lp-faint);
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--lp-line);
-  padding-bottom: 0.45rem;
-  color: var(--lp-ink);
-  font-size: 0.78rem;
-  font-weight: 600;
+  margin-bottom: 0.35rem;
 }
-.lps-msg-assistant,
-.lps-msg-user {
+.lpx-msg {
   margin: 0;
-  padding: 0.45rem 0.7rem;
-  font-size: 0.78rem;
+  max-width: 80%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  font-size: 0.85rem;
   line-height: 1.4;
 }
-.lps-msg-assistant {
+.lpx-msg-a {
   align-self: flex-start;
-  max-width: 88%;
+  border-bottom-left-radius: 4px;
+  background: var(--lp-panel-2);
   border: 1px solid var(--lp-line);
-  border-radius: 12px 12px 12px 4px;
-  background: #fff;
   color: var(--lp-ink);
 }
-.lps-msg-user {
+.lpx-msg-u {
   align-self: flex-end;
-  max-width: 85%;
-  background: var(--lp-ink);
-  color: var(--lp-canvas);
-  border-radius: 14px 14px 4px 14px;
+  border-bottom-right-radius: 4px;
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
+  font-weight: 500;
 }
-.lps-chat-input {
-  margin-top: 0.15rem;
+.lpx-typing {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  background: var(--lp-panel-2);
+  border: 1px solid var(--lp-line);
+  opacity: 0;
+}
+.lpx-typing i {
+  width: 0.3rem;
+  height: 0.3rem;
+  border-radius: 50%;
+  background: var(--lp-faint);
+}
+.lpx-chat-input {
+  margin-top: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.6rem;
   border: 1px solid var(--lp-line);
   border-radius: 999px;
-  background: #fff;
-  padding: 0.35rem 0.4rem 0.35rem 0.75rem;
-  color: var(--lp-muted);
-  font-size: 0.72rem;
+  padding: 0.5rem 0.55rem 0.5rem 0.9rem;
+  color: var(--lp-faint);
+  font-size: 0.78rem;
 }
-.lps-chat-input b {
+.lpx-chat-input b {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 1.6rem;
+  height: 1.6rem;
   border-radius: 999px;
-  background: var(--lp-accent);
-  color: var(--lp-accent-ink);
-  font-size: 0.8rem;
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
+  font-weight: 700;
 }
-/* Galerie-Schema: ruhiges 2×2-Raster, darüber eine fokussierte Lightbox. */
-.lps-gallery {
+/* Galerie */
+.lpx-gal {
   position: relative;
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 4%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.6rem;
   min-height: 0;
 }
-.lps-gallery-img {
-  border-radius: 6px;
-  background: #dfe8e3;
-}
-.lps-gallery-img.tone-2 {
-  background: #e7ddcf;
-}
-.lps-gallery-img.tone-3 {
-  background: #d9d3c8;
-}
-.lps-gallery-img.tone-4 {
-  background: #cbdcd4;
-}
-.lps-lightbox {
-  position: absolute;
-  inset: 13% 9%;
-  border-radius: 9px;
-  padding: 5%;
-  background: rgba(29, 26, 23, 0.92);
-  box-shadow: 0 18px 35px -20px rgba(29, 26, 23, 0.65);
-}
-.lps-lightbox-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 5px;
-  background:
-    linear-gradient(145deg, transparent 45%, rgba(31, 95, 75, 0.45) 46% 56%, transparent 57%),
-    #e7ddcf;
-}
-.lps-lightbox b {
-  position: absolute;
-  top: 4px;
-  right: 8px;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 400;
-}
-/* Buchungs-Schema: Kalender links, Slots rechts, gleicher Kartenrahmen wie
-   Chat/Galerie — keine externe UI-/Pack-Anmutung. */
-.lps-booking {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 5%;
-  min-height: 0;
-}
-.lps-calendar,
-.lps-slots {
-  border: 1px solid var(--lp-line);
-  border-radius: 8px;
-  background: #fff;
-  padding: 8%;
-  min-width: 0;
+.lpx-ph {
+  position: relative;
+  border-radius: 10px;
   overflow: hidden;
 }
-.lps-calendar {
+.lpx-ph::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    92deg,
+    rgba(0, 0, 0, 0.12) 0 6px,
+    transparent 6px 13px
+  );
+  mix-blend-mode: multiply;
+}
+.lpx-ph {
+  background: var(--lp-panel-2);
+}
+.lpx-ph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.lpx-lb {
+  position: absolute;
+  inset: -3%;
+  z-index: 2;
+  border-radius: 14px;
+  background: rgba(11, 11, 13, 0.94);
+  border: 1px solid var(--lp-line);
   display: flex;
   flex-direction: column;
-  gap: 10%;
+  padding: 5%;
+  opacity: 0;
+  transform: scale(0.96);
 }
-.lps-cal-head,
-.lps-slot-label {
-  display: block;
-  height: 7px;
-  width: 58%;
+.lpx-lb-img {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.lpx-lb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-family: var(--lp-mono);
+  font-size: 0.68rem;
+  color: var(--lp-muted);
+}
+.lpx-lb-bar b {
+  color: var(--lp-ink);
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+/* Buchung */
+.lpx-book {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 0.8rem;
+  min-height: 0;
+}
+.lpx-cal {
+  border: 1px solid var(--lp-line);
+  border-radius: 12px;
+  background: var(--lp-panel-2);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}
+.lpx-cal-head {
+  height: 0.45rem;
+  width: 55%;
   border-radius: 99px;
-  background: var(--lp-ink);
+  background: rgba(255, 255, 255, 0.18);
 }
-.lps-cal-grid {
+.lpx-cal-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6%;
+  gap: 0.3rem;
   min-height: 0;
 }
-.lps-cal-grid i {
+.lpx-cal-grid i {
   aspect-ratio: 1;
-  border-radius: 999px;
-  background: var(--lp-canvas);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
 }
-.lps-cal-grid i[data-muted] {
-  opacity: 0.4;
+.lpx-cal-day {
+  background: var(--lp-volt);
 }
-.lps-cal-grid i[data-active] {
-  background: var(--lp-accent);
-  box-shadow: 0 0 0 3px rgba(31, 95, 75, 0.14);
-}
-.lps-slots {
+.lpx-slots {
   display: flex;
   flex-direction: column;
-  gap: 7%;
+  gap: 0.45rem;
+  justify-content: center;
+  min-width: 0;
 }
-.lps-slots i {
-  font-style: normal;
-  font-size: 0.72rem;
-  text-align: center;
+.lpx-slot {
   border: 1px solid var(--lp-line);
-  border-radius: 999px;
-  padding: 0.3rem;
-}
-.lps-slots i[data-active] {
-  border-color: var(--lp-accent);
-  color: var(--lp-accent);
-  background: #eef5f1;
-}
-.lps-slots b {
-  margin-top: auto;
-  border-radius: 999px;
-  padding: 0.38rem 0.5rem;
-  background: var(--lp-accent);
-  color: var(--lp-accent-ink);
-  font-size: 0.68rem;
+  border-radius: 10px;
+  padding: 0.45rem 0.6rem;
+  font-family: var(--lp-mono);
+  font-size: 0.74rem;
   text-align: center;
-  font-weight: 600;
+  color: var(--lp-muted);
 }
+.lpx-slot-active {
+  border-color: var(--lp-volt);
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
+  font-weight: 500;
+}
+.lpx-confirm {
+  margin-top: 0.35rem;
+  border-radius: 10px;
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.55rem 0.5rem;
+}
+/* Loop-Choreografie: nur unter no-preference; sonst stehen die Endzustände. */
+@media (prefers-reduced-motion: no-preference) {
+  .lpx-w1 { animation: lpx-w1 9s infinite; }
+  .lpx-w2 { animation: lpx-w2 9s infinite; }
+  .lpx-wt { animation: lpx-wt 9s infinite; }
+  .lpx-w4 { animation: lpx-w4 9s infinite; }
+  .lpx-typing i { animation: lpx-dot 1s ease infinite; }
+  .lpx-typing i:nth-child(2) { animation-delay: 0.15s; }
+  .lpx-typing i:nth-child(3) { animation-delay: 0.3s; }
+  .lpx-gal .lpx-ph { animation: lpx-pop 9s infinite; }
+  .lpx-gal .lpx-ph2 { animation-delay: 0.12s; }
+  .lpx-gal .lpx-ph3 { animation-delay: 0.24s; }
+  .lpx-gal .lpx-ph4 { animation-delay: 0.36s; }
+  .lpx-lb { animation: lpx-lb 9s infinite; }
+  .lpx-cal-day { animation: lpx-day 9s infinite; }
+  .lpx-slots .lpx-slot { animation: lpx-w2 9s infinite; }
+  .lpx-slots .lpx-slot:nth-child(2) { animation-delay: 0.12s; }
+  .lpx-slots .lpx-slot:nth-child(3) { animation-delay: 0.24s; }
+  .lpx-slot-active { animation: lpx-fill 9s infinite; }
+  .lpx-confirm { animation: lpx-w4 9s infinite; }
+}
+@keyframes lpx-w1 {
+  0%, 4% { opacity: 0; transform: translateY(8px); }
+  9%, 93% { opacity: 1; transform: none; }
+  97%, 100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes lpx-w2 {
+  0%, 21% { opacity: 0; transform: translateY(8px); }
+  27%, 93% { opacity: 1; transform: none; }
+  97%, 100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes lpx-wt {
+  0%, 31% { opacity: 0; }
+  35%, 52% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}
+@keyframes lpx-w4 {
+  0%, 56% { opacity: 0; transform: translateY(8px); }
+  62%, 93% { opacity: 1; transform: none; }
+  97%, 100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes lpx-dot {
+  40% { transform: translateY(-3px); }
+}
+@keyframes lpx-pop {
+  0%, 3% { opacity: 0; transform: scale(0.94); }
+  9%, 93% { opacity: 1; transform: none; }
+  97%, 100% { opacity: 0; transform: scale(0.94); }
+}
+@keyframes lpx-lb {
+  0%, 42% { opacity: 0; transform: scale(0.96); }
+  48%, 86% { opacity: 1; transform: none; }
+  92%, 100% { opacity: 0; transform: scale(0.96); }
+}
+@keyframes lpx-day {
+  0%, 18% { background: rgba(255, 255, 255, 0.06); transform: none; }
+  24% { transform: scale(1.25); }
+  26%, 100% { background: var(--lp-volt); transform: none; }
+}
+@keyframes lpx-fill {
+  0%, 50% { background: transparent; color: var(--lp-muted); border-color: var(--lp-line); }
+  56%, 100% { background: var(--lp-volt); color: var(--lp-volt-ink); border-color: var(--lp-volt); }
+}
+
 
 /* Dunkle Feature-Bühne: trennt die drei „arbeitenden" Funktionen sichtbar
    von Template-/Studio-Beweisen und bricht die helle Seitenmonotonie.
@@ -1503,6 +1713,22 @@ html.lp-nav-open body {
 .pb-carousel-track {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Weicher Auslauf statt harter Kante (2026-08-29): rechts stärker,
+     links dezent — signalisiert „hier geht es weiter". */
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 2.5%,
+    #000 86%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 2.5%,
+    #000 86%,
+    transparent 100%
+  );
 }
 .pb-carousel-track::-webkit-scrollbar {
   display: none;
