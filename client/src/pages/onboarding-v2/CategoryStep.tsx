@@ -29,10 +29,6 @@ export function CategoryStep({
   const [value, setValue] = React.useState(initialCategory);
   const [open, setOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
-  // Erkannte Branche → erst die Ein-Klick-Frage („Ist das richtig?");
-  // das Eingabefeld erscheint nur, wenn jemand die Branche ändern will
-  // (User-Feedback 2026-08-29: „smarter kommunizieren").
-  const [editing, setEditing] = React.useState(!initialCategory);
   const suggestions = open ? filterCategorySuggestions(value) : [];
   const listVisible = suggestions.length > 0;
   const canSubmit = value.trim().length >= 2 && !pending;
@@ -80,59 +76,6 @@ export function CategoryStep({
     }
   };
 
-  if (initialCategory && !editing) {
-    return (
-      <section className="pb-studio-gen">
-        <div className="pb-studio-gen-inner pb-studio-cat">
-          <p className="pb-studio-kicker">Bevor es losgeht</p>
-          <h1 className="pb-studio-title">
-            Wir haben als Branche{" "}
-            <span className="pb-circled">
-              <strong>{initialCategory}</strong>
-              {/* Handgezeichneter Einkreis-Effekt: der Strich zeichnet sich
-                  beim Erscheinen selbst (stroke-dashoffset). */}
-              <svg
-                className="pb-circled-svg"
-                viewBox="0 0 120 44"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <ellipse cx="60" cy="22" rx="56" ry="18" />
-              </svg>
-            </span>{" "}
-            erkannt.
-          </h1>
-          <p className="pb-studio-cat-hint">
-            Ist das richtig? Dann entsteht daraus direkt die Website für{" "}
-            {businessName}.
-          </p>
-          {error && (
-            <p role="alert" className="pb-studio-cat-error">
-              {error}
-            </p>
-          )}
-          <button
-            type="button"
-            className="pb-studio-btn pb-studio-cat-submit"
-            onClick={() => onSubmit(initialCategory)}
-            disabled={pending}
-          >
-            {pending ? "Wird gespeichert …" : "Ja, stimmt — Website erstellen"}
-          </button>
-          <button
-            type="button"
-            className="pb-studio-btn pb-studio-cat-submit"
-            data-variant="ghost"
-            onClick={() => setEditing(true)}
-            disabled={pending}
-          >
-            Nein, Branche ändern
-          </button>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <section className="pb-studio-gen">
       <div className="pb-studio-gen-inner pb-studio-cat">
@@ -141,8 +84,22 @@ export function CategoryStep({
         <p className="pb-studio-cat-hint">
           {initialCategory ? (
             <>
-              Kein Problem — wähle die passende Branche für {businessName} aus
-              oder tippe sie frei ein.
+              Wir haben als Branche{" "}
+              <span className="pb-circled">
+                <strong>{initialCategory}</strong>
+                {/* Handgezeichneter Einkreis-Effekt: der Strich zeichnet
+                    sich beim Erscheinen selbst (stroke-dashoffset). */}
+                <svg
+                  className="pb-circled-svg"
+                  viewBox="0 0 120 44"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+                  <ellipse cx="60" cy="22" rx="56" ry="18" />
+                </svg>
+              </span>{" "}
+              erkannt. Ist das richtig? Bestätige sie — oder korrigiere sie
+              unten.
             </>
           ) : (
             <>
@@ -217,7 +174,7 @@ export function CategoryStep({
           {pending
             ? "Wird gespeichert …"
             : initialCategory
-              ? "Branche speichern & Website erstellen"
+              ? "Branche bestätigen & Website erstellen"
               : "Weiter"}
         </button>
       </div>

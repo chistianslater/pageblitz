@@ -46,16 +46,17 @@ describe("CategoryStep", () => {
     expect(html).toContain("Wird gespeichert …");
   });
 
-  test("erkannte Branche wird als Ein-Klick-Bestätigung kommuniziert (2026-08-29)", () => {
+  test("erkannte Branche: vorbefüllt, Klartext-Frage und Einkreis-Effekt (2026-08-29)", () => {
     const html = render({ initialCategory: "IT-Dienstleister" });
-    // Klartext-Frage statt Formular-Prosa …
+    // Ursprüngliches Layout (Feld sichtbar, ein Bestätigen-Button) …
+    expect(html).toContain('value="IT-Dienstleister"');
+    expect(html).toContain('role="combobox"');
+    expect(html).toContain("Branche bestätigen &amp; Website erstellen");
+    // … mit smarterer Formulierung und eingekreister Branche.
     expect(html).toContain("Wir haben als Branche");
     expect(html).toContain("<strong>IT-Dienstleister</strong>");
     expect(html).toContain("Ist das richtig?");
-    // … Ja-Button + Änderungsweg, aber noch KEIN Eingabefeld im Erstrender.
-    expect(html).toContain("Ja, stimmt — Website erstellen");
-    expect(html).toContain("Branche ändern");
-    expect(html).not.toContain('role="combobox"');
+    expect(html).toContain("pb-circled");
   });
 
   test("error → role=alert mit deutscher Meldung", () => {
