@@ -73,14 +73,17 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
             </button>
           </div>
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
-            <div className="pointer-events-none relative -mb-[var(--lp-section)] select-none">
+            {/* shrink-0 + max-w-none: Flex darf die Spalte nicht schmaler
+                drücken als das Foto — sonst staucht Tailwinds
+                max-width:100% das Bild bei fixer Höhe (User-Bug 2026-08-29). */}
+            <div className="pointer-events-none relative shrink-0 -mb-[var(--lp-section)] select-none">
               <img
                 src="/personas/handwerker-laptop.webp"
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
                 decoding="async"
-                className="h-[30rem] w-auto"
+                className="h-[28rem] w-auto max-w-none"
               />
               {/* Schwebendes Suchergebnis am Laptop: DIE Botschaft der
                   Sektion in einem Blick. */}

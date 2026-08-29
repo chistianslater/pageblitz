@@ -20,12 +20,12 @@ export function FinalCta(props: FinalCtaProps) {
           {/* Illustrative Persona (KI-generiert, Magnific 2026-08-29) — keine
               echte Kundin, daher bewusst ohne Namen oder Zitat. */}
           <img
-            src="/personas/gastgeberin.webp"
+            src="/personas/friseurin.webp"
             alt=""
             aria-hidden="true"
             loading="lazy"
             decoding="async"
-            className="pointer-events-none absolute right-6 bottom-0 hidden h-[calc(100%+5.5rem)] w-auto select-none xl:block"
+            className="pointer-events-none absolute right-6 bottom-0 hidden h-[calc(100%+5.5rem)] w-auto max-w-none select-none xl:block"
           />
           <div className="max-w-[36rem]">
             <h2 id="lp-final-heading" className="lp-h2">
