@@ -31,16 +31,6 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
       aria-labelledby="lp-problem-heading"
       className="lp-section lp-glowspot lp-glowspot--left"
     >
-      {/* Illustrative Persona (KI-generiert, Magnific 2026-08-29) — steht
-          stellvertretend für den Betrieb, bewusst ohne Namen. */}
-      <img
-        src="/personas/handwerker.webp"
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        className="pointer-events-none absolute right-[3vw] bottom-0 hidden h-[34rem] w-auto select-none xl:block"
-      />
       <div className="lp-container">
         <Kicker className="mb-4">Ohne Website</Kicker>
         <h2 id="lp-problem-heading" className="lp-h2 max-w-[24ch]">
@@ -63,18 +53,36 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
           ))}
         </ul>
 
-        <p className="lp-h2 mt-14 max-w-[38rem]">
-          Nicht weil deine Arbeit schlechter ist. Sondern weil man sie{" "}
-          <em className="not-italic text-lp-volt">online nicht sieht.</em>
-        </p>
-        <button
-          type="button"
-          onClick={() => navigate(startHref(billingYearly))}
-          className={`${pillPrimary} mt-8`}
-        >
-          Website kostenlos erstellen
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
+        {/* Schlusszeile + Persona als EIN Moment: Der stolze Handwerker
+            bezieht sich direkt auf „Nicht weil deine Arbeit schlechter
+            ist" — seine Arbeit ist gut, man sieht sie nur nicht.
+            (KI-Persona, Magnific 2026-08-29, bewusst ohne Namen.) */}
+        <div className="mt-14 grid items-end gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <p className="lp-h2 max-w-[38rem]">
+              Nicht weil deine Arbeit schlechter ist. Sondern weil man sie{" "}
+              <em className="not-italic text-lp-volt">online nicht sieht.</em>
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(startHref(billingYearly))}
+              className={`${pillPrimary} mt-8`}
+            >
+              Website kostenlos erstellen
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+          <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
+            <img
+              src="/personas/handwerker.webp"
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              className="pointer-events-none -mb-[var(--lp-section)] h-[30rem] w-auto select-none"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
