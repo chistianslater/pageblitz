@@ -37,9 +37,11 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-about img{width:100%;border-radius:var(--pb-radius-card);display:block;box-shadow:0 6px 0 var(--pb-line)}
 .pb-mp-about p{max-width:60ch}
 @media(max-width:840px){.pb-mp-about{grid-template-columns:1fr}}
-.pb-mp-quote{font-style:normal}
-.pb-mp-quote p{font-size:15px}
-.pb-mp-quote footer{margin-top:12px;font-weight:700;font-family:var(--pb-font-display);font-size:13px;color:var(--pb-accent-text)}
+.pb-mp-quote{font-style:normal;box-shadow:0 6px 0 var(--pb-line)}
+.pb-mp-quote p{font-size:15.5px;line-height:1.5;color:var(--pb-ink)}
+.pb-mp-quote footer{margin-top:16px;font-weight:700;font-family:var(--pb-font-display);font-size:13px;color:var(--pb-accent-text)}
+.pb-mp-quote .pb-review-stars{margin-bottom:12px}
+.pb-mp-quote .pb-review-avatar{border-radius:var(--pb-radius-button);background:var(--pb-accent);color:var(--pb-ink);border-color:transparent}
 .pb-mp-faq strong{color:var(--pb-accent-text)}
 .pb-mp-gallery img{width:100%;height:210px;object-fit:cover;border-radius:var(--pb-radius-card);display:block;box-shadow:0 6px 0 var(--pb-line)}
 .pb-mp-gallery img:only-child{max-width:720px;height:auto;aspect-ratio:3/2;margin:0 auto}

@@ -34,9 +34,12 @@ export const SALON_NOIR_CSS = `
 .pb-sn-about{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
 .pb-sn-about img{width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid color-mix(in srgb, var(--pb-accent) 40%, transparent);display:block}
 .pb-sn-about p{color:var(--pb-ink);max-width:60ch;min-width:0}
-.pb-sn-quote{max-width:56ch;margin:0 0 26px;padding:0 0 0 18px;border-left:2px solid var(--pb-accent)}
-.pb-sn-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:16px}
-.pb-sn-quote footer{margin-top:10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-sn-quotes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.pb-sn-quote{margin:0;padding:26px 24px;max-width:none;background:var(--pb-surface);border:1px solid var(--pb-line);border-left:2px solid var(--pb-accent)}
+.pb-sn-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:17px;line-height:1.4}
+.pb-sn-quote footer{margin-top:18px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pb-muted)}
+.pb-sn-quotes .pb-review-stars{margin-bottom:14px}
+.pb-sn-quote .pb-review-source{letter-spacing:.12em}
 .pb-sn-price-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 64px;align-items:start}
 .pb-sn-price-grid .pb-sn-price-category{max-width:none;margin:0 0 24px}
 .pb-sn-price-grid .pb-sn-price-category:last-child:nth-child(odd){grid-column:1/-1;max-width:560px}
@@ -78,6 +81,7 @@ export const SALON_NOIR_CSS = `
 @keyframes pb-sn-gold-sweep{from{clip-path:polygon(0 0,0 0,0 0,0 0)}to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
 @keyframes pb-sn-mat-in{from{clip-path:inset(8%);opacity:.2;transform:scale(.985)}to{clip-path:inset(0);opacity:1;transform:none}}
 @media(max-width:840px){.pb-sn-frame{inset:8px}.pb-sn-nav{padding:14px 18px}.pb-sn-nav-links{display:none}.pb-salon-noir .pb-mnav{display:block;position:relative;margin-left:auto;flex-shrink:0}.pb-salon-noir .pb-mnav-toggle{box-sizing:border-box;list-style:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--pb-line);border-radius:var(--pb-radius-button);background:var(--pb-canvas);color:var(--pb-ink)}.pb-salon-noir .pb-mnav-toggle::-webkit-details-marker{display:none}.pb-salon-noir .pb-mnav-icon{display:flex;flex-direction:column;gap:5px;width:20px}.pb-salon-noir .pb-mnav-icon span{display:block;height:2px;background:currentColor}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(1){transform:translateY(7px) rotate(45deg)}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(2){opacity:0}.pb-salon-noir .pb-mnav[open] .pb-mnav-icon span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}.pb-salon-noir .pb-mnav-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:80;display:flex;flex-direction:column;min-width:min(264px,84vw);padding:6px;background:var(--pb-canvas);border:1px solid var(--pb-line)}.pb-salon-noir .pb-mnav-panel a{display:flex;align-items:center;min-height:44px;padding:8px 14px;font-size:17px}.pb-sn-booking{top:81px;margin-inline:20px;max-width:calc(100% - 40px)}.pb-sn-section,.pb-sn-hero{scroll-margin-top:140px}.pb-sn-price-grid{grid-template-columns:1fr}.pb-sn-hero{padding:40px 20px 44px}.pb-sn-hero-inner{grid-template-columns:1fr;gap:24px}.pb-sn-photo{aspect-ratio:16/9}.pb-sn-vert{display:none}.pb-sn-section{padding:48px 20px}.pb-sn-about{grid-template-columns:1fr}.pb-sn-gallery{grid-template-columns:1fr}.pb-sn-gallery figure:nth-child(2){margin-top:0}.pb-sn-gallery img{height:auto;aspect-ratio:4/5}.pb-sn-contact{grid-template-columns:1fr}}
+@media(max-width:720px){.pb-sn-quotes{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.pb-salon-noir *,.pb-salon-noir *::before,.pb-salon-noir *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .pb-sn-page-header{padding:64px 6vw 32px;border-bottom:1px solid var(--pb-line)}
 .pb-sn-page-header h1{font-family:var(--pb-font-display);font-size:clamp(2rem,4vw,3rem);line-height:1.05}

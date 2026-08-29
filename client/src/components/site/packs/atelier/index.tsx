@@ -17,6 +17,11 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
+import {
+  ReviewAuthor,
+  ReviewStars,
+  REVIEW_READONLY,
+} from "../../googleReview";
 import { ATELIER_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -191,14 +196,18 @@ function renderSection(
           </header>
           <div className="pb-at-voice-pages">
             {section.items.map((item, i) => (
-              <blockquote className="pb-at-quote" key={item.author}>
+              <blockquote
+                className="pb-at-quote"
+                key={item.author}
+                {...REVIEW_READONLY}
+              >
                 <span className="pb-at-folio" aria-hidden="true">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <p>„{item.text}“</p>
+                <ReviewStars rating={item.rating} />
+                <p>{item.text}</p>
                 <footer>
-                  <b>{item.author}</b>
-                  {item.rating && <span>Bewertung {item.rating}/5</span>}
+                  <ReviewAuthor author={item.author} />
                 </footer>
               </blockquote>
             ))}

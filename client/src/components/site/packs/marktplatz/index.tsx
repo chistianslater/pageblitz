@@ -18,6 +18,7 @@ import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
+import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { MARKTPLATZ_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 
@@ -190,12 +191,13 @@ function renderSection(
               <blockquote
                 className="pb-mp-card-item pb-mp-quote"
                 key={item.author}
+                {...REVIEW_READONLY}
               >
-                <p>„{item.text}“</p>
-                <footer>
-                  {item.author}
-                  {item.rating ? ` · ${item.rating}/5` : ""}
-                </footer>
+                <GoogleReviewBody
+                  author={item.author}
+                  text={item.text}
+                  rating={item.rating}
+                />
               </blockquote>
             ))}
           </div>
