@@ -1,3 +1,5 @@
+import React from "react";
+import { addonPrice, formatEuro, type AddOnKey } from "@shared/pricing";
 import { SectionHead, textLink } from "./primitives";
 
 /**
@@ -97,11 +99,19 @@ function BookingSketch() {
   );
 }
 
-const FEATURES = [
+const FEATURES: ReadonlyArray<{
+  id: string;
+  addon: AddOnKey;
+  kicker: string;
+  title: string;
+  text: string;
+  Diagram: () => React.JSX.Element;
+  proof: string;
+}> = [
   {
     id: "ki-chat",
-    pillar: "Antworten",
-    kicker: "KI-Chat · Extra",
+    addon: "aiChat",
+    kicker: "KI-Chat",
     title: "Antwortet deinen Kunden. Rund um die Uhr.",
     text: "Besucher fragen nach Leistungen, Preisen oder Öffnungszeiten und erhalten sofort eine passende Antwort.",
     Diagram: ChatSketch,
@@ -109,8 +119,8 @@ const FEATURES = [
   },
   {
     id: "galerie",
-    pillar: "Zeigen",
-    kicker: "Bildergalerie · Extra",
+    addon: "gallery",
+    kicker: "Bildergalerie",
     title: "Deine Arbeiten verdienen eine Bühne.",
     text: "Projekte und Referenzen als mobiloptimierte Galerie mit Großansicht. Wer sieht, was du kannst, fragt an.",
     Diagram: GallerySketch,
@@ -118,8 +128,8 @@ const FEATURES = [
   },
   {
     id: "buchung",
-    pillar: "Buchen",
-    kicker: "Terminbuchung · Extra",
+    addon: "booking",
+    kicker: "Terminbuchung",
     title: "Kunden buchen, während du arbeitest.",
     text: "Kunden wählen den passenden Zeitslot direkt auf deiner Website. Weniger Telefonate, kein Hin und Her.",
     Diagram: BookingSketch,
@@ -131,7 +141,7 @@ export function FeatureShowcase() {
   return (
     <section
       aria-labelledby="lp-features-heading"
-      className="lp-section lp-feature-dark"
+      className="lp-section border-t border-lp-line"
     >
       <div className="lp-container">
         <SectionHead
@@ -139,24 +149,26 @@ export function FeatureShowcase() {
           kicker="Kann mehr"
           title="Deine Website ist kein Plakat. Sie arbeitet."
           text="Drei der stärksten Extras — systematisch erklärt. Alle Extras sind jederzeit zubuch- und kündbar."
-          billboard
-          echo
         />
-        <div className="mt-14 grid gap-10 lg:grid-cols-3 lg:gap-8">
+        <div className="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-8">
           {FEATURES.map(feature => (
             <article key={feature.id} className="flex flex-col">
-              <p className="lp-kicker mb-4">{feature.kicker}</p>
-              <h3 className="lp-pillar">{feature.pillar}</h3>
-              <p className="mt-3 text-[1.2rem] leading-[1.2] tracking-[-0.015em]">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="lp-kicker">{feature.kicker}</p>
+                <span className="rounded-full border border-lp-line px-2.5 py-1 font-[family-name:var(--lp-mono)] text-[0.66rem] font-medium tracking-[0.04em] text-lp-muted">
+                  EXTRA · + {formatEuro(addonPrice(feature.addon))}
+                </span>
+              </div>
+              <h3 className="text-[1.35rem] font-bold leading-[1.15] tracking-[-0.02em] text-lp-ink">
                 {feature.title}
-              </p>
+              </h3>
               <div className="mt-6">
                 <feature.Diagram />
               </div>
-              <p className="mt-5 flex-1 text-[1.02rem] leading-[1.5] text-lp-muted">
+              <p className="mt-5 flex-1 text-[0.98rem] leading-[1.5] text-lp-muted">
                 {feature.text}
               </p>
-              <p className="mt-5 border-t border-lp-line pt-4 text-[0.85rem] font-medium text-lp-accent">
+              <p className="mt-5 border-t border-lp-line pt-4 text-[0.85rem] font-medium text-lp-volt">
                 {feature.proof}
               </p>
             </article>
