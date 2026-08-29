@@ -4,7 +4,6 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { ProblemSection } from "@/components/landing/ProblemSection";
-import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { PackShowcase } from "@/components/landing/PackShowcase";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
@@ -148,7 +147,6 @@ export default function LandingPage() {
         {/* Erst „Was muss ich tun?", dann „Passt das zu meiner Branche?"
             — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
         <HowItWorks />
-        <ForWhom />
         {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
             verkaufen das Abo indirekt, bevor der Preis fällt. */}
         <FeatureShowcase />
