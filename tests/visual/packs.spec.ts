@@ -98,8 +98,10 @@ for (const pack of PACKS)
  * (siehe `client/src/components/site/packs/<pack>/css.ts`):
  * - Die meisten Packs rendern den Hero-CTA als gefüllten Button
  *   (`background:var(--pb-accent)`) → `background-color` gegen `accent`.
- * - `kanzlei` und `salon-noir` rendern den CTA als reinen Textlink/Outline
- *   mit `color:var(--pb-accent)` im Ruhezustand → `color` gegen `accent`.
+ * - `salon-noir` rendert den CTA als Outline mit
+ *   `color:var(--pb-accent)` im Ruhezustand → `color` gegen `accent`.
+ * - `kanzlei` rendert den CTA als gefüllten Kiefer-Button
+ *   (`background:var(--pb-accent)`) → `background-color` gegen `accent`.
  * - `atelier`, `gusto`, `schimmer` und `fundament` färben den CTA im
  *   Ruhezustand NICHT mit
  *   `accent`, sondern mit `ink` (atelier: `.pb-at-lnk` erbt `color` von
@@ -127,7 +129,11 @@ const CTA_COLOR_CHECKS: Record<
     role: "accent",
     textRole: "ink",
   },
-  kanzlei: { selector: "a.pb-kz-link", prop: "color", role: "accent" },
+  kanzlei: {
+    selector: "a.pb-kz-link",
+    prop: "background-color",
+    role: "accent",
+  },
   morgenlicht: {
     selector: "a.pb-ml-cta",
     prop: "background-color",

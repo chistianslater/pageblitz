@@ -36,7 +36,7 @@ const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
 
 const MUTED_STYLE: React.CSSProperties = { color: "var(--pb-muted)" };
 
-/** Letztes Wort der Headline in Accent-Blau abgesetzt. */
+/** Letztes Wort der Headline in Kupfer abgesetzt. */
 function renderHeadline(headline: string): React.ReactNode {
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
@@ -56,21 +56,20 @@ function formatRating(rating: number): string {
   });
 }
 
-interface BentoFact {
+interface ReadoutFact {
   value: string;
   label: string;
 }
 
 /**
- * Kennzahlen für das Bento-Band — aus services/google abgeleitet.
- * Fehlt eine Datenquelle, fällt der jeweilige Fact weg (Kennzahlen-Zelle
- * UND zugehörige Fläche werden weggelassen).
+ * Kennzahlen für das Readout — aus services/google abgeleitet.
+ * Fehlt eine Datenquelle, fällt der jeweilige Fact weg.
  */
 function buildFacts(
   data: WebsiteDataV2,
   services: SectionOf<"services"> | undefined
-): BentoFact[] {
-  const facts: BentoFact[] = [];
+): ReadoutFact[] {
+  const facts: ReadoutFact[] = [];
   if (services && services.items.length > 0) {
     const count = services.items.length;
     facts.push({
@@ -374,11 +373,15 @@ const KlarwerkPage: React.FC<{
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
+  const about = sections.find(
+    (s): s is SectionOf<"about"> => s.type === "about"
+  );
   const eyebrow = [data.businessCategory, contact?.city]
     .filter((v): v is string => Boolean(v))
     .join(" — ");
   const facts = buildFacts(data, services);
   const year = now.getFullYear();
+  const heroImage = hero?.imageUrl ?? about?.imageUrl;
 
   return (
     <div className="pb-klarwerk">
@@ -411,44 +414,50 @@ const KlarwerkPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kw-hero">
-          {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}
-          <h1>{renderHeadline(hero.headline)}</h1>
-          {hero.subheadline && <p>{hero.subheadline}</p>}
-          {hero.ctaText && (
-            <a className="pb-kw-hero-cta" href={hero.ctaHref ?? "#kontakt"}>
-              {hero.ctaText} →
-            </a>
-          )}
+          <div className="pb-kw-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+            <div className="pb-kw-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+              {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-kw-sub">{hero.subheadline}</p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-kw-hero-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText} →
+                </a>
+              )}
+            </div>
+            {heroImage && (
+              <figure
+                className="pb-kw-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
+                <img
+                  src={heroImage}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </figure>
+            )}
+          </div>
         </section>
       )}
-      {/* Bento-Band (Kennzahlen) nur auf der Startseite (Q1, B7
-          Welle 0): auf Unterseiten muss der pageHeader das erste Element
-          nach der Nav sein — Kennzahlen vor dem Seitentitel wirken wie
-          ein Bug. */}
+      {/* Readout nur auf der Startseite: auf Unterseiten muss der
+          pageHeader das erste Element nach der Nav sein. */}
       {hero && (
-        <div className="pb-kw-bento">
-          {facts.length > 0 && (
-            <div className="pb-kw-metric">
-              {facts.map(f => (
-                <div key={f.label}>
-                  <b>{f.value}</b>
-                  {f.label}
-                </div>
-              ))}
+        <div className="pb-kw-readout">
+          {facts.map((f, i) => (
+            <div
+              className={
+                i === 0 ? "pb-kw-metric" : i === 1 ? "pb-kw-cell hi" : "pb-kw-cell"
+              }
+              key={f.label}
+            >
+              <b>{f.value}</b>
+              {f.label}
             </div>
-          )}
-          {facts[0] && (
-            <div className="pb-kw-cell hi">
-              <b>{facts[0].value}</b>
-              {facts[0].label}
-            </div>
-          )}
-          {facts[1] && (
-            <div className="pb-kw-cell">
-              <b>{facts[1].value}</b>
-              {facts[1].label}
-            </div>
-          )}
+          ))}
           <div className="pb-kw-status">
             <span className="dot" aria-hidden="true" />
             Heute für Sie da

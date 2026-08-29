@@ -47,7 +47,7 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
   return data.businessName;
 }
 
-/** Letztes Wort der Headline grau abgesetzt — der Rest bleibt Tinte-farben. */
+/** Letztes Wort der Headline kursiv in Kieferngrün — der Rest bleibt Tinte. */
 function renderHeadline(headline: string): React.ReactNode {
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
@@ -386,6 +386,9 @@ const KanzleiPage: React.FC<{
   const services = sections.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
+  const about = sections.find(
+    (s): s is SectionOf<"about"> => s.type === "about"
+  );
   const eyebrow = [data.businessCategory, contact?.city]
     .filter((v): v is string => Boolean(v))
     .join(" — ");
@@ -393,9 +396,21 @@ const KanzleiPage: React.FC<{
   const total = String(sections.length).padStart(2, "0");
   const facts = buildFacts(data, services);
   const year = now.getFullYear();
+  const heroImage = hero?.imageUrl ?? about?.imageUrl;
+  const folio = idx.length > 0 && (
+    <div className="pb-kz-idx">
+      {idx.map((line, i) => (
+        <React.Fragment key={line + i}>
+          {line}
+          <br />
+        </React.Fragment>
+      ))}
+      — 01 / {total}
+    </div>
+  );
 
   return (
-    <div className="pb-kanzlei pb-kz-grid">
+    <div className="pb-kanzlei">
       <nav className="pb-kz-nav">
         <span className="pb-kz-logo">{renderLogo(data)}</span>
         <div className="pb-kz-nav-links">
@@ -423,39 +438,38 @@ const KanzleiPage: React.FC<{
           }
         />
       </nav>
-      {navList.length > 0 && (
-        <aside className="pb-kz-section-index" aria-label="Seitenindex">
-          <span>Übersicht</span>
-          <div>
-            {navList.map((item, i) => (
-              <a
-                key={item.key}
-                href={item.href}
-                aria-current={item.current ? "page" : undefined}
-              >
-                {String(i + 1).padStart(2, "0")} {item.label}
-              </a>
-            ))}
-          </div>
-        </aside>
-      )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
-          <div className="pb-kz-watermark" aria-hidden="true" />
-          {idx.length > 0 && (
-            <div className="pb-kz-idx">
-              {idx.map((line, i) => (
-                <React.Fragment key={line + i}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
-              — 01 / {total}
+          <div className="pb-kz-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+            <div className="pb-kz-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+              {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-kz-sub">{hero.subheadline}</p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-kz-link" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText} →
+                </a>
+              )}
             </div>
-          )}
-          {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}
-          <h1>{renderHeadline(hero.headline)}</h1>
-          {hero.subheadline && <p>{hero.subheadline}</p>}
+            {heroImage ? (
+              <figure
+                className="pb-kz-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+              >
+                <img
+                  src={heroImage}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+                {folio}
+              </figure>
+            ) : (
+              folio
+            )}
+          </div>
         </section>
       )}
       {/* Kennzahlen-Band nur auf der Startseite (Q1, B7 Welle 0): auf

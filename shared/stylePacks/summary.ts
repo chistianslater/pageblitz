@@ -41,8 +41,9 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
   {
     id: "kanzlei",
     name: "Kanzlei",
-    essence: "Weißraum, Hairlines und ein tiefes Blau — Ordnung als Ästhetik.",
-    accent: "#1D3FBF",
+    essence:
+      "Pergament, Kieferngrün und eine ruhige Serife — eine Kammer, kein Raster.",
+    accent: "#3F5C47",
   },
   {
     id: "salon-noir",
@@ -89,8 +90,8 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
     id: "klarwerk",
     name: "Klarwerk",
     essence:
-      "Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.",
-    accent: "#3B5BFD",
+      "Graphitpapier, Kupfer und eine geometrische Grotesk — Präzision statt Bento.",
+    accent: "#C45C26",
   },
   {
     id: "verve",

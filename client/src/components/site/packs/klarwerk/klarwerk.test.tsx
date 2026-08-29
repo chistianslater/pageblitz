@@ -8,10 +8,12 @@ import { SiteRenderer } from "../../SiteRenderer";
 import { KLARWERK_CSS } from "./css";
 
 describe("Pack klarwerk", () => {
-  test("Verfassung registriert, Signatur enthält Bento + Kennzahlen-Panel", () => {
+  test("Verfassung registriert, Signatur enthält Readout statt Bento", () => {
     const c = getConstitution("klarwerk");
-    expect(c.signature.decor).toContain("irregular-bento");
-    expect(c.signature.decor).toContain("metric-panel");
+    expect(c.signature.decor).toContain("instrument-readout");
+    expect(c.signature.decor).toContain("copper-rule");
+    expect(c.signature.decor).toContain("spec-sheet");
+    expect(c.signature.decor).not.toContain("irregular-bento");
     expect(c.signature.decor).not.toContain("terminal-cell");
   });
 
@@ -19,10 +21,13 @@ describe("Pack klarwerk", () => {
     <SiteRenderer data={getFixture("klarwerk", "full")} />
   );
 
-  test("Signatur-Klassen (Bento, Kennzahlen, Status) rendern", () => {
-    expect(html).toContain("pb-kw-bento");
+  test("Signatur-Klassen (Split, Readout, Kennzahlen, Status) rendern", () => {
+    expect(html).toContain("pb-kw-split");
+    expect(html).toContain("pb-kw-photo");
+    expect(html).toContain("pb-kw-readout");
     expect(html).toContain("pb-kw-metric");
     expect(html).toContain("pb-kw-status");
+    expect(html).not.toContain("pb-kw-bento");
     expect(html).not.toContain("pb-kw-term");
   });
 
@@ -38,6 +43,7 @@ describe("Pack klarwerk", () => {
   test("Kennzahlen-Panel zeigt Fixture-Werte ohne Terminal-/Quellcode-Ästhetik", () => {
     expect(html).toContain("4,9");
     expect(html).toContain("Leistungen");
+    expect(html).toContain("/demo/klarwerk-hero.webp");
     expect(html).not.toContain("leistungen --list");
     expect(html).not.toContain("google --rating");
     expect(html).not.toContain('class="dim">$');
@@ -70,7 +76,7 @@ describe("Pack klarwerk", () => {
     );
     expect(h).toContain("pb-kw-metric");
     const heroMetrics = h.slice(
-      h.indexOf('class="pb-kw-bento"'),
+      h.indexOf('class="pb-kw-readout"'),
       h.indexOf('id="leistungen"')
     );
     expect(heroMetrics).not.toContain("★");
