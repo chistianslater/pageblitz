@@ -42,7 +42,7 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
           loading="lazy"
           decoding="async"
           alt={`Vorschau Designrichtung ${name}`}
-          className="block aspect-[16/10] w-full object-cover object-top transition-transform duration-700 [transition-timing-function:var(--lp-ease)] group-hover:scale-[1.02]"
+          className="lp-zoom block aspect-[16/10] w-full object-cover object-top"
         />
       </button>
       <div className="flex flex-1 flex-col p-5">
