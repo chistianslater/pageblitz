@@ -61,7 +61,7 @@ export function HowItWorks() {
           {STEPS.map((step, index) => (
             <li
               key={step.title}
-              className="grid grid-cols-[3.5rem_1fr] gap-4 border-t border-lp-line py-6 last:border-b sm:grid-cols-[5.5rem_1fr] sm:gap-6 sm:py-8"
+              className="grid grid-cols-[4.5rem_1fr] gap-4 border-t border-lp-line py-6 last:border-b sm:grid-cols-[6.5rem_1fr] sm:gap-6 sm:py-8"
             >
               <span className="lp-num" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}

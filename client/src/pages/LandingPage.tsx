@@ -21,12 +21,10 @@ import {
 } from "@/components/landing/LandingFooter";
 
 /**
- * Landingpage „/" im Look des Pageblitz-Studios (Brief:
- * docs/superpowers/specs/2026-08-23-landing-redesign-brief.md).
- *
- * Helles Papier, Hairlines, eine Schrift, ein Grün — Tokens `.lp`/`--lp-*` in
- * client/src/index.css, Sektionen unter client/src/components/landing/.
- * Kein Dark-Mode-Toggle mehr (kein `lp-theme` in localStorage).
+ * Landingpage „/" — brutalist-editorial Showroom (Refero „AI for Business"):
+ * warmes Grau, Condensed-Versalien, Mint/Gelb nur als Mikro-Akzent. Tokens
+ * `.lp`/`--lp-*` in client/src/index.css (Landing-Overrides, Studio bleibt
+ * Papier/Grün). Sektionen unter client/src/components/landing/.
  *
  * Meta/JSON-LD (Title, Description, OG, SoftwareApplication, Organization)
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender

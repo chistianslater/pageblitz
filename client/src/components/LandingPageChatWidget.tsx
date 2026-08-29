@@ -9,12 +9,9 @@ interface Message {
 }
 
 /**
- * Farben ausschließlich aus den Landing-Tokens (`--lp-*`, client/src/index.css,
- * Brief docs/superpowers/specs/2026-08-23-landing-redesign-brief.md): das
- * Widget wird in LandingPage.tsx innerhalb von `<div class="lp">` gemountet,
- * die Custom Properties erben also auch in die fixed positionierten Teile.
- * Kein Neon-Lime, keine Verläufe, keine dunklen Flächen — Hairlines statt
- * Schatten, ein Grün (Accent #1f5f4b, auf Weiß ≈ 7:1).
+ * Farben ausschließlich aus den Landing-Tokens (`--lp-*`). Das Widget sitzt
+ * in `.lp`, die Custom Properties erben also auch in die fixed Teile.
+ * Mint nur als Tag-Fläche, Gelb als Mikro-Punkt, CTAs Carbon-Schwarz.
  */
 const LP = {
   canvas: "var(--lp-canvas)",
