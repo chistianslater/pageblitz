@@ -1159,18 +1159,15 @@ html.lp-reveal-on .lp-section.lp-in {
   }
 }
 
-/* ── Apple-Material + Press (emilkowalski/apple-design) ─────────────────── */
+/* ── Glas-Nav + Press (Nachtschicht) ─────────────────────────────────── */
 .lp-nav-pill {
-  background: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  background: rgba(20, 20, 23, 0.6);
+  border: 1px solid var(--lp-line);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
 }
 .lp-nav-pill[data-scrolled] {
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 1px 0 rgba(0, 0, 0, 0.04);
+  background: rgba(20, 20, 23, 0.82);
 }
 .lp-press {
   transition:
@@ -1189,13 +1186,9 @@ html.lp-reveal-on .lp-section.lp-in {
   transition: color 160ms ease, background-color 160ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
-  .lp-press.bg-lp-ink:hover,
-  .lp-press.bg-lp-accent:hover {
-    background-color: #2f2f2f;
-  }
   .lp-nav-link:hover {
     color: var(--lp-ink);
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.06);
   }
   .group:hover .lp-zoom {
     transform: scale(1.02);
@@ -1205,7 +1198,7 @@ html.lp-reveal-on .lp-section.lp-in {
   .lp-nav-pill,
   .lp-nav-pill[data-scrolled],
   .lp-sticky-cta {
-    background: #fff;
+    background: var(--lp-panel);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -1213,8 +1206,8 @@ html.lp-reveal-on .lp-section.lp-in {
 @media (prefers-contrast: more) {
   .lp-nav-pill,
   .lp-nav-pill[data-scrolled] {
-    background: #fff;
-    border: 1px solid #000;
+    background: #000;
+    border: 1px solid #fff;
     backdrop-filter: none;
   }
 }
@@ -1257,10 +1250,10 @@ html.lp-reveal-on .lp-section.lp-in {
    damit die Leiste auch ohne Motion-Präferenz korrekt aus dem Weg ist;
    nur das Gleiten selbst ist gegatet. */
 .lp-sticky-cta {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 0 -16px 28px rgba(229, 229, 229, 0.55);
+  background: rgba(19, 19, 22, 0.88);
+  border-top: 1px solid var(--lp-line);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   transform: translate3d(
     0,
     calc(100% + env(safe-area-inset-bottom, 0px)),

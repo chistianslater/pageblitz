@@ -1,7 +1,7 @@
 import type { FormEvent } from "react";
 import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
-import { HeroForm, TrustLine } from "./LandingHero";
-import { Wordmark } from "./primitives";
+import { HeroForm } from "./LandingHero";
+import { Wordmark, textLink } from "./primitives";
 
 interface FinalCtaProps {
   value: string;
@@ -9,36 +9,33 @@ interface FinalCtaProps {
   onSubmit: (event: FormEvent) => void;
 }
 
-/** Schluss: dieselbe Einstiegsfrage wie im Hero, gleicher Handler. Seit
-    2026-08-25 als dunkler Kontrast-Block (lp-final-dark, siehe index.css). */
+/** Schluss-CTA als Volt-Bühne (Spec §4.10): der eine flächige Volt-Moment
+    der Seite. Risiko-Umkehr als Schlusswort — die Vorschau kostet nichts
+    und verpflichtet zu nichts. Gleiche Einstiegsfrage/Handler wie im Hero. */
 export function FinalCta(props: FinalCtaProps) {
   return (
-    <section
-      aria-labelledby="lp-final-heading"
-      className="lp-section lp-final-dark"
-    >
-      <div className="lp-container grid gap-10 lg:grid-cols-12 lg:items-end">
-        <div className="lg:col-span-6">
-          <p className="lp-kicker mb-5">Jetzt loslegen</p>
-          <h2 id="lp-final-heading" className="lp-h1">
-            <span className="block">Erst sehen. Dann entscheiden.</span>
-            <span className="lp-echo" aria-hidden="true">
-              Erst sehen. Dann entscheiden.
-            </span>
-          </h2>
-          {/* Risiko-Umkehr als Schlusswort (Conversion-Pass 2026-08-25):
-              Der letzte Zweifel vor dem Absprung ist das Ergebnis-Risiko —
-              die Antwort: die Vorschau kostet nichts und verpflichtet zu
-              nichts. */}
-          <p className="mt-6 max-w-[32rem] text-[1.1rem] leading-[1.6] text-lp-muted">
-            Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos und
-            unverbindlich. Gefällt sie dir nicht, hat dich der Blick nichts
-            gekostet. Gefällt sie dir, schaltest du sie mit einem Klick live.
-          </p>
-        </div>
-        <div className="lg:col-span-6">
-          <HeroForm {...props} idPrefix="final" size="lg" />
-          <TrustLine className="mt-6" />
+    <section aria-labelledby="lp-final-heading" className="lp-section">
+      <div className="lp-container">
+        <div className="rounded-3xl bg-lp-volt px-6 py-12 text-lp-volt-ink sm:px-10 lg:px-14 lg:py-16">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-6">
+              <h2 id="lp-final-heading" className="lp-h2">
+                Sehen kostet nichts.
+              </h2>
+              <p className="mt-5 max-w-[32rem] text-[1.08rem] leading-[1.55] text-lp-volt-ink/75">
+                Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos
+                und unverbindlich. Gefällt sie dir nicht, hat dich der Blick
+                nichts gekostet. Gefällt sie dir, schaltest du sie mit einem
+                Klick live.
+              </p>
+            </div>
+            <div className="lg:col-span-6">
+              <HeroForm {...props} idPrefix="final" size="lg" tone="volt" />
+              <p className="mt-4 font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-volt-ink/65">
+                Kostenlos ansehen · keine Kreditkarte · monatlich kündbar
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -83,13 +80,10 @@ export function LandingFooter() {
     <footer className="border-t border-lp-line py-12">
       <div className="lp-container flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <Wordmark />
-          <p className="mt-5 text-[1.15rem] tracking-[-0.015em]">
+          <Wordmark markClassName="text-lp-volt" />
+          <p className="mt-5 text-[1.15rem] tracking-[-0.015em] text-lp-ink">
             Fragen?{" "}
-            <a
-              href="mailto:hallo@pageblitz.de"
-              className="font-medium underline decoration-[var(--lp-mint)] decoration-2 underline-offset-[0.22em] hover:bg-[var(--lp-mint)]"
-            >
+            <a href="mailto:hallo@pageblitz.de" className={textLink}>
               Schreib uns →
             </a>
           </p>

@@ -25,8 +25,6 @@ export function Faq() {
             kicker="FAQ"
             title="Häufige Fragen."
             text="Nicht dabei, was du wissen willst? Der Chat unten rechts antwortet sofort."
-            billboard
-            echo
           />
         </div>
         <div className="lg:col-span-8">
@@ -46,13 +44,13 @@ export function Faq() {
                     aria-expanded={isOpen}
                     aria-controls={panelId}
                     onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="flex w-full items-center justify-between gap-6 py-5 text-left text-[1.1rem] font-medium tracking-[-0.01em] transition-colors hover:text-lp-accent sm:text-[1.2rem]"
+                    className="flex w-full items-center justify-between gap-6 py-5 text-left text-[1.1rem] font-medium tracking-[-0.01em] text-lp-ink transition-colors hover:text-lp-volt sm:text-[1.2rem]"
                   >
                     {item.q}
                     <Plus
                       aria-hidden="true"
                       className={`h-5 w-5 shrink-0 text-lp-muted transition-transform duration-300 ${
-                        isOpen ? "rotate-45 text-lp-accent" : ""
+                        isOpen ? "rotate-45 text-lp-volt" : ""
                       }`}
                     />
                   </button>

@@ -153,7 +153,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
               close(() => window.scrollTo({ top: 0 }));
             }}
           >
-            <Wordmark />
+            <Wordmark markClassName="text-lp-volt" />
           </a>
           <button
             ref={closeRef}
@@ -210,7 +210,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
     >
       <nav
         aria-label="Hauptnavigation"
-        className="lp-nav-pill mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 rounded-[48px] px-4 sm:px-5"
+        className="lp-nav-pill mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 rounded-2xl px-4 sm:px-5"
         data-scrolled={isScrolled || undefined}
       >
         <a
@@ -223,7 +223,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             window.scrollTo({ top: 0 });
           }}
         >
-          <Wordmark />
+          <Wordmark markClassName="text-lp-volt" />
         </a>
 
         <ul className="hidden items-center gap-1 md:flex">

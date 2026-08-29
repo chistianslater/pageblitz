@@ -13,6 +13,8 @@ export interface HeroFormProps {
   size?: "lg" | "md";
   /** Hero braucht in der schmalen 5/12-Spalte einen klaren Stack. */
   layout?: "inline" | "stacked";
+  /** "volt": Feldvariante für die Volt-Bühne des Schluss-CTAs. */
+  tone?: "dark" | "volt";
 }
 
 /**
@@ -27,9 +29,18 @@ export function HeroForm({
   idPrefix,
   size = "lg",
   layout = "inline",
+  tone = "dark",
 }: HeroFormProps) {
   const inputId = `${idPrefix}-business-name`;
   const h = size === "lg" ? "h-14" : "h-12";
+  const inputTone =
+    tone === "volt"
+      ? "border-black/25 bg-white/90 text-lp-volt-ink placeholder:text-black/45 focus-visible:border-black"
+      : "border-lp-line bg-[rgba(255,255,255,0.05)] text-lp-ink placeholder:text-lp-faint focus-visible:border-lp-volt";
+  const buttonTone =
+    tone === "volt"
+      ? "lp-press inline-flex items-center justify-center gap-2 rounded-xl bg-lp-volt-ink px-6 font-bold text-lp-volt transition-transform hover:-translate-y-px"
+      : pillPrimary;
   return (
     <form
       onSubmit={onSubmit}
@@ -47,11 +58,11 @@ export function HeroForm({
         onChange={event => onChange(event.target.value)}
         placeholder="Wie heißt dein Betrieb?"
         autoComplete="organization"
-        className={`${h} w-full min-w-0 rounded-xl border border-lp-line bg-[rgba(255,255,255,0.05)] px-5 text-[1rem] text-lp-ink placeholder:text-lp-faint focus-visible:border-lp-volt focus-visible:outline-2`}
+        className={`${h} w-full min-w-0 rounded-xl border px-5 text-[1rem] focus-visible:outline-2 ${inputTone}`}
       />
       <button
         type="submit"
-        className={`${pillPrimary} ${h} shrink-0 px-6 ${
+        className={`${buttonTone} ${h} shrink-0 px-6 ${
           layout === "stacked" ? "w-full" : ""
         } ${size === "lg" ? "text-[1rem]" : ""}`}
       >
