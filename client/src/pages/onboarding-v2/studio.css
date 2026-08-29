@@ -1697,6 +1697,46 @@
   --st-accent-ink: #0b0b0d;
   background: var(--st-canvas);
   color: var(--st-ink);
+  /* UI-Anatomie wie /start (User-Feedback 2026-08-29): linksbündig,
+     schmale Spalte, keine Karten-Box, runde Felder, Volt-Button. */
+  text-align: left;
+}
+.pb-studio-gen--dark .pb-studio-gen-inner {
+  max-width: 640px;
+}
+.pb-studio-gen--dark .pb-studio-cat {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.pb-studio-gen--dark .pb-studio-kicker {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  color: var(--st-accent);
+}
+.pb-studio-gen--dark .pb-studio-cat-field input {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.85rem 1.25rem;
+}
+.pb-studio-gen--dark .pb-studio-cat-list {
+  border-radius: 1rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.pb-studio-gen--dark .pb-studio-btn {
+  width: 100%;
+  padding: 0.9rem 1.4rem;
+  font-weight: 700;
+  background: var(--st-accent);
+  border-color: var(--st-accent);
+  color: var(--st-accent-ink);
+}
+.pb-studio-gen--dark .pb-studio-btn:hover:not(:disabled) {
+  background: #b3e600;
+  border-color: #b3e600;
 }
 
 /* Unterstreich-Effekt für die erkannte Branche (CategoryStep, 2026-08-29):
