@@ -86,7 +86,21 @@ export function CategoryStep({
         <div className="pb-studio-gen-inner pb-studio-cat">
           <p className="pb-studio-kicker">Bevor es losgeht</p>
           <h1 className="pb-studio-title">
-            Wir haben als Branche <strong>{initialCategory}</strong> erkannt.
+            Wir haben als Branche{" "}
+            <span className="pb-circled">
+              <strong>{initialCategory}</strong>
+              {/* Handgezeichneter Einkreis-Effekt: der Strich zeichnet sich
+                  beim Erscheinen selbst (stroke-dashoffset). */}
+              <svg
+                className="pb-circled-svg"
+                viewBox="0 0 120 44"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <ellipse cx="60" cy="22" rx="56" ry="18" />
+              </svg>
+            </span>{" "}
+            erkannt.
           </h1>
           <p className="pb-studio-cat-hint">
             Ist das richtig? Dann entsteht daraus direkt die Website für{" "}
