@@ -187,11 +187,6 @@ export default defineConfig(({ command }) => ({
             return "vendor-react";
           if (id.includes("node_modules/framer-motion/"))
             return "vendor-motion";
-          if (
-            id.includes("node_modules/remotion") ||
-            id.includes("node_modules/@remotion/")
-          )
-            return "vendor-remotion";
           // Getrennt von @tanstack: react-query wird am App-Root
           // (QueryClientProvider, main.tsx) für tRPC gebraucht und lädt
           // daher auf JEDER Route mit, Radix nur dort, wo Dialog/Dropdown/

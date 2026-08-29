@@ -1,27 +1,119 @@
-import { SectionHead, textLink } from "./primitives";
+import React from "react";
+import { Check } from "lucide-react";
+import { SectionHead } from "./primitives";
 
 /**
- * „So funktioniert's": vier nummerierte Schritte in der Checklisten-Optik des
- * Studios (Hairline-Zeilen, große Nummer als typografisches Element). Der
- * GMB-Import ist Schritt 1, keine eigene Bühne. Darunter die Leistungen, die
- * immer dabei sind (ehemalige Feature-Karten, ohne Icons).
+ * Ablauf-Sektion (Spec §4.5): vier Schritte als 2×2-Grid, jeder mit einem
+ * gezeichneten Mini-Visual im Nachtschicht-Stil — gezeigt statt versprochen.
+ * Schritt 3 trägt das frühere StudioProof-Motiv (Checkliste links, live
+ * rechts); StudioProof als eigene Sektion ist damit aufgelöst.
  */
+
+/** Schritt 1: Suchfeld mit G-Punkt und getipptem Namen. */
+function VisualSearch() {
+  return (
+    <div className="flex h-full items-center px-6">
+      <div className="flex w-full items-center gap-2.5 rounded-xl border border-lp-line bg-lp-panel-2 px-4 py-3">
+        <span className="font-[family-name:var(--lp-mono)] text-[0.8rem] font-medium text-lp-volt">
+          G
+        </span>
+        <span className="h-2 w-2/3 rounded-full bg-[rgba(255,255,255,0.18)]" />
+      </div>
+    </div>
+  );
+}
+
+/** Schritt 2: drei Richtungs-Karten, die mittlere gewählt. */
+function VisualStyles() {
+  return (
+    <div className="flex h-full items-center justify-center gap-3 px-6">
+      {[0, 1, 2].map(i => (
+        <span
+          key={i}
+          className={`h-14 w-12 rounded-lg border ${
+            i === 1
+              ? "border-lp-volt bg-lp-panel-2"
+              : "border-lp-line bg-lp-panel"
+          }`}
+        >
+          <span
+            className={`mt-2.5 ml-2 block h-1.5 w-6 rounded-full ${
+              i === 1 ? "bg-[var(--lp-volt)]" : "bg-[rgba(255,255,255,0.18)]"
+            }`}
+          />
+          <span className="mt-1.5 ml-2 block h-1 w-4 rounded-full bg-[rgba(255,255,255,0.12)]" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Schritt 3: Checkliste links, Mini-Browser rechts (StudioProof-Motiv). */
+function VisualStudio() {
+  return (
+    <div className="flex h-full items-center justify-center gap-4 px-6">
+      <div className="flex flex-col gap-2">
+        {[true, true, false].map((done, i) => (
+          <span key={i} className="flex items-center gap-2">
+            <span
+              className={`flex h-4 w-4 items-center justify-center rounded-full ${
+                done
+                  ? "bg-[var(--lp-volt)] text-lp-volt-ink"
+                  : "border border-lp-line"
+              }`}
+            >
+              {done ? (
+                <Check className="h-2.5 w-2.5" aria-hidden="true" />
+              ) : null}
+            </span>
+            <span className="h-1.5 w-14 rounded-full bg-[rgba(255,255,255,0.16)]" />
+          </span>
+        ))}
+      </div>
+      <span className="block h-16 w-20 overflow-hidden rounded-lg border border-lp-line bg-lp-panel-2">
+        <span className="block h-3 border-b border-lp-line" />
+        <span className="mt-2 ml-2 block h-1.5 w-10 rounded-full bg-[rgba(255,255,255,0.18)]" />
+        <span className="mt-1.5 ml-2 block h-4 w-14 rounded bg-[rgba(255,255,255,0.08)]" />
+      </span>
+    </div>
+  );
+}
+
+/** Schritt 4: Freischalt-Toggle + Live-Punkt. */
+function VisualLive() {
+  return (
+    <div className="flex h-full items-center justify-center gap-4 px-6">
+      <span className="flex h-7 w-12 items-center rounded-full bg-[var(--lp-volt)] px-1">
+        <span className="ml-auto block h-5 w-5 rounded-full bg-lp-volt-ink" />
+      </span>
+      <span className="inline-flex items-center gap-2 font-[family-name:var(--lp-mono)] text-[0.72rem] font-medium tracking-[0.06em] text-lp-ink">
+        <span className="h-2 w-2 rounded-full bg-lp-live" aria-hidden="true" />
+        LIVE
+      </span>
+    </div>
+  );
+}
+
 const STEPS = [
   {
     title: "Firmenname eingeben – oder Google-Profil übernehmen",
     text: "Name, Adresse, Öffnungszeiten, Fotos und Bewertungen werden automatisch übernommen.",
+    visual: <VisualSearch />,
   },
   {
     title: "Designrichtung bestimmen",
-    text: "Pageblitz startet mit einer kuratierten Richtung; Farben, Schriften und Bildwirkung passt du anschließend an.",
+    text: "Pageblitz startet mit einer kuratierten Richtung; Farben, Schriften und Bildwirkung passt du an.",
+    visual: <VisualStyles />,
   },
   {
     title: "Texte und Bilder prüfen",
-    text: "Die Checkliste führt durch Fotos, Texte, Angebot und Rechtliches; die KI hilft beim Formulieren.",
+    text: "Links die Checkliste, rechts deine Website — live. Die KI hilft beim Formulieren.",
+    visual: <VisualStudio />,
   },
   {
     title: "Freischalten – und live",
     text: "Gefällt dir die Vorschau, schaltest du sie mit einem Klick unter deiner Domain frei.",
+    visual: <VisualLive />,
   },
 ] as const;
 
@@ -47,62 +139,48 @@ export function HowItWorks() {
       aria-labelledby="lp-how-heading"
       className="lp-section border-t border-lp-line"
     >
-      <div className="lp-container grid gap-12 lg:grid-cols-12 lg:gap-16">
-        <div className="lg:col-span-5">
-          <SectionHead
-            id="lp-how-heading"
-            kicker="So funktioniert's"
-            title="Vier Schritte. Eine Checkliste. Keine Technik."
-            text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
-            billboard
-            echo
-          />
-        </div>
+      <div className="lp-container">
+        <SectionHead
+          id="lp-how-heading"
+          kicker="So funktioniert's"
+          title="Vier Schritte. Keine Technik."
+          text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
+        />
 
-        <ol className="lg:col-span-7">
+        <ol className="mt-12 grid gap-5 md:grid-cols-2">
           {STEPS.map((step, index) => (
             <li
               key={step.title}
-              className="grid grid-cols-[4.75rem_1fr] gap-4 border-t border-lp-line py-7 last:border-b sm:grid-cols-[7rem_1fr] sm:gap-7 sm:py-9"
+              className="overflow-hidden rounded-2xl border border-lp-line"
             >
-              <span className="lp-num text-[clamp(2.4rem,1.6rem+1.8vw,3.6rem)]" aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div className="max-w-[40rem]">
-                <h3 className="text-[1.3rem] leading-snug tracking-[-0.015em] sm:text-[1.6rem]">
+              <div aria-hidden="true" className="h-[7.5rem] bg-lp-panel">
+                {step.visual}
+              </div>
+              <div className="p-6">
+                <p className="lp-kicker" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 text-[1.12rem] font-bold leading-[1.25] tracking-[-0.015em] text-lp-ink">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-[1rem] leading-[1.55] text-lp-muted">
+                <p className="mt-2 text-[0.93rem] leading-[1.5] text-lp-muted">
                   {step.text}
                 </p>
               </div>
             </li>
           ))}
         </ol>
-      </div>
 
-      <div className="lp-container mt-16 lg:mt-20">
-        <p className="lp-kicker mb-6">Immer dabei</p>
-        <dl className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-6 border-t border-lp-line pt-8 md:grid-cols-3">
           {INCLUDED.map(([title, text]) => (
-            <div key={title} className="lp-stage-card p-7">
-              <dt className="text-[1.2rem] font-medium tracking-[-0.015em]">
-                {title}
-              </dt>
-              <dd className="mt-3 text-[0.95rem] leading-[1.55] text-lp-muted">
+            <div key={title}>
+              <h3 className="text-[1rem] font-bold text-lp-ink">{title}</h3>
+              <p className="mt-1.5 text-[0.9rem] leading-[1.5] text-lp-muted">
                 {text}
-              </dd>
+              </p>
             </div>
           ))}
-        </dl>
-        <p className="mt-6 text-[0.95rem] text-lp-muted">
-          KI-Chat für deine Website-Besucher und Terminbuchung gibt es als
-          Extras –{" "}
-          <a href="#pricing" className={textLink}>
-            zu den Preisen
-          </a>
-          .
-        </p>
+        </div>
       </div>
     </section>
   );

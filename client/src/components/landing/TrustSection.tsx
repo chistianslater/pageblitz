@@ -46,19 +46,15 @@ export function TrustSection() {
           kicker="Sicher & fair"
           title="In sicheren Händen — ohne Kleingedrucktes."
           text="Alles, worauf es bei einer Unternehmens-Website wirklich ankommt, ist eingebaut — nicht dazugekauft."
-          billboard
-          echo
         />
-        <ul className="mt-14 grid gap-5 sm:grid-cols-2">
-          {TRUST_ITEMS.map((item, index) => (
-            <li key={item.title} className="lp-stage-card flex flex-col p-8">
-              <div className="flex items-center justify-between gap-4">
-                <p className="lp-kicker">{item.tag}</p>
-                <span className="lp-num text-[1.75rem]" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              </div>
-              <h3 className="mt-8 text-[1.45rem] leading-[1.12] tracking-[-0.02em]">
+        <ul className="mt-12 grid gap-5 sm:grid-cols-2">
+          {TRUST_ITEMS.map(item => (
+            <li
+              key={item.title}
+              className="flex flex-col rounded-2xl border border-lp-line p-7"
+            >
+              <p className="lp-kicker">{item.tag}</p>
+              <h3 className="mt-4 text-[1.3rem] font-bold leading-[1.15] tracking-[-0.02em] text-lp-ink">
                 {item.title}
               </h3>
               <p className="mt-3 text-[0.95rem] leading-[1.55] text-lp-muted">

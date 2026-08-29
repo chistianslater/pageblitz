@@ -3,7 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PACK_IDS } from "@shared/siteContract/types";
 import { getConstitution } from "@shared/stylePacks";
-import { PackShowcase } from "./PackShowcase";
+import { PACK_INDUSTRIES, PackShowcase } from "./PackShowcase";
 
 // Interaktions-Verhalten des Vorschau-Modals (Backdrop-Klick schließt,
 // Tab-Fokusfalle springt am Rand um) wird HIER bewusst nicht getestet:
@@ -68,6 +68,15 @@ describe("PackShowcase", () => {
     // und nennt bewusst keine Anzahl, die Sammlung wächst mit der Zeit.
     expect(html).not.toMatch(/<h[1-6][^>]*>Designrichtungen</);
     expect(html).not.toMatch(/\d+\s*Designrichtungen/);
+  });
+
+  test("jede Karte trägt eine Branchen-Zeile (ForWhom-Nachfolger, Relaunch 2026-08-29)", () => {
+    for (const packId of PACK_IDS) {
+      expect(PACK_INDUSTRIES[packId]).toBeTruthy();
+      expect(html).toContain(PACK_INDUSTRIES[packId]);
+    }
+    expect(html).toContain("Schreinerei, Zimmerei, Metallbau");
+    expect(html).toContain("Alle Branchen ansehen");
   });
 
   test("Karten sitzen in einem horizontal scrollbaren Karussell (Scroll-Snap), nicht in einem Grid mit fester Spaltenzahl", () => {

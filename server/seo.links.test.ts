@@ -8,17 +8,14 @@ import {
   generateOverviewHTML,
 } from "./seo/landingPages";
 import { generateHomePrerender, buildHomeFaqSchema } from "./seo/homePage";
-import {
-  PRICING,
-  addonPrice,
-  ADDON_KEYS,
-  formatEuro,
-} from "../shared/pricing";
+import { PRICING, addonPrice, ADDON_KEYS, formatEuro } from "../shared/pricing";
 
 describe("SEO_INDUSTRY_LINKS bleibt deckungsgleich mit SEO_INDUSTRIES", () => {
   it("enthält exakt dieselben Slugs", () => {
-    expect(SEO_INDUSTRY_LINKS.map((l) => l.slug).sort()).toEqual(
-      Object.values(SEO_INDUSTRIES).map((i) => i.slug).sort()
+    expect(SEO_INDUSTRY_LINKS.map(l => l.slug).sort()).toEqual(
+      Object.values(SEO_INDUSTRIES)
+        .map(i => i.slug)
+        .sort()
     );
   });
 
@@ -37,7 +34,7 @@ describe("Städte-Seiten sind keine Duplikate mehr", () => {
   });
 
   it("gibt jeder Stadt eigenen Text mit", () => {
-    const intros = new Set(DE_CITIES.map((c) => c.intro));
+    const intros = new Set(DE_CITIES.map(c => c.intro));
     expect(intros.size).toBe(DE_CITIES.length);
     for (const city of DE_CITIES) {
       expect(city.intro.length).toBeGreaterThan(150);
@@ -97,7 +94,9 @@ describe("Home-Prerender", () => {
 
   it("liefert die H1 als echtes HTML aus", () => {
     expect(html).toContain("<h1");
-    expect(html).toContain("Deine Website in 3 Minuten fertig.");
+    // Nachtschicht-Relaunch 2026-08-29: H1 mit Volt-<em> für „in 3 Minuten."
+    expect(html).toContain("Die fertige Website für deinen Betrieb");
+    expect(html).toContain("in 3 Minuten.");
   });
 
   it("verlinkt jede Branchenseite", () => {
@@ -112,7 +111,9 @@ describe("Home-Prerender", () => {
     const schema = JSON.parse(buildHomeFaqSchema());
     expect(schema.mainEntity).toHaveLength(HOME_FAQ_ITEMS.length);
     for (const faq of HOME_FAQ_ITEMS) {
-      expect(schema.mainEntity.some((e: { name: string }) => e.name === faq.q)).toBe(true);
+      expect(
+        schema.mainEntity.some((e: { name: string }) => e.name === faq.q)
+      ).toBe(true);
       expect(html).toContain(faq.q);
     }
   });
@@ -132,14 +133,15 @@ describe("Home-Prerender", () => {
       formatEuro(PRICING.base.monthly),
       ...ADDON_KEYS.map(k => formatEuro(addonPrice(k))),
     ]);
-    const found = Array.from(html.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2} €)\s*\/\s*Monat/g)).map(
-      m => m[1]
-    );
+    const found = Array.from(
+      html.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2} €)\s*\/\s*Monat/g)
+    ).map(m => m[1]);
     expect(found.length).toBeGreaterThan(0);
     for (const price of found) {
-      expect(allowed.has(price), `Unbekannter Monatspreis im Prerender: ${price}`).toBe(
-        true
-      );
+      expect(
+        allowed.has(price),
+        `Unbekannter Monatspreis im Prerender: ${price}`
+      ).toBe(true);
     }
   });
 });

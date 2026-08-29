@@ -1,7 +1,7 @@
-import type { FormEvent } from "react";
+import React, { type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
-import { HeroBuild } from "./HeroBuild";
-import { Kicker, PRICE_YEARLY, pillPrimary } from "./primitives";
+import { HeroBuildLive } from "./HeroBuildLive";
+import { pillPrimary } from "./primitives";
 
 export interface HeroFormProps {
   value: string;
@@ -13,6 +13,8 @@ export interface HeroFormProps {
   size?: "lg" | "md";
   /** Hero braucht in der schmalen 5/12-Spalte einen klaren Stack. */
   layout?: "inline" | "stacked";
+  /** "volt": Feldvariante für die Volt-Bühne des Schluss-CTAs. */
+  tone?: "dark" | "volt";
 }
 
 /**
@@ -27,75 +29,68 @@ export function HeroForm({
   idPrefix,
   size = "lg",
   layout = "inline",
+  tone = "dark",
 }: HeroFormProps) {
   const inputId = `${idPrefix}-business-name`;
   const h = size === "lg" ? "h-14" : "h-12";
+  const inputTone =
+    tone === "volt"
+      ? "border-black/25 bg-white/90 text-lp-volt-ink placeholder:text-black/45 focus-visible:border-black"
+      : "border-lp-line bg-[rgba(255,255,255,0.05)] text-lp-ink placeholder:text-lp-faint focus-visible:border-lp-volt";
+  const buttonTone =
+    tone === "volt"
+      ? "lp-press inline-flex items-center justify-center gap-2 rounded-xl bg-lp-volt-ink px-6 font-bold text-lp-volt transition-transform hover:-translate-y-px"
+      : pillPrimary;
   return (
-    <div className="w-full max-w-[36rem]">
-      <form
-        onSubmit={onSubmit}
-        className={`flex w-full flex-col gap-3 ${
-          layout === "inline" ? "sm:flex-row" : ""
-        }`}
+    <form
+      onSubmit={onSubmit}
+      className={`flex w-full max-w-[32rem] flex-col gap-2.5 ${
+        layout === "inline" ? "sm:flex-row" : ""
+      }`}
+    >
+      <label htmlFor={inputId} className="sr-only">
+        Wie heißt dein Betrieb?
+      </label>
+      <input
+        id={inputId}
+        type="text"
+        value={value}
+        onChange={event => onChange(event.target.value)}
+        placeholder="Wie heißt dein Betrieb?"
+        autoComplete="organization"
+        className={`${h} w-full min-w-0 rounded-xl border px-5 text-[1rem] focus-visible:outline-2 ${inputTone}`}
+      />
+      <button
+        type="submit"
+        className={`${buttonTone} ${h} shrink-0 px-6 ${
+          layout === "stacked" ? "w-full" : ""
+        } ${size === "lg" ? "text-[1rem]" : ""}`}
       >
-        <div
-          className={
-            layout === "inline"
-              ? "min-w-0 flex-1"
-              : "flex w-full flex-col gap-2"
-          }
-        >
-          <label
-            htmlFor={inputId}
-            className={
-              layout === "stacked"
-                ? "text-[0.88rem] font-medium text-lp-ink"
-                : "sr-only"
-            }
-          >
-            Wie heißt dein Unternehmen?
-          </label>
-          <input
-            id={inputId}
-            type="text"
-            value={value}
-            onChange={event => onChange(event.target.value)}
-            placeholder={
-              layout === "stacked"
-                ? "z. B. Schreinerei Brandt"
-                : "Wie heißt dein Unternehmen?"
-            }
-            autoComplete="organization"
-            className={`${h} w-full min-w-0 rounded-full border border-lp-line bg-white px-4 text-[1rem] text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent focus-visible:outline-2 sm:px-5`}
-          />
-        </div>
-        <button
-          type="submit"
-          className={`${pillPrimary} ${h} shrink-0 px-7 ${
-            layout === "stacked" ? "w-full" : ""
-          } ${size === "lg" ? "text-[1rem]" : ""}`}
-        >
-        Website kostenlos erstellen
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </form>
-      {/* Reibungsabbau direkt am CTA (Conversion-Pass 2026-08-25): Die drei
-          häufigsten Einwände — Kosten, Kreditkarte, Ergebnis-Risiko —
-          werden beantwortet, bevor sie entstehen. */}
-      <p className="mt-3 text-[0.85rem] text-lp-muted">
-        Starte mit deinem Firmennamen. Die Vorschau ist kostenlos und braucht
-        keine Kreditkarte.
-      </p>
-    </div>
+        Meine Website ansehen
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </form>
   );
 }
 
-const TRUST = [
-  "7 Tage gratis",
-  `Danach ab ${PRICE_YEARLY}/Monat`,
-  "Monatlich kündbar",
-];
+/**
+ * Einwandbehandlung direkt am CTA (Mono-Chrome): Kosten, Kreditkarte,
+ * Bindung — beantwortet, bevor die Frage entsteht.
+ */
+export function RiskLine({ className = "" }: { className?: string }) {
+  return (
+    <p
+      className={`font-[family-name:var(--lp-mono)] text-[0.74rem] uppercase tracking-[0.02em] text-lp-faint ${className}`}
+    >
+      <span className="text-lp-volt">Kostenlos ansehen</span> · keine
+      Kreditkarte · monatlich kündbar
+    </p>
+  );
+}
 
+const TRUST = ["7 Tage gratis", "Monatlich kündbar", "Keine Kreditkarte"];
+
+/** Punkt-Aufzählung für den Schluss-CTA (FinalCta im LandingFooter). */
 export function TrustLine({ className = "" }: { className?: string }) {
   return (
     <ul
@@ -114,39 +109,46 @@ export function TrustLine({ className = "" }: { className?: string }) {
   );
 }
 
+/**
+ * Hero „Nachtschicht" (Spec §4.2): links Klartext-Versprechen + Namensfeld,
+ * rechts die HeroBuildLive-Bühne auf einer Panel-Fläche, die rechts aus dem
+ * Viewport läuft. Kein Kicker — der Agentur-Anker sitzt im Beweis-Streifen
+ * direkt darunter.
+ */
 export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
   return (
     <section
       aria-labelledby="lp-hero-heading"
-      className="lp-container pt-8 pb-16 lg:pt-10 lg:pb-24"
+      className="lp-hero-glow relative overflow-hidden"
     >
-      <Kicker className="lp-rise lp-rise-1 mb-6">
-        Webagentur: 2.000–8.000 € · Pageblitz ab {PRICE_YEARLY}/Monat
-      </Kicker>
-      <h1 id="lp-hero-heading" className="lp-h1 lp-h1--hero lp-rise lp-rise-2">
-        Deine Website
-        <br />
-        in 3&nbsp;Minuten.
-      </h1>
-      <div className="mt-10 grid items-start gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-5">
-          <p className="lp-rise lp-rise-3 max-w-[32rem] text-[1.12rem] leading-[1.5] text-lp-muted">
-            Deine Kunden suchen dich bei Google. Pageblitz baut aus deinem
-            Google-Profil automatisch eine fertige Vorschau — ohne Webdesigner,
-            Wartezeit oder vierstelliges Budget.
-          </p>
-          <div className="lp-rise lp-rise-4 mt-8">
-            <HeroForm
-              {...props}
-              idPrefix="hero"
-              size="lg"
-              layout="stacked"
-            />
+      <div className="lp-container">
+        <div className="grid items-center gap-10 pt-10 pb-14 lg:grid-cols-12 lg:gap-12 lg:pt-16 lg:pb-20">
+          <div className="lg:col-span-5">
+            <h1
+              id="lp-hero-heading"
+              className="lp-rise lp-rise-1 lp-h1 lp-h1--hero"
+            >
+              Die fertige Website für deinen Betrieb —{" "}
+              <em className="not-italic text-lp-volt">in 3&nbsp;Minuten.</em>
+            </h1>
+            <p className="lp-rise lp-rise-2 mt-6 max-w-[30rem] text-[1.12rem] leading-[1.55] text-lp-muted">
+              Tipp deinen Firmennamen ein. Pageblitz holt Fotos, Bewertungen und
+              Öffnungszeiten aus deinem Google-Profil und baut daraus eine echte
+              Website.{" "}
+              <strong className="font-semibold text-lp-ink">
+                Du siehst das Ergebnis, bevor du irgendetwas bezahlst.
+              </strong>
+            </p>
+            <div className="lp-rise lp-rise-3 mt-8">
+              <HeroForm {...props} idPrefix="hero" size="lg" layout="stacked" />
+            </div>
+            <RiskLine className="lp-rise lp-rise-4 mt-4" />
           </div>
-          <TrustLine className="lp-rise lp-rise-5 mt-8" />
-        </div>
-        <div className="lg:col-span-7 lp-rise lp-rise-6">
-          <HeroBuild />
+          <div className="lp-rise lp-rise-5 lg:col-span-7">
+            <div className="lp-hero-stage">
+              <HeroBuildLive />
+            </div>
+          </div>
         </div>
       </div>
     </section>

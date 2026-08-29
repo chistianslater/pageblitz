@@ -6,6 +6,28 @@ import type { PackId } from "@shared/siteContract/types";
 import { motionSafeScrollBehavior } from "@/lib/motion";
 import { SectionHead, textLink } from "./primitives";
 
+/**
+ * Branchen-Zeile je Richtung (ersetzt die ForWhom-Sektion, Relaunch
+ * 2026-08-29): Selbstidentifikation direkt an der Karte. Ids exakt aus
+ * `shared/siteContract/packIds.ts`.
+ */
+export const PACK_INDUSTRIES: Record<PackId, string> = {
+  werkbank: "Schreinerei, Zimmerei, Metallbau",
+  patina: "Café, Vintage-Laden, Concept Store",
+  kanzlei: "Anwalt, Steuerberatung, Notariat",
+  "salon-noir": "Friseur, Barbershop, Beauty",
+  morgenlicht: "Praxis, Physiotherapie, Wellness",
+  marktplatz: "Bäckerei, Eisdiele, Familiengeschäft",
+  gusto: "Restaurant, Weinbar, Bistro",
+  landgut: "Gärtnerei, Hofladen, Floristik",
+  atelier: "Fotografie, Design, Kreativstudio",
+  klarwerk: "Ingenieurbüro, IT-Service, Architektur",
+  verve: "Fitnessstudio, Tanzschule, Coaching",
+  zunft: "Metzgerei, Brauerei, Traditionsbetrieb",
+  schimmer: "Kosmetik, Ästhetik, Hautpflege",
+  fundament: "Bauunternehmen, Immobilien, Hausverwaltung",
+};
+
 interface PackCardProps {
   summary: PackSummary;
   index: number;
@@ -27,7 +49,7 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
   return (
     <article
       aria-label={`${name}: ${essence}`}
-      className="lp-stage-card group flex w-[16rem] shrink-0 snap-start flex-col overflow-hidden sm:w-[18rem]"
+      className="group flex w-[16rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-lp-line bg-lp-panel sm:w-[18rem]"
     >
       <button
         type="button"
@@ -59,11 +81,14 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
             aria-hidden="true"
           />
         </div>
-        <h3 className="text-[1.2rem] leading-tight tracking-[-0.01em]">
+        <h3 className="text-[1.2rem] font-bold leading-tight tracking-[-0.01em] text-lp-ink">
           {name}
         </h3>
-        <p className="mt-1.5 mb-4 flex-1 text-[0.9rem] leading-[1.55] text-lp-muted">
+        <p className="mt-1.5 text-[0.9rem] leading-[1.55] text-lp-muted">
           {essence}
+        </p>
+        <p className="mt-2 mb-4 flex-1 text-[0.8rem] leading-[1.5] text-lp-faint">
+          {PACK_INDUSTRIES[packId]}
         </p>
         <button
           type="button"
@@ -147,7 +172,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
 
   const modal = (
     <div
-      className="lp fixed inset-0 z-[100] flex items-center justify-center bg-lp-ink/60 p-4 sm:p-8"
+      className="lp fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 sm:p-8"
       onMouseDown={event => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -157,7 +182,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[32px] bg-lp-surface"
+        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-lp-line bg-lp-panel"
         style={{ height: "min(85vh, 720px)" }}
       >
         <div className="flex items-center justify-between gap-4 border-b border-lp-line px-5 py-3">
@@ -179,7 +204,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
               type="button"
               onClick={onClose}
               aria-label="Vorschau schließen"
-              className="rounded-full p-1.5 text-lp-muted transition-colors hover:bg-lp-canvas hover:text-lp-ink"
+              className="rounded-full p-1.5 text-lp-muted transition-colors hover:bg-lp-panel-2 hover:text-lp-ink"
             >
               <X className="h-4 w-4" />
             </button>
@@ -259,9 +284,7 @@ export function PackShowcase() {
             id="lp-showcase-heading"
             kicker="Designrichtungen"
             title="Welche Richtung passt zu deinem Betrieb?"
-            text="Diese Richtungen sind professionelle Ausgangspunkte, keine fertigen Vorlagen. Deine Inhalte, Farben, Schriften und Bilder formen daraus deine Website."
-            billboard
-            echo
+            text="Professionelle Ausgangspunkte, keine fertigen Vorlagen — deine Inhalte, Farben und Bilder formen daraus deine Website."
           />
           <div className="flex shrink-0 gap-2">
             <button
@@ -269,7 +292,7 @@ export function PackShowcase() {
               onClick={() => scrollByPage(-1)}
               disabled={!canScrollPrev}
               aria-label="Vorherige Designrichtungen"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-volt disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -278,7 +301,7 @@ export function PackShowcase() {
               onClick={() => scrollByPage(1)}
               disabled={!canScrollNext}
               aria-label="Weitere Designrichtungen"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-accent disabled:pointer-events-none disabled:opacity-30"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-lp-line text-lp-ink transition-colors hover:border-lp-volt disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -299,6 +322,13 @@ export function PackShowcase() {
             />
           ))}
         </div>
+
+        <p className="mt-6">
+          <a href="#branchen" className={`${textLink} text-[0.92rem]`}>
+            Alle Branchen ansehen
+            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </a>
+        </p>
       </div>
 
       <PreviewModal packId={openPackId} onClose={handleClose} />
