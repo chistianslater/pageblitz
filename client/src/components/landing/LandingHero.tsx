@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
-import { HeroBuild } from "./HeroBuild";
+import { HeroBuildLive } from "./HeroBuildLive";
 import { Kicker, PRICE_YEARLY, pillPrimary } from "./primitives";
 
 export interface HeroFormProps {
@@ -146,7 +146,7 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
           <TrustLine className="lp-rise lp-rise-5 mt-8" />
         </div>
         <div className="lg:col-span-7 lp-rise lp-rise-6">
-          <HeroBuild />
+          <HeroBuildLive />
         </div>
       </div>
     </section>

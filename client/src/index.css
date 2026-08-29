@@ -708,60 +708,408 @@ html.lp-reveal-on .lp-section.lp-in {
   transform: none;
 }
 
-/* ── Hero-Bühne: Browser-Chrome + 16:10-Stage. Der Film läuft in
-   Remotion (hero-film/); Poster bleibt als LCP und Reduced-Motion-
-   Fallback darunter liegen. */
+/* ── Hero-Bühne „Website entsteht" (HeroBuildLive, Spec §3) ──────────────
+   Vier Phasen über [data-phase] am Wurzelelement; JS ist nur die Timer-
+   Timeline. Phase 1: Suchfeld tippt. Phase 2: Google-Chips. Phase 3: Site
+   baut sich aus dem Skeleton. Phase 4: LIVE + Subdomain. */
 .lpb {
-  border: 0;
-  border-radius: 32px;
-  background: var(--lp-surface);
-  overflow: hidden;
-  box-shadow: none;
+  position: relative;
+  width: 100%;
 }
-.lpb-chrome {
+.lpb-search {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0.6rem 0.8rem;
-  border-bottom: 1px solid var(--lp-line);
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  background: var(--lp-panel-2);
+  border: 1px solid var(--lp-line);
+  color: var(--lp-ink);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  position: relative;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s var(--lp-ease);
 }
-.lpb-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--lp-line);
+.lpb-g {
+  color: var(--lp-volt);
+  font-weight: 700;
 }
-.lpb-url {
-  margin-left: 0.5rem;
-  flex: 1;
-  max-width: 16rem;
-  height: 1.2rem;
+.lpb[data-phase="1"] .lpb-search,
+.lpb[data-phase="2"] .lpb-search {
+  opacity: 1;
+  transform: none;
+}
+.lpb[data-phase="3"] .lpb-search,
+.lpb[data-phase="4"] .lpb-search {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.lpb-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.05em;
+  background: currentColor;
+  animation: lpb-caret 0.9s steps(1) infinite;
+}
+@keyframes lpb-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.lpb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+  min-height: 2rem;
+  position: relative;
+  z-index: 3;
+}
+.lpb-chips span {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.32rem 0.7rem;
   border-radius: 999px;
-  background: var(--lp-canvas);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--lp-line);
   color: var(--lp-muted);
-  font-size: 0.68rem;
+  font-family: var(--lp-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.34, 1.4, 0.4, 1);
+}
+.lpb[data-phase="2"] .lpb-chips span {
+  opacity: 1;
+  transform: none;
+}
+.lpb[data-phase="2"] .lpb-chips span:nth-child(1) {
+  transition-delay: 0.05s;
+}
+.lpb[data-phase="2"] .lpb-chips span:nth-child(2) {
+  transition-delay: 0.2s;
+}
+.lpb[data-phase="2"] .lpb-chips span:nth-child(3) {
+  transition-delay: 0.35s;
+}
+.lpb[data-phase="2"] .lpb-chips span:nth-child(4) {
+  transition-delay: 0.5s;
+}
+.lpb[data-phase="3"] .lpb-chips span,
+.lpb[data-phase="4"] .lpb-chips span {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.9);
+}
+.lpb-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--lp-panel);
+  border: 1px solid var(--lp-line);
+  opacity: 0.55;
+  transform: translateY(14px) scale(0.985);
+  transition:
+    transform 0.6s var(--lp-ease),
+    opacity 0.6s ease,
+    box-shadow 0.6s ease;
+}
+.lpb[data-phase="3"] .lpb-frame,
+.lpb[data-phase="4"] .lpb-frame {
+  opacity: 1;
+  transform: none;
+  /* Der eine schwere Schatten des Viewports (Spec §2, Budget 2×). */
+  box-shadow:
+    var(--lp-shadow-heavy),
+    0 0 70px -30px rgba(204, 255, 0, 0.22);
+}
+.lpb-bar {
   display: flex;
   align-items: center;
-  padding: 0 0.7rem;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--lp-panel-2);
+  border-bottom: 1px solid var(--lp-line);
+  color: var(--lp-faint);
+  font-family: var(--lp-mono);
+  font-size: 0.72rem;
 }
-.lpb-stage {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  background: #191919;
+.lpb-dots {
+  display: flex;
+  gap: 0.3rem;
 }
-.lpb-final {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top;
+.lpb-dots i {
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #333338;
 }
-.lpb-player {
-  position: absolute;
-  inset: 0;
+.lpb-url {
+  flex: 1;
+  text-align: center;
+  padding: 0.28rem 0.8rem;
+  border-radius: 999px;
+  background: var(--lp-bg);
+  border: 1px solid var(--lp-line);
+  color: var(--lp-muted);
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.lpb-u2 {
+  display: none;
+}
+.lpb[data-phase="4"] .lpb-u1 {
+  display: none;
+}
+.lpb[data-phase="4"] .lpb-u2 {
+  display: inline;
+}
+/* Die entstehende Kundenwebsite (Werkbank-Demo als HTML/CSS). */
+.lpb-site {
+  background: #191612;
+  color: #efe9df;
+  padding: 0 0 1.1rem;
+  position: relative;
+  overflow: hidden;
+}
+.lpb-skel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #24201a;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  opacity: 1;
+  transition: opacity 0.5s ease 0.15s;
+}
+.lpb-skel i {
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(100deg, #2e2922 30%, #3a342b 50%, #2e2922 70%);
+  background-size: 220% 100%;
+  animation: lpb-shimmer 1.4s linear infinite;
+}
+@keyframes lpb-shimmer {
+  to {
+    background-position: -120% 0;
+  }
+}
+.lpb-skel i:nth-child(1) {
+  height: 12%;
+  width: 100%;
+}
+.lpb-skel i:nth-child(2) {
+  height: 26%;
+  width: 62%;
+}
+.lpb-skel i:nth-child(3) {
+  height: 26%;
+  width: 78%;
+}
+.lpb-skel i:nth-child(4) {
+  height: 14%;
+  width: 38%;
+}
+.lpb[data-phase="3"] .lpb-skel,
+.lpb[data-phase="4"] .lpb-skel {
+  opacity: 0;
+  pointer-events: none;
+}
+.lpb-snav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(239, 233, 223, 0.14);
+  transform: translateY(-110%);
+  transition: transform 0.5s var(--lp-ease);
+}
+.lpb-snav b {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+.lpb-snav > span {
+  display: flex;
+  gap: 0.9rem;
+  color: rgba(239, 233, 223, 0.65);
+}
+.lpb[data-phase="3"] .lpb-snav,
+.lpb[data-phase="4"] .lpb-snav {
+  transform: none;
+  transition-delay: 0.1s;
+}
+.lpb-shero {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 1rem;
+  padding: 1.15rem 1.1rem 0.4rem;
+  align-items: center;
+}
+.lpb-sh1 {
+  font-weight: 700;
+  font-size: clamp(1.1rem, 2vw, 1.7rem);
+  line-height: 0.98;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+.lpb-l {
+  display: block;
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 0.55s var(--lp-ease);
+}
+.lpb-l-accent {
+  color: #e05e1b;
+}
+.lpb[data-phase="3"] .lpb-l,
+.lpb[data-phase="4"] .lpb-l {
+  clip-path: inset(0 0 0 0);
+}
+.lpb[data-phase="3"] .lpb-l:nth-child(1) {
+  transition-delay: 0.3s;
+}
+.lpb[data-phase="3"] .lpb-l:nth-child(2) {
+  transition-delay: 0.45s;
+}
+.lpb[data-phase="3"] .lpb-l:nth-child(3) {
+  transition-delay: 0.6s;
+}
+.lpb-simg {
+  aspect-ratio: 4 / 3.1;
+  border-radius: 8px;
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgba(255, 255, 255, 0.16), transparent 45%),
+    linear-gradient(155deg, #8a5a2e 0%, #6e4522 38%, #4c2f18 72%, #33200f 100%);
+  position: relative;
+  opacity: 0;
+  transform: scale(1.06);
+  transition:
+    opacity 0.7s ease 0.55s,
+    transform 0.9s var(--lp-ease) 0.55s;
+}
+.lpb-simg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: repeating-linear-gradient(
+    92deg,
+    rgba(0, 0, 0, 0.14) 0 7px,
+    transparent 7px 15px
+  );
+  mix-blend-mode: multiply;
+}
+.lpb[data-phase="3"] .lpb-simg,
+.lpb[data-phase="4"] .lpb-simg {
+  opacity: 1;
+  transform: none;
+}
+.lpb-srow {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.55rem 1.1rem 0;
+}
+.lpb-scta {
+  padding: 0.45rem 0.9rem;
+  background: #e05e1b;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease 0.85s,
+    transform 0.4s cubic-bezier(0.34, 1.5, 0.4, 1) 0.85s;
+}
+.lpb-sstars {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(239, 233, 223, 0.85);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s ease 1s,
+    transform 0.4s ease 1s;
+}
+.lpb-sstars b {
+  color: #f5b52e;
+  letter-spacing: 0.1em;
+}
+.lpb[data-phase="3"] .lpb-scta,
+.lpb[data-phase="4"] .lpb-scta,
+.lpb[data-phase="3"] .lpb-sstars,
+.lpb[data-phase="4"] .lpb-sstars {
+  opacity: 1;
+  transform: none;
+}
+.lpb-live {
+  position: absolute;
+  top: -0.55rem;
+  right: 1rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  background: var(--lp-volt);
+  color: var(--lp-volt-ink);
+  font-family: var(--lp-mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transform: scale(0.8);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.4, 1);
+}
+.lpb-live i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--lp-volt-ink);
+  animation: lpb-pulse 1.6s ease infinite;
+}
+@keyframes lpb-pulse {
+  50% {
+    box-shadow: 0 0 0 5px rgba(11, 11, 13, 0.2);
+  }
+}
+.lpb[data-phase="4"] .lpb-live {
+  opacity: 1;
+  transform: none;
+}
+@media (max-width: 560px) {
+  .lpb-shero {
+    grid-template-columns: 1fr;
+  }
+  .lpb-simg {
+    aspect-ratio: 16 / 7;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lpb *,
+  .lpb {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* ── Apple-Material + Press (emilkowalski/apple-design) ─────────────────── */
