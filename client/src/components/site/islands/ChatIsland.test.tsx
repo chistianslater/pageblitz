@@ -6,7 +6,8 @@ import { ChatIsland } from "./ChatIsland";
 describe("ChatIsland — SSR-Markup", () => {
   test("Button mit Label 'Chat', aria-expanded=false und aria-controls auf die Panel-Id", () => {
     const html = renderToStaticMarkup(<ChatIsland slug="brandt" />);
-    expect(html).toContain('class="pb-island-fab-btn"');
+    expect(html).toContain('class="pb-island-fab-btn pb-island-chat-fab"');
+    expect(html).toContain('aria-label="Chat"');
     expect(html).toContain(">Chat<");
     expect(html).toContain('aria-expanded="false"');
     const controls = html.match(/aria-controls="([^"]+)"/);
@@ -29,14 +30,18 @@ describe("ChatIsland — SSR-Markup", () => {
 
   test("aria-label fällt ohne businessName auf 'Chat' zurück", () => {
     const html = renderToStaticMarkup(<ChatIsland slug="brandt" />);
+    expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-label="Chat"');
+    expect(html).not.toContain("Chat mit");
   });
 
-  test("enthält Eingabefeld und Senden-Button, initial nicht beschäftigt", () => {
+  test("enthält Eingabefeld, Senden- und Schließen-Button mit zugänglichen Namen", () => {
     const html = renderToStaticMarkup(<ChatIsland slug="brandt" />);
     expect(html).toContain('aria-label="Nachricht an den Chat"');
-    expect(html).toContain(">Senden<");
-    expect(html).toContain(">Schließen<");
+    expect(html).toContain('aria-label="Nachricht senden"');
+    expect(html).toContain('aria-label="Schließen"');
+    expect(html).toContain("pb-island-chat-panel");
+    expect(html).toContain("pb-island-chat-composer");
   });
 
   test("welcomeMessage/businessName tauchen nicht ungefiltert im SSR-Markup auf (erst nach dem Öffnen relevant), aber HTML bleibt gültig bei Sonderzeichen", () => {
@@ -58,7 +63,7 @@ describe("ChatIsland — SSR-Markup", () => {
 
   test("disabled=true rendert nur den ausgegrauten Button, keinen Dialog", () => {
     const html = renderToStaticMarkup(<ChatIsland slug="brandt" disabled />);
-    expect(html).toContain('class="pb-island-fab-btn"');
+    expect(html).toContain('class="pb-island-fab-btn pb-island-chat-fab"');
     expect(html).toContain(">Chat<");
     expect(html).toContain('disabled=""');
     expect(html).toContain('aria-disabled="true"');

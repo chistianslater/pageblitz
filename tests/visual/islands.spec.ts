@@ -68,6 +68,54 @@ test.describe("Kundenseiten-Inseln (Kontaktformular, KI-Chat, Terminbuchung)", (
     );
   });
 
+  test("FAB „Chat“ öffnet klassisches Chatfenster mit Pack-Schrift", async ({
+    page,
+  }) => {
+    await page.setViewportSize(VIEWPORTS.desktop);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+    await page.waitForLoadState("networkidle");
+    await waitForContactIslandMounted(page);
+
+    await page.getByRole("button", { name: "Chat" }).click();
+    const dialog = page.getByRole("dialog", { name: /Chat mit/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("Online");
+    await expect(dialog.getByRole("log")).toContainText(/Hallo/);
+    await expect(dialog.getByLabel("Nachricht an den Chat")).toBeVisible();
+    await expect(
+      dialog.getByRole("button", { name: "Nachricht senden" })
+    ).toBeVisible();
+
+    const fontFamily = await dialog.evaluate(
+      el => getComputedStyle(el).fontFamily
+    );
+    expect(fontFamily.toLowerCase()).not.toMatch(/times/);
+    expect(fontFamily).toMatch(/Inter/i);
+
+    await page.evaluate(() => document.fonts.ready);
+    await expect(dialog).toHaveScreenshot(
+      "islands-werkbank-features-chat-dialog.png"
+    );
+  });
+
+  test("Chatfenster auf Mobil als Blatt von unten", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS.mobil);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/dev/site-preview?pack=werkbank&fixture=features");
+    await page.waitForLoadState("networkidle");
+    await waitForContactIslandMounted(page);
+
+    await page.getByRole("button", { name: "Chat" }).click();
+    const dialog = page.getByRole("dialog", { name: /Chat mit/ });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("Online");
+    await page.evaluate(() => document.fonts.ready);
+    await expect(dialog).toHaveScreenshot(
+      "islands-werkbank-features-chat-dialog-mobil.png"
+    );
+  });
+
   test("Kontaktformular ausfüllen + absenden (echte Website via Studio-Seed)", async ({
     page,
     request,
