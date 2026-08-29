@@ -90,31 +90,67 @@ export default function LandingPage() {
   const [billingYearly, setBillingYearly] = useState(true);
   const [heroBusinessName, setHeroBusinessName] = useState("");
 
-  // Scroll-Reveal per IntersectionObserver (2026-08-25): Die CSS-only
-  // Variante mit `animation-timeline: view()` lief in Safari < 26 und
-  // älterem Firefox schlicht nicht — dort blieb die Seite komplett
-  // statisch. Die versteckende Klasse `lp-reveal-on` wird nur per JS
-  // gesetzt (kein JS = alles sichtbar); bei prefers-reduced-motion:
-  // reduce bleibt die Seite statisch.
+  // Scroll-Scrub statt One-Shot-Reveal (User-Wunsch 2026-08-29): Sektionen
+  // und Karten hängen direkt an der Scrollposition — runter = vorwärts,
+  // hoch = rückwärts. GSAP + ScrollTrigger laden dynamisch (nicht im
+  // LCP-Pfad); ohne JS oder bei prefers-reduced-motion bleibt alles
+  // sichtbar-statisch (kein `lp-reveal-on` mehr → CSS versteckt nichts).
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (!("IntersectionObserver" in window)) return;
-    document.documentElement.classList.add("lp-reveal-on");
-    const io = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("lp-in");
-            io.unobserve(entry.target);
-          }
+    let cancelled = false;
+    let ctx: { revert: () => void } | undefined;
+    Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(
+      ([{ gsap }, { ScrollTrigger }]) => {
+        if (cancelled) return;
+        gsap.registerPlugin(ScrollTrigger);
+        ctx = gsap.context(() => {
+          document
+            .querySelectorAll<HTMLElement>(".lp-section")
+            .forEach(section => {
+              gsap.fromTo(
+                section,
+                { y: 44, opacity: 0.3 },
+                {
+                  y: 0,
+                  opacity: 1,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: section,
+                    start: "top 94%",
+                    end: "top 58%",
+                    scrub: 0.4,
+                  },
+                }
+              );
+              section
+                .querySelectorAll<HTMLElement>("li, article")
+                .forEach((el, i) => {
+                  // Die Vier-Schritte-Reihe choreografiert ihre eigene
+                  // GSAP-Bounce-Timeline (HowItWorks) — nicht doppeln.
+                  if (el.closest("[data-gsap-steps]")) return;
+                  gsap.fromTo(
+                    el,
+                    { y: 32, opacity: 0 },
+                    {
+                      y: 0,
+                      opacity: 1,
+                      ease: "none",
+                      scrollTrigger: {
+                        trigger: el,
+                        start: `top ${96 - Math.min(i, 5) * 2}%`,
+                        end: "top 64%",
+                        scrub: 0.4,
+                      },
+                    }
+                  );
+                });
+            });
         });
-      },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.05 }
+      }
     );
-    document.querySelectorAll(".lp-section").forEach(el => io.observe(el));
     return () => {
-      io.disconnect();
-      document.documentElement.classList.remove("lp-reveal-on");
+      cancelled = true;
+      ctx?.revert();
     };
   }, []);
 

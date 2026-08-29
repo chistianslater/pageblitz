@@ -55,10 +55,11 @@ describe("Städte-Seiten sind keine Duplikate mehr", () => {
 describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
   const html = generateLandingPageHTML(SEO_INDUSTRIES.restaurant);
 
-  it("nutzt die Studio-Palette und die selbst gehostete Space Grotesk", () => {
+  it("nutzt die Nachtschicht-Palette und die selbst gehostete Space Grotesk", () => {
     expect(html).toContain('url("/fonts/space-grotesk-latin-wght.woff2")');
-    expect(html).toContain("background:#f7f5f1");
-    expect(html).toContain("background:#1f5f4b!important");
+    // Nachtschicht-Skin (Relaunch 2026-08-29): Kohle-Grund, Volt-CTA.
+    expect(html).toContain("background:#0b0b0d");
+    expect(html).toContain("background:#ccff00!important");
     expect(html).not.toContain("fonts.googleapis.com");
     expect(html).not.toContain("Plus+Jakarta+Sans");
   });

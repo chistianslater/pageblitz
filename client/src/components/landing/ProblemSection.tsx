@@ -73,14 +73,29 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
             </button>
           </div>
           <div className="hidden lg:col-span-4 lg:flex lg:justify-end">
-            <img
-              src="/personas/handwerker.webp"
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-              className="pointer-events-none -mb-[var(--lp-section)] h-[30rem] w-auto select-none"
-            />
+            <div className="pointer-events-none relative -mb-[var(--lp-section)] select-none">
+              <img
+                src="/personas/handwerker-laptop.webp"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                className="h-[30rem] w-auto"
+              />
+              {/* Schwebendes Suchergebnis am Laptop: DIE Botschaft der
+                  Sektion in einem Blick. */}
+              <div
+                aria-hidden="true"
+                className="lp-float absolute top-[34%] -left-24 -rotate-3 rounded-xl border border-lp-line bg-lp-panel px-4 py-3 shadow-[0_16px_40px_-16px_rgba(0,0,0,.8)]"
+              >
+                <p className="font-[family-name:var(--lp-mono)] text-[0.66rem] tracking-[0.03em] text-lp-faint">
+                  google.de · „schreinerei in deiner nähe"
+                </p>
+                <p className="mt-1 text-[0.9rem] font-bold text-lp-ink">
+                  Keine Website gefunden
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

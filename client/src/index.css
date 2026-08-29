@@ -750,6 +750,17 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
 @keyframes lph-pulse {
   50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.22); }
 }
+/* Schwebender UI-Chip (Persona-Vignetten). */
+@media (prefers-reduced-motion: no-preference) {
+  .lp-float {
+    animation: lp-float 5s ease-in-out infinite alternate;
+  }
+}
+@keyframes lp-float {
+  to {
+    transform: translateY(-9px) rotate(-3deg);
+  }
+}
 /* Hover-Lift für Hairline-Karten — Motion, die Interaktivität erklärt. */
 @media (hover: hover) and (pointer: fine) {
   .lp li[class*="border-lp-line"]:hover,
