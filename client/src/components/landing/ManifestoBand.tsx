@@ -6,7 +6,7 @@ export function ManifestoBand() {
   return (
     <section
       aria-labelledby="lp-manifesto-heading"
-      className="lp-section border-t border-lp-line"
+      className="lp-section lp-manifesto"
     >
       <div className="lp-container">
         <p className="lp-kicker mb-6">Das Prinzip</p>

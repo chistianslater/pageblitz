@@ -568,20 +568,28 @@ body {
   line-height: 1;
   letter-spacing: -0.032em;
 }
-/* Gestapelte Echo-Zeile (Dayos: Titel erscheint zweimal). aria-hidden
-   im Markup — Screenreader hören den Satz nur einmal. */
+/* Gestapelte Echo-Zeile (Dayos: derselbe Titel noch einmal). aria-hidden
+   im Markup — Screenreader hören den Satz nur einmal. Gefüllte Ghost-
+   Kopie, nicht Outline: 1px-Stroke bei 0.2 Opacity war unsichtbar. */
 .lp-echo {
   display: block;
-  margin-top: 0.08em;
-  color: transparent;
-  -webkit-text-stroke: 1.25px currentColor;
-  opacity: 0.2;
+  margin-top: 0.04em;
+  color: currentColor;
+  opacity: 0.22;
   pointer-events: none;
   user-select: none;
 }
 .lp-feature-dark .lp-echo,
 .lp-final-dark .lp-echo {
   opacity: 0.28;
+}
+/* Manifesto-Bühne: volle Mint-Fläche, Kicker in Carbon. */
+.lp-manifesto {
+  background: var(--lp-mint);
+}
+.lp-manifesto .lp-kicker {
+  background: #000;
+  color: #fff;
 }
 /* Answers / Actions / Experts: ein Wort trägt die Karte. */
 .lp-pillar {
