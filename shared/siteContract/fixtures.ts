@@ -1767,7 +1767,13 @@ const KLARWERK_FULL: WebsiteDataV2 = {
       street: "Holtenauer Straße 118",
       zip: "24118",
       city: "Kiel",
-      openingHours: [{ day: "Mo–Fr", hours: "8:00 – 18:00" }],
+      openingHours: [
+        { day: "Montag", hours: "8:00 – 18:00" },
+        { day: "Dienstag", hours: "8:00 – 18:00" },
+        { day: "Mittwoch", hours: "8:00 – 18:00" },
+        { day: "Donnerstag", hours: "8:00 – 18:00" },
+        { day: "Freitag", hours: "8:00 – 18:00" },
+      ],
     },
   ],
   seo: {

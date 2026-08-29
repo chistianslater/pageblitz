@@ -57,7 +57,9 @@ export const KLARWERK_CSS = `
 .pb-kw-hours-block{max-width:380px}
 .pb-kw-hours-block h3{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pb-accent-text);margin-bottom:8px}
 .pb-kw-hours{width:100%;border-collapse:collapse;margin-top:4px}
-.pb-kw-hours td{padding:6px 0;border-bottom:1px solid var(--pb-line);font-size:13px}
+.pb-kw-hours td{padding:6px 0;border-bottom:1px solid var(--pb-line);font-size:13px;white-space:nowrap}
+.pb-kw-hours tr:last-child td{border-bottom:none}
+.pb-kw-hours td:first-child{font-weight:500;color:var(--pb-muted)}
 .pb-kw-hours td:last-child{text-align:right}
 .pb-kw-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .pb-kw-gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border:1px solid var(--pb-ink)}
