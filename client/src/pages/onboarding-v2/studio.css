@@ -1684,40 +1684,52 @@
 .pb-studio-cat {
   max-width: 34rem;
 }
-/* Einkreis-Effekt für die erkannte Branche (CategoryStep, 2026-08-29):
-   handgezeichnete Ellipse, die sich beim Erscheinen selbst zeichnet.
-   Umfang rx56/ry18 ≈ 250 (Ramanujan). */
-.pb-circled {
+/* Dunkle Fassung des Vor-Studio-Schritts (CategoryStep, 2026-08-29):
+   überschreibt NUR lokal die --st-*-Tokens auf die Nachtschicht-Palette
+   der Landing — das Studio selbst bleibt Papier/Grün. */
+.pb-studio-gen--dark {
+  --st-canvas: #0b0b0d;
+  --st-surface: #131316;
+  --st-ink: #f2f1ee;
+  --st-muted: #a4a39d;
+  --st-line: rgba(255, 255, 255, 0.14);
+  --st-accent: #ccff00;
+  --st-accent-ink: #0b0b0d;
+  background: var(--st-canvas);
+  color: var(--st-ink);
+}
+
+/* Unterstreich-Effekt für die erkannte Branche (CategoryStep, 2026-08-29):
+   handgezeichnete Linie, die sich beim Erscheinen selbst zeichnet. */
+.pb-underlined {
   position: relative;
   display: inline-block;
-  padding: 0 0.12em;
 }
-.pb-circled-svg {
+.pb-underlined-svg {
   position: absolute;
-  inset: -0.22em -0.3em;
-  width: calc(100% + 0.6em);
-  height: calc(100% + 0.44em);
+  left: -0.1em;
+  bottom: -0.3em;
+  width: calc(100% + 0.2em);
+  height: 0.45em;
   overflow: visible;
   pointer-events: none;
 }
-.pb-circled-svg ellipse {
+.pb-underlined-svg path {
   fill: none;
   stroke: var(--st-accent);
-  stroke-width: 2.5;
+  stroke-width: 3;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-  transform: rotate(-2deg);
-  transform-origin: center;
-  stroke-dasharray: 250;
+  stroke-dasharray: 125;
   stroke-dashoffset: 0;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .pb-circled-svg ellipse {
-    stroke-dashoffset: 250;
-    animation: pb-circle-draw 0.9s ease-out 0.45s forwards;
+  .pb-underlined-svg path {
+    stroke-dashoffset: 125;
+    animation: pb-underline-draw 0.6s ease-out 0.45s forwards;
   }
 }
-@keyframes pb-circle-draw {
+@keyframes pb-underline-draw {
   to {
     stroke-dashoffset: 0;
   }

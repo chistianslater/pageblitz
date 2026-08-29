@@ -77,7 +77,7 @@ export function CategoryStep({
   };
 
   return (
-    <section className="pb-studio-gen">
+    <section className="pb-studio-gen pb-studio-gen--dark">
       <div className="pb-studio-gen-inner pb-studio-cat">
         <p className="pb-studio-kicker">Bevor es losgeht</p>
         <h1 className="pb-studio-title">Was macht dein Betrieb?</h1>
@@ -85,17 +85,17 @@ export function CategoryStep({
           {initialCategory ? (
             <>
               Wir haben als Branche{" "}
-              <span className="pb-circled">
+              <span className="pb-underlined">
                 <strong>{initialCategory}</strong>
-                {/* Handgezeichneter Einkreis-Effekt: der Strich zeichnet
+                {/* Handgezeichnete Unterstreichung: der Strich zeichnet
                     sich beim Erscheinen selbst (stroke-dashoffset). */}
                 <svg
-                  className="pb-circled-svg"
-                  viewBox="0 0 120 44"
+                  className="pb-underlined-svg"
+                  viewBox="0 0 120 12"
                   preserveAspectRatio="none"
                   aria-hidden="true"
                 >
-                  <ellipse cx="60" cy="22" rx="56" ry="18" />
+                  <path d="M3 8 C 32 4, 64 10, 117 5" />
                 </svg>
               </span>{" "}
               erkannt. Ist das richtig? Bestätige sie — oder korrigiere sie

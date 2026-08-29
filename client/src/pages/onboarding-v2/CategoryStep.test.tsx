@@ -56,7 +56,9 @@ describe("CategoryStep", () => {
     expect(html).toContain("Wir haben als Branche");
     expect(html).toContain("<strong>IT-Dienstleister</strong>");
     expect(html).toContain("Ist das richtig?");
-    expect(html).toContain("pb-circled");
+    expect(html).toContain("pb-underlined");
+    // Dunkle Fassung passend zur Landing (User-Feedback 2026-08-29).
+    expect(html).toContain("pb-studio-gen--dark");
   });
 
   test("error → role=alert mit deutscher Meldung", () => {
