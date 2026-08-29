@@ -87,19 +87,22 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
       className="lp-section border-t border-lp-line"
     >
       <div className="lp-container">
-        <div className="mx-auto max-w-[42rem] text-center">
-          <p className="lp-kicker mb-4">Preise</p>
-          <h2 id="lp-pricing-heading" className="lp-h2">
-            Ein Preis. Alles inklusive.
+        <div className="max-w-[54rem]">
+          <p className="lp-kicker mb-5">Preise</p>
+          <h2 id="lp-pricing-heading" className="lp-h2 lp-h2--billboard">
+            <span className="block">Ein Preis. Alles inklusive.</span>
+            <span className="lp-echo" aria-hidden="true">
+              Ein Preis. Alles inklusive.
+            </span>
           </h2>
-          <p className="mx-auto mt-5 max-w-[34rem] text-[1.05rem] leading-[1.6] text-lp-muted">
+          <p className="mt-6 max-w-[34rem] text-[1.12rem] leading-[1.5] text-lp-muted">
             Website, Hosting, SSL und rechtliche Seiten — ohne
             Einrichtungsgebühr oder Mindestlaufzeit.
           </p>
         </div>
 
         {/* Ein fokussiertes Angebot statt verteilter Preisfragmente. */}
-        <div className="mx-auto mt-10 max-w-[42rem] rounded-[32px] bg-lp-surface p-6 sm:p-8">
+        <div className="mx-auto mt-12 max-w-[42rem] rounded-[40px] bg-lp-surface p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="lp-kicker">Pageblitz Website</p>
@@ -222,12 +225,15 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
           className="mx-auto mt-20 max-w-[64rem]"
           aria-labelledby="lp-compare-heading"
         >
-          <div className="text-center">
-            <p className="lp-kicker mb-4">Der Vergleich</p>
-            <h3 id="lp-compare-heading" className="lp-h2">
-              Pageblitz vs. Webagentur
+          <div>
+            <p className="lp-kicker mb-5">Der Vergleich</p>
+            <h3 id="lp-compare-heading" className="lp-h2 lp-h2--billboard">
+              <span className="block">Pageblitz vs. Webagentur</span>
+              <span className="lp-echo" aria-hidden="true">
+                Pageblitz vs. Webagentur
+              </span>
             </h3>
-            <p className="mx-auto mt-4 max-w-[36rem] text-[0.95rem] text-lp-muted">
+            <p className="mt-5 max-w-[36rem] text-[1.05rem] text-lp-muted">
               Professionell online gehen — ohne monatelanges Projekt und
               vierstellige Vorleistung.
             </p>

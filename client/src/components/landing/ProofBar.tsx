@@ -97,15 +97,16 @@ export function ProofBar() {
   return (
     <section
       aria-label="Pageblitz in Zahlen"
-      className="lp-section border-t border-lp-line !py-10"
+      className="lp-section border-y border-lp-line bg-white !py-14 sm:!py-16"
     >
-      <dl className="lp-container grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+      <dl className="lp-container grid grid-cols-2 gap-x-8 gap-y-10 lg:grid-cols-4">
         {items.map(item => (
-          <div key={item.label}>
-            <dt className="order-2 mt-1 text-[0.9rem] leading-snug text-lp-muted">
-              {item.label}
-            </dt>
-            <dd className="lp-display order-1 text-[clamp(2.6rem,1.7rem+2.8vw,4rem)] leading-none">
+          <div key={item.label} className="relative">
+            <span
+              aria-hidden="true"
+              className="mb-4 block h-2 w-2 rounded-full bg-[var(--lp-volt)]"
+            />
+            <dd className="lp-display text-[clamp(2.9rem,1.6rem+3.4vw,4.75rem)] leading-none">
               {item.target !== undefined ? (
                 <CountUp target={item.target} />
               ) : (
@@ -113,6 +114,9 @@ export function ProofBar() {
               )}
               {item.suffix}
             </dd>
+            <dt className="mt-3 max-w-[16rem] text-[0.95rem] leading-snug text-lp-muted">
+              {item.label}
+            </dt>
           </div>
         ))}
       </dl>

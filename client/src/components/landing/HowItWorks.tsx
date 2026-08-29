@@ -47,30 +47,32 @@ export function HowItWorks() {
       aria-labelledby="lp-how-heading"
       className="lp-section border-t border-lp-line"
     >
-      <div className="lp-container grid gap-10 lg:grid-cols-12 lg:gap-12">
-        <div className="lg:col-span-4">
+      <div className="lp-container grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5">
           <SectionHead
             id="lp-how-heading"
             kicker="So funktioniert's"
             title="Vier Schritte. Eine Checkliste. Keine Technik."
             text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
+            billboard
+            echo
           />
         </div>
 
-        <ol className="lg:col-span-8">
+        <ol className="lg:col-span-7">
           {STEPS.map((step, index) => (
             <li
               key={step.title}
-              className="grid grid-cols-[4.5rem_1fr] gap-4 border-t border-lp-line py-6 last:border-b sm:grid-cols-[6.5rem_1fr] sm:gap-6 sm:py-8"
+              className="grid grid-cols-[4.75rem_1fr] gap-4 border-t border-lp-line py-7 last:border-b sm:grid-cols-[7rem_1fr] sm:gap-7 sm:py-9"
             >
-              <span className="lp-num" aria-hidden="true">
+              <span className="lp-num text-[clamp(2.4rem,1.6rem+1.8vw,3.6rem)]" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div className="max-w-[40rem]">
-                <h3 className="text-[1.25rem] leading-snug tracking-[-0.01em] sm:text-[1.5rem]">
+                <h3 className="text-[1.3rem] leading-snug tracking-[-0.015em] sm:text-[1.6rem]">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-[1rem] leading-[1.6] text-lp-muted">
+                <p className="mt-2 text-[1rem] leading-[1.55] text-lp-muted">
                   {step.text}
                 </p>
               </div>
@@ -80,12 +82,14 @@ export function HowItWorks() {
       </div>
 
       <div className="lp-container mt-16 lg:mt-20">
-        <p className="lp-kicker mb-5">Immer dabei</p>
-        <dl className="grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
+        <p className="lp-kicker mb-6">Immer dabei</p>
+        <dl className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {INCLUDED.map(([title, text]) => (
-            <div key={title} className="border-t border-lp-line py-4 sm:py-5">
-              <dt className="font-medium">{title}</dt>
-              <dd className="mt-1 text-[0.9rem] leading-[1.55] text-lp-muted">
+            <div key={title} className="lp-stage-card p-7">
+              <dt className="text-[1.2rem] font-medium tracking-[-0.015em]">
+                {title}
+              </dt>
+              <dd className="mt-3 text-[0.95rem] leading-[1.55] text-lp-muted">
                 {text}
               </dd>
             </div>

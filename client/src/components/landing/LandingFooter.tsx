@@ -19,9 +19,12 @@ export function FinalCta(props: FinalCtaProps) {
     >
       <div className="lp-container grid gap-10 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-6">
-          <p className="lp-kicker mb-4">Jetzt loslegen</p>
+          <p className="lp-kicker mb-5">Jetzt loslegen</p>
           <h2 id="lp-final-heading" className="lp-h1">
-            Erst sehen. Dann entscheiden.
+            <span className="block">Erst sehen. Dann entscheiden.</span>
+            <span className="lp-echo" aria-hidden="true">
+              Erst sehen. Dann entscheiden.
+            </span>
           </h2>
           {/* Risiko-Umkehr als Schlusswort (Conversion-Pass 2026-08-25):
               Der letzte Zweifel vor dem Absprung ist das Ergebnis-Risiko —
@@ -77,12 +80,23 @@ export function IndustryLinks() {
 
 export function LandingFooter() {
   return (
-    <footer className="border-t border-lp-line py-10">
-      <div className="lp-container flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <Wordmark />
-        <p className="text-[0.85rem] text-lp-muted">
-          © {new Date().getFullYear()} Pageblitz. Alle Rechte vorbehalten.
-        </p>
+    <footer className="border-t border-lp-line py-12">
+      <div className="lp-container flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div>
+          <Wordmark />
+          <p className="mt-5 text-[1.15rem] tracking-[-0.015em]">
+            Fragen?{" "}
+            <a
+              href="mailto:hallo@pageblitz.de"
+              className="font-medium underline decoration-[var(--lp-mint)] decoration-2 underline-offset-[0.22em] hover:bg-[var(--lp-mint)]"
+            >
+              Schreib uns →
+            </a>
+          </p>
+          <p className="mt-3 text-[0.85rem] text-lp-muted">
+            © {new Date().getFullYear()} Pageblitz. Alle Rechte vorbehalten.
+          </p>
+        </div>
         <ul className="flex flex-wrap gap-x-6 gap-y-2 text-[0.9rem]">
           <li>
             <a

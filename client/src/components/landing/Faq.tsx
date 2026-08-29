@@ -25,6 +25,8 @@ export function Faq() {
             kicker="FAQ"
             title="Häufige Fragen."
             text="Nicht dabei, was du wissen willst? Der Chat unten rechts antwortet sofort."
+            billboard
+            echo
           />
         </div>
         <div className="lg:col-span-8">

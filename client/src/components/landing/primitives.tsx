@@ -42,25 +42,35 @@ export function Kicker({
   return <p className={`lp-kicker ${className}`}>{children}</p>;
 }
 
-/** Sektionskopf: Kicker + H2 + optionaler Text, linksbündig, schmal. */
+/** Sektionskopf: Kicker + H2 + optionaler Text, linksbündig.
+ *  `billboard` / `echo` sind Dayos-Sektionsmotive (größer, gestapelt). */
 export function SectionHead({
   kicker,
   title,
   text,
   id,
   className = "",
+  billboard = false,
+  echo = false,
 }: {
   kicker?: string;
   title: ReactNode;
   text?: ReactNode;
   id?: string;
   className?: string;
+  billboard?: boolean;
+  echo?: boolean;
 }) {
   return (
-    <div className={`max-w-[44rem] ${className}`}>
+    <div className={`${billboard ? "max-w-[54rem]" : "max-w-[44rem]"} ${className}`}>
       {kicker ? <Kicker className="mb-4">{kicker}</Kicker> : null}
-      <h2 id={id} className="lp-h2">
-        {title}
+      <h2 id={id} className={billboard ? "lp-h2 lp-h2--billboard" : "lp-h2"}>
+        <span className="block">{title}</span>
+        {echo ? (
+          <span className="lp-echo" aria-hidden="true">
+            {title}
+          </span>
+        ) : null}
       </h2>
       {text ? (
         <p className="mt-5 max-w-[32rem] text-[1.05rem] leading-[1.5] text-lp-muted">

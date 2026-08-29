@@ -100,6 +100,7 @@ function BookingSketch() {
 const FEATURES = [
   {
     id: "ki-chat",
+    pillar: "Antworten",
     kicker: "KI-Chat · Extra",
     title: "Antwortet deinen Kunden. Rund um die Uhr.",
     text: "Besucher fragen nach Leistungen, Preisen oder Öffnungszeiten und erhalten sofort eine passende Antwort.",
@@ -108,6 +109,7 @@ const FEATURES = [
   },
   {
     id: "galerie",
+    pillar: "Zeigen",
     kicker: "Bildergalerie · Extra",
     title: "Deine Arbeiten verdienen eine Bühne.",
     text: "Projekte und Referenzen als mobiloptimierte Galerie mit Großansicht. Wer sieht, was du kannst, fragt an.",
@@ -116,6 +118,7 @@ const FEATURES = [
   },
   {
     id: "buchung",
+    pillar: "Buchen",
     kicker: "Terminbuchung · Extra",
     title: "Kunden buchen, während du arbeitest.",
     text: "Kunden wählen den passenden Zeitslot direkt auf deiner Website. Weniger Telefonate, kein Hin und Her.",
@@ -136,19 +139,24 @@ export function FeatureShowcase() {
           kicker="Kann mehr"
           title="Deine Website ist kein Plakat. Sie arbeitet."
           text="Drei der stärksten Extras — systematisch erklärt. Alle Extras sind jederzeit zubuch- und kündbar."
+          billboard
+          echo
         />
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+        <div className="mt-14 grid gap-10 lg:grid-cols-3 lg:gap-8">
           {FEATURES.map(feature => (
             <article key={feature.id} className="flex flex-col">
-              <p className="lp-kicker mb-3">{feature.kicker}</p>
-              <feature.Diagram />
-              <h3 className="mt-5 text-[1.35rem] leading-[1.15] tracking-[-0.015em]">
+              <p className="lp-kicker mb-4">{feature.kicker}</p>
+              <h3 className="lp-pillar">{feature.pillar}</h3>
+              <p className="mt-3 text-[1.2rem] leading-[1.2] tracking-[-0.015em]">
                 {feature.title}
-              </h3>
-              <p className="mt-3 flex-1 text-[0.95rem] leading-[1.6] text-lp-muted">
+              </p>
+              <div className="mt-6">
+                <feature.Diagram />
+              </div>
+              <p className="mt-5 flex-1 text-[1.02rem] leading-[1.5] text-lp-muted">
                 {feature.text}
               </p>
-              <p className="mt-4 border-t border-lp-line pt-3 text-[0.82rem] font-medium text-lp-accent">
+              <p className="mt-5 border-t border-lp-line pt-4 text-[0.85rem] font-medium text-lp-accent">
                 {feature.proof}
               </p>
             </article>

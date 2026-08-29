@@ -27,7 +27,7 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
   return (
     <article
       aria-label={`${name}: ${essence}`}
-      className="group flex w-[15rem] shrink-0 snap-start flex-col overflow-hidden rounded-[32px] bg-white sm:w-[17rem]"
+      className="lp-stage-card group flex w-[16rem] shrink-0 snap-start flex-col overflow-hidden sm:w-[18rem]"
     >
       <button
         type="button"
@@ -260,6 +260,8 @@ export function PackShowcase() {
             kicker="Designrichtungen"
             title="Welche Richtung passt zu deinem Betrieb?"
             text="Diese Richtungen sind professionelle Ausgangspunkte, keine fertigen Vorlagen. Deine Inhalte, Farben, Schriften und Bilder formen daraus deine Website."
+            billboard
+            echo
           />
           <div className="flex shrink-0 gap-2">
             <button

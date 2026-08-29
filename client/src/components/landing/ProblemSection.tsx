@@ -36,22 +36,30 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
       className="lp-section border-y border-lp-line"
     >
       <div className="lp-container">
-        <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-16">
           <div className="lg:col-span-8">
-            <Kicker className="mb-4">Ohne Website</Kicker>
-            <h2 id="lp-problem-heading" className="lp-h2 max-w-[46rem]">
-              Jeden Tag suchen Kunden — und wählen einen anderen.
+            <Kicker className="mb-5">Ohne Website</Kicker>
+            <h2
+              id="lp-problem-heading"
+              className="lp-h2 lp-h2--billboard max-w-[18ch]"
+            >
+              <span className="block">
+                Jeden Tag suchen Kunden — und wählen einen anderen.
+              </span>
+              <span className="lp-echo" aria-hidden="true">
+                Jeden Tag suchen Kunden — und wählen einen anderen.
+              </span>
             </h2>
           </div>
           <div className="lg:col-span-4">
-            <p className="max-w-[30rem] text-[1.05rem] leading-[1.6] text-lp-muted">
+            <p className="max-w-[30rem] text-[1.12rem] leading-[1.5] text-lp-muted">
               Nicht weil deine Arbeit schlechter ist. Sondern weil neue Kunden
               sie online nicht sehen.
             </p>
             <button
               type="button"
               onClick={() => navigate(startHref(billingYearly))}
-              className={`${pillPrimary} mt-6`}
+              className={`${pillPrimary} mt-8`}
             >
               Website kostenlos erstellen
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -59,22 +67,19 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
           </div>
         </div>
 
-        <ol className="mt-12 grid gap-4 md:grid-cols-3">
+        <ol className="mt-16 grid gap-5 md:grid-cols-3">
           {LOSSES.map((loss, index) => (
             <li
               key={loss.title}
-              className="flex min-h-[15rem] flex-col rounded-[32px] bg-lp-surface p-7"
+              className="lp-stage-card flex min-h-[18rem] flex-col p-8"
             >
-              <span
-                className="lp-num text-[2.75rem] text-lp-ink/15"
-                aria-hidden="true"
-              >
+              <span className="lp-num text-[3.25rem]" aria-hidden="true">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <h3 className="mt-auto pt-8 text-[1.2rem] leading-snug tracking-[-0.01em]">
+              <h3 className="mt-auto pt-10 text-[1.35rem] leading-[1.15] tracking-[-0.02em]">
                 {loss.title}
               </h3>
-              <p className="mt-3 text-[0.92rem] leading-[1.6] text-lp-muted">
+              <p className="mt-3 text-[0.95rem] leading-[1.55] text-lp-muted">
                 {loss.text}
               </p>
             </li>

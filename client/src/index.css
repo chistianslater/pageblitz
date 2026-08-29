@@ -561,6 +561,40 @@ body {
   line-height: 1.08;
   letter-spacing: -0.022em;
 }
+/* Dayos-Sektionsköpfe: eine Nummer größer, dichter gestapelt — nur dort,
+   wo die Bühne ein Plakat sein soll, nicht auf jeder H2. */
+.lp-h2--billboard {
+  font-size: clamp(2.2rem, 1.05rem + 3.8vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: -0.032em;
+}
+/* Gestapelte Echo-Zeile (Dayos: Titel erscheint zweimal). aria-hidden
+   im Markup — Screenreader hören den Satz nur einmal. */
+.lp-echo {
+  display: block;
+  margin-top: 0.08em;
+  color: transparent;
+  -webkit-text-stroke: 1.25px currentColor;
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+}
+.lp-feature-dark .lp-echo,
+.lp-final-dark .lp-echo {
+  opacity: 0.28;
+}
+/* Answers / Actions / Experts: ein Wort trägt die Karte. */
+.lp-pillar {
+  font-family: var(--lp-display);
+  font-size: clamp(2.35rem, 1.4rem + 2.8vw, 4rem);
+  line-height: 0.92;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.lp-stage-card {
+  border-radius: 40px;
+  background: var(--lp-surface);
+}
 .lp-num {
   font-family: var(--lp-display);
   font-size: clamp(2.05rem, 1.25rem + 1.8vw, 3.15rem);
@@ -857,6 +891,9 @@ html.lp-nav-open body {
   aspect-ratio: 4 / 3;
   padding: 7%;
   display: flex;
+}
+.lp-stage-card .lps-sketch {
+  background: var(--lp-canvas);
 }
 /* Übersicht: Rail + Stage */
 .lps-studio {

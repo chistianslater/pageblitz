@@ -4,6 +4,7 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/LandingHero";
 import { ProofBar } from "@/components/landing/ProofBar";
 import { ProblemSection } from "@/components/landing/ProblemSection";
+import { ManifestoBand } from "@/components/landing/ManifestoBand";
 import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { StudioProof } from "@/components/landing/StudioProof";
@@ -21,9 +22,9 @@ import {
 } from "@/components/landing/LandingFooter";
 
 /**
- * Landingpage „/" — Showroom mit Apple-optical Type (Tracking nach Größe,
- * keine Versalien-Schreie), transluzentem Chrome, Press-Feedback.
- * Tokens `.lp`/`--lp-*` in client/src/index.css. Studio bleibt Papier/Grün.
+ * Landingpage „/" — Dayos-Sektionsrhythmus (Billboard, Echo-Titel,
+ * Pillar-Wörter) auf Apple-optical Type. Tokens `.lp`/`--lp-*` in
+ * client/src/index.css. Studio bleibt Papier/Grün.
  *
  * Meta/JSON-LD (Title, Description, OG, SoftwareApplication, Organization)
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender
@@ -143,11 +144,10 @@ export default function LandingPage() {
           onChange={setHeroBusinessName}
           onSubmit={handleHeroStart}
         />
-        {/* Conversion-Pass 2026-08-25: Belege (ProofBar) und Problem-
-            Aktivierung stehen vor den Branchen-Kacheln — erst Vertrauen
-            und Dringlichkeit aufbauen, dann das Produkt zeigen. */}
+        {/* Belege und Problem zuerst, dann Dayos-Manifesto, dann Ablauf. */}
         <ProofBar />
         <ProblemSection billingYearly={billingYearly} />
+        <ManifestoBand />
         {/* Erst „Was muss ich tun?", dann „Passt das zu meiner Branche?"
             — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
         <HowItWorks />

@@ -98,16 +98,18 @@ export function StudioProof() {
           kicker="Dein Studio"
           title="So arbeitest du. Gezeigt, nicht versprochen."
           text="Drei Prinzipien deines Studios — als Struktur gezeichnet, damit klar ist, wie es sich anfühlt."
+          billboard
+          echo
         />
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {CARDS.map(card => (
-            <figure key={card.title} className="flex flex-col">
+            <figure key={card.title} className="lp-stage-card flex flex-col p-6">
               <card.Diagram />
-              <figcaption className="mt-4 border-t border-lp-line pt-3">
-                <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
+              <figcaption className="mt-5">
+                <span className="text-[1.25rem] font-medium tracking-[-0.02em]">
                   {card.title}
                 </span>
-                <p className="mt-1 text-[0.95rem] leading-[1.6] text-lp-muted">
+                <p className="mt-2 text-[0.95rem] leading-[1.55] text-lp-muted">
                   {card.text}
                 </p>
               </figcaption>

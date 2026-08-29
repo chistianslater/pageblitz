@@ -58,22 +58,31 @@ export function ForWhom() {
       className="lp-section border-t border-lp-line"
     >
       <div className="lp-container">
-        <div className="grid gap-8 border-b border-lp-line pb-10 lg:grid-cols-12 lg:items-end lg:gap-12">
+        <div className="grid gap-10 border-b border-lp-line pb-12 lg:grid-cols-12 lg:items-end lg:gap-16">
           <div className="lg:col-span-8">
-            <Kicker className="mb-4">Für wen</Kicker>
-            <h2 id="lp-forwhom-heading" className="lp-h2 max-w-[44rem]">
-              Für lokale Betriebe, die online so gut aussehen wollen, wie sie
-              arbeiten.
+            <Kicker className="mb-5">Für wen</Kicker>
+            <h2
+              id="lp-forwhom-heading"
+              className="lp-h2 lp-h2--billboard max-w-[16ch]"
+            >
+              <span className="block">
+                Für lokale Betriebe, die online so gut aussehen wollen, wie sie
+                arbeiten.
+              </span>
+              <span className="lp-echo" aria-hidden="true">
+                Für lokale Betriebe, die online so gut aussehen wollen, wie sie
+                arbeiten.
+              </span>
             </h2>
           </div>
-          <p className="max-w-[30rem] text-[1.05rem] leading-[1.6] text-lp-muted lg:col-span-4">
+          <p className="max-w-[30rem] text-[1.12rem] leading-[1.5] text-lp-muted lg:col-span-4">
             Kein Einheitslook: Pageblitz verbindet deine Inhalte mit einer
             kuratierten Designrichtung und passt Farben, Schrift und
             Bildwirkung an deinen Betrieb an.
           </p>
         </div>
 
-        <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2">
+        <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2">
           {TILES.map((tile, index) => (
             <article key={tile.packId} className="group">
               <a
@@ -81,7 +90,7 @@ export function ForWhom() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${tile.industry}: Demo in neuem Tab öffnen`}
-                className="block overflow-hidden rounded-[32px] bg-white"
+                className="lp-stage-card block overflow-hidden"
               >
                 <img
                   src={`/pack-previews/${tile.packId}.webp`}
@@ -93,13 +102,13 @@ export function ForWhom() {
                   className="lp-zoom aspect-[16/10] w-full object-cover object-top"
                 />
               </a>
-              <div className="mt-4 grid grid-cols-[2.25rem_1fr] gap-3 border-t border-lp-line pt-3">
-                <span className="lp-num pt-1 text-[1.65rem]" aria-hidden="true">
+              <div className="mt-5 flex items-start justify-between gap-4">
+                <span className="lp-num text-[1.85rem]" aria-hidden="true">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-[1.25rem] font-medium tracking-[-0.01em]">
+                    <h3 className="text-[1.55rem] leading-[1.1] tracking-[-0.025em]">
                       {tile.industry}
                     </h3>
                     <a
@@ -115,10 +124,10 @@ export function ForWhom() {
                       />
                     </a>
                   </div>
-                  <p className="mt-1 text-[0.95rem] leading-[1.55]">
+                  <p className="mt-2 text-[1rem] leading-[1.5]">
                     {tile.promise}
                   </p>
-                  <p className="mt-2 text-[0.85rem] text-lp-muted">
+                  <p className="lp-kicker mt-4 !normal-case !tracking-normal">
                     {tile.examples}
                   </p>
                 </div>
