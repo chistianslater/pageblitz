@@ -99,12 +99,12 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
         </div>
 
         {/* Ein fokussiertes Angebot statt verteilter Preisfragmente. */}
-        <div className="mx-auto mt-10 max-w-[42rem] rounded-[18px] border border-lp-line bg-lp-surface p-6 shadow-[0_28px_60px_-42px_rgba(29,26,23,0.55)] sm:p-8">
+        <div className="mx-auto mt-10 max-w-[42rem] rounded-[32px] bg-lp-surface p-6 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="lp-kicker">Pageblitz Website</p>
               <div className="mt-4 flex flex-wrap items-end gap-x-3 gap-y-1">
-                <span className="text-[clamp(3.25rem,2.4rem+3vw,5rem)] leading-none tracking-[-0.035em]">
+                <span className="lp-display text-[clamp(3.25rem,2.4rem+3vw,5.5rem)] leading-none uppercase">
                   {price}
                 </span>
                 <span className="pb-1.5 text-[0.95rem] text-lp-muted">
@@ -169,7 +169,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
           {/* Restaurant-Seiten-Prinzip: Add-ons transparent in einer
               nachgeordneten Box INNERHALB des Angebots statt als lose
               Preisliste unterhalb. Icons aus Lucide, keine Emojis. */}
-          <div className="mt-7 rounded-[12px] border border-lp-line bg-lp-canvas p-5">
+          <div className="mt-7 rounded-[24px] bg-lp-canvas p-5">
             <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="lp-kicker">Optionale Extras</h3>
@@ -233,7 +233,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
             </p>
           </div>
 
-          <div className="mt-8 overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface">
+          <div className="mt-8 overflow-hidden rounded-[32px] bg-lp-surface">
             <table className="w-full table-fixed border-collapse text-[0.72rem] sm:text-[0.92rem]">
               <caption className="sr-only">
                 Vergleich Webagentur und Pageblitz
@@ -254,7 +254,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                   </th>
                   <th
                     scope="col"
-                    className="bg-[#eef5f1] p-3 font-medium text-lp-accent sm:p-4"
+                    className="bg-[var(--lp-mint)] p-3 font-medium text-black sm:p-4"
                   >
                     Pageblitz
                   </th>
@@ -275,7 +275,7 @@ export function Pricing({ billingYearly, onBillingChange }: PricingProps) {
                     <td className="break-words p-2 align-top text-lp-muted sm:p-4">
                       {agency}
                     </td>
-                    <td className="break-words bg-[#eef5f1] p-2 align-top font-medium text-lp-accent sm:p-4">
+                    <td className="break-words bg-[var(--lp-mint)] p-2 align-top font-medium text-black sm:p-4">
                       {us}
                     </td>
                   </tr>

@@ -105,7 +105,7 @@ export function ProofBar() {
             <dt className="order-2 mt-1 text-[0.9rem] leading-snug text-lp-muted">
               {item.label}
             </dt>
-            <dd className="order-1 text-[clamp(2.25rem,1.6rem+2.4vw,3.5rem)] leading-none tracking-[-0.02em]">
+            <dd className="lp-display order-1 text-[clamp(2.6rem,1.7rem+2.8vw,4rem)] leading-none">
               {item.target !== undefined ? (
                 <CountUp target={item.target} />
               ) : (

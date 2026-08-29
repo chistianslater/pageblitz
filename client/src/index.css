@@ -32,6 +32,9 @@
   --lp-accent-ink: #ffffff;
   --lp-warn: #a4441f;
   --lp-font: "Space Grotesk", system-ui, sans-serif;
+  --lp-display: "Space Grotesk", system-ui, sans-serif;
+  --lp-mint: #d1ffca;
+  --lp-volt: #fff100;
   --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
   /* Layout-Gutter global: `.lp-container` und Portale (Mobile-Nav auf
      document.body, Cookie-Banner) sitzen außerhalb von `.lp`. Nur dort
@@ -78,6 +81,20 @@ body {
   font-weight: 300 700;
   font-display: swap;
   src: url("/fonts/space-grotesk-latin-wght.woff2") format("woff2");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
+    U+2215, U+FEFF, U+FFFD;
+}
+
+/* Landing-Display (nur `.lp`): Barlow Condensed 700, latin, self-hosted.
+   OFL, Quelle analog Space Grotesk (Google Fonts latin-Datei v13). */
+@font-face {
+  font-family: "Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/barlow-condensed-latin-700.woff2") format("woff2");
   unicode-range:
     U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
     U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212,
@@ -135,6 +152,8 @@ body {
   --color-lp-accent: var(--lp-accent);
   --color-lp-accent-ink: var(--lp-accent-ink);
   --color-lp-warn: var(--lp-warn);
+  --color-lp-mint: var(--lp-mint);
+  --color-lp-volt: var(--lp-volt);
 }
 
 :root {
@@ -471,28 +490,41 @@ body {
   aspect-ratio: 1 / 1;
 }
 
-/* ── Landingpage (Studio-Look, 2026-08-23) ─────────────────────────────────
-   Gleiche Welt wie client/src/pages/onboarding-v2/studio.css (--st-*): warmes
-   Papier, Hairlines, eine Schrift, ein Grün. Hell ohne Umschalter —
-   prefers-color-scheme wird bewusst ignoriert. Farb-Tokens in :root (oben),
-   Layout in client/src/components/landing/*.tsx per Tailwind-Klassen
-   (bg-lp-canvas …). */
+/* ── Landingpage (brutalist-editorial, 2026-08-29) ─────────────────────────
+   Richtung: Refero „AI for Business" / Dayos — warmes Grau, Carbon-Schwarz,
+   oversized Condensed-Versalien, Mint/Gelb nur als Mikro-Akzent, flache
+   Flächen ohne Schatten. Tokens hier auf `.lp` begrenzt, damit Studio,
+   Dashboard und Cookie-Banner die Papier/Grün-Welt behalten. */
 .lp {
-  /* Farb-/Schrift-Tokens und --lp-gutter stehen in :root (oben); hier
-     nur sektionsspezifische Layout-Maße. */
-  --lp-section: clamp(4rem, 3rem + 5vw, 9rem);
+  --lp-canvas: #e5e5e5;
+  --lp-surface: #ffffff;
+  --lp-ink: #000000;
+  --lp-muted: #444444;
+  --lp-line: #c6c6c6;
+  --lp-accent: #000000;
+  --lp-accent-ink: #ffffff;
+  --lp-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --lp-section: clamp(4.5rem, 3.2rem + 6vw, 9.5rem);
   font-family: var(--lp-font);
   background: var(--lp-canvas);
   color: var(--lp-ink);
   -webkit-font-smoothing: antialiased;
-  accent-color: var(--lp-accent);
-  caret-color: var(--lp-accent);
+  accent-color: var(--lp-ink);
+  caret-color: var(--lp-ink);
 }
 .lp ::selection {
-  background: color-mix(in oklab, var(--lp-accent) 22%, transparent);
+  background: var(--lp-mint);
+  color: #000;
 }
 .lp h1,
-.lp h2,
+.lp h2 {
+  font-family: var(--lp-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
 .lp h3,
 .lp h4 {
   font-family: var(--lp-font);
@@ -500,8 +532,8 @@ body {
   text-wrap: balance;
 }
 .lp :focus-visible {
-  outline: 2px solid var(--lp-accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--lp-ink);
+  outline-offset: 3px;
 }
 .lp-container {
   width: 100%;
@@ -511,40 +543,50 @@ body {
 }
 .lp-section {
   padding-block: var(--lp-section);
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: 6rem;
 }
 .lp-kicker {
-  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0;
+  padding: 0.32rem 0.85rem;
+  border-radius: 64px;
+  background: var(--lp-mint);
+  color: #000;
+  font-size: 0.72rem;
   font-weight: 500;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--lp-muted);
+  line-height: 1.2;
 }
 .lp-h1 {
-  font-size: clamp(2.5rem, 1.5rem + 4vw, 5.5rem);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
+  font-size: clamp(3.1rem, 1.4rem + 7.2vw, 8.25rem);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
 }
-/* Hero-H1 teilt sich die Zeile mit der HeroBuild-Bühne (5/12-Spalte).
-   2026-08-25: kleiner + kürzere Zeilen (Copy mit festem Umbruch) — die
-   lange Zeile „Deine professionelle …" überragte bei 1024–1300px die
-   Grid-Spalte und ragte sichtbar in die Bühne (Grid-Items schrumpfen
-   nicht unter ihre Inhaltsbreite). */
 .lp-h1--hero {
-  font-size: clamp(2.4rem, 1.15rem + 2.9vw, 4.25rem);
+  max-width: 14.5ch;
   overflow-wrap: break-word;
 }
 .lp-h2 {
-  font-size: clamp(1.9rem, 1.1rem + 2.2vw, 3rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.15rem, 1.05rem + 3.4vw, 4.25rem);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
 }
 .lp-num {
-  font-size: clamp(1.75rem, 1.25rem + 1.5vw, 2.5rem);
-  line-height: 1;
-  font-weight: 400;
+  font-family: var(--lp-display);
+  font-size: clamp(2.4rem, 1.4rem + 2.4vw, 4rem);
+  line-height: 0.85;
+  font-weight: 700;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
-  color: var(--lp-muted);
+  color: var(--lp-ink);
+}
+.lp-display {
+  font-family: var(--lp-display);
+  font-weight: 700;
+  letter-spacing: -0.04em;
 }
 /* Hero-Studio-Rahmen: Checkliste füllt sich (einziger erklärender Moment). */
 .lp-check-num {
@@ -610,11 +652,11 @@ html.lp-reveal-on .lp-section.lp-in {
    fertige Bild fadet über data-on darüber. Bei reduced-motion setzt die
    Komponente das finale Bild sofort (keine Timer). */
 .lpb {
-  border: 1px solid var(--lp-line);
-  border-radius: 14px;
+  border: 0;
+  border-radius: 32px;
   background: var(--lp-surface);
   overflow: hidden;
-  box-shadow: 0 24px 48px -28px rgba(29, 26, 23, 0.45);
+  box-shadow: none;
 }
 .lpb-chrome {
   display: flex;
@@ -895,8 +937,8 @@ html.lp-nav-open body {
    unscharf und zeigten wieder dasselbe Pack wie der Hero). Immer scharf,
    pack-neutral, altern nicht mit UI-Änderungen. */
 .lps-sketch {
-  border: 1px solid var(--lp-line);
-  border-radius: 12px;
+  border: 0;
+  border-radius: 32px;
   background: var(--lp-surface);
   aspect-ratio: 4 / 3;
   padding: 7%;
@@ -1244,54 +1286,60 @@ html.lp-nav-open body {
    Zeichnungen bleiben als helle technische Karten erhalten. */
 .lp-feature-dark {
   background: var(--lp-ink);
-  color: var(--lp-canvas);
+  color: #fff;
 }
 .lp-feature-dark .lp-h2,
 .lp-feature-dark h3 {
-  color: var(--lp-canvas);
+  color: #fff;
 }
 .lp-feature-dark .lp-kicker {
-  color: #9db8ac;
+  background: var(--lp-mint);
+  color: #000;
 }
 .lp-feature-dark .text-lp-muted {
-  color: #c7c0b4;
+  color: #c6c6c6;
 }
 .lp-feature-dark .border-lp-line {
-  border-color: rgba(221, 214, 201, 0.2);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .lp-feature-dark .lps-sketch {
   color: var(--lp-ink);
-  background: var(--lp-surface);
-  border-color: rgba(221, 214, 201, 0.35);
+  background: #fff;
+  border-color: transparent;
 }
 .lp-feature-dark a.text-lp-accent,
 .lp-feature-dark .text-lp-accent {
-  color: #70b69d;
+  color: var(--lp-mint);
 }
 
-/* Dunkler Schluss-CTA (2026-08-25, User-Feedback „Creme zu brav/zu häufig"):
-   ein einziger tiefer Kontrast-Block am Seitenende bricht die helle
-   Monotonie, ohne die Identität zu kippen. Overrides nur innerhalb der
-   Sektion; Buttons/Akzente bekommen ein helleres Grün für ausreichenden
-   Kontrast auf Ink. */
 .lp-final-dark {
   background: var(--lp-ink);
-  color: var(--lp-canvas);
+  color: #fff;
 }
 .lp-final-dark .lp-h1 {
-  color: var(--lp-canvas);
+  color: #fff;
 }
 .lp-final-dark .lp-kicker {
-  color: #9db8ac;
+  background: var(--lp-mint);
+  color: #000;
 }
 .lp-final-dark .text-lp-muted {
-  color: #c7c0b4;
+  color: #c6c6c6;
 }
+.lp-final-dark .bg-lp-ink,
 .lp-final-dark .bg-lp-accent {
-  background-color: #2e7d64;
+  background-color: var(--lp-mint);
+  color: #000;
 }
+.lp-final-dark .bg-lp-ink:hover,
 .lp-final-dark .bg-lp-accent:hover {
-  background-color: #379176;
+  background-color: #fff;
+  color: #000;
+}
+.lp-final-dark input {
+  background: #fff;
+  color: #000;
+  border-color: transparent;
 }
 
 /* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der

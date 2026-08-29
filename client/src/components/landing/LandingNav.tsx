@@ -13,8 +13,7 @@ const NAV_LINKS = [
 ] as const;
 
 /**
- * Sticky Navigation: transparent auf dem Canvas, nach dem ersten Scrollen
- * Surface mit Hairline.
+ * Sticky Navigation: schwebende weiße Pill auf dem Canvas (Refero/Dayos).
  *
  * Mobile: Vollflächen-Dialog per Portal auf document.body. Der Close-Button
  * sitzt IM Overlay (nicht im sticky Header). `overflow:hidden` am Body
@@ -141,7 +140,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation"
-        className="fixed inset-0 z-[100] flex flex-col bg-lp-canvas md:hidden"
+        className="fixed inset-0 z-[100] flex flex-col bg-lp-canvas md:hidden lp"
       >
         <div className="lp-mobile-menu-gutter flex h-[4.25rem] shrink-0 items-center justify-between border-b border-lp-line">
           <a
@@ -204,17 +203,15 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-[background-color,border-color] duration-300 ${
+      className={`sticky top-0 z-50 px-[var(--lp-gutter,1.5rem)] pt-3 pb-2 ${
         isOpen ? "invisible" : ""
-      } ${
-        isScrolled || isOpen
-          ? "border-b border-lp-line bg-lp-surface/95 backdrop-blur-[2px]"
-          : "border-b border-transparent bg-transparent"
       }`}
     >
       <nav
         aria-label="Hauptnavigation"
-        className="lp-container flex h-[4.25rem] items-center justify-between gap-6"
+        className={`mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-6 rounded-[48px] px-4 sm:px-5 ${
+          isScrolled ? "bg-white" : "bg-white/80"
+        }`}
       >
         <a
           href="/"
@@ -234,7 +231,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="rounded-full px-3.5 py-2 text-[0.95rem] text-lp-muted transition-colors hover:text-lp-ink"
+                className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted transition-colors hover:text-lp-ink"
               >
                 {link.label}
               </a>
@@ -249,7 +246,7 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
               event.preventDefault();
               navigate("/login");
             }}
-            className="rounded-full px-3.5 py-2 text-[0.95rem] text-lp-muted transition-colors hover:text-lp-ink"
+            className="rounded-full px-3.5 py-2 text-[0.9rem] font-medium text-lp-muted transition-colors hover:text-lp-ink"
           >
             Anmelden
           </a>

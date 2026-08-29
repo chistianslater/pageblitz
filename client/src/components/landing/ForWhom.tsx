@@ -81,7 +81,7 @@ export function ForWhom() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${tile.industry}: Demo in neuem Tab öffnen`}
-                className="block overflow-hidden rounded-[10px] border border-lp-line bg-white"
+                className="block overflow-hidden rounded-[32px] bg-white"
               >
                 <img
                   src={`/pack-previews/${tile.packId}.webp`}
@@ -94,7 +94,7 @@ export function ForWhom() {
                 />
               </a>
               <div className="mt-4 grid grid-cols-[2.25rem_1fr] gap-3 border-t border-lp-line pt-3">
-                <span className="lp-kicker pt-1" aria-hidden="true">
+                <span className="lp-num pt-1 text-[1.65rem]" aria-hidden="true">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>

@@ -105,7 +105,7 @@ export function TrustLine({ className = "" }: { className?: string }) {
         <li key={item} className="inline-flex items-center gap-2">
           <span
             aria-hidden="true"
-            className="inline-block h-1.5 w-1.5 rounded-full bg-lp-accent"
+            className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--lp-volt)]"
           />
           {item}
         </li>
@@ -118,46 +118,36 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
   return (
     <section
       aria-labelledby="lp-hero-heading"
-      className="lp-container grid items-center gap-12 pt-10 pb-16 lg:min-h-[calc(100svh-4.25rem)] lg:grid-cols-12 lg:gap-10 lg:pt-4 lg:pb-20"
+      className="lp-container pt-8 pb-16 lg:pt-10 lg:pb-24"
     >
-      {/* 5/7 statt 6/6 (Conversion-Pass 2): das Ergebnis (deine Website im
-          Frame) bekommt die dominante Fläche, die Argumentation die
-          schmalere — Besucher kaufen das Ergebnis, nicht das Werkzeug. */}
-      <div className="lg:col-span-5">
-        {/* Gestaffelter Einstieg (lp-rise-*, CSS in index.css): Kicker →
-            Headline → Subline → Formular → Vertrauenszeile — führt den
-            Blick in genau dieser Reihenfolge zum CTA. */}
-        <Kicker className="lp-rise lp-rise-1 mb-6">
-          Webagentur: 2.000–8.000 € · Pageblitz ab {PRICE_YEARLY}/Monat
-        </Kicker>
-        <h1 id="lp-hero-heading" className="lp-h1 lp-h1--hero lp-rise lp-rise-2">
-          Deine Website
-          <br />
-          in 3&nbsp;Minuten fertig.
-        </h1>
-        {/* Problem-Aktivierung vor der Lösung (Conversion-Pass 2026-08-25):
-            Der Verlust-Frame („Mitbewerber") schafft die Dringlichkeit, die
-            der reine Feature-Text nicht hatte. */}
-        <p className="lp-rise lp-rise-3 mt-6 max-w-[30rem] text-[1.1rem] leading-[1.6] text-lp-muted">
-          Deine Kunden suchen dich bei Google. Pageblitz baut aus deinem
-          Google-Profil automatisch eine fertige Vorschau — ohne Webdesigner,
-          Wartezeit oder vierstelliges Budget.
-        </p>
-        <div className="lp-rise lp-rise-4 mt-8">
-          <HeroForm
-            {...props}
-            idPrefix="hero"
-            size="lg"
-            layout="stacked"
-          />
+      <Kicker className="lp-rise lp-rise-1 mb-6">
+        Webagentur: 2.000–8.000 € · Pageblitz ab {PRICE_YEARLY}/Monat
+      </Kicker>
+      <h1 id="lp-hero-heading" className="lp-h1 lp-h1--hero lp-rise lp-rise-2">
+        Deine Website
+        <br />
+        in 3&nbsp;Minuten.
+      </h1>
+      <div className="mt-10 grid items-start gap-10 lg:grid-cols-12 lg:gap-12">
+        <div className="lg:col-span-5">
+          <p className="lp-rise lp-rise-3 max-w-[32rem] text-[1.12rem] leading-[1.5] text-lp-muted">
+            Deine Kunden suchen dich bei Google. Pageblitz baut aus deinem
+            Google-Profil automatisch eine fertige Vorschau — ohne Webdesigner,
+            Wartezeit oder vierstelliges Budget.
+          </p>
+          <div className="lp-rise lp-rise-4 mt-8">
+            <HeroForm
+              {...props}
+              idPrefix="hero"
+              size="lg"
+              layout="stacked"
+            />
+          </div>
+          <TrustLine className="lp-rise lp-rise-5 mt-8" />
         </div>
-        <TrustLine className="lp-rise lp-rise-5 mt-8 border-t border-lp-line pt-5" />
-      </div>
-      <div className="lg:col-span-7 lp-rise lp-rise-6">
-        {/* Wireframe-Aufbau statt fertiger Template-Vorschau (User-Brief
-            2026-08-25): Der Besucher sieht das Ergebnis ENTSTEHEN — das
-            ist der Beweis für „in 3 Minuten", kein fertiges Template. */}
-        <HeroBuild />
+        <div className="lg:col-span-7 lp-rise lp-rise-6">
+          <HeroBuild />
+        </div>
       </div>
     </section>
   );

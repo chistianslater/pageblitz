@@ -27,13 +27,13 @@ function PackCard({ summary, index, onOpen }: PackCardProps) {
   return (
     <article
       aria-label={`${name}: ${essence}`}
-      className="group flex w-[15rem] shrink-0 snap-start flex-col overflow-hidden rounded-[10px] border border-lp-line bg-lp-canvas sm:w-[17rem]"
+      className="group flex w-[15rem] shrink-0 snap-start flex-col overflow-hidden rounded-[32px] bg-white sm:w-[17rem]"
     >
       <button
         type="button"
         onClick={handleOpen}
         aria-label={`Live-Vorschau ${name} öffnen`}
-        className="relative block w-full cursor-zoom-in overflow-hidden border-b border-lp-line bg-white text-left focus-visible:outline-offset-[-2px]"
+        className="relative block w-full cursor-zoom-in overflow-hidden bg-[#f3f3f3] text-left focus-visible:outline-offset-[-2px]"
       >
         <img
           src={`/pack-previews/${packId}.webp`}
@@ -157,7 +157,7 @@ function PreviewModal({ packId, onClose }: PreviewModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface shadow-[0_40px_80px_-40px_rgba(29,26,23,0.6)]"
+        className="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-[32px] bg-lp-surface"
         style={{ height: "min(85vh, 720px)" }}
       >
         <div className="flex items-center justify-between gap-4 border-b border-lp-line px-5 py-3">

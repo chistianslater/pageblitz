@@ -33,7 +33,7 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
   return (
     <section
       aria-labelledby="lp-problem-heading"
-      className="lp-section border-y border-lp-line bg-[#eee9df]"
+      className="lp-section border-y border-lp-line"
     >
       <div className="lp-container">
         <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
@@ -63,10 +63,10 @@ export function ProblemSection({ billingYearly }: { billingYearly: boolean }) {
           {LOSSES.map((loss, index) => (
             <li
               key={loss.title}
-              className="flex min-h-[15rem] flex-col rounded-[12px] border border-lp-line bg-lp-surface p-6"
+              className="flex min-h-[15rem] flex-col rounded-[32px] bg-lp-surface p-7"
             >
               <span
-                className="text-[2.5rem] leading-none tracking-[-0.03em] text-lp-accent/35"
+                className="lp-num text-[2.75rem] text-lp-ink/15"
                 aria-hidden="true"
               >
                 {String(index + 1).padStart(2, "0")}
