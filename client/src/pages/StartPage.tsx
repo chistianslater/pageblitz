@@ -38,10 +38,10 @@ type Step = "choice" | "manual" | "gmb";
 // ── Studio-Look-Bausteine (Tokens `--lp-*` aus client/src/index.css) ────────
 
 const FIELD =
-  "h-12 w-full rounded-full border border-lp-line bg-white px-5 text-[1rem] text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent focus-visible:outline-2 disabled:opacity-50";
+  "h-12 w-full rounded-full border border-lp-line bg-[rgba(255,255,255,0.06)] px-5 text-[1rem] text-lp-ink placeholder:text-lp-faint focus-visible:border-lp-accent focus-visible:outline-2 disabled:opacity-50";
 
 const CTA =
-  "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-lp-accent text-[0.95rem] font-medium text-lp-accent-ink transition-[background-color,color,transform] duration-200 hover:bg-[#174a3b] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100";
+  "inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-lp-accent text-[0.95rem] font-medium text-lp-accent-ink transition-[background-color,color,transform] duration-200 hover:bg-[#b3e600] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100";
 
 // ─────────────────────────── CategoryPicker ─────────────────────────────────
 
@@ -91,7 +91,7 @@ function CategoryPicker({
               </span>
               <button
                 onClick={() => onSelect(search.trim())}
-                className="flex-shrink-0 rounded-full bg-lp-accent px-3.5 py-1.5 text-xs font-medium text-lp-accent-ink transition-colors hover:bg-[#174a3b]"
+                className="flex-shrink-0 rounded-full bg-lp-accent px-3.5 py-1.5 text-xs font-medium text-lp-accent-ink transition-colors hover:bg-[#b3e600]"
               >
                 Übernehmen
               </button>
@@ -132,7 +132,7 @@ function CategoryPicker({
                     className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${
                       selected === cat
                         ? "border-lp-accent bg-lp-accent text-lp-accent-ink"
-                        : "border-lp-line bg-white text-lp-ink hover:border-lp-accent"
+                        : "border-lp-line bg-lp-panel text-lp-ink hover:border-lp-accent"
                     }`}
                   >
                     {cat}
@@ -703,7 +703,7 @@ export default function StartPage() {
                       !gmbSearchQuery.trim() || gmbSearchLoading || isLoading
                     }
                     aria-label="Suchen"
-                    className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lp-accent text-lp-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#174a3b] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100"
+                    className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lp-accent text-lp-accent-ink transition-[background-color,transform] duration-200 hover:bg-[#b3e600] active:scale-[0.98] disabled:bg-lp-line disabled:text-lp-muted disabled:active:scale-100"
                   >
                     {gmbSearchLoading ? (
                       <Loader2

@@ -32,10 +32,9 @@ export function FinalCta(props: FinalCtaProps) {
               Sehen kostet nichts.
             </h2>
             <p className="mt-5 max-w-[32rem] text-[1.08rem] leading-[1.55] text-lp-volt-ink/75">
-              Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos
-              und unverbindlich. Gefällt sie dir nicht, hat dich der Blick
-              nichts gekostet. Gefällt sie dir, schaltest du sie mit einem
-              Klick live.
+              Deine fertige Vorschau liegt in 3 Minuten vor dir — kostenlos und
+              unverbindlich. Gefällt sie dir nicht, hat dich der Blick nichts
+              gekostet. Gefällt sie dir, schaltest du sie mit einem Klick live.
             </p>
             <div className="mt-8">
               <HeroForm

@@ -29,6 +29,10 @@ export function CategoryStep({
   const [value, setValue] = React.useState(initialCategory);
   const [open, setOpen] = React.useState(false);
   const [activeIndex, setActiveIndex] = React.useState(-1);
+  // Erkannte Branche → erst die Ein-Klick-Frage („Ist das richtig?");
+  // das Eingabefeld erscheint nur, wenn jemand die Branche ändern will
+  // (User-Feedback 2026-08-29: „smarter kommunizieren").
+  const [editing, setEditing] = React.useState(!initialCategory);
   const suggestions = open ? filterCategorySuggestions(value) : [];
   const listVisible = suggestions.length > 0;
   const canSubmit = value.trim().length >= 2 && !pending;
@@ -76,6 +80,45 @@ export function CategoryStep({
     }
   };
 
+  if (initialCategory && !editing) {
+    return (
+      <section className="pb-studio-gen">
+        <div className="pb-studio-gen-inner pb-studio-cat">
+          <p className="pb-studio-kicker">Bevor es losgeht</p>
+          <h1 className="pb-studio-title">
+            Wir haben als Branche <strong>{initialCategory}</strong> erkannt.
+          </h1>
+          <p className="pb-studio-cat-hint">
+            Ist das richtig? Dann entsteht daraus direkt die Website für{" "}
+            {businessName}.
+          </p>
+          {error && (
+            <p role="alert" className="pb-studio-cat-error">
+              {error}
+            </p>
+          )}
+          <button
+            type="button"
+            className="pb-studio-btn pb-studio-cat-submit"
+            onClick={() => onSubmit(initialCategory)}
+            disabled={pending}
+          >
+            {pending ? "Wird gespeichert …" : "Ja, stimmt — Website erstellen"}
+          </button>
+          <button
+            type="button"
+            className="pb-studio-btn pb-studio-cat-submit"
+            data-variant="ghost"
+            onClick={() => setEditing(true)}
+            disabled={pending}
+          >
+            Nein, Branche ändern
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="pb-studio-gen">
       <div className="pb-studio-gen-inner pb-studio-cat">
@@ -84,9 +127,8 @@ export function CategoryStep({
         <p className="pb-studio-cat-hint">
           {initialCategory ? (
             <>
-              Wir haben <strong>{initialCategory}</strong> erkannt. Passt das zu{" "}
-              {businessName}? Bestätige die Branche oder korrigiere sie — erst
-              danach entsteht deine Website.
+              Kein Problem — wähle die passende Branche für {businessName} aus
+              oder tippe sie frei ein.
             </>
           ) : (
             <>
@@ -161,7 +203,7 @@ export function CategoryStep({
           {pending
             ? "Wird gespeichert …"
             : initialCategory
-              ? "Branche bestätigen & Website erstellen"
+              ? "Branche speichern & Website erstellen"
               : "Weiter"}
         </button>
       </div>

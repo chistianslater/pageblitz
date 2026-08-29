@@ -46,12 +46,16 @@ describe("CategoryStep", () => {
     expect(html).toContain("Wird gespeichert …");
   });
 
-  test("erkannte Branche wird vorbefüllt und muss bestätigt werden", () => {
+  test("erkannte Branche wird als Ein-Klick-Bestätigung kommuniziert (2026-08-29)", () => {
     const html = render({ initialCategory: "IT-Dienstleister" });
-    expect(html).toContain('value="IT-Dienstleister"');
-    expect(html).toContain("Wir haben");
-    expect(html).toContain("Branche bestätigen &amp; Website erstellen");
-    expect(html).not.toMatch(/<button[^>]*disabled[^>]*>Branche best/);
+    // Klartext-Frage statt Formular-Prosa …
+    expect(html).toContain("Wir haben als Branche");
+    expect(html).toContain("<strong>IT-Dienstleister</strong>");
+    expect(html).toContain("Ist das richtig?");
+    // … Ja-Button + Änderungsweg, aber noch KEIN Eingabefeld im Erstrender.
+    expect(html).toContain("Ja, stimmt — Website erstellen");
+    expect(html).toContain("Branche ändern");
+    expect(html).not.toContain('role="combobox"');
   });
 
   test("error → role=alert mit deutscher Meldung", () => {
