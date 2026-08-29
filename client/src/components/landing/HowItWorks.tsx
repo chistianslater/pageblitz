@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
 import { SectionHead } from "./primitives";
 
@@ -136,6 +136,76 @@ const INCLUDED = [
 ] as const;
 
 export function HowItWorks() {
+  const listRef = useRef<HTMLOListElement>(null);
+
+  // GSAP-Choreografie (User-Wunsch 2026-08-29): Die vier Karten bouncen
+  // nacheinander herein; jede neue Karte „stößt" die vorherige kurz an
+  // (Nudge + elastisches Zurückfedern). GSAP wird erst beim Annähern der
+  // Sektion dynamisch geladen (nicht im LCP-Pfad, Performance-Budget).
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("IntersectionObserver" in window)) return;
+    const cards = Array.from(list.children) as HTMLElement[];
+    cards.forEach(c => {
+      c.style.opacity = "0";
+    });
+    let cancelled = false;
+    const io = new IntersectionObserver(
+      entries => {
+        if (!entries.some(e => e.isIntersecting)) return;
+        io.disconnect();
+        import("gsap").then(({ gsap }) => {
+          if (cancelled) return;
+          const tl = gsap.timeline();
+          cards.forEach((card, i) => {
+            tl.fromTo(
+              card,
+              { y: 90, opacity: 0, rotate: i % 2 ? 3.5 : -3.5 },
+              {
+                y: 0,
+                opacity: 1,
+                rotate: 0,
+                duration: 0.7,
+                ease: "back.out(1.6)",
+              },
+              i * 0.24
+            );
+            if (i > 0) {
+              // Der Neuankömmling schubst den Nachbarn an …
+              tl.to(
+                cards[i - 1],
+                { x: -14, rotate: -1.6, duration: 0.14, ease: "power2.out" },
+                i * 0.24 + 0.3
+              );
+              // … der elastisch zurückfedert.
+              tl.to(
+                cards[i - 1],
+                {
+                  x: 0,
+                  rotate: 0,
+                  duration: 0.6,
+                  ease: "elastic.out(1, 0.35)",
+                },
+                i * 0.24 + 0.44
+              );
+            }
+          });
+        });
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(list);
+    return () => {
+      cancelled = true;
+      io.disconnect();
+      cards.forEach(c => {
+        c.style.opacity = "";
+      });
+    };
+  }, []);
+
   return (
     <section
       id="ablauf"
@@ -150,7 +220,11 @@ export function HowItWorks() {
           text="Das Studio führt dich in der Reihenfolge, in der auch eine Agentur arbeiten würde – nur in Minuten statt Wochen."
         />
 
-        <ol className="lp-stagger-slow mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <ol
+          ref={listRef}
+          data-gsap-steps
+          className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4"
+        >
           {STEPS.map((step, index) => (
             <li
               key={step.title}

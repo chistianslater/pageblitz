@@ -193,13 +193,17 @@ export function FeatureShowcase() {
                   index % 2 === 1 ? "lg:order-1" : ""
                 }`}
               >
+                {/* Der Funktionsname muss sofort lesbar sein (User-Feedback
+                    2026-08-29) — deutlich größer als ein Kicker, in Volt. */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <p className="lp-kicker">{feature.kicker}</p>
+                  <p className="font-[family-name:var(--lp-mono)] text-[1rem] font-semibold uppercase tracking-[0.08em] text-lp-volt">
+                    {feature.kicker}
+                  </p>
                   <span className="rounded-full border border-lp-line px-2.5 py-1 font-[family-name:var(--lp-mono)] text-[0.66rem] font-medium tracking-[0.04em] text-lp-muted">
                     EXTRA · + {formatEuro(addonPrice(feature.addon))}/Monat
                   </span>
                 </div>
-                <h3 className="mt-4 max-w-[18ch] text-[clamp(1.6rem,2.6vw,2.2rem)] font-bold leading-[1.08] tracking-[-0.025em] text-lp-ink">
+                <h3 className="mt-3 max-w-[18ch] text-[clamp(1.6rem,2.6vw,2.2rem)] font-bold leading-[1.08] tracking-[-0.025em] text-lp-ink">
                   {feature.title}
                 </h3>
                 <p className="mt-4 max-w-[28rem] text-[1.05rem] leading-[1.55] text-lp-muted">

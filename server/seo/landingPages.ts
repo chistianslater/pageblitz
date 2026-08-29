@@ -1809,87 +1809,87 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
   .stats{padding:2rem 0}
 }
 
-/* ── Pageblitz Studio Skin (2026-08-25) ─────────────────────────────────
-   Branchen-Landingpages teilen jetzt Palette, Typografie, Hairlines und
-   Kartenlogik mit der Startseite. Die branchenspezifischen Akzentfarben
-   bleiben ausschließlich INNERHALB der Website-Vorschau (.mw-*) erhalten:
-   dort demonstrieren sie das Ergebnis; die Pageblitz-Verkaufsoberfläche
-   selbst bleibt konsistent Papier/Ink/Grün. */
+/* ── Pageblitz Nachtschicht Skin (2026-08-29) ───────────────────────────
+   Branchen-/Städte-Landingpages teilen Palette, Typografie, Hairlines und
+   Kartenlogik mit der neuen Startseite (Kohle/Volt, Spec
+   docs/superpowers/specs/2026-08-29-landing-relaunch-dark-volt-design.md).
+   Die branchenspezifischen Akzentfarben und die HELLE Website-Vorschau
+   (.mw-*, .mock-*) bleiben erhalten: dort demonstrieren sie das Ergebnis. */
 @font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url("/fonts/space-grotesk-latin-wght.woff2") format("woff2")}
-body{font-family:"Space Grotesk",system-ui,sans-serif;color:#1d1a17;background:#f7f5f1}
+body{font-family:"Space Grotesk",system-ui,sans-serif;color:#f2f1ee;background:#0b0b0d}
 .container{max-width:1200px}
-nav{background:rgba(253,252,250,.94);border-color:#ddd6c9;padding:.75rem 0}
-.logo{color:#1d1a17;font-weight:500}
-.nav-cta,.btn-primary,.pricing-badge{background:#1f5f4b!important;color:#fff!important;box-shadow:none!important}
-.nav-cta:hover,.btn-primary:hover{background:#174a3b!important;opacity:1}
-.hero{background:#f7f5f1;color:#1d1a17;padding:5rem 0 4.5rem;border-bottom:1px solid #ddd6c9}
-.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(31,95,75,.09),transparent)}
+nav{background:rgba(19,19,22,.88);border-color:rgba(255,255,255,.09);padding:.75rem 0}
+.logo{color:#f2f1ee;font-weight:500}
+.nav-cta,.btn-primary,.pricing-badge{background:#ccff00!important;color:#0b0b0d!important;box-shadow:none!important}
+.nav-cta:hover,.btn-primary:hover{background:#b3e600!important;opacity:1}
+.hero{background:#0b0b0d;color:#f2f1ee;padding:5rem 0 4.5rem;border-bottom:1px solid rgba(255,255,255,.09)}
+.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(204,255,0,.09),transparent)}
 .hero-orb{display:none}
-.hero-badge{background:#fdfcfa;border-color:#ddd6c9;color:#6b645b;font-weight:500}
-.hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#1d1a17;font-weight:500;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03}
-.hero p{color:#6b645b}
-.hero-trust{color:#6b645b}
+.hero-badge{background:#131316;border-color:rgba(255,255,255,.09);color:#a4a39d;font-weight:500}
+.hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#f2f1ee;font-weight:500;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03}
+.hero p{color:#a4a39d}
+.hero-trust{color:#a4a39d}
 .btn-primary{font-weight:600}
-.stats{background:#fdfcfa;border-color:#ddd6c9}
-.stat-value{color:#1d1a17;font-weight:500}
-.stat-label{color:#6b645b}
-.steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:#ddd6c9}
-.section-label{color:#1f5f4b;font-weight:500}
-.section-title{color:#1d1a17;font-weight:500;font-size:clamp(1.9rem,3vw,3rem)}
-.section-sub,.local-intro{color:#6b645b}
+.stats{background:#131316;border-color:rgba(255,255,255,.09)}
+.stat-value{color:#f2f1ee;font-weight:500}
+.stat-label{color:#a4a39d}
+.steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:rgba(255,255,255,.09)}
+.section-label{color:#ccff00;font-weight:500}
+.section-title{color:#f2f1ee;font-weight:500;font-size:clamp(1.9rem,3vw,3rem)}
+.section-sub,.local-intro{color:#a4a39d}
 .steps-grid{gap:1rem}
-.step{text-align:left;border-top:1px solid #ddd6c9;padding:1.5rem 0}
-.step-num{margin:0 0 1.25rem;background:#fdfcfa;border-color:#ddd6c9;color:#1f5f4b}
-.step h3,.feature-card h3,.addon-card h4{color:#1d1a17}
-.step p,.feature-card p,.addon-card p{color:#6b645b}
-.feature-card,.addon-card{background:#fdfcfa;border-color:#ddd6c9;border-radius:12px}
-.feature-card:hover,.addon-card:hover{background:#fff;border-color:#bdb5a7}
-.feature-icon{background:#eef5f1;border-color:#cddfd7}
-.addon-price{background:#eef5f1;border-color:#cddfd7;color:#1f5f4b}
-.addon-expand-btn{background:transparent;border-color:#bdb5a7;color:#1d1a17}
-.addon-expand-btn:hover{background:#fdfcfa;color:#1d1a17}
+.step{text-align:left;border-top:1px solid rgba(255,255,255,.09);padding:1.5rem 0}
+.step-num{margin:0 0 1.25rem;background:#131316;border-color:rgba(255,255,255,.09);color:#ccff00}
+.step h3,.feature-card h3,.addon-card h4{color:#f2f1ee}
+.step p,.feature-card p,.addon-card p{color:#a4a39d}
+.feature-card,.addon-card{background:#131316;border-color:rgba(255,255,255,.09);border-radius:12px}
+.feature-card:hover,.addon-card:hover{background:#1a1a1e;border-color:rgba(255,255,255,.22)}
+.feature-icon{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32)}
+.addon-price{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32);color:#ccff00}
+.addon-expand-btn{background:transparent;border-color:rgba(255,255,255,.22);color:#f2f1ee}
+.addon-expand-btn:hover{background:#131316;color:#f2f1ee}
 .pricing-wrapper{max-width:560px}
-.pricing-card{background:#fdfcfa;border-color:#ddd6c9;border-radius:18px;box-shadow:0 28px 60px -42px rgba(29,26,23,.55)}
-.pricing-name,.pricing-note,.pricing-note-bottom{color:#6b645b}
-.pricing-price{color:#1d1a17;font-weight:500}
-.pricing-price span{color:#6b645b}
-.pricing-features li{color:#1d1a17;border-color:#ddd6c9}
-.pricing-features li::before{color:#1f5f4b}
-.pricing-addon-box{background:#f7f5f1;border-color:#ddd6c9}
-.pricing-addon-label,.pricing-addon-row span:last-child{color:#6b645b}
-.pricing-addon-row span:first-child{color:#1d1a17}
-.pricing-cta{background:#1f5f4b!important;color:#fff!important}
-.pricing-cta:hover{background:#174a3b!important}
-.billing-toggle{background:#fdfcfa;border-color:#ddd6c9}
-.billing-btn{color:#6b645b}
-.billing-btn.active{background:#1d1a17;color:#f7f5f1;box-shadow:none}
-.billing-save{background:#eef5f1;color:#1f5f4b}
-.comp-table{background:#fdfcfa;border-color:#ddd6c9;border-radius:14px}
-.comp-header{background:#f7f5f1}
-.comp-header div{color:#6b645b}
-.comp-header div:first-child{color:#6b645b}
-.comp-header div:last-child{color:#1f5f4b;background:#eef5f1}
-.comp-row{border-color:#ddd6c9}
-.comp-row:nth-child(even){background:#faf8f4}
-.comp-row div{color:#6b645b}
-.comp-row div:first-child{color:#1d1a17}
-.comp-row div:last-child{color:#1f5f4b;background:#eef5f1}
-details{background:#fdfcfa;border-color:#ddd6c9;border-radius:10px}
-details[open]{border-color:#bdb5a7}
-summary{color:#1d1a17}
-summary::after{color:#6b645b}
-.faq-answer{color:#6b645b}
-.cta-banner{background:#1d1a17}
-.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(31,95,75,.18),transparent)}
-.cta-banner h2{color:#f7f5f1;font-weight:500}
-.cta-banner p,.cta-note{color:#c7c0b4}
-.industries,.cities{border-color:#ddd6c9;background:#fdfcfa}
-.industries h3,.cities h3{color:#6b645b}
-.industry-link,.city-link{background:#f7f5f1;border-color:#ddd6c9;color:#6b645b}
-.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#1f5f4b;color:#1f5f4b;background:#eef5f1}
-footer{background:#1d1a17;color:#9f988d;border-color:#1d1a17}
-footer a{color:#c7c0b4}
-.mock-browser{background:#fff;box-shadow:0 28px 60px -36px rgba(29,26,23,.5),0 0 0 1px #ddd6c9}
+.pricing-card{background:#131316;border-color:rgba(255,255,255,.09);border-radius:18px;box-shadow:0 28px 60px -42px rgba(0,0,0,.55)}
+.pricing-name,.pricing-note,.pricing-note-bottom{color:#a4a39d}
+.pricing-price{color:#f2f1ee;font-weight:500}
+.pricing-price span{color:#a4a39d}
+.pricing-features li{color:#f2f1ee;border-color:rgba(255,255,255,.09)}
+.pricing-features li::before{color:#ccff00}
+.pricing-addon-box{background:#0b0b0d;border-color:rgba(255,255,255,.09)}
+.pricing-addon-label,.pricing-addon-row span:last-child{color:#a4a39d}
+.pricing-addon-row span:first-child{color:#f2f1ee}
+.pricing-cta{background:#ccff00!important;color:#0b0b0d!important}
+.pricing-cta:hover{background:#b3e600!important}
+.billing-toggle{background:#131316;border-color:rgba(255,255,255,.09)}
+.billing-btn{color:#a4a39d}
+.billing-btn.active{background:#ccff00;color:#0b0b0d;box-shadow:none}
+.billing-save{background:rgba(204,255,0,.10);color:#ccff00}
+.comp-table{background:#131316;border-color:rgba(255,255,255,.09);border-radius:14px}
+.comp-header{background:#0b0b0d}
+.comp-header div{color:#a4a39d}
+.comp-header div:first-child{color:#a4a39d}
+.comp-header div:last-child{color:#ccff00;background:rgba(204,255,0,.10)}
+.comp-row{border-color:rgba(255,255,255,.09)}
+.comp-row:nth-child(even){background:#101013}
+.comp-row div{color:#a4a39d}
+.comp-row div:first-child{color:#f2f1ee}
+.comp-row div:last-child{color:#ccff00;background:rgba(204,255,0,.10)}
+details{background:#131316;border-color:rgba(255,255,255,.09);border-radius:10px}
+details[open]{border-color:rgba(255,255,255,.22)}
+summary{color:#f2f1ee}
+summary::after{color:#a4a39d}
+.faq-answer{color:#a4a39d}
+.cta-banner{background:#131316;border-top:1px solid rgba(255,255,255,.09)}
+.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(204,255,0,.18),transparent)}
+.cta-banner h2{color:#f2f1ee;font-weight:500}
+.cta-banner p,.cta-note{color:#a4a39d}
+.industries,.cities{border-color:rgba(255,255,255,.09);background:#131316}
+.industries h3,.cities h3{color:#a4a39d}
+.industry-link,.city-link{background:#0b0b0d;border-color:rgba(255,255,255,.09);color:#a4a39d}
+.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#ccff00;color:#ccff00;background:rgba(204,255,0,.10)}
+footer{background:#0b0b0d;color:#7c7b76;border-color:rgba(255,255,255,.09)}
+footer a{color:#a4a39d}
+.mock-browser{background:#fff;box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12)}
 .mock-chrome,.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
 .mock-url,.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
 @media(max-width:768px){
@@ -1898,10 +1898,10 @@ footer a{color:#c7c0b4}
   .comp-header{display:none}
   .comp-row{display:grid;grid-template-columns:1fr 1fr;padding:0}
   .comp-row div{padding:.85rem 1rem;text-align:left}
-  .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid #ddd6c9;background:#f7f5f1}
-  .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6b645b}
+  .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid rgba(255,255,255,.09);background:#0b0b0d}
+  .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#a4a39d}
   .comp-row div:nth-child(2)::before{content:"Webagentur"}
-  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#1f5f4b}
+  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#ccff00}
 }
 `.trim();
 

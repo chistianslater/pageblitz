@@ -697,16 +697,12 @@ html.lp-reveal-on .lp-section.lp-in li:nth-child(5) {
 html.lp-reveal-on .lp-section.lp-in li:nth-child(n + 6) {
   transition-delay: 340ms;
 }
-/* Langsamer Stagger für die Vier-Schritte-Reihe: die Sequenz IST der
-   Inhalt, also deutlich sichtbar nacheinander. */
-html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(2) {
-  transition-delay: 180ms;
-}
-html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(3) {
-  transition-delay: 360ms;
-}
-html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(4) {
-  transition-delay: 540ms;
+/* Die Vier-Schritte-Reihe choreografiert GSAP selbst (HowItWorks.tsx,
+   Bounce + Nudge) — der CSS-Stagger bleibt dort komplett aus. */
+html.lp-reveal-on .lp-section [data-gsap-steps] li {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 /* Mini-Visual-Loops der Vier Schritte (lph-*): kleine, ruhige Bewegungen,
    die den jeweiligen Schritt erklären. Nur unter no-preference. */
@@ -796,6 +792,47 @@ html.lp-reveal-on .lp-section.lp-in .lp-stagger-slow li:nth-child(4) {
 }
 .lp-glowspot--right::before {
   right: -14%;
+}
+/* Lebende Hintergründe (2026-08-29): Glows driften langsam, darüber liegt
+   feiner Film-Grain. Beides nur transform/opacity; bei Reduced Motion
+   steht der Grain still und die Glows bleiben statisch. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp-hero-glow::before {
+    animation: lp-glowdrift 14s ease-in-out infinite alternate;
+  }
+  .lp-glowspot::before {
+    animation: lp-glowdrift 19s ease-in-out infinite alternate;
+  }
+  .lp::after {
+    animation: lp-grain 1.2s steps(6) infinite;
+  }
+}
+@keyframes lp-glowdrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: translate3d(-3.5rem, 2.5rem, 0) scale(1.18);
+    opacity: 1;
+  }
+}
+.lp::after {
+  content: "";
+  position: fixed;
+  inset: -60%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+@keyframes lp-grain {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-3%, 2%, 0); }
+  40% { transform: translate3d(2%, -3%, 0); }
+  60% { transform: translate3d(-1%, -2%, 0); }
+  80% { transform: translate3d(3%, 1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 /* Cookie-Banner auf der dunklen Landing: gleiche Struktur, Nachtschicht-
