@@ -258,6 +258,21 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* „KI-Bilder"-Tab im Fotos-Panel (AiPhotoGenerator). */
+.pb-studio-ai-gen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+.pb-studio-ai-gen label {
+  font-size: 0.85rem;
+  color: var(--st-muted);
+}
+.pb-studio-ai-gen .pb-studio-input {
+  width: 100%;
+}
+
 /* Klick auf „Website freischalten" bei offenen Pflichtpunkten: erklärt,
    was fehlt, statt den Button tot zu schalten. */
 .pb-studio-checkout-blockers {

@@ -15,6 +15,7 @@ import {
   SelectedGalleryList,
   type PhotoTarget,
 } from "./photoParts";
+import { AiPhotoGenerator } from "./AiPhotoGenerator";
 
 // Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
 // (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
@@ -32,7 +33,7 @@ function isAcceptedMime(type: string): type is AcceptedMime {
   return (ACCEPTED_MIME_TYPES as readonly string[]).includes(type);
 }
 
-type SourceTab = "gmb" | "stock" | "upload";
+type SourceTab = "gmb" | "stock" | "upload" | "ai";
 
 interface PhotosPanelProps {
   token: string;
@@ -355,6 +356,13 @@ export function PhotosPanel({
             >
               Hochladen
             </button>
+            <button
+              type="button"
+              aria-pressed={sourceTab === "ai"}
+              onClick={() => setSourceTab("ai")}
+            >
+              KI-Bilder
+            </button>
           </div>
           {sources.isLoading && <p>Lade Fotos …</p>}
           {sources.error && (
@@ -384,6 +392,14 @@ export function PhotosPanel({
                 defaultQuery={doc.businessCategory ?? ""}
               />
             </>
+          )}
+          {sourceTab === "ai" && (
+            <AiPhotoGenerator
+              token={token}
+              onPick={handlePick}
+              selected={selected}
+              onGenerated={() => sources.refetch()}
+            />
           )}
           {sourceTab === "upload" && (
             <>

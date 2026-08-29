@@ -4,10 +4,7 @@ import React from "react";
 export const REVIEW_READONLY = { "data-pb-readonly": "" } as const;
 
 export function reviewInitials(name: string): string {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
   if (parts.length === 1) {
     const word = parts[0]!;

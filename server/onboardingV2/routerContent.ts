@@ -11,6 +11,12 @@ import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getIndustryImages } from "../industryImages";
 import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
 import {
+  AI_IMAGES_PER_HOUR,
+  consumeAiImageQuota,
+  generateAiImage,
+  isAiImagesConfigured,
+} from "../_core/aiImages";
+import {
   ImagesPatchSchema,
   OfferPatchSchema,
   PagesPatchSchema,
@@ -171,6 +177,71 @@ export const contentProcedures = {
       const { url } = await uploadPhotoToStorage(
         input.imageData,
         input.mimeType,
+        loaded.website.id,
+        uploaded.length
+      );
+      const next = [...uploaded, url];
+      if (onboarding) {
+        await updateOnboarding(loaded.website.id, {
+          photoUrls: next,
+          updatedAt: Date.now(),
+        });
+      } else {
+        await createOnboarding({
+          websiteId: loaded.website.id,
+          status: "in_progress",
+          stepCurrent: 0,
+          photoUrls: next,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+      return { url, uploaded: next };
+    }),
+
+  /**
+   * KI-Bild über Cloudflare Workers AI (Flux-1-schnell, server/_core/
+   * aiImages.ts) generieren und wie ein Upload behandeln: nach R2
+   * komprimieren/hochladen und an photoUrls anhängen — damit taucht es
+   * auch unter „Hochladen" auf und zählt in das 30-Fotos-Limit.
+   * Rate-Limit: 10 Generierungen pro Website und Stunde (Public-Token!).
+   */
+  generateAiPhoto: publicProcedure
+    .input(tokenInput.extend({ prompt: z.string().trim().min(3).max(300) }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      if (!isAiImagesConfigured()) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "KI-Bilder sind noch nicht eingerichtet — nutze solange Stockbilder oder eigene Fotos.",
+        });
+      }
+      if (!consumeAiImageQuota(loaded.website.id)) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: `Maximal ${AI_IMAGES_PER_HOUR} KI-Bilder pro Stunde — bitte kurz warten.`,
+        });
+      }
+      const onboarding = await getOnboardingByWebsiteId(loaded.website.id);
+      const uploaded = readPhotoUrls(onboarding);
+      if (uploaded.length >= MAX_UPLOADED_PHOTOS) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Maximal 30 eigene Fotos pro Website.",
+        });
+      }
+      const imageBase64 = await generateAiImage(input.prompt);
+      if (!imageBase64) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Das Bild konnte gerade nicht generiert werden — bitte versuch es noch einmal.",
+        });
+      }
+      const { url } = await uploadPhotoToStorage(
+        imageBase64,
+        "image/jpeg",
         loaded.website.id,
         uploaded.length
       );
