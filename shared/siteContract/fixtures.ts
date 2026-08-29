@@ -262,6 +262,7 @@ const KANZLEI_FULL: WebsiteDataV2 = {
         "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998 — präzise, verbindlich, ohne Umwege.",
       ctaText: "Erstgespräch anfragen",
       ctaHref: "#kontakt",
+      imageUrl: "/demo/kanzlei-hero.webp",
     },
     {
       type: "services",
@@ -375,6 +376,7 @@ const KANZLEI_MINIMAL: WebsiteDataV2 = {
         "Roth & Weber berät Unternehmen und Selbstständige in Köln seit 1998.",
       ctaText: "Erstgespräch anfragen",
       ctaHref: "#kontakt",
+      imageUrl: "/demo/kanzlei-hero.webp",
     },
     {
       type: "services",

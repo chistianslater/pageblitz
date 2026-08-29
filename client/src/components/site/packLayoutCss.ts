@@ -28,12 +28,7 @@ function q(
   return `.pb-site.pb-${pack}[${mobileAttr}="${variant}"]${rest},.pb-site.pb-${pack}:not([${mobileAttr}])[${attr}="${variant}"]${rest}`;
 }
 
-function hero(
-  pack: string,
-  variant: string,
-  mode: Mode,
-  rest = ""
-): string {
+function hero(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(pack, "data-pb-hero", "data-pb-hero-mobile", variant, mode, rest);
 }
 
@@ -65,12 +60,7 @@ function about(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(pack, "data-pb-about", "data-pb-about-mobile", variant, mode, rest);
 }
 
-function gallery(
-  pack: string,
-  variant: string,
-  mode: Mode,
-  rest = ""
-): string {
+function gallery(pack: string, variant: string, mode: Mode, rest = ""): string {
   return q(
     pack,
     "data-pb-gallery",
@@ -209,11 +199,24 @@ ${both(mp, mode, " .pb-mp-sticker")}{position:relative!important;inset:auto!impo
 }
 
 function editorialHeroes(mode: Mode): string {
+  const kz = "kanzlei";
+  const kw = "klarwerk";
   return `
-/* ── Kanzlei / Klarwerk: textbasiert, Varianten zentrieren nur ── */
-${start("kanzlei", "centered", mode)},${start("klarwerk", "centered", mode)}{text-align:center!important}
-${start("kanzlei", "centered", mode, " h1")},${start("kanzlei", "centered", mode, " p")},${start("klarwerk", "centered", mode, " h1")},${start("klarwerk", "centered", mode, " p")}{margin-left:auto!important;margin-right:auto!important}
-${start("kanzlei", "image-first", mode)},${start("klarwerk", "image-first", mode)}{text-align:left!important}
+/* ── Kanzlei: Dossier-Split flachlegen ── */
+${both(kz, mode, " .pb-kz-split")}{grid-template-columns:1fr!important;gap:clamp(1.5rem,4vw,2.75rem)!important}
+${start(kz, "centered", mode, " .pb-kz-copy")}{text-align:center!important;margin-inline:auto!important}
+${start(kz, "centered", mode, " .pb-kz-copy h1")},${start(kz, "centered", mode, " .pb-kz-eyebrow")},${start(kz, "centered", mode, " .pb-kz-sub")},${start(kz, "centered", mode, " a.pb-kz-link")}{margin-left:auto!important;margin-right:auto!important}
+${start(kz, "centered", mode, " .pb-kz-photo")}{width:min(100%,28rem)!important;margin-inline:auto!important}
+${start(kz, "image-first", mode, " .pb-kz-photo")}{order:-1!important;width:100%!important}
+${both(kz, mode, " .pb-kz-photo img")}{max-height:min(36rem,70vh)!important}
+
+/* ── Klarwerk: Instrument-Split flachlegen ── */
+${both(kw, mode, " .pb-kw-split")}{grid-template-columns:1fr!important;gap:clamp(1.5rem,4vw,2.75rem)!important}
+${start(kw, "centered", mode, " .pb-kw-copy")}{text-align:center!important;margin-inline:auto!important}
+${start(kw, "centered", mode, " .pb-kw-copy h1")},${start(kw, "centered", mode, " .pb-kw-eyebrow")},${start(kw, "centered", mode, " .pb-kw-sub")},${start(kw, "centered", mode, " a.pb-kw-hero-cta")}{margin-left:auto!important;margin-right:auto!important}
+${start(kw, "centered", mode, " .pb-kw-photo")}{width:min(100%,28rem)!important;margin-inline:auto!important}
+${start(kw, "image-first", mode, " .pb-kw-photo")}{order:-1!important;width:100%!important}
+${both(kw, mode, " .pb-kw-photo img")}{max-height:min(36rem,70vh)!important}
 `;
 }
 

@@ -4,7 +4,7 @@ export const KLARWERK: PackConstitution = {
   id: "klarwerk",
   name: "Klarwerk",
   essence:
-    "Weiß, Geometrie und ein elektrisches Blau — aufgeräumt wie gutes Werkzeug.",
+    "Graphitpapier, Kupfer und eine geometrische Grotesk — Präzision statt Bento.",
   industries: [
     "it-service",
     "it-dienstleister",
@@ -21,54 +21,60 @@ export const KLARWERK: PackConstitution = {
   theme: "light",
   palette: [
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      name: "Graphitpapier",
+      hex: "#F3F1EB",
       role: "canvas",
-      usage: "Seitengrund — reines Weiß.",
+      usage: "Seitengrund — warmes Plotterpapier.",
     },
     {
-      name: "Nebel",
-      hex: "#F2F4F7",
+      name: "Platte",
+      hex: "#FFFFFF",
       role: "surface",
-      usage: "Bento-Zellen, dezente Flächen.",
+      usage: "Karten, Readout-Zellen.",
     },
     {
-      name: "Tinte",
-      hex: "#14171C",
+      name: "Graphit",
+      hex: "#161616",
       role: "ink",
-      usage: "Text, Kennzahlen-Panel-Grund.",
+      usage: "Text, Haarlinien, Foto-Rahmen.",
     },
     {
-      name: "Grau",
-      hex: "#5B6472",
+      name: "Rauch",
+      hex: "#5C5A54",
       role: "muted",
-      usage: "Sekundärtext, gedämpfte Kennzahlen.",
+      usage: "Sekundärtext, Readout-Label.",
     },
     {
-      name: "Trennlinie",
-      hex: "#E3E7ED",
+      name: "Riss",
+      hex: "#D4D0C6",
       role: "line",
-      usage: "Hairlines, Rahmen.",
+      usage: "Haarlinien, Spec-Reihen.",
     },
     {
-      name: "Elektroblau",
-      hex: "#3B5BFD",
+      name: "Kupfer",
+      hex: "#C45C26",
       role: "accent",
-      usage: "Nav-Button, Akzentwort, Bento-Highlight — override-fähig.",
+      usage: "CTA, Index, Akzentwort, Statuspunkt.",
     },
     {
       name: "Weiß",
       hex: "#FFFFFF",
       role: "accent-contrast",
-      usage: "Text auf Elektroblau.",
+      usage: "Text auf Kupfer.",
+    },
+    {
+      name: "Rost",
+      hex: "#A84A1C",
+      role: "accent-text",
+      usage: "Kupfer-Text auf hellem Papier (≥ 4,5:1).",
     },
   ],
   type: {
     display: {
-      family: "Space Grotesk",
-      weights: [500, 700],
+      family: "Syne",
+      weights: [600, 700],
       fallback: "system-ui, sans-serif",
-      googleCss: "Space+Grotesk:wght@500;700",
+      googleCss: "Syne:wght@600;700",
     },
     body: {
       family: "Inter",
@@ -79,20 +85,20 @@ export const KLARWERK: PackConstitution = {
     scale: {
       basePx: 16,
       ratio: 1.25,
-      heroClamp: "clamp(2.4rem, 5.6vw, 4.5rem)",
+      heroClamp: "clamp(2.6rem, 6vw, 5rem)",
     },
   },
   shape: {
-    radiusCard: "14px",
-    radiusButton: "8px",
+    radiusCard: "4px",
+    radiusButton: "4px",
     buttonStyle: "filled-accent",
     density: "normal",
   },
   signature: {
-    hero: "Nav mit gefülltem Accent-Button + Headline mit Akzentwort, gefolgt von unregelmäßigem Bento (hohe Kennzahlen-Zelle, Accent-Kennzahl-Zelle, kleine Zelle, breite Status-Zelle mit Punkt)",
-    decor: ["irregular-bento", "metric-panel", "status-dot", "accent-headline"],
+    hero: "Instrument-Split: geometrische Headline mit Kupfer-Akzentwort, Arbeitsfoto rechts, darunter ein schmales Readout (Kennzahlen + Statuspunkt)",
+    decor: ["instrument-readout", "copper-rule", "spec-sheet", "accent-headline"],
     imageTreatment:
-      "flache, gradientenfreie Blau-/Grau-Geometrie — nie Fotos im Bento",
+      "scharf, kühl, 1px-Graphitrahmen — flache Geometrie nur als Dekor, nie als Foto-Ersatz",
   },
   llmHints: {
     do: [

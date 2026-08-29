@@ -8,10 +8,12 @@ import { SiteRenderer } from "../../SiteRenderer";
 import { KANZLEI_CSS } from "./css";
 
 describe("Pack kanzlei", () => {
-  test("Verfassung registriert, Signatur enthält Raster + Mono-Index", () => {
+  test("Verfassung registriert, Signatur enthält Dossier + Folio", () => {
     const c = getConstitution("kanzlei");
-    expect(c.signature.decor).toContain("column-grid");
-    expect(c.signature.decor).toContain("mono-index");
+    expect(c.signature.decor).toContain("dossier-split");
+    expect(c.signature.decor).toContain("folio-stamp");
+    expect(c.signature.decor).toContain("leather-rule");
+    expect(c.signature.decor).not.toContain("column-grid");
   });
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("kanzlei", "full")} />
@@ -19,15 +21,20 @@ describe("Pack kanzlei", () => {
   test("eine h1, deutsche Anker, Signatur-Klassen", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain('id="leistungen"');
-    expect(html).toContain("pb-kz-grid");
+    expect(html).toContain("pb-kz-split");
+    expect(html).toContain("pb-kz-photo");
     expect(html).toContain("pb-kz-idx");
+    expect(html).not.toContain("pb-kz-grid");
   });
   test("Kennzahlen-Leiste rendert", () => {
     expect(html).toContain("pb-kz-facts");
   });
-  test("Raster-Motion, Sticky-Index und responsive Motion-Fallbacks", () => {
-    expect(html).toContain('class="pb-kz-section-index"');
-    expect(KANZLEI_CSS).toContain("@keyframes pb-kz-grid-build");
+  test("Hero-Foto und Dossier-Motion, responsive Motion-Fallbacks", () => {
+    expect(html).toContain("/demo/kanzlei-hero.webp");
+    expect(html).not.toContain('class="pb-kz-section-index"');
+    expect(html).not.toContain("pb-kz-watermark");
+    expect(KANZLEI_CSS).toContain("@keyframes pb-kz-dossier-in");
+    expect(KANZLEI_CSS).toContain("@keyframes pb-kz-folio");
     expect(KANZLEI_CSS).toContain("position:sticky");
     expect(KANZLEI_CSS).toContain("scroll-margin-top");
     expect(KANZLEI_CSS).toContain("@media(max-width:840px)");
@@ -38,13 +45,11 @@ describe("Pack kanzlei", () => {
 
   test("Chrome ist beratungstauglich, nicht nur Anwaltskanzlei", () => {
     const c = getConstitution("kanzlei");
-    expect(c.signature.decor).toContain("frame-watermark");
     expect(c.signature.decor).not.toContain("paragraph-watermark");
-    expect(html).toContain("pb-kz-watermark");
+    expect(c.signature.decor).not.toContain("frame-watermark");
     expect(html).not.toContain("§");
     expect(html).toContain("Kundenstimmen");
     expect(html).not.toContain("Mandantenstimmen");
-    expect(html).toContain("Übersicht");
     expect(html).not.toContain("Fachgebiete");
     expect(html).not.toContain("Mandant");
     expect(html).not.toContain("Klage");
