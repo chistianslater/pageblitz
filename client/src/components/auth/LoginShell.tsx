@@ -23,7 +23,7 @@ export function LoginShell({
         <a
           href="/"
           aria-label="Pageblitz Startseite"
-          className="mb-8 inline-flex rounded-md"
+          className="mx-auto mb-8 flex w-fit rounded-md"
         >
           <Wordmark />
         </a>
