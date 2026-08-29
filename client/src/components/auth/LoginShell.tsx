@@ -18,7 +18,7 @@ export function LoginShell({
   footer,
 }: LoginShellProps) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-lp-canvas p-4 text-lp-ink sm:p-6">
+    <main className="lp flex min-h-screen items-center justify-center bg-lp-canvas p-4 text-lp-ink sm:p-6">
       <div className="w-full max-w-md">
         <a
           href="/"
@@ -28,7 +28,7 @@ export function LoginShell({
           <Wordmark />
         </a>
 
-        <section className="rounded-[16px] border border-lp-line bg-lp-surface p-6 shadow-[0_28px_60px_-42px_rgba(29,26,23,0.55)] sm:p-8">
+        <section className="rounded-[16px] border border-lp-line bg-lp-surface p-6 shadow-[0_40px_90px_-40px_rgba(0,0,0,0.9)] sm:p-8">
           <p className="lp-kicker mb-3">{eyebrow}</p>
           <h1 className="text-[1.75rem] font-medium leading-tight tracking-[-0.02em]">
             {title}

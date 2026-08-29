@@ -42,6 +42,7 @@ export const FUNDAMENT_CSS = `
 .pb-fd-quote p{font-size:16px;line-height:1.5;max-width:42ch}
 .pb-fd-quote footer{margin-top:18px;font-size:12px;color:var(--pb-muted)}
 .pb-fd-quotes .pb-review-stars{margin-bottom:14px}
+.pb-fd-faq-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));column-gap:clamp(40px,6vw,90px)}
 .pb-fd-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-fd-faq strong{display:block;font-weight:600;margin-bottom:6px}
 .pb-fd-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}

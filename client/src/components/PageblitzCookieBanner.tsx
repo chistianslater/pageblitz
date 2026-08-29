@@ -35,10 +35,17 @@ const CATEGORIES: Category[] = [
 
 export default function PageblitzCookieBanner() {
   const [location] = useLocation();
-  // Die Landing "/" ist dunkel (Nachtschicht) — der globale Banner bekommt
-  // dort einen dunklen Token-Scope (.pb-cookie-dark in index.css); überall
-  // sonst (Start-Funnel, Dashboard) bleibt der helle Studio-Look.
-  const isDarkLanding = location === "/";
+  // Nachtschicht-Routen (gleiche Liste wie das Pre-Paint-Skript in
+  // client/index.html): Landing, Start-Funnel, Studio, Login, Rechtsseiten.
+  // Der globale Banner bekommt dort den dunklen Token-Scope
+  // (.pb-cookie-dark in index.css); überall sonst (Dashboard) bleibt hell.
+  const isDarkLanding =
+    location === "/" ||
+    location.startsWith("/start") ||
+    location.startsWith("/onboarding") ||
+    location.startsWith("/login") ||
+    location === "/impressum" ||
+    location === "/datenschutz";
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);

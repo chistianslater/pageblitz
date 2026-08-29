@@ -44,6 +44,7 @@ export const KANZLEI_CSS = `
 .pb-kz-quote p{font-family:var(--pb-font-display);font-style:italic;font-size:clamp(1.1rem,1.8vw,1.4rem);line-height:1.4;max-width:30ch}
 .pb-kz-quote footer{margin-top:18px;font-size:12px;color:var(--pb-muted)}
 .pb-kz-quotes .pb-review-stars{margin-bottom:16px;color:var(--pb-accent)}
+.pb-kz-faq-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));column-gap:clamp(40px,6vw,90px)}
 .pb-kz-faq{border-bottom:1px solid var(--pb-line);padding:18px 0}
 .pb-kz-faq strong{display:block;font-family:var(--pb-font-display);font-weight:500;margin-bottom:6px;font-size:1.15rem}
 .pb-kz-faq p{color:var(--pb-muted);font-size:14px;max-width:56ch}

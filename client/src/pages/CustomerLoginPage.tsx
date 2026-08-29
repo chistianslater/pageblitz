@@ -78,7 +78,7 @@ export default function CustomerLoginPage() {
       }
     >
       {(error || urlError) && (
-        <div className="mb-6 flex items-start gap-2 rounded-[10px] border border-[#e5c2b4] bg-[#fbf0ec] p-3">
+        <div className="mb-6 flex items-start gap-2 rounded-[10px] border border-[rgba(255,157,122,0.4)] bg-[rgba(255,157,122,0.08)] p-3">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-lp-warn" />
           <p className="text-sm text-lp-warn">
             {error ||
@@ -123,7 +123,7 @@ export default function CustomerLoginPage() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-lp-line bg-white px-4 py-3.5 font-medium text-lp-ink transition-colors hover:border-lp-ink disabled:cursor-not-allowed disabled:opacity-50"
+            className="mb-4 flex w-full items-center justify-center gap-3 rounded-full border border-lp-line bg-[rgba(255,255,255,0.06)] px-4 py-3.5 font-medium text-lp-ink transition-colors hover:border-lp-ink disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <span className="h-5 w-5 animate-spin rounded-full border-2 border-lp-line border-t-lp-ink motion-reduce:animate-none" />
@@ -163,7 +163,7 @@ export default function CustomerLoginPage() {
                   value={email}
                   onChange={event => setEmail(event.target.value)}
                   required
-                  className="h-12 border-lp-line bg-white pl-10 text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent"
+                  className="h-12 border-lp-line bg-[rgba(255,255,255,0.06)] pl-10 text-lp-ink placeholder:text-lp-muted focus-visible:border-lp-accent"
                 />
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function CustomerLoginPage() {
             <Button
               type="submit"
               disabled={loading || !email.trim()}
-              className="h-12 w-full rounded-full bg-lp-accent py-3 font-medium text-lp-accent-ink hover:bg-[#174a3b]"
+              className="h-12 w-full rounded-full bg-lp-accent py-3 font-medium text-lp-accent-ink hover:bg-[#b3e600]"
             >
               {loading ? (
                 <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none" />

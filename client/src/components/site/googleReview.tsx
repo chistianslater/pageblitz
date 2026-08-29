@@ -22,6 +22,9 @@ export function ReviewStars({ rating }: { rating?: number }) {
   return (
     <span
       className="pb-review-stars"
+      // role="img": aria-label ist auf rollenlosen Spans verboten
+      // (axe aria-prohibited-attr) — als Bild beschreibt es die Sterne.
+      role="img"
       aria-label={`${filled} von 5 Sternen`}
     >
       {Array.from({ length: 5 }, (_, i) => (

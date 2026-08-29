@@ -271,12 +271,17 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          {section.items.map(item => (
-            <div className="pb-kz-faq" key={item.question}>
-              <strong>{item.question}</strong>
-              <p>{item.answer}</p>
-            </div>
-          ))}
+          {/* 2-Spalten-Raster ab Desktop (Stilvorlagen-Audit P5, 2026-08-29):
+              einspaltige Fragen mit seitenbreiten Trennlinien ließen die
+              rechte Sektionshälfte leer. */}
+          <div className="pb-kz-faq-list">
+            {section.items.map(item => (
+              <div className="pb-kz-faq" key={item.question}>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+              </div>
+            ))}
+          </div>
         </section>
       );
     }

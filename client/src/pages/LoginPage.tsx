@@ -69,7 +69,7 @@ export default function LoginPage() {
               placeholder="name@pageblitz.de"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="h-12 border-lp-line bg-white pl-9"
+              className="h-12 border-lp-line bg-[rgba(255,255,255,0.06)] pl-9"
               required
               autoFocus
               autoComplete="email"
@@ -91,7 +91,7 @@ export default function LoginPage() {
               placeholder="Passwort"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="h-12 border-lp-line bg-white pl-9"
+              className="h-12 border-lp-line bg-[rgba(255,255,255,0.06)] pl-9"
               required
               autoComplete="current-password"
             />
@@ -102,7 +102,7 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-full bg-lp-accent text-lp-accent-ink hover:bg-[#174a3b]"
+          className="h-12 w-full rounded-full bg-lp-accent text-lp-accent-ink hover:bg-[#b3e600]"
           disabled={loading}
         >
           {loading ? "Anmelden…" : "Anmelden"}
