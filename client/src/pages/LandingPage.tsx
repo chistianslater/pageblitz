@@ -6,7 +6,6 @@ import { ProofBar } from "@/components/landing/ProofBar";
 import { ProblemSection } from "@/components/landing/ProblemSection";
 import { ForWhom } from "@/components/landing/ForWhom";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { StudioProof } from "@/components/landing/StudioProof";
 import { PackShowcase } from "@/components/landing/PackShowcase";
 import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
 import { Pricing } from "@/components/landing/Pricing";
@@ -150,8 +149,6 @@ export default function LandingPage() {
             — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
         <HowItWorks />
         <ForWhom />
-        {/* Systematische Studio-Struktur statt wiederholtem Pack-Screenshot. */}
-        <StudioProof />
         {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
             verkaufen das Abo indirekt, bevor der Preis fällt. */}
         <FeatureShowcase />
