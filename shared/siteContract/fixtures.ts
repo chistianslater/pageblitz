@@ -139,14 +139,17 @@ const WERKBANK_FULL: WebsiteDataV2 = {
         {
           url: "/demo/werkbank-hero.webp",
           alt: "Massivholztisch in einer Dortmunder Altbauwohnung",
+          caption: "Massivholztisch in einer Dortmunder Altbauwohnung",
         },
         {
           url: "/demo/werkbank-detail-1.webp",
           alt: "Maßgefertigter Einbauschrank aus Eiche",
+          caption: "Maßgefertigter Einbauschrank aus Eiche",
         },
         {
           url: "/demo/werkbank-detail-2.webp",
           alt: "Restauriertes Sideboard aus den 1960ern",
+          caption: "Restauriertes Sideboard aus den 1960ern",
         },
       ],
     },
@@ -471,10 +474,12 @@ const MORGENLICHT_FULL: WebsiteDataV2 = {
         {
           url: "/demo/morgenlicht-detail-2.webp",
           alt: "Warmer Empfangsbereich der Praxis Dr. Sommer",
+          caption: "Warmer Empfangsbereich der Praxis Dr. Sommer",
         },
         {
           url: "/demo/morgenlicht-detail-3.webp",
           alt: "Ruhig arrangierte Instrumente und natürliche Materialien",
+          caption: "Ruhig arrangierte Instrumente und natürliche Materialien",
         },
       ],
     },
@@ -692,10 +697,12 @@ const GUSTO_FULL: WebsiteDataV2 = {
         {
           url: "/demo/gusto-detail-1.webp",
           alt: "Hausgemachte Tagliatelle mit Ragù",
+          caption: "Hausgemachte Tagliatelle mit Ragù",
         },
         {
           url: "/demo/gusto-detail-2.webp",
           alt: "Weinregal mit Flaschen aus der Emilia-Romagna",
+          caption: "Weinregal mit Flaschen aus der Emilia-Romagna",
         },
       ],
     },
@@ -840,14 +847,17 @@ const PATINA_FULL: WebsiteDataV2 = {
         {
           url: "/demo/patina-detail-2.webp",
           alt: "Ruhige Behandlung in der Naturheilpraxis",
+          caption: "Ruhige Behandlung in der Naturheilpraxis",
         },
         {
           url: "/demo/patina-detail-3.webp",
           alt: "Persönliches Erstgespräch mit Annelie Voss",
+          caption: "Persönliches Erstgespräch mit Annelie Voss",
         },
         {
           url: "/demo/patina-detail-4.webp",
           alt: "Heilpflanzen und traditionelle Arbeitsmaterialien",
+          caption: "Heilpflanzen und traditionelle Arbeitsmaterialien",
         },
       ],
     },
@@ -1025,10 +1035,12 @@ const SALON_NOIR_FULL: WebsiteDataV2 = {
         {
           url: "/demo/salon-noir-detail-2.webp",
           alt: "Die Stylingplätze des NOIR Haarstudios",
+          caption: "Die Stylingplätze des NOIR Haarstudios",
         },
         {
           url: "/demo/salon-noir-detail-3.webp",
           alt: "Glänzendes Balayage-Ergebnis im NOIR Haarstudio",
+          caption: "Glänzendes Balayage-Ergebnis im NOIR Haarstudio",
         },
       ],
     },
@@ -1278,6 +1290,7 @@ const MARKTPLATZ_FULL: WebsiteDataV2 = {
         {
           url: "/demo/marktplatz-detail-3.webp",
           alt: "Xylophon und Blockflöte im Unterrichtsraum",
+          caption: "Xylophon und Blockflöte im Unterrichtsraum",
         },
       ],
     },
@@ -1444,6 +1457,7 @@ const LANDGUT_FULL: WebsiteDataV2 = {
         {
           url: "/demo/landgut-detail-2.webp",
           alt: "Frisch gepflanzte Baumschule bei Sonnenaufgang",
+          caption: "Frisch gepflanzte Baumschule bei Sonnenaufgang",
         },
       ],
     },
@@ -1575,10 +1589,12 @@ const ATELIER_FULL: WebsiteDataV2 = {
         {
           url: "/demo/atelier-detail-1.webp",
           alt: "Natürliches Porträt am Atelierfenster",
+          caption: "Natürliches Porträt am Atelierfenster",
         },
         {
           url: "/demo/atelier-detail-2.webp",
           alt: "Markenshooting für eine Keramik-Kollektion",
+          caption: "Markenshooting für eine Keramik-Kollektion",
         },
       ],
     },
@@ -1898,10 +1914,12 @@ const VERVE_FULL: WebsiteDataV2 = {
         {
           url: "/demo/verve-detail-2.webp",
           alt: "Coach und Athlet beim persönlichen Fortschritts-Check",
+          caption: "Coach und Athlet beim persönlichen Fortschritts-Check",
         },
         {
           url: "/demo/verve-detail-3.webp",
           alt: "Athletin beim Battle-Rope-Training",
+          caption: "Athletin beim Battle-Rope-Training",
         },
       ],
     },
@@ -2107,10 +2125,12 @@ const ZUNFT_FULL: WebsiteDataV2 = {
         {
           url: "/demo/zunft-detail-2.webp",
           alt: "Sauerteig wird von Hand zu einem Laib geformt",
+          caption: "Sauerteig wird von Hand zu einem Laib geformt",
         },
         {
           url: "/demo/zunft-detail-3.webp",
           alt: "Zwei Generationen arbeiten gemeinsam am Backtisch",
+          caption: "Zwei Generationen arbeiten gemeinsam am Backtisch",
         },
       ],
     },
@@ -2297,6 +2317,7 @@ const SCHIMMER_FULL: WebsiteDataV2 = {
         {
           url: "/demo/schimmer-detail-2.webp",
           alt: "Wartebereich im Studio Lumière",
+          caption: "Wartebereich im Studio Lumière",
         },
       ],
     },

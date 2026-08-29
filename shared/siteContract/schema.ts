@@ -184,7 +184,18 @@ const GallerySchema = z
     type: z.literal("gallery"),
     headline: z.string().optional(),
     images: z
-      .array(z.object({ url: SafeUrlSchema, alt: z.string() }).strict())
+      .array(
+        z
+          .object({
+            url: SafeUrlSchema,
+            alt: z.string(),
+            // Sichtbare Bildunterschrift (2026-08-29): getrennt vom alt-Text.
+            // Ohne caption zeigen die Packs KEINEN Text unter dem Foto mehr —
+            // vorher stand dort das alt (bei Kundenauswahl = Firmenname).
+            caption: z.string().max(140).optional(),
+          })
+          .strict()
+      )
       .min(1),
   })
   .strict();

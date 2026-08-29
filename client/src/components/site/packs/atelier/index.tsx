@@ -174,7 +174,7 @@ function renderSection(
                 </div>
                 <figcaption>
                   <b>{String(i + 1).padStart(2, "0")}</b>
-                  <span>{img.alt || "Ohne Titel"}</span>
+                  <span>{img.caption || "Ohne Titel"}</span>
                 </figcaption>
               </figure>
             ))}

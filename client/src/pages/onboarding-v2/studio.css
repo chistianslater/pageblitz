@@ -258,6 +258,13 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* Bildunterschrift-Eingabe in der Galerie-Liste (2026-08-29). */
+.pb-studio-gallery-caption {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
 /* „KI-Bilder"-Tab im Fotos-Panel (AiPhotoGenerator). */
 .pb-studio-ai-gen {
   display: flex;

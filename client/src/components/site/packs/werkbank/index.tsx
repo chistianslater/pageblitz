@@ -256,7 +256,7 @@ function renderSection(
                 </div>
                 <figcaption>
                   <b>{String(i + 1).padStart(2, "0")}</b>
-                  {img.alt && <span>{img.alt}</span>}
+                  {img.caption && <span>{img.caption}</span>}
                 </figcaption>
               </figure>
             ))}

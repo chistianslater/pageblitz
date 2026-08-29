@@ -99,6 +99,17 @@ export function PhotosPanel({
   const [galleryUrls, setGalleryUrls] = useState<string[]>(
     gallerySection?.images.map(i => i.url) ?? []
   );
+  // Sichtbare Bildunterschriften je URL (2026-08-29): getrennt vom alt-Text,
+  // Packs zeigen nur noch caption an. Start: gespeicherte captions aus dem Doc.
+  const [galleryCaptions, setGalleryCaptions] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries(
+      (gallerySection?.images ?? [])
+        .filter(i => i.caption)
+        .map(i => [i.url, i.caption as string])
+    )
+  );
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   const sources = trpc.onboardingV2.getPhotoSources.useQuery({ token });
@@ -150,6 +161,13 @@ export function PhotosPanel({
    * Klicks (kein Lost-Update durch parallele Galerie-Patches); schlägt der
    * Patch fehl, rollt der State auf den Dokumentstand zurück.
    */
+  /** Galerie-Patch-Item: alt bleibt der Firmenname (A11y), caption nur wenn gesetzt. */
+  const galleryItem = (url: string, captions = galleryCaptions) => ({
+    url,
+    alt: doc.businessName,
+    ...(captions[url] ? { caption: captions[url] } : {}),
+  });
+
   const applyImages = (patch: ImagesPatch, rollback: () => void) => {
     setImages.mutate(
       { token, patch },
@@ -181,16 +199,28 @@ export function PhotosPanel({
       // expliziten „Galerie entfernen"-Button unten.
       if (next.length === 0 && hasExistingGallery) return;
       applyImages(
-        { gallery: next.map(u => ({ url: u, alt: doc.businessName })) },
+        { gallery: next.map(u => galleryItem(u)) },
         () => setGalleryUrls(prev)
       );
     }
   };
 
+  const handleCaptionChange = (url: string, caption: string) => {
+    const prev = galleryCaptions;
+    const next = { ...prev };
+    if (caption) next[url] = caption;
+    else delete next[url];
+    setGalleryCaptions(next);
+    applyImages(
+      { gallery: galleryUrls.map(u => galleryItem(u, next)) },
+      () => setGalleryCaptions(prev)
+    );
+  };
+
   const persistGallery = (prev: string[], next: string[]) => {
     if (next.length === 0 && hasExistingGallery) return;
     applyImages(
-      { gallery: next.map(u => ({ url: u, alt: doc.businessName })) },
+      { gallery: next.map(u => galleryItem(u)) },
       () => setGalleryUrls(prev)
     );
   };
@@ -323,6 +353,8 @@ export function PhotosPanel({
       {!galleryLocked && target === "gallery" && (
         <SelectedGalleryList
           urls={galleryUrls}
+          captions={galleryCaptions}
+          onCaptionChange={handleCaptionChange}
           onMove={handleMoveGallery}
           onRemove={handleRemoveGallery}
           busy={busy}

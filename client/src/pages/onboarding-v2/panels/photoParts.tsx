@@ -144,6 +144,10 @@ interface SelectedGalleryListProps {
   onMove: (index: number, direction: "up" | "down") => void;
   onRemove: (index: number) => void;
   busy?: boolean;
+  /** Sichtbare Bildunterschriften je URL (optional, 2026-08-29). */
+  captions?: Record<string, string>;
+  /** Commit einer Unterschrift (onBlur) — ohne Handler kein Eingabefeld. */
+  onCaptionChange?: (url: string, caption: string) => void;
 }
 
 /**
@@ -156,6 +160,8 @@ export function SelectedGalleryList({
   onMove,
   onRemove,
   busy = false,
+  captions = {},
+  onCaptionChange,
 }: SelectedGalleryListProps) {
   if (urls.length === 0) {
     return (
@@ -170,7 +176,23 @@ export function SelectedGalleryList({
       {urls.map((url, index) => (
         <li key={`${url}-${index}`} className="pb-studio-gallery-selected-item">
           <img src={url} alt={`Galerie-Foto ${index + 1}`} />
-          <span>Foto {index + 1}</span>
+          {onCaptionChange ? (
+            <input
+              type="text"
+              className="pb-studio-input pb-studio-gallery-caption"
+              aria-label={`Bildunterschrift für Foto ${index + 1}`}
+              placeholder="Bildunterschrift (optional)"
+              maxLength={140}
+              defaultValue={captions[url] ?? ""}
+              disabled={busy}
+              onBlur={event => {
+                const next = event.target.value.trim();
+                if (next !== (captions[url] ?? "")) onCaptionChange(url, next);
+              }}
+            />
+          ) : (
+            <span>Foto {index + 1}</span>
+          )}
           <div className="pb-studio-team-actions">
             <button
               type="button"

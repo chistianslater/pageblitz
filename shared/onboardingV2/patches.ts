@@ -14,7 +14,15 @@ export const ImagesPatchSchema = z
     hero: SafeUrlSchema.optional(),
     about: SafeUrlSchema.optional(),
     gallery: z
-      .array(z.object({ url: SafeUrlSchema, alt: z.string().min(1) }).strict())
+      .array(
+        z
+          .object({
+            url: SafeUrlSchema,
+            alt: z.string().min(1),
+            caption: z.string().max(140).optional(),
+          })
+          .strict()
+      )
       .max(12)
       .optional(),
   })

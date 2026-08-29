@@ -270,8 +270,10 @@ test("Designprofil-Variante verändert Komposition ohne Pack-Wechsel", async ({
     .locator("#leistungen")
     .evaluate(el => getComputedStyle(el).display);
   expect(servicesDisplay).toBe("grid");
+  // Die Variante ordnet den MEDIA-SLOT (figure) um, nicht das img darin —
+  // werkbank wickelt das Bild seit dem Slot-Umbau in eine figure.
   const aboutImageOrder = await page
-    .locator("#ueber-uns img")
+    .locator('#ueber-uns [data-pb-slot="about-media"]')
     .evaluate(el => getComputedStyle(el).order);
   expect(aboutImageOrder).toBe("-1");
   const galleryOverflow = await page
