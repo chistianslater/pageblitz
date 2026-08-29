@@ -19,16 +19,18 @@ import {
 } from "@/components/landing/LandingFooter";
 
 /**
- * Landingpage „/" — Dayos-Sektionsrhythmus (Billboard, Echo-Titel,
- * Pillar-Wörter) auf Apple-optical Type. Tokens `.lp`/`--lp-*` in
- * client/src/index.css. Studio bleibt Papier/Grün.
+ * Landingpage „/" — „Nachtschicht" (Relaunch 2026-08-29): Kohle-Bühne,
+ * ein Volt-Akzent, Space Grotesk + JetBrains Mono. Tokens `.lp`/`--lp-*`
+ * in client/src/index.css; Spec:
+ * docs/superpowers/specs/2026-08-29-landing-relaunch-dark-volt-design.md.
+ * Studio bleibt Papier/Grün.
  *
  * Meta/JSON-LD (Title, Description, OG, SoftwareApplication, Organization)
  * stehen in client/index.html; das FAQPage-Schema und der Crawler-Prerender
  * kommen serverseitig aus server/seo/homePage.ts (Quelle: shared/faq.ts).
  *
- * Die Hero-Bühne läuft als Remotion-Player (hero-film/, lazy, nicht im
- * ersten Paint). Chat-Widget lädt ebenfalls lazy.
+ * Die Hero-Bühne ist HeroBuildLive (CSS-Phasen + Timer, kein Remotion,
+ * kein Bild im LCP-Pfad). Chat-Widget lädt lazy.
  */
 
 const LandingPageChatWidget = lazy(
@@ -141,23 +143,18 @@ export default function LandingPage() {
           onChange={setHeroBusinessName}
           onSubmit={handleHeroStart}
         />
-        {/* Belege und Problem zuerst, dann Dayos-Manifesto, dann Ablauf. */}
+        {/* Dramaturgie (Spec §4): Anker direkt unterm Hero, dann Problem
+            (Verlustaversion), Ablauf, Selbstidentifikation über die
+            Designrichtungen, Extras als Wertaufbau — erst danach der Preis. */}
         <ProofBar />
         <ProblemSection billingYearly={billingYearly} />
-        {/* Erst „Was muss ich tun?", dann „Passt das zu meiner Branche?"
-            — für wenig technikaffine Besucher die natürlichere Reihenfolge. */}
         <HowItWorks />
-        {/* Feature-Bühnen VOR dem Preis (Conversion-Pass 2): Die Extras
-            verkaufen das Abo indirekt, bevor der Preis fällt. */}
+        <PackShowcase />
         <FeatureShowcase />
         <Pricing
           billingYearly={billingYearly}
           onBillingChange={setBillingYearly}
         />
-        {/* Alle Designrichtungen erst nach dem Preis: Branchenbeispiele oben
-            reichen zur Orientierung, das Karussell dient später als
-            Design-Vertiefung statt dritte Pack-Bühne in Folge. */}
-        <PackShowcase />
         {/* Vertrauens-Bühne nach dem Preis, vor der FAQ (Referenz:
             snaplove.de) — wer den Preis gesehen hat, braucht als Nächstes
             Sicherheit, nicht noch mehr Features. */}

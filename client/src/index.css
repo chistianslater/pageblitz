@@ -599,57 +599,9 @@ body {
   letter-spacing: -0.022em;
 }
 /* Dayos-Sektionsköpfe: eine Nummer größer, dichter gestapelt — nur dort,
-   wo die Bühne ein Plakat sein soll, nicht auf jeder H2. */
-.lp-h2--billboard {
-  font-size: clamp(2.2rem, 1.05rem + 3.8vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.032em;
-}
-/* Gestapelte Echo-Zeile (Dayos: derselbe Titel noch einmal). aria-hidden
+   wo die Bühne ein Plakat sein soll, nicht auf jeder H2. *//* Gestapelte Echo-Zeile (Dayos: derselbe Titel noch einmal). aria-hidden
    im Markup — Screenreader hören den Satz nur einmal. Gefüllte Ghost-
-   Kopie, nicht Outline: 1px-Stroke bei 0.2 Opacity war unsichtbar. */
-.lp-echo {
-  display: block;
-  margin-top: 0.04em;
-  color: currentColor;
-  opacity: 0.22;
-  pointer-events: none;
-  user-select: none;
-}
-.lp-feature-dark .lp-echo,
-.lp-final-dark .lp-echo {
-  opacity: 0.28;
-}
-/* Manifesto-Bühne: volle Mint-Fläche, Kicker in Carbon. */
-.lp-manifesto {
-  background: var(--lp-mint);
-}
-.lp-manifesto .lp-kicker {
-  background: #000;
-  color: #fff;
-}
-/* Answers / Actions / Experts: ein Wort trägt die Karte. */
-.lp-pillar {
-  font-family: var(--lp-display);
-  font-size: clamp(2.35rem, 1.4rem + 2.8vw, 4rem);
-  line-height: 0.92;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-}
-.lp-stage-card {
-  border-radius: 40px;
-  background: var(--lp-surface);
-}
-.lp-num {
-  font-family: var(--lp-display);
-  font-size: clamp(2.05rem, 1.25rem + 1.8vw, 3.15rem);
-  line-height: 1;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  font-variant-numeric: tabular-nums;
-  color: var(--lp-ink);
-}
-.lp-display {
+   Kopie, nicht Outline: 1px-Stroke bei 0.2 Opacity war unsichtbar. *//* Manifesto-Bühne: volle Mint-Fläche, Kicker in Carbon. *//* Answers / Actions / Experts: ein Wort trägt die Karte. */.lp-display {
   font-family: var(--lp-display);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -1320,127 +1272,12 @@ html.lp-nav-open body {
   aspect-ratio: 4 / 3;
   padding: 7%;
   display: flex;
-}
-.lp-stage-card .lps-sketch {
-  background: var(--lp-canvas);
-}
-/* Übersicht: Rail + Stage */
-.lps-studio {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 2.2fr;
-  border: 1px solid var(--lp-line);
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-  min-height: 0;
-}
-.lps-rail {
-  background: var(--lp-canvas);
-  border-right: 1px solid var(--lp-line);
-  padding: 8%;
-  display: flex;
-  flex-direction: column;
-  gap: 9%;
-}
-.lps-rail-title {
-  width: 62%;
-  height: 8px;
-  border-radius: 99px;
-  background: var(--lp-ink);
-  margin-bottom: 4%;
-}
-.lps-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.lps-check::before {
-  content: "";
-  flex: 1;
-  height: 6px;
-  border-radius: 99px;
-  background: var(--lp-line);
-}
-.lps-check i {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--lp-line);
-}
-.lps-check[data-done] i {
-  background: var(--lp-accent);
-}
-.lps-stage {
-  padding: 7%;
-  display: flex;
-  flex-direction: column;
-  gap: 8%;
-}
-.lps-toolbar {
-  width: 34%;
-  height: 9px;
-  border-radius: 99px;
-  background: var(--lp-line);
-}
-.lps-view {
-  flex: 1;
-  border: 1px solid var(--lp-line);
-  border-radius: 6px;
-  padding: 7%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  min-height: 0;
-}
-.lps-v-h {
-  width: 55%;
-  height: 10px;
-  border-radius: 4px;
-  background: var(--lp-ink);
-}
-.lps-v-p {
-  width: 80%;
-  height: 6px;
-  border-radius: 99px;
-  background: var(--lp-line);
-}
-.lps-v-p.short {
-  width: 58%;
-}
-/* Stil-Auswahl: drei Kandidaten, einer aktiv */
-.lps-styles {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6%;
-  min-height: 0;
-}
-.lps-style-card {
-  border: 1px solid var(--lp-line);
-  border-radius: 8px;
-  background: #fff;
-  padding: 7%;
-  display: flex;
-  flex-direction: column;
-  gap: 8%;
-  min-height: 0;
-}
-.lps-style-card[data-active] {
-  border-color: var(--lp-accent);
-  box-shadow: 0 0 0 1px var(--lp-accent);
-}
-.lps-style-thumb {
+}/* Übersicht: Rail + Stage *//* Stil-Auswahl: drei Kandidaten, einer aktiv */.lps-style-thumb {
   flex: 1;
   border-radius: 5px;
   background: #ece5d8;
   min-height: 0;
-}
-.lps-style-card[data-active] .lps-style-thumb {
-  background: #dce8e2;
-}
-.lps-style-line {
+}.lps-style-line {
   height: 7px;
   width: 70%;
   border-radius: 99px;
@@ -1451,11 +1288,7 @@ html.lp-nav-open body {
   width: 62%;
   border-radius: 999px;
   background: var(--lp-line);
-}
-.lps-style-card[data-active] .lps-style-pill {
-  background: var(--lp-accent);
-}
-/* Fotos: 3×3-Raster mit Auswahl */
+}/* Fotos: 3×3-Raster mit Auswahl */
 .lps-grid {
   flex: 1;
   display: grid;
@@ -1664,64 +1497,6 @@ html.lp-nav-open body {
 /* Dunkle Feature-Bühne: trennt die drei „arbeitenden" Funktionen sichtbar
    von Template-/Studio-Beweisen und bricht die helle Seitenmonotonie.
    Zeichnungen bleiben als helle technische Karten erhalten. */
-.lp-feature-dark {
-  background: var(--lp-ink);
-  color: #fff;
-}
-.lp-feature-dark .lp-h2,
-.lp-feature-dark h3 {
-  color: #fff;
-}
-.lp-feature-dark .lp-kicker {
-  background: var(--lp-mint);
-  color: #000;
-}
-.lp-feature-dark .text-lp-muted {
-  color: #c6c6c6;
-}
-.lp-feature-dark .border-lp-line {
-  border-color: rgba(255, 255, 255, 0.18);
-}
-.lp-feature-dark .lps-sketch {
-  color: var(--lp-ink);
-  background: #fff;
-  border-color: transparent;
-}
-.lp-feature-dark a.text-lp-accent,
-.lp-feature-dark .text-lp-accent {
-  color: var(--lp-mint);
-}
-
-.lp-final-dark {
-  background: var(--lp-ink);
-  color: #fff;
-}
-.lp-final-dark .lp-h1 {
-  color: #fff;
-}
-.lp-final-dark .lp-kicker {
-  background: var(--lp-mint);
-  color: #000;
-}
-.lp-final-dark .text-lp-muted {
-  color: #c6c6c6;
-}
-.lp-final-dark .bg-lp-ink,
-.lp-final-dark .bg-lp-accent {
-  background-color: var(--lp-mint);
-  color: #000;
-}
-.lp-final-dark .bg-lp-ink:hover,
-.lp-final-dark .bg-lp-accent:hover {
-  background-color: #fff;
-  color: #000;
-}
-.lp-final-dark input {
-  background: #fff;
-  color: #000;
-  border-color: transparent;
-}
-
 /* Horizontales Karussell (PackShowcase): native Scrollbar ausblenden, der
    Scroll-Bereich selbst bleibt per Touch/Trackpad/Tastatur (Pfeil-Buttons)
    bedienbar. */
