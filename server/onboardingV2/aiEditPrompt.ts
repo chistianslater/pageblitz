@@ -1,4 +1,8 @@
-import { getConstitution } from "../../shared/stylePacks";
+import { FONT_PAIRS, getConstitution } from "../../shared/stylePacks";
+import {
+  activeColorWorldId,
+  getColorWorlds,
+} from "../../shared/stylePacks/colorWorlds";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { PACK_IDS } from "../../shared/siteContract/schema";
 import type {
@@ -53,6 +57,21 @@ export function buildAiEditPrompt(args: {
     const c = getConstitution(id);
     return `- ${id}: ${c.name} — ${c.essence}`;
   });
+  const worlds = getColorWorlds(args.doc.stylePackId);
+  const activeWorld = activeColorWorldId(
+    args.doc.stylePackId,
+    args.doc.colorOverrides ?? undefined
+  );
+  const profile = args.doc.designProfile;
+  const designStatus = [
+    `Designrichtung: ${constitution.name} (${args.doc.stylePackId})`,
+    `Aktive Farbwelt: ${activeWorld}`,
+    `Akzentfarbe: ${args.doc.colorOverrides?.accent ?? "Richtungsfarbe"}`,
+    `Schriftpaar: ${args.doc.fontPairId ?? "Richtungsschriften"}`,
+    profile
+      ? `Layout: hero=${profile.heroLayout}, leistungen=${profile.servicesLayout}, ueber-uns=${profile.aboutLayout}, galerie=${profile.galleryLayout}, abstaende=${profile.density}, bildwirkung=${profile.imageTreatment}`
+      : `Layout: Richtungs-Standard`,
+  ];
   const scope = args.page
     ? `die Unterseite „${args.page.title}“ (Pfad /${args.page.slug}) seiner Website`
     : `seine Website`;
@@ -80,20 +99,36 @@ export function buildAiEditPrompt(args: {
       : `## Aktueller Inhalt (SEO + Sektionen, als JSON)`,
     JSON.stringify(content),
     ``,
+    `## Aktuelles Design`,
+    ...designStatus,
+    ``,
     `## Wie antworten`,
-    `Antworte mit GENAU EINEM der drei folgenden JSON-Formate:`,
+    `Antworte mit GENAU EINEM der vier folgenden JSON-Formate:`,
     ``,
     `1) Inhaltlicher Wunsch (Texte ändern):`,
-    `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"packId":null,"reason":null}`,
+    `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"theme":null,"packId":null,"reason":null}`,
     `- "sections" enthält ALLE Sektionen aus dem aktuellen Inhalt, in derselben Reihenfolge und mit denselben Typen — nur die vom Wunsch betroffenen Textfelder ändern sich.`,
     `- Fakten (imageUrl, ctaHref, Telefon, E-Mail, Adresse, Öffnungszeiten) unverändert aus dem aktuellen Inhalt übernehmen.`,
     ``,
-    `2) Design-/Stil-Wunsch (z. B. "dunkler", "eleganter", "moderner", "auffälliger"):`,
-    `{"kind":"style","content":null,"packId":"<eine ID aus der Liste unten>","reason":"<ein Satz, warum dieses Pack passt>"}`,
+    `2) Design-Feinjustierung (Farben, Schrift, Abstände, Layout — z. B. "dunkler", "andere Akzentfarbe", "mehr Luft", "Bild im Hero nach oben"):`,
+    `{"kind":"theme","content":null,"theme":{...nur die gewünschten Felder...},"packId":null,"reason":"<ein Satz, was du geändert hast>"}`,
+    `Mögliche Felder in "theme" (nur setzen, was der Wunsch verlangt; null = Richtungs-Standard):`,
+    `- "colorWorldId": eine von ${worlds.map(w => `"${w.id}"`).join(", ")} — Grundstimmung der Farben ("abend" = dunkel, "heller" = licht, "waermer"/"kuehler"/"getoent" = Tönung, "original" = zurücksetzen).`,
+    `- "colorWorldBase": "#rrggbb" — eigene Grundfarbe (Hintergrund), wenn der Kunde eine KONKRETE Farbe für den Hintergrund nennt; Text-/Linienfarben werden automatisch lesbar nachgeführt.`,
+    `- "accent": "#rrggbb" oder null — Akzentfarbe (Buttons, Hervorhebungen).`,
+    `- "fontPairId": eine von ${FONT_PAIRS.map(f => `"${f.id}"`).join(", ")} oder null. (${FONT_PAIRS.map(f => `${f.id} = ${f.label}, ${f.vibe}`).join("; ")})`,
+    `- "density": "airy" (großzügig) oder "compact".`,
+    `- "imageTreatment": "natural", "framed" (gerahmt) oder "bleed" (flächig).`,
+    `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben).`,
+    `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
+    `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
+    ``,
+    `3) Grundlegend anderer Look (die aktuelle Richtung passt überhaupt nicht — z. B. "komplett anderer Stil", "wie eine Anwaltskanzlei statt Werkstatt"):`,
+    `{"kind":"style","content":null,"theme":null,"packId":"<eine ID aus der Liste unten>","reason":"<ein Satz, warum dieses Pack passt>"}`,
     `Verfügbare Packs:`,
     ...candidateLines,
     ``,
-    `3) Faktenwunsch (Telefon, Adresse, Preise, Öffnungszeiten oder rechtliche Angaben ändern):`,
-    `{"kind":"reject","content":null,"packId":null,"reason":"<kurzer Hinweis, welches Panel dafür zuständig ist>"}`,
+    `4) Faktenwunsch (Telefon, Adresse, Preise, Öffnungszeiten oder rechtliche Angaben ändern):`,
+    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<kurzer Hinweis, welches Panel dafür zuständig ist>"}`,
   ].join("\n");
 }

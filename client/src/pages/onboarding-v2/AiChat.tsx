@@ -18,6 +18,7 @@ const LEGAL_HINT_PATTERN = /rechtlich|kontakt|impressum/i;
 
 type AiChatOutcome =
   | { kind: "content"; proposalId: string; diff: AiDiffEntry[] }
+  | { kind: "theme"; reason: string; summary: string[] }
   | { kind: "style"; packId: PackId; name: string; reason: string }
   | { kind: "reject"; reason: string };
 
@@ -99,6 +100,9 @@ export function AiChat({
             message: trimmed,
             outcome,
           };
+          // Theme-Antworten sind bereits serverseitig angewandt — Vorschau
+          // und Studio-State sofort nachziehen.
+          if (outcome.kind === "theme") onApplied();
           setHistory(prev => [...prev, exchange].slice(-MAX_HISTORY));
           setActive(exchange);
           setMessage("");
@@ -116,6 +120,7 @@ export function AiChat({
 
   const activeContent =
     active?.outcome.kind === "content" ? active.outcome : null;
+  const activeTheme = active?.outcome.kind === "theme" ? active.outcome : null;
   const activeStyle = active?.outcome.kind === "style" ? active.outcome : null;
   const activeReject =
     active?.outcome.kind === "reject" ? active.outcome : null;
@@ -214,6 +219,25 @@ export function AiChat({
                 {discardAiEdit.error.message}
               </p>
             )}
+          </div>
+        )}
+        {activeTheme && (
+          <div className="pb-studio-ai-theme">
+            <p className="pb-studio-ai-theme-done">✓ Erledigt</p>
+            {activeTheme.reason && <p>{activeTheme.reason}</p>}
+            <ul>
+              {activeTheme.summary.map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="pb-studio-btn"
+              data-variant="ghost"
+              onClick={() => onOpenPanel("style")}
+            >
+              Im Stil-Panel feinjustieren
+            </button>
           </div>
         )}
         {activeStyle && (

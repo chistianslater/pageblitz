@@ -2584,3 +2584,32 @@
 .pb-studio-album-head input {
   flex: 1;
 }
+
+/* KI-Assistent (2026-08-30): Erledigt-Karte für Design-Patches. */
+.pb-studio-ai-theme {
+  border: 1px solid color-mix(in oklab, var(--st-accent) 45%, var(--st-line));
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+.pb-studio-ai-theme-done {
+  font-weight: 700;
+  color: var(--st-accent);
+}
+.pb-studio-ai-theme ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--st-muted);
+}
+/* Kontextzeile am Funken-Icon. */
+.pb-studio-suggest-hint-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.pb-studio-suggest-hint-row input {
+  flex: 1;
+}

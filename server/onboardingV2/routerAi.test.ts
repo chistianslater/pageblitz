@@ -28,6 +28,9 @@ vi.mock("./aiEdit", async importOriginal => {
 import { appRouter } from "../routers";
 import * as db from "../db";
 import { proposals, proposeAiEdit } from "./aiEdit";
+import { applyAiTheme } from "./routerAi";
+import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 const mockedDb = vi.mocked(db);
 const mockedProposeAiEdit = vi.mocked(proposeAiEdit);
 
@@ -197,6 +200,76 @@ describe("onboardingV2.aiEdit", () => {
     await expect(
       caller().onboardingV2.aiEdit({ token: "tok", message: "hi" })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+});
+
+describe("applyAiTheme", () => {
+  const doc = v2 as unknown as WebsiteDataV2;
+
+  test("Farbwelt + Akzent + Layout werden über applyTheme angewandt und zusammengefasst", () => {
+    const { next, summary } = applyAiTheme(doc, {
+      colorWorldId: "abend",
+      accent: "#2B44FF",
+      heroLayout: "image-first",
+      density: "compact",
+    });
+    const abend = getColorWorld("werkbank", "abend")!;
+    expect(next.colorOverrides?.canvas).toBe(abend.overrides.canvas);
+    expect(next.colorOverrides?.accent).toBe("#2B44FF");
+    expect(next.designProfile?.heroLayout).toBe("image-first");
+    expect(next.designProfile?.density).toBe("compact");
+    expect(summary.join(" ")).toContain("Abend");
+    expect(summary.join(" ")).toContain("#2B44FF");
+    expect(summary.join(" ")).toContain("Hero-Layout");
+  });
+
+  test("unbekannte Schriftpaar-ID wird übersprungen, Original-Welt setzt zurück", () => {
+    const { next, summary } = applyAiTheme(doc, {
+      fontPairId: "gibts-nicht",
+      colorWorldId: "original",
+    });
+    expect(next.fontPairId).toBeUndefined();
+    expect(summary.join(" ")).toContain("Original");
+    expect(summary.join(" ")).not.toContain("gibts-nicht");
+  });
+
+  test("leerer Patch liefert leere Summary (Route mappt das auf reject)", () => {
+    const { summary } = applyAiTheme(doc, {});
+    expect(summary).toEqual([]);
+  });
+});
+
+describe("onboardingV2.aiEdit (theme)", () => {
+  test("theme-Antwort wird sofort persistiert und als Summary zurückgegeben", async () => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
+      theme: { colorWorldId: "heller" },
+      reason: "Heller gestellt.",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "mach alles heller",
+    });
+    expect(result.kind).toBe("theme");
+    if (result.kind === "theme") {
+      expect(result.summary.join(" ")).toContain("Heller");
+    }
+    // Sofort-Persist: updateWebsite wurde mit neuem Doc aufgerufen.
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  });
+
+  test("theme ohne zuordenbare Felder wird zur Ablehnung", async () => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
+      theme: { fontPairId: "gibts-nicht" },
+      reason: "",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "irgendwas",
+    });
+    expect(result.kind).toBe("reject");
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });
 

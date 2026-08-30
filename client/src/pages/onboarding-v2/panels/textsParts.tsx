@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
 
@@ -129,7 +129,8 @@ export function validateTexts(values: TextsPatch): string[] {
 interface TextsFormProps {
   values: TextsPatch;
   onChange: (v: TextsPatch) => void;
-  onSuggest: (field: TextField) => void;
+  /** Startet die KI-Vorschläge — optional mit Kontext („Was willst du sagen?“). */
+  onSuggest: (field: TextField, hint?: string) => void;
   suggesting: TextField | null;
   variants: Partial<Record<TextField, string[]>>;
   onPickVariant: (field: TextField, value: string) => void;
@@ -153,6 +154,16 @@ export function TextsForm({
   onFieldFocus,
 }: TextsFormProps) {
   const errors = validateTexts(values);
+  // Kontextfrage am Funken-Icon (2026-08-30): erster Klick öffnet eine
+  // kleine Zeile „Was willst du sagen?“ — leer abschicken geht weiterhin.
+  const [hintFor, setHintFor] = useState<TextField | null>(null);
+  const [hintText, setHintText] = useState("");
+
+  const startSuggest = (field: TextField) => {
+    setHintFor(null);
+    onSuggest(field, hintText);
+    setHintText("");
+  };
 
   const renderField = (field: FieldConfig) => {
     const raw = values[field.key];
@@ -174,9 +185,17 @@ export function TextsForm({
               type="button"
               className="pb-studio-suggest-icon"
               aria-label={`KI-Vorschlag: ${field.label}`}
+              aria-expanded={hintFor === suggestField}
               title="Drei Formulierungen von der KI"
               disabled={isSuggesting}
-              onClick={() => onSuggest(suggestField)}
+              onClick={() => {
+                if (hintFor === suggestField) {
+                  setHintFor(null);
+                } else {
+                  setHintFor(suggestField);
+                  setHintText("");
+                }
+              }}
             >
               {isSuggesting ? (
                 <Loader2 className="pb-studio-spin" aria-hidden="true" />
@@ -211,6 +230,34 @@ export function TextsForm({
         <span className="pb-studio-counter">
           {value.length}/{field.maxLength}
         </span>
+        {suggestField && hintFor === suggestField && (
+          <div className="pb-studio-suggest-hint-row">
+            <input
+              type="text"
+              className="pb-studio-input"
+              placeholder="Was willst du sagen? (optional)"
+              value={hintText}
+              maxLength={200}
+              autoFocus
+              aria-label={`Kontext für den KI-Vorschlag: ${field.label}`}
+              onChange={e => setHintText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  startSuggest(suggestField);
+                }
+                if (e.key === "Escape") setHintFor(null);
+              }}
+            />
+            <button
+              type="button"
+              className="pb-studio-btn"
+              onClick={() => startSuggest(suggestField)}
+            >
+              Vorschlagen
+            </button>
+          </div>
+        )}
         {/* Sichtbares Feedback direkt am Feld (2026-08-25): Der KI-Request
             braucht spürbar Zeit — ohne Hinweis wirkte der Klick wirkungslos. */}
         {isSuggesting && (

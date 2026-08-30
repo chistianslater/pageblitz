@@ -483,7 +483,13 @@ export const contentProcedures = {
 
   /** KI-Vorschlag für ein Textfeld — persistiert nichts, der User bestätigt über updateTexts. */
   suggestTexts: publicProcedure
-    .input(tokenInput.extend({ field: TextFieldSchema }))
+    .input(
+      tokenInput.extend({
+        field: TextFieldSchema,
+        /** Kontext des Kunden („Was willst du sagen?“) — fließt in den Prompt. */
+        hint: z.string().trim().max(200).optional(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
@@ -495,6 +501,7 @@ export const contentProcedures = {
         businessName: doc.businessName,
         category: doc.businessCategory ?? business?.category ?? "",
         city: readCity(doc),
+        ...(input.hint ? { hint: input.hint } : {}),
       });
       return { variants };
     }),

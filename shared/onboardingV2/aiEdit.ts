@@ -4,6 +4,14 @@ import {
   PageSectionSchema,
   SectionV2Schema,
 } from "../siteContract/schema";
+import {
+  ABOUT_LAYOUTS,
+  DESIGN_DENSITIES,
+  GALLERY_LAYOUTS,
+  HERO_LAYOUTS,
+  IMAGE_TREATMENTS,
+  SERVICES_LAYOUTS,
+} from "../siteContract/designProfile";
 import type {
   Page,
   PageSection,
@@ -13,14 +21,62 @@ import type {
 } from "../siteContract/types";
 
 /**
- * Antwortschema der KI-Chat-Bearbeitung (server/onboardingV2/aiEdit.ts). Drei
+ * Design-Patch des KI-Assistenten (2026-08-30): jede Stellschraube, die
+ * auch der Theme-Editor kennt — Akzent, Farbwelt (kuratiert oder eigene
+ * Grundfarbe), Schriftpaar, Abstände, Bildwirkung, Sektionslayouts.
+ * `null` = auf Richtungs-Standard zurück; fehlende Felder bleiben
+ * unangetastet. Server-seitig zusätzlich gegen FONT_PAIRS/getColorWorld
+ * validiert (routerAi.ts) und SOFORT angewandt (leicht revidierbar).
+ */
+export const AiThemePatchSchema = z
+  .object({
+    accent: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .nullable()
+      .optional(),
+    colorWorldId: z
+      .string()
+      .regex(/^[a-z-]+$/)
+      .max(24)
+      .nullable()
+      .optional(),
+    colorWorldBase: z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/)
+      .optional(),
+    fontPairId: z.string().max(40).nullable().optional(),
+    density: z.enum(DESIGN_DENSITIES).optional(),
+    imageTreatment: z.enum(IMAGE_TREATMENTS).optional(),
+    heroLayout: z.enum(HERO_LAYOUTS).optional(),
+    servicesLayout: z.enum(SERVICES_LAYOUTS).optional(),
+    aboutLayout: z.enum(ABOUT_LAYOUTS).optional(),
+    galleryLayout: z.enum(GALLERY_LAYOUTS).optional(),
+  })
+  .strict();
+
+export type AiThemePatch = z.infer<typeof AiThemePatchSchema>;
+
+const AiThemeResponseSchema = z
+  .object({
+    kind: z.literal("theme"),
+    theme: AiThemePatchSchema,
+    reason: z.string().max(200),
+  })
+  .strict();
+
+/**
+ * Antwortschema der KI-Chat-Bearbeitung (server/onboardingV2/aiEdit.ts). Vier
  * sich gegenseitig ausschließende Ergebnisse:
  * - "content": ein validierter Inhalts-Vorschlag (seo + sections).
- * - "style": ein Pack-Vorschlag für Design-Wünsche (kein Farb-/Font-Patch).
+ * - "theme": ein Design-Patch (Farben/Schrift/Layout) — wird sofort
+ *   angewandt, weil im Stil-Panel jederzeit revidierbar.
+ * - "style": ein Pack-Vorschlag für grundlegend anderen Look.
  * - "reject": eine Ablehnung, z. B. bei Fakten-/Kontaktwünschen, die nur
  *   über die Panels geändert werden dürfen.
  */
 export const AiEditResponseSchema = z.discriminatedUnion("kind", [
+  AiThemeResponseSchema,
   z
     .object({
       kind: z.literal("content"),
@@ -59,8 +115,10 @@ export const AiPageEditResponseSchema = z.discriminatedUnion("kind", [
       sections: z.array(PageSectionSchema).min(1),
     })
     .strict(),
-  AiEditResponseSchema.options[1],
+  // theme/style/reject gelten seitenunabhängig (Design ist global).
+  AiEditResponseSchema.options[0],
   AiEditResponseSchema.options[2],
+  AiEditResponseSchema.options[3],
 ]);
 
 /** Ein einzelner Vorher/Nachher-Eintrag für die Diff-Vorschau im KI-Chat. */

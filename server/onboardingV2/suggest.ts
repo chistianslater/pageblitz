@@ -118,6 +118,8 @@ function buildTextVariantPrompt(
     businessName: string;
     category: string;
     city?: string;
+    /** Freitext-Kontext des Kunden („Was willst du sagen?“) — optional. */
+    hint?: string;
   },
   constitution: PackConstitution
 ): string {
@@ -146,6 +148,14 @@ function buildTextVariantPrompt(
     `## Feldvorgabe`,
     FIELD_GUIDANCE[args.field],
     `Maximal ${FIELD_MAX_LENGTH[args.field]} Zeichen.`,
+    ...(args.hint
+      ? [
+          ``,
+          `## Wunsch des Kunden`,
+          `Der Kunde möchte Folgendes rüberbringen — alle 3 Varianten müssen das aufgreifen:`,
+          args.hint,
+        ]
+      : []),
     ``,
     `Antworte NUR mit JSON: { "variants": ["...", "...", "..."] } — genau 3 Einträge, spürbar unterschiedlich formuliert.`,
   ].join("\n");
@@ -203,6 +213,7 @@ export async function suggestTextVariants(args: {
   businessName: string;
   category: string;
   city?: string;
+  hint?: string;
 }): Promise<string[]> {
   if (LLM_MOCK_ACTIVE) return mockTextVariants(args.field);
   const constitution = getConstitution(args.doc.stylePackId);

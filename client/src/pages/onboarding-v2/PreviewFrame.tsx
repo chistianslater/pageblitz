@@ -150,7 +150,7 @@ export function PreviewFrame({
   useEffect(() => {
     if (pageSlug || !onSectionLayout) return;
     const doc = iframeRef.current?.contentDocument;
-    if (!doc?.documentElement.hasAttribute("data-pb-layout-chrome")) return;
+    if (!doc?.documentElement?.hasAttribute("data-pb-layout-chrome")) return;
     enablePreviewLayoutChrome(doc, designProfile, onSectionLayout, {
       viewport: device,
     });

@@ -2,7 +2,19 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import { getBusinessById } from "../db";
-import { getConstitution } from "../../shared/stylePacks";
+import { getConstitution, getFontPair } from "../../shared/stylePacks";
+import {
+  buildCustomWorldOverrides,
+  getColorWorld,
+  getColorWorlds,
+} from "../../shared/stylePacks/colorWorlds";
+import {
+  deriveDesignProfile,
+  type DesignProfile,
+} from "../../shared/siteContract/designProfile";
+import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type { AiThemePatch } from "../../shared/onboardingV2/aiEdit";
+import { applyTheme } from "./applyPatch";
 import {
   assertAiEditQuota,
   proposeAiEdit,
@@ -27,6 +39,106 @@ const PROPOSAL_EXPIRED_MESSAGE =
  * `./aiEdit`) und erst durch den expliziten `applyAiEdit`-Aufruf über
  * `persistDoc` geschrieben.
  */
+
+/**
+ * Wendet einen Theme-Patch des KI-Assistenten über dieselben Mechaniken an
+ * wie der Theme-Editor (applyTheme) und liefert eine deutsche
+ * Änderungsliste für die Chat-Karte. Unbekannte Farbwelt/Schriftpaar-IDs
+ * werden übersprungen statt den ganzen Patch zu verwerfen.
+ */
+export function applyAiTheme(
+  doc: WebsiteDataV2,
+  theme: AiThemePatch
+): { next: WebsiteDataV2; summary: string[] } {
+  const summary: string[] = [];
+  const packId = doc.stylePackId as PackId;
+
+  let worldOverrides: Record<string, string> | null | undefined;
+  if (theme.colorWorldBase !== undefined) {
+    worldOverrides = buildCustomWorldOverrides(packId, theme.colorWorldBase);
+    summary.push(`Grundfarbe auf ${theme.colorWorldBase} gestellt`);
+  } else if (theme.colorWorldId !== undefined) {
+    if (theme.colorWorldId === null || theme.colorWorldId === "original") {
+      worldOverrides = null;
+      summary.push("Farbwelt auf Original zurückgesetzt");
+    } else {
+      const world = getColorWorld(packId, theme.colorWorldId);
+      if (world) {
+        worldOverrides = world.overrides;
+        summary.push(`Farbwelt „${world.name}“ aktiviert`);
+      }
+    }
+  }
+
+  let fontPairId: string | null | undefined;
+  if (theme.fontPairId !== undefined) {
+    if (theme.fontPairId === null) {
+      fontPairId = null;
+      summary.push("Schriften auf die Richtungs-Standards zurückgesetzt");
+    } else {
+      const pair = getFontPair(theme.fontPairId);
+      if (pair) {
+        fontPairId = pair.id;
+        summary.push(`Schriftpaar „${pair.label}“ gewählt`);
+      }
+    }
+  }
+
+  if (theme.accent !== undefined) {
+    summary.push(
+      theme.accent === null
+        ? "Akzentfarbe auf die Richtungsfarbe zurückgesetzt"
+        : `Akzentfarbe auf ${theme.accent} gestellt`
+    );
+  }
+
+  const layoutKeys = [
+    "heroLayout",
+    "servicesLayout",
+    "aboutLayout",
+    "galleryLayout",
+    "density",
+    "imageTreatment",
+  ] as const;
+  const layoutLabels: Record<(typeof layoutKeys)[number], string> = {
+    heroLayout: "Hero-Layout",
+    servicesLayout: "Leistungen-Layout",
+    aboutLayout: "Über-uns-Layout",
+    galleryLayout: "Galerie-Layout",
+    density: "Abstände",
+    imageTreatment: "Bildwirkung",
+  };
+  const wantsProfileChange = layoutKeys.some(key => theme[key] !== undefined);
+  let designProfile: DesignProfile | undefined;
+  if (wantsProfileChange) {
+    const base =
+      doc.designProfile ??
+      deriveDesignProfile({
+        stylePackId: packId,
+        businessName: doc.businessName,
+        businessCategory: doc.businessCategory,
+        sections: doc.sections,
+      });
+    const merged: DesignProfile = { ...base };
+    for (const key of layoutKeys) {
+      const value = theme[key];
+      if (value !== undefined) {
+        (merged as unknown as Record<string, unknown>)[key] = value;
+        summary.push(`${layoutLabels[key]}: ${value}`);
+      }
+    }
+    designProfile = merged;
+  }
+
+  const next = applyTheme(doc, {
+    accent: theme.accent,
+    fontPairId,
+    designProfile,
+    worldOverrides,
+  });
+  return { next, summary };
+}
+
 export const aiProcedures = {
   aiEdit: publicProcedure
     .input(
@@ -62,6 +174,25 @@ export const aiProcedures = {
           kind: "content" as const,
           proposalId,
           diff: result.diff,
+        };
+      }
+      if (result.kind === "theme") {
+        // Design-Patches werden SOFORT angewandt: jede Stellschraube ist im
+        // Stil-Panel mit einem Klick revidierbar — ein Bestätigen-Zwang
+        // würde den „KI passt es an“-Fluss nur bremsen.
+        const { next, summary } = applyAiTheme(doc, result.theme);
+        if (summary.length === 0) {
+          return {
+            kind: "reject" as const,
+            reason:
+              "Diesen Design-Wunsch konnte ich keiner Einstellung zuordnen — probiere es im Stil-Panel.",
+          };
+        }
+        await persistDoc(input.token, loaded, next);
+        return {
+          kind: "theme" as const,
+          reason: result.reason,
+          summary,
         };
       }
       if (result.kind === "style") {

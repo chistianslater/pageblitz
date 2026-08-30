@@ -14,6 +14,7 @@ import {
   diffDocuments,
   diffPages,
   type AiDiffEntry,
+  type AiThemePatch,
 } from "../../shared/onboardingV2/aiEdit";
 import { assertQuota } from "./suggest";
 import { restoreFacts, restorePageFacts } from "./aiEditFacts";
@@ -30,6 +31,7 @@ import { AI_EDIT_SYSTEM_PROMPT, buildAiEditPrompt } from "./aiEditPrompt";
 
 export type ProposeAiEditResult =
   | { kind: "content"; next: WebsiteDataV2; diff: AiDiffEntry[] }
+  | { kind: "theme"; theme: AiThemePatch; reason: string }
   | { kind: "style"; packId: PackId; reason: string }
   | { kind: "reject"; reason: string };
 
@@ -65,7 +67,7 @@ async function withAiEditRetry<T>(attempt: () => Promise<T>): Promise<T> {
  * Validierung inkl. jeder Sektion) gemappt.
  */
 const RawAiEditResponseSchema = z.object({
-  kind: z.enum(["content", "style", "reject"]),
+  kind: z.enum(["content", "theme", "style", "reject"]),
   content: z
     .object({
       seo: z.object({ title: z.string(), description: z.string() }),
@@ -73,6 +75,7 @@ const RawAiEditResponseSchema = z.object({
     })
     .nullable()
     .optional(),
+  theme: z.record(z.string(), z.unknown()).nullable().optional(),
   packId: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
 });
@@ -88,6 +91,11 @@ function mapRawToAiEditResponse(
       seo: raw.content.seo,
       sections: raw.content.sections,
     };
+  }
+  if (raw.kind === "theme") {
+    if (!raw.theme)
+      throw new Error("KI-Antwort: 'theme' fehlt bei kind=theme.");
+    return { kind: "theme", theme: raw.theme, reason: raw.reason ?? "" };
   }
   if (raw.kind === "style") {
     if (!raw.packId)
@@ -105,7 +113,7 @@ const AI_EDIT_RESPONSE_FORMAT = {
     schema: {
       type: "object",
       properties: {
-        kind: { type: "string", enum: ["content", "style", "reject"] },
+        kind: { type: "string", enum: ["content", "theme", "style", "reject"] },
         content: {
           type: ["object", "null"],
           properties: {
@@ -121,6 +129,7 @@ const AI_EDIT_RESPONSE_FORMAT = {
           },
           required: ["seo", "sections"],
         },
+        theme: { type: ["object", "null"] },
         packId: { type: ["string", "null"] },
         reason: { type: ["string", "null"] },
       },

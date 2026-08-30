@@ -111,11 +111,11 @@ export function TextsPanel({
   const updateTexts = trpc.onboardingV2.updateTexts.useMutation();
   const suggestTexts = trpc.onboardingV2.suggestTexts.useMutation();
 
-  const handleSuggest = (field: TextField) => {
+  const handleSuggest = (field: TextField, hint?: string) => {
     setSuggesting(field);
     setSuggestError(null);
     suggestTexts.mutate(
-      { token, field },
+      { token, field, ...(hint?.trim() ? { hint: hint.trim() } : {}) },
       {
         onSuccess: result => {
           setVariants(prev => ({ ...prev, [field]: result.variants }));
