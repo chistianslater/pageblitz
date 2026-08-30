@@ -34,6 +34,8 @@ export interface PreviewLayoutOption {
   label: string;
   /** Smartphone-Label, wenn die Komposition anders gelesen wird. */
   mobileLabel?: string;
+  /** Mini-Wireframe der Komposition (inline SVG, currentColor). */
+  icon: string;
 }
 
 export interface PreviewLayoutSection {
@@ -45,9 +47,11 @@ export interface PreviewLayoutSection {
     | "data-pb-gallery";
   anchor: string;
   title: string;
-  buttonLabel: string;
   options: readonly PreviewLayoutOption[];
 }
+
+const icon = (shapes: string) =>
+  `<svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">${shapes}</svg>`;
 
 export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
   {
@@ -55,11 +59,29 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     attr: "data-pb-hero",
     anchor: SECTION_ANCHORS.hero,
     title: "Hero-Layout",
-    buttonLabel: "Layout",
     options: [
-      { value: "split", label: "Bild & Text", mobileLabel: "Text oben" },
-      { value: "centered", label: "Zentriert" },
-      { value: "image-first", label: "Bild oben" },
+      {
+        value: "split",
+        label: "Bild & Text",
+        mobileLabel: "Text oben",
+        icon: icon(
+          '<rect x="2" y="5" width="7" height="2" rx="1"/><rect x="2" y="9" width="5" height="2" rx="1"/><rect x="2" y="13" width="4" height="2" rx="1"/><rect x="11" y="4" width="7" height="12" rx="1.5"/>'
+        ),
+      },
+      {
+        value: "centered",
+        label: "Zentriert",
+        icon: icon(
+          '<rect x="5" y="5" width="10" height="2" rx="1"/><rect x="6.5" y="9" width="7" height="2" rx="1"/><rect x="8" y="13" width="4" height="2" rx="1"/>'
+        ),
+      },
+      {
+        value: "image-first",
+        label: "Bild oben",
+        icon: icon(
+          '<rect x="3" y="3" width="14" height="8" rx="1.5"/><rect x="5" y="13" width="10" height="2" rx="1"/><rect x="6.5" y="16.4" width="7" height="1.6" rx=".8"/>'
+        ),
+      },
     ],
   },
   {
@@ -67,11 +89,28 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     attr: "data-pb-services",
     anchor: SECTION_ANCHORS.services,
     title: "Leistungen-Layout",
-    buttonLabel: "Layout",
     options: [
-      { value: "list", label: "Liste" },
-      { value: "grid", label: "Raster" },
-      { value: "featured", label: "Hervorgehoben" },
+      {
+        value: "list",
+        label: "Liste",
+        icon: icon(
+          '<rect x="3" y="3.5" width="14" height="3.4" rx="1"/><rect x="3" y="8.3" width="14" height="3.4" rx="1"/><rect x="3" y="13.1" width="14" height="3.4" rx="1"/>'
+        ),
+      },
+      {
+        value: "grid",
+        label: "Raster",
+        icon: icon(
+          '<rect x="3" y="3" width="6.4" height="6.4" rx="1"/><rect x="10.6" y="3" width="6.4" height="6.4" rx="1"/><rect x="3" y="10.6" width="6.4" height="6.4" rx="1"/><rect x="10.6" y="10.6" width="6.4" height="6.4" rx="1"/>'
+        ),
+      },
+      {
+        value: "featured",
+        label: "Hervorgehoben",
+        icon: icon(
+          '<rect x="3" y="3" width="8.4" height="14" rx="1.5"/><rect x="13" y="3" width="4" height="6.4" rx="1"/><rect x="13" y="10.6" width="4" height="6.4" rx="1"/>'
+        ),
+      },
     ],
   },
   {
@@ -79,10 +118,23 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     attr: "data-pb-about",
     anchor: SECTION_ANCHORS.about,
     title: "Über-uns-Layout",
-    buttonLabel: "Layout",
     options: [
-      { value: "image-left", label: "Bild links", mobileLabel: "Bild oben" },
-      { value: "image-right", label: "Bild rechts", mobileLabel: "Bild unten" },
+      {
+        value: "image-left",
+        label: "Bild links",
+        mobileLabel: "Bild oben",
+        icon: icon(
+          '<rect x="3" y="4" width="6.5" height="12" rx="1.5"/><rect x="11.5" y="5.5" width="5.5" height="2" rx="1"/><rect x="11.5" y="9" width="4.5" height="2" rx="1"/><rect x="11.5" y="12.5" width="5.5" height="2" rx="1"/>'
+        ),
+      },
+      {
+        value: "image-right",
+        label: "Bild rechts",
+        mobileLabel: "Bild unten",
+        icon: icon(
+          '<rect x="10.5" y="4" width="6.5" height="12" rx="1.5"/><rect x="3" y="5.5" width="5.5" height="2" rx="1"/><rect x="3" y="9" width="4.5" height="2" rx="1"/><rect x="3" y="12.5" width="5.5" height="2" rx="1"/>'
+        ),
+      },
     ],
   },
   {
@@ -90,16 +142,33 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
     attr: "data-pb-gallery",
     anchor: SECTION_ANCHORS.gallery,
     title: "Galerie-Layout",
-    buttonLabel: "Layout",
     options: [
-      { value: "grid", label: "Raster" },
-      { value: "mosaic", label: "Mosaik" },
-      { value: "filmstrip", label: "Filmstreifen" },
+      {
+        value: "grid",
+        label: "Raster",
+        icon: icon(
+          '<rect x="3" y="4" width="4" height="5.2" rx=".8"/><rect x="8" y="4" width="4" height="5.2" rx=".8"/><rect x="13" y="4" width="4" height="5.2" rx=".8"/><rect x="3" y="10.8" width="4" height="5.2" rx=".8"/><rect x="8" y="10.8" width="4" height="5.2" rx=".8"/><rect x="13" y="10.8" width="4" height="5.2" rx=".8"/>'
+        ),
+      },
+      {
+        value: "mosaic",
+        label: "Mosaik",
+        icon: icon(
+          '<rect x="3" y="3" width="8" height="8" rx="1"/><rect x="12" y="3" width="5" height="3.7" rx=".8"/><rect x="12" y="7.3" width="5" height="3.7" rx=".8"/><rect x="3" y="12" width="5" height="5" rx=".8"/><rect x="9" y="12" width="8" height="5" rx=".8"/>'
+        ),
+      },
+      {
+        value: "filmstrip",
+        label: "Filmstreifen",
+        icon: icon(
+          '<rect x="1.5" y="7" width="5" height="6" rx=".8"/><rect x="7.5" y="7" width="5" height="6" rx=".8"/><rect x="13.5" y="7" width="5" height="6" rx=".8"/>'
+        ),
+      },
     ],
   },
 ];
 
-/** 3×3-Raster wie ein Layout-Grid, neben dem Wort „Layout". */
+/** 3×3-Raster wie ein Layout-Grid — Inhalt des runden Auslöser-Buttons. */
 export const LAYOUT_GRID_ICON_HTML = `<span class="pb-preview-layout-icon" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>`;
 
 const CHROME_MARK = "data-pb-layout-chrome";
@@ -113,28 +182,21 @@ const placedChrome = new WeakMap<
 >();
 
 const CHROME_CSS = `
-.pb-preview-layout{position:fixed;right:12px;z-index:28;display:flex;flex-direction:column;align-items:flex-end;font-family:"Space Grotesk",system-ui,sans-serif}
-.pb-preview-layout-btn{appearance:none;display:inline-flex;align-items:center;gap:.45rem;border:1px solid rgba(20,24,20,.16);background:rgba(255,252,247,.96);color:#141814;font:600 .78rem/1 "Space Grotesk",system-ui,sans-serif;padding:.42rem .72rem .42rem .58rem;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(20,24,20,.12)}
+.pb-preview-layout{position:fixed;right:12px;z-index:28;display:flex;font-family:"Space Grotesk",system-ui,sans-serif}
+.pb-preview-layout-btn{appearance:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(11,11,13,.35)}
 .pb-preview-layout-icon{display:grid;grid-template-columns:repeat(3,3px);gap:1.5px;width:12px;height:12px}
 .pb-preview-layout-icon i{display:block;width:3px;height:3px;border-radius:.4px;background:currentColor}
-.pb-preview-layout-btn:hover,.pb-preview-layout:hover>.pb-preview-layout-btn,.pb-preview-layout:focus-within>.pb-preview-layout-btn,.pb-preview-layout[data-open="true"]>.pb-preview-layout-btn{background:#141814;color:#fff}
-.pb-preview-layout-menu{position:absolute;top:100%;right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.28rem;padding:.4rem 0 0;pointer-events:none}
-.pb-preview-layout[data-fan="up"] .pb-preview-layout-menu{top:auto;bottom:100%;padding:0 0 .4rem;flex-direction:column-reverse}
-.pb-preview-layout-menu button{appearance:none;border:1px solid rgba(20,24,20,.16);background:rgba(255,252,247,.96);text-align:left;font:500 .82rem/1.3 "Space Grotesk",system-ui,sans-serif;padding:.48rem .78rem;border-radius:999px;cursor:pointer;color:#141814;box-shadow:0 10px 28px rgba(20,24,20,.12);opacity:0;visibility:hidden;transform:translate3d(10px,-8px,0) scale(.92);pointer-events:none}
-.pb-preview-layout[data-fan="up"] .pb-preview-layout-menu button{transform:translate3d(10px,8px,0) scale(.92)}
-.pb-preview-layout-menu button:hover{background:#141814;color:#fff}
-.pb-preview-layout-menu button[aria-pressed="true"]{background:#141814;color:#fff}
-@media(hover:hover) and (pointer:fine){
-  .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu{pointer-events:auto}
-  .pb-preview-layout:hover .pb-preview-layout-menu button,.pb-preview-layout:focus-within .pb-preview-layout-menu button{opacity:1;visibility:visible;transform:none;pointer-events:auto}
-}
-.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{pointer-events:auto}
-.pb-preview-layout[data-open="true"] .pb-preview-layout-menu button{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.pb-preview-layout-btn:hover,.pb-preview-layout:hover>.pb-preview-layout-btn,.pb-preview-layout:focus-within>.pb-preview-layout-btn,.pb-preview-layout[data-open="true"]>.pb-preview-layout-btn{background:#fff100;border-color:#fff100;color:#0b0b0d}
+.pb-preview-layout-menu{position:absolute;top:50%;right:calc(100% + 8px);display:flex;align-items:center;gap:2px;padding:3px;background:rgba(11,11,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:999px;box-shadow:0 14px 34px rgba(11,11,13,.4);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-50%) translateX(8px) scale(.96)}
+.pb-preview-layout-menu button{appearance:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;background:transparent;color:rgba(245,245,242,.72);border-radius:999px;cursor:pointer}
+.pb-preview-layout-menu button svg{width:17px;height:17px}
+.pb-preview-layout-menu button:hover{background:rgba(255,255,255,.12);color:#fff}
+.pb-preview-layout-menu button[aria-pressed="true"]{background:#fff100;color:#0b0b0d}
+.pb-preview-layout-caption{position:absolute;top:calc(100% + 7px);right:0;white-space:nowrap;font:600 .68rem/1 "Space Grotesk",system-ui,sans-serif;color:#f5f5f2;background:rgba(11,11,13,.94);border:1px solid rgba(255,255,255,.14);padding:.32rem .6rem;border-radius:999px;pointer-events:none}
+.pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
 @media(prefers-reduced-motion:no-preference){
-  .pb-preview-layout-menu button{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s,background .12s,color .12s}
-  .pb-preview-layout:hover .pb-preview-layout-menu button:nth-child(1),.pb-preview-layout:focus-within .pb-preview-layout-menu button:nth-child(1),.pb-preview-layout[data-open="true"] .pb-preview-layout-menu button:nth-child(1){transition-delay:20ms}
-  .pb-preview-layout:hover .pb-preview-layout-menu button:nth-child(2),.pb-preview-layout:focus-within .pb-preview-layout-menu button:nth-child(2),.pb-preview-layout[data-open="true"] .pb-preview-layout-menu button:nth-child(2){transition-delay:55ms}
-  .pb-preview-layout:hover .pb-preview-layout-menu button:nth-child(3),.pb-preview-layout:focus-within .pb-preview-layout-menu button:nth-child(3),.pb-preview-layout[data-open="true"] .pb-preview-layout-menu button:nth-child(3){transition-delay:90ms}
+  .pb-preview-layout-menu{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s}
+  .pb-preview-layout-menu button{transition:background .12s,color .12s}
 }
 `;
 
@@ -233,21 +295,27 @@ export function renderLayoutChromeHtml(
   viewport: LayoutViewport = "desktop"
 ): string {
   const title = layoutChromeTitle(section, viewport);
+  const currentOption = section.options.find(
+    option => option.value === current
+  );
   const options = section.options
-    .map(
-      option =>
-        `<button type="button" data-pb-layout-option="${option.value}" aria-pressed="${
-          option.value === current ? "true" : "false"
-        }">${escapeHtml(layoutOptionLabel(option, viewport))}</button>`
-    )
+    .map(option => {
+      const label = escapeHtml(layoutOptionLabel(option, viewport));
+      return `<button type="button" data-pb-layout-option="${option.value}" aria-pressed="${
+        option.value === current ? "true" : "false"
+      }" aria-label="${label}" title="${label}">${option.icon}</button>`;
+    })
     .join("");
+  const caption = currentOption
+    ? escapeHtml(layoutOptionLabel(currentOption, viewport))
+    : "";
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
     <button type="button" class="pb-preview-layout-btn" aria-expanded="false" aria-haspopup="true" aria-label="${escapeHtml(
       title
-    )}">${LAYOUT_GRID_ICON_HTML}<span>${escapeHtml(section.buttonLabel)}</span></button>
+    )}">${LAYOUT_GRID_ICON_HTML}</button>
     <div class="pb-preview-layout-menu" role="group" aria-label="${escapeHtml(
       title
-    )}">${options}</div>
+    )}">${options}<span class="pb-preview-layout-caption" aria-hidden="true">${caption}</span></div>
   </div>`;
 }
 
@@ -293,8 +361,29 @@ function syncChromeCopy(doc: Document): void {
       .forEach(button => {
         const value = button.getAttribute("data-pb-layout-option");
         const option = section.options.find(item => item.value === value);
-        if (option) button.textContent = layoutOptionLabel(option, viewport);
+        if (!option) return;
+        const label = layoutOptionLabel(option, viewport);
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
       });
+  }
+}
+
+/** Caption unter der Leiste: Label der gehoverten, sonst der aktiven Option. */
+function syncCaption(doc: Document, hovered?: HTMLButtonElement | null): void {
+  const viewport = viewportOf(doc);
+  for (const section of PREVIEW_LAYOUT_SECTIONS) {
+    const chrome = doc.querySelector(
+      `[data-pb-layout-field="${section.field}"]`
+    );
+    const caption = chrome?.querySelector(".pb-preview-layout-caption");
+    if (!chrome || !caption) continue;
+    const shown =
+      hovered && chrome.contains(hovered)
+        ? hovered.getAttribute("data-pb-layout-option")
+        : currentOfDoc(doc, section.field);
+    const option = section.options.find(item => item.value === shown);
+    caption.textContent = option ? layoutOptionLabel(option, viewport) : "";
   }
 }
 
@@ -380,7 +469,6 @@ function placeChrome(doc: Document): void {
     }
     chrome.style.display = "flex";
     chrome.style.top = `${Math.round(top)}px`;
-    chrome.dataset.fan = viewHeight - top - chromeHeight < 148 ? "up" : "down";
   }
 }
 
@@ -430,6 +518,7 @@ export function enablePreviewLayoutChrome(
     }
     syncPressed(doc, field => currentOfDoc(doc, field));
     syncChromeCopy(doc);
+    syncCaption(doc);
   };
 
   if (doc.documentElement.hasAttribute(CHROME_MARK)) {
@@ -490,6 +579,19 @@ export function enablePreviewLayoutChrome(
       });
     }
 
+    const hoveredOption = (target: EventTarget | null) =>
+      target instanceof Element
+        ? target.closest<HTMLButtonElement>("[data-pb-layout-option]")
+        : null;
+    menu.addEventListener("pointerover", event => {
+      syncCaption(doc, hoveredOption(event.target));
+    });
+    menu.addEventListener("pointerout", () => syncCaption(doc));
+    menu.addEventListener("focusin", event => {
+      syncCaption(doc, hoveredOption(event.target));
+    });
+    menu.addEventListener("focusout", () => syncCaption(doc));
+
     menu.addEventListener("click", event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
         "[data-pb-layout-option]"
@@ -511,6 +613,7 @@ export function enablePreviewLayoutChrome(
         overlayState.set(doc, overlay);
         applyLayoutOverlay(site, overlay, viewportOf(doc));
         syncPressed(doc, field => currentOfDoc(doc, field));
+        syncCaption(doc);
         setOpen(false);
         options?.onOverlayChange?.(overlay);
         return;
@@ -526,6 +629,7 @@ export function enablePreviewLayoutChrome(
       workingProfiles.set(doc, working);
       applyProfileAttrs(site, working);
       syncPressed(doc, field => currentOfDoc(doc, field));
+      syncCaption(doc);
       setOpen(false);
       onPick(working);
     });

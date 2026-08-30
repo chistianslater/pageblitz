@@ -37,7 +37,10 @@ describe("PREVIEW_LAYOUT_SECTIONS", () => {
     ]);
     for (const section of PREVIEW_LAYOUT_SECTIONS) {
       expect(section.options.length).toBeGreaterThanOrEqual(2);
-      expect(section.buttonLabel).toBe("Layout");
+      for (const option of section.options) {
+        expect(option.icon).toContain("<svg");
+        expect(option.icon).toContain('fill="currentColor"');
+      }
     }
     expect(
       PREVIEW_LAYOUT_SECTIONS[0]!.options.map(option => option.value)
@@ -65,13 +68,22 @@ describe("renderLayoutChromeHtml", () => {
     );
   });
 
-  test("zeigt das 3×3-Raster-Icon neben dem Wort Layout, ohne hidden-Menü", () => {
+  test("zeigt das 3×3-Raster-Icon im runden Auslöser, ohne hidden-Menü", () => {
     const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
     expect(html).toContain(LAYOUT_GRID_ICON_HTML);
     expect(html).toContain("pb-preview-layout-icon");
     expect((html.match(/<i><\/i>/g) ?? []).length).toBe(9);
-    expect(html).toContain("<span>Layout</span>");
     expect(html).not.toMatch(/class="pb-preview-layout-menu"[^>]*\bhidden\b/);
+  });
+
+  test("rendert Optionen als Piktogramme mit Label als Tooltip und Caption", () => {
+    const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
+    expect((html.match(/<svg viewBox="0 0 20 20"/g) ?? []).length).toBe(3);
+    expect(html).toContain('aria-label="Bild &amp; Text"');
+    expect(html).toContain('title="Zentriert"');
+    expect(html).toContain(
+      '<span class="pb-preview-layout-caption" aria-hidden="true">Bild &amp; Text</span>'
+    );
   });
 
   test("kennzeichnet Mobil-Layouts im Aria-Label", () => {
