@@ -10,6 +10,8 @@ import {
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getIndustryImages } from "../industryImages";
 import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
+import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import type { PackId } from "../../shared/siteContract/types";
 import {
   AI_IMAGES_PER_HOUR,
   consumeAiImageQuota,
@@ -369,11 +371,39 @@ export const contentProcedures = {
             message: "Unbekannte Schriftpaarung.",
           }),
         designProfile: DesignProfileSchema.optional(),
+        /**
+         * Farbwelt (P10): kuratierte Grundstimmung per ID — der Server löst
+         * sie gegen getColorWorld(pack) auf und schreibt die Grundrollen als
+         * colorOverrides. `null`/"original" setzt auf das Pack zurück.
+         */
+        colorWorldId: z
+          .string()
+          .regex(/^[a-z-]+$/)
+          .max(24)
+          .nullish(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
+      let worldOverrides: Record<string, string> | null | undefined;
+      if (input.colorWorldId !== undefined) {
+        if (input.colorWorldId === null || input.colorWorldId === "original") {
+          worldOverrides = null;
+        } else {
+          const world = getColorWorld(
+            doc.stylePackId as PackId,
+            input.colorWorldId
+          );
+          if (!world) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Unbekannte Farbwelt.",
+            });
+          }
+          worldOverrides = world.overrides;
+        }
+      }
       return persistDoc(
         input.token,
         loaded,
@@ -381,6 +411,7 @@ export const contentProcedures = {
           accent: input.accent,
           fontPairId: input.fontPairId,
           designProfile: input.designProfile,
+          worldOverrides,
         })
       );
     }),

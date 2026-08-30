@@ -33,7 +33,11 @@ interface PreviewFrameProps {
 }
 
 export function normalizeInlineText(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
+  // Case-Fold (2026-08-30): Packs rendern Texte per CSS text-transform in
+  // GROSSBUCHSTABEN — innerText liefert den GERENDERTEN Text, sodass der
+  // Vergleich mit dem Dokumentwert sonst nie matcht (Werkbank-H1 war
+  // dadurch nicht inline-editierbar).
+  return value.replace(/\s+/g, " ").trim().toLocaleLowerCase("de-DE");
 }
 
 /** Echte Google-Bewertungen (und andere gesperrte Hosts) nicht editierbar. */
@@ -98,6 +102,20 @@ export function PreviewFrame({
     return () => window.clearTimeout(id);
   }, [scrollToFocus, src]);
 
+  // Race-Guard (2026-08-30): Das SSR-iframe kann fertig geladen sein, BEVOR
+  // React den onLoad-Handler anhängt — dann lief das Inline-Wiring nie und
+  // „Klicken und direkt bearbeiten" fehlte komplett. Beim Mount/Target-
+  // Wechsel nachziehen; doppelte Verdrahtung verhindert der Style-Marker.
+  useEffect(() => {
+    const el = iframeRef.current;
+    if (!el) return;
+    if (el.contentDocument?.readyState === "complete") {
+      enableInlineEditing(el);
+    }
+    // enableInlineEditing ist absichtlich keine Dep (ändert sich je Render).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, inlineTargets, pageSlug]);
+
   useEffect(() => {
     if (pageSlug || !onSectionLayout) return;
     const doc = iframeRef.current?.contentDocument;
@@ -107,22 +125,21 @@ export function PreviewFrame({
     });
   }, [designProfile, onSectionLayout, pageSlug, device]);
 
-  const enableInlineEditing = (
-    iframe: React.SyntheticEvent<HTMLIFrameElement>
-  ) => {
-    onIframeReady?.(iframe.currentTarget);
+  const enableInlineEditing = (iframeEl: HTMLIFrameElement) => {
+    onIframeReady?.(iframeEl);
     // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
     window.setTimeout(scrollToFocus, 80);
-    const previewDoc = iframe.currentTarget.contentDocument;
+    const previewDoc = iframeEl.contentDocument;
     if (previewDoc && !pageSlug && onSectionLayout) {
       enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout, {
         viewport: device,
       });
     }
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;
-    const doc = iframe.currentTarget.contentDocument;
+    const doc = iframeEl.contentDocument;
     if (!doc) return;
 
+    if (doc.querySelector("[data-pb-inline-style]")) return;
     const style = doc.createElement("style");
     style.setAttribute("data-pb-inline-style", "");
     style.textContent = `
@@ -169,7 +186,7 @@ export function PreviewFrame({
         target.setAttribute("data-pb-inline-edit", targetConfig.path);
         target.setAttribute("title", "Klicken und direkt bearbeiten");
         target.setAttribute("spellcheck", "true");
-        let original = target.innerText;
+        let original = target.textContent ?? "";
 
         target.addEventListener("click", event => {
           if (target.tagName === "A") event.preventDefault();
@@ -193,7 +210,7 @@ export function PreviewFrame({
           }
         });
         target.addEventListener("blur", () => {
-          const value = target.innerText.trim();
+          const value = (target.textContent ?? "").trim();
           if (!value || value.length > targetConfig.maxLength) {
             target.innerText = original;
             return;
@@ -213,7 +230,7 @@ export function PreviewFrame({
         src={src}
         title="Live-Vorschau deiner Website"
         loading="eager"
-        onLoad={enableInlineEditing}
+        onLoad={event => enableInlineEditing(event.currentTarget)}
       />
     </div>
   );

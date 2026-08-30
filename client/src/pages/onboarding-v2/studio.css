@@ -265,6 +265,49 @@
   font-size: 0.85rem;
 }
 
+/* Farbwelten (P10, 2026-08-30): Swatch-Karten im Theme-Editor. */
+.pb-studio-theme-worlds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.pb-studio-theme-world {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.5rem;
+  border: 1px solid var(--st-line);
+  border-radius: 999px;
+  background: var(--st-canvas);
+  color: var(--st-ink);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.pb-studio-theme-world:hover:not(:disabled) {
+  border-color: var(--st-muted);
+}
+.pb-studio-theme-world[data-active="true"] {
+  border-color: var(--st-accent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--st-accent) 25%, transparent);
+}
+.pb-studio-theme-world:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.pb-studio-theme-world-dots {
+  display: inline-flex;
+}
+.pb-studio-theme-world-dots i {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.pb-studio-theme-world-dots i + i {
+  margin-left: -0.35rem;
+}
+
 /* Texte-Panel aufgeräumt (2026-08-30): Sektionen mit Mono-Kicker,
    KI-Vorschlag als kleines Funken-Icon in der Label-Zeile, SEO als
    eingeklappter Block. */

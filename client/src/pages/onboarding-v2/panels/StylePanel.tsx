@@ -102,6 +102,8 @@ interface StylePanelProps {
   fontPairId?: string | null;
   /** Gespeichertes Kompositionsprofil innerhalb der Designrichtung. */
   designProfile?: DesignProfile | null;
+  /** colorOverrides des Dokuments — markiert die aktive Farbwelt im Editor. */
+  colorOverrides?: Record<string, string> | null;
 }
 
 export function StylePanel({
@@ -114,6 +116,7 @@ export function StylePanel({
   accent = null,
   fontPairId = null,
   designProfile = null,
+  colorOverrides = null,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<PackId | null>(null);
@@ -258,6 +261,7 @@ export function StylePanel({
           accent={accent}
           fontPairId={fontPairId}
           designProfile={designProfile}
+          colorOverrides={colorOverrides}
           onApplied={onApplied}
         />
       </details>

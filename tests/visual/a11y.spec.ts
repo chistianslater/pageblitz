@@ -43,6 +43,14 @@ async function skipCookieBanner(page: Page): Promise<void> {
  * CSS-Selektor des ersten (und ggf. zweiten/dritten) betroffenen Knotens,
  * damit ein Fehlschlag ohne erneuten lokalen Lauf debugbar ist.
  */
+test.beforeEach(async ({ page }) => {
+  // Statischer Prüfstand: Der Landing-Scroll-Scrub (GSAP) hält Sektionen
+  // unterhalb des Folds im Ausgangszustand (Opacity .3) — axe würde den
+  // Übergangszustand statt des Lesezustands messen. Mit reduced-motion
+  // rendert alles statisch-sichtbar (wie packs.spec/studio.spec).
+  await page.emulateMedia({ reducedMotion: "reduce" });
+});
+
 async function expectNoSeriousViolations(
   page: Page,
   label: string
@@ -205,7 +213,7 @@ test.describe("A11y (axe): Studio", () => {
     const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
     await expect(addonsPanel).toBeVisible();
     await addonsPanel
-      .locator(".pb-studio-addon-list li")
+      .locator(".pb-studio-addon-grid li")
       .filter({ hasText: "Unterseiten" })
       .getByRole("button", { name: "Hinzufügen" })
       .click();

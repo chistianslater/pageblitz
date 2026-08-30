@@ -509,7 +509,9 @@ body {
   --lp-panel-2: #1a1a1e;
   --lp-ink: #f2f1ee;
   --lp-muted: #a4a39d;
-  --lp-faint: #7c7b76;
+  /* 2026-08-30: von #7c7b76 angehoben — 4,37:1 auf --lp-panel lag unter
+     WCAG AA; #84837d erreicht >=4,5:1 auf allen drei Flächen. */
+  --lp-faint: #84837d;
   --lp-line: rgba(255, 255, 255, 0.09);
   --lp-volt: #ccff00;
   --lp-volt-ink: #0b0b0d;

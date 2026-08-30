@@ -58,7 +58,7 @@ export function HeroForm({
         onChange={event => onChange(event.target.value)}
         placeholder="Wie heißt dein Betrieb?"
         autoComplete="organization"
-        className={`${h} w-full min-w-0 rounded-xl border px-5 text-[1rem] focus-visible:outline-2 ${inputTone}`}
+        className={`${h} w-full min-w-0 rounded-full border px-5 text-[1rem] focus-visible:outline-2 ${inputTone}`}
       />
       <button
         type="submit"

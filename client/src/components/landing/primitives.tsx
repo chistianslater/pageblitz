@@ -95,7 +95,7 @@ export function SectionHead({
 }
 
 const PILL =
-  "lp-press inline-flex h-12 items-center justify-center gap-2 rounded-xl px-6 text-[0.95rem] font-bold transition-transform disabled:opacity-50";
+  "lp-press inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-bold transition-transform disabled:opacity-50";
 
 /** Volt-CTA: die eine Akzentfarbe der Seite trägt die Handlung. */
 export const pillPrimary = `${PILL} bg-lp-volt text-lp-volt-ink shadow-[0_0_32px_-6px_rgba(204,255,0,.4)] hover:-translate-y-px`;

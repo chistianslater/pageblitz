@@ -146,7 +146,7 @@ test.describe("Studio", () => {
     );
   });
 
-  test("Initialer Design-Gate: Richtung + Feinschliff bestätigen → Studio startet bei Fotos", async ({
+  test("Initialer Design-Gate: Richtung + Feinschliff bestätigen → Studio startet beim ersten offenen Schritt", async ({
     page,
     request,
   }) => {
@@ -209,8 +209,11 @@ test.describe("Studio", () => {
     await expect(
       page.getByRole("heading", { name: /Gefällt dir das Design/ })
     ).toBeHidden();
+    // Erster OFFENER Schritt: photos ist mit dem Hero-Platzhalterfoto der
+    // full-Fixture bereits erledigt (hasHeroImage) → der Wizard startet
+    // bei den Texten.
     await expect(
-      page.getByRole("region", { name: "Fotos wählen" })
+      page.getByRole("region", { name: "Texte prüfen" })
     ).toBeVisible();
   });
 
@@ -390,7 +393,7 @@ test.describe("Studio", () => {
     );
     await expect(
       page.frameLocator(".pb-studio-device iframe").locator("#start h1")
-    ).toContainText("Mock-Vorschlag A für headline");
+    ).toHaveAttribute("aria-label", /Mock-Vorschlag A für headline/);
   });
 
   test("Texte direkt in der Vorschau bearbeiten → Blur speichert und lädt Preview neu", async ({
@@ -446,7 +449,7 @@ test.describe("Studio", () => {
     await page.getByRole("button", { name: /Texte/ }).first().click();
 
     const panel = page.getByRole("region", { name: "Texte prüfen" });
-    await panel.getByLabel("Über-uns-Text").focus();
+    await panel.getByRole("textbox", { name: "Über-uns-Text" }).focus();
     await page.waitForTimeout(700); // smooth scroll im iframe
 
     const inViewport = await page
@@ -497,10 +500,11 @@ test.describe("Studio", () => {
       legalPanel.getByRole("button", { name: "Speichern" }).click(),
     ]);
 
-    // LegalPanel schließt sich nicht selbst (onApplied refetcht nur) —
-    // "Schließen" (PanelFrame-Footer, Ghost-Button) bringt uns zurück zur
-    // Checkliste. (Hieß bis zum Wizard-Umbau "Fertig".)
-    await legalPanel.getByRole("button", { name: "Schließen" }).click();
+    // „Speichern & weiter" führt seit 2026-08-30 geführt zum nächsten
+    // offenen Schritt (Extras) — von dort zurück zur Checkliste.
+    const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
+    await expect(addonsPanel).toBeVisible();
+    await addonsPanel.getByRole("button", { name: "Schließen" }).click();
 
     const legalItem = page.getByRole("button", { name: /Rechtliches/ }).first();
     await expect(legalItem).toHaveAttribute("data-status", "done");
@@ -560,8 +564,10 @@ test.describe("Studio", () => {
     await page.goto(`/onboarding/${token}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
+    // /Extras/ allein matcht auch die Angebot-Karte (Hinweistext nennt
+    // „…liegen unter Extras") — Checklisten-Karte eindeutig greifen.
     await page
-      .getByRole("button", { name: /Extras/ })
+      .getByRole("button", { name: /Extras\s*Kontaktformular/ })
       .first()
       .click();
     const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
@@ -574,10 +580,10 @@ test.describe("Studio", () => {
     // (Finding: value.team steuert die Sichtbarkeit, nicht der persistierte
     // addOns-Stand).
     const teamRow = addonsPanel
-      .locator(".pb-studio-addon-list li")
+      .locator(".pb-studio-addon-grid li")
       .filter({ hasText: "Team" });
     await teamRow.getByRole("button", { name: "Hinzufügen" }).click();
-    await expect(teamRow.getByRole("button", { name: "Aktiv" })).toBeVisible();
+    await expect(teamRow.getByRole("button", { name: "Ausgewählt" })).toBeVisible();
 
     await expect(
       addonsPanel.getByRole("heading", { name: "Team pflegen", level: 3 })
@@ -629,19 +635,21 @@ test.describe("Studio", () => {
       page.getByRole("group", { name: "Vorschau-Seite" })
     ).toHaveCount(0);
 
+    // /Extras/ allein matcht auch die Angebot-Karte (Hinweistext nennt
+    // „…liegen unter Extras") — Checklisten-Karte eindeutig greifen.
     await page
-      .getByRole("button", { name: /Extras/ })
+      .getByRole("button", { name: /Extras\s*Kontaktformular/ })
       .first()
       .click();
     const addonsPanel = page.getByRole("region", { name: "Extras wählen" });
     await expect(addonsPanel).toBeVisible();
 
     const subpagesRow = addonsPanel
-      .locator(".pb-studio-addon-list li")
+      .locator(".pb-studio-addon-grid li")
       .filter({ hasText: "Unterseiten" });
     await subpagesRow.getByRole("button", { name: "Hinzufügen" }).click();
     await expect(
-      subpagesRow.getByRole("button", { name: "Aktiv" })
+      subpagesRow.getByRole("button", { name: "Ausgewählt" })
     ).toBeVisible();
     await expect(
       addonsPanel.getByRole("heading", {

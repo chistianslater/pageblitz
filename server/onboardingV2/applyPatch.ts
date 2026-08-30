@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
 import type {
   ImagesPatch,
   OfferPatch,
@@ -67,11 +68,27 @@ export function applyTheme(
     accent?: string | null;
     fontPairId?: string | null;
     designProfile?: DesignProfile;
+    /**
+     * Farbwelt (P10): vollständiges Grundrollen-Set aus getColorWorld —
+     * `null` setzt auf Original zurück (Grundrollen löschen, accent bleibt).
+     */
+    worldOverrides?: Record<string, string> | null;
   }
 ): WebsiteDataV2 {
   const next: WebsiteDataV2 = { ...doc };
-  if (patch.accent !== undefined) {
+  if (patch.worldOverrides !== undefined) {
     const overrides = { ...(doc.colorOverrides ?? {}) };
+    for (const role of WORLD_ROLES) delete overrides[role];
+    if (patch.worldOverrides) {
+      for (const [role, hex] of Object.entries(patch.worldOverrides)) {
+        overrides[role] = hex;
+      }
+    }
+    if (Object.keys(overrides).length > 0) next.colorOverrides = overrides;
+    else delete next.colorOverrides;
+  }
+  if (patch.accent !== undefined) {
+    const overrides = { ...(next.colorOverrides ?? {}) };
     if (patch.accent === null) delete overrides.accent;
     else overrides.accent = patch.accent;
     if (Object.keys(overrides).length > 0) next.colorOverrides = overrides;

@@ -339,8 +339,11 @@ export default function StudioPage({ token }: { token: string }) {
     id => state.checklist.find(i => i.id === id)?.status === "done"
   ).length;
   const wizardOpenCount = WIZARD_PANEL_STEPS.length - wizardDoneCount;
-  // Panels bekommen im Wizard „Weiter"/„Schließen = Übersicht" verdrahtet.
-  const panelNext = wizardActive ? goNext : undefined;
+  // „Weiter" führt IMMER durch die Schritte (User-Feedback 2026-08-30):
+  // Auch aus der Übersicht geöffnete Wizard-Schritte zeigen „Speichern &
+  // weiter" und springen zum nächsten offenen Schritt — vorher stand dort
+  // nur „Speichern", und die Führung riss ab.
+  const panelNext = activeIsWizardStep ? goNext : undefined;
   const panelClose = (panelId: ChecklistItemId | null) =>
     wizardActive ? exitWizard() : setActiveId(panelId);
 
@@ -389,6 +392,7 @@ export default function StudioPage({ token }: { token: string }) {
               accent={state.doc?.colorOverrides?.accent ?? null}
               fontPairId={state.doc?.fontPairId ?? null}
               designProfile={state.doc?.designProfile ?? null}
+              colorOverrides={state.doc?.colorOverrides ?? null}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

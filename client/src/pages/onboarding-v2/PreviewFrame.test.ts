@@ -6,9 +6,10 @@ import {
 } from "./PreviewFrame";
 
 describe("PreviewFrame helpers", () => {
-  test("normalisiert Zeilenumbrüche und Mehrfach-Leerzeichen für DOM-Matching", () => {
+  test("normalisiert Whitespace und Groß-/Kleinschreibung (text-transform) für DOM-Matching", () => {
     expect(normalizeInlineText("  Massarbeit\n aus   Holz.  ")).toBe(
-      "Massarbeit aus Holz."
+      // Case-Fold: text-transform-feste Vergleiche (2026-08-30).
+      "massarbeit aus holz."
     );
   });
 

@@ -57,8 +57,10 @@ export const KLARWERK: PackConstitution = {
       usage: "CTA, Index, Akzentwort, Statuspunkt.",
     },
     {
-      name: "Weiß",
-      hex: "#FFFFFF",
+      // Weiß lag mit 4,28:1 knapp unter WCAG AA (axe: serious) —
+      // dunkle Tinte auf Kupfer erreicht 4,9:1 und passt zum Tech-Look.
+      name: "Tiefschwarz",
+      hex: "#0F0E0C",
       role: "accent-contrast",
       usage: "Text auf Kupfer.",
     },

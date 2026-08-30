@@ -10,6 +10,10 @@ import {
   IMAGE_TREATMENTS,
 } from "@shared/siteContract/designProfile";
 import { ACCENT_CHOICES } from "../themeChoices";
+import {
+  activeColorWorldId,
+  getColorWorlds,
+} from "@shared/stylePacks/colorWorlds";
 
 /**
  * Studio-Theme-Editor (2026-08-24): Akzentfarbe + Schriftpaarung unabhängig
@@ -46,6 +50,8 @@ interface ThemeEditorProps {
   designProfile?: DesignProfile | null;
   /** Splash zeigt nur Farbe/Schrift; Layoutdetails bleiben im Studio. */
   showLayoutControls?: boolean;
+  /** Gespeicherte colorOverrides des Dokuments — markiert die aktive Farbwelt. */
+  colorOverrides?: Record<string, string> | null;
   onApplied: () => void;
 }
 
@@ -56,12 +62,16 @@ export function ThemeEditor({
   fontPairId,
   designProfile = null,
   showLayoutControls = true,
+  colorOverrides = null,
   onApplied,
 }: ThemeEditorProps) {
   const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
   // Optimistisch: Chips zeigen die Wahl sofort, der Server-Refetch folgt.
   const [localAccent, setLocalAccent] = useState(accent);
   const [localPairId, setLocalPairId] = useState(fontPairId);
+  const [localWorldId, setLocalWorldId] = useState<string>(() =>
+    packId ? activeColorWorldId(packId, colorOverrides ?? undefined) : "original"
+  );
   const [localProfile, setLocalProfile] = useState<DesignProfile>(
     designProfile ?? DEFAULT_DESIGN_PROFILE
   );
@@ -70,6 +80,11 @@ export function ThemeEditor({
   // Beim Wechsel der Designrichtung leitet der Server ein neues Profil ab.
   // StylePanel bleibt dabei gemountet; deshalb den lokalen Editor-Zustand
   // nach dem Parent-Refetch explizit synchronisieren.
+  useEffect(() => {
+    if (packId)
+      setLocalWorldId(activeColorWorldId(packId, colorOverrides ?? undefined));
+  }, [packId, colorOverrides]);
+
   useEffect(() => {
     setLocalProfile(designProfile ?? DEFAULT_DESIGN_PROFILE);
   }, [designProfile]);
@@ -110,7 +125,13 @@ export function ThemeEditor({
     accent?: string | null;
     fontPairId?: string | null;
     designProfile?: DesignProfile;
+    colorWorldId?: string | null;
   }) => updateTheme.mutate({ token, ...patch }, { onSuccess: onApplied });
+
+  const pickWorld = (id: string) => {
+    setLocalWorldId(id);
+    save({ colorWorldId: id === "original" ? null : id });
+  };
 
   const pickAccent = (hex: string | null) => {
     setLocalAccent(hex);
@@ -204,6 +225,37 @@ export function ThemeEditor({
             <option value="bleed">Flächig</option>
           </select>
         </label>
+          </div>
+        </>
+      )}
+
+      {packId && (
+        <>
+          <p className="pb-studio-theme-label" id="pb-theme-world-label">
+            Farbwelt
+          </p>
+          <div
+            className="pb-studio-theme-worlds"
+            role="group"
+            aria-labelledby="pb-theme-world-label"
+          >
+            {getColorWorlds(packId).map(world => (
+              <button
+                key={world.id}
+                type="button"
+                className="pb-studio-theme-world"
+                data-active={localWorldId === world.id ? "true" : undefined}
+                disabled={busy}
+                onClick={() => pickWorld(world.id)}
+              >
+                <span className="pb-studio-theme-world-dots" aria-hidden="true">
+                  {world.swatch.map((hex: string, i: number) => (
+                    <i key={i} style={{ background: hex }} />
+                  ))}
+                </span>
+                {world.name}
+              </button>
+            ))}
           </div>
         </>
       )}

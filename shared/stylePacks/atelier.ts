@@ -61,6 +61,14 @@ export const ATELIER: PackConstitution = {
       role: "accent-contrast",
       usage: "Bildunterschrift auf dem Cover-Bild.",
     },
+    {
+      // Signalrot #E0301E erreicht auf der Surface (#EDEDEA) nur 3,9:1 —
+      // Kleintext (Kicker, Index, tel-small) nutzt den dunkleren Ton.
+      name: "Signalrot dunkel",
+      hex: "#C02100",
+      role: "accent-text",
+      usage: "Kicker, Index-Ziffern und Kleintext in Rot.",
+    },
   ],
   type: {
     display: {

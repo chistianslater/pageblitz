@@ -132,7 +132,10 @@ function renderSection(
                     : undefined;
                 return (
                   <span key={line + i} className={cls} aria-hidden="true">
-                    {line}
+                    {/* Trailing-Space: die Spans sind Block-Zeilen — ohne
+                        Leerzeichen klebt innerText zusammen („ausHolz.")
+                        und das Inline-Editing findet den H1 nicht mehr. */}
+                    {isLast ? line : `${line} `}
                   </span>
                 );
               })}

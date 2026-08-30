@@ -213,9 +213,9 @@ export function generateHomePrerender(): string {
       <form action="/start" method="get" style="display:flex;flex-wrap:wrap;gap:.75rem;max-width:32rem;margin:0 0 1rem">
         <input type="text" name="name" placeholder="Wie heißt dein Betrieb?" aria-label="Firmenname"
                autocomplete="organization"
-               style="flex:1 1 16rem;height:3.5rem;padding:0 1.25rem;border-radius:12px;border:1px solid ${C.line};background:${C.panel};font-size:1rem;color:${C.ink}"/>
+               style="flex:1 1 16rem;height:3.5rem;padding:0 1.25rem;border-radius:999px;border:1px solid ${C.line};background:${C.panel};font-size:1rem;color:${C.ink}"/>
         <button type="submit"
-                style="height:3.5rem;padding:0 1.5rem;border:0;border-radius:12px;background:${C.volt};color:${C.voltInk};font-size:1rem;font-weight:700;cursor:pointer">Meine Website ansehen</button>
+                style="height:3.5rem;padding:0 1.5rem;border:0;border-radius:999px;background:${C.volt};color:${C.voltInk};font-size:1rem;font-weight:700;cursor:pointer">Meine Website ansehen</button>
       </form>
       <p style="font-size:.8rem;color:${C.faint};margin:0;letter-spacing:.02em;text-transform:uppercase"><span style="color:${C.volt}">Kostenlos ansehen</span> · keine Kreditkarte · monatlich kündbar</p>
       <div style="margin-top:2.5rem;max-width:42rem">
