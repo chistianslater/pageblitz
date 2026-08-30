@@ -5,6 +5,7 @@ import {
 } from "../../shared/stylePacks/colorWorlds";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { PACK_IDS } from "../../shared/siteContract/schema";
+import type { AiChatHistoryEntry } from "../../shared/onboardingV2/aiEdit";
 import type {
   PackId,
   Page,
@@ -50,6 +51,8 @@ export function buildAiEditPrompt(args: {
   category: string;
   /** Unterseiten-Scope (Plan B6 Task 5): Inhalt = Page.seo + Page.sections statt der Startseite. */
   page?: Page;
+  /** Kurzer Dialog-Kontext (Rückfragen): vorherige Wortwechsel dieses Wunschs. */
+  history?: AiChatHistoryEntry[];
 }): string {
   const constitution = getConstitution(args.doc.stylePackId);
   const candidateIds = buildStyleCandidateIds(args.category);
@@ -78,8 +81,22 @@ export function buildAiEditPrompt(args: {
   const content = args.page
     ? { seo: args.page.seo, sections: args.page.sections }
     : { seo: args.doc.seo, sections: args.doc.sections };
+  // Rückfragen-Dialog (2026-08-30): vorherige Wortwechsel VOR dem aktuellen
+  // Wunsch, damit eine Antwort auf eine Rückfrage zuzuordnen ist.
+  const dialogLines =
+    args.history && args.history.length > 0
+      ? [
+          `## Bisheriger Dialog zu diesem Wunsch`,
+          ...args.history.map(
+            entry =>
+              `${entry.role === "user" ? "Kunde" : "Du (Rückfrage)"}: "${entry.text}"`
+          ),
+          ``,
+        ]
+      : [];
 
   return [
+    ...dialogLines,
     `Der Kunde äußert folgenden Wunsch für ${scope}: "${args.message}"`,
     ``,
     `## Tonalität (aktuelles Style Pack: ${constitution.name})`,
@@ -103,7 +120,7 @@ export function buildAiEditPrompt(args: {
     ...designStatus,
     ``,
     `## Wie antworten`,
-    `Antworte mit GENAU EINEM der vier folgenden JSON-Formate:`,
+    `Antworte mit GENAU EINEM der fünf folgenden JSON-Formate:`,
     ``,
     `1) Inhaltlicher Wunsch (Texte ändern):`,
     `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"theme":null,"packId":null,"reason":null}`,
@@ -130,5 +147,10 @@ export function buildAiEditPrompt(args: {
     ``,
     `4) Faktenwunsch (Telefon, Adresse, Preise, Öffnungszeiten oder rechtliche Angaben ändern):`,
     `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<kurzer Hinweis, welches Panel dafür zuständig ist>"}`,
+    ``,
+    `5) Rückfrage — NUR wenn der Wunsch so mehrdeutig ist, dass du ihn ohne Zusatzinfo falsch umsetzen könntest (z. B. "mach das schöner" ohne Bezug, oder zwei mögliche Lesarten mit sehr unterschiedlichem Ergebnis):`,
+    `{"kind":"question","content":null,"theme":null,"packId":null,"reason":null,"question":"<genau EINE kurze, konkrete Rückfrage auf Deutsch, gern mit 2–3 Optionen>"}`,
+    `- Höchstens EINE Rückfrage pro Wunsch: steht im bisherigen Dialog bereits eine Rückfrage von dir, dann NIE erneut fragen — setze stattdessen die plausibelste Interpretation um.`,
+    `- Bei nur leichter Unschärfe nicht fragen, sondern die naheliegendste Interpretation direkt umsetzen.`,
   ].join("\n");
 }

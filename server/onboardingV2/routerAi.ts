@@ -13,7 +13,10 @@ import {
   type DesignProfile,
 } from "../../shared/siteContract/designProfile";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
-import type { AiThemePatch } from "../../shared/onboardingV2/aiEdit";
+import {
+  AiChatHistorySchema,
+  type AiThemePatch,
+} from "../../shared/onboardingV2/aiEdit";
 import { applyTheme } from "./applyPatch";
 import {
   assertAiEditQuota,
@@ -151,6 +154,10 @@ export const aiProcedures = {
           .string()
           .regex(/^[a-z0-9-]{2,40}$/)
           .optional(),
+        // Rückfragen-Dialog (2026-08-30): vorherige Wortwechsel dieses
+        // Wunschs (Wunsch → Rückfrage → Antwort) — nur vom Client gehalten,
+        // nie persistiert.
+        history: AiChatHistorySchema.optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -166,6 +173,7 @@ export const aiProcedures = {
         message: input.message,
         category,
         ...(input.pageSlug !== undefined ? { pageSlug: input.pageSlug } : {}),
+        ...(input.history !== undefined ? { history: input.history } : {}),
       });
 
       if (result.kind === "content") {
@@ -202,6 +210,9 @@ export const aiProcedures = {
           name: getConstitution(result.packId).name,
           reason: result.reason,
         };
+      }
+      if (result.kind === "question") {
+        return { kind: "question" as const, question: result.question };
       }
       return { kind: "reject" as const, reason: result.reason };
     }),

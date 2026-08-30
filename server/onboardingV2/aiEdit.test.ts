@@ -496,3 +496,68 @@ describe("Proposal-Store", () => {
     expect(takeProposal(id, 42)).toBeNull();
   });
 });
+
+describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
+  test("liefert die Rückfrage unverändert, ohne Dokument-Änderung", async () => {
+    vi.mocked(invokeLLM).mockResolvedValueOnce({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              kind: "question",
+              content: null,
+              theme: null,
+              packId: null,
+              reason: null,
+              question: "Meinst du die Überschrift im Hero oder bei Leistungen?",
+            }),
+          },
+        },
+      ],
+    } as any);
+    const result = await proposeAiEdit({
+      doc,
+      message: "mach die überschrift besser",
+      category: "Tischler",
+    });
+    expect(result).toEqual({
+      kind: "question",
+      question: "Meinst du die Überschrift im Hero oder bei Leistungen?",
+    });
+  });
+
+  test("kind=question ohne question-Feld → Retry, dann TRPCError", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({ kind: "question", question: null }),
+          },
+        },
+      ],
+    } as any);
+    await expect(
+      proposeAiEdit({ doc, message: "hm", category: "Tischler" })
+    ).rejects.toBeInstanceOf(TRPCError);
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+
+  test("history landet als Dialog-Block im Prompt", async () => {
+    vi.mocked(invokeLLM).mockResolvedValueOnce(llmContentResponse());
+    await proposeAiEdit({
+      doc,
+      message: "die im Hero",
+      category: "Tischler",
+      history: [
+        { role: "user", text: "mach die überschrift besser" },
+        { role: "assistant", text: "Welche Überschrift meinst du?" },
+      ],
+    });
+    const prompt = vi.mocked(invokeLLM).mock.calls[0][0].messages[1]
+      .content as string;
+    expect(prompt).toContain("## Bisheriger Dialog zu diesem Wunsch");
+    expect(prompt).toContain('Kunde: "mach die überschrift besser"');
+    expect(prompt).toContain('Du (Rückfrage): "Welche Überschrift meinst du?"');
+    expect(prompt).toContain('"kind":"question"');
+  });
+});

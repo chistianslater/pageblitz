@@ -101,6 +101,9 @@ export default function StudioPage({ token }: { token: string }) {
   };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
+  // Schwebender KI-Assistent über der Vorschau (2026-08-30): eingeklappt
+  // eine Pill unten rechts, ausgeklappt der bisherige KI-Chat als Karte.
+  const [assistantOpen, setAssistantOpen] = useState(false);
   // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
   // Startseite. Der gewählte Slug wird bei jedem Render gegen die aktuell
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
@@ -567,16 +570,6 @@ export default function StudioPage({ token }: { token: string }) {
                   setActiveId(editor.panel, key);
                 }}
               />
-              <AiChat
-                token={token}
-                onApplied={() => {
-                  studio.refetch();
-                  studio.bumpPreview();
-                }}
-                onOpenStylePanel={openStylePanelWithSuggestion}
-                onOpenPanel={setActiveId}
-                page={aiChatPage}
-              />
               {state.status !== "preview" ? (
                 <LiveCard slug={state.slug} status={state.status} />
               ) : (
@@ -685,6 +678,52 @@ export default function StudioPage({ token }: { token: string }) {
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).
             reveal={studio.justGenerated && studio.previewVersion === 0}
           />
+          {/* Schwebender KI-Assistent (2026-08-30): sichtbar rechts unten
+              über der Vorschau — „Was möchtest du noch ändern?". Der Chat
+              selbst ist unverändert der AiChat aus der bisherigen Rail. */}
+          <div className="pb-studio-assistant" data-open={assistantOpen}>
+            {assistantOpen && (
+              <div
+                className="pb-studio-assistant-panel"
+                role="dialog"
+                aria-label="KI-Assistent"
+              >
+                <button
+                  type="button"
+                  className="pb-studio-assistant-close"
+                  aria-label="Assistent schließen"
+                  onClick={() => setAssistantOpen(false)}
+                >
+                  ×
+                </button>
+                <AiChat
+                  token={token}
+                  onApplied={() => {
+                    studio.refetch();
+                    studio.bumpPreview();
+                  }}
+                  onOpenStylePanel={packId => {
+                    setAssistantOpen(false);
+                    openStylePanelWithSuggestion(packId);
+                  }}
+                  onOpenPanel={id => {
+                    setAssistantOpen(false);
+                    setActiveId(id);
+                  }}
+                  page={aiChatPage}
+                />
+              </div>
+            )}
+            {!assistantOpen && (
+              <button
+                type="button"
+                className="pb-studio-assistant-fab"
+                onClick={() => setAssistantOpen(true)}
+              >
+                <span aria-hidden="true">✦</span> Was möchtest du noch ändern?
+              </button>
+            )}
+          </div>
         </main>
       </div>
     </div>

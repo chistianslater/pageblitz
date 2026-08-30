@@ -13,6 +13,7 @@ import {
   AiPageEditResponseSchema,
   diffDocuments,
   diffPages,
+  type AiChatHistoryEntry,
   type AiDiffEntry,
   type AiThemePatch,
 } from "../../shared/onboardingV2/aiEdit";
@@ -33,7 +34,8 @@ export type ProposeAiEditResult =
   | { kind: "content"; next: WebsiteDataV2; diff: AiDiffEntry[] }
   | { kind: "theme"; theme: AiThemePatch; reason: string }
   | { kind: "style"; packId: PackId; reason: string }
-  | { kind: "reject"; reason: string };
+  | { kind: "reject"; reason: string }
+  | { kind: "question"; question: string };
 
 /** Ein Versuch + genau ein Retry (Spec: „genau 1 Retry, dann Fehler"). */
 const MAX_AI_EDIT_ATTEMPTS = 2;
@@ -67,7 +69,7 @@ async function withAiEditRetry<T>(attempt: () => Promise<T>): Promise<T> {
  * Validierung inkl. jeder Sektion) gemappt.
  */
 const RawAiEditResponseSchema = z.object({
-  kind: z.enum(["content", "theme", "style", "reject"]),
+  kind: z.enum(["content", "theme", "style", "reject", "question"]),
   content: z
     .object({
       seo: z.object({ title: z.string(), description: z.string() }),
@@ -78,6 +80,7 @@ const RawAiEditResponseSchema = z.object({
   theme: z.record(z.string(), z.unknown()).nullable().optional(),
   packId: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
+  question: z.string().nullable().optional(),
 });
 
 function mapRawToAiEditResponse(
@@ -102,6 +105,11 @@ function mapRawToAiEditResponse(
       throw new Error("KI-Antwort: 'packId' fehlt bei kind=style.");
     return { kind: "style", packId: raw.packId, reason: raw.reason ?? "" };
   }
+  if (raw.kind === "question") {
+    if (!raw.question)
+      throw new Error("KI-Antwort: 'question' fehlt bei kind=question.");
+    return { kind: "question", question: raw.question };
+  }
   return { kind: "reject", reason: raw.reason ?? "" };
 }
 
@@ -113,7 +121,10 @@ const AI_EDIT_RESPONSE_FORMAT = {
     schema: {
       type: "object",
       properties: {
-        kind: { type: "string", enum: ["content", "theme", "style", "reject"] },
+        kind: {
+          type: "string",
+          enum: ["content", "theme", "style", "reject", "question"],
+        },
         content: {
           type: ["object", "null"],
           properties: {
@@ -132,6 +143,7 @@ const AI_EDIT_RESPONSE_FORMAT = {
         theme: { type: ["object", "null"] },
         packId: { type: ["string", "null"] },
         reason: { type: ["string", "null"] },
+        question: { type: ["string", "null"] },
       },
       required: ["kind"],
     },
@@ -204,6 +216,12 @@ export async function proposeAiEdit(args: {
    * gleicher Retry. Startseite und übrige Pages bleiben byteidentisch.
    */
   pageSlug?: string;
+  /**
+   * Kurzer Dialog-Kontext (Rückfragen, 2026-08-30): die letzten Wortwechsel
+   * — nötig, damit eine Antwort auf eine Rückfrage dem ursprünglichen
+   * Wunsch zugeordnet werden kann. Geht 1:1 in den Prompt.
+   */
+  history?: AiChatHistoryEntry[];
 }): Promise<ProposeAiEditResult> {
   const page =
     args.pageSlug !== undefined

@@ -66,6 +66,19 @@ const AiThemeResponseSchema = z
   .strict();
 
 /**
+ * Rückfrage des Assistenten (2026-08-30, „bei Bedarf rückfragen"): bei einem
+ * mehrdeutigen Wunsch stellt die KI GENAU EINE kurze Rückfrage statt zu
+ * raten. Der Client schickt Frage + Antwort als `history` mit der nächsten
+ * Nachricht zurück — mehr Dialog-Gedächtnis gibt es bewusst nicht.
+ */
+const AiQuestionResponseSchema = z
+  .object({
+    kind: z.literal("question"),
+    question: z.string().min(5).max(300),
+  })
+  .strict();
+
+/**
  * Antwortschema der KI-Chat-Bearbeitung (server/onboardingV2/aiEdit.ts). Vier
  * sich gegenseitig ausschließende Ergebnisse:
  * - "content": ein validierter Inhalts-Vorschlag (seo + sections).
@@ -74,6 +87,8 @@ const AiThemeResponseSchema = z
  * - "style": ein Pack-Vorschlag für grundlegend anderen Look.
  * - "reject": eine Ablehnung, z. B. bei Fakten-/Kontaktwünschen, die nur
  *   über die Panels geändert werden dürfen.
+ * - "question": eine Rückfrage bei mehrdeutigem Wunsch (als fünfte Option
+ *   ans Ende angehängt — die Index-Referenzen unten bleiben stabil).
  */
 export const AiEditResponseSchema = z.discriminatedUnion("kind", [
   AiThemeResponseSchema,
@@ -97,9 +112,29 @@ export const AiEditResponseSchema = z.discriminatedUnion("kind", [
       reason: z.string().max(200),
     })
     .strict(),
+  AiQuestionResponseSchema,
 ]);
 
 type AiEditResponse = z.infer<typeof AiEditResponseSchema>;
+
+/**
+ * Kurzer Dialog-Kontext für Rückfragen: der Client schickt die letzten
+ * Wortwechsel (Wunsch → Rückfrage → Antwort) mit, damit die KI die Antwort
+ * dem ursprünglichen Wunsch zuordnen kann. Bewusst klein gehalten — kein
+ * persistenter Chat-Verlauf.
+ */
+export const AiChatHistorySchema = z
+  .array(
+    z
+      .object({
+        role: z.enum(["user", "assistant"]),
+        text: z.string().min(1).max(500),
+      })
+      .strict()
+  )
+  .max(8);
+
+export type AiChatHistoryEntry = z.infer<typeof AiChatHistorySchema>[number];
 
 /**
  * Dasselbe Antwortschema für den Unterseiten-Scope (Plan B6 Task 5,
@@ -115,10 +150,12 @@ export const AiPageEditResponseSchema = z.discriminatedUnion("kind", [
       sections: z.array(PageSectionSchema).min(1),
     })
     .strict(),
-  // theme/style/reject gelten seitenunabhängig (Design ist global).
+  // theme/style/reject/question gelten seitenunabhängig (Design ist global,
+  // eine Rückfrage bezieht sich auf den Wunsch, nicht auf die Seite).
   AiEditResponseSchema.options[0],
   AiEditResponseSchema.options[2],
   AiEditResponseSchema.options[3],
+  AiQuestionResponseSchema,
 ]);
 
 /** Ein einzelner Vorher/Nachher-Eintrag für die Diff-Vorschau im KI-Chat. */

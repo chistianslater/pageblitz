@@ -1,7 +1,10 @@
 import React, { useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
-import type { AiDiffEntry } from "@shared/onboardingV2/aiEdit";
+import type {
+  AiChatHistoryEntry,
+  AiDiffEntry,
+} from "@shared/onboardingV2/aiEdit";
 import type { PackId } from "@shared/siteContract/types";
 import {
   AiDiffList,
@@ -20,7 +23,8 @@ type AiChatOutcome =
   | { kind: "content"; proposalId: string; diff: AiDiffEntry[] }
   | { kind: "theme"; reason: string; summary: string[] }
   | { kind: "style"; packId: PackId; name: string; reason: string }
-  | { kind: "reject"; reason: string };
+  | { kind: "reject"; reason: string }
+  | { kind: "question"; question: string };
 
 interface AiExchange {
   /** Stabiler React-Key für die Verlaufsliste — Array-Index wäre instabil, sobald ältere Einträge aus MAX_HISTORY herausfallen. */
@@ -64,6 +68,11 @@ export function AiChat({
   // Diffs/Ergebnissen je Eintrag, siehe unten).
   const [history, setHistory] = useState<AiExchange[]>([]);
   const [active, setActive] = useState<AiExchange | null>(null);
+  // Offener Rückfragen-Dialog (2026-08-30): nach einer "question"-Antwort
+  // enthält das die Wortwechsel (Wunsch → Rückfrage), die mit der nächsten
+  // Nachricht als `history` zum Server gehen. Jede andere Antwortart
+  // schließt den Dialog.
+  const [pendingDialog, setPendingDialog] = useState<AiChatHistoryEntry[]>([]);
   // Reiner Zähler für stabile React-Keys der Verlaufsliste (kein Re-Render nötig, daher Ref statt State).
   const nextExchangeId = useRef(0);
 
@@ -91,8 +100,16 @@ export function AiChat({
   const handleSend = () => {
     if (!canSend) return;
     const trimmed = message.trim();
+    // Offener Rückfragen-Dialog geht als Kontext mit — die KI ordnet die
+    // Antwort so dem ursprünglichen Wunsch zu.
+    const dialog = pendingDialog;
     aiEdit.mutate(
-      { token, message: trimmed, ...(page ? { pageSlug: page.slug } : {}) },
+      {
+        token,
+        message: trimmed,
+        ...(page ? { pageSlug: page.slug } : {}),
+        ...(dialog.length > 0 ? { history: dialog } : {}),
+      },
       {
         onSuccess: outcome => {
           const exchange: AiExchange = {
@@ -103,6 +120,15 @@ export function AiChat({
           // Theme-Antworten sind bereits serverseitig angewandt — Vorschau
           // und Studio-State sofort nachziehen.
           if (outcome.kind === "theme") onApplied();
+          setPendingDialog(
+            outcome.kind === "question"
+              ? [
+                  ...dialog,
+                  { role: "user" as const, text: trimmed },
+                  { role: "assistant" as const, text: outcome.question },
+                ].slice(-8)
+              : []
+          );
           setHistory(prev => [...prev, exchange].slice(-MAX_HISTORY));
           setActive(exchange);
           setMessage("");
@@ -124,6 +150,8 @@ export function AiChat({
   const activeStyle = active?.outcome.kind === "style" ? active.outcome : null;
   const activeReject =
     active?.outcome.kind === "reject" ? active.outcome : null;
+  const activeQuestion =
+    active?.outcome.kind === "question" ? active.outcome : null;
 
   const handleApply = () => {
     if (!activeContent) return;
@@ -151,15 +179,21 @@ export function AiChat({
 
   return (
     <div className="pb-studio-ai">
-      <p className="pb-studio-kicker">KI-Chat</p>
+      <p className="pb-studio-kicker">KI-Assistent</p>
       <div className="pb-studio-field">
-        <label htmlFor="pb-ai-input">Was soll anders sein?</label>
+        <label htmlFor="pb-ai-input">
+          {activeQuestion ? "Deine Antwort" : "Was möchtest du noch ändern?"}
+        </label>
         <div className="pb-studio-ai-row">
           <input
             id="pb-ai-input"
             type="text"
             className="pb-studio-input"
-            placeholder="z. B. „Mach die Überschrift knackiger“"
+            placeholder={
+              activeQuestion
+                ? "Kurz antworten …"
+                : "z. B. „Mach die Überschrift knackiger“"
+            }
             value={message}
             disabled={busy}
             onChange={e => setMessage(e.target.value)}
@@ -246,6 +280,12 @@ export function AiChat({
             reason={activeStyle.reason}
             onView={() => onOpenStylePanel(activeStyle.packId)}
           />
+        )}
+        {activeQuestion && (
+          <div className="pb-studio-ai-question">
+            <p className="pb-studio-ai-question-label">Kurze Rückfrage</p>
+            <p>{activeQuestion.question}</p>
+          </div>
         )}
         {activeReject && (
           <div className="pb-studio-ai-reject">

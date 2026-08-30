@@ -1814,6 +1814,95 @@
   padding-top: 1rem;
   border-top: 1px solid var(--st-line);
 }
+/* Schwebender KI-Assistent über der Vorschau (2026-08-30): Pill unten
+   rechts in der Stage, ausgeklappt eine Karte mit dem bisherigen KI-Chat. */
+.pb-studio-assistant {
+  position: absolute;
+  right: calc(var(--st-space) + 4px);
+  bottom: calc(var(--st-space) + 4px);
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.pb-studio-assistant-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #131316;
+  color: #f2f1ee;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.pb-studio-assistant-fab span {
+  color: #ccff00;
+  font-size: 1rem;
+}
+.pb-studio-assistant-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+}
+.pb-studio-assistant-panel {
+  position: relative;
+  width: min(350px, calc(100vw - 2 * var(--st-space) - 8px));
+  max-height: min(60vh, 480px);
+  overflow-y: auto;
+  padding: 0.9rem 1rem 1rem;
+  border-radius: 16px;
+  background: var(--st-surface);
+  border: 1px solid var(--st-line);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+.pb-studio-assistant-panel .pb-studio-ai {
+  padding-top: 0;
+  border-top: 0;
+}
+.pb-studio-assistant-close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.55rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--st-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.pb-studio-assistant-close:hover {
+  background: var(--st-canvas);
+  color: var(--st-ink);
+}
+.pb-studio-ai-question {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--st-canvas);
+  border: 1px dashed var(--st-accent);
+  font-size: 0.9rem;
+}
+.pb-studio-ai-question p {
+  margin: 0;
+}
+.pb-studio-ai-question-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--st-muted);
+}
 .pb-studio-ai-row {
   display: flex;
   gap: 0.5rem;
