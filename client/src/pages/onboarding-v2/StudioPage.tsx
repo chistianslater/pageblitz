@@ -66,6 +66,7 @@ export default function StudioPage({ token }: { token: string }) {
     extra: AddOnKey | null = null
   ) => {
     setAddonFocus(extra);
+    setPhotoFocus(null);
     setActiveIdState(id);
     const editor = extra ? ADDON_EDITORS[extra] : null;
     const anchorByPanel: Partial<Record<ChecklistItemId, string>> = {
@@ -88,6 +89,16 @@ export default function StudioPage({ token }: { token: string }) {
   // Live-Spiegel des Texte-Panels: Inline-Pfad → Eingabewert (PreviewFrame
   // schreibt die Werte direkt in die Vorschau; Speichern bleibt explizit).
   const [textDraft, setTextDraft] = useState<Record<string, string>>({});
+  // Foto-Klick in der Vorschau: Ziel fürs Fotos-Panel (hero/about/gallery).
+  const [photoFocus, setPhotoFocus] = useState<
+    "hero" | "about" | "gallery" | null
+  >(null);
+  const openPhotosAt = (target: "hero" | "about" | "gallery") => {
+    // Reihenfolge: setActiveId zuerst — es nullt photoFocus für alle
+    // anderen Öffnungswege (Checkliste), der Klick-Wert gewinnt danach.
+    setActiveId("photos");
+    setPhotoFocus(target);
+  };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
@@ -425,7 +436,9 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
-              initialTarget={addonFocus === "gallery" ? "gallery" : undefined}
+              initialTarget={
+                addonFocus === "gallery" ? "gallery" : (photoFocus ?? undefined)
+              }
             />
           ) : activeId === "texts" ? (
             <TextsPanel
@@ -663,6 +676,7 @@ export default function StudioPage({ token }: { token: string }) {
             inlineTargets={inlineTargets}
             onInlineTextEdit={applyInlineText}
             draftValues={activeId === "texts" ? textDraft : undefined}
+            onPickPhoto={openPhotosAt}
             focusAnchor={previewFocusAnchor}
             designProfile={state.doc.designProfile ?? null}
             onSectionLayout={applySectionLayout}

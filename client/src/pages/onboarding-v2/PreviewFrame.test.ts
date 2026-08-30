@@ -1,8 +1,10 @@
+// @vitest-environment jsdom
 import { describe, expect, test } from "vitest";
 import {
   isInlineLocked,
   normalizeInlineText,
   previewPath,
+  photoClickTargetOf,
 } from "./PreviewFrame";
 
 describe("PreviewFrame helpers", () => {
@@ -32,5 +34,26 @@ describe("PreviewFrame helpers", () => {
         closest: () => null,
       } as unknown as Element)
     ).toBe(false);
+  });
+});
+
+describe("photoClickTargetOf", () => {
+  const build = (sectionId: string) => {
+    const section = document.createElement("section");
+    section.id = sectionId;
+    const img = document.createElement("img");
+    section.appendChild(img);
+    document.body.appendChild(section);
+    return img;
+  };
+
+  test("ordnet Bilder ihrer Sektion zu", () => {
+    expect(photoClickTargetOf(build("start"))).toBe("hero");
+    expect(photoClickTargetOf(build("ueber-uns"))).toBe("about");
+    expect(photoClickTargetOf(build("galerie"))).toBe("gallery");
+  });
+
+  test("Bilder außerhalb der Foto-Sektionen liefern null", () => {
+    expect(photoClickTargetOf(build("bewertungen"))).toBeNull();
   });
 });

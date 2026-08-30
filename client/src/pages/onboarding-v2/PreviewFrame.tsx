@@ -42,6 +42,23 @@ interface PreviewFrameProps {
    * ohne Server-Roundtrip — Speichern persistiert wie gehabt.
    */
   draftValues?: Record<string, string>;
+  /**
+   * Foto-Klick (2026-08-30): Klick auf ein Bild in Hero/Über uns/Galerie
+   * öffnet das Fotos-Panel mit diesem Ziel. Im Studio ersetzt das die
+   * Lightbox der Live-Site (Capture-Listener stoppt deren Handler).
+   */
+  onPickPhoto?: (target: PhotoClickTarget) => void;
+}
+
+export type PhotoClickTarget = "hero" | "about" | "gallery";
+
+/** Ziel des Fotos-Panels anhand der umgebenden Sektion — null außerhalb. */
+export function photoClickTargetOf(el: Element): PhotoClickTarget | null {
+  const section = el.closest("#start,#ueber-uns,#galerie");
+  if (!section) return null;
+  if (section.id === "start") return "hero";
+  if (section.id === "ueber-uns") return "about";
+  return "gallery";
 }
 
 export function normalizeInlineText(value: string): string {
@@ -78,6 +95,7 @@ export function PreviewFrame({
   onSectionLayout,
   onIframeReady,
   draftValues,
+  onPickPhoto,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
   if (packOverride) params.set("pack", packOverride);
@@ -177,8 +195,43 @@ export function PreviewFrame({
       [data-pb-inline-edit]{cursor:text;outline:1px dashed transparent;outline-offset:5px;transition:outline-color .15s,background-color .15s}
       [data-pb-inline-edit]:hover{outline-color:rgba(31,95,75,.55);background:rgba(31,95,75,.04)}
       [data-pb-inline-edit]:focus{outline:2px solid #1f5f4b;background:rgba(31,95,75,.07)}
+      [data-pb-photo-edit]{cursor:pointer;outline:1px dashed transparent;outline-offset:4px;transition:outline-color .15s}
+      [data-pb-photo-edit]:hover,[data-pb-photo-edit]:focus-visible{outline-color:rgba(31,95,75,.65)}
     `;
     doc.head.appendChild(style);
+
+    // Foto-Klick → Fotos-Panel mit passendem Ziel. Capture + stop, damit
+    // die Lightbox der Live-Site (siteEnhancer, document-Listener) im
+    // Studio nicht zusätzlich aufgeht.
+    if (onPickPhoto) {
+      doc
+        .querySelectorAll<HTMLImageElement>(
+          "#start img, #ueber-uns img, #galerie img"
+        )
+        .forEach(img => {
+          const target = photoClickTargetOf(img);
+          if (!target) return;
+          img.setAttribute("data-pb-photo-edit", target);
+          img.setAttribute("title", "Klicken, um das Foto zu tauschen");
+          if (!img.hasAttribute("tabindex")) img.tabIndex = 0;
+          img.setAttribute("role", "button");
+          img.setAttribute("aria-label", "Foto tauschen");
+          const openPanel = (event: Event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onPickPhoto(target);
+          };
+          img.addEventListener("click", openPanel, true);
+          img.addEventListener(
+            "keydown",
+            event => {
+              const key = (event as KeyboardEvent).key;
+              if (key === "Enter" || key === " ") openPanel(event);
+            },
+            true
+          );
+        });
+    }
 
     const candidateSelector =
       "h1,h2,h3,h4,p,strong,span,a,button,summary,figcaption,blockquote,footer,address,td,th,li";

@@ -98,6 +98,12 @@ export function PhotosPanel({
   const hasExistingGallery = !!gallerySection;
 
   const [target, setTarget] = useState<PhotoTarget>(initialTarget);
+  // Foto-Klick in der Vorschau bei bereits offenem Panel: das neue Ziel
+  // nachziehen (initialTarget ändert sich dann, ohne dass das Panel
+  // remountet).
+  useEffect(() => {
+    setTarget(initialTarget);
+  }, [initialTarget]);
   const [sourceTab, setSourceTab] = useState<SourceTab>("gmb");
   const [heroUrl, setHeroUrl] = useState<string | null>(
     heroSection?.imageUrl ?? null
