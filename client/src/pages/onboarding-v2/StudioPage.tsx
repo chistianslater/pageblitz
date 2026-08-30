@@ -85,6 +85,9 @@ export default function StudioPage({ token }: { token: string }) {
       `${window.location.pathname}${nextSearch}`
     );
   };
+  // Live-Spiegel des Texte-Panels: Inline-Pfad → Eingabewert (PreviewFrame
+  // schreibt die Werte direkt in die Vorschau; Speichern bleibt explizit).
+  const [textDraft, setTextDraft] = useState<Record<string, string>>({});
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
@@ -432,9 +435,13 @@ export default function StudioPage({ token }: { token: string }) {
                 studio.refetch();
                 studio.bumpPreview();
               }}
-              onClose={() => panelClose(null)}
+              onClose={() => {
+                setTextDraft({});
+                panelClose(null);
+              }}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              onDraft={setTextDraft}
             />
           ) : activeId === "offer" ? (
             <OfferPanel
@@ -655,6 +662,7 @@ export default function StudioPage({ token }: { token: string }) {
             pageSlug={previewSlug ?? undefined}
             inlineTargets={inlineTargets}
             onInlineTextEdit={applyInlineText}
+            draftValues={activeId === "texts" ? textDraft : undefined}
             focusAnchor={previewFocusAnchor}
             designProfile={state.doc.designProfile ?? null}
             onSectionLayout={applySectionLayout}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
@@ -45,6 +45,33 @@ interface TextsPanelProps {
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
+  /**
+   * Live-Spiegel (2026-08-30): feuert bei jeder Eingabe die sichtbaren
+   * Feldwerte als Inline-Pfad→Wert-Map — die Vorschau zeigt Tipparbeit
+   * sofort, gespeichert wird weiterhin erst per Button.
+   */
+  onDraft?: (draft: Record<string, string>) => void;
+}
+
+/** Panel-Felder → Inline-Pfade der sichtbaren Vorschau-Texte. */
+export function draftTargetsFromValues(
+  doc: WebsiteDataV2,
+  values: TextsPatch
+): Record<string, string> {
+  const heroIdx = doc.sections.findIndex(s => s.type === "hero");
+  const aboutIdx = doc.sections.findIndex(s => s.type === "about");
+  const draft: Record<string, string> = {};
+  const put = (idx: number, suffix: string, value: string | undefined) => {
+    if (idx >= 0 && value !== undefined) {
+      draft[`sections.${idx}.${suffix}`] = value;
+    }
+  };
+  put(heroIdx, "headline", values.headline);
+  put(heroIdx, "subheadline", values.subheadline);
+  put(heroIdx, "ctaText", values.ctaText);
+  put(aboutIdx, "headline", values.aboutHeadline);
+  put(aboutIdx, "body", values.aboutBody);
+  return draft;
 }
 
 export function TextsPanel({
@@ -54,9 +81,17 @@ export function TextsPanel({
   onClose,
   onNext,
   onPreviewFocus,
+  onDraft,
 }: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
+  // Live-Spiegel als Effekt (nicht im Setter): Varianten-Klicks nutzen die
+  // Updater-Form von setValues; der Effekt fängt jede Wertänderung ab.
+  useEffect(() => {
+    onDraft?.(draftTargetsFromValues(doc, values));
+    // doc/onDraft ändern sich nur mit dem Server-Refetch — values genügt.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [values]);
   const [suggesting, setSuggesting] = useState<TextField | null>(null);
   const [applyingVariant, setApplyingVariant] = useState<TextField | null>(
     null
@@ -104,8 +139,7 @@ export function TextsPanel({
       { token, patch: { [field]: value } },
       {
         onSuccess: onApplied,
-        onError: () =>
-          setValues(prev => ({ ...prev, [field]: previous })),
+        onError: () => setValues(prev => ({ ...prev, [field]: previous })),
         onSettled: () => setApplyingVariant(null),
       }
     );

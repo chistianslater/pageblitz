@@ -2,7 +2,11 @@ import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
-import { serializeRichDom, stripMarks } from "@/components/site/richText";
+import {
+  richHtml,
+  serializeRichDom,
+  stripMarks,
+} from "@/components/site/richText";
 import { enableInlineFormatToolbar } from "./previewInlineFormat";
 import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
 
@@ -32,6 +36,12 @@ interface PreviewFrameProps {
   onSectionLayout?: (profile: DesignProfile) => void;
   /** Meldet das geladene iframe z. B. für Scroll-Weiterleitung im Splash. */
   onIframeReady?: (iframe: HTMLIFrameElement) => void;
+  /**
+   * Live-Spiegel des Texte-Panels (2026-08-30): Inline-Pfad → aktueller
+   * Eingabewert. Wird direkt ins DOM der Vorschau geschrieben (richHtml),
+   * ohne Server-Roundtrip — Speichern persistiert wie gehabt.
+   */
+  draftValues?: Record<string, string>;
 }
 
 export function normalizeInlineText(value: string): string {
@@ -67,6 +77,7 @@ export function PreviewFrame({
   designProfile,
   onSectionLayout,
   onIframeReady,
+  draftValues,
 }: PreviewFrameProps) {
   const params = new URLSearchParams();
   if (packOverride) params.set("pack", packOverride);
@@ -117,6 +128,24 @@ export function PreviewFrame({
     // enableInlineEditing ist absichtlich keine Dep (ändert sich je Render).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, inlineTargets, pageSlug]);
+
+  // Live-Spiegel: Panel-Eingaben sofort in die passenden Vorschau-Elemente
+  // schreiben. Das gerade inline fokussierte Element bleibt unangetastet.
+  useEffect(() => {
+    if (!draftValues || pageSlug) return;
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc) return;
+    for (const [path, value] of Object.entries(draftValues)) {
+      const targets = doc.querySelectorAll<HTMLElement>(
+        `[data-pb-inline-edit="${path.replace(/"/g, '\\"')}"]`
+      );
+      targets.forEach(el => {
+        if (el === doc.activeElement) return;
+        if (serializeRichDom(el) === value) return;
+        el.innerHTML = richHtml(value);
+      });
+    }
+  }, [draftValues, pageSlug]);
 
   useEffect(() => {
     if (pageSlug || !onSectionLayout) return;
@@ -240,9 +269,7 @@ export function PreviewFrame({
     enableInlineFormatToolbar(
       doc,
       new Map(
-        inlineTargets
-          .filter(t => t.formattable)
-          .map(t => [t.path, t.maxLength])
+        inlineTargets.filter(t => t.formattable).map(t => [t.path, t.maxLength])
       ),
       onInlineTextEdit
     );
