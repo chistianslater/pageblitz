@@ -110,6 +110,7 @@ export function buildAiEditPrompt(args: {
     `- ${FORBIDDEN_CONTENT_RULE}`,
     `- Erfinde oder ändere niemals Rechtstexte (Impressum/Datenschutz).`,
     `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`,
+    `- Die Bildplätze sind fest: der Hero hat genau EIN Bild, Über-uns genau eines; nur die Galerie trägt mehrere. Anzahl oder Anordnung der Bilder kannst du NICHT ändern.`,
     ``,
     args.page
       ? `## Aktueller Inhalt der Unterseite (SEO + Sektionen, als JSON)`
@@ -145,8 +146,10 @@ export function buildAiEditPrompt(args: {
     `Verfügbare Packs:`,
     ...candidateLines,
     ``,
-    `4) Faktenwunsch (Telefon, Adresse, Preise, Öffnungszeiten oder rechtliche Angaben ändern):`,
-    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<kurzer Hinweis, welches Panel dafür zuständig ist>"}`,
+    `4) Nicht machbarer Wunsch — zwei Fälle:`,
+    `   a) Fakten (Telefon, Adresse, Preise, Öffnungszeiten, Rechtliches): die ändert der Kunde selbst in den Panels.`,
+    `   b) Struktur/Funktionen, die es nicht gibt (Sektion hinzufügen/entfernen/umsortieren, mehr oder andere Bildplätze wie "3 Fotos im Hero", Buchung/Shop/neue Features).`,
+    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst (z. B. statt 3 Hero-Fotos: Galerie-Layout auf Mosaik stellen oder ein anderes Hero-Layout). NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
     ``,
     `5) Rückfrage — NUR wenn der Wunsch so mehrdeutig ist, dass du ihn ohne Zusatzinfo falsch umsetzen könntest (z. B. "mach das schöner" ohne Bezug, oder zwei mögliche Lesarten mit sehr unterschiedlichem Ergebnis):`,
     `{"kind":"question","content":null,"theme":null,"packId":null,"reason":null,"question":"<genau EINE kurze, konkrete Rückfrage auf Deutsch, gern mit 2–3 Optionen>"}`,

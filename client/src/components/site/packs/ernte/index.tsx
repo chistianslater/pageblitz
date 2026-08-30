@@ -71,10 +71,27 @@ function Blob({ tone }: { tone: "honey" | "sage" }) {
   );
 }
 
+/** Gefüllte Blatt-Tropfenform — Fuß bei (0,0), Spitze bei (13,-30). */
+const SPRIG_LEAF = "M0 0C9 -5 15 -16 13 -30C3 -26 -5 -12 0 0Z";
+
 /**
- * Botanische Linien-Illustration in Indigo — 1.5px Outline ohne Füllung,
- * bewusst groß und über Ränder blutend (Pa'lais-Signatur: „Living
- * Illustration").
+ * Blattpositionen auf der Stiel-Kurve (Punkte der Bezier-Kurve bei
+ * t=0.2…0.8), alternierend links/rechts, nach oben kleiner werdend.
+ */
+const SPRIG_LEAVES: { x: number; y: number; r: number; s: number }[] = [
+  { x: 51, y: 130, r: -70, s: 1.05 },
+  { x: 66, y: 118, r: 15, s: 1 },
+  { x: 81, y: 107, r: -65, s: 1 },
+  { x: 95, y: 94, r: 18, s: 0.95 },
+  { x: 111, y: 81, r: -60, s: 0.9 },
+  { x: 126, y: 67, r: 22, s: 0.85 },
+  { x: 141, y: 53, r: -55, s: 0.8 },
+];
+
+/**
+ * Botanischer Zweig in Indigo (Pa'lais-Signatur: „Living Illustration",
+ * neu gezeichnet 2026-08-30): geschwungener Stiel mit gefüllten Blättern
+ * — die frühere reine Linien-Fassung war als Pflanze nicht erkennbar.
  */
 function Sprig({ className }: { className?: string }) {
   return (
@@ -85,17 +102,25 @@ function Sprig({ className }: { className?: string }) {
       aria-hidden="true"
     >
       <path
-        d="M18 152C58 118 96 78 178 18M70 110c-8-18-4-38 10-50M70 110c18 6 38 0 48-16M112 74c-4-16 2-32 16-40M112 74c16 4 32-2 40-16M146 44c-2-12 4-22 14-26M146 44c12 2 22-2 28-12"
+        d="M22 150C70 118 120 76 172 22"
         stroke="currentColor"
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
       />
+      {SPRIG_LEAVES.map((leaf, i) => (
+        <path
+          key={i}
+          d={SPRIG_LEAF}
+          fill="currentColor"
+          opacity={i % 2 ? 0.55 : 0.8}
+          transform={`translate(${leaf.x} ${leaf.y}) rotate(${leaf.r}) scale(${leaf.s})`}
+        />
+      ))}
       <path
-        d="M80 100c-10 2-16 10-16 18M104 82c-10 0-18 6-20 14M132 58c-8-2-16 2-20 8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity=".55"
+        d={SPRIG_LEAF}
+        fill="currentColor"
+        opacity=".9"
+        transform="translate(172 22) rotate(-20) scale(0.85)"
       />
     </svg>
   );

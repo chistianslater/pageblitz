@@ -41,9 +41,17 @@ export type ProposeAiEditResult =
 const MAX_AI_EDIT_ATTEMPTS = 2;
 
 const AI_EDIT_FAILED_MESSAGE =
-  "Die KI konnte den Wunsch gerade nicht umsetzen — bitte noch einmal versuchen.";
+  "Das hat leider nicht geklappt. Gut kann ich: Texte umformulieren, Farben, Schriften und Abstände ändern, Sektions-Layouts umstellen oder einen anderen Look vorschlagen. Nicht möglich: den Aufbau ändern (z. B. mehr Bilder im Hero, neue Sektionen) oder Kontaktdaten und Rechtliches — die änderst du in den Panels.";
 
-async function withAiEditRetry<T>(attempt: () => Promise<T>): Promise<T> {
+/**
+ * Ein Versuch + Retry; sind beide erschöpft, kommt KEIN Fehler, sondern eine
+ * reguläre Absage (kind=reject) mit der Fähigkeiten-Erklärung — im Webchat
+ * erscheint sie als normale Assistenten-Bubble statt als roter Fehlertext
+ * („hier muss klar werden was geht und was nicht", 2026-08-30).
+ */
+async function withAiEditRetry(
+  attempt: () => Promise<ProposeAiEditResult>
+): Promise<ProposeAiEditResult> {
   for (let i = 0; i < MAX_AI_EDIT_ATTEMPTS; i++) {
     try {
       return await attempt();
@@ -54,10 +62,7 @@ async function withAiEditRetry<T>(attempt: () => Promise<T>): Promise<T> {
       );
     }
   }
-  throw new TRPCError({
-    code: "INTERNAL_SERVER_ERROR",
-    message: AI_EDIT_FAILED_MESSAGE,
-  });
+  return { kind: "reject", reason: AI_EDIT_FAILED_MESSAGE };
 }
 
 /**

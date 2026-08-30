@@ -277,7 +277,7 @@ describe("proposeAiEdit — Unterseiten-Scope (pageSlug, Plan B6 Task 5)", () =>
     expect(prompt).not.toContain('"hero"');
   });
 
-  test("KI liefert Startseiten-Sektionstyp (hero) für eine Unterseite → Retry, dann TRPCError", async () => {
+  test("KI liefert Startseiten-Sektionstyp (hero) für eine Unterseite → Retry, dann erklärende Absage", async () => {
     vi.mocked(invokeLLM).mockResolvedValue(
       llmContentResponse([{ type: "hero", headline: "X" }], {
         title: "t",
@@ -291,7 +291,10 @@ describe("proposeAiEdit — Unterseiten-Scope (pageSlug, Plan B6 Task 5)", () =>
         category: "Tischler",
         pageSlug: "leistungen-im-detail",
       })
-    ).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
+    ).resolves.toMatchObject({
+      kind: "reject",
+      reason: expect.stringContaining("Das hat leider nicht geklappt."),
+    });
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
 
@@ -415,7 +418,7 @@ describe("proposeAiEdit — Retry", () => {
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
 
-  test("KI erfindet neuen Sektionstyp → Retry, danach TRPCError INTERNAL_SERVER_ERROR", async () => {
+  test("KI erfindet neuen Sektionstyp → Retry, danach erklärende Absage (kind=reject)", async () => {
     const invented = [
       ...doc.sections,
       { type: "faq", items: [{ question: "Q", answer: "A" }] },
@@ -424,22 +427,21 @@ describe("proposeAiEdit — Retry", () => {
 
     await expect(
       proposeAiEdit({ doc, message: "Füge FAQ hinzu", category: "Tischler" })
-    ).rejects.toMatchObject({
-      code: "INTERNAL_SERVER_ERROR",
-      message:
-        "Die KI konnte den Wunsch gerade nicht umsetzen — bitte noch einmal versuchen.",
+    ).resolves.toMatchObject({
+      kind: "reject",
+      reason: expect.stringContaining("Das hat leider nicht geklappt."),
     });
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
 
-  test("dauerhaft kaputtes JSON → nach 2 Versuchen TRPCError", async () => {
+  test("dauerhaft kaputtes JSON → nach 2 Versuchen erklärende Absage", async () => {
     vi.mocked(invokeLLM).mockResolvedValue({
       choices: [{ message: { content: "kaputt" } }],
     } as any);
 
     await expect(
       proposeAiEdit({ doc, message: "x", category: "Tischler" })
-    ).rejects.toThrow(TRPCError);
+    ).resolves.toMatchObject({ kind: "reject" });
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
 });
@@ -526,7 +528,7 @@ describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
     });
   });
 
-  test("kind=question ohne question-Feld → Retry, dann TRPCError", async () => {
+  test("kind=question ohne question-Feld → Retry, dann erklärende Absage", async () => {
     vi.mocked(invokeLLM).mockResolvedValue({
       choices: [
         {
@@ -538,7 +540,7 @@ describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
     } as any);
     await expect(
       proposeAiEdit({ doc, message: "hm", category: "Tischler" })
-    ).rejects.toBeInstanceOf(TRPCError);
+    ).resolves.toMatchObject({ kind: "reject" });
     expect(invokeLLM).toHaveBeenCalledTimes(2);
   });
 

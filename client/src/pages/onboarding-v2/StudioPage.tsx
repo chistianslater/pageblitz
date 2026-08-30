@@ -104,6 +104,19 @@ export default function StudioPage({ token }: { token: string }) {
   // Schwebender KI-Assistent über der Vorschau (2026-08-30): eingeklappt
   // eine Pill unten rechts, ausgeklappt der bisherige KI-Chat als Karte.
   const [assistantOpen, setAssistantOpen] = useState(false);
+  // Kurzer Lime-Puls um die Vorschau, wenn der Assistent eine Änderung
+  // angewandt hat — lenkt den Blick dorthin, wo sich etwas geändert hat.
+  const [previewFlash, setPreviewFlash] = useState(false);
+  const flashPreview = useCallback(() => {
+    setPreviewFlash(false);
+    // Doppel-rAF statt setTimeout(0): garantiert einen Frame ohne data-flash,
+    // damit die CSS-Animation auch bei schnell aufeinanderfolgenden
+    // Änderungen erneut anläuft.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => setPreviewFlash(true))
+    );
+    window.setTimeout(() => setPreviewFlash(false), 1300);
+  }, []);
   // Vorschau-Leiste „Startseite | <Unterseiten…>“ (Plan B6 Task 5): null =
   // Startseite. Der gewählte Slug wird bei jedem Render gegen die aktuell
   // gültigen Seiten aufgelöst (resolvePreviewSlug) — eine entfernte Seite
@@ -583,7 +596,7 @@ export default function StudioPage({ token }: { token: string }) {
             </>
           )}
         </aside>
-        <main className="pb-studio-stage">
+        <main className="pb-studio-stage" data-flash={previewFlash}>
           {/* Mobiler Rückweg (2026-08-25): Auf dem Smartphone blendet der
               Vorschau-Tab die Rail komplett aus — der Tab-Umschalter liegt
               aber IN der Rail, es gab also keinen Weg zurück zu den
@@ -701,6 +714,7 @@ export default function StudioPage({ token }: { token: string }) {
                   onApplied={() => {
                     studio.refetch();
                     studio.bumpPreview();
+                    flashPreview();
                   }}
                   onOpenStylePanel={packId => {
                     setAssistantOpen(false);

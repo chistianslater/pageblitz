@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
 import type {
@@ -14,8 +14,8 @@ import {
   type AiChatPageScope,
 } from "./aiChatParts";
 
-/** Spec §5: Verlauf der letzten 5 Anfragen im Component-State, kein Storage. */
-const MAX_HISTORY = 5;
+/** Obergrenze des Bubble-Verlaufs — Session-only, kein Storage (Spec §5). */
+const MAX_MESSAGES = 40;
 /** Ablehnungsgründe, die auf Fakten-/Kontaktwünsche hindeuten, bekommen einen Link ins Rechtliches-Panel. */
 const LEGAL_HINT_PATTERN = /rechtlich|kontakt|impressum/i;
 
@@ -26,11 +26,19 @@ type AiChatOutcome =
   | { kind: "reject"; reason: string }
   | { kind: "question"; question: string };
 
-interface AiExchange {
-  /** Stabiler React-Key für die Verlaufsliste — Array-Index wäre instabil, sobald ältere Einträge aus MAX_HISTORY herausfallen. */
+/**
+ * Eine Nachricht im Webchat-Verlauf (2026-08-30, „klassisch wie ein
+ * Webchat"): Kunden-Bubbles tragen nur Text, Assistenten-Bubbles das
+ * strukturierte Ergebnis. Content-Vorschläge merken sich zusätzlich, ob sie
+ * übernommen/verworfen wurden — die Buttons zeigt nur der jüngste offene
+ * Vorschlag (ältere verfallen server-seitig ohnehin per TTL).
+ */
+interface ChatMessage {
   id: number;
-  message: string;
-  outcome: AiChatOutcome;
+  role: "user" | "assistant";
+  text?: string;
+  outcome?: AiChatOutcome;
+  proposalState?: "open" | "applied" | "discarded";
 }
 
 interface AiChatProps {
@@ -49,11 +57,30 @@ interface AiChatProps {
   page?: AiChatPageScope;
 }
 
+/** Drei hüpfende Punkte, solange die KI arbeitet — hält den Kunden am Ball. */
+function TypingIndicator() {
+  return (
+    <div
+      className="pb-studio-chat-msg pb-studio-chat-typing"
+      data-role="assistant"
+      aria-label="KI denkt nach"
+    >
+      <span className="pb-studio-chat-dots" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className="pb-studio-chat-typing-label">denkt nach …</span>
+    </div>
+  );
+}
+
 /**
- * Freier KI-Chat im Studio ("Was soll anders sein?", Spec §5): ein
- * Eingabefeld statt eines vollständigen Chat-Verlaufs — nur das jeweils
- * letzte Ergebnis wird als Karte angezeigt. `aiEdit` persistiert nie selbst;
- * ein Inhalts-Vorschlag muss explizit über "Übernehmen" bestätigt werden.
+ * KI-Assistent als klassischer Webchat (2026-08-30): Bubble-Verlauf mit
+ * Kunden-Nachrichten rechts und Assistenten-Antworten links, Tipp-Indikator
+ * während der Anfrage, animierte Einblendungen. `aiEdit` persistiert nie
+ * selbst; ein Inhalts-Vorschlag muss weiterhin explizit über "Übernehmen"
+ * bestätigt werden, Design-Patches (theme) sind sofort angewandt.
  */
 export function AiChat({
   token,
@@ -63,31 +90,24 @@ export function AiChat({
   page,
 }: AiChatProps) {
   const [message, setMessage] = useState("");
-  // Verlauf der letzten 5 Anfragen (Spec §5) — bewusst nur als schmale
-  // Liste vorheriger Fragen dargestellt (kein voller Chat-Verlauf mit
-  // Diffs/Ergebnissen je Eintrag, siehe unten).
-  const [history, setHistory] = useState<AiExchange[]>([]);
-  const [active, setActive] = useState<AiExchange | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   // Offener Rückfragen-Dialog (2026-08-30): nach einer "question"-Antwort
   // enthält das die Wortwechsel (Wunsch → Rückfrage), die mit der nächsten
   // Nachricht als `history` zum Server gehen. Jede andere Antwortart
   // schließt den Dialog.
   const [pendingDialog, setPendingDialog] = useState<AiChatHistoryEntry[]>([]);
-  // Reiner Zähler für stabile React-Keys der Verlaufsliste (kein Re-Render nötig, daher Ref statt State).
-  const nextExchangeId = useRef(0);
+  // Reiner Zähler für stabile React-Keys (kein Re-Render nötig, daher Ref).
+  const nextMessageId = useRef(0);
+  const feedRef = useRef<HTMLDivElement>(null);
 
   const aiEdit = trpc.onboardingV2.aiEdit.useMutation();
   const applyAiEdit = trpc.onboardingV2.applyAiEdit.useMutation();
   const discardAiEdit = trpc.onboardingV2.discardAiEdit.useMutation();
 
   // Eingabe UND Senden sind gesperrt, solange aiEdit ODER ein laufendes
-  // Übernehmen/Verwerfen des aktuellen Vorschlags offen ist. Ohne die
-  // beiden letzteren könnte während eines laufenden applyAiEdit/
-  // discardAiEdit eine neue Nachricht gesendet werden, deren onSuccess dann
-  // applyAiEdit.reset()/discardAiEdit.reset() aufruft — das würde die noch
-  // laufende Mutation "kappen": ihr onSuccess (→ onApplied → refetch +
-  // bumpPreview) würde nie mehr sichtbar, obwohl der Server bereits
-  // persistiert hat (Review-Fund Fix-Runde 1).
+  // Übernehmen/Verwerfen offen ist — sonst könnte eine neue Antwort die
+  // Fehler-/Erfolgszustände einer noch laufenden Mutation kappen
+  // (Review-Fund Fix-Runde 1, unverändert aus der Karten-Fassung).
   const busy =
     aiEdit.isPending || applyAiEdit.isPending || discardAiEdit.isPending;
   const canSend = canSendMessage({
@@ -97,12 +117,34 @@ export function AiChat({
     discardPending: discardAiEdit.isPending,
   });
 
+  // Klassisches Chat-Verhalten: neue Bubbles (und der Tipp-Indikator)
+  // scrollen den Feed ans Ende.
+  useEffect(() => {
+    const feed = feedRef.current;
+    if (feed) feed.scrollTop = feed.scrollHeight;
+  }, [messages, aiEdit.isPending]);
+
+  const pushMessage = (msg: Omit<ChatMessage, "id">) => {
+    setMessages(prev =>
+      [...prev, { ...msg, id: nextMessageId.current++ }].slice(-MAX_MESSAGES)
+    );
+  };
+
+  // Der jüngste offene Content-Vorschlag — nur er zeigt die Buttons.
+  const lastOpenProposal = [...messages]
+    .reverse()
+    .find(m => m.outcome?.kind === "content" && m.proposalState === "open");
+  const awaitingAnswer =
+    messages[messages.length - 1]?.outcome?.kind === "question";
+
   const handleSend = () => {
     if (!canSend) return;
     const trimmed = message.trim();
     // Offener Rückfragen-Dialog geht als Kontext mit — die KI ordnet die
     // Antwort so dem ursprünglichen Wunsch zu.
     const dialog = pendingDialog;
+    pushMessage({ role: "user", text: trimmed });
+    setMessage("");
     aiEdit.mutate(
       {
         token,
@@ -112,11 +154,6 @@ export function AiChat({
       },
       {
         onSuccess: outcome => {
-          const exchange: AiExchange = {
-            id: nextExchangeId.current++,
-            message: trimmed,
-            outcome,
-          };
           // Theme-Antworten sind bereits serverseitig angewandt — Vorschau
           // und Studio-State sofort nachziehen.
           if (outcome.kind === "theme") onApplied();
@@ -129,14 +166,15 @@ export function AiChat({
                 ].slice(-8)
               : []
           );
-          setHistory(prev => [...prev, exchange].slice(-MAX_HISTORY));
-          setActive(exchange);
-          setMessage("");
+          pushMessage({
+            role: "assistant",
+            outcome,
+            ...(outcome.kind === "content"
+              ? { proposalState: "open" as const }
+              : {}),
+          });
           // Fehler eines vorherigen Übernehmen/Verwerfen dürfen nicht unter
-          // der neuen Karte hängen bleiben (andere Karte, anderer
-          // Vorschlag) — dank `busy`/`canSend` oben kann das nur nach
-          // Abschluss eines vorherigen Übernehmen/Verwerfen passieren, nie
-          // während es noch läuft.
+          // der neuen Bubble hängen bleiben.
           applyAiEdit.reset();
           discardAiEdit.reset();
         },
@@ -144,124 +182,91 @@ export function AiChat({
     );
   };
 
-  const activeContent =
-    active?.outcome.kind === "content" ? active.outcome : null;
-  const activeTheme = active?.outcome.kind === "theme" ? active.outcome : null;
-  const activeStyle = active?.outcome.kind === "style" ? active.outcome : null;
-  const activeReject =
-    active?.outcome.kind === "reject" ? active.outcome : null;
-  const activeQuestion =
-    active?.outcome.kind === "question" ? active.outcome : null;
+  const setProposalState = (
+    id: number,
+    state: "applied" | "discarded"
+  ): void => {
+    setMessages(prev =>
+      prev.map(m => (m.id === id ? { ...m, proposalState: state } : m))
+    );
+  };
 
-  const handleApply = () => {
-    if (!activeContent) return;
+  const handleApply = (msg: ChatMessage) => {
+    if (msg.outcome?.kind !== "content") return;
     applyAiEdit.mutate(
-      { token, proposalId: activeContent.proposalId },
+      { token, proposalId: msg.outcome.proposalId },
       {
         onSuccess: () => {
-          setActive(null);
+          setProposalState(msg.id, "applied");
           onApplied();
         },
       }
     );
   };
 
-  const handleDiscard = () => {
-    if (!activeContent) return;
+  const handleDiscard = (msg: ChatMessage) => {
+    if (msg.outcome?.kind !== "content") return;
     discardAiEdit.mutate(
-      { token, proposalId: activeContent.proposalId },
-      { onSuccess: () => setActive(null) }
+      { token, proposalId: msg.outcome.proposalId },
+      { onSuccess: () => setProposalState(msg.id, "discarded") }
     );
   };
 
-  const showLegalHint =
-    !!activeReject && LEGAL_HINT_PATTERN.test(activeReject.reason);
-
-  return (
-    <div className="pb-studio-ai">
-      <p className="pb-studio-kicker">KI-Assistent</p>
-      <div className="pb-studio-field">
-        <label htmlFor="pb-ai-input">
-          {activeQuestion ? "Deine Antwort" : "Was möchtest du noch ändern?"}
-        </label>
-        <div className="pb-studio-ai-row">
-          <input
-            id="pb-ai-input"
-            type="text"
-            className="pb-studio-input"
-            placeholder={
-              activeQuestion
-                ? "Kurz antworten …"
-                : "z. B. „Mach die Überschrift knackiger“"
-            }
-            value={message}
-            disabled={busy}
-            onChange={e => setMessage(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
-          <button
-            type="button"
-            className="pb-studio-btn"
-            disabled={!canSend}
-            onClick={handleSend}
-          >
-            {aiEdit.isPending ? "Wird gesendet…" : "Senden"}
-          </button>
-        </div>
-      </div>
-      <p className="pb-studio-ai-hint">{aiScopeHint(page)}</p>
-      {aiEdit.error && (
-        <p role="alert" className="pb-studio-ai-error">
-          {aiEdit.error.message}
-        </p>
-      )}
-      <div aria-live="polite">
-        {activeContent && (
-          <div className="pb-studio-ai-result">
-            <AiDiffList diff={activeContent.diff} />
-            <div className="pb-studio-ai-actions">
-              <button
-                type="button"
-                className="pb-studio-btn"
-                data-variant="ghost"
-                disabled={discardAiEdit.isPending || applyAiEdit.isPending}
-                onClick={handleDiscard}
-              >
-                Verwerfen
-              </button>
-              <button
-                type="button"
-                className="pb-studio-btn"
-                disabled={applyAiEdit.isPending || discardAiEdit.isPending}
-                onClick={handleApply}
-              >
-                {applyAiEdit.isPending ? "Wird übernommen…" : "Übernehmen"}
-              </button>
-            </div>
-            {applyAiEdit.error && (
-              <p role="alert" className="pb-studio-ai-error">
-                {applyAiEdit.error.message}
+  const renderAssistant = (msg: ChatMessage) => {
+    const outcome = msg.outcome;
+    if (!outcome) return <p>{msg.text}</p>;
+    switch (outcome.kind) {
+      case "content": {
+        const actionable =
+          msg.proposalState === "open" && lastOpenProposal?.id === msg.id;
+        return (
+          <>
+            <p className="pb-studio-chat-lede">So würde ich es ändern:</p>
+            <AiDiffList diff={outcome.diff} />
+            {actionable && (
+              <div className="pb-studio-ai-actions">
+                <button
+                  type="button"
+                  className="pb-studio-btn"
+                  data-variant="ghost"
+                  disabled={busy}
+                  onClick={() => handleDiscard(msg)}
+                >
+                  Verwerfen
+                </button>
+                <button
+                  type="button"
+                  className="pb-studio-btn"
+                  disabled={busy}
+                  onClick={() => handleApply(msg)}
+                >
+                  {applyAiEdit.isPending ? "Wird übernommen…" : "Übernehmen"}
+                </button>
+              </div>
+            )}
+            {msg.proposalState === "applied" && (
+              <p className="pb-studio-chat-status" data-tone="done">
+                ✓ Übernommen
               </p>
             )}
-            {discardAiEdit.error && (
-              <p role="alert" className="pb-studio-ai-error">
-                {discardAiEdit.error.message}
-              </p>
+            {msg.proposalState === "discarded" && (
+              <p className="pb-studio-chat-status">Verworfen</p>
             )}
-          </div>
-        )}
-        {activeTheme && (
-          <div className="pb-studio-ai-theme">
-            <p className="pb-studio-ai-theme-done">✓ Erledigt</p>
-            {activeTheme.reason && <p>{activeTheme.reason}</p>}
-            <ul>
-              {activeTheme.summary.map((line, i) => (
-                <li key={i}>{line}</li>
+          </>
+        );
+      }
+      case "theme":
+        return (
+          <>
+            <p className="pb-studio-chat-status" data-tone="done">
+              ✓ Erledigt
+            </p>
+            {outcome.reason && <p>{outcome.reason}</p>}
+            <ul className="pb-studio-chat-summary">
+              {outcome.summary.map((line, i) => (
+                <li key={i} style={{ "--i": i } as React.CSSProperties}>
+                  {line}
+                </li>
               ))}
             </ul>
             <button
@@ -272,25 +277,28 @@ export function AiChat({
             >
               Im Stil-Panel feinjustieren
             </button>
-          </div>
-        )}
-        {activeStyle && (
+          </>
+        );
+      case "style":
+        return (
           <AiStyleCard
-            name={activeStyle.name}
-            reason={activeStyle.reason}
-            onView={() => onOpenStylePanel(activeStyle.packId)}
+            name={outcome.name}
+            reason={outcome.reason}
+            onView={() => onOpenStylePanel(outcome.packId)}
           />
-        )}
-        {activeQuestion && (
-          <div className="pb-studio-ai-question">
-            <p className="pb-studio-ai-question-label">Kurze Rückfrage</p>
-            <p>{activeQuestion.question}</p>
-          </div>
-        )}
-        {activeReject && (
-          <div className="pb-studio-ai-reject">
-            <p>{activeReject.reason}</p>
-            {showLegalHint && (
+        );
+      case "question":
+        return (
+          <>
+            <p className="pb-studio-chat-lede">Kurze Rückfrage:</p>
+            <p>{outcome.question}</p>
+          </>
+        );
+      case "reject":
+        return (
+          <>
+            <p>{outcome.reason}</p>
+            {LEGAL_HINT_PATTERN.test(outcome.reason) && (
               <button
                 type="button"
                 className="pb-studio-btn"
@@ -300,19 +308,92 @@ export function AiChat({
                 Zu Rechtliches
               </button>
             )}
-          </div>
+          </>
+        );
+    }
+  };
+
+  return (
+    <div className="pb-studio-ai pb-studio-chat">
+      <p className="pb-studio-kicker">KI-Assistent</p>
+      <div
+        ref={feedRef}
+        className="pb-studio-chat-feed"
+        aria-live="polite"
+        aria-label="Chat-Verlauf"
+      >
+        <div className="pb-studio-chat-msg" data-role="assistant">
+          <p>
+            Hi! Was möchtest du noch ändern? Ich passe Texte, Farben und
+            Layout direkt an.
+          </p>
+        </div>
+        {messages.map(msg =>
+          msg.role === "user" ? (
+            <div key={msg.id} className="pb-studio-chat-msg" data-role="user">
+              <p>{msg.text}</p>
+            </div>
+          ) : (
+            <div
+              key={msg.id}
+              className="pb-studio-chat-msg"
+              data-role="assistant"
+            >
+              {renderAssistant(msg)}
+            </div>
+          )
+        )}
+        {aiEdit.isPending && <TypingIndicator />}
+        {aiEdit.error && (
+          <p role="alert" className="pb-studio-ai-error">
+            {aiEdit.error.message}
+          </p>
+        )}
+        {applyAiEdit.error && (
+          <p role="alert" className="pb-studio-ai-error">
+            {applyAiEdit.error.message}
+          </p>
+        )}
+        {discardAiEdit.error && (
+          <p role="alert" className="pb-studio-ai-error">
+            {discardAiEdit.error.message}
+          </p>
         )}
       </div>
-      {history.length > 1 && (
-        <ul className="pb-studio-ai-history" aria-label="Bisherige Anfragen">
-          {history
-            .slice(0, -1)
-            .reverse()
-            .map(exchange => (
-              <li key={exchange.id}>{exchange.message}</li>
-            ))}
-        </ul>
-      )}
+      <div className="pb-studio-ai-row">
+        <input
+          id="pb-ai-input"
+          type="text"
+          className="pb-studio-input"
+          aria-label={
+            awaitingAnswer ? "Deine Antwort" : "Was möchtest du noch ändern?"
+          }
+          placeholder={
+            awaitingAnswer
+              ? "Kurz antworten …"
+              : "z. B. „Mach die Überschrift knackiger“"
+          }
+          value={message}
+          disabled={busy}
+          onChange={e => setMessage(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+        />
+        <button
+          type="button"
+          className="pb-studio-btn"
+          disabled={!canSend}
+          onClick={handleSend}
+          aria-label="Senden"
+        >
+          {aiEdit.isPending ? "…" : "Senden"}
+        </button>
+      </div>
+      <p className="pb-studio-ai-hint">{aiScopeHint(page)}</p>
     </div>
   );
 }
