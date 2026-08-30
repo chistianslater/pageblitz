@@ -97,6 +97,7 @@ ${start(gu, "image-first", mode, " .pb-gu-hero-media")}{order:-1!important;width
 ${both(gu, mode, " .pb-gu-hero-media img")}{height:auto!important;max-height:min(36rem,70vh)!important;aspect-ratio:16/10!important;animation:none!important;filter:brightness(.92) saturate(.96)!important;transform:none!important}
 ${both(gu, mode, " .pb-gu-hero-shade")}{display:none!important}
 ${both(gu, mode, " .pb-gu-hero-copy")}{padding:clamp(2rem,5vw,4.5rem) 0!important;max-width:46rem;position:relative!important;align-self:stretch}
+${start(gu, "image-first", mode, " .pb-gu-hero-copy")}{padding-inline:clamp(22px,5vw,72px)!important}
 ${start(gu, "centered", mode, " .pb-gu-hero-copy")}{margin-inline:auto!important;text-align:center!important}
 ${start(gu, "centered", mode, " .pb-gu-hero-copy h1")},${start(gu, "centered", mode, " .pb-gu-subline")},${start(gu, "centered", mode, " .pb-gu-eyebrow")}{margin-left:auto!important;margin-right:auto!important}
 ${both(gu, mode, " .pb-gu-menu-preview")}{display:none!important}
@@ -104,6 +105,7 @@ ${both(gu, mode, " .pb-gu-menu-preview")}{display:none!important}
 /* ── Fundament: drei Absolut-Ebenen → Stapel ── */
 ${both(fd, mode)}{display:flex!important;flex-direction:column!important;min-height:auto!important;overflow:visible!important;gap:clamp(1.1rem,2.5vw,1.75rem)!important}
 ${both(fd, mode, " .pb-fd-content")}{position:relative!important;inset:auto!important;left:auto!important;top:auto!important;padding:clamp(2rem,5vw,4rem) 0!important;z-index:1!important;max-width:46rem}
+${start(fd, "image-first", mode, " .pb-fd-content")}{padding-inline:clamp(22px,5vw,72px)!important}
 ${start(fd, "centered", mode, " .pb-fd-content")}{margin-inline:auto!important;text-align:center!important}
 ${both(fd, mode, " .pb-fd-photo")}{position:relative!important;inset:auto!important;left:auto!important;top:auto!important;height:auto!important;aspect-ratio:4/3!important;object-fit:cover!important;z-index:1!important;animation:none!important;transform:none!important;box-shadow:none!important}
 ${start(fd, "centered", mode, " .pb-fd-photo")}{width:min(100%,28rem)!important;margin-inline:auto!important;order:2!important}

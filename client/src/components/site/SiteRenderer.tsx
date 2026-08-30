@@ -11,6 +11,7 @@ import type {
 import { PACK_MODULES } from "./packRegistry";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
+import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
 import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
@@ -170,6 +171,8 @@ export const SiteRenderer: React.FC<{
             MOTION_CSS +
             "\n" +
             REVIEW_CHROME_CSS +
+            "\n" +
+            LAYOUT_POLISH_CSS +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
         }}
       />

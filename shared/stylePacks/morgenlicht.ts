@@ -22,7 +22,12 @@ export const MORGENLICHT: PackConstitution = {
   ],
   theme: "light",
   palette: [
-    { name: "Elfenbein", hex: "#F5F0E8", role: "canvas", usage: "Seitengrund." },
+    {
+      name: "Elfenbein",
+      hex: "#F5F0E8",
+      role: "canvas",
+      usage: "Seitengrund.",
+    },
     {
       name: "Porzellan",
       hex: "#FFFCF7",

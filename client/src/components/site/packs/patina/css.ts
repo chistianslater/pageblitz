@@ -33,7 +33,7 @@ export const PATINA_CSS = `
 .pb-pa-service p{margin-top:4px;color:var(--pb-muted);font-size:14px;max-width:56ch}
 .pb-pa-about p{max-width:64ch}
 .pb-pa-about-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:center}
-.pb-pa-about-grid>p:only-child{grid-column:1/-1;max-width:none;columns:2;column-gap:56px}
+.pb-pa-about-grid>p:only-child{grid-column:1/-1;max-width:62ch;margin-inline:auto}
 .pb-pa-about-img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:200px 200px var(--pb-radius-card) var(--pb-radius-card);display:block}
 .pb-pa-quotes{display:grid;grid-template-columns:1fr 1fr;gap:22px 56px;align-items:start}
 .pb-pa-quotes .pb-pa-quote{margin-bottom:0}

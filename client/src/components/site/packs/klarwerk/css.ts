@@ -38,7 +38,7 @@ export const KLARWERK_CSS = `
 .pb-kw-about p{max-width:64ch}
 .pb-kw-about-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:center}
 .pb-kw-about-grid>p:only-child{grid-column:1/-1}
-.pb-kw-about-grid .pb-kw-about-img{max-width:100%;margin-bottom:0}
+.pb-kw-about-grid .pb-kw-about-img{max-width:100%;margin-bottom:0;max-height:26rem;width:auto;margin-inline:auto}
 .pb-kw-quotes{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
 .pb-kw-quotes .pb-kw-quote{margin-bottom:0}
 .pb-kw-quotes .pb-kw-quote:last-child:nth-child(odd){grid-column:1/-1;max-width:720px}

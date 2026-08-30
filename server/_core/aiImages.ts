@@ -66,9 +66,7 @@ export function buildAiImagePrompt(subject: string): string {
  * zurück — `null` bei jedem Fehler (Aufrufer übersetzt in eine
  * nutzerfreundliche Meldung). Fehlerdetails landen im Server-Log.
  */
-export async function generateAiImage(
-  subject: string
-): Promise<string | null> {
+export async function generateAiImage(subject: string): Promise<string | null> {
   const token = process.env.CLOUDFLARE_API_TOKEN;
   const account = accountId();
   if (!token || !account) {
