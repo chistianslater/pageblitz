@@ -74,11 +74,18 @@ export function buildAiEditPrompt(args: {
     profile
       ? `Layout: hero=${profile.heroLayout}, leistungen=${profile.servicesLayout}, ueber-uns=${profile.aboutLayout}, galerie=${profile.galleryLayout}, abstaende=${profile.density}, bildwirkung=${profile.imageTreatment}`
       : `Layout: Richtungs-Standard`,
-    `Sektionstypen im Dokument: ${args.doc.sections.map(s => s.type).join(", ")}`,
-    `Ausgeblendete Sektionen: ${(args.doc.hiddenSections ?? []).join(", ") || "keine"}`,
-    args.doc.sectionOrder
-      ? `Eigene Reihenfolge: ${args.doc.sectionOrder.join(", ")}`
-      : `Reihenfolge: Dokument-Standard (hero immer zuerst)`,
+    // Bestand/Sichtbarkeit/Reihenfolge betreffen die STARTSEITE — im
+    // Unterseiten-Scope weggelassen (dort gilt die Sektions-Whitelist der
+    // Page, und der Test belegt: kein "hero" im Unterseiten-Prompt).
+    ...(args.page
+      ? []
+      : [
+          `Sektionstypen im Dokument: ${args.doc.sections.map(s => s.type).join(", ")}`,
+          `Ausgeblendete Sektionen: ${(args.doc.hiddenSections ?? []).join(", ") || "keine"}`,
+          args.doc.sectionOrder
+            ? `Eigene Reihenfolge: ${args.doc.sectionOrder.join(", ")}`
+            : `Reihenfolge: Dokument-Standard (hero immer zuerst)`,
+        ]),
   ];
   const scope = args.page
     ? `die Unterseite „${args.page.title}“ (Pfad /${args.page.slug}) seiner Website`
@@ -147,8 +154,15 @@ export function buildAiEditPrompt(args: {
     `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben), "collage" (mehrere Fotos im Hero — Hauptbild plus bis zu zwei Galerie-Bilder als gestapelte Karten; wähle das bei Wünschen wie "mehr Bilder im Hero" oder "3 Fotos im Hero").`,
     `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
     `- "decorations": "off" blendet Schmuck-Illustrationen aus (Zweige, Farbkleckse, Ornamente — z. B. wenn dem Kunden eine Illustration nicht gefällt), "on" zeigt sie wieder.`,
-    `- "hiddenSections": VOLLSTÄNDIGE Liste der auszublendenden Sektionstypen (ersetzt die bisherige Liste; [] blendet alles wieder ein). Erlaubt sind nur Typen aus dem Dokument, NIE "hero" oder "contact". Beispiel: Kunde will keine Bewertungen zeigen → ["testimonials"] (plus alles, was schon ausgeblendet war und bleiben soll).`,
-    `- "sectionOrder": VOLLSTÄNDIGE neue Reihenfolge der Sektionstypen (alle Typen aus dem Dokument aufzählen; "hero" bleibt immer zuerst, "contact" gehört ans Ende).`,
+    // Sichtbarkeit/Reihenfolge wirken auf die Startseite — im
+    // Unterseiten-Scope nicht anbieten (und kein "hero" in den Prompt
+    // leaken, siehe Whitelist-Test).
+    ...(args.page
+      ? []
+      : [
+          `- "hiddenSections": VOLLSTÄNDIGE Liste der auszublendenden Sektionstypen (ersetzt die bisherige Liste; [] blendet alles wieder ein). Erlaubt sind nur Typen aus dem Dokument, NIE "hero" oder "contact". Beispiel: Kunde will keine Bewertungen zeigen → ["testimonials"] (plus alles, was schon ausgeblendet war und bleiben soll).`,
+          `- "sectionOrder": VOLLSTÄNDIGE neue Reihenfolge der Sektionstypen (alle Typen aus dem Dokument aufzählen; "hero" bleibt immer zuerst, "contact" gehört ans Ende).`,
+        ]),
     `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
     ``,
     `3) Grundlegend anderer Look (die aktuelle Richtung passt überhaupt nicht — z. B. "komplett anderer Stil", "wie eine Anwaltskanzlei statt Werkstatt"):`,
