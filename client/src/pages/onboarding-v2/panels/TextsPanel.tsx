@@ -194,6 +194,12 @@ export function TextsPanel({
     >
       <TextsForm
         values={values}
+        serp={{
+          businessName: doc.businessName,
+          // Vorschau-Slugs tragen ein technisches Präfix — die spätere
+          // Kundenadresse ist die bereinigte Subdomain.
+          domain: `${(doc.slug ?? "deine-website").replace(/^(preview|studio-seed)-/, "")}.pageblitz.de`,
+        }}
         onChange={setValues}
         onSuggest={handleSuggest}
         suggesting={suggesting}

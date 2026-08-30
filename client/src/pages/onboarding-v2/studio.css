@@ -2613,3 +2613,68 @@
 .pb-studio-suggest-hint-row input {
   flex: 1;
 }
+
+/* Google-SERP-Vorschau im SEO-Bereich (2026-08-30) — bewusst hell. */
+.pb-studio-serp {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 4px 0 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  min-width: 0;
+}
+.pb-studio-serp-site {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.pb-studio-serp-favicon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #f1f3f4;
+  border: 1px solid #dadce0;
+  color: #5f6368;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pb-studio-serp-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.pb-studio-serp-name {
+  color: #202124;
+  font-size: 13px;
+}
+.pb-studio-serp-url {
+  color: #4d5156;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-studio-serp-title {
+  color: #1a0dab;
+  font-size: 19px;
+  line-height: 1.3;
+  margin: 0 0 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-studio-serp-desc {
+  color: #4d5156;
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

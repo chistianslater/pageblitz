@@ -126,6 +126,46 @@ export function validateTexts(values: TextsPatch): string[] {
     .map(field => `${field.label} darf nicht leer sein.`);
 }
 
+/**
+ * Google-Ergebnis-Vorschau (SERP, 2026-08-30): zeigt live, wie SEO-Titel
+ * und -Beschreibung im Suchergebnis aussehen — bewusst als HELLE Karte im
+ * dunklen Studio, weil Google so aussieht. Truncation wie bei Google:
+ * Titel einzeilig mit Ellipsis, Beschreibung auf zwei Zeilen geklemmt.
+ */
+export function SerpPreview({
+  title,
+  description,
+  businessName,
+  domain,
+}: {
+  title: string;
+  description: string;
+  businessName: string;
+  domain: string;
+}) {
+  const initial = (businessName.trim()[0] ?? "P").toUpperCase();
+  return (
+    <div className="pb-studio-serp" aria-label="Google-Vorschau">
+      <div className="pb-studio-serp-site">
+        <span className="pb-studio-serp-favicon" aria-hidden="true">
+          {initial}
+        </span>
+        <span className="pb-studio-serp-meta">
+          <span className="pb-studio-serp-name">{businessName}</span>
+          <span className="pb-studio-serp-url">https://{domain}</span>
+        </span>
+      </div>
+      <p className="pb-studio-serp-title">
+        {title.trim() || "SEO-Titel deiner Website"}
+      </p>
+      <p className="pb-studio-serp-desc">
+        {description.trim() ||
+          "Die SEO-Beschreibung erscheint hier — zwei Zeilen, die zum Klicken einladen."}
+      </p>
+    </div>
+  );
+}
+
 interface TextsFormProps {
   values: TextsPatch;
   onChange: (v: TextsPatch) => void;
@@ -139,6 +179,8 @@ interface TextsFormProps {
   /** Feld, dessen gewählter Vorschlag gerade gespeichert wird. */
   applyingVariant?: TextField | null;
   onFieldFocus?: (field: keyof TextsPatch) => void;
+  /** Kontext für die Google-Vorschau im SEO-Bereich — ohne bleibt sie aus. */
+  serp?: { businessName: string; domain: string };
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -152,6 +194,7 @@ export function TextsForm({
   suggestError = null,
   applyingVariant = null,
   onFieldFocus,
+  serp,
 }: TextsFormProps) {
   const errors = validateTexts(values);
   // Kontextfrage am Funken-Icon (2026-08-30): erster Klick öffnet eine
@@ -334,6 +377,14 @@ export function TextsForm({
           <details className="pb-studio-field-group" key={group.title}>
             <summary>{group.title}</summary>
             {group.hint && <p className="pb-studio-group-hint">{group.hint}</p>}
+            {serp && (
+              <SerpPreview
+                title={values.seoTitle ?? ""}
+                description={values.seoDescription ?? ""}
+                businessName={serp.businessName}
+                domain={serp.domain}
+              />
+            )}
             <div className="pb-studio-rows">
               {group.fields.map(field => renderField(field))}
             </div>

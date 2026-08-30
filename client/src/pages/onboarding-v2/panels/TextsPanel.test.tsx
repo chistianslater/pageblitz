@@ -173,3 +173,37 @@ describe("validateTexts", () => {
     ).toEqual([]);
   });
 });
+
+import { renderToStaticMarkup as rtsm } from "react-dom/server";
+import { SerpPreview } from "./textsParts";
+
+describe("SerpPreview", () => {
+  test("zeigt Titel, Beschreibung, Site-Name und Domain im Google-Look", () => {
+    const html = rtsm(
+      <SerpPreview
+        title="Tischlerei Brandt Dortmund — Möbel nach Maß"
+        description="Massivholzmöbel aus der Werkstatt."
+        businessName="Tischlerei Brandt"
+        domain="tischlerei-brandt.pageblitz.de"
+      />
+    );
+    expect(html).toContain("pb-studio-serp-title");
+    expect(html).toContain("Möbel nach Maß");
+    expect(html).toContain("Massivholzmöbel");
+    expect(html).toContain("https://tischlerei-brandt.pageblitz.de");
+    expect(html).toContain(">T<");
+  });
+
+  test("leere Werte zeigen erklärende Platzhalter", () => {
+    const html = rtsm(
+      <SerpPreview
+        title=""
+        description=""
+        businessName="Brandt"
+        domain="brandt.pageblitz.de"
+      />
+    );
+    expect(html).toContain("SEO-Titel deiner Website");
+    expect(html).toContain("zum Klicken einladen");
+  });
+});
