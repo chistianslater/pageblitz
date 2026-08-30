@@ -363,7 +363,6 @@ function syncChromeCopy(doc: Document): void {
   }
 }
 
-
 function syncPressed(
   root: ParentNode,
   currentOf: (field: PreviewLayoutField) => string

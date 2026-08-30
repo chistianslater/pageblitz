@@ -64,19 +64,23 @@ export function rich(text: string): React.ReactNode {
 export function serializeRichDom(root: Node): string {
   let out = "";
   root.childNodes.forEach(node => {
+    // nodeType statt instanceof: die Knoten stammen aus dem Vorschau-
+    // iframe (eigener Realm) — `instanceof Element` des Studio-Bundles
+    // wäre dort immer false und würde alle Element-Kinder verschlucken.
     if (node.nodeType === Node.TEXT_NODE) {
       out += node.textContent ?? "";
       return;
     }
-    if (!(node instanceof Element)) return;
-    if (node.tagName === "BR") {
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const el = node as Element;
+    if (el.tagName === "BR") {
       out += "\n";
       return;
     }
-    const inner = serializeRichDom(node);
-    if (node.tagName === "STRONG" && inner) out += `**${inner}**`;
-    else if (node.tagName === "EM" && inner)
-      out += node.classList.contains("pb-rich-accent")
+    const inner = serializeRichDom(el);
+    if (el.tagName === "STRONG" && inner) out += `**${inner}**`;
+    else if (el.tagName === "EM" && inner)
+      out += el.classList.contains("pb-rich-accent")
         ? `==${inner}==`
         : `*${inner}*`;
     else out += inner;
@@ -85,49 +89,6 @@ export function serializeRichDom(root: Node): string {
 }
 
 export type RichMark = "**" | "*" | "==";
-
-/**
- * Marker um eine Auswahl legen bzw. wieder entfernen (Format-Buttons im
- * Texte-Panel). Gibt den neuen Wert plus die nachgeführte Auswahl zurück.
- */
-export function toggleMark(
-  value: string,
-  start: number,
-  end: number,
-  mark: RichMark
-): { value: string; selStart: number; selEnd: number } {
-  const len = mark.length;
-  const selected = value.slice(start, end);
-  // Auswahl enthält die Marker selbst → entfernen.
-  if (
-    selected.length > len * 2 &&
-    selected.startsWith(mark) &&
-    selected.endsWith(mark)
-  ) {
-    const inner = selected.slice(len, -len);
-    return {
-      value: value.slice(0, start) + inner + value.slice(end),
-      selStart: start,
-      selEnd: start + inner.length,
-    };
-  }
-  // Marker liegen direkt außerhalb der Auswahl → entfernen.
-  if (
-    value.slice(start - len, start) === mark &&
-    value.slice(end, end + len) === mark
-  ) {
-    return {
-      value: value.slice(0, start - len) + selected + value.slice(end + len),
-      selStart: start - len,
-      selEnd: end - len,
-    };
-  }
-  return {
-    value: value.slice(0, start) + mark + selected + mark + value.slice(end),
-    selStart: start + len,
-    selEnd: end + len,
-  };
-}
 
 /** Akzent-Auszeichnung — von SiteRenderer an jedes Pack-CSS angehängt. */
 export const RICH_TEXT_CSS = `

@@ -3,6 +3,7 @@ import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 import { serializeRichDom, stripMarks } from "@/components/site/richText";
+import { enableInlineFormatToolbar } from "./previewInlineFormat";
 import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
 
 interface PreviewFrameProps {
@@ -234,6 +235,17 @@ export function PreviewFrame({
         });
       }
     }
+
+    // Format-Toolbar (F/K/A) bei Textauswahl in formatierbaren Feldern.
+    enableInlineFormatToolbar(
+      doc,
+      new Map(
+        inlineTargets
+          .filter(t => t.formattable)
+          .map(t => [t.path, t.maxLength])
+      ),
+      onInlineTextEdit
+    );
   };
   return (
     <div className="pb-studio-device" data-device={device}>

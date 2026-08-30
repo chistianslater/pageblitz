@@ -7,7 +7,6 @@ import {
   rich,
   serializeRichDom,
   stripMarks,
-  toggleMark,
 } from "./richText";
 
 describe("hasMarks / stripMarks", () => {
@@ -67,28 +66,3 @@ describe("serializeRichDom", () => {
   });
 });
 
-describe("toggleMark", () => {
-  test("legt Marker um die Auswahl und stellt die Auswahl nach", () => {
-    expect(toggleMark("Hallo Welt", 6, 10, "**")).toEqual({
-      value: "Hallo **Welt**",
-      selStart: 8,
-      selEnd: 12,
-    });
-  });
-
-  test("entfernt Marker, die direkt außerhalb der Auswahl liegen", () => {
-    expect(toggleMark("Hallo **Welt**", 8, 12, "**")).toEqual({
-      value: "Hallo Welt",
-      selStart: 6,
-      selEnd: 10,
-    });
-  });
-
-  test("entfernt Marker, die mit ausgewählt wurden", () => {
-    expect(toggleMark("Hallo ==Welt==", 6, 14, "==")).toEqual({
-      value: "Hallo Welt",
-      selStart: 6,
-      selEnd: 10,
-    });
-  });
-});

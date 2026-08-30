@@ -70,7 +70,9 @@ export function ThemeEditor({
   const [localAccent, setLocalAccent] = useState(accent);
   const [localPairId, setLocalPairId] = useState(fontPairId);
   const [localWorldId, setLocalWorldId] = useState<string>(() =>
-    packId ? activeColorWorldId(packId, colorOverrides ?? undefined) : "original"
+    packId
+      ? activeColorWorldId(packId, colorOverrides ?? undefined)
+      : "original"
   );
   const [localProfile, setLocalProfile] = useState<DesignProfile>(
     designProfile ?? DEFAULT_DESIGN_PROFILE
@@ -164,9 +166,7 @@ export function ThemeEditor({
     save({ fontPairId: id });
   };
 
-  const pickProfile = <
-    K extends keyof Omit<DesignProfile, "version" | "seed">,
-  >(
+  const pickProfile = <K extends keyof Omit<DesignProfile, "version" | "seed">>(
     key: K,
     value: DesignProfile[K]
   ) => {
@@ -190,8 +190,8 @@ export function ThemeEditor({
           : "Farben & Schriften"}
       </h3>
       <p className="pb-studio-theme-hint">
-        Feinschliff für die gewählte Designrichtung — Sektionslayouts stellst
-        du rechts in der Vorschau um. Jede Auswahl wird sofort übernommen.
+        Feinschliff für die gewählte Designrichtung — Sektionslayouts stellst du
+        rechts in der Vorschau um. Jede Auswahl wird sofort übernommen.
       </p>
 
       {showLayoutControls && (
@@ -204,41 +204,41 @@ export function ThemeEditor({
             role="group"
             aria-labelledby="pb-theme-rhythm-label"
           >
-        <label className="pb-studio-theme-layout">
-          <span>Abstände</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.density}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "density",
-                e.target.value as (typeof DESIGN_DENSITIES)[number]
-              )
-            }
-          >
-            <option value="airy">Großzügig</option>
-            <option value="compact">Kompakt</option>
-          </select>
-        </label>
-        <label className="pb-studio-theme-layout">
-          <span>Bildwirkung</span>
-          <select
-            className="pb-studio-input"
-            value={localProfile.imageTreatment}
-            disabled={busy}
-            onChange={e =>
-              pickProfile(
-                "imageTreatment",
-                e.target.value as (typeof IMAGE_TREATMENTS)[number]
-              )
-            }
-          >
-            <option value="natural">Natürlich</option>
-            <option value="framed">Gerahmt</option>
-            <option value="bleed">Flächig</option>
-          </select>
-        </label>
+            <label className="pb-studio-theme-layout">
+              <span>Abstände</span>
+              <select
+                className="pb-studio-input"
+                value={localProfile.density}
+                disabled={busy}
+                onChange={e =>
+                  pickProfile(
+                    "density",
+                    e.target.value as (typeof DESIGN_DENSITIES)[number]
+                  )
+                }
+              >
+                <option value="airy">Großzügig</option>
+                <option value="compact">Kompakt</option>
+              </select>
+            </label>
+            <label className="pb-studio-theme-layout">
+              <span>Bildwirkung</span>
+              <select
+                className="pb-studio-input"
+                value={localProfile.imageTreatment}
+                disabled={busy}
+                onChange={e =>
+                  pickProfile(
+                    "imageTreatment",
+                    e.target.value as (typeof IMAGE_TREATMENTS)[number]
+                  )
+                }
+              >
+                <option value="natural">Natürlich</option>
+                <option value="framed">Gerahmt</option>
+                <option value="bleed">Flächig</option>
+              </select>
+            </label>
           </div>
         </>
       )}

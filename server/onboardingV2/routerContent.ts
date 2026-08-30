@@ -344,8 +344,7 @@ export const contentProcedures = {
         extra:
           input.chatWelcomeMessage !== undefined
             ? {
-                chatWelcomeMessage:
-                  input.chatWelcomeMessage?.trim() || null,
+                chatWelcomeMessage: input.chatWelcomeMessage?.trim() || null,
               }
             : undefined,
       });

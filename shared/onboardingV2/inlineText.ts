@@ -7,6 +7,12 @@ export interface InlineTextTarget {
   multiline: boolean;
   /** Stabiler Sektionsanker aus engine.SECTION_ANCHORS. */
   scope: string;
+  /**
+   * Fett/Kursiv/Akzent-Toolbar bei Textauswahl (richText-Marker) — nur
+   * Felder, die die Packs über rich() rendern (Hero-Überschrift/-Unterzeile,
+   * Über-uns-Text). Überall sonst würden Marker als Sternchen sichtbar.
+   */
+  formattable?: boolean;
 }
 
 const ANCHORS: Partial<Record<SectionV2["type"], string>> = {
@@ -38,7 +44,8 @@ export function collectInlineTextTargets(
     suffix: string,
     value: string | undefined,
     maxLength: number,
-    multiline = false
+    multiline = false,
+    formattable = false
   ) => {
     if (!value?.trim()) return;
     targets.push({
@@ -47,6 +54,7 @@ export function collectInlineTextTargets(
       maxLength,
       multiline,
       scope,
+      ...(formattable ? { formattable } : {}),
     });
   };
 
@@ -55,8 +63,16 @@ export function collectInlineTextTargets(
     if (!scope) return;
     switch (section.type) {
       case "hero":
-        add(sectionIndex, scope, "headline", section.headline, 120);
-        add(sectionIndex, scope, "subheadline", section.subheadline, 240);
+        add(sectionIndex, scope, "headline", section.headline, 120, false, true);
+        add(
+          sectionIndex,
+          scope,
+          "subheadline",
+          section.subheadline,
+          240,
+          false,
+          true
+        );
         add(sectionIndex, scope, "ctaText", section.ctaText, 40);
         break;
       case "services":
@@ -89,7 +105,7 @@ export function collectInlineTextTargets(
         break;
       case "about":
         add(sectionIndex, scope, "headline", section.headline, 120);
-        add(sectionIndex, scope, "body", section.body, 2000, true);
+        add(sectionIndex, scope, "body", section.body, 2000, true, true);
         break;
       case "gallery":
         add(sectionIndex, scope, "headline", section.headline, 120);
