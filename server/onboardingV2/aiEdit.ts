@@ -41,7 +41,7 @@ export type ProposeAiEditResult =
 const MAX_AI_EDIT_ATTEMPTS = 2;
 
 const AI_EDIT_FAILED_MESSAGE =
-  "Das hat leider nicht geklappt. Gut kann ich: Texte umformulieren, Farben, Schriften und Abstände ändern, Sektions-Layouts umstellen oder einen anderen Look vorschlagen. Nicht möglich: den Aufbau ändern (z. B. mehr Bilder im Hero, neue Sektionen) oder Kontaktdaten und Rechtliches — die änderst du in den Panels.";
+  "Das hat leider nicht geklappt. Gut kann ich: Texte umformulieren, Farben, Schriften und Abstände ändern, Sektions-Layouts umstellen (auch eine Foto-Collage im Hero), eine Erzähl-Sektion ergänzen oder einen anderen Look vorschlagen. Nicht möglich: Kontaktdaten und Rechtliches — die änderst du in den Panels.";
 
 /**
  * Ein Versuch + Retry; sind beide erschöpft, kommt KEIN Fehler, sondern eine

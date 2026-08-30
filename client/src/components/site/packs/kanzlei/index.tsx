@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -451,6 +452,7 @@ const KanzleiPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
+          <HeroCollage data={data} />
           <div className="pb-kz-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
             <div className="pb-kz-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}

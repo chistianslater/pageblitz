@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -420,6 +421,7 @@ const KlarwerkPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-kw-hero">
+          <HeroCollage data={data} />
           <div className="pb-kw-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
             <div className="pb-kw-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}

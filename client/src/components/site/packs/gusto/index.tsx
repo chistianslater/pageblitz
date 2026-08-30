@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -468,6 +469,7 @@ const GustoPage: React.FC<{
         </nav>
         {hero && (
           <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
+          <HeroCollage data={data} />
             <div
               className="pb-gu-hero-media"
               data-pb-slot={LAYOUT_SLOT.heroMedia}

@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -387,6 +388,7 @@ const SalonNoirPage: React.FC<{
       )}
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
+          <HeroCollage data={data} />
           <div
             className="pb-sn-hero-inner"
             data-pb-slot={LAYOUT_SLOT.heroSplit}

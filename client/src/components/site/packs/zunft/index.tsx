@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -415,6 +416,7 @@ const ZunftPage: React.FC<{
       <DoubleRule />
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-zf-hero">
+          <HeroCollage data={data} />
           {hero.imageUrl && (
             <img
               className="pb-zf-hero-photo"

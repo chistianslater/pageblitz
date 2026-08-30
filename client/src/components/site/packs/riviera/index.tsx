@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -399,6 +400,7 @@ const RivieraPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-rv-hero">
+          <HeroCollage data={data} />
           <div className="pb-rv-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <Kicker>{city ?? data.businessCategory}</Kicker>
             <h1>{renderHeadline(hero.headline)}</h1>

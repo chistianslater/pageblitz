@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -402,6 +403,7 @@ const SchimmerPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-sc-hero">
+          <HeroCollage data={data} />
           <div className="pb-sc-aperture" aria-hidden="true">
             <span />
             <span />

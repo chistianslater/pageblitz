@@ -195,7 +195,9 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
   test("Extra-Editor-Anker treffen die echten Sektions-IDs (sonst scrollt die Vorschau ins Leere)", () => {
     expect(ADDON_EDITORS.gallery.previewAnchor).toBe(SECTION_ANCHORS.gallery);
     expect(ADDON_EDITORS.menu.previewAnchor).toBe(SECTION_ANCHORS.menu);
-    expect(ADDON_EDITORS.pricelist.previewAnchor).toBe(SECTION_ANCHORS.pricelist);
+    expect(ADDON_EDITORS.pricelist.previewAnchor).toBe(
+      SECTION_ANCHORS.pricelist
+    );
     expect(ADDON_EDITORS.team.previewAnchor).toBe(SECTION_ANCHORS.team);
   });
 

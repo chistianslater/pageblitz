@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -404,6 +405,7 @@ const VervePage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-vv-hero">
+          <HeroCollage data={data} />
           <div className="pb-vv-ghost" aria-hidden="true">
             {ghostText}
           </div>

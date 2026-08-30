@@ -44,7 +44,7 @@ describe("PREVIEW_LAYOUT_SECTIONS", () => {
     }
     expect(
       PREVIEW_LAYOUT_SECTIONS[0]!.options.map(option => option.value)
-    ).toEqual(["split", "centered", "image-first"]);
+    ).toEqual(["split", "centered", "image-first", "collage"]);
   });
 });
 
@@ -78,7 +78,7 @@ describe("renderLayoutChromeHtml", () => {
 
   test("rendert Optionen als Piktogramme mit Label als Tooltip", () => {
     const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
-    expect((html.match(/<svg viewBox="0 0 20 20"/g) ?? []).length).toBe(3);
+    expect((html.match(/<svg viewBox="0 0 20 20"/g) ?? []).length).toBe(4);
     expect(html).toContain('aria-label="Bild &amp; Text"');
     expect(html).toContain('title="Zentriert"');
     expect(html).not.toContain("pb-preview-layout-caption");

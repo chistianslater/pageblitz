@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -383,6 +384,7 @@ const StromPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-st-hero">
+          <HeroCollage data={data} />
           <div className="pb-st-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <MonoLabel>SYSTEME BEREIT</MonoLabel>
             <h1>{renderHeadline(hero.headline)}</h1>

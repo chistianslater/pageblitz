@@ -112,7 +112,7 @@ export function buildAiEditPrompt(args: {
     args.page
       ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
       : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahme: die Erzähl-Sektion {"type":"story","headline":"...","body":"..."} darfst du hinzufügen (wenn der Kunde mehr erzählen will: Geschichte, Historie, Philosophie, Werte — am besten direkt nach "about" einsortiert) oder entfernen (wenn er sie loswerden will). Absätze im body durch Leerzeile trennen.`,
-    `- Die Bildplätze sind fest: der Hero hat genau EIN Bild, Über-uns genau eines; nur die Galerie trägt mehrere. Anzahl oder Anordnung der Bilder kannst du NICHT ändern.`,
+    `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben — aber heroLayout "collage" (Format 2) zeigt zusätzlich zum Hauptbild bis zu zwei Galerie-Bilder im Hero.`,
     ``,
     args.page
       ? `## Aktueller Inhalt der Unterseite (SEO + Sektionen, als JSON)`
@@ -139,7 +139,7 @@ export function buildAiEditPrompt(args: {
     `- "fontPairId": eine von ${FONT_PAIRS.map(f => `"${f.id}"`).join(", ")} oder null. (${FONT_PAIRS.map(f => `${f.id} = ${f.label}, ${f.vibe}`).join("; ")})`,
     `- "density": "airy" (großzügig) oder "compact".`,
     `- "imageTreatment": "natural", "framed" (gerahmt) oder "bleed" (flächig).`,
-    `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben).`,
+    `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben), "collage" (mehrere Fotos im Hero — Hauptbild plus bis zu zwei Galerie-Bilder als gestapelte Karten; wähle das bei Wünschen wie "mehr Bilder im Hero" oder "3 Fotos im Hero").`,
     `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
     `- "decorations": "off" blendet Schmuck-Illustrationen aus (Zweige, Farbkleckse, Ornamente — z. B. wenn dem Kunden eine Illustration nicht gefällt), "on" zeigt sie wieder.`,
     `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
@@ -151,8 +151,8 @@ export function buildAiEditPrompt(args: {
     ``,
     `4) Nicht machbarer Wunsch — zwei Fälle:`,
     `   a) Fakten (Telefon, Adresse, Preise, Öffnungszeiten, Rechtliches): die ändert der Kunde selbst in den Panels.`,
-    `   b) Struktur/Funktionen, die es nicht gibt (Sektion hinzufügen/entfernen/umsortieren, mehr oder andere Bildplätze wie "3 Fotos im Hero", Buchung/Shop/neue Features).`,
-    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst (z. B. statt 3 Hero-Fotos: Galerie-Layout auf Mosaik stellen oder ein anderes Hero-Layout). NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
+    `   b) Struktur/Funktionen, die es nicht gibt (andere Sektionen als "story" hinzufügen/entfernen, Buchung/Shop/neue Features). Hinweis: "mehr Bilder im Hero" IST machbar — heroLayout "collage" (Format 2); "mehr erzählen" IST machbar — story-Sektion (Format 1).`,
+    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst. NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
     ``,
     `5) Rückfrage — NUR wenn der Wunsch so mehrdeutig ist, dass du ihn ohne Zusatzinfo falsch umsetzen könntest (z. B. "mach das schöner" ohne Bezug, oder zwei mögliche Lesarten mit sehr unterschiedlichem Ergebnis):`,
     `{"kind":"question","content":null,"theme":null,"packId":null,"reason":null,"question":"<genau EINE kurze, konkrete Rückfrage auf Deutsch, gern mit 2–3 Optionen>"}`,

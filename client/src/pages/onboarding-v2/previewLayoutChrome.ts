@@ -82,6 +82,13 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
           '<rect x="3" y="3" width="14" height="8" rx="1.5"/><rect x="5" y="13" width="10" height="2" rx="1"/><rect x="6.5" y="16.4" width="7" height="1.6" rx=".8"/>'
         ),
       },
+      {
+        value: "collage",
+        label: "Collage",
+        icon: icon(
+          '<rect x="2" y="6" width="6" height="2" rx="1"/><rect x="2" y="10" width="4" height="2" rx="1"/><rect x="9" y="4" width="8" height="12" rx="1.5" opacity=".55"/><rect x="12" y="2.6" width="5.4" height="7" rx="1" transform="rotate(6 14.7 6.1)"/><rect x="10.6" y="11" width="5.4" height="7" rx="1" transform="rotate(-6 13.3 14.5)"/>'
+        ),
+      },
     ],
   },
   {

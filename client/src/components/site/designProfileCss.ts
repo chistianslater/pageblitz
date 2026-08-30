@@ -101,6 +101,20 @@ ${heroMediaInFlow(h, "image-first", "-1", "100%")}
 ${h("hero")}="compact"] #start{min-height:auto!important;padding-top:clamp(2.5rem,6vw,5rem)!important;padding-bottom:clamp(2.5rem,6vw,5rem)!important}
 ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;max-width:14ch}
 
+/* Collage (2026-08-30, „3 Fotos im Hero"): Hauptbild bleibt im Pack-Layout,
+   bis zu zwei Galerie-Karten stapeln sich leicht rotiert darüber
+   (Markup: heroCollage.tsx, in jedem Pack direkt nach dem Hero-Tag). */
+${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important}
+${h("hero")}="collage"] #start .pb-hero-extras img{position:absolute!important;z-index:6;display:block;width:${
+    mode === "mobile" ? "clamp(76px,24vw,116px)" : "clamp(120px,14vw,196px)"
+  };aspect-ratio:4/5;object-fit:cover;border:5px solid var(--pb-surface,#fff)!important;border-radius:8px!important;box-shadow:0 18px 44px rgba(0,0,0,.28);padding:0!important}
+${h("hero")}="collage"] #start .pb-hero-extras img:first-child{right:${
+    mode === "mobile" ? "10px" : "clamp(14px,3vw,52px)"
+  };top:${mode === "mobile" ? "10px" : "clamp(14px,3vw,44px)"};transform:rotate(3.5deg)}
+${h("hero")}="collage"] #start .pb-hero-extras img:last-child{right:${
+    mode === "mobile" ? "26px" : "clamp(48px,7vw,128px)"
+  };bottom:${mode === "mobile" ? "10px" : "clamp(14px,3vw,40px)"};transform:rotate(-4deg)}
+
 ${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(.75rem,1.5vw,1.25rem)!important;background:transparent!important}
 ${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}>*{grid-column:auto!important;width:100%!important}
 ${h("services")}="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important;background:transparent!important}

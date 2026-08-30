@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -444,6 +445,7 @@ const AtelierPage: React.FC<{
       </header>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-at-cover">
+          <HeroCollage data={data} />
           <div className="pb-at-img" data-pb-slot={LAYOUT_SLOT.heroMedia}>
             {hero.imageUrl && (
               <img

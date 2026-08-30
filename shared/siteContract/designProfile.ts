@@ -12,6 +12,11 @@ export const HERO_LAYOUTS = [
   "centered",
   "compact",
   "image-first",
+  // Collage (2026-08-30, „3 Fotos im Hero"): Hauptbild + bis zu zwei
+  // Galerie-Bilder als gestapelte Karten (heroCollage.tsx). Bewusst NICHT
+  // in HERO_LAYOUT_CHOICES — der Generator wählt sie nie zufällig, nur
+  // Kunde/KI-Chat schalten sie aktiv.
+  "collage",
 ] as const;
 /** Picker und Generator: compact bleibt nur für bestehende Profile gültig. */
 export const HERO_LAYOUT_CHOICES = [

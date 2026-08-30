@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -372,6 +373,7 @@ const RasterPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-ra-hero">
+          <HeroCollage data={data} />
           <div className="pb-ra-hero-margin">
             <span className="pb-ra-index">00</span>
             {city && <span className="pb-ra-margin-note">{city}</span>}

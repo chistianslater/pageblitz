@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -463,6 +464,7 @@ const ErntePage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
+          <HeroCollage data={data} />
           <Blob tone="sage" />
           <Sprig className="pb-er-sprig pb-er-hero-deco pb-deco" />
           <div className="pb-er-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>

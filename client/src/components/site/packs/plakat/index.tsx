@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -364,6 +365,7 @@ const PlakatPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-pl-hero">
+          <HeroCollage data={data} />
           <div className="pb-pl-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <h1>{renderHeadline(hero.headline)}</h1>
             {hero.subheadline && (

@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -111,7 +112,8 @@ function buildMarquee(
 function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">,
   servicesSection: SectionOf<"services"> | undefined,
-  hasPageHeader: boolean
+  hasPageHeader: boolean,
+  data: WebsiteDataV2
 ): React.ReactNode {
   switch (section.type) {
     case "story":
@@ -122,6 +124,7 @@ function renderSection(
       return (
         <React.Fragment key={section.type}>
           <section id={SECTION_ANCHORS.hero} className="pb-wb-hero">
+          <HeroCollage data={data} />
             <h1 aria-label={stripMarks(section.headline)}>
               {richHeadline && rich(section.headline)}
               {lines.map((line, i) => {
@@ -503,7 +506,7 @@ const WerkbankPage: React.FC<{
           <MobileNav items={navList} />
         </nav>
         {sections.map(section =>
-          renderSection(section, services, hasPageHeader)
+          renderSection(section, services, hasPageHeader, data)
         )}
         <footer className="pb-wb-footer">
           <p>

@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -405,6 +406,7 @@ const MarktplatzPage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
+          <HeroCollage data={data} />
           <div
             className="pb-mp-hero-inner"
             data-pb-slot={LAYOUT_SLOT.heroSplit}

@@ -192,7 +192,13 @@ export function richHtml(value: string): string {
   return out + emit(plain.slice(pos));
 }
 
-/** Akzent-Auszeichnung — von SiteRenderer an jedes Pack-CSS angehängt. */
+/**
+ * Akzent-Auszeichnung — von SiteRenderer an jedes Pack-CSS angehängt.
+ * Zusätzlich zur Akzentfarbe eine Unterstreichung im ROHEN Akzent
+ * (--pb-accent): der Kontrast-Guard dunkelt --pb-accent-text bei grellen
+ * Akzenten fast auf Textfarbe ab — ohne die Linie wären ==Akzent== und
+ * *kursiv* dann optisch identisch (Betreiber-Befund 2026-08-30).
+ */
 export const RICH_TEXT_CSS = `
-.pb-rich-accent{font-style:italic;color:var(--pb-accent-text)}
+.pb-rich-accent{font-style:italic;color:var(--pb-accent-text);text-decoration:underline;text-decoration-color:var(--pb-accent);text-decoration-thickness:2px;text-underline-offset:3px}
 `;

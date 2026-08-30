@@ -1,4 +1,5 @@
 import React from "react";
+import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
   PageSection,
@@ -403,6 +404,7 @@ const LandgutPage: React.FC<{
       {hero && (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
+          <HeroCollage data={data} />
             <div className="pb-lg-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
               <div className="pb-lg-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
                 {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
