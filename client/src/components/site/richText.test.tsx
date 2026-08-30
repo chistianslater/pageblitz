@@ -4,9 +4,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import {
   hasMarks,
+  parseMarkRanges,
   rich,
+  richHtml,
   serializeRichDom,
   stripMarks,
+  toggleRangeMark,
 } from "./richText";
 
 describe("hasMarks / stripMarks", () => {
@@ -63,6 +66,49 @@ describe("serializeRichDom", () => {
     const el = document.createElement("div");
     el.innerHTML = 'Zeile eins<br><span class="pb-x">und <em>mehr</em></span>';
     expect(serializeRichDom(el)).toBe("Zeile eins\nund *mehr*");
+  });
+});
+
+describe("toggleRangeMark", () => {
+  test("legt eine Auszeichnung um Plain-Offsets", () => {
+    expect(toggleRangeMark("Heilung beginnt", 0, 7, "==")).toBe(
+      "==Heilung== beginnt"
+    );
+  });
+
+  test("Toggle: gleicher Bereich mit gleicher Auszeichnung wird entfernt", () => {
+    expect(toggleRangeMark("==Heilung== beginnt", 0, 7, "==")).toBe(
+      "Heilung beginnt"
+    );
+  });
+
+  test("Kombination bleibt flach und parsebar (A, dann F auf denselben Text)", () => {
+    const accented = toggleRangeMark("Heilung beginnt", 0, 7, "==");
+    const bolded = toggleRangeMark(accented, 0, 7, "**");
+    expect(bolded).toBe("**Heilung** beginnt");
+    // Keine rohen Marker im gerenderten Ergebnis:
+    expect(stripMarks(bolded)).toBe("Heilung beginnt");
+    expect(richHtml(bolded)).toBe("<strong>Heilung</strong> beginnt");
+  });
+
+  test("teilweise Überlappung verdrängt den Altbestand", () => {
+    const value = "**Heilung beginnt** mit";
+    expect(toggleRangeMark(value, 8, 15, "==")).toBe(
+      "Heilung ==beginnt== mit"
+    );
+  });
+
+  test("parseMarkRanges liefert Plain-Offsets", () => {
+    expect(parseMarkRanges("a **bc** d")).toEqual({
+      plain: "a bc d",
+      ranges: [{ start: 2, end: 4, mark: "**" }],
+    });
+  });
+
+  test("richHtml escaped den Text", () => {
+    expect(richHtml("a<b & ==c==")).toBe(
+      'a&lt;b &amp; <em class="pb-rich-accent">c</em>'
+    );
   });
 });
 

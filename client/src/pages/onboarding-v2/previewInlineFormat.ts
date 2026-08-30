@@ -1,11 +1,16 @@
-import { serializeRichDom, type RichMark } from "@/components/site/richText";
+import {
+  richHtml,
+  serializeRichDom,
+  toggleRangeMark,
+  type RichMark,
+} from "@/components/site/richText";
 
 /**
  * Schwebende Format-Toolbar im Vorschau-iframe (2026-08-30): Text in einem
- * formatierbaren Inline-Feld markieren → F/K/A über der Auswahl. Ein Klick
- * wrappt die Auswahl in strong/em (bzw. entfernt die Auszeichnung), das
- * Element wird zu Marker-Text serialisiert (richText.tsx) und sofort
- * gespeichert — der iframe lädt danach mit sauberem Render neu.
+ * formatierbaren Inline-Feld markieren → F/K/A über der Auswahl. Die
+ * Auswahl wird als Plain-Offsets gelesen und TEXTBASIERT ausgezeichnet
+ * (toggleRangeMark, immer flach), sofort lokal gerendert (richHtml) und
+ * gespeichert — der iframe lädt danach mit sauberem Pack-Render neu.
  */
 
 const STYLE_MARK = "data-pb-inline-format-style";
@@ -18,13 +23,6 @@ const TOOLBAR_CSS = `
 .pb-inline-format button[data-accent]{color:#ccff00}
 `;
 
-function markElement(doc: Document, mark: RichMark): HTMLElement {
-  const el = doc.createElement(mark === "**" ? "strong" : "em");
-  if (mark === "==") el.className = "pb-rich-accent";
-  return el;
-}
-
-/** Passendes Format-Element, in dem die Range vollständig liegt (→ Unwrap). */
 /** Cross-Realm-sicher (iframe): nodeType statt instanceof. */
 function asElement(node: Node): Element | null {
   return node.nodeType === Node.ELEMENT_NODE
@@ -32,51 +30,48 @@ function asElement(node: Node): Element | null {
     : node.parentElement;
 }
 
-function surroundingMark(
-  range: Range,
-  mark: RichMark,
-  boundary: Element
-): Element | null {
-  const el = asElement(range.commonAncestorContainer);
-  const selector =
-    mark === "**"
-      ? "strong"
-      : mark === "=="
-        ? "em.pb-rich-accent"
-        : "em:not(.pb-rich-accent)";
-  const found = el?.closest(selector) ?? null;
-  return found && boundary.contains(found) && found !== boundary
-    ? found
-    : null;
-}
-
 /**
- * Auswahl auszeichnen bzw. Auszeichnung entfernen. Exportiert für Tests.
- * Gleiche Auszeichnungen im extrahierten Fragment werden entpackt, damit
- * keine Verschachtelung entsteht (Serialisierung bliebe sonst mehrdeutig).
+ * Plain-Text-Offset eines Selektionspunkts innerhalb des Ziels — zählt
+ * Textknoten (BR = 1 Zeichen, wie serializeRichDom), Realm-sicher über
+ * nodeType. Grundlage der textbasierten Auszeichnung (toggleRangeMark).
  */
-export function applyMarkToRange(
-  doc: Document,
-  range: Range,
-  mark: RichMark,
-  boundary: Element
-): void {
-  const wrapped = surroundingMark(range, mark, boundary);
-  if (wrapped) {
-    const parent = wrapped.parentNode;
-    if (!parent) return;
-    while (wrapped.firstChild) parent.insertBefore(wrapped.firstChild, wrapped);
-    wrapped.remove();
-    return;
-  }
-  const frag = range.extractContents();
-  const tag = mark === "**" ? "strong" : "em";
-  frag
-    .querySelectorAll(tag)
-    .forEach(nested => nested.replaceWith(...Array.from(nested.childNodes)));
-  const wrap = markElement(doc, mark);
-  wrap.appendChild(frag);
-  range.insertNode(wrap);
+export function plainOffset(
+  root: Node,
+  container: Node,
+  offset: number
+): number {
+  let count = 0;
+  let done = false;
+  const walk = (node: Node): void => {
+    if (done) return;
+    if (node === container && node.nodeType === Node.TEXT_NODE) {
+      count += offset;
+      done = true;
+      return;
+    }
+    if (node.nodeType === Node.TEXT_NODE) {
+      count += node.textContent?.length ?? 0;
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    if ((node as Element).tagName === "BR") {
+      count += 1;
+      return;
+    }
+    const children = Array.from(node.childNodes);
+    const limit = node === container ? offset : children.length;
+    for (let i = 0; i < children.length; i++) {
+      if (node === container && i >= limit) {
+        done = true;
+        return;
+      }
+      walk(children[i]!);
+      if (done) return;
+    }
+    if (node === container) done = true;
+  };
+  walk(root);
+  return count;
 }
 
 /**
@@ -137,8 +132,15 @@ export function enableInlineFormatToolbar(
     toolbar.style.top = `${Math.round(top)}px`;
   };
 
+  // setTimeout statt requestAnimationFrame: rAF wird in Hintergrund-Tabs
+  // gedrosselt/pausiert — die Toolbar erschiene dann gar nicht.
+  let pending = 0;
   doc.addEventListener("selectionchange", () => {
-    doc.defaultView?.requestAnimationFrame(update);
+    if (pending) return;
+    pending = doc.defaultView?.setTimeout(() => {
+      pending = 0;
+      update();
+    }, 30) as unknown as number;
   });
   doc.defaultView?.addEventListener("scroll", hide, { passive: true });
 
@@ -155,10 +157,23 @@ export function enableInlineFormatToolbar(
     if (!currentTarget.contains(range.commonAncestorContainer)) return;
     const path = currentTarget.getAttribute("data-pb-inline-edit") ?? "";
     const maxLength = formattable.get(path) ?? Infinity;
-    applyMarkToRange(doc, range, mark, currentTarget);
-    const value = serializeRichDom(currentTarget).trim();
+    const target = currentTarget;
+    const start = plainOffset(target, range.startContainer, range.startOffset);
+    const end = plainOffset(target, range.endContainer, range.endOffset);
+    // Textbasiert statt DOM-Chirurgie: Marker bleiben garantiert flach —
+    // verschachtelte strong/em ergaben sonst unparsebare Marker, die als
+    // rohe Sternchen in der Vorschau landeten (User-Befund 2026-08-30).
+    const value = toggleRangeMark(
+      serializeRichDom(target),
+      Math.min(start, end),
+      Math.max(start, end),
+      mark
+    ).trim();
     sel.removeAllRanges();
     hide();
-    if (value && value.length <= maxLength) onApply(path, value);
+    if (!value || value.length > maxLength) return;
+    // Sofort-Feedback; das saubere Pack-Rendering folgt mit dem Reload.
+    target.innerHTML = richHtml(value);
+    onApply(path, value);
   });
 }
