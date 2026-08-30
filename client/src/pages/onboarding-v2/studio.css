@@ -265,6 +265,86 @@
   font-size: 0.85rem;
 }
 
+/* Texte-Panel aufgeräumt (2026-08-30): Sektionen mit Mono-Kicker,
+   KI-Vorschlag als kleines Funken-Icon in der Label-Zeile, SEO als
+   eingeklappter Block. */
+.pb-studio-field-group {
+  border-top: 1px solid var(--st-line);
+  padding-top: 1rem;
+}
+.pb-studio-field-group:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+.pb-studio-group-kicker,
+.pb-studio-field-group > summary {
+  font-family: var(--st-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--st-muted);
+  margin: 0 0 0.75rem;
+}
+.pb-studio-field-group > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pb-studio-field-group > summary::before {
+  content: "▸";
+  font-size: 0.8rem;
+  transition: transform 0.15s ease;
+}
+.pb-studio-field-group[open] > summary::before {
+  transform: rotate(90deg);
+}
+.pb-studio-group-hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.82rem;
+  color: var(--st-muted);
+  max-width: 52ch;
+}
+.pb-studio-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.pb-studio-suggest-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--st-line);
+  background: transparent;
+  color: var(--st-accent);
+  cursor: pointer;
+}
+.pb-studio-suggest-icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+.pb-studio-suggest-icon:hover:not(:disabled) {
+  border-color: var(--st-accent);
+  background: color-mix(in oklab, var(--st-accent) 12%, transparent);
+}
+.pb-studio-suggest-icon:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.pb-studio-spin {
+  animation: pb-studio-spin 0.9s linear infinite;
+}
+@keyframes pb-studio-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* „KI-Bilder"-Tab im Fotos-Panel (AiPhotoGenerator). */
 .pb-studio-ai-gen {
   display: flex;
