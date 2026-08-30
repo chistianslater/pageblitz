@@ -101,11 +101,11 @@ ${heroMediaInFlow(h, "image-first", "-1", "100%")}
 ${h("hero")}="compact"] #start{min-height:auto!important;padding-top:clamp(2.5rem,6vw,5rem)!important;padding-bottom:clamp(2.5rem,6vw,5rem)!important}
 ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;max-width:14ch}
 
-${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(.75rem,1.5vw,1.25rem)!important}
+${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(.75rem,1.5vw,1.25rem)!important;background:transparent!important}
 ${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}>*{grid-column:auto!important;width:100%!important}
-${h("services")}="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important}
+${h("services")}="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important;background:transparent!important}
 ${h("services")}="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}>*{grid-column:auto!important}
-${h("services")}="featured"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important}
+${h("services")}="featured"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important;background:transparent!important}
 ${h("services")}="featured"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}>:first-child{grid-column:1/-1!important}
 ${h("services")}="grid"] #leistungen:not(:has(${SLOT.servicesItems})){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important}
 ${h("services")}="grid"] #leistungen:not(:has(${SLOT.servicesItems}))>h2,
@@ -131,7 +131,7 @@ ${h("gallery")}="mosaic"] ${SLOT.galleryItems}>:first-child{grid-column:span 2!i
     mode === "mobile" ? "auto" : "span 2"
   }!important}
 ${h("gallery")}="mosaic"] ${SLOT.galleryItems} img{width:100%!important;height:100%!important;min-height:160px!important;object-fit:cover!important}
-${h("gallery")}="filmstrip"] ${SLOT.galleryItems}{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:${filmCols}!important;grid-template-columns:none!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;gap:clamp(.5rem,1.5vw,1.25rem)!important;padding-bottom:.5rem}
+${h("gallery")}="filmstrip"] ${SLOT.galleryItems}{background:transparent!important;display:grid!important;grid-auto-flow:column!important;grid-auto-columns:${filmCols}!important;grid-template-columns:none!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;gap:clamp(.5rem,1.5vw,1.25rem)!important;padding-bottom:.5rem}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems}>*{grid-column:auto!important;grid-row:auto!important;margin-top:0!important;scroll-snap-align:start;width:auto!important}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems} img{width:100%!important;height:clamp(200px,32vw,320px)!important;object-fit:cover!important}
 `;

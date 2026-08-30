@@ -1,10 +1,5 @@
 import type { FontSpec, PackConstitution } from "./types";
-import {
-  bestTextOn,
-  clampChroma,
-  ensureTextContrast,
-  mix,
-} from "./colorMath";
+import { bestTextOn, clampChroma, ensureTextContrast, mix } from "./colorMath";
 
 const fontStack = (f: FontSpec) => `"${f.family}", ${f.fallback}`;
 

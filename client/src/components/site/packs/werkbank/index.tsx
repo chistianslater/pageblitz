@@ -17,11 +17,7 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
-import {
-  ReviewAuthor,
-  ReviewStars,
-  REVIEW_READONLY,
-} from "../../googleReview";
+import { ReviewAuthor, ReviewStars, REVIEW_READONLY } from "../../googleReview";
 import { WERKBANK_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {

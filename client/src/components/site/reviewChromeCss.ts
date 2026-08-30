@@ -3,6 +3,9 @@
  * Packs färben über currentColor / --pb-accent nach; Layout bleibt pack-eigen.
  */
 export const REVIEW_CHROME_CSS = `
+/* UA-Default (1em 40px) — sonst schieben Review-Blockquotes die
+   line-farbenen Hairline-Grids (morgenlicht/schimmer) zu Bändern auf. */
+blockquote{margin:0}
 [data-pb-readonly]{cursor:default;-webkit-user-select:text;user-select:text}
 .pb-review-stars{display:inline-flex;align-items:center;gap:.08em;margin:0 0 .85em;line-height:1;letter-spacing:.04em;color:var(--pb-accent)}
 .pb-review-star{font-size:.95em;opacity:.22}
