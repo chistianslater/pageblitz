@@ -13,6 +13,9 @@ export const VERVE: PackConstitution = {
     "kampfsport",
     "crossfit",
     "boxen",
+    "eventplanung",
+    "dj",
+    "fotobox",
   ],
   theme: "dark",
   palette: [

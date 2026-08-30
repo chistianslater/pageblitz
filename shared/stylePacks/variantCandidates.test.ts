@@ -18,9 +18,7 @@ describe("getV2VariantCandidates", () => {
 
   test("Splash-Modus liefert genau 3 swipebare Kandidaten", () => {
     for (let round = 0; round < 5; round++) {
-      expect(
-        getV2VariantCandidates("schreinerei", round, 3)
-      ).toHaveLength(3);
+      expect(getV2VariantCandidates("schreinerei", round, 3)).toHaveLength(3);
     }
   });
 

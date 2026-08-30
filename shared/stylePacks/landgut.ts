@@ -27,6 +27,7 @@ export const LANDGUT: PackConstitution = {
     "bnb",
     "bedbreakfast",
     "bedandbreakfast",
+    "tierpension",
   ],
   theme: "light",
   palette: [

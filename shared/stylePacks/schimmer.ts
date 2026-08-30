@@ -14,6 +14,11 @@ export const SCHIMMER: PackConstitution = {
     "aesthetik",
     "wimpern",
     "sonnenstudio",
+    "juwelier",
+    "goldschmiede",
+    "modegeschaeft",
+    "modegeschäft",
+    "hochzeitsplaner",
   ],
   theme: "light",
   palette: [
@@ -53,8 +58,7 @@ export const SCHIMMER: PackConstitution = {
       name: "Oxid",
       hex: "#87372F",
       role: "accent-text",
-      usage:
-        "Akzentwort, Preis, Rubrik und Hover auf hellem Grund.",
+      usage: "Akzentwort, Preis, Rubrik und Hover auf hellem Grund.",
     },
     {
       name: "Hautlicht",
@@ -95,8 +99,7 @@ export const SCHIMMER: PackConstitution = {
     density: "airy",
   },
   signature: {
-    hero:
-      "Editorialer Beauty-Hero aus monumentaler Serifentypografie, präzisem Laborindex und großem Makrobild; eine warme Karmin-Markierung setzt den Fokus.",
+    hero: "Editorialer Beauty-Hero aus monumentaler Serifentypografie, präzisem Laborindex und großem Makrobild; eine warme Karmin-Markierung setzt den Fokus.",
     decor: ["editorial-index", "macro-crop", "light-scan", "hairline-grid"],
     imageTreatment:
       "große, scharfe Makro-Crops von Haut, Textur, Material und Händen; warmes Seitenlicht statt Beauty-Stock und Weichzeichner",

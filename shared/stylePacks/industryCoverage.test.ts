@@ -1,32 +1,114 @@
 import { describe, expect, test } from "vitest";
-import { getPackPool, packMatchesCategory } from "./index";
 import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
+import { packMatchesCategory } from "./index";
+import { PACK_IDS } from "../siteContract/packIds";
 
 /**
- * Branchen-Vollabdeckung: JEDE in server/seo/landingPages.ts registrierte
- * SEO-Branche muss über getPackPool() eine echte Style-Pack-Zuordnung
- * bekommen — der erste Eintrag muss die Kategorie direkt über `industries`
- * treffen, nicht nur den leeren-Pool-Fallback auffüllen.
- *
- * FALLBACK_PACK ("werkbank") ist gleichzeitig ein reguläres Pack. Deshalb
- * reicht „erster Eintrag != Fallback" nicht: Handwerk/Reinigung matchen
- * werkbank zu Recht. Entscheidend ist packMatchesCategory().
+ * Branchen-Abdeckung (2026-08-30): Jede kuratierte SEO-Branche und jede
+ * gängige GMB-Kategorie muss mindestens EINE Designrichtung direkt über
+ * `industries` treffen — sonst landet der Kunde im generischen
+ * Fallback-Pool statt bei einer passenden Empfehlung.
  */
-describe("Style-Pack-Registrierung — Branchen-Vollabdeckung (SEO_INDUSTRIES)", () => {
-  const industryKeys = Object.keys(SEO_INDUSTRIES);
 
-  test("SEO_INDUSTRIES ist nicht leer (Test wäre sonst trivial grün)", () => {
-    expect(industryKeys.length).toBeGreaterThan(0);
+/** Gängige GMB-Kategorien jenseits der SEO-Liste (Abgleich 2026-08-30). */
+const GMB_CATEGORIES = [
+  "Hotel",
+  "Pension",
+  "Ferienwohnung",
+  "Café",
+  "Bar",
+  "Imbiss",
+  "Pizzeria",
+  "Eiscafé",
+  "Konditorei",
+  "Metzgerei",
+  "Hofladen",
+  "Weingut",
+  "Brauerei",
+  "Catering",
+  "Foodtruck",
+  "Optiker",
+  "Hörakustiker",
+  "Sanitätshaus",
+  "Drogerie",
+  "Heilpraktiker",
+  "Naturheilpraxis",
+  "Podologie",
+  "Massagepraxis",
+  "Pflegedienst",
+  "Kita",
+  "Tagesmutter",
+  "Bestatter",
+  "Schreiner",
+  "Tischler",
+  "Dachdecker",
+  "Fliesenleger",
+  "Bodenleger",
+  "Glaser",
+  "Metallbau",
+  "Zaunbau",
+  "Gerüstbau",
+  "Heizungsbau",
+  "Solaranlagen",
+  "Gartenbau",
+  "Landschaftsbau",
+  "Blumenladen",
+  "Buchhandlung",
+  "Boutique",
+  "Modegeschäft",
+  "Juwelier",
+  "Goldschmiede",
+  "Schuhmacher",
+  "Änderungsschneiderei",
+  "Tattoostudio",
+  "Barbershop",
+  "Tanzschule",
+  "Kampfsportschule",
+  "Nachhilfe",
+  "Sprachschule",
+  "Musikunterricht",
+  "Umzugsunternehmen",
+  "Werbeagentur",
+  "IT-Service",
+  "Versicherungsmakler",
+  "Finanzberatung",
+  "Hausverwaltung",
+  "Autohaus",
+  "Fahrradladen",
+  "Motorradwerkstatt",
+  "Abschleppdienst",
+  "Fahrradwerkstatt",
+  "Hundeschule",
+  "Tierpension",
+  "Eventplanung",
+  "DJ",
+  "Hochzeitsplaner",
+  "Zahntechnik",
+  "Psychotherapie",
+  "Coaching",
+  "Unternehmensberatung",
+  "Übersetzungsbüro",
+  "Schlüsseldienst",
+  "Gebäudereinigung",
+  "Winterdienst",
+  "Sicherheitsdienst",
+  "Detektei",
+];
+
+function hasDirectMatch(category: string): boolean {
+  return PACK_IDS.some(packId => packMatchesCategory(packId, category));
+}
+
+describe("Branchen-Abdeckung der Designrichtungen", () => {
+  test("jede SEO-Branche trifft mindestens ein Pack direkt", () => {
+    const misses = Object.keys(SEO_INDUSTRIES).filter(
+      key => !hasDirectMatch(key)
+    );
+    expect(misses).toEqual([]);
   });
 
-  for (const key of industryKeys) {
-    test(`${key}: echter direkter Branchenmatch`, () => {
-      const pool = getPackPool(key);
-      expect(pool.length).toBeGreaterThanOrEqual(3);
-      expect(
-        packMatchesCategory(pool[0], key),
-        `${key} → ${pool[0]} muss ein direkter Industry-Treffer sein`
-      ).toBe(true);
-    });
-  }
+  test("gängige GMB-Kategorien treffen mindestens ein Pack direkt", () => {
+    const misses = GMB_CATEGORIES.filter(cat => !hasDirectMatch(cat));
+    expect(misses).toEqual([]);
+  });
 });

@@ -98,7 +98,12 @@ export const KLARWERK: PackConstitution = {
   },
   signature: {
     hero: "Instrument-Split: geometrische Headline mit Kupfer-Akzentwort, Arbeitsfoto rechts, darunter ein schmales Readout (Kennzahlen + Statuspunkt)",
-    decor: ["instrument-readout", "copper-rule", "spec-sheet", "accent-headline"],
+    decor: [
+      "instrument-readout",
+      "copper-rule",
+      "spec-sheet",
+      "accent-headline",
+    ],
     imageTreatment:
       "scharf, kühl, 1px-Graphitrahmen — flache Geometrie nur als Dekor, nie als Foto-Ersatz",
   },

@@ -14,6 +14,10 @@ export const ZUNFT: PackConstitution = {
     "weingut",
     "brennerei",
     "hofkaese",
+    "schuhmacher",
+    "aenderungsschneiderei",
+    "änderungsschneiderei",
+    "schneiderei",
   ],
   // Gastro-Pack (Bäckerei/Konditorei/Metzgerei — Produkte über Theke/
   // Vitrine) — Angebot-Panel startet im Speisekarten-Modus (B4c Task 7,

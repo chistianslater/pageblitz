@@ -22,6 +22,10 @@ export const PATINA: PackConstitution = {
     "resort",
     "unterkunft",
     "lodge",
+    "naturheilpraxis",
+    "buchhandlung",
+    "bestatter",
+    "bestattungen",
   ],
   theme: "light",
   palette: [

@@ -15,6 +15,10 @@ export const MARKTPLATZ: PackConstitution = {
     "nachhilfe",
     "hundesalon",
     "fahrschule",
+    "drogerie",
+    "fahrradladen",
+    "sprachschule",
+    "musikunterricht",
   ],
   theme: "light",
   palette: [
