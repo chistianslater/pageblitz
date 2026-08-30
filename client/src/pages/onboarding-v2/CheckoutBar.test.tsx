@@ -16,11 +16,16 @@ describe("CheckoutSummary", () => {
         addOns={{}}
         ready={false}
         hasEmail={false}
-        missing={["Impressum-Angaben", "E-Mail-Adresse"]}
+        missing={[
+          { id: "legal", title: "Impressum-Angaben" },
+          { id: "email", title: "E-Mail-Adresse" },
+        ]}
       />
     );
     expect(html).toContain("Impressum-Angaben");
     expect(html).toContain("E-Mail-Adresse");
+    // Verlinkt (2026-08-30): Einträge sind Buttons, kein toter Text.
+    expect(html).toContain("<button");
   });
 
   test("zeigt einen Bereit-Hinweis, wenn nichts mehr fehlt", () => {

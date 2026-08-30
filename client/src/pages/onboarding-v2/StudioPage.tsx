@@ -502,6 +502,7 @@ export default function StudioPage({ token }: { token: string }) {
                   state={state}
                   token={token}
                   onStateChanged={studio.refetch}
+                  onOpenPanel={id => setActiveId(id)}
                 />
               )}
             </>
@@ -563,6 +564,7 @@ export default function StudioPage({ token }: { token: string }) {
                   state={state}
                   token={token}
                   onStateChanged={studio.refetch}
+                  onOpenPanel={id => setActiveId(id)}
                 />
               )}
             </>

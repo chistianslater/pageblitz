@@ -425,6 +425,23 @@
 .pb-studio-checkout-blockers li {
   margin: 0.15rem 0;
 }
+/* Fehlliste verlinkt (2026-08-30): Klick springt zum Panel/E-Mail-Feld. */
+.pb-studio-checkout-blockers li button,
+.pb-studio-checkout-missing li button {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.pb-studio-checkout-blockers li button:hover,
+.pb-studio-checkout-missing li button:hover {
+  color: var(--st-accent);
+}
 .pb-studio-gen {
   min-height: 100dvh;
   display: grid;

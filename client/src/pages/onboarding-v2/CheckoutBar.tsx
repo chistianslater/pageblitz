@@ -9,13 +9,21 @@ import {
   type BillingInterval,
 } from "@shared/pricing";
 import type { StudioState } from "../../../../server/onboardingV2/state";
+import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
+
+/** Offener Pflichtpunkt — klickbar: Checklisten-Panel bzw. E-Mail-Feld. */
+export interface MissingItem {
+  id: ChecklistItemId | "email";
+  title: string;
+}
 
 interface CheckoutSummaryProps {
   interval: BillingInterval;
   addOns: AddOnFlags;
   ready: boolean;
   hasEmail: boolean;
-  missing: string[];
+  missing: MissingItem[];
+  onSelectMissing?: (item: MissingItem) => void;
 }
 
 /**
@@ -28,6 +36,7 @@ export function CheckoutSummary({
   ready,
   hasEmail,
   missing,
+  onSelectMissing,
 }: CheckoutSummaryProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(addOns));
   return (
@@ -43,7 +52,15 @@ export function CheckoutSummary({
       {missing.length > 0 ? (
         <ul className="pb-studio-checkout-missing" aria-label="Noch offen">
           {missing.map(item => (
-            <li key={item}>{item}</li>
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => onSelectMissing?.(item)}
+                title={`${item.title} jetzt ergänzen`}
+              >
+                {item.title}
+              </button>
+            </li>
           ))}
         </ul>
       ) : (
@@ -61,6 +78,8 @@ interface CheckoutBarProps {
   state: StudioState;
   token: string;
   onStateChanged: () => void;
+  /** Öffnet das Panel eines offenen Pflichtpunkts (Klick in der Fehlliste). */
+  onOpenPanel?: (id: ChecklistItemId) => void;
 }
 
 const ADDON_SETUP_NOTE =
@@ -78,6 +97,7 @@ export function CheckoutBar({
   state,
   token,
   onStateChanged,
+  onOpenPanel,
 }: CheckoutBarProps) {
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>("yearly");
@@ -103,12 +123,24 @@ export function CheckoutBar({
   // Aus der Checkliste abgeleitet statt hartkodiert auf "legal" (Finding
   // F3) — deckt automatisch jeden künftigen Pflichtpunkt ab, ohne
   // CheckoutBar bei jeder Checklisten-Änderung anfassen zu müssen.
-  const missing: string[] = [
+  const missing: MissingItem[] = [
     ...state.checklist
       .filter(i => i.required && i.status !== "done")
-      .map(i => i.title),
-    ...(!state.customerEmail ? ["E-Mail-Adresse"] : []),
+      .map(i => ({ id: i.id, title: i.title })),
+    ...(!state.customerEmail
+      ? [{ id: "email" as const, title: "E-Mail-Adresse" }]
+      : []),
   ];
+
+  // Klick in der Fehlliste (User-Feedback 2026-08-30): direkt dorthin
+  // springen, wo die Info ergänzt wird — Panel bzw. E-Mail-Feld.
+  const selectMissing = (item: MissingItem) => {
+    if (item.id === "email") {
+      document.getElementById("pb-checkout-email")?.focus();
+      return;
+    }
+    onOpenPanel?.(item.id);
+  };
 
   const trimmedEmail = email.trim();
   const emailValid = EMAIL_RE.test(trimmedEmail);
@@ -173,6 +205,7 @@ export function CheckoutBar({
         ready={state.checkoutReady}
         hasEmail={!!state.customerEmail}
         missing={missing}
+        onSelectMissing={selectMissing}
       />
       {!state.customerEmail && (
         <div className="pb-studio-field">
@@ -238,7 +271,15 @@ export function CheckoutBar({
           <p>Fast geschafft — dafür fehlt nur noch:</p>
           <ul>
             {missing.map(item => (
-              <li key={item}>{item}</li>
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => selectMissing(item)}
+                  title={`${item.title} jetzt ergänzen`}
+                >
+                  {item.title}
+                </button>
+              </li>
             ))}
           </ul>
         </div>
