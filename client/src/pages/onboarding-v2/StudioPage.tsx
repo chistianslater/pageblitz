@@ -132,7 +132,15 @@ export default function StudioPage({ token }: { token: string }) {
     (profile: DesignProfile) => {
       updateTheme.mutate(
         { token, designProfile: profile },
-        { onSuccess: () => studio.refetch() }
+        {
+          onSuccess: () => {
+            studio.refetch();
+            // Collage-Karten rendert nur das SSR (heroCollage.tsx) — beim
+            // Einschalten braucht die Vorschau deshalb einen Reload. Das
+            // Wegschalten versteckt die Karten sofort per CSS-Basisregel.
+            if (profile.heroLayout === "collage") studio.bumpPreview();
+          },
+        }
       );
     },
     [token, updateTheme, studio]

@@ -105,6 +105,7 @@ ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;m
    bis zu zwei Galerie-Karten stapeln sich leicht rotiert darüber
    (Markup: heroCollage.tsx, in jedem Pack direkt nach dem Hero-Tag). */
 ${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important}
+${h("hero")}="collage"] #start .pb-hero-extras{display:block}
 ${h("hero")}="collage"] #start .pb-hero-extras img{position:absolute!important;z-index:6;display:block;width:${
     mode === "mobile" ? "clamp(76px,24vw,116px)" : "clamp(120px,14vw,196px)"
   };aspect-ratio:4/5;object-fit:cover;border:5px solid var(--pb-surface,#fff)!important;border-radius:8px!important;box-shadow:0 18px 44px rgba(0,0,0,.28);padding:0!important}
@@ -152,6 +153,13 @@ ${h("gallery")}="filmstrip"] ${SLOT.galleryItems} img{width:100%!important;heigh
 }
 
 export const DESIGN_PROFILE_CSS = `
+/* Collage-Extras sind NUR im collage-Layout sichtbar. Wichtig für den
+   Studio-Preview: der Layoutwechsel läuft ohne Reload rein über das
+   data-pb-hero-Attribut — ohne diese Basisregel fielen die noch im DOM
+   stehenden Karten beim Wegschalten in den normalen Fluss und
+   zerschössen das Layout (Betreiber-Befund 2026-08-31). */
+.pb-site .pb-hero-extras{display:none}
+
 /* Einzeln ausgeblendete Elemente (2026-08-31, „Bild weg, Text breiter"):
    data-pb-he trägt die hiddenElements des Profils; das Layout zieht nach —
    Hero-/About-Grids kollabieren auf eine Spalte. */

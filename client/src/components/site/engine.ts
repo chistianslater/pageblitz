@@ -248,9 +248,7 @@ export function buildNavItems(
   const anchorItems: NavItem[] = orderedSections(doc)
     // hero hat keinen Nav-Punkt; notice ist ein Banner über der Nav,
     // quote ein Zwischenakzent ohne Navigationswert.
-    .filter(
-      s => s.type !== "hero" && s.type !== "notice" && s.type !== "quote"
-    )
+    .filter(s => s.type !== "hero" && s.type !== "notice" && s.type !== "quote")
     .map(s => ({
       key: `anchor-${s.type}`,
       href: `${anchorPrefix}#${SECTION_ANCHORS[s.type]}`,

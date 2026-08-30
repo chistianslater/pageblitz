@@ -30,11 +30,7 @@ export function StatsSection({ section }: { section: SectionOf<"stats"> }) {
 }
 
 /** Ablauf: nummerierte Schritte („So läuft's"). */
-export function ProcessSection({
-  section,
-}: {
-  section: SectionOf<"process">;
-}) {
+export function ProcessSection({ section }: { section: SectionOf<"process"> }) {
   return (
     <section id={SECTION_ANCHORS.process} className="pb-process">
       <div className="pb-process-inner">
