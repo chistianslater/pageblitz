@@ -11,9 +11,11 @@ type AnySection = SectionV2 | PageSection;
 
 /**
  * Fakten-Garantie für den KI-Chat: die KI darf Sektionstypen weder erfinden
- * noch entfernen. Wird geprüft, bevor Fakten zurückkopiert werden — ein
- * Verstoß löst in `proposeAiEdit` einen Retry aus (der zweite Versuch bekommt
- * denselben Prompt, der die Regel explizit nennt).
+ * noch entfernen. Einzige Ausnahme (2026-08-30, „mehr erzählen"): die
+ * Erzähl-Sektion `story` — sie besteht nur aus Text (keine Fakten) und darf
+ * hinzugefügt und entfernt werden. Ein Verstoß löst in `proposeAiEdit`
+ * einen Retry aus (der zweite Versuch bekommt denselben Prompt, der die
+ * Regel explizit nennt).
  */
 function assertSameSectionTypeSet(
   originalSections: AnySection[],
@@ -21,6 +23,7 @@ function assertSameSectionTypeSet(
 ): void {
   const originalTypes = new Set<string>(originalSections.map(s => s.type));
   for (const section of candidateSections) {
+    if (section.type === "story") continue;
     if (!originalTypes.has(section.type)) {
       throw new Error(
         `Die KI hat einen neuen Sektionstyp erfunden: "${section.type}".`
@@ -145,7 +148,13 @@ export function restorePageFacts(
   return { ...original, seo: candidate.seo, sections };
 }
 
-/** Gemeinsamer Kern von restoreFacts/restorePageFacts — Reihenfolge und Sektions-Set folgen strikt dem Original. */
+/**
+ * Gemeinsamer Kern von restoreFacts/restorePageFacts — Reihenfolge und
+ * Sektions-Set folgen strikt dem Original. Ausnahme `story` (2026-08-30):
+ * fehlt sie im Kandidaten, wird sie entfernt; ist sie neu, wird sie an der
+ * Position eingefügt, die die KI gewählt hat (nach ihrem Vorgänger-Typ im
+ * Kandidaten; ohne auffindbaren Vorgänger ans Ende vor contact).
+ */
 function restoreSectionList(
   originalSections: AnySection[],
   candidateSections: AnySection[]
@@ -155,11 +164,36 @@ function restoreSectionList(
   const candidateByType = new Map<string, AnySection>(
     candidateSections.map(s => [s.type, s])
   );
+  const candidateHasStory = candidateByType.has("story");
+  const originalHasStory = originalSections.some(s => s.type === "story");
 
-  return originalSections.map(originalSection => {
-    if (originalSection.type === "contact") return originalSection;
-    const candidateSection = candidateByType.get(originalSection.type);
-    if (!candidateSection) return originalSection;
-    return restoreSectionFacts(originalSection, candidateSection);
-  });
+  const restored = originalSections
+    // story ist die einzige Sektion, die die KI entfernen darf.
+    .filter(s => s.type !== "story" || candidateHasStory)
+    .map(originalSection => {
+      if (originalSection.type === "contact") return originalSection;
+      const candidateSection = candidateByType.get(originalSection.type);
+      if (!candidateSection) return originalSection;
+      return restoreSectionFacts(originalSection, candidateSection);
+    });
+
+  if (candidateHasStory && !originalHasStory) {
+    const story = candidateByType.get("story")!;
+    const storyIndex = candidateSections.findIndex(s => s.type === "story");
+    const predecessorType = candidateSections[storyIndex - 1]?.type;
+    const anchor = predecessorType
+      ? restored.findIndex(s => s.type === predecessorType)
+      : -1;
+    if (anchor !== -1) {
+      restored.splice(anchor + 1, 0, story);
+    } else {
+      const contactIndex = restored.findIndex(s => s.type === "contact");
+      restored.splice(
+        contactIndex === -1 ? restored.length : contactIndex,
+        0,
+        story
+      );
+    }
+  }
+  return restored;
 }

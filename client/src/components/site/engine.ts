@@ -21,6 +21,7 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
   pricelist: "preise",
   team: "team",
   cta: "anfrage",
+  story: "geschichte",
   // pageHeader existiert nur innerhalb Page.sections (siehe schema.ts,
   // PageSectionSchema), niemals in der Startseiten-`sections`-Liste, die
   // dieser Anker-Karte zugrunde liegt — Wert wird praktisch nie gelesen.
@@ -201,6 +202,7 @@ const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
   pricelist: "Preise",
   team: "Team",
   cta: "Anfrage",
+  story: "Unsere Geschichte",
 };
 
 /**

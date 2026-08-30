@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -43,7 +44,7 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 /** Ornament-Divider: zwei Hairlines um ein Gold-Diamant-Zeichen. */
 function OrnamentDivider(): React.ReactElement {
   return (
-    <div className="pb-gu-div" aria-hidden="true">
+    <div className="pb-gu-div pb-deco" aria-hidden="true">
       <span className="line" />
       <span className="diamond">◆</span>
       <span className="line" />
@@ -104,6 +105,8 @@ function renderSection(
   chrome: GustoChrome
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
     case "services": {

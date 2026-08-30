@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -75,7 +76,7 @@ function extractYear(footerNote: string | undefined): string | undefined {
 /** Ornament-Bordüre: letterspaced ◆-Reihe in Siegelgold über einer Gold-Linie. */
 function OrnamentBorder(): React.ReactElement {
   return (
-    <div className="pb-zf-borde" aria-hidden="true">
+    <div className="pb-zf-borde pb-deco" aria-hidden="true">
       {Array.from({ length: 40 }, () => "◆").join(" ")}
     </div>
   );
@@ -107,6 +108,8 @@ function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
     case "services": {

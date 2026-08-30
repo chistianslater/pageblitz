@@ -15,6 +15,12 @@ import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
 import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { RICH_TEXT_CSS } from "./richText";
+import { STORY_CSS } from "./storySection";
+
+/** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
+const DECO_TOGGLE_CSS = `
+.pb-site[data-pb-deco="off"] .pb-deco{display:none!important}
+`;
 import {
   ALBUM_CSS,
   albumChromeJson,
@@ -166,6 +172,7 @@ export const SiteRenderer: React.FC<{
       data-pb-gallery-mobile={designProfile?.galleryLayoutMobile}
       data-pb-density={designProfile?.density}
       data-pb-image={designProfile?.imageTreatment}
+      data-pb-deco={designProfile?.decorations}
     >
       {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
           für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts.
@@ -183,6 +190,10 @@ export const SiteRenderer: React.FC<{
             REVIEW_CHROME_CSS +
             "\n" +
             RICH_TEXT_CSS +
+            "\n" +
+            STORY_CSS +
+            "\n" +
+            DECO_TOGGLE_CSS +
             "\n" +
             LAYOUT_POLISH_CSS +
             (albumJson ? "\n" + ALBUM_CSS : "") +

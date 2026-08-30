@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -52,7 +53,7 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 function Squiggle(): React.ReactNode {
   return (
     <svg
-      className="pb-mp-squiggle"
+      className="pb-mp-squiggle pb-deco"
       viewBox="0 0 120 12"
       preserveAspectRatio="none"
       aria-hidden="true"
@@ -113,6 +114,8 @@ function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
     case "services": {

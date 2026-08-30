@@ -23,6 +23,7 @@ export const ERNTE_CSS = `
 .pb-er-blob path{fill:var(--pb-accent-2)}
 .pb-er-blob-sage path{fill:#A2D3A6}
 .pb-er-hero-media img{position:relative;z-index:1;display:block;width:100%;aspect-ratio:4/4.1;object-fit:cover;clip-path:url(#pb-er-clip-a);filter:drop-shadow(-10px 12px 26px rgba(0,0,0,.14))}
+.pb-site.pb-ernte[data-pb-hero] #start .pb-er-hero-media img{clip-path:url(#pb-er-clip-a)!important}
 .pb-er-section{max-width:1180px;margin:0 auto;padding:72px 30px;border-top:1px solid var(--pb-line)}
 .pb-er-title{font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.8rem,3.2vw,2.6rem);letter-spacing:.03em;text-transform:uppercase;color:var(--pb-accent)}
 .pb-er-intro{margin-top:12px;max-width:56ch;color:var(--pb-muted)}

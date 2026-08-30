@@ -324,8 +324,8 @@ export function AiChat({
       >
         <div className="pb-studio-chat-msg" data-role="assistant">
           <p>
-            Hi! Was möchtest du noch ändern? Ich passe Texte, Farben und
-            Layout direkt an.
+            Hi! Was möchtest du noch ändern? Ich passe Texte, Farben und Layout
+            direkt an.
           </p>
         </div>
         {messages.map(msg =>

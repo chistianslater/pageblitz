@@ -24,6 +24,8 @@ export const ABOUT_LAYOUTS = ["image-left", "image-right"] as const;
 export const GALLERY_LAYOUTS = ["grid", "mosaic", "filmstrip"] as const;
 export const DESIGN_DENSITIES = ["airy", "compact"] as const;
 export const IMAGE_TREATMENTS = ["natural", "framed", "bleed"] as const;
+/** Schmuck-Illustrationen (`pb-deco`-Elemente): "off" blendet sie aus. */
+export const DECORATION_MODES = ["on", "off"] as const;
 
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];
 export type ServicesLayout = (typeof SERVICES_LAYOUTS)[number];
@@ -45,6 +47,8 @@ export interface DesignProfile {
   servicesLayoutMobile?: ServicesLayout;
   aboutLayoutMobile?: AboutLayout;
   galleryLayoutMobile?: GalleryLayout;
+  /** Schmuck-Illustrationen aus-/einblenden; fehlt das Feld, gilt "on". */
+  decorations?: (typeof DECORATION_MODES)[number];
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -98,6 +99,8 @@ function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
     case "services": {

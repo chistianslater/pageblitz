@@ -8,6 +8,7 @@ import { z } from "zod";
 import { PACK_IDS } from "./packIds";
 import {
   ABOUT_LAYOUTS,
+  DECORATION_MODES,
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
@@ -29,6 +30,10 @@ export const SECTION_TYPES = [
   "pricelist",
   "team",
   "cta",
+  // Freie Erzähl-Sektion (2026-08-30, „mehr erzählen": Historie,
+  // Philosophie, …) — die einzige Sektion, die der KI-Chat hinzufügen und
+  // entfernen darf (siehe server/onboardingV2/aiEditFacts.ts).
+  "story",
   // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
   // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
   // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
@@ -317,6 +322,20 @@ const CtaSchema = z
     ctaHref: SafeUrlSchema.optional(),
   })
   .strict();
+/**
+ * Freie Erzähl-Sektion („Unsere Geschichte", Philosophie, …): Überschrift +
+ * Fließtext, bewusst ohne Bild und ohne Fakten-Felder — dadurch darf der
+ * KI-Chat sie als einzige Sektion hinzufügen und entfernen. Gerendert wird
+ * sie zentral über die Pack-Designvariablen (storySection.tsx), nicht je
+ * Pack einzeln.
+ */
+const StorySchema = z
+  .object({
+    type: z.literal("story"),
+    headline: z.string().min(1).max(120),
+    body: z.string().min(1).max(2500),
+  })
+  .strict();
 
 export const SectionV2Schema = z.discriminatedUnion("type", [
   HeroSchema,
@@ -330,6 +349,7 @@ export const SectionV2Schema = z.discriminatedUnion("type", [
   PricelistSchema,
   TeamSchema,
   CtaSchema,
+  StorySchema,
 ]);
 
 /**
@@ -406,6 +426,10 @@ export const DesignProfileSchema = z
     servicesLayoutMobile: z.enum(SERVICES_LAYOUTS).optional(),
     aboutLayoutMobile: z.enum(ABOUT_LAYOUTS).optional(),
     galleryLayoutMobile: z.enum(GALLERY_LAYOUTS).optional(),
+    // Schmuck-Illustrationen (Zweige, Farbkleckse, Ornamente — Elemente mit
+    // der Klasse `pb-deco`): "off" blendet sie aus. Fehlt das Feld, bleiben
+    // sie sichtbar (Pack-Standard).
+    decorations: z.enum(DECORATION_MODES).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();

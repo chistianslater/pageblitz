@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -117,6 +118,8 @@ function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero":
       return null; // eigenständig im Page-Layout gerendert
     case "services": {
@@ -438,7 +441,7 @@ const MorgenlichtPage: React.FC<{
           <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
             {hero.imageUrl ? (
               <img
-                className="pb-ml-blob"
+                className="pb-ml-blob pb-deco"
                 data-pb-slot={LAYOUT_SLOT.heroMedia}
                 src={hero.imageUrl}
                 alt=""
@@ -446,7 +449,7 @@ const MorgenlichtPage: React.FC<{
                 fetchPriority="high"
               />
             ) : (
-              <div className="pb-ml-blob" aria-hidden="true" />
+              <div className="pb-ml-blob pb-deco" aria-hidden="true" />
             )}
             {todaysHours && (
               <div className="pb-ml-float f1">

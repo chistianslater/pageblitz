@@ -27,6 +27,7 @@ const ANCHORS: Partial<Record<SectionV2["type"], string>> = {
   pricelist: "#preisliste",
   team: "#team",
   cta: "#cta",
+  story: "#geschichte",
 };
 
 /**
@@ -200,6 +201,10 @@ export function collectInlineTextTargets(
       case "cta":
         add(sectionIndex, scope, "headline", section.headline, 120);
         add(sectionIndex, scope, "ctaText", section.ctaText, 40);
+        break;
+      case "story":
+        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(sectionIndex, scope, "body", section.body, 2500, true, true);
         break;
     }
   });

@@ -6,6 +6,7 @@ import {
 } from "../siteContract/schema";
 import {
   ABOUT_LAYOUTS,
+  DECORATION_MODES,
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
@@ -52,6 +53,7 @@ export const AiThemePatchSchema = z
     servicesLayout: z.enum(SERVICES_LAYOUTS).optional(),
     aboutLayout: z.enum(ABOUT_LAYOUTS).optional(),
     galleryLayout: z.enum(GALLERY_LAYOUTS).optional(),
+    decorations: z.enum(DECORATION_MODES).optional(),
   })
   .strict();
 
@@ -178,6 +180,7 @@ const SECTION_LABELS: Record<SectionType, string> = {
   pricelist: "Preisliste",
   team: "Team",
   cta: "CTA",
+  story: "Geschichte",
   // pageHeader existiert nur in Page.sections (Unterseiten) — diffPages
   // vergleicht sie mit demselben Feld-Mechanismus wie diffDocuments.
   pageHeader: "Kopfzeile",
@@ -205,6 +208,7 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
   pricelist: { headline: "Überschrift" },
   team: { headline: "Überschrift" },
   cta: { headline: "Überschrift", ctaText: "Button-Text" },
+  story: { headline: "Überschrift", body: "Text" },
   pageHeader: { title: "Titel", intro: "Einleitung" },
 };
 
@@ -253,6 +257,22 @@ function toDiffString(value: unknown): string {
   if (value === undefined || value === null) return "";
   if (typeof value === "string") return value;
   return JSON.stringify(value);
+}
+
+/**
+ * Lesbare Kurzfassung einer ganzen Sektion für „Neu"/„Entfernt"-Einträge —
+ * rohes JSON wäre in der Chat-Bubble Kundenschreck (praktisch betrifft das
+ * nur die story-Sektion, die einzige, die hinzukommen/verschwinden kann).
+ */
+function sectionSummary(section: SectionV2 | PageSection): string {
+  const record = section as unknown as Record<string, unknown>;
+  const headline = record.headline ?? record.title;
+  const body = typeof record.body === "string" ? record.body : "";
+  const parts = [
+    typeof headline === "string" ? `„${headline}“` : "",
+    body.length > 160 ? `${body.slice(0, 160)}…` : body,
+  ].filter(Boolean);
+  return parts.join(" — ") || JSON.stringify(section);
 }
 
 function pushIfChanged(
@@ -422,7 +442,7 @@ function diffContent(
       entries.push({
         path: `${prefix}sections.${type}`,
         label: `${label} – Entfernt`,
-        before: JSON.stringify(b),
+        before: sectionSummary(b),
         after: "",
       });
       continue;
@@ -432,7 +452,7 @@ function diffContent(
         path: `${prefix}sections.${type}`,
         label: `${label} – Neu`,
         before: "",
-        after: JSON.stringify(a),
+        after: sectionSummary(a),
       });
       continue;
     }

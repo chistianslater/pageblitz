@@ -102,6 +102,7 @@ export function applyAiTheme(
     "galleryLayout",
     "density",
     "imageTreatment",
+    "decorations",
   ] as const;
   const layoutLabels: Record<(typeof layoutKeys)[number], string> = {
     heroLayout: "Hero-Layout",
@@ -110,6 +111,7 @@ export function applyAiTheme(
     galleryLayout: "Galerie-Layout",
     density: "Abstände",
     imageTreatment: "Bildwirkung",
+    decorations: "Schmuck-Illustrationen",
   };
   const wantsProfileChange = layoutKeys.some(key => theme[key] !== undefined);
   let designProfile: DesignProfile | undefined;
@@ -127,7 +129,13 @@ export function applyAiTheme(
       const value = theme[key];
       if (value !== undefined) {
         (merged as unknown as Record<string, unknown>)[key] = value;
-        summary.push(`${layoutLabels[key]}: ${value}`);
+        summary.push(
+          key === "decorations"
+            ? value === "off"
+              ? "Schmuck-Illustrationen ausgeblendet"
+              : "Schmuck-Illustrationen wieder eingeblendet"
+            : `${layoutLabels[key]}: ${value}`
+        );
       }
     }
     designProfile = merged;

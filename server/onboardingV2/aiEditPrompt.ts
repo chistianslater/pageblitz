@@ -109,7 +109,9 @@ export function buildAiEditPrompt(args: {
     ...constitution.llmHints.dont.map(rule => `- ${rule}`),
     `- ${FORBIDDEN_CONTENT_RULE}`,
     `- Erfinde oder ändere niemals Rechtstexte (Impressum/Datenschutz).`,
-    `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`,
+    args.page
+      ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
+      : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahme: die Erzähl-Sektion {"type":"story","headline":"...","body":"..."} darfst du hinzufügen (wenn der Kunde mehr erzählen will: Geschichte, Historie, Philosophie, Werte — am besten direkt nach "about" einsortiert) oder entfernen (wenn er sie loswerden will). Absätze im body durch Leerzeile trennen.`,
     `- Die Bildplätze sind fest: der Hero hat genau EIN Bild, Über-uns genau eines; nur die Galerie trägt mehrere. Anzahl oder Anordnung der Bilder kannst du NICHT ändern.`,
     ``,
     args.page
@@ -139,6 +141,7 @@ export function buildAiEditPrompt(args: {
     `- "imageTreatment": "natural", "framed" (gerahmt) oder "bleed" (flächig).`,
     `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben).`,
     `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
+    `- "decorations": "off" blendet Schmuck-Illustrationen aus (Zweige, Farbkleckse, Ornamente — z. B. wenn dem Kunden eine Illustration nicht gefällt), "on" zeigt sie wieder.`,
     `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
     ``,
     `3) Grundlegend anderer Look (die aktuelle Richtung passt überhaupt nicht — z. B. "komplett anderer Stil", "wie eine Anwaltskanzlei statt Werkstatt"):`,

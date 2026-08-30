@@ -511,7 +511,8 @@ describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
               theme: null,
               packId: null,
               reason: null,
-              question: "Meinst du die Überschrift im Hero oder bei Leistungen?",
+              question:
+                "Meinst du die Überschrift im Hero oder bei Leistungen?",
             }),
           },
         },
@@ -561,5 +562,82 @@ describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
     expect(prompt).toContain('Kunde: "mach die überschrift besser"');
     expect(prompt).toContain('Du (Rückfrage): "Welche Überschrift meinst du?"');
     expect(prompt).toContain('"kind":"question"');
+  });
+});
+
+describe("story-Sektion (2026-08-30): einzige von der KI veränderbare Sektionsmenge", () => {
+  test("KI fügt eine story nach about ein → bleibt an dieser Position erhalten", async () => {
+    const withStory = [
+      doc.sections[0],
+      doc.sections[1],
+      {
+        type: "story",
+        headline: "Unsere Geschichte",
+        body: "Seit 1998 fertigen wir Möbel.\n\nHeute führt die zweite Generation den Betrieb.",
+      },
+      doc.sections[2],
+    ];
+    vi.mocked(invokeLLM).mockResolvedValueOnce(llmContentResponse(withStory));
+    const result = await proposeAiEdit({
+      doc,
+      message: "erzähle unsere geschichte",
+      category: "Tischler",
+    });
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") return;
+    expect(result.next.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "story",
+      "contact",
+    ]);
+    expect(result.diff.some(d => d.label.includes("Geschichte"))).toBe(true);
+  });
+
+  test("KI entfernt die story → sie verschwindet, alles andere bleibt", async () => {
+    const docWithStory = {
+      ...doc,
+      sections: [
+        ...doc.sections,
+        { type: "story" as const, headline: "Historie", body: "Text." },
+      ],
+    };
+    vi.mocked(invokeLLM).mockResolvedValueOnce(
+      llmContentResponse(doc.sections)
+    );
+    const result = await proposeAiEdit({
+      doc: docWithStory as WebsiteDataV2,
+      message: "nimm die geschichte raus",
+      category: "Tischler",
+    });
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") return;
+    expect(result.next.sections.map(s => s.type)).toEqual([
+      "hero",
+      "services",
+      "contact",
+    ]);
+  });
+
+  test("andere Sektionen bleiben trotz story-Ausnahme geschützt (weggelassene services kommen zurück)", async () => {
+    const candidate = [
+      doc.sections[0],
+      { type: "story", headline: "Wir", body: "Text." },
+      doc.sections[2],
+    ];
+    vi.mocked(invokeLLM).mockResolvedValueOnce(llmContentResponse(candidate));
+    const result = await proposeAiEdit({
+      doc,
+      message: "x",
+      category: "Tischler",
+    });
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") return;
+    expect(result.next.sections.map(s => s.type)).toEqual([
+      "hero",
+      "story",
+      "services",
+      "contact",
+    ]);
   });
 });

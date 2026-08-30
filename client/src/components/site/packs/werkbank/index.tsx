@@ -1,4 +1,5 @@
 import React from "react";
+import { StorySection } from "../../storySection";
 import type {
   PageSection,
   PageSectionOf,
@@ -113,6 +114,8 @@ function renderSection(
   hasPageHeader: boolean
 ): React.ReactNode {
   switch (section.type) {
+    case "story":
+      return <StorySection section={section} key="story" />;
     case "hero": {
       const richHeadline = hasMarks(section.headline);
       const lines = richHeadline ? [] : splitHeadline(section.headline);
