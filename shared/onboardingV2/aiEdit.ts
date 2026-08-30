@@ -40,6 +40,9 @@ export const HIDEABLE_SECTION_TYPES = [
   "story",
   "usp",
   "notice",
+  "stats",
+  "process",
+  "quote",
 ] as const;
 
 /**
@@ -212,6 +215,9 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   story: "Geschichte",
   usp: "Vorteile",
   notice: "Hinweis-Banner",
+  stats: "Zahlen",
+  process: "Ablauf",
+  quote: "Zitat",
   // pageHeader existiert nur in Page.sections (Unterseiten) — diffPages
   // vergleicht sie mit demselben Feld-Mechanismus wie diffDocuments.
   pageHeader: "Kopfzeile",
@@ -242,6 +248,9 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
   story: { headline: "Überschrift", body: "Text" },
   usp: { headline: "Überschrift" },
   notice: { text: "Text" },
+  stats: { headline: "Überschrift" },
+  process: { headline: "Überschrift" },
+  quote: { text: "Zitat", author: "Urheber" },
   pageHeader: { title: "Titel", intro: "Einleitung" },
 };
 
@@ -281,6 +290,16 @@ const ARRAY_FIELDS: Partial<Record<SectionType, ArrayFieldSpec>> = {
   usp: {
     field: "items",
     singular: "Vorteil",
+    subfields: { title: "Titel", text: "Text" },
+  },
+  stats: {
+    field: "items",
+    singular: "Kennzahl",
+    subfields: { value: "Wert", label: "Beschriftung" },
+  },
+  process: {
+    field: "steps",
+    singular: "Schritt",
     subfields: { title: "Titel", text: "Text" },
   },
 };

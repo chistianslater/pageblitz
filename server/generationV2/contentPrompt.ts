@@ -42,6 +42,9 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
   story: `"headline" (Pflicht), "body" (Pflicht, 2–5 Absätze)`,
   usp: `"headline" (optional), "items": [{ "title" (Pflicht), "text" (optional) }] (2–6 Einträge)`,
   notice: `"text" (Pflicht, 1 Satz)`,
+  stats: `"headline" (optional), "items": [{ "value" (Pflicht), "label" (Pflicht) }] (2–4 Einträge)`,
+  process: `"headline" (optional), "steps": [{ "title" (Pflicht), "text" (optional) }] (2–5 Einträge)`,
+  quote: `"text" (Pflicht), "author" (optional)`,
   // pageHeader wird von generateSiteContent (Startseiten-Generator) nie
   // angefragt — Unterseiten-Inhalte entstehen im Studio, nicht bei der
   // Erstgenerierung (Spec §2.1). Platzhalter für Exhaustivität von

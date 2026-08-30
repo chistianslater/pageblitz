@@ -94,7 +94,9 @@ export function applyAiTheme(
     };
     for (const el of afterEl) {
       if (!beforeEl.has(el))
-        summary.push(`${elLabels[el] ?? el} ausgeblendet — Text nutzt die volle Breite`);
+        summary.push(
+          `${elLabels[el] ?? el} ausgeblendet — Text nutzt die volle Breite`
+        );
     }
     for (const el of beforeEl) {
       if (!afterEl.has(el))

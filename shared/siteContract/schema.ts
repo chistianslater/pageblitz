@@ -37,6 +37,9 @@ export const SECTION_TYPES = [
   "story",
   "usp",
   "notice",
+  "stats",
+  "process",
+  "quote",
   // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
   // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
   // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
@@ -372,6 +375,50 @@ const NoticeSchema = z
     text: z.string().min(1).max(240),
   })
   .strict();
+/** Zahlen-Band (2026-08-31): „25+ Jahre / 500 Projekte" — 2–4 Kennzahlen. */
+const StatsSchema = z
+  .object({
+    type: z.literal("stats"),
+    headline: z.string().min(1).max(120).optional(),
+    items: z
+      .array(
+        z
+          .object({
+            value: z.string().min(1).max(20),
+            label: z.string().min(1).max(80),
+          })
+          .strict()
+      )
+      .min(2)
+      .max(4),
+  })
+  .strict();
+/** Ablauf (2026-08-31): nummerierte Schritte („So läuft's"), 2–5 Stück. */
+const ProcessSchema = z
+  .object({
+    type: z.literal("process"),
+    headline: z.string().min(1).max(120).optional(),
+    steps: z
+      .array(
+        z
+          .object({
+            title: z.string().min(1).max(80),
+            text: z.string().min(1).max(240).optional(),
+          })
+          .strict()
+      )
+      .min(2)
+      .max(5),
+  })
+  .strict();
+/** Zitat/Motto (2026-08-31): großes Pull-Quote, optional mit Urheber. */
+const QuoteSchema = z
+  .object({
+    type: z.literal("quote"),
+    text: z.string().min(1).max(300),
+    author: z.string().min(1).max(80).optional(),
+  })
+  .strict();
 
 export const SectionV2Schema = z.discriminatedUnion("type", [
   HeroSchema,
@@ -388,6 +435,9 @@ export const SectionV2Schema = z.discriminatedUnion("type", [
   StorySchema,
   UspSchema,
   NoticeSchema,
+  StatsSchema,
+  ProcessSchema,
+  QuoteSchema,
 ]);
 
 /**

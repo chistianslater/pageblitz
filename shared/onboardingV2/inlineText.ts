@@ -30,6 +30,9 @@ const ANCHORS: Partial<Record<SectionV2["type"], string>> = {
   story: "#geschichte",
   usp: "#vorteile",
   notice: "#hinweis",
+  stats: "#zahlen",
+  process: "#ablauf",
+  quote: "#zitat",
 };
 
 /**
@@ -224,6 +227,31 @@ export function collectInlineTextTargets(
         break;
       case "notice":
         add(sectionIndex, scope, "text", section.text, 240);
+        break;
+      case "stats":
+        add(sectionIndex, scope, "headline", section.headline, 120);
+        section.items.forEach((item, itemIndex) => {
+          add(sectionIndex, scope, `items.${itemIndex}.value`, item.value, 20);
+          add(sectionIndex, scope, `items.${itemIndex}.label`, item.label, 80);
+        });
+        break;
+      case "process":
+        add(sectionIndex, scope, "headline", section.headline, 120);
+        section.steps.forEach((step, stepIndex) => {
+          add(sectionIndex, scope, `steps.${stepIndex}.title`, step.title, 80);
+          add(
+            sectionIndex,
+            scope,
+            `steps.${stepIndex}.text`,
+            step.text,
+            240,
+            true
+          );
+        });
+        break;
+      case "quote":
+        add(sectionIndex, scope, "text", section.text, 300, true);
+        add(sectionIndex, scope, "author", section.author, 80);
         break;
     }
   });

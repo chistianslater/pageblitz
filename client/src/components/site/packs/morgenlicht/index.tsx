@@ -1,4 +1,5 @@
 import React from "react";
+import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -120,6 +121,12 @@ function renderSection(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
+    case "stats":
+      return <StatsSection section={section} key="stats" />;
+    case "process":
+      return <ProcessSection section={section} key="process" />;
+    case "quote":
+      return <QuoteSection section={section} key="quote" />;
     case "usp":
       return <UspSection section={section} key="usp" />;
     case "notice":

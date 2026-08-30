@@ -24,6 +24,9 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
   story: "geschichte",
   usp: "vorteile",
   notice: "hinweis",
+  stats: "zahlen",
+  process: "ablauf",
+  quote: "zitat",
   // pageHeader existiert nur innerhalb Page.sections (siehe schema.ts,
   // PageSectionSchema), niemals in der Startseiten-`sections`-Liste, die
   // dieser Anker-Karte zugrunde liegt — Wert wird praktisch nie gelesen.
@@ -206,7 +209,10 @@ const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
   cta: "Anfrage",
   story: "Unsere Geschichte",
   usp: "Vorteile",
-  // notice erscheint nie in der Nav (Banner, siehe buildNavItems-Filter).
+  stats: "Zahlen",
+  process: "Ablauf",
+  // notice (Banner) und quote (Pull-Quote) erscheinen nie in der Nav
+  // (siehe buildNavItems-Filter).
 };
 
 /**
@@ -240,8 +246,11 @@ export function buildNavItems(
   const currentPage = pageForPathname(doc, opts.pathname);
   const anchorPrefix = currentPage ? opts.basePath || "/" : "";
   const anchorItems: NavItem[] = orderedSections(doc)
-    // hero hat keinen Nav-Punkt; notice ist ein Banner über der Nav.
-    .filter(s => s.type !== "hero" && s.type !== "notice")
+    // hero hat keinen Nav-Punkt; notice ist ein Banner über der Nav,
+    // quote ein Zwischenakzent ohne Navigationswert.
+    .filter(
+      s => s.type !== "hero" && s.type !== "notice" && s.type !== "quote"
+    )
     .map(s => ({
       key: `anchor-${s.type}`,
       href: `${anchorPrefix}#${SECTION_ANCHORS[s.type]}`,

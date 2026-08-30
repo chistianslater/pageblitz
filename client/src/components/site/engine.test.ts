@@ -116,7 +116,10 @@ describe("orderedSections", () => {
     expect(SECTION_ANCHORS.story).toBe("geschichte");
     expect(SECTION_ANCHORS.usp).toBe("vorteile");
     expect(SECTION_ANCHORS.notice).toBe("hinweis");
-    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(15);
+    expect(SECTION_ANCHORS.stats).toBe("zahlen");
+    expect(SECTION_ANCHORS.process).toBe("ablauf");
+    expect(SECTION_ANCHORS.quote).toBe("zitat");
+    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(18);
   });
 });
 

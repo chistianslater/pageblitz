@@ -36,7 +36,14 @@ function assertSameSectionTypeSet(
  * Faktenfreie Zusatz-Sektionen — die einzigen, die die KI hinzufügen und
  * entfernen darf (story 2026-08-30, usp/notice 2026-08-31).
  */
-const ADDABLE_TYPES = new Set<string>(["story", "usp", "notice"]);
+const ADDABLE_TYPES = new Set<string>([
+  "story",
+  "usp",
+  "notice",
+  "stats",
+  "process",
+  "quote",
+]);
 
 /**
  * Kopiert Fakten (imageUrl, ctaHref) einer einzelnen Sektion vom Original in

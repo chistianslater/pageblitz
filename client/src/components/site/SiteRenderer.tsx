@@ -18,6 +18,7 @@ import { RICH_TEXT_CSS } from "./richText";
 import { STORY_CSS } from "./storySection";
 import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
+import { EXTRA_SECTIONS_CSS } from "./extraSections";
 
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
 const DECO_TOGGLE_CSS = `
@@ -199,6 +200,8 @@ export const SiteRenderer: React.FC<{
             USP_CSS +
             "\n" +
             NOTICE_CSS +
+            "\n" +
+            EXTRA_SECTIONS_CSS +
             "\n" +
             DECO_TOGGLE_CSS +
             "\n" +

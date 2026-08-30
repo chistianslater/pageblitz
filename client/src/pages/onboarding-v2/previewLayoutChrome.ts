@@ -346,9 +346,13 @@ export function renderLayoutChromeHtml(
     ? `<span class="pb-preview-layout-sep" aria-hidden="true"></span><button type="button" data-pb-hide-element="${section.hideElement.key}" aria-pressed="${
         elementHidden ? "true" : "false"
       }" aria-label="${escapeHtml(
-        elementHidden ? section.hideElement.showLabel : section.hideElement.hideLabel
+        elementHidden
+          ? section.hideElement.showLabel
+          : section.hideElement.hideLabel
       )}" title="${escapeHtml(
-        elementHidden ? section.hideElement.showLabel : section.hideElement.hideLabel
+        elementHidden
+          ? section.hideElement.showLabel
+          : section.hideElement.hideLabel
       )}">${HIDE_EYE_ICON}</button>`
     : "";
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
