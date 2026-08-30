@@ -63,7 +63,15 @@ export function collectInlineTextTargets(
     if (!scope) return;
     switch (section.type) {
       case "hero":
-        add(sectionIndex, scope, "headline", section.headline, 120, false, true);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(
           sectionIndex,
           scope,
@@ -79,13 +87,7 @@ export function collectInlineTextTargets(
         add(sectionIndex, scope, "headline", section.headline, 120);
         add(sectionIndex, scope, "intro", section.intro, 500, true);
         section.items.forEach((item, itemIndex) => {
-          add(
-            sectionIndex,
-            scope,
-            `items.${itemIndex}.title`,
-            item.title,
-            120
-          );
+          add(sectionIndex, scope, `items.${itemIndex}.title`, item.title, 120);
           add(
             sectionIndex,
             scope,
@@ -94,13 +96,7 @@ export function collectInlineTextTargets(
             500,
             true
           );
-          add(
-            sectionIndex,
-            scope,
-            `items.${itemIndex}.price`,
-            item.price,
-            60
-          );
+          add(sectionIndex, scope, `items.${itemIndex}.price`, item.price, 60);
         });
         break;
       case "about":
@@ -110,13 +106,7 @@ export function collectInlineTextTargets(
       case "gallery":
         add(sectionIndex, scope, "headline", section.headline, 120);
         section.images.forEach((image, imageIndex) =>
-          add(
-            sectionIndex,
-            scope,
-            `images.${imageIndex}.alt`,
-            image.alt,
-            240
-          )
+          add(sectionIndex, scope, `images.${imageIndex}.alt`, image.alt, 240)
         );
         break;
       case "testimonials":
@@ -132,13 +122,7 @@ export function collectInlineTextTargets(
         add(sectionIndex, scope, "zip", section.zip, 12);
         add(sectionIndex, scope, "city", section.city, 120);
         section.openingHours?.forEach((row, rowIndex) => {
-          add(
-            sectionIndex,
-            scope,
-            `openingHours.${rowIndex}.day`,
-            row.day,
-            40
-          );
+          add(sectionIndex, scope, `openingHours.${rowIndex}.day`, row.day, 40);
           add(
             sectionIndex,
             scope,
@@ -222,4 +206,3 @@ export function collectInlineTextTargets(
 
   return targets;
 }
-

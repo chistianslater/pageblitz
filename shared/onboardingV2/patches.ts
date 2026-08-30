@@ -25,6 +25,33 @@ export const ImagesPatchSchema = z
       )
       .max(12)
       .optional(),
+    /**
+     * Galerie-Alben (2026-08-30): vollständige Alben-Liste — wird immer
+     * zusammen mit `gallery` gedacht (das Panel schickt beide, damit die
+     * Zuordnung konsistent bleibt). Leere Liste löscht alle Alben.
+     */
+    galleryAlbums: z
+      .array(
+        z
+          .object({
+            title: z.string().min(1).max(60),
+            images: z
+              .array(
+                z
+                  .object({
+                    url: SafeUrlSchema,
+                    alt: z.string().min(1),
+                    caption: z.string().max(140).optional(),
+                  })
+                  .strict()
+              )
+              .min(1)
+              .max(12),
+          })
+          .strict()
+      )
+      .max(6)
+      .optional(),
   })
   .strict();
 

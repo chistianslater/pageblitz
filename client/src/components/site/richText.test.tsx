@@ -93,9 +93,7 @@ describe("toggleRangeMark", () => {
 
   test("teilweise Überlappung verdrängt den Altbestand", () => {
     const value = "**Heilung beginnt** mit";
-    expect(toggleRangeMark(value, 8, 15, "==")).toBe(
-      "Heilung ==beginnt== mit"
-    );
+    expect(toggleRangeMark(value, 8, 15, "==")).toBe("Heilung ==beginnt== mit");
   });
 
   test("parseMarkRanges liefert Plain-Offsets", () => {
@@ -111,4 +109,3 @@ describe("toggleRangeMark", () => {
     );
   });
 });
-

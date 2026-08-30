@@ -52,3 +52,31 @@ describe("removeGalleryImage", () => {
     expect(urls).toHaveLength(3);
   });
 });
+
+import {
+  totalGalleryCount,
+  withListUrls,
+  type GalleryAlbumDraft,
+} from "./galleryLogic";
+
+describe("Galerie-Alben-Helfer", () => {
+  const albums: GalleryAlbumDraft[] = [
+    { title: "A", urls: ["a1"] },
+    { title: "B", urls: ["b1", "b2"] },
+  ];
+
+  test("withListUrls ersetzt Hauptliste bzw. Album, ohne zu mutieren", () => {
+    const main = withListUrls(["m1"], albums, "main", ["m1", "m2"]);
+    expect(main.main).toEqual(["m1", "m2"]);
+    expect(main.albums).toBe(albums);
+
+    const album = withListUrls(["m1"], albums, 1, ["b1"]);
+    expect(album.albums[1]!.urls).toEqual(["b1"]);
+    expect(albums[1]!.urls).toEqual(["b1", "b2"]);
+  });
+
+  test("totalGalleryCount zählt Hauptliste und Alben", () => {
+    expect(totalGalleryCount(["m1"], albums)).toBe(4);
+    expect(totalGalleryCount([], [])).toBe(0);
+  });
+});

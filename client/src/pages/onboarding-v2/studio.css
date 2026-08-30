@@ -2547,3 +2547,40 @@
   width: auto;
   color: var(--st-accent);
 }
+
+/* Galerie-Alben im Fotos-Panel (2026-08-30): aktive Liste als Chips. */
+.pb-studio-album-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pb-studio-album-chips button {
+  appearance: none;
+  font: 600 0.78rem/1 inherit;
+  padding: 8px 13px;
+  border: 1px solid var(--st-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--st-ink);
+  cursor: pointer;
+}
+.pb-studio-album-chips button:hover {
+  border-color: var(--st-muted);
+}
+.pb-studio-album-chips button[aria-pressed="true"] {
+  background: var(--st-accent);
+  border-color: var(--st-accent);
+  color: var(--st-accent-ink);
+}
+.pb-studio-album-chips button[data-variant="add"] {
+  border-style: dashed;
+  color: var(--st-muted);
+}
+.pb-studio-album-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pb-studio-album-head input {
+  flex: 1;
+}

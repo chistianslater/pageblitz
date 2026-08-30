@@ -201,6 +201,58 @@ describe("applyImages", () => {
     ).toBe(false);
   });
 
+  test("galleryAlbums schreibt Alben; reiner Bild-Patch erhält sie", () => {
+    const withAlbums = applyImages(docFull, {
+      gallery: [{ url: "https://x/g.jpg", alt: "a" }],
+      galleryAlbums: [
+        {
+          title: "Hochzeiten",
+          images: [{ url: "https://x/w1.jpg", alt: "a" }],
+        },
+      ],
+    });
+    const gallery = withAlbums.sections.find(s => s.type === "gallery") as {
+      albums?: { title: string }[];
+    };
+    expect(gallery.albums?.map(a => a.title)).toEqual(["Hochzeiten"]);
+
+    // Bild-Patch ohne galleryAlbums darf die Alben nicht verwerfen.
+    const rePatched = applyImages(withAlbums, {
+      gallery: [{ url: "https://x/g2.jpg", alt: "a" }],
+    });
+    const gallery2 = rePatched.sections.find(s => s.type === "gallery") as {
+      albums?: { title: string }[];
+      images: { url: string }[];
+    };
+    expect(gallery2.albums?.map(a => a.title)).toEqual(["Hochzeiten"]);
+    expect(gallery2.images[0]!.url).toBe("https://x/g2.jpg");
+
+    // Alben leeren, Hauptbilder bleiben.
+    const cleared = applyImages(withAlbums, { galleryAlbums: [] });
+    const gallery3 = cleared.sections.find(s => s.type === "gallery") as {
+      albums?: unknown;
+    };
+    expect(gallery3.albums).toBeUndefined();
+  });
+
+  test("nur Alben ohne Hauptbilder: erstes Albumbild rückt als Hauptbild nach", () => {
+    const next = applyImages(docFull, {
+      gallery: [],
+      galleryAlbums: [
+        {
+          title: "Werkstatt",
+          images: [{ url: "https://x/w1.jpg", alt: "a" }],
+        },
+      ],
+    });
+    const gallery = next.sections.find(s => s.type === "gallery") as {
+      images: { url: string }[];
+      albums?: { images: { url: string }[] }[];
+    };
+    expect(gallery.images[0]!.url).toBe("https://x/w1.jpg");
+    expect(gallery.albums).toHaveLength(1);
+  });
+
   test("leere Quellen lassen vorhandene Hero-/About-Platzhalter stehen", () => {
     const withPhotos = applyImages(docFull, {
       hero: "https://x/h.jpg",

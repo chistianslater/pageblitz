@@ -233,17 +233,27 @@ export function applyImages(
       ...s,
       imageUrl: patch.about,
     }));
-  if (patch.gallery !== undefined) {
+  if (patch.gallery !== undefined || patch.galleryAlbums !== undefined) {
     const existing = sections.find(s => s.type === "gallery") as
       | SectionOf<"gallery">
       | undefined;
     const without = sections.filter(s => s.type !== "gallery");
-    if (patch.gallery.length === 0) sections = without;
+    // Nicht mitgeschickte Teile bleiben erhalten — ein reiner Bild-Patch
+    // darf bestehende Alben nicht verwerfen (und umgekehrt).
+    const images = patch.gallery ?? existing?.images ?? [];
+    const albums = (patch.galleryAlbums ?? existing?.albums ?? []).filter(
+      album => album.images.length > 0
+    );
+    if (images.length === 0 && albums.length === 0) sections = without;
     else {
       const gallery: SectionOf<"gallery"> = {
         type: "gallery",
         headline: existing?.headline ?? "Einblicke",
-        images: patch.gallery,
+        // Schema verlangt images.min(1): existiert nur ein Album, rückt
+        // dessen erstes Bild als Hauptbild nach (Anzeige bleibt gleich —
+        // die Website flacht ohnehin Hauptliste + Alben zusammen).
+        images: images.length > 0 ? images : [albums[0]!.images[0]!],
+        ...(albums.length > 0 ? { albums } : {}),
       };
       sections = existing
         ? sections.map(s => (s.type === "gallery" ? gallery : s))

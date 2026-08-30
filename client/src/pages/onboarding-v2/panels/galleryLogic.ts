@@ -28,3 +28,37 @@ export function moveGalleryImage(
 export function removeGalleryImage(urls: string[], index: number): string[] {
   return urls.filter((_, i) => i !== index);
 }
+
+export const MAX_GALLERY_ALBUMS = 6;
+
+export interface GalleryAlbumDraft {
+  title: string;
+  urls: string[];
+}
+
+/**
+ * Aktive Liste im Fotos-Panel: "main" = Hauptgalerie, Zahl = Album-Index.
+ */
+export type GalleryListId = "main" | number;
+
+/** Ersetzt die URL-Liste der adressierten Liste — mutiert nichts. */
+export function withListUrls(
+  main: string[],
+  albums: GalleryAlbumDraft[],
+  list: GalleryListId,
+  urls: string[]
+): { main: string[]; albums: GalleryAlbumDraft[] } {
+  if (list === "main") return { main: urls, albums };
+  return {
+    main,
+    albums: albums.map((album, i) => (i === list ? { ...album, urls } : album)),
+  };
+}
+
+/** Gesamtzahl aller Galerie-Bilder (Hauptliste + Alben). */
+export function totalGalleryCount(
+  main: string[],
+  albums: GalleryAlbumDraft[]
+): number {
+  return main.length + albums.reduce((sum, a) => sum + a.urls.length, 0);
+}

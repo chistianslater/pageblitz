@@ -197,6 +197,34 @@ const GallerySchema = z
           .strict()
       )
       .min(1),
+    /**
+     * Alben (2026-08-30, Galerie-Extra): benannte Zusatzgruppen neben der
+     * Hauptliste `images`. Die Website rendert alle Bilder in EINER
+     * Galerie-Sektion; der siteEnhancer blendet Filter-Chips ein
+     * (SiteRenderer flacht für die Packs — kein Pack kennt Alben).
+     */
+    albums: z
+      .array(
+        z
+          .object({
+            title: z.string().min(1).max(60),
+            images: z
+              .array(
+                z
+                  .object({
+                    url: SafeUrlSchema,
+                    alt: z.string(),
+                    caption: z.string().max(140).optional(),
+                  })
+                  .strict()
+              )
+              .min(1)
+              .max(12),
+          })
+          .strict()
+      )
+      .max(6)
+      .optional(),
   })
   .strict();
 const TestimonialsSchema = z

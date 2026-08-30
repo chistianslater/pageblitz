@@ -15,6 +15,11 @@ import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
 import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { RICH_TEXT_CSS } from "./richText";
+import {
+  ALBUM_CSS,
+  albumChromeJson,
+  flattenGalleryAlbums,
+} from "./galleryAlbums";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
 import { deriveDesignProfile } from "../../../../shared/siteContract/designProfile";
 import {
@@ -143,6 +148,10 @@ export const SiteRenderer: React.FC<{
           hiddenSections: undefined,
         }
       : effectiveData;
+  // Galerie-Alben (2026-08-30): Packs bekommen die geflachte Bildliste;
+  // die Zuordnung wandert als JSON-Tag zur Chip-Leiste des siteEnhancers.
+  const albumJson = albumChromeJson(pageRenderData);
+  const packRenderData = flattenGalleryAlbums(pageRenderData);
   return (
     <div
       className={`pb-site pb-${effectiveData.stylePackId}`}
@@ -176,11 +185,19 @@ export const SiteRenderer: React.FC<{
             RICH_TEXT_CSS +
             "\n" +
             LAYOUT_POLISH_CSS +
+            (albumJson ? "\n" + ALBUM_CSS : "") +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
         }}
       />
+      {albumJson && (
+        <script
+          type="application/json"
+          data-pb-albums=""
+          dangerouslySetInnerHTML={{ __html: albumJson }}
+        />
+      )}
       <mod.Page
-        data={pageRenderData}
+        data={packRenderData}
         basePath={basePath}
         now={now}
         navItems={navItems}

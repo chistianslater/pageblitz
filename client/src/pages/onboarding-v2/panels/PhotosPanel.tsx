@@ -7,7 +7,16 @@ import type { AddonsPatch, ImagesPatch } from "@shared/onboardingV2/patches";
 import { withAddOnEnabled } from "@shared/onboardingV2/addonEditors";
 import { SECTION_ANCHORS } from "@/components/site/engine";
 import { PanelFrame } from "./PanelFrame";
-import { moveGalleryImage, removeGalleryImage, MAX_GALLERY_PHOTOS } from "./galleryLogic";
+import {
+  moveGalleryImage,
+  removeGalleryImage,
+  totalGalleryCount,
+  withListUrls,
+  MAX_GALLERY_ALBUMS,
+  MAX_GALLERY_PHOTOS,
+  type GalleryAlbumDraft,
+  type GalleryListId,
+} from "./galleryLogic";
 import {
   GalleryAddonNotice,
   PhotoGrid,
@@ -99,13 +108,26 @@ export function PhotosPanel({
   const [galleryUrls, setGalleryUrls] = useState<string[]>(
     gallerySection?.images.map(i => i.url) ?? []
   );
+  // Alben (2026-08-30): benannte Zusatzgruppen neben der Hauptliste. Die
+  // Chips unter dem Ziel-Umschalter wählen die aktive Liste; Auswahl,
+  // Sortierung und Captions wirken immer auf die aktive Liste.
+  const [galleryAlbums, setGalleryAlbums] = useState<GalleryAlbumDraft[]>(
+    gallerySection?.albums?.map(album => ({
+      title: album.title,
+      urls: album.images.map(img => img.url),
+    })) ?? []
+  );
+  const [activeList, setActiveList] = useState<GalleryListId>("main");
   // Sichtbare Bildunterschriften je URL (2026-08-29): getrennt vom alt-Text,
   // Packs zeigen nur noch caption an. Start: gespeicherte captions aus dem Doc.
   const [galleryCaptions, setGalleryCaptions] = useState<
     Record<string, string>
   >(() =>
     Object.fromEntries(
-      (gallerySection?.images ?? [])
+      [
+        ...(gallerySection?.images ?? []),
+        ...(gallerySection?.albums ?? []).flatMap(album => album.images),
+      ]
         .filter(i => i.caption)
         .map(i => [i.url, i.caption as string])
     )
@@ -142,6 +164,10 @@ export function PhotosPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const activeUrls =
+    activeList === "main"
+      ? galleryUrls
+      : (galleryAlbums[activeList]?.urls ?? []);
   const selected =
     target === "hero"
       ? heroUrl
@@ -151,7 +177,7 @@ export function PhotosPanel({
         ? aboutUrl
           ? [aboutUrl]
           : []
-        : galleryUrls;
+        : activeUrls;
 
   /**
    * Sofort-Übernahme (Studio-Befund „Bilder nicht in Echtzeit"): jede
@@ -175,6 +201,21 @@ export function PhotosPanel({
     );
   };
 
+  /** Galerie + Alben als EIN Patch — hält die Zuordnung konsistent. */
+  const galleryPatch = (
+    main: string[],
+    albums: GalleryAlbumDraft[],
+    captions = galleryCaptions
+  ): ImagesPatch => ({
+    gallery: main.map(u => galleryItem(u, captions)),
+    galleryAlbums: albums
+      .filter(album => album.urls.length > 0)
+      .map(album => ({
+        title: album.title,
+        images: album.urls.map(u => galleryItem(u, captions)),
+      })),
+  });
+
   const handlePick = (url: string) => {
     if (upload.isPending || setImages.isPending) return;
     if (target === "hero") {
@@ -188,20 +229,33 @@ export function PhotosPanel({
       setAboutUrl(url);
       applyImages({ about: url }, () => setAboutUrl(prev));
     } else {
-      const prev = galleryUrls;
+      const prev = activeUrls;
       let next: string[];
       if (prev.includes(url)) next = prev.filter(u => u !== url);
       else if (prev.length >= MAX_GALLERY_PHOTOS) return;
       else next = [...prev, url];
-      setGalleryUrls(next);
-      // Schutz bleibt: Abwahl des letzten Fotos bei bestehender Galerie
-      // wird NICHT sofort gepatcht — das Leeren verlangt weiterhin den
-      // expliziten „Galerie entfernen"-Button unten.
-      if (next.length === 0 && hasExistingGallery) return;
-      applyImages(
-        { gallery: next.map(u => galleryItem(u)) },
-        () => setGalleryUrls(prev)
+      const updated = withListUrls(
+        galleryUrls,
+        galleryAlbums,
+        activeList,
+        next
       );
+      setGalleryUrls(updated.main);
+      setGalleryAlbums(updated.albums);
+      // Schutz bleibt: Abwahl des LETZTEN Fotos der gesamten Galerie bei
+      // bestehender Galerie wird NICHT sofort gepatcht — das Leeren
+      // verlangt weiterhin den expliziten „Galerie entfernen"-Button.
+      if (
+        totalGalleryCount(updated.main, updated.albums) === 0 &&
+        hasExistingGallery
+      )
+        return;
+      const prevMain = galleryUrls;
+      const prevAlbums = galleryAlbums;
+      applyImages(galleryPatch(updated.main, updated.albums), () => {
+        setGalleryUrls(prevMain);
+        setGalleryAlbums(prevAlbums);
+      });
     }
   };
 
@@ -211,35 +265,80 @@ export function PhotosPanel({
     if (caption) next[url] = caption;
     else delete next[url];
     setGalleryCaptions(next);
-    applyImages(
-      { gallery: galleryUrls.map(u => galleryItem(u, next)) },
-      () => setGalleryCaptions(prev)
+    applyImages(galleryPatch(galleryUrls, galleryAlbums, next), () =>
+      setGalleryCaptions(prev)
     );
   };
 
-  const persistGallery = (prev: string[], next: string[]) => {
-    if (next.length === 0 && hasExistingGallery) return;
-    applyImages(
-      { gallery: next.map(u => galleryItem(u)) },
-      () => setGalleryUrls(prev)
-    );
+  const persistLists = (
+    prevMain: string[],
+    prevAlbums: GalleryAlbumDraft[],
+    main: string[],
+    albums: GalleryAlbumDraft[]
+  ) => {
+    if (totalGalleryCount(main, albums) === 0 && hasExistingGallery) return;
+    applyImages(galleryPatch(main, albums), () => {
+      setGalleryUrls(prevMain);
+      setGalleryAlbums(prevAlbums);
+    });
   };
 
   const handleMoveGallery = (index: number, direction: "up" | "down") => {
     if (upload.isPending || setImages.isPending) return;
-    const prev = galleryUrls;
-    const next = moveGalleryImage(prev, index, direction);
-    if (next === prev) return;
-    setGalleryUrls(next);
-    persistGallery(prev, next);
+    const next = moveGalleryImage(activeUrls, index, direction);
+    if (next === activeUrls) return;
+    const updated = withListUrls(galleryUrls, galleryAlbums, activeList, next);
+    const prevMain = galleryUrls;
+    const prevAlbums = galleryAlbums;
+    setGalleryUrls(updated.main);
+    setGalleryAlbums(updated.albums);
+    persistLists(prevMain, prevAlbums, updated.main, updated.albums);
   };
 
   const handleRemoveGallery = (index: number) => {
     if (upload.isPending || setImages.isPending) return;
-    const prev = galleryUrls;
-    const next = removeGalleryImage(prev, index);
-    setGalleryUrls(next);
-    persistGallery(prev, next);
+    const next = removeGalleryImage(activeUrls, index);
+    const updated = withListUrls(galleryUrls, galleryAlbums, activeList, next);
+    const prevMain = galleryUrls;
+    const prevAlbums = galleryAlbums;
+    setGalleryUrls(updated.main);
+    setGalleryAlbums(updated.albums);
+    persistLists(prevMain, prevAlbums, updated.main, updated.albums);
+  };
+
+  const handleAddAlbum = () => {
+    if (galleryAlbums.length >= MAX_GALLERY_ALBUMS) return;
+    const next = [
+      ...galleryAlbums,
+      { title: `Album ${galleryAlbums.length + 1}`, urls: [] },
+    ];
+    // Leere Alben werden erst mit dem ersten Bild persistiert — lokal
+    // anlegen genügt, damit sofort Bilder zugeordnet werden können.
+    setGalleryAlbums(next);
+    setActiveList(next.length - 1);
+  };
+
+  const handleRenameAlbum = (index: number, title: string) => {
+    const prevAlbums = galleryAlbums;
+    const next = galleryAlbums.map((album, i) =>
+      i === index ? { ...album, title } : album
+    );
+    setGalleryAlbums(next);
+    if (!title.trim() || prevAlbums[index]?.urls.length === 0) return;
+    applyImages(galleryPatch(galleryUrls, next), () =>
+      setGalleryAlbums(prevAlbums)
+    );
+  };
+
+  const handleRemoveAlbum = (index: number) => {
+    const prevAlbums = galleryAlbums;
+    const next = galleryAlbums.filter((_, i) => i !== index);
+    setGalleryAlbums(next);
+    setActiveList("main");
+    if (prevAlbums[index]?.urls.length === 0) return;
+    applyImages(galleryPatch(galleryUrls, next), () =>
+      setGalleryAlbums(prevAlbums)
+    );
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,12 +384,16 @@ export function PhotosPanel({
   // „Galerie entfernen"-Aktion — ein versehentlicher Klick soll nie die
   // ganze Sektion löschen.
   const galleryWouldDeleteExisting =
-    target === "gallery" && galleryUrls.length === 0 && hasExistingGallery;
+    target === "gallery" &&
+    totalGalleryCount(galleryUrls, galleryAlbums) === 0 &&
+    hasExistingGallery;
   const galleryLocked = target === "gallery" && !galleryBooked;
 
   const removeGallery = () => {
+    setGalleryAlbums([]);
+    setActiveList("main");
     setImages.mutate(
-      { token, patch: { gallery: [] } },
+      { token, patch: { gallery: [], galleryAlbums: [] } },
       { onSuccess: onApplied }
     );
   };
@@ -351,14 +454,70 @@ export function PhotosPanel({
         />
       )}
       {!galleryLocked && target === "gallery" && (
-        <SelectedGalleryList
-          urls={galleryUrls}
-          captions={galleryCaptions}
-          onCaptionChange={handleCaptionChange}
-          onMove={handleMoveGallery}
-          onRemove={handleRemoveGallery}
-          busy={busy}
-        />
+        <>
+          <div
+            className="pb-studio-album-chips"
+            role="group"
+            aria-label="Galerie-Alben"
+          >
+            <button
+              type="button"
+              aria-pressed={activeList === "main"}
+              onClick={() => setActiveList("main")}
+            >
+              Galerie ({galleryUrls.length})
+            </button>
+            {galleryAlbums.map((album, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-pressed={activeList === i}
+                onClick={() => setActiveList(i)}
+              >
+                {album.title || `Album ${i + 1}`} ({album.urls.length})
+              </button>
+            ))}
+            {galleryAlbums.length < MAX_GALLERY_ALBUMS && (
+              <button
+                type="button"
+                data-variant="add"
+                onClick={handleAddAlbum}
+                aria-label="Album hinzufügen"
+              >
+                + Album
+              </button>
+            )}
+          </div>
+          {activeList !== "main" && galleryAlbums[activeList] && (
+            <div className="pb-studio-album-head">
+              <input
+                type="text"
+                className="pb-studio-input"
+                value={galleryAlbums[activeList].title}
+                maxLength={60}
+                aria-label="Albumtitel"
+                onChange={e => handleRenameAlbum(activeList, e.target.value)}
+              />
+              <button
+                type="button"
+                className="pb-studio-btn"
+                data-variant="ghost"
+                disabled={busy}
+                onClick={() => handleRemoveAlbum(activeList)}
+              >
+                Album löschen
+              </button>
+            </div>
+          )}
+          <SelectedGalleryList
+            urls={activeUrls}
+            captions={galleryCaptions}
+            onCaptionChange={handleCaptionChange}
+            onMove={handleMoveGallery}
+            onRemove={handleRemoveGallery}
+            busy={busy}
+          />
+        </>
       )}
       {!galleryLocked && (
         <>

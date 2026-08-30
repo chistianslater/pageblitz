@@ -112,7 +112,11 @@ export function parseMarkRanges(value: string): {
     const inner = String(accent ?? bold ?? italic);
     const mark: RichMark =
       accent !== undefined ? "==" : bold !== undefined ? "**" : "*";
-    ranges.push({ start: plain.length, end: plain.length + inner.length, mark });
+    ranges.push({
+      start: plain.length,
+      end: plain.length + inner.length,
+      mark,
+    });
     plain += inner;
     last = m.index + m[0].length;
   }
