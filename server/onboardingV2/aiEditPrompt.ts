@@ -82,6 +82,7 @@ export function buildAiEditPrompt(args: {
       : [
           `Sektionstypen im Dokument: ${args.doc.sections.map(s => s.type).join(", ")}`,
           `Ausgeblendete Sektionen: ${(args.doc.hiddenSections ?? []).join(", ") || "keine"}`,
+          `Ausgeblendete Einzel-Elemente: ${(args.doc.designProfile?.hiddenElements ?? []).join(", ") || "keine"}`,
           args.doc.sectionOrder
             ? `Eigene Reihenfolge: ${args.doc.sectionOrder.join(", ")}`
             : `Reihenfolge: Dokument-Standard (hero immer zuerst)`,
@@ -123,7 +124,7 @@ export function buildAiEditPrompt(args: {
     `- Erfinde oder ändere niemals Rechtstexte (Impressum/Datenschutz).`,
     args.page
       ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
-      : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahme: die Erzähl-Sektion {"type":"story","headline":"...","body":"..."} darfst du hinzufügen (wenn der Kunde mehr erzählen will: Geschichte, Historie, Philosophie, Werte — am besten direkt nach "about" einsortiert) oder entfernen (wenn er sie loswerden will). Absätze im body durch Leerzeile trennen.`,
+      : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahmen (faktenfreie Zusatz-Sektionen, hinzufügen UND entfernen erlaubt): {"type":"story","headline":"...","body":"..."} (mehr erzählen: Geschichte/Historie/Philosophie — nach "about" einsortieren, Absätze durch Leerzeile), {"type":"usp","headline":"...","items":[{"title":"...","text":"..."}]} (2–6 Vorteile/Argumente — früh platzieren, z. B. nach "hero" oder "services"), {"type":"notice","text":"..."} (Saison-/Aktionshinweis wie Urlaub oder Rabatt — wird als Banner GANZ OBEN über der Navigation gezeigt, egal wo er in der Liste steht; genau EIN Satz).`,
     `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben — aber heroLayout "collage" (Format 2) zeigt zusätzlich zum Hauptbild bis zu zwei Galerie-Bilder im Hero.`,
     ``,
     args.page
@@ -162,6 +163,7 @@ export function buildAiEditPrompt(args: {
       : [
           `- "hiddenSections": VOLLSTÄNDIGE Liste der auszublendenden Sektionstypen (ersetzt die bisherige Liste; [] blendet alles wieder ein). Erlaubt sind nur Typen aus dem Dokument, NIE "hero" oder "contact". Beispiel: Kunde will keine Bewertungen zeigen → ["testimonials"] (plus alles, was schon ausgeblendet war und bleiben soll).`,
           `- "sectionOrder": VOLLSTÄNDIGE neue Reihenfolge der Sektionstypen (alle Typen aus dem Dokument aufzählen; "hero" bleibt immer zuerst, "contact" gehört ans Ende).`,
+          `- "hiddenElements": VOLLSTÄNDIGE Liste einzeln ausgeblendeter Elemente (ersetzt die bisherige; [] zeigt alles wieder). Möglich: "hero-media" (Bild im Hero weg — Text nutzt die volle Breite), "about-media" (Über-uns-Bild weg). Nicht-destruktiv, die Bilder bleiben gespeichert.`,
         ]),
     `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
     ``,

@@ -48,6 +48,16 @@ export interface PreviewLayoutSection {
   anchor: string;
   title: string;
   options: readonly PreviewLayoutOption[];
+  /**
+   * Einzeln ausblendbares Element dieser Sektion (2026-08-31, „Bild weg,
+   * Text wird breiter"): rendert einen Auge-Toggle hinter den
+   * Layout-Optionen, der `designProfile.hiddenElements` umschaltet.
+   */
+  hideElement?: {
+    key: "hero-media" | "about-media";
+    hideLabel: string;
+    showLabel: string;
+  };
 }
 
 const icon = (shapes: string) =>
@@ -90,6 +100,11 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
         ),
       },
     ],
+    hideElement: {
+      key: "hero-media",
+      hideLabel: "Bild ausblenden",
+      showLabel: "Bild einblenden",
+    },
   },
   {
     field: "servicesLayout",
@@ -143,6 +158,11 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
         ),
       },
     ],
+    hideElement: {
+      key: "about-media",
+      hideLabel: "Bild ausblenden",
+      showLabel: "Bild einblenden",
+    },
   },
   {
     field: "galleryLayout",
@@ -200,6 +220,8 @@ const CHROME_CSS = `
 .pb-preview-layout-menu button svg{width:17px;height:17px}
 .pb-preview-layout-menu button:hover{background:rgba(255,255,255,.12);color:#fff}
 .pb-preview-layout-menu button[aria-pressed="true"]{background:#ccff00;color:#0b0b0d}
+.pb-preview-layout-sep{width:1px;height:18px;margin:0 2px;background:rgba(255,255,255,.2)}
+.pb-preview-layout-menu button[data-pb-hide-element][aria-pressed="true"]{background:#ff5d45;color:#0b0b0d}
 .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
 @media(prefers-reduced-motion:no-preference){
   .pb-preview-layout-menu{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s}
@@ -220,6 +242,10 @@ export function applyProfileAttrs(
   site: AttrTarget,
   profile: DesignProfile
 ): void {
+  const hiddenElements = profile.hiddenElements ?? [];
+  if (hiddenElements.length > 0)
+    site.setAttribute("data-pb-he", hiddenElements.join(" "));
+  else site.removeAttribute("data-pb-he");
   site.setAttribute("data-pb-hero", profile.heroLayout);
   site.setAttribute("data-pb-services", profile.servicesLayout);
   site.setAttribute("data-pb-about", profile.aboutLayout);
@@ -296,10 +322,16 @@ export function layoutChromeTitle(
   return viewport === "mobile" ? `${section.title} (Mobil)` : section.title;
 }
 
+/** Auge-Icon des Element-Toggles — bewusst KEIN 20×20-viewBox-SVG wie die
+    Layout-Piktogramme, damit bestehende Icon-Zähl-Tests stabil bleiben. */
+const HIDE_EYE_ICON =
+  '<svg viewBox="0 0 21 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2.5 10c1.6-3.2 4.6-5.2 8-5.2s6.4 2 8 5.2c-1.6 3.2-4.6 5.2-8 5.2s-6.4-2-8-5.2Z"/><circle cx="10.5" cy="10" r="2.3" fill="currentColor" stroke="none"/></svg>';
+
 export function renderLayoutChromeHtml(
   section: PreviewLayoutSection,
   current: string,
-  viewport: LayoutViewport = "desktop"
+  viewport: LayoutViewport = "desktop",
+  elementHidden = false
 ): string {
   const title = layoutChromeTitle(section, viewport);
   const options = section.options
@@ -310,13 +342,22 @@ export function renderLayoutChromeHtml(
       }" aria-label="${label}" title="${label}">${option.icon}</button>`;
     })
     .join("");
+  const hide = section.hideElement
+    ? `<span class="pb-preview-layout-sep" aria-hidden="true"></span><button type="button" data-pb-hide-element="${section.hideElement.key}" aria-pressed="${
+        elementHidden ? "true" : "false"
+      }" aria-label="${escapeHtml(
+        elementHidden ? section.hideElement.showLabel : section.hideElement.hideLabel
+      )}" title="${escapeHtml(
+        elementHidden ? section.hideElement.showLabel : section.hideElement.hideLabel
+      )}">${HIDE_EYE_ICON}</button>`
+    : "";
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
     <button type="button" class="pb-preview-layout-btn" aria-expanded="false" aria-haspopup="true" aria-label="${escapeHtml(
       title
     )}">${LAYOUT_GRID_ICON_HTML}</button>
     <div class="pb-preview-layout-menu" role="group" aria-label="${escapeHtml(
       title
-    )}">${options}</div>
+    )}">${options}${hide}</div>
   </div>`;
 }
 
@@ -372,7 +413,8 @@ function syncChromeCopy(doc: Document): void {
 
 function syncPressed(
   root: ParentNode,
-  currentOf: (field: PreviewLayoutField) => string
+  currentOf: (field: PreviewLayoutField) => string,
+  hiddenElements: readonly string[] = []
 ): void {
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const chrome = root.querySelector(
@@ -390,6 +432,18 @@ function syncPressed(
             : "false"
         );
       });
+    const hideButton = chrome.querySelector<HTMLButtonElement>(
+      "[data-pb-hide-element]"
+    );
+    if (hideButton && section.hideElement) {
+      const hidden = hiddenElements.includes(section.hideElement.key);
+      hideButton.setAttribute("aria-pressed", hidden ? "true" : "false");
+      const label = hidden
+        ? section.hideElement.showLabel
+        : section.hideElement.hideLabel;
+      hideButton.setAttribute("aria-label", label);
+      hideButton.setAttribute("title", label);
+    }
   }
 }
 
@@ -493,13 +547,15 @@ export function enablePreviewLayoutChrome(
     doc.head.appendChild(style);
   }
 
+  const hiddenOfDoc = () =>
+    (workingProfiles.get(doc) ?? resolved).hiddenElements ?? [];
   const applyDoc = () => {
     if (overlayMode) {
       applyLayoutOverlay(site, overlayState.get(doc) ?? {}, viewportOf(doc));
     } else {
       applyProfileAttrs(site, workingProfiles.get(doc) ?? resolved);
     }
-    syncPressed(doc, field => currentOfDoc(doc, field));
+    syncPressed(doc, field => currentOfDoc(doc, field), hiddenOfDoc());
     syncChromeCopy(doc);
   };
 
@@ -521,7 +577,10 @@ export function enablePreviewLayoutChrome(
     wrap.innerHTML = renderLayoutChromeHtml(
       section,
       currentOfDoc(doc, section.field),
-      viewportOf(doc)
+      viewportOf(doc),
+      section.hideElement
+        ? hiddenOfDoc().includes(section.hideElement.key)
+        : false
     );
     const chrome = wrap.firstElementChild as HTMLElement | null;
     if (!chrome) continue;
@@ -562,6 +621,35 @@ export function enablePreviewLayoutChrome(
     }
 
     menu.addEventListener("click", event => {
+      // Element-Toggle („Bild ausblenden"): schaltet hiddenElements im
+      // Profil um — gleicher onPick-Fluss wie die Layout-Optionen. Im
+      // Overlay-Modus (Design-Review) bewusst inaktiv.
+      const hideButton = (
+        event.target as HTMLElement
+      ).closest<HTMLButtonElement>("[data-pb-hide-element]");
+      if (hideButton && section.hideElement && !overlayState.has(doc)) {
+        event.preventDefault();
+        event.stopPropagation();
+        const key = section.hideElement.key;
+        const profileNow = workingProfiles.get(doc) ?? DEFAULT_DESIGN_PROFILE;
+        const nowHidden = profileNow.hiddenElements ?? [];
+        const nextHidden = nowHidden.includes(key)
+          ? nowHidden.filter(k => k !== key)
+          : [...nowHidden, key];
+        const working: DesignProfile = { ...profileNow };
+        if (nextHidden.length > 0) working.hiddenElements = nextHidden;
+        else delete working.hiddenElements;
+        workingProfiles.set(doc, working);
+        applyProfileAttrs(site, working);
+        syncPressed(
+          doc,
+          field => currentOfDoc(doc, field),
+          working.hiddenElements ?? []
+        );
+        setOpen(false);
+        onPick(working);
+        return;
+      }
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
         "[data-pb-layout-option]"
       );
@@ -581,7 +669,7 @@ export function enablePreviewLayoutChrome(
         };
         overlayState.set(doc, overlay);
         applyLayoutOverlay(site, overlay, viewportOf(doc));
-        syncPressed(doc, field => currentOfDoc(doc, field));
+        syncPressed(doc, field => currentOfDoc(doc, field), hiddenOfDoc());
         setOpen(false);
         options?.onOverlayChange?.(overlay);
         return;
@@ -596,7 +684,7 @@ export function enablePreviewLayoutChrome(
       } as DesignProfile;
       workingProfiles.set(doc, working);
       applyProfileAttrs(site, working);
-      syncPressed(doc, field => currentOfDoc(doc, field));
+      syncPressed(doc, field => currentOfDoc(doc, field), hiddenOfDoc());
       setOpen(false);
       onPick(working);
     });

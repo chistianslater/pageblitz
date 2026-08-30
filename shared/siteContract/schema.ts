@@ -9,6 +9,7 @@ import { PACK_IDS } from "./packIds";
 import {
   ABOUT_LAYOUTS,
   DECORATION_MODES,
+  HIDEABLE_ELEMENTS,
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
@@ -30,10 +31,12 @@ export const SECTION_TYPES = [
   "pricelist",
   "team",
   "cta",
-  // Freie Erzähl-Sektion (2026-08-30, „mehr erzählen": Historie,
-  // Philosophie, …) — die einzige Sektion, die der KI-Chat hinzufügen und
-  // entfernen darf (siehe server/onboardingV2/aiEditFacts.ts).
+  // Faktenfreie Zusatz-Sektionen (2026-08-30/31) — die einzigen, die der
+  // KI-Chat hinzufügen und entfernen darf (server/onboardingV2/aiEditFacts):
+  // story = Erzähl-Sektion, usp = Vorteile, notice = Saison-/Aktionsbanner.
   "story",
+  "usp",
+  "notice",
   // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
   // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
   // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
@@ -336,6 +339,39 @@ const StorySchema = z
     body: z.string().min(1).max(2500),
   })
   .strict();
+/**
+ * Vorteile/USP (2026-08-31): 2–6 Punkte mit Titel + optionalem Satz —
+ * faktenfrei, zentral gerendert (uspSection.tsx), von der KI
+ * hinzufüg-/entfernbar wie story.
+ */
+const UspSchema = z
+  .object({
+    type: z.literal("usp"),
+    headline: z.string().min(1).max(120).optional(),
+    items: z
+      .array(
+        z
+          .object({
+            title: z.string().min(1).max(80),
+            text: z.string().min(1).max(240).optional(),
+          })
+          .strict()
+      )
+      .min(2)
+      .max(6),
+  })
+  .strict();
+/**
+ * Saison-/Aktionshinweis (2026-08-31): schmaler Banner über der Navigation
+ * („Vom 12.–26.8. sind wir im Urlaub") — zentral gerendert
+ * (noticeBanner.tsx, SiteRenderer), erscheint nie in der Navigation.
+ */
+const NoticeSchema = z
+  .object({
+    type: z.literal("notice"),
+    text: z.string().min(1).max(240),
+  })
+  .strict();
 
 export const SectionV2Schema = z.discriminatedUnion("type", [
   HeroSchema,
@@ -350,6 +386,8 @@ export const SectionV2Schema = z.discriminatedUnion("type", [
   TeamSchema,
   CtaSchema,
   StorySchema,
+  UspSchema,
+  NoticeSchema,
 ]);
 
 /**
@@ -430,6 +468,8 @@ export const DesignProfileSchema = z
     // der Klasse `pb-deco`): "off" blendet sie aus. Fehlt das Feld, bleiben
     // sie sichtbar (Pack-Standard).
     decorations: z.enum(DECORATION_MODES).optional(),
+    // Einzeln ausgeblendete Sektions-Elemente („Bild weg, Text breiter").
+    hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();

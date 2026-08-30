@@ -28,6 +28,8 @@ const ANCHORS: Partial<Record<SectionV2["type"], string>> = {
   team: "#team",
   cta: "#cta",
   story: "#geschichte",
+  usp: "#vorteile",
+  notice: "#hinweis",
 };
 
 /**
@@ -205,6 +207,23 @@ export function collectInlineTextTargets(
       case "story":
         add(sectionIndex, scope, "headline", section.headline, 120);
         add(sectionIndex, scope, "body", section.body, 2500, true, true);
+        break;
+      case "usp":
+        add(sectionIndex, scope, "headline", section.headline, 120);
+        section.items.forEach((item, itemIndex) => {
+          add(sectionIndex, scope, `items.${itemIndex}.title`, item.title, 80);
+          add(
+            sectionIndex,
+            scope,
+            `items.${itemIndex}.text`,
+            item.text,
+            240,
+            true
+          );
+        });
+        break;
+      case "notice":
+        add(sectionIndex, scope, "text", section.text, 240);
         break;
     }
   });

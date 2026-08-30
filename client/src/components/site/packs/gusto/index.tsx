@@ -1,4 +1,5 @@
 import React from "react";
+import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
 import type {
@@ -106,6 +107,11 @@ function renderSection(
   chrome: GustoChrome
 ): React.ReactNode {
   switch (section.type) {
+    case "usp":
+      return <UspSection section={section} key="usp" />;
+    case "notice":
+      // Zentral als Banner über der Nav gerendert (SiteRenderer).
+      return null;
     case "story":
       return <StorySection section={section} key="story" />;
     case "hero":

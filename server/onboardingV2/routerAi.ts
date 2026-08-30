@@ -82,6 +82,25 @@ export function applyAiTheme(
     if (hidden.length > 0) base.hiddenSections = hidden;
     else delete base.hiddenSections;
   }
+  if (theme.hiddenElements !== undefined) {
+    // Einzeln ausgeblendete Elemente („Bild weg, Text breiter") leben im
+    // designProfile — hier nur die Summary; der Patch läuft unten über die
+    // wantsProfileChange-Mechanik mit.
+    const beforeEl = new Set(doc.designProfile?.hiddenElements ?? []);
+    const afterEl = new Set(theme.hiddenElements);
+    const elLabels: Record<string, string> = {
+      "hero-media": "Hero-Bild",
+      "about-media": "Über-uns-Bild",
+    };
+    for (const el of afterEl) {
+      if (!beforeEl.has(el))
+        summary.push(`${elLabels[el] ?? el} ausgeblendet — Text nutzt die volle Breite`);
+    }
+    for (const el of beforeEl) {
+      if (!afterEl.has(el))
+        summary.push(`${elLabels[el] ?? el} wieder eingeblendet`);
+    }
+  }
   if (theme.sectionOrder !== undefined) {
     const order = Array.from(new Set(theme.sectionOrder)).filter(t =>
       presentTypes.has(t)
@@ -145,6 +164,7 @@ export function applyAiTheme(
     "density",
     "imageTreatment",
     "decorations",
+    "hiddenElements",
   ] as const;
   const layoutLabels: Record<(typeof layoutKeys)[number], string> = {
     heroLayout: "Hero-Layout",
@@ -154,6 +174,8 @@ export function applyAiTheme(
     density: "Abstände",
     imageTreatment: "Bildwirkung",
     decorations: "Schmuck-Illustrationen",
+    // Summary läuft separat (Einzelelemente mit deutschen Namen).
+    hiddenElements: "Ausgeblendete Elemente",
   };
   const wantsProfileChange = layoutKeys.some(key => theme[key] !== undefined);
   let designProfile: DesignProfile | undefined;
@@ -171,6 +193,7 @@ export function applyAiTheme(
       const value = theme[key];
       if (value !== undefined) {
         (merged as unknown as Record<string, unknown>)[key] = value;
+        if (key === "hiddenElements") continue; // Summary lief oben separat.
         summary.push(
           key === "decorations"
             ? value === "off"

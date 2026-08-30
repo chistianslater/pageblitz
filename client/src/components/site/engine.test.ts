@@ -112,9 +112,11 @@ describe("orderedSections", () => {
     // Seit Plan B6 zusätzlich "pageHeader" (nur innerhalb Page.sections
     // gültig, siehe schema.ts) — Platzhalter für die Exhaustivität von
     // Record<SectionType, string>, echte Unterseiten-Navigation baut Task 3.
-    // Seit 2026-08-30 zusätzlich "story" (#geschichte, Erzähl-Sektion).
+    // Seit 2026-08-30/31 zusätzlich story/usp/notice (Zusatz-Sektionen).
     expect(SECTION_ANCHORS.story).toBe("geschichte");
-    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(13);
+    expect(SECTION_ANCHORS.usp).toBe("vorteile");
+    expect(SECTION_ANCHORS.notice).toBe("hinweis");
+    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(15);
   });
 });
 

@@ -31,6 +31,14 @@ export const DESIGN_DENSITIES = ["airy", "compact"] as const;
 export const IMAGE_TREATMENTS = ["natural", "framed", "bleed"] as const;
 /** Schmuck-Illustrationen (`pb-deco`-Elemente): "off" blendet sie aus. */
 export const DECORATION_MODES = ["on", "off"] as const;
+/**
+ * Einzeln ausblendbare Sektions-Elemente (2026-08-31, „Bild weg, Text wird
+ * breiter"): das Layout passt sich zentral an (DESIGN_PROFILE_CSS,
+ * `data-pb-he`-Attribut). Nicht-destruktiv — die Bild-URLs bleiben im
+ * Dokument, Wiedereinblenden bringt alles zurück.
+ */
+export const HIDEABLE_ELEMENTS = ["hero-media", "about-media"] as const;
+export type HideableElement = (typeof HIDEABLE_ELEMENTS)[number];
 
 export type HeroLayout = (typeof HERO_LAYOUTS)[number];
 export type ServicesLayout = (typeof SERVICES_LAYOUTS)[number];
@@ -54,6 +62,8 @@ export interface DesignProfile {
   galleryLayoutMobile?: GalleryLayout;
   /** Schmuck-Illustrationen aus-/einblenden; fehlt das Feld, gilt "on". */
   decorations?: (typeof DECORATION_MODES)[number];
+  /** Einzeln ausgeblendete Sektions-Elemente (Hero-/Über-uns-Bild). */
+  hiddenElements?: HideableElement[];
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }

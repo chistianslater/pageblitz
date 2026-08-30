@@ -11,6 +11,7 @@ import {
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
+  HIDEABLE_ELEMENTS,
   IMAGE_TREATMENTS,
   SERVICES_LAYOUTS,
 } from "../siteContract/designProfile";
@@ -37,6 +38,8 @@ export const HIDEABLE_SECTION_TYPES = [
   "team",
   "cta",
   "story",
+  "usp",
+  "notice",
 ] as const;
 
 /**
@@ -76,8 +79,10 @@ export const AiThemePatchSchema = z
     decorations: z.enum(DECORATION_MODES).optional(),
     // VOLLSTÄNDIGE Ersatz-Listen (kein Merge): [] blendet alles wieder ein
     // bzw. setzt die Reihenfolge auf die Dokument-Ordnung zurück.
-    hiddenSections: z.array(z.enum(HIDEABLE_SECTION_TYPES)).max(12).optional(),
+    hiddenSections: z.array(z.enum(HIDEABLE_SECTION_TYPES)).max(14).optional(),
     sectionOrder: z.array(z.enum(SECTION_TYPES)).max(16).optional(),
+    // Einzeln ausblendbare Sektions-Elemente („Bild weg, Text breiter").
+    hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
   })
   .strict();
 
@@ -205,6 +210,8 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   team: "Team",
   cta: "CTA",
   story: "Geschichte",
+  usp: "Vorteile",
+  notice: "Hinweis-Banner",
   // pageHeader existiert nur in Page.sections (Unterseiten) — diffPages
   // vergleicht sie mit demselben Feld-Mechanismus wie diffDocuments.
   pageHeader: "Kopfzeile",
@@ -233,6 +240,8 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
   team: { headline: "Überschrift" },
   cta: { headline: "Überschrift", ctaText: "Button-Text" },
   story: { headline: "Überschrift", body: "Text" },
+  usp: { headline: "Überschrift" },
+  notice: { text: "Text" },
   pageHeader: { title: "Titel", intro: "Einleitung" },
 };
 
@@ -269,6 +278,11 @@ const ARRAY_FIELDS: Partial<Record<SectionType, ArrayFieldSpec>> = {
     singular: "Bild",
     subfields: { alt: "Alt-Text" },
   },
+  usp: {
+    field: "items",
+    singular: "Vorteil",
+    subfields: { title: "Titel", text: "Text" },
+  },
 };
 
 /** Zu tief verschachtelte Listen (Kategorien mit eigenen Positionen) → ganze Liste als JSON-String. */
@@ -291,7 +305,8 @@ function toDiffString(value: unknown): string {
 function sectionSummary(section: SectionV2 | PageSection): string {
   const record = section as unknown as Record<string, unknown>;
   const headline = record.headline ?? record.title;
-  const body = typeof record.body === "string" ? record.body : "";
+  const bodyValue = record.body ?? record.text;
+  const body = typeof bodyValue === "string" ? bodyValue : "";
   const parts = [
     typeof headline === "string" ? `„${headline}“` : "",
     body.length > 160 ? `${body.slice(0, 160)}…` : body,

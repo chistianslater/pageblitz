@@ -152,6 +152,15 @@ ${h("gallery")}="filmstrip"] ${SLOT.galleryItems} img{width:100%!important;heigh
 }
 
 export const DESIGN_PROFILE_CSS = `
+/* Einzeln ausgeblendete Elemente (2026-08-31, „Bild weg, Text breiter"):
+   data-pb-he trägt die hiddenElements des Profils; das Layout zieht nach —
+   Hero-/About-Grids kollabieren auf eine Spalte. */
+.pb-site[data-pb-he~="hero-media"] #start :is(${SLOT.heroMedia},.pb-hero-extras){display:none!important}
+.pb-site[data-pb-he~="hero-media"] #start ${SLOT.heroSplit}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important}
+.pb-site[data-pb-he~="hero-media"] #start ${SLOT.heroCopy}{max-width:none!important}
+.pb-site[data-pb-he~="about-media"] #ueber-uns ${SLOT.aboutMedia}{display:none!important}
+.pb-site[data-pb-he~="about-media"] #ueber-uns ${SLOT.aboutGrid}{display:block!important;grid-template-columns:1fr!important}
+
 /* Dichte + Bildwirkung gelten auf allen Viewports */
 .pb-site[data-pb-density="compact"] section{padding-top:clamp(2.5rem,5vw,4.5rem)!important;padding-bottom:clamp(2.5rem,5vw,4.5rem)!important}
 .pb-site[data-pb-density="compact"] #start{min-height:auto!important}

@@ -23,7 +23,7 @@ function assertSameSectionTypeSet(
 ): void {
   const originalTypes = new Set<string>(originalSections.map(s => s.type));
   for (const section of candidateSections) {
-    if (section.type === "story") continue;
+    if (ADDABLE_TYPES.has(section.type)) continue;
     if (!originalTypes.has(section.type)) {
       throw new Error(
         `Die KI hat einen neuen Sektionstyp erfunden: "${section.type}".`
@@ -31,6 +31,12 @@ function assertSameSectionTypeSet(
     }
   }
 }
+
+/**
+ * Faktenfreie Zusatz-Sektionen — die einzigen, die die KI hinzufügen und
+ * entfernen darf (story 2026-08-30, usp/notice 2026-08-31).
+ */
+const ADDABLE_TYPES = new Set<string>(["story", "usp", "notice"]);
 
 /**
  * Kopiert Fakten (imageUrl, ctaHref) einer einzelnen Sektion vom Original in
@@ -164,12 +170,11 @@ function restoreSectionList(
   const candidateByType = new Map<string, AnySection>(
     candidateSections.map(s => [s.type, s])
   );
-  const candidateHasStory = candidateByType.has("story");
-  const originalHasStory = originalSections.some(s => s.type === "story");
+  const originalTypes = new Set<string>(originalSections.map(s => s.type));
 
   const restored = originalSections
-    // story ist die einzige Sektion, die die KI entfernen darf.
-    .filter(s => s.type !== "story" || candidateHasStory)
+    // Nur die faktenfreien Zusatz-Sektionen darf die KI entfernen.
+    .filter(s => !ADDABLE_TYPES.has(s.type) || candidateByType.has(s.type))
     .map(originalSection => {
       if (originalSection.type === "contact") return originalSection;
       const candidateSection = candidateByType.get(originalSection.type);
@@ -177,21 +182,29 @@ function restoreSectionList(
       return restoreSectionFacts(originalSection, candidateSection);
     });
 
-  if (candidateHasStory && !originalHasStory) {
-    const story = candidateByType.get("story")!;
-    const storyIndex = candidateSections.findIndex(s => s.type === "story");
-    const predecessorType = candidateSections[storyIndex - 1]?.type;
+  // Neue Zusatz-Sektionen an der Position einfügen, die die KI gewählt hat
+  // (nach ihrem Vorgänger-Typ im Kandidaten; sonst ans Ende vor contact —
+  // "notice" ganz nach vorn, der Banner liegt ohnehin über der Nav).
+  for (const type of ADDABLE_TYPES) {
+    if (!candidateByType.has(type) || originalTypes.has(type)) continue;
+    const added = candidateByType.get(type)!;
+    if (type === "notice") {
+      restored.unshift(added);
+      continue;
+    }
+    const addedIndex = candidateSections.findIndex(s => s.type === type);
+    const predecessorType = candidateSections[addedIndex - 1]?.type;
     const anchor = predecessorType
       ? restored.findIndex(s => s.type === predecessorType)
       : -1;
     if (anchor !== -1) {
-      restored.splice(anchor + 1, 0, story);
+      restored.splice(anchor + 1, 0, added);
     } else {
       const contactIndex = restored.findIndex(s => s.type === "contact");
       restored.splice(
         contactIndex === -1 ? restored.length : contactIndex,
         0,
-        story
+        added
       );
     }
   }

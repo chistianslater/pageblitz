@@ -641,3 +641,51 @@ describe("story-Sektion (2026-08-30): einzige von der KI veränderbare Sektionsm
     ]);
   });
 });
+
+describe("usp/notice (2026-08-31): weitere faktenfreie Zusatz-Sektionen", () => {
+  test("KI fügt usp und notice hinzu — notice landet vorn, usp an KI-Position", async () => {
+    const withBoth = [
+      { type: "notice", text: "Im August Betriebsurlaub." },
+      doc.sections[0],
+      {
+        type: "usp",
+        headline: "Warum wir",
+        items: [{ title: "25 Jahre" }, { title: "Festpreise" }],
+      },
+      doc.sections[1],
+      doc.sections[2],
+    ];
+    vi.mocked(invokeLLM).mockResolvedValueOnce(llmContentResponse(withBoth));
+    const result = await proposeAiEdit({
+      doc,
+      message: "vorteile und urlaubshinweis",
+      category: "Tischler",
+    });
+    expect(result.kind).toBe("content");
+    if (result.kind !== "content") return;
+    expect(result.next.sections.map(s => s.type)).toEqual([
+      "notice",
+      "hero",
+      "usp",
+      "services",
+      "contact",
+    ]);
+  });
+
+  test("Diff-Kurzfassung nutzt bei notice das text-Feld statt JSON", async () => {
+    vi.mocked(invokeLLM).mockResolvedValueOnce(
+      llmContentResponse([
+        { type: "notice", text: "Im August Betriebsurlaub." },
+        ...doc.sections,
+      ])
+    );
+    const result = await proposeAiEdit({
+      doc,
+      message: "urlaubshinweis",
+      category: "Tischler",
+    });
+    if (result.kind !== "content") throw new Error("content erwartet");
+    const entry = result.diff.find(d => d.label.includes("Hinweis"));
+    expect(entry?.after).toBe("Im August Betriebsurlaub.");
+  });
+});

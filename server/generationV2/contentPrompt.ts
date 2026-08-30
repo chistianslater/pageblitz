@@ -37,9 +37,11 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
   pricelist: `"headline" (optional), "categories": [{ "name" (Pflicht), "items": [{ "name" (Pflicht), "description" (optional), "price" (Pflicht) }] (mind. 1) }] (mind. 1 Kategorie)`,
   team: `"headline" (optional), "members": [{ "name" (Pflicht), "role" (optional) }] (mind. 1 Eintrag) — KEINE "imageUrl"`,
   cta: `"headline" (Pflicht), "ctaText" (Pflicht) — KEINE "ctaHref"`,
-  // story entsteht nur im Studio (KI-Chat, „mehr erzählen") — die
+  // story/usp/notice entstehen nur im Studio (KI-Chat) — die
   // Erstgenerierung fragt sie nie an. Platzhalter für Exhaustivität.
   story: `"headline" (Pflicht), "body" (Pflicht, 2–5 Absätze)`,
+  usp: `"headline" (optional), "items": [{ "title" (Pflicht), "text" (optional) }] (2–6 Einträge)`,
+  notice: `"text" (Pflicht, 1 Satz)`,
   // pageHeader wird von generateSiteContent (Startseiten-Generator) nie
   // angefragt — Unterseiten-Inhalte entstehen im Studio, nicht bei der
   // Erstgenerierung (Spec §2.1). Platzhalter für Exhaustivität von

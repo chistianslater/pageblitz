@@ -16,6 +16,8 @@ import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { RICH_TEXT_CSS } from "./richText";
 import { STORY_CSS } from "./storySection";
+import { USP_CSS } from "./uspSection";
+import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
 
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
 const DECO_TOGGLE_CSS = `
@@ -173,6 +175,7 @@ export const SiteRenderer: React.FC<{
       data-pb-density={designProfile?.density}
       data-pb-image={designProfile?.imageTreatment}
       data-pb-deco={designProfile?.decorations}
+      data-pb-he={designProfile?.hiddenElements?.join(" ") || undefined}
     >
       {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)
           für SSR + CSR aus einer Quelle — siehe mobileNavCss.ts.
@@ -193,6 +196,10 @@ export const SiteRenderer: React.FC<{
             "\n" +
             STORY_CSS +
             "\n" +
+            USP_CSS +
+            "\n" +
+            NOTICE_CSS +
+            "\n" +
             DECO_TOGGLE_CSS +
             "\n" +
             LAYOUT_POLISH_CSS +
@@ -207,6 +214,10 @@ export const SiteRenderer: React.FC<{
           dangerouslySetInnerHTML={{ __html: albumJson }}
         />
       )}
+      {/* Saison-/Aktionsbanner GANZ OBEN, über der Pack-Navigation —
+          zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
+          Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
+      {!currentPage && <NoticeBanner data={effectiveData} />}
       <mod.Page
         data={packRenderData}
         basePath={basePath}
