@@ -1,5 +1,5 @@
 /**
- * Die 14 Style-Pack-IDs — bewusst in einem eigenen, **zod-freien** Modul.
+ * Die 20 Style-Pack-IDs — bewusst in einem eigenen, **zod-freien** Modul.
  *
  * `shared/siteContract/schema.ts` (und damit zod, ~57 kB unminifiziert)
  * re-exportiert die Liste für `PackIdSchema`; Module, die nur die IDs
@@ -22,4 +22,10 @@ export const PACK_IDS = [
   "zunft",
   "schimmer",
   "fundament",
+  "karat",
+  "plakat",
+  "raster",
+  "strom",
+  "riviera",
+  "ernte",
 ] as const;

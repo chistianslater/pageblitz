@@ -70,7 +70,7 @@ die Klasse in den Devtools nicht ankommt.
 8. `StudioProof` — drei CSS-Schemata, keine Pack-Screenshots
 9. `FeatureShowcase` — dunkel, Pillars **Antworten / Zeigen / Buchen**
 10. `Pricing` (`#pricing`) — eine Karte, dann Vergleichstabelle (Mint-Spalte)
-11. `PackShowcase` (`#showcase`) — 14 Packs, Modal → `/demo/<id>`
+11. `PackShowcase` (`#showcase`) — 20 Packs, Modal → `/demo/<id>`
 12. `TrustSection` — Tags Recht / Hosting / Inhalte / Vertrag
 13. `Testimonials` — no-op solange leer
 14. `IndustryLinks` (`#branchen`)

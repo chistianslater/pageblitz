@@ -2560,6 +2560,1033 @@ const FUNDAMENT_MINIMAL: WebsiteDataV2 = {
   google: { rating: 4.8, reviewCount: 58 },
 };
 
+
+const KARAT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "karat",
+  businessName: "Goldschmiede Hartung",
+  slug: "goldschmiede-hartung-luebeck",
+  businessCategory: "Goldschmiede",
+  tagline: "Bleibendes, von Hand.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Bleibendes, von Hand.",
+      subheadline:
+        "Trauringe, Umarbeitungen und eigene Kollektionen — gefertigt in der Werkstatt hinter dem Laden, seit 1987 in der Lübecker Altstadt.",
+      ctaText: "Beratungstermin vereinbaren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/karat-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Werkstatt & Vitrine",
+      intro: "Vier Felder, ein Maßstab: Präzision am Werktisch.",
+      items: [
+        {
+          title: "Trauringe nach Maß",
+          description:
+            "Vom ersten Gespräch bis zur Gravur — Ringe, die es genau einmal gibt.",
+        },
+        {
+          title: "Umarbeitungen",
+          description:
+            "Erbstücke behutsam neu gefasst: alter Stein, neue Fassung, dieselbe Geschichte.",
+        },
+        {
+          title: "Reparatur & Pflege",
+          description:
+            "Kettenglieder, Fassungen, Verschlüsse — meist innerhalb einer Woche.",
+        },
+        {
+          title: "Eigene Kollektion",
+          description:
+            "Kleine Serien aus 750er Gold und Silber, entworfen und gefertigt im Haus.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Die Werkstatt",
+      body: "Seit 1987 arbeiten wir in der Hüxstraße — zwei Werktische, eine Walze, ein Lötplatz. Katrin Hartung führt die Werkstatt in zweiter Generation und nimmt sich für jedes Stück die Zeit, die es verlangt. Wer mag, schaut bei der Anprobe durch die offene Tür in die Werkstatt: Hier entsteht, was Sie später tragen.",
+      imageUrl: "/demo/karat-detail-1.webp",
+    },
+    {
+      type: "gallery",
+      headline: "Aus der Vitrine",
+      images: [
+        {
+          url: "/demo/karat-detail-2.webp",
+          alt: "Trauringe aus Roségold auf dunklem Samt",
+        },
+        {
+          url: "/demo/karat-detail-1.webp",
+          alt: "Werktisch mit Punziereisen und Feilen",
+        },
+      ],
+    },
+    {
+      type: "testimonials",
+      headline: "Stimmen",
+      items: [
+        {
+          author: "Friederike Voss",
+          text: "Unsere Trauringe sind genau so geworden, wie wir sie uns nicht besser hätten ausdenken können — die Beratung war ein Geschenk.",
+          rating: 5,
+        },
+        {
+          author: "Jan Petersen",
+          text: "Der Ring meiner Großmutter trägt jetzt einen neuen Stein und bleibt doch ganz ihr Ring. Große Kunst.",
+          rating: 5,
+        },
+        {
+          author: "Maren Lühr",
+          text: "Sorgfältig, ehrlich beraten, fair im Preis. Man merkt in jeder Minute, dass hier jemand sein Handwerk liebt.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Wie lange dauert die Anfertigung von Trauringen?",
+          answer:
+            "Rechnen Sie mit vier bis sechs Wochen ab dem zweiten Termin — Gravur inklusive.",
+        },
+        {
+          question: "Arbeiten Sie auch mit mitgebrachtem Gold?",
+          answer:
+            "Ja. Altgold schmelzen wir ein oder arbeiten es direkt um — das besprechen wir am Werktisch.",
+        },
+        {
+          question: "Braucht es einen Termin?",
+          answer:
+            "Für Beratungen ja, damit wir uns Zeit nehmen können. Reparaturen nehmen wir auch spontan an.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0451 70 44 82",
+      email: "werkstatt@goldschmiede-hartung.de",
+      street: "Hüxstraße 47",
+      zip: "23552",
+      city: "Lübeck",
+      openingHours: [
+        { day: "Di–Fr", hours: "10:00 – 18:00" },
+        { day: "Sa", hours: "10:00 – 14:00" },
+      ],
+    },
+  ],
+  seo: {
+    title: "Goldschmiede Hartung Lübeck — Trauringe, Umarbeitungen, Reparatur",
+    description:
+      "Goldschmiede Hartung in der Lübecker Altstadt: Trauringe nach Maß, Umarbeitungen und eigene Kollektionen — von Hand gefertigt seit 1987.",
+  },
+  footerNote: "Goldschmiede Hartung · Lübeck · seit 1987",
+  google: { rating: 5.0, reviewCount: 41 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const KARAT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "karat",
+  businessName: "Goldschmiede Hartung",
+  slug: "goldschmiede-hartung-luebeck",
+  businessCategory: "Goldschmiede",
+  tagline: "Bleibendes, von Hand.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Bleibendes, von Hand.",
+      subheadline: "Trauringe und Umarbeitungen aus der Lübecker Altstadt.",
+      ctaText: "Beratungstermin vereinbaren",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/karat-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Werkstatt & Vitrine",
+      items: [
+        {
+          title: "Trauringe nach Maß",
+          description: "Ringe, die es genau einmal gibt.",
+        },
+        {
+          title: "Umarbeitungen",
+          description: "Erbstücke behutsam neu gefasst.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0451 70 44 82",
+      email: "werkstatt@goldschmiede-hartung.de",
+      street: "Hüxstraße 47",
+      zip: "23552",
+      city: "Lübeck",
+      openingHours: [{ day: "Di–Fr", hours: "10:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Goldschmiede Hartung Lübeck",
+    description: "Trauringe, Umarbeitungen und Reparaturen — von Hand.",
+  },
+  footerNote: "Goldschmiede Hartung · Lübeck · seit 1987",
+  google: { rating: 5.0, reviewCount: 41 },
+};
+
+const PLAKAT_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "plakat",
+  businessName: "Blackline Tattoo",
+  slug: "blackline-tattoo-dortmund",
+  businessCategory: "Tattoostudio",
+  tagline: "Saubere Linien. Ehrliche Preise.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Saubere Linien. Ehrliche Preise.",
+      subheadline:
+        "Custom-Tattoos, Fine Line und Cover-ups im Dortmunder Kreuzviertel — gestochen nach Termin, beraten ohne Aufschneiderei.",
+      ctaText: "Termin anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/plakat-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Was wir stechen",
+      intro: "Vier Richtungen — alles custom, nichts vom Blatt.",
+      items: [
+        {
+          title: "Custom Design",
+          description:
+            "Dein Motiv, von uns gezeichnet: vom ersten Scribble bis zur Stencil-Freigabe.",
+        },
+        {
+          title: "Fine Line",
+          description:
+            "Feine, präzise Linienarbeit — Schrift, Florales, Minimalmotive.",
+        },
+        {
+          title: "Blackwork",
+          description:
+            "Flächen, Kontraste, Geometrie — satt gestochen, sauber verheilt.",
+        },
+        {
+          title: "Cover-up",
+          description:
+            "Alte Jugendsünden verschwinden unter einem Motiv, das du wirklich willst.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Das Studio",
+      body: "Blackline gibt es seit 2016: zwei Arbeitsplätze, Hygienezertifikat an der Wand, Skizzenbücher auf dem Tresen. Wir nehmen uns für die Beratung genauso viel Zeit wie für die Session — weil ein Tattoo bleibt und Beratung im Zweifel wichtiger ist als der schnelle Termin. Walk-ins nehmen wir, wenn ein Platz frei ist; sicherer ist eine Anfrage vorab.",
+      imageUrl: "/demo/plakat-detail-1.webp",
+    },
+    {
+      type: "testimonials",
+      headline: "Sagen die Leute",
+      items: [
+        {
+          author: "Nadja K.",
+          text: "Beratung auf Augenhöhe, Stencil dreimal angepasst, bis es saß. Ergebnis: besser als mein Wunschbild.",
+          rating: 5,
+        },
+        {
+          author: "Timo Berger",
+          text: "Mein Cover-up sieht aus, als wäre nie was anderes da gewesen. Sauber, schnell, fairer Kurs.",
+          rating: 5,
+        },
+        {
+          author: "Alina Roth",
+          text: "Fine-Line-Schrift, ein Jahr alt, immer noch messerscharf. Kommt nie wieder ein anderes Studio dran.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Kurz geklärt",
+      items: [
+        {
+          question: "Was kostet ein Tattoo bei euch?",
+          answer:
+            "Kleinteile ab 90 €, danach nach Aufwand — du bekommst vor dem Termin eine ehrliche Einschätzung, keine Überraschung danach.",
+        },
+        {
+          question: "Nehmt ihr Walk-ins?",
+          answer:
+            "Wenn ein Platz frei ist, ja. Sicherer: kurze Anfrage mit Motiv-Idee und Wunschgröße.",
+        },
+        {
+          question: "Wie läuft die Nachsorge?",
+          answer:
+            "Du gehst mit Folie, Pflegeplan und unserer Nummer raus — bei Fragen meldest du dich einfach.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0231 58 96 41",
+      email: "hello@blackline-tattoo.de",
+      street: "Kreuzstraße 74",
+      zip: "44139",
+      city: "Dortmund",
+      openingHours: [
+        { day: "Di–Fr", hours: "11:00 – 19:00" },
+        { day: "Sa", hours: "11:00 – 16:00" },
+      ],
+    },
+  ],
+  seo: {
+    title: "Blackline Tattoo Dortmund — Custom, Fine Line, Cover-up",
+    description:
+      "Blackline Tattoo im Dortmunder Kreuzviertel: Custom-Designs, Fine Line, Blackwork und Cover-ups — gestochen nach Termin, beraten auf Augenhöhe.",
+  },
+  footerNote: "Blackline Tattoo · Dortmund · seit 2016",
+  google: { rating: 4.9, reviewCount: 132 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const PLAKAT_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "plakat",
+  businessName: "Blackline Tattoo",
+  slug: "blackline-tattoo-dortmund",
+  businessCategory: "Tattoostudio",
+  tagline: "Saubere Linien. Ehrliche Preise.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Saubere Linien. Ehrliche Preise.",
+      subheadline: "Custom-Tattoos im Dortmunder Kreuzviertel.",
+      ctaText: "Termin anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/plakat-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Was wir stechen",
+      items: [
+        { title: "Custom Design", description: "Dein Motiv, von uns gezeichnet." },
+        { title: "Cover-up", description: "Alte Motive sauber überdeckt." },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0231 58 96 41",
+      email: "hello@blackline-tattoo.de",
+      street: "Kreuzstraße 74",
+      zip: "44139",
+      city: "Dortmund",
+      openingHours: [{ day: "Di–Fr", hours: "11:00 – 19:00" }],
+    },
+  ],
+  seo: {
+    title: "Blackline Tattoo Dortmund",
+    description: "Custom-Tattoos, Fine Line und Cover-ups nach Termin.",
+  },
+  footerNote: "Blackline Tattoo · Dortmund · seit 2016",
+  google: { rating: 4.9, reviewCount: 132 },
+};
+
+const RASTER_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "raster",
+  businessName: "Büro Lindqvist Architekten",
+  slug: "buero-lindqvist-architekten-basel",
+  businessCategory: "Architekturbüro",
+  tagline: "Räume, die rechnen.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Räume, die rechnen.",
+      subheadline:
+        "Architektur und Umbau im Bestand — vom Vorentwurf bis zur Bauleitung, mit klaren Kosten und einem Plan, der hält.",
+      ctaText: "Projekt anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/raster-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Leistungsphasen",
+      intro: "Vier Felder — dokumentiert, terminiert, verantwortet.",
+      items: [
+        {
+          title: "Entwurf & Planung",
+          description:
+            "Vom Raumprogramm zum Vorentwurf: Varianten, Kostenrahmen, Entscheidung.",
+        },
+        {
+          title: "Umbau im Bestand",
+          description:
+            "Aufmaß, Substanzbewertung und Eingriffe, die das Haus weiterdenken.",
+        },
+        {
+          title: "Genehmigungsplanung",
+          description:
+            "Bauantrag, Behördenabstimmung und Nachweise aus einer Hand.",
+        },
+        {
+          title: "Bauleitung",
+          description:
+            "Ausschreibung, Vergabe, Termin- und Kostenkontrolle bis zur Abnahme.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Das Büro",
+      body: "Büro Lindqvist arbeitet seit 2011 an der Schnittstelle von Bestand und Neubau — drei Architekten, eine Bauleiterin, ein Modellbautisch. Wir glauben an Pläne, die man lesen kann, an Budgets, die man hält, und an Entwürfe, die aus dem Ort kommen statt aus dem Katalog. Referenzen zeigen wir im Gespräch — passend zur Aufgabe.",
+      imageUrl: "/demo/raster-detail-1.webp",
+    },
+    {
+      type: "testimonials",
+      headline: "Bauherren",
+      items: [
+        {
+          author: "Familie Oberli",
+          text: "Der Umbau blieb im Budget und der Zeitplan hielt auf die Woche. Das hatten wir so noch nicht erlebt.",
+          rating: 5,
+        },
+        {
+          author: "S. Brunner, Verwaltung",
+          text: "Präzise Pläne, klare Kommunikation mit den Gewerken — die Bauleitung war jede Rechnung wert.",
+          rating: 5,
+        },
+        {
+          author: "Dr. Anna Feld",
+          text: "Aus einem dunklen Gewerberaum wurde eine Praxis mit Licht und Logik. Genau zugehört, präzise umgesetzt.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Ab welcher Projektgröße arbeiten Sie?",
+          answer:
+            "Ab Umbauten im mittleren fünfstelligen Bereich — entscheidend ist die Aufgabe, nicht die Summe.",
+        },
+        {
+          question: "Was kostet der Vorentwurf?",
+          answer:
+            "Wir arbeiten nach Honorarordnung mit transparenter Phasenaufstellung — Sie sehen vor jeder Phase, was sie kostet.",
+        },
+        {
+          question: "Begleiten Sie auch nur die Bauleitung?",
+          answer:
+            "Ja, auch einzelne Phasen — sofern die Planunterlagen eine belastbare Grundlage bieten.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0761 29 84 30",
+      email: "buero@lindqvist-architekten.de",
+      street: "Rehlingstraße 8",
+      zip: "79100",
+      city: "Freiburg",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 17:30" }],
+    },
+  ],
+  seo: {
+    title: "Büro Lindqvist Architekten Freiburg — Entwurf, Umbau, Bauleitung",
+    description:
+      "Büro Lindqvist Architekten in Freiburg: Entwurf, Umbau im Bestand, Genehmigungsplanung und Bauleitung — mit klaren Kosten und haltbaren Plänen.",
+  },
+  footerNote: "Büro Lindqvist Architekten · Freiburg · seit 2011",
+  google: { rating: 4.8, reviewCount: 27 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const RASTER_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "raster",
+  businessName: "Büro Lindqvist Architekten",
+  slug: "buero-lindqvist-architekten-basel",
+  businessCategory: "Architekturbüro",
+  tagline: "Räume, die rechnen.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Räume, die rechnen.",
+      subheadline: "Architektur und Umbau im Bestand.",
+      ctaText: "Projekt anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/raster-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Leistungsphasen",
+      items: [
+        {
+          title: "Entwurf & Planung",
+          description: "Vom Raumprogramm zum Vorentwurf.",
+        },
+        { title: "Bauleitung", description: "Kostenkontrolle bis zur Abnahme." },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0761 29 84 30",
+      email: "buero@lindqvist-architekten.de",
+      street: "Rehlingstraße 8",
+      zip: "79100",
+      city: "Freiburg",
+      openingHours: [{ day: "Mo–Fr", hours: "9:00 – 17:30" }],
+    },
+  ],
+  seo: {
+    title: "Büro Lindqvist Architekten Freiburg",
+    description: "Entwurf, Umbau und Bauleitung mit klaren Kosten.",
+  },
+  footerNote: "Büro Lindqvist Architekten · Freiburg · seit 2011",
+  google: { rating: 4.8, reviewCount: 27 },
+};
+
+const STROM_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "strom",
+  businessName: "Nordvolt Elektrotechnik",
+  slug: "nordvolt-elektrotechnik-kiel",
+  businessCategory: "Elektrotechnik",
+  tagline: "Strom, der ankommt.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Strom, der ankommt.",
+      subheadline:
+        "Photovoltaik, Wallboxen und Smart-Home-Installationen in Kiel und Umland — geplant vom Meisterbetrieb, angeschlossen mit Protokoll.",
+      ctaText: "Anlage anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/strom-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      intro: "Vier Systeme — ein Ansprechpartner, ein Protokoll.",
+      items: [
+        {
+          title: "Photovoltaik",
+          description:
+            "Dachanlage, Speicher, Anmeldung beim Netzbetreiber — schlüsselfertig mit Ertragsprognose.",
+        },
+        {
+          title: "Wallbox & Laden",
+          description:
+            "Ladepunkte für Zuhause und Fuhrpark, inklusive Lastmanagement und Förderberatung.",
+        },
+        {
+          title: "Smart Home",
+          description:
+            "KNX und Funk-Systeme: Licht, Heizung, Beschattung — bedienbar statt kompliziert.",
+        },
+        {
+          title: "E-Check & Service",
+          description:
+            "Prüfprotokolle für Bestand und Gewerbe, Störungsdienst mit fester Reaktionszeit.",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Der Betrieb",
+      body: "Nordvolt ist ein Elektro-Meisterbetrieb mit acht Kolleginnen und Kollegen — gegründet 2015, zuhause zwischen Kiel und Eckernförde. Wir planen Anlagen so, wie wir sie selbst betreiben würden: dokumentiert, wartbar, ohne Abhängigkeit von einem einzigen Hersteller. Nach der Abnahme bekommen Sie Zugangsdaten, Protokolle und eine Nummer, unter der jemand abhebt.",
+      imageUrl: "/demo/strom-detail-1.webp",
+    },
+    {
+      type: "testimonials",
+      headline: "Kundenstimmen",
+      items: [
+        {
+          author: "Henrik Paulsen",
+          text: "Von der Dachplanung bis zur Netzanmeldung ein Ablauf ohne Reibung — die Anlage liefert über Prognose.",
+          rating: 5,
+        },
+        {
+          author: "Sina Mertens",
+          text: "Wallbox montiert, Förderung erklärt, Lastmanagement sauber eingestellt. Termin gehalten, Preis gehalten.",
+          rating: 5,
+        },
+        {
+          author: "Bäckerei Thomsen",
+          text: "Der Störungsdienst war nach 40 Minuten da, als die Kühlung stand. Das vergisst man nicht.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Wie schnell rechnet sich eine PV-Anlage?",
+          answer:
+            "Je nach Dach und Verbrauch meist zwischen neun und zwölf Jahren — die Prognose rechnen wir vor Vertragsschluss transparent durch.",
+        },
+        {
+          question: "Übernehmt ihr die Anmeldung beim Netzbetreiber?",
+          answer:
+            "Ja, vollständig — inklusive Marktstammdatenregister und Zählersetzung.",
+        },
+        {
+          question: "Wartet ihr auch Fremdanlagen?",
+          answer:
+            "Nach einem E-Check gern — dann wissen beide Seiten, worauf sie sich einlassen.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0431 66 09 14",
+      email: "service@nordvolt.de",
+      street: "Schwedendamm 19",
+      zip: "24143",
+      city: "Kiel",
+      openingHours: [{ day: "Mo–Fr", hours: "7:30 – 16:30" }],
+    },
+  ],
+  seo: {
+    title: "Nordvolt Elektrotechnik Kiel — Photovoltaik, Wallbox, Smart Home",
+    description:
+      "Nordvolt Elektrotechnik in Kiel: Photovoltaik mit Speicher, Wallboxen, Smart Home und E-Check — Meisterbetrieb mit Protokoll und festen Reaktionszeiten.",
+  },
+  footerNote: "Nordvolt Elektrotechnik · Kiel · seit 2015",
+  google: { rating: 4.9, reviewCount: 88 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const STROM_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "strom",
+  businessName: "Nordvolt Elektrotechnik",
+  slug: "nordvolt-elektrotechnik-kiel",
+  businessCategory: "Elektrotechnik",
+  tagline: "Strom, der ankommt.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Strom, der ankommt.",
+      subheadline: "Photovoltaik, Wallboxen und Smart Home in Kiel.",
+      ctaText: "Anlage anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/strom-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Leistungen",
+      items: [
+        {
+          title: "Photovoltaik",
+          description: "Dachanlage und Speicher, schlüsselfertig.",
+        },
+        {
+          title: "Wallbox & Laden",
+          description: "Ladepunkte inklusive Lastmanagement.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0431 66 09 14",
+      email: "service@nordvolt.de",
+      street: "Schwedendamm 19",
+      zip: "24143",
+      city: "Kiel",
+      openingHours: [{ day: "Mo–Fr", hours: "7:30 – 16:30" }],
+    },
+  ],
+  seo: {
+    title: "Nordvolt Elektrotechnik Kiel",
+    description: "Photovoltaik, Wallboxen und Smart Home vom Meisterbetrieb.",
+  },
+  footerNote: "Nordvolt Elektrotechnik · Kiel · seit 2015",
+  google: { rating: 4.9, reviewCount: 88 },
+};
+
+const RIVIERA_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "riviera",
+  businessName: "Casa Belmare",
+  slug: "casa-belmare-lindau",
+  businessCategory: "Ferienwohnung",
+  tagline: "Ankommen, Fenster auf, See.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Ankommen, Fenster auf, See.",
+      subheadline:
+        "Vier Ferienwohnungen in einem Altstadthaus auf der Lindauer Insel — zwei Minuten zum Hafen, Frühstückskorb auf Wunsch vor der Tür.",
+      ctaText: "Verfügbarkeit anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/riviera-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Die Wohnungen",
+      intro: "Vier Zuschnitte — alle mit Küche, Leinen und Seeluft.",
+      items: [
+        {
+          title: "Belmare Uno",
+          description:
+            "Zwei Zimmer, Südbalkon, Blick über die Dächer zum Hafen — für zwei bis drei Gäste.",
+          price: "ab 118 €/Nacht",
+        },
+        {
+          title: "Belmare Due",
+          description:
+            "Drei Zimmer im ersten Stock, große Wohnküche, Stellplatz inklusive — für Familien.",
+          price: "ab 146 €/Nacht",
+        },
+        {
+          title: "Studio Porto",
+          description:
+            "Kompaktes Studio mit Erker und Kaffeemaschine, die den Namen verdient.",
+          price: "ab 89 €/Nacht",
+        },
+        {
+          title: "Dachterrasse Sole",
+          description:
+            "Die obere Etage mit privater Dachterrasse — Sonnenuntergänge inklusive.",
+          price: "ab 172 €/Nacht",
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Das Haus",
+      body: "Casa Belmare ist ein Altstadthaus von 1911, das wir 2019 behutsam renoviert haben: Kalkputz, Eichenböden, Bäder mit Tageslicht. Wir wohnen selbst im Erdgeschoss — deshalb funktioniert der Check-in auch um zehn am Abend, und deshalb wissen wir, wo es den besten Espresso der Insel gibt. Räder, Kindersitze und SUP-Boards leihen Sie direkt bei uns.",
+      imageUrl: "/demo/riviera-detail-1.webp",
+    },
+    {
+      type: "gallery",
+      headline: "Einblicke",
+      images: [
+        {
+          url: "/demo/riviera-detail-2.webp",
+          alt: "Wohnraum mit Erker und Blick Richtung Hafen",
+        },
+        {
+          url: "/demo/riviera-detail-1.webp",
+          alt: "Frühstückskorb auf der Dachterrasse",
+        },
+      ],
+    },
+    {
+      type: "testimonials",
+      headline: "Gästestimmen",
+      items: [
+        {
+          author: "Familie Winter",
+          text: "Die Lage ist unschlagbar und das Haus mit so viel Geschmack gemacht — wir kommen jedes Jahr wieder.",
+          rating: 5,
+        },
+        {
+          author: "Claire Dubois",
+          text: "Late Check-in um 23 Uhr, ein Lächeln an der Tür und morgens der Frühstückskorb. Gastfreundschaft, wie sie sein soll.",
+          rating: 5,
+        },
+        {
+          author: "Jens & Ole",
+          text: "Dachterrasse Sole hält, was der Name verspricht. Bester Sonnenuntergang am See.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Gut zu wissen",
+      items: [
+        {
+          question: "Ab wann ist der Check-in möglich?",
+          answer:
+            "Ab 15 Uhr — und weil wir im Haus wohnen, klappt nach Absprache auch ein später Abend.",
+        },
+        {
+          question: "Gibt es Parkplätze?",
+          answer:
+            "Belmare Due hat einen festen Stellplatz; für alle anderen reservieren wir gern im Parkhaus am Karlsbad.",
+        },
+        {
+          question: "Sind Hunde willkommen?",
+          answer:
+            "In Uno und Porto ja, nach kurzer Anfrage — die Insel ist ein Paradies für Spaziergänge.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "08382 27 45 10",
+      email: "post@casa-belmare.de",
+      street: "In der Grub 24",
+      zip: "88131",
+      city: "Lindau",
+      openingHours: [{ day: "Check-in", hours: "15:00 – 20:00" }],
+    },
+  ],
+  seo: {
+    title: "Casa Belmare Lindau — Ferienwohnungen auf der Insel",
+    description:
+      "Casa Belmare: vier Ferienwohnungen in einem Altstadthaus auf der Lindauer Insel — zwei Minuten zum Hafen, persönlicher Check-in, Frühstückskorb auf Wunsch.",
+  },
+  footerNote: "Casa Belmare · Lindau · seit 2019",
+  google: { rating: 4.9, reviewCount: 164 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const RIVIERA_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "riviera",
+  businessName: "Casa Belmare",
+  slug: "casa-belmare-lindau",
+  businessCategory: "Ferienwohnung",
+  tagline: "Ankommen, Fenster auf, See.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Ankommen, Fenster auf, See.",
+      subheadline: "Vier Ferienwohnungen auf der Lindauer Insel.",
+      ctaText: "Verfügbarkeit anfragen",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/riviera-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Die Wohnungen",
+      items: [
+        {
+          title: "Belmare Uno",
+          description: "Zwei Zimmer mit Südbalkon.",
+          price: "ab 118 €/Nacht",
+        },
+        {
+          title: "Studio Porto",
+          description: "Kompaktes Studio mit Erker.",
+          price: "ab 89 €/Nacht",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "08382 27 45 10",
+      email: "post@casa-belmare.de",
+      street: "In der Grub 24",
+      zip: "88131",
+      city: "Lindau",
+      openingHours: [{ day: "Check-in", hours: "15:00 – 20:00" }],
+    },
+  ],
+  seo: {
+    title: "Casa Belmare Lindau",
+    description: "Ferienwohnungen auf der Lindauer Insel — nah am Hafen.",
+  },
+  footerNote: "Casa Belmare · Lindau · seit 2019",
+  google: { rating: 4.9, reviewCount: 164 },
+};
+
+
+const ERNTE_FULL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "ernte",
+  businessName: "Rösterei Kornblum",
+  slug: "roesterei-kornblum-leipzig",
+  businessCategory: "Kaffeerösterei",
+  tagline: "Kaffee, der Zeit hatte.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Von Hand geröstet, mit Geduld.",
+      subheadline:
+        "Kleine Chargen aus direktem Handel, geröstet im Leipziger Westen — dazu ein Ladencafé, in dem man die Maschine arbeiten hört.",
+      ctaText: "Sorten entdecken",
+      ctaHref: "#speisekarte",
+      imageUrl: "/demo/ernte-hero.webp",
+    },
+    {
+      type: "menu",
+      headline: "Unsere Sorten",
+      categories: [
+        {
+          name: "Espresso",
+          items: [
+            {
+              name: "Kornblum No. 1",
+              description:
+                "Brasilien & Indien — schokoladig, nussig, wenig Säure. Unser Haus-Espresso.",
+              price: "9,80 € / 250 g",
+            },
+            {
+              name: "Straße der Röster",
+              description:
+                "Äthiopien, hell geröstet — Bergamotte, Aprikose, lebendige Frucht.",
+              price: "11,40 € / 250 g",
+            },
+          ],
+        },
+        {
+          name: "Filter",
+          items: [
+            {
+              name: "Morgenblatt",
+              description:
+                "Kolumbien, gewaschen — klare Tasse, Honig und rote Johannisbeere.",
+              price: "10,60 € / 250 g",
+            },
+            {
+              name: "Späte Ernte",
+              description:
+                "Peru, natural — beerig und weich, unser Nachmittagskaffee.",
+              price: "10,90 € / 250 g",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "about",
+      headline: "Die Rösterei",
+      body: "Kornblum rösten wir seit 2018 auf einem alten 12-Kilo-Trommelröster, den wir selbst wieder aufgebaut haben. Unsere Rohkaffees kaufen wir direkt bei Kooperativen, die wir kennen — die Aufschläge stehen auf jeder Tüte. Geröstet wird zweimal die Woche, verkauft ab Werkstatt und im Ladencafé nebenan: erst probieren, dann mitnehmen.",
+      imageUrl: "/demo/ernte-detail-1.webp",
+    },
+    {
+      type: "testimonials",
+      headline: "Aus dem Gästebuch",
+      items: [
+        {
+          author: "Paula Brandt",
+          text: "Der beste Espresso der Stadt — und man bekommt noch erklärt, warum er so schmeckt, wie er schmeckt.",
+          rating: 5,
+        },
+        {
+          author: "Robert Ilg",
+          text: "Seit zwei Jahren im Abo. Jede Lieferung riecht wie ein kleines Fest.",
+          rating: 5,
+        },
+        {
+          author: "Milena K.",
+          text: "Das Ladencafé ist mein Wohnzimmer geworden. Herzliche Leute, ehrliches Handwerk.",
+          rating: 5,
+        },
+      ],
+    },
+    {
+      type: "faq",
+      headline: "Häufige Fragen",
+      items: [
+        {
+          question: "Mahlt ihr den Kaffee auf Wunsch?",
+          answer:
+            "Gern — sagt uns nur, wie ihr brüht: Sieb, Filter, French Press oder Vollautomat.",
+        },
+        {
+          question: "Gibt es ein Kaffee-Abo?",
+          answer:
+            "Ja, ab 250 g monatlich, jederzeit pausierbar — die Sorte wechselt mit der Saison.",
+        },
+        {
+          question: "Kann man bei der Röstung zuschauen?",
+          answer:
+            "Dienstags und freitags läuft die Trommel — kommt vorbei, die Tür zur Werkstatt steht offen.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0341 92 71 44",
+      email: "hallo@roesterei-kornblum.de",
+      street: "Karl-Heine-Straße 87",
+      zip: "04229",
+      city: "Leipzig",
+      openingHours: [
+        { day: "Di–Fr", hours: "9:00 – 18:00" },
+        { day: "Sa", hours: "9:00 – 15:00" },
+      ],
+    },
+  ],
+  seo: {
+    title: "Rösterei Kornblum Leipzig — Kaffee aus direktem Handel",
+    description:
+      "Rösterei Kornblum in Leipzig-Plagwitz: kleine Chargen aus direktem Handel, zweimal wöchentlich geröstet — mit Ladencafé und Kaffee-Abo.",
+  },
+  footerNote: "Rösterei Kornblum · Leipzig · seit 2018",
+  google: { rating: 4.9, reviewCount: 213 },
+  pages: DEMO_PAGES,
+  addOns: DEMO_ADD_ONS,
+};
+
+const ERNTE_MINIMAL: WebsiteDataV2 = {
+  version: 2,
+  stylePackId: "ernte",
+  businessName: "Rösterei Kornblum",
+  slug: "roesterei-kornblum-leipzig",
+  businessCategory: "Kaffeerösterei",
+  tagline: "Kaffee, der Zeit hatte.",
+  sections: [
+    {
+      type: "hero",
+      headline: "Von Hand geröstet, mit Geduld.",
+      subheadline: "Kleine Chargen aus direktem Handel — Leipziger Westen.",
+      ctaText: "Sorten entdecken",
+      ctaHref: "#kontakt",
+      imageUrl: "/demo/ernte-hero.webp",
+    },
+    {
+      type: "services",
+      headline: "Sortiment",
+      items: [
+        {
+          title: "Espresso Kornblum No. 1",
+          description: "Schokoladig, nussig, wenig Säure.",
+        },
+        {
+          title: "Filter Morgenblatt",
+          description: "Klare Tasse, Honig, rote Johannisbeere.",
+        },
+      ],
+    },
+    {
+      type: "contact",
+      headline: "Kontakt",
+      phone: "0341 92 71 44",
+      email: "hallo@roesterei-kornblum.de",
+      street: "Karl-Heine-Straße 87",
+      zip: "04229",
+      city: "Leipzig",
+      openingHours: [{ day: "Di–Fr", hours: "9:00 – 18:00" }],
+    },
+  ],
+  seo: {
+    title: "Rösterei Kornblum Leipzig",
+    description: "Kaffee aus direktem Handel, von Hand geröstet.",
+  },
+  footerNote: "Rösterei Kornblum · Leipzig · seit 2018",
+  google: { rating: 4.9, reviewCount: 213 },
+};
+
 const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   werkbank: { full: WERKBANK_FULL, minimal: WERKBANK_MINIMAL },
   kanzlei: { full: KANZLEI_FULL, minimal: KANZLEI_MINIMAL },
@@ -2575,6 +3602,12 @@ const FIXTURES: Partial<Record<PackId, FixtureSet>> = {
   zunft: { full: ZUNFT_FULL, minimal: ZUNFT_MINIMAL },
   schimmer: { full: SCHIMMER_FULL, minimal: SCHIMMER_MINIMAL },
   fundament: { full: FUNDAMENT_FULL, minimal: FUNDAMENT_MINIMAL },
+  karat: { full: KARAT_FULL, minimal: KARAT_MINIMAL },
+  plakat: { full: PLAKAT_FULL, minimal: PLAKAT_MINIMAL },
+  raster: { full: RASTER_FULL, minimal: RASTER_MINIMAL },
+  strom: { full: STROM_FULL, minimal: STROM_MINIMAL },
+  riviera: { full: RIVIERA_FULL, minimal: RIVIERA_MINIMAL },
+  ernte: { full: ERNTE_FULL, minimal: ERNTE_MINIMAL },
 };
 
 export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {

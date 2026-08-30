@@ -26,6 +26,12 @@ export const PACK_INDUSTRIES: Record<PackId, string> = {
   zunft: "Metzgerei, Brauerei, Traditionsbetrieb",
   schimmer: "Kosmetik, Ästhetik, Hautpflege",
   fundament: "Bauunternehmen, Immobilien, Hausverwaltung",
+  karat: "Juwelier, Goldschmiede, Uhrmacher",
+  plakat: "Tattoostudio, Barbershop, Streetwear",
+  raster: "Architekturbüro, Ingenieurbüro, Verlag",
+  strom: "Elektrotechnik, Photovoltaik, IT",
+  riviera: "Ferienwohnung, Hotel, Strandcafé",
+  ernte: "Feinkost, Rösterei, Manufaktur",
 };
 
 interface PackCardProps {

@@ -121,6 +121,48 @@ export const PACK_SUMMARY: readonly PackSummary[] = [
       "Tiefes Marineblau gegen Weiß — Substanz, Seriosität, klare Kante.",
     accent: "#7A5F2E",
   },
+  {
+    id: "karat",
+    name: "Karat",
+    essence:
+      "Onyx, Champagner-Gold und hohe Serifen — Vitrinenlicht auf dunklem Samt.",
+    accent: "#CBA35C",
+  },
+  {
+    id: "plakat",
+    name: "Plakat",
+    essence:
+      "Knochenweiß, harte schwarze Kanten und Elektroblau — geklebt wie ein Siebdruck-Plakat.",
+    accent: "#2B44FF",
+  },
+  {
+    id: "raster",
+    name: "Raster",
+    essence:
+      "Weiß, ein strenges Spaltenraster und ein roter Punkt — Schweizer Typografie ohne Lärm.",
+    accent: "#E02D10",
+  },
+  {
+    id: "strom",
+    name: "Strom",
+    essence:
+      "Nachtblau, Elektro-Cyan und Mono-Labels — Kontrollraumlicht mit leisem Glühen.",
+    accent: "#3BE0C4",
+  },
+  {
+    id: "riviera",
+    name: "Riviera",
+    essence:
+      "Sonnenweiß, Meerblau und Arkadenbögen — Mittagslicht an einer Uferpromenade.",
+    accent: "#0E7898",
+  },
+  {
+    id: "ernte",
+    name: "Ernte",
+    essence:
+      "Cremepapier, tiefes Indigo und Honig-Formen — ein handgezeichnetes Kochbuch im Food-Magazin.",
+    accent: "#234386",
+  },
 ];
 
 /** Verifiziert Reihenfolge = `PACK_IDS` (Landing-Grid-Reihenfolge). */

@@ -14,10 +14,10 @@ import { PACK_INDUSTRIES, PackShowcase } from "./PackShowcase";
 describe("PackShowcase", () => {
   const html = renderToStaticMarkup(<PackShowcase />);
 
-  test("rendert genau 14 Karten (eine je Style Pack), als <article> mit aria-label", () => {
+  test("rendert genau eine Karte je Style Pack (eine je Style Pack), als <article> mit aria-label", () => {
     const articleCount = (html.match(/<article/g) ?? []).length;
     expect(articleCount).toBe(PACK_IDS.length);
-    expect(articleCount).toBe(14);
+    expect(articleCount).toBe(PACK_IDS.length);
   });
 
   test("jede Karte zeigt das statische Vorschaubild (client/public/pack-previews/<pack>.webp) sowie Name + Essenz", () => {
@@ -31,7 +31,7 @@ describe("PackShowcase", () => {
 
   test("Vorschaubilder sind lazy, mit async decoding und expliziten Maßen (kein Layout-Shift)", () => {
     const imgCount = (html.match(/<img\b/g) ?? []).length;
-    expect(imgCount).toBe(14);
+    expect(imgCount).toBe(PACK_IDS.length);
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('decoding="async"');
     expect(html).toContain('width="800"');
@@ -50,7 +50,7 @@ describe("PackShowcase", () => {
       );
     }
     const ansehenCount = (html.match(/>Ansehen</g) ?? []).length;
-    expect(ansehenCount).toBe(14);
+    expect(ansehenCount).toBe(PACK_IDS.length);
     // "Ansehen" ist ein Button, kein <a target="_blank"> mehr — das Öffnen
     // in neuem Tab passiert jetzt nur noch über den Link im Modal.
     expect(html).not.toContain('target="_blank"');
@@ -62,7 +62,7 @@ describe("PackShowcase", () => {
     const h4Count = (html.match(/<h4[ >]/g) ?? []).length;
     expect(h2Count).toBe(1);
     expect(html).toContain(">Welche Richtung passt zu deinem Betrieb?<");
-    expect(h3Count).toBe(14);
+    expect(h3Count).toBe(PACK_IDS.length);
     expect(h4Count).toBe(0);
     // Kicker "Designrichtungen" ist bewusst kein Heading (Label, nicht Struktur) —
     // und nennt bewusst keine Anzahl, die Sammlung wächst mit der Zeit.

@@ -14,6 +14,12 @@ import { VERVE } from "./verve";
 import { ZUNFT } from "./zunft";
 import { SCHIMMER } from "./schimmer";
 import { FUNDAMENT } from "./fundament";
+import { KARAT } from "./karat";
+import { PLAKAT } from "./plakat";
+import { RASTER } from "./raster";
+import { STROM } from "./strom";
+import { RIVIERA } from "./riviera";
+import { ERNTE } from "./ernte";
 
 export type { PackConstitution, FontSpec } from "./types";
 export { toCssVars } from "./toCssVars";
@@ -35,6 +41,12 @@ export const STYLE_PACKS: Partial<Record<PackId, PackConstitution>> = {
   zunft: ZUNFT,
   schimmer: SCHIMMER,
   fundament: FUNDAMENT,
+  karat: KARAT,
+  plakat: PLAKAT,
+  raster: RASTER,
+  strom: STROM,
+  riviera: RIVIERA,
+  ernte: ERNTE,
 };
 
 /**
@@ -52,6 +64,12 @@ export const SELECTIVE_PACKS: ReadonlySet<PackId> = new Set([
   "klarwerk",
   "kanzlei",
   "atelier",
+  // Neue Richtungen 2026-08-30: nur bei direktem Branchen-Match anbieten —
+  // ihre Ästhetik ist zu spitz für den generischen Füller-Pool.
+  "karat",
+  "plakat",
+  "raster",
+  "strom",
 ]);
 
 export function getConstitution(id: PackId): PackConstitution {
@@ -269,6 +287,12 @@ const DIRECTION_NEIGHBORS: Record<PackId, readonly PackId[]> = {
   zunft: ["landgut", "werkbank", "patina"],
   schimmer: ["morgenlicht", "salon-noir", "patina"],
   fundament: ["werkbank", "zunft", "morgenlicht"],
+  karat: ["salon-noir", "schimmer", "patina"],
+  plakat: ["verve", "werkbank", "marktplatz"],
+  raster: ["fundament", "atelier", "klarwerk"],
+  strom: ["klarwerk", "fundament", "werkbank"],
+  riviera: ["landgut", "gusto", "morgenlicht"],
+  ernte: ["landgut", "marktplatz", "patina"],
 };
 
 /** Bewährte Füller, falls Nachbarn nicht reichen — nie die neuen Templates. */

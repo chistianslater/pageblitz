@@ -1,0 +1,430 @@
+import React from "react";
+import type {
+  PageSection,
+  PageSectionOf,
+  SectionOf,
+  SectionType,
+  SectionV2,
+  WebsiteDataV2,
+} from "../../../../../../shared/siteContract/types";
+import {
+  applyNavLabels,
+  buildNavItems,
+  orderedSections,
+  SECTION_ANCHORS,
+  type NavItem,
+} from "../../engine";
+import { PACK_MODULES, type PackModule } from "../../packRegistry";
+import { MobileNav } from "../../MobileNav";
+import { LAYOUT_SLOT } from "../../layoutSlots";
+import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
+import { RASTER_CSS } from "./css";
+
+const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
+  services: "Leistungen",
+  about: "Büro",
+  gallery: "Projekte",
+  testimonials: "Bauherren",
+  contact: "Kontakt",
+  faq: "Fragen",
+  menu: "Karte",
+  pricelist: "Honorar",
+  team: "Team",
+  cta: "Anfrage",
+};
+
+function renderLogo(data: WebsiteDataV2): React.ReactNode {
+  if (data.logo?.kind === "font") {
+    return (
+      <span style={{ fontFamily: data.logo.font }}>{data.businessName}</span>
+    );
+  }
+  if (data.logo?.kind === "image") {
+    return <img src={data.logo.url} alt={data.businessName} />;
+  }
+  return data.businessName;
+}
+
+/** Kein Auto-Schmuck — Swiss lässt die Worte stehen; nur Marker greifen. */
+function renderHeadline(headline: string): React.ReactNode {
+  if (headline && hasMarks(headline)) return rich(headline);
+  return headline;
+}
+
+/** Nummerierte Sektions-Marginalie (01 — Leistungen). */
+function SectionHead({
+  index,
+  title,
+}: {
+  index: number;
+  title: React.ReactNode;
+}) {
+  return (
+    <div className="pb-ra-head">
+      <span className="pb-ra-index">
+        {String(index).padStart(2, "0")}
+      </span>
+      <h2>{title}</h2>
+    </div>
+  );
+}
+
+function renderSection(
+  section: SectionV2 | PageSectionOf<"pageHeader">,
+  index: number
+): React.ReactNode {
+  switch (section.type) {
+    case "hero":
+      return null;
+    case "services": {
+      return (
+        <section
+          id={SECTION_ANCHORS.services}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={section.headline} />
+          {section.intro && <p className="pb-ra-intro">{section.intro}</p>}
+          <div
+            className="pb-ra-services"
+            data-pb-slot={LAYOUT_SLOT.servicesItems}
+          >
+            {section.items.map((item, i) => (
+              <div className="pb-ra-service" key={item.title}>
+                <span className="pb-ra-num">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <strong>{item.title}</strong>
+                {item.description && <p>{item.description}</p>}
+                {item.price && <span className="pb-ra-price">{item.price}</span>}
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "about": {
+      return (
+        <section
+          id={SECTION_ANCHORS.about}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={section.headline} />
+          <div className="pb-ra-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
+            <p>{rich(section.body)}</p>
+            {section.imageUrl && (
+              <figure
+                className="pb-ra-figure"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              >
+                <img src={section.imageUrl} alt="" loading="lazy" />
+                <figcaption>Abb. 01</figcaption>
+              </figure>
+            )}
+          </div>
+        </section>
+      );
+    }
+    case "gallery": {
+      const title = section.headline ?? FALLBACK_TITLES.gallery;
+      return (
+        <section
+          id={SECTION_ANCHORS.gallery}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          <div
+            className="pb-ra-gallery"
+            data-pb-slot={LAYOUT_SLOT.galleryItems}
+          >
+            {section.images.map((img, i) => (
+              <figure className="pb-ra-figure" key={img.url}>
+                <img src={img.url} alt={img.alt} loading="lazy" />
+                <figcaption>
+                  Abb. {String(i + 1).padStart(2, "0")}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "testimonials": {
+      const title = section.headline ?? FALLBACK_TITLES.testimonials;
+      return (
+        <section
+          id={SECTION_ANCHORS.testimonials}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          <div className="pb-ra-quotes">
+            {section.items.map(item => (
+              <blockquote
+                className="pb-ra-quote"
+                key={item.author}
+                {...REVIEW_READONLY}
+              >
+                <GoogleReviewBody
+                  author={item.author}
+                  text={item.text}
+                  rating={item.rating}
+                />
+              </blockquote>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "contact": {
+      const title = section.headline ?? FALLBACK_TITLES.contact;
+      const addressLine = [section.zip, section.city].filter(Boolean).join(" ");
+      return (
+        <section
+          id={SECTION_ANCHORS.contact}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          <div className="pb-ra-contact">
+            <address>
+              {section.phone && (
+                <p>
+                  <a href={`tel:${section.phone}`}>{section.phone}</a>
+                </p>
+              )}
+              {section.email && (
+                <p>
+                  <a href={`mailto:${section.email}`}>{section.email}</a>
+                </p>
+              )}
+              {(section.street || addressLine) && (
+                <p>
+                  {section.street && <span>{section.street}</span>}
+                  {section.street && addressLine && <br />}
+                  {addressLine && <span>{addressLine}</span>}
+                </p>
+              )}
+            </address>
+            {section.openingHours && section.openingHours.length > 0 && (
+              <div className="pb-ra-hours-block">
+                <h3>Öffnungszeiten</h3>
+                <table className="pb-ra-hours">
+                  <tbody>
+                    {section.openingHours.map(oh => (
+                      <tr key={oh.day}>
+                        <td>{oh.day}</td>
+                        <td>{oh.hours}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </section>
+      );
+    }
+    case "faq": {
+      const title = section.headline ?? FALLBACK_TITLES.faq;
+      return (
+        <section
+          id={SECTION_ANCHORS.faq}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          <div className="pb-ra-faq-list">
+            {section.items.map(item => (
+              <div className="pb-ra-faq" key={item.question}>
+                <strong>{item.question}</strong>
+                <p>{item.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "menu":
+    case "pricelist": {
+      const fallback =
+        section.type === "menu"
+          ? FALLBACK_TITLES.menu
+          : FALLBACK_TITLES.pricelist;
+      const title = section.headline ?? fallback;
+      return (
+        <section
+          id={SECTION_ANCHORS[section.type]}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          {section.categories.map(cat => (
+            <div className="pb-ra-menu-category" key={cat.name}>
+              <h3>{cat.name}</h3>
+              {cat.items.map(item => (
+                <div className="pb-ra-service pb-ra-menu-row" key={item.name}>
+                  <strong>{item.name}</strong>
+                  {item.description && <p>{item.description}</p>}
+                  <span className="pb-ra-price">{item.price}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      );
+    }
+    case "team": {
+      const title = section.headline ?? FALLBACK_TITLES.team;
+      return (
+        <section
+          id={SECTION_ANCHORS.team}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={title} />
+          <div className="pb-ra-team">
+            {section.members.map((member, i) => (
+              <div className="pb-ra-member" key={`${i}-${member.name}`}>
+                {member.imageUrl && (
+                  <img src={member.imageUrl} alt="" loading="lazy" />
+                )}
+                <strong>{member.name}</strong>
+                {member.role && <p>{member.role}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+    case "cta": {
+      return (
+        <section
+          id={SECTION_ANCHORS.cta}
+          className="pb-ra-section"
+          key={section.type}
+        >
+          <SectionHead index={index} title={section.headline} />
+          <a className="pb-ra-cta" href={section.ctaHref ?? "#kontakt"}>
+            <i aria-hidden="true" />
+            {section.ctaText}
+          </a>
+        </section>
+      );
+    }
+    case "pageHeader": {
+      return (
+        <header className="pb-ra-page-header" key={section.type}>
+          <h1>{section.title}</h1>
+          {section.intro && <p>{section.intro}</p>}
+        </header>
+      );
+    }
+    default: {
+      const exhaustive: never = section;
+      return exhaustive;
+    }
+  }
+}
+
+const RasterPage: React.FC<{
+  data: WebsiteDataV2;
+  basePath: string;
+  now: Date;
+  navItems?: NavItem[];
+  pageTitle?: string;
+  sections?: PageSection[];
+}> = ({ data, basePath, now, navItems, sections: pageSections }) => {
+  const sections: (SectionV2 | PageSectionOf<"pageHeader">)[] =
+    pageSections ?? orderedSections(data);
+  const navList = applyNavLabels(
+    navItems ?? buildNavItems(data, { pathname: "/", basePath }),
+    FALLBACK_TITLES
+  );
+  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
+  const year = now.getFullYear();
+  const city = data.sections
+    .map(s => (s.type === "contact" ? s.city : undefined))
+    .find(Boolean);
+
+  return (
+    <div className="pb-raster">
+      <nav className="pb-ra-nav">
+        <span className="pb-ra-logo">{renderLogo(data)}</span>
+        <div className="pb-ra-nav-links">
+          {navList.map(item => (
+            <a
+              key={item.key}
+              href={item.href}
+              aria-current={item.current ? "page" : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+        <MobileNav items={navList} />
+      </nav>
+      {hero && (
+        <section id={SECTION_ANCHORS.hero} className="pb-ra-hero">
+          <div className="pb-ra-hero-margin">
+            <span className="pb-ra-index">00</span>
+            {city && <span className="pb-ra-margin-note">{city}</span>}
+          </div>
+          <div className="pb-ra-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+            <h1>{renderHeadline(hero.headline)}</h1>
+            {hero.subheadline && (
+              <p className="pb-ra-sub">{rich(hero.subheadline)}</p>
+            )}
+            {hero.ctaText && (
+              <a className="pb-ra-cta" href={hero.ctaHref ?? "#kontakt"}>
+                <i aria-hidden="true" />
+                {hero.ctaText}
+              </a>
+            )}
+          </div>
+          {hero.imageUrl && (
+            <figure className="pb-ra-figure pb-ra-hero-figure">
+              <img
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+              <figcaption>Abb. 00 — {data.businessName}</figcaption>
+            </figure>
+          )}
+        </section>
+      )}
+      {sections
+        .filter(s => s.type !== "hero")
+        .map((section, i) => renderSection(section, i + 1))}
+      <footer className="pb-ra-footer">
+        <p>
+          © {year} {data.businessName}
+        </p>
+        {data.footerNote && (
+          <p>
+            {data.footerNote.startsWith(`${data.businessName} · `)
+              ? data.footerNote.slice(data.businessName.length + 3)
+              : data.footerNote}
+          </p>
+        )}
+        <p>
+          <a href={`${basePath}/impressum`}>Impressum</a> ·{" "}
+          <a href={`${basePath}/datenschutz`}>Datenschutz</a>
+        </p>
+      </footer>
+    </div>
+  );
+};
+
+const RASTER_MODULE: PackModule = {
+  id: "raster",
+  css: RASTER_CSS,
+  Page: RasterPage,
+};
+PACK_MODULES.raster = RASTER_MODULE;

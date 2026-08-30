@@ -4,7 +4,7 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
 
 ## Produkt
 
-- **Genau 14 Style-Packs.** Kein 15. Pack erfinden, keine Pack-ID umbenennen.
+- **Genau 20 Style-Packs.** Kein 15. Pack erfinden, keine Pack-ID umbenennen.
   Quelle: `shared/siteContract/packIds.ts`.
 - **Preise und Add-on-Namen** nur aus `shared/pricing.ts`. Landing, Checkout,
   SEO-Prerender und Copy müssen dieselbe Zahl zeigen.

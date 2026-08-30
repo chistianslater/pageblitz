@@ -308,11 +308,84 @@ ${stagger}{margin-top:0!important}
 `;
 }
 
+
+/**
+ * Neue Richtungen 2026-08-30 (karat/plakat/raster/strom/riviera): alle
+ * fünf sind Fluss-Layouts (Stack oder 2-Spalten-Grid) — die Varianten
+ * biegen Reihenfolge und Ausrichtung, keine Absolut-Ebenen nötig.
+ */
+function newDirectionHeroes(mode: Mode): string {
+  const ka = "karat";
+  const pl = "plakat";
+  const ra = "raster";
+  const st = "strom";
+  const rv = "riviera";
+
+  return `
+/* ── Karat: zentrierter Vitrinen-Stack ── */
+${both(ka, mode)}{display:flex!important;flex-direction:column!important;gap:clamp(1rem,2.5vw,1.75rem)!important}
+${start(ka, "image-first", mode, " .pb-ka-hero-media")}{order:-1!important;margin-top:0!important;width:100%!important}
+${start(ka, "centered", mode, " .pb-ka-hero-media")}{margin-top:0!important}
+${hero(ka, "split", mode, " #start, ")}${start(ka, "split", mode)}{text-align:left!important}
+${start(ka, "split", mode, " .pb-ka-hero-copy")}{display:grid!important;justify-items:start!important}
+${start(ka, "split", mode, " h1")},${start(ka, "split", mode, " .pb-ka-sub")}{margin-left:0!important;margin-right:0!important}
+
+/* ── Plakat: 2-Spalten-Plakatwand ── */
+${start(pl, "centered", mode)}{grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important}
+${start(pl, "centered", mode, " h1")}{max-width:16ch!important}
+${start(pl, "centered", mode, " .pb-pl-sub")}{margin-inline:auto!important}
+${start(pl, "centered", mode, " .pb-pl-hero-media")}{order:2!important;width:min(100%,30rem)!important}
+${start(pl, "image-first", mode)}{grid-template-columns:1fr!important}
+${start(pl, "image-first", mode, " .pb-pl-hero-media")}{order:-1!important;width:100%!important}
+${start(pl, "image-first", mode, " .pb-pl-hero-media .pb-pl-photo")}{aspect-ratio:16/9!important}
+
+/* ── Raster: Marginalie weicht dem Stapel ── */
+${both(ra, mode)}{grid-template-columns:1fr!important;gap:clamp(1.25rem,3vw,2rem)!important}
+${both(ra, mode, " .pb-ra-hero-margin")}{flex-direction:row!important;border-right:none!important;border-bottom:1px solid var(--pb-line)!important;padding:0 0 10px!important}
+${both(ra, mode, " .pb-ra-margin-note")}{writing-mode:horizontal-tb!important}
+${start(ra, "centered", mode, " .pb-ra-hero-copy")}{text-align:center!important}
+${start(ra, "centered", mode, " h1")},${start(ra, "centered", mode, " .pb-ra-sub")}{margin-inline:auto!important}
+${start(ra, "centered", mode, " .pb-ra-hero-figure")}{order:2!important;width:min(100%,38rem)!important;margin-inline:auto!important}
+${start(ra, "image-first", mode, " .pb-ra-hero-figure")}{order:-1!important}
+${start(ra, "image-first", mode, " .pb-ra-hero-figure img")}{aspect-ratio:16/8!important}
+
+/* ── Strom: Kontrollraum-Split ── */
+${start(st, "centered", mode)}{grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important}
+${start(st, "centered", mode, " .pb-st-hero-copy")}{display:grid!important;justify-items:center!important}
+${start(st, "centered", mode, " h1")},${start(st, "centered", mode, " .pb-st-sub")}{margin-inline:auto!important}
+${start(st, "centered", mode, " .pb-st-hero-media")}{order:2!important;width:min(100%,32rem)!important}
+${start(st, "image-first", mode)}{grid-template-columns:1fr!important}
+${start(st, "image-first", mode, " .pb-st-hero-media")}{order:-1!important;width:100%!important}
+${start(st, "image-first", mode, " .pb-st-hero-media .pb-st-screen img")}{aspect-ratio:16/8!important}
+
+/* ── Riviera: Promenaden-Split ── */
+${start(rv, "centered", mode)}{grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important}
+${start(rv, "centered", mode, " .pb-rv-kicker")}{justify-content:center!important}
+${start(rv, "centered", mode, " h1")},${start(rv, "centered", mode, " .pb-rv-sub")}{margin-inline:auto!important}
+${start(rv, "centered", mode, " .pb-rv-hero-actions")}{justify-content:center!important}
+${start(rv, "centered", mode, " .pb-rv-hero-photo")}{order:2!important;width:min(100%,26rem)!important}
+${start(rv, "image-first", mode)}{grid-template-columns:1fr!important}
+${start(rv, "image-first", mode, " .pb-rv-hero-photo")}{order:-1!important;width:100%!important;max-width:none!important;aspect-ratio:16/8.5!important;border-radius:999px 999px var(--pb-radius-card) var(--pb-radius-card)!important}
+
+/* ── Ernte: Kochbuch-Split mit Blob ── */
+${start("ernte", "centered", mode)}{grid-template-columns:1fr!important;justify-items:center!important;text-align:center!important}
+${start("ernte", "centered", mode, " .pb-er-script")}{transform-origin:center!important}
+${start("ernte", "centered", mode, " h1")},${start("ernte", "centered", mode, " .pb-er-sub")}{margin-inline:auto!important}
+${start("ernte", "centered", mode, " .pb-er-hero-actions")}{justify-content:center!important}
+${start("ernte", "centered", mode, " .pb-er-hero-media")}{order:2!important;width:min(100%,28rem)!important}
+${start("ernte", "centered", mode, " .pb-er-hero-sprig")}{margin-inline:auto!important}
+${start("ernte", "image-first", mode)}{grid-template-columns:1fr!important}
+${start("ernte", "image-first", mode, " .pb-er-hero-media")}{order:-1!important;width:100%!important}
+${start("ernte", "image-first", mode, " .pb-er-hero-media img")}{aspect-ratio:16/8.5!important}
+`;
+}
+
 export function packLayoutRules(mode: Mode): string {
   return `
 ${overlayHeroes(mode)}
 ${splitGridHeroes(mode)}
 ${editorialHeroes(mode)}
+${newDirectionHeroes(mode)}
 ${servicesPacks(mode)}
 ${aboutPacks(mode)}
 ${galleryPacks(mode)}

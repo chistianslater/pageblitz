@@ -13,7 +13,7 @@ Antworten an den Betreiber: **Deutsch, informell (du)**.
 ## Produkt in einem Satz
 
 Pageblitz erzeugt aus Firmenname oder Google-Profil in ~3 Minuten eine fertige
-Website-Vorschau. 14 kuratierte Style-Packs, Studio unter `/onboarding/:token`,
+Website-Vorschau. 20 kuratierte Style-Packs, Studio unter `/onboarding/:token`,
 Live-Vorschau same-origin `/preview-ssr/<token>`.
 
 ## Preise (einzige Quelle)
@@ -21,11 +21,13 @@ Live-Vorschau same-origin `/preview-ssr/<token>`.
 Nur `shared/pricing.ts`: Basis **19,90 €**/Monat jährlich bzw. **24,90 €**
 monatlich. Keine erfundenen Preise, keine erfundenen Testimonials.
 
-## 14 Packs — kein 15.
+## 20 Packs — kein 21.
 
 `werkbank`, `patina`, `kanzlei`, `salon-noir`, `morgenlicht`, `marktplatz`,
 `gusto`, `landgut`, `atelier`, `klarwerk`, `verve`, `zunft`, `schimmer`,
-`fundament` — IDs in `shared/siteContract/packIds.ts`.
+`fundament`, `karat`, `plakat`, `raster`, `strom`, `riviera`, `ernte` — IDs in
+`shared/siteContract/packIds.ts`. (Erweitert 2026-08-30 auf Betreiber-
+Wunsch um sechs Richtungen im refero-Standard.)
 
 ## Landing vs. Studio
 
