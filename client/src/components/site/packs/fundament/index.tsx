@@ -19,6 +19,7 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
 import { FUNDAMENT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -50,6 +51,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline kursiv in Messing — der Rest bleibt Marine-farben. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -146,7 +149,7 @@ function renderSection(
             className="pb-fd-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
           >
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
             {section.imageUrl && (
               <img
                 src={section.imageUrl}
@@ -418,7 +421,7 @@ const FundamentPage: React.FC<{
           </div>
           <div className="pb-fd-content" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p>{hero.subheadline}</p>}
+            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
             {hero.ctaText && (
               <a className="pb-fd-cta" href={hero.ctaHref ?? "#kontakt"}>
                 {hero.ctaText}

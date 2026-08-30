@@ -21,6 +21,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { MORGENLICHT_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
+import { hasMarks, rich } from "../../richText";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -61,6 +62,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline als Akzentwort (em) — der Rest bleibt Tinte-farben. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -150,7 +153,7 @@ function renderSection(
         >
           <h2>{section.headline}</h2>
           <div className="pb-ml-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
             {section.imageUrl && (
               <img
                 className="pb-ml-about-img"
@@ -458,7 +461,7 @@ const MorgenlichtPage: React.FC<{
               </div>
             )}
             <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p>{hero.subheadline}</p>}
+            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
             {hero.ctaText && (
               <a className="pb-ml-cta" href={hero.ctaHref ?? "#kontakt"}>
                 {hero.ctaText}

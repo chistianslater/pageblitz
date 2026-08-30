@@ -19,6 +19,7 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
 import { KLARWERK_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -38,6 +39,8 @@ const MUTED_STYLE: React.CSSProperties = { color: "var(--pb-muted)" };
 
 /** Letztes Wort der Headline in Kupfer abgesetzt. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -132,7 +135,7 @@ function renderSection(
             className="pb-kw-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
           >
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
             {section.imageUrl && (
               <img
                 className="pb-kw-about-img"
@@ -419,7 +422,7 @@ const KlarwerkPage: React.FC<{
               {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-kw-sub">{hero.subheadline}</p>
+                <p className="pb-kw-sub">{rich(hero.subheadline)}</p>
               )}
               {hero.ctaText && (
                 <a className="pb-kw-hero-cta" href={hero.ctaHref ?? "#kontakt"}>

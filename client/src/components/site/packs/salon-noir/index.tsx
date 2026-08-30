@@ -21,6 +21,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { SALON_NOIR_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
+import { rich } from "../../richText";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -116,7 +117,7 @@ function renderSection(
                 data-pb-slot={LAYOUT_SLOT.aboutMedia}
               />
             )}
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
           </div>
         </section>
       );
@@ -389,9 +390,9 @@ const SalonNoirPage: React.FC<{
           >
             <div className="pb-sn-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
               {eyebrow && <p className="pb-sn-eyebrow">{eyebrow}</p>}
-              <h1>{hero.headline}</h1>
+              <h1>{rich(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-sn-sub">{hero.subheadline}</p>
+                <p className="pb-sn-sub">{rich(hero.subheadline)}</p>
               )}
               {hero.ctaText && (
                 <a className="pb-sn-cta" href={hero.ctaHref ?? "#kontakt"}>

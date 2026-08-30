@@ -22,6 +22,7 @@ import {
   ReviewStars,
   REVIEW_READONLY,
 } from "../../googleReview";
+import { rich } from "../../richText";
 import { ATELIER_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -134,7 +135,7 @@ function renderSection(
               <span className="pb-at-dropcap" aria-hidden="true">
                 A
               </span>
-              <p>{section.body}</p>
+              <p>{rich(section.body)}</p>
             </div>
             {section.imageUrl && (
               <figure data-pb-slot={LAYOUT_SLOT.aboutMedia}>
@@ -449,11 +450,11 @@ const AtelierPage: React.FC<{
                 fetchPriority="high"
               />
             )}
-            <h1 className="pb-at-caption">{hero.headline}</h1>
+            <h1 className="pb-at-caption">{rich(hero.headline)}</h1>
           </div>
           <div className="pb-at-capcol" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             {indexLabel && <span className="pb-at-idx">{indexLabel}</span>}
-            {hero.subheadline && <p>{hero.subheadline}</p>}
+            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
             {hero.ctaText && (
               <a className="pb-at-lnk" href={hero.ctaHref ?? "#kontakt"}>
                 {hero.ctaText} →

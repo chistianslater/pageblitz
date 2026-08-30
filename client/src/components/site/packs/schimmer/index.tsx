@@ -20,6 +20,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { SCHIMMER_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
+import { hasMarks, rich } from "../../richText";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   ...GENERIC_TITLES,
@@ -39,6 +40,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline als warmer Serifenkontrast. */
 function renderHeadline(headline: string | undefined): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   if (!headline) return null;
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
@@ -130,7 +133,7 @@ function renderSection(
             )}
             <div className="pb-sc-about-copy">
               <h2>{renderHeadline(title)}</h2>
-              <p>{section.body}</p>
+              <p>{rich(section.body)}</p>
             </div>
           </div>
         </section>
@@ -409,7 +412,7 @@ const SchimmerPage: React.FC<{
                 {data.businessCategory ?? data.businessName}
               </LabLabel>
               <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && <p>{hero.subheadline}</p>}
+              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
               <div className="pb-sc-cta-row">
                 {hero.ctaText && (
                   <a className="pb-sc-cta" href={hero.ctaHref ?? "#kontakt"}>

@@ -17,6 +17,7 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
+import { hasMarks, rich, stripMarks } from "../../richText";
 import { ReviewAuthor, ReviewStars, REVIEW_READONLY } from "../../googleReview";
 import { WERKBANK_CSS } from "./css";
 
@@ -113,11 +114,13 @@ function renderSection(
 ): React.ReactNode {
   switch (section.type) {
     case "hero": {
-      const lines = splitHeadline(section.headline);
+      const richHeadline = hasMarks(section.headline);
+      const lines = richHeadline ? [] : splitHeadline(section.headline);
       return (
         <React.Fragment key={section.type}>
           <section id={SECTION_ANCHORS.hero} className="pb-wb-hero">
-            <h1 aria-label={section.headline}>
+            <h1 aria-label={stripMarks(section.headline)}>
+              {richHeadline && rich(section.headline)}
               {lines.map((line, i) => {
                 const isLast = i === lines.length - 1;
                 const isMiddle = i > 0 && !isLast;
@@ -136,7 +139,7 @@ function renderSection(
                 );
               })}
             </h1>
-            {section.subheadline && <p>{section.subheadline}</p>}
+            {section.subheadline && <p>{rich(section.subheadline)}</p>}
             {section.ctaText && (
               <a className="pb-wb-cta" href={section.ctaHref ?? "#kontakt"}>
                 {section.ctaText}
@@ -210,7 +213,7 @@ function renderSection(
               <span className="pb-wb-cross" aria-hidden="true">
                 +
               </span>
-              <p>{section.body}</p>
+              <p>{rich(section.body)}</p>
             </div>
             {section.imageUrl && (
               <figure

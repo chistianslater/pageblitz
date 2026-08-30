@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
+import { serializeRichDom, stripMarks } from "@/components/site/richText";
 import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
 
 interface PreviewFrameProps {
@@ -157,7 +158,11 @@ export function PreviewFrame({
       const candidates = Array.from(
         scope.querySelectorAll<HTMLElement>(candidateSelector)
       );
-      const normalizedCurrent = normalizeInlineText(targetConfig.value);
+      // Marker (**fett**, ==akzent==) stehen im Dokument, aber nicht im
+      // gerenderten Text — fürs Auffinden im DOM entfernen.
+      const normalizedCurrent = normalizeInlineText(
+        stripMarks(targetConfig.value)
+      );
       const matches = candidates.filter(el => {
         const text = normalizeInlineText(el.innerText);
         if (text === normalizedCurrent) return true;
@@ -186,13 +191,17 @@ export function PreviewFrame({
         target.setAttribute("data-pb-inline-edit", targetConfig.path);
         target.setAttribute("title", "Klicken und direkt bearbeiten");
         target.setAttribute("spellcheck", "true");
-        let original = target.textContent ?? "";
+        // innerHTML statt Text: Escape/Verwerfen muss auch die gerenderten
+        // Auszeichnungen (strong/em aus dem Marker-Subset) wiederherstellen.
+        let originalHtml = target.innerHTML;
+        let originalValue = serializeRichDom(target);
 
         target.addEventListener("click", event => {
           if (target.tagName === "A") event.preventDefault();
         });
         target.addEventListener("focus", () => {
-          original = target.innerText;
+          originalHtml = target.innerHTML;
+          originalValue = serializeRichDom(target);
         });
         target.addEventListener("paste", event => {
           event.preventDefault();
@@ -202,7 +211,7 @@ export function PreviewFrame({
         target.addEventListener("keydown", event => {
           if (event.key === "Escape") {
             event.preventDefault();
-            target.innerText = original;
+            target.innerHTML = originalHtml;
             target.blur();
           } else if (event.key === "Enter" && !targetConfig.multiline) {
             event.preventDefault();
@@ -210,12 +219,16 @@ export function PreviewFrame({
           }
         });
         target.addEventListener("blur", () => {
-          const value = (target.textContent ?? "").trim();
+          // Serialisiert strong/em zurück zu Markern — Formatierungen
+          // überleben so das Inline-Editieren (früher: textContent).
+          const value = serializeRichDom(target).trim();
           if (!value || value.length > targetConfig.maxLength) {
-            target.innerText = original;
+            target.innerHTML = originalHtml;
             return;
           }
-          if (normalizeInlineText(value) !== normalizeInlineText(original)) {
+          if (
+            normalizeInlineText(value) !== normalizeInlineText(originalValue)
+          ) {
             onInlineTextEdit(targetConfig.path, value);
           }
         });

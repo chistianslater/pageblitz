@@ -355,6 +355,33 @@
   justify-content: space-between;
   gap: 0.5rem;
 }
+/* Fett/Kursiv/Akzent fürs Marker-Subset (richText.tsx) — schiebt sich
+   rechts neben das Funken-Icon. */
+.pb-studio-format {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: auto;
+}
+.pb-studio-format button {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  border: 1px solid var(--st-line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--st-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.pb-studio-format button:hover {
+  color: var(--st-ink);
+  border-color: var(--st-muted);
+}
+.pb-studio-format button[data-accent] i {
+  color: var(--st-accent);
+}
 .pb-studio-suggest-icon {
   display: inline-flex;
   align-items: center;

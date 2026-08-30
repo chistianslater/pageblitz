@@ -76,14 +76,12 @@ describe("renderLayoutChromeHtml", () => {
     expect(html).not.toMatch(/class="pb-preview-layout-menu"[^>]*\bhidden\b/);
   });
 
-  test("rendert Optionen als Piktogramme mit Label als Tooltip und Caption", () => {
+  test("rendert Optionen als Piktogramme mit Label als Tooltip", () => {
     const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
     expect((html.match(/<svg viewBox="0 0 20 20"/g) ?? []).length).toBe(3);
     expect(html).toContain('aria-label="Bild &amp; Text"');
     expect(html).toContain('title="Zentriert"');
-    expect(html).toContain(
-      '<span class="pb-preview-layout-caption" aria-hidden="true">Bild &amp; Text</span>'
-    );
+    expect(html).not.toContain("pb-preview-layout-caption");
   });
 
   test("kennzeichnet Mobil-Layouts im Aria-Label", () => {

@@ -21,6 +21,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { MARKTPLATZ_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
+import { hasMarks, rich } from "../../richText";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -69,6 +70,8 @@ function Squiggle(): React.ReactNode {
 
 /** Letztes Wort der Headline als Akzentwort mit Kritzel-Unterstreichung. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -152,7 +155,7 @@ function renderSection(
                 data-pb-slot={LAYOUT_SLOT.aboutMedia}
               />
             )}
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
           </div>
         </section>
       );
@@ -409,7 +412,7 @@ const MarktplatzPage: React.FC<{
               )}
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-mp-sub">{hero.subheadline}</p>
+                <p className="pb-mp-sub">{rich(hero.subheadline)}</p>
               )}
               {hero.ctaText && (
                 <a className="pb-mp-cta" href={hero.ctaHref ?? "#kontakt"}>

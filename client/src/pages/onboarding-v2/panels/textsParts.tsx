@@ -1,6 +1,7 @@
 import React from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
+import { toggleMark, type RichMark } from "@/components/site/richText";
 
 /** Deckt sich mit server/onboardingV2/suggest.ts (TextField) — bewusst lokal dupliziert statt importiert, damit das Client-Bundle nicht vom Server-Modul abhängt. */
 export type TextField =
@@ -19,6 +20,8 @@ interface FieldConfig {
   suggestField?: TextField;
   /** Deckt sich mit TextsPatchSchema (shared/onboardingV2/patches.ts): min(1), wenn das Feld gesetzt ist. */
   required?: boolean;
+  /** Fett/Kursiv/Akzent-Buttons — nur Felder, die die Packs per rich() rendern. */
+  formattable?: boolean;
 }
 
 interface FieldGroup {
@@ -46,6 +49,7 @@ const GROUPS: FieldGroup[] = [
         maxLength: 120,
         suggestField: "headline",
         required: true,
+        formattable: true,
       },
       {
         key: "subheadline",
@@ -53,6 +57,7 @@ const GROUPS: FieldGroup[] = [
         kind: "input",
         maxLength: 240,
         suggestField: "subheadline",
+        formattable: true,
       },
       {
         key: "ctaText",
@@ -79,6 +84,7 @@ const GROUPS: FieldGroup[] = [
         maxLength: 2000,
         suggestField: "aboutBody",
         required: true,
+        formattable: true,
       },
     ],
   },
@@ -166,10 +172,66 @@ export function TextsForm({
     const isSuggesting = suggestField ? suggesting === suggestField : false;
     const isInvalid =
       !!field.required && raw !== undefined && raw.trim() === "";
+    // Format-Buttons: Marker um die aktuelle Auswahl legen (oder entfernen)
+    // und die Auswahl danach wiederherstellen — die Vorschau rendert die
+    // Marker über rich() (siehe richText.tsx).
+    const applyFormat = (mark: RichMark) => {
+      const el = document.getElementById(fieldId) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | null;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      if (start == null || end == null || start === end) return;
+      const next = toggleMark(value, start, end, mark);
+      if (next.value.length > field.maxLength) return;
+      onChange({ ...values, [field.key]: next.value });
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(next.selStart, next.selEnd);
+      });
+    };
     return (
       <div className="pb-studio-field" key={field.key}>
         <div className="pb-studio-field-head">
           <label htmlFor={fieldId}>{field.label}</label>
+          {field.formattable && (
+            <span
+              className="pb-studio-format"
+              role="group"
+              aria-label={`Formatierung: ${field.label}`}
+            >
+              <button
+                type="button"
+                title="Markierten Text fett"
+                aria-label={`Fett: ${field.label}`}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => applyFormat("**")}
+              >
+                <b>F</b>
+              </button>
+              <button
+                type="button"
+                title="Markierten Text kursiv"
+                aria-label={`Kursiv: ${field.label}`}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => applyFormat("*")}
+              >
+                <i>K</i>
+              </button>
+              <button
+                type="button"
+                data-accent
+                title="Markierten Text in der Akzentfarbe der Designrichtung (kursiv)"
+                aria-label={`Akzentfarbe: ${field.label}`}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => applyFormat("==")}
+              >
+                <i>A</i>
+              </button>
+            </span>
+          )}
           {suggestField && (
             <button
               type="button"

@@ -145,7 +145,9 @@ describe("submitContactRequest", () => {
 
     const call = mockedSendEmail.mock.calls[0][0] as { html: string };
     expect(call.html).toContain("&lt;img");
-    expect(call.html).not.toContain("<img");
+    // Das Marken-Logo im Mail-Kopf ist ein legitimes <img> (emailDesign.ts)
+    // — verboten ist nur das INJIZIERTE Muster aus den Eingaben.
+    expect(call.html).not.toContain("<img src=x");
     expect(call.html).not.toContain("<script>");
     expect(call.html).not.toContain("<b onmouseover=alert(1)>");
   });

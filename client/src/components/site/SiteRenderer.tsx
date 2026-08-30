@@ -14,6 +14,7 @@ import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
 import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
+import { RICH_TEXT_CSS } from "./richText";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
 import { deriveDesignProfile } from "../../../../shared/siteContract/designProfile";
 import {
@@ -171,6 +172,8 @@ export const SiteRenderer: React.FC<{
             MOTION_CSS +
             "\n" +
             REVIEW_CHROME_CSS +
+            "\n" +
+            RICH_TEXT_CSS +
             "\n" +
             LAYOUT_POLISH_CSS +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),

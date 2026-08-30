@@ -18,6 +18,7 @@ import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
 import { PATINA_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -47,6 +48,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline kursiv in Terrakotta — der Rest bleibt Tinte-farben. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -129,7 +132,7 @@ function renderSection(
             className="pb-pa-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
           >
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
             {showImage && (
               <img
                 className="pb-pa-about-img"
@@ -420,7 +423,7 @@ const PatinaPage: React.FC<{
               {eyebrow && <p className="pb-pa-eyebrow">{eyebrow}</p>}
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-pa-sub">{hero.subheadline}</p>
+                <p className="pb-pa-sub">{rich(hero.subheadline)}</p>
               )}
               {serviceTitles.length > 0 && (
                 <p className="pb-pa-services-line">

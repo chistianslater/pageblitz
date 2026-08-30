@@ -20,6 +20,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { GUSTO_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
+import { rich } from "../../richText";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   ...GENERIC_TITLES,
@@ -155,7 +156,7 @@ function renderSection(
             )}
             <div className="pb-gu-about-copy">
               <h2>{section.headline}</h2>
-              <p>{section.body}</p>
+              <p>{rich(section.body)}</p>
             </div>
           </div>
         </section>
@@ -486,9 +487,9 @@ const GustoPage: React.FC<{
               {data.businessCategory && (
                 <p className="pb-gu-eyebrow">{data.businessCategory}</p>
               )}
-              <h1>{hero.headline}</h1>
+              <h1>{rich(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-gu-subline">{hero.subheadline}</p>
+                <p className="pb-gu-subline">{rich(hero.subheadline)}</p>
               )}
               <OrnamentDivider />
               {hero.ctaText && (

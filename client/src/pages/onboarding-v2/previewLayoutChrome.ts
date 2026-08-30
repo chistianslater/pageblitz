@@ -186,13 +186,13 @@ const CHROME_CSS = `
 .pb-preview-layout-btn{appearance:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(11,11,13,.35)}
 .pb-preview-layout-icon{display:grid;grid-template-columns:repeat(3,3px);gap:1.5px;width:12px;height:12px}
 .pb-preview-layout-icon i{display:block;width:3px;height:3px;border-radius:.4px;background:currentColor}
-.pb-preview-layout-btn:hover,.pb-preview-layout:hover>.pb-preview-layout-btn,.pb-preview-layout:focus-within>.pb-preview-layout-btn,.pb-preview-layout[data-open="true"]>.pb-preview-layout-btn{background:#fff100;border-color:#fff100;color:#0b0b0d}
+.pb-preview-layout-btn:hover,.pb-preview-layout:hover>.pb-preview-layout-btn,.pb-preview-layout:focus-within>.pb-preview-layout-btn,.pb-preview-layout[data-open="true"]>.pb-preview-layout-btn{background:#ccff00;border-color:#ccff00;color:#0b0b0d}
 .pb-preview-layout-menu{position:absolute;top:50%;right:calc(100% + 8px);display:flex;align-items:center;gap:2px;padding:3px;background:rgba(11,11,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:999px;box-shadow:0 14px 34px rgba(11,11,13,.4);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-50%) translateX(8px) scale(.96)}
+.pb-preview-layout-menu::after{content:"";position:absolute;left:100%;top:-6px;bottom:-6px;width:14px}
 .pb-preview-layout-menu button{appearance:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;background:transparent;color:rgba(245,245,242,.72);border-radius:999px;cursor:pointer}
 .pb-preview-layout-menu button svg{width:17px;height:17px}
 .pb-preview-layout-menu button:hover{background:rgba(255,255,255,.12);color:#fff}
-.pb-preview-layout-menu button[aria-pressed="true"]{background:#fff100;color:#0b0b0d}
-.pb-preview-layout-caption{position:absolute;top:calc(100% + 7px);right:0;white-space:nowrap;font:600 .68rem/1 "Space Grotesk",system-ui,sans-serif;color:#f5f5f2;background:rgba(11,11,13,.94);border:1px solid rgba(255,255,255,.14);padding:.32rem .6rem;border-radius:999px;pointer-events:none}
+.pb-preview-layout-menu button[aria-pressed="true"]{background:#ccff00;color:#0b0b0d}
 .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
 @media(prefers-reduced-motion:no-preference){
   .pb-preview-layout-menu{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s}
@@ -295,9 +295,6 @@ export function renderLayoutChromeHtml(
   viewport: LayoutViewport = "desktop"
 ): string {
   const title = layoutChromeTitle(section, viewport);
-  const currentOption = section.options.find(
-    option => option.value === current
-  );
   const options = section.options
     .map(option => {
       const label = escapeHtml(layoutOptionLabel(option, viewport));
@@ -306,16 +303,13 @@ export function renderLayoutChromeHtml(
       }" aria-label="${label}" title="${label}">${option.icon}</button>`;
     })
     .join("");
-  const caption = currentOption
-    ? escapeHtml(layoutOptionLabel(currentOption, viewport))
-    : "";
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
     <button type="button" class="pb-preview-layout-btn" aria-expanded="false" aria-haspopup="true" aria-label="${escapeHtml(
       title
     )}">${LAYOUT_GRID_ICON_HTML}</button>
     <div class="pb-preview-layout-menu" role="group" aria-label="${escapeHtml(
       title
-    )}">${options}<span class="pb-preview-layout-caption" aria-hidden="true">${caption}</span></div>
+    )}">${options}</div>
   </div>`;
 }
 
@@ -369,23 +363,6 @@ function syncChromeCopy(doc: Document): void {
   }
 }
 
-/** Caption unter der Leiste: Label der gehoverten, sonst der aktiven Option. */
-function syncCaption(doc: Document, hovered?: HTMLButtonElement | null): void {
-  const viewport = viewportOf(doc);
-  for (const section of PREVIEW_LAYOUT_SECTIONS) {
-    const chrome = doc.querySelector(
-      `[data-pb-layout-field="${section.field}"]`
-    );
-    const caption = chrome?.querySelector(".pb-preview-layout-caption");
-    if (!chrome || !caption) continue;
-    const shown =
-      hovered && chrome.contains(hovered)
-        ? hovered.getAttribute("data-pb-layout-option")
-        : currentOfDoc(doc, section.field);
-    const option = section.options.find(item => item.value === shown);
-    caption.textContent = option ? layoutOptionLabel(option, viewport) : "";
-  }
-}
 
 function syncPressed(
   root: ParentNode,
@@ -518,7 +495,6 @@ export function enablePreviewLayoutChrome(
     }
     syncPressed(doc, field => currentOfDoc(doc, field));
     syncChromeCopy(doc);
-    syncCaption(doc);
   };
 
   if (doc.documentElement.hasAttribute(CHROME_MARK)) {
@@ -579,19 +555,6 @@ export function enablePreviewLayoutChrome(
       });
     }
 
-    const hoveredOption = (target: EventTarget | null) =>
-      target instanceof Element
-        ? target.closest<HTMLButtonElement>("[data-pb-layout-option]")
-        : null;
-    menu.addEventListener("pointerover", event => {
-      syncCaption(doc, hoveredOption(event.target));
-    });
-    menu.addEventListener("pointerout", () => syncCaption(doc));
-    menu.addEventListener("focusin", event => {
-      syncCaption(doc, hoveredOption(event.target));
-    });
-    menu.addEventListener("focusout", () => syncCaption(doc));
-
     menu.addEventListener("click", event => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
         "[data-pb-layout-option]"
@@ -613,7 +576,6 @@ export function enablePreviewLayoutChrome(
         overlayState.set(doc, overlay);
         applyLayoutOverlay(site, overlay, viewportOf(doc));
         syncPressed(doc, field => currentOfDoc(doc, field));
-        syncCaption(doc);
         setOpen(false);
         options?.onOverlayChange?.(overlay);
         return;
@@ -629,7 +591,6 @@ export function enablePreviewLayoutChrome(
       workingProfiles.set(doc, working);
       applyProfileAttrs(site, working);
       syncPressed(doc, field => currentOfDoc(doc, field));
-      syncCaption(doc);
       setOpen(false);
       onPick(working);
     });

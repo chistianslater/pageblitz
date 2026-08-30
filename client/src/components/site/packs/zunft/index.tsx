@@ -19,6 +19,7 @@ import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
 import { ZUNFT_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -48,6 +49,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline kursiv in Bordeaux — der Rest bleibt Ofenschwarz. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -146,7 +149,7 @@ function renderSection(
                 data-pb-slot={LAYOUT_SLOT.aboutMedia}
               />
             )}
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
           </div>
         </section>
       );
@@ -429,7 +432,7 @@ const ZunftPage: React.FC<{
               </span>
             )}
           </h1>
-          {hero.subheadline && <p className="pb-zf-sub">{hero.subheadline}</p>}
+          {hero.subheadline && <p className="pb-zf-sub">{rich(hero.subheadline)}</p>}
           {previewItems.length > 0 && (
             <div className="pb-zf-tafel-preview">
               {previewItems.map(item => (

@@ -17,6 +17,7 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
+import { hasMarks, rich, stripMarks } from "../../richText";
 
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { VERVE_CSS } from "./css";
@@ -145,7 +146,7 @@ function renderSection(
                 data-pb-slot={LAYOUT_SLOT.aboutMedia}
               />
             )}
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
           </div>
         </section>
       );
@@ -377,7 +378,9 @@ const VervePage: React.FC<{
     data.businessName
   ).toUpperCase();
   const stats = buildStats(data, services);
-  const [line1, line2] = hero ? splitHeadline(hero.headline) : ["", ""];
+  const richHeadline = hero && hasMarks(hero.headline);
+  const [line1, line2] =
+    hero && !richHeadline ? splitHeadline(hero.headline) : ["", ""];
 
   return (
     <div className="pb-verve">
@@ -417,15 +420,18 @@ const VervePage: React.FC<{
             {tapeText}
           </div>
           <div className="pb-vv-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <h1 aria-label={hero.headline}>
-              <span aria-hidden="true">{line1}</span>
+            <h1 aria-label={stripMarks(hero.headline)}>
+              {richHeadline && (
+                <span aria-hidden="true">{rich(hero.headline)}</span>
+              )}
+              {!richHeadline && <span aria-hidden="true">{line1}</span>}
               {line2 && (
                 <span className="pb-vv-block" aria-hidden="true">
                   {line2}
                 </span>
               )}
             </h1>
-            {hero.subheadline && <p>{hero.subheadline}</p>}
+            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
             {hero.ctaText && (
               <a className="pb-vv-cta" href={hero.ctaHref ?? "#kontakt"}>
                 {hero.ctaText}

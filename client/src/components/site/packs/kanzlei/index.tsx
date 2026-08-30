@@ -18,6 +18,7 @@ import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
+import { hasMarks, rich } from "../../richText";
 import { KANZLEI_CSS } from "./css";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
@@ -49,6 +50,8 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 
 /** Letztes Wort der Headline kursiv in Kieferngrün — der Rest bleibt Tinte. */
 function renderHeadline(headline: string): React.ReactNode {
+  // Explizite Marker (Studio-Texteditor) ersetzen die Auto-Akzentuierung.
+  if (headline && hasMarks(headline)) return rich(headline);
   const words = headline.trim().split(/\s+/).filter(Boolean);
   if (words.length <= 1) return headline;
   const last = words[words.length - 1];
@@ -152,7 +155,7 @@ function renderSection(
             className="pb-kz-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
           >
-            <p>{section.body}</p>
+            <p>{rich(section.body)}</p>
             {section.imageUrl && (
               <img
                 className="pb-kz-about-img"
@@ -450,7 +453,7 @@ const KanzleiPage: React.FC<{
               {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}
               <h1>{renderHeadline(hero.headline)}</h1>
               {hero.subheadline && (
-                <p className="pb-kz-sub">{hero.subheadline}</p>
+                <p className="pb-kz-sub">{rich(hero.subheadline)}</p>
               )}
               {hero.ctaText && (
                 <a className="pb-kz-link" href={hero.ctaHref ?? "#kontakt"}>
