@@ -71,22 +71,76 @@ function Blob({ tone }: { tone: "honey" | "sage" }) {
   );
 }
 
-/** Botanische Linien-Illustration (Zweig) in Indigo, 1.5px, ohne Füllung. */
+/**
+ * Botanische Linien-Illustration in Indigo — 1.5px Outline ohne Füllung,
+ * bewusst groß und über Ränder blutend (Pa'lais-Signatur: „Living
+ * Illustration").
+ */
 function Sprig({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 120 40"
+      viewBox="0 0 200 160"
       fill="none"
       aria-hidden="true"
     >
       <path
-        d="M4 36C34 26 66 14 116 6M34 26c-2-8 2-16 9-19M34 26c8 2 16-1 20-8M62 17c-1-7 3-13 9-15M62 17c7 1 13-2 16-9M88 10c0-5 3-9 8-10"
+        d="M18 152C58 118 96 78 178 18M70 110c-8-18-4-38 10-50M70 110c18 6 38 0 48-16M112 74c-4-16 2-32 16-40M112 74c16 4 32-2 40-16M146 44c-2-12 4-22 14-26M146 44c12 2 22-2 28-12"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
+      <path
+        d="M80 100c-10 2-16 10-16 18M104 82c-10 0-18 6-20 14M132 58c-8-2-16 2-20 8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity=".55"
+      />
     </svg>
+  );
+}
+
+/**
+ * Organische Bild-Masken (Pa'lais: „wilde Ränder"): zwei Blob-Pfade als
+ * clipPath in objectBoundingBox-Einheiten (scale 1/200 des 200er-Pfads),
+ * einmal pro Seite unsichtbar definiert — CSS referenziert sie per url(#…).
+ */
+function BlobDefs() {
+  return (
+    <svg
+      aria-hidden="true"
+      focusable="false"
+      style={{ position: "absolute", width: 0, height: 0 }}
+    >
+      <defs>
+        <clipPath id="pb-er-clip-a" clipPathUnits="objectBoundingBox">
+          <path
+            transform="scale(0.005)"
+            d="M28 104C14 74 26 34 60 16c34-18 82-16 112 6 30 22 36 62 24 96-12 34-44 58-84 60-40 2-70-24-84-74Z"
+          />
+        </clipPath>
+        <clipPath id="pb-er-clip-b" clipPathUnits="objectBoundingBox">
+          <path
+            transform="scale(0.005) rotate(160 100 100)"
+            d="M28 104C14 74 26 34 60 16c34-18 82-16 112 6 30 22 36 62 24 96-12 34-44 58-84 60-40 2-70-24-84-74Z"
+          />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+}
+
+/** Punkte-Reihe unter der Headline — kleines Pa'lais-Markenzeichen. */
+function Dots() {
+  return (
+    <span className="pb-er-dots" aria-hidden="true">
+      <i />
+      <i />
+      <i />
+      <i />
+      <i />
+    </span>
   );
 }
 
@@ -364,6 +418,7 @@ const ErntePage: React.FC<{
 
   return (
     <div className="pb-ernte">
+      <BlobDefs />
       <nav className="pb-er-nav">
         <span className="pb-er-logo">{renderLogo(data)}</span>
         <div className="pb-er-nav-links">
@@ -381,12 +436,15 @@ const ErntePage: React.FC<{
       </nav>
       {hero && (
         <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
+          <Blob tone="sage" />
+          <Sprig className="pb-er-sprig pb-er-hero-deco" />
           <div className="pb-er-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             {/* Script-Zeile nur, wenn sie nicht bloß die Headline dupliziert. */}
             {data.tagline && data.tagline !== hero.headline && (
               <p className="pb-er-script">{data.tagline}</p>
             )}
             <h1>{renderHeadline(hero.headline)}</h1>
+            <Dots />
             {hero.subheadline && (
               <p className="pb-er-sub">{rich(hero.subheadline)}</p>
             )}
@@ -403,7 +461,6 @@ const ErntePage: React.FC<{
                 </span>
               )}
             </div>
-            <Sprig className="pb-er-sprig pb-er-hero-sprig" />
           </div>
           {hero.imageUrl && (
             <div className="pb-er-hero-media">
