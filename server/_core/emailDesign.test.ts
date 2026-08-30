@@ -8,7 +8,7 @@ import {
 import { renderLifecycleEmail } from "./lifecycleEmails";
 
 describe("Pageblitz E-Mail-Design", () => {
-  test("gemeinsame Chrome nutzt Papier, Ink, Grün und Hairlines", () => {
+  test("gemeinsame Chrome nutzt die Nachtschicht-Markensprache (heller Brief, dunkler Kopf, Volt)", () => {
     const html = wrapPageblitzEmail({
       eyebrow: "Test",
       content:
@@ -16,11 +16,14 @@ describe("Pageblitz E-Mail-Design", () => {
         emailPrimaryButton("Weiter", "https://pageblitz.de"),
       footer: emailFooter({ unsubscribeLink: "https://example.com/aus" }),
     });
-    expect(html).toContain("#f7f5f1");
-    expect(html).toContain("#fdfcfa");
-    expect(html).toContain("#1d1a17");
-    expect(html).toContain("#1f5f4b");
-    expect(html).toContain("#ddd6c9");
+    expect(html).toContain("#f2f2ef");
+    expect(html).toContain("#ffffff");
+    expect(html).toContain("#131316");
+    // Dunkler Kopf + Volt (Buttons/Eyebrow) statt des alten Grüns.
+    expect(html).toContain("#0b0b0d");
+    expect(html).toContain("#ccff00");
+    expect(html).toContain("#e4e3de");
+    expect(html).not.toContain("#1f5f4b");
     expect(html).not.toContain("#4f46e5");
     expect(html).not.toContain("#818cf8");
     expect(html).not.toContain("#f4f4f5");
@@ -42,7 +45,7 @@ describe("Pageblitz E-Mail-Design", () => {
         unsubscribeLink: "https://pageblitz.de/abmelden",
       });
       expect(html).toContain("Pageblitz");
-      expect(html).toContain("#1f5f4b");
+      expect(html).toContain("#ccff00");
       expect(html).not.toContain("#4f46e5");
       expect(html).not.toContain("#818cf8");
       expect(html).not.toContain("#f4f4f5");

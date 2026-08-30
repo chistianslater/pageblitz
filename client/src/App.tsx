@@ -1,5 +1,6 @@
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import { lazy, Suspense, useEffect } from "react";
+import { BrandMark } from "@/components/landing/primitives";
 import ErrorBoundary from "./components/ErrorBoundary";
 import {
   initConsent,
@@ -76,37 +77,19 @@ const LegacyWebsiteRedirect = lazy(
 );
 
 function PageLoader({ inline = false }: { inline?: boolean }) {
+  // Nachtschicht-Preloader (2026-08-30): pulsierender P-Blitz auf Kohle —
+  // gleiche Welt wie Landing/Studio statt des alten hellen Kastens.
   return (
     <div
-      className={`${inline ? "h-64" : "fixed inset-0 min-h-screen"} flex items-center justify-center bg-lp-canvas p-6 text-lp-ink`}
+      className={`lp ${inline ? "min-h-64" : "fixed inset-0 min-h-screen"} flex items-center justify-center bg-lp-canvas p-6 text-lp-ink`}
       role="status"
       aria-label="Pageblitz wird geladen"
     >
-      <div className="w-full max-w-[18rem]">
-        <div className="flex items-center gap-2.5">
-          <span
-            aria-hidden="true"
-            className="grid h-9 w-9 place-items-center rounded-[7px] bg-lp-ink text-lg font-semibold text-lp-canvas"
-          >
-            ↯
-          </span>
-          <span className="text-[1.05rem] font-medium tracking-[-0.01em]">
-            Pageblitz
-          </span>
-        </div>
-        <p className="lp-kicker mt-8">Einen Moment</p>
-        <p className="mt-2 text-[0.95rem] text-lp-muted">
-          Dein Studio wird vorbereitet …
-        </p>
-        <div className="mt-5 grid grid-cols-3 gap-1.5" aria-hidden="true">
-          {[0, 1, 2].map(index => (
-            <span
-              key={index}
-              className="h-1 animate-pulse rounded-full bg-lp-accent motion-reduce:animate-none"
-              style={{ animationDelay: `${index * 180}ms` }}
-            />
-          ))}
-        </div>
+      <div className="flex flex-col items-center">
+        <span className="pb-loader-bolt" aria-hidden="true">
+          <BrandMark className="h-14 w-auto text-lp-volt" />
+        </span>
+        <p className="lp-kicker mt-6">Einen Moment</p>
       </div>
     </div>
   );

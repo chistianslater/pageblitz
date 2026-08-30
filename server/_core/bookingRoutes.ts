@@ -347,7 +347,7 @@ export function registerBookingRoutes(app: Express) {
               <p style="color:#3f3a34;font-size:15px;line-height:1.65;margin:0;">Auf der Website von <strong>${businessName}</strong> ist eine neue Buchung eingegangen.</p>
               ${emailInfoPanel(
                 "Termindetails",
-                `<p style="margin:0 0 6px;"><strong>Leistung:</strong> ${appointmentTitle}</p><p style="margin:0 0 6px;"><strong>Datum:</strong> ${formattedDate}, ${time} Uhr</p><p style="margin:0 0 6px;"><strong>Name:</strong> ${name}</p><p style="margin:0 0 6px;"><strong>E-Mail:</strong> <a href="mailto:${email}" style="color:#1f5f4b;">${email}</a></p>${phone ? `<p style="margin:0 0 6px;"><strong>Telefon:</strong> ${phone}</p>` : ""}${message ? `<p style="margin:0;"><strong>Nachricht:</strong> ${message}</p>` : ""}`
+                `<p style="margin:0 0 6px;"><strong>Leistung:</strong> ${appointmentTitle}</p><p style="margin:0 0 6px;"><strong>Datum:</strong> ${formattedDate}, ${time} Uhr</p><p style="margin:0 0 6px;"><strong>Name:</strong> ${name}</p><p style="margin:0 0 6px;"><strong>E-Mail:</strong> <a href="mailto:${email}" style="color:#4a6b00;">${email}</a></p>${phone ? `<p style="margin:0 0 6px;"><strong>Telefon:</strong> ${phone}</p>` : ""}${message ? `<p style="margin:0;"><strong>Nachricht:</strong> ${message}</p>` : ""}`
               )}
               ${emailPrimaryButton(
                 "Alle Termine ansehen",

@@ -25,6 +25,7 @@ import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
 import { CheckoutBar } from "./CheckoutBar";
 import { LeaveWithoutEmailGuard } from "./LeaveWithoutEmailGuard";
+import { BrandMark } from "@/components/landing/primitives";
 import { LiveCard } from "./LiveCard";
 import { LegacyCard } from "./LegacyCard";
 import {
@@ -175,8 +176,17 @@ export default function StudioPage({ token }: { token: string }) {
 
   if (studio.isLoading && !studio.state)
     return (
-      <div className="pb-studio pb-studio-gen">
-        <p>Lade dein Studio …</p>
+      <div
+        className="pb-studio pb-studio-gen"
+        role="status"
+        aria-label="Dein Studio wird geladen"
+      >
+        <div className="pb-studio-loader">
+          <span className="pb-loader-bolt" aria-hidden="true">
+            <BrandMark className="pb-studio-loader-mark" />
+          </span>
+          <p>Lade dein Studio …</p>
+        </div>
       </div>
     );
   if (!studio.state)

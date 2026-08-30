@@ -63,14 +63,14 @@ function buildOwnerNotificationHtml(input: {
     .filter(([, value]) => value.trim().length > 0)
     .map(
       ([label, value]) =>
-        `<tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">${esc(label)}</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;">${esc(value)}</td></tr>`
+        `<tr><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#6d6c66;font-size:13px;">${esc(label)}</td><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#1d1a17;font-size:14px;">${esc(value)}</td></tr>`
     )
     .join("");
   const rows = `
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
-      <tr><td style="width:30%;padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;font-weight:600;">${name}</td></tr>
-      <tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">E-Mail</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;"><a href="mailto:${email}" style="color:#1f5f4b;font-size:14px;text-decoration:none;">${email}</a></td></tr>
-      ${phone ? `<tr><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#6b645b;font-size:13px;">Telefon</td><td style="padding:10px 0;border-bottom:1px solid #ddd6c9;color:#1d1a17;font-size:14px;">${phone}</td></tr>` : ""}
+      <tr><td style="width:30%;padding:10px 0;border-bottom:1px solid #e4e3de;color:#6d6c66;font-size:13px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#1d1a17;font-size:14px;font-weight:600;">${name}</td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#6d6c66;font-size:13px;">E-Mail</td><td style="padding:10px 0;border-bottom:1px solid #e4e3de;"><a href="mailto:${email}" style="color:#4a6b00;font-size:14px;text-decoration:none;">${email}</a></td></tr>
+      ${phone ? `<tr><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#6d6c66;font-size:13px;">Telefon</td><td style="padding:10px 0;border-bottom:1px solid #e4e3de;color:#1d1a17;font-size:14px;">${phone}</td></tr>` : ""}
       ${customRows}
     </table>`;
   return wrapPageblitzEmail({

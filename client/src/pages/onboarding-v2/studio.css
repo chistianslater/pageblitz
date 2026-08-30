@@ -2516,3 +2516,17 @@
   color: #f2f1ee;
   background: rgba(255, 255, 255, 0.06);
 }
+
+/* Studio-Ladezustand mit pulsierendem Blitz (Keyframes in index.css). */
+.pb-studio-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--st-muted);
+}
+.pb-studio-loader-mark {
+  height: 3.25rem;
+  width: auto;
+  color: var(--st-accent);
+}

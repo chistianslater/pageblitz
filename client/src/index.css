@@ -2145,3 +2145,27 @@ html.lp-nav-open body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Preloader-Blitz (2026-08-30): pulsiert in Größe und Glow — Landing wie
+   Studio nutzen denselben Look. Bei reduzierter Bewegung statisch. */
+.pb-loader-bolt {
+  display: inline-flex;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pb-loader-bolt {
+    animation: pb-loader-pulse 1.3s ease-in-out infinite;
+  }
+}
+@keyframes pb-loader-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(204, 255, 0, 0));
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 18px rgba(204, 255, 0, 0.45));
+    opacity: 1;
+  }
+}

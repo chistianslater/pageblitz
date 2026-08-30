@@ -100,8 +100,8 @@ const wrap = (
 const primaryCta = emailPrimaryButton;
 
 const secondaryLink = (text: string, href: string) => `
-    <p style="margin:12px 0 0;font-size:14px;line-height:1.5;color:#6b645b;font-family:'Helvetica Neue',Arial,sans-serif;">
-      <a href="${href}" style="color:#1f5f4b;text-decoration:underline;">${text}</a>
+    <p style="margin:12px 0 0;font-size:14px;line-height:1.5;color:#6d6c66;font-family:'Helvetica Neue',Arial,sans-serif;">
+      <a href="${href}" style="color:#4a6b00;text-decoration:underline;">${text}</a>
     </p>`;
 
 // Helper: Text-Fragment "für X" nur rendern, wenn echter Business-Name vorhanden
