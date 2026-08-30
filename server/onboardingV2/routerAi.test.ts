@@ -382,3 +382,65 @@ describe("onboardingV2.discardAiEdit", () => {
     expect(result).toEqual({ ok: true });
   });
 });
+
+describe("applyAiTheme — Sichtbarkeit + Reihenfolge (2026-08-30)", () => {
+  const doc: WebsiteDataV2 = {
+    version: 2,
+    stylePackId: "werkbank",
+    businessName: "Brandt",
+    seo: { title: "t", description: "d" },
+    sections: [
+      { type: "hero", headline: "H" },
+      { type: "services", headline: "L", items: [{ title: "A" }] },
+      {
+        type: "testimonials",
+        items: [{ author: "Kunde", text: "Top" }],
+      },
+      { type: "contact", city: "Dortmund" },
+    ],
+  };
+
+  test("hiddenSections wird gefiltert übernommen und deutsch zusammengefasst", () => {
+    const { next, summary } = applyAiTheme(doc, {
+      hiddenSections: ["testimonials", "gallery"],
+    });
+    // gallery existiert im Dokument nicht → gefiltert.
+    expect(next.hiddenSections).toEqual(["testimonials"]);
+    expect(summary).toEqual(["„Bewertungen“ ausgeblendet"]);
+  });
+
+  test("[] blendet wieder ein und entfernt das Feld", () => {
+    const hiddenDoc: WebsiteDataV2 = {
+      ...doc,
+      hiddenSections: ["testimonials"],
+    };
+    const { next, summary } = applyAiTheme(hiddenDoc, { hiddenSections: [] });
+    expect(next.hiddenSections).toBeUndefined();
+    expect(summary).toEqual(["„Bewertungen“ wieder eingeblendet"]);
+  });
+
+  test("sectionOrder wird gefiltert/dedupliziert übernommen", () => {
+    const { next, summary } = applyAiTheme(doc, {
+      sectionOrder: ["hero", "testimonials", "services", "faq", "contact"],
+    });
+    expect(next.sectionOrder).toEqual([
+      "hero",
+      "testimonials",
+      "services",
+      "contact",
+    ]);
+    expect(summary.join(" ")).toContain("Reihenfolge angepasst");
+    expect(summary.join(" ")).toContain("Bewertungen");
+  });
+
+  test("unveränderte hiddenSections erzeugen keine Summary-Zeile (Route würde sonst fälschlich 'Erledigt' melden)", () => {
+    const hiddenDoc: WebsiteDataV2 = {
+      ...doc,
+      hiddenSections: ["testimonials"],
+    };
+    const { summary } = applyAiTheme(hiddenDoc, {
+      hiddenSections: ["testimonials"],
+    });
+    expect(summary).toEqual([]);
+  });
+});

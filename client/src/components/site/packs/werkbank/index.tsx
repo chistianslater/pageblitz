@@ -124,7 +124,7 @@ function renderSection(
       return (
         <React.Fragment key={section.type}>
           <section id={SECTION_ANCHORS.hero} className="pb-wb-hero">
-          <HeroCollage data={data} />
+            <HeroCollage data={data} />
             <h1 aria-label={stripMarks(section.headline)}>
               {richHeadline && rich(section.headline)}
               {lines.map((line, i) => {

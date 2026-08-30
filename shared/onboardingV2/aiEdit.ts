@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   PACK_IDS,
   PageSectionSchema,
+  SECTION_TYPES,
   SectionV2Schema,
 } from "../siteContract/schema";
 import {
@@ -22,12 +23,31 @@ import type {
 } from "../siteContract/types";
 
 /**
+ * Sektionstypen, die der Assistent ausblenden darf — hero und contact nie
+ * (Identität bzw. Pflicht-Fakten), pageHeader existiert nur auf Unterseiten.
+ */
+export const HIDEABLE_SECTION_TYPES = [
+  "services",
+  "about",
+  "gallery",
+  "testimonials",
+  "faq",
+  "menu",
+  "pricelist",
+  "team",
+  "cta",
+  "story",
+] as const;
+
+/**
  * Design-Patch des KI-Assistenten (2026-08-30): jede Stellschraube, die
  * auch der Theme-Editor kennt — Akzent, Farbwelt (kuratiert oder eigene
- * Grundfarbe), Schriftpaar, Abstände, Bildwirkung, Sektionslayouts.
- * `null` = auf Richtungs-Standard zurück; fehlende Felder bleiben
- * unangetastet. Server-seitig zusätzlich gegen FONT_PAIRS/getColorWorld
- * validiert (routerAi.ts) und SOFORT angewandt (leicht revidierbar).
+ * Grundfarbe), Schriftpaar, Abstände, Bildwirkung, Sektionslayouts, seit
+ * heute auch Sichtbarkeit (hiddenSections) und Reihenfolge (sectionOrder)
+ * der Sektionen. `null` = auf Richtungs-Standard zurück; fehlende Felder
+ * bleiben unangetastet. Server-seitig zusätzlich gegen FONT_PAIRS/
+ * getColorWorld/den Sektionsbestand validiert (routerAi.ts) und SOFORT
+ * angewandt (leicht revidierbar).
  */
 export const AiThemePatchSchema = z
   .object({
@@ -54,6 +74,10 @@ export const AiThemePatchSchema = z
     aboutLayout: z.enum(ABOUT_LAYOUTS).optional(),
     galleryLayout: z.enum(GALLERY_LAYOUTS).optional(),
     decorations: z.enum(DECORATION_MODES).optional(),
+    // VOLLSTÄNDIGE Ersatz-Listen (kein Merge): [] blendet alles wieder ein
+    // bzw. setzt die Reihenfolge auf die Dokument-Ordnung zurück.
+    hiddenSections: z.array(z.enum(HIDEABLE_SECTION_TYPES)).max(12).optional(),
+    sectionOrder: z.array(z.enum(SECTION_TYPES)).max(16).optional(),
   })
   .strict();
 
@@ -168,7 +192,7 @@ export interface AiDiffEntry {
   after: string;
 }
 
-const SECTION_LABELS: Record<SectionType, string> = {
+export const SECTION_LABELS: Record<SectionType, string> = {
   hero: "Hero",
   services: "Leistungen",
   about: "Über uns",

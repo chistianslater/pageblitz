@@ -15,6 +15,7 @@ import {
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
   AiChatHistorySchema,
+  SECTION_LABELS,
   type AiThemePatch,
 } from "../../shared/onboardingV2/aiEdit";
 import { applyTheme } from "./applyPatch";
@@ -55,6 +56,47 @@ export function applyAiTheme(
 ): { next: WebsiteDataV2; summary: string[] } {
   const summary: string[] = [];
   const packId = doc.stylePackId as PackId;
+
+  // Sichtbarkeit + Reihenfolge (2026-08-30): VOR applyTheme aufs Dokument,
+  // damit dessen abschließendes Zod-Parse alles gemeinsam validiert. Beide
+  // Listen werden auf tatsächlich vorhandene Sektionstypen gefiltert und
+  // dedupliziert — die KI kann nichts verstecken/ordnen, was es nicht gibt.
+  let base = doc;
+  // Set<string>: sectionOrder erlaubt schema-seitig auch "pageHeader"
+  // (SECTION_TYPES) — der Filter wirft es hier ohnehin raus.
+  const presentTypes = new Set<string>(doc.sections.map(s => s.type));
+  if (theme.hiddenSections !== undefined) {
+    const hidden = Array.from(new Set(theme.hiddenSections)).filter(t =>
+      presentTypes.has(t)
+    );
+    const before = new Set(doc.hiddenSections ?? []);
+    const after = new Set<string>(hidden);
+    for (const t of hidden) {
+      if (!before.has(t)) summary.push(`„${SECTION_LABELS[t]}“ ausgeblendet`);
+    }
+    for (const t of before) {
+      if (!after.has(t))
+        summary.push(`„${SECTION_LABELS[t]}“ wieder eingeblendet`);
+    }
+    base = { ...base };
+    if (hidden.length > 0) base.hiddenSections = hidden;
+    else delete base.hiddenSections;
+  }
+  if (theme.sectionOrder !== undefined) {
+    const order = Array.from(new Set(theme.sectionOrder)).filter(t =>
+      presentTypes.has(t)
+    );
+    base = { ...base };
+    if (order.length > 0) {
+      base.sectionOrder = order;
+      summary.push(
+        `Reihenfolge angepasst: ${order.map(t => SECTION_LABELS[t]).join(" → ")}`
+      );
+    } else {
+      delete base.sectionOrder;
+      summary.push("Reihenfolge auf Standard zurückgesetzt");
+    }
+  }
 
   let worldOverrides: Record<string, string> | null | undefined;
   if (theme.colorWorldBase !== undefined) {
@@ -141,7 +183,7 @@ export function applyAiTheme(
     designProfile = merged;
   }
 
-  const next = applyTheme(doc, {
+  const next = applyTheme(base, {
     accent: theme.accent,
     fontPairId,
     designProfile,
