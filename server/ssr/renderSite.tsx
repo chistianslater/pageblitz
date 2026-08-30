@@ -279,7 +279,7 @@ function renderPageHtml(
       pathname={pathname}
     />
   );
-  const canvasColor = getCanvasColor(data.stylePackId);
+  const canvasColor = getCanvasColor(data);
   const bodyParts = [body, siteEnhancerTag()];
   if (includeIslands) {
     bodyParts.push(
@@ -338,14 +338,33 @@ function sectionRevealTag(opts: RenderSiteOptions): string {
   return opts.sectionReveal ? SECTION_REVEAL_STYLE : "";
 }
 
-/** Hole die Canvas-Farbe (Hintergrund) aus der Verfassung. */
-function getCanvasColor(packId: string): string {
+/**
+ * Canvas-Farbe (Body-Hintergrund hinter der Site): Farbwelt-Override
+ * gewinnt vor der Verfassung — sonst blitzt bei dunklen Welten der helle
+ * Pack-Standard als Streifen über der Navigation/beim Overscroll durch.
+ */
+function getCanvasColor(data: WebsiteDataV2): string {
+  return getRoleColor(data, "canvas", "#ffffff");
+}
+
+/** Textfarbe der Rechtsseiten — folgt der Farbwelt wie die Canvas. */
+function getInkColor(data: WebsiteDataV2): string {
+  return getRoleColor(data, "ink", "#111111");
+}
+
+function getRoleColor(
+  data: WebsiteDataV2,
+  role: "canvas" | "ink",
+  fallback: string
+): string {
+  const override = data.colorOverrides?.[role];
+  if (override && /^#[0-9a-fA-F]{6}$/.test(override)) return override;
   try {
-    const constitution = getConstitution(packId as any);
-    const canvasEntry = constitution.palette.find(c => c.role === "canvas");
-    return canvasEntry?.hex ?? "#ffffff";
+    const constitution = getConstitution(data.stylePackId as any);
+    const entry = constitution.palette.find(c => c.role === role);
+    return entry?.hex ?? fallback;
   } catch {
-    return "#ffffff";
+    return fallback;
   }
 }
 
@@ -387,12 +406,12 @@ function renderLegalPage(
     ? bodyHtml
     : "<p>Diese Seite wurde nicht gefunden.</p>";
   const backHref = basePath || "/";
-  const canvasColor = getCanvasColor(data.stylePackId);
+  const canvasColor = getCanvasColor(data);
   const html = `<!doctype html>
 <html lang="de">
 <head>
 ${[renderLegalHead(data, canonicalUrl, title), analyticsTag(opts)].filter(Boolean).join("\n")}
-<style>html,body{margin:0;padding:0}body{background:${canvasColor}}</style>
+<style>html,body{margin:0;padding:0}body{background:${canvasColor};color:${getInkColor(data)}}.pb-legal a{color:inherit}</style>
 </head>
 <body>
 <div class="pb-legal">
@@ -479,7 +498,7 @@ export function renderSiteHtml(
     />
   );
 
-  const canvasColor = getCanvasColor(data.stylePackId);
+  const canvasColor = getCanvasColor(data);
   const bodyParts = [body, siteEnhancerTag()];
   if (includeIslands) {
     bodyParts.push(

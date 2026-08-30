@@ -181,6 +181,20 @@ const RECIPES: WorldRecipe[] = [
   },
 ];
 
+/**
+ * Eigene Farbwelt aus einer frei gewählten Grundfarbe (Studio-Farbwähler).
+ * Die Fläche liegt eine Spur über dem Grund (wie bei den Rezepten), alle
+ * abhängigen Rollen laufen durch denselben Kontrast-Guard wie die Welten.
+ */
+export function buildCustomWorldOverrides(
+  packId: PackId,
+  baseHex: string
+): Record<string, string> {
+  const { h, s, l } = hexToHsl(baseHex);
+  const surface = hslToHex({ h, s, l: Math.min(0.97, l + 0.05) });
+  return buildWorldSet(packId, baseHex.toLowerCase(), surface);
+}
+
 /** Alle Welten eines Packs — „Original" (leere Overrides) immer zuerst. */
 export function getColorWorlds(packId: PackId): ColorWorld[] {
   const accent = roleHex(packId, "accent");

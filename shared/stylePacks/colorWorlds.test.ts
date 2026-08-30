@@ -3,6 +3,7 @@ import { PACK_IDS } from "../siteContract/packIds";
 import { contrastRatio, ensureTextContrast, mix } from "./colorMath";
 import {
   activeColorWorldId,
+  buildCustomWorldOverrides,
   getColorWorld,
   getColorWorlds,
 } from "./colorWorlds";
@@ -47,6 +48,27 @@ describe("getColorWorlds — Kontrast-Matrix über alle Packs", () => {
           contrastRatio(o["accent-contrast"], accent)
         ).toBeGreaterThanOrEqual(4.5);
         expect(world.swatch).toHaveLength(3);
+      }
+    });
+  }
+});
+
+describe("buildCustomWorldOverrides", () => {
+  // Frei gewählte Grundfarben (Studio-Farbwähler): hell, dunkel, gesättigt.
+  // Mittlere Luminanzen erreichen 7:1 physikalisch nicht immer — der Guard
+  // liefert dann das Maximum; hier gilt die 4,5:1-Lesbarkeitsuntergrenze.
+  const BASES = ["#f2e5d2", "#1a1512", "#dcebe0", "#3b1f4e", "#808080"];
+  for (const packId of PACK_IDS) {
+    test(`kontrastfeste Rollen für ${packId} aus jeder Basisfarbe`, () => {
+      for (const base of BASES) {
+        const o = buildCustomWorldOverrides(packId, base);
+        expect(o.canvas).toBe(base.toLowerCase());
+        expect(contrastRatio(o.ink, o.canvas)).toBeGreaterThanOrEqual(4.5);
+        expect(contrastRatio(o.ink, o.surface)).toBeGreaterThanOrEqual(4.5);
+        expect(contrastRatio(o.muted, o.canvas)).toBeGreaterThanOrEqual(3);
+        expect(
+          contrastRatio(o["accent-text"], o.canvas)
+        ).toBeGreaterThanOrEqual(4.5);
       }
     });
   }

@@ -10,7 +10,10 @@ import {
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getIndustryImages } from "../industryImages";
 import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
-import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import {
+  buildCustomWorldOverrides,
+  getColorWorld,
+} from "../../shared/stylePacks/colorWorlds";
 import type { PackId } from "../../shared/siteContract/types";
 import {
   AI_IMAGES_PER_HOUR,
@@ -381,13 +384,27 @@ export const contentProcedures = {
           .regex(/^[a-z-]+$/)
           .max(24)
           .nullish(),
+        /**
+         * Eigene Grundfarbe statt kuratierter Welt: der Server rechnet
+         * daraus ein vollständiges kontrastgeführtes Rollen-Set
+         * (buildCustomWorldOverrides). Gewinnt gegenüber colorWorldId.
+         */
+        colorWorldBase: z
+          .string()
+          .regex(/^#[0-9a-fA-F]{6}$/)
+          .optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
       let worldOverrides: Record<string, string> | null | undefined;
-      if (input.colorWorldId !== undefined) {
+      if (input.colorWorldBase !== undefined) {
+        worldOverrides = buildCustomWorldOverrides(
+          doc.stylePackId as PackId,
+          input.colorWorldBase
+        );
+      } else if (input.colorWorldId !== undefined) {
         if (input.colorWorldId === null || input.colorWorldId === "original") {
           worldOverrides = null;
         } else {

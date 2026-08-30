@@ -126,11 +126,25 @@ export function ThemeEditor({
     fontPairId?: string | null;
     designProfile?: DesignProfile;
     colorWorldId?: string | null;
+    colorWorldBase?: string;
   }) => updateTheme.mutate({ token, ...patch }, { onSuccess: onApplied });
 
   const pickWorld = (id: string) => {
     setLocalWorldId(id);
     save({ colorWorldId: id === "original" ? null : id });
+  };
+
+  /** Eigene Grundfarbe — Farbwähler feuert kontinuierlich, debounced. */
+  const worldDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [localWorldBase, setLocalWorldBase] = useState<string | null>(null);
+  const pickWorldBase = (hex: string) => {
+    setLocalWorldId("eigene");
+    setLocalWorldBase(hex);
+    if (worldDebounceRef.current) clearTimeout(worldDebounceRef.current);
+    worldDebounceRef.current = setTimeout(
+      () => save({ colorWorldBase: hex }),
+      300
+    );
   };
 
   const pickAccent = (hex: string | null) => {
@@ -256,6 +270,28 @@ export function ThemeEditor({
                 {world.name}
               </button>
             ))}
+            <label
+              className="pb-studio-theme-world pb-studio-theme-custom"
+              data-active={localWorldId === "eigene" ? "true" : undefined}
+              title="Eigene Grundfarbe"
+            >
+              <input
+                type="color"
+                value={
+                  localWorldBase ??
+                  colorOverrides?.canvas ??
+                  packCanvas ??
+                  "#f5f0e8"
+                }
+                disabled={busy}
+                onChange={e => pickWorldBase(e.target.value)}
+                aria-label="Eigene Grundfarbe wählen"
+              />
+              <span className="pb-studio-theme-color-wheel" aria-hidden="true">
+                <Plus />
+              </span>
+              Eigene
+            </label>
           </div>
         </>
       )}
