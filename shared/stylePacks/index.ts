@@ -253,6 +253,35 @@ function bestIndustryScore(
   return best;
 }
 
+/**
+ * Kanonischer Schlüssel einer Branchen-Eingabe für Dedupe/Zählung
+ * (Branchen-Lücken-Logging): gleiche Normalisierung wie das Matching,
+ * damit „Naturschutzbund", „naturschutz-bund" und „NATURSCHUTZBUND"
+ * nicht als getrennte Lücken zählen.
+ */
+export function normalizeCategoryKey(category: string): string {
+  return transliterate(category)
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .slice(0, 160);
+}
+
+/**
+ * Ob IRGENDEIN Pack die Kategorie direkt über `industries` trifft.
+ * false ⇒ getPackPool landet im Neutral-Fallback — das ist das Signal
+ * fürs Branchen-Lücken-Logging (neue Template-Richtung priorisieren).
+ * Hotellerie zählt als abgedeckt (eigener Hospitality-Fallback ist gewollt).
+ */
+export function hasDirectPackMatch(category: string): boolean {
+  const tokens = tokenize(transliterate(category));
+  const compact = tokens.join("");
+  if (!compact) return true;
+  if (isHospitalityQuery(tokens, compact)) return true;
+  return (Object.values(STYLE_PACKS) as PackConstitution[]).some(
+    constitution => bestIndustryScore(constitution, tokens, compact) > 0
+  );
+}
+
 /** Ob ein Pack die Kategorie direkt über `industries` trifft (kein Fallback). */
 export function packMatchesCategory(
   packId: PackId,

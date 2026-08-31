@@ -37,7 +37,10 @@ import {
   lifecycleEmails,
   appointmentSettings,
   appointments,
+  industryGaps,
+  IndustryGap,
 } from "../drizzle/schema";
+import { normalizeCategoryKey } from "../shared/stylePacks";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -1374,4 +1377,47 @@ export async function deleteExpiredPreviews(olderThanDays = 30) {
     await deleteWebsite(w.id);
   }
   return expired.length;
+}
+
+// ── Branchen-Lücken (Backlog 16): Kategorien ohne Pack-Match zählen ──────
+/**
+ * Zählt eine Branchen-Eingabe ohne direkten Pack-Match (Upsert per
+ * normalisiertem Schlüssel). Fire-and-forget aus der Generierung —
+ * Fehler dürfen den Job nie blocken, deshalb hier nur warnend geloggt.
+ */
+export async function recordIndustryGap(
+  term: string,
+  websiteId?: number
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const trimmed = term.trim().slice(0, 120);
+  const normalized = normalizeCategoryKey(trimmed);
+  if (!normalized) return;
+  try {
+    await db
+      .insert(industryGaps)
+      .values({ term: trimmed, normalized, websiteId: websiteId ?? null })
+      .onDuplicateKeyUpdate({
+        set: {
+          term: trimmed,
+          websiteId: websiteId ?? undefined,
+          occurrences: sql`${industryGaps.occurrences} + 1`,
+          lastSeenAt: new Date(),
+        },
+      });
+  } catch (error) {
+    console.warn("[DB] recordIndustryGap failed:", error);
+  }
+}
+
+/** Branchen-Lücken fürs Admin-Panel, häufigste zuerst. */
+export async function listIndustryGaps(limit = 100): Promise<IndustryGap[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(industryGaps)
+    .orderBy(desc(industryGaps.occurrences), desc(industryGaps.lastSeenAt))
+    .limit(limit);
 }

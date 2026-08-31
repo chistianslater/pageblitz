@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Building2, Globe, Mail, ShoppingCart, Eye, CheckCircle, TrendingUp } from "lucide-react";
+import { BarChart3, Building2, Globe, Mail, ShoppingCart, Eye, CheckCircle, TrendingUp, Puzzle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StatsPage() {
@@ -71,7 +71,65 @@ export default function StatsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <IndustryGapsCard />
     </div>
+  );
+}
+
+/**
+ * Branchen-Lücken (Backlog 16): Kategorien aus dem Onboarding, die kein
+ * Style-Pack direkt matcht (z. B. „Naturschutzbund") — gezählt in der
+ * Generierung, sortiert nach Häufigkeit. Basis für neue Template-Richtungen.
+ */
+function IndustryGapsCard() {
+  const { data: gaps, isLoading } = trpc.stats.industryGaps.useQuery();
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Puzzle className="h-5 w-5 text-primary" />
+          Branchen-Lücken
+        </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Eingegebene Branchen ohne passendes Style-Pack — Kandidaten für
+          neue Templates, häufigste zuerst.
+        </p>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <Skeleton className="h-16 w-full" />
+        ) : !gaps || gaps.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Keine Lücken erfasst — bisher hat jede eingegebene Branche ein
+            Pack gefunden.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground border-b border-border">
+                  <th className="py-2 pr-4 font-medium">Branche</th>
+                  <th className="py-2 pr-4 font-medium">Anzahl</th>
+                  <th className="py-2 font-medium">Zuletzt</th>
+                </tr>
+              </thead>
+              <tbody>
+                {gaps.map(gap => (
+                  <tr key={gap.id} className="border-b border-border/50">
+                    <td className="py-2 pr-4 font-medium">{gap.term}</td>
+                    <td className="py-2 pr-4">{gap.occurrences}</td>
+                    <td className="py-2 text-muted-foreground">
+                      {new Date(gap.lastSeenAt).toLocaleDateString("de-DE")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

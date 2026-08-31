@@ -344,6 +344,32 @@ export const clientErrors = mysqlTable(
 export type ClientError = typeof clientErrors.$inferSelect;
 export type InsertClientError = typeof clientErrors.$inferInsert;
 
+// ── Branchen-Lücken (Backlog 16, 2026-08-31): Kategorien ohne direkten
+// Pack-Match (hasDirectPackMatch === false) werden hier gezählt, damit
+// neue Template-Richtungen nach echter Nachfrage priorisiert werden. ──────
+export const industryGaps = mysqlTable(
+  "industry_gaps",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    /** Letzte Original-Schreibweise der Eingabe (setCategory begrenzt auf 60). */
+    term: varchar("term", { length: 120 }).notNull(),
+    /** normalizeCategoryKey(term) — dedupliziert Schreibvarianten. */
+    normalized: varchar("normalized", { length: 160 }).notNull(),
+    /** Zuletzt betroffene Website (Sprung in den Kontext im Admin). */
+    websiteId: int("websiteId"),
+    occurrences: int("occurrences").notNull().default(1),
+    firstSeenAt: timestamp("firstSeenAt").defaultNow().notNull(),
+    lastSeenAt: timestamp("lastSeenAt").defaultNow().notNull(),
+  },
+  table => ({
+    normalizedUnique: uniqueIndex("industry_gaps_normalized_unique").on(
+      table.normalized
+    ),
+  })
+);
+
+export type IndustryGap = typeof industryGaps.$inferSelect;
+
 // ── Lifecycle Emails (Drip-Sequenz für unfertige Onboardings) ────────────────
 export const lifecycleEmails = mysqlTable(
   "lifecycle_emails",

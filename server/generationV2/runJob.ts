@@ -4,7 +4,9 @@ import {
   getWebsiteById,
   updateGenerationJob,
   updateWebsite,
+  recordIndustryGap,
 } from "../db";
+import { hasDirectPackMatch } from "../../shared/stylePacks";
 import { invalidateSsrCache } from "../ssr/routes";
 import { classifyIndustry } from "../industryClassifier";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
@@ -288,6 +290,19 @@ async function runWebsiteGenerationV2(
 ): Promise<void> {
   const t0 = Date.now();
   await updateGenerationJob(jobId, { progress: 30 });
+  // Branchen-Lücken-Logging (Backlog 16): Kategorien, die kein Pack direkt
+  // matcht (z. B. „Naturschutzbund"), fürs Admin-Panel zählen — daraus
+  // werden neue Template-Richtungen priorisiert. Der generische Leerfall-
+  // Fallback „Dienstleistung" zählt nicht als echte Lücke. Fire-and-forget,
+  // recordIndustryGap wirft nie (fängt intern).
+  const trimmedCategory = category.trim();
+  if (
+    trimmedCategory &&
+    trimmedCategory.toLowerCase() !== "dienstleistung" &&
+    !hasDirectPackMatch(trimmedCategory)
+  ) {
+    void recordIndustryGap(trimmedCategory, website.id);
+  }
   const packId = await selectPack(category, industryKey);
   // Fortschrittsstufen sind an generationProgress.PHASES gekoppelt:
   // 30–54 „Bilder werden gesetzt", 55–89 „Texte entstehen", ≥ 90 „Vorschau".

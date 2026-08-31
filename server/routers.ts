@@ -36,6 +36,7 @@ import {
   getUserById,
   deleteUser,
   getStepFunnelStats,
+  listIndustryGaps,
   getStepEventsForWebsite,
   deleteExpiredPreviews,
   createOutreachEmail,
@@ -266,6 +267,13 @@ export const appRouter = router({
     }),
     stepFunnel: adminProcedure.query(async () => {
       return getStepFunnelStats();
+    }),
+    /**
+     * Branchen-Lücken (Backlog 16): Kategorien ohne direkten Pack-Match,
+     * gezählt in der Generierung — Basis für neue Template-Richtungen.
+     */
+    industryGaps: adminProcedure.query(async () => {
+      return listIndustryGaps();
     }),
     cleanup: adminProcedure
       .input(

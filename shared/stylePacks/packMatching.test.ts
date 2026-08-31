@@ -2,7 +2,9 @@ import { describe, expect, test } from "vitest";
 import {
   FALLBACK_PACK,
   getPackPool,
+  hasDirectPackMatch,
   isLodgingCategory,
+  normalizeCategoryKey,
   packMatchesCategory,
   SELECTIVE_PACKS,
 } from "./index";
@@ -123,5 +125,37 @@ describe("isLodgingCategory", () => {
     expect(isLodgingCategory("Café")).toBe(false);
     expect(isLodgingCategory("")).toBe(false);
     expect(isLodgingCategory(undefined)).toBe(false);
+  });
+});
+
+describe("hasDirectPackMatch (Branchen-Lücken-Logging)", () => {
+  test("abgedeckte Branchen zählen nicht als Lücke", () => {
+    expect(hasDirectPackMatch("Friseursalon")).toBe(true);
+    expect(hasDirectPackMatch("Tischlerei")).toBe(true);
+    expect(hasDirectPackMatch("Kfz-Werkstatt")).toBe(true);
+  });
+
+  test("Hotellerie zählt als abgedeckt (eigener Hospitality-Fallback)", () => {
+    expect(hasDirectPackMatch("Hotel")).toBe(true);
+    expect(hasDirectPackMatch("Pension")).toBe(true);
+  });
+
+  test("unbekannte Branchen sind Lücken", () => {
+    expect(hasDirectPackMatch("Naturschutzbund")).toBe(false);
+    expect(hasDirectPackMatch("Verein")).toBe(false);
+  });
+
+  test("leere Eingabe ist keine Lücke", () => {
+    expect(hasDirectPackMatch("")).toBe(true);
+    expect(hasDirectPackMatch("   ")).toBe(true);
+  });
+});
+
+describe("normalizeCategoryKey", () => {
+  test("dedupliziert Schreibvarianten wie das Matching", () => {
+    expect(normalizeCategoryKey("Naturschutzbund")).toBe("naturschutzbund");
+    expect(normalizeCategoryKey("NATURSCHUTZBUND")).toBe("naturschutzbund");
+    expect(normalizeCategoryKey("Café")).toBe("cafe");
+    expect(normalizeCategoryKey("")).toBe("");
   });
 });
