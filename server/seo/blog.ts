@@ -8,122 +8,13 @@
  * Fremdinhalte hier einfügen).
  */
 
-export interface BlogPost {
-  slug: string;
-  title: string;
-  metaTitle: string;
-  metaDescription: string;
-  /** ISO-Datum (YYYY-MM-DD) für sichtbares Datum + Schema. */
-  publishedAt: string;
-  updatedAt: string;
-  teaser: string;
-  readingMinutes: number;
-  bodyHtml: string;
-  faq: { question: string; answer: string }[];
-}
 
-const IMPRESSUM_POST: BlogPost = {
-  slug: "impressum-fuer-kleinunternehmer",
-  title:
-    "Impressum für Kleinunternehmer: Pflichtangaben, Muster und häufige Fehler",
-  metaTitle: "Impressum für Kleinunternehmer erstellen | Pageblitz",
-  metaDescription:
-    "Welche Angaben ins Impressum gehören, was für Kleinunternehmer gilt und welche Fehler abgemahnt werden – mit Muster und Checkliste (Stand 2026).",
-  publishedAt: "2026-08-31",
-  updatedAt: "2026-08-31",
-  readingMinutes: 7,
-  teaser:
-    "Fast jede geschäftliche Website braucht ein Impressum – auch die von Kleinunternehmern. Welche Angaben Pflicht sind, was du weglassen darfst und welche Fehler wirklich teuer werden.",
-  bodyHtml: `
-<p>Wer in Deutschland eine geschäftliche Website betreibt, braucht ein Impressum – das gilt für die GmbH genauso wie für den Ein-Personen-Betrieb mit Kleinunternehmerregelung. Die Rechtsgrundlage ist seit Mai 2024 <strong>§ 5 des Digitale-Dienste-Gesetzes (DDG)</strong>; vorher stand die Pflicht fast wortgleich in § 5 TMG. Für dich ändert das inhaltlich wenig – aber wenn dein Impressum noch „gemäß § 5 TMG“ zitiert, ist das ein Zeichen, dass es länger nicht aktualisiert wurde.</p>
-
-<h2>Wer braucht überhaupt ein Impressum?</h2>
-<p>Kurz gesagt: jeder, der seine Website nicht rein privat betreibt. Sobald du Leistungen anbietest, für deinen Betrieb wirbst oder auch nur deine Öffnungszeiten für Kundschaft zeigst, ist die Seite „geschäftsmäßig“ – und damit impressumspflichtig. Auf die Größe kommt es nicht an: Auch als Kleinunternehmer nach § 19 UStG, als Freiberufler oder im Nebengewerbe brauchst du die Anbieterkennzeichnung. Eine Ausnahme gilt nur für rein persönliche oder familiäre Seiten ohne jeden geschäftlichen Bezug.</p>
-
-<h2>Diese Angaben sind Pflicht</h2>
-<p>Für Einzelunternehmer und Kleinunternehmer sieht die Pflichtliste überschaubar aus:</p>
-<ul>
-<li><strong>Vollständiger Name</strong> – Vor- und Nachname, kein Künstler- oder reiner Firmenname. Führst du eine Geschäftsbezeichnung („Salon Anna“), steht sie zusätzlich dabei, ersetzt den Namen aber nicht.</li>
-<li><strong>Ladungsfähige Anschrift</strong> – Straße, Hausnummer, PLZ, Ort. Ein Postfach genügt nicht; unter der Adresse muss dir Post förmlich zugestellt werden können.</li>
-<li><strong>Schnelle Kontaktmöglichkeit</strong> – eine E-Mail-Adresse ist Pflicht. Dazu ein zweiter schneller Weg, in der Praxis die Telefonnummer.</li>
-<li><strong>Umsatzsteuer-Identifikationsnummer</strong> – aber nur, wenn du eine hast. Als Kleinunternehmer ohne USt-IdNr. lässt du die Angabe einfach weg. Wichtig: Deine <em>Steuernummer</em> gehört nicht ins Impressum – sie ist keine Pflichtangabe, und du gibst ohne Not ein Datum preis, das für Identitätsmissbrauch taugt.</li>
-<li><strong>Registereinträge</strong> – nur relevant, wenn dein Betrieb im Handels-, Vereins- oder Genossenschaftsregister steht. Der typische Kleinunternehmer ist das nicht.</li>
-<li><strong>Aufsichtsbehörde</strong> – nur bei erlaubnispflichtigen Tätigkeiten (etwa Gastronomie mit Ausschank, Makler, Bewachungsgewerbe): Behörde mit Anschrift nennen.</li>
-<li><strong>Kammer und Berufsbezeichnung</strong> – bei reglementierten Berufen (z. B. Meisterbetriebe im zulassungspflichtigen Handwerk, Heilberufe): zuständige Kammer, gesetzliche Berufsbezeichnung und der Staat, der sie verliehen hat.</li>
-</ul>
-
-<h2>Was gilt speziell für Kleinunternehmer?</h2>
-<p>Die Kleinunternehmerregelung nach § 19 UStG ist eine reine Umsatzsteuer-Frage – ins Impressum gehört dazu <strong>kein</strong> Hinweis. Der Satz „Als Kleinunternehmer wird keine Umsatzsteuer ausgewiesen“ gehört auf deine <em>Rechnungen</em>, nicht auf die Website. Fürs Impressum bedeutet die Regelung nur: Du hast meist keine USt-IdNr. und lässt das Feld weg. Alles andere – Name, Anschrift, Kontakt – gilt für dich in vollem Umfang.</p>
-
-<h2>Wohin mit dem Impressum?</h2>
-<p>Das Gesetz verlangt, dass die Angaben „leicht erkennbar, unmittelbar erreichbar und ständig verfügbar“ sind. Bewährt hat sich der Link „Impressum“ im Footer, sichtbar auf jeder Seite – maximal zwei Klicks von jeder Unterseite entfernt. Verstecke ihn nicht hinter kreativen Namen wie „Über diese Seite“: Gerichte erwarten die üblichen Bezeichnungen „Impressum“ oder „Anbieterkennzeichnung“. Das gilt übrigens auch für deine geschäftlichen Social-Media-Profile – dort genügt ein gut erreichbarer Link auf das Impressum deiner Website.</p>
-
-<h2>Diese Fehler werden wirklich abgemahnt</h2>
-<ul>
-<li><strong>Gar kein Impressum</strong> – der Klassiker bei „ist ja nur eine kleine Seite“. Ein fehlendes Impressum ist ein Wettbewerbsverstoß und kann von Konkurrenten kostenpflichtig abgemahnt werden; zusätzlich drohen Bußgelder.</li>
-<li><strong>Postfach statt Adresse</strong> – die Anschrift muss ladungsfähig sein.</li>
-<li><strong>Kontaktformular statt E-Mail-Adresse</strong> – ein Formular allein reicht nicht, die E-Mail-Adresse muss genannt sein.</li>
-<li><strong>Veralteter Streitschlichtungs-Link</strong> – der jahrelang übliche Link zur EU-Streitbeilegungsplattform (ec.europa.eu/consumers/odr) ist überholt: Die Plattform wurde im Juli 2025 abgeschaltet. Der tote Link macht dein Impressum angreifbar – raus damit. Was bleibt: Betriebe mit mehr als zehn Beschäftigten müssen nach § 36 VSBG angeben, ob sie an Verbraucherschlichtung teilnehmen; kleinere Betriebe trifft diese Pflicht nicht.</li>
-<li><strong>Copy-Paste von der Konkurrenz</strong> – fremde Impressen enthalten fremde Registerangaben und Formulierungen, die auf dich nicht zutreffen. Falsche Pflichtangaben sind schlimmer als schlicht formulierte richtige.</li>
-</ul>
-
-<h2>Muster: Impressum für einen Kleinunternehmer</h2>
-<pre class="blog-muster">Impressum
-
-Angaben gemäß § 5 DDG
-
-Max Mustermann
-Malerbetrieb Mustermann
-Musterstraße 12
-12345 Musterstadt
-
-Telefon: 01234 567890
-E-Mail: kontakt@musterbetrieb.de
-
-Zuständige Handwerkskammer: HWK Musterstadt
-Berufsbezeichnung: Maler- und Lackierermeister
-(verliehen in Deutschland)</pre>
-<p>Die letzten drei Zeilen brauchst du nur bei Kammerberufen; die USt-IdNr. ergänzt du, sobald du eine hast. Prüfe jede Zeile gegen deine echten Daten – ein Muster ersetzt keine Kontrolle.</p>
-
-<h2>Der schnellste Weg zum fertigen Impressum</h2>
-<p>Wenn du deine Website mit <a href="/">Pageblitz</a> erstellst, fragt das Studio die nötigen Angaben einmal ab und erzeugt Impressum und Datenschutzerklärung automatisch als eigene Seiten – korrekt verlinkt im Footer, auf jeder Unterseite erreichbar. Änderungen an Adresse oder Kontakt pflegst du an einer Stelle, die Rechtsseiten ziehen nach.</p>
-
-<p class="blog-disclaimer">Dieser Artikel ist eine sorgfältig recherchierte Orientierung, aber keine Rechtsberatung. Bei Sonderfällen – etwa reglementierten Berufen oder Auslandsbezug – hilft eine kurze Prüfung durch eine Kanzlei oder deine Kammer.</p>
-`,
-  faq: [
-    {
-      question: "Brauche ich als Kleinunternehmer wirklich ein Impressum?",
-      answer:
-        "Ja. Die Impressumspflicht nach § 5 DDG hängt nicht von der Unternehmensgröße oder der Kleinunternehmerregelung ab, sondern davon, dass die Website geschäftsmäßig betrieben wird – und das ist bei jeder Betriebs-Website der Fall.",
-    },
-    {
-      question: "Muss meine Steuernummer ins Impressum?",
-      answer:
-        "Nein. Die Steuernummer ist keine Pflichtangabe und sollte aus Datenschutzgründen nicht veröffentlicht werden. Pflicht ist nur die Umsatzsteuer-Identifikationsnummer – und auch die nur, wenn du eine besitzt.",
-    },
-    {
-      question: "Muss ich auf die Kleinunternehmerregelung hinweisen?",
-      answer:
-        "Nicht im Impressum. Der Hinweis nach § 19 UStG, dass keine Umsatzsteuer ausgewiesen wird, gehört auf deine Rechnungen – auf der Website ist er nicht vorgeschrieben.",
-    },
-    {
-      question: "Reicht ein Kontaktformular statt einer E-Mail-Adresse?",
-      answer:
-        "Nein. Das Impressum muss eine E-Mail-Adresse nennen. Ein Kontaktformular darfst du zusätzlich anbieten, es ersetzt die Pflichtangabe aber nicht.",
-    },
-    {
-      question: "Was ist mit dem Link zur EU-Streitschlichtungsplattform?",
-      answer:
-        "Die EU-Plattform zur Online-Streitbeilegung wurde im Juli 2025 eingestellt – der früher übliche Link gehört nicht mehr ins Impressum. Betriebe mit mehr als zehn Beschäftigten geben weiterhin nach § 36 VSBG an, ob sie an Verbraucherschlichtungsverfahren teilnehmen.",
-    },
-  ],
-};
-
-export const BLOG_POSTS: BlogPost[] = [IMPRESSUM_POST];
-
-export function getBlogPost(slug: string): BlogPost | undefined {
-  return BLOG_POSTS.find(post => post.slug === slug);
-}
+export {
+  BLOG_POSTS,
+  getBlogPost,
+  type BlogPost,
+} from "./blogPosts";
+import { BLOG_POSTS, type BlogPost } from "./blogPosts";
 
 // ── Rendering ────────────────────────────────────────────────────────────────
 
