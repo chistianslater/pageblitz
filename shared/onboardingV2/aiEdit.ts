@@ -7,6 +7,7 @@ import {
 } from "../siteContract/schema";
 import {
   ABOUT_LAYOUTS,
+  CONTACT_LAYOUTS,
   DECORATION_GROUPS,
   DECORATION_MODES,
   DESIGN_DENSITIES,
@@ -15,6 +16,7 @@ import {
   HIDEABLE_ELEMENTS,
   IMAGE_TREATMENTS,
   SERVICES_LAYOUTS,
+  TESTIMONIALS_LAYOUTS,
 } from "../siteContract/designProfile";
 import type {
   Page,
@@ -80,6 +82,8 @@ export const AiThemePatchSchema = z
     servicesLayout: z.enum(SERVICES_LAYOUTS).optional(),
     aboutLayout: z.enum(ABOUT_LAYOUTS).optional(),
     galleryLayout: z.enum(GALLERY_LAYOUTS).optional(),
+    testimonialsLayout: z.enum(TESTIMONIALS_LAYOUTS).optional(),
+    contactLayout: z.enum(CONTACT_LAYOUTS).optional(),
     decorations: z.enum(DECORATION_MODES).optional(),
     // VOLLSTÄNDIGE Ersatz-Listen (kein Merge): [] blendet alles wieder ein
     // bzw. setzt die Reihenfolge auf die Dokument-Ordnung zurück.

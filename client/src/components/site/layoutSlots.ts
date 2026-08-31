@@ -15,6 +15,12 @@ export const LAYOUT_SLOT = {
   aboutGrid: "about-grid",
   aboutMedia: "about-media",
   galleryItems: "gallery-items",
+  /**
+   * Kontakt-Inhalts-Wrapper (Backlog 13c Rest): 18 Packs tragen den Slot;
+   * karat/verve haben keinen Wrapper und laufen über den
+   * `:not(:has(...))`-Fallback in DESIGN_PROFILE_CSS.
+   */
+  contactGrid: "contact-grid",
 } as const;
 
 export type LayoutSlot = (typeof LAYOUT_SLOT)[keyof typeof LAYOUT_SLOT];

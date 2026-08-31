@@ -246,7 +246,7 @@ function renderSection(
             <span>{FALLBACK_TITLES.contact}</span>
             <h2>{title}</h2>
           </header>
-          <div className="pb-at-contact">
+          <div className="pb-at-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
                 <a href={`tel:${section.phone}`}>

@@ -330,7 +330,7 @@ function renderSection(
               ↘
             </span>
           </header>
-          <div className="pb-wb-contact-grid">
+          <div className="pb-wb-contact-grid" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <div className="pb-wb-contact-links">
               {section.phone && (
                 <a href={`tel:${section.phone}`}>

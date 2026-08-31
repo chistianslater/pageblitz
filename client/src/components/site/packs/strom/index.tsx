@@ -210,7 +210,7 @@ function renderSection(
         >
           <MonoLabel>KONTAKT</MonoLabel>
           <h2 className="pb-st-title">{title}</h2>
-          <div className="pb-st-contact">
+          <div className="pb-st-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address className="pb-st-card">
               {section.phone && (
                 <p>

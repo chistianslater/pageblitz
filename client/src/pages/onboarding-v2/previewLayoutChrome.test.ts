@@ -28,12 +28,16 @@ describe("PREVIEW_LAYOUT_SECTIONS", () => {
       "servicesLayout",
       "aboutLayout",
       "galleryLayout",
+      "testimonialsLayout",
+      "contactLayout",
     ]);
     expect(PREVIEW_LAYOUT_SECTIONS.map(section => section.anchor)).toEqual([
       "start",
       "leistungen",
       "ueber-uns",
       "galerie",
+      "bewertungen",
+      "kontakt",
     ]);
     for (const section of PREVIEW_LAYOUT_SECTIONS) {
       expect(section.options.length).toBeGreaterThanOrEqual(2);

@@ -255,7 +255,7 @@ function renderSection(
               </a>
             )}
           </div>
-          <div className="pb-gu-contact">
+          <div className="pb-gu-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
                 <p>

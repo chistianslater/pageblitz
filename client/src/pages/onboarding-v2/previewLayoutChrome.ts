@@ -14,7 +14,9 @@ export type PreviewLayoutField =
   | "heroLayout"
   | "servicesLayout"
   | "aboutLayout"
-  | "galleryLayout";
+  | "galleryLayout"
+  | "testimonialsLayout"
+  | "contactLayout";
 
 export type { LayoutOverlay, LayoutViewport };
 
@@ -44,7 +46,9 @@ export interface PreviewLayoutSection {
     | "data-pb-hero"
     | "data-pb-services"
     | "data-pb-about"
-    | "data-pb-gallery";
+    | "data-pb-gallery"
+    | "data-pb-testimonials"
+    | "data-pb-contact";
   anchor: string;
   title: string;
   options: readonly PreviewLayoutOption[];
@@ -207,6 +211,57 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
       },
     ],
   },
+  {
+    field: "testimonialsLayout",
+    attr: "data-pb-testimonials",
+    anchor: SECTION_ANCHORS.testimonials,
+    title: "Bewertungen-Layout",
+    options: [
+      {
+        value: "stack",
+        label: "Untereinander",
+        icon: icon(
+          '<rect x="3" y="3" width="14" height="4" rx="1"/><rect x="3" y="8.5" width="14" height="4" rx="1"/><rect x="3" y="14" width="14" height="4" rx="1" opacity=".55"/>'
+        ),
+      },
+      {
+        value: "grid",
+        label: "Raster",
+        icon: icon(
+          '<rect x="3" y="4" width="6.5" height="5.4" rx="1"/><rect x="10.5" y="4" width="6.5" height="5.4" rx="1"/><rect x="3" y="10.6" width="6.5" height="5.4" rx="1"/><rect x="10.5" y="10.6" width="6.5" height="5.4" rx="1"/>'
+        ),
+      },
+      {
+        value: "carousel",
+        label: "Karussell",
+        icon: icon(
+          '<rect x="1" y="6" width="3" height="8" rx=".8" opacity=".5"/><rect x="5.5" y="5" width="9" height="10" rx="1"/><rect x="16" y="6" width="3" height="8" rx=".8" opacity=".5"/>'
+        ),
+      },
+    ],
+  },
+  {
+    field: "contactLayout",
+    attr: "data-pb-contact",
+    anchor: SECTION_ANCHORS.contact,
+    title: "Kontakt-Layout",
+    options: [
+      {
+        value: "stack",
+        label: "Untereinander",
+        icon: icon(
+          '<rect x="4" y="3" width="12" height="4.5" rx="1"/><rect x="4" y="9" width="12" height="3" rx="1"/><rect x="4" y="13.8" width="12" height="3" rx="1" opacity=".55"/>'
+        ),
+      },
+      {
+        value: "split",
+        label: "Zweispaltig",
+        icon: icon(
+          '<rect x="2.5" y="4" width="7" height="12" rx="1"/><rect x="10.8" y="4" width="6.7" height="12" rx="1" opacity=".55"/>'
+        ),
+      },
+    ],
+  },
 ];
 
 /** 3×3-Raster wie ein Layout-Grid — Inhalt des runden Auslöser-Buttons. */
@@ -266,6 +321,13 @@ export function applyProfileAttrs(
   site.setAttribute("data-pb-gallery", profile.galleryLayout);
   site.setAttribute("data-pb-density", profile.density);
   site.setAttribute("data-pb-image", profile.imageTreatment);
+  // Optionale Sektions-Layouts (13c Rest): ohne Wert gilt der Pack-Look.
+  if (profile.testimonialsLayout)
+    site.setAttribute("data-pb-testimonials", profile.testimonialsLayout);
+  else site.removeAttribute("data-pb-testimonials");
+  if (profile.contactLayout)
+    site.setAttribute("data-pb-contact", profile.contactLayout);
+  else site.removeAttribute("data-pb-contact");
   for (const section of PREVIEW_LAYOUT_SECTIONS) {
     const mobileValue = profile[MOBILE_LAYOUT_FIELD[section.field]];
     const attr = mobileAttrName(section.attr);
@@ -399,7 +461,9 @@ function currentValue(
   if (viewport === "mobile") {
     return profile[MOBILE_LAYOUT_FIELD[field]] ?? "";
   }
-  return profile[field];
+  // testimonialsLayout/contactLayout sind optional — ohne Wert gilt der
+  // Pack-Look, keine Picker-Option ist markiert.
+  return profile[field] ?? "";
 }
 
 function syncChromeCopy(doc: Document): void {

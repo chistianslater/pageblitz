@@ -22,9 +22,16 @@ const SLOT = {
   aboutGrid: '[data-pb-slot="about-grid"]',
   aboutMedia: '[data-pb-slot="about-media"]',
   galleryItems: '[data-pb-slot="gallery-items"]',
+  contactGrid: '[data-pb-slot="contact-grid"]',
 } as const;
 
-type AttrKind = "hero" | "services" | "about" | "gallery";
+type AttrKind =
+  | "hero"
+  | "services"
+  | "about"
+  | "gallery"
+  | "testimonials"
+  | "contact";
 type ViewportMode = "desktop" | "mobile";
 
 const ATTR: Record<AttrKind, string> = {
@@ -32,6 +39,8 @@ const ATTR: Record<AttrKind, string> = {
   services: "data-pb-services",
   about: "data-pb-about",
   gallery: "data-pb-gallery",
+  testimonials: "data-pb-testimonials",
+  contact: "data-pb-contact",
 };
 
 const ATTR_MOBILE: Record<AttrKind, string> = {
@@ -39,6 +48,8 @@ const ATTR_MOBILE: Record<AttrKind, string> = {
   services: "data-pb-services-mobile",
   about: "data-pb-about-mobile",
   gallery: "data-pb-gallery-mobile",
+  testimonials: "data-pb-testimonials-mobile",
+  contact: "data-pb-contact-mobile",
 };
 
 function sel(
@@ -164,6 +175,34 @@ ${h("gallery")}="mosaic"] ${SLOT.galleryItems} img{width:100%!important;height:1
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems}{background:transparent!important;display:grid!important;grid-auto-flow:column!important;grid-auto-columns:${filmCols}!important;grid-template-columns:none!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;gap:clamp(.5rem,1.5vw,1.25rem)!important;padding-bottom:.5rem}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems}>*{grid-column:auto!important;grid-row:auto!important;margin-top:0!important;scroll-snap-align:start;width:auto!important}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems} img{width:100%!important;height:clamp(200px,32vw,320px)!important;object-fit:cover!important}
+/* Bewertungen (Backlog 13c Rest): alle 20 Packs rendern die Stimmen als
+   blockquote-Kinder EINES Containers — :has(>blockquote) findet ihn ohne
+   Pack-Slot. "stack" = untereinander, "grid" = 2 Spalten, "carousel" =
+   horizontales Scroll-Snap (wie Galerie-Filmstreifen). */
+${h("testimonials")}="stack"] #bewertungen :not(blockquote):has(>blockquote){display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(.9rem,2vw,1.5rem)!important}
+${h("testimonials")}="stack"] #bewertungen :has(>blockquote)>blockquote{width:100%!important;margin:0!important}
+${h("testimonials")}="grid"] #bewertungen :not(blockquote):has(>blockquote){display:grid!important;grid-template-columns:${
+    mode === "mobile" ? "1fr" : "repeat(2,minmax(0,1fr))"
+  }!important;grid-auto-flow:row!important;gap:clamp(.9rem,2vw,1.5rem)!important;align-items:stretch!important}
+${h("testimonials")}="grid"] #bewertungen :has(>blockquote)>blockquote{width:100%!important;margin:0!important;grid-column:auto!important}
+${h("testimonials")}="carousel"] #bewertungen :not(blockquote):has(>blockquote){display:grid!important;grid-auto-flow:column!important;grid-auto-columns:${
+    mode === "mobile" ? "84%" : "minmax(280px,44%)"
+  }!important;grid-template-columns:none!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;gap:clamp(.9rem,2vw,1.5rem)!important;padding-bottom:.5rem}
+${h("testimonials")}="carousel"] #bewertungen :has(>blockquote)>blockquote{width:auto!important;margin:0!important;scroll-snap-align:start;grid-column:auto!important}
+
+/* Kontakt (Backlog 13c Rest): "split" stellt Info/Formular/Zeiten
+   zweispaltig; 18 Packs über den Slot, karat/verve (kein Wrapper) über den
+   Sektions-Fallback — Überschriften bleiben volle Breite. */
+${h("contact")}="split"] #kontakt ${SLOT.contactGrid}{display:grid!important;grid-template-columns:${
+    mode === "mobile" ? "1fr" : "repeat(2,minmax(0,1fr))"
+  }!important;grid-auto-flow:row!important;gap:clamp(1.25rem,3vw,3rem)!important;align-items:start!important}
+${h("contact")}="split"] #kontakt ${SLOT.contactGrid}>*{grid-column:auto!important;width:100%!important;margin-top:0!important}
+${h("contact")}="split"] #kontakt:not(:has(${SLOT.contactGrid})){display:grid!important;grid-template-columns:${
+    mode === "mobile" ? "1fr" : "repeat(2,minmax(0,1fr))"
+  }!important;gap:clamp(1rem,2.5vw,2.5rem)!important;align-items:start!important}
+${h("contact")}="split"] #kontakt:not(:has(${SLOT.contactGrid}))>:is(h1,h2,h3,header){grid-column:1/-1!important}
+${h("contact")}="stack"] #kontakt ${SLOT.contactGrid}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(1rem,2.5vw,2rem)!important}
+
 /* Masonry (Backlog 13c): CSS-Spalten mit natürlicher Bildhöhe. */
 ${h("gallery")}="masonry"] ${SLOT.galleryItems}{display:block!important;columns:${
     mode === "mobile" ? 2 : 3

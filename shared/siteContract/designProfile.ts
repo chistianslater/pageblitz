@@ -38,6 +38,16 @@ export const GALLERY_LAYOUTS = [
   "masonry",
 ] as const;
 export const GALLERY_LAYOUT_CHOICES = ["grid", "mosaic", "filmstrip"] as const;
+/**
+ * Backlog 13c Rest (2026-08-31): Bewertungen- und Kontakt-Layout. Beide
+ * Felder sind OPTIONAL — fehlt der Wert, bleibt der handgestaltete
+ * Pack-Look ("stack" = untereinander/Pack-Default erzwungen als Variante).
+ * Der Generator wählt sie nie; nur Picker/KI-Chat setzen sie aktiv.
+ */
+export const TESTIMONIALS_LAYOUTS = ["stack", "grid", "carousel"] as const;
+export const CONTACT_LAYOUTS = ["stack", "split"] as const;
+export type TestimonialsLayout = (typeof TESTIMONIALS_LAYOUTS)[number];
+export type ContactLayout = (typeof CONTACT_LAYOUTS)[number];
 export const DESIGN_DENSITIES = ["airy", "compact"] as const;
 export const IMAGE_TREATMENTS = ["natural", "framed", "bleed"] as const;
 /** Schmuck-Illustrationen (`pb-deco`-Elemente): "off" blendet sie aus. */
@@ -92,6 +102,12 @@ export interface DesignProfile {
   hiddenElements?: HideableElement[];
   /** Einzeln ausgeblendete Deko-Gruppen (granular statt Alles-aus). */
   hiddenDecorations?: DecorationGroup[];
+  /** Bewertungen-Layout (13c); fehlt es, gilt der Pack-Look. */
+  testimonialsLayout?: TestimonialsLayout;
+  testimonialsLayoutMobile?: TestimonialsLayout;
+  /** Kontakt-Layout (13c); fehlt es, gilt der Pack-Look. */
+  contactLayout?: ContactLayout;
+  contactLayoutMobile?: ContactLayout;
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }
@@ -102,7 +118,9 @@ export type SectionLayoutField =
   | "heroLayout"
   | "servicesLayout"
   | "aboutLayout"
-  | "galleryLayout";
+  | "galleryLayout"
+  | "testimonialsLayout"
+  | "contactLayout";
 
 export type LayoutOverlay = Partial<Record<SectionLayoutField, string>>;
 
@@ -112,11 +130,15 @@ export const MOBILE_LAYOUT_FIELD: Record<
   | "servicesLayoutMobile"
   | "aboutLayoutMobile"
   | "galleryLayoutMobile"
+  | "testimonialsLayoutMobile"
+  | "contactLayoutMobile"
 > = {
   heroLayout: "heroLayoutMobile",
   servicesLayout: "servicesLayoutMobile",
   aboutLayout: "aboutLayoutMobile",
   galleryLayout: "galleryLayoutMobile",
+  testimonialsLayout: "testimonialsLayoutMobile",
+  contactLayout: "contactLayoutMobile",
 };
 
 export const DEFAULT_DESIGN_PROFILE: DesignProfile = {

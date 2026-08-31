@@ -223,7 +223,7 @@ function renderSection(
         >
           <Kicker>Anreise</Kicker>
           <h2 className="pb-rv-title">{title}</h2>
-          <div className="pb-rv-contact">
+          <div className="pb-rv-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
                 <p>

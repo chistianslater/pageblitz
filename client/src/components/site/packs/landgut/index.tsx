@@ -225,7 +225,7 @@ function renderSection(
           key={section.type}
         >
           <h2>{title}</h2>
-          <div className="pb-lg-contact">
+          <div className="pb-lg-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
                 <p>

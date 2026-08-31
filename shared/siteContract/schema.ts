@@ -8,9 +8,11 @@ import { z } from "zod";
 import { PACK_IDS } from "./packIds";
 import {
   ABOUT_LAYOUTS,
+  CONTACT_LAYOUTS,
   DECORATION_MODES,
   DECORATION_GROUPS,
   HIDEABLE_ELEMENTS,
+  TESTIMONIALS_LAYOUTS,
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
   HERO_LAYOUTS,
@@ -523,6 +525,12 @@ export const DesignProfileSchema = z
     hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
     // Deko granular (Backlog 13d): einzelne pb-deco-Gruppen ausblenden.
     hiddenDecorations: z.array(z.enum(DECORATION_GROUPS)).max(4).optional(),
+    // Bewertungen-/Kontakt-Layout (Backlog 13c Rest) — optional, ohne Wert
+    // gilt der handgestaltete Pack-Look.
+    testimonialsLayout: z.enum(TESTIMONIALS_LAYOUTS).optional(),
+    testimonialsLayoutMobile: z.enum(TESTIMONIALS_LAYOUTS).optional(),
+    contactLayout: z.enum(CONTACT_LAYOUTS).optional(),
+    contactLayoutMobile: z.enum(CONTACT_LAYOUTS).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();
