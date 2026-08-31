@@ -79,7 +79,7 @@ function extractYear(footerNote: string | undefined): string | undefined {
 /** Ornament-Bordüre: letterspaced ◆-Reihe in Siegelgold über einer Gold-Linie. */
 function OrnamentBorder(): React.ReactElement {
   return (
-    <div className="pb-zf-borde pb-deco" aria-hidden="true">
+    <div className="pb-zf-borde pb-deco pb-deco-ornaments" aria-hidden="true">
       {Array.from({ length: 40 }, () => "◆").join(" ")}
     </div>
   );

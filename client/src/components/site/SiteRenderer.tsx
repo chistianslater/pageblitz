@@ -24,6 +24,10 @@ import { EXTRA_SECTIONS_CSS } from "./extraSections";
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
 const DECO_TOGGLE_CSS = `
 .pb-site[data-pb-deco="off"] .pb-deco{display:none!important}
+.pb-site[data-pb-deco-off~="blobs"] .pb-deco-blobs{display:none!important}
+.pb-site[data-pb-deco-off~="dots"] .pb-deco-dots{display:none!important}
+.pb-site[data-pb-deco-off~="sprigs"] .pb-deco-sprigs{display:none!important}
+.pb-site[data-pb-deco-off~="ornaments"] .pb-deco-ornaments{display:none!important}
 `;
 
 /**
@@ -209,6 +213,9 @@ export const SiteRenderer: React.FC<{
       data-pb-density={designProfile?.density}
       data-pb-image={designProfile?.imageTreatment}
       data-pb-deco={designProfile?.decorations}
+      data-pb-deco-off={
+        designProfile?.hiddenDecorations?.join(" ") || undefined
+      }
       data-pb-he={designProfile?.hiddenElements?.join(" ") || undefined}
     >
       {/* MOBILE_NAV_CSS hängt am Pack-CSS: geteiltes Burger-Menü (MobileNav)

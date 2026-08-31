@@ -103,6 +103,25 @@ export function applyAiTheme(
         summary.push(`${elLabels[el] ?? el} wieder eingeblendet`);
     }
   }
+  if (theme.hiddenDecorations !== undefined) {
+    // Deko granular (Backlog 13d): gleiche Mechanik wie hiddenElements.
+    const beforeDeco = new Set(doc.designProfile?.hiddenDecorations ?? []);
+    const afterDeco = new Set(theme.hiddenDecorations);
+    const decoLabels: Record<string, string> = {
+      blobs: "Farbflächen",
+      dots: "Punktraster",
+      sprigs: "Zweig-Illustrationen",
+      ornaments: "Ornamente",
+    };
+    for (const grp of afterDeco) {
+      if (!beforeDeco.has(grp))
+        summary.push(`${decoLabels[grp] ?? grp} ausgeblendet`);
+    }
+    for (const grp of beforeDeco) {
+      if (!afterDeco.has(grp))
+        summary.push(`${decoLabels[grp] ?? grp} wieder eingeblendet`);
+    }
+  }
   if (theme.sectionOrder !== undefined) {
     const order = Array.from(new Set(theme.sectionOrder)).filter(t =>
       presentTypes.has(t)
@@ -167,6 +186,7 @@ export function applyAiTheme(
     "imageTreatment",
     "decorations",
     "hiddenElements",
+    "hiddenDecorations",
   ] as const;
   const layoutLabels: Record<(typeof layoutKeys)[number], string> = {
     heroLayout: "Hero-Layout",
@@ -178,6 +198,7 @@ export function applyAiTheme(
     decorations: "Schmuck-Illustrationen",
     // Summary läuft separat (Einzelelemente mit deutschen Namen).
     hiddenElements: "Ausgeblendete Elemente",
+    hiddenDecorations: "Ausgeblendete Deko-Gruppen",
   };
   const wantsProfileChange = layoutKeys.some(key => theme[key] !== undefined);
   let designProfile: DesignProfile | undefined;
@@ -195,7 +216,7 @@ export function applyAiTheme(
       const value = theme[key];
       if (value !== undefined) {
         (merged as unknown as Record<string, unknown>)[key] = value;
-        if (key === "hiddenElements") continue; // Summary lief oben separat.
+        if (key === "hiddenElements" || key === "hiddenDecorations") continue; // Summary lief oben separat.
         summary.push(
           key === "decorations"
             ? value === "off"

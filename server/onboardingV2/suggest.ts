@@ -24,6 +24,7 @@ export type TextField =
   | "headline"
   | "subheadline"
   | "aboutBody"
+  | "storyBody"
   | "seoTitle"
   | "seoDescription";
 
@@ -32,6 +33,7 @@ const FIELD_MAX_LENGTH: Record<TextField, number> = {
   headline: 120,
   subheadline: 240,
   aboutBody: 2000,
+  storyBody: 2500,
   seoTitle: 70,
   seoDescription: 170,
 };
@@ -41,6 +43,8 @@ const FIELD_GUIDANCE: Record<TextField, string> = {
   subheadline: "Ein Satz: Kundennutzen + Ort.",
   aboutBody:
     "120–180 Wörter, Wir-Form, genau 3 Absätze, getrennt durch eine Leerzeile (\\n\\n).",
+  storyBody:
+    "100–180 Wörter, Wir-Form, erzählt Geschichte/Werdegang des Betriebs chronologisch, 2–3 Absätze, getrennt durch eine Leerzeile (\\n\\n).",
   seoTitle: "Max. 60 Zeichen, inkl. Ort.",
   seoDescription: "Max. 155 Zeichen, mit Handlungsaufforderung.",
 };

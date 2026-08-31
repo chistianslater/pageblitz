@@ -16,6 +16,9 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
   const about = doc.sections.find(
     (s): s is SectionOf<"about"> => s.type === "about"
   );
+  const story = doc.sections.find(
+    (s): s is SectionOf<"story"> => s.type === "story"
+  );
   return {
     ...(hero?.headline !== undefined ? { headline: hero.headline } : {}),
     ...(hero?.subheadline !== undefined
@@ -24,6 +27,9 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
     ...(hero?.ctaText !== undefined ? { ctaText: hero.ctaText } : {}),
     ...(about?.headline !== undefined ? { aboutHeadline: about.headline } : {}),
     ...(about?.body !== undefined ? { aboutBody: about.body } : {}),
+    // Story (Backlog 13e): Felder nur liefern, wenn die Sektion existiert —
+    // die Gruppe im Formular blendet sich sonst aus (onlyWhenPresent).
+    ...(story ? { storyHeadline: story.headline, storyBody: story.body } : {}),
     seoTitle: doc.seo.title,
     seoDescription: doc.seo.description,
   };
@@ -71,6 +77,9 @@ export function draftTargetsFromValues(
   put(heroIdx, "ctaText", values.ctaText);
   put(aboutIdx, "headline", values.aboutHeadline);
   put(aboutIdx, "body", values.aboutBody);
+  const storyIdx = doc.sections.findIndex(s => s.type === "story");
+  put(storyIdx, "headline", values.storyHeadline);
+  put(storyIdx, "body", values.storyBody);
   return draft;
 }
 
@@ -216,6 +225,8 @@ export function TextsPanel({
             onPreviewFocus?.("start");
           if (field === "aboutHeadline" || field === "aboutBody")
             onPreviewFocus?.("ueber-uns");
+          if (field === "storyHeadline" || field === "storyBody")
+            onPreviewFocus?.("geschichte");
         }}
       />
       {updateTexts.error && (

@@ -117,6 +117,7 @@ const TextFieldSchema = z.enum([
   "headline",
   "subheadline",
   "aboutBody",
+  "storyBody",
   "seoTitle",
   "seoDescription",
 ]);

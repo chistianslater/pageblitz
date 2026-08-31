@@ -47,7 +47,7 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 /** Ornament-Divider: zwei Hairlines um ein Gold-Diamant-Zeichen. */
 function OrnamentDivider(): React.ReactElement {
   return (
-    <div className="pb-gu-div pb-deco" aria-hidden="true">
+    <div className="pb-gu-div pb-deco pb-deco-ornaments" aria-hidden="true">
       <span className="line" />
       <span className="diamond">◆</span>
       <span className="line" />

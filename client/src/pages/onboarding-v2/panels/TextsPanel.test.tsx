@@ -207,3 +207,48 @@ describe("SerpPreview", () => {
     expect(html).toContain("zum Klicken einladen");
   });
 });
+
+describe("Story im Texte-Panel (Backlog 13e)", () => {
+  const noop = () => {};
+  const formProps = {
+    onChange: noop,
+    onSuggest: noop,
+    suggesting: null,
+    variants: {},
+    onPickVariant: noop,
+  };
+
+  test("mit Story-Sektion liefert textsFromDoc storyHeadline/storyBody", () => {
+    const withStory: WebsiteDataV2 = {
+      ...doc,
+      sections: [
+        ...doc.sections,
+        { type: "story", headline: "Unsere Geschichte", body: "Seit 1987." },
+      ],
+    };
+    const result = textsFromDoc(withStory);
+    expect(result.storyHeadline).toBe("Unsere Geschichte");
+    expect(result.storyBody).toBe("Seit 1987.");
+  });
+
+  test("ohne Story-Sektion fehlen die Felder und die Gruppe rendert nicht", () => {
+    const result = textsFromDoc(doc);
+    expect(result.storyHeadline).toBeUndefined();
+    expect(result.storyBody).toBeUndefined();
+    const markup = renderToStaticMarkup(
+      <TextsForm values={result} {...formProps} />
+    );
+    expect(markup).not.toContain("Eure Geschichte");
+  });
+
+  test("mit Story-Werten rendert die Gruppe samt Feldern", () => {
+    const markup = renderToStaticMarkup(
+      <TextsForm
+        values={{ storyHeadline: "Unsere Geschichte", storyBody: "Seit 1987." }}
+        {...formProps}
+      />
+    );
+    expect(markup).toContain("Eure Geschichte");
+    expect(markup).toContain("Geschichte-Text");
+  });
+});

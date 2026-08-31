@@ -339,6 +339,14 @@ export function applyTexts(doc: WebsiteDataV2, p: TextsPatch): WebsiteDataV2 {
       ...(p.aboutHeadline !== undefined ? { headline: p.aboutHeadline } : {}),
       ...(p.aboutBody !== undefined ? { body: p.aboutBody } : {}),
     }));
+  // Story (Backlog 13e): replaceSection ist ohne story-Sektion ein No-op —
+  // das Panel zeigt die Felder ohnehin nur, wenn die Sektion existiert.
+  if (p.storyHeadline !== undefined || p.storyBody !== undefined)
+    sections = replaceSection(sections, "story", s => ({
+      ...s,
+      ...(p.storyHeadline !== undefined ? { headline: p.storyHeadline } : {}),
+      ...(p.storyBody !== undefined ? { body: p.storyBody } : {}),
+    }));
   const seo = {
     title: p.seoTitle ?? doc.seo.title,
     description: p.seoDescription ?? doc.seo.description,

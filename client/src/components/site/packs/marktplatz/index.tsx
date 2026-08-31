@@ -56,7 +56,7 @@ function renderLogo(data: WebsiteDataV2): React.ReactNode {
 function Squiggle(): React.ReactNode {
   return (
     <svg
-      className="pb-mp-squiggle pb-deco"
+      className="pb-mp-squiggle pb-deco pb-deco-ornaments"
       viewBox="0 0 120 12"
       preserveAspectRatio="none"
       aria-hidden="true"

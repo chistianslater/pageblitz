@@ -66,7 +66,7 @@ function formatRating(rating: number): string {
 function Blob({ tone }: { tone: "honey" | "sage" }) {
   return (
     <svg
-      className={`pb-er-blob pb-deco pb-er-blob-${tone}`}
+      className={`pb-er-blob pb-deco pb-deco-blobs pb-er-blob-${tone}`}
       viewBox="0 0 200 200"
       aria-hidden="true"
     >
@@ -163,7 +163,7 @@ function BlobDefs() {
 /** Punkte-Reihe unter der Headline — kleines Pa'lais-Markenzeichen. */
 function Dots() {
   return (
-    <span className="pb-er-dots pb-deco" aria-hidden="true">
+    <span className="pb-er-dots pb-deco pb-deco-dots" aria-hidden="true">
       <i />
       <i />
       <i />
@@ -297,7 +297,7 @@ function renderSection(
           <h2 className="pb-er-title">{title}</h2>
           <div className="pb-er-contact">
             <address>
-              <Sprig className="pb-er-sprig pb-deco" />
+              <Sprig className="pb-er-sprig pb-deco pb-deco-sprigs" />
               {section.phone && (
                 <p>
                   <a href={`tel:${section.phone}`}>{section.phone}</a>
@@ -479,7 +479,7 @@ const ErntePage: React.FC<{
         <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
           <HeroCollage data={data} />
           <Blob tone="sage" />
-          <Sprig className="pb-er-sprig pb-er-hero-deco pb-deco" />
+          <Sprig className="pb-er-sprig pb-er-hero-deco pb-deco pb-deco-sprigs" />
           <div className="pb-er-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
             {/* Script-Zeile nur, wenn sie nicht bloß die Headline dupliziert. */}
             {data.tagline && data.tagline !== hero.headline && (

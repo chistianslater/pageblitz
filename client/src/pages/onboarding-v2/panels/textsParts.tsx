@@ -7,6 +7,7 @@ export type TextField =
   | "headline"
   | "subheadline"
   | "aboutBody"
+  | "storyBody"
   | "seoTitle"
   | "seoDescription";
 
@@ -27,6 +28,12 @@ interface FieldGroup {
   /** Eingeklappt (details) — für Angaben, die im Onboarding nicht drängen. */
   collapsed?: boolean;
   hint?: string;
+  /**
+   * Gruppe nur zeigen, wenn mindestens ein Feld in `values` gesetzt ist —
+   * für optionale Sektionen (Story, Backlog 13e), die per KI-Chat
+   * hinzugefügt werden; ohne Sektion liefe die Eingabe ins Leere.
+   */
+  onlyWhenPresent?: boolean;
 }
 
 /**
@@ -78,6 +85,27 @@ const GROUPS: FieldGroup[] = [
         kind: "textarea",
         maxLength: 2000,
         suggestField: "aboutBody",
+        required: true,
+      },
+    ],
+  },
+  {
+    title: "Eure Geschichte",
+    onlyWhenPresent: true,
+    fields: [
+      {
+        key: "storyHeadline",
+        label: "Geschichte-Überschrift",
+        kind: "input",
+        maxLength: 120,
+        required: true,
+      },
+      {
+        key: "storyBody",
+        label: "Geschichte-Text",
+        kind: "textarea",
+        maxLength: 2500,
+        suggestField: "storyBody",
         required: true,
       },
     ],
@@ -372,7 +400,11 @@ export function TextsForm({
           ))}
         </ul>
       )}
-      {GROUPS.map(group =>
+      {GROUPS.filter(
+        group =>
+          !group.onlyWhenPresent ||
+          group.fields.some(field => values[field.key] !== undefined)
+      ).map(group =>
         group.collapsed ? (
           <details className="pb-studio-field-group" key={group.title}>
             <summary>{group.title}</summary>

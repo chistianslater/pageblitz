@@ -155,6 +155,7 @@ export function buildAiEditPrompt(args: {
     `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben), "collage" (mehrere Fotos im Hero — Hauptbild plus bis zu zwei Galerie-Bilder als gestapelte Karten; wähle das bei Wünschen wie "mehr Bilder im Hero" oder "3 Fotos im Hero").`,
     `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
     `- "decorations": "off" blendet Schmuck-Illustrationen aus (Zweige, Farbkleckse, Ornamente — z. B. wenn dem Kunden eine Illustration nicht gefällt), "on" zeigt sie wieder.`,
+    `- "hiddenDecorations": VOLLSTÄNDIGE Liste einzeln ausgeblendeter Deko-Gruppen (statt alles auf einmal): "blobs" = organische Farbflächen, "dots" = Punktraster, "sprigs" = Zweig-Illustrationen, "ornaments" = Trennornamente/Bordüren. [] blendet alle Gruppen wieder ein. Beispiel: Kunde will nur die Zweige weg → ["sprigs"].`,
     // Sichtbarkeit/Reihenfolge wirken auf die Startseite — im
     // Unterseiten-Scope nicht anbieten (und kein "hero" in den Prompt
     // leaken, siehe Whitelist-Test).

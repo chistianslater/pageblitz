@@ -62,6 +62,9 @@ export const TextsPatchSchema = z
     ctaText: z.string().max(40).optional(),
     aboutHeadline: z.string().min(1).max(120).optional(),
     aboutBody: z.string().min(1).max(2000).optional(),
+    /** Story-Sektion (Backlog 13e) — Grenzen wie StorySchema (siteContract). */
+    storyHeadline: z.string().min(1).max(120).optional(),
+    storyBody: z.string().min(1).max(2500).optional(),
     seoTitle: z.string().min(1).max(70).optional(),
     seoDescription: z.string().min(1).max(170).optional(),
   })

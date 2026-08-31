@@ -456,7 +456,7 @@ const MorgenlichtPage: React.FC<{
           <HeroCollage data={data} />
             {hero.imageUrl ? (
               <img
-                className="pb-ml-blob pb-deco"
+                className="pb-ml-blob pb-deco pb-deco-blobs"
                 data-pb-slot={LAYOUT_SLOT.heroMedia}
                 src={hero.imageUrl}
                 alt=""
@@ -464,7 +464,7 @@ const MorgenlichtPage: React.FC<{
                 fetchPriority="high"
               />
             ) : (
-              <div className="pb-ml-blob pb-deco" aria-hidden="true" />
+              <div className="pb-ml-blob pb-deco pb-deco-blobs" aria-hidden="true" />
             )}
             {todaysHours && (
               <div className="pb-ml-float f1">

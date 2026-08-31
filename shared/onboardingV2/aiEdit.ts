@@ -7,6 +7,7 @@ import {
 } from "../siteContract/schema";
 import {
   ABOUT_LAYOUTS,
+  DECORATION_GROUPS,
   DECORATION_MODES,
   DESIGN_DENSITIES,
   GALLERY_LAYOUTS,
@@ -86,6 +87,8 @@ export const AiThemePatchSchema = z
     sectionOrder: z.array(z.enum(SECTION_TYPES)).max(16).optional(),
     // Einzeln ausblendbare Sektions-Elemente („Bild weg, Text breiter").
     hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
+    // Deko granular (Backlog 13d): ebenfalls VOLLSTÄNDIGE Ersatzliste.
+    hiddenDecorations: z.array(z.enum(DECORATION_GROUPS)).max(4).optional(),
   })
   .strict();
 

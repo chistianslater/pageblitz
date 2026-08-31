@@ -32,6 +32,21 @@ export const IMAGE_TREATMENTS = ["natural", "framed", "bleed"] as const;
 /** Schmuck-Illustrationen (`pb-deco`-Elemente): "off" blendet sie aus. */
 export const DECORATION_MODES = ["on", "off"] as const;
 /**
+ * Deko granular (Backlog 13d, 2026-08-31): semantische Gruppen der
+ * pb-deco-Elemente, einzeln ausblendbar (`data-pb-deco-off`-Attribut) —
+ * blobs = organische Farbflächen (ernte/morgenlicht), dots = Punktraster
+ * (ernte), sprigs = Zweig-Illustrationen (ernte), ornaments =
+ * Trennornamente/Bordüren (gusto/marktplatz/zunft). `decorations: "off"`
+ * bleibt der Alles-aus-Schalter.
+ */
+export const DECORATION_GROUPS = [
+  "blobs",
+  "dots",
+  "sprigs",
+  "ornaments",
+] as const;
+export type DecorationGroup = (typeof DECORATION_GROUPS)[number];
+/**
  * Einzeln ausblendbare Sektions-Elemente (2026-08-31, „Bild weg, Text wird
  * breiter"): das Layout passt sich zentral an (DESIGN_PROFILE_CSS,
  * `data-pb-he`-Attribut). Nicht-destruktiv — die Bild-URLs bleiben im
@@ -64,6 +79,8 @@ export interface DesignProfile {
   decorations?: (typeof DECORATION_MODES)[number];
   /** Einzeln ausgeblendete Sektions-Elemente (Hero-/Über-uns-Bild). */
   hiddenElements?: HideableElement[];
+  /** Einzeln ausgeblendete Deko-Gruppen (granular statt Alles-aus). */
+  hiddenDecorations?: DecorationGroup[];
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }
