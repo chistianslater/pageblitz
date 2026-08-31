@@ -8,49 +8,32 @@ Positionen 48–100 („homepage für hebammen", „website maler erstellen
 lassen" — die programmatischen Seiten sammeln erste Impressionen, es
 fehlt Autorität). Morgen: Indexing-/CWV-Daten in den Fix-Lauf ziehen.
 
-### [ ] 2. Eigene Titles/Metas für SPA-Routen · /start, /impressum, /datenschutz tragen den Homepage-Title
+### [x] 2. Eigene Titles/Metas für SPA-Routen
+Erledigt 31 Aug (c7aac82): /impressum, /datenschutz, /start mit eigenen
+Titles/Descriptions/Canonicals; /login, /admin-login, /my-website,
+/my-account, /welcome-back, /design-review noindex. Live verifiziert,
+genau ein robots-Tag pro Seite. Kein Body-Text angefasst.
 
-Die Routen liefern das SPA-Fallback-HTML — Google hat /datenschutz und /start
-bereits MIT Homepage-Title und -Description indexiert (site:-Check 30.08.).
-/start (Funnel) vermutlich besser noindex; Rechtsseiten eigene Titles.
+### [x] 3. /site/admin-demo-1 aus der Sitemap + Demo-Seiten noindex
+Erledigt 31 Aug: Sitemap filtert admin-demo-*; X-Robots-Tag noindex live
+bestätigt (SSR hatte robotsNoindex bereits — der Sitemap-Eintrag war der
+Widerspruch). Nichts gelöscht.
 
-**Wer:** ich, im Code (SSR-Meta je Route oder noindex)
-**Zeit:** 45 min
-**Änderungen:** Server-Route/Head-Tags. Kein Body-Text.
+### [x] 4. Stadt in die Meta-Description der 222 Stadt-Seiten
+Erledigt 31 Aug: Befund präzisiert — die Stadt stand am ENDE einer
+~190-Zeichen-Description (Google schneidet bei ~160). Jetzt Stadt vorn,
+~140 Zeichen: „Professionelle Friseur-Website in Berlin ab 19,90 €/Monat
+– von der KI in 3 Minuten erstellt. …" Live verifiziert.
 
-### [ ] 3. /site/admin-demo-1 aus der Sitemap + Demo-Seiten noindex
+### [x] 5. llms.txt anlegen
+Erledigt 31 Aug: Route liefert Produkt-Kurzbeschreibung + wichtigste
+Seiten + Preise. Live: https://pageblitz.de/llms.txt → 200.
 
-Eine Demo-Kundenseite steht in der öffentlichen sitemap.xml und liefert 200.
-
-**Wer:** ich, im Code (Sitemap-Generator + noindex auf /site/* Demos)
-**Zeit:** 15 min
-**Änderungen:** sitemap.xml-Ausgabe, ein Meta-Tag. Kein Inhalt.
-
-### [ ] 4. Stadt in die Meta-Description der 222 Stadt-Seiten
-
-Branchen- und Stadt-Seite teilen sich dieselbe Description ohne Stadtnamen
-(Titles sind korrekt individuell). Template-Fix, wirkt auf alle 222.
-
-**Wer:** ich, im Code (SEO-Template in server/seo/landingPages.ts)
-**Zeit:** 20 min
-**Änderungen:** Meta-Descriptions (per COPY RULE erlaubt). Kein Body-Text.
-
-### [ ] 5. llms.txt anlegen · 404 heute
-
-robots.txt lässt GPTBot & Co. bereits zu (gut), llms.txt fehlt.
-
-**Wer:** ich, im Code
-**Zeit:** 15 min
-**Änderungen:** neue Datei. Kein Inhalt angefasst.
-
-### [ ] 6. width/height auf Template-Bildern + Cache-Header
-
-1 Bild ohne width/height im Branchen-/Stadt-Template (CLS-Risiko, von
-Lighthouse geflaggt); Home: ~270 KiB Cache-Ersparnis, ~115 KiB unused JS.
-
-**Wer:** ich, im Code
-**Zeit:** 30–60 min
-**Änderungen:** img-Attribute, Cache-Header, ggf. Code-Splitting. Kein Inhalt.
+### [x] 6. width/height auf Template-Bildern + Cache-Header (Teilfix)
+Erledigt 31 Aug: Preview-Bild mit width/height; Bilder (webp/jpg/png/svg)
+im generischen Static jetzt 7 Tage Cache (live: max-age=604800).
+REST OFFEN: ~115 KiB unused JS auf der Home — größerer Eingriff
+(Bundle-Analyse), eigene Session; Lighthouse Home war trotzdem 95.
 
 ### [ ] 7. Backlink-Aufbau starten · 11 Referring Domains vs. 178/407 bei Konkurrenten
 
@@ -63,6 +46,17 @@ domain_intersection ziehen.
 **Wer:** du (Outreach) + ich (Gap-Liste ziehen)
 **Zeit:** laufend
 **Änderungen:** keine an der Site.
+
+GAP-LISTE gezogen 31 Aug (domain_intersection lisakoch+wedeon minus
+pageblitz): 19 Domains, davon nur 3 legitim — werbeagenturen.ch
+(Agentur-Verzeichnis, Spam 7), photodesign-kluz.de und unicatdesigns.de
+(Artikel-Links, Spam 2–5). Der Rest ist Linkspam (.party/.shop/
+backlink-agency.pro …) — NICHT nachbauen.
+DIE eigentliche Erkenntnis: beide Konkurrenten beziehen ihre Links
+über KUNDEN-FOOTER („Website by …" — lisakoch 1.719, wedeon 2.595
+Footer-Links). EMPFEHLUNG (deine Entscheidung, ändert Kundenseiten):
+dezenter „Erstellt mit Pageblitz"-Link im Footer der Kundenwebsites —
+Standard bei Wix/Jimdo, skaliert mit jedem Kunden.
 
 ### [ ] 8. Blog aufbauen · Route zu Content-Arbeit, NICHT Teil des Fix-Loops
 
