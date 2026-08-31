@@ -416,27 +416,29 @@ async function startServer() {
   // llms.txt (Audit 2026-08-30, Punkt 5): kompakte Orientierung für
   // KI-Crawler (GPTBot, ClaudeBot, PerplexityBot — robots.txt lässt sie zu).
   app.get("/llms.txt", (_req, res) => {
-    res.type("text/plain").send(
-      [
-        "# Pageblitz",
-        "",
-        "> Pageblitz erstellt per KI in ca. 3 Minuten eine fertige Website",
-        "> für Kleinunternehmen in Deutschland (Friseure, Handwerker,",
-        "> Restaurants u. v. m.). Basis 19,90 €/Monat (jährlich) bzw.",
-        "> 24,90 €/Monat (monatlich), 7 Tage gratis testen, DSGVO-konform,",
-        "> Hosting in Deutschland inklusive.",
-        "",
-        "## Wichtige Seiten",
-        "",
-        "- [Startseite](https://pageblitz.de/): Produkt, Preise, FAQ",
-        "- [Website erstellen nach Branche](https://pageblitz.de/website-erstellen): 37 Branchen-Übersicht",
-        "- [Beispiel Branche](https://pageblitz.de/website-erstellen/friseur): Friseur-Website",
-        "",
-        "## Kontakt",
-        "",
-        "- [Impressum](https://pageblitz.de/impressum)",
-      ].join("\n")
-    );
+    res
+      .type("text/plain")
+      .send(
+        [
+          "# Pageblitz",
+          "",
+          "> Pageblitz erstellt per KI in ca. 3 Minuten eine fertige Website",
+          "> für Kleinunternehmen in Deutschland (Friseure, Handwerker,",
+          "> Restaurants u. v. m.). Basis 19,90 €/Monat (jährlich) bzw.",
+          "> 24,90 €/Monat (monatlich), 7 Tage gratis testen, DSGVO-konform,",
+          "> Hosting in Deutschland inklusive.",
+          "",
+          "## Wichtige Seiten",
+          "",
+          "- [Startseite](https://pageblitz.de/): Produkt, Preise, FAQ",
+          "- [Website erstellen nach Branche](https://pageblitz.de/website-erstellen): 37 Branchen-Übersicht",
+          "- [Beispiel Branche](https://pageblitz.de/website-erstellen/friseur): Friseur-Website",
+          "",
+          "## Kontakt",
+          "",
+          "- [Impressum](https://pageblitz.de/impressum)",
+        ].join("\n")
+      );
   });
 
   // Dynamic sitemap.xml – includes all active customer websites + landing pages

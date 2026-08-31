@@ -44,7 +44,7 @@ export interface RenderSiteOptions {
    * `server/routers.ts`, NICHT Teil von `WebsiteDataV2`/`features`). Geht
    * über `SiteRenderer` an `SiteIslands` → `ChatIsland` weiter.
    */
-  site?: { chatWelcomeMessage?: string | null };
+  site?: { chatWelcomeMessage?: string | null; showBranding?: boolean };
   /**
    * Reicht den Vorschau-Modus 1:1 an `SiteRenderer`/`SiteIslands` durch.
    * `undefined` (Default) lässt Inseln im Live-Modus rendern — so bleibt das
@@ -402,9 +402,16 @@ function renderLegalPage(
   opts: RenderSiteOptions
 ): RenderSiteResult {
   const hasContent = Boolean(bodyHtml && bodyHtml.trim().length > 0);
+  // Studio-Vorschau vor der Veröffentlichung (Betreiber-Wunsch 2026-08-31):
+  // Impressum/Datenschutz entstehen erst im Schritt „Rechtliches" — statt
+  // „nicht gefunden" ein erklärender Hinweis mit Status 200. Live-Seiten
+  // behalten das 404-Verhalten.
+  const isPreview = basePath.startsWith("/preview-ssr/");
   const content = hasContent
     ? bodyHtml
-    : "<p>Diese Seite wurde nicht gefunden.</p>";
+    : isPreview
+      ? `<h1>${esc(title)}</h1><p><strong>Diese Seite wird nach der Veröffentlichung sichtbar.</strong></p><p>Pageblitz erzeugt ${esc(title)} automatisch aus deinen Angaben im Schritt „Rechtliches“ — sobald deine Website freigeschaltet ist, steht die Seite hier.</p>`
+      : "<p>Diese Seite wurde nicht gefunden.</p>";
   const backHref = basePath || "/";
   const canvasColor = getCanvasColor(data);
   const html = `<!doctype html>
@@ -420,7 +427,7 @@ ${content}
 </div>
 </body>
 </html>`;
-  return { html, status: hasContent ? 200 : 404 };
+  return { html, status: hasContent || isPreview ? 200 : 404 };
 }
 
 /**

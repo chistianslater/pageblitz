@@ -24,6 +24,13 @@ import { EXTRA_SECTIONS_CSS } from "./extraSections";
 const DECO_TOGGLE_CSS = `
 .pb-site[data-pb-deco="off"] .pb-deco{display:none!important}
 `;
+
+/** Dezentes „Erstellt mit Pageblitz"-Badge (Dashboard-Schalter showBranding). */
+const BRANDING_CSS = `
+.pb-made-with{display:block;padding:14px 20px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.78rem;color:var(--pb-muted,var(--pb-ink));background:var(--pb-canvas);text-decoration:none;opacity:.75}
+.pb-made-with:hover{opacity:1;text-decoration:underline}
+.pb-made-with strong{font-weight:700}
+`;
 import {
   ALBUM_CSS,
   albumChromeJson,
@@ -63,7 +70,16 @@ export const SiteRenderer: React.FC<{
    * `SiteIslands.tsx`). Wird 1:1 durchgereicht — `SiteRenderer` kennt den
    * Inhalt nicht, nur `renderSiteHtml` füllt es (Kundenseiten-SSR).
    */
-  site?: { chatWelcomeMessage?: string | null };
+  site?: {
+    chatWelcomeMessage?: string | null;
+    /**
+     * Dashboard-Schalter „Pageblitz-Branding im Footer anzeigen"
+     * (websites.showBranding, default true). Rendert ein dezentes
+     * „Erstellt mit Pageblitz"-Badge unter der Seite — der bislang tote
+     * Toggle wird hiermit erstmals im v2-Rendering wirksam (2026-08-31).
+     */
+    showBranding?: boolean;
+  };
   /**
    * Reicht den Vorschau-Modus 1:1 an `SiteIslands` durch (siehe dort für die
    * Begründung) — `undefined` lässt `SiteIslands` bei seinem eigenen
@@ -205,6 +221,8 @@ export const SiteRenderer: React.FC<{
             "\n" +
             DECO_TOGGLE_CSS +
             "\n" +
+            BRANDING_CSS +
+            "\n" +
             LAYOUT_POLISH_CSS +
             (albumJson ? "\n" + ALBUM_CSS : "") +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
@@ -229,6 +247,13 @@ export const SiteRenderer: React.FC<{
         pageTitle={currentPage?.title}
         sections={pageSections}
       />
+      {/* „Erstellt mit Pageblitz" (Dashboard-Schalter, default an): der
+          Backlink-Hebel jedes Baukastens — folgt bewusst ohne nofollow. */}
+      {site?.showBranding === true && (
+        <a className="pb-made-with" href="https://pageblitz.de">
+          Erstellt mit <strong>Pageblitz</strong>
+        </a>
+      )}
       <SiteIslands
         data={effectiveData}
         slug={slug}

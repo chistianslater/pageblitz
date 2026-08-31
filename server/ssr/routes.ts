@@ -209,7 +209,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       pathname,
       basePath,
       slug: website.slug,
-      site: { chatWelcomeMessage: website.chatWelcomeMessage },
+      site: {
+        chatWelcomeMessage: website.chatWelcomeMessage,
+        showBranding: website.showBranding !== false,
+      },
       // Zeitmaschine (Plan B7 Task 4): Der GenerationScreen hängt ?reveal=1
       // an, damit die Sektionen des frisch geschriebenen (Zwischen-)Stands
       // sichtbar einfaden. Nur diese Preview-Route kennt den Parameter —
@@ -649,7 +652,10 @@ async function handleCustomerSiteSsr(
       pathname: siteRequest.pathname,
       basePath: siteRequest.basePath,
       slug: website.slug,
-      site: { chatWelcomeMessage: website.chatWelcomeMessage },
+      site: {
+        chatWelcomeMessage: website.chatWelcomeMessage,
+        showBranding: website.showBranding !== false,
+      },
       // Cookieloses Umami-Tracking nur für aktive Sites mit registrierter
       // ID (Plan B6 Task 7; ID kommt aus server/umamiProvisioning.ts, die
       // nach dem Write den Cache hier invalidiert).

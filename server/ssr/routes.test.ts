@@ -728,7 +728,7 @@ describe("SSR routes", () => {
       expect(without.text).not.toContain("pb-reveal");
     });
 
-    test("Rechtsseite ohne Inhalt → 404", async () => {
+    test("Rechtsseite ohne Inhalt → 200 mit Veröffentlichungs-Hinweis (Betreiber-Wunsch 2026-08-31)", async () => {
       (getWebsiteByToken as Mock).mockResolvedValue({
         id: 1,
         slug: "s",
@@ -738,7 +738,8 @@ describe("SSR routes", () => {
       const res = await request(app).get(
         "/preview-ssr/abcdefghabcdefgh/impressum"
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(200);
+      expect(res.text).toContain("nach der Veröffentlichung sichtbar");
     });
 
     describe("Unterseiten (pages[], Plan B6 Task 3)", () => {

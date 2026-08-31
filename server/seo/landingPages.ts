@@ -30,10 +30,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "friseur",
     displayName: "Friseur",
     title: "Website für Friseur erstellen",
-    h1Template: "KI-Website für deinen Friseursalon{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Friseursalon{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Friseure ab 19,90 €/Monat. Mit Galerie, Leistungsübersicht und Kontaktformular. Von der KI erstellt – als Vorschau in 3 Minuten.",
-    keywords: ["Website Friseur", "Friseursalon Website erstellen", "Homepage Friseur"],
+    keywords: [
+      "Website Friseur",
+      "Friseursalon Website erstellen",
+      "Homepage Friseur",
+    ],
     features: [
       {
         icon: "✂️",
@@ -78,7 +83,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Restaurant{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Restaurants ab 19,90 €/Monat. Speisekarte, Öffnungszeiten, Tisch-Reservierung – alles von der KI erstellt.",
-    keywords: ["Website Restaurant", "Restaurant Website erstellen", "Homepage Gastronomie"],
+    keywords: [
+      "Website Restaurant",
+      "Restaurant Website erstellen",
+      "Homepage Gastronomie",
+    ],
     features: [
       {
         icon: "🍽️",
@@ -120,10 +129,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "handwerk",
     displayName: "Handwerker",
     title: "Website für Handwerker erstellen",
-    h1Template: "KI-Website für deinen Handwerksbetrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Handwerksbetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Handwerker ab 19,90 €/Monat. Leistungen, Referenzen, Anfrage-Formular – von der KI erstellt, als Vorschau in 3 Minuten.",
-    keywords: ["Website Handwerker", "Handwerksbetrieb Website erstellen", "Homepage Handwerk"],
+    keywords: [
+      "Website Handwerker",
+      "Handwerksbetrieb Website erstellen",
+      "Homepage Handwerk",
+    ],
     features: [
       {
         icon: "🔧",
@@ -165,10 +179,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "zahnarzt",
     displayName: "Zahnarzt",
     title: "Website für Zahnarztpraxis erstellen",
-    h1Template: "KI-Website für deine Zahnarztpraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Zahnarztpraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Zahnarztpraxen ab 19,90 €/Monat. Praxis, Team, Leistungen, Online-Terminanfrage – von der KI erstellt.",
-    keywords: ["Website Zahnarzt", "Zahnarztpraxis Website erstellen", "Homepage Zahnarzt"],
+    keywords: [
+      "Website Zahnarzt",
+      "Zahnarztpraxis Website erstellen",
+      "Homepage Zahnarzt",
+    ],
     features: [
       {
         icon: "🦷",
@@ -210,10 +229,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "kosmetik",
     displayName: "Kosmetikstudio",
     title: "Website für Kosmetikstudio erstellen",
-    h1Template: "KI-Website für dein Kosmetikstudio{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Kosmetikstudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Kosmetikerinnen ab 19,90 €/Monat. Behandlungen, Preise, Galerie und Terminanfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Kosmetikstudio", "Kosmetikerin Website erstellen", "Homepage Kosmetik"],
+    keywords: [
+      "Website Kosmetikstudio",
+      "Kosmetikerin Website erstellen",
+      "Homepage Kosmetik",
+    ],
     features: [
       {
         icon: "💆",
@@ -255,10 +279,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "fitness",
     displayName: "Fitnessstudio",
     title: "Website für Fitnessstudio erstellen",
-    h1Template: "KI-Website für dein Fitnessstudio{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Fitnessstudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Fitnessstudios und Personal Trainer ab 19,90 €/Monat. Kurspläne, Mitgliedschaft, Fotos – als Vorschau in 3 Minuten.",
-    keywords: ["Website Fitnessstudio", "Personal Trainer Website erstellen", "Homepage Gym"],
+    keywords: [
+      "Website Fitnessstudio",
+      "Personal Trainer Website erstellen",
+      "Homepage Gym",
+    ],
     features: [
       {
         icon: "💪",
@@ -345,10 +374,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "immobilien",
     displayName: "Immobilienmakler",
     title: "Website für Immobilienmakler erstellen",
-    h1Template: "KI-Website für deinen Immobilienmakler-Betrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Immobilienmakler-Betrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Immobilienmakler ab 19,90 €/Monat. Referenzobjekte, Kontaktformular, Über-Mich – als Vorschau in 3 Minuten.",
-    keywords: ["Website Immobilienmakler", "Makler Website erstellen", "Homepage Immobilien"],
+    keywords: [
+      "Website Immobilienmakler",
+      "Makler Website erstellen",
+      "Homepage Immobilien",
+    ],
     features: [
       {
         icon: "🏠",
@@ -390,10 +424,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "rechtsanwalt",
     displayName: "Rechtsanwalt",
     title: "Website für Anwaltskanzlei erstellen",
-    h1Template: "KI-Website für deine Anwaltskanzlei{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Anwaltskanzlei{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Rechtsanwälte ab 19,90 €/Monat. Fachgebiete, Kontaktformular, Kanzleivorstellung – DSGVO-konform.",
-    keywords: ["Website Rechtsanwalt", "Anwaltskanzlei Website erstellen", "Homepage Anwalt"],
+    keywords: [
+      "Website Rechtsanwalt",
+      "Anwaltskanzlei Website erstellen",
+      "Homepage Anwalt",
+    ],
     features: [
       {
         icon: "⚖️",
@@ -435,10 +474,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "steuerberater",
     displayName: "Steuerberater",
     title: "Website für Steuerberater erstellen",
-    h1Template: "KI-Website für deine Steuerkanzlei{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Steuerkanzlei{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Steuerberater ab 19,90 €/Monat. Leistungen, Team, Kontaktformular – DSGVO-konform und als Vorschau in 3 Minuten.",
-    keywords: ["Website Steuerberater", "Steuerkanzlei Website erstellen", "Homepage Steuerberater"],
+    keywords: [
+      "Website Steuerberater",
+      "Steuerkanzlei Website erstellen",
+      "Homepage Steuerberater",
+    ],
     features: [
       {
         icon: "📊",
@@ -483,7 +527,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Portfolio-Website für Fotografen ab 19,90 €/Monat. Portfolio-Galerie, Preisliste, Buchungsanfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Fotograf", "Fotografen Website erstellen", "Portfolio Website Fotograf"],
+    keywords: [
+      "Website Fotograf",
+      "Fotografen Website erstellen",
+      "Portfolio Website Fotograf",
+    ],
     features: [
       {
         icon: "📷",
@@ -525,10 +573,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "physiotherapie",
     displayName: "Physiotherapeut",
     title: "Website für Physiotherapeut erstellen",
-    h1Template: "KI-Website für deine Physiopraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Physiopraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Physiotherapeuten ab 19,90 €/Monat. Behandlungen, Team, Online-Terminanfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Physiotherapeut", "Physiopraxis Website erstellen", "Physiotherapie Homepage"],
+    keywords: [
+      "Website Physiotherapeut",
+      "Physiopraxis Website erstellen",
+      "Physiotherapie Homepage",
+    ],
     features: [
       {
         icon: "🦴",
@@ -573,7 +626,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Nagelstudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Nagelstudios ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten und ohne Technik.",
-    keywords: ["Website Nagelstudio", "Nagelstylistin Website erstellen", "Nail Art Homepage"],
+    keywords: [
+      "Website Nagelstudio",
+      "Nagelstylistin Website erstellen",
+      "Nail Art Homepage",
+    ],
     features: [
       {
         icon: "💅",
@@ -618,7 +675,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für deine Bäckerei{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Bäckereien und Konditoreien ab 19,90 €/Monat. Angebote, Öffnungszeiten, Sonderbestellungen – als Vorschau in 3 Minuten.",
-    keywords: ["Website Bäckerei", "Bäckerei Homepage erstellen", "Konditorei Website"],
+    keywords: [
+      "Website Bäckerei",
+      "Bäckerei Homepage erstellen",
+      "Konditorei Website",
+    ],
     features: [
       {
         icon: "🥖",
@@ -660,10 +721,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "reinigung",
     displayName: "Reinigungsservice",
     title: "Website für Reinigungsservice erstellen",
-    h1Template: "KI-Website für deinen Reinigungsservice{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Reinigungsservice{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Reinigungsunternehmen ab 19,90 €/Monat. Leistungen, Angebote, Kontaktformular – als Vorschau in 3 Minuten.",
-    keywords: ["Website Reinigungsservice", "Reinigungsunternehmen Website erstellen", "Hausreinigung Homepage"],
+    keywords: [
+      "Website Reinigungsservice",
+      "Reinigungsunternehmen Website erstellen",
+      "Hausreinigung Homepage",
+    ],
     features: [
       {
         icon: "🧹",
@@ -705,10 +771,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hundesalon",
     displayName: "Hundesalon",
     title: "Website für Hundesalon erstellen",
-    h1Template: "KI-Website für deinen Hundesalon{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Hundesalon{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Hundesalons und Tierpfleger ab 19,90 €/Monat. Preisliste, Galerie, Terminanfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Hundesalon", "Tierpfleger Website erstellen", "Hundefriseur Homepage"],
+    keywords: [
+      "Website Hundesalon",
+      "Tierpfleger Website erstellen",
+      "Hundefriseur Homepage",
+    ],
     features: [
       {
         icon: "🐕",
@@ -750,10 +821,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "musikschule",
     displayName: "Musikschule",
     title: "Website für Musikschule erstellen",
-    h1Template: "KI-Website für deine Musikschule{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Musikschule{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Musikschulen und Musiklehrer ab 19,90 €/Monat. Kurse, Instrumente, Schnupperstunde – als Vorschau in 3 Minuten.",
-    keywords: ["Website Musikschule", "Musiklehrer Website erstellen", "Musikunterricht Homepage"],
+    keywords: [
+      "Website Musikschule",
+      "Musiklehrer Website erstellen",
+      "Musikunterricht Homepage",
+    ],
     features: [
       {
         icon: "🎵",
@@ -795,10 +871,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "elektriker",
     displayName: "Elektriker",
     title: "Website für Elektriker erstellen",
-    h1Template: "KI-Website für deinen Elektrobetrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Elektrobetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Elektriker ab 19,90 €/Monat. Mit Leistungsübersicht, Notdienst-Kontakt und Referenzen. Von der KI erstellt – als Vorschau in 3 Minuten.",
-    keywords: ["Website Elektriker", "Elektriker Website erstellen", "Homepage Elektrobetrieb"],
+    keywords: [
+      "Website Elektriker",
+      "Elektriker Website erstellen",
+      "Homepage Elektrobetrieb",
+    ],
     features: [
       {
         icon: "⚡",
@@ -817,10 +898,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Elektriker?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Elektriker-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meinen Notdienst auf der Website hervorheben?", a: "Ja. Notdienst-Hinweis, Telefonnummer und Kontaktformular sind per KI automatisch eingebunden." },
-      { q: "Brauche ich technisches Wissen für meine Elektriker-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Elektriker?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Elektriker-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meinen Notdienst auf der Website hervorheben?",
+        a: "Ja. Notdienst-Hinweis, Telefonnummer und Kontaktformular sind per KI automatisch eingebunden.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Elektriker-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -828,10 +921,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "maler",
     displayName: "Malerbetrieb",
     title: "Website für Malerbetrieb erstellen",
-    h1Template: "KI-Website für deinen Malerbetrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Malerbetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Malerbetriebe ab 19,90 €/Monat. Vorher-Nachher-Galerie, Leistungen und Kontaktformular – von der KI erstellt.",
-    keywords: ["Website Maler", "Malerbetrieb Website erstellen", "Homepage Malermeister"],
+    keywords: [
+      "Website Maler",
+      "Malerbetrieb Website erstellen",
+      "Homepage Malermeister",
+    ],
     features: [
       {
         icon: "🎨",
@@ -850,10 +948,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Malerbetrieb?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Maler-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich eigene Fotos meiner Malerarbeiten hochladen?", a: "Ja. Im Kundenbereich lassen sich Bilder jederzeit ergänzen oder austauschen." },
-      { q: "Brauche ich technisches Wissen für meine Maler-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Malerbetrieb?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Maler-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich eigene Fotos meiner Malerarbeiten hochladen?",
+        a: "Ja. Im Kundenbereich lassen sich Bilder jederzeit ergänzen oder austauschen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Maler-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -861,10 +971,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "klempner",
     displayName: "Klempner",
     title: "Website für Klempner erstellen",
-    h1Template: "KI-Website für deinen Klempnerbetrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Klempnerbetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Klempner ab 19,90 €/Monat. Mit Notdienst-Bereich, Leistungsübersicht und schneller Kontaktmöglichkeit – als Vorschau in 3 Minuten.",
-    keywords: ["Website Klempner", "Klempner Website erstellen", "Homepage Sanitärbetrieb"],
+    keywords: [
+      "Website Klempner",
+      "Klempner Website erstellen",
+      "Homepage Sanitärbetrieb",
+    ],
     features: [
       {
         icon: "🔧",
@@ -883,10 +998,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Klempner?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Klempner-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meinen Notdienst auf der Website besonders betonen?", a: "Ja. Notdiensthinweis und direkte Telefonnummer werden automatisch prominent platziert." },
-      { q: "Brauche ich technisches Wissen für meine Klempner-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Klempner?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Klempner-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meinen Notdienst auf der Website besonders betonen?",
+        a: "Ja. Notdiensthinweis und direkte Telefonnummer werden automatisch prominent platziert.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Klempner-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -894,10 +1021,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "gaertner",
     displayName: "Gärtner",
     title: "Website für Gärtner erstellen",
-    h1Template: "KI-Website für deinen Gärtnereibetrieb{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Gärtnereibetrieb{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Gärtner ab 19,90 €/Monat. Mit Saisondiensten, Bildergalerie und Kontaktformular – von der KI in Minuten erstellt.",
-    keywords: ["Website Gärtner", "Gärtnerei Website erstellen", "Homepage Gartenservice"],
+    keywords: [
+      "Website Gärtner",
+      "Gärtnerei Website erstellen",
+      "Homepage Gartenservice",
+    ],
     features: [
       {
         icon: "🌿",
@@ -916,10 +1048,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Gärtner?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Gärtner-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich saisonale Angebote wie Winterdienst hervorheben?", a: "Ja. Texte und Angebote lassen sich im Kundenbereich jederzeit aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Gärtner-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Gärtner?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Gärtner-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich saisonale Angebote wie Winterdienst hervorheben?",
+        a: "Ja. Texte und Angebote lassen sich im Kundenbereich jederzeit aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Gärtner-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -927,10 +1071,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "tierarzt",
     displayName: "Tierarzt",
     title: "Website für Tierarzt erstellen",
-    h1Template: "KI-Website für deine Tierarztpraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Tierarztpraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Tierarztpraxen ab 19,90 €/Monat. Mit Leistungsübersicht, Öffnungszeiten und Notfallkontakt – als Vorschau in 3 Minuten.",
-    keywords: ["Website Tierarzt", "Tierarztpraxis Website erstellen", "Homepage Veterinär"],
+    keywords: [
+      "Website Tierarzt",
+      "Tierarztpraxis Website erstellen",
+      "Homepage Veterinär",
+    ],
     features: [
       {
         icon: "🐾",
@@ -949,10 +1098,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Tierarztpraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Tierarzt-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich Notfallzeiten und Vertretungen auf der Website angeben?", a: "Ja. Alle Texte, Öffnungszeiten und Kontaktdaten lassen sich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Tierarzt-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Tierarztpraxis?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Tierarzt-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich Notfallzeiten und Vertretungen auf der Website angeben?",
+        a: "Ja. Alle Texte, Öffnungszeiten und Kontaktdaten lassen sich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Tierarzt-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -963,7 +1124,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für deine Apotheke{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Apotheken ab 19,90 €/Monat. Mit Öffnungszeiten, Notdienst-Hinweis und Leistungsübersicht – von der KI erstellt.",
-    keywords: ["Website Apotheke", "Apotheke Website erstellen", "Homepage Apotheke"],
+    keywords: [
+      "Website Apotheke",
+      "Apotheke Website erstellen",
+      "Homepage Apotheke",
+    ],
     features: [
       {
         icon: "💊",
@@ -982,10 +1147,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Apotheke?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Apotheken-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich den Notdienst-Kalender auf der Website einbinden?", a: "Notdiensthinweise lassen sich als Text jederzeit im Kundenbereich aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Apotheken-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Apotheke?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Apotheken-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich den Notdienst-Kalender auf der Website einbinden?",
+        a: "Notdiensthinweise lassen sich als Text jederzeit im Kundenbereich aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Apotheken-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -996,7 +1173,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Yogastudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Yogastudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Online-Kursanfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Yogastudio", "Yogastudio Website erstellen", "Homepage Yoga"],
+    keywords: [
+      "Website Yogastudio",
+      "Yogastudio Website erstellen",
+      "Homepage Yoga",
+    ],
     features: [
       {
         icon: "🧘",
@@ -1015,10 +1196,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Yogastudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Yogastudio-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meinen Kursplan auf der Website veröffentlichen?", a: "Ja. Kursbeschreibungen und Zeiten lassen sich im Kundenbereich jederzeit aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Yogastudio-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Yogastudio?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Yogastudio-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meinen Kursplan auf der Website veröffentlichen?",
+        a: "Ja. Kursbeschreibungen und Zeiten lassen sich im Kundenbereich jederzeit aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Yogastudio-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1029,7 +1222,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für deine Fahrschule{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Fahrschulen ab 19,90 €/Monat. Mit Preisliste, Führerscheinklassen und Online-Anmeldeformular – von der KI erstellt.",
-    keywords: ["Website Fahrschule", "Fahrschule Website erstellen", "Homepage Fahrlehrer"],
+    keywords: [
+      "Website Fahrschule",
+      "Fahrschule Website erstellen",
+      "Homepage Fahrlehrer",
+    ],
     features: [
       {
         icon: "🚗",
@@ -1048,10 +1245,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Fahrschule?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Fahrschul-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meine Preisliste und Führerscheinklassen selbst pflegen?", a: "Ja. Alle Inhalte lassen sich jederzeit im Kundenbereich anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Fahrschul-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Fahrschule?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Fahrschul-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meine Preisliste und Führerscheinklassen selbst pflegen?",
+        a: "Ja. Alle Inhalte lassen sich jederzeit im Kundenbereich anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Fahrschul-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1059,10 +1268,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "kfz-werkstatt",
     displayName: "Kfz-Werkstatt",
     title: "Website für Kfz-Werkstatt erstellen",
-    h1Template: "KI-Website für deine Kfz-Werkstatt{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Kfz-Werkstatt{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Kfz-Werkstätten ab 19,90 €/Monat. Mit Leistungsübersicht, Terminbuchung und Kundenbewertungen – als Vorschau in 3 Minuten.",
-    keywords: ["Website Kfz-Werkstatt", "Autowerkstatt Website erstellen", "Homepage Kfz-Betrieb"],
+    keywords: [
+      "Website Kfz-Werkstatt",
+      "Autowerkstatt Website erstellen",
+      "Homepage Kfz-Betrieb",
+    ],
     features: [
       {
         icon: "🔩",
@@ -1081,10 +1295,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Kfz-Werkstatt?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Werkstatt-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich Sonderaktionen wie Reifenwechsel-Aktionen bewerben?", a: "Ja. Aktionen und Angebote lassen sich im Kundenbereich jederzeit aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Werkstatt-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Kfz-Werkstatt?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Werkstatt-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich Sonderaktionen wie Reifenwechsel-Aktionen bewerben?",
+        a: "Ja. Aktionen und Angebote lassen sich im Kundenbereich jederzeit aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Werkstatt-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1092,10 +1318,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "schluesseldienst",
     displayName: "Schlüsseldienst",
     title: "Website für Schlüsseldienst erstellen",
-    h1Template: "KI-Website für deinen Schlüsseldienst{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Schlüsseldienst{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Schlüsseldienste ab 19,90 €/Monat. Mit Notdienst-Bereich, transparenten Preishinweisen und Kontakt – als Vorschau in 3 Minuten.",
-    keywords: ["Website Schlüsseldienst", "Schlüsseldienst Website erstellen", "Homepage Schlüsselnotdienst"],
+    keywords: [
+      "Website Schlüsseldienst",
+      "Schlüsseldienst Website erstellen",
+      "Homepage Schlüsselnotdienst",
+    ],
     features: [
       {
         icon: "🔑",
@@ -1114,10 +1345,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Schlüsseldienst?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Schlüsseldienst-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich mein Einsatzgebiet und meine Preise klar kommunizieren?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Schlüsseldienst-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Schlüsseldienst?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Schlüsseldienst-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich mein Einsatzgebiet und meine Preise klar kommunizieren?",
+        a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Schlüsseldienst-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1125,10 +1368,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "architekt",
     displayName: "Architekt",
     title: "Website für Architekt erstellen",
-    h1Template: "KI-Website für dein Architekturbüro{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Architekturbüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Architekturbüros ab 19,90 €/Monat. Mit Portfolio, Leistungsprofil und Kontaktmöglichkeit – von der KI erstellt.",
-    keywords: ["Website Architekt", "Architekturbüro Website erstellen", "Homepage Architekt"],
+    keywords: [
+      "Website Architekt",
+      "Architekturbüro Website erstellen",
+      "Homepage Architekt",
+    ],
     features: [
       {
         icon: "🏛️",
@@ -1147,10 +1395,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Architekturbüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Architekten-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich mein Projektportfolio mit eigenen Fotos befüllen?", a: "Ja. Im Kundenbereich lassen sich Bilder und Beschreibungen jederzeit ergänzen." },
-      { q: "Brauche ich technisches Wissen für meine Architekten-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Architekturbüro?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Architekten-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich mein Projektportfolio mit eigenen Fotos befüllen?",
+        a: "Ja. Im Kundenbereich lassen sich Bilder und Beschreibungen jederzeit ergänzen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Architekten-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1158,10 +1418,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "innenarchitekt",
     displayName: "Innenarchitekt",
     title: "Website für Innenarchitekt erstellen",
-    h1Template: "KI-Website für dein Innenarchitekturbüro{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Innenarchitekturbüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Innenarchitekten ab 19,90 €/Monat. Mit Designportfolio, Leistungsübersicht und Kontaktformular – als Vorschau in 3 Minuten.",
-    keywords: ["Website Innenarchitekt", "Innenarchitektur Website erstellen", "Homepage Raumgestaltung"],
+    keywords: [
+      "Website Innenarchitekt",
+      "Innenarchitektur Website erstellen",
+      "Homepage Raumgestaltung",
+    ],
     features: [
       {
         icon: "🛋️",
@@ -1180,10 +1445,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Innenarchitekten?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Innenarchitekten-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich mein Portfolio mit eigenen Raumfotos zeigen?", a: "Ja. Bilder und Projekttexte lassen sich im Kundenbereich jederzeit hochladen." },
-      { q: "Brauche ich technisches Wissen für meine Innenarchitekten-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Innenarchitekten?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Innenarchitekten-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich mein Portfolio mit eigenen Raumfotos zeigen?",
+        a: "Ja. Bilder und Projekttexte lassen sich im Kundenbereich jederzeit hochladen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Innenarchitekten-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1191,10 +1468,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "buchhaltung",
     displayName: "Buchhaltungsbüro",
     title: "Website für Buchhaltungsbüro erstellen",
-    h1Template: "KI-Website für dein Buchhaltungsbüro{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Buchhaltungsbüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Buchhaltungsbüros ab 19,90 €/Monat. Mit Leistungsangeboten, Beratungstermin-Anfrage und Vertrauenssignalen – als Vorschau in 3 Minuten.",
-    keywords: ["Website Buchhaltung", "Buchhaltungsbüro Website erstellen", "Homepage Buchhalter"],
+    keywords: [
+      "Website Buchhaltung",
+      "Buchhaltungsbüro Website erstellen",
+      "Homepage Buchhalter",
+    ],
     features: [
       {
         icon: "📊",
@@ -1213,10 +1495,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Buchhaltungsbüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Buchhaltungs-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meine Qualifikationen und Zertifikate auf der Website zeigen?", a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen und ergänzen." },
-      { q: "Brauche ich technisches Wissen für meine Buchhaltungs-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Buchhaltungsbüro?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Buchhaltungs-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meine Qualifikationen und Zertifikate auf der Website zeigen?",
+        a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen und ergänzen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Buchhaltungs-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1224,10 +1518,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "logopaedie",
     displayName: "Logopädie",
     title: "Website für Logopädie erstellen",
-    h1Template: "KI-Website für deine Logopädiepraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Logopädiepraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Logopädiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Terminanfrage und wichtigen Infos für Patienten – als Vorschau in 3 Minuten.",
-    keywords: ["Website Logopädie", "Logopädie Praxis Website", "Homepage Logopäde"],
+    keywords: [
+      "Website Logopädie",
+      "Logopädie Praxis Website",
+      "Homepage Logopäde",
+    ],
     features: [
       {
         icon: "🗣️",
@@ -1246,10 +1545,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Logopädiepraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Logopädie-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich auf der Website über Kassenzulassung und Rezept informieren?", a: "Ja. Alle Informationstexte lassen sich im Kundenbereich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Logopädie-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Logopädiepraxis?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Logopädie-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich auf der Website über Kassenzulassung und Rezept informieren?",
+        a: "Ja. Alle Informationstexte lassen sich im Kundenbereich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Logopädie-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1257,10 +1568,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "ergotherapie",
     displayName: "Ergotherapie",
     title: "Website für Ergotherapie erstellen",
-    h1Template: "KI-Website für deine Ergotherapiepraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Ergotherapiepraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Ergotherapiepraxen ab 19,90 €/Monat. Mit Therapieangeboten, Patienteninfos und Kontaktformular – als Vorschau in 3 Minuten.",
-    keywords: ["Website Ergotherapie", "Ergotherapie Praxis Website", "Homepage Ergotherapeut"],
+    keywords: [
+      "Website Ergotherapie",
+      "Ergotherapie Praxis Website",
+      "Homepage Ergotherapeut",
+    ],
     features: [
       {
         icon: "🤲",
@@ -1279,10 +1595,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Ergotherapiepraxis?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Ergotherapie-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meine Therapieschwerpunkte auf der Website erklären?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Ergotherapie-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Ergotherapiepraxis?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Ergotherapie-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meine Therapieschwerpunkte auf der Website erklären?",
+        a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Ergotherapie-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1290,10 +1618,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hebamme",
     displayName: "Hebamme",
     title: "Website für Hebamme erstellen",
-    h1Template: "KI-Website für deine Hebammenpraxis{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deine Hebammenpraxis{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Hebammen ab 19,90 €/Monat. Mit Leistungsübersicht, Betreuungsangeboten und Kontaktformular für werdende Mütter – als Vorschau in 3 Minuten.",
-    keywords: ["Website Hebamme", "Hebamme Website erstellen", "Homepage Hebammenpraxis"],
+    keywords: [
+      "Website Hebamme",
+      "Hebamme Website erstellen",
+      "Homepage Hebammenpraxis",
+    ],
     features: [
       {
         icon: "👶",
@@ -1312,10 +1645,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für eine Hebamme?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Hebammen-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meine freien Betreuungskapazitäten kommunizieren?", a: "Ja. Texte und Verfügbarkeitshinweise lassen sich im Kundenbereich jederzeit aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Hebammen-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für eine Hebamme?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Hebammen-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meine freien Betreuungskapazitäten kommunizieren?",
+        a: "Ja. Texte und Verfügbarkeitshinweise lassen sich im Kundenbereich jederzeit aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Hebammen-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1323,10 +1668,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "pilates",
     displayName: "Pilatesstudio",
     title: "Website für Pilatesstudio erstellen",
-    h1Template: "KI-Website für dein Pilatesstudio{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für dein Pilatesstudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Pilatesstudios ab 19,90 €/Monat. Mit Kursplan, Lehrer-Profilen und Probestunden-Anfrage – als Vorschau in 3 Minuten.",
-    keywords: ["Website Pilatesstudio", "Pilates Studio Website erstellen", "Homepage Pilates"],
+    keywords: [
+      "Website Pilatesstudio",
+      "Pilates Studio Website erstellen",
+      "Homepage Pilates",
+    ],
     features: [
       {
         icon: "🧘",
@@ -1345,10 +1695,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Pilatesstudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Pilates-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich meinen Kursplan und Preise selbst aktualisieren?", a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Pilates-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Pilatesstudio?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Pilates-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich meinen Kursplan und Preise selbst aktualisieren?",
+        a: "Ja. Alle Inhalte lassen sich im Kundenbereich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Pilates-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1359,7 +1721,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Reisebüro{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Reisebüros ab 19,90 €/Monat. Mit Reiseangeboten, Beratungsleistungen und Kontaktmöglichkeit – von der KI erstellt.",
-    keywords: ["Website Reisebüro", "Reisebüro Website erstellen", "Homepage Reisevermittlung"],
+    keywords: [
+      "Website Reisebüro",
+      "Reisebüro Website erstellen",
+      "Homepage Reisevermittlung",
+    ],
     features: [
       {
         icon: "✈️",
@@ -1378,10 +1744,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Reisebüro?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Reisebüro-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich aktuelle Reiseangebote auf der Website veröffentlichen?", a: "Ja. Angebote und Texte lassen sich im Kundenbereich jederzeit aktualisieren." },
-      { q: "Brauche ich technisches Wissen für meine Reisebüro-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Reisebüro?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Reisebüro-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich aktuelle Reiseangebote auf der Website veröffentlichen?",
+        a: "Ja. Angebote und Texte lassen sich im Kundenbereich jederzeit aktualisieren.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Reisebüro-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1389,10 +1767,15 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     slug: "hausreinigung",
     displayName: "Hausreinigung",
     title: "Website für Hausreinigung erstellen",
-    h1Template: "KI-Website für deinen Hausreinigungsservice{city} – Vorschau in 3 Minuten",
+    h1Template:
+      "KI-Website für deinen Hausreinigungsservice{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Hausreinigungsservices ab 19,90 €/Monat. Mit Leistungsübersicht, Preisangaben und Kontaktformular – als Vorschau in 3 Minuten.",
-    keywords: ["Website Hausreinigung", "Reinigungsservice Website erstellen", "Homepage Haushaltsreinigung"],
+    keywords: [
+      "Website Hausreinigung",
+      "Reinigungsservice Website erstellen",
+      "Homepage Haushaltsreinigung",
+    ],
     features: [
       {
         icon: "🧹",
@@ -1411,10 +1794,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für einen Reinigungsservice?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Reinigungsservice-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich mein Einsatzgebiet und meine Leistungspakete beschreiben?", a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen." },
-      { q: "Brauche ich technisches Wissen für meine Reinigungsservice-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für einen Reinigungsservice?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Reinigungsservice-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich mein Einsatzgebiet und meine Leistungspakete beschreiben?",
+        a: "Ja. Alle Texte lassen sich im Kundenbereich jederzeit anpassen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Reinigungsservice-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 
@@ -1425,7 +1820,11 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
     h1Template: "KI-Website für dein Fotostudio{city} – Vorschau in 3 Minuten",
     description:
       "Professionelle Website für Fotostudios ab 19,90 €/Monat. Mit Portfolio, Leistungsangeboten und Buchungsanfrage – von der KI erstellt.",
-    keywords: ["Website Fotostudio", "Fotograf Website erstellen", "Homepage Fotografen"],
+    keywords: [
+      "Website Fotostudio",
+      "Fotograf Website erstellen",
+      "Homepage Fotografen",
+    ],
     features: [
       {
         icon: "📷",
@@ -1444,10 +1843,22 @@ export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
       },
     ],
     faqs: [
-      { q: "Was kostet eine Website für ein Fotostudio?", a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr." },
-      { q: "Wie schnell ist meine Fotostudio-Website online?", a: "In 3 Minuten erstellt die KI deine fertige Website." },
-      { q: "Kann ich mein Fotoportfolio mit eigenen Bildern befüllen?", a: "Ja. Im Kundenbereich lassen sich Fotos und Beschreibungen jederzeit hochladen." },
-      { q: "Brauche ich technisches Wissen für meine Fotostudio-Website?", a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse." },
+      {
+        q: "Was kostet eine Website für ein Fotostudio?",
+        a: "Mit Pageblitz ab 19,90 €/Monat – 7 Tage gratis, keine Einrichtungsgebühr.",
+      },
+      {
+        q: "Wie schnell ist meine Fotostudio-Website online?",
+        a: "In 3 Minuten erstellt die KI deine fertige Website.",
+      },
+      {
+        q: "Kann ich mein Fotoportfolio mit eigenen Bildern befüllen?",
+        a: "Ja. Im Kundenbereich lassen sich Fotos und Beschreibungen jederzeit hochladen.",
+      },
+      {
+        q: "Brauche ich technisches Wissen für meine Fotostudio-Website?",
+        a: "Nein. Pageblitz funktioniert ohne jegliche IT-Kenntnisse.",
+      },
     ],
   },
 };
@@ -1470,7 +1881,13 @@ export const DE_CITIES: SeoCity[] = [
     name: "Berlin",
     slug: "berlin",
     region: "Berlin",
-    districts: ["Mitte", "Prenzlauer Berg", "Kreuzberg", "Charlottenburg", "Neukölln"],
+    districts: [
+      "Mitte",
+      "Prenzlauer Berg",
+      "Kreuzberg",
+      "Charlottenburg",
+      "Neukölln",
+    ],
     intro:
       "Berlin ist der härteste Kiez-Markt Deutschlands: In Prenzlauer Berg oder Neukölln liegen oft ein Dutzend Betriebe derselben Branche in Laufweite. Wer hier gefunden werden will, braucht vor allem eine Website, die den Stadtteil klar benennt – die meisten Suchanfragen laufen nicht über „Berlin“, sondern über den Kiez. Dazu kommt ein hoher Anteil an Neuzugezogenen, die einen Betrieb ausschließlich online auswählen.",
   },
@@ -1486,7 +1903,13 @@ export const DE_CITIES: SeoCity[] = [
     name: "München",
     slug: "muenchen",
     region: "Bayern",
-    districts: ["Schwabing", "Haidhausen", "Maxvorstadt", "Sendling", "Giesing"],
+    districts: [
+      "Schwabing",
+      "Haidhausen",
+      "Maxvorstadt",
+      "Sendling",
+      "Giesing",
+    ],
     intro:
       "In München sind Gewerbemieten hoch, und das prägt die Kundenerwartung: Wer hier Premiumpreise aufruft, muss das auf der Website auch zeigen – über Referenzen, Qualifikationen und saubere Fotos statt über Rabatte. Gleichzeitig ist der Anteil englischsprachiger Kundschaft in Schwabing und der Maxvorstadt spürbar höher als im Bundesschnitt.",
   },
@@ -1502,7 +1925,13 @@ export const DE_CITIES: SeoCity[] = [
     name: "Frankfurt am Main",
     slug: "frankfurt",
     region: "Hessen",
-    districts: ["Bornheim", "Sachsenhausen", "Nordend", "Bockenheim", "Westend"],
+    districts: [
+      "Bornheim",
+      "Sachsenhausen",
+      "Nordend",
+      "Bockenheim",
+      "Westend",
+    ],
     intro:
       "Frankfurt hat einen ungewöhnlich hohen Anteil an Pendlern und Kurzzeit-Bewohnern. Für lokale Betriebe heißt das: Ein großer Teil der Kundschaft kennt die Stadt kaum und entscheidet rein über Google – ohne Empfehlung, ohne Vorgeschichte. Online-Terminbuchung und mehrsprachige Angaben wirken hier stärker als in vergleichbar großen Städten.",
   },
@@ -1510,14 +1939,19 @@ export const DE_CITIES: SeoCity[] = [
     name: "Stuttgart",
     slug: "stuttgart",
     region: "Baden-Württemberg",
-    districts: ["Bad Cannstatt", "Vaihingen", "Feuerbach", "Degerloch", "Stuttgart-West"],
+    districts: [
+      "Bad Cannstatt",
+      "Vaihingen",
+      "Feuerbach",
+      "Degerloch",
+      "Stuttgart-West",
+    ],
     intro:
       "Stuttgart liegt im Kessel, und die Topografie prägt das Suchverhalten: Wer in Degerloch wohnt, sucht selten einen Betrieb in Feuerbach. Lokale Sichtbarkeit im eigenen Stadtbezirk schlägt hier stadtweite Reichweite. Dazu kommt eine mittelständisch geprägte Kundschaft, die Wert auf Handwerksqualität und belastbare Angaben legt – Meisterbrief und Zertifikate gehören sichtbar auf die Seite.",
   },
 ];
 
 // ── Per-industry visual style + relevant add-ons ─────────────────────────────
-
 
 // ── Icon-System (Relaunch 2026-08-29): Lucide-Linien-Icons statt OS-Emojis,
 // passend zur Startseite. Schlüssel ohne Variation Selector (FE0F);
@@ -1569,88 +2003,345 @@ function iconSvg(emoji: string): string {
 }
 
 interface IndustryStyle {
-  accent: string;     // CTA + accent color
-  heroBg: string;     // gradient for mock-browser hero
-  orb: string;        // rgba for background orbs
+  accent: string; // CTA + accent color
+  heroBg: string; // gradient for mock-browser hero
+  orb: string; // rgba for background orbs
   previewPhoto: string;
 }
 
 const INDUSTRY_STYLES: Record<string, IndustryStyle> = {
-  friseur:        { accent: "#c8a96e", heroBg: "linear-gradient(135deg,#1c1610 0%,#2d2212 100%)", orb: "rgba(200,169,110,.13)", previewPhoto: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80&auto=format&fit=crop" },
-  restaurant:     { accent: "#f97316", heroBg: "linear-gradient(135deg,#1c1008 0%,#2d1a0c 100%)", orb: "rgba(249,115,22,.12)",  previewPhoto: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=80&auto=format&fit=crop" },
-  handwerk:       { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1e08 100%)", orb: "rgba(245,158,11,.12)",  previewPhoto: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1200&q=80&auto=format&fit=crop" },
-  zahnarzt:       { accent: "#38bdf8", heroBg: "linear-gradient(135deg,#061828 0%,#0f2440 100%)", orb: "rgba(56,189,248,.12)",  previewPhoto: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=1200&q=80&auto=format&fit=crop" },
-  kosmetik:       { accent: "#f472b6", heroBg: "linear-gradient(135deg,#1c0a18 0%,#2d1028 100%)", orb: "rgba(244,114,182,.12)", previewPhoto: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80&auto=format&fit=crop" },
-  fitness:        { accent: "#ef4444", heroBg: "linear-gradient(135deg,#1a0808 0%,#2d1010 100%)", orb: "rgba(239,68,68,.12)",   previewPhoto: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80&auto=format&fit=crop" },
-  arzt:           { accent: "#34d399", heroBg: "linear-gradient(135deg,#061614 0%,#0a2420 100%)", orb: "rgba(52,211,153,.12)",  previewPhoto: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1200&q=80&auto=format&fit=crop" },
-  immobilien:     { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)", orb: "rgba(129,140,248,.12)", previewPhoto: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop" },
-  rechtsanwalt:   { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)", orb: "rgba(99,102,241,.12)",  previewPhoto: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?w=1200&q=80&auto=format&fit=crop" },
-  steuerberater:  { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop" },
-  fotograf:       { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80&auto=format&fit=crop" },
-  physiotherapie: { accent: "#22d3ee", heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)", orb: "rgba(34,211,238,.12)",  previewPhoto: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80&auto=format&fit=crop" },
-  nagelstudio:    { accent: "#c084fc", heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)", orb: "rgba(192,132,252,.12)", previewPhoto: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80&auto=format&fit=crop" },
-  baeckerei:      { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80&auto=format&fit=crop" },
-  reinigung:      { accent: "#60a5fa", heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)", orb: "rgba(96,165,250,.12)",  previewPhoto: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80&auto=format&fit=crop" },
-  hundesalon:     { accent: "#a78bfa", heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)", orb: "rgba(167,139,250,.12)", previewPhoto: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&q=80&auto=format&fit=crop" },
-  musikschule:    { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=1200&q=80&auto=format&fit=crop" },
-  elektriker:     { accent: "#f59e0b", heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1a04 100%)", orb: "rgba(245,158,11,.12)",  previewPhoto: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=80&auto=format&fit=crop" },
-  maler:          { accent: "#14b8a6", heroBg: "linear-gradient(135deg,#041414 0%,#082020 100%)", orb: "rgba(20,184,166,.12)",  previewPhoto: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=1200&q=80&auto=format&fit=crop" },
-  klempner:       { accent: "#64748b", heroBg: "linear-gradient(135deg,#0c1018 0%,#141c28 100%)", orb: "rgba(100,116,139,.12)", previewPhoto: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop" },
-  gaertner:       { accent: "#22c55e", heroBg: "linear-gradient(135deg,#061408 0%,#0a2010 100%)", orb: "rgba(34,197,94,.12)",   previewPhoto: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80&auto=format&fit=crop" },
-  tierarzt:       { accent: "#fb923c", heroBg: "linear-gradient(135deg,#1c1008 0%,#2c1808 100%)", orb: "rgba(251,146,60,.12)",  previewPhoto: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1200&q=80&auto=format&fit=crop" },
-  apotheke:       { accent: "#10b981", heroBg: "linear-gradient(135deg,#041410 0%,#082018 100%)", orb: "rgba(16,185,129,.12)",  previewPhoto: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80&auto=format&fit=crop" },
-  fahrschule:     { accent: "#6366f1", heroBg: "linear-gradient(135deg,#0a0c20 0%,#121428 100%)", orb: "rgba(99,102,241,.12)",  previewPhoto: "https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?w=1200&q=80&auto=format&fit=crop" },
-  architekt:      { accent: "#94a3b8", heroBg: "linear-gradient(135deg,#0c1014 0%,#141c24 100%)", orb: "rgba(148,163,184,.12)", previewPhoto: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80&auto=format&fit=crop" },
-  buchhaltung:    { accent: "#818cf8", heroBg: "linear-gradient(135deg,#0c0c1e 0%,#14142c 100%)", orb: "rgba(129,140,248,.12)", previewPhoto: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&auto=format&fit=crop" },
-  ergotherapie:   { accent: "#06b6d4", heroBg: "linear-gradient(135deg,#040e14 0%,#081820 100%)", orb: "rgba(6,182,212,.12)",   previewPhoto: "https://images.unsplash.com/photo-1594737626072-90dc274bc2bd?w=1200&q=80&auto=format&fit=crop" },
-  hebamme:        { accent: "#f9a8d4", heroBg: "linear-gradient(135deg,#1c0a14 0%,#2c1020 100%)", orb: "rgba(249,168,212,.12)", previewPhoto: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=1200&q=80&auto=format&fit=crop" },
-  pilates:        { accent: "#8b5cf6", heroBg: "linear-gradient(135deg,#100a1e 0%,#1c1030 100%)", orb: "rgba(139,92,246,.12)",  previewPhoto: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80&auto=format&fit=crop" },
-  fotostudio:     { accent: "#fbbf24", heroBg: "linear-gradient(135deg,#161408 0%,#24200c 100%)", orb: "rgba(251,191,36,.12)",  previewPhoto: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80&auto=format&fit=crop" },
+  friseur: {
+    accent: "#c8a96e",
+    heroBg: "linear-gradient(135deg,#1c1610 0%,#2d2212 100%)",
+    orb: "rgba(200,169,110,.13)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80&auto=format&fit=crop",
+  },
+  restaurant: {
+    accent: "#f97316",
+    heroBg: "linear-gradient(135deg,#1c1008 0%,#2d1a0c 100%)",
+    orb: "rgba(249,115,22,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1200&q=80&auto=format&fit=crop",
+  },
+  handwerk: {
+    accent: "#f59e0b",
+    heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1e08 100%)",
+    orb: "rgba(245,158,11,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1200&q=80&auto=format&fit=crop",
+  },
+  zahnarzt: {
+    accent: "#38bdf8",
+    heroBg: "linear-gradient(135deg,#061828 0%,#0f2440 100%)",
+    orb: "rgba(56,189,248,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=1200&q=80&auto=format&fit=crop",
+  },
+  kosmetik: {
+    accent: "#f472b6",
+    heroBg: "linear-gradient(135deg,#1c0a18 0%,#2d1028 100%)",
+    orb: "rgba(244,114,182,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=1200&q=80&auto=format&fit=crop",
+  },
+  fitness: {
+    accent: "#ef4444",
+    heroBg: "linear-gradient(135deg,#1a0808 0%,#2d1010 100%)",
+    orb: "rgba(239,68,68,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&q=80&auto=format&fit=crop",
+  },
+  arzt: {
+    accent: "#34d399",
+    heroBg: "linear-gradient(135deg,#061614 0%,#0a2420 100%)",
+    orb: "rgba(52,211,153,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1200&q=80&auto=format&fit=crop",
+  },
+  immobilien: {
+    accent: "#818cf8",
+    heroBg: "linear-gradient(135deg,#0c0c1e 0%,#141428 100%)",
+    orb: "rgba(129,140,248,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=80&auto=format&fit=crop",
+  },
+  rechtsanwalt: {
+    accent: "#6366f1",
+    heroBg: "linear-gradient(135deg,#0a0c20 0%,#121430 100%)",
+    orb: "rgba(99,102,241,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?w=1200&q=80&auto=format&fit=crop",
+  },
+  steuerberater: {
+    accent: "#60a5fa",
+    heroBg: "linear-gradient(135deg,#080c18 0%,#101c2c 100%)",
+    orb: "rgba(96,165,250,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1200&q=80&auto=format&fit=crop",
+  },
+  fotograf: {
+    accent: "#fbbf24",
+    heroBg: "linear-gradient(135deg,#161408 0%,#241e0c 100%)",
+    orb: "rgba(251,191,36,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&q=80&auto=format&fit=crop",
+  },
+  physiotherapie: {
+    accent: "#22d3ee",
+    heroBg: "linear-gradient(135deg,#060f14 0%,#0a1a20 100%)",
+    orb: "rgba(34,211,238,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=80&auto=format&fit=crop",
+  },
+  nagelstudio: {
+    accent: "#c084fc",
+    heroBg: "linear-gradient(135deg,#180a20 0%,#280e34 100%)",
+    orb: "rgba(192,132,252,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80&auto=format&fit=crop",
+  },
+  baeckerei: {
+    accent: "#fbbf24",
+    heroBg: "linear-gradient(135deg,#1c1208 0%,#2c1e08 100%)",
+    orb: "rgba(251,191,36,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&q=80&auto=format&fit=crop",
+  },
+  reinigung: {
+    accent: "#60a5fa",
+    heroBg: "linear-gradient(135deg,#08101c 0%,#0e2040 100%)",
+    orb: "rgba(96,165,250,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&q=80&auto=format&fit=crop",
+  },
+  hundesalon: {
+    accent: "#a78bfa",
+    heroBg: "linear-gradient(135deg,#100c1e 0%,#1e1434 100%)",
+    orb: "rgba(167,139,250,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&q=80&auto=format&fit=crop",
+  },
+  musikschule: {
+    accent: "#fb923c",
+    heroBg: "linear-gradient(135deg,#1c1008 0%,#2a1804 100%)",
+    orb: "rgba(251,146,60,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=1200&q=80&auto=format&fit=crop",
+  },
+  elektriker: {
+    accent: "#f59e0b",
+    heroBg: "linear-gradient(135deg,#1c1508 0%,#2c1a04 100%)",
+    orb: "rgba(245,158,11,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&q=80&auto=format&fit=crop",
+  },
+  maler: {
+    accent: "#14b8a6",
+    heroBg: "linear-gradient(135deg,#041414 0%,#082020 100%)",
+    orb: "rgba(20,184,166,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=1200&q=80&auto=format&fit=crop",
+  },
+  klempner: {
+    accent: "#64748b",
+    heroBg: "linear-gradient(135deg,#0c1018 0%,#141c28 100%)",
+    orb: "rgba(100,116,139,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80&auto=format&fit=crop",
+  },
+  gaertner: {
+    accent: "#22c55e",
+    heroBg: "linear-gradient(135deg,#061408 0%,#0a2010 100%)",
+    orb: "rgba(34,197,94,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&q=80&auto=format&fit=crop",
+  },
+  tierarzt: {
+    accent: "#fb923c",
+    heroBg: "linear-gradient(135deg,#1c1008 0%,#2c1808 100%)",
+    orb: "rgba(251,146,60,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=1200&q=80&auto=format&fit=crop",
+  },
+  apotheke: {
+    accent: "#10b981",
+    heroBg: "linear-gradient(135deg,#041410 0%,#082018 100%)",
+    orb: "rgba(16,185,129,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80&auto=format&fit=crop",
+  },
+  fahrschule: {
+    accent: "#6366f1",
+    heroBg: "linear-gradient(135deg,#0a0c20 0%,#121428 100%)",
+    orb: "rgba(99,102,241,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1502161254066-6c74afbf07aa?w=1200&q=80&auto=format&fit=crop",
+  },
+  architekt: {
+    accent: "#94a3b8",
+    heroBg: "linear-gradient(135deg,#0c1014 0%,#141c24 100%)",
+    orb: "rgba(148,163,184,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=80&auto=format&fit=crop",
+  },
+  buchhaltung: {
+    accent: "#818cf8",
+    heroBg: "linear-gradient(135deg,#0c0c1e 0%,#14142c 100%)",
+    orb: "rgba(129,140,248,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=80&auto=format&fit=crop",
+  },
+  ergotherapie: {
+    accent: "#06b6d4",
+    heroBg: "linear-gradient(135deg,#040e14 0%,#081820 100%)",
+    orb: "rgba(6,182,212,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1594737626072-90dc274bc2bd?w=1200&q=80&auto=format&fit=crop",
+  },
+  hebamme: {
+    accent: "#f9a8d4",
+    heroBg: "linear-gradient(135deg,#1c0a14 0%,#2c1020 100%)",
+    orb: "rgba(249,168,212,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=1200&q=80&auto=format&fit=crop",
+  },
+  pilates: {
+    accent: "#8b5cf6",
+    heroBg: "linear-gradient(135deg,#100a1e 0%,#1c1030 100%)",
+    orb: "rgba(139,92,246,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80&auto=format&fit=crop",
+  },
+  fotostudio: {
+    accent: "#fbbf24",
+    heroBg: "linear-gradient(135deg,#161408 0%,#24200c 100%)",
+    orb: "rgba(251,191,36,.12)",
+    previewPhoto:
+      "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1200&q=80&auto=format&fit=crop",
+  },
 };
 
 const DEFAULT_INDUSTRY_STYLE: IndustryStyle = {
   accent: "#e91e8c",
   heroBg: "linear-gradient(135deg,#1a0a14 0%,#2a1020 100%)",
   orb: "rgba(233,30,140,.12)",
-  previewPhoto: "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1200&q=80&auto=format&fit=crop",
+  previewPhoto:
+    "https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1200&q=80&auto=format&fit=crop",
 };
 
 // Add-ons relevant per industry – avoids e.g. "Speisekarte" for a Zahnarzt
-interface AddonDef { icon: string; title: string; desc: string; price: string }
+interface AddonDef {
+  icon: string;
+  title: string;
+  desc: string;
+  price: string;
+}
 
 function getRelevantAddons(slug: string): AddonDef[] {
   const ALL: Record<string, AddonDef> = {
-    aiChat:    { icon: "🤖", title: "KI-Chat Assistent",  desc: "Beantwortet Kundenfragen rund um die Uhr – automatisch auf dein Unternehmen trainiert.", price: "+ 9,90 €/Mo." },
-    booking:   { icon: "📅", title: "Terminbuchung",       desc: "Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.",      price: "+ 4,90 €/Mo." },
-    contact:   { icon: "✉️", title: "Kontaktformular",     desc: "Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.",               price: "+ 3,90 €/Mo." },
-    gallery:   { icon: "🖼️", title: "Bildergalerie",       desc: "Präsentiere deine Arbeiten, Räumlichkeiten oder Produkte in einer professionellen Galerie.", price: "+ 3,90 €/Mo." },
-    team:      { icon: "👥", title: "Team-Sektion",        desc: "Stelle dein Team mit Fotos, Namen und Positionen professionell vor.",                        price: "+ 3,90 €/Mo." },
-    menu:      { icon: "🍽️", title: "Speisekarte",         desc: "Digitale Speisekarte mit Kategorien, Beschreibungen und Preisen – immer aktuell.",          price: "+ 3,90 €/Mo." },
-    pricelist: { icon: "💶", title: "Preisliste",           desc: "Zeige dein Leistungsangebot und deine Preise übersichtlich auf der Website.",               price: "+ 3,90 €/Mo." },
+    aiChat: {
+      icon: "🤖",
+      title: "KI-Chat Assistent",
+      desc: "Beantwortet Kundenfragen rund um die Uhr – automatisch auf dein Unternehmen trainiert.",
+      price: "+ 9,90 €/Mo.",
+    },
+    booking: {
+      icon: "📅",
+      title: "Terminbuchung",
+      desc: "Kunden buchen direkt auf deiner Website einen Termin – ohne Anruf, ohne Wartezeit.",
+      price: "+ 4,90 €/Mo.",
+    },
+    contact: {
+      icon: "✉️",
+      title: "Kontaktformular",
+      desc: "Kundenanfragen direkt per E-Mail – DSGVO-konform und sofort einsatzbereit.",
+      price: "+ 3,90 €/Mo.",
+    },
+    gallery: {
+      icon: "🖼️",
+      title: "Bildergalerie",
+      desc: "Präsentiere deine Arbeiten, Räumlichkeiten oder Produkte in einer professionellen Galerie.",
+      price: "+ 3,90 €/Mo.",
+    },
+    team: {
+      icon: "👥",
+      title: "Team-Sektion",
+      desc: "Stelle dein Team mit Fotos, Namen und Positionen professionell vor.",
+      price: "+ 3,90 €/Mo.",
+    },
+    menu: {
+      icon: "🍽️",
+      title: "Speisekarte",
+      desc: "Digitale Speisekarte mit Kategorien, Beschreibungen und Preisen – immer aktuell.",
+      price: "+ 3,90 €/Mo.",
+    },
+    pricelist: {
+      icon: "💶",
+      title: "Preisliste",
+      desc: "Zeige dein Leistungsangebot und deine Preise übersichtlich auf der Website.",
+      price: "+ 3,90 €/Mo.",
+    },
   };
 
   const SETS: Record<string, (keyof typeof ALL)[]> = {
-    restaurant:     ["aiChat", "booking", "contact", "gallery", "team", "menu", "pricelist"],
-    baeckerei:      ["contact", "gallery", "team", "menu", "pricelist"],
-    zahnarzt:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    arzt:           ["aiChat", "booking", "contact", "team", "pricelist"],
+    restaurant: [
+      "aiChat",
+      "booking",
+      "contact",
+      "gallery",
+      "team",
+      "menu",
+      "pricelist",
+    ],
+    baeckerei: ["contact", "gallery", "team", "menu", "pricelist"],
+    zahnarzt: ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    arzt: ["aiChat", "booking", "contact", "team", "pricelist"],
     physiotherapie: ["aiChat", "booking", "contact", "team", "pricelist"],
-    fitness:        ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    friseur:        ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    kosmetik:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    nagelstudio:    ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    hundesalon:     ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    handwerk:       ["aiChat", "contact", "gallery", "team", "pricelist"],
-    reinigung:      ["aiChat", "contact", "team", "pricelist"],
-    immobilien:     ["aiChat", "contact", "gallery", "team"],
-    rechtsanwalt:   ["aiChat", "booking", "contact", "team"],
-    steuerberater:  ["aiChat", "booking", "contact", "team"],
-    fotograf:       ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
-    musikschule:    ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    fitness: ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    friseur: ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    kosmetik: ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    nagelstudio: [
+      "aiChat",
+      "booking",
+      "contact",
+      "gallery",
+      "team",
+      "pricelist",
+    ],
+    hundesalon: [
+      "aiChat",
+      "booking",
+      "contact",
+      "gallery",
+      "team",
+      "pricelist",
+    ],
+    handwerk: ["aiChat", "contact", "gallery", "team", "pricelist"],
+    reinigung: ["aiChat", "contact", "team", "pricelist"],
+    immobilien: ["aiChat", "contact", "gallery", "team"],
+    rechtsanwalt: ["aiChat", "booking", "contact", "team"],
+    steuerberater: ["aiChat", "booking", "contact", "team"],
+    fotograf: ["aiChat", "booking", "contact", "gallery", "team", "pricelist"],
+    musikschule: [
+      "aiChat",
+      "booking",
+      "contact",
+      "gallery",
+      "team",
+      "pricelist",
+    ],
   };
 
-  const keys = SETS[slug] ?? ["aiChat", "booking", "contact", "gallery", "team", "pricelist"];
-  return keys.map((k) => ALL[k]);
+  const keys = SETS[slug] ?? [
+    "aiChat",
+    "booking",
+    "contact",
+    "gallery",
+    "team",
+    "pricelist",
+  ];
+  return keys.map(k => ALL[k]);
 }
 
 // ── Inline CSS (shared across all landing pages) ─────────────────────────────
@@ -1973,7 +2664,7 @@ function buildFaqSchema(faqs: Array<{ q: string; a: string }>): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
+    mainEntity: faqs.map(f => ({
       "@type": "Question",
       name: f.q,
       acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -2003,7 +2694,11 @@ function buildWebPageSchema(
 function buildBreadcrumbSchema(industry: SeoIndustry, city?: SeoCity): string {
   const items: Array<{ position: number; name: string; item?: string }> = [
     { position: 1, name: "Startseite", item: "https://pageblitz.de" },
-    { position: 2, name: "Website erstellen", item: "https://pageblitz.de/website-erstellen" },
+    {
+      position: 2,
+      name: "Website erstellen",
+      item: "https://pageblitz.de/website-erstellen",
+    },
     {
       position: 3,
       name: `Website für ${industry.displayName}`,
@@ -2016,7 +2711,7 @@ function buildBreadcrumbSchema(industry: SeoIndustry, city?: SeoCity): string {
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((i) => ({
+    itemListElement: items.map(i => ({
       "@type": "ListItem",
       position: i.position,
       name: i.name,
@@ -2026,7 +2721,6 @@ function buildBreadcrumbSchema(industry: SeoIndustry, city?: SeoCity): string {
 }
 
 // ── HTML generator ────────────────────────────────────────────────────────────
-
 
 // ── Hero-Personas (2026-08-29): pro Branche ein KI-Freisteller, in dem sich
 // die Zielgruppe wiederfindet. Drei Branchen nutzen die bestehenden
@@ -2060,13 +2754,13 @@ export function generateLandingPageHTML(
   const h1 = industry.h1Template.replace("{city}", cityStr);
 
   const otherIndustries = Object.values(SEO_INDUSTRIES).filter(
-    (i) => i.slug !== industry.slug
+    i => i.slug !== industry.slug
   );
-  const otherCities = city ? DE_CITIES.filter((c) => c.slug !== city.slug) : [];
+  const otherCities = city ? DE_CITIES.filter(c => c.slug !== city.slug) : [];
 
   const industryLinksHtml = otherIndustries
     .map(
-      (i) =>
+      i =>
         `<a class="industry-link" href="/website-erstellen/${i.slug}${city ? "/" + city.slug : ""}">Website für ${i.displayName}</a>`
     )
     .join("\n    ");
@@ -2074,12 +2768,12 @@ export function generateLandingPageHTML(
   const cityLinksHtml = city
     ? `<div class="cities"><div class="container"><h3>${industry.displayName}-Website in anderen Städten</h3><div class="city-links">\n    ${otherCities
         .map(
-          (c) =>
+          c =>
             `<a class="city-link" href="/website-erstellen/${industry.slug}/${c.slug}">${c.name}</a>`
         )
         .join("\n    ")}\n  </div></div></div>`
     : `<div class="cities"><div class="container"><h3>${industry.displayName}-Website in deiner Stadt</h3><div class="city-links">\n    ${DE_CITIES.map(
-        (c) =>
+        c =>
           `<a class="city-link" href="/website-erstellen/${industry.slug}/${c.slug}">${c.name}</a>`
       ).join("\n    ")}\n  </div></div></div>`;
 
@@ -2110,7 +2804,10 @@ export function generateLandingPageHTML(
   // Industry-relevant add-ons
   const relevantAddons = getRelevantAddons(industry.slug);
   const addonsHtml = relevantAddons
-    .map((a, i) => `<div class="addon-card${i >= 3 ? ' addon-more' : ''}"><div class="addon-icon">${iconSvg(a.icon)}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`)
+    .map(
+      (a, i) =>
+        `<div class="addon-card${i >= 3 ? " addon-more" : ""}"><div class="addon-icon">${iconSvg(a.icon)}</div><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.desc)}</p><span class="addon-price">${escapeHtml(a.price)}</span></div>`
+    )
     .join("\n      ");
 
   const showExpandBtn = relevantAddons.length > 3;
@@ -2118,14 +2815,14 @@ export function generateLandingPageHTML(
   // Pricing add-ons list (matches relevant ones)
   const pricingAddonsHtml = relevantAddons
     .map(
-      (a) =>
+      a =>
         `<div class="pricing-addon-row"><span>${iconSvg(a.icon)} ${escapeHtml(a.title)}</span><span>${escapeHtml(a.price)}</span></div>`
     )
     .join("\n          ");
 
   const featuresHtml = industry.features
     .map(
-      (f) =>
+      f =>
         `<div class="feature-card"><div class="feature-icon">${iconSvg(f.icon)}</div><h3>${escapeHtml(f.title)}</h3><p>${escapeHtml(f.text)}</p></div>`
     )
     .join("\n      ");
@@ -2149,7 +2846,7 @@ export function generateLandingPageHTML(
 
   const faqsHtml = pageFaqs
     .map(
-      (f) =>
+      f =>
         `<details><summary>${escapeHtml(f.q)}</summary><div class="faq-answer"><p>${escapeHtml(f.a)}</p></div></details>`
     )
     .join("\n    ");
@@ -2164,7 +2861,8 @@ export function generateLandingPageHTML(
   const mockCardsHtml = industry.features
     .slice(0, 3)
     .map(
-      (f) => `<div class="mw-card"><div class="mw-card-icon">${iconSvg(f.icon)}</div><div class="mw-card-line1"></div><div class="mw-card-line2"></div></div>`
+      f =>
+        `<div class="mw-card"><div class="mw-card-icon">${iconSvg(f.icon)}</div><div class="mw-card-line1"></div><div class="mw-card-line2"></div></div>`
     )
     .join("\n          ");
 
@@ -2326,7 +3024,7 @@ ${localSectionHtml}
     <div class="addons-grid">
       ${addonsHtml}
     </div>
-    ${showExpandBtn ? `<button class="addon-expand-btn" id="addon-expand-btn" onclick="expandAddons()">Weitere Add-ons anzeigen ↓</button>` : ''}
+    ${showExpandBtn ? `<button class="addon-expand-btn" id="addon-expand-btn" onclick="expandAddons()">Weitere Add-ons anzeigen ↓</button>` : ""}
   </div>
 </section>
 
@@ -2455,11 +3153,14 @@ function expandAddons(){
 
 export function generateOverviewHTML(): string {
   const canonical = "https://pageblitz.de/website-erstellen";
-  const title = "Website erstellen für Kleinunternehmen | Pageblitz – KI-Website-Generator";
+  const title =
+    "Website erstellen für Kleinunternehmen | Pageblitz – KI-Website-Generator";
   const desc =
     "Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. Über 17 Branchen – ab 19,90 €/Monat.";
 
-  const overviewCss = SHARED_CSS + `
+  const overviewCss =
+    SHARED_CSS +
+    `
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
 .industry-card{display:flex;flex-direction:column;align-items:center;background:#fdfcfa;border:1px solid #ddd6c9;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:background-color .2s,border-color .2s,transform .2s;color:#1d1a17}
 .industry-card:hover{border-color:#1f5f4b;background:#fff;transform:translateY(-2px)}
@@ -2472,7 +3173,7 @@ export function generateOverviewHTML(): string {
 
   const industryCardsHtml = Object.values(SEO_INDUSTRIES)
     .map(
-      (i) =>
+      i =>
         `<a class="industry-card" href="/website-erstellen/${i.slug}"><div class="icon">${iconSvg(i.features[0]?.icon ?? "🌐")}</div><h3>${escapeHtml(i.displayName)}</h3><p>${escapeHtml(i.title)}</p></a>`
     )
     .join("\n    ");
