@@ -397,15 +397,21 @@ describe("SSR routes", () => {
       });
       const app = buildAppWithFallback();
       // 1) Tippfehler-Pfad → 404 (geteilter Slug-Eintrag wird befüllt)
-      const typo = await request(app).get("/site/brandt-404-vs-page/tippfehler-pfad");
+      const typo = await request(app).get(
+        "/site/brandt-404-vs-page/tippfehler-pfad"
+      );
       expect(typo.status).toBe(404);
       // 2) echte Unterseite, noch nie gerendert → MUSS 200 + Page-Inhalt liefern
-      const page = await request(app).get("/site/brandt-404-vs-page/leistungen-im-detail");
+      const page = await request(app).get(
+        "/site/brandt-404-vs-page/leistungen-im-detail"
+      );
       expect(page.status).toBe(200);
       expect(page.text).toContain("Leistungen im Detail");
       // 3) weiterer Tippfehler → 404 aus dem Cache, kein neuer DB-Zugriff nötig
       const calls = (getWebsiteBySlug as Mock).mock.calls.length;
-      const typo2 = await request(app).get("/site/brandt-404-vs-page/noch-ein-tippfehler");
+      const typo2 = await request(app).get(
+        "/site/brandt-404-vs-page/noch-ein-tippfehler"
+      );
       expect(typo2.status).toBe(404);
       expect((getWebsiteBySlug as Mock).mock.calls.length).toBe(calls);
     });

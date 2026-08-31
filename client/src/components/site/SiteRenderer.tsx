@@ -25,11 +25,20 @@ const DECO_TOGGLE_CSS = `
 .pb-site[data-pb-deco="off"] .pb-deco{display:none!important}
 `;
 
-/** Dezentes „Erstellt mit Pageblitz"-Badge (Dashboard-Schalter showBranding). */
+/**
+ * Dezentes „Mit ♥ erstellt mit ⚡ Pageblitz"-Badge (Dashboard-Schalter
+ * showBranding). Der siteEnhancer verschiebt es beim Laden IN den
+ * Pack-Footer (Betreiber-Wunsch 2026-08-31: integriert statt
+ * „runterhängend"); ohne JS bleibt es als schmale Zeile darunter.
+ * color:inherit übernimmt die Footer-Textfarbe des jeweiligen Packs;
+ * grid-column deckt Grid-Footer ab, in Flex/Block wirkungslos.
+ */
 const BRANDING_CSS = `
-.pb-made-with{display:block;padding:14px 20px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.78rem;color:var(--pb-muted,var(--pb-ink));background:var(--pb-canvas);text-decoration:none;opacity:.75}
-.pb-made-with:hover{opacity:1;text-decoration:underline}
+.pb-made-with{display:block;grid-column:1/-1;width:100%;padding:10px 20px 14px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.72rem;letter-spacing:.02em;color:inherit;text-decoration:none;opacity:.55}
+.pb-made-with:hover{opacity:.9}
 .pb-made-with strong{font-weight:700}
+.pb-made-with svg{display:inline-block;width:.7em;height:.9em;vertical-align:-.08em;margin:0 .1em}
+.pb-made-with .pb-mw-heart{margin:0 .1em}
 `;
 import {
   ALBUM_CSS,
@@ -247,11 +256,20 @@ export const SiteRenderer: React.FC<{
         pageTitle={currentPage?.title}
         sections={pageSections}
       />
-      {/* „Erstellt mit Pageblitz" (Dashboard-Schalter, default an): der
-          Backlink-Hebel jedes Baukastens — folgt bewusst ohne nofollow. */}
+      {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
+          der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der
+          siteEnhancer hängt das Badge beim Laden in den Pack-Footer. */}
       {site?.showBranding === true && (
         <a className="pb-made-with" href="https://pageblitz.de">
-          Erstellt mit <strong>Pageblitz</strong>
+          Mit{" "}
+          <span className="pb-mw-heart" aria-hidden="true">
+            ♥
+          </span>{" "}
+          erstellt mit{" "}
+          <svg viewBox="0 0 10 14" fill="currentColor" aria-hidden="true">
+            <path d="M6.2 0 0 8.1h3.4L2.6 14l6.9-8.6H5.8L6.2 0Z" />
+          </svg>
+          <strong>Pageblitz</strong>
         </a>
       )}
       <SiteIslands

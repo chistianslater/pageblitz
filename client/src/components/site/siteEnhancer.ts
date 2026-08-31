@@ -25,6 +25,10 @@
  */
 export const SITE_ENHANCER_JS = `(function(){
 var d=document,de=d.documentElement,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Branding-Badge in den Pack-Footer integrieren (Betreiber-Wunsch
+// 2026-08-31: nicht "runterhaengend"); ohne JS bleibt es dezent darunter.
+var mw=d.querySelector(".pb-made-with");
+if(mw){var ft=d.querySelector(".pb-site footer");if(ft)ft.appendChild(mw);}
 if(!reduced&&"IntersectionObserver" in window){
 de.classList.add("pb-io-on");
 var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("pb-in");io.unobserve(en.target)}})},{rootMargin:"0px 0px -8% 0px",threshold:0.05});
