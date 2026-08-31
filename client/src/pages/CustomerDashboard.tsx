@@ -295,7 +295,7 @@ export default function CustomerDashboard() {
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+      <div className="min-h-screen bg-lp-canvas pb-dash lp flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-lp-accent" />
       </div>
     );
@@ -303,7 +303,7 @@ export default function CustomerDashboard() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+      <div className="min-h-screen bg-lp-canvas pb-dash lp flex items-center justify-center">
         <div className="text-center text-lp-ink max-w-sm mx-auto px-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-lp-accent to-lp-ink flex items-center justify-center mx-auto mb-6">
             <Globe className="w-8 h-8 text-lp-ink" />
@@ -326,7 +326,7 @@ export default function CustomerDashboard() {
   if (!myWebsites || myWebsites.length === 0) {
     const isAdmin = user.role === "admin";
     return (
-      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+      <div className="min-h-screen bg-lp-canvas pb-dash lp flex items-center justify-center">
         <div className="text-center text-lp-ink max-w-md mx-auto px-6">
           <div className="w-16 h-16 rounded-2xl bg-lp-canvas flex items-center justify-center mx-auto mb-6">
             {isAdmin ? (
@@ -476,11 +476,11 @@ export default function CustomerDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash">
+    <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash lp">
       {/* Header */}
       <header className="border-b border-lp-line bg-lp-surface/90 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <div className="flex items-center gap-3 flex-1">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-[220px]">
             <div className="pb-dash-mark" aria-hidden="true">
               ↯
             </div>
@@ -548,13 +548,13 @@ export default function CustomerDashboard() {
       {isAdminDemo && (
         <div className="border-b border-amber-400/30 bg-amber-400/10">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2.5">
-            <p className="text-sm text-amber-900">
+            <p className="text-sm text-amber-200">
               <strong>Admin-Demo:</strong> Diese Website ist deine isolierte
               Testumgebung. Änderungen betreffen keine Kunden.
             </p>
             <a
               href="/admin"
-              className="text-sm font-medium text-amber-800 underline underline-offset-4 hover:text-lp-ink"
+              className="text-sm font-medium text-amber-300 underline underline-offset-4 hover:text-lp-ink"
             >
               Zurück zum Adminbereich
             </a>

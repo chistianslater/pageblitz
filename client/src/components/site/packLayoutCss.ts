@@ -248,12 +248,30 @@ function servicesPacks(mode: Mode): string {
       )
     )
     .join(",");
+  // Gestapelte Profil-Variante (grid-template-columns:1fr unten): der
+  // pack-eigene sticky Sektionskopf pinnt dann ÜBER der durchlaufenden
+  // Liste (Betreiber-Screenshot 2026-08-31) — im Ein-Spalten-Fluss
+  // deshalb statisch; im Zwei-Spalten-Basislayout bleibt sticky (dort
+  // deckt seit heute zusätzlich ein Canvas-Hintergrund).
+  const processHead = ["werkbank", "atelier", "schimmer"]
+    .flatMap(pack =>
+      variants.map(v =>
+        services(
+          pack,
+          v,
+          mode,
+          " :is(.pb-wb-section-head,.pb-at-section-head,.pb-sc-section-head)"
+        )
+      )
+    )
+    .join(",");
   return `
 ${gustoOffset}{margin-left:0!important}
 ${gustoHead}{display:block!important;grid-template-columns:1fr!important}
 ${schimmerProtocol}{grid-template-columns:auto minmax(0,1fr) auto!important}
 ${schimmerP}{grid-column:1/-1!important}
 ${processShell}{grid-template-columns:1fr!important}
+${processHead}{position:static!important}
 ${services("werkbank", "grid", mode, " .pb-wb-service")},${services("werkbank", "featured", mode, " .pb-wb-service")}{grid-template-columns:auto minmax(0,1fr)!important}
 ${services("atelier", "grid", mode, " .pb-at-service")},${services("atelier", "featured", mode, " .pb-at-service")}{grid-template-columns:auto minmax(0,1fr) auto!important}
 ${services("kanzlei", "grid", mode, " .pb-kz-services-grid")},${services("kanzlei", "featured", mode, " .pb-kz-services-grid")},${services("kanzlei", "list", mode, " .pb-kz-services-grid")}{grid-template-columns:1fr!important}

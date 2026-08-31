@@ -1,8 +1,10 @@
+/* Kundendashboard in Nachtschicht (2026-08-31): der `lp`-Klassen-Wrapper am
+   Root liefert die dunklen Token-Werte; hier nur Dashboard-Eigenheiten. */
 .pb-dash {
   min-height: 100dvh;
   background: var(--lp-canvas);
   color: var(--lp-ink);
-  font-family: var(--lp-font);
+  font-family: var(--lp-display, var(--lp-font, system-ui, sans-serif));
 }
 .pb-dash-mark {
   display: grid;
@@ -10,9 +12,22 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 7px;
-  background: var(--lp-ink);
-  color: var(--lp-canvas);
+  background: var(--lp-volt, var(--lp-ink));
+  color: var(--lp-volt-ink, var(--lp-canvas));
   font-size: 1.1rem;
   font-weight: 600;
   line-height: 1;
+}
+/* Volt-Buttons: die Komponenten tragen historisch `text-white` — auf
+   #ccff00 unlesbar. Zentral statt 20 Einzeledits erzwungen. */
+.pb-dash .bg-lp-accent {
+  color: var(--lp-accent-ink, #0b0b0d) !important;
+}
+/* Mono-Kicker wie Landing/Studio. */
+.pb-dash .pb-dash-kicker {
+  font-family: var(--lp-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lp-volt, var(--lp-accent));
 }
