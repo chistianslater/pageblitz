@@ -54,9 +54,14 @@ pageblitz): 19 Domains, davon nur 3 legitim — werbeagenturen.ch
 backlink-agency.pro …) — NICHT nachbauen.
 DIE eigentliche Erkenntnis: beide Konkurrenten beziehen ihre Links
 über KUNDEN-FOOTER („Website by …" — lisakoch 1.719, wedeon 2.595
-Footer-Links). EMPFEHLUNG (deine Entscheidung, ändert Kundenseiten):
-dezenter „Erstellt mit Pageblitz"-Link im Footer der Kundenwebsites —
-Standard bei Wix/Jimdo, skaliert mit jedem Kunden.
+Footer-Links).
+UMGESETZT 31 Aug: Der Dashboard-Schalter „Pageblitz-Branding anzeigen"
+(websites.showBranding) existierte, wurde aber von keinem v2-Pack
+gerendert — jetzt rendert der SiteRenderer zentral ein dezentes
+„Erstellt mit Pageblitz"-Badge (follow-Link), live verifiziert auf
+/site/admin-demo-1. Default an, Kunde kann es im Dashboard abschalten.
+Verbleibt hier: manueller Outreach (werbeagenturen.ch, ProductHunt,
+OMR/Capterra ausbauen) — dein Part.
 
 ### [ ] 8. Blog aufbauen · Route zu Content-Arbeit, NICHT Teil des Fix-Loops
 
