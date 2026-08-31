@@ -10,6 +10,9 @@ const NAV_LINKS = [
   { label: "Ablauf", href: "#ablauf" },
   { label: "Preise", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
+  // /blog ist eine SSR-Route (server/seo/blog.ts) — normaler Server-Link,
+  // kein Hash-Scroll und kein Wouter-Routing.
+  { label: "Blog", href: "/blog" },
 ] as const;
 
 /**
@@ -122,6 +125,8 @@ export function LandingNav({ billingYearly }: { billingYearly: boolean }) {
   const goHash =
     (href: (typeof NAV_LINKS)[number]["href"]) =>
     (event: React.MouseEvent<HTMLAnchorElement>) => {
+      // Nicht-Hash-Links (Blog) laufen als normale Server-Navigation.
+      if (!href.startsWith("#")) return;
       event.preventDefault();
       const id = href.slice(1);
       close(() => {
