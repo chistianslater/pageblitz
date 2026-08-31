@@ -209,7 +209,15 @@ function Router() {
         <Route path="/impressum" component={PageblitzImpressum} />
         <Route path="/datenschutz" component={PageblitzDatenschutz} />
         <Route path="/start" component={StartPage} />
-        <Route path="/design-review" component={DesignReviewPage} />
+        {/* Interne Pack-Galerie — seit 2026-08-31 nur für Admins
+            (Betreiber: „auf jeden Fall hinter Admin-Login"). */}
+        <Route path="/design-review">
+          {() => (
+            <AdminRoute>
+              <DesignReviewPage />
+            </AdminRoute>
+          )}
+        </Route>
         <Route path="/welcome-back" component={WelcomeBack} />
         {/* /preview/:token wird serverseitig (302) auf /onboarding/:token weitergeleitet
             (siehe server/ssr/routes.ts, registerSsrRoutes) — läuft nie hier ein,
