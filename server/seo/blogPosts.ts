@@ -10,6 +10,8 @@ export interface BlogPost {
   title: string;
   metaTitle: string;
   metaDescription: string;
+  /** Themen-Rubrik fürs Index-Tag (kurz, z. B. "Recht & Pflichten"). */
+  category: string;
   /** ISO-Datum (YYYY-MM-DD) für sichtbares Datum + Schema. */
   publishedAt: string;
   updatedAt: string;
@@ -21,6 +23,7 @@ export interface BlogPost {
 
 const IMPRESSUM_POST: BlogPost = {
   slug: "impressum-fuer-kleinunternehmer",
+  category: "Recht & Pflichten",
   title:
     "Impressum für Kleinunternehmer: Pflichtangaben, Muster und häufige Fehler",
   metaTitle: "Impressum für Kleinunternehmer erstellen | Pageblitz",
@@ -118,6 +121,7 @@ Berufsbezeichnung: Maler- und Lackierermeister
 
 const KOSTEN_POST: BlogPost = {
   slug: "was-kostet-eine-website-fuer-kleinunternehmen",
+  category: "Kosten & Vergleich",
   title: "Was kostet eine Website für Kleinunternehmen? Alle Preise im Überblick",
   metaTitle: "Website-Kosten für Kleinunternehmen 2026 | Pageblitz",
   metaDescription:
@@ -185,6 +189,7 @@ const KOSTEN_POST: BlogPost = {
 
 const WIX_ALTERNATIVE_POST: BlogPost = {
   slug: "wix-alternative",
+  category: "Kosten & Vergleich",
   title: "Wix-Alternative gesucht? Worauf deutsche Kleinunternehmen achten sollten",
   metaTitle: "Wix-Alternative für deutsche Kleinunternehmen | Pageblitz",
   metaDescription:
@@ -247,6 +252,7 @@ const WIX_ALTERNATIVE_POST: BlogPost = {
 
 const DATENSCHUTZ_POST: BlogPost = {
   slug: "datenschutzerklaerung-firmen-website",
+  category: "Recht & Pflichten",
   title: "Datenschutzerklärung für die Firmen-Website: Was wirklich rein muss",
   metaTitle: "Datenschutzerklärung für die Website erstellen | Pageblitz",
   metaDescription:
@@ -318,6 +324,7 @@ const DATENSCHUTZ_POST: BlogPost = {
 
 const LOKAL_SEO_POST: BlogPost = {
   slug: "bei-google-gefunden-werden-lokale-betriebe",
+  category: "Sichtbarkeit",
   title: "Bei Google gefunden werden: Lokales SEO für kleine Betriebe",
   metaTitle: "Lokales SEO: Bei Google gefunden werden | Pageblitz",
   metaDescription:
@@ -381,6 +388,7 @@ const LOKAL_SEO_POST: BlogPost = {
 
 const HANDWERK_POST: BlogPost = {
   slug: "braucht-mein-handwerksbetrieb-eine-website",
+  category: "Praxis",
   title: "Braucht mein Handwerksbetrieb eine Website? 7 ehrliche Gründe",
   metaTitle: "Website für Handwerker: 7 Gründe | Pageblitz",
   metaDescription:

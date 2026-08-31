@@ -67,10 +67,29 @@ article strong{color:#f2f1ee}
 .faq details{background:#131316;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:1rem 1.25rem;margin-bottom:.6rem}
 .faq summary{cursor:pointer;font-weight:500;color:#f2f1ee}
 .faq details p{color:#a4a39d;margin:.75rem 0 0}
-.post-card{display:block;background:#131316;border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:1.5rem;margin-bottom:1rem;color:inherit}
-.post-card:hover{border-color:rgba(255,255,255,.22);text-decoration:none}
-.post-card h2{font-size:1.25rem;font-weight:600;margin:.4rem 0 .6rem;color:#f2f1ee}
-.post-card p{color:#a4a39d;font-size:.95rem}
+.wrap-wide{max-width:1080px;margin:0 auto;padding:0 20px}
+.blog-head{border-bottom:1px solid rgba(255,255,255,.09);padding-bottom:2.5rem;margin-bottom:2.5rem}
+.blog-head h1{max-width:16ch}
+.blog-head .meta{margin-bottom:0;max-width:44ch}
+.tag{display:inline-block;font-family:ui-monospace,SFMono-Regular,monospace;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:#ccff00;border:1px solid rgba(204,255,0,.32);border-radius:999px;padding:.28rem .7rem}
+.post-featured{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(1.5rem,4vw,3.5rem);align-items:end;background:#131316;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:clamp(1.5rem,3.5vw,2.75rem);margin-bottom:2.5rem;color:inherit;position:relative;transition:border-color .2s ease}
+.post-featured:hover{border-color:rgba(204,255,0,.45);text-decoration:none}
+.post-featured h2{font-size:clamp(1.5rem,3.2vw,2.3rem);line-height:1.15;letter-spacing:-.02em;font-weight:600;color:#f2f1ee;margin:.9rem 0 0;text-wrap:balance}
+.post-featured .post-side{display:flex;flex-direction:column;gap:1rem}
+.post-featured .post-side p{color:#a4a39d;font-size:.98rem;margin:0}
+.post-featured:hover .post-arrow{background:#ccff00;color:#0b0b0d}
+.post-meta{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#a4a39d}
+.post-arrow{display:inline-grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:999px;border:1px solid rgba(255,255,255,.18);color:#f2f1ee;font-size:1.05rem;transition:background .2s ease,color .2s ease;align-self:flex-start}
+.post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+.post-card{display:flex;flex-direction:column;gap:.85rem;background:#131316;border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:1.6rem;color:inherit;position:relative;transition:border-color .2s ease,transform .2s ease}
+.post-card .tag{align-self:flex-start}
+.post-card:hover{border-color:rgba(204,255,0,.45);text-decoration:none;transform:translateY(-3px)}
+.post-card h2{font-size:1.18rem;font-weight:600;line-height:1.3;margin:0;color:#f2f1ee;text-wrap:balance}
+.post-card p{color:#a4a39d;font-size:.92rem;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.post-card .post-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:.85rem;border-top:1px solid rgba(255,255,255,.07)}
+.post-card:hover .post-arrow{background:#ccff00;color:#0b0b0d}
+@media(max-width:720px){.post-featured{grid-template-columns:1fr;align-items:start}}
+@media(prefers-reduced-motion:reduce){.post-card,.post-card:hover{transform:none;transition:none}}
 .post-cta{background:#131316;border:1px solid rgba(204,255,0,.32);border-radius:14px;padding:1.5rem;margin-top:3rem;text-align:center}
 .post-cta p{color:#c9c8c2;margin-bottom:1rem}
 footer.site{border-top:1px solid rgba(255,255,255,.09);padding:2rem 0;color:#a4a39d;font-size:.85rem}
@@ -117,14 +136,40 @@ ${opts.body}
 }
 
 export function renderBlogIndexHTML(): string {
-  const cards = BLOG_POSTS.map(
-    post => `
-  <a class="post-card" href="/blog/${post.slug}">
-    <span class="kicker">${formatDate(post.publishedAt)} · ${post.readingMinutes} Min. Lesezeit</span>
-    <h2>${escapeHtml(post.title)}</h2>
-    <p>${escapeHtml(post.teaser)}</p>
+  // Neuester Artikel als Featured-Karte, Rest im Grid (Index nach Datum,
+  // neueste zuerst; bei gleichem Datum entscheidet die Array-Reihenfolge).
+  const sorted = [...BLOG_POSTS].sort((a, b) =>
+    b.publishedAt.localeCompare(a.publishedAt)
+  );
+  const [featured, ...rest] = sorted;
+  const featuredHtml = featured
+    ? `
+  <a class="post-featured" href="/blog/${featured.slug}">
+    <div>
+      <span class="tag">${escapeHtml(featured.category)}</span>
+      <h2>${escapeHtml(featured.title)}</h2>
+    </div>
+    <div class="post-side">
+      <p>${escapeHtml(featured.teaser)}</p>
+      <span class="post-meta">${formatDate(featured.publishedAt)} · ${featured.readingMinutes} Min. Lesezeit</span>
+      <span class="post-arrow" aria-hidden="true">→</span>
+    </div>
   </a>`
-  ).join("\n");
+    : "";
+  const cards = rest
+    .map(
+      post => `
+    <a class="post-card" href="/blog/${post.slug}">
+      <span class="tag">${escapeHtml(post.category)}</span>
+      <h2>${escapeHtml(post.title)}</h2>
+      <p>${escapeHtml(post.teaser)}</p>
+      <span class="post-foot">
+        <span class="post-meta">${formatDate(post.publishedAt)} · ${post.readingMinutes} Min.</span>
+        <span class="post-arrow" aria-hidden="true">→</span>
+      </span>
+    </a>`
+    )
+    .join("\n");
   const schema = `<script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Blog",
@@ -139,11 +184,16 @@ export function renderBlogIndexHTML(): string {
       "Praktische Anleitungen für Kleinunternehmer: Impressum, Website-Pflichten und lokale Sichtbarkeit – ohne Juristendeutsch.",
     canonical: "https://pageblitz.de/blog",
     schema,
-    body: `<main><div class="wrap">
-  <p class="kicker">Pageblitz Blog</p>
-  <h1>Website-Wissen für Kleinunternehmer.</h1>
-  <p class="meta">Anleitungen ohne Juristendeutsch — geschrieben für Betriebe, nicht für Konzerne.</p>
+    body: `<main><div class="wrap-wide">
+  <div class="blog-head">
+    <p class="kicker">Pageblitz Blog</p>
+    <h1>Website-Wissen für Kleinunternehmer.</h1>
+    <p class="meta">Anleitungen ohne Juristendeutsch — geschrieben für Betriebe, nicht für Konzerne.</p>
+  </div>
+${featuredHtml}
+  <div class="post-grid">
 ${cards}
+  </div>
 </div></main>`,
   });
 }
@@ -204,7 +254,7 @@ export function renderBlogPostHTML(post: BlogPost): string {
     canonical,
     schema,
     body: `<main><div class="wrap">
-  <p class="kicker"><a href="/blog">Blog</a> · ${formatDate(post.publishedAt)} · ${post.readingMinutes} Min. Lesezeit</p>
+  <p class="kicker"><a href="/blog">Blog</a> · ${escapeHtml(post.category)} · ${formatDate(post.publishedAt)} · ${post.readingMinutes} Min. Lesezeit</p>
   <h1>${escapeHtml(post.title)}</h1>
   <p class="meta">Zuletzt aktualisiert am ${formatDate(post.updatedAt)}</p>
   <article>${post.bodyHtml}</article>
