@@ -17,6 +17,9 @@ export const HERO_LAYOUTS = [
   // in HERO_LAYOUT_CHOICES — der Generator wählt sie nie zufällig, nur
   // Kunde/KI-Chat schalten sie aktiv.
   "collage",
+  // Banner (Backlog 13c, 2026-08-31): Hero-Bild vollflächig hinter dem
+  // Text (dunkles Overlay, helle Typo). Wie collage nur aktiv wählbar.
+  "banner",
 ] as const;
 /** Picker und Generator: compact bleibt nur für bestehende Profile gültig. */
 export const HERO_LAYOUT_CHOICES = [
@@ -26,7 +29,15 @@ export const HERO_LAYOUT_CHOICES = [
 ] as const;
 export const SERVICES_LAYOUTS = ["list", "grid", "featured"] as const;
 export const ABOUT_LAYOUTS = ["image-left", "image-right"] as const;
-export const GALLERY_LAYOUTS = ["grid", "mosaic", "filmstrip"] as const;
+export const GALLERY_LAYOUTS = [
+  "grid",
+  "mosaic",
+  "filmstrip",
+  // Masonry (Backlog 13c): Spalten mit natürlicher Bildhöhe — nur aktiv
+  // wählbar (Picker/KI), der Generator nutzt GALLERY_LAYOUT_CHOICES.
+  "masonry",
+] as const;
+export const GALLERY_LAYOUT_CHOICES = ["grid", "mosaic", "filmstrip"] as const;
 export const DESIGN_DENSITIES = ["airy", "compact"] as const;
 export const IMAGE_TREATMENTS = ["natural", "framed", "bleed"] as const;
 /** Schmuck-Illustrationen (`pb-deco`-Elemente): "off" blendet sie aus. */
@@ -190,7 +201,7 @@ export function deriveDesignProfile(
       ? "mosaic"
       : galleryCount > 0 && galleryCount <= 3
         ? "filmstrip"
-        : pick(GALLERY_LAYOUTS, seed, 3);
+        : pick(GALLERY_LAYOUT_CHOICES, seed, 3);
 
   return {
     version: 1,

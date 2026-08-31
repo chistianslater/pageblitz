@@ -99,6 +99,13 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
           '<rect x="2" y="6" width="6" height="2" rx="1"/><rect x="2" y="10" width="4" height="2" rx="1"/><rect x="9" y="4" width="8" height="12" rx="1.5" opacity=".55"/><rect x="12" y="2.6" width="5.4" height="7" rx="1" transform="rotate(6 14.7 6.1)"/><rect x="10.6" y="11" width="5.4" height="7" rx="1" transform="rotate(-6 13.3 14.5)"/>'
         ),
       },
+      {
+        value: "banner",
+        label: "Vollbild",
+        icon: icon(
+          '<rect x="2" y="3" width="16" height="14" rx="1.5" opacity=".45"/><rect x="4.5" y="8" width="8" height="2" rx="1"/><rect x="4.5" y="11.6" width="5.5" height="1.8" rx=".9"/>'
+        ),
+      },
     ],
     hideElement: {
       key: "hero-media",
@@ -189,6 +196,13 @@ export const PREVIEW_LAYOUT_SECTIONS: readonly PreviewLayoutSection[] = [
         label: "Filmstreifen",
         icon: icon(
           '<rect x="1.5" y="7" width="5" height="6" rx=".8"/><rect x="7.5" y="7" width="5" height="6" rx=".8"/><rect x="13.5" y="7" width="5" height="6" rx=".8"/>'
+        ),
+      },
+      {
+        value: "masonry",
+        label: "Kacheln",
+        icon: icon(
+          '<rect x="3" y="3" width="4.2" height="7" rx=".8"/><rect x="8.2" y="3" width="4.2" height="4.4" rx=".8"/><rect x="13.4" y="3" width="3.6" height="6" rx=".8"/><rect x="3" y="11" width="4.2" height="6" rx=".8"/><rect x="8.2" y="8.4" width="4.2" height="8.6" rx=".8"/><rect x="13.4" y="10" width="3.6" height="7" rx=".8"/>'
         ),
       },
     ],

@@ -116,6 +116,21 @@ ${h("hero")}="collage"] #start .pb-hero-extras img:last-child{right:${
     mode === "mobile" ? "26px" : "clamp(48px,7vw,128px)"
   };bottom:${mode === "mobile" ? "10px" : "clamp(14px,3vw,40px)"};transform:rotate(-4deg)}
 
+/* Banner (Backlog 13c): Hero-Bild vollflächig hinter dem Text — dunkles
+   Overlay für Lesbarkeit, Typo hell. Ohne Hero-Bild bleibt eine ruhige
+   dunkle Fläche (wie ein Color-Block). */
+${h("hero")}="banner"] #start{position:relative!important;overflow:hidden!important;display:flex!important;align-items:center!important;min-height:${
+    mode === "mobile" ? "68vh" : "76vh"
+  }!important;background:#20211f!important}
+${h("hero")}="banner"] #start ${SLOT.heroSplit}{display:block!important;position:relative;z-index:3;grid-template-columns:1fr!important}
+${h("hero")}="banner"] #start ${SLOT.heroMedia}{position:absolute!important;inset:0!important;z-index:1!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;order:0!important;transform:none!important}
+${h("hero")}="banner"] #start ${SLOT.heroMedia} img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;clip-path:none!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
+${h("hero")}="banner"] #start::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(100deg,rgba(12,12,11,.72) 20%,rgba(12,12,11,.3) 75%)}
+${h("hero")}="banner"] #start ${SLOT.heroCopy}{position:relative!important;z-index:3!important;max-width:50rem;text-align:left!important;margin-inline:0!important}
+${h("hero")}="banner"] #start :is(h1,h2,p){position:relative;z-index:3}
+${h("hero")}="banner"] #start :is(h1,h1 span,h1 em,h1 strong,h2,p,p span){color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:0!important;text-shadow:0 2px 26px rgba(0,0,0,.45)}
+${h("hero")}="banner"] #start .pb-hero-extras{display:none!important}
+
 ${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important;gap:clamp(.75rem,1.5vw,1.25rem)!important;background:transparent!important}
 ${h("services")}="list"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}>*{grid-column:auto!important;width:100%!important}
 ${h("services")}="grid"] :is(#leistungen,#speisekarte) ${SLOT.servicesItems}{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:clamp(1rem,2vw,1.75rem)!important;background:transparent!important}
@@ -149,6 +164,12 @@ ${h("gallery")}="mosaic"] ${SLOT.galleryItems} img{width:100%!important;height:1
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems}{background:transparent!important;display:grid!important;grid-auto-flow:column!important;grid-auto-columns:${filmCols}!important;grid-template-columns:none!important;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;gap:clamp(.5rem,1.5vw,1.25rem)!important;padding-bottom:.5rem}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems}>*{grid-column:auto!important;grid-row:auto!important;margin-top:0!important;scroll-snap-align:start;width:auto!important}
 ${h("gallery")}="filmstrip"] ${SLOT.galleryItems} img{width:100%!important;height:clamp(200px,32vw,320px)!important;object-fit:cover!important}
+/* Masonry (Backlog 13c): CSS-Spalten mit natürlicher Bildhöhe. */
+${h("gallery")}="masonry"] ${SLOT.galleryItems}{display:block!important;columns:${
+    mode === "mobile" ? 2 : 3
+  }!important;column-gap:clamp(.5rem,1.5vw,1.25rem)!important;overflow:visible!important;background:transparent!important}
+${h("gallery")}="masonry"] ${SLOT.galleryItems}>*{display:block!important;width:100%!important;max-width:none!important;margin:0 0 clamp(.5rem,1.5vw,1.25rem)!important;break-inside:avoid;grid-column:auto!important;grid-row:auto!important}
+${h("gallery")}="masonry"] ${SLOT.galleryItems} img{width:100%!important;height:auto!important;min-height:0!important;object-fit:cover!important}
 `;
 }
 
