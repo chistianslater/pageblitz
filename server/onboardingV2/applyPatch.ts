@@ -120,6 +120,37 @@ export function applyLogo(
 }
 
 /**
+ * Partner/Zertifikate (2026-08-31): schreibt die partners-Sektion aus dem
+ * Fotos-Panel — leere Liste entfernt sie, sonst wird sie ersetzt bzw. nach
+ * den Bewertungen (Fallback: vor Kontakt) eingefügt.
+ */
+export function applyPartners(
+  doc: WebsiteDataV2,
+  patch: {
+    headline?: string;
+    items: { imageUrl: string; name: string; url?: string }[];
+  }
+): WebsiteDataV2 {
+  let sections: SectionV2[];
+  if (patch.items.length === 0) {
+    sections = doc.sections.filter(s => s.type !== "partners");
+  } else {
+    const headline = patch.headline?.trim();
+    const section: SectionV2 = {
+      type: "partners",
+      ...(headline ? { headline } : {}),
+      items: patch.items,
+    };
+    const existingIdx = doc.sections.findIndex(s => s.type === "partners");
+    sections =
+      existingIdx >= 0
+        ? doc.sections.map((s, i) => (i === existingIdx ? section : s))
+        : insertAfter(doc.sections, "testimonials", section);
+  }
+  return WebsiteDataV2Schema.parse({ ...doc, sections });
+}
+
+/**
  * Direkte Vorschau-Bearbeitung: ausschließlich Pfade, die aus dem aktuellen
  * Dokument selbst als sichtbare Textziele abgeleitet wurden. Kein freier
  * JSON-Patch, keine URLs/SEO/Legal-Felder.

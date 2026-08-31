@@ -19,6 +19,7 @@ import { STORY_CSS } from "./storySection";
 import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
 import { AGE_GATE_CSS, AgeGateSsr } from "./ageGateSsr";
+import { PARTNERS_CSS } from "./partnersSection";
 import { EXTRA_SECTIONS_CSS } from "./extraSections";
 
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
@@ -246,6 +247,8 @@ export const SiteRenderer: React.FC<{
             NOTICE_CSS +
             "\n" +
             EXTRA_SECTIONS_CSS +
+            "\n" +
+            PARTNERS_CSS +
             "\n" +
             DECO_TOGGLE_CSS +
             "\n" +

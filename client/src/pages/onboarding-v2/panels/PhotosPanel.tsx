@@ -25,6 +25,7 @@ import {
   type PhotoTarget,
 } from "./photoParts";
 import { AiPhotoGenerator } from "./AiPhotoGenerator";
+import { PartnerLogosEditor } from "./PartnerLogosEditor";
 
 // Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
 // (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
@@ -551,10 +552,13 @@ export function PhotosPanel({
             </p>
           )}
           <p style={{ fontSize: "0.78rem", opacity: 0.6, margin: 0 }}>
-            PNG mit transparentem Hintergrund wirkt am besten — erscheint in
-            der Navigation und im Footer statt des Schriftzugs.
+            PNG mit transparentem Hintergrund wirkt am besten — erscheint in der
+            Navigation und im Footer statt des Schriftzugs.
           </p>
         </section>
+      )}
+      {initialTarget !== "gallery" && (
+        <PartnerLogosEditor token={token} doc={doc} onApplied={onApplied} />
       )}
       <PhotoTargetPicker
         target={target}

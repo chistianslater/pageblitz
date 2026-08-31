@@ -35,6 +35,7 @@ import {
   applyAddonHeadings,
   applyImages,
   applyLogo,
+  applyPartners,
   applyInlineText,
   applyOffer,
   applyPages,
@@ -42,7 +43,10 @@ import {
   applyTheme,
 } from "./applyPatch";
 import { getFontPair } from "../../shared/stylePacks";
-import { DesignProfileSchema } from "../../shared/siteContract/schema";
+import {
+  DesignProfileSchema,
+  SafeUrlSchema,
+} from "../../shared/siteContract/schema";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
@@ -325,6 +329,60 @@ export const contentProcedures = {
         loaded.website.id
       );
       return persistDoc(input.token, loaded, applyLogo(doc, url));
+    }),
+
+  /**
+   * Partner-Logo hochladen (2026-08-31): reiner Upload (WebP mit
+   * Transparenz) — schreibt anders als updateLogo NICHT ins Dokument;
+   * die URL geht in updatePartners-Items.
+   */
+  uploadPartnerLogo: publicProcedure
+    .input(
+      tokenInput.extend({
+        imageData: z.string().min(10).max(8_000_000),
+        mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const { url } = await uploadLogoToStorage(
+        input.imageData,
+        input.mimeType,
+        loaded.website.id
+      );
+      return { url };
+    }),
+
+  /**
+   * Partner/Zertifikate-Sektion schreiben (Fotos-Panel): vollständige
+   * Item-Liste — [] entfernt die Sektion. Logos entstehen nur über
+   * uploadPartnerLogo, die KI legt die Sektion nie an.
+   */
+  updatePartners: publicProcedure
+    .input(
+      tokenInput.extend({
+        headline: z.string().max(80).optional(),
+        items: z
+          .array(
+            z
+              .object({
+                imageUrl: SafeUrlSchema,
+                name: z.string().min(1).max(60),
+                url: SafeUrlSchema.optional(),
+              })
+              .strict()
+          )
+          .max(10),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      return persistDoc(
+        input.token,
+        loaded,
+        applyPartners(doc, { headline: input.headline, items: input.items })
+      );
     }),
 
   updateTexts: publicProcedure
