@@ -26,6 +26,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { AddonsTab } from "@/pages/dashboard/AddonsTab";
+import type { DetailKey as AddonDetailKey } from "@/pages/dashboard/AddonsTab";
 import { ChatLeadsTab } from "@/pages/dashboard/ChatLeadsTab";
 import { AppointmentsTab } from "@/pages/dashboard/AppointmentsTab";
 import { PreviewTab } from "@/pages/dashboard/PreviewTab";
@@ -124,6 +125,13 @@ export default function CustomerDashboard() {
     return p && valid.includes(p) ? p : "preview";
   });
   const [previewKey, setPreviewKey] = useState(0);
+  // Direktsprung „Betrieb & Benachrichtigungen" (Phase 2, 2026-08-31):
+  // öffnet im Add-ons-Tab sofort die gewünschte Detail-Section.
+  const [addonDetail, setAddonDetail] = useState<AddonDetailKey | null>(null);
+  const openAddonSettings = (key: AddonDetailKey) => {
+    setAddonDetail(key);
+    setActiveTab("addons");
+  };
   const {
     data: myWebsites,
     isLoading,
@@ -438,13 +446,6 @@ export default function CustomerDashboard() {
   }[] = [
     { id: "preview", label: "Vorschau", icon: <Globe className="w-4 h-4" /> },
     {
-      id: "settings",
-      label: "Einstellungen",
-      icon: <Settings className="w-4 h-4" />,
-    },
-    { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
-    { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
-    {
       id: "submissions",
       label: "Anfragen",
       icon: <MessageSquare className="w-4 h-4" />,
@@ -468,6 +469,13 @@ export default function CustomerDashboard() {
           },
         ]
       : []),
+    {
+      id: "settings",
+      label: "Einstellungen",
+      icon: <Settings className="w-4 h-4" />,
+    },
+    { id: "addons", label: "Add-ons", icon: <Sparkles className="w-4 h-4" /> },
+    { id: "domain", label: "Domain", icon: <Globe className="w-4 h-4" /> },
     {
       id: "analytics",
       label: "Statistiken",
@@ -626,6 +634,7 @@ export default function CustomerDashboard() {
             <button
               key={tab.id}
               onClick={() => {
+                setAddonDetail(null);
                 setActiveTab(tab.id);
                 window.history.replaceState(null, "", `?tab=${tab.id}`);
               }}
@@ -656,6 +665,7 @@ export default function CustomerDashboard() {
               <button
                 key={tab.id}
                 onClick={() => {
+                  setAddonDetail(null);
                   setActiveTab(tab.id);
                   window.history.replaceState(null, "", `?tab=${tab.id}`);
                 }}
@@ -697,6 +707,109 @@ export default function CustomerDashboard() {
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Betrieb & Benachrichtigungen — Direktsprünge zu den
+                  Funktions-Settings der Extras (Design bleibt im Studio). */}
+              <div className="bg-lp-surface border border-lp-line rounded-2xl p-5 lg:col-span-2">
+                <h2 className="text-lp-ink font-semibold flex items-center gap-2 mb-1">
+                  <Settings className="w-4 h-4 text-lp-accent" />
+                  Betrieb &amp; Benachrichtigungen
+                </h2>
+                <p className="text-lp-muted text-xs mb-4">
+                  Formular-Felder, E-Mail-Empfänger und dein Postfach — das
+                  Design deiner Website bearbeitest du im Studio.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => openAddonSettings("contactForm")}
+                    className="flex items-start gap-3 rounded-xl border border-lp-line bg-lp-canvas p-4 text-left transition-colors hover:border-lp-accent/60"
+                  >
+                    <MessageSquare className="w-4 h-4 text-lp-accent mt-0.5 shrink-0" />
+                    <span>
+                      <span className="block text-lp-ink text-sm font-medium">
+                        Kontaktformular
+                      </span>
+                      <span className="block text-lp-muted text-xs mt-0.5">
+                        Felder anpassen &amp; Empfänger-E-Mail festlegen
+                      </span>
+                    </span>
+                  </button>
+                  {aiChatEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => openAddonSettings("aiChat")}
+                      className="flex items-start gap-3 rounded-xl border border-lp-line bg-lp-canvas p-4 text-left transition-colors hover:border-lp-accent/60"
+                    >
+                      <Users className="w-4 h-4 text-lp-accent mt-0.5 shrink-0" />
+                      <span>
+                        <span className="block text-lp-ink text-sm font-medium">
+                          KI-Chat
+                        </span>
+                        <span className="block text-lp-muted text-xs mt-0.5">
+                          Wissen pflegen &amp; Benachrichtigungs-E-Mail
+                        </span>
+                      </span>
+                    </button>
+                  )}
+                  {bookingEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => openAddonSettings("booking")}
+                      className="flex items-start gap-3 rounded-xl border border-lp-line bg-lp-canvas p-4 text-left transition-colors hover:border-lp-accent/60"
+                    >
+                      <CalendarDays className="w-4 h-4 text-lp-accent mt-0.5 shrink-0" />
+                      <span>
+                        <span className="block text-lp-ink text-sm font-medium">
+                          Terminbuchung
+                        </span>
+                        <span className="block text-lp-muted text-xs mt-0.5">
+                          Zeiten, Leistungen &amp; Benachrichtigungs-E-Mail
+                        </span>
+                      </span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab("submissions");
+                      window.history.replaceState(null, "", "?tab=submissions");
+                    }}
+                    className="flex items-start gap-3 rounded-xl border border-lp-line bg-lp-canvas p-4 text-left transition-colors hover:border-lp-accent/60"
+                  >
+                    <MessageSquare className="w-4 h-4 text-lp-muted mt-0.5 shrink-0" />
+                    <span>
+                      <span className="block text-lp-ink text-sm font-medium">
+                        Postfach: Anfragen
+                        {unreadCount > 0 ? ` (${unreadCount} neu)` : ""}
+                      </span>
+                      <span className="block text-lp-muted text-xs mt-0.5">
+                        Eingegangene Formular-Nachrichten lesen
+                      </span>
+                    </span>
+                  </button>
+                  {aiChatEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("leads");
+                        window.history.replaceState(null, "", "?tab=leads");
+                      }}
+                      className="flex items-start gap-3 rounded-xl border border-lp-line bg-lp-canvas p-4 text-left transition-colors hover:border-lp-accent/60"
+                    >
+                      <Users className="w-4 h-4 text-lp-muted mt-0.5 shrink-0" />
+                      <span>
+                        <span className="block text-lp-ink text-sm font-medium">
+                          Postfach: Chat-Leads
+                        </span>
+                        <span className="block text-lp-muted text-xs mt-0.5">
+                          Leads &amp; Chat-Verläufe ansehen
+                        </span>
+                      </span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Kontaktdaten — Telefon/E-Mail/Adresse sind Website-Inhalt
                   (websiteData.sections[type=contact]) und gehören ins Studio;
                   es gibt (noch) kein Studio-Panel dafür (bekannte Lücke, siehe
@@ -780,6 +893,7 @@ export default function CustomerDashboard() {
                     (subscription?.addOns ?? {}) as Record<string, boolean>
                   }
                   businessEmail={business?.email}
+                  initialDetail={addonDetail}
                 />
               ) : (
                 <div className="flex items-center justify-center py-12">

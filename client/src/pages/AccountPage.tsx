@@ -186,7 +186,7 @@ export default function AccountPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+      <div className="min-h-screen bg-lp-canvas pb-dash lp flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-lp-accent" />
       </div>
     );
@@ -194,7 +194,7 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-lp-canvas pb-dash flex items-center justify-center">
+      <div className="min-h-screen bg-lp-canvas pb-dash lp flex items-center justify-center">
         <div className="text-center text-lp-ink">
           <p className="mb-4">
             Bitte melde dich an, um deinen Account zu verwalten.
@@ -239,7 +239,7 @@ export default function AccountPage() {
   const totalStr = (totalCents / 100).toFixed(2).replace(".", ",");
 
   return (
-    <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash">
+    <div className="min-h-screen bg-lp-canvas text-lp-ink pb-dash lp">
       {/* Header */}
       <header className="border-b border-lp-line bg-lp-surface/90 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">

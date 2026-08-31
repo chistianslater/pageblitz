@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -24,7 +24,7 @@ const CONTENT_ADDON_KEYS: ContentAddonKey[] = [
   "subpages",
 ];
 type AddonKey = ContentAddonKey;
-type DetailKey = "booking" | "aiChat" | "contactForm";
+export type DetailKey = "booking" | "aiChat" | "contactForm";
 
 const CONTENT_ADDON_LABELS: Record<
   ContentAddonKey,
@@ -70,6 +70,13 @@ interface AddonsTabProps {
   onUpdate: () => void;
   purchasedAddOns: Record<string, boolean>;
   businessEmail?: string | null;
+  /**
+   * Direktsprung in eine Betriebs-Einstellung (Phase-2-Aufräumen
+   * 2026-08-31): der „Betrieb & Benachrichtigungen"-Block im
+   * Einstellungen-Tab öffnet Formular/KI-Chat/Buchung ohne den Umweg
+   * über die Add-on-Übersicht.
+   */
+  initialDetail?: DetailKey | null;
 }
 
 /** Add-ons-Tab: Kauf/Feature-Flags bleiben im Dashboard, Inhaltspflege
@@ -82,8 +89,16 @@ export function AddonsTab({
   onUpdate,
   purchasedAddOns,
   businessEmail,
+  initialDetail = null,
 }: AddonsTabProps) {
-  const [activeDetail, setActiveDetail] = useState<DetailKey | null>(null);
+  const [activeDetail, setActiveDetail] = useState<DetailKey | null>(
+    initialDetail
+  );
+  // Direktsprung aus dem Einstellungen-Tab auch nach dem ersten Render;
+  // ein Wechsel zurück auf null (Tab-Klick) schließt das offene Detail.
+  useEffect(() => {
+    setActiveDetail(initialDetail);
+  }, [initialDetail]);
   const [confirmAddon, setConfirmAddon] = useState<AddonKey | null>(null);
 
   const purchaseAddonMutation = trpc.customer.purchaseAddon.useMutation({
