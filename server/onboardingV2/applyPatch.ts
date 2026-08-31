@@ -105,6 +105,21 @@ export function applyTheme(
 }
 
 /**
+ * Firmenlogo (2026-08-31): alle 20 Packs rendern `doc.logo` seit jeher
+ * (Bild-Marke statt Textmarke in Nav/Footer) — dies ist der erste
+ * Schreibpfad dafür. `null` entfernt das Logo (zurück zur Textmarke).
+ */
+export function applyLogo(
+  doc: WebsiteDataV2,
+  logoUrl: string | null
+): WebsiteDataV2 {
+  const next: WebsiteDataV2 = { ...doc };
+  if (logoUrl === null) delete next.logo;
+  else next.logo = { kind: "image", url: logoUrl };
+  return WebsiteDataV2Schema.parse(next);
+}
+
+/**
  * Direkte Vorschau-Bearbeitung: ausschließlich Pfade, die aus dem aktuellen
  * Dokument selbst als sichtbare Textziele abgeleitet wurden. Kein freier
  * JSON-Patch, keine URLs/SEO/Legal-Felder.
@@ -145,11 +160,7 @@ export function applyInlineText(
   return WebsiteDataV2Schema.parse(next);
 }
 
-export type AddonHeadingType =
-  | "contact"
-  | "gallery"
-  | "menu"
-  | "pricelist";
+export type AddonHeadingType = "contact" | "gallery" | "menu" | "pricelist";
 
 /** Optionale Überschriften für bereits vorhandene Extra-/Kontaktsektionen. */
 export function applyAddonHeadings(

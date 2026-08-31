@@ -27,6 +27,7 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
   stats: "zahlen",
   process: "ablauf",
   quote: "zitat",
+  partners: "partner",
   // pageHeader existiert nur innerhalb Page.sections (siehe schema.ts,
   // PageSectionSchema), niemals in der Startseiten-`sections`-Liste, die
   // dieser Anker-Karte zugrunde liegt — Wert wird praktisch nie gelesen.
@@ -211,6 +212,7 @@ const SECTION_NAV_LABELS: Partial<Record<SectionType, string>> = {
   usp: "Vorteile",
   stats: "Zahlen",
   process: "Ablauf",
+  partners: "Partner",
   // notice (Banner) und quote (Pull-Quote) erscheinen nie in der Nav
   // (siehe buildNavItems-Filter).
 };

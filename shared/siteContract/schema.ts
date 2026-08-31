@@ -43,6 +43,10 @@ export const SECTION_TYPES = [
   "stats",
   "process",
   "quote",
+  // Partner/Zertifikate (2026-08-31): Logo-Leiste — Logos lädt der Kunde
+  // im Fotos-Panel hoch (uploadLogo), die KI kann sie nicht erfinden und
+  // darf die Sektion deshalb NICHT hinzufügen (nur ausblenden/umsortieren).
+  "partners",
   // Nur innerhalb von Page.sections gültig (siehe PageSectionSchema) — NICHT
   // Teil von SectionV2Schema (Startseiten-Sektionen), damit die
   // Exhaustiveness-Checks ("const exhaustive: never = section") in den 14
@@ -346,6 +350,29 @@ const StorySchema = z
   })
   .strict();
 /**
+ * Partner/Zertifikate (2026-08-31): Logo-Leiste mit Namen und optionalem
+ * Link — zentral gerendert (partnersSection.tsx). Items entstehen nur über
+ * hochgeladene Logos (Fotos-Panel), nie durch die KI.
+ */
+const PartnersSchema = z
+  .object({
+    type: z.literal("partners"),
+    headline: z.string().min(1).max(80).optional(),
+    items: z
+      .array(
+        z
+          .object({
+            imageUrl: SafeUrlSchema,
+            name: z.string().min(1).max(60),
+            url: SafeUrlSchema.optional(),
+          })
+          .strict()
+      )
+      .min(1)
+      .max(10),
+  })
+  .strict();
+/**
  * Vorteile/USP (2026-08-31): 2–6 Punkte mit Titel + optionalem Satz —
  * faktenfrei, zentral gerendert (uspSection.tsx), von der KI
  * hinzufüg-/entfernbar wie story.
@@ -441,6 +468,7 @@ export const SectionV2Schema = z.discriminatedUnion("type", [
   StatsSchema,
   ProcessSchema,
   QuoteSchema,
+  PartnersSchema,
 ]);
 
 /**

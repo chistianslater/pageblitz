@@ -225,6 +225,7 @@ export const SECTION_LABELS: Record<SectionType, string> = {
   stats: "Zahlen",
   process: "Ablauf",
   quote: "Zitat",
+  partners: "Partner-Logos",
   // pageHeader existiert nur in Page.sections (Unterseiten) — diffPages
   // vergleicht sie mit demselben Feld-Mechanismus wie diffDocuments.
   pageHeader: "Kopfzeile",

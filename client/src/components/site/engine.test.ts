@@ -119,7 +119,8 @@ describe("orderedSections", () => {
     expect(SECTION_ANCHORS.stats).toBe("zahlen");
     expect(SECTION_ANCHORS.process).toBe("ablauf");
     expect(SECTION_ANCHORS.quote).toBe("zitat");
-    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(18);
+    expect(SECTION_ANCHORS.partners).toBe("partner");
+    expect(Object.keys(SECTION_ANCHORS)).toHaveLength(19);
   });
 });
 

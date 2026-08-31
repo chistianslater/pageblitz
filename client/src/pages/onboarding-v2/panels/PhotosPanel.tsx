@@ -144,6 +144,58 @@ export function PhotosPanel({
   const upload = trpc.onboardingV2.uploadPhoto.useMutation();
   const setImages = trpc.onboardingV2.setImages.useMutation();
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
+  // Firmenlogo (2026-08-31): erster Schreibpfad für doc.logo — die Packs
+  // rendern die Bild-Marke in Nav/Footer seit jeher, es fehlte nur die UI.
+  const updateLogo = trpc.onboardingV2.updateLogo.useMutation();
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const currentLogoUrl = doc.logo?.kind === "image" ? doc.logo.url : null;
+
+  const handleLogoFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setLogoError("Bitte eine Datei bis 5 MB wählen.");
+      return;
+    }
+    if (!isAcceptedMime(file.type)) {
+      setLogoError("Nur JPEG-, PNG- oder WebP-Dateien sind erlaubt.");
+      return;
+    }
+    setLogoError(null);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      if (typeof dataUrl !== "string") {
+        setLogoError("Datei konnte nicht gelesen werden.");
+        return;
+      }
+      updateLogo.mutate(
+        {
+          token,
+          imageData: dataUrl,
+          mimeType: file.type as AcceptedMime,
+        },
+        {
+          onSuccess: onApplied,
+          onError: err => setLogoError(err.message),
+        }
+      );
+    };
+    reader.onerror = () => setLogoError("Datei konnte nicht gelesen werden.");
+    reader.readAsDataURL(file);
+  };
+
+  const removeLogo = () => {
+    setLogoError(null);
+    updateLogo.mutate(
+      { token, remove: true },
+      {
+        onSuccess: onApplied,
+        onError: err => setLogoError(err.message),
+      }
+    );
+  };
 
   // Galerie ist Add-on-Inhalt (Plan B6 Task 6): Gating-Quelle ist
   // `doc.addOns.gallery` (dieselbe wie SSR/CSR, engine.ts). Der Studio-
@@ -438,6 +490,72 @@ export function PhotosPanel({
         </>
       }
     >
+      {initialTarget !== "gallery" && (
+        <section className="pb-studio-field-group">
+          <p className="pb-studio-group-kicker">Dein Logo</p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.9rem",
+              flexWrap: "wrap",
+            }}
+          >
+            {currentLogoUrl ? (
+              <img
+                src={currentLogoUrl}
+                alt="Aktuelles Logo"
+                style={{
+                  height: 44,
+                  maxWidth: 160,
+                  objectFit: "contain",
+                  background: "#fff",
+                  borderRadius: 6,
+                  padding: "4px 8px",
+                }}
+              />
+            ) : (
+              <span style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+                Aktuell zeigt deine Website den Firmennamen als Schriftzug.
+              </span>
+            )}
+            <label className="pb-studio-btn" data-variant="ghost">
+              {updateLogo.isPending
+                ? "Wird hochgeladen…"
+                : currentLogoUrl
+                  ? "Logo ersetzen"
+                  : "Logo hochladen"}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: "none" }}
+                disabled={updateLogo.isPending}
+                onChange={handleLogoFile}
+              />
+            </label>
+            {currentLogoUrl && (
+              <button
+                type="button"
+                className="pb-studio-btn"
+                data-variant="ghost"
+                disabled={updateLogo.isPending}
+                onClick={removeLogo}
+              >
+                Logo entfernen
+              </button>
+            )}
+          </div>
+          {logoError && (
+            <p role="alert" style={{ color: "var(--st-warn)", margin: 0 }}>
+              {logoError}
+            </p>
+          )}
+          <p style={{ fontSize: "0.78rem", opacity: 0.6, margin: 0 }}>
+            PNG mit transparentem Hintergrund wirkt am besten — erscheint in
+            der Navigation und im Footer statt des Schriftzugs.
+          </p>
+        </section>
+      )}
       <PhotoTargetPicker
         target={target}
         onTarget={nextTarget => {

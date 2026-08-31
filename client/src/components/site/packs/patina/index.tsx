@@ -3,6 +3,7 @@ import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections"
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
+import { PartnersSection } from "../../partnersSection";
 import type {
   PageSection,
   PageSectionOf,
@@ -106,6 +107,8 @@ function renderSection(
     case "notice":
       // Zentral als Banner über der Nav gerendert (SiteRenderer).
       return null;
+    case "partners":
+      return <PartnersSection section={section} key="partners" />;
     case "story":
       return <StorySection section={section} key="story" />;
     case "hero":

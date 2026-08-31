@@ -9,7 +9,10 @@ import {
 } from "../db";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import { getIndustryImages } from "../industryImages";
-import { uploadPhoto as uploadPhotoToStorage } from "../onboardingUpload";
+import {
+  uploadPhoto as uploadPhotoToStorage,
+  uploadLogo as uploadLogoToStorage,
+} from "../onboardingUpload";
 import {
   buildCustomWorldOverrides,
   getColorWorld,
@@ -31,6 +34,7 @@ import {
   applyAddOnFlags,
   applyAddonHeadings,
   applyImages,
+  applyLogo,
   applyInlineText,
   applyOffer,
   applyPages,
@@ -288,6 +292,39 @@ export const contentProcedures = {
         base = applyAddOnFlags(doc, { gallery: true });
       }
       return persistDoc(input.token, loaded, applyImages(base, input.patch));
+    }),
+
+  /**
+   * Firmenlogo (2026-08-31): lädt ein Logo hoch (WebP mit Transparenz,
+   * onboardingUpload.uploadLogo) und setzt doc.logo — bzw. entfernt es
+   * (remove) zurück zur Textmarke. Alle 20 Packs rendern doc.logo bereits.
+   */
+  updateLogo: publicProcedure
+    .input(
+      tokenInput.extend({
+        imageData: z.string().min(10).max(8_000_000).optional(),
+        mimeType: z.enum(["image/jpeg", "image/png", "image/webp"]).optional(),
+        remove: z.boolean().optional().default(false),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      if (input.remove) {
+        return persistDoc(input.token, loaded, applyLogo(doc, null));
+      }
+      if (!input.imageData || !input.mimeType) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Bitte wähle eine Logo-Datei aus.",
+        });
+      }
+      const { url } = await uploadLogoToStorage(
+        input.imageData,
+        input.mimeType,
+        loaded.website.id
+      );
+      return persistDoc(input.token, loaded, applyLogo(doc, url));
     }),
 
   updateTexts: publicProcedure

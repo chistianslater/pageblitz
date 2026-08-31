@@ -45,6 +45,8 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
   stats: `"headline" (optional), "items": [{ "value" (Pflicht), "label" (Pflicht) }] (2–4 Einträge)`,
   process: `"headline" (optional), "steps": [{ "title" (Pflicht), "text" (optional) }] (2–5 Einträge)`,
   quote: `"text" (Pflicht), "author" (optional)`,
+  // partners: Logos lädt der Kunde im Fotos-Panel hoch — nie vom LLM.
+  partners: `"headline" (optional) — KEINE "items" (Logos werden vom Kunden hochgeladen)`,
   // pageHeader wird von generateSiteContent (Startseiten-Generator) nie
   // angefragt — Unterseiten-Inhalte entstehen im Studio, nicht bei der
   // Erstgenerierung (Spec §2.1). Platzhalter für Exhaustivität von
