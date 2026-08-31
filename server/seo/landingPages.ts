@@ -2051,8 +2051,11 @@ export function generateLandingPageHTML(
   const title = city
     ? `Website für ${industry.displayName} in ${city.name} erstellen | Pageblitz`
     : `${industry.title} | Pageblitz`;
+  // Stadt NACH VORN (Audit 2026-08-30, Punkt 4): die alte Fassung hängte
+  // die Stadt ans Ende einer ~190-Zeichen-Description — Google schneidet
+  // bei ~160 ab, in den SERPs sahen Branchen- und Stadt-Seite identisch aus.
   const metaDesc = city
-    ? `${industry.description} Jetzt in ${city.name} starten – 7 Tage gratis.`
+    ? `Professionelle ${industry.displayName}-Website in ${city.name} ab 19,90 €/Monat – von der KI in 3 Minuten erstellt. Jetzt Vorschau ansehen, 7 Tage gratis.`
     : `${industry.description} 7 Tage gratis testen.`;
   const h1 = industry.h1Template.replace("{city}", cityStr);
 
@@ -2259,7 +2262,7 @@ export function generateLandingPageHTML(
           <div class="mw-btn"></div>
         </div>
         <div class="mw-hero" style="position:relative;overflow:hidden;background:#111;padding:0">
-          <img src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.8;display:block">
+          <img src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" width="640" height="400" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.8;display:block">
           <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 100%)"></div>
           <div style="position:relative;z-index:1;padding:2.25rem 1.5rem 2rem">
             <div class="mw-hero-eyebrow" style="background:${style.accent};opacity:1;height:.3rem;border-radius:99px;width:4rem;margin-bottom:.875rem"></div>

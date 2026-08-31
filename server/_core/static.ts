@@ -34,13 +34,17 @@ export function serveStatic(app: Express) {
     })
   );
 
-  // All other static files (index.html, favicon, etc.) → short cache
+  // All other static files (index.html, favicon, etc.) → short cache;
+  // Bilder (Demo-Previews, Hero-Personas, OG-Image) ändern sich nur bei
+  // Deploys → 7 Tage (Audit 2026-08-30, Punkt 6 / PSI-Cache-Befund).
   app.use(
     express.static(distPath, {
       maxAge: "5m",
       setHeaders: (res, filePath) => {
         if (filePath.endsWith(".html")) {
           res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        } else if (/\.(webp|avif|jpe?g|png|svg|ico)$/i.test(filePath)) {
+          res.setHeader("Cache-Control", "public, max-age=604800");
         }
       },
     })

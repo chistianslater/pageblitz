@@ -413,6 +413,32 @@ async function startServer() {
       );
   });
 
+  // llms.txt (Audit 2026-08-30, Punkt 5): kompakte Orientierung für
+  // KI-Crawler (GPTBot, ClaudeBot, PerplexityBot — robots.txt lässt sie zu).
+  app.get("/llms.txt", (_req, res) => {
+    res.type("text/plain").send(
+      [
+        "# Pageblitz",
+        "",
+        "> Pageblitz erstellt per KI in ca. 3 Minuten eine fertige Website",
+        "> für Kleinunternehmen in Deutschland (Friseure, Handwerker,",
+        "> Restaurants u. v. m.). Basis 19,90 €/Monat (jährlich) bzw.",
+        "> 24,90 €/Monat (monatlich), 7 Tage gratis testen, DSGVO-konform,",
+        "> Hosting in Deutschland inklusive.",
+        "",
+        "## Wichtige Seiten",
+        "",
+        "- [Startseite](https://pageblitz.de/): Produkt, Preise, FAQ",
+        "- [Website erstellen nach Branche](https://pageblitz.de/website-erstellen): 37 Branchen-Übersicht",
+        "- [Beispiel Branche](https://pageblitz.de/website-erstellen/friseur): Friseur-Website",
+        "",
+        "## Kontakt",
+        "",
+        "- [Impressum](https://pageblitz.de/impressum)",
+      ].join("\n")
+    );
+  });
+
   // Dynamic sitemap.xml – includes all active customer websites + landing pages
   app.get("/sitemap.xml", async (_req, res) => {
     try {
@@ -437,11 +463,15 @@ async function startServer() {
           changefreq: "monthly",
         },
         ...landingPageUrls,
-        ...activeWebsites.map(w => ({
-          loc: `https://pageblitz.de/site/${w.slug}`,
-          priority: "0.5",
-          changefreq: "monthly",
-        })),
+        // Interne Demo-Seiten (admin-demo-<userId>) gehören nicht in die
+        // öffentliche Sitemap (Audit 2026-08-30, Punkt 3).
+        ...activeWebsites
+          .filter(w => !w.slug.startsWith("admin-demo-"))
+          .map(w => ({
+            loc: `https://pageblitz.de/site/${w.slug}`,
+            priority: "0.5",
+            changefreq: "monthly",
+          })),
       ];
       res.type("application/xml").send(buildSitemapXml(urls));
     } catch (err) {
@@ -554,6 +584,94 @@ async function startServer() {
       }
     });
 
+    // ── Statische SPA-Routen: eigene Metas statt Homepage-Duplikat ──────────
+    // Audit 2026-08-30, Punkt 2: /impressum, /datenschutz und /start waren
+    // mit Title + Description der Startseite indexiert (SPA-Fallback).
+    // Private/Funnel-Routen bekommen zusätzlich noindex.
+    const spaRouteMeta = (opts: {
+      title: string;
+      description: string;
+      canonicalPath?: string;
+      noindex?: boolean;
+    }) => {
+      let cached: string | null = null;
+      return (_req: express.Request, res: express.Response) => {
+        res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        try {
+          if (cached === null) {
+            if (!fs.existsSync(indexHtmlPath)) {
+              return res.status(500).send("Server error");
+            }
+            const tags = [
+              `<title>${escapeHtml(opts.title)}</title>`,
+              `<meta name="description" content="${escapeHtml(opts.description)}">`,
+              opts.canonicalPath
+                ? `<link rel="canonical" href="https://pageblitz.de${opts.canonicalPath}">`
+                : "",
+              opts.noindex ? `<meta name="robots" content="noindex">` : "",
+            ]
+              .filter(Boolean)
+              .join("\n    ");
+            cached = fs
+              .readFileSync(indexHtmlPath, "utf-8")
+              .replace(/<title>[^<]*<\/title>/, "")
+              .replace(/<meta name="description"[^>]*>/i, "")
+              .replace(/<link rel="canonical"[^>]*>/i, "")
+              .replace("</head>", `${tags}\n  </head>`);
+          }
+          res.type("text/html").send(cached);
+        } catch (err) {
+          console.error("[SEO] SPA-Routen-Meta fehlgeschlagen:", err);
+          if (fs.existsSync(indexHtmlPath)) return res.sendFile(indexHtmlPath);
+          res.status(500).send("Server error");
+        }
+      };
+    };
+    app.get(
+      "/impressum",
+      spaRouteMeta({
+        title: "Impressum | Pageblitz",
+        description:
+          "Impressum und Anbieterkennzeichnung von Pageblitz — KI-Websites für Kleinunternehmen.",
+        canonicalPath: "/impressum",
+      })
+    );
+    app.get(
+      "/datenschutz",
+      spaRouteMeta({
+        title: "Datenschutzerklärung | Pageblitz",
+        description:
+          "Datenschutzerklärung von Pageblitz: Welche Daten wir verarbeiten, wofür und wie lange — DSGVO-konform, Hosting in Deutschland.",
+        canonicalPath: "/datenschutz",
+      })
+    );
+    app.get(
+      "/start",
+      spaRouteMeta({
+        title: "Website jetzt erstellen — in 3 Minuten | Pageblitz",
+        description:
+          "Starte jetzt: Firmenname oder Google-Profil eingeben und in ca. 3 Minuten eine fertige Website-Vorschau erhalten. Kostenlos ansehen.",
+        canonicalPath: "/start",
+      })
+    );
+    for (const [route, title] of [
+      ["/login", "Anmelden | Pageblitz"],
+      ["/admin-login", "Admin | Pageblitz"],
+      ["/my-website", "Meine Website | Pageblitz"],
+      ["/my-account", "Mein Konto | Pageblitz"],
+      ["/welcome-back", "Willkommen zurück | Pageblitz"],
+      ["/design-review", "Design-Review | Pageblitz"],
+    ] as const) {
+      app.get(
+        route,
+        spaRouteMeta({
+          title,
+          description: "Interner Bereich von Pageblitz.",
+          noindex: true,
+        })
+      );
+    }
+
     const injectMetaTags = async (
       req: express.Request,
       res: express.Response
@@ -564,6 +682,10 @@ async function startServer() {
       res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
       try {
         const slug = req.params.slug;
+        // Interne Demo-Seiten nie indexieren (Audit 2026-08-30, Punkt 3).
+        if (slug?.startsWith("admin-demo-")) {
+          res.setHeader("X-Robots-Tag", "noindex");
+        }
         if (!slug || !fs.existsSync(indexHtmlPath)) {
           return res.sendFile(indexHtmlPath);
         }
