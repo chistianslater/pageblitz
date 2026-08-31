@@ -2748,9 +2748,14 @@ export function generateLandingPageHTML(
   // Stadt NACH VORN (Audit 2026-08-30, Punkt 4): die alte Fassung hängte
   // die Stadt ans Ende einer ~190-Zeichen-Description — Google schneidet
   // bei ~160 ab, in den SERPs sahen Branchen- und Stadt-Seite identisch aus.
+  // Branchen-Meta: Suffix nur anhängen, wenn die 160-Zeichen-Grenze hält
+  // (Vollgrade-Fund 2026-08-31: Friseur lag mit Suffix bei 177c).
+  const branchSuffix = " 7 Tage gratis testen.";
   const metaDesc = city
     ? `Professionelle ${industry.displayName}-Website in ${city.name} ab 19,90 €/Monat – von der KI in 3 Minuten erstellt. Jetzt Vorschau ansehen und 7 Tage gratis testen.`
-    : `${industry.description} 7 Tage gratis testen.`;
+    : industry.description.length + branchSuffix.length <= 160
+      ? `${industry.description}${branchSuffix}`
+      : industry.description;
   const h1 = industry.h1Template.replace("{city}", cityStr);
 
   const otherIndustries = Object.values(SEO_INDUSTRIES).filter(
