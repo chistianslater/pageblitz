@@ -21,6 +21,13 @@ export interface SeoCity {
   /** 2–3 Sätze über die lokale Kleinunternehmer-/Wettbewerbslage. Muss pro Stadt
    *  wirklich unterschiedlich sein – sonst sind die Seiten wieder Duplikate. */
   intro: string;
+  /**
+   * Vertiefender Stadt-Text (~150 Wörter, 2 Absätze via \n\n) gegen das
+   * Thin-Content-Risiko der City-Pages (Audit 2026-08-31: ~660 → 900+
+   * eindeutige Wörter). Rendert als .local-detail unterhalb der drei
+   * Feature-Karten — nur wenn gesetzt.
+   */
+  description?: string;
 }
 
 // ── 17 Branchen ───────────────────────────────────────────────────────────────
@@ -1890,6 +1897,8 @@ export const DE_CITIES: SeoCity[] = [
     ],
     intro:
       "Berlin ist der härteste Kiez-Markt Deutschlands: In Prenzlauer Berg oder Neukölln liegen oft ein Dutzend Betriebe derselben Branche in Laufweite. Wer hier gefunden werden will, braucht vor allem eine Website, die den Stadtteil klar benennt – die meisten Suchanfragen laufen nicht über „Berlin“, sondern über den Kiez. Dazu kommt ein hoher Anteil an Neuzugezogenen, die einen Betrieb ausschließlich online auswählen.",
+    description:
+      "Berlin zählt mehr Kleinbetriebe als jede andere deutsche Stadt — und kaum irgendwo wechselt die Kundschaft so schnell. Wer neu in den Kiez zieht, kennt weder den Friseur an der Ecke noch die Werkstatt zwei Straßen weiter; entschieden wird am Handy, zwischen U-Bahn-Station und Haustür. Dabei zählen drei Dinge: taucht der Betrieb für den Stadtteil auf, wirken die Fotos echt, und steht da ein Preis oder wenigstens eine klare Leistung. Ein Google-Profil allein reicht in Berlin selten — zu viele Einträge sehen gleich aus.\n\nFür deine Website heißt das: Stadtteil und Straße gehören prominent auf die Startseite, nicht versteckt ins Impressum. Nenne die Kieze, aus denen deine Kundschaft wirklich kommt, zeig echte Bilder aus dem Laden und mach die Kontaktaufnahme zum Ein-Finger-Klick. Genau diese Struktur legt Pageblitz automatisch an — mit deinem Stadtteil in Titel und Überschriften.",
   },
   {
     name: "Hamburg",
@@ -1898,6 +1907,8 @@ export const DE_CITIES: SeoCity[] = [
     districts: ["Altona", "Eimsbüttel", "St. Pauli", "Winterhude", "Eppendorf"],
     intro:
       "Hamburg ist stark in Stadtteile segmentiert – Eppendorf tickt anders als St. Pauli, und das schlägt auf Preisniveau und Bildsprache durch. Weil die Elbe die Stadt teilt, spielt Erreichbarkeit eine größere Rolle als anderswo: Anfahrt, Parkplatz und ÖPNV-Anbindung gehören auf einer Hamburger Website sichtbar nach oben, nicht ins Impressum.",
+    description:
+      "Hamburg ist eine Stadt der klaren Reviere: Wer in Eppendorf wohnt, sucht selten einen Betrieb in Harburg — die Elbe und die weiten Wege sortieren die Kundschaft von selbst. Deshalb gewinnt hier nicht der lauteste Anbieter, sondern der, der sein Einzugsgebiet präzise benennt. Dazu kommt ein Publikum, das Wert auf Verlässlichkeit legt: Hanseatische Zurückhaltung gilt auch bei der Anbieterwahl, übertriebene Werbeversprechen schrecken eher ab als sie überzeugen.\n\nDeine Website sollte deshalb nüchtern und konkret sein: welche Stadtteile du bedienst, wie man dich erreicht, wo man parkt oder welche Bahn hält. Öffnungszeiten und Anfahrt gehören sichtbar nach oben — bei Hamburger Wetter wird die Entscheidung oft unterwegs am Handy getroffen. Pageblitz baut diese Angaben automatisch dorthin, wo Google und deine Kundschaft sie zuerst sehen.",
   },
   {
     name: "München",
@@ -1912,6 +1923,8 @@ export const DE_CITIES: SeoCity[] = [
     ],
     intro:
       "In München sind Gewerbemieten hoch, und das prägt die Kundenerwartung: Wer hier Premiumpreise aufruft, muss das auf der Website auch zeigen – über Referenzen, Qualifikationen und saubere Fotos statt über Rabatte. Gleichzeitig ist der Anteil englischsprachiger Kundschaft in Schwabing und der Maxvorstadt spürbar höher als im Bundesschnitt.",
+    description:
+      "München hat die höchste Kaufkraft der deutschen Großstädte — und die höchsten Erwartungen. Kundschaft, die für Miete und Handwerkerstunde Münchner Preise zahlt, erwartet auch online einen professionellen Auftritt: Eine Website mit verpixeltem Logo und toten Links kostet hier schneller Aufträge als anderswo. Gleichzeitig ist die Konkurrenz durch alteingesessene Betriebe groß, die sich auf Empfehlungen über Jahrzehnte verlassen konnten. Wer neu ist oder wachsen will, muss über die Suche gefunden werden.\n\nDer Hebel: eine Website, die Qualität ausstrahlt, bevor das erste Gespräch stattfindet — saubere Typografie, echte Referenzfotos, klare Leistungsbeschreibung, gern mit Preisrahmen. Und weil viele Münchner Termine online erwarten, lohnt sich eine direkte Anfrage- oder Buchungsmöglichkeit. Pageblitz liefert beides: ein Design, das zum Preisniveau der Stadt passt, und die Anfrage in einem Klick.",
   },
   {
     name: "Köln",
@@ -1920,6 +1933,8 @@ export const DE_CITIES: SeoCity[] = [
     districts: ["Ehrenfeld", "Nippes", "Sülz", "Lindenthal", "Deutz"],
     intro:
       "Köln funktioniert über Veedel und Stammkundschaft – Empfehlungen zählen mehr als Werbebudget. Der typische Weg: Jemand hört von deinem Betrieb, googelt den Namen und will in zehn Sekunden Öffnungszeiten, Adresse und eine Telefonnummer sehen. Genau daran scheitern die meisten Kölner Kleinbetriebe, weil sie nur eine Facebook-Seite haben.",
+    description:
+      "In Köln läuft vieles über das Veedel: Man kennt seinen Bäcker, seinen Elektriker, seine Friseurin — und empfiehlt sie weiter. Diese Empfehlungskultur ist eine Stärke für etablierte Betriebe, aber eine Hürde für alle, die neu sind oder deren Stammkundschaft wegzieht. Denn die Zugezogenen, die jedes Jahr in die Stadt kommen, haben kein Veedel-Netzwerk. Sie fragen nicht den Nachbarn, sie fragen Google — und landen bei dem Betrieb, der online am greifbarsten wirkt.\n\nEine Kölner Website sollte deshalb das leisten, was sonst die Mundpropaganda erledigt: Vertrauen aufbauen. Echte Google-Bewertungen sichtbar einbinden, das Team zeigen, das Veedel beim Namen nennen. Wer aus Ehrenfeld kommt, klickt eher auf einen Betrieb, der „Ehrenfeld“ schreibt, als auf einen anonymen Köln-Eintrag. Pageblitz zieht Bewertungen und Ortsangaben automatisch an die richtigen Stellen.",
   },
   {
     name: "Frankfurt am Main",
@@ -1934,6 +1949,8 @@ export const DE_CITIES: SeoCity[] = [
     ],
     intro:
       "Frankfurt hat einen ungewöhnlich hohen Anteil an Pendlern und Kurzzeit-Bewohnern. Für lokale Betriebe heißt das: Ein großer Teil der Kundschaft kennt die Stadt kaum und entscheidet rein über Google – ohne Empfehlung, ohne Vorgeschichte. Online-Terminbuchung und mehrsprachige Angaben wirken hier stärker als in vergleichbar großen Städten.",
+    description:
+      "Frankfurt ist Deutschlands Pendlerhauptstadt: Tagsüber verdoppelt sich die Stadt beinahe, abends leeren sich Bankenviertel und Innenstadt. Für lokale Betriebe heißt das: Die Kundschaft entscheidet in Zeitfenstern — in der Mittagspause, auf dem Heimweg, am Wochenende im Wohnviertel. Dazu kommt ein internationales Publikum, das oft auf Englisch sucht und Betriebe strikt nach Online-Auftritt vorsortiert, weil persönliche Empfehlungen fehlen.\n\nDeine Website muss deshalb vor allem zwei Fragen sofort beantworten: Wann hast du auf, und wie schnell bekomme ich einen Termin? Öffnungszeiten, die Berufstätigen entgegenkommen, gehören genauso prominent auf die Seite wie eine Anfrage, die ohne Anruf funktioniert. Und wer sein Wohnviertel — ob Bornheim, Bockenheim oder Sachsenhausen — klar benennt, fängt die Suche nach Feierabend genau dort ab, wo sie stattfindet. Pageblitz strukturiert die Seite genau so.",
   },
   {
     name: "Stuttgart",
@@ -1948,6 +1965,8 @@ export const DE_CITIES: SeoCity[] = [
     ],
     intro:
       "Stuttgart liegt im Kessel, und die Topografie prägt das Suchverhalten: Wer in Degerloch wohnt, sucht selten einen Betrieb in Feuerbach. Lokale Sichtbarkeit im eigenen Stadtbezirk schlägt hier stadtweite Reichweite. Dazu kommt eine mittelständisch geprägte Kundschaft, die Wert auf Handwerksqualität und belastbare Angaben legt – Meisterbrief und Zertifikate gehören sichtbar auf die Seite.",
+    description:
+      "Stuttgart ist eine Stadt der Ingenieure und Handwerker — Qualität wird hier nicht versprochen, sondern vorausgesetzt. Die Kundschaft vergleicht gründlich, liest Bewertungen bis zum Ende und misstraut allem, was nach leerer Werbung klingt. Dazu kommt die Kessellage: Viele Aufträge kommen nicht aus der Kernstadt, sondern aus den Teilorten und dem Speckgürtel von Fellbach bis Leinfelden — wer nur „Stuttgart“ schreibt, verschenkt genau diese Suchen.\n\nEine Website für den Stuttgarter Markt sollte deshalb sachlich überzeugen: konkrete Leistungen statt Floskeln, Referenzen mit echten Fotos, Qualifikationen und Meistertitel sichtbar. Und sie sollte das Einzugsgebiet ehrlich benennen — samt Anfahrt und Parkmöglichkeit, denn in der Region Stuttgart kommt die Kundschaft mit dem Auto. Pageblitz setzt Ort, Leistungen und Nachweise automatisch dorthin, wo schwäbische Gründlichkeit sie sucht.",
   },
 ];
 
@@ -2428,6 +2447,9 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .feature-card h3{font-size:1rem;font-weight:600;margin-bottom:.5rem;color:#fff}
 .feature-card p{color:rgba(255,255,255,.4);font-size:.9375rem;line-height:1.65}
 .local-intro{max-width:760px;margin:0 auto 3rem;text-align:center;color:rgba(255,255,255,.55);font-size:1.0625rem;line-height:1.75}
+.local-detail{max-width:760px;margin:3rem auto 0;color:rgba(255,255,255,.55);font-size:1rem;line-height:1.8}
+.local-detail p{margin:0 0 1em}
+.local-detail p:last-child{margin-bottom:0}
 /* Add-ons */
 .addons{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .addons-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;margin-top:3.5rem}
@@ -2586,7 +2608,7 @@ nav{background:rgba(19,19,22,.88);border-color:rgba(255,255,255,.09);padding:.75
 .steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:rgba(255,255,255,.09)}
 .section-label{color:#ccff00;font-weight:500}
 .section-title{color:#f2f1ee;font-weight:500;font-size:clamp(1.9rem,3vw,3rem)}
-.section-sub,.local-intro{color:#a4a39d}
+.section-sub,.local-intro,.local-detail{color:#a4a39d}
 .steps-grid{gap:1rem}
 .step{text-align:left;border-top:1px solid rgba(255,255,255,.09);padding:1.5rem 0}
 .step-num{margin:0 0 1.25rem;background:#131316;border-color:rgba(255,255,255,.09);color:#ccff00}
@@ -2799,6 +2821,14 @@ export function generateLandingPageHTML(
       <div class="feature-card"><div class="feature-icon">${iconSvg("🔍")}</div><h3>„${escapeHtml(industry.displayName)} ${escapeHtml(city.name)}“</h3><p>Genau nach dieser Kombination sucht deine Kundschaft. Pageblitz setzt Titel, Überschriften und Meta-Angaben automatisch so, dass dein Betrieb für ${escapeHtml(industry.displayName.toLowerCase())}-Suchen in ${escapeHtml(city.name)} passend ausgezeichnet ist.</p></div>
       <div class="feature-card"><div class="feature-icon">${iconSvg("📱")}</div><h3>Unterwegs entschieden</h3><p>Lokale Suchen laufen fast immer über das Handy – oft direkt vor der Tür. Deine Seite lädt schnell, zeigt Öffnungszeiten und Route sofort und macht die Kontaktaufnahme zu einem Fingertipp.</p></div>
     </div>
+    ${
+      city.description
+        ? `<div class="local-detail">${city.description
+            .split(/\n{2,}/)
+            .map(paragraph => `<p>${escapeHtml(paragraph)}</p>`)
+            .join("")}</div>`
+        : ""
+    }
   </div>
 </section>`
     : "";
