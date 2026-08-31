@@ -24,6 +24,7 @@ import {
   CalendarDays,
   Layers,
   Trash2,
+  Eye,
 } from "lucide-react";
 import { AddonsTab } from "@/pages/dashboard/AddonsTab";
 import type { DetailKey as AddonDetailKey } from "@/pages/dashboard/AddonsTab";
@@ -221,6 +222,17 @@ export default function CustomerDashboard() {
 
   const updateShowBrandingMutation =
     trpc.customer.updateShowBranding.useMutation({
+      onSuccess: () => {
+        refetch();
+        toast.success("Einstellung gespeichert");
+      },
+      onError: (err: any) => {
+        toast.error("Fehler beim Speichern: " + err.message);
+      },
+    });
+
+  const updateAgeGateMutation =
+    trpc.customer.updateRequiresAgeGate.useMutation({
       onSuccess: () => {
         refetch();
         toast.success("Einstellung gespeichert");
@@ -868,6 +880,59 @@ export default function CustomerDashboard() {
                   </label>
                 </div>
               )}
+
+              {/* Altersabfrage 18+ (FSK-18, 2026-08-31): Kunden-Schalter für
+                  Alkohol/Erotik/Glücksspiel — wird bei passender Branche
+                  automatisch aktiviert, hier jederzeit umstellbar. */}
+              <div className="bg-lp-surface border border-lp-line rounded-2xl p-5">
+                <h2 className="text-lp-ink font-semibold flex items-center gap-2 mb-1">
+                  <Eye className="w-4 h-4 text-lp-muted" />
+                  Altersabfrage (18+)
+                </h2>
+                <p className="text-lp-muted text-xs mb-4">
+                  Für Betriebe mit Alkohol-, Erotik- oder Glücksspiel-Bezug:
+                  Besucher müssen vor dem Betreten ihr Alter bestätigen.
+                </p>
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <div className="relative mt-0.5">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={(website as any).requiresAgeGate === true}
+                      onChange={e => {
+                        updateAgeGateMutation.mutate({
+                          websiteId: website.id,
+                          requiresAgeGate: e.target.checked,
+                        });
+                      }}
+                    />
+                    <div
+                      className={`w-10 h-6 rounded-full transition-colors ${(website as any).requiresAgeGate === true ? "bg-lp-accent" : "bg-lp-line"}`}
+                      onClick={() => {
+                        const current =
+                          (website as any).requiresAgeGate === true;
+                        updateAgeGateMutation.mutate({
+                          websiteId: website.id,
+                          requiresAgeGate: !current,
+                        });
+                      }}
+                    >
+                      <div
+                        className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${(website as any).requiresAgeGate === true ? "translate-x-4" : "translate-x-0"}`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-lp-ink text-sm font-medium">
+                      Altersbestätigung vor dem Besuch verlangen
+                    </span>
+                    <p className="text-lp-muted text-xs mt-0.5">
+                      Zeigt ein „Bist du 18 oder älter?"-Overlay, bevor die
+                      Website sichtbar wird. Die Bestätigung gilt 30 Tage.
+                    </p>
+                  </div>
+                </label>
+              </div>
             </div>
           )}
 

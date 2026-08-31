@@ -44,7 +44,12 @@ export interface RenderSiteOptions {
    * `server/routers.ts`, NICHT Teil von `WebsiteDataV2`/`features`). Geht
    * über `SiteRenderer` an `SiteIslands` → `ChatIsland` weiter.
    */
-  site?: { chatWelcomeMessage?: string | null; showBranding?: boolean };
+  site?: {
+    chatWelcomeMessage?: string | null;
+    showBranding?: boolean;
+    /** FSK-18-Overlay (nur Live-Kundenseiten, nie Studio-Vorschau). */
+    requiresAgeGate?: boolean;
+  };
   /**
    * Reicht den Vorschau-Modus 1:1 an `SiteRenderer`/`SiteIslands` durch.
    * `undefined` (Default) lässt Inseln im Live-Modus rendern — so bleibt das

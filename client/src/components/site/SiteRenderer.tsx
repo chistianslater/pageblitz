@@ -18,6 +18,7 @@ import { RICH_TEXT_CSS } from "./richText";
 import { STORY_CSS } from "./storySection";
 import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
+import { AGE_GATE_CSS, AgeGateSsr } from "./ageGateSsr";
 import { EXTRA_SECTIONS_CSS } from "./extraSections";
 
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
@@ -88,6 +89,13 @@ export const SiteRenderer: React.FC<{
      * Toggle wird hiermit erstmals im v2-Rendering wirksam (2026-08-31).
      */
     showBranding?: boolean;
+    /**
+     * FSK-18-Altersabfrage (websites.requiresAgeGate): rendert das
+     * SSR-Overlay aus ageGateSsr.tsx VOR dem Seiteninhalt. Wird nur vom
+     * Live-Kundenseiten-SSR gesetzt — Studio-/Dashboard-Vorschauen bleiben
+     * gate-frei, damit das Bearbeiten nicht blockiert.
+     */
+    requiresAgeGate?: boolean;
   };
   /**
    * Reicht den Vorschau-Modus 1:1 an `SiteIslands` durch (siehe dort für die
@@ -234,9 +242,16 @@ export const SiteRenderer: React.FC<{
             "\n" +
             LAYOUT_POLISH_CSS +
             (albumJson ? "\n" + ALBUM_CSS : "") +
+            (site?.requiresAgeGate === true ? "\n" + AGE_GATE_CSS : "") +
             (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
         }}
       />
+      {/* FSK-18-Overlay VOR allem Inhalt (fail-closed ohne JS); das
+          Inline-Script der Komponente räumt es für bestätigte Besucher
+          vor dem ersten Paint wieder weg. */}
+      {site?.requiresAgeGate === true && (
+        <AgeGateSsr slug={slug} businessName={effectiveData.businessName} />
+      )}
       {albumJson && (
         <script
           type="application/json"

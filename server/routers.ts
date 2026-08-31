@@ -2788,7 +2788,8 @@ export const appRouter = router({
       .input(z.object({ websiteId: z.number(), showBranding: z.boolean() }))
       .mutation(async ({ ctx, input }) => {
         const rows = await getWebsitesByUserId(ctx.user.id);
-        if (!rows.find(r => r.website.id === input.websiteId))
+        const owned = rows.find(r => r.website.id === input.websiteId);
+        if (!owned)
           throw new TRPCError({
             code: "FORBIDDEN",
             message: "Keine Berechtigung",
@@ -2796,6 +2797,31 @@ export const appRouter = router({
         await updateWebsite(input.websiteId, {
           showBranding: input.showBranding,
         } as any);
+        // Sofort sichtbar statt erst nach Cache-TTL (60s).
+        invalidateSsrCache(owned.website.slug);
+        return { success: true };
+      }),
+
+    /**
+     * Kunden-Schalter „Altersabfrage (18+)" (2026-08-31): bei Alkohol,
+     * Erotik, Glücksspiel etc. wird das Flag zwar automatisch bei der
+     * Generierung gesetzt (shouldRequireAgeGate), aber der Kunde konnte
+     * es bislang nicht selbst steuern — nur der Admin.
+     */
+    updateRequiresAgeGate: protectedProcedure
+      .input(z.object({ websiteId: z.number(), requiresAgeGate: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        const rows = await getWebsitesByUserId(ctx.user.id);
+        const owned = rows.find(r => r.website.id === input.websiteId);
+        if (!owned)
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Keine Berechtigung",
+          });
+        await updateWebsite(input.websiteId, {
+          requiresAgeGate: input.requiresAgeGate,
+        });
+        invalidateSsrCache(owned.website.slug);
         return { success: true };
       }),
 

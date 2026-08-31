@@ -655,6 +655,7 @@ async function handleCustomerSiteSsr(
       site: {
         chatWelcomeMessage: website.chatWelcomeMessage,
         showBranding: website.showBranding !== false,
+        requiresAgeGate: website.requiresAgeGate === true,
       },
       // Cookieloses Umami-Tracking nur für aktive Sites mit registrierter
       // ID (Plan B6 Task 7; ID kommt aus server/umamiProvisioning.ts, die
