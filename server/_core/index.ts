@@ -617,6 +617,9 @@ async function startServer() {
               .replace(/<title>[^<]*<\/title>/, "")
               .replace(/<meta name="description"[^>]*>/i, "")
               .replace(/<link rel="canonical"[^>]*>/i, "")
+              // Basis-HTML trägt ein "index, follow"-Tag — raus, damit bei
+              // noindex-Routen nicht zwei widersprüchliche Tags stehen.
+              .replace(/<meta name="robots"[^>]*>/i, "")
               .replace("</head>", `${tags}\n  </head>`);
           }
           res.type("text/html").send(cached);
