@@ -118,5 +118,8 @@ Erste Artikel: „Impressum für Kleinunternehmer" (Memory: 5.400 Suchen/Mo),
 - **Local/GBP (Layer 11): skipped** — SaaS ohne lokales Servicegebiet.
 - **Doorway (Layer 13): gemessen, sauber** — berlin↔hamburg 49 % Satz-
   Ähnlichkeit mit echten Stadt-Spezifika, ~1.045 Wörter/Seite. Kein Set.
-- **HTML-Board (audit-report.html): ausstehend** — wird beim Fix-Lauf
-  generiert, wenn es ein echtes Vorher/Nachher gibt.
+- **HTML-Board: erledigt 31 Aug** — audit-report.html im Repo-Root,
+  Vollgrade 80+31 Checks auf 3 Template-Seiten, 86 → 88 (fixable,
+  0 Waiver). Neue Vollgrade-Funde: Branchen-Meta 177c, Home-H1 ohne
+  Keyword (Fix-Liste „now"); Content-Routen: Autor/Über-uns, Tabellen,
+  externe Quellen, Kundenzahlen.
