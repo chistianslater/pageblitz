@@ -28,6 +28,12 @@ import {
   generateOverviewHTML,
 } from "../seo/landingPages";
 import {
+  BLOG_POSTS,
+  getBlogPost,
+  renderBlogIndexHTML,
+  renderBlogPostHTML,
+} from "../seo/blog";
+import {
   buildSitemapXml,
   buildLocalBusinessSchema,
   extractCity,
@@ -433,6 +439,7 @@ async function startServer() {
           "- [Startseite](https://pageblitz.de/): Produkt, Preise, FAQ",
           "- [Website erstellen nach Branche](https://pageblitz.de/website-erstellen): 37 Branchen-Übersicht",
           "- [Beispiel Branche](https://pageblitz.de/website-erstellen/friseur): Friseur-Website",
+          "- [Blog](https://pageblitz.de/blog): Anleitungen für Kleinunternehmer (Impressum, Website-Pflichten)",
           "",
           "## Kontakt",
           "",
@@ -464,6 +471,16 @@ async function startServer() {
           priority: "0.9",
           changefreq: "monthly",
         },
+        {
+          loc: "https://pageblitz.de/blog",
+          priority: "0.7",
+          changefreq: "weekly",
+        },
+        ...BLOG_POSTS.map(post => ({
+          loc: `https://pageblitz.de/blog/${post.slug}`,
+          priority: "0.7",
+          changefreq: "monthly",
+        })),
         ...landingPageUrls,
         // Interne Demo-Seiten (admin-demo-<userId>) gehören nicht in die
         // öffentliche Sitemap (Audit 2026-08-30, Punkt 3).
@@ -488,6 +505,20 @@ async function startServer() {
   app.get("/website-erstellen", (_req, res) => {
     res.setHeader("Cache-Control", LANDING_CACHE);
     res.type("text/html").send(generateOverviewHTML());
+  });
+
+  // Blog (SEO-Task 2, 2026-08-31): SSR-HTML wie die programmatischen
+  // Pages — kein SPA-Bundle, Inhalte in server/seo/blog.ts.
+  app.get("/blog", (_req, res) => {
+    res.setHeader("Cache-Control", LANDING_CACHE);
+    res.type("text/html").send(renderBlogIndexHTML());
+  });
+
+  app.get("/blog/:slug", (req, res) => {
+    const post = getBlogPost(req.params.slug);
+    if (!post) return res.redirect(301, "/blog");
+    res.setHeader("Cache-Control", LANDING_CACHE);
+    res.type("text/html").send(renderBlogPostHTML(post));
   });
 
   app.get("/website-erstellen/:industry", (req, res) => {
