@@ -38,7 +38,13 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
       mode: "services",
       headline: services.headline,
       ...(services.intro !== undefined ? { intro: services.intro } : {}),
-      items: services.items,
+      // price bewusst gestrippt (Betreiber 2026-09-01): das Patch-Schema
+      // kennt kein price mehr — Bestands-Preise fallen beim nächsten
+      // Speichern weg, Preise leben in den Extras Preisliste/Speisekarte.
+      items: services.items.map(({ title, description }) => ({
+        title,
+        ...(description !== undefined ? { description } : {}),
+      })),
     };
   }
   const menu = doc.sections.find(

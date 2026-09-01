@@ -102,7 +102,8 @@ export function collectInlineTextTargets(
             500,
             true
           );
-          add(sectionIndex, scope, `items.${itemIndex}.price`, item.price, 60);
+          // Kein Inline-Ziel für services-Preise mehr (Betreiber
+          // 2026-09-01): Preise gehören in die Extras.
         });
         break;
       case "about":

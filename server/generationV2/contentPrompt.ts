@@ -27,7 +27,7 @@ export interface ContentPromptArgs {
  */
 const SECTION_FIELD_DOC: Record<SectionType, string> = {
   hero: `"headline" (Pflicht), "subheadline" (optional), "ctaText" (optional, z. B. "Jetzt anfragen") — KEINE "ctaHref", KEINE "imageUrl"`,
-  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional), "price" (optional) }] (4–6 Einträge)`,
+  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional) }] (4–6 Einträge) — KEINE Preise (Preise gehören in die Extras Preisliste/Speisekarte)`,
   about: `"headline" (Pflicht), "body" (Pflicht, 2–4 Sätze) — KEINE "imageUrl"`,
   gallery: `"headline" (optional) — KEINE "images" (werden systemseitig gesetzt)`,
   testimonials: `"headline" (optional), "items": [{ "author" (Pflicht), "text" (Pflicht), "rating" (optional, 1–5) }] (mind. 1 Eintrag)`,

@@ -158,6 +158,7 @@ export function buildAiEditPrompt(args: {
     `- "hiddenDecorations": VOLLSTÄNDIGE Liste einzeln ausgeblendeter Deko-Gruppen (statt alles auf einmal): "blobs" = organische Farbflächen, "dots" = Punktraster, "sprigs" = Zweig-Illustrationen, "ornaments" = Trennornamente/Bordüren. [] blendet alle Gruppen wieder ein. Beispiel: Kunde will nur die Zweige weg → ["sprigs"].`,
     `- heroLayout "banner": Hero-Bild vollflächig hinter dem Text (dunkles Overlay, helle Schrift) — für „großes Bild über die ganze Breite". galleryLayout "masonry": Bilder in Spalten mit natürlicher Höhe (Pinterest-Stil).`,
     `- "testimonialsLayout": "stack" (untereinander), "grid" (2 Spalten), "carousel" (seitlich wischbar). "contactLayout": "split" stellt Kontaktdaten/Öffnungszeiten/Formular zweispaltig, "stack" untereinander. Beide weglassen = Pack-Standard.`,
+    `- Leistungen (services) tragen KEINE Preise — bei Preis-Wünschen freundlich auf die Extras Preisliste bzw. Speisekarte verweisen (buchbar im Extras-Panel).`,
     // Sichtbarkeit/Reihenfolge wirken auf die Startseite — im
     // Unterseiten-Scope nicht anbieten (und kein "hero" in den Prompt
     // leaken, siehe Whitelist-Test).

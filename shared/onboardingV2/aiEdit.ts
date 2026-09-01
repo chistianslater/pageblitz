@@ -273,7 +273,9 @@ const ARRAY_FIELDS: Partial<Record<SectionType, ArrayFieldSpec>> = {
   services: {
     field: "items",
     singular: "Leistung",
-    subfields: { title: "Titel", description: "Beschreibung", price: "Preis" },
+    // Kein "price" mehr (Betreiber 2026-09-01): Preise leben in den
+    // Extras Preisliste/Speisekarte, die KI darf hier keine setzen.
+    subfields: { title: "Titel", description: "Beschreibung" },
   },
   testimonials: {
     field: "items",

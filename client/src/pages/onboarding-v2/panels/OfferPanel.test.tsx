@@ -26,7 +26,8 @@ describe("offerFromDoc", () => {
       mode: "services",
       headline: "Unsere Leistungen",
       intro: "Kurzer Überblick",
-      items: [{ title: "Beratung", description: "Kostenlos", price: "ab 0 €" }],
+      // price wird bewusst gestrippt (Betreiber 2026-09-01).
+      items: [{ title: "Beratung", description: "Kostenlos" }],
     });
   });
 
@@ -217,7 +218,8 @@ describe("OfferEditor", () => {
     expect(servicesHtml).toContain('maxLength="80"'); // Überschrift + Titel
     expect(servicesHtml).toContain('maxLength="300"'); // Einleitung
     expect(servicesHtml).toContain('maxLength="240"'); // Beschreibung
-    expect(servicesHtml).toContain('maxLength="40"'); // Preis
+    // Kein Preis-Feld mehr bei Leistungen (Betreiber 2026-09-01).
+    expect(servicesHtml).not.toContain('aria-label="Preis"');
 
     const menuHtml = renderToStaticMarkup(
       <OfferEditor
@@ -260,7 +262,7 @@ describe("validateOffer", () => {
       validateOffer({
         mode: "services",
         headline: "Leistungen",
-        items: [{ title: "Beratung", price: "ab 50 €" }],
+        items: [{ title: "Beratung" }],
       })
     ).toEqual([]);
   });

@@ -143,15 +143,8 @@ function ServicesEditor({ value, onChange }: ServicesEditorProps) {
             value={item.description ?? ""}
             onChange={e => updateItem(i, { description: e.target.value })}
           />
-          <input
-            aria-label="Preis"
-            type="text"
-            className="pb-studio-input"
-            placeholder="Preis (optional)"
-            maxLength={40}
-            value={item.price ?? ""}
-            onChange={e => updateItem(i, { price: e.target.value })}
-          />
+          {/* Kein Preis-Feld mehr (Betreiber 2026-09-01): Preise sind der
+              Kaufgrund für die Extras Preisliste/Speisekarte. */}
           <button
             type="button"
             className="pb-studio-btn"

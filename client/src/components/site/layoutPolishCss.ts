@@ -12,4 +12,8 @@ export const LAYOUT_POLISH_CSS = `
 .pb-site:not([data-pb-gallery]) [data-pb-slot="gallery-items"]>:only-child{grid-column:1/-1!important;width:100%!important;margin:0}
 .pb-site:not([data-pb-gallery]) [data-pb-slot="gallery-items"]>img:only-child,
 .pb-site:not([data-pb-gallery]) [data-pb-slot="gallery-items"]>:only-child img{width:100%!important;max-width:100%!important;aspect-ratio:auto!important;height:auto;max-height:min(60vh,30rem);object-fit:cover}
+/* Kontakt-CTA direkt unter der Headline (Betreiber-Screenshot 2026-09-01,
+   gusto: 4px Abstand): Mindestluft, wenn ein Link unmittelbar auf die
+   Kontakt-Überschrift folgt. Packs mit Zwischeninhalt bleiben unberührt. */
+.pb-site #kontakt :is(h1,h2)+a{display:inline-block;margin-top:18px}
 `;

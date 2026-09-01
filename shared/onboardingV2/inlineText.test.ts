@@ -41,7 +41,6 @@ describe("collectInlineTextTargets", () => {
         "sections.0.ctaText",
         "sections.1.items.0.title",
         "sections.1.items.0.description",
-        "sections.1.items.0.price",
         "sections.2.body",
         "sections.3.items.0.question",
         "sections.3.items.0.answer",

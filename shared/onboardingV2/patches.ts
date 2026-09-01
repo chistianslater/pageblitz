@@ -82,7 +82,10 @@ export const OfferPatchSchema = z.discriminatedUnion("mode", [
             .object({
               title: z.string().min(1).max(80),
               description: z.string().max(240).optional(),
-              price: z.string().max(40).optional(),
+              // KEIN price mehr (Betreiber 2026-09-01): Preise sind der
+              // Kaufgrund für die Extras Preisliste/Speisekarte. Bestands-
+              // Dokumente behalten vorhandene Preise (SectionSchema
+              // unverändert), verlieren sie aber beim nächsten Speichern.
             })
             .strict()
         )

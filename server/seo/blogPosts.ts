@@ -1,3 +1,5 @@
+import { BLOG_POSTS_BATCH2 } from "./blogPosts2";
+
 /**
  * Blog-Artikel als Daten (ausgelagert aus blog.ts, 2026-08-31, damit
  * beide Dateien unter der 800-Zeilen-Grenze bleiben). `bodyHtml` ist
@@ -450,6 +452,7 @@ const HANDWERK_POST: BlogPost = {
 };
 
 export const BLOG_POSTS: BlogPost[] = [
+  ...BLOG_POSTS_BATCH2,
   IMPRESSUM_POST,
   KOSTEN_POST,
   WIX_ALTERNATIVE_POST,
