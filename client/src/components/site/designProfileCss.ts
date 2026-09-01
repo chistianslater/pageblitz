@@ -89,10 +89,12 @@ function layoutRules(
   const splitHero =
     mode === "desktop"
       ? `
-${h("hero")}="split"] #start ${SLOT.heroSplit}{display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)!important;align-items:center!important;gap:clamp(1.5rem,4vw,3.5rem)!important}
+${h("hero")}="split"] #start ${SLOT.heroSplit},
+${h("hero")}="collage"] #start ${SLOT.heroSplit}{display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)!important;align-items:center!important;gap:clamp(1.5rem,4vw,3.5rem)!important}
 `
       : `
-${h("hero")}="split"] #start ${SLOT.heroSplit}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important}
+${h("hero")}="split"] #start ${SLOT.heroSplit},
+${h("hero")}="collage"] #start ${SLOT.heroSplit}{display:flex!important;flex-direction:column!important;grid-template-columns:1fr!important}
 `;
 
   return `
@@ -112,24 +114,31 @@ ${heroMediaInFlow(h, "image-first", "-1", "100%")}
 ${h("hero")}="compact"] #start{min-height:auto!important;padding-top:clamp(2.5rem,6vw,5rem)!important;padding-bottom:clamp(2.5rem,6vw,5rem)!important}
 ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;max-width:14ch}
 
-/* Collage (2026-08-30, „3 Fotos im Hero"): Hauptbild bleibt im Pack-Layout,
-   bis zu zwei Galerie-Karten stapeln sich leicht rotiert darüber
-   (Markup: heroCollage.tsx, in jedem Pack direkt nach dem Hero-Tag). */
-${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important}
-${h("hero")}="collage"] #start .pb-hero-extras{display:block}
-/* Text hat IMMER Vorrang vor den Karten (Fallback ohne JS; der
-   siteEnhancer blendet kollidierende Karten zusaetzlich ganz aus). */
-${h("hero")}="collage"] #start ${SLOT.heroCopy}{position:relative!important;z-index:7}
+/* Collage (Neuaufbau 2026-09-01, Betreiber: „Text zentriert, rechts die
+   Collagenbilder"): erzwingt wie split/centered eine EIGENE Komposition
+   statt sich über das Pack-Layout zu legen — Copy links (vertikal
+   zentriert, via splitHero-Grid oben), Hauptbild rechts im Fluss, die
+   Galerie-Karten stapeln leicht rotiert ÜBER der Bild-Spalte.
+   (Markup: heroCollage.tsx, in jedem Pack direkt nach dem Hero-Tag.) */
+${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important;text-align:left!important}
+${h("hero")}="collage"] #start ${SLOT.heroCopy}{position:relative!important;z-index:7;order:0!important;text-align:left!important;margin-inline:0!important}
 ${h("hero")}="collage"] #start :is(h1,h2){position:relative;z-index:7}
-${h("hero")}="collage"] #start .pb-hero-extras img{position:absolute!important;z-index:6;display:block;width:${
-    mode === "mobile" ? "clamp(76px,24vw,116px)" : "clamp(120px,14vw,196px)"
+${heroMediaInFlow(h, "collage", "2", "100%")}
+${h("hero")}="collage"] #start ${SLOT.heroMedia}{z-index:1!important}
+${h("hero")}="collage"] #start .pb-hero-extras{display:block;position:absolute;z-index:6;pointer-events:none;${
+    mode === "mobile"
+      ? "left:0;right:0;bottom:0;height:46%"
+      : "top:0;right:0;bottom:0;width:46%"
+  }}
+${h("hero")}="collage"] #start .pb-hero-extras img{position:absolute!important;display:block;width:${
+    mode === "mobile" ? "clamp(76px,24vw,116px)" : "clamp(110px,12vw,180px)"
   };aspect-ratio:4/5;object-fit:cover;border:5px solid var(--pb-surface,#fff)!important;border-radius:8px!important;box-shadow:0 18px 44px rgba(0,0,0,.28);padding:0!important}
 ${h("hero")}="collage"] #start .pb-hero-extras img:first-child{right:${
-    mode === "mobile" ? "10px" : "clamp(14px,3vw,52px)"
-  };top:${mode === "mobile" ? "10px" : "clamp(14px,3vw,44px)"};transform:rotate(3.5deg)}
-${h("hero")}="collage"] #start .pb-hero-extras img:last-child{right:${
-    mode === "mobile" ? "26px" : "clamp(48px,7vw,128px)"
-  };bottom:${mode === "mobile" ? "10px" : "clamp(14px,3vw,40px)"};transform:rotate(-4deg)}
+    mode === "mobile" ? "10px" : "clamp(10px,2vw,34px)"
+  };top:${mode === "mobile" ? "6%" : "14%"};transform:rotate(3.5deg)}
+${h("hero")}="collage"] #start .pb-hero-extras img:last-child{${
+    mode === "mobile" ? "right:96px" : "left:clamp(4px,1.5vw,20px)"
+  };bottom:${mode === "mobile" ? "8%" : "12%"};transform:rotate(-4deg)}
 
 /* Banner (Backlog 13c): Hero-Bild vollflächig hinter dem Text — dunkles
    Overlay für Lesbarkeit, Typo hell. Ohne Hero-Bild bleibt eine ruhige
