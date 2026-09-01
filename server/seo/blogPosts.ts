@@ -1,4 +1,6 @@
 import { BLOG_POSTS_BATCH2 } from "./blogPosts2";
+import { BLOG_POSTS_BATCH3 } from "./blogPosts3";
+import { BLOG_POSTS_BATCH4 } from "./blogPosts4";
 
 /**
  * Blog-Artikel als Daten (ausgelagert aus blog.ts, 2026-08-31, damit
@@ -452,6 +454,8 @@ const HANDWERK_POST: BlogPost = {
 };
 
 export const BLOG_POSTS: BlogPost[] = [
+  ...BLOG_POSTS_BATCH3,
+  ...BLOG_POSTS_BATCH4,
   ...BLOG_POSTS_BATCH2,
   IMPRESSUM_POST,
   KOSTEN_POST,

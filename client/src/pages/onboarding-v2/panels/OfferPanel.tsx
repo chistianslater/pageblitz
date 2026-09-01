@@ -102,7 +102,13 @@ export function offerDraftsFromDoc(
           mode: "services",
           headline: services.headline,
           ...(services.intro !== undefined ? { intro: services.intro } : {}),
-          items: services.items,
+          // price gestrippt wie in offerFromDoc (Betreiber 2026-09-01) —
+          // sonst scheitert das Speichern von Bestands-Docs am strikten
+          // Patch-Schema ohne price.
+          items: services.items.map(({ title, description }) => ({
+            title,
+            ...(description !== undefined ? { description } : {}),
+          })),
         }
       : blankOffer("services"),
     menu: menu
@@ -142,7 +148,10 @@ export function previewAnchorForOfferMode(mode: OfferMode): string {
 }
 
 /** Titel/Intro zum festen Editor-Modus — kein Typ-Wechsel mehr im Panel. */
-export function offerPanelCopy(mode: OfferMode): { title: string; intro: string } {
+export function offerPanelCopy(mode: OfferMode): {
+  title: string;
+  intro: string;
+} {
   if (mode === "menu") {
     return {
       title: "Speisekarte pflegen",
@@ -192,9 +201,7 @@ export function OfferPanel({
   onPreviewFocus,
   initialMode,
 }: OfferPanelProps) {
-  const [mode] = useState<OfferMode>(() =>
-    initialOfferMode(doc, initialMode)
-  );
+  const [mode] = useState<OfferMode>(() => initialOfferMode(doc, initialMode));
   const [value, setValue] = useState<OfferPatch>(
     () => offerDraftsFromDoc(doc)[initialOfferMode(doc, initialMode)]
   );
@@ -298,9 +305,12 @@ export function OfferPanel({
           spürbar Zeit; Fehler landeten vorher unter dem Editor außerhalb
           des sichtbaren Bereichs — wirkte wie „nichts passiert". */}
       {suggesting && (
-        <p role="status" style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}>
-          Die KI stellt einen Vorschlag zusammen — das kann bis zu 30
-          Sekunden dauern …
+        <p
+          role="status"
+          style={{ color: "var(--st-muted)", fontSize: "0.85rem" }}
+        >
+          Die KI stellt einen Vorschlag zusammen — das kann bis zu 30 Sekunden
+          dauern …
         </p>
       )}
       {suggestOffer.error && (
