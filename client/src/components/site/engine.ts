@@ -263,7 +263,17 @@ export function buildNavItems(
     label: p.navLabel ?? p.title,
     current: currentPage?.slug === p.slug,
   }));
-  return [...anchorItems, ...pageItems];
+  // Label-Dedupe (Betreiber-Screenshot 2026-09-01, Tapas-Site): heißt eine
+  // Unterseite wie ein Sektions-Anker (z. B. Story-Sektion „Unsere
+  // Geschichte" + gleichnamige Page), stand das Label doppelt in der Nav.
+  // Erste gewinnt — Anker vor Pages.
+  const seenLabels = new Set<string>();
+  return [...anchorItems, ...pageItems].filter(item => {
+    const key = item.label.trim().toLowerCase();
+    if (seenLabels.has(key)) return false;
+    seenLabels.add(key);
+    return true;
+  });
 }
 
 /**

@@ -117,6 +117,10 @@ ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;m
    (Markup: heroCollage.tsx, in jedem Pack direkt nach dem Hero-Tag). */
 ${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important}
 ${h("hero")}="collage"] #start .pb-hero-extras{display:block}
+/* Text hat IMMER Vorrang vor den Karten (Fallback ohne JS; der
+   siteEnhancer blendet kollidierende Karten zusaetzlich ganz aus). */
+${h("hero")}="collage"] #start ${SLOT.heroCopy}{position:relative!important;z-index:7}
+${h("hero")}="collage"] #start :is(h1,h2){position:relative;z-index:7}
 ${h("hero")}="collage"] #start .pb-hero-extras img{position:absolute!important;z-index:6;display:block;width:${
     mode === "mobile" ? "clamp(76px,24vw,116px)" : "clamp(120px,14vw,196px)"
   };aspect-ratio:4/5;object-fit:cover;border:5px solid var(--pb-surface,#fff)!important;border-radius:8px!important;box-shadow:0 18px 44px rgba(0,0,0,.28);padding:0!important}

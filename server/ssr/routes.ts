@@ -8,7 +8,10 @@ import {
   type PackId,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
-import { deriveDesignProfile } from "../../shared/siteContract/designProfile";
+import {
+  deriveDesignProfile,
+  HERO_LAYOUTS,
+} from "../../shared/siteContract/designProfile";
 import { getWebsiteBySlug, getWebsiteByToken } from "../db";
 import {
   pageForPathname,
@@ -326,7 +329,7 @@ function handleDevPreview(req: Request, res: Response): void {
       variantRaw !== "" && /^\d{1,2}$/.test(variantRaw)
         ? Math.min(31, Number(variantRaw))
         : null;
-    const data =
+    let data =
       variant === null
         ? fixture
         : {
@@ -341,6 +344,27 @@ function handleDevPreview(req: Request, res: Response): void {
               variant
             ),
           };
+    // Dev-only Hero-Override (?hero=collage|banner|…): nur bekannte Werte,
+    // Parameter wird nie reflektiert. Für Layouts, die der Varianten-
+    // Generator nie wählt (collage/banner), sonst nicht SSR-testbar.
+    const heroRaw = typeof req.query.hero === "string" ? req.query.hero : "";
+    if ((HERO_LAYOUTS as readonly string[]).includes(heroRaw)) {
+      const baseProfile =
+        data.designProfile ??
+        deriveDesignProfile({
+          stylePackId: fixture.stylePackId,
+          businessName: fixture.businessName,
+          businessCategory: fixture.businessCategory,
+          sections: fixture.sections,
+        });
+      data = {
+        ...data,
+        designProfile: {
+          ...baseProfile,
+          heroLayout: heroRaw as (typeof HERO_LAYOUTS)[number],
+        },
+      };
+    }
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     // fixes Datum für deterministische Visual-Baselines (nur Dev-Preview,
     // Kundenseiten-SSR unten bleibt bei Echtzeit).

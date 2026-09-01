@@ -29,6 +29,26 @@ var d=document,de=d.documentElement,reduced=matchMedia("(prefers-reduced-motion:
 // 2026-08-31: nicht "runterhaengend"); ohne JS bleibt es dezent darunter.
 var mw=d.querySelector(".pb-made-with");
 if(mw){var ft=d.querySelector(".pb-site footer");if(ft)ft.appendChild(mw);}
+// Collage-Guard (Betreiber-Befund 2026-09-01, Tapas-Site): die absolut
+// positionierten Hero-Karten kollidieren je nach Pack/Inhalt mit der
+// Hero-Typo. Nach Load/Resize messen; Karten, die Text ueberlappen,
+// werden ausgeblendet — Collage degradiert dann sauber zum Pack-Hero.
+var hx=d.querySelectorAll(".pb-hero-extras img");
+if(hx.length){
+var hxGuard=function(){
+var hero=d.getElementById("start");if(!hero)return;
+var texts=Array.prototype.map.call(hero.querySelectorAll("h1,h2,p,a"),function(t){return t.getBoundingClientRect()});
+Array.prototype.forEach.call(hx,function(img){
+img.style.display="";
+var c=img.getBoundingClientRect();
+var hit=texts.some(function(t){return t.width>0&&t.height>0&&!(c.right<=t.left||t.right<=c.left||c.bottom<=t.top||t.bottom<=c.top)});
+if(hit)img.style.display="none";
+});
+};
+var hxT;var hxRun=function(){clearTimeout(hxT);hxT=setTimeout(hxGuard,160)};
+if(d.readyState==="complete")hxRun();else window.addEventListener("load",hxRun);
+window.addEventListener("resize",hxRun);
+}
 if(!reduced&&"IntersectionObserver" in window){
 de.classList.add("pb-io-on");
 var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("pb-in");io.unobserve(en.target)}})},{rootMargin:"0px 0px -8% 0px",threshold:0.05});
