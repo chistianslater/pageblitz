@@ -123,8 +123,10 @@ ${h("hero")}="compact"] #start h1{font-size:clamp(2rem,6.5vw,4.6rem)!important;m
 ${h("hero")}="collage"] #start{position:relative!important;overflow:visible!important;text-align:left!important}
 ${h("hero")}="collage"] #start ${SLOT.heroCopy}{position:relative!important;z-index:7;order:0!important;text-align:left!important;margin-inline:0!important}
 ${h("hero")}="collage"] #start :is(h1,h2){position:relative;z-index:7}
-${heroMediaInFlow(h, "collage", "2", "100%")}
-${h("hero")}="collage"] #start ${SLOT.heroMedia}{z-index:1!important}
+/* Das Hauptbild bleibt bewusst UNANGETASTET (Betreiber 2026-09-01):
+   Vollflächen-Hintergründe (gusto & Co.) sollen Hintergrund bleiben,
+   Fluss-Bilder bleiben im Fluss — nur Copy-links und die Karten-Zone
+   werden erzwungen. */
 ${h("hero")}="collage"] #start .pb-hero-extras{display:block;position:absolute;z-index:6;pointer-events:none;${
     mode === "mobile"
       ? "left:0;right:0;bottom:0;height:46%"
