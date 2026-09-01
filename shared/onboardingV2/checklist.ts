@@ -4,6 +4,7 @@ export type ChecklistItemId =
   | "style"
   | "photos"
   | "texts"
+  | "structure"
   | "offer"
   | "legal"
   | "addons";
@@ -38,6 +39,7 @@ export const CHECKLIST_ORDER = [
   "style",
   "photos",
   "texts",
+  "structure",
   "offer",
   "legal",
   "addons",
@@ -55,6 +57,10 @@ const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
   texts: {
     title: "Texte",
     hint: "Überschriften und Über-uns-Text prüfen oder anpassen.",
+  },
+  structure: {
+    title: "Struktur",
+    hint: "Sektionen per Anfasser verschieben oder ausblenden.",
   },
   offer: {
     title: "Angebot",
@@ -125,6 +131,9 @@ export function deriveChecklistState(
     style: progress.styleConfirmed ? "done" : "open",
     photos: hasHeroImage(doc) ? "done" : "open",
     texts: progress.textsReviewed ? "done" : "open",
+    // Struktur ist ein Werkzeug ohne Pflichtaufgabe — immer "done",
+    // blockiert nie und taucht nicht im Wizard auf (WIZARD_PANEL_STEPS).
+    structure: "done",
     offer: hasOffer(doc) ? "done" : "open",
     legal: legalComplete(answers) ? "done" : "open",
     // Ehrlich statt hardcoded "done" (Studio-Flow-Befund): Extras gelten

@@ -52,6 +52,12 @@ interface TextsPanelProps {
   onNext?: () => void;
   onPreviewFocus?: (anchor: string) => void;
   /**
+   * Querverweis „Leistungen bearbeiten" (Backlog 21a, 2026-09-01):
+   * Leistungen/Speisekarte/Preise leben im Angebot-Panel — dieser Callback
+   * öffnet es, damit niemand die Inhalte hier vergeblich sucht.
+   */
+  onOpenOffer?: () => void;
+  /**
    * Live-Spiegel (2026-08-30): feuert bei jeder Eingabe die sichtbaren
    * Feldwerte als Inline-Pfad→Wert-Map — die Vorschau zeigt Tipparbeit
    * sofort, gespeichert wird weiterhin erst per Button.
@@ -91,6 +97,7 @@ export function TextsPanel({
   onNext,
   onPreviewFocus,
   onDraft,
+  onOpenOffer,
 }: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
@@ -229,6 +236,33 @@ export function TextsPanel({
             onPreviewFocus?.("geschichte");
         }}
       />
+      {onOpenOffer && (
+        <p
+          style={{
+            fontSize: "0.82rem",
+            color: "var(--st-muted, #a4a39d)",
+            margin: "0.5rem 0 0",
+          }}
+        >
+          Leistungen, Speisekarte und Preise bearbeitest du im{" "}
+          <button
+            type="button"
+            onClick={onOpenOffer}
+            style={{
+              background: "none",
+              border: 0,
+              padding: 0,
+              color: "var(--st-accent, #ccff00)",
+              font: "inherit",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Angebot-Panel
+          </button>
+          .
+        </p>
+      )}
       {updateTexts.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {updateTexts.error.message}

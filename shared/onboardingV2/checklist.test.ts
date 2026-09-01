@@ -31,7 +31,7 @@ const legalDone = {
 };
 
 describe("deriveChecklistState", () => {
-  test("Reihenfolge ist fix: style, photos, texts, offer, legal, addons", () => {
+  test("Reihenfolge ist fix: style, photos, texts, structure, offer, legal, addons", () => {
     expect(deriveChecklistState(base, {}).map(i => i.id)).toEqual([
       ...CHECKLIST_ORDER,
     ]);
@@ -39,14 +39,17 @@ describe("deriveChecklistState", () => {
       "style",
       "photos",
       "texts",
+      "structure",
       "offer",
       "legal",
       "addons",
     ]);
   });
-  test("ohne Dokument und ohne Fortschritt ist alles offen (addons ehrlich)", () => {
+  test("ohne Dokument und ohne Fortschritt ist alles offen (nur das Struktur-Werkzeug zaehlt immer als done)", () => {
     const items = deriveChecklistState(null, {});
-    expect(items.filter(i => i.status === "done")).toEqual([]);
+    expect(items.filter(i => i.status === "done").map(i => i.id)).toEqual([
+      "structure",
+    ]);
   });
   test("addons done erst nach addonsReviewed-Flag", () => {
     expect(

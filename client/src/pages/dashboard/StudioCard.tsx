@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   Scale,
   Sparkles,
+  LayoutList,
 } from "lucide-react";
 import { CHECKLIST_ORDER } from "@shared/onboardingV2/checklist";
 import { withStudioParams } from "@/pages/onboarding-v2/studioUrl";
@@ -30,6 +31,11 @@ const PANEL_META: Record<
     label: "Texte",
     hint: "Überschriften & Über-uns",
     icon: <Type className="w-4 h-4" />,
+  },
+  structure: {
+    label: "Struktur",
+    hint: "Sektionen verschieben & ausblenden",
+    icon: <LayoutList className="w-4 h-4" />,
   },
   offer: {
     label: "Angebot",

@@ -20,6 +20,7 @@ import { AiChat } from "./AiChat";
 import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
 import { TextsPanel } from "./panels/TextsPanel";
+import { StructurePanel } from "./panels/StructurePanel";
 import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
@@ -479,6 +480,18 @@ export default function StudioPage({ token }: { token: string }) {
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
               onDraft={setTextDraft}
+              onOpenOffer={() => setActiveId("offer")}
+            />
+          ) : activeId === "structure" ? (
+            <StructurePanel
+              token={token}
+              doc={state.doc}
+              onApplied={() => {
+                studio.refetch();
+                studio.bumpPreview();
+              }}
+              onClose={() => panelClose(null)}
+              onPreviewFocus={setPreviewFocusAnchor}
             />
           ) : activeId === "offer" ? (
             <OfferPanel

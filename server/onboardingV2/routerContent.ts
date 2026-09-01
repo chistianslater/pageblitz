@@ -36,6 +36,7 @@ import {
   applyImages,
   applyLogo,
   applyPartners,
+  applyStructure,
   applyInlineText,
   applyOffer,
   applyPages,
@@ -46,7 +47,9 @@ import { getFontPair } from "../../shared/stylePacks";
 import {
   DesignProfileSchema,
   SafeUrlSchema,
+  SECTION_TYPES,
 } from "../../shared/siteContract/schema";
+import { HIDEABLE_SECTION_TYPES } from "../../shared/onboardingV2/aiEdit";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
@@ -382,6 +385,33 @@ export const contentProcedures = {
         input.token,
         loaded,
         applyPartners(doc, { headline: input.headline, items: input.items })
+      );
+    }),
+
+  /**
+   * Struktur-Editor (Backlog 21b): Sektionen verschieben/ausblenden per
+   * Anfasser-UI — gleiche Ersatzlisten-Semantik wie der KI-Chat.
+   */
+  updateStructure: publicProcedure
+    .input(
+      tokenInput.extend({
+        hiddenSections: z
+          .array(z.enum(HIDEABLE_SECTION_TYPES))
+          .max(16)
+          .optional(),
+        sectionOrder: z.array(z.enum(SECTION_TYPES)).max(20).optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      return persistDoc(
+        input.token,
+        loaded,
+        applyStructure(doc, {
+          hiddenSections: input.hiddenSections,
+          sectionOrder: input.sectionOrder,
+        })
       );
     }),
 

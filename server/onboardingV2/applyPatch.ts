@@ -120,6 +120,35 @@ export function applyLogo(
 }
 
 /**
+ * Struktur-Editor (Backlog 21b, 2026-09-01): Sichtbarkeit + Reihenfolge
+ * als VOLLSTÄNDIGE Ersatzlisten — gleiche Semantik wie der KI-Chat-Pfad
+ * (routerAi): auf vorhandene Sektionstypen gefiltert, leere Liste löscht
+ * das Feld (Standard-Reihenfolge / alles sichtbar).
+ */
+export function applyStructure(
+  doc: WebsiteDataV2,
+  patch: { hiddenSections?: string[]; sectionOrder?: string[] }
+): WebsiteDataV2 {
+  const presentTypes = new Set<string>(doc.sections.map(s => s.type));
+  const next: WebsiteDataV2 = { ...doc };
+  if (patch.hiddenSections !== undefined) {
+    const hidden = Array.from(new Set(patch.hiddenSections)).filter(t =>
+      presentTypes.has(t)
+    );
+    if (hidden.length > 0) next.hiddenSections = hidden as SectionType[];
+    else delete next.hiddenSections;
+  }
+  if (patch.sectionOrder !== undefined) {
+    const order = Array.from(new Set(patch.sectionOrder)).filter(t =>
+      presentTypes.has(t)
+    );
+    if (order.length > 0) next.sectionOrder = order as SectionType[];
+    else delete next.sectionOrder;
+  }
+  return WebsiteDataV2Schema.parse(next);
+}
+
+/**
  * Partner/Zertifikate (2026-08-31): schreibt die partners-Sektion aus dem
  * Fotos-Panel — leere Liste entfernt sie, sonst wird sie ersetzt bzw. nach
  * den Bewertungen (Fallback: vor Kontakt) eingefügt.

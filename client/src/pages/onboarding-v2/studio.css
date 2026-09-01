@@ -2929,3 +2929,98 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ── Struktur-Editor (Backlog 21b, 2026-09-01) ─────────────────────────── */
+.pb-structure-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pb-structure-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px 10px 6px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+.pb-structure-row[data-dragging] {
+  border-color: var(--st-accent, #ccff00);
+  opacity: 0.6;
+}
+.pb-structure-row[data-hidden] .pb-structure-label {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+.pb-structure-grip {
+  display: grid;
+  place-items: center;
+  color: var(--st-muted, #a4a39d);
+  cursor: grab;
+}
+.pb-structure-grip[data-disabled] {
+  opacity: 0.25;
+  cursor: default;
+}
+.pb-structure-grip svg {
+  width: 16px;
+  height: 16px;
+}
+.pb-structure-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.pb-structure-note {
+  font-size: 0.7rem;
+  color: var(--st-muted, #a4a39d);
+}
+.pb-structure-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.pb-structure-actions button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--st-muted, #a4a39d);
+  cursor: pointer;
+}
+.pb-structure-actions button:hover:not(:disabled) {
+  color: var(--st-ink, #f2f1ee);
+  background: rgba(255, 255, 255, 0.07);
+}
+.pb-structure-actions button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.pb-structure-actions button[aria-pressed="true"] {
+  color: #ff5d45;
+}
+.pb-structure-actions svg {
+  width: 15px;
+  height: 15px;
+}
+.pb-structure-spacer {
+  width: 30px;
+  height: 30px;
+}

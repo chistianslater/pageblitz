@@ -5,7 +5,7 @@ import { deriveChecklistState } from "../../../../shared/onboardingV2/checklist"
 import { Checklist } from "./Checklist";
 
 describe("Checklist", () => {
-  test("rendert sechs Punkte in fester Reihenfolge, markiert erledigt/aktiv/pflicht", () => {
+  test("rendert sieben Punkte in fester Reihenfolge, markiert erledigt/aktiv/pflicht", () => {
     const items = deriveChecklistState(null, {
       legalOwner: "",
       studioProgress: { styleConfirmed: true },
@@ -13,7 +13,7 @@ describe("Checklist", () => {
     const html = renderToStaticMarkup(
       <Checklist items={items} activeId="photos" onSelect={() => {}} />
     );
-    expect(html.match(/class="[^"]*pb-studio-check-item/g)).toHaveLength(6);
+    expect(html.match(/class="[^"]*pb-studio-check-item/g)).toHaveLength(7);
     expect(html.indexOf("Designrichtung")).toBeLessThan(
       html.indexOf("Rechtliches")
     );
