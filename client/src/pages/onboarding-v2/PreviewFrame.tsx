@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import type { PackId } from "@shared/siteContract/types";
+import type { PackId, SectionType } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 import {
@@ -53,6 +53,8 @@ interface PreviewFrameProps {
    * die Vorschau zeigt diesen Stand statt des Dokuments (nur lesen).
    */
   versionId?: number | null;
+  /** Plus-Zonen (2026-09-03): Klick auf „Sektion einfügen" hinter einer Sektion. */
+  onInsertSection?: (afterType: SectionType) => void;
 }
 
 export type PhotoClickTarget = "hero" | "about" | "gallery";
@@ -119,6 +121,7 @@ export function PreviewFrame({
   draftValues,
   onPickPhoto,
   versionId,
+  onInsertSection,
 }: PreviewFrameProps) {
   const src = buildPreviewSrc({
     token,
@@ -197,8 +200,9 @@ export function PreviewFrame({
     if (!doc?.documentElement?.hasAttribute("data-pb-layout-chrome")) return;
     enablePreviewLayoutChrome(doc, designProfile, onSectionLayout, {
       viewport: device,
+      onInsertSection,
     });
-  }, [designProfile, onSectionLayout, pageSlug, device]);
+  }, [designProfile, onSectionLayout, pageSlug, device, onInsertSection]);
 
   const enableInlineEditing = (iframeEl: HTMLIFrameElement) => {
     onIframeReady?.(iframeEl);
@@ -208,6 +212,7 @@ export function PreviewFrame({
     if (previewDoc && !pageSlug && onSectionLayout) {
       enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout, {
         viewport: device,
+        onInsertSection,
       });
     }
     if (!inlineTargets || !onInlineTextEdit || pageSlug) return;

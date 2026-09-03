@@ -24,6 +24,9 @@ import { StructurePanel } from "./panels/StructurePanel";
 import { VersionsPanel } from "./panels/VersionsPanel";
 import { UndoButton } from "./UndoButton";
 import { GoalStep } from "./GoalStep";
+import { SectionInsertDialog } from "./SectionInsertDialog";
+import { SECTION_ANCHORS } from "@/components/site/engine";
+import type { SectionType } from "@shared/siteContract/types";
 import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
@@ -115,6 +118,9 @@ export default function StudioPage({ token }: { token: string }) {
   // Aktualisierung neu laden — jede Studio-Mutation bumpt die Vorschau.
   const trpcUtils = trpc.useUtils();
   const updateGoal = trpc.onboardingV2.updateGoal.useMutation();
+  // Plus-Zonen (2026-09-03): Sektion, hinter der eingefügt werden soll —
+  // gesetzt vom Chrome in der Vorschau, öffnet den Einfüge-Dialog.
+  const [insertAfter, setInsertAfter] = useState<SectionType | null>(null);
   const skipGoal = trpc.onboardingV2.skipGoal.useMutation();
   useEffect(() => {
     void trpcUtils.onboardingV2.listVersions.invalidate();
@@ -797,11 +803,31 @@ export default function StudioPage({ token }: { token: string }) {
             onSectionLayout={
               versionPreviewId === null ? applySectionLayout : undefined
             }
+            onInsertSection={
+              versionPreviewId === null && previewSlug === null
+                ? setInsertAfter
+                : undefined
+            }
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).
             reveal={studio.justGenerated && studio.previewVersion === 0}
           />
+          {insertAfter !== null && (
+            <SectionInsertDialog
+              token={token}
+              doc={state.doc}
+              afterType={insertAfter}
+              onClose={() => setInsertAfter(null)}
+              onInserted={type => {
+                setInsertAfter(null);
+                setPreviewFocusAnchor(SECTION_ANCHORS[type]);
+                studio.refetch();
+                studio.bumpPreview();
+                flashPreview();
+              }}
+            />
+          )}
           {/* Schwebender KI-Assistent (2026-08-30): sichtbar rechts unten
               über der Vorschau — „Was möchtest du noch ändern?". Der Chat
               selbst ist unverändert der AiChat aus der bisherigen Rail. */}

@@ -9,6 +9,8 @@ import {
 } from "@shared/siteContract/designProfile";
 import { DESIGN_PROFILE_CSS } from "@/components/site/designProfileCss";
 import { SECTION_ANCHORS } from "@/components/site/engine";
+import type { SectionType } from "@shared/siteContract/types";
+import { SECTION_LABELS } from "@shared/onboardingV2/aiEdit";
 
 export type PreviewLayoutField =
   | "heroLayout"
@@ -29,6 +31,12 @@ export interface LayoutChromeOptions {
   onOverlayChange?: (overlay: LayoutOverlay) => void;
   /** Welche Viewport-Attribute geschrieben werden. Default: desktop. */
   viewport?: LayoutViewport;
+  /**
+   * Plus-Zonen (2026-09-03): Klick auf „Sektion einfügen" an der Unterkante
+   * einer Sektion. Nur gesetzt im Studio auf der Startseite — ohne Callback
+   * werden keine Zonen gerendert.
+   */
+  onInsertSection?: (afterType: SectionType) => void;
 }
 
 export interface PreviewLayoutOption {
@@ -276,6 +284,16 @@ const placedChrome = new WeakMap<
   Document,
   { host: HTMLElement; chrome: HTMLElement }[]
 >();
+const placedZones = new WeakMap<
+  Document,
+  { host: HTMLElement; zone: HTMLElement }[]
+>();
+
+/** Sektionen, hinter denen nichts eingefügt wird: Kontakt (Seitenende) und der Hinweis-Banner (liegt über der Navigation). */
+const NO_INSERT_AFTER: ReadonlySet<SectionType> = new Set([
+  "contact",
+  "notice",
+]);
 
 const CHROME_CSS = `
 .pb-preview-layout{position:fixed;right:12px;z-index:28;display:flex;font-family:"Space Grotesk",system-ui,sans-serif}
@@ -292,11 +310,28 @@ const CHROME_CSS = `
 .pb-preview-layout-sep{width:1px;height:18px;margin:0 2px;background:rgba(255,255,255,.2)}
 .pb-preview-layout-menu button[data-pb-hide-element][aria-pressed="true"]{background:#ff5d45;color:#0b0b0d}
 .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
+.pb-preview-insert{position:fixed;left:0;right:0;z-index:27;height:0;display:flex;justify-content:center;align-items:center;pointer-events:none;font-family:"Space Grotesk",system-ui,sans-serif}
+.pb-preview-insert::before{content:"";position:absolute;left:24px;right:24px;top:0;height:1px;background:#ccff00;opacity:0;transform:scaleX(.6)}
+.pb-preview-insert-btn{appearance:none;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px 0 8px;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;font:600 12px/1 "Space Grotesk",system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 22px rgba(11,11,13,.35);opacity:.45}
+.pb-preview-insert-btn b{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;background:#ccff00;color:#0b0b0d;font:700 13px/1 system-ui,sans-serif}
+.pb-preview-insert:hover .pb-preview-insert-btn,.pb-preview-insert-btn:focus-visible{opacity:1;border-color:#ccff00}
+.pb-preview-insert:hover::before,.pb-preview-insert:focus-within::before{opacity:.7;transform:scaleX(1)}
+@media(hover:none){.pb-preview-insert-btn{opacity:.85}}
 @media(prefers-reduced-motion:no-preference){
   .pb-preview-layout-menu{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s}
   .pb-preview-layout-menu button{transition:background .12s,color .12s}
+  .pb-preview-insert-btn{transition:opacity .14s,border-color .14s}
+  .pb-preview-insert::before{transition:opacity .16s,transform .22s cubic-bezier(.2,.8,.2,1)}
 }
 `;
+
+/** Plus-Zone an der Unterkante einer Sektion (Startseite, Studio). */
+export function renderInsertZoneHtml(
+  afterType: SectionType,
+  label: string
+): string {
+  return `<div class="pb-preview-insert" data-pb-after="${escapeHtml(afterType)}"><button type="button" class="pb-preview-insert-btn" aria-label="Sektion nach ${escapeHtml(label)} einfügen"><b aria-hidden="true">+</b>Sektion einfügen</button></div>`;
+}
 
 type AttrTarget = {
   setAttribute: (name: string, value: string) => void;
@@ -565,7 +600,27 @@ function stickyNavBottom(doc: Document): number {
   return bottom;
 }
 
+function placeInsertZones(doc: Document): void {
+  const win = doc.defaultView;
+  const zones = placedZones.get(doc);
+  if (!win || !zones) return;
+  const navBottom = stickyNavBottom(doc);
+  const viewHeight = win.innerHeight;
+  for (const { host, zone } of zones) {
+    const bottom = host.getBoundingClientRect().bottom;
+    // Nur zeigen, wenn die Kante frei im Viewport liegt (nicht unter der
+    // Navigation, nicht außerhalb) — sonst hängt das Plus im Nichts.
+    if (bottom < navBottom + 20 || bottom > viewHeight - 8) {
+      zone.style.display = "none";
+      continue;
+    }
+    zone.style.display = "flex";
+    zone.style.top = `${Math.round(bottom)}px`;
+  }
+}
+
 function placeChrome(doc: Document): void {
+  placeInsertZones(doc);
   const win = doc.defaultView;
   const placed = placedChrome.get(doc);
   if (!win || !placed) return;
@@ -773,6 +828,34 @@ export function enablePreviewLayoutChrome(
   }
 
   placedChrome.set(doc, placed);
+
+  // Plus-Zonen (2026-09-03): eine je gerenderter Startseiten-Sektion außer
+  // Kontakt/Hinweis, sortiert wie im Dokument — Klick meldet den Typ, hinter
+  // dem eingefügt werden soll, ans Studio.
+  const onInsert = options?.onInsertSection;
+  if (onInsert && !overlayMode) {
+    const zones: { host: HTMLElement; zone: HTMLElement }[] = [];
+    for (const [type, anchor] of Object.entries(SECTION_ANCHORS) as [
+      SectionType,
+      string,
+    ][]) {
+      if (NO_INSERT_AFTER.has(type)) continue;
+      const host = doc.getElementById(anchor);
+      if (!host) continue;
+      const wrap = doc.createElement("div");
+      wrap.innerHTML = renderInsertZoneHtml(type, SECTION_LABELS[type]);
+      const zone = wrap.firstElementChild as HTMLElement | null;
+      if (!zone) continue;
+      doc.body.appendChild(zone);
+      zones.push({ host, zone });
+      zone.querySelector("button")?.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onInsert(type);
+      });
+    }
+    placedZones.set(doc, zones);
+  }
   placeChrome(doc);
 
   const win = doc.defaultView;

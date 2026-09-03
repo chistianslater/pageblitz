@@ -8,6 +8,7 @@ import {
   chromeViewportTop,
   layoutChromeTitle,
   renderLayoutChromeHtml,
+  renderInsertZoneHtml,
 } from "./previewLayoutChrome";
 
 function attrTarget(attrs: Record<string, string>) {
@@ -49,6 +50,16 @@ describe("PREVIEW_LAYOUT_SECTIONS", () => {
     expect(
       PREVIEW_LAYOUT_SECTIONS[0]!.options.map(option => option.value)
     ).toEqual(["split", "centered", "image-first", "collage", "banner"]);
+  });
+});
+
+describe("renderInsertZoneHtml (Plus-Zonen, 2026-09-03)", () => {
+  test("rendert eine Zone mit Ziel-Sektion, Beschriftung und zugänglichem Label", () => {
+    const html = renderInsertZoneHtml("services", "Leistungen");
+    expect(html).toContain('data-pb-after="services"');
+    expect(html).toContain('aria-label="Sektion nach Leistungen einfügen"');
+    expect(html).toContain("Sektion einfügen");
+    expect(html).toContain('class="pb-preview-insert"');
   });
 });
 
