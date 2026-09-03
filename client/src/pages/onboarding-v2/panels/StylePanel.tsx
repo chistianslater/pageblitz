@@ -4,6 +4,7 @@ import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import { PanelFrame } from "./PanelFrame";
+import { BrandImportCard } from "./BrandImportCard";
 import { ThemeEditor } from "./ThemeEditor";
 
 interface Candidate {
@@ -31,11 +32,7 @@ export function StyleCandidateList({
   preselectPackId = null,
 }: StyleCandidateListProps) {
   return (
-    <div
-      className="pb-studio-cands"
-      role="group"
-      aria-label="Designrichtungen"
-    >
+    <div className="pb-studio-cands" role="group" aria-label="Designrichtungen">
       {candidates.map(c => {
         const isCurrent = c.id === currentPackId;
         const isPreselected = c.id === preselectPackId;
@@ -229,6 +226,10 @@ export function StylePanel({
         </>
       }
     >
+      {/* Marken-Import zuerst (2026-09-03): Wer schon eine Website hat,
+          soll Logo, Farbe und Schrift übernehmen können, bevor er eine
+          Richtung wählt — die Richtung übernimmt die Werte dann. */}
+      <BrandImportCard token={token} onApplied={onApplied} />
       {preselectPackId && (
         <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
       )}

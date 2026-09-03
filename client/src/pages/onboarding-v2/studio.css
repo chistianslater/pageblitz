@@ -3352,3 +3352,82 @@
 }
 .pb-insert-notice { margin: 10px 0 0; font-size: 0.85rem; color: var(--st-muted, #a4a39d); }
 @media (max-width: 560px) { .pb-insert-grid { grid-template-columns: 1fr; } }
+
+/* ── Marken-Import (2026-09-03) ────────────────────────────────────────── */
+.pb-brand-block {
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid var(--st-accent, #ccff00);
+  border-radius: 12px;
+  background: rgba(204, 255, 0, 0.05);
+}
+.pb-brand-loading {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  color: var(--st-muted, #a4a39d);
+}
+.pb-brand-lead { margin: 4px 0 12px; font-size: 0.86rem; color: var(--st-muted, #a4a39d); }
+.pb-brand-rows { display: flex; flex-direction: column; gap: 8px; }
+.pb-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.pb-brand-row[aria-pressed="true"] { border-color: var(--st-accent, #ccff00); }
+.pb-brand-row:disabled { opacity: 0.6; cursor: default; }
+.pb-brand-check {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 5px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.2));
+  color: var(--st-accent, #ccff00);
+}
+.pb-brand-check svg { width: 13px; height: 13px; }
+.pb-brand-row[aria-pressed="true"] .pb-brand-check { border-color: var(--st-accent, #ccff00); }
+.pb-brand-logo {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 3px;
+}
+.pb-brand-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.pb-brand-swatch {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.pb-brand-fonts {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+}
+.pb-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pb-brand-text span { font-size: 0.78rem; color: var(--st-muted, #a4a39d); }
+.pb-brand-actions { display: flex; gap: 8px; margin-top: 12px; }
+.pb-brand-actions .pb-studio-btn { display: inline-flex; align-items: center; gap: 6px; }
+.pb-brand-actions svg { width: 15px; height: 15px; }

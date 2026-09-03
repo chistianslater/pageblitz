@@ -24,6 +24,7 @@ import { versionProcedures } from "./routerVersions";
 import { toneProcedures } from "./routerTone";
 import { goalProcedures } from "./routerGoal";
 import { insertProcedures } from "./routerInsert";
+import { brandProcedures } from "./routerBrand";
 
 /**
  * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
@@ -220,4 +221,5 @@ export const onboardingV2Router = router({
   ...toneProcedures,
   ...goalProcedures,
   ...insertProcedures,
+  ...brandProcedures,
 });
