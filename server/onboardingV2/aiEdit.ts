@@ -308,6 +308,8 @@ interface StoredProposal {
   createdAt: number;
   /** Kundenwunsch für das Verlaufs-Label (chatLabel). */
   message?: string;
+  /** Fertiges Verlaufs-Label (z. B. Tonalitäts-Umschreibung) — schlägt message. */
+  label?: string;
 }
 
 /** Server-only Zwischenspeicher unbestätigter Vorschläge (Spec §5: TTL 10 min, NIE ohne applyAiEdit persistiert). */
@@ -324,12 +326,18 @@ function sweepExpiredProposals(now: number): void {
 export function storeProposal(
   websiteId: number,
   next: WebsiteDataV2,
-  message?: string
+  origin?: string | { label: string }
 ): string {
   const now = Date.now();
   sweepExpiredProposals(now);
   const id = nanoid(21);
-  proposals.set(id, { websiteId, next, createdAt: now, message });
+  proposals.set(id, {
+    websiteId,
+    next,
+    createdAt: now,
+    ...(typeof origin === "string" ? { message: origin } : {}),
+    ...(origin && typeof origin === "object" ? { label: origin.label } : {}),
+  });
   return id;
 }
 
@@ -345,11 +353,11 @@ export function takeProposal(
 export function takeProposalEntry(
   id: string,
   websiteId: number
-): { next: WebsiteDataV2; message?: string } | null {
+): { next: WebsiteDataV2; message?: string; label?: string } | null {
   const now = Date.now();
   sweepExpiredProposals(now);
   const entry = proposals.get(id);
   if (!entry || entry.websiteId !== websiteId) return null;
   proposals.delete(id);
-  return { next: entry.next, message: entry.message };
+  return { next: entry.next, message: entry.message, label: entry.label };
 }

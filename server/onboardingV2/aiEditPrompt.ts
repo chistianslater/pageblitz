@@ -6,6 +6,7 @@ import {
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { PACK_IDS } from "../../shared/siteContract/schema";
 import type { AiChatHistoryEntry } from "../../shared/onboardingV2/aiEdit";
+import { tonePromptLines } from "../../shared/onboardingV2/tone";
 import type {
   PackId,
   Page,
@@ -126,6 +127,9 @@ export function buildAiEditPrompt(args: {
       ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
       : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahmen (faktenfreie Zusatz-Sektionen, hinzufügen UND entfernen erlaubt): {"type":"story","headline":"...","body":"..."} (mehr erzählen: Geschichte/Historie/Philosophie — nach "about" einsortieren, Absätze durch Leerzeile), {"type":"usp","headline":"...","items":[{"title":"...","text":"..."}]} (2–6 Vorteile/Argumente — früh platzieren, z. B. nach "hero" oder "services"), {"type":"notice","text":"..."} (Saison-/Aktionshinweis wie Urlaub oder Rabatt — wird als Banner GANZ OBEN über der Navigation gezeigt, egal wo er in der Liste steht; genau EIN Satz), {"type":"stats","headline":"...","items":[{"value":"25+","label":"Jahre Erfahrung"}]} (2–4 Kennzahlen — NUR Zahlen verwenden, die der Kunde selbst nennt oder die aus dem Inhalt belegt sind, NIE erfinden), {"type":"process","headline":"...","steps":[{"title":"...","text":"..."}]} (Ablauf in 2–5 nummerierten Schritten, z. B. Anfrage → Termin → Umsetzung), {"type":"quote","text":"...","author":"..."} (großes Zitat/Motto des Betriebs).`,
     `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben — aber heroLayout "collage" (Format 2) zeigt zusätzlich zum Hauptbild bis zu zwei Galerie-Bilder im Hero.`,
+    // Tonalität (2026-09-03): Vorgabe des Kunden schlägt Anrede-Hinweise
+    // der Verfassung — gilt für jeden Text, den der Chat umschreibt.
+    ...(args.doc.tone ? [``, ...tonePromptLines(args.doc.tone)] : []),
     ``,
     args.page
       ? `## Aktueller Inhalt der Unterseite (SEO + Sektionen, als JSON)`

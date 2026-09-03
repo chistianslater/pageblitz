@@ -10,6 +10,7 @@ import {
   type OfferPatch,
 } from "../../shared/onboardingV2/patches";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { tonePromptLines } from "../../shared/onboardingV2/tone";
 
 /**
  * KI-Vorschläge für Texte (Panel „Texte") und Angebot (Panel „Angebot") des
@@ -116,9 +117,11 @@ function clampToLength(value: string, max: number): string {
   return trimmed.length > max ? trimmed.slice(0, max).trim() : trimmed;
 }
 
-function buildTextVariantPrompt(
+export function buildTextVariantPrompt(
   args: {
     field: TextField;
+    /** Dokument — liefert die Tonalität (doc.tone). */
+    doc: Pick<WebsiteDataV2, "tone">;
     businessName: string;
     category: string;
     city?: string;
@@ -148,6 +151,9 @@ function buildTextVariantPrompt(
     `## Verbote`,
     ...constitution.llmHints.dont.map(rule => `- ${rule}`),
     `- ${FORBIDDEN_CONTENT_RULE}`,
+    // Tonalität (2026-09-03): gesetzte Anrede/Ton des Dokuments gilt auch
+    // für jede einzelne Variante.
+    ...(args.doc.tone ? [``, ...tonePromptLines(args.doc.tone)] : []),
     ``,
     `## Feldvorgabe`,
     FIELD_GUIDANCE[args.field],

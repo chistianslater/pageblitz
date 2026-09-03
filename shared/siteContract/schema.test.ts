@@ -25,6 +25,22 @@ const valid = {
 };
 
 describe("WebsiteDataV2Schema", () => {
+  test("tone (2026-09-03): akzeptiert die fünf Stufen, lehnt Fremdwerte ab, bleibt optional", () => {
+    const base = {
+      version: 2,
+      stylePackId: "werkbank",
+      businessName: "Brandt",
+      seo: { title: "t", description: "d" },
+      sections: [{ type: "hero", headline: "H" }],
+    };
+    expect(WebsiteDataV2Schema.safeParse(base).success).toBe(true);
+    expect(
+      WebsiteDataV2Schema.safeParse({ ...base, tone: "professionell" }).success
+    ).toBe(true);
+    expect(
+      WebsiteDataV2Schema.safeParse({ ...base, tone: "schnoddrig" }).success
+    ).toBe(false);
+  });
   test("akzeptiert gültiges Dokument", () => {
     expect(WebsiteDataV2Schema.parse(valid).stylePackId).toBe("werkbank");
   });

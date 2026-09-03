@@ -343,7 +343,7 @@ export const aiProcedures = {
       }
       return persistDoc(input.token, loaded, proposal.next, {
         trigger: "chat",
-        label: chatLabel(proposal.message),
+        label: proposal.label ?? chatLabel(proposal.message),
       });
     }),
 

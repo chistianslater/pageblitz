@@ -5,6 +5,7 @@
 // selbst; z.config ist idempotent.
 import "../zodLocale";
 import { z } from "zod";
+import { TONE_LEVELS } from "../onboardingV2/tone";
 import { PACK_IDS } from "./packIds";
 import {
   ABOUT_LAYOUTS,
@@ -625,6 +626,9 @@ export const WebsiteDataV2Schema = z
     addOns: SiteAddOnsSchema.optional(),
     contactFormConfig: ContactFormConfigSchema.optional(),
     chatConfig: ChatConfigSchema.optional(),
+    // Tonalität (2026-09-03): Anrede + Ton für alle Text-Prompts, gewählt
+    // im Texte-Panel. Fehlt das Feld, entscheidet die Pack-Verfassung allein.
+    tone: z.enum(TONE_LEVELS).optional(),
   })
   .strict()
   .refine(

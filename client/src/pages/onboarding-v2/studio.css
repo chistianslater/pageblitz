@@ -3133,3 +3133,83 @@
   border: 1px solid var(--st-accent, #ccff00);
   background: rgba(204, 255, 0, 0.06);
 }
+
+/* ── Tonalität (2026-09-03) ────────────────────────────────────────────── */
+.pb-tone-block {
+  margin: 0 0 22px;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+}
+.pb-tone-intro {
+  margin: 4px 0 12px;
+  font-size: 0.85rem;
+  color: var(--st-muted, #a4a39d);
+}
+.pb-tone-range {
+  width: 100%;
+  margin: 4px 0 6px;
+  accent-color: var(--st-accent, #ccff00);
+}
+.pb-tone-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+}
+.pb-tone-step {
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--st-muted, #a4a39d);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.pb-tone-step:first-child { text-align: left; }
+.pb-tone-step:last-child { text-align: right; }
+.pb-tone-step:hover:not(:disabled) { color: var(--st-ink, #f2f1ee); }
+.pb-tone-step[aria-pressed="true"] {
+  color: var(--st-accent, #ccff00);
+  font-weight: 600;
+}
+.pb-tone-example {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.92rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pb-tone-example q { quotes: "„" "“"; }
+.pb-tone-example-empty { color: var(--st-muted, #a4a39d); font-size: 0.85rem; }
+.pb-tone-address {
+  flex-shrink: 0;
+  font-family: var(--st-mono, ui-monospace, monospace);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--st-muted, #a4a39d);
+}
+.pb-tone-rewrite {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pb-tone-rewrite svg { width: 15px; height: 15px; }
+.pb-tone-proposal {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--st-accent, #ccff00);
+  background: rgba(204, 255, 0, 0.06);
+}
+.pb-tone-proposal-head { margin: 0 0 8px; font-size: 0.85rem; }
+.pb-tone-proposal-actions { display: flex; gap: 8px; margin-top: 10px; }
+.pb-tone-note { margin: 10px 0 0; font-size: 0.85rem; color: var(--st-muted, #a4a39d); }

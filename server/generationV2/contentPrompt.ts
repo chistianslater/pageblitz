@@ -1,5 +1,9 @@
 import type { PackConstitution } from "../../shared/stylePacks";
 import type { SectionType } from "../../shared/siteContract/types";
+import {
+  tonePromptLines,
+  type ToneLevel,
+} from "../../shared/onboardingV2/tone";
 
 export interface ContentPromptArgs {
   constitution: PackConstitution;
@@ -16,6 +20,8 @@ export interface ContentPromptArgs {
    * landet NIE im Dokument. Fehlt das Feld, fehlt der Abschnitt.
    */
   existingSite?: { title?: string; description?: string; text?: string };
+  /** Tonalität (2026-09-03) — nur bei Neugenerierung eines Dokuments mit gesetztem Feld. */
+  tone?: ToneLevel;
 }
 
 /**
@@ -71,8 +77,14 @@ function untrustedContentNote(was: string): string {
 }
 
 export function buildContentPrompt(args: ContentPromptArgs): string {
-  const { constitution, business, sections, existingSite, editorialSummary } =
-    args;
+  const {
+    constitution,
+    business,
+    sections,
+    existingSite,
+    editorialSummary,
+    tone,
+  } = args;
 
   const factLines = [
     `Name: ${business.name}`,
@@ -131,6 +143,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     `- Erfinde niemals Telefonnummern, E-Mail-Adressen, Straßen oder Öffnungszeiten — die contact-Sektion enthält höchstens city.`,
     `- Nenne niemals eine andere Stadt als die genannte. Leite die Branche niemals aus dem Firmennamen ab — nutze ausschließlich Kategorie, Google-Beschreibung und bestehende Website.`,
     `- Formuliere ausschließlich zur genannten Kategorie. Keine Branchenklischees einer anderen Profession (Anwalt/Mandant/Klage, Quellcode/Tickets/Deploy, Speisekarte) — außer die Kategorie verlangt das ausdrücklich.`,
+    ...(tone ? [``, ...tonePromptLines(tone)] : []),
     ``,
     `## Antwortformat`,
     `Antworte mit einem JSON-Objekt mit GENAU zwei Top-Level-Feldern: "seo" und "sections". Keine weiteren Top-Level-Felder — insbesondere KEIN "version", KEIN "stylePackId", KEIN "businessName" (die setzt das System).`,

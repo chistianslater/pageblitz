@@ -4,6 +4,7 @@ import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { TextsPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
 import { TextsForm, validateTexts, type TextField } from "./textsParts";
+import { ToneControl } from "./ToneControl";
 
 export { TextsForm, validateTexts };
 export type { TextField };
@@ -101,6 +102,16 @@ export function TextsPanel({
 }: TextsPanelProps) {
   const base = textsFromDoc(doc);
   const [values, setValues] = useState<TextsPatch>(base);
+  // Tonalität (2026-09-03): nach einer übernommenen Umschreibung kommen die
+  // neuen Texte per Refetch im Dokument an — dann die Felder einmalig
+  // nachziehen (sonst blieben die alten Formularwerte stehen).
+  const [resyncOnDoc, setResyncOnDoc] = useState(false);
+  useEffect(() => {
+    if (!resyncOnDoc) return;
+    setValues(textsFromDoc(doc));
+    setResyncOnDoc(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doc]);
   // Live-Spiegel als Effekt (nicht im Setter): Varianten-Klicks nutzen die
   // Updater-Form von setValues; der Effekt fängt jede Wertänderung ab.
   useEffect(() => {
@@ -208,6 +219,15 @@ export function TextsPanel({
         </>
       }
     >
+      <ToneControl
+        token={token}
+        tone={doc.tone ?? null}
+        onToneSaved={onApplied}
+        onTextsRewritten={() => {
+          setResyncOnDoc(true);
+          onApplied();
+        }}
+      />
       <TextsForm
         values={values}
         serp={{
