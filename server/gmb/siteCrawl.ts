@@ -52,12 +52,16 @@ export type SiteCrawlDeps = {
   timeoutMs?: number;
 };
 
+import { extractBrandingSignals, type BrandingSignals } from "./siteBranding";
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_BODY_BYTES = 200 * 1024;
 const MAX_TEXT_CHARS = 2_000;
 const MAX_TITLE_CHARS = 300;
 const MAX_DESCRIPTION_CHARS = 500;
 const MAX_REDIRECTS = 3;
+/** Marken-Crawl: höchstens drei eigene Stylesheets (2026-09-03). */
+const MAX_STYLESHEETS = 3;
 /** "" = kein expliziter Port in der URL (Standard-Port des Schemas). */
 const ALLOWED_PORTS = new Set(["", "80", "443"]);
 const CRAWL_HEADERS: Record<string, string> = {
@@ -216,8 +220,22 @@ function isSameHostOrWwwVariant(a: string, b: string): boolean {
  * ausgewertet werden — sie werden konservativ als Komplett-Sperre (`"/"`)
  * behandelt: im Zweifel crawlen wir NICHT.
  */
-export function parseRobotsDisallow(body: string): string[] {
-  const disallow: string[] = [];
+export interface RobotsRule {
+  allow: boolean;
+  /** Muster wie in robots.txt, inkl. `*` und `$`. */
+  pattern: string;
+}
+
+/**
+ * Regeln der `*`-Gruppe aus robots.txt. Platzhalter bleiben erhalten und
+ * werden in `isPathAllowed` als Muster ausgewertet — vorher wurde jede
+ * Regel mit `*` oder `$` konservativ als Komplett-Sperre gelesen, was
+ * Websites mit üblichen Mustern (`Disallow: /*\/danke`) vollständig
+ * unlesbar machte, obwohl nur einzelne Pfade gesperrt sind (Befund
+ * 2026-09-03: dadurch fiel auch der Fakten-Crawl solcher Seiten aus).
+ */
+export function parseRobotsRules(body: string): RobotsRule[] {
+  const rules: RobotsRule[] = [];
   let currentAgents: string[] = [];
   let inRuleBlock = false;
   for (const rawLine of body.split(/\r?\n/)) {
@@ -236,18 +254,46 @@ export function parseRobotsDisallow(body: string): string[] {
       currentAgents.push(value);
     } else if (field === "disallow" || field === "allow") {
       inRuleBlock = true;
-      if (field === "disallow" && value && currentAgents.includes("*")) {
-        // Wildcard-Syntax (`*`/`$`) ist mit Präfix-Matching nicht abbildbar
-        // → konservativ alles sperren.
-        disallow.push(/[*$]/.test(value) ? "/" : value);
-      }
+      if (!currentAgents.includes("*")) continue;
+      // `Disallow:` ohne Wert hebt die Sperre auf (= alles erlaubt) und
+      // trägt keine Regel bei.
+      if (!value) continue;
+      rules.push({ allow: field === "allow", pattern: value });
     }
   }
-  return disallow;
+  return rules;
 }
 
-function isDisallowed(pathWithQuery: string, rules: string[]): boolean {
-  return rules.some(prefix => pathWithQuery.startsWith(prefix));
+function patternToRegExp(pattern: string): RegExp {
+  const anchored = pattern.endsWith("$");
+  const body = anchored ? pattern.slice(0, -1) : pattern;
+  const escaped = body
+    .split("*")
+    .map(part => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+    .join(".*");
+  return new RegExp(`^${escaped}${anchored ? "$" : ""}`);
+}
+
+/**
+ * Standard-Auswertung: Die längste passende Regel gewinnt, bei gleicher
+ * Länge schlägt `Allow` das `Disallow`. Ohne Treffer ist der Pfad erlaubt.
+ */
+export function isPathAllowed(
+  pathWithQuery: string,
+  rules: readonly RobotsRule[]
+): boolean {
+  let best: RobotsRule | null = null;
+  for (const rule of rules) {
+    if (!patternToRegExp(rule.pattern).test(pathWithQuery)) continue;
+    if (
+      !best ||
+      rule.pattern.length > best.pattern.length ||
+      (rule.pattern.length === best.pattern.length && rule.allow)
+    ) {
+      best = rule;
+    }
+  }
+  return best ? best.allow : true;
 }
 
 /**
@@ -258,7 +304,7 @@ async function fetchRobotsRules(
   origin: string,
   fetchImpl: typeof fetch,
   signal: AbortSignal
-): Promise<string[]> {
+): Promise<RobotsRule[]> {
   try {
     const response = await fetchImpl(`${origin}/robots.txt`, {
       signal,
@@ -269,7 +315,7 @@ async function fetchRobotsRules(
     // Gleiche 200-kB-Kappung wie beim Seiten-Body (Stream wird nach dem
     // Limit abgebrochen); nicht lesbar/zu groß angekündigt → keine Regeln.
     const body = await readBodyLimited(response);
-    return body === null ? [] : parseRobotsDisallow(body);
+    return body === null ? [] : parseRobotsRules(body);
   } catch {
     return [];
   }
@@ -448,6 +494,87 @@ function extractSiteFacts(html: string): ExistingSiteFacts | null {
  * Inhalt). Wirft NIE: der Aufrufer (Generierungs-Job) läuft ohne die
  * Faktenquelle einfach weiter.
  */
+/**
+ * Marken-Signale der bestehenden Website (2026-09-03, Punkt 3 Scheibe 1):
+ * dieselbe Kette wie `crawlExistingSite` (SSRF-Prüfung, robots.txt,
+ * begrenzte Redirects, 200-kB-Kappung, jeder Fehler → null), zusätzlich bis
+ * zu drei eigene Stylesheets. Ausgelesen wird nur, was `siteBranding.ts`
+ * deterministisch erkennt — kein LLM, keine Texte.
+ */
+export async function crawlSiteBranding(
+  url: string,
+  deps: SiteCrawlDeps = {}
+): Promise<(BrandingSignals & { origin: string }) | null> {
+  const fetchImpl = deps.fetchImpl ?? fetch;
+  const resolveIps = deps.resolveIps ?? defaultResolveIps;
+  const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
+  let target: URL;
+  try {
+    target = new URL(url.trim());
+  } catch {
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    if (!(await isSafeTarget(target, resolveIps))) return null;
+    const rules = await fetchRobotsRules(
+      target.origin,
+      fetchImpl,
+      controller.signal
+    );
+    if (!isPathAllowed(target.pathname + target.search, rules)) return null;
+
+    const response = await fetchWithGuardedRedirects(
+      target,
+      fetchImpl,
+      resolveIps,
+      controller.signal
+    );
+    if (!response) return null;
+    const html = await readBodyLimited(response);
+    if (html === null) return null;
+
+    const origin = target.origin;
+    const stylesheets: string[] = [];
+    for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
+      if (stylesheets.length >= MAX_STYLESHEETS) break;
+      if (!/rel\s*=\s*["']?stylesheet/i.test(tag)) continue;
+      const hrefMatch = /href\s*=\s*("([^"]*)"|'([^']*)')/i.exec(tag);
+      const href = hrefMatch?.[2] ?? hrefMatch?.[3];
+      if (!href) continue;
+      let sheetUrl: URL;
+      try {
+        sheetUrl = new URL(href, origin);
+      } catch {
+        continue;
+      }
+      // Nur eigene Stylesheets: fremde CDNs (Fonts, Frameworks) tragen
+      // keine Markenfarbe und wären zusätzliche Abrufziele.
+      if (sheetUrl.origin !== origin) continue;
+      if (!isPathAllowed(sheetUrl.pathname + sheetUrl.search, rules)) continue;
+      const sheetResponse = await fetchWithGuardedRedirects(
+        sheetUrl,
+        fetchImpl,
+        resolveIps,
+        controller.signal
+      );
+      if (!sheetResponse) continue;
+      const css = await readBodyLimited(sheetResponse);
+      if (css !== null) stylesheets.push(css);
+    }
+
+    const signals = extractBrandingSignals(html, origin, stylesheets);
+    return { origin, ...signals };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function crawlExistingSite(
   url: string,
   deps: SiteCrawlDeps = {}
@@ -473,7 +600,7 @@ export async function crawlExistingSite(
       fetchImpl,
       controller.signal
     );
-    if (isDisallowed(target.pathname + target.search, rules)) return null;
+    if (!isPathAllowed(target.pathname + target.search, rules)) return null;
 
     const response = await fetchWithGuardedRedirects(
       target,

@@ -420,13 +420,30 @@ describe("crawlExistingSite", () => {
     expect(calledUrls).toEqual(["https://example.de/robots.txt"]);
   });
 
-  test("robots.txt Disallow: /admin* (Wildcard) wird konservativ als Komplett-Sperre behandelt → null", async () => {
+  // Verhaltensänderung 2026-09-03: Platzhalter-Regeln werden als Muster
+  // ausgewertet statt konservativ als Komplett-Sperre. Vorher war jede
+  // Website mit einer üblichen Regel wie „Disallow: /*/danke" komplett
+  // unlesbar — der Fakten-Crawl fiel dort still aus.
+  test("robots.txt Disallow: /admin* sperrt nur passende Pfade, die Startseite bleibt lesbar", async () => {
     const fetchImpl = makeFetch({
       "https://example.de/robots.txt": () =>
         new Response("User-agent: *\nDisallow: /admin*", { status: 200 }),
       "https://example.de/": () => htmlResponse(SIMPLE_HTML),
     });
     const result = await crawlExistingSite("https://example.de/", {
+      fetchImpl,
+      resolveIps: publicDns(),
+    });
+    expect(result?.title).toContain("Müller Metallbau");
+  });
+
+  test("robots.txt Disallow: /admin* sperrt den passenden Pfad weiterhin", async () => {
+    const fetchImpl = makeFetch({
+      "https://example.de/robots.txt": () =>
+        new Response("User-agent: *\nDisallow: /admin*", { status: 200 }),
+      "https://example.de/admin/intern": () => htmlResponse(SIMPLE_HTML),
+    });
+    const result = await crawlExistingSite("https://example.de/admin/intern", {
       fetchImpl,
       resolveIps: publicDns(),
     });
