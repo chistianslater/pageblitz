@@ -317,16 +317,29 @@ const CHROME_CSS = `
 .pb-preview-insert:hover .pb-preview-insert-btn,.pb-preview-insert-btn:focus-visible{opacity:1;border-color:#ccff00}
 .pb-preview-insert:hover .pb-preview-insert-stub,.pb-preview-insert:focus-within .pb-preview-insert-stub{opacity:.75;transform:scaleX(1)}
 @media(hover:none){.pb-preview-insert-btn{opacity:.9}}
-.pb-preview-skeleton{display:block;padding:48px 24px;background:rgba(11,11,13,.055);border-top:1px solid rgba(11,11,13,.12);border-bottom:1px solid rgba(11,11,13,.12)}
-.pb-preview-skeleton-inner{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.pb-preview-skeleton-kicker{font:600 12px/1 "Space Grotesk",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#0b0b0d;opacity:.55}
-.pb-preview-skeleton-line{display:block;height:16px;border-radius:8px;background:linear-gradient(90deg,rgba(11,11,13,.09) 0%,rgba(11,11,13,.16) 50%,rgba(11,11,13,.09) 100%);background-size:200% 100%}
+/* Richtungsneutral (Befund 2026-09-03): mit schwarzen Tönungen war das
+   Skelett auf dunklen Packs (salon-noir & Co.) unsichtbar — der Kunde sah
+   nach dem Klick scheinbar nichts. Grundfarben kommen jetzt aus den
+   Pack-Variablen, die Balken aus mittlerem Grau mit Alpha (liest auf
+   hellem UND dunklem Grund). */
+.pb-preview-skeleton{display:block;padding:44px 24px;background:var(--pb-surface,rgba(128,128,128,.08));border-top:2px solid var(--pb-accent,#888);border-bottom:1px solid var(--pb-line,rgba(128,128,128,.3));color:var(--pb-ink,inherit)}
+.pb-preview-skeleton-inner{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.pb-preview-skeleton-kicker{display:inline-flex;align-items:center;gap:10px;font:700 15px/1.2 "Space Grotesk",system-ui,sans-serif;letter-spacing:.04em;color:var(--pb-accent,#888)}
+.pb-preview-skeleton-kicker::before{content:"";width:11px;height:11px;flex:0 0 auto;border-radius:999px;background:currentColor}
+/* Balken aus der Textfarbe des Packs mischen (Befund 2026-09-03): festes
+   Grau war auf dunklen Richtungen wie salon-noir kaum zu sehen. */
+.pb-preview-skeleton-line{display:block;height:18px;border-radius:9px;background:linear-gradient(90deg,rgba(128,128,128,.28) 0%,rgba(128,128,128,.5) 50%,rgba(128,128,128,.28) 100%);background-size:200% 100%}
+@supports (background:color-mix(in srgb,red 10%,transparent)){
+  .pb-preview-skeleton-line{background:linear-gradient(90deg,color-mix(in srgb,var(--pb-ink,#888) 20%,transparent) 0%,color-mix(in srgb,var(--pb-ink,#888) 45%,transparent) 50%,color-mix(in srgb,var(--pb-ink,#888) 20%,transparent) 100%);background-size:200% 100%}
+}
 .pb-preview-skeleton-line[data-w="70"]{width:70%}
 .pb-preview-skeleton-line[data-w="92"]{width:92%}
 .pb-preview-skeleton-line[data-w="56"]{width:56%}
 @media(prefers-reduced-motion:no-preference){
   .pb-preview-skeleton-line{animation:pb-skeleton-shimmer 1.4s linear infinite}
+  .pb-preview-skeleton-kicker::before{animation:pb-skeleton-pulse 1.2s ease-in-out infinite}
   @keyframes pb-skeleton-shimmer{0%{background-position:150% 0}100%{background-position:-50% 0}}
+  @keyframes pb-skeleton-pulse{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
 }
 @media(prefers-reduced-motion:no-preference){.pb-preview-insert-stub{transition:opacity .16s,transform .22s cubic-bezier(.2,.8,.2,1)}}
 @media(prefers-reduced-motion:no-preference){

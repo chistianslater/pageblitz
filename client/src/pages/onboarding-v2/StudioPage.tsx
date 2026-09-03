@@ -757,6 +757,16 @@ export default function StudioPage({ token }: { token: string }) {
               „Wiederherstellen“ oder „Abbrechen“ im Verlauf.
             </p>
           )}
+          {pendingInsert && (
+            <p
+              className="pb-studio-inline-hint pb-studio-pending"
+              role="status"
+            >
+              <span className="pb-studio-pending-dot" aria-hidden="true" />
+              {pendingInsert.label} wird geschrieben — das dauert etwa eine
+              Minute. Die Sektion erscheint an ihrer Stelle in der Vorschau.
+            </p>
+          )}
           {previewSlug === null && (
             <p className="pb-studio-inline-hint">
               Tipp: Texte kannst du direkt anklicken. Das Layout jeder Sektion
