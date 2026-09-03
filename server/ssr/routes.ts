@@ -12,7 +12,7 @@ import {
   deriveDesignProfile,
   HERO_LAYOUTS,
 } from "../../shared/siteContract/designProfile";
-import { getWebsiteBySlug, getWebsiteByToken } from "../db";
+import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
 import {
   pageForPathname,
   visiblePages,
@@ -175,13 +175,32 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
     res.status(400).type("text/plain").send("Unbekanntes Pack");
     return;
   }
+  // Verlauf (2026-09-03): ?version=<id> rendert einen gespeicherten Stand
+  // aus website_versions statt des aktuellen Dokuments — nur lesen, nie
+  // schreiben, und nur Stände derselben Website (getWebsiteVersion prüft
+  // die websiteId). Ungültige Werte → 400 ohne Reflektion (s. o.).
+  const versionParam =
+    typeof req.query.version === "string" ? req.query.version : "";
+  if (versionParam && !/^\d{1,10}$/.test(versionParam)) {
+    res.status(400).type("text/plain").send("Ungültiger Stand");
+    return;
+  }
   try {
     const website = await getWebsiteByToken(token);
     if (!website || !website.websiteData) {
       res.status(404).send("Vorschau nicht gefunden");
       return;
     }
-    const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
+    let rawDoc: unknown = website.websiteData;
+    if (versionParam) {
+      const version = await getWebsiteVersion(website.id, Number(versionParam));
+      if (!version) {
+        res.status(404).send("Stand nicht gefunden");
+        return;
+      }
+      rawDoc = version.doc;
+    }
+    const parsed = WebsiteDataV2Schema.safeParse(rawDoc);
     if (!parsed.success) {
       res.status(404).send("Noch keine Website im neuen Format");
       return;

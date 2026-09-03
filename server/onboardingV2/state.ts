@@ -1,11 +1,16 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import {
+  countWebsiteVersions,
   createOnboarding,
+  deleteOldestWebsiteVersions,
   getBusinessById,
   getGenerationJobByWebsiteId,
+  getLatestWebsiteVersion,
   getOnboardingByWebsiteId,
   getSubscriptionByWebsiteId,
+  insertWebsiteVersion,
+  replaceWebsiteVersion,
   updateOnboarding,
   updateWebsite,
 } from "../db";
@@ -17,6 +22,14 @@ import {
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { parseGmbAddress } from "../gmb/address";
 import { addOnFlagsFromDoc } from "./applyPatch";
+import {
+  planVersionWrite,
+  versionsToPrune,
+  type StoredVersion,
+  type VersionTrigger,
+  type VersionWrite,
+} from "./versions";
+import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
   deriveChecklistState,
   isCheckoutReady,
@@ -359,15 +372,76 @@ export async function mergeStudioProgress(
 }
 
 /**
+ * Verlauf (2026-09-03): legt nach dem Schreiben einen Stand ab. Fehler
+ * werden geloggt, aber nie weitergereicht — das Dokument ist zu diesem
+ * Zeitpunkt bereits gespeichert, ein kaputter Verlauf darf die Änderung
+ * des Kunden nicht als Fehler erscheinen lassen.
+ */
+async function recordVersion(
+  websiteId: number,
+  prevDoc: WebsiteDataV2 | null,
+  nextDoc: WebsiteDataV2,
+  write: VersionWrite
+): Promise<void> {
+  try {
+    const latestRow = await getLatestWebsiteVersion(websiteId);
+    const latestDoc = latestRow
+      ? WebsiteDataV2Schema.safeParse(latestRow.doc)
+      : null;
+    const latest: StoredVersion | null =
+      latestRow && latestDoc?.success
+        ? {
+            id: latestRow.id,
+            trigger: latestRow.trigger as VersionTrigger,
+            label: latestRow.label,
+            createdAt: latestRow.createdAt,
+            doc: latestDoc.data,
+          }
+        : null;
+    const ops = planVersionWrite({
+      latest,
+      prevDoc: prevDoc ?? nextDoc,
+      nextDoc,
+      write,
+      now: new Date(),
+    });
+    for (const op of ops) {
+      if (op.kind === "insert") {
+        await insertWebsiteVersion({
+          websiteId,
+          trigger: op.trigger,
+          label: op.label,
+          doc: op.doc,
+        });
+      } else {
+        await replaceWebsiteVersion(op.id, {
+          trigger: op.trigger,
+          label: op.label,
+          doc: op.doc,
+        });
+      }
+    }
+    if (ops.some(op => op.kind === "insert")) {
+      const excess = versionsToPrune(await countWebsiteVersions(websiteId));
+      if (excess > 0) await deleteOldestWebsiteVersions(websiteId, excess);
+    }
+  } catch (error) {
+    console.error("[Verlauf] Stand konnte nicht gesichert werden:", error);
+  }
+}
+
+/**
  * Persistiert ein neues v2-Dokument entlang der immer gleichen Kette: Guard →
- * updateWebsite (+ optionale Extra-Spalten, z. B. hasLegalPages) → optionaler
- * Progress-Merge → Cache-Invalidierung → neu gebauter State. Bündelt das
- * Pattern, das vorher in jeder schreibenden Prozedur einzeln stand.
+ * updateWebsite (+ optionale Extra-Spalten, z. B. hasLegalPages) → Verlaufs-
+ * Stand (Auslöser + Label, siehe versions.ts) → optionaler Progress-Merge →
+ * Cache-Invalidierung → neu gebauter State. Bündelt das Pattern, das vorher
+ * in jeder schreibenden Prozedur einzeln stand.
  */
 export async function persistDoc(
   token: string,
   loaded: StudioWebsite,
   next: WebsiteDataV2,
+  version: VersionWrite,
   opts: {
     progress?: StudioProgress;
     extra?: Partial<InsertGeneratedWebsite>;
@@ -378,6 +452,7 @@ export async function persistDoc(
     websiteData: next as any,
     ...(opts.extra ?? {}),
   });
+  await recordVersion(loaded.website.id, loaded.doc, next, version);
   const progress = opts.progress
     ? await mergeStudioProgress(loaded.website.id, opts.progress)
     : undefined;

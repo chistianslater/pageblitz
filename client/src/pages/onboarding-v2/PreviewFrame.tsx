@@ -48,6 +48,11 @@ interface PreviewFrameProps {
    * Lightbox der Live-Site (Capture-Listener stoppt deren Handler).
    */
   onPickPhoto?: (target: PhotoClickTarget) => void;
+  /**
+   * Verlauf (2026-09-03): id eines gespeicherten Stands → `?version=<id>`,
+   * die Vorschau zeigt diesen Stand statt des Dokuments (nur lesen).
+   */
+  versionId?: number | null;
 }
 
 export type PhotoClickTarget = "hero" | "about" | "gallery";
@@ -81,6 +86,23 @@ export function previewPath(token: string, pageSlug?: string): string {
     : `/preview-ssr/${token}`;
 }
 
+/** Vorschau-URL inkl. Pack-Override, Verlaufs-Stand, Reveal und Cache-Bust. */
+export function buildPreviewSrc(args: {
+  token: string;
+  version: number;
+  pageSlug?: string;
+  packOverride?: PackId;
+  reveal?: boolean;
+  versionId?: number | null;
+}): string {
+  const params = new URLSearchParams();
+  if (args.packOverride) params.set("pack", args.packOverride);
+  if (args.versionId) params.set("version", String(args.versionId));
+  if (args.reveal) params.set("reveal", "1");
+  params.set("v", String(args.version)); // Cache-Bust nach jedem Patch (Server ist ohnehin no-store)
+  return `${previewPath(args.token, args.pageSlug)}?${params.toString()}`;
+}
+
 export function PreviewFrame({
   token,
   version,
@@ -96,12 +118,16 @@ export function PreviewFrame({
   onIframeReady,
   draftValues,
   onPickPhoto,
+  versionId,
 }: PreviewFrameProps) {
-  const params = new URLSearchParams();
-  if (packOverride) params.set("pack", packOverride);
-  if (reveal) params.set("reveal", "1");
-  params.set("v", String(version)); // Cache-Bust nach jedem Patch (Server ist ohnehin no-store)
-  const src = `${previewPath(token, pageSlug)}?${params.toString()}`;
+  const src = buildPreviewSrc({
+    token,
+    version,
+    pageSlug,
+    packOverride,
+    reveal,
+    versionId,
+  });
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const scrollToFocus = useCallback(() => {

@@ -4,6 +4,7 @@ import {
   isInlineLocked,
   normalizeInlineText,
   previewPath,
+  buildPreviewSrc,
   photoClickTargetOf,
 } from "./PreviewFrame";
 
@@ -20,6 +21,24 @@ describe("PreviewFrame helpers", () => {
     expect(previewPath("tok", "leistungen")).toBe(
       "/preview-ssr/tok/leistungen"
     );
+  });
+
+  test("buildPreviewSrc hängt ?version= für einen Verlaufs-Stand an (2026-09-03)", () => {
+    expect(buildPreviewSrc({ token: "tok", version: 3 })).toBe(
+      "/preview-ssr/tok?v=3"
+    );
+    expect(buildPreviewSrc({ token: "tok", version: 3, versionId: 17 })).toBe(
+      "/preview-ssr/tok?version=17&v=3"
+    );
+    expect(
+      buildPreviewSrc({
+        token: "tok",
+        version: 1,
+        pageSlug: "leistungen",
+        packOverride: "kanzlei",
+        reveal: true,
+      })
+    ).toBe("/preview-ssr/tok/leistungen?pack=kanzlei&reveal=1&v=1");
   });
 
   test("Google-Bewertungen hinter data-pb-readonly gelten als gesperrt", () => {

@@ -1,13 +1,14 @@
 import React from "react";
 import type { ReactNode } from "react";
 import {
-  Palette,
+  History,
   Image,
-  Type,
-  ShoppingBag,
-  Scale,
-  Sparkles,
   LayoutList,
+  Palette,
+  Scale,
+  ShoppingBag,
+  Sparkles,
+  Type,
 } from "lucide-react";
 import { CHECKLIST_ORDER } from "@shared/onboardingV2/checklist";
 import { withStudioParams } from "@/pages/onboarding-v2/studioUrl";
@@ -51,6 +52,11 @@ const PANEL_META: Record<
     label: "Extras",
     hint: "Kontaktformular, Galerie, Buchung & mehr",
     icon: <Sparkles className="w-4 h-4" />,
+  },
+  versions: {
+    label: "Verlauf",
+    hint: "Frühere Stände zurückholen",
+    icon: <History className="w-4 h-4" />,
   },
 };
 

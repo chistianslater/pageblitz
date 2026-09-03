@@ -21,6 +21,8 @@ import { StylePanel } from "./panels/StylePanel";
 import { PhotosPanel } from "./panels/PhotosPanel";
 import { TextsPanel } from "./panels/TextsPanel";
 import { StructurePanel } from "./panels/StructurePanel";
+import { VersionsPanel } from "./panels/VersionsPanel";
+import { UndoButton } from "./UndoButton";
 import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
@@ -101,6 +103,20 @@ export default function StudioPage({ token }: { token: string }) {
     setPhotoFocus(target);
   };
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  // Verlauf (2026-09-03): Stand, der in der Vorschau gezeigt wird (null =
+  // aktueller Stand). Nur solange das Verlaufs-Panel offen ist — beim
+  // Panelwechsel fällt die Vorschau auf den aktuellen Stand zurück.
+  const [versionPreviewId, setVersionPreviewId] = useState<number | null>(null);
+  useEffect(() => {
+    if (activeId !== "versions") setVersionPreviewId(null);
+  }, [activeId]);
+  // Die Verlaufsliste (Panel + Rückgängig-Knopf) nach jeder Vorschau-
+  // Aktualisierung neu laden — jede Studio-Mutation bumpt die Vorschau.
+  const trpcUtils = trpc.useUtils();
+  useEffect(() => {
+    void trpcUtils.onboardingV2.listVersions.invalidate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studio.previewVersion]);
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   // Schwebender KI-Assistent über der Vorschau (2026-08-30): eingeklappt
   // eine Pill unten rechts, ausgeklappt der bisherige KI-Chat als Karte.
@@ -493,6 +509,18 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onPreviewFocus={setPreviewFocusAnchor}
             />
+          ) : activeId === "versions" ? (
+            <VersionsPanel
+              token={token}
+              previewId={versionPreviewId}
+              onPreview={setVersionPreviewId}
+              onRestored={() => {
+                studio.refetch();
+                studio.bumpPreview();
+                flashPreview();
+              }}
+              onClose={() => panelClose(null)}
+            />
           ) : activeId === "offer" ? (
             <OfferPanel
               token={token}
@@ -649,16 +677,35 @@ export default function StudioPage({ token }: { token: string }) {
                 Mobil
               </button>
             </div>
-            <a
-              className="pb-studio-btn"
-              data-variant="ghost"
-              href={previewPath(token, previewSlug ?? undefined)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              In neuem Tab öffnen
-            </a>
+            <div className="pb-studio-toolbar-actions">
+              <UndoButton
+                token={token}
+                onApplied={() => {
+                  studio.refetch();
+                  studio.bumpPreview();
+                  flashPreview();
+                }}
+              />
+              <a
+                className="pb-studio-btn"
+                data-variant="ghost"
+                href={previewPath(token, previewSlug ?? undefined)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                In neuem Tab öffnen
+              </a>
+            </div>
           </div>
+          {versionPreviewId !== null && (
+            <p
+              className="pb-studio-inline-hint pb-studio-version-hint"
+              role="status"
+            >
+              Du siehst einen früheren Stand. Bearbeiten geht erst wieder nach
+              „Wiederherstellen“ oder „Abbrechen“ im Verlauf.
+            </p>
+          )}
           {previewSlug === null && (
             <p className="pb-studio-inline-hint">
               Tipp: Texte kannst du direkt anklicken. Das Layout jeder Sektion
@@ -700,13 +747,20 @@ export default function StudioPage({ token }: { token: string }) {
             version={studio.previewVersion}
             device={device}
             pageSlug={previewSlug ?? undefined}
-            inlineTargets={inlineTargets}
+            versionId={versionPreviewId}
+            // Ein früherer Stand ist nur zum Ansehen: kein Inline-Text, keine
+            // Layout-Schalter, kein Foto-Klick, bis er wiederhergestellt ist.
+            inlineTargets={
+              versionPreviewId === null ? inlineTargets : undefined
+            }
             onInlineTextEdit={applyInlineText}
             draftValues={activeId === "texts" ? textDraft : undefined}
-            onPickPhoto={openPhotosAt}
+            onPickPhoto={versionPreviewId === null ? openPhotosAt : undefined}
             focusAnchor={previewFocusAnchor}
             designProfile={state.doc.designProfile ?? null}
-            onSectionLayout={applySectionLayout}
+            onSectionLayout={
+              versionPreviewId === null ? applySectionLayout : undefined
+            }
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).

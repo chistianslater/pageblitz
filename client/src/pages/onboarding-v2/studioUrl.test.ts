@@ -10,6 +10,7 @@ import {
 describe("parsePanelParam", () => {
   test("gültige ChecklistItemId → wird zurückgegeben", () => {
     expect(parsePanelParam("?panel=style")).toBe("style");
+    expect(parsePanelParam("?panel=versions")).toBe("versions");
     expect(parsePanelParam("?panel=addons")).toBe("addons");
   });
   test("kein panel-Parameter → null", () => {

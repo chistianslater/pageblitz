@@ -3024,3 +3024,112 @@
   width: 30px;
   height: 30px;
 }
+
+/* ── Verlauf (2026-09-03) ──────────────────────────────────────────────── */
+.pb-studio-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pb-studio-undo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pb-studio-undo svg {
+  width: 15px;
+  height: 15px;
+}
+.pb-studio-undo:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.pb-studio-version-hint {
+  color: var(--st-accent, #ccff00);
+}
+.pb-versions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pb-versions-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 10px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.pb-versions-row:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.pb-versions-row[aria-pressed="true"] {
+  border-color: var(--st-accent, #ccff00);
+  background: rgba(204, 255, 0, 0.06);
+}
+.pb-versions-row[data-current] {
+  cursor: default;
+}
+.pb-versions-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--st-muted, #a4a39d);
+  flex-shrink: 0;
+}
+.pb-versions-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.pb-versions-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pb-versions-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pb-versions-meta {
+  font-size: 0.72rem;
+  color: var(--st-muted, #a4a39d);
+}
+.pb-versions-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--st-accent, #ccff00);
+  color: var(--st-accent, #ccff00);
+}
+.pb-versions-empty,
+.pb-versions-notice {
+  margin: 0 0 12px;
+  color: var(--st-muted, #a4a39d);
+  font-size: 0.85rem;
+}
+.pb-versions-notice {
+  color: var(--st-ink, #f2f1ee);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--st-accent, #ccff00);
+  background: rgba(204, 255, 0, 0.06);
+}

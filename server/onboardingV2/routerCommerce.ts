@@ -101,9 +101,15 @@ export const commerceProcedures = {
         openingHours: legal.openingHours,
       });
 
-      return persistDoc(input.token, loaded, next, {
-        extra: { hasLegalPages: true },
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        next,
+        { trigger: "panel", label: "Rechtliches geändert" },
+        {
+          extra: { hasLegalPages: true },
+        }
+      );
     }),
 
   /**
@@ -208,9 +214,15 @@ export const commerceProcedures = {
         base = applyAddOnFlags(doc, { team: true });
         extra = { addOnTeam: true };
       }
-      return persistDoc(input.token, loaded, applyTeam(base, input.patch), {
-        extra,
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        applyTeam(base, input.patch),
+        { trigger: "panel", label: "Team geändert" },
+        {
+          extra,
+        }
+      );
     }),
 
   /**

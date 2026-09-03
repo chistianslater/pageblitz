@@ -24,8 +24,10 @@ import {
   proposeAiEdit,
   storeProposal,
   takeProposal,
+  takeProposalEntry,
 } from "./aiEdit";
 import { loadStudioWebsite } from "./ownership";
+import { chatLabel } from "./versions";
 import {
   assertNotGenerating,
   persistDoc,
@@ -277,7 +279,11 @@ export const aiProcedures = {
       });
 
       if (result.kind === "content") {
-        const proposalId = storeProposal(loaded.website.id, result.next);
+        const proposalId = storeProposal(
+          loaded.website.id,
+          result.next,
+          input.message
+        );
         return {
           kind: "content" as const,
           proposalId,
@@ -296,7 +302,10 @@ export const aiProcedures = {
               "Diesen Design-Wunsch konnte ich keiner Einstellung zuordnen — probiere es im Stil-Panel.",
           };
         }
-        await persistDoc(input.token, loaded, next);
+        await persistDoc(input.token, loaded, next, {
+          trigger: "chat",
+          label: chatLabel(input.message),
+        });
         return {
           kind: "theme" as const,
           reason: result.reason,
@@ -325,14 +334,17 @@ export const aiProcedures = {
       // Gleiche Sperre wie requireDoc (aiEdit): kein Übernehmen in ein
       // Dokument, das der laufende Generierungs-Job gleich überschreibt.
       await assertNotGenerating(loaded.website.id);
-      const next = takeProposal(input.proposalId, loaded.website.id);
-      if (!next) {
+      const proposal = takeProposalEntry(input.proposalId, loaded.website.id);
+      if (!proposal) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: PROPOSAL_EXPIRED_MESSAGE,
         });
       }
-      return persistDoc(input.token, loaded, next);
+      return persistDoc(input.token, loaded, proposal.next, {
+        trigger: "chat",
+        label: chatLabel(proposal.message),
+      });
     }),
 
   /** Verwirft einen Vorschlag explizit (z. B. Klick auf "Verwerfen") — idempotent, kein Fehler bei bereits abgelaufenem/unbekanntem Vorschlag. */

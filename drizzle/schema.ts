@@ -571,3 +571,31 @@ export const chatTranscripts = mysqlTable("chat_transcripts", {
 
 export type ChatTranscript = typeof chatTranscripts.$inferSelect;
 export type InsertChatTranscript = typeof chatTranscripts.$inferInsert;
+
+// ── Verlauf (2026-09-03): Stände des v2-Dokuments je Website ─────────────────
+// Jeder Studio-Schreibvorgang (persistDoc) legt einen Stand ab; max. 50 pro
+// Website (ältere werden gelöscht), gleiche Auslöser innerhalb von zwei
+// Minuten werden ersetzt statt angehängt (server/onboardingV2/versions.ts).
+export const websiteVersions = mysqlTable(
+  "website_versions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    websiteId: int("websiteId").notNull(),
+    /** generation | chat | panel | inline | restore (VERSION_TRIGGERS). */
+    trigger: varchar("trigger", { length: 20 }).notNull(),
+    /** Klartext für die Liste, z. B. „KI-Chat: „Header dunkler““. */
+    label: varchar("label", { length: 160 }).notNull(),
+    /** Kompletter WebsiteDataV2-Stand. */
+    websiteData: json("websiteData").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    websiteCreatedIdx: index("website_versions_website_created_idx").on(
+      table.websiteId,
+      table.createdAt
+    ),
+  })
+);
+
+export type WebsiteVersion = typeof websiteVersions.$inferSelect;
+export type InsertWebsiteVersion = typeof websiteVersions.$inferInsert;

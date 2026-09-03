@@ -306,6 +306,8 @@ interface StoredProposal {
   websiteId: number;
   next: WebsiteDataV2;
   createdAt: number;
+  /** Kundenwunsch für das Verlaufs-Label (chatLabel). */
+  message?: string;
 }
 
 /** Server-only Zwischenspeicher unbestätigter Vorschläge (Spec §5: TTL 10 min, NIE ohne applyAiEdit persistiert). */
@@ -319,11 +321,15 @@ function sweepExpiredProposals(now: number): void {
   });
 }
 
-export function storeProposal(websiteId: number, next: WebsiteDataV2): string {
+export function storeProposal(
+  websiteId: number,
+  next: WebsiteDataV2,
+  message?: string
+): string {
   const now = Date.now();
   sweepExpiredProposals(now);
   const id = nanoid(21);
-  proposals.set(id, { websiteId, next, createdAt: now });
+  proposals.set(id, { websiteId, next, createdAt: now, message });
   return id;
 }
 
@@ -332,10 +338,18 @@ export function takeProposal(
   id: string,
   websiteId: number
 ): WebsiteDataV2 | null {
+  return takeProposalEntry(id, websiteId)?.next ?? null;
+}
+
+/** Wie takeProposal, liefert zusätzlich den ursprünglichen Kundenwunsch (Verlaufs-Label). */
+export function takeProposalEntry(
+  id: string,
+  websiteId: number
+): { next: WebsiteDataV2; message?: string } | null {
   const now = Date.now();
   sweepExpiredProposals(now);
   const entry = proposals.get(id);
   if (!entry || entry.websiteId !== websiteId) return null;
   proposals.delete(id);
-  return entry.next;
+  return { next: entry.next, message: entry.message };
 }

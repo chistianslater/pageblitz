@@ -20,6 +20,7 @@ import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
 import { contentProcedures } from "./routerContent";
 import { commerceProcedures } from "./routerCommerce";
 import { aiProcedures } from "./routerAi";
+import { versionProcedures } from "./routerVersions";
 
 /**
  * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
@@ -160,7 +161,10 @@ const coreProcedures = {
     .input(
       tokenInput.extend({
         round: z.number().int().min(0).default(0),
-        count: z.union([z.literal(2), z.literal(3)]).optional().default(2),
+        count: z
+          .union([z.literal(2), z.literal(3)])
+          .optional()
+          .default(2),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -171,12 +175,10 @@ const coreProcedures = {
         category,
         input.round,
         input.count
-      ).map(
-        id => {
-          const c = getConstitution(id);
-          return { id, name: c.name, essence: c.essence };
-        }
-      );
+      ).map(id => {
+        const c = getConstitution(id);
+        return { id, name: c.name, essence: c.essence };
+      });
       return { candidates };
     }),
 
@@ -197,6 +199,10 @@ const coreProcedures = {
         input.token,
         loaded,
         next,
+        {
+          trigger: "panel",
+          label: `Designrichtung: ${getConstitution(packId).name}`,
+        },
         input.confirm ? { progress: { styleConfirmed: true } } : undefined
       );
     }),
@@ -207,4 +213,5 @@ export const onboardingV2Router = router({
   ...contentProcedures,
   ...commerceProcedures,
   ...aiProcedures,
+  ...versionProcedures,
 });

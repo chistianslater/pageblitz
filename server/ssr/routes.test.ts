@@ -7,11 +7,12 @@ import { getFixture } from "../../shared/siteContract/fixtures";
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
   getWebsiteByToken: vi.fn(),
+  getWebsiteVersion: vi.fn(),
 }));
 
 // Import nach vi.mock, damit der Mock vor dem ersten Aufruf von registerSsrRoutes greift.
 import { invalidateSsrCache, registerSsrRoutes } from "./routes";
-import { getWebsiteBySlug, getWebsiteByToken } from "../db";
+import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
 
 /** App mit SSR-Routen + einem SPA-Fallback-Stand-in (statt echter Vite-/serveStatic-Middleware). */
 function buildAppWithFallback(): Express {
@@ -808,6 +809,46 @@ describe("SSR routes", () => {
       );
       expect(res.status).toBe(200);
       expect(res.text).toContain('class="pb-kanzlei');
+    });
+
+    test("?version=<id> rendert den gespeicherten Stand statt des Dokuments (Verlauf, 2026-09-03)", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      (getWebsiteVersion as Mock).mockResolvedValue({
+        id: 5,
+        trigger: "panel",
+        label: "Designrichtung: Kanzlei",
+        createdAt: new Date(),
+        doc: getFixture("kanzlei", "full"),
+      });
+      const res = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?version=5"
+      );
+      expect(res.status).toBe(200);
+      expect(getWebsiteVersion).toHaveBeenCalledWith(1, 5);
+      expect(res.text).toContain('class="pb-kanzlei');
+      expect(res.headers["cache-control"]).toBe("no-store");
+    });
+
+    test("?version= unbekannt oder fremd → 404; ungültiger Wert → 400 ohne Reflektion", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("werkbank", "full"),
+      });
+      (getWebsiteVersion as Mock).mockResolvedValue(null);
+      const missing = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?version=99"
+      );
+      expect(missing.status).toBe(404);
+      const bad = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?version=%3Cscript%3E"
+      );
+      expect(bad.status).toBe(400);
+      expect(bad.text).not.toContain("<script");
     });
 
     test("v1-Dokument → 404, unbekanntes pack → 400", async () => {

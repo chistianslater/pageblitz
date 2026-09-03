@@ -1,4 +1,14 @@
-import { eq, desc, sql, and, gte, isNotNull, notInArray } from "drizzle-orm";
+import {
+  eq,
+  desc,
+  asc,
+  sql,
+  and,
+  gte,
+  isNotNull,
+  notInArray,
+  inArray,
+} from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import crypto from "crypto";
 import {
@@ -39,6 +49,7 @@ import {
   appointments,
   industryGaps,
   IndustryGap,
+  websiteVersions,
 } from "../drizzle/schema";
 import { normalizeCategoryKey } from "../shared/stylePacks";
 import { ENV } from "./_core/env";
@@ -1420,4 +1431,155 @@ export async function listIndustryGaps(limit = 100): Promise<IndustryGap[]> {
     .from(industryGaps)
     .orderBy(desc(industryGaps.occurrences), desc(industryGaps.lastSeenAt))
     .limit(limit);
+}
+
+// ── Verlauf (2026-09-03): website_versions ────────────────────────────────────
+// Reine DB-Zugriffe (ohne DB: leer/no-op wie listIndustryGaps); die Entscheidungslogik (Baseline, Zusammenfassen,
+// Kappung, Restore) lebt in server/onboardingV2/versions.ts.
+
+export interface WebsiteVersionRow {
+  id: number;
+  trigger: string;
+  label: string;
+  createdAt: Date;
+}
+
+export interface WebsiteVersionWithDoc extends WebsiteVersionRow {
+  doc: unknown;
+}
+
+function toVersionRow(row: {
+  id: number;
+  trigger: string;
+  label: string;
+  createdAt: Date;
+}): WebsiteVersionRow {
+  return {
+    id: row.id,
+    trigger: row.trigger,
+    label: row.label,
+    createdAt: row.createdAt,
+  };
+}
+
+/** Jüngster Stand inkl. Dokument (für den Gleichheits-/Zusammenfassen-Check). */
+export async function getLatestWebsiteVersion(
+  websiteId: number
+): Promise<WebsiteVersionWithDoc | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(websiteVersions)
+    .where(eq(websiteVersions.websiteId, websiteId))
+    .orderBy(desc(websiteVersions.createdAt), desc(websiteVersions.id))
+    .limit(1);
+  return row ? { ...toVersionRow(row), doc: row.websiteData } : null;
+}
+
+export async function insertWebsiteVersion(input: {
+  websiteId: number;
+  trigger: string;
+  label: string;
+  doc: unknown;
+}): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const [result] = await db.insert(websiteVersions).values({
+    websiteId: input.websiteId,
+    trigger: input.trigger,
+    label: input.label,
+    websiteData: input.doc as any,
+  });
+  return result.insertId;
+}
+
+/** Ersetzt Inhalt + Zeitstempel eines Stands (Zusammenfassen kurz aufeinanderfolgender Änderungen). */
+export async function replaceWebsiteVersion(
+  id: number,
+  input: { trigger: string; label: string; doc: unknown }
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(websiteVersions)
+    .set({
+      trigger: input.trigger,
+      label: input.label,
+      websiteData: input.doc as any,
+      createdAt: new Date(),
+    })
+    .where(eq(websiteVersions.id, id));
+}
+
+export async function countWebsiteVersions(websiteId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const [row] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(websiteVersions)
+    .where(eq(websiteVersions.websiteId, websiteId));
+  return Number(row?.count ?? 0);
+}
+
+/** Löscht die `count` ältesten Stände einer Website (Kappung auf MAX_VERSIONS). */
+export async function deleteOldestWebsiteVersions(
+  websiteId: number,
+  count: number
+): Promise<void> {
+  if (count <= 0) return;
+  const db = await getDb();
+  if (!db) return;
+  const oldest = await db
+    .select({ id: websiteVersions.id })
+    .from(websiteVersions)
+    .where(eq(websiteVersions.websiteId, websiteId))
+    .orderBy(asc(websiteVersions.createdAt), asc(websiteVersions.id))
+    .limit(count);
+  if (oldest.length === 0) return;
+  await db.delete(websiteVersions).where(
+    inArray(
+      websiteVersions.id,
+      oldest.map(row => row.id)
+    )
+  );
+}
+
+/** Metadaten aller Stände, jüngster zuerst — ohne Dokument (Liste im Panel). */
+export async function listWebsiteVersions(
+  websiteId: number
+): Promise<WebsiteVersionRow[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db
+    .select({
+      id: websiteVersions.id,
+      trigger: websiteVersions.trigger,
+      label: websiteVersions.label,
+      createdAt: websiteVersions.createdAt,
+    })
+    .from(websiteVersions)
+    .where(eq(websiteVersions.websiteId, websiteId))
+    .orderBy(desc(websiteVersions.createdAt), desc(websiteVersions.id));
+  return rows.map(toVersionRow);
+}
+
+/** Ein Stand inkl. Dokument — nur, wenn er zur angegebenen Website gehört. */
+export async function getWebsiteVersion(
+  websiteId: number,
+  versionId: number
+): Promise<WebsiteVersionWithDoc | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(websiteVersions)
+    .where(
+      and(
+        eq(websiteVersions.id, versionId),
+        eq(websiteVersions.websiteId, websiteId)
+      )
+    )
+    .limit(1);
+  return row ? { ...toVersionRow(row), doc: row.websiteData } : null;
 }

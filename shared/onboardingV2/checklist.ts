@@ -7,7 +7,8 @@ export type ChecklistItemId =
   | "structure"
   | "offer"
   | "legal"
-  | "addons";
+  | "addons"
+  | "versions";
 type ChecklistStatus = "done" | "open";
 
 export interface StudioProgress {
@@ -43,6 +44,7 @@ export const CHECKLIST_ORDER = [
   "offer",
   "legal",
   "addons",
+  "versions",
 ] as const;
 
 const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
@@ -73,6 +75,10 @@ const TITLES: Record<ChecklistItemId, { title: string; hint: string }> = {
   addons: {
     title: "Extras",
     hint: "Kontaktformular, Galerie, Buchung & mehr.",
+  },
+  versions: {
+    title: "Verlauf",
+    hint: "Frühere Stände ansehen und zurückholen.",
   },
 };
 
@@ -140,6 +146,8 @@ export function deriveChecklistState(
     // erst als erledigt, wenn das Panel einmal gespeichert wurde —
     // blockiert den Checkout aber nie (required bleibt false).
     addons: progress.addonsReviewed ? "done" : "open",
+    // Verlauf (2026-09-03): Werkzeug wie Struktur — immer "done", nie im Wizard.
+    versions: "done",
   };
   return CHECKLIST_ORDER.map(id => ({
     id,

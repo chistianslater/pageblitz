@@ -298,7 +298,10 @@ export const contentProcedures = {
         await commitAddOnFlags(loaded, { gallery: true });
         base = applyAddOnFlags(doc, { gallery: true });
       }
-      return persistDoc(input.token, loaded, applyImages(base, input.patch));
+      return persistDoc(input.token, loaded, applyImages(base, input.patch), {
+        trigger: "panel",
+        label: "Fotos geändert",
+      });
     }),
 
   /**
@@ -318,7 +321,10 @@ export const contentProcedures = {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
       if (input.remove) {
-        return persistDoc(input.token, loaded, applyLogo(doc, null));
+        return persistDoc(input.token, loaded, applyLogo(doc, null), {
+          trigger: "panel",
+          label: "Logo entfernt",
+        });
       }
       if (!input.imageData || !input.mimeType) {
         throw new TRPCError({
@@ -331,7 +337,10 @@ export const contentProcedures = {
         input.mimeType,
         loaded.website.id
       );
-      return persistDoc(input.token, loaded, applyLogo(doc, url));
+      return persistDoc(input.token, loaded, applyLogo(doc, url), {
+        trigger: "panel",
+        label: "Logo hochgeladen",
+      });
     }),
 
   /**
@@ -384,7 +393,8 @@ export const contentProcedures = {
       return persistDoc(
         input.token,
         loaded,
-        applyPartners(doc, { headline: input.headline, items: input.items })
+        applyPartners(doc, { headline: input.headline, items: input.items }),
+        { trigger: "panel", label: "Partner-Logos geändert" }
       );
     }),
 
@@ -411,7 +421,8 @@ export const contentProcedures = {
         applyStructure(doc, {
           hiddenSections: input.hiddenSections,
           sectionOrder: input.sectionOrder,
-        })
+        }),
+        { trigger: "panel", label: "Struktur geändert" }
       );
     }),
 
@@ -420,9 +431,13 @@ export const contentProcedures = {
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      return persistDoc(input.token, loaded, applyTexts(doc, input.patch), {
-        progress: { textsReviewed: true },
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        applyTexts(doc, input.patch),
+        { trigger: "panel", label: "Texte geändert" },
+        { progress: { textsReviewed: true } }
+      );
     }),
 
   updateInlineText: publicProcedure
@@ -441,7 +456,8 @@ export const contentProcedures = {
       return persistDoc(
         input.token,
         loaded,
-        applyInlineText(doc, input.path, input.value)
+        applyInlineText(doc, input.path, input.value),
+        { trigger: "inline", label: "Text direkt bearbeitet" }
       );
     }),
 
@@ -466,14 +482,20 @@ export const contentProcedures = {
       const next = input.headings
         ? applyAddonHeadings(doc, input.headings)
         : doc;
-      return persistDoc(input.token, loaded, next, {
-        extra:
-          input.chatWelcomeMessage !== undefined
-            ? {
-                chatWelcomeMessage: input.chatWelcomeMessage?.trim() || null,
-              }
-            : undefined,
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        next,
+        { trigger: "panel", label: "Extras-Einstellungen geändert" },
+        {
+          extra:
+            input.chatWelcomeMessage !== undefined
+              ? {
+                  chatWelcomeMessage: input.chatWelcomeMessage?.trim() || null,
+                }
+              : undefined,
+        }
+      );
     }),
 
   /**
@@ -554,7 +576,8 @@ export const contentProcedures = {
           fontPairId: input.fontPairId,
           designProfile: input.designProfile,
           worldOverrides,
-        })
+        }),
+        { trigger: "panel", label: "Design angepasst" }
       );
     }),
 
@@ -575,7 +598,10 @@ export const contentProcedures = {
           base = applyAddOnFlags(doc, { [key]: true });
         }
       }
-      return persistDoc(input.token, loaded, applyOffer(base, input.offer));
+      return persistDoc(input.token, loaded, applyOffer(base, input.offer), {
+        trigger: "panel",
+        label: "Angebot geändert",
+      });
     }),
 
   /**
@@ -602,9 +628,15 @@ export const contentProcedures = {
         base = applyAddOnFlags(doc, { subpages: true });
         extra = { addOnSubpages: true };
       }
-      return persistDoc(input.token, loaded, applyPages(base, input.patch), {
-        extra,
-      });
+      return persistDoc(
+        input.token,
+        loaded,
+        applyPages(base, input.patch),
+        { trigger: "panel", label: "Unterseiten geändert" },
+        {
+          extra,
+        }
+      );
     }),
 
   /** KI-Vorschlag für ein Textfeld — persistiert nichts, der User bestätigt über updateTexts. */
