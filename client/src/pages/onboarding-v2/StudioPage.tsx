@@ -799,6 +799,9 @@ export default function StudioPage({ token }: { token: string }) {
             draftValues={activeId === "texts" ? textDraft : undefined}
             onPickPhoto={versionPreviewId === null ? openPhotosAt : undefined}
             focusAnchor={previewFocusAnchor}
+            // Einmal-Signal: nach dem Sprung zurücksetzen, damit das
+            // nächste Neuladen der Vorschau an der Stelle bleibt.
+            onFocusHandled={() => setPreviewFocusAnchor(null)}
             designProfile={state.doc.designProfile ?? null}
             onSectionLayout={
               versionPreviewId === null ? applySectionLayout : undefined

@@ -9,6 +9,7 @@ import {
 } from "@/components/site/richText";
 import { enableInlineFormatToolbar } from "./previewInlineFormat";
 import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
+import { scrollRestoreTarget, shouldConsumeFocus } from "./previewScroll";
 
 interface PreviewFrameProps {
   token: string;
@@ -30,6 +31,13 @@ interface PreviewFrameProps {
   onInlineTextEdit?: (path: string, value: string) => void;
   /** Sektionsanker, der beim Bearbeiten rechts sichtbar sein soll. */
   focusAnchor?: string | null;
+  /**
+   * Der Anker wurde angesprungen (2026-09-03): der Aufrufer setzt ihn auf
+   * null zurück. Ohne dieses Zurücksetzen sprang die Vorschau bei JEDEM
+   * Neuladen erneut zum alten Anker — nach jeder Änderung landete der
+   * Kunde wieder ganz oben.
+   */
+  onFocusHandled?: () => void;
   /** Kompositionsprofil — Layout-Buttons in der Vorschau. */
   designProfile?: DesignProfile | null;
   /** Speichert ein in der Vorschau gewähltes Sektions-Layout. */
@@ -115,6 +123,7 @@ export function PreviewFrame({
   inlineTargets,
   onInlineTextEdit,
   focusAnchor,
+  onFocusHandled,
   designProfile,
   onSectionLayout,
   onIframeReady,
@@ -132,12 +141,35 @@ export function PreviewFrame({
     versionId,
   });
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  /**
+   * Scrollstand über das Neuladen halten (2026-09-03): Jeder gespeicherte
+   * Patch erhöht `?v=` und lädt das iframe neu — ohne das hier landete der
+   * Kunde nach jeder Layout-/Text-Änderung wieder ganz oben. Der Wert wird
+   * laufend beim Scrollen gemerkt und nach dem Load wiederhergestellt,
+   * außer ein Sektionsanker (Panel-Fokus) oder `reveal` will woanders hin.
+   */
+  const savedScrollRef = useRef<number | null>(null);
+  /** Zuletzt angesprungener Anker — verhindert das erneute Springen bei jedem Reload. */
+  const handledFocusRef = useRef<string | null>(null);
+  /**
+   * Wurde für die aktuelle Vorschau-URL schon wiederhergestellt? Solange
+   * nicht, darf der Beobachter unten den gemerkten Stand nicht mit der 0
+   * des frisch geladenen Dokuments überschreiben.
+   */
+  const restoredForSrcRef = useRef(false);
 
   const scrollToFocus = useCallback(() => {
-    if (!focusAnchor) return;
+    if (!shouldConsumeFocus(focusAnchor ?? null, handledFocusRef.current)) {
+      return;
+    }
     const doc = iframeRef.current?.contentDocument;
-    const target = doc?.getElementById(focusAnchor);
+    const target = focusAnchor ? doc?.getElementById(focusAnchor) : null;
     if (!target) return;
+    // Ref UND Callback: der Ref verhindert einen zweiten Sprung in dem
+    // Moment, in dem das Zurücksetzen im Aufrufer noch nicht gerendert ist
+    // (scrollToFocus läuft aus zwei Stellen — Effekt und nach dem Load).
+    handledFocusRef.current = focusAnchor ?? null;
+    onFocusHandled?.();
     const reduceMotion =
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     target.scrollIntoView({
@@ -154,7 +186,28 @@ export function PreviewFrame({
         { duration: 900, easing: "ease-out" }
       );
     }
+    // onFocusHandled ist bewusst keine Dep: der Aufrufer gibt bei jedem
+    // Render eine neue Funktion, das würde den Effekt unnötig neu starten.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusAnchor]);
+
+  /**
+   * Scrollstand beobachten (2026-09-03): bewusst per Intervall statt per
+   * `scroll`-Listener — im iframe kommen Scroll-Ereignisse nicht überall
+   * verlässlich an (u. a. in automatisierten/verdeckten Fenstern), der
+   * gelesene `scrollTop` stimmt dagegen immer. Erst nach dem Wiederher-
+   * stellen mitschreiben, sonst überschreibt die 0 des frisch geladenen
+   * Dokuments den gemerkten Stand.
+   */
+  useEffect(() => {
+    restoredForSrcRef.current = false;
+    const id = window.setInterval(() => {
+      if (!restoredForSrcRef.current) return;
+      const root = iframeRef.current?.contentDocument?.documentElement;
+      if (root) savedScrollRef.current = root.scrollTop;
+    }, 300);
+    return () => window.clearInterval(id);
+  }, [src]);
 
   useEffect(() => {
     // Panel-/Feldwechsel nach bereits geladenem iframe.
@@ -206,6 +259,31 @@ export function PreviewFrame({
 
   const enableInlineEditing = (iframeEl: HTMLIFrameElement) => {
     onIframeReady?.(iframeEl);
+    const previewWin = iframeEl.contentWindow;
+    const previewRoot = iframeEl.contentDocument?.documentElement;
+    if (previewWin && previewRoot) {
+      const restore = scrollRestoreTarget({
+        savedTop: savedScrollRef.current,
+        // Ein bereits verarbeiteter Anker ist kein Grund mehr, den
+        // gemerkten Scrollstand zu verwerfen.
+        focusAnchor: shouldConsumeFocus(
+          focusAnchor ?? null,
+          handledFocusRef.current
+        )
+          ? (focusAnchor ?? null)
+          : null,
+        reveal: reveal ?? false,
+      });
+      if (restore !== null) {
+        // Ohne "auto" würde ein Pack mit scroll-behavior:smooth sichtbar
+        // von oben herunterfahren statt einfach an der Stelle zu stehen.
+        const previousBehavior = previewRoot.style.scrollBehavior;
+        previewRoot.style.scrollBehavior = "auto";
+        previewRoot.scrollTop = restore;
+        previewRoot.style.scrollBehavior = previousBehavior;
+      }
+      restoredForSrcRef.current = true;
+    }
     // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
     window.setTimeout(scrollToFocus, 80);
     const previewDoc = iframeEl.contentDocument;
