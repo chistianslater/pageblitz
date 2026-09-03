@@ -322,6 +322,9 @@ const CHROME_CSS = `
    nach dem Klick scheinbar nichts. Grundfarben kommen jetzt aus den
    Pack-Variablen, die Balken aus mittlerem Grau mit Alpha (liest auf
    hellem UND dunklem Grund). */
+/* Zusätzlich hart gegen die Einblende-Regel absichern: die Regel greift mit
+   gleicher Spezifität, unser Stylesheet wird später eingehängt und gewinnt. */
+html .pb-site section.pb-preview-skeleton{opacity:1;transform:none;filter:none;animation:none}
 .pb-preview-skeleton{display:block;padding:44px 24px;background:var(--pb-surface,rgba(128,128,128,.08));border-top:2px solid var(--pb-accent,#888);border-bottom:1px solid var(--pb-line,rgba(128,128,128,.3));color:var(--pb-ink,inherit)}
 .pb-preview-skeleton-inner{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .pb-preview-skeleton-kicker{display:inline-flex;align-items:center;gap:10px;font:700 15px/1.2 "Space Grotesk",system-ui,sans-serif;letter-spacing:.04em;color:var(--pb-accent,#888)}
@@ -370,7 +373,11 @@ export function renderInsertZoneHtml(
  * gespeichert, der echte Inhalt kommt mit dem nächsten Laden.
  */
 export function renderInsertSkeletonHtml(label: string): string {
-  return `<section class="pb-preview-skeleton" data-pb-insert-skeleton aria-live="polite"><div class="pb-preview-skeleton-inner"><span class="pb-preview-skeleton-kicker">${escapeHtml(label)} · wird geschrieben …</span><span class="pb-preview-skeleton-line" data-w="70"></span><span class="pb-preview-skeleton-line" data-w="92"></span><span class="pb-preview-skeleton-line" data-w="56"></span></div></section>`;
+  // `pb-in` ist die Klasse, die der Einblende-Beobachter der Kundenseite
+  // sonst selbst setzt (motionCss.ts). Ohne sie bleibt jede nachträglich
+  // eingefügte Sektion bei `opacity:0` stehen — genau deshalb war das
+  // Skelett unsichtbar (Betreiber-Befund 2026-09-03).
+  return `<section class="pb-preview-skeleton pb-in" data-pb-insert-skeleton aria-live="polite"><div class="pb-preview-skeleton-inner"><span class="pb-preview-skeleton-kicker">${escapeHtml(label)} · wird geschrieben …</span><span class="pb-preview-skeleton-line" data-w="70"></span><span class="pb-preview-skeleton-line" data-w="92"></span><span class="pb-preview-skeleton-line" data-w="56"></span></div></section>`;
 }
 
 /** Sentinel: Skelett ganz oben statt hinter einer Sektion. */

@@ -82,6 +82,12 @@ describe("skeletonAnchorFor (Sofort-Rückmeldung, 2026-09-03)", () => {
 });
 
 describe("renderInsertSkeletonHtml (Sofort-Rückmeldung, 2026-09-03)", () => {
+  test("trägt die Einblende-Klasse pb-in, sonst bleibt die Sektion unsichtbar (Befund 2026-09-03)", () => {
+    expect(renderInsertSkeletonHtml("Ablauf")).toContain(
+      "pb-preview-skeleton pb-in"
+    );
+  });
+
   test("zeigt den Sektionsnamen und einen Schreib-Hinweis", () => {
     const html = renderInsertSkeletonHtml("Ablauf");
     expect(html).toContain("Ablauf");
