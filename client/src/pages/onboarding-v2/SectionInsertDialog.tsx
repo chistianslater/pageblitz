@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import React from "react";
 import type { SectionType, WebsiteDataV2 } from "@shared/siteContract/types";
 import { SECTION_LABELS } from "@shared/onboardingV2/aiEdit";
 import {
@@ -60,41 +59,17 @@ export function SectionInsertChoices({
 }
 
 export function SectionInsertDialog({
-  token,
   doc,
   afterType,
-  onInserted,
+  onPick,
   onClose,
 }: {
-  token: string;
   doc: WebsiteDataV2;
   afterType: SectionType;
-  /** Nach erfolgreichem Einfügen: Vorschau + State neu laden, Fokus auf die neue Sektion. */
-  onInserted: (type: InsertableSectionType) => void;
+  /** Auswahl — der Aufrufer schließt den Dialog und zeigt das Skelett. */
+  onPick: (type: InsertableSectionType) => void;
   onClose: () => void;
 }) {
-  const [pending, setPending] = useState<InsertableSectionType | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const insert = trpc.onboardingV2.insertSection.useMutation();
-
-  const pick = (type: InsertableSectionType) => {
-    setPending(type);
-    setNotice(null);
-    insert.mutate(
-      { token, type, afterType },
-      {
-        onSuccess: result => {
-          if (result.kind === "inserted") {
-            onInserted(type);
-          } else {
-            setNotice(result.reason);
-          }
-        },
-        onSettled: () => setPending(null),
-      }
-    );
-  };
-
   return (
     <div
       className="pb-insert-dialog"
@@ -107,7 +82,6 @@ export function SectionInsertDialog({
           type="button"
           className="pb-studio-assistant-close"
           aria-label="Schließen"
-          disabled={pending !== null}
           onClick={onClose}
         >
           ×
@@ -116,19 +90,9 @@ export function SectionInsertDialog({
       <SectionInsertChoices
         doc={doc}
         afterType={afterType}
-        onPick={pick}
-        pending={pending}
+        onPick={onPick}
+        pending={null}
       />
-      {notice && (
-        <p className="pb-insert-notice" role="status">
-          {notice}
-        </p>
-      )}
-      {insert.error && (
-        <p role="alert" style={{ color: "var(--st-warn)" }}>
-          {insert.error.message}
-        </p>
-      )}
     </div>
   );
 }

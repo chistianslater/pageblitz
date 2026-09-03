@@ -9,6 +9,9 @@ import {
   layoutChromeTitle,
   renderLayoutChromeHtml,
   renderInsertZoneHtml,
+  renderInsertSkeletonHtml,
+  skeletonAnchorFor,
+  SKELETON_TOP,
 } from "./previewLayoutChrome";
 
 function attrTarget(attrs: Record<string, string>) {
@@ -60,6 +63,31 @@ describe("renderInsertZoneHtml (Plus-Zonen, 2026-09-03)", () => {
     expect(html).toContain('aria-label="Sektion nach Leistungen einfügen"');
     expect(html).toContain("Sektion einfügen");
     expect(html).toContain('class="pb-preview-insert"');
+  });
+
+  test("die Linie besteht aus zwei kurzen Stummeln neben dem Knopf, nicht aus einer Linie über die ganze Breite (Befund 2026-09-03: lief durch die Schrift)", () => {
+    const html = renderInsertZoneHtml("services", "Leistungen");
+    expect(html.match(/pb-preview-insert-stub/g)).toHaveLength(2);
+  });
+});
+
+describe("skeletonAnchorFor (Sofort-Rückmeldung, 2026-09-03)", () => {
+  test("normale Sektion: Skelett hinter die geklickte Sektion", () => {
+    expect(skeletonAnchorFor("quote", "leistungen")).toBe("leistungen");
+  });
+
+  test("Hinweis-Banner rendert ganz oben — das Skelett auch, nicht an der Klickstelle", () => {
+    expect(skeletonAnchorFor("notice", "leistungen")).toBe(SKELETON_TOP);
+  });
+});
+
+describe("renderInsertSkeletonHtml (Sofort-Rückmeldung, 2026-09-03)", () => {
+  test("zeigt den Sektionsnamen und einen Schreib-Hinweis", () => {
+    const html = renderInsertSkeletonHtml("Ablauf");
+    expect(html).toContain("Ablauf");
+    expect(html).toMatch(/wird geschrieben/i);
+    expect(html).toContain("pb-preview-skeleton");
+    expect(html).toContain('aria-live="polite"');
   });
 });
 

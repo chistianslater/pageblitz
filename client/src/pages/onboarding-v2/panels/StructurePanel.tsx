@@ -27,28 +27,48 @@ import { PanelFrame } from "./PanelFrame";
  * bleibt sichtbar (nicht in HIDEABLE_SECTION_TYPES), notice ist ein
  * Banner über der Navigation und taucht hier nicht auf.
  */
-const FIXED_TOP: readonly SectionType[] = ["hero"];
-const EXCLUDED: readonly SectionType[] = ["notice"];
+/**
+ * Zeilen ohne Verschiebe-Griff: hero steht immer oben, der Hinweis-Banner
+ * rendert grundsätzlich über der Navigation — seine Position in der Liste
+ * hat also keine Wirkung. Beide bleiben aber ausblendbar; vorher fehlte der
+ * Banner ganz und war nach dem Einfügen nirgends abschaltbar
+ * (Betreiber-Befund 2026-09-03).
+ */
+const PINNED: readonly SectionType[] = ["notice", "hero"];
 
-interface Row {
+export interface Row {
   type: SectionType;
   hidden: boolean;
+  /** Nicht verschiebbar (Banner/Hero). */
+  pinned: boolean;
 }
 
-function rowsFromDoc(doc: WebsiteDataV2): Row[] {
+export function rowsFromDoc(doc: WebsiteDataV2): Row[] {
   const present = doc.sections.map(s => s.type);
   // Set<string>: sectionOrder erlaubt schema-seitig auch "pageHeader" —
   // der Filter wirft es hier ohnehin raus (gleiches Muster wie routerAi).
   const presentSet = new Set<string>(present);
-  const order = (doc.sectionOrder ?? []).filter((t): t is Row["type"] =>
+  const order = (doc.sectionOrder ?? []).filter((t): t is SectionType =>
     presentSet.has(t)
   );
   const rest = present.filter(t => !order.includes(t));
   const sorted = [...order, ...rest];
   const hidden = new Set(doc.hiddenSections ?? []);
-  return sorted
-    .filter(t => !EXCLUDED.includes(t))
-    .map(t => ({ type: t, hidden: hidden.has(t) }));
+  // Gepinnte Zeilen zuerst, in der Reihenfolge von PINNED.
+  const pinnedFirst = [
+    ...PINNED.filter(t => sorted.includes(t)),
+    ...sorted.filter(t => !PINNED.includes(t)),
+  ];
+  return pinnedFirst.map(t => ({
+    type: t,
+    hidden: hidden.has(t),
+    pinned: PINNED.includes(t),
+  }));
+}
+
+/** Reihenfolge fürs Speichern — jede Sektion genau einmal, Banner und Hero vorn. */
+export function orderForSave(rows: readonly Row[]): SectionType[] {
+  return rows.map(r => r.type);
 }
 
 const hideable = new Set<string>(HIDEABLE_SECTION_TYPES);
@@ -81,12 +101,7 @@ export function StructurePanel({
     update.mutate(
       {
         token,
-        // notice behält seine Position: ausgeklammerte Typen wieder
-        // einreihen (vorn — der Banner rendert ohnehin über allem).
-        sectionOrder: [
-          ...doc.sections.map(s => s.type).filter(t => EXCLUDED.includes(t)),
-          ...next.map(r => r.type),
-        ],
+        sectionOrder: orderForSave(next),
         hiddenSections: next
           .filter(r => r.hidden)
           .map(r => r.type)
@@ -100,9 +115,8 @@ export function StructurePanel({
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= rows.length) return;
-    // hero bleibt oben: Position 0 ist tabu, solange hero existiert.
-    const heroAt = rows.findIndex(r => FIXED_TOP.includes(r.type));
-    if (heroAt === 0 && (from === 0 || to === 0)) return;
+    // Gepinnte Zeilen (Banner, Hero) bleiben, wo sie sind.
+    if (rows[from]?.pinned || rows[to]?.pinned) return;
     const next = [...rows];
     const [row] = next.splice(from, 1);
     next.splice(to, 0, row);
@@ -116,7 +130,10 @@ export function StructurePanel({
     save(next);
   };
 
-  const isFixed = (row: Row) => FIXED_TOP.includes(row.type);
+  const isFixed = (row: Row) => row.pinned;
+  const pinnedNote = (row: Row) =>
+    row.type === "notice" ? "Banner über der Navigation" : "bleibt oben";
+  const firstMovable = rows.findIndex(r => !r.pinned);
   const busy = update.isPending;
 
   return (
@@ -178,14 +195,14 @@ export function StructurePanel({
             >
               {SECTION_LABELS[row.type]}
               {isFixed(row) && (
-                <span className="pb-structure-note">bleibt oben</span>
+                <span className="pb-structure-note">{pinnedNote(row)}</span>
               )}
             </button>
             <span className="pb-structure-actions">
               <button
                 type="button"
                 aria-label={`${SECTION_LABELS[row.type]} nach oben`}
-                disabled={busy || isFixed(row) || index <= 1}
+                disabled={busy || isFixed(row) || index <= firstMovable}
                 onClick={() => move(index, index - 1)}
               >
                 <ChevronUp />

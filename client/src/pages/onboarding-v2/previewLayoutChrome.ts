@@ -310,27 +310,98 @@ const CHROME_CSS = `
 .pb-preview-layout-sep{width:1px;height:18px;margin:0 2px;background:rgba(255,255,255,.2)}
 .pb-preview-layout-menu button[data-pb-hide-element][aria-pressed="true"]{background:#ff5d45;color:#0b0b0d}
 .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
-.pb-preview-insert{position:fixed;left:0;right:0;z-index:27;height:0;display:flex;justify-content:center;align-items:center;pointer-events:none;font-family:"Space Grotesk",system-ui,sans-serif}
-.pb-preview-insert::before{content:"";position:absolute;left:24px;right:24px;top:0;height:1px;background:#ccff00;opacity:0;transform:scaleX(.6)}
-.pb-preview-insert-btn{appearance:none;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px 0 8px;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;font:600 12px/1 "Space Grotesk",system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 22px rgba(11,11,13,.35);opacity:.45}
+.pb-preview-insert{position:fixed;left:0;right:0;z-index:27;height:0;display:flex;justify-content:center;align-items:center;gap:8px;pointer-events:none;font-family:"Space Grotesk",system-ui,sans-serif}
+.pb-preview-insert-stub{display:block;width:44px;height:1px;background:#ccff00;opacity:0;transform:scaleX(.4)}
+.pb-preview-insert-btn{appearance:none;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px 0 8px;border:1px solid rgba(255,255,255,.16);background:#0b0b0d;color:#f5f5f2;border-radius:999px;font:600 12px/1 "Space Grotesk",system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 22px rgba(11,11,13,.45);opacity:.6}
 .pb-preview-insert-btn b{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;background:#ccff00;color:#0b0b0d;font:700 13px/1 system-ui,sans-serif}
 .pb-preview-insert:hover .pb-preview-insert-btn,.pb-preview-insert-btn:focus-visible{opacity:1;border-color:#ccff00}
-.pb-preview-insert:hover::before,.pb-preview-insert:focus-within::before{opacity:.7;transform:scaleX(1)}
-@media(hover:none){.pb-preview-insert-btn{opacity:.85}}
+.pb-preview-insert:hover .pb-preview-insert-stub,.pb-preview-insert:focus-within .pb-preview-insert-stub{opacity:.75;transform:scaleX(1)}
+@media(hover:none){.pb-preview-insert-btn{opacity:.9}}
+.pb-preview-skeleton{display:block;padding:48px 24px;background:rgba(11,11,13,.055);border-top:1px solid rgba(11,11,13,.12);border-bottom:1px solid rgba(11,11,13,.12)}
+.pb-preview-skeleton-inner{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.pb-preview-skeleton-kicker{font:600 12px/1 "Space Grotesk",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#0b0b0d;opacity:.55}
+.pb-preview-skeleton-line{display:block;height:16px;border-radius:8px;background:linear-gradient(90deg,rgba(11,11,13,.09) 0%,rgba(11,11,13,.16) 50%,rgba(11,11,13,.09) 100%);background-size:200% 100%}
+.pb-preview-skeleton-line[data-w="70"]{width:70%}
+.pb-preview-skeleton-line[data-w="92"]{width:92%}
+.pb-preview-skeleton-line[data-w="56"]{width:56%}
+@media(prefers-reduced-motion:no-preference){
+  .pb-preview-skeleton-line{animation:pb-skeleton-shimmer 1.4s linear infinite}
+  @keyframes pb-skeleton-shimmer{0%{background-position:150% 0}100%{background-position:-50% 0}}
+}
+@media(prefers-reduced-motion:no-preference){.pb-preview-insert-stub{transition:opacity .16s,transform .22s cubic-bezier(.2,.8,.2,1)}}
 @media(prefers-reduced-motion:no-preference){
   .pb-preview-layout-menu{transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility .16s}
   .pb-preview-layout-menu button{transition:background .12s,color .12s}
   .pb-preview-insert-btn{transition:opacity .14s,border-color .14s}
-  .pb-preview-insert::before{transition:opacity .16s,transform .22s cubic-bezier(.2,.8,.2,1)}
 }
 `;
 
-/** Plus-Zone an der Unterkante einer Sektion (Startseite, Studio). */
+/**
+ * Plus-Zone an der Unterkante einer Sektion (Startseite, Studio). Die Linie
+ * besteht aus zwei kurzen Stummeln links und rechts des Knopfs — eine Linie
+ * über die ganze Breite lief mitten durch die Schrift der Nachbarsektion
+ * (Betreiber-Befund 2026-09-03).
+ */
 export function renderInsertZoneHtml(
   afterType: SectionType,
   label: string
 ): string {
-  return `<div class="pb-preview-insert" data-pb-after="${escapeHtml(afterType)}"><button type="button" class="pb-preview-insert-btn" aria-label="Sektion nach ${escapeHtml(label)} einfügen"><b aria-hidden="true">+</b>Sektion einfügen</button></div>`;
+  const stub = `<i class="pb-preview-insert-stub" aria-hidden="true"></i>`;
+  return `<div class="pb-preview-insert" data-pb-after="${escapeHtml(afterType)}">${stub}<button type="button" class="pb-preview-insert-btn" aria-label="Sektion nach ${escapeHtml(label)} einfügen"><b aria-hidden="true">+</b>Sektion einfügen</button>${stub}</div>`;
+}
+
+/**
+ * Platzhalter direkt nach dem Klick (2026-09-03): Die KI braucht rund eine
+ * Minute für den Text. Statt im Dialog zu warten, erscheint die Sektion
+ * sofort als Skelett an ihrer Stelle in der Vorschau — nichts davon wird
+ * gespeichert, der echte Inhalt kommt mit dem nächsten Laden.
+ */
+export function renderInsertSkeletonHtml(label: string): string {
+  return `<section class="pb-preview-skeleton" data-pb-insert-skeleton aria-live="polite"><div class="pb-preview-skeleton-inner"><span class="pb-preview-skeleton-kicker">${escapeHtml(label)} · wird geschrieben …</span><span class="pb-preview-skeleton-line" data-w="70"></span><span class="pb-preview-skeleton-line" data-w="92"></span><span class="pb-preview-skeleton-line" data-w="56"></span></div></section>`;
+}
+
+/** Sentinel: Skelett ganz oben statt hinter einer Sektion. */
+export const SKELETON_TOP = "__top";
+
+/**
+ * Wohin das Skelett gehört: normalerweise hinter die geklickte Sektion —
+ * der Hinweis-Banner rendert aber immer über der Navigation, dort wäre ein
+ * Skelett an der Klickstelle irreführend.
+ */
+export function skeletonAnchorFor(
+  type: SectionType,
+  afterAnchor: string
+): string {
+  return type === "notice" ? SKELETON_TOP : afterAnchor;
+}
+
+/**
+ * Skelett hinter der Zielsektion (oder ganz oben) einhängen bzw. entfernen.
+ * Rein im Vorschau-DOM — das Dokument bleibt unangetastet.
+ */
+export function applyInsertSkeleton(
+  doc: Document,
+  pending: { anchor: string; label: string } | null
+): void {
+  for (const old of Array.from(
+    doc.querySelectorAll("[data-pb-insert-skeleton]")
+  )) {
+    old.remove();
+  }
+  if (!pending) return;
+  const wrap = doc.createElement("div");
+  wrap.innerHTML = renderInsertSkeletonHtml(pending.label);
+  const skeleton = wrap.firstElementChild;
+  if (!skeleton) return;
+  if (pending.anchor === SKELETON_TOP) {
+    const site = doc.querySelector(".pb-site") ?? doc.body;
+    site.insertAdjacentElement("afterbegin", skeleton as Element);
+  } else {
+    const host = doc.getElementById(pending.anchor);
+    if (!host) return;
+    host.insertAdjacentElement("afterend", skeleton as Element);
+  }
+  skeleton.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 type AttrTarget = {

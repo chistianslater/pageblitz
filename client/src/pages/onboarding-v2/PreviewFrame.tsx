@@ -8,7 +8,10 @@ import {
   stripMarks,
 } from "@/components/site/richText";
 import { enableInlineFormatToolbar } from "./previewInlineFormat";
-import { enablePreviewLayoutChrome } from "./previewLayoutChrome";
+import {
+  applyInsertSkeleton,
+  enablePreviewLayoutChrome,
+} from "./previewLayoutChrome";
 import { scrollRestoreTarget, shouldConsumeFocus } from "./previewScroll";
 
 interface PreviewFrameProps {
@@ -63,6 +66,12 @@ interface PreviewFrameProps {
   versionId?: number | null;
   /** Plus-Zonen (2026-09-03): Klick auf „Sektion einfügen" hinter einer Sektion. */
   onInsertSection?: (afterType: SectionType) => void;
+  /**
+   * Laufendes Einfügen (2026-09-03): zeigt an der Stelle sofort ein Skelett
+   * („… wird geschrieben"), damit niemand eine Minute im Dialog wartet.
+   * Nur Vorschau-DOM, nichts davon wird gespeichert.
+   */
+  pendingInsert?: { anchor: string; label: string } | null;
 }
 
 export type PhotoClickTarget = "hero" | "about" | "gallery";
@@ -131,6 +140,7 @@ export function PreviewFrame({
   onPickPhoto,
   versionId,
   onInsertSection,
+  pendingInsert = null,
 }: PreviewFrameProps) {
   const src = buildPreviewSrc({
     token,
@@ -246,6 +256,12 @@ export function PreviewFrame({
       });
     }
   }, [draftValues, pageSlug]);
+
+  useEffect(() => {
+    const doc = iframeRef.current?.contentDocument;
+    if (!doc) return;
+    applyInsertSkeleton(doc, pendingInsert);
+  }, [pendingInsert, src]);
 
   useEffect(() => {
     if (pageSlug || !onSectionLayout) return;

@@ -25,6 +25,8 @@ import { VersionsPanel } from "./panels/VersionsPanel";
 import { UndoButton } from "./UndoButton";
 import { GoalStep } from "./GoalStep";
 import { SectionInsertDialog } from "./SectionInsertDialog";
+import { INSERT_META } from "@shared/onboardingV2/sectionInsert";
+import { skeletonAnchorFor } from "./previewLayoutChrome";
 import { SECTION_ANCHORS } from "@/components/site/engine";
 import type { SectionType } from "@shared/siteContract/types";
 import { OfferPanel } from "./panels/OfferPanel";
@@ -121,6 +123,13 @@ export default function StudioPage({ token }: { token: string }) {
   // Plus-Zonen (2026-09-03): Sektion, hinter der eingefügt werden soll —
   // gesetzt vom Chrome in der Vorschau, öffnet den Einfüge-Dialog.
   const [insertAfter, setInsertAfter] = useState<SectionType | null>(null);
+  // Laufendes Einfügen: Anker + Label fürs Skelett in der Vorschau.
+  const [pendingInsert, setPendingInsert] = useState<{
+    anchor: string;
+    label: string;
+  } | null>(null);
+  const [insertNotice, setInsertNotice] = useState<string | null>(null);
+  const insertSection = trpc.onboardingV2.insertSection.useMutation();
   const skipGoal = trpc.onboardingV2.skipGoal.useMutation();
   useEffect(() => {
     void trpcUtils.onboardingV2.listVersions.invalidate();
@@ -811,6 +820,7 @@ export default function StudioPage({ token }: { token: string }) {
                 ? setInsertAfter
                 : undefined
             }
+            pendingInsert={pendingInsert}
             // Finalstand-Einblendung (Zeitmaschine, Task 4): direkt nach einer
             // in dieser Sitzung beobachteten Generierung faden die Sektionen
             // des fertigen Stands ein — nur bis zum ersten Patch (version 0).
@@ -818,18 +828,50 @@ export default function StudioPage({ token }: { token: string }) {
           />
           {insertAfter !== null && (
             <SectionInsertDialog
-              token={token}
               doc={state.doc}
               afterType={insertAfter}
               onClose={() => setInsertAfter(null)}
-              onInserted={type => {
+              onPick={type => {
+                // Sofort schließen und das Skelett zeigen — der Text kommt
+                // nach (die KI braucht rund eine Minute, Betreiber-Befund).
+                const after = insertAfter;
                 setInsertAfter(null);
-                setPreviewFocusAnchor(SECTION_ANCHORS[type]);
-                studio.refetch();
-                studio.bumpPreview();
-                flashPreview();
+                setInsertNotice(null);
+                setPendingInsert({
+                  anchor: skeletonAnchorFor(type, SECTION_ANCHORS[after]),
+                  label: INSERT_META[type].label,
+                });
+                insertSection.mutate(
+                  { token, type, afterType: after },
+                  {
+                    onSuccess: result => {
+                      if (result.kind === "inserted") {
+                        setPreviewFocusAnchor(SECTION_ANCHORS[type]);
+                        studio.refetch();
+                        studio.bumpPreview();
+                        flashPreview();
+                      } else {
+                        setInsertNotice(result.reason);
+                      }
+                    },
+                    onError: error => setInsertNotice(error.message),
+                    onSettled: () => setPendingInsert(null),
+                  }
+                );
               }}
             />
+          )}
+          {insertNotice && (
+            <p role="alert" className="pb-studio-inline-error">
+              {insertNotice}{" "}
+              <button
+                type="button"
+                className="pb-studio-inline-dismiss"
+                onClick={() => setInsertNotice(null)}
+              >
+                ausblenden
+              </button>
+            </p>
           )}
           {/* Schwebender KI-Assistent (2026-08-30): sichtbar rechts unten
               über der Vorschau — „Was möchtest du noch ändern?". Der Chat
