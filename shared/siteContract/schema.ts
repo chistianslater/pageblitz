@@ -562,6 +562,9 @@ export const DesignProfileSchema = z
     testimonialsLayoutMobile: z.enum(TESTIMONIALS_LAYOUTS).optional(),
     contactLayout: z.enum(CONTACT_LAYOUTS).optional(),
     contactLayoutMobile: z.enum(CONTACT_LAYOUTS).optional(),
+    // Hero-Collage: bis zu zwei Bilder aus dem eigenen Material. Der Server
+    // prüft zusätzlich, dass jede Adresse im Dokument vorkommt.
+    heroCollageImages: z.array(SafeUrlSchema).max(2).optional(),
     seed: z.number().int().min(0).max(0xffffffff),
   })
   .strict();

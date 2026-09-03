@@ -17,7 +17,16 @@ import type {
  * Hero-Sektion (`<HeroCollage data={data} />`); außerhalb des
  * Collage-Layouts oder ohne Zusatzbilder rendert sie nichts.
  */
-export function heroCollageImages(data: WebsiteDataV2): string[] {
+/** Höchstens so viele Karten legen sich über die Hero-Sektion. */
+export const MAX_COLLAGE_IMAGES = 2;
+
+/**
+ * Auswählbares Material für die Collage: Galerie zuerst, dann das
+ * Über-uns-Bild — ohne das Hero-Bild selbst (das liegt schon darunter) und
+ * ohne Dubletten. Server und Fotos-Panel prüfen gegen genau diese Liste,
+ * damit nie eine fremde Adresse in die Collage wandert.
+ */
+export function collagePhotoPool(data: WebsiteDataV2): string[] {
   const hero = data.sections.find(
     (s): s is SectionOf<"hero"> => s.type === "hero"
   );
@@ -27,19 +36,30 @@ export function heroCollageImages(data: WebsiteDataV2): string[] {
   const about = data.sections.find(
     (s): s is SectionOf<"about"> => s.type === "about"
   );
-  const candidates: string[] = [
+  const seen = new Set<string>(hero?.imageUrl ? [hero.imageUrl] : []);
+  const pool: string[] = [];
+  for (const url of [
     ...(gallery?.images.map(img => img.url) ?? []),
     ...(about?.imageUrl ? [about.imageUrl] : []),
-  ];
-  const seen = new Set<string>(hero?.imageUrl ? [hero.imageUrl] : []);
-  const extras: string[] = [];
-  for (const url of candidates) {
+  ]) {
     if (seen.has(url)) continue;
     seen.add(url);
-    extras.push(url);
-    if (extras.length === 2) break;
+    pool.push(url);
   }
-  return extras;
+  return pool;
+}
+
+export function heroCollageImages(data: WebsiteDataV2): string[] {
+  const pool = collagePhotoPool(data);
+  const chosen = data.designProfile?.heroCollageImages;
+  // Gewählt schlägt automatisch. Gegen den Vorrat filtern, damit gelöschte
+  // Fotos still herausfallen und fremde Adressen nie greifen.
+  if (chosen) {
+    return chosen
+      .filter(url => pool.includes(url))
+      .slice(0, MAX_COLLAGE_IMAGES);
+  }
+  return pool.slice(0, MAX_COLLAGE_IMAGES);
 }
 
 export function HeroCollage({ data }: { data: WebsiteDataV2 }) {

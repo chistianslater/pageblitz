@@ -26,6 +26,7 @@ import {
 } from "./photoParts";
 import { AiPhotoGenerator } from "./AiPhotoGenerator";
 import { PartnerLogosEditor } from "./PartnerLogosEditor";
+import { CollagePicker } from "./CollagePicker";
 
 // Serverseitig ist die base64-Data-URL auf 8.000.000 Zeichen begrenzt
 // (ImagesPatchSchema/uploadPhoto-Input) — das entspricht roh ca. 5,7 MB.
@@ -148,6 +149,20 @@ export function PhotosPanel({
   // Firmenlogo (2026-08-31): erster Schreibpfad für doc.logo — die Packs
   // rendern die Bild-Marke in Nav/Footer seit jeher, es fehlte nur die UI.
   const updateLogo = trpc.onboardingV2.updateLogo.useMutation();
+  // Collage-Fotos (2026-09-03) liegen im designProfile, nicht in den
+  // Sektionen — deshalb der Theme-Schreibpfad statt setImages.
+  const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
+  const handleCollageChange = (urls: string[] | null) => {
+    const profile = doc.designProfile;
+    if (!profile) return;
+    const next = { ...profile };
+    if (urls === null) delete next.heroCollageImages;
+    else next.heroCollageImages = urls;
+    updateTheme.mutate(
+      { token, designProfile: next },
+      { onSuccess: () => onApplied?.() }
+    );
+  };
   const [logoError, setLogoError] = useState<string | null>(null);
   const currentLogoUrl = doc.logo?.kind === "image" ? doc.logo.url : null;
 
@@ -574,6 +589,14 @@ export function PhotosPanel({
         }}
         hasAbout={hasAbout}
       />
+      {target === "hero" && (
+        <CollagePicker
+          doc={doc}
+          onChange={handleCollageChange}
+          busy={updateTheme.isPending}
+          error={updateTheme.error?.message ?? null}
+        />
+      )}
       {galleryLocked && (
         <GalleryAddonNotice
           onActivate={activateGallery}

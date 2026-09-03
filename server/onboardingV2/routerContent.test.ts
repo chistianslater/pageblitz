@@ -636,3 +636,85 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Patches während laufender Generi
     });
   });
 });
+
+describe("onboardingV2.updateTheme: Collage-Bilder (2026-09-03)", () => {
+  const PROFILE = {
+    version: 1,
+    heroLayout: "collage",
+    servicesLayout: "list",
+    aboutLayout: "image-right",
+    galleryLayout: "grid",
+    density: "airy",
+    imageTreatment: "natural",
+    seed: 7,
+  } as const;
+
+  const withGallery = () => ({
+    ...v2,
+    sections: [
+      ...v2.sections,
+      {
+        type: "gallery",
+        images: [
+          { url: "https://x/g1.jpg", alt: "" },
+          { url: "https://x/g2.jpg", alt: "" },
+        ],
+      },
+    ],
+  });
+
+  test("Bilder aus dem eigenen Material werden gespeichert", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: withGallery(),
+      customerEmail: null,
+    } as any);
+    const state = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      designProfile: { ...PROFILE, heroCollageImages: ["https://x/g2.jpg"] },
+    });
+    expect(state.doc?.designProfile?.heroCollageImages).toEqual([
+      "https://x/g2.jpg",
+    ]);
+  });
+
+  test("fremde Adresse → BAD_REQUEST, nichts geschrieben", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: withGallery(),
+      customerEmail: null,
+    } as any);
+    await expect(
+      caller().onboardingV2.updateTheme({
+        token: "tok",
+        designProfile: {
+          ...PROFILE,
+          heroCollageImages: ["https://fremd/klau.jpg"],
+        },
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("leere Auswahl ist erlaubt — bewusst keine Karten", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: withGallery(),
+      customerEmail: null,
+    } as any);
+    const state = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      designProfile: { ...PROFILE, heroCollageImages: [] },
+    });
+    expect(state.doc?.designProfile?.heroCollageImages).toEqual([]);
+  });
+});

@@ -108,6 +108,13 @@ export interface DesignProfile {
   /** Kontakt-Layout (13c); fehlt es, gilt der Pack-Look. */
   contactLayout?: ContactLayout;
   contactLayoutMobile?: ContactLayout;
+  /**
+   * Bilder der Hero-Collage (2026-09-03, Betreiber: „beim Stil Collage kann
+   * ich die weiteren Fotos nicht auswählen"). Fehlt das Feld, wählt
+   * `heroCollageImages()` wie bisher automatisch (Galerie, dann Über uns).
+   * Eine leere Liste heißt bewusst „keine Karten".
+   */
+  heroCollageImages?: string[];
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }

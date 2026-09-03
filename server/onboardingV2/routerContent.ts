@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { collagePhotoPool } from "../../client/src/components/site/heroCollage";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import {
@@ -566,6 +567,21 @@ export const contentProcedures = {
             });
           }
           worldOverrides = world.overrides;
+        }
+      }
+      // Collage-Bilder dürfen nur aus dem eigenen Material stammen — sonst
+      // hinge eine fremde, ungeprüfte Adresse in der Kundenseite
+      // (2026-09-03). Der Vorrat ist derselbe, den das Fotos-Panel anbietet.
+      const collage = input.designProfile?.heroCollageImages;
+      if (collage && collage.length > 0) {
+        const pool = collagePhotoPool(doc);
+        const fremd = collage.filter(url => !pool.includes(url));
+        if (fremd.length > 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Für die Collage sind nur Fotos aus deiner Galerie oder dem Über-uns-Bild möglich.",
+          });
         }
       }
       return persistDoc(

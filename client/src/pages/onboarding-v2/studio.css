@@ -1304,6 +1304,82 @@
   outline: 2px solid var(--st-accent);
   outline-offset: 2px;
 }
+/* Collage-Fotos wählen (2026-09-03): eigener Block im Fotos-Panel, nur bei
+   Hero-Layout „collage". Gewählte Karten tragen ihre Reihenfolge sichtbar,
+   damit klar ist, welches Foto oben liegt. */
+.pb-studio-collage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--st-line);
+  border-radius: 14px;
+  background: var(--st-canvas);
+}
+.pb-studio-collage-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.pb-studio-collage-head h3 {
+  margin: 0;
+  font-family: var(--st-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.pb-studio-collage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.pb-studio-collage-grid button {
+  position: relative;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: none;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 4 / 3;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+.pb-studio-collage-grid button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pb-studio-collage-grid button[aria-pressed="false"] img {
+  opacity: 0.55;
+}
+.pb-studio-collage-grid button[aria-pressed="true"] {
+  border-color: var(--st-ink);
+}
+.pb-studio-collage-grid button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.pb-studio-collage-grid button:disabled {
+  cursor: not-allowed;
+}
+.pb-studio-collage-mark {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--st-ink);
+  color: var(--st-surface);
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 .pb-studio-photo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
