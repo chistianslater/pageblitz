@@ -148,8 +148,14 @@ ${h("hero")}="collage"] #start .pb-hero-extras img:last-child{${
 ${h("hero")}="banner"] #start{position:relative!important;overflow:hidden!important;display:flex!important;align-items:center!important;min-height:${
     mode === "mobile" ? "68vh" : "76vh"
   }!important;background:#20211f!important}
-${h("hero")}="banner"] #start ${SLOT.heroSplit}{display:block!important;position:relative;z-index:3;grid-template-columns:1fr!important}
-${h("hero")}="banner"] #start ${SLOT.heroMedia}{position:absolute!important;inset:0!important;z-index:1!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;order:0!important;transform:none!important}
+/* Der innere Wrapper darf KEIN Bezugsrahmen sein (Befund 2026-09-03):
+   mit position:relative bezog sich das absolut gesetzte Hero-Bild auf die
+   schmale Textspalte statt auf die ganze Sektion — das Bild klebte als
+   kleiner Kasten links (u. a. salon-noir). Die Ebenen regeln stattdessen
+   die Kinder (heroCopy und ::after tragen eigene z-index). */
+${h("hero")}="banner"] #start ${SLOT.heroSplit}{display:block!important;position:static!important;z-index:auto!important;grid-template-columns:1fr!important}
+/* background-image-Medien (Packs ohne <img> im Hero) müssen ebenfalls füllen. */
+${h("hero")}="banner"] #start ${SLOT.heroMedia}{position:absolute!important;inset:0!important;z-index:1!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important;height:100%!important;max-height:none!important;order:0!important;transform:none!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;clip-path:none!important;border-radius:0!important}
 ${h("hero")}="banner"] #start ${SLOT.heroMedia} img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important;clip-path:none!important;border:0!important;border-radius:0!important;padding:0!important;box-shadow:none!important}
 ${h("hero")}="banner"] #start::after{content:"";position:absolute;inset:0;z-index:2;background:linear-gradient(100deg,rgba(12,12,11,.72) 20%,rgba(12,12,11,.3) 75%)}
 ${h("hero")}="banner"] #start ${SLOT.heroCopy}{position:relative!important;z-index:3!important;max-width:50rem;text-align:left!important;margin-inline:0!important}
