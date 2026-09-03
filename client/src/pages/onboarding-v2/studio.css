@@ -36,6 +36,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--st-space);
+  min-width: 0;
 }
 .pb-studio-rail > :first-child {
   margin-top: var(--st-space);
@@ -49,6 +50,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  /* Grid-Kinder haben per Voreinstellung min-width:auto — die Spalte kann
+     dann nicht unter die Mindestbreite ihres Inhalts schrumpfen. Am iPhone
+     schob das die Vorschau-Leiste samt iframe über den rechten Rand
+     (Betreiber-Meldung 2026-09-03). min-width:0 gibt die Spalte frei. */
+  min-width: 0;
 }
 .pb-studio-title {
   font-family: var(--st-display);
@@ -192,6 +198,10 @@
   gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
+  /* Auf schmalen Bildschirmen passen Geräte-Umschalter, „Rückgängig" und
+     „In neuem Tab öffnen" nicht nebeneinander — ohne Umbruch bestimmte ihre
+     Summe die Mindestbreite der ganzen Bühne (2026-09-03). */
+  flex-wrap: wrap;
 }
 .pb-studio-seg {
   display: inline-flex;
@@ -3030,6 +3040,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 .pb-studio-undo {
   display: inline-flex;

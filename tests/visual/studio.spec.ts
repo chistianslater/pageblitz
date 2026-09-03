@@ -86,6 +86,21 @@ async function waitForFirstStockPhoto(page: Page): Promise<void> {
   );
 }
 
+/**
+ * Ziel-Frage überspringen (2026-09-03): Die einmalige Frage „Was soll die
+ * Website bringen?" liegt vor dem Studio und würde sonst jede Interaktion
+ * darin blockieren. Sie erscheint nur, solange `studioProgress.goalAsked`
+ * nicht gesetzt ist — deshalb weich prüfen statt hart erwarten.
+ */
+async function skipGoalStep(page: Page): Promise<void> {
+  const later = page.getByRole("button", { name: "Später entscheiden" });
+  await later.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
+  if (await later.isVisible().catch(() => false)) {
+    await later.click();
+    await later.waitFor({ state: "hidden", timeout: 10000 }).catch(() => {});
+  }
+}
+
 test.describe("Studio", () => {
   // Wizard-Autostart im Test aus (Studio-UI-Audit, 2026-08-24): Der
   // geführte Modus startet einmal pro Browser-Session automatisch und
@@ -114,6 +129,7 @@ test.describe("Studio", () => {
       const { token } = (await seed.json()) as { token: string };
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`/onboarding/${token}`);
+      await skipGoalStep(page);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await page.waitForLoadState("networkidle");
       await page.evaluate(() => document.fonts.ready);
@@ -130,6 +146,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await page
       .getByRole("button", { name: /Designrichtung/ })
       .first()
@@ -157,6 +174,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     // Globaler Test-beforeEach deaktiviert den Wizard für Screenshot-
     // Determinismus; dieser Flow-Test braucht bewusst den echten Erststart.
     await page.evaluate(
@@ -209,6 +227,8 @@ test.describe("Studio", () => {
     await expect(
       page.getByRole("heading", { name: /Gefällt dir das Design/ })
     ).toBeHidden();
+    // Die Ziel-Frage (2026-09-03) liegt zwischen Design-Gate und Studio.
+    await skipGoalStep(page);
     // Erster OFFENER Schritt: photos ist mit dem Hero-Platzhalterfoto der
     // full-Fixture bereits erledigt (hasHeroImage) → der Wizard startet
     // bei den Texten.
@@ -225,6 +245,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await page
       .getByRole("button", { name: /Rechtliches/ })
       .first()
@@ -248,6 +269,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await page.getByRole("button", { name: /Fotos/ }).first().click();
     await expect(
       page.getByRole("region", { name: "Fotos wählen" })
@@ -278,6 +300,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // Auf den KI-Chat-Bereich scoped, statt einer globalen Rollen-Suche: die
@@ -335,6 +358,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // In die Vorschau wechseln → Rail verschwindet, Rückweg erscheint.
@@ -351,6 +375,49 @@ test.describe("Studio", () => {
     ).toBeVisible();
   });
 
+  test("Mobil: Vorschau bleibt innerhalb des Bildschirms (2026-09-03)", async ({
+    page,
+    request,
+  }) => {
+    // Regression (Betreiber-Meldung 2026-09-03): Am iPhone war die Seite in
+    // der Vorschau rechts abgeschnitten. Die Vorschau-Leiste (Geräte-
+    // Umschalter + „Rückgängig“ + „In neuem Tab öffnen“) umbrach nicht, und
+    // Grid-Kinder haben per Voreinstellung min-width:auto — die 1fr-Spalte
+    // konnte also nicht unter die Mindestbreite der Leiste schrumpfen und
+    // schob Leiste samt iframe über den rechten Rand.
+    await skipCookieBanner(page);
+    const seed = await request.get(
+      "/dev/studio-seed?pack=werkbank&fixture=full&json=1"
+    );
+    const { token } = (await seed.json()) as { token: string };
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+    await page.getByRole("button", { name: "Vorschau" }).click();
+    await expect(page.locator(".pb-studio-mobilebar")).toBeVisible();
+
+    const metrics = await page.evaluate(() => {
+      const right = (selector: string): number => {
+        const el = document.querySelector(selector);
+        return el ? Math.round(el.getBoundingClientRect().right) : -1;
+      };
+      return {
+        viewport: document.documentElement.clientWidth,
+        documentScroll: Math.round(document.body.scrollWidth),
+        stage: right(".pb-studio-stage"),
+        toolbar: right(".pb-studio-toolbar"),
+        device: right(".pb-studio-device"),
+      };
+    });
+
+    expect(metrics.documentScroll).toBeLessThanOrEqual(metrics.viewport);
+    expect(metrics.stage).toBeLessThanOrEqual(metrics.viewport);
+    expect(metrics.toolbar).toBeLessThanOrEqual(metrics.viewport);
+    expect(metrics.device).toBeLessThanOrEqual(metrics.viewport);
+  });
+
   test("Texte: KI-Vorschlag liefert Chips und übernimmt ins Feld", async ({
     page,
     request,
@@ -364,6 +431,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     await page.getByRole("button", { name: /Texte/ }).first().click();
@@ -407,6 +475,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     const preview = page.frameLocator(".pb-studio-device iframe");
@@ -446,6 +515,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await page.getByRole("button", { name: /Texte/ }).first().click();
 
     const panel = page.getByRole("region", { name: "Texte prüfen" });
@@ -473,6 +543,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // Rechtliches-Panel öffnen und alle Pflichtfelder ausfüllen (Spec §4:
@@ -562,6 +633,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // /Extras/ allein matcht auch die Angebot-Karte (Hinweistext nennt
@@ -628,6 +700,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
     // Ohne aktives Unterseiten-Extra gibt es keine Vorschau-Leiste (Add-on-Inhalt).
@@ -722,6 +795,7 @@ test.describe("Studio", () => {
     const { token } = (await seed.json()) as { token: string };
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`/onboarding/${token}`);
+    await skipGoalStep(page);
 
     // Der Schritt erscheint statt des Generierungs-Screens; ensureGeneration
     // wurde nicht gekickt (useStudioState prüft needsCategory).
