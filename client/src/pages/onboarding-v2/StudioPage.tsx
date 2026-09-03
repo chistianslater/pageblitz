@@ -23,6 +23,7 @@ import { TextsPanel } from "./panels/TextsPanel";
 import { StructurePanel } from "./panels/StructurePanel";
 import { VersionsPanel } from "./panels/VersionsPanel";
 import { UndoButton } from "./UndoButton";
+import { GoalStep } from "./GoalStep";
 import { OfferPanel } from "./panels/OfferPanel";
 import { LegalPanel } from "./panels/LegalPanel";
 import { AddonsPanel } from "./panels/AddonsPanel";
@@ -113,6 +114,8 @@ export default function StudioPage({ token }: { token: string }) {
   // Die Verlaufsliste (Panel + Rückgängig-Knopf) nach jeder Vorschau-
   // Aktualisierung neu laden — jede Studio-Mutation bumpt die Vorschau.
   const trpcUtils = trpc.useUtils();
+  const updateGoal = trpc.onboardingV2.updateGoal.useMutation();
+  const skipGoal = trpc.onboardingV2.skipGoal.useMutation();
   useEffect(() => {
     void trpcUtils.onboardingV2.listVersions.invalidate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,6 +360,39 @@ export default function StudioPage({ token }: { token: string }) {
             studio.bumpPreview();
           }}
           onConfirmed={() => studio.refetch()}
+        />
+      </>
+    );
+  }
+
+  // Ziel-Frage (2026-09-03): einmalig direkt nach dem Design-Gate — solange
+  // weder ein Ziel gesetzt noch die Frage übersprungen wurde.
+  if (
+    state.status === "preview" &&
+    !state.doc.goal &&
+    !state.studioProgress.goalAsked
+  ) {
+    return (
+      <>
+        {leaveGuard}
+        <GoalStep
+          businessName={state.businessName}
+          pending={updateGoal.isPending || skipGoal.isPending}
+          error={updateGoal.error?.message ?? skipGoal.error?.message ?? null}
+          onPick={goal =>
+            updateGoal.mutate(
+              { token, goal },
+              {
+                onSuccess: () => {
+                  studio.refetch();
+                  studio.bumpPreview();
+                },
+              }
+            )
+          }
+          onSkip={() =>
+            skipGoal.mutate({ token }, { onSuccess: () => studio.refetch() })
+          }
         />
       </>
     );

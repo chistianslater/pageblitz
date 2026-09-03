@@ -22,6 +22,7 @@ import { commerceProcedures } from "./routerCommerce";
 import { aiProcedures } from "./routerAi";
 import { versionProcedures } from "./routerVersions";
 import { toneProcedures } from "./routerTone";
+import { goalProcedures } from "./routerGoal";
 
 /**
  * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
@@ -216,4 +217,5 @@ export const onboardingV2Router = router({
   ...aiProcedures,
   ...versionProcedures,
   ...toneProcedures,
+  ...goalProcedures,
 });

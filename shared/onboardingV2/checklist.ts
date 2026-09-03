@@ -15,6 +15,8 @@ export interface StudioProgress {
   styleConfirmed?: boolean;
   textsReviewed?: boolean;
   addonsReviewed?: boolean;
+  /** Ziel-Frage (2026-09-03) wurde nach dem Design-Gate gestellt — beantwortet oder übersprungen. */
+  goalAsked?: boolean;
 }
 
 export interface ChecklistAnswers {
@@ -93,6 +95,7 @@ export function parseStudioProgress(value: unknown): StudioProgress {
     ...(v.styleConfirmed === true ? { styleConfirmed: true } : {}),
     ...(v.textsReviewed === true ? { textsReviewed: true } : {}),
     ...(v.addonsReviewed === true ? { addonsReviewed: true } : {}),
+    ...(v.goalAsked === true ? { goalAsked: true } : {}),
   };
 }
 

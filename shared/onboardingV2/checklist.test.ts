@@ -30,6 +30,15 @@ const legalDone = {
   legalPhone: "0231 1",
 };
 
+describe("parseStudioProgress", () => {
+  test("goalAsked (2026-09-03) wird wie die anderen Flags nur bei true übernommen", () => {
+    expect(parseStudioProgress({ goalAsked: true })).toEqual({
+      goalAsked: true,
+    });
+    expect(parseStudioProgress({ goalAsked: "ja" })).toEqual({});
+  });
+});
+
 describe("deriveChecklistState", () => {
   test("Reihenfolge ist fix: style, photos, texts, structure, offer, legal, addons, versions", () => {
     expect(deriveChecklistState(base, {}).map(i => i.id)).toEqual([

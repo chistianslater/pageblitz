@@ -41,6 +41,8 @@ import {
   type BillingInterval,
 } from "@shared/pricing";
 import { PanelFrame } from "./PanelFrame";
+import { GoalPicker } from "../GoalStep";
+import { GOALS, type GoalKey } from "@shared/onboardingV2/goal";
 import { TeamEditor } from "./TeamEditor";
 import { validateTeam, type TeamValue } from "./teamLogic";
 import { PagesEditor } from "./PagesEditor";
@@ -166,6 +168,8 @@ interface AddonsListProps {
    * statt nur den Kauf-Toggle umzuschalten.
    */
   onEditExtra?: (k: AddOnKey) => void;
+  /** Ziel der Website (2026-09-03): empfohlenes Extra rückt nach vorn und trägt einen Chip. */
+  recommendedKey?: AddOnKey | null;
 }
 
 /** Reine Darstellung: Schalter je bindbarem Add-on mit Preis, gesperrte "bald verfügbar"-Zeilen, Gesamtsumme inkl. Basispreis. */
@@ -175,16 +179,22 @@ export function AddonsList({
   interval,
   focusKey = null,
   onEditExtra,
+  recommendedKey = null,
 }: AddonsListProps) {
   const total = calcTotalCents(interval, sanitizeAddOns(value));
   const activeCount = TOGGLEABLE_KEYS.filter(key => value[key]).length;
+  const orderedKeys =
+    recommendedKey && TOGGLEABLE_KEYS.includes(recommendedKey)
+      ? [recommendedKey, ...TOGGLEABLE_KEYS.filter(k => k !== recommendedKey)]
+      : TOGGLEABLE_KEYS;
   return (
     <div className="pb-studio-addon-wrap">
       <ul className="pb-studio-addon-grid" aria-label="Extras">
-        {TOGGLEABLE_KEYS.map(key => {
+        {orderedKeys.map(key => {
           const meta = ADDON_META[key];
           const Icon = meta.icon;
           const active = value[key] === true;
+          const recommended = recommendedKey === key;
           const canEdit = active && !!onEditExtra;
           const editKind = extraEditIntent(key).kind;
           return (
@@ -194,6 +204,7 @@ export function AddonsList({
               data-active={active || undefined}
               data-focused={focusKey === key || undefined}
               data-has-editor={canEdit || undefined}
+              data-recommended={recommended || undefined}
               key={key}
               onClick={
                 canEdit
@@ -219,6 +230,11 @@ export function AddonsList({
                 </span>
               </div>
               <h3>{ADDON_NAMES[key]}</h3>
+              {recommended && (
+                <span className="pb-studio-addon-recommended">
+                  Empfohlen für dein Ziel
+                </span>
+              )}
               <p>{meta.description}</p>
               <span className="pb-studio-addon-benefit">{meta.benefit}</span>
               <div className="pb-studio-addon-actions">
@@ -304,6 +320,74 @@ interface AddonsPanelProps {
   onOpenExtraEditor?: (key: AddOnKey) => void;
 }
 
+/**
+ * Ziel-Zeile (2026-09-03) oben im Extras-Panel: „Dein Ziel: Termine · Ändern"
+ * klappt die vier Kacheln aus dem GoalStep auf; Auswahl speichert sofort.
+ */
+function GoalRow({
+  token,
+  goal,
+  onApplied,
+}: {
+  token: string;
+  goal: GoalKey | null;
+  onApplied: () => void;
+}) {
+  const [open, setOpen] = useState(goal === null);
+  const updateGoal = trpc.onboardingV2.updateGoal.useMutation();
+  return (
+    <section className="pb-goal-row" aria-label="Ziel der Website">
+      <div className="pb-goal-row-head">
+        <span>
+          {goal ? (
+            <>
+              Dein Ziel: <strong>{GOALS[goal].label}</strong>
+            </>
+          ) : (
+            <>Was soll die Website bringen?</>
+          )}
+        </span>
+        {goal && (
+          <button
+            type="button"
+            className="pb-goal-row-toggle"
+            aria-expanded={open}
+            onClick={() => setOpen(v => !v)}
+          >
+            {open ? "Schließen" : "Ändern"}
+          </button>
+        )}
+      </div>
+      {open && (
+        <GoalPicker
+          value={goal}
+          disabled={updateGoal.isPending}
+          onPick={key => {
+            if (key === goal) {
+              setOpen(false);
+              return;
+            }
+            updateGoal.mutate(
+              { token, goal: key },
+              {
+                onSuccess: () => {
+                  setOpen(false);
+                  onApplied();
+                },
+              }
+            );
+          }}
+        />
+      )}
+      {updateGoal.error && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          {updateGoal.error.message}
+        </p>
+      )}
+    </section>
+  );
+}
+
 export function AddonsPanel({
   token,
   doc,
@@ -330,9 +414,7 @@ export function AddonsPanel({
   }
   const [team, setTeam] = useState<TeamValue>(() => teamFromDoc(doc));
   const [pages, setPages] = useState<Page[]>(() => pagesFromDoc(doc));
-  const readHeadline = (
-    type: "contact" | "gallery" | "menu" | "pricelist"
-  ) => {
+  const readHeadline = (type: "contact" | "gallery" | "menu" | "pricelist") => {
     const section = doc.sections.find(item => item.type === type);
     return section && "headline" in section ? (section.headline ?? "") : "";
   };
@@ -524,12 +606,14 @@ export function AddonsPanel({
         </>
       }
     >
+      <GoalRow token={token} goal={doc.goal ?? null} onApplied={onApplied} />
       <AddonsList
         value={value}
         onToggle={handleToggle}
         interval="yearly"
         focusKey={focusKey}
         onEditExtra={handleEditExtra}
+        recommendedKey={doc.goal ? GOALS[doc.goal].addOn : null}
       />
       {onOpenExtraEditor &&
         (value.gallery || value.menu || value.pricelist) && (
@@ -620,9 +704,7 @@ export function AddonsPanel({
                 <div
                   id="pb-addon-editor-contactForm"
                   className="pb-studio-addon-dashboard-note"
-                  data-focused={
-                    focusKey === "contactForm" ? true : undefined
-                  }
+                  data-focused={focusKey === "contactForm" ? true : undefined}
                 >
                   <MessageSquareText aria-hidden="true" />
                   <div>

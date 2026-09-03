@@ -7,6 +7,7 @@ import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidate
 import { PACK_IDS } from "../../shared/siteContract/schema";
 import type { AiChatHistoryEntry } from "../../shared/onboardingV2/aiEdit";
 import { tonePromptLines } from "../../shared/onboardingV2/tone";
+import { GOALS } from "../../shared/onboardingV2/goal";
 import type {
   PackId,
   Page,
@@ -72,6 +73,12 @@ export function buildAiEditPrompt(args: {
     `Aktive Farbwelt: ${activeWorld}`,
     `Akzentfarbe: ${args.doc.colorOverrides?.accent ?? "Richtungsfarbe"}`,
     `Schriftpaar: ${args.doc.fontPairId ?? "Richtungsschriften"}`,
+    // Ziel (2026-09-03): damit Button-Wünsche zum gewählten Ziel passen.
+    ...(args.doc.goal
+      ? [
+          `Ziel der Website: ${GOALS[args.doc.goal].label} — der Hero-Button führt dorthin, Text und Ziel des Buttons nur auf ausdrücklichen Wunsch ändern.`,
+        ]
+      : []),
     profile
       ? `Layout: hero=${profile.heroLayout}, leistungen=${profile.servicesLayout}, ueber-uns=${profile.aboutLayout}, galerie=${profile.galleryLayout}, abstaende=${profile.density}, bildwirkung=${profile.imageTreatment}`
       : `Layout: Richtungs-Standard`,

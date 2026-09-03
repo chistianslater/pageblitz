@@ -84,6 +84,7 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
   return {
     websiteId: 1,
     token: "t".repeat(32),
+    studioProgress: {},
     businessName: "Testfirma",
     category: "handwerk",
     stylePackId: "werkbank",

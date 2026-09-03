@@ -55,6 +55,22 @@ function renderWithTrpc(node: React.ReactElement): string {
 }
 
 describe("AddonsList", () => {
+  test("recommendedKey (Ziel, 2026-09-03): Chip „Empfohlen für dein Ziel“ auf der Karte, Karte rückt nach vorn", () => {
+    const html = renderToStaticMarkup(
+      <AddonsList
+        value={{}}
+        onToggle={() => {}}
+        interval="yearly"
+        recommendedKey="booking"
+      />
+    );
+    expect(html).toContain("Empfohlen für dein Ziel");
+    expect(html.match(/Empfohlen für dein Ziel/g)).toHaveLength(1);
+    const firstCard = html.indexOf('id="pb-addon-');
+    expect(html.slice(firstCard, firstCard + 40)).toContain("pb-addon-booking");
+    expect(html).toMatch(/data-recommended="true"/);
+  });
+
   test("Summe für gallery + menu jährlich zeigt 27,70 €", () => {
     // 19,90 € Basis (jährlich) + 3,90 € Galerie + 3,90 € Speisekarte.
     // Abweichung vom Task-Brief (dort: gallery+aiChat = 33,70 €): laut

@@ -56,6 +56,21 @@ describe("Tonalität in den Prompts (2026-09-03)", () => {
     );
   });
 
+  test("KI-Chat-Prompt nennt das Ziel der Website im Design-Status (goal, 2026-09-03)", () => {
+    const without = buildAiEditPrompt({
+      doc,
+      message: "Mehr Wärme",
+      category: "Café",
+    });
+    expect(without).not.toContain("Ziel der Website");
+    const withGoal = buildAiEditPrompt({
+      doc: { ...doc, goal: "termine" },
+      message: "Mehr Wärme",
+      category: "Café",
+    });
+    expect(withGoal).toContain("Ziel der Website: Termine");
+  });
+
   test("KI-Vorschlag-Prompt liest tone aus dem Dokument", () => {
     const args = {
       field: "headline" as const,

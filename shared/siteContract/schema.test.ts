@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { PageSchema, RESERVED_PAGE_SLUGS, WebsiteDataV2Schema } from "./schema";
+import {
+  PageSchema,
+  RESERVED_PAGE_SLUGS,
+  SafeUrlSchema,
+  WebsiteDataV2Schema,
+} from "./schema";
 
 const valid = {
   version: 2,
@@ -41,6 +46,21 @@ describe("WebsiteDataV2Schema", () => {
       WebsiteDataV2Schema.safeParse({ ...base, tone: "schnoddrig" }).success
     ).toBe(false);
   });
+  test("goal (2026-09-03): vier Ziele erlaubt, Fremdwerte nicht, optional", () => {
+    const base = {
+      version: 2,
+      stylePackId: "werkbank",
+      businessName: "Brandt",
+      seo: { title: "t", description: "d" },
+      sections: [{ type: "hero", headline: "H" }],
+    };
+    expect(
+      WebsiteDataV2Schema.safeParse({ ...base, goal: "termine" }).success
+    ).toBe(true);
+    expect(
+      WebsiteDataV2Schema.safeParse({ ...base, goal: "ruhm" }).success
+    ).toBe(false);
+  });
   test("akzeptiert gültiges Dokument", () => {
     expect(WebsiteDataV2Schema.parse(valid).stylePackId).toBe("werkbank");
   });
@@ -63,6 +83,13 @@ describe("WebsiteDataV2Schema", () => {
   });
 
   describe("SafeUrlSchema — URL-Härtung", () => {
+    test("erlaubt tel:-Links nur mit Ziffern (Ziel Anrufe, 2026-09-03)", () => {
+      expect(SafeUrlSchema.safeParse("tel:+492315554471").success).toBe(true);
+      expect(SafeUrlSchema.safeParse("tel:02315554471").success).toBe(true);
+      expect(SafeUrlSchema.safeParse("tel:+49 231 555").success).toBe(false);
+      expect(SafeUrlSchema.safeParse("tel:javascript").success).toBe(false);
+    });
+
     test("lehnt javascript:-URL in hero.ctaHref ab", () => {
       const bad = {
         ...valid,

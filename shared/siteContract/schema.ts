@@ -6,6 +6,7 @@
 import "../zodLocale";
 import { z } from "zod";
 import { TONE_LEVELS } from "../onboardingV2/tone";
+import { GOAL_KEYS } from "../onboardingV2/goal";
 import { PACK_IDS } from "./packIds";
 import {
   ABOUT_LAYOUTS,
@@ -86,13 +87,14 @@ const PackIdSchema = z.enum(PACK_IDS);
 const SectionTypeSchema = z.enum(SECTION_TYPES);
 
 /**
- * Erlaubt nur http(s)-URLs, root-relative Pfade ("/...") oder Anker ("#...").
+ * Erlaubt nur http(s)-URLs, root-relative Pfade ("/...") oder Anker ("#...")
+ * sowie reine Telefon-Links (`tel:` + Ziffern, Ziel „Anrufe" 2026-09-03).
  * Blockiert insbesondere "javascript:"- und andere unsichere URL-Schemata in
  * allen Link-/Bild-Feldern des Vertrags.
  */
 export const SafeUrlSchema = z
   .string()
-  .regex(/^(https?:\/\/|\/|#)/, "unsichere URL");
+  .regex(/^(https?:\/\/|\/|#|tel:\+?[0-9]{5,20}$)/, "unsichere URL");
 
 /**
  * Bezahlte Zusatzfunktionen (Add-ons), die nach Zahlung im Dokument aktiviert
@@ -629,6 +631,8 @@ export const WebsiteDataV2Schema = z
     // Tonalität (2026-09-03): Anrede + Ton für alle Text-Prompts, gewählt
     // im Texte-Panel. Fehlt das Feld, entscheidet die Pack-Verfassung allein.
     tone: z.enum(TONE_LEVELS).optional(),
+    // Ziel der Website (2026-09-03): steuert Hero-Button + Extra-Empfehlung.
+    goal: z.enum(GOAL_KEYS).optional(),
   })
   .strict()
   .refine(

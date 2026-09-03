@@ -3213,3 +3213,86 @@
 .pb-tone-proposal-head { margin: 0 0 8px; font-size: 0.85rem; }
 .pb-tone-proposal-actions { display: flex; gap: 8px; margin-top: 10px; }
 .pb-tone-note { margin: 10px 0 0; font-size: 0.85rem; color: var(--st-muted, #a4a39d); }
+
+/* ── Ziel der Website (2026-09-03) ─────────────────────────────────────── */
+.pb-goal-step { max-width: 760px; }
+.pb-goal-lead { margin: 8px 0 22px; color: var(--st-muted, #a4a39d); max-width: 56ch; }
+.pb-goal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pb-goal-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 14px 14px 12px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+.pb-goal-tile:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.3); transform: translateY(-1px); }
+.pb-goal-tile[aria-pressed="true"] { border-color: var(--st-accent, #ccff00); background: rgba(204, 255, 0, 0.07); }
+.pb-goal-tile:disabled { opacity: 0.6; cursor: default; }
+.pb-goal-tile strong { font-size: 1rem; }
+.pb-goal-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--st-accent, #ccff00);
+}
+.pb-goal-icon svg { width: 16px; height: 16px; }
+.pb-goal-hint { font-size: 0.82rem; color: var(--st-muted, #a4a39d); }
+.pb-goal-actions { margin-top: 18px; display: flex; justify-content: flex-end; }
+.pb-goal-error { margin: 12px 0 0; color: var(--st-warn, #ff8a65); }
+@media (max-width: 560px) { .pb-goal-grid { grid-template-columns: 1fr; } }
+.pb-goal-row {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
+  border-radius: 12px;
+  background: var(--st-surface, rgba(255, 255, 255, 0.04));
+}
+.pb-goal-row-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.92rem; }
+.pb-goal-row .pb-goal-grid { margin-top: 12px; }
+.pb-goal-row .pb-goal-tile { padding: 10px 12px; }
+.pb-goal-row .pb-goal-hint { display: none; }
+.pb-goal-row-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--st-accent, #ccff00);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pb-studio-addon-card[data-recommended] { border-color: var(--st-accent, #ccff00); }
+.pb-studio-addon-recommended {
+  display: inline-block;
+  margin: 2px 0 6px;
+  font-family: var(--st-mono, ui-monospace, monospace);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--st-accent, #ccff00);
+  color: var(--st-accent, #ccff00);
+}
+/* Überspringen im GoalStep ist bewusst leise — kein zweiter Volt-Knopf. */
+.pb-goal-actions .pb-studio-btn[data-variant="ghost"] {
+  width: auto;
+  background: transparent;
+  color: var(--st-muted, #a4a39d);
+  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.18));
+}
+.pb-goal-actions .pb-studio-btn[data-variant="ghost"]:hover:not(:disabled) {
+  color: var(--st-ink, #f2f1ee);
+  border-color: rgba(255, 255, 255, 0.35);
+}

@@ -73,6 +73,7 @@ export interface StudioLegal {
 export interface StudioState {
   websiteId: number;
   token: string;
+  studioProgress: StudioProgress;
   businessName: string;
   category: string;
   stylePackId: PackId | null;
@@ -232,6 +233,8 @@ export async function buildState(
     getGenerationJobByWebsiteId(website.id),
     isLive ? getSubscriptionByWebsiteId(website.id) : Promise.resolve(null),
   ]);
+  const studioProgress =
+    progressOverride ?? parseStudioProgress(onboarding?.studioProgress);
   const checklist = deriveChecklistState(doc, {
     legalOwner: onboarding?.legalOwner,
     legalEmail: onboarding?.legalEmail,
@@ -239,8 +242,7 @@ export async function buildState(
     legalZip: onboarding?.legalZip,
     legalCity: onboarding?.legalCity,
     legalPhone: onboarding?.legalPhone,
-    studioProgress:
-      progressOverride ?? parseStudioProgress(onboarding?.studioProgress),
+    studioProgress,
   });
   const addOns = resolveAddOns({
     isLive,
@@ -281,6 +283,9 @@ export async function buildState(
     // GenerationScreen Vorrang; mit finalem Doc verschwindet die Rückfrage.
     needsCategory: !doc && !hasLegacyDoc,
     checklist,
+    // Ziel-Frage (2026-09-03): das Studio zeigt GoalStep nur, solange
+    // goalAsked fehlt — deshalb liegt das Progress-Objekt im State.
+    studioProgress,
     checkoutReady: isCheckoutReady(checklist, !!website.customerEmail),
     customerEmail: website.customerEmail ?? null,
     legal,
