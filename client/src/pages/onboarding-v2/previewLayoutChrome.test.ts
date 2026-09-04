@@ -12,6 +12,8 @@ import {
   renderInsertSkeletonHtml,
   skeletonAnchorFor,
   SKELETON_TOP,
+  CHROME_CSS,
+  insertZoneDocumentTop,
 } from "./previewLayoutChrome";
 
 function attrTarget(attrs: Record<string, string>) {
@@ -234,5 +236,29 @@ describe("chromeViewportTop", () => {
 
   test("klemmt am sichtbaren Sektionsende, damit der Button nicht in den nächsten Block rutscht", () => {
     expect(chromeViewportTop(120, 180, 64, 800, 80)).toBe(92);
+  });
+});
+
+describe("Plus-Zonen scrollen mit dem Inhalt (Ruckeln am Handy, 2026-09-04)", () => {
+  test("die Zone liegt absolut im Dokument, nicht fest im Viewport", () => {
+    // position:fixed zwang zu einer Neuberechnung bei JEDEM Scroll-
+    // Ereignis. Am Handy kommen die während des Schwungscrollens verzögert,
+    // der Knopf hinkte sichtbar hinterher. Absolut positioniert scrollt ihn
+    // der Browser selbst mit — ohne JavaScript pro Bild.
+    const rule = CHROME_CSS.match(/\.pb-preview-insert\{[^}]*\}/)?.[0] ?? "";
+    expect(rule).toContain("position:absolute");
+    expect(rule).not.toContain("position:fixed");
+  });
+
+  test("bei statischem body zählt die Dokumentkante inklusive Scrollstand", () => {
+    expect(insertZoneDocumentTop(120, 800, -800, false)).toBe(920);
+  });
+
+  test("bei positioniertem body zählt der Abstand zur body-Kante", () => {
+    expect(insertZoneDocumentTop(120, 800, -50, true)).toBe(170);
+  });
+
+  test("rundet auf ganze Pixel, damit die Linie nicht unscharf sitzt", () => {
+    expect(insertZoneDocumentTop(120.4, 0.2, 0, false)).toBe(121);
   });
 });

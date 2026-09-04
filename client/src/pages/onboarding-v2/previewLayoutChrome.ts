@@ -295,7 +295,7 @@ const NO_INSERT_AFTER: ReadonlySet<SectionType> = new Set([
   "notice",
 ]);
 
-const CHROME_CSS = `
+export const CHROME_CSS = `
 .pb-preview-layout{position:fixed;right:12px;z-index:28;display:flex;font-family:"Space Grotesk",system-ui,sans-serif}
 .pb-preview-layout-btn{appearance:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(11,11,13,.35)}
 .pb-preview-layout-icon{display:grid;grid-template-columns:repeat(3,3px);gap:1.5px;width:12px;height:12px}
@@ -310,7 +310,7 @@ const CHROME_CSS = `
 .pb-preview-layout-sep{width:1px;height:18px;margin:0 2px;background:rgba(255,255,255,.2)}
 .pb-preview-layout-menu button[data-pb-hide-element][aria-pressed="true"]{background:#ff5d45;color:#0b0b0d}
 .pb-preview-layout:hover .pb-preview-layout-menu,.pb-preview-layout:focus-within .pb-preview-layout-menu,.pb-preview-layout[data-open="true"] .pb-preview-layout-menu{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(-50%)}
-.pb-preview-insert{position:fixed;left:0;right:0;z-index:27;height:0;display:flex;justify-content:center;align-items:center;gap:8px;pointer-events:none;font-family:"Space Grotesk",system-ui,sans-serif}
+.pb-preview-insert{position:absolute;left:0;right:0;z-index:27;height:0;display:flex;justify-content:center;align-items:center;gap:8px;pointer-events:none;font-family:"Space Grotesk",system-ui,sans-serif}
 .pb-preview-insert-stub{display:block;width:44px;height:1px;background:#ccff00;opacity:0;transform:scaleX(.4)}
 .pb-preview-insert-btn{appearance:none;pointer-events:auto;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px 0 8px;border:1px solid rgba(255,255,255,.16);background:#0b0b0d;color:#f5f5f2;border-radius:999px;font:600 12px/1 "Space Grotesk",system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 22px rgba(11,11,13,.45);opacity:.6}
 .pb-preview-insert-btn b{display:grid;place-items:center;width:16px;height:16px;border-radius:999px;background:#ccff00;color:#0b0b0d;font:700 13px/1 system-ui,sans-serif}
@@ -691,50 +691,114 @@ function stickyNavBottom(doc: Document): number {
   return bottom;
 }
 
+/**
+ * Position einer Plus-Zone im Dokument (2026-09-04). `position:absolute`
+ * bezieht sich auf den nächsten positionierten Vorfahren: bei statischem
+ * `body` ist das der Dokumentanfang (Scrollstand zählt mit), bei
+ * positioniertem `body` dessen eigene Kante.
+ */
+export function insertZoneDocumentTop(
+  hostBottom: number,
+  scrollY: number,
+  bodyTop: number,
+  bodyPositioned: boolean
+): number {
+  return Math.round(
+    bodyPositioned ? hostBottom - bodyTop : hostBottom + scrollY
+  );
+}
+
+/**
+ * Zonen einmalig setzen — sie scrollen danach mit dem Inhalt. Früher lief
+ * das bei jedem Scroll-Ereignis; am Handy kamen die verzögert und der Knopf
+ * ruckelte sichtbar hinterher (Betreiber-Meldung 2026-09-04).
+ */
 function placeInsertZones(doc: Document): void {
   const win = doc.defaultView;
   const zones = placedZones.get(doc);
   if (!win || !zones) return;
-  const navBottom = stickyNavBottom(doc);
-  const viewHeight = win.innerHeight;
-  for (const { host, zone } of zones) {
-    const bottom = host.getBoundingClientRect().bottom;
-    // Nur zeigen, wenn die Kante frei im Viewport liegt (nicht unter der
-    // Navigation, nicht außerhalb) — sonst hängt das Plus im Nichts.
-    if (bottom < navBottom + 20 || bottom > viewHeight - 8) {
-      zone.style.display = "none";
-      continue;
-    }
-    zone.style.display = "flex";
-    zone.style.top = `${Math.round(bottom)}px`;
-  }
+  const body = doc.body;
+  const bodyPositioned = win.getComputedStyle(body).position !== "static";
+  const bodyTop = bodyPositioned ? body.getBoundingClientRect().top : 0;
+  const scrollY = win.scrollY;
+  // Erst alle Kanten lesen, dann alle Positionen schreiben — verschränktes
+  // Lesen und Schreiben erzwingt sonst pro Zone ein neues Layout.
+  const tops = zones.map(({ host }) =>
+    insertZoneDocumentTop(
+      host.getBoundingClientRect().bottom,
+      scrollY,
+      bodyTop,
+      bodyPositioned
+    )
+  );
+  zones.forEach(({ zone }, i) => {
+    const next = `${tops[i]}px`;
+    if (zone.style.top !== next) zone.style.top = next;
+    if (zone.style.display !== "flex") zone.style.display = "flex";
+  });
 }
 
 function placeChrome(doc: Document): void {
-  placeInsertZones(doc);
   const win = doc.defaultView;
   const placed = placedChrome.get(doc);
   if (!win || !placed) return;
   const navBottom = stickyNavBottom(doc);
   const viewHeight = win.innerHeight;
-  for (const { host, chrome } of placed) {
+  // Lesephase: alle Maße auf einmal, danach erst schreiben.
+  const tops = placed.map(({ host, chrome }) => {
     const rect = host.getBoundingClientRect();
     const btn = chrome.querySelector<HTMLElement>(".pb-preview-layout-btn");
     const chromeHeight = btn?.offsetHeight || chrome.offsetHeight || 40;
-    const top = chromeViewportTop(
+    return chromeViewportTop(
       rect.top,
       rect.bottom,
       navBottom,
       viewHeight,
       chromeHeight
     );
+  });
+  placed.forEach(({ chrome }, i) => {
+    const top = tops[i];
     if (top == null) {
-      chrome.style.display = "none";
-      continue;
+      if (chrome.style.display !== "none") chrome.style.display = "none";
+      return;
     }
-    chrome.style.display = "flex";
-    chrome.style.top = `${Math.round(top)}px`;
-  }
+    if (chrome.style.display !== "flex") chrome.style.display = "flex";
+    const next = `${Math.round(top)}px`;
+    if (chrome.style.top !== next) chrome.style.top = next;
+  });
+}
+
+/**
+ * Scrollen darf höchstens einmal pro Bild rechnen. Ohne diese Bremse lief
+ * die Platzierung bei jedem einzelnen Scroll-Ereignis.
+ */
+const zonePending = new WeakSet<Document>();
+/**
+ * Zonen nachziehen, wenn sich das Layout ändert (nachgeladene Bilder,
+ * Schriften, Umbruch). Ohne das blieben sie auf der Position stehen, die
+ * beim Einhängen galt — und saßen dann sichtbar neben der Kante.
+ */
+function schedulePlaceZones(doc: Document): void {
+  const win = doc.defaultView;
+  if (!win || zonePending.has(doc)) return;
+  zonePending.add(doc);
+  win.requestAnimationFrame(() => {
+    zonePending.delete(doc);
+    placeInsertZones(doc);
+  });
+}
+
+const framePending = new WeakSet<Document>();
+function schedulePlaceChrome(doc: Document): void {
+  const win = doc.defaultView;
+  if (!win) return;
+  if (framePending.has(doc)) return;
+  framePending.add(doc);
+  win.requestAnimationFrame(() => {
+    framePending.delete(doc);
+    placeChrome(doc);
+  });
 }
 
 function prefersFineHover(doc: Document): boolean {
@@ -947,11 +1011,29 @@ export function enablePreviewLayoutChrome(
     }
     placedZones.set(doc, zones);
   }
+  placeInsertZones(doc);
   placeChrome(doc);
 
   const win = doc.defaultView;
-  win?.addEventListener("scroll", () => placeChrome(doc), { passive: true });
-  win?.addEventListener("resize", () => placeChrome(doc));
+  // Scrollen bewegt nur noch die Layout-Knöpfe (fest im Viewport). Die
+  // Plus-Zonen liegen im Dokument und wandern von selbst mit.
+  win?.addEventListener("scroll", () => schedulePlaceChrome(doc), {
+    passive: true,
+  });
+  win?.addEventListener("resize", () => {
+    schedulePlaceZones(doc);
+    schedulePlaceChrome(doc);
+  });
+  // Nachgeladene Bilder und Schriften verschieben die Sektionskanten noch
+  // nach dem Einhängen — beides beobachten statt bei jedem Scroll zu rechnen.
+  win?.addEventListener("load", () => schedulePlaceZones(doc));
+  doc.fonts?.ready?.then(() => schedulePlaceZones(doc)).catch(() => {});
+  const zoneHosts = placedZones.get(doc)?.map(z => z.host) ?? [];
+  if (zoneHosts.length > 0 && typeof win?.ResizeObserver === "function") {
+    const observer = new win.ResizeObserver(() => schedulePlaceZones(doc));
+    observer.observe(doc.body);
+    for (const host of zoneHosts) observer.observe(host);
+  }
   if (!fineHover) {
     doc.addEventListener("click", event => {
       const target = event.target;
