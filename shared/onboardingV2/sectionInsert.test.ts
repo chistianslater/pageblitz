@@ -6,6 +6,7 @@ import {
   insertCandidates,
   insertSectionMessage,
   orderWithInsert,
+  insertAddonCandidates,
 } from "./sectionInsert";
 
 const doc: WebsiteDataV2 = {
@@ -81,5 +82,33 @@ describe("Sektion einfügen (Plus-Zonen, 2026-09-03)", () => {
     expect(msg).toMatch(/Leistungen/);
     expect(msg).toMatch(/erfinde|belegt|Fakten/i);
     expect(msg.length).toBeLessThanOrEqual(500);
+  });
+});
+
+describe("insertAddonCandidates (kostenpflichtige Extras im Einfügen-Dialog, 2026-09-04)", () => {
+  test("bietet genau die vier Sektions-Extras mit Preis an", () => {
+    const list = insertAddonCandidates({});
+    expect(list.map(c => c.key)).toEqual([
+      "gallery",
+      "team",
+      "menu",
+      "pricelist",
+    ]);
+    expect(list.every(c => c.priceLabel === "3,90 €")).toBe(true);
+    expect(list.every(c => c.hint.length > 0)).toBe(true);
+    expect(list.map(c => c.label)).toContain("Bildergalerie");
+  });
+
+  test("bereits gebuchte Extras sind als aktiv markiert", () => {
+    const list = insertAddonCandidates({ gallery: true });
+    expect(list.find(c => c.key === "gallery")?.active).toBe(true);
+    expect(list.find(c => c.key === "team")?.active).toBe(false);
+  });
+
+  test("nur echte Sektionen — kein KI-Chat, keine Buchung, keine Unterseiten", () => {
+    const keys = insertAddonCandidates({}).map(c => String(c.key));
+    for (const fremd of ["aiChat", "booking", "subpages", "contactForm"]) {
+      expect(keys).not.toContain(fremd);
+    }
   });
 });

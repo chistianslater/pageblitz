@@ -25,6 +25,10 @@ import { VersionsPanel } from "./panels/VersionsPanel";
 import { UndoButton } from "./UndoButton";
 import { GoalStep } from "./GoalStep";
 import { SectionInsertDialog } from "./SectionInsertDialog";
+import {
+  withAddOnEnabled,
+  type GatedSectionAddOn,
+} from "@shared/onboardingV2/addonEditors";
 import { INSERT_META } from "@shared/onboardingV2/sectionInsert";
 import { skeletonAnchorFor } from "./previewLayoutChrome";
 import { SECTION_ANCHORS } from "@/components/site/engine";
@@ -130,6 +134,13 @@ export default function StudioPage({ token }: { token: string }) {
   } | null>(null);
   const [insertNotice, setInsertNotice] = useState<string | null>(null);
   const insertSection = trpc.onboardingV2.insertSection.useMutation();
+  // Kostenpflichtige Sektions-Extras direkt aus dem Einfügen-Dialog
+  // einschalten (2026-09-04): Der Kunde will dort etwas hinzufügen — der
+  // Umweg über das Extras-Panel bräche genau diesen Moment.
+  const insertAddons = trpc.onboardingV2.updateAddons.useMutation();
+  const [addonPending, setAddonPending] = useState<GatedSectionAddOn | null>(
+    null
+  );
   const skipGoal = trpc.onboardingV2.skipGoal.useMutation();
   useEffect(() => {
     void trpcUtils.onboardingV2.listVersions.invalidate();
@@ -841,6 +852,32 @@ export default function StudioPage({ token }: { token: string }) {
               doc={state.doc}
               afterType={insertAfter}
               onClose={() => setInsertAfter(null)}
+              addOns={state.addOns}
+              addonPending={addonPending}
+              onPickAddon={key => {
+                setAddonPending(key);
+                setInsertNotice(null);
+                insertAddons.mutate(
+                  { token, addOns: withAddOnEnabled(state.addOns, key) },
+                  {
+                    onSuccess: () => {
+                      setAddonPending(null);
+                      setInsertAfter(null);
+                      studio.refetch();
+                      studio.bumpPreview();
+                      // Direkt dorthin, wo der Inhalt gepflegt wird —
+                      // eingeschaltet allein zeigt nur eine leere Sektion.
+                      setActiveId(ADDON_EDITORS[key].panel, key);
+                      setPreviewFocusAnchor(ADDON_EDITORS[key].previewAnchor);
+                    },
+                    onError: error => {
+                      setAddonPending(null);
+                      setInsertAfter(null);
+                      setInsertNotice(error.message);
+                    },
+                  }
+                );
+              }}
               onPick={type => {
                 // Sofort schließen und das Skelett zeigen — der Text kommt
                 // nach (die KI braucht rund eine Minute, Betreiber-Befund).

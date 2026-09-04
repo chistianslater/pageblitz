@@ -1,4 +1,14 @@
 import type { SectionType, WebsiteDataV2 } from "../siteContract/types";
+import {
+  addonPrice,
+  formatEuro,
+  ADDON_NAMES,
+  type AddOnFlags,
+} from "../pricing";
+import {
+  GATED_SECTION_ADDONS,
+  type GatedSectionAddOn,
+} from "./addonEditors";
 import { SECTION_LABELS } from "./aiEdit";
 
 /**
@@ -91,4 +101,49 @@ export function insertSectionMessage(
   afterType: SectionType
 ): string {
   return `Füge eine neue Sektion vom Typ "${type}" (${INSERT_META[type].label}) direkt nach der Sektion "${afterType}" (${SECTION_LABELS[afterType]}) ein. ${INSERT_META[type].hint} Nutze nur Inhalte, die aus dem bestehenden Text belegt sind — erfinde keine Zahlen, Namen oder Fakten. Alle anderen Sektionen bleiben unverändert.`;
+}
+
+/**
+ * Kostenpflichtige Extras, die selbst eine Sektion sind (2026-09-04,
+ * Betreiber: „beim Sektion einfügen macht es ggf. auch Sinn
+ * kostenpflichtige Extras zu zeigen"). Der Einfügen-Dialog ist der Moment,
+ * in dem jemand etwas hinzufügen will — dort gehören sie hin, mit klarem
+ * Preis vor dem Klick. Reihenfolge nach erwartetem Nutzen, nicht alphabetisch.
+ */
+const ADDON_INSERT_ORDER = [
+  "gallery",
+  "team",
+  "menu",
+  "pricelist",
+] as const satisfies readonly GatedSectionAddOn[];
+
+const ADDON_INSERT_HINTS: Record<GatedSectionAddOn, string> = {
+  gallery: "Arbeiten und Räume als Bilderstrecke — der häufigste Grund, warum Kunden länger bleiben.",
+  team: "Gesichter statt Anonymität: Mitglieder mit Foto, Name und Rolle.",
+  menu: "Speisekarte mit Kategorien, Gerichten und Preisen.",
+  pricelist: "Leistungen mit Preisen, damit Kunden vorab wissen, woran sie sind.",
+};
+
+export interface InsertAddonCandidate {
+  key: GatedSectionAddOn;
+  label: string;
+  /** Monatspreis, fertig formatiert — nie im Client neu berechnen. */
+  priceLabel: string;
+  hint: string;
+  /** Schon gebucht: die Sektion liegt bereits auf der Seite. */
+  active: boolean;
+}
+
+export function insertAddonCandidates(
+  addOns: AddOnFlags
+): InsertAddonCandidate[] {
+  return ADDON_INSERT_ORDER.filter(key =>
+    (GATED_SECTION_ADDONS as readonly string[]).includes(key)
+  ).map(key => ({
+    key,
+    label: ADDON_NAMES[key],
+    priceLabel: formatEuro(addonPrice(key)),
+    hint: ADDON_INSERT_HINTS[key],
+    active: addOns[key] === true,
+  }));
 }
