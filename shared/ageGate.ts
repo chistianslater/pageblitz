@@ -19,7 +19,8 @@ const ADULT_KEYWORDS: string[] = [
   "rotlicht", "etablissement", "adult", "porno", "fetisch", "bdsm", "sm-studio",
   "begleitservice", "kontaktbar", "saunaclub",
   // Alkohol
-  "bar", "cocktailbar", "whiskybar", "weinhandlung", "weinhandel", "vinothek",
+  "bar", "cocktailbar", "whiskybar", "weinbar", "sektbar", "bierbar",
+  "sportsbar", "shishabar", "weinhandlung", "weinhandel", "vinothek",
   "weingut", "winery", "brauerei", "spirituosen", "spirits", "destillerie",
   "distillery", "schnaps", "liqueur", "bier", "wein", "champagner", "sekt",
   "rum", "whisky", "whiskey", "gin", "vodka", "wodka",
@@ -34,13 +35,34 @@ const ADULT_KEYWORDS: string[] = [
 ];
 
 /**
+ * Text auf Wörter herunterbrechen: alles, was kein Buchstabe und keine
+ * Ziffer ist, wird zu einem Leerzeichen. Führendes und abschließendes
+ * Leerzeichen erlauben danach den Test auf ganze Wörter ohne Lookbehind
+ * (das ältere Safari-Versionen nicht kennen).
+ */
+function normalize(text: string): string {
+  return ` ${text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
+}
+
+/**
  * Prüft, ob die gegebene Kategorie + (optional) Business-Name auf einen
  * Branchenbereich hindeutet, der eine Altersbestätigung erfordert.
+ *
+ * Verglichen wird auf GANZE Wörter (2026-09-05). Vorher genügte die bloße
+ * Zeichenfolge irgendwo im Text — „Barbier" enthielt „bar", „Zentrum"
+ * enthielt „rum", „Original" enthielt „gin". Jeder Barbershop bekam damit
+ * eine Altersprüfung vor die Startseite, gefunden im Bocholter Zehnerstapel.
+ *
+ * Bewusste Abwägung: Ein zu Unrecht gesetztes Tor macht die Vorschau eines
+ * harmlosen Betriebs wertlos und fällt dem Kunden sofort auf. Ein fehlendes
+ * Tor bei einem Grenzfall (etwa „Weinbar" als ein Wort) lässt sich im Admin
+ * mit einem Klick nachziehen. Deshalb lieber streng vergleichen und
+ * zusammengesetzte Begriffe ausdrücklich in die Liste aufnehmen.
  */
 export function shouldRequireAgeGate(category?: string | null, businessName?: string | null): boolean {
-  const haystack = `${category || ""} ${businessName || ""}`.toLowerCase();
-  if (!haystack.trim()) return false;
-  return ADULT_KEYWORDS.some((kw) => haystack.includes(kw));
+  const haystack = normalize(`${category || ""} ${businessName || ""}`);
+  if (haystack.trim().length === 0) return false;
+  return ADULT_KEYWORDS.some((kw) => haystack.includes(normalize(kw)));
 }
 
 /** Default-Mindestalter — könnte später pro Site konfigurierbar werden. */
