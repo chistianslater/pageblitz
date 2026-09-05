@@ -36,6 +36,10 @@ display:flex;align-items:center;justify-content:space-between;gap:16px;
 padding:12px 16px calc(12px + env(safe-area-inset-bottom));
 background:#0b0b0d;color:#f5f2ea;box-shadow:0 -10px 30px rgba(0,0,0,.28);
 font:500 15px/1.35 "Space Grotesk",system-ui,-apple-system,sans-serif}
+/* Muss VOR den anderen Regeln greifen: die ID-Regel display:flex hat
+   hoehere Spezifitaet als die Browser-Regel [hidden]{display:none} —
+   ohne diese Zeile blieb die Leiste im Studio-iframe sichtbar. */
+#pb-preview-cta[hidden]{display:none}
 #pb-preview-cta p{margin:0;min-width:0}
 #pb-preview-cta b{display:block;font-weight:700}
 #pb-preview-cta small{display:block;color:#a9a79f;font-size:13px;font-weight:400}

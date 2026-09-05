@@ -18,6 +18,13 @@ describe("previewCtaTag (Postkarten-Funnel, 2026-09-05)", () => {
     expect(tag).toContain("window.top === window.self");
   });
 
+  test("hidden schlaegt die eigene display-Regel — sonst bliebe die Leiste im iframe sichtbar", () => {
+    // Befund 2026-09-05: #pb-preview-cta{display:flex} hat hoehere
+    // Spezifitaet als die Browser-Regel [hidden]{display:none}. Im Studio
+    // wurde die Leiste dadurch trotz hidden gerendert (241 px hoch).
+    expect(tag).toContain("#pb-preview-cta[hidden]{display:none}");
+  });
+
   test("Firmenname wird escaped — er stammt aus dem Dokument", () => {
     const böse = previewCtaTag({
       businessName: '"><script>alert(1)</script>',
