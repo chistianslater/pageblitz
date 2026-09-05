@@ -119,7 +119,11 @@ async function main(): Promise<void> {
   }
 
   const zeilen: string[] = [
-    "name;anschrift;telefon;bisherige_website;lead;bewertungen;vorschau_url",
+    // vorschau_url ist das Ziel des QR-Codes: die fertige Seite mit der
+    // Leiste „Website übernehmen". Der Studio-Link steht daneben, für den
+    // Fall dass wir selbst etwas nachbessern wollen — er gehört NICHT auf
+    // die Postkarte, dort landet man sonst im Editor statt auf der Seite.
+    "name;anschrift;telefon;bisherige_website;lead;bewertungen;vorschau_url;studio_url",
   ];
   for (const [i, r] of kandidaten.entries()) {
     console.log(`\n[${i + 1}/${kandidaten.length}] ${r.name}`);
@@ -169,10 +173,15 @@ async function main(): Promise<void> {
     // Inhalt kommen in die Postkarten-Liste.
     const seite = await getWebsiteByBusinessId(businessId);
     const fertig = Boolean(seite?.previewToken && seite?.websiteData);
-    const url = fertig
+    const vorschauUrl = fertig
+      ? `https://pageblitz.de/preview-ssr/${seite!.previewToken}`
+      : "";
+    const studioUrl = fertig
       ? `https://pageblitz.de/onboarding/${seite!.previewToken}`
       : "";
-    console.log(`  ${url || "KEINE VORSCHAU — nicht für Postkarte geeignet"}`);
+    console.log(
+      `  ${vorschauUrl || "KEINE VORSCHAU — nicht für Postkarte geeignet"}`
+    );
     zeilen.push(
       [
         r.name,
@@ -181,7 +190,8 @@ async function main(): Promise<void> {
         r.website ?? "",
         r.leadType,
         String(r.reviewCount ?? 0),
-        url,
+        vorschauUrl,
+        studioUrl,
       ]
         .map(f => String(f).replaceAll(";", ","))
         .join(";")
