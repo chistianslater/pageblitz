@@ -1,10 +1,16 @@
 import React from "react";
-import { CalendarCheck, MessageSquare, Phone, ShoppingBag } from "lucide-react";
+import {
+  CalendarCheck,
+  Landmark,
+  MessageSquare,
+  Phone,
+  ShoppingBag,
+} from "lucide-react";
 import { GOAL_KEYS, GOALS, type GoalKey } from "@shared/onboardingV2/goal";
 
 /**
  * Ziel der Website (2026-09-03, Übernahme aus vite-deploy-studio „GoalsStep"):
- * einmalige Karte nach dem Design-Gate. Vier Kacheln, ein Klick, oder
+ * einmalige Karte nach dem Design-Gate. Fünf Kacheln, ein Klick, oder
  * „Später entscheiden". Der GoalPicker wird auch im Extras-Panel zum
  * Ändern des Ziels wiederverwendet.
  */
@@ -14,6 +20,7 @@ const GOAL_ICONS: Record<GoalKey, React.ReactNode> = {
   anfragen: <MessageSquare />,
   termine: <CalendarCheck />,
   verkauf: <ShoppingBag />,
+  praesenz: <Landmark />,
 };
 
 export function GoalPicker({

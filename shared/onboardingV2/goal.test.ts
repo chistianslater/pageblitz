@@ -22,7 +22,15 @@ const base: WebsiteDataV2 = {
 
 describe("Ziel der Website (2026-09-03)", () => {
   test("vier Ziele mit Label, Erklärung, Button-Text und Extra-Empfehlung", () => {
-    expect(GOAL_KEYS).toEqual(["anrufe", "anfragen", "termine", "verkauf"]);
+    expect(GOAL_KEYS).toEqual([
+      "anrufe",
+      "anfragen",
+      "termine",
+      "verkauf",
+      // 2026-09-05 ergaenzt: rein repraesentative Seiten (Vereine,
+      // soziale Einrichtungen) passten in keines der vier Abschlussziele.
+      "praesenz",
+    ]);
     expect(GOALS.anrufe.addOn).toBeNull();
     expect(GOALS.anfragen.addOn).toBe("contactForm");
     expect(GOALS.termine.addOn).toBe("booking");
@@ -81,5 +89,65 @@ describe("Ziel der Website (2026-09-03)", () => {
       headline: "H",
       ctaText: "Projekt anfragen",
     });
+  });
+});
+
+describe("Ziel Nur Praesenz (Betreiber-Befund 2026-09-05, Caritas-Jugendhaus)", () => {
+  test("ist als fünftes Ziel wählbar und steht hinter den Abschluss-Zielen", () => {
+    expect(GOAL_KEYS).toContain("praesenz");
+    expect(GOAL_KEYS[GOAL_KEYS.length - 1]).toBe("praesenz");
+  });
+
+  test("empfiehlt kein kostenpflichtiges Extra — die Basis reicht", () => {
+    expect(GOALS.praesenz.addOn).toBeNull();
+  });
+
+  test("Beschreibung nennt den repräsentativen Zweck ohne Verkaufsdruck", () => {
+    const text = `${GOALS.praesenz.label} ${GOALS.praesenz.hint}`.toLowerCase();
+    expect(text).toContain("repräsentativ");
+    expect(GOALS.praesenz.ctaText).not.toMatch(/kaufen|angebot|buchen/i);
+  });
+
+  test("führt zum Über-uns-Abschnitt, wenn es einen gibt", () => {
+    const doc = {
+      version: 2,
+      stylePackId: "werkbank",
+      businessName: "Caritas",
+      seo: { title: "t", description: "d" },
+      sections: [
+        { type: "hero", headline: "H" },
+        { type: "about", headline: "Ü", body: "B" },
+        { type: "contact", phone: "02871 123456" },
+      ],
+    } as const;
+    expect(goalCtaHref("praesenz", doc as never)).toBe("#ueber-uns");
+  });
+
+  test("ohne Über-uns bleibt der Kontakt das Ziel", () => {
+    const doc = {
+      version: 2,
+      stylePackId: "werkbank",
+      businessName: "Caritas",
+      seo: { title: "t", description: "d" },
+      sections: [{ type: "hero", headline: "H" }, { type: "contact" }],
+    } as const;
+    expect(goalCtaHref("praesenz", doc as never)).toBe("#kontakt");
+  });
+
+  test("setzt den Hero-Button auf den Präsenz-Standard", () => {
+    const doc = {
+      version: 2,
+      stylePackId: "werkbank",
+      businessName: "Caritas",
+      seo: { title: "t", description: "d" },
+      sections: [
+        { type: "hero", headline: "H" },
+        { type: "about", headline: "Ü", body: "B" },
+      ],
+    } as const;
+    const next = applyGoal(doc as never, "praesenz");
+    const hero = next.sections[0] as { ctaText?: string; ctaHref?: string };
+    expect(hero.ctaText).toBe(GOALS.praesenz.ctaText);
+    expect(hero.ctaHref).toBe("#ueber-uns");
   });
 });

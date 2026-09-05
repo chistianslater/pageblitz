@@ -8,7 +8,19 @@ import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
  * Design-Gate (GoalStep), änderbar im Extras-Panel.
  */
 
-export const GOAL_KEYS = ["anrufe", "anfragen", "termine", "verkauf"] as const;
+/**
+ * „praesenz" steht bewusst am Ende (2026-09-05): Die vier davor zielen auf
+ * einen Abschluss. Für Vereine, soziale Einrichtungen oder Betriebe, die
+ * schlicht auffindbar sein wollen, passte keines davon — der Betreiber sah
+ * es bei einem Caritas-Kinder- und Jugendhaus.
+ */
+export const GOAL_KEYS = [
+  "anrufe",
+  "anfragen",
+  "termine",
+  "verkauf",
+  "praesenz",
+] as const;
 export type GoalKey = (typeof GOAL_KEYS)[number];
 
 export interface GoalSpec {
@@ -45,6 +57,12 @@ export const GOALS: Record<GoalKey, GoalSpec> = {
     ctaText: "Angebot ansehen",
     addOn: "pricelist",
   },
+  praesenz: {
+    label: "Nur Präsenz",
+    hint: "Rein repräsentativ: Die Seite zeigt, wer ihr seid und wie man euch erreicht — ohne Verkauf, ohne Buchung.",
+    ctaText: "Mehr erfahren",
+    addOn: null,
+  },
 };
 
 const DEFAULT_CTA_TEXTS = new Set(GOAL_KEYS.map(key => GOALS[key].ctaText));
@@ -69,6 +87,12 @@ export function telHref(phone: string): string | null {
 
 export function goalCtaHref(goal: GoalKey, doc: WebsiteDataV2): string {
   if (goal === "verkauf") return "#leistungen";
+  // Präsenz führt nach innen statt zum Abschluss: erst die Geschichte, und
+  // nur wenn es keine gibt, zum Kontakt.
+  if (goal === "praesenz") {
+    const hasAbout = doc.sections.some(s => s.type === "about");
+    return hasAbout ? "#ueber-uns" : "#kontakt";
+  }
   if (goal === "anrufe") {
     const contact = doc.sections.find(
       (s): s is SectionOf<"contact"> => s.type === "contact"

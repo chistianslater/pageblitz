@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { GoalPicker, GoalStep } from "./GoalStep";
 
 describe("GoalStep (Ziel der Website, 2026-09-03)", () => {
-  test("zeigt vier Kacheln mit Label und Erklärung, Überspringen-Knopf und den Betriebsnamen", () => {
+  test("zeigt fuenf Kacheln mit Label und Erklaerung, Ueberspringen-Knopf und den Betriebsnamen", () => {
     const html = renderToStaticMarkup(
       <GoalStep
         businessName="Schreinerei Brandt"
@@ -14,8 +14,15 @@ describe("GoalStep (Ziel der Website, 2026-09-03)", () => {
         error={null}
       />
     );
-    expect(html.match(/class="pb-goal-tile"/g)).toHaveLength(4);
-    for (const label of ["Anrufe", "Anfragen", "Termine", "Verkauf"]) {
+    // Seit 2026-09-05 fuenf: „Nur Praesenz" fuer rein repraesentative Seiten.
+    expect(html.match(/class="pb-goal-tile"/g)).toHaveLength(5);
+    for (const label of [
+      "Anrufe",
+      "Anfragen",
+      "Termine",
+      "Verkauf",
+      "Nur Präsenz",
+    ]) {
       expect(html).toContain(label);
     }
     expect(html).toContain("Schreinerei Brandt");
