@@ -11,6 +11,7 @@ import type {
 } from "../../shared/siteContract/types";
 import { buildContentPrompt } from "./contentPrompt";
 import { llmComplete } from "./llmClient";
+import { jsonFromLlm } from "./jsonFromLlm";
 
 /**
  * Deterministische Fakten aus dem Business-Datensatz (nicht vom LLM), die
@@ -159,9 +160,15 @@ async function attempt(
 ): Promise<AttemptResult> {
   const raw = await llmComplete(prompt);
 
+  // Das Modell hängt gelegentlich Text hinter das Objekt (Befund
+  // 2026-09-05) — erst das JSON herausschneiden, dann parsen.
+  const json = jsonFromLlm(raw);
+  if (json === null) {
+    return { ok: false, error: "Antwort enthält kein vollständiges JSON-Objekt" };
+  }
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(json);
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "JSON.parse fehlgeschlagen";

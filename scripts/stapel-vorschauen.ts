@@ -164,11 +164,15 @@ async function main(): Promise<void> {
       }
     }
 
+    // Ein gescheiterter Job hinterlässt Zeile UND Token, aber kein Dokument
+    // — der Link liefe auf 404 (Befund Bocholt 2026-09-05). Nur Seiten mit
+    // Inhalt kommen in die Postkarten-Liste.
     const seite = await getWebsiteByBusinessId(businessId);
-    const url = seite?.previewToken
-      ? `https://pageblitz.de/onboarding/${seite.previewToken}`
+    const fertig = Boolean(seite?.previewToken && seite?.websiteData);
+    const url = fertig
+      ? `https://pageblitz.de/onboarding/${seite!.previewToken}`
       : "";
-    console.log(`  ${url || "keine Vorschau"}`);
+    console.log(`  ${url || "KEINE VORSCHAU — nicht für Postkarte geeignet"}`);
     zeilen.push(
       [
         r.name,
