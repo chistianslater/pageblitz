@@ -12,6 +12,11 @@ import type {
 import { buildContentPrompt } from "./contentPrompt";
 import { llmComplete } from "./llmClient";
 import { jsonFromLlm } from "./jsonFromLlm";
+import {
+  contentGaps,
+  depthRetryHint,
+  lohntNachforderung,
+} from "./contentDepth";
 
 /**
  * Deterministische Fakten aus dem Business-Datensatz (nicht vom LLM), die
@@ -450,12 +455,33 @@ export async function generateSiteContent(
     );
   }
 
+  // Inhaltliche Nachforderung (2026-09-05): Gemessen an echten Kundenseiten
+  // blieben Über-uns-Text und Leistungsbeschreibungen deutlich unter dem, was
+  // die Pack-Layouts brauchen. Genau EIN zusätzlicher Versuch, und nur bei
+  // erheblicher Unterschreitung — er kostet sonst grundlos Zeit. Der bessere
+  // der beiden Stände gewinnt; wird der zweite schlechter, bleibt der erste.
+  let beste = result;
+  // Nicht während des Fakten-Retrys nachfordern: der Guard ruft diese
+  // Funktion ein zweites Mal auf (mit retryHint). Ohne diese Bremse
+  // stapeln sich beide Nachbesserungen zu vier Modellaufrufen.
+  const luecken = retryHint ? [] : contentGaps(result.data);
+  if (lohntNachforderung(luecken)) {
+    const nach = await attempt(
+      `${prompt}\n\n## Nachbesserung\n${depthRetryHint(luecken)}`,
+      packId,
+      business.name
+    );
+    if (nach.ok && contentGaps(nach.data).length < luecken.length) {
+      beste = nach;
+    }
+  }
+
   if (!facts) {
-    return withGeneratedAddOnDefaults(withContactHourPlaceholders(result.data));
+    return withGeneratedAddOnDefaults(withContactHourPlaceholders(beste.data));
   }
 
   const merged = withGeneratedAddOnDefaults(
-    withContactHourPlaceholders(mergeFacts(result.data, facts))
+    withContactHourPlaceholders(mergeFacts(beste.data, facts))
   );
   const revalidated = WebsiteDataV2Schema.safeParse(merged);
   if (!revalidated.success) {

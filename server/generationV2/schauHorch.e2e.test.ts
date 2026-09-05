@@ -201,7 +201,12 @@ beforeEach(() => {
   mockedDb.getBusinessById.mockResolvedValue(schauHorchBusiness as any);
   vi.mocked(mirrorGmbPhotosToR2).mockResolvedValue(R2_PHOTOS);
   vi.mocked(crawlExistingSite).mockResolvedValue(existingSiteFacts);
+  // Drei Antworten seit der Tiefenprüfung (2026-09-05): Erstversuch, dann
+  // die inhaltliche Nachforderung — die verlängert Texte, korrigiert aber
+  // keine Branche, deshalb bleibt sie fachlich falsch — und erst der
+  // Guard-Retry liefert die faktentreue Fassung.
   mockedLlm
+    .mockResolvedValueOnce(WRONG_ANSWER)
     .mockResolvedValueOnce(WRONG_ANSWER)
     .mockResolvedValueOnce(CORRECTED_ANSWER);
 });
@@ -219,10 +224,16 @@ describe("SCHAU & HORCH — Ende-zu-Ende (Plan B7 Task 3, Spec §4)", () => {
       99,
       expect.objectContaining({ status: "completed" })
     );
-    // Genau zwei LLM-Aufrufe: Erstversuch + Guard-Retry.
-    expect(mockedLlm).toHaveBeenCalledTimes(2);
-    const retryPrompt = mockedLlm.mock.calls[1][0];
+    // Drei LLM-Aufrufe seit der Tiefenprüfung (2026-09-05): Erstversuch,
+    // inhaltliche Nachforderung (die Fixture-Antwort ist bewusst knapp), dann
+    // der Guard-Retry. Mehr darf es nicht werden — während des Guard-Retrys
+    // ist die Nachforderung abgeschaltet, sonst stapeln sich beide.
+    expect(mockedLlm).toHaveBeenCalledTimes(3);
+    const nachforderung = mockedLlm.mock.calls[1][0];
+    expect(nachforderung).toContain("## Nachbesserung");
+    const retryPrompt = mockedLlm.mock.calls[2][0];
     expect(retryPrompt).toContain("## Faktenkorrektur");
+    expect(retryPrompt).not.toContain("## Nachbesserung");
     expect(retryPrompt).toContain("Optik");
     expect(retryPrompt.toLowerCase()).toContain("firmennamen");
 

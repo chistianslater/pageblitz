@@ -32,13 +32,13 @@ export interface ContentPromptArgs {
  * Fantasie-URLs. Bilder/Links werden systemseitig gesetzt, nicht vom LLM.
  */
 const SECTION_FIELD_DOC: Record<SectionType, string> = {
-  hero: `"headline" (Pflicht), "subheadline" (optional), "ctaText" (optional, z. B. "Jetzt anfragen") — KEINE "ctaHref", KEINE "imageUrl"`,
-  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (optional) }] (4–6 Einträge) — KEINE Preise (Preise gehören in die Extras Preisliste/Speisekarte)`,
-  about: `"headline" (Pflicht), "body" (Pflicht, 2–4 Sätze) — KEINE "imageUrl"`,
+  hero: `"headline" (Pflicht), "subheadline" (optional, 12–28 Wörter — ein Halbsatz wirkt auf der fertigen Seite unfertig), "ctaText" (optional, z. B. "Jetzt anfragen") — KEINE "ctaHref", KEINE "imageUrl"`,
+  services: `"headline" (Pflicht), "intro" (optional), "items": [{ "title" (Pflicht), "description" (Pflicht, 18–45 Wörter: was genau gemacht wird, für wen, womit — keine Floskeln) }] (4–6 Einträge) — KEINE Preise (Preise gehören in die Extras Preisliste/Speisekarte)`,
+  about: `"headline" (Pflicht), "body" (Pflicht, 80–160 Wörter in 2–4 Absätzen: Entstehung, Arbeitsweise, was den Betrieb von anderen unterscheidet — nur Belegtes) — KEINE "imageUrl"`,
   gallery: `"headline" (optional) — KEINE "images" (werden systemseitig gesetzt)`,
   testimonials: `"headline" (optional), "items": [{ "author" (Pflicht), "text" (Pflicht), "rating" (optional, 1–5) }] (mind. 1 Eintrag)`,
   contact: `"headline" (optional), "phone" (optional), "email" (optional), "street" (optional), "zip" (optional), "city" (optional), "openingHours": [{ "day", "hours" }] (optional)`,
-  faq: `"headline" (optional), "items": [{ "question" (Pflicht), "answer" (Pflicht) }] (4–6 Einträge)`,
+  faq: `"headline" (optional), "items": [{ "question" (Pflicht), "answer" (Pflicht, 25–70 Wörter — eine vollständige Antwort, nicht „Ja." oder „Nein.") }] (4–6 Einträge)`,
   menu: `"headline" (optional), "categories": [{ "name" (Pflicht), "items": [{ "name" (Pflicht), "description" (optional), "price" (Pflicht) }] (mind. 1) }] (mind. 1 Kategorie)`,
   pricelist: `"headline" (optional), "categories": [{ "name" (Pflicht), "items": [{ "name" (Pflicht), "description" (optional), "price" (Pflicht) }] (mind. 1) }] (mind. 1 Kategorie)`,
   team: `"headline" (optional), "members": [{ "name" (Pflicht), "role" (optional) }] (mind. 1 Eintrag) — KEINE "imageUrl"`,
