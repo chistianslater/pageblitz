@@ -235,6 +235,13 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
         chatWelcomeMessage: website.chatWelcomeMessage,
         showBranding: website.showBranding !== false,
       },
+      // Postkarten-Funnel (2026-09-05): Der QR-Code führt auf die fertige
+      // Seite, die Leiste ist der Weg ins Studio. Im Studio-iframe blendet
+      // sie sich selbst aus (previewCta.ts).
+      previewCta: {
+        businessName: data.businessName,
+        studioHref: `/onboarding/${token}`,
+      },
       // Zeitmaschine (Plan B7 Task 4): Der GenerationScreen hängt ?reveal=1
       // an, damit die Sektionen des frisch geschriebenen (Zwischen-)Stands
       // sichtbar einfaden. Nur diese Preview-Route kennt den Parameter —

@@ -1,5 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { previewCtaTag, type PreviewCta } from "./previewCta";
 import { SiteRenderer } from "../../client/src/components/site/SiteRenderer";
 import "../../client/src/components/site/packs/index";
 import { getConstitution, getFontPair } from "../../shared/stylePacks";
@@ -17,6 +18,11 @@ import { umamiScriptTag } from "../umami";
 
 export interface RenderSiteOptions {
   origin: string;
+  /**
+   * Vorschau-Leiste am unteren Rand (2026-09-05): nur die Preview-Route
+   * setzt sie, Kundenseiten bleiben unberührt. Siehe previewCta.ts.
+   */
+  previewCta?: PreviewCta | null;
   pathname?: string;
   /**
    * Präfix für interne Pack-Links (Impressum/Datenschutz, Legal-Zurück-Link).
@@ -285,7 +291,7 @@ function renderPageHtml(
     />
   );
   const canvasColor = getCanvasColor(data);
-  const bodyParts = [body, siteEnhancerTag()];
+  const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
