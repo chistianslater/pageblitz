@@ -517,7 +517,7 @@ export function renderSiteHtml(
   );
 
   const canvasColor = getCanvasColor(data);
-  const bodyParts = [body, siteEnhancerTag()];
+  const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
