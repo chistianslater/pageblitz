@@ -40,3 +40,65 @@ export function displayOpeningHours(
   if (hours && hours.length === 0) return hours;
   return withPlaceholderOpeningHours(hours);
 }
+
+/**
+ * Aufeinanderfolgende Tage mit gleichen Zeiten zu einem Bereich zusammenfassen
+ * (Befund 2026-09-05, Kontakt-Sektion).
+ *
+ * Gemessen an zehn echten Kundenseiten: Die Kontakt-Sektion war zu 57–67 %
+ * leer. Ursache war kein fehlender Inhalt, sondern das Ungleichgewicht im
+ * Zweispalter — links Anschrift mit 117 px, rechts eine Tabelle mit sieben
+ * Einzeltagen und 283 px. Sieben Zeilen sind zudem nicht die Art, wie ein
+ * Betrieb seine Zeiten aufschreibt: „Montag–Freitag 08:30–18:30" ist kürzer
+ * UND üblicher.
+ *
+ * Bewusst konservativ: Nur Tage, die in der Wochenreihenfolge direkt
+ * aufeinanderfolgen und exakt dieselbe Zeitangabe tragen, werden verbunden.
+ * Unbekannte Bezeichnungen („Nach Vereinbarung") bleiben unangetastet, ebenso
+ * bereits zusammengefasste Bereiche.
+ */
+const WOCHENTAGE: string[][] = [
+  ["montag", "mo", "mon"],
+  ["dienstag", "di", "die"],
+  ["mittwoch", "mi", "mit"],
+  ["donnerstag", "do", "don"],
+  ["freitag", "fr", "fre"],
+  ["samstag", "sa", "sam", "sonnabend"],
+  ["sonntag", "so", "son"],
+];
+
+function tagIndex(day: string): number {
+  const wert = day.trim().toLowerCase().replace(/\.$/, "");
+  return WOCHENTAGE.findIndex(namen => namen.includes(wert));
+}
+
+export function groupOpeningHours(
+  hours: { day: string; hours: string }[] | null | undefined
+): { day: string; hours: string }[] {
+  if (!hours || hours.length < 2) return hours ?? [];
+  const raus: { day: string; hours: string }[] = [];
+  let start = hours[0];
+  let ende = hours[0];
+  const abschliessen = () => {
+    raus.push(
+      start === ende
+        ? { ...start }
+        : { day: `${start.day.trim()}–${ende.day.trim()}`, hours: start.hours }
+    );
+  };
+  for (let i = 1; i < hours.length; i++) {
+    const jetzt = hours[i];
+    const iEnde = tagIndex(ende.day);
+    const iJetzt = tagIndex(jetzt.day);
+    const reihe = iEnde >= 0 && iJetzt === iEnde + 1;
+    if (reihe && jetzt.hours === ende.hours) {
+      ende = jetzt;
+      continue;
+    }
+    abschliessen();
+    start = jetzt;
+    ende = jetzt;
+  }
+  abschliessen();
+  return raus;
+}

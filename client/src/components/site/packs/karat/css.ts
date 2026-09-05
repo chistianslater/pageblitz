@@ -21,6 +21,13 @@ export const KARAT_CSS = `
 .pb-ka-frame img{display:block;width:100%;height:auto;border:1px solid var(--pb-line);filter:brightness(.92)}
 .pb-ka-hero-media .pb-ka-frame img{aspect-ratio:16/8.5;object-fit:cover}
 .pb-ka-section{max-width:960px;margin:0 auto;padding:76px 24px;border-top:1px solid var(--pb-line)}
+/* Ausrichtung vereinheitlicht (Betreiber-Befund 2026-09-05): In Über uns,
+   Stimmen und Fragen stand der zentrierte Sektionstitel über linksbündigem
+   Inhalt. Hero, Kontakt und CTA bleiben bewusst zentriert — dort ist auch
+   der Text zentriert. */
+.pb-ka-section:has(> .pb-ka-about) > .pb-ka-title,
+.pb-ka-section:has(> .pb-ka-quotes) > .pb-ka-title,
+.pb-ka-section:has(> .pb-ka-faq-list) > .pb-ka-title{text-align:left}
 .pb-ka-title{font-family:var(--pb-font-display);font-weight:500;font-size:clamp(1.7rem,3vw,2.4rem);letter-spacing:.01em;margin-bottom:10px;text-align:center}
 .pb-ka-title::after{content:"";display:block;width:52px;height:1px;background:var(--pb-accent);margin:18px auto 0;opacity:.7}
 .pb-ka-intro{text-align:center;color:var(--pb-muted);max-width:56ch;margin:0 auto 26px}

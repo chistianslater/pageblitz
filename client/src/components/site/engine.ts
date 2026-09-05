@@ -7,7 +7,10 @@ import type {
   SiteAddOns,
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
-import { displayOpeningHours } from "../../../../shared/onboardingV2/openingHours";
+import {
+  displayOpeningHours,
+  groupOpeningHours,
+} from "../../../../shared/onboardingV2/openingHours";
 
 export const SECTION_ANCHORS: Record<SectionType, string> = {
   hero: "start",
@@ -107,7 +110,13 @@ function withDisplayOpeningHours<S extends SectionV2 | PageSection>(
   section: S
 ): S {
   if (section.type !== "contact") return section;
-  const openingHours = displayOpeningHours(section.openingHours);
+  // Zusammenfassen gleicher Folgetage (2026-09-05): sieben Einzelzeilen
+  // ließen die Kontakt-Sektion auf allen gemessenen Kundenseiten zu 57–67 %
+  // leer wirken, weil die Zeiten-Spalte doppelt so hoch war wie die
+  // Anschrift daneben. „Montag–Freitag" ist kürzer und die übliche Schreibweise.
+  const openingHours = groupOpeningHours(
+    displayOpeningHours(section.openingHours)
+  );
   if (openingHours === section.openingHours) return section;
   return { ...section, openingHours };
 }
@@ -145,7 +154,9 @@ export function linkPageSections(
   );
   return sections.map(section => {
     if (section.type === "contact" && homeContact) {
-      const hours = displayOpeningHours(homeContact.openingHours);
+      const hours = groupOpeningHours(
+        displayOpeningHours(homeContact.openingHours)
+      );
       return {
         ...homeContact,
         headline: section.headline ?? PAGE_CONTACT_DEFAULT_HEADLINE,

@@ -91,14 +91,15 @@ describe("Pack klarwerk", () => {
     expect(h).not.toContain('id="ueber-uns"');
   });
 
-  test("Öffnungszeiten listen die Woche, nicht nur Montag", () => {
+  test("Öffnungszeiten decken die Woche ab und fassen gleiche Folgetage zusammen", () => {
+    // Bis 2026-09-05 prüfte dieser Test jeden Wochentag einzeln. Der Zweck
+    // war und bleibt, den alten „nur Montag"-Stub abzuwehren. Seit dem
+    // Kontakt-Befund fasst engine.ts gleiche Folgetage zu einem Bereich
+    // zusammen — sieben Einzelzeilen ließen die Sektion halb leer wirken.
     const start = html.indexOf('class="pb-kw-hours"');
     const hours = html.slice(start, html.indexOf("</table>", start));
-    expect(hours).toContain("Montag");
-    expect(hours).toContain("Dienstag");
-    expect(hours).toContain("Mittwoch");
-    expect(hours).toContain("Donnerstag");
-    expect(hours).toContain("Freitag");
+    expect(hours).toContain("Montag–Freitag");
+    expect(hours).not.toMatch(/<td>Montag<\/td>/);
   });
 
   test("Montag-Stub wird als Mo–Fr-Platzhalter gerendert", () => {
