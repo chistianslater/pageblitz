@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { ageGateSuspected } from "@shared/ageGate";
 import { z } from "zod";
 import {
   countWebsiteVersions,
@@ -99,6 +100,12 @@ export interface StudioState {
   checkoutReady: boolean;
   customerEmail: string | null;
   legal: StudioLegal;
+  /**
+   * Altersprüfung (2026-09-05): `enabled` ist der wirksame Schalter der
+   * Website, `suspected` nur eine Vermutung aus Branche/Name. Gefragt wird
+   * vor dem Freischalten genau dann, wenn `suspected && !asked`.
+   */
+  ageGate: { enabled: boolean; suspected: boolean; asked: boolean };
   addOns: AddOnFlags;
   uploadedPhotos: string[];
   openingHours: { day: string; hours: string }[];
@@ -289,6 +296,14 @@ export async function buildState(
     checkoutReady: isCheckoutReady(checklist, !!website.customerEmail),
     customerEmail: website.customerEmail ?? null,
     legal,
+    ageGate: {
+      enabled: website.requiresAgeGate === true,
+      suspected: ageGateSuspected(
+        doc?.businessCategory ?? business?.category ?? "",
+        doc?.businessName ?? business?.name ?? ""
+      ),
+      asked: studioProgress.ageGateAsked === true,
+    },
     addOns,
     uploadedPhotos: Array.isArray(onboarding?.photoUrls)
       ? (onboarding.photoUrls as string[])

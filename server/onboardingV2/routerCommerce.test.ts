@@ -1139,3 +1139,29 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 });
+
+describe("onboardingV2.setAgeGate (Betreiber-Entscheidung 2026-09-05)", () => {
+  test("schaltet die Altersprüfung ein und merkt sich, dass gefragt wurde", async () => {
+    const state = await caller().onboardingV2.setAgeGate({
+      token: "tok",
+      enabled: true,
+    });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {
+      requiresAgeGate: true,
+    });
+    expect(state.ageGate.enabled).toBe(true);
+    expect(state.ageGate.asked).toBe(true);
+  });
+
+  test("„Nein“ lässt die Seite frei, gilt aber ebenfalls als beantwortet", async () => {
+    const state = await caller().onboardingV2.setAgeGate({
+      token: "tok",
+      enabled: false,
+    });
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(42, {
+      requiresAgeGate: false,
+    });
+    expect(state.ageGate.enabled).toBe(false);
+    expect(state.ageGate.asked).toBe(true);
+  });
+});

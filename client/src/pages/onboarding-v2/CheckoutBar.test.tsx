@@ -140,7 +140,8 @@ function buildState(overrides: Partial<StudioState> = {}): StudioState {
     ],
     checkoutReady: false,
     customerEmail: null,
-    legal: {
+    ageGate: { enabled: false, suspected: false, asked: false },
+  legal: {
       legalOwner: "",
       legalStreet: "",
       legalZip: "",

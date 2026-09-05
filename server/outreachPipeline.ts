@@ -484,7 +484,9 @@ export async function runPipelineCycle(opts?: { forceRun?: boolean }): Promise<{
           industry: category,
           previewToken,
           addons: [],
-          requiresAgeGate: shouldRequireAgeGate(category, business.name),
+          // Nie automatisch (2026-09-05): Bei Verdacht fragt das Studio vor
+          // dem Freischalten nach, entschieden wird im Betrieb.
+          requiresAgeGate: false,
         });
 
         const jobId = await createGenerationJob({

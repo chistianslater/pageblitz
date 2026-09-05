@@ -125,3 +125,13 @@ WICHTIG – Branchen-Kontext: Konzessioniertes Glücksspiel-/Wettbüro-Geschäft
 
   return "";
 }
+
+/**
+ * Verdacht auf eine altersbeschränkte Branche (2026-09-05, Betreiber-
+ * Entscheidung): Seit diesem Datum setzt NICHTS mehr automatisch eine
+ * Altersprüfung. Der Wert steuert allein, ob im Studio vor dem Freischalten
+ * einmal nachgefragt wird — entscheiden tut der Betrieb selbst.
+ *
+ * Gleiche Logik wie `shouldRequireAgeGate`, eigener Name für die neue Rolle.
+ */
+export const ageGateSuspected = shouldRequireAgeGate;

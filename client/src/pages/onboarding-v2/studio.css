@@ -3405,6 +3405,29 @@
   justify-content: space-between;
   margin-bottom: 4px;
 }
+/* Altersprüfung-Frage im Rechtliches-Panel (2026-09-05): eigener Block,
+   damit die Entscheidung nicht zwischen den Pflichtfeldern untergeht. */
+.pb-agegate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.35rem;
+  padding: 0.9rem;
+  border: 1px solid var(--st-line);
+  border-radius: 14px;
+  background: var(--st-canvas);
+}
+.pb-agegate h3 {
+  margin: 0;
+  font-family: var(--st-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.pb-agegate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 .pb-insert-lead {
   margin: 4px 0 12px;
   font-size: 0.85rem;

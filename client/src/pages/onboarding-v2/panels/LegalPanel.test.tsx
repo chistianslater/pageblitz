@@ -66,6 +66,7 @@ describe("LegalPanel", () => {
       <LegalPanel
         token={"t".repeat(32)}
         initial={initial}
+        ageGate={{ enabled: false, suspected: false, asked: false }}
         openingHours={[]}
         onApplied={() => {}}
         onClose={() => {}}
@@ -82,6 +83,7 @@ describe("LegalPanel", () => {
       <LegalPanel
         token={"t".repeat(32)}
         initial={initial}
+        ageGate={{ enabled: false, suspected: false, asked: false }}
         openingHours={[]}
         onApplied={() => {}}
         onClose={() => {}}
@@ -109,6 +111,7 @@ describe("LegalPanel", () => {
       <LegalPanel
         token={"t".repeat(32)}
         initial={initial}
+        ageGate={{ enabled: false, suspected: false, asked: false }}
         openingHours={openingHours}
         onApplied={() => {}}
         onClose={() => {}}
@@ -125,6 +128,7 @@ describe("LegalPanel", () => {
       <LegalPanel
         token={"t".repeat(32)}
         initial={initial}
+        ageGate={{ enabled: false, suspected: false, asked: false }}
         openingHours={[{ day: "Mo–Fr", hours: "9–18 Uhr" }]}
         onApplied={() => {}}
         onClose={() => {}}
@@ -142,6 +146,7 @@ describe("LegalPanel", () => {
       <LegalPanel
         token={"t".repeat(32)}
         initial={initial}
+        ageGate={{ enabled: false, suspected: false, asked: false }}
         openingHours={[]}
         onApplied={() => {}}
         onClose={() => {}}

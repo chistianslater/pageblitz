@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { shouldRequireAgeGate } from "./ageGate";
+import { ageGateSuspected, shouldRequireAgeGate } from "./ageGate";
 
 describe("shouldRequireAgeGate: keine Altersprüfung beim Friseur (Befund Bocholt, 2026-09-05)", () => {
   test("„Barbier“ ist kein „Bar“ — der gemeldete Fehlschlag", () => {
@@ -42,5 +42,20 @@ describe("shouldRequireAgeGate: keine Altersprüfung beim Friseur (Befund Bochol
   test("ohne Angaben keine Altersprüfung", () => {
     expect(shouldRequireAgeGate(null, null)).toBe(false);
     expect(shouldRequireAgeGate("", "")).toBe(false);
+  });
+});
+
+describe("ageGateSuspected: Verdacht statt Automatik (Betreiber-Entscheidung 2026-09-05)", () => {
+  test("liefert denselben Verdacht wie die alte Prüfung", () => {
+    expect(ageGateSuspected("Bar", "Bar Celona")).toBe(true);
+    expect(ageGateSuspected("Friseursalon", "Infinity coiffeur & Barbier")).toBe(
+      false
+    );
+  });
+
+  test("ist nur eine Vermutung — der Betrieb entscheidet vor dem Freischalten", () => {
+    // Dokumentiert die Rolle: nichts wird mehr automatisch gesetzt, der
+    // Wert steuert allein, OB gefragt wird.
+    expect(ageGateSuspected("Weinhandlung", "Weinhandlung Schmitz")).toBe(true);
   });
 });

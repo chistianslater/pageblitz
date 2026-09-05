@@ -605,6 +605,7 @@ export default function StudioPage({ token }: { token: string }) {
             <LegalPanel
               token={token}
               initial={state.legal}
+              ageGate={state.ageGate}
               openingHours={state.openingHours}
               onApplied={() => {
                 studio.refetch();

@@ -17,6 +17,8 @@ export interface StudioProgress {
   addonsReviewed?: boolean;
   /** Ziel-Frage (2026-09-03) wurde nach dem Design-Gate gestellt — beantwortet oder übersprungen. */
   goalAsked?: boolean;
+  /** Altersprüfung wurde vor dem Freischalten abgefragt (2026-09-05). */
+  ageGateAsked?: boolean;
 }
 
 export interface ChecklistAnswers {

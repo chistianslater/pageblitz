@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { publicProcedure } from "../_core/trpc";
 import { updateWebsite } from "../db";
+import { invalidateSsrCache } from "../ssr/routes";
 import { generateDatenschutz, generateImpressum } from "../legalGenerator";
 import { applyOnboardingToV2 } from "../onboardingV2Patch";
 import { applyAddOnFlags, applyTeam } from "./applyPatch";
@@ -55,6 +56,33 @@ export const commerceProcedures = {
    * so liest `buildState` (via persistDoc) die frischen Werte für die
    * Checkliste, ohne einen Sonderfall im State-Aufbau zu brauchen.
    */
+  /**
+   * Altersprüfung setzen (2026-09-05). Nichts setzt sie mehr automatisch —
+   * das Studio fragt vor dem Freischalten nach, wenn Branche oder Name den
+   * Verdacht nahelegen, und schreibt hier die Antwort. Auch ein „Nein" gilt
+   * als beantwortet, damit die Frage nicht erneut auftaucht.
+   */
+  setAgeGate: publicProcedure
+    .input(tokenInput.extend({ enabled: z.boolean() }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      await updateWebsite(loaded.website.id, {
+        requiresAgeGate: input.enabled,
+      });
+      const progress = await mergeStudioProgress(loaded.website.id, {
+        ageGateAsked: true,
+      });
+      invalidateSsrCache(loaded.website.slug);
+      return buildState(
+        input.token,
+        {
+          ...loaded,
+          website: { ...loaded.website, requiresAgeGate: input.enabled },
+        },
+        progress
+      );
+    }),
+
   updateLegal: publicProcedure
     .input(tokenInput.extend({ legal: LegalPatchSchema }))
     .mutation(async ({ input, ctx }) => {

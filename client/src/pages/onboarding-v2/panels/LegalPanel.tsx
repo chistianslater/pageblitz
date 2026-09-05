@@ -1,4 +1,5 @@
 import React from "react";
+import { AgeGateQuestion } from "./AgeGateQuestion";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { trpc } from "@/lib/trpc";
@@ -51,6 +52,8 @@ const FIELD_HINTS: Partial<Record<TextFieldConfig["name"], string>> = {
 interface LegalPanelProps {
   token: string;
   initial: StudioLegal;
+  /** Altersprüfung (2026-09-05): Frage vor dem Freischalten, siehe AgeGateQuestion. */
+  ageGate: { enabled: boolean; suspected: boolean; asked: boolean };
   openingHours: { day: string; hours: string }[];
   /** Geführter Modus (Studio-Wizard): Primary-Button wird zu „Speichern & weiter". */
   onNext?: () => void;
@@ -87,6 +90,7 @@ export function legalDefaults(
 export function LegalPanel({
   token,
   initial,
+  ageGate,
   openingHours,
   onApplied,
   onClose,
@@ -107,6 +111,7 @@ export function LegalPanel({
   });
 
   const updateLegal = trpc.onboardingV2.updateLegal.useMutation();
+  const setAgeGate = trpc.onboardingV2.setAgeGate.useMutation();
   const busy = updateLegal.isPending;
 
   const submit = handleSubmit(values => {
@@ -153,6 +158,13 @@ export function LegalPanel({
         </>
       }
     >
+      <AgeGateQuestion
+        ageGate={ageGate}
+        busy={setAgeGate.isPending}
+        onAnswer={enabled =>
+          setAgeGate.mutate({ token, enabled }, { onSuccess: () => onApplied() })
+        }
+      />
       <div className="pb-studio-rows">
         {FIELDS.map(field => {
           const fieldId = `pb-legal-${field.name}`;
