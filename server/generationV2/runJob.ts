@@ -1,4 +1,9 @@
 import {
+  pickPackColorWorld,
+  pickPackFontPair,
+} from "../../shared/stylePacks/packVariants";
+import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import {
   getBusinessById,
   listWebsites,
   getWebsiteById,
@@ -378,6 +383,22 @@ async function runWebsiteGenerationV2(
     let designProfile = previousParsed.success
       ? previousParsed.data.designProfile
       : undefined;
+    // Streuung zwischen Seiten desselben Packs (Betreiber-Wunsch
+    // 2026-09-05): Farbwelt und Schriftpaar aus dem Betriebsnamen ableiten.
+    // Nur setzen, wenn nichts vorhanden ist — eine Kundenwahl im Studio darf
+    // eine Regenerierung nie überschreiben. Beides fließt unten in den
+    // Kollisionsvergleich ein, der Schrift und Akzent ohnehin schon kennt.
+    if (!websiteData.fontPairId) {
+      const fontPairId = pickPackFontPair(packId, websiteData.businessName);
+      websiteData = { ...websiteData, fontPairId };
+    }
+    if (!websiteData.colorOverrides) {
+      const worldId = pickPackColorWorld(packId, websiteData.businessName);
+      const world = getColorWorld(packId, worldId);
+      if (world && Object.keys(world.overrides).length > 0) {
+        websiteData = { ...websiteData, colorOverrides: world.overrides };
+      }
+    }
     if (!designProfile) {
       let occupied = new Set<string>();
       try {
