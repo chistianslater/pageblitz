@@ -1,11 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { contrastRatio, hexToHsl } from "./colorMath";
+import { contrastRatio } from "./colorMath";
 import { toCssVars } from "./toCssVars";
 import { getConstitution } from "./index";
 import { PACK_IDS } from "../siteContract/packIds";
 import { FONT_PAIRS } from "./fontPairs";
 import { getColorWorlds } from "./colorWorlds";
 import {
+  PACK_ACCENTS,
   PACK_FONT_PAIRS,
   packAccentHex,
   pickPackAccent,
@@ -95,10 +96,39 @@ describe("pickPackColorWorld", () => {
   });
 });
 
-describe("pickPackAccent (Akzent-Streuung, 2026-09-09)", () => {
-  // Befund des Betreibers: 12 Friseur-Seiten, davon 8 in Terracotta-Toenen.
-  // Ursache war, dass die Farbwelten nur Grund und Flaeche variieren — der
-  // Akzent, den man in der Typografie sieht, blieb der Pack-Akzent.
+describe("PACK_ACCENTS (kuratierte Akzente, 2026-09-09)", () => {
+  test("jedes Pack hat genau fuenf Toene", () => {
+    for (const packId of PACK_IDS) {
+      expect(PACK_ACCENTS[packId]).toHaveLength(5);
+    }
+  });
+
+  test("keine Dubletten innerhalb eines Packs", () => {
+    for (const packId of PACK_IDS) {
+      const toene = PACK_ACCENTS[packId];
+      expect(new Set(toene).size).toBe(toene.length);
+    }
+  });
+
+  test("nur gueltige Hex-Werte", () => {
+    for (const packId of PACK_IDS) {
+      for (const ton of PACK_ACCENTS[packId]) {
+        expect(ton).toMatch(/^#[0-9a-f]{6}$/i);
+      }
+    }
+  });
+
+  test("der Original-Akzent des Packs steht an erster Stelle", () => {
+    // Sonst verschwindet die kuratierte Pack-Identitaet aus der Mischung.
+    for (const packId of PACK_IDS) {
+      expect(PACK_ACCENTS[packId][0].toLowerCase()).toBe(
+        packAccentHex(packId).toLowerCase()
+      );
+    }
+  });
+});
+
+describe("pickPackAccent", () => {
   const namen = Array.from({ length: 40 }, (_, i) => `Betrieb ${i}`);
 
   test("gleicher Betrieb ergibt immer denselben Akzent", () => {
@@ -107,32 +137,18 @@ describe("pickPackAccent (Akzent-Streuung, 2026-09-09)", () => {
     );
   });
 
-  test("mindestens sechs verschiedene Farbtoene ueber 40 Betriebe", () => {
-    const toene = new Set(namen.map(n => pickPackAccent("salon-noir", n)));
-    expect(toene.size).toBeGreaterThanOrEqual(6);
-  });
-
-  test("dreht nur den Farbton, Saettigung und Helligkeit bleiben", () => {
-    const basis = hexToHsl(packAccentHex("salon-noir"));
-    for (const name of namen) {
-      const hsl = hexToHsl(pickPackAccent("salon-noir", name));
-      expect(Math.abs(hsl.s - basis.s)).toBeLessThan(0.06);
-      expect(Math.abs(hsl.l - basis.l)).toBeLessThan(0.06);
-    }
-  });
-
-  test("bleibt in der Nachbarschaft des Pack-Akzents (max 80 Grad)", () => {
-    const basis = hexToHsl(packAccentHex("salon-noir")).h;
-    for (const name of namen) {
-      const h = hexToHsl(pickPackAccent("salon-noir", name)).h;
-      const diff = Math.min(Math.abs(h - basis), 1 - Math.abs(h - basis));
-      expect(diff * 360).toBeLessThanOrEqual(80.5);
-    }
-  });
-
-  test("funktioniert fuer jedes der 20 Packs", () => {
+  test("liefert nur Toene aus der Tafel des Packs", () => {
     for (const packId of PACK_IDS) {
-      expect(pickPackAccent(packId, "Testbetrieb")).toMatch(/^#[0-9a-f]{6}$/i);
+      for (const name of namen) {
+        expect(PACK_ACCENTS[packId]).toContain(pickPackAccent(packId, name));
+      }
+    }
+  });
+
+  test("nutzt ueber 40 Betriebe mindestens vier der fuenf Toene", () => {
+    for (const packId of PACK_IDS) {
+      const genutzt = new Set(namen.map(n => pickPackAccent(packId, n)));
+      expect(genutzt.size).toBeGreaterThanOrEqual(4);
     }
   });
 });
@@ -158,16 +174,18 @@ describe("weltMitAkzent", () => {
   test("Kleintext bleibt auf allen Packs und Welten lesbar (4,5:1)", () => {
     for (const packId of PACK_IDS) {
       for (const welt of getColorWorlds(packId)) {
-        const akzent = pickPackAccent(packId, "Salon Beispiel");
-        const vars = toCssVars(
-          getConstitution(packId),
-          weltMitAkzent(welt.overrides, akzent)
-        );
-        const ratio = contrastRatio(
-          vars["--pb-accent-text"],
-          vars["--pb-canvas"]
-        );
-        expect(ratio).toBeGreaterThanOrEqual(4.49);
+        for (const akzent of PACK_ACCENTS[packId]) {
+          const vars = toCssVars(
+            getConstitution(packId),
+            weltMitAkzent(welt.overrides, akzent)
+          );
+          expect(
+            contrastRatio(vars["--pb-accent-text"], vars["--pb-canvas"])
+          ).toBeGreaterThanOrEqual(4.49);
+          expect(
+            contrastRatio(vars["--pb-accent-contrast"], vars["--pb-accent"])
+          ).toBeGreaterThanOrEqual(4.49);
+        }
       }
     }
   });

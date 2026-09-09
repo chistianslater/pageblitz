@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { PACK_ACCENTS } from "./packVariants";
 import {
   FALLBACK_PACK,
   getPackPool,
@@ -201,6 +202,22 @@ describe("Pool-Breite (Betreiber-Befund 2026-09-09)", () => {
     for (const branche of branchen) {
       const pool = getPackPool(branche);
       expect(new Set(pool).size).toBe(pool.length);
+    }
+  });
+});
+
+describe("Akzente innerhalb eines Branchen-Pools", () => {
+  test("kein Ton kommt in zwei Packs derselben Branche vor", () => {
+    // Sonst koennten zwei Salons am selben Ort trotz verschiedener Packs
+    // exakt dieselbe Akzentfarbe bekommen — der Befund, der die ganze
+    // Umstellung ausgeloest hat.
+    for (const branche of ["Friseur", "Zahnarzt", "Restaurant", "Elektriker"]) {
+      const toene = getPackPool(branche).flatMap(id => [...PACK_ACCENTS[id]]);
+      const doppelt = toene.filter((h, i) => toene.indexOf(h) !== i);
+      expect({ branche, doppelt: [...new Set(doppelt)] }).toEqual({
+        branche,
+        doppelt: [],
+      });
     }
   });
 });
