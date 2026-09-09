@@ -19,7 +19,9 @@ describe("stylePacks registry", () => {
     expect(c.signature.decor.length).toBeGreaterThanOrEqual(2);
   });
   test("unbekannte Branche fällt auf branchenneutrale Allround-Packs zurück", () => {
-    expect(getPackPool("unbekannte-branche")).toEqual([
+    // Fuehrende Richtung bleibt; seit der Pool-Verbreiterung (2026-09-09)
+    // haengen kuratierte Nachbarn dahinter.
+    expect(getPackPool("unbekannte-branche").slice(0, 3)).toEqual([
       "patina",
       "fundament",
       "morgenlicht",
@@ -38,7 +40,7 @@ describe("stylePacks registry", () => {
   });
   test("Schreinerei landet bei werkbank", () => {
     expect(getPackPool("schreinerei")[0]).toBe("werkbank");
-    expect(getPackPool("schreinerei")).toEqual([
+    expect(getPackPool("schreinerei").slice(0, 3)).toEqual([
       "werkbank",
       "fundament",
       "zunft",

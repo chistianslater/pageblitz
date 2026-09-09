@@ -1,6 +1,8 @@
 import type { PackId } from "../siteContract/types";
 import { designSeed } from "../siteContract/designProfile";
 import { getColorWorlds } from "./colorWorlds";
+import { getConstitution } from "./index";
+import { hexToHsl, hslToHex } from "./colorMath";
 
 /**
  * Sichtbare Streuung zwischen Seiten desselben Packs (Betreiber-Wunsch
@@ -65,4 +67,51 @@ export function pickPackColorWorld(
 ): string {
   const welten = getColorWorlds(packId).map(w => w.id);
   return waehle(welten, businessName, 29);
+}
+
+/**
+ * Akzent-Streuung (Betreiber-Befund 2026-09-09): Zwoelf Friseur-Seiten,
+ * acht davon in Terracotta. Die Farbwelten drehen nur Grund und Flaeche —
+ * der Akzent, den man in Ueberschriften und Buttons sieht, blieb je Pack
+ * derselbe. Drei Packs mit warmen Akzenten ergaben also drei Farben.
+ *
+ * Gedreht wird ausschliesslich der Farbton. Saettigung und Helligkeit
+ * bleiben, damit ein gedecktes Pack gedeckt bleibt und ein lautes laut —
+ * sonst kippt die kuratierte Wirkung. Die Spannweite reicht bis 80 Grad
+ * (Betreiber: "ruhig etwas groesser"): aus Terracotta wird Rose, Ocker
+ * oder Weinrot, aber nie Neongruen.
+ */
+const ACCENT_DREHUNGEN = [-80, -55, -35, -18, 0, 18, 35, 55, 80] as const;
+
+/** Der unveraenderte Akzent aus der Pack-Verfassung. */
+export function packAccentHex(packId: PackId): string {
+  const eintrag = getConstitution(packId).palette.find(
+    color => color.role === "accent"
+  );
+  if (!eintrag) throw new Error(`Palette-Rolle fehlt: ${packId}/accent`);
+  return eintrag.hex;
+}
+
+export function pickPackAccent(packId: PackId, businessName: string): string {
+  const grad = waehle(ACCENT_DREHUNGEN, businessName, 47);
+  const hsl = hexToHsl(packAccentHex(packId));
+  // h liegt in 0..1 — Drehung in Grad umrechnen und den Kreis schliessen.
+  const h = (((hsl.h + grad / 360) % 1) + 1) % 1;
+  return hslToHex({ ...hsl, h });
+}
+
+/**
+ * Setzt den gedrehten Akzent in ein Welt-Set. Die Welt hat `accent-text`
+ * und `accent-contrast` aus dem ALTEN Akzent abgeleitet — beide muessen
+ * weichen, sonst stuende neben dem neuen Akzent ein Kleintext im alten Ton.
+ * Ohne sie fuehrt der Kontrast-Guard in `toCssVars` sie korrekt nach.
+ */
+export function weltMitAkzent(
+  overrides: Record<string, string>,
+  accent: string
+): Record<string, string> {
+  const rest = { ...overrides };
+  delete rest["accent-text"];
+  delete rest["accent-contrast"];
+  return { ...rest, accent };
 }

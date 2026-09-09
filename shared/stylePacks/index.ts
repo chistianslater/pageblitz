@@ -335,7 +335,17 @@ const SAFE_FILL: readonly PackId[] = [
   "zunft",
 ];
 
-const MIN_DIRECTION_POOL_SIZE = 3;
+/**
+ * Zielgroesse des Kandidaten-Pools. War 3 — dadurch liefen zwoelf Friseur-
+ * Seiten in Bocholt auf exakt drei Packs (4/4/4, gemessen 2026-09-09): bei
+ * drei direkten Treffern brach die Erweiterung sofort ab, und der
+ * Rotations-Zaehler konnte nur darueber kreisen. Fuenf holt kuratierte
+ * Nachbarrichtungen dazu, ohne den Charakter der Branche zu verlassen.
+ */
+const POOL_ZIELBREITE = 5;
+
+/** Harte Untergrenze — nur hierfuer duerfen die generischen Fueller ran. */
+const POOL_MINDESTBREITE = 3;
 
 function allowInPool(id: PackId, direct: PackId[]): boolean {
   return !SELECTIVE_PACKS.has(id) || direct.includes(id);
@@ -343,17 +353,21 @@ function allowInPool(id: PackId, direct: PackId[]): boolean {
 
 function expandPool(direct: PackId[]): PackId[] {
   const expanded = [...direct];
-  if (expanded.length >= MIN_DIRECTION_POOL_SIZE) return expanded;
+  // Erst kuratierte Nachbarrichtungen — bis zur Zielbreite.
   for (const primary of direct) {
     for (const neighbor of DIRECTION_NEIGHBORS[primary] ?? []) {
       if (!allowInPool(neighbor, direct)) continue;
       if (!expanded.includes(neighbor)) expanded.push(neighbor);
-      if (expanded.length >= MIN_DIRECTION_POOL_SIZE) return expanded;
+      if (expanded.length >= POOL_ZIELBREITE) return expanded;
     }
   }
+  // Die generischen Fueller nur, wenn sonst nicht einmal drei Kandidaten
+  // zusammenkommen. Sie bis zur Zielbreite aufzufuellen wuerde `werkbank`
+  // in den Friseur-Pool schieben — genau die Verwaesserung, gegen die die
+  // kuratierten Richtungen existieren.
   for (const id of SAFE_FILL) {
+    if (expanded.length >= POOL_MINDESTBREITE) break;
     if (!expanded.includes(id)) expanded.push(id);
-    if (expanded.length >= MIN_DIRECTION_POOL_SIZE) return expanded;
   }
   return expanded;
 }

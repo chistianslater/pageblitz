@@ -1,6 +1,8 @@
 import {
+  pickPackAccent,
   pickPackColorWorld,
   pickPackFontPair,
+  weltMitAkzent,
 } from "../../shared/stylePacks/packVariants";
 import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
 import {
@@ -395,9 +397,15 @@ async function runWebsiteGenerationV2(
     if (!websiteData.colorOverrides) {
       const worldId = pickPackColorWorld(packId, websiteData.businessName);
       const world = getColorWorld(packId, worldId);
-      if (world && Object.keys(world.overrides).length > 0) {
-        websiteData = { ...websiteData, colorOverrides: world.overrides };
-      }
+      // Der Akzent wird zusaetzlich im Farbton gedreht (2026-09-09): die
+      // Welten variieren nur Grund und Flaeche, deshalb sahen alle Seiten
+      // eines Packs in der Typografie gleich aus. Auch auf der Welt
+      // "Original" gesetzt — sonst blieben genau die Seiten ohne Streuung.
+      const accent = pickPackAccent(packId, websiteData.businessName);
+      websiteData = {
+        ...websiteData,
+        colorOverrides: weltMitAkzent(world?.overrides ?? {}, accent),
+      };
     }
     if (!designProfile) {
       let occupied = new Set<string>();

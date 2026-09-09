@@ -106,10 +106,19 @@ describe("Pack-Matching — Hospitality, Ranking, selektive Templates", () => {
   });
 
   test("Schreinerei-Pool bleibt werkbank + bewährte Nachbarn", () => {
+    // Seit der Pool-Verbreiterung (2026-09-09) kommt eine kuratierte
+    // Nachbarrichtung dazu. Die Reihenfolge der Handwerks-Packs vorn und
+    // die Abwesenheit branchenfremder Packs bleiben die eigentliche Zusage.
+    expect(getPackPool("schreinerei").slice(0, 3)).toEqual([
+      "werkbank",
+      "fundament",
+      "zunft",
+    ]);
     expect(getPackPool("schreinerei")).toEqual([
       "werkbank",
       "fundament",
       "zunft",
+      "patina",
     ]);
   });
 });
@@ -157,5 +166,41 @@ describe("normalizeCategoryKey", () => {
     expect(normalizeCategoryKey("NATURSCHUTZBUND")).toBe("naturschutzbund");
     expect(normalizeCategoryKey("Café")).toBe("cafe");
     expect(normalizeCategoryKey("")).toBe("");
+  });
+});
+
+describe("Pool-Breite (Betreiber-Befund 2026-09-09)", () => {
+  // Zwoelf Friseur-Seiten liefen auf genau drei Packs (4/4/4), weil der
+  // Pool bei drei direkten Treffern sofort abbrach und der Zaehler nur
+  // darueber rotierte. Fuenf Kandidaten geben demselben Ort sichtbar
+  // verschiedene Seiten, ohne die kuratierte Richtung zu verlassen.
+  const branchen = [
+    "Friseur",
+    "Restaurant",
+    "Elektriker",
+    "Zahnarzt",
+    "Rechtsanwalt",
+  ];
+
+  // Vier, nicht fuenf: `atelier`, `karat` und die uebrigen selektiven Packs
+  // duerfen laut Kuratierung nur bei direktem Branchen-Treffer erscheinen,
+  // nie als Nachbar. Diese Grenze bleibt bewusst stehen.
+  test("jede Branche hat mindestens vier Kandidaten", () => {
+    for (const branche of branchen) {
+      expect(getPackPool(branche).length).toBeGreaterThanOrEqual(4);
+    }
+  });
+
+  test("keine generischen Fueller in einer gut getroffenen Branche", () => {
+    // werkbank ist der erste SAFE_FILL-Eintrag — im Friseur-Pool waere er
+    // ein Zeichen dafuer, dass die Erweiterung wieder verwaessert.
+    expect(getPackPool("Friseur")).not.toContain("werkbank");
+  });
+
+  test("keine Dubletten im Pool", () => {
+    for (const branche of branchen) {
+      const pool = getPackPool(branche);
+      expect(new Set(pool).size).toBe(pool.length);
+    }
   });
 });
