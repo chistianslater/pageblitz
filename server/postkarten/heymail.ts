@@ -81,29 +81,33 @@ export interface PostkartenText {
 }
 
 export const TEXT_VARIANTEN = {
-  /** Bisheriger Wortlaut: Neugier zuerst, Preis am Ende. */
-  ueberraschung: {
-    headline: "Hey, wir haben eine Überraschung für dich.",
-    copy: "Deine Website ist schon fertig. Wir haben sie gebaut — mit euren Fotos, euren Öffnungszeiten, euren Bewertungen.",
-    abbinder: "Ansehen kostet nichts. Behalten 19,90 € im Monat.",
+  /**
+   * Umkehrung: Der zweite Satz dreht die Erwartung. Die alte Fassung
+   * („Überraschung für dich") war ein Baukasten-Satz — er hätte unter jedem
+   * Mailing stehen können.
+   */
+  ungefragt: {
+    headline: "Deine Website ist fertig. Du wusstest nur nichts davon.",
+    copy: "Deine Fotos. Deine Zeiten. Deine Bewertungen. Alles schon drin.",
+    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
-      "ich bin über euer Google-Profil gestolpert — gute Bewertungen, schöne Fotos, aber keine eigene Seite.\n\nIch führe selbst eine Agentur und weiß, wie wichtig eine Website ist. Und wie teuer und langwierig sie sonst wird. Genau das wollte ich einfacher machen — deshalb hab ich dir schon eine gebaut.\n\nScann den Code und schau sie dir an. Gefällt sie dir: 19,90 € im Monat, ein paar Klicks, fertig.\n\nViele Grüße\nChristian",
+      "euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
-  /** Direkt: sagt sofort, worum es geht. */
-  fertig: {
-    headline: "Deine Website ist fertig.",
-    copy: "Kein Termin, kein Angebot, keine Wartezeit. Schau dir an, was wir für deinen Salon gebaut haben — mit euren echten Fotos und Bewertungen.",
-    abbinder: "Freischalten ab 19,90 € im Monat. Ansehen kostet nichts.",
+  /** Der Verlust: Was passiert, wenn nichts passiert. */
+  gefunden: {
+    headline: "Wer dich googelt, findet ein Profil. Keine Seite.",
+    copy: "Die Seite, die dort fehlt, haben wir gebaut — mit euren Fotos und Bewertungen.",
+    abbinder: "Freischalten ab 19,90 € im Monat. Anschauen kostet nichts.",
     anschreiben:
-      "euer Google-Profil habe ich gefunden, eine eigene Seite nicht. Wer heute nicht gefunden wird, existiert für viele Kunden schlicht nicht.\n\nIch führe selbst eine Agentur und sehe täglich, woran es scheitert: zu teuer, zu langsam, zu kompliziert. Das wollte ich anders machen — deine Seite steht deshalb schon fertig.\n\nCode scannen, anschauen, für 19,90 € im Monat freischalten.\n\nViele Grüße\nChristian",
+      "wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
-  /** Nachbarschaft: lokaler Bezug statt Verkaufsversprechen. */
+  /** Der Wettbewerb vor Ort — nah an der Welt des Salons. */
   nachbarschaft: {
-    headline: "Wir haben dir was gebaut.",
-    copy: "Einfach so, weil dein Salon online kaum zu finden ist. Deine Seite steht schon — mit euren Fotos, Zeiten und Bewertungen aus dem Google-Profil.",
-    abbinder: "Anschauen kostet nichts, behalten 19,90 € im Monat.",
+    headline: "Der Salon zwei Straßen weiter hat eine Website. Du auch — seit heute.",
+    copy: "Gebaut mit euren Fotos, euren Zeiten, euren Bewertungen. Fertig, nicht geplant.",
+    abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
-      "euer Google-Profil sieht gut aus, nur eine eigene Seite fehlt. Wer im Netz nicht auftaucht, verliert Kunden an den Salon zwei Straßen weiter.\n\nIch führe selbst eine Agentur und weiß, wie wichtig so eine Seite ist — und wie umständlich der übliche Weg dorthin. Deshalb hab ich dir einfach schon eine gebaut.\n\nCode scannen, anschauen, 19,90 € im Monat.\n\nViele Grüße\nChristian",
+      "dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
 } as const satisfies Record<string, PostkartenText>;
 
@@ -131,7 +135,7 @@ function ohneSchema(url: string): string {
 
 export function postkartenVariablen(
   betrieb: PostkartenBetrieb,
-  variante: TextVariante = "ueberraschung"
+  variante: TextVariante = "ungefragt"
 ): PostkartenVariablen {
   const text = TEXT_VARIANTEN[variante];
   if (!text) {

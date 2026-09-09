@@ -130,7 +130,7 @@ describe("Textvarianten (Betreiber-Wunsch 2026-09-09: Wording testen)", () => {
 
   test("ohne Angabe kommt die bestehende Fassung mit du-Ansprache", () => {
     const v = postkartenVariablen(basis);
-    expect(v.headline).toContain("Überraschung");
+    expect(v.headline).toContain("Deine Website ist fertig");
     expect(v.copy).toMatch(/\bdeine\b|\bDeine\b/);
     expect(v.abbinder).toContain("19,90");
   });
@@ -192,7 +192,9 @@ describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
       const v = postkartenVariablen(basis, name as never);
       // Handschriften laufen breit; auf einer A6-Rueckseite mit Adressblock
       // ist bei rund 600 Zeichen Schluss, bevor die Schrift zu klein wird.
-      expect(v.anschreiben.length).toBeLessThanOrEqual(600);
+      // 320 statt 600: Bei 417 Zeichen lief der Text aus dem Satzspiegel
+      // (Betreiber-Befund am gedruckten PDF, 2026-09-09).
+      expect(v.anschreiben.length).toBeLessThanOrEqual(320);
     }
   });
 
