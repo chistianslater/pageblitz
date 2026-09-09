@@ -203,11 +203,27 @@ describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
     }
   });
 
-  test("Begruessung raet keinen Personennamen aus dem Firmennamen", () => {
-    // "Manfred Wagner" ist ein Firmenname; ob die Person so heisst, wissen
-    // wir nicht. "Hallo Herr Wagner" waere geraten und peinlich, wenn falsch.
-    const v = postkartenVariablen({ ...basis, name: "Manfred Wagner" });
-    expect(v.begruessung).not.toMatch(/Herr|Frau|Wagner/);
+  test("Begruessung nennt den Betrieb beim Namen statt allgemein zu gruessen", () => {
+    expect(postkartenVariablen(basis).begruessung).toBe("Hallo Haar Galerie,");
+    expect(
+      postkartenVariablen({ ...basis, name: "Manfred Wagner" }).begruessung
+    ).toBe("Hallo Manfred Wagner,");
+  });
+
+  test("erfindet aber keine Anrede — Herr oder Frau waere geraten", () => {
+    // "Manfred Wagner" ist der FIRMENname. Ob die Person so heisst, verraet
+    // uns Google nicht; "Hallo Herr Wagner" waere peinlich, wenn falsch.
+    for (const name of ["Manfred Wagner", "Haar Galerie", "Goldene Schere"]) {
+      const v = postkartenVariablen({ ...basis, name });
+      expect(v.begruessung).not.toMatch(/\bHerr\b|\bFrau\b/);
+    }
+  });
+
+  test("das Anschreiben nimmt Bezug auf den konkreten Anlass", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.anschreiben.toLowerCase()).toMatch(/google|profil/);
+    }
   });
 });
 

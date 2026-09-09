@@ -73,9 +73,10 @@ export interface PostkartenText {
   headline: string;
   copy: string;
   abbinder: string;
-  /** Rückseite, Handschrift: Anrede ohne geratenen Personennamen. */
-  begruessung: string;
-  /** Rückseite, Handschrift: kurzes persönliches Anschreiben. */
+  /**
+   * Rückseite: Nur die Anschreiben-Vorlage; die Begrüßung entsteht je
+   * Betrieb aus dem Namen (siehe postkartenVariablen).
+   */
   anschreiben: string;
 }
 
@@ -85,27 +86,24 @@ export const TEXT_VARIANTEN = {
     headline: "Hey, wir haben eine Überraschung für dich.",
     copy: "Deine Website ist schon fertig. Wir haben sie gebaut — mit euren Fotos, euren Öffnungszeiten, euren Bewertungen.",
     abbinder: "Ansehen kostet nichts. Behalten 19,90 € im Monat.",
-    begruessung: "Hallo zusammen,",
     anschreiben:
-      "gefunden zu werden ist heute alles — kompliziert muss es aber nicht mehr sein. Deine Seite ist schon fertig. Einmal anschauen, ein paar Klicks, und sie ist live. 19,90 € im Monat, ohne Agentur, ohne Wartezeit.\n\nScann einfach den Code — dann siehst du sie.\n\nViele Grüße\nChristian",
+      "ich bin über euer Google-Profil gestolpert — gute Bewertungen, schöne Fotos, aber keine eigene Seite. Das wollte ich nicht so stehen lassen und hab dir eine gebaut.\n\nScann den Code, dann siehst du sie. Gefällt sie dir: 19,90 € im Monat, ein paar Klicks, fertig.\n\nViele Grüße\nChristian",
   },
   /** Direkt: sagt sofort, worum es geht. */
   fertig: {
     headline: "Deine Website ist fertig.",
     copy: "Kein Termin, kein Angebot, keine Wartezeit. Schau dir an, was wir für deinen Salon gebaut haben — mit euren echten Fotos und Bewertungen.",
     abbinder: "Freischalten ab 19,90 € im Monat. Ansehen kostet nichts.",
-    begruessung: "Hallo zusammen,",
     anschreiben:
-      "wer heute nicht gefunden wird, existiert für viele Kunden nicht. Eine eigene Seite war dafür lange zu teuer und zu aufwendig — das ist vorbei. Deine steht schon fertig da, du musst sie nur noch freischalten: 19,90 € im Monat.\n\nDer Code führt direkt hin.\n\nViele Grüße\nChristian",
+      "euer Google-Profil habe ich gefunden, eine eigene Seite nicht. Wer heute nicht gefunden wird, existiert für viele Kunden nicht — teuer und kompliziert muss das aber längst nicht mehr sein.\n\nDeine Seite steht schon fertig. Code scannen, anschauen, für 19,90 € im Monat freischalten.\n\nViele Grüße\nChristian",
   },
   /** Nachbarschaft: lokaler Bezug statt Verkaufsversprechen. */
   nachbarschaft: {
     headline: "Wir haben dir was gebaut.",
     copy: "Einfach so, weil dein Salon online kaum zu finden ist. Deine Seite steht schon — mit euren Fotos, Zeiten und Bewertungen aus dem Google-Profil.",
     abbinder: "Anschauen kostet nichts, behalten 19,90 € im Monat.",
-    begruessung: "Hallo zusammen,",
     anschreiben:
-      "im Netz gefunden zu werden entscheidet heute mit, wer bei euch auf dem Stuhl sitzt. Das muss weder teuer noch kompliziert sein. Deine Seite haben wir schon gebaut — anschauen, ein paar Klicks, live. 19,90 € im Monat.\n\nEinfach den Code scannen.\n\nViele Grüße\nChristian",
+      "euer Google-Profil sieht gut aus, nur eine eigene Seite fehlt. Wer im Netz nicht auftaucht, verliert Kunden an den Salon zwei Straßen weiter — dabei muss das weder teuer noch aufwendig sein.\n\nIch hab dir schon eine gebaut. Code scannen, anschauen, 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
 } as const satisfies Record<string, PostkartenText>;
 
@@ -121,6 +119,7 @@ export interface PostkartenBetrieb {
 }
 
 export interface PostkartenVariablen extends PostkartenText {
+  begruessung: string;
   betrieb_ort: string;
   qrCodeUrl: string;
   bildUrl: string;
@@ -161,6 +160,9 @@ export function postkartenVariablen(
 
   return {
     ...text,
+    // Persönlich, ohne zu raten: Der Betriebsname ist das Einzige, was wir
+    // sicher wissen — eine Anrede mit Herr/Frau wäre geraten.
+    begruessung: `Hallo ${betrieb.name},`,
     betrieb_ort,
     qrCodeUrl: ohneSchema(betrieb.vorschauUrl.trim()),
     bildUrl: betrieb.bildUrl.trim(),
