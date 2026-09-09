@@ -59,6 +59,45 @@ export function anschriftZerlegen(anschrift: string): Empfaenger | null {
   };
 }
 
+/**
+ * Wortlaut-Varianten für die Karte (Betreiber-Wunsch 2026-09-09). Headline,
+ * Fließtext und Abbinder liegen als Variablen im Template, damit sich
+ * Formulierungen vergleichen lassen, ohne das Template anzufassen.
+ *
+ * Alle Varianten duzen — das Motiv ist darauf ausgelegt, ein Wechsel zu „Sie"
+ * mitten in der Serie bräche den Ton. Und jede nennt den Preis: Eine Karte,
+ * die zum Scannen auffordert, ohne zu sagen was es kostet, wirkt wie ein
+ * Lockangebot.
+ */
+export interface PostkartenText {
+  headline: string;
+  copy: string;
+  abbinder: string;
+}
+
+export const TEXT_VARIANTEN = {
+  /** Bisheriger Wortlaut: Neugier zuerst, Preis am Ende. */
+  ueberraschung: {
+    headline: "Hey, wir haben eine Überraschung für dich.",
+    copy: "Deine Website ist schon fertig. Wir haben sie gebaut — mit euren Fotos, euren Öffnungszeiten, euren Bewertungen.",
+    abbinder: "Ansehen kostet nichts. Behalten 19,90 € im Monat.",
+  },
+  /** Direkt: sagt sofort, worum es geht. */
+  fertig: {
+    headline: "Deine Website ist fertig.",
+    copy: "Kein Termin, kein Angebot, keine Wartezeit. Schau dir an, was wir für deinen Salon gebaut haben — mit euren echten Fotos und Bewertungen.",
+    abbinder: "Freischalten ab 19,90 € im Monat. Ansehen kostet nichts.",
+  },
+  /** Nachbarschaft: lokaler Bezug statt Verkaufsversprechen. */
+  nachbarschaft: {
+    headline: "Wir haben dir was gebaut.",
+    copy: "Einfach so, weil dein Salon online kaum zu finden ist. Deine Seite steht schon — mit euren Fotos, Zeiten und Bewertungen aus dem Google-Profil.",
+    abbinder: "Anschauen kostet nichts, behalten 19,90 € im Monat.",
+  },
+} as const satisfies Record<string, PostkartenText>;
+
+export type TextVariante = keyof typeof TEXT_VARIANTEN;
+
 export interface PostkartenBetrieb {
   name: string;
   stadt: string;
@@ -68,7 +107,7 @@ export interface PostkartenBetrieb {
   bildUrl: string;
 }
 
-export interface PostkartenVariablen {
+export interface PostkartenVariablen extends PostkartenText {
   betrieb_ort: string;
   qrCodeUrl: string;
   bildUrl: string;
@@ -79,8 +118,15 @@ function ohneSchema(url: string): string {
 }
 
 export function postkartenVariablen(
-  betrieb: PostkartenBetrieb
+  betrieb: PostkartenBetrieb,
+  variante: TextVariante = "ueberraschung"
 ): PostkartenVariablen {
+  const text = TEXT_VARIANTEN[variante];
+  if (!text) {
+    throw new Error(
+      `Unbekannte Textvariante "${variante}" — bekannt sind: ${Object.keys(TEXT_VARIANTEN).join(", ")}`
+    );
+  }
   if (!betrieb.vorschauUrl.trim()) {
     throw new Error(
       "Ohne Vorschau-Link hat die Postkarte kein Ziel — Karte übersprungen."
@@ -99,6 +145,7 @@ export function postkartenVariablen(
       : `${voll.slice(0, MAX_BETRIEB_ORT - 1).trimEnd()}…`;
 
   return {
+    ...text,
     betrieb_ort,
     qrCodeUrl: ohneSchema(betrieb.vorschauUrl.trim()),
     bildUrl: betrieb.bildUrl.trim(),

@@ -14,6 +14,8 @@ import { storagePut } from "../server/storage";
 import {
   anschriftZerlegen,
   postkartenVariablen,
+  TEXT_VARIANTEN,
+  type TextVariante,
 } from "../server/postkarten/heymail";
 
 const API = "https://api.heymail.com/v1/mailings/preview";
@@ -26,6 +28,12 @@ function arg(flag: string): string | undefined {
 const csvPfad = arg("--csv");
 const bilderPfad = arg("--bilder");
 const templateId = arg("--template") ?? "93df425c-64eb-4c13-b07b-cd54dd663301";
+const variante = (arg("--text") ?? "ueberraschung") as TextVariante;
+if (!(variante in TEXT_VARIANTEN)) {
+  throw new Error(
+    `Unbekannte Textvariante "${variante}" — bekannt: ${Object.keys(TEXT_VARIANTEN).join(", ")}`
+  );
+}
 if (!csvPfad || !bilderPfad) {
   throw new Error(
     'Aufruf: --csv <datei> --bilder <ordner> [--template <id>]'
@@ -47,7 +55,7 @@ async function main(): Promise<void> {
   const zeilen = fs.readFileSync(csvPfad!, "utf8").trim().split("\n");
   const kopf = zeilen[0].split(";");
   const idx = (name: string) => kopf.indexOf(name);
-  const ergebnisse: string[] = ["name;vorschau_pdf;bild_url;hinweis"];
+  const ergebnisse: string[] = [`name;vorschau_pdf;bild_url;textvariante;hinweis`];
 
   for (const zeile of zeilen.slice(1)) {
     const f = zeile.split(";");
@@ -77,12 +85,10 @@ async function main(): Promise<void> {
 
     let variablen;
     try {
-      variablen = postkartenVariablen({
-        name,
-        stadt: empfaenger.city,
-        vorschauUrl,
-        bildUrl: hoch.url,
-      });
+      variablen = postkartenVariablen(
+        { name, stadt: empfaenger.city, vorschauUrl, bildUrl: hoch.url },
+        variante
+      );
     } catch (err) {
       const grund = err instanceof Error ? err.message : String(err);
       console.log(`${name}: ${grund}`);
@@ -109,7 +115,7 @@ async function main(): Promise<void> {
     }
     const pdf = (JSON.parse(text) as { previewUrl?: string }).previewUrl ?? "";
     console.log(`${name}: ${pdf}`);
-    ergebnisse.push(`${name};${pdf};${hoch.url};`);
+    ergebnisse.push(`${name};${pdf};${hoch.url};${variante};`);
   }
 
   const ziel = csvPfad!.replace(/\.csv$/, "-vorschau.csv");

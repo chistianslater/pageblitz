@@ -3,6 +3,7 @@ import {
   anschriftZerlegen,
   MAX_BETRIEB_ORT,
   postkartenVariablen,
+  TEXT_VARIANTEN,
 } from "./heymail";
 
 describe("anschriftZerlegen (Google-Anschrift → HeyMail-Empfänger)", () => {
@@ -115,5 +116,58 @@ describe("postkartenVariablen (die beiden gegenläufigen Schema-Regeln)", () => 
 
   test("leerer Vorschaulink ist ein Fehler — eine Karte ohne Ziel ist wertlos", () => {
     expect(() => postkartenVariablen({ ...basis, vorschauUrl: "" })).toThrow();
+  });
+});
+
+describe("Textvarianten (Betreiber-Wunsch 2026-09-09: Wording testen)", () => {
+  const basis = {
+    name: "Haar Galerie",
+    stadt: "Bocholt",
+    vorschauUrl: "https://pageblitz.de/preview-ssr/abc123",
+    bildUrl: "https://pub-x.r2.dev/postkarten/haar-galerie.png",
+  };
+
+  test("ohne Angabe kommt die bestehende Fassung mit du-Ansprache", () => {
+    const v = postkartenVariablen(basis);
+    expect(v.headline).toContain("Überraschung");
+    expect(v.copy).toMatch(/\bdeine\b|\bDeine\b/);
+    expect(v.abbinder).toContain("19,90");
+  });
+
+  test("jede Variante liefert alle drei Textfelder gefüllt", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as keyof typeof TEXT_VARIANTEN);
+      expect(v.headline.length).toBeGreaterThan(10);
+      expect(v.copy.length).toBeGreaterThan(30);
+      expect(v.abbinder.length).toBeGreaterThan(10);
+    }
+  });
+
+  test("jede Variante duzt — Sie-Ansprache waere ein Bruch im Motiv", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as keyof typeof TEXT_VARIANTEN);
+      const text = `${v.headline} ${v.copy} ${v.abbinder}`;
+      expect(text).not.toMatch(/\bIhre\b|\bIhnen\b|\bSie\b/);
+    }
+  });
+
+  test("jede Variante nennt den Preis — ohne Preis keine Entscheidung", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as keyof typeof TEXT_VARIANTEN);
+      expect(`${v.copy} ${v.abbinder}`).toContain("19,90");
+    }
+  });
+
+  test("unbekannte Variante faellt nicht still auf den Standard zurueck", () => {
+    expect(() =>
+      postkartenVariablen(basis, "gibtsnicht" as never)
+    ).toThrow(/unbekannt/i);
+  });
+
+  test("die Varianten unterscheiden sich tatsaechlich im Wortlaut", () => {
+    const alle = Object.keys(TEXT_VARIANTEN).map(
+      n => postkartenVariablen(basis, n as never).headline
+    );
+    expect(new Set(alle).size).toBe(alle.length);
   });
 });
