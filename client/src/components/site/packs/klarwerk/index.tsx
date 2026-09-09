@@ -1,4 +1,5 @@
 import React from "react";
+import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
@@ -240,9 +241,15 @@ function renderSection(
               )}
               {(section.street || addressLine) && (
                 <p>
-                  {section.street && <span>{section.street}</span>}
-                  {section.street && addressLine && <br />}
-                  {addressLine && <span>{addressLine}</span>}
+                  <MapsAdresse
+                    street={section.street}
+                    zip={section.zip}
+                    city={section.city}
+                  >
+                    {section.street && <span>{section.street}</span>}
+                    {section.street && addressLine && <br />}
+                    {addressLine && <span>{addressLine}</span>}
+                  </MapsAdresse>
                 </p>
               )}
             </address>
