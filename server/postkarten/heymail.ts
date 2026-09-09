@@ -87,7 +87,7 @@ export const TEXT_VARIANTEN = {
     copy: "Deine Website ist schon fertig. Wir haben sie gebaut — mit euren Fotos, euren Öffnungszeiten, euren Bewertungen.",
     abbinder: "Ansehen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
-      "ich bin über euer Google-Profil gestolpert — gute Bewertungen, schöne Fotos, aber keine eigene Seite. Das wollte ich nicht so stehen lassen und hab dir eine gebaut.\n\nScann den Code, dann siehst du sie. Gefällt sie dir: 19,90 € im Monat, ein paar Klicks, fertig.\n\nViele Grüße\nChristian",
+      "ich bin über euer Google-Profil gestolpert — gute Bewertungen, schöne Fotos, aber keine eigene Seite.\n\nIch führe selbst eine Agentur und weiß, wie wichtig eine Website ist. Und wie teuer und langwierig sie sonst wird. Genau das wollte ich einfacher machen — deshalb hab ich dir schon eine gebaut.\n\nScann den Code und schau sie dir an. Gefällt sie dir: 19,90 € im Monat, ein paar Klicks, fertig.\n\nViele Grüße\nChristian",
   },
   /** Direkt: sagt sofort, worum es geht. */
   fertig: {
@@ -95,7 +95,7 @@ export const TEXT_VARIANTEN = {
     copy: "Kein Termin, kein Angebot, keine Wartezeit. Schau dir an, was wir für deinen Salon gebaut haben — mit euren echten Fotos und Bewertungen.",
     abbinder: "Freischalten ab 19,90 € im Monat. Ansehen kostet nichts.",
     anschreiben:
-      "euer Google-Profil habe ich gefunden, eine eigene Seite nicht. Wer heute nicht gefunden wird, existiert für viele Kunden nicht — teuer und kompliziert muss das aber längst nicht mehr sein.\n\nDeine Seite steht schon fertig. Code scannen, anschauen, für 19,90 € im Monat freischalten.\n\nViele Grüße\nChristian",
+      "euer Google-Profil habe ich gefunden, eine eigene Seite nicht. Wer heute nicht gefunden wird, existiert für viele Kunden schlicht nicht.\n\nIch führe selbst eine Agentur und sehe täglich, woran es scheitert: zu teuer, zu langsam, zu kompliziert. Das wollte ich anders machen — deine Seite steht deshalb schon fertig.\n\nCode scannen, anschauen, für 19,90 € im Monat freischalten.\n\nViele Grüße\nChristian",
   },
   /** Nachbarschaft: lokaler Bezug statt Verkaufsversprechen. */
   nachbarschaft: {
@@ -103,7 +103,7 @@ export const TEXT_VARIANTEN = {
     copy: "Einfach so, weil dein Salon online kaum zu finden ist. Deine Seite steht schon — mit euren Fotos, Zeiten und Bewertungen aus dem Google-Profil.",
     abbinder: "Anschauen kostet nichts, behalten 19,90 € im Monat.",
     anschreiben:
-      "euer Google-Profil sieht gut aus, nur eine eigene Seite fehlt. Wer im Netz nicht auftaucht, verliert Kunden an den Salon zwei Straßen weiter — dabei muss das weder teuer noch aufwendig sein.\n\nIch hab dir schon eine gebaut. Code scannen, anschauen, 19,90 € im Monat.\n\nViele Grüße\nChristian",
+      "euer Google-Profil sieht gut aus, nur eine eigene Seite fehlt. Wer im Netz nicht auftaucht, verliert Kunden an den Salon zwei Straßen weiter.\n\nIch führe selbst eine Agentur und weiß, wie wichtig so eine Seite ist — und wie umständlich der übliche Weg dorthin. Deshalb hab ich dir einfach schon eine gebaut.\n\nCode scannen, anschauen, 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
 } as const satisfies Record<string, PostkartenText>;
 

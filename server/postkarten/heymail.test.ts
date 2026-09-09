@@ -190,8 +190,9 @@ describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
   test("das Anschreiben bleibt kurz genug fuer eine Handschrift", () => {
     for (const name of Object.keys(TEXT_VARIANTEN)) {
       const v = postkartenVariablen(basis, name as never);
-      // Handschriften laufen breit; darueber wird die Rueckseite unruhig.
-      expect(v.anschreiben.length).toBeLessThanOrEqual(400);
+      // Handschriften laufen breit; auf einer A6-Rueckseite mit Adressblock
+      // ist bei rund 600 Zeichen Schluss, bevor die Schrift zu klein wird.
+      expect(v.anschreiben.length).toBeLessThanOrEqual(600);
     }
   });
 
@@ -216,6 +217,15 @@ describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
     for (const name of ["Manfred Wagner", "Haar Galerie", "Goldene Schere"]) {
       const v = postkartenVariablen({ ...basis, name });
       expect(v.begruessung).not.toMatch(/\bHerr\b|\bFrau\b/);
+    }
+  });
+
+  test("jedes Anschreiben nennt den eigenen Agentur-Hintergrund", () => {
+    // Der Glaubwuerdigkeitsanker: Wer selbst Websites baut, weiss, warum
+    // der uebliche Weg zu teuer und zu langsam ist.
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.anschreiben.toLowerCase()).toContain("agentur");
     }
   });
 
