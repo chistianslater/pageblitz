@@ -156,10 +156,21 @@ async function main(): Promise<void> {
     // Automatisch bestaetigen (Betreiber-Entscheidung 2026-09-09): Was der
     // Anbieter angenommen hat, gilt als raus — kein zweiter Handgriff.
     if (senden && karte) {
-      await postkarteVersendet(
-        karte.id,
-        antwortDaten.mailingId ?? antwortDaten.id ?? null
-      );
+      const referenz =
+        antwortDaten.mailingId ??
+        antwortDaten.id ??
+        (antwortDaten as Record<string, string | undefined>).orderId ??
+        null;
+      // Beim ersten echten Versand (09.09.) blieb die Referenz leer: Die
+      // Antwort trug keins der erwarteten Felder, und der Rohtext war weg.
+      // Ohne Referenz gibt es bei einer Reklamation nichts vorzuzeigen —
+      // deshalb im Zweifel die ganze Antwort protokollieren.
+      if (!referenz) {
+        console.log(
+          `  ${name}: keine Referenz in der Antwort — Rohdaten: ${text.slice(0, 400)}`
+        );
+      }
+      await postkarteVersendet(karte.id, referenz);
     }
     console.log(`${name}: ${karte?.code ?? "ohne Code"} ${pdf}`);
     ergebnisse.push(`${name};${pdf};${hoch.url};${variante};${karte?.code ?? ""}`);
