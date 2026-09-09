@@ -87,24 +87,24 @@ export const TEXT_VARIANTEN = {
    * Mailing stehen können.
    */
   ungefragt: {
-    headline: "Deine Website ist fertig. Du wusstest nur nichts davon.",
-    copy: "Deine Fotos. Deine Zeiten. Deine Bewertungen. Alles schon drin.",
+    headline: "Deine Website ist fertig.",
+    copy: "Du wusstest nur nichts davon. Deine Fotos, Zeiten und Bewertungen sind drin.",
     abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
       "euer Google-Profil ist gepflegt. Nur eine eigene Seite fehlt.\n\nIch baue Websites in meiner eigenen Agentur. Normal dauert das Wochen. Deine steht schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
   /** Der Verlust: Was passiert, wenn nichts passiert. */
   gefunden: {
-    headline: "Wer dich googelt, findet ein Profil. Keine Seite.",
-    copy: "Die Seite, die dort fehlt, haben wir gebaut — mit euren Fotos und Bewertungen.",
+    headline: "Ein Google-Profil. Keine Website.",
+    copy: "Die Seite, die dort fehlt, steht schon — mit euren Fotos und Bewertungen.",
     abbinder: "Freischalten ab 19,90 € im Monat. Anschauen kostet nichts.",
     anschreiben:
       "wer dich sucht, landet auf deinem Google-Profil und dann im Nichts.\n\nIch führe selbst eine Agentur und kenne den Grund: zu teuer, zu langsam. Deine Seite steht trotzdem schon.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",
   },
   /** Der Wettbewerb vor Ort — nah an der Welt des Salons. */
   nachbarschaft: {
-    headline: "Der Salon zwei Straßen weiter hat eine Website. Du auch — seit heute.",
-    copy: "Gebaut mit euren Fotos, euren Zeiten, euren Bewertungen. Fertig, nicht geplant.",
+    headline: "Zwei Straßen weiter gibt es eine Website.",
+    copy: "Deine auch — seit heute. Mit euren Fotos, Zeiten und Bewertungen.",
     abbinder: "Anschauen kostet nichts. Behalten 19,90 € im Monat.",
     anschreiben:
       "dein Google-Profil ist gut. Nur endet es dort, wo andere ihre Seite haben.\n\nIch baue solche Seiten in meiner Agentur. Sonst dauert das Wochen — deine ist fertig.\n\nScannen, anschauen. Behalten kostet 19,90 € im Monat.\n\nViele Grüße\nChristian",

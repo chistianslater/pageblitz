@@ -198,6 +198,15 @@ describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
     }
   });
 
+  test("Schlagzeile bleibt zweizeilig — sonst laeuft sie in den Fliesstext", () => {
+    // Gemessen am gedruckten PDF (2026-09-09): ab ~46 Zeichen bricht die
+    // Schlagzeile auf vier Zeilen um und ueberlagert die Copy.
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.headline.length).toBeLessThanOrEqual(46);
+    }
+  });
+
   test("Anschreiben duzt und nennt den Preis", () => {
     for (const name of Object.keys(TEXT_VARIANTEN)) {
       const v = postkartenVariablen(basis, name as never);
