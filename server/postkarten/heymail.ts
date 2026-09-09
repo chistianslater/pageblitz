@@ -185,3 +185,22 @@ export function postkartenVariablen(
     bildUrl: betrieb.bildUrl.trim(),
   };
 }
+
+export type Modus = "vorschau" | "versand";
+
+/**
+ * HeyMail verlangt fuer die beiden Endpunkte unterschiedliche Formen:
+ * `/mailings/preview` nimmt `mailItem` (Einzahl), `/mailings/send` besteht
+ * auf `mailItems` (Liste). Am 09.09. an der Validierung abgelesen — die
+ * Doku sagte beide Male etwas anderes. Deshalb hier an einer Stelle
+ * festgehalten statt im Skript verstreut.
+ */
+export function anfrageKoerper(
+  modus: Modus,
+  templateId: string,
+  eintrag: unknown
+): Record<string, unknown> {
+  return modus === "versand"
+    ? { templateId, mailItems: [eintrag] }
+    : { templateId, mailItem: eintrag };
+}

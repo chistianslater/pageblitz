@@ -13,6 +13,7 @@ import path from "path";
 import { storagePut } from "../server/storage";
 import { postkarteSichern, postkarteVersendet } from "../server/postkarten/db";
 import {
+  anfrageKoerper,
   anschriftZerlegen,
   postkartenVariablen,
   TEXT_VARIANTEN,
@@ -133,10 +134,12 @@ async function main(): Promise<void> {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        templateId,
-        mailItem: { recipient: { company: name, ...empfaenger }, variableData: variablen },
-      }),
+      body: JSON.stringify(
+        anfrageKoerper(senden ? "versand" : "vorschau", templateId, {
+          recipient: { company: name, ...empfaenger },
+          variableData: variablen,
+        })
+      ),
     });
     const text = await antwort.text();
     if (!antwort.ok) {

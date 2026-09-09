@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  anfrageKoerper,
   anschriftZerlegen,
   MAX_BETRIEB_ORT,
   postkartenVariablen,
@@ -296,5 +297,32 @@ describe("Kurzcode auf der Karte (2026-09-09)", () => {
     const v = postkartenVariablen(ohne);
     expect(v.qrCodeUrl).toBe("pageblitz.de/preview-ssr/abc123");
     expect(v.kurzlink).toBe("");
+  });
+});
+
+describe("anfrageKoerper — Vorschau und Versand unterscheiden sich", () => {
+  const eintrag = {
+    recipient: { company: "SCHAU & HORCH", street: "Zum Waldschlösschen", houseNumber: "19", zip: "46395", city: "Bocholt", country: "Deutschland" },
+    variableData: { headline: "x" },
+  };
+
+  test("Vorschau erwartet mailItem in der Einzahl", () => {
+    const k = anfrageKoerper("vorschau", "tpl", eintrag) as Record<string, unknown>;
+    expect(k.mailItem).toEqual(eintrag);
+    expect(k.mailItems).toBeUndefined();
+  });
+
+  test("Versand erwartet mailItems als Liste", () => {
+    // Von HeyMail am 09.09. an der Validierung abgelesen: /send lehnt
+    // mailItem mit UNKNOWN_FIELD ab, /preview lehnt mailItems ab.
+    const k = anfrageKoerper("versand", "tpl", eintrag) as Record<string, unknown>;
+    expect(k.mailItems).toEqual([eintrag]);
+    expect(k.mailItem).toBeUndefined();
+  });
+
+  test("der Versand traegt immer genau einen Empfaenger", () => {
+    // Schutz gegen einen Stapel, der versehentlich als Liste rausgeht.
+    const k = anfrageKoerper("versand", "tpl", eintrag) as { mailItems: unknown[] };
+    expect(k.mailItems).toHaveLength(1);
   });
 });
