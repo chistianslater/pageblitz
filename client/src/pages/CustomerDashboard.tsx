@@ -231,8 +231,8 @@ export default function CustomerDashboard() {
       },
     });
 
-  const updateAgeGateMutation =
-    trpc.customer.updateRequiresAgeGate.useMutation({
+  const updateAgeGateMutation = trpc.customer.updateRequiresAgeGate.useMutation(
+    {
       onSuccess: () => {
         refetch();
         toast.success("Einstellung gespeichert");
@@ -240,7 +240,8 @@ export default function CustomerDashboard() {
       onError: (err: any) => {
         toast.error("Fehler beim Speichern: " + err.message);
       },
-    });
+    }
+  );
 
   const handleUpdate = () => {
     refetch();

@@ -77,7 +77,10 @@ export function PartnerLogosEditor({
     }
     setError(null);
     const defaultName =
-      file.name.replace(/\.[^.]+$/, "").trim().slice(0, 60) || "Partner";
+      file.name
+        .replace(/\.[^.]+$/, "")
+        .trim()
+        .slice(0, 60) || "Partner";
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result;

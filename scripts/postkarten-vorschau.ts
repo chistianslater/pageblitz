@@ -28,7 +28,7 @@ function arg(flag: string): string | undefined {
 const csvPfad = arg("--csv");
 const bilderPfad = arg("--bilder");
 const templateId = arg("--template") ?? "93df425c-64eb-4c13-b07b-cd54dd663301";
-const variante = (arg("--text") ?? "ueberraschung") as TextVariante;
+const variante = (arg("--text") ?? "ungefragt") as TextVariante;
 if (!(variante in TEXT_VARIANTEN)) {
   throw new Error(
     `Unbekannte Textvariante "${variante}" — bekannt: ${Object.keys(TEXT_VARIANTEN).join(", ")}`

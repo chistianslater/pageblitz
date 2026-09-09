@@ -8,12 +8,7 @@
  * Fremdinhalte hier einfügen).
  */
 
-
-export {
-  BLOG_POSTS,
-  getBlogPost,
-  type BlogPost,
-} from "./blogPosts";
+export { BLOG_POSTS, getBlogPost, type BlogPost } from "./blogPosts";
 import { BLOG_POSTS, type BlogPost } from "./blogPosts";
 
 // ── Rendering ────────────────────────────────────────────────────────────────

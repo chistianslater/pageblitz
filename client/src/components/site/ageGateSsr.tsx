@@ -74,8 +74,8 @@ export function AgeGateSsr({ slug, businessName }: AgeGateSsrProps) {
           <h2 id="pb-age-gate-title">Altersbestätigung erforderlich</h2>
           <p>
             Die Inhalte dieser Website{bizPart} sind nur für Personen ab{" "}
-            <strong>{AGE_GATE_MIN_AGE} Jahren</strong> bestimmt. Bitte
-            bestätige dein Alter, um fortzufahren.
+            <strong>{AGE_GATE_MIN_AGE} Jahren</strong> bestimmt. Bitte bestätige
+            dein Alter, um fortzufahren.
           </p>
           <div className="pb-age-actions">
             <button type="button" className="pb-age-yes">

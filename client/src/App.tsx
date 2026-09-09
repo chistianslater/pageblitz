@@ -102,10 +102,7 @@ function PageLoader({ inline = false }: { inline?: boolean }) {
 function AdminSwitch() {
   const [location] = useLocation();
   return (
-    <Suspense
-      key={location}
-      fallback={<PageLoader inline />}
-    >
+    <Suspense key={location} fallback={<PageLoader inline />}>
       <Switch>
         <Route path="/admin" component={Home} />
         <Route path="/admin/search" component={SearchPage} />

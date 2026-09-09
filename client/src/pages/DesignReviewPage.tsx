@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUpRight, ExternalLink, Monitor, Smartphone, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  ExternalLink,
+  Monitor,
+  Smartphone,
+  X,
+} from "lucide-react";
 import { PACK_SUMMARY } from "@shared/stylePacks/summary";
 import type { PackId } from "@shared/siteContract/types";
 
@@ -154,8 +160,8 @@ export default function DesignReviewPage() {
             </h1>
           </div>
           <p className="max-w-[40rem] text-[1rem] leading-7 text-lp-muted">
-            Öffne jede Richtung als echte Website — Desktop und Mobil direkt
-            in der Vorschau, oder im neuen Tab.
+            Öffne jede Richtung als echte Website — Desktop und Mobil direkt in
+            der Vorschau, oder im neuen Tab.
           </p>
         </div>
 

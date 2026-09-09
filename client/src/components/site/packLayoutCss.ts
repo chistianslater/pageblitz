@@ -326,7 +326,6 @@ ${stagger}{margin-top:0!important}
 `;
 }
 
-
 /**
  * Neue Richtungen 2026-08-30 (karat/plakat/raster/strom/riviera): alle
  * fünf sind Fluss-Layouts (Stack oder 2-Spalten-Grid) — die Varianten
