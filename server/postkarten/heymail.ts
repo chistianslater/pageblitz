@@ -73,6 +73,10 @@ export interface PostkartenText {
   headline: string;
   copy: string;
   abbinder: string;
+  /** Rückseite, Handschrift: Anrede ohne geratenen Personennamen. */
+  begruessung: string;
+  /** Rückseite, Handschrift: kurzes persönliches Anschreiben. */
+  anschreiben: string;
 }
 
 export const TEXT_VARIANTEN = {
@@ -81,18 +85,27 @@ export const TEXT_VARIANTEN = {
     headline: "Hey, wir haben eine Überraschung für dich.",
     copy: "Deine Website ist schon fertig. Wir haben sie gebaut — mit euren Fotos, euren Öffnungszeiten, euren Bewertungen.",
     abbinder: "Ansehen kostet nichts. Behalten 19,90 € im Monat.",
+    begruessung: "Hallo zusammen,",
+    anschreiben:
+      "gefunden zu werden ist heute alles — kompliziert muss es aber nicht mehr sein. Deine Seite ist schon fertig. Einmal anschauen, ein paar Klicks, und sie ist live. 19,90 € im Monat, ohne Agentur, ohne Wartezeit.\n\nScann einfach den Code — dann siehst du sie.\n\nViele Grüße\nChristian",
   },
   /** Direkt: sagt sofort, worum es geht. */
   fertig: {
     headline: "Deine Website ist fertig.",
     copy: "Kein Termin, kein Angebot, keine Wartezeit. Schau dir an, was wir für deinen Salon gebaut haben — mit euren echten Fotos und Bewertungen.",
     abbinder: "Freischalten ab 19,90 € im Monat. Ansehen kostet nichts.",
+    begruessung: "Hallo zusammen,",
+    anschreiben:
+      "wer heute nicht gefunden wird, existiert für viele Kunden nicht. Eine eigene Seite war dafür lange zu teuer und zu aufwendig — das ist vorbei. Deine steht schon fertig da, du musst sie nur noch freischalten: 19,90 € im Monat.\n\nDer Code führt direkt hin.\n\nViele Grüße\nChristian",
   },
   /** Nachbarschaft: lokaler Bezug statt Verkaufsversprechen. */
   nachbarschaft: {
     headline: "Wir haben dir was gebaut.",
     copy: "Einfach so, weil dein Salon online kaum zu finden ist. Deine Seite steht schon — mit euren Fotos, Zeiten und Bewertungen aus dem Google-Profil.",
     abbinder: "Anschauen kostet nichts, behalten 19,90 € im Monat.",
+    begruessung: "Hallo zusammen,",
+    anschreiben:
+      "im Netz gefunden zu werden entscheidet heute mit, wer bei euch auf dem Stuhl sitzt. Das muss weder teuer noch kompliziert sein. Deine Seite haben wir schon gebaut — anschauen, ein paar Klicks, live. 19,90 € im Monat.\n\nEinfach den Code scannen.\n\nViele Grüße\nChristian",
   },
 } as const satisfies Record<string, PostkartenText>;
 
@@ -138,7 +151,9 @@ export function postkartenVariablen(
     );
   }
 
-  const voll = `Für die ${betrieb.name} in ${betrieb.stadt}`;
+  // Ohne Artikel: „Für die Manfred Wagner" war bei Personennamen falsch,
+  // „Für Manfred Wagner" und „Für Haar Galerie" stimmen beide.
+  const voll = `Für ${betrieb.name} in ${betrieb.stadt}`;
   const betrieb_ort =
     voll.length <= MAX_BETRIEB_ORT
       ? voll

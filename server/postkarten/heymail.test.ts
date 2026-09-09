@@ -100,8 +100,9 @@ describe("postkartenVariablen (die beiden gegenläufigen Schema-Regeln)", () => 
   });
 
   test("betrieb_ort nennt Betrieb und Ort", () => {
+    // Ohne Artikel, siehe Grammatikfalle weiter unten.
     expect(postkartenVariablen(basis).betrieb_ort).toBe(
-      "Für die Haar Galerie in Bocholt"
+      "Für Haar Galerie in Bocholt"
     );
   });
 
@@ -169,5 +170,64 @@ describe("Textvarianten (Betreiber-Wunsch 2026-09-09: Wording testen)", () => {
       n => postkartenVariablen(basis, n as never).headline
     );
     expect(new Set(alle).size).toBe(alle.length);
+  });
+});
+
+describe("Rueckseite: Begruessung und Anschreiben (2026-09-09)", () => {
+  const basis = {
+    name: "Haar Galerie",
+    stadt: "Bocholt",
+    vorschauUrl: "https://pageblitz.de/preview-ssr/abc123",
+    bildUrl: "https://pub-x.r2.dev/postkarten/haar-galerie.png",
+  };
+
+  test("liefert Begruessung und Anschreiben mit", () => {
+    const v = postkartenVariablen(basis);
+    expect(v.begruessung.length).toBeGreaterThan(5);
+    expect(v.anschreiben.length).toBeGreaterThan(80);
+  });
+
+  test("das Anschreiben bleibt kurz genug fuer eine Handschrift", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      // Handschriften laufen breit; darueber wird die Rueckseite unruhig.
+      expect(v.anschreiben.length).toBeLessThanOrEqual(400);
+    }
+  });
+
+  test("Anschreiben duzt und nennt den Preis", () => {
+    for (const name of Object.keys(TEXT_VARIANTEN)) {
+      const v = postkartenVariablen(basis, name as never);
+      expect(v.anschreiben).not.toMatch(/\bIhre\b|\bIhnen\b/);
+      expect(v.anschreiben).toContain("19,90");
+    }
+  });
+
+  test("Begruessung raet keinen Personennamen aus dem Firmennamen", () => {
+    // "Manfred Wagner" ist ein Firmenname; ob die Person so heisst, wissen
+    // wir nicht. "Hallo Herr Wagner" waere geraten und peinlich, wenn falsch.
+    const v = postkartenVariablen({ ...basis, name: "Manfred Wagner" });
+    expect(v.begruessung).not.toMatch(/Herr|Frau|Wagner/);
+  });
+});
+
+describe("betrieb_ort ohne Artikel (Grammatikfalle)", () => {
+  const basis = {
+    stadt: "Bocholt",
+    vorschauUrl: "https://pageblitz.de/x",
+    bildUrl: "https://pub-x.r2.dev/x.png",
+  };
+
+  test("Personenname ergibt einen korrekten Satz", () => {
+    // "Für die Manfred Wagner" war grammatisch falsch.
+    expect(postkartenVariablen({ ...basis, name: "Manfred Wagner" }).betrieb_ort).toBe(
+      "Für Manfred Wagner in Bocholt"
+    );
+  });
+
+  test("Firmenname ebenso", () => {
+    expect(postkartenVariablen({ ...basis, name: "Haar Galerie" }).betrieb_ort).toBe(
+      "Für Haar Galerie in Bocholt"
+    );
   });
 });
