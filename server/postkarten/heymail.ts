@@ -14,6 +14,9 @@
 /** Kopfzeile der Karte; darüber bricht die Zeile im Layout um. */
 export const MAX_BETRIEB_ORT = 44;
 
+/** Ohne Schema, weil das Template `https://{{...}}` bereits mitbringt. */
+const KURZ_BASIS = "pageblitz.de";
+
 export interface Empfaenger {
   street: string;
   houseNumber: string;
@@ -120,12 +123,16 @@ export interface PostkartenBetrieb {
   vorschauUrl: string;
   /** Screenshot der Seite, öffentlich über HTTPS, mit Schema. */
   bildUrl: string;
+  /** Vier Zeichen von der Karte; ohne ihn bleibt es beim Vorschau-Link. */
+  kurzcode?: string;
 }
 
 export interface PostkartenVariablen extends PostkartenText {
   begruessung: string;
   betrieb_ort: string;
   qrCodeUrl: string;
+  /** Zum Abtippen unter dem QR — leer, solange kein Code vergeben ist. */
+  kurzlink: string;
   bildUrl: string;
 }
 
@@ -168,7 +175,13 @@ export function postkartenVariablen(
     // sicher wissen — eine Anrede mit Herr/Frau wäre geraten.
     begruessung: `Hallo ${betrieb.name},`,
     betrieb_ort,
-    qrCodeUrl: ohneSchema(betrieb.vorschauUrl.trim()),
+    // Der QR zeigt auf den Kurzcode, nicht auf den Vorschau-Token: Der
+    // Token wechselt bei jeder Neuerzeugung, der Code bleibt. `?q=1`
+    // unterscheidet den Scan vom abgetippten Kurz-Link darunter.
+    qrCodeUrl: betrieb.kurzcode
+      ? `${KURZ_BASIS}/k/${betrieb.kurzcode}?q=1`
+      : ohneSchema(betrieb.vorschauUrl.trim()),
+    kurzlink: betrieb.kurzcode ? `${KURZ_BASIS}/k/${betrieb.kurzcode}` : "",
     bildUrl: betrieb.bildUrl.trim(),
   };
 }

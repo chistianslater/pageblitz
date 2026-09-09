@@ -123,7 +123,7 @@ async function main(): Promise<void> {
     // Leiste „Website übernehmen". Der Studio-Link steht daneben, für den
     // Fall dass wir selbst etwas nachbessern wollen — er gehört NICHT auf
     // die Postkarte, dort landet man sonst im Editor statt auf der Seite.
-    "name;anschrift;telefon;bisherige_website;lead;bewertungen;vorschau_url;studio_url",
+    "name;anschrift;telefon;bisherige_website;lead;bewertungen;vorschau_url;studio_url;business_id",
   ];
   for (const [i, r] of kandidaten.entries()) {
     console.log(`\n[${i + 1}/${kandidaten.length}] ${r.name}`);
@@ -192,6 +192,8 @@ async function main(): Promise<void> {
         String(r.reviewCount ?? 0),
         vorschauUrl,
         studioUrl,
+        // Bindeglied zur Postkarten-Tabelle: ein Betrieb, ein Kurzcode.
+        String(businessId),
       ]
         .map(f => String(f).replaceAll(";", ","))
         .join(";")

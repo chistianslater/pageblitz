@@ -1,0 +1,1146 @@
+{
+  "werkbank": {
+    "business": "Schreinerei Brandt",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 25,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 43,
+        "textFields": 11,
+        "shortFields": 10,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 86,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 30,
+        "textFields": 8,
+        "shortFields": 8,
+        "images": 3,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 58,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 7,
+        "textFields": 7,
+        "shortFields": 7,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "patina": {
+    "business": "Naturheilpraxis Annelie Voss",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 26,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 52,
+        "textFields": 10,
+        "shortFields": 6,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 83,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 33,
+        "textFields": 8,
+        "shortFields": 8,
+        "images": 3,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 60,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 70,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "kanzlei": {
+    "business": "Roth & Weber Steuerberater",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 22,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 39,
+        "textFields": 10,
+        "shortFields": 8,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 72,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 43,
+        "textFields": 6,
+        "shortFields": 4,
+        "images": 0,
+        "items": 2
+      },
+      {
+        "type": "faq",
+        "words": 64,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 7,
+        "textFields": 7,
+        "shortFields": 7,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "salon-noir": {
+    "business": "NOIR Haarstudio",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 21,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 43,
+        "textFields": 11,
+        "shortFields": 10,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 64,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 23,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 48,
+        "textFields": 8,
+        "shortFields": 6,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "pricelist",
+        "words": 17,
+        "textFields": 10,
+        "shortFields": 10,
+        "images": 0,
+        "items": 6
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "morgenlicht": {
+    "business": "Zahnarztpraxis Dr. Sommer",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 18,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 49,
+        "textFields": 11,
+        "shortFields": 9,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 81,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 28,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 50,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 79,
+        "textFields": 8,
+        "shortFields": 4,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "marktplatz": {
+    "business": "Musikschule Tonleiter",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 20,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 58,
+        "textFields": 11,
+        "shortFields": 7,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 50,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 59,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 77,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "gallery",
+        "words": 12,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "contact",
+        "words": 4,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "gusto": {
+    "business": "Trattoria Lucia",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 26,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "menu",
+        "words": 54,
+        "textFields": 16,
+        "shortFields": 16,
+        "images": 0,
+        "items": 6
+      },
+      {
+        "type": "about",
+        "words": 64,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 39,
+        "textFields": 6,
+        "shortFields": 4,
+        "images": 0,
+        "items": 2
+      },
+      {
+        "type": "gallery",
+        "words": 22,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "landgut": {
+    "business": "Gärtnerei Grünholz",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 19,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 70,
+        "textFields": 11,
+        "shortFields": 6,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 78,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 62,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "gallery",
+        "words": 12,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "atelier": {
+    "business": "Studio Lenz",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 23,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 44,
+        "textFields": 9,
+        "shortFields": 7,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "about",
+        "words": 63,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 18,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 32,
+        "textFields": 6,
+        "shortFields": 4,
+        "images": 0,
+        "items": 2
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "klarwerk": {
+    "business": "Nordwind IT",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 25,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 45,
+        "textFields": 11,
+        "shortFields": 10,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 58,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 45,
+        "textFields": 6,
+        "shortFields": 4,
+        "images": 0,
+        "items": 2
+      },
+      {
+        "type": "faq",
+        "words": 53,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 7,
+        "textFields": 7,
+        "shortFields": 7,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "verve": {
+    "business": "Studio PULS",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 22,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 39,
+        "textFields": 11,
+        "shortFields": 11,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 58,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 22,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 55,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 56,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 5,
+        "textFields": 5,
+        "shortFields": 5,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "zunft": {
+    "business": "Bäckerei Steinofen",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 18,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "pricelist",
+        "words": 27,
+        "textFields": 12,
+        "shortFields": 12,
+        "images": 0,
+        "items": 6
+      },
+      {
+        "type": "services",
+        "words": 32,
+        "textFields": 8,
+        "shortFields": 6,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "about",
+        "words": 58,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 32,
+        "textFields": 6,
+        "shortFields": 6,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 38,
+        "textFields": 6,
+        "shortFields": 4,
+        "images": 0,
+        "items": 2
+      },
+      {
+        "type": "contact",
+        "words": 4,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "schimmer": {
+    "business": "Studio Lumière",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 18,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 69,
+        "textFields": 11,
+        "shortFields": 6,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 58,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 52,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "gallery",
+        "words": 10,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "fundament": {
+    "business": "Falk & Partner Immobilien",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 18,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 48,
+        "textFields": 11,
+        "shortFields": 9,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 57,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 61,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 69,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "karat": {
+    "business": "Goldschmiede Hartung",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 25,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 63,
+        "textFields": 11,
+        "shortFields": 8,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 55,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 15,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 63,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 65,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 4,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "plakat": {
+    "business": "Blackline Tattoo",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 22,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 54,
+        "textFields": 11,
+        "shortFields": 9,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 59,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 53,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 64,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 4,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "raster": {
+    "business": "Büro Lindqvist Architekten",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 25,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 46,
+        "textFields": 11,
+        "shortFields": 11,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 56,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 58,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 60,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "strom": {
+    "business": "Nordvolt Elektrotechnik",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 21,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 55,
+        "textFields": 11,
+        "shortFields": 7,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 52,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 50,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 59,
+        "textFields": 8,
+        "shortFields": 6,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "riviera": {
+    "business": "Casa Belmare",
+    "sectionCount": 7,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 27,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "services",
+        "words": 66,
+        "textFields": 11,
+        "shortFields": 6,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 57,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "gallery",
+        "words": 13,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 2,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 57,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 65,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 3,
+        "textFields": 3,
+        "shortFields": 3,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  },
+  "ernte": {
+    "business": "Rösterei Kornblum",
+    "sectionCount": 6,
+    "sections": [
+      {
+        "type": "hero",
+        "words": 28,
+        "textFields": 4,
+        "shortFields": 3,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "menu",
+        "words": 49,
+        "textFields": 12,
+        "shortFields": 10,
+        "images": 0,
+        "items": 4
+      },
+      {
+        "type": "about",
+        "words": 51,
+        "textFields": 3,
+        "shortFields": 2,
+        "images": 1,
+        "items": 0
+      },
+      {
+        "type": "testimonials",
+        "words": 50,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "faq",
+        "words": 62,
+        "textFields": 8,
+        "shortFields": 5,
+        "images": 0,
+        "items": 3
+      },
+      {
+        "type": "contact",
+        "words": 4,
+        "textFields": 4,
+        "shortFields": 4,
+        "images": 0,
+        "items": 0
+      }
+    ]
+  }
+}

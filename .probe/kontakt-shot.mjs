@@ -1,0 +1,10 @@
+import { chromium } from "@playwright/test";
+const [dir] = process.argv.slice(2);
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await page.goto("https://pageblitz.de/preview-ssr/c7lXkJpxJBMl6MBQyEhZWHV6bf-Ejo0y", { waitUntil: "networkidle", timeout: 60000 });
+await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; document.getElementById("pb-preview-cta")?.remove(); });
+await page.locator("#kontakt").screenshot({ path: `${dir}/kontakt-nachher.png` });
+await page.goto("https://pageblitz.de/demo/zunft", { waitUntil: "networkidle", timeout: 60000 });
+await page.locator("#ueber-uns").screenshot({ path: `${dir}/zunft-ausrichtung.png` });
+await browser.close();

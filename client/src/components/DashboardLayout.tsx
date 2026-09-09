@@ -34,6 +34,7 @@ import {
   Building2,
   Bug,
   MailCheck,
+  QrCode,
   Users,
   MessageCircle,
 } from "lucide-react";
@@ -50,6 +51,7 @@ const menuItems = [
   { icon: TrendingUp, label: "Lead-Funnel", path: "/admin/leads" },
   { icon: Mail, label: "Outreach", path: "/admin/outreach" },
   { icon: MailCheck, label: "Lifecycle-Mails", path: "/admin/lifecycle" },
+  { icon: QrCode, label: "Postkarten", path: "/admin/postkarten" },
   { icon: Users, label: "Nutzer", path: "/admin/users" },
   { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
   { icon: Zap, label: "Pipeline", path: "/admin/pipeline" },

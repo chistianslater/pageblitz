@@ -268,3 +268,33 @@ describe("betrieb_ort ohne Artikel (Grammatikfalle)", () => {
     );
   });
 });
+
+describe("Kurzcode auf der Karte (2026-09-09)", () => {
+  const basisMitCode = {
+    name: "Manfred Wagner",
+    stadt: "Bocholt",
+    anschrift: "Am Schievegraben 54, 46399 Bocholt, Deutschland",
+    vorschauUrl: "https://pageblitz.de/preview-ssr/abc123",
+    bildUrl: "https://pub-test.r2.dev/karte.png",
+    kurzcode: "BOC7",
+  };
+
+  test("der QR zeigt auf den Kurzcode, nicht mehr auf den Token", () => {
+    // Der Token wechselt bei jeder Neuerzeugung — der Code bleibt.
+    const v = postkartenVariablen(basisMitCode);
+    expect(v.qrCodeUrl).toBe("pageblitz.de/k/BOC7?q=1");
+  });
+
+  test("der gedruckte Kurz-Link traegt kein q=1", () => {
+    // Daran unterscheiden wir Scan von Abgetipptem.
+    const v = postkartenVariablen(basisMitCode);
+    expect(v.kurzlink).toBe("pageblitz.de/k/BOC7");
+  });
+
+  test("ohne Code bleibt es beim Vorschau-Link", () => {
+    const { kurzcode, ...ohne } = basisMitCode;
+    const v = postkartenVariablen(ohne);
+    expect(v.qrCodeUrl).toBe("pageblitz.de/preview-ssr/abc123");
+    expect(v.kurzlink).toBe("");
+  });
+});

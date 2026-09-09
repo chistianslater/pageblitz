@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-09-05T10:33:05.371Z",
+  "demos": {},
+  "customers": {},
+  "errors": [
+    {
+      "p": "werkbank",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "patina",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "kanzlei",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "salon-noir",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "morgenlicht",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "marktplatz",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "gusto",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "landgut",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "atelier",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "klarwerk",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "verve",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "zunft",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "schimmer",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "fundament",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "karat",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "plakat",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "raster",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "strom",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "riviera",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "p": "ernte",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "HTZLyCxq59IJhxcvyoq8dzhDoB31ffzy",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "c7lXkJpxJBMl6MBQyEhZWHV6bf-Ejo0y",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "rsAAkT_wZZEZpxC40X5VYFvUUyJ1lYy_",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "DQcA_O6sHzErMuLxsN9kPutWDegjFs2Y",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "1tSJIE5gnC3q-7bChWSYxsUh17YJZHn0",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "KnGt3nkNGnj1QKQ-Rup5BoVBnCxE_i0P",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "EDOZ8ghEvPCf5HxBMKldHm2gLTVH46j-",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "w9HVHgYbNYLR7VczTzM_Cl-eLEh9m5d0",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "KYSbZzc9cqEvFzRxJrzgJf7JedMSqVfS",
+      "error": "TypeError: fetch failed"
+    },
+    {
+      "t": "OUJvn4qc6wuBhxy1qnsPSYZ4uiFdIwj-",
+      "error": "TypeError: fetch failed"
+    }
+  ]
+}

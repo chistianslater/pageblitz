@@ -58,6 +58,7 @@ const SearchPage = lazy(() => import("./pages/SearchPage"));
 const WebsitesPage = lazy(() => import("./pages/WebsitesPage"));
 const OutreachPage = lazy(() => import("./pages/OutreachPage"));
 const StatsPage = lazy(() => import("./pages/StatsPage"));
+const PostkartenPage = lazy(() => import("./pages/PostkartenPage"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
 const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
@@ -109,6 +110,7 @@ function AdminSwitch() {
         <Route path="/admin/websites" component={WebsitesPage} />
         <Route path="/admin/outreach" component={OutreachPage} />
         <Route path="/admin/stats" component={StatsPage} />
+        <Route path="/admin/postkarten" component={PostkartenPage} />
         <Route path="/admin/leads" component={LeadsPage} />
         <Route path="/admin/businesses" component={BusinessesPage} />
         <Route path="/admin/users" component={UsersPage} />

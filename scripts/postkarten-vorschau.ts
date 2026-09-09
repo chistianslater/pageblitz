@@ -11,6 +11,7 @@
 import fs from "fs";
 import path from "path";
 import { storagePut } from "../server/storage";
+import { postkarteSichern, postkarteVersendet } from "../server/postkarten/db";
 import {
   anschriftZerlegen,
   postkartenVariablen,
@@ -18,7 +19,15 @@ import {
   type TextVariante,
 } from "../server/postkarten/heymail";
 
-const API = "https://api.heymail.com/v1/mailings/preview";
+const BASIS = "https://api.heymail.com/v1/mailings";
+
+/**
+ * `--senden` schaltet von der Vorschau auf den echten Druckauftrag. Mit dem
+ * Test-Key passiert weiterhin nichts; mit einem Live-Key kostet jeder Lauf
+ * Geld und ist nicht rueckholbar. Deshalb ist die Vorschau der Standard.
+ */
+const senden = process.argv.includes("--senden");
+const API = senden ? `${BASIS}/send` : `${BASIS}/preview`;
 
 function arg(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -55,7 +64,7 @@ async function main(): Promise<void> {
   const zeilen = fs.readFileSync(csvPfad!, "utf8").trim().split("\n");
   const kopf = zeilen[0].split(";");
   const idx = (name: string) => kopf.indexOf(name);
-  const ergebnisse: string[] = [`name;vorschau_pdf;bild_url;textvariante;hinweis`];
+  const ergebnisse: string[] = [`name;vorschau_pdf;bild_url;textvariante;kurzcode`];
 
   for (const zeile of zeilen.slice(1)) {
     const f = zeile.split(";");
@@ -69,6 +78,16 @@ async function main(): Promise<void> {
       ergebnisse.push(`${name};;;Anschrift nicht zerlegbar`);
       continue;
     }
+
+    // Ein Betrieb, ein Code: Die Karte wird gesichert, bevor sie entsteht.
+    const businessId = Number(f[idx("business_id")] ?? "0");
+    const karte = businessId
+      ? await postkarteSichern({
+          businessId,
+          city: empfaenger.city,
+          textVariant: variante,
+        })
+      : null;
 
     const bildDatei = path.join(bilderPfad!, `${dateiname(name)}.png`);
     if (!fs.existsSync(bildDatei)) {
@@ -86,7 +105,13 @@ async function main(): Promise<void> {
     let variablen;
     try {
       variablen = postkartenVariablen(
-        { name, stadt: empfaenger.city, vorschauUrl, bildUrl: hoch.url },
+        {
+          name,
+          stadt: empfaenger.city,
+          vorschauUrl,
+          bildUrl: hoch.url,
+          ...(karte ? { kurzcode: karte.code } : {}),
+        },
         variante
       );
     } catch (err) {
@@ -113,9 +138,22 @@ async function main(): Promise<void> {
       ergebnisse.push(`${name};;${hoch.url};HTTP ${antwort.status}`);
       continue;
     }
-    const pdf = (JSON.parse(text) as { previewUrl?: string }).previewUrl ?? "";
-    console.log(`${name}: ${pdf}`);
-    ergebnisse.push(`${name};${pdf};${hoch.url};${variante};`);
+    const antwortDaten = JSON.parse(text) as {
+      previewUrl?: string;
+      id?: string;
+      mailingId?: string;
+    };
+    const pdf = antwortDaten.previewUrl ?? "";
+    // Automatisch bestaetigen (Betreiber-Entscheidung 2026-09-09): Was der
+    // Anbieter angenommen hat, gilt als raus — kein zweiter Handgriff.
+    if (senden && karte) {
+      await postkarteVersendet(
+        karte.id,
+        antwortDaten.mailingId ?? antwortDaten.id ?? null
+      );
+    }
+    console.log(`${name}: ${karte?.code ?? "ohne Code"} ${pdf}`);
+    ergebnisse.push(`${name};${pdf};${hoch.url};${variante};${karte?.code ?? ""}`);
   }
 
   const ziel = csvPfad!.replace(/\.csv$/, "-vorschau.csv");

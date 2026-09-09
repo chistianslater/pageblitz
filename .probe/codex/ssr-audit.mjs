@@ -1,0 +1,15 @@
+import {JSDOM} from "jsdom";
+import fs from "node:fs/promises";
+const packs=["werkbank","patina","kanzlei","salon-noir","morgenlicht","marktplatz","gusto","landgut","atelier","klarwerk","verve","zunft","schimmer","fundament","karat","plakat","raster","strom","riviera","ernte"];
+const tokens=["HTZLyCxq59IJhxcvyoq8dzhDoB31ffzy","c7lXkJpxJBMl6MBQyEhZWHV6bf-Ejo0y","rsAAkT_wZZEZpxC40X5VYFvUUyJ1lYy_","DQcA_O6sHzErMuLxsN9kPutWDegjFs2Y","1tSJIE5gnC3q-7bChWSYxsUh17YJZHn0","KnGt3nkNGnj1QKQ-Rup5BoVBnCxE_i0P","EDOZ8ghEvPCf5HxBMKldHm2gLTVH46j-","w9HVHgYbNYLR7VczTzM_Cl-eLEh9m5d0","KYSbZzc9cqEvFzRxJrzgJf7JedMSqVfS","OUJvn4qc6wuBhxy1qnsPSYZ4uiFdIwj-"];
+const clean=s=>(s||"").replace(/\s+/g," ").trim();
+function inspect(html,url){
+ const dom=new JSDOM(html,{url}),d=dom.window.document,root=d.querySelector('.pb-site')||d.body;
+ const styles=[...d.querySelectorAll('style')].map(x=>x.textContent||'').join('\n');
+ const secs=[...root.querySelectorAll('section')].map((s,i)=>{const text=clean(s.textContent),imgs=[...s.querySelectorAll('img')];return {i,id:s.id,classes:s.className,words:text?text.split(/\s+/).length:0,chars:text.length,text:text.slice(0,1200),headings:[...s.querySelectorAll('h1,h2,h3')].map(h=>({tag:h.tagName,text:clean(h.textContent)})),paragraphs:[...s.querySelectorAll('p')].map(p=>clean(p.textContent)),items:s.querySelectorAll('li').length,imgs:imgs.map(x=>({src:x.getAttribute('src'),alt:x.getAttribute('alt')||'',caption:x.closest('figure')?.querySelector('figcaption')?.textContent?.trim()||''})),figures:s.querySelectorAll('figure').length,figcaptions:s.querySelectorAll('figcaption').length,links:s.querySelectorAll('a').length,buttons:s.querySelectorAll('button').length,hrs:s.querySelectorAll('hr').length,svgs:s.querySelectorAll('svg').length}});
+ return {url,title:d.title,packClass:root.className,htmlBytes:Buffer.byteLength(html),styleBytes:Buffer.byteLength(styles),mediaQueries:(styles.match(/@media/g)||[]).length,hoverRules:(styles.match(/:hover/g)||[]).length,focusRules:(styles.match(/:focus(?:-visible)?/g)||[]).length,borderDecls:(styles.match(/border(?:-\w+)?:/g)||[]).length,beforeAfter:(styles.match(/::(?:before|after)/g)||[]).length,backgroundUrls:(styles.match(/background(?:-image)?:\s*url\(/g)||[]).length,sections:secs,totalWords:clean(root.textContent).split(/\s+/).filter(Boolean).length,totalImgs:root.querySelectorAll('img').length,totalFigures:root.querySelectorAll('figure').length,totalCaptions:root.querySelectorAll('figcaption').length};
+}
+const out={generatedAt:new Date().toISOString(),demos:{},customers:{},errors:[]};
+for(const p of packs){try{const u=`https://pageblitz.de/demo/${p}`,r=await fetch(u),h=await r.text();out.demos[p]={status:r.status,...inspect(h,u)};console.log('demo',p,r.status)}catch(e){out.errors.push({p,error:String(e)})}}
+for(const t of tokens){try{const u=`https://pageblitz.de/preview-ssr/${t}`,r=await fetch(u),h=await r.text();out.customers[t]={status:r.status,...inspect(h,u)};console.log('customer',t.slice(0,6),r.status)}catch(e){out.errors.push({t,error:String(e)})}}
+await fs.writeFile(new URL('./ssr-measurements.json',import.meta.url),JSON.stringify(out,null,2));

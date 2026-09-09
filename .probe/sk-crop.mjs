@@ -1,0 +1,24 @@
+import { chromium } from "@playwright/test";
+const TOKEN = process.argv[2];
+const OUT = process.argv[3];
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } });
+await page.goto(`http://localhost:3000/onboarding/${TOKEN}`, { waitUntil: "domcontentloaded", timeout: 60000 });
+await page.waitForTimeout(4000);
+const inner = page.locator("iframe").first().contentFrame();
+await inner.locator('.pb-preview-insert[data-pb-after="services"] button').dispatchEvent("click");
+await page.waitForTimeout(800);
+const free = page.locator(".pb-insert-choice:not([disabled])").first();
+console.log("freier Typ:", (await free.textContent())?.slice(0, 30));
+await free.dispatchEvent("click");
+await page.waitForTimeout(2500);
+const sk = inner.locator(".pb-preview-skeleton");
+const info = await sk.evaluate(el => {
+  const kick = el.querySelector(".pb-preview-skeleton-kicker");
+  const line = el.querySelector(".pb-preview-skeleton-line");
+  const g = e => { const s = getComputedStyle(e); const r = e.getBoundingClientRect(); return { display: s.display, w: Math.round(r.width), h: Math.round(r.height), color: s.color, bgImage: s.backgroundImage.slice(0, 70), opacity: s.opacity, visibility: s.visibility }; };
+  return { self: g(el), kicker: kick ? g(kick) : null, kickerText: kick?.textContent, line: line ? g(line) : null, innerHTML: el.innerHTML.slice(0, 200) };
+});
+console.log(JSON.stringify(info, null, 1));
+await sk.screenshot({ path: OUT });
+await browser.close();

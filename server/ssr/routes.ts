@@ -1,4 +1,6 @@
 import type { Express, NextFunction, Request, Response } from "express";
+import { handleKurzlink } from "../postkarten/route";
+import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
 import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
@@ -733,6 +735,15 @@ async function handleCustomerSiteSsr(
 }
 
 export function registerSsrRoutes(app: Express): void {
+  // Kurz-Link der Postkarte (2026-09-09): zaehlt den Aufruf und leitet auf
+  // die aktuelle Vorschau des Betriebs weiter. Vor den Token-Routen, damit
+  // /k/ nie als Token missverstanden wird.
+  app.get("/k/:code([A-Za-z0-9]{3,12})", (req, res) =>
+    handleKurzlink(req, res, {
+      findeKarte: findeKarteNachCode,
+      erfasseScan: scanErfassen,
+    })
+  );
   app.get("/dev/site-preview", handleDevPreview);
   app.get(
     "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",

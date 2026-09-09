@@ -599,3 +599,43 @@ export const websiteVersions = mysqlTable(
 
 export type WebsiteVersion = typeof websiteVersions.$inferSelect;
 export type InsertWebsiteVersion = typeof websiteVersions.$inferInsert;
+
+/**
+ * Postkarten-Akquise (2026-09-09). Eine Zeile je gedruckte Karte; der
+ * `code` steht darauf und fuehrt ueber `/k/:code` zur Vorschau.
+ */
+export const postcards = mysqlTable("postcards", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 12 }).notNull().unique(),
+  businessId: int("businessId").notNull(),
+  websiteId: int("websiteId"),
+  city: varchar("city", { length: 120 }),
+  textVariant: varchar("textVariant", { length: 60 }),
+  heymailId: varchar("heymailId", { length: 120 }),
+  status: mysqlEnum("status", ["entwurf", "versendet"])
+    .default("entwurf")
+    .notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  sentAt: timestamp("sentAt"),
+});
+
+/** Ein Aufruf der Karte — ohne Personenbezug, nur Zeitpunkt und Kanal. */
+export const postcardScans = mysqlTable(
+  "postcard_scans",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    postcardId: int("postcardId").notNull(),
+    channel: mysqlEnum("channel", ["qr", "typed"]).notNull(),
+    at: timestamp("at").defaultNow().notNull(),
+  },
+  table => ({
+    cardAtIdx: index("postcard_scans_card_at_idx").on(
+      table.postcardId,
+      table.at
+    ),
+  })
+);
+
+export type Postcard = typeof postcards.$inferSelect;
+export type InsertPostcard = typeof postcards.$inferInsert;
+export type PostcardScan = typeof postcardScans.$inferSelect;

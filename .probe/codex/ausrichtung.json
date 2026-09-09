@@ -1,0 +1,190 @@
+{
+ "zunft/desktop": [
+  {
+   "sektion": "preise",
+   "tag": "H2",
+   "ueberschrift": "Sortiment",
+   "hAusricht": "center",
+   "text": "Knusprige Kruste, langsam gereifter Natu",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "preise",
+   "tag": "H3",
+   "ueberschrift": "Brote",
+   "hAusricht": "center",
+   "text": "Knusprige Kruste, langsam gereifter Natu",
+   "pAusricht": "left",
+   "container": "pb-zf-tafel-category"
+  },
+  {
+   "sektion": "leistungen",
+   "tag": "H2",
+   "ueberschrift": "Leistungen",
+   "hAusricht": "center",
+   "text": "Täglich frisch gebacken, mit 48 Stunden ",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "ueber-uns",
+   "tag": "H2",
+   "ueberschrift": "Unsere Geschichte",
+   "hAusricht": "center",
+   "text": "Seit 1927 backt unsere Familie in Augsbu",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "bewertungen",
+   "tag": "H2",
+   "ueberschrift": "Was Kunden sagen",
+   "hAusricht": "center",
+   "text": "Dieses Brot schmeckt wie bei meiner Groß",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "kontakt",
+   "tag": "H2",
+   "ueberschrift": "Kontakt",
+   "hAusricht": "center",
+   "text": "0821 34 56 78",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  }
+ ],
+ "zunft/mobil": [
+  {
+   "sektion": "preise",
+   "tag": "H2",
+   "ueberschrift": "Sortiment",
+   "hAusricht": "center",
+   "text": "Knusprige Kruste, langsam gereifter Natu",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "preise",
+   "tag": "H3",
+   "ueberschrift": "Brote",
+   "hAusricht": "center",
+   "text": "Knusprige Kruste, langsam gereifter Natu",
+   "pAusricht": "left",
+   "container": "pb-zf-tafel-category"
+  },
+  {
+   "sektion": "leistungen",
+   "tag": "H2",
+   "ueberschrift": "Leistungen",
+   "hAusricht": "center",
+   "text": "Täglich frisch gebacken, mit 48 Stunden ",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "ueber-uns",
+   "tag": "H2",
+   "ueberschrift": "Unsere Geschichte",
+   "hAusricht": "center",
+   "text": "Seit 1927 backt unsere Familie in Augsbu",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "bewertungen",
+   "tag": "H2",
+   "ueberschrift": "Was Kunden sagen",
+   "hAusricht": "center",
+   "text": "Dieses Brot schmeckt wie bei meiner Groß",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  },
+  {
+   "sektion": "kontakt",
+   "tag": "H2",
+   "ueberschrift": "Kontakt",
+   "hAusricht": "center",
+   "text": "0821 34 56 78",
+   "pAusricht": "left",
+   "container": "pb-zf-section"
+  }
+ ],
+ "karat/desktop": [
+  {
+   "sektion": "leistungen",
+   "tag": "H2",
+   "ueberschrift": "Werkstatt & Vitrine",
+   "hAusricht": "center",
+   "text": "Vom ersten Gespräch bis zur Gravur — Rin",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "ueber-uns",
+   "tag": "H2",
+   "ueberschrift": "Die Werkstatt",
+   "hAusricht": "center",
+   "text": "Seit 1987 arbeiten wir in der Hüxstraße ",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "bewertungen",
+   "tag": "H2",
+   "ueberschrift": "Stimmen",
+   "hAusricht": "center",
+   "text": "Unsere Trauringe sind genau so geworden,",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "faq",
+   "tag": "H2",
+   "ueberschrift": "Häufige Fragen",
+   "hAusricht": "center",
+   "text": "Rechnen Sie mit vier bis sechs Wochen ab",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  }
+ ],
+ "karat/mobil": [
+  {
+   "sektion": "leistungen",
+   "tag": "H2",
+   "ueberschrift": "Werkstatt & Vitrine",
+   "hAusricht": "center",
+   "text": "Vom ersten Gespräch bis zur Gravur — Rin",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "ueber-uns",
+   "tag": "H2",
+   "ueberschrift": "Die Werkstatt",
+   "hAusricht": "center",
+   "text": "Seit 1987 arbeiten wir in der Hüxstraße ",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "bewertungen",
+   "tag": "H2",
+   "ueberschrift": "Stimmen",
+   "hAusricht": "center",
+   "text": "Unsere Trauringe sind genau so geworden,",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  },
+  {
+   "sektion": "faq",
+   "tag": "H2",
+   "ueberschrift": "Häufige Fragen",
+   "hAusricht": "center",
+   "text": "Rechnen Sie mit vier bis sechs Wochen ab",
+   "pAusricht": "left",
+   "container": "pb-ka-section"
+  }
+ ]
+}
