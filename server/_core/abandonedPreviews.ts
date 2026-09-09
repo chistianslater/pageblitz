@@ -17,6 +17,7 @@ export interface AbandonedPreviewCandidate {
   id: number;
   status: string;
   customerEmail: string | null;
+  source: string | null;
   paidAt: Date | null;
   createdAt: Date;
 }
@@ -27,6 +28,10 @@ export function isAbandonedPreviewWithoutEmail(
   ttlMs = ABANDONED_PREVIEW_TTL_MS
 ): boolean {
   if (site.status !== "preview") return false;
+  // Selbst angelegte Vorschauen (Outreach, Postkarten-Stapel) haben nie eine
+  // E-Mail — dahinter steckt aber kein abgesprungener Besucher, sondern ein
+  // gedruckter QR-Code, der Wochen spaeter gescannt wird.
+  if (site.source === "admin") return false;
   const email = site.customerEmail?.trim() ?? "";
   if (email.length > 0) return false;
   if (site.paidAt) return false;
@@ -50,6 +55,7 @@ export async function deleteAbandonedPreviewSites(
       id: generatedWebsites.id,
       status: generatedWebsites.status,
       customerEmail: generatedWebsites.customerEmail,
+      source: generatedWebsites.source,
       paidAt: generatedWebsites.paidAt,
       createdAt: generatedWebsites.createdAt,
     })
@@ -57,6 +63,7 @@ export async function deleteAbandonedPreviewSites(
     .where(
       and(
         eq(generatedWebsites.status, "preview"),
+        eq(generatedWebsites.source, "external"),
         sql`(${generatedWebsites.customerEmail} IS NULL OR ${generatedWebsites.customerEmail} = '')`,
         sql`${generatedWebsites.paidAt} IS NULL`,
         lte(generatedWebsites.createdAt, cutoff)

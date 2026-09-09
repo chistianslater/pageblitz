@@ -16,6 +16,7 @@ function site(
     id: 1,
     status: "preview",
     customerEmail: null,
+    source: "external",
     paidAt: null,
     createdAt: old,
     ...overrides,
@@ -25,6 +26,16 @@ function site(
 describe("isAbandonedPreviewWithoutEmail", () => {
   test("löscht alte Preview ohne E-Mail", () => {
     expect(isAbandonedPreviewWithoutEmail(site(), now)).toBe(true);
+  });
+
+  test("rührt selbst angelegte Vorschauen (source admin) nicht an", () => {
+    // Outreach-Vorschauen aus dem Postkarten-Stapel haben nie eine E-Mail —
+    // sie werden von uns erzeugt, nicht von einem Besucher. Die TTL hat sie
+    // am 2026-09-08 geloescht, wodurch die gedruckten QR-Codes ins Leere
+    // liefen. Eine Karte wird Tage bis Wochen nach dem Druck gescannt.
+    expect(
+      isAbandonedPreviewWithoutEmail(site({ source: "admin" }), now)
+    ).toBe(false);
   });
 
   test("rührt Live-/Sold-/Active-Sites nicht an", () => {
