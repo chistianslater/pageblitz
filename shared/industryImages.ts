@@ -557,17 +557,21 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   },
 
   // ── Default / Neutral Fallback ─────────────────────
+  // Frueher lagen hier abstrakte Farbverlaeufe. Auf einer Kundenseite sagen
+  // sie nichts und lassen sie halbfertig wirken (Betreiber-Befund
+  // 2026-09-09) — ein neutrales Foto von Arbeit und Raum traegt immer noch
+  // mehr als ein Verlauf. Alle IDs sind im Bestand geprueft.
   default: {
     keywords: [],
     hero: [
-      "https://images.unsplash.com/photo-1557683316-973673baf926?w=1400&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1554147090-e1221a04a025?w=1400&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1508615039623-a25605d2b022?w=1400&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1400&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1400&q=80&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1557683311-eac922347aa1?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80&auto=format&fit=crop",
     ],
   },
 };

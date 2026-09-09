@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { buildStockFallbackImages } from "./industryImages";
+import { getIndustryImages } from "./industryImages";
+import { INDUSTRY_IMAGES } from "../shared/industryImages";
 
 describe("buildStockFallbackImages", () => {
   test("liefert visuell vollständige Defaults (Hero, About, Galerie ≥ 3)", () => {
@@ -27,5 +29,28 @@ describe("buildStockFallbackImages", () => {
     expect(byKey.hero).toBe(byCategory.hero);
     expect(byCategory.hero).not.toBe(restaurant.hero);
     expect(byCategory.gallery?.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('industryKey "default" darf die Kategorie nicht ueberstimmen', () => {
+  // Befund 2026-09-09: Zwei Friseursalons bekamen abstrakte Verlaufsbilder.
+  // classifyIndustry ist ein LLM-Aufruf und liefert bei Unsicherheit
+  // "default" — weil eine Gruppe dieses Namens existiert, gewann die
+  // Verlegenheitsantwort gegen die Kategorie "Friseursalon", die eindeutig
+  // ist. Auf einer Akquise-Postkarte ist das der Unterschied zwischen
+  // einem Salonfoto und einem Farbverlauf.
+  test("Friseursalon bekommt Friseurbilder, auch wenn der Classifier passt", () => {
+    const set = getIndustryImages("Friseursalon", "Manfred Wagner", "default");
+    expect(set).toBe(INDUSTRY_IMAGES.friseur);
+  });
+
+  test("ein echter Schluessel gewinnt weiterhin sofort", () => {
+    const set = getIndustryImages("Irgendwas", "Betrieb", "restaurant");
+    expect(set).toBe(INDUSTRY_IMAGES.restaurant);
+  });
+
+  test("ohne jeden Anhaltspunkt bleibt es beim neutralen Satz", () => {
+    const set = getIndustryImages("Zamboni-Wartung", "Betrieb", "default");
+    expect(set).toBe(INDUSTRY_IMAGES.default);
   });
 });

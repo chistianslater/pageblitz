@@ -19,7 +19,13 @@ export function getIndustryImages(
   industryKey?: string
 ): IndustryImageSet {
   if (industryKey === "hotel") industryKey = "hospitality";
-  if (industryKey && INDUSTRY_IMAGES[industryKey]) {
+  // "default" ist die Verlegenheitsantwort von classifyIndustry (LLM), nicht
+  // eine Aussage. Frueher gewann sie sofort, weil eine Gruppe dieses Namens
+  // existiert — zwei Friseursalons bekamen dadurch abstrakte Verlaufsbilder,
+  // obwohl ihre Kategorie "Friseursalon" eindeutig ist (Befund 2026-09-09).
+  // Jetzt faellt sie durch zur Schlagwortsuche und landet nur dort, wo auch
+  // die Kategorie nichts hergibt.
+  if (industryKey && industryKey !== "default" && INDUSTRY_IMAGES[industryKey]) {
     return INDUSTRY_IMAGES[industryKey];
   }
 
