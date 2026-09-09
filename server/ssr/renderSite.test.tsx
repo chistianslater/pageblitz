@@ -531,3 +531,54 @@ describe("renderSiteHtml — canonical in der Pfadform (/site/:slug, Final-Revie
     );
   });
 });
+
+describe("Rechtsseiten in der Vorschau — Ton (2026-09-09)", () => {
+  const vorschau = (pfad: string) =>
+    renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://pageblitz.de",
+      pathname: pfad,
+      basePath: "/preview-ssr/tok123",
+    }).html;
+
+  test("beruhigt, statt zu belehren", () => {
+    // Der Empfaenger einer Postkarte kennt keinen "Schritt Rechtliches" —
+    // er hat noch nie mit uns gesprochen. Ein Verweis darauf verwirrt.
+    const html = vorschau("/impressum");
+    expect(html).toContain("Keine Sorge");
+    expect(html).not.toContain("Schritt");
+  });
+
+  test("duzt, wie die ganze Seite", () => {
+    const html = vorschau("/datenschutz");
+    expect(html).toMatch(/\bdeine\b|\bDeine\b|\bdu\b|\bDu\b/);
+    expect(html).not.toMatch(/\bIhre\b|\bIhnen\b/);
+  });
+
+  test("gilt auch fuer die Pfadform /site/<slug>", () => {
+    // Betreiber-Befund 2026-09-09: Ueber den Vorschau-Link im Dashboard
+    // stand dort "nicht gefunden". Die Pfadform ist unsere interne Ansicht;
+    // eine live geschaltete Kundenseite laeuft auf eigener Domain mit
+    // leerem basePath und behaelt den 404.
+    const { html, status } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://pageblitz.de",
+      pathname: "/impressum",
+      basePath: "/site/salon-xy-8V2Z",
+    });
+    expect(status).toBe(200);
+    expect(html).toContain("Keine Sorge");
+  });
+
+  test("die eigene Domain einer Live-Seite behaelt den 404", () => {
+    const { status } = renderSiteHtml(getFixture("werkbank", "full"), {
+      origin: "https://salon.pageblitz.de",
+      pathname: "/impressum",
+      basePath: "",
+    });
+    expect(status).toBe(404);
+  });
+
+  test("verspricht nichts Rechtliches", () => {
+    // "rechtssicher" waere eine Zusage, die wir nicht halten koennen.
+    expect(vorschau("/impressum")).not.toContain("rechtssicher");
+  });
+});

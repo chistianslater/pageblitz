@@ -38,6 +38,12 @@ const csvPfad = arg("--csv");
 const bilderPfad = arg("--bilder");
 const templateId = arg("--template") ?? "93df425c-64eb-4c13-b07b-cd54dd663301";
 const variante = (arg("--text") ?? "ungefragt") as TextVariante;
+/**
+ * Die Stadt fuer die Auswertung. Ohne sie wuerde die Postanschrift zaehlen —
+ * und die zerfaellt in "Duisburg-Hamborn", "Duisburg-Rheinhausen" usw., was
+ * den Vergleich zwischen Staedten im Dashboard unbrauchbar macht.
+ */
+const stadtGruppe = arg("--stadt");
 if (!(variante in TEXT_VARIANTEN)) {
   throw new Error(
     `Unbekannte Textvariante "${variante}" — bekannt: ${Object.keys(TEXT_VARIANTEN).join(", ")}`
@@ -84,7 +90,7 @@ async function main(): Promise<void> {
     const karte = businessId
       ? await postkarteSichern({
           businessId,
-          city: empfaenger.city,
+          city: stadtGruppe ?? empfaenger.city,
           textVariant: variante,
         })
       : null;

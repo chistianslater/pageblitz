@@ -30,7 +30,19 @@ export async function postkarteSichern(eintrag: {
     .from(postcards)
     .where(eq(postcards.businessId, eintrag.businessId))
     .limit(1);
-  if (vorhanden[0]) return vorhanden[0];
+  if (vorhanden[0]) {
+    // Der Code bleibt — er steht schon auf Papier. Stadt und Variante
+    // duerfen sich aendern, wenn der Stapel neu laeuft.
+    await db
+      .update(postcards)
+      .set({
+        city: eintrag.city ?? null,
+        textVariant: eintrag.textVariant ?? null,
+        websiteId: eintrag.websiteId ?? null,
+      })
+      .where(eq(postcards.id, vorhanden[0].id));
+    return vorhanden[0];
+  }
 
   for (let versuch = 0; versuch < MAX_VERSUCHE; versuch++) {
     const code = kurzcodeErzeugen();

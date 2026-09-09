@@ -575,7 +575,11 @@ describe("SSR routes", () => {
       expect(res.text).toContain("<p>Firma XY, Musterstraße 1</p>");
     });
 
-    test("/impressum ohne legal-Inhalt → Status 404 mit 'nicht gefunden'-Text", async () => {
+    // Geaendert 2026-09-09 (Betreiber): Ueber den Vorschau-Link im Dashboard
+    // stand hier "nicht gefunden". Die Pfadform /site/<slug> ist unsere
+    // interne Ansicht — eine live geschaltete Seite laeuft auf eigener
+    // Domain mit leerem basePath und behaelt den 404 (Test weiter unten).
+    test("/impressum ohne legal-Inhalt → 200 mit beruhigendem Hinweis", async () => {
       (getWebsiteBySlug as Mock).mockResolvedValue({
         websiteData: getFixture("werkbank", "full"),
       });
@@ -585,8 +589,8 @@ describe("SSR routes", () => {
         "/site/schreinerei-brandt-dortmund/impressum"
       );
 
-      expect(res.status).toBe(404);
-      expect(res.text).toContain("nicht gefunden");
+      expect(res.status).toBe(200);
+      expect(res.text).toContain("Keine Sorge");
     });
 
     test("/site/:slug-Request rendert Footer-Links mit /site/<slug>-Präfix (basePath)", async () => {
@@ -746,7 +750,9 @@ describe("SSR routes", () => {
         "/preview-ssr/abcdefghabcdefgh/impressum"
       );
       expect(res.status).toBe(200);
-      expect(res.text).toContain("nach der Veröffentlichung sichtbar");
+      // Formulierung 2026-09-09 beruhigend statt belehrend: Der Empfaenger
+      // einer Postkarte kennt keinen "Schritt Rechtliches".
+      expect(res.text).toContain("Keine Sorge");
     });
 
     describe("Unterseiten (pages[], Plan B6 Task 3)", () => {

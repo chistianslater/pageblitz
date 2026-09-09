@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { stadtAusAnschrift } from "@shared/stadtAusAnschrift";
 import { trpc } from "@/lib/trpc";
 import { packNameFor, studioHrefFor } from "./admin/websitesPageLogic";
 import { Button } from "@/components/ui/button";
@@ -600,6 +601,7 @@ function AdminWebsitesTab({
                   </TableHead>
                   <TableHead>Unternehmen</TableHead>
                   <TableHead>Branche</TableHead>
+                  <TableHead>Stadt</TableHead>
                   <TableHead>Designrichtung</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Erstellt</TableHead>
@@ -631,6 +633,9 @@ function AdminWebsitesTab({
                     </TableCell>
                     <TableCell className="text-sm">
                       {w.industry || "–"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {stadtAusAnschrift(w.business?.address) || "–"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {packNameFor(w.websiteData)}
@@ -902,6 +907,7 @@ function ExternalWebsitesTab({
                   </TableHead>
                   <TableHead>E-Mail / Slug</TableHead>
                   <TableHead>Branche</TableHead>
+                  <TableHead>Stadt</TableHead>
                   <TableHead>Designrichtung</TableHead>
                   <TableHead>Funnel-Status</TableHead>
                   <TableHead>Website-Status</TableHead>
@@ -943,6 +949,9 @@ function ExternalWebsitesTab({
                     </TableCell>
                     <TableCell className="text-sm">
                       {w.industry || "–"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {stadtAusAnschrift(w.business?.address) || "–"}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {packNameFor(w.websiteData)}

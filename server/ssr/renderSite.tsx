@@ -417,11 +417,16 @@ function renderLegalPage(
   // Impressum/Datenschutz entstehen erst im Schritt „Rechtliches" — statt
   // „nicht gefunden" ein erklärender Hinweis mit Status 200. Live-Seiten
   // behalten das 404-Verhalten.
-  const isPreview = basePath.startsWith("/preview-ssr/");
+  // Beide Pfadformen sind unsere internen Ansichten: /preview-ssr/<token>
+  // (Studio, Postkarte) und /site/<slug> (Dashboard-Vorschau). Eine live
+  // geschaltete Kundenseite laeuft auf eigener Domain mit leerem basePath
+  // und behaelt bewusst den 404.
+  const isPreview =
+    basePath.startsWith("/preview-ssr/") || basePath.startsWith("/site/");
   const content = hasContent
     ? bodyHtml
     : isPreview
-      ? `<h1>${esc(title)}</h1><p><strong>Diese Seite wird nach der Veröffentlichung sichtbar.</strong></p><p>Pageblitz erzeugt ${esc(title)} automatisch aus deinen Angaben im Schritt „Rechtliches“ — sobald deine Website freigeschaltet ist, steht die Seite hier.</p>`
+      ? `<h1>${esc(title)}</h1><p><strong>Keine Sorge — hier steht noch nichts.</strong></p><p>Das ${esc(title)} entsteht aus deinen Angaben, sobald du die Seite freischaltest. Dann ist hier alles fertig, und du musst dich um nichts kümmern.</p>`
       : "<p>Diese Seite wurde nicht gefunden.</p>";
   const backHref = basePath || "/";
   const canvasColor = getCanvasColor(data);
