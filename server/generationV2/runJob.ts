@@ -5,6 +5,7 @@ import {
   weltMitAkzent,
 } from "../../shared/stylePacks/packVariants";
 import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import { AKTUELLER_DESIGN_STAND } from "../../shared/siteContract/designStand";
 import {
   getBusinessById,
   listWebsites,
@@ -390,6 +391,12 @@ async function runWebsiteGenerationV2(
     // Nur setzen, wenn nichts vorhanden ist — eine Kundenwahl im Studio darf
     // eine Regenerierung nie überschreiben. Beides fließt unten in den
     // Kollisionsvergleich ein, der Schrift und Akzent ohnehin schon kennt.
+    // Festhalten, mit welcher Design-Fassung diese Seite entstand. Tut
+    // vorerst nichts — aber rueckwirkend ist es nicht mehr feststellbar
+    // (Spec 2026-09-12 §6). Ein vorhandener Wert bleibt unangetastet.
+    if (!websiteData.designStand) {
+      websiteData = { ...websiteData, designStand: AKTUELLER_DESIGN_STAND };
+    }
     if (!websiteData.fontPairId) {
       const fontPairId = pickPackFontPair(packId, websiteData.businessName);
       websiteData = { ...websiteData, fontPairId };

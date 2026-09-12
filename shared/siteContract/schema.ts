@@ -21,6 +21,7 @@ import {
   IMAGE_TREATMENTS,
   SERVICES_LAYOUTS,
 } from "./designProfile";
+import { DESIGN_STAND_MUSTER } from "./designStand";
 
 export { PACK_IDS };
 
@@ -627,6 +628,11 @@ export const WebsiteDataV2Schema = z
     // ohne Profil rendern über DEFAULT_DESIGN_PROFILE unverändert. Neu
     // generierte/angepasste Websites persistieren das Profil.
     designProfile: DesignProfileSchema.optional(),
+    // Mit welcher Design-Fassung wurde die Seite gebaut? (Spec 2026-09-12)
+    // Optional, weil alle Seiten vor dieser Aenderung keinen Wert haben.
+    // Bewusst ein festes Format statt eines freien Strings: Das Feld ist
+    // die Grundlage der spaeteren Umschaltung.
+    designStand: z.string().regex(DESIGN_STAND_MUSTER).optional(),
     features: FeaturesSchema.optional(),
     addOns: SiteAddOnsSchema.optional(),
     contactFormConfig: ContactFormConfigSchema.optional(),

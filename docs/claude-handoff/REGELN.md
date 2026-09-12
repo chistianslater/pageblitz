@@ -14,6 +14,27 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
 - FAQ-Texte aus `shared/faq.ts` (auch JSON-LD). Nicht an einer Stelle
   umschreiben und an der anderen vergessen.
 
+## Pack-Änderungen einstufen
+
+Das Design liegt im Code, nicht im Dokument: Eine geänderte Zeile in
+`client/src/components/site/packs/<id>/css.ts` verändert **jede** Kundenseite
+auf diesem Pack beim nächsten Aufruf. Deshalb bekommt jede Pack-Änderung im
+Commit eine von zwei Einstufungen:
+
+- **Korrektur** — Kontrast, Umbruch, Klickbarkeit, Sicherheit, Performance.
+  Gilt sofort für alle. Niemand wird gefragt, ob er einen Fehler behalten
+  will.
+- **Gestaltung** — Hero-Komposition, Typo-Skala, Sektionsreihenfolge,
+  Farbwelten. Gehört in den nächsten Design-Stand, nicht in den laufenden.
+
+Im Zweifel **Gestaltung**. Die Versuchung geht in die andere Richtung: Wer
+alles als Korrektur einstuft, macht den Mechanismus wertlos und ändert
+Kundenseiten ohne deren Zutun.
+
+Aktueller Stand: `AKTUELLER_DESIGN_STAND` in
+`shared/siteContract/designStand.ts`. Hintergrund und Umschaltung:
+`docs/superpowers/specs/2026-09-12-design-staende-design.md`.
+
 ## Studio vs. Landing
 
 - Studio-Tokens (`:root` `--lp-canvas` Papier/Grün, `studio.css`) **nicht**
