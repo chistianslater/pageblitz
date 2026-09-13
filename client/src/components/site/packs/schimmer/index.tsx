@@ -290,7 +290,7 @@ function renderSection(
           className="pb-sc-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-sc-grid">
             {section.items.map(item => (
               <div className="pb-sc-card pb-sc-faq" key={item.question}>
@@ -315,7 +315,7 @@ function renderSection(
           className="pb-sc-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-sc-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -341,7 +341,7 @@ function renderSection(
           className="pb-sc-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-sc-grid">
             {section.members.map((member, i) => (
               <div className="pb-sc-member" key={`${i}-${member.name}`}>
@@ -364,7 +364,7 @@ function renderSection(
           key={section.type}
         >
           <div className="pb-sc-card pb-sc-cta-card">
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
             <a className="pb-sc-cta" href={section.ctaHref ?? "#kontakt"}>
               {section.ctaText}
             </a>

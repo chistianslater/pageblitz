@@ -144,7 +144,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-mp-intro">{section.intro}</p>}
           <div className="pb-mp-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
@@ -167,7 +167,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <div className="pb-mp-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
               <img
@@ -190,7 +190,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div
             className="pb-mp-grid pb-mp-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -210,7 +210,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-mp-grid">
             {section.items.map(item => (
               <blockquote
@@ -238,7 +238,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-mp-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -292,7 +292,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-mp-grid">
             {section.items.map(item => (
               <div className="pb-mp-card-item pb-mp-faq" key={item.question}>
@@ -317,7 +317,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div key={cat.name}>
               <h3>{cat.name}</h3>
@@ -343,7 +343,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-mp-grid pb-mp-team">
             {section.members.map((member, i) => (
               <div key={`${i}-${member.name}`}>
@@ -365,7 +365,7 @@ function renderSection(
           className="pb-mp-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-mp-link" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText} →
           </a>

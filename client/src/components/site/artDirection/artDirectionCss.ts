@@ -13,7 +13,17 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] #ueber-uns [data-pb-slot="about-grid"]{column-gap:clamp(30px,7vw,110px)}
 .pb-site[data-pb-revision="2"] #ueber-uns [data-pb-slot="about-grid"] p{max-width:55ch;line-height:1.7}
 .pb-site[data-pb-revision="2"] #galerie [data-pb-slot="gallery-items"]{gap:clamp(18px,3vw,42px)}
-.pb-site[data-pb-revision="2"] #bewertungen blockquote{overflow-wrap:anywhere}
+.pb-site[data-pb-revision="2"] #bewertungen h2{max-width:22ch;hyphens:none;overflow-wrap:normal}
+.pb-site[data-pb-revision="2"] #bewertungen div:has(>blockquote){background:transparent;border:0;padding:0;gap:24px}
+.pb-site[data-pb-revision="2"] #bewertungen blockquote{overflow-wrap:anywhere;position:relative;display:flex;flex-direction:column;gap:20px;padding:clamp(22px,3vw,38px);margin:0;border:1px solid var(--pb-line);border-radius:3px;background:transparent;box-shadow:none}
+.pb-site[data-pb-revision="2"] #bewertungen blockquote>p{font-family:var(--pb-font-display);font-size:clamp(19px,1.7vw,25px);line-height:1.55;letter-spacing:-.015em;font-style:normal;margin:0;max-width:44ch;color:inherit}
+.pb-site[data-pb-revision="2"] #bewertungen blockquote>footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--pb-line);background:transparent;text-align:left}
+.pb-site[data-pb-revision="2"] #bewertungen .pb-review-stars{font-size:12px;letter-spacing:3px;color:var(--pb-art-accent-text)}
+.pb-site[data-pb-revision="2"] #bewertungen .pb-review-byline{display:flex;align-items:center;gap:12px;font-family:var(--pb-font-body);font-style:normal}
+.pb-site[data-pb-revision="2"] #bewertungen .pb-review-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:12px;background:var(--pb-surface);color:var(--pb-ink);flex-shrink:0}
+.pb-site[data-pb-revision="2"] #bewertungen .pb-review-meta{display:grid;gap:3px;font-size:13px;line-height:1.4}
+.pb-site[data-pb-revision="2"] #bewertungen .pb-review-source{font-size:11px;opacity:.72}
+
 .pb-site[data-pb-revision="2"] .pb-art-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(28px,5vw,75px);max-width:1600px;margin:0 auto;padding:clamp(30px,4vw,65px) 6.5% 70px;background:transparent;color:var(--pb-ink);overflow:hidden;box-sizing:border-box}
 .pb-site[data-pb-revision="2"] .pb-art-copy{position:relative;z-index:2;min-width:0;padding:0;text-align:left}
 .pb-site[data-pb-revision="2"] .pb-art-category{font:400 12px/1.5 var(--pb-font-body);color:var(--pb-muted);margin:0 0 28px;text-transform:none;letter-spacing:.02em}

@@ -197,7 +197,7 @@ function renderSection(
               {FALLBACK_TITLES.services} / 01—
               {String(section.items.length).padStart(2, "0")}
             </span>
-            {!hasPageHeader && <h2>{section.headline}</h2>}
+            {!hasPageHeader && <h2>{rich(section.headline ?? "")}</h2>}
             {section.intro && <p>{section.intro}</p>}
           </header>
           <div
@@ -231,7 +231,7 @@ function renderSection(
         >
           <header className="pb-wb-section-head">
             <span className="pb-wb-kicker">{FALLBACK_TITLES.about}</span>
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
           </header>
           <div className="pb-wb-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <div className="pb-wb-about-copy">
@@ -267,7 +267,7 @@ function renderSection(
         >
           <header className="pb-wb-section-head">
             <span className="pb-wb-kicker">{FALLBACK_TITLES.gallery}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div
             className="pb-wb-gallery"
@@ -301,7 +301,7 @@ function renderSection(
         >
           <header className="pb-wb-section-head">
             <span className="pb-wb-kicker">{FALLBACK_TITLES.testimonials}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div className="pb-wb-proof-grid">
             {section.items.map((item, i) => (
@@ -331,7 +331,7 @@ function renderSection(
         >
           <header className="pb-wb-contact-head">
             <span className="pb-wb-kicker">{FALLBACK_TITLES.contact}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
             <span className="pb-wb-contact-mark" aria-hidden="true">
               ↘
             </span>
@@ -392,7 +392,7 @@ function renderSection(
           className="pb-wb-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.items.map(item => (
             <div key={item.question}>
               <strong>{item.question}</strong>
@@ -415,7 +415,7 @@ function renderSection(
           className="pb-wb-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div key={cat.name}>
               <h3>{cat.name}</h3>
@@ -441,7 +441,7 @@ function renderSection(
           className="pb-wb-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.members.map((member, i) => (
             <div className="pb-wb-service" key={`${i}-${member.name}`}>
               {member.imageUrl && (
@@ -463,7 +463,7 @@ function renderSection(
           className="pb-wb-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-wb-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

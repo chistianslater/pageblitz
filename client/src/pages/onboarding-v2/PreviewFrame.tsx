@@ -366,14 +366,17 @@ export function PreviewFrame({
       const scope = doc.querySelector(targetConfig.scope);
       if (!scope) continue;
       const candidates = Array.from(
-        scope.querySelectorAll<HTMLElement>(candidateSelector)
+        scope.querySelectorAll<HTMLElement>(
+          targetConfig.renderedHeading ? "h2" : candidateSelector
+        )
       );
       // Marker (**fett**, ==akzent==) stehen im Dokument, aber nicht im
       // gerenderten Text — fürs Auffinden im DOM entfernen.
       const normalizedCurrent = normalizeInlineText(
         stripMarks(targetConfig.value)
       );
-      const matches = candidates.filter(el => {
+      const matches = candidates.filter((el, index) => {
+        if (targetConfig.renderedHeading) return index === 0;
         const text = normalizeInlineText(el.innerText);
         if (text === normalizedCurrent) return true;
         // Testimonials/Autoren tragen typografische Anführungszeichen,
@@ -388,6 +391,7 @@ export function PreviewFrame({
         // Keine Container zusätzlich editierbar machen, wenn ein Kind bereits
         // denselben Text präziser repräsentiert.
         if (
+          !targetConfig.renderedHeading &&
           Array.from(target.children).some(child =>
             normalizeInlineText((child as HTMLElement).innerText).includes(
               normalizedCurrent

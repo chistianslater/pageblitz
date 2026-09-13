@@ -140,7 +140,7 @@ function renderSection(
               rechts (ausgefranste Treppe, linke Hälfte leer). */}
           <div className="pb-fd-services-grid">
             <div>
-              <h2>{section.headline}</h2>
+              <h2>{rich(section.headline ?? "")}</h2>
               {section.intro && <p className="pb-fd-intro">{section.intro}</p>}
             </div>
             <div data-pb-slot={LAYOUT_SLOT.servicesItems}>
@@ -166,7 +166,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <div
             className="pb-fd-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
@@ -193,7 +193,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div
             className="pb-fd-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -213,7 +213,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-fd-quotes">
             {section.items.map(item => (
               <blockquote
@@ -241,7 +241,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-fd-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -295,7 +295,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {/* 2-Spalten-Raster ab Desktop (Stilvorlagen-Audit P5, 2026-08-29):
               einspaltige Fragen mit seitenbreiten Trennlinien ließen die
               rechte Sektionshälfte leer. */}
@@ -323,7 +323,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-fd-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -351,7 +351,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-fd-team">
             {section.members.map((member, i) => (
               <div className="pb-fd-member" key={`${i}-${member.name}`}>
@@ -373,7 +373,7 @@ function renderSection(
           className="pb-fd-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-fd-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

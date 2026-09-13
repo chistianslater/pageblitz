@@ -121,7 +121,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Angebot</Kicker>
-          <h2 className="pb-rv-title">{section.headline}</h2>
+          <h2 className="pb-rv-title">{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-rv-intro">{section.intro}</p>}
           <div
             className="pb-rv-services"
@@ -146,7 +146,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Willkommen</Kicker>
-          <h2 className="pb-rv-title">{section.headline}</h2>
+          <h2 className="pb-rv-title">{rich(section.headline ?? "")}</h2>
           <div className="pb-rv-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{rich(section.body)}</p>
             {section.imageUrl && (
@@ -171,7 +171,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Galerie</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           <div
             className="pb-rv-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -198,7 +198,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Stimmen</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           <div className="pb-rv-quotes">
             {section.items.map(item => (
               <blockquote
@@ -227,7 +227,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Anreise</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           <div className="pb-rv-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -282,7 +282,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Fragen</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           <div className="pb-rv-faq-list">
             {section.items.map(item => (
               <div className="pb-rv-faq" key={item.question}>
@@ -308,7 +308,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>{fallback}</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-rv-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -335,7 +335,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Menschen</Kicker>
-          <h2 className="pb-rv-title">{title}</h2>
+          <h2 className="pb-rv-title">{rich(title ?? "")}</h2>
           <div className="pb-rv-team">
             {section.members.map((member, i) => (
               <div className="pb-rv-member" key={`${i}-${member.name}`}>
@@ -363,7 +363,7 @@ function renderSection(
           key={section.type}
         >
           <Kicker>Anfrage</Kicker>
-          <h2 className="pb-rv-title">{section.headline}</h2>
+          <h2 className="pb-rv-title">{rich(section.headline ?? "")}</h2>
           <a className="pb-rv-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

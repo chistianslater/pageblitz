@@ -13,6 +13,8 @@ export interface InlineTextTarget {
    * Über-uns-Text). Überall sonst würden Marker als Sternchen sichtbar.
    */
   formattable?: boolean;
+  /** Pack supplies this heading when the document has no explicit value. */
+  renderedHeading?: boolean;
 }
 
 const ANCHORS: Partial<Record<SectionV2["type"], string>> = {
@@ -53,10 +55,12 @@ export function collectInlineTextTargets(
     multiline = false,
     formattable = false
   ) => {
-    if (!value?.trim()) return;
+    const renderedHeading = suffix === "headline" && !value?.trim();
+    if (!value?.trim() && !renderedHeading) return;
     targets.push({
       path: `sections.${sectionIndex}.${suffix}`,
-      value,
+      value: value ?? "",
+      ...(renderedHeading ? { renderedHeading: true } : {}),
       maxLength,
       multiline,
       scope,
@@ -90,7 +94,15 @@ export function collectInlineTextTargets(
         add(sectionIndex, scope, "ctaText", section.ctaText, 40);
         break;
       case "services":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(sectionIndex, scope, "intro", section.intro, 500, true);
         section.items.forEach((item, itemIndex) => {
           add(sectionIndex, scope, `items.${itemIndex}.title`, item.title, 120);
@@ -107,11 +119,27 @@ export function collectInlineTextTargets(
         });
         break;
       case "about":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(sectionIndex, scope, "body", section.body, 2000, true, true);
         break;
       case "gallery":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.images.forEach((image, imageIndex) =>
           add(sectionIndex, scope, `images.${imageIndex}.alt`, image.alt, 240)
         );
@@ -119,10 +147,26 @@ export function collectInlineTextTargets(
       case "testimonials":
         // Nur die Überschrift ist editierbar. Item-Text/Autor sind echte
         // Google-Bewertungen und dürfen im Studio nicht umgeschrieben werden.
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         break;
       case "contact":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(sectionIndex, scope, "phone", section.phone, 50);
         add(sectionIndex, scope, "email", section.email, 320);
         add(sectionIndex, scope, "street", section.street, 180);
@@ -140,7 +184,15 @@ export function collectInlineTextTargets(
         });
         break;
       case "faq":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.items.forEach((item, itemIndex) => {
           add(
             sectionIndex,
@@ -161,7 +213,15 @@ export function collectInlineTextTargets(
         break;
       case "menu":
       case "pricelist":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.categories.forEach((category, categoryIndex) => {
           add(
             sectionIndex,
@@ -186,7 +246,15 @@ export function collectInlineTextTargets(
         });
         break;
       case "team":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.members.forEach((member, memberIndex) => {
           add(
             sectionIndex,
@@ -205,15 +273,39 @@ export function collectInlineTextTargets(
         });
         break;
       case "cta":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(sectionIndex, scope, "ctaText", section.ctaText, 40);
         break;
       case "story":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         add(sectionIndex, scope, "body", section.body, 2500, true, true);
         break;
       case "usp":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.items.forEach((item, itemIndex) => {
           add(sectionIndex, scope, `items.${itemIndex}.title`, item.title, 80);
           add(
@@ -230,14 +322,30 @@ export function collectInlineTextTargets(
         add(sectionIndex, scope, "text", section.text, 240);
         break;
       case "stats":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.items.forEach((item, itemIndex) => {
           add(sectionIndex, scope, `items.${itemIndex}.value`, item.value, 20);
           add(sectionIndex, scope, `items.${itemIndex}.label`, item.label, 80);
         });
         break;
       case "process":
-        add(sectionIndex, scope, "headline", section.headline, 120);
+        add(
+          sectionIndex,
+          scope,
+          "headline",
+          section.headline,
+          120,
+          false,
+          true
+        );
         section.steps.forEach((step, stepIndex) => {
           add(sectionIndex, scope, `steps.${stepIndex}.title`, step.title, 80);
           add(

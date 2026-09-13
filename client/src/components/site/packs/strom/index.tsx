@@ -113,7 +113,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>LEISTUNGEN</MonoLabel>
-          <h2 className="pb-st-title">{section.headline}</h2>
+          <h2 className="pb-st-title">{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-st-intro">{section.intro}</p>}
           <div
             className="pb-st-services"
@@ -141,7 +141,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>ÜBER UNS</MonoLabel>
-          <h2 className="pb-st-title">{section.headline}</h2>
+          <h2 className="pb-st-title">{rich(section.headline ?? "")}</h2>
           <div className="pb-st-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{rich(section.body)}</p>
             {section.imageUrl && (
@@ -162,7 +162,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>GALERIE</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           <div
             className="pb-st-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -185,7 +185,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>REFERENZEN</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           <div className="pb-st-quotes">
             {section.items.map(item => (
               <blockquote
@@ -214,7 +214,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>KONTAKT</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           <div className="pb-st-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address className="pb-st-card">
               {section.phone && (
@@ -269,7 +269,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>FAQ</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           <div className="pb-st-faq-list">
             {section.items.map(item => (
               <div className="pb-st-faq" key={item.question}>
@@ -295,7 +295,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>PREISE</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-st-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -322,7 +322,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>TEAM</MonoLabel>
-          <h2 className="pb-st-title">{title}</h2>
+          <h2 className="pb-st-title">{rich(title ?? "")}</h2>
           <div className="pb-st-team">
             {section.members.map((member, i) => (
               <div className="pb-st-member" key={`${i}-${member.name}`}>
@@ -347,7 +347,7 @@ function renderSection(
           key={section.type}
         >
           <MonoLabel>ANFRAGE</MonoLabel>
-          <h2 className="pb-st-title">{section.headline}</h2>
+          <h2 className="pb-st-title">{rich(section.headline ?? "")}</h2>
           <a className="pb-st-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

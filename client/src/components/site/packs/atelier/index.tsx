@@ -113,7 +113,7 @@ function renderSection(
         >
           <header className="pb-at-section-head">
             <span>{FALLBACK_TITLES.services}</span>
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
           </header>
           <div
             className="pb-at-project-index"
@@ -147,7 +147,7 @@ function renderSection(
         >
           <header className="pb-at-section-head">
             <span>{FALLBACK_TITLES.about}</span>
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
           </header>
           <div
             className="pb-at-about-grid"
@@ -184,7 +184,7 @@ function renderSection(
         >
           <header className="pb-at-section-head">
             <span>{FALLBACK_TITLES.gallery}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div
             className="pb-at-gallery"
@@ -215,7 +215,7 @@ function renderSection(
         >
           <header className="pb-at-section-head">
             <span>{FALLBACK_TITLES.testimonials}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div className="pb-at-voice-pages">
             {section.items.map((item, i) => (
@@ -249,7 +249,7 @@ function renderSection(
         >
           <header className="pb-at-section-head">
             <span>{FALLBACK_TITLES.contact}</span>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div className="pb-at-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
@@ -307,7 +307,7 @@ function renderSection(
           className="pb-at-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.items.map(item => (
             <div className="pb-at-service" key={item.question}>
               <div>
@@ -332,7 +332,7 @@ function renderSection(
           className="pb-at-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div key={cat.name}>
               <h3>{cat.name}</h3>
@@ -360,7 +360,7 @@ function renderSection(
           className="pb-at-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.members.map((member, i) => (
             <div className="pb-at-service" key={`${i}-${member.name}`}>
               {member.imageUrl && (
@@ -387,7 +387,7 @@ function renderSection(
           className="pb-at-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-at-lnk" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText} →
           </a>

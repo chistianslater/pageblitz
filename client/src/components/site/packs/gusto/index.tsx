@@ -137,7 +137,7 @@ function renderSection(
         >
           <header className="pb-gu-section-head">
             <SectionKicker index="01">{FALLBACK_TITLES.services}</SectionKicker>
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
             {section.intro && <p className="pb-gu-intro">{section.intro}</p>}
           </header>
           <div
@@ -177,7 +177,7 @@ function renderSection(
               </figure>
             )}
             <div className="pb-gu-about-copy">
-              <h2>{section.headline}</h2>
+              <h2>{rich(section.headline ?? "")}</h2>
               <p>{rich(section.body)}</p>
             </div>
           </div>
@@ -194,7 +194,7 @@ function renderSection(
         >
           <header className="pb-gu-section-head">
             <SectionKicker index="03">{FALLBACK_TITLES.gallery}</SectionKicker>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div
             className="pb-gu-gallery"
@@ -222,7 +222,7 @@ function renderSection(
         >
           <SectionKicker index="04">{FALLBACK_TITLES.testimonials}</SectionKicker>
           <div className="pb-gu-voices-grid">
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
             <div>
               {section.items.map(item => (
                 <blockquote
@@ -253,7 +253,7 @@ function renderSection(
         >
           <div className="pb-gu-reservation-title">
             <SectionKicker index="05">{FALLBACK_TITLES.contact}</SectionKicker>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
             {section.phone && (
               <a className="pb-gu-cta" href={`tel:${section.phone}`}>
                 {chrome.contactCta}
@@ -323,7 +323,7 @@ function renderSection(
           className="pb-gu-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.items.map(item => (
             <div className="pb-gu-faq" key={item.question}>
               <strong>{item.question}</strong>
@@ -348,7 +348,7 @@ function renderSection(
         >
           <header className="pb-gu-section-head">
             <SectionKicker index="06">{fallback}</SectionKicker>
-            <h2>{title}</h2>
+            <h2>{rich(title ?? "")}</h2>
           </header>
           <div
             className="pb-gu-menu-columns"
@@ -380,7 +380,7 @@ function renderSection(
           className="pb-gu-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-gu-team">
             {section.members.map((member, i) => (
               <div className="pb-gu-member" key={`${i}-${member.name}`}>
@@ -402,7 +402,7 @@ function renderSection(
           className="pb-gu-section pb-gu-cta-card"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-gu-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

@@ -72,7 +72,7 @@ function SectionHead({
       <span className="pb-ra-index">
         {String(index).padStart(2, "0")}
       </span>
-      <h2>{title}</h2>
+      <h2>{typeof title === "string" ? rich(title) : title}</h2>
     </div>
   );
 }

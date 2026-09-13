@@ -138,7 +138,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-zf-intro">{section.intro}</p>}
           <div className="pb-zf-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
@@ -161,7 +161,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <div className="pb-zf-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             {section.imageUrl && (
               <img
@@ -184,7 +184,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div
             className="pb-zf-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -204,7 +204,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-zf-quotes">
             {section.items.map(item => (
               <blockquote
@@ -232,7 +232,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-zf-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -286,7 +286,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.items.map(item => (
             <div className="pb-zf-faq" key={item.question}>
               <strong>{item.question}</strong>
@@ -309,7 +309,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-zf-tafel-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -332,7 +332,7 @@ function renderSection(
           className="pb-zf-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-zf-team">
             {section.members.map((member, i) => (
               <div className="pb-zf-member" key={`${i}-${member.name}`}>
@@ -354,7 +354,7 @@ function renderSection(
           className="pb-zf-section pb-zf-cta-card"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-zf-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

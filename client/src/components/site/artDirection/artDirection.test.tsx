@@ -22,6 +22,13 @@ describe("production art direction", () => {
       expect(html).not.toContain("Anfrage ausprobieren");
     }
   );
+  test.each(PACK_IDS)("%s renders editable section emphasis without literal markers", id => {
+    const data = withArtDirection(getFixture(id, "full"));
+    data.sections = data.sections.map(section => ({...section, headline: "Unsere ==Behandlungen=="}));
+    const html = renderToStaticMarkup(<SiteRenderer data={data} islandsMode="preview" />);
+    expect(html).toContain('class="pb-rich-accent"');
+    expect(html).not.toContain("==Behandlungen==");
+  });
   test("explicit revision 1 keeps legacy rendering", () => {
     const data = getFixture("gusto", "full");
     const html = renderToStaticMarkup(<SiteRenderer data={data} />);

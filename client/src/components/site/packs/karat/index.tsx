@@ -126,7 +126,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{section.headline}</h2>
+          <h2 className="pb-ka-title">{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-ka-intro">{section.intro}</p>}
           <div
             className="pb-ka-services"
@@ -157,7 +157,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{section.headline}</h2>
+          <h2 className="pb-ka-title">{rich(section.headline ?? "")}</h2>
           <div className="pb-ka-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{rich(section.body)}</p>
             {section.imageUrl && (
@@ -179,7 +179,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           <div
             className="pb-ka-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -199,7 +199,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           <div className="pb-ka-quotes">
             {section.items.map(item => (
               <blockquote
@@ -227,7 +227,7 @@ function renderSection(
           className="pb-ka-section pb-ka-contact"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           <address>
             {section.phone && (
               <p>
@@ -279,7 +279,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           <div className="pb-ka-faq-list">
             {section.items.map(item => (
               <div className="pb-ka-faq" key={item.question}>
@@ -304,7 +304,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-ka-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -330,7 +330,7 @@ function renderSection(
           className="pb-ka-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{title}</h2>
+          <h2 className="pb-ka-title">{rich(title ?? "")}</h2>
           <div className="pb-ka-team">
             {section.members.map((member, i) => (
               <div className="pb-ka-member" key={`${i}-${member.name}`}>
@@ -352,7 +352,7 @@ function renderSection(
           className="pb-ka-section pb-ka-cta-section"
           key={section.type}
         >
-          <h2 className="pb-ka-title">{section.headline}</h2>
+          <h2 className="pb-ka-title">{rich(section.headline ?? "")}</h2>
           <a className="pb-ka-cta" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText}
           </a>

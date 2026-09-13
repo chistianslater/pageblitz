@@ -145,7 +145,7 @@ function renderSection(
               — vorher schob ein zu breiter span-Selektor jede Zeile
               unterschiedlich weit nach rechts (ausgefranste Treppe). */}
           <div className="pb-kz-services-grid">
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
             <div
               className="pb-kz-services-list"
               data-pb-slot={LAYOUT_SLOT.servicesItems}
@@ -172,7 +172,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <div
             className="pb-kz-about-grid"
             data-pb-slot={LAYOUT_SLOT.aboutGrid}
@@ -199,7 +199,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div
             className="pb-kz-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -219,7 +219,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-kz-quotes">
             {section.items.map(item => (
               <blockquote
@@ -247,7 +247,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-kz-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -301,7 +301,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {/* 2-Spalten-Raster ab Desktop (Stilvorlagen-Audit P5, 2026-08-29):
               einspaltige Fragen mit seitenbreiten Trennlinien ließen die
               rechte Sektionshälfte leer. */}
@@ -329,7 +329,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-kz-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -357,7 +357,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-kz-team">
             {section.members.map((member, i) => (
               <div className="pb-kz-member" key={`${i}-${member.name}`}>
@@ -379,7 +379,7 @@ function renderSection(
           className="pb-kz-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <a className="pb-kz-link" href={section.ctaHref ?? "#kontakt"}>
             {section.ctaText} →
           </a>

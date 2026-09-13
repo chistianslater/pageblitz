@@ -148,7 +148,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           {section.intro && <p className="pb-ml-intro">{section.intro}</p>}
           <div className="pb-ml-grid" data-pb-slot={LAYOUT_SLOT.servicesItems}>
             {section.items.map(item => (
@@ -173,7 +173,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{section.headline}</h2>
+          <h2>{rich(section.headline ?? "")}</h2>
           <div className="pb-ml-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{rich(section.body)}</p>
             {section.imageUrl && (
@@ -197,7 +197,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div
             className="pb-ml-grid pb-ml-gallery"
             data-pb-slot={LAYOUT_SLOT.galleryItems}
@@ -217,7 +217,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-ml-grid">
             {section.items.map(item => (
               <blockquote
@@ -245,7 +245,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-ml-contact" data-pb-slot={LAYOUT_SLOT.contactGrid}>
             <address>
               {section.phone && (
@@ -299,7 +299,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-ml-grid">
             {section.items.map(item => (
               <div className="pb-ml-card pb-ml-faq" key={item.question}>
@@ -324,7 +324,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           {section.categories.map(cat => (
             <div className="pb-ml-menu-category" key={cat.name}>
               <h3>{cat.name}</h3>
@@ -350,7 +350,7 @@ function renderSection(
           className="pb-ml-section"
           key={section.type}
         >
-          <h2>{title}</h2>
+          <h2>{rich(title ?? "")}</h2>
           <div className="pb-ml-grid">
             {section.members.map((member, i) => (
               <div className="pb-ml-member" key={`${i}-${member.name}`}>
@@ -373,7 +373,7 @@ function renderSection(
           key={section.type}
         >
           <div className="pb-ml-card pb-ml-cta-card">
-            <h2>{section.headline}</h2>
+            <h2>{rich(section.headline ?? "")}</h2>
             <a className="pb-ml-cta" href={section.ctaHref ?? "#kontakt"}>
               {section.ctaText}
             </a>

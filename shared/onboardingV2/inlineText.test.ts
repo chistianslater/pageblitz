@@ -82,3 +82,8 @@ describe("collectInlineTextTargets", () => {
     expect(paths.some(path => path.includes("items.0.author"))).toBe(false);
   });
 });
+
+test("fehlende Sektionsüberschriften sind als formatierbare gerenderte Überschriften erreichbar", () => {
+  const targets = collectInlineTextTargets({...doc, sections:[{type:"services",items:[{title:"Schnitt",description:"Beratung"}]}]});
+  expect(targets.find(t=>t.path === "sections.0.headline")).toMatchObject({renderedHeading:true,formattable:true,scope:"#leistungen"});
+});
