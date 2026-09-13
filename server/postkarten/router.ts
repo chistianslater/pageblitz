@@ -341,6 +341,46 @@ export const postkartenRouter = router({
     }),
 
   /**
+   * Musterbild für den Template-Bau bei HeyMail (Betreiber-Wunsch
+   * 2026-09-13).
+   *
+   * Im HeyMail-Editor braucht man ein Bild, das dauerhaft unter derselben
+   * Adresse liegt — sonst beurteilt man ein Layout an einer Aufnahme, die
+   * morgen weg ist. Ein Motiv eines echten Betriebs taugt dafuer nur halb:
+   * Es gehoert zu dessen Karte und wird ersetzt, sobald die Seite neu
+   * erzeugt wird.
+   *
+   * Deshalb liegt das Muster unter einem festen Schluessel
+   * (`postkarten/muster.jpg`), gehoert keiner Karte und wird nur ersetzt,
+   * wenn man hier erneut drueckt.
+   */
+  musterMotiv: adminProcedure
+    .input(
+      z
+        .object({ businessId: z.number().int().positive().optional() })
+        .optional()
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = input?.businessId
+        ? await kandidatLaden(input.businessId)
+        : ((await kandidatenLaden({ limit: 50 })).zeilen.find(
+            k => k.previewToken
+          ) ?? null);
+      if (!kandidat?.previewToken) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Keine Vorschau-Seite gefunden, von der sich ein Muster aufnehmen ließe.",
+        });
+      }
+      const { bildUrl } = await motivErzeugen({
+        vorschauUrl: `${basisUrl()}/preview-ssr/${kandidat.previewToken}`,
+        code: "muster",
+      });
+      return { bildUrl, betrieb: kandidat.name };
+    }),
+
+  /**
    * HeyMail-Vorschau: erzeugt das PDF, verschickt nichts und kostet nichts.
    */
   vorschau: adminProcedure

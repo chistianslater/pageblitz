@@ -127,6 +127,7 @@ vi.mock("@/lib/trpc", () => {
         wiederAufnehmen: { useMutation: () => mutation },
         seiteLoeschen: { useMutation: () => mutation },
         motiv: { useMutation: () => mutation },
+        musterMotiv: { useMutation: () => mutation },
         vorschau: { useMutation: () => mutation },
         beauftragen: { useMutation: () => mutation },
       },
@@ -160,6 +161,10 @@ describe("KartenErzeugen", () => {
     // statt eines Hinweises, der in die Datenbank schickt.
     expect(html).toContain("Anschrift speichern");
     expect(html).toContain("Osterstraße 25, 46397 Bocholt, Deutschland");
+  });
+
+  test("bietet ein Musterbild für den Template-Bau an", () => {
+    expect(html).toContain("Musterbild fürs HeyMail-Template");
   });
 
   test("nennt den Stand der Kampagne, nicht nur Zahlen", () => {
