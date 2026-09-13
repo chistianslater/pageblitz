@@ -374,7 +374,7 @@ export function TextsForm({
         {suggestField && applyingVariant === suggestField && (
           <p
             role="status"
-            style={{ color: "var(--st-accent)", fontSize: "0.82rem" }}
+            style={{ color: "var(--st-accent-text)", fontSize: "0.82rem" }}
           >
             Wird übernommen und in der Vorschau aktualisiert …
           </p>

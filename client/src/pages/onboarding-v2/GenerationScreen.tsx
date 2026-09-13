@@ -211,6 +211,7 @@ export function GenerationScreen({
             <div
               className="pb-studio-gen-bar"
               role="progressbar"
+              aria-label="Fortschritt der Website-Erstellung"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={ariaNow}

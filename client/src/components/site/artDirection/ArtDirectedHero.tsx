@@ -94,7 +94,7 @@ export function ArtDirectedHero({
         </figure>
       )}
       {hasImage && composition === "portrait" && secondary && (
-        <figure className="pb-art-secondary" aria-hidden="true">
+        <figure className="pb-art-secondary">
           <img src={secondary} alt="" loading="lazy" />
         </figure>
       )}

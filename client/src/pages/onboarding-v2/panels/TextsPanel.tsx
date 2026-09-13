@@ -272,7 +272,7 @@ export function TextsPanel({
               background: "none",
               border: 0,
               padding: 0,
-              color: "var(--st-accent, #ccff00)",
+              color: "var(--st-accent-text, #ccff00)",
               font: "inherit",
               cursor: "pointer",
               textDecoration: "underline",

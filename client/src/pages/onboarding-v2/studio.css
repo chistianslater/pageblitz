@@ -1,14 +1,14 @@
 .pb-studio {
-  /* Nachtschicht (2026-08-29, User-Entscheid): das Studio folgt der
-     Landing — Kohle, EIN Volt-Akzent. Vorher Papier/Grün. */
-  --st-canvas: #0b0b0d;
-  --st-surface: #131316;
-  --st-ink: #f2f1ee;
-  --st-muted: #a4a39d;
-  --st-line: rgba(255, 255, 255, 0.14);
-  --st-accent: #ccff00;
+  /* Klarstart: shared white, graphite and lime palette for the creation flow. */
+  --st-canvas: #ffffff;
+  --st-surface: #f5f6f0;
+  --st-ink: #242424;
+  --st-muted: #62675b;
+  --st-line: #d8ddce;
+  --st-accent: #d5f330;
+  --st-accent-text: #536025;
   --st-accent-ink: #0b0b0d;
-  --st-warn: #ff9d7a;
+  --st-warn: #9d381b;
   /* Eine Schrift für das ganze System (Landing + Studio + Dashboard): Space Grotesk. */
   --st-display: "Space Grotesk", system-ui, sans-serif;
   --st-ui: "Space Grotesk", system-ui, sans-serif;
@@ -110,7 +110,7 @@
   color: var(--st-muted);
 }
 .pb-studio-check-item[data-status="done"] .pb-studio-check-num {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-check-title {
   display: block;
@@ -130,7 +130,7 @@
   align-self: center;
 }
 .pb-studio-check-item[data-status="done"] .pb-studio-check-flag {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-addon-steps {
   list-style: none;
@@ -157,7 +157,7 @@
   color: var(--st-ink);
 }
 .pb-studio-addon-steps small {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
   font-size: 0.62rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -374,7 +374,7 @@
   border-radius: 999px;
   border: 1px solid var(--st-line);
   background: transparent;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
   cursor: pointer;
 }
 .pb-studio-suggest-icon svg {
@@ -450,7 +450,7 @@
 }
 .pb-studio-checkout-blockers li button:hover,
 .pb-studio-checkout-missing li button:hover {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-gen {
   min-height: 100dvh;
@@ -578,7 +578,7 @@
   color: var(--st-ink);
   text-align: left;
   cursor: pointer;
-  opacity: 0.58;
+  opacity: 1;
   transform: scale(0.88);
   transition:
     opacity 0.2s ease,
@@ -1677,7 +1677,7 @@
   place-items: center;
   border-radius: 8px;
   background: var(--st-surface);
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-addon-icon svg {
   width: 1.05rem;
@@ -1710,7 +1710,7 @@
 }
 .pb-studio-addon-benefit {
   margin-top: 0.55rem;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -1789,7 +1789,7 @@
   font-size: 1rem;
 }
 .pb-studio-addon-settings-head > span {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
   font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
@@ -1811,7 +1811,7 @@
   width: 1rem;
   height: 1rem;
   flex: 0 0 auto;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-addon-dashboard-note p,
 .pb-studio-addon-later {
@@ -2006,7 +2006,7 @@
   color: var(--st-muted);
 }
 .pb-studio-chat-status[data-tone="done"] {
-  color: var(--st-accent);
+  color: var(--st-accent-text);
   font-weight: 700;
 }
 .pb-studio-chat-msg[data-role="assistant"] .pb-studio-btn {
@@ -2033,7 +2033,7 @@
   content: "→";
   position: absolute;
   left: 0;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 /* Tipp-Indikator: drei hüpfende Punkte, solange die KI arbeitet. */
 .pb-studio-chat-typing {
@@ -2264,12 +2264,13 @@
    überschreibt NUR lokal die --st-*-Tokens auf die Nachtschicht-Palette
    der Landing — das Studio selbst bleibt Papier/Grün. */
 .pb-studio-gen--dark {
-  --st-canvas: #0b0b0d;
-  --st-surface: #131316;
-  --st-ink: #f2f1ee;
-  --st-muted: #a4a39d;
-  --st-line: rgba(255, 255, 255, 0.14);
-  --st-accent: #ccff00;
+  --st-canvas: #ffffff;
+  --st-surface: #f5f6f0;
+  --st-ink: #242424;
+  --st-muted: #62675b;
+  --st-line: #d8ddce;
+  --st-accent: #d5f330;
+  --st-accent-text: #536025;
   --st-accent-ink: #0b0b0d;
   background: var(--st-canvas);
   color: var(--st-ink);
@@ -2278,7 +2279,7 @@
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-weight: 500;
   letter-spacing: 0.07em;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-gen--dark .pb-studio-btn {
   font-weight: 700;
@@ -2882,7 +2883,7 @@
 .pb-studio-loader-mark {
   height: 3.25rem;
   width: auto;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 
 /* Galerie-Alben im Fotos-Panel (2026-08-30): aktive Liste als Chips. */
@@ -2934,7 +2935,7 @@
 }
 .pb-studio-ai-theme-done {
   font-weight: 700;
-  color: var(--st-accent);
+  color: var(--st-accent-text);
 }
 .pb-studio-ai-theme ul {
   margin: 0;
@@ -3132,7 +3133,7 @@
   cursor: default;
 }
 .pb-studio-version-hint {
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 .pb-versions-list {
   list-style: none;
@@ -3205,7 +3206,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   border: 1px solid var(--st-accent, #ccff00);
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 .pb-versions-empty,
 .pb-versions-notice {
@@ -3259,7 +3260,7 @@
 .pb-tone-step:last-child { text-align: right; }
 .pb-tone-step:hover:not(:disabled) { color: var(--st-ink, #f2f1ee); }
 .pb-tone-step[aria-pressed="true"] {
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
   font-weight: 600;
 }
 .pb-tone-example {
@@ -3331,7 +3332,7 @@
   height: 30px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 .pb-goal-icon svg { width: 16px; height: 16px; }
 .pb-goal-hint { font-size: 0.82rem; color: var(--st-muted, #a4a39d); }
@@ -3355,7 +3356,7 @@
   padding: 0;
   font: inherit;
   font-size: 0.85rem;
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
   text-decoration: underline;
   cursor: pointer;
 }
@@ -3370,7 +3371,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   border: 1px solid var(--st-accent, #ccff00);
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 /* Überspringen im GoalStep ist bewusst leise — kein zweiter Volt-Knopf. */
 .pb-goal-actions .pb-studio-btn[data-variant="ghost"] {
@@ -3532,7 +3533,7 @@
   flex-shrink: 0;
   border-radius: 5px;
   border: 1px solid var(--st-line, rgba(255, 255, 255, 0.2));
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 .pb-brand-check svg { width: 13px; height: 13px; }
 .pb-brand-row[aria-pressed="true"] .pb-brand-check { border-color: var(--st-accent, #ccff00); }
@@ -3588,7 +3589,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--st-accent, #ccff00);
+  color: var(--st-accent-text, #ccff00);
 }
 .pb-studio-pending-dot {
   width: 8px;
@@ -3606,3 +3607,7 @@
     50% { opacity: 1; transform: scale(1); }
   }
 }
+
+.pb-studio-cat input,.pb-studio-cat-submit{border-radius:8px}.pb-studio-cat{max-width:40rem}.pb-studio-gen--dark .pb-studio-kicker{font-family:var(--st-ui)}
+
+@media(max-width:420px){.pb-tone-steps{display:flex;flex-wrap:wrap;gap:6px}.pb-tone-step{border:1px solid var(--st-line);padding:6px 9px;font-size:11px;text-align:center}.pb-tone-step[aria-pressed="true"]{border-color:var(--st-accent-text)}}

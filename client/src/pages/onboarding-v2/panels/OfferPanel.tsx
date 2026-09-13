@@ -318,7 +318,7 @@ export function OfferPanel({
           {suggestOffer.error.message}
         </p>
       )}
-      {hint && <p style={{ color: "var(--st-accent)" }}>{hint}</p>}
+      {hint && <p style={{ color: "var(--st-accent-text)" }}>{hint}</p>}
       <OfferEditor value={value} onChange={setValue} />
       {updateOffer.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>

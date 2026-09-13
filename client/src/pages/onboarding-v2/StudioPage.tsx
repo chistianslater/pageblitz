@@ -485,7 +485,7 @@ export default function StudioPage({ token }: { token: string }) {
           </header>
           <div
             className="pb-studio-seg pb-studio-tabs"
-            role="tablist"
+            role="group"
             aria-label="Ansicht"
           >
             <button
