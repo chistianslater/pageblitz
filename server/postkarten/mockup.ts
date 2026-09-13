@@ -33,20 +33,66 @@ export const MOCKUP_HOEHE = 1136;
 /** Ecken der Bildschirmfläche — ohne sie stößt das Bild hart in den Rahmen. */
 const SCHIRM_RADIUS = 6;
 
-function rahmenSvg(): string {
+/**
+ * Zwei Tonlagen. Die Karte hat einen dunklen Hintergrund — darauf
+ * verschwindet ein schwarzer Laptop bis auf den Bildschirm, und übrig
+ * bleibt ein schwebendes Rechteck (Betreiber-Befund 2026-09-13). Deshalb
+ * ist Silber der Standard; `dunkel` bleibt für helle Karten.
+ */
+export type Tonlage = "hell" | "dunkel";
+
+interface Palette {
+  deckel: string;
+  /** Kante des Deckels — auf dunklem Grund trennt sie Gerät und Karte. */
+  kante: string;
+  /** Schmaler Ring um die Bildschirmfläche. */
+  ring: string;
+  kamera: string;
+  basisOben: string;
+  basisUnten: string;
+  mulde: string;
+}
+
+const PALETTEN: Record<Tonlage, Palette> = {
+  hell: {
+    deckel: "#e9e9ec",
+    kante: "#c3c3cb",
+    ring: "#b9b9c2",
+    kamera: "#a8a8b2",
+    basisOben: "#dededf",
+    basisUnten: "#adadb6",
+    mulde: "#c2c2cb",
+  },
+  dunkel: {
+    deckel: "#17171a",
+    kante: "#0d0d0f",
+    ring: "#2c2c31",
+    kamera: "#3a3a40",
+    basisOben: "#3f3f46",
+    basisUnten: "#232327",
+    mulde: "#1b1b1f",
+  },
+};
+
+function rahmenSvg(p: Palette): string {
   const basisOben = DECKEL_H + 2;
   const basisUnten = MOCKUP_HOEHE - 26;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${MOCKUP_BREITE}" height="${MOCKUP_HOEHE}">
   <defs>
     <linearGradient id="basis" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3f3f46"/>
-      <stop offset="1" stop-color="#232327"/>
+      <stop offset="0" stop-color="${p.basisOben}"/>
+      <stop offset="1" stop-color="${p.basisUnten}"/>
     </linearGradient>
   </defs>
   <!-- Deckel -->
-  <rect x="${DECKEL_X}" y="0" width="${DECKEL_B}" height="${DECKEL_H}" rx="22" fill="#17171a"/>
+  <rect x="${DECKEL_X}" y="0" width="${DECKEL_B}" height="${DECKEL_H}" rx="22"
+        fill="${p.deckel}" stroke="${p.kante}" stroke-width="2"/>
   <!-- Kamerapunkt: der kleine Beweis, dass es ein Gerät ist und kein Kasten -->
-  <circle cx="${MOCKUP_BREITE / 2}" cy="12" r="3.5" fill="#3a3a40"/>
+  <circle cx="${MOCKUP_BREITE / 2}" cy="12" r="3.5" fill="${p.kamera}"/>
+  <!-- Ring um die Bildschirmfläche: Ohne ihn laufen helle Seiten in einen
+       hellen Rahmen und der Bildschirm verliert seine Kante. -->
+  <rect x="${SCHIRM_X - 1}" y="${SCHIRM_Y - 1}" width="${SCHIRM_B + 2}" height="${SCHIRM_H + 2}"
+        rx="${SCHIRM_RADIUS + 1}" fill="none" stroke="${p.ring}" stroke-width="2"/>
   <!-- Scharnier und Unterteil, unten breiter als der Deckel -->
   <path d="M ${DECKEL_X - 40} ${basisOben}
            L ${DECKEL_X + DECKEL_B + 40} ${basisOben}
@@ -56,7 +102,7 @@ function rahmenSvg(): string {
            Q 0 ${basisUnten} 4 ${basisUnten} Z"
         fill="url(#basis)"/>
   <!-- Griffmulde -->
-  <rect x="${MOCKUP_BREITE / 2 - 95}" y="${basisOben + 1}" width="190" height="11" rx="6" fill="#1b1b1f"/>
+  <rect x="${MOCKUP_BREITE / 2 - 95}" y="${basisOben + 1}" width="190" height="11" rx="6" fill="${p.mulde}"/>
 </svg>`;
 }
 
@@ -73,7 +119,10 @@ function schirmMaske(): string {
  * ausgerichtet): Eine verzerrte Website auf einer Karte, die für Websites
  * wirbt, wäre die schlechteste aller Anzeigen.
  */
-export async function laptopMockup(aufnahme: Buffer): Promise<Buffer> {
+export async function laptopMockup(
+  aufnahme: Buffer,
+  tonlage: Tonlage = "hell"
+): Promise<Buffer> {
   const schirm = await sharp(aufnahme)
     .resize({
       width: SCHIRM_B,
@@ -85,7 +134,7 @@ export async function laptopMockup(aufnahme: Buffer): Promise<Buffer> {
     .png()
     .toBuffer();
 
-  return sharp(Buffer.from(rahmenSvg()))
+  return sharp(Buffer.from(rahmenSvg(PALETTEN[tonlage])))
     .composite([{ input: schirm, left: SCHIRM_X, top: SCHIRM_Y }])
     .png()
     .toBuffer();

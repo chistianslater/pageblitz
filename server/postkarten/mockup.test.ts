@@ -37,6 +37,24 @@ describe("laptopMockup", () => {
     expect(ecke[3]).toBe(0);
   });
 
+  test("silbern als Standard — die Karte ist dunkel", async () => {
+    // Ein schwarzer Laptop auf dunklem Karton verschwindet bis auf den
+    // Bildschirm (Betreiber-Befund 2026-09-13). Geprüft am Deckelrand,
+    // links neben der Bildschirmfläche.
+    const roh = await sharp(await laptopMockup(await aufnahme()))
+      .extract({ left: 88, top: 500, width: 4, height: 4 })
+      .raw()
+      .toBuffer();
+    expect(roh[0]).toBeGreaterThan(180);
+    expect(roh[3]).toBe(255);
+
+    const dunkel = await sharp(await laptopMockup(await aufnahme(), "dunkel"))
+      .extract({ left: 88, top: 500, width: 4, height: 4 })
+      .raw()
+      .toBuffer();
+    expect(dunkel[0]).toBeLessThan(60);
+  });
+
   test("staucht die Aufnahme nicht, sondern schneidet oben zu", async () => {
     // Eine verzerrte Website auf einer Karte, die für Websites wirbt, wäre
     // die schlechteste aller Anzeigen. Ein sehr langer Screenshot muss
