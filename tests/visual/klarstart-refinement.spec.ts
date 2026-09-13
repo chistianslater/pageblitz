@@ -252,3 +252,23 @@ test("Landing progress, feature hint and lime chat", async ({ page }) => {
     "rgb(243, 245, 233)"
   );
 });
+
+for (const width of [390, 1440])
+  test(`Feature alignment and continuous hover ${width}`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 950 });
+    await page.goto("/");
+    const choice = page.locator(".clear-choices button[aria-pressed=true]");
+    const initial = await choice.textContent();
+    await page.locator(".clear-workspace").hover();
+    await expect
+      .poll(() => choice.textContent(), { timeout: 6500 })
+      .not.toBe(initial);
+    const positions = await page.evaluate(() =>
+      [".cf-heading", ".cf-picker-hint", ".cf-feature-picker"].map(s => {
+        const b = document.querySelector(s)!.getBoundingClientRect();
+        return { x: b.x, width: b.width };
+      })
+    );
+    expect(Math.abs(positions[0].x - positions[1].x)).toBeLessThan(1);
+    expect(Math.abs(positions[2].x - positions[1].x)).toBeLessThan(1);
+  });

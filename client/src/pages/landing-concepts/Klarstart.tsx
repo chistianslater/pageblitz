@@ -114,7 +114,6 @@ function EditingDemo() {
 export default function Klarstart() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [reduced, setReduced] = useState(true);
   const root = useRef<HTMLDivElement>(null);
@@ -127,7 +126,7 @@ export default function Klarstart() {
     return () => query.removeEventListener("change", update);
   }, []);
   useEffect(() => {
-    if (paused || hovered || focused || reduced) return;
+    if (paused || focused || reduced) return;
     let frame = 0;
     let last = performance.now();
     const tick = (now: number) => {
@@ -145,7 +144,7 @@ export default function Klarstart() {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [paused, hovered, focused, reduced, active]);
+  }, [paused, focused, reduced, active]);
   useEffect(() => {
     const elements = root.current?.querySelectorAll(
       "main > section, .cf-section, .cf-foundation"
@@ -215,8 +214,6 @@ export default function Klarstart() {
           <div
             className="clear-workspace"
             id="entdecken"
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
             onFocusCapture={() => setFocused(true)}
             onBlurCapture={e => {
               if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);

@@ -1470,3 +1470,5 @@
 .clear-evolved .cf-picker-hint{display:flex;align-items:center;gap:12px;background:#f3f5e9;border:1px solid #dce2ca;border-radius:8px;padding:16px 18px;font-size:14px;line-height:1.5;font-weight:500;margin-top:0;margin-bottom:16px;color:#303b1a}.cf-picker-hint>svg{flex-shrink:0}.clear-evolved .cf-picker-hint>span{font-weight:400;font-size:11px;color:#5f674e}
 .klarstart-live{--lp-canvas:#fff;--lp-surface:#f5f6f0;--lp-ink:#242424;--lp-muted:#62675b;--lp-line:#d8ddce;--lp-accent:#d5f330;--lp-accent-ink:#25300d}
 @media(prefers-reduced-motion:reduce){.clear-choices button::after{display:none}}
+
+.clear-evolved .cf-picker-hint{margin-inline:auto}
