@@ -48,8 +48,8 @@ const DECO_TOGGLE_CSS = `
  * grid-column deckt Grid-Footer ab, in Flex/Block wirkungslos.
  */
 const BRANDING_CSS = `
-.pb-made-with{display:block;grid-column:1/-1;width:100%;padding:10px 20px 14px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.72rem;letter-spacing:.02em;color:inherit;text-decoration:none;opacity:.55}
-.pb-made-with:hover{opacity:.9}
+.pb-made-with{display:block;grid-column:1/-1;width:100%;padding:10px 20px 14px;text-align:center;font-family:var(--pb-font-body,system-ui,sans-serif);font-size:.72rem;letter-spacing:.02em;color:inherit;text-decoration:none;opacity:1}
+.pb-made-with:hover{text-decoration:underline}
 .pb-made-with strong{font-weight:700}
 .pb-made-with svg{display:inline-block;width:.7em;height:.9em;vertical-align:-.08em;margin:0 .1em}
 .pb-made-with .pb-mw-heart{margin:0 .1em}
