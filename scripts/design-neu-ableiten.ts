@@ -71,6 +71,8 @@ async function main(): Promise<void> {
   let uebersprungenVerkauft = 0;
   let uebersprungenFremd = 0;
   let unveraendert = 0;
+  let ohneProfil = 0;
+  const rhythmen = new Map<string, number>();
   const geaendert: Array<{
     id: number;
     slug: string;
@@ -99,7 +101,11 @@ async function main(): Promise<void> {
     // ausdrueckliche Revision 1 ist dagegen der alte Referenz-Renderer und
     // wird mitgezogen.
     if (!doc.designProfile && doc.designRevision !== 1) {
-      unveraendert += 1;
+      // Getrennt gezaehlt: "kein Profil gespeichert" ist etwas anderes als
+      // "Profil stimmt schon". Beides braucht keinen Schreibvorgang, aber nur
+      // das erste heisst auch, dass die Seite bei jedem Aufruf denselben
+      // Grundrhythmus ableitet — also identisch zu allen anderen ohne Profil.
+      ohneProfil += 1;
       continue;
     }
 
@@ -127,6 +133,8 @@ async function main(): Promise<void> {
       ? `${alt.composition}/${alt.heroLayout}/${alt.servicesLayout}/${alt.galleryLayout}`
       : "ohne Profil";
     const neuKurz = `${neu.composition}/${neu.heroLayout}/${neu.servicesLayout}/${neu.galleryLayout}`;
+    const rhythmus = `${neu.servicesLayout}/${neu.galleryLayout}`;
+    rhythmen.set(rhythmus, (rhythmen.get(rhythmus) ?? 0) + 1);
     if (altKurz === neuKurz) {
       unveraendert += 1;
       continue;
@@ -154,7 +162,17 @@ async function main(): Promise<void> {
     `\n${geprueft} Vorschau-Dokumente gelesen · ${uebersprungenVerkauft} verkauft (unangetastet)` +
       (brancheFilter ? ` · ${uebersprungenFremd} andere Branche` : "")
   );
-  console.log(`${unveraendert} hatten bereits die richtige Gestaltung.`);
+  console.log(
+    `${ohneProfil} ohne gespeichertes Profil (leiten beim Rendern ab — alle mit demselben Grundrhythmus).`
+  );
+  console.log(`${unveraendert} mit Profil, das bereits stimmt.`);
+  if (rhythmen.size > 0) {
+    const verteilung = [...rhythmen.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([r, n]) => `${r}: ${n}`)
+      .join(" · ");
+    console.log(`Rhythmus-Verteilung der geprüften Profile: ${verteilung}`);
+  }
   console.log(
     `${geaendert.length} ${schreiben ? "geändert" : "würden sich ändern"}:`
   );
