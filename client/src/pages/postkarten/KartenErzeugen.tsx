@@ -70,6 +70,56 @@ interface Lauf {
   fehler: string[];
 }
 
+/**
+ * Anschrift direkt in der Zeile nachtragen. Gespeichert wird nur, was der
+ * Server zerlegen kann — die Fehlermeldung nennt die Form, statt „ungültig"
+ * zu sagen.
+ */
+function AnschriftNachtragen({
+  businessId,
+  anschrift,
+  gespeichert,
+}: {
+  businessId: number;
+  anschrift: string;
+  gespeichert: () => Promise<void>;
+}) {
+  const [wert, setWert] = useState(anschrift);
+  const speichern = trpc.postkarten.anschrift.useMutation();
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-2">
+      <Input
+        className="h-8 w-72 text-xs"
+        value={wert}
+        placeholder="Osterstraße 25, 46397 Bocholt, Deutschland"
+        onChange={e => setWert(e.target.value)}
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={speichern.isPending || wert.trim().length < 5}
+        onClick={async () => {
+          try {
+            const { empfaenger } = await speichern.mutateAsync({
+              businessId,
+              anschrift: wert,
+            });
+            toast.success(
+              `Gespeichert: ${empfaenger.street} ${empfaenger.houseNumber}, ${empfaenger.zip} ${empfaenger.city}`
+            );
+            await gespeichert();
+          } catch (err) {
+            toast.error(err instanceof Error ? err.message : String(err));
+          }
+        }}
+      >
+        Anschrift speichern
+      </Button>
+    </div>
+  );
+}
+
 export default function KartenErzeugen() {
   const [filter, setFilter] = useState({ branche: "", stadt: "", suche: "" });
   const [entwurf, setEntwurf] = useState(filter);
@@ -356,6 +406,18 @@ export default function KartenErzeugen() {
                         <div className="text-xs text-muted-foreground">
                           {z.hinweis}
                         </div>
+                        {z.zustand === "ohne-anschrift" && (
+                          // Der einzige Zustand, den kein Knopf loest: Google
+                          // hat keine oder eine unbrauchbare Adresse
+                          // geliefert. Hier eintragen statt in der Datenbank.
+                          <AnschriftNachtragen
+                            businessId={z.businessId}
+                            anschrift={z.anschrift ?? ""}
+                            gespeichert={async () => {
+                              await utils.postkarten.kandidaten.invalidate();
+                            }}
+                          />
+                        )}
                       </td>
                       <td className="py-2">{z.stadt ?? "—"}</td>
                       <td className="py-2 font-mono">{z.code ?? "—"}</td>

@@ -104,6 +104,7 @@ vi.mock("@/lib/trpc", () => {
             data: [{ id: "ungefragt", headline: "Deine Website ist fertig." }],
           }),
         },
+        anschrift: { useMutation: () => mutation },
         motiv: { useMutation: () => mutation },
         vorschau: { useMutation: () => mutation },
         beauftragen: { useMutation: () => mutation },
@@ -131,6 +132,13 @@ describe("KartenErzeugen", () => {
     // Ohne Auswahl ist der Versandknopf leer — und bleibt es, bis jemand
     // Zeilen anhakt.
     expect(html).toContain("Beauftragen (0)");
+  });
+
+  test("bietet bei fehlender Anschrift das Nachtragen an", () => {
+    // Der einzige Zustand, den kein Knopf auflöst — deshalb hier ein Feld
+    // statt eines Hinweises, der in die Datenbank schickt.
+    expect(html).toContain("Anschrift speichern");
+    expect(html).toContain("Osterstraße 25, 46397 Bocholt, Deutschland");
   });
 
   test("nennt die Zähler aus der Abfrage", () => {

@@ -20,6 +20,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
+import { updateBusiness } from "../db";
 import { gruppiere } from "./auswertung";
 import { karteAnHeymail } from "./auftrag";
 import {
@@ -171,6 +172,42 @@ export const postkartenRouter = router({
           ).length,
         },
       };
+    }),
+
+  /**
+   * Anschrift nachtragen oder geradeziehen.
+   *
+   * „Anschrift fehlt" ist der einzige Zustand, den der Betreiber nicht mit
+   * einem Klick aufloesen kann: Google liefert bei manchen Betrieben keine
+   * Adresse oder eine, die sich nicht sauber zerlegen laesst (fehlende
+   * Hausnummer, „Postfach", Adresszusatz vor der Strasse). Bisher haette er
+   * dafuer in die Datenbank gemusst.
+   *
+   * Gespeichert wird nur, was `anschriftZerlegen` versteht — eine geratene
+   * Adresse waere schlimmer als gar keine Karte: Sie kostet Porto und landet
+   * im Nirgendwo.
+   */
+  anschrift: adminProcedure
+    .input(
+      z.object({
+        businessId: z.number().int().positive(),
+        anschrift: z.string().min(5).max(400),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      const empfaenger = anschriftZerlegen(input.anschrift.trim());
+      if (!empfaenger) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "So ist die Anschrift nicht zerlegbar. Form: Osterstraße 25, 46397 Bocholt, Deutschland — Hausnummer und PLZ müssen drin sein.",
+        });
+      }
+      await updateBusiness(kandidat.businessId, {
+        address: input.anschrift.trim(),
+      });
+      return { empfaenger };
     }),
 
   /**
