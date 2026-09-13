@@ -1,3 +1,4 @@
+import { applyStylePack } from "../onboardingV2/applyPatch";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import type { Mock } from "vitest";
 import express, { type Express } from "express";
@@ -815,6 +816,27 @@ describe("SSR routes", () => {
       );
       expect(res.status).toBe(200);
       expect(res.text).toContain('class="pb-kanzlei');
+    });
+
+    test("Designalternative und übernommenes Design zeigen dieselbe Komposition", async () => {
+      const source = {
+        ...getFixture("werkbank", "full"),
+        designRevision: 2 as const,
+      };
+      const chosen = applyStylePack(source, "kanzlei");
+      const lookup = getWebsiteByToken as Mock;
+      lookup.mockResolvedValue({ id: 1, slug: "s", websiteData: source });
+      const candidate = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
+      );
+      lookup.mockResolvedValue({ id: 1, slug: "s", websiteData: chosen });
+      const selected = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
+      );
+      const hero = (html: string) =>
+        html.match(/<section[^>]*data-art-composition[^>]*>/)?.[0];
+      expect(hero(candidate.text)).toBeTruthy();
+      expect(hero(candidate.text)).toBe(hero(selected.text));
     });
 
     test("?version=<id> rendert den gespeicherten Stand statt des Dokuments (Verlauf, 2026-09-03)", async () => {

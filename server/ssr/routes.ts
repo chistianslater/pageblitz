@@ -1,3 +1,4 @@
+import { applyStylePack } from "../onboardingV2/applyPatch";
 import type { Express, NextFunction, Request, Response } from "express";
 import { handleKurzlink } from "../postkarten/route";
 import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
@@ -212,21 +213,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       res.status(404).send("Vorschau-Seite nicht gefunden");
       return;
     }
-    const data = packParam
-      ? {
-          ...parsed.data,
-          stylePackId: packParam as PackId,
-          // Richtungs-Kandidat zeigt bereits die Komposition, die beim
-          // Übernehmen persistiert wird — kein visueller Sprung zwischen
-          // Mini-Preview und Auswahl.
-          designProfile: deriveDesignProfile({
-            stylePackId: packParam,
-            businessName: parsed.data.businessName,
-            businessCategory: parsed.data.businessCategory,
-            sections: parsed.data.sections,
-          }),
-        }
-      : parsed.data;
+    const data =
+      packParam && packParam !== parsed.data.stylePackId
+        ? applyStylePack(parsed.data, packParam as PackId)
+        : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const basePath = `/preview-ssr/${token}`;
     const { html, status } = renderSiteHtml(data, {

@@ -3,7 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
-import { PreviewFrame } from "./PreviewFrame";
+import { usePreviewViewport } from "./usePreviewViewport";
+import { PreviewFrame, buildPreviewSrc } from "./PreviewFrame";
 import { DesignQuickControls } from "./DesignQuickControls";
 
 interface Candidate {
@@ -23,6 +24,32 @@ interface DesignSplashProps {
   onApplied: () => void;
   onSelectionApplied?: () => void;
   onConfirmed: () => void;
+}
+
+function AlternativePreview({
+  token,
+  packId,
+  version,
+}: {
+  token: string;
+  packId: PackId;
+  version: number;
+}) {
+  const ref = usePreviewViewport("desktop");
+  return (
+    <span
+      ref={ref as React.RefObject<HTMLSpanElement>}
+      className="pb-design-side-frame"
+      aria-hidden="true"
+    >
+      <iframe
+        src={buildPreviewSrc({ token, packOverride: packId, version })}
+        title="Alternative mit deinen Inhalten"
+        loading="lazy"
+        tabIndex={-1}
+      />
+    </span>
+  );
 }
 
 /**
@@ -125,15 +152,13 @@ export function DesignSplash({
         disabled={busyId !== null}
         aria-label={`${candidate.name} als Designrichtung verwenden`}
       >
-        <span className="pb-design-side-frame" aria-hidden="true">
-          <img
-            src={`/pack-previews/${candidate.id}.webp`}
-            alt=""
-            loading="lazy"
-          />
-        </span>
+        <AlternativePreview
+          token={token}
+          packId={candidate.id}
+          version={previewVersion}
+        />
         <strong>{candidate.name}</strong>
-        <span>Stilbeispiel · {candidate.essence}</span>
+        <span>Deine Inhalte · {candidate.essence}</span>
       </button>
     ) : (
       <span />

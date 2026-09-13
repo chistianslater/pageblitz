@@ -3638,3 +3638,4 @@
 .pb-design-preview-shell .pb-harmony-options legend{float:left;width:100%}
 @media(max-width:480px){.pb-design-preview-shell .pb-harmony-triggers button>svg:last-child{display:none}.pb-design-preview-shell .pb-harmony-triggers button{gap:4px;padding:8px 5px}.pb-harmony-accent{padding:0 4px}.pb-design-preview-shell .pb-harmony{right:8px;bottom:8px;max-width:calc(100% - 16px)}}
 .pb-design-preview-shell .pb-harmony-grid,.pb-design-preview-shell .pb-harmony-current{clear:both}
+.pb-harmony-accent i{display:block;width:25px;height:25px;border-radius:5px;border:1px solid #0002}.pb-harmony-color-chip{height:32px;border-radius:5px;border:1px solid #0002}.pb-harmony-custom-color{display:flex;align-items:center;gap:10px;font-size:12px;padding:10px}.pb-harmony-custom-color input{width:32px;height:32px;border:0;padding:0;background:none}

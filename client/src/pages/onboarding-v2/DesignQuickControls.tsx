@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Palette, Type, ChevronDown } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution, getFontPair } from "@shared/stylePacks";
-import { PACK_FONT_PAIRS } from "@shared/stylePacks/packVariants";
+import { PACK_FONT_PAIRS, PACK_ACCENTS } from "@shared/stylePacks/packVariants";
 import {
   getColorWorlds,
   activeColorWorldId,
@@ -26,7 +26,7 @@ export function DesignQuickControls({
   fontPairId = null,
   onApplied,
 }: DesignQuickControlsProps) {
-  const [open, setOpen] = useState<"color" | "font" | null>(null);
+  const [open, setOpen] = useState<"accent" | "color" | "font" | null>(null);
   const [custom, setCustom] = useState(accent ?? "#536025");
   const colorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -79,24 +79,16 @@ export function DesignQuickControls({
       }}
     >
       <div className="pb-harmony-triggers">
-        <label className="pb-harmony-accent" title="Akzentfarbe ändern">
-          <input
-            aria-label="Akzentfarbe"
-            type="color"
-            value={custom}
-            disabled={update.isPending}
-            onChange={e => {
-              const value = e.target.value;
-              setCustom(value);
-              if (colorTimer.current) clearTimeout(colorTimer.current);
-              colorTimer.current = setTimeout(
-                () => save({ accent: value }),
-                450
-              );
-            }}
-          />
+        <button
+          type="button"
+          className="pb-harmony-accent"
+          aria-label="Akzentfarbe"
+          aria-expanded={open === "accent"}
+          onClick={() => setOpen(open === "accent" ? null : "accent")}
+        >
+          <i style={{ background: custom }} aria-hidden="true" />
           <span>Akzent</span>
-        </label>
+        </button>
         <button
           type="button"
           aria-expanded={open === "color"}
@@ -119,11 +111,53 @@ export function DesignQuickControls({
       {open && (
         <fieldset className="pb-harmony-options" disabled={update.isPending}>
           <legend>
-            {open === "color"
-              ? "Grundfläche, Text und Akzent im Zusammenspiel"
-              : "Überschrift und Lesetext als abgestimmtes Paar"}
+            {open === "accent"
+              ? "Passende Akzentfarben für dein Design"
+              : open === "color"
+                ? "Grundfläche, Text und Akzent im Zusammenspiel"
+                : "Überschrift und Lesetext als abgestimmtes Paar"}
           </legend>
-          {open === "color" ? (
+          {open === "accent" ? (
+            <div className="pb-harmony-grid">
+              {PACK_ACCENTS[packId].map((hex, i) => (
+                <button
+                  key={hex}
+                  type="button"
+                  aria-label={`Akzentvorschlag ${i + 1}`}
+                  aria-pressed={custom.toLowerCase() === hex.toLowerCase()}
+                  onClick={() => {
+                    setCustom(hex);
+                    save({ accent: hex });
+                  }}
+                >
+                  <span
+                    className="pb-harmony-color-chip"
+                    style={{ background: hex }}
+                  />
+                  <small>
+                    {i === 0 ? "Originalakzent" : `Variante ${i + 1}`}
+                  </small>
+                </button>
+              ))}
+              <label className="pb-harmony-custom-color">
+                Eigene Farbe
+                <input
+                  type="color"
+                  aria-label="Eigene Akzentfarbe"
+                  value={custom}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setCustom(value);
+                    if (colorTimer.current) clearTimeout(colorTimer.current);
+                    colorTimer.current = setTimeout(
+                      () => save({ accent: value }),
+                      450
+                    );
+                  }}
+                />
+              </label>
+            </div>
+          ) : open === "color" ? (
             <>
               {activeWorld === "eigene" && (
                 <p className="pb-harmony-current">
@@ -137,13 +171,14 @@ export function DesignQuickControls({
                     type="button"
                     key={world.id}
                     aria-pressed={activeWorld === world.id}
-                    onClick={() =>
-                      save({ colorWorldId: world.id, accent: world.swatch[2] })
-                    }
+                    onClick={() => save({ colorWorldId: world.id })}
                   >
                     <span className="pb-harmony-swatches" aria-hidden="true">
                       {world.swatch.map((hex, i) => (
-                        <i key={i} style={{ background: hex }} />
+                        <i
+                          key={i}
+                          style={{ background: i === 2 ? custom : hex }}
+                        />
                       ))}
                     </span>
                     <strong>{world.name}</strong>

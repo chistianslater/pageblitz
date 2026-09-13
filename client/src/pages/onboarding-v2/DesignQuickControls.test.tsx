@@ -29,7 +29,7 @@ describe("DesignQuickControls", () => {
   test("zeigt kompakte Farb-/Schrift-Trigger ohne ausführliche Layoutoptionen", () => {
     const html = render();
     expect(html).toContain('aria-label="Akzentfarbe"');
-    expect(html).toContain('type="color"');
+    expect(html).not.toContain('type="color"');
     expect(html).toContain("Farbwelt");
     expect(html).toContain("Schrift");
     expect(html).toContain("Schriftkombination");
