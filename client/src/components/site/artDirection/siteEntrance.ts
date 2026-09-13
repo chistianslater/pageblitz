@@ -6,6 +6,7 @@ export function mountSiteEntrance(root: HTMLElement): () => void {
   media.add("(prefers-reduced-motion: no-preference)", () => {
     const context = gsap.context(() => {}, root);
     const animated = new WeakSet<Element>();
+    const activeTweens = new Set<gsap.core.Tween>();
     const reveal = (elements: HTMLElement[], hero = false) => {
       const targets = elements.filter(
         el => !animated.has(el) && !el.contains(document.activeElement)
@@ -13,7 +14,7 @@ export function mountSiteEntrance(root: HTMLElement): () => void {
       targets.forEach(el => animated.add(el));
       if (!targets.length) return;
       context.add(() => {
-        gsap.from(targets, {
+        const tween = gsap.from(targets, {
           opacity: hero ? 0.25 : 0.4,
           y: hero ? 22 : 16,
           duration: hero ? 0.85 : 0.65,
@@ -23,7 +24,11 @@ export function mountSiteEntrance(root: HTMLElement): () => void {
           },
           ease: "power3.out",
           clearProps: "opacity,transform",
+          onComplete: () => {
+            activeTweens.delete(tween);
+          },
         });
+        activeTweens.add(tween);
       });
     };
     const hero = root.querySelector<HTMLElement>(".pb-art-hero");
@@ -61,15 +66,17 @@ export function mountSiteEntrance(root: HTMLElement): () => void {
       .querySelectorAll("section:not(#start)")
       .forEach(el => observer?.observe(el));
     const finish = () => {
-      context
-        .getTweens()
-        .forEach((tween: gsap.core.Animation) => tween.progress(1));
+      // context.getTweens() also exposes GSAP's internal from/start-state
+      // tweens. Finishing those reapplies the faded start state after completion.
+      // Only retain our currently running parent tweens, never completed helpers.
+      Array.from(activeTweens).forEach(tween => tween.progress(1));
     };
     root.addEventListener("focusin", finish);
     return () => {
       observer?.disconnect();
       root.removeEventListener("focusin", finish);
       context.revert();
+      activeTweens.clear();
     };
   });
   return () => media.revert();
