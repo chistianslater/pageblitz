@@ -101,9 +101,13 @@ Protokoll der PB_LAYOUT_V2-Übergangsphase).
   migrate`) spiegelt diese Konvention aktuell **nicht** exakt — für neue
   Migrationen von Hand eine `NNNN_beschreibung.sql`-Datei anlegen und
   committen, keinen Generator laufen lassen.
-- VPS-Einspielung: keine Automatisierung, manuell per `mysql`-Client
-  (`ssh -i ~/.ssh/claude_pageblitz root@76.13.147.95`, dann `mysql -u <user>
-  -p <db> < /root/pageblitz/drizzle/NNNN_*.sql`).
+- VPS-Einspielung: keine Automatisierung, aber ein Skript statt getippter
+  Zugangsdaten — `./scripts/migration-einspielen.sh drizzle/NNNN_*.sql` nimmt
+  `DATABASE_URL` aus der `.env` und zeigt das Passwort nirgends;
+  `--trocken` zeigt vorher nur, was liefe. Von Hand geht es weiter mit
+  `mysql -u DERNUTZER -p DIEDATENBANK < /root/pageblitz/drizzle/NNNN_*.sql`
+  (Platzhalter ohne spitze Klammern schreiben: `<user>` ist in der Bash eine
+  Umleitung und bricht die Zeile mit „syntax error" ab).
 - Lokale Dev-DB: Docker-Container `pageblitz-mysql` (Image `mysql:8.4`,
   Runtime Colima — `colima start`, dann `docker start pageblitz-mysql` falls
   gestoppt). Schema-Abgleich lokal per `npx drizzle-kit push --force`
