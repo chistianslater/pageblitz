@@ -26,24 +26,37 @@ function arg(flag: string): string | undefined {
 const slug = arg("--slug");
 const ohneNetz = process.argv.includes("--ohne-netz");
 
-/** Alle Bild-URLs im Dokument einsammeln, samt Pfad zur Fundstelle. */
+/**
+ * Alle Bild-URLs im Dokument einsammeln, samt Pfad zur Fundstelle.
+ *
+ * Nicht über die Dateiendung: Google-Fotos kommen als
+ * `lh3.googleusercontent.com/p/AF1Qip…=w1600` ohne Endung. Die erste Fassung
+ * filterte genau danach und meldete deshalb für eine Seite mit Galerie
+ * „2 Bilder", obwohl die Galerie voll war — die Lücke hat den Befund
+ * verschleiert statt ihn zu zeigen. Jetzt entscheidet der Feldname.
+ */
+const BILDFELDER = new Set(["url", "imageurl", "src", "image", "photourl"]);
+
 function bilderSammeln(
   wert: unknown,
   pfad: string,
-  treffer: Array<{ pfad: string; url: string }> = []
+  treffer: Array<{ pfad: string; url: string }> = [],
+  feld = ""
 ): Array<{ pfad: string; url: string }> {
   if (typeof wert === "string") {
-    if (
-      /^https?:\/\//i.test(wert) &&
-      /\.(webp|jpe?g|png|avif|gif)(\?|$)/i.test(wert)
-    ) {
+    const istBildfeld = BILDFELDER.has(feld.toLowerCase());
+    const hatEndung = /\.(webp|jpe?g|png|avif|gif)(\?|$)/i.test(wert);
+    // Auch relative Pfade melden: die zeigen auf die eigene Domain und
+    // laufen auf einer Kundenseite ins Leere, wenn dort nichts liegt.
+    const istPfad = wert.startsWith("/") && (istBildfeld || hatEndung);
+    if ((/^https?:\/\//i.test(wert) && (istBildfeld || hatEndung)) || istPfad) {
       treffer.push({ pfad, url: wert });
     }
     return treffer;
   }
   if (Array.isArray(wert)) {
     wert.forEach((eintrag, i) =>
-      bilderSammeln(eintrag, `${pfad}[${i}]`, treffer)
+      bilderSammeln(eintrag, `${pfad}[${i}]`, treffer, feld)
     );
     return treffer;
   }
@@ -52,7 +65,8 @@ function bilderSammeln(
       bilderSammeln(
         inhalt,
         pfad ? `${pfad}.${schluessel}` : schluessel,
-        treffer
+        treffer,
+        schluessel
       );
     }
   }
@@ -60,6 +74,7 @@ function bilderSammeln(
 }
 
 async function erreichbar(url: string): Promise<string> {
+  if (!/^https?:\/\//i.test(url)) return "relativer Pfad";
   try {
     const res = await fetch(url, { method: "HEAD", redirect: "follow" });
     const laenge = res.headers.get("content-length");
@@ -114,11 +129,24 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log(`\n${bilder.length} Bild-URLs im Dokument:`);
+  const googleBilder = bilder.filter(b =>
+    /googleusercontent|ggpht/i.test(b.url)
+  );
+  console.log(
+    `\n${bilder.length} Bild-URLs im Dokument` +
+      (googleBilder.length
+        ? ` — davon ${googleBilder.length} NICHT nach R2 gespiegelt (direkt von Google)`
+        : " — alle nach R2 gespiegelt")
+  );
   for (const { pfad, url } of bilder) {
     const status = ohneNetz ? "(nicht geprüft)" : await erreichbar(url);
-    console.log(`  ${status.padEnd(22)} ${pfad}`);
-    console.log(`  ${" ".repeat(22)} ${url.slice(0, 120)}`);
+    const herkunft = !/^https?:\/\//i.test(url)
+      ? "relativ"
+      : /googleusercontent|ggpht/i.test(url)
+        ? "Google"
+        : "R2";
+    console.log(`  ${status.padEnd(22)} ${herkunft.padEnd(7)} ${pfad}`);
+    console.log(`  ${" ".repeat(30)} ${url.slice(0, 120)}`);
   }
   if (!ohneNetz) {
     console.log(
