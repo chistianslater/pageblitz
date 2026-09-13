@@ -129,24 +129,54 @@ async function main(): Promise<void> {
     return;
   }
 
-  const googleBilder = bilder.filter(b =>
-    /googleusercontent|ggpht/i.test(b.url)
-  );
+  // Herkunft ehrlich benennen: die erste Fassung nannte alles "R2", was nicht
+  // von Google kam — und wies damit Unsplash-Stockfotos als gespiegelte
+  // Kundenfotos aus. Genau die Unterscheidung braucht man hier.
+  const herkunftVon = (url: string): string => {
+    if (!/^https?:\/\//i.test(url)) return "relativ";
+    if (/googleusercontent|ggpht/i.test(url)) return "Google";
+    if (/images\.unsplash\.com/i.test(url)) return "Stock";
+    if (/r2\.dev|r2\.cloudflarestorage/i.test(url)) return "R2";
+    try {
+      return new URL(url).hostname.replace(/^www\./, "").slice(0, 18);
+    } catch {
+      return "?";
+    }
+  };
+  const zaehlung = new Map<string, number>();
+  for (const b of bilder) {
+    const h = herkunftVon(b.url);
+    zaehlung.set(h, (zaehlung.get(h) ?? 0) + 1);
+  }
   console.log(
-    `\n${bilder.length} Bild-URLs im Dokument` +
-      (googleBilder.length
-        ? ` — davon ${googleBilder.length} NICHT nach R2 gespiegelt (direkt von Google)`
-        : " — alle nach R2 gespiegelt")
+    `\n${bilder.length} Bild-URLs im Dokument — ` +
+      [...zaehlung.entries()].map(([h, n]) => `${n}× ${h}`).join(", ")
   );
+  const stock = bilder.filter(b => herkunftVon(b.url) === "Stock");
+  if (stock.length) {
+    console.log(
+      `  Hinweis: ${stock.length} davon sind Stockfotos, keine Fotos des Betriebs.`
+    );
+  }
   for (const { pfad, url } of bilder) {
     const status = ohneNetz ? "(nicht geprüft)" : await erreichbar(url);
-    const herkunft = !/^https?:\/\//i.test(url)
-      ? "relativ"
-      : /googleusercontent|ggpht/i.test(url)
-        ? "Google"
-        : "R2";
+    const herkunft = herkunftVon(url);
     console.log(`  ${status.padEnd(22)} ${herkunft.padEnd(7)} ${pfad}`);
     console.log(`  ${" ".repeat(30)} ${url.slice(0, 120)}`);
+  }
+  const motive = bilder.map(b => {
+    try {
+      return new URL(b.url).pathname;
+    } catch {
+      return b.url.split("?")[0];
+    }
+  });
+  const doppelt = motive.filter((m, i) => motive.indexOf(m) !== i);
+  if (doppelt.length) {
+    console.log(
+      `\nACHTUNG: ${doppelt.length} Motiv(e) kommen mehrfach vor — dasselbe Foto\n` +
+        "steht zweimal auf der Seite (oft dieselbe Datei in zwei Größen)."
+    );
   }
   if (!ohneNetz) {
     console.log(

@@ -4,6 +4,33 @@ import { getIndustryImages } from "./industryImages";
 import { INDUSTRY_IMAGES } from "../shared/industryImages";
 
 describe("buildStockFallbackImages", () => {
+  /** Ein Motiv, egal in welchem Zuschnitt: der Pfad ohne Query. */
+  const motiv = (url: string) => new URL(url).pathname;
+
+  test("zeigt kein Motiv zweimal, auch nicht in zwei Größen", () => {
+    // Betreiber-Befund 2026-09-13 (Salon Iris Klautke): sieben Bilder in der
+    // Galerie, davon zwei dasselbe Foto — einmal als ?w=800&q=80 aus der
+    // Galerieliste, einmal als ?w=1400&q=85 aus Hero/Über-uns. Die
+    // Entdopplung verglich ganze URLs und sah zwei verschiedene.
+    for (const branche of [
+      "Friseur",
+      "Restaurant",
+      "Zahnarzt",
+      "Handwerker",
+      "Kosmetikstudio",
+    ]) {
+      const bilder = buildStockFallbackImages(branche, "Beispiel", undefined);
+      const motive = (bilder.gallery ?? []).map(motiv);
+      expect(new Set(motive).size, `${branche}: Dublette in der Galerie`).toBe(
+        motive.length
+      );
+      // Über-uns darf nicht dasselbe Motiv wie der Hero sein.
+      if (bilder.about) {
+        expect(motiv(bilder.about), branche).not.toBe(motiv(bilder.hero));
+      }
+    }
+  });
+
   test("liefert visuell vollständige Defaults (Hero, About, Galerie ≥ 3)", () => {
     const images = buildStockFallbackImages("Tischler", "Brandt", "handwerk");
     expect(images.hero).toMatch(/^https:\/\/images\.unsplash\.com\//);

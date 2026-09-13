@@ -25,7 +25,11 @@ export function getIndustryImages(
   // obwohl ihre Kategorie "Friseursalon" eindeutig ist (Befund 2026-09-09).
   // Jetzt faellt sie durch zur Schlagwortsuche und landet nur dort, wo auch
   // die Kategorie nichts hergibt.
-  if (industryKey && industryKey !== "default" && INDUSTRY_IMAGES[industryKey]) {
+  if (
+    industryKey &&
+    industryKey !== "default" &&
+    INDUSTRY_IMAGES[industryKey]
+  ) {
     return INDUSTRY_IMAGES[industryKey];
   }
 
@@ -98,6 +102,24 @@ export function getGalleryImages(
 const MIN_STOCK_GALLERY = 3;
 
 /**
+ * Dasselbe Foto in zwei Größen ist dasselbe Foto.
+ *
+ * Die Listen liefern ein Motiv je nach Zweck unterschiedlich zugeschnitten:
+ * Galerie mit `?w=800&q=80`, Hero und Über-uns mit `?w=1400&q=85`. Der
+ * Vergleich lief über die ganze URL — damit galten beide als verschieden und
+ * standen nebeneinander in der Galerie (Betreiber-Befund 2026-09-13, Salon
+ * Iris Klautke: sieben Bilder, davon zwei doppelt). Die Identität ist der
+ * Pfad ohne Query, bei Unsplash also `/photo-<id>`.
+ */
+function bildIdentitaet(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return url.split("?")[0];
+  }
+}
+
+/**
  * Branchen-Stock, wenn GMB/Upload leer sind: Hero, Über-uns und (ab 3
  * Motiven) Galerie. Die Generierung bleibt so visuell vollständig, statt
  * Hero/About/Galerie auf kaputte Leere zu strippen.
@@ -109,15 +131,21 @@ export function buildStockFallbackImages(
 ): { hero: string; about?: string; gallery?: string[] } {
   const imageSet = getIndustryImages(category, businessName, industryKey);
   const unique: string[] = [];
+  const gesehen = new Set<string>();
   for (const url of [
     ...(imageSet.gallery ?? []),
     ...imageSet.hero,
     ...(imageSet.about ?? []),
   ]) {
-    if (!unique.includes(url)) unique.push(url);
+    const id = bildIdentitaet(url);
+    if (gesehen.has(id)) continue;
+    gesehen.add(id);
+    unique.push(url);
   }
   const hero = getHeroImageUrl(category, businessName, industryKey);
-  const about = unique.find(url => url !== hero) ?? unique[0] ?? hero;
+  const heroId = bildIdentitaet(hero);
+  const about =
+    unique.find(url => bildIdentitaet(url) !== heroId) ?? unique[0] ?? hero;
   return {
     hero,
     ...(about ? { about } : {}),
