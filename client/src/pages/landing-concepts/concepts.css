@@ -278,6 +278,26 @@
   font-size: 12px;
   padding: 10px 16px;
 }
+/* Rechte Gruppe: Login (Bestandskunden) + Start-CTA. Bewusst `span` und
+   nicht `div` — `.clear-nav > div` ist die Linkliste und verschwindet unter
+   680px; der Login soll dort bleiben. */
+.clear-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.clear-nav-login {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  font-size: 13px;
+  color: #4c5b71;
+  white-space: nowrap;
+}
+.clear-nav-login:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .clear-hero {
   padding-top: 65px;
   text-align: center;
@@ -1160,6 +1180,12 @@
     gap: 7px;
     min-height: 40px;
   }
+  .clear-nav-actions {
+    gap: 12px;
+  }
+  .clear-nav-login {
+    font-size: 11px;
+  }
   .clear-hero {
     padding-top: 40px;
   }
@@ -1483,6 +1509,7 @@
 }
 .clear-evolved .clear-step-visual,
 .clear-evolved .clear-nav > div,
+.clear-evolved .clear-nav-login,
 .clear-evolved .clear-preview-foot,
 .clear-evolved .clear-benefit-strip,
 .clear-evolved .clear-browser,

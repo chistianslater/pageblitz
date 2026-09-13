@@ -191,9 +191,17 @@ export default function Klarstart() {
           <a href="#funktionen">Funktionen</a>
           <a href="#preise">Preise</a>
         </div>
-        <a className="lc-button" href="#start">
-          Kostenlos starten <ArrowRight size={16} />
-        </a>
+        <span className="clear-nav-actions">
+          {/* Bestandskunden: echte Route (/login, Magic-Link + Google), also
+              ein normaler Link — kein Hash-Scroll wie die Nav-Punkte. Bleibt
+              mobil sichtbar, wo die Nav-Punkte ausgeblendet werden. */}
+          <a className="clear-nav-login" href="/login">
+            Anmelden
+          </a>
+          <a className="lc-button" href="#start">
+            Kostenlos starten <ArrowRight size={16} />
+          </a>
+        </span>
       </nav>
       <main>
         <section className="clear-hero lc-width">
