@@ -17,9 +17,11 @@ interface DesignSplashProps {
   businessName: string;
   currentPackId: PackId;
   accent?: string | null;
+  colorOverrides?: Record<string, string>;
   fontPairId?: string | null;
   previewVersion: number;
   onApplied: () => void;
+  onSelectionApplied?: () => void;
   onConfirmed: () => void;
 }
 
@@ -33,21 +35,17 @@ export function DesignSplash({
   businessName,
   currentPackId,
   accent = null,
+  colorOverrides,
   fontPairId = null,
   previewVersion,
   onApplied,
+  onSelectionApplied = onApplied,
   onConfirmed,
 }: DesignSplashProps) {
   const [round, setRound] = useState(0);
   const [activePackId, setActivePackId] = useState(currentPackId);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [busyId, setBusyId] = useState<PackId | null>(null);
-  const pointerGesture = React.useRef<{
-    x: number;
-    y: number;
-    lastY: number;
-  } | null>(null);
-  const previewIframe = React.useRef<HTMLIFrameElement | null>(null);
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right"
   );
@@ -89,15 +87,15 @@ export function DesignSplash({
 
   const pick = (packId: PackId, direction: "left" | "right" = "right") => {
     if (busyId || packId === activePackId) return;
-    const before = activePackId;
     setSlideDirection(direction);
-    setActivePackId(packId);
     setBusyId(packId);
     select.mutate(
       { token, packId, confirm: false },
       {
-        onSuccess: onApplied,
-        onError: () => setActivePackId(before),
+        onSuccess: () => {
+          setActivePackId(packId);
+          onSelectionApplied();
+        },
         onSettled: () => setBusyId(null),
       }
     );
@@ -128,14 +126,14 @@ export function DesignSplash({
         aria-label={`${candidate.name} als Designrichtung verwenden`}
       >
         <span className="pb-design-side-frame" aria-hidden="true">
-          <iframe
-            src={`/preview-ssr/${token}?pack=${candidate.id}`}
-            tabIndex={-1}
-            title={`Vorschau ${candidate.name}`}
+          <img
+            src={`/pack-previews/${candidate.id}.webp`}
+            alt=""
+            loading="lazy"
           />
         </span>
         <strong>{candidate.name}</strong>
-        <span>{candidate.essence}</span>
+        <span>Stilbeispiel · {candidate.essence}</span>
       </button>
     ) : (
       <span />
@@ -175,11 +173,7 @@ export function DesignSplash({
 
         <div className="pb-design-stage">
           {sideCard(previous, "left")}
-          <div
-            className="pb-design-center"
-            data-enter={slideDirection}
-            key={activePackId}
-          >
+          <div className="pb-design-center" data-enter={slideDirection}>
             <div className="pb-design-center-label">
               <button
                 type="button"
@@ -207,62 +201,14 @@ export function DesignSplash({
               version={previewVersion}
               device={device}
               packOverride={activePackId}
-              onIframeReady={iframe => {
-                previewIframe.current = iframe;
-              }}
             />
             <DesignQuickControls
               token={token}
               packId={activePackId}
               accent={accent}
+              colorOverrides={colorOverrides}
               fontPairId={fontPairId}
               onApplied={onApplied}
-            />
-            <div
-              className="pb-design-swipe-surface"
-              aria-hidden="true"
-              onWheel={event => {
-                event.preventDefault();
-                previewIframe.current?.contentWindow?.scrollBy(0, event.deltaY);
-              }}
-              onPointerDown={event => {
-                pointerGesture.current = {
-                  x: event.clientX,
-                  y: event.clientY,
-                  lastY: event.clientY,
-                };
-                event.currentTarget.setPointerCapture(event.pointerId);
-              }}
-              onPointerMove={event => {
-                const gesture = pointerGesture.current;
-                if (!gesture) return;
-                const totalX = event.clientX - gesture.x;
-                const totalY = event.clientY - gesture.y;
-                // Nur überwiegend vertikale Bewegung an die Website
-                // weiterreichen. Horizontale Bewegung bleibt für den Swipe.
-                if (Math.abs(totalY) > Math.abs(totalX)) {
-                  const deltaY = gesture.lastY - event.clientY;
-                  previewIframe.current?.contentWindow?.scrollBy(0, deltaY);
-                  gesture.lastY = event.clientY;
-                }
-              }}
-              onPointerUp={event => {
-                const gesture = pointerGesture.current;
-                if (!gesture) return;
-                const deltaX = event.clientX - gesture.x;
-                const deltaY = event.clientY - gesture.y;
-                pointerGesture.current = null;
-                if (
-                  Math.abs(deltaX) < 45 ||
-                  Math.abs(deltaX) <= Math.abs(deltaY)
-                )
-                  return;
-                if (deltaX > 0 && previous) pick(previous.id, "left");
-                if (deltaX < 0 && next) pick(next.id, "right");
-              }}
-              onPointerCancel={() => {
-                pointerGesture.current = null;
-              }}
             />
             <button
               type="button"

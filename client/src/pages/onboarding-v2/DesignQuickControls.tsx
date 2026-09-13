@@ -1,240 +1,194 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Check, Palette, Plus, Type, X } from "lucide-react";
+import { Palette, Type, ChevronDown } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { getConstitution, getFontPair } from "@shared/stylePacks";
+import { PACK_FONT_PAIRS } from "@shared/stylePacks/packVariants";
 import {
-  FONT_PAIRS,
-  getConstitution,
-  getFontPair,
-} from "@shared/stylePacks";
+  getColorWorlds,
+  activeColorWorldId,
+} from "@shared/stylePacks/colorWorlds";
 import type { PackId } from "@shared/siteContract/types";
-import { ACCENT_CHOICES } from "./themeChoices";
 
 interface DesignQuickControlsProps {
   token: string;
   packId: PackId;
   accent?: string | null;
+  colorOverrides?: Record<string, string>;
   fontPairId?: string | null;
   onApplied: () => void;
 }
 
-/** Kompakte Splash-Steuerung: zwei Buttons, Optionen fächern nach oben auf. */
 export function DesignQuickControls({
   token,
   packId,
   accent = null,
+  colorOverrides,
   fontPairId = null,
   onApplied,
 }: DesignQuickControlsProps) {
   const [open, setOpen] = useState<"color" | "font" | null>(null);
-  const [localAccent, setLocalAccent] = useState(accent);
-  const [localFontPairId, setLocalFontPairId] = useState(fontPairId);
-  const updateTheme = trpc.onboardingV2.updateTheme.useMutation();
-
-  useEffect(() => setLocalAccent(accent), [accent]);
-  useEffect(() => setLocalFontPairId(fontPairId), [fontPairId]);
+  const [custom, setCustom] = useState(accent ?? "#536025");
+  const update = trpc.onboardingV2.updateTheme.useMutation();
+  const worlds = useMemo(() => getColorWorlds(packId).slice(0, 4), [packId]);
+  const fonts = useMemo(
+    () => PACK_FONT_PAIRS[packId].map(id => getFontPair(id)!).filter(Boolean),
+    [packId]
+  );
+  const activeWorld = activeColorWorldId(packId, colorOverrides);
+  const defaultAccent = getConstitution(packId).palette.find(
+    c => c.role === "accent"
+  )?.hex;
+  useEffect(
+    () => setCustom(accent ?? defaultAccent ?? "#536025"),
+    [accent, defaultAccent]
+  );
+  // Load only the three recommended combinations, only when their samples are opened.
   useEffect(() => {
-    if (!open) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(null);
-    };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [open]);
-
-  const directionAccent =
-    getConstitution(packId).palette.find(color => color.role === "accent")
-      ?.hex ?? "#1f5f4b";
-  const activeColor =
-    ACCENT_CHOICES.find(
-      color => color.hex.toLowerCase() === localAccent?.toLowerCase()
-    )?.name ?? (localAccent ? "Eigene Farbe" : "Richtungsfarbe");
-  const activeFont = getFontPair(localFontPairId)?.label ?? "Schriften der Richtung";
-
-  // Font-Chips sollen ihre tatsächliche Richtung zeigen; einmalig laden.
-  const fontHref = useMemo(() => {
-    const families = Array.from(
-      new Set(FONT_PAIRS.flatMap(pair => [pair.display.googleCss, pair.body.googleCss]))
-    );
-    return `https://fonts.googleapis.com/css2?${families
-      .map(font => `family=${font}`)
-      .join("&")}&display=swap`;
-  }, []);
-  useEffect(() => {
-    if (document.querySelector(`link[data-pb-quick-fonts="${fontHref}"]`)) return;
+    if (open !== "font") return;
+    const families = [
+      ...new Set(
+        fonts.flatMap(pair => [pair.display.googleCss, pair.body.googleCss])
+      ),
+    ];
+    const href = `https://fonts.googleapis.com/css2?${families.map(font => `family=${font}`).join("&")}&display=swap`;
+    if (document.querySelector(`link[data-pb-harmony-fonts="${packId}"]`))
+      return;
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = fontHref;
-    link.dataset.pbQuickFonts = fontHref;
+    link.href = href;
+    link.dataset.pbHarmonyFonts = packId;
     document.head.appendChild(link);
-  }, [fontHref]);
-
+  }, [open, fonts, packId]);
   const save = (patch: {
     accent?: string | null;
+    colorWorldId?: string | null;
     fontPairId?: string | null;
-  }) =>
-    updateTheme.mutate(
-      { token, ...patch },
-      {
-        onSuccess: () => {
-          onApplied();
-          setOpen(null);
-        },
-      }
-    );
-
-  const chooseAccent = (value: string | null) => {
-    setLocalAccent(value);
-    save({ accent: value });
-  };
-  const chooseFont = (value: string | null) => {
-    setLocalFontPairId(value);
-    save({ fontPairId: value });
-  };
-
+  }) => update.mutate({ token, ...patch }, { onSuccess: onApplied });
   return (
-    <div className="pb-design-quick">
-      <p className="pb-studio-kicker">Schnell anpassen</p>
-      <div className="pb-design-quick-row">
-        <div className="pb-design-quick-control">
-          <button
-            type="button"
-            className="pb-design-quick-trigger"
-            aria-expanded={open === "color"}
-            aria-label={`Farbe anpassen – ${activeColor}`}
-            onClick={() => setOpen(value => (value === "color" ? null : "color"))}
-          >
-            <Palette aria-hidden="true" />
-            <span
-              className="pb-design-quick-color"
-              style={{ background: localAccent ?? directionAccent }}
-            />
-            <span>
-              <small>Farbe</small>
-              <strong>{activeColor}</strong>
-            </span>
-          </button>
-          {open === "color" && (
-            <div className="pb-design-fan" data-kind="color">
-              <div className="pb-design-fan-head">
-                <strong>Akzentfarbe</strong>
-                <button
-                  type="button"
-                  aria-label="Farbauswahl schließen"
-                  onClick={() => setOpen(null)}
-                >
-                  <X aria-hidden="true" />
-                </button>
-              </div>
-              <div className="pb-design-fan-colors">
-                <button
-                  type="button"
-                  className="pb-design-fan-color"
-                  data-active={localAccent === null || undefined}
-                  onClick={() => chooseAccent(null)}
-                  title="Richtungsfarbe"
-                >
-                  <span style={{ background: directionAccent }} />
-                  {localAccent === null && <Check aria-hidden="true" />}
-                </button>
-                {ACCENT_CHOICES.map(color => {
-                  const active =
-                    localAccent?.toLowerCase() === color.hex.toLowerCase();
-                  return (
-                    <button
-                      key={color.hex}
-                      type="button"
-                      className="pb-design-fan-color"
-                      data-active={active || undefined}
-                      onClick={() => chooseAccent(color.hex)}
-                      title={color.name}
-                    >
-                      <span style={{ background: color.hex }} />
-                      {active && <Check aria-hidden="true" />}
-                    </button>
-                  );
-                })}
-                <label
-                  className="pb-design-custom-color"
-                  title="Eigene Farbe wählen"
-                >
-                  <input
-                    type="color"
-                    value={localAccent ?? directionAccent}
-                    onChange={event => chooseAccent(event.target.value)}
-                    aria-label="Eigene Akzentfarbe"
-                  />
-                  <span className="pb-design-color-wheel" aria-hidden="true">
-                    <Plus />
-                  </span>
-                  <strong>Eigene Farbe</strong>
-                </label>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="pb-design-quick-control">
-          <button
-            type="button"
-            className="pb-design-quick-trigger"
-            aria-expanded={open === "font"}
-            aria-label={`Schrift anpassen – ${activeFont}`}
-            onClick={() => setOpen(value => (value === "font" ? null : "font"))}
-          >
-            <Type aria-hidden="true" />
-            <span>
-              <small>Schrift</small>
-              <strong>{activeFont}</strong>
-            </span>
-          </button>
-          {open === "font" && (
-            <div className="pb-design-fan" data-kind="font">
-              <div className="pb-design-fan-head">
-                <strong>Schriftkombination</strong>
-                <button
-                  type="button"
-                  aria-label="Schriftauswahl schließen"
-                  onClick={() => setOpen(null)}
-                >
-                  <X aria-hidden="true" />
-                </button>
-              </div>
-              <div className="pb-design-fan-fonts">
-                <button
-                  type="button"
-                  data-active={localFontPairId === null || undefined}
-                  onClick={() => chooseFont(null)}
-                >
-                  <strong>Schriften der Richtung</strong>
-                  <span>Standard</span>
-                </button>
-                {FONT_PAIRS.map(pair => (
+    <div
+      className="pb-harmony"
+      onKeyDown={e => {
+        if (e.key === "Escape") setOpen(null);
+      }}
+    >
+      <div className="pb-harmony-heading">
+        <strong>Dein Design. Fein abgestimmt.</strong>
+        <span>Passende Kombinationen für {getConstitution(packId).name}</span>
+      </div>
+      <div className="pb-harmony-triggers">
+        <button
+          type="button"
+          aria-expanded={open === "color"}
+          onClick={() => setOpen(open === "color" ? null : "color")}
+        >
+          <Palette size={17} />
+          <span>Farbwelt</span>
+          <ChevronDown size={16} />
+        </button>
+        <button
+          type="button"
+          aria-expanded={open === "font"}
+          onClick={() => setOpen(open === "font" ? null : "font")}
+        >
+          <Type size={17} />
+          <span>Schriftkombination</span>
+          <ChevronDown size={16} />
+        </button>
+      </div>
+      {open && (
+        <fieldset className="pb-harmony-options" disabled={update.isPending}>
+          <legend>
+            {open === "color"
+              ? "Grundfläche, Text und Akzent im Zusammenspiel"
+              : "Überschrift und Lesetext als abgestimmtes Paar"}
+          </legend>
+          {open === "color" ? (
+            <>
+              {activeWorld === "eigene" && (
+                <p className="pb-harmony-current">
+                  Deine aktuelle Kombination ist individuell abgestimmt. Sie
+                  bleibt erhalten, bis du eine andere wählst.
+                </p>
+              )}
+              <div className="pb-harmony-grid">
+                {worlds.map(world => (
                   <button
-                    key={pair.id}
                     type="button"
-                    data-active={localFontPairId === pair.id || undefined}
-                    onClick={() => chooseFont(pair.id)}
+                    key={world.id}
+                    aria-pressed={activeWorld === world.id}
+                    onClick={() =>
+                      save({ colorWorldId: world.id, accent: world.swatch[2] })
+                    }
                   >
-                    <strong
-                      style={{
-                        fontFamily: `"${pair.display.family}", ${pair.display.fallback}`,
-                      }}
-                    >
-                      {pair.label}
-                    </strong>
-                    <span>{pair.vibe}</span>
+                    <span className="pb-harmony-swatches" aria-hidden="true">
+                      {world.swatch.map((hex, i) => (
+                        <i key={i} style={{ background: hex }} />
+                      ))}
+                    </span>
+                    <strong>{world.name}</strong>
+                    <small>
+                      {world.id === "original"
+                        ? "Original der Designrichtung"
+                        : "Abgestimmte Farbwelt"}
+                    </small>
                   </button>
                 ))}
               </div>
+              <details className="pb-harmony-custom">
+                <summary>Eigene Markenfarbe verwenden</summary>
+                <label>
+                  Akzentfarbe
+                  <input
+                    type="color"
+                    value={custom}
+                    onChange={e => setCustom(e.target.value)}
+                  />
+                </label>
+                <button type="button" onClick={() => save({ accent: custom })}>
+                  Farbe übernehmen
+                </button>
+              </details>
+            </>
+          ) : (
+            <div className="pb-harmony-grid">
+              <button
+                type="button"
+                aria-pressed={fontPairId === null}
+                onClick={() => save({ fontPairId: null })}
+              >
+                <strong>Schriften der Richtung</strong>
+                <small>Original beibehalten</small>
+              </button>
+              {fonts.map((pair, i) => (
+                <button
+                  key={pair.id}
+                  type="button"
+                  aria-pressed={fontPairId === pair.id}
+                  onClick={() => save({ fontPairId: pair.id })}
+                >
+                  <strong
+                    style={{
+                      fontFamily: `"${pair.display.family}", ${pair.display.fallback}`,
+                    }}
+                  >
+                    {pair.label}
+                  </strong>
+                  <span
+                    style={{
+                      fontFamily: `"${pair.body.family}", ${pair.body.fallback}`,
+                    }}
+                  >
+                    Ein guter erster Eindruck.
+                  </span>
+                  <small>{i === 0 ? "Unsere Empfehlung" : pair.vibe}</small>
+                </button>
+              ))}
             </div>
           )}
-        </div>
-      </div>
-      {updateTheme.error && (
-        <p role="alert" className="pb-design-error">
-          {updateTheme.error.message}
-        </p>
+        </fieldset>
       )}
+      {update.isPending && <p role="status">Deine Vorschau wird angepasst …</p>}
+      {update.error && <p role="alert">{update.error.message}</p>}
     </div>
   );
 }

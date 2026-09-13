@@ -412,6 +412,11 @@ describe("runWebsiteGenerationV2Job", () => {
       vi.mocked(invalidateSsrCache).mock.invocationCallOrder[0]
     ).toBeLessThan(mockedGen.mock.invocationCallOrder[0]);
 
+    const finalDoc = mockedDb.updateWebsite.mock.calls[1][1].websiteData as any;
+    expect(finalDoc.designProfile).toEqual(interim.designProfile);
+    expect(finalDoc.fontPairId).toEqual(interim.fontPairId);
+    expect(finalDoc.colorOverrides).toEqual(interim.colorOverrides);
+
     // Finaler Write überschreibt den Zwischenstand mit dem LLM-Dokument.
     expect(mockedDb.updateWebsite).toHaveBeenLastCalledWith(42, {
       websiteData: expect.objectContaining({

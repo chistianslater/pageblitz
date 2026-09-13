@@ -193,7 +193,12 @@ export function buildInterimV2Doc(
   };
   // Harte Garantie statt Annahme: der Zwischenstand MUSS dem Vertrag genügen
   // (SSR-Preview und assertV2SafeWrite verlassen sich darauf).
-  return WebsiteDataV2Schema.parse(interim);
+  return WebsiteDataV2Schema.parse({
+    ...interim,
+    ...pickArtTheme(packId, businessName),
+    designStand: AKTUELLER_DESIGN_STAND,
+    designProfile: deriveArtDirectedProfile(interim),
+  });
 }
 
 /**
@@ -358,13 +363,71 @@ async function runWebsiteGenerationV2(
   // persistieren und den SSR-Cache invalidieren, BEVOR die lange LLM-Phase
   // beginnt — die Studio-Vorschau (/preview-ssr, ungecacht) zeigt ihn sofort.
   const previousWebsiteData = website.websiteData ?? null;
-  const interim = buildInterimV2Doc(
+  let interim = buildInterimV2Doc(
     packId,
     business.name,
     category,
     website.slug,
     images
   );
+  // Decide the visual identity before the first preview, then retain it when text arrives.
+  const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
+  let designProfile = previousParsed.success
+    ? previousParsed.data.designProfile
+    : undefined;
+  if (!designProfile) {
+    let occupied = new Set<string>();
+    let recipeOffset = 0;
+    try {
+      const city = buildV2GenerationFacts(
+        business,
+        category,
+        website.slug,
+        images
+      ).facts?.contact?.city;
+      const recentWebsites = await listDesignNeighbors(city);
+      occupied = collectOccupiedCompositions(recentWebsites, category);
+      // Transaction-backed recipe rotation also spreads concurrent jobs whose
+      // final documents are not yet visible in the neighbor query.
+      recipeOffset = Number(
+        await getNextLayoutForIndustry(
+          `art2:${packId}:${designSeed(`${designIndustryKey(category)}|${(city ?? "").trim().toLowerCase()}`)}`,
+          Array.from({ length: 12 }, (_, i) => String(i))
+        )
+      );
+    } catch (err) {
+      // Individualisierung ist wichtig, darf aber nie die eigentliche
+      // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die
+      // Ableitung durch Betriebsname/Kategorie trotzdem deterministisch.
+      console.warn(
+        "[DesignProfile] Kollisionsprüfung nicht verfügbar, nutze deterministische Ableitung:",
+        err
+      );
+    }
+    designProfile = deriveArtDirectedProfile(
+      {
+        stylePackId: packId,
+        businessName: interim.businessName,
+        businessCategory: interim.businessCategory,
+        sections: interim.sections,
+      },
+      occupied,
+      recipeOffset
+    );
+  }
+  interim = WebsiteDataV2Schema.parse({
+    ...interim,
+    designProfile,
+    fontPairId:
+      (previousParsed.success && previousParsed.data.fontPairId) ||
+      interim.fontPairId,
+    colorOverrides:
+      (previousParsed.success && previousParsed.data.colorOverrides) ||
+      interim.colorOverrides,
+    designStand:
+      (previousParsed.success && previousParsed.data.designStand) ||
+      interim.designStand,
+  });
   assertV2SafeWrite(previousWebsiteData, interim);
   await updateWebsite(website.id, { websiteData: interim as any });
   invalidateSsrCache(website.slug);
@@ -403,85 +466,15 @@ async function runWebsiteGenerationV2(
       },
       hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
     );
-    // Komposition wird erst aus dem finalen Inhalt abgeleitet (Anzahl
-    // Leistungen/Bilder/Sektionen). Gegen die jüngsten Websites derselben
-    // Branche prüfen, damit nicht zweimal dieselbe sichtbare Kombination
-    // aus Richtung + Layout + Bildbehandlung entsteht.
-    const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
-    websiteData = { ...websiteData, designRevision: CURRENT_DESIGN_REVISION };
-    let designProfile = previousParsed.success
-      ? previousParsed.data.designProfile
-      : undefined;
-    // Streuung zwischen Seiten desselben Packs (Betreiber-Wunsch
-    // 2026-09-05): Farbwelt und Schriftpaar aus dem Betriebsnamen ableiten.
-    // Nur setzen, wenn nichts vorhanden ist — eine Kundenwahl im Studio darf
-    // eine Regenerierung nie überschreiben. Beides fließt unten in den
-    // Kollisionsvergleich ein, der Schrift und Akzent ohnehin schon kennt.
-    // Festhalten, mit welcher Design-Fassung diese Seite entstand. Tut
-    // vorerst nichts — aber rueckwirkend ist es nicht mehr feststellbar
-    // (Spec 2026-09-12 §6). Ein vorhandener Wert bleibt unangetastet.
-    if (!websiteData.designStand) {
-      websiteData = { ...websiteData, designStand: AKTUELLER_DESIGN_STAND };
-    }
-    if (!websiteData.fontPairId) {
-      const fontPairId =
-        (previousParsed.success && previousParsed.data.fontPairId) ||
-        pickArtTheme(packId, websiteData.businessName).fontPairId;
-      websiteData = { ...websiteData, fontPairId };
-    }
-    if (!websiteData.colorOverrides) {
-      if (previousParsed.success && previousParsed.data.colorOverrides) {
-        websiteData = {
-          ...websiteData,
-          colorOverrides: previousParsed.data.colorOverrides,
-        };
-      } else {
-        websiteData = {
-          ...websiteData,
-          colorOverrides: pickArtTheme(packId, websiteData.businessName)
-            .colorOverrides,
-        };
-      }
-    }
-
-    if (!designProfile) {
-      let occupied = new Set<string>();
-      let recipeOffset = 0;
-      try {
-        const city = factArgs.facts?.contact?.city;
-        const recentWebsites = await listDesignNeighbors(city);
-        occupied = collectOccupiedCompositions(recentWebsites, category);
-        // Transaction-backed recipe rotation also spreads concurrent jobs whose
-        // final documents are not yet visible in the neighbor query.
-        recipeOffset = Number(
-          await getNextLayoutForIndustry(
-            `art2:${packId}:${designSeed(`${designIndustryKey(category)}|${(city ?? "").trim().toLowerCase()}`)}`,
-            Array.from({ length: 12 }, (_, i) => String(i))
-          )
-        );
-      } catch (err) {
-        // Individualisierung ist wichtig, darf aber nie die eigentliche
-        // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die
-        // Ableitung durch Betriebsname/Kategorie trotzdem deterministisch.
-        console.warn(
-          "[DesignProfile] Kollisionsprüfung nicht verfügbar, nutze deterministische Ableitung:",
-          err
-        );
-      }
-      designProfile = deriveArtDirectedProfile(
-        {
-          stylePackId: packId,
-          businessName: websiteData.businessName,
-          businessCategory: websiteData.businessCategory,
-          sections: websiteData.sections,
-        },
-        occupied,
-        recipeOffset
-      );
-    }
+    // Die vor der ersten Vorschau gewählte Gestaltung bleibt auch nach
+    // der Texterstellung erhalten.
     websiteData = WebsiteDataV2Schema.parse({
       ...websiteData,
-      designProfile,
+      designRevision: CURRENT_DESIGN_REVISION,
+      designStand: interim.designStand,
+      fontPairId: interim.fontPairId,
+      colorOverrides: interim.colorOverrides,
+      designProfile: interim.designProfile,
     });
   } catch (err) {
     // Der Zwischenstand darf einen Fehlschlag nicht überleben: sonst sähe

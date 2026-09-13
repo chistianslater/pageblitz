@@ -28,11 +28,10 @@ function render(): string {
 describe("DesignQuickControls", () => {
   test("zeigt kompakte Farb-/Schrift-Trigger ohne ausführliche Layoutoptionen", () => {
     const html = render();
-    expect(html).toContain("Schnell anpassen");
-    expect(html).toContain("Farbe");
-    expect(html).toContain("Richtungsfarbe");
+    expect(html).toContain("Dein Design. Fein abgestimmt.");
+    expect(html).toContain("Farbwelt");
     expect(html).toContain("Schrift");
-    expect(html).toContain("Schriften der Richtung");
+    expect(html).toContain("Schriftkombination");
     expect(html).not.toContain("Seitenaufbau");
     expect(html).not.toContain("Galerie");
   });

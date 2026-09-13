@@ -118,6 +118,7 @@ export default function Klarstart() {
   const [focused, setFocused] = useState(false);
   const [reduced, setReduced] = useState(true);
   const root = useRef<HTMLDivElement>(null);
+  const rotationElapsed = useRef(0);
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReduced(query.matches);
@@ -127,11 +128,24 @@ export default function Klarstart() {
   }, []);
   useEffect(() => {
     if (paused || hovered || focused || reduced) return;
-    const timer = setInterval(() => {
-      if (!document.hidden) setActive(i => (i + 1) % choices.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [paused, hovered, focused, reduced]);
+    let frame = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      if (!document.hidden)
+        rotationElapsed.current += Math.min(now - last, 100);
+      last = now;
+      root.current?.style.setProperty(
+        "--choice-progress",
+        String(Math.min(1, rotationElapsed.current / 3500))
+      );
+      if (rotationElapsed.current >= 3500) {
+        rotationElapsed.current = 0;
+        setActive(i => (i + 1) % choices.length);
+      } else frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [paused, hovered, focused, reduced, active]);
   useEffect(() => {
     const elements = root.current?.querySelectorAll(
       "main > section, .cf-section, .cf-foundation"
@@ -185,7 +199,7 @@ export default function Klarstart() {
       <main>
         <section className="clear-hero lc-width">
           <p className="lc-eyebrow">
-            <span /> Die Website für deinen Betrieb
+            <span /> Deine Website. Mit KI für deinen Betrieb.
           </p>
           <h1>
             Deine Website?
@@ -193,8 +207,8 @@ export default function Klarstart() {
             <span>Schon fast fertig.</span>
           </h1>
           <p className="clear-intro">
-            Du bringst dein Geschäft mit. Pageblitz macht die Website daraus.
-            <br className="desktop-break" /> Mit passenden Texten, deinen
+            Du kennst deinen Betrieb. Unsere KI macht deine Website daraus.
+            <br className="desktop-break" /> Mit Texten für dein Angebot, deinen
             Bildern und einem Design, das nach dir aussieht.
           </p>
           <TypingStart />
@@ -228,6 +242,8 @@ export default function Klarstart() {
                     aria-pressed={i === active}
                     onClick={() => {
                       setActive(i);
+                      rotationElapsed.current = 0;
+                      root.current?.style.setProperty("--choice-progress", "0");
                       setPaused(true);
                     }}
                   >

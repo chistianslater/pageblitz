@@ -576,8 +576,9 @@ export default function ClearFeatures() {
       </div>
 
       <p className="lc-width cf-picker-hint">
-        <ArrowRight size={18} aria-hidden="true" /> Klicke auf eine Funktion und
-        probiere sie aus.<span>Optionale Extras · einzeln dazubuchbar</span>
+        <ArrowRight size={18} aria-hidden="true" />
+        <strong>Wähle eine Funktion. Probiere sie direkt darunter aus.</strong>
+        <span>Optionale Extras · einzeln dazubuchbar</span>
       </p>
       <div
         className="lc-width cf-feature-picker"

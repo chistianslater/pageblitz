@@ -1,3 +1,4 @@
+import { usePreviewViewport } from "./usePreviewViewport";
 import React from "react";
 import { getConstitution, toCssVars } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
@@ -96,6 +97,7 @@ export function GenerationScreen({
   onRetry,
   retrying = false,
 }: GenerationScreenProps) {
+  const viewportRef = usePreviewViewport("desktop", hasDoc);
   const phase = PHASES[phaseIndexFor(progress)];
   const textPhase = progress >= 55 && progress < 90;
   const [elapsedMs, setElapsedMs] = React.useState(0);
@@ -229,6 +231,7 @@ export function GenerationScreen({
             </p>
             <div
               className="pb-studio-gen-preview"
+              ref={viewportRef}
               data-frame-loaded={frameLoaded || undefined}
             >
               <PackSkeleton packId={packId} />

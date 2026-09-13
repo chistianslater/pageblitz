@@ -1,3 +1,4 @@
+import { usePreviewViewport } from "./usePreviewViewport";
 import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId, SectionType } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
@@ -151,6 +152,7 @@ export function PreviewFrame({
     versionId,
   });
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const viewportRef = usePreviewViewport(device, Boolean(src));
   /**
    * Scrollstand über das Neuladen halten (2026-09-03): Jeder gespeicherte
    * Patch erhöht `?v=` und lädt das iframe neu — ohne das hier landete der
@@ -453,10 +455,9 @@ export function PreviewFrame({
     );
   };
   return (
-    <div className="pb-studio-device" data-device={device}>
+    <div ref={viewportRef} className="pb-studio-device" data-device={device}>
       <iframe
         ref={iframeRef}
-        key={src}
         src={src}
         title="Live-Vorschau deiner Website"
         loading="eager"

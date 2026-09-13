@@ -379,12 +379,14 @@ export default function StudioPage({ token }: { token: string }) {
           businessName={state.businessName}
           currentPackId={state.doc.stylePackId}
           accent={state.doc.colorOverrides?.accent ?? null}
+          colorOverrides={state.doc.colorOverrides}
           fontPairId={state.doc.fontPairId ?? null}
           previewVersion={studio.previewVersion}
           onApplied={() => {
             studio.refetch();
             studio.bumpPreview();
           }}
+          onSelectionApplied={() => studio.refetch()}
           onConfirmed={() => studio.refetch()}
         />
       </>

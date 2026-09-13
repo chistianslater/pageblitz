@@ -218,3 +218,37 @@ test("Build loops and editing/chat examples complete", async ({ page }) => {
     { timeout: 6500 }
   );
 });
+
+test("Landing progress, feature hint and lime chat", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 950 });
+  await page.goto("/");
+  await expect
+    .poll(() =>
+      page.locator(".clear-choices button[aria-pressed=true]").textContent()
+    )
+    .not.toBe(null);
+  const initial = await page
+    .locator(".clear-choices button[aria-pressed=true]")
+    .textContent();
+  await expect
+    .poll(
+      () =>
+        page.locator(".clear-choices button[aria-pressed=true]").textContent(),
+      { timeout: 6500 }
+    )
+    .not.toBe(initial);
+  await page.mouse.wheel(0, 500);
+  const chat = page.getByRole("button", { name: "Chat öffnen", exact: true });
+  await expect(chat).toBeVisible();
+  expect(await chat.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(
+    "rgb(213, 243, 48)"
+  );
+  const hint = page.locator(".cf-picker-hint");
+  await hint.scrollIntoViewIfNeeded();
+  const b = (await hint.boundingBox())!;
+  expect(b.x).toBeGreaterThanOrEqual(0);
+  expect(b.x + b.width).toBeLessThanOrEqual(390);
+  expect(await hint.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(
+    "rgb(243, 245, 233)"
+  );
+});

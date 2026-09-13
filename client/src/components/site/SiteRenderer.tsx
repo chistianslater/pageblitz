@@ -147,7 +147,7 @@ export const SiteRenderer: React.FC<{
         }
       : data;
   const effectiveData =
-    packOverride && PACK_MODULES[packOverride]
+    packOverride && packOverride !== data.stylePackId && PACK_MODULES[packOverride]
       ? {
           ...data,
           stylePackId: packOverride,
