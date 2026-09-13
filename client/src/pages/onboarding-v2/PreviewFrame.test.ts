@@ -76,3 +76,5 @@ describe("photoClickTargetOf", () => {
     expect(photoClickTargetOf(build("bewertungen"))).toBeNull();
   });
 });
+
+test("non-text icon nodes do not abort inline editing", () => { expect(normalizeInlineText(undefined)).toBe(""); expect(normalizeInlineText(null)).toBe(""); });

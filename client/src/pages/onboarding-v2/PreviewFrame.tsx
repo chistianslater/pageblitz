@@ -86,12 +86,12 @@ export function photoClickTargetOf(el: Element): PhotoClickTarget | null {
   return "gallery";
 }
 
-export function normalizeInlineText(value: string): string {
+export function normalizeInlineText(value: string | null | undefined): string {
   // Case-Fold (2026-08-30): Packs rendern Texte per CSS text-transform in
   // GROSSBUCHSTABEN — innerText liefert den GERENDERTEN Text, sodass der
   // Vergleich mit dem Dokumentwert sonst nie matcht (Werkbank-H1 war
   // dadurch nicht inline-editierbar).
-  return value.replace(/\s+/g, " ").trim().toLocaleLowerCase("de-DE");
+  return (value ?? "").replace(/\s+/g, " ").trim().toLocaleLowerCase("de-DE");
 }
 
 /** Echte Google-Bewertungen (und andere gesperrte Hosts) nicht editierbar. */
@@ -377,7 +377,7 @@ export function PreviewFrame({
       );
       const matches = candidates.filter((el, index) => {
         if (targetConfig.renderedHeading) return index === 0;
-        const text = normalizeInlineText(el.innerText);
+        const text = normalizeInlineText(el.textContent);
         if (text === normalizedCurrent) return true;
         // Testimonials/Autoren tragen typografische Anführungszeichen,
         // Gedankenstrich oder Rating direkt um den eigentlichen Wert.
@@ -393,7 +393,7 @@ export function PreviewFrame({
         if (
           !targetConfig.renderedHeading &&
           Array.from(target.children).some(child =>
-            normalizeInlineText((child as HTMLElement).innerText).includes(
+            normalizeInlineText(child.textContent).includes(
               normalizedCurrent
             )
           )
