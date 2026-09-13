@@ -157,37 +157,60 @@ export function deriveArtDirectedProfile(
   const seed = designSeed(
     `${input.businessName}|${input.businessCategory ?? ""}|${input.stylePackId}`
   );
-  // Photos enable spatial/portrait layouts; text-only businesses get deliberate type.
-  const candidates = hero?.imageUrl
-    ? [
-        direction.composition,
-        ...ART_COMPOSITIONS.filter(c => c !== direction.composition),
-      ]
-    : ["statement" as const];
-  // Keep the pack's primary direction first. Only spread to an alternative when
-  // an existing composition is occupied. Further cycles vary service/gallery rhythm.
+  // Photos enable the pack's spatial composition; text-only businesses get
+  // deliberate type. Die Komposition steht damit fest — und mit ihr Hero,
+  // Bildwirkung und Ueber-uns-Aufbau, die in RECIPES an ihr haengen.
+  const composition = hero?.imageUrl ? direction.composition : "statement";
+  const base = RECIPES[composition];
+  // Variiert wird nur der Rhythmus (Leistungen und Galerie), nie die
+  // Silhouette.
+  //
+  // Vorher drehte der Rezept-Zaehler auch die Komposition durch: der erste
+  // Betrieb einer Branche in einer Stadt bekam das Pack-Design, jeder
+  // folgende ein anderes Grundschema samt anderem Hero. Bei einem
+  // Kampagnenstapel sah damit etwa jede fuenfte Seite aus wie das Motiv auf
+  // der Postkarte — der Rest war eine andere Gestaltung (Betreiber-Befund
+  // 2026-09-13). Der Zweck des Zaehlers bleibt: zehn Salons in einer Stadt
+  // sollen keine zehn identischen Seiten bekommen. Er greift jetzt eine
+  // Ebene tiefer, wo Unterschiede auffallen, ohne das Design zu wechseln.
+  const ALTERNATIVE_RHYTHMS = [
+    { servicesLayout: "featured", galleryLayout: "filmstrip" },
+    { servicesLayout: "grid", galleryLayout: "grid" },
+    { servicesLayout: "list", galleryLayout: "mosaic" },
+    { servicesLayout: "featured", galleryLayout: "grid" },
+    { servicesLayout: "grid", galleryLayout: "filmstrip" },
+  ] as const satisfies ReadonlyArray<
+    Pick<DesignProfile, "servicesLayout" | "galleryLayout">
+  >;
+  // Der Pack-Rhythmus zuerst, danach die Abwandlungen — und die Doppelung
+  // heraus: je nach Pack ist einer der Alternativen genau der Pack-Rhythmus
+  // (portrait ist "featured/filmstrip", editorial "list/mosaic"). Ohne den
+  // Filter bekaemen der erste und zweite Betrieb einer Stadt dieselbe Seite.
+  const packRhythm = {
+    servicesLayout: base.servicesLayout,
+    galleryLayout: base.galleryLayout,
+  };
+  const RHYTHMS = [
+    packRhythm,
+    ...ALTERNATIVE_RHYTHMS.filter(
+      r =>
+        r.servicesLayout !== packRhythm.servicesLayout ||
+        r.galleryLayout !== packRhythm.galleryLayout
+    ),
+  ];
   let fallback: DesignProfile | undefined;
-  const choices = Array.from({ length: 3 }, (_, cycle) =>
-    candidates.map(composition => ({ cycle, composition }))
-  ).flat();
-  const offset = Math.abs(Math.trunc(recipeOffset)) % choices.length;
-  const ordered = [...choices.slice(offset), ...choices.slice(0, offset)];
-  for (const { cycle, composition } of ordered) {
-    const base = RECIPES[composition];
+  const offset = Math.abs(Math.trunc(recipeOffset)) % RHYTHMS.length;
+  const ordered = [...RHYTHMS.slice(offset), ...RHYTHMS.slice(0, offset)];
+  for (const rhythm of ordered) {
     const profile: DesignProfile = {
       ...base,
       composition,
       seed,
+      // Viele Leistungen sprengen jede andere Anordnung — das entscheidet
+      // der Inhalt, nicht der Rhythmus.
       servicesLayout:
-        (services?.items?.length ?? 0) > 6
-          ? "grid"
-          : cycle === 1
-            ? "featured"
-            : cycle === 2
-              ? "grid"
-              : base.servicesLayout,
-      galleryLayout:
-        cycle === 1 ? "filmstrip" : cycle === 2 ? "grid" : base.galleryLayout,
+        (services?.items?.length ?? 0) > 6 ? "grid" : rhythm.servicesLayout,
+      galleryLayout: rhythm.galleryLayout,
       heroLayoutMobile: hero?.imageUrl ? "split" : "centered",
       servicesLayoutMobile: "list",
       galleryLayoutMobile: "grid",

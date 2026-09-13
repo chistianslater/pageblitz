@@ -37,6 +37,43 @@ describe("art-directed generation", () => {
     }
     expect(occupied.size).toBe(12);
   });
+  test("recipe rotation varies the rhythm, never the silhouette", () => {
+    // Betreiber-Befund 2026-09-13: Von einem Kampagnenstapel sah nur etwa
+    // jede fuenfte Seite aus wie das Pack — der Rezept-Zaehler drehte auch
+    // Komposition und Hero durch. Die Silhouette ist das, was die Postkarte
+    // verspricht; variieren darf nur, was darunter liegt.
+    for (const pack of ["salon-noir", "gusto", "raster"] as const) {
+      const fixture = getFixture(pack, "full");
+      const input = {
+        stylePackId: fixture.stylePackId,
+        businessName: fixture.businessName,
+        businessCategory: fixture.businessCategory,
+        sections: fixture.sections,
+      };
+      const master = withArtDirection(fixture).designProfile!;
+      const rhythms: string[] = [];
+      for (let offset = 0; offset < 12; offset++) {
+        const profile = deriveArtDirectedProfile(input, new Set(), offset);
+        for (const key of [
+          "composition",
+          "heroLayout",
+          "imageTreatment",
+          "aboutLayout",
+          "density",
+        ] as const) {
+          expect(profile[key], `${pack} @ ${offset}: ${key}`).toBe(master[key]);
+        }
+        rhythms.push(`${profile.servicesLayout}/${profile.galleryLayout}`);
+      }
+      // Zehn Salons in einer Stadt sollen trotzdem nicht zehn gleiche Seiten
+      // bekommen — und schon gar nicht zwei direkt hintereinander.
+      expect(new Set(rhythms).size, pack).toBeGreaterThanOrEqual(5);
+      expect(
+        rhythms.some((r, i) => i > 0 && r === rhythms[i - 1]),
+        `${pack}: direkte Wiederholung`
+      ).toBe(false);
+    }
+  });
   test("no-image documents use typography, never empty photo scaffolding", () => {
     for (const id of PACK_IDS) {
       const input = {
