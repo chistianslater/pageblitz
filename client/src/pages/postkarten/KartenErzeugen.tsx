@@ -140,7 +140,8 @@ function MusterMotiv() {
         <div className="font-medium">Musterbild fürs HeyMail-Template</div>
         <div className="text-muted-foreground">
           Feste Adresse zum Einsetzen in den Editor — steht für{" "}
-          <code>{"{{bildUrl}}"}</code>.
+          <code>{"{{bildUrl}}"}</code>. Laptop-Mockup, 1760 × 1136 px, PNG mit
+          durchsichtigem Hintergrund.
         </div>
       </div>
       <Button

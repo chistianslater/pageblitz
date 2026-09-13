@@ -554,11 +554,20 @@ teilen sie sich die Logik jetzt mit dem Backend:
 | Teil | Pfad |
 |---|---|
 | Aufnahme (Playwright, 1280×900) | `server/postkarten/aufnahme.ts` |
-| Motiv → JPEG → R2 | `server/postkarten/motiv.ts` |
+| Laptop-Rahmen (Vektor) | `server/postkarten/mockup.ts` |
+| Motiv → Mockup → R2 | `server/postkarten/motiv.ts` |
 | HeyMail-Aufruf (Vorschau/Versand) | `server/postkarten/auftrag.ts` |
 | Liste + Zustand je Betrieb | `server/postkarten/kandidaten.ts` |
 | tRPC (`postkarten.*`) | `server/postkarten/router.ts` |
 | Oberfläche | `client/src/pages/postkarten/KartenErzeugen.tsx` |
+
+Das Motiv ist seit 2026-09-13 ein **Laptop-Mockup**: Der Screenshot sitzt im
+Gerät (1760 × 1136 px, PNG mit durchsichtigem Hintergrund), der Rahmen ist als
+SVG gezeichnet — kein Markengerät, keine Lizenz, in jeder Größe scharf. Vorher
+lieferte Pageblitz den nackten Screenshot und das HeyMail-Template malte das
+Gerät; mit dem alten Template war der Rahmen weg. `motivErzeugen({ ohneMockup:
+true })` liefert weiterhin den blanken Screenshot als JPEG, falls eine
+Kartengrafik das Gerät selbst mitbringt.
 
 Ablauf im Backend (`/admin/postkarten`, Reiter „Karten erzeugen"): filtern →
 Motive aufnehmen → HeyMail-Vorschau (kostenlos) → beauftragen. Der Zustand je
