@@ -27,8 +27,19 @@ export const SITE_ENHANCER_JS = `(function(){
 var d=document,de=d.documentElement,reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
 // Branding-Badge in den Pack-Footer integrieren (Betreiber-Wunsch
 // 2026-08-31: nicht "runterhaengend"); ohne JS bleibt es dezent darunter.
+// querySelector nahm den ERSTEN <footer> — und mehrere Packs (werkbank,
+// atelier) setzen einen <footer> IN die Bewertungskarte fuer Name und
+// Quelle. Das Badge landete damit mitten in einer Kundenstimme
+// (Betreiber-Befund 2026-09-13). Gesucht ist der Seitenfuss: der letzte
+// <footer>, der in keiner Karte steckt.
 var mw=d.querySelector(".pb-made-with");
-if(mw){var ft=d.querySelector(".pb-site footer");if(ft)ft.appendChild(mw);}
+if(mw){
+var fs=d.querySelectorAll(".pb-site footer"),ft=null;
+for(var fi=fs.length-1;fi>=0;fi--){
+if(!fs[fi].closest("blockquote,article,li,figure")){ft=fs[fi];break}
+}
+if(ft)ft.appendChild(mw);
+}
 // Collage-Guard (Betreiber-Befund 2026-09-01, Tapas-Site): die absolut
 // positionierten Hero-Karten kollidieren je nach Pack/Inhalt mit der
 // Hero-Typo. Nach Load/Resize messen; Karten, die Text ueberlappen,
