@@ -923,6 +923,16 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
 /* Cookie-Banner auf der dunklen Landing: gleiche Struktur, Nachtschicht-
    Tokens. Der Banner (Portal, außerhalb von .lp) liest --lp-*-Variablen —
    dieser Scope überschreibt sie nur dort, App-Seiten bleiben hell. */
+/* Heller Banner: dieselbe Lime wie die Buttons der Startseite
+   (--clear-lime / #202514 in .clear-evolved, concepts.css). Ohne das nimmt er
+   --lp-accent aus :root — das Studio-Gruen — und steht als zweite Markenfarbe
+   neben dem Volt der Landing. Keine Routen-Liste noetig: der Banner ist auf
+   jeder hellen Flaeche derselbe. */
+.pb-cookie-klarstart {
+  --lp-accent: #d7ef45;
+  --lp-accent-ink: #202514;
+}
+
 .pb-cookie-dark {
   --lp-surface: #131316;
   --lp-canvas: #1a1a1e;

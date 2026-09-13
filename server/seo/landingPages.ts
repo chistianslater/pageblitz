@@ -2376,7 +2376,7 @@ img{max-width:100%;height:auto}
 nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);padding:1rem 0;position:sticky;top:0;z-index:100}
 .nav-inner{display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:1.125rem;font-weight:700;color:#fff;letter-spacing:-.5px;display:flex;align-items:center;gap:.5rem}
-.nav-cta{background:#d5f330;color:#25300d!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:opacity .2s,transform .2s,background-color .2s}
+.nav-cta{background:#d7ef45;color:#202514!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:opacity .2s,transform .2s,background-color .2s}
 .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
 /* Hero */
 .hero{background:#0a0a0a;color:#fff;padding:5rem 0 4rem;position:relative;overflow:hidden}
@@ -2398,7 +2398,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
 .hero h1{font-size:clamp(1.875rem,3.5vw,2.75rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff;text-align:center}
 .hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:520px;margin:0 auto 2.5rem;line-height:1.7}
-.btn-primary{display:inline-block;background:#d5f330;color:#25300d;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:opacity .2s,transform .2s,background-color .2s,box-shadow .2s}
+.btn-primary{display:inline-block;background:#d7ef45;color:#202514;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:opacity .2s,transform .2s,background-color .2s,box-shadow .2s}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(233,30,140,.4)}
 .hero-trust{margin-top:1.5rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35);justify-content:center}
 .hero-trust span{display:flex;align-items:center;gap:.375rem}
@@ -2468,7 +2468,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .pricing{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .pricing-wrapper{max-width:460px;margin:0 auto;margin-top:3.5rem}
 .pricing-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:2.5rem;position:relative}
-.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#d5f330;color:#25300d;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
+.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#d7ef45;color:#202514;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
 .pricing-name{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem}
 .pricing-price{font-size:3.5rem;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1}
 .pricing-price span{font-size:1rem;color:rgba(255,255,255,.4);font-weight:400}
@@ -2554,7 +2554,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
 .billing-toggle{display:flex;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:.25rem;gap:.25rem;max-width:340px;margin:0 auto 2.5rem}
 .billing-btn{flex:1;padding:.5rem 1rem;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,.45);font-size:.875rem;font-weight:600;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s;white-space:nowrap}
 .billing-btn.active{background:#fff;color:#0a0a0a;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.billing-save{display:inline-block;background:rgba(213,243,48,.45);color:#25300d;font-size:.625rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.375rem;vertical-align:middle}
+.billing-save{display:inline-block;background:#f5f9da;color:#425000;font-size:.625rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.375rem;vertical-align:middle}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .nav-cta,.btn-primary,.hero-browser,.feature-card,.addon-card,.addon-expand-btn,.pricing-cta,.industry-link,.city-link,.billing-btn{transition:none!important}
@@ -2585,10 +2585,15 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
 /* ── Pageblitz Klarstart Skin ──────────────────────────────────────────
    Branchen- und Staedteseiten teilen Palette und Typografie mit der
    Startseite. Die Werte sind die Klarstart-Tokens aus
-   client/src/pages/landing-concepts/clear-flow.css (.klarstart-live):
-   Weiss, Tinte #242424, Linie #d8ddce, Volt #d5f330 auf dunkler Volt-Tinte
-   #25300d. Volt als TEXTfarbe waere auf Weiss unlesbar — Akzenttext nimmt
-   deshalb immer #25300d, Volt bleibt Flaeche.
+   client/src/pages/landing-concepts/concepts.css (.clear-evolved):
+   Weiss, Tinte #242424, Linie #d8ddce, Lime --clear-lime #d7ef45 auf
+   #202514, Akzenttext --clear-accent #425000, Tint --clear-tint #f5f9da.
+   Lime als TEXTfarbe waere auf Weiss unlesbar — Akzenttext nimmt deshalb
+   immer #425000, Lime bleibt Flaeche.
+
+   Buttons folgen .lc-button der Startseite: Radius 7px (kein Pill),
+   50px hoch, 14px/600, Hover hebt nur an und wechselt nicht die Farbe.
+   Die Nav-Variante ist die kleine Stufe (42px, 12px).
 
    Ueberschreibt den alten Basis-Skin darunter (Magenta auf Kohle) und
    ersetzt den Nachtschicht-Skin, der hier bis zum Klarstart-Relaunch stand.
@@ -2599,36 +2604,38 @@ body{font-family:"Space Grotesk",system-ui,sans-serif;color:#242424;background:#
 .container{max-width:1200px}
 nav{background:rgba(255,255,255,.9);border-color:#d8ddce;padding:.75rem 0}
 .logo{color:#242424;font-weight:600}
-.nav-cta,.btn-primary,.pricing-badge{background:#d5f330!important;color:#25300d!important;box-shadow:none!important}
-.nav-cta:hover,.btn-primary:hover{background:#c2e024!important;opacity:1}
+.nav-cta,.btn-primary,.pricing-badge{background:#d7ef45!important;color:#202514!important;box-shadow:none!important}
+.nav-cta,.btn-primary,.pricing-cta{border-radius:7px;font-weight:600;transition:transform .2s ease-out,background-color .2s ease-out}
+.nav-cta{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 16px;font-size:12px}
+.btn-primary,.pricing-cta{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:14px 23px;font-size:14px}
+.nav-cta:hover,.btn-primary:hover,.pricing-cta:hover{opacity:1;transform:translateY(-2px)}
 .hero{background:#fff;color:#242424;padding:5rem 0 4.5rem;border-bottom:1px solid #d8ddce}
-.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(213,243,48,.16),transparent)}
+.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(215,239,69,.18),transparent)}
 .hero-orb{display:none}
 .hero-persona{filter:drop-shadow(0 24px 45px rgba(36,36,36,.18))}
 .hero-badge{background:#f5f6f0;border-color:#d8ddce;color:#62675b;font-weight:500}
 .hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#242424;font-weight:700;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03;letter-spacing:-.03em}
 .hero p{color:#62675b}
 .hero-trust{color:#62675b}
-.btn-primary{font-weight:700}
 .stats{background:#f5f6f0;border-color:#d8ddce}
 .stat-value{color:#242424;font-weight:700}
 .stat-label{color:#62675b}
 .steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:#d8ddce}
-.section-label{color:#25300d;font-weight:600}
+.section-label{color:#425000;font-weight:600}
 .section-title{color:#242424;font-weight:700;font-size:clamp(1.9rem,3vw,3rem);letter-spacing:-.02em}
 .section-sub,.local-intro,.local-detail{color:#62675b}
 .steps-grid{gap:1rem}
 .step{text-align:left;border-top:1px solid #d8ddce;padding:1.5rem 0}
-.step-num{margin:0 0 1.25rem;background:#f5f6f0;border-color:#d8ddce;color:#25300d}
+.step-num{margin:0 0 1.25rem;background:#f5f6f0;border-color:#d8ddce;color:#425000}
 .step h3,.feature-card h3,.addon-card h4{color:#242424}
 .step p,.feature-card p,.addon-card p{color:#62675b}
 .feature-card,.addon-card{background:#f5f6f0;border-color:#d8ddce;border-radius:12px}
 .feature-card:hover,.addon-card:hover{background:#fff;border-color:#bcc4ab}
-.feature-icon{background:rgba(213,243,48,.38);border-color:rgba(37,48,13,.18);color:#25300d}
-.addon-icon{color:#25300d}
-.pricing-addon-row svg{vertical-align:-4px;margin-right:.3rem;color:#25300d}
+.feature-icon{background:#f5f9da;border-color:rgba(66,80,0,.2);color:#425000}
+.addon-icon{color:#425000}
+.pricing-addon-row svg{vertical-align:-4px;margin-right:.3rem;color:#425000}
 .mw-card-icon svg{width:16px;height:16px}
-.addon-price{background:rgba(213,243,48,.38);border-color:rgba(37,48,13,.18);color:#25300d}
+.addon-price{background:#f5f9da;border-color:rgba(66,80,0,.2);color:#425000}
 .addon-expand-btn{background:transparent;border-color:#d8ddce;color:#242424}
 .addon-expand-btn:hover{background:#f5f6f0;color:#242424}
 .pricing-wrapper{max-width:560px}
@@ -2637,39 +2644,38 @@ nav{background:rgba(255,255,255,.9);border-color:#d8ddce;padding:.75rem 0}
 .pricing-price{color:#242424;font-weight:700}
 .pricing-price span{color:#62675b}
 .pricing-features li{color:#242424;border-color:#d8ddce}
-.pricing-features li::before{color:#25300d}
+.pricing-features li::before{color:#425000}
 .pricing-addon-box{background:#f5f6f0;border-color:#d8ddce}
 .pricing-addon-label,.pricing-addon-row span:last-child{color:#62675b}
 .pricing-addon-row span:first-child{color:#242424}
-.pricing-cta{background:#d5f330!important;color:#25300d!important}
-.pricing-cta:hover{background:#c2e024!important}
+.pricing-cta{background:#d7ef45!important;color:#202514!important}
 .billing-toggle{background:#f5f6f0;border-color:#d8ddce}
 .billing-btn{color:#62675b}
-.billing-btn.active{background:#d5f330;color:#25300d;box-shadow:none}
-.billing-save{background:rgba(213,243,48,.45);color:#25300d}
+.billing-btn.active{background:#d7ef45;color:#202514;box-shadow:none}
+.billing-save{background:#f5f9da;color:#425000}
 .comp-table{background:#fff;border-color:#d8ddce;border-radius:14px}
 .comp-header{background:#f5f6f0}
 .comp-header div{color:#62675b}
 .comp-header div:first-child{color:#62675b}
-.comp-header div:last-child{color:#25300d;background:rgba(213,243,48,.38)}
+.comp-header div:last-child{color:#425000;background:#f5f9da}
 .comp-row{border-color:#d8ddce}
 .comp-row:nth-child(even){background:#faf9f5}
 .comp-row div{color:#62675b}
 .comp-row div:first-child{color:#242424}
-.comp-row div:last-child{color:#25300d;background:rgba(213,243,48,.38)}
+.comp-row div:last-child{color:#425000;background:#f5f9da}
 details{background:#f5f6f0;border-color:#d8ddce;border-radius:10px}
 details[open]{border-color:#bcc4ab}
 summary{color:#242424}
 summary::after{color:#62675b}
 .faq-answer{color:#62675b}
 .cta-banner{background:#f5f6f0;border-top:1px solid #d8ddce}
-.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(213,243,48,.22),transparent)}
+.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(215,239,69,.24),transparent)}
 .cta-banner h2{color:#242424;font-weight:700;letter-spacing:-.02em}
 .cta-banner p,.cta-note{color:#62675b}
 .industries,.cities{border-color:#d8ddce;background:#f5f6f0}
 .industries h3,.cities h3{color:#62675b}
 .industry-link,.city-link{background:#fff;border-color:#d8ddce;color:#62675b}
-.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#25300d;color:#25300d;background:rgba(213,243,48,.38)}
+.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#425000;color:#425000;background:#f5f9da}
 footer{background:#fff;color:#62675b;border-color:#d8ddce}
 footer a{color:#242424}
 .mock-browser{background:#fff;box-shadow:0 30px 70px -40px rgba(36,36,36,.45),0 0 0 1px #d8ddce}
@@ -2684,7 +2690,7 @@ footer a{color:#242424}
   .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid #d8ddce;background:#f5f6f0}
   .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#62675b}
   .comp-row div:nth-child(2)::before{content:"Webagentur"}
-  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#25300d}
+  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#425000}
 }
 `.trim();
 
@@ -3208,8 +3214,8 @@ export function generateOverviewHTML(): string {
     `
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
 .industry-card{display:flex;flex-direction:column;align-items:center;background:#f5f6f0;border:1px solid #d8ddce;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:background-color .2s,border-color .2s,transform .2s;color:#1d1a17}
-.industry-card:hover{border-color:#25300d;background:#fff;transform:translateY(-2px)}
-.industry-card .icon{margin-bottom:.75rem;color:#25300d}
+.industry-card:hover{border-color:#425000;background:#fff;transform:translateY(-2px)}
+.industry-card .icon{margin-bottom:.75rem;color:#425000}
 .industry-card .icon svg{width:28px;height:28px}
 .industry-card h3{font-size:.9375rem;font-weight:700;color:#242424;margin-bottom:.375rem}
 .industry-card p{font-size:.8125rem;color:#62675b;line-height:1.5}

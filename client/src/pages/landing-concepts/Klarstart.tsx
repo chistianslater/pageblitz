@@ -15,6 +15,7 @@ import {
   IndustryLinks,
   Footer,
 } from "./shared";
+import { startHref } from "@/components/landing/primitives";
 import ClearFeatures from "./ClearFeatures";
 import TypingStart from "./TypingStart";
 import BuildStory from "./BuildStory";
@@ -206,7 +207,10 @@ export default function Klarstart() {
           <a className="clear-nav-login" href="/login">
             Anmelden
           </a>
-          <a className="lc-button" href="#start">
+          {/* Fuehrt in den Funnel, nicht zum Formular am Seitenende: wer oben
+              klickt, will anfangen — nicht scrollen. /start ohne ?name= zeigt
+              dort die eigene Betriebssuche. */}
+          <a className="lc-button" href={startHref(true)}>
             Kostenlos starten <ArrowRight size={16} />
           </a>
         </span>

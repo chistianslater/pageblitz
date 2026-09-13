@@ -96,7 +96,7 @@ export default function PageblitzCookieBanner() {
       // sichtbarem Banner nicht anklickbar. Das Panel selbst schaltet sie
       // wieder ein.
       className={`fixed bottom-0 left-0 right-0 z-[9999] p-3 sm:p-5 pointer-events-none ${
-        isDarkLanding ? "pb-cookie-dark" : ""
+        isDarkLanding ? "pb-cookie-dark" : "pb-cookie-klarstart"
       }`}
       role="dialog"
       aria-modal="true"

@@ -58,13 +58,24 @@ describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
 
   it("nutzt die Klarstart-Palette und die selbst gehostete Space Grotesk", () => {
     expect(html).toContain('url("/fonts/space-grotesk-latin-wght.woff2")');
-    // Klarstart-Skin: heller Grund, Tinte #242424, Volt als Flaeche mit
-    // dunkler Volt-Tinte darauf (dieselben Werte wie `.klarstart-live`).
+    // Klarstart-Skin: heller Grund, Tinte #242424, Lime als Flaeche mit
+    // #202514 darauf — dieselben Werte wie die Buttons der Startseite
+    // (--clear-lime / --clear-accent in `.clear-evolved`).
     expect(html).toContain("color:#242424;background:#fff");
-    expect(html).toContain("background:#d5f330!important");
-    expect(html).toContain("color:#25300d!important");
+    expect(html).toContain("background:#d7ef45!important");
+    expect(html).toContain("color:#202514!important");
     expect(html).not.toContain("fonts.googleapis.com");
     expect(html).not.toContain("Plus+Jakarta+Sans");
+  });
+
+  it("gibt den Buttons die Form der Startseite statt Pillen", () => {
+    // `.lc-button` (concepts.css): 7px Radius, 50px hoch, 14px/600 — die
+    // Branchenseiten trugen hier Pillen mit 999px und 700er Schrift.
+    expect(html).toContain(
+      ".nav-cta,.btn-primary,.pricing-cta{border-radius:7px"
+    );
+    expect(html).toContain("min-height:50px;padding:14px 23px;font-size:14px");
+    expect(html).toContain("transform:translateY(-2px)");
   });
 
   it("laesst keine Reste des dunklen Skins stehen", () => {
