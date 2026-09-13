@@ -134,6 +134,18 @@ async function main(): Promise<void> {
         if (!istKundenseite) {
           throw new Error("Keine Kundenseite unter dieser Adresse");
         }
+        // Die Vorschau-Leiste gehoert nicht auf die Karte.
+        //
+        // `/preview-ssr/<token>` haengt den Postkarten-Funnel-Balken an
+        // (previewCta.ts): dunkel, fix am unteren Rand, "Website
+        // uebernehmen". Er blendet sich nur im iframe selbst aus — im
+        // obersten Fenster, also auch in Playwright, steht er sichtbar da.
+        // Gemessen liegt er bei y 833–900 und damit mitten im Ausschnitt
+        // (1280x900): Ohne diese Zeile wirbt die gedruckte Karte mit einem
+        // Screenshot, auf dem schon ein Button klebt.
+        await page.addStyleTag({
+          content: "#pb-preview-cta{display:none!important}",
+        });
         // Einblend-Animationen der Packs zu Ende laufen lassen, sonst steht
         // halb sichtbarer Text auf der Karte.
         await page.waitForTimeout(1200);
@@ -155,8 +167,11 @@ async function main(): Promise<void> {
     await browser.close();
   }
 
+  // Zeilenzahl mitnennen: Der Lauf deckt genau die CSV ab, nicht alle
+  // Vorschau-Seiten der Kampagne. 13 Aufnahmen neben 36 generierten Seiten
+  // sind dann kein Fehler, sondern die Bocholt-Liste.
   console.log(
-    `\n${erzeugt} Aufnahmen in ${zielPfad}` +
+    `\n${erzeugt} Aufnahmen in ${zielPfad} (aus ${zeilen.length - 1} CSV-Zeilen)` +
       (uebersprungen ? ` · ${uebersprungen} übersprungen` : "") +
       (fehler.length ? ` · ${fehler.length} Fehler` : "")
   );
