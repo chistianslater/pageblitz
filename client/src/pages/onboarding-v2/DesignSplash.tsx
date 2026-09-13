@@ -185,7 +185,9 @@ export function DesignSplash({
               </button>
               <div>
                 <strong>{getConstitution(activePackId).name}</strong>
-                <span>Aktive Designrichtung</span>
+                <span role="status">
+                  {busyId ? "Design wird geladen …" : "Aktive Designrichtung"}
+                </span>
               </div>
               <button
                 type="button"
@@ -196,20 +198,22 @@ export function DesignSplash({
                 <ChevronRight aria-hidden="true" />
               </button>
             </div>
-            <PreviewFrame
-              token={token}
-              version={previewVersion}
-              device={device}
-              packOverride={activePackId}
-            />
-            <DesignQuickControls
-              token={token}
-              packId={activePackId}
-              accent={accent}
-              colorOverrides={colorOverrides}
-              fontPairId={fontPairId}
-              onApplied={onApplied}
-            />
+            <div className="pb-design-preview-shell">
+              <PreviewFrame
+                token={token}
+                version={previewVersion}
+                device={device}
+                packOverride={activePackId}
+              />
+              <DesignQuickControls
+                token={token}
+                packId={activePackId}
+                accent={accent}
+                colorOverrides={colorOverrides}
+                fontPairId={fontPairId}
+                onApplied={onApplied}
+              />
+            </div>
             <button
               type="button"
               className="pb-studio-btn pb-design-confirm"

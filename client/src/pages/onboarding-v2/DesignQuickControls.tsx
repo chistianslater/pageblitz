@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Palette, Type, ChevronDown } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution, getFontPair } from "@shared/stylePacks";
@@ -28,6 +28,13 @@ export function DesignQuickControls({
 }: DesignQuickControlsProps) {
   const [open, setOpen] = useState<"color" | "font" | null>(null);
   const [custom, setCustom] = useState(accent ?? "#536025");
+  const colorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (colorTimer.current) clearTimeout(colorTimer.current);
+    },
+    [packId]
+  );
   const update = trpc.onboardingV2.updateTheme.useMutation();
   const worlds = useMemo(() => getColorWorlds(packId).slice(0, 4), [packId]);
   const fonts = useMemo(
@@ -71,11 +78,25 @@ export function DesignQuickControls({
         if (e.key === "Escape") setOpen(null);
       }}
     >
-      <div className="pb-harmony-heading">
-        <strong>Dein Design. Fein abgestimmt.</strong>
-        <span>Passende Kombinationen für {getConstitution(packId).name}</span>
-      </div>
       <div className="pb-harmony-triggers">
+        <label className="pb-harmony-accent" title="Akzentfarbe ändern">
+          <input
+            aria-label="Akzentfarbe"
+            type="color"
+            value={custom}
+            disabled={update.isPending}
+            onChange={e => {
+              const value = e.target.value;
+              setCustom(value);
+              if (colorTimer.current) clearTimeout(colorTimer.current);
+              colorTimer.current = setTimeout(
+                () => save({ accent: value }),
+                450
+              );
+            }}
+          />
+          <span>Akzent</span>
+        </label>
         <button
           type="button"
           aria-expanded={open === "color"}
@@ -134,20 +155,6 @@ export function DesignQuickControls({
                   </button>
                 ))}
               </div>
-              <details className="pb-harmony-custom">
-                <summary>Eigene Markenfarbe verwenden</summary>
-                <label>
-                  Akzentfarbe
-                  <input
-                    type="color"
-                    value={custom}
-                    onChange={e => setCustom(e.target.value)}
-                  />
-                </label>
-                <button type="button" onClick={() => save({ accent: custom })}>
-                  Farbe übernehmen
-                </button>
-              </details>
             </>
           ) : (
             <div className="pb-harmony-grid">
