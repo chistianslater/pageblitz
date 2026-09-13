@@ -141,7 +141,11 @@ function Auswertung() {
                           {datum(k.sentAt)}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">Entwurf</span>
+                        <span className="text-muted-foreground">
+                          {k.status === "zurueckgestellt"
+                            ? "zurückgestellt"
+                            : "Entwurf"}
+                        </span>
                       )}
                     </td>
                     <td className="py-2 text-right tabular-nums">{k.scans}</td>

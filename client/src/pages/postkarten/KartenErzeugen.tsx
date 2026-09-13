@@ -28,11 +28,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, FileText, Image, Send } from "lucide-react";
+import { Camera, FileText, Image, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Zustand =
   | "versendet"
+  | "zurueckgestellt"
   | "bereit"
   | "motiv-veraltet"
   | "ohne-motiv"
@@ -52,6 +53,7 @@ const ZUSTAND_TEXT: Record<
   "ohne-anschrift": { text: "Anschrift fehlt", variante: "outline" },
   "ohne-vorschau": { text: "kein Vorschau-Link", variante: "outline" },
   versendet: { text: "versendet", variante: "outline" },
+  zurueckgestellt: { text: "zurückgestellt", variante: "secondary" },
 };
 
 const datum = (d: Date | string | null | undefined) =>
@@ -120,6 +122,130 @@ function AnschriftNachtragen({
   );
 }
 
+/**
+ * Aktionen je Zeile: aus der Kampagne nehmen, zurückholen, Seite löschen.
+ *
+ * Zurückstellen ist der normale Weg — die Zeile bleibt mit Begründung
+ * stehen, und beim nächsten Durchgang ist zu sehen, dass der Betrieb dran
+ * war. Löschen ist für Seiten, die gar nicht hätten entstehen sollen: Danach
+ * ist auch die Buchführung weg.
+ */
+function ZeilenAktionen({
+  businessId,
+  name,
+  zustand,
+  fertig,
+}: {
+  businessId: number;
+  name: string;
+  zustand: Zustand;
+  fertig: () => Promise<void>;
+}) {
+  const [loeschenOffen, setLoeschenOffen] = useState(false);
+  const zurueckstellen = trpc.postkarten.zurueckstellen.useMutation();
+  const wiederAufnehmen = trpc.postkarten.wiederAufnehmen.useMutation();
+  const seiteLoeschen = trpc.postkarten.seiteLoeschen.useMutation();
+
+  if (zustand === "versendet") {
+    return <span className="text-xs text-muted-foreground">—</span>;
+  }
+
+  async function ruf(
+    arbeit: () => Promise<unknown>,
+    erfolg: string
+  ): Promise<void> {
+    try {
+      await arbeit();
+      toast.success(erfolg);
+      await fertig();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-1">
+      {zustand === "zurueckgestellt" ? (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 px-2 text-xs"
+          disabled={wiederAufnehmen.isPending}
+          onClick={() =>
+            ruf(
+              () => wiederAufnehmen.mutateAsync({ businessId }),
+              `${name} ist wieder in der Kampagne.`
+            )
+          }
+        >
+          Wieder aufnehmen
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 px-2 text-xs"
+          disabled={zurueckstellen.isPending}
+          onClick={() =>
+            ruf(
+              () => zurueckstellen.mutateAsync({ businessId }),
+              `${name} zurückgestellt — bleibt in der Liste.`
+            )
+          }
+        >
+          Zurückstellen
+        </Button>
+      )}
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-7 px-2 text-xs text-destructive"
+        onClick={() => setLoeschenOffen(true)}
+      >
+        <Trash2 className="h-3 w-3" />
+        Seite löschen
+      </Button>
+
+      <Dialog open={loeschenOffen} onOpenChange={setLoeschenOffen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vorschau-Seite von {name} löschen</DialogTitle>
+            <DialogDescription>
+              Die Seite und alles, was daran hängt, sind danach weg — auch der
+              Eintrag in dieser Liste. Für „fällt aus der Kampagne" ist
+              <strong> Zurückstellen </strong>
+              das bessere Werkzeug: Der Betrieb bleibt mit Begründung stehen,
+              und du siehst beim nächsten Durchgang, dass er schon dran war.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLoeschenOffen(false)}>
+              Abbrechen
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={seiteLoeschen.isPending}
+              onClick={async () => {
+                setLoeschenOffen(false);
+                await ruf(
+                  () =>
+                    seiteLoeschen.mutateAsync({
+                      businessId,
+                      bestaetigung: "LOESCHEN",
+                    }),
+                  `Seite von ${name} gelöscht.`
+                );
+              }}
+            >
+              Endgültig löschen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 export default function KartenErzeugen() {
   const [filter, setFilter] = useState({ branche: "", stadt: "", suche: "" });
   const [entwurf, setEntwurf] = useState(filter);
@@ -137,8 +263,13 @@ export default function KartenErzeugen() {
   const beauftragen = trpc.postkarten.beauftragen.useMutation();
 
   const zeilen = useMemo(() => data?.zeilen ?? [], [data]);
+  // „Offen" heisst: macht noch Arbeit. Versendet und zurueckgestellt sind
+  // beide erledigt — nur aus verschiedenen Gruenden.
   const offen = useMemo(
-    () => zeilen.filter(z => z.zustand !== "versendet"),
+    () =>
+      zeilen.filter(
+        z => z.zustand !== "versendet" && z.zustand !== "zurueckgestellt"
+      ),
     [zeilen]
   );
   const auswahl = useMemo(
@@ -245,12 +376,21 @@ export default function KartenErzeugen() {
           </form>
 
           {zaehler && (
-            <p className="text-sm text-muted-foreground">
-              {zaehler.gesamt} Vorschau-Seiten · {zaehler.bereit} bereit ·{" "}
-              {zaehler.ohneMotiv} ohne Motiv · {zaehler.veraltet} mit veraltetem
-              Motiv · {zaehler.versendet} versendet · {zaehler.blockiert}{" "}
-              blockiert
-            </p>
+            // Der Filter ist die Kampagne — deshalb steht hier ihr Stand in
+            // einem Satz, statt dass er sich aus sechs Zahlen ergibt.
+            <div className="space-y-1 text-sm">
+              <p className="font-medium">
+                {zaehler.versendet} von {zaehler.gesamt} erledigt ·{" "}
+                {zaehler.offen} offen
+                {zaehler.zurueckgestellt > 0 &&
+                  ` · ${zaehler.zurueckgestellt} zurückgestellt`}
+              </p>
+              <p className="text-muted-foreground">
+                Davon offen: {zaehler.ohneMotiv} ohne Motiv · {zaehler.veraltet}{" "}
+                mit veraltetem Motiv · {zaehler.bereit} bereit zum Beauftragen ·{" "}
+                {zaehler.blockiert} ohne Anschrift oder Vorschau-Link
+              </p>
+            </div>
           )}
           {data?.abgeschnitten && (
             <p className="text-sm text-muted-foreground">
@@ -389,6 +529,7 @@ export default function KartenErzeugen() {
                     <th className="pb-2 font-medium">Motiv</th>
                     <th className="pb-2 font-medium">Seite geändert</th>
                     <th className="pb-2 font-medium">Karte</th>
+                    <th className="pb-2 font-medium">Aktion</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -397,7 +538,11 @@ export default function KartenErzeugen() {
                       <td className="py-2">
                         <Checkbox
                           checked={ausgewaehlt.includes(z.businessId)}
-                          disabled={laeuft || z.zustand === "versendet"}
+                          disabled={
+                            laeuft ||
+                            z.zustand === "versendet" ||
+                            z.zustand === "zurueckgestellt"
+                          }
                           onCheckedChange={() => umschalten(z.businessId)}
                         />
                       </td>
@@ -459,11 +604,22 @@ export default function KartenErzeugen() {
                         )}
                         {z.sentAt ? ` · raus ${datum(z.sentAt)}` : ""}
                       </td>
+                      <td className="py-2">
+                        <ZeilenAktionen
+                          businessId={z.businessId}
+                          name={z.name}
+                          zustand={z.zustand as Zustand}
+                          fertig={async () => {
+                            await utils.postkarten.kandidaten.invalidate();
+                            await utils.postkarten.uebersicht.invalidate();
+                          }}
+                        />
+                      </td>
                     </tr>
                   ))}
                   {zeilen.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="py-3 text-muted-foreground">
+                      <td colSpan={9} className="py-3 text-muted-foreground">
                         Keine Vorschau-Seiten zu diesem Filter.
                       </td>
                     </tr>

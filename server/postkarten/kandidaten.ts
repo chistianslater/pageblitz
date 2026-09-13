@@ -29,6 +29,8 @@ export interface KandidatZeile {
   karteId: number | null;
   code: string | null;
   kartenStatus: string | null;
+  /** Begruendung, wenn zurueckgestellt. */
+  notiz: string | null;
   textVariant: string | null;
   bildUrl: string | null;
   bildAt: Date | null;
@@ -38,6 +40,7 @@ export interface KandidatZeile {
 
 export type Zustand =
   | "versendet"
+  | "zurueckgestellt"
   | "bereit"
   | "motiv-veraltet"
   | "ohne-motiv"
@@ -69,6 +72,16 @@ export function kandidatBewerten(zeile: KandidatZeile): Kandidat {
       ...basis,
       zustand: "versendet",
       hinweis: "Karte ist raus — bleibt unangetastet.",
+      beauftragbar: false,
+    };
+  }
+  if (zeile.kartenStatus === "zurueckgestellt") {
+    return {
+      ...basis,
+      zustand: "zurueckgestellt",
+      hinweis:
+        zeile.notiz ??
+        "Zurückgestellt — bekommt in dieser Kampagne keine Karte.",
       beauftragbar: false,
     };
   }
@@ -166,6 +179,7 @@ export async function kandidatenLaden(
       karteId: postcards.id,
       code: postcards.code,
       kartenStatus: postcards.status,
+      notiz: postcards.notiz,
       textVariant: postcards.textVariant,
       bildUrl: postcards.bildUrl,
       bildAt: postcards.bildAt,
@@ -221,6 +235,7 @@ export async function kandidatLaden(
       karteId: postcards.id,
       code: postcards.code,
       kartenStatus: postcards.status,
+      notiz: postcards.notiz,
       textVariant: postcards.textVariant,
       bildUrl: postcards.bildUrl,
       bildAt: postcards.bildAt,

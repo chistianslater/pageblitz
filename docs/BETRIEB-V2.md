@@ -242,6 +242,14 @@ ist dort der Unterschied zwischen „Motiv passt" und „Seite wurde seither neu
 erzeugt". Additiv, auf Prod nach dem Deploy:
 `mysql -u <user> -p <db> < /root/pageblitz/drizzle/0034_postkarten_motiv.sql`.
 
+### Migration 0035 — Postkarten zurückstellen (additiv)
+
+`drizzle/0035_postkarten_zurueckstellen.sql`: `postcards.status` bekommt den
+Wert `zurueckgestellt`, dazu die Spalte `notiz`. Damit fällt ein Betrieb ohne
+brauchbare Anschrift aus der Kampagne, ohne dass die Zeile verschwindet —
+die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
+`./scripts/migration-einspielen.sh drizzle/0035_postkarten_zurueckstellen.sql`.
+
 ## 4. Umgebungsvariablen & Mock-Flags
 
 `PB_LLM_MOCK=1` (nur wenn zusätzlich `NODE_ENV !== "production"`): überspringt
@@ -560,6 +568,17 @@ genau der Fall nach einem Neugenerierungs-Lauf der Kampagne.
 Drei Sperren, die nur im Router sitzen: versendete Karten werden nicht mehr
 angefasst, ein Auftrag braucht ein Motiv vom aktuellen Stand, und
 `beauftragen` verlangt die ausgeschriebene Bestätigung `"VERSENDEN"`.
+
+Kampagnen-Buchführung (Migration 0035): `postcards.status` kennt zusätzlich
+`zurueckgestellt` samt `notiz`. Ein Betrieb ohne brauchbare Anschrift wird
+damit **zurückgestellt**, nicht gelöscht — die Zeile bleibt mit Begründung
+stehen, und der Stand der Kampagne steht als Satz über der Liste („3 von 36
+erledigt · 30 offen · 3 zurückgestellt"). Die Anschrift lässt sich in der
+Zeile nachtragen (`postkarten.anschrift`, speichert nur, was
+`anschriftZerlegen` versteht). `postkarten.seiteLoeschen` gibt es für Seiten,
+die gar nicht hätten entstehen sollen — mit dem Preis, dass danach auch die
+Buchführung zu diesem Betrieb weg ist; eine versendete Karte sperrt es
+ohnehin, weil ihr QR-Code auf genau diese Seite zeigt.
 
 Voraussetzungen auf dem Server: `HEYMAIL_API_KEY`, R2-Variablen (das Bild
 muss öffentlich über HTTPS liegen, HeyMail lädt es selbst), `APP_BASE_URL`

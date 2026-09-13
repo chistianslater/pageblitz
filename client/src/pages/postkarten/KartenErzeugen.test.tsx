@@ -69,6 +69,13 @@ const zeilen = [
     zustand: "ohne-vorschau",
     beauftragbar: false,
   }),
+  zeile({
+    businessId: 7,
+    name: "Mobiler Friseur",
+    zustand: "zurueckgestellt",
+    beauftragbar: false,
+    hinweis: "Zurückgestellt: keine brauchbare Anschrift.",
+  }),
 ];
 
 vi.mock("@/lib/trpc", () => {
@@ -88,12 +95,14 @@ vi.mock("@/lib/trpc", () => {
               zeilen,
               abgeschnitten: false,
               zaehler: {
-                gesamt: 6,
+                gesamt: 7,
                 bereit: 1,
                 ohneMotiv: 1,
                 veraltet: 1,
                 versendet: 1,
+                zurueckgestellt: 1,
                 blockiert: 2,
+                offen: 5,
               },
             },
             isLoading: false,
@@ -105,6 +114,9 @@ vi.mock("@/lib/trpc", () => {
           }),
         },
         anschrift: { useMutation: () => mutation },
+        zurueckstellen: { useMutation: () => mutation },
+        wiederAufnehmen: { useMutation: () => mutation },
+        seiteLoeschen: { useMutation: () => mutation },
         motiv: { useMutation: () => mutation },
         vorschau: { useMutation: () => mutation },
         beauftragen: { useMutation: () => mutation },
@@ -141,8 +153,16 @@ describe("KartenErzeugen", () => {
     expect(html).toContain("Osterstraße 25, 46397 Bocholt, Deutschland");
   });
 
-  test("nennt die Zähler aus der Abfrage", () => {
-    expect(html).toContain("6 Vorschau-Seiten");
+  test("nennt den Stand der Kampagne, nicht nur Zahlen", () => {
+    expect(html).toContain("1 von 7 erledigt");
+    expect(html).toContain("5 offen");
+    expect(html).toContain("1 zurückgestellt");
     expect(html).toContain("1 mit veraltetem Motiv");
+  });
+
+  test("bietet Zurückstellen an und Wiederaufnehmen für Zurückgestellte", () => {
+    expect(html).toContain("Zurückstellen");
+    expect(html).toContain("Wieder aufnehmen");
+    expect(html).toContain("Seite löschen");
   });
 });

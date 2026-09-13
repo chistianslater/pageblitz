@@ -106,6 +106,33 @@ export async function scanErfassen(
 }
 
 /**
+ * Zuruecklegen statt loeschen: Der Betrieb faellt aus der Kampagne, die
+ * Zeile bleibt. Nur so ist spaeter noch zu sehen, dass er dran war und
+ * warum er keine Karte bekam.
+ */
+export async function karteZurueckstellen(
+  postcardId: number,
+  notiz: string | null
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(postcards)
+    .set({ status: "zurueckgestellt", notiz })
+    .where(eq(postcards.id, postcardId));
+}
+
+/** Zurueck in die Kampagne — etwa, wenn die Anschrift nachgetragen wurde. */
+export async function karteWiederAufnehmen(postcardId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(postcards)
+    .set({ status: "entwurf", notiz: null })
+    .where(eq(postcards.id, postcardId));
+}
+
+/**
  * Motiv festhalten. `bildAt` ist der Zeitstempel, an dem spaeter haengt, ob
  * die Aufnahme noch zur Seite passt — deshalb immer mitschreiben.
  */

@@ -13,6 +13,7 @@ const zeile = (teil: Partial<KandidatZeile> = {}): KandidatZeile => ({
   karteId: 3,
   code: "AB12",
   kartenStatus: "entwurf",
+  notiz: null,
   textVariant: "ungefragt",
   bildUrl: "https://media.pageblitz.de/postkarten/AB12.jpg",
   bildAt: new Date("2026-09-12T10:00:00Z"),
@@ -67,6 +68,35 @@ describe("kandidatBewerten", () => {
     );
     expect(k.zustand).toBe("versendet");
     expect(k.beauftragbar).toBe(false);
+  });
+
+  test("zurückgestellt zeigt die Begründung, nicht den nächsten Schritt", () => {
+    // Der Betrieb faellt aus der Kampagne, die Zeile bleibt — sonst waere
+    // beim naechsten Durchgang nicht mehr zu sehen, dass er dran war.
+    const k = kandidatBewerten(
+      zeile({
+        kartenStatus: "zurueckgestellt",
+        notiz: "Zurückgestellt: keine brauchbare Anschrift.",
+        bildUrl: null,
+      })
+    );
+    expect(k.zustand).toBe("zurueckgestellt");
+    expect(k.hinweis).toContain("keine brauchbare Anschrift");
+    expect(k.beauftragbar).toBe(false);
+  });
+
+  test("zurückgestellt ohne Notiz bleibt verständlich", () => {
+    const k = kandidatBewerten(
+      zeile({ kartenStatus: "zurueckgestellt", notiz: null })
+    );
+    expect(k.hinweis).toContain("Zurückgestellt");
+  });
+
+  test("versendet schlägt zurückgestellt", () => {
+    const k = kandidatBewerten(
+      zeile({ kartenStatus: "versendet", notiz: "alt" })
+    );
+    expect(k.zustand).toBe("versendet");
   });
 
   test("unzerlegbare Anschrift blockiert den Auftrag", () => {

@@ -20,10 +20,12 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
-import { updateBusiness } from "../db";
+import { deleteWebsite, updateBusiness } from "../db";
 import { gruppiere } from "./auswertung";
 import { karteAnHeymail } from "./auftrag";
 import {
+  karteWiederAufnehmen,
+  karteZurueckstellen,
   kartenUebersicht,
   motivGespeichert,
   postkarteSichern,
@@ -161,14 +163,22 @@ export const postkartenRouter = router({
       return {
         zeilen,
         abgeschnitten,
+        // Der Stand der Kampagne in Zahlen: Was der Filter gerade zeigt, ist
+        // die Kampagne (Branche + Stadt). `offen` ist der Rest, der noch
+        // Arbeit macht — versendet und zurueckgestellt sind erledigt.
         zaehler: {
           gesamt: zeilen.length,
           bereit: zeilen.filter(z => z.zustand === "bereit").length,
           ohneMotiv: zeilen.filter(z => z.zustand === "ohne-motiv").length,
           veraltet: zeilen.filter(z => z.zustand === "motiv-veraltet").length,
           versendet: zeilen.filter(z => z.zustand === "versendet").length,
+          zurueckgestellt: zeilen.filter(z => z.zustand === "zurueckgestellt")
+            .length,
           blockiert: zeilen.filter(
             z => z.zustand === "ohne-anschrift" || z.zustand === "ohne-vorschau"
+          ).length,
+          offen: zeilen.filter(
+            z => z.zustand !== "versendet" && z.zustand !== "zurueckgestellt"
           ).length,
         },
       };
@@ -208,6 +218,73 @@ export const postkartenRouter = router({
         address: input.anschrift.trim(),
       });
       return { empfaenger };
+    }),
+
+  /**
+   * Zuruecklegen: Der Betrieb faellt aus der Kampagne — ohne brauchbare
+   * Anschrift etwa —, die Zeile bleibt aber stehen. Das ist der Unterschied
+   * zum Loeschen der Seite: Beim naechsten Durchgang ist noch zu sehen, dass
+   * er dran war und warum er nichts bekam.
+   */
+  zurueckstellen: adminProcedure
+    .input(
+      z.object({
+        businessId: z.number().int().positive(),
+        notiz: z.string().max(300).optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      const karte = await postkarteSichern({
+        businessId: kandidat.businessId,
+        websiteId: kandidat.websiteId,
+        city: kandidat.stadt,
+        textVariant: kandidat.textVariant,
+      });
+      const notiz =
+        input.notiz?.trim() ||
+        (kandidat.zustand === "ohne-anschrift"
+          ? "Zurückgestellt: keine brauchbare Anschrift."
+          : "Zurückgestellt.");
+      await karteZurueckstellen(karte.id, notiz);
+      return { code: karte.code, notiz };
+    }),
+
+  /** Zurueck in die Kampagne, etwa nach nachgetragener Anschrift. */
+  wiederAufnehmen: adminProcedure
+    .input(z.object({ businessId: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      if (!kandidat.karteId) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Für diesen Betrieb gibt es noch gar keine Karte.",
+        });
+      }
+      await karteWiederAufnehmen(kandidat.karteId);
+      return { ok: true };
+    }),
+
+  /**
+   * Vorschau-Seite loeschen. Der harte Weg — gedacht fuer Betriebe, die gar
+   * nicht erst haetten generiert werden sollen.
+   *
+   * Fuer „faellt aus der Kampagne" ist `zurueckstellen` das richtige
+   * Werkzeug: Nach dem Loeschen verschwindet die Zeile, und mit ihr die
+   * Antwort, ob der Betrieb je dran war. Eine versendete Karte sperrt das
+   * Loeschen ohnehin — ihr QR-Code zeigt auf genau diese Seite.
+   */
+  seiteLoeschen: adminProcedure
+    .input(
+      z.object({
+        businessId: z.number().int().positive(),
+        bestaetigung: z.literal("LOESCHEN"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      await deleteWebsite(kandidat.websiteId);
+      return { name: kandidat.name, slug: kandidat.slug };
     }),
 
   /**

@@ -612,9 +612,18 @@ export const postcards = mysqlTable("postcards", {
   city: varchar("city", { length: 120 }),
   textVariant: varchar("textVariant", { length: 60 }),
   heymailId: varchar("heymailId", { length: 120 }),
-  status: mysqlEnum("status", ["entwurf", "versendet"])
+  /**
+   * `zurueckgestellt` heisst: Dieser Betrieb bekommt in dieser Kampagne
+   * keine Karte — meist, weil es keine brauchbare Anschrift gibt. Der
+   * Unterschied zum Loeschen der Seite ist Absicht: Die Zeile bleibt, und
+   * damit die Antwort auf „haben wir den schon angefasst?" (Betreiber-Wunsch
+   * 2026-09-13).
+   */
+  status: mysqlEnum("status", ["entwurf", "versendet", "zurueckgestellt"])
     .default("entwurf")
     .notNull(),
+  /** Warum zurueckgestellt — steht in der Liste unter dem Namen. */
+  notiz: varchar("notiz", { length: 300 }),
   /**
    * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
    * `bildAt` sagt, von wann sie ist — aelter als
