@@ -1,0 +1,199 @@
+/* Static tiled grain: no canvas, animation loop, asset request or hit target.
+   The SVG is a texture filter, not an illustration or an icon. */
+.ref-site {
+  --surface-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cpath fill='%23888' opacity='.105' filter='url(%23grain)' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+  --micro-ease: cubic-bezier(0.22, 0.68, 0.2, 1);
+  background-image: var(--surface-grain);
+  background-repeat: repeat;
+}
+.ref-architecture {
+  background-image:
+    var(--surface-grain),
+    linear-gradient(
+      90deg,
+      transparent calc(50% - 0.5px),
+      #18201e08 50%,
+      transparent calc(50% + 0.5px)
+    );
+}
+.ref-restaurant .food-menu-paper,
+.ref-restaurant .ref-contact,
+.ref-salon .salon-detail > div {
+  background-image: var(--surface-grain);
+}
+.ref-salon {
+  background-image:
+    var(--surface-grain),
+    repeating-linear-gradient(115deg, transparent 0 5px, #51434b03 5px 6px);
+}
+.ref-restaurant .food-heading {
+  background-image: var(--surface-grain), linear-gradient(90deg,var(--canvas) 82%,transparent);
+}
+@media (max-width:760px) {
+  .ref-restaurant .food-heading { background-image:none; }
+}
+.ref-site .ref-button {
+  transition:
+    transform 220ms var(--micro-ease),
+    box-shadow 220ms var(--micro-ease),
+    background-color 220ms ease;
+}
+.ref-site .ref-button svg,
+.ref-site .ref-link svg,
+.ref-nav-cta svg {
+  transition: transform 260ms var(--micro-ease);
+}
+.ref-site .ref-button:active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: none;
+}
+.ref-site .ref-link {
+  position: relative;
+}
+.ref-site .ref-link::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms var(--micro-ease);
+  pointer-events: none;
+}
+.ref-site .ref-link:focus-visible::after {
+  transform: scaleX(1);
+}
+.ref-nav nav > a {
+  position: relative;
+}
+.ref-nav nav > a::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--micro-ease);
+  pointer-events: none;
+}
+.ref-nav nav > a:focus-visible::after {
+  transform: scaleX(1);
+}
+.ref-switch button,
+.food-menu-tabs button {
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+.food-menu-tabs button svg {
+  transition: transform 240ms var(--micro-ease);
+}
+.food-menu-tabs button[aria-pressed="true"] svg {
+  transform: rotate(45deg);
+}
+.salon-services summary {
+  transition: color 200ms ease;
+}
+.salon-services summary svg {
+  flex-shrink: 0;
+  transition: transform 260ms var(--micro-ease);
+}
+.salon-services details[open] p {
+  animation: ref-detail-open 280ms var(--micro-ease) both;
+}
+.ref-contact input,
+.ref-contact textarea {
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
+}
+.ref-contact input:focus,
+.ref-contact textarea:focus {
+  border-bottom-color: var(--accent);
+  background-color: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+.ref-contact label:focus-within {
+  color: var(--accent);
+}
+.ref-contact [role="status"] {
+  animation: ref-detail-open 280ms var(--micro-ease) both;
+}
+@keyframes ref-detail-open {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Pointer-only image feedback does not move text or alter cropping at rest. */
+@media (hover: hover) and (pointer: fine) {
+  .ref-site .ref-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 color-mix(in srgb, var(--ink) 13%, transparent);
+  }
+  .ref-site .ref-button:active {
+    transform: translateY(1px) scale(0.985);
+    box-shadow: none;
+  }
+  .ref-site .ref-link:hover::after,
+  .ref-nav nav > a:hover::after {
+    transform: scaleX(1);
+  }
+  .ref-nav nav > a:hover {
+    text-decoration: none;
+  }
+  .ref-nav-cta:hover svg {
+    transform: translate(2px, -2px);
+  }
+  .ref-switch button:not([aria-pressed="true"]):hover {
+    background: color-mix(in srgb, var(--ink) 7%, transparent);
+  }
+  .salon-services summary:hover {
+    color: var(--accent);
+  }
+  .arch-cover img,
+  .food-cover img,
+  .salon-cover img,
+  .salon-inset img {
+    transition: transform 850ms var(--micro-ease);
+  }
+  .arch-cover:hover img,
+  .food-cover:hover img,
+  .salon-cover:hover img,
+  .salon-inset:hover img {
+    transform: scale(1.025);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ref-site .ref-button,
+  .ref-site .ref-button svg,
+  .ref-site .ref-link svg,
+  .ref-nav-cta svg,
+  .ref-site .ref-link::after,
+  .ref-nav nav > a::after,
+  .food-menu-tabs button svg,
+  .arch-cover img,
+  .food-cover img,
+  .salon-cover img,
+  .salon-inset img {
+    transform: none !important;
+  }
+  .ref-site .ref-link::after,
+  .ref-nav nav > a::after {
+    opacity: 0;
+  }
+  .ref-site .ref-link:is(:hover, :focus-visible)::after,
+  .ref-nav nav > a:is(:hover, :focus-visible)::after {
+    opacity: 1;
+  }
+}

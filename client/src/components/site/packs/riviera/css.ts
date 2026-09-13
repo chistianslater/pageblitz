@@ -42,7 +42,7 @@ export const RIVIERA_CSS = `
 .pb-rv-quote p{font-family:var(--pb-font-display);font-size:16.5px;line-height:1.55}
 .pb-rv-quote footer{margin-top:16px;font-size:12.5px;color:var(--pb-muted)}
 .pb-rv-quotes .pb-review-stars{margin-bottom:12px;color:var(--pb-accent)}
-.pb-rv-faq-list{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 48px}
+.pb-rv-faq-list{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 48px}
 .pb-rv-faq{padding:18px 0;border-bottom:1px solid var(--pb-line)}
 .pb-rv-faq strong{display:block;font-weight:600;font-size:15.5px;margin-bottom:6px}
 .pb-rv-faq p{font-size:14px;color:var(--pb-muted);max-width:58ch}

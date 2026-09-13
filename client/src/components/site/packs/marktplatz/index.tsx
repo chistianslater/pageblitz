@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -427,7 +428,7 @@ const MarktplatzPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
           <HeroCollage data={data} />
           <div
@@ -473,7 +474,7 @@ const MarktplatzPage: React.FC<{
           </div>
           <div className="pb-mp-scallop" aria-hidden="true" />
         </section>
-      )}
+      ))}
       {hero?.ctaText && (
         <aside className="pb-mp-trial-cta" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>

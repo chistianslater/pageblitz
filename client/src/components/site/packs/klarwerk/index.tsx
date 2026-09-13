@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -442,7 +443,7 @@ const KlarwerkPage: React.FC<{
           }
         />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-kw-hero">
           <HeroCollage data={data} />
           <div className="pb-kw-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
@@ -473,7 +474,7 @@ const KlarwerkPage: React.FC<{
             )}
           </div>
         </section>
-      )}
+      ))}
       {/* Readout nur auf der Startseite: auf Unterseiten muss der
           pageHeader das erste Element nach der Nav sein. */}
       {hero && (

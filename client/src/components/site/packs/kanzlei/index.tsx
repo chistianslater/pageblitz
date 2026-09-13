@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -473,7 +474,7 @@ const KanzleiPage: React.FC<{
           }
         />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
           <HeroCollage data={data} />
           <div className="pb-kz-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
@@ -507,7 +508,7 @@ const KanzleiPage: React.FC<{
             )}
           </div>
         </section>
-      )}
+      ))}
       {/* Kennzahlen-Band nur auf der Startseite (Q1, B7 Welle 0): auf
           Unterseiten muss der pageHeader das erste Element nach der Nav
           sein — ein Stats-Band vor dem Seitentitel wirkt wie eine

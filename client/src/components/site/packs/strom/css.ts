@@ -45,7 +45,7 @@ export const STROM_CSS = `
 .pb-st-quote p{font-size:15px;line-height:1.55}
 .pb-st-quote footer{margin-top:14px;font-size:12px;color:var(--pb-muted)}
 .pb-st-quotes .pb-review-stars{margin-bottom:10px;color:var(--pb-accent)}
-.pb-st-faq-list{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 44px}
+.pb-st-faq-list{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 44px}
 .pb-st-faq{padding:17px 0;border-bottom:1px solid var(--pb-line)}
 .pb-st-faq strong{display:block;font-weight:600;font-size:15px;margin-bottom:5px}
 .pb-st-faq p{font-size:14px;color:var(--pb-muted);max-width:58ch}

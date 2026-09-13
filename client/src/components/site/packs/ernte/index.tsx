@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -485,7 +486,7 @@ const ErntePage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
           <HeroCollage data={data} />
           <Blob tone="sage" />
@@ -527,7 +528,7 @@ const ErntePage: React.FC<{
             </div>
           )}
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

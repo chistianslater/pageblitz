@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -460,7 +461,7 @@ const MorgenlichtPage: React.FC<{
           )}
         </aside>
       )}
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
           <HeroCollage data={data} />
@@ -517,7 +518,7 @@ const MorgenlichtPage: React.FC<{
             </div>
           )}
         </>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

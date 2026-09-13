@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -424,7 +425,7 @@ const LandgutPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <>
           <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
           <HeroCollage data={data} />
@@ -474,7 +475,7 @@ const LandgutPage: React.FC<{
               Nav sein — ein Laufband davor wirkt kontextlos. */}
           {buildTicker(services)}
         </>
-      )}
+      ))}
       {contact && (
         <aside className="pb-lg-visit-sticky" aria-label={PACK_UI.contact}>
           <span>

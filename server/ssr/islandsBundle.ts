@@ -48,3 +48,22 @@ function readManifestFileName(): string {
     return DEFAULT_BUNDLE_FILE;
   }
 }
+
+let cachedMotionFile: string | undefined;
+export function getMotionBundlePath(): string {
+  if (!cachedMotionFile) {
+    try {
+      const manifest = JSON.parse(
+        fs.readFileSync(
+          path.join(resolveIslandsDir(), "motion-manifest.json"),
+          "utf8"
+        )
+      );
+      cachedMotionFile =
+        typeof manifest.file === "string" ? manifest.file : "site-motion.js";
+    } catch {
+      cachedMotionFile = "site-motion.js";
+    }
+  }
+  return `/islands/${cachedMotionFile}`;
+}

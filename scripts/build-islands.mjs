@@ -26,7 +26,11 @@ const outdir = path.join(repoRoot, "dist/public/islands");
 // veraltetem Hash im Ordner ansammeln.
 if (fs.existsSync(outdir)) {
   for (const entry of fs.readdirSync(outdir)) {
-    if (entry === "manifest.json" || /^site-islands\.[^/]*\.js$/.test(entry)) {
+    if (
+      entry === "manifest.json" ||
+      entry === "motion-manifest.json" ||
+      /^site-(islands|motion)\.[^/]*\.js$/.test(entry)
+    ) {
       fs.rmSync(path.join(outdir, entry));
     }
   }
@@ -67,4 +71,23 @@ fs.writeFileSync(
 
 console.log(
   `[build-islands] dist/public/islands/${fileName} gebaut, manifest.json aktualisiert.`
+);
+
+// Lightweight GSAP enhancement, independently loaded without React islands.
+const motionBuild = await build({
+  entryPoints: [path.join(repoRoot, "client/src/site-islands/motion.ts")],
+  bundle: true,
+  format: "esm",
+  minify: true,
+  target: ["es2020"],
+  outdir,
+  entryNames: "site-motion.[hash]",
+  metafile: true,
+});
+const motionFile = path.basename(
+  Object.keys(motionBuild.metafile.outputs).find(f => f.endsWith(".js"))
+);
+fs.writeFileSync(
+  path.join(outdir, "motion-manifest.json"),
+  JSON.stringify({ file: motionFile }) + "\n"
 );

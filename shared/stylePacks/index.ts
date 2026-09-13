@@ -1,3 +1,4 @@
+import { resolveDesignCategory } from "./categoryAliases";
 import type { PackId } from "../siteContract/types";
 import type { PackConstitution } from "./types";
 import { WERKBANK } from "./werkbank";
@@ -188,7 +189,7 @@ export function isLodgingCategory(
   category: string | null | undefined
 ): boolean {
   if (!category?.trim()) return false;
-  const tokens = tokenize(transliterate(category));
+  const tokens = tokenize(transliterate(resolveDesignCategory(category)));
   return isHospitalityQuery(tokens, tokens.join(""));
 }
 
@@ -273,7 +274,7 @@ export function normalizeCategoryKey(category: string): string {
  * Hotellerie zählt als abgedeckt (eigener Hospitality-Fallback ist gewollt).
  */
 export function hasDirectPackMatch(category: string): boolean {
-  const tokens = tokenize(transliterate(category));
+  const tokens = tokenize(transliterate(resolveDesignCategory(category)));
   const compact = tokens.join("");
   if (!compact) return true;
   if (isHospitalityQuery(tokens, compact)) return true;
@@ -289,7 +290,7 @@ export function packMatchesCategory(
 ): boolean {
   const constitution = STYLE_PACKS[packId];
   if (!constitution) return false;
-  const tokens = tokenize(transliterate(categoryKey));
+  const tokens = tokenize(transliterate(resolveDesignCategory(categoryKey)));
   return bestIndustryScore(constitution, tokens, tokens.join("")) > 0;
 }
 
@@ -374,7 +375,7 @@ function expandPool(direct: PackId[]): PackId[] {
 
 /** Direkte Branchen-Matches zuerst, danach kompatible Richtungen; min. 3. */
 export function getPackPool(categoryKey: string): PackId[] {
-  const tokens = tokenize(transliterate(categoryKey));
+  const tokens = tokenize(transliterate(resolveDesignCategory(categoryKey)));
   const compact = tokens.join("");
   const hospitality = isHospitalityQuery(tokens, compact);
   const scored = (Object.values(STYLE_PACKS) as PackConstitution[])

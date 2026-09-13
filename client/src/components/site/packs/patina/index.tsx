@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -440,7 +441,7 @@ const PatinaPage: React.FC<{
           </div>
         </aside>
       )}
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-pa-hero">
           <HeroCollage data={data} />
           <div className="pb-pa-init" aria-hidden="true">
@@ -497,7 +498,7 @@ const PatinaPage: React.FC<{
             </div>
           </div>
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section, heroArchSrc))}

@@ -5,6 +5,7 @@ export const FUNDAMENT: PackConstitution = {
   name: "Fundament",
   essence: "Tiefes Marineblau gegen Weiß — Substanz, Seriosität, klare Kante.",
   industries: [
+    "fachhandel",
     "immobilien",
     "immobilienmakler",
     "makler",

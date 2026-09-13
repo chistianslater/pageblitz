@@ -85,8 +85,10 @@ describe("SiteRenderer", () => {
       expect(html).toContain("pb-site pb-werkbank");
     });
 
-    test("bestehendes Dokument ohne Profil nutzt ausschließlich handgestaltete Pack-Defaults", () => {
-      const html = renderToStaticMarkup(<SiteRenderer data={data} />);
+    test("explizite Revision 1 ohne Profil nutzt handgestaltete Pack-Defaults", () => {
+      const html = renderToStaticMarkup(
+        <SiteRenderer data={{ ...data, designRevision: 1 }} />
+      );
       const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
       expect(root).not.toContain("data-pb-hero=");
       expect(root).not.toContain("data-pb-services=");

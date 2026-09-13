@@ -45,7 +45,7 @@ export const ERNTE_CSS = `
 .pb-er-quote p{font-size:15px;line-height:1.55}
 .pb-er-quote footer{margin-top:14px;font-size:12px;color:var(--pb-muted)}
 .pb-er-quotes .pb-review-stars{margin-bottom:10px;color:var(--pb-accent-2)}
-.pb-er-faq-list{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 44px}
+.pb-er-faq-list{margin-top:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 44px}
 .pb-er-faq{padding:17px 0;border-bottom:1px solid var(--pb-line)}
 .pb-er-faq strong{display:block;font-weight:600;font-size:15px;margin-bottom:5px;color:var(--pb-accent)}
 .pb-er-faq p{font-size:14px;color:var(--pb-muted);max-width:58ch}

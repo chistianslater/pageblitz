@@ -1,4 +1,6 @@
-import React from "react";
+import { mountGalleryInteractions } from "./galleryInteractions";
+import { ensureTextContrast } from "../../../../shared/stylePacks/colorMath";
+import React, { useEffect, useRef } from "react";
 import {
   getConstitution,
   getFontPair,
@@ -20,6 +22,12 @@ import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
 import { AGE_GATE_CSS, AgeGateSsr } from "./ageGateSsr";
 import { PARTNERS_CSS } from "./partnersSection";
+import {
+  ART_DIRECTIONS,
+  artPalette,
+  deriveArtDirectedProfile,
+} from "../../../../shared/stylePacks/artDirection";
+import { ART_DIRECTION_CSS } from "./artDirection/artDirectionCss";
 import { EXTRA_SECTIONS_CSS } from "./extraSections";
 
 /** designProfile.decorations === "off" blendet alle `pb-deco`-Elemente aus. */
@@ -128,12 +136,24 @@ export const SiteRenderer: React.FC<{
   islandsMode,
   pathname = "/",
 }) => {
+  // There are no paying customers yet: existing unversioned previews also
+  // adopt the new default. Revision 1 remains an explicit comparison option.
+  data =
+    data.designRevision === undefined
+      ? {
+          ...data,
+          designRevision: 2,
+          designProfile: data.designProfile ?? deriveArtDirectedProfile(data),
+        }
+      : data;
   const effectiveData =
     packOverride && PACK_MODULES[packOverride]
       ? {
           ...data,
           stylePackId: packOverride,
-          designProfile: deriveDesignProfile({
+          designProfile: (data.designRevision === 2
+            ? deriveArtDirectedProfile
+            : deriveDesignProfile)({
             stylePackId: packOverride,
             businessName: data.businessName,
             businessCategory: data.businessCategory,
@@ -141,6 +161,28 @@ export const SiteRenderer: React.FC<{
           }),
         }
       : data;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const motionKey = JSON.stringify(effectiveData);
+  useEffect(() => {
+    if (rootRef.current) return mountGalleryInteractions(rootRef.current);
+  }, [motionKey]);
+  useEffect(() => {
+    if (effectiveData.designRevision !== 2 || !rootRef.current) return;
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+    const root = rootRef.current;
+    import("./artDirection/siteEntrance")
+      .then(({ mountSiteEntrance }) => {
+        if (!cancelled) cleanup = mountSiteEntrance(root);
+      })
+      .catch(() => {
+        /* Content stays readable if the optional animation bundle fails. */
+      });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, [motionKey]);
   const mod = PACK_MODULES[effectiveData.stylePackId];
   if (!mod)
     throw new Error(
@@ -148,9 +190,31 @@ export const SiteRenderer: React.FC<{
     );
   const vars = toCssVars(
     getConstitution(effectiveData.stylePackId),
-    effectiveData.colorOverrides,
+    effectiveData.designRevision === 2
+      ? {
+          ...artPalette(effectiveData.stylePackId),
+          ...effectiveData.colorOverrides,
+        }
+      : effectiveData.colorOverrides,
     getFontPair(effectiveData.fontPairId)
   );
+  if (effectiveData.designRevision === 2) {
+    vars["--pb-art-accent-text"] = ensureTextContrast(
+      ensureTextContrast(vars["--pb-accent"], vars["--pb-canvas"], 4.7),
+      vars["--pb-surface"],
+      4.7
+    );
+    vars["--pb-art-inverse-accent"] = ensureTextContrast(
+      vars["--pb-accent"],
+      vars["--pb-ink"],
+      4.7
+    );
+    vars["--pb-art-dark-accent"] = ensureTextContrast(
+      vars["--pb-accent"],
+      "#191919",
+      4.7
+    );
+  }
   // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
   // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS
   // die Komposition in allen 14 Packs über data-pb-slot.
@@ -201,8 +265,15 @@ export const SiteRenderer: React.FC<{
   const packRenderData = flattenGalleryAlbums(pageRenderData);
   return (
     <div
+      ref={rootRef}
       className={`pb-site pb-${effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
+      data-pb-revision={effectiveData.designRevision}
+      data-pb-texture={
+        effectiveData.designRevision === 2
+          ? ART_DIRECTIONS[effectiveData.stylePackId].texture
+          : undefined
+      }
       data-pb-hero={designProfile?.heroLayout}
       data-pb-services={designProfile?.servicesLayout}
       data-pb-about={designProfile?.aboutLayout}
@@ -257,7 +328,18 @@ export const SiteRenderer: React.FC<{
             LAYOUT_POLISH_CSS +
             (albumJson ? "\n" + ALBUM_CSS : "") +
             (site?.requiresAgeGate === true ? "\n" + AGE_GATE_CSS : "") +
-            (designProfile ? "\n" + DESIGN_PROFILE_CSS : ""),
+            (designProfile
+              ? "\n" +
+                (effectiveData.designRevision === 2
+                  ? DESIGN_PROFILE_CSS.replaceAll(
+                      "#start",
+                      "#start:not(.pb-art-hero)"
+                    )
+                  : DESIGN_PROFILE_CSS)
+              : "") +
+            (effectiveData.designRevision === 2
+              ? "\n" + ART_DIRECTION_CSS
+              : ""),
         }}
       />
       {/* FSK-18-Overlay VOR allem Inhalt (fail-closed ohne JS); das

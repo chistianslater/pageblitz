@@ -42,7 +42,7 @@ export const PLAKAT_CSS = `
 .pb-pl-quote p{font-size:15.5px;line-height:1.5;font-weight:400}
 .pb-pl-quote footer{margin-top:14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
 .pb-pl-quotes .pb-review-stars{margin-bottom:10px;color:var(--pb-accent)}
-.pb-pl-faq-list{margin-top:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 48px}
+.pb-pl-faq-list{margin-top:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 48px}
 .pb-pl-faq{padding:18px 0;border-bottom:2px solid var(--pb-ink)}
 .pb-pl-faq strong{display:block;font-weight:700;text-transform:uppercase;font-size:14px;letter-spacing:.02em;margin-bottom:6px}
 .pb-pl-faq p{font-size:14px;color:var(--pb-muted);max-width:60ch}

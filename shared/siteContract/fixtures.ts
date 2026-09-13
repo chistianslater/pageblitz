@@ -3616,7 +3616,9 @@ export function getFixture(packId: PackId, kind: FixtureKind): WebsiteDataV2 {
     throw new Error(`Fixture fehlt für Pack: ${packId}`);
   }
   if (kind === "features") {
-    return { ...set.full, features: DEMO_FEATURES };
+    return { ...set.full, designRevision: 1, features: DEMO_FEATURES };
   }
-  return set[kind];
+  // Historical fixtures keep the original look for regression comparisons.
+  // Public demos explicitly upgrade them via withArtDirection.
+  return { ...set[kind], designRevision: 1 };
 }

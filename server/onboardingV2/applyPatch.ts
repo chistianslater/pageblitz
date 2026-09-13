@@ -1,3 +1,4 @@
+import { deriveArtDirectedProfile } from "../../shared/stylePacks/artDirection";
 import { TRPCError } from "@trpc/server";
 import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
 import type {
@@ -43,7 +44,9 @@ export function applyStylePack(
   doc: WebsiteDataV2,
   packId: PackId
 ): WebsiteDataV2 {
-  const designProfile = deriveDesignProfile({
+  const designProfile = (
+    doc.designRevision !== 1 ? deriveArtDirectedProfile : deriveDesignProfile
+  )({
     stylePackId: packId,
     businessName: doc.businessName,
     businessCategory: doc.businessCategory,
@@ -51,6 +54,7 @@ export function applyStylePack(
   });
   return WebsiteDataV2Schema.parse({
     ...doc,
+    designRevision: doc.designRevision ?? 2,
     stylePackId: packId,
     designProfile,
   });

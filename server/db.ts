@@ -338,6 +338,24 @@ export async function listWebsites(limit = 50, offset = 0) {
     .offset(offset);
 }
 
+/** Compare within the actual locality rather than the last 200 global rows.
+ * JSON_CONTAINS uses a bound JSON string; city values never become SQL syntax.
+ */
+export async function listDesignNeighbors(city?: string, limit = 1000) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({ websiteData: generatedWebsites.websiteData })
+    .from(generatedWebsites)
+    .where(
+      city?.trim()
+        ? sql`JSON_CONTAINS(JSON_EXTRACT(${generatedWebsites.websiteData}, '$.sections[*].city'), ${JSON.stringify(city.trim())})`
+        : undefined
+    )
+    .orderBy(desc(generatedWebsites.createdAt))
+    .limit(limit);
+}
+
 export async function countWebsites(source?: "admin" | "external") {
   const db = await getDb();
   if (!db) return 0;
@@ -668,23 +686,25 @@ export async function getNextLayoutForIndustry(
     return pool[Math.floor(Math.random() * pool.length)];
   }
   try {
-    // Upsert: insert with counter=1 on first use, otherwise increment
-    await db.execute(
-      sql`INSERT INTO layout_counters (industryKey, counter)
+    return await db.transaction(async tx => {
+      // Upsert: insert with counter=1 on first use, otherwise increment
+      await tx.execute(
+        sql`INSERT INTO layout_counters (industryKey, counter)
           VALUES (${industryKey}, 1)
           ON DUPLICATE KEY UPDATE counter = counter + 1`
-    );
-    const rows = await db.execute(
-      sql`SELECT counter FROM layout_counters WHERE industryKey = ${industryKey}`
-    );
-    // rows[0] is the result array from a SELECT via db.execute
-    const resultRows =
-      (rows as unknown as { counter: number }[][])[0] ??
-      (rows as unknown as { counter: number }[]);
-    const counter = Array.isArray(resultRows)
-      ? (resultRows[0]?.counter ?? 1)
-      : 1;
-    return pool[(counter - 1) % pool.length];
+      );
+      const rows = await tx.execute(
+        sql`SELECT counter FROM layout_counters WHERE industryKey = ${industryKey}`
+      );
+      // rows[0] is the result array from a SELECT via db.execute
+      const resultRows =
+        (rows as unknown as { counter: number }[][])[0] ??
+        (rows as unknown as { counter: number }[]);
+      const counter = Array.isArray(resultRows)
+        ? (resultRows[0]?.counter ?? 1)
+        : 1;
+      return pool[(counter - 1) % pool.length];
+    });
   } catch (err) {
     console.warn(
       "[DB] getNextLayoutForIndustry failed, falling back to random:",

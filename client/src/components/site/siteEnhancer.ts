@@ -49,7 +49,7 @@ var hxT;var hxRun=function(){clearTimeout(hxT);hxT=setTimeout(hxGuard,160)};
 if(d.readyState==="complete")hxRun();else window.addEventListener("load",hxRun);
 window.addEventListener("resize",hxRun);
 }
-if(!reduced&&"IntersectionObserver" in window){
+if(!reduced&&"IntersectionObserver" in window&&!d.querySelector('.pb-site[data-pb-revision="2"]')){
 de.classList.add("pb-io-on");
 var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){en.target.classList.add("pb-in");io.unobserve(en.target)}})},{rootMargin:"0px 0px -8% 0px",threshold:0.05});
 d.querySelectorAll(".pb-site section:not(:first-of-type)").forEach(function(s){io.observe(s)});

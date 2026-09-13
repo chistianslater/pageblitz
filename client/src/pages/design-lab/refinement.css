@@ -1,0 +1,623 @@
+/* Second reference round: stronger art direction and content-led interactions. */
+.ref-entered {
+  animation: ref-section-enter 0.75s cubic-bezier(0.2, 0.65, 0.25, 1) both;
+}
+@keyframes ref-section-enter {
+  from {
+    opacity: 0.65;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ref-photo-enter {
+  from {
+    opacity: 0.65;
+    transform: scale(1.025);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.ref-site .ref-footer {
+  padding-top: 55px;
+  padding-bottom: 55px;
+}
+.ref-footer > .ref-logo {
+  font-size: clamp(40px, 7vw, 96px);
+}
+.ref-switch {
+  display: flex;
+  gap: 5px;
+  margin: 30px 0 22px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  width: fit-content;
+}
+.ref-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 12px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ref-switch button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--canvas);
+}
+/* An architectural grid expressed through alignment and fine rules. */
+.ref-architecture {
+  background-image: linear-gradient(
+    90deg,
+    transparent calc(50% - 0.5px),
+    #18201e08 50%,
+    transparent calc(50% + 0.5px)
+  );
+}
+.arch-heading h1 {
+  font-weight: 500;
+}
+.arch-cover {
+  margin-right: 4.5%;
+  height: clamp(340px, 43vw, 610px);
+}
+.arch-practice {
+  position: relative;
+}
+.arch-practice h2 {
+  margin-left: 22%;
+  max-width: 790px;
+}
+.arch-practice-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 16%;
+  align-items: end;
+}
+.arch-practice-grid img {
+  aspect-ratio: 1.1;
+  max-width: 480px;
+}
+.arch-practice-grid p {
+  padding-bottom: 18px;
+  font-size: clamp(18px, 1.75vw, 26px);
+}
+.arch-services > div {
+  display: block;
+  margin-left: 22%;
+  margin-top: 55px;
+}
+.arch-services article {
+  display: grid;
+  grid-template-columns: 35px 1fr 1fr;
+  gap: 25px;
+  padding: 30px 0;
+  align-items: baseline;
+}
+.arch-services svg {
+  margin: 0;
+  width: 18px;
+}
+.arch-services h3 {
+  margin: 0;
+  font-size: 24px;
+}
+.arch-services p {
+  max-width: 32ch;
+}
+.arch-study {
+  grid-template-columns: 0.9fr 1.1fr;
+  align-items: center;
+  gap: 9%;
+  padding-top: 65px;
+  padding-bottom: 100px;
+}
+.arch-study-heading > p:last-child {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 35ch;
+}
+.arch-study-image {
+  overflow: hidden;
+}
+.arch-study-image img {
+  width: 100%;
+  aspect-ratio: 4/5;
+  animation: ref-photo-enter 0.65s ease both;
+}
+.arch-study h2 {
+  font-size: clamp(40px, 4.2vw, 66px);
+}
+/* A contemporary trattoria: dark olive, warm paper-colored type and serif display.
+   Georgia is intentional here: the requested warmth of the former restaurant pack. */
+.ref-restaurant {
+  --canvas: #192019;
+  --ink: #f2e9d7;
+  --muted: #bdbba9;
+  --accent: #e0bc80;
+  --line: #505746;
+  background: var(--canvas);
+}
+.ref-restaurant .ref-nav {
+  border-bottom: 1px solid var(--line);
+  margin: 0 4.5%;
+  padding-left: 0;
+  padding-right: 0;
+}
+.ref-restaurant .ref-logo {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+.ref-restaurant h1,
+.ref-restaurant h2,
+.food-menu-paper > h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.055em;
+}
+.food-hero {
+  position: relative;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0;
+  padding: 35px 4.5% 220px;
+  align-items: center;
+  isolation: isolate;
+  min-height: 770px;
+}
+.food-heading {
+  position: relative;
+  z-index: 2;
+  margin-right: -15%;
+  padding: 30px 35px 40px 0;
+  background: linear-gradient(90deg, var(--canvas) 82%, transparent);
+}
+.food-heading h1 {
+  font-size: clamp(42px, 4.7vw, 74px);
+  line-height: 1.08;
+}
+.food-heading em {
+  font-style: italic;
+  font-size: 1.65em;
+  line-height: 1.12;
+  padding-bottom: 0.06em;
+  color: var(--accent);
+}
+.food-heading > p:first-child {
+  color: var(--accent);
+  font-size: 12px;
+}
+.food-heading > p:not(:first-child) {
+  color: var(--muted);
+  max-width: 31ch;
+  line-height: 1.65;
+}
+.food-cover {
+  height: 580px;
+  border-radius: 0;
+  position: relative;
+}
+.food-cover:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #19201988, transparent 40%);
+}
+.food-cover img {
+  object-position: 50% 70%;
+}
+.ref-restaurant .ref-button {
+  background: var(--accent);
+  color: #192019 !important;
+  border-color: var(--accent);
+  border-radius: 0;
+}
+.food-wordmark {
+  position: absolute;
+  bottom: 0;
+  left: 4.5%;
+  right: 4.5%;
+  font-family: Georgia, serif;
+  font-size: clamp(100px, 20.8vw, 330px);
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  z-index: 3;
+  pointer-events: none;
+  color: var(--ink);
+}
+.food-menu {
+  border-top: 0;
+  padding-top: 105px;
+}
+.food-menu h2 {
+  font-size: clamp(60px, 8.5vw, 125px);
+  margin-bottom: 35px;
+}
+.food-menu-tabs {
+  display: flex;
+  gap: 30px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 45px;
+}
+.food-menu-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  color: var(--muted);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  padding: 16px 0;
+  font: inherit;
+  cursor: pointer;
+}
+.food-menu-tabs button[aria-pressed="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.food-menu-tabs button:hover {
+  color: var(--ink);
+}
+.food-menu-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 8%;
+  align-items: stretch;
+}
+.food-dish-image {
+  overflow: hidden;
+}
+.food-dish-image img {
+  aspect-ratio: 4/5;
+  max-height: 660px;
+  animation: ref-photo-enter 0.5s ease both;
+}
+.food-menu-paper {
+  border: 1px solid var(--line);
+  padding: 35px;
+  position: relative;
+  background: #21291f;
+  align-self: center;
+}
+.food-menu-paper:before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #50574666;
+  pointer-events: none;
+}
+.food-menu-paper > .ref-label {
+  font-size: 10px;
+  margin-bottom: 22px;
+}
+.food-menu-paper > h3 {
+  font-size: clamp(31px, 3vw, 44px);
+  line-height: 1.15;
+  margin-bottom: 28px;
+  color: var(--accent);
+}
+.food-menu-paper article {
+  padding: 18px 0;
+}
+.food-menu-paper article + article {
+  border: 0;
+}
+.food-menu-paper h4 {
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0 0 8px;
+}
+.food-menu-paper article p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.food-menu-paper .food-menu-note {
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 25px;
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.food-story {
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 12%;
+}
+.food-story > img {
+  border-radius: 0;
+  aspect-ratio: 1;
+}
+.food-story h2 {
+  font-size: clamp(44px, 5vw, 72px);
+}
+.food-story p {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.ref-restaurant .ref-contact {
+  background: #1d251c;
+}
+.ref-restaurant .ref-contact h2 {
+  font-size: clamp(48px, 5vw, 76px);
+}
+/* A salon cover with a second focal length, not another text/photo split. */
+.ref-salon {
+  --canvas: #eae7e9;
+  --accent: #51434b;
+  --muted: #62585e;
+  --line: #c5bcc2;
+}
+.salon-hero {
+  position: relative;
+  grid-template-columns: 1fr 1fr;
+  padding-bottom: 210px;
+  gap: 4%;
+  isolation: isolate;
+}
+.salon-heading {
+  padding-left: 3%;
+  align-self: start;
+  padding-top: 65px;
+}
+.salon-heading h1 {
+  font-weight: 300;
+  font-size: clamp(65px, 7.3vw, 112px);
+}
+.salon-cover {
+  height: 640px;
+  margin-left: 8%;
+}
+.salon-inset {
+  position: absolute;
+  left: 39%;
+  bottom: 200px;
+  width: 20%;
+  height: 260px;
+  z-index: 2;
+  border: 10px solid var(--canvas);
+  overflow: hidden;
+}
+.salon-inset img {
+  filter: saturate(0.4);
+}
+.salon-wordmark {
+  font-size: clamp(100px, 23vw, 355px);
+  font-weight: 300;
+  letter-spacing: -0.075em;
+  line-height: 0.85;
+  position: absolute;
+  bottom: 0;
+  left: 4.5%;
+  z-index: 3;
+  pointer-events: none;
+}
+.salon-services {
+  padding-top: 110px;
+}
+.salon-services details {
+  padding: 26px 0;
+}
+.salon-services details p {
+  padding-bottom: 10px;
+}
+.salon-story {
+  grid-template-columns: 1fr 1fr;
+  gap: 14%;
+  align-items: end;
+}
+.salon-story > img {
+  aspect-ratio: 1;
+}
+.salon-story > div {
+  padding-bottom: 40px;
+}
+.salon-detail {
+  position: relative;
+  display: block;
+  min-height: 640px;
+  padding-top: 0;
+  padding-bottom: 100px;
+}
+.salon-detail > img {
+  width: 66%;
+  height: 530px;
+  margin-left: auto;
+  object-position: center;
+}
+.salon-detail > div {
+  position: absolute;
+  z-index: 2;
+  top: 110px;
+  left: 6.5%;
+  width: 45%;
+  padding: 35px 45px 35px 0;
+  background: var(--canvas);
+}
+.salon-detail h2 {
+  font-size: clamp(40px, 4.5vw, 70px);
+}
+@media (max-width: 760px) {
+  .arch-practice h2 {
+    margin-left: 0;
+  }
+  .arch-practice-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .arch-practice-grid img {
+    max-width: none;
+    width: 90%;
+  }
+  .arch-services > div {
+    margin-left: 0;
+    margin-top: 30px;
+  }
+  .arch-services article {
+    grid-template-columns: 22px 1fr;
+    gap: 14px;
+  }
+  .arch-services article p {
+    grid-column: 2;
+    max-width: none;
+  }
+  .arch-study {
+    grid-template-columns: 1fr;
+    padding-top: 30px;
+    padding-bottom: 60px;
+    gap: 30px;
+  }
+  .arch-study-image img {
+    aspect-ratio: 5/4;
+  }
+  .ref-switch button {
+    font-size: 12px;
+    padding: 11px 13px;
+  }
+  .food-hero {
+    grid-template-columns: 1fr;
+    padding: 20px 6% 75px;
+    gap: 5px;
+    min-height: 0;
+  }
+  .food-heading {
+    margin: 0;
+    padding: 10px 0 25px;
+    background: none;
+  }
+  .food-heading h1 {
+    font-size: clamp(33px, 8vw, 60px);
+  }
+  .food-heading em {
+    font-size: 1.6em;
+  }
+  .food-heading > p:not(:first-child) {
+    font-size: 15px;
+    margin: 15px 0 22px;
+  }
+  .food-cover {
+    height: 360px;
+    max-width: 100%;
+    justify-self: stretch;
+  }
+  .food-wordmark {
+    font-size: 21vw;
+    bottom: 12px;
+    left: 5.5%;
+  }
+  .food-menu {
+    padding-top: 55px;
+  }
+  .food-menu h2 {
+    font-size: clamp(50px, 12vw, 85px);
+    margin-bottom: 15px;
+  }
+  .food-menu-tabs {
+    gap: 22px;
+    margin-bottom: 30px;
+  }
+  .food-menu-tabs button {
+    font-size: 12px;
+    gap: 8px;
+  }
+  .food-menu-tabs button svg {
+    width: 14px;
+  }
+  .food-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .food-dish-image img {
+    height: 270px;
+    aspect-ratio: 5/4;
+  }
+  .food-menu-paper {
+    margin: -20px 12px 0;
+    padding: 28px;
+    z-index: 2;
+  }
+  .food-menu-paper > h3 {
+    font-size: 34px;
+  }
+  .food-menu-paper h4 {
+    font-size: 18px;
+  }
+  .food-story {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .food-story h2 {
+    font-size: 43px;
+  }
+  .ref-restaurant .ref-nav {
+    margin: 0 6%;
+  }
+  .salon-hero {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-bottom: 100px;
+  }
+  .salon-heading {
+    padding: 10px 0 0;
+  }
+  .salon-heading h1 {
+    font-size: clamp(60px, 15vw, 95px);
+  }
+  .salon-cover {
+    height: 430px;
+    margin-left: 16%;
+  }
+  .salon-inset {
+    left: 6%;
+    bottom: 105px;
+    width: 42%;
+    height: 190px;
+    border-width: 7px;
+  }
+  .salon-wordmark {
+    font-size: 24vw;
+    bottom: 18px;
+    left: 5%;
+  }
+  .salon-services {
+    padding-top: 60px;
+  }
+  .salon-story {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .salon-story > div {
+    padding-bottom: 0;
+  }
+  .salon-detail {
+    min-height: 0;
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .salon-detail > div {
+    position: static;
+    padding: 0;
+    width: 100%;
+  }
+  .salon-detail > img {
+    width: 90%;
+    height: 330px;
+  }
+  .ref-site .ref-footer {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+  .ref-footer > .ref-logo {
+    font-size: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ref-entered,
+  .arch-study-image img,
+  .food-dish-image img {
+    animation: none !important;
+  }
+}

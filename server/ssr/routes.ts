@@ -4,6 +4,7 @@ import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
 import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { withArtDirection } from "../../shared/stylePacks/artDirection";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
   PACK_IDS,
@@ -442,7 +443,7 @@ function handleDemoRoute(req: Request, res: Response): void {
     return;
   }
   try {
-    const data = getFixture(packParam, "full");
+    const data = withArtDirection(getFixture(packParam, "full"));
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const basePath = `/demo/${packParam}`;
     const { html, status } = renderSiteHtml(data, {
@@ -543,7 +544,7 @@ function handleDemoPageRoute(req: Request, res: Response): void {
     return;
   }
   try {
-    const data = getFixture(packParam, "full");
+    const data = withArtDirection(getFixture(packParam, "full"));
     const page = pageForPathname(data, `/${pageParam}`);
     if (!page) {
       res.status(404).type("text/plain").send("Unbekannte Seite");

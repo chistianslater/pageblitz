@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -466,7 +467,7 @@ const AtelierPage: React.FC<{
           </div>
         )}
       </header>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-at-cover">
           <HeroCollage data={data} />
           <div className="pb-at-img" data-pb-slot={LAYOUT_SLOT.heroMedia}>
@@ -490,7 +491,7 @@ const AtelierPage: React.FC<{
             )}
           </div>
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

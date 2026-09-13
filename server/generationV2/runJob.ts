@@ -1,14 +1,15 @@
-import {
-  pickPackAccent,
-  pickPackColorWorld,
-  pickPackFontPair,
-  weltMitAkzent,
-} from "../../shared/stylePacks/packVariants";
-import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { AKTUELLER_DESIGN_STAND } from "../../shared/siteContract/designStand";
 import {
+  CURRENT_DESIGN_REVISION,
+  deriveArtDirectedProfile,
+  compositionFingerprint,
+} from "../../shared/stylePacks/artDirection";
+import { designIndustryKey } from "../../shared/stylePacks/categoryAliases";
+import {
   getBusinessById,
-  listWebsites,
+  listDesignNeighbors,
+  getNextLayoutForIndustry,
   getWebsiteById,
   updateGenerationJob,
   updateWebsite,
@@ -33,8 +34,8 @@ import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
 import {
-  deriveDistinctDesignProfile,
   designFingerprint,
+  designSeed,
 } from "../../shared/siteContract/designProfile";
 
 /** Entwurfs-Flags in onboarding_responses je Sektions-Add-on (wie server/onboardingV2/addOnFlags.ts). */
@@ -142,6 +143,7 @@ export function buildInterimV2Doc(
 ): WebsiteDataV2 {
   const interim = {
     version: 2 as const,
+    designRevision: CURRENT_DESIGN_REVISION,
     stylePackId: packId,
     businessName,
     businessCategory: category,
@@ -243,6 +245,25 @@ export function collectOccupiedDesignFingerprints(
   return occupied;
 }
 
+export function collectOccupiedCompositions(
+  rows: Array<{ websiteData?: unknown }>,
+  category: string
+): Set<string> {
+  const occupied = new Set<string>();
+  for (const row of rows) {
+    const result = WebsiteDataV2Schema.safeParse(row.websiteData);
+    if (!result.success || !result.data.designProfile) continue;
+    const doc = result.data;
+    if (
+      designIndustryKey(doc.businessCategory ?? "") ===
+      designIndustryKey(category)
+    ) {
+      occupied.add(compositionFingerprint(doc.stylePackId, doc.designProfile!));
+    }
+  }
+  return occupied;
+}
+
 /**
  * Bilder kommen NIE vom LLM: echte GMB-Fotos zuerst (Foto 1 = Hero, Foto 2 =
  * Über uns, ab ≥ 3 Fotos zusätzlich alle als Galerie). Fehlen GMB-Fotos
@@ -311,7 +332,11 @@ async function runWebsiteGenerationV2(
   ) {
     void recordIndustryGap(trimmedCategory, website.id);
   }
-  const packId = await selectPack(category, industryKey);
+  const packId = await selectPack(
+    category,
+    industryKey,
+    business.editorialSummary ?? undefined
+  );
   // Fortschrittsstufen sind an generationProgress.PHASES gekoppelt:
   // 30–54 „Bilder werden gesetzt", 55–89 „Texte entstehen", ≥ 90 „Vorschau".
   await devPhasePause();
@@ -383,6 +408,7 @@ async function runWebsiteGenerationV2(
     // Branche prüfen, damit nicht zweimal dieselbe sichtbare Kombination
     // aus Richtung + Layout + Bildbehandlung entsteht.
     const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
+    websiteData = { ...websiteData, designRevision: CURRENT_DESIGN_REVISION };
     let designProfile = previousParsed.success
       ? previousParsed.data.designProfile
       : undefined;
@@ -398,27 +424,41 @@ async function runWebsiteGenerationV2(
       websiteData = { ...websiteData, designStand: AKTUELLER_DESIGN_STAND };
     }
     if (!websiteData.fontPairId) {
-      const fontPairId = pickPackFontPair(packId, websiteData.businessName);
+      const fontPairId =
+        (previousParsed.success && previousParsed.data.fontPairId) ||
+        pickArtTheme(packId, websiteData.businessName).fontPairId;
       websiteData = { ...websiteData, fontPairId };
     }
     if (!websiteData.colorOverrides) {
-      const worldId = pickPackColorWorld(packId, websiteData.businessName);
-      const world = getColorWorld(packId, worldId);
-      // Der Akzent wird zusaetzlich im Farbton gedreht (2026-09-09): die
-      // Welten variieren nur Grund und Flaeche, deshalb sahen alle Seiten
-      // eines Packs in der Typografie gleich aus. Auch auf der Welt
-      // "Original" gesetzt — sonst blieben genau die Seiten ohne Streuung.
-      const accent = pickPackAccent(packId, websiteData.businessName);
-      websiteData = {
-        ...websiteData,
-        colorOverrides: weltMitAkzent(world?.overrides ?? {}, accent),
-      };
+      if (previousParsed.success && previousParsed.data.colorOverrides) {
+        websiteData = {
+          ...websiteData,
+          colorOverrides: previousParsed.data.colorOverrides,
+        };
+      } else {
+        websiteData = {
+          ...websiteData,
+          colorOverrides: pickArtTheme(packId, websiteData.businessName)
+            .colorOverrides,
+        };
+      }
     }
+
     if (!designProfile) {
       let occupied = new Set<string>();
+      let recipeOffset = 0;
       try {
-        const recentWebsites = await listWebsites(200, 0);
-        occupied = collectOccupiedDesignFingerprints(recentWebsites, category);
+        const city = factArgs.facts?.contact?.city;
+        const recentWebsites = await listDesignNeighbors(city);
+        occupied = collectOccupiedCompositions(recentWebsites, category);
+        // Transaction-backed recipe rotation also spreads concurrent jobs whose
+        // final documents are not yet visible in the neighbor query.
+        recipeOffset = Number(
+          await getNextLayoutForIndustry(
+            `art2:${packId}:${designSeed(`${designIndustryKey(category)}|${(city ?? "").trim().toLowerCase()}`)}`,
+            Array.from({ length: 12 }, (_, i) => String(i))
+          )
+        );
       } catch (err) {
         // Individualisierung ist wichtig, darf aber nie die eigentliche
         // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die
@@ -428,16 +468,15 @@ async function runWebsiteGenerationV2(
           err
         );
       }
-      designProfile = deriveDistinctDesignProfile(
+      designProfile = deriveArtDirectedProfile(
         {
           stylePackId: packId,
           businessName: websiteData.businessName,
           businessCategory: websiteData.businessCategory,
           sections: websiteData.sections,
-          fontPairId: websiteData.fontPairId,
-          accent: websiteData.colorOverrides?.accent,
         },
-        occupied
+        occupied,
+        recipeOffset
       );
     }
     websiteData = WebsiteDataV2Schema.parse({

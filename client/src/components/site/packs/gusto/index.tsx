@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -490,7 +491,7 @@ const GustoPage: React.FC<{
           </div>
           <MobileNav items={navList} />
         </nav>
-        {hero && (
+        {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
           <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
           <HeroCollage data={data} />
             <div
@@ -557,7 +558,7 @@ const GustoPage: React.FC<{
               </a>
             </nav>
           </section>
-        )}
+        ))}
         {sections
           .filter(s => s.type !== "hero")
           .map(section => renderSection(section, chrome))}

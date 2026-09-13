@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
 import { packMatchesCategory } from "./index";
 import { PACK_IDS } from "../siteContract/packIds";
+import { CATEGORY_GROUPS } from "../gmbCategories";
 
 /**
  * Branchen-Abdeckung (2026-08-30): Jede kuratierte SEO-Branche und jede
@@ -100,6 +101,12 @@ function hasDirectMatch(category: string): boolean {
 }
 
 describe("Branchen-Abdeckung der Designrichtungen", () => {
+  test("jede auswählbare Onboarding-Kategorie hat eine direkte Designzuordnung", () => {
+    const misses = CATEGORY_GROUPS.flatMap(group => group.categories).filter(
+      category => !hasDirectMatch(category)
+    );
+    expect(misses).toEqual([]);
+  });
   test("jede SEO-Branche trifft mindestens ein Pack direkt", () => {
     const misses = Object.keys(SEO_INDUSTRIES).filter(
       key => !hasDirectMatch(key)

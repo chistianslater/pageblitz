@@ -39,7 +39,7 @@ html.pb-io-on .pb-site section:not(:first-of-type){opacity:0;transform:translate
 html.pb-io-on .pb-site section:not(:first-of-type).pb-in{opacity:1;transform:none;filter:none}
 /* ── Lightbox (Galerie, 2026-08-25) — Markup baut SITE_ENHANCER_JS zur
    Laufzeit; ohne JS kein Zoom-Cursor und keine Klick-Falle. ── */
-html.pb-lb-on .pb-site #galerie img{cursor:zoom-in}
+html.pb-lb-on .pb-site #galerie img,.pb-gallery-active #galerie img{cursor:zoom-in}
 .pb-lb{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(12,10,8,.92);padding:4vmin;box-sizing:border-box;opacity:0;visibility:hidden;pointer-events:none}
 .pb-lb.pb-lb-open{opacity:1;visibility:visible;pointer-events:auto}
 .pb-lb[hidden]{display:none}

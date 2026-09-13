@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -424,7 +425,7 @@ const SchimmerPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-sc-hero">
           <HeroCollage data={data} />
           <div className="pb-sc-aperture" aria-hidden="true">
@@ -484,7 +485,7 @@ const SchimmerPage: React.FC<{
             )}
           </div>
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

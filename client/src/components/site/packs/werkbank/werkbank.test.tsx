@@ -8,6 +8,7 @@ import { WERKBANK_CSS } from "./css";
 
 const data: WebsiteDataV2 = {
   version: 2,
+  designRevision: 1, // Legacy signature regression; revision 2 is covered in artDirection tests.
   stylePackId: "werkbank",
   businessName: "Schreinerei Brandt",
   businessCategory: "Schreinerei",

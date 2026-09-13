@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -437,7 +438,7 @@ const ZunftPage: React.FC<{
         <MobileNav items={navList} />
       </nav>
       <DoubleRule />
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-zf-hero">
           <HeroCollage data={data} />
           {hero.imageUrl && (
@@ -474,7 +475,7 @@ const ZunftPage: React.FC<{
             </a>
           )}
         </section>
-      )}
+      ))}
       {(hero?.ctaText || routeQuery) && (
         <aside
           className="pb-zf-order-sticky"

@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -136,6 +137,7 @@ function renderSection(
     case "story":
       return <StorySection section={section} key="story" />;
     case "hero": {
+      if (data.designRevision === 2) return <ArtDirectedHero key="hero" data={data} hero={section} />;
       const richHeadline = hasMarks(section.headline);
       const lines = richHeadline ? [] : splitHeadline(section.headline);
       return (

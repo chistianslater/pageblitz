@@ -1,3 +1,4 @@
+import { deriveArtDirectedProfile } from "../../shared/stylePacks/artDirection";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
@@ -211,7 +212,9 @@ export function applyAiTheme(
   if (wantsProfileChange) {
     const base =
       doc.designProfile ??
-      deriveDesignProfile({
+      (doc.designRevision !== 1
+        ? deriveArtDirectedProfile
+        : deriveDesignProfile)({
         stylePackId: packId,
         businessName: doc.businessName,
         businessCategory: doc.businessCategory,

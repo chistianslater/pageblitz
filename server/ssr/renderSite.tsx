@@ -1,3 +1,4 @@
+import { artPalette } from "../../shared/stylePacks/artDirection";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { previewCtaTag, type PreviewCta } from "./previewCta";
@@ -12,7 +13,7 @@ import type {
 } from "../../shared/siteContract/types";
 import { hasActiveFeatures } from "../../client/src/components/site/islands/SiteIslands";
 import { SITE_ENHANCER_JS } from "../../client/src/components/site/siteEnhancer";
-import { getIslandsBundlePath } from "./islandsBundle";
+import { getIslandsBundlePath, getMotionBundlePath } from "./islandsBundle";
 import { pageForPathname } from "../../client/src/components/site/engine";
 import { umamiScriptTag } from "../umami";
 
@@ -292,6 +293,11 @@ function renderPageHtml(
   );
   const canvasColor = getCanvasColor(data);
   const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
+  if (data.designRevision !== 1) {
+    bodyParts.push(
+      `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
+    );
+  }
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`
@@ -368,7 +374,11 @@ function getRoleColor(
   role: "canvas" | "ink",
   fallback: string
 ): string {
-  const override = data.colorOverrides?.[role];
+  const override =
+    data.colorOverrides?.[role] ??
+    (data.designRevision !== 1
+      ? artPalette(data.stylePackId)[role]
+      : undefined);
   if (override && /^#[0-9a-fA-F]{6}$/.test(override)) return override;
   try {
     const constitution = getConstitution(data.stylePackId as any);
@@ -523,6 +533,11 @@ export function renderSiteHtml(
 
   const canvasColor = getCanvasColor(data);
   const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
+  if (data.designRevision !== 1) {
+    bodyParts.push(
+      `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
+    );
+  }
   if (includeIslands) {
     bodyParts.push(
       `<script type="module" src="${esc(getIslandsBundlePath())}" defer></script>`

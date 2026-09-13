@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -409,7 +410,7 @@ const SalonNoirPage: React.FC<{
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
         </aside>
       )}
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
           <HeroCollage data={data} />
           <div
@@ -445,7 +446,7 @@ const SalonNoirPage: React.FC<{
             </p>
           )}
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

@@ -539,6 +539,9 @@ export const PageSchema = z
 export const DesignProfileSchema = z
   .object({
     version: z.literal(1),
+    composition: z
+      .enum(["editorial", "portrait", "panorama", "statement"])
+      .optional(),
     heroLayout: z.enum(HERO_LAYOUTS),
     servicesLayout: z.enum(SERVICES_LAYOUTS),
     aboutLayout: z.enum(ABOUT_LAYOUTS),
@@ -573,6 +576,7 @@ export const DesignProfileSchema = z
 export const WebsiteDataV2Schema = z
   .object({
     version: z.literal(2),
+    designRevision: z.union([z.literal(1), z.literal(2)]).optional(),
     stylePackId: PackIdSchema,
     businessName: z.string().min(1),
     slug: z.string().optional(),

@@ -582,3 +582,14 @@ describe("Rechtsseiten in der Vorschau — Ton (2026-09-09)", () => {
     expect(vorschau("/impressum")).not.toContain("rechtssicher");
   });
 });
+
+describe("revision 2 entrance delivery", () => {
+  test("loads independent motion without paid islands and keeps complete static content", () => {
+    const data = { ...getFixture("gusto", "full"), designRevision: 2 as const };
+    const { html } = renderSiteHtml(data, { origin: "https://example.test" });
+    expect(html).toMatch(/src="\/islands\/site-motion[^"]*\.js"/);
+    expect(html).not.toMatch(/src="\/islands\/site-islands/);
+    expect(html).toContain('class="pb-art-hero"');
+    expect(html).toContain("body{background:#192019}");
+  });
+});

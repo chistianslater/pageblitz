@@ -1,0 +1,825 @@
+@font-face {
+  font-family: Lab Grotesk;
+  src: url("/fonts/space-grotesk-latin-wght.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+.design-lab {
+  background: #e8e8e8;
+  min-height: 100dvh;
+  color: #171717;
+  font-family: "Lab Grotesk", sans-serif;
+}
+.lab-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  font-size: 12px;
+  position: relative;
+  z-index: 50;
+  flex-wrap: wrap;
+}
+.lab-toolbar strong {
+  font-size: 15px;
+}
+.lab-toolbar strong span {
+  font-weight: 400;
+  color: #666;
+  margin-left: 8px;
+}
+.lab-toolbar [role="group"] {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.lab-toolbar button {
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.lab-toolbar button[aria-pressed="true"] {
+  background: #202020;
+  color: #fff;
+}
+.lab-toolbar button:hover {
+  border-color: #888;
+}
+.lab-toolbar button:focus-visible {
+  outline: 2px solid #294ee5;
+  outline-offset: 2px;
+}
+.lab-mobile {
+  padding: 30px 12px;
+  display: flex;
+  justify-content: center;
+}
+.lab-mobile iframe {
+  border: 0;
+  background: #fff;
+  width: 390px;
+  max-width: 100%;
+  height: 820px;
+  box-shadow: 0 10px 50px #0002;
+}
+.ref-site {
+  --canvas: #f7f8f7;
+  --ink: #18201e;
+  --muted: #515b57;
+  --accent: #255747;
+  --line: #cbd2ce;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: "Lab Grotesk", Arial, sans-serif;
+  line-height: 1.5;
+  overflow: clip;
+  color-scheme: light;
+}
+.ref-site * {
+  box-sizing: border-box;
+}
+.ref-site h1,
+.ref-site h2,
+.ref-site h3,
+.ref-site p,
+.ref-site figure {
+  margin: 0;
+}
+.ref-site a {
+  color: inherit;
+  text-decoration: none;
+}
+.ref-site button,
+.ref-site input,
+.ref-site textarea {
+  font: inherit;
+}
+.ref-site img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ref-site h1 {
+  font-size: clamp(56px, 7.4vw, 112px);
+  line-height: 1.01;
+  font-weight: 400;
+  letter-spacing: -0.065em;
+}
+.ref-site h2 {
+  font-size: clamp(40px, 5.1vw, 76px);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+.ref-site h3 {
+  font-size: 25px;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+}
+.ref-site p {
+  max-width: 48ch;
+}
+.ref-site a:focus-visible,
+.ref-site button:focus-visible,
+.ref-site summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 6px;
+}
+.ref-site section {
+  scroll-margin-top: 24px;
+}
+.ref-site .ref-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 26px;
+  color: var(--muted);
+}
+.ref-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 4.5%;
+  min-height: 80px;
+}
+.ref-logo {
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  font-size: 27px;
+  line-height: 1;
+}
+.ref-nav nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  font-size: 13px;
+}
+.ref-nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.ref-nav a:not(.ref-logo):hover {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.ref-section {
+  padding: 110px 6.5%;
+  max-width: 1600px;
+  margin: auto;
+}
+.ref-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 35px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ink);
+  font-size: 14px;
+}
+.ref-link svg,
+.ref-button svg {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.ref-link:hover svg,
+.ref-button:hover svg {
+  transform: translate(3px, -3px);
+}
+.ref-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--canvas) !important;
+  padding: 17px 23px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ref-skip {
+  position: fixed;
+  top: -100px;
+  left: 20px;
+  padding: 12px;
+  background: var(--canvas);
+  z-index: 99;
+}
+.ref-skip:focus {
+  top: 12px;
+}
+.ref-contact {
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 12%;
+  padding-top: 90px;
+  padding-bottom: 100px;
+}
+.ref-contact h2 {
+  font-size: clamp(40px, 4.7vw, 68px);
+  margin-bottom: 30px;
+}
+.ref-contact > div > p:last-child {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 40ch;
+}
+.ref-contact form {
+  display: grid;
+  gap: 22px;
+}
+.ref-contact label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.ref-contact input,
+.ref-contact textarea {
+  width: 100%;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 10px 0;
+  font-size: 16px;
+  resize: vertical;
+}
+.ref-contact input::placeholder {
+  color: var(--muted);
+}
+.ref-contact input:focus,
+.ref-contact textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.ref-contact [role="status"] {
+  font-size: 14px;
+}
+.ref-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border-top: 1px solid var(--line);
+  padding: 35px 4.5%;
+  font-size: 12px;
+}
+.ref-footer p {
+  color: var(--muted);
+}
+/* Architecture: a structural grid, a panoramic opening and an offset material study. */
+.arch-heading {
+  padding: 35px 6.5% 48px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  column-gap: 7%;
+}
+.arch-heading > p {
+  grid-column: 1/-1;
+  font-size: 12px;
+  margin-bottom: 24px;
+  color: var(--muted);
+}
+.arch-intro {
+  align-self: end;
+  max-width: 290px;
+  justify-self: end;
+}
+.arch-intro > p {
+  font-size: 17px;
+  margin-bottom: 25px;
+}
+.arch-cover {
+  height: clamp(330px, 44vw, 620px);
+  margin-left: 6.5%;
+  overflow: hidden;
+}
+.arch-cover img {
+  object-position: 50% 60%;
+}
+.arch-practice h2 {
+  max-width: 700px;
+  margin-bottom: 65px;
+}
+.arch-practice-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  align-items: center;
+  gap: 14%;
+}
+.arch-practice-grid img {
+  aspect-ratio: 5/4;
+}
+.arch-practice-grid p {
+  font-size: 22px;
+  line-height: 1.55;
+}
+.arch-services {
+  padding-top: 50px;
+}
+.arch-services > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6%;
+  margin-top: 60px;
+}
+.arch-services article {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.arch-services svg {
+  color: var(--accent);
+  margin-bottom: 55px;
+}
+.arch-services h3 {
+  margin-bottom: 16px;
+}
+.arch-services p {
+  font-size: 15px;
+  color: var(--muted);
+}
+.arch-study {
+  padding-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 8%;
+  align-items: end;
+}
+.arch-study img {
+  aspect-ratio: 4/5;
+}
+.arch-study h2 {
+  padding-bottom: 15px;
+}
+/* Restaurant: typographic warmth without the cream-and-gold restaurant template. */
+.ref-restaurant {
+  --canvas: #e8edb7;
+  --ink: #233627;
+  --muted: #42533a;
+  --accent: #233627;
+  --line: #aeb790;
+}
+.ref-restaurant .ref-logo {
+  font-size: 35px;
+  font-weight: 700;
+  letter-spacing: -0.075em;
+}
+.food-hero {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 4%;
+  padding: 30px 4.5% 65px;
+  align-items: center;
+  max-width: 1600px;
+  margin: auto;
+}
+.food-heading {
+  padding: 20px 0;
+}
+.food-heading > p:first-child {
+  font-size: 13px;
+  margin-bottom: 30px;
+}
+.food-heading h1 {
+  font-size: clamp(40px, 4.7vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.065em;
+  line-height: 1.04;
+}
+.food-heading em {
+  font-style: normal;
+  font-size: 1.55em;
+  display: inline-block;
+  padding-bottom: 0.08em;
+}
+.food-heading > p:not(:first-child) {
+  font-size: 17px;
+  max-width: 30ch;
+  margin: 24px 0 30px;
+}
+.food-cover {
+  height: clamp(420px, 46vw, 640px);
+  border-radius: 48% 48% 0 0;
+  overflow: hidden;
+}
+.food-cover img {
+  object-position: 50% 70%;
+}
+.food-menu {
+  border-top: 1px solid var(--line);
+}
+.food-menu h2 {
+  font-size: clamp(65px, 10vw, 150px);
+  margin-bottom: 50px;
+  letter-spacing: -0.065em;
+}
+.food-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13%;
+  align-items: center;
+}
+.food-menu-grid > img {
+  aspect-ratio: 4/5;
+  max-height: 640px;
+}
+.food-menu-grid article {
+  padding: 25px 0;
+}
+.food-menu-grid article + article {
+  border-top: 1px solid var(--line);
+}
+.food-menu-grid h3 {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+.food-menu-grid p {
+  color: var(--muted);
+  max-width: 30ch;
+}
+.food-story {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 10%;
+  padding-top: 25px;
+}
+.food-story h2 {
+  margin-bottom: 30px;
+}
+.food-story p {
+  margin-bottom: 25px;
+  font-size: 17px;
+}
+.food-story > img {
+  aspect-ratio: 4/5;
+  border-radius: 48% 48% 0 0;
+}
+.ref-restaurant .ref-button {
+  border-radius: 3px;
+}
+/* Salon: cool monochrome, a vertical portrait and quiet accordion interactions. */
+.ref-salon {
+  --canvas: #efedf1;
+  --ink: #29252e;
+  --muted: #625b68;
+  --accent: #51415f;
+  --line: #c9c3ce;
+}
+.ref-salon .ref-logo {
+  letter-spacing: 0.13em;
+  font-weight: 400;
+  font-size: 26px;
+}
+.salon-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 640px;
+  padding: 15px 4.5% 55px;
+  gap: 5%;
+  align-items: center;
+  max-width: 1600px;
+  margin: auto;
+}
+.salon-heading {
+  padding-left: 4%;
+}
+.salon-heading > p:first-child {
+  font-size: 12px;
+  margin-bottom: 40px;
+}
+.salon-heading h1 {
+  font-size: clamp(64px, 7.8vw, 120px);
+  font-weight: 300;
+  line-height: 1.04;
+}
+.salon-heading h1 span {
+  color: var(--accent);
+}
+.salon-heading > p:not(:first-child) {
+  max-width: 30ch;
+  font-size: 17px;
+  margin: 30px 0;
+}
+.salon-cover {
+  height: clamp(470px, 47vw, 680px);
+  overflow: hidden;
+}
+.salon-cover img {
+  object-position: 45% center;
+  filter: saturate(0.6);
+}
+.salon-services {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12%;
+  align-items: start;
+}
+.salon-services h2 {
+  font-size: clamp(38px, 4.2vw, 64px);
+}
+.salon-services details {
+  border-bottom: 1px solid var(--line);
+  padding: 23px 0;
+}
+.salon-services details:first-child {
+  padding-top: 0;
+}
+.salon-services summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 24px;
+  cursor: pointer;
+  list-style: none;
+  letter-spacing: -0.035em;
+}
+.salon-services summary::-webkit-details-marker {
+  display: none;
+}
+.salon-services details[open] summary svg {
+  transform: rotate(45deg);
+}
+.salon-services details p {
+  color: var(--muted);
+  font-size: 15px;
+  padding-top: 18px;
+  max-width: 36ch;
+}
+.salon-story {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 13%;
+  align-items: center;
+  padding-top: 20px;
+}
+.salon-story > img {
+  aspect-ratio: 4/5;
+  filter: saturate(0.6);
+}
+.salon-story h2 {
+  margin-bottom: 30px;
+}
+.salon-story p:last-child {
+  font-size: 19px;
+}
+.salon-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12%;
+  align-items: center;
+  padding-top: 25px;
+}
+.salon-detail h2 {
+  margin-bottom: 35px;
+}
+.salon-detail img {
+  aspect-ratio: 5/4;
+  filter: saturate(0.6);
+}
+@media (min-width: 1600px) {
+  .ref-nav,
+  .ref-footer {
+    padding-left: max(4.5%, calc((100% - 1456px) / 2));
+    padding-right: max(4.5%, calc((100% - 1456px) / 2));
+  }
+  .arch-heading {
+    max-width: 1600px;
+    margin: auto;
+  }
+  .arch-cover {
+    max-width: 1496px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 760px) {
+  .lab-toolbar {
+    padding: 12px;
+    gap: 10px;
+  }
+  .lab-toolbar > strong {
+    width: 100%;
+  }
+  .lab-toolbar button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+  .ref-nav {
+    padding: 22px 6%;
+    min-height: 72px;
+    gap: 14px;
+  }
+  .ref-nav nav {
+    gap: 12px;
+  }
+  .ref-nav nav > a:not(:last-child) {
+    display: none;
+  }
+  .ref-nav-cta {
+    font-size: 11px;
+    gap: 7px;
+  }
+  .ref-logo {
+    font-size: 23px;
+  }
+  .ref-site h1 {
+    font-size: clamp(48px, 11.5vw, 82px);
+  }
+  .ref-site h2 {
+    font-size: clamp(36px, 9vw, 60px);
+  }
+  .ref-section {
+    padding: 65px 6%;
+  }
+  .ref-contact {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .ref-contact h2 {
+    font-size: 42px;
+  }
+  .ref-footer {
+    padding: 28px 6%;
+    flex-wrap: wrap;
+  }
+  .ref-footer p {
+    order: 3;
+    flex-basis: 100%;
+    font-size: 11px;
+  }
+  .ref-button {
+    padding: 15px 20px;
+  }
+  .arch-heading {
+    display: block;
+    padding: 24px 6% 32px;
+  }
+  .arch-heading > p {
+    margin-bottom: 20px;
+  }
+  .arch-intro {
+    max-width: none;
+    margin-top: 24px;
+  }
+  .arch-intro > p {
+    font-size: 15px;
+    max-width: 35ch;
+    margin-bottom: 8px;
+  }
+  .arch-cover {
+    height: 330px;
+    margin-left: 6%;
+  }
+  .arch-practice h2 {
+    margin-bottom: 30px;
+  }
+  .arch-practice-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .arch-practice-grid p {
+    font-size: 19px;
+  }
+  .arch-services {
+    padding-top: 20px;
+  }
+  .arch-services > div {
+    grid-template-columns: 1fr;
+    margin-top: 35px;
+    gap: 30px;
+  }
+  .arch-services svg {
+    margin-bottom: 18px;
+  }
+  .arch-services h3 {
+    font-size: 24px;
+  }
+  .arch-study {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding-top: 10px;
+  }
+  .arch-study img {
+    aspect-ratio: 5/4;
+    width: 85%;
+  }
+  .food-hero {
+    grid-template-columns: 1fr;
+    padding: 15px 6% 45px;
+    gap: 20px;
+  }
+  .food-heading {
+    padding: 5px 0;
+  }
+  .food-heading > p:first-child {
+    margin-bottom: 22px;
+  }
+  .food-heading h1 {
+    font-size: clamp(31px, 8.8vw, 60px);
+  }
+  .food-heading > p:not(:first-child) {
+    font-size: 16px;
+    margin: 20px 0 24px;
+  }
+  .food-cover {
+    height: 390px;
+    max-width: 85%;
+    width: 100%;
+    justify-self: end;
+  }
+  .food-menu h2 {
+    font-size: clamp(56px, 13.5vw, 100px);
+    margin-bottom: 32px;
+  }
+  .food-menu-grid {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+  .food-menu-grid > img {
+    aspect-ratio: 5/4;
+  }
+  .food-menu-grid h3 {
+    font-size: 34px;
+  }
+  .food-story {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding-top: 0;
+  }
+  .food-story > img {
+    max-height: 470px;
+  }
+  .ref-restaurant .ref-logo {
+    font-size: 29px;
+  }
+  .salon-hero {
+    grid-template-columns: 1fr;
+    padding: 20px 6% 45px;
+    min-height: 0;
+    gap: 35px;
+  }
+  .salon-heading {
+    padding: 0;
+  }
+  .salon-heading > p:first-child {
+    margin-bottom: 22px;
+  }
+  .salon-heading h1 {
+    font-size: clamp(64px, 15vw, 108px);
+  }
+  .salon-heading > p:not(:first-child) {
+    font-size: 16px;
+    margin: 22px 0;
+  }
+  .salon-cover {
+    height: 450px;
+  }
+  .salon-services {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+  .salon-services summary {
+    font-size: 23px;
+  }
+  .salon-story {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding-top: 0;
+  }
+  .salon-story > img {
+    max-height: 480px;
+  }
+  .salon-story p:last-child {
+    font-size: 17px;
+  }
+  .salon-detail {
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding-top: 0;
+  }
+  .salon-detail img {
+    width: 85%;
+    justify-self: end;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ref-site * {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}

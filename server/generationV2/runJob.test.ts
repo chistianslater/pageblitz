@@ -4,6 +4,8 @@ vi.mock("../db", () => ({
   getWebsiteById: vi.fn(),
   getBusinessById: vi.fn(),
   listWebsites: vi.fn().mockResolvedValue([]),
+  listDesignNeighbors: vi.fn().mockResolvedValue([]),
+  getNextLayoutForIndustry: vi.fn().mockResolvedValue("0"),
   updateGenerationJob: vi.fn().mockResolvedValue(undefined),
   updateWebsite: vi.fn().mockResolvedValue(undefined),
   // upsertOnboarding (server/onboardingV2/state.ts) für die Spiegelung der
@@ -45,6 +47,7 @@ import { guardGeneratedContent } from "./factGuard";
 import {
   buildInterimV2Doc,
   collectOccupiedDesignFingerprints,
+  collectOccupiedCompositions,
   resolveV2Images,
   runWebsiteGenerationV2Job,
 } from "./runJob";
@@ -153,7 +156,9 @@ describe("resolveV2Images", () => {
     expect(result.about).toBe(R2_2);
     expect(result.gallery?.length).toBeGreaterThanOrEqual(3);
     expect(
-      result.gallery?.every(url => url.startsWith("https://images.unsplash.com"))
+      result.gallery?.every(url =>
+        url.startsWith("https://images.unsplash.com")
+      )
     ).toBe(true);
   });
   test("self-Place-IDs fragen Google gar nicht erst, Branchen-Stock füllt Hero/About/Galerie", async () => {
@@ -235,12 +240,14 @@ describe("runWebsiteGenerationV2Job", () => {
     const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
       .websiteData as any;
     expect(finalDoc.designProfile).toEqual(existingProfile);
-    expect(mockedDb.listWebsites).not.toHaveBeenCalled();
+    expect(mockedDb.listDesignNeighbors).not.toHaveBeenCalled();
   });
 
   test("Fehler der optionalen Kollisionsprüfung blockiert die Generierung nicht", async () => {
     mockedMirror.mockResolvedValue([]);
-    mockedDb.listWebsites.mockRejectedValueOnce(new Error("DB kurz weg"));
+    mockedDb.listDesignNeighbors.mockRejectedValueOnce(
+      new Error("DB kurz weg")
+    );
 
     await runWebsiteGenerationV2Job(99, 42);
 
@@ -478,5 +485,34 @@ describe("runWebsiteGenerationV2Job", () => {
       status: "failed",
       error: "LLM kaputt",
     });
+  });
+});
+
+describe("collectOccupiedCompositions", () => {
+  test("groups salon synonyms and ignores colors while excluding other industries", () => {
+    const profile = {
+      ...DEFAULT_DESIGN_PROFILE,
+      composition: "portrait" as const,
+    };
+    const salon = {
+      ...doc,
+      businessCategory: "Friseur",
+      stylePackId: "salon-noir",
+      designProfile: profile,
+    };
+    const rows = [
+      { websiteData: salon },
+      { websiteData: { ...salon, colorOverrides: { accent: "#ffffff" } } },
+      {
+        websiteData: {
+          ...salon,
+          businessCategory: "Restaurant",
+          stylePackId: "gusto",
+        },
+      },
+      { websiteData: { broken: true } },
+    ];
+    expect(collectOccupiedCompositions(rows, "Haarsalon").size).toBe(1);
+    expect(collectOccupiedCompositions(rows, "Zahnarzt").size).toBe(0);
   });
 });

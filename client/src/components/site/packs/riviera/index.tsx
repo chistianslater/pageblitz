@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -421,7 +422,7 @@ const RivieraPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-rv-hero">
           <HeroCollage data={data} />
           <div className="pb-rv-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
@@ -455,7 +456,7 @@ const RivieraPage: React.FC<{
             />
           )}
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}

@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -394,7 +395,7 @@ const RasterPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-ra-hero">
           <HeroCollage data={data} />
           <div className="pb-ra-hero-margin">
@@ -426,7 +427,7 @@ const RasterPage: React.FC<{
             </figure>
           )}
         </section>
-      )}
+      ))}
       {sections
         .filter(s => s.type !== "hero")
         .map((section, i) => renderSection(section, i + 1))}

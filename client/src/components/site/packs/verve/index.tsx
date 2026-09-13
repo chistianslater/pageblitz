@@ -1,3 +1,4 @@
+import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
 import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
@@ -426,7 +427,7 @@ const VervePage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (
+      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
         <section id={SECTION_ANCHORS.hero} className="pb-vv-hero">
           <HeroCollage data={data} />
           <div className="pb-vv-ghost" aria-hidden="true">
@@ -477,7 +478,7 @@ const VervePage: React.FC<{
             )}
           </div>
         </section>
-      )}
+      ))}
       {hero?.ctaText && (
         <aside className="pb-vv-trial-sticky" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>

@@ -41,7 +41,7 @@ export const RASTER_CSS = `
 .pb-ra-quote p{font-size:15px;line-height:1.55}
 .pb-ra-quote footer{margin-top:14px;font-size:12px;color:var(--pb-muted)}
 .pb-ra-quotes .pb-review-stars{margin-bottom:10px;color:var(--pb-accent-text)}
-.pb-ra-faq-list{margin:28px 0 0 100px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 48px}
+.pb-ra-faq-list{margin:28px 0 0 100px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 48px}
 .pb-ra-faq{padding:16px 0;border-top:1px solid var(--pb-line)}
 .pb-ra-faq strong{display:block;font-weight:600;font-size:15px;margin-bottom:5px}
 .pb-ra-faq p{font-size:14px;color:var(--pb-muted);max-width:58ch}

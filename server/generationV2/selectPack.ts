@@ -1,6 +1,7 @@
 import { getPackPool } from "../../shared/stylePacks";
 import type { PackId } from "../../shared/siteContract/types";
 import { getNextLayoutForIndustry } from "../db";
+import { rankArtDirections } from "../../shared/stylePacks/artDirection";
 
 /**
  * Wählt das Style-Pack für ein neues Geschäft: Kandidaten-Pool aus der
@@ -10,9 +11,10 @@ import { getNextLayoutForIndustry } from "../db";
  */
 export async function selectPack(
   category: string,
-  industryKey: string
+  industryKey: string,
+  context?: string
 ): Promise<PackId> {
-  const pool = getPackPool(category);
+  const pool = rankArtDirections(getPackPool(category), context);
   const packId = await getNextLayoutForIndustry(industryKey, pool);
   return packId as PackId;
 }
