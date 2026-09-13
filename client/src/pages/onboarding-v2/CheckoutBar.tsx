@@ -99,8 +99,11 @@ export function CheckoutBar({
   onStateChanged,
   onOpenPanel,
 }: CheckoutBarProps) {
-  const [billingInterval, setBillingInterval] =
-    useState<BillingInterval>("yearly");
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("billing") === "monthly"
+      ? "monthly"
+      : "yearly"
+  );
   const suggestedEmail =
     state.customerEmail ?? state.legal.legalEmail?.trim() ?? "";
   const [email, setEmail] = useState(suggestedEmail);

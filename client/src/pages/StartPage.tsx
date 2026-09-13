@@ -24,6 +24,7 @@ import {
   BlitzMark,
   textLink,
   PRICE_YEARLY,
+  PRICE_MONTHLY,
 } from "@/components/landing/primitives";
 import { StandortControl } from "./StandortControl";
 import {
@@ -32,6 +33,8 @@ import {
   standortControlMode,
   type GeoUiStatus,
 } from "./startLocation";
+
+import "./start-klarstart.css";
 
 type Step = "choice" | "manual" | "gmb";
 
@@ -319,7 +322,9 @@ export default function StartPage() {
       });
       trackConversion("form_start");
       toast.success("Website wird erstellt...");
-      navigate(`/onboarding/${data.previewToken}`);
+      navigate(
+        `/onboarding/${data.previewToken}?billing=${new URLSearchParams(window.location.search).get("billing") === "monthly" ? "monthly" : "yearly"}`
+      );
     } catch (err: any) {
       toast.error("Fehler beim Erstellen: " + err.message);
     }
@@ -403,14 +408,16 @@ export default function StartPage() {
       });
       trackConversion("form_start");
       toast.success("Website wird erstellt...");
-      navigate(`/onboarding/${data.previewToken}`);
+      navigate(
+        `/onboarding/${data.previewToken}?billing=${new URLSearchParams(window.location.search).get("billing") === "monthly" ? "monthly" : "yearly"}`
+      );
     } catch (err: any) {
       toast.error("Fehler beim Erstellen: " + err.message);
     }
   };
 
   return (
-    <div className="lp flex min-h-screen flex-col bg-lp-canvas text-lp-ink">
+    <div className="lp start-klarstart flex min-h-screen flex-col bg-lp-canvas text-lp-ink">
       <main className="mx-auto flex w-full max-w-[34rem] flex-1 flex-col px-5 pt-10 pb-12 sm:pt-14">
         {/* Logo-Zeile */}
         <div className="flex items-center gap-2.5 border-b border-lp-line pb-6">
@@ -881,9 +888,9 @@ export default function StartPage() {
         <footer className="mt-auto pt-14">
           <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-lp-line pt-5 text-[0.9rem] text-lp-muted">
             {[
-              "7 Tage gratis",
-              `Danach ${PRICE_YEARLY}/Monat`,
-              "Jederzeit kündbar",
+              "Entwurf kostenlos",
+              new URLSearchParams(window.location.search).get("billing") === "monthly" ? `Live ab ${PRICE_MONTHLY}/Monat` : `Live ab ${PRICE_YEARLY}/Monat im Jahrestarif`,
+              "Keine Kreditkarte für den Entwurf",
             ].map(item => (
               <li key={item} className="inline-flex items-center gap-2">
                 <span
