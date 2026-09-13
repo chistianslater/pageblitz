@@ -36,7 +36,14 @@ import {
 
 import "./start-klarstart.css";
 
-type Step = "choice" | "manual" | "gmb";
+/**
+ * Kein Auswahlschritt mehr davor (Betreiber-Wunsch 2026-09-13): Wer auf
+ * /start landet, will anfangen und nicht erst einen Weg wählen. Die
+ * Google-Suche ist der schnellste Weg und deshalb der Einstieg; findet
+ * Google nichts oder ist der eigene Betrieb nicht dabei, führt derselbe
+ * Schritt weiter zur manuellen Eingabe. Ein Klick weniger für alle.
+ */
+type Step = "manual" | "gmb";
 
 // ── Studio-Look-Bausteine (Tokens `--lp-*` aus client/src/index.css) ────────
 
@@ -152,7 +159,7 @@ function CategoryPicker({
 
 export default function StartPage() {
   const { user, isAuthenticated } = useAuth();
-  const [step, setStep] = useState<Step>("choice");
+  const [step, setStep] = useState<Step>("gmb");
 
   // Manual step
   const [businessName, setBusinessName] = useState("");
@@ -274,6 +281,23 @@ export default function StartPage() {
   // Findet die Suche nichts, bleibt er im GMB-Schritt und kann über "Zurück"
   // auf die manuelle Eingabe wechseln; der Name ist dort schon vorbelegt.
   const didPrefill = useRef(false);
+
+  /**
+   * Standort und Messpunkt hingen bisher am Klick auf „Mit Google My Business
+   * starten". Den Schritt gibt es nicht mehr — beides passiert jetzt beim
+   * Öffnen. `ensureLocationIfGranted` fragt NICHT nach Erlaubnis: es nutzt den
+   * Standort nur, wenn er ohnehin schon freigegeben ist.
+   */
+  const didEnter = useRef(false);
+  useEffect(() => {
+    if (didEnter.current) return;
+    didEnter.current = true;
+    void ensureLocationIfGranted();
+    try {
+      (window as any).clarity?.("event", "start_gmb");
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     if (didPrefill.current) return;
     const name = new URLSearchParams(window.location.search)
@@ -427,85 +451,14 @@ export default function StartPage() {
           </span>
         </div>
 
-        {/* ── Choice ── */}
-        {step === "choice" && (
-          <div className="pt-10">
-            <p className="lp-kicker mb-4">Website erstellen</p>
-            <h1 className="text-[2rem] leading-[1.05] tracking-[-0.02em]">
-              Wie möchtest du starten?
-            </h1>
-            <p className="mt-3 text-[1rem] leading-[1.6] text-lp-muted">
-              Mit deinem Google My Business-Profil geht es am schnellsten.
-            </p>
-
-            {isAuthenticated && user?.email && (
-              <p className="mt-5 inline-flex items-center gap-2 text-sm text-lp-muted">
-                <CheckCircle
-                  className="h-4 w-4 shrink-0 text-lp-accent"
-                  aria-hidden="true"
-                />
-                Angemeldet als {user.email}
-              </p>
-            )}
-
-            <div className="mt-8 space-y-3">
-              <button
-                onClick={() => {
-                  setStep("gmb");
-                  void ensureLocationIfGranted();
-                  try {
-                    (window as any).clarity?.("event", "start_gmb");
-                  } catch {}
-                }}
-                className="group flex w-full items-center gap-4 rounded-2xl border border-lp-line bg-lp-surface p-5 text-left transition-colors hover:border-lp-accent"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 font-medium text-lp-ink">
-                    <span
-                      aria-hidden="true"
-                      className="inline-block h-1.5 w-1.5 rounded-full bg-lp-accent"
-                    />
-                    Mit Google My Business starten
-                  </div>
-                  <div className="mt-1 text-sm text-lp-muted">
-                    Daten werden automatisch übernommen – schnellster Weg
-                  </div>
-                </div>
-                <ArrowRight
-                  className="h-4 w-4 shrink-0 text-lp-muted transition-[color,transform] group-hover:translate-x-1 group-hover:text-lp-accent"
-                  aria-hidden="true"
-                />
-              </button>
-
-              <button
-                onClick={() => setStep("manual")}
-                className="group flex w-full items-center gap-4 rounded-2xl border border-lp-line bg-lp-surface p-5 text-left transition-colors hover:border-lp-accent"
-              >
-                <div className="flex-1">
-                  <div className="font-medium text-lp-ink">
-                    Ohne Google My Business starten
-                  </div>
-                  <div className="mt-1 text-sm text-lp-muted">
-                    Unternehmensname und Branche eingeben
-                  </div>
-                </div>
-                <ArrowRight
-                  className="h-4 w-4 shrink-0 text-lp-muted transition-[color,transform] group-hover:translate-x-1 group-hover:text-lp-accent"
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* ── Manual ── */}
         {step === "manual" && (
           <div className="pt-10">
             <button
-              onClick={() => setStep("choice")}
+              onClick={() => setStep("gmb")}
               className={`${textLink} text-sm`}
             >
-              ← Zurück
+              ← Zurück zur Google-Suche
             </button>
 
             <h1 className="mt-6 text-[2rem] leading-[1.05] tracking-[-0.02em]">
@@ -581,17 +534,11 @@ export default function StartPage() {
         {/* ── GMB Search ── */}
         {step === "gmb" && (
           <div className="pt-10">
-            <button
-              onClick={() => {
-                setStep("choice");
-                setResolvedInfo(null);
-                setGmbSearchResults([]);
-                setGmbSearchQuery("");
-              }}
-              className={`${textLink} text-sm`}
-            >
-              ← Zurück
-            </button>
+            {/* Erster Schritt des Funnels: zurueck fuehrt zur Startseite,
+                nicht zu einer Auswahl, die es nicht mehr gibt. */}
+            <a href="/" className={`${textLink} text-sm`}>
+              ← Zurück zur Startseite
+            </a>
 
             <h1 className="mt-6 text-[2rem] leading-[1.05] tracking-[-0.02em]">
               Dein Unternehmen bei Google
@@ -889,7 +836,10 @@ export default function StartPage() {
           <ul className="flex flex-wrap gap-x-6 gap-y-2 border-t border-lp-line pt-5 text-[0.9rem] text-lp-muted">
             {[
               "Entwurf kostenlos",
-              new URLSearchParams(window.location.search).get("billing") === "monthly" ? `Live ab ${PRICE_MONTHLY}/Monat` : `Live ab ${PRICE_YEARLY}/Monat im Jahrestarif`,
+              new URLSearchParams(window.location.search).get("billing") ===
+              "monthly"
+                ? `Live ab ${PRICE_MONTHLY}/Monat`
+                : `Live ab ${PRICE_YEARLY}/Monat im Jahrestarif`,
               "Keine Kreditkarte für den Entwurf",
             ].map(item => (
               <li key={item} className="inline-flex items-center gap-2">

@@ -111,7 +111,7 @@ const MIN_STOCK_GALLERY = 3;
  * Iris Klautke: sieben Bilder, davon zwei doppelt). Die Identität ist der
  * Pfad ohne Query, bei Unsplash also `/photo-<id>`.
  */
-function bildIdentitaet(url: string): string {
+export function bildIdentitaet(url: string): string {
   try {
     return new URL(url).pathname;
   } catch {
