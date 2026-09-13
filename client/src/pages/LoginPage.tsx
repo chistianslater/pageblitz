@@ -50,7 +50,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => navigate("/login")}
-          className="text-lp-accent underline underline-offset-4"
+          className="text-lp-accent-ink underline underline-offset-4"
         >
           Zum Kunden-Login
         </button>
@@ -58,7 +58,10 @@ export default function LoginPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="admin-email" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="admin-email"
+            className="mb-2 block text-sm font-medium"
+          >
             E-Mail-Adresse
           </label>
           <div className="relative">
@@ -69,7 +72,7 @@ export default function LoginPage() {
               placeholder="name@pageblitz.de"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="h-12 border-lp-line bg-[rgba(255,255,255,0.06)] pl-9"
+              className="h-12 border-lp-line bg-lp-canvas pl-9"
               required
               autoFocus
               autoComplete="email"
@@ -91,7 +94,7 @@ export default function LoginPage() {
               placeholder="Passwort"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="h-12 border-lp-line bg-[rgba(255,255,255,0.06)] pl-9"
+              className="h-12 border-lp-line bg-lp-canvas pl-9"
               required
               autoComplete="current-password"
             />
@@ -102,7 +105,7 @@ export default function LoginPage() {
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-full bg-lp-accent text-lp-accent-ink hover:bg-[#b3e600]"
+          className="h-12 w-full rounded-full bg-lp-accent text-lp-accent-ink hover:bg-[#c2e024]"
           disabled={loading}
         >
           {loading ? "Anmelden…" : "Anmelden"}

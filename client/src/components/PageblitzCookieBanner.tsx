@@ -35,17 +35,14 @@ const CATEGORIES: Category[] = [
 
 export default function PageblitzCookieBanner() {
   const [location] = useLocation();
-  // Nachtschicht-Routen (gleiche Liste wie das Pre-Paint-Skript in
-  // client/index.html): Landing, Start-Funnel, Studio, Login, Rechtsseiten.
-  // Der globale Banner bekommt dort den dunklen Token-Scope
-  // (.pb-cookie-dark in index.css); überall sonst (Dashboard) bleibt hell.
+  // Dunkle Routen (gleiche Liste wie das Pre-Paint-Skript in
+  // client/index.html): nur noch die Rechtsseiten. Landing, Start-Funnel,
+  // Studio und Login sind seit dem Klarstart-Relaunch hell — der Banner legte
+  // sich dort als dunkler Block ueber eine helle Seite. Dort bekommt er den
+  // dunklen Token-Scope (.pb-cookie-dark in index.css), ueberall sonst
+  // (Dashboard, helle Seiten) bleibt er hell.
   const isDarkLanding =
-    location === "/" ||
-    location.startsWith("/start") ||
-    location.startsWith("/onboarding") ||
-    location.startsWith("/login") ||
-    location === "/impressum" ||
-    location === "/datenschutz";
+    location === "/impressum" || location === "/datenschutz";
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);

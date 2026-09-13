@@ -11,10 +11,10 @@
          Liste malte dort weiter Kohle (#0b0b0d) und damit genau den Blitz,
          den sie verhindern sollte — nur andersherum. Werte muessen zum
          tatsaechlichen Grund der Route passen:
-           /            .klarstart-live  → #fff    (clear-flow.css)
-           /start       .start-klarstart → #fff    (start-klarstart.css)
-           /onboarding  .pb-studio       → #fff    (--st-canvas, studio.css)
-           /login       bg-lp-canvas     → #f7f5f1 (--lp-canvas, index.css)
+           /            .klarstart-live  → #fff (clear-flow.css)
+           /start       .start-klarstart → #fff (start-klarstart.css)
+           /onboarding  .pb-studio       → #fff (--st-canvas, studio.css)
+           /login       .lp .lp-light    → #fff (--lp-bg in .lp-light, index.css)
          Impressum/Datenschutz sind weiterhin dunkel. -->
     <script>
       (function () {
@@ -23,10 +23,10 @@
         if (
           p === "/" ||
           p.indexOf("/start") === 0 ||
-          p.indexOf("/onboarding") === 0
+          p.indexOf("/onboarding") === 0 ||
+          p.indexOf("/login") === 0
         )
           bg = "#ffffff";
-        else if (p.indexOf("/login") === 0) bg = "#f7f5f1";
         else if (p === "/impressum" || p === "/datenschutz") bg = "#0a0a0f";
         document.documentElement.style.background = bg;
       })();

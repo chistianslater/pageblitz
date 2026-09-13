@@ -569,6 +569,32 @@ body {
   scroll-margin-top: 6rem;
 }
 /* Mono-Label statt Pill (Nachtschicht): Kicker sind UI-Chrome, keine Badges. */
+/* Helle Fassung der `.lp`-Tokens — Klarstart-Palette (die Werte stehen in
+   `.klarstart-live`, client/src/pages/landing-concepts/clear-flow.css).
+   `.lp` allein ist die dunkle Nachtschicht-Fassung; seit dem Klarstart-Relaunch
+   ist die Landing hell, und Auth-Seiten, die direkt daneben aufgehen, waren es
+   nicht. Die Aliase (--lp-canvas, --lp-surface, --lp-accent …) zeigen in `.lp`
+   per var() auf diese Namen und ziehen deshalb automatisch mit.
+
+   Anwenden als `class="lp lp-light"` — nie statt `.lp`, sondern dazu. */
+.lp-light {
+  --lp-bg: #ffffff;
+  --lp-panel: #f5f6f0;
+  --lp-panel-2: #eef0e6;
+  --lp-ink: #242424;
+  --lp-muted: #62675b;
+  --lp-faint: #6a6f62;
+  --lp-line: #d8ddce;
+  --lp-volt: #d5f330;
+  --lp-volt-ink: #25300d;
+  --lp-glow: rgba(213, 243, 48, 0.18);
+  --lp-shadow-heavy: 0 30px 70px -40px rgba(36, 36, 36, 0.45);
+}
+/* Volt auf Weiss ist unlesbar: der Kicker nimmt die dunkle Volt-Tinte. */
+.lp-light .lp-kicker {
+  color: var(--lp-volt-ink);
+}
+
 .lp-kicker {
   display: inline-flex;
   align-items: center;
@@ -601,9 +627,10 @@ body {
   letter-spacing: -0.022em;
 }
 /* Dayos-Sektionsköpfe: eine Nummer größer, dichter gestapelt — nur dort,
-   wo die Bühne ein Plakat sein soll, nicht auf jeder H2. *//* Gestapelte Echo-Zeile (Dayos: derselbe Titel noch einmal). aria-hidden
+   wo die Bühne ein Plakat sein soll, nicht auf jeder H2. */ /* Gestapelte Echo-Zeile (Dayos: derselbe Titel noch einmal). aria-hidden
    im Markup — Screenreader hören den Satz nur einmal. Gefüllte Ghost-
-   Kopie, nicht Outline: 1px-Stroke bei 0.2 Opacity war unsichtbar. *//* Manifesto-Bühne: volle Mint-Fläche, Kicker in Carbon. *//* Answers / Actions / Experts: ein Wort trägt die Karte. */.lp-display {
+   Kopie, nicht Outline: 1px-Stroke bei 0.2 Opacity war unsichtbar. */ /* Manifesto-Bühne: volle Mint-Fläche, Kicker in Carbon. */ /* Answers / Actions / Experts: ein Wort trägt die Karte. */
+.lp-display {
   font-family: var(--lp-display);
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -735,22 +762,55 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
   }
 }
 @keyframes lph-select {
-  0%, 35% { transform: none; box-shadow: none; }
-  45%, 80% { transform: translateY(-3px); box-shadow: 0 0 0 3px rgba(204, 255, 0, 0.15); }
-  90%, 100% { transform: none; box-shadow: none; }
+  0%,
+  35% {
+    transform: none;
+    box-shadow: none;
+  }
+  45%,
+  80% {
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 3px rgba(204, 255, 0, 0.15);
+  }
+  90%,
+  100% {
+    transform: none;
+    box-shadow: none;
+  }
 }
 @keyframes lph-check {
-  0%, 55% { border-color: var(--lp-line); transform: none; }
-  62% { transform: scale(1.25); }
-  66%, 88% { border-color: var(--lp-volt); transform: none; }
-  96%, 100% { border-color: var(--lp-line); }
+  0%,
+  55% {
+    border-color: var(--lp-line);
+    transform: none;
+  }
+  62% {
+    transform: scale(1.25);
+  }
+  66%,
+  88% {
+    border-color: var(--lp-volt);
+    transform: none;
+  }
+  96%,
+  100% {
+    border-color: var(--lp-line);
+  }
 }
 @keyframes lph-knob {
-  0%, 18% { transform: translateX(-1.25rem); }
-  32%, 100% { transform: none; }
+  0%,
+  18% {
+    transform: translateX(-1.25rem);
+  }
+  32%,
+  100% {
+    transform: none;
+  }
 }
 @keyframes lph-pulse {
-  50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.22); }
+  50% {
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.22);
+  }
 }
 /* Schwebender UI-Chip (Persona-Vignetten). */
 @media (prefers-reduced-motion: no-preference) {
@@ -840,12 +900,24 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 @keyframes lp-grain {
-  0% { transform: translate3d(0, 0, 0); }
-  20% { transform: translate3d(-3%, 2%, 0); }
-  40% { transform: translate3d(2%, -3%, 0); }
-  60% { transform: translate3d(-1%, -2%, 0); }
-  80% { transform: translate3d(3%, 1%, 0); }
-  100% { transform: translate3d(0, 0, 0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  20% {
+    transform: translate3d(-3%, 2%, 0);
+  }
+  40% {
+    transform: translate3d(2%, -3%, 0);
+  }
+  60% {
+    transform: translate3d(-1%, -2%, 0);
+  }
+  80% {
+    transform: translate3d(3%, 1%, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* Cookie-Banner auf der dunklen Landing: gleiche Struktur, Nachtschicht-
@@ -871,7 +943,11 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
   width: 60rem;
   height: 44rem;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, var(--lp-glow), transparent 62%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--lp-glow),
+    transparent 62%
+  );
 }
 .lp-hero-stage {
   position: relative;
@@ -1330,7 +1406,9 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
   transition: transform 400ms var(--lp-ease);
 }
 .lp-nav-link {
-  transition: color 160ms ease, background-color 160ms ease;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .lp-nav-link:hover {
@@ -1401,11 +1479,7 @@ html.lp-reveal-on .lp-section [data-gsap-steps] li {
   border-top: 1px solid var(--lp-line);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
-  transform: translate3d(
-    0,
-    calc(100% + env(safe-area-inset-bottom, 0px)),
-    0
-  );
+  transform: translate3d(0, calc(100% + env(safe-area-inset-bottom, 0px)), 0);
   visibility: hidden;
   pointer-events: none;
   will-change: transform;
@@ -1467,12 +1541,14 @@ html.lp-nav-open body {
   aspect-ratio: 4 / 3;
   padding: 7%;
   display: flex;
-}/* Übersicht: Rail + Stage *//* Stil-Auswahl: drei Kandidaten, einer aktiv */.lps-style-thumb {
+} /* Übersicht: Rail + Stage */ /* Stil-Auswahl: drei Kandidaten, einer aktiv */
+.lps-style-thumb {
   flex: 1;
   border-radius: 5px;
   background: #ece5d8;
   min-height: 0;
-}.lps-style-line {
+}
+.lps-style-line {
   height: 7px;
   width: 70%;
   border-radius: 99px;
@@ -1483,7 +1559,7 @@ html.lp-nav-open body {
   width: 62%;
   border-radius: 999px;
   background: var(--lp-line);
-}/* Fotos: 3×3-Raster mit Auswahl */
+} /* Fotos: 3×3-Raster mit Auswahl */
 .lps-grid {
   flex: 1;
   display: grid;
@@ -1726,68 +1802,194 @@ html.lp-nav-open body {
 }
 /* Loop-Choreografie: nur unter no-preference; sonst stehen die Endzustände. */
 @media (prefers-reduced-motion: no-preference) {
-  .lpx-w1 { animation: lpx-w1 9s infinite; }
-  .lpx-w2 { animation: lpx-w2 9s infinite; }
-  .lpx-wt { animation: lpx-wt 9s infinite; }
-  .lpx-w4 { animation: lpx-w4 9s infinite; }
-  .lpx-typing i { animation: lpx-dot 1s ease infinite; }
-  .lpx-typing i:nth-child(2) { animation-delay: 0.15s; }
-  .lpx-typing i:nth-child(3) { animation-delay: 0.3s; }
-  .lpx-gal .lpx-ph { animation: lpx-pop 9s infinite; }
-  .lpx-gal .lpx-ph2 { animation-delay: 0.12s; }
-  .lpx-gal .lpx-ph3 { animation-delay: 0.24s; }
-  .lpx-gal .lpx-ph4 { animation-delay: 0.36s; }
-  .lpx-lb { animation: lpx-lb 9s infinite; }
-  .lpx-cal-day { animation: lpx-day 9s infinite; }
-  .lpx-slots .lpx-slot { animation: lpx-w2 9s infinite; }
-  .lpx-slots .lpx-slot:nth-child(2) { animation-delay: 0.12s; }
-  .lpx-slots .lpx-slot:nth-child(3) { animation-delay: 0.24s; }
-  .lpx-slot-active { animation: lpx-fill 9s infinite; }
-  .lpx-confirm { animation: lpx-w4 9s infinite; }
+  .lpx-w1 {
+    animation: lpx-w1 9s infinite;
+  }
+  .lpx-w2 {
+    animation: lpx-w2 9s infinite;
+  }
+  .lpx-wt {
+    animation: lpx-wt 9s infinite;
+  }
+  .lpx-w4 {
+    animation: lpx-w4 9s infinite;
+  }
+  .lpx-typing i {
+    animation: lpx-dot 1s ease infinite;
+  }
+  .lpx-typing i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .lpx-typing i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .lpx-gal .lpx-ph {
+    animation: lpx-pop 9s infinite;
+  }
+  .lpx-gal .lpx-ph2 {
+    animation-delay: 0.12s;
+  }
+  .lpx-gal .lpx-ph3 {
+    animation-delay: 0.24s;
+  }
+  .lpx-gal .lpx-ph4 {
+    animation-delay: 0.36s;
+  }
+  .lpx-lb {
+    animation: lpx-lb 9s infinite;
+  }
+  .lpx-cal-day {
+    animation: lpx-day 9s infinite;
+  }
+  .lpx-slots .lpx-slot {
+    animation: lpx-w2 9s infinite;
+  }
+  .lpx-slots .lpx-slot:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+  .lpx-slots .lpx-slot:nth-child(3) {
+    animation-delay: 0.24s;
+  }
+  .lpx-slot-active {
+    animation: lpx-fill 9s infinite;
+  }
+  .lpx-confirm {
+    animation: lpx-w4 9s infinite;
+  }
 }
 @keyframes lpx-w1 {
-  0%, 4% { opacity: 0; transform: translateY(8px); }
-  9%, 93% { opacity: 1; transform: none; }
-  97%, 100% { opacity: 0; transform: translateY(8px); }
+  0%,
+  4% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  9%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 @keyframes lpx-w2 {
-  0%, 21% { opacity: 0; transform: translateY(8px); }
-  27%, 93% { opacity: 1; transform: none; }
-  97%, 100% { opacity: 0; transform: translateY(8px); }
+  0%,
+  21% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  27%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 @keyframes lpx-wt {
-  0%, 31% { opacity: 0; }
-  35%, 52% { opacity: 1; }
-  56%, 100% { opacity: 0; }
+  0%,
+  31% {
+    opacity: 0;
+  }
+  35%,
+  52% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
 }
 @keyframes lpx-w4 {
-  0%, 56% { opacity: 0; transform: translateY(8px); }
-  62%, 93% { opacity: 1; transform: none; }
-  97%, 100% { opacity: 0; transform: translateY(8px); }
+  0%,
+  56% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  62%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 @keyframes lpx-dot {
-  40% { transform: translateY(-3px); }
+  40% {
+    transform: translateY(-3px);
+  }
 }
 @keyframes lpx-pop {
-  0%, 3% { opacity: 0; transform: scale(0.94); }
-  9%, 93% { opacity: 1; transform: none; }
-  97%, 100% { opacity: 0; transform: scale(0.94); }
+  0%,
+  3% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  9%,
+  93% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
 }
 @keyframes lpx-lb {
-  0%, 42% { opacity: 0; transform: scale(0.96); }
-  48%, 86% { opacity: 1; transform: none; }
-  92%, 100% { opacity: 0; transform: scale(0.96); }
+  0%,
+  42% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  48%,
+  86% {
+    opacity: 1;
+    transform: none;
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
 }
 @keyframes lpx-day {
-  0%, 18% { background: rgba(255, 255, 255, 0.06); transform: none; }
-  24% { transform: scale(1.25); }
-  26%, 100% { background: var(--lp-volt); transform: none; }
+  0%,
+  18% {
+    background: rgba(255, 255, 255, 0.06);
+    transform: none;
+  }
+  24% {
+    transform: scale(1.25);
+  }
+  26%,
+  100% {
+    background: var(--lp-volt);
+    transform: none;
+  }
 }
 @keyframes lpx-fill {
-  0%, 50% { background: transparent; color: var(--lp-muted); border-color: var(--lp-line); }
-  56%, 100% { background: var(--lp-volt); color: var(--lp-volt-ink); border-color: var(--lp-volt); }
+  0%,
+  50% {
+    background: transparent;
+    color: var(--lp-muted);
+    border-color: var(--lp-line);
+  }
+  56%,
+  100% {
+    background: var(--lp-volt);
+    color: var(--lp-volt-ink);
+    border-color: var(--lp-volt);
+  }
 }
-
 
 /* Dunkle Feature-Bühne: trennt die drei „arbeitenden" Funktionen sichtbar
    von Template-/Studio-Beweisen und bricht die helle Seitenmonotonie.
