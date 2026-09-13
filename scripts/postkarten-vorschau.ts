@@ -12,15 +12,13 @@ import fs from "fs";
 import path from "path";
 import { storagePut } from "../server/storage";
 import { postkarteSichern, postkarteVersendet } from "../server/postkarten/db";
+import { karteAnHeymail, TEMPLATE_STANDARD } from "../server/postkarten/auftrag";
 import {
-  anfrageKoerper,
   anschriftZerlegen,
   postkartenVariablen,
   TEXT_VARIANTEN,
   type TextVariante,
 } from "../server/postkarten/heymail";
-
-const BASIS = "https://api.heymail.com/v1/mailings";
 
 /**
  * `--senden` schaltet von der Vorschau auf den echten Druckauftrag. Mit dem
@@ -28,7 +26,6 @@ const BASIS = "https://api.heymail.com/v1/mailings";
  * Geld und ist nicht rueckholbar. Deshalb ist die Vorschau der Standard.
  */
 const senden = process.argv.includes("--senden");
-const API = senden ? `${BASIS}/send` : `${BASIS}/preview`;
 
 function arg(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -37,7 +34,7 @@ function arg(flag: string): string | undefined {
 
 const csvPfad = arg("--csv");
 const bilderPfad = arg("--bilder");
-const templateId = arg("--template") ?? "93df425c-64eb-4c13-b07b-cd54dd663301";
+const templateId = arg("--template") ?? TEMPLATE_STANDARD;
 const variante = (arg("--text") ?? "ungefragt") as TextVariante;
 /**
  * Die Stadt fuer die Auswertung. Ohne sie wuerde die Postanschrift zaehlen —
@@ -128,49 +125,38 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const antwort = await fetch(API, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        anfrageKoerper(senden ? "versand" : "vorschau", templateId, {
-          recipient: { company: name, ...empfaenger },
-          variableData: variablen,
-        })
-      ),
-    });
-    const text = await antwort.text();
-    if (!antwort.ok) {
-      console.log(`${name}: HTTP ${antwort.status} — ${text.slice(0, 160)}`);
-      ergebnisse.push(`${name};;${hoch.url};HTTP ${antwort.status}`);
+    // Der Aufruf selbst liegt in server/postkarten/auftrag.ts — dasselbe
+    // Modul, ueber das auch das Backend Karten erzeugt und beauftragt.
+    let ergebnis;
+    try {
+      ergebnis = await karteAnHeymail({
+        modus: senden ? "versand" : "vorschau",
+        apiKey: key!,
+        templateId,
+        firma: name,
+        empfaenger,
+        variablen,
+      });
+    } catch (err) {
+      const grund = err instanceof Error ? err.message : String(err);
+      console.log(`${name}: ${grund}`);
+      ergebnisse.push(`${name};;${hoch.url};${grund}`);
       continue;
     }
-    const antwortDaten = JSON.parse(text) as {
-      previewUrl?: string;
-      id?: string;
-      mailingId?: string;
-    };
-    const pdf = antwortDaten.previewUrl ?? "";
+    const pdf = ergebnis.pdfUrl ?? "";
     // Automatisch bestaetigen (Betreiber-Entscheidung 2026-09-09): Was der
     // Anbieter angenommen hat, gilt als raus — kein zweiter Handgriff.
     if (senden && karte) {
-      const referenz =
-        antwortDaten.mailingId ??
-        antwortDaten.id ??
-        (antwortDaten as Record<string, string | undefined>).orderId ??
-        null;
       // Beim ersten echten Versand (09.09.) blieb die Referenz leer: Die
       // Antwort trug keins der erwarteten Felder, und der Rohtext war weg.
       // Ohne Referenz gibt es bei einer Reklamation nichts vorzuzeigen —
       // deshalb im Zweifel die ganze Antwort protokollieren.
-      if (!referenz) {
+      if (!ergebnis.referenz) {
         console.log(
-          `  ${name}: keine Referenz in der Antwort — Rohdaten: ${text.slice(0, 400)}`
+          `  ${name}: keine Referenz in der Antwort — Rohdaten: ${ergebnis.roh}`
         );
       }
-      await postkarteVersendet(karte.id, referenz);
+      await postkarteVersendet(karte.id, ergebnis.referenz);
     }
     console.log(`${name}: ${karte?.code ?? "ohne Code"} ${pdf}`);
     ergebnisse.push(`${name};${pdf};${hoch.url};${variante};${karte?.code ?? ""}`);

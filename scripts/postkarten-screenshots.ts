@@ -27,7 +27,7 @@
  */
 import fs from "fs";
 import path from "path";
-import { chromium } from "@playwright/test";
+import { aufnahmegeraetOeffnen } from "../server/postkarten/aufnahme";
 
 function arg(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -55,14 +55,10 @@ function dateiname(name: string): string {
 }
 
 /**
- * Ausschnitt der Aufnahme.
- *
- * Bewusst der obere Teil der Seite: Das Motiv auf der Karte soll zeigen, was
- * der Betrieb beim Scannen als Erstes sieht — Hero mit Name, Bild und
- * Aufmacher. Eine ganze Seite als Briefmarke ist auf Papier unlesbar.
+ * Ausschnitt, Fehlerseiten-Pruefung und das Ausblenden der Vorschau-Leiste
+ * stecken in `server/postkarten/aufnahme.ts` — dasselbe Modul, das auch das
+ * Backend benutzt. Zweimal gepflegt hiesse: einmal vergessen.
  */
-const BREITE = 1280;
-const HOEHE = 900;
 
 async function main(): Promise<void> {
   // Erst hier pruefen, nicht beim Laden: so landet die Hilfe als Satz in der
@@ -86,9 +82,7 @@ async function main(): Promise<void> {
 
   fs.mkdirSync(zielPfad, { recursive: true });
 
-  const browser = await chromium.launch(
-    chromiumPfad ? { executablePath: chromiumPfad } : {}
-  );
+  const geraet = await aufnahmegeraetOeffnen(chromiumPfad);
   let erzeugt = 0;
   let uebersprungen = 0;
   const fehler: string[] = [];
@@ -108,63 +102,18 @@ async function main(): Promise<void> {
         continue;
       }
 
-      const page = await browser.newPage({
-        viewport: { width: BREITE, height: HOEHE },
-      });
       try {
-        const antwort = await page.goto(url, {
-          waitUntil: "networkidle",
-          timeout: 45000,
-        });
-        // Ohne diese Pruefung landet die Aufnahme einer Fehlerseite auf der
-        // Postkarte: page.goto wirft bei 404 nicht, es rendert sie brav.
-        const status = antwort?.status() ?? 0;
-        if (status >= 400 || status === 0) {
-          throw new Error(`Seite antwortet mit HTTP ${status || "?"}`);
-        }
-        // Der Status allein reicht nicht: Unbekannte Pfade landen im
-        // SPA-Fallback und antworten mit 200, obwohl dort keine Kundenseite
-        // steht. Jede echte Seite rendert in `.pb-site` — fehlt der Container,
-        // ist es eine Fehler- oder Platzhalterseite und gehoert nicht auf eine
-        // Postkarte.
-        const istKundenseite = await page
-          .locator(".pb-site")
-          .count()
-          .then(n => n > 0);
-        if (!istKundenseite) {
-          throw new Error("Keine Kundenseite unter dieser Adresse");
-        }
-        // Die Vorschau-Leiste gehoert nicht auf die Karte.
-        //
-        // `/preview-ssr/<token>` haengt den Postkarten-Funnel-Balken an
-        // (previewCta.ts): dunkel, fix am unteren Rand, "Website
-        // uebernehmen". Er blendet sich nur im iframe selbst aus — im
-        // obersten Fenster, also auch in Playwright, steht er sichtbar da.
-        // Gemessen liegt er bei y 833–900 und damit mitten im Ausschnitt
-        // (1280x900): Ohne diese Zeile wirbt die gedruckte Karte mit einem
-        // Screenshot, auf dem schon ein Button klebt.
-        await page.addStyleTag({
-          content: "#pb-preview-cta{display:none!important}",
-        });
-        // Einblend-Animationen der Packs zu Ende laufen lassen, sonst steht
-        // halb sichtbarer Text auf der Karte.
-        await page.waitForTimeout(1200);
-        await page.screenshot({
-          path: ziel,
-          clip: { x: 0, y: 0, width: BREITE, height: HOEHE },
-        });
+        fs.writeFileSync(ziel, await geraet.aufnehmen(url));
         erzeugt += 1;
-        console.log(`  ${dateiname(name)}.png ← ${url}`);
+        console.log(`  ${dateiname(name)}.png \u2190 ${url}`);
       } catch (err) {
         const grund = err instanceof Error ? err.message : String(err);
         fehler.push(`${name}: ${grund.split("\n")[0]}`);
         console.log(`  FEHLER ${name}: ${grund.split("\n")[0]}`);
-      } finally {
-        await page.close();
       }
     }
   } finally {
-    await browser.close();
+    await geraet.schliessen();
   }
 
   // Zeilenzahl mitnennen: Der Lauf deckt genau die CSV ab, nicht alle

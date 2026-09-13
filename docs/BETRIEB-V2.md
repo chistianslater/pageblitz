@@ -229,6 +229,15 @@ nach dem Deploy einspielen: `mysql -uroot -p pageblitz < drizzle/0029_add_on_sub
 COLUMN editorialSummary text;` — Teil des GMB-Tiefenabrufs (§6a). Additiv,
 auf Prod nach dem Deploy: `mysql -uroot -p pageblitz < drizzle/0030_business_editorial_summary.sql`.
 
+### Migration 0034 — Postkarten-Motiv & Vorschau (additiv)
+
+`drizzle/0034_postkarten_motiv.sql`: vier Spalten auf `postcards` —
+`bildUrl`, `bildAt`, `pdfUrl`, `pdfAt`. Grundlage für den Postkarten-Teil
+im Backend (§6 „Postkarten"). `bildAt` gegen `generated_websites.updatedAt`
+ist dort der Unterschied zwischen „Motiv passt" und „Seite wurde seither neu
+erzeugt". Additiv, auf Prod nach dem Deploy:
+`mysql -u <user> -p <db> < /root/pageblitz/drizzle/0034_postkarten_motiv.sql`.
+
 ## 4. Umgebungsvariablen & Mock-Flags
 
 `PB_LLM_MOCK=1` (nur wenn zusätzlich `NODE_ENV !== "production"`): überspringt
@@ -255,6 +264,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `GOOGLE_PLACES_API_KEY` | GMB-Suche / Orts-Autocomplete |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | Google OAuth |
 | `HUNTER_API_KEY` | E-Mail-Recherche (Outreach) |
+| `HEYMAIL_API_KEY` | Postkarten-Vorschau und -Druckauftrag (§6 „Postkarten") |
 | `UNSPLASH_ACCESS_KEY` | Stock-Bilder |
 | `SSR_SITES` | `"off"` deaktiviert Kundenseiten-SSR (Client rendert dann selbst) |
 | `UMAMI_API_URL` (oder `UMAMI_URL`) / `UMAMI_API_TOKEN` (oder `UMAMI_USERNAME` + `UMAMI_PASSWORD`) / `UMAMI_SCRIPT_URL` | Kundenstatistik (Umami, §6 „Kundenstatistik") — alle optional; ohne Konfiguration keine Registrierung/Statistik, Aktivierung läuft trotzdem |
@@ -520,6 +530,38 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   `https://analytics.pageblitz.de/script.js`). Prod braucht für Task 7
   **keine** neuen Variablen — die bestehenden `UMAMI_URL`/`UMAMI_USERNAME`/
   `UMAMI_PASSWORD` reichen.
+
+### Postkarten (seit 2026-09-13 im Backend)
+
+Bis dahin liefen Motive und Versand über zwei Skripte und eine CSV auf dem
+VPS. Beides gibt es weiter (`scripts/postkarten-screenshots.ts`,
+`scripts/postkarten-vorschau.ts`, für ganze Stapel aus einer Liste), nur
+teilen sie sich die Logik jetzt mit dem Backend:
+
+| Teil | Pfad |
+|---|---|
+| Aufnahme (Playwright, 1280×900) | `server/postkarten/aufnahme.ts` |
+| Motiv → JPEG → R2 | `server/postkarten/motiv.ts` |
+| HeyMail-Aufruf (Vorschau/Versand) | `server/postkarten/auftrag.ts` |
+| Liste + Zustand je Betrieb | `server/postkarten/kandidaten.ts` |
+| tRPC (`postkarten.*`) | `server/postkarten/router.ts` |
+| Oberfläche | `client/src/pages/postkarten/KartenErzeugen.tsx` |
+
+Ablauf im Backend (`/admin/postkarten`, Reiter „Karten erzeugen"): filtern →
+Motive aufnehmen → HeyMail-Vorschau (kostenlos) → beauftragen. Der Zustand je
+Zeile kommt aus `kandidatBewerten`; `motiv-veraltet` heißt: die Seite wurde
+nach der Aufnahme neu erzeugt (`generated_websites.updatedAt > bildAt`) —
+genau der Fall nach einem Neugenerierungs-Lauf der Kampagne.
+
+Drei Sperren, die nur im Router sitzen: versendete Karten werden nicht mehr
+angefasst, ein Auftrag braucht ein Motiv vom aktuellen Stand, und
+`beauftragen` verlangt die ausgeschriebene Bestätigung `"VERSENDEN"`.
+
+Voraussetzungen auf dem Server: `HEYMAIL_API_KEY`, R2-Variablen (das Bild
+muss öffentlich über HTTPS liegen, HeyMail lädt es selbst), `APP_BASE_URL`
+und Playwright samt Chromium (`npx playwright install --with-deps chromium`).
+Playwright ist devDependency und wird erst beim Aufnehmen geladen — fehlt es,
+meldet das Backend das im Klartext, der Serverstart bleibt unberührt.
 
 ## 7. Fonts & Performance
 

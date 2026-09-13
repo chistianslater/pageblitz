@@ -32,6 +32,35 @@ export interface UploadResult {
 }
 
 /**
+ * Datei mit festem Schluessel nach R2 legen (2026-09-13).
+ *
+ * `uploadImageToR2` wuerfelt den Namen und schreibt jede Datei als
+ * `image/jpeg` — fuer Galeriebilder egal, fuer ein Postkartenmotiv nicht:
+ * Dort soll die Adresse stabil bleiben (eine Karte, ein Bild) und der Typ
+ * stimmen, weil HeyMail das Bild selbst laedt.
+ */
+export async function uploadBufferToR2(
+  buffer: Buffer,
+  key: string,
+  contentType: string
+): Promise<UploadResult> {
+  const bucketName = ENV.r2BucketName || "pageblitz-media";
+  const s3Client = getS3Client();
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    })
+  );
+  const publicUrl = ENV.r2PublicUrl
+    ? `${ENV.r2PublicUrl.replace(/\/$/, "")}/${key}`
+    : `https://${ENV.r2AccountId}.r2.cloudflarestorage.com/${bucketName}/${key}`;
+  return { url: publicUrl, key };
+}
+
+/**
  * Compress and upload image to R2
  * Accepts base64-encoded image data
  */

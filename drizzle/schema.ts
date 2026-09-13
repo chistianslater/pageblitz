@@ -615,6 +615,18 @@ export const postcards = mysqlTable("postcards", {
   status: mysqlEnum("status", ["entwurf", "versendet"])
     .default("entwurf")
     .notNull(),
+  /**
+   * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
+   * `bildAt` sagt, von wann sie ist — aelter als
+   * `generated_websites.updatedAt` heisst: Die Seite wurde seither neu
+   * erzeugt, das Motiv zeigt einen Stand, den es nicht mehr gibt
+   * (Betreiber-Wunsch 2026-09-13: im Backend nachziehen koennen).
+   */
+  bildUrl: varchar("bildUrl", { length: 500 }),
+  bildAt: timestamp("bildAt"),
+  /** Letzte HeyMail-Vorschau (PDF) — die Kontrolle vor dem Auftrag. */
+  pdfUrl: varchar("pdfUrl", { length: 500 }),
+  pdfAt: timestamp("pdfAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   sentAt: timestamp("sentAt"),
 });

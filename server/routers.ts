@@ -1,6 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
-import { kartenUebersicht } from "./postkarten/db";
-import { gruppiere } from "./postkarten/auswertung";
+import { postkartenRouter } from "./postkarten/router";
 import {
   PRICING,
   ADDON_NAMES,
@@ -267,16 +266,7 @@ export const appRouter = router({
    * Postkarten-Akquise (2026-09-09): Wer hat eine Karte, wurde sie
    * gescannt, und welche Textvariante zieht?
    */
-  postkarten: router({
-    uebersicht: adminProcedure.query(async () => {
-      const karten = await kartenUebersicht();
-      return {
-        karten,
-        nachStadt: gruppiere(karten, z => z.city),
-        nachVariante: gruppiere(karten, z => z.textVariant),
-      };
-    }),
-  }),
+  postkarten: postkartenRouter,
 
   stats: router({
     dashboard: adminProcedure.query(async () => {

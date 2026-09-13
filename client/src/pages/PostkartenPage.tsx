@@ -1,10 +1,18 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, QrCode, Send, Type } from "lucide-react";
+import KartenErzeugen from "./postkarten/KartenErzeugen";
 
 const datum = (d: Date | string | null) =>
-  d ? new Date(d).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—";
+  d
+    ? new Date(d).toLocaleDateString("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+      })
+    : "—";
 
 function Gruppentabelle({
   titel,
@@ -13,7 +21,13 @@ function Gruppentabelle({
 }: {
   titel: string;
   icon: React.ReactNode;
-  zeilen: { name: string; versendet: number; gescannt: number; scans: number; quote: number }[];
+  zeilen: {
+    name: string;
+    versendet: number;
+    gescannt: number;
+    scans: number;
+    quote: number;
+  }[];
 }) {
   return (
     <Card>
@@ -39,7 +53,9 @@ function Gruppentabelle({
                 <td className="py-2">{z.name}</td>
                 <td className="py-2 text-right tabular-nums">{z.versendet}</td>
                 <td className="py-2 text-right tabular-nums">{z.gescannt}</td>
-                <td className="py-2 text-right tabular-nums font-medium">{z.quote} %</td>
+                <td className="py-2 text-right tabular-nums font-medium">
+                  {z.quote} %
+                </td>
               </tr>
             ))}
             {zeilen.length === 0 && (
@@ -56,7 +72,12 @@ function Gruppentabelle({
   );
 }
 
-export default function PostkartenPage() {
+/**
+ * Die Auswertung der gedruckten Karten — unveraendert seit 09.09., nur in
+ * einen eigenen Reiter gerueckt. Der zweite Reiter ist das Erzeugen
+ * (Betreiber-Wunsch 2026-09-13): Motiv, Vorschau, Auftrag.
+ */
+function Auswertung() {
   const { data, isLoading } = trpc.postkarten.uebersicht.useQuery();
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
@@ -67,21 +88,22 @@ export default function PostkartenPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1
-          className="text-3xl font-bold tracking-tight"
-          style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
-        >
-          Postkarten
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          {karten.length} Karten, davon {versendet} versendet und {gescannt} mindestens einmal geöffnet.
-        </p>
-      </div>
+      <p className="text-muted-foreground">
+        {karten.length} Karten, davon {versendet} versendet und {gescannt}{" "}
+        mindestens einmal geöffnet.
+      </p>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Gruppentabelle titel="Nach Stadt" icon={<MapPin className="h-4 w-4" />} zeilen={data?.nachStadt ?? []} />
-        <Gruppentabelle titel="Nach Textvariante" icon={<Type className="h-4 w-4" />} zeilen={data?.nachVariante ?? []} />
+        <Gruppentabelle
+          titel="Nach Stadt"
+          icon={<MapPin className="h-4 w-4" />}
+          zeilen={data?.nachStadt ?? []}
+        />
+        <Gruppentabelle
+          titel="Nach Textvariante"
+          icon={<Type className="h-4 w-4" />}
+          zeilen={data?.nachVariante ?? []}
+        />
       </div>
 
       <Card>
@@ -138,6 +160,38 @@ export default function PostkartenPage() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+export default function PostkartenPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1
+          className="text-3xl font-bold tracking-tight"
+          style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
+        >
+          Postkarten
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Motiv aufnehmen, Karte prüfen, Druck beauftragen — und danach sehen,
+          wer scannt.
+        </p>
+      </div>
+
+      <Tabs defaultValue="erzeugen">
+        <TabsList>
+          <TabsTrigger value="erzeugen">Karten erzeugen</TabsTrigger>
+          <TabsTrigger value="auswertung">Auswertung</TabsTrigger>
+        </TabsList>
+        <TabsContent value="erzeugen" className="mt-4">
+          <KartenErzeugen />
+        </TabsContent>
+        <TabsContent value="auswertung" className="mt-4">
+          <Auswertung />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

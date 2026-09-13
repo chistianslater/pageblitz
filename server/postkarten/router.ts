@@ -1,0 +1,297 @@
+/**
+ * Postkarten im Backend: erzeugen, pruefen, beauftragen (2026-09-13).
+ *
+ * Bisher lief das ueber zwei Skripte auf dem Server, mit einer CSV
+ * dazwischen. Das ging, solange eine Stadt gleichzeitig dran war — aber
+ * nach jeder Neugenerierung der Seiten musste der Betreiber sich erinnern,
+ * welche Motive dadurch veraltet sind. Genau das macht jetzt die Liste
+ * (`kandidaten.ts`) sichtbar, und diese Prozeduren sind die Handgriffe
+ * dazu.
+ *
+ * Drei Sperren sitzen hier und nirgends sonst:
+ *
+ *   1. Eine versendete Karte wird nicht angefasst. Kein neues Motiv, kein
+ *      zweiter Auftrag — sie liegt beim Betrieb im Briefkasten.
+ *   2. Ein Auftrag geht nur raus, wenn das Motiv zur heutigen Seite passt.
+ *      Sonst wirbt Papier mit einem Stand, den es nicht mehr gibt.
+ *   3. `beauftragen` verlangt eine ausgeschriebene Bestaetigung. Der Aufruf
+ *      kostet Porto und Druck und ist nicht rueckholbar.
+ */
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { adminProcedure, router } from "../_core/trpc";
+import { gruppiere } from "./auswertung";
+import { karteAnHeymail } from "./auftrag";
+import {
+  kartenUebersicht,
+  motivGespeichert,
+  postkarteSichern,
+  postkarteVersendet,
+  vorschauGespeichert,
+} from "./db";
+import {
+  anschriftZerlegen,
+  postkartenVariablen,
+  TEXT_VARIANTEN,
+  type TextVariante,
+} from "./heymail";
+import { kandidatenLaden, kandidatLaden, type Kandidat } from "./kandidaten";
+import { motivErzeugen } from "./motiv";
+
+const VarianteSchema = z.enum(
+  Object.keys(TEXT_VARIANTEN) as [TextVariante, ...TextVariante[]]
+);
+
+function basisUrl(): string {
+  return (process.env.APP_BASE_URL || "https://pageblitz.de").replace(
+    /\/+$/,
+    ""
+  );
+}
+
+function heymailSchluessel(): string {
+  const key = process.env.HEYMAIL_API_KEY;
+  if (!key) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "HEYMAIL_API_KEY fehlt in der Server-Umgebung.",
+    });
+  }
+  return key;
+}
+
+/** Laedt die Zeile und wirft verstaendlich, wenn daran nichts zu tun ist. */
+async function offenerKandidat(businessId: number): Promise<Kandidat> {
+  const kandidat = await kandidatLaden(businessId);
+  if (!kandidat) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Kein Betrieb mit Vorschau-Seite unter dieser Nummer.",
+    });
+  }
+  if (kandidat.zustand === "versendet") {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: `Die Karte für ${kandidat.name} ist bereits versendet — sie bleibt, wie sie ist.`,
+    });
+  }
+  return kandidat;
+}
+
+/**
+ * Baut die Variablen der Karte. Wirft dieselben Fehler wie der Skriptweg,
+ * nur eben als Meldung im Backend statt in der Konsole.
+ */
+function variablenFuer(
+  kandidat: Kandidat,
+  variante: TextVariante,
+  code: string
+) {
+  const empfaenger = kandidat.anschrift
+    ? anschriftZerlegen(kandidat.anschrift)
+    : null;
+  if (!empfaenger) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: `Anschrift von ${kandidat.name} ist nicht zerlegbar — ohne sie kostet die Karte nur Porto.`,
+    });
+  }
+  if (!kandidat.bildUrl) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "Erst das Motiv aufnehmen, dann die Karte.",
+    });
+  }
+  try {
+    return {
+      empfaenger,
+      variablen: postkartenVariablen(
+        {
+          name: kandidat.name,
+          stadt: empfaenger.city,
+          vorschauUrl: `${basisUrl()}/preview-ssr/${kandidat.previewToken}`,
+          bildUrl: kandidat.bildUrl,
+          kurzcode: code,
+        },
+        variante
+      ),
+    };
+  } catch (err) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
+export const postkartenRouter = router({
+  /** Auswertung der gedruckten Karten: Scans, Staedte, Textvarianten. */
+  uebersicht: adminProcedure.query(async () => {
+    const karten = await kartenUebersicht();
+    return {
+      karten,
+      nachStadt: gruppiere(karten, z => z.city),
+      nachVariante: gruppiere(karten, z => z.textVariant),
+    };
+  }),
+
+  /** Textvarianten fuer die Auswahl im Backend. */
+  varianten: adminProcedure.query(() =>
+    Object.entries(TEXT_VARIANTEN).map(([id, text]) => ({
+      id,
+      headline: text.headline,
+      copy: text.copy,
+    }))
+  ),
+
+  /** Alle Vorschau-Seiten mit dem Stand ihrer Karte. */
+  kandidaten: adminProcedure
+    .input(
+      z
+        .object({
+          branche: z.string().max(120).optional(),
+          stadt: z.string().max(120).optional(),
+          suche: z.string().max(200).optional(),
+        })
+        .optional()
+    )
+    .query(async ({ input }) => {
+      const { zeilen, abgeschnitten } = await kandidatenLaden(input ?? {});
+      return {
+        zeilen,
+        abgeschnitten,
+        zaehler: {
+          gesamt: zeilen.length,
+          bereit: zeilen.filter(z => z.zustand === "bereit").length,
+          ohneMotiv: zeilen.filter(z => z.zustand === "ohne-motiv").length,
+          veraltet: zeilen.filter(z => z.zustand === "motiv-veraltet").length,
+          versendet: zeilen.filter(z => z.zustand === "versendet").length,
+          blockiert: zeilen.filter(
+            z => z.zustand === "ohne-anschrift" || z.zustand === "ohne-vorschau"
+          ).length,
+        },
+      };
+    }),
+
+  /**
+   * Motiv aufnehmen — auch erneut, solange die Karte nicht raus ist. Genau
+   * das ist der Handgriff nach einer Neugenerierung der Seiten.
+   */
+  motiv: adminProcedure
+    .input(z.object({ businessId: z.number().int().positive() }))
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      if (!kandidat.previewToken) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message:
+            "Die Seite hat keinen Vorschau-Token — der QR hätte kein Ziel.",
+        });
+      }
+      // Der Code entsteht hier, falls es noch keinen gibt: Er bestimmt den
+      // Dateinamen des Motivs und steht spaeter auf dem Papier.
+      const karte = await postkarteSichern({
+        businessId: kandidat.businessId,
+        websiteId: kandidat.websiteId,
+        city: kandidat.stadt,
+        textVariant: kandidat.textVariant,
+      });
+      try {
+        const { bildUrl, bytes } = await motivErzeugen({
+          vorschauUrl: `${basisUrl()}/preview-ssr/${kandidat.previewToken}`,
+          code: karte.code,
+        });
+        await motivGespeichert(karte.id, bildUrl);
+        return { code: karte.code, bildUrl, bytes };
+      } catch (err) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Motiv für ${kandidat.name}: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+    }),
+
+  /**
+   * HeyMail-Vorschau: erzeugt das PDF, verschickt nichts und kostet nichts.
+   */
+  vorschau: adminProcedure
+    .input(
+      z.object({
+        businessId: z.number().int().positive(),
+        variante: VarianteSchema.default("ungefragt"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      const karte = await postkarteSichern({
+        businessId: kandidat.businessId,
+        websiteId: kandidat.websiteId,
+        city: kandidat.stadt,
+        textVariant: input.variante,
+      });
+      const { empfaenger, variablen } = variablenFuer(
+        kandidat,
+        input.variante,
+        karte.code
+      );
+      const ergebnis = await karteAnHeymail({
+        modus: "vorschau",
+        apiKey: heymailSchluessel(),
+        firma: kandidat.name,
+        empfaenger,
+        variablen,
+      });
+      await vorschauGespeichert(karte.id, ergebnis.pdfUrl);
+      return { code: karte.code, pdfUrl: ergebnis.pdfUrl };
+    }),
+
+  /**
+   * Der Druckauftrag. Kostet Geld, ist nicht rueckholbar — deshalb die
+   * ausgeschriebene Bestaetigung und die Pruefung, dass das Motiv zur
+   * heutigen Seite gehoert.
+   */
+  beauftragen: adminProcedure
+    .input(
+      z.object({
+        businessId: z.number().int().positive(),
+        variante: VarianteSchema.default("ungefragt"),
+        bestaetigung: z.literal("VERSENDEN"),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const kandidat = await offenerKandidat(input.businessId);
+      if (!kandidat.beauftragbar) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: `${kandidat.name}: ${kandidat.hinweis}`,
+        });
+      }
+      const karte = await postkarteSichern({
+        businessId: kandidat.businessId,
+        websiteId: kandidat.websiteId,
+        city: kandidat.stadt,
+        textVariant: input.variante,
+      });
+      const { empfaenger, variablen } = variablenFuer(
+        kandidat,
+        input.variante,
+        karte.code
+      );
+      const ergebnis = await karteAnHeymail({
+        modus: "versand",
+        apiKey: heymailSchluessel(),
+        firma: kandidat.name,
+        empfaenger,
+        variablen,
+      });
+      if (!ergebnis.referenz) {
+        // Ohne Referenz gibt es bei einer Reklamation nichts vorzuzeigen —
+        // deshalb wenigstens die Rohantwort ins Log (Befund 2026-09-09).
+        console.log(
+          `[Postkarten] ${kandidat.name}: keine Referenz in der Antwort — ${ergebnis.roh}`
+        );
+      }
+      await postkarteVersendet(karte.id, ergebnis.referenz);
+      return { code: karte.code, referenz: ergebnis.referenz };
+    }),
+});

@@ -105,6 +105,35 @@ export async function scanErfassen(
   await db.insert(postcardScans).values({ postcardId, channel });
 }
 
+/**
+ * Motiv festhalten. `bildAt` ist der Zeitstempel, an dem spaeter haengt, ob
+ * die Aufnahme noch zur Seite passt — deshalb immer mitschreiben.
+ */
+export async function motivGespeichert(
+  postcardId: number,
+  bildUrl: string
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(postcards)
+    .set({ bildUrl, bildAt: new Date() })
+    .where(eq(postcards.id, postcardId));
+}
+
+/** Letzte HeyMail-Vorschau (PDF) zur Karte merken. */
+export async function vorschauGespeichert(
+  postcardId: number,
+  pdfUrl: string | null
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(postcards)
+    .set({ pdfUrl, pdfAt: new Date() })
+    .where(eq(postcards.id, postcardId));
+}
+
 /** Nach erfolgreichem Versand: Status und Zeitpunkt automatisch setzen. */
 export async function postkarteVersendet(
   postcardId: number,
