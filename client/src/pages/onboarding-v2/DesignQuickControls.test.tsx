@@ -5,9 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { trpc } from "@/lib/trpc";
+import { ThemeEditor } from "./panels/ThemeEditor";
 import { DesignQuickControls } from "./DesignQuickControls";
 
-function render(): string {
+function render(studio = false): string {
   const queryClient = new QueryClient();
   const client = trpc.createClient({
     links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
@@ -15,11 +16,11 @@ function render(): string {
   return renderToStaticMarkup(
     <trpc.Provider client={client} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <DesignQuickControls
+        {studio ? <ThemeEditor token={"t".repeat(32)} packId="werkbank" accent={null} fontPairId={null} onApplied={()=>{}} /> : <DesignQuickControls
           token={"t".repeat(32)}
           packId="werkbank"
           onApplied={() => {}}
-        />
+        />}
       </QueryClientProvider>
     </trpc.Provider>
   );
@@ -36,4 +37,13 @@ describe("DesignQuickControls", () => {
     expect(html).not.toContain("Seitenaufbau");
     expect(html).not.toContain("Galerie");
   });
+});
+
+test("Studio und Onboarding verwenden dieselben Farb- und Schriftzugänge", () => {
+  for (const html of [render(), render(true)]) {
+    expect(html).toContain('aria-label="Akzentfarbe"');
+    expect(html).toContain("Farbwelt");
+    expect(html).toContain("Schriftkombination");
+  }
+  expect(render(true)).toContain("Bildwirkung");
 });
