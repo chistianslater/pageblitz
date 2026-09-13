@@ -45,3 +45,17 @@ export const HOME_FAQ_ITEMS: FaqItem[] = [
     a: "Ja, jederzeit. Schreib einfach im Chat was du ändern möchtest – z. B. „Ändere die Headline auf …“ oder „Füge diese Leistung hinzu“. Keine Programmierkenntnisse nötig.",
   },
 ];
+
+/**
+ * Die vier Fragen, die die Startseite sichtbar zeigt (Klarstart, Block
+ * „Noch eine Frage?"). Server-Prerender und FAQPage-JSON-LD lesen dieselbe
+ * Liste: Google verlangt, dass FAQ-Markup dem sichtbaren Inhalt entspricht —
+ * ein Schema mit allen sieben Fragen waere Markup fuer Inhalt, den niemand
+ * sieht. Wer den sichtbaren Block erweitert, erweitert hier.
+ */
+export const HOME_FAQ_VISIBLE: FaqItem[] = [
+  HOME_FAQ_ITEMS[0],
+  HOME_FAQ_ITEMS[1],
+  HOME_FAQ_ITEMS[2],
+  HOME_FAQ_ITEMS[5],
+];

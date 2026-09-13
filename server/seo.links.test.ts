@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SEO_INDUSTRY_LINKS } from "../shared/seoIndustryLinks";
-import { HOME_FAQ_ITEMS } from "../shared/faq";
+import { HOME_FAQ_VISIBLE } from "../shared/faq";
 import {
   DE_CITIES,
   SEO_INDUSTRIES,
@@ -9,6 +9,7 @@ import {
 } from "./seo/landingPages";
 import { generateHomePrerender, buildHomeFaqSchema } from "./seo/homePage";
 import { PRICING, addonPrice, ADDON_KEYS, formatEuro } from "../shared/pricing";
+import { LANDING_FEATURES } from "../shared/landingFeatures";
 
 describe("SEO_INDUSTRY_LINKS bleibt deckungsgleich mit SEO_INDUSTRIES", () => {
   it("enthält exakt dieselben Slugs", () => {
@@ -95,9 +96,47 @@ describe("Home-Prerender", () => {
 
   it("liefert die H1 als echtes HTML aus", () => {
     expect(html).toContain("<h1");
-    // Nachtschicht-Relaunch 2026-08-29: H1 mit Volt-<em>.
-    expect(html).toContain("Deine Website —");
-    expect(html).toContain("Fertig in 3 Minuten.");
+    // Wortgleich mit dem Hero in landing-concepts/Klarstart.tsx.
+    expect(html).toContain("Deine Website?");
+    expect(html).toContain("Schon fast fertig.");
+  });
+
+  it("spiegelt die Abschnitte, die Klarstart sichtbar rendert", () => {
+    // Der Prerender ist die Fassung, die Crawler ohne JavaScript sehen —
+    // laeuft er der React-Seite davon, ist das Cloaking (Kopfkommentar in
+    // server/seo/homePage.ts). Diese Ueberschriften stehen in Klarstart.tsx,
+    // BuildStory.tsx und ClearFeatures.tsx.
+    for (const heading of [
+      "Was machst du?",
+      "Dein Alltag ist voll genug.",
+      "Neue Öffnungszeiten?",
+      "Alles, was dein Betrieb braucht.",
+      "Erst überzeugt.",
+      "Noch eine Frage?",
+      "Wie würde deine",
+    ]) {
+      expect(html, `Ueberschrift fehlt im Prerender: ${heading}`).toContain(
+        heading
+      );
+    }
+    // Und nichts aus den Bausteinen, die "/" nicht mehr rendert.
+    for (const alt of [
+      "Vier Schritte. Keine Technik.",
+      "Eine gute Entscheidung fühlt sich klar an.",
+      "So unterschiedlich wie die Menschen dahinter.",
+    ]) {
+      expect(
+        html,
+        `Text aus der alten Landing im Prerender: ${alt}`
+      ).not.toContain(alt);
+    }
+  });
+
+  it("nennt jede optionale Funktion aus derselben Quelle wie die Landing", () => {
+    for (const feature of LANDING_FEATURES) {
+      expect(html).toContain(feature.title);
+      expect(html).toContain(`+ ${formatEuro(addonPrice(feature.id))}/Monat`);
+    }
   });
 
   it("verlinkt jede Branchenseite", () => {
@@ -108,10 +147,12 @@ describe("Home-Prerender", () => {
 
   it("zeigt jede FAQ sichtbar an, die auch im Schema steht", () => {
     // Google verlangt, dass FAQ-Markup dem sichtbaren Inhalt entspricht.
-    // Genau hier war die Seite vorher kaputt.
+    // Genau hier war die Seite vorher kaputt. Klarstart zeigt vier der sieben
+    // Fragen (HOME_FAQ_VISIBLE) — Schema und Prerender folgen derselben Liste,
+    // sonst stuende Markup fuer Fragen da, die niemand sieht.
     const schema = JSON.parse(buildHomeFaqSchema());
-    expect(schema.mainEntity).toHaveLength(HOME_FAQ_ITEMS.length);
-    for (const faq of HOME_FAQ_ITEMS) {
+    expect(schema.mainEntity).toHaveLength(HOME_FAQ_VISIBLE.length);
+    for (const faq of HOME_FAQ_VISIBLE) {
       expect(
         schema.mainEntity.some((e: { name: string }) => e.name === faq.q)
       ).toBe(true);

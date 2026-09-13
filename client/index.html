@@ -3,23 +3,32 @@
 
   <head>
     <meta charset="UTF-8" />
-    <!-- Pre-Paint-Hintergrund (2026-08-29): dunkle Routen (Landing, Funnel,
-         Studio, Rechtsseiten) malen sofort Kohle statt kurz hell zu blitzen,
+    <!-- Pre-Paint-Hintergrund: jede Route malt sofort ihren eigenen Grund,
          bevor React/CSS greifen. Synchron und winzig — bewusst VOR allem
-         anderen. -->
+         anderen.
+
+         Seit dem Klarstart-Relaunch sind Landing und Funnel hell; die alte
+         Liste malte dort weiter Kohle (#0b0b0d) und damit genau den Blitz,
+         den sie verhindern sollte — nur andersherum. Werte muessen zum
+         tatsaechlichen Grund der Route passen:
+           /            .klarstart-live  → #fff    (clear-flow.css)
+           /start       .start-klarstart → #fff    (start-klarstart.css)
+           /onboarding  .pb-studio       → #fff    (--st-canvas, studio.css)
+           /login       bg-lp-canvas     → #f7f5f1 (--lp-canvas, index.css)
+         Impressum/Datenschutz sind weiterhin dunkel. -->
     <script>
       (function () {
         var p = location.pathname;
-        var dark =
+        var bg = "#f3efe7";
+        if (
           p === "/" ||
           p.indexOf("/start") === 0 ||
-          p.indexOf("/onboarding") === 0 ||
-          p.indexOf("/login") === 0 ||
-          p === "/impressum" ||
-          p === "/datenschutz";
-        document.documentElement.style.background = dark
-          ? "#0b0b0d"
-          : "#f3efe7";
+          p.indexOf("/onboarding") === 0
+        )
+          bg = "#ffffff";
+        else if (p.indexOf("/login") === 0) bg = "#f7f5f1";
+        else if (p === "/impressum" || p === "/datenschutz") bg = "#0a0a0f";
+        document.documentElement.style.background = bg;
       })();
     </script>
     <!-- Translate verhindern: schützt React vor DOM-Konflikten durch Google Translate u.a. Übersetzer -->

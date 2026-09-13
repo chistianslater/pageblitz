@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Wordmark } from "@/components/landing/primitives";
 import { PRICING, formatEuro } from "@shared/pricing";
-import { HOME_FAQ_ITEMS } from "@shared/faq";
+import { HOME_FAQ_VISIBLE } from "@shared/faq";
 
 export function Logo() {
   return (
@@ -109,12 +109,7 @@ export function Price({ dark = false }: { dark?: boolean }) {
 export function Questions() {
   return (
     <div className="lc-faq">
-      {[
-        HOME_FAQ_ITEMS[0],
-        HOME_FAQ_ITEMS[1],
-        HOME_FAQ_ITEMS[2],
-        HOME_FAQ_ITEMS[5],
-      ].map(f => (
+      {HOME_FAQ_VISIBLE.map(f => (
         <details key={f.q}>
           <summary>
             {f.q}
