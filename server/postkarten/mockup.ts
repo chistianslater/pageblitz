@@ -27,8 +27,20 @@ const DECKEL_X = 80;
 const DECKEL_B = 1600;
 const DECKEL_H = 1042;
 
-export const MOCKUP_BREITE = 1760;
-export const MOCKUP_HOEHE = 1136;
+const MOCKUP_BREITE = 1760;
+const MOCKUP_HOEHE = 1136;
+
+/**
+ * Ausgeliefert wird quadratisch (Betreiber-Befund 2026-09-13).
+ *
+ * HeyMail erlaubt für dynamische Bilder nur quadratische Platzhalter und
+ * zieht alles darauf — ein 1760x1136-Laptop käme gestaucht aus dem Drucker.
+ * Der Rahmen liegt deshalb mittig auf einer quadratischen Fläche, der Rest
+ * bleibt durchsichtig. Das Seitenverhältnis stimmt damit immer, egal wie
+ * groß die Vorlage den Platzhalter zeichnet.
+ */
+export const MOCKUP_KANTE = MOCKUP_BREITE;
+const RAND_OBEN = Math.round((MOCKUP_KANTE - MOCKUP_HOEHE) / 2);
 
 /** Ecken der Bildschirmfläche — ohne sie stößt das Bild hart in den Rahmen. */
 const SCHIRM_RADIUS = 6;
@@ -134,8 +146,22 @@ export async function laptopMockup(
     .png()
     .toBuffer();
 
-  return sharp(Buffer.from(rahmenSvg(PALETTEN[tonlage])))
+  const laptop = await sharp(Buffer.from(rahmenSvg(PALETTEN[tonlage])))
     .composite([{ input: schirm, left: SCHIRM_X, top: SCHIRM_Y }])
+    .png()
+    .toBuffer();
+
+  // Auf quadratisch bringen, statt es HeyMail überlassen: Der Platzhalter
+  // dort ist quadratisch und verzerrt, was nicht passt.
+  return sharp({
+    create: {
+      width: MOCKUP_KANTE,
+      height: MOCKUP_KANTE,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{ input: laptop, left: 0, top: RAND_OBEN }])
     .png()
     .toBuffer();
 }

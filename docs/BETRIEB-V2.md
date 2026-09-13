@@ -562,10 +562,12 @@ teilen sie sich die Logik jetzt mit dem Backend:
 | Oberfläche | `client/src/pages/postkarten/KartenErzeugen.tsx` |
 
 Das Motiv ist seit 2026-09-13 ein **Laptop-Mockup**: Der Screenshot sitzt im
-Gerät (1760 × 1136 px, PNG mit durchsichtigem Hintergrund), silbern — die
+Gerät (1760 × 1760 px, PNG mit durchsichtigem Hintergrund), silbern — die
 Karte hat einen dunklen Grund, auf dem ein schwarzer Laptop bis auf den
 Bildschirm verschwindet (`laptopMockup(…, "dunkel")` für helle Karten). Der
-Rahmen ist als SVG gezeichnet — kein Markengerät, keine Lizenz, in jeder Größe scharf. Vorher
+Fläche ist **quadratisch**, weil HeyMail für dynamische Bilder nur
+quadratische Platzhalter erlaubt und alles andere darauf zieht — der Laptop
+liegt mittig, der Rest ist durchsichtig. Der Rahmen ist als SVG gezeichnet — kein Markengerät, keine Lizenz, in jeder Größe scharf. Vorher
 lieferte Pageblitz den nackten Screenshot und das HeyMail-Template malte das
 Gerät; mit dem alten Template war der Rahmen weg. `motivErzeugen({ ohneMockup:
 true })` liefert weiterhin den blanken Screenshot als JPEG, falls eine

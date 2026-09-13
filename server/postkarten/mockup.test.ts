@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import sharp from "sharp";
-import { laptopMockup, MOCKUP_BREITE, MOCKUP_HOEHE } from "./mockup";
+import { laptopMockup, MOCKUP_KANTE } from "./mockup";
 
 /** Eine Aufnahme in den Maßen, die `aufnahme.ts` liefert. */
 async function aufnahme(breite = 1280, hoehe = 900): Promise<Buffer> {
@@ -17,11 +17,14 @@ async function aufnahme(breite = 1280, hoehe = 900): Promise<Buffer> {
 }
 
 describe("laptopMockup", () => {
-  test("liefert ein PNG in festen Maßen", async () => {
+  test("liefert ein quadratisches PNG", async () => {
+    // HeyMail erlaubt für dynamische Bilder nur quadratische Platzhalter und
+    // zieht alles darauf — ein Laptop im Querformat käme gestaucht aus dem
+    // Drucker (Betreiber-Befund 2026-09-13).
     const bild = await sharp(await laptopMockup(await aufnahme())).metadata();
     expect(bild.format).toBe("png");
-    expect(bild.width).toBe(MOCKUP_BREITE);
-    expect(bild.height).toBe(MOCKUP_HOEHE);
+    expect(bild.width).toBe(MOCKUP_KANTE);
+    expect(bild.height).toBe(MOCKUP_KANTE);
   });
 
   test("behält einen durchsichtigen Hintergrund", async () => {
@@ -42,14 +45,14 @@ describe("laptopMockup", () => {
     // Bildschirm (Betreiber-Befund 2026-09-13). Geprüft am Deckelrand,
     // links neben der Bildschirmfläche.
     const roh = await sharp(await laptopMockup(await aufnahme()))
-      .extract({ left: 88, top: 500, width: 4, height: 4 })
+      .extract({ left: 88, top: 812, width: 4, height: 4 })
       .raw()
       .toBuffer();
     expect(roh[0]).toBeGreaterThan(180);
     expect(roh[3]).toBe(255);
 
     const dunkel = await sharp(await laptopMockup(await aufnahme(), "dunkel"))
-      .extract({ left: 88, top: 500, width: 4, height: 4 })
+      .extract({ left: 88, top: 812, width: 4, height: 4 })
       .raw()
       .toBuffer();
     expect(dunkel[0]).toBeLessThan(60);
@@ -61,7 +64,7 @@ describe("laptopMockup", () => {
     // deshalb beschnitten werden, nicht gequetscht.
     const lang = await aufnahme(1280, 3000);
     const bild = await sharp(await laptopMockup(lang)).metadata();
-    expect(bild.width).toBe(MOCKUP_BREITE);
-    expect(bild.height).toBe(MOCKUP_HOEHE);
+    expect(bild.width).toBe(MOCKUP_KANTE);
+    expect(bild.height).toBe(MOCKUP_KANTE);
   });
 });
