@@ -14,6 +14,15 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    /**
+     * Platzhalter-Schluessel fuer den Testlauf: server/routers.ts zieht ueber
+     * onboardingV2/checkout.ts einen Stripe-Client, dessen Konstruktor ohne
+     * Schluessel wirft. Ohne das brachen server/pageblitz.test.ts und
+     * server/auth.logout.test.ts schon beim Einlesen ab — mit "0 test" im
+     * Bericht, also lautlos. Der Wert ist erfunden und erreicht Stripe nie;
+     * die Tests rufen keine API.
+     */
+    env: { STRIPE_SECRET_KEY: "sk_test_placeholder_fuer_tests" },
     include: [
       "server/**/*.test.ts",
       "server/**/*.test.tsx",
