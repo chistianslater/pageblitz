@@ -22,7 +22,7 @@ import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { deleteWebsite, updateBusiness } from "../db";
 import { gruppiere } from "./auswertung";
-import { karteAnHeymail } from "./auftrag";
+import { karteAnHeymail, standardTemplate } from "./auftrag";
 import {
   karteWiederAufnehmen,
   karteZurueckstellen,
@@ -40,6 +40,14 @@ import {
 } from "./heymail";
 import { kandidatenLaden, kandidatLaden, type Kandidat } from "./kandidaten";
 import { motivErzeugen } from "./motiv";
+
+/**
+ * Die Vorlage darf je Lauf mitgegeben werden. Grund: Am 13.09. antwortete
+ * HeyMail auf die eingebaute ID mit NOT_FOUND — Vorlagen gehoeren zum Konto
+ * und wechseln, ohne dass der Code davon erfaehrt. So kann der Betreiber die
+ * ID aus dem HeyMail-Konto eintragen, ohne dass jemand deployen muss.
+ */
+const TemplateSchema = z.string().trim().min(8).max(100).optional();
 
 const VarianteSchema = z.enum(
   Object.keys(TEXT_VARIANTEN) as [TextVariante, ...TextVariante[]]
@@ -137,6 +145,13 @@ export const postkartenRouter = router({
       nachVariante: gruppiere(karten, z => z.textVariant),
     };
   }),
+
+  /** Was der Server gerade benutzen wuerde — fuer die Anzeige im Backend. */
+  einstellungen: adminProcedure.query(() => ({
+    templateId: standardTemplate(),
+    ausUmgebung: !!process.env.HEYMAIL_TEMPLATE_ID?.trim(),
+    heymailBereit: !!process.env.HEYMAIL_API_KEY,
+  })),
 
   /** Textvarianten fuer die Auswahl im Backend. */
   varianten: adminProcedure.query(() =>
@@ -333,6 +348,7 @@ export const postkartenRouter = router({
       z.object({
         businessId: z.number().int().positive(),
         variante: VarianteSchema.default("ungefragt"),
+        templateId: TemplateSchema,
       })
     )
     .mutation(async ({ input }) => {
@@ -351,6 +367,7 @@ export const postkartenRouter = router({
       const ergebnis = await karteAnHeymail({
         modus: "vorschau",
         apiKey: heymailSchluessel(),
+        ...(input.templateId ? { templateId: input.templateId } : {}),
         firma: kandidat.name,
         empfaenger,
         variablen,
@@ -369,6 +386,7 @@ export const postkartenRouter = router({
       z.object({
         businessId: z.number().int().positive(),
         variante: VarianteSchema.default("ungefragt"),
+        templateId: TemplateSchema,
         bestaetigung: z.literal("VERSENDEN"),
       })
     )
@@ -394,6 +412,7 @@ export const postkartenRouter = router({
       const ergebnis = await karteAnHeymail({
         modus: "versand",
         apiKey: heymailSchluessel(),
+        ...(input.templateId ? { templateId: input.templateId } : {}),
         firma: kandidat.name,
         empfaenger,
         variablen,

@@ -254,10 +254,24 @@ export default function KartenErzeugen() {
   const [lauf, setLauf] = useState<Lauf | null>(null);
   const [versandDialog, setVersandDialog] = useState(false);
   const [bestaetigung, setBestaetigung] = useState("");
+  /**
+   * Vorlage je Lauf. HeyMail antwortete am 13.09. auf die eingebaute ID mit
+   * „Could not find template" — Vorlagen gehoeren zum Konto und wechseln.
+   * Der Wert bleibt im Browser stehen, damit er nicht bei jedem Lauf neu
+   * eingetippt werden muss.
+   */
+  const [templateId, setTemplateId] = useState(() => {
+    try {
+      return localStorage.getItem("pb-heymail-template") ?? "";
+    } catch {
+      return "";
+    }
+  });
 
   const utils = trpc.useUtils();
   const { data, isLoading } = trpc.postkarten.kandidaten.useQuery(filter);
   const { data: varianten } = trpc.postkarten.varianten.useQuery();
+  const { data: einstellungen } = trpc.postkarten.einstellungen.useQuery();
   const motiv = trpc.postkarten.motiv.useMutation();
   const vorschau = trpc.postkarten.vorschau.useMutation();
   const beauftragen = trpc.postkarten.beauftragen.useMutation();
@@ -452,6 +466,26 @@ export default function KartenErzeugen() {
               <Camera className="h-4 w-4" />
               Motive aufnehmen
             </Button>
+            <Input
+              className="w-72"
+              placeholder={
+                einstellungen
+                  ? `HeyMail-Vorlage (Standard: ${einstellungen.templateId.slice(0, 8)}…)`
+                  : "HeyMail-Vorlage"
+              }
+              value={templateId}
+              disabled={laeuft}
+              onChange={e => {
+                setTemplateId(e.target.value);
+                // Im Browser merken: Die ID gehoert zum Konto, nicht zum
+                // einzelnen Lauf — sie jedes Mal neu zu tippen waere Unsinn.
+                try {
+                  localStorage.setItem("pb-heymail-template", e.target.value);
+                } catch {
+                  // Privates Fenster o. Ä. — dann eben nur für diesen Lauf.
+                }
+              }}
+            />
             <select
               className="h-9 rounded-md border bg-background px-2 text-sm"
               value={variante}
@@ -475,6 +509,9 @@ export default function KartenErzeugen() {
                   await vorschau.mutateAsync({
                     businessId,
                     variante: variante as "ungefragt",
+                    ...(templateId.trim()
+                      ? { templateId: templateId.trim() }
+                      : {}),
                   });
                 })
               }
@@ -670,6 +707,9 @@ export default function KartenErzeugen() {
                       businessId,
                       variante: variante as "ungefragt",
                       bestaetigung: "VERSENDEN",
+                      ...(templateId.trim()
+                        ? { templateId: templateId.trim() }
+                        : {}),
                     });
                   }
                 );

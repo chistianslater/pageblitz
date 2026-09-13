@@ -21,8 +21,21 @@ import {
 
 const BASIS = "https://api.heymail.com/v1/mailings";
 
-/** Das Motiv-Template, mit dem die Bocholt-Serie gedruckt wurde. */
+/**
+ * Das Motiv-Template, mit dem die Bocholt-Serie am 09.09. gedruckt wurde.
+ *
+ * Es steht hier nur noch als letzter Rueckfall: Am 13.09. antwortete HeyMail
+ * darauf mit `NOT_FOUND` — eine Template-ID gehoert zum Konto und kann
+ * geloescht oder neu angelegt werden, eine im Code festgenagelte ID kann das
+ * nicht wissen. Vorrang hat deshalb `HEYMAIL_TEMPLATE_ID` aus der Umgebung,
+ * und darueber steht noch, was im Backend im Feld steht.
+ */
 export const TEMPLATE_STANDARD = "93df425c-64eb-4c13-b07b-cd54dd663301";
+
+/** Die Vorlage, die ohne ausdrueckliche Angabe benutzt wird. */
+export function standardTemplate(): string {
+  return process.env.HEYMAIL_TEMPLATE_ID?.trim() || TEMPLATE_STANDARD;
+}
 
 export interface HeymailErgebnis {
   /** PDF der Vorschau; beim Versand liefert HeyMail keins. */
@@ -42,7 +55,7 @@ export async function karteAnHeymail(opts: {
   empfaenger: Empfaenger;
   variablen: PostkartenVariablen;
 }): Promise<HeymailErgebnis> {
-  const templateId = opts.templateId ?? TEMPLATE_STANDARD;
+  const templateId = opts.templateId?.trim() || standardTemplate();
   const antwort = await fetch(
     opts.modus === "versand" ? `${BASIS}/send` : `${BASIS}/preview`,
     {
@@ -61,6 +74,14 @@ export async function karteAnHeymail(opts: {
   );
   const text = await antwort.text();
   if (!antwort.ok) {
+    // Der haeufigste Fehler ist kein Datenfehler, sondern eine Vorlage, die
+    // es im Konto nicht (mehr) gibt. Ohne diesen Satz liest man 33-mal
+    // „HTTP 404" und sucht in den Adressen.
+    if (antwort.status === 404 && /template/i.test(text)) {
+      throw new Error(
+        `HeyMail kennt die Vorlage ${templateId} nicht. Im HeyMail-Konto die Template-ID nachsehen und im Feld „HeyMail-Vorlage" eintragen (oder HEYMAIL_TEMPLATE_ID setzen).`
+      );
+    }
     throw new Error(`HeyMail HTTP ${antwort.status} — ${text.slice(0, 200)}`);
   }
   let daten: Record<string, string | undefined> = {};

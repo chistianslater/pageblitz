@@ -277,6 +277,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | Google OAuth |
 | `HUNTER_API_KEY` | E-Mail-Recherche (Outreach) |
 | `HEYMAIL_API_KEY` | Postkarten-Vorschau und -Druckauftrag (§6 „Postkarten") |
+| `HEYMAIL_TEMPLATE_ID` | Motiv-Vorlage bei HeyMail; ohne sie greift die eingebaute ID, die das Konto längst gelöscht haben kann |
 | `UNSPLASH_ACCESS_KEY` | Stock-Bilder |
 | `SSR_SITES` | `"off"` deaktiviert Kundenseiten-SSR (Client rendert dann selbst) |
 | `UMAMI_API_URL` (oder `UMAMI_URL`) / `UMAMI_API_TOKEN` (oder `UMAMI_USERNAME` + `UMAMI_PASSWORD`) / `UMAMI_SCRIPT_URL` | Kundenstatistik (Umami, §6 „Kundenstatistik") — alle optional; ohne Konfiguration keine Registrierung/Statistik, Aktivierung läuft trotzdem |
@@ -579,6 +580,12 @@ Zeile nachtragen (`postkarten.anschrift`, speichert nur, was
 die gar nicht hätten entstehen sollen — mit dem Preis, dass danach auch die
 Buchführung zu diesem Betrieb weg ist; eine versendete Karte sperrt es
 ohnehin, weil ihr QR-Code auf genau diese Seite zeigt.
+
+Die Vorlage (Template-ID) gehört zum HeyMail-Konto und kann dort gelöscht
+oder neu angelegt werden — am 13.09. antwortete HeyMail auf die eingebaute ID
+mit `NOT_FOUND`. Reihenfolge: Feld „HeyMail-Vorlage" im Backend (bleibt im
+Browser gespeichert) → `HEYMAIL_TEMPLATE_ID` → eingebaute ID. Ein 404 mit
+„template" nennt deshalb die Vorlage im Klartext statt nur den Statuscode.
 
 Voraussetzungen auf dem Server: `HEYMAIL_API_KEY`, R2-Variablen (das Bild
 muss öffentlich über HTTPS liegen, HeyMail lädt es selbst), `APP_BASE_URL`

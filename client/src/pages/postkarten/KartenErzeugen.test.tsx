@@ -108,6 +108,15 @@ vi.mock("@/lib/trpc", () => {
             isLoading: false,
           }),
         },
+        einstellungen: {
+          useQuery: () => ({
+            data: {
+              templateId: "93df425c-64eb-4c13-b07b-cd54dd663301",
+              ausUmgebung: false,
+              heymailBereit: true,
+            },
+          }),
+        },
         varianten: {
           useQuery: () => ({
             data: [{ id: "ungefragt", headline: "Deine Website ist fertig." }],

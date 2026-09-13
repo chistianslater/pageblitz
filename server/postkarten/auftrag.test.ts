@@ -18,17 +18,18 @@ const variablen = postkartenVariablen({
   kurzcode: "AB12",
 });
 
-function antwortMit(körper: unknown, ok = true) {
+function antwortMit(körper: unknown, ok = true, status?: number) {
   const text = typeof körper === "string" ? körper : JSON.stringify(körper);
   return vi.fn(async () => ({
     ok,
-    status: ok ? 200 : 422,
+    status: status ?? (ok ? 200 : 422),
     text: async () => text,
   })) as unknown as typeof fetch;
 }
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe("karteAnHeymail", () => {
@@ -89,6 +90,53 @@ describe("karteAnHeymail", () => {
         variablen,
       })
     ).rejects.toThrow(/422.*Adresse unvollständig/);
+  });
+
+  test("unbekannte Vorlage nennt die Vorlage, nicht nur 404", async () => {
+    // Befund 2026-09-13: 33-mal „HeyMail HTTP 404" im Backend, während der
+    // Grund eine Template-ID war, die es im Konto nicht mehr gibt.
+    vi.stubGlobal(
+      "fetch",
+      antwortMit(
+        {
+          type: "NOT_FOUND",
+          message:
+            "Could not find template with id 93df425c-64eb-4c13-b07b-cd54dd663301",
+        },
+        false,
+        404
+      )
+    );
+    await expect(
+      karteAnHeymail({
+        modus: "vorschau",
+        apiKey: "k",
+        templateId: "93df425c-64eb-4c13-b07b-cd54dd663301",
+        firma: "Salon Beispiel",
+        empfaenger,
+        variablen,
+      })
+    ).rejects.toThrow(/kennt die Vorlage 93df425c/);
+  });
+
+  test("Vorlage aus der Umgebung sticht die eingebaute", async () => {
+    const fetchMock = antwortMit({ previewUrl: "https://pdf/2.pdf" });
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubEnv("HEYMAIL_TEMPLATE_ID", "neue-vorlage-1234");
+
+    await karteAnHeymail({
+      modus: "vorschau",
+      apiKey: "k",
+      firma: "Salon Beispiel",
+      empfaenger,
+      variablen,
+    });
+
+    const [, init] = (fetchMock as unknown as ReturnType<typeof vi.fn>).mock
+      .calls[0];
+    expect(JSON.parse((init as RequestInit).body as string).templateId).toBe(
+      "neue-vorlage-1234"
+    );
   });
 
   test("Antwort ohne JSON bleibt als Rohtext erhalten", async () => {
