@@ -1,3 +1,4 @@
+import { PRICING, formatEuro } from "../../shared/pricing";
 import { escapeHtml } from "./metaInjection";
 
 export interface SeoIndustry {
@@ -30,7 +31,7 @@ export interface SeoCity {
   description?: string;
 }
 
-// ── 17 Branchen ───────────────────────────────────────────────────────────────
+// ── Branchen ──────────────────────────────────────────────────────────────────
 
 export const SEO_INDUSTRIES: Record<string, SeoIndustry> = {
   friseur: {
@@ -2375,7 +2376,7 @@ img{max-width:100%;height:auto}
 nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06);padding:1rem 0;position:sticky;top:0;z-index:100}
 .nav-inner{display:flex;align-items:center;justify-content:space-between}
 .logo{font-size:1.125rem;font-weight:700;color:#fff;letter-spacing:-.5px;display:flex;align-items:center;gap:.5rem}
-.nav-cta{background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:opacity .2s,transform .2s,background-color .2s}
+.nav-cta{background:#d5f330;color:#25300d!important;padding:.5rem 1.25rem;border-radius:999px;font-size:.875rem;font-weight:600;transition:opacity .2s,transform .2s,background-color .2s}
 .nav-cta:hover{opacity:.9;transform:translateY(-1px)}
 /* Hero */
 .hero{background:#0a0a0a;color:#fff;padding:5rem 0 4rem;position:relative;overflow:hidden}
@@ -2397,7 +2398,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:.375rem 1rem;font-size:.8125rem;font-weight:600;margin-bottom:1.5rem;color:rgba(255,255,255,.7)}
 .hero h1{font-size:clamp(1.875rem,3.5vw,2.75rem);font-weight:700;margin-bottom:1.25rem;line-height:1.15;letter-spacing:-.02em;color:#fff;text-align:center}
 .hero p{font-size:1.0625rem;color:rgba(255,255,255,.5);max-width:520px;margin:0 auto 2.5rem;line-height:1.7}
-.btn-primary{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:opacity .2s,transform .2s,background-color .2s,box-shadow .2s;box-shadow:0 4px 24px rgba(233,30,140,.3)}
+.btn-primary{display:inline-block;background:#d5f330;color:#25300d;padding:.9375rem 2.5rem;border-radius:999px;font-size:1rem;font-weight:700;transition:opacity .2s,transform .2s,background-color .2s,box-shadow .2s}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(233,30,140,.4)}
 .hero-trust{margin-top:1.5rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;font-size:.8125rem;color:rgba(255,255,255,.35);justify-content:center}
 .hero-trust span{display:flex;align-items:center;gap:.375rem}
@@ -2467,7 +2468,7 @@ nav{background:rgba(10,10,10,.85);backdrop-filter:blur(20px);-webkit-backdrop-fi
 .pricing{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .pricing-wrapper{max-width:460px;margin:0 auto;margin-top:3.5rem}
 .pricing-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:2.5rem;position:relative}
-.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
+.pricing-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#d5f330;color:#25300d;font-size:.75rem;font-weight:700;padding:.3rem .875rem;border-radius:999px;white-space:nowrap}
 .pricing-name{font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem}
 .pricing-price{font-size:3.5rem;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1}
 .pricing-price span{font-size:1rem;color:rgba(255,255,255,.4);font-weight:400}
@@ -2553,7 +2554,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
 .billing-toggle{display:flex;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:.25rem;gap:.25rem;max-width:340px;margin:0 auto 2.5rem}
 .billing-btn{flex:1;padding:.5rem 1rem;border-radius:999px;border:none;background:transparent;color:rgba(255,255,255,.45);font-size:.875rem;font-weight:600;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s;white-space:nowrap}
 .billing-btn.active{background:#fff;color:#0a0a0a;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.billing-save{display:inline-block;background:linear-gradient(135deg,#e91e8c,#c8177a);color:#fff;font-size:.625rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.375rem;vertical-align:middle}
+.billing-save{display:inline-block;background:rgba(213,243,48,.45);color:#25300d;font-size:.625rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.375rem;vertical-align:middle}
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .nav-cta,.btn-primary,.hero-browser,.feature-card,.addon-card,.addon-expand-btn,.pricing-cta,.industry-link,.city-link,.billing-btn{transition:none!important}
@@ -2581,90 +2582,97 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
   .stats{padding:2rem 0}
 }
 
-/* ── Pageblitz Nachtschicht Skin (2026-08-29) ───────────────────────────
-   Branchen-/Städte-Landingpages teilen Palette, Typografie, Hairlines und
-   Kartenlogik mit der neuen Startseite (Kohle/Volt, Spec
-   docs/superpowers/specs/2026-08-29-landing-relaunch-dark-volt-design.md).
-   Die branchenspezifischen Akzentfarben und die HELLE Website-Vorschau
-   (.mw-*, .mock-*) bleiben erhalten: dort demonstrieren sie das Ergebnis. */
+/* ── Pageblitz Klarstart Skin ──────────────────────────────────────────
+   Branchen- und Staedteseiten teilen Palette und Typografie mit der
+   Startseite. Die Werte sind die Klarstart-Tokens aus
+   client/src/pages/landing-concepts/clear-flow.css (.klarstart-live):
+   Weiss, Tinte #242424, Linie #d8ddce, Volt #d5f330 auf dunkler Volt-Tinte
+   #25300d. Volt als TEXTfarbe waere auf Weiss unlesbar — Akzenttext nimmt
+   deshalb immer #25300d, Volt bleibt Flaeche.
+
+   Ueberschreibt den alten Basis-Skin darunter (Magenta auf Kohle) und
+   ersetzt den Nachtschicht-Skin, der hier bis zum Klarstart-Relaunch stand.
+   Die branchenspezifischen Akzentfarben und die Website-Vorschau (.mw-*,
+   .mock-*) bleiben unangetastet: dort demonstrieren sie das Ergebnis. */
 @font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url("/fonts/space-grotesk-latin-wght.woff2") format("woff2")}
-body{font-family:"Space Grotesk",system-ui,sans-serif;color:#f2f1ee;background:#0b0b0d}
+body{font-family:"Space Grotesk",system-ui,sans-serif;color:#242424;background:#fff}
 .container{max-width:1200px}
-nav{background:rgba(19,19,22,.88);border-color:rgba(255,255,255,.09);padding:.75rem 0}
-.logo{color:#f2f1ee;font-weight:500}
-.nav-cta,.btn-primary,.pricing-badge{background:#ccff00!important;color:#0b0b0d!important;box-shadow:none!important}
-.nav-cta:hover,.btn-primary:hover{background:#b3e600!important;opacity:1}
-.hero{background:#0b0b0d;color:#f2f1ee;padding:5rem 0 4.5rem;border-bottom:1px solid rgba(255,255,255,.09)}
-.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(204,255,0,.09),transparent)}
+nav{background:rgba(255,255,255,.9);border-color:#d8ddce;padding:.75rem 0}
+.logo{color:#242424;font-weight:600}
+.nav-cta,.btn-primary,.pricing-badge{background:#d5f330!important;color:#25300d!important;box-shadow:none!important}
+.nav-cta:hover,.btn-primary:hover{background:#c2e024!important;opacity:1}
+.hero{background:#fff;color:#242424;padding:5rem 0 4.5rem;border-bottom:1px solid #d8ddce}
+.hero::before{background:radial-gradient(ellipse 55% 55% at 72% 20%,rgba(213,243,48,.16),transparent)}
 .hero-orb{display:none}
-.hero-badge{background:#131316;border-color:rgba(255,255,255,.09);color:#a4a39d;font-weight:500}
-.hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#f2f1ee;font-weight:500;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03}
-.hero p{color:#a4a39d}
-.hero-trust{color:#a4a39d}
-.btn-primary{font-weight:600}
-.stats{background:#131316;border-color:rgba(255,255,255,.09)}
-.stat-value{color:#f2f1ee;font-weight:500}
-.stat-label{color:#a4a39d}
-.steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:rgba(255,255,255,.09)}
-.section-label{color:#ccff00;font-weight:500}
-.section-title{color:#f2f1ee;font-weight:500;font-size:clamp(1.9rem,3vw,3rem)}
-.section-sub,.local-intro,.local-detail{color:#a4a39d}
+.hero-persona{filter:drop-shadow(0 24px 45px rgba(36,36,36,.18))}
+.hero-badge{background:#f5f6f0;border-color:#d8ddce;color:#62675b;font-weight:500}
+.hero h1{max-width:52rem;margin:0 auto 1.25rem;color:#242424;font-weight:700;font-size:clamp(2.25rem,4vw,4rem);line-height:1.03;letter-spacing:-.03em}
+.hero p{color:#62675b}
+.hero-trust{color:#62675b}
+.btn-primary{font-weight:700}
+.stats{background:#f5f6f0;border-color:#d8ddce}
+.stat-value{color:#242424;font-weight:700}
+.stat-label{color:#62675b}
+.steps,.features,.addons,.pricing,.comparison,.faq,.preview-section{padding:6rem 0;border-color:#d8ddce}
+.section-label{color:#25300d;font-weight:600}
+.section-title{color:#242424;font-weight:700;font-size:clamp(1.9rem,3vw,3rem);letter-spacing:-.02em}
+.section-sub,.local-intro,.local-detail{color:#62675b}
 .steps-grid{gap:1rem}
-.step{text-align:left;border-top:1px solid rgba(255,255,255,.09);padding:1.5rem 0}
-.step-num{margin:0 0 1.25rem;background:#131316;border-color:rgba(255,255,255,.09);color:#ccff00}
-.step h3,.feature-card h3,.addon-card h4{color:#f2f1ee}
-.step p,.feature-card p,.addon-card p{color:#a4a39d}
-.feature-card,.addon-card{background:#131316;border-color:rgba(255,255,255,.09);border-radius:12px}
-.feature-card:hover,.addon-card:hover{background:#1a1a1e;border-color:rgba(255,255,255,.22)}
-.feature-icon{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32);color:#ccff00}
-.addon-icon{color:#ccff00}
-.pricing-addon-row svg{vertical-align:-4px;margin-right:.3rem;color:#ccff00}
+.step{text-align:left;border-top:1px solid #d8ddce;padding:1.5rem 0}
+.step-num{margin:0 0 1.25rem;background:#f5f6f0;border-color:#d8ddce;color:#25300d}
+.step h3,.feature-card h3,.addon-card h4{color:#242424}
+.step p,.feature-card p,.addon-card p{color:#62675b}
+.feature-card,.addon-card{background:#f5f6f0;border-color:#d8ddce;border-radius:12px}
+.feature-card:hover,.addon-card:hover{background:#fff;border-color:#bcc4ab}
+.feature-icon{background:rgba(213,243,48,.38);border-color:rgba(37,48,13,.18);color:#25300d}
+.addon-icon{color:#25300d}
+.pricing-addon-row svg{vertical-align:-4px;margin-right:.3rem;color:#25300d}
 .mw-card-icon svg{width:16px;height:16px}
-.addon-price{background:rgba(204,255,0,.10);border-color:rgba(204,255,0,.32);color:#ccff00}
-.addon-expand-btn{background:transparent;border-color:rgba(255,255,255,.22);color:#f2f1ee}
-.addon-expand-btn:hover{background:#131316;color:#f2f1ee}
+.addon-price{background:rgba(213,243,48,.38);border-color:rgba(37,48,13,.18);color:#25300d}
+.addon-expand-btn{background:transparent;border-color:#d8ddce;color:#242424}
+.addon-expand-btn:hover{background:#f5f6f0;color:#242424}
 .pricing-wrapper{max-width:560px}
-.pricing-card{background:#131316;border-color:rgba(255,255,255,.09);border-radius:18px;box-shadow:0 28px 60px -42px rgba(0,0,0,.55)}
-.pricing-name,.pricing-note,.pricing-note-bottom{color:#a4a39d}
-.pricing-price{color:#f2f1ee;font-weight:500}
-.pricing-price span{color:#a4a39d}
-.pricing-features li{color:#f2f1ee;border-color:rgba(255,255,255,.09)}
-.pricing-features li::before{color:#ccff00}
-.pricing-addon-box{background:#0b0b0d;border-color:rgba(255,255,255,.09)}
-.pricing-addon-label,.pricing-addon-row span:last-child{color:#a4a39d}
-.pricing-addon-row span:first-child{color:#f2f1ee}
-.pricing-cta{background:#ccff00!important;color:#0b0b0d!important}
-.pricing-cta:hover{background:#b3e600!important}
-.billing-toggle{background:#131316;border-color:rgba(255,255,255,.09)}
-.billing-btn{color:#a4a39d}
-.billing-btn.active{background:#ccff00;color:#0b0b0d;box-shadow:none}
-.billing-save{background:rgba(204,255,0,.10);color:#ccff00}
-.comp-table{background:#131316;border-color:rgba(255,255,255,.09);border-radius:14px}
-.comp-header{background:#0b0b0d}
-.comp-header div{color:#a4a39d}
-.comp-header div:first-child{color:#a4a39d}
-.comp-header div:last-child{color:#ccff00;background:rgba(204,255,0,.10)}
-.comp-row{border-color:rgba(255,255,255,.09)}
-.comp-row:nth-child(even){background:#101013}
-.comp-row div{color:#a4a39d}
-.comp-row div:first-child{color:#f2f1ee}
-.comp-row div:last-child{color:#ccff00;background:rgba(204,255,0,.10)}
-details{background:#131316;border-color:rgba(255,255,255,.09);border-radius:10px}
-details[open]{border-color:rgba(255,255,255,.22)}
-summary{color:#f2f1ee}
-summary::after{color:#a4a39d}
-.faq-answer{color:#a4a39d}
-.cta-banner{background:#131316;border-top:1px solid rgba(255,255,255,.09)}
-.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(204,255,0,.18),transparent)}
-.cta-banner h2{color:#f2f1ee;font-weight:500}
-.cta-banner p,.cta-note{color:#a4a39d}
-.industries,.cities{border-color:rgba(255,255,255,.09);background:#131316}
-.industries h3,.cities h3{color:#a4a39d}
-.industry-link,.city-link{background:#0b0b0d;border-color:rgba(255,255,255,.09);color:#a4a39d}
-.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#ccff00;color:#ccff00;background:rgba(204,255,0,.10)}
-footer{background:#0b0b0d;color:#7c7b76;border-color:rgba(255,255,255,.09)}
-footer a{color:#a4a39d}
-.mock-browser{background:#fff;box-shadow:0 40px 90px -30px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12)}
+.pricing-card{background:#fff;border-color:#d8ddce;border-radius:18px;box-shadow:0 30px 70px -45px rgba(36,36,36,.45)}
+.pricing-name,.pricing-note,.pricing-note-bottom{color:#62675b}
+.pricing-price{color:#242424;font-weight:700}
+.pricing-price span{color:#62675b}
+.pricing-features li{color:#242424;border-color:#d8ddce}
+.pricing-features li::before{color:#25300d}
+.pricing-addon-box{background:#f5f6f0;border-color:#d8ddce}
+.pricing-addon-label,.pricing-addon-row span:last-child{color:#62675b}
+.pricing-addon-row span:first-child{color:#242424}
+.pricing-cta{background:#d5f330!important;color:#25300d!important}
+.pricing-cta:hover{background:#c2e024!important}
+.billing-toggle{background:#f5f6f0;border-color:#d8ddce}
+.billing-btn{color:#62675b}
+.billing-btn.active{background:#d5f330;color:#25300d;box-shadow:none}
+.billing-save{background:rgba(213,243,48,.45);color:#25300d}
+.comp-table{background:#fff;border-color:#d8ddce;border-radius:14px}
+.comp-header{background:#f5f6f0}
+.comp-header div{color:#62675b}
+.comp-header div:first-child{color:#62675b}
+.comp-header div:last-child{color:#25300d;background:rgba(213,243,48,.38)}
+.comp-row{border-color:#d8ddce}
+.comp-row:nth-child(even){background:#faf9f5}
+.comp-row div{color:#62675b}
+.comp-row div:first-child{color:#242424}
+.comp-row div:last-child{color:#25300d;background:rgba(213,243,48,.38)}
+details{background:#f5f6f0;border-color:#d8ddce;border-radius:10px}
+details[open]{border-color:#bcc4ab}
+summary{color:#242424}
+summary::after{color:#62675b}
+.faq-answer{color:#62675b}
+.cta-banner{background:#f5f6f0;border-top:1px solid #d8ddce}
+.cta-banner::before{background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(213,243,48,.22),transparent)}
+.cta-banner h2{color:#242424;font-weight:700;letter-spacing:-.02em}
+.cta-banner p,.cta-note{color:#62675b}
+.industries,.cities{border-color:#d8ddce;background:#f5f6f0}
+.industries h3,.cities h3{color:#62675b}
+.industry-link,.city-link{background:#fff;border-color:#d8ddce;color:#62675b}
+.industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#25300d;color:#25300d;background:rgba(213,243,48,.38)}
+footer{background:#fff;color:#62675b;border-color:#d8ddce}
+footer a{color:#242424}
+.mock-browser{background:#fff;box-shadow:0 30px 70px -40px rgba(36,36,36,.45),0 0 0 1px #d8ddce}
 .mock-chrome,.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
 .mock-url,.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
 @media(max-width:768px){
@@ -2673,10 +2681,10 @@ footer a{color:#a4a39d}
   .comp-header{display:none}
   .comp-row{display:grid;grid-template-columns:1fr 1fr;padding:0}
   .comp-row div{padding:.85rem 1rem;text-align:left}
-  .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid rgba(255,255,255,.09);background:#0b0b0d}
-  .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#a4a39d}
+  .comp-row div:first-child{grid-column:1/-1;border-bottom:1px solid #d8ddce;background:#f5f6f0}
+  .comp-row div:nth-child(2)::before,.comp-row div:nth-child(3)::before{display:block;margin-bottom:.25rem;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#62675b}
   .comp-row div:nth-child(2)::before{content:"Webagentur"}
-  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#ccff00}
+  .comp-row div:nth-child(3)::before{content:"Pageblitz";color:#25300d}
 }
 `.trim();
 
@@ -2931,7 +2939,7 @@ export function generateLandingPageHTML(
 <nav>
   <div class="container nav-inner">
     <a class="logo" href="/">
-      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#ccff00" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
+      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#242424" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
       Pageblitz
     </a>
     <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>
@@ -3190,19 +3198,21 @@ export function generateOverviewHTML(): string {
   const canonical = "https://pageblitz.de/website-erstellen";
   const title =
     "Website erstellen für Kleinunternehmen | Pageblitz – KI-Website-Generator";
-  const desc =
-    "Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. Über 17 Branchen – ab 19,90 €/Monat.";
+  // Abgeleitet statt eingetippt: die Zahl stand auf 17, waehrend
+  // SEO_INDUSTRIES laengst mehr Branchen fuehrte.
+  const branchenZahl = Object.keys(SEO_INDUSTRIES).length;
+  const desc = `Mit Pageblitz erstellst du in 3 Minuten eine professionelle Website für dein Unternehmen. ${branchenZahl} Branchen – ab ${formatEuro(PRICING.base.yearly)}/Monat.`;
 
   const overviewCss =
     SHARED_CSS +
     `
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem;margin-top:3rem}
-.industry-card{display:flex;flex-direction:column;align-items:center;background:#fdfcfa;border:1px solid #ddd6c9;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:background-color .2s,border-color .2s,transform .2s;color:#1d1a17}
-.industry-card:hover{border-color:#1f5f4b;background:#fff;transform:translateY(-2px)}
-.industry-card .icon{margin-bottom:.75rem;color:#ccff00}
+.industry-card{display:flex;flex-direction:column;align-items:center;background:#f5f6f0;border:1px solid #d8ddce;border-radius:12px;padding:1.75rem 1.25rem;text-align:center;transition:background-color .2s,border-color .2s,transform .2s;color:#1d1a17}
+.industry-card:hover{border-color:#25300d;background:#fff;transform:translateY(-2px)}
+.industry-card .icon{margin-bottom:.75rem;color:#25300d}
 .industry-card .icon svg{width:28px;height:28px}
-.industry-card h3{font-size:.9375rem;font-weight:600;color:#1d1a17;margin-bottom:.375rem}
-.industry-card p{font-size:.8125rem;color:#6b645b;line-height:1.5}
+.industry-card h3{font-size:.9375rem;font-weight:700;color:#242424;margin-bottom:.375rem}
+.industry-card p{font-size:.8125rem;color:#62675b;line-height:1.5}
 @media(prefers-reduced-motion:reduce),(hover:none),(pointer:coarse){.industry-card{transition:none}.industry-card:hover{transform:none}}
 `;
 
@@ -3268,7 +3278,7 @@ export function generateOverviewHTML(): string {
 <nav>
   <div class="container nav-inner">
     <a class="logo" href="/">
-      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#ccff00" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
+      <svg width="24" height="30" viewBox="480 380 1060 1360" fill="none" style="flex-shrink:0"><path fill="#242424" d="M 889.39 448.271 L 1027 448.389 C 1095.26 448.402 1154.86 444.93 1220.54 467.755 C 1441.18 544.436 1468.5 839.339 1248.65 943.253 C 1195 1000 1062 1038 954.752 1030.36 C 969.049 994.436 987.735 958.777 1002.94 923.08 C 1011.21 903.687 1020.46 883.279 1029.77 864.375 C 1077.42 864.484 1115.44 859.364 1153.94 827.092 C 1180.73 804.639 1196.69 773.181 1199.23 738.284 C 1199.31 734.894 1199.34 731.503 1199.31 728.112 C 1198.7 678.301 1167.03 637.505 1120.22 622.217 C 1092.14 613.044 1067.16 614.392 1038.07 614.653 C 1011.55 671.788 986.431 733.177 960.902 791.178 L 819.443 1113.34 C 905.629 1113.18 991.813 1112.4 1077.99 1110.98 C 1032.38 1160.99 985.77 1217.67 941.609 1269.32 L 738.53 1506.61 C 709.377 1541.1 680.035 1575.42 650.503 1609.58 C 631.107 1632.07 611.179 1655.76 590.625 1677.11 C 640.951 1539.68 697.528 1403.49 748.736 1266.29 C 687.357 1265.51 624.298 1266.35 562.693 1266.3 C 578.865 1222.21 598.131 1176.46 615.52 1132.68 L 739.197 823.33 L 836.91 577.647 L 865.589 506.36 C 873.185 487.231 880.738 466.851 889.39 448.271 z"/></svg>
       Pageblitz
     </a>
     <a class="nav-cta" href="https://pageblitz.de/start">Kostenlos erstellen</a>
@@ -3293,7 +3303,7 @@ export function generateOverviewHTML(): string {
   <div class="container">
     <p class="section-label">Branchen</p>
     <h2 class="section-title">Wähle deine Branche</h2>
-    <p class="section-sub">Über 17 spezialisierte Branchen – professionell, DSGVO-konform, als Vorschau in 3 Minuten.</p>
+    <p class="section-sub">${branchenZahl} spezialisierte Branchen – professionell, DSGVO-konform, als Vorschau in 3 Minuten.</p>
     <div class="overview-grid">
     ${industryCardsHtml}
     </div>

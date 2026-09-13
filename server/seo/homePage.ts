@@ -286,10 +286,11 @@ export function generateHomePrerender(): string {
     </section>
 
     <section style="padding:3rem 0;border-top:1px solid ${C.line}">
-      <h2 style="font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;font-weight:500;margin:0 0 1.25rem;color:${C.muted}">Website erstellen – nach Branche</h2>
+      <h2 style="font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;font-weight:600;margin:0 0 1.25rem;color:${C.muted}">Website für deine Branche</h2>
       <div style="display:flex;flex-wrap:wrap;gap:.75rem 1.5rem">
         ${industryLinks}
       </div>
+      <p style="margin:1.25rem 0 0"><a href="/website-erstellen" style="font-size:.875rem;font-weight:500;color:${C.ink}">Alle Branchen ansehen</a></p>
     </section>
 
     <footer style="padding:2rem 0;border-top:1px solid ${C.line};font-size:.875rem;color:${C.faint}">

@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Wordmark } from "@/components/landing/primitives";
 import { PRICING, formatEuro } from "@shared/pricing";
 import { HOME_FAQ_VISIBLE } from "@shared/faq";
+import { SEO_INDUSTRY_LINKS } from "@shared/seoIndustryLinks";
 
 export function Logo() {
   return (
@@ -119,6 +120,35 @@ export function Questions() {
         </details>
       ))}
     </div>
+  );
+}
+/**
+ * Branchenseiten (/website-erstellen/<slug>, serverseitig gerendert).
+ *
+ * Sie existierten bisher nur fuer Crawler: der Prerender verlinkte sie, React
+ * ersetzt den Prerender beim Mounten — fuer Besucherinnen waren sie damit
+ * unerreichbar. Hier stehen sie sichtbar, direkt ueber dem Fuss, und die
+ * Startseite gibt ihre interne Verlinkung an sie weiter.
+ *
+ * Die Liste kommt aus shared/seoIndustryLinks.ts; server/seo.links.test.ts
+ * haelt sie deckungsgleich mit SEO_INDUSTRIES auf der Serverseite.
+ */
+export function IndustryLinks() {
+  return (
+    <section className="lc-industries" aria-labelledby="lc-industries-title">
+      <h2 id="lc-industries-title">Website für deine Branche</h2>
+      <div>
+        {SEO_INDUSTRY_LINKS.map(link => (
+          <a key={link.slug} href={`/website-erstellen/${link.slug}`}>
+            {link.name}
+          </a>
+        ))}
+      </div>
+      <a className="lc-industries-all" href="/website-erstellen">
+        Alle Branchen ansehen
+        <ArrowRight size={15} />
+      </a>
+    </section>
   );
 }
 export function Footer() {

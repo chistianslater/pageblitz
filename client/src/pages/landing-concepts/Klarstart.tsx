@@ -6,7 +6,15 @@ import {
   SlidersHorizontal,
   MousePointer2,
 } from "lucide-react";
-import { Logo, StartForm, DemoLink, Price, Questions, Footer } from "./shared";
+import {
+  Logo,
+  StartForm,
+  DemoLink,
+  Price,
+  Questions,
+  IndustryLinks,
+  Footer,
+} from "./shared";
 import ClearFeatures from "./ClearFeatures";
 import TypingStart from "./TypingStart";
 import BuildStory from "./BuildStory";
@@ -392,6 +400,7 @@ export default function Klarstart() {
         </section>
       </main>
       <div className="lc-width">
+        <IndustryLinks />
         <Footer />
       </div>
     </div>

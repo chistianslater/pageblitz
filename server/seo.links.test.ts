@@ -56,13 +56,35 @@ describe("Städte-Seiten sind keine Duplikate mehr", () => {
 describe("Branchen-Landingpages tragen den neuen Pageblitz-Look", () => {
   const html = generateLandingPageHTML(SEO_INDUSTRIES.restaurant);
 
-  it("nutzt die Nachtschicht-Palette und die selbst gehostete Space Grotesk", () => {
+  it("nutzt die Klarstart-Palette und die selbst gehostete Space Grotesk", () => {
     expect(html).toContain('url("/fonts/space-grotesk-latin-wght.woff2")');
-    // Nachtschicht-Skin (Relaunch 2026-08-29): Kohle-Grund, Volt-CTA.
-    expect(html).toContain("background:#0b0b0d");
-    expect(html).toContain("background:#ccff00!important");
+    // Klarstart-Skin: heller Grund, Tinte #242424, Volt als Flaeche mit
+    // dunkler Volt-Tinte darauf (dieselben Werte wie `.klarstart-live`).
+    expect(html).toContain("color:#242424;background:#fff");
+    expect(html).toContain("background:#d5f330!important");
+    expect(html).toContain("color:#25300d!important");
     expect(html).not.toContain("fonts.googleapis.com");
     expect(html).not.toContain("Plus+Jakarta+Sans");
+  });
+
+  it("laesst keine Reste des dunklen Skins stehen", () => {
+    // Der alte Nachtschicht-Skin und der Magenta-Basis-Skin davor faerbten
+    // Flaechen, die jetzt hell sind. Volt als Textfarbe (#ccff00) waere auf
+    // Weiss unlesbar — deshalb darf keiner der Werte mehr auftauchen.
+    for (const rest of [
+      "#ccff00",
+      "#0b0b0d",
+      "#131316",
+      "#f2f1ee",
+      "linear-gradient(135deg,#e91e8c,#c8177a)",
+    ]) {
+      expect(html, `Rest des dunklen Skins: ${rest}`).not.toContain(rest);
+    }
+    // Die branchenspezifischen Akzente bleiben — sie faerben die
+    // Website-Vorschau, nicht die Seite drumherum.
+    expect(generateLandingPageHTML(SEO_INDUSTRIES.kosmetik)).toContain(
+      "--accent:"
+    );
   });
 
   it("zeigt nur belegbare Produktfakten statt erfundener Erfolgszahlen", () => {
