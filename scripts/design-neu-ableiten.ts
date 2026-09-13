@@ -73,6 +73,8 @@ async function main(): Promise<void> {
   let unveraendert = 0;
   let ohneProfil = 0;
   const rhythmen = new Map<string, number>();
+  const ansichten = new Map<string, number>();
+  const packs = new Map<string, number>();
   const geaendert: Array<{
     id: number;
     slug: string;
@@ -100,6 +102,22 @@ async function main(): Promise<void> {
     // ab (SiteRenderer/renderSite) — die brauchen keinen Schreibvorgang. Eine
     // ausdrueckliche Revision 1 ist dagegen der alte Referenz-Renderer und
     // wird mitgezogen.
+    // Was die Seite HEUTE zeigt: das gespeicherte Profil, sonst die Ableitung
+    // beim Rendern (offset 0, leere Nachbarschaft). Danach laesst sich zaehlen,
+    // wie viele Seiten tatsaechlich gleich aussehen — die eigentliche Frage
+    // bei einem Kampagnenstapel.
+    const heute =
+      doc.designProfile ??
+      deriveArtDirectedProfile({
+        stylePackId: doc.stylePackId,
+        businessName: doc.businessName,
+        businessCategory: doc.businessCategory,
+        sections: doc.sections,
+      });
+    const ansicht = `${doc.stylePackId} · ${heute.composition}/${heute.heroLayout} · ${heute.servicesLayout}/${heute.galleryLayout}`;
+    ansichten.set(ansicht, (ansichten.get(ansicht) ?? 0) + 1);
+    packs.set(doc.stylePackId, (packs.get(doc.stylePackId) ?? 0) + 1);
+
     if (!doc.designProfile && doc.designRevision !== 1) {
       // Getrennt gezaehlt: "kein Profil gespeichert" ist etwas anderes als
       // "Profil stimmt schon". Beides braucht keinen Schreibvorgang, aber nur
@@ -166,6 +184,23 @@ async function main(): Promise<void> {
     `${ohneProfil} ohne gespeichertes Profil (leiten beim Rendern ab — alle mit demselben Grundrhythmus).`
   );
   console.log(`${unveraendert} mit Profil, das bereits stimmt.`);
+  // Die Frage hinter dem Stapel: Wie viele Seiten sehen gleich aus?
+  if (packs.size > 0) {
+    console.log(
+      `\nStyle-Packs: ${[...packs.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([p, n]) => `${p}: ${n}`)
+        .join(" · ")}`
+    );
+    console.log(
+      `So sehen die Seiten heute aus (${ansichten.size} verschiedene Gestaltungen auf ${[...ansichten.values()].reduce((a, b) => a + b, 0)} Seiten):`
+    );
+    for (const [ansicht, n] of [...ansichten.entries()].sort(
+      (a, b) => b[1] - a[1]
+    )) {
+      console.log(`  ${n}×  ${ansicht}`);
+    }
+  }
   if (rhythmen.size > 0) {
     const verteilung = [...rhythmen.entries()]
       .sort((a, b) => b[1] - a[1])
