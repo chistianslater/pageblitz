@@ -25,6 +25,15 @@
  *   npx tsx -r dotenv/config scripts/design-neu-ableiten.ts
  *   npx tsx -r dotenv/config scripts/design-neu-ableiten.ts --branche Friseur
  *   npx tsx -r dotenv/config scripts/design-neu-ableiten.ts --branche Friseur --schreiben
+ *
+ * Mit `--staffeln` zusaetzlich die Seiten ohne gespeichertes Profil verteilen
+ * (gleiche Silhouette, rotierender Rhythmus je Stadt und Branche):
+ *
+ *   npx tsx -r dotenv/config scripts/design-neu-ableiten.ts --branche Friseur --staffeln
+ *
+ * Dieses Skript schreibt KEINE Version in `website_versions`. Fuer
+ * Vorschau-Seiten vor dem Verkauf ist das in Ordnung; verkaufte Seiten fasst
+ * es ohnehin nicht an.
  */
 import { getDb, listWebsites, updateWebsite } from "../server/db";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
@@ -43,13 +52,28 @@ function arg(flag: string): string | undefined {
 }
 
 const brancheFilter = arg("--branche")?.trim().toLowerCase();
+/**
+ * `--staffeln` nimmt auch Dokumente ohne gespeichertes Profil mit.
+ *
+ * Ohne Profil leitet jede Seite beim Rendern mit Position 0 ab — neun Salons
+ * auf demselben Pack bekommen damit neunmal dieselbe Seite. Mit `--staffeln`
+ * wird je Stadt und Branche durchrotiert: gleiche Silhouette, anderer
+ * Rhythmus von Leistungen und Galerie. Das schreibt das Profil fest, wo
+ * vorher keins stand.
+ */
+const staffeln = process.argv.includes("--staffeln");
 
-/** Seiten einer Stadt+Branche bekommen verschiedene Rhythmen, wie bei der Generierung. */
+/**
+ * Rotiert wird je Stadt, Branche UND Pack. Ein Frisoerstapel verteilt sich
+ * ueber mehrere Packs (getPackPool); teilten die sich eine Reihe, bekaeme das
+ * erste Pack die ersten Rhythmen und das letzte die Reste.
+ */
 function gruppenschluessel(
   city: string | undefined,
-  kategorie: string
+  kategorie: string,
+  pack: string
 ): string {
-  return `${(city ?? "").trim().toLowerCase()}|${designIndustryKey(kategorie)}`;
+  return `${(city ?? "").trim().toLowerCase()}|${designIndustryKey(kategorie)}|${pack}`;
 }
 
 async function main(): Promise<void> {
@@ -98,10 +122,6 @@ async function main(): Promise<void> {
       continue;
     }
 
-    // Dokumente ohne gespeichertes Profil leiten beim Rendern ohnehin frisch
-    // ab (SiteRenderer/renderSite) — die brauchen keinen Schreibvorgang. Eine
-    // ausdrueckliche Revision 1 ist dagegen der alte Referenz-Renderer und
-    // wird mitgezogen.
     // Was die Seite HEUTE zeigt: das gespeicherte Profil, sonst die Ableitung
     // beim Rendern (offset 0, leere Nachbarschaft). Danach laesst sich zaehlen,
     // wie viele Seiten tatsaechlich gleich aussehen — die eigentliche Frage
@@ -118,7 +138,11 @@ async function main(): Promise<void> {
     ansichten.set(ansicht, (ansichten.get(ansicht) ?? 0) + 1);
     packs.set(doc.stylePackId, (packs.get(doc.stylePackId) ?? 0) + 1);
 
-    if (!doc.designProfile && doc.designRevision !== 1) {
+    // Dokumente ohne gespeichertes Profil leiten beim Rendern ohnehin frisch
+    // ab (SiteRenderer/renderSite) — ohne --staffeln bleiben sie unberuehrt.
+    // Eine ausdrueckliche Revision 1 ist dagegen der alte Referenz-Renderer
+    // und wird immer mitgezogen.
+    if (!doc.designProfile && doc.designRevision !== 1 && !staffeln) {
       // Getrennt gezaehlt: "kein Profil gespeichert" ist etwas anderes als
       // "Profil stimmt schon". Beides braucht keinen Schreibvorgang, aber nur
       // das erste heisst auch, dass die Seite bei jedem Aufruf denselben
@@ -128,7 +152,7 @@ async function main(): Promise<void> {
     }
 
     const stadt = doc.sections.find(s => s.type === "contact")?.city;
-    const schluessel = gruppenschluessel(stadt, kategorie);
+    const schluessel = gruppenschluessel(stadt, kategorie, doc.stylePackId);
     const occupied = belegt.get(schluessel) ?? new Set<string>();
     const offset = zaehler.get(schluessel) ?? 0;
 
@@ -180,9 +204,11 @@ async function main(): Promise<void> {
     `\n${geprueft} Vorschau-Dokumente gelesen · ${uebersprungenVerkauft} verkauft (unangetastet)` +
       (brancheFilter ? ` · ${uebersprungenFremd} andere Branche` : "")
   );
-  console.log(
-    `${ohneProfil} ohne gespeichertes Profil (leiten beim Rendern ab — alle mit demselben Grundrhythmus).`
-  );
+  if (!staffeln) {
+    console.log(
+      `${ohneProfil} ohne gespeichertes Profil (leiten beim Rendern ab — alle mit demselben Grundrhythmus). Mit --staffeln werden sie verteilt.`
+    );
+  }
   console.log(`${unveraendert} mit Profil, das bereits stimmt.`);
   // Die Frage hinter dem Stapel: Wie viele Seiten sehen gleich aus?
   if (packs.size > 0) {
