@@ -29,6 +29,30 @@ export function DesignQuickControls({
   const [open, setOpen] = useState<"accent" | "color" | "font" | null>(null);
   const [custom, setCustom] = useState(accent ?? "#536025");
   const colorTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const huelle = useRef<HTMLDivElement | null>(null);
+  /**
+   * Zumachen war die unklarste Stelle im Studio (Betreiber-Befund
+   * 2026-09-14): Wer eine Farbe oder Schrift gewählt hatte, fand keinen Weg
+   * aus der Klappe — sie schloss nur, wenn man denselben Knopf noch einmal
+   * traf, und Escape half nur, solange der Fokus drin lag. Jetzt schließt
+   * sie auch bei einem Klick daneben und bei Escape von überall; ein
+   * „Fertig" steht sichtbar darin.
+   */
+  useEffect(() => {
+    if (!open) return;
+    const danebenGeklickt = (e: PointerEvent) => {
+      if (!huelle.current?.contains(e.target as Node)) setOpen(null);
+    };
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(null);
+    };
+    document.addEventListener("pointerdown", danebenGeklickt);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", danebenGeklickt);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
   useEffect(
     () => () => {
       if (colorTimer.current) clearTimeout(colorTimer.current);
@@ -72,12 +96,7 @@ export function DesignQuickControls({
     fontPairId?: string | null;
   }) => update.mutate({ token, ...patch }, { onSuccess: onApplied });
   return (
-    <div
-      className="pb-harmony"
-      onKeyDown={e => {
-        if (e.key === "Escape") setOpen(null);
-      }}
-    >
+    <div className="pb-harmony" ref={huelle}>
       <div className="pb-harmony-triggers">
         <button
           type="button"
@@ -227,6 +246,20 @@ export function DesignQuickControls({
               ))}
             </div>
           )}
+          {/* Der Weg raus, sichtbar: Jede Auswahl ist sofort in der
+              Vorschau — hier steht nur noch, dass man fertig ist. Unten im
+              Fluss statt oben absolut: In einem <fieldset> liegt die
+              Legende ausserhalb der Padding-Box, ein absolut gesetzter
+              Knopf landet dadurch ueber den Kacheln. */}
+          <div className="pb-harmony-foot">
+            <button
+              type="button"
+              className="pb-harmony-close"
+              onClick={() => setOpen(null)}
+            >
+              Fertig
+            </button>
+          </div>
         </fieldset>
       )}
       {update.isPending && <p role="status">Deine Vorschau wird angepasst …</p>}
