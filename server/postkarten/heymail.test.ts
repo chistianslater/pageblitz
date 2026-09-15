@@ -2,7 +2,9 @@ import { describe, expect, test } from "vitest";
 import {
   anfrageKoerper,
   anschriftZerlegen,
+  mailingTitel,
   MAX_BETRIEB_ORT,
+  MAX_MAILING_NAME,
   postkartenVariablen,
   TEXT_VARIANTEN,
 } from "./heymail";
@@ -324,5 +326,48 @@ describe("anfrageKoerper — Vorschau und Versand unterscheiden sich", () => {
     // Schutz gegen einen Stapel, der versehentlich als Liste rausgeht.
     const k = anfrageKoerper("versand", "tpl", eintrag) as { mailItems: unknown[] };
     expect(k.mailItems).toHaveLength(1);
+  });
+});
+
+describe("mailingTitel — welcher Auftrag gehoert zu welchem Betrieb", () => {
+  test("Betrieb und Kurzcode, durch einen Punkt getrennt", () => {
+    expect(mailingTitel("Friseur Bocholt by Aras", "KGA5")).toBe(
+      "Friseur Bocholt by Aras · KGA5"
+    );
+  });
+
+  test("ohne Kurzcode bleibt der Betriebsname allein stehen", () => {
+    expect(mailingTitel("Haar Galerie")).toBe("Haar Galerie");
+  });
+
+  test("lange Namen werden gekuerzt, nicht abgeschnitten", () => {
+    const titel = mailingTitel("A".repeat(120), "KGA5");
+    expect(titel.length).toBe(MAX_MAILING_NAME);
+    expect(titel.endsWith("…")).toBe(true);
+  });
+});
+
+describe("anfrageKoerper — der Titel gehoert nur an den Versand", () => {
+  const eintrag = { recipient: {}, variableData: {} };
+
+  test("Versand traegt den Titel als name", () => {
+    const k = anfrageKoerper("versand", "tpl", eintrag, "Salon · AB12") as Record<
+      string,
+      unknown
+    >;
+    expect(k.name).toBe("Salon · AB12");
+  });
+
+  test("die Vorschau bleibt ohne — /preview weist unbekannte Felder ab", () => {
+    const k = anfrageKoerper("vorschau", "tpl", eintrag, "Salon · AB12") as Record<
+      string,
+      unknown
+    >;
+    expect(k.name).toBeUndefined();
+  });
+
+  test("ohne Titel steht das Feld gar nicht erst im Koerper", () => {
+    const k = anfrageKoerper("versand", "tpl", eintrag) as Record<string, unknown>;
+    expect("name" in k).toBe(false);
   });
 });

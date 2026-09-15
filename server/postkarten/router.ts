@@ -454,6 +454,9 @@ export const postkartenRouter = router({
         apiKey: heymailSchluessel(),
         ...(input.templateId ? { templateId: input.templateId } : {}),
         firma: kandidat.name,
+        // Steht als Titel des Mailings in der HeyMail-Liste — sonst heisst
+        // dort jeder der 31 Auftraege gleich.
+        kurzcode: karte.code,
         empfaenger,
         variablen,
       });

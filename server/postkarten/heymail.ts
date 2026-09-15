@@ -198,9 +198,32 @@ export type Modus = "vorschau" | "versand";
 export function anfrageKoerper(
   modus: Modus,
   templateId: string,
-  eintrag: unknown
+  eintrag: unknown,
+  name?: string
 ): Record<string, unknown> {
   return modus === "versand"
-    ? { templateId, mailItems: [eintrag] }
+    ? { templateId, mailItems: [eintrag], ...(name ? { name } : {}) }
     : { templateId, mailItem: eintrag };
+}
+
+/** Obergrenze fuer den Mailing-Titel; HeyMail nennt keine, also bleiben wir kurz. */
+export const MAX_MAILING_NAME = 80;
+
+/**
+ * Titel des Mailings in der HeyMail-Liste (Betreiber-Wunsch 2026-09-15).
+ *
+ * Bis hierher hiess dort jeder Auftrag „Mailing pageblitz master" — bei 31
+ * Karten steht dann 31-mal dasselbe untereinander und keiner weiss, welche
+ * Zeile zu welchem Betrieb gehoert. Der Kurzcode steht mit drin, weil er die
+ * Bruecke zur Auswertung ist: Er steht auf dem Papier und unter jedem Scan.
+ *
+ * Nur beim Versand mitgeschickt — `/send` nimmt `name` an, fuer `/preview`
+ * ist das ungeprueft, und die Validierung dort weist unbekannte Felder mit
+ * UNKNOWN_FIELD ab.
+ */
+export function mailingTitel(betrieb: string, kurzcode?: string): string {
+  const voll = kurzcode ? `${betrieb} · ${kurzcode}` : betrieb;
+  return voll.length <= MAX_MAILING_NAME
+    ? voll
+    : `${voll.slice(0, MAX_MAILING_NAME - 1).trimEnd()}…`;
 }

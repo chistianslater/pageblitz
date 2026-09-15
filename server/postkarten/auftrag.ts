@@ -14,6 +14,7 @@
  */
 import {
   anfrageKoerper,
+  mailingTitel,
   type Empfaenger,
   type Modus,
   type PostkartenVariablen,
@@ -22,19 +23,32 @@ import {
 const BASIS = "https://api.heymail.com/v1/mailings";
 
 /**
- * Das Motiv-Template, mit dem die Bocholt-Serie am 09.09. gedruckt wurde.
+ * Die Vorlage, die ohne ausdrueckliche Angabe benutzt wird — oder `null`.
  *
- * Es steht hier nur noch als letzter Rueckfall: Am 13.09. antwortete HeyMail
- * darauf mit `NOT_FOUND` — eine Template-ID gehoert zum Konto und kann
- * geloescht oder neu angelegt werden, eine im Code festgenagelte ID kann das
- * nicht wissen. Vorrang hat deshalb `HEYMAIL_TEMPLATE_ID` aus der Umgebung,
- * und darueber steht noch, was im Backend im Feld steht.
+ * Hier stand bis zum 15.09. eine fest eingebaute ID. Die war seit dem 13.09.
+ * im HeyMail-Konto geloescht, und weil `/send` die Vorlage erst nach der
+ * Feldpruefung nachschlaegt, kam als Antwort kein „nicht gefunden", sondern
+ * ein nacktes `500 INTERNAL` — 31-mal hintereinander, und die Suche lief
+ * tagelang in die Adressen statt in die Vorlage.
+ *
+ * Eine ID gehoert zum Konto und kann jederzeit verschwinden. Der Code kann
+ * das nicht wissen, also raet er auch nicht mehr: Ohne
+ * `HEYMAIL_TEMPLATE_ID` oder ausdrueckliche Angabe geht gar nichts raus.
  */
-export const TEMPLATE_STANDARD = "93df425c-64eb-4c13-b07b-cd54dd663301";
+export function standardTemplate(): string | null {
+  return process.env.HEYMAIL_TEMPLATE_ID?.trim() || null;
+}
 
-/** Die Vorlage, die ohne ausdrueckliche Angabe benutzt wird. */
-export function standardTemplate(): string {
-  return process.env.HEYMAIL_TEMPLATE_ID?.trim() || TEMPLATE_STANDARD;
+/**
+ * Wie lange nach einem `429` gewartet wird, bevor es der naechste Versuch
+ * probiert. HeyMail drosselt `/send` schon bei rund einem Dutzend Aufrufen
+ * kurz hintereinander (gemessen 15.09.) — und ein Stapel von 31 Karten
+ * laeuft genau da hinein.
+ */
+const WARTEN_MS = [2000, 6000, 15000];
+
+function schlafen(ms: number): Promise<void> {
+  return new Promise(a => setTimeout(a, ms));
 }
 
 export interface HeymailErgebnis {
@@ -52,41 +66,76 @@ export async function karteAnHeymail(opts: {
   templateId?: string;
   /** Firmenname in der Anschrift — steht ueber der Strasse. */
   firma: string;
+  /** Kurzcode der Karte; steht im Titel des Mailings, wenn vorhanden. */
+  kurzcode?: string;
   empfaenger: Empfaenger;
   variablen: PostkartenVariablen;
 }): Promise<HeymailErgebnis> {
   const templateId = opts.templateId?.trim() || standardTemplate();
-  const antwort = await fetch(
-    opts.modus === "versand" ? `${BASIS}/send` : `${BASIS}/preview`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${opts.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        anfrageKoerper(opts.modus, templateId, {
-          recipient: { company: opts.firma, ...opts.empfaenger },
-          variableData: opts.variablen,
-        })
-      ),
-    }
+  if (!templateId) {
+    throw new Error(
+      `Keine HeyMail-Vorlage hinterlegt. Die ID aus dem HeyMail-Konto im Feld „HeyMail-Vorlage" eintragen oder HEYMAIL_TEMPLATE_ID auf dem Server setzen.`
+    );
+  }
+  const eintrag = {
+    recipient: { company: opts.firma, ...opts.empfaenger },
+    variableData: opts.variablen,
+  };
+  const url = opts.modus === "versand" ? `${BASIS}/send` : `${BASIS}/preview`;
+  const koerper = JSON.stringify(
+    anfrageKoerper(
+      opts.modus,
+      templateId,
+      eintrag,
+      opts.modus === "versand"
+        ? mailingTitel(opts.firma, opts.kurzcode)
+        : undefined
+    )
   );
-  const text = await antwort.text();
+
+  let antwort = await heymailRuf(url, opts.apiKey, koerper);
+  // Gedrosselt heisst „gleich wieder", nicht „geht nicht". Ohne das Warten
+  // faellt mitten im Stapel eine Karte raus, die nichts falsch gemacht hat.
+  //
+  // Der zweite Versuch ist nur deshalb unbedenklich, weil HeyMail vor dem
+  // Anlegen drosselt: Die Antwort lautet „Too many send requests", nicht
+  // „schon angenommen". Wuerde dort je ein Auftrag entstehen und trotzdem
+  // 429 zurueckkommen, waere dieses Wiederholen ein doppelter Druck.
+  for (const ms of WARTEN_MS) {
+    if (antwort.status !== 429) break;
+    await schlafen(ms);
+    antwort = await heymailRuf(url, opts.apiKey, koerper);
+  }
+
   if (!antwort.ok) {
     // Der haeufigste Fehler ist kein Datenfehler, sondern eine Vorlage, die
     // es im Konto nicht (mehr) gibt. Ohne diesen Satz liest man 33-mal
     // „HTTP 404" und sucht in den Adressen.
-    if (antwort.status === 404 && /template/i.test(text)) {
-      throw new Error(
-        `HeyMail kennt die Vorlage ${templateId} nicht. Im HeyMail-Konto die Template-ID nachsehen und im Feld „HeyMail-Vorlage" eintragen (oder HEYMAIL_TEMPLATE_ID setzen).`
-      );
+    if (antwort.status === 404 && /template/i.test(antwort.text)) {
+      throw new Error(vorlageFehltText(templateId));
     }
-    throw new Error(`HeyMail HTTP ${antwort.status} — ${text.slice(0, 200)}`);
+    // Beim Versand verschweigt HeyMail genau das: `/send` prueft die Vorlage
+    // erst nach der Feldpruefung und antwortet dann mit `500 INTERNAL`
+    // (Befund 15.09.). Die Vorschau sagt es sauber und kostet nichts —
+    // also einmal nachfragen, statt den nackten 500er weiterzureichen.
+    if (antwort.status >= 500 && opts.modus === "versand") {
+      const probe = await heymailRuf(
+        `${BASIS}/preview`,
+        opts.apiKey,
+        JSON.stringify(anfrageKoerper("vorschau", templateId, eintrag))
+      );
+      if (probe.status === 404 && /template/i.test(probe.text)) {
+        throw new Error(vorlageFehltText(templateId));
+      }
+    }
+    throw new Error(
+      `HeyMail HTTP ${antwort.status} — ${antwort.text.slice(0, 200)}`
+    );
   }
+
   let daten: Record<string, string | undefined> = {};
   try {
-    daten = JSON.parse(text) as Record<string, string | undefined>;
+    daten = JSON.parse(antwort.text) as Record<string, string | undefined>;
   } catch {
     // Kein JSON: Die Antwort bleibt als Rohtext erhalten, statt hier zu
     // scheitern — beim ersten echten Versand (09.09.) war genau das der
@@ -95,6 +144,30 @@ export async function karteAnHeymail(opts: {
   return {
     pdfUrl: daten.previewUrl ?? null,
     referenz: daten.mailingId ?? daten.id ?? daten.orderId ?? null,
-    roh: text.slice(0, 400),
+    roh: antwort.text.slice(0, 400),
+  };
+}
+
+function vorlageFehltText(templateId: string): string {
+  return `HeyMail kennt die Vorlage ${templateId} nicht. Im HeyMail-Konto die Template-ID nachsehen und im Feld „HeyMail-Vorlage" eintragen (oder HEYMAIL_TEMPLATE_ID setzen).`;
+}
+
+async function heymailRuf(
+  url: string,
+  apiKey: string,
+  koerper: string
+): Promise<{ ok: boolean; status: number; text: string }> {
+  const antwort = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: koerper,
+  });
+  return {
+    ok: antwort.ok,
+    status: antwort.status,
+    text: await antwort.text(),
   };
 }

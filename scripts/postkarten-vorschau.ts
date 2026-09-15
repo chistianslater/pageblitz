@@ -12,7 +12,7 @@ import fs from "fs";
 import path from "path";
 import { storagePut } from "../server/storage";
 import { postkarteSichern, postkarteVersendet } from "../server/postkarten/db";
-import { karteAnHeymail, TEMPLATE_STANDARD } from "../server/postkarten/auftrag";
+import { karteAnHeymail } from "../server/postkarten/auftrag";
 import {
   anschriftZerlegen,
   postkartenVariablen,
@@ -34,7 +34,9 @@ function arg(flag: string): string | undefined {
 
 const csvPfad = arg("--csv");
 const bilderPfad = arg("--bilder");
-const templateId = arg("--template") ?? TEMPLATE_STANDARD;
+// Ohne --template greift HEYMAIL_TEMPLATE_ID; fehlt auch die, bricht
+// karteAnHeymail mit einem lesbaren Satz ab statt an eine tote ID zu gehen.
+const templateId = arg("--template");
 const variante = (arg("--text") ?? "ungefragt") as TextVariante;
 /**
  * Die Stadt fuer die Auswertung. Ohne sie wuerde die Postanschrift zaehlen —
@@ -132,7 +134,8 @@ async function main(): Promise<void> {
       ergebnis = await karteAnHeymail({
         modus: senden ? "versand" : "vorschau",
         apiKey: key!,
-        templateId,
+        ...(templateId ? { templateId } : {}),
+        ...(karte ? { kurzcode: karte.code } : {}),
         firma: name,
         empfaenger,
         variablen,

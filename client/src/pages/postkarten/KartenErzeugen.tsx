@@ -524,9 +524,9 @@ export default function KartenErzeugen() {
             <Input
               className="w-72"
               placeholder={
-                einstellungen
+                einstellungen?.templateId
                   ? `HeyMail-Vorlage (Standard: ${einstellungen.templateId.slice(0, 8)}…)`
-                  : "HeyMail-Vorlage"
+                  : "HeyMail-Vorlage — Pflicht, keine hinterlegt"
               }
               value={templateId}
               disabled={laeuft}
