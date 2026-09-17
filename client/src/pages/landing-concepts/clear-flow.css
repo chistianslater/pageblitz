@@ -2216,3 +2216,60 @@
     padding: 7px 11px;
   }
 }
+
+/* Sticky-Funktionsleiste (2026-09-17): Die Extras-Buttons kleben unter der
+   Navigation, solange die Feature-Buehne im Viewport ist. `top` setzt React
+   auf die gemessene Nav-Hoehe, der Sentinel steuert `.is-stuck`. */
+.cf-feature-stage {
+  position: relative;
+}
+.cf-picker-sentinel {
+  height: 1px;
+  margin-top: -1px;
+  pointer-events: none;
+}
+.cf-feature-picker-bar {
+  position: sticky;
+  z-index: 20;
+  background: #fff;
+  padding-block: 10px 0;
+  transition: box-shadow 0.25s ease;
+}
+.cf-feature-picker-bar.is-stuck {
+  box-shadow:
+    0 1px 0 #ddd9d6,
+    0 10px 24px -16px #17200b40;
+}
+.cf-feature-picker-bar .cf-feature-picker {
+  padding-bottom: 12px;
+}
+.clear-evolved .clear-features-flow .cf-feature-picker-bar + .cf-section {
+  margin-top: 13px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cf-feature-picker-bar {
+    transition: none;
+  }
+}
+@media (max-width: 680px) {
+  /* Eine Scroll-Reihe statt vier gestapelter Button-Zeilen, sonst frisst
+     die klebende Leiste ein Drittel des Handy-Viewports. */
+  .cf-feature-picker-bar .cf-feature-picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    width: 100%;
+    margin-inline: 0;
+    padding-inline: 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cf-feature-picker-bar .cf-feature-picker::-webkit-scrollbar {
+    display: none;
+  }
+  .cf-feature-picker-bar .cf-feature-picker button {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+    white-space: nowrap;
+  }
+}
