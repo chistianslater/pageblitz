@@ -10,6 +10,25 @@ import {
 } from "./heymail";
 
 describe("anschriftZerlegen (Google-Anschrift → HeyMail-Empfänger)", () => {
+  test("ein Zusatz vor der Strasse landet nicht in der Strasse", () => {
+    // Befund 17.09.: Haarem ging als Strasse „Friseurhaarem, Ludgeripl." raus.
+    expect(
+      anschriftZerlegen("Friseurhaarem, Ludgeripl. 19, 47057 Duisburg, Deutschland")
+    ).toEqual({
+      street: "Ludgeripl.",
+      houseNumber: "19",
+      zip: "47057",
+      city: "Duisburg",
+      country: "Deutschland",
+    });
+  });
+
+  test("ein Zusatz hinter der Strasse ebenso nicht", () => {
+    expect(
+      anschriftZerlegen("Hauptstraße 5, Hinterhaus, 46397 Bocholt, Deutschland")
+    ).toMatchObject({ street: "Hauptstraße", houseNumber: "5" });
+  });
+
   test("Standardfall aus der Google-Suche", () => {
     expect(anschriftZerlegen("Osterstraße 25, 46397 Bocholt, Deutschland")).toEqual({
       street: "Osterstraße",

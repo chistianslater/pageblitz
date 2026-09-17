@@ -48,9 +48,18 @@ export function anschriftZerlegen(anschrift: string): Empfaenger | null {
   const plzOrt = ortTeil.match(/^(\d{4,5})\s+(.+)$/);
   if (!plzOrt) return null;
 
-  const strasseTeil = teile.join(", ");
   // Hausnummer: Ziffer am Ende, optional mit Bereich oder Buchstabe.
-  const strasse = strasseTeil.match(/^(.*?)\s+(\d+\s*[-/]?\s*\d*\s*[a-zA-Z]?)$/);
+  const strassenMuster = /^(.*?)\s+(\d+\s*[-/]?\s*\d*\s*[a-zA-Z]?)$/;
+  // Google stellt manchmal einen Zusatz vor die Strasse — bei Haarem stand
+  // „Friseurhaarem, Ludgeripl. 19". Frueher wurden alle Teile verklebt, und
+  // auf der Karte stand „Friseurhaarem, Ludgeripl." als Strasse (17.09.).
+  // Die Strasse ist deshalb der letzte Teil mit Hausnummer; was davor
+  // steht, ist Zusatz und faellt weg — der Firmenname steht ohnehin in der
+  // Anschrift.
+  const strasse = [...teile]
+    .reverse()
+    .map(t => t.match(strassenMuster))
+    .find(Boolean);
   if (!strasse) return null;
 
   return {
