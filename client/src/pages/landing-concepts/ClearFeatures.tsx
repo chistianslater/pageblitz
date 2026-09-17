@@ -3,6 +3,7 @@ import {
   ArrowUpRight,
   Check,
   ArrowRight,
+  ArrowDown,
   MessageCircle,
   CalendarDays,
   Globe,
@@ -504,31 +505,31 @@ function FeatureCopy({ id }: { id: AddOnKey }) {
 }
 
 /**
- * Die Funktions-Buttons bleiben beim Scrollen unter der Navigation kleben,
- * solange man sich in der Feature-Bühne befindet (Betreiber-Wunsch
- * 2026-09-17: hoch- und runterscrollen, ohne für den nächsten Klick wieder
- * nach oben zu müssen). Der Sentinel liegt direkt über der Leiste; sobald er
- * unter der Nav verschwindet, ist die Leiste „stuck" und bekommt Hintergrund
- * und Schatten.
+ * Die Funktions-Buttons kleben am unteren Bildschirmrand, solange man sich
+ * in der Feature-Bühne befindet (Betreiber-Wunsch 2026-09-17: hoch- und
+ * runterscrollen, ohne für den nächsten Klick zurück zu müssen; unten statt
+ * unter der Nav, damit die Demo oben nicht abgeschnitten wird). Sticky-Bottom
+ * verlangt, dass die Leiste im Fluss am Ende der Bühne steht; der Sentinel
+ * direkt dahinter markiert diese natürliche Position. Liegt er unterhalb des
+ * Viewports, schwebt die Leiste und bekommt Hintergrund und Schatten.
  */
-function useStickyPicker(offsetPx: number) {
+function useStickyPicker() {
   const sentinel = useRef<HTMLDivElement>(null);
   const [isStuck, setIsStuck] = useState(false);
   useEffect(() => {
     const el = sentinel.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    // Der Root ist oben um die Nav-Höhe verkleinert: Der Sentinel verlässt
-    // ihn also bereits bei `offsetPx`, nicht erst bei 0.
     const observer = new IntersectionObserver(
       ([entry]) =>
         setIsStuck(
-          !entry.isIntersecting && entry.boundingClientRect.top < offsetPx
+          !entry.isIntersecting &&
+            entry.boundingClientRect.top >= window.innerHeight
         ),
-      { rootMargin: `-${offsetPx}px 0px 0px 0px`, threshold: 0 }
+      { threshold: 0 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [offsetPx]);
+  }, []);
   return { sentinel, isStuck };
 }
 
@@ -555,20 +556,24 @@ function useNavOffset() {
 export default function ClearFeatures() {
   const [activeFeature, setActiveFeature] = useState<AddOnKey>("gallery");
   const navOffset = useNavOffset();
-  const { sentinel, isStuck } = useStickyPicker(navOffset);
+  const { sentinel, isStuck } = useStickyPicker();
+  const stage = useRef<HTMLDivElement>(null);
 
   const selectFeature = (id: AddOnKey, button: HTMLButtonElement) => {
     setActiveFeature(id);
-    // Auf Mobil ist die Leiste eine Scroll-Reihe: gewählten Button einrücken.
-    button.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-    // Ist die Leiste festgeklebt, springt die neue Funktion nach oben in den
-    // Blick statt irgendwo in der Mitte der alten Scrollposition zu landen.
-    // Ziel ist der Sentinel: Er bleibt im normalen Fluss, die Leiste selbst
-    // meldet im gestickten Zustand nur die Nav-Unterkante.
-    if (isStuck && sentinel.current) {
-      const top =
-        sentinel.current.getBoundingClientRect().top + window.scrollY - navOffset;
-      window.scrollTo({ top, behavior: "smooth" });
+    // Die Leiste ist eine Scroll-Reihe: gewählten Button in die Mitte rücken.
+    // Bewusst über scrollLeft statt scrollIntoView — letzteres scrollt auch
+    // die Seite vertikal und reißt die Leiste aus dem Blick.
+    const row = button.parentElement;
+    if (row) {
+      const left = button.offsetLeft - (row.clientWidth - button.offsetWidth) / 2;
+      row.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+    }
+    // Steckt man bereits in der Bühne, springt die neue Demo an deren
+    // Anfang (direkt unter die Nav) statt mitten in die alte Scrollposition.
+    const stageTop = stage.current?.getBoundingClientRect().top;
+    if (stageTop !== undefined && stageTop < navOffset) {
+      window.scrollTo({ top: stageTop + window.scrollY - navOffset, behavior: "smooth" });
     }
   };
 
@@ -588,35 +593,11 @@ export default function ClearFeatures() {
       </div>
 
       <p className="lc-width cf-picker-hint">
-        <ArrowRight size={18} aria-hidden="true" />
-        <strong>Wähle eine Funktion. Probiere sie direkt darunter aus.</strong>
+        <ArrowDown size={18} aria-hidden="true" />
+        <strong>Wähle unten eine Funktion. Probiere sie direkt hier aus.</strong>
         <span>Optionale Extras · einzeln dazubuchbar</span>
       </p>
-      <div className="cf-feature-stage">
-        <div ref={sentinel} className="cf-picker-sentinel" aria-hidden="true" />
-        <div
-          className={`cf-feature-picker-bar${isStuck ? " is-stuck" : ""}`}
-          style={{ top: navOffset }}
-        >
-          <div
-            className="lc-width cf-feature-picker"
-            role="group"
-            aria-label="Funktion auswählen"
-          >
-            {features.map(feature => (
-              <button
-                key={feature.id}
-                type="button"
-                aria-pressed={activeFeature === feature.id}
-                aria-controls={`feature-${feature.id}`}
-                onClick={e => selectFeature(feature.id, e.currentTarget)}
-              >
-                <span>{ADDON_NAMES[feature.id]}</span>
-                <ArrowRight size={15} aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-        </div>
+      <div ref={stage} className="cf-feature-stage">
       <section
         className="cf-section flow-gallery"
         id="feature-gallery"
@@ -732,6 +713,27 @@ export default function ClearFeatures() {
           <FeatureVisual id="subpages" />
         </div>
       </section>
+        <div className={`cf-feature-picker-bar${isStuck ? " is-stuck" : ""}`}>
+          <div
+            className="lc-width cf-feature-picker"
+            role="group"
+            aria-label="Funktion auswählen"
+          >
+            {features.map(feature => (
+              <button
+                key={feature.id}
+                type="button"
+                aria-pressed={activeFeature === feature.id}
+                aria-controls={`feature-${feature.id}`}
+                onClick={e => selectFeature(feature.id, e.currentTarget)}
+              >
+                <span>{ADDON_NAMES[feature.id]}</span>
+                <ArrowRight size={15} aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </div>
+        <div ref={sentinel} className="cf-picker-sentinel" aria-hidden="true" />
       </div>
       <section className="cf-foundation">
         <div className="lc-width cf-grid">
