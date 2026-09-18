@@ -143,6 +143,72 @@ describe("generateInsertSection", () => {
     expect(mockedInvoke).toHaveBeenCalledTimes(2);
   });
 
+  test("Kennzahlen: echte Google-Bewertung steht als Fakt im Prompt", () => {
+    const withGoogle = {
+      ...doc,
+      google: { rating: 4.9, reviewCount: 239 },
+    } as WebsiteDataV2;
+    const prompt = buildInsertSectionPrompt({
+      doc: withGoogle,
+      type: "stats",
+      category: "Friseur",
+    });
+    expect(prompt).toContain("4,9");
+    expect(prompt).toContain("239");
+  });
+
+  test("Kennzahlen mit erfundenen Zahlen werden verworfen (Prod-Befund: 5/5 und 100 %)", async () => {
+    const withGoogle = {
+      ...doc,
+      google: { rating: 4.9, reviewCount: 239 },
+    } as WebsiteDataV2;
+    mockedInvoke.mockResolvedValue(
+      answer(
+        JSON.stringify({
+          section: {
+            type: "stats",
+            items: [
+              { value: "5/5", label: "Sterne" },
+              { value: "100 %", label: "Zufriedenheit" },
+            ],
+          },
+        })
+      )
+    );
+    const result = await generateInsertSection({
+      doc: withGoogle,
+      type: "stats",
+      category: "Friseur",
+    });
+    expect(result.kind).toBe("reject");
+  });
+
+  test("Kennzahlen mit belegten Zahlen gehen durch", async () => {
+    const withGoogle = {
+      ...doc,
+      google: { rating: 4.9, reviewCount: 239 },
+    } as WebsiteDataV2;
+    mockedInvoke.mockResolvedValue(
+      answer(
+        JSON.stringify({
+          section: {
+            type: "stats",
+            items: [
+              { value: "4,9 ★", label: "Google-Bewertung" },
+              { value: "239", label: "Bewertungen" },
+            ],
+          },
+        })
+      )
+    );
+    const result = await generateInsertSection({
+      doc: withGoogle,
+      type: "stats",
+      category: "Friseur",
+    });
+    expect(result.kind).toBe("section");
+  });
+
   test("Absage des Modells wird durchgereicht (z. B. keine belegbaren Zahlen)", async () => {
     mockedInvoke.mockResolvedValue(
       answer(JSON.stringify({ reject: "Dazu fehlen belegbare Zahlen." }))

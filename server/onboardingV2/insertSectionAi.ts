@@ -48,7 +48,7 @@ const SHAPES: Record<InsertableSectionType, string> = {
   usp: '{"type": "usp", "headline": "…", "items": [{"title": "…", "text": "…"}]} — 2 bis 6 items, title bis 80, text bis 240 Zeichen (text optional).',
   notice: '{"type": "notice", "text": "…"} — ein Satz, bis 240 Zeichen.',
   stats:
-    '{"type": "stats", "headline": "…", "items": [{"value": "25+", "label": "Jahre Erfahrung"}]} — 2 bis 4 items, value bis 20, label bis 80 Zeichen.',
+    '{"type": "stats", "headline": "…", "items": [{"value": "25+", "label": "Jahre Erfahrung"}]} — 2 bis 4 items, value bis 20, label bis 80 Zeichen. Jede Zahl in value muss wörtlich in den belegten Fakten oben stehen, keine Prozentwerte oder Schätzungen erfinden.',
   process:
     '{"type": "process", "headline": "…", "steps": [{"title": "…", "text": "…"}]} — 2 bis 5 steps, title bis 80, text bis 240 Zeichen (text optional).',
   quote:
@@ -83,6 +83,53 @@ function contentDigest(doc: WebsiteDataV2): string {
   return lines.join("\n");
 }
 
+/** Deutsche Zahl mit Komma („4,9"), wie sie auf der Website stünde. */
+function formatDe(value: number): string {
+  return String(value).replace(".", ",");
+}
+
+/**
+ * Belegte Fakten außerhalb der Sektionen (Prod-Befund 2026-09-18: Der Salon
+ * hat 4,9 Sterne bei 239 Bewertungen, die KI schrieb „5/5" — die Google-
+ * Werte fehlten im Kontext). Bewusst ohne „von 5": Sonst gälte „5/5" in der
+ * Zahlenprüfung als belegt.
+ */
+function factLines(doc: WebsiteDataV2): string[] {
+  if (!doc.google) return [];
+  return [
+    `Google-Bewertung: ${formatDe(doc.google.rating)} Sterne, ${doc.google.reviewCount} Bewertungen`,
+  ];
+}
+
+/** Alles, was die KI als belegt ansehen darf — Grundlage für Prompt UND Zahlenprüfung. */
+function evidenceText(doc: WebsiteDataV2): string {
+  return [...factLines(doc), contentDigest(doc)].join("\n");
+}
+
+const NUMBER = /\d+(?:[.,]\d+)?/g;
+
+function numbersIn(text: string): string[] {
+  return (text.match(NUMBER) ?? []).map(n => n.replace(",", "."));
+}
+
+/**
+ * Kennzahlen dürfen nur Zahlen enthalten, die wörtlich belegt sind — eine
+ * Anweisung im Prompt allein reichte nicht (Prod: „100 %" frei erfunden).
+ * Andere Typen tragen keine Kennzahlen und bleiben ungeprüft.
+ */
+function assertNumbersBacked(section: SectionV2, evidence: string): void {
+  if (section.type !== "stats") return;
+  const known = new Set(numbersIn(evidence));
+  for (const item of section.items) {
+    const invented = numbersIn(item.value).filter(n => !known.has(n));
+    if (invented.length > 0) {
+      throw new Error(
+        `Kennzahl ohne Beleg: „${item.value}" (${invented.join(", ")})`
+      );
+    }
+  }
+}
+
 export function buildInsertSectionPrompt(args: {
   doc: WebsiteDataV2;
   type: InsertableSectionType;
@@ -96,8 +143,8 @@ export function buildInsertSectionPrompt(args: {
     `Stil der Website: ${constitution.essence}`,
     ...(doc.tone ? [``, ...tonePromptLines(doc.tone)] : []),
     ``,
-    `Bestehende Inhalte der Website (Auszug, JSON je Sektion):`,
-    contentDigest(doc),
+    `Belegte Fakten und bestehende Inhalte der Website (Auszug, JSON je Sektion):`,
+    evidenceText(doc),
     ``,
     `Aufgabe: Schreibe nur diese eine Sektion neu — „${meta.label}“. ${meta.hint}`,
     `Die Sektion hat immer "type": "${type}". Format: ${SHAPES[type]}`,
@@ -149,7 +196,8 @@ function isLlmMockEnabled(): boolean {
 
 async function attempt(
   prompt: string,
-  type: InsertableSectionType
+  type: InsertableSectionType,
+  evidence: string
 ): Promise<InsertSectionAiResult> {
   const response = await invokeLLM({
     messages: [
@@ -178,6 +226,7 @@ async function attempt(
   if (section.type !== type) {
     throw new Error(`Falscher Sektionstyp: ${section.type} statt ${type}.`);
   }
+  assertNumbersBacked(section, evidence);
   return { kind: "section", section };
 }
 
@@ -190,10 +239,11 @@ export async function generateInsertSection(args: {
     return { kind: "section", section: mockSection(args.type) };
   }
   const prompt = buildInsertSectionPrompt(args);
+  const evidence = evidenceText(args.doc);
   for (let i = 0; i < MAX_ATTEMPTS; i++) {
     const startedAt = Date.now();
     try {
-      const result = await attempt(prompt, args.type);
+      const result = await attempt(prompt, args.type, evidence);
       console.info(
         `[onboardingV2.insertSection] ${args.type} in ${Date.now() - startedAt} ms (Versuch ${i + 1})`
       );
@@ -205,5 +255,11 @@ export async function generateInsertSection(args: {
       );
     }
   }
-  return { kind: "reject", reason: FAILED_MESSAGE };
+  return {
+    kind: "reject",
+    reason:
+      args.type === "stats"
+        ? "Für Kennzahlen fehlen belegbare Zahlen auf deiner Seite — probier lieber „Vorteile“ oder „Ablauf“."
+        : FAILED_MESSAGE,
+  };
 }
