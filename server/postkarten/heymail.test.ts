@@ -3,6 +3,7 @@ import {
   anfrageKoerper,
   anschriftZerlegen,
   mailingTitel,
+  betriebOrt,
   MAX_BETRIEB_ORT,
   MAX_MAILING_NAME,
   postkartenVariablen,
@@ -390,3 +391,52 @@ describe("anfrageKoerper — der Titel gehoert nur an den Versand", () => {
     expect("name" in k).toBe(false);
   });
 });
+
+describe("betriebOrt — höchstens 38 Zeichen, lieber kürzer als abgeschnitten", () => {
+  test("passt alles, bleibt alles", () => {
+    expect(betriebOrt("Haar Galerie", "Bocholt")).toBe("Für Haar Galerie in Bocholt");
+  });
+
+  test("zuerst fällt der Ortsteil weg", () => {
+    // Befund 17.09.: „Für La Hair by Mery in Duisburg-Meiderich/B…"
+    expect(betriebOrt("La Hair by Mery", "Duisburg-Meiderich/Beeck")).toBe(
+      "Für La Hair by Mery in Duisburg"
+    );
+    expect(betriebOrt("Friedhelm Wetzel", "Borken (Hessen)")).toBe(
+      "Für Friedhelm Wetzel in Borken"
+    );
+  });
+
+  test("dann der Ort — er steht ohnehin in der Anschrift", () => {
+    expect(betriebOrt("Hairlounge Hachtkemper GmbH", "Bocholt")).toBe(
+      "Für Hairlounge Hachtkemper GmbH"
+    );
+  });
+
+  test("nur ein zu langer Name selbst wird gekürzt", () => {
+    const k = betriebOrt("Hair und Cino Inh. Tanja Borghorst Friseure", "Velen");
+    expect(k.length).toBe(MAX_BETRIEB_ORT);
+    expect(k).toMatch(/…$/);
+  });
+
+  test("die zwölf Umbrüche vom 17.09. passen jetzt alle", () => {
+    const faelle: [string, string][] = [
+      ["Hairlounge Hachtkemper GmbH", "Bocholt"],
+      ["Infinity coiffeur & Barbier", "Bocholt"],
+      ["Friseursalon ByMemo Bocholt", "Bocholt"],
+      ["Hair und Cino Inh. Tanja Borghorst", "Velen"],
+      ["Cevin Dufen hair & make up artist", "Duisburg"],
+      ["Herren Salon MadeMan Friseur", "Duisburg"],
+      ["Friseur Salon Me-Ra Damen & Herren", "Duisburg"],
+      ["La Hair by Mery", "Duisburg-Meiderich/Beeck"],
+      ["Haarstudio Haut und Haar", "Duisburg-Hamborn"],
+      ["Iris Klautke Friseursalon", "Duisburg-Rheinhausen"],
+      ["Friedhelm Wetzel Friseursalon", "Borken (Hessen)"],
+      ["Favori Friseur - Brazilian Waxing", "Duisburg"],
+    ];
+    for (const [name, stadt] of faelle) {
+      expect(betriebOrt(name, stadt).length).toBeLessThanOrEqual(MAX_BETRIEB_ORT);
+    }
+  });
+});
+

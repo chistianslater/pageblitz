@@ -11,8 +11,34 @@
  *              sein. Der Bildserver ist bei HeyMail freigeschaltet.
  */
 
-/** Kopfzeile der Karte; darüber bricht die Zeile im Layout um. */
-export const MAX_BETRIEB_ORT = 44;
+/**
+ * Kopfzeile der Karte; darüber bricht die Zeile im Layout um.
+ * Vorgabe von HeyMail (Robin, 2026-09-18) nach der Druckprüfung: 44 war
+ * zu viel, zwölf der 32 Karten vom 17.09. brachen um.
+ */
+export const MAX_BETRIEB_ORT = 38;
+
+/** „Duisburg-Hamborn", „Borken (Hessen)" → „Duisburg", „Borken". */
+function stadtKern(stadt: string): string {
+  return stadt.split(/\s*[-/(]/)[0].trim() || stadt;
+}
+
+/**
+ * Kopfzeile in abnehmender Ausführlichkeit: erst ohne Ortsteil, dann ohne
+ * Ort — der steht ohnehin in der Anschrift. Abgeschnitten wird nur, wenn
+ * selbst der Betriebsname allein zu lang ist; „in Du…" auf Papier sah am
+ * 17.09. nach Fehler aus, nicht nach Absicht.
+ */
+export function betriebOrt(name: string, stadt: string): string {
+  const kandidaten = [
+    `Für ${name} in ${stadt}`,
+    `Für ${name} in ${stadtKern(stadt)}`,
+    `Für ${name}`,
+  ];
+  const passend = kandidaten.find(k => k.length <= MAX_BETRIEB_ORT);
+  if (passend) return passend;
+  return `${kandidaten[2].slice(0, MAX_BETRIEB_ORT - 1).trimEnd()}…`;
+}
 
 /** Ohne Schema, weil das Template `https://{{...}}` bereits mitbringt. */
 const KURZ_BASIS = "pageblitz.de";
@@ -172,11 +198,7 @@ export function postkartenVariablen(
 
   // Ohne Artikel: „Für die Manfred Wagner" war bei Personennamen falsch,
   // „Für Manfred Wagner" und „Für Haar Galerie" stimmen beide.
-  const voll = `Für ${betrieb.name} in ${betrieb.stadt}`;
-  const betrieb_ort =
-    voll.length <= MAX_BETRIEB_ORT
-      ? voll
-      : `${voll.slice(0, MAX_BETRIEB_ORT - 1).trimEnd()}…`;
+  const betrieb_ort = betriebOrt(betrieb.name, betrieb.stadt);
 
   return {
     ...text,
