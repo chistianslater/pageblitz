@@ -9,6 +9,19 @@ export interface DesignDirection {
   essence: string;
 }
 
+/**
+ * Intro-Overlay (2026-09-18, Betreiber-Wunsch): dunkle Bühne mit gestaffeltem
+ * Text vor der Design-Auswahl. Einmal pro Browser-Sitzung und Vorschau —
+ * ein Reload soll den Kunden nicht erneut ausbremsen.
+ */
+export function introStorageKey(token: string): string {
+  return `pb-splash-intro-done:${token}`;
+}
+
+export function shouldShowIntro(stored: string | null): boolean {
+  return stored === null;
+}
+
 /** Höchstens so viele Richtungen stehen gleichzeitig zur Wahl. */
 export const MAX_DIRECTIONS = 3;
 

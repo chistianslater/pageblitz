@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { neighbourOf, orderDirections } from "./designSplashLogic";
+import {
+  introStorageKey,
+  neighbourOf,
+  orderDirections,
+  shouldShowIntro,
+} from "./designSplashLogic";
 
 const base = [
   { id: "werkbank", name: "Werkbank", essence: "robust" },
@@ -19,6 +24,16 @@ describe("orderDirections", () => {
       essence: "genussvoll",
     }));
     expect(result.map(d => d.id)).toEqual(["gusto", "werkbank", "patina"]);
+  });
+});
+
+describe("Intro-Overlay (2026-09-18)", () => {
+  test("Schlüssel ist pro Vorschau-Token", () => {
+    expect(introStorageKey("a")).not.toBe(introStorageKey("b"));
+  });
+  test("zeigt sich nur, solange es in dieser Sitzung noch nicht weggeklickt wurde", () => {
+    expect(shouldShowIntro(null)).toBe(true);
+    expect(shouldShowIntro("1")).toBe(false);
   });
 });
 

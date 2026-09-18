@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
@@ -6,7 +6,29 @@ import type { PackId } from "@shared/siteContract/types";
 import { usePreviewViewport } from "./usePreviewViewport";
 import { PreviewFrame, buildPreviewSrc } from "./PreviewFrame";
 import { DesignQuickControls } from "./DesignQuickControls";
-import { neighbourOf, orderDirections } from "./designSplashLogic";
+import {
+  introStorageKey,
+  neighbourOf,
+  orderDirections,
+  shouldShowIntro,
+} from "./designSplashLogic";
+import { SplashIntro } from "./SplashIntro";
+
+function readSession(key: string): string | null {
+  try {
+    return window.sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeSession(key: string): void {
+  try {
+    window.sessionStorage.setItem(key, "1");
+  } catch {
+    // Ohne Storage erscheint das Intro beim Reload eben nochmal.
+  }
+}
 
 interface Candidate {
   id: PackId;
@@ -82,6 +104,14 @@ export function DesignSplash({
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right"
   );
+  const introKey = introStorageKey(token);
+  const [introOpen, setIntroOpen] = useState(() =>
+    shouldShowIntro(readSession(introKey))
+  );
+  const dismissIntro = useCallback(() => {
+    writeSession(introKey);
+    setIntroOpen(false);
+  }, [introKey]);
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
@@ -163,19 +193,25 @@ export function DesignSplash({
     );
 
   return (
-    <section className="pb-studio pb-studio-gen pb-studio-gen--dark pb-design-splash">
-      <div className="pb-design-splash-inner">
+    <section
+      className="pb-studio pb-studio-gen pb-studio-gen--dark pb-design-splash"
+      data-intro={introOpen}
+    >
+      {introOpen && (
+        <SplashIntro businessName={businessName} onDismiss={dismissIntro} />
+      )}
+      <div className="pb-design-splash-inner" aria-hidden={introOpen}>
         <header className="pb-design-splash-head">
           <div>
             <p className="pb-studio-kicker">Deine Website ist fertig</p>
-            <h1 className="pb-studio-title">
+            {/* Die große Frage stellt das Intro-Overlay; hier bleibt der
+                Kopf bewusst flach, damit die drei Vorschauen höher rücken. */}
+            <h1 className="pb-studio-title pb-design-splash-title">
               Welche Richtung passt zu {businessName}?
             </h1>
             <p>
-              Links und rechts siehst du Alternativen — jede mit deinen
-              Inhalten. Farbe, Schrift und alle Texte passt du gleich im
-              Studio an. Nichts ist endgültig, auch das Design kannst du
-              später noch wechseln.
+              Links und rechts: Alternativen mit deinen Inhalten. Farbe, Schrift
+              und Texte passt du gleich im Studio an — nichts ist endgültig.
             </p>
           </div>
           <div className="pb-studio-seg" aria-label="Gerät">

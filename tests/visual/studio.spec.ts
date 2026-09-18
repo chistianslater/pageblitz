@@ -130,6 +130,9 @@ test.describe("Studio", () => {
         // Einmalige Studio-Tour (2026-09-18) ebenfalls aus: Ihre Karte
         // liegt fixed über der Bühne und würde Klicks abfangen.
         window.localStorage.setItem(`pb-studio-tour-done:${m[1]}`, "1");
+        // Intro-Overlay des Design-Splashs (2026-09-18) aus — es liegt
+        // modal über der Auswahl, bis „Jetzt auswählen" geklickt wird.
+        window.sessionStorage.setItem(`pb-splash-intro-done:${m[1]}`, "1");
       }
     });
     // Reveal-Script (siteEnhancer.ts) in den Vorschau-/Thumbnail-iframes
