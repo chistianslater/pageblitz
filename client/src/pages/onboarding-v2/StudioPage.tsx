@@ -87,10 +87,7 @@ export default function StudioPage({ token }: { token: string }) {
   // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
   // Query-Parameter bleiben erhalten (studioUrl.withStudioParams). Extra-Klick
   // (Galerie, Speisekarte, …) setzt `?extra=` und öffnet das Inhaltspanel.
-  const setActiveId = (
-    id: RailPanel | null,
-    extra: AddOnKey | null = null
-  ) => {
+  const setActiveId = (id: RailPanel | null, extra: AddOnKey | null = null) => {
     setAddonFocus(extra);
     setPhotoFocus(null);
     setActiveIdState(id);
@@ -783,7 +780,10 @@ export default function StudioPage({ token }: { token: string }) {
             </button>
           </div>
           <div className="pb-studio-toolbar">
-            <div className="pb-studio-seg pb-studio-seg--even" aria-label="Gerät">
+            <div
+              className="pb-studio-seg pb-studio-seg--even"
+              aria-label="Gerät"
+            >
               <button
                 type="button"
                 aria-pressed={device === "desktop"}
@@ -838,13 +838,9 @@ export default function StudioPage({ token }: { token: string }) {
               Minute. Die Sektion erscheint an ihrer Stelle in der Vorschau.
             </p>
           )}
-          {previewSlug === null && (
-            <p className="pb-studio-inline-hint">
-              Tipp: Texte kannst du direkt anklicken. Der Knopf „Layout“ am
-              rechten Rand jeder Sektion zeigt Varianten — Bild links, rechts
-              oder zentriert.
-            </p>
-          )}
+          {/* Tipp-Zeile entfernt (Betreiber-Feedback 2026-09-18): Der beschriftete
+              „Layout"-Knopf und die Studio-Tour erklären das — die Vorschau
+              bekommt die Höhe. */}
           {inlineUpdateText.error && (
             <p role="alert" className="pb-studio-inline-error">
               Änderung konnte nicht gespeichert werden:{" "}

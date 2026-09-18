@@ -216,8 +216,7 @@ export function deriveStepperItems(
   const steps: WizardStep[] = [...WIZARD_PANEL_STEPS, "publish"];
   return steps.map((id, index) => {
     const done =
-      id !== "publish" &&
-      items.find(item => item.id === id)?.status === "done";
+      id !== "publish" && items.find(item => item.id === id)?.status === "done";
     return {
       id,
       label: STEPPER_LABELS[id],
@@ -253,9 +252,7 @@ export function nextWizardStep(
   // Fallback darf genau dieser Schritt nicht erneut gewählt werden — sonst
   // braucht „Speichern & weiter" einen zweiten Klick (besonders sichtbar bei
   // Rechtliches, wenn Extras bereits geprüft sind).
-  const firstOpen = WIZARD_PANEL_STEPS.find(
-    id => id !== current && isOpen(id)
-  );
+  const firstOpen = WIZARD_PANEL_STEPS.find(id => id !== current && isOpen(id));
   return firstOpen ?? "publish";
 }
 
