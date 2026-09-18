@@ -62,6 +62,29 @@ export interface Size {
 
 /** Abstand der Karte zum Fensterrand und zum Ziel. */
 const TOUR_GAP = 16;
+/** Luft zwischen Ziel und Spotlight-Rahmen bzw. Mindestabstand zum Fensterrand. */
+const SPOTLIGHT_PAD = 8;
+
+/**
+ * Ausschnitt, der beim Abdunkeln frei bleibt (Betreiber-Feedback
+ * 2026-09-18: Ziele stärker hervorheben). Etwas größer als das Ziel, aber nie
+ * über den Fensterrand — sonst verschwindet der Volt-Rahmen z. B. bei der
+ * Rail, die die volle Höhe einnimmt. `null` = kein Ziel, alles abdunkeln.
+ */
+export function spotlightRect(target: Rect | null, viewport: Size): Rect | null {
+  if (!target) return null;
+  const left = Math.max(SPOTLIGHT_PAD, target.left - SPOTLIGHT_PAD);
+  const top = Math.max(SPOTLIGHT_PAD, target.top - SPOTLIGHT_PAD);
+  const right = Math.min(
+    viewport.width - SPOTLIGHT_PAD,
+    target.left + target.width + SPOTLIGHT_PAD
+  );
+  const bottom = Math.min(
+    viewport.height - SPOTLIGHT_PAD,
+    target.top + target.height + SPOTLIGHT_PAD
+  );
+  return { left, top, width: right - left, height: bottom - top };
+}
 
 /**
  * Position der Tour-Karte: bevorzugt rechts neben dem Ziel (die Rail liegt

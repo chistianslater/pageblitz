@@ -3,6 +3,7 @@ import {
   STUDIO_TOUR_STEPS,
   clampTourCard,
   shouldStartTour,
+  spotlightRect,
   tourStorageKey,
 } from "./studioTourLogic";
 
@@ -44,6 +45,25 @@ describe("Studio-Tour (Test-Feedback 2026-09-18)", () => {
     expect(pos.top + card.height).toBeLessThanOrEqual(viewport.height - 16);
     expect(pos.left).toBeGreaterThanOrEqual(16);
     expect(pos.top).toBeGreaterThanOrEqual(16);
+  });
+
+  test("Spotlight umrahmt das Ziel mit Luft, bleibt aber im Fenster", () => {
+    const viewport = { width: 1200, height: 800 };
+    expect(
+      spotlightRect({ left: 100, top: 100, width: 300, height: 200 }, viewport)
+    ).toEqual({ left: 92, top: 92, width: 316, height: 216 });
+    // Ziel füllt die ganze Höhe (Rail): Rahmen wird auf 8px Rand begrenzt.
+    const full = spotlightRect(
+      { left: 0, top: 0, width: 420, height: 800 },
+      viewport
+    );
+    expect(full?.left).toBe(8);
+    expect(full?.top).toBe(8);
+    expect((full?.top ?? 0) + (full?.height ?? 0)).toBe(792);
+  });
+
+  test("ohne Ziel gibt es keinen Spotlight (Vollabdunkelung)", () => {
+    expect(spotlightRect(null, { width: 1200, height: 800 })).toBeNull();
   });
 
   test("ohne Ziel wird die Karte zentriert", () => {

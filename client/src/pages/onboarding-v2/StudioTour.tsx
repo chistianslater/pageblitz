@@ -3,6 +3,7 @@ import {
   STUDIO_TOUR_STEPS,
   clampTourCard,
   shouldStartTour,
+  spotlightRect,
   tourStorageKey,
   type Rect,
 } from "./studioTourLogic";
@@ -49,9 +50,13 @@ function anchorRect(anchor: string | null): Rect | null {
 /**
  * Einmalige Tour beim ersten Studio-Besuch pro Vorschau (Test-Feedback
  * 2026-09-18). Vier Karten: Schritte links, Vorschau mit Layout-Varianten,
- * KI-Assistent, Kauf erst zum Schluss. Die Karte legt sich neben das Ziel
- * und hebt es per `data-tour-active` hervor; ist das Ziel nicht sichtbar
- * (Mobil zeigt Rail ODER Vorschau), steht sie mittig.
+ * KI-Assistent, Kauf erst zum Schluss.
+ *
+ * Seit dem Betreiber-Feedback am selben Tag dunkelt ein Spotlight alles
+ * außer dem jeweiligen Ziel ab; der Volt-Rahmen gleitet von Schritt zu
+ * Schritt. Ist das Ziel nicht sichtbar (Mobil zeigt Rail ODER Vorschau) oder
+ * gibt es keins, wird das ganze Fenster abgedunkelt und die Karte steht
+ * mittig.
  */
 export function StudioTour({ token, status }: StudioTourProps) {
   const key = tourStorageKey(token);
@@ -63,36 +68,35 @@ export function StudioTour({ token, status }: StudioTourProps) {
     left: 16,
     top: 16,
   });
+  const [spot, setSpot] = useState<Rect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const step = STUDIO_TOUR_STEPS[index] ?? null;
 
+  // Spotlight und Karte gemeinsam platzieren: Die Karte legt sich neben den
+  // (etwas größeren) Spotlight-Rahmen, nicht neben das nackte Ziel.
   useLayoutEffect(() => {
     if (!open || !step) return;
     const place = () => {
       const card = cardRef.current;
       if (!card) return;
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const nextSpot = spotlightRect(anchorRect(step.anchor), viewport);
+      setSpot(nextSpot);
       setPosition(
         clampTourCard(
-          anchorRect(step.anchor),
+          nextSpot,
           { width: card.offsetWidth, height: card.offsetHeight },
-          { width: window.innerWidth, height: window.innerHeight }
+          viewport
         )
       );
     };
     place();
     window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
-  }, [open, step]);
-
-  // Ziel markieren — Attribut statt React-State, die Ziele liegen außerhalb
-  // dieser Komponente.
-  useEffect(() => {
-    if (!open || !step?.anchor) return;
-    const element = document.querySelector<HTMLElement>(
-      `[data-tour="${step.anchor}"]`
-    );
-    element?.setAttribute("data-tour-active", "true");
-    return () => element?.removeAttribute("data-tour-active");
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
   }, [open, step]);
 
   useEffect(() => {
@@ -107,42 +111,56 @@ export function StudioTour({ token, status }: StudioTourProps) {
     setOpen(false);
   };
   const last = index === STUDIO_TOUR_STEPS.length - 1;
+  const spotStyle = spot
+    ? { left: spot.left, top: spot.top, width: spot.width, height: spot.height }
+    : undefined;
 
   return (
-    <div
-      ref={cardRef}
-      className="pb-studio-tour"
-      role="dialog"
-      aria-modal="false"
-      aria-labelledby="pb-studio-tour-title"
-      tabIndex={-1}
-      style={{ left: position.left, top: position.top }}
-      onKeyDown={event => {
-        if (event.key === "Escape") finish();
-      }}
-    >
-      <p className="pb-studio-kicker">
-        Kurze Einführung · {index + 1} von {STUDIO_TOUR_STEPS.length}
-      </p>
-      <h2 id="pb-studio-tour-title">{step.title}</h2>
-      <p>{step.body}</p>
-      <div className="pb-studio-tour-actions">
-        <button
-          type="button"
-          className="pb-studio-btn"
-          data-variant="ghost"
-          onClick={finish}
-        >
-          Überspringen
-        </button>
-        <button
-          type="button"
-          className="pb-studio-btn"
-          onClick={() => (last ? finish() : setIndex(index + 1))}
-        >
-          {last ? "Los geht's" : "Weiter"}
-        </button>
+    <>
+      {/* Abdunkelung mit Aussparung: ein Rahmen, dessen großer Schatten den
+          Rest des Fensters deckt. Klicks in den dunklen Bereich beenden die
+          Tour nicht versehentlich — sie gehen ins Leere. */}
+      <div
+        className="pb-studio-tour-dim"
+        data-full={spot === null}
+        aria-hidden="true"
+        style={spotStyle}
+      />
+      <div
+        ref={cardRef}
+        className="pb-studio-tour"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pb-studio-tour-title"
+        tabIndex={-1}
+        style={{ left: position.left, top: position.top }}
+        onKeyDown={event => {
+          if (event.key === "Escape") finish();
+        }}
+      >
+        <p className="pb-studio-kicker">
+          Kurze Einführung · {index + 1} von {STUDIO_TOUR_STEPS.length}
+        </p>
+        <h2 id="pb-studio-tour-title">{step.title}</h2>
+        <p>{step.body}</p>
+        <div className="pb-studio-tour-actions">
+          <button
+            type="button"
+            className="pb-studio-btn"
+            data-variant="ghost"
+            onClick={finish}
+          >
+            Überspringen
+          </button>
+          <button
+            type="button"
+            className="pb-studio-btn"
+            onClick={() => (last ? finish() : setIndex(index + 1))}
+          >
+            {last ? "Los geht's" : "Weiter"}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
