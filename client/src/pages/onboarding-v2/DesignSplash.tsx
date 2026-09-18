@@ -14,6 +14,9 @@ import {
 } from "./designSplashLogic";
 import { SplashIntro } from "./SplashIntro";
 
+/** Dauer der Overlay-Ausblendung — muss zur CSS-Animation pb-splash-intro-out passen. */
+const INTRO_EXIT_MS = 700;
+
 function readSession(key: string): string | null {
   try {
     return window.sessionStorage.getItem(key);
@@ -108,9 +111,21 @@ export function DesignSplash({
   const [introOpen, setIntroOpen] = useState(() =>
     shouldShowIntro(readSession(introKey))
   );
+  // Ausblenden in zwei Schritten: erst die Exit-Animation (CSS,
+  // data-leaving), dann aus dem Baum — sonst würde das Overlay hart
+  // verschwinden. Bei reduced-motion sofort weg.
+  const [introLeaving, setIntroLeaving] = useState(false);
   const dismissIntro = useCallback(() => {
     writeSession(introKey);
-    setIntroOpen(false);
+    const reduced = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduced) {
+      setIntroOpen(false);
+      return;
+    }
+    setIntroLeaving(true);
+    window.setTimeout(() => setIntroOpen(false), INTRO_EXIT_MS);
   }, [introKey]);
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
@@ -198,7 +213,11 @@ export function DesignSplash({
       data-intro={introOpen}
     >
       {introOpen && (
-        <SplashIntro businessName={businessName} onDismiss={dismissIntro} />
+        <SplashIntro
+          businessName={businessName}
+          leaving={introLeaving}
+          onDismiss={dismissIntro}
+        />
       )}
       <div className="pb-design-splash-inner" aria-hidden={introOpen}>
         <header className="pb-design-splash-head">

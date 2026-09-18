@@ -724,10 +724,19 @@
   display: grid;
   place-items: center;
   padding: clamp(1.5rem, 5vw, 4rem);
-  background: #0b0b0d;
+  /* Halbtransparent + Blur: Die drei Vorschauen schimmern durch, das
+     Versprechen „ist fertig" hat sofort etwas Sichtbares hinter sich. */
+  background: rgba(11, 11, 13, 0.8);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
   color: #f5f2ea;
   cursor: pointer;
   overflow: hidden;
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .pb-splash-intro {
+    background: rgba(11, 11, 13, 0.92);
+  }
 }
 .pb-splash-intro-glow {
   position: absolute;
@@ -793,32 +802,51 @@
   outline-offset: 4px;
 }
 /* Solange das Intro liegt, bleibt die Auswahl dahinter ruhig — die
-   Vorschauen laden trotzdem schon. */
+   Vorschauen laden trotzdem schon und schimmern durch. */
 .pb-design-splash[data-intro="true"] .pb-design-splash-inner {
   pointer-events: none;
 }
 @media (prefers-reduced-motion: no-preference) {
   .pb-splash-intro {
-    animation: pb-splash-intro-in 320ms ease-out both;
+    animation: pb-splash-intro-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .pb-splash-intro-line,
   .pb-splash-intro-cta {
     opacity: 0;
-    transform: translateY(14px);
-    animation: pb-splash-intro-rise 640ms cubic-bezier(0.16, 1, 0.3, 1)
+    transform: translateY(22px);
+    filter: blur(6px);
+    animation: pb-splash-intro-rise 1100ms cubic-bezier(0.22, 1, 0.36, 1)
       forwards;
   }
   .pb-splash-intro [data-step="1"] {
-    animation-delay: 0.3s;
+    animation-delay: 0.45s;
   }
   .pb-splash-intro [data-step="2"] {
-    animation-delay: 1.4s;
+    animation-delay: 1.6s;
   }
   .pb-splash-intro [data-step="3"] {
-    animation-delay: 2.4s;
+    animation-delay: 2.8s;
   }
   .pb-splash-intro-glow {
-    animation: pb-splash-intro-glow 3.2s ease-in-out infinite alternate;
+    animation: pb-splash-intro-glow 4.5s ease-in-out infinite alternate;
+  }
+  /* Ausblenden: Overlay hebt sich leicht und löst sich auf, der Inhalt
+     dahinter wächst sanft von 0.97 auf 1 (DesignSplash wartet die Dauer ab). */
+  .pb-splash-intro[data-leaving="true"] {
+    animation: pb-splash-intro-out 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    pointer-events: none;
+  }
+  .pb-splash-intro[data-leaving="true"] .pb-splash-intro-line,
+  .pb-splash-intro[data-leaving="true"] .pb-splash-intro-cta {
+    animation: pb-splash-intro-lift 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .pb-design-splash[data-intro="true"] .pb-design-splash-inner {
+    transform: scale(0.97);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pb-design-splash[data-intro="true"]:has(.pb-splash-intro[data-leaving="true"])
+    .pb-design-splash-inner {
+    transform: none;
   }
   @keyframes pb-splash-intro-in {
     from {
@@ -832,15 +860,30 @@
     to {
       opacity: 1;
       transform: none;
+      filter: blur(0);
+    }
+  }
+  @keyframes pb-splash-intro-out {
+    to {
+      opacity: 0;
+      -webkit-backdrop-filter: blur(0) saturate(1);
+      backdrop-filter: blur(0) saturate(1);
+    }
+  }
+  @keyframes pb-splash-intro-lift {
+    to {
+      opacity: 0;
+      transform: translateY(-16px);
+      filter: blur(4px);
     }
   }
   @keyframes pb-splash-intro-glow {
     from {
       transform: translate(-50%, -50%) scale(0.9);
-      opacity: 0.8;
+      opacity: 0.7;
     }
     to {
-      transform: translate(-50%, -50%) scale(1.08);
+      transform: translate(-50%, -50%) scale(1.1);
       opacity: 1;
     }
   }

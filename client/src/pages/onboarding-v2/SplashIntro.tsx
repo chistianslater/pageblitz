@@ -3,6 +3,8 @@ import { ArrowRight } from "lucide-react";
 
 interface SplashIntroProps {
   businessName: string;
+  /** Ausblend-Phase läuft (DesignSplash hält das Overlay so lange im Baum). */
+  leaving: boolean;
   onDismiss: () => void;
 }
 
@@ -13,7 +15,11 @@ interface SplashIntroProps {
  * bei prefers-reduced-motion steht alles sofort. Klick irgendwohin oder
  * Esc schließt ebenfalls — niemand soll warten müssen.
  */
-export function SplashIntro({ businessName, onDismiss }: SplashIntroProps) {
+export function SplashIntro({
+  businessName,
+  leaving,
+  onDismiss,
+}: SplashIntroProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -28,6 +34,7 @@ export function SplashIntro({ businessName, onDismiss }: SplashIntroProps) {
   return (
     <div
       className="pb-splash-intro"
+      data-leaving={leaving}
       role="dialog"
       aria-modal="true"
       aria-labelledby="pb-splash-intro-title"
