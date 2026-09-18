@@ -2,24 +2,28 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import { getBusinessById } from "../db";
-import { SECTION_TYPES } from "../../shared/siteContract/schema";
+import {
+  SECTION_TYPES,
+  WebsiteDataV2Schema,
+} from "../../shared/siteContract/schema";
 import {
   INSERT_META,
   INSERTABLE_SECTION_TYPES,
-  insertSectionMessage,
   orderWithInsert,
 } from "../../shared/onboardingV2/sectionInsert";
-import { assertAiEditQuota, proposeAiEdit } from "./aiEdit";
+import { assertAiEditQuota } from "./aiEdit";
+import { generateInsertSection } from "./insertSectionAi";
 import { applyStructure } from "./applyPatch";
 import { loadStudioWebsite } from "./ownership";
 import { persistDoc, requireDoc, tokenInput } from "./state";
 
 /**
  * Plus-Zonen (2026-09-03): Sektion an einer bestimmten Stelle der Startseite
- * einfügen. Inhalt schreibt die KI über den Vorschlags-Pfad des Chats
- * (gleiche Whitelist, Fakten-Restauration, Retry); die Position setzt der
- * Server deterministisch über `sectionOrder`. Wird sofort persistiert —
- * Rücknahme über den Verlauf (Rückgängig-Knopf).
+ * einfügen. Seit 2026-09-18 schreibt die KI nur die eine neue Sektion
+ * (insertSectionAi.ts) statt über den Chat die ganze Website neu auszugeben —
+ * vorher dauerte das bis zu Minuten. Die Position setzt der Server
+ * deterministisch über `sectionOrder`. Wird sofort persistiert — Rücknahme
+ * über den Verlauf (Rückgängig-Knopf).
  */
 export const insertProcedures = {
   insertSection: publicProcedure
@@ -48,25 +52,19 @@ export const insertProcedures = {
       assertAiEditQuota(loaded.website.id);
       const business = await getBusinessById(loaded.website.businessId);
       const category = doc.businessCategory ?? business?.category ?? "";
-      const result = await proposeAiEdit({
+      const result = await generateInsertSection({
         doc,
-        message: insertSectionMessage(input.type, input.afterType),
+        type: input.type,
         category,
       });
       if (result.kind === "reject") {
         return { kind: "reject" as const, reason: result.reason };
       }
-      if (
-        result.kind !== "content" ||
-        !result.next.sections.some(s => s.type === input.type)
-      ) {
-        return {
-          kind: "reject" as const,
-          reason:
-            "Die Sektion konnte gerade nicht geschrieben werden — bitte noch einmal versuchen.",
-        };
-      }
-      const next = applyStructure(result.next, { sectionOrder: order });
+      const withSection = WebsiteDataV2Schema.parse({
+        ...doc,
+        sections: [...doc.sections, result.section],
+      });
+      const next = applyStructure(withSection, { sectionOrder: order });
       const state = await persistDoc(input.token, loaded, next, {
         trigger: "chat",
         label: `Sektion „${INSERT_META[input.type].label}“ eingefügt`,

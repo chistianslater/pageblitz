@@ -95,13 +95,6 @@ export function orderWithInsert(
   return [...base.slice(0, idx + 1), type, ...base.slice(idx + 1)];
 }
 
-/** Fester Wunsch für den Vorschlags-Pfad des KI-Chats. */
-export function insertSectionMessage(
-  type: InsertableSectionType,
-  afterType: SectionType
-): string {
-  return `Füge eine neue Sektion vom Typ "${type}" (${INSERT_META[type].label}) direkt nach der Sektion "${afterType}" (${SECTION_LABELS[afterType]}) ein. ${INSERT_META[type].hint} Nutze nur Inhalte, die aus dem bestehenden Text belegt sind — erfinde keine Zahlen, Namen oder Fakten. Alle anderen Sektionen bleiben unverändert.`;
-}
 
 /**
  * Kostenpflichtige Extras, die selbst eine Sektion sind (2026-09-04,

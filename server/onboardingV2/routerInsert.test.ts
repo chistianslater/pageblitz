@@ -25,16 +25,16 @@ vi.mock("../db", async importOriginal => {
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
-vi.mock("./aiEdit", async importOriginal => {
-  const actual = await importOriginal<typeof import("./aiEdit")>();
-  return { ...actual, proposeAiEdit: vi.fn() };
+vi.mock("./insertSectionAi", async importOriginal => {
+  const actual = await importOriginal<typeof import("./insertSectionAi")>();
+  return { ...actual, generateInsertSection: vi.fn() };
 });
 
 import { appRouter } from "../routers";
 import * as db from "../db";
-import { proposeAiEdit } from "./aiEdit";
+import { generateInsertSection } from "./insertSectionAi";
 const mockedDb = vi.mocked(db);
-const mockedProposeAiEdit = vi.mocked(proposeAiEdit);
+const mockedGenerate = vi.mocked(generateInsertSection);
 
 const ctx = (): TrpcContext => ({
   user: null,
@@ -90,10 +90,9 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
   };
 
   test("fügt die Sektion sofort ein, setzt die Position hinter die Ziel-Sektion und schreibt einen Verlaufsstand", async () => {
-    mockedProposeAiEdit.mockResolvedValue({
-      kind: "content",
-      next: { ...v2, sections: [...v2.sections, processSection] } as any,
-      diff: [],
+    mockedGenerate.mockResolvedValue({
+      kind: "section",
+      section: processSection as any,
     });
     const result = await caller().onboardingV2.insertSection({
       token: "tok",
@@ -108,11 +107,9 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
       "process",
       "contact",
     ]);
-    expect(mockedProposeAiEdit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        category: "Tischler",
-        message: expect.stringMatching(/Ablauf/),
-      })
+    // Schneller Pfad (2026-09-18): nur die eine Sektion wird angefragt.
+    expect(mockedGenerate).toHaveBeenCalledWith(
+      expect.objectContaining({ category: "Tischler", type: "process" })
     );
     const inserted = mockedDb.insertWebsiteVersion.mock.calls.map(c => c[0]);
     expect(inserted.at(-1)).toMatchObject({
@@ -133,7 +130,7 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
         afterType: "hero",
       })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    expect(mockedProposeAiEdit).not.toHaveBeenCalled();
+    expect(mockedGenerate).not.toHaveBeenCalled();
   });
 
   test("hinter der Kontakt-Sektion oder hinter einer fehlenden Sektion → BAD_REQUEST", async () => {
@@ -151,15 +148,14 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
         afterType: "gallery",
       })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    expect(mockedProposeAiEdit).not.toHaveBeenCalled();
+    expect(mockedGenerate).not.toHaveBeenCalled();
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("Modell liefert die Sektion nicht → freundliche Absage, kein Write", async () => {
-    mockedProposeAiEdit.mockResolvedValue({
-      kind: "content",
-      next: v2 as any,
-      diff: [],
+  test("Generator scheitert → freundliche Absage, kein Write", async () => {
+    mockedGenerate.mockResolvedValue({
+      kind: "reject",
+      reason: "Die Sektion konnte gerade nicht geschrieben werden.",
     });
     const result = await caller().onboardingV2.insertSection({
       token: "tok",
@@ -171,10 +167,7 @@ describe("insertSection (Plus-Zonen, 2026-09-03)", () => {
   });
 
   test("Absage des Modells wird durchgereicht", async () => {
-    mockedProposeAiEdit.mockResolvedValue({
-      kind: "reject",
-      reason: "Nö.",
-    } as any);
+    mockedGenerate.mockResolvedValue({ kind: "reject", reason: "Nö." });
     const result = await caller().onboardingV2.insertSection({
       token: "tok",
       type: "quote",

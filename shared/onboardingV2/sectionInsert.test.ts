@@ -4,7 +4,6 @@ import {
   INSERTABLE_SECTION_TYPES,
   INSERT_META,
   insertCandidates,
-  insertSectionMessage,
   orderWithInsert,
   insertAddonCandidates,
 } from "./sectionInsert";
@@ -74,14 +73,6 @@ describe("Sektion einfügen (Plus-Zonen, 2026-09-03)", () => {
   test("orderWithInsert: unbekannte Ziel-Sektion → null; hinter contact nicht erlaubt", () => {
     expect(orderWithInsert(doc, "process", "gallery")).toBeNull();
     expect(orderWithInsert(doc, "process", "contact")).toBeNull();
-  });
-
-  test("Einfüge-Wunsch nennt Typ und Position und schützt Fakten", () => {
-    const msg = insertSectionMessage("process", "services");
-    expect(msg).toMatch(/Ablauf/);
-    expect(msg).toMatch(/Leistungen/);
-    expect(msg).toMatch(/erfinde|belegt|Fakten/i);
-    expect(msg.length).toBeLessThanOrEqual(500);
   });
 });
 
