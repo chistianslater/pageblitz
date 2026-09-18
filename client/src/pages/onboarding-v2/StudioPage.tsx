@@ -532,7 +532,7 @@ export default function StudioPage({ token }: { token: string }) {
             )}
           </header>
           <div
-            className="pb-studio-seg pb-studio-tabs"
+            className="pb-studio-seg pb-studio-seg--fill pb-studio-tabs"
             role="group"
             aria-label="Ansicht"
           >
@@ -556,6 +556,7 @@ export default function StudioPage({ token }: { token: string }) {
               step={wizardStep}
               doneCount={wizardDoneCount}
               onExit={exitWizard}
+              showExit={activeId === null}
             />
           )}
           {activeId === "style" ? (
@@ -782,7 +783,7 @@ export default function StudioPage({ token }: { token: string }) {
             </button>
           </div>
           <div className="pb-studio-toolbar">
-            <div className="pb-studio-seg" aria-label="Gerät">
+            <div className="pb-studio-seg pb-studio-seg--even" aria-label="Gerät">
               <button
                 type="button"
                 aria-pressed={device === "desktop"}

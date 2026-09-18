@@ -1600,7 +1600,9 @@
     animation: none;
   }
 }
-.pb-studio-tabs {
+/* Doppelte Klasse: schlägt .pb-studio-seg--fill (display:flex), das die
+   Leiste mobil auf 50/50 zieht — am Desktop bleibt sie versteckt. */
+.pb-studio-seg.pb-studio-tabs {
   display: none;
 }
 @media (min-width: 1024px) {
@@ -1631,8 +1633,8 @@
     border-right: 0;
     border-bottom: 1px solid var(--st-line);
   }
-  .pb-studio-tabs {
-    display: inline-flex;
+  .pb-studio-seg.pb-studio-tabs {
+    display: flex;
   }
   .pb-studio-layout[data-tab="preview"] .pb-studio-rail {
     display: none;
@@ -3055,6 +3057,17 @@
   padding: 0.35rem 0.3rem;
   font-size: 0.85rem;
   white-space: nowrap;
+  text-align: center;
+}
+/* Kompakte Umschalter mit zwei gleich breiten Hälften (Desktop | Mobil,
+   Betreiber-Feedback 2026-09-18: Trennung nicht mittig). Breite = doppelte
+   Breite des längeren Labels. */
+.pb-studio-seg--even {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+.pb-studio-seg--even button {
   text-align: center;
 }
 

@@ -233,7 +233,7 @@ export function DesignSplash({
               und Texte passt du gleich im Studio an — nichts ist endgültig.
             </p>
           </div>
-          <div className="pb-studio-seg" aria-label="Gerät">
+          <div className="pb-studio-seg pb-studio-seg--even" aria-label="Gerät">
             <button
               type="button"
               aria-pressed={device === "desktop"}

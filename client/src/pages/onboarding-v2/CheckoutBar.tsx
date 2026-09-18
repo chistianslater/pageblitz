@@ -186,7 +186,11 @@ export function CheckoutBar({
 
   return (
     <div className="pb-studio-checkout" aria-label="Checkout">
-      <div className="pb-studio-seg" role="group" aria-label="Abrechnung">
+      <div
+        className="pb-studio-seg pb-studio-seg--fill"
+        role="group"
+        aria-label="Abrechnung"
+      >
         <button
           type="button"
           aria-pressed={billingInterval === "monthly"}

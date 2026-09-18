@@ -13,6 +13,13 @@ interface WizardBarProps {
   doneCount: number;
   /** Verlässt den geführten Modus in die freie Übersicht (Checkliste). */
   onExit: () => void;
+  /**
+   * Eigener „Übersicht"-Knopf nur, wenn kein Panel offen ist (Abschluss-
+   * Schritt). Mit offenem Panel trägt dessen Kopfleiste bereits
+   * „‹ Übersicht" — zwei gleiche Knöpfe übereinander verwirrten
+   * (Betreiber-Feedback 2026-09-18).
+   */
+  showExit?: boolean;
 }
 
 /**
@@ -22,7 +29,12 @@ interface WizardBarProps {
  * freien Modus — der Fortschritt lebt in der Checkliste, nichts geht
  * verloren.
  */
-export function WizardBar({ step, doneCount, onExit }: WizardBarProps) {
+export function WizardBar({
+  step,
+  doneCount,
+  onExit,
+  showExit = true,
+}: WizardBarProps) {
   const current = wizardStepNumber(step);
   const progress = Math.min(
     100,
@@ -34,14 +46,16 @@ export function WizardBar({ step, doneCount, onExit }: WizardBarProps) {
         <p className="pb-studio-kicker">
           Geführt · Schritt {current} von {WIZARD_TOTAL_STEPS}
         </p>
-        <button
-          type="button"
-          className="pb-studio-btn"
-          data-variant="ghost"
-          onClick={onExit}
-        >
-          Übersicht
-        </button>
+        {showExit && (
+          <button
+            type="button"
+            className="pb-studio-btn"
+            data-variant="ghost"
+            onClick={onExit}
+          >
+            Übersicht
+          </button>
+        )}
       </div>
       <h2 className="pb-studio-wizard-title">{WIZARD_STEP_TITLES[step]}</h2>
       <div
