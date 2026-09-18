@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
@@ -6,6 +6,7 @@ import type { PackId } from "@shared/siteContract/types";
 import { usePreviewViewport } from "./usePreviewViewport";
 import { PreviewFrame, buildPreviewSrc } from "./PreviewFrame";
 import { DesignQuickControls } from "./DesignQuickControls";
+import { neighbourOf, orderDirections } from "./designSplashLogic";
 
 interface Candidate {
   id: PackId;
@@ -53,9 +54,14 @@ function AlternativePreview({
 }
 
 /**
- * Vollbild-Design-Splash direkt nach der Generierung:
- * Alternative links ← aktive Live-Vorschau → Alternative rechts,
- * darunter Farbe/Schrift. Erst Bestätigung öffnet das Studio.
+ * Vollbild-Design-Splash direkt nach der Generierung (und seit 2026-09-18
+ * auch das Ziel des Postkarten-Kurzlinks): Alternative links ← aktive
+ * Live-Vorschau → Alternative rechts, darunter Farbe/Schrift.
+ *
+ * Test-Feedback 2026-09-18: Die Alternativen wurden übersehen und die
+ * Bestätigung klang endgültig. Deshalb: Richtungs-Leiste über der Bühne,
+ * sichtbar beschriftete Seitenkarten, „weiter" statt „verwenden" und ein
+ * Satz, dass sich alles noch ändern lässt.
  */
 export function DesignSplash({
   token,
@@ -85,32 +91,21 @@ export function DesignSplash({
 
   useEffect(() => setActivePackId(currentPackId), [currentPackId]);
 
-  const directions = useMemo<Candidate[]>(() => {
-    const base = candidates.data?.candidates ?? [];
-    if (base.some(candidate => candidate.id === activePackId)) return base;
-    const constitution = getConstitution(activePackId);
-    return [
-      {
-        id: activePackId,
+  const directions = orderDirections<Candidate>(
+    candidates.data?.candidates ?? [],
+    activePackId,
+    id => {
+      const constitution = getConstitution(id as PackId);
+      return {
+        id: id as PackId,
         name: constitution.name,
         essence: constitution.essence,
-      },
-      ...base,
-    ].slice(0, 3);
-  }, [activePackId, candidates.data]);
-
-  const activeIndex = Math.max(
-    0,
-    directions.findIndex(candidate => candidate.id === activePackId)
+      };
+    }
   );
-  const alternative = (offset: -1 | 1): Candidate | null => {
-    if (directions.length < 2) return null;
-    const index =
-      (activeIndex + offset + directions.length) % directions.length;
-    return directions[index] ?? null;
-  };
-  const previous = alternative(-1);
-  const next = alternative(1);
+  const activeIndex = directions.findIndex(d => d.id === activePackId);
+  const previous = neighbourOf(directions, activePackId, -1);
+  const next = neighbourOf(directions, activePackId, 1);
 
   const pick = (packId: PackId, direction: "left" | "right" = "right") => {
     if (busyId || packId === activePackId) return;
@@ -150,13 +145,16 @@ export function DesignSplash({
         data-side={side}
         onClick={() => pick(candidate.id, side)}
         disabled={busyId !== null}
-        aria-label={`${candidate.name} als Designrichtung verwenden`}
+        aria-label={`${candidate.name} als Designrichtung ansehen`}
       >
         <AlternativePreview
           token={token}
           packId={candidate.id}
           version={previewVersion}
         />
+        <span className="pb-design-side-pill" aria-hidden="true">
+          Alternative ansehen
+        </span>
         <strong>{candidate.name}</strong>
         <span>Deine Inhalte · {candidate.essence}</span>
       </button>
@@ -171,11 +169,13 @@ export function DesignSplash({
           <div>
             <p className="pb-studio-kicker">Deine Website ist fertig</p>
             <h1 className="pb-studio-title">
-              Gefällt dir das Design für {businessName}?
+              Welche Richtung passt zu {businessName}?
             </h1>
             <p>
-              Wähle eine Richtung, passe Farbe und Schrift an und bestätige erst
-              dann den Einstieg ins Studio.
+              Links und rechts siehst du Alternativen — jede mit deinen
+              Inhalten. Farbe, Schrift und alle Texte passt du gleich im
+              Studio an. Nichts ist endgültig, auch das Design kannst du
+              später noch wechseln.
             </p>
           </div>
           <div className="pb-studio-seg" aria-label="Gerät">
@@ -196,6 +196,31 @@ export function DesignSplash({
           </div>
         </header>
 
+        {directions.length > 1 && (
+          <div
+            className="pb-studio-seg pb-design-tabs"
+            role="group"
+            aria-label="Designrichtungen"
+          >
+            {directions.map((direction, index) => (
+              <button
+                key={direction.id}
+                type="button"
+                aria-pressed={direction.id === activePackId}
+                disabled={busyId !== null}
+                onClick={() =>
+                  pick(direction.id, index < activeIndex ? "left" : "right")
+                }
+              >
+                <span className="pb-design-tabs-num" aria-hidden="true">
+                  {index + 1}
+                </span>
+                {direction.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="pb-design-stage">
           {sideCard(previous, "left")}
           <div className="pb-design-center" data-enter={slideDirection}>
@@ -211,7 +236,9 @@ export function DesignSplash({
               <div>
                 <strong>{getConstitution(activePackId).name}</strong>
                 <span role="status">
-                  {busyId ? "Design wird geladen …" : "Aktive Designrichtung"}
+                  {busyId
+                    ? "Design wird geladen …"
+                    : "Aktive Richtung — mit deinen Inhalten"}
                 </span>
               </div>
               <button
@@ -245,8 +272,12 @@ export function DesignSplash({
               onClick={confirm}
               disabled={busyId !== null}
             >
-              {busyId ? "Wird übernommen …" : "Dieses Design verwenden"}
+              {busyId ? "Einen Moment …" : "Mit diesem Design weiter"}
             </button>
+            <p className="pb-design-confirm-note">
+              Im nächsten Schritt passt du Fotos, Texte und Farben an — das
+              Design lässt sich dort jederzeit wechseln.
+            </p>
           </div>
           {sideCard(next, "right")}
         </div>
@@ -257,7 +288,7 @@ export function DesignSplash({
           onClick={() => setRound(value => value + 1)}
           disabled={busyId !== null || candidates.isFetching}
         >
-          Weitere Designrichtungen laden
+          Andere Richtungen zeigen
         </button>
 
         {(select.error || candidates.error) && (

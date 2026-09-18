@@ -41,6 +41,8 @@ import { LeaveWithoutEmailGuard } from "./LeaveWithoutEmailGuard";
 import { BrandMark } from "@/components/landing/primitives";
 import { LiveCard } from "./LiveCard";
 import { LegacyCard } from "./LegacyCard";
+import { PublishPanel, PublishTeaser } from "./PublishPanel";
+import { StudioTour } from "./StudioTour";
 import {
   deriveGenerationStatus,
   derivePreviewTabs,
@@ -56,10 +58,19 @@ import {
 import { resolveStudioLocation, withStudioParams } from "./studioUrl";
 import "./studio.css";
 
+/**
+ * Offenes Panel in der Rail: ein Checklisten-Punkt oder — seit 2026-09-18 —
+ * das Freischalten-Panel („publish"). Freischalten ist bewusst kein
+ * Checklisten-Punkt und hat keinen Deep-Link: Test-Feedback war, dass die
+ * Übersicht mit der ständig sichtbaren Checkout-Leiste wie „direkt beim
+ * Zahlen" wirkte.
+ */
+type RailPanel = ChecklistItemId | "publish";
+
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
   const initialLocation = resolveStudioLocation(window.location.search);
-  const [activeId, setActiveIdState] = useState<ChecklistItemId | null>(
+  const [activeId, setActiveIdState] = useState<RailPanel | null>(
     () => initialLocation.panel
   );
   const [addonFocus, setAddonFocus] = useState<AddOnKey | null>(
@@ -75,14 +86,14 @@ export default function StudioPage({ token }: { token: string }) {
   // Query-Parameter bleiben erhalten (studioUrl.withStudioParams). Extra-Klick
   // (Galerie, Speisekarte, …) setzt `?extra=` und öffnet das Inhaltspanel.
   const setActiveId = (
-    id: ChecklistItemId | null,
+    id: RailPanel | null,
     extra: AddOnKey | null = null
   ) => {
     setAddonFocus(extra);
     setPhotoFocus(null);
     setActiveIdState(id);
     const editor = extra ? ADDON_EDITORS[extra] : null;
-    const anchorByPanel: Partial<Record<ChecklistItemId, string>> = {
+    const anchorByPanel: Partial<Record<RailPanel, string>> = {
       style: "start",
       photos: "start",
       texts: "start",
@@ -92,7 +103,11 @@ export default function StudioPage({ token }: { token: string }) {
     };
     if (editor) setPreviewFocusAnchor(editor.previewAnchor);
     else if (id && anchorByPanel[id]) setPreviewFocusAnchor(anchorByPanel[id]!);
-    const nextSearch = withStudioParams(window.location.search, id, extra);
+    const nextSearch = withStudioParams(
+      window.location.search,
+      id === "publish" ? null : id,
+      extra
+    );
     window.history.replaceState(
       null,
       "",
@@ -475,15 +490,33 @@ export default function StudioPage({ token }: { token: string }) {
   const panelNext = activeIsWizardStep ? goNext : undefined;
   const panelClose = (panelId: ChecklistItemId | null) =>
     wizardActive ? exitWizard() : setActiveId(panelId);
+  const isPreview = state.status === "preview";
 
   return (
     <div className="pb-studio">
       {leaveGuard}
+      {/* Einmalige Einführung (Test-Feedback 2026-09-18): Schritte links,
+          Layout-Varianten in der Vorschau, Assistent, Kauf zum Schluss. */}
+      <StudioTour token={token} status={state.status} />
       <div className="pb-studio-layout" data-tab={tab}>
-        <aside className="pb-studio-rail">
-          <header>
-            <p className="pb-studio-kicker">Pageblitz Studio</p>
-            <h1 className="pb-studio-title">{state.businessName}</h1>
+        <aside className="pb-studio-rail" data-tour="rail">
+          <header className="pb-studio-rail-head">
+            <p className="pb-studio-kicker">
+              Pageblitz Studio · {state.businessName}
+            </p>
+            {isPreview ? (
+              <>
+                <h1 className="pb-studio-title">
+                  Deine Website, Schritt für Schritt
+                </h1>
+                <p className="pb-studio-rail-intro">
+                  Hier gehst du die Punkte durch, in der Vorschau siehst du
+                  sofort das Ergebnis. Bezahlt wird erst ganz zum Schluss.
+                </p>
+              </>
+            ) : (
+              <h1 className="pb-studio-title">{state.businessName}</h1>
+            )}
           </header>
           <div
             className="pb-studio-seg pb-studio-tabs"
@@ -616,6 +649,14 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
             />
+          ) : activeId === "publish" ? (
+            <PublishPanel
+              state={state}
+              token={token}
+              onStateChanged={studio.refetch}
+              onOpenPanel={id => setActiveId(id)}
+              onClose={() => setActiveId(null)}
+            />
           ) : activeId === "addons" ? (
             <AddonsPanel
               token={token}
@@ -658,7 +699,7 @@ export default function StudioPage({ token }: { token: string }) {
             </>
           ) : (
             <>
-              {state.status === "preview" && (
+              {isPreview && (
                 <div className="pb-studio-wizard-card">
                   <p>
                     {wizardOpenCount > 0
@@ -670,13 +711,13 @@ export default function StudioPage({ token }: { token: string }) {
                     className="pb-studio-btn"
                     onClick={resumeWizard}
                   >
-                    Geführt weiter
+                    Schritt für Schritt weiter
                   </button>
                 </div>
               )}
               <Checklist
                 items={state.checklist}
-                activeId={activeId}
+                activeId={activeId === "publish" ? null : activeId}
                 onSelect={id => setActiveId(id)}
                 activeAddOns={BOOKABLE_ADDON_KEYS.filter(
                   key => state.addOns[key] === true
@@ -697,20 +738,22 @@ export default function StudioPage({ token }: { token: string }) {
                   setActiveId(editor.panel, key);
                 }}
               />
+              {/* Freischalten ist der letzte Eintrag, nicht mehr die volle
+                  Checkout-Leiste (Test-Feedback 2026-09-18: „direkt beim
+                  Zahlen"). Abrechnung/E-Mail/Button liegen im Panel. */}
               {state.status !== "preview" ? (
                 <LiveCard slug={state.slug} status={state.status} />
               ) : (
-                <CheckoutBar
-                  state={state}
-                  token={token}
-                  onStateChanged={studio.refetch}
-                  onOpenPanel={id => setActiveId(id)}
-                />
+                <PublishTeaser onOpen={() => setActiveId("publish")} />
               )}
             </>
           )}
         </aside>
-        <main className="pb-studio-stage" data-flash={previewFlash}>
+        <main
+          className="pb-studio-stage"
+          data-flash={previewFlash}
+          data-tour="preview"
+        >
           {/* Mobiler Rückweg (2026-08-25): Auf dem Smartphone blendet der
               Vorschau-Tab die Rail komplett aus — der Tab-Umschalter liegt
               aber IN der Rail, es gab also keinen Weg zurück zu den
@@ -783,8 +826,9 @@ export default function StudioPage({ token }: { token: string }) {
           )}
           {previewSlug === null && (
             <p className="pb-studio-inline-hint">
-              Tipp: Texte kannst du direkt anklicken. Das Layout jeder Sektion
-              stellst du rechts in der Vorschau um.
+              Tipp: Texte kannst du direkt anklicken. Der Knopf „Layout“ am
+              rechten Rand jeder Sektion zeigt Varianten — Bild links, rechts
+              oder zentriert.
             </p>
           )}
           {inlineUpdateText.error && (
@@ -926,7 +970,11 @@ export default function StudioPage({ token }: { token: string }) {
           {/* Schwebender KI-Assistent (2026-08-30): sichtbar rechts unten
               über der Vorschau — „Was möchtest du noch ändern?". Der Chat
               selbst ist unverändert der AiChat aus der bisherigen Rail. */}
-          <div className="pb-studio-assistant" data-open={assistantOpen}>
+          <div
+            className="pb-studio-assistant"
+            data-open={assistantOpen}
+            data-tour="assistant"
+          >
             {assistantOpen && (
               <div
                 className="pb-studio-assistant-panel"

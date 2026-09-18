@@ -10,8 +10,8 @@ interface PanelFrameProps {
   children: React.ReactNode;
   /** Buttons am Fuß des Panels (z. B. "Fertig" / "Übernehmen"). */
   footer: React.ReactNode;
-  /** Checklisten-Eintrag, den dieses Panel bearbeitet — für Fokus-Management (siehe usePanelFocus). */
-  panelId: ChecklistItemId;
+  /** Checklisten-Eintrag, den dieses Panel bearbeitet — für Fokus-Management (siehe usePanelFocus). "publish" = Freischalten-Panel (kein Checklisten-Punkt). */
+  panelId: ChecklistItemId | "publish";
   onClose: () => void;
 }
 

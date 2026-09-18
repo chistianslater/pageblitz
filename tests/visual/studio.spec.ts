@@ -101,6 +101,19 @@ async function skipGoalStep(page: Page): Promise<void> {
   }
 }
 
+/**
+ * Freischalten-Panel öffnen (2026-09-18): In der freien Übersicht steht
+ * statt der Dauer-Checkout-Leiste nur noch der Teaser „Website
+ * freischalten" als letzter Eintrag; Abrechnung/E-Mail/Button liegen im
+ * Panel dahinter (PublishPanel.tsx).
+ */
+async function openPublishPanel(page: Page): Promise<void> {
+  await page.locator(".pb-studio-publish-teaser").click();
+  await expect(
+    page.getByRole("region", { name: "Website freischalten" })
+  ).toBeVisible();
+}
+
 test.describe("Studio", () => {
   // Wizard-Autostart im Test aus (Studio-UI-Audit, 2026-08-24): Der
   // geführte Modus startet einmal pro Browser-Session automatisch und
@@ -112,7 +125,12 @@ test.describe("Studio", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       const m = window.location.pathname.match(/\/onboarding\/([^/]+)/);
-      if (m) window.sessionStorage.setItem(`pb-wizard-dismissed:${m[1]}`, "1");
+      if (m) {
+        window.sessionStorage.setItem(`pb-wizard-dismissed:${m[1]}`, "1");
+        // Einmalige Studio-Tour (2026-09-18) ebenfalls aus: Ihre Karte
+        // liegt fixed über der Bühne und würde Klicks abfangen.
+        window.localStorage.setItem(`pb-studio-tour-done:${m[1]}`, "1");
+      }
     });
     // Reveal-Script (siteEnhancer.ts) in den Vorschau-/Thumbnail-iframes
     // deterministisch aus — sonst hängt die Sichtbarkeit der Sektionen vom
@@ -183,10 +201,10 @@ test.describe("Studio", () => {
     );
 
     await expect(
-      page.getByRole("heading", { name: /Gefällt dir das Design/ })
+      page.getByRole("heading", { name: /Welche Richtung passt/ })
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /als Designrichtung verwenden/ })
+      page.getByRole("button", { name: /als Designrichtung ansehen/ })
     ).toHaveCount(2);
     await expect(page.getByText("Schrift", { exact: true })).toBeVisible();
     await expect(page.getByText("Seitenaufbau", { exact: true })).toHaveCount(
@@ -221,11 +239,11 @@ test.describe("Studio", () => {
         res =>
           res.url().includes("onboardingV2.selectStylePack") && res.ok()
       ),
-      page.getByRole("button", { name: "Dieses Design verwenden" }).click(),
+      page.getByRole("button", { name: "Mit diesem Design weiter" }).click(),
     ]);
 
     await expect(
-      page.getByRole("heading", { name: /Gefällt dir das Design/ })
+      page.getByRole("heading", { name: /Welche Richtung passt/ })
     ).toBeHidden();
     // Die Ziel-Frage (2026-09-03) liegt zwischen Design-Gate und Studio.
     await skipGoalStep(page);
@@ -581,6 +599,10 @@ test.describe("Studio", () => {
     await expect(legalItem).toHaveAttribute("data-status", "done");
     await expect(legalItem.getByText("Erledigt")).toBeVisible();
 
+    // Freischalten liegt seit 2026-09-18 hinter dem letzten Eintrag der
+    // Übersicht (Teaser → Panel), nicht mehr als Dauer-Leiste darunter.
+    await openPublishPanel(page);
+
     // Die Dev-Seed setzt customerEmail nicht zurück (siehe devSeed.ts) — bei
     // wiederholten Testläufen gegen dieselbe DB kann das E-Mail-Feld daher
     // schon befüllt sein. Test funktioniert in beiden Fällen.
@@ -615,6 +637,7 @@ test.describe("Studio", () => {
       .first();
     await expect(legalItemAfterReload).toHaveAttribute("data-status", "done");
     await expect(legalItemAfterReload.getByText("Erledigt")).toBeVisible();
+    await openPublishPanel(page);
     await expect(
       page
         .locator(".pb-studio-checkout")

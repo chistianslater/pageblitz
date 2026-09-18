@@ -1,10 +1,12 @@
 /**
  * Vorschau-Leiste für den Postkarten-Funnel (2026-09-05).
  *
- * Der QR-Code auf der Postkarte führt bewusst NICHT ins Studio, sondern auf
- * die fertige Seite selbst: Die Karte verspricht „deine Website ist fertig",
- * ein Editor mit Panels würde genau dieses Versprechen brechen. Diese
- * schmale Leiste liegt über der Seite und ist der einzige Weg weiter.
+ * Ursprünglich führte der QR-Code direkt auf die fertige Seite, diese Leiste
+ * war der einzige Weg weiter. Seit 2026-09-18 landet der Kurz-Link in der
+ * Design-Auswahl des Studios (Test-Feedback: „man sieht sofort ein fertiges
+ * Template"); die Leiste bleibt für alle anderen Wege zur Vorschau — geteilter
+ * Link, E-Mail, Erinnerung — und formuliert bewusst nicht endgültig
+ * („Jetzt anpassen" statt „Website übernehmen").
  *
  * Sie erscheint nur im obersten Fenster. Das Studio, das Design-Gate und die
  * Stil-Miniaturen betten dieselbe Route als iframe ein — dort bleibt sie
@@ -48,8 +50,8 @@ font-weight:700;padding:11px 18px;border-radius:999px;white-space:nowrap}
 @media(max-width:520px){#pb-preview-cta{font-size:14px}
 #pb-preview-cta a{padding:10px 14px;font-size:14px}}
 </style>
-<p><b>Ein Vorschlag für ${name}</b><small>Von Pageblitz gebaut — noch nicht veröffentlicht.</small></p>
-<a href="${href}">Website übernehmen</a>
+<p><b>Dein Website-Vorschlag für ${name}</b><small>Design wählen, Texte und Fotos anpassen — nichts ist endgültig.</small></p>
+<a href="${href}">Jetzt anpassen</a>
 </div>
 <script>if (window.top === window.self){var b=document.getElementById("pb-preview-cta");if(b)b.hidden=false;}</script>`;
 }

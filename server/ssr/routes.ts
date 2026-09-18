@@ -726,9 +726,10 @@ async function handleCustomerSiteSsr(
 }
 
 export function registerSsrRoutes(app: Express): void {
-  // Kurz-Link der Postkarte (2026-09-09): zaehlt den Aufruf und leitet auf
-  // die aktuelle Vorschau des Betriebs weiter. Vor den Token-Routen, damit
-  // /k/ nie als Token missverstanden wird.
+  // Kurz-Link der Postkarte (2026-09-09): zaehlt den Aufruf und leitet in
+  // die Design-Auswahl des Studios weiter (seit 2026-09-18, vorher direkt
+  // auf die Vorschau). Vor den Token-Routen, damit /k/ nie als Token
+  // missverstanden wird.
   app.get("/k/:code([A-Za-z0-9]{3,12})", (req, res) =>
     handleKurzlink(req, res, {
       findeKarte: findeKarteNachCode,

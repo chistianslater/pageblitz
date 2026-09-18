@@ -26,7 +26,7 @@ describe("renderSiteHtml mit Vorschau-Leiste (Befund 2026-09-05)", () => {
   test("Startseite trägt die Leiste — sie lief über einen zweiten Body-Zusammenbau", () => {
     const { html } = renderSiteHtml(doc, { ...opts, pathname: "/" });
     expect(html).toContain("pb-preview-cta");
-    expect(html).toContain("Website übernehmen");
+    expect(html).toContain("Jetzt anpassen");
   });
 
   test("ohne die Option bleibt die Seite unverändert — Kundenseiten sehen nichts", () => {

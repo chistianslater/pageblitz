@@ -18,7 +18,8 @@ import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
  * schließt das Panel wie der "Fertig"-Button, und beim Schließen (Esc ODER
  * regulärer Footer-Button) kehrt der Fokus zum auslösenden
  * Checklisten-Eintrag zurück (`Checklist.tsx` vergibt dafür
- * `id="pb-checklist-<ChecklistItemId>"`).
+ * `id="pb-checklist-<ChecklistItemId>"`; der Freischalten-Teaser trägt
+ * `pb-checklist-publish`).
  *
  * `onClose` wird über eine Ref statt als Effekt-Dependency verfolgt: Aufrufer
  * übergeben meist eine neue Inline-Funktion pro Render (z. B.
@@ -44,7 +45,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
   );
 }
 export function usePanelFocus(
-  panelId: ChecklistItemId,
+  panelId: ChecklistItemId | "publish",
   onClose: () => void
 ): React.RefObject<HTMLHeadingElement | null> {
   const headingRef = useRef<HTMLHeadingElement>(null);

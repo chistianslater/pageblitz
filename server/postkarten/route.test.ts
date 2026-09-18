@@ -18,7 +18,7 @@ function res() {
 const karte = { id: 7, code: "BOC7", token: "tok123" };
 
 describe("handleKurzlink", () => {
-  test("leitet auf die Vorschau weiter und zaehlt den Scan", async () => {
+  test("leitet in die Design-Auswahl des Studios weiter und zaehlt den Scan", async () => {
     const erfasseScan = vi.fn();
     const r = res();
     await handleKurzlink(
@@ -27,7 +27,7 @@ describe("handleKurzlink", () => {
       { findeKarte: async () => karte, erfasseScan }
     );
     expect(r.code).toBe(302);
-    expect(r.ziel).toBe("/preview-ssr/tok123");
+    expect(r.ziel).toBe("/onboarding/tok123");
     expect(erfasseScan).toHaveBeenCalledWith(7, "qr");
   });
 
@@ -87,6 +87,6 @@ describe("handleKurzlink", () => {
       }
     );
     expect(r.code).toBe(302);
-    expect(r.ziel).toBe("/preview-ssr/tok123");
+    expect(r.ziel).toBe("/onboarding/tok123");
   });
 });

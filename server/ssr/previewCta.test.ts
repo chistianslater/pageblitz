@@ -10,7 +10,14 @@ describe("previewCtaTag (Postkarten-Funnel, 2026-09-05)", () => {
   test("nennt den Betrieb und führt ins Studio", () => {
     expect(tag).toContain("Haar Galerie");
     expect(tag).toContain('href="/onboarding/abc123"');
-    expect(tag).toContain("Website übernehmen");
+  });
+
+  test("klingt nach Anpassen, nicht nach einer endgültigen Entscheidung (Test-Feedback 2026-09-18)", () => {
+    // „Website übernehmen" las sich, als könne danach nichts mehr geändert
+    // werden — der Betrieb hat aber garantiert noch Änderungswünsche.
+    expect(tag).not.toContain("übernehmen");
+    expect(tag).toContain("Jetzt anpassen");
+    expect(tag).toContain("nichts ist endgültig");
   });
 
   test("startet versteckt und zeigt sich nur im obersten Fenster — im Studio-iframe bleibt sie weg", () => {

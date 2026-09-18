@@ -14,7 +14,13 @@ export interface KurzlinkDeps {
 }
 
 /**
- * `/k/:code` — der Weg von der gedruckten Karte zur Vorschau.
+ * `/k/:code` — der Weg von der gedruckten Karte ins Studio.
+ *
+ * Ziel ist seit 2026-09-18 die Design-Auswahl (`/onboarding/<token>`),
+ * nicht mehr die fertige Vorschau: Test-Feedback war, dass die Karte sonst
+ * „ein fertiges Template" zeigt, obwohl der Betrieb zuerst zwischen den
+ * Richtungen waehlen soll. Der Splash zeigt die Seite trotzdem gross —
+ * das Kartenversprechen „deine Website ist fertig" bleibt.
  *
  * Reihenfolge mit Absicht: erst zaehlen, dann weiterleiten — aber die
  * Zaehlung darf nie im Weg stehen. Wer die Karte in der Hand haelt, ist
@@ -51,5 +57,5 @@ export async function handleKurzlink(
     }
   }
 
-  res.redirect(302, `/preview-ssr/${karte.token}`);
+  res.redirect(302, `/onboarding/${karte.token}`);
 }

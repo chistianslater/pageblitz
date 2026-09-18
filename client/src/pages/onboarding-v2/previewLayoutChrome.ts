@@ -297,7 +297,10 @@ const NO_INSERT_AFTER: ReadonlySet<SectionType> = new Set([
 
 export const CHROME_CSS = `
 .pb-preview-layout{position:fixed;right:12px;z-index:28;display:flex;font-family:"Space Grotesk",system-ui,sans-serif}
-.pb-preview-layout-btn{appearance:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(11,11,13,.35)}
+/* Beschriftet statt nur Icon (Test-Feedback 2026-09-18): Der runde Knopf
+   allein wurde nicht als „hier gibt es Layout-Varianten" gelesen. */
+.pb-preview-layout-btn{appearance:none;display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px 0 11px;border:1px solid rgba(255,255,255,.16);background:rgba(11,11,13,.92);color:#f5f5f2;border-radius:999px;cursor:pointer;box-shadow:0 10px 28px rgba(11,11,13,.35);font:700 11px/1 "Space Grotesk",system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.pb-preview-layout-word{display:inline-block}
 .pb-preview-layout-icon{display:grid;grid-template-columns:repeat(3,3px);gap:1.5px;width:12px;height:12px}
 .pb-preview-layout-icon i{display:block;width:3px;height:3px;border-radius:.4px;background:currentColor}
 .pb-preview-layout-btn:hover,.pb-preview-layout:hover>.pb-preview-layout-btn,.pb-preview-layout:focus-within>.pb-preview-layout-btn,.pb-preview-layout[data-open="true"]>.pb-preview-layout-btn{background:#ccff00;border-color:#ccff00;color:#0b0b0d}
@@ -560,7 +563,7 @@ export function renderLayoutChromeHtml(
   return `<div class="pb-preview-layout" data-pb-layout-field="${section.field}">
     <button type="button" class="pb-preview-layout-btn" aria-expanded="false" aria-haspopup="true" aria-label="${escapeHtml(
       title
-    )}">${LAYOUT_GRID_ICON_HTML}</button>
+    )}">${LAYOUT_GRID_ICON_HTML}<span class="pb-preview-layout-word" aria-hidden="true">Layout</span></button>
     <div class="pb-preview-layout-menu" role="group" aria-label="${escapeHtml(
       title
     )}">${options}${hide}</div>
