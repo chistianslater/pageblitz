@@ -834,8 +834,8 @@ export default function StudioPage({ token }: { token: string }) {
               role="status"
             >
               <span className="pb-studio-pending-dot" aria-hidden="true" />
-              {pendingInsert.label} wird geschrieben — das dauert etwa eine
-              Minute. Die Sektion erscheint an ihrer Stelle in der Vorschau.
+              {pendingInsert.label} wird geschrieben — das dauert nur ein paar
+              Sekunden. Die Sektion erscheint an ihrer Stelle in der Vorschau.
             </p>
           )}
           {/* Tipp-Zeile entfernt (Betreiber-Feedback 2026-09-18): Der beschriftete
@@ -937,7 +937,7 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onPick={type => {
                 // Sofort schließen und das Skelett zeigen — der Text kommt
-                // nach (die KI braucht rund eine Minute, Betreiber-Befund).
+                // nach (seit 2026-09-18 rund 10 s über insertSectionAi.ts).
                 const after = insertAfter;
                 setInsertAfter(null);
                 setInsertNotice(null);

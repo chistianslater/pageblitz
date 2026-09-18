@@ -7,10 +7,7 @@ import {
   INSERT_META,
   type InsertableSectionType,
 } from "../../shared/onboardingV2/sectionInsert";
-import type {
-  SectionV2,
-  WebsiteDataV2,
-} from "../../shared/siteContract/types";
+import type { SectionV2, WebsiteDataV2 } from "../../shared/siteContract/types";
 
 /**
  * Schneller Pfad für die Plus-Zonen (2026-09-18, Betreiber: „dauert extrem
