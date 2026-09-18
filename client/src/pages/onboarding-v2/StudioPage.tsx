@@ -43,9 +43,11 @@ import { LiveCard } from "./LiveCard";
 import { LegacyCard } from "./LegacyCard";
 import { PublishPanel, PublishTeaser } from "./PublishPanel";
 import { StudioTour } from "./StudioTour";
+import { StudioStepper } from "./StudioStepper";
 import {
   deriveGenerationStatus,
   derivePreviewTabs,
+  deriveStepperItems,
   generationInProgress,
   nextWizardStep,
   resolvePreviewSlug,
@@ -491,6 +493,14 @@ export default function StudioPage({ token }: { token: string }) {
   const panelClose = (panelId: ChecklistItemId | null) =>
     wizardActive ? exitWizard() : setActiveId(panelId);
   const isPreview = state.status === "preview";
+  // Markierter Schritt in der Schritt-Leiste: offenes Wizard-Panel, das
+  // Freischalten-Panel oder — im geführten Modus ohne Panel — der
+  // Abschluss. In der freien Übersicht ist nichts markiert.
+  const stepperCurrent: WizardStep | null = activeIsWizardStep
+    ? (activeId as WizardPanelStep)
+    : activeId === "publish" || (wizardActive && activeId === null)
+      ? "publish"
+      : null;
 
   return (
     <div className="pb-studio">
@@ -500,22 +510,25 @@ export default function StudioPage({ token }: { token: string }) {
       <StudioTour token={token} status={state.status} />
       <div className="pb-studio-layout" data-tab={tab}>
         <aside className="pb-studio-rail" data-tour="rail">
+          {/* Rail-Kopf (Betreiber-Wunsch 2026-09-18): vor dem Kauf nur eine
+              Zeile Kontext plus die Schritt-Leiste — die Erklärung „Schritt
+              für Schritt …" übernimmt die Leiste selbst. */}
           <header className="pb-studio-rail-head">
-            <p className="pb-studio-kicker">
-              Pageblitz Studio · {state.businessName}
-            </p>
             {isPreview ? (
               <>
-                <h1 className="pb-studio-title">
-                  Deine Website, Schritt für Schritt
+                <h1 className="pb-studio-kicker pb-studio-rail-kicker">
+                  Pageblitz Studio · {state.businessName}
                 </h1>
-                <p className="pb-studio-rail-intro">
-                  Hier gehst du die Punkte durch, in der Vorschau siehst du
-                  sofort das Ergebnis. Bezahlt wird erst ganz zum Schluss.
-                </p>
+                <StudioStepper
+                  items={deriveStepperItems(state.checklist, stepperCurrent)}
+                  onSelect={id => setActiveId(id)}
+                />
               </>
             ) : (
-              <h1 className="pb-studio-title">{state.businessName}</h1>
+              <>
+                <p className="pb-studio-kicker">Pageblitz Studio</p>
+                <h1 className="pb-studio-title">{state.businessName}</h1>
+              </>
             )}
           </header>
           <div

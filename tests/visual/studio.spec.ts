@@ -214,12 +214,8 @@ test.describe("Studio", () => {
       0
     );
     await page.getByRole("button", { name: /Farbe/ }).click();
-    await expect(
-      page.getByText("Akzentfarbe", { exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByText("Eigene Farbe", { exact: true })
-    ).toBeVisible();
+    await expect(page.getByText("Akzentfarbe", { exact: true })).toBeVisible();
+    await expect(page.getByText("Eigene Farbe", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Farbauswahl schließen" }).click();
     await page.getByRole("button", { name: /Schrift/ }).click();
     await expect(
@@ -230,17 +226,20 @@ test.describe("Studio", () => {
       .click();
 
     const previewFrame = page.frameLocator(".pb-design-center iframe");
-    const scrollBefore = await previewFrame.locator("html").evaluate(() => scrollY);
+    const scrollBefore = await previewFrame
+      .locator("html")
+      .evaluate(() => scrollY);
     await page.locator(".pb-design-swipe-surface").hover();
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(200);
-    const scrollAfter = await previewFrame.locator("html").evaluate(() => scrollY);
+    const scrollAfter = await previewFrame
+      .locator("html")
+      .evaluate(() => scrollY);
     expect(scrollAfter).toBeGreaterThan(scrollBefore);
 
     await Promise.all([
       page.waitForResponse(
-        res =>
-          res.url().includes("onboardingV2.selectStylePack") && res.ok()
+        res => res.url().includes("onboardingV2.selectStylePack") && res.ok()
       ),
       page.getByRole("button", { name: "Mit diesem Design weiter" }).click(),
     ]);
@@ -472,8 +471,7 @@ test.describe("Studio", () => {
 
     await Promise.all([
       page.waitForResponse(
-        res =>
-          res.url().includes("onboardingV2.updateTexts") && res.ok()
+        res => res.url().includes("onboardingV2.updateTexts") && res.ok()
       ),
       chips.getByRole("button").first().click(),
     ]);
@@ -509,8 +507,7 @@ test.describe("Studio", () => {
 
     await Promise.all([
       page.waitForResponse(
-        res =>
-          res.url().includes("onboardingV2.updateInlineText") && res.ok()
+        res => res.url().includes("onboardingV2.updateInlineText") && res.ok()
       ),
       // Klick außerhalb des iframes löst blur + Persistenz aus.
       page.getByRole("button", { name: "Desktop" }).click(),
@@ -519,9 +516,7 @@ test.describe("Studio", () => {
     // onApplied bumpPreview remountet das iframe; persistierter Text muss im
     // neuen SSR-Dokument wieder erscheinen.
     await expect(
-      page
-        .frameLocator(".pb-studio-device iframe")
-        .locator("#start h1")
+      page.frameLocator(".pb-studio-device iframe").locator("#start h1")
     ).toContainText("Direkt in der Vorschau geändert");
   });
 
@@ -681,7 +676,9 @@ test.describe("Studio", () => {
       .locator(".pb-studio-addon-grid li")
       .filter({ hasText: "Team" });
     await teamRow.getByRole("button", { name: "Hinzufügen" }).click();
-    await expect(teamRow.getByRole("button", { name: "Ausgewählt" })).toBeVisible();
+    await expect(
+      teamRow.getByRole("button", { name: "Ausgewählt" })
+    ).toBeVisible();
 
     await expect(
       addonsPanel.getByRole("heading", { name: "Team pflegen", level: 3 })

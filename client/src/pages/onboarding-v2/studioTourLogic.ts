@@ -18,7 +18,7 @@ export const STUDIO_TOUR_STEPS: readonly TourStep[] = [
   {
     anchor: "rail",
     title: "Deine Schritte",
-    body: "Hier gehst du Punkt für Punkt durch — Design, Fotos, Texte, Angebot, Rechtliches. Jeder Schritt öffnet ein kleines Panel. Über „Übersicht“ siehst du jederzeit alle Punkte auf einen Blick.",
+    body: "Oben siehst du alle Schritte — von Design bis Live. Tipp einen an, um ihn zu bearbeiten; Häkchen zeigen, was schon erledigt ist. Mit „Weiter“ im jeweiligen Schritt kommst du automatisch zum nächsten.",
   },
   {
     anchor: "preview",
@@ -71,7 +71,10 @@ const SPOTLIGHT_PAD = 8;
  * über den Fensterrand — sonst verschwindet der Volt-Rahmen z. B. bei der
  * Rail, die die volle Höhe einnimmt. `null` = kein Ziel, alles abdunkeln.
  */
-export function spotlightRect(target: Rect | null, viewport: Size): Rect | null {
+export function spotlightRect(
+  target: Rect | null,
+  viewport: Size
+): Rect | null {
   if (!target) return null;
   const left = Math.max(SPOTLIGHT_PAD, target.left - SPOTLIGHT_PAD);
   const top = Math.max(SPOTLIGHT_PAD, target.top - SPOTLIGHT_PAD);

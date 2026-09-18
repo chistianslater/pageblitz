@@ -180,6 +180,53 @@ export const WIZARD_STEP_TITLES: Record<WizardStep, string> = {
   publish: "Website freischalten",
 };
 
+/**
+ * Kurze Labels für die Schritt-Leiste oben in der Rail (Betreiber-Wunsch
+ * 2026-09-18: Schritte sichtbarer, weniger Text). Die langen Titel oben
+ * bleiben für WizardBar und Panel-Köpfe.
+ */
+export const STEPPER_LABELS: Record<WizardStep, string> = {
+  style: "Design",
+  photos: "Fotos",
+  texts: "Texte",
+  offer: "Angebot",
+  legal: "Recht",
+  addons: "Extras",
+  publish: "Live",
+};
+
+export interface StepperItem {
+  id: WizardStep;
+  label: string;
+  /** 1-basiert, wie „Schritt X von 7" in der WizardBar. */
+  number: number;
+  status: "done" | "current" | "open";
+}
+
+/**
+ * Zustand jedes Schritts für die Schritt-Leiste: „current" gewinnt über
+ * „done" (man kann einen erledigten Schritt erneut öffnen). Freischalten
+ * ist vor dem Kauf nie erledigt — nach dem Kauf wird die Leiste gar nicht
+ * gezeigt.
+ */
+export function deriveStepperItems(
+  items: ChecklistItem[],
+  current: WizardStep | null
+): StepperItem[] {
+  const steps: WizardStep[] = [...WIZARD_PANEL_STEPS, "publish"];
+  return steps.map((id, index) => {
+    const done =
+      id !== "publish" &&
+      items.find(item => item.id === id)?.status === "done";
+    return {
+      id,
+      label: STEPPER_LABELS[id],
+      number: index + 1,
+      status: id === current ? "current" : done ? "done" : "open",
+    };
+  });
+}
+
 /** Gesamtzahl der sichtbaren Wizard-Schritte (6 Panels + Veröffentlichen). */
 export const WIZARD_TOTAL_STEPS = WIZARD_PANEL_STEPS.length + 1;
 

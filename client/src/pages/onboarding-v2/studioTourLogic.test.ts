@@ -33,7 +33,11 @@ describe("Studio-Tour (Test-Feedback 2026-09-18)", () => {
     const card = { width: 320, height: 160 };
     // Ziel links: Karte rechts daneben.
     expect(
-      clampTourCard({ left: 0, top: 100, width: 400, height: 500 }, card, viewport)
+      clampTourCard(
+        { left: 0, top: 100, width: 400, height: 500 },
+        card,
+        viewport
+      )
     ).toEqual({ left: 416, top: 100 });
     // Ziel rechts unten: kein Platz rechts → unter/über dem Ziel, eingeklemmt.
     const pos = clampTourCard(
@@ -68,7 +72,11 @@ describe("Studio-Tour (Test-Feedback 2026-09-18)", () => {
 
   test("ohne Ziel wird die Karte zentriert", () => {
     expect(
-      clampTourCard(null, { width: 320, height: 160 }, { width: 1200, height: 800 })
+      clampTourCard(
+        null,
+        { width: 320, height: 160 },
+        { width: 1200, height: 800 }
+      )
     ).toEqual({ left: 440, top: 320 });
   });
 });

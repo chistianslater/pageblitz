@@ -9,6 +9,7 @@ import {
   WIZARD_PANEL_STEPS,
   WIZARD_TOTAL_STEPS,
   wizardStepNumber,
+  deriveStepperItems,
 } from "./studioLogic";
 import type { Page } from "@shared/siteContract/types";
 import type { ChecklistItem } from "@shared/onboardingV2/checklist";
@@ -340,5 +341,40 @@ describe("shouldWarnOnLeave", () => {
     expect(shouldWarnOnLeave("active", null)).toBe(false);
     expect(shouldWarnOnLeave("sold", null)).toBe(false);
     expect(shouldWarnOnLeave("inactive", "x@y.de")).toBe(false);
+  });
+});
+
+describe("deriveStepperItems (Schritt-Leiste, 2026-09-18)", () => {
+  test("sieben Schritte mit kurzen Labels, Freischalten zuletzt", () => {
+    const items = deriveStepperItems(checklistWith([]), null);
+    expect(items.map(i => i.label)).toEqual([
+      "Design",
+      "Fotos",
+      "Texte",
+      "Angebot",
+      "Recht",
+      "Extras",
+      "Live",
+    ]);
+    expect(items.map(i => i.number)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  test("erledigt, aktuell und offen — aktuell gewinnt über erledigt", () => {
+    const items = deriveStepperItems(
+      checklistWith(["style", "photos", "texts"]),
+      "texts"
+    );
+    expect(items.slice(0, 4).map(i => i.status)).toEqual([
+      "done",
+      "done",
+      "current",
+      "open",
+    ]);
+  });
+
+  test("Freischalten ist vor dem Kauf nie erledigt, kann aber aktuell sein", () => {
+    const all = checklistWith([...WIZARD_PANEL_STEPS]);
+    expect(deriveStepperItems(all, null).at(-1)?.status).toBe("open");
+    expect(deriveStepperItems(all, "publish").at(-1)?.status).toBe("current");
   });
 });

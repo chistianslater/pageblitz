@@ -57,7 +57,6 @@ export function neighbourOf<T extends DesignDirection>(
     0,
     directions.findIndex(direction => direction.id === activeId)
   );
-  const index =
-    (activeIndex + offset + directions.length) % directions.length;
+  const index = (activeIndex + offset + directions.length) % directions.length;
   return directions[index] ?? null;
 }
