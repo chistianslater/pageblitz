@@ -68,9 +68,7 @@ describe("studioEvents — späte Einwilligung", () => {
     expect(clarity).toHaveBeenCalledWith("set", "quelle", "postkarte");
     expect(clarity).toHaveBeenLastCalledWith("event", "design_angesehen");
     trackStudioEvent("design_bestaetigt");
-    expect(
-      clarity.mock.calls.filter(c => c[0] === "set").length
-    ).toBe(1);
+    expect(clarity.mock.calls.filter(c => c[0] === "set").length).toBe(1);
   });
 });
 
