@@ -12,6 +12,7 @@ import {
   shouldShowIntro,
 } from "./designSplashLogic";
 import { SplashIntro } from "./SplashIntro";
+import { tagStudioSession, trackStudioEvent } from "@/lib/studioEvents";
 
 /** Dauer der Overlay-Ausblendung — muss zur CSS-Animation pb-splash-intro-out passen. */
 const INTRO_EXIT_MS = 700;
@@ -116,6 +117,7 @@ export function DesignSplash({
   const [introLeaving, setIntroLeaving] = useState(false);
   const dismissIntro = useCallback(() => {
     writeSession(introKey);
+    trackStudioEvent("intro_geschlossen");
     const reduced = window.matchMedia?.(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -159,6 +161,7 @@ export function DesignSplash({
       { token, packId, confirm: false },
       {
         onSuccess: () => {
+          trackStudioEvent("design_angesehen");
           setActivePackId(packId);
           onSelectionApplied();
         },
@@ -173,6 +176,9 @@ export function DesignSplash({
       { token, packId: activePackId, confirm: true },
       {
         onSuccess: () => {
+          // Gewählte Richtung statt Start-Design als Tag für alles Weitere.
+          tagStudioSession({ design: activePackId });
+          trackStudioEvent("design_bestaetigt");
           onApplied();
           onConfirmed();
         },

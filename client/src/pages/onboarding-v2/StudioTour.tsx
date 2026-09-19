@@ -7,6 +7,7 @@ import {
   tourStorageKey,
   type Rect,
 } from "./studioTourLogic";
+import { trackStudioEvent } from "@/lib/studioEvents";
 
 interface StudioTourProps {
   token: string;
@@ -106,11 +107,14 @@ export function StudioTour({ token, status }: StudioTourProps) {
 
   if (!open || !step) return null;
 
-  const finish = () => {
+  const last = index === STUDIO_TOUR_STEPS.length - 1;
+  // „Los geht's" im letzten Schritt = abgeschlossen; „Überspringen"/Esc
+  // vorher = übersprungen (Funnel-Auswertung, 2026-09-19).
+  const finish = (completed = false) => {
     writeStored(key);
+    trackStudioEvent(completed ? "tour_abgeschlossen" : "tour_uebersprungen");
     setOpen(false);
   };
-  const last = index === STUDIO_TOUR_STEPS.length - 1;
   const spotStyle = spot
     ? { left: spot.left, top: spot.top, width: spot.width, height: spot.height }
     : undefined;
@@ -148,14 +152,14 @@ export function StudioTour({ token, status }: StudioTourProps) {
             type="button"
             className="pb-studio-btn"
             data-variant="ghost"
-            onClick={finish}
+            onClick={() => finish()}
           >
             Überspringen
           </button>
           <button
             type="button"
             className="pb-studio-btn"
-            onClick={() => (last ? finish() : setIndex(index + 1))}
+            onClick={() => (last ? finish(true) : setIndex(index + 1))}
           >
             {last ? "Los geht's" : "Weiter"}
           </button>

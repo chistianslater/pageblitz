@@ -57,5 +57,8 @@ export async function handleKurzlink(
     }
   }
 
-  res.redirect(302, `/onboarding/${karte.token}`);
+  // `via=karte` (2026-09-19): markiert Postkarten-Besuche für Clarity/GA4
+  // (studioEvents.ts), damit sich der Funnel nur für Kartenempfänger
+  // auswerten lässt. Das Studio ignoriert den Parameter sonst.
+  res.redirect(302, `/onboarding/${karte.token}?via=karte`);
 }

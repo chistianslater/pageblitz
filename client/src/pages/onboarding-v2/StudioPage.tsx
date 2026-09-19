@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   ADDON_EDITORS,
@@ -58,7 +58,26 @@ import {
   type WizardStep,
 } from "./studioLogic";
 import { resolveStudioLocation, withStudioParams } from "./studioUrl";
+import {
+  tagStudioSession,
+  trackStudioEvent,
+  type StudioEvent,
+} from "@/lib/studioEvents";
+import { trackConversion } from "@/lib/tracking";
 import "./studio.css";
+
+/** Ereignis je geöffnetem Schritt (Funnel-Auswertung, 2026-09-19). */
+const PANEL_EVENTS: Record<RailPanel, StudioEvent> = {
+  style: "schritt_design",
+  photos: "schritt_fotos",
+  texts: "schritt_texte",
+  structure: "schritt_struktur",
+  offer: "schritt_angebot",
+  legal: "schritt_recht",
+  addons: "schritt_extras",
+  versions: "schritt_verlauf",
+  publish: "schritt_freischalten",
+};
 
 /**
  * Offenes Panel in der Rail: ein Checklisten-Punkt oder — seit 2026-09-18 —
@@ -71,6 +90,22 @@ type RailPanel = ChecklistItemId | "publish";
 
 export default function StudioPage({ token }: { token: string }) {
   const studio = useStudioState(token);
+  // Sitzungs-Markierung für Clarity/GA4 (2026-09-19): Herkunft (Postkarte
+  // über /k/:code → ?via=karte), Status und Designrichtung — einmal, sobald
+  // der Studio-Zustand geladen ist.
+  const [via] = useState(() =>
+    new URLSearchParams(window.location.search).get("via")
+  );
+  const sessionTagged = useRef(false);
+  useEffect(() => {
+    if (sessionTagged.current || !studio.state) return;
+    sessionTagged.current = true;
+    tagStudioSession({
+      quelle: via === "karte" ? "postkarte" : "direkt",
+      status: studio.state.status,
+      design: studio.state.stylePackId ?? "offen",
+    });
+  }, [studio.state, via]);
   const initialLocation = resolveStudioLocation(window.location.search);
   const [activeId, setActiveIdState] = useState<RailPanel | null>(
     () => initialLocation.panel
@@ -87,9 +122,15 @@ export default function StudioPage({ token }: { token: string }) {
   // Deep-Link) — kein zusätzlicher History-Eintrag pro Klick, andere
   // Query-Parameter bleiben erhalten (studioUrl.withStudioParams). Extra-Klick
   // (Galerie, Speisekarte, …) setzt `?extra=` und öffnet das Inhaltspanel.
-  const setActiveId = (id: RailPanel | null, extra: AddOnKey | null = null) => {
+  const setActiveId = (
+    id: RailPanel | null,
+    extra: AddOnKey | null = null,
+    /** false = automatisch geöffnet (Wizard-Start) — zählt nicht als Klick. */
+    track = true
+  ) => {
     setAddonFocus(extra);
     setPhotoFocus(null);
+    if (track && id && id !== activeId) trackStudioEvent(PANEL_EVENTS[id]);
     setActiveIdState(id);
     const editor = extra ? ADDON_EDITORS[extra] : null;
     const anchorByPanel: Partial<Record<RailPanel, string>> = {
@@ -123,6 +164,7 @@ export default function StudioPage({ token }: { token: string }) {
   const openPhotosAt = (target: "hero" | "about" | "gallery") => {
     // Reihenfolge: setActiveId zuerst — es nullt photoFocus für alle
     // anderen Öffnungswege (Checkliste), der Klick-Wert gewinnt danach.
+    trackStudioEvent("vorschau_foto_geklickt");
     setActiveId("photos");
     setPhotoFocus(target);
   };
@@ -190,6 +232,7 @@ export default function StudioPage({ token }: { token: string }) {
   const guardSaveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
   const applySectionLayout = useCallback(
     (profile: DesignProfile) => {
+      trackStudioEvent("vorschau_layout_gewechselt");
       updateTheme.mutate(
         { token, designProfile: profile },
         {
@@ -240,7 +283,7 @@ export default function StudioPage({ token }: { token: string }) {
     setWizardActive(true);
     if (!activeId) {
       const step = nextWizardStep(state.checklist);
-      if (step !== "publish") setActiveId(step);
+      if (step !== "publish") setActiveId(step, null, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [studio.state]);
@@ -302,6 +345,8 @@ export default function StudioPage({ token }: { token: string }) {
       armed={shouldWarnOnLeave(state.status, state.customerEmail)}
       onSubmitEmail={async email => {
         await guardSaveEmail.mutateAsync({ token, email });
+        trackStudioEvent("email_gespeichert");
+        trackConversion("qualify_lead");
         await studio.refetch();
       }}
     />
@@ -421,7 +466,8 @@ export default function StudioPage({ token }: { token: string }) {
           businessName={state.businessName}
           pending={updateGoal.isPending || skipGoal.isPending}
           error={updateGoal.error?.message ?? skipGoal.error?.message ?? null}
-          onPick={goal =>
+          onPick={goal => {
+            trackStudioEvent("ziel_gewaehlt");
             updateGoal.mutate(
               { token, goal },
               {
@@ -430,11 +476,12 @@ export default function StudioPage({ token }: { token: string }) {
                   studio.bumpPreview();
                 },
               }
-            )
-          }
-          onSkip={() =>
-            skipGoal.mutate({ token }, { onSuccess: () => studio.refetch() })
-          }
+            );
+          }}
+          onSkip={() => {
+            trackStudioEvent("ziel_uebersprungen");
+            skipGoal.mutate({ token }, { onSuccess: () => studio.refetch() });
+          }}
         />
       </>
     );
@@ -459,6 +506,7 @@ export default function StudioPage({ token }: { token: string }) {
   const inlineTargets =
     previewSlug === null ? collectInlineTextTargets(state.doc) : undefined;
   const applyInlineText = (path: string, value: string) => {
+    trackStudioEvent("vorschau_text_bearbeitet");
     inlineUpdateText.mutate(
       { token, path, value },
       {
@@ -895,7 +943,10 @@ export default function StudioPage({ token }: { token: string }) {
             }
             onInsertSection={
               versionPreviewId === null && previewSlug === null
-                ? setInsertAfter
+                ? afterType => {
+                    trackStudioEvent("sektion_einfuegen_geoeffnet");
+                    setInsertAfter(afterType);
+                  }
                 : undefined
             }
             pendingInsert={pendingInsert}
@@ -950,11 +1001,13 @@ export default function StudioPage({ token }: { token: string }) {
                   {
                     onSuccess: result => {
                       if (result.kind === "inserted") {
+                        trackStudioEvent("sektion_eingefuegt");
                         setPreviewFocusAnchor(SECTION_ANCHORS[type]);
                         studio.refetch();
                         studio.bumpPreview();
                         flashPreview();
                       } else {
+                        trackStudioEvent("sektion_abgelehnt");
                         setInsertNotice(result.reason);
                       }
                     },
@@ -1022,7 +1075,10 @@ export default function StudioPage({ token }: { token: string }) {
               <button
                 type="button"
                 className="pb-studio-assistant-fab"
-                onClick={() => setAssistantOpen(true)}
+                onClick={() => {
+                  trackStudioEvent("ki_assistent_geoeffnet");
+                  setAssistantOpen(true);
+                }}
               >
                 <span aria-hidden="true">✦</span> Was möchtest du noch ändern?
               </button>

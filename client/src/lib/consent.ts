@@ -7,6 +7,8 @@
  */
 
 const CONSENT_KEY = "pageblitz_site_consent_v1";
+/** GA4-Property von pageblitz.de — auch Ziel der Studio-Funnel-Ereignisse (studioEvents.ts). */
+export const GA4_MEASUREMENT_ID = "G-3ZF2WR4VWF";
 
 export type ConsentData = {
   /** Google Analytics 4 + Microsoft Clarity */
@@ -83,6 +85,11 @@ export function trackMetaPageView(): void {
   }
 }
 
+/** Statistik-Consent prüfen (GA4 + Clarity). */
+export function hasAnalyticsConsent(): boolean {
+  return getStoredConsent()?.analytics === true;
+}
+
 /** Marketing-Consent prüfen. */
 export function hasMarketingConsent(): boolean {
   return getStoredConsent()?.marketing === true;
@@ -115,7 +122,7 @@ function injectGoogleAnalytics(): void {
   const s1 = document.createElement("script");
   s1.id = "pb-ga-script";
   s1.async = true;
-  s1.src = "https://www.googletagmanager.com/gtag/js?id=G-3ZF2WR4VWF";
+  s1.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
   document.head.appendChild(s1);
 
   const s2 = document.createElement("script");
@@ -124,7 +131,7 @@ function injectGoogleAnalytics(): void {
     "window.dataLayer = window.dataLayer || [];",
     "function gtag(){dataLayer.push(arguments);}",
     "gtag('js', new Date());",
-    "gtag('config', 'G-3ZF2WR4VWF');",
+    `gtag('config', '${GA4_MEASUREMENT_ID}');`,
   ].join("\n");
   document.head.appendChild(s2);
 }

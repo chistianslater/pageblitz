@@ -10,6 +10,8 @@ import {
 } from "@shared/pricing";
 import type { StudioState } from "../../../../server/onboardingV2/state";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
+import { trackStudioEvent } from "@/lib/studioEvents";
+import { trackConversion } from "@/lib/tracking";
 
 /** Offener Pflichtpunkt — klickbar: Checklisten-Panel bzw. E-Mail-Feld. */
 export interface MissingItem {
@@ -153,7 +155,14 @@ export function CheckoutBar({
     if (!emailValid) return;
     saveEmail.mutate(
       { token, email: trimmedEmail, marketingConsent },
-      { onSuccess: onStateChanged }
+      {
+        onSuccess: () => {
+          // Lead für Google Ads/GA4 (bisher nur auf der alten Startseite).
+          trackStudioEvent("email_gespeichert");
+          trackConversion("qualify_lead");
+          onStateChanged();
+        },
+      }
     );
   };
 
@@ -168,6 +177,7 @@ export function CheckoutBar({
 
   const handleCheckout = () => {
     if (!state.checkoutReady) {
+      trackStudioEvent("kauf_blockiert");
       setShowMissing(true);
       if (!state.customerEmail) {
         document.getElementById("pb-checkout-email")?.focus();
@@ -178,6 +188,8 @@ export function CheckoutBar({
       { token, billingInterval },
       {
         onSuccess: ({ url }) => {
+          trackStudioEvent("kauf_gestartet");
+          trackConversion("close_convert_lead");
           window.location.assign(url);
         },
       }
