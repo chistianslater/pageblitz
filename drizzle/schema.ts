@@ -625,6 +625,11 @@ export const postcards = mysqlTable("postcards", {
   /** Warum zurueckgestellt — steht in der Liste unter dem Namen. */
   notiz: varchar("notiz", { length: 300 }),
   /**
+   * Stand im HeyMail-Konto (2026-09-19), von Hand gepflegt: HeyMail bietet
+   * per API-Schluessel keine Status-Abfrage. `null` = nie beauftragt.
+   */
+  druckstatus: mysqlEnum("druckstatus", ["geplant", "verschickt", "storniert"]),
+  /**
    * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
    * `bildAt` sagt, von wann sie ist — aelter als
    * `generated_websites.updatedAt` heisst: Die Seite wurde seither neu

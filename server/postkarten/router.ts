@@ -21,7 +21,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { adminProcedure, router } from "../_core/trpc";
 import { deleteWebsite, updateBusiness } from "../db";
-import { gruppiere } from "./auswertung";
+import { gruppiere, trichter } from "./auswertung";
 import { karteAnHeymail, standardTemplate } from "./auftrag";
 import {
   karteWiederAufnehmen,
@@ -31,6 +31,7 @@ import {
   postkarteSichern,
   postkarteVersendet,
   vorschauGespeichert,
+  druckstatusSetzen,
 } from "./db";
 import {
   anschriftZerlegen,
@@ -141,10 +142,26 @@ export const postkartenRouter = router({
     const karten = await kartenUebersicht();
     return {
       karten,
+      trichter: trichter(karten),
       nachStadt: gruppiere(karten, z => z.city),
       nachVariante: gruppiere(karten, z => z.textVariant),
     };
   }),
+
+  /**
+   * Druckstatus aus dem HeyMail-Konto nachziehen (2026-09-19) — von Hand,
+   * weil HeyMail per API-Schluessel keine Status-Abfrage anbietet.
+   */
+  druckstatusSetzen: adminProcedure
+    .input(
+      z.object({
+        ids: z.array(z.number().int().positive()).min(1).max(500),
+        druckstatus: z.enum(["geplant", "verschickt", "storniert"]),
+      })
+    )
+    .mutation(async ({ input }) => ({
+      geaendert: await druckstatusSetzen(input.ids, input.druckstatus),
+    })),
 
   /** Was der Server gerade benutzen wuerde — fuer die Anzeige im Backend. */
   einstellungen: adminProcedure.query(() => ({
