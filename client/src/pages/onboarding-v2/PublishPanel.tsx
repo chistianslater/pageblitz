@@ -59,19 +59,11 @@ export function PublishPanel({
     <PanelFrame
       step="Letzter Schritt"
       title="Website freischalten"
-      intro="Wähle die Abrechnung, hinterlege deine E-Mail-Adresse und schalte die Website frei. Danach kannst du sie weiterhin jederzeit im Studio ändern."
+      intro="Ändern kannst du danach weiterhin alles."
       panelId="publish"
       onClose={onClose}
-      footer={
-        <button
-          type="button"
-          className="pb-studio-btn"
-          data-variant="ghost"
-          onClick={onClose}
-        >
-          Zurück zur Übersicht
-        </button>
-      }
+      // Kein Fuß mit „Zurück zur Übersicht" (Audit 2026-09-19): Den Rückweg
+      // trägt die Kopfleiste; unten klebt stattdessen der Kaufknopf.
     >
       <CheckoutBar
         state={state}

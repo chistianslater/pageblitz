@@ -8,8 +8,8 @@ interface PanelFrameProps {
   title: string;
   intro?: string;
   children: React.ReactNode;
-  /** Buttons am Fuß des Panels (z. B. "Fertig" / "Übernehmen"). */
-  footer: React.ReactNode;
+  /** Buttons am Fuß des Panels (z. B. "Fertig" / "Übernehmen"); ohne → kein Fuß. */
+  footer?: React.ReactNode;
   /** Checklisten-Eintrag, den dieses Panel bearbeitet — für Fokus-Management (siehe usePanelFocus). "publish" = Freischalten-Panel (kein Checklisten-Punkt). */
   panelId: ChecklistItemId | "publish";
   onClose: () => void;
@@ -58,7 +58,7 @@ export function PanelFrame({
       {children}
       {/* Sticky (P2): Die Hauptaktion bleibt auch bei langem Panel-Inhalt
           (z. B. Fotos-Grid) ohne Scrollen erreichbar. */}
-      <div className="pb-studio-panel-foot">{footer}</div>
+      {footer && <div className="pb-studio-panel-foot">{footer}</div>}
     </section>
   );
 }

@@ -610,19 +610,17 @@ test.describe("Studio", () => {
       // Domain example.com statt pageblitz.de (Finding I3): reserviert für
       // Doku/Tests (RFC 2606), damit kein echter Mailversand an eine
       // pageblitz.de-Adresse ausgelöst wird.
+      // Seit dem Audit 2026-09-19 gibt es keinen eigenen Speichern-Knopf:
+      // „Website freischalten" speichert die Adresse und startet Stripe. Den
+      // Klick sparen wir uns hier (kein Checkout im Test).
       await emailInput.fill("qa-onboarding-v2@example.com");
-      await Promise.all([
-        page.waitForResponse(
-          res => res.url().includes("onboardingV2.setCustomerEmail") && res.ok()
-        ),
-        checkoutBar.getByRole("button", { name: "Speichern" }).click(),
-      ]);
     }
 
     const checkoutButton = checkoutBar.getByRole("button", {
-      name: "Website freischalten",
+      name: /Website freischalten/,
     });
     await expect(checkoutButton).toBeEnabled();
+    await expect(checkoutButton).toContainText("7 Tage gratis");
 
     // Reload-Garantie (Spec §8.1): Rechtliches-Status und Checkout-Bereitschaft
     // sind serverseitig abgeleitet (deriveChecklistState/isCheckoutReady),
@@ -639,7 +637,7 @@ test.describe("Studio", () => {
     await expect(
       page
         .locator(".pb-studio-checkout")
-        .getByRole("button", { name: "Website freischalten" })
+        .getByRole("button", { name: /Website freischalten/ })
     ).toBeEnabled();
   });
 

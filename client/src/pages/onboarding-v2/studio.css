@@ -2344,19 +2344,80 @@
   background: var(--st-canvas);
   border: 1px solid var(--st-line);
 }
+/* Preis einmal und groß (Audit 2026-09-19). */
 .pb-studio-checkout-total {
+  margin: 0;
+  color: var(--st-muted);
+  font-size: 0.95rem;
+}
+.pb-studio-checkout-total strong {
+  color: var(--st-ink);
+  font-family: var(--st-display);
+  font-size: 1.9rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
 }
 .pb-studio-checkout-hint,
 .pb-studio-checkout-ready {
+  margin: 0;
   color: var(--st-muted);
   font-size: 0.85rem;
 }
+/* „Noch offen:" mit anklickbaren Punkten statt eines nackten roten Links. */
 .pb-studio-checkout-missing {
-  margin: 0;
-  padding-left: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0.2rem 0 0;
   font-size: 0.85rem;
   color: var(--st-warn);
+}
+.pb-studio-checkout-missing ul {
+  display: contents;
+  list-style: none;
+}
+.pb-studio-checkout-missing li + li::before {
+  content: "· ";
+}
+/* Preise direkt im Umschalter (Audit 2026-09-19). */
+.pb-studio-billing button span {
+  margin-left: 0.3rem;
+  font-weight: 600;
+}
+/* Kaufknopf mit Testwoche und Preis; klebt unten in der Rail, damit er beim
+   Scrollen über das E-Mail-Feld sichtbar bleibt (Audit 2026-09-19). */
+.pb-studio-checkout-cta-area {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 calc(-1 * var(--st-space));
+  padding: 0.75rem var(--st-space);
+  background: var(--st-surface);
+  border-top: 1px solid var(--st-line);
+}
+.pb-studio-checkout-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  width: 100%;
+  padding-block: 0.75rem;
+  font-size: 1.02rem;
+}
+.pb-studio-checkout-cta small {
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.pb-studio-checkout-trust {
+  margin: 0;
+  text-align: center;
+  color: var(--st-muted);
+  font-size: 0.75rem;
 }
 .pb-studio-ai {
   display: flex;

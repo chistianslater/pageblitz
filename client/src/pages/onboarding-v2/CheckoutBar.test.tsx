@@ -28,6 +28,15 @@ describe("CheckoutSummary", () => {
     expect(html).toContain("<button");
   });
 
+  test("ohne Extras steht der Preis einmal — kein „+ Extras“ (Audit 2026-09-19)", () => {
+    const html = renderToStaticMarkup(
+      <CheckoutSummary interval="yearly" addOns={{}} ready={true} hasEmail={true} missing={[]} />
+    );
+    expect(html).not.toContain("Extras");
+    expect(html.match(/19,90 €/g)).toHaveLength(1);
+    expect(html).toContain("7 Tage kostenlos");
+  });
+
   test("zeigt einen Bereit-Hinweis, wenn nichts mehr fehlt", () => {
     const html = renderToStaticMarkup(
       <CheckoutSummary
@@ -176,10 +185,13 @@ function renderWithTrpc(node: React.ReactElement): string {
   );
 }
 
-describe("CheckoutBar", () => {
-  // Seit 2026-08-29 bewusst NICHT mehr deaktiviert: der Klick zeigt die
-  // offenen Pflichtpunkte an (siehe handleCheckout), statt stumm zu bleiben.
-  test("'Website freischalten' bleibt auch ohne checkoutReady klickbar", () => {
+const legalDone = (state: StudioState): StudioState["checklist"] =>
+  state.checklist.map(i => (i.id === "legal" ? { ...i, status: "done" } : i));
+
+describe("CheckoutBar (Audit 2026-09-19)", () => {
+  // Seit 2026-08-29 bewusst NICHT deaktiviert — der Knopf sagt jetzt aber
+  // ehrlich, was fehlt, statt „freischalten“ zu versprechen.
+  test("fehlt Rechtliches, heißt der Knopf „Rechtliches ergänzen“ und bleibt klickbar", () => {
     const html = renderWithTrpc(
       <CheckoutBar
         state={buildState()}
@@ -187,22 +199,57 @@ describe("CheckoutBar", () => {
         onStateChanged={() => {}}
       />
     );
-    const match = html.match(/<button[^>]*>Website freischalten<\/button>/);
+    const match = html.match(/<button[^>]*class="[^"]*pb-studio-checkout-cta[^"]*"[^>]*>[\s\S]*?<\/button>/);
     expect(match).not.toBeNull();
+    expect(match![0]).toContain("Rechtliches ergänzen");
     expect(match![0]).not.toContain("disabled");
   });
 
-  test("'Website freischalten' ist aktiv, sobald checkoutReady wahr ist", () => {
+  test("bereit: Knopf nennt Testwoche und Preis", () => {
+    const base = buildState();
     const html = renderWithTrpc(
       <CheckoutBar
-        state={buildState({ checkoutReady: true, customerEmail: "a@b.de" })}
+        state={buildState({
+          checkoutReady: true,
+          customerEmail: "a@b.de",
+          checklist: legalDone(base),
+        })}
         token={"t".repeat(32)}
         onStateChanged={() => {}}
       />
     );
-    const match = html.match(/<button[^>]*>Website freischalten<\/button>/);
-    expect(match).not.toBeNull();
-    expect(match![0]).not.toContain("disabled");
+    expect(html).toContain("Website freischalten");
+    expect(html).toContain("7 Tage gratis, dann 19,90 € / Monat");
+  });
+
+  test("nur die E-Mail fehlt: kein eigener Speichern-Knopf, Freischalten speichert sie mit", () => {
+    const base = buildState();
+    const html = renderWithTrpc(
+      <CheckoutBar
+        state={buildState({ checklist: legalDone(base) })}
+        token={"t".repeat(32)}
+        onStateChanged={() => {}}
+      />
+    );
+    expect(html).toContain("Website freischalten");
+    expect(html).not.toMatch(/>Speichern</);
+  });
+
+  test("Umschalter nennt beide Preise", () => {
+    const html = renderWithTrpc(
+      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+    );
+    expect(html).toContain("24,90 €");
+    expect(html).toContain("19,90 €");
+  });
+
+  test("Vertrauenszeile am Knopf: kündbar, inkl. MwSt., Stripe", () => {
+    const html = renderWithTrpc(
+      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+    );
+    expect(html).toContain("Jederzeit kündbar");
+    expect(html).toContain("inkl. MwSt.");
+    expect(html).toContain("Stripe");
   });
 
   test("Impressums-E-Mail wird als änderbarer Account-Vorschlag vorbefüllt", () => {
@@ -221,21 +268,21 @@ describe("CheckoutBar", () => {
     expect(html).toContain('value="impressum@beispiel.de"');
     expect(html).toContain("E-Mail-Adresse für deinen Account");
     expect(html).toContain("Aus dem Impressum vorgeschlagen");
-    expect(html).toContain(
-      "Ohne E-Mail wird deine Vorschau nach 24 Stunden automatisch gelöscht."
-    );
   });
 
-  test("Finding F3: Hinweistext differenziert Kontaktformular (sofort) von KI-Chat/Terminbuchung (nach Freischalten)", () => {
-    const html = renderWithTrpc(
+  test("Extras-Hinweis nur, wenn solche Extras gebucht sind (Finding F3 bleibt inhaltlich)", () => {
+    const ohne = renderWithTrpc(
+      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+    );
+    expect(ohne).not.toContain("Kontaktformular erscheint sofort");
+    const mit = renderWithTrpc(
       <CheckoutBar
-        state={buildState()}
+        state={buildState({ addOns: { aiChat: true } })}
         token={"t".repeat(32)}
         onStateChanged={() => {}}
       />
     );
-    expect(html).toContain(
-      "Kontaktformular erscheint sofort in deiner Website; KI-Chat und Terminbuchung werden direkt nach dem Freischalten aktiv."
-    );
+    expect(mit).toContain("KI-Chat");
+    expect(mit).toContain("direkt nach dem Freischalten aktiv");
   });
 });
