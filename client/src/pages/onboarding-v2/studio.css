@@ -824,6 +824,21 @@
 .pb-design-side:hover .pb-design-side-frame {
   border-color: var(--st-accent);
 }
+/* Leichter Schleier über den Alternativen (Betreiber-Wunsch 2026-09-19):
+   Die aktive Richtung in der Mitte wirkt heller; beim Überfahren hebt sich
+   der Schleier fast ganz. */
+.pb-design-side-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 11, 13, 0.22);
+  pointer-events: none;
+  transition: background-color 0.3s ease;
+}
+.pb-design-side:hover .pb-design-side-frame::after,
+.pb-design-side:focus-visible .pb-design-side-frame::after {
+  background: rgba(11, 11, 13, 0.04);
+}
 .pb-design-side:focus-visible {
   outline: 2px solid var(--st-accent);
   outline-offset: 4px;
@@ -1063,19 +1078,6 @@
   transform: scale(0.25);
   transform-origin: top left;
   pointer-events: none;
-}
-.pb-design-side strong,
-.pb-design-side > span:last-child {
-  display: block;
-  margin-top: 0.4rem;
-}
-.pb-design-side strong {
-  font-size: 1rem;
-}
-.pb-design-side > span:last-child {
-  color: var(--st-muted);
-  font-size: 0.8rem;
-  line-height: 1.4;
 }
 .pb-design-more {
   display: block;
@@ -4093,7 +4095,7 @@
 /* Seitenkarten breiter (.38fr → .6fr) und nicht mehr ausgeblendet auf
    schmalen Fenstern — Test-Feedback 2026-09-18, siehe Regeln oben. */
 .pb-design-stage{grid-template-columns:minmax(150px,.6fr) minmax(0,2fr) minmax(150px,.6fr);align-items:start}
-.pb-design-side{margin-top:90px}.pb-design-center[data-enter]{animation:none}
+.pb-design-side{margin-top:0;align-self:center}.pb-design-center[data-enter]{animation:none}
 .pb-design-splash-head{margin-bottom:20px}.pb-design-splash-head .pb-studio-title{font-size:clamp(24px,2.4vw,34px)}
 @media(max-width:900px){.pb-design-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pb-design-side{margin-top:0}.pb-design-splash .pb-studio-device{height:55dvh}.pb-design-splash-head{gap:14px}}
 

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
 import type { PackId } from "@shared/siteContract/types";
@@ -200,8 +199,6 @@ export function DesignSplash({
         <span className="pb-design-side-pill" aria-hidden="true">
           Alternative ansehen
         </span>
-        <strong>{candidate.name}</strong>
-        <span>Deine Inhalte · {candidate.essence}</span>
       </button>
     ) : (
       <span />
@@ -279,32 +276,13 @@ export function DesignSplash({
         <div className="pb-design-stage">
           {sideCard(previous, "left")}
           <div className="pb-design-center" data-enter={slideDirection}>
-            <div className="pb-design-center-label">
-              <button
-                type="button"
-                aria-label="Vorherige Designrichtung"
-                onClick={() => previous && pick(previous.id, "left")}
-                disabled={!previous || busyId !== null}
-              >
-                <ChevronLeft aria-hidden="true" />
-              </button>
-              <div>
-                <strong>{getConstitution(activePackId).name}</strong>
-                <span role="status">
-                  {busyId
-                    ? "Design wird geladen …"
-                    : "Aktive Richtung — mit deinen Inhalten"}
-                </span>
-              </div>
-              <button
-                type="button"
-                aria-label="Nächste Designrichtung"
-                onClick={() => next && pick(next.id, "right")}
-                disabled={!next || busyId !== null}
-              >
-                <ChevronRight aria-hidden="true" />
-              </button>
-            </div>
+            {/* Zeile „‹ Name · Aktive Richtung ›" entfernt (Betreiber-Wunsch
+                2026-09-19): Der dunkle Tab zeigt die aktive Richtung,
+                gewechselt wird über Tabs oder Seitenkarten. Der Ladezustand
+                bleibt für Screenreader hörbar. */}
+            <span className="sr-only" role="status">
+              {busyId ? "Design wird geladen …" : ""}
+            </span>
             <div className="pb-design-preview-shell">
               <PreviewFrame
                 token={token}
