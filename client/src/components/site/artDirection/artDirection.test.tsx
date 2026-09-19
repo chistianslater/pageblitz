@@ -29,6 +29,22 @@ describe("production art direction", () => {
     expect(html).toContain('class="pb-rich-accent"');
     expect(html).not.toContain("==Behandlungen==");
   });
+  test.each(PACK_IDS)("%s zeigt die Google-Bewertung an der Überschrift", id => {
+    const data = {
+      ...withArtDirection(getFixture(id, "full")),
+      google: { rating: 4.9, reviewCount: 1239 },
+    };
+    const html = renderToStaticMarkup(<SiteRenderer data={data} islandsMode="preview" />);
+    const hero = html.slice(html.indexOf('class="pb-art-hero"'), html.indexOf("<h1"));
+    expect(hero).toContain('class="pb-art-rating"');
+    expect(hero).toContain("<b aria-hidden=\"true\">4,9</b>");
+    expect(hero).toContain("1.239 Google-Bewertungen");
+  });
+  test("ohne Google-Daten keine Bewertungszeile im Kopf", () => {
+    const data = { ...withArtDirection(getFixture("patina", "full")), google: undefined };
+    const html = renderToStaticMarkup(<SiteRenderer data={data} islandsMode="preview" />);
+    expect(html).not.toContain('class="pb-art-rating"');
+  });
   test("explicit revision 1 keeps legacy rendering", () => {
     const data = getFixture("gusto", "full");
     const html = renderToStaticMarkup(<SiteRenderer data={data} />);

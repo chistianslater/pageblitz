@@ -11,6 +11,37 @@ import {
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
 
+type GoogleRating = NonNullable<WebsiteDataV2["google"]>;
+
+/** Deutsche Schreibweise mit einer Nachkommastelle, z. B. „4,9". */
+export function formatHeroRating(rating: number): string {
+  return rating.toLocaleString("de-DE", {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+/** Vertrauenssignal direkt an der Überschrift (Hero-Audit 2026-09-19):
+ * Der erste Stern stand sonst erst 3000 px tiefer bei den Bewertungen. */
+function HeroRating({ google }: { google: GoogleRating }) {
+  const count = google.reviewCount.toLocaleString("de-DE");
+  const label = google.reviewCount === 1 ? "Google-Bewertung" : "Google-Bewertungen";
+  return (
+    <span
+      className="pb-art-rating"
+      aria-label={`${formatHeroRating(google.rating)} von 5 Sternen bei ${count} ${label}`}
+    >
+      <span className="pb-art-rating-star" aria-hidden="true">
+        ★
+      </span>
+      <b aria-hidden="true">{formatHeroRating(google.rating)}</b>
+      <span aria-hidden="true">
+        {count} {label}
+      </span>
+    </span>
+  );
+}
+
 /** Server-renderable composition. Only genuine document content is rendered.
  * Layout and image hooks stay compatible with the studio and SSR enhancer.
  */
@@ -63,8 +94,16 @@ export function ArtDirectedHero({
       data-art-wordmark={wordmark ? "yes" : "no"}
     >
       <div className="pb-art-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-        {data.businessCategory && (
-          <p className="pb-art-category">{data.businessCategory}</p>
+        {(data.businessCategory || data.google) && (
+          <p className="pb-art-category">
+            {data.businessCategory}
+            {data.businessCategory && data.google && (
+              <span className="pb-art-rating-sep" aria-hidden="true">
+                ·
+              </span>
+            )}
+            {data.google && <HeroRating google={data.google} />}
+          </p>
         )}
         <h1
           data-art-long={

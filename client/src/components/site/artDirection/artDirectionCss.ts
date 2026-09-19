@@ -27,6 +27,11 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(28px,5vw,75px);max-width:1600px;margin:0 auto;padding:clamp(30px,4vw,65px) 6.5% 70px;background:transparent;color:var(--pb-ink);overflow:hidden;box-sizing:border-box}
 .pb-site[data-pb-revision="2"] .pb-art-copy{position:relative;z-index:2;min-width:0;padding:0;text-align:left}
 .pb-site[data-pb-revision="2"] .pb-art-category{font:400 12px/1.5 var(--pb-font-body);color:var(--pb-muted);margin:0 0 28px;text-transform:none;letter-spacing:.02em}
+.pb-site[data-pb-revision="2"] .pb-art-rating{display:inline-flex;align-items:baseline;gap:.4em;white-space:nowrap}
+.pb-site[data-pb-revision="2"] .pb-art-rating-sep{margin:0 .6em;opacity:.6}
+.pb-site[data-pb-revision="2"] .pb-art-rating-star{color:var(--pb-art-accent-text,var(--pb-accent))}
+.pb-site[data-pb-revision="2"] .pb-art-rating b{font-weight:600;color:var(--pb-ink)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-layout="banner"][data-art-image="yes"] .pb-art-rating :is(b,.pb-art-rating-star){color:#fff}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1{font-family:var(--pb-font-display);font-size:clamp(2.8rem,6.1vw,6.6rem);font-weight:var(--pb-art-weight,400);line-height:1.08;letter-spacing:-.055em;margin:0;max-width:16ch;color:var(--pb-ink);text-shadow:none;word-break:normal}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1[data-art-long="yes"]{font-size:clamp(2.1rem,4.4vw,4.7rem);max-width:23ch}
 .pb-site[data-pb-revision="2"] .pb-art-intro{font:400 clamp(1rem,1.3vw,1.2rem)/1.65 var(--pb-font-body);color:var(--pb-muted);max-width:38ch;margin:26px 0 30px}
