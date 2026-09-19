@@ -1,6 +1,7 @@
 import { applyStylePack } from "../onboardingV2/applyPatch";
 import type { Express, NextFunction, Request, Response } from "express";
 import { handleKurzlink } from "../postkarten/route";
+import { sdk } from "../_core/sdk";
 import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
 import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
@@ -734,6 +735,7 @@ export function registerSsrRoutes(app: Express): void {
     handleKurzlink(req, res, {
       findeKarte: findeKarteNachCode,
       erfasseScan: scanErfassen,
+      istAdmin: async r => (await sdk.authenticateRequest(r))?.role === "admin",
     })
   );
   app.get("/dev/site-preview", handleDevPreview);

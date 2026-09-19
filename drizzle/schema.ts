@@ -630,6 +630,11 @@ export const postcards = mysqlTable("postcards", {
    */
   druckstatus: mysqlEnum("druckstatus", ["geplant", "verschickt", "storniert"]),
   /**
+   * Eigene Testkarte des Betreibers (2026-09-19, 7N38 an SCHAU & HORCH):
+   * Der Kurz-Link funktioniert, in Übersicht und Trichter zählt sie nicht.
+   */
+  testkarte: boolean("testkarte").notNull().default(false),
+  /**
    * Motiv der Karte: Aufnahme der Vorschau-Seite, oeffentlich bei R2.
    * `bildAt` sagt, von wann sie ist — aelter als
    * `generated_websites.updatedAt` heisst: Die Seite wurde seither neu

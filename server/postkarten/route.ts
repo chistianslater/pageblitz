@@ -11,6 +11,21 @@ export interface KurzlinkKarte {
 export interface KurzlinkDeps {
   findeKarte: (code: string) => Promise<KurzlinkKarte | null>;
   erfasseScan: (postcardId: number, kanal: Kanal) => Promise<void> | void;
+  /**
+   * Eingeloggter Admin? Dann nicht zaehlen (2026-09-19): Die eigenen Tests
+   * des Betreibers standen sonst als Scans im Trichter.
+   */
+  istAdmin?: (req: Request) => Promise<boolean>;
+}
+
+/** Admin-Pruefung, die nie im Weg steht: Fehler heisst „kein Admin". */
+async function vomAdmin(req: Request, deps: KurzlinkDeps): Promise<boolean> {
+  if (!deps.istAdmin) return false;
+  try {
+    return await deps.istAdmin(req);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -48,9 +63,15 @@ export async function handleKurzlink(
   }
 
   const userAgent = req.headers["user-agent"];
-  if (!istBot(typeof userAgent === "string" ? userAgent : undefined)) {
+  const zaehlen =
+    !istBot(typeof userAgent === "string" ? userAgent : undefined) &&
+    !(await vomAdmin(req, deps));
+  if (zaehlen) {
     try {
-      await deps.erfasseScan(karte.id, kanalAus(req.query.q as string | undefined));
+      await deps.erfasseScan(
+        karte.id,
+        kanalAus(req.query.q as string | undefined)
+      );
     } catch {
       // Bewusst geschluckt: Eine kaputte Zaehlung darf den Besucher nicht
       // vor eine Fehlerseite laufen lassen.

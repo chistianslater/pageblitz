@@ -233,6 +233,8 @@ export async function kartenUebersicht(): Promise<KartenZeile[]> {
       eq(onboardingResponses.websiteId, postcards.websiteId)
     )
     .leftJoin(postcardScans, eq(postcardScans.postcardId, postcards.id))
+    // Eigene Testkarten zählen nicht zur Aktion (2026-09-19).
+    .where(eq(postcards.testkarte, false))
     .groupBy(postcards.id)
     .orderBy(desc(postcards.createdAt));
   return zeilen.map(({ studioProgress, ...z }) => ({

@@ -75,6 +75,37 @@ describe("handleKurzlink", () => {
     expect(r.kopf["X-Robots-Tag"]).toContain("noindex");
   });
 
+  test("Aufrufe eingeloggter Admins werden weitergeleitet, aber nicht gezaehlt (2026-09-19)", async () => {
+    // Die eigenen Tests des Betreibers verfaelschten den Trichter.
+    const erfasseScan = vi.fn();
+    const r = res();
+    await handleKurzlink(
+      { params: { code: "BOC7" }, query: { q: "1" }, headers: { "user-agent": "Mozilla/5.0 (iPhone)" } } as never,
+      r as never,
+      { findeKarte: async () => karte, erfasseScan, istAdmin: async () => true }
+    );
+    expect(r.code).toBe(302);
+    expect(erfasseScan).not.toHaveBeenCalled();
+  });
+
+  test("scheitert die Admin-Pruefung, wird gezaehlt und weitergeleitet", async () => {
+    const erfasseScan = vi.fn();
+    const r = res();
+    await handleKurzlink(
+      { params: { code: "BOC7" }, query: {}, headers: { "user-agent": "Mozilla/5.0 (iPhone)" } } as never,
+      r as never,
+      {
+        findeKarte: async () => karte,
+        erfasseScan,
+        istAdmin: async () => {
+          throw new Error("Session kaputt");
+        },
+      }
+    );
+    expect(r.code).toBe(302);
+    expect(erfasseScan).toHaveBeenCalledOnce();
+  });
+
   test("eine fehlgeschlagene Zaehlung darf den Besucher nicht aufhalten", async () => {
     // Der Mensch mit der Karte in der Hand ist wichtiger als die Statistik.
     const r = res();
