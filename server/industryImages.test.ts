@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { buildStockFallbackImages } from "./industryImages";
-import { getIndustryImages } from "./industryImages";
+import { getIndustryImages, istNeutralesSet } from "./industryImages";
 import { INDUSTRY_IMAGES } from "../shared/industryImages";
 
 describe("buildStockFallbackImages", () => {
@@ -79,5 +79,63 @@ describe('industryKey "default" darf die Kategorie nicht ueberstimmen', () => {
   test("ohne jeden Anhaltspunkt bleibt es beim neutralen Satz", () => {
     const set = getIndustryImages("Zamboni-Wartung", "Betrieb", "default");
     expect(set).toBe(INDUSTRY_IMAGES.default);
+  });
+});
+
+describe("Branchenzuordnung trifft die richtige Gruppe", () => {
+  const gruppe = (kategorie: string, name = "") => {
+    const satz = getIndustryImages(kategorie, name, undefined);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+
+  // Betreiber-Befund 2026-09-20: „Salon City Cuts Borken" bekam Laptop- und
+  // Bürofotos, weil das Technik-Schlagwort „it" in „City" steckt.
+  test("kurze Schlagworte treffen nur als ganzes Wort", () => {
+    expect(gruppe("Friseursalon", "Salon City Cuts Borken")).toBe("friseur");
+    expect(gruppe("Fitnessstudio", "Fitness First")).toBe("fitness");
+    expect(gruppe("Friseursalon", "Aland Barber Shop")).toBe("friseur");
+    expect(gruppe("Autohaus", "Carola Automobile")).toBe("automotive");
+    expect(gruppe("Bäckerei", "Baumann & Söhne")).not.toBe("handwerk");
+    expect(gruppe("Restaurant", "Apfelbaum")).toBe("restaurant");
+  });
+
+  test("echte Kurzworte treffen weiterhin", () => {
+    expect(gruppe("Bar", "Zum Anker")).toBe("bar");
+    expect(gruppe("IT-Service", "Netzwerk Nord")).toBe("tech");
+    expect(gruppe("Gym", "Kraftraum")).toBe("fitness");
+  });
+
+  test("die Kategorie schlägt den Firmennamen", () => {
+    // Der Name klingt nach Café, die Kategorie ist eindeutig.
+    expect(gruppe("Friseursalon", "Haarlounge am Café Central")).toBe(
+      "friseur"
+    );
+    expect(gruppe("Zahnarztpraxis", "Zahnrad Immobilien")).toBe("medizin");
+  });
+
+  test("die 32 Postkarten-Betriebe landen alle beim Friseur-Set", () => {
+    const namen = [
+      "Salon City Cuts Borken",
+      "Friseursalon Haarem",
+      "Aland Barber Shop",
+      "H&B Barber",
+      "Le Coiffeur",
+      "Pyra Haarmoden",
+      "Iris Klautke Friseursalon",
+      "Cevin Dufen Hair & Make-up Artist",
+      "Favori Friseur & Brazilian Waxing",
+      "Hair und Cino Inh. Tanja Borghorst",
+    ];
+    for (const name of namen) {
+      expect(gruppe("Friseursalon", name), name).toBe("friseur");
+    }
+  });
+
+  test("ohne passende Gruppe bleibt das neutrale Set erkennbar", () => {
+    const satz = getIndustryImages("Briefmarkenhandel", "Sammler Schmitz");
+    expect(istNeutralesSet(satz)).toBe(true);
+    expect(istNeutralesSet(getIndustryImages("Friseursalon", "Test"))).toBe(
+      false
+    );
   });
 });

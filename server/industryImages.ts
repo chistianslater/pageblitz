@@ -13,56 +13,77 @@ import { INDUSTRY_IMAGES, type IndustryImageSet } from "@shared/industryImages";
  * Uses intelligent matching: prioritizes longer, more specific keywords
  * to avoid false matches (e.g., "bauunternehmen" vs "bau").
  */
+/**
+ * Kurze Schlagworte dürfen nur als ganzes Wort treffen. Vorher galt jeder
+ * Teilstring: „it" (Technik) steckt in „City", „bar" in „Barbier", „bau" in
+ * „Baumann", „car" in „Carola". Der Friseursalon „Salon City Cuts Borken"
+ * bekam so Laptop- und Bürofotos in die Galerie (Betreiber-Befund
+ * 2026-09-20). Ab vier Zeichen bleibt der Teilstring erlaubt — deutsche
+ * Komposita wie „Friseursalon" ⊃ „friseur" sollen weiter greifen.
+ */
+const MIN_TEILSTRING = 4;
+
+/** Kleinschreibung, nur Buchstaben/Ziffern, von Leerzeichen umschlossen. */
+function normalisiert(text: string): string {
+  return ` ${text.toLowerCase().replace(/[^a-zäöüß0-9]+/g, " ").trim()} `;
+}
+
+/** Länge des längsten treffenden Schlagworts; 0 = kein Treffer. */
+function trefferLaenge(text: string, keywords: string[]): number {
+  let beste = 0;
+  for (const kw of keywords) {
+    const k = normalisiert(kw).trim();
+    if (!k) continue;
+    const trifft =
+      k.length >= MIN_TEILSTRING ? text.includes(k) : text.includes(` ${k} `);
+    if (trifft && k.length > beste) beste = k.length;
+  }
+  return beste;
+}
+
+/**
+ * Beste Bildergruppe für eine Branche. Die Kategorie aus dem Google-Profil
+ * wiegt schwerer als der Firmenname, und das längste treffende Schlagwort
+ * gewinnt (spezifisch vor allgemein). Früher entschied die mittlere
+ * Schlagwortlänge der Gruppe — eine Gruppe mit langen Wörtern gewann damit
+ * auch mit einem Zufallstreffer.
+ *
+ * `industryKey` (aus classifyIndustry) zählt nur, wenn er eine echte Gruppe
+ * benennt; „default" ist die Verlegenheitsantwort des LLM und darf die
+ * Kategorie nicht überstimmen (Befund 2026-09-09).
+ */
 export function getIndustryImages(
   category: string,
   businessName: string = "",
   industryKey?: string
 ): IndustryImageSet {
   if (industryKey === "hotel") industryKey = "hospitality";
-  // "default" ist die Verlegenheitsantwort von classifyIndustry (LLM), nicht
-  // eine Aussage. Frueher gewann sie sofort, weil eine Gruppe dieses Namens
-  // existiert — zwei Friseursalons bekamen dadurch abstrakte Verlaufsbilder,
-  // obwohl ihre Kategorie "Friseursalon" eindeutig ist (Befund 2026-09-09).
-  // Jetzt faellt sie durch zur Schlagwortsuche und landet nur dort, wo auch
-  // die Kategorie nichts hergibt.
-  if (
-    industryKey &&
-    industryKey !== "default" &&
-    INDUSTRY_IMAGES[industryKey]
-  ) {
+  if (industryKey && industryKey !== "default" && INDUSTRY_IMAGES[industryKey]) {
     return INDUSTRY_IMAGES[industryKey];
   }
 
-  const combined = `${category} ${businessName}`.toLowerCase().trim();
-
-  // Sortiere nach Priorität: längere/spezifischere Keywords zuerst
-  const entries = Object.entries(INDUSTRY_IMAGES).sort(([, setA], [, setB]) => {
-    const avgLenA =
-      setA.keywords.reduce((sum, kw) => sum + kw.length, 0) /
-      setA.keywords.length;
-    const avgLenB =
-      setB.keywords.reduce((sum, kw) => sum + kw.length, 0) /
-      setB.keywords.length;
-    return avgLenB - avgLenA; // Längere zuerst
-  });
-
-  // 1. Versuche: Exaktes oder starkes Match
-  for (const [, imageSet] of entries) {
-    const hasMatch = imageSet.keywords.some(kw => {
-      const normalizedKw = kw.toLowerCase();
-      // Prüfe auf exakten Match oder als Teilstring
-      return (
-        combined === normalizedKw ||
-        combined.includes(normalizedKw) ||
-        normalizedKw.includes(combined)
-      );
-    });
-    if (hasMatch) {
-      return imageSet;
+  const kategorie = normalisiert(category);
+  const name = normalisiert(businessName);
+  let beste: IndustryImageSet | null = null;
+  let bestKategorie = 0;
+  let bestName = 0;
+  for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
+    if (key === "default") continue;
+    const k = trefferLaenge(kategorie, satz.keywords);
+    const n = trefferLaenge(name, satz.keywords);
+    if (k === 0 && n === 0) continue;
+    if (k > bestKategorie || (k === bestKategorie && n > bestName)) {
+      beste = satz;
+      bestKategorie = k;
+      bestName = n;
     }
   }
+  return beste ?? INDUSTRY_IMAGES.default;
+}
 
-  return INDUSTRY_IMAGES.default;
+/** true, wenn keine Branchengruppe passte und nur das neutrale Set bleibt. */
+export function istNeutralesSet(satz: IndustryImageSet): boolean {
+  return satz === INDUSTRY_IMAGES.default;
 }
 
 /**

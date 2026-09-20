@@ -19,7 +19,12 @@ import { hasDirectPackMatch } from "../../shared/stylePacks";
 import { invalidateSsrCache } from "../ssr/routes";
 import { classifyIndustry } from "../industryClassifier";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
-import { buildStockFallbackImages } from "../industryImages";
+import {
+  buildStockFallbackImages,
+  getIndustryImages,
+  istNeutralesSet,
+} from "../industryImages";
+import { generateIndustryImages } from "./aiStockImages";
 import { crawlExistingSite } from "../gmb/siteCrawl";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
@@ -294,7 +299,17 @@ export async function resolveV2Images(
     business.placeId && !business.placeId.startsWith("self-")
       ? await mirrorGmbPhotosToR2(business.placeId, websiteId, MAX_GMB_PHOTOS)
       : [];
-  if (gmb.length === 0) return stock;
+  if (gmb.length === 0) {
+    // Ohne Google-Fotos UND ohne passende Branchengruppe blieben generische
+    // Büromotive übrig (Betreiber-Befund 2026-09-20: Laptops beim Friseur).
+    // Dann lieber Bilder zur Kategorie erzeugen.
+    const satz = getIndustryImages(category, business.name, industryKey);
+    if (istNeutralesSet(satz)) {
+      const erzeugt = await generateIndustryImages(category, websiteId);
+      if (erzeugt) return erzeugt;
+    }
+    return stock;
+  }
   const about = gmb[1] ?? stock.about;
   const gallery = gmb.length >= MIN_GALLERY_PHOTOS ? gmb : stock.gallery;
   return {
