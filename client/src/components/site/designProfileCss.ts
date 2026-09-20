@@ -249,6 +249,10 @@ export const DESIGN_PROFILE_CSS = `
 .pb-site[data-pb-he~="hero-media"] #start ${SLOT.heroCopy}{max-width:none!important}
 .pb-site[data-pb-he~="about-media"] #ueber-uns ${SLOT.aboutMedia}{display:none!important}
 .pb-site[data-pb-he~="about-media"] #ueber-uns ${SLOT.aboutGrid}{display:block!important;grid-template-columns:1fr!important}
+/* Dasselbe, wenn das Foto gar nicht erst im Dokument steht (2026-09-20):
+   Vorher blieb die zweite Spalte leer stehen und der Text schwebte in der
+   halben Breite. Alle Richtungen setzen dort ein <img>. */
+.pb-site[data-pb-about] ${SLOT.aboutGrid}:not(:has(img)),.pb-site[data-pb-about-mobile] ${SLOT.aboutGrid}:not(:has(img)){display:block!important;grid-template-columns:1fr!important}
 
 /* Dichte + Bildwirkung gelten auf allen Viewports */
 .pb-site[data-pb-density="compact"] section{padding-top:clamp(2.5rem,5vw,4.5rem)!important;padding-bottom:clamp(2.5rem,5vw,4.5rem)!important}

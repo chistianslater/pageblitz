@@ -16,4 +16,13 @@ export const LAYOUT_POLISH_CSS = `
    gusto: 4px Abstand): Mindestluft, wenn ein Link unmittelbar auf die
    Kontakt-Überschrift folgt. Packs mit Zwischeninhalt bleiben unberührt. */
 .pb-site #kontakt :is(h1,h2)+a{display:inline-block;margin-top:18px}
+
+/* Fehlendes Bild = volle Breite (2026-09-20, Betreiber-Befund „Text schwebt
+   im Raum"): Blendet der Kunde das Foto aus, kollabiert das Über-uns-Raster
+   bereits über data-pb-he. Fehlt das Foto dagegen im Dokument, blieb die
+   zweite Spalte leer stehen — in allen 20 Richtungen, mit 600 bis 870 px
+   ungenutzter Fläche. Alle Richtungen setzen dort ein <img>, deshalb greift
+   :has(img) zuverlässig. */
+.pb-site [data-pb-slot="about-grid"]:not(:has(img)){display:block;grid-template-columns:1fr}
+.pb-site .pb-ra-about:not(:has(img)){margin-left:0}
 `;

@@ -67,6 +67,7 @@ import {
   pageContentSections,
   pageForPathname,
   visiblePageSections,
+  withAboutFallbackImage,
 } from "./engine";
 
 export const SiteRenderer: React.FC<{
@@ -146,6 +147,9 @@ export const SiteRenderer: React.FC<{
           designProfile: data.designProfile ?? deriveArtDirectedProfile(data),
         }
       : data;
+  // Fehlt dem Über-uns-Abschnitt das Foto, rückt ein Galeriebild nach —
+  // sonst steht der Abschnitt halb leer (Betreiber-Befund 2026-09-20).
+  data = withAboutFallbackImage(data);
   const effectiveData =
     packOverride && packOverride !== data.stylePackId && PACK_MODULES[packOverride]
       ? {

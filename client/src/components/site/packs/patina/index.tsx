@@ -398,8 +398,16 @@ const PatinaPage: React.FC<{
   const gallery = sections.find(
     (s): s is SectionOf<"gallery"> => s.type === "gallery"
   );
-  const archSrc = gallery?.images[0]?.url ?? about?.imageUrl;
-  const heroArchSrc = hero ? archSrc : undefined;
+  // Der Bogen im Kopfbereich nimmt zuerst Galerie, dann das Kopfbild — das
+  // Über-uns-Foto nur als letzte Rückfallebene. Vorher fiel er ohne gebuchte
+  // Galerie auf das Über-uns-Foto zurück, und der Über-uns-Abschnitt ließ
+  // seines daraufhin weg (Betreiber-Befund 2026-09-20: fehlende Fotos).
+  const archSrc =
+    gallery?.images[0]?.url ?? hero?.imageUrl ?? about?.imageUrl;
+  // In der neuen Designstufe rendert ArtDirectedHero den Kopfbereich; der
+  // Bogen existiert dort nicht, also darf er auch nichts unterdrücken.
+  const heroArchSrc =
+    hero && data.designRevision !== 2 ? archSrc : undefined;
   const eyebrow = [data.businessCategory, contact?.city]
     .filter((v): v is string => Boolean(v))
     .join(" · ");

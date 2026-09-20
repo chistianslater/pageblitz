@@ -2,6 +2,7 @@ import type {
   Page,
   PageSection,
   PageSectionOf,
+  SectionOf,
   SectionType,
   SectionV2,
   SiteAddOns,
@@ -68,6 +69,35 @@ export function isSectionBooked(
   const addOn = ADDON_GATED_SECTION_TYPES[type];
   if (!addOn) return true;
   return doc.addOns?.[addOn] === true;
+}
+
+/**
+ * Über-uns ohne Foto: Das erste Galeriebild rückt nach, sofern es nicht
+ * schon im Kopfbereich steht. Rein für die Anzeige — das Dokument bleibt
+ * unverändert, der Abschnitt steht sonst halb leer da (Betreiber-Befund
+ * 2026-09-20). Hat der Kunde das Bild bewusst ausgeblendet, bleibt es aus;
+ * das Raster fällt dann über `data-pb-he` auf eine Spalte zurück.
+ */
+export function withAboutFallbackImage(doc: WebsiteDataV2): WebsiteDataV2 {
+  const about = doc.sections.find(
+    (s): s is SectionOf<"about"> => s.type === "about"
+  );
+  if (!about || about.imageUrl) return doc;
+  if (doc.designProfile?.hiddenElements?.includes("about-media")) return doc;
+  const heroBild = doc.sections.find(
+    (s): s is SectionOf<"hero"> => s.type === "hero"
+  )?.imageUrl;
+  const galerie = doc.sections.find(
+    (s): s is SectionOf<"gallery"> => s.type === "gallery"
+  );
+  const ersatz = galerie?.images.find(img => img.url !== heroBild)?.url;
+  if (!ersatz) return doc;
+  return {
+    ...doc,
+    sections: doc.sections.map(s =>
+      s.type === "about" ? { ...s, imageUrl: ersatz } : s
+    ),
+  };
 }
 
 /**

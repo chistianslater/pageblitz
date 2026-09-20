@@ -1,8 +1,10 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
+import { getFixture } from "../../../../shared/siteContract/fixtures";
 import { ADDON_EDITORS } from "../../../../shared/onboardingV2/addonEditors";
 import {
   ADDON_GATED_SECTION_TYPES,
+  SECTION_ANCHORS,
   applyNavLabels,
   buildNavItems,
   isSectionBooked,
@@ -11,10 +13,10 @@ import {
   pageContentSections,
   pageForPathname,
   pageHeaderSection,
-  SECTION_ANCHORS,
-  visiblePages,
   visiblePageSections,
+  visiblePages,
   visibleSections,
+  withAboutFallbackImage,
 } from "./engine";
 
 const base: WebsiteDataV2 = {
@@ -487,5 +489,64 @@ describe("applyNavLabels", () => {
     ]);
     expect(items[0]!.label).toBe("Bewertungen");
     expect(out[2]).toBe(items[2]);
+  });
+});
+
+describe("withAboutFallbackImage", () => {
+  const basis = () => {
+    const doc = getFixture("patina", "full");
+    return {
+      ...doc,
+      sections: doc.sections.map(s =>
+        s.type === "about" ? { ...s, imageUrl: undefined } : s
+      ),
+    } as typeof doc;
+  };
+
+  test("fehlt das Über-uns-Foto, rückt das erste Galeriebild nach", () => {
+    const doc = basis();
+    const galerie = doc.sections.find(s => s.type === "gallery");
+    const ergebnis = withAboutFallbackImage(doc);
+    const about = ergebnis.sections.find(s => s.type === "about");
+    expect(about && "imageUrl" in about ? about.imageUrl : undefined).toBe(
+      galerie && "images" in galerie ? galerie.images[0].url : "fehlt"
+    );
+  });
+
+  test("das Kopfbild wird nicht doppelt verwendet", () => {
+    const doc = basis();
+    const galerie = doc.sections.find(s => s.type === "gallery");
+    const erstes =
+      galerie && "images" in galerie ? galerie.images[0].url : "x";
+    const mitDublette = {
+      ...doc,
+      sections: doc.sections.map(s =>
+        s.type === "hero" ? { ...s, imageUrl: erstes } : s
+      ),
+    } as typeof doc;
+    const about = withAboutFallbackImage(mitDublette).sections.find(
+      s => s.type === "about"
+    );
+    const gesetzt =
+      about && "imageUrl" in about ? about.imageUrl : undefined;
+    expect(gesetzt).not.toBe(erstes);
+    expect(gesetzt).toBeTruthy();
+  });
+
+  test("bewusst ausgeblendetes Foto bleibt aus", () => {
+    const doc = basis();
+    const versteckt = {
+      ...doc,
+      designProfile: { ...doc.designProfile, hiddenElements: ["about-media"] },
+    } as typeof doc;
+    const about = withAboutFallbackImage(versteckt).sections.find(
+      s => s.type === "about"
+    );
+    expect(about && "imageUrl" in about ? about.imageUrl : "x").toBeUndefined();
+  });
+
+  test("vorhandenes Foto bleibt unangetastet", () => {
+    const doc = getFixture("patina", "full");
+    expect(withAboutFallbackImage(doc)).toBe(doc);
   });
 });
