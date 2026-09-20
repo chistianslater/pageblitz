@@ -1,5 +1,5 @@
 export const KLARWERK_CSS = `
-.pb-klarwerk{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
+.pb-klarwerk{--pb-shell-outer:100%;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-klarwerk a{color:inherit;text-decoration:none}
 .pb-kw-nav{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--pb-canvas) 90%,transparent);display:flex;align-items:center;gap:20px;padding:16px clamp(20px,4vw,48px);border-bottom:1px solid var(--pb-ink);box-shadow:0 2px 0 var(--pb-accent);backdrop-filter:blur(12px)}
 .pb-kw-logo{font-family:var(--pb-font-display);font-weight:700;font-size:17px;letter-spacing:-.03em}
@@ -28,6 +28,7 @@ export const KLARWERK_CSS = `
 .pb-kw-status{display:flex;align-items:center;gap:10px;padding:16px 18px;font-size:13px;font-weight:500}
 .pb-kw-status .dot{flex-shrink:0;width:8px;height:8px;border-radius:50%;background:var(--pb-accent)}
 .pb-kw-section{padding:56px clamp(20px,4vw,48px);border-top:1px solid var(--pb-line)}
+.pb-klarwerk{--pb-shell-pad:clamp(20px,4vw,48px)}
 .pb-kw-section h2{font-family:var(--pb-font-display);font-weight:700;letter-spacing:-.03em;font-size:clamp(1.8rem,3.4vw,2.8rem);margin:0 0 26px;max-width:14ch}
 .pb-kw-service{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid var(--pb-line);align-items:baseline}
 .pb-kw-service .idx{font-family:var(--pb-font-display);color:var(--pb-accent-text);font-size:13px;flex-shrink:0}
@@ -92,5 +93,6 @@ export const KLARWERK_CSS = `
   .pb-kw-faq-grid{grid-template-columns:1fr}
   .pb-kw-hero{padding:28px 20px 18px}
   .pb-kw-section{padding:48px 20px}
+.pb-klarwerk{--pb-shell-pad:20px}
 }
 `;

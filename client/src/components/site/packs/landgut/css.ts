@@ -1,5 +1,5 @@
 export const LANDGUT_CSS = `
-.pb-landgut{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-landgut{--pb-shell-outer:100%;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-landgut a{color:inherit;text-decoration:none}
 .pb-lg-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
 .pb-lg-logo{font-family:var(--pb-font-display);font-weight:500;font-size:16px}
@@ -28,6 +28,7 @@ export const LANDGUT_CSS = `
 .pb-lg-ticker-group{display:flex;align-items:center;flex:none}
 .pb-lg-ticker em{font-style:normal;opacity:.65;padding:0 16px}
 .pb-lg-section{padding:72px 32px;border-top:1px solid var(--pb-line)}
+.pb-landgut{--pb-shell-pad:32px}
 .pb-lg-section h2{font-family:var(--pb-font-display);font-weight:500;font-style:italic;font-size:clamp(1.6rem,2.6vw,2.2rem);margin-bottom:26px}
 .pb-lg-service{padding:18px 0;border-bottom:1px dashed var(--pb-line)}
 .pb-lg-service strong{font-family:var(--pb-font-display);font-weight:500;font-size:16px}

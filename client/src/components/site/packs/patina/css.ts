@@ -1,5 +1,5 @@
 export const PATINA_CSS = `
-.pb-patina{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-patina{--pb-shell-outer:100%;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-patina a{color:inherit;text-decoration:none}
 .pb-pa-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);display:flex;align-items:center;gap:20px;padding:22px 32px;border-bottom:1px solid var(--pb-line);font-size:13px;font-weight:500}
 .pb-pa-logo{font-family:var(--pb-font-display);font-weight:600;font-size:16px}
@@ -25,6 +25,7 @@ export const PATINA_CSS = `
 .pb-pa-arch.a2{width:44%;height:56%;right:0;bottom:-24px;box-shadow:-10px -10px 0 var(--pb-canvas)}
 .pb-pa-note{display:block;width:fit-content;margin-top:16px;font-family:var(--pb-font-display);font-style:italic;font-size:14px;color:var(--pb-muted);transform:rotate(-2deg);transform-origin:left center}
 .pb-pa-section{padding:72px 32px;border-top:1px solid var(--pb-line)}
+.pb-patina{--pb-shell-pad:32px}
 .pb-pa-section h2{font-family:var(--pb-font-display);font-weight:600;font-style:italic;font-size:clamp(1.6rem,2.6vw,2.2rem);margin-bottom:26px}
 .pb-pa-services-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 56px;align-items:start}
 .pb-pa-services-grid .pb-pa-service:last-child:nth-child(odd){grid-column:1/-1}

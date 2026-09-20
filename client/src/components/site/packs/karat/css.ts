@@ -1,5 +1,5 @@
 export const KARAT_CSS = `
-.pb-karat{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.6;overflow-x:clip}
+.pb-karat{--pb-shell-outer:1008px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.6;overflow-x:clip}
 .pb-karat a{color:inherit;text-decoration:none}
 .pb-ka-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:24px;padding:18px 36px;background:color-mix(in srgb,var(--pb-canvas) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--pb-line)}
 .pb-ka-logo{font-family:var(--pb-font-display);font-size:19px;letter-spacing:.04em}
@@ -21,6 +21,7 @@ export const KARAT_CSS = `
 .pb-ka-frame img{display:block;width:100%;height:auto;border:1px solid var(--pb-line);filter:brightness(.92)}
 .pb-ka-hero-media .pb-ka-frame img{aspect-ratio:16/8.5;object-fit:cover}
 .pb-ka-section{max-width:960px;margin:0 auto;padding:76px 24px;border-top:1px solid var(--pb-line)}
+.pb-karat{--pb-shell-pad:24px}
 /* Ausrichtung vereinheitlicht (Betreiber-Befund 2026-09-05): In Über uns,
    Stimmen und Fragen stand der zentrierte Sektionstitel über linksbündigem
    Inhalt. Hero, Kontakt und CTA bleiben bewusst zentriert — dort ist auch
@@ -90,6 +91,8 @@ export const KARAT_CSS = `
 @keyframes pb-ka-rule{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes pb-ka-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.pb-karat *,.pb-karat *::before,.pb-karat *::after{animation:none!important;transition:none!important}}
-@media(max-width:840px){.pb-ka-nav{padding:16px 20px}.pb-ka-nav-links{display:none}.pb-ka-hero{padding:56px 18px 48px}.pb-ka-section{padding:52px 18px}.pb-ka-about{grid-template-columns:1fr;gap:24px}.pb-ka-about .pb-ka-frame{order:-1}}
-@media(max-width:390px){.pb-ka-hero{padding-left:14px;padding-right:14px}.pb-ka-section{padding-left:14px;padding-right:14px}.pb-ka-service{gap:12px}}
+@media(max-width:840px){.pb-ka-nav{padding:16px 20px}.pb-ka-nav-links{display:none}.pb-ka-hero{padding:56px 18px 48px}.pb-ka-section{padding:52px 18px}
+.pb-karat{--pb-shell-pad:18px}.pb-ka-about{grid-template-columns:1fr;gap:24px}.pb-ka-about .pb-ka-frame{order:-1}}
+@media(max-width:390px){.pb-ka-hero{padding-left:14px;padding-right:14px}.pb-ka-section{padding-left:14px;padding-right:14px}
+.pb-karat{--pb-shell-pad:14px}.pb-ka-service{gap:12px}}
 `;

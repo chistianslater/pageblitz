@@ -24,7 +24,7 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] #bewertungen .pb-review-meta{display:grid;gap:3px;font-size:13px;line-height:1.4}
 .pb-site[data-pb-revision="2"] #bewertungen .pb-review-source{font-size:11px;opacity:.72}
 
-.pb-site[data-pb-revision="2"] .pb-art-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(28px,5vw,75px);max-width:1600px;margin:0 auto;padding:clamp(30px,4vw,65px) 6.5% 70px;background:transparent;color:var(--pb-ink);overflow:hidden;box-sizing:border-box}
+.pb-site[data-pb-revision="2"] .pb-art-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(28px,5vw,75px);max-width:min(100%,var(--pb-shell-outer,1600px));margin:0 auto;padding:clamp(30px,4vw,65px) var(--pb-shell-pad,6.5%) 70px;background:transparent;color:var(--pb-ink);overflow:hidden;box-sizing:border-box}
 .pb-site[data-pb-revision="2"] .pb-art-copy{position:relative;z-index:2;min-width:0;padding:0;text-align:left}
 .pb-site[data-pb-revision="2"] .pb-art-category{font:400 12px/1.5 var(--pb-font-body);color:var(--pb-muted);margin:0 0 28px;text-transform:none;letter-spacing:.02em}
 .pb-site[data-pb-revision="2"] .pb-art-rating{display:inline-flex;align-items:baseline;gap:.4em;white-space:nowrap}
@@ -33,13 +33,17 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-rating b{font-weight:600;color:var(--pb-ink)}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-layout="banner"][data-art-image="yes"] .pb-art-rating :is(b,.pb-art-rating-star){color:#fff}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1{font-family:var(--pb-font-display);font-size:clamp(2.8rem,6.1vw,6.6rem);font-weight:var(--pb-art-weight,400);line-height:1.08;letter-spacing:-.055em;margin:0;max-width:16ch;color:var(--pb-ink);text-shadow:none;word-break:normal}
+/* Karat führt die schmalste Textspalte (960 px). Seit Kopfbereich und
+   Abschnitte dieselbe Breite teilen, war die Überschrift dort zu groß
+   und brach vor dem Komma um. */
+.pb-site[data-pb-revision="2"].pb-karat .pb-art-copy h1,.pb-site[data-pb-revision="2"] .pb-karat .pb-art-copy h1{font-size:clamp(2.4rem,3.6vw,4.2rem)}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1[data-art-long="yes"]{font-size:clamp(2.1rem,4.4vw,4.7rem);max-width:23ch}
 .pb-site[data-pb-revision="2"] .pb-art-intro{font:400 clamp(1rem,1.3vw,1.2rem)/1.65 var(--pb-font-body);color:var(--pb-muted);max-width:38ch;margin:26px 0 30px}
 .pb-site[data-pb-revision="2"] .pb-art-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:26px;padding:17px 23px;background:var(--pb-accent);color:var(--pb-accent-contrast);font:500 14px/1.4 var(--pb-font-body);border:1px solid var(--pb-accent);border-radius:var(--pb-radius-button,0);text-decoration:none;max-width:100%;overflow-wrap:anywhere;transition:transform .22s var(--pb-art-ease),box-shadow .22s var(--pb-art-ease)}
 .pb-site[data-pb-revision="2"] .pb-art-cta svg{flex-shrink:0;transition:transform .22s var(--pb-art-ease)}
 .pb-site[data-pb-revision="2"] .pb-art-media{margin:0;overflow:hidden;min-width:0;position:relative;width:100%;height:clamp(360px,43vw,620px);border:0;border-radius:0}
 .pb-site[data-pb-revision="2"] .pb-art-media img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;filter:none;transform:none;aspect-ratio:auto;transition:transform .8s var(--pb-art-ease)}
-.pb-site[data-pb-revision="2"] .pb-art-secondary{position:absolute;left:40%;bottom:195px;width:19%;height:clamp(160px,18vw,250px);z-index:2;margin:0;border:8px solid var(--pb-canvas);overflow:hidden}
+.pb-site[data-pb-revision="2"] .pb-art-secondary{position:absolute;left:49%;bottom:195px;width:19%;height:clamp(160px,18vw,250px);z-index:2;margin:0;border:8px solid var(--pb-canvas);overflow:hidden}
 .pb-site[data-pb-revision="2"] .pb-art-secondary img{display:block;width:100%;height:100%;object-fit:cover}
 .pb-site[data-pb-revision="2"] .pb-art-wordmark{grid-column:1/-1;font:400 clamp(3rem,10vw,10rem)/1.08 var(--pb-font-display);letter-spacing:-.065em;color:var(--pb-ink);overflow-wrap:anywhere;margin-top:-8px;pointer-events:none}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="portrait"]{grid-template-columns:1.1fr 1fr;gap:6%}
@@ -72,13 +76,16 @@ export const ART_DIRECTION_CSS = `
 /* Approved reference families, carried through the existing section renderers. */
 .pb-site[data-pb-revision="2"].pb-raster{--pb-art-weight:500}.pb-site[data-pb-revision="2"] :is(.pb-ra-head .pb-ra-index,.pb-ra-figure figcaption,.pb-sn-frame,.pb-sn-booking,.pb-sn-vert,.pb-at-edition,.pb-kw-readout){display:none}
 .pb-site[data-pb-revision="2"] .pb-ra-head{grid-template-columns:1fr}.pb-site[data-pb-revision="2"] .pb-ra-section{padding:90px 6.5%;border-color:var(--pb-line)}
+.pb-site[data-pb-revision="2"].pb-raster,.pb-site[data-pb-revision="2"] .pb-raster{--pb-shell-pad:6.5%}
 .pb-site[data-pb-revision="2"] .pb-ra-about{align-items:center}.pb-site[data-pb-revision="2"] .pb-ra-services{margin-left:15%}
 .pb-site[data-pb-revision="2"] .pb-gu-frame{border:0;padding:0}.pb-site[data-pb-revision="2"] .pb-gu-nav{margin:0 5%;border-bottom:1px solid var(--pb-line)}
-.pb-site[data-pb-revision="2"] .pb-gu-section{padding:90px 6.5%}.pb-site[data-pb-revision="2"] .pb-gu-menu-category{border:1px solid var(--pb-line);padding:clamp(24px,4vw,55px);background:var(--pb-surface)}
+.pb-site[data-pb-revision="2"] .pb-gu-section{padding:90px 6.5%}
+.pb-site[data-pb-revision="2"].pb-gusto,.pb-site[data-pb-revision="2"] .pb-gusto{--pb-shell-pad:6.5%}.pb-site[data-pb-revision="2"] .pb-gu-menu-category{border:1px solid var(--pb-line);padding:clamp(24px,4vw,55px);background:var(--pb-surface)}
 .pb-site[data-pb-revision="2"] .pb-gu-menu-columns{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:35px!important}
 .pb-site[data-pb-revision="2"] .pb-gu-menu{padding:8px 0;border:0}
 .pb-site[data-pb-revision="2"] .pb-gu-menu-category>.pb-gu-index{display:none}
-.pb-site[data-pb-revision="2"] .pb-sn-nav{border-bottom:1px solid var(--pb-line)}.pb-site[data-pb-revision="2"] .pb-sn-section{padding:90px 6.5%}.pb-site[data-pb-revision="2"] .pb-sn-about{gap:10%;align-items:center}
+.pb-site[data-pb-revision="2"] .pb-sn-nav{border-bottom:1px solid var(--pb-line)}.pb-site[data-pb-revision="2"] .pb-sn-section{padding:90px 6.5%}
+.pb-site[data-pb-revision="2"].pb-salon-noir,.pb-site[data-pb-revision="2"] .pb-salon-noir{--pb-shell-pad:6.5%}.pb-site[data-pb-revision="2"] .pb-sn-about{gap:10%;align-items:center}
 /* Each remaining family keeps a distinct frame, rhythm and image silhouette. */
 .pb-site[data-pb-revision="2"].pb-werkbank{--pb-art-weight:700}.pb-site[data-pb-revision="2"].pb-werkbank .pb-art-media{border-left:8px solid var(--pb-accent)}
 .pb-site[data-pb-revision="2"].pb-kanzlei .pb-art-media{border-radius:45% 45% 0 0}.pb-site[data-pb-revision="2"].pb-kanzlei .pb-art-copy h1{letter-spacing:-.04em}
@@ -125,7 +132,7 @@ export const ART_DIRECTION_CSS = `
 @keyframes pb-art-detail{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:none}}
 @media(max-width:760px){
 .pb-site[data-pb-revision="2"] .pb-gu-menu-columns{grid-template-columns:1fr!important}
-.pb-site[data-pb-revision="2"] .pb-art-hero,.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition]{display:flex;flex-direction:column;align-items:stretch;gap:30px;padding:28px 6% 55px}
+.pb-site[data-pb-revision="2"] .pb-art-hero,.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition]{display:flex;flex-direction:column;align-items:stretch;gap:30px;padding:28px var(--pb-shell-pad,6%) 55px}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1,.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="statement"] h1{font-size:clamp(2.5rem,10vw,4rem);max-width:none}
 .pb-site[data-pb-revision="2"] .pb-art-copy h1[data-art-long="yes"]{font-size:clamp(2rem,8vw,3rem)}
 .pb-site[data-pb-revision="2"] .pb-art-category{margin-bottom:20px}
@@ -138,8 +145,15 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-mobile="centered"] .pb-art-copy{text-align:center}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-mobile="centered"] .pb-art-intro{margin-left:auto;margin-right:auto}
 .pb-site[data-pb-revision="2"] :is(.pb-ra-section,.pb-gu-section,.pb-sn-section){padding:60px 6%}
+.pb-site[data-pb-revision="2"]:is(.pb-raster,.pb-gusto,.pb-salon-noir),.pb-site[data-pb-revision="2"] :is(.pb-raster,.pb-gusto,.pb-salon-noir){--pb-shell-pad:6%}
 .pb-site[data-pb-revision="2"] .pb-ra-services{margin-left:0}
 .pb-site[data-pb-revision="2"] section:not(#start) h2{font-size:clamp(2rem,8vw,3rem)}
 }
+/* Gemeinsame Textkante (2026-09-20, Betreiber-Wunsch): Kopfbereich und
+   Abschnitte teilen sich Außenbreite und Seitenrand. Beide Werte stehen als
+   Variablen neben den Abschnitts-Regeln der jeweiligen Richtung, also auch
+   in deren Media-Queries — dadurch wandert die Textkante des Kopfbereichs
+   bei jeder Breite mit den Abschnitten mit. Bilder und Farbflächen bleiben
+   unberührt. */
 @media(prefers-reduced-motion:reduce){.pb-site[data-pb-revision="2"] :is(.pb-art-cta,.pb-art-cta svg,.pb-art-media img,details[open]>:not(summary)){animation:none!important;transition:none!important;transform:none!important}}
 `;

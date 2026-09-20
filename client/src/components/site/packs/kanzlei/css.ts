@@ -1,5 +1,5 @@
 export const KANZLEI_CSS = `
-.pb-kanzlei{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-kanzlei{--pb-shell-outer:100%;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-kanzlei a{color:inherit;text-decoration:none}
 .pb-kz-nav{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--pb-canvas) 92%,transparent);display:flex;align-items:center;gap:22px;padding:18px clamp(22px,4vw,56px);border-bottom:1px solid var(--pb-line);box-shadow:0 1px 0 var(--pb-ink);backdrop-filter:blur(10px)}
 .pb-kz-logo{font-family:var(--pb-font-display);font-style:italic;font-weight:500;font-size:1.25rem;letter-spacing:-.02em}
@@ -26,6 +26,7 @@ export const KANZLEI_CSS = `
 .pb-kz-facts div:last-child{border-right:0}
 .pb-kz-facts b{display:block;font-family:var(--pb-font-display);font-size:1.7rem;font-weight:500;color:var(--pb-ink);letter-spacing:-.02em}
 .pb-kz-section{padding:clamp(64px,9vw,110px) clamp(22px,4vw,56px);border-top:1px solid var(--pb-line)}
+.pb-kanzlei{--pb-shell-pad:clamp(22px,4vw,56px)}
 .pb-kz-section h2{font-family:var(--pb-font-display);font-weight:500;letter-spacing:-.025em;font-size:clamp(2rem,4vw,3.4rem);margin:0 0 32px;max-width:16ch}
 .pb-kz-services-grid{display:grid;grid-template-columns:minmax(180px,.7fr) minmax(0,1.3fr);gap:clamp(24px,5vw,72px);align-items:start}
 .pb-kz-services-grid h2{margin-bottom:0}
@@ -107,6 +108,7 @@ export const KANZLEI_CSS = `
   .pb-kz-gallery img:nth-child(n){grid-column:auto;margin-top:0}
   .pb-kz-gallery img:first-child{grid-column:1/-1}
 }
-@media(max-width:720px){.pb-kz-quotes{grid-template-columns:1fr}.pb-kz-quote:nth-child(even){padding-left:0;border-left:0}.pb-kz-hero{padding:36px 20px 48px}.pb-kz-section{padding:56px 20px}}
+@media(max-width:720px){.pb-kz-quotes{grid-template-columns:1fr}.pb-kz-quote:nth-child(even){padding-left:0;border-left:0}.pb-kz-hero{padding:36px 20px 48px}.pb-kz-section{padding:56px 20px}
+.pb-kanzlei{--pb-shell-pad:20px}}
 @media(prefers-reduced-motion:reduce){.pb-kanzlei *,.pb-kanzlei *::before,.pb-kanzlei *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 `;

@@ -1,5 +1,5 @@
 export const RIVIERA_CSS = `
-.pb-riviera{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.62;overflow-x:clip}
+.pb-riviera{--pb-shell-outer:1224px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.62;overflow-x:clip}
 .pb-riviera a{color:inherit;text-decoration:none}
 .pb-rv-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:22px;padding:18px 32px;background:color-mix(in srgb,var(--pb-canvas) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--pb-line)}
 .pb-rv-logo{font-family:var(--pb-font-display);font-size:19px;letter-spacing:.05em}
@@ -21,6 +21,7 @@ export const RIVIERA_CSS = `
 .pb-rv-arch{display:block;width:100%;height:auto;border-radius:999px 999px var(--pb-radius-card) var(--pb-radius-card);object-fit:cover}
 .pb-rv-hero-photo{aspect-ratio:4/5;border:6px solid var(--pb-surface);box-shadow:0 24px 48px rgba(23,59,76,.16)}
 .pb-rv-section{max-width:1160px;margin:0 auto;padding:76px 32px}
+.pb-riviera{--pb-shell-pad:32px}
 .pb-rv-section+.pb-rv-section{border-top:1px solid var(--pb-line)}
 .pb-rv-title{margin-top:14px;font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.7rem,3vw,2.5rem);letter-spacing:.01em}
 .pb-rv-intro{margin-top:12px;max-width:56ch;color:var(--pb-muted)}
@@ -84,6 +85,8 @@ export const RIVIERA_CSS = `
 @keyframes pb-rv-drift{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes pb-rv-arch-in{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.pb-riviera *,.pb-riviera *::before,.pb-riviera *::after{animation:none!important;transition:none!important}}
-@media(max-width:880px){.pb-rv-nav{padding:14px 18px}.pb-rv-nav-links{display:none}.pb-rv-hero{grid-template-columns:1fr;gap:34px;padding:48px 18px 72px}.pb-rv-hero-photo{max-width:400px}.pb-rv-section{padding:54px 18px}.pb-rv-about{grid-template-columns:1fr;gap:26px}.pb-rv-about .pb-rv-arch{order:-1;justify-self:start;max-width:340px}}
-@media(max-width:390px){.pb-rv-hero{padding-left:14px;padding-right:14px}.pb-rv-section{padding-left:14px;padding-right:14px}}
+@media(max-width:880px){.pb-rv-nav{padding:14px 18px}.pb-rv-nav-links{display:none}.pb-rv-hero{grid-template-columns:1fr;gap:34px;padding:48px 18px 72px}.pb-rv-hero-photo{max-width:400px}.pb-rv-section{padding:54px 18px}
+.pb-riviera{--pb-shell-pad:18px}.pb-rv-about{grid-template-columns:1fr;gap:26px}.pb-rv-about .pb-rv-arch{order:-1;justify-self:start;max-width:340px}}
+@media(max-width:390px){.pb-rv-hero{padding-left:14px;padding-right:14px}.pb-rv-section{padding-left:14px;padding-right:14px}
+.pb-riviera{--pb-shell-pad:14px}}
 `;

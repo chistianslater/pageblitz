@@ -1,5 +1,5 @@
 export const MARKTPLATZ_CSS = `
-.pb-marktplatz{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-marktplatz{--pb-shell-outer:1244px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-marktplatz a{color:inherit;text-decoration:none}
 .pb-mp-nav{display:flex;align-items:center;gap:20px;padding:22px 32px;position:sticky;top:0;z-index:40;background:var(--pb-canvas);border-bottom:1px solid var(--pb-line);font-size:14px;font-weight:700}
 .pb-mp-logo{font-family:var(--pb-font-display);font-weight:800;font-size:19px;color:var(--pb-accent-text)}
@@ -26,6 +26,7 @@ export const MARKTPLATZ_CSS = `
 .pb-mp-scallop{position:absolute;left:0;right:0;bottom:-1px;height:22px;z-index:2;background:radial-gradient(circle at 12px -6px,transparent 16px,var(--pb-canvas) 17px);background-size:44px 32px}
 @media(min-width:641px) and (max-width:860px){.pb-mp-hero-inner{gap:16px}.pb-mp-card{flex-basis:58%;padding:26px 24px 28px}.pb-mp-photo-wrap{flex-basis:30%;margin-top:10px}.pb-mp-sticker.pill{font-size:10px;padding:13px 14px;box-shadow:0 2px 0 #E0A81C}.pb-mp-sticker.ink{font-size:9.5px;padding:8px 11px}.pb-mp-sticker.outline{font-size:9px;padding:7px 10px}}
 .pb-mp-section{padding:64px 32px;max-width:1180px;margin:0 auto}
+.pb-marktplatz{--pb-shell-pad:32px}
 .pb-mp-section h2{font-family:var(--pb-font-display);font-weight:800;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:24px}
 .pb-mp-intro{color:var(--pb-muted);margin-bottom:24px;max-width:56ch}
 .pb-mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}

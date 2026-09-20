@@ -1,5 +1,5 @@
 export const ZUNFT_CSS = `
-.pb-zunft{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-zunft{--pb-shell-outer:100%;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-zunft a{color:inherit;text-decoration:none}
 .pb-zf-borde{border-bottom:1px solid var(--pb-accent-2);padding:9px 0;color:var(--pb-accent-2);font-size:9px;letter-spacing:.9em;text-align:center;overflow:hidden;white-space:nowrap}
 .pb-zf-nav{position:sticky;top:0;z-index:40;background:var(--pb-canvas);border-bottom:1px solid var(--pb-line);display:flex;align-items:center;justify-content:center;gap:24px;padding:22px 24px;flex-wrap:wrap}
@@ -27,6 +27,7 @@ export const ZUNFT_CSS = `
    Überschrift zentriert über linksbündigem Text wirkt unfertig. Gemessen in
    vier Sektionen; alle 18 anderen Packs richten Überschrift und Text gleich aus. */
 .pb-zf-section{padding:60px 32px;border-top:1px solid var(--pb-line);text-align:left}
+.pb-zunft{--pb-shell-pad:32px}
 .pb-zf-section h2{font-family:var(--pb-font-display);font-weight:600;font-style:italic;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:28px}
 .pb-zf-intro{color:var(--pb-muted);margin:0 auto 28px;max-width:46ch}
 .pb-zf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;text-align:left}

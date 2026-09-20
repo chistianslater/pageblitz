@@ -1,5 +1,5 @@
 export const PLAKAT_CSS = `
-.pb-plakat{background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
+.pb-plakat{--pb-shell-outer:1208px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-plakat a{color:inherit;text-decoration:none}
 .pb-pl-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:14px 24px;background:var(--pb-canvas);border-bottom:3px solid var(--pb-ink)}
 .pb-pl-logo{font-family:var(--pb-font-display);font-size:17px;text-transform:uppercase;letter-spacing:.02em}
@@ -20,6 +20,7 @@ export const PLAKAT_CSS = `
 .pb-pl-sticker{position:absolute;top:-22px;right:-14px;display:grid;place-items:center;width:108px;height:108px;background:var(--pb-accent);color:var(--pb-accent-contrast);border:3px solid var(--pb-ink);border-radius:50%;transform:rotate(8deg);font-family:var(--pb-font-display);font-size:22px;line-height:1.05;text-align:center;padding:10px}
 .pb-pl-sticker small{font-family:var(--pb-font-body);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-top:2px}
 .pb-pl-section{max-width:1160px;margin:0 auto;padding:64px 24px;border-top:3px solid var(--pb-ink)}
+.pb-plakat{--pb-shell-pad:24px}
 .pb-pl-title{font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.7rem,3.6vw,2.6rem);text-transform:uppercase;margin-bottom:8px}
 .pb-pl-title::after{content:"";display:block;width:74px;height:8px;background:var(--pb-accent);margin-top:10px}
 .pb-pl-intro{margin:16px 0 0;max-width:56ch;color:var(--pb-muted)}
@@ -81,6 +82,8 @@ export const PLAKAT_CSS = `
 @keyframes pb-pl-up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes pb-pl-spin{from{opacity:0;transform:rotate(-14deg) scale(.6)}to{opacity:1;transform:rotate(8deg) scale(1)}}
 @media(prefers-reduced-motion:reduce){.pb-plakat *,.pb-plakat *::before,.pb-plakat *::after{animation:none!important;transition:none!important}}
-@media(max-width:840px){.pb-pl-nav{padding:12px 16px}.pb-pl-nav-links{display:none}.pb-pl-hero{grid-template-columns:1fr;gap:30px;padding:40px 18px 56px}.pb-pl-hero-media{max-width:420px}.pb-pl-sticker{right:6px}.pb-pl-section{padding:48px 18px}.pb-pl-about{grid-template-columns:1fr;gap:22px}.pb-pl-about .pb-pl-photo{order:-1;max-width:420px}}
-@media(max-width:390px){.pb-pl-hero{padding-left:14px;padding-right:14px}.pb-pl-section{padding-left:14px;padding-right:14px}.pb-pl-card,.pb-pl-quote{box-shadow:5px 5px 0 var(--pb-ink)}}
+@media(max-width:840px){.pb-pl-nav{padding:12px 16px}.pb-pl-nav-links{display:none}.pb-pl-hero{grid-template-columns:1fr;gap:30px;padding:40px 18px 56px}.pb-pl-hero-media{max-width:420px}.pb-pl-sticker{right:6px}.pb-pl-section{padding:48px 18px}
+.pb-plakat{--pb-shell-pad:18px}.pb-pl-about{grid-template-columns:1fr;gap:22px}.pb-pl-about .pb-pl-photo{order:-1;max-width:420px}}
+@media(max-width:390px){.pb-pl-hero{padding-left:14px;padding-right:14px}.pb-pl-section{padding-left:14px;padding-right:14px}
+.pb-plakat{--pb-shell-pad:14px}.pb-pl-card,.pb-pl-quote{box-shadow:5px 5px 0 var(--pb-ink)}}
 `;
