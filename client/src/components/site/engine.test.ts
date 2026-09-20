@@ -4,6 +4,7 @@ import { getFixture } from "../../../../shared/siteContract/fixtures";
 import { ADDON_EDITORS } from "../../../../shared/onboardingV2/addonEditors";
 import {
   ADDON_GATED_SECTION_TYPES,
+  FREIE_GALERIEBILDER,
   SECTION_ANCHORS,
   applyNavLabels,
   buildNavItems,
@@ -17,6 +18,7 @@ import {
   visiblePages,
   visibleSections,
   withAboutFallbackImage,
+  withGalleryLimit,
 } from "./engine";
 
 const base: WebsiteDataV2 = {
@@ -188,16 +190,18 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       { type: "contact", city: "Dortmund" },
     ],
   };
-  const GATED = ["gallery", "menu", "pricelist", "team"] as const;
-  const FREE = ["hero", "services", "about", "contact"] as const;
+  const GATED = ["menu", "pricelist", "team"] as const;
+  // Die Galerie ist seit 2026-09-20 frei sichtbar (auf drei Fotos begrenzt).
+  const FREE = ["hero", "services", "about", "gallery", "contact"] as const;
 
-  test("ADDON_GATED_SECTION_TYPES bildet genau gallery/menu/pricelist/team auf ihr Add-on ab", () => {
+  test("ADDON_GATED_SECTION_TYPES bildet genau menu/pricelist/team auf ihr Add-on ab", () => {
     expect(ADDON_GATED_SECTION_TYPES).toEqual({
-      gallery: "gallery",
       menu: "menu",
       pricelist: "pricelist",
       team: "team",
     });
+    // Galerie bewusst nicht mehr gesperrt, sondern begrenzt.
+    expect(ADDON_GATED_SECTION_TYPES.gallery).toBeUndefined();
   });
 
   test("Extra-Editor-Anker treffen die echten Sektions-IDs (sonst scrollt die Vorschau ins Leere)", () => {
@@ -211,7 +215,7 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
 
   test("ohne addOns: gebuchte Sektionstypen werden ausgeblendet, freie bleiben (Dokument bleibt unverändert)", () => {
     const types = visibleSections(gatedDoc).map(s => s.type);
-    expect(types).toEqual([...FREE.slice(0, 3), "contact"]);
+    expect(types).toEqual(["hero", "services", "about", "gallery", "contact"]);
     // Kein Datenverlust: das Dokument selbst behält alle Sektionen.
     expect(gatedDoc.sections).toHaveLength(8);
   });
@@ -231,7 +235,7 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
   test("alle addOns true → alle Sektionen sichtbar, Reihenfolge wie im Dokument; orderedSections hält den Hero vorn und respektiert das Gating", () => {
     const doc: WebsiteDataV2 = {
       ...gatedDoc,
-      addOns: { gallery: true, menu: true, pricelist: true, team: true },
+      addOns: { menu: true, pricelist: true, team: true },
     };
     expect(visibleSections(doc).map(s => s.type)).toEqual(
       gatedDoc.sections.map(s => s.type)
@@ -247,6 +251,7 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       "team",
       "services",
       "about",
+      "gallery",
     ]);
   });
 
@@ -285,7 +290,7 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
     expect(onPage.map(i => i.href)).toEqual(["#kontakt", "#leistungen"]);
   });
 
-  test("Nav-Anker folgen dem Gating: ausgeblendete Galerie bekommt keinen Anker", () => {
+  test("Nav-Anker folgen dem Gating: nicht gebuchte Speisekarte bekommt keinen Anker, die freie Galerie schon", () => {
     const items = buildNavItems(
       { ...gatedDoc, addOns: { team: true } },
       { pathname: "/", basePath: "" }
@@ -293,9 +298,11 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
     expect(items.map(i => i.key)).toEqual([
       "anchor-services",
       "anchor-about",
+      "anchor-gallery",
       "anchor-team",
       "anchor-contact",
     ]);
+    expect(items.map(i => i.key)).not.toContain("anchor-menu");
   });
 
   test("linkPageSections: Kontakt/Galerie auf Unterseiten lesen beim Rendern die Startseite (Fakten/Bilder), Überschrift der Seite bleibt; ohne Startseiten-Pendant bleibt die Kopie", () => {
@@ -384,8 +391,10 @@ describe("Add-on-Gating (Plan B6 Task 6): visibleSections / visiblePages", () =>
       ],
     };
     const docOff: WebsiteDataV2 = { ...base, addOns: { subpages: true } };
+    // Die Galerie bleibt auch ohne Add-on sichtbar (begrenzt auf drei Fotos).
     expect(visiblePageSections(docOff, page).map(s => s.type)).toEqual([
       "pageHeader",
+      "gallery",
       "contact",
     ]);
     const docOn: WebsiteDataV2 = {
@@ -548,5 +557,64 @@ describe("withAboutFallbackImage", () => {
   test("vorhandenes Foto bleibt unangetastet", () => {
     const doc = getFixture("patina", "full");
     expect(withAboutFallbackImage(doc)).toBe(doc);
+  });
+});
+
+describe("withGalleryLimit", () => {
+  const fuenfBilder = Array.from({ length: 5 }, (_, i) => ({
+    url: `https://x/g${i + 1}.jpg`,
+    alt: `Bild ${i + 1}`,
+  }));
+  const mitGalerie = (): WebsiteDataV2 => {
+    const doc = getFixture("patina", "full");
+    return {
+      ...doc,
+      addOns: undefined,
+      sections: doc.sections.map(s =>
+        s.type === "gallery" ? { ...s, images: fuenfBilder } : s
+      ),
+    };
+  };
+  const bilder = (doc: WebsiteDataV2) => {
+    const g = doc.sections.find(s => s.type === "gallery");
+    return g && "images" in g ? g.images.length : 0;
+  };
+
+  test("ohne Add-on bleiben genau drei Fotos", () => {
+    expect(FREIE_GALERIEBILDER).toBe(3);
+    expect(bilder(withGalleryLimit(mitGalerie()))).toBe(3);
+  });
+
+  test("mit gebuchtem Add-on bleiben alle Fotos", () => {
+    const voll = { ...mitGalerie(), addOns: { gallery: true } };
+    expect(bilder(withGalleryLimit(voll))).toBe(5);
+    expect(withGalleryLimit(voll)).toBe(voll);
+  });
+
+  test("Unterseiten folgen derselben Grenze", () => {
+    const doc = mitGalerie();
+    const galerie = doc.sections.find(s => s.type === "gallery");
+    const gekuerzt = withGalleryLimit({
+      ...doc,
+      pages: [
+        {
+          slug: "impressionen",
+          title: "Impressionen",
+          seo: { title: "Impressionen", description: "Bilder." },
+          sections: [
+            { type: "pageHeader" as const, title: "Impressionen" },
+            galerie!,
+          ],
+        },
+      ],
+    } as WebsiteDataV2);
+    const g = gekuerzt.pages?.[0].sections.find(s => s.type === "gallery");
+    expect(g && "images" in g ? g.images.length : 0).toBe(3);
+  });
+
+  test("das Dokument selbst bleibt unangetastet", () => {
+    const doc = mitGalerie();
+    withGalleryLimit(doc);
+    expect(bilder(doc)).toBe(5);
   });
 });

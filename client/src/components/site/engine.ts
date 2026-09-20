@@ -55,11 +55,36 @@ export const SECTION_ANCHORS: Record<SectionType, string> = {
 export const ADDON_GATED_SECTION_TYPES: Partial<
   Record<SectionType, keyof SiteAddOns>
 > = {
-  gallery: "gallery",
   menu: "menu",
   pricelist: "pricelist",
   team: "team",
 };
+
+/**
+ * Die Galerie ist nicht mehr ganz gesperrt (Betreiber-Entscheidung
+ * 2026-09-20): Ohne gebuchtes Add-on zeigt sie die ersten drei Fotos, mit
+ * Add-on alle. Vorher fiel der ganze Abschnitt weg — im Schnitt sechs
+ * Fotos je Seite blieben unsichtbar und die Seite wirkte leer.
+ */
+export const FREIE_GALERIEBILDER = 3;
+
+/** Galerie-Abschnitte auf die freien Bilder kürzen (Start- und Unterseiten). */
+export function withGalleryLimit(doc: WebsiteDataV2): WebsiteDataV2 {
+  if (doc.addOns?.gallery === true) return doc;
+  const kuerzen = <T extends { type: string }>(abschnitt: T): T => {
+    if (abschnitt.type !== "gallery") return abschnitt;
+    const galerie = abschnitt as T & { images: { url: string }[] };
+    if (galerie.images.length <= FREIE_GALERIEBILDER) return abschnitt;
+    return { ...galerie, images: galerie.images.slice(0, FREIE_GALERIEBILDER) };
+  };
+  return {
+    ...doc,
+    sections: doc.sections.map(kuerzen),
+    ...(doc.pages
+      ? { pages: doc.pages.map(p => ({ ...p, sections: p.sections.map(kuerzen) })) }
+      : {}),
+  };
+}
 
 /** true, wenn der Sektionstyp frei ist oder sein Add-on im Dokument gebucht wurde. */
 export function isSectionBooked(

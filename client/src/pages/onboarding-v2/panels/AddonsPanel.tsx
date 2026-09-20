@@ -76,8 +76,8 @@ const ADDON_META: Record<
   gallery: {
     icon: Images,
     description:
-      "Zeige Projekte, Räume, Arbeiten oder Impressionen in einer Bildergalerie.",
-    benefit: "Arbeit sichtbar beweisen",
+      "Drei Fotos zeigt deine Website ohne Extra. Mit dem Extra erscheinen alle Bilder in der Galerie.",
+    benefit: "Alle Arbeiten statt nur drei",
   },
   menu: {
     icon: UtensilsCrossed,

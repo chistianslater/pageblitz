@@ -312,15 +312,61 @@ describe("renderSiteHtml — Add-on-Gating (Plan B6 Task 6)", () => {
     expect(html).toContain('href="#galerie"');
   });
 
-  test("ohne addOns.gallery fehlt die Galerie im HTML (Sektion bleibt im Dokument) — inkl. Nav-Anker", () => {
+  test("ohne addOns.gallery bleibt die Galerie sichtbar, zeigt aber nur drei Fotos (Betreiber-Entscheidung 2026-09-20)", () => {
     const { gallery: _g, ...rest } = full.addOns ?? {};
-    const { html, status } = renderSiteHtml({ ...full, addOns: rest }, opts);
+    // Fixture-Galerien sind klein; fünf Fotos machen die Grenze sichtbar.
+    const fuenf = {
+      ...full,
+      addOns: rest,
+      sections: full.sections.map(s =>
+        s.type === "gallery"
+          ? {
+              ...s,
+              images: Array.from({ length: 5 }, (_, i) => ({
+                url: `https://x/g${i + 1}.jpg`,
+                alt: `Bild ${i + 1}`,
+              })),
+            }
+          : s
+      ),
+    };
+    const { html, status } = renderSiteHtml(fuenf, opts);
     expect(status).toBe(200);
-    expect(html).not.toContain('id="galerie"');
-    expect(html).not.toContain('href="#galerie"');
-    // Freie Sektionen bleiben.
+    expect(html).toContain('id="galerie"');
+    expect(html).toContain('href="#galerie"');
     expect(html).toContain('id="leistungen"');
-    expect(full.sections.some(s => s.type === "gallery")).toBe(true);
+    const gezeigt = (html.match(/data-pb-lightbox/g) ?? []).length;
+    const abschnitt = html.slice(html.indexOf('id="galerie"'));
+    const bilder = (
+      abschnitt.slice(0, abschnitt.indexOf("</section>")).match(/<img/g) ?? []
+    ).length;
+    expect(bilder).toBe(3);
+    expect(gezeigt).toBeGreaterThanOrEqual(0);
+  });
+
+  test("mit addOns.gallery erscheinen alle Fotos", () => {
+    const fuenf = {
+      ...full,
+      addOns: { ...full.addOns, gallery: true },
+      sections: full.sections.map(s =>
+        s.type === "gallery"
+          ? {
+              ...s,
+              images: Array.from({ length: 5 }, (_, i) => ({
+                url: `https://x/g${i + 1}.jpg`,
+                alt: `Bild ${i + 1}`,
+              })),
+            }
+          : s
+      ),
+    };
+    const alle = 5;
+    const { html } = renderSiteHtml(fuenf, opts);
+    const abschnitt = html.slice(html.indexOf('id="galerie"'));
+    const bilder = (
+      abschnitt.slice(0, abschnitt.indexOf("</section>")).match(/<img/g) ?? []
+    ).length;
+    expect(bilder).toBe(alle);
   });
 
   test("ohne addOns.subpages: Page-Link fehlt in der Nav, Page-Pfad rendert die Startseite (Route liefert 404, siehe routes.test)", () => {
@@ -337,7 +383,7 @@ describe("renderSiteHtml — Add-on-Gating (Plan B6 Task 6)", () => {
     expect(onPage.html).not.toContain(`<title>${page.seo.title}</title>`);
   });
 
-  test("Unterseite: nicht gebuchte Galerie-Sektion auf der Page wird ebenfalls ausgeblendet, pageHeader bleibt", () => {
+  test("Unterseite: die Galerie bleibt sichtbar (begrenzt), pageHeader bleibt", () => {
     const page = {
       slug: "einblicke",
       title: "Einblicke",
@@ -362,7 +408,7 @@ describe("renderSiteHtml — Add-on-Gating (Plan B6 Task 6)", () => {
     });
     expect(status).toBe(200);
     expect(html).toContain("Einblicke-Kopf");
-    expect(html).not.toContain("Unterseiten-Galerie");
+    expect(html).toContain("Unterseiten-Galerie");
     const booked = renderSiteHtml(
       { ...data, addOns: { subpages: true, gallery: true } },
       { ...opts, pathname: "/einblicke" }

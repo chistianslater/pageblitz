@@ -68,6 +68,7 @@ import {
   pageForPathname,
   visiblePageSections,
   withAboutFallbackImage,
+  withGalleryLimit,
 } from "./engine";
 
 export const SiteRenderer: React.FC<{
@@ -150,6 +151,8 @@ export const SiteRenderer: React.FC<{
   // Fehlt dem Über-uns-Abschnitt das Foto, rückt ein Galeriebild nach —
   // sonst steht der Abschnitt halb leer (Betreiber-Befund 2026-09-20).
   data = withAboutFallbackImage(data);
+  // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar.
+  data = withGalleryLimit(data);
   const effectiveData =
     packOverride && packOverride !== data.stylePackId && PACK_MODULES[packOverride]
       ? {

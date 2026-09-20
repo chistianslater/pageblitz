@@ -33,7 +33,7 @@ const CONTENT_ADDON_LABELS: Record<
   gallery: {
     name: "Bildergalerie",
     icon: "🖼️",
-    hint: "Präsentiere deine Arbeiten in einer Galerie.",
+    hint: "Ohne Extra zeigt die Galerie drei Fotos, mit Extra alle.",
     priceLabel: "+3,90 €/Mon",
   },
   menu: {

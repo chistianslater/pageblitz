@@ -479,7 +479,7 @@ describe("SSR routes", () => {
         expect(home.text).not.toContain(`/brandt-ungebucht/${page.slug}"`);
       });
 
-      test("nicht gebuchte Galerie (addOns.gallery fehlt) erscheint nicht im ausgelieferten HTML", async () => {
+      test("ohne gebuchte Galerie liefert die Seite die drei freien Fotos aus", async () => {
         const fixture = getFixture("werkbank", "full");
         const { gallery: _g, ...rest } = fixture.addOns ?? {};
         (getWebsiteBySlug as Mock).mockResolvedValue({
@@ -489,8 +489,13 @@ describe("SSR routes", () => {
         const app = buildAppWithFallback();
         const res = await request(app).get("/site/brandt-ohne-galerie");
         expect(res.status).toBe(200);
-        expect(res.text).not.toContain('id="galerie"');
+        expect(res.text).toContain('id="galerie"');
         expect(res.text).toContain('id="leistungen"');
+        const abschnitt = res.text.slice(res.text.indexOf('id="galerie"'));
+        const bilder = (
+          abschnitt.slice(0, abschnitt.indexOf("</section>")).match(/<img/g) ?? []
+        ).length;
+        expect(bilder).toBe(3);
       });
 
       test("invalidateSsrCache() löscht per Prefix-Scan auch eine bereits gecachte Unterseite", async () => {
