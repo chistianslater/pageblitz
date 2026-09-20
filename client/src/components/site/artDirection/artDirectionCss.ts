@@ -155,5 +155,12 @@ export const ART_DIRECTION_CSS = `
    in deren Media-Queries — dadurch wandert die Textkante des Kopfbereichs
    bei jeder Breite mit den Abschnitten mit. Bilder und Farbflächen bleiben
    unberührt. */
+/* Lesbare Zeilenlänge (2026-09-20): Fließtext ohne eigene Breitenangabe
+   lief in breiten Karten über 110 Zeichen pro Zeile. 70 Zeichen ist die
+   Obergrenze des angenehmen Bereichs; 62ch der Grundschrift entsprechen rund
+   75 Zeichen. Der Kopfbereich bleibt außen vor, dort zentrieren einige
+   Richtungen bewusst. :where() hat keine Spezifität, eigene
+   Vorgaben der Richtungen stechen die Regel also weiterhin. */
+:where(.pb-site[data-pb-revision="2"] section:not(#start) p){max-width:62ch}
 @media(prefers-reduced-motion:reduce){.pb-site[data-pb-revision="2"] :is(.pb-art-cta,.pb-art-cta svg,.pb-art-media img,details[open]>:not(summary)){animation:none!important;transition:none!important;transform:none!important}}
 `;

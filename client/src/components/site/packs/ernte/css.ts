@@ -1,13 +1,14 @@
 export const ERNTE_CSS = `
-.pb-ernte{--pb-shell-outer:1240px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
+.pb-ernte{--pb-shell-outer:1460px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.6;overflow-x:clip}
 .pb-ernte a{color:inherit;text-decoration:none}
 .pb-er-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:22px;padding:16px 30px;background:color-mix(in srgb,var(--pb-canvas) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--pb-line)}
+.pb-er-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-er-logo{font-family:var(--pb-font-display);font-size:21px;letter-spacing:.04em;color:var(--pb-accent)}
 .pb-er-nav-links{display:flex;gap:20px;margin-left:auto;font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
 .pb-er-nav-links a{color:var(--pb-accent);opacity:.75;transition:opacity .15s}
 .pb-er-nav-links a:hover,.pb-er-nav-links a:focus-visible,.pb-er-nav-links a[aria-current="page"]{opacity:1}
 .pb-er-nav-links a[aria-current="page"]{border-bottom:2px solid var(--pb-accent-2)}
-.pb-er-hero{position:relative;display:grid;grid-template-columns:minmax(0,6.5fr) minmax(0,5.5fr);gap:48px;align-items:center;max-width:1180px;margin:0 auto;padding:76px 30px 96px}\n.pb-er-hero>.pb-er-blob-sage{position:absolute;left:-160px;top:38%;width:280px;height:280px;inset:auto;z-index:0;opacity:.85}\n.pb-er-hero-deco{position:absolute;right:-30px;bottom:-34px;width:230px;height:184px;color:var(--pb-accent);opacity:.5;z-index:0;pointer-events:none}
+.pb-er-hero{position:relative;display:grid;grid-template-columns:minmax(0,6.5fr) minmax(0,5.5fr);gap:48px;align-items:center;max-width:1400px;margin:0 auto;padding:76px 30px 96px}\n.pb-er-hero>.pb-er-blob-sage{position:absolute;left:-160px;top:38%;width:280px;height:280px;inset:auto;z-index:0;opacity:.85}\n.pb-er-hero-deco{position:absolute;right:-30px;bottom:-34px;width:230px;height:184px;color:var(--pb-accent);opacity:.5;z-index:0;pointer-events:none}
 .pb-er-script{font-family:var(--pb-font-utility);font-size:clamp(1.5rem,2.6vw,2.1rem);color:var(--pb-accent);transform:rotate(-1.5deg);transform-origin:left}
 .pb-er-hero h1{margin-top:10px;font-family:var(--pb-font-display);font-weight:400;font-size:var(--pb-hero-size);line-height:.95;letter-spacing:.02em;text-transform:uppercase;color:var(--pb-accent);max-width:15ch}
 .pb-ernte .pb-rich-accent{font-style:normal;color:var(--pb-accent);box-shadow:inset 0 -0.28em 0 var(--pb-accent-2)}
@@ -24,7 +25,7 @@ export const ERNTE_CSS = `
 .pb-er-blob-sage path{fill:#A2D3A6}
 .pb-er-hero-media img{position:relative;z-index:1;display:block;width:100%;aspect-ratio:4/4.1;object-fit:cover;clip-path:url(#pb-er-clip-a);filter:drop-shadow(-10px 12px 26px rgba(0,0,0,.14))}
 .pb-site.pb-ernte[data-pb-hero] #start .pb-er-hero-media img{clip-path:url(#pb-er-clip-a)!important}
-.pb-er-section{max-width:1180px;margin:0 auto;padding:72px 30px;border-top:1px solid var(--pb-line)}
+.pb-er-section{max-width:1400px;margin:0 auto;padding:72px 30px;border-top:1px solid var(--pb-line)}
 .pb-ernte{--pb-shell-pad:30px}
 .pb-er-title{font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.8rem,3.2vw,2.6rem);letter-spacing:.03em;text-transform:uppercase;color:var(--pb-accent)}
 .pb-er-intro{margin-top:12px;max-width:56ch;color:var(--pb-muted)}
@@ -72,7 +73,7 @@ export const ERNTE_CSS = `
 .pb-er-member strong{display:block;font-weight:600}
 .pb-er-member p{font-size:13px;color:var(--pb-muted)}
 .pb-er-cta-section .pb-er-cta{margin-top:24px}
-.pb-er-page-header{max-width:1180px;margin:0 auto;padding:64px 30px 16px}
+.pb-er-page-header{max-width:1400px;margin:0 auto;padding:64px 30px 16px}
 .pb-er-page-header h1{font-family:var(--pb-font-display);font-weight:400;text-transform:uppercase;letter-spacing:.03em;color:var(--pb-accent);font-size:clamp(2.2rem,4.5vw,3.4rem)}
 .pb-er-page-header p{margin-top:14px;max-width:58ch;color:var(--pb-muted)}
 .pb-er-footer{border-top:1px solid var(--pb-line);padding:34px 30px;font-size:12.5px;color:var(--pb-muted)}

@@ -1,7 +1,8 @@
 export const KARAT_CSS = `
-.pb-karat{--pb-shell-outer:1008px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.6;overflow-x:clip}
+.pb-karat{--pb-shell-outer:1168px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);font-weight:300;line-height:1.6;overflow-x:clip}
 .pb-karat a{color:inherit;text-decoration:none}
 .pb-ka-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:24px;padding:18px 36px;background:color-mix(in srgb,var(--pb-canvas) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--pb-line)}
+.pb-ka-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-ka-logo{font-family:var(--pb-font-display);font-size:19px;letter-spacing:.04em}
 .pb-ka-nav-links{display:flex;gap:22px;margin-left:auto;font-size:11px;letter-spacing:.16em;text-transform:uppercase}
 .pb-ka-nav-links a{padding-bottom:3px;border-bottom:1px solid transparent;transition:border-color .2s,color .2s}
@@ -16,11 +17,11 @@ export const KARAT_CSS = `
 .pb-karat a.pb-ka-cta{display:inline-block;margin-top:32px;padding:15px 38px;border:1px solid var(--pb-accent);color:var(--pb-accent);font-size:12px;letter-spacing:.18em;text-transform:uppercase;transition:background .2s,color .2s}
 .pb-ka-cta:hover,.pb-ka-cta:focus-visible{background:var(--pb-accent);color:var(--pb-accent-contrast)}
 .pb-ka-rating{margin-top:26px;font-size:12px;letter-spacing:.08em;color:var(--pb-muted)}
-.pb-ka-hero-media{margin:56px auto 0;max-width:960px;padding:0 12px}
+.pb-ka-hero-media{margin:56px auto 0;max-width:1120px;padding:0 12px}
 .pb-ka-frame{display:block;border:1px solid var(--pb-accent);padding:10px;background:var(--pb-canvas)}
 .pb-ka-frame img{display:block;width:100%;height:auto;border:1px solid var(--pb-line);filter:brightness(.92)}
 .pb-ka-hero-media .pb-ka-frame img{aspect-ratio:16/8.5;object-fit:cover}
-.pb-ka-section{max-width:960px;margin:0 auto;padding:76px 24px;border-top:1px solid var(--pb-line)}
+.pb-ka-section{max-width:1120px;margin:0 auto;padding:76px 24px;border-top:1px solid var(--pb-line)}
 .pb-karat{--pb-shell-pad:24px}
 /* Ausrichtung vereinheitlicht (Betreiber-Befund 2026-09-05): In Über uns,
    Stimmen und Fragen stand der zentrierte Sektionstitel über linksbündigem
@@ -75,7 +76,7 @@ export const KARAT_CSS = `
 .pb-ka-member strong{display:block;font-family:var(--pb-font-display);font-weight:600;font-size:17px}
 .pb-ka-member p{color:var(--pb-muted);font-size:13px}
 .pb-ka-cta-section{text-align:center}
-.pb-ka-page-header{max-width:960px;margin:0 auto;padding:72px 24px 20px;text-align:center}
+.pb-ka-page-header{max-width:1120px;margin:0 auto;padding:72px 24px 20px;text-align:center}
 .pb-ka-page-header h1{font-family:var(--pb-font-display);font-weight:500;font-size:clamp(2rem,4vw,3.2rem)}
 .pb-ka-page-header p{margin:16px auto 0;max-width:58ch;color:var(--pb-muted)}
 .pb-ka-footer{border-top:1px solid var(--pb-line);padding:38px 24px;text-align:center;font-size:12px;color:var(--pb-muted)}

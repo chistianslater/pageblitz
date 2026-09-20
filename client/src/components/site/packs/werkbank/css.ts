@@ -4,6 +4,7 @@ export const WERKBANK_CSS = `
 .pb-wb-rail{position:absolute;inset:0 auto 0 0;width:58px;background:var(--pb-ink);color:var(--pb-canvas);display:flex;align-items:center;justify-content:center;z-index:40}
 .pb-wb-rail b{writing-mode:vertical-rl;transform:rotate(180deg);font:400 10px/1 var(--pb-font-utility);letter-spacing:.32em;text-transform:uppercase}
 .pb-wb-main{margin-left:58px}.pb-wb-nav{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--pb-canvas) 94%,transparent);border-bottom:2px solid var(--pb-ink);display:flex;align-items:center;gap:20px;padding:18px clamp(20px,3vw,42px);font:700 11px/1 var(--pb-font-utility);text-transform:uppercase;letter-spacing:.08em;backdrop-filter:blur(8px)}
+.pb-wb-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-wb-logo{font-family:var(--pb-font-display);font-size:17px}.pb-wb-logo img{display:block;max-height:30px;max-width:180px}.pb-wb-nav-links{display:flex;gap:18px;margin-left:auto}
 .pb-wb-nav-links a{transition:color .18s}.pb-wb-nav-links a:focus-visible{color:var(--pb-accent-text)}.pb-wb-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:5px}
 .pb-wb-hero{position:relative;min-height:min(760px,82vh);padding:clamp(48px,7vw,104px) clamp(20px,3vw,42px) 110px;overflow:hidden}

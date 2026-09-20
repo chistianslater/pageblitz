@@ -1,13 +1,14 @@
 export const RASTER_CSS = `
-.pb-raster{--pb-shell-outer:calc(1200px + 13%);background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
+.pb-raster{--pb-shell-outer:calc(1400px + 13%);background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-raster a{color:inherit;text-decoration:none}
 .pb-ra-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:24px;padding:16px 32px;background:var(--pb-canvas);border-bottom:1px solid var(--pb-ink)}
+.pb-ra-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-ra-logo{font-family:var(--pb-font-display);font-weight:700;font-size:15px;letter-spacing:-.01em}
 .pb-ra-nav-links{display:flex;gap:22px;margin-left:auto;font-size:12.5px;font-weight:500}
 .pb-ra-nav-links a{position:relative;padding-left:14px;transition:color .15s}
 .pb-ra-nav-links a::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:transparent;transition:background .15s}
 .pb-ra-nav-links a:hover::before,.pb-ra-nav-links a:focus-visible::before,.pb-ra-nav-links a[aria-current="page"]::before{background:var(--pb-accent)}
-.pb-ra-hero{display:grid;grid-template-columns:64px minmax(0,7fr) minmax(0,5fr);gap:36px;max-width:1200px;margin:0 auto;padding:72px 32px 80px;border-bottom:1px solid var(--pb-ink)}
+.pb-ra-hero{display:grid;grid-template-columns:64px minmax(0,7fr) minmax(0,5fr);gap:36px;max-width:1400px;margin:0 auto;padding:72px 32px 80px;border-bottom:1px solid var(--pb-ink)}
 .pb-ra-hero-margin{display:flex;flex-direction:column;gap:10px;border-right:1px solid var(--pb-line);padding-right:16px}
 .pb-ra-index{font-size:12px;font-weight:700;color:var(--pb-accent-text);font-variant-numeric:tabular-nums}
 .pb-ra-margin-note{writing-mode:vertical-rl;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--pb-muted)}
@@ -21,7 +22,7 @@ export const RASTER_CSS = `
 .pb-ra-figure img{display:block;width:100%;height:auto}
 .pb-ra-hero-figure img{aspect-ratio:4/4.4;object-fit:cover}
 .pb-ra-figure figcaption{margin-top:8px;font-size:11px;letter-spacing:.06em;color:var(--pb-muted);border-top:1px solid var(--pb-line);padding-top:6px;font-variant-numeric:tabular-nums}
-.pb-ra-section{max-width:1200px;margin:0 auto;padding:64px 32px;border-bottom:1px solid var(--pb-line)}
+.pb-ra-section{max-width:1400px;margin:0 auto;padding:64px 32px;border-bottom:1px solid var(--pb-line)}
 .pb-raster{--pb-shell-pad:32px}
 .pb-ra-head{display:grid;grid-template-columns:64px 1fr;gap:36px;align-items:baseline}
 .pb-ra-head h2{font-family:var(--pb-font-display);font-weight:700;font-size:clamp(1.4rem,2.4vw,2rem);letter-spacing:-.02em}
@@ -65,10 +66,10 @@ export const RASTER_CSS = `
 .pb-ra-member strong{display:block;font-weight:600}
 .pb-ra-member p{font-size:13px;color:var(--pb-muted)}
 .pb-ra-section .pb-ra-cta{margin:26px 0 0 100px}
-.pb-ra-page-header{max-width:1200px;margin:0 auto;padding:64px 32px 24px;border-bottom:1px solid var(--pb-ink)}
+.pb-ra-page-header{max-width:1400px;margin:0 auto;padding:64px 32px 24px;border-bottom:1px solid var(--pb-ink)}
 .pb-ra-page-header h1{font-family:var(--pb-font-display);font-weight:700;font-size:clamp(2rem,4vw,3rem);letter-spacing:-.03em}
 .pb-ra-page-header p{margin-top:14px;max-width:58ch;color:var(--pb-muted)}
-.pb-ra-footer{max-width:1200px;margin:0 auto;padding:32px;font-size:12px;color:var(--pb-muted)}
+.pb-ra-footer{max-width:1400px;margin:0 auto;padding:32px;font-size:12px;color:var(--pb-muted)}
 .pb-ra-footer p{margin-bottom:4px}
 .pb-ra-footer a{border-bottom:1px solid var(--pb-line)}
 .pb-ra-footer a:hover,.pb-ra-footer a:focus-visible{color:var(--pb-accent-text);border-color:var(--pb-accent-text)}

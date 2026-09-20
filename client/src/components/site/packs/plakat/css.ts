@@ -1,13 +1,14 @@
 export const PLAKAT_CSS = `
-.pb-plakat{--pb-shell-outer:1208px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
+.pb-plakat{--pb-shell-outer:1408px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip}
 .pb-plakat a{color:inherit;text-decoration:none}
 .pb-pl-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:20px;padding:14px 24px;background:var(--pb-canvas);border-bottom:3px solid var(--pb-ink)}
+.pb-pl-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-pl-logo{font-family:var(--pb-font-display);font-size:17px;text-transform:uppercase;letter-spacing:.02em}
 .pb-pl-nav-links{display:flex;gap:4px;margin-left:auto;font-size:13px;font-weight:700}
 .pb-pl-nav-links a{padding:6px 10px;border:2px solid transparent;transition:border-color .12s,background .12s}
 .pb-pl-nav-links a:hover,.pb-pl-nav-links a:focus-visible{border-color:var(--pb-ink)}
 .pb-pl-nav-links a[aria-current="page"]{background:var(--pb-accent);color:var(--pb-accent-contrast);border-color:var(--pb-ink)}
-.pb-pl-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:center;padding:64px 24px 72px;max-width:1160px;margin:0 auto}
+.pb-pl-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:center;padding:64px 24px 72px;max-width:1360px;margin:0 auto}
 .pb-pl-hero h1{font-family:var(--pb-font-display);font-weight:400;font-size:var(--pb-hero-size);line-height:.98;text-transform:uppercase;letter-spacing:.01em;max-width:14ch}
 .pb-pl-mark{box-shadow:inset 0 -0.32em 0 var(--pb-accent)}
 .pb-plakat .pb-rich-accent{font-style:normal;box-shadow:inset 0 -0.32em 0 var(--pb-accent)}
@@ -19,7 +20,7 @@ export const PLAKAT_CSS = `
 .pb-pl-hero-media .pb-pl-photo{aspect-ratio:4/4.6;object-fit:cover}
 .pb-pl-sticker{position:absolute;top:-22px;right:-14px;display:grid;place-items:center;width:108px;height:108px;background:var(--pb-accent);color:var(--pb-accent-contrast);border:3px solid var(--pb-ink);border-radius:50%;transform:rotate(8deg);font-family:var(--pb-font-display);font-size:22px;line-height:1.05;text-align:center;padding:10px}
 .pb-pl-sticker small{font-family:var(--pb-font-body);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block;margin-top:2px}
-.pb-pl-section{max-width:1160px;margin:0 auto;padding:64px 24px;border-top:3px solid var(--pb-ink)}
+.pb-pl-section{max-width:1360px;margin:0 auto;padding:64px 24px;border-top:3px solid var(--pb-ink)}
 .pb-plakat{--pb-shell-pad:24px}
 .pb-pl-title{font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.7rem,3.6vw,2.6rem);text-transform:uppercase;margin-bottom:8px}
 .pb-pl-title::after{content:"";display:block;width:74px;height:8px;background:var(--pb-accent);margin-top:10px}
@@ -66,7 +67,7 @@ export const PLAKAT_CSS = `
 .pb-pl-team{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:26px;margin-top:32px}
 .pb-pl-member img{width:100%;aspect-ratio:1/1;object-fit:cover;border:3px solid var(--pb-ink);margin-bottom:12px}
 .pb-pl-cta-section{text-align:left}
-.pb-pl-page-header{max-width:1160px;margin:0 auto;padding:56px 24px 8px}
+.pb-pl-page-header{max-width:1360px;margin:0 auto;padding:56px 24px 8px}
 .pb-pl-page-header h1{font-family:var(--pb-font-display);font-weight:400;text-transform:uppercase;font-size:clamp(2rem,5vw,3.4rem);line-height:1}
 .pb-pl-page-header p{margin-top:14px;max-width:58ch;color:var(--pb-muted)}
 .pb-pl-footer{border-top:3px solid var(--pb-ink);padding:30px 24px;font-size:12.5px;font-weight:600}

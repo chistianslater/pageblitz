@@ -1,7 +1,8 @@
 export const RIVIERA_CSS = `
-.pb-riviera{--pb-shell-outer:1224px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.62;overflow-x:clip}
+.pb-riviera{--pb-shell-outer:1424px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.62;overflow-x:clip}
 .pb-riviera a{color:inherit;text-decoration:none}
 .pb-rv-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:22px;padding:18px 32px;background:color-mix(in srgb,var(--pb-canvas) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--pb-line)}
+.pb-rv-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-rv-logo{font-family:var(--pb-font-display);font-size:19px;letter-spacing:.05em}
 .pb-rv-nav-links{display:flex;gap:20px;margin-left:auto;font-size:13.5px;font-weight:500}
 .pb-rv-nav-links a{padding-bottom:3px;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
@@ -9,7 +10,7 @@ export const RIVIERA_CSS = `
 .pb-rv-nav-links a[aria-current="page"]{border-bottom-color:var(--pb-accent)}
 .pb-rv-kicker{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--pb-accent)}
 .pb-rv-kicker svg{width:44px;height:8px;flex-shrink:0}
-.pb-rv-hero{position:relative;display:grid;grid-template-columns:minmax(0,6.5fr) minmax(0,5.5fr);gap:52px;align-items:center;max-width:1160px;margin:0 auto;padding:76px 32px 96px}
+.pb-rv-hero{position:relative;display:grid;grid-template-columns:minmax(0,6.5fr) minmax(0,5.5fr);gap:52px;align-items:center;max-width:1360px;margin:0 auto;padding:76px 32px 96px}
 .pb-rv-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26px;background:var(--pb-line);opacity:.45;border-radius:999px 999px 0 0}
 .pb-rv-hero h1{margin-top:20px;font-family:var(--pb-font-display);font-weight:400;font-size:var(--pb-hero-size);line-height:1.08;letter-spacing:.01em;max-width:16ch}
 .pb-rv-hero h1 em,.pb-riviera .pb-rich-accent{font-style:italic;color:var(--pb-accent)}
@@ -20,7 +21,7 @@ export const RIVIERA_CSS = `
 .pb-rv-rating{font-size:13px;color:var(--pb-muted)}
 .pb-rv-arch{display:block;width:100%;height:auto;border-radius:999px 999px var(--pb-radius-card) var(--pb-radius-card);object-fit:cover}
 .pb-rv-hero-photo{aspect-ratio:4/5;border:6px solid var(--pb-surface);box-shadow:0 24px 48px rgba(23,59,76,.16)}
-.pb-rv-section{max-width:1160px;margin:0 auto;padding:76px 32px}
+.pb-rv-section{max-width:1360px;margin:0 auto;padding:76px 32px}
 .pb-riviera{--pb-shell-pad:32px}
 .pb-rv-section+.pb-rv-section{border-top:1px solid var(--pb-line)}
 .pb-rv-title{margin-top:14px;font-family:var(--pb-font-display);font-weight:400;font-size:clamp(1.7rem,3vw,2.5rem);letter-spacing:.01em}
@@ -68,7 +69,7 @@ export const RIVIERA_CSS = `
 .pb-rv-member strong{display:block;font-family:var(--pb-font-display);font-size:17px}
 .pb-rv-member p{font-size:13px;color:var(--pb-muted)}
 .pb-rv-cta-section .pb-rv-cta{margin-top:26px}
-.pb-rv-page-header{max-width:1160px;margin:0 auto;padding:68px 32px 16px}
+.pb-rv-page-header{max-width:1360px;margin:0 auto;padding:68px 32px 16px}
 .pb-rv-page-header h1{font-family:var(--pb-font-display);font-weight:400;font-size:clamp(2rem,4vw,3.2rem)}
 .pb-rv-page-header p{margin-top:14px;max-width:58ch;color:var(--pb-muted)}
 .pb-rv-footer{border-top:1px solid var(--pb-line);padding:36px 32px;text-align:center;font-size:13px;color:var(--pb-muted)}

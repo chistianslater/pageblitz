@@ -29,7 +29,7 @@ export const ZUNFT_CSS = `
 .pb-zf-section{padding:60px 32px;border-top:1px solid var(--pb-line);text-align:left}
 .pb-zunft{--pb-shell-pad:32px}
 .pb-zf-section h2{font-family:var(--pb-font-display);font-weight:600;font-style:italic;font-size:clamp(1.5rem,2.6vw,2.1rem);margin-bottom:28px}
-.pb-zf-intro{color:var(--pb-muted);margin:0 auto 28px;max-width:46ch}
+.pb-zf-intro{color:var(--pb-muted);margin:0 0 28px;max-width:65ch}
 .pb-zf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;text-align:left}
 .pb-zf-card{background:var(--pb-surface);padding:24px;border:1px solid var(--pb-line)}
 .pb-zf-card strong{display:block;font-family:var(--pb-font-display);font-weight:600;margin-bottom:8px;font-size:15px}

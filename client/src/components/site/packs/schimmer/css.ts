@@ -2,6 +2,7 @@ export const SCHIMMER_CSS = `
 .pb-schimmer{--pb-shell-outer:100%;--pb-dur-enter:.85s;--pb-enter-y:12px;--pb-enter-blur:6px;--pb-hero-dur:.9s;--pb-hero-y:10px;background:var(--pb-canvas);color:var(--pb-ink);font-family:var(--pb-font-body);line-height:1.55;overflow-x:clip;position:relative}
 .pb-schimmer *{box-sizing:border-box}.pb-schimmer a{color:inherit;text-decoration:none}
 .pb-sc-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:24px;background:color-mix(in srgb,var(--pb-canvas) 95%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--pb-line);padding:18px clamp(22px,4vw,64px);font-size:11px}
+.pb-sc-nav{padding-inline:calc(max(0px,(100% - min(100%,var(--pb-shell-outer,100%))) / 2) + var(--pb-shell-pad,0px))}
 .pb-sc-logo{font-family:var(--pb-font-display);font-weight:600;font-size:16px;letter-spacing:-.01em}.pb-sc-nav-links{display:flex;align-items:center;gap:26px;margin-left:auto;flex-wrap:wrap;text-transform:uppercase;letter-spacing:.12em}
 .pb-sc-nav-links a{transition:color .2s}.pb-sc-nav-links a:focus-visible{color:var(--pb-accent-text)}.pb-sc-nav-links a[aria-current="page"]{text-decoration:underline;text-decoration-color:var(--pb-accent);text-underline-offset:5px}
 .pb-sc-hero{position:relative;min-height:min(780px,calc(100svh - 55px));padding:clamp(44px,6vw,88px) clamp(22px,6vw,90px);display:flex;align-items:center;overflow:hidden;isolation:isolate}
