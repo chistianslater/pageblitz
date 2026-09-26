@@ -21,6 +21,19 @@ export const GUSTO: PackConstitution = {
     "eiscafe",
     "eiscafé",
     "foodtruck",
+    // Imbiss- und Wirtshaus-Vokabular (2026-09-26, Test „Kebabimbiss")
+    "doener",
+    "kebab",
+    "burger",
+    "grill",
+    "falafel",
+    "currywurst",
+    "pommes",
+    "sushi",
+    "gaststaette",
+    "lokal",
+    "wirtshaus",
+    "partyservice",
   ],
   // Gastro-Pack (Restaurant/Bar/Bistro/Catering) — Angebot-Panel startet im
   // Speisekarten-Modus (B4c Task 7, siehe PackConstitution.prefersMenu).

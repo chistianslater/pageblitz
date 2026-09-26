@@ -141,6 +141,13 @@ function tokenize(value: string): string[] {
  */
 function matchScore(token: string, industry: string): number {
   if (token === industry) return 100 + industry.length;
+  // Deutsche Komposita tragen die Branche am Wortende: „Kebab|imbiss",
+  // „Haus|arzt", „Bier|lokal". Das Grundwort bestimmt, was der Betrieb ist —
+  // deshalb zählt ein Treffer am Ende so sicher wie ein exakter. Ab vier
+  // Zeichen, damit „Sushi|bar" nicht über „bar" läuft.
+  if (token.endsWith(industry) && industry.length >= MIN_PREFIX_MATCH_LENGTH) {
+    return 100 + industry.length;
+  }
   if (
     token.startsWith(industry) &&
     industry.length >= MIN_PREFIX_MATCH_LENGTH
@@ -348,8 +355,20 @@ const POOL_ZIELBREITE = 5;
 /** Harte Untergrenze — nur hierfuer duerfen die generischen Fueller ran. */
 const POOL_MINDESTBREITE = 3;
 
+/**
+ * Richtungen, die nie als Nachbar oder Füller in fremde Branchen rutschen.
+ * Gusto ist Gastro-Stimme (Speisekarte, „Tisch reservieren") — als Nachbar
+ * von Patina/Landgut landete es bei Bestattern, Yogastudios und Blumenläden.
+ * Anders als SELECTIVE_PACKS zählt für Gusto auch ein unsicherer Treffer
+ * („Dönerladen" über „doener").
+ */
+const DIRECT_ONLY_PACKS: ReadonlySet<PackId> = new Set([
+  ...SELECTIVE_PACKS,
+  "gusto",
+]);
+
 function allowInPool(id: PackId, direct: PackId[]): boolean {
-  return !SELECTIVE_PACKS.has(id) || direct.includes(id);
+  return !DIRECT_ONLY_PACKS.has(id) || direct.includes(id);
 }
 
 function expandPool(direct: PackId[]): PackId[] {
@@ -368,6 +387,7 @@ function expandPool(direct: PackId[]): PackId[] {
   // kuratierten Richtungen existieren.
   for (const id of SAFE_FILL) {
     if (expanded.length >= POOL_MINDESTBREITE) break;
+    if (!allowInPool(id, direct)) continue;
     if (!expanded.includes(id)) expanded.push(id);
   }
   return expanded;
