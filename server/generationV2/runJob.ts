@@ -200,7 +200,7 @@ export function buildInterimV2Doc(
   // (SSR-Preview und assertV2SafeWrite verlassen sich darauf).
   return WebsiteDataV2Schema.parse({
     ...interim,
-    ...pickArtTheme(packId, businessName),
+    ...pickArtTheme(packId, businessName, category),
     designStand: AKTUELLER_DESIGN_STAND,
     designProfile: deriveArtDirectedProfile(interim),
   });

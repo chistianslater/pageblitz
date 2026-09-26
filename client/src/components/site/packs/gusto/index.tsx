@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -28,6 +32,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { GUSTO_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 import { rich } from "../../richText";
+import { isImbissCategory } from "../../../../../../shared/stylePacks/imbiss";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   ...GENERIC_TITLES,
@@ -220,7 +225,9 @@ function renderSection(
           className="pb-gu-section pb-gu-voices"
           key={section.type}
         >
-          <SectionKicker index="04">{FALLBACK_TITLES.testimonials}</SectionKicker>
+          <SectionKicker index="04">
+            {FALLBACK_TITLES.testimonials}
+          </SectionKicker>
           <div className="pb-gu-voices-grid">
             <h2>{rich(title ?? "")}</h2>
             <div>
@@ -463,7 +470,13 @@ const GustoPage: React.FC<{
   const year = now.getFullYear();
 
   return (
-    <div className="pb-gusto">
+    <div
+      className={
+        isImbissCategory(data.businessCategory)
+          ? "pb-gusto pb-gusto--imbiss"
+          : "pb-gusto"
+      }
+    >
       <div className="pb-gu-frame">
         <nav className="pb-gu-nav">
           <div className="pb-gu-nav-links">
@@ -491,74 +504,77 @@ const GustoPage: React.FC<{
           </div>
           <MobileNav items={navList} />
         </nav>
-        {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-          <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
-          <HeroCollage data={data} />
-            <div
-              className="pb-gu-hero-media"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              aria-hidden="true"
-            >
-              {hero.imageUrl && (
-                <img
-                  src={hero.imageUrl}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              )}
-            </div>
-            <div className="pb-gu-hero-shade" aria-hidden="true" />
-            <div
-              className="pb-gu-hero-copy"
-              data-pb-slot={LAYOUT_SLOT.heroCopy}
-            >
-              {data.businessCategory && (
-                <p className="pb-gu-eyebrow">{data.businessCategory}</p>
-              )}
-              <h1>{rich(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-gu-subline">{rich(hero.subheadline)}</p>
-              )}
-              <OrnamentDivider />
-              {hero.ctaText && (
-                <a className="pb-gu-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
-              )}
-            </div>
-            {previewItems.length > 0 && (
-              <aside
-                className="pb-gu-menu-preview"
-                aria-label={FALLBACK_TITLES.menu}
+        {hero &&
+          (data.designRevision === 2 ? (
+            <ArtDirectedHero data={data} hero={hero} />
+          ) : (
+            <section id={SECTION_ANCHORS.hero} className="pb-gu-hero">
+              <HeroCollage data={data} />
+              <div
+                className="pb-gu-hero-media"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                aria-hidden="true"
               >
-                <p className="pb-gu-preview-label">{FALLBACK_TITLES.menu}</p>
-                {previewItems.map(item => (
-                  <MenuRow
-                    key={item.name}
-                    name={item.name}
-                    price={item.price}
+                {hero.imageUrl && (
+                  <img
+                    src={hero.imageUrl}
+                    alt=""
+                    loading="eager"
+                    fetchPriority="high"
                   />
-                ))}
-              </aside>
-            )}
-            <nav className="pb-gu-quick" aria-label="Schnellzugriff">
-              {menu && <a href={`#${SECTION_ANCHORS.menu}`}>Speisekarte</a>}
-              <a href={chrome.contactHref}>{chrome.contactCta}</a>
-              <a
-                href={
-                  routeQuery
-                    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        routeQuery
-                      )}`
-                    : "#kontakt"
-                }
+                )}
+              </div>
+              <div className="pb-gu-hero-shade" aria-hidden="true" />
+              <div
+                className="pb-gu-hero-copy"
+                data-pb-slot={LAYOUT_SLOT.heroCopy}
               >
-                Route
-              </a>
-            </nav>
-          </section>
-        ))}
+                {data.businessCategory && (
+                  <p className="pb-gu-eyebrow">{data.businessCategory}</p>
+                )}
+                <h1>{rich(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-gu-subline">{rich(hero.subheadline)}</p>
+                )}
+                <OrnamentDivider />
+                {hero.ctaText && (
+                  <a className="pb-gu-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+              </div>
+              {previewItems.length > 0 && (
+                <aside
+                  className="pb-gu-menu-preview"
+                  aria-label={FALLBACK_TITLES.menu}
+                >
+                  <p className="pb-gu-preview-label">{FALLBACK_TITLES.menu}</p>
+                  {previewItems.map(item => (
+                    <MenuRow
+                      key={item.name}
+                      name={item.name}
+                      price={item.price}
+                    />
+                  ))}
+                </aside>
+              )}
+              <nav className="pb-gu-quick" aria-label="Schnellzugriff">
+                {menu && <a href={`#${SECTION_ANCHORS.menu}`}>Speisekarte</a>}
+                <a href={chrome.contactHref}>{chrome.contactCta}</a>
+                <a
+                  href={
+                    routeQuery
+                      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          routeQuery
+                        )}`
+                      : "#kontakt"
+                  }
+                >
+                  Route
+                </a>
+              </nav>
+            </section>
+          ))}
         {sections
           .filter(s => s.type !== "hero")
           .map(section => renderSection(section, chrome))}

@@ -9,6 +9,7 @@ import {
   pickPackFontPair,
   weltMitAkzent,
 } from "./packVariants";
+import { isImbissCategory } from "./imbiss";
 
 // Curated materials for the revised reference families; each keeps its character.
 const MATERIALS: Partial<Record<PackId, readonly [string, string, string][]>> =
@@ -32,9 +33,35 @@ const MATERIALS: Partial<Record<PackId, readonly [string, string, string][]>> =
       ["#f8f4f2", "#eee6e2", "#784d43"],
     ],
   };
-export function pickArtTheme(packId: PackId, customerSeed: string) {
-  const fontPairId = pickPackFontPair(packId, customerSeed);
-  const materials = MATERIALS[packId];
+/**
+ * Gusto für Imbisse: dunkler Grund bleibt (Pack-Charakter), der Akzent wird
+ * appetitlich laut — Paprika, Senf, Chili, Tomate statt Gold. Schrift
+ * markant statt kursiver Serife. Siehe imbiss.ts.
+ */
+const IMBISS_MATERIALS: readonly [string, string, string][] = [
+  ["#171311", "#221b17", "#e5482e"],
+  ["#15130f", "#201c15", "#f0b429"],
+  ["#121713", "#1b221c", "#f06a2c"],
+  ["#1a1216", "#251a1f", "#ef5a3c"],
+];
+const IMBISS_FONT_PAIRS = ["markant", "kraftvoll"] as const;
+
+function isGustoImbiss(packId: PackId, category?: string): boolean {
+  return packId === "gusto" && isImbissCategory(category);
+}
+
+export function pickArtTheme(
+  packId: PackId,
+  customerSeed: string,
+  category?: string
+) {
+  const imbiss = isGustoImbiss(packId, category);
+  const fontPairId = imbiss
+    ? IMBISS_FONT_PAIRS[
+        designSeed(`${customerSeed}:11`) % IMBISS_FONT_PAIRS.length
+      ]
+    : pickPackFontPair(packId, customerSeed);
+  const materials = imbiss ? IMBISS_MATERIALS : MATERIALS[packId];
   if (!materials) {
     const world = getColorWorld(
       packId,
