@@ -1,4 +1,5 @@
 import { deriveArtDirectedProfile } from "../../shared/stylePacks/artDirection";
+import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { TRPCError } from "@trpc/server";
 import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
 import type {
@@ -52,8 +53,18 @@ export function applyStylePack(
     businessCategory: doc.businessCategory,
     sections: doc.sections,
   });
+  // Ein Wechsel bringt die Farbwelt und Schrift mit, die das neue Pack bei
+  // einer Neuerstellung bekäme (inkl. Imbiss-Stimmung für Gusto). Vorher
+  // blieben die Overrides des alten Packs stehen — Grau aus Klarwerk auf
+  // Zunft, Gold-los auf Gusto. Dasselbe Pack erneut wählen behält eigene
+  // Anpassungen.
+  const theme =
+    packId === doc.stylePackId
+      ? {}
+      : pickArtTheme(packId, doc.businessName, doc.businessCategory);
   return WebsiteDataV2Schema.parse({
     ...doc,
+    ...theme,
     designRevision: doc.designRevision ?? 2,
     stylePackId: packId,
     designProfile,

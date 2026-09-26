@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import {
   addOnFlagsFromDoc,
   applyAddOnFlags,
@@ -41,6 +42,44 @@ describe("applyStylePack", () => {
     expect(next.designProfile).toBeDefined();
     expect(doc.stylePackId).toBe("werkbank");
     expect(next.sections).toEqual(doc.sections);
+  });
+
+  test("Designwechsel bringt die passende Farbwelt und Schrift mit", () => {
+    const alt = {
+      ...doc,
+      colorOverrides: { accent: "#292929", canvas: "#eeefed" },
+      fontPairId: "markant",
+    };
+    const next = applyStylePack(alt, "kanzlei");
+    const erwartet = pickArtTheme("kanzlei", "B");
+    expect(next.colorOverrides).toEqual(erwartet.colorOverrides);
+    expect(next.fontPairId).toBe(erwartet.fontPairId);
+  });
+
+  test("Imbiss auf Gusto bekommt die Imbiss-Farbwelt", () => {
+    const doener = {
+      ...doc,
+      stylePackId: "zunft" as const,
+      businessName: "Dicle Döner",
+      businessCategory: "Kebabimbiss",
+      colorOverrides: { accent: "#292929" },
+    };
+    const next = applyStylePack(doener, "gusto");
+    expect(next.colorOverrides).toEqual(
+      pickArtTheme("gusto", "Dicle Döner", "Kebabimbiss").colorOverrides
+    );
+    expect(["markant", "kraftvoll"]).toContain(next.fontPairId);
+  });
+
+  test("dasselbe Design erneut wählen behält eigene Anpassungen", () => {
+    const angepasst = {
+      ...doc,
+      colorOverrides: { accent: "#1D3FBF" },
+      fontPairId: "elegant",
+    };
+    const next = applyStylePack(angepasst, "werkbank");
+    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
+    expect(next.fontPairId).toBe("elegant");
   });
 });
 
