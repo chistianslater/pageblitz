@@ -47,6 +47,11 @@ import { TeamEditor } from "./TeamEditor";
 import { validateTeam, type TeamValue } from "./teamLogic";
 import { PagesEditor } from "./PagesEditor";
 import { syncLinkedSections, validatePages } from "./pagesLogic";
+import { SECTION_ANCHORS } from "@/components/site/engine";
+import {
+  useLiveSectionPreview,
+  type DraftSection,
+} from "../useLiveSectionPreview";
 
 /**
  * Bindbare Add-ons: Seit Plan B3 schaltet der Zahlungs-Webhook auch KI-Chat
@@ -318,6 +323,8 @@ interface AddonsPanelProps {
    * diesem Panel ins echte Inhaltspanel wechseln.
    */
   onOpenExtraEditor?: (key: AddOnKey) => void;
+  /** Live-Vorschau des Team-Editors (useLiveSectionPreview). */
+  onDraftPreview?: (draft: DraftSection | null) => void;
 }
 
 /**
@@ -400,6 +407,7 @@ export function AddonsPanel({
   onPreviewFocus,
   initialFocusKey = null,
   onOpenExtraEditor,
+  onDraftPreview,
 }: AddonsPanelProps) {
   const [value, setValue] = useState<AddOnFlags>(() => sanitizeAddOns(addOns));
   // Server-Stand, aus dem der Entwurf zuletzt abgeleitet wurde — ändert er
@@ -430,6 +438,15 @@ export function AddonsPanel({
 
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const updateTeam = trpc.onboardingV2.updateTeam.useMutation();
+  const previewTeam = trpc.onboardingV2.previewTeamDraft.useMutation();
+  // Team live in der Vorschau (wie die Speisekarte), gespeichert wird erst
+  // über „Team übernehmen".
+  const { endPreview: endTeamPreview } = useLiveSectionPreview({
+    value: team,
+    anchor: SECTION_ANCHORS.team,
+    onDraftPreview,
+    render: draft => previewTeam.mutateAsync({ token, team: draft }),
+  });
   const updatePages = trpc.onboardingV2.updatePages.useMutation();
   const updateAddonSettings =
     trpc.onboardingV2.updateAddonSettings.useMutation();
@@ -544,7 +561,15 @@ export function AddonsPanel({
       members: team.members,
       ...(team.headline !== undefined ? { headline: team.headline } : {}),
     };
-    updateTeam.mutate({ token, patch }, { onSuccess: onApplied });
+    updateTeam.mutate(
+      { token, patch },
+      {
+        onSuccess: () => {
+          endTeamPreview();
+          onApplied();
+        },
+      }
+    );
   };
 
   const quickHeadingSettings = [

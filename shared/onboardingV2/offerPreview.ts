@@ -1,4 +1,10 @@
-import { OfferPatchSchema, type OfferPatch } from "./patches";
+import {
+  OfferPatchSchema,
+  TeamPatchSchema,
+  type OfferPatch,
+  type TeamPatch,
+} from "./patches";
+import { SafeUrlSchema } from "../siteContract/schema";
 import { buttonLinkErrors, type ButtonLink } from "./buttonLink";
 
 /** Sichtbarer Platzhalter für noch leere Pflichtfelder in der Live-Vorschau. */
@@ -79,5 +85,33 @@ export function offerForPreview(draft: unknown): OfferPatch | null {
     return null;
   }
   const parsed = OfferPatchSchema.safeParse(candidate);
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Live-Vorschau des Team-Editors: Mitglieder ohne Namen weglassen, unsichere
+ * Foto-Adressen verwerfen. Leere Liste = Sektion verschwindet (wie beim
+ * Speichern). null = kein Team-Entwurf.
+ */
+export function teamForPreview(draft: unknown): TeamPatch | null {
+  if (!draft || typeof draft !== "object") return null;
+  const d = draft as Draft;
+  if (!Array.isArray(d.members)) return null;
+  const members = list(d.members)
+    .map(member => {
+      const imageUrl = text(member.imageUrl);
+      return {
+        name: text(member.name),
+        ...(text(member.role) ? { role: text(member.role) } : {}),
+        ...(imageUrl && SafeUrlSchema.safeParse(imageUrl).success
+          ? { imageUrl }
+          : {}),
+      };
+    })
+    .filter(member => member.name);
+  const parsed = TeamPatchSchema.safeParse({
+    ...(text(d.headline) ? { headline: text(d.headline) } : {}),
+    members,
+  });
   return parsed.success ? parsed.data : null;
 }

@@ -111,6 +111,26 @@ const GROUPS: FieldGroup[] = [
     ],
   },
   {
+    title: "Button-Block",
+    onlyWhenPresent: true,
+    fields: [
+      {
+        key: "ctaBlockHeadline",
+        label: "Button-Block – Überschrift",
+        kind: "input",
+        maxLength: 120,
+        required: true,
+      },
+      {
+        key: "ctaBlockText",
+        label: "Button-Block – Button-Text",
+        kind: "input",
+        maxLength: 40,
+        required: true,
+      },
+    ],
+  },
+  {
     title: "Google & Suchmaschinen",
     collapsed: true,
     hint: "Titel und Beschreibung, wie sie im Google-Ergebnis stehen — die KI hat beides schon gesetzt. Feinschliff geht jederzeit, später auch im Dashboard.",
@@ -209,6 +229,8 @@ interface TextsFormProps {
   onFieldFocus?: (field: keyof TextsPatch) => void;
   /** Kontext für die Google-Vorschau im SEO-Bereich — ohne bleibt sie aus. */
   serp?: { businessName: string; domain: string };
+  /** Zusatz-Felder am Ende einer Gruppe (nach Titel), z. B. Button-Ziel. */
+  groupExtras?: Partial<Record<string, React.ReactNode>>;
 }
 
 /** Reine Darstellung: alle Textfelder inkl. Zähler, KI-Vorschlag-Button und Varianten-Chips. */
@@ -223,6 +245,7 @@ export function TextsForm({
   applyingVariant = null,
   onFieldFocus,
   serp,
+  groupExtras = {},
 }: TextsFormProps) {
   const errors = validateTexts(values);
   // Kontextfrage am Funken-Icon (2026-08-30): erster Klick öffnet eine
@@ -426,6 +449,7 @@ export function TextsForm({
             <p className="pb-studio-group-kicker">{group.title}</p>
             <div className="pb-studio-rows">
               {group.fields.map(field => renderField(field))}
+              {groupExtras[group.title]}
             </div>
           </section>
         )

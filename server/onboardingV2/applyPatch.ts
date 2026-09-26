@@ -421,6 +421,21 @@ export function applyTexts(doc: WebsiteDataV2, p: TextsPatch): WebsiteDataV2 {
       ...(p.ctaText !== undefined ? { ctaText: p.ctaText } : {}),
       ...(p.ctaHref !== undefined ? { ctaHref: p.ctaHref } : {}),
     }));
+  // Button-Block: replaceSection ist ohne cta-Sektion ein No-op — das Panel
+  // zeigt die Felder nur, wenn es den Block gibt.
+  if (
+    p.ctaBlockHeadline !== undefined ||
+    p.ctaBlockText !== undefined ||
+    p.ctaBlockHref !== undefined
+  )
+    sections = replaceSection(sections, "cta", s => ({
+      ...s,
+      ...(p.ctaBlockHeadline !== undefined
+        ? { headline: p.ctaBlockHeadline }
+        : {}),
+      ...(p.ctaBlockText !== undefined ? { ctaText: p.ctaBlockText } : {}),
+      ...(p.ctaBlockHref !== undefined ? { ctaHref: p.ctaBlockHref } : {}),
+    }));
   if (p.aboutHeadline !== undefined || p.aboutBody !== undefined)
     sections = replaceSection(sections, "about", s => ({
       ...s,

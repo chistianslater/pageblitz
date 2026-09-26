@@ -651,3 +651,38 @@ describe("applyPages", () => {
     expect(docFull.pages).toBeUndefined();
   });
 });
+
+describe("applyTexts — Button-Block (cta)", () => {
+  const mitCta: WebsiteDataV2 = {
+    ...doc,
+    sections: [
+      { type: "hero", headline: "H", ctaText: "Anfragen" },
+      { type: "cta", headline: "Hunger?", ctaText: "Bestellen" },
+    ],
+  };
+  test("setzt Überschrift, Text und Ziel des Blocks", () => {
+    const next = applyTexts(mitCta, {
+      ctaBlockHeadline: "Lust auf Döner?",
+      ctaBlockText: "Online bestellen",
+      ctaBlockHref: "https://dicle.nexorder.de",
+    });
+    expect(next.sections[1]).toEqual({
+      type: "cta",
+      headline: "Lust auf Döner?",
+      ctaText: "Online bestellen",
+      ctaHref: "https://dicle.nexorder.de",
+    });
+  });
+  test("Hero-Ziel und Block-Ziel sind getrennt", () => {
+    const next = applyTexts(mitCta, { ctaHref: "tel:+492871123456" });
+    expect((next.sections[0] as { ctaHref?: string }).ctaHref).toBe(
+      "tel:+492871123456"
+    );
+    expect((next.sections[1] as { ctaHref?: string }).ctaHref).toBeUndefined();
+  });
+  test("ohne cta-Sektion kein Effekt", () => {
+    expect(applyTexts(doc, { ctaBlockText: "X" }).sections).toEqual(
+      doc.sections
+    );
+  });
+});

@@ -66,6 +66,10 @@ export const TextsPatchSchema = z
     ctaText: z.string().max(40).optional(),
     /** Ziel des Hero-Buttons (2026-09-26): Anker, tel: oder externe Adresse. */
     ctaHref: SafeUrlSchema.optional(),
+    /** Button-Block (cta-Sektion, 2026-09-26) — Grenzen wie SectionLinkSchema. */
+    ctaBlockHeadline: z.string().min(1).max(120).optional(),
+    ctaBlockText: z.string().min(1).max(40).optional(),
+    ctaBlockHref: SafeUrlSchema.optional(),
     aboutHeadline: z.string().min(1).max(120).optional(),
     aboutBody: z.string().min(1).max(2000).optional(),
     /** Story-Sektion (Backlog 13e) — Grenzen wie StorySchema (siteContract). */

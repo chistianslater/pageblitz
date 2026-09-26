@@ -21,6 +21,7 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
   const story = doc.sections.find(
     (s): s is SectionOf<"story"> => s.type === "story"
   );
+  const cta = doc.sections.find((s): s is SectionOf<"cta"> => s.type === "cta");
   return {
     ...(hero?.headline !== undefined ? { headline: hero.headline } : {}),
     ...(hero?.subheadline !== undefined
@@ -33,6 +34,14 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
     // Story (Backlog 13e): Felder nur liefern, wenn die Sektion existiert —
     // die Gruppe im Formular blendet sich sonst aus (onlyWhenPresent).
     ...(story ? { storyHeadline: story.headline, storyBody: story.body } : {}),
+    // Button-Block (cta): Ziel bleibt ohne Eintrag, solange es der Standard ist.
+    ...(cta
+      ? {
+          ctaBlockHeadline: cta.headline,
+          ctaBlockText: cta.ctaText,
+          ...(cta.ctaHref !== undefined ? { ctaBlockHref: cta.ctaHref } : {}),
+        }
+      : {}),
     seoTitle: doc.seo.title,
     seoDescription: doc.seo.description,
   };
@@ -89,6 +98,9 @@ export function draftTargetsFromValues(
   const storyIdx = doc.sections.findIndex(s => s.type === "story");
   put(storyIdx, "headline", values.storyHeadline);
   put(storyIdx, "body", values.storyBody);
+  const ctaIdx = doc.sections.findIndex(s => s.type === "cta");
+  put(ctaIdx, "headline", values.ctaBlockHeadline);
+  put(ctaIdx, "ctaText", values.ctaBlockText);
   return draft;
 }
 
@@ -232,6 +244,28 @@ export function TextsPanel({
       />
       <TextsForm
         values={values}
+        groupExtras={{
+          Startbereich: (
+            <ButtonTargetField
+              idPrefix="pb-texts-cta-href"
+              doc={doc}
+              value={values.ctaHref}
+              onChange={ctaHref => setValues(v => ({ ...v, ctaHref }))}
+              onFocus={() => onPreviewFocus?.("start")}
+            />
+          ),
+          "Button-Block": (
+            <ButtonTargetField
+              idPrefix="pb-texts-ctablock-href"
+              doc={doc}
+              value={values.ctaBlockHref}
+              onChange={ctaBlockHref =>
+                setValues(v => ({ ...v, ctaBlockHref }))
+              }
+              onFocus={() => onPreviewFocus?.("anfrage")}
+            />
+          ),
+        }}
         serp={{
           businessName: doc.businessName,
           // Vorschau-Slugs tragen ein technisches Präfix — die spätere
@@ -256,14 +290,9 @@ export function TextsPanel({
             onPreviewFocus?.("ueber-uns");
           if (field === "storyHeadline" || field === "storyBody")
             onPreviewFocus?.("geschichte");
+          if (field === "ctaBlockHeadline" || field === "ctaBlockText")
+            onPreviewFocus?.("anfrage");
         }}
-      />
-      <ButtonTargetField
-        idPrefix="pb-texts-cta-href"
-        doc={doc}
-        value={values.ctaHref}
-        onChange={ctaHref => setValues(v => ({ ...v, ctaHref }))}
-        onFocus={() => onPreviewFocus?.("start")}
       />
       {onOpenOffer && (
         <p

@@ -40,6 +40,7 @@ import {
   applyStructure,
   applyInlineText,
   applyOffer,
+  applyTeam,
   applyPages,
   applyTexts,
   applyTheme,
@@ -53,7 +54,10 @@ import {
 import { HIDEABLE_SECTION_TYPES } from "../../shared/onboardingV2/aiEdit";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
-import { offerForPreview } from "../../shared/onboardingV2/offerPreview";
+import {
+  offerForPreview,
+  teamForPreview,
+} from "../../shared/onboardingV2/offerPreview";
 import { renderSiteHtml } from "../ssr/renderSite";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
 import {
@@ -62,6 +66,20 @@ import {
   suggestTextVariants,
 } from "./suggest";
 import type { SectionOf } from "../../shared/siteContract/types";
+
+/** Rendert einen ungespeicherten Entwurf wie die Studio-Vorschau (/preview-ssr). */
+function renderDraftHtml(
+  token: string,
+  loaded: { website: { slug: string } },
+  doc: Parameters<typeof renderSiteHtml>[0]
+): string {
+  return renderSiteHtml(doc, {
+    origin: "https://pageblitz.de",
+    pathname: "/",
+    basePath: `/preview-ssr/${token}`,
+    slug: loaded.website.slug,
+  }).html;
+}
 
 /**
  * Präfixe synthetischer placeIds (Businesses ohne echten Google-Places-
@@ -617,13 +635,23 @@ export const contentProcedures = {
         offer.mode === "services"
           ? doc
           : applyAddOnFlags(doc, { [offer.mode]: true });
-      const { html } = renderSiteHtml(applyOffer(base, offer), {
-        origin: "https://pageblitz.de",
-        pathname: "/",
-        basePath: `/preview-ssr/${input.token}`,
-        slug: loaded.website.slug,
-      });
-      return { html };
+      return {
+        html: renderDraftHtml(input.token, loaded, applyOffer(base, offer)),
+      };
+    }),
+
+  /** Live-Vorschau des Team-Editors — wie previewOfferDraft, speichert nichts. */
+  previewTeamDraft: publicProcedure
+    .input(tokenInput.extend({ team: z.unknown() }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      const team = teamForPreview(input.team);
+      if (!team) return { html: null };
+      const base = applyAddOnFlags(doc, { team: true });
+      return {
+        html: renderDraftHtml(input.token, loaded, applyTeam(base, team)),
+      };
     }),
 
   updateOffer: publicProcedure

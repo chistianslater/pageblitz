@@ -749,6 +749,7 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              onDraftPreview={handleDraftPreview}
               initialFocusKey={addonFocus}
               onOpenExtraEditor={key => {
                 const editor = ADDON_EDITORS[key];
@@ -951,7 +952,11 @@ export default function StudioPage({ token }: { token: string }) {
             }
             onInlineTextEdit={applyInlineText}
             draftValues={activeId === "texts" ? textDraft : undefined}
-            draftSection={activeId === "offer" ? draftSection : null}
+            draftSection={
+              activeId === "offer" || activeId === "addons"
+                ? draftSection
+                : null
+            }
             onPickPhoto={versionPreviewId === null ? openPhotosAt : undefined}
             focusAnchor={previewFocusAnchor}
             // Einmal-Signal: nach dem Sprung zurücksetzen, damit das

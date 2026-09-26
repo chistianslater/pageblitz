@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { offerForPreview } from "./offerPreview";
+import { offerForPreview, teamForPreview } from "./offerPreview";
 
 describe("offerForPreview — halbfertige Entwürfe vorschautauglich machen", () => {
   test("leere Zeilen fallen weg, fehlender Preis wird Platzhalter", () => {
@@ -77,5 +77,33 @@ describe("offerForPreview — halbfertige Entwürfe vorschautauglich machen", ()
   test("Unsinn → null", () => {
     expect(offerForPreview(null)).toBeNull();
     expect(offerForPreview({ mode: "disco" })).toBeNull();
+  });
+});
+
+describe("teamForPreview", () => {
+  test("Mitglieder ohne Namen fallen weg, Rolle und Foto bleiben", () => {
+    expect(
+      teamForPreview({
+        headline: "Unser Team",
+        members: [
+          { name: "Mehmet", role: "Inhaber", imageUrl: "https://a.de/m.jpg" },
+          { name: " ", role: "Koch" },
+        ],
+      })
+    ).toEqual({
+      headline: "Unser Team",
+      members: [
+        { name: "Mehmet", role: "Inhaber", imageUrl: "https://a.de/m.jpg" },
+      ],
+    });
+  });
+  test("unsichere Foto-Adresse fällt weg", () => {
+    expect(
+      teamForPreview({ members: [{ name: "A", imageUrl: "javascript:x" }] })
+    ).toEqual({ members: [{ name: "A" }] });
+  });
+  test("keine Mitglieder → leere Liste (Sektion verschwindet)", () => {
+    expect(teamForPreview({ members: [] })).toEqual({ members: [] });
+    expect(teamForPreview("quatsch")).toBeNull();
   });
 });

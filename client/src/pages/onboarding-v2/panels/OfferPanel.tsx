@@ -1,4 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  useLiveSectionPreview,
+  type DraftSection,
+} from "../useLiveSectionPreview";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
@@ -199,11 +203,8 @@ interface OfferPanelProps {
    * Live-Vorschau (2026-09-26): gerenderter Entwurf für die Sektion `anchor`,
    * null beim Schließen/Speichern. Ohne Callback keine Live-Vorschau.
    */
-  onDraftPreview?: (draft: { anchor: string; html: string } | null) => void;
+  onDraftPreview?: (draft: DraftSection | null) => void;
 }
-
-/** Tipp-Pause, nach der der Entwurf in die Vorschau gerendert wird. */
-const LIVE_PREVIEW_DELAY_MS = 450;
 
 export function OfferPanel({
   token,
@@ -227,35 +228,14 @@ export function OfferPanel({
 
   const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
   const previewDraft = trpc.onboardingV2.previewOfferDraft.useMutation();
-  const previewDraftRef = useRef(previewDraft.mutate);
-  previewDraftRef.current = previewDraft.mutate;
-
-  // Live-Vorschau: nach kurzer Tipp-Pause den Entwurf rendern lassen und nur
-  // die Angebots-Sektion rechts austauschen. Der erste Lauf (unveränderter
-  // Stand) entfällt — die Vorschau zeigt ihn schon. Eine überholte Antwort
-  // (Kunde hat weitergetippt) wird verworfen.
-  const firstValueRef = useRef(value);
-  const requestSeqRef = useRef(0);
-  useEffect(() => {
-    if (!onDraftPreview || value === firstValueRef.current) return;
-    const seq = ++requestSeqRef.current;
-    const timer = window.setTimeout(() => {
-      previewDraftRef.current(
-        { token, offer: value },
-        {
-          onSuccess: result => {
-            if (seq !== requestSeqRef.current || !result.html) return;
-            onDraftPreview({
-              anchor: previewAnchorForOfferMode(mode),
-              html: result.html,
-            });
-          },
-        }
-      );
-    }, LIVE_PREVIEW_DELAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [value, mode, token, onDraftPreview]);
-  useEffect(() => () => onDraftPreview?.(null), [onDraftPreview]);
+  // Live-Vorschau: nach kurzer Tipp-Pause nur die Angebots-Sektion rechts
+  // austauschen (useLiveSectionPreview) — ohne zu speichern.
+  const { endPreview } = useLiveSectionPreview({
+    value,
+    anchor: previewAnchorForOfferMode(mode),
+    onDraftPreview,
+    render: offer => previewDraft.mutateAsync({ token, offer }),
+  });
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
 
@@ -295,8 +275,7 @@ export function OfferPanel({
         onSuccess: () => {
           // Entwurf ist jetzt gespeichert — Live-Vorschau beenden; das
           // Neuladen von onApplied zeigt den gespeicherten Stand.
-          requestSeqRef.current++;
-          onDraftPreview?.(null);
+          endPreview();
           onApplied();
           onNext?.();
         },

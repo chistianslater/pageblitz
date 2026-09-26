@@ -1,6 +1,7 @@
 import { artPalette } from "../../shared/stylePacks/artDirection";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { openExternalLinksInNewTab } from "./externalLinks";
 import { previewCtaTag, type PreviewCta } from "./previewCta";
 import { SiteRenderer } from "../../client/src/components/site/SiteRenderer";
 import "../../client/src/components/site/packs/index";
@@ -292,7 +293,11 @@ function renderPageHtml(
     />
   );
   const canvasColor = getCanvasColor(data);
-  const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
+  const bodyParts = [
+    openExternalLinksInNewTab(body),
+    siteEnhancerTag(),
+    previewCtaTag(opts.previewCta),
+  ];
   if (data.designRevision !== 1) {
     bodyParts.push(
       `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
@@ -532,7 +537,11 @@ export function renderSiteHtml(
   );
 
   const canvasColor = getCanvasColor(data);
-  const bodyParts = [body, siteEnhancerTag(), previewCtaTag(opts.previewCta)];
+  const bodyParts = [
+    openExternalLinksInNewTab(body),
+    siteEnhancerTag(),
+    previewCtaTag(opts.previewCta),
+  ];
   if (data.designRevision !== 1) {
     bodyParts.push(
       `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
