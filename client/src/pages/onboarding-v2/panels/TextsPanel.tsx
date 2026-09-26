@@ -5,6 +5,7 @@ import type { TextsPatch } from "@shared/onboardingV2/patches";
 import { PanelFrame } from "./PanelFrame";
 import { TextsForm, validateTexts, type TextField } from "./textsParts";
 import { ToneControl } from "./ToneControl";
+import { ButtonTargetField } from "./ButtonLinkEditor";
 
 export { TextsForm, validateTexts };
 export type { TextField };
@@ -26,6 +27,7 @@ export function textsFromDoc(doc: WebsiteDataV2): TextsPatch {
       ? { subheadline: hero.subheadline }
       : {}),
     ...(hero?.ctaText !== undefined ? { ctaText: hero.ctaText } : {}),
+    ...(hero?.ctaHref !== undefined ? { ctaHref: hero.ctaHref } : {}),
     ...(about?.headline !== undefined ? { aboutHeadline: about.headline } : {}),
     ...(about?.body !== undefined ? { aboutBody: about.body } : {}),
     // Story (Backlog 13e): Felder nur liefern, wenn die Sektion existiert —
@@ -255,6 +257,13 @@ export function TextsPanel({
           if (field === "storyHeadline" || field === "storyBody")
             onPreviewFocus?.("geschichte");
         }}
+      />
+      <ButtonTargetField
+        idPrefix="pb-texts-cta-href"
+        doc={doc}
+        value={values.ctaHref}
+        onChange={ctaHref => setValues(v => ({ ...v, ctaHref }))}
+        onFocus={() => onPreviewFocus?.("start")}
       />
       {onOpenOffer && (
         <p

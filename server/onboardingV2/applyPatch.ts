@@ -411,13 +411,15 @@ export function applyTexts(doc: WebsiteDataV2, p: TextsPatch): WebsiteDataV2 {
   if (
     p.headline !== undefined ||
     p.subheadline !== undefined ||
-    p.ctaText !== undefined
+    p.ctaText !== undefined ||
+    p.ctaHref !== undefined
   )
     sections = replaceSection(sections, "hero", s => ({
       ...s,
       ...(p.headline !== undefined ? { headline: p.headline } : {}),
       ...(p.subheadline !== undefined ? { subheadline: p.subheadline } : {}),
       ...(p.ctaText !== undefined ? { ctaText: p.ctaText } : {}),
+      ...(p.ctaHref !== undefined ? { ctaHref: p.ctaHref } : {}),
     }));
   if (p.aboutHeadline !== undefined || p.aboutBody !== undefined)
     sections = replaceSection(sections, "about", s => ({
@@ -452,11 +454,13 @@ export function applyOffer(
           headline: offer.headline,
           ...(offer.intro ? { intro: offer.intro } : {}),
           items: offer.items,
+          ...(offer.link ? { link: offer.link } : {}),
         }
       : {
           type: offer.mode,
           ...(offer.headline ? { headline: offer.headline } : {}),
           categories: offer.categories,
+          ...(offer.link ? { link: offer.link } : {}),
         };
   const existingIdx = doc.sections.findIndex(s => s.type === section.type);
   let sections: SectionV2[];

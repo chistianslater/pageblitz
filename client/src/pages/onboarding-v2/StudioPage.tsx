@@ -157,6 +157,24 @@ export default function StudioPage({ token }: { token: string }) {
   // Live-Spiegel des Texte-Panels: Inline-Pfad → Eingabewert (PreviewFrame
   // schreibt die Werte direkt in die Vorschau; Speichern bleibt explizit).
   const [textDraft, setTextDraft] = useState<Record<string, string>>({});
+  /** Live-Vorschau des Angebots-Editors (Sektion aus dem Entwurfs-HTML). */
+  const [draftSection, setDraftSection] = useState<{
+    anchor: string;
+    html: string;
+  } | null>(null);
+  // Schließt der Kunde den Editor ohne Speichern, steht der Entwurf noch im
+  // Vorschau-DOM — dann einmal neu laden, damit rechts wieder der
+  // gespeicherte Stand steht.
+  const draftActiveRef = useRef(false);
+  const bumpPreview = studio.bumpPreview;
+  const handleDraftPreview = useCallback(
+    (draft: { anchor: string; html: string } | null) => {
+      if (!draft && draftActiveRef.current) bumpPreview();
+      draftActiveRef.current = draft !== null;
+      setDraftSection(draft);
+    },
+    [bumpPreview]
+  );
   // Foto-Klick in der Vorschau: Ziel fürs Fotos-Panel (hero/about/gallery).
   const [photoFocus, setPhotoFocus] = useState<
     "hero" | "about" | "gallery" | null
@@ -689,6 +707,7 @@ export default function StudioPage({ token }: { token: string }) {
               onClose={() => panelClose(null)}
               onNext={panelNext}
               onPreviewFocus={setPreviewFocusAnchor}
+              onDraftPreview={handleDraftPreview}
               initialMode={
                 addonFocus === "menu" || addonFocus === "pricelist"
                   ? addonFocus
@@ -932,6 +951,7 @@ export default function StudioPage({ token }: { token: string }) {
             }
             onInlineTextEdit={applyInlineText}
             draftValues={activeId === "texts" ? textDraft : undefined}
+            draftSection={activeId === "offer" ? draftSection : null}
             onPickPhoto={versionPreviewId === null ? openPhotosAt : undefined}
             focusAnchor={previewFocusAnchor}
             // Einmal-Signal: nach dem Sprung zurücksetzen, damit das

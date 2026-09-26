@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -29,6 +33,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { MARKTPLATZ_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 import { hasMarks, rich } from "../../richText";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -116,7 +121,7 @@ function buildStickers(
   return { pill, ink, outline };
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -428,53 +433,56 @@ const MarktplatzPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
-          <HeroCollage data={data} />
-          <div
-            className="pb-mp-hero-inner"
-            data-pb-slot={LAYOUT_SLOT.heroSplit}
-          >
-            <div className="pb-mp-card" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-              {data.businessCategory && (
-                <p className="pb-mp-eyebrow">{data.businessCategory}</p>
-              )}
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-mp-sub">{rich(hero.subheadline)}</p>
-              )}
-              {hero.ctaText && (
-                <a className="pb-mp-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-mp-hero">
+            <HeroCollage data={data} />
+            <div
+              className="pb-mp-hero-inner"
+              data-pb-slot={LAYOUT_SLOT.heroSplit}
+            >
+              <div className="pb-mp-card" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                {data.businessCategory && (
+                  <p className="pb-mp-eyebrow">{data.businessCategory}</p>
+                )}
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-mp-sub">{rich(hero.subheadline)}</p>
+                )}
+                {hero.ctaText && (
+                  <a className="pb-mp-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+              </div>
+              {hero.imageUrl && (
+                <div
+                  className="pb-mp-photo-wrap"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                >
+                  <img
+                    className="pb-mp-photo"
+                    src={hero.imageUrl}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <div className="pb-mp-sticker pill" aria-hidden="true">
+                    {stickers.pill}
+                  </div>
+                  <div className="pb-mp-sticker ink" aria-hidden="true">
+                    {stickers.ink}
+                  </div>
+                  <div className="pb-mp-sticker outline" aria-hidden="true">
+                    {stickers.outline}
+                  </div>
+                </div>
               )}
             </div>
-            {hero.imageUrl && (
-              <div
-                className="pb-mp-photo-wrap"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-              >
-                <img
-                  className="pb-mp-photo"
-                  src={hero.imageUrl}
-                  alt=""
-                  aria-hidden="true"
-                />
-                <div className="pb-mp-sticker pill" aria-hidden="true">
-                  {stickers.pill}
-                </div>
-                <div className="pb-mp-sticker ink" aria-hidden="true">
-                  {stickers.ink}
-                </div>
-                <div className="pb-mp-sticker outline" aria-hidden="true">
-                  {stickers.outline}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="pb-mp-scallop" aria-hidden="true" />
-        </section>
-      ))}
+            <div className="pb-mp-scallop" aria-hidden="true" />
+          </section>
+        ))}
       {hero?.ctaText && (
         <aside className="pb-mp-trial-cta" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
@@ -511,3 +519,6 @@ const MARKTPLATZ_MODULE: PackModule = {
   Page: MarktplatzPage,
 };
 PACK_MODULES.marktplatz = MARKTPLATZ_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

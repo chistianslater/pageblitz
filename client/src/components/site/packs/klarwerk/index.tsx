@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -28,6 +32,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { KLARWERK_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -101,7 +106,7 @@ function buildFacts(
   return facts;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -443,38 +448,44 @@ const KlarwerkPage: React.FC<{
           }
         />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-kw-hero">
-          <HeroCollage data={data} />
-          <div className="pb-kw-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
-            <div className="pb-kw-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-              {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-kw-sub">{rich(hero.subheadline)}</p>
-              )}
-              {hero.ctaText && (
-                <a className="pb-kw-hero-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText} →
-                </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-kw-hero">
+            <HeroCollage data={data} />
+            <div className="pb-kw-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+              <div className="pb-kw-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                {eyebrow && <p className="pb-kw-eyebrow">{eyebrow}</p>}
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-kw-sub">{rich(hero.subheadline)}</p>
+                )}
+                {hero.ctaText && (
+                  <a
+                    className="pb-kw-hero-cta"
+                    href={hero.ctaHref ?? "#kontakt"}
+                  >
+                    {hero.ctaText} →
+                  </a>
+                )}
+              </div>
+              {heroImage && (
+                <figure
+                  className="pb-kw-photo"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                >
+                  <img
+                    src={heroImage}
+                    alt=""
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                </figure>
               )}
             </div>
-            {heroImage && (
-              <figure
-                className="pb-kw-photo"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-              >
-                <img
-                  src={heroImage}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </figure>
-            )}
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
       {/* Readout nur auf der Startseite: auf Unterseiten muss der
           pageHeader das erste Element nach der Nav sein. */}
       {hero && (
@@ -539,3 +550,6 @@ const KLARWERK_MODULE: PackModule = {
   Page: KlarwerkPage,
 };
 PACK_MODULES.klarwerk = KLARWERK_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

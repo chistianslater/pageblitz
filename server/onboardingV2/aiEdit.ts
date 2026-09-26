@@ -19,6 +19,7 @@ import {
 } from "../../shared/onboardingV2/aiEdit";
 import { assertQuota } from "./suggest";
 import { restoreFacts, restorePageFacts } from "./aiEditFacts";
+import { allowedLinkTargets } from "./aiEditLinks";
 import { AI_EDIT_SYSTEM_PROMPT, buildAiEditPrompt } from "./aiEditPrompt";
 
 /**
@@ -227,6 +228,8 @@ export async function proposeAiEdit(args: {
    * Wunsch zugeordnet werden kann. Geht 1:1 in den Prompt.
    */
   history?: AiChatHistoryEntry[];
+  /** Website aus dem Google-Profil — belegtes Link-Ziel (aiEditLinks). */
+  businessWebsite?: string | null;
 }): Promise<ProposeAiEditResult> {
   const page =
     args.pageSlug !== undefined
@@ -237,7 +240,21 @@ export async function proposeAiEdit(args: {
     return mockAiEditResponse(args.doc, page);
   }
 
-  const prompt = buildAiEditPrompt({ ...args, page });
+  const allowedLinks = allowedLinkTargets({
+    doc: args.doc,
+    texts: [
+      args.message,
+      ...(args.history ?? [])
+        .filter(entry => entry.role === "user")
+        .map(entry => entry.text),
+    ],
+    businessWebsite: args.businessWebsite,
+  });
+  const prompt = buildAiEditPrompt({
+    ...args,
+    page,
+    allowedLinks: [...allowedLinks],
+  });
 
   return withAiEditRetry(async () => {
     const response = await invokeLLM({
@@ -264,10 +281,11 @@ export async function proposeAiEdit(args: {
     if (page) {
       const parsed = AiPageEditResponseSchema.parse(mapped);
       if (parsed.kind !== "content") return parsed;
-      const nextPage = restorePageFacts(page, {
-        seo: parsed.seo,
-        sections: parsed.sections,
-      });
+      const nextPage = restorePageFacts(
+        page,
+        { seo: parsed.seo, sections: parsed.sections },
+        allowedLinks
+      );
       const next = WebsiteDataV2Schema.parse(replacePage(args.doc, nextPage));
       return {
         kind: "content" as const,
@@ -279,10 +297,11 @@ export async function proposeAiEdit(args: {
     const parsed = AiEditResponseSchema.parse(mapped);
     if (parsed.kind !== "content") return parsed;
 
-    const restored = restoreFacts(args.doc, {
-      seo: parsed.seo,
-      sections: parsed.sections,
-    });
+    const restored = restoreFacts(
+      args.doc,
+      { seo: parsed.seo, sections: parsed.sections },
+      allowedLinks
+    );
     const next = WebsiteDataV2Schema.parse(restored);
     return {
       kind: "content" as const,

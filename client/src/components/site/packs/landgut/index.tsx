@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -29,6 +33,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { LANDGUT_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 import { hasMarks, rich } from "../../richText";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -102,7 +107,7 @@ function buildTicker(
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -425,57 +430,60 @@ const LandgutPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <>
-          <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
-          <HeroCollage data={data} />
-            <div className="pb-lg-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
-              <div className="pb-lg-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-                {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
-                <h1>{renderHeadline(hero.headline)}</h1>
-                {hero.subheadline && (
-                  <p className="pb-lg-sub">{rich(hero.subheadline)}</p>
-                )}
-                {hero.ctaText && (
-                  <a className="pb-lg-cta" href={hero.ctaHref ?? "#kontakt"}>
-                    {hero.ctaText}
-                  </a>
-                )}
-              </div>
-              {/* Pflanzreihen-Bögen (B7 Welle 2): der höchste Bogen trägt
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <>
+            <section id={SECTION_ANCHORS.hero} className="pb-lg-hero">
+              <HeroCollage data={data} />
+              <div className="pb-lg-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+                <div className="pb-lg-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                  {eyebrow && <p className="pb-lg-eyebrow">{eyebrow}</p>}
+                  <h1>{renderHeadline(hero.headline)}</h1>
+                  {hero.subheadline && (
+                    <p className="pb-lg-sub">{rich(hero.subheadline)}</p>
+                  )}
+                  {hero.ctaText && (
+                    <a className="pb-lg-cta" href={hero.ctaHref ?? "#kontakt"}>
+                      {hero.ctaText}
+                    </a>
+                  )}
+                </div>
+                {/* Pflanzreihen-Bögen (B7 Welle 2): der höchste Bogen trägt
                   das Hero-Foto in der Bogen-Maske (imageTreatment der
                   Verfassung), die beiden kleineren bleiben Farbflächen als
                   Rhythmus. Ohne Hero-Bild greift die bisherige Komposition
                   mit dem SAISON-Label — auf dem Foto wäre es unlesbar. */}
-              <div
-                className="pb-lg-rows"
-                aria-hidden="true"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-              >
-                <div className="pb-lg-row r1">
-                  {hero.imageUrl ? (
-                    <img
-                      className="pb-lg-row-img"
-                      src={hero.imageUrl}
-                      alt=""
-                      loading="eager"
-                      fetchPriority="high"
-                    />
-                  ) : (
-                    <span className="pb-lg-row-label">{ROW_LABEL}</span>
-                  )}
+                <div
+                  className="pb-lg-rows"
+                  aria-hidden="true"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                >
+                  <div className="pb-lg-row r1">
+                    {hero.imageUrl ? (
+                      <img
+                        className="pb-lg-row-img"
+                        src={hero.imageUrl}
+                        alt=""
+                        loading="eager"
+                        fetchPriority="high"
+                      />
+                    ) : (
+                      <span className="pb-lg-row-label">{ROW_LABEL}</span>
+                    )}
+                  </div>
+                  <div className="pb-lg-row r2" />
+                  <div className="pb-lg-row r3" />
                 </div>
-                <div className="pb-lg-row r2" />
-                <div className="pb-lg-row r3" />
               </div>
-            </div>
-          </section>
-          {/* Saison-Ticker nur auf der Startseite (Q1, B7 Welle 0): auf
+            </section>
+            {/* Saison-Ticker nur auf der Startseite (Q1, B7 Welle 0): auf
               Unterseiten muss der pageHeader das erste Element nach der
               Nav sein — ein Laufband davor wirkt kontextlos. */}
-          {buildTicker(services)}
-        </>
-      ))}
+            {buildTicker(services)}
+          </>
+        ))}
       {contact && (
         <aside className="pb-lg-visit-sticky" aria-label={PACK_UI.contact}>
           <span>
@@ -525,3 +533,6 @@ const LANDGUT_MODULE: PackModule = {
   Page: LandgutPage,
 };
 PACK_MODULES.landgut = LANDGUT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

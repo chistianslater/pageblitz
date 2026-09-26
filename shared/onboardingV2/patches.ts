@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { PageSchema, SafeUrlSchema } from "../siteContract/schema";
+import {
+  PageSchema,
+  SafeUrlSchema,
+  SectionLinkSchema,
+} from "../siteContract/schema";
 
 /**
  * Patch-Schemas für die Onboarding-v2-Panels (Bilder, Texte, Angebot,
@@ -60,6 +64,8 @@ export const TextsPatchSchema = z
     headline: z.string().min(1).max(120).optional(),
     subheadline: z.string().max(240).optional(),
     ctaText: z.string().max(40).optional(),
+    /** Ziel des Hero-Buttons (2026-09-26): Anker, tel: oder externe Adresse. */
+    ctaHref: SafeUrlSchema.optional(),
     aboutHeadline: z.string().min(1).max(120).optional(),
     aboutBody: z.string().min(1).max(2000).optional(),
     /** Story-Sektion (Backlog 13e) — Grenzen wie StorySchema (siteContract). */
@@ -69,6 +75,9 @@ export const TextsPatchSchema = z
     seoDescription: z.string().min(1).max(170).optional(),
   })
   .strict();
+
+/** Optionaler Button unter dem Angebot — Grenzen wie SectionLinkSchema. */
+const OfferLinkSchema = SectionLinkSchema.optional();
 
 export const OfferPatchSchema = z.discriminatedUnion("mode", [
   z
@@ -91,6 +100,7 @@ export const OfferPatchSchema = z.discriminatedUnion("mode", [
         )
         .min(1)
         .max(12),
+      link: OfferLinkSchema,
     })
     .strict(),
   z
@@ -119,6 +129,7 @@ export const OfferPatchSchema = z.discriminatedUnion("mode", [
         )
         .min(1)
         .max(12),
+      link: OfferLinkSchema,
     })
     .strict(),
 ]);

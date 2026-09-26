@@ -232,7 +232,8 @@ export const SECTION_LABELS: Record<SectionType, string> = {
 };
 
 /**
- * Inhaltliche Skalarfelder je Sektionstyp. Fakten (imageUrl, ctaHref,
+ * Inhaltliche Skalarfelder je Sektionstyp. Button-Ziele (ctaHref) sind
+ * seit 2026-09-26 dabei — die KI darf sie auf belegte Ziele setzen. Fakten (imageUrl,
  * Telefon/E-Mail/Adresse/Öffnungszeiten) sind bewusst ausgeschlossen — sie
  * werden von der KI ohnehin nie verändert (Fakten-Garantie in
  * server/onboardingV2/aiEdit.ts), ein Diff dafür wäre irreführend.
@@ -242,6 +243,7 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
     headline: "Überschrift",
     subheadline: "Unterzeile",
     ctaText: "Button-Text",
+    ctaHref: "Button-Ziel",
   },
   services: { headline: "Überschrift", intro: "Einleitung" },
   about: { headline: "Überschrift", body: "Text" },
@@ -252,7 +254,11 @@ const SCALAR_FIELDS: Partial<Record<SectionType, Record<string, string>>> = {
   menu: { headline: "Überschrift" },
   pricelist: { headline: "Überschrift" },
   team: { headline: "Überschrift" },
-  cta: { headline: "Überschrift", ctaText: "Button-Text" },
+  cta: {
+    headline: "Überschrift",
+    ctaText: "Button-Text",
+    ctaHref: "Button-Ziel",
+  },
   story: { headline: "Überschrift", body: "Text" },
   usp: { headline: "Überschrift" },
   notice: { text: "Text" },
@@ -383,6 +389,13 @@ function diffSeo(
   );
 }
 
+/** Button unter dem Angebot (link) — als „Text → Ziel" lesbar. */
+function linkLabel(value: unknown): string | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const link = value as { text?: string; href?: string };
+  return link.text && link.href ? `${link.text} → ${link.href}` : undefined;
+}
+
 function diffScalarFields(
   type: SectionType,
   before: Record<string, unknown>,
@@ -390,6 +403,15 @@ function diffScalarFields(
   entries: AiDiffEntry[],
   prefix: string
 ): void {
+  if (type === "services" || type === "menu" || type === "pricelist") {
+    pushIfChanged(
+      entries,
+      `${prefix}sections.${type}.link`,
+      `${SECTION_LABELS[type]} – Button`,
+      linkLabel(before.link),
+      linkLabel(after.link)
+    );
+  }
   const fields = SCALAR_FIELDS[type];
   if (!fields) return;
   for (const [field, label] of Object.entries(fields)) {

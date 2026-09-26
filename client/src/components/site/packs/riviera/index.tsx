@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { RIVIERA_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Angebot",
@@ -92,7 +97,7 @@ function Kicker({ children }: { children: React.ReactNode }) {
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -131,7 +136,9 @@ function renderSection(
               <div className="pb-rv-card" key={item.title}>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
-                {item.price && <span className="pb-rv-price">{item.price}</span>}
+                {item.price && (
+                  <span className="pb-rv-price">{item.price}</span>
+                )}
               </div>
             ))}
           </div>
@@ -422,41 +429,47 @@ const RivieraPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-rv-hero">
-          <HeroCollage data={data} />
-          <div className="pb-rv-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <Kicker>{city ?? data.businessCategory}</Kicker>
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && (
-              <p className="pb-rv-sub">{rich(hero.subheadline)}</p>
-            )}
-            <div className="pb-rv-hero-actions">
-              {hero.ctaText && (
-                <a className="pb-rv-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-rv-hero">
+            <HeroCollage data={data} />
+            <div
+              className="pb-rv-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              <Kicker>{city ?? data.businessCategory}</Kicker>
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-rv-sub">{rich(hero.subheadline)}</p>
               )}
-              {data.google && (
-                <span className="pb-rv-rating">
-                  ★ {formatRating(data.google.rating)} ·{" "}
-                  {data.google.reviewCount} Bewertungen
-                </span>
-              )}
+              <div className="pb-rv-hero-actions">
+                {hero.ctaText && (
+                  <a className="pb-rv-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+                {data.google && (
+                  <span className="pb-rv-rating">
+                    ★ {formatRating(data.google.rating)} ·{" "}
+                    {data.google.reviewCount} Bewertungen
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          {hero.imageUrl && (
-            <img
-              className="pb-rv-arch pb-rv-hero-photo"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              src={hero.imageUrl}
-              alt=""
-              loading="eager"
-              fetchPriority="high"
-            />
-          )}
-        </section>
-      ))}
+            {hero.imageUrl && (
+              <img
+                className="pb-rv-arch pb-rv-hero-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+            )}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -486,3 +499,6 @@ const RIVIERA_MODULE: PackModule = {
   Page: RivieraPage,
 };
 PACK_MODULES.riviera = RIVIERA_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

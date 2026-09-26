@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { PLAKAT_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -74,7 +79,7 @@ function formatRating(rating: number): string {
   });
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -112,7 +117,9 @@ function renderSection(
               <div className="pb-pl-card" key={item.title}>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
-                {item.price && <span className="pb-pl-price">{item.price}</span>}
+                {item.price && (
+                  <span className="pb-pl-price">{item.price}</span>
+                )}
               </div>
             ))}
           </div>
@@ -161,7 +168,9 @@ function renderSection(
                 src={img.url}
                 alt={img.alt}
                 loading="lazy"
-                className={i % 3 === 1 ? "tilt-r" : i % 3 === 2 ? "tilt-l" : undefined}
+                className={
+                  i % 3 === 1 ? "tilt-r" : i % 3 === 2 ? "tilt-l" : undefined
+                }
               />
             ))}
           </div>
@@ -312,7 +321,10 @@ function renderSection(
           <h2 className="pb-pl-title">{rich(title ?? "")}</h2>
           <div className="pb-pl-team">
             {section.members.map((member, i) => (
-              <div className="pb-pl-card pb-pl-member" key={`${i}-${member.name}`}>
+              <div
+                className="pb-pl-card pb-pl-member"
+                key={`${i}-${member.name}`}
+              >
                 {member.imageUrl && (
                   <img src={member.imageUrl} alt="" loading="lazy" />
                 )}
@@ -387,40 +399,49 @@ const PlakatPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-pl-hero">
-          <HeroCollage data={data} />
-          <div className="pb-pl-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && (
-              <p className="pb-pl-sub">{rich(hero.subheadline)}</p>
-            )}
-            {hero.ctaText && (
-              <a className="pb-pl-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
-            )}
-          </div>
-          <div className="pb-pl-hero-media">
-            {hero.imageUrl && (
-              <img
-                className="pb-pl-photo"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
-              />
-            )}
-            {data.google && (
-              <span className="pb-pl-sticker" aria-label={`Google-Bewertung ${formatRating(data.google.rating)} von 5`}>
-                ★ {formatRating(data.google.rating)}
-                <small>{data.google.reviewCount} Bewertungen</small>
-              </span>
-            )}
-          </div>
-        </section>
-      ))}
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-pl-hero">
+            <HeroCollage data={data} />
+            <div
+              className="pb-pl-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-pl-sub">{rich(hero.subheadline)}</p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-pl-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+            </div>
+            <div className="pb-pl-hero-media">
+              {hero.imageUrl && (
+                <img
+                  className="pb-pl-photo"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              )}
+              {data.google && (
+                <span
+                  className="pb-pl-sticker"
+                  aria-label={`Google-Bewertung ${formatRating(data.google.rating)} von 5`}
+                >
+                  ★ {formatRating(data.google.rating)}
+                  <small>{data.google.reviewCount} Bewertungen</small>
+                </span>
+              )}
+            </div>
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -450,3 +471,6 @@ const PLAKAT_MODULE: PackModule = {
   Page: PlakatPage,
 };
 PACK_MODULES.plakat = PLAKAT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

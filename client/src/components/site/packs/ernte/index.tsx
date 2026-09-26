@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { ERNTE_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Sortiment",
@@ -176,7 +181,7 @@ function Dots() {
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -486,49 +491,55 @@ const ErntePage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
-          <HeroCollage data={data} />
-          <Blob tone="sage" />
-          <Sprig className="pb-er-sprig pb-er-hero-deco pb-deco pb-deco-sprigs" />
-          <div className="pb-er-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            {/* Script-Zeile nur, wenn sie nicht bloß die Headline dupliziert. */}
-            {data.tagline && data.tagline !== hero.headline && (
-              <p className="pb-er-script">{data.tagline}</p>
-            )}
-            <h1>{renderHeadline(hero.headline)}</h1>
-            <Dots />
-            {hero.subheadline && (
-              <p className="pb-er-sub">{rich(hero.subheadline)}</p>
-            )}
-            <div className="pb-er-hero-actions">
-              {hero.ctaText && (
-                <a className="pb-er-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-er-hero">
+            <HeroCollage data={data} />
+            <Blob tone="sage" />
+            <Sprig className="pb-er-sprig pb-er-hero-deco pb-deco pb-deco-sprigs" />
+            <div
+              className="pb-er-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              {/* Script-Zeile nur, wenn sie nicht bloß die Headline dupliziert. */}
+              {data.tagline && data.tagline !== hero.headline && (
+                <p className="pb-er-script">{data.tagline}</p>
               )}
-              {data.google && (
-                <span className="pb-er-rating">
-                  ★ {formatRating(data.google.rating)} ·{" "}
-                  {data.google.reviewCount} Bewertungen
-                </span>
+              <h1>{renderHeadline(hero.headline)}</h1>
+              <Dots />
+              {hero.subheadline && (
+                <p className="pb-er-sub">{rich(hero.subheadline)}</p>
               )}
+              <div className="pb-er-hero-actions">
+                {hero.ctaText && (
+                  <a className="pb-er-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+                {data.google && (
+                  <span className="pb-er-rating">
+                    ★ {formatRating(data.google.rating)} ·{" "}
+                    {data.google.reviewCount} Bewertungen
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-          {hero.imageUrl && (
-            <div className="pb-er-hero-media">
-              <Blob tone="honey" />
-              <img
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
-              />
-            </div>
-          )}
-        </section>
-      ))}
+            {hero.imageUrl && (
+              <div className="pb-er-hero-media">
+                <Blob tone="honey" />
+                <img
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </div>
+            )}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -558,3 +569,6 @@ const ERNTE_MODULE: PackModule = {
   Page: ErntePage,
 };
 PACK_MODULES.ernte = ERNTE_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

@@ -33,6 +33,7 @@ import { GUSTO_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 import { rich } from "../../richText";
 import { isImbissCategory } from "../../../../../../shared/stylePacks/imbiss";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   ...GENERIC_TITLES,
@@ -111,7 +112,7 @@ interface GustoChrome {
   contactHref: string;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">,
   chrome: GustoChrome
 ): React.ReactNode {
@@ -607,3 +608,6 @@ const GUSTO_MODULE: PackModule = {
   Page: GustoPage,
 };
 PACK_MODULES.gusto = GUSTO_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

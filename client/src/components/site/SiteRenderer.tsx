@@ -18,6 +18,7 @@ import { MOTION_CSS } from "./motionCss";
 import { REVIEW_CHROME_CSS } from "./reviewChromeCss";
 import { RICH_TEXT_CSS } from "./richText";
 import { STORY_CSS } from "./storySection";
+import { SECTION_LINK_CSS } from "./sectionLink";
 import { USP_CSS } from "./uspSection";
 import { NOTICE_CSS, NoticeBanner } from "./noticeBanner";
 import { AGE_GATE_CSS, AgeGateSsr } from "./ageGateSsr";
@@ -154,7 +155,9 @@ export const SiteRenderer: React.FC<{
   // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar.
   data = withGalleryLimit(data);
   const effectiveData =
-    packOverride && packOverride !== data.stylePackId && PACK_MODULES[packOverride]
+    packOverride &&
+    packOverride !== data.stylePackId &&
+    PACK_MODULES[packOverride]
       ? {
           ...data,
           stylePackId: packOverride,
@@ -319,6 +322,7 @@ export const SiteRenderer: React.FC<{
             RICH_TEXT_CSS +
             "\n" +
             STORY_CSS +
+            SECTION_LINK_CSS +
             "\n" +
             USP_CSS +
             "\n" +

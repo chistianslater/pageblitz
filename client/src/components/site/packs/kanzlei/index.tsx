@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { KANZLEI_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -112,7 +117,7 @@ function buildFacts(
   return facts;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -474,41 +479,44 @@ const KanzleiPage: React.FC<{
           }
         />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
-          <HeroCollage data={data} />
-          <div className="pb-kz-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
-            <div className="pb-kz-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-              {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-kz-sub">{rich(hero.subheadline)}</p>
-              )}
-              {hero.ctaText && (
-                <a className="pb-kz-link" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText} →
-                </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-kz-hero">
+            <HeroCollage data={data} />
+            <div className="pb-kz-split" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+              <div className="pb-kz-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                {eyebrow && <p className="pb-kz-eyebrow">{eyebrow}</p>}
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-kz-sub">{rich(hero.subheadline)}</p>
+                )}
+                {hero.ctaText && (
+                  <a className="pb-kz-link" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText} →
+                  </a>
+                )}
+              </div>
+              {heroImage ? (
+                <figure
+                  className="pb-kz-photo"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                >
+                  <img
+                    src={heroImage}
+                    alt=""
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                  {folio}
+                </figure>
+              ) : (
+                folio
               )}
             </div>
-            {heroImage ? (
-              <figure
-                className="pb-kz-photo"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-              >
-                <img
-                  src={heroImage}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                />
-                {folio}
-              </figure>
-            ) : (
-              folio
-            )}
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
       {/* Kennzahlen-Band nur auf der Startseite (Q1, B7 Welle 0): auf
           Unterseiten muss der pageHeader das erste Element nach der Nav
           sein — ein Stats-Band vor dem Seitentitel wirkt wie eine
@@ -554,3 +562,6 @@ const KANZLEI_MODULE: PackModule = {
   Page: KanzleiPage,
 };
 PACK_MODULES.kanzlei = KANZLEI_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

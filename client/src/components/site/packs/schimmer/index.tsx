@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -28,6 +32,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { SCHIMMER_CSS } from "./css";
 import { GENERIC_TITLES, PACK_UI } from "../../packCopy";
 import { hasMarks, rich } from "../../richText";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   ...GENERIC_TITLES,
@@ -76,7 +81,7 @@ function LabLabel({
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -425,67 +430,73 @@ const SchimmerPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-sc-hero">
-          <HeroCollage data={data} />
-          <div className="pb-sc-aperture" aria-hidden="true">
-            <span />
-            <span />
-          </div>
-          <div className="pb-sc-hero-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-sc-hero">
+            <HeroCollage data={data} />
+            <div className="pb-sc-aperture" aria-hidden="true">
+              <span />
+              <span />
+            </div>
             <div
-              className="pb-sc-hero-copy"
-              data-pb-slot={LAYOUT_SLOT.heroCopy}
+              className="pb-sc-hero-grid"
+              data-pb-slot={LAYOUT_SLOT.heroSplit}
             >
-              <LabLabel index="L/01">
-                {data.businessCategory ?? data.businessName}
-              </LabLabel>
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
-              <div className="pb-sc-cta-row">
-                {hero.ctaText && (
-                  <a className="pb-sc-cta" href={hero.ctaHref ?? "#kontakt"}>
-                    {hero.ctaText}
-                  </a>
-                )}
-                {services && (
-                  <a
-                    className="pb-sc-ghost"
-                    href={`#${SECTION_ANCHORS.services}`}
-                  >
-                    Mehr erfahren
-                  </a>
+              <div
+                className="pb-sc-hero-copy"
+                data-pb-slot={LAYOUT_SLOT.heroCopy}
+              >
+                <LabLabel index="L/01">
+                  {data.businessCategory ?? data.businessName}
+                </LabLabel>
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
+                <div className="pb-sc-cta-row">
+                  {hero.ctaText && (
+                    <a className="pb-sc-cta" href={hero.ctaHref ?? "#kontakt"}>
+                      {hero.ctaText}
+                    </a>
+                  )}
+                  {services && (
+                    <a
+                      className="pb-sc-ghost"
+                      href={`#${SECTION_ANCHORS.services}`}
+                    >
+                      Mehr erfahren
+                    </a>
+                  )}
+                </div>
+                {firstService && (
+                  <p className="pb-sc-current">
+                    <span>Aktueller Fokus</span>
+                    {firstService.title}
+                  </p>
                 )}
               </div>
-              {firstService && (
-                <p className="pb-sc-current">
-                  <span>Aktueller Fokus</span>
-                  {firstService.title}
-                </p>
+              {hero.imageUrl && (
+                <div
+                  className="pb-sc-hero-img"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                >
+                  <img
+                    src={hero.imageUrl}
+                    alt=""
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                  <div className="pb-sc-focus-mark" aria-hidden="true">
+                    <span />
+                    <span />
+                    <i className="pb-sc-scan-line" />
+                  </div>
+                  <p aria-hidden="true">01</p>
+                </div>
               )}
             </div>
-            {hero.imageUrl && (
-              <div
-                className="pb-sc-hero-img"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-              >
-                <img
-                  src={hero.imageUrl}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                />
-                <div className="pb-sc-focus-mark" aria-hidden="true">
-                  <span />
-                  <span />
-                  <i className="pb-sc-scan-line" />
-                </div>
-                <p aria-hidden="true">01</p>
-              </div>
-            )}
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -517,3 +528,6 @@ const SCHIMMER_MODULE: PackModule = {
   Page: SchimmerPage,
 };
 PACK_MODULES.schimmer = SCHIMMER_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

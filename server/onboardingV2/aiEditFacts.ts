@@ -37,6 +37,9 @@ function assertSameSectionTypeSet(
  * entfernen darf (story 2026-08-30, usp/notice 2026-08-31).
  */
 const ADDABLE_TYPES = new Set<string>([
+  // cta (2026-09-26): Button-Block „Jetzt online bestellen" — das Ziel
+  // läuft durch dieselbe Link-Prüfung wie jedes andere ctaHref.
+  "cta",
   "story",
   "usp",
   "notice",
@@ -51,9 +54,61 @@ const ADDABLE_TYPES = new Set<string>([
  * separat komplett aus dem Original übernommen (siehe `restoreFacts`), weil
  * sie ausschließlich aus Fakten besteht.
  */
+/** Ziel übernehmen, wenn belegt (aiEditLinks) — sonst das Original. */
+function pickHref(
+  candidateHref: string | undefined,
+  originalHref: string | undefined,
+  allowed: ReadonlySet<string>
+): string | undefined {
+  if (candidateHref !== undefined && allowed.has(candidateHref)) {
+    return candidateHref;
+  }
+  return originalHref;
+}
+
+type SectionLink = { text: string; href: string };
+
+function pickLink(
+  candidate: SectionLink | undefined,
+  original: SectionLink | undefined,
+  allowed: ReadonlySet<string>
+): SectionLink | undefined {
+  // Fehlt das Feld, hat die KI es übersehen — bestehender Button bleibt.
+  // Entfernen geht über das Angebots-Panel.
+  if (candidate === undefined) return original;
+  if (candidate.text?.trim() && allowed.has(candidate.href)) return candidate;
+  return original;
+}
+
+function withOptional<T extends object, K extends string, V>(
+  base: T,
+  key: K,
+  value: V | undefined
+): T {
+  const { [key]: _drop, ...rest } = base as Record<string, unknown>;
+  return (value === undefined ? rest : { ...rest, [key]: value }) as T;
+}
+
+/**
+ * Link-Prüfung für neu hinzugefügte Sektionen (cta): unbelegtes Ziel fällt
+ * weg, der Pack-Standard (#kontakt) greift.
+ */
+function sanitizeAddedSection(
+  section: AnySection,
+  allowed: ReadonlySet<string>
+): AnySection {
+  if (section.type !== "cta") return section;
+  return withOptional(
+    section,
+    "ctaHref",
+    pickHref(section.ctaHref, undefined, allowed)
+  );
+}
+
 function restoreSectionFacts(
   original: AnySection,
-  candidate: AnySection
+  candidate: AnySection,
+  allowed: ReadonlySet<string>
 ): AnySection {
   if (candidate.type !== original.type) return original;
 
@@ -63,9 +118,11 @@ function restoreSectionFacts(
       const merged: SectionOf<"hero"> = { ...c };
       if (original.imageUrl !== undefined) merged.imageUrl = original.imageUrl;
       else delete merged.imageUrl;
-      if (original.ctaHref !== undefined) merged.ctaHref = original.ctaHref;
-      else delete merged.ctaHref;
-      return merged;
+      return withOptional(
+        merged,
+        "ctaHref",
+        pickHref(c.ctaHref, original.ctaHref, allowed)
+      );
     }
     case "about": {
       const c = candidate as SectionOf<"about">;
@@ -105,10 +162,25 @@ function restoreSectionFacts(
     }
     case "cta": {
       const c = candidate as SectionOf<"cta">;
-      const merged: SectionOf<"cta"> = { ...c };
-      if (original.ctaHref !== undefined) merged.ctaHref = original.ctaHref;
-      else delete merged.ctaHref;
-      return merged;
+      return withOptional(
+        c,
+        "ctaHref",
+        pickHref(c.ctaHref, original.ctaHref, allowed)
+      );
+    }
+    case "services":
+    case "menu":
+    case "pricelist": {
+      const c = candidate as SectionOf<"services" | "menu" | "pricelist">;
+      return withOptional(
+        c,
+        "link",
+        pickLink(
+          c.link,
+          (original as SectionOf<"services" | "menu" | "pricelist">).link,
+          allowed
+        )
+      );
     }
     default:
       return candidate;
@@ -134,11 +206,14 @@ function restoreSectionFacts(
  */
 export function restoreFacts(
   original: WebsiteDataV2,
-  candidate: { seo: WebsiteDataV2["seo"]; sections: SectionV2[] }
+  candidate: { seo: WebsiteDataV2["seo"]; sections: SectionV2[] },
+  /** Belegte Link-Ziele (aiEditLinks); leer = alle Links wie im Original. */
+  allowedLinks: ReadonlySet<string> = new Set()
 ): WebsiteDataV2 {
   const sections = restoreSectionList(
     original.sections,
-    candidate.sections
+    candidate.sections,
+    allowedLinks
   ) as SectionV2[];
   return { ...original, seo: candidate.seo, sections };
 }
@@ -152,11 +227,13 @@ export function restoreFacts(
  */
 export function restorePageFacts(
   original: Page,
-  candidate: { seo: Page["seo"]; sections: PageSection[] }
+  candidate: { seo: Page["seo"]; sections: PageSection[] },
+  allowedLinks: ReadonlySet<string> = new Set()
 ): Page {
   const sections = restoreSectionList(
     original.sections,
-    candidate.sections
+    candidate.sections,
+    allowedLinks
   ) as PageSection[];
   return { ...original, seo: candidate.seo, sections };
 }
@@ -170,7 +247,8 @@ export function restorePageFacts(
  */
 function restoreSectionList(
   originalSections: AnySection[],
-  candidateSections: AnySection[]
+  candidateSections: AnySection[],
+  allowed: ReadonlySet<string>
 ): AnySection[] {
   assertSameSectionTypeSet(originalSections, candidateSections);
 
@@ -186,7 +264,7 @@ function restoreSectionList(
       if (originalSection.type === "contact") return originalSection;
       const candidateSection = candidateByType.get(originalSection.type);
       if (!candidateSection) return originalSection;
-      return restoreSectionFacts(originalSection, candidateSection);
+      return restoreSectionFacts(originalSection, candidateSection, allowed);
     });
 
   // Neue Zusatz-Sektionen an der Position einfügen, die die KI gewählt hat
@@ -194,7 +272,7 @@ function restoreSectionList(
   // "notice" ganz nach vorn, der Banner liegt ohnehin über der Nav).
   for (const type of ADDABLE_TYPES) {
     if (!candidateByType.has(type) || originalTypes.has(type)) continue;
-    const added = candidateByType.get(type)!;
+    const added = sanitizeAddedSection(candidateByType.get(type)!, allowed);
     if (type === "notice") {
       restored.unshift(added);
       continue;

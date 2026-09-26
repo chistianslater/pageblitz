@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { STROM_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -84,7 +89,7 @@ function MonoLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -126,7 +131,9 @@ function renderSection(
                 </span>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
-                {item.price && <span className="pb-st-price">{item.price}</span>}
+                {item.price && (
+                  <span className="pb-st-price">{item.price}</span>
+                )}
               </div>
             ))}
           </div>
@@ -145,7 +152,10 @@ function renderSection(
           <div className="pb-st-about" data-pb-slot={LAYOUT_SLOT.aboutGrid}>
             <p>{rich(section.body)}</p>
             {section.imageUrl && (
-              <span className="pb-st-screen" data-pb-slot={LAYOUT_SLOT.aboutMedia}>
+              <span
+                className="pb-st-screen"
+                data-pb-slot={LAYOUT_SLOT.aboutMedia}
+              >
                 <img src={section.imageUrl} alt="" loading="lazy" />
               </span>
             )}
@@ -406,57 +416,63 @@ const StromPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-st-hero">
-          <HeroCollage data={data} />
-          <div className="pb-st-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <MonoLabel>SYSTEME BEREIT</MonoLabel>
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && (
-              <p className="pb-st-sub">{rich(hero.subheadline)}</p>
-            )}
-            {hero.ctaText && (
-              <a className="pb-st-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
-            )}
-            <div className="pb-st-terminal">
-              {services && services.items.length > 0 && (
-                <div>
-                  <b>{services.items.length}</b>
-                  <span>Leistungsfelder</span>
-                </div>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-st-hero">
+            <HeroCollage data={data} />
+            <div
+              className="pb-st-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              <MonoLabel>SYSTEME BEREIT</MonoLabel>
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-st-sub">{rich(hero.subheadline)}</p>
               )}
-              {data.google && (
-                <>
-                  <div>
-                    <b>{formatRating(data.google.rating)}</b>
-                    <span>Google-Wertung</span>
-                  </div>
-                  <div>
-                    <b>{data.google.reviewCount}</b>
-                    <span>Bewertungen</span>
-                  </div>
-                </>
+              {hero.ctaText && (
+                <a className="pb-st-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
               )}
+              <div className="pb-st-terminal">
+                {services && services.items.length > 0 && (
+                  <div>
+                    <b>{services.items.length}</b>
+                    <span>Leistungsfelder</span>
+                  </div>
+                )}
+                {data.google && (
+                  <>
+                    <div>
+                      <b>{formatRating(data.google.rating)}</b>
+                      <span>Google-Wertung</span>
+                    </div>
+                    <div>
+                      <b>{data.google.reviewCount}</b>
+                      <span>Bewertungen</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-          {hero.imageUrl && (
-            <div className="pb-st-hero-media">
-              <span className="pb-st-aurora" aria-hidden="true" />
-              <span className="pb-st-screen">
-                <img
-                  data-pb-slot={LAYOUT_SLOT.heroMedia}
-                  src={hero.imageUrl}
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </span>
-            </div>
-          )}
-        </section>
-      ))}
+            {hero.imageUrl && (
+              <div className="pb-st-hero-media">
+                <span className="pb-st-aurora" aria-hidden="true" />
+                <span className="pb-st-screen">
+                  <img
+                    data-pb-slot={LAYOUT_SLOT.heroMedia}
+                    src={hero.imageUrl}
+                    alt=""
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                </span>
+              </div>
+            )}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -486,3 +502,6 @@ const STROM_MODULE: PackModule = {
   Page: StromPage,
 };
 PACK_MODULES.strom = STROM_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

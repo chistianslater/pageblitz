@@ -277,6 +277,7 @@ export const aiProcedures = {
         doc,
         message: input.message,
         category,
+        businessWebsite: business?.website ?? null,
         ...(input.pageSlug !== undefined ? { pageSlug: input.pageSlug } : {}),
         ...(input.history !== undefined ? { history: input.history } : {}),
       });

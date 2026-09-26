@@ -14,6 +14,7 @@ import {
   enablePreviewLayoutChrome,
 } from "./previewLayoutChrome";
 import { scrollRestoreTarget, shouldConsumeFocus } from "./previewScroll";
+import { swapSectionFromHtml } from "./previewSectionSwap";
 
 interface PreviewFrameProps {
   token: string;
@@ -73,6 +74,12 @@ interface PreviewFrameProps {
    * Nur Vorschau-DOM, nichts davon wird gespeichert.
    */
   pendingInsert?: { anchor: string; label: string } | null;
+  /**
+   * Live-Vorschau strukturierter Editoren (2026-09-26, Speisekarte): vom
+   * Server gerenderter Entwurf, aus dem nur die Sektion `anchor` ins
+   * Vorschau-DOM übernommen wird — ohne Speichern und ohne Neuladen.
+   */
+  draftSection?: { anchor: string; html: string } | null;
 }
 
 export type PhotoClickTarget = "hero" | "about" | "gallery";
@@ -142,6 +149,7 @@ export function PreviewFrame({
   versionId,
   onInsertSection,
   pendingInsert = null,
+  draftSection = null,
 }: PreviewFrameProps) {
   const src = buildPreviewSrc({
     token,
@@ -240,6 +248,23 @@ export function PreviewFrame({
     // enableInlineEditing ist absichtlich keine Dep (ändert sich je Render).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, inlineTargets, pageSlug]);
+
+  // Live-Vorschau strukturierter Editoren: Sektion aus dem Entwurfs-HTML
+  // übernehmen. Läuft auch nach jedem Neuladen des iframes erneut (onLoad),
+  // solange der Entwurf aktiv ist.
+  const draftSectionRef = useRef(draftSection);
+  draftSectionRef.current = draftSection;
+  const applyDraftSection = useCallback(() => {
+    const draft = draftSectionRef.current;
+    const doc = iframeRef.current?.contentDocument;
+    if (!draft || !doc || pageSlug) return;
+    if (!swapSectionFromHtml(doc, draft.html, draft.anchor)) return;
+    // Bearbeitete Sektion sichtbar halten — ohne Sprung, wenn sie es schon ist.
+    doc.getElementById(draft.anchor)?.scrollIntoView({ block: "nearest" });
+  }, [pageSlug]);
+  useEffect(() => {
+    applyDraftSection();
+  }, [draftSection, applyDraftSection]);
 
   // Live-Spiegel: Panel-Eingaben sofort in die passenden Vorschau-Elemente
   // schreiben. Das gerade inline fokussierte Element bleibt unangetastet.
@@ -393,9 +418,7 @@ export function PreviewFrame({
         if (
           !targetConfig.renderedHeading &&
           Array.from(target.children).some(child =>
-            normalizeInlineText(child.textContent).includes(
-              normalizedCurrent
-            )
+            normalizeInlineText(child.textContent).includes(normalizedCurrent)
           )
         )
           continue;
@@ -465,7 +488,10 @@ export function PreviewFrame({
         src={src}
         title="Live-Vorschau deiner Website"
         loading="eager"
-        onLoad={event => enableInlineEditing(event.currentTarget)}
+        onLoad={event => {
+          enableInlineEditing(event.currentTarget);
+          applyDraftSection();
+        }}
       />
     </div>
   );

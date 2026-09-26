@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -24,13 +28,10 @@ import {
 import { PACK_MODULES, type PackModule } from "../../packRegistry";
 import { MobileNav } from "../../MobileNav";
 import { LAYOUT_SLOT } from "../../layoutSlots";
-import {
-  ReviewAuthor,
-  ReviewStars,
-  REVIEW_READONLY,
-} from "../../googleReview";
+import { ReviewAuthor, ReviewStars, REVIEW_READONLY } from "../../googleReview";
 import { rich } from "../../richText";
 import { ATELIER_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -83,7 +84,7 @@ function buildIndexLabel(
   return `N° 01 — Aus der Serie „${first}“`;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -467,31 +468,34 @@ const AtelierPage: React.FC<{
           </div>
         )}
       </header>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-at-cover">
-          <HeroCollage data={data} />
-          <div className="pb-at-img" data-pb-slot={LAYOUT_SLOT.heroMedia}>
-            {hero.imageUrl && (
-              <img
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
-              />
-            )}
-            <h1 className="pb-at-caption">{rich(hero.headline)}</h1>
-          </div>
-          <div className="pb-at-capcol" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            {indexLabel && <span className="pb-at-idx">{indexLabel}</span>}
-            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
-            {hero.ctaText && (
-              <a className="pb-at-lnk" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText} →
-              </a>
-            )}
-          </div>
-        </section>
-      ))}
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-at-cover">
+            <HeroCollage data={data} />
+            <div className="pb-at-img" data-pb-slot={LAYOUT_SLOT.heroMedia}>
+              {hero.imageUrl && (
+                <img
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              )}
+              <h1 className="pb-at-caption">{rich(hero.headline)}</h1>
+            </div>
+            <div className="pb-at-capcol" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+              {indexLabel && <span className="pb-at-idx">{indexLabel}</span>}
+              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
+              {hero.ctaText && (
+                <a className="pb-at-lnk" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText} →
+                </a>
+              )}
+            </div>
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -523,3 +527,6 @@ const ATELIER_MODULE: PackModule = {
   Page: AtelierPage,
 };
 PACK_MODULES.atelier = ATELIER_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

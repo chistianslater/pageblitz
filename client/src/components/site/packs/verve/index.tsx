@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -29,6 +33,7 @@ import { hasMarks, rich, stripMarks } from "../../richText";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { VERVE_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -107,7 +112,7 @@ function buildStats(
   return stats;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -427,58 +432,61 @@ const VervePage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-vv-hero">
-          <HeroCollage data={data} />
-          <div className="pb-vv-ghost" aria-hidden="true">
-            {ghostText}
-          </div>
-          {hero.imageUrl ? (
-            <img
-              className="pb-vv-panel"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              src={hero.imageUrl}
-              alt=""
-              loading="eager"
-              fetchPriority="high"
-            />
-          ) : (
-            <div className="pb-vv-panel" aria-hidden="true" />
-          )}
-          <div className="pb-vv-tape" aria-hidden="true">
-            {tapeText}
-          </div>
-          <div className="pb-vv-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <h1 aria-label={stripMarks(hero.headline)}>
-              {richHeadline && (
-                <span aria-hidden="true">{rich(hero.headline)}</span>
-              )}
-              {!richHeadline && <span aria-hidden="true">{line1}</span>}
-              {line2 && (
-                <span className="pb-vv-block" aria-hidden="true">
-                  {line2}
-                </span>
-              )}
-            </h1>
-            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
-            {hero.ctaText && (
-              <a className="pb-vv-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-vv-hero">
+            <HeroCollage data={data} />
+            <div className="pb-vv-ghost" aria-hidden="true">
+              {ghostText}
+            </div>
+            {hero.imageUrl ? (
+              <img
+                className="pb-vv-panel"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+            ) : (
+              <div className="pb-vv-panel" aria-hidden="true" />
             )}
-            {stats.length > 0 && (
-              <div className="pb-vv-stats">
-                {stats.map(s => (
-                  <div className="pb-vv-chip" key={s.label}>
-                    <b>{s.value}</b>
-                    <span>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      ))}
+            <div className="pb-vv-tape" aria-hidden="true">
+              {tapeText}
+            </div>
+            <div className="pb-vv-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+              <h1 aria-label={stripMarks(hero.headline)}>
+                {richHeadline && (
+                  <span aria-hidden="true">{rich(hero.headline)}</span>
+                )}
+                {!richHeadline && <span aria-hidden="true">{line1}</span>}
+                {line2 && (
+                  <span className="pb-vv-block" aria-hidden="true">
+                    {line2}
+                  </span>
+                )}
+              </h1>
+              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
+              {hero.ctaText && (
+                <a className="pb-vv-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+              {stats.length > 0 && (
+                <div className="pb-vv-stats">
+                  {stats.map(s => (
+                    <div className="pb-vv-chip" key={s.label}>
+                      <b>{s.value}</b>
+                      <span>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
       {hero?.ctaText && (
         <aside className="pb-vv-trial-sticky" aria-label={PACK_UI.contact}>
           <a href={hero.ctaHref ?? "#kontakt"}>
@@ -517,3 +525,6 @@ const VERVE_MODULE: PackModule = {
   Page: VervePage,
 };
 PACK_MODULES.verve = VERVE_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

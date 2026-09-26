@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -29,6 +33,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { MORGENLICHT_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 import { hasMarks, rich } from "../../richText";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -120,7 +125,7 @@ function todaysOpeningHours(
   return entry?.hours;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -461,64 +466,70 @@ const MorgenlichtPage: React.FC<{
           )}
         </aside>
       )}
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <>
-          <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
-          <HeroCollage data={data} />
-            {hero.imageUrl ? (
-              <img
-                className="pb-ml-blob pb-deco pb-deco-blobs"
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <>
+            <section id={SECTION_ANCHORS.hero} className="pb-ml-hero">
+              <HeroCollage data={data} />
+              {hero.imageUrl ? (
+                <img
+                  className="pb-ml-blob pb-deco pb-deco-blobs"
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              ) : (
+                <div
+                  className="pb-ml-blob pb-deco pb-deco-blobs"
+                  aria-hidden="true"
+                />
+              )}
+              {todaysHours && (
+                <div className="pb-ml-float f1">
+                  <b>Heute geöffnet</b>
+                  {todaysHours}
+                </div>
+              )}
+              {data.google && (
+                <div className="pb-ml-float f2">
+                  <b>★ {formatRating(data.google.rating)}</b>
+                  {data.google.reviewCount} Google-Bewertungen
+                </div>
+              )}
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
+              {hero.ctaText && (
+                <a className="pb-ml-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+            </section>
+            <svg
+              className="pb-ml-wave"
+              viewBox="0 0 600 30"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M0,18 C100,32 200,2 300,14 C400,26 500,6 600,16 L600,30 L0,30 Z"
+                fill="var(--pb-line)"
               />
-            ) : (
-              <div className="pb-ml-blob pb-deco pb-deco-blobs" aria-hidden="true" />
-            )}
-            {todaysHours && (
-              <div className="pb-ml-float f1">
-                <b>Heute geöffnet</b>
-                {todaysHours}
+            </svg>
+            {services && services.items.length > 0 && (
+              <div className="pb-ml-band">
+                {services.items.map(item => (
+                  <span className="pb-ml-chip" key={item.title}>
+                    {item.title}
+                  </span>
+                ))}
               </div>
             )}
-            {data.google && (
-              <div className="pb-ml-float f2">
-                <b>★ {formatRating(data.google.rating)}</b>
-                {data.google.reviewCount} Google-Bewertungen
-              </div>
-            )}
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
-            {hero.ctaText && (
-              <a className="pb-ml-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
-            )}
-          </section>
-          <svg
-            className="pb-ml-wave"
-            viewBox="0 0 600 30"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M0,18 C100,32 200,2 300,14 C400,26 500,6 600,16 L600,30 L0,30 Z"
-              fill="var(--pb-line)"
-            />
-          </svg>
-          {services && services.items.length > 0 && (
-            <div className="pb-ml-band">
-              {services.items.map(item => (
-                <span className="pb-ml-chip" key={item.title}>
-                  {item.title}
-                </span>
-              ))}
-            </div>
-          )}
-        </>
-      ))}
+          </>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -550,3 +561,6 @@ const MORGENLICHT_MODULE: PackModule = {
   Page: MorgenlichtPage,
 };
 PACK_MODULES.morgenlicht = MORGENLICHT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -28,6 +32,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { FUNDAMENT_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -106,7 +111,7 @@ function buildStats(
   return stats;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -433,42 +438,45 @@ const FundamentPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-fd-hero">
-          <HeroCollage data={data} />
-          <div className="pb-fd-panel">
-            {stats.length > 0 && (
-              <div className="pb-fd-stats">
-                {stats.map((stat, i) => (
-                  <div key={stat.label + i}>
-                    <b>{stat.value}</b>
-                    <span>{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-fd-hero">
+            <HeroCollage data={data} />
+            <div className="pb-fd-panel">
+              {stats.length > 0 && (
+                <div className="pb-fd-stats">
+                  {stats.map((stat, i) => (
+                    <div key={stat.label + i}>
+                      <b>{stat.value}</b>
+                      <span>{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="pb-fd-content" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
+              {hero.ctaText && (
+                <a className="pb-fd-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+            </div>
+            {hero.imageUrl && (
+              <img
+                className="pb-fd-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                alt=""
+                src={hero.imageUrl}
+                loading="eager"
+                fetchPriority="high"
+              />
             )}
-          </div>
-          <div className="pb-fd-content" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p>{rich(hero.subheadline)}</p>}
-            {hero.ctaText && (
-              <a className="pb-fd-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
-            )}
-          </div>
-          {hero.imageUrl && (
-            <img
-              className="pb-fd-photo"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              alt=""
-              src={hero.imageUrl}
-              loading="eager"
-              fetchPriority="high"
-            />
-          )}
-        </section>
-      ))}
+          </section>
+        ))}
       {(data.google || sections.some(s => s.type === "contact")) && (
         <aside
           className="pb-fd-contact-sticky"
@@ -514,3 +522,6 @@ const FUNDAMENT_MODULE: PackModule = {
   Page: FundamentPage,
 };
 PACK_MODULES.fundament = FUNDAMENT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

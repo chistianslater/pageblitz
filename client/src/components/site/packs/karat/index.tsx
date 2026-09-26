@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { KARAT_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -98,7 +103,7 @@ function FramedImage({
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -390,9 +395,12 @@ const KaratPage: React.FC<{
   );
   const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const year = now.getFullYear();
-  const kicker = [data.businessCategory, data.sections
-    .map(s => (s.type === "contact" ? s.city : undefined))
-    .find(Boolean)]
+  const kicker = [
+    data.businessCategory,
+    data.sections
+      .map(s => (s.type === "contact" ? s.city : undefined))
+      .find(Boolean),
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -413,37 +421,45 @@ const KaratPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-ka-hero">
-          <HeroCollage data={data} />
-          <div className="pb-ka-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            {kicker && <p className="pb-ka-kicker">{kicker}</p>}
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && <p className="pb-ka-sub">{rich(hero.subheadline)}</p>}
-            {hero.ctaText && (
-              <a className="pb-ka-cta" href={hero.ctaHref ?? "#kontakt"}>
-                {hero.ctaText}
-              </a>
-            )}
-            {data.google && (
-              <p className="pb-ka-rating">
-                ★ {formatRating(data.google.rating)} ·{" "}
-                {data.google.reviewCount} Google-Bewertungen
-              </p>
-            )}
-          </div>
-          {hero.imageUrl && (
-            <div className="pb-ka-hero-media">
-              <FramedImage
-                src={hero.imageUrl}
-                alt=""
-                slot={LAYOUT_SLOT.heroMedia}
-                eager
-              />
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-ka-hero">
+            <HeroCollage data={data} />
+            <div
+              className="pb-ka-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              {kicker && <p className="pb-ka-kicker">{kicker}</p>}
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-ka-sub">{rich(hero.subheadline)}</p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-ka-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  {hero.ctaText}
+                </a>
+              )}
+              {data.google && (
+                <p className="pb-ka-rating">
+                  ★ {formatRating(data.google.rating)} ·{" "}
+                  {data.google.reviewCount} Google-Bewertungen
+                </p>
+              )}
             </div>
-          )}
-        </section>
-      ))}
+            {hero.imageUrl && (
+              <div className="pb-ka-hero-media">
+                <FramedImage
+                  src={hero.imageUrl}
+                  alt=""
+                  slot={LAYOUT_SLOT.heroMedia}
+                  eager
+                />
+              </div>
+            )}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -473,3 +489,6 @@ const KARAT_MODULE: PackModule = {
   Page: KaratPage,
 };
 PACK_MODULES.karat = KARAT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

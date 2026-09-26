@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { PATINA_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -93,7 +98,7 @@ function buildNote(
   return undefined;
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">,
   heroArchSrc: string | undefined
 ): React.ReactNode {
@@ -402,12 +407,10 @@ const PatinaPage: React.FC<{
   // Über-uns-Foto nur als letzte Rückfallebene. Vorher fiel er ohne gebuchte
   // Galerie auf das Über-uns-Foto zurück, und der Über-uns-Abschnitt ließ
   // seines daraufhin weg (Betreiber-Befund 2026-09-20: fehlende Fotos).
-  const archSrc =
-    gallery?.images[0]?.url ?? hero?.imageUrl ?? about?.imageUrl;
+  const archSrc = gallery?.images[0]?.url ?? hero?.imageUrl ?? about?.imageUrl;
   // In der neuen Designstufe rendert ArtDirectedHero den Kopfbereich; der
   // Bogen existiert dort nicht, also darf er auch nichts unterdrücken.
-  const heroArchSrc =
-    hero && data.designRevision !== 2 ? archSrc : undefined;
+  const heroArchSrc = hero && data.designRevision !== 2 ? archSrc : undefined;
   const eyebrow = [data.businessCategory, contact?.city]
     .filter((v): v is string => Boolean(v))
     .join(" · ");
@@ -449,64 +452,67 @@ const PatinaPage: React.FC<{
           </div>
         </aside>
       )}
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-pa-hero">
-          <HeroCollage data={data} />
-          <div className="pb-pa-init" aria-hidden="true">
-            {initialLetter(data.businessName)}
-          </div>
-          <div className="pb-pa-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
-            <div className="pb-pa-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-              {eyebrow && <p className="pb-pa-eyebrow">{eyebrow}</p>}
-              <h1>{renderHeadline(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-pa-sub">{rich(hero.subheadline)}</p>
-              )}
-              {serviceTitles.length > 0 && (
-                <p className="pb-pa-services-line">
-                  {serviceTitles.map((title, i) => (
-                    <React.Fragment key={title}>
-                      {i > 0 && (
-                        <>
-                          {" "}
-                          <span className="sep" aria-hidden="true">
-                            ·
-                          </span>{" "}
-                        </>
-                      )}
-                      {title}
-                    </React.Fragment>
-                  ))}
-                </p>
-              )}
-              {note && <p className="pb-pa-note">{note}</p>}
-              {hero.ctaText && (
-                <a className="pb-pa-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
-              )}
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-pa-hero">
+            <HeroCollage data={data} />
+            <div className="pb-pa-init" aria-hidden="true">
+              {initialLetter(data.businessName)}
             </div>
-            <div className="pb-pa-pics" data-pb-slot={LAYOUT_SLOT.heroMedia}>
-              <div
-                className="pb-pa-arch a1"
-                aria-hidden="true"
-                style={
-                  hero.imageUrl
-                    ? { backgroundImage: `url(${hero.imageUrl})` }
-                    : undefined
-                }
-              />
-              <div
-                className="pb-pa-arch a2"
-                aria-hidden="true"
-                style={
-                  archSrc ? { backgroundImage: `url(${archSrc})` } : undefined
-                }
-              />
+            <div className="pb-pa-grid" data-pb-slot={LAYOUT_SLOT.heroSplit}>
+              <div className="pb-pa-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                {eyebrow && <p className="pb-pa-eyebrow">{eyebrow}</p>}
+                <h1>{renderHeadline(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-pa-sub">{rich(hero.subheadline)}</p>
+                )}
+                {serviceTitles.length > 0 && (
+                  <p className="pb-pa-services-line">
+                    {serviceTitles.map((title, i) => (
+                      <React.Fragment key={title}>
+                        {i > 0 && (
+                          <>
+                            {" "}
+                            <span className="sep" aria-hidden="true">
+                              ·
+                            </span>{" "}
+                          </>
+                        )}
+                        {title}
+                      </React.Fragment>
+                    ))}
+                  </p>
+                )}
+                {note && <p className="pb-pa-note">{note}</p>}
+                {hero.ctaText && (
+                  <a className="pb-pa-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+              </div>
+              <div className="pb-pa-pics" data-pb-slot={LAYOUT_SLOT.heroMedia}>
+                <div
+                  className="pb-pa-arch a1"
+                  aria-hidden="true"
+                  style={
+                    hero.imageUrl
+                      ? { backgroundImage: `url(${hero.imageUrl})` }
+                      : undefined
+                  }
+                />
+                <div
+                  className="pb-pa-arch a2"
+                  aria-hidden="true"
+                  style={
+                    archSrc ? { backgroundImage: `url(${archSrc})` } : undefined
+                  }
+                />
+              </div>
             </div>
-          </div>
-        </section>
-      ))}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section, heroArchSrc))}
@@ -538,3 +544,6 @@ const PATINA_MODULE: PackModule = {
   Page: PatinaPage,
 };
 PACK_MODULES.patina = PATINA_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

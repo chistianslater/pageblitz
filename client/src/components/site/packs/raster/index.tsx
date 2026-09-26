@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { RASTER_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -69,15 +74,13 @@ function SectionHead({
 }) {
   return (
     <div className="pb-ra-head">
-      <span className="pb-ra-index">
-        {String(index).padStart(2, "0")}
-      </span>
+      <span className="pb-ra-index">{String(index).padStart(2, "0")}</span>
       <h2>{typeof title === "string" ? rich(title) : title}</h2>
     </div>
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">,
   index: number
 ): React.ReactNode {
@@ -119,7 +122,9 @@ function renderSection(
                 </span>
                 <strong>{item.title}</strong>
                 {item.description && <p>{item.description}</p>}
-                {item.price && <span className="pb-ra-price">{item.price}</span>}
+                {item.price && (
+                  <span className="pb-ra-price">{item.price}</span>
+                )}
               </div>
             ))}
           </div>
@@ -165,9 +170,7 @@ function renderSection(
             {section.images.map((img, i) => (
               <figure className="pb-ra-figure" key={img.url}>
                 <img src={img.url} alt={img.alt} loading="lazy" />
-                <figcaption>
-                  Abb. {String(i + 1).padStart(2, "0")}
-                </figcaption>
+                <figcaption>Abb. {String(i + 1).padStart(2, "0")}</figcaption>
               </figure>
             ))}
           </div>
@@ -395,39 +398,45 @@ const RasterPage: React.FC<{
         </div>
         <MobileNav items={navList} />
       </nav>
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-ra-hero">
-          <HeroCollage data={data} />
-          <div className="pb-ra-hero-margin">
-            <span className="pb-ra-index">00</span>
-            {city && <span className="pb-ra-margin-note">{city}</span>}
-          </div>
-          <div className="pb-ra-hero-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-            <h1>{renderHeadline(hero.headline)}</h1>
-            {hero.subheadline && (
-              <p className="pb-ra-sub">{rich(hero.subheadline)}</p>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-ra-hero">
+            <HeroCollage data={data} />
+            <div className="pb-ra-hero-margin">
+              <span className="pb-ra-index">00</span>
+              {city && <span className="pb-ra-margin-note">{city}</span>}
+            </div>
+            <div
+              className="pb-ra-hero-copy"
+              data-pb-slot={LAYOUT_SLOT.heroCopy}
+            >
+              <h1>{renderHeadline(hero.headline)}</h1>
+              {hero.subheadline && (
+                <p className="pb-ra-sub">{rich(hero.subheadline)}</p>
+              )}
+              {hero.ctaText && (
+                <a className="pb-ra-cta" href={hero.ctaHref ?? "#kontakt"}>
+                  <i aria-hidden="true" />
+                  {hero.ctaText}
+                </a>
+              )}
+            </div>
+            {hero.imageUrl && (
+              <figure className="pb-ra-figure pb-ra-hero-figure">
+                <img
+                  data-pb-slot={LAYOUT_SLOT.heroMedia}
+                  src={hero.imageUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                />
+                <figcaption>Abb. 00 — {data.businessName}</figcaption>
+              </figure>
             )}
-            {hero.ctaText && (
-              <a className="pb-ra-cta" href={hero.ctaHref ?? "#kontakt"}>
-                <i aria-hidden="true" />
-                {hero.ctaText}
-              </a>
-            )}
-          </div>
-          {hero.imageUrl && (
-            <figure className="pb-ra-figure pb-ra-hero-figure">
-              <img
-                data-pb-slot={LAYOUT_SLOT.heroMedia}
-                src={hero.imageUrl}
-                alt=""
-                loading="eager"
-                fetchPriority="high"
-              />
-              <figcaption>Abb. 00 — {data.businessName}</figcaption>
-            </figure>
-          )}
-        </section>
-      ))}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map((section, i) => renderSection(section, i + 1))}
@@ -457,3 +466,6 @@ const RASTER_MODULE: PackModule = {
   Page: RasterPage,
 };
 PACK_MODULES.raster = RASTER_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

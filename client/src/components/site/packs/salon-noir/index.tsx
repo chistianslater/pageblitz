@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -29,6 +33,7 @@ import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { SALON_NOIR_CSS } from "./css";
 import { PACK_UI } from "../../packCopy";
 import { rich } from "../../richText";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -78,7 +83,7 @@ function PriceRow({
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -410,43 +415,46 @@ const SalonNoirPage: React.FC<{
           <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
         </aside>
       )}
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
-          <HeroCollage data={data} />
-          <div
-            className="pb-sn-hero-inner"
-            data-pb-slot={LAYOUT_SLOT.heroSplit}
-          >
-            <div className="pb-sn-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-              {eyebrow && <p className="pb-sn-eyebrow">{eyebrow}</p>}
-              <h1>{rich(hero.headline)}</h1>
-              {hero.subheadline && (
-                <p className="pb-sn-sub">{rich(hero.subheadline)}</p>
-              )}
-              {hero.ctaText && (
-                <a className="pb-sn-cta" href={hero.ctaHref ?? "#kontakt"}>
-                  {hero.ctaText}
-                </a>
-              )}
-            </div>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-sn-hero">
+            <HeroCollage data={data} />
             <div
-              className="pb-sn-photo"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              aria-hidden="true"
-              style={
-                hero.imageUrl
-                  ? { backgroundImage: `url(${hero.imageUrl})` }
-                  : undefined
-              }
-            />
-          </div>
-          {verticalLabel && (
-            <p className="pb-sn-vert" aria-hidden="true">
-              {verticalLabel}
-            </p>
-          )}
-        </section>
-      ))}
+              className="pb-sn-hero-inner"
+              data-pb-slot={LAYOUT_SLOT.heroSplit}
+            >
+              <div className="pb-sn-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+                {eyebrow && <p className="pb-sn-eyebrow">{eyebrow}</p>}
+                <h1>{rich(hero.headline)}</h1>
+                {hero.subheadline && (
+                  <p className="pb-sn-sub">{rich(hero.subheadline)}</p>
+                )}
+                {hero.ctaText && (
+                  <a className="pb-sn-cta" href={hero.ctaHref ?? "#kontakt"}>
+                    {hero.ctaText}
+                  </a>
+                )}
+              </div>
+              <div
+                className="pb-sn-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                aria-hidden="true"
+                style={
+                  hero.imageUrl
+                    ? { backgroundImage: `url(${hero.imageUrl})` }
+                    : undefined
+                }
+              />
+            </div>
+            {verticalLabel && (
+              <p className="pb-sn-vert" aria-hidden="true">
+                {verticalLabel}
+              </p>
+            )}
+          </section>
+        ))}
       {sections
         .filter(s => s.type !== "hero")
         .map(section => renderSection(section))}
@@ -478,3 +486,6 @@ const SALON_NOIR_MODULE: PackModule = {
   Page: SalonNoirPage,
 };
 PACK_MODULES["salon-noir"] = SALON_NOIR_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

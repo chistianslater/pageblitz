@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -27,6 +31,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { hasMarks, rich, stripMarks } from "../../richText";
 import { ReviewAuthor, ReviewStars, REVIEW_READONLY } from "../../googleReview";
 import { WERKBANK_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -114,7 +119,7 @@ function buildMarquee(
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">,
   servicesSection: SectionOf<"services"> | undefined,
   hasPageHeader: boolean,
@@ -137,7 +142,8 @@ function renderSection(
     case "story":
       return <StorySection section={section} key="story" />;
     case "hero": {
-      if (data.designRevision === 2) return <ArtDirectedHero key="hero" data={data} hero={section} />;
+      if (data.designRevision === 2)
+        return <ArtDirectedHero key="hero" data={data} hero={section} />;
       const richHeadline = hasMarks(section.headline);
       const lines = richHeadline ? [] : splitHeadline(section.headline);
       return (
@@ -336,7 +342,10 @@ function renderSection(
               ↘
             </span>
           </header>
-          <div className="pb-wb-contact-grid" data-pb-slot={LAYOUT_SLOT.contactGrid}>
+          <div
+            className="pb-wb-contact-grid"
+            data-pb-slot={LAYOUT_SLOT.contactGrid}
+          >
             <div className="pb-wb-contact-links">
               {section.phone && (
                 <a href={`tel:${section.phone}`}>
@@ -562,3 +571,6 @@ const WERKBANK_MODULE: PackModule = {
   Page: WerkbankPage,
 };
 PACK_MODULES.werkbank = WERKBANK_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

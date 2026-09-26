@@ -165,6 +165,18 @@ export const SiteAddOnsSchema = z
   })
   .strict();
 
+/**
+ * Button unter einem Angebots-Block (2026-09-26): „Online bestellen" unter
+ * der Speisekarte, „Termin buchen" unter der Preisliste. Zentral gerendert
+ * (sectionLink.tsx), nicht je Pack.
+ */
+export const SectionLinkSchema = z
+  .object({
+    text: z.string().min(1).max(40),
+    href: SafeUrlSchema,
+  })
+  .strict();
+
 const HeroSchema = z
   .object({
     type: z.literal("hero"),
@@ -191,6 +203,7 @@ const ServicesSchema = z
           .strict()
       )
       .min(1),
+    link: SectionLinkSchema.optional(),
   })
   .strict();
 const AboutSchema = z
@@ -305,6 +318,7 @@ const MenuSchema = z
     type: z.literal("menu"),
     headline: z.string().optional(),
     categories: z.array(PricedCategorySchema).min(1),
+    link: SectionLinkSchema.optional(),
   })
   .strict();
 const PricelistSchema = z
@@ -312,6 +326,7 @@ const PricelistSchema = z
     type: z.literal("pricelist"),
     headline: z.string().optional(),
     categories: z.array(PricedCategorySchema).min(1),
+    link: SectionLinkSchema.optional(),
   })
   .strict();
 const TeamSchema = z

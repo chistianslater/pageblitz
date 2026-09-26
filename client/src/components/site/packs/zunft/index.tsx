@@ -1,7 +1,11 @@
 import { ArtDirectedHero } from "../../artDirection/ArtDirectedHero";
 import React from "react";
 import { MapsAdresse } from "../../MapsAdresse";
-import { ProcessSection, QuoteSection, StatsSection } from "../../extraSections";
+import {
+  ProcessSection,
+  QuoteSection,
+  StatsSection,
+} from "../../extraSections";
 import { UspSection } from "../../uspSection";
 import { HeroCollage } from "../../heroCollage";
 import { StorySection } from "../../storySection";
@@ -28,6 +32,7 @@ import { LAYOUT_SLOT } from "../../layoutSlots";
 import { GoogleReviewBody, REVIEW_READONLY } from "../../googleReview";
 import { hasMarks, rich } from "../../richText";
 import { ZUNFT_CSS } from "./css";
+import { withSectionLinks } from "../../sectionLink";
 
 const FALLBACK_TITLES: Partial<Record<SectionType, string>> = {
   services: "Leistungen",
@@ -110,7 +115,7 @@ function TafelRow({
   );
 }
 
-function renderSection(
+function renderSectionBase(
   section: SectionV2 | PageSectionOf<"pageHeader">
 ): React.ReactNode {
   switch (section.type) {
@@ -438,49 +443,55 @@ const ZunftPage: React.FC<{
         <MobileNav items={navList} />
       </nav>
       <DoubleRule />
-      {hero && (data.designRevision === 2 ? <ArtDirectedHero data={data} hero={hero} /> : (
-        <section id={SECTION_ANCHORS.hero} className="pb-zf-hero">
-          <HeroCollage data={data} />
-          {hero.imageUrl && (
-            <img
-              className="pb-zf-hero-photo"
-              data-pb-slot={LAYOUT_SLOT.heroMedia}
-              src={hero.imageUrl}
-              alt=""
-              loading="eager"
-              fetchPriority="high"
-            />
-          )}
-          <h1 className="pb-zf-headline">
-            {renderHeadline(hero.headline)}
-            {year && (
-              <span className="pb-zf-stamp" aria-hidden="true">
-                Seit
-                <br />
-                {year}
-              </span>
+      {hero &&
+        (data.designRevision === 2 ? (
+          <ArtDirectedHero data={data} hero={hero} />
+        ) : (
+          <section id={SECTION_ANCHORS.hero} className="pb-zf-hero">
+            <HeroCollage data={data} />
+            {hero.imageUrl && (
+              <img
+                className="pb-zf-hero-photo"
+                data-pb-slot={LAYOUT_SLOT.heroMedia}
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
             )}
-          </h1>
-          {hero.subheadline && <p className="pb-zf-sub">{rich(hero.subheadline)}</p>}
-          {previewItems.length > 0 && (
-            <div className="pb-zf-tafel-preview">
-              {previewItems.map(item => (
-                <TafelRow key={item.name} name={item.name} price={item.price} />
-              ))}
-            </div>
-          )}
-          {hero.ctaText && (
-            <a className="pb-zf-cta" href={hero.ctaHref ?? "#kontakt"}>
-              {hero.ctaText}
-            </a>
-          )}
-        </section>
-      ))}
+            <h1 className="pb-zf-headline">
+              {renderHeadline(hero.headline)}
+              {year && (
+                <span className="pb-zf-stamp" aria-hidden="true">
+                  Seit
+                  <br />
+                  {year}
+                </span>
+              )}
+            </h1>
+            {hero.subheadline && (
+              <p className="pb-zf-sub">{rich(hero.subheadline)}</p>
+            )}
+            {previewItems.length > 0 && (
+              <div className="pb-zf-tafel-preview">
+                {previewItems.map(item => (
+                  <TafelRow
+                    key={item.name}
+                    name={item.name}
+                    price={item.price}
+                  />
+                ))}
+              </div>
+            )}
+            {hero.ctaText && (
+              <a className="pb-zf-cta" href={hero.ctaHref ?? "#kontakt"}>
+                {hero.ctaText}
+              </a>
+            )}
+          </section>
+        ))}
       {(hero?.ctaText || routeQuery) && (
-        <aside
-          className="pb-zf-order-sticky"
-          aria-label="Kontakt und Route"
-        >
+        <aside className="pb-zf-order-sticky" aria-label="Kontakt und Route">
           <span aria-hidden="true">◆</span>
           {hero?.ctaText && (
             <a href={hero.ctaHref ?? "#kontakt"}>{hero.ctaText}</a>
@@ -527,3 +538,6 @@ const ZUNFT_MODULE: PackModule = {
   Page: ZunftPage,
 };
 PACK_MODULES.zunft = ZUNFT_MODULE;
+
+/** Button unter Speisekarte/Preisliste/Leistungen — zentral, siehe sectionLink.tsx. */
+const renderSection = withSectionLinks(renderSectionBase);

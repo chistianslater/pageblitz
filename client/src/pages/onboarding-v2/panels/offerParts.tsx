@@ -1,5 +1,7 @@
 import React from "react";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
+import { buttonLinkErrors } from "@shared/onboardingV2/buttonLink";
+import { ButtonLinkEditor } from "./ButtonLinkEditor";
 
 export type OfferMode = OfferPatch["mode"];
 
@@ -30,6 +32,30 @@ function rowLabel(name: string, fallback: string): string {
  * kein Diff.
  */
 export function validateOffer(value: OfferPatch): string[] {
+  const linkErrors = value.link ? buttonLinkErrors(value.link) : [];
+  return [...validateOfferContent(value), ...linkErrors];
+}
+
+/** Button-Vorschlag je Modus — „Online bestellen" unter der Speisekarte. */
+export const OFFER_LINK_COPY: Record<
+  OfferMode,
+  { label: string; defaultText: string }
+> = {
+  services: {
+    label: "Button unter den Leistungen",
+    defaultText: "Jetzt anfragen",
+  },
+  menu: {
+    label: "Button unter der Speisekarte",
+    defaultText: "Online bestellen",
+  },
+  pricelist: {
+    label: "Button unter der Preisliste",
+    defaultText: "Termin buchen",
+  },
+};
+
+function validateOfferContent(value: OfferPatch): string[] {
   if (value.mode === "services") {
     const messages: string[] = [];
     if (value.headline.trim() === "") {
@@ -378,6 +404,16 @@ export function OfferEditor({ value, onChange }: OfferEditorProps) {
       ) : (
         <CategoriesEditor value={value} onChange={onChange} />
       )}
+      <ButtonLinkEditor
+        idPrefix={`pb-offer-link-${value.mode}`}
+        label={OFFER_LINK_COPY[value.mode].label}
+        defaultText={OFFER_LINK_COPY[value.mode].defaultText}
+        value={value.link}
+        onChange={link => {
+          const { link: _alt, ...ohne } = value;
+          onChange(link ? { ...ohne, link } : ohne);
+        }}
+      />
     </div>
   );
 }

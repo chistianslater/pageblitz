@@ -18,7 +18,7 @@ export const AI_EDIT_SYSTEM_PROMPT =
   "Du bist ein KI-Assistent, der Kundenwünsche zu einer bestehenden Kleinunternehmer-Website interpretiert und ausschließlich als valides JSON beantwortest, ohne Markdown, ohne Erklärung.";
 
 const FORBIDDEN_CONTENT_RULE =
-  "Erfinde oder ändere niemals URLs, Telefonnummern, E-Mail-Adressen, Postadressen oder Öffnungszeiten.";
+  "Erfinde oder ändere niemals Telefonnummern, E-Mail-Adressen, Postadressen oder Öffnungszeiten. URLs nur aus der Liste „Erlaubte Link-Ziele“ — nie erfinden.";
 
 /**
  * Kandidaten-Packs für Stil-Vorschläge: die branchenpassenden Kandidaten
@@ -42,6 +42,22 @@ function buildStyleCandidateIds(category: string): PackId[] {
 }
 
 /**
+ * Buttons & Links (2026-09-26): wo Buttons sitzen, welche Ziele erlaubt
+ * sind. Unbelegte Ziele setzt aiEditFacts ohnehin zurück — die Regel hier
+ * sorgt dafür, dass die KI nach der Adresse fragt statt zu raten.
+ */
+function linkRuleLines(allowed: string[], isPage: boolean): string[] {
+  const external = allowed.filter(href => /^https?:/.test(href));
+  return [
+    `- Buttons & Links: Hero-Button = Feld "ctaHref" der hero-Sektion (Text "ctaText"). Button UNTER Leistungen/Speisekarte/Preisliste = Feld "link":{"text":"<max. 40 Zeichen>","href":"..."} an der services-/menu-/pricelist-Sektion.${isPage ? "" : ` Eigener Button-Block = Zusatz-Sektion {"type":"cta","headline":"...","ctaText":"...","ctaHref":"..."} (z. B. „Hunger? Jetzt online bestellen" nach der Speisekarte).`}`,
+    `- Erlaubte Link-Ziele (NUR diese als "href"/"ctaHref" verwenden): ${allowed.length > 0 ? allowed.join(", ") : "keine"}. Anker (#…) springen auf der Seite, tel: ruft an.`,
+    external.length > 0
+      ? `- Webadressen daraus: ${external.join(", ")} — z. B. die Bestellplattform.`
+      : `- Es ist KEINE Webadresse belegt: wünscht der Kunde einen Button zu einer externen Seite (Bestellplattform, Buchung, Shop), frag nach der genauen Adresse (Format 5) statt eine zu erfinden.`,
+  ];
+}
+
+/**
  * Baut den User-Prompt für den KI-Chat: Verfassung (essence + llmHints) des
  * aktuell gewählten Packs, aktueller Inhalt (seo + sections) als JSON, harte
  * Regeln (nur Inhalte, keine Fakten/Rechtstexte, Struktur beibehalten) und
@@ -55,6 +71,8 @@ export function buildAiEditPrompt(args: {
   page?: Page;
   /** Kurzer Dialog-Kontext (Rückfragen): vorherige Wortwechsel dieses Wunschs. */
   history?: AiChatHistoryEntry[];
+  /** Belegte Link-Ziele (aiEditLinks) — die KI darf nur diese setzen. */
+  allowedLinks?: string[];
 }): string {
   const constitution = getConstitution(args.doc.stylePackId);
   const candidateIds = buildStyleCandidateIds(args.category);
@@ -133,6 +151,7 @@ export function buildAiEditPrompt(args: {
     args.page
       ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
       : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahmen (faktenfreie Zusatz-Sektionen, hinzufügen UND entfernen erlaubt): {"type":"story","headline":"...","body":"..."} (mehr erzählen: Geschichte/Historie/Philosophie — nach "about" einsortieren, Absätze durch Leerzeile), {"type":"usp","headline":"...","items":[{"title":"...","text":"..."}]} (2–6 Vorteile/Argumente — früh platzieren, z. B. nach "hero" oder "services"), {"type":"notice","text":"..."} (Saison-/Aktionshinweis wie Urlaub oder Rabatt — wird als Banner GANZ OBEN über der Navigation gezeigt, egal wo er in der Liste steht; genau EIN Satz), {"type":"stats","headline":"...","items":[{"value":"25+","label":"Jahre Erfahrung"}]} (2–4 Kennzahlen — NUR Zahlen verwenden, die der Kunde selbst nennt oder die aus dem Inhalt belegt sind, NIE erfinden), {"type":"process","headline":"...","steps":[{"title":"...","text":"..."}]} (Ablauf in 2–5 nummerierten Schritten, z. B. Anfrage → Termin → Umsetzung), {"type":"quote","text":"...","author":"..."} (großes Zitat/Motto des Betriebs).`,
+    ...linkRuleLines(args.allowedLinks ?? [], Boolean(args.page)),
     `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben — aber heroLayout "collage" (Format 2) zeigt zusätzlich zum Hauptbild bis zu zwei Galerie-Bilder im Hero.`,
     // Tonalität (2026-09-03): Vorgabe des Kunden schlägt Anrede-Hinweise
     // der Verfassung — gilt für jeden Text, den der Chat umschreibt.
@@ -152,7 +171,7 @@ export function buildAiEditPrompt(args: {
     `1) Inhaltlicher Wunsch (Texte ändern):`,
     `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"theme":null,"packId":null,"reason":null}`,
     `- "sections" enthält ALLE Sektionen aus dem aktuellen Inhalt, in derselben Reihenfolge und mit denselben Typen — nur die vom Wunsch betroffenen Textfelder ändern sich.`,
-    `- Fakten (imageUrl, ctaHref, Telefon, E-Mail, Adresse, Öffnungszeiten) unverändert aus dem aktuellen Inhalt übernehmen.`,
+    `- Fakten (imageUrl, Telefon, E-Mail, Adresse, Öffnungszeiten) unverändert aus dem aktuellen Inhalt übernehmen. Bestehende "ctaHref"/"link" unverändert mitgeben, außer der Wunsch betrifft genau diesen Button.`,
     ``,
     `2) Design-Feinjustierung (Farben, Schrift, Abstände, Layout — z. B. "dunkler", "andere Akzentfarbe", "mehr Luft", "Bild im Hero nach oben"):`,
     `{"kind":"theme","content":null,"theme":{...nur die gewünschten Felder...},"packId":null,"reason":"<ein Satz, was du geändert hast>"}`,
@@ -189,7 +208,7 @@ export function buildAiEditPrompt(args: {
     ``,
     `4) Nicht machbarer Wunsch — zwei Fälle:`,
     `   a) Fakten (Telefon, Adresse, Preise, Öffnungszeiten, Rechtliches): die ändert der Kunde selbst in den Panels.`,
-    `   b) Struktur/Funktionen, die es nicht gibt (andere Sektionen als "story" hinzufügen/entfernen, Buchung/Shop/neue Features). Hinweis: "mehr Bilder im Hero" IST machbar — heroLayout "collage" (Format 2); "mehr erzählen" IST machbar — story-Sektion (Format 1).`,
+    `   b) Struktur/Funktionen, die es nicht gibt (andere als die erlaubten Zusatz-Sektionen hinzufügen/entfernen, Buchung/Shop/neue Features). Buttons/Links zu einer Bestell- oder Buchungsseite SIND machbar (siehe Buttons & Links) — fehlt nur die Adresse, frag danach (Format 5). Hinweis: "mehr Bilder im Hero" IST machbar — heroLayout "collage" (Format 2); "mehr erzählen" IST machbar — story-Sektion (Format 1).`,
     `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst. NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
     ``,
     `5) Rückfrage — NUR wenn der Wunsch so mehrdeutig ist, dass du ihn ohne Zusatzinfo falsch umsetzen könntest (z. B. "mach das schöner" ohne Bezug, oder zwei mögliche Lesarten mit sehr unterschiedlichem Ergebnis):`,

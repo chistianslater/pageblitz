@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { SectionOf, WebsiteDataV2 } from "@shared/siteContract/types";
 import type { OfferPatch } from "@shared/onboardingV2/patches";
@@ -45,6 +45,7 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
         title,
         ...(description !== undefined ? { description } : {}),
       })),
+      ...(services.link ? { link: services.link } : {}),
     };
   }
   const menu = doc.sections.find(
@@ -55,6 +56,7 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
       mode: "menu",
       ...(menu.headline !== undefined ? { headline: menu.headline } : {}),
       categories: menu.categories,
+      ...(menu.link ? { link: menu.link } : {}),
     };
   }
   const pricelist = doc.sections.find(
@@ -67,6 +69,7 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
         ? { headline: pricelist.headline }
         : {}),
       categories: pricelist.categories,
+      ...(pricelist.link ? { link: pricelist.link } : {}),
     };
   }
   let constitution;
@@ -109,6 +112,7 @@ export function offerDraftsFromDoc(
             title,
             ...(description !== undefined ? { description } : {}),
           })),
+          ...(services.link ? { link: services.link } : {}),
         }
       : blankOffer("services"),
     menu: menu
@@ -116,6 +120,7 @@ export function offerDraftsFromDoc(
           mode: "menu",
           ...(menu.headline !== undefined ? { headline: menu.headline } : {}),
           categories: menu.categories,
+          ...(menu.link ? { link: menu.link } : {}),
         }
       : blankOffer("menu"),
     pricelist: pricelist
@@ -125,6 +130,7 @@ export function offerDraftsFromDoc(
             ? { headline: pricelist.headline }
             : {}),
           categories: pricelist.categories,
+          ...(pricelist.link ? { link: pricelist.link } : {}),
         }
       : blankOffer("pricelist"),
   };
@@ -189,7 +195,15 @@ interface OfferPanelProps {
   onPreviewFocus?: (anchor: string) => void;
   /** Deep-Link aus Extra Speisekarte/Preisliste. */
   initialMode?: OfferMode;
+  /**
+   * Live-Vorschau (2026-09-26): gerenderter Entwurf für die Sektion `anchor`,
+   * null beim Schließen/Speichern. Ohne Callback keine Live-Vorschau.
+   */
+  onDraftPreview?: (draft: { anchor: string; html: string } | null) => void;
 }
+
+/** Tipp-Pause, nach der der Entwurf in die Vorschau gerendert wird. */
+const LIVE_PREVIEW_DELAY_MS = 450;
 
 export function OfferPanel({
   token,
@@ -200,6 +214,7 @@ export function OfferPanel({
   onNext,
   onPreviewFocus,
   initialMode,
+  onDraftPreview,
 }: OfferPanelProps) {
   const [mode] = useState<OfferMode>(() => initialOfferMode(doc, initialMode));
   const [value, setValue] = useState<OfferPatch>(
@@ -211,6 +226,36 @@ export function OfferPanel({
   }, [mode, onPreviewFocus]);
 
   const updateOffer = trpc.onboardingV2.updateOffer.useMutation();
+  const previewDraft = trpc.onboardingV2.previewOfferDraft.useMutation();
+  const previewDraftRef = useRef(previewDraft.mutate);
+  previewDraftRef.current = previewDraft.mutate;
+
+  // Live-Vorschau: nach kurzer Tipp-Pause den Entwurf rendern lassen und nur
+  // die Angebots-Sektion rechts austauschen. Der erste Lauf (unveränderter
+  // Stand) entfällt — die Vorschau zeigt ihn schon. Eine überholte Antwort
+  // (Kunde hat weitergetippt) wird verworfen.
+  const firstValueRef = useRef(value);
+  const requestSeqRef = useRef(0);
+  useEffect(() => {
+    if (!onDraftPreview || value === firstValueRef.current) return;
+    const seq = ++requestSeqRef.current;
+    const timer = window.setTimeout(() => {
+      previewDraftRef.current(
+        { token, offer: value },
+        {
+          onSuccess: result => {
+            if (seq !== requestSeqRef.current || !result.html) return;
+            onDraftPreview({
+              anchor: previewAnchorForOfferMode(mode),
+              html: result.html,
+            });
+          },
+        }
+      );
+    }, LIVE_PREVIEW_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [value, mode, token, onDraftPreview]);
+  useEffect(() => () => onDraftPreview?.(null), [onDraftPreview]);
   const updateAddons = trpc.onboardingV2.updateAddons.useMutation();
   const suggestOffer = trpc.onboardingV2.suggestOffer.useMutation();
 
@@ -248,6 +293,10 @@ export function OfferPanel({
       { token, offer: value },
       {
         onSuccess: () => {
+          // Entwurf ist jetzt gespeichert — Live-Vorschau beenden; das
+          // Neuladen von onApplied zeigt den gespeicherten Stand.
+          requestSeqRef.current++;
+          onDraftPreview?.(null);
           onApplied();
           onNext?.();
         },

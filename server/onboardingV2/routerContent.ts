@@ -53,6 +53,8 @@ import {
 import { HIDEABLE_SECTION_TYPES } from "../../shared/onboardingV2/aiEdit";
 import { commitAddOnFlags } from "./addOnFlags";
 import { loadStudioWebsite } from "./ownership";
+import { offerForPreview } from "../../shared/onboardingV2/offerPreview";
+import { renderSiteHtml } from "../ssr/renderSite";
 import { persistDoc, requireDoc, tokenInput, upsertOnboarding } from "./state";
 import {
   assertSuggestQuota,
@@ -595,6 +597,33 @@ export const contentProcedures = {
         }),
         { trigger: "panel", label: "Design angepasst" }
       );
+    }),
+
+  /**
+   * Live-Vorschau des Angebots-Editors (2026-09-26): rendert den aktuellen
+   * Entwurf, ohne ihn zu speichern. Das Studio tauscht aus dem HTML nur die
+   * betroffene Sektion in der Vorschau aus — der Kunde sieht Gerichte und
+   * Preise beim Tippen, nicht erst nach „Speichern & weiter". Halbfertige
+   * Zeilen glättet `offerForPreview`; `html: null` = nichts Zeigbares.
+   */
+  previewOfferDraft: publicProcedure
+    .input(tokenInput.extend({ offer: z.unknown() }))
+    .mutation(async ({ input, ctx }) => {
+      const loaded = await loadStudioWebsite(input.token, ctx.user);
+      const doc = await requireDoc(loaded);
+      const offer = offerForPreview(input.offer);
+      if (!offer) return { html: null };
+      const base =
+        offer.mode === "services"
+          ? doc
+          : applyAddOnFlags(doc, { [offer.mode]: true });
+      const { html } = renderSiteHtml(applyOffer(base, offer), {
+        origin: "https://pageblitz.de",
+        pathname: "/",
+        basePath: `/preview-ssr/${input.token}`,
+        slug: loaded.website.slug,
+      });
+      return { html };
     }),
 
   updateOffer: publicProcedure
