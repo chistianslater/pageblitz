@@ -253,3 +253,40 @@ describe("Fotoprüfung", () => {
     expect(result.gallery).toEqual(["hoch.jpg", "quadrat.jpg"]);
   });
 });
+
+describe("Eigene Fotos vor Stock", () => {
+  it("nimmt fürs Titelbild das eigene Foto, auch wenn das Stockbild schöner ist", () => {
+    const own = "https://r2.test/website-1/gmb-salon.jpg";
+    const stock = "https://images.unsplash.com/photo-1?w=1400";
+    const result = curateImages({ hero: own, gallery: [own, stock] }, [
+      {
+        url: own,
+        width: 1600,
+        height: 1067,
+        mirrored: false,
+        vision: {
+          motiv: "innenraum",
+          overlay: false,
+          collage: false,
+          quality: 3,
+          heroScore: 4,
+        },
+      },
+      {
+        url: stock,
+        width: 1600,
+        height: 1067,
+        mirrored: false,
+        vision: {
+          motiv: "team",
+          overlay: false,
+          collage: false,
+          quality: 5,
+          heroScore: 5,
+        },
+      },
+    ]);
+    expect(result.hero).toBe(own);
+    expect(result.gallery).toEqual([own, stock]);
+  });
+});

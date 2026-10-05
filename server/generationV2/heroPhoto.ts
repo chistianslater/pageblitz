@@ -263,6 +263,11 @@ function isLandscape(c: PhotoSize): boolean {
   return c.width >= STAGE_MIN_WIDTH && c.width / c.height >= STAGE_MIN_RATIO;
 }
 
+/** Vom Betrieb selbst: nach R2 gespiegelte Google-Fotos tragen `/gmb-`. */
+export function isOwnPhoto(url: string): boolean {
+  return url.includes("/gmb-");
+}
+
 /** Aussortieren: Overlay, Collage, Spiegelung, zu klein. */
 export function isFlawed(c: PhotoCheck): boolean {
   return (
@@ -293,7 +298,11 @@ export function curateImages(images: V2Images, checks: PhotoCheck[]): V2Images {
   const byUrl = new Map(checks.map(c => [c.url, c]));
   const ok = (url: string | undefined): url is string =>
     Boolean(url) && !(byUrl.get(url!) && isFlawed(byUrl.get(url!)!));
-  const usable = checks.filter(c => !isFlawed(c));
+  const clean = checks.filter(c => !isFlawed(c));
+  // Eigene Google-Fotos vor Stockbildern: Ein schönes Unsplash-Motiv im
+  // Titelbild sähe aus wie das Team des Betriebs (Befund Wetzel 2026-10-05).
+  const own = clean.filter(c => isOwnPhoto(c.url));
+  const usable = own.length > 0 ? own : clean;
   const rated = usable.some(c => c.vision);
 
   // Bühne nur mit einem Querformat, das der Betrieb auch zeigen will.
