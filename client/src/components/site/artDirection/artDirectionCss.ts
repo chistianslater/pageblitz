@@ -202,8 +202,10 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"] .pb-art-sticker b{font:600 clamp(2.2rem,3.3vw,3.1rem)/1 var(--pb-font-display);letter-spacing:-.03em}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"] .pb-art-sticker>span{font:600 10.5px/1.3 var(--pb-font-body);max-width:11ch;margin:auto}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"] .pb-art-stars{color:inherit}
-/* Die Heute-Leiste von morgenlicht wiederholt nur, was der Einstieg zeigt. */
-.pb-site[data-pb-revision="2"]:has(.pb-art-hero:is([data-art-composition="stage"],[data-art-composition="colorfield"])) .pb-ml-practice-dock{display:none}
+/* Heute-Leisten und schwebende Kontakt-Kästchen der Packs wiederholen nur,
+   was der Einstieg schon zeigt (Öffnungszeit, Bewertung, Termin, Anruf) —
+   und lagen über dem Bühnenfoto. */
+.pb-site[data-pb-revision="2"]:has(.pb-art-hero:is([data-art-composition="stage"],[data-art-composition="colorfield"])) :is(.pb-ml-practice-dock,.pb-fd-contact-sticky,.pb-zf-order-sticky,.pb-kw-utility-sticky,.pb-lg-visit-sticky,.pb-vv-trial-sticky){display:none}
 @media(max-width:760px){
 .pb-site[data-pb-revision="2"] .pb-art-hero:is([data-art-composition="stage"],[data-art-composition="colorfield"]){padding-left:var(--pb-shell-pad,6%);padding-right:var(--pb-shell-pad,6%)}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="stage"][data-art-image="yes"]{display:flex;justify-content:flex-end;min-height:84svh;padding-top:90px;padding-bottom:28px;gap:0}
