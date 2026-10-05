@@ -118,7 +118,7 @@ export interface V2Images {
 }
 
 /** Echte Fotos neben dem Hero-Bild — die Farbfläche braucht mindestens eins. */
-function entryPhotos(images: V2Images): EntryPhotos {
+export function entryPhotos(images: V2Images): EntryPhotos {
   const extra = new Set(
     [images.about, ...(images.gallery ?? [])].filter(
       (u): u is string => Boolean(u) && u !== images.hero
@@ -149,6 +149,34 @@ const INTERIM_SEO_DESCRIPTION = "Diese Website wird gerade erstellt.";
  */
 export function isInterimV2Doc(doc: WebsiteDataV2): boolean {
   return doc.seo.description === INTERIM_SEO_DESCRIPTION;
+}
+
+/**
+ * Gestaltung wie bei einer neuen Seite (2026-10-05): aktueller Design-Stand,
+ * Farbwelt des Packs und Einstieg nach Fotomaterial. Für die Admin-
+ * Neuerstellung, die bisher ohne Designprofil schrieb — dann leitete erst
+ * der Renderer ein Profil ab, ohne Bühne/Farbfläche.
+ */
+export function withNewSiteDesign(
+  doc: WebsiteDataV2,
+  packId: PackId,
+  images: V2Images
+): WebsiteDataV2 {
+  return WebsiteDataV2Schema.parse({
+    ...doc,
+    ...pickArtTheme(packId, doc.businessName, doc.businessCategory),
+    designRevision: CURRENT_DESIGN_REVISION,
+    designStand: AKTUELLER_DESIGN_STAND,
+    designProfile: withEntryComposition(
+      deriveArtDirectedProfile({
+        stylePackId: packId,
+        businessName: doc.businessName,
+        businessCategory: doc.businessCategory,
+        sections: doc.sections,
+      }),
+      entryPhotos(images)
+    ),
+  });
 }
 
 /**

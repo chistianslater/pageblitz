@@ -1,3 +1,4 @@
+import { withStagePhoto } from "./generationV2/heroPhoto";
 import { COOKIE_NAME } from "@shared/const";
 import { postkartenRouter } from "./postkarten/router";
 import {
@@ -116,6 +117,7 @@ import { classifyIndustry } from "./industryClassifier";
 import {
   runWebsiteGenerationV2Job,
   resolveV2Images,
+  withNewSiteDesign,
 } from "./generationV2/runJob";
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
@@ -1191,7 +1193,7 @@ export const appRouter = router({
             category,
             industryKey,
             input.websiteId
-          ),
+          ).then(found => withStagePhoto(found)),
           business.website
             ? crawlExistingSite(business.website)
             : Promise.resolve(null),
@@ -1219,6 +1221,9 @@ export const appRouter = router({
           },
           hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
         );
+
+        // Wie eine neue Seite: Design-Stand, Farbwelt, Einstieg nach Fotos.
+        websiteData = withNewSiteDesign(websiteData, packId, images);
 
         const newPreviewToken = nanoid(32);
         // Defensiv: generateSiteContent liefert bereits schema-valide v2-Daten,
@@ -1628,8 +1633,8 @@ export const appRouter = router({
               previewToken,
               addons: [],
               // Nie automatisch (2026-09-05): Bei Verdacht fragt das Studio vor
-          // dem Freischalten nach, entschieden wird im Betrieb.
-          requiresAgeGate: false,
+              // dem Freischalten nach, entschieden wird im Betrieb.
+              requiresAgeGate: false,
             });
 
             const jobId = await createGenerationJob({

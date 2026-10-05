@@ -50,6 +50,7 @@ import {
   collectOccupiedCompositions,
   resolveV2Images,
   runWebsiteGenerationV2Job,
+  withNewSiteDesign,
 } from "./runJob";
 import { DEFAULT_DESIGN_PROFILE } from "../../shared/siteContract/designProfile";
 
@@ -519,5 +520,44 @@ describe("collectOccupiedCompositions", () => {
     ];
     expect(collectOccupiedCompositions(rows, "Haarsalon").size).toBe(1);
     expect(collectOccupiedCompositions(rows, "Zahnarzt").size).toBe(0);
+  });
+});
+
+describe("withNewSiteDesign", () => {
+  const doc = buildInterimV2Doc(
+    "morgenlicht",
+    "Salon Test",
+    "Friseursalon",
+    "salon-test",
+    {
+      hero: "https://img.test/hero.jpg",
+      gallery: ["https://img.test/a.jpg", "https://img.test/b.jpg"],
+    }
+  );
+
+  test("gibt der Neuerstellung Design-Stand und Farbfläche wie einer neuen Seite", () => {
+    const result = withNewSiteDesign(
+      { ...doc, designProfile: undefined },
+      "morgenlicht",
+      {
+        hero: "https://img.test/hero.jpg",
+        gallery: ["https://img.test/a.jpg", "https://img.test/b.jpg"],
+        heroLandscape: false,
+      }
+    );
+    expect(result.designRevision).toBe(2);
+    expect(result.designStand).toBeTruthy();
+    expect(result.designProfile?.composition).toBe("colorfield");
+  });
+
+  test("nimmt bei Querformat die Bühne", () => {
+    const result = withNewSiteDesign(doc, "morgenlicht", {
+      hero: "https://img.test/hero.jpg",
+      heroLandscape: true,
+    });
+    expect(result.designProfile).toMatchObject({
+      composition: "stage",
+      heroLayout: "banner",
+    });
   });
 });
