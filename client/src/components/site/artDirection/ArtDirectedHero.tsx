@@ -10,7 +10,7 @@ import {
 } from "../../../../../shared/stylePacks/artDirection";
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
-import { streetLine, telHref, todayLine } from "./heroFacts";
+import { pickReviewQuote, streetLine, telHref, todayLine } from "./heroFacts";
 
 type GoogleRating = NonNullable<WebsiteDataV2["google"]>;
 
@@ -26,7 +26,8 @@ export function formatHeroRating(rating: number): string {
  * Der erste Stern stand sonst erst 3000 px tiefer bei den Bewertungen. */
 function HeroRating({ google }: { google: GoogleRating }) {
   const count = google.reviewCount.toLocaleString("de-DE");
-  const label = google.reviewCount === 1 ? "Google-Bewertung" : "Google-Bewertungen";
+  const label =
+    google.reviewCount === 1 ? "Google-Bewertung" : "Google-Bewertungen";
   return (
     <span
       className="pb-art-rating"
@@ -125,59 +126,27 @@ function EntryHero({
     .join(" · ");
   const nameLength = data.businessName.length;
   const stage = composition === "stage";
+  const testimonials = data.hiddenSections?.includes("testimonials")
+    ? undefined
+    : data.sections.find(
+        (s): s is SectionOf<"testimonials"> => s.type === "testimonials"
+      );
+  const quote = pickReviewQuote(testimonials?.items);
   return (
-    <section
-      id="start"
-      className="pb-art-hero"
-      data-art-composition={composition}
-      data-art-layout={profile?.heroLayout}
-      data-art-mobile={profile?.heroLayoutMobile}
-      data-art-image="yes"
-      data-art-wordmark="no"
-      data-art-name={nameLength > 22 ? "long" : nameLength > 12 ? "mid" : "short"}
-    >
-      {stage && (
-        <figure className="pb-art-media" data-pb-slot={LAYOUT_SLOT.heroMedia}>
-          <img src={hero.imageUrl} alt="" loading="eager" fetchPriority="high" />
-        </figure>
-      )}
-      <div className="pb-art-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
-        {(stage ? today : today || place) && (
-          <p className="pb-art-today">
-            {stage ? today : [today, place].filter(Boolean).join(" · ")}
-          </p>
-        )}
-        {stage ? (
-          <>
-            <p className="pb-art-category">
-              {[data.businessCategory, place].filter(Boolean).join(" · ")}
-            </p>
-            <h1 className="pb-art-name">{data.businessName}</h1>
-            <p className="pb-art-intro">{rich(hero.headline)}</p>
-          </>
-        ) : (
-          <>
-            <h1
-              data-art-long={
-                stripMarks(hero.headline).length > 65 ? "yes" : undefined
-              }
-            >
-              {rich(hero.headline)}
-            </h1>
-            {hero.subheadline && (
-              <p className="pb-art-intro">{rich(hero.subheadline)}</p>
-            )}
-          </>
-        )}
-        <div className="pb-art-entry-row">
-          {stage && data.google && (
-            <RatingMark google={data.google} className="pb-art-score" />
-          )}
-          <EntryActions hero={hero} phone={contact?.phone} />
-        </div>
-      </div>
-      {!stage && (
-        <div className="pb-art-cards">
+    <>
+      <section
+        id="start"
+        className="pb-art-hero"
+        data-art-composition={composition}
+        data-art-layout={profile?.heroLayout}
+        data-art-mobile={profile?.heroLayoutMobile}
+        data-art-image="yes"
+        data-art-wordmark="no"
+        data-art-name={
+          nameLength > 22 ? "long" : nameLength > 12 ? "mid" : "short"
+        }
+      >
+        {stage && (
           <figure className="pb-art-media" data-pb-slot={LAYOUT_SLOT.heroMedia}>
             <img
               src={hero.imageUrl}
@@ -186,17 +155,75 @@ function EntryHero({
               fetchPriority="high"
             />
           </figure>
-          {secondary && (
-            <figure className="pb-art-secondary">
-              <img src={secondary} alt="" loading="lazy" />
-            </figure>
+        )}
+        <div className="pb-art-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+          {(stage ? today : today || place) && (
+            <p className="pb-art-today">
+              {stage ? today : [today, place].filter(Boolean).join(" · ")}
+            </p>
           )}
-          {data.google && (
-            <RatingMark google={data.google} className="pb-art-sticker" />
+          {stage ? (
+            <>
+              <p className="pb-art-category">
+                {[data.businessCategory, place].filter(Boolean).join(" · ")}
+              </p>
+              <h1 className="pb-art-name">{data.businessName}</h1>
+              <p className="pb-art-intro">{rich(hero.headline)}</p>
+            </>
+          ) : (
+            <>
+              <h1
+                data-art-long={
+                  stripMarks(hero.headline).length > 65 ? "yes" : undefined
+                }
+              >
+                {rich(hero.headline)}
+              </h1>
+              {hero.subheadline && (
+                <p className="pb-art-intro">{rich(hero.subheadline)}</p>
+              )}
+            </>
           )}
+          <div className="pb-art-entry-row">
+            {stage && data.google && (
+              <RatingMark google={data.google} className="pb-art-score" />
+            )}
+            <EntryActions hero={hero} phone={contact?.phone} />
+          </div>
         </div>
+        {!stage && (
+          <div className="pb-art-cards">
+            <figure
+              className="pb-art-media"
+              data-pb-slot={LAYOUT_SLOT.heroMedia}
+            >
+              <img
+                src={hero.imageUrl}
+                alt=""
+                loading="eager"
+                fetchPriority="high"
+              />
+            </figure>
+            {secondary && (
+              <figure className="pb-art-secondary">
+                <img src={secondary} alt="" loading="lazy" />
+              </figure>
+            )}
+            {data.google && (
+              <RatingMark google={data.google} className="pb-art-sticker" />
+            )}
+          </div>
+        )}
+      </section>
+      {quote && (
+        <aside className="pb-entry-quote" data-entry={composition}>
+          <blockquote>
+            <p>„{quote.text}“</p>
+            <footer>{quote.author} · Google-Bewertung</footer>
+          </blockquote>
+        </aside>
       )}
-    </section>
+    </>
   );
 }
 

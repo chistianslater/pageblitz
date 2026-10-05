@@ -21,9 +21,7 @@ export type EntryComposition = "stage" | "colorfield";
  * Gilt der neue Einstieg? Nur solange das Hero-Layout dazu passt — wählt der
  * Kunde im Studio ein anderes Layout, greift wieder der Pack-Look.
  */
-export function activeEntry(
-  data: WebsiteDataV2
-): EntryComposition | undefined {
+export function activeEntry(data: WebsiteDataV2): EntryComposition | undefined {
   if (data.designRevision !== 2) return undefined;
   const profile = data.designProfile;
   const hero = data.sections.find(s => s.type === "hero");
@@ -124,6 +122,12 @@ ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-head h2{font-size:cla
 ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:clamp(32px,6vw,96px)}
 ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-list li{grid-template-columns:minmax(0,1fr) auto;border-bottom:1.5px dotted color-mix(in srgb,var(--pb-ink) 30%,transparent)}
 ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-index{display:none}
+${S} .pb-entry-quote{box-sizing:border-box;padding:clamp(72px,9vw,136px) ${INLINE};text-align:center}
+${S} .pb-entry-quote blockquote{margin:0 auto;max-width:none;border:0;padding:0}
+${S} .pb-entry-quote p{margin:0;font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,500);font-size:clamp(1.8rem,3.6vw,3.4rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance;max-width:24ch;margin-inline:auto}
+${S} .pb-entry-quote footer{margin-top:22px;font:500 12px/1.4 var(--pb-font-body);letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+${S} .pb-entry-quote[data-entry="stage"]{background:#16120f;color:#f7f2eb}
+${S} .pb-entry-quote[data-entry="colorfield"]{background:var(--pb-canvas);color:var(--pb-ink);border-bottom:1px solid var(--pb-line)}
 /* Die Layout-Varianten (designProfileCss, mit !important) gelten den
    Pack-Listen; die Einstiegsliste hat ihre eigene Ordnung. */
 ${S} #leistungen.pb-entry-services .pb-entry-list[data-pb-slot]{display:block!important;gap:0!important;background:transparent!important}

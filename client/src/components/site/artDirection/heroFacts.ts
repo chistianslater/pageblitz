@@ -107,3 +107,52 @@ export function telHref(phone: string | undefined): string | undefined {
   const digits = phone.trim().replace(/(?!^\+)\D/g, "");
   return digits.replace(/\D/g, "").length >= 6 ? `tel:${digits}` : undefined;
 }
+
+const QUOTE_MAX = 180;
+const QUOTE_MIN = 25;
+/** Einschränkungen gehören nicht ins Aushängeschild, auch nicht bei 5 Sternen. */
+const RESERVATION =
+  /\b(leider|aber|schade|nicht|kein\w*|enttäusch\w*|trotzdem|allerdings|nur)\b/i;
+const EMOJI = /\p{Extended_Pictographic}/u;
+
+/** Vollständiger Text oder die ganzen Sätze vor Googles „…". */
+function quotable(text: string): string | undefined {
+  const trimmed = text.trim();
+  const truncated = /(…|\.\.\.)$/.test(trimmed);
+  if (!truncated && trimmed.length <= QUOTE_MAX) return trimmed;
+  const sentences = trimmed.match(/[^.!?…]+[.!?]+/g) ?? [];
+  let quote = "";
+  for (const sentence of sentences) {
+    const next = (quote + sentence).trim();
+    if (next.length > QUOTE_MAX) break;
+    quote = next;
+  }
+  return quote || undefined;
+}
+
+/** Je näher an 60–140 Zeichen und je ruhiger der Ton, desto besser. */
+function quoteScore(text: string): number {
+  const length = text.length;
+  const lengthPenalty =
+    length < 60 ? 60 - length : length > 140 ? length - 140 : 0;
+  const shouting = (text.match(/!/g)?.length ?? 0) > 1 ? 30 : 0;
+  return lengthPenalty + shouting;
+}
+
+/**
+ * Wörtliches Zitat für das Band unter dem Einstieg. Gekürzt wird nur an
+ * Satzgrenzen, nie umformuliert, nie aus mehreren Bewertungen gemischt.
+ * Bewertungen mit Einschränkung oder Emoji scheiden aus.
+ */
+export function pickReviewQuote(
+  items: { author: string; text: string; rating?: number }[] | undefined
+): { author: string; text: string } | undefined {
+  const candidates = (items ?? []).flatMap(item => {
+    if (item.rating !== undefined && item.rating < 5) return [];
+    const text = quotable(item.text);
+    if (!text || text.length < QUOTE_MIN) return [];
+    if (RESERVATION.test(text) || EMOJI.test(text)) return [];
+    return [{ author: item.author, text }];
+  });
+  return candidates.sort((a, b) => quoteScore(a.text) - quoteScore(b.text))[0];
+}

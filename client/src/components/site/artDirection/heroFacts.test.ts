@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { shortHours, streetLine, telHref, todayLine } from "./heroFacts";
+import {
+  pickReviewQuote,
+  shortHours,
+  streetLine,
+  telHref,
+  todayLine,
+} from "./heroFacts";
 
 // Dienstag, 6. Oktober 2026, 23:30 UTC = Mittwoch 01:30 in Berlin.
 const TUESDAY_NIGHT_UTC = new Date("2026-10-06T23:30:00Z");
@@ -68,5 +74,71 @@ describe("telHref", () => {
   });
   it("verwirft Unsinn", () => {
     expect(telHref("n/a")).toBeUndefined();
+  });
+});
+
+describe("pickReviewQuote", () => {
+  it("nimmt eine kurze Bewertung unverändert", () => {
+    expect(
+      pickReviewQuote([
+        {
+          author: "C. I.",
+          text: "Die Chefin hat tolle Arbeit geleistet.",
+          rating: 5,
+        },
+      ])
+    ).toEqual({
+      author: "C. I.",
+      text: "Die Chefin hat tolle Arbeit geleistet.",
+    });
+  });
+
+  it("kürzt gekappte Bewertungen auf ganze Sätze", () => {
+    expect(
+      pickReviewQuote([
+        {
+          author: "B. B.",
+          text: "Ich bin sehr zufrieden. Das Team ist sehr freundlich. Schnitt sowie Farbe sind wunderschön geworden. Ein Besuch …",
+          rating: 5,
+        },
+      ])?.text
+    ).toBe(
+      "Ich bin sehr zufrieden. Das Team ist sehr freundlich. Schnitt sowie Farbe sind wunderschön geworden."
+    );
+  });
+
+  it("meidet Einschränkungen und Emojis, auch bei 5 Sternen", () => {
+    expect(
+      pickReviewQuote([
+        {
+          author: "Y",
+          text: "Check in und Bar waren super. Leider gab es keinen Joghurt.",
+          rating: 5,
+        },
+        {
+          author: "A",
+          text: "Super toller Laden ❤️ immer gerne wieder.",
+          rating: 5,
+        },
+        {
+          author: "C. I.",
+          text: "Die Chefin hat tolle Arbeit geleistet. Angenehme Atmosphäre im Salon.",
+          rating: 5,
+        },
+      ])?.author
+    ).toBe("C. I.");
+  });
+
+  it("überspringt schwächere und zu kurze Bewertungen", () => {
+    expect(
+      pickReviewQuote([
+        {
+          author: "A",
+          text: "Ganz okay, aber zu teuer für das Ergebnis.",
+          rating: 3,
+        },
+        { author: "B", text: "Top!", rating: 5 },
+      ])
+    ).toBeUndefined();
   });
 });
