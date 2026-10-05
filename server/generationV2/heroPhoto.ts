@@ -49,9 +49,7 @@ export async function measurePhotos(
       try {
         const response = await fetchImpl(url, { signal: controller.signal });
         if (!response.ok) return null;
-        const size = await readSize(
-          Buffer.from(await response.arrayBuffer())
-        );
+        const size = await readSize(Buffer.from(await response.arrayBuffer()));
         return size.width > 0 && size.height > 0 ? { url, ...size } : null;
       } catch {
         return null;

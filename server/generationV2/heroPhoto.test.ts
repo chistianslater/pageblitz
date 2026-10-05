@@ -85,7 +85,10 @@ describe("keepEntryComposition", () => {
       { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
       { heroLandscape: true, extraPhotos: 0 }
     );
-    const next = { ...DEFAULT_DESIGN_PROFILE, composition: "editorial" as const };
+    const next = {
+      ...DEFAULT_DESIGN_PROFILE,
+      composition: "editorial" as const,
+    };
     expect(keepEntryComposition(stage, next)).toMatchObject({
       composition: "stage",
       heroLayout: "banner",
