@@ -1,4 +1,7 @@
-import { deriveArtDirectedProfile } from "../../shared/stylePacks/artDirection";
+import {
+  deriveArtDirectedProfile,
+  keepEntryComposition,
+} from "../../shared/stylePacks/artDirection";
 import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { TRPCError } from "@trpc/server";
 import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
@@ -45,14 +48,17 @@ export function applyStylePack(
   doc: WebsiteDataV2,
   packId: PackId
 ): WebsiteDataV2 {
-  const designProfile = (
-    doc.designRevision !== 1 ? deriveArtDirectedProfile : deriveDesignProfile
-  )({
-    stylePackId: packId,
-    businessName: doc.businessName,
-    businessCategory: doc.businessCategory,
-    sections: doc.sections,
-  });
+  const designProfile = keepEntryComposition(
+    doc.designProfile,
+    (doc.designRevision !== 1 ? deriveArtDirectedProfile : deriveDesignProfile)(
+      {
+        stylePackId: packId,
+        businessName: doc.businessName,
+        businessCategory: doc.businessCategory,
+        sections: doc.sections,
+      }
+    )
+  );
   // Ein Wechsel bringt die Farbwelt und Schrift mit, die das neue Pack bei
   // einer Neuerstellung bekäme (inkl. Imbiss-Stimmung für Gusto). Vorher
   // blieben die Overrides des alten Packs stehen — Grau aus Klarwerk auf

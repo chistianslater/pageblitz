@@ -10,6 +10,7 @@ import {
 } from "../../../../../shared/stylePacks/artDirection";
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
+import { streetLine, telHref, todayLine } from "./heroFacts";
 
 type GoogleRating = NonNullable<WebsiteDataV2["google"]>;
 
@@ -45,18 +46,182 @@ function HeroRating({ google }: { google: GoogleRating }) {
 /** Server-renderable composition. Only genuine document content is rendered.
  * Layout and image hooks stay compatible with the studio and SSR enhancer.
  */
-export function ArtDirectedHero({
+/** Bewertung als großes Zeichen (Bühne) bzw. runder Aufkleber (Farbfläche). */
+function RatingMark({
+  google,
+  className,
+}: {
+  google: GoogleRating;
+  className: string;
+}) {
+  const count = google.reviewCount.toLocaleString("de-DE");
+  const label =
+    google.reviewCount === 1 ? "Google-Bewertung" : "Google-Bewertungen";
+  return (
+    <p
+      className={className}
+      aria-label={`${formatHeroRating(google.rating)} von 5 Sternen bei ${count} ${label}`}
+    >
+      <b aria-hidden="true">{formatHeroRating(google.rating)}</b>
+      <span aria-hidden="true">
+        <span className="pb-art-stars">★★★★★</span>
+        {count} {label}
+      </span>
+    </p>
+  );
+}
+
+/** Hauptaktion plus Anruf — die zwei Dinge, für die man die Seite öffnet. */
+function EntryActions({
+  hero,
+  phone,
+}: {
+  hero: SectionOf<"hero">;
+  phone?: string;
+}) {
+  const tel = telHref(phone);
+  if (!hero.ctaText && !tel) return null;
+  return (
+    <div className="pb-art-actions">
+      {hero.ctaText && (
+        <a className="pb-art-cta" href={hero.ctaHref ?? "#kontakt"}>
+          {hero.ctaText}
+          <ArrowUpRight size={19} aria-hidden="true" />
+        </a>
+      )}
+      {tel && (
+        <a className="pb-art-call" href={tel}>
+          {phone}
+        </a>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Einstiege „Bühne" und „Farbfläche" (2026-10-05). Getrennt vom bisherigen
+ * Hero, damit dessen Markup für bestehende Seiten unverändert bleibt.
+ */
+function EntryHero({
   data,
   hero,
+  composition,
+  secondary,
+  now,
 }: {
   data: WebsiteDataV2;
   hero: SectionOf<"hero">;
+  composition: "stage" | "colorfield";
+  secondary?: string;
+  now: Date;
+}) {
+  const profile = data.designProfile;
+  const contact = data.sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const today = todayLine(contact?.openingHours, now);
+  const place = [streetLine(contact?.street), contact?.city]
+    .filter(Boolean)
+    .join(" · ");
+  const nameLength = data.businessName.length;
+  const stage = composition === "stage";
+  return (
+    <section
+      id="start"
+      className="pb-art-hero"
+      data-art-composition={composition}
+      data-art-layout={profile?.heroLayout}
+      data-art-mobile={profile?.heroLayoutMobile}
+      data-art-image="yes"
+      data-art-wordmark="no"
+      data-art-name={nameLength > 22 ? "long" : nameLength > 12 ? "mid" : "short"}
+    >
+      {stage && (
+        <figure className="pb-art-media" data-pb-slot={LAYOUT_SLOT.heroMedia}>
+          <img src={hero.imageUrl} alt="" loading="eager" fetchPriority="high" />
+        </figure>
+      )}
+      <div className="pb-art-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
+        {(stage ? today : today || place) && (
+          <p className="pb-art-today">
+            {stage ? today : [today, place].filter(Boolean).join(" · ")}
+          </p>
+        )}
+        {stage ? (
+          <>
+            <p className="pb-art-category">
+              {[data.businessCategory, place].filter(Boolean).join(" · ")}
+            </p>
+            <h1 className="pb-art-name">{data.businessName}</h1>
+            <p className="pb-art-intro">{rich(hero.headline)}</p>
+          </>
+        ) : (
+          <>
+            <h1
+              data-art-long={
+                stripMarks(hero.headline).length > 65 ? "yes" : undefined
+              }
+            >
+              {rich(hero.headline)}
+            </h1>
+            {hero.subheadline && (
+              <p className="pb-art-intro">{rich(hero.subheadline)}</p>
+            )}
+          </>
+        )}
+        <div className="pb-art-entry-row">
+          {stage && data.google && (
+            <RatingMark google={data.google} className="pb-art-score" />
+          )}
+          <EntryActions hero={hero} phone={contact?.phone} />
+        </div>
+      </div>
+      {!stage && (
+        <div className="pb-art-cards">
+          <figure className="pb-art-media" data-pb-slot={LAYOUT_SLOT.heroMedia}>
+            <img
+              src={hero.imageUrl}
+              alt=""
+              loading="eager"
+              fetchPriority="high"
+            />
+          </figure>
+          {secondary && (
+            <figure className="pb-art-secondary">
+              <img src={secondary} alt="" loading="lazy" />
+            </figure>
+          )}
+          {data.google && (
+            <RatingMark google={data.google} className="pb-art-sticker" />
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function ArtDirectedHero({
+  data,
+  hero,
+  now = new Date(),
+}: {
+  data: WebsiteDataV2;
+  hero: SectionOf<"hero">;
+  now?: Date;
 }) {
   const profile = data.designProfile;
   const layout = profile?.heroLayout;
   const hidden = profile?.hiddenElements?.includes("hero-media");
   const hasImage = Boolean(hero.imageUrl) && !hidden;
   const preferred = artComposition(data);
+  // Die neuen Einstiege gelten, solange das Layout zu ihnen passt. Wählt der
+  // Kunde im Studio ein anderes Hero-Layout, greift die alte Zuordnung.
+  const entry =
+    hasImage &&
+    ((preferred === "stage" && layout === "banner") ||
+      (preferred === "colorfield" && layout === "collage"))
+      ? preferred
+      : undefined;
   const composition = !hasImage
     ? "statement"
     : layout === "centered" || layout === "compact"
@@ -79,6 +244,26 @@ export function ArtDirectedHero({
           about?.imageUrl !== hero.imageUrl
         ? about?.imageUrl
         : undefined;
+  if (entry) {
+    const gallery = data.sections.find(
+      (s): s is SectionOf<"gallery"> => s.type === "gallery"
+    );
+    // Eine bewusst leere Kartenwahl im Studio bleibt leer.
+    const cardImage =
+      profile?.heroCollageImages !== undefined
+        ? secondary
+        : (secondary ??
+          gallery?.images.find(img => img.url !== hero.imageUrl)?.url);
+    return (
+      <EntryHero
+        data={data}
+        hero={hero}
+        composition={entry}
+        secondary={cardImage}
+        now={now}
+      />
+    );
+  }
   const wordmark =
     hasImage &&
     ART_DIRECTIONS[data.stylePackId].emphasis === "expressive" &&

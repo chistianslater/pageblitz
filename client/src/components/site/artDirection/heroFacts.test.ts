@@ -1,0 +1,72 @@
+import { describe, expect, it } from "vitest";
+import { shortHours, streetLine, telHref, todayLine } from "./heroFacts";
+
+// Dienstag, 6. Oktober 2026, 23:30 UTC = Mittwoch 01:30 in Berlin.
+const TUESDAY_NIGHT_UTC = new Date("2026-10-06T23:30:00Z");
+const TUESDAY_NOON = new Date("2026-10-06T10:00:00Z");
+const MONDAY = new Date("2026-10-05T10:00:00Z");
+
+const HOURS = [
+  { day: "Montag", hours: "Geschlossen" },
+  { day: "Dienstag", hours: "09:00–18:00 Uhr" },
+  { day: "Mittwoch", hours: "08:30 - 12:00" },
+];
+
+describe("todayLine", () => {
+  it("zeigt die Zeit des heutigen Tags verkürzt", () => {
+    expect(todayLine(HOURS, TUESDAY_NOON)).toBe("Heute 9–18 Uhr");
+  });
+
+  it("rechnet mit deutscher Zeit, nicht mit Serverzeit", () => {
+    expect(todayLine(HOURS, TUESDAY_NIGHT_UTC)).toBe("Heute 8:30–12 Uhr");
+  });
+
+  it("meldet Ruhetage", () => {
+    expect(todayLine(HOURS, MONDAY)).toBe("Heute geschlossen");
+  });
+
+  it("versteht Bereiche wie Mo–Fr", () => {
+    expect(
+      todayLine([{ day: "Mo–Sa", hours: "10:00–19:00" }], TUESDAY_NOON)
+    ).toBe("Heute 10–19 Uhr");
+  });
+
+  it("zeigt Platzhalter-Zeiten nie an", () => {
+    expect(
+      todayLine([{ day: "Mo–Fr", hours: "09:00–17:00" }], TUESDAY_NOON)
+    ).toBeUndefined();
+  });
+
+  it("bleibt ohne Eintrag für heute still", () => {
+    expect(
+      todayLine([{ day: "Samstag", hours: "9–14" }], TUESDAY_NOON)
+    ).toBeUndefined();
+    expect(todayLine(undefined, TUESDAY_NOON)).toBeUndefined();
+  });
+});
+
+describe("shortHours", () => {
+  it("lässt Text ohne Ziffern unverändert", () => {
+    expect(shortHours("nach Vereinbarung")).toBe("nach Vereinbarung");
+  });
+});
+
+describe("streetLine", () => {
+  it("entfernt den vorangestellten Firmennamen", () => {
+    expect(streetLine("Friseurhaarem, Ludgeripl. 19")).toBe("Ludgeripl. 19");
+  });
+  it("lässt normale Straßen stehen", () => {
+    expect(streetLine("Hauptstraße 5")).toBe("Hauptstraße 5");
+    expect(streetLine("  ")).toBeUndefined();
+  });
+});
+
+describe("telHref", () => {
+  it("baut einen wählbaren Link", () => {
+    expect(telHref("0203 7399646")).toBe("tel:02037399646");
+    expect(telHref("+49 (0) 2871 / 12 34")).toBe("tel:+49028711234");
+  });
+  it("verwirft Unsinn", () => {
+    expect(telHref("n/a")).toBeUndefined();
+  });
+});

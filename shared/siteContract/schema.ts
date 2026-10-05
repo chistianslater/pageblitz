@@ -555,7 +555,14 @@ export const DesignProfileSchema = z
   .object({
     version: z.literal(1),
     composition: z
-      .enum(["editorial", "portrait", "panorama", "statement"])
+      .enum([
+        "editorial",
+        "portrait",
+        "panorama",
+        "statement",
+        "stage",
+        "colorfield",
+      ])
       .optional(),
     heroLayout: z.enum(HERO_LAYOUTS),
     servicesLayout: z.enum(SERVICES_LAYOUTS),

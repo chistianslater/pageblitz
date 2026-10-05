@@ -42,6 +42,13 @@ export const ART_COMPOSITIONS = [
   "portrait",
   "panorama",
   "statement",
+  // Einstiege nach den Referenzen vom 2026-10-05 (Larry King, Roberta's,
+  // Monte, Lamanna's): „stage" = Foto vollflächig, Name groß, Bewertung
+  // groß; „colorfield" = Pack-Farbe flächig mit gestapelten Fotokarten.
+  // Nur neue Generierungen bekommen sie (withEntryComposition) — kein Pack
+  // hat sie als Standard, bestehende Seiten behalten ihre Komposition.
+  "stage",
+  "colorfield",
 ] as const;
 export type ArtComposition = (typeof ART_COMPOSITIONS)[number];
 type Direction = {
@@ -129,7 +136,84 @@ const RECIPES: Record<ArtComposition, Omit<DesignProfile, "seed">> = {
     density: "airy",
     imageTreatment: "natural",
   },
+  stage: {
+    version: 1,
+    heroLayout: "banner",
+    servicesLayout: "list",
+    aboutLayout: "image-right",
+    galleryLayout: "mosaic",
+    density: "airy",
+    imageTreatment: "bleed",
+  },
+  colorfield: {
+    version: 1,
+    heroLayout: "collage",
+    servicesLayout: "list",
+    aboutLayout: "image-left",
+    galleryLayout: "grid",
+    density: "airy",
+    imageTreatment: "framed",
+  },
 };
+
+/** Ab dieser Breite trägt ein Querformat-Foto die volle Bühne. */
+export const STAGE_MIN_WIDTH = 1000;
+/** Breite/Höhe, ab der ein Foto als Querformat gilt. */
+export const STAGE_MIN_RATIO = 1.25;
+
+export type EntryPhotos = {
+  /** Das Hero-Foto ist ein großes Querformat (gemessen bei der Generierung). */
+  heroLandscape: boolean;
+  /** Zahl der echten Fotos neben dem Hero-Bild (Über uns, Galerie). */
+  extraPhotos: number;
+};
+
+/**
+ * Wählt den Einstieg nach dem Material: Ein großes Querformat bekommt die
+ * Bühne, Hochformat-Handyfotos (der Normalfall bei Google-Profilen) die
+ * Farbfläche mit zwei Fotokarten. Ohne Hero-Foto bleibt die Typo-Komposition.
+ */
+export function withEntryComposition(
+  profile: DesignProfile,
+  photos: EntryPhotos
+): DesignProfile {
+  if (profile.composition === "statement") return profile;
+  const composition: ArtComposition | undefined = photos.heroLandscape
+    ? "stage"
+    : photos.extraPhotos >= 1
+      ? "colorfield"
+      : undefined;
+  if (!composition) return profile;
+  const recipe = RECIPES[composition];
+  return {
+    ...profile,
+    composition,
+    heroLayout: recipe.heroLayout,
+    aboutLayout: recipe.aboutLayout,
+    imageTreatment: recipe.imageTreatment,
+    heroLayoutMobile: recipe.heroLayout,
+  };
+}
+
+/**
+ * Designwechsel im Studio leitet das Profil neu ab. Der Einstieg hängt aber
+ * an den Fotos, nicht am Pack — er überlebt den Wechsel.
+ */
+export function keepEntryComposition(
+  previous: DesignProfile | undefined,
+  next: DesignProfile
+): DesignProfile {
+  const composition = previous?.composition;
+  if (composition !== "stage" && composition !== "colorfield") return next;
+  return {
+    ...next,
+    composition,
+    heroLayout: previous!.heroLayout,
+    heroLayoutMobile: previous!.heroLayoutMobile,
+    aboutLayout: previous!.aboutLayout,
+    imageTreatment: previous!.imageTreatment,
+  };
+}
 
 /** Ignore color/font changes: a recolored composition still looks like a duplicate. */
 export function compositionFingerprint(

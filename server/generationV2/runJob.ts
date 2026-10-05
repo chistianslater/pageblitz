@@ -4,6 +4,8 @@ import {
   CURRENT_DESIGN_REVISION,
   deriveArtDirectedProfile,
   compositionFingerprint,
+  withEntryComposition,
+  type EntryPhotos,
 } from "../../shared/stylePacks/artDirection";
 import { designIndustryKey } from "../../shared/stylePacks/categoryAliases";
 import {
@@ -26,6 +28,7 @@ import {
 } from "../industryImages";
 import { generateIndustryImages } from "./aiStockImages";
 import { crawlExistingSite } from "../gmb/siteCrawl";
+import { withStagePhoto } from "./heroPhoto";
 import { generateSiteContent } from "./generateSiteContent";
 import { selectPack } from "./selectPack";
 import { buildV2GenerationFacts } from "./facts";
@@ -107,6 +110,24 @@ export interface V2Images {
    * Galerie-Sektion dasteht. Nie Google-URLs mit API-Key.
    */
   gallery?: string[];
+  /**
+   * Hero-Foto ist ein großes Querformat (withStagePhoto). Steuert den
+   * Einstieg „Bühne" vs. „Farbfläche"; nie im Dokument gespeichert.
+   */
+  heroLandscape?: boolean;
+}
+
+/** Echte Fotos neben dem Hero-Bild — die Farbfläche braucht mindestens eins. */
+function entryPhotos(images: V2Images): EntryPhotos {
+  const extra = new Set(
+    [images.about, ...(images.gallery ?? [])].filter(
+      (u): u is string => Boolean(u) && u !== images.hero
+    )
+  );
+  return {
+    heroLandscape: images.heroLandscape === true,
+    extraPhotos: extra.size,
+  };
 }
 
 /**
@@ -202,7 +223,10 @@ export function buildInterimV2Doc(
     ...interim,
     ...pickArtTheme(packId, businessName, category),
     designStand: AKTUELLER_DESIGN_STAND,
-    designProfile: deriveArtDirectedProfile(interim),
+    designProfile: withEntryComposition(
+      deriveArtDirectedProfile(interim),
+      entryPhotos(images)
+    ),
   });
 }
 
@@ -366,11 +390,8 @@ async function runWebsiteGenerationV2(
   const existingSitePromise = business.website
     ? crawlExistingSite(business.website)
     : Promise.resolve(null);
-  const images = await resolveV2Images(
-    business,
-    category,
-    industryKey,
-    website.id
+  const images = await withStagePhoto(
+    await resolveV2Images(business, category, industryKey, website.id)
   );
   const tImages = Date.now();
 
@@ -419,15 +440,18 @@ async function runWebsiteGenerationV2(
         err
       );
     }
-    designProfile = deriveArtDirectedProfile(
-      {
-        stylePackId: packId,
-        businessName: interim.businessName,
-        businessCategory: interim.businessCategory,
-        sections: interim.sections,
-      },
-      occupied,
-      recipeOffset
+    designProfile = withEntryComposition(
+      deriveArtDirectedProfile(
+        {
+          stylePackId: packId,
+          businessName: interim.businessName,
+          businessCategory: interim.businessCategory,
+          sections: interim.sections,
+        },
+        occupied,
+        recipeOffset
+      ),
+      entryPhotos(images)
     );
   }
   interim = WebsiteDataV2Schema.parse({

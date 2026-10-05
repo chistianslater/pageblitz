@@ -86,7 +86,13 @@ export type ImageTreatment = (typeof IMAGE_TREATMENTS)[number];
 export interface DesignProfile {
   version: 1;
   /** Curated whole-page recipe, used only by design revision 2. */
-  composition?: "editorial" | "portrait" | "panorama" | "statement";
+  composition?:
+    | "editorial"
+    | "portrait"
+    | "panorama"
+    | "statement"
+    | "stage"
+    | "colorfield";
   heroLayout: HeroLayout;
   servicesLayout: ServicesLayout;
   aboutLayout: AboutLayout;

@@ -27,6 +27,7 @@ import {
   ART_DIRECTIONS,
   artPalette,
   deriveArtDirectedProfile,
+  keepEntryComposition,
 } from "../../../../shared/stylePacks/artDirection";
 import { ART_DIRECTION_CSS } from "./artDirection/artDirectionCss";
 import { EXTRA_SECTIONS_CSS } from "./extraSections";
@@ -161,14 +162,17 @@ export const SiteRenderer: React.FC<{
       ? {
           ...data,
           stylePackId: packOverride,
-          designProfile: (data.designRevision === 2
-            ? deriveArtDirectedProfile
-            : deriveDesignProfile)({
-            stylePackId: packOverride,
-            businessName: data.businessName,
-            businessCategory: data.businessCategory,
-            sections: data.sections,
-          }),
+          designProfile: keepEntryComposition(
+            data.designProfile,
+            (data.designRevision === 2
+              ? deriveArtDirectedProfile
+              : deriveDesignProfile)({
+              stylePackId: packOverride,
+              businessName: data.businessName,
+              businessCategory: data.businessCategory,
+              sections: data.sections,
+            })
+          ),
         }
       : data;
   const rootRef = useRef<HTMLDivElement>(null);
