@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { pickStagePhoto, withStagePhoto, type MeasureDeps } from "./heroPhoto";
+import {
+  curateImages,
+  parseVisionRatings,
+  pickStagePhoto,
+  withStagePhoto,
+  type MeasureDeps,
+  type PhotoCheck,
+  type VisionRating,
+} from "./heroPhoto";
 import {
   keepEntryComposition,
   withEntryComposition,
@@ -120,5 +128,128 @@ describe("withEntryComposition", () => {
     expect(
       withEntryComposition(statement, { heroLandscape: true, extraPhotos: 3 })
     ).toBe(statement);
+  });
+});
+
+describe("Fotoprüfung", () => {
+  const check = (
+    url: string,
+    width: number,
+    height: number,
+    vision?: Partial<VisionRating>,
+    mirrored = false
+  ): PhotoCheck => ({
+    url,
+    width,
+    height,
+    mirrored,
+    ...(vision
+      ? {
+          vision: {
+            motiv: "innenraum",
+            overlay: false,
+            collage: false,
+            quality: 4,
+            heroScore: 4,
+            ...vision,
+          },
+        }
+      : {}),
+  });
+
+  it("liest die Modellantwort streng und verwirft Unbekanntes", () => {
+    const parsed = parseVisionRatings(
+      '```json\n{"photos":[{"i":1,"motiv":"arbeit","overlay":true,"collage":false,"qualitaet":9,"hero":"2"},{"i":7}]}\n```',
+      2
+    );
+    expect(parsed?.[0]).toBeNull();
+    expect(parsed?.[1]).toEqual({
+      motiv: "arbeit",
+      overlay: true,
+      collage: false,
+      quality: 5,
+      heroScore: 2,
+    });
+    expect(parseVisionRatings("kein json", 2)).toBeNull();
+  });
+
+  it("sortiert Overlay, Collage und Spiegelung überall aus", () => {
+    const result = curateImages(
+      {
+        hero: "insta.jpg",
+        about: "collage.jpg",
+        gallery: ["insta.jpg", "gut.jpg", "spiegel.jpg", "auch-gut.jpg"],
+      },
+      [
+        check("insta.jpg", 1200, 1600, { overlay: true, heroScore: 5 }),
+        check("collage.jpg", 1200, 1000, { collage: true }),
+        check("gut.jpg", 1200, 1600, { heroScore: 5, quality: 5 }),
+        check("spiegel.jpg", 1200, 1600, undefined, true),
+        check("auch-gut.jpg", 1200, 1600, { heroScore: 3 }),
+      ]
+    );
+    expect(result.hero).toBe("gut.jpg");
+    expect(result.about).toBe("auch-gut.jpg");
+    expect(result.gallery).toEqual(["gut.jpg", "auch-gut.jpg"]);
+    expect(result.heroLandscape).toBe(false);
+  });
+
+  it("gibt dem Himmel keine Bühne, der Werkstatt schon", () => {
+    const sky = curateImages(
+      { hero: "himmel.jpg", gallery: ["werkstatt.jpg"] },
+      [
+        check("himmel.jpg", 2400, 1600, { motiv: "landschaft", heroScore: 2 }),
+        check("werkstatt.jpg", 1200, 1600, { motiv: "arbeit", heroScore: 4 }),
+      ]
+    );
+    expect(sky).toMatchObject({ hero: "werkstatt.jpg", heroLandscape: false });
+
+    const shop = curateImages({ hero: "himmel.jpg", gallery: ["laden.jpg"] }, [
+      check("himmel.jpg", 2400, 1600, { motiv: "landschaft", heroScore: 2 }),
+      check("laden.jpg", 1600, 1000, { motiv: "innenraum", heroScore: 5 }),
+    ]);
+    expect(shop).toMatchObject({ hero: "laden.jpg", heroLandscape: true });
+  });
+
+  it("lässt alles stehen, wenn jedes Foto Mängel hat", () => {
+    const images = { hero: "a.jpg", gallery: ["a.jpg"] };
+    const result = curateImages(images, [
+      check("a.jpg", 1200, 1600, { overlay: true }),
+    ]);
+    expect(result.hero).toBe("a.jpg");
+    expect(result.gallery).toEqual(["a.jpg"]);
+  });
+
+  it("nutzt die Bewertung des Modells, wenn es erreichbar ist", async () => {
+    const result = await withStagePhoto(
+      { hero: "hoch.jpg", gallery: ["hoch.jpg", "quer.jpg", "quadrat.jpg"] },
+      {
+        ...deps,
+        readMirror: async () => 60,
+        makeThumb: async buffer => `thumb:${buffer.toString()}`,
+        rate: async thumbs =>
+          thumbs.map(t =>
+            t === "thumb:quer.jpg"
+              ? {
+                  motiv: "aussen",
+                  overlay: true,
+                  collage: false,
+                  quality: 4,
+                  heroScore: 5,
+                }
+              : {
+                  motiv: "ergebnis",
+                  overlay: false,
+                  collage: false,
+                  quality: t === "thumb:quadrat.jpg" ? 5 : 3,
+                  heroScore: 4,
+                }
+          ),
+      },
+      "Friseursalon"
+    );
+    expect(result.hero).toBe("quadrat.jpg");
+    expect(result.heroLandscape).toBe(false);
+    expect(result.gallery).toEqual(["hoch.jpg", "quadrat.jpg"]);
   });
 });

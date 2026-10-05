@@ -419,7 +419,9 @@ async function runWebsiteGenerationV2(
     ? crawlExistingSite(business.website)
     : Promise.resolve(null);
   const images = await withStagePhoto(
-    await resolveV2Images(business, category, industryKey, website.id)
+    await resolveV2Images(business, category, industryKey, website.id),
+    {},
+    category
   );
   const tImages = Date.now();
 

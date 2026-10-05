@@ -1193,7 +1193,7 @@ export const appRouter = router({
             category,
             industryKey,
             input.websiteId
-          ).then(found => withStagePhoto(found)),
+          ).then(found => withStagePhoto(found, {}, category)),
           business.website
             ? crawlExistingSite(business.website)
             : Promise.resolve(null),
