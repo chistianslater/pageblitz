@@ -10,6 +10,7 @@ import type {
   WebsiteDataV2,
 } from "../../shared/siteContract/types";
 import { buildContentPrompt } from "./contentPrompt";
+import { streetLine } from "../../client/src/components/site/artDirection/heroFacts";
 import { llmComplete } from "./llmClient";
 import { jsonFromLlm } from "./jsonFromLlm";
 import {
@@ -169,7 +170,10 @@ async function attempt(
   // 2026-09-05) — erst das JSON herausschneiden, dann parsen.
   const json = jsonFromLlm(raw);
   if (json === null) {
-    return { ok: false, error: "Antwort enthält kein vollständiges JSON-Objekt" };
+    return {
+      ok: false,
+      error: "Antwort enthält kein vollständiges JSON-Objekt",
+    };
   }
   let parsed: unknown;
   try {
@@ -424,10 +428,17 @@ export async function generateSiteContent(
 
   const constitution = getConstitution(packId);
   const sections = resolveSections(packId);
+  const street = streetLine(facts?.contact?.street);
+  const reviewExcerpts = facts?.reviews
+    ?.filter(r => r.rating >= 4)
+    .slice(0, 3)
+    .map(r => r.text.trim().slice(0, 220));
   const basePrompt = buildContentPrompt({
     constitution,
     business,
     sections,
+    ...(street ? { street } : {}),
+    ...(reviewExcerpts?.length ? { reviewExcerpts } : {}),
     ...(facts?.existingSite ? { existingSite: facts.existingSite } : {}),
     ...(facts?.editorialSummary
       ? { editorialSummary: facts.editorialSummary }

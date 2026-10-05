@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { getConstitution } from "../../shared/stylePacks";
-import { buildContentPrompt } from "./contentPrompt";
+import { buildContentPrompt, FLOSKELN } from "./contentPrompt";
 
 describe("buildContentPrompt", () => {
   const p = buildContentPrompt({
@@ -118,5 +118,47 @@ describe("buildContentPrompt — Fakten-Kontext B7 Task 3", () => {
     expect(p).toContain("Formuliere ausschließlich zur genannten Kategorie.");
     expect(p).toContain("Anwalt/Mandant/Klage");
     expect(p).toContain("Quellcode/Tickets/Deploy");
+  });
+});
+
+describe("buildContentPrompt — konkrete Texte (2026-10-05)", () => {
+  const base = {
+    constitution: getConstitution("morgenlicht"),
+    business: {
+      name: "Friseursalon Haarem",
+      category: "Friseursalon",
+      city: "Duisburg",
+    },
+    sections: ["hero", "services"] as const,
+  };
+
+  test("verbietet die Floskel-Liste ausdrücklich", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    for (const floskel of FLOSKELN) expect(p).toContain(`„${floskel}“`);
+  });
+
+  test("verlangt eine kurze, ortsbezogene Überschrift", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    expect(p).toContain("höchstens 8 Wörter");
+    expect(p).toContain("EIN Satz mit 8–20 Wörtern");
+  });
+
+  test("gibt Straße und gelobte Punkte als Fakten mit", () => {
+    const p = buildContentPrompt({
+      ...base,
+      sections: [...base.sections],
+      street: "Ludgeripl. 19",
+      reviewExcerpts: ["Die Chefin hat tolle Arbeit geleistet."],
+    });
+    expect(p).toContain("Straße: Ludgeripl. 19");
+    expect(p).toContain("## Was Kunden auf Google loben");
+    expect(p).toContain("- Die Chefin hat tolle Arbeit geleistet.");
+    expect(p).toMatch(/Fremdinhalt[\s\S]*Die Chefin/);
+  });
+
+  test("lässt beide Blöcke ohne Daten weg", () => {
+    const p = buildContentPrompt({ ...base, sections: [...base.sections] });
+    expect(p).not.toContain("Straße:");
+    expect(p).not.toContain("Was Kunden auf Google loben");
   });
 });
