@@ -1,3 +1,8 @@
+import {
+  activeEntry,
+  ENTRY_SECTIONS_CSS,
+  EntryContext,
+} from "./artDirection/entrySections";
 import { mountGalleryInteractions } from "./galleryInteractions";
 import { ensureTextContrast } from "../../../../shared/stylePacks/colorMath";
 import React, { useEffect, useRef } from "react";
@@ -353,7 +358,7 @@ export const SiteRenderer: React.FC<{
                   : DESIGN_PROFILE_CSS)
               : "") +
             (effectiveData.designRevision === 2
-              ? "\n" + ART_DIRECTION_CSS
+              ? "\n" + ART_DIRECTION_CSS + "\n" + ENTRY_SECTIONS_CSS
               : ""),
         }}
       />
@@ -374,14 +379,16 @@ export const SiteRenderer: React.FC<{
           zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
           Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
       {!currentPage && <NoticeBanner data={effectiveData} />}
-      <mod.Page
-        data={packRenderData}
-        basePath={basePath}
-        now={now}
-        navItems={navItems}
-        pageTitle={currentPage?.title}
-        sections={pageSections}
-      />
+      <EntryContext.Provider value={activeEntry(effectiveData)}>
+        <mod.Page
+          data={packRenderData}
+          basePath={basePath}
+          now={now}
+          navItems={navItems}
+          pageTitle={currentPage?.title}
+          sections={pageSections}
+        />
+      </EntryContext.Provider>
       {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
           der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der
           siteEnhancer hängt das Badge beim Laden in den Pack-Footer. */}
