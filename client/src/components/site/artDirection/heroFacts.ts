@@ -35,6 +35,23 @@ function dayIndex(token: string): number {
     : DAY_FULL.findIndex(d => d.toLocaleLowerCase("de-DE") === t);
 }
 
+/** Deckt ein Öffnungszeiten-Eintrag („Di", „Mo–Fr") den heutigen Tag ab? */
+export function coversToday(day: string, now: Date): boolean {
+  return coversDay(day, berlinWeekday(now));
+}
+
+/** Deutsche Handynummer (015x/016x/017x) — nur dann gibt es WhatsApp. */
+export function whatsappHref(phone: string | undefined): string | undefined {
+  if (!phone) return undefined;
+  const digits = phone.replace(/\D/g, "");
+  const national = digits.startsWith("49")
+    ? digits.slice(2)
+    : digits.replace(/^0/, "");
+  return /^1[5-7]\d{7,10}$/.test(national)
+    ? `https://wa.me/49${national}`
+    : undefined;
+}
+
 function coversDay(day: string, today: number): boolean {
   const range = day.trim().match(/^(\p{L}{2,})\s*[–-]\s*(\p{L}{2,})$/u);
   if (range) {

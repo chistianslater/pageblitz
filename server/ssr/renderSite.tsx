@@ -289,6 +289,7 @@ function renderPageHtml(
       slug={opts.slug}
       site={opts.site}
       islandsMode={opts.islandsMode}
+      preview={Boolean(opts.previewCta) || opts.islandsMode === "preview"}
       pathname={pathname}
     />
   );
@@ -533,6 +534,7 @@ export function renderSiteHtml(
       slug={opts.slug}
       site={opts.site}
       islandsMode={opts.islandsMode}
+      preview={Boolean(opts.previewCta) || opts.islandsMode === "preview"}
     />
   );
 

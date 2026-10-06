@@ -15,10 +15,14 @@ import type { SectionOf, WebsiteDataV2 } from "../../shared/siteContract/types";
  * Die Grenzen sind Untergrenzen, keine Zielwerte: Sie sollen Halbsätze
  * abfangen, nicht Geschwätzigkeit belohnen.
  */
+// 2026-10-06: an den Prompt angeglichen — Leistungen sind seit den
+// konkreten Texten EIN Satz (8–20 Wörter), Über uns im Salon 60–90 Wörter.
+// Mit den alten Schwellen (15/70) forderte fast jede Seite nach und das
+// Modell blähte die kurzen Texte wieder auf.
 export const MIN_WORDS = {
-  heroSubheadline: 12,
-  serviceDescription: 15,
-  aboutBody: 70,
+  heroSubheadline: 10,
+  serviceDescription: 8,
+  aboutBody: 55,
   faqAnswer: 20,
 } as const;
 

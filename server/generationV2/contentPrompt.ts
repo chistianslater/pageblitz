@@ -16,6 +16,8 @@ export interface ContentPromptArgs {
    * Reine Faktenquelle, nie wörtlich als eigene Aussage übernehmen.
    */
   reviewExcerpts?: string[];
+  /** Zeilen aus dem Branchen-Bauplan (shared/stylePacks/blueprints.ts). */
+  blueprintLines?: string[];
   /**
    * Googles Editorial Summary des Places (Spec §2.1) — kurzer redaktioneller
    * Beschreibungstext, reiner Fakten-Kontext für den Prompt.
@@ -116,6 +118,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     tone,
     street,
     reviewExcerpts,
+    blueprintLines,
   } = args;
 
   const factLines = [
@@ -180,6 +183,7 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     ``,
     `## Regeln`,
     ...constitution.llmHints.do.map(rule => `- ${rule}`),
+    ...(blueprintLines?.length ? [``, `## Branche`, ...blueprintLines] : []),
     ``,
     `## Verbote`,
     ...constitution.llmHints.dont.map(rule => `- ${rule}`),

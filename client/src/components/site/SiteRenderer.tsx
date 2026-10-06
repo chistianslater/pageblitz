@@ -1,7 +1,8 @@
 import {
-  activeEntry,
   ENTRY_SECTIONS_CSS,
   EntryContext,
+  EntryDock,
+  entryState,
 } from "./artDirection/entrySections";
 import { mountGalleryInteractions } from "./galleryInteractions";
 import { ensureTextContrast } from "../../../../shared/stylePacks/colorMath";
@@ -128,6 +129,11 @@ export const SiteRenderer: React.FC<{
    */
   islandsMode?: "live" | "preview";
   /**
+   * Vorschau/Studio (2026-10-06): Platzhalter für fehlende Extras des
+   * Branchen-Bauplans zeigen („Deine Preise", „Euer Team"). Live nie.
+   */
+  preview?: boolean;
+  /**
    * Aktueller Pfad relativ zur Kundenseite ("/" für die Startseite,
    * "/<slug>" für eine Unterseite aus `data.pages`) — Plan B6, Task 3.
    * `undefined` verhält sich wie "/" (Startseite, unverändertes Verhalten
@@ -143,6 +149,7 @@ export const SiteRenderer: React.FC<{
   slug = "",
   site,
   islandsMode,
+  preview = false,
   pathname = "/",
 }) => {
   // There are no paying customers yet: existing unversioned previews also
@@ -379,7 +386,7 @@ export const SiteRenderer: React.FC<{
           zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
           Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
       {!currentPage && <NoticeBanner data={effectiveData} />}
-      <EntryContext.Provider value={activeEntry(effectiveData)}>
+      <EntryContext.Provider value={entryState(effectiveData, preview, now)}>
         <mod.Page
           data={packRenderData}
           basePath={basePath}
@@ -388,6 +395,7 @@ export const SiteRenderer: React.FC<{
           pageTitle={currentPage?.title}
           sections={pageSections}
         />
+        <EntryDock />
       </EntryContext.Provider>
       {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
           der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der

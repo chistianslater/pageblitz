@@ -1,8 +1,10 @@
 import React from "react";
 import type { SectionLinkSchema } from "../../../../shared/siteContract/schema";
 import type { z } from "zod";
-import type { SectionOf } from "../../../../shared/siteContract/types";
-import { EntryServicesSwitch } from "./artDirection/entrySections";
+import {
+  EntrySectionSwitch,
+  isEntrySection,
+} from "./artDirection/entrySections";
 
 type SectionLink = z.infer<typeof SectionLinkSchema>;
 
@@ -55,29 +57,22 @@ export function withSectionLink(
   );
 }
 
-function isServices(section: unknown): section is SectionOf<"services"> {
-  return (
-    Boolean(section) &&
-    typeof section === "object" &&
-    (section as { type?: unknown }).type === "services"
-  );
-}
-
 /**
  * Umhüllt das `renderSection` eines Packs — erstes Argument ist die Sektion.
- * Leistungen laufen zusätzlich über den Einstiegs-Schalter: Seiten mit
- * „Bühne"/„Farbfläche" bekommen dort die gemeinsame Liste (entrySections).
+ * Leistungen, Über uns, Galerie, Bewertungen, FAQ und Kontakt laufen
+ * zusätzlich über den Einstiegs-Schalter: Seiten mit „Bühne"/„Farbfläche"
+ * bekommen dort die gemeinsamen Fassungen (entrySections).
  */
 export function withSectionLinks<A extends [unknown, ...unknown[]]>(
   render: (...args: A) => React.ReactNode
 ): (...args: A) => React.ReactNode {
   return (...args: A) => {
     const section = args[0];
-    if (!isServices(section))
+    if (!isEntrySection(section))
       return withSectionLink(section, render(...args));
     return (
-      <EntryServicesSwitch
-        key="services"
+      <EntrySectionSwitch
+        key={section.type}
         section={section}
         fallback={() => render(...args)}
         decorate={node => withSectionLink(section, node)}

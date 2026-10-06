@@ -1,3 +1,7 @@
+import {
+  blueprintFor,
+  withBlueprint,
+} from "../../shared/stylePacks/blueprints";
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
@@ -433,10 +437,14 @@ export async function generateSiteContent(
     ?.filter(r => r.rating >= 4)
     .slice(0, 3)
     .map(r => r.text.trim().slice(0, 220));
+  const blueprint = blueprintFor(business.category, business.name);
   const basePrompt = buildContentPrompt({
     constitution,
     business,
     sections,
+    ...(blueprint.promptLines.length
+      ? { blueprintLines: blueprint.promptLines }
+      : {}),
     ...(street ? { street } : {}),
     ...(reviewExcerpts?.length ? { reviewExcerpts } : {}),
     ...(facts?.existingSite ? { existingSite: facts.existingSite } : {}),
@@ -488,11 +496,17 @@ export async function generateSiteContent(
   }
 
   if (!facts) {
-    return withGeneratedAddOnDefaults(withContactHourPlaceholders(beste.data));
+    return withBlueprint(
+      withGeneratedAddOnDefaults(withContactHourPlaceholders(beste.data)),
+      blueprint
+    );
   }
 
-  const merged = withGeneratedAddOnDefaults(
-    withContactHourPlaceholders(mergeFacts(beste.data, facts))
+  const merged = withBlueprint(
+    withGeneratedAddOnDefaults(
+      withContactHourPlaceholders(mergeFacts(beste.data, facts))
+    ),
+    blueprint
   );
   const revalidated = WebsiteDataV2Schema.safeParse(merged);
   if (!revalidated.success) {
