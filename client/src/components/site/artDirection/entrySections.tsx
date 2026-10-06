@@ -23,6 +23,13 @@ import { SECTION_ANCHORS } from "../engine";
 import { LAYOUT_SLOT } from "../layoutSlots";
 import { googleMapsUrl } from "../mapsLink";
 import { rich } from "../richText";
+import {
+  EntryMenu,
+  EntryMenuPlaceholder,
+  gastroTrustFacts,
+  menuPlaceholderShown,
+  menuVisible,
+} from "./entryGastro";
 import { coversToday, shortHours, telHref, whatsappHref } from "./heroFacts";
 
 export type EntryComposition = "stage" | "colorfield";
@@ -136,34 +143,39 @@ function EntryServices({
     state.blueprint.placeholders.includes("pricelist") &&
     !hasSection(state.data, "pricelist");
   return (
-    <section
-      id={SECTION_ANCHORS.services}
-      className="pb-entry-services"
-      data-entry={state.entry}
-    >
-      <Head title={section.headline ?? "Leistungen"} intro={section.intro} />
-      <ol className="pb-entry-list" data-pb-slot={LAYOUT_SLOT.servicesItems}>
-        {section.items.map((item, i) => (
-          <li key={item.title}>
-            <span className="pb-entry-index" aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <div className="pb-entry-copy">
-              <h3>{item.title}</h3>
-              {item.description && <p>{rich(item.description)}</p>}
-            </div>
-            {item.price && <span className="pb-entry-price">{item.price}</span>}
-          </li>
-        ))}
-      </ol>
-      {showPrices && (
-        <Placeholder
-          kind="pricelist"
-          title="Deine Preise"
-          text={state.blueprint.placeholderText.pricelist ?? ""}
-        />
-      )}
-    </section>
+    <>
+      <section
+        id={SECTION_ANCHORS.services}
+        className="pb-entry-services"
+        data-entry={state.entry}
+      >
+        <Head title={section.headline ?? "Leistungen"} intro={section.intro} />
+        <ol className="pb-entry-list" data-pb-slot={LAYOUT_SLOT.servicesItems}>
+          {section.items.map((item, i) => (
+            <li key={item.title}>
+              <span className="pb-entry-index" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="pb-entry-copy">
+                <h3>{item.title}</h3>
+                {item.description && <p>{rich(item.description)}</p>}
+              </div>
+              {item.price && (
+                <span className="pb-entry-price">{item.price}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+        {showPrices && (
+          <Placeholder
+            kind="pricelist"
+            title="Deine Preise"
+            text={state.blueprint.placeholderText.pricelist ?? ""}
+          />
+        )}
+      </section>
+      {menuPlaceholderShown(state) && <EntryMenuPlaceholder state={state} />}
+    </>
   );
 }
 
@@ -327,6 +339,16 @@ function EntryVisit({
   const place = [section.zip, section.city].filter(Boolean).join(" ");
   // Handwerk (2026-10-06): Man besucht keinen Laden, man fragt ein Angebot an.
   const inquiry = state.blueprint.contactMode === "inquiry";
+  // Gastro (2026-10-06): „Tisch reservieren"/„Jetzt bestellen" per Anruf vorn.
+  const hero = state.data.sections.find(
+    (s): s is SectionOf<"hero"> => s.type === "hero"
+  );
+  const callCta =
+    state.blueprint.id === "gastro" &&
+    hero?.ctaText &&
+    hero.ctaHref?.startsWith("tel:")
+      ? { text: hero.ctaText, href: hero.ctaHref }
+      : undefined;
   const inquiryHref = section.email
     ? `mailto:${section.email}?subject=${encodeURIComponent(`Anfrage über die Website – ${state.data.businessName}`)}`
     : tel;
@@ -351,6 +373,14 @@ function EntryVisit({
           </p>
         )}
         <div className="pb-entry-visit-actions">
+          {callCta && (
+            <a
+              className="pb-entry-btn pb-entry-btn-primary"
+              href={callCta.href}
+            >
+              {callCta.text}
+            </a>
+          )}
           {inquiry && inquiryHref && (
             <a className="pb-entry-btn pb-entry-btn-primary" href={inquiryHref}>
               Angebot anfragen
@@ -358,7 +388,7 @@ function EntryVisit({
           )}
           {route && (
             <a
-              className={`pb-entry-btn${inquiry ? "" : " pb-entry-btn-primary"}`}
+              className={`pb-entry-btn${inquiry || callCta ? "" : " pb-entry-btn-primary"}`}
               href={route}
               target="_blank"
               rel="noopener noreferrer"
@@ -453,6 +483,7 @@ export const ENTRY_SECTION_TYPES = [
   "faq",
   "contact",
   "process",
+  "menu",
 ] as const;
 type EntrySectionType = (typeof ENTRY_SECTION_TYPES)[number];
 
@@ -482,6 +513,8 @@ function renderEntry(
       return <EntryVisit section={section} state={state} />;
     case "process":
       return <EntryProcess section={section} state={state} />;
+    case "menu":
+      return <EntryMenu section={section} state={state} />;
   }
 }
 
@@ -541,7 +574,10 @@ export function trustFacts(
 export function EntryTrust() {
   const state = useContext(EntryContext);
   if (!state?.blueprint.trust) return null;
-  const facts = trustFacts(state.data);
+  const facts =
+    state.blueprint.id === "gastro"
+      ? gastroTrustFacts(state.data)
+      : trustFacts(state.data);
   if (facts.length < 2) return null;
   return (
     <aside className="pb-entry-trust" aria-label="Auf einen Blick">
@@ -553,6 +589,17 @@ export function EntryTrust() {
       ))}
     </aside>
   );
+}
+
+/** Karten-Platzhalter direkt unter dem Einstieg (nur Vorschau, Gastro). */
+export function EntryMenuSlot() {
+  const state = useContext(EntryContext);
+  // Mit Sortiment (Café/Bäckerei) steht der Platzhalter unter der Liste.
+  return state &&
+    menuPlaceholderShown(state) &&
+    !hasSection(state.data, "services") ? (
+    <EntryMenuPlaceholder state={state} />
+  ) : null;
 }
 
 /**
@@ -571,16 +618,24 @@ export function EntryDock() {
   const tel = telHref(contact?.phone);
   const route = googleMapsUrl(contact?.street, contact?.zip, contact?.city);
   const items: { label: string; href: string; external?: boolean }[] = [];
-  if (tel) items.push({ label: "Anrufen", href: tel });
+  const ctaHref = hero?.ctaHref ?? `#${SECTION_ANCHORS.contact}`;
+  // Ruft die Hauptaktion schon an (Gastro: „Tisch reservieren"), entfällt
+  // der eigene Anruf-Knopf.
+  if (tel && !ctaHref.startsWith("tel:"))
+    items.push({ label: "Anrufen", href: tel });
   if (hero?.ctaText)
     items.push({
       label: hero.ctaText,
-      href: hero.ctaHref ?? `#${SECTION_ANCHORS.contact}`,
+      href: ctaHref,
+      external: ctaHref.startsWith("http"),
     });
   const whatsapp = whatsappHref(contact?.phone);
+  if (state.blueprint.id === "gastro" && menuVisible(state.data))
+    items.push({ label: "Karte", href: `#${SECTION_ANCHORS.menu}` });
   if (state.blueprint.contactMode === "inquiry" && whatsapp)
     items.push({ label: "WhatsApp", href: whatsapp, external: true });
-  else if (route) items.push({ label: "Route", href: route, external: true });
+  else if (route && !ctaHref.startsWith("http") && items.length < 3)
+    items.push({ label: "Route", href: route, external: true });
   if (items.length < 2) return null;
   return (
     <nav className="pb-entry-dock" aria-label="Schnellzugriff">
@@ -588,11 +643,7 @@ export function EntryDock() {
         <a
           key={item.label}
           href={item.href}
-          data-primary={
-            item.href === hero?.ctaHref || item.href.startsWith("#")
-              ? "yes"
-              : undefined
-          }
+          data-primary={item.label === hero?.ctaText ? "yes" : undefined}
           {...(item.external
             ? { target: "_blank", rel: "noopener noreferrer" }
             : {})}

@@ -78,6 +78,18 @@ describe("telHref", () => {
 });
 
 describe("pickReviewQuote", () => {
+  it("nimmt keine Bewertung mit Kritik, auch nicht bei 5 Sternen", () => {
+    expect(
+      pickReviewQuote([
+        {
+          author: "P. F.",
+          rating: 5,
+          text: "Der Döner war super lecker und das Brot ein Träumchen. Einziger Kritikpunkt, es war super kalt im Laden.",
+        },
+      ])
+    ).toBeUndefined();
+  });
+
   it("nimmt eine kurze Bewertung unverändert", () => {
     expect(
       pickReviewQuote([

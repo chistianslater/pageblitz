@@ -338,7 +338,7 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
-  test("Gastro-Default (Plan B6 Task 6, Spec §5.5): Speisekarte im Ergebnis → addOns.menu=true (vorausgewählt, sichtbar); ohne Speisekarte kein addOns", async () => {
+  test("Bauplan Gastro (2026-10-06): vom Modell erfundene Speisekarte wird verworfen, kein Speisekarten-Extra vorgebucht", async () => {
     const gastro = JSON.stringify({
       seo: { title: "Trattoria", description: "Italienisch in Berlin." },
       sections: [
@@ -362,8 +362,8 @@ describe("generateSiteContent", () => {
       business: { name: "Trattoria", category: "Restaurant", city: "Berlin" },
       facts: { slug: "trattoria" },
     });
-    expect(d.addOns).toEqual({ menu: true });
-    expect(d.sections.some(s => s.type === "menu")).toBe(true);
+    expect(d.addOns).toBeUndefined();
+    expect(d.sections.some(s => s.type === "menu")).toBe(false);
     vi.doUnmock("./llmClient");
     vi.resetModules();
 
@@ -380,7 +380,7 @@ describe("generateSiteContent", () => {
     vi.resetModules();
   });
 
-  test("Galerie-Sektion ohne User-Toggle lässt addOns.gallery aus; Gastro-Menü bleibt vorausgewählt", async () => {
+  test("Galerie-Sektion ohne User-Toggle lässt addOns.gallery aus; Gastro ohne erfundene Speisekarte", async () => {
     const gastroWithGallery = JSON.stringify({
       seo: { title: "Trattoria", description: "Italienisch in Berlin." },
       sections: [
@@ -414,8 +414,8 @@ describe("generateSiteContent", () => {
       facts: { images: {} },
     });
     expect(d.sections.some(s => s.type === "gallery")).toBe(true);
-    expect(d.sections.some(s => s.type === "menu")).toBe(true);
-    expect(d.addOns).toEqual({ menu: true });
+    expect(d.sections.some(s => s.type === "menu")).toBe(false);
+    expect(d.addOns?.menu).toBeUndefined();
     expect(d.addOns?.gallery).not.toBe(true);
     vi.doUnmock("./llmClient");
     vi.resetModules();

@@ -12,6 +12,7 @@ import type {
   SECTION_TYPES,
   SectionV2Schema,
   SiteAddOnsSchema,
+  AmenitiesSchema,
   WebsiteDataV2Schema,
 } from "./schema";
 import { PACK_IDS } from "./packIds";
@@ -25,6 +26,7 @@ export type WebsiteDataV2 = z.infer<typeof WebsiteDataV2Schema>;
 export type SectionOf<T extends SectionType> = Extract<SectionV2, { type: T }>;
 export type SiteFeatures = z.infer<typeof FeaturesSchema>;
 export type SiteAddOns = z.infer<typeof SiteAddOnsSchema>;
+export type Amenities = z.infer<typeof AmenitiesSchema>;
 export type ContactFormConfig = z.infer<typeof ContactFormConfigSchema>;
 export type ChatConfig = z.infer<typeof ChatConfigSchema>;
 /** Sektion innerhalb einer Unterseite (Page.sections) — siehe PageSectionSchema. */

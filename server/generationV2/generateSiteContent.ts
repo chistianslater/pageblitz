@@ -1,7 +1,9 @@
 import {
+  amenityPromptLine,
   blueprintFor,
   withBlueprint,
 } from "../../shared/stylePacks/blueprints";
+import type { Amenities } from "../../shared/siteContract/types";
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
@@ -60,6 +62,8 @@ interface GenerateSiteContentFacts {
   reviews?: { author: string; text: string; rating: number }[];
   /** Googles Editorial Summary — reiner Prompt-Kontext, landet nie im Dokument. */
   editorialSummary?: string;
+  /** Belegte Google-Angaben (Reservierung, Mitnehmen …) — Bauplan Gastro. */
+  amenities?: Amenities;
   /**
    * Crawl-Ergebnis der bestehenden Betriebs-Website (Plan B7 Task 2,
    * `server/gmb/siteCrawl.ts`): Faktenquelle für Leistungen/Selbstbeschreibung
@@ -94,17 +98,11 @@ const DEFAULT_SECTIONS: SectionType[] = [
   "faq",
   "contact",
 ];
-/** Gastro-Packs (aktuell nur "gusto") bekommen eine Speisekarte statt Leistungen. */
-const MENU_SECTIONS: SectionType[] = [
-  "hero",
-  "menu",
-  "about",
-  "faq",
-  "contact",
-];
 
-function resolveSections(packId: PackId): SectionType[] {
-  return packId === "gusto" ? MENU_SECTIONS : DEFAULT_SECTIONS;
+function resolveSections(_packId: PackId): SectionType[] {
+  // Keine Speisekarte mehr vom Modell (2026-10-06, Betreiber: „keine
+  // erfundenen Preise"): Gerichte und Preise trägt der Betrieb im Studio ein.
+  return DEFAULT_SECTIONS;
 }
 
 /** Galerie erst ab so vielen echten Fotos (Spec §2.2: „wenn ≥ 3 brauchbare"). */
@@ -324,6 +322,7 @@ function mergeFacts(
       ? { businessCategory: facts.businessCategory }
       : {}),
     ...(facts.google !== undefined ? { google: facts.google } : {}),
+    ...(facts.amenities ? { amenities: facts.amenities } : {}),
   };
 }
 
@@ -434,7 +433,7 @@ export async function generateSiteContent(
   const blueprint = blueprintFor(business.category, business.name);
   // Bauplan-Abschnitte (z. B. „So läuft's ab" im Handwerk) direkt nach den
   // Leistungen anfordern; die Reihenfolge auf der Seite setzt withBlueprint.
-  const baseSections = resolveSections(packId);
+  const baseSections = blueprint.sections ?? resolveSections(packId);
   const sections = (blueprint.extraSections ?? []).reduce(
     (list, extra) =>
       list.includes(extra)
@@ -442,6 +441,11 @@ export async function generateSiteContent(
         : [...list.slice(0, 2), extra, ...list.slice(2)],
     baseSections
   );
+  const amenityLine =
+    blueprint.id === "gastro" ? amenityPromptLine(facts?.amenities) : null;
+  const blueprintLines = amenityLine
+    ? [...blueprint.promptLines, amenityLine]
+    : blueprint.promptLines;
   const street = streetLine(facts?.contact?.street);
   const reviewExcerpts = facts?.reviews
     ?.filter(r => r.rating >= 4)
@@ -451,9 +455,7 @@ export async function generateSiteContent(
     constitution,
     business,
     sections,
-    ...(blueprint.promptLines.length
-      ? { blueprintLines: blueprint.promptLines }
-      : {}),
+    ...(blueprintLines.length ? { blueprintLines } : {}),
     ...(street ? { street } : {}),
     ...(reviewExcerpts?.length ? { reviewExcerpts } : {}),
     ...(facts?.existingSite ? { existingSite: facts.existingSite } : {}),

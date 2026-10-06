@@ -93,6 +93,18 @@ const SectionTypeSchema = z.enum(SECTION_TYPES);
  * Blockiert insbesondere "javascript:"- und andere unsichere URL-Schemata in
  * allen Link-/Bild-Feldern des Vertrags.
  */
+export const AmenitiesSchema = z
+  .object({
+    dineIn: z.boolean().optional(),
+    takeout: z.boolean().optional(),
+    delivery: z.boolean().optional(),
+    reservable: z.boolean().optional(),
+    vegetarian: z.boolean().optional(),
+    breakfast: z.boolean().optional(),
+    wheelchair: z.boolean().optional(),
+  })
+  .strict();
+
 export const SafeUrlSchema = z
   .string()
   .regex(/^(https?:\/\/|\/|#|tel:\+?[0-9]{5,20}$)/, "unsichere URL");
@@ -625,6 +637,10 @@ export const WebsiteDataV2Schema = z
       .object({ rating: z.number(), reviewCount: z.number() })
       .strict()
       .optional(),
+    // Belegte Google-Angaben (Bauplan Gastro, 2026-10-06): nur, was das
+    // Unternehmensprofil ausdrücklich meldet — fehlt ein Feld, ist es
+    // unbekannt, nicht „nein".
+    amenities: AmenitiesSchema.optional(),
     // SICHERHEITS-INVARIANTE: impressumHtml/datenschutzHtml werden beim SSR
     // (server/ssr/renderSite.tsx) bewusst UNESCAPED gerendert und sind
     // same-origin mit dem Admin-Panel. In diese Felder darf ausschließlich

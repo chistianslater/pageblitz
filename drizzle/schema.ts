@@ -45,6 +45,8 @@ export const businesses = mysqlTable("businesses", {
   openingHours: json("openingHours"),
   // Plan B7: Editorial Summary aus dem GMB-Tiefenabruf (Migration 0030)
   editorialSummary: text("editorialSummary"),
+  // Bauplan Gastro (Migration 0038): belegte Google-Angaben wie Reservierung
+  amenities: json("amenities"),
   lat: decimal("lat", { precision: 10, scale: 7 }),
   lng: decimal("lng", { precision: 10, scale: 7 }),
   socialMedia: json("socialMedia"),

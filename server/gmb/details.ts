@@ -38,6 +38,14 @@ const LEGACY_DETAILS_FIELDS = [
   "editorial_summary",
   "reviews",
   "photos",
+  // Bauplan Gastro: belegte Angaben für Leiste und FAQ
+  "dine_in",
+  "takeout",
+  "delivery",
+  "reservable",
+  "serves_vegetarian_food",
+  "serves_breakfast",
+  "wheelchair_accessible_entrance",
 ].join(",");
 
 export type GmbReview = {
@@ -65,7 +73,46 @@ export type GmbDetails = {
   primaryTypeDisplayName: string | null;
   /** Ergebnis der Kategorie-Kette — `null` = unbekannt, nie der Firmenname. */
   category: string | null;
+  /** Belegte Angaben (Reservierung, Mitnehmen …) — `null`, wenn Google keine meldet. */
+  amenities: Amenities | null;
 };
+
+export type Amenities = {
+  dineIn?: boolean;
+  takeout?: boolean;
+  delivery?: boolean;
+  reservable?: boolean;
+  vegetarian?: boolean;
+  breakfast?: boolean;
+  wheelchair?: boolean;
+};
+
+type AmenityFields = {
+  dine_in?: boolean;
+  takeout?: boolean;
+  delivery?: boolean;
+  reservable?: boolean;
+  serves_vegetarian_food?: boolean;
+  serves_breakfast?: boolean;
+  wheelchair_accessible_entrance?: boolean;
+};
+
+/** Nur gemeldete Angaben übernehmen — fehlend heißt unbekannt. */
+export function pickAmenities(result: AmenityFields): Amenities | null {
+  const raw: Amenities = {
+    dineIn: result.dine_in,
+    takeout: result.takeout,
+    delivery: result.delivery,
+    reservable: result.reservable,
+    vegetarian: result.serves_vegetarian_food,
+    breakfast: result.serves_breakfast,
+    wheelchair: result.wheelchair_accessible_entrance,
+  };
+  const known = Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => typeof v === "boolean")
+  ) as Amenities;
+  return Object.keys(known).length ? known : null;
+}
 
 type LegacyDetailsResponse = {
   status: string;
@@ -82,7 +129,7 @@ type LegacyDetailsResponse = {
     editorial_summary?: { language?: string; overview?: string };
     reviews?: GmbReview[];
     photos?: Array<{ photo_reference: string; width: number; height: number }>;
-  };
+  } & AmenityFields;
 };
 
 export type GmbDetailsDeps = {
@@ -210,6 +257,7 @@ export async function fetchGmbDetails(
       types,
       editorialSummary,
     }),
+    amenities: pickAmenities(result),
   };
 }
 
@@ -253,6 +301,7 @@ export async function persistGmbDetails(
   if (details.editorialSummary)
     updates.editorialSummary = details.editorialSummary;
   if (details.category) updates.category = details.category;
+  if (details.amenities) updates.amenities = details.amenities;
   if (details.rating !== null) updates.rating = String(details.rating);
   if (details.reviewCount !== null) updates.reviewCount = details.reviewCount;
 
