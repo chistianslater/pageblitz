@@ -128,6 +128,10 @@ export function telHref(phone: string | undefined): string | undefined {
 const QUOTE_MAX = 180;
 const QUOTE_MIN = 25;
 /** Einschränkungen gehören nicht ins Aushängeschild, auch nicht bei 5 Sternen. */
+/** Kritik gehört nicht ins große Zitat, auch nicht in einer 5-Sterne-Bewertung. */
+const CRITICISM =
+  /kritik|leider|schade|einziger? (minus|nachteil|manko)|enttäusch|stressig|zu laut|zu kalt|super kalt|unfreundlich/i;
+
 const RESERVATION =
   /\b(leider|aber|schade|nicht|kein\w*|enttäusch\w*|trotzdem|allerdings|nur)\b/i;
 const EMOJI = /\p{Extended_Pictographic}/u;
@@ -168,7 +172,8 @@ export function pickReviewQuote(
     if (item.rating !== undefined && item.rating < 5) return [];
     const text = quotable(item.text);
     if (!text || text.length < QUOTE_MIN) return [];
-    if (RESERVATION.test(text) || EMOJI.test(text)) return [];
+    if (RESERVATION.test(text) || EMOJI.test(text) || CRITICISM.test(item.text))
+      return [];
     return [{ author: item.author, text }];
   });
   return candidates.sort((a, b) => quoteScore(a.text) - quoteScore(b.text))[0];

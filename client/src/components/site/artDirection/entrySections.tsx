@@ -143,34 +143,39 @@ function EntryServices({
     state.blueprint.placeholders.includes("pricelist") &&
     !hasSection(state.data, "pricelist");
   return (
-    <section
-      id={SECTION_ANCHORS.services}
-      className="pb-entry-services"
-      data-entry={state.entry}
-    >
-      <Head title={section.headline ?? "Leistungen"} intro={section.intro} />
-      <ol className="pb-entry-list" data-pb-slot={LAYOUT_SLOT.servicesItems}>
-        {section.items.map((item, i) => (
-          <li key={item.title}>
-            <span className="pb-entry-index" aria-hidden="true">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <div className="pb-entry-copy">
-              <h3>{item.title}</h3>
-              {item.description && <p>{rich(item.description)}</p>}
-            </div>
-            {item.price && <span className="pb-entry-price">{item.price}</span>}
-          </li>
-        ))}
-      </ol>
-      {showPrices && (
-        <Placeholder
-          kind="pricelist"
-          title="Deine Preise"
-          text={state.blueprint.placeholderText.pricelist ?? ""}
-        />
-      )}
-    </section>
+    <>
+      <section
+        id={SECTION_ANCHORS.services}
+        className="pb-entry-services"
+        data-entry={state.entry}
+      >
+        <Head title={section.headline ?? "Leistungen"} intro={section.intro} />
+        <ol className="pb-entry-list" data-pb-slot={LAYOUT_SLOT.servicesItems}>
+          {section.items.map((item, i) => (
+            <li key={item.title}>
+              <span className="pb-entry-index" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="pb-entry-copy">
+                <h3>{item.title}</h3>
+                {item.description && <p>{rich(item.description)}</p>}
+              </div>
+              {item.price && (
+                <span className="pb-entry-price">{item.price}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+        {showPrices && (
+          <Placeholder
+            kind="pricelist"
+            title="Deine Preise"
+            text={state.blueprint.placeholderText.pricelist ?? ""}
+          />
+        )}
+      </section>
+      {menuPlaceholderShown(state) && <EntryMenuPlaceholder state={state} />}
+    </>
   );
 }
 
@@ -589,7 +594,10 @@ export function EntryTrust() {
 /** Karten-Platzhalter direkt unter dem Einstieg (nur Vorschau, Gastro). */
 export function EntryMenuSlot() {
   const state = useContext(EntryContext);
-  return state && menuPlaceholderShown(state) ? (
+  // Mit Sortiment (Café/Bäckerei) steht der Platzhalter unter der Liste.
+  return state &&
+    menuPlaceholderShown(state) &&
+    !hasSection(state.data, "services") ? (
     <EntryMenuPlaceholder state={state} />
   ) : null;
 }

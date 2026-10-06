@@ -191,7 +191,7 @@ function gastroKind(text: string): GastroKind {
   )
     return "cafe";
   if (
-    /imbiss|döner|doener|kebab|burger|lieferservice|take-?away|schnellrestaurant|meal/i.test(
+    /imbiss|fast-?food|döner|doener|kebab|burger|lieferservice|take-?away|schnellrestaurant|meal/i.test(
       text
     )
   )
@@ -295,7 +295,11 @@ export function amenityPromptLine(
     wheelchair: "Rollstuhlgerechter Eingang",
   };
   const parts = Object.entries(amenities)
-    .filter(([key, v]) => typeof v === "boolean" && labels[key])
+    // Ein „nein" zur Barrierefreiheit gehört nicht auf die eigene Seite.
+    .filter(
+      ([key, v]) =>
+        typeof v === "boolean" && labels[key] && (key !== "wheelchair" || v)
+    )
     .map(([key, v]) => `${labels[key]}: ${v ? "ja" : "nein"}`);
   return parts.length
     ? `- Belegte Google-Angaben: ${parts.join("; ")}. Alles andere ist unbekannt.`
