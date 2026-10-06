@@ -6,7 +6,12 @@ import {
   entryState,
 } from "./artDirection/entrySections";
 import { mountGalleryInteractions } from "./galleryInteractions";
-import { ensureTextContrast } from "../../../../shared/stylePacks/colorMath";
+import {
+  bestTextOn,
+  ensureTextContrast,
+  mix,
+  relativeLuminance,
+} from "../../../../shared/stylePacks/colorMath";
 import React, { useEffect, useRef } from "react";
 import {
   getConstitution,
@@ -241,6 +246,15 @@ export const SiteRenderer: React.FC<{
       "#191919",
       4.7
     );
+    // Dunkle Fläche des Packs (Bühne, Bogen) statt festem Braunschwarz
+    // (2026-10-06, Betreiber: „alles dunkelbraun im Hintergrund?").
+    const deep =
+      relativeLuminance(vars["--pb-canvas"]) <
+      relativeLuminance(vars["--pb-ink"])
+        ? vars["--pb-canvas"]
+        : vars["--pb-ink"];
+    vars["--pb-art-deep"] = mix(deep, "#000000", 0.82);
+    vars["--pb-art-on-accent"] = bestTextOn(vars["--pb-accent"]);
   }
   // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
   // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS

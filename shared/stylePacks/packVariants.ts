@@ -17,6 +17,9 @@ import { getConstitution } from "./index";
  * Paar auf einer Kanzlei würde die kuratierte Wirkung zerstören. Deshalb
  * bekommt jedes Pack hier eine eigene Auswahl, aus der gewürfelt wird.
  */
+// Höchstens ein Serifen-Paar je Pack (2026-10-06, Betreiber: „warum so viele
+// Serifenschriften?!" — 24 von 33 Postkarten-Seiten trugen Serif). Ausnahmen
+// mit zwei: karat, kanzlei, salon-noir — dort gehört Serif zum Charakter.
 export const PACK_FONT_PAIRS: Record<PackId, readonly string[]> = {
   // Werkstatt, Handwerk, Bau: kräftig und sachlich, nichts Zartes.
   werkbank: ["kraftvoll", "markant", "modern"],
@@ -25,15 +28,15 @@ export const PACK_FONT_PAIRS: Record<PackId, readonly string[]> = {
   // Gehoben und ruhig.
   "salon-noir": ["elegant", "luxurioes", "modern"],
   karat: ["luxurioes", "elegant", "serioes"],
-  schimmer: ["luxurioes", "elegant", "modern"],
-  atelier: ["elegant", "modern", "luxurioes"],
+  schimmer: ["modern", "luxurioes", "freundlich"],
+  atelier: ["modern", "elegant", "markant"],
   // Warm, traditionell, nahbar.
-  patina: ["klassisch", "elegant", "freundlich"],
-  landgut: ["klassisch", "freundlich", "elegant"],
-  gusto: ["klassisch", "freundlich", "elegant"],
-  ernte: ["freundlich", "klassisch", "elegant"],
+  patina: ["freundlich", "klassisch", "modern"],
+  landgut: ["freundlich", "klassisch", "kraftvoll"],
+  gusto: ["freundlich", "klassisch", "modern"],
+  ernte: ["freundlich", "modern", "klassisch"],
   marktplatz: ["freundlich", "kraftvoll", "klassisch"],
-  morgenlicht: ["freundlich", "elegant", "klassisch"],
+  morgenlicht: ["freundlich", "modern", "elegant"],
   riviera: ["elegant", "freundlich", "modern"],
   // Sachlich, technisch, vertrauensbildend.
   kanzlei: ["serioes", "klassisch", "modern"],

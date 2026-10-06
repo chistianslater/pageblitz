@@ -8,6 +8,7 @@ import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
 import { withArtDirection, withEntryComposition } from "./artDirection";
+import { pickArtTheme } from "./artThemes";
 import { blueprintFor, withBlueprint } from "./blueprints";
 import {
   SHOWCASES,
@@ -67,7 +68,16 @@ export function showcaseDoc(
     !named.sections.some(s => s.type === "process")
       ? { ...named, sections: [...named.sections, SAMPLE_PROCESS] }
       : named;
-  const directed = withArtDirection(withExtras);
+  // Schrift und Farbwelt wie bei einer neuen Seite (runJob), nicht die
+  // handgesetzten Werte der Fixture.
+  const directed = withArtDirection({
+    ...withExtras,
+    ...pickArtTheme(
+      withExtras.stylePackId,
+      withExtras.businessName,
+      withExtras.businessCategory
+    ),
+  });
   const designProfile = withEntryComposition(
     {
       ...(directed.designProfile ?? DEFAULT_DESIGN_PROFILE),
