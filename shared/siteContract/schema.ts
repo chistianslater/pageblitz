@@ -641,6 +641,25 @@ export const WebsiteDataV2Schema = z
     // Unternehmensprofil ausdrücklich meldet — fehlt ein Feld, ist es
     // unbekannt, nicht „nein".
     amenities: AmenitiesSchema.optional(),
+    // Branchen-Bauplan, bei der Erzeugung bestimmt (2026-10-06): Google kennt
+    // ~4.000 Kategorien, Stichwörter allein reichen nicht — die Familie
+    // steht deshalb im Dokument (server/generationV2/industryFamily.ts).
+    blueprintFamily: z
+      .enum([
+        "beauty",
+        "trade",
+        "gastro",
+        "health",
+        "advice",
+        "retail",
+        "auto",
+        "courses",
+        "stay",
+        "creative",
+        "urgent",
+        "standard",
+      ])
+      .optional(),
     // SICHERHEITS-INVARIANTE: impressumHtml/datenschutzHtml werden beim SSR
     // (server/ssr/renderSite.tsx) bewusst UNESCAPED gerendert und sind
     // same-origin mit dem Admin-Panel. In diese Felder darf ausschließlich

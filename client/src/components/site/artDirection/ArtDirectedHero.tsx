@@ -33,7 +33,11 @@ export function formatHeroRating(rating: number): string {
  * Der erste Stern stand sonst erst 3000 px tiefer bei den Bewertungen. */
 /** Kategorie für die Kopfzeile — bei Handwerkern das Gewerk statt „Hersteller". */
 function categoryLabel(data: WebsiteDataV2): string | undefined {
-  return blueprintFor(data.businessCategory, data.businessName).id === "trade"
+  return blueprintFor(
+    data.businessCategory,
+    data.businessName,
+    data.blueprintFamily
+  ).id === "trade"
     ? tradeLabel(data.businessCategory, data.businessName)
     : data.businessCategory;
 }

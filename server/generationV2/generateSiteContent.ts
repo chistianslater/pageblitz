@@ -4,6 +4,8 @@ import {
   withBlueprint,
 } from "../../shared/stylePacks/blueprints";
 import type { Amenities } from "../../shared/siteContract/types";
+import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import { resolveIndustryFamily } from "./industryFamily";
 import { getConstitution } from "../../shared/stylePacks";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
@@ -83,6 +85,8 @@ export interface GenerateSiteContentArgs {
    * wird beim Branchen-Retry als eigener Prompt-Abschnitt angehängt.
    */
   retryHint?: string;
+  /** Schlüssel aus `classifyIndustry` — letzte Stufe der Familien-Zuordnung. */
+  industryKey?: string;
 }
 
 /**
@@ -326,6 +330,11 @@ function mergeFacts(
   };
 }
 
+/** Familie im Dokument festhalten — Standard bleibt ohne Feld. */
+function withFamily(data: WebsiteDataV2, family: BlueprintId): WebsiteDataV2 {
+  return family === "standard" ? data : { ...data, blueprintFamily: family };
+}
+
 /** Mo–Fr-Platzhalter auf jeder contact-Sektion, wenn Zeiten fehlen oder nur „Montag" sind. */
 function withContactHourPlaceholders(data: WebsiteDataV2): WebsiteDataV2 {
   let changed = false;
@@ -423,14 +432,19 @@ function withGeneratedAddOnDefaults(data: WebsiteDataV2): WebsiteDataV2 {
 export async function generateSiteContent(
   args: GenerateSiteContentArgs
 ): Promise<WebsiteDataV2> {
-  const { packId, business, facts, retryHint } = args;
+  const { packId, business, facts, retryHint, industryKey } = args;
 
   if (isLlmMockEnabled()) {
     return mockSiteContent(packId, business, facts);
   }
 
   const constitution = getConstitution(packId);
-  const blueprint = blueprintFor(business.category, business.name);
+  const family = resolveIndustryFamily(
+    business.category,
+    business.name,
+    industryKey
+  );
+  const blueprint = blueprintFor(business.category, business.name, family);
   // Bauplan-Abschnitte (z. B. „So läuft's ab" im Handwerk) direkt nach den
   // Leistungen anfordern; die Reihenfolge auf der Seite setzt withBlueprint.
   const baseSections = blueprint.sections ?? resolveSections(packId);
@@ -507,17 +521,23 @@ export async function generateSiteContent(
   }
 
   if (!facts) {
-    return withBlueprint(
-      withGeneratedAddOnDefaults(withContactHourPlaceholders(beste.data)),
-      blueprint
+    return withFamily(
+      withBlueprint(
+        withGeneratedAddOnDefaults(withContactHourPlaceholders(beste.data)),
+        blueprint
+      ),
+      family
     );
   }
 
-  const merged = withBlueprint(
-    withGeneratedAddOnDefaults(
-      withContactHourPlaceholders(mergeFacts(beste.data, facts))
+  const merged = withFamily(
+    withBlueprint(
+      withGeneratedAddOnDefaults(
+        withContactHourPlaceholders(mergeFacts(beste.data, facts))
+      ),
+      blueprint
     ),
-    blueprint
+    family
   );
   const revalidated = WebsiteDataV2Schema.safeParse(merged);
   if (!revalidated.success) {

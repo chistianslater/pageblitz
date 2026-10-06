@@ -11,9 +11,14 @@
  * („standard").
  */
 import type { SectionType, WebsiteDataV2 } from "../siteContract/types";
+import {
+  familyBlueprint,
+  familyByKeyword,
+  type FamilyId,
+} from "./blueprintFamilies";
 import { designIndustryKey } from "./categoryAliases";
 
-export type BlueprintId = "beauty" | "trade" | "gastro" | "standard";
+export type BlueprintId = "beauty" | "trade" | "gastro" | FamilyId | "standard";
 
 /** Unterart im Bauplan Gastro — steuert Hauptaktion und Vokabular. */
 export type GastroKind = "restaurant" | "imbiss" | "cafe";
@@ -48,6 +53,10 @@ export type Blueprint = {
   contactMode?: "visit" | "inquiry";
   /** Feste Nav-Beschriftungen, passend zu den Überschriften (vor Pack-Labels). */
   navLabels?: Partial<Record<SectionType, string>>;
+  /** Überschrift der Zeiten im Kontakt („Sprechzeiten" in Praxen). */
+  hoursLabel?: string;
+  /** Arbeitet beim Kunden — Einsatzgebiet statt Ladenadresse betonen. */
+  serviceArea?: boolean;
 };
 
 const STANDARD: Blueprint = {
@@ -56,10 +65,12 @@ const STANDARD: Blueprint = {
   promptLines: [],
   placeholders: [],
   placeholderText: {},
+  // Auch ohne eigenen Bauplan: belegte Fakten unter dem Einstieg.
+  trust: true,
 };
 
 const BEAUTY_KEYS =
-  /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung)/;
+  /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung|wellness|massage|day-?spa|spa$|hundesalon|hundefriseur|tierfriseur)/;
 
 function beautyBlueprint(category: string, name: string): Blueprint {
   // Google führt viele Barbershops als „Friseursalon" — der Name verrät sie.
@@ -107,7 +118,7 @@ function beautyBlueprint(category: string, name: string): Blueprint {
  * „Hersteller") — deshalb zählt auch der Name.
  */
 const TRADE =
-  /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|generalunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich/i;
+  /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr(?!onik)|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|generalunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich|gebäudereinig|reinigung|umzug|entrümpel|hausmeister|schädling|garten(pflege|service)|baumpflege|landschaftspflege|winterdienst|plumber|electrician|roofer|painter|carpenter|contractor|cleaning|landscap|mover/i;
 
 function tradeBlueprint(category: string, name: string): Blueprint {
   const text = `${category} ${name}`;
@@ -151,6 +162,7 @@ function tradeBlueprint(category: string, name: string): Blueprint {
     ],
     trust: true,
     contactMode: "inquiry",
+    serviceArea: true,
     navLabels: {
       services: "Leistungen",
       gallery: "Referenzen",
@@ -307,21 +319,66 @@ export function amenityPromptLine(
 }
 
 /** Bauplan zur Kategorie (Name schärft die Unterart) — sonst Standard. */
+/** Alle Bauplan-Familien, die ein Dokument tragen kann. */
+export const BLUEPRINT_IDS = [
+  "beauty",
+  "trade",
+  "gastro",
+  "health",
+  "advice",
+  "retail",
+  "auto",
+  "courses",
+  "stay",
+  "creative",
+  "urgent",
+  "standard",
+] as const satisfies readonly BlueprintId[];
+
+/**
+ * Bauplan zur Kategorie. `family` (bei der Erzeugung bestimmt und im
+ * Dokument gespeichert, siehe server/generationV2/industryFamily.ts) hat
+ * Vorrang; sonst entscheiden Stichwörter in Kategorie und Name.
+ */
 export function blueprintFor(
   category: string | undefined,
-  businessName = ""
+  businessName = "",
+  family?: BlueprintId
 ): Blueprint {
-  if (!category?.trim()) return STANDARD;
-  if (BEAUTY_KEYS.test(designIndustryKey(category)))
-    return beautyBlueprint(category, businessName);
-  if (TRADE.test(`${category} ${businessName}`))
-    return tradeBlueprint(category, businessName);
+  const cat = category?.trim() ?? "";
+  if (family && family !== "standard")
+    return byFamily(family, cat, businessName);
+  if (!cat) return STANDARD;
+  const keyword = keywordFamily(cat, businessName);
+  return keyword ? byFamily(keyword, cat, businessName) : STANDARD;
+}
+
+/** Familie allein aus Stichwörtern — `undefined`, wenn nichts passt. */
+export function keywordFamily(
+  category: string,
+  businessName = ""
+): Exclude<BlueprintId, "standard"> | undefined {
+  if (!category.trim()) return undefined;
+  if (BEAUTY_KEYS.test(designIndustryKey(category))) return "beauty";
+  if (TRADE.test(`${category} ${businessName}`)) return "trade";
   if (
     GASTRO_KEYS.test(designIndustryKey(category)) ||
     GASTRO_TEXT.test(category)
   )
-    return gastroBlueprint(category, businessName);
-  return STANDARD;
+    return "gastro";
+  // Neue Familien zuerst über die Kategorie, erst dann über den Namen.
+  return familyByKeyword(category) ?? familyByKeyword(businessName);
+}
+
+function byFamily(
+  family: Exclude<BlueprintId, "standard">,
+  category: string,
+  name: string
+): Blueprint {
+  if (family === "beauty") return beautyBlueprint(category, name);
+  if (family === "trade") return tradeBlueprint(category, name);
+  if (family === "gastro") return gastroBlueprint(category, name);
+  return familyBlueprint(family, category, name);
 }
 
 /**

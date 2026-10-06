@@ -75,7 +75,11 @@ export function entryState(
     ? {
         entry,
         data,
-        blueprint: blueprintFor(data.businessCategory, data.businessName),
+        blueprint: blueprintFor(
+          data.businessCategory,
+          data.businessName,
+          data.blueprintFamily
+        ),
         preview,
         now,
       }
@@ -344,7 +348,7 @@ function EntryVisit({
     (s): s is SectionOf<"hero"> => s.type === "hero"
   );
   const callCta =
-    state.blueprint.id === "gastro" &&
+    state.blueprint.ctaAction === "tel" &&
     hero?.ctaText &&
     hero.ctaHref?.startsWith("tel:")
       ? { text: hero.ctaText, href: hero.ctaHref }
@@ -367,7 +371,7 @@ function EntryVisit({
             {place && <span>{place}</span>}
           </address>
         )}
-        {inquiry && section.city && (
+        {state.blueprint.serviceArea && section.city && (
           <p className="pb-entry-area">
             Einsatzgebiet: {section.city} und Umgebung
           </p>
@@ -383,7 +387,7 @@ function EntryVisit({
           )}
           {inquiry && inquiryHref && (
             <a className="pb-entry-btn pb-entry-btn-primary" href={inquiryHref}>
-              Angebot anfragen
+              {state.blueprint.ctaText ?? "Anfrage senden"}
             </a>
           )}
           {route && (
@@ -420,7 +424,7 @@ function EntryVisit({
       </div>
       {hours.length > 0 && (
         <div className="pb-entry-hours">
-          <h3>Öffnungszeiten</h3>
+          <h3>{state.blueprint.hoursLabel ?? "Öffnungszeiten"}</h3>
           <dl>
             {hours.map(entry => {
               const today = coversToday(entry.day, state.now);
@@ -571,13 +575,47 @@ export function trustFacts(
   return facts.slice(0, 4);
 }
 
+/** Leiste für Betriebe mit Adresse (Praxis, Laden, Werkstatt …). */
+export function visitTrustFacts(
+  data: WebsiteDataV2
+): { value: string; label: string }[] {
+  const contact = data.sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  const facts: { value: string; label: string }[] = [];
+  if (/meister/i.test(data.businessName))
+    facts.push({ value: "Meister", label: "Meisterbetrieb" });
+  if (contact?.street && contact.city)
+    facts.push({ value: contact.city, label: contact.street });
+  if (data.amenities?.wheelchair)
+    facts.push({ value: "Barrierefrei", label: "rollstuhlgerechter Eingang" });
+  const channels = [
+    contact?.phone && "Telefon",
+    whatsappHref(contact?.phone) && "WhatsApp",
+    contact?.email && "E-Mail",
+  ].filter(Boolean) as string[];
+  if (channels.length >= 2)
+    facts.push({
+      value: channels.slice(0, 2).join(" & "),
+      label: "direkt erreichbar",
+    });
+  if (data.google && data.google.reviewCount > 0)
+    facts.push({
+      value: data.google.reviewCount.toLocaleString("de-DE"),
+      label: "Bewertungen auf Google",
+    });
+  return facts.slice(0, 4);
+}
+
 export function EntryTrust() {
   const state = useContext(EntryContext);
   if (!state?.blueprint.trust) return null;
   const facts =
     state.blueprint.id === "gastro"
       ? gastroTrustFacts(state.data)
-      : trustFacts(state.data);
+      : state.blueprint.serviceArea
+        ? trustFacts(state.data)
+        : visitTrustFacts(state.data);
   if (facts.length < 2) return null;
   return (
     <aside className="pb-entry-trust" aria-label="Auf einen Blick">

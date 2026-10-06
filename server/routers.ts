@@ -1214,7 +1214,11 @@ export const appRouter = router({
           images,
           existingSite
         );
-        let websiteData = await generateSiteContent({ packId, ...factArgs });
+        let websiteData = await generateSiteContent({
+          packId,
+          ...factArgs,
+          industryKey,
+        });
         websiteData = await guardGeneratedContent(
           websiteData,
           {
@@ -1226,7 +1230,13 @@ export const appRouter = router({
               existingSite
             ),
           },
-          hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
+          hint =>
+            generateSiteContent({
+              packId,
+              ...factArgs,
+              industryKey,
+              retryHint: hint,
+            })
         );
 
         // Wie eine neue Seite: Design-Stand, Farbwelt, Einstieg nach Fotos.

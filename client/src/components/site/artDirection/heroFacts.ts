@@ -78,6 +78,9 @@ function isPlaceholder(hours: OpeningHours): boolean {
 
 /** „09:00–18:00 Uhr" → „9–18 Uhr", „08:30 - 12:00" → „8:30–12 Uhr". */
 export function shortHours(hours: string): string {
+  // Google: „24 Stunden geöffnet" — kein „Uhr" anhängen.
+  if (/24\s*stunden|rund um die uhr|open 24/i.test(hours))
+    return "rund um die Uhr geöffnet";
   const compact = hours
     .replace(/\s*Uhr\s*/gi, "")
     .replace(/\b0(\d)(?=:)/g, "$1")

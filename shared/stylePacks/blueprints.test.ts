@@ -17,7 +17,7 @@ describe("blueprintFor", () => {
     ])
       expect(blueprintFor(category).id).toBe("beauty");
     expect(blueprintFor(undefined).id).toBe("standard");
-    expect(blueprintFor("Zahnarzt").id).toBe("standard");
+    expect(blueprintFor("Naturschutzbund").id).toBe("standard");
   });
 
   it("schärft die Unterart über den Namen", () => {
@@ -81,7 +81,7 @@ describe("withBlueprint", () => {
 
   it("lässt Standard-Branchen unverändert", () => {
     const doc = getFixture("werkbank", "full");
-    expect(withBlueprint(doc, blueprintFor("Zahnarzt"))).toBe(doc);
+    expect(withBlueprint(doc, blueprintFor("Naturschutzbund"))).toBe(doc);
   });
 
   it("sortiert Handwerk: Referenzen und Ablauf vor dem Betrieb", () => {
@@ -265,5 +265,46 @@ describe("Bauplan Gastro", () => {
     expect(render(false)).not.toContain('data-placeholder="yes"');
     expect(render(false)).toContain("Reservierung");
     expect(render(false)).toContain("Zum Mitnehmen");
+  });
+});
+
+describe("Branchenfamilien", () => {
+  it("ordnet typische Google-Kategorien ihrer Familie zu", () => {
+    const cases: Record<string, string> = {
+      Zahnarztpraxis: "health",
+      Physiotherapeut: "health",
+      Tierarzt: "health",
+      Steuerberater: "advice",
+      Rechtsanwalt: "advice",
+      Immobilienmakler: "advice",
+      Blumengeschäft: "retail",
+      Optiker: "retail",
+      Autowerkstatt: "auto",
+      Reifenhändler: "auto",
+      Fitnessstudio: "courses",
+      Fahrschule: "courses",
+      Hotel: "stay",
+      Ferienwohnung: "stay",
+      Fotograf: "creative",
+      Tattoostudio: "creative",
+      Taxiunternehmen: "urgent",
+      Schlüsseldienst: "urgent",
+      Gebäudereinigung: "trade",
+      Elektronikgeschäft: "retail",
+    };
+    for (const [category, family] of Object.entries(cases))
+      expect([category, blueprintFor(category).id]).toEqual([category, family]);
+  });
+
+  it("nimmt die gespeicherte Familie vor den Stichwörtern", () => {
+    expect(blueprintFor("Holzhaus", "", "trade").id).toBe("trade");
+    expect(blueprintFor("Holzhaus").id).toBe("standard");
+  });
+
+  it("verbietet Heilversprechen im Bauplan Gesundheit", () => {
+    expect(blueprintFor("Physiotherapeut").promptLines.join(" ")).toContain(
+      "Heilversprechen"
+    );
+    expect(blueprintFor("Zahnarztpraxis").ctaText).toBe("Termin vereinbaren");
   });
 });
