@@ -26,7 +26,15 @@ describe("Bauplan-Übersicht", () => {
       restaurant: "gastro",
       imbiss: "gastro",
       cafe: "gastro",
-      zahnarzt: "standard",
+      zahnarzt: "health",
+      steuerberater: "advice",
+      goldschmiede: "retail",
+      werkstatt: "auto",
+      musikschule: "courses",
+      ferienwohnung: "stay",
+      fotografie: "creative",
+      taxi: "urgent",
+      gaertnerei: "standard",
     });
     const schreinerei = showcaseDoc(
       SHOWCASES.find(s => s.id === "schreinerei")!,

@@ -546,7 +546,11 @@ async function runWebsiteGenerationV2(
       images,
       existingSite
     );
-    websiteData = await generateSiteContent({ packId, ...factArgs });
+    websiteData = await generateSiteContent({
+      packId,
+      ...factArgs,
+      industryKey,
+    });
     // Halluzinations-Guard (Spec §2.2): fremde Stadt deterministisch
     // korrigieren; harter Branchen-Widerspruch → genau ein LLM-Retry mit
     // explizitem Hinweis, danach akzeptieren.
@@ -561,7 +565,13 @@ async function runWebsiteGenerationV2(
           existingSite
         ),
       },
-      hint => generateSiteContent({ packId, ...factArgs, retryHint: hint })
+      hint =>
+        generateSiteContent({
+          packId,
+          ...factArgs,
+          industryKey,
+          retryHint: hint,
+        })
     );
     // Die vor der ersten Vorschau gewählte Gestaltung bleibt auch nach
     // der Texterstellung erhalten.

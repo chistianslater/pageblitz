@@ -154,3 +154,9 @@ describe("pickReviewQuote", () => {
     ).toBeUndefined();
   });
 });
+
+describe("shortHours bei 24 Stunden", () => {
+  it('hängt kein „Uhr" an „24 Stunden geöffnet"', () => {
+    expect(shortHours("24 Stunden geöffnet")).toBe("rund um die Uhr geöffnet");
+  });
+});
