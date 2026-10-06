@@ -140,6 +140,9 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-media,.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition] .pb-art-media{height:360px;width:100%;margin:0}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="panorama"] .pb-art-copy{display:block;margin:0}
 .pb-site[data-pb-revision="2"] .pb-art-secondary{display:none}
+/* Lange Google-Namen („Spitzenzeit Rebecca Pfenninger | Präzise Haarschnitte
+   & Farbveränderung") brachen in der Kopfzeile in vier Zeilen um. */
+.pb-site[data-pb-revision="2"] :is([class$="-logo"],[class$="-brand"]){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.2}
 .pb-site[data-pb-revision="2"] .pb-art-wordmark{font-size:clamp(2.5rem,12vw,5rem);margin:0}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-mobile="image-first"] .pb-art-media{order:-1}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-mobile="centered"] .pb-art-copy{text-align:center}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   curateImages,
+  isFlawed,
   parseVisionRatings,
   pickStagePhoto,
   withStagePhoto,
@@ -441,5 +442,25 @@ describe("alternativeLooks", () => {
     expect(
       [looks.schimmer!.entryVariant, looks["salon-noir"]!.entryVariant].sort()
     ).toEqual([0, 1]);
+  });
+});
+
+describe("Logos", () => {
+  it("nimmt Logos und Grafiken nicht als Foto", () => {
+    expect(
+      isFlawed({
+        url: "logo.jpg",
+        width: 1200,
+        height: 1200,
+        mirrored: false,
+        vision: {
+          motiv: "grafik",
+          overlay: false,
+          collage: false,
+          quality: 4,
+          heroScore: 3,
+        },
+      })
+    ).toBe(true);
   });
 });

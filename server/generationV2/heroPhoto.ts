@@ -232,6 +232,7 @@ async function rateWithModel(
                 `Bewerte jedes Bild, Index ab 0 in der gezeigten Reihenfolge.`,
                 `Antworte NUR mit JSON: {"photos":[{"i":0,"motiv":"${MOTIVE.join("|")}","screenshot":bool,"overlay":bool,"collage":bool,"qualitaet":1-5,"hero":1-5}]}`,
                 `screenshot = Bildschirmfoto eines Handys oder Computers: Statusleiste mit Uhrzeit/Akku, App-Kopfzeile (z. B. Galerie, WhatsApp, Instagram), Navigationsleiste oder Bedienelemente am Rand — auch wenn das eigentliche Motiv gut ist.`,
+                `motiv grafik = Logo, Schild-Grafik, Flyer, Preisliste oder Text-Bild statt eines Fotos.`,
                 `overlay = sichtbares App-Symbol, runder Profilbild-Kreis, Wasserzeichen, eingeblendeter Text oder Rahmen.`,
                 `collage = aus mehreren Bildern zusammengesetzt oder gespiegelt.`,
                 `hero = wie gut das Bild als großes Titelbild genau diesen Betrieb zeigt (Räume, Arbeit, Ergebnisse, Team schlagen Himmel, Landschaft, Grafiken).`,
@@ -271,13 +272,16 @@ export function isOwnPhoto(url: string): boolean {
   return url.includes("/gmb-");
 }
 
-/** Aussortieren: Overlay, Collage, Spiegelung, zu klein. */
+/** Aussortieren: Overlay, Collage, Spiegelung, zu klein, Logo/Grafik. */
 export function isFlawed(c: PhotoCheck): boolean {
   return (
     c.mirrored ||
     Math.min(c.width, c.height) < MIN_SHORT_SIDE ||
     c.vision?.overlay === true ||
-    c.vision?.collage === true
+    c.vision?.collage === true ||
+    // Logos und Grafiken sind keine Fotos des Betriebs (Spitzenzeit: das
+    // Logo landete als Fotokarte im Einstieg).
+    c.vision?.motiv === "grafik"
   );
 }
 
