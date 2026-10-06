@@ -7,6 +7,10 @@ import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
 import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import {
+  findShowcase,
+  showcaseDoc,
+} from "../../shared/stylePacks/blueprintShowcase";
 import { withArtDirection } from "../../shared/stylePacks/artDirection";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
@@ -471,6 +475,39 @@ function handleDemoRoute(req: Request, res: Response): void {
 }
 
 /**
+ * Bauplan-Übersicht (`/demo/bauplan/:id/:entry`, 2026-10-06): Beispielbetrieb
+ * je Branche mit Einstieg und Bauplan, wie eine frisch erzeugte Seite.
+ * Standard = Vorschau mit Platzhaltern; `?live=1` zeigt die fertige Seite.
+ */
+function handleBauplanDemoRoute(req: Request, res: Response): void {
+  const showcase = findShowcase(String(req.params.id ?? ""));
+  const entry = req.params.entry === "colorfield" ? "colorfield" : "stage";
+  if (!showcase) {
+    res.status(404).type("text/plain").send("Unbekannter Bauplan");
+    return;
+  }
+  try {
+    const data = showcaseDoc(showcase, entry);
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const live = req.query.live === "1";
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath: `/demo/bauplan/${showcase.id}/${entry}`,
+      slug: "demo",
+      site: {},
+      ...(live ? {} : { islandsMode: "preview" as const }),
+      now: new Date("2026-08-19T10:00:00"),
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] Bauplan-Demo-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
+/**
  * Platzhalter-Rechtstext für die Pack-Demo: Fixtures haben absichtlich kein
  * `legal`-Feld (keine echte Firma dahinter, siehe `shared/siteContract/fixtures.ts`)
  * — dieser Hinweistext ersetzt die echten Rechtstexte NUR für die
@@ -749,6 +786,11 @@ export function registerSsrRoutes(app: Express): void {
     })
   );
   app.get("/dev/site-preview", handleDevPreview);
+  // Vor den Pack-Demos: sonst fängt /demo/:pack/:page „bauplan/…" ab.
+  app.get(
+    "/demo/bauplan/:id([a-z0-9-]+)/:entry(stage|colorfield)",
+    handleBauplanDemoRoute
+  );
   app.get(
     "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",
     handleDemoLegalRoute
