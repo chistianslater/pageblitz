@@ -7,6 +7,7 @@ import type {
 import {
   ART_DIRECTIONS,
   artComposition,
+  entryVariant,
 } from "../../../../../shared/stylePacks/artDirection";
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
@@ -108,12 +109,15 @@ function EntryHero({
   hero,
   composition,
   secondary,
+  third,
   now,
 }: {
   data: WebsiteDataV2;
   hero: SectionOf<"hero">;
   composition: "stage" | "colorfield";
   secondary?: string;
+  /** Drittes Foto für den Fächer der Farbfläche. */
+  third?: string;
   now: Date;
 }) {
   const profile = data.designProfile;
@@ -138,6 +142,7 @@ function EntryHero({
         id="start"
         className="pb-art-hero"
         data-art-composition={composition}
+        data-art-variant={entryVariant(data.stylePackId, composition)}
         data-art-layout={profile?.heroLayout}
         data-art-mobile={profile?.heroLayoutMobile}
         data-art-image="yes"
@@ -207,6 +212,11 @@ function EntryHero({
             {secondary && (
               <figure className="pb-art-secondary">
                 <img src={secondary} alt="" loading="lazy" />
+              </figure>
+            )}
+            {third && (
+              <figure className="pb-art-third">
+                <img src={third} alt="" loading="lazy" />
               </figure>
             )}
             {data.google && (
@@ -281,12 +291,21 @@ export function ArtDirectedHero({
         ? secondary
         : (secondary ??
           gallery?.images.find(img => img.url !== hero.imageUrl)?.url);
+    const third =
+      profile?.heroCollageImages !== undefined
+        ? profile.heroCollageImages[1]
+        : gallery?.images.find(
+            img => img.url !== hero.imageUrl && img.url !== cardImage
+          )?.url;
     return (
       <EntryHero
         data={data}
         hero={hero}
         composition={entry}
         secondary={cardImage}
+        third={
+          entryVariant(data.stylePackId, entry) === "stack" ? third : undefined
+        }
         now={now}
       />
     );

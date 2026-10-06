@@ -156,6 +156,52 @@ const RECIPES: Record<ArtComposition, Omit<DesignProfile, "seed">> = {
   },
 };
 
+/**
+ * Jedes Pack hat seine eigene Fassung der Einstiege (2026-10-06): Ohne sie
+ * zeigte die Design-Auswahl im Onboarding drei Alternativen mit derselben
+ * Komposition — nur Farbe und Schrift wechselten. Die Zuordnung ist so
+ * gerechnet, dass die Packs, die die Auswahl je Branche nebeneinander zeigt
+ * (variantCandidates), verschiedene Fassungen tragen. Einzige unvermeidbare
+ * Doppelung bei drei Fassungen: schimmer/patina (Barbershop, Runde 2).
+ */
+const ENTRY_VARIANT: Record<PackId, 0 | 1 | 2> = {
+  werkbank: 0,
+  "salon-noir": 0,
+  landgut: 0,
+  klarwerk: 0,
+  strom: 0,
+  patina: 1,
+  gusto: 1,
+  kanzlei: 1,
+  plakat: 1,
+  schimmer: 1,
+  verve: 1,
+  karat: 1,
+  ernte: 1,
+  fundament: 2,
+  marktplatz: 2,
+  morgenlicht: 2,
+  riviera: 2,
+  zunft: 2,
+  atelier: 2,
+  raster: 2,
+};
+const STAGE_VARIANTS = ["split", "center", "bottom"] as const;
+const COLORFIELD_VARIANTS = ["arch", "stack", "duo"] as const;
+export type StageVariant = (typeof STAGE_VARIANTS)[number];
+export type ColorfieldVariant = (typeof COLORFIELD_VARIANTS)[number];
+
+/** Fassung des Einstiegs für ein Pack: bottom/center/split bzw. duo/arch/stack. */
+export function entryVariant(
+  pack: PackId,
+  composition: "stage" | "colorfield"
+): StageVariant | ColorfieldVariant {
+  const index = ENTRY_VARIANT[pack] ?? 2;
+  return composition === "stage"
+    ? STAGE_VARIANTS[index]
+    : COLORFIELD_VARIANTS[index];
+}
+
 /** Ab dieser Breite trägt ein Querformat-Foto die volle Bühne. */
 export const STAGE_MIN_WIDTH = 1000;
 /** Breite/Höhe, ab der ein Foto als Querformat gilt. */

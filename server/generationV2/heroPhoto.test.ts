@@ -9,9 +9,11 @@ import {
   type VisionRating,
 } from "./heroPhoto";
 import {
+  entryVariant,
   keepEntryComposition,
   withEntryComposition,
 } from "../../shared/stylePacks/artDirection";
+import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { DEFAULT_DESIGN_PROFILE } from "../../shared/siteContract/designProfile";
 
 const SIZES: Record<string, [number, number]> = {
@@ -372,5 +374,33 @@ describe("Über uns ohne zweites eigenes Foto", () => {
     );
     expect(result.hero).toBe(front);
     expect(result.about).toBe(stock);
+  });
+});
+
+describe("Fassungen der Einstiege in der Design-Auswahl", () => {
+  it("zeigt nebeneinander gezeigte Alternativen in verschiedenen Fassungen", () => {
+    const categories = [
+      "Friseursalon",
+      "Kosmetikstudio",
+      "Restaurant",
+      "Café",
+      "Bäckerei",
+      "Tischlerei",
+      "Elektriker",
+      "Physiotherapie",
+      "Rechtsanwalt",
+      "Hotel",
+      "Dienstleistung",
+      "Fitnessstudio",
+      "Blumenladen",
+    ];
+    const doppelt: string[] = [];
+    for (const category of categories)
+      for (const round of [0, 1, 2]) {
+        const [a, b] = getV2VariantCandidates(category, round);
+        if (entryVariant(a, "stage") === entryVariant(b, "stage"))
+          doppelt.push(`${category}: ${a}/${b}`);
+      }
+    expect(doppelt).toEqual([]);
   });
 });
