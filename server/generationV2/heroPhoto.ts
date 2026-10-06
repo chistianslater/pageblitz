@@ -328,13 +328,17 @@ export function curateImages(images: V2Images, checks: PhotoCheck[]): V2Images {
     (ok(images.hero) && !rated ? images.hero : bestRated) ??
     images.hero;
 
+  // Über uns: erst ein weiteres eigenes Foto, dann jedes saubere — nie ein
+  // aussortiertes (Klautke: der Screenshot blieb sonst als Rückfall stehen).
+  const byScore = (list: PhotoCheck[]) =>
+    [...list].sort((a, b) => score(b) - score(a)).find(c => c.url !== hero)
+      ?.url;
   const about =
     ok(images.about) && images.about !== hero
       ? images.about
-      : ([...usable]
-          .sort((a, b) => score(b) - score(a))
-          .find(c => c.url !== hero)?.url ??
-        (images.about !== hero ? images.about : undefined));
+      : (byScore(usable) ??
+        byScore(clean) ??
+        (ok(images.about) && images.about !== hero ? images.about : undefined));
 
   const cleanGallery = images.gallery?.filter(ok);
   const gallery =

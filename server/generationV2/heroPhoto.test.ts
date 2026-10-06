@@ -337,3 +337,40 @@ describe("Screenshots", () => {
     ).toBe(true);
   });
 });
+
+describe("Über uns ohne zweites eigenes Foto", () => {
+  it("nimmt ein sauberes Stockbild statt des aussortierten bisherigen Fotos", () => {
+    const front = "https://r2.test/website-1/gmb-front.jpg";
+    const screenshot = "https://r2.test/website-1/gmb-screen.jpg";
+    const stock = "https://images.unsplash.com/photo-3?w=800";
+    const vision = {
+      motiv: "aussen" as const,
+      overlay: false,
+      collage: false,
+      quality: 4,
+      heroScore: 4,
+    };
+    const result = curateImages(
+      { hero: front, about: screenshot, gallery: [stock] },
+      [
+        { url: front, width: 1044, height: 1600, mirrored: false, vision },
+        {
+          url: screenshot,
+          width: 778,
+          height: 1600,
+          mirrored: false,
+          vision: { ...vision, overlay: true },
+        },
+        {
+          url: stock,
+          width: 800,
+          height: 1200,
+          mirrored: false,
+          vision: { ...vision, motiv: "innenraum" },
+        },
+      ]
+    );
+    expect(result.hero).toBe(front);
+    expect(result.about).toBe(stock);
+  });
+});
