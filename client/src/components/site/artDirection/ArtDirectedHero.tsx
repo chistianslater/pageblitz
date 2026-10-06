@@ -142,7 +142,11 @@ function EntryHero({
         id="start"
         className="pb-art-hero"
         data-art-composition={composition}
-        data-art-variant={entryVariant(data.stylePackId, composition)}
+        data-art-variant={entryVariant(
+          data.stylePackId,
+          composition,
+          profile?.entryVariant
+        )}
         data-art-layout={profile?.heroLayout}
         data-art-mobile={profile?.heroLayoutMobile}
         data-art-image="yes"
@@ -304,7 +308,10 @@ export function ArtDirectedHero({
         composition={entry}
         secondary={cardImage}
         third={
-          entryVariant(data.stylePackId, entry) === "stack" ? third : undefined
+          entryVariant(data.stylePackId, entry, profile?.entryVariant) ===
+          "stack"
+            ? third
+            : undefined
         }
         now={now}
       />

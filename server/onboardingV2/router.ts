@@ -1,3 +1,6 @@
+import { alternativeLooks } from "../../shared/stylePacks/artDirection";
+import { PACK_FONT_PAIRS } from "../../shared/stylePacks/packVariants";
+import { getFontPair } from "../../shared/stylePacks/fontPairs";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
@@ -179,11 +182,25 @@ const coreProcedures = {
         category,
         input.round,
         input.count
-      ).map(id => {
-        const c = getConstitution(id);
-        return { id, name: c.name, essence: c.essence };
-      });
-      return { candidates };
+      );
+      const doc = loaded.doc;
+      const looks = doc
+        ? alternativeLooks(
+            {
+              pack: doc.stylePackId,
+              entryVariant: doc.designProfile?.entryVariant,
+              fontPairId: doc.fontPairId,
+            },
+            candidates,
+            pack => PACK_FONT_PAIRS[pack]
+          )
+        : {};
+      return {
+        candidates: candidates.map(id => {
+          const c = getConstitution(id);
+          return { id, name: c.name, essence: c.essence, look: looks[id] };
+        }),
+      };
     }),
 
   selectStylePack: publicProcedure
@@ -192,13 +209,22 @@ const coreProcedures = {
         packId: z.string(),
         /** Erst „Passt so" bestätigt den Gate/Checklist-Schritt. */
         confirm: z.boolean().optional().default(false),
+        /** Look der gezeigten Alternative (getStyleCandidates). */
+        look: z
+          .object({
+            entryVariant: z.union([z.literal(0), z.literal(1), z.literal(2)]),
+            fontPairId: z.string().refine(id => Boolean(getFontPair(id)), {
+              message: "Unbekanntes Schriftpaar",
+            }),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const packId = parsePackId(input.packId);
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      const next = applyStylePack(doc, packId);
+      const next = applyStylePack(doc, packId, input.look);
       return persistDoc(
         input.token,
         loaded,

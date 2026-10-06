@@ -564,6 +564,9 @@ export const DesignProfileSchema = z
         "colorfield",
       ])
       .optional(),
+    entryVariant: z
+      .union([z.literal(0), z.literal(1), z.literal(2)])
+      .optional(),
     heroLayout: z.enum(HERO_LAYOUTS),
     servicesLayout: z.enum(SERVICES_LAYOUTS),
     aboutLayout: z.enum(ABOUT_LAYOUTS),

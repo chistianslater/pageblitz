@@ -1,3 +1,4 @@
+import type { AlternativeLook } from "../../../../shared/stylePacks/artDirection";
 import React, { useCallback, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { getConstitution } from "@shared/stylePacks";
@@ -37,6 +38,8 @@ interface Candidate {
   id: PackId;
   name: string;
   essence: string;
+  /** Fassung + Schrift, die diese Alternative zeigt (Server, alternativeLooks). */
+  look?: AlternativeLook;
 }
 
 interface DesignSplashProps {
@@ -56,10 +59,12 @@ function AlternativePreview({
   token,
   packId,
   version,
+  look,
 }: {
   token: string;
   packId: PackId;
   version: number;
+  look?: AlternativeLook;
 }) {
   const ref = usePreviewViewport("desktop");
   return (
@@ -69,7 +74,7 @@ function AlternativePreview({
       aria-hidden="true"
     >
       <iframe
-        src={buildPreviewSrc({ token, packOverride: packId, version })}
+        src={buildPreviewSrc({ token, packOverride: packId, version, look })}
         title="Alternative mit deinen Inhalten"
         loading="lazy"
         tabIndex={-1}
@@ -157,8 +162,9 @@ export function DesignSplash({
     if (busyId || packId === activePackId) return;
     setSlideDirection(direction);
     setBusyId(packId);
+    const look = candidates.data?.candidates.find(c => c.id === packId)?.look;
     select.mutate(
-      { token, packId, confirm: false },
+      { token, packId, confirm: false, ...(look ? { look } : {}) },
       {
         onSuccess: () => {
           trackStudioEvent("design_angesehen");
@@ -201,6 +207,7 @@ export function DesignSplash({
           token={token}
           packId={candidate.id}
           version={previewVersion}
+          look={candidate.look}
         />
         <span className="pb-design-side-pill" aria-hidden="true">
           Alternative ansehen

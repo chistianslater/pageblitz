@@ -121,9 +121,15 @@ export function buildPreviewSrc(args: {
   packOverride?: PackId;
   reveal?: boolean;
   versionId?: number | null;
+  /** Look einer Alternative in der Design-Auswahl (Fassung + Schrift). */
+  look?: { entryVariant: number; fontPairId: string };
 }): string {
   const params = new URLSearchParams();
   if (args.packOverride) params.set("pack", args.packOverride);
+  if (args.packOverride && args.look) {
+    params.set("variant", String(args.look.entryVariant));
+    params.set("font", args.look.fontPairId);
+  }
   if (args.versionId) params.set("version", String(args.versionId));
   if (args.reveal) params.set("reveal", "1");
   params.set("v", String(args.version)); // Cache-Bust nach jedem Patch (Server ist ohnehin no-store)

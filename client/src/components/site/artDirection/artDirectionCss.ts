@@ -264,5 +264,29 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-media{width:72%}
 .pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-third{display:block}
 }
+/* Silhouetten klar trennen (2026-10-06): In der Design-Auswahl sind die
+   Alternativen kleine Vorschaubilder — dort zählt nur der Umriss. Bogen =
+   Foto links, Text rechts; Fächer = Text zentriert oben, Fotos darunter. */
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"]{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-cards{grid-column:1;grid-row:1}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-copy{grid-column:2;grid-row:1}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-media{margin:0 auto 0 0}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-secondary{left:auto;right:6%}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-sticker{right:auto;left:-2%;transform:rotate(-8deg)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"]{display:flex;flex-direction:column;align-items:center;text-align:center;gap:clamp(36px,4vw,56px)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-copy{max-width:min(940px,100%);margin:0 auto}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] h1{max-width:18ch;margin-left:auto;margin-right:auto;font-size:clamp(2.8rem,5.8vw,6.4rem)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-intro{margin-left:auto;margin-right:auto}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-entry-row{justify-content:center}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-cards{width:min(1000px,100%);min-height:clamp(320px,32vw,500px)}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-media{left:31%;width:38%;top:0}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-secondary{left:5%;width:30%;top:12%}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-third{right:5%;width:30%;top:12%}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-sticker{left:auto;right:22%;bottom:auto;top:-4%}
+@media(max-width:760px){
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="arch"] .pb-art-cards{order:-1}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-cards{height:min(80vw,360px);min-height:0}
+.pb-site[data-pb-revision="2"] .pb-art-hero[data-art-composition="colorfield"][data-art-variant="stack"] .pb-art-sticker{right:4%;top:auto;bottom:-6%}
+}
 @media(prefers-reduced-motion:reduce){.pb-site[data-pb-revision="2"] :is(.pb-art-cta,.pb-art-cta svg,.pb-art-media img,details[open]>:not(summary)){animation:none!important;transition:none!important;transform:none!important}}
 `;

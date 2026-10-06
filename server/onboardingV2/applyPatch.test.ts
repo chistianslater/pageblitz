@@ -143,9 +143,9 @@ describe("applyInlineText", () => {
   });
 
   test("weist freie/unsichtbare Pfade und leere Texte zurück", () => {
-    expect(() =>
-      applyInlineText(docFull, "seo.title", "Manipuliert")
-    ).toThrow(/nicht direkt bearbeitet/);
+    expect(() => applyInlineText(docFull, "seo.title", "Manipuliert")).toThrow(
+      /nicht direkt bearbeitet/
+    );
     expect(() =>
       applyInlineText(docFull, "sections.1.items.0.title", "   ")
     ).toThrow(/maximal/);
@@ -684,5 +684,44 @@ describe("applyTexts — Button-Block (cta)", () => {
     expect(applyTexts(doc, { ctaBlockText: "X" }).sections).toEqual(
       doc.sections
     );
+  });
+});
+
+describe("applyStylePack mit Look aus der Design-Auswahl", () => {
+  const entryDoc: WebsiteDataV2 = {
+    ...doc,
+    designRevision: 2,
+    designProfile: {
+      version: 1,
+      composition: "colorfield",
+      heroLayout: "collage",
+      heroLayoutMobile: "collage",
+      servicesLayout: "list",
+      aboutLayout: "image-left",
+      galleryLayout: "grid",
+      density: "airy",
+      imageTreatment: "framed",
+      seed: 1,
+    },
+  };
+
+  test("übernimmt Fassung und Schrift der gezeigten Alternative", () => {
+    const next = applyStylePack(entryDoc, "schimmer", {
+      entryVariant: 0,
+      fontPairId: "elegant",
+    });
+    expect(next.fontPairId).toBe("elegant");
+    expect(next.designProfile?.entryVariant).toBe(0);
+    expect(next.designProfile?.composition).toBe("colorfield");
+  });
+
+  test("ohne Look gilt die Fassung des neuen Packs", () => {
+    const withVariant = applyStylePack(entryDoc, "schimmer", {
+      entryVariant: 0,
+      fontPairId: "elegant",
+    });
+    expect(
+      applyStylePack(withVariant, "patina").designProfile?.entryVariant
+    ).toBeUndefined();
   });
 });

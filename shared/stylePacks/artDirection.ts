@@ -191,12 +191,20 @@ const COLORFIELD_VARIANTS = ["arch", "stack", "duo"] as const;
 export type StageVariant = (typeof STAGE_VARIANTS)[number];
 export type ColorfieldVariant = (typeof COLORFIELD_VARIANTS)[number];
 
+/** Index der Fassung: gespeicherte Wahl vor Pack-Standard. */
+export function entryVariantIndex(pack: PackId, stored?: number): 0 | 1 | 2 {
+  return stored === 0 || stored === 1 || stored === 2
+    ? stored
+    : (ENTRY_VARIANT[pack] ?? 2);
+}
+
 /** Fassung des Einstiegs für ein Pack: bottom/center/split bzw. duo/arch/stack. */
 export function entryVariant(
   pack: PackId,
-  composition: "stage" | "colorfield"
+  composition: "stage" | "colorfield",
+  stored?: number
 ): StageVariant | ColorfieldVariant {
-  const index = ENTRY_VARIANT[pack] ?? 2;
+  const index = entryVariantIndex(pack, stored);
   return composition === "stage"
     ? STAGE_VARIANTS[index]
     : COLORFIELD_VARIANTS[index];
@@ -390,4 +398,35 @@ export function withArtDirection(
     designRevision: CURRENT_DESIGN_REVISION,
     designProfile: deriveArtDirectedProfile(data, occupied),
   };
+}
+
+export type AlternativeLook = { entryVariant: 0 | 1 | 2; fontPairId: string };
+
+/**
+ * Look je Alternative in der Design-Auswahl (2026-10-06, Betreiber: „für den
+ * Kunden nicht wirklich als krasse Alternative erkennbar"). Die gezeigten
+ * Alternativen bekommen die beiden Fassungen, die die aktive Seite nicht
+ * hat, und je ein Schriftpaar aus der Liste ihres Packs, das weder die
+ * aktive Seite noch die andere Alternative trägt. Vorschau und Auswahl
+ * nutzen denselben Look — gezeigt ist, was gewählt wird.
+ */
+export function alternativeLooks(
+  active: { pack: PackId; entryVariant?: number; fontPairId?: string },
+  alternatives: PackId[],
+  fontPairsOf: (pack: PackId) => readonly string[]
+): Partial<Record<PackId, AlternativeLook>> {
+  const activeIndex = entryVariantIndex(active.pack, active.entryVariant);
+  const free = ([0, 1, 2] as const).filter(i => i !== activeIndex);
+  const usedFonts = new Set(active.fontPairId ? [active.fontPairId] : []);
+  const looks: Partial<Record<PackId, AlternativeLook>> = {};
+  alternatives
+    .filter(pack => pack !== active.pack)
+    .forEach((pack, k) => {
+      const fonts = fontPairsOf(pack);
+      const fontPairId =
+        fonts.find(font => !usedFonts.has(font)) ?? fonts[0] ?? "modern";
+      usedFonts.add(fontPairId);
+      looks[pack] = { entryVariant: free[k % free.length], fontPairId };
+    });
+  return looks;
 }

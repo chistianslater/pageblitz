@@ -9,7 +9,9 @@ import {
   type VisionRating,
 } from "./heroPhoto";
 import {
+  alternativeLooks,
   entryVariant,
+  entryVariantIndex,
   keepEntryComposition,
   withEntryComposition,
 } from "../../shared/stylePacks/artDirection";
@@ -402,5 +404,42 @@ describe("Fassungen der Einstiege in der Design-Auswahl", () => {
           doppelt.push(`${category}: ${a}/${b}`);
       }
     expect(doppelt).toEqual([]);
+  });
+});
+
+describe("alternativeLooks", () => {
+  const fonts = (pack: string) =>
+    ({
+      schimmer: ["luxurioes", "elegant", "modern"],
+      patina: ["klassisch", "elegant", "freundlich"],
+      "salon-noir": ["elegant", "luxurioes", "modern"],
+    })[pack] ?? ["modern"];
+
+  it("gibt beiden Alternativen andere Fassungen und Schriften als die aktive Seite", () => {
+    const looks = alternativeLooks(
+      { pack: "salon-noir", fontPairId: "luxurioes" },
+      ["salon-noir", "schimmer", "patina"],
+      fonts as never
+    );
+    expect(looks["salon-noir"]).toBeUndefined();
+    const a = looks.schimmer!;
+    const b = looks.patina!;
+    const active = entryVariantIndex("salon-noir");
+    expect(new Set([active, a.entryVariant, b.entryVariant]).size).toBe(3);
+    expect(a.fontPairId).toBe("elegant");
+    expect(b.fontPairId).toBe("klassisch");
+  });
+
+  it("weicht auf die nächste Schrift aus, wenn die erste schon vergeben ist", () => {
+    const looks = alternativeLooks(
+      { pack: "patina", entryVariant: 2, fontPairId: "luxurioes" },
+      ["schimmer", "salon-noir"],
+      fonts as never
+    );
+    expect(looks.schimmer!.fontPairId).toBe("elegant");
+    expect(looks["salon-noir"]!.fontPairId).toBe("modern");
+    expect(
+      [looks.schimmer!.entryVariant, looks["salon-noir"]!.entryVariant].sort()
+    ).toEqual([0, 1]);
   });
 });

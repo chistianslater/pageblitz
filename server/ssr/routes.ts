@@ -1,3 +1,4 @@
+import { getFontPair } from "../../shared/stylePacks/fontPairs";
 import { applyStylePack } from "../onboardingV2/applyPatch";
 import type { Express, NextFunction, Request, Response } from "express";
 import { handleKurzlink } from "../postkarten/route";
@@ -214,9 +215,18 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       res.status(404).send("Vorschau-Seite nicht gefunden");
       return;
     }
+    // Look der Alternative aus der Design-Auswahl (?variant=&font=): nur
+    // gültige Werte, sonst der Pack-Standard — nie reflektiert.
+    const variantParam = Number(req.query.variant);
+    const fontParam = typeof req.query.font === "string" ? req.query.font : "";
+    const look =
+      (variantParam === 0 || variantParam === 1 || variantParam === 2) &&
+      getFontPair(fontParam)
+        ? { entryVariant: variantParam as 0 | 1 | 2, fontPairId: fontParam }
+        : undefined;
     const data =
       packParam && packParam !== parsed.data.stylePackId
-        ? applyStylePack(parsed.data, packParam as PackId)
+        ? applyStylePack(parsed.data, packParam as PackId, look)
         : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const basePath = `/preview-ssr/${token}`;

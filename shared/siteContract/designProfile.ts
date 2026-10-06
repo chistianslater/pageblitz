@@ -123,6 +123,12 @@ export interface DesignProfile {
    * Eine leere Liste heißt bewusst „keine Karten".
    */
   heroCollageImages?: string[];
+  /**
+   * Fassung des Einstiegs (Bühne: split/center/bottom, Farbfläche:
+   * arch/stack/duo als 0/1/2). Fehlt das Feld, gilt die Fassung des Packs.
+   * Gesetzt von der Design-Auswahl, damit jede Alternative anders aussieht.
+   */
+  entryVariant?: 0 | 1 | 2;
   /** Deterministischer Salt für Kollisionsschutz und spätere Varianten. */
   seed: number;
 }

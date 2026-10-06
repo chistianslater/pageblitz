@@ -1,6 +1,7 @@
 import {
   deriveArtDirectedProfile,
   keepEntryComposition,
+  type AlternativeLook,
 } from "../../shared/stylePacks/artDirection";
 import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { TRPCError } from "@trpc/server";
@@ -46,7 +47,9 @@ export function parsePackId(value: string): PackId {
 /** Pure: neues, schema-validiertes Dokument mit anderem Pack; Inhalte bleiben 1:1. */
 export function applyStylePack(
   doc: WebsiteDataV2,
-  packId: PackId
+  packId: PackId,
+  /** Look aus der Design-Auswahl (alternativeLooks): Fassung + Schrift. */
+  look?: AlternativeLook
 ): WebsiteDataV2 {
   const designProfile = keepEntryComposition(
     doc.designProfile,
@@ -68,12 +71,19 @@ export function applyStylePack(
     packId === doc.stylePackId
       ? {}
       : pickArtTheme(packId, doc.businessName, doc.businessCategory);
+  const entry =
+    designProfile.composition === "stage" ||
+    designProfile.composition === "colorfield";
   return WebsiteDataV2Schema.parse({
     ...doc,
     ...theme,
+    ...(look ? { fontPairId: look.fontPairId } : {}),
     designRevision: doc.designRevision ?? 2,
     stylePackId: packId,
-    designProfile,
+    designProfile:
+      look && entry
+        ? { ...designProfile, entryVariant: look.entryVariant }
+        : designProfile,
   });
 }
 
