@@ -1,3 +1,4 @@
+import { AmenitiesSchema } from "../../shared/siteContract/schema";
 import { resolveOpeningHours } from "./gmbOpeningHours";
 import { parseGmbAddress } from "../gmb/address";
 import type { GenerateSiteContentArgs } from "./generateSiteContent";
@@ -92,6 +93,11 @@ export function buildV2GenerationFacts(
   const rating = business.rating ? parseFloat(business.rating) : NaN;
   const parsedAddress = parseGmbAddress(null, business.address);
   const city = parsedAddress.city || business.searchRegion || undefined;
+  const parsedAmenities = AmenitiesSchema.safeParse(business.amenities);
+  const amenities =
+    parsedAmenities.success && Object.keys(parsedAmenities.data).length
+      ? parsedAmenities.data
+      : undefined;
   return {
     business: {
       name: business.name,
@@ -119,6 +125,7 @@ export function buildV2GenerationFacts(
       ...(business.editorialSummary
         ? { editorialSummary: business.editorialSummary }
         : {}),
+      ...(amenities ? { amenities } : {}),
       images,
       ...(existingSite ? { existingSite } : {}),
     },

@@ -180,3 +180,90 @@ describe("Handwerk-Seite", () => {
     expect(render(false)).not.toContain("Euer Team");
   });
 });
+
+describe("Bauplan Gastro", () => {
+  it("erkennt Restaurant, Imbiss und Café/Bäckerei", () => {
+    expect(blueprintFor("Restaurant").gastroKind).toBe("restaurant");
+    expect(blueprintFor("Pizzeria").gastroKind).toBe("restaurant");
+    expect(blueprintFor("Imbiss").gastroKind).toBe("imbiss");
+    expect(blueprintFor("Restaurant", "Döner Haus").gastroKind).toBe("imbiss");
+    expect(blueprintFor("Café").gastroKind).toBe("cafe");
+    expect(blueprintFor("Bäckerei").gastroKind).toBe("cafe");
+    expect(blueprintFor("Friseursalon").id).toBe("beauty");
+  });
+
+  it("verwirft die vom Modell erfundene Speisekarte samt Extra", () => {
+    const base = getFixture("gusto", "full");
+    const doc = {
+      ...base,
+      addOns: { ...(base.addOns ?? {}), menu: true },
+      sections: base.sections.some(s => s.type === "menu")
+        ? base.sections
+        : [
+            ...base.sections,
+            {
+              type: "menu" as const,
+              categories: [
+                {
+                  name: "Pizza",
+                  items: [{ name: "Margherita", price: "9 €" }],
+                },
+              ],
+            },
+          ],
+    };
+    const next = withBlueprint(doc, blueprintFor("Restaurant"));
+    expect(next.sections.some(s => s.type === "menu")).toBe(false);
+    expect(next.addOns?.menu).not.toBe(true);
+  });
+
+  it("setzt die Hauptaktion fest: Restaurant ruft an, Café zeigt die Route", () => {
+    const base = getFixture("gusto", "full");
+    const withPhone = {
+      ...base,
+      sections: base.sections.map(s =>
+        s.type === "contact"
+          ? { ...s, phone: "02871 488882", zip: "46395", city: "Bocholt" }
+          : s
+      ),
+    };
+    const hero = (d: typeof base) =>
+      d.sections.find(s => s.type === "hero") as {
+        ctaText?: string;
+        ctaHref?: string;
+      };
+    const restaurant = hero(
+      withBlueprint(withPhone, blueprintFor("Restaurant"))
+    );
+    expect(restaurant.ctaText).toBe("Tisch reservieren");
+    expect(restaurant.ctaHref).toBe("tel:02871488882");
+    const cafe = hero(withBlueprint(withPhone, blueprintFor("Café")));
+    expect(cafe.ctaText).toBe("Route planen");
+    expect(cafe.ctaHref).toMatch(/^https:\/\/www\.google\.com\/maps/);
+  });
+
+  it("zeigt den Karten-Platzhalter nur in der Vorschau, Google-Angaben in der Leiste", () => {
+    const base = getFixture("gusto", "full");
+    const doc = {
+      ...base,
+      businessCategory: "Restaurant",
+      amenities: { reservable: true, takeout: true, vegetarian: true },
+      addOns: { ...(base.addOns ?? {}), menu: false },
+      designRevision: 2 as const,
+      designProfile: withEntryComposition(
+        { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
+        { heroLandscape: false, extraPhotos: 3 }
+      ),
+    };
+    const render = (preview: boolean) =>
+      renderSiteHtml(doc as typeof base, {
+        origin: "https://pageblitz.de",
+        slug: "test",
+        ...(preview ? { islandsMode: "preview" as const } : {}),
+      }).html;
+    expect(render(true)).toContain('data-placeholder="yes"');
+    expect(render(false)).not.toContain('data-placeholder="yes"');
+    expect(render(false)).toContain("Reservierung");
+    expect(render(false)).toContain("Zum Mitnehmen");
+  });
+});

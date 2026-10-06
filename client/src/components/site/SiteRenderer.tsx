@@ -1,3 +1,4 @@
+import { ENTRY_GASTRO_CSS } from "./artDirection/entryGastro";
 import {
   ENTRY_SECTIONS_CSS,
   EntryContext,
@@ -372,7 +373,12 @@ export const SiteRenderer: React.FC<{
                   : DESIGN_PROFILE_CSS)
               : "") +
             (effectiveData.designRevision === 2
-              ? "\n" + ART_DIRECTION_CSS + "\n" + ENTRY_SECTIONS_CSS
+              ? "\n" +
+                ART_DIRECTION_CSS +
+                "\n" +
+                ENTRY_SECTIONS_CSS +
+                "\n" +
+                ENTRY_GASTRO_CSS
               : ""),
         }}
       />

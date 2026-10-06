@@ -2,8 +2,9 @@ import {
   blueprintFor,
   tradeLabel,
 } from "../../../../../shared/stylePacks/blueprints";
-import { EntryTrust } from "./entrySections";
-import React from "react";
+import { EntryContext, EntryMenuSlot, EntryTrust } from "./entrySections";
+import { menuLink } from "./entryGastro";
+import React, { useContext } from "react";
 import { ArrowUpRight } from "lucide-react";
 import type {
   SectionOf,
@@ -94,19 +95,34 @@ function EntryActions({
   phone?: string;
 }) {
   const tel = telHref(phone);
+  // Gastro: neben der Hauptaktion die Karte statt der Telefonnummer.
+  const menu = menuLink(useContext(EntryContext));
   if (!hero.ctaText && !tel) return null;
+  const external = hero.ctaHref?.startsWith("http");
   return (
     <div className="pb-art-actions">
       {hero.ctaText && (
-        <a className="pb-art-cta" href={hero.ctaHref ?? "#kontakt"}>
+        <a
+          className="pb-art-cta"
+          href={hero.ctaHref ?? "#kontakt"}
+          {...(external
+            ? { target: "_blank", rel: "noopener noreferrer" }
+            : {})}
+        >
           {hero.ctaText}
           <ArrowUpRight size={19} aria-hidden="true" />
         </a>
       )}
-      {tel && (
-        <a className="pb-art-call" href={tel}>
-          {phone}
+      {menu ? (
+        <a className="pb-art-call" href={menu.href}>
+          {menu.label}
         </a>
+      ) : (
+        tel && (
+          <a className="pb-art-call" href={tel}>
+            {phone}
+          </a>
+        )
       )}
     </div>
   );
@@ -250,6 +266,7 @@ function EntryHero({
           </blockquote>
         </aside>
       )}
+      <EntryMenuSlot />
     </>
   );
 }

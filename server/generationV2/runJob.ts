@@ -99,6 +99,8 @@ export interface V2JobBusiness {
   googleReviews: GmbReview[] | null;
   /** Googles Editorial Summary — reiner Prompt-Kontext, landet nie im Dokument. */
   editorialSummary: string | null;
+  /** Belegte Google-Angaben (JSON-Spalte, Migration 0038) — Bauplan Gastro. */
+  amenities?: unknown;
 }
 
 export interface V2Images {
