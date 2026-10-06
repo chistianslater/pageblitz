@@ -713,7 +713,8 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
       { author: "Anna B.", text: "Top Arbeit.", rating: 5 },
       { author: "Carla", text: "Gerne wieder.", rating: 4 },
     ]);
-    expect(testimonials.headline).toBe("Stimmen");
+    // Überschrift kommt aus dem Bauplan Handwerk, nicht vom Modell
+    expect(testimonials.headline).toBe("Das sagen unsere Kunden");
     expect(JSON.stringify(d)).not.toContain("Erfundene Person");
     vi.doUnmock("./llmClient");
     vi.resetModules();
@@ -771,12 +772,12 @@ describe("generateSiteContent — vollständige, faktentreue Erstgenerierung (Pl
       alt: "Schreinerei Brandt – Eindruck 1",
     });
     expect(d.addOns?.gallery).not.toBe(true);
-    // Kanonische Reihenfolge: … about → gallery → testimonials → faq → contact
+    // Bauplan Handwerk (Schreinerei): Referenzen vor dem Betrieb
     expect(d.sections.map(s => s.type)).toEqual([
       "hero",
       "services",
-      "about",
       "gallery",
+      "about",
       "testimonials",
       "faq",
       "contact",

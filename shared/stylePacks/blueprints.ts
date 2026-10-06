@@ -5,13 +5,14 @@
  * beantwortet werden und welche Extras (Preise, Team) in der Vorschau als
  * Platzhalter angeboten werden. Die Packs bleiben die Gestaltung.
  *
- * Erster Bauplan: Friseur / Barbier / Kosmetik. Alle anderen Branchen laufen
- * bis zu ihrem eigenen Bauplan unverändert („standard").
+ * Baupläne: Friseur / Barbier / Kosmetik („beauty"), Handwerk („trade").
+ * Alle anderen Branchen laufen bis zu ihrem eigenen Bauplan unverändert
+ * („standard").
  */
 import type { SectionType, WebsiteDataV2 } from "../siteContract/types";
 import { designIndustryKey } from "./categoryAliases";
 
-export type BlueprintId = "beauty" | "standard";
+export type BlueprintId = "beauty" | "trade" | "standard";
 
 export type Blueprint = {
   id: BlueprintId;
@@ -25,6 +26,16 @@ export type Blueprint = {
   placeholders: Array<"pricelist" | "team">;
   /** Texte der Platzhalter in der Sprache der Branche. */
   placeholderText: Partial<Record<"pricelist" | "team", string>>;
+  /** Zusätzliche Abschnitte, die das Modell für diese Branche schreibt. */
+  extraSections?: SectionType[];
+  /** Reihenfolge der Abschnitte; nicht genannte behalten ihren Platz am Ende. */
+  order?: SectionType[];
+  /** Vertrauensleiste unter dem Einstieg (nur belegte Fakten). */
+  trust?: boolean;
+  /** Kontaktabschnitt: Besuch (Laden) oder Anfrage (Handwerk). */
+  contactMode?: "visit" | "inquiry";
+  /** Feste Nav-Beschriftungen, passend zu den Überschriften (vor Pack-Labels). */
+  navLabels?: Partial<Record<SectionType, string>>;
 };
 
 const STANDARD: Blueprint = {
@@ -79,15 +90,93 @@ function beautyBlueprint(category: string, name: string): Blueprint {
   };
 }
 
+/**
+ * Gewerke. Google ordnet Handwerker oft unpassend ein (Tischlerei Klähn:
+ * „Hersteller") — deshalb zählt auch der Name.
+ */
+const TRADE =
+  /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|generalunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich/i;
+
+function tradeBlueprint(category: string, name: string): Blueprint {
+  const text = `${category} ${name}`;
+  const emergency = /elektr|sanitär|sanitaer|heizung|installat|notdienst/i.test(
+    text
+  );
+  return {
+    id: "trade",
+    headlines: {
+      services: "Leistungen",
+      gallery: "Referenzen",
+      process: "So läuft's ab",
+      about: "Der Betrieb",
+      testimonials: "Das sagen unsere Kunden",
+      faq: "Gut zu wissen",
+      contact: "Anfrage & Kontakt",
+    },
+    ctaText: "Angebot anfragen",
+    promptLines: [
+      `- Branche: Handwerksbetrieb (${category}). Kundinnen und Kunden holen ein Angebot ein und wollen Verlässlichkeit sehen: was genau gemacht wird, wo, wie es abläuft.`,
+      `- hero.headline nennt Gewerk und Ort, z. B. „Maßtischlerei in Bocholt und Umgebung“. hero.ctaText: „Angebot anfragen“.`,
+      `- services.items: Titel mit 1–4 Wörtern wie in einem Leistungsverzeichnis (z. B. „Innentüren“, „Einbauschränke“, „Fassadenanstrich“, „Elektroinstallation“) — nur, was zum Gewerk und zu den Fakten passt.`,
+      `- process.steps: genau 4 Schritte vom ersten Kontakt bis zur Fertigstellung (Anfrage → Termin vor Ort → Angebot → Ausführung), je Schritt ein Satz. Keine Versprechen wie „kostenlos“, „innerhalb von 24 Stunden“ oder „Festpreis“, wenn sie nicht in den Fakten stehen.`,
+      `- about.body: 60–100 Wörter. Inhaber, Meistertitel, Gründungsjahr oder Innung NUR nennen, wenn sie in den Fakten stehen.`,
+      `- faq: Fragen vor der Beauftragung (In welchem Umkreis arbeitet ihr? Wie schnell gibt es einen Termin? Wie entsteht das Angebot?${emergency ? " Gibt es einen Notdienst?" : ""}). Antworten NUR mit belegten Fakten, sonst neutral auf das persönliche Gespräch verweisen.`,
+    ],
+    placeholders: ["team"],
+    placeholderText: {
+      team: "Wer kommt zu euren Kunden? Mit Fotos und Namen im Studio entsteht hier euer Team — bei Handwerkern zählt, wer vor der Tür steht. Auf der fertigen Seite erscheint der Block erst mit euren Angaben.",
+    },
+    extraSections: ["process"],
+    order: [
+      "hero",
+      "services",
+      "gallery",
+      "process",
+      "about",
+      "testimonials",
+      "faq",
+      "contact",
+    ],
+    trust: true,
+    contactMode: "inquiry",
+    navLabels: {
+      services: "Leistungen",
+      gallery: "Referenzen",
+      process: "Ablauf",
+      about: "Betrieb",
+      testimonials: "Bewertungen",
+      faq: "FAQ",
+      contact: "Anfrage",
+    },
+  };
+}
+
+/**
+ * Gewerk für die Kopfzeile. Google ordnet Handwerker manchmal unpassend ein
+ * („Hersteller") — dann zählt das Gewerk aus dem Namen („Tischlerei").
+ */
+export function tradeLabel(
+  category: string | undefined,
+  businessName = ""
+): string | undefined {
+  if (!category || TRADE.test(category)) return category;
+  const word = businessName
+    .split(/\s+/)
+    .find(w => TRADE.test(w) && /^[A-ZÄÖÜ]/.test(w));
+  return word ?? category;
+}
+
 /** Bauplan zur Kategorie (Name schärft die Unterart) — sonst Standard. */
 export function blueprintFor(
   category: string | undefined,
   businessName = ""
 ): Blueprint {
   if (!category?.trim()) return STANDARD;
-  return BEAUTY_KEYS.test(designIndustryKey(category))
-    ? beautyBlueprint(category, businessName)
-    : STANDARD;
+  if (BEAUTY_KEYS.test(designIndustryKey(category)))
+    return beautyBlueprint(category, businessName);
+  if (TRADE.test(`${category} ${businessName}`))
+    return tradeBlueprint(category, businessName);
+  return STANDARD;
 }
 
 /**
@@ -99,14 +188,27 @@ export function withBlueprint(
   blueprint: Blueprint
 ): WebsiteDataV2 {
   if (blueprint.id === "standard") return doc;
+  const sections = doc.sections.map(section => {
+    const headline = blueprint.headlines[section.type];
+    const next = headline ? { ...section, headline } : section;
+    return next.type === "hero" && !next.ctaText && blueprint.ctaText
+      ? { ...next, ctaText: blueprint.ctaText }
+      : next;
+  }) as WebsiteDataV2["sections"];
+  const order = blueprint.order;
+  const rank = (type: SectionType) => {
+    const i = order?.indexOf(type) ?? -1;
+    return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+  };
   return {
     ...doc,
-    sections: doc.sections.map(section => {
-      const headline = blueprint.headlines[section.type];
-      const next = headline ? { ...section, headline } : section;
-      return next.type === "hero" && !next.ctaText && blueprint.ctaText
-        ? { ...next, ctaText: blueprint.ctaText }
-        : next;
-    }) as WebsiteDataV2["sections"],
+    sections: order
+      ? sections
+          .map((section, i) => ({ section, i }))
+          .sort(
+            (a, b) => rank(a.section.type) - rank(b.section.type) || a.i - b.i
+          )
+          .map(({ section }) => section)
+      : sections,
   };
 }

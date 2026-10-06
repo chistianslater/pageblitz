@@ -245,7 +245,14 @@ export const SiteRenderer: React.FC<{
   // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS
   // die Komposition in allen 14 Packs über data-pb-slot.
   const designProfile = effectiveData.designProfile;
-  const navItems = buildNavItems(effectiveData, { pathname, basePath });
+  const entry = entryState(effectiveData, preview, now);
+  const blueprintNav = entry?.blueprint.navLabels;
+  const navItems = buildNavItems(effectiveData, { pathname, basePath }).map(
+    item =>
+      blueprintNav && item.sectionType && blueprintNav[item.sectionType]
+        ? { ...item, label: blueprintNav[item.sectionType]!, fixedLabel: true }
+        : item
+  );
   const currentPage = pageForPathname(effectiveData, pathname);
   // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
   // nur mit den Page-Sektionen anstelle der Startseiten-Sektionen (siehe
@@ -386,7 +393,7 @@ export const SiteRenderer: React.FC<{
           zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
           Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
       {!currentPage && <NoticeBanner data={effectiveData} />}
-      <EntryContext.Provider value={entryState(effectiveData, preview, now)}>
+      <EntryContext.Provider value={entry}>
         <mod.Page
           data={packRenderData}
           basePath={basePath}
