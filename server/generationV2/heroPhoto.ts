@@ -198,7 +198,9 @@ export function parseVisionRatings(
       : "sonstiges";
     result[i] = {
       motiv,
-      overlay: e.overlay === true,
+      // Screenshots zählen als Overlay: Statusleiste und App-Rahmen gehören
+      // nie auf eine Website (Klautke, 2026-10-06).
+      overlay: e.overlay === true || e.screenshot === true,
       collage: e.collage === true,
       quality: clampScore(e.qualitaet),
       heroScore: clampScore(e.hero),
@@ -228,7 +230,8 @@ async function rateWithModel(
               text: [
                 `Du prüfst Google-Fotos für die Website eines Betriebs (Kategorie: ${category}).`,
                 `Bewerte jedes Bild, Index ab 0 in der gezeigten Reihenfolge.`,
-                `Antworte NUR mit JSON: {"photos":[{"i":0,"motiv":"${MOTIVE.join("|")}","overlay":bool,"collage":bool,"qualitaet":1-5,"hero":1-5}]}`,
+                `Antworte NUR mit JSON: {"photos":[{"i":0,"motiv":"${MOTIVE.join("|")}","screenshot":bool,"overlay":bool,"collage":bool,"qualitaet":1-5,"hero":1-5}]}`,
+                `screenshot = Bildschirmfoto eines Handys oder Computers: Statusleiste mit Uhrzeit/Akku, App-Kopfzeile (z. B. Galerie, WhatsApp, Instagram), Navigationsleiste oder Bedienelemente am Rand — auch wenn das eigentliche Motiv gut ist.`,
                 `overlay = sichtbares App-Symbol, runder Profilbild-Kreis, Wasserzeichen, eingeblendeter Text oder Rahmen.`,
                 `collage = aus mehreren Bildern zusammengesetzt oder gespiegelt.`,
                 `hero = wie gut das Bild als großes Titelbild genau diesen Betrieb zeigt (Räume, Arbeit, Ergebnisse, Team schlagen Himmel, Landschaft, Grafiken).`,

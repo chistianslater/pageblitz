@@ -326,3 +326,14 @@ describe("Eigene Fotos nur, wenn sie taugen", () => {
     expect(result.hero).toBe(stock);
   });
 });
+
+describe("Screenshots", () => {
+  it("wertet ein Handy-Bildschirmfoto als Overlay", () => {
+    expect(
+      parseVisionRatings(
+        '{"photos":[{"i":0,"motiv":"aussen","screenshot":true,"overlay":false,"collage":false,"qualitaet":4,"hero":4}]}',
+        1
+      )?.[0]?.overlay
+    ).toBe(true);
+  });
+});
