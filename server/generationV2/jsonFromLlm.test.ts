@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { jsonFromLlm } from "./jsonFromLlm";
+import { jsonFromLlm, normalizeLlmText } from "./jsonFromLlm";
 
 describe("jsonFromLlm (Befund Bocholt-Stapel, 2026-09-05)", () => {
   test("reines JSON bleibt unverändert", () => {
@@ -40,5 +40,27 @@ describe("jsonFromLlm (Befund Bocholt-Stapel, 2026-09-05)", () => {
 
   test("unvollständiges Objekt (abgeschnittene Antwort) gilt als ungültig", () => {
     expect(jsonFromLlm('{"a":1')).toBeNull();
+  });
+});
+
+describe("normalizeLlmText", () => {
+  test("macht aus doppelt maskierten Umbrüchen echte Absätze", () => {
+    const parsed = JSON.parse(
+      '{"sections":[{"type":"about","body":"Erster Absatz.\\\\n\\\\nZweiter Absatz.","tags":["a\\\\tb"]}]}'
+    );
+    expect(parsed.sections[0].body).toBe("Erster Absatz.\\n\\nZweiter Absatz.");
+    const clean = normalizeLlmText(parsed);
+    expect(clean.sections[0].body).toBe("Erster Absatz.\n\nZweiter Absatz.");
+    expect(clean.sections[0].tags[0]).toBe("a b");
+    expect(parsed.sections[0].body).toContain("\\n");
+  });
+
+  test("lässt Zahlen, Wahrheitswerte und echte Umbrüche unverändert", () => {
+    expect(normalizeLlmText({ n: 4.9, ok: true, x: null, t: "A\nB" })).toEqual({
+      n: 4.9,
+      ok: true,
+      x: null,
+      t: "A\nB",
+    });
   });
 });

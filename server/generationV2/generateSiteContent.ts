@@ -12,7 +12,7 @@ import type {
 import { buildContentPrompt } from "./contentPrompt";
 import { streetLine } from "../../client/src/components/site/artDirection/heroFacts";
 import { llmComplete } from "./llmClient";
-import { jsonFromLlm } from "./jsonFromLlm";
+import { jsonFromLlm, normalizeLlmText } from "./jsonFromLlm";
 import {
   contentGaps,
   depthRetryHint,
@@ -177,7 +177,7 @@ async function attempt(
   }
   let parsed: unknown;
   try {
-    parsed = JSON.parse(json);
+    parsed = normalizeLlmText(JSON.parse(json));
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "JSON.parse fehlgeschlagen";

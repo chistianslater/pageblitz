@@ -1,3 +1,4 @@
+import { normalizeLlmText } from "../generationV2/jsonFromLlm";
 import { nanoid } from "nanoid";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -274,7 +275,7 @@ export async function proposeAiEdit(args: {
     }
     const rawContent = choice?.message?.content;
     const text = typeof rawContent === "string" ? rawContent : "";
-    const json = JSON.parse(text);
+    const json = normalizeLlmText(JSON.parse(text));
     const raw = RawAiEditResponseSchema.parse(json);
     const mapped = mapRawToAiEditResponse(raw);
 

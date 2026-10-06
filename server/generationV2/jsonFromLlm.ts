@@ -40,3 +40,24 @@ export function jsonFromLlm(raw: string): string | null {
   }
   return null;
 }
+
+/**
+ * Doppelt maskierte Zeilenumbrüche entfernen (Befund 2026-10-05, Haarem):
+ * Das Modell schrieb `\\n\\n` statt `\n\n` in JSON-Strings. Nach dem Parsen
+ * stand dann wörtlich „\n\n" im Über-uns-Text der Kundenseite. Wandelt in
+ * allen Strings eines geparsten Objekts `\n`/`\r\n` als Zeichenfolge in echte
+ * Umbrüche und `\t` in ein Leerzeichen — rekursiv, ohne das Original zu
+ * verändern.
+ */
+export function normalizeLlmText<T>(value: T): T {
+  if (typeof value === "string")
+    return value
+      .replace(/\\r\\n|\\n/g, "\n")
+      .replace(/\\t/g, " ") as unknown as T;
+  if (Array.isArray(value)) return value.map(normalizeLlmText) as unknown as T;
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, normalizeLlmText(v)])
+    ) as T;
+  return value;
+}

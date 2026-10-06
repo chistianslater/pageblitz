@@ -1,5 +1,5 @@
 import { invokeLLM } from "../_core/llm";
-import { jsonFromLlm } from "../generationV2/jsonFromLlm";
+import { jsonFromLlm, normalizeLlmText } from "../generationV2/jsonFromLlm";
 import { SectionV2Schema } from "../../shared/siteContract/schema";
 import { getConstitution } from "../../shared/stylePacks";
 import { tonePromptLines } from "../../shared/onboardingV2/tone";
@@ -215,7 +215,10 @@ async function attempt(
   const raw = choice?.message?.content;
   const json = jsonFromLlm(typeof raw === "string" ? raw : "");
   if (!json) throw new Error("Keine JSON-Antwort.");
-  const parsed = JSON.parse(json) as { section?: unknown; reject?: unknown };
+  const parsed = normalizeLlmText(JSON.parse(json)) as {
+    section?: unknown;
+    reject?: unknown;
+  };
   if (typeof parsed.reject === "string" && parsed.reject.trim()) {
     return { kind: "reject", reason: parsed.reject.trim() };
   }
