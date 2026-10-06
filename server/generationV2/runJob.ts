@@ -117,6 +117,32 @@ export interface V2Images {
   heroLandscape?: boolean;
 }
 
+const OWN_PHOTO_URL = /https?:\/\/[^"\s]+\/gmb-[^"\s]+/g;
+
+/**
+ * Neuerstellung verliert keine Fotos (2026-10-06): Kommen beim erneuten
+ * Spiegeln weniger eigene Google-Fotos an, als die Seite schon hatte
+ * (Google drosselt, Foto kurz nicht abrufbar), bleiben die bereits nach R2
+ * gespiegelten. Die Fotoprüfung sortiert danach wie gewohnt aus.
+ */
+export function keepOwnPhotos(found: V2Images, previousDoc: unknown): V2Images {
+  const previous = Array.from(
+    new Set(JSON.stringify(previousDoc ?? null).match(OWN_PHOTO_URL) ?? [])
+  );
+  const current = new Set(
+    [found.hero, found.about, ...(found.gallery ?? [])].filter(
+      (u): u is string => Boolean(u && u.includes("/gmb-"))
+    )
+  );
+  if (current.size >= previous.length) return found;
+  return {
+    ...found,
+    hero: previous[0],
+    about: previous[1] ?? found.about,
+    gallery: previous.length >= MIN_GALLERY_PHOTOS ? previous : found.gallery,
+  };
+}
+
 /** Echte Fotos neben dem Hero-Bild — die Farbfläche braucht mindestens eins. */
 export function entryPhotos(images: V2Images): EntryPhotos {
   const extra = new Set(

@@ -28,6 +28,7 @@ function makeDeps(
       url: `https://media.pageblitz.de/website-42/gmb-${++n}.jpg`,
       key: `website-42/gmb-${n}.jpg`,
     })),
+    retryDelayMs: 0,
     ...overrides,
   };
 }
@@ -81,7 +82,7 @@ describe("mirrorGmbPhotosToR2", () => {
     expect(urls).toHaveLength(2);
   });
 
-  test("einzelner R2-Upload schlägt fehl → Foto überspringen, kein Throw", async () => {
+  test("einmaliger R2-Fehler → zweiter Versuch rettet das Foto, kein Throw", async () => {
     const deps = makeDeps({
       upload: vi
         .fn()
@@ -93,7 +94,26 @@ describe("mirrorGmbPhotosToR2", () => {
     });
     await expect(
       mirrorGmbPhotosToR2("ChIJabc", 42, 8, deps)
-    ).resolves.toHaveLength(2);
+    ).resolves.toHaveLength(3);
+  });
+
+  test("dauerhafter R2-Fehler → Foto nach zwei Versuchen überspringen", async () => {
+    const deps = makeDeps({
+      upload: vi
+        .fn()
+        .mockRejectedValueOnce(new Error("R2 down"))
+        .mockRejectedValueOnce(new Error("R2 down"))
+        .mockResolvedValue({
+          url: "https://media.pageblitz.de/ok.jpg",
+          key: "k",
+        }),
+    });
+    await expect(
+      mirrorGmbPhotosToR2("ChIJabc", 42, 8, {
+        ...deps,
+        getPhotos: vi.fn().mockResolvedValue([GOOGLE_URL_1]),
+      })
+    ).resolves.toEqual([]);
   });
 
   test("HTTP-Fehler und Nicht-Bild-Antworten werden übersprungen", async () => {
@@ -150,7 +170,8 @@ describe("mirrorGmbPhotosToR2", () => {
         ) as unknown as typeof fetch,
       });
       const pending = mirrorGmbPhotosToR2("ChIJabc", 42, 8, deps);
-      await vi.advanceTimersByTimeAsync(12_001);
+      // Beide Versuche laufen in den Timeout.
+      await vi.advanceTimersByTimeAsync(24_002);
       const urls = await pending;
       expect(urls).toHaveLength(2);
       expect(deps.upload).toHaveBeenCalledTimes(2);

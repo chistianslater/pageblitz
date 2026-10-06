@@ -51,6 +51,7 @@ import {
   resolveV2Images,
   runWebsiteGenerationV2Job,
   withNewSiteDesign,
+  keepOwnPhotos,
 } from "./runJob";
 import { DEFAULT_DESIGN_PROFILE } from "../../shared/siteContract/designProfile";
 
@@ -559,5 +560,31 @@ describe("withNewSiteDesign", () => {
       composition: "stage",
       heroLayout: "banner",
     });
+  });
+});
+
+describe("keepOwnPhotos", () => {
+  const own = (n: number) => `https://media.test/website-7/gmb-${n}.jpg`;
+  const stock = "https://images.unsplash.com/photo-1?w=800";
+
+  test("behält bereits gespiegelte Fotos, wenn beim Neuabruf weniger ankommen", () => {
+    const previous = {
+      sections: [
+        { type: "hero", imageUrl: own(1) },
+        { type: "gallery", images: [{ url: own(1) }, { url: own(2) }] },
+      ],
+    };
+    const result = keepOwnPhotos({ hero: stock, gallery: [stock] }, previous);
+    expect(result.hero).toBe(own(1));
+    expect(result.about).toBe(own(2));
+    expect(result.gallery).toEqual([stock]);
+  });
+
+  test("nimmt den frischen Abruf, wenn er mindestens gleich viele eigene Fotos bringt", () => {
+    const fresh = { hero: own(9), gallery: [own(9), own(8)] };
+    expect(
+      keepOwnPhotos(fresh, { sections: [{ type: "hero", imageUrl: own(1) }] })
+    ).toBe(fresh);
+    expect(keepOwnPhotos(fresh, null)).toBe(fresh);
   });
 });

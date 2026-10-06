@@ -61,6 +61,8 @@ export type MirrorGmbPhotosDeps = {
   fetchImpl?: typeof fetch;
   /** R2-Upload (Default: `uploadImageToR2`). */
   upload?: typeof uploadImageToR2;
+  /** Pause vor dem zweiten Versuch eines Fotos (Default 1500 ms; Tests: 0). */
+  retryDelayMs?: number;
 };
 
 /**
@@ -101,15 +103,20 @@ export async function mirrorGmbPhotosToR2(
     return [];
   }
 
-  /** Spiegelt genau EIN Foto — `null` = überspringen (Fehler/Timeout/Nicht-Bild), wirft nie. */
-  const mirrorOne = async (googleUrl: string): Promise<string | null> => {
+  /** Ein Versuch für EIN Foto — `null` = überspringen, wirft nie. */
+  const mirrorOnce = async (googleUrl: string): Promise<string | null> => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PHOTO_FETCH_TIMEOUT_MS);
     try {
       const response = await fetchImpl(googleUrl, {
         signal: controller.signal,
       });
-      if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn(
+          `[GMB Fotos] Google antwortet ${response.status} (Website ${websiteId})`
+        );
+        return null;
+      }
       const mime =
         response.headers.get("content-type")?.split(";")[0]?.trim() ||
         "image/jpeg";
@@ -133,6 +140,20 @@ export async function mirrorGmbPhotosToR2(
     } finally {
       clearTimeout(timer);
     }
+  };
+
+  /**
+   * Zweiter Versuch nach kurzer Pause (2026-10-06): Bei 32 Neuerstellungen
+   * am Stück verloren Bramhoff und Klautke still ihre Google-Fotos — die
+   * Seite fiel auf Branchen-Stock zurück, obwohl der Eintrag Fotos hat.
+   */
+  const mirrorOne = async (googleUrl: string): Promise<string | null> => {
+    const first = await mirrorOnce(googleUrl);
+    if (first) return first;
+    await new Promise(resolve =>
+      setTimeout(resolve, deps.retryDelayMs ?? 1500)
+    );
+    return mirrorOnce(googleUrl);
   };
 
   // Worker-Pool: max. MIRROR_CONCURRENCY Fotos gleichzeitig, Ergebnis je

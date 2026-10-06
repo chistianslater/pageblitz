@@ -290,3 +290,39 @@ describe("Eigene Fotos vor Stock", () => {
     expect(result.gallery).toEqual([own, stock]);
   });
 });
+
+describe("Eigene Fotos nur, wenn sie taugen", () => {
+  it("stellt ein untaugliches eigenes Foto nicht vor ein passendes Stockbild", () => {
+    const own = "https://r2.test/website-1/gmb-magazin.jpg";
+    const stock = "https://images.unsplash.com/photo-2?w=1400";
+    const result = curateImages({ hero: own, gallery: [stock] }, [
+      {
+        url: own,
+        width: 1200,
+        height: 1600,
+        mirrored: false,
+        vision: {
+          motiv: "sonstiges",
+          overlay: false,
+          collage: false,
+          quality: 3,
+          heroScore: 1,
+        },
+      },
+      {
+        url: stock,
+        width: 1600,
+        height: 1067,
+        mirrored: false,
+        vision: {
+          motiv: "innenraum",
+          overlay: false,
+          collage: false,
+          quality: 4,
+          heroScore: 4,
+        },
+      },
+    ]);
+    expect(result.hero).toBe(stock);
+  });
+});

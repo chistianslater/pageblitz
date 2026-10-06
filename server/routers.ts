@@ -118,6 +118,7 @@ import {
   runWebsiteGenerationV2Job,
   resolveV2Images,
   withNewSiteDesign,
+  keepOwnPhotos,
 } from "./generationV2/runJob";
 import { selectPack } from "./generationV2/selectPack";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
@@ -1193,7 +1194,13 @@ export const appRouter = router({
             category,
             industryKey,
             input.websiteId
-          ).then(found => withStagePhoto(found, {}, category)),
+          ).then(found =>
+            withStagePhoto(
+              keepOwnPhotos(found, website.websiteData),
+              {},
+              category
+            )
+          ),
           business.website
             ? crawlExistingSite(business.website)
             : Promise.resolve(null),

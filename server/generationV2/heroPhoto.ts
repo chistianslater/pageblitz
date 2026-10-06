@@ -301,7 +301,11 @@ export function curateImages(images: V2Images, checks: PhotoCheck[]): V2Images {
   const clean = checks.filter(c => !isFlawed(c));
   // Eigene Google-Fotos vor Stockbildern: Ein schönes Unsplash-Motiv im
   // Titelbild sähe aus wie das Team des Betriebs (Befund Wetzel 2026-10-05).
-  const own = clean.filter(c => isOwnPhoto(c.url));
+  // Nur eigene Fotos, die als Titelbild taugen — ein Magazin auf dem
+  // Schoß (Bramhoff) soll nicht vor einem passenden Stockbild stehen.
+  const own = clean.filter(
+    c => isOwnPhoto(c.url) && (c.vision?.heroScore ?? 3) >= 3
+  );
   const usable = own.length > 0 ? own : clean;
   const rated = usable.some(c => c.vision);
 
