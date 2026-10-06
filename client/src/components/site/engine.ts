@@ -81,7 +81,12 @@ export function withGalleryLimit(doc: WebsiteDataV2): WebsiteDataV2 {
     ...doc,
     sections: doc.sections.map(kuerzen),
     ...(doc.pages
-      ? { pages: doc.pages.map(p => ({ ...p, sections: p.sections.map(kuerzen) })) }
+      ? {
+          pages: doc.pages.map(p => ({
+            ...p,
+            sections: p.sections.map(kuerzen),
+          })),
+        }
       : {}),
   };
 }
@@ -255,6 +260,8 @@ export type NavItem = {
   current?: boolean;
   /** Nur bei Sektions-Ankern gesetzt — erlaubt Packs, ihre eigene Beschriftung zu verwenden (`applyNavLabels`). */
   sectionType?: SectionType;
+  /** Beschriftung aus dem Branchen-Bauplan — Packs überschreiben sie nicht. */
+  fixedLabel?: boolean;
 };
 
 /**
@@ -352,7 +359,7 @@ export function applyNavLabels(
   labels: Partial<Record<SectionType, string>>
 ): NavItem[] {
   return items.map(item =>
-    item.sectionType && labels[item.sectionType]
+    item.sectionType && labels[item.sectionType] && !item.fixedLabel
       ? { ...item, label: labels[item.sectionType] as string }
       : item
   );

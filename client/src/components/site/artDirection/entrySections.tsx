@@ -510,22 +510,32 @@ export function EntrySectionSwitch({
 export function trustFacts(
   data: WebsiteDataV2
 ): { value: string; label: string }[] {
-  const facts: { value: string; label: string }[] = [];
-  if (data.google && data.google.reviewCount > 0) {
-    facts.push({
-      value: formatRating(data.google.rating),
-      label: `Sterne auf Google · ${data.google.reviewCount.toLocaleString("de-DE")} Bewertungen`,
-    });
-  }
-  if (/meister/i.test(data.businessName))
-    facts.push({ value: "Meister", label: "Meisterbetrieb" });
+  // Die Google-Note steht schon im Einstieg — hier nur, was dort fehlt.
   const contact = data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
   );
+  const channels = [
+    contact?.phone && "Telefon",
+    whatsappHref(contact?.phone) && "WhatsApp",
+    contact?.email && "E-Mail",
+  ].filter(Boolean) as string[];
+  const facts: { value: string; label: string }[] = [];
+  if (/meister/i.test(data.businessName))
+    facts.push({ value: "Meister", label: "Meisterbetrieb" });
   if (contact?.city) facts.push({ value: contact.city, label: "und Umgebung" });
   if (/notdienst/i.test(data.businessName))
     facts.push({ value: "Notdienst", label: "erreichbar" });
-  return facts;
+  if (channels.length >= 2)
+    facts.push({
+      value: channels.slice(0, 2).join(" & "),
+      label: "direkt erreichbar",
+    });
+  if (data.google && data.google.reviewCount > 0)
+    facts.push({
+      value: data.google.reviewCount.toLocaleString("de-DE"),
+      label: "Bewertungen auf Google",
+    });
+  return facts.slice(0, 4);
 }
 
 export function EntryTrust() {
@@ -635,6 +645,7 @@ ${S} .pb-entry-gallery .pb-entry-head{margin-bottom:clamp(28px,3.5vw,48px)}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:clamp(150px,17vw,260px)!important;gap:clamp(8px,1vw,14px)!important;columns:auto!important}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure{margin:0;overflow:hidden;border-radius:12px;grid-column:auto!important;width:auto!important;height:auto!important}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure:first-child{grid-column:span 2!important;grid-row:span 2}
+${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure:first-child:nth-last-child(3)~figure{grid-column:span 2!important}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--pb-art-ease,ease)}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid figure:hover img{transform:scale(1.03)}
 ${S} .pb-entry-reviews{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:clamp(32px,6vw,96px);align-items:start}
@@ -712,6 +723,7 @@ ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]{grid-templat
 ${S} .pb-entry-trust{grid-auto-flow:row;grid-template-columns:1fr 1fr;padding:0 var(--pb-shell-pad,6%)}
 ${S} .pb-entry-trust p{padding:18px 12px 18px 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--pb-canvas) 18%,transparent)}
 ${S} .pb-entry-trust p:nth-child(-n+2){border-top:0}
+${S} .pb-entry-trust p:last-child:nth-child(odd){grid-column:1/-1}
 ${S} .pb-entry-process{padding:64px var(--pb-shell-pad,6%)}
 ${S} .pb-entry-dock{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding:6px;border-radius:16px;background:color-mix(in srgb,var(--pb-ink) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 30px -12px rgba(0,0,0,.45)}
 ${S} .pb-entry-dock a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:11px;color:var(--pb-canvas);font:600 14px/1.2 var(--pb-font-body);text-decoration:none;text-align:center;border:0!important;box-shadow:none!important;background-image:none!important}

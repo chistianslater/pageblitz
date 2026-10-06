@@ -34,6 +34,8 @@ export type Blueprint = {
   trust?: boolean;
   /** Kontaktabschnitt: Besuch (Laden) oder Anfrage (Handwerk). */
   contactMode?: "visit" | "inquiry";
+  /** Feste Nav-Beschriftungen, passend zu den Überschriften (vor Pack-Labels). */
+  navLabels?: Partial<Record<SectionType, string>>;
 };
 
 const STANDARD: Blueprint = {
@@ -93,7 +95,7 @@ function beautyBlueprint(category: string, name: string): Blueprint {
  * „Hersteller") — deshalb zählt auch der Name.
  */
 const TRADE =
-  /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich/i;
+  /tischler|schreiner|zimmerei|zimmerer|maler|lackier|elektr|sanitär|sanitaer|heizung|klima|installat|dachdeck|bauunternehm|generalunternehm|baufirma|bauges|maurer|fliesen|parkett|bodenleger|trockenbau|stuckat|glaserei|schlosser|metallbau|landschaftsbau|gartenbau|zaunbau|rollladen|rolladen|handwerk|sanierung|schornstein|ofenbau|kaminbau|küchenbau|treppenbau|dachdecker|gerüstbau|estrich/i;
 
 function tradeBlueprint(category: string, name: string): Blueprint {
   const text = `${category} ${name}`;
@@ -137,7 +139,31 @@ function tradeBlueprint(category: string, name: string): Blueprint {
     ],
     trust: true,
     contactMode: "inquiry",
+    navLabels: {
+      services: "Leistungen",
+      gallery: "Referenzen",
+      process: "Ablauf",
+      about: "Betrieb",
+      testimonials: "Bewertungen",
+      faq: "FAQ",
+      contact: "Anfrage",
+    },
   };
+}
+
+/**
+ * Gewerk für die Kopfzeile. Google ordnet Handwerker manchmal unpassend ein
+ * („Hersteller") — dann zählt das Gewerk aus dem Namen („Tischlerei").
+ */
+export function tradeLabel(
+  category: string | undefined,
+  businessName = ""
+): string | undefined {
+  if (!category || TRADE.test(category)) return category;
+  const word = businessName
+    .split(/\s+/)
+    .find(w => TRADE.test(w) && /^[A-ZÄÖÜ]/.test(w));
+  return word ?? category;
 }
 
 /** Bauplan zur Kategorie (Name schärft die Unterart) — sonst Standard. */

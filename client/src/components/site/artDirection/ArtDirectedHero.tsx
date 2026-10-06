@@ -1,3 +1,7 @@
+import {
+  blueprintFor,
+  tradeLabel,
+} from "../../../../../shared/stylePacks/blueprints";
 import { EntryTrust } from "./entrySections";
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
@@ -26,6 +30,13 @@ export function formatHeroRating(rating: number): string {
 
 /** Vertrauenssignal direkt an der Überschrift (Hero-Audit 2026-09-19):
  * Der erste Stern stand sonst erst 3000 px tiefer bei den Bewertungen. */
+/** Kategorie für die Kopfzeile — bei Handwerkern das Gewerk statt „Hersteller". */
+function categoryLabel(data: WebsiteDataV2): string | undefined {
+  return blueprintFor(data.businessCategory, data.businessName).id === "trade"
+    ? tradeLabel(data.businessCategory, data.businessName)
+    : data.businessCategory;
+}
+
 function HeroRating({ google }: { google: GoogleRating }) {
   const count = google.reviewCount.toLocaleString("de-DE");
   const label =
@@ -175,7 +186,7 @@ function EntryHero({
           {stage ? (
             <>
               <p className="pb-art-category">
-                {[data.businessCategory, place].filter(Boolean).join(" · ")}
+                {[categoryLabel(data), place].filter(Boolean).join(" · ")}
               </p>
               <h1 className="pb-art-name">{data.businessName}</h1>
               <p className="pb-art-intro">{rich(hero.headline)}</p>
@@ -336,7 +347,7 @@ export function ArtDirectedHero({
       <div className="pb-art-copy" data-pb-slot={LAYOUT_SLOT.heroCopy}>
         {(data.businessCategory || data.google) && (
           <p className="pb-art-category">
-            {data.businessCategory}
+            {categoryLabel(data)}
             {data.businessCategory && data.google && (
               <span className="pb-art-rating-sep" aria-hidden="true">
                 ·
