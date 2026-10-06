@@ -431,13 +431,22 @@ export async function generateSiteContent(
   }
 
   const constitution = getConstitution(packId);
-  const sections = resolveSections(packId);
+  const blueprint = blueprintFor(business.category, business.name);
+  // Bauplan-Abschnitte (z. B. „So läuft's ab" im Handwerk) direkt nach den
+  // Leistungen anfordern; die Reihenfolge auf der Seite setzt withBlueprint.
+  const baseSections = resolveSections(packId);
+  const sections = (blueprint.extraSections ?? []).reduce(
+    (list, extra) =>
+      list.includes(extra)
+        ? list
+        : [...list.slice(0, 2), extra, ...list.slice(2)],
+    baseSections
+  );
   const street = streetLine(facts?.contact?.street);
   const reviewExcerpts = facts?.reviews
     ?.filter(r => r.rating >= 4)
     .slice(0, 3)
     .map(r => r.text.trim().slice(0, 220));
-  const blueprint = blueprintFor(business.category, business.name);
   const basePrompt = buildContentPrompt({
     constitution,
     business,

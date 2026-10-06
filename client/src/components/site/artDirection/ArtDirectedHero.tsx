@@ -1,3 +1,4 @@
+import { EntryTrust } from "./entrySections";
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 import type {
@@ -229,6 +230,7 @@ function EntryHero({
           </div>
         )}
       </section>
+      <EntryTrust />
       {quote && (
         <aside className="pb-entry-quote" data-entry={composition}>
           <blockquote>

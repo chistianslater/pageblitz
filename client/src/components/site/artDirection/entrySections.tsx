@@ -325,10 +325,16 @@ function EntryVisit({
   const whatsapp = whatsappHref(section.phone);
   const hours = section.openingHours ?? [];
   const place = [section.zip, section.city].filter(Boolean).join(" ");
+  // Handwerk (2026-10-06): Man besucht keinen Laden, man fragt ein Angebot an.
+  const inquiry = state.blueprint.contactMode === "inquiry";
+  const inquiryHref = section.email
+    ? `mailto:${section.email}?subject=${encodeURIComponent(`Anfrage über die Website – ${state.data.businessName}`)}`
+    : tel;
   return (
     <section
       id={SECTION_ANCHORS.contact}
       className="pb-entry-visit"
+      data-mode={inquiry ? "inquiry" : "visit"}
       data-entry={state.entry}
     >
       <div className="pb-entry-visit-main">
@@ -339,15 +345,25 @@ function EntryVisit({
             {place && <span>{place}</span>}
           </address>
         )}
+        {inquiry && section.city && (
+          <p className="pb-entry-area">
+            Einsatzgebiet: {section.city} und Umgebung
+          </p>
+        )}
         <div className="pb-entry-visit-actions">
+          {inquiry && inquiryHref && (
+            <a className="pb-entry-btn pb-entry-btn-primary" href={inquiryHref}>
+              Angebot anfragen
+            </a>
+          )}
           {route && (
             <a
-              className="pb-entry-btn pb-entry-btn-primary"
+              className={`pb-entry-btn${inquiry ? "" : " pb-entry-btn-primary"}`}
               href={route}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Route planen
+              {inquiry ? "Anfahrt" : "Route planen"}
             </a>
           )}
           {tel && (
@@ -399,6 +415,35 @@ function EntryVisit({
   );
 }
 
+function EntryProcess({
+  section,
+  state,
+}: {
+  section: SectionOf<"process">;
+  state: EntryState;
+}) {
+  return (
+    <section
+      id={SECTION_ANCHORS.process}
+      className="pb-entry-process"
+      data-entry={state.entry}
+    >
+      <Head title={section.headline ?? "So läuft's ab"} />
+      <ol className="pb-entry-steps">
+        {section.steps.map((step, i) => (
+          <li key={step.title}>
+            <span className="pb-entry-step-num" aria-hidden="true">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <h3>{step.title}</h3>
+            {step.text && <p>{rich(step.text)}</p>}
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 /** Abschnittstypen mit eigener Fassung bei den neuen Einstiegen. */
 export const ENTRY_SECTION_TYPES = [
   "services",
@@ -407,6 +452,7 @@ export const ENTRY_SECTION_TYPES = [
   "testimonials",
   "faq",
   "contact",
+  "process",
 ] as const;
 type EntrySectionType = (typeof ENTRY_SECTION_TYPES)[number];
 
@@ -434,6 +480,8 @@ function renderEntry(
       return <EntryFaq section={section} state={state} />;
     case "contact":
       return <EntryVisit section={section} state={state} />;
+    case "process":
+      return <EntryProcess section={section} state={state} />;
   }
 }
 
@@ -453,6 +501,48 @@ export function EntrySectionSwitch({
 }) {
   const state = useContext(EntryContext);
   return <>{decorate(state ? renderEntry(section, state) : fallback())}</>;
+}
+
+/**
+ * Vertrauensleiste unter dem Einstieg (Handwerk, 2026-10-06): nur Belegtes —
+ * Google-Wert, Meistertitel aus dem Namen, Einsatzgebiet aus dem Ort.
+ */
+export function trustFacts(
+  data: WebsiteDataV2
+): { value: string; label: string }[] {
+  const facts: { value: string; label: string }[] = [];
+  if (data.google && data.google.reviewCount > 0) {
+    facts.push({
+      value: formatRating(data.google.rating),
+      label: `Sterne auf Google · ${data.google.reviewCount.toLocaleString("de-DE")} Bewertungen`,
+    });
+  }
+  if (/meister/i.test(data.businessName))
+    facts.push({ value: "Meister", label: "Meisterbetrieb" });
+  const contact = data.sections.find(
+    (s): s is SectionOf<"contact"> => s.type === "contact"
+  );
+  if (contact?.city) facts.push({ value: contact.city, label: "und Umgebung" });
+  if (/notdienst/i.test(data.businessName))
+    facts.push({ value: "Notdienst", label: "erreichbar" });
+  return facts;
+}
+
+export function EntryTrust() {
+  const state = useContext(EntryContext);
+  if (!state?.blueprint.trust) return null;
+  const facts = trustFacts(state.data);
+  if (facts.length < 2) return null;
+  return (
+    <aside className="pb-entry-trust" aria-label="Auf einen Blick">
+      {facts.map(fact => (
+        <p key={fact.label}>
+          <b>{fact.value}</b>
+          <span>{fact.label}</span>
+        </p>
+      ))}
+    </aside>
+  );
 }
 
 /**
@@ -477,7 +567,10 @@ export function EntryDock() {
       label: hero.ctaText,
       href: hero.ctaHref ?? `#${SECTION_ANCHORS.contact}`,
     });
-  if (route) items.push({ label: "Route", href: route, external: true });
+  const whatsapp = whatsappHref(contact?.phone);
+  if (state.blueprint.contactMode === "inquiry" && whatsapp)
+    items.push({ label: "WhatsApp", href: whatsapp, external: true });
+  else if (route) items.push({ label: "Route", href: route, external: true });
   if (items.length < 2) return null;
   return (
     <nav className="pb-entry-dock" aria-label="Schnellzugriff">
@@ -579,6 +672,19 @@ ${S} .pb-entry-hours [data-today] :is(dt,dd){font-weight:700;color:var(--pb-ink)
 ${S} .pb-entry-hours em{margin-left:8px;padding:2px 8px;border-radius:999px;background:var(--pb-accent);color:var(--pb-accent-contrast);font:600 11px/1.4 var(--pb-font-body);font-style:normal;letter-spacing:.04em}
 ${S} .pb-entry-visit>.pb-island{grid-column:1/-1}
 ${S} .pb-entry-dock{display:none}
+${S} .pb-entry-trust{box-sizing:border-box;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;padding:0 ${INLINE};background:var(--pb-ink);color:var(--pb-canvas)}
+${S} .pb-entry-trust p{margin:0;padding:clamp(22px,2.6vw,34px) clamp(14px,2vw,28px);border-left:1px solid color-mix(in srgb,var(--pb-canvas) 18%,transparent);display:grid;gap:4px}
+${S} .pb-entry-trust p:first-child{border-left:0;padding-left:0}
+${S} .pb-entry-trust b{font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,600);font-size:clamp(1.6rem,2.6vw,2.4rem);line-height:1;letter-spacing:-.02em}
+${S} .pb-entry-trust span{font:400 13px/1.4 var(--pb-font-body);opacity:.75}
+${S} .pb-entry-process{box-sizing:border-box;padding:clamp(72px,9vw,140px) ${INLINE};background:var(--pb-surface);color:var(--pb-ink)}
+${S} .pb-entry-process .pb-entry-head{margin-bottom:clamp(32px,4vw,56px)}
+${S} .pb-entry-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:clamp(18px,2.4vw,32px);counter-reset:none}
+${S} .pb-entry-steps li{position:relative;padding-top:22px;border-top:2px solid var(--pb-ink)}
+${S} .pb-entry-step-num{display:block;margin-bottom:14px;font:600 13px/1 var(--pb-font-body);letter-spacing:.08em;color:var(--pb-art-accent-text,var(--pb-accent))}
+${S} .pb-entry-steps h3{margin:0;font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,600);font-size:clamp(1.25rem,1.8vw,1.6rem);line-height:1.2;color:var(--pb-ink)}
+${S} .pb-entry-steps p{margin:10px 0 0;color:var(--pb-muted);font:400 15px/1.55 var(--pb-font-body)}
+${S} .pb-entry-area{margin:18px 0 0;font:500 15px/1.4 var(--pb-font-body);color:var(--pb-muted)}
 ${S} .pb-entry-quote{box-sizing:border-box;padding:clamp(72px,9vw,136px) ${INLINE};text-align:center}
 ${S} .pb-entry-quote blockquote{margin:0 auto;max-width:none;border:0;padding:0}
 ${S} .pb-entry-quote p{margin:0;font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,500);font-size:clamp(1.8rem,3.6vw,3.4rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance;max-width:24ch;margin-inline:auto}
@@ -603,6 +709,10 @@ ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-price{grid-column:1}
 ${S} .pb-entry-about[data-entry="stage"] .pb-entry-about-media{order:0}
 ${S} .pb-entry-about-media{aspect-ratio:4/3}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:42vw!important}
+${S} .pb-entry-trust{grid-auto-flow:row;grid-template-columns:1fr 1fr;padding:0 var(--pb-shell-pad,6%)}
+${S} .pb-entry-trust p{padding:18px 12px 18px 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--pb-canvas) 18%,transparent)}
+${S} .pb-entry-trust p:nth-child(-n+2){border-top:0}
+${S} .pb-entry-process{padding:64px var(--pb-shell-pad,6%)}
 ${S} .pb-entry-dock{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding:6px;border-radius:16px;background:color-mix(in srgb,var(--pb-ink) 92%,transparent);backdrop-filter:blur(10px);box-shadow:0 14px 30px -12px rgba(0,0,0,.45)}
 ${S} .pb-entry-dock a{display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:11px;color:var(--pb-canvas);font:600 14px/1.2 var(--pb-font-body);text-decoration:none;text-align:center;border:0!important;box-shadow:none!important;background-image:none!important}
 ${S} .pb-entry-dock a[data-primary]{background:var(--pb-accent);color:var(--pb-accent-contrast)}
