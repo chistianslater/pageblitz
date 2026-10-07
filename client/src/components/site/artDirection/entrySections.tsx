@@ -38,6 +38,7 @@ import {
   bandQuote,
   coversToday,
   isBandQuote,
+  isPlaceholderHours,
   shortHours,
   telHref,
   whatsappHref,
@@ -369,7 +370,12 @@ function EntryVisit({
   const route = googleMapsUrl(section.street, section.zip, section.city);
   const tel = telHref(section.phone);
   const whatsapp = whatsappHref(section.phone);
-  const hours = section.openingHours ?? [];
+  // Unterkunft/Sofort-Dienst: „Mo–Fr 9–17" passt nicht — Platzhalter weglassen.
+  const hours =
+    (state.blueprint.id === "stay" || state.blueprint.id === "urgent") &&
+    isPlaceholderHours(section.openingHours)
+      ? []
+      : (section.openingHours ?? []);
   const place = [section.zip, section.city].filter(Boolean).join(" ");
   // Handwerk (2026-10-06): Man besucht keinen Laden, man fragt ein Angebot an.
   const inquiry = state.blueprint.contactMode === "inquiry";
@@ -574,65 +580,59 @@ export function EntrySectionSwitch({
  * Vertrauensleiste unter dem Einstieg (Handwerk, 2026-10-06): nur Belegtes —
  * Google-Wert, Meistertitel aus dem Namen, Einsatzgebiet aus dem Ort.
  */
-export function trustFacts(
-  data: WebsiteDataV2
-): { value: string; label: string }[] {
+/** `weak` = Ort oder Bewertungszahl: allein tragen sie keine Leiste (2026-10-07). */
+type Fact = { value: string; label: string; weak?: boolean };
+
+/** Kontaktwege nur, wenn WhatsApp dabei ist — „Telefon & E-Mail" hat jeder. */
+function channelFact(contact: SectionOf<"contact"> | undefined): Fact | null {
+  if (!whatsappHref(contact?.phone)) return null;
+  return { value: "Telefon & WhatsApp", label: "direkt erreichbar" };
+}
+
+export function trustFacts(data: WebsiteDataV2): Fact[] {
   // Die Google-Note steht schon im Einstieg — hier nur, was dort fehlt.
   const contact = data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
   );
-  const channels = [
-    contact?.phone && "Telefon",
-    whatsappHref(contact?.phone) && "WhatsApp",
-    contact?.email && "E-Mail",
-  ].filter(Boolean) as string[];
-  const facts: { value: string; label: string }[] = [];
+  const facts: Fact[] = [];
   if (/meister/i.test(data.businessName))
     facts.push({ value: "Meister", label: "Meisterbetrieb" });
-  if (contact?.city) facts.push({ value: contact.city, label: "und Umgebung" });
+  if (contact?.city)
+    facts.push({ value: contact.city, label: "und Umgebung", weak: true });
   if (/notdienst/i.test(data.businessName))
     facts.push({ value: "Notdienst", label: "erreichbar" });
-  if (channels.length >= 2)
-    facts.push({
-      value: channels.slice(0, 2).join(" & "),
-      label: "direkt erreichbar",
-    });
+  const channel = channelFact(contact);
+  if (channel) facts.push(channel);
   if (data.google && data.google.reviewCount > 0)
     facts.push({
       value: data.google.reviewCount.toLocaleString("de-DE"),
       label: "Bewertungen auf Google",
+      // Steht schon im Einstieg — trägt die Leiste nicht allein.
+      weak: true,
     });
   return facts.slice(0, 4);
 }
 
 /** Leiste für Betriebe mit Adresse (Praxis, Laden, Werkstatt …). */
-export function visitTrustFacts(
-  data: WebsiteDataV2
-): { value: string; label: string }[] {
+export function visitTrustFacts(data: WebsiteDataV2): Fact[] {
   const contact = data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
   );
-  const facts: { value: string; label: string }[] = [];
+  const facts: Fact[] = [];
   if (/meister/i.test(data.businessName))
     facts.push({ value: "Meister", label: "Meisterbetrieb" });
   if (contact?.street && contact.city)
-    facts.push({ value: contact.city, label: contact.street });
+    facts.push({ value: contact.city, label: contact.street, weak: true });
   if (data.amenities?.wheelchair)
     facts.push({ value: "Barrierefrei", label: "rollstuhlgerechter Eingang" });
-  const channels = [
-    contact?.phone && "Telefon",
-    whatsappHref(contact?.phone) && "WhatsApp",
-    contact?.email && "E-Mail",
-  ].filter(Boolean) as string[];
-  if (channels.length >= 2)
-    facts.push({
-      value: channels.slice(0, 2).join(" & "),
-      label: "direkt erreichbar",
-    });
+  const channel = channelFact(contact);
+  if (channel) facts.push(channel);
   if (data.google && data.google.reviewCount > 0)
     facts.push({
       value: data.google.reviewCount.toLocaleString("de-DE"),
       label: "Bewertungen auf Google",
+      // Steht schon im Einstieg — trägt die Leiste nicht allein.
+      weak: true,
     });
   return facts.slice(0, 4);
 }
@@ -646,7 +646,8 @@ export function EntryTrust() {
       : state.blueprint.serviceArea
         ? trustFacts(state.data)
         : visitTrustFacts(state.data);
-  if (facts.length < 2) return null;
+  // Ohne echten Fakt (nur Ort) keine Leiste — sonst steht Füllstoff da.
+  if (facts.length < 2 || facts.every(f => (f as Fact).weak)) return null;
   return (
     <aside className="pb-entry-trust" aria-label="Auf einen Blick">
       {facts.map(fact => (

@@ -65,6 +65,11 @@ function coversDay(day: string, today: number): boolean {
   return dayIndex(day) === today;
 }
 
+/** Mo–Fr-Platzhalter der Erzeugung statt echter Zeiten? */
+export function isPlaceholderHours(hours: OpeningHours | undefined): boolean {
+  return Boolean(hours?.length) && isPlaceholder(hours!);
+}
+
 function isPlaceholder(hours: OpeningHours): boolean {
   return (
     hours.length === PLACEHOLDER_OPENING_HOURS.length &&

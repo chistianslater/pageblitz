@@ -308,3 +308,26 @@ describe("Branchenfamilien", () => {
     expect(blueprintFor("Zahnarztpraxis").ctaText).toBe("Termin vereinbaren");
   });
 });
+
+describe("Vertrauensleiste ohne Füllstoff", () => {
+  it("bleibt weg, wenn nur Ort und Kontaktwege bekannt sind", () => {
+    const base = getFixture("werkbank", "full");
+    const doc = {
+      ...base,
+      businessName: "Schreinerei Brandt",
+      businessCategory: "Tischlerei",
+      google: undefined,
+      designRevision: 2 as const,
+      designProfile: withEntryComposition(
+        { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
+        { heroLandscape: false, extraPhotos: 3 }
+      ),
+    };
+    const html = renderSiteHtml(doc as typeof base, {
+      origin: "https://pageblitz.de",
+      slug: "test",
+    }).html;
+    expect(html).not.toContain('class="pb-entry-trust"');
+    expect(html).not.toContain("Telefon &amp; E-Mail");
+  });
+});
