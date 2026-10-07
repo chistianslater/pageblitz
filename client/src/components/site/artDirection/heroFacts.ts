@@ -181,3 +181,40 @@ export function pickReviewQuote(
   });
   return candidates.sort((a, b) => quoteScore(a.text) - quoteScore(b.text))[0];
 }
+
+/** Ab hier trägt ein Zitat eine eigene Fläche (Betreiber 2026-10-07: „soll nur nicht alles gleich aussehen"). */
+const BAND_MIN_RATING = 4.7;
+const BAND_MIN_REVIEWS = 20;
+const BAND_MIN_LENGTH = 60;
+/** Nur in der mittleren Fassung (Bühne „center", Farbfläche „stack"). */
+const BAND_VARIANT = 1;
+
+/**
+ * Zitat-Band unter dem Einstieg — nicht mehr auf jeder Seite: nur bei
+ * starker Bewertungslage, einem Satz mit Substanz und in einer der drei
+ * Fassungen. So unterscheiden sich die Seiten, und schwache Zitate tragen
+ * keine große Fläche.
+ */
+export function bandQuote(
+  items: { author: string; text: string; rating?: number }[] | undefined,
+  google: { rating: number; reviewCount: number } | undefined,
+  variantIndex: number
+): { author: string; text: string } | undefined {
+  if (variantIndex !== BAND_VARIANT) return undefined;
+  if (!google || google.rating < BAND_MIN_RATING) return undefined;
+  if (google.reviewCount < BAND_MIN_REVIEWS) return undefined;
+  const quote = pickReviewQuote(items);
+  return quote && quote.text.length >= BAND_MIN_LENGTH ? quote : undefined;
+}
+
+/** Steht diese Bewertung schon im Band? Dann nicht noch einmal darunter. */
+export function isBandQuote(
+  item: { author: string; text: string },
+  quote: { author: string; text: string } | undefined
+): boolean {
+  return Boolean(
+    quote &&
+      item.author === quote.author &&
+      item.text.trim().startsWith(quote.text.slice(0, 40))
+  );
+}

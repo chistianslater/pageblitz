@@ -15,7 +15,10 @@ import type {
   SectionV2,
   WebsiteDataV2,
 } from "../../../../../shared/siteContract/types";
-import { artComposition } from "../../../../../shared/stylePacks/artDirection";
+import {
+  artComposition,
+  entryVariantIndex,
+} from "../../../../../shared/stylePacks/artDirection";
 import {
   blueprintFor,
   type Blueprint,
@@ -31,7 +34,14 @@ import {
   menuPlaceholderShown,
   menuVisible,
 } from "./entryGastro";
-import { coversToday, shortHours, telHref, whatsappHref } from "./heroFacts";
+import {
+  bandQuote,
+  coversToday,
+  isBandQuote,
+  shortHours,
+  telHref,
+  whatsappHref,
+} from "./heroFacts";
 
 export type EntryComposition = "stage" | "colorfield";
 
@@ -277,6 +287,15 @@ function EntryReviews({
   state: EntryState;
 }) {
   const google = state.data.google;
+  // Das Zitat aus dem Band unter dem Einstieg nicht noch einmal zeigen.
+  const band = bandQuote(
+    section.items,
+    google,
+    entryVariantIndex(
+      state.data.stylePackId,
+      state.data.designProfile?.entryVariant
+    )
+  );
   return (
     <section
       id={SECTION_ANCHORS.testimonials}
@@ -300,12 +319,15 @@ function EntryReviews({
         )}
       </div>
       <div className="pb-entry-reviews-list">
-        {section.items.slice(0, 3).map((item, i) => (
-          <blockquote key={i}>
-            <p>{item.text}</p>
-            <footer>{item.author} · Google-Bewertung</footer>
-          </blockquote>
-        ))}
+        {section.items
+          .filter(item => !isBandQuote(item, band))
+          .slice(0, 3)
+          .map((item, i) => (
+            <blockquote key={i}>
+              <p>{item.text}</p>
+              <footer>{item.author} · Google-Bewertung</footer>
+            </blockquote>
+          ))}
       </div>
     </section>
   );

@@ -14,10 +14,11 @@ import {
   ART_DIRECTIONS,
   artComposition,
   entryVariant,
+  entryVariantIndex,
 } from "../../../../../shared/stylePacks/artDirection";
 import { rich, stripMarks } from "../richText";
 import { LAYOUT_SLOT } from "../layoutSlots";
-import { pickReviewQuote, streetLine, telHref, todayLine } from "./heroFacts";
+import { bandQuote, streetLine, telHref, todayLine } from "./heroFacts";
 
 type GoogleRating = NonNullable<WebsiteDataV2["google"]>;
 
@@ -167,7 +168,11 @@ function EntryHero({
     : data.sections.find(
         (s): s is SectionOf<"testimonials"> => s.type === "testimonials"
       );
-  const quote = pickReviewQuote(testimonials?.items);
+  const quote = bandQuote(
+    testimonials?.items,
+    data.google,
+    entryVariantIndex(data.stylePackId, profile?.entryVariant)
+  );
   return (
     <>
       <section

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   pickReviewQuote,
   shortHours,
+  bandQuote,
+  isBandQuote,
   streetLine,
   telHref,
   todayLine,
@@ -158,5 +160,43 @@ describe("pickReviewQuote", () => {
 describe("shortHours bei 24 Stunden", () => {
   it('hängt kein „Uhr" an „24 Stunden geöffnet"', () => {
     expect(shortHours("24 Stunden geöffnet")).toBe("rund um die Uhr geöffnet");
+  });
+});
+
+describe("bandQuote", () => {
+  const items = [
+    {
+      author: "Anna",
+      rating: 5,
+      text: "Der Einbauschrank passt auf den Millimeter, Beratung und Montage liefen ruhig und sauber.",
+    },
+  ];
+  const google = { rating: 4.9, reviewCount: 87 };
+
+  it("zeigt das Band nur in der mittleren Fassung und bei starker Bewertungslage", () => {
+    expect(bandQuote(items, google, 1)?.author).toBe("Anna");
+    expect(bandQuote(items, google, 0)).toBeUndefined();
+    expect(
+      bandQuote(items, { rating: 4.5, reviewCount: 87 }, 1)
+    ).toBeUndefined();
+    expect(
+      bandQuote(items, { rating: 4.9, reviewCount: 12 }, 1)
+    ).toBeUndefined();
+  });
+
+  it("nimmt kurze Allerweltssätze nicht", () => {
+    expect(
+      bandQuote(
+        [{ author: "B", rating: 5, text: "Superpünktlich, sehr freundlich." }],
+        google,
+        1
+      )
+    ).toBeUndefined();
+  });
+
+  it("erkennt die Bewertung aus dem Band wieder", () => {
+    const quote = bandQuote(items, google, 1);
+    expect(isBandQuote(items[0], quote)).toBe(true);
+    expect(isBandQuote({ author: "C", text: "Anders." }, quote)).toBe(false);
   });
 });
