@@ -29,6 +29,14 @@ const MIN_SHORT_SIDE = 500;
  */
 const MIRROR_THRESHOLD = 30;
 const MIRROR_GRID = 64;
+/**
+ * Anteil der häufigsten Farbe (48×48, 16 Stufen je Kanal). Logos und
+ * Schild-Grafiken lagen bei ~0,65, echte Betriebsfotos höchstens bei 0,25
+ * (39 Fotos aus 6 Betrieben, 2026-10-07). Greift nur, wenn das Bildmodell
+ * ausfällt — sonst entscheidet dessen Motiv „grafik".
+ */
+const FLAT_THRESHOLD = 0.45;
+const FLAT_GRID = 48;
 
 export type PhotoSize = { url: string; width: number; height: number };
 
@@ -57,6 +65,8 @@ export type VisionRating = {
 
 export type PhotoCheck = PhotoSize & {
   mirrored: boolean;
+  /** Große einfarbige Flächen — vermutlich Logo/Grafik (nur ohne Bildmodell). */
+  graphic?: boolean;
   vision?: VisionRating;
 };
 
@@ -66,6 +76,7 @@ export type MeasureDeps = {
   fetchImpl?: typeof fetch;
   readSize?: (buffer: Buffer) => Promise<{ width: number; height: number }>;
   readMirror?: (buffer: Buffer) => Promise<number>;
+  readFlat?: (buffer: Buffer) => Promise<number>;
   makeThumb?: (buffer: Buffer) => Promise<string>;
   /** Bildmodell; `null` = nicht verfügbar. Reihenfolge wie `thumbs`. */
   rate?: (
@@ -101,6 +112,23 @@ async function sharpMirror(buffer: Buffer): Promise<number> {
   return diff / ((n * n) / 2);
 }
 
+async function sharpFlat(buffer: Buffer): Promise<number> {
+  const n = FLAT_GRID;
+  const px = await sharp(buffer)
+    .rotate()
+    .resize(n, n, { fit: "fill" })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  const counts = new Map<number, number>();
+  for (let i = 0; i + 2 < px.length; i += 3) {
+    const key =
+      ((px[i] >> 4) << 8) | ((px[i + 1] >> 4) << 4) | (px[i + 2] >> 4);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return Math.max(...counts.values()) / (n * n);
+}
+
 async function sharpThumb(buffer: Buffer): Promise<string> {
   const small = await sharp(buffer)
     .rotate()
@@ -127,6 +155,7 @@ async function inspectPhotos(
   const readSize = deps.readSize ?? sharpSize;
   const readMirror = deps.readMirror ?? sharpMirror;
   const makeThumb = deps.makeThumb ?? sharpThumb;
+  const readFlat = deps.readFlat ?? sharpFlat;
   const checks = await Promise.all(
     urls.map(async (url): Promise<Inspected | null> => {
       const controller = new AbortController();
@@ -139,10 +168,14 @@ async function inspectPhotos(
         if (!(size.width > 0 && size.height > 0)) return null;
         const mirror = await attempt(() => readMirror(buffer));
         const thumb = await attempt(() => makeThumb(buffer));
+        const flat = await attempt(() => readFlat(buffer));
         return {
           url,
           ...size,
           mirrored: mirror !== undefined && mirror < MIRROR_THRESHOLD,
+          ...(flat !== undefined && flat >= FLAT_THRESHOLD
+            ? { graphic: true }
+            : {}),
           thumb,
         };
       } catch {
@@ -281,7 +314,10 @@ export function isFlawed(c: PhotoCheck): boolean {
     c.vision?.collage === true ||
     // Logos und Grafiken sind keine Fotos des Betriebs (Spitzenzeit: das
     // Logo landete als Fotokarte im Einstieg).
-    c.vision?.motiv === "grafik"
+    c.vision?.motiv === "grafik" ||
+    // Ohne Bildmodell (Kontingent erschöpft): große einfarbige Flächen
+    // sprechen für Logo oder Grafik (Siegert, 2026-10-06).
+    (c.vision === undefined && c.graphic === true)
   );
 }
 
@@ -376,12 +412,14 @@ export async function withStagePhoto(
   if (candidates.length === 0) return images;
   const inspected = await inspectPhotos(candidates, deps);
   const withThumbs = inspected.filter(c => c.thumb);
+  const rate = deps.rate ?? rateWithModel;
+  const thumbs = withThumbs.map(c => c.thumb!);
+  // Ein zweiter Versuch: fällt das Bildmodell kurz aus, rutschen sonst
+  // Logos und Screenshots durch.
   const ratings =
     withThumbs.length > 0
-      ? await (deps.rate ?? rateWithModel)(
-          withThumbs.map(c => c.thumb!),
-          category
-        )
+      ? ((await rate(thumbs, category)) ??
+        (deps.rate ? null : await rate(thumbs, category)))
       : null;
   const checks: PhotoCheck[] = inspected.map(({ thumb: _t, ...c }) => {
     const index = withThumbs.findIndex(w => w.url === c.url);

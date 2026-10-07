@@ -8,6 +8,7 @@ import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
 import { withArtDirection, withEntryComposition } from "./artDirection";
+import { INDUSTRY_IMAGES } from "../industryImages";
 import { pickArtTheme } from "./artThemes";
 import { blueprintFor, withBlueprint } from "./blueprints";
 import {
@@ -108,6 +109,59 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       },
     ],
   },
+  hersteller: {
+    hero: {
+      headline: "Metallverarbeitung für die Industrie in Bocholt",
+      subheadline:
+        "Laserschneiden, Kanten und Schweißen nach Zeichnung — vom Einzelteil bis zur Serie, für Betriebe aus dem Münsterland.",
+    },
+    services: [
+      {
+        title: "Laserschneiden",
+        description:
+          "Bleche aus Stahl, Edelstahl und Aluminium nach Ihrer Zeichnung zugeschnitten.",
+      },
+      {
+        title: "Kanten",
+        description:
+          "Abkantteile in gleichbleibender Qualität, vom Muster bis zur Serie.",
+      },
+      {
+        title: "Schweißen",
+        description:
+          "Baugruppen aus Stahl und Edelstahl, montagefertig vorbereitet.",
+      },
+      {
+        title: "Oberflächen",
+        description:
+          "Entgraten, Schleifen und auf Wunsch Beschichtung über Partnerbetriebe.",
+      },
+    ],
+    about:
+      "Wir fertigen Blech- und Schweißteile für Maschinenbauer, Handwerksbetriebe und Industrie aus der Region. Kurze Wege und feste Ansprechpartner sind uns wichtig.\n\nSie schicken uns Zeichnung oder Muster, wir melden uns mit einem Angebot und einem realistischen Liefertermin.",
+    faq: [
+      {
+        question: "Fertigt ihr auch Einzelteile?",
+        answer:
+          "Ja, vom Einzelteil über Prototypen bis zur Serie — schicken Sie uns Zeichnung oder Muster für ein Angebot.",
+      },
+      {
+        question: "In welches Gebiet liefert ihr?",
+        answer:
+          "Wir liefern im Münsterland und am Niederrhein, Abholung bei uns in Bocholt ist ebenfalls möglich.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Thomas R.",
+        text: "Zuverlässiger Partner, Teile kommen sauber und termingerecht.",
+      },
+      {
+        author: "Andrea P.",
+        text: "Schnelle Angebote und kurze Abstimmung, so muss das sein.",
+      },
+    ],
+  },
   taxi: {
     hero: {
       headline: "Taxi in Rhede und Umgebung",
@@ -157,6 +211,31 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     ],
   },
 };
+
+/** Branchenbilder statt Fixture-Fotos, wenn die Fixture nicht passt. */
+function withShowcasePhotos(
+  doc: WebsiteDataV2,
+  photos?: string
+): WebsiteDataV2 {
+  const set = photos ? INDUSTRY_IMAGES[photos] : undefined;
+  if (!set) return doc;
+  const gallery = set.gallery ?? set.hero;
+  const sections = doc.sections.map(section => {
+    if (section.type === "hero") return { ...section, imageUrl: set.hero[0] };
+    if (section.type === "about")
+      return { ...section, imageUrl: set.about?.[0] ?? gallery[0] };
+    if (section.type === "gallery")
+      return {
+        ...section,
+        images: gallery.slice(0, 6).map((url, i) => ({
+          url,
+          alt: `${doc.businessName} – Eindruck ${i + 1}`,
+        })),
+      };
+    return section;
+  }) as WebsiteDataV2["sections"];
+  return { ...doc, sections };
+}
 
 function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   const text = SAMPLE_TEXT[id];
@@ -208,7 +287,10 @@ export function showcaseDoc(
     ...(showcase.amenities ? { amenities: showcase.amenities } : {}),
   };
   const blueprint = blueprintFor(named.businessCategory, named.businessName);
-  const texted = withSampleText(named, showcase.id);
+  const texted = withShowcasePhotos(
+    withSampleText(named, showcase.id),
+    showcase.photos
+  );
   const withExtras: WebsiteDataV2 =
     blueprint.extraSections?.includes("process") &&
     !texted.sections.some(s => s.type === "process")

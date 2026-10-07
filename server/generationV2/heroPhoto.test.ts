@@ -464,3 +464,25 @@ describe("Logos", () => {
     ).toBe(true);
   });
 });
+
+describe("Logo-Rückfall ohne Bildmodell", () => {
+  it("sortiert flächige Grafiken aus, wenn keine Bewertung vorliegt", () => {
+    const base = { url: "a", width: 1200, height: 900, mirrored: false };
+    expect(isFlawed({ ...base, graphic: true })).toBe(true);
+    expect(isFlawed({ ...base })).toBe(false);
+    // Mit Bewertung entscheidet das Bildmodell.
+    expect(
+      isFlawed({
+        ...base,
+        graphic: true,
+        vision: {
+          motiv: "ergebnis",
+          overlay: false,
+          collage: false,
+          quality: 4,
+          heroScore: 4,
+        },
+      })
+    ).toBe(false);
+  });
+});

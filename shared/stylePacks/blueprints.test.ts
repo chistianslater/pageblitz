@@ -46,7 +46,7 @@ describe("Bauplan Handwerk", () => {
       expect(blueprintFor(category).id).toBe("trade");
     // Google führt die Tischlerei Klähn als „Hersteller"
     expect(blueprintFor("Hersteller", "Tischlerei Klähn").id).toBe("trade");
-    expect(blueprintFor("Hersteller", "Brotfabrik").id).toBe("standard");
+    expect(blueprintFor("Hersteller", "Brotfabrik").id).toBe("industry");
   });
 
   it("schreibt einen Ablauf und fragt Angebote an", () => {

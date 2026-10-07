@@ -52,8 +52,12 @@ export function resolveIndustryFamily(
 ): BlueprintId {
   const cat = category?.trim() ?? "";
   const fromTable = cat ? CATEGORY_FAMILIES[categoryKey(cat)] : undefined;
-  if (fromTable && fromTable !== "standard") return fromTable;
   const fromKeyword = keywordFamily(cat, businessName);
+  // „Hersteller" ist bei Google oft ein Handwerksbetrieb (Tischlerei Klähn) —
+  // ein Gewerk im Namen schlägt die allgemeine Tabellen-Familie.
+  if (fromTable === "industry" && fromKeyword && fromKeyword !== "industry")
+    return fromKeyword;
+  if (fromTable && fromTable !== "standard") return fromTable;
   if (fromKeyword) return fromKeyword;
   if (fromTable) return fromTable;
   return (industryKey && INDUSTRY_KEY_FAMILY[industryKey]) || "standard";

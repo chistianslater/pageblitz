@@ -19,6 +19,8 @@ export type Showcase = {
   businessName?: string;
   businessCategory?: string;
   amenities?: WebsiteDataV2["amenities"];
+  /** Branchenbilder statt der Fixture-Fotos (shared/industryImages.ts). */
+  photos?: string;
 };
 
 export const SHOWCASES: readonly Showcase[] = [
@@ -145,6 +147,7 @@ export const SHOWCASES: readonly Showcase[] = [
     fixture: "werkbank",
     businessName: "Kfz-Service Brandt",
     businessCategory: "Autowerkstatt",
+    photos: "automotive",
   },
   {
     id: "musikschule",
@@ -189,6 +192,17 @@ export const SHOWCASES: readonly Showcase[] = [
     fixture: "strom",
     businessName: "Taxi Rhede",
     businessCategory: "Taxiunternehmen",
+    photos: "automotive",
+  },
+  {
+    id: "hersteller",
+    sample: "Kruse Metalltechnik",
+    group: "Betrieb & Industrie",
+    label: "Metallverarbeitung",
+    fixture: "fundament",
+    businessName: "Kruse Metalltechnik GmbH",
+    businessCategory: "Metallverarbeitung",
+    photos: "handwerk",
   },
   {
     id: "gaertnerei",

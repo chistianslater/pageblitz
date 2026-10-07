@@ -15,7 +15,8 @@ export type FamilyId =
   | "courses"
   | "stay"
   | "creative"
-  | "urgent";
+  | "urgent"
+  | "industry";
 
 /** Gemeinsame Verbote für jede Familie. */
 const NO_INVENTION = `- Erfinde KEINE Preise, Zulassungen, Zertifikate, Gründungsjahre, Mitarbeiterzahlen, Marken oder Auszeichnungen. Nur, was in den Fakten steht.`;
@@ -503,6 +504,61 @@ export function urgentBlueprint(category: string): Blueprint {
   };
 }
 
+/* ── Betrieb & Industrie ────────────────────────────────────────────────── */
+
+export const INDUSTRY =
+  /hersteller|herstellung|großhandel|grosshandel|großhändler|grosshändler|lieferant|zulieferer|produktion|fertigung|fabrik|maschinenbau|anlagenbau|anlagenservice|werkzeugbau|metallverarbeit|kunststoff|druckerei|verpackung|logistik|spedition|lager|manufactur|wholesal|supplier|distribut|factory|logistics/i;
+
+export function industryBlueprint(category: string): Blueprint {
+  return {
+    id: "industry",
+    headlines: {
+      services: "Produkte & Leistungen",
+      process: "Zusammenarbeit",
+      about: "Das Unternehmen",
+      gallery: "Einblicke",
+      testimonials: "Das sagen unsere Kunden",
+      faq: "Häufige Fragen",
+      contact: "Kontakt & Anfrage",
+    },
+    ctaText: "Anfrage senden",
+    promptLines: [
+      `- Branche: Unternehmen für Geschäftskunden (${category}). Einkäufer und Betriebe wollen wissen: Was liefert ihr, für wen, wie läuft eine Anfrage.`,
+      `- hero.headline nennt Produkt bzw. Leistung UND Ort, z. B. „Metallbearbeitung für die Industrie in Bocholt“ oder „Getränkegroßhandel im Kreis Borken“.`,
+      `- services.items: Produkte, Fertigungsverfahren oder Leistungen mit 1–4 Wörtern — nur, was zur Kategorie und zu den Fakten passt. Keine Mindestmengen, Lieferzeiten, Preise oder Normen/Zertifikate ohne Beleg.`,
+      `- process.steps: genau 4 Schritte (Anfrage → Abstimmung/Muster → Angebot → Lieferung/Fertigung), je Schritt ein Satz.`,
+      NO_INVENTION,
+      faqLine(
+        "Liefert ihr auch an Privatkunden? In welches Gebiet liefert ihr? Wie läuft eine Anfrage? Gibt es Abholung vor Ort?"
+      ),
+    ],
+    placeholders: [],
+    placeholderText: {},
+    extraSections: ["process"],
+    order: [
+      "hero",
+      "services",
+      "process",
+      "gallery",
+      "about",
+      "testimonials",
+      "faq",
+      "contact",
+    ],
+    trust: true,
+    contactMode: "inquiry",
+    navLabels: {
+      services: "Leistungen",
+      process: "Zusammenarbeit",
+      gallery: "Einblicke",
+      about: "Unternehmen",
+      testimonials: "Bewertungen",
+      faq: "FAQ",
+      contact: "Anfrage",
+    },
+  };
+}
+
 /** Familie zur Kategorie per Stichwort — Reihenfolge entscheidet bei Überschneidung. */
 export function familyByKeyword(text: string): FamilyId | undefined {
   if (URGENT.test(text)) return "urgent";
@@ -512,6 +568,8 @@ export function familyByKeyword(text: string): FamilyId | undefined {
   if (STAY.test(text)) return "stay";
   if (CREATIVE.test(text)) return "creative";
   if (ADVICE.test(text)) return "advice";
+  // Hersteller/Großhandel vor „Handel": „Getränkegroßhandel" ist kein Laden.
+  if (INDUSTRY.test(text)) return "industry";
   if (RETAIL.test(text)) return "retail";
   return undefined;
 }
@@ -538,5 +596,7 @@ export function familyBlueprint(
       return creativeBlueprint(category, name);
     case "urgent":
       return urgentBlueprint(category);
+    case "industry":
+      return industryBlueprint(category);
   }
 }

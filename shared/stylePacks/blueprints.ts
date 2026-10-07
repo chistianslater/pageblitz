@@ -332,6 +332,7 @@ export const BLUEPRINT_IDS = [
   "stay",
   "creative",
   "urgent",
+  "industry",
   "standard",
 ] as const satisfies readonly BlueprintId[];
 

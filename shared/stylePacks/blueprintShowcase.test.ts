@@ -34,6 +34,7 @@ describe("Bauplan-Übersicht", () => {
       ferienwohnung: "stay",
       fotografie: "creative",
       taxi: "urgent",
+      hersteller: "industry",
       gaertnerei: "standard",
     });
     const schreinerei = showcaseDoc(

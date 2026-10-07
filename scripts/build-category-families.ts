@@ -29,9 +29,19 @@ for (const file of files.filter(f => f.endsWith(".json"))) {
     string,
     [string, string]
   >;
-  for (const [id, [de, family]] of Object.entries(data)) {
+  for (const [id, [de, assigned]] of Object.entries(data)) {
+    let family = assigned;
     if (!(BLUEPRINT_IDS as readonly string[]).includes(family)) continue;
     total++;
+    // Hersteller, Großhandel, Lieferanten bekommen „Betrieb & Industrie"
+    // (Familie kam nach der ersten Zuordnung dazu, 2026-10-07).
+    if (
+      ["standard", "retail", "trade"].includes(family) &&
+      /wholesal|supplier|manufactur|distribut|factory|producer|exporter|importer/.test(
+        `${id} ${english.get(id) ?? ""}`.toLowerCase()
+      )
+    )
+      family = "industry";
     counts[family] = (counts[family] ?? 0) + 1;
     for (const name of [de, english.get(id), id.replace(/_/g, " ")])
       if (name) table[categoryKey(name)] ??= family;

@@ -21,3 +21,14 @@ describe("resolveIndustryFamily", () => {
     expect(categoryKey("  Kfz-Werkstatt ")).toBe("kfz werkstatt");
   });
 });
+
+describe("Betrieb & Industrie", () => {
+  it("ordnet Hersteller und Großhandel zu, ohne Handwerker zu verlieren", () => {
+    expect(resolveIndustryFamily("Getränkegroßhandel")).toBe("industry");
+    expect(resolveIndustryFamily("furniture manufacturer")).toBe("industry");
+    expect(resolveIndustryFamily("Hersteller", "Tischlerei Klähn")).toBe(
+      "trade"
+    );
+    expect(resolveIndustryFamily("Anlagenservice")).toBe("industry");
+  });
+});
