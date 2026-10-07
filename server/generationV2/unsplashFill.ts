@@ -15,6 +15,7 @@ import {
   type StockPhoto,
 } from "../_core/stockPhotos";
 import type { BlueprintId } from "../../shared/stylePacks/blueprints";
+import { designSeed } from "../../shared/siteContract/designProfile";
 import { CATEGORY_ENGLISH } from "./categoryEnglish";
 import { categoryKey } from "./industryFamily";
 
@@ -79,17 +80,26 @@ export async function unsplashFill(
   category: string,
   family: BlueprintId,
   count: number,
-  deps: FillDeps = {}
+  deps: FillDeps = {},
+  /**
+   * Betriebsname: Jeder Betrieb bekommt einen anderen Ausschnitt der
+   * Treffer — sonst trügen alle Friseure ohne eigene Fotos dasselbe
+   * Titelbild (Befund 2026-10-07: vier Postkarten-Seiten, ein Foto).
+   */
+  seed = ""
 ): Promise<UnsplashFill> {
   if (count <= 0) return { urls: [], credits: [] };
   const search = deps.search ?? searchStockPhotos;
   const query = unsplashQuery(category, family);
   const result = await search(query, 1, PER_PAGE, "high");
-  const picked = result.photos
-    .filter(
-      p => (p.width ?? 0) >= MIN_WIDTH && (p.width ?? 0) > (p.height ?? 0)
-    )
-    .slice(0, count);
+  const usable = result.photos.filter(
+    p => (p.width ?? 0) >= MIN_WIDTH && (p.width ?? 0) > (p.height ?? 0)
+  );
+  const start = usable.length > 0 ? designSeed(seed) % usable.length : 0;
+  const picked = [...usable.slice(start), ...usable.slice(0, start)].slice(
+    0,
+    count
+  );
   const track = deps.track ?? trackUse;
   const urls: string[] = [];
   const credits: PhotoCredit[] = [];

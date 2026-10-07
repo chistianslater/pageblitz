@@ -395,7 +395,9 @@ export async function resolveV2Images(
       ? await unsplashFill(
           category,
           resolveIndustryFamily(category, business.name, industryKey),
-          TARGET_PHOTOS - gmb.length + FILL_RESERVE
+          TARGET_PHOTOS - gmb.length + FILL_RESERVE,
+          {},
+          business.name
         )
       : { urls: [], credits: [] };
   if (fill.urls.length > 0) {

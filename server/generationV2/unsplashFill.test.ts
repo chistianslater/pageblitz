@@ -42,8 +42,10 @@ describe("unsplashFill", () => {
     expect(search).toHaveBeenCalledWith("carpentry workshop", 1, 30, "high");
     expect(fill.urls).toHaveLength(2);
     expect(fill.urls[0]).toContain("w=1800");
-    expect(fill.credits.map(c => c.name)).toEqual(["Foto a", "Foto b"]);
-    expect(fill.credits[0].match).toBe("https://images.unsplash.com/photo-a");
+    expect(fill.credits.map(c => c.name).sort()).toEqual(["Foto a", "Foto b"]);
+    expect(fill.credits.map(c => c.match)).toContain(
+      "https://images.unsplash.com/photo-a"
+    );
     expect(track).toHaveBeenCalledTimes(2);
   });
 
@@ -57,5 +59,31 @@ describe("unsplashFill", () => {
     expect(
       (await unsplashFill("Schreinerei", "trade", 5, { search })).urls
     ).toEqual([]);
+  });
+});
+
+describe("unsplashFill je Betrieb", () => {
+  it("gibt verschiedenen Betrieben verschiedene Titelbilder", async () => {
+    const photos = Array.from({ length: 12 }, (_, i) =>
+      photo(`p${i}`, 6000, 4000)
+    );
+    const search = vi
+      .fn()
+      .mockResolvedValue({ photos, total: 12, totalPages: 1 });
+    const track = vi.fn();
+    const heroes = new Set<string>();
+    for (const name of ["Salon A", "Haarstudio B", "Friseur C", "Barber D"])
+      heroes.add(
+        (
+          await unsplashFill(
+            "Friseursalon",
+            "beauty",
+            4,
+            { search, track },
+            name
+          )
+        ).urls[0]
+      );
+    expect(heroes.size).toBeGreaterThan(1);
   });
 });
