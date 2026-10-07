@@ -8,6 +8,7 @@
  * Anker bleiben die alten (#leistungen, #galerie, #kontakt …): Studio,
  * Galerie-Lightbox und Kontaktformular-Insel hängen daran.
  */
+import { sectionLayout, spareImages } from "./entryLayouts";
 import { galleryIsStock } from "../PhotoCredits";
 import React, { createContext, useContext } from "react";
 import type {
@@ -147,6 +148,26 @@ function formatRating(rating: number): string {
   });
 }
 
+/**
+ * Fassung „Einleitung": Groß steht nur der erste Satz. Ist der Text ein
+ * einziger Absatz, wird er nach dem ersten Satz geteilt — sonst stünde der
+ * ganze Text in Großschrift.
+ */
+function withLead(paragraphs: string[], lead: boolean): string[] {
+  if (!lead || paragraphs.length !== 1) return paragraphs;
+  const match = paragraphs[0].match(/^(.{40,}?[.!?])\s+(.+)$/s);
+  return match ? [match[1], match[2]] : paragraphs;
+}
+
+/** Titelbild und Über-uns-Bild — nicht noch einmal in Kacheln/Bildpaaren. */
+function shownImages(data: WebsiteDataV2): (string | undefined)[] {
+  return data.sections.map(s =>
+    (s.type === "hero" || s.type === "about") && "imageUrl" in s
+      ? s.imageUrl
+      : undefined
+  );
+}
+
 function EntryServices({
   section,
   state,
@@ -158,17 +179,29 @@ function EntryServices({
     state.preview &&
     state.blueprint.placeholders.includes("pricelist") &&
     !hasSection(state.data, "pricelist");
+  const layout = sectionLayout(state.data, "services");
+  // Fotos nur, wenn jede Kachel eins bekommt — kein Mix mit und ohne Bild.
+  // Die Galerie-Grenze (3 frei) gilt auch hier: Gezählt wird nach dem Kürzen.
+  const spare =
+    layout === "b" ? spareImages(state.data, shownImages(state.data)) : [];
+  const tiles = spare.length >= section.items.length ? spare : [];
   return (
     <>
       <section
         id={SECTION_ANCHORS.services}
         className="pb-entry-services"
         data-entry={state.entry}
+        data-layout={layout}
       >
         <Head title={section.headline ?? "Leistungen"} intro={section.intro} />
         <ol className="pb-entry-list" data-pb-slot={LAYOUT_SLOT.servicesItems}>
           {section.items.map((item, i) => (
             <li key={item.title}>
+              {tiles[i] && (
+                <figure className="pb-entry-tile-media">
+                  <img src={tiles[i]} alt="" loading="lazy" />
+                </figure>
+              )}
               <span className="pb-entry-index" aria-hidden="true">
                 {String(i + 1).padStart(2, "0")}
               </span>
@@ -207,15 +240,25 @@ function EntryAbout({
     !state.data.designProfile?.hiddenElements?.includes("about-media")
       ? section.imageUrl
       : undefined;
-  const paragraphs = section.body.split(/\n{2,}/).filter(p => p.trim());
+  // Ohne Bild bleibt die Grundfassung — Bildband und Bildpaar brauchen Fotos.
+  const layout = image ? sectionLayout(state.data, "about") : "a";
+  const paragraphs = withLead(
+    section.body.split(/\n{2,}/).filter(p => p.trim()),
+    layout === "c"
+  );
+  const second =
+    layout === "c"
+      ? spareImages(state.data, [...shownImages(state.data), image])[1]
+      : undefined;
   return (
     <section
       id={SECTION_ANCHORS.about}
       className="pb-entry-about"
       data-entry={state.entry}
       data-image={image ? "yes" : "no"}
+      data-layout={layout}
     >
-      {image && (
+      {image && layout !== "c" && (
         <figure className="pb-entry-about-media">
           <img src={image} alt="" loading="lazy" />
         </figure>
@@ -226,6 +269,18 @@ function EntryAbout({
           <p key={i}>{rich(p)}</p>
         ))}
       </div>
+      {image && layout === "c" && (
+        <div className="pb-entry-about-pair">
+          <figure>
+            <img src={image} alt="" loading="lazy" />
+          </figure>
+          {second && (
+            <figure>
+              <img src={second} alt="" loading="lazy" />
+            </figure>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -302,6 +357,7 @@ function EntryReviews({
       id={SECTION_ANCHORS.testimonials}
       className="pb-entry-reviews"
       data-entry={state.entry}
+      data-layout={sectionLayout(state.data, "reviews")}
     >
       <div className="pb-entry-reviews-score">
         <Head title={section.headline ?? "Bewertungen"} />
@@ -766,6 +822,7 @@ ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]{display:grid
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure{margin:0;overflow:hidden;border-radius:12px;grid-column:auto!important;width:auto!important;height:auto!important}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure:first-child{grid-column:span 2!important;grid-row:span 2}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure:first-child:nth-last-child(3)~figure{grid-column:span 2!important}
+${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid[data-pb-slot]>figure:first-child:nth-last-child(2)~figure{grid-column:span 2!important;grid-row:span 2}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s var(--pb-art-ease,ease)}
 ${S} #galerie.pb-entry-gallery .pb-entry-gallery-grid figure:hover img{transform:scale(1.03)}
 ${S} .pb-entry-reviews{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:clamp(32px,6vw,96px);align-items:start}

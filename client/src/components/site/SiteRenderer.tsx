@@ -1,3 +1,4 @@
+import { ENTRY_LAYOUTS_CSS } from "./artDirection/entryLayouts";
 import {
   galleryIsStock,
   PhotoCredits,
@@ -424,7 +425,9 @@ export const SiteRenderer: React.FC<{
                 "\n" +
                 ENTRY_SECTIONS_CSS +
                 "\n" +
-                ENTRY_GASTRO_CSS
+                ENTRY_GASTRO_CSS +
+                "\n" +
+                ENTRY_LAYOUTS_CSS
               : "") +
             (effectiveData.photoCredits?.length
               ? "\n" + PHOTO_CREDITS_CSS
