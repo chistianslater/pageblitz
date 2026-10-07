@@ -22,6 +22,8 @@ if (csv)
   }
 
 const table: Record<string, string> = {};
+// Deutscher Kategoriename → englischer Google-Name (Suchbegriff für Unsplash).
+const englishByKey: Record<string, string> = {};
 const counts: Record<string, number> = {};
 let total = 0;
 for (const file of files.filter(f => f.endsWith(".json"))) {
@@ -45,6 +47,8 @@ for (const file of files.filter(f => f.endsWith(".json"))) {
     counts[family] = (counts[family] ?? 0) + 1;
     for (const name of [de, english.get(id), id.replace(/_/g, " ")])
       if (name) table[categoryKey(name)] ??= family;
+    const en = english.get(id);
+    if (en && de) englishByKey[categoryKey(de)] ??= en;
   }
 }
 
@@ -63,6 +67,22 @@ import type { BlueprintId } from "../../shared/stylePacks/blueprints";
 
 export const CATEGORY_FAMILIES: Record<string, BlueprintId> = {
 ${body}
+};
+`
+);
+const englishBody = Object.keys(englishByKey)
+  .sort()
+  .map(k => `  ${JSON.stringify(k)}: ${JSON.stringify(englishByKey[k])},`)
+  .join("\n");
+fs.writeFileSync(
+  path.join("server/generationV2/categoryEnglish.ts"),
+  `/**
+ * Deutscher Google-Kategoriename → englischer Name (${Object.keys(englishByKey).length} Einträge),
+ * Suchbegriff für Unsplash (englisch verschlagwortet).
+ * Erzeugt von scripts/build-category-families.ts — nicht von Hand pflegen.
+ */
+export const CATEGORY_ENGLISH: Record<string, string> = {
+${englishBody}
 };
 `
 );

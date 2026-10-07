@@ -1,3 +1,8 @@
+import {
+  galleryIsStock,
+  PhotoCredits,
+  PHOTO_CREDITS_CSS,
+} from "./PhotoCredits";
 import { ENTRY_GASTRO_CSS } from "./artDirection/entryGastro";
 import {
   ENTRY_SECTIONS_CSS,
@@ -262,11 +267,19 @@ export const SiteRenderer: React.FC<{
   const designProfile = effectiveData.designProfile;
   const entry = entryState(effectiveData, preview, now);
   const blueprintNav = entry?.blueprint.navLabels;
+  // Stockfotos nicht als „Referenzen" ausgeben (Betreiber 2026-10-07).
+  const stockGallery = galleryIsStock(effectiveData);
   const navItems = buildNavItems(effectiveData, { pathname, basePath }).map(
     item =>
-      blueprintNav && item.sectionType && blueprintNav[item.sectionType]
-        ? { ...item, label: blueprintNav[item.sectionType]!, fixedLabel: true }
-        : item
+      item.sectionType === "gallery" && stockGallery
+        ? { ...item, label: "Einblicke", fixedLabel: true }
+        : blueprintNav && item.sectionType && blueprintNav[item.sectionType]
+          ? {
+              ...item,
+              label: blueprintNav[item.sectionType]!,
+              fixedLabel: true,
+            }
+          : item
   );
   const currentPage = pageForPathname(effectiveData, pathname);
   // Eine Unterseite rendert über dasselbe `mod.Page` wie die Startseite —
@@ -393,6 +406,9 @@ export const SiteRenderer: React.FC<{
                 ENTRY_SECTIONS_CSS +
                 "\n" +
                 ENTRY_GASTRO_CSS
+              : "") +
+            (effectiveData.photoCredits?.length
+              ? "\n" + PHOTO_CREDITS_CSS
               : ""),
         }}
       />
@@ -423,6 +439,7 @@ export const SiteRenderer: React.FC<{
           sections={pageSections}
         />
         <EntryDock />
+        <PhotoCredits data={effectiveData} />
       </EntryContext.Provider>
       {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
           der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der

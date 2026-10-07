@@ -641,6 +641,17 @@ export const WebsiteDataV2Schema = z
     // Unternehmensprofil ausdrücklich meldet — fehlt ein Feld, ist es
     // unbekannt, nicht „nein".
     amenities: AmenitiesSchema.optional(),
+    // Bildnachweis für Unsplash-Fotos (2026-10-07, API-Guidelines): der
+    // Seitenfuß nennt nur Fotografen, deren Bild (`match`) noch im Dokument
+    // steht.
+    photoCredits: z
+      .array(
+        z
+          .object({ name: z.string(), url: SafeUrlSchema, match: z.string() })
+          .strict()
+      )
+      .max(24)
+      .optional(),
     // Branchen-Bauplan, bei der Erzeugung bestimmt (2026-10-06): Google kennt
     // ~4.000 Kategorien, Stichwörter allein reichen nicht — die Familie
     // steht deshalb im Dokument (server/generationV2/industryFamily.ts).

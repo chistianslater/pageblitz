@@ -1,3 +1,5 @@
+import { unsplashFill, type PhotoCredit } from "./unsplashFill";
+import { resolveIndustryFamily } from "./industryFamily";
 import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { AKTUELLER_DESIGN_STAND } from "../../shared/siteContract/designStand";
 import {
@@ -117,6 +119,8 @@ export interface V2Images {
    * Einstieg „Bühne" vs. „Farbfläche"; nie im Dokument gespeichert.
    */
   heroLandscape?: boolean;
+  /** Bildnachweis der Unsplash-Fotos (landet als `photoCredits` im Dokument). */
+  credits?: PhotoCredit[];
 }
 
 const OWN_PHOTO_URL = /https?:\/\/[^"\s]+\/gmb-[^"\s]+/g;
@@ -301,6 +305,10 @@ async function devPhasePause(): Promise<void> {
 
 /** Max. GMB-Fotos pro Job (Spec §2.1: „photos bis 8"). */
 const MAX_GMB_PHOTOS = 8;
+/** So viele Fotos soll eine Seite haben (Einstieg, Über uns, Galerie). */
+const TARGET_PHOTOS = 9;
+/** Zusätzliche Unsplash-Kandidaten, weil die Fotoprüfung aussortiert. */
+const FILL_RESERVE = 3;
 /** Galerie nur, wenn mindestens so viele brauchbare GMB-Fotos existieren (Spec §2.2). */
 const MIN_GALLERY_PHOTOS = 3;
 
@@ -379,6 +387,26 @@ export async function resolveV2Images(
     business.placeId && !business.placeId.startsWith("self-")
       ? await mirrorGmbPhotosToR2(business.placeId, websiteId, MAX_GMB_PHOTOS)
       : [];
+  // Reichlich bebildert (Betreiber 2026-10-07: „je mehr Fotos, desto besser,
+  // nur hochwertig"): eigene Fotos zuerst, Unsplash zur genauen Kategorie
+  // füllt auf. Ein paar mehr als nötig — die Fotoprüfung sortiert aus.
+  const fill =
+    gmb.length < TARGET_PHOTOS
+      ? await unsplashFill(
+          category,
+          resolveIndustryFamily(category, business.name, industryKey),
+          TARGET_PHOTOS - gmb.length + FILL_RESERVE
+        )
+      : { urls: [], credits: [] };
+  if (fill.urls.length > 0) {
+    const pool = Array.from(new Set([...gmb, ...fill.urls]));
+    return {
+      hero: pool[0],
+      about: pool[1],
+      gallery: pool,
+      credits: fill.credits,
+    };
+  }
   if (gmb.length === 0) {
     // Ohne Google-Fotos UND ohne passende Branchengruppe blieben generische
     // Büromotive übrig (Betreiber-Befund 2026-09-20: Laptops beim Friseur).

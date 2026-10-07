@@ -21,6 +21,12 @@ vi.mock("../industryClassifier", () => ({
 // Seit Plan B7 Task 3 spiegelt der Job GMB-Fotos nach R2 (Key-Leak
 // geschlossen) — resolveV2Images nutzt mirrorGmbPhotosToR2 statt getGmbPhotos.
 vi.mock("../gmbPhotos", () => ({ mirrorGmbPhotosToR2: vi.fn() }));
+// Fotoprüfung lädt echte Bilder aus dem Netz — im Test durchreichen, sonst
+// hängt das Ergebnis davon ab, welche Stock-URLs gerade erreichbar sind.
+vi.mock("./heroPhoto", async importOriginal => ({
+  ...(await importOriginal<typeof import("./heroPhoto")>()),
+  withStagePhoto: vi.fn(async (images: unknown) => images),
+}));
 vi.mock("../gmb/siteCrawl", () => ({ crawlExistingSite: vi.fn() }));
 vi.mock("./selectPack", () => ({
   selectPack: vi.fn().mockResolvedValue("werkbank"),

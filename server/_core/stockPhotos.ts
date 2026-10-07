@@ -12,10 +12,17 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export interface StockPhoto {
   id: string;
-  url: string;         // full-res landscape (w=1600)
-  thumb: string;       // thumbnail (w=400)
+  url: string; // full-res landscape (w=1600)
+  thumb: string; // thumbnail (w=400)
   photographer: string;
   photographerUrl: string;
+  /** Originalmaße — für die Auswahl großer Querformate (Seitenerzeugung). */
+  width?: number;
+  height?: number;
+  /** Basis-URL ohne Parameter: eigene Größe wählen, Bildnachweis zuordnen. */
+  raw?: string;
+  /** Nutzung melden (Unsplash-API-Guidelines). */
+  downloadLocation?: string;
 }
 
 export interface StockSearchResult {
@@ -23,7 +30,6 @@ export interface StockSearchResult {
   total: number;
   totalPages: number;
 }
-
 
 /**
  * Unsplash ist englisch verschlagwortet — deutsche Komposita wie
@@ -115,6 +121,11 @@ const GERMAN_QUERY_FALLBACKS: Record<string, string> = {
 const COMPOUND_SUFFIXES =
   /(studio|salon|praxis|service|betrieb|meisterbetrieb|zentrum|haus)$/;
 
+/** Gepflegte englische Übersetzung einer deutschen Branche (oder `undefined`). */
+export function germanQueryFallback(query: string): string | undefined {
+  return fallbackQueryFor(query) ?? undefined;
+}
+
 function fallbackQueryFor(query: string): string | null {
   const key = query.toLowerCase().trim();
   const direct = GERMAN_QUERY_FALLBACKS[key];
@@ -129,7 +140,9 @@ function fallbackQueryFor(query: string): string | null {
 export async function searchStockPhotos(
   query: string,
   page = 1,
-  perPage = 12
+  perPage = 12,
+  /** Nur jugendfreie Treffer (Seitenerzeugung); das Studio sucht frei. */
+  contentFilter?: "high"
 ): Promise<StockSearchResult> {
   const empty: StockSearchResult = { photos: [], total: 0, totalPages: 0 };
 
@@ -139,7 +152,7 @@ export async function searchStockPhotos(
     return empty;
   }
 
-  const cacheKey = `${query.toLowerCase().trim()}:${page}:${perPage}`;
+  const cacheKey = `${query.toLowerCase().trim()}:${page}:${perPage}:${contentFilter ?? ""}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.expires > Date.now()) return cached.data;
 
@@ -149,6 +162,7 @@ export async function searchStockPhotos(
       per_page: String(perPage),
       page: String(page),
       orientation: "landscape",
+      ...(contentFilter ? { content_filter: contentFilter } : {}),
     });
     const res = await fetch(`${UNSPLASH_BASE}/search/photos?${params}`, {
       headers: { Authorization: `Client-ID ${apiKey}` },
@@ -164,10 +178,16 @@ export async function searchStockPhotos(
       photos: (data.results || []).map((p: any) => ({
         id: String(p.id),
         // Append utm params for Unsplash attribution compliance
-        url:  p.urls.regular  + "&utm_source=pageblitz&utm_medium=referral",
-        thumb: p.urls.small   + "&utm_source=pageblitz&utm_medium=referral",
+        url: p.urls.regular + "&utm_source=pageblitz&utm_medium=referral",
+        thumb: p.urls.small + "&utm_source=pageblitz&utm_medium=referral",
         photographer: p.user?.name ?? "Unbekannt",
-        photographerUrl: (p.user?.links?.html ?? "https://unsplash.com") + "?utm_source=pageblitz&utm_medium=referral",
+        photographerUrl:
+          (p.user?.links?.html ?? "https://unsplash.com") +
+          "?utm_source=pageblitz&utm_medium=referral",
+        width: p.width,
+        height: p.height,
+        raw: p.urls?.raw,
+        downloadLocation: p.links?.download_location,
       })),
       total: data.total ?? 0,
       totalPages: data.total_pages ?? 0,
@@ -176,7 +196,12 @@ export async function searchStockPhotos(
     if (result.total === 0) {
       const fallback = fallbackQueryFor(query);
       if (fallback && fallback.toLowerCase() !== query.toLowerCase().trim()) {
-        const translated = await searchStockPhotos(fallback, page, perPage);
+        const translated = await searchStockPhotos(
+          fallback,
+          page,
+          perPage,
+          contentFilter
+        );
         // Unter dem ORIGINAL-Key cachen, damit Folge-Seiten derselben
         // deutschen Suche nicht jedes Mal doppelt anfragen.
         cache.set(cacheKey, {

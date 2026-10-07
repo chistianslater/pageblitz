@@ -54,7 +54,13 @@ interface GenerateSiteContentFacts {
    * Galerien (fremde Hosts) werden gestrippt, damit Hero/About/Galerie
    * nicht auf leere/kaputte Sektionen zusammenfallen.
    */
-  images?: { hero?: string; about?: string; gallery?: string[] };
+  images?: {
+    hero?: string;
+    about?: string;
+    gallery?: string[];
+    /** Unsplash-Bildnachweis — nur Einträge, deren Foto im Dokument landet. */
+    credits?: { name: string; url: string; match: string }[];
+  };
   /**
    * Deterministische Testimonials aus echten Google-Reviews
    * (`selectTestimonialReviews` in facts.ts, Spec §2.2): setzt/ersetzt die
@@ -327,7 +333,19 @@ function mergeFacts(
       : {}),
     ...(facts.google !== undefined ? { google: facts.google } : {}),
     ...(facts.amenities ? { amenities: facts.amenities } : {}),
+    ...usedCredits(sections, facts.images?.credits),
   };
+}
+
+/** Bildnachweis nur für Fotos, die tatsächlich im Dokument stehen. */
+function usedCredits(
+  sections: WebsiteDataV2["sections"],
+  credits: { name: string; url: string; match: string }[] | undefined
+): Pick<WebsiteDataV2, "photoCredits"> {
+  if (!credits?.length) return {};
+  const json = JSON.stringify(sections);
+  const used = credits.filter(c => json.includes(c.match)).slice(0, 24);
+  return used.length ? { photoCredits: used } : {};
 }
 
 /** Familie im Dokument festhalten — Standard bleibt ohne Feld. */

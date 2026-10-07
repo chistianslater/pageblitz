@@ -381,8 +381,15 @@ export function curateImages(images: V2Images, checks: PhotoCheck[]): V2Images {
         (ok(images.about) && images.about !== hero ? images.about : undefined));
 
   const cleanGallery = images.gallery?.filter(ok);
+  // Kein Foto doppelt (Betreiber 2026-10-07): Titelbild und Über uns
+  // stehen nicht noch einmal in der Galerie — solange drei übrig bleiben.
+  const distinct = cleanGallery?.filter(u => u !== hero && u !== about);
   const gallery =
-    cleanGallery && cleanGallery.length > 0 ? cleanGallery : images.gallery;
+    distinct && distinct.length >= 3
+      ? distinct
+      : cleanGallery && cleanGallery.length > 0
+        ? cleanGallery
+        : images.gallery;
 
   return {
     ...images,
