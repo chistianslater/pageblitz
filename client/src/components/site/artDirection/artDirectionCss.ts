@@ -93,7 +93,7 @@ export const ART_DIRECTION_CSS = `
 .pb-site[data-pb-revision="2"].pb-patina .pb-art-media{border-radius:4px}.pb-site[data-pb-revision="2"].pb-patina .pb-art-copy h1{font-style:italic;line-height:1.15}
 .pb-site[data-pb-revision="2"].pb-marktplatz .pb-art-media{border-radius:50px 10px 50px 10px}.pb-site[data-pb-revision="2"].pb-marktplatz{--pb-art-weight:700}
 .pb-site[data-pb-revision="2"].pb-landgut .pb-art-media{border-radius:48% 48% 0 0}.pb-site[data-pb-revision="2"].pb-landgut #ueber-uns img{border-radius:4px}
-.pb-site[data-pb-revision="2"].pb-atelier .pb-at-masthead-wrap{display:none}.pb-site[data-pb-revision="2"].pb-atelier .pb-art-media{filter:saturate(.75)}
+.pb-site[data-pb-revision="2"].pb-atelier .pb-at-masthead-wrap{display:none}.pb-site[data-pb-revision="2"].pb-atelier .pb-at-nav-brand{display:block;margin-right:auto;max-width:60vw;font:400 clamp(1.1rem,1.6vw,1.4rem)/1.1 var(--pb-font-display);letter-spacing:-.01em;text-transform:none;color:var(--pb-ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pb-site[data-pb-revision="2"].pb-atelier .pb-art-media{filter:saturate(.75)}
 .pb-site[data-pb-revision="2"].pb-klarwerk .pb-art-media{border:1px solid var(--pb-line);padding:8px;background:var(--pb-surface)}
 .pb-site[data-pb-revision="2"].pb-verve{--pb-art-weight:700}.pb-site[data-pb-revision="2"].pb-verve .pb-art-wordmark{color:var(--pb-accent-text,var(--pb-accent))}
 .pb-site[data-pb-revision="2"].pb-zunft .pb-art-media{outline:1px solid var(--pb-line);outline-offset:-12px}.pb-site[data-pb-revision="2"].pb-zunft .pb-art-copy h1{letter-spacing:-.035em}

@@ -120,14 +120,23 @@ function Placeholder({
 }) {
   return (
     <aside className="pb-entry-placeholder" data-kind={kind} aria-label={title}>
-      <span className="pb-entry-placeholder-tag">Nur in deiner Vorschau</span>
-      <h3>{title}</h3>
-      <p>{text}</p>
+      <div className="pb-entry-placeholder-copy">
+        <span className="pb-entry-placeholder-tag">Nur in deiner Vorschau</span>
+        <h3>{title}</h3>
+        <p>{text}</p>
+      </div>
       {kind === "team" && (
+        // Porträtrahmen statt grauer Kreise (2026-10-07): zeigt, wo die
+        // Teamfotos hinkommen, ohne unfertig zu wirken.
         <span className="pb-entry-placeholder-faces" aria-hidden="true">
-          <i />
-          <i />
-          <i />
+          {[0, 1, 2].map(i => (
+            <i key={i}>
+              <svg viewBox="0 0 48 60" focusable="false">
+                <circle cx="24" cy="22" r="10" />
+                <path d="M6 58c2-12 9.5-18 18-18s16 6 18 18" />
+              </svg>
+            </i>
+          ))}
         </span>
       )}
     </aside>
@@ -808,8 +817,11 @@ ${S} .pb-entry-placeholder{position:relative;margin-top:32px;padding:clamp(22px,
 ${S} .pb-entry-placeholder h3{margin:12px 0 6px;font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,600);font-size:clamp(1.3rem,2vw,1.8rem);line-height:1.15;color:var(--pb-ink)}
 ${S} .pb-entry-placeholder p{margin:0;max-width:60ch;color:var(--pb-muted);font:400 15px/1.55 var(--pb-font-body)}
 ${S} .pb-entry-placeholder-tag{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--pb-accent);color:var(--pb-accent-contrast);font:600 11px/1.3 var(--pb-font-body);letter-spacing:.06em;text-transform:uppercase}
-${S} .pb-entry-placeholder-faces{display:flex;gap:14px;margin-top:20px}
-${S} .pb-entry-placeholder-faces i{width:72px;height:72px;border-radius:50%;background:color-mix(in srgb,var(--pb-ink) 10%,transparent);border:1.5px dashed color-mix(in srgb,var(--pb-ink) 30%,transparent)}
+${S} .pb-entry-placeholder[data-kind="team"]{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(20px,4vw,56px);align-items:center}
+${S} .pb-entry-placeholder-faces{display:flex;gap:clamp(10px,1.4vw,16px)}
+${S} .pb-entry-placeholder-faces i{display:grid;place-items:end center;width:clamp(72px,8vw,108px);aspect-ratio:3/4;border-radius:12px;border:1.5px dashed color-mix(in srgb,var(--pb-ink) 28%,transparent);background:color-mix(in srgb,var(--pb-canvas) 70%,transparent);overflow:hidden}
+${S} .pb-entry-placeholder-faces svg{width:70%;fill:none;stroke:color-mix(in srgb,var(--pb-ink) 30%,transparent);stroke-width:1.6;stroke-linecap:round}
+${S} .pb-entry-placeholder-faces i:nth-child(2){transform:translateY(-10px)}
 ${S} .pb-entry-team-slot{padding-top:0!important}
 ${S} .pb-entry-about{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(32px,6vw,96px);align-items:center;background:var(--pb-surface)}
 ${S} .pb-entry-about[data-image="no"]{grid-template-columns:minmax(0,1fr)}
@@ -893,6 +905,7 @@ ${S} ${BLOCKS}{padding:64px var(--pb-shell-pad,6%)}
 ${S} :is(.pb-entry-services[data-entry="stage"],.pb-entry-about,.pb-entry-reviews,.pb-entry-faq,.pb-entry-visit){grid-template-columns:1fr;gap:28px}
 ${S} .pb-entry-services[data-entry="stage"] .pb-entry-head{position:static}
 ${S} .pb-entry-services[data-entry="stage"] .pb-entry-placeholder{grid-column:1}
+${S} .pb-entry-placeholder[data-kind="team"]{grid-template-columns:1fr}
 ${S} .pb-entry-list li{grid-template-columns:36px minmax(0,1fr);padding:22px 0}
 ${S} .pb-entry-price{grid-column:2}
 ${S} .pb-entry-services[data-entry="colorfield"] .pb-entry-list li{grid-template-columns:minmax(0,1fr)}

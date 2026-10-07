@@ -200,3 +200,11 @@ describe("bandQuote", () => {
     expect(isBandQuote({ author: "C", text: "Anders." }, quote)).toBe(false);
   });
 });
+
+describe("shortHours mit Zusatz", () => {
+  it('setzt „Uhr" vor die Klammer', () => {
+    expect(shortHours("10:00–18:00 (nach Termin)")).toBe(
+      "10–18 Uhr (nach Termin)"
+    );
+  });
+});

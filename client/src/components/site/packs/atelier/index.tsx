@@ -438,6 +438,11 @@ const AtelierPage: React.FC<{
   return (
     <div className="pb-atelier">
       <nav className="pb-at-nav">
+        {/* Nur bei den neuen Einstiegen sichtbar: Dort fehlt der Zeitungskopf
+            mit dem Namen (artDirectionCss), sonst stünde oben kein Name. */}
+        <a className="pb-at-nav-brand" href="#start">
+          {data.businessName}
+        </a>
         <div className="pb-at-nav-links">
           {navList.map(item => (
             <a

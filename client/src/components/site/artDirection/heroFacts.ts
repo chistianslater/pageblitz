@@ -92,7 +92,10 @@ export function shortHours(hours: string): string {
     .replace(/:00\b/g, "")
     .replace(/\s*[–-]\s*/g, "–")
     .trim();
-  return /\d/.test(compact) ? `${compact} Uhr` : hours.trim();
+  if (!/\d/.test(compact)) return hours.trim();
+  // „10–18 (nach Termin)" → „10–18 Uhr (nach Termin)", nicht „… (nach Termin) Uhr".
+  const note = compact.match(/^(.*?)\s*(\(.*\))\s*$/);
+  return note ? `${note[1]} Uhr ${note[2]}` : `${compact} Uhr`;
 }
 
 /**
