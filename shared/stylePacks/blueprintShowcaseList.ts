@@ -202,7 +202,7 @@ export const SHOWCASES: readonly Showcase[] = [
     fixture: "fundament",
     businessName: "Kruse Metalltechnik GmbH",
     businessCategory: "Metallverarbeitung",
-    photos: "handwerk:1",
+    photos: "handwerk:0",
   },
   {
     id: "gaertnerei",

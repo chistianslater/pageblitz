@@ -211,13 +211,17 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "tiefbau",
       "rohbau",
     ],
+    // Fensterputzerin entfernt (2026-10-07): stand bei jeder Schreinerei
+    // ohne eigene Fotos im Einstieg.
     hero: [
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1595814432314-90095f342694?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
     ],
   },
