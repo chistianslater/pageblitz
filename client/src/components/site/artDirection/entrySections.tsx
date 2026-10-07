@@ -8,6 +8,7 @@
  * Anker bleiben die alten (#leistungen, #galerie, #kontakt …): Studio,
  * Galerie-Lightbox und Kontaktformular-Insel hängen daran.
  */
+import { galleryIsStock } from "../PhotoCredits";
 import React, { createContext, useContext } from "react";
 import type {
   SectionOf,
@@ -236,7 +237,14 @@ function EntryGallery({
         className="pb-entry-gallery"
         data-entry={state.entry}
       >
-        <Head title={section.headline ?? "Einblicke"} />
+        <Head
+          title={
+            // Stockfotos nicht als „Referenzen" ausgeben (2026-10-07).
+            galleryIsStock(state.data)
+              ? "Einblicke"
+              : (section.headline ?? "Einblicke")
+          }
+        />
         <div
           className="pb-entry-gallery-grid"
           data-pb-slot={LAYOUT_SLOT.galleryItems}
