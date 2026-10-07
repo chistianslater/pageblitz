@@ -45,6 +45,8 @@ const SAMPLE_PROCESS: SectionOf<"process"> = {
 
 type SampleText = {
   hero: { headline: string; subheadline: string };
+  /** Adresse passend zum Beispiel (die Fixture gehört zu einer anderen Firma). */
+  contact: { street: string; zip: string; city: string; phone: string };
   services: { title: string; description: string }[];
   about: string;
   faq: { question: string; answer: string }[];
@@ -57,6 +59,12 @@ type SampleText = {
  */
 const SAMPLE_TEXT: Record<string, SampleText> = {
   werkstatt: {
+    contact: {
+      street: "Hörder Bahnhofstraße 12",
+      zip: "44263",
+      city: "Dortmund",
+      phone: "0231 555 4471",
+    },
     hero: {
       headline: "Kfz-Werkstatt in Dortmund-Hörde",
       subheadline:
@@ -110,6 +118,12 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     ],
   },
   hersteller: {
+    contact: {
+      street: "Industriestraße 8",
+      zip: "46395",
+      city: "Bocholt",
+      phone: "02871 555 120",
+    },
     hero: {
       headline: "Metallverarbeitung für die Industrie in Bocholt",
       subheadline:
@@ -163,6 +177,12 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     ],
   },
   taxi: {
+    contact: {
+      street: "Rathausplatz 3",
+      zip: "46414",
+      city: "Rhede",
+      phone: "02872 555 300",
+    },
     hero: {
       headline: "Taxi in Rhede und Umgebung",
       subheadline:
@@ -217,11 +237,14 @@ function withShowcasePhotos(
   doc: WebsiteDataV2,
   photos?: string
 ): WebsiteDataV2 {
-  const set = photos ? INDUSTRY_IMAGES[photos] : undefined;
+  const [name, start] = (photos ?? "").split(":");
+  const set = name ? INDUSTRY_IMAGES[name] : undefined;
   if (!set) return doc;
+  const first = Number(start ?? 0);
   const gallery = set.gallery ?? set.hero;
   const sections = doc.sections.map(section => {
-    if (section.type === "hero") return { ...section, imageUrl: set.hero[0] };
+    if (section.type === "hero")
+      return { ...section, imageUrl: set.hero[first] ?? set.hero[0] };
     if (section.type === "about")
       return { ...section, imageUrl: set.about?.[0] ?? gallery[0] };
     if (section.type === "gallery")
@@ -243,7 +266,15 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   const sections = doc.sections.map(section => {
     switch (section.type) {
       case "hero":
-        return { ...section, ...text.hero };
+        // Hauptaktion setzt der Bauplan (die Fixture hätte „Immobilie bewerten lassen").
+        return {
+          ...section,
+          ...text.hero,
+          ctaText: undefined,
+          ctaHref: undefined,
+        };
+      case "contact":
+        return { ...section, ...text.contact };
       case "services":
         return { ...section, items: text.services };
       case "about":

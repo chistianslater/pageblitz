@@ -91,7 +91,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
     hero: [
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1555939594-58d7cb561404?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1400&q=85&auto=format&fit=crop",
     ],
@@ -150,12 +149,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
     hero: [
       "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1574129624162-fa167303c403?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1593504049359-74330189a345?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1574071318508-1cdbad80ad50?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=800&q=80&auto=format&fit=crop",
     ],
   },
@@ -180,13 +177,11 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "tapasbar",
     ],
     hero: [
-      "https://images.unsplash.com/photo-1514432324607-2e467f4af445?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1527761939622-933c972a0b08?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800&q=80&auto=format&fit=crop",
     ],
   },
@@ -218,12 +213,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
     hero: [
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1584622674529-47cadf5f1eeb?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1584622674529-47cadf5f1eeb?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&q=80&auto=format&fit=crop",
     ],
@@ -315,12 +308,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
     hero: [
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1631217314831-c6227db76b6e?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1631217314831-c6227db76b6e?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80&auto=format&fit=crop",
     ],
@@ -397,12 +388,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "kfz-werkstatt",
     ],
     hero: [
-      "https://images.unsplash.com/photo-1487622914050-2dcc6b9995cc?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1537984822441-cff330075342?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1487622914050-2dcc6b9995cc?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1537984822441-cff330075342?w=800&q=80&auto=format&fit=crop",
@@ -471,7 +460,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "gartenarbeit",
     ],
     hero: [
-      "https://images.unsplash.com/photo-1466781783364-f716f4a00f30?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=1400&q=85&auto=format&fit=crop",
     ],
@@ -544,12 +532,10 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "ferienhof",
     ],
     hero: [
-      "https://images.unsplash.com/photo-1582719471537-41efb92911d3?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1400&q=85&auto=format&fit=crop",
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1582719471537-41efb92911d3?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&auto=format&fit=crop",
