@@ -70,6 +70,7 @@ import {
   deleteContactSubmission,
   getChatTranscriptsByWebsiteId,
   deleteChatTranscriptById,
+  insertWebsiteVersion,
 } from "./db";
 import type { InsertUser } from "../drizzle/schema";
 import { ensureAdminDemoWebsite } from "./adminDemoWebsite";
@@ -109,6 +110,7 @@ import { applyChatConfig, applyContactFormConfig } from "./customerAddonConfig";
 import {
   ChatConfigSchema,
   ContactFormConfigSchema,
+  WebsiteDataV2Schema,
 } from "../shared/siteContract/schema";
 import { readSubscriptionAddOns } from "./onboardingV2/addOnFlags";
 import { syncSubscriptionAddOns } from "./stripeAddons";
@@ -1154,7 +1156,17 @@ export const appRouter = router({
     // Slug + Token: der bisherige Preview-Link wird ungültig (Hinweistext in
     // WebsitesPage.tsx).
     regenerate: adminProcedure
-      .input(z.object({ websiteId: z.number() }))
+      .input(
+        z.object({
+          websiteId: z.number(),
+          /**
+           * Adresse, Vorschau-Link, Status und gewählte Designrichtung
+           * behalten (2026-10-07: bestehende Seiten auf die Baupläne
+           * bringen, ohne verschickte Links zu brechen).
+           */
+          keepLinks: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const website = await getWebsiteById(input.websiteId);
         if (!website)
@@ -1165,7 +1177,9 @@ export const appRouter = router({
         // Verkaufte/aktive Websites werden nicht neu erstellt — Regenerierung
         // würde bezahlten Kundinnen ihre bearbeiteten Inhalte überschreiben.
         // Nur Preview-Websites (vor dem Checkout) dürfen neu generiert werden.
-        if (website.status !== "preview")
+        // Ausnahme: eigene Admin-Demos, und nur mit behaltenen Links.
+        const ownDemo = input.keepLinks === true && website.source === "admin";
+        if (website.status !== "preview" && !ownDemo)
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: "Verkaufte Websites werden nicht neu erstellt",
@@ -1179,7 +1193,11 @@ export const appRouter = router({
 
         const category = business.category || "Dienstleistung";
         const industryKey = await classifyIndustry(category, business.name);
-        const packId = await selectPack(category, industryKey);
+        const previous = WebsiteDataV2Schema.safeParse(website.websiteData);
+        const packId =
+          input.keepLinks && previous.success
+            ? previous.data.stylePackId
+            : await selectPack(category, industryKey);
         const businessForFacts = {
           ...business,
           openingHours: business.openingHours as string[] | null,
@@ -1205,7 +1223,9 @@ export const appRouter = router({
             ? crawlExistingSite(business.website)
             : Promise.resolve(null),
         ]);
-        const newSlug = slugify(business.name) + "-" + nanoid(4);
+        const newSlug = input.keepLinks
+          ? website.slug
+          : slugify(business.name) + "-" + nanoid(4);
 
         const factArgs = buildV2GenerationFacts(
           businessForFacts,
@@ -1242,14 +1262,25 @@ export const appRouter = router({
         // Wie eine neue Seite: Design-Stand, Farbwelt, Einstieg nach Fotos.
         websiteData = withNewSiteDesign(websiteData, packId, images);
 
-        const newPreviewToken = nanoid(32);
+        const newPreviewToken =
+          input.keepLinks && website.previewToken
+            ? website.previewToken
+            : nanoid(32);
+        if (input.keepLinks)
+          // Alte Fassung bleibt im Verlauf des Studios wiederherstellbar.
+          await insertWebsiteVersion({
+            websiteId: input.websiteId,
+            trigger: "generation",
+            label: "Stand vor Neuerstellung",
+            doc: website.websiteData,
+          });
         // Defensiv: generateSiteContent liefert bereits schema-valide v2-Daten,
         // der zentrale Write-Guard bleibt trotzdem davor (Konsistenz mit allen
         // anderen websiteData-Schreibpfaden, siehe v2WriteGuard.ts).
         assertV2SafeWrite(website.websiteData, websiteData);
         await updateWebsite(input.websiteId, {
           slug: newSlug,
-          status: "preview",
+          status: input.keepLinks ? website.status : "preview",
           websiteData: websiteData as any,
           industry: category,
           previewToken: newPreviewToken,

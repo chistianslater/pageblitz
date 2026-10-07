@@ -354,6 +354,18 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
     expect(mockedDb.getBusinessById).not.toHaveBeenCalled();
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
+
+  test("website.regenerate mit keepLinks schützt gekaufte Kundenseiten weiter", async () => {
+    mockedDb.getWebsiteById.mockResolvedValue(
+      baseWebsiteRow({ status: "active", source: "external" })
+    );
+
+    const caller = appRouter.createCaller(createAdminContext());
+    await expect(
+      caller.website.regenerate({ websiteId: 42, keepLinks: true })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
 });
 
 describe("website.generate — v2-Job statt synchroner v1-Generierung (Task 4)", () => {
