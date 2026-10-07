@@ -14,9 +14,13 @@ import { mountGalleryInteractions } from "./galleryInteractions";
 import {
   bestTextOn,
   ensureTextContrast,
+  hexToHsl,
   mix,
   relativeLuminance,
 } from "../../../../shared/stylePacks/colorMath";
+
+/** Ab dieser Sättigung wirkt eine Akzentfläche schreiend (gemessen an 24 Packs). */
+const LOUD_ACCENT_SATURATION = 0.6;
 import React, { useEffect, useRef } from "react";
 import {
   getConstitution,
@@ -260,6 +264,21 @@ export const SiteRenderer: React.FC<{
         : vars["--pb-ink"];
     vars["--pb-art-deep"] = mix(deep, "#000000", 0.82);
     vars["--pb-art-on-accent"] = bestTextOn(vars["--pb-accent"]);
+    // Zitat-Band (2026-10-07, Betreiber: „bei manchen gut, bei anderen
+    // schlecht"): gedeckte Akzente tragen eine ganze Fläche, knallige
+    // (Signalorange, Neonblau, Pink) nicht — dann helle Fläche, Zitat in
+    // Textfarbe, nur ein Akzentstrich.
+    const loudAccent =
+      hexToHsl(vars["--pb-accent"]).s >= LOUD_ACCENT_SATURATION;
+    vars["--pb-art-quote-bg"] = loudAccent
+      ? vars["--pb-surface"]
+      : vars["--pb-accent"];
+    vars["--pb-art-quote-ink"] = loudAccent
+      ? vars["--pb-ink"]
+      : vars["--pb-art-on-accent"];
+    vars["--pb-art-quote-rule"] = loudAccent
+      ? vars["--pb-art-accent-text"]
+      : "transparent";
   }
   // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
   // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS

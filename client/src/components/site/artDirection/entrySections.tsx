@@ -799,7 +799,8 @@ ${S} .pb-entry-quote{box-sizing:border-box;padding:clamp(72px,9vw,136px) ${INLIN
 ${S} .pb-entry-quote blockquote{margin:0 auto;max-width:none;border:0;padding:0}
 ${S} .pb-entry-quote p{margin:0;font-family:var(--pb-font-display);font-weight:var(--pb-art-weight,500);font-size:clamp(1.8rem,3.6vw,3.4rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance;max-width:24ch;margin-inline:auto}
 ${S} .pb-entry-quote footer{margin-top:22px;font:500 12px/1.4 var(--pb-font-body);letter-spacing:.12em;text-transform:uppercase;opacity:.65}
-${S} .pb-entry-quote[data-entry="stage"]{background:var(--pb-accent);color:var(--pb-art-on-accent,#111)}
+${S} .pb-entry-quote[data-entry="stage"]{background:var(--pb-art-quote-bg,var(--pb-accent));color:var(--pb-art-quote-ink,var(--pb-art-on-accent,#111))}
+${S} .pb-entry-quote[data-entry="stage"] blockquote::before{content:"";display:block;width:56px;height:3px;margin:0 auto clamp(22px,2.6vw,34px);background:var(--pb-art-quote-rule,transparent)}
 ${S} .pb-entry-quote[data-entry="colorfield"]{background:var(--pb-canvas);color:var(--pb-ink);border-bottom:1px solid var(--pb-line)}
 /* Die Layout-Varianten (designProfileCss, mit !important) gelten den
    Pack-Listen; die Einstiegsliste hat ihre eigene Ordnung. */
