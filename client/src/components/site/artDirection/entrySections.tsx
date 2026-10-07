@@ -406,16 +406,19 @@ function EntryFaq({
   section: SectionOf<"faq">;
   state: EntryState;
 }) {
+  const layout = sectionLayout(state.data, "faq");
   return (
     <section
       id={SECTION_ANCHORS.faq}
       className="pb-entry-faq"
       data-entry={state.entry}
+      data-layout={layout}
     >
       <Head title={section.headline ?? "Gut zu wissen"} />
       <div className="pb-entry-faq-list">
         {section.items.map(item => (
-          <details key={item.question}>
+          // Fassung b zeigt alle Antworten offen.
+          <details key={item.question} open={layout === "b" || undefined}>
             <summary>{item.question}</summary>
             <p>{rich(item.answer)}</p>
           </details>
@@ -462,6 +465,7 @@ function EntryVisit({
       id={SECTION_ANCHORS.contact}
       className="pb-entry-visit"
       data-mode={inquiry ? "inquiry" : "visit"}
+      data-layout={sectionLayout(state.data, "contact")}
       data-entry={state.entry}
     >
       <div className="pb-entry-visit-main">

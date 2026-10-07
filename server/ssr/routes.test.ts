@@ -1,8 +1,17 @@
 import { applyStylePack } from "../onboardingV2/applyPatch";
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+  vi,
+} from "vitest";
 import type { Mock } from "vitest";
 import express, { type Express } from "express";
-import request from "supertest";
+import supertest from "supertest";
+import type { Server } from "http";
 import { getFixture } from "../../shared/siteContract/fixtures";
 
 vi.mock("../db", () => ({
@@ -14,6 +23,23 @@ vi.mock("../db", () => ({
 // Import nach vi.mock, damit der Mock vor dem ersten Aufruf von registerSsrRoutes greift.
 import { invalidateSsrCache, registerSsrRoutes } from "./routes";
 import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
+
+/**
+ * Testserver ausdrücklich an 127.0.0.1 binden (2026-10-07): `supertest(app)`
+ * lauscht auf allen Adressen. Unter Volllast belegte auf macOS ein
+ * paralleler Testserver denselben Port auf 127.0.0.1 — die Anfrage landete
+ * dort (405 eines tRPC-Servers statt 200). Mit fester Adresse vergibt das
+ * System den Port nicht doppelt.
+ */
+const servers: Server[] = [];
+function request(app: Express) {
+  const server = app.listen(0, "127.0.0.1");
+  servers.push(server);
+  return supertest(server);
+}
+afterAll(() => {
+  for (const server of servers) server.close();
+});
 
 /** App mit SSR-Routen + einem SPA-Fallback-Stand-in (statt echter Vite-/serveStatic-Middleware). */
 function buildAppWithFallback(): Express {
@@ -493,7 +519,8 @@ describe("SSR routes", () => {
         expect(res.text).toContain('id="leistungen"');
         const abschnitt = res.text.slice(res.text.indexOf('id="galerie"'));
         const bilder = (
-          abschnitt.slice(0, abschnitt.indexOf("</section>")).match(/<img/g) ?? []
+          abschnitt.slice(0, abschnitt.indexOf("</section>")).match(/<img/g) ??
+          []
         ).length;
         expect(bilder).toBe(3);
       });

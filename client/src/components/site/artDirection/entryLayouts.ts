@@ -10,13 +10,20 @@ import type { WebsiteDataV2 } from "../../../../../shared/siteContract/types";
 import { entryVariantIndex } from "../../../../../shared/stylePacks/artDirection";
 
 export type SectionLayout = "a" | "b" | "c";
-export type LayoutSection = "services" | "about" | "reviews";
+export type LayoutSection =
+  | "services"
+  | "about"
+  | "reviews"
+  | "faq"
+  | "contact";
 
 const LAYOUTS: readonly SectionLayout[] = ["a", "b", "c"];
 const OFFSET: Record<LayoutSection, number> = {
   services: 0,
   about: 1,
   reviews: 2,
+  faq: 2,
+  contact: 1,
 };
 
 /** Fassung eines Abschnitts aus der Variante des Einstiegs. */
@@ -105,7 +112,43 @@ ${S} #bewertungen.pb-entry-reviews[data-layout="c"] blockquote:first-child{grid-
 ${S} #bewertungen.pb-entry-reviews[data-layout="c"] blockquote:first-child p{font:var(--pb-art-weight,500) clamp(1.35rem,2.1vw,1.9rem)/1.3 var(--pb-font-display);letter-spacing:-.015em;color:var(--pb-canvas)}
 ${S} #bewertungen.pb-entry-reviews[data-layout="c"] blockquote:first-child footer{color:color-mix(in srgb,var(--pb-canvas) 70%,transparent)}
 
+/* Gut zu wissen b: alle Antworten offen, zwei Spalten */
+${S} .pb-entry-faq[data-layout="b"]{display:block}
+${S} .pb-entry-faq[data-layout="b"] .pb-entry-head{margin-bottom:clamp(32px,4vw,56px)}
+${S} .pb-entry-faq[data-layout="b"] .pb-entry-faq-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(28px,3vw,44px) clamp(32px,5vw,80px);border-top:0}
+${S} .pb-entry-faq[data-layout="b"] details{border-bottom:0;border-top:2px solid var(--pb-ink);padding-top:20px}
+${S} .pb-entry-faq[data-layout="b"] summary{padding:0 0 12px;cursor:default;pointer-events:none}
+${S} .pb-entry-faq[data-layout="b"] summary:after{display:none}
+${S} .pb-entry-faq[data-layout="b"] details p{margin:0}
+
+/* Gut zu wissen c: mittig, nummeriert, große Fragen */
+${S} .pb-entry-faq[data-layout="c"]{display:block;background:var(--pb-canvas)}
+${S} .pb-entry-faq[data-layout="c"] .pb-entry-head{text-align:center;margin:0 auto clamp(32px,4vw,56px)}
+${S} .pb-entry-faq[data-layout="c"] .pb-entry-faq-list{max-width:900px;margin:0 auto;counter-reset:pbfaq;border-top:2px solid var(--pb-ink)}
+${S} .pb-entry-faq[data-layout="c"] summary{counter-increment:pbfaq;justify-content:flex-start;align-items:baseline;gap:clamp(14px,2vw,28px);padding:clamp(22px,2.6vw,32px) 0;font-size:clamp(1.25rem,2.2vw,1.9rem)}
+${S} .pb-entry-faq[data-layout="c"] summary:before{content:counter(pbfaq,decimal-leading-zero);flex:none;font:600 13px/1 var(--pb-font-body);letter-spacing:.08em;color:var(--pb-art-accent-text,var(--pb-accent))}
+${S} .pb-entry-faq[data-layout="c"] summary:after{margin-left:auto}
+${S} .pb-entry-faq[data-layout="c"] details p{margin:0 0 28px calc(13px * 2 + clamp(14px,2vw,28px));font-size:17px}
+
+/* Kontakt b: getönte Fläche, Öffnungszeiten als Karte */
+${S} .pb-entry-visit[data-layout="b"]{background:color-mix(in srgb,var(--pb-accent) 13%,var(--pb-canvas));align-items:center}
+${S} .pb-entry-visit[data-layout="b"] .pb-entry-hours{background:var(--pb-canvas);box-shadow:0 30px 60px -40px color-mix(in srgb,var(--pb-ink) 45%,transparent)}
+${S} .pb-entry-visit[data-layout="b"] .pb-entry-head h2{font-size:clamp(2.6rem,5vw,5rem)}
+
+/* Kontakt c: Adresse als Blickfang, Zeiten als Zeile */
+${S} .pb-entry-visit[data-layout="c"]{display:block}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-head h2{font:600 13px/1.3 var(--pb-font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--pb-muted)}
+${S} .pb-entry-visit[data-layout="c"] address{margin-top:18px;font-size:clamp(2.4rem,5.6vw,5.4rem);line-height:1.02;letter-spacing:-.035em;font-weight:var(--pb-art-weight,600)}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours{margin-top:clamp(36px,4vw,56px);padding:0;background:transparent;border-radius:0;border-top:2px solid var(--pb-ink)}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours h3{margin:18px 0 10px}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours dl{display:flex;flex-wrap:wrap;gap:0 clamp(24px,4vw,56px)}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours dl>div{flex-direction:column;justify-content:flex-start;gap:4px;border-bottom:0}
+
 @media (max-width:760px){
+${S} .pb-entry-faq[data-layout="b"] .pb-entry-faq-list{grid-template-columns:1fr}
+${S} .pb-entry-faq[data-layout="c"] details p{margin-left:0}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours dl{display:block}
+${S} .pb-entry-visit[data-layout="c"] .pb-entry-hours dl>div{flex-direction:row;justify-content:space-between;border-bottom:1px solid var(--pb-line)}
 ${S} #leistungen.pb-entry-services[data-layout="c"] .pb-entry-list[data-pb-slot]>li{grid-template-columns:52px minmax(0,1fr)!important}
 ${S} #leistungen.pb-entry-services[data-layout="c"] .pb-entry-copy :is(h3,p),${S} #leistungen.pb-entry-services[data-layout="c"] .pb-entry-price{grid-column:2}
 ${S} .pb-entry-about[data-layout="b"] .pb-entry-about-media{aspect-ratio:4/3}
