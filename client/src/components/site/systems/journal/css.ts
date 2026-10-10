@@ -202,7 +202,7 @@ ${NAME_FIT}
   padding-block:calc(var(--sys-space-s) + var(--sys-space-2xs) / 2);border-bottom:1px solid var(--sys-rule)}
 .pb-journal .jr-row h3{${step("h3")};grid-column:1}
 .pb-journal .jr-price{${step("body")};font-variant-numeric:oldstyle-nums tabular-nums;white-space:nowrap;align-self:baseline;grid-column:2;grid-row:1}
-.pb-journal .jr-row p{${step("small")};color:var(--sys-muted);grid-column:1/-1;max-width:34ch}
+.pb-journal .jr-row p{${step("small")};color:var(--sys-muted);grid-column:1/-1;max-width:calc(var(--sys-space-measure) * .42)}
 .pb-journal .jr-group{color:var(--sys-muted);padding-bottom:calc(var(--sys-space-xs) + var(--sys-space-2xs) / 2);border-bottom:1px solid var(--sys-ink)}
 .pb-journal .jr-group + .jr-rows{border-top:0}
 .pb-journal .jr-group-block + .jr-group-block{margin-top:calc(var(--sys-space-l) - var(--sys-space-xs))}
@@ -212,7 +212,7 @@ ${NAME_FIT}
 .pb-journal .jr-step{display:grid;align-content:start;grid-template-columns:calc(var(--sys-space-xl) - var(--sys-space-s) / 2) minmax(0,1fr);column-gap:var(--sys-space-xs);
   padding-block:var(--sys-space-m);border-top:1px solid var(--sys-rule)}
 .pb-journal .jr-step:last-child{border-bottom:1px solid var(--sys-rule)}
-.pb-journal .jr-step-no{font-family:var(--sys-font-display);font-weight:300;font-size:calc(var(--sys-space-xl) * .6875);line-height:.9;
+.pb-journal .jr-step-no{font-family:var(--sys-font-display);font-weight:300;font-size:calc(var(--sys-space-xl) * .6875);line-height:var(--sys-display-line);
   color:var(--sys-accent);font-variant-numeric:oldstyle-nums}
 .pb-journal .jr-step h3{${step("h3")};margin-bottom:calc(var(--sys-space-2xs) * 1.5)}
 .pb-journal .jr-step p{max-width:var(--sys-space-measure)}
@@ -297,9 +297,9 @@ ${NAME_FIT}
 .pb-journal .jr-reviews{text-align:center}
 .pb-journal .jr-reviews .jr-chapter-label{margin-bottom:0}
 .pb-journal .jr-quote-figure{margin:calc(var(--sys-space-m) - var(--sys-space-2xs)) 0 0}
-.pb-journal .jr-stars{${step("small")};letter-spacing:.3em;color:var(--sys-accent);margin-bottom:calc(var(--sys-space-m) - var(--sys-space-2xs))}
+.pb-journal .jr-stars{${step("small")};letter-spacing:calc(var(--sys-kicker-track) * 1.5);color:var(--sys-accent);margin-bottom:calc(var(--sys-space-m) - var(--sys-space-2xs))}
 .pb-journal .jr-quote{margin:0}
-.pb-journal .jr-quote p{${step("lede")};font-style:italic;font-weight:300;line-height:1.42;hyphens:manual;text-wrap:balance;max-width:26ch;margin-inline:auto}
+.pb-journal .jr-quote p{${step("lede")};font-style:italic;font-weight:300;hyphens:manual;text-wrap:balance;max-width:calc(var(--sys-space-measure) * .45);margin-inline:auto}
 .pb-journal .jr-quote-figure figcaption{margin-top:var(--sys-space-m);display:grid;gap:var(--sys-space-2xs);justify-items:center}
 .pb-journal .jr-quote-source{${step("small")};color:var(--sys-muted)}
 
@@ -326,7 +326,7 @@ ${NAME_FIT}
   .pb-journal .jr-strip figure:last-child:nth-child(odd) img{aspect-ratio:2.2/1}
   .pb-journal .jr-strip .jr-figcap{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal}
   .pb-journal .jr-strip-note{display:none}
-  .pb-journal .jr-quote p{font-size:calc(var(--sys-h2-size) * .72);line-height:1.3;max-width:28ch}
+  .pb-journal .jr-quote p{font-size:calc(var(--sys-h2-size) * .72);max-width:calc(var(--sys-space-measure) * .75)}
 }
 /* ende journal */
 `;

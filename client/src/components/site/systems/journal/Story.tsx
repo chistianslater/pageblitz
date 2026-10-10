@@ -128,8 +128,14 @@ export function JournalGallery({ section, sections }: P<"gallery">) {
       <div
         className="jr-strip"
         data-count={section.images.length}
+        role="region"
+        aria-label={many ? `${label}, seitlich wischen` : label}
+        // Fokussierbar, damit der Streifen auf dem Handy per Tastatur
+        // scrollt. Ab 64rem scrollt er nicht mehr; der Tab-Halt bleibt,
+        // weil SSR-Seiten ohne Hydration keinen Medienwechsel abfangen und
+        // ein Script nur dafür mehr kostet als ein harmloser Halt auf einer
+        // benannten Region.
         tabIndex={many ? 0 : undefined}
-        aria-label={many ? "Bilder, seitlich wischen" : undefined}
       >
         {section.images.map((image, i) => (
           <figure key={image.url}>

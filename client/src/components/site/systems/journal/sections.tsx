@@ -16,8 +16,6 @@ import {
   JournalProcess,
   JournalServices,
   JournalTeam,
-  JournalTeamSlot,
-  teamSlotAfter,
 } from "./Offer";
 import { JournalAbout, JournalGallery, JournalReviews } from "./Story";
 
@@ -100,6 +98,8 @@ export function formatPrice(price: string): string {
 export function journalShows(section: JournalSection): boolean {
   if (section.type === "testimonials")
     return Boolean(pickReviewQuote(section.items));
+  if (section.type === "menu" || section.type === "pricelist")
+    return section.categories.some(c => c.items.length > 0);
   return true;
 }
 
@@ -159,23 +159,9 @@ export function renderJournalSection(
     case "team":
       return <JournalTeam section={section} sections={sections} />;
     case "about":
-      return (
-        <>
-          <JournalAbout section={section} sections={sections} />
-          {teamSlotAfter(sections) === "about" && (
-            <JournalTeamSlot sections={sections} />
-          )}
-        </>
-      );
+      return <JournalAbout section={section} sections={sections} />;
     case "gallery":
-      return (
-        <>
-          <JournalGallery section={section} sections={sections} />
-          {teamSlotAfter(sections) === "gallery" && (
-            <JournalTeamSlot sections={sections} />
-          )}
-        </>
-      );
+      return <JournalGallery section={section} sections={sections} />;
     case "testimonials":
       return <JournalReviews section={section} sections={sections} />;
     default:

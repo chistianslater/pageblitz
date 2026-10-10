@@ -2,6 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
+import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
 import {
   JournalChapter,
@@ -109,7 +110,6 @@ export function JournalServices({ section, sections }: P<"services">) {
   const index = chapterIndex(sections, "services");
   const id = SECTION_ANCHORS.services;
   const priceSlot = useSlot("pricelist", sections);
-  const menuSlot = useSlot("menu", sections);
   return (
     <>
       <section
@@ -145,19 +145,6 @@ export function JournalServices({ section, sections }: P<"services">) {
           </div>
         </div>
       </section>
-      {menuSlot !== undefined && (
-        <section
-          id={SECTION_ANCHORS.menu}
-          className="jr-section jr-slot-section"
-        >
-          <div className="jr-wrap">
-            <PreviewCard
-              title={blueprint.headlines.menu ?? "Speisekarte"}
-              text={menuSlot}
-            />
-          </div>
-        </section>
-      )}
     </>
   );
 }
@@ -330,17 +317,52 @@ export function JournalTeam({ section, sections }: P<"team">) {
   );
 }
 
+/** Platzhalter, die als eigener Abschnitt zwischen den Kapiteln stehen. */
+export type PreviewSlotKind = "menu" | "team";
+
 /**
- * Wo der Team-Platzhalter steht: nach „Über uns" (dort fragt man nach den
- * Menschen), sonst nach der Galerie.
+ * Wo die Vorschau-Platzhalter stehen (unabhängig davon, ob sie gerade
+ * gezeigt werden): Speisekarte nach den Leistungen, sonst nach dem
+ * Einstieg; Team nach „Über uns", sonst nach der Galerie, sonst vor dem
+ * Besuch (bzw. am Ende).
  */
-export function teamSlotAfter(
+export function previewSlotAnchors(
   sections: readonly JournalSection[]
-): "about" | "gallery" | undefined {
-  if (has(sections, "team")) return undefined;
-  if (has(sections, "about")) return "about";
-  if (has(sections, "gallery")) return "gallery";
-  return undefined;
+): Partial<Record<PreviewSlotKind, number>> {
+  const at = (type: JournalSection["type"]) =>
+    sections.findIndex(s => s.type === type);
+  const pick = (...indices: number[]) => indices.find(i => i >= 0);
+  const contact = at("contact");
+  return {
+    menu: pick(at("services"), at("hero"), sections.length - 1),
+    team: pick(
+      at("about"),
+      at("gallery"),
+      contact > 0 ? contact - 1 : -1,
+      sections.length - 1
+    ),
+  };
+}
+
+export function JournalMenuSlot({
+  sections,
+}: {
+  sections: readonly JournalSection[];
+}) {
+  const { data, preview, blueprint } = useSystem();
+  // Wie entryGastro.menuPlaceholderShown: echte Karte = Abschnitt + Extra.
+  const real = menuVisible(data) && has(sections, "menu");
+  if (!preview || !blueprint.placeholders.includes("menu") || real) return null;
+  return (
+    <section id={SECTION_ANCHORS.menu} className="jr-section jr-slot-section">
+      <div className="jr-wrap">
+        <PreviewCard
+          title={blueprint.headlines.menu ?? "Speisekarte"}
+          text={blueprint.placeholderText.menu ?? ""}
+        />
+      </div>
+    </section>
+  );
 }
 
 export function JournalTeamSlot({

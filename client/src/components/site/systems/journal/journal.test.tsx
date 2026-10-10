@@ -724,3 +724,77 @@ describe("Journal: Geschichte", () => {
     expect(() => render(journalDoc("minimal"))).not.toThrow();
   });
 });
+
+describe("Journal: Nachbesserung Task 9/10", () => {
+  test("keine Navigation zu Stimmen, die Journal nicht zeigt (Kopf und Menü)", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "testimonials"
+        ? { ...s, items: [{ author: "X", text: "Ok.", rating: 3 }] }
+        : s
+    );
+    const html = render(data);
+    expect(html).not.toContain('href="#bewertungen"');
+    expect(html).toContain('href="#leistungen"');
+    expect(render()).toContain('href="#bewertungen"');
+  });
+
+  const gastro = () => ({ ...journalDoc(), businessCategory: "Restaurant" });
+
+  test("Speisekarten-Platzhalter in der Vorschau auch ohne Leistungen, nie live", () => {
+    const data = withSections(gastro(), s =>
+      s.type === "services" ? undefined : s
+    );
+    const preview = render(data, true);
+    const slot = preview.slice(preview.indexOf('id="speisekarte"'));
+    expect(preview).toContain('id="speisekarte"');
+    expect(slot).toContain("Nur in deiner Vorschau");
+    expect(render(data, false)).not.toContain('id="speisekarte"');
+  });
+
+  test("leere Speisekarte: kein nummeriertes Kapitel, Platzhalter nur in der Vorschau", () => {
+    const d = gastro();
+    const data = {
+      ...d,
+      addOns: { ...d.addOns, menu: true },
+      sections: [
+        ...d.sections,
+        { type: "menu" as const, categories: [{ name: "Leer", items: [] }] },
+      ],
+    } as typeof d;
+    const preview = render(data, true);
+    expect(preview).not.toContain("jr-section jr-speisekarte");
+    expect(preview).toContain('id="speisekarte"');
+    expect(preview).toContain("Nur in deiner Vorschau");
+    const live = render(data, false);
+    expect(live).not.toContain('id="speisekarte"');
+  });
+
+  test("Team-Platzhalter auch ohne Über uns und Galerie (nur Vorschau)", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "about" || s.type === "gallery" ? undefined : s
+    );
+    const preview = render(data, true);
+    const slot = preview.slice(preview.indexOf('id="team"'));
+    expect(preview).toContain('id="team"');
+    expect(slot).toContain("Nur in deiner Vorschau");
+    expect(render(data, false)).not.toContain('id="team"');
+  });
+
+  test("Galerie-Streifen ist eine benannte Region", () => {
+    expect(sectionHtml(render(), "gallery")).toMatch(
+      /class="jr-strip"[^>]*role="region"[^>]*aria-label="Einblicke, seitlich wischen"/
+    );
+  });
+
+  test("Abschnitts-CSS ohne freie Maße (ch, feste Zeilenhöhen, em-Sperrung)", () => {
+    const css = render().match(/<style>([\s\S]*?)<\/style>/)![1];
+    const part = css.slice(
+      css.indexOf("/* Abschnitte: helles Band"),
+      css.indexOf("/* ende journal */")
+    );
+    expect(part.length).toBeGreaterThan(100);
+    expect(part).not.toMatch(/\d+ch\b/);
+    expect(part).not.toMatch(/line-height:[\d.]+[;}]/);
+    expect(part).not.toMatch(/letter-spacing:[\d.]+em/);
+  });
+});
