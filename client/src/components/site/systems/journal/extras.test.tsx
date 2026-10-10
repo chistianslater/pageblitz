@@ -194,6 +194,24 @@ describe("Journal: Unterseiten", () => {
     expect(html).toMatch(/<h1[^>]*>Leistungen im Detail<\/h1>/);
   });
 
+  test("zwei pageHeader-Abschnitte: trotzdem genau ein h1 und ein Seitentitel-Anker", () => {
+    const d = journalDoc();
+    const data = {
+      ...d,
+      pages: d.pages!.map(p => ({
+        ...p,
+        sections: [
+          ...p.sections,
+          { type: "pageHeader" as const, title: "Noch ein Kopf", intro: "Zweiter Teil" },
+        ],
+      })),
+    };
+    const html = page(data as typeof d);
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html.match(/id="seite-titel"/g)).toHaveLength(1);
+    expect(html).toMatch(/<h2>Noch ein Kopf<\/h2>/);
+  });
+
   test("Anker der Navigation zeigen auf die Startseite", () => {
     const html = page();
     const head = html.slice(

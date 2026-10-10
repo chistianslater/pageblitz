@@ -369,6 +369,8 @@ export const SiteRenderer: React.FC<{
         ),
         preview,
         now,
+        contactIsland:
+          Boolean(slug) && Boolean(effectiveData.features?.contactForm),
       }
     : undefined;
   const blueprintNav = (systemState?.blueprint ?? entry?.blueprint)?.navLabels;

@@ -212,7 +212,14 @@ export function renderJournalSection(
     case "cta":
       return <JournalCta section={section} sections={sections} />;
     case "pageHeader":
-      return <JournalPageHead title={section.title} intro={section.intro} />;
+      // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
+      return (
+        <JournalPageHead
+          title={section.title}
+          intro={section.intro}
+          secondary={sections.find(s => s.type === "pageHeader") !== section}
+        />
+      );
     case "notice":
       // Banner über dem Kopf, zentral in SiteRenderer (noticeBanner.tsx).
       return null;

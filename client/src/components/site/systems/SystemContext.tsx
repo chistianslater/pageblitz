@@ -8,6 +8,12 @@ export type SystemState = {
   blueprint: Blueprint;
   preview: boolean;
   now: Date;
+  /**
+   * True, wenn `SiteIslands` das Kontaktformular wirklich rendert (Add-on
+   * aktiv UND echter Slug) — gleiche Bedingung wie dort. Ohne das bliebe im
+   * Kontakt-Abschnitt ein Formular-Titel ohne Formular stehen.
+   */
+  contactIsland?: boolean;
 };
 
 export const SystemContext = createContext<SystemState | undefined>(undefined);

@@ -10,7 +10,7 @@ import {
   whatsappHref,
 } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import { addressLine, mapsHref, primaryAction } from "./Chrome";
+import { addressLine, mailHref, mapsHref, primaryAction } from "./Chrome";
 import {
   JournalChapter,
   chapterIndex,
@@ -143,7 +143,7 @@ function MapPlate({ address, label }: { address: string; label: string }) {
 }
 
 export function JournalContact({ section, sections }: P<"contact">) {
-  const { data, blueprint } = useSystem();
+  const { data, blueprint, contactIsland } = useSystem();
   const index = chapterIndex(sections, "contact");
   const id = SECTION_ANCHORS.contact;
   const inquiry = blueprint.contactMode === "inquiry";
@@ -163,10 +163,14 @@ export function JournalContact({ section, sections }: P<"contact">) {
   const whatsapp = whatsappHref(section.phone);
   const routeLabel = inquiry ? "Anfahrt" : "Route planen";
   // Handwerk (EntryVisit, 2026-10-06): Man fragt ein Angebot an.
-  const inquiryHref = section.email
-    ? `mailto:${section.email}?subject=${encodeURIComponent(`Anfrage über die Website – ${data.businessName}`)}`
-    : tel;
-  const form = Boolean(data.features?.contactForm);
+  const mail = mailHref(section.email);
+  const inquiryHref =
+    mailHref(
+      section.email,
+      `Anfrage über die Website – ${data.businessName}`
+    ) ?? tel;
+  // Titel nur, wenn die Kontakt-Insel wirklich erscheint (SiteIslands).
+  const form = Boolean(contactIsland);
   return (
     <section
       id={id}
@@ -227,9 +231,9 @@ export function JournalContact({ section, sections }: P<"contact">) {
                   {section.phone}
                 </a>
               )}
-              {section.email && (
-                <a className="jr-link" href={`mailto:${section.email}`}>
-                  {section.email}
+              {mail && section.email && (
+                <a className="jr-link" href={mail}>
+                  {section.email.trim()}
                 </a>
               )}
               {whatsapp && (

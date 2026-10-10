@@ -169,3 +169,15 @@ describe("mountJournalMotion", () => {
     expect(fill.style.transform).toBe("scaleX(1)");
   });
 });
+
+describe("Journal: Fokus und Trefferflächen (Design-Audit Task 18)", () => {
+  test("Fokusring überall 2 px, nie 1 px", () => {
+    expect(JOURNAL_CSS).toMatch(/--jr-focus:2px/);
+    expect(JOURNAL_CSS).not.toMatch(/outline:1px/);
+  });
+  test("Textlinks im Fuß und Besuch bekommen eine unsichtbare Trefferfläche", () => {
+    expect(JOURNAL_CSS).toMatch(
+      /\.jr-link::before,[^{]*\.jr-foot-contact a::before,[^{]*\.jr-foot-legal a::before\{content:"";position:absolute;inset:var\(--jr-hit\)/
+    );
+  });
+});

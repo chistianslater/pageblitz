@@ -234,12 +234,25 @@ export function JournalPageHead({
   title,
   titleHtml,
   intro,
+  secondary = false,
 }: {
   title?: string;
   titleHtml?: string;
   intro?: string;
+  /** Weiterer pageHeader derselben Seite: kein zweites h1, kein doppelter Anker. */
+  secondary?: boolean;
 }) {
   const { data } = useSystem();
+  if (secondary) {
+    return (
+      <section className="jr-page-head jr-page-head--more">
+        <div className="jr-wrap">
+          <h2>{rich(title ?? "")}</h2>
+          {intro && <p className="jr-page-intro">{rich(intro)}</p>}
+        </div>
+      </section>
+    );
+  }
   return (
     <section
       className="jr-page-head"

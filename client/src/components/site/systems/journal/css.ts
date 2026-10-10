@@ -56,6 +56,10 @@ export const JOURNAL_CSS = `
 ${FONT_FACES}
 
 .pb-journal{--jr-raised:color-mix(in srgb,var(--sys-paper) 35%,#fff);--jr-ease:cubic-bezier(.23,1,.32,1);
+  /* Fokusring 2 px (WCAG 2.4.13); Trefferfläche: Textlinks wachsen unsichtbar auf ≥ 44 px Höhe */
+  --jr-focus:2px;--jr-hit:calc(var(--sys-space-s) * -.75);
+  /* Kopfmarke Desktop = 18 px (Systemblatt „Kopf“: Marke eine Stufe über mark) */
+  --jr-brand-desk:calc(var(--sys-mark-size) * 1.125);
   background:var(--sys-paper);color:var(--sys-ink);${step("body")};
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal;font-variant-numeric:oldstyle-nums proportional-nums}
 .pb-journal *{box-sizing:border-box}
@@ -64,7 +68,7 @@ ${FONT_FACES}
 .pb-journal address{font-style:normal}
 .pb-journal a{color:inherit}
 .pb-journal img{display:block;max-width:100%}
-.pb-journal :focus-visible{outline:1px solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
+.pb-journal :focus-visible{outline:var(--jr-focus) solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
 .pb-journal .jr-wrap{max-width:var(--sys-space-max);margin-inline:auto;padding-inline:var(--sys-space-gutter)}
 .pb-journal .jr-kicker{${step("kicker")}}
 .pb-journal .jr-mark{${step("mark")}}
@@ -73,6 +77,8 @@ ${FONT_FACES}
 .pb-journal .jr-link{${step("link")};text-decoration:none;display:inline-block;padding-bottom:var(--sys-space-2xs);position:relative}
 .pb-journal .jr-link::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;transform-origin:left;transition:transform 250ms var(--jr-ease)}
 .pb-journal .jr-link:hover::after{transform:scaleX(.4)}
+.pb-journal .jr-link::before,.pb-journal .jr-foot-contact a::before,.pb-journal .jr-foot-legal a::before{content:"";position:absolute;inset:var(--jr-hit) calc(var(--sys-space-2xs) * -1)}
+.pb-journal .jr-foot-contact a,.pb-journal .jr-foot-legal a{position:relative}
 .pb-journal .jr-links{display:flex;flex-wrap:wrap;gap:var(--sys-space-m)}
 
 /* Knopf (Klassenname jr-pill aus dem Plan; Gestalt laut Systemblatt eckig) */
@@ -80,7 +86,7 @@ ${FONT_FACES}
   background:var(--sys-deep);color:var(--sys-on-deep);border:1px solid var(--sys-deep);padding:var(--sys-space-s) var(--sys-space-m);
   transition:transform 120ms var(--jr-ease),background 200ms var(--jr-ease),border-color 200ms var(--jr-ease)}
 .pb-journal .jr-pill:hover{background:color-mix(in srgb,var(--sys-deep) 86%,var(--sys-paper));border-color:color-mix(in srgb,var(--sys-deep) 86%,var(--sys-paper))}
-.pb-journal .jr-pill:focus-visible{outline:1px solid var(--sys-deep);outline-offset:var(--sys-space-2xs)}
+.pb-journal .jr-pill:focus-visible{outline:var(--jr-focus) solid var(--sys-deep);outline-offset:var(--sys-space-2xs)}
 .pb-journal .jr-pill:active{transform:scale(.98)}
 
 /* Kopf */
@@ -107,12 +113,12 @@ ${FONT_FACES}
 .pb-journal .jr-menu[open] .jr-menu-icon{transform:scaleX(.6)}
 .pb-journal .jr-menu-panel{position:absolute;left:0;right:0;top:100%;background:var(--sys-paper);border-bottom:1px solid var(--sys-rule);
   padding:var(--sys-space-m) var(--sys-space-gutter) var(--sys-space-l);display:grid}
-.pb-journal .jr-menu-panel a{${step("h3")};text-decoration:none;padding-block:var(--sys-space-xs);border-bottom:1px solid var(--sys-rule)}
+.pb-journal .jr-menu-panel a{${step("h3")};text-decoration:none;padding-block:var(--sys-space-xs);display:flex;align-items:center;min-height:calc(var(--sys-space-l) + var(--sys-space-2xs));border-bottom:1px solid var(--sys-rule)}
 .pb-journal .jr-menu-panel a[aria-current]{color:var(--sys-muted)}
 
 @media (min-width:64rem){
   .pb-journal .jr-head-bar{padding-block:var(--sys-space-s)}
-  .pb-journal .jr-brand{font-size:calc(var(--sys-mark-size) * 1.125)}
+  .pb-journal .jr-brand{font-size:var(--jr-brand-desk)}
   .pb-journal .jr-head-call{display:none}
   .pb-journal .jr-head-phone,.pb-journal .jr-head .jr-pill{display:inline-flex}
   .pb-journal .jr-nav{display:flex;justify-content:center;flex-wrap:wrap;gap:var(--sys-space-xs) var(--sys-space-l);padding:var(--sys-space-xs) var(--sys-space-gutter) var(--sys-space-s)}
@@ -334,7 +340,7 @@ ${NAME_FIT}
 .pb-journal .jr-faq-item summary{display:grid;grid-template-columns:minmax(0,1fr) var(--sys-space-m);gap:var(--sys-space-s);align-items:start;
   padding-block:calc(var(--sys-space-s) + var(--sys-space-2xs));cursor:pointer;list-style:none}
 .pb-journal .jr-faq-item summary::-webkit-details-marker{display:none}
-.pb-journal .jr-faq-item summary:focus-visible{outline:1px solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
+.pb-journal .jr-faq-item summary:focus-visible{outline:var(--jr-focus) solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
 .pb-journal .jr-faq-q{${step("h3")};transition:color 200ms var(--jr-ease)}
 .pb-journal .jr-faq-item summary:hover .jr-faq-q{color:var(--sys-muted)}
 .pb-journal .jr-faq-sign{position:relative;justify-self:end;width:var(--sys-space-s);height:calc(var(--sys-h3-size) * var(--sys-h3-line))}
@@ -393,9 +399,16 @@ ${NAME_FIT}
 .pb-journal .jr-dock-main{${step("link")};background:var(--sys-deep);color:var(--sys-on-deep);padding-inline:var(--sys-space-m);min-width:0;text-align:center}
 .pb-journal .jr-dock-icon{width:calc(var(--sys-space-l) + var(--sys-space-s));border:1px solid var(--sys-ink);color:var(--sys-ink)}
 .pb-journal .jr-dock-icon svg{width:calc(var(--sys-space-s) * 1.4);height:calc(var(--sys-space-s) * 1.4)}
-.pb-journal .jr-dock a:focus-visible{outline:1px solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
+.pb-journal .jr-dock a:focus-visible{outline:var(--jr-focus) solid var(--sys-ink);outline-offset:var(--sys-space-2xs)}
+/* Bildnachweis (PhotoCredits) im Journal-Fuß: gleiches helles Band, Textschrift, gedämpft */
+.pb-journal .pb-photo-credits{${step("small")};font-size:calc(var(--sys-small-size) * .93);color:var(--sys-muted);background:var(--jr-raised);
+  margin:0;padding:0 var(--sys-space-gutter) var(--sys-space-l);text-align:left}
+.pb-journal .pb-photo-credits a{color:inherit;text-underline-offset:.2em}
+@media (min-width:64rem){.pb-journal .pb-photo-credits{max-width:none;padding-inline:max(var(--sys-space-gutter),calc((100% - var(--sys-space-max)) / 2 + var(--sys-space-gutter)))}}
 @media (max-width:47.99rem){
-  .pb-journal{padding-bottom:calc(var(--sys-space-l) + var(--sys-space-s) * 3 + env(safe-area-inset-bottom))}
+  /* Platz unter dem Dock in der Farbe des Fußes, kein fremder Streifen am Seitenende */
+  .pb-journal{--jr-dock-space:calc(var(--sys-space-l) + var(--sys-space-s) * 3 + env(safe-area-inset-bottom));padding-bottom:var(--jr-dock-space);
+    background:var(--sys-paper) linear-gradient(var(--jr-raised),var(--jr-raised)) left bottom/100% var(--jr-dock-space) no-repeat}
   .pb-journal .pb-island--fab{bottom:calc(var(--sys-space-l) + var(--sys-space-s) * 4)}
   .pb-journal .pb-island--fab ~ .pb-island--fab{bottom:calc(var(--sys-space-l) * 2 + var(--sys-space-s) * 5)}
 }
@@ -414,7 +427,7 @@ ${NAME_FIT}
 /* Unterseiten- und Rechtsseiten-Kopf: Typo-Einstieg ohne Foto, ein h1 */
 .pb-journal .jr-page-head{text-align:center;padding-block:calc(var(--sys-space-xl) - var(--sys-space-s)) var(--sys-space-xl);border-bottom:1px solid var(--sys-rule)}
 .pb-journal .jr-page-kicker{margin-bottom:calc(var(--sys-space-s) + var(--sys-space-2xs))}
-.pb-journal .jr-page-head h1{${step("h2")};font-size:calc(var(--sys-h2-size) * 1.4);max-width:calc(var(--sys-space-measure) * .9);margin-inline:auto;overflow-wrap:anywhere;hyphens:auto}
+.pb-journal .jr-page-head h1,.pb-journal .jr-page-head--more h2{${step("h2")};font-size:calc(var(--sys-h2-size) * 1.4);max-width:calc(var(--sys-space-measure) * .9);margin-inline:auto;overflow-wrap:anywhere;hyphens:auto}
 .pb-journal .jr-page-intro{${step("lede")};font-style:italic;font-weight:300;max-width:calc(var(--sys-space-measure) * .8);margin:var(--sys-space-m) auto 0;hyphens:manual}
 
 /* Rechtsseiten: Fließtext im Textmaß, Überschriften aus der Skala */

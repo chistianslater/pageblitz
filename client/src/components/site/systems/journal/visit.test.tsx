@@ -5,6 +5,7 @@ import type {
 } from "../../../../../../shared/siteContract/types";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { journalDoc, render, sectionHtml } from "./testkit";
+import { mailHref } from "./Chrome";
 
 type Doc = ReturnType<typeof journalDoc>;
 
@@ -178,8 +179,32 @@ describe("Journal: Besuch", () => {
 
   test("Kontaktformular nur mit aktivem Feature: Bereich vorbereitet, Insel unverändert", () => {
     expect(sectionHtml(render(), "contact")).not.toContain("jr-contact-form");
-    const html = render({ ...journalDoc("features"), slug: "noir" }, false);
+    // Feature aktiv, aber ohne Slug rendert SiteIslands kein Formular —
+    // dann auch kein verwaister Formular-Titel.
+    const noSlug = render(journalDoc("features"));
+    expect(sectionHtml(noSlug, "contact")).not.toContain("jr-contact-form");
+    expect(noSlug).not.toContain('data-island="contact"');
+    const html = render(journalDoc("features"), false, "", undefined, "noir");
     expect(sectionHtml(html, "contact")).toContain("jr-contact-form");
+    expect(html).toContain('data-island="contact"');
+  });
+});
+
+describe("Journal: E-Mail-Links aus Kundendaten", () => {
+  test("mailHref nimmt nur eine plausible Adresse und kodiert den Betreff", () => {
+    expect(mailHref("termin@noir.de")).toBe("mailto:termin@noir.de");
+    expect(mailHref(" termin@noir.de ")).toBe("mailto:termin@noir.de");
+    expect(mailHref("a@b.de?bcc=x@y.de")).toBeUndefined();
+    expect(mailHref("a@b.de,c@d.de")).toBeUndefined();
+    expect(mailHref("javascript:alert(1)")).toBeUndefined();
+    expect(mailHref("keine adresse")).toBeUndefined();
+    expect(mailHref("a@b.de", "Anfrage & Termin")).toBe(
+      "mailto:a@b.de?subject=Anfrage%20%26%20Termin"
+    );
+  });
+  test("ungültige Adresse: kein mailto-Link in Besuch und Fuß", () => {
+    const html = render(withContact(journalDoc(), { email: "a@b.de?bcc=x@y.de" }));
+    expect(html).not.toContain("mailto:");
   });
 });
 
@@ -223,7 +248,7 @@ describe("Journal: Handy-Dock", () => {
   test("Seite bekommt unten Platz für das Dock, nur auf dem Handy", () => {
     const css = render().match(/<style>([\s\S]*?)<\/style>/)![1];
     expect(css).toMatch(
-      /@media \(max-width:47\.99rem\)\{[^}]*\.pb-journal\{padding-bottom:/
+      /@media \(max-width:47\.99rem\)\{[^}]*\.pb-journal\{[^}]*padding-bottom:var\(--jr-dock-space\)/
     );
     expect(css).toMatch(
       /@media \(min-width:48rem\)\{\.pb-journal \.jr-dock\{display:none\}/

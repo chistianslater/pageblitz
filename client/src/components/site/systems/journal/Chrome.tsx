@@ -33,6 +33,24 @@ export function addressLine(c: SectionOf<"contact"> | undefined): string {
 export const mapsHref = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
+/**
+ * `mailto:`-Link nur für eine plausible, einzelne Adresse. Die Adresse kommt
+ * aus Kundendaten: Zeichen, die einen mailto-Link umbauen könnten (?, &, #,
+ * Komma, Leerraum, spitze Klammern, Anführungszeichen), schließen sie aus.
+ * Der Betreff wird kodiert.
+ */
+const MAIL = /^[^\s@?&#,;:<>"'()\\]+@[^\s@?&#,;:<>"'()\\]+\.[a-z]{2,}$/i;
+export function mailHref(
+  email: string | undefined,
+  subject?: string
+): string | undefined {
+  const value = email?.trim();
+  if (!value || !MAIL.test(value)) return undefined;
+  return subject
+    ? `mailto:${value}?subject=${encodeURIComponent(subject)}`
+    : `mailto:${value}`;
+}
+
 /** Hauptaktion laut Bauplan: Anruf, Route oder Sprung zum Kontakt. */
 export function primaryAction(
   data: WebsiteDataV2,
@@ -197,15 +215,16 @@ export function JournalFoot({
   const address = addressLine(contact);
   const tel = telHref(contact?.phone);
   const action = primaryAction(data, blueprint, anchorPrefix);
+  const mail = mailHref(contact?.email);
   const reach = [
     tel && contact?.phone ? (
       <a key="tel" href={tel}>
         {contact.phone}
       </a>
     ) : null,
-    contact?.email ? (
-      <a key="mail" href={`mailto:${contact.email}`}>
-        {contact.email}
+    mail && contact?.email ? (
+      <a key="mail" href={mail}>
+        {contact.email.trim()}
       </a>
     ) : null,
   ].filter(Boolean);

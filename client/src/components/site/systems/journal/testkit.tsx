@@ -19,11 +19,13 @@ export const render = (
   data = journalDoc(),
   preview = false,
   basePath = "",
-  pathname?: string
+  pathname?: string,
+  slug = ""
 ) =>
   renderToStaticMarkup(
     <SiteRenderer
       data={data}
+      slug={slug}
       basePath={basePath}
       islandsMode={preview ? "preview" : "live"}
       preview={preview}
