@@ -9,6 +9,7 @@ import {
 } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
 import { JournalMenuSlot, JournalTeamSlot, previewSlotAnchors } from "./Offer";
+import { JournalDock } from "./Visit";
 
 /**
  * Navigation ohne Anker auf Abschnitte, die Journal nicht zeigt (z. B.
@@ -58,6 +59,7 @@ export const JOURNAL_MODULE: PackModule = {
           ))}
         </main>
         <JournalFoot basePath={basePath} anchorPrefix={anchorPrefix} />
+        <JournalDock anchorPrefix={anchorPrefix} />
       </>
     );
   },

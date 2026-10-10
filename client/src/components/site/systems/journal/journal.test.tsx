@@ -29,21 +29,8 @@ function compareSpecificity(a: number[], b: number[]): number {
   return 0;
 }
 
-export const journalDoc = (
-  kind: "full" | "minimal" | "features" = "full",
-  palette?: string
-) => withDesignSystem(getFixture("salon-noir", kind), "journal", palette);
-
-export const render = (data = journalDoc(), preview = false, basePath = "") =>
-  renderToStaticMarkup(
-    <SiteRenderer
-      data={data}
-      basePath={basePath}
-      islandsMode={preview ? "preview" : "live"}
-      preview={preview}
-      now={new Date("2026-10-13T10:00:00+02:00")}
-    />
-  );
+export { journalDoc, render } from "./testkit";
+import { journalDoc, render } from "./testkit";
 
 describe("Journal: Grundgerüst", () => {
   test("rendert mit System-Attributen und System-Variablen", () => {

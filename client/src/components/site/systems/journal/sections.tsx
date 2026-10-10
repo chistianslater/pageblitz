@@ -18,6 +18,7 @@ import {
   JournalTeam,
 } from "./Offer";
 import { JournalAbout, JournalGallery, JournalReviews } from "./Story";
+import { JournalContact, JournalFaq } from "./Visit";
 
 /**
  * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
@@ -140,7 +141,7 @@ export function JournalChapter({
   );
 }
 
-/** Abschnitts-Weiche; Task 11 ergänzt Gut zu wissen und Besuch. */
+/** Abschnitts-Weiche. */
 export function renderJournalSection(
   section: JournalSection,
   sections: readonly JournalSection[]
@@ -164,6 +165,10 @@ export function renderJournalSection(
       return <JournalGallery section={section} sections={sections} />;
     case "testimonials":
       return <JournalReviews section={section} sections={sections} />;
+    case "faq":
+      return <JournalFaq section={section} sections={sections} />;
+    case "contact":
+      return <JournalContact section={section} sections={sections} />;
     default:
       return null;
   }
