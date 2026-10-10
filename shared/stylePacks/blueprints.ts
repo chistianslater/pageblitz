@@ -72,10 +72,14 @@ const STANDARD: Blueprint = {
 const BEAUTY_KEYS =
   /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung|wellness|massage|day-?spa|spa$|hundesalon|hundefriseur|tierfriseur)/;
 
+/** Google führt viele Barbershops als „Friseursalon" — der Name verrät sie. */
+export function isBarberShop(category: string | undefined, name: string): boolean {
+  return /barb|herren/i.test(`${category ?? ""} ${name}`);
+}
+
 function beautyBlueprint(category: string, name: string): Blueprint {
-  // Google führt viele Barbershops als „Friseursalon" — der Name verrät sie.
   const text = `${category} ${name}`;
-  const barber = /barb|herren/i.test(text);
+  const barber = isBarberShop(category, name);
   const studio =
     !barber &&
     /kosmetik|cosmetic|nagel|nail|wimpern|lash|beauty|brauen|waxing|schönheit|schoenheit/i.test(
