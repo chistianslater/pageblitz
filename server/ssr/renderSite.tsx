@@ -486,6 +486,38 @@ function renderLegalPage(
     : isPreview
       ? `<h1>${esc(title)}</h1><p><strong>Keine Sorge — hier steht noch nichts.</strong></p><p>Das ${esc(title)} entsteht aus deinen Angaben, sobald du die Seite freischaltest. Dann ist hier alles fertig, und du musst dich um nichts kümmern.</p>`
       : "<p>Diese Seite wurde nicht gefunden.</p>";
+  const status = hasContent || isPreview ? 200 : 404;
+  // Designsystem (rev 3): Rechtsseite im Rahmen der Seite (Kopf, Fuß,
+  // Schrift, Palette) statt der schlichten Hülle.
+  const system = systemOf(data);
+  if (system) {
+    const body = renderToStaticMarkup(
+      <SiteRenderer
+        data={data}
+        basePath={basePath}
+        now={opts.now}
+        legal={{ title, html: content ?? "" }}
+      />
+    );
+    const head = [
+      renderLegalHead(data, canonicalUrl, title),
+      systemFontHead(system),
+      analyticsTag(opts),
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const html = `<!doctype html>
+<html lang="de">
+<head>
+${head}
+<style>html,body{margin:0;padding:0}body{background:${getCanvasColor(data)};color:${getInkColor(data)}}</style>
+</head>
+<body>
+${openExternalLinksInNewTab(body)}
+</body>
+</html>`;
+    return { html, status };
+  }
   const backHref = basePath || "/";
   const canvasColor = getCanvasColor(data);
   const html = `<!doctype html>
@@ -501,7 +533,7 @@ ${content}
 </div>
 </body>
 </html>`;
-  return { html, status: hasContent || isPreview ? 200 : 404 };
+  return { html, status };
 }
 
 /**

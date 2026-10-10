@@ -99,3 +99,115 @@ describe("SSR rev 3", () => {
     expect(legal).toContain("body{background:#eef0ea;color:#232924}");
   });
 });
+
+describe("SSR rev 3: Rechtsseiten und Unterseiten im Journal-Rahmen", () => {
+  const impressum =
+    "<h1>Impressum</h1><h2>Angaben gemäß § 5 TMG</h2><p>NOIR Haarstudio, Türkenstraße 42</p>";
+  const doc = () => ({
+    ...withDesignSystem(getFixture("salon-noir", "full"), "journal"),
+    legal: {
+      impressumHtml: impressum,
+      datenschutzHtml: "<p>Wir speichern nichts.</p>",
+    },
+  });
+
+  test("Impressum einer Journal-Seite nutzt Journal-Schrift, -Kopf und -Fuß", () => {
+    const { html, status } = renderSiteHtml(doc(), {
+      origin,
+      pathname: "/impressum",
+    });
+    expect(status).toBe(200);
+    expect(html).toContain('data-pb-system="journal"');
+    expect(html).toContain('class="jr-head"');
+    expect(html).toContain('class="jr-foot"');
+    expect(html).toContain('class="jr-wrap jr-legal"');
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect((html.match(/rel="preload"[^>]+as="font"/g) ?? []).length).toBe(2);
+    expect(html).toContain("<title>Impressum — NOIR Haarstudio</title>");
+    expect(html).toContain(`rel="canonical" href="${origin}/impressum"`);
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1 id="seite-titel">Impressum<\/h1>/);
+    expect(html).toContain("<h2>Angaben gemäß § 5 TMG</h2>");
+    expect(html).toContain("body{background:#f3eee7;color:#2f2e2c}");
+  });
+
+  test("Datenschutz ohne h1 im Text bekommt den Seitentitel als h1", () => {
+    const { html } = renderSiteHtml(doc(), {
+      origin,
+      pathname: "/datenschutz",
+    });
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toContain(">Datenschutz</h1>");
+    expect(html).toContain("Wir speichern nichts.");
+  });
+
+  test("Anker der Rechtsseite zeigen auf die Startseite (mit basePath)", () => {
+    const { html } = renderSiteHtml(doc(), {
+      origin,
+      pathname: "/impressum",
+      basePath: "/site/noir",
+    });
+    const head = html.slice(
+      html.indexOf('class="jr-head"'),
+      html.indexOf("</header>")
+    );
+    expect(head).not.toMatch(/href="#/);
+    expect(head).toContain('href="/site/noir#leistungen"');
+  });
+
+  test("leere Rechtsseite live: 404, Vorschau: Hinweis mit 200", () => {
+    const empty = { ...doc(), legal: undefined };
+    expect(
+      renderSiteHtml(empty, { origin, pathname: "/impressum" }).status
+    ).toBe(404);
+    const preview = renderSiteHtml(empty, {
+      origin,
+      pathname: "/impressum",
+      basePath: "/preview-ssr/abc",
+    });
+    expect(preview.status).toBe(200);
+    expect(preview.html).toContain("Keine Sorge");
+    expect(preview.html.match(/<h1[\s>]/g)).toHaveLength(1);
+  });
+
+  test("Unterseite einer Journal-Seite hat Typo-Kopf und genau ein h1", () => {
+    const base = withDesignSystem(getFixture("salon-noir", "full"), "journal");
+    const data = {
+      ...base,
+      addOns: { ...base.addOns, subpages: true },
+      pages: [
+        {
+          slug: "leistungen",
+          title: "Leistungen",
+          seo: { title: "Leistungen", description: "Alle Leistungen" },
+          sections: [
+            {
+              type: "pageHeader" as const,
+              title: "Unsere Leistungen",
+              intro: "Alles im Detail.",
+            },
+            {
+              type: "services" as const,
+              headline: "Leistungen",
+              items: [
+                {
+                  title: "Damenschnitt",
+                  description: "Waschen, Schnitt, Föhnen.",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const { html } = renderSiteHtml(data as typeof base, {
+      origin,
+      pathname: "/leistungen",
+    });
+    expect(html).toContain('class="jr-page-head"');
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toContain(">Unsere Leistungen</h1>");
+    expect(html).toContain("Damenschnitt");
+    expect(html).not.toContain('class="jr-entry');
+  });
+});

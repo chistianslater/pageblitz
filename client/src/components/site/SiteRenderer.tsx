@@ -191,6 +191,12 @@ export const SiteRenderer: React.FC<{
    * wird und geht in `buildNavItems` ein (Anker-Präfix, `current`-Flag).
    */
   pathname?: string;
+  /**
+   * Rechtsseite im Rahmen eines Designsystems (rev 3): Kopf, Fuß, Schrift
+   * und Palette wie die Seite, Inhalt aus dem legalGenerator. Packs (rev
+   * 1/2) rendern Rechtsseiten weiter schlicht in renderLegalPage.
+   */
+  legal?: { title: string; html: string };
 }> = ({
   data,
   basePath = "",
@@ -201,6 +207,7 @@ export const SiteRenderer: React.FC<{
   islandsMode,
   preview = false,
   pathname = "/",
+  legal,
 }) => {
   // There are no paying customers yet: existing unversioned previews also
   // adopt the new default. Revision 1 remains an explicit comparison option.
@@ -520,7 +527,7 @@ export const SiteRenderer: React.FC<{
       {/* Saison-/Aktionsbanner GANZ OBEN, über der Pack-Navigation —
           zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
           Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
-      {!currentPage && <NoticeBanner data={effectiveData} />}
+      {!currentPage && !legal && <NoticeBanner data={effectiveData} />}
       {systemState ? (
         <SystemContext.Provider value={systemState}>
           <mod.Page
@@ -530,8 +537,9 @@ export const SiteRenderer: React.FC<{
             navItems={navItems}
             pageTitle={currentPage?.title}
             sections={pageSections}
+            legal={legal}
           />
-          <PhotoCredits data={effectiveData} />
+          {!legal && <PhotoCredits data={effectiveData} />}
         </SystemContext.Provider>
       ) : (
         <EntryContext.Provider value={entry}>

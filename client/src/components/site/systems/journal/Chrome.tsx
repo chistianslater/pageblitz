@@ -80,6 +80,9 @@ const NAV_LABELS: Partial<Record<SectionType, string>> = {
   process: "Ablauf",
   faq: "Gut zu wissen",
   contact: "Besuch",
+  story: "Geschichte",
+  usp: "Grundsätze",
+  stats: "In Zahlen",
 };
 
 export function journalNavItems(items: NavItem[]): NavItem[] {

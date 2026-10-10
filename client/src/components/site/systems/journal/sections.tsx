@@ -19,6 +19,15 @@ import {
 } from "./Offer";
 import { JournalAbout, JournalGallery, JournalReviews } from "./Story";
 import { JournalContact, JournalFaq } from "./Visit";
+import {
+  JournalCta,
+  JournalPageHead,
+  JournalPartners,
+  JournalQuote,
+  JournalStats,
+  JournalStory,
+  JournalUsp,
+} from "./Extras";
 
 /**
  * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
@@ -36,6 +45,8 @@ const NUMBERED: ReadonlySet<JournalSection["type"]> = new Set([
   "pricelist",
   "menu",
   "faq",
+  "story",
+  "usp",
   "contact",
 ]);
 
@@ -65,6 +76,10 @@ const CHAPTER_LABELS: Partial<Record<JournalSection["type"], string>> = {
   testimonials: "Stimmen",
   faq: "Gut zu wissen",
   contact: "Besuch",
+  story: "Geschichte",
+  usp: "Grundsätze",
+  stats: "In Zahlen",
+  partners: "Partner",
 };
 
 export function chapterLabel(
@@ -82,6 +97,21 @@ export function chapterLabel(
  */
 export function sectionClass(name: string, index: number): string {
   return `jr-section jr-${name}${index % 2 === 1 ? " jr-section--raised" : ""}`;
+}
+
+/**
+ * Zwischentöne ohne Nummer (Zahlen, Zitat, Partner) liegen auf dem Band
+ * des vorangehenden Kapitels und lesen sich als dessen Ausklang.
+ */
+export function interludeClass(
+  name: string,
+  section: JournalSection,
+  sections: readonly JournalSection[]
+): string {
+  const before = sections.slice(0, Math.max(0, sections.indexOf(section)));
+  const previous = [...before].reverse().find(s => NUMBERED.has(s.type));
+  const index = previous ? chapterIndex(sections, previous.type) : 0;
+  return sectionClass(name, index);
 }
 
 /** Ergänzt das Euro-Zeichen, wenn der Preis nackt ist („ab 45" → „ab 45 €"). */
@@ -169,7 +199,26 @@ export function renderJournalSection(
       return <JournalFaq section={section} sections={sections} />;
     case "contact":
       return <JournalContact section={section} sections={sections} />;
-    default:
+    case "story":
+      return <JournalStory section={section} sections={sections} />;
+    case "usp":
+      return <JournalUsp section={section} sections={sections} />;
+    case "stats":
+      return <JournalStats section={section} sections={sections} />;
+    case "quote":
+      return <JournalQuote section={section} sections={sections} />;
+    case "partners":
+      return <JournalPartners section={section} sections={sections} />;
+    case "cta":
+      return <JournalCta section={section} sections={sections} />;
+    case "pageHeader":
+      return <JournalPageHead title={section.title} intro={section.intro} />;
+    case "notice":
+      // Banner über dem Kopf, zentral in SiteRenderer (noticeBanner.tsx).
       return null;
+    default: {
+      const exhaustive: never = section;
+      return exhaustive;
+    }
   }
 }

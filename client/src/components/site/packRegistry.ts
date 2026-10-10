@@ -26,6 +26,12 @@ export interface PackModule {
     navItems?: NavItem[];
     pageTitle?: string;
     sections?: PageSection[];
+    /**
+     * Rechtsseite (Impressum/Datenschutz) im Rahmen des Moduls — nur
+     * Designsysteme (rev 3) bekommen sie, siehe renderLegalPage. `html`
+     * ist systemgenerierter Output des legalGenerator.
+     */
+    legal?: { title: string; html: string };
   }>;
 }
 

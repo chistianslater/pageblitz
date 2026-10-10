@@ -10,6 +10,8 @@ import {
 import { orderedSections, type NavItem } from "../../engine";
 import { JournalMenuSlot, JournalTeamSlot, previewSlotAnchors } from "./Offer";
 import { JournalDock } from "./Visit";
+import { JournalLegal, JournalPageHead } from "./Extras";
+import { useSystem } from "../SystemContext";
 
 /**
  * Navigation ohne Anker auf Abschnitte, die Journal nicht zeigt (z. B.
@@ -28,28 +30,42 @@ export function shownNavItems(
   );
 }
 
+/** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
+const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
+  items.map(item =>
+    item.href.startsWith("#") ? { ...item, href: prefix + item.href } : item
+  );
+
 export const JOURNAL_MODULE: PackModule = {
   id: "journal",
   css: JOURNAL_CSS,
-  Page: ({ data, basePath, navItems = [], sections }) => {
+  Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
+    // Startseiten-Dokument (auf Unterseiten trägt `data` die Seiten-Abschnitte).
+    const { data: home } = useSystem();
     // Startseite wie in den Packs über orderedSections: hiddenSections,
     // sectionOrder und Add-on-Gating greifen, Kapitel zählen nur Sichtbares.
-    const list: JournalSection[] = (sections ?? orderedSections(data)).filter(
-      journalShows
-    );
-    // Unterseiten bekommen `sections`; Anker zeigen dann auf die Startseite.
-    const anchorPrefix = sections ? basePath || "/" : "";
+    const list: JournalSection[] = legal
+      ? []
+      : (sections ?? orderedSections(data)).filter(journalShows);
+    // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
+    const anchorPrefix = sections || legal ? basePath || "/" : "";
     // Vorschau-Platzhalter nur auf der Startseite.
-    const slots = sections ? {} : previewSlotAnchors(list);
+    const slots = sections || legal ? {} : previewSlotAnchors(list);
+    const shown = shownNavItems(navItems, orderedSections(home));
+    // Unterseite ohne eigenen Kopf-Abschnitt: Titel der Seite trägt den Kopf.
+    const ownHead =
+      pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
     return (
       <>
         <JournalHead
           navItems={journalNavItems(
-            shownNavItems(navItems, orderedSections(data))
+            legal ? prefixAnchors(shown, anchorPrefix) : shown
           )}
           anchorPrefix={anchorPrefix}
         />
         <main className="jr-main" id="inhalt">
+          {legal && <JournalLegal title={legal.title} html={legal.html} />}
+          {ownHead && <JournalPageHead title={pageTitle} />}
           {list.map((s, i) => (
             <React.Fragment key={`${s.type}-${i}`}>
               {renderJournalSection(s, list)}

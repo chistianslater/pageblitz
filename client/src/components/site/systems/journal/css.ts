@@ -411,5 +411,79 @@ ${NAME_FIT}
   .pb-journal .jr-contact-map{grid-column:7/13;grid-row:1/3;margin-top:0}
   .pb-journal .jr-contact-form{grid-column:1/-1}
 }
+/* Unterseiten- und Rechtsseiten-Kopf: Typo-Einstieg ohne Foto, ein h1 */
+.pb-journal .jr-page-head{text-align:center;padding-block:calc(var(--sys-space-xl) - var(--sys-space-s)) var(--sys-space-xl);border-bottom:1px solid var(--sys-rule)}
+.pb-journal .jr-page-kicker{margin-bottom:calc(var(--sys-space-s) + var(--sys-space-2xs))}
+.pb-journal .jr-page-head h1{${step("h2")};font-size:calc(var(--sys-h2-size) * 1.4);max-width:calc(var(--sys-space-measure) * .9);margin-inline:auto;overflow-wrap:anywhere;hyphens:auto}
+.pb-journal .jr-page-intro{${step("lede")};font-style:italic;font-weight:300;max-width:calc(var(--sys-space-measure) * .8);margin:var(--sys-space-m) auto 0;hyphens:manual}
+
+/* Rechtsseiten: Fließtext im Textmaß, Überschriften aus der Skala */
+.pb-journal .jr-legal{max-width:calc(var(--sys-space-measure) + 2 * var(--sys-space-gutter));padding-block:var(--sys-space-xl) var(--sys-space-section);overflow-wrap:anywhere}
+.pb-journal .jr-legal h1,.pb-journal .jr-legal h2{${step("h3")};margin:var(--sys-space-l) 0 var(--sys-space-s);padding-top:var(--sys-space-m);border-top:1px solid var(--sys-rule)}
+.pb-journal .jr-legal>:first-child{margin-top:0;padding-top:0;border-top:0}
+.pb-journal .jr-legal h3,.pb-journal .jr-legal h4{${step("kicker")};color:var(--sys-muted);margin:var(--sys-space-m) 0 var(--sys-space-xs)}
+.pb-journal .jr-legal p+p{margin-top:var(--sys-space-s)}
+.pb-journal .jr-legal ul,.pb-journal .jr-legal ol{margin:var(--sys-space-s) 0;padding-left:var(--sys-space-m)}
+.pb-journal .jr-legal li+li{margin-top:var(--sys-space-2xs)}
+.pb-journal .jr-legal a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:var(--sys-space-2xs)}
+.pb-journal .jr-legal strong,.pb-journal .jr-legal b{font-weight:500}
+
+/* Geschichte: Kapitel, erster Absatz als Einleitung */
+.pb-journal .jr-story-body{max-width:var(--sys-space-measure)}
+.pb-journal .jr-story-body p:first-child{${step("lede")}}
+.pb-journal .jr-story-body p+p{margin-top:var(--sys-space-s)}
+
+/* Grundsätze: Punkte zwischen Haarlinien */
+.pb-journal .jr-usp-list{list-style:none;margin:0;padding:0;display:grid;column-gap:calc(var(--sys-space-l) + var(--sys-space-xs));border-top:1px solid var(--sys-ink)}
+.pb-journal .jr-usp-list li{display:grid;align-content:start;gap:var(--sys-space-xs);padding-block:var(--sys-space-m);border-bottom:1px solid var(--sys-rule)}
+.pb-journal .jr-usp-list h3{${step("h3")}}
+.pb-journal .jr-usp-list p{${step("small")};color:var(--sys-muted);max-width:calc(var(--sys-space-measure) * .6)}
+
+/* Zahlen: kursive Display-Ziffern, Haarlinie links */
+.pb-journal .jr-stats{padding-block:var(--sys-space-xl)}
+.pb-journal .jr-stats-list{list-style:none;margin:0;padding:0;display:grid;border-bottom:1px solid var(--sys-rule)}
+.pb-journal .jr-stats-list li{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:baseline;gap:var(--sys-space-m);
+  padding-block:var(--sys-space-s);border-top:1px solid var(--sys-rule);min-width:0}
+.pb-journal .jr-stat-value{font-family:var(--sys-font-display);font-style:italic;font-weight:300;font-size:calc(var(--sys-display-size) * .55);
+  line-height:var(--sys-display-line);letter-spacing:var(--sys-display-track);overflow-wrap:anywhere}
+.pb-journal .jr-stat-label{${step("small")};color:var(--sys-muted)}
+
+/* Zitat: Akzentstrich, große kursive Zeile */
+.pb-journal .jr-quote-band{text-align:center}
+.pb-journal .jr-motto{margin:0 auto;max-width:calc(var(--sys-space-measure) * 1.1)}
+.pb-journal .jr-motto::before{content:"";display:block;width:var(--sys-space-xl);height:1px;background:var(--sys-accent);margin:0 auto var(--sys-space-l)}
+.pb-journal .jr-motto blockquote{margin:0}
+.pb-journal .jr-motto p{${step("h2")};font-style:italic;text-wrap:balance;hyphens:manual}
+.pb-journal .jr-motto p::before{content:"„"}
+.pb-journal .jr-motto p::after{content:"“"}
+.pb-journal .jr-quote-author{color:var(--sys-muted);margin-top:var(--sys-space-m)}
+
+/* Partner: ruhige Logo-Zeile in Graustufen */
+.pb-journal .jr-partners{padding-block:var(--sys-space-xl);text-align:center}
+.pb-journal .jr-partners .jr-chapter h2{${step("h3")}}
+.pb-journal .jr-logos{list-style:none;margin:0;padding:var(--sys-space-l) 0 0;border-top:1px solid var(--sys-rule);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:var(--sys-space-l) var(--sys-space-xl)}
+.pb-journal .jr-logos img{height:var(--sys-space-l);width:auto;max-width:calc(var(--sys-space-2xl) * 1.5);object-fit:contain;filter:grayscale(1);opacity:.72;transition:opacity 200ms var(--jr-ease),filter 200ms var(--jr-ease)}
+.pb-journal .jr-logos a:hover img{opacity:1;filter:none}
+
+/* Aufruf: das einzige dunkle Band */
+.pb-journal .jr-cta{background:var(--sys-deep);color:var(--sys-on-deep);text-align:center}
+.pb-journal .jr-cta h2{${step("h2")};max-width:calc(var(--sys-space-measure) * .9);margin-inline:auto}
+.pb-journal .jr-cta-action{margin-top:var(--sys-space-l)}
+.pb-journal .jr-pill--light{background:var(--sys-on-deep);color:var(--sys-deep);border-color:var(--sys-on-deep)}
+.pb-journal .jr-pill--light:hover{background:transparent;color:var(--sys-on-deep);border-color:var(--sys-on-deep)}
+.pb-journal .jr-cta :focus-visible{outline-color:var(--sys-on-deep)}
+
+@media (min-width:48rem){
+  .pb-journal .jr-usp-list{grid-template-columns:repeat(2,minmax(0,1fr));border-top:0}
+  .pb-journal .jr-usp-list li:nth-child(-n+2){border-top:1px solid var(--sys-ink)}
+}
+@media (min-width:64rem){
+  .pb-journal .jr-page-head{padding-block:var(--sys-space-xl) calc(var(--sys-space-xl) + var(--sys-space-m))}
+  .pb-journal .jr-stats-list{grid-template-columns:repeat(var(--jr-stats,3),minmax(0,1fr));column-gap:var(--sys-space-m);border-bottom:0}
+  .pb-journal .jr-stats-list li{grid-template-columns:minmax(0,1fr);gap:var(--sys-space-xs);padding:var(--sys-space-m) 0 0;border-top:1px solid var(--sys-ink)}
+  .pb-journal .jr-stats-list[data-count="2"]{--jr-stats:2}
+  .pb-journal .jr-stats-list[data-count="4"]{--jr-stats:4}
+  .pb-journal .jr-stat-value{font-size:calc(var(--sys-display-size) * .72)}
+}
 /* ende journal */
 `;
