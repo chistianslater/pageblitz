@@ -18,7 +18,8 @@ import { isPlaceholderHours } from "../../artDirection/heroFacts";
 /** [ids, Klassen/Attribute/Pseudoklassen, Elemente] eines einfachen Selektors. */
 function specificityOf(selector: string): [number, number, number] {
   const ids = (selector.match(/#[\w-]+/g) ?? []).length;
-  const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+/g) ?? []).length;
+  const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+/g) ?? [])
+    .length;
   const elements = (selector.match(/(^|[\s>+~])[a-z][\w-]*/gi) ?? []).length;
   return [ids, classes, elements];
 }
@@ -234,7 +235,10 @@ describe("Journal: Knopf und Bewegung", () => {
 
 describe("Journal: Einstieg", () => {
   const entryOf = (html: string) =>
-    html.slice(html.indexOf('<section id="start"'), html.indexOf("</section>", html.indexOf('<section id="start"')));
+    html.slice(
+      html.indexOf('<section id="start"'),
+      html.indexOf("</section>", html.indexOf('<section id="start"'))
+    );
   const withHero = (patch: Record<string, unknown>, d = journalDoc()) => ({
     ...d,
     sections: d.sections.map(s => (s.type === "hero" ? { ...s, ...patch } : s)),
@@ -243,8 +247,12 @@ describe("Journal: Einstieg", () => {
   test("mit Foto: Kicker, Name als h1, kursive Zeile, Bild, Abb. 1, Faktenzeilen", () => {
     const entry = entryOf(render());
     expect(entry).toMatch(/<section id="start" class="jr-entry"/);
-    expect(entry).toMatch(/class="jr-kicker jr-entry-kicker">Friseursalon in München-Maxvorstadt</);
-    expect(entry).toMatch(/<h1 class="jr-entry-name[^"]*">NOIR Haarstudio<\/h1>/);
+    expect(entry).toMatch(
+      /class="jr-kicker jr-entry-kicker">Friseursalon in München-Maxvorstadt</
+    );
+    expect(entry).toMatch(
+      /<h1 class="jr-entry-name[^"]*">NOIR Haarstudio<\/h1>/
+    );
     expect(entry).toContain('<p class="jr-entry-line">Handwerk für Haar.</p>');
     expect(entry).toContain('src="/demo/salon-noir-hero.webp"');
     expect(entry).toContain("Abb. 1");
@@ -254,9 +262,15 @@ describe("Journal: Einstieg", () => {
   test("Faktenzeilen: heute geöffnet, Google, Adresse — höchstens drei", () => {
     const entry = entryOf(render());
     // 13.10.2026 ist ein Dienstag, Di–Sa 9:00 – 19:00
-    expect(entry).toMatch(/Heute geöffnet<\/span><span class="jr-entry-fact-note">9 bis 19 Uhr/);
-    expect(entry).toMatch(/4,8 bei Google<\/span><span class="jr-entry-fact-note">167 Bewertungen/);
-    expect(entry).toMatch(/Türkenstraße 42<\/span><span class="jr-entry-fact-note">80799 München-Maxvorstadt/);
+    expect(entry).toMatch(
+      /Heute geöffnet<\/span><span class="jr-entry-fact-note">9 bis 19 Uhr/
+    );
+    expect(entry).toMatch(
+      /4,8 bei Google<\/span><span class="jr-entry-fact-note">167 Bewertungen/
+    );
+    expect(entry).toMatch(
+      /Türkenstraße 42<\/span><span class="jr-entry-fact-note">80799 München-Maxvorstadt/
+    );
     expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(3);
   });
 
@@ -267,7 +281,10 @@ describe("Journal: Einstieg", () => {
       google: { rating: 5, reviewCount: 0 },
       sections: d.sections.map(s =>
         s.type === "contact"
-          ? { ...s, openingHours: PLACEHOLDER_OPENING_HOURS.map(h => ({ ...h })) }
+          ? {
+              ...s,
+              openingHours: PLACEHOLDER_OPENING_HOURS.map(h => ({ ...h })),
+            }
           : s
       ),
     });
@@ -293,12 +310,20 @@ describe("Journal: Einstieg", () => {
       ".pb-journal .jr-entry--type .jr-entry-name--long",
     ]) {
       const at = JOURNAL_CSS.indexOf(`${sel}{`);
-      expect(at, sel).toBeGreaterThan(JOURNAL_CSS.indexOf(".pb-journal .jr-entry h1{"));
-      expect(JOURNAL_CSS.slice(at, JOURNAL_CSS.indexOf("}", at))).toContain("--jr-name-size:");
-      expect(compareSpecificity(specificityOf(sel), base), sel).toBeGreaterThan(0);
+      expect(at, sel).toBeGreaterThan(
+        JOURNAL_CSS.indexOf(".pb-journal .jr-entry h1{")
+      );
+      expect(JOURNAL_CSS.slice(at, JOURNAL_CSS.indexOf("}", at))).toContain(
+        "--jr-name-size:"
+      );
+      expect(compareSpecificity(specificityOf(sel), base), sel).toBeGreaterThan(
+        0
+      );
     }
     // Typo-Fassung lang muss nach der allgemeinen --long-Regel stehen (gleiche Spezifität).
-    expect(JOURNAL_CSS.indexOf(".pb-journal .jr-entry--type .jr-entry-name--long{")).toBeGreaterThan(
+    expect(
+      JOURNAL_CSS.indexOf(".pb-journal .jr-entry--type .jr-entry-name--long{")
+    ).toBeGreaterThan(
       JOURNAL_CSS.indexOf(".pb-journal .jr-entry .jr-entry-name--long{")
     );
   });
@@ -309,26 +334,42 @@ describe("Journal: Einstieg", () => {
     expect(entry).toContain("jr-entry--type");
     expect(entry).not.toContain("Abb. 1");
     expect(entry).not.toContain("<img");
-    expect(entry).toMatch(/class="jr-pill jr-pill--ghost" href="#leistungen">Leistungen ansehen</);
-    expect(entry).toMatch(/class="jr-link" href="https:\/\/www.google.com\/maps[^"]*">Route planen</);
+    expect(entry).toMatch(
+      /class="jr-pill jr-pill--ghost" href="#leistungen">Leistungen ansehen</
+    );
+    expect(entry).toMatch(
+      /class="jr-link" href="https:\/\/www.google.com\/maps[^"]*">Route planen</
+    );
   });
 
   test("Foto aussortiert (hiddenElements) → Typo-Einstieg", () => {
     const d = journalDoc();
     const html = render({
       ...d,
-      designProfile: { ...(d.designProfile ?? {}), hiddenElements: ["hero-media"] },
+      designProfile: {
+        ...(d.designProfile ?? {}),
+        hiddenElements: ["hero-media"],
+      },
     } as typeof d);
     expect(entryOf(html)).toContain("jr-entry--type");
   });
 
   test("lange Modell-Überschrift → Tagline, sonst keine kursive Zeile", () => {
-    const long = "Handwerk für Haar, mitten in der Maxvorstadt und mit viel Liebe zum Detail gemacht.";
-    expect(entryLine({ headline: long, subheadline: "Kurz und gut." } as never, "Tagline.")).toBe("Tagline.");
+    const long =
+      "Handwerk für Haar, mitten in der Maxvorstadt und mit viel Liebe zum Detail gemacht.";
+    expect(
+      entryLine(
+        { headline: long, subheadline: "Kurz und gut." } as never,
+        "Tagline."
+      )
+    ).toBe("Tagline.");
     expect(entryLine({ headline: long } as never, undefined)).toBeUndefined();
-    expect(entryLine({ headline: "Schnitt, **Farbe** & gute Laune." } as never, undefined)).toBe(
-      "Schnitt, Farbe & gute Laune."
-    );
+    expect(
+      entryLine(
+        { headline: "Schnitt, **Farbe** & gute Laune." } as never,
+        undefined
+      )
+    ).toBe("Schnitt, Farbe & gute Laune.");
   });
 
   test("langer Name: Größe stuft ab, Trennung erlaubt, kein nowrap", () => {
@@ -346,7 +387,9 @@ describe("Journal: Einstieg", () => {
 
   test("genau ein h1", () => {
     expect((render().match(/<h1/g) ?? []).length).toBe(1);
-    expect((render(withHero({ imageUrl: undefined })).match(/<h1/g) ?? []).length).toBe(1);
+    expect(
+      (render(withHero({ imageUrl: undefined })).match(/<h1/g) ?? []).length
+    ).toBe(1);
   });
 });
 
@@ -354,16 +397,202 @@ describe("Journal: Marke im Kopf", () => {
   test("Längenklasse aus dem Namen", () => {
     expect(brandClasses("Lindner")).toBe("jr-brand");
     expect(brandClasses("NOIR Haarstudio")).toBe("jr-brand jr-brand--long");
-    expect(brandClasses("Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff")).toBe(
-      "jr-brand jr-brand--xlong"
-    );
+    expect(
+      brandClasses("Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff")
+    ).toBe("jr-brand jr-brand--xlong");
   });
   test("Kopf trägt die Klasse; CSS kann nicht überlaufen", () => {
     const d = journalDoc();
-    const html = render({ ...d, businessName: "Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff" });
+    const html = render({
+      ...d,
+      businessName: "Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff",
+    });
     expect(html).toMatch(/<a class="jr-brand jr-brand--xlong" href="#start">/);
-    expect(render()).toMatch(/<a class="jr-brand jr-brand--long" href="#start">/);
-    expect(JOURNAL_CSS).toMatch(/\.jr-brand\{[^}]*min-width:0[^}]*overflow-wrap:anywhere/);
+    expect(render()).toMatch(
+      /<a class="jr-brand jr-brand--long" href="#start">/
+    );
+    expect(JOURNAL_CSS).toMatch(
+      /\.jr-brand\{[^}]*min-width:0[^}]*overflow-wrap:anywhere/
+    );
     expect(JOURNAL_CSS).toMatch(/\.jr-brand--xlong\{[^}]*text-transform:none/);
+  });
+});
+
+/** Abschnitte eines Dokuments ersetzen/entfernen (Typ-sicher genug für Tests). */
+const withSections = (
+  d: ReturnType<typeof journalDoc>,
+  map: (s: SectionV2) => SectionV2 | undefined
+) => ({
+  ...d,
+  sections: d.sections.map(map).filter((s): s is SectionV2 => Boolean(s)),
+});
+const esc = (t: string) => t.replace(/&/g, "&amp;");
+const sectionHtml = (html: string, cls: string) => {
+  const start = html.lastIndexOf(
+    "<section",
+    html.indexOf(`class="jr-section jr-${cls}`)
+  );
+  if (!html.includes(`class="jr-section jr-${cls}`)) return "";
+  if (start === -1) return "";
+  return html.slice(start, html.indexOf("</section>", start));
+};
+
+describe("Journal: Angebot", () => {
+  test("Leistungen als Kapitel 02 mit allen Titeln, Anker aus SECTION_ANCHORS", () => {
+    const data = journalDoc();
+    const html = render(data);
+    const services = data.sections.find(s => s.type === "services")!;
+    expect(html).toMatch(
+      /<section id="leistungen" class="jr-section jr-services/
+    );
+    if (services.type !== "services") throw new Error();
+    for (const item of services.items) expect(html).toContain(esc(item.title));
+    expect(sectionHtml(html, "services")).toMatch(/jr-chapter-no[^>]*>02</);
+  });
+
+  test("Preis nur, wenn vorhanden; nackte Preise bekommen €", () => {
+    const html = sectionHtml(render(), "services");
+    expect(html).toContain("ab 45 €");
+    expect(html).toContain('class="jr-price"');
+  });
+
+  test("keine erfundenen Preise", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "pricelist"
+        ? undefined
+        : s.type === "services"
+          ? { ...s, items: s.items.map(i => ({ title: i.title })) }
+          : s
+    );
+    const html = render(data);
+    expect(html).not.toMatch(/€/);
+    expect(html).not.toContain('class="jr-price"');
+  });
+
+  test("Label doppelt nicht die Überschrift: nur Nummer, wenn gleich", () => {
+    const html = sectionHtml(render(), "services");
+    expect(html).toMatch(
+      /<p class="jr-kicker jr-chapter-label"><span class="jr-chapter-no"[^>]*>02<\/span><\/p>/
+    );
+  });
+
+  test("„Alle Leistungen“ nur mit Link im Dokument", () => {
+    expect(sectionHtml(render(), "services")).not.toContain("jr-link");
+    const data = withSections(journalDoc(), s =>
+      s.type === "services"
+        ? {
+            ...s,
+            link: {
+              text: "Alle Leistungen",
+              href: "https://example.org/preise",
+            },
+          }
+        : s
+    );
+    expect(sectionHtml(render(data), "services")).toMatch(
+      /<a class="jr-link" href="https:\/\/example.org\/preise">Alle Leistungen<\/a>/
+    );
+  });
+
+  test("Preisliste mit Gruppen-Kicker, Haarlinien-Zeilen und €", () => {
+    const html = sectionHtml(render(), "pricelist");
+    expect(html).toMatch(/<section id="preise" class="jr-section jr-pricelist/);
+    expect(html).toMatch(/class="jr-kicker jr-group"[^>]*>Damen</);
+    expect(html).toContain("Balayage komplett");
+    expect(html).toContain("165 €");
+  });
+
+  test("Preis-Platzhalter nur in der Vorschau, nie live", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "pricelist" ? undefined : s
+    );
+    expect(render(data, true)).toContain("Nur in deiner Vorschau");
+    expect(render(data, false)).not.toContain("Nur in deiner Vorschau");
+  });
+
+  test("Team-Platzhalter in der Vorschau ohne Nummer", () => {
+    const html = render(journalDoc(), true);
+    const slot = html.slice(html.indexOf('id="team"'));
+    expect(slot).toContain("Nur in deiner Vorschau");
+    expect(slot.slice(0, slot.indexOf("</section>"))).not.toContain(
+      "jr-chapter-no"
+    );
+    expect(render(journalDoc(), false)).not.toContain('id="team"');
+  });
+
+  test("Team mit echten Mitgliedern: Porträt, Name als h3, Rolle", () => {
+    const d = journalDoc();
+    const data = {
+      ...d,
+      sections: [
+        ...d.sections,
+        {
+          type: "team" as const,
+          headline: "Das Team",
+          members: [
+            { name: "Mara Noir", role: "Inhaberin", imageUrl: "/demo/a.webp" },
+            { name: "Leo Brandt", role: "Colorist", imageUrl: "/demo/b.webp" },
+          ],
+        },
+      ],
+    };
+    const html = sectionHtml(render(data), "team");
+    expect(html).toMatch(/<h3>Mara Noir<\/h3>/);
+    expect(html).toContain("Colorist");
+    expect(html).toMatch(/<img[^>]*loading="lazy"[^>]*>/);
+    expect(html).not.toContain("Nur in deiner Vorschau");
+  });
+
+  test("Ablauf: nummerierte Schritte mit großer Ziffer", () => {
+    const d = journalDoc();
+    const data = {
+      ...d,
+      sections: [
+        ...d.sections,
+        {
+          type: "process" as const,
+          headline: "So läuft dein Termin",
+          steps: [
+            { title: "Termin anfragen", text: "Online oder per Anruf." },
+            { title: "Beratung am Platz" },
+          ],
+        },
+      ],
+    };
+    const html = sectionHtml(render(data), "process");
+    expect(html).toMatch(/<section id="ablauf" class="jr-section jr-process/);
+    expect(html).toMatch(/<ol class="jr-steps"/);
+    expect(html).toMatch(/class="jr-step-no"[^>]*>1</);
+    expect(html).toContain("Beratung am Platz");
+  });
+
+  test("Speisekarte mit Gruppen; Platzhalter nur in der Vorschau", () => {
+    const d = journalDoc();
+    const menu = {
+      type: "menu" as const,
+      headline: "Karte",
+      categories: [
+        { name: "Vorspeisen", items: [{ name: "Burrata", price: "12,50" }] },
+      ],
+    };
+    const html = sectionHtml(
+      render({ ...d, sections: [...d.sections, menu] }),
+      "speisekarte"
+    );
+    expect(html).toMatch(
+      /<section id="speisekarte" class="jr-section jr-speisekarte/
+    );
+    expect(html).toContain("12,50 €");
+    // Abschnittsklasse kollidiert nicht mit dem Kopf-Menü (.jr-menu)
+    expect(
+      render({ ...d, sections: [...d.sections, menu] }).match(
+        /class="jr-menu[ "]/g
+      )
+    ).toHaveLength(1);
+  });
+
+  test("minimal rendert ohne Fehler", () => {
+    expect(() => render(journalDoc("minimal"))).not.toThrow();
+    expect(() => render(journalDoc("minimal"), true)).not.toThrow();
   });
 });

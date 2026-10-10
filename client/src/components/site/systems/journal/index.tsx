@@ -2,7 +2,11 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { JOURNAL_CSS } from "./css";
 import { JournalFoot, JournalHead, journalNavItems } from "./Chrome";
-import { renderJournalSection, type JournalSection } from "./sections";
+import {
+  journalShows,
+  renderJournalSection,
+  type JournalSection,
+} from "./sections";
 import { orderedSections } from "../../engine";
 
 export const JOURNAL_MODULE: PackModule = {
@@ -11,7 +15,9 @@ export const JOURNAL_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections }) => {
     // Startseite wie in den Packs über orderedSections: hiddenSections,
     // sectionOrder und Add-on-Gating greifen, Kapitel zählen nur Sichtbares.
-    const list: JournalSection[] = sections ?? orderedSections(data);
+    const list: JournalSection[] = (sections ?? orderedSections(data)).filter(
+      journalShows
+    );
     // Unterseiten bekommen `sections`; Anker zeigen dann auf die Startseite.
     const anchorPrefix = sections ? basePath || "/" : "";
     return (
