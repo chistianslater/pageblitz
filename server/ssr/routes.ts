@@ -168,16 +168,6 @@ function isFixtureKind(
 }
 
 /**
- * Studio-Live-Preview: rendert das gespeicherte v2-Dokument per previewToken
- * (Zugangsgeheimnis, nanoid 32) — ungecacht (jeder Patch soll sofort sichtbar
- * sein), noindex, optional mit Pack-Override (?pack=) für Stil-Kandidaten.
- * Der Override verändert NIE das gespeicherte Dokument. Seit Plan B6 (Task 3)
- * ist die Pfad-Gültigkeit vom Dokument abhängig (`data.pages[]`), deshalb
- * wird erst geladen und geparst, dann der Pfad gegen `isKnownSitePathname`
- * geprüft — anders als vorher (statische `PREVIEW_PATHNAMES`, vor dem
- * Token-Lookup geprüft) reicht ein rein statischer Pfad-Check nicht mehr.
- */
-/**
  * `?system=&palette=` für Vorschauen: nur gebaute Systeme (Freischaltung ist
  * für Vorschauen nicht nötig) und deren Paletten. `undefined` = kein System
  * verlangt; `null` = ungültig, 400 ist schon gesendet — der Parameter wird
@@ -205,6 +195,16 @@ function readSystemQuery(
   return { system: def.id, palette: paletteParam || undefined };
 }
 
+/**
+ * Studio-Live-Preview: rendert das gespeicherte v2-Dokument per previewToken
+ * (Zugangsgeheimnis, nanoid 32) — ungecacht (jeder Patch soll sofort sichtbar
+ * sein), noindex, optional mit Pack-Override (?pack=) für Stil-Kandidaten.
+ * Der Override verändert NIE das gespeicherte Dokument. Seit Plan B6 (Task 3)
+ * ist die Pfad-Gültigkeit vom Dokument abhängig (`data.pages[]`), deshalb
+ * wird erst geladen und geparst, dann der Pfad gegen `isKnownSitePathname`
+ * geprüft — anders als vorher (statische `PREVIEW_PATHNAMES`, vor dem
+ * Token-Lookup geprüft) reicht ein rein statischer Pfad-Check nicht mehr.
+ */
 async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
   // Express-Regex-Route (siehe registerSsrRoutes): params[0] = Token, params[1] = Restpfad
   const token = typeof req.params[0] === "string" ? req.params[0] : "";

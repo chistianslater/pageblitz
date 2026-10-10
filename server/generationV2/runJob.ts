@@ -40,7 +40,10 @@ import { upsertOnboarding } from "../onboardingV2/state";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { SECTION_ADDON_KEYS } from "../../shared/pricing";
 import { PLACEHOLDER_OPENING_HOURS } from "../../shared/onboardingV2/openingHours";
-import { withPrimarySystem } from "../../shared/designSystems/apply";
+import {
+  withoutDesignSystem,
+  withPrimarySystem,
+} from "../../shared/designSystems/apply";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
@@ -196,7 +199,8 @@ export function withNewSiteDesign(
   images: V2Images
 ): WebsiteDataV2 {
   const designed = WebsiteDataV2Schema.parse({
-    ...doc,
+    // rev 3 ⇔ system/palette: erst ablegen, dann rev 2 erzwingen.
+    ...withoutDesignSystem(doc),
     ...pickArtTheme(packId, doc.businessName, doc.businessCategory),
     designRevision: CURRENT_DESIGN_REVISION,
     designStand: AKTUELLER_DESIGN_STAND,

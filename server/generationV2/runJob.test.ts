@@ -594,3 +594,44 @@ describe("keepOwnPhotos", () => {
     expect(keepOwnPhotos(fresh, null)).toBe(fresh);
   });
 });
+
+describe("withNewSiteDesign und Designsysteme", () => {
+  const images = {
+    hero: "https://img.test/hero.jpg",
+    gallery: ["https://img.test/a.jpg", "https://img.test/b.jpg"],
+    heroLandscape: false,
+  };
+  const friseur = () =>
+    buildInterimV2Doc("morgenlicht", "Salon Test", "Friseursalon", "salon-test", images);
+
+  test("rev-3-Dokument wird ohne Freischaltung zu gültigem rev 2 ohne system/palette", async () => {
+    const { withDesignSystem } = await import("../../shared/designSystems/apply");
+    const rev3 = withDesignSystem(friseur(), "journal", "ton");
+    const result = withNewSiteDesign(rev3, "morgenlicht", images);
+    expect(result.designRevision).toBe(2);
+    expect(result.system).toBeUndefined();
+    expect(result.palette).toBeUndefined();
+  });
+
+  test("mit freigeschaltetem Journal bekommt ein Friseur-Dokument rev 3 Journal", async () => {
+    vi.resetModules();
+    vi.doMock("../../shared/designSystems/registry", async orig => ({
+      ...(await orig<object>()),
+      isReleased: (id: string) => id === "journal",
+    }));
+    const mod = await import("./runJob");
+    const { withDesignSystem } = await import("../../shared/designSystems/apply");
+    const fresh = mod.withNewSiteDesign(friseur(), "morgenlicht", images);
+    expect(fresh.system).toBe("journal");
+    expect(fresh.designRevision).toBe(3);
+    const stale = mod.withNewSiteDesign(
+      withDesignSystem(friseur(), "journal", "ton"),
+      "morgenlicht",
+      images
+    );
+    expect(stale.designRevision).toBe(3);
+    expect(stale.system).toBe("journal");
+    vi.doUnmock("../../shared/designSystems/registry");
+    vi.resetModules();
+  });
+});
