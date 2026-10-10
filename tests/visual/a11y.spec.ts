@@ -266,3 +266,28 @@ test.describe("A11y (axe): Dashboard", () => {
     await expectNoSeriousViolations(page, "Dashboard Anfragen-Tab");
   });
 });
+
+/**
+ * Designsystem Journal (Plan 2026-10-10, Task 17): alle drei
+ * Farbstimmungen im vollen Inhaltsstand, Desktop und Handy (Handy zeigt das
+ * Termin-Dock und das Galerie-Karussell, die es auf Desktop nicht gibt).
+ * Gleiches Gate: 0 critical/serious.
+ */
+test.describe("A11y (axe): Designsystem Journal", () => {
+  for (const palette of ["papier", "salbei", "ton"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`journal ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=journal&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await expectNoSeriousViolations(
+          page,
+          `journal ${palette} (${width})`
+        );
+      });
+    }
+  }
+});
