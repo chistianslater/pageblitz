@@ -455,6 +455,10 @@ export default function StudioPage({ token }: { token: string }) {
           token={token}
           businessName={state.businessName}
           currentPackId={state.doc.stylePackId}
+          currentSystem={
+            state.doc.designRevision === 3 ? (state.doc.system ?? null) : null
+          }
+          currentPalette={state.doc.palette ?? null}
           accent={state.doc.colorOverrides?.accent ?? null}
           colorOverrides={state.doc.colorOverrides}
           fontPairId={state.doc.fontPairId ?? null}
@@ -632,6 +636,12 @@ export default function StudioPage({ token }: { token: string }) {
               fontPairId={state.doc?.fontPairId ?? null}
               designProfile={state.doc?.designProfile ?? null}
               colorOverrides={state.doc?.colorOverrides ?? null}
+              currentSystem={
+                state.doc?.designRevision === 3
+                  ? (state.doc.system ?? null)
+                  : null
+              }
+              currentPalette={state.doc?.palette ?? null}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

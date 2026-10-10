@@ -31,3 +31,18 @@ export function packFontHrefs(packId: PackId, fontPairId?: string): string[] {
   const query = families.map(f => `family=${f}`).join("&");
   return [`https://fonts.googleapis.com/css2?${query}&display=swap`];
 }
+
+/**
+ * Schrift-Links für ein ganzes Dokument (CSR-Fallback): rev 3 bringt seine
+ * Systemschriften selbst gehostet mit (SSR-Head, `/fonts/systems/`) und
+ * braucht deshalb keine Google Fonts; alles andere wie packFontHrefs.
+ */
+export function siteFontHrefs(doc: {
+  stylePackId: PackId;
+  fontPairId?: string;
+  designRevision?: number;
+  system?: string;
+}): string[] {
+  if (doc.designRevision === 3 && doc.system) return [];
+  return packFontHrefs(doc.stylePackId, doc.fontPairId);
+}

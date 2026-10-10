@@ -60,3 +60,21 @@ export function neighbourOf<T extends DesignDirection>(
   const index = (activeIndex + offset + directions.length) % directions.length;
   return directions[index] ?? null;
 }
+
+/**
+ * Pack- und System-IDs überschneiden sich (z. B. „raster", „plakat") —
+ * Richtungen werden deshalb über `kind:id` unterschieden.
+ */
+export type DirectionKind = "pack" | "system";
+
+export function directionKey(kind: DirectionKind, id: string): string {
+  return `${kind}:${id}`;
+}
+
+export function parseDirectionKey(
+  key: string
+): { kind: DirectionKind; id: string } | null {
+  const [kind, id] = key.split(":");
+  if ((kind !== "pack" && kind !== "system") || !id) return null;
+  return { kind, id };
+}

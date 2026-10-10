@@ -52,3 +52,23 @@ describe("neighbourOf", () => {
     expect(neighbourOf([...base], "xyz", 1)?.id).toBe("patina");
   });
 });
+
+describe("directionKey / parseDirectionKey", () => {
+  test("trennt gleichnamige Pack- und System-IDs", async () => {
+    const { directionKey, parseDirectionKey } = await import(
+      "./designSplashLogic"
+    );
+    expect(directionKey("pack", "raster")).not.toBe(
+      directionKey("system", "raster")
+    );
+    expect(parseDirectionKey("system:journal")).toEqual({
+      kind: "system",
+      id: "journal",
+    });
+    expect(parseDirectionKey("pack:werkbank")).toEqual({
+      kind: "pack",
+      id: "werkbank",
+    });
+    expect(parseDirectionKey("werkbank")).toBeNull();
+  });
+});

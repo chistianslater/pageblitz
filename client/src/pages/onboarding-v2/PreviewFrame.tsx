@@ -2,6 +2,7 @@ import { usePreviewViewport } from "./usePreviewViewport";
 import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId, SectionType } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
+import type { DesignSystemId } from "@shared/designSystems/types";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 import {
   richHtml,
@@ -21,6 +22,10 @@ interface PreviewFrameProps {
   version: number;
   device: "desktop" | "mobile";
   packOverride?: PackId;
+  /** Designsystem-Vorschau (rev 3), Vorrang vor packOverride. */
+  systemOverride?: DesignSystemId;
+  /** Farbstimmung zu systemOverride. */
+  paletteOverride?: string;
   /** Unterseiten-Vorschau (Plan B6 Task 5): Slug der Page → `/preview-ssr/<token>/<slug>`; ohne → Startseite. */
   pageSlug?: string;
   /**
@@ -123,12 +128,21 @@ export function buildPreviewSrc(args: {
   versionId?: number | null;
   /** Look einer Alternative in der Design-Auswahl (Fassung + Schrift). */
   look?: { entryVariant: number; fontPairId: string };
+  /** Designsystem-Vorschau (rev 3) — hat Vorrang vor Pack/Fassung/Schrift. */
+  system?: DesignSystemId;
+  /** Farbstimmung des Systems; ohne → Palette des Dokuments bzw. erste. */
+  palette?: string;
 }): string {
   const params = new URLSearchParams();
-  if (args.packOverride) params.set("pack", args.packOverride);
-  if (args.packOverride && args.look) {
-    params.set("variant", String(args.look.entryVariant));
-    params.set("font", args.look.fontPairId);
+  if (args.system) {
+    params.set("system", args.system);
+    if (args.palette) params.set("palette", args.palette);
+  } else if (args.packOverride) {
+    params.set("pack", args.packOverride);
+    if (args.look) {
+      params.set("variant", String(args.look.entryVariant));
+      params.set("font", args.look.fontPairId);
+    }
   }
   if (args.versionId) params.set("version", String(args.versionId));
   if (args.reveal) params.set("reveal", "1");
@@ -141,6 +155,8 @@ export function PreviewFrame({
   version,
   device,
   packOverride,
+  systemOverride,
+  paletteOverride,
   pageSlug,
   reveal,
   inlineTargets,
@@ -162,6 +178,8 @@ export function PreviewFrame({
     version,
     pageSlug,
     packOverride,
+    system: systemOverride,
+    palette: paletteOverride,
     reveal,
     versionId,
   });

@@ -106,3 +106,23 @@ describe("packFontHrefs", () => {
     expect(paired[0]).not.toContain("family=Archivo+Black");
   });
 });
+
+describe("siteFontHrefs", () => {
+  test("rev 2: dieselben Google-Fonts wie packFontHrefs", async () => {
+    const { packFontHrefs, siteFontHrefs } = await import("./packFonts");
+    expect(
+      siteFontHrefs({ stylePackId: "werkbank", fontPairId: "klassisch" })
+    ).toEqual(packFontHrefs("werkbank", "klassisch"));
+  });
+
+  test("rev 3 (Designsystem, selbst gehostete Schriften): keine Google Fonts", async () => {
+    const { siteFontHrefs } = await import("./packFonts");
+    expect(
+      siteFontHrefs({
+        stylePackId: "salon-noir",
+        designRevision: 3,
+        system: "journal",
+      })
+    ).toEqual([]);
+  });
+});

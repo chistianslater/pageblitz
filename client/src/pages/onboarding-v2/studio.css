@@ -4310,3 +4310,114 @@
     -0.5rem 0 0 var(--st-canvas),
     0.5rem 0 0 var(--st-canvas);
 }
+
+/* ── Farbstimmungen der Designsysteme (Task 16, 2026-10-10) ──────────────
+   Radiogruppe aus runden Feldern: Papier-Grund, Akzent als Punkt. Studio-
+   Tokens (Papier/Grün), nicht die Tokens des Systems selbst — die Felder
+   zeigen die Stimmung, der Rahmen bleibt Studio. */
+.pb-palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+}
+.pb-palette-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 44px;
+  padding: 0.2rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--st-ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pb-palette-option[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.6;
+}
+.pb-palette-swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--st-line);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.pb-palette-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.pb-palette-option:hover:not([aria-disabled="true"]) .pb-palette-swatch {
+  transform: translateY(-1px);
+}
+.pb-palette-option[aria-checked="true"] .pb-palette-swatch {
+  border-color: var(--st-ink);
+  box-shadow:
+    0 0 0 2px var(--st-canvas),
+    0 0 0 4px var(--st-accent-text);
+}
+.pb-palette-option[aria-checked="true"] .pb-palette-name {
+  font-weight: 600;
+}
+.pb-palette-option:focus-visible {
+  outline: 2px solid var(--st-accent-text);
+  outline-offset: 2px;
+}
+.pb-palette[data-size="compact"] .pb-palette-swatch {
+  width: 28px;
+  height: 28px;
+}
+.pb-palette[data-size="compact"] .pb-palette-dot {
+  width: 9px;
+  height: 9px;
+}
+.pb-palette[data-size="compact"] .pb-palette-name {
+  font-size: 11px;
+  color: var(--st-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pb-palette-swatch {
+    transition: none;
+  }
+}
+/* Splash: Systemkarte links/rechts — Farbfelder unter der Karte. */
+.pb-design-side-wrap {
+  display: grid;
+  gap: 0.6rem;
+  min-width: 0;
+}
+.pb-design-side-wrap .pb-palette {
+  justify-content: center;
+}
+/* Splash Mitte: Farbstimmung schwebt wie die Schnellwahl über der Vorschau. */
+.pb-design-preview-shell .pb-harmony .pb-palette {
+  padding: 4px 6px;
+}
+/* Stil-Panel: aktuelle Farbstimmung über den Alternativen. */
+.pb-studio-palette-current {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border: 1px solid var(--st-line);
+  border-radius: 12px;
+  background: var(--st-surface);
+}
+.pb-studio-palette-current h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.pb-studio-palette-current p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--st-muted);
+}
+.pb-studio-cand .pb-palette {
+  margin-top: 0.1rem;
+}

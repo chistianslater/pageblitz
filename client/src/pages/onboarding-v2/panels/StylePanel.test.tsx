@@ -78,3 +78,83 @@ describe("StylePanel", () => {
     expect(html).not.toContain("Mosaik");
   });
 });
+
+describe("Designsysteme im Stil-Panel (Task 16)", () => {
+  const token = "t".repeat(32);
+  const journal = {
+    kind: "system" as const,
+    id: "journal" as const,
+    name: "Journal",
+    essence: "Magazin, ruhig, gebildet",
+    palettes: [
+      { id: "papier", name: "Papier", paper: "#f3eee7", accent: "#6e5643" },
+      { id: "salbei", name: "Salbei", paper: "#eef0ea", accent: "#4a6545" },
+      { id: "ton", name: "Ton", paper: "#f4ece6", accent: "#9a4630" },
+    ],
+  };
+
+  test("Systemkarte: Vorschau mit system/palette, Farbstimmungen als Radiogruppe neben dem Knopf", () => {
+    const html = renderToStaticMarkup(
+      <StyleCandidateList
+        token={token}
+        currentPackId="werkbank"
+        busyId={null}
+        onPick={() => {}}
+        onPickSystem={() => {}}
+        candidates={[
+          journal,
+          { kind: "pack", id: "werkbank", name: "Werkbank", essence: "Robust." },
+        ]}
+      />
+    );
+    expect(html).toContain(
+      `/preview-ssr/${token}?system=journal&amp;palette=papier&amp;v=0`
+    );
+    expect(html).toContain('role="radiogroup"');
+    expect(html).toContain('aria-label="Farbstimmung Journal"');
+    expect(html.match(/role="radio"/g)).toHaveLength(3);
+    expect(html).toContain("Dieses Design verwenden");
+    // Pack-Karte unverändert daneben.
+    expect(html).toContain(`/preview-ssr/${token}?pack=werkbank`);
+    // Keine Radiogruppe und kein iframe innerhalb eines <button>.
+    expect(html).not.toMatch(/<button[^>]*>(?:(?!<\/button>)[\s\S])*<iframe/);
+    expect(html).not.toMatch(
+      /<button[^>]*class="pb-studio-cand-pick"[^>]*>(?:(?!<\/button>)[\s\S])*radiogroup/
+    );
+  });
+
+  test("rev-3-Seite: Farbstimmungen des aktuellen Systems oben, keine Schrift-/Farbwahl des Packs", () => {
+    const html = renderWithTrpc(
+      <StylePanel
+        token={token}
+        currentPackId="salon-noir"
+        currentSystem="journal"
+        currentPalette="ton"
+        category="Friseursalon"
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).toContain("Farbstimmung für Journal");
+    expect(html).toMatch(/role="radio"[^>]*aria-checked="true"[^>]*>(?:(?!<\/button>)[\s\S])*Ton/);
+    expect(html).not.toContain("Schriftkombination");
+    expect(html).not.toContain("Farbwelt");
+    expect(html).toContain("Abstände &amp; Bilder anpassen");
+    // Kein Pack gilt als „Aktuell", solange das System aktiv ist.
+    expect(html).not.toContain("Aktuell");
+  });
+
+  test("rev-2-Seite: keine Farbstimmungs-Sektion, Schriftwahl wie bisher", () => {
+    const html = renderWithTrpc(
+      <StylePanel
+        token={token}
+        currentPackId="werkbank"
+        category="handwerk"
+        onApplied={() => {}}
+        onClose={() => {}}
+      />
+    );
+    expect(html).not.toContain("Farbstimmung für");
+    expect(html).toContain("Schriftkombination");
+  });
+});

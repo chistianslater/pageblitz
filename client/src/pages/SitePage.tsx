@@ -7,7 +7,7 @@ import CookieBanner from "@/components/CookieBanner";
 import { Loader2, AlertCircle } from "lucide-react";
 import { parseV2 } from "@/components/site/isV2";
 import { pageForPathname } from "@/components/site/engine";
-import { packFontHrefs } from "@/lib/packFonts";
+import { siteFontHrefs } from "@/lib/packFonts";
 
 interface SitePageProps {
   forceSlug?: string;
@@ -60,7 +60,7 @@ export default function SitePage({ forceSlug, pageSlug }: SitePageProps = {}) {
     if (!data?.website) return;
     const v2 = parseV2(data.website.websiteData);
     if (!v2) return;
-    for (const href of packFontHrefs(v2.stylePackId, v2.fontPairId)) {
+    for (const href of siteFontHrefs(v2)) {
       if (document.querySelector(`link[data-pb-pack-font="${href}"]`)) continue;
       const link = document.createElement("link");
       link.rel = "stylesheet";

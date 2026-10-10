@@ -30,6 +30,19 @@ vi.mock("../generationV2/runJob", async importOriginal => {
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
+// Freischaltung der Designsysteme steuerbar (Spec §6: bis zur Abnahme leer).
+const released = vi.hoisted(() => ({ ids: [] as string[] }));
+vi.mock("../../shared/designSystems/registry", async importOriginal => {
+  const actual =
+    await importOriginal<
+      typeof import("../../shared/designSystems/registry")
+    >();
+  return {
+    ...actual,
+    isReleased: (id: string) =>
+      released.ids.includes(id) && Boolean((actual.DESIGN_SYSTEMS as any)[id]),
+  };
+});
 
 import { appRouter } from "../routers";
 import * as db from "../db";
@@ -58,6 +71,7 @@ const v2 = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  released.ids = [];
   mockedDb.getWebsiteByToken.mockResolvedValue({
     id: 42,
     slug: "preview-brandt",
@@ -597,5 +611,164 @@ describe("onboardingV2.selectStylePack", () => {
     );
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
     expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
+  });
+});
+
+describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
+  const friseurDoc = {
+    ...v2,
+    stylePackId: "salon-noir",
+    businessName: "Salon Lindner",
+    businessCategory: "Friseursalon",
+    blueprintFamily: "beauty",
+  };
+  const friseurToken = "tok-friseur";
+  const caller = () => appRouter.createCaller(ctx()).onboardingV2;
+  const loadDoc = (_token: string) => {
+    const calls = mockedDb.updateWebsite.mock.calls;
+    return (calls[calls.length - 1][1] as any).websiteData;
+  };
+  const useDoc = (doc: object) =>
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-lindner",
+      status: "preview",
+      businessId: 7,
+      websiteData: doc,
+      customerEmail: null,
+    } as any);
+
+  beforeEach(() => {
+    useDoc(friseurDoc);
+    mockedDb.getBusinessById.mockResolvedValue({
+      id: 7,
+      name: "Salon Lindner",
+      category: "Friseursalon",
+    } as any);
+  });
+
+  test("ohne Freischaltung: nur Packs, jeder mit kind pack", async () => {
+    const { candidates } = await caller().getStyleCandidates({
+      token: friseurToken,
+      count: 3,
+    });
+    expect(candidates).toHaveLength(3);
+    expect(candidates.every(c => c.kind === "pack")).toBe(true);
+  });
+
+  test("Kandidaten enthalten freigeschaltetes Hauptsystem", async () => {
+    released.ids = ["journal"];
+    const { candidates } = await caller().getStyleCandidates({
+      token: friseurToken,
+      count: 3,
+    });
+    expect(candidates).toHaveLength(3);
+    expect(candidates[0]).toMatchObject({
+      kind: "system",
+      id: "journal",
+      name: "Journal",
+      palettes: [
+        { id: "papier", name: "Papier", accent: "#6e5643", paper: "#f3eee7" },
+        expect.objectContaining({ id: "salbei" }),
+        expect.objectContaining({ id: "ton" }),
+      ],
+    });
+    expect(candidates.slice(1).every(c => c.kind === "pack")).toBe(true);
+  });
+
+  test("Handwerk (Hauptsystem nicht frei) bekommt keine Systemkarte", async () => {
+    released.ids = ["journal"];
+    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
+    const { candidates } = await caller().getStyleCandidates({
+      token: "tok",
+      count: 3,
+    });
+    expect(candidates.some(c => c.kind === "system")).toBe(false);
+  });
+
+  test("aktuelles System der Seite wird nicht erneut angeboten", async () => {
+    released.ids = ["journal"];
+    useDoc({
+      ...friseurDoc,
+      designRevision: 3,
+      system: "journal",
+      palette: "papier",
+    });
+    const { candidates } = await caller().getStyleCandidates({
+      token: friseurToken,
+      count: 2,
+    });
+    expect(candidates).toHaveLength(2);
+    expect(candidates.some(c => c.kind === "system")).toBe(false);
+  });
+
+  test("selectDesignSystem setzt rev 3", async () => {
+    released.ids = ["journal"];
+    const s = await caller().selectDesignSystem({
+      token: friseurToken,
+      system: "journal",
+      palette: "ton",
+    });
+    const doc = loadDoc(friseurToken);
+    expect(doc.designRevision).toBe(3);
+    expect(doc.system).toBe("journal");
+    expect(doc.palette).toBe("ton");
+    expect(doc.fontPairId).toBeUndefined();
+    expect(invalidateSsrCache).toHaveBeenCalledWith("preview-lindner");
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
+    expect(s.checklist.find(i => i.id === "style")?.status).toBe("open");
+  });
+
+  test("selectDesignSystem mit confirm bestätigt den Design-Schritt", async () => {
+    released.ids = ["journal"];
+    const s = await caller().selectDesignSystem({
+      token: friseurToken,
+      system: "journal",
+      confirm: true,
+    });
+    expect(loadDoc(friseurToken).palette).toMatch(/^(papier|salbei|ton)$/);
+    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ studioProgress: { styleConfirmed: true } })
+    );
+    expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
+  });
+
+  test("selectDesignSystem lehnt nicht freigeschaltetes System ab", async () => {
+    await expect(
+      caller().selectDesignSystem({ token: friseurToken, system: "journal" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    released.ids = ["journal"];
+    await expect(
+      caller().selectDesignSystem({ token: friseurToken, system: "nacht" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("selectDesignSystem lehnt unbekannte Palette ab statt still zu ersetzen", async () => {
+    released.ids = ["journal"];
+    await expect(
+      caller().selectDesignSystem({
+        token: friseurToken,
+        system: "journal",
+        palette: "nacht",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller().selectDesignSystem({
+        token: friseurToken,
+        system: "journal",
+        palette: "x;color:red" as any,
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("selectDesignSystem ohne Dokument → BAD_REQUEST", async () => {
+    released.ids = ["journal"];
+    useDoc(null as any);
+    await expect(
+      caller().selectDesignSystem({ token: friseurToken, system: "journal" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 });
