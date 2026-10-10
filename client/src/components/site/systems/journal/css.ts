@@ -63,7 +63,9 @@ ${FONT_FACES}
 /* Knopf (Klassenname jr-pill aus dem Plan; Gestalt laut Systemblatt eckig) */
 .pb-journal .jr-pill{${step("link")};display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
   background:var(--sys-deep);color:var(--sys-on-deep);border:1px solid var(--sys-deep);padding:var(--sys-space-s) var(--sys-space-m);
-  transition:transform 120ms var(--jr-ease),background 200ms}
+  transition:transform 120ms var(--jr-ease),background 200ms var(--jr-ease),border-color 200ms var(--jr-ease)}
+.pb-journal .jr-pill:hover{background:color-mix(in srgb,var(--sys-deep) 86%,var(--sys-paper));border-color:color-mix(in srgb,var(--sys-deep) 86%,var(--sys-paper))}
+.pb-journal .jr-pill:focus-visible{outline:1px solid var(--sys-deep);outline-offset:var(--sys-space-2xs)}
 .pb-journal .jr-pill:active{transform:scale(.98)}
 
 /* Kopf */
@@ -116,6 +118,6 @@ ${FONT_FACES}
 .pb-journal .jr-foot-legal a{text-decoration:none}
 .pb-journal .jr-foot-legal a:hover{text-decoration:underline}
 @media (min-width:64rem){.pb-journal .jr-foot{padding-block:var(--sys-space-xl)}.pb-journal .jr-foot-legal{justify-content:flex-start;gap:var(--sys-space-l)}}
-@media (prefers-reduced-motion:reduce){.pb-journal *{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.pb-journal *,.pb-journal *::before,.pb-journal *::after{transition:none!important;animation:none!important}}
 /* ende journal */
 `;

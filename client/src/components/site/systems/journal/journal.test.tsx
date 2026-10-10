@@ -199,3 +199,18 @@ describe("Journal: Kapitel", () => {
     expect(html).toContain('class="jr-chapter-intro"');
   });
 });
+
+describe("Journal: Knopf und Bewegung", () => {
+  const css = () => render().match(/<style>([\s\S]*?)<\/style>/)![1];
+  test("jr-pill hat gestaltete Hover- und Fokus-Zustände", () => {
+    expect(css()).toMatch(
+      /\.jr-pill:hover\{background:color-mix\(in srgb,var\(--sys-deep\)/
+    );
+    expect(css()).toMatch(/\.jr-pill:focus-visible\{outline:/);
+  });
+  test("reduzierte Bewegung erfasst auch Pseudo-Elemente", () => {
+    expect(css()).toContain(
+      ".pb-journal *::before,.pb-journal *::after{transition:none!important"
+    );
+  });
+});

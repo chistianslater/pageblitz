@@ -66,4 +66,36 @@ describe("SSR rev 3", () => {
     expect(html).toContain("fonts.googleapis.com");
     expect(html).not.toContain("/fonts/systems/");
   });
+
+  test("rev 3 lädt kein Motion-Bundle, rev 2 und unversioniert schon", () => {
+    const rev3 = renderSiteHtml(
+      withDesignSystem(getFixture("salon-noir", "full"), "journal"),
+      { origin }
+    ).html;
+    const rev2 = renderSiteHtml(
+      { ...getFixture("salon-noir", "full"), designRevision: 2 },
+      { origin }
+    ).html;
+    const unversioned = renderSiteHtml(
+      { ...getFixture("salon-noir", "full"), designRevision: undefined },
+      { origin }
+    ).html;
+    const motion = /<script type="module" src="[^"]*motion[^"]*">/;
+    expect(rev2).toMatch(motion);
+    expect(unversioned).toMatch(motion);
+    expect(rev3).not.toMatch(motion);
+  });
+
+  test("rev 3: Body-Hintergrund und Rechtsseiten in Papier/Tinte der Palette", () => {
+    const doc = withDesignSystem(
+      getFixture("salon-noir", "full"),
+      "journal",
+      "salbei"
+    );
+    expect(renderSiteHtml(doc, { origin }).html).toContain(
+      "body{background:#eef0ea}"
+    );
+    const legal = renderSiteHtml(doc, { origin, pathname: "/impressum" }).html;
+    expect(legal).toContain("body{background:#eef0ea;color:#232924}");
+  });
 });

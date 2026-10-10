@@ -19,6 +19,7 @@ import { pageForPathname } from "../../client/src/components/site/engine";
 import { umamiScriptTag } from "../umami";
 import { getSystem } from "../../shared/designSystems/registry";
 import type { DesignSystemDef } from "../../shared/designSystems/types";
+import { getPalette } from "../../shared/designSystems/palette";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -141,12 +142,25 @@ export function systemFontHead(def: DesignSystemDef): string {
     .join("\n");
 }
 
+/** Systemdefinition eines rev-3-Dokuments, sonst undefined. */
+function systemOf(data: WebsiteDataV2): DesignSystemDef | undefined {
+  return data.designRevision === 3 && data.system
+    ? getSystem(data.system)
+    : undefined;
+}
+
+/**
+ * Das Motion-Bundle (siteEntrance) gehört zur rev-2-Art-Direction; rev 1
+ * und Designsysteme (rev 3) brauchen es nicht. Unversionierte Dokumente
+ * gelten wie bisher als rev 2.
+ */
+function usesMotionBundle(data: WebsiteDataV2): boolean {
+  return data.designRevision !== 1 && data.designRevision !== 3;
+}
+
 /** Schrift-Kopfzeilen: rev 3 selbst gehostet, sonst Google Fonts (unverändert). */
 function fontHeadTags(data: WebsiteDataV2): string[] {
-  const def =
-    data.designRevision === 3 && data.system
-      ? getSystem(data.system)
-      : undefined;
+  const def = systemOf(data);
   if (def) return [systemFontHead(def)];
   const fontsUrl = buildFontsUrl(fontsForDoc(data));
   return [
@@ -321,7 +335,7 @@ function renderPageHtml(
     siteEnhancerTag(),
     previewCtaTag(opts.previewCta),
   ];
-  if (data.designRevision !== 1) {
+  if (usesMotionBundle(data)) {
     bodyParts.push(
       `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
     );
@@ -402,6 +416,12 @@ function getRoleColor(
   role: "canvas" | "ink",
   fallback: string
 ): string {
+  // Designsystem (rev 3): Papier/Tinte der gewählten Palette.
+  const def = systemOf(data);
+  if (def) {
+    const palette = getPalette(def, data.palette);
+    return role === "canvas" ? palette.paper : palette.ink;
+  }
   const override =
     data.colorOverrides?.[role] ??
     (data.designRevision !== 1
@@ -566,7 +586,7 @@ export function renderSiteHtml(
     siteEnhancerTag(),
     previewCtaTag(opts.previewCta),
   ];
-  if (data.designRevision !== 1) {
+  if (usesMotionBundle(data)) {
     bodyParts.push(
       `<script type="module" src="${esc(getMotionBundlePath())}"></script>`
     );
