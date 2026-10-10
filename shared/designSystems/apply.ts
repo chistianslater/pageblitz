@@ -1,6 +1,7 @@
 import type { WebsiteDataV2 } from "../siteContract/types";
 import { getPalette, pickPalette } from "./palette";
-import { getSystem } from "./registry";
+import { systemsForDoc } from "./assignment";
+import { getSystem, isReleased } from "./registry";
 import type { DesignSystemId } from "./types";
 
 /**
@@ -24,4 +25,13 @@ export function withDesignSystem(
 export function withoutDesignSystem(doc: WebsiteDataV2): WebsiteDataV2 {
   const { system: _system, palette: _palette, ...rest } = doc;
   return { ...rest, designRevision: 2 };
+}
+
+/**
+ * Neue Seiten: das freigeschaltete Hauptsystem der Branche, sonst unverändert
+ * (rev 2). Erwartet ein Dokument mit gesetztem `blueprintFamily`.
+ */
+export function withPrimarySystem(doc: WebsiteDataV2): WebsiteDataV2 {
+  const [primary] = systemsForDoc(doc);
+  return isReleased(primary) ? withDesignSystem(doc, primary) : doc;
 }

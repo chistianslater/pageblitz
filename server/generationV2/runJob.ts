@@ -40,6 +40,7 @@ import { upsertOnboarding } from "../onboardingV2/state";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { SECTION_ADDON_KEYS } from "../../shared/pricing";
 import { PLACEHOLDER_OPENING_HOURS } from "../../shared/onboardingV2/openingHours";
+import { withPrimarySystem } from "../../shared/designSystems/apply";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
@@ -194,7 +195,7 @@ export function withNewSiteDesign(
   packId: PackId,
   images: V2Images
 ): WebsiteDataV2 {
-  return WebsiteDataV2Schema.parse({
+  const designed = WebsiteDataV2Schema.parse({
     ...doc,
     ...pickArtTheme(packId, doc.businessName, doc.businessCategory),
     designRevision: CURRENT_DESIGN_REVISION,
@@ -209,6 +210,7 @@ export function withNewSiteDesign(
       entryPhotos(images)
     ),
   });
+  return withPrimarySystem(designed);
 }
 
 /**
@@ -613,6 +615,9 @@ async function runWebsiteGenerationV2(
       colorOverrides: interim.colorOverrides,
       designProfile: interim.designProfile,
     });
+    // blueprintFamily steht jetzt (generateSiteContent/withFamily): das
+    // freigeschaltete Hauptsystem der Branche anwenden (sonst bleibt rev 2).
+    websiteData = WebsiteDataV2Schema.parse(withPrimarySystem(websiteData));
   } catch (err) {
     // Der Zwischenstand darf einen Fehlschlag nicht überleben: sonst sähe
     // ensureGeneration ein (Platzhalter-)Dokument und würde nie neu
