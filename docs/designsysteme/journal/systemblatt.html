@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journal Systemblatt</title>
+<link rel="preload" href="fonts/newsreader-latin-o36-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/newsreader-latin-o36-wght-italic.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* ── Schriften (self-hosted, OFL) ─────────────────────────────── */
+@font-face{font-family:"Newsreader";src:url(fonts/newsreader-latin-o36-wght.woff2) format("woff2");font-weight:300 500;font-style:normal;font-display:swap}
+@font-face{font-family:"Newsreader";src:url(fonts/newsreader-latin-o36-wght-italic.woff2) format("woff2");font-weight:300 500;font-style:italic;font-display:swap}
+@font-face{font-family:"Source Sans 3";src:url(fonts/source-sans-3-latin-wght.woff2) format("woff2");font-weight:200 900;font-style:normal;font-display:swap}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --paper:#f3eee7;--raised:#fbf9f5;--ink:#2f2e2c;--muted:#5d5a55;--rule:#d9d3c9;--accent:#6e5643;--deep:#2f2e2c;--onDeep:#f3eee7;
+  --sheet-pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e6e1d9;color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.sheet{width:1520px;margin:0 auto;background:var(--paper)}
+[data-shot]{padding:0 var(--sheet-pad)}
+.blk{padding:72px 0 80px;border-top:1px solid var(--rule)}
+.blk:first-child{border-top:0}
+.kick{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--ink)}
+.kick i{font-family:var(--serif);font-style:italic;font-size:15px;letter-spacing:0;text-transform:none;font-weight:400;margin-right:.55em;color:var(--accent)}
+.bh{font-family:var(--serif);font-weight:300;font-size:46px;line-height:1.05;letter-spacing:-.012em;margin:14px 0 18px}
+.bp{max-width:44rem;color:var(--ink);font-size:17px}
+.bp+.bp{margin-top:10px}
+.note{font-family:var(--sans);font-size:14px;color:var(--muted);letter-spacing:.02em;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+table.t{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:14px;letter-spacing:.01em;margin-top:28px}
+table.t th{font-weight:500;font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-align:left;padding:10px 12px 10px 0;border-bottom:1px solid var(--ink)}
+table.t td{padding:11px 12px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:600;white-space:nowrap}
+table.t code,code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px;background:rgba(47,46,44,.06);padding:1px 4px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12.5px}
+
+/* Kopf */
+.top{display:grid;grid-template-columns:1.1fr 1fr;gap:64px;padding:64px 0 72px;align-items:end}
+.top h1{font-family:var(--serif);font-weight:300;font-size:112px;line-height:.94;letter-spacing:-.022em}
+.top h1 em{font-style:italic;font-weight:300}
+.top .meta{display:grid;gap:14px}
+
+/* Schriftmuster */
+.spec{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--ink)}
+.spec>div{padding:28px 32px 32px 0}
+.spec>div+div{padding-left:32px;border-left:1px solid var(--rule)}
+.glyphs{font-size:30px;line-height:1.3;margin:18px 0}
+.wrow{display:flex;gap:28px;align-items:baseline;flex-wrap:wrap;margin-top:12px}
+.wrow span{font-size:44px;line-height:1.1}
+
+/* Skala */
+.step{display:grid;grid-template-columns:200px 375px 1fr;gap:32px;border-top:1px solid var(--rule);padding:26px 0;align-items:start}
+.step .lab .kick{display:block;margin-bottom:8px}
+.step .s375{width:375px;padding:0 0;border-left:1px dashed var(--rule);border-right:1px dashed var(--rule);padding:0 24px;overflow:hidden}
+.step .s1440{overflow:hidden;white-space:nowrap}
+.step .px{font-family:var(--sans);font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:8px;white-space:normal}
+
+/* Abstände */
+.bar{display:grid;grid-template-columns:110px 220px 1fr;gap:16px;align-items:center;padding:7px 0;font-family:var(--sans);font-size:14px}
+.bar b{display:block;height:18px;background:var(--ink)}
+.bar .mono{color:var(--muted)}
+
+/* Raster */
+.rasters{display:grid;grid-template-columns:390px 1fr;gap:56px;align-items:start}
+.r-mob{width:390px;height:300px;background:var(--raised);position:relative;border:1px solid var(--rule)}
+.r-mob .g{position:absolute;top:0;bottom:0;width:24px;background:rgba(110,86,67,.16)}
+.r-mob .c{position:absolute;left:24px;right:24px;top:40px;font-size:15px}
+.r-desk{height:300px;background:var(--raised);position:relative;border:1px solid var(--rule);padding:0 36px;display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px}
+.r-desk span{background:rgba(110,86,67,.10);height:100%}
+.r-desk .meas{position:absolute;left:50%;transform:translateX(-50%);top:80px;width:calc(36rem * 0.62);border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);height:140px;display:grid;place-items:center;font-family:var(--sans);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);background:rgba(243,238,231,.75)}
+
+/* Paletten */
+.pals{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:28px}
+.pal{border:1px solid var(--rule)}
+.pal .hero{padding:36px 28px 30px;text-align:center}
+.pal .hero .n{font-family:var(--serif);font-weight:300;font-size:58px;line-height:.95;letter-spacing:-.02em;margin:12px 0 12px}
+.pal .hero .it{font-style:italic;font-size:21px}
+.pal .hero .btn{display:inline-block;margin-top:22px;font-family:var(--sans);font-size:14px;letter-spacing:.05em;padding:12px 22px}
+.pal .hero .lk{display:inline-block;margin:16px 0 0 18px;font-family:var(--sans);font-size:14px;letter-spacing:.05em;padding-bottom:5px;border-bottom:1px solid currentColor}
+.sw{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--rule)}
+.sw div{height:64px;position:relative}
+.sw small{position:absolute;left:6px;bottom:4px;font-family:var(--sans);font-size:10px;letter-spacing:.06em}
+.cr{font-family:var(--sans);font-size:13px;padding:14px 18px;display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;border-top:1px solid var(--rule);background:#fff}
+.cr .ok{color:#2d6a3a;font-weight:600}.cr .no{color:#a3281c;font-weight:700}
+
+/* Bild & Bewegung */
+.imgs{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-top:28px;align-items:end}
+.imgs figure img{width:100%;display:block;object-fit:cover}
+figcaption{font-family:var(--sans);font-size:13px;letter-spacing:.02em;color:var(--muted);margin-top:10px;display:flex;justify-content:space-between;gap:12px}
+figcaption i{font-family:var(--serif);font-size:15px;letter-spacing:0;color:var(--ink)}
+.rules{columns:2;column-gap:56px;margin-top:28px}
+.rules li{break-inside:avoid;list-style:none;padding:10px 0;border-top:1px solid var(--rule);font-size:16px}
+.rules li b{font-weight:500}
+
+/* ───────────────────────────────────────────────────────────────
+   JOURNAL — das System selbst (Mockups). Alle Größen in cqi statt vw,
+   damit die Formeln 1:1 gelten, wenn der Rahmen 390 bzw. 1440 breit ist.
+   ─────────────────────────────────────────────────────────────── */
+.jf{container-type:inline-size;position:relative;overflow:hidden;background:var(--j-paper)}
+.j{
+  --j-display:clamp(4.5rem, 3rem + 6.4cqi, 8.5rem);
+  --j-h2:clamp(2rem, 1.55rem + 1.9cqi, 3.25rem);
+  --j-h3:clamp(1.25rem, 1.15rem + 0.45cqi, 1.5rem);
+  --j-lede:clamp(1.25rem, 1.1rem + 0.65cqi, 1.625rem);
+  --j-section:clamp(6rem, 4.5rem + 5cqi, 10rem);
+  --j-gutter:clamp(1.5rem, 1.2rem + 1.2cqi, 2.25rem);
+  --j-measure:36rem; --j-max:90rem;
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  font-family:var(--serif);font-size:1.0625rem;line-height:1.6;letter-spacing:.012em;color:var(--j-ink);background:var(--j-paper);
+}
+.pal-papier{--j-paper:#f3eee7;--j-ink:#2f2e2c;--j-muted:#5d5a55;--j-rule:#d9d3c9;--j-accent:#6e5643;--j-deep:#2f2e2c;--j-onDeep:#f3eee7}
+.pal-salbei{--j-paper:#eef0ea;--j-ink:#232924;--j-muted:#556057;--j-rule:#d2d8cd;--j-accent:#4a6545;--j-deep:#253027;--j-onDeep:#eef0ea}
+.pal-ton{--j-paper:#f4ece6;--j-ink:#2e2420;--j-muted:#6a5951;--j-rule:#e0d2c8;--j-accent:#9a4630;--j-deep:#2e2420;--j-onDeep:#f4ece6}
+.j{--j-raised:color-mix(in srgb, var(--j-paper) 35%, #fff)}
+.j .wrap{padding-inline:var(--j-gutter);max-width:var(--j-max);margin-inline:auto}
+.j .kicker{font-family:var(--sans);font-size:.6875rem;line-height:1.35;letter-spacing:.2em;font-weight:500;text-transform:uppercase}
+.j .kicker .no{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.0625rem;letter-spacing:0;text-transform:none;color:var(--j-accent);margin-right:.5em;vertical-align:-.06em}
+.j .display{font-weight:300;font-size:var(--j-display);line-height:.94;letter-spacing:-.022em}
+.j .h2{font-weight:300;font-size:var(--j-h2);line-height:1.08;letter-spacing:-.012em}
+.j .h3{font-weight:400;font-size:var(--j-h3);line-height:1.25;letter-spacing:.005em}
+.j .lede{font-weight:400;font-size:var(--j-lede);line-height:1.38}
+.j .lede.it{font-style:italic;font-weight:300}
+.j .small{font-family:var(--sans);font-size:.875rem;line-height:1.55;letter-spacing:.02em}
+.j .muted{color:var(--j-muted)}
+.j .link{font-family:var(--sans);font-size:.875rem;line-height:1.4;letter-spacing:.05em;color:var(--j-ink);text-decoration:none;display:inline-block;padding-bottom:.4em;position:relative}
+.j .link::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;transform-origin:left;transition:transform 250ms var(--ease-out)}
+.j .link:hover::after{transform:scaleX(.4)}
+.j .links{display:flex;gap:2rem;flex-wrap:wrap}
+.j .mark{font-family:var(--serif);font-size:1rem;letter-spacing:.22em;text-transform:uppercase;font-weight:400}
+.j .btn{font-family:var(--sans);font-size:.875rem;letter-spacing:.05em;background:var(--j-deep);color:var(--j-onDeep);border:1px solid var(--j-deep);padding:.85rem 1.25rem;display:inline-flex;align-items:center;justify-content:center;transition:transform 120ms var(--ease-out)}
+.j .btn:active{transform:scale(.98)}
+.j .btn.ghost{background:transparent;color:var(--j-ink);border-color:var(--j-ink)}
+.j hr{border:0;border-top:1px solid var(--j-rule)}
+.j img{display:block;width:100%;object-fit:cover}
+.j figcaption{color:var(--j-muted)}
+.j figcaption i{color:var(--j-ink)}
+
+/* Kopf */
+.j .hdr{height:56px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding-inline:var(--j-gutter);background:var(--j-paper)}
+.j .hdr .r{justify-self:end}
+.j .menu{display:flex;align-items:center;gap:.6rem;font-family:var(--sans);font-size:.875rem;letter-spacing:.05em}
+.j .menu b{display:block;width:18px;height:7px;border-top:1px solid currentColor;border-bottom:1px solid currentColor}
+
+/* Einstieg */
+.j .entry{text-align:center;padding-top:2.25rem}
+.j .entry .kicker{margin-bottom:1.125rem}
+.j .entry .display{margin-inline:auto}
+.j .entry .lede{margin:1.25rem auto 0;max-width:22ch}
+.j .entry figure{margin-top:2rem;text-align:left}
+.j .entry figure img{aspect-ratio:4/5}
+.j figcaption{font-family:var(--sans);font-size:.8125rem;letter-spacing:.02em;margin-top:.625rem;display:flex;justify-content:space-between;gap:1rem}
+.j figcaption i{font-family:var(--serif);font-size:.9375rem;letter-spacing:0}
+.j .facts{margin-top:2.5rem;border-top:1px solid var(--j-rule)}
+.j .facts div{display:flex;justify-content:space-between;align-items:baseline;padding:.875rem 0;border-bottom:1px solid var(--j-rule)}
+.j .facts .small{color:var(--j-muted)}
+
+/* Abschnitt-Modul (Aman: Label, Serife, Text, Link) */
+.j .sec{padding-block:var(--j-section)}
+.j .sec.raised{background:var(--j-raised)}
+.j .sec .kicker{margin-bottom:.875rem}
+.j .sec .h2{margin-bottom:1.25rem}
+.j .sec p.body{max-width:var(--j-measure)}
+.j .sec .links{margin-top:1.75rem}
+.j .center{text-align:center}
+.j .center p.body{margin-inline:auto}
+.j .center .links{justify-content:center}
+
+/* Leistungen als Preisliste */
+.j .menu-list{margin-top:2.5rem}
+.j .menu-list .grp{font-family:var(--sans);font-size:.6875rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--j-muted);padding-bottom:.625rem;border-bottom:1px solid var(--j-ink);margin-top:2rem}
+.j .menu-list .grp:first-child{margin-top:0}
+.j .item{display:grid;grid-template-columns:1fr auto;gap:.25rem 1rem;padding:1rem 0;border-bottom:1px solid var(--j-rule)}
+.j .item .h3{grid-column:1}
+.j .item .price{font-family:var(--serif);font-size:1.0625rem;font-variant-numeric:oldstyle-nums tabular-nums;align-self:baseline;white-space:nowrap}
+.j .item .small{grid-column:1/-1;color:var(--j-muted);max-width:34ch}
+
+/* Bildleiste (Aman-Galerie: gemischte Formate, vertikal mittig) */
+.j .strip{display:flex;gap:.75rem;align-items:center;overflow:hidden;margin-top:2.5rem;padding-left:var(--j-gutter)}
+.j .strip figure{flex:0 0 auto}
+.j .strip .p{width:62%}.j .strip .p img{aspect-ratio:3/4}
+.j .strip .q{width:48%}.j .strip .q img{aspect-ratio:1/1}
+.j .strip .l{width:74%}.j .strip .l img{aspect-ratio:1.618/1}
+.j .progress{margin:1.5rem var(--j-gutter) 0;height:1px;background:var(--j-rule);position:relative}
+.j .progress span{position:absolute;left:0;top:-.5px;height:2px;width:28%;background:var(--j-ink)}
+
+/* Über uns */
+.j .portrait img{aspect-ratio:3/4}
+.j .portrait{margin-bottom:2.25rem}
+
+/* Stimmen */
+.j .quote{font-weight:300;font-style:italic;font-size:var(--j-lede);line-height:1.42;max-width:26ch;margin:0 auto}
+.j .quote::before{content:"„"}.j .quote::after{content:"“"}
+.j .who{margin-top:1.5rem}
+.j .stars{font-family:var(--sans);font-size:.875rem;letter-spacing:.3em;color:var(--j-accent)}
+.j .qnav{display:flex;justify-content:center;gap:.5rem;margin-top:2rem}
+.j .qnav b{width:22px;height:1px;background:var(--j-rule)}.j .qnav b.on{background:var(--j-ink)}
+
+/* Ablauf */
+.j .steps{margin-top:2.5rem;counter-reset:s}
+.j .stp{display:grid;grid-template-columns:3.25rem 1fr;gap:0 .5rem;padding:1.5rem 0;border-top:1px solid var(--j-rule)}
+.j .stp:last-child{border-bottom:1px solid var(--j-rule)}
+.j .stp .num{font-weight:300;font-size:2.75rem;line-height:.9;color:var(--j-accent);font-variant-numeric:oldstyle-nums}
+.j .stp .h3{margin-bottom:.375rem}
+
+/* Gut zu wissen */
+.j .faq{margin-top:2.5rem;border-top:1px solid var(--j-ink)}
+.j .faq details{border-bottom:1px solid var(--j-rule)}
+.j .faq summary{list-style:none;display:grid;grid-template-columns:1fr 1.25rem;gap:1rem;padding:1.125rem 0;cursor:pointer}
+.j .faq summary::-webkit-details-marker{display:none}
+.j .faq summary .pl{position:relative;width:13px;height:13px;margin-top:.45em;justify-self:end}
+.j .faq summary .pl::before,.j .faq summary .pl::after{content:"";position:absolute;left:0;right:0;top:6px;height:1px;background:currentColor;transition:transform 250ms var(--ease-out)}
+.j .faq summary .pl::after{transform:rotate(90deg)}
+.j .faq details[open] summary .pl::after{transform:rotate(0)}
+.j .faq details p{padding:0 2.25rem 1.375rem 0;max-width:var(--j-measure)}
+
+/* Kontakt */
+.j .hours{margin-top:2rem;border-top:1px solid var(--j-rule)}
+.j .hours div{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--j-rule);font-variant-numeric:oldstyle-nums tabular-nums}
+.j .hours .today{font-weight:500}
+.j .hours .today span:first-child::after{content:" heute";font-family:var(--sans);font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;color:var(--j-accent);margin-left:.6em;font-weight:500}
+.j .addr{font-style:normal;margin-top:2rem}
+.j .map{margin-top:2.5rem;aspect-ratio:1.618/1;background:
+  linear-gradient(var(--j-rule),var(--j-rule)) 0 38%/100% 1px no-repeat,
+  linear-gradient(var(--j-rule),var(--j-rule)) 0 71%/100% 1px no-repeat,
+  linear-gradient(90deg,var(--j-rule),var(--j-rule)) 33% 0/1px 100% no-repeat,
+  linear-gradient(90deg,var(--j-rule),var(--j-rule)) 77% 0/1px 100% no-repeat,
+  var(--j-raised);position:relative}
+.j .map::after{content:"";position:absolute;left:52%;top:46%;width:11px;height:11px;border-radius:50%;background:var(--j-ink);box-shadow:0 0 0 6px color-mix(in srgb,var(--j-ink) 12%,transparent)}
+
+/* Fuß */
+.j .foot{padding-block:4rem 7.5rem;background:var(--j-raised);border-top:1px solid var(--j-rule)}
+.j .foot .mark{display:block;margin-bottom:1.25rem}
+.j .foot .small{color:var(--j-muted)}
+.j .foot .links{margin-top:1.75rem;gap:1.5rem}
+.j .foot .legal{margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--j-rule);display:flex;justify-content:space-between}
+
+/* Handy-Dock */
+.j .dock{position:absolute;left:0;right:0;bottom:0;padding:.75rem var(--j-gutter) calc(.75rem + 0px);background:color-mix(in srgb,var(--j-paper) 92%,transparent);border-top:1px solid var(--j-rule);display:grid;grid-template-columns:1fr auto;gap:.625rem;backdrop-filter:blur(10px)}
+.j .dock .btn{height:52px}
+.j .dock .btn.ghost{width:52px;padding:0}
+.j .dock .btn.ghost svg{width:19px;height:19px}
+
+/* Typo-Einstieg (kein/ schwaches Foto) */
+.j .typo .display{font-size:calc(var(--j-display) * 1.22);line-height:.9}
+.j .typo .lede{margin-top:1.5rem}
+.j .typo .facts{margin-top:3rem;text-align:left}
+.j .typo .btnrow{margin-top:2rem;display:flex;justify-content:center;gap:1.75rem;align-items:center}
+
+/* Desktop-spezifisch */
+.j .dhdr{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:72px;padding-inline:var(--j-gutter)}
+.j .dhdr .r{justify-self:end;display:flex;gap:1.75rem;align-items:center}
+.j .dnav{display:flex;justify-content:center;gap:2.25rem;padding:.75rem 0 1rem;border-bottom:1px solid var(--j-rule);font-family:var(--sans);font-size:.8125rem;letter-spacing:.05em}
+.j .dnav span:first-child{letter-spacing:.2em;text-transform:uppercase;font-size:.6875rem;font-weight:500}
+.j .dentry{text-align:center;padding-top:3.5rem}
+.j .dentry .kicker{margin-bottom:1.25rem}
+.j .dentry .lede{margin-top:1.25rem}
+.j .dentry figure{margin-top:3rem}
+.j .dentry figure img{aspect-ratio:2.2/1}
+.j .dsplit{display:grid;grid-template-columns:repeat(12,1fr);column-gap:1.5rem}
+.j .dsplit .a{grid-column:1/5}.j .dsplit .b{grid-column:6/13}
+
+/* Rahmen der Mockups im Blatt */
+.phones{display:grid;grid-template-columns:repeat(3,390px);gap:56px;justify-content:start;margin-top:32px}
+.phwrap .px2{font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.phone{width:390px;height:2300px;border:1px solid #c9c2b6;background:var(--j-paper)}
+.phone .roll{position:absolute;left:0;right:0;top:0}
+.phone .fold{position:absolute;left:0;right:0;top:844px;border-top:1px dashed #b5462f;z-index:3}
+.phone .fold span{position:absolute;right:6px;top:-18px;font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#b5462f}
+.phone .cont{position:absolute;left:0;right:0;top:0;height:22px;background:linear-gradient(var(--j-paper),transparent);z-index:2}
+.phone .seg{position:absolute;top:8px;left:8px;z-index:4;font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:#2f2e2c;color:#f3eee7;padding:3px 6px}
+.first{display:grid;grid-template-columns:390px 390px 1fr;gap:30px;margin-top:32px;align-items:start}
+.first .phone{height:844px}
+.desk{width:1408px;height:900px;border:1px solid #c9c2b6;margin-top:32px}
+.desk2{width:1408px;border:1px solid #c9c2b6;margin-top:30px}
+
+/* Bewegung (Demo im Blatt) */
+.motion{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;margin-top:28px}
+.mv{border:1px solid var(--rule);padding:20px;background:var(--raised)}
+.mv .demo{height:120px;display:grid;place-items:center;overflow:hidden;margin-bottom:14px}
+.mv .demo .x{font-family:var(--serif);font-weight:300;font-size:46px}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes unmask{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion:no-preference){
+  .play .rise{animation:rise 700ms cubic-bezier(.23,1,.32,1) both}
+  .play .rise.d1{animation-delay:120ms}
+  .play .unmask{animation:unmask 1000ms cubic-bezier(.77,0,.175,1) 200ms both}
+}
+
+/* Endtabellen */
+.final h3{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;margin-top:40px}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ═══════════════ SHOT 1 ═══════════════ -->
+<div data-shot="1">
+<header class="top">
+  <div>
+    <p class="kick">Pageblitz · Designsystem 01</p>
+    <h1 style="margin-top:18px">Journal,<br><em>Systemblatt</em></h1>
+  </div>
+  <div class="meta">
+    <p class="bp">Journal ist ein Nachbau mit Verbesserungen von <b>Aman Venice</b> (aman.com/resorts/aman-venice). Jede Zahl unten ist dort gemessen (Chrome, getComputedStyle, 1440 und 390 px) und dann für Salons, Kosmetik, kleine Hotels und Studios angepasst.</p>
+    <p class="note">Stand 10.10.2026 · Schriften: Newsreader (opsz 36) und Source Sans 3, beide OFL, selbst gehostet · Kontraste unten live nach WCAG berechnet (gleiche Formel wie <code>colorMath.contrastRatio</code>).</p>
+  </div>
+</header>
+
+<section class="blk">
+  <p class="kick"><i>01</i>Aman gemessen → Journal</p>
+  <h2 class="bh">Was wir übernehmen, was wir ändern</h2>
+  <table class="t">
+    <thead><tr><th>Rolle</th><th>Aman Venice (gemessen)</th><th>Journal</th><th>Warum</th></tr></thead>
+    <tbody>
+      <tr><td>Name / Display</td><td>Lyon Display 300, 31 px (390: 24 px), Zeile 1,45, +0,5 px, zentriert</td><td>Newsreader 300, <code>clamp(4.5rem…8.5rem)</code> = 73 px (390) / 136 px (1440), Zeile 0,94, −0,022em, zentriert</td><td>Der einzige große Eingriff: Aman ist im ersten Handy-Bild zu leise, der Name trägt bei uns das Wow</td></tr>
+      <tr><td>Abschnittstitel</td><td>Lyon Text 400, 31 px / 24 px, Zeile 1,45</td><td>Newsreader 300, 32 → 52 px, Zeile 1,08</td><td>Gleiche Rolle, leichter und eine Stufe größer, weil wir weniger Bildfläche haben</td></tr>
+      <tr><td>Karten-/Posten-Titel</td><td>Lyon Text 400, 19,6 px, Zeile 1,45, +0,98 px</td><td>Newsreader 400, 20 → 24 px, Zeile 1,25, +0,005em</td><td>1:1, Laufweite an Newsreader angepasst</td></tr>
+      <tr><td>Fließtext</td><td><b>Serife</b> (Lyon Display 400) 14 px, Zeile 1,45, +0,8 px</td><td><b>Serife</b> Newsreader 400, 17 px, Zeile 1,6, +0,012em, Maß 36rem</td><td>Aman setzt Fließtext in der Serife, das ist der Ton. 14 px ist für unsere Kundschaft zu klein</td></tr>
+      <tr><td>Label</td><td>Whitney ScreenSmart 400, 10,1 px, Versal, +2 px (0,2em)</td><td>Source Sans 3 500, 11 px, Versal, 0,2em; Kapitelnummer kursiv in der Serife davor</td><td>1:1; 500 statt 400, weil Source Sans bei 11 px sonst dünner wirkt als Whitney</td></tr>
+      <tr><td>Textlink</td><td>Whitney 13 px, +0,8 px, Linie 1 px unter dem Wort, ~8 px Abstand</td><td>Source Sans 3, 14 px, 0,05em, Linie 1 px, Abstand 0,4em; Hover: Linie zieht auf 40 % zusammen</td><td>Eigene Stufe <code>link</code> (Vorschlag)</td></tr>
+      <tr><td>Knopf</td><td>„Reserve“ Fläche #313131, Text Papier, eckig, 14 px, 10/15 px Innenabstand</td><td>Fläche <code>deep</code>, Text <code>onDeep</code>, Radius 0, 14 px, 0,05em, Höhe 52 px im Dock</td><td>1:1, keine Rundungen, keine Schatten</td></tr>
+      <tr><td>Kopf</td><td>Fest, 88 px (Handy), Menü links, Marke Mitte, Suche rechts; Desktop 2 Zeilen (Marke + Navigation)</td><td>56 px Handy (Menü · Marke · Anrufen), Desktop 72 px + Navigationszeile</td><td>Weniger Höhe, weil der Name darunter schon groß steht</td></tr>
+      <tr><td>Handy-Leiste unten</td><td>Fest, 80 px, „Reserve“ über volle Breite (15 px Rand)</td><td>Dock 76 px: „Termin anfragen“ + Telefon-Quadrat</td><td>Wichtigste Handlung immer greifbar</td></tr>
+      <tr><td>Rand</td><td>25 px (Handy und Desktop)</td><td><code>clamp(1.5rem…2.25rem)</code> = 24 / 36 px</td><td>Auf Desktop etwas mehr Luft</td></tr>
+      <tr><td>Abschnittsabstand</td><td>~100 px Handy, 96–270 px Desktop</td><td><code>clamp(6rem…10rem)</code> = 96 / 144 px</td><td>Gleichmäßig statt sprunghaft</td></tr>
+      <tr><td>Flächen</td><td>Papier #f3eee7, hellere Bänder #fdfaf6, Fuß weiß; Text #313131, gedämpft #585858; Linie #dad9d7</td><td>3 Paletten (unten), helles Band = <code>color-mix(paper 35 %, weiß)</code></td><td>Abwechselnde Bänder ohne neues Token</td></tr>
+      <tr><td>Bilder</td><td>Radius 0, kein Text auf Bildern; Hochformat 0,76 (≈3:4), Quer 1,62 (Goldener Schnitt), Quadrat; Bildleiste mit gemischten Formaten</td><td>Gleich: 3:4, 1,618:1, 1:1; Einstieg 4:5; Bildunterschrift „Abb. n“</td><td>Robust bei mittelmäßigen Fotos</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="blk">
+  <p class="kick"><i>02</i>Schriften</p>
+  <h2 class="bh">Newsreader und Source Sans 3</h2>
+  <p class="bp">Aman setzt Lyon Display und Lyon Text (Commercial Type) und Whitney ScreenSmart (H&amp;Co). Beide sind lizenzpflichtig. <b>Newsreader</b> (Production Type, OFL) ist der nächste freie Verwandte von Lyon: eine Text-Antiqua mit kräftigen, leicht scharfen Serifen und echter Kursiven. Wir laden sie als statischen Optikgrößen-Schnitt <b>opsz 36</b>: genug Kontrast für den großen Namen, robust genug für Fließtext. Aman macht es genauso und setzt Fließtext im Display-Schnitt. <b>Source Sans 3</b> (Adobe, OFL) ist humanistisch wie Whitney (beide in der Myriad/Frutiger-Linie) und hält gesperrte Versalien bei 11 px sauber.</p>
+  <div class="spec" style="margin-top:32px">
+    <div>
+      <p class="kick">Display und Text · Newsreader opsz 36 · wght 300–500</p>
+      <p class="glyphs" style="font-weight:300">Aa Bb Ää Öö Üü ß &amp; 0123456789 „Termin“</p>
+      <div class="wrow"><span style="font-weight:300">Light 300</span><span style="font-weight:400">Regular 400</span><span style="font-weight:500">Medium 500</span></div>
+      <div class="wrow"><span style="font-weight:300;font-style:italic">Kursiv 300</span><span style="font-style:italic">Kursiv 400</span></div>
+      <p class="note" style="margin-top:16px">Dateien: <code>newsreader-latin-o36-wght.woff2</code> (58 KB) · <code>newsreader-latin-o36-wght-italic.woff2</code> (65 KB)</p>
+    </div>
+    <div>
+      <p class="kick">Etiketten, Links, Knöpfe · Source Sans 3 · wght 200–900</p>
+      <p class="glyphs" style="font-family:var(--sans);font-weight:400">Aa Bb Ää Öö Üü ß &amp; 0123456789</p>
+      <div class="wrow" style="font-family:var(--sans)"><span style="font-weight:400;font-size:36px">Regular 400</span><span style="font-weight:500;font-size:36px">Medium 500</span><span style="font-weight:600;font-size:36px">Semibold 600</span></div>
+      <p style="font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500;margin-top:22px">Leistungen · Öffnungszeiten · Gut zu wissen</p>
+      <p class="note" style="margin-top:16px">Datei: <code>source-sans-3-latin-wght.woff2</code> (29 KB) · keine Kursive nötig</p>
+    </div>
+  </div>
+  <p class="note" style="margin-top:20px"><b>Vorladen (2):</b> die beiden Newsreader-Dateien. Begründung: Name, kursive Zeile und Fließtext stehen im ersten Bild alle in der Serife; Source Sans trägt dort nur das 11-px-Label, ein Tausch nach dem Laden fällt nicht auf. Hinweis: Fraunces aus den Startwerten fällt weg, weil Lyon keine weichen „Wonky“-Formen hat und Fraunces die meistgenutzte KI-Serife ist.</p>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 2 ═══════════════ -->
+<div data-shot="2">
+<section class="blk">
+  <p class="kick"><i>03</i>Schriftskala</p>
+  <h2 class="bh">Jede Stufe bei 375 und 1440 px</h2>
+  <p class="note">Mitte: Spalte mit 375 px Breite und 24 px Rand. Rechts: Größe bei 1440 px (Werte aus den clamp-Formeln berechnet).</p>
+  <div id="scale" style="margin-top:20px"></div>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 3 ═══════════════ -->
+<div data-shot="3">
+<section class="blk">
+  <div class="grid2">
+    <div>
+      <p class="kick"><i>04</i>Abstände</p>
+      <h2 class="bh">Rhythmus nach Aman</h2>
+      <p class="bp">Label → Titel <code>s</code>, Titel → Text <code>m</code>, Text → Links <code>l</code>, Einleitung → Bildleiste <code>l</code>, zwischen Abschnitten <code>section</code>. Innerhalb eines Moduls eng, zwischen Modulen sehr weit: so liest sich die Seite wie ein Heft.</p>
+      <div id="bars" style="margin-top:28px"></div>
+    </div>
+    <div>
+      <p class="kick"><i>05</i>Raster</p>
+      <h2 class="bh">Eine Spalte, zwölf Spalten</h2>
+      <div class="rasters" style="grid-template-columns:1fr;gap:28px">
+        <div style="display:grid;grid-template-columns:390px 1fr;gap:24px;align-items:start">
+          <div class="r-mob"><div class="g" style="left:0"></div><div class="g" style="right:0"></div>
+            <div class="c"><p class="kick">Handy · 390 px</p><p style="margin-top:12px">Eine Spalte, Rand 24 px links und rechts, 342 px Satzbreite. Bilder in der Spalte; nur die Bildleiste läuft rechts aus dem Rand.</p></div></div>
+          <p class="note">Aman: 25 px Rand, alles einspaltig gestapelt, Bildleiste horizontal wischbar. Journal übernimmt das unverändert.</p>
+        </div>
+        <div>
+          <div class="r-desk"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><div class="meas">Textmaß 36rem · zentriert</div></div>
+          <p class="note" style="margin-top:10px">Desktop: 12 Spalten, Spaltenabstand 24 px, Rand <code>gutter</code>, maximal <code>90rem</code>. Einleitungen zentriert im Textmaß (Aman: 680 px Mitte), Module links in Spalte 1–4, Listen und Bilder in 6–12. Drei Hochformate nebeneinander = je 4 Spalten (Aman: 3 × 439 px).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <p class="kick"><i>06</i>Farben</p>
+  <h2 class="bh">Drei Paletten, alle Kontraste geprüft</h2>
+  <p class="bp">Papier ist Amans Ton fast 1:1 (#f3eee7), Tinte ein warmes Anthrazit statt Schwarz. Aman hat keine Akzentfarbe; Journal nutzt den Akzent nur für Kapitelnummern, Ablauf-Ziffern, Sterne und die Markierung „heute“, nie für Flächen.</p>
+  <div class="pals" id="pals"></div>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 4 ═══════════════ -->
+<div data-shot="4">
+<section class="blk">
+  <p class="kick"><i>07</i>Bilder</p>
+  <h2 class="bh">Drei Formate, eine Bildunterschrift</h2>
+  <div class="imgs">
+    <figure><img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=700&q=80&auto=format&fit=crop" style="aspect-ratio:4/5" alt="Salon, Arbeitsplätze"><figcaption><span><i>Abb. 1</i> Einstieg 4:5</span><span>Handy-Erstbild</span></figcaption></figure>
+    <figure><img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&q=80&auto=format&fit=crop" style="aspect-ratio:3/4" alt="Haare werden geföhnt"><figcaption><span><i>Abb. 2</i> Hochformat 3:4</span><span>Aman 0,76</span></figcaption></figure>
+    <figure><img src="https://images.unsplash.com/photo-1559599101-f09722fb4948?w=700&q=80&auto=format&fit=crop" style="aspect-ratio:1/1" alt="Detail im Salon"><figcaption><span><i>Abb. 3</i> Quadrat 1:1</span><span>Bildleiste</span></figcaption></figure>
+    <figure><img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=900&q=80&auto=format&fit=crop" style="aspect-ratio:1.618/1" alt="Salon von innen"><figcaption><span><i>Abb. 4</i> Quer 1,618:1</span><span>Aman 1,62</span></figcaption></figure>
+  </div>
+  <ul class="rules">
+    <li><b>Kein Text auf Fotos,</b> keine Verläufe, keine Etiketten. Bildunterschrift steht darunter: links „Abb. n“ in Serife kursiv plus kurzer Satz, rechts optional der Ort.</li>
+    <li><b>Radius 0, kein Rahmen, kein Schatten.</b> Fotos sitzen in der Spalte, nur die Bildleiste läuft aus dem rechten Rand (Aman).</li>
+    <li><b>Einstieg:</b> 4:5 in der Spalte. Ist das Titelfoto ein Logo, kleiner als 1200 px Breite oder fehlt es, kommt der Typo-Einstieg (siehe Mockup), nie ein leeres Feld.</li>
+    <li><b>Bildleiste:</b> Hochformat, Quadrat, Quer gemischt, vertikal mittig, 12 px Abstand, darunter eine Fortschrittslinie (Aman). Mindestens 3 Fotos, sonst entfällt sie.</li>
+    <li><b>Über uns / Team:</b> 3:4. Fehlt das Foto, steht der Text allein im Textmaß, kein Platzhalter.</li>
+    <li><b>Bildausschnitt:</b> <code>object-fit: cover</code>, Fokus Mitte oben bei Menschen (<code>object-position: 50% 30%</code>).</li>
+  </ul>
+</section>
+
+<section class="blk play">
+  <p class="kick"><i>08</i>Bewegung</p>
+  <h2 class="bh">Langsam auftauchen, schnell antworten</h2>
+  <p class="bp">Nur <code>transform</code>, <code>opacity</code> und <code>clip-path</code>. Kurve für Auftritte <code>cubic-bezier(.23,1,.32,1)</code>, für das Aufdecken von Bildern <code>cubic-bezier(.77,0,.175,1)</code>. Jede Bewegung einmal, beim ersten Sichtbarwerden (IntersectionObserver, 15 % sichtbar), nie in Schleife.</p>
+  <div class="motion">
+    <div class="mv"><div class="demo"><span class="x rise">Lindner</span></div><p class="kick">Name im Einstieg</p><p class="note" style="margin-top:6px">700 ms, von 14 px unten, Deckkraft 0 → 1. Kursive Zeile 120 ms später.</p></div>
+    <div class="mv"><div class="demo"><img class="unmask" src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=500&q=70&auto=format&fit=crop" style="width:96px;height:120px;object-fit:cover" alt=""></div><p class="kick">Einstiegsfoto</p><p class="note" style="margin-top:6px">1000 ms, <code>clip-path</code> von unten auf, 200 ms Verzug. Das ist der einzige „große“ Moment.</p></div>
+    <div class="mv"><div class="demo"><span class="x rise d1" style="font-size:28px">Abschnitte</span></div><p class="kick">Abschnitte</p><p class="note" style="margin-top:6px">500 ms, 16 px, einmal. Listenzeilen gestaffelt um 50 ms, höchstens 6.</p></div>
+    <div class="mv"><div class="demo"><span style="font-family:var(--sans);font-size:14px;letter-spacing:.05em;padding-bottom:6px;border-bottom:1px solid var(--ink)">Alle Leistungen</span></div><p class="kick">Links und Knöpfe</p><p class="note" style="margin-top:6px">Link: Linie 250 ms auf 40 % (nur Hover-Geräte). Knopf: <code>scale(.98)</code> beim Drücken, 120 ms.</p></div>
+  </div>
+  <p class="note" style="margin-top:20px"><b>Reduzierte Bewegung:</b> alles wird zu 200 ms Deckkraft, keine Verschiebung, kein Aufdecken; Bilder sind sofort ganz sichtbar. Inhalt ist ohne JavaScript immer vollständig sichtbar (Startzustand nur, wenn das Skript eine Klasse setzt).</p>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 5 ═══════════════ -->
+<div data-shot="5">
+<section class="blk">
+  <p class="kick"><i>09</i>Erstes Handy-Bild</p>
+  <h2 class="bh">Der Wow-Moment: Name, kursive Zeile, Foto</h2>
+  <div class="first">
+    <div class="phone jf pal-papier" id="first-photo"></div>
+    <div class="phone jf pal-papier" id="first-typo"></div>
+    <div>
+      <p class="bp"><b>Mit Foto (links):</b> Aman zeigt zuerst das Foto, darunter klein den Namen. Wir drehen das um. Der Name steht in 73 px Newsreader Light auf Papier, zentriert wie ein Buchtitel, darüber das Label mit Branche und Ort, darunter genau eine kursive Zeile. Das Foto beginnt bei rund 330 px und deckt sich von unten auf; es wird vom Dock angeschnitten und zieht so in die Seite.</p>
+      <p class="bp"><b>Ohne Foto (Mitte):</b> Der Name wird 22 % größer und füllt die Breite, danach die Fakten in Haarlinien-Zeilen (heute geöffnet, Adresse, Google-Bewertung) und Knopf plus Textlink. Das sieht absichtlich aus, nicht wie ein fehlendes Bild.</p>
+      <p class="bp"><b>Regeln:</b> höchstens vier Textelemente im Einstieg. Lange Namen: Ab 14 Zeichen pro Zeile fällt die Größe stufenweise bis 3,25rem; Umbruch nur an Wortgrenzen (<code>text-wrap: balance</code>). Die kursive Zeile ist die einzige Kursive in einer Überschrift auf der ganzen Seite.</p>
+      <p class="note" style="margin-top:16px">Rote Linie = Ende des ersten Bildschirms (844 px, iPhone 14). Dock 76 px.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 6 ═══════════════ -->
+<div data-shot="6">
+<section class="blk">
+  <p class="kick"><i>10</i>Ganze Seite, Handy 390 px</p>
+  <h2 class="bh">Salon Lindner, Münster</h2>
+  <p class="note">Fiktiver Betrieb. Die Seite läuft von links nach rechts weiter (je 2300 px pro Rahmen). Preise sind Beispiel; im Produkt erscheinen sie nur, wenn der Betrieb sie eingibt.</p>
+  <div class="phones" id="phones"></div>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 7 ═══════════════ -->
+<div data-shot="7">
+<section class="blk">
+  <p class="kick"><i>11</i>Desktop 1440 px</p>
+  <h2 class="bh">Erster Bildschirm und Leistungen</h2>
+  <div class="desk jf pal-papier" id="desk"></div>
+  <div class="desk2 jf pal-papier" id="desk2"></div>
+</section>
+</div>
+
+<!-- ═══════════════ SHOT 8 ═══════════════ -->
+<div data-shot="8">
+<section class="blk">
+  <p class="kick"><i>12</i>Lücken in Amans Grammatik</p>
+  <h2 class="bh">Was Aman nicht hat, und wie Journal es baut</h2>
+  <table class="t">
+    <thead><tr><th>Abschnitt</th><th>Bauweise in Journal</th></tr></thead>
+    <tbody>
+      <tr><td>Leistungen</td><td>Label, H2, kurzer Text, dann Preisliste: Gruppenüberschrift als Label über einer Tintenlinie, Posten als H3 links, Preis in Mediävalziffern rechts, Beschreibung klein gedämpft darunter, Haarlinie je Posten. Desktop: Modul links (Spalte 1–4), Liste rechts (6–12).</td></tr>
+      <tr><td>Stimmen</td><td>Eine Stimme zur Zeit, zentriert, Newsreader Light kursiv in Lede-Größe, höchstens 3 Zeilen (26 Zeichen breit), Sterne im Akzent, Name als Label, Quelle klein. Darunter Striche als Seitenanzeige (Aman-Fortschrittslinie), Link „Alle Bewertungen auf Google“.</td></tr>
+      <tr><td>Ablauf</td><td>Nummerierte Zeilen mit Haarlinien: große leichte Ziffer im Akzent links, H3 und Satz rechts. Keine Karten, keine Icons.</td></tr>
+      <tr><td>Gut zu wissen</td><td>Aufklappliste über einer Tintenlinie, Frage in H3-Serife, feines Plus, das sich zum Minus dreht (250 ms). Antwort im Textmaß.</td></tr>
+      <tr><td>Öffnungszeiten, Kontakt</td><td>Aman „Getting here“: zentrierte H2, Adresse, Karte im Goldenen Schnitt, dazu Öffnungszeiten als Zeilen mit „heute“-Markierung. Links „Route planen“ und „Anrufen“.</td></tr>
+      <tr><td>Handy-Dock</td><td>Fest unten, Papier mit 92 % Deckung und Haarlinie oben, Knopf „Termin anfragen“ volle Breite plus Telefon-Quadrat 52 px. Taste ≥ 48 px.</td></tr>
+      <tr><td>Typo-Einstieg</td><td>Siehe erstes Handy-Bild Mitte: Name 1,22-fach, kursive Zeile, Faktenzeilen, Knopf und Link.</td></tr>
+      <tr><td>Fuß</td><td>Ein Block auf hellem Band: Marke in gesperrten Serifen-Versalien (Aman), Adresse, Telefon, Links, darunter Impressum und Datenschutz. Keine Spalten-Wüste.</td></tr>
+      <tr><td>Kapitelnummern</td><td>Nur als kursive Serifenziffer vor dem Label (z. B. <i>02</i> LEISTUNGEN), Akzentfarbe, nie als eigenes Element oder „01 /“.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="blk final" id="final">
+  <p class="kick"><i>13</i>Endwerte für Task 4</p>
+  <h2 class="bh">Tokens zum Kopieren</h2>
+  <div id="finaltables"></div>
+</section>
+</div>
+
+</div>
+
+<!-- ═══════════════ Mobile Seite (Vorlage) ═══════════════ -->
+<template id="tpl-page">
+<div class="j">
+  <div class="hdr"><span class="menu"><b></b>Menü</span><span class="mark">Lindner</span><span class="r link" style="padding-bottom:.25em">Anrufen</span></div>
+  <section class="entry wrap">
+    <p class="kicker rise">Friseur in Münster</p>
+    <h1 class="display rise">Salon<br>Lindner</h1>
+    <p class="lede it rise d1">Schnitt, Farbe &amp; gute Laune.</p>
+    <figure><img class="unmask" src="https://images.unsplash.com/photo-1562322140-8baeececf3df?w=900&q=80&auto=format&fit=crop" alt="Arbeitsplätze im Salon Lindner"><figcaption class="small"><span><i>Abb. 1</i> Föhnen am Vormittag</span><span>Hammer Str. 41</span></figcaption></figure>
+    <div class="facts">
+      <div><span>Heute geöffnet</span><span class="small">9 bis 18 Uhr</span></div>
+      <div><span>4,9 bei Google</span><span class="small">112 Bewertungen</span></div>
+      <div><span>Hammer Straße 41</span><span class="small">48153 Münster</span></div>
+    </div>
+  </section>
+
+  <section class="sec wrap">
+    <p class="kicker"><span class="no">02</span>Leistungen</p>
+    <h2 class="h2">Was wir für dich tun</h2>
+    <p class="body">Jeder Termin beginnt mit fünf Minuten Beratung am Platz. Danach weißt du, was es kostet und wie lange es dauert.</p>
+    <div class="menu-list">
+      <p class="grp">Schnitt</p>
+      <div class="item"><span class="h3">Damenschnitt</span><span class="price">ab 48 €</span><span class="small">Waschen, Schnitt, Föhnen. Rund 60 Minuten.</span></div>
+      <div class="item"><span class="h3">Herrenschnitt</span><span class="price">ab 29 €</span><span class="small">Mit Nacken und Konturen. Rund 30 Minuten.</span></div>
+      <p class="grp">Farbe</p>
+      <div class="item"><span class="h3">Balayage</span><span class="price">ab 129 €</span><span class="small">Freihand gemalt, inklusive Pflege und Schnitt.</span></div>
+      <div class="item"><span class="h3">Ansatzfarbe</span><span class="price">ab 54 €</span><span class="small">Bis 3 cm Ansatz, ohne Schnitt.</span></div>
+    </div>
+    <div class="links"><a class="link">Alle Leistungen</a></div>
+  </section>
+
+  <section class="sec raised">
+    <div class="wrap">
+      <p class="kicker"><span class="no">03</span>Über uns</p>
+      <h2 class="h2">Seit 2009 an der Hammer Straße</h2>
+    </div>
+    <div class="wrap"><figure class="portrait" style="margin-top:2rem"><img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&q=80&auto=format&fit=crop" alt="Föhnen im Salon"><figcaption class="small"><span><i>Abb. 2</i> Pflege nach der Farbe</span></figcaption></figure>
+    <p class="body">Anna Lindner hat den Salon mit zwei Stühlen eröffnet. Heute arbeiten wir zu viert, aber noch immer so: zuhören, ehrlich beraten, sauber schneiden. Wer einmal da war, kennt unseren Kaffee.</p>
+    <div class="links" style="margin-top:1.75rem"><a class="link">Das Team kennenlernen</a></div></div>
+  </section>
+
+  <section class="sec" style="padding-bottom:calc(var(--j-section) * .75)">
+    <div class="wrap"><p class="kicker"><span class="no">04</span>Einblicke</p><h2 class="h2">Aus dem Salon</h2></div>
+    <div class="strip">
+      <figure class="p"><img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=700&q=80&auto=format&fit=crop" alt=""></figure>
+      <figure class="q"><img src="https://images.unsplash.com/photo-1559599101-f09722fb4948?w=600&q=80&auto=format&fit=crop" alt=""></figure>
+      <figure class="l"><img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&auto=format&fit=crop" alt=""></figure>
+    </div>
+    <div class="progress"><span></span></div>
+    <div class="wrap" style="margin-top:1rem"><figcaption class="small" style="margin:0"><span><i>Abb. 3 bis 7</i> Wischen für mehr</span></figcaption></div>
+  </section>
+
+  <section class="sec raised center">
+    <div class="wrap">
+      <p class="kicker"><span class="no">05</span>Stimmen</p>
+      <p class="stars" style="margin:1.25rem 0 1.25rem">★★★★★</p>
+      <p class="quote">Ich gehe seit sieben Jahren zu Anna. Sie sagt mir auch, wenn eine Idee nicht zu meinen Haaren passt.</p>
+      <p class="kicker who">Sabine K.</p>
+      <p class="small muted" style="margin-top:.25rem">Google-Bewertung, März 2026</p>
+      <div class="qnav"><b class="on"></b><b></b><b></b></div>
+      <div class="links"><a class="link" style="margin-top:.5rem">Alle 112 Bewertungen auf Google</a></div>
+    </div>
+  </section>
+
+  <section class="sec wrap">
+    <p class="kicker"><span class="no">06</span>Ablauf</p>
+    <h2 class="h2">So läuft dein Termin</h2>
+    <div class="steps">
+      <div class="stp"><span class="num">1</span><div><p class="h3">Termin anfragen</p><p class="body">Online oder per Anruf. Wir melden uns am selben Tag.</p></div></div>
+      <div class="stp"><span class="num">2</span><div><p class="h3">Beratung am Platz</p><p class="body">Wir schauen Haar und Wunsch an und nennen den Preis vorher.</p></div></div>
+      <div class="stp"><span class="num">3</span><div><p class="h3">Schnitt und Pflege-Tipp</p><p class="body">Du gehst mit einer Frisur, die du zu Hause selbst hinbekommst.</p></div></div>
+    </div>
+  </section>
+
+  <section class="sec raised">
+    <div class="wrap">
+      <p class="kicker"><span class="no">07</span>Gut zu wissen</p>
+      <h2 class="h2">Häufige Fragen</h2>
+      <div class="faq">
+        <details open><summary><span class="h3">Kann ich ohne Termin kommen?</span><span class="pl"></span></summary><p class="body">Dienstags bis freitags meistens ja, samstags nur mit Termin. Ruf kurz an, dann sagen wir dir, wann ein Stuhl frei ist.</p></details>
+        <details><summary><span class="h3">Kann ich mit Karte zahlen?</span><span class="pl"></span></summary></details>
+        <details><summary><span class="h3">Gibt es Parkplätze?</span><span class="pl"></span></summary></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec wrap center" style="padding-bottom:calc(var(--j-section) * .8)">
+    <p class="kicker"><span class="no">08</span>Besuch</p>
+    <h2 class="h2">Öffnungszeiten und Weg</h2>
+    <address class="addr">Salon Lindner<br>Hammer Straße 41<br>48153 Münster</address>
+    <div class="hours" style="text-align:left">
+      <div><span>Montag</span><span class="muted">geschlossen</span></div>
+      <div><span>Di bis Fr</span><span>9 bis 18 Uhr</span></div>
+      <div class="today"><span>Samstag</span><span>9 bis 14 Uhr</span></div>
+    </div>
+    <div class="map"></div>
+    <div class="links" style="margin-top:1.75rem"><a class="link">Route planen</a><a class="link">0251 284 17 30</a></div>
+  </section>
+
+  <footer class="foot">
+    <div class="wrap">
+      <span class="mark">Salon Lindner</span>
+      <p class="small">Hammer Straße 41, 48153 Münster<br>0251 284 17 30 · hallo@salon-lindner.de</p>
+      <div class="links"><a class="link">Instagram</a><a class="link">Termin anfragen</a></div>
+      <div class="legal small"><span>Impressum</span><span>Datenschutz</span><span>© 2026</span></div>
+    </div>
+  </footer>
+</div>
+</template>
+
+<template id="tpl-dock">
+<div class="j" style="position:absolute;left:0;right:0;bottom:0;z-index:5;background:transparent"><div class="dock"><span class="btn">Termin anfragen</span><span class="btn ghost" aria-label="Anrufen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1"/></svg></span></div></div>
+</template>
+
+<template id="tpl-typo">
+<div class="j">
+  <div class="hdr"><span class="menu"><b></b>Menü</span><span class="mark">Lindner</span><span class="r link" style="padding-bottom:.25em">Anrufen</span></div>
+  <section class="entry typo wrap" style="padding-top:3.25rem">
+    <p class="kicker">Friseur in Münster</p>
+    <h1 class="display">Salon<br>Lindner</h1>
+    <p class="lede it">Schnitt, Farbe &amp; gute Laune.</p>
+    <div class="facts">
+      <div><span>Heute geöffnet</span><span class="small">9 bis 18 Uhr</span></div>
+      <div><span>4,9 bei Google</span><span class="small">112 Bewertungen</span></div>
+      <div><span>Hammer Straße 41</span><span class="small">48153 Münster</span></div>
+    </div>
+    <div class="btnrow"><span class="btn ghost">Leistungen ansehen</span><a class="link">Route planen</a></div>
+  </section>
+</div>
+</template>
+
+<template id="tpl-desk">
+<div class="j">
+  <div class="dhdr"><span class="menu"><b></b>Menü</span><span class="mark" style="font-size:1.125rem">Salon Lindner</span><span class="r"><a class="link">0251 284 17 30</a><span class="btn">Termin anfragen</span></span></div>
+  <nav class="dnav"><span>Salon Lindner</span><span>Leistungen</span><span>Über uns</span><span>Einblicke</span><span>Stimmen</span><span>Ablauf</span><span>Gut zu wissen</span><span>Besuch</span></nav>
+  <section class="dentry wrap">
+    <p class="kicker">Friseur in Münster</p>
+    <h1 class="display">Salon Lindner</h1>
+    <p class="lede it">Schnitt, Farbe &amp; gute Laune.</p>
+    <figure><img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=2000&q=80&auto=format&fit=crop" alt=""></figure>
+  </section>
+</div>
+</template>
+
+<template id="tpl-desk2">
+<div class="j">
+  <section class="sec wrap" style="padding-block:7rem">
+    <div class="dsplit">
+      <div class="a" style="position:sticky;top:2rem;align-self:start">
+        <p class="kicker"><span class="no">02</span>Leistungen</p>
+        <h2 class="h2">Was wir für dich tun</h2>
+        <p class="body">Jeder Termin beginnt mit fünf Minuten Beratung am Platz. Danach weißt du, was es kostet und wie lange es dauert.</p>
+        <div class="links"><a class="link">Alle Leistungen</a><a class="link">Termin anfragen</a></div>
+      </div>
+      <div class="b">
+        <div class="menu-list" style="margin-top:0;display:grid;grid-template-columns:1fr 1fr;column-gap:3rem">
+          <div>
+            <p class="grp">Schnitt</p>
+            <div class="item"><span class="h3">Damenschnitt</span><span class="price">ab 48 €</span><span class="small">Waschen, Schnitt, Föhnen. Rund 60 Minuten.</span></div>
+            <div class="item"><span class="h3">Herrenschnitt</span><span class="price">ab 29 €</span><span class="small">Mit Nacken und Konturen. Rund 30 Minuten.</span></div>
+            <div class="item"><span class="h3">Kinderschnitt</span><span class="price">ab 19 €</span><span class="small">Bis 12 Jahre.</span></div>
+          </div>
+          <div>
+            <p class="grp">Farbe</p>
+            <div class="item"><span class="h3">Balayage</span><span class="price">ab 129 €</span><span class="small">Freihand gemalt, inklusive Pflege und Schnitt.</span></div>
+            <div class="item"><span class="h3">Ansatzfarbe</span><span class="price">ab 54 €</span><span class="small">Bis 3 cm Ansatz, ohne Schnitt.</span></div>
+            <div class="item"><span class="h3">Glossing</span><span class="price">ab 35 €</span><span class="small">Mehr Glanz, ohne Farbwechsel.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</template>
+
+<script>
+/* ── Endwerte (einzige Quelle für Tabellen und Skala) ─────────── */
+const TYPE = {
+  display:{font:"display",size:"clamp(4.5rem, 3rem + 6.4vw, 8.5rem)",line:0.94,track:"-0.022em",weight:300,ex:"Salon Lindner"},
+  h2:{font:"display",size:"clamp(2rem, 1.55rem + 1.9vw, 3.25rem)",line:1.08,track:"-0.012em",weight:300,ex:"Schnitt, Farbe & gute Laune."},
+  h3:{font:"display",size:"clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem)",line:1.25,track:"0.005em",weight:400,ex:"Damenschnitt"},
+  lede:{font:"display",size:"clamp(1.25rem, 1.1rem + 0.65vw, 1.625rem)",line:1.38,track:"0em",weight:400,ex:"Schnitt, Farbe & gute Laune.",italic:true},
+  body:{font:"display",size:"1.0625rem",line:1.6,track:"0.012em",weight:400,ex:"Anna Lindner hat den Salon 2009 mit zwei Stühlen eröffnet. Heute arbeiten wir zu viert, aber noch immer so: zuhören, ehrlich beraten, sauber schneiden. Wer einmal da war, kennt unseren Kaffee."},
+  small:{font:"text",size:"0.875rem",line:1.55,track:"0.02em",weight:400,ex:"Waschen, Schnitt, Föhnen. Rund 60 Minuten."},
+  kicker:{font:"text",size:"0.6875rem",line:1.35,track:"0.2em",weight:500,upper:true,ex:"Leistungen"},
+  link:{font:"text",size:"0.875rem",line:1.4,track:"0.05em",weight:400,ex:"Alle Leistungen",extra:true},
+  mark:{font:"display",size:"1rem",line:1.2,track:"0.22em",weight:400,upper:true,ex:"Salon Lindner",extra:true},
+};
+const SPACE = {"2xs":".25rem",xs:".5rem",s:".875rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6rem",
+  section:"clamp(6rem, 4.5rem + 5vw, 10rem)",gutter:"clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem)",measure:"36rem",max:"90rem"};
+const PALS = [
+  {id:"papier",name:"Papier",paper:"#f3eee7",ink:"#2f2e2c",muted:"#5d5a55",rule:"#d9d3c9",accent:"#6e5643",deep:"#2f2e2c",onDeep:"#f3eee7"},
+  {id:"salbei",name:"Salbei",paper:"#eef0ea",ink:"#232924",muted:"#556057",rule:"#d2d8cd",accent:"#4a6545",deep:"#253027",onDeep:"#eef0ea"},
+  {id:"ton",name:"Ton",paper:"#f4ece6",ink:"#2e2420",muted:"#6a5951",rule:"#e0d2c8",accent:"#9a4630",deep:"#2e2420",onDeep:"#f4ece6"},
+];
+
+/* clamp(a, b + c vw, d) bei Breite w → px */
+function px(expr,w){const m=expr.match(/clamp\(([\d.]+)rem,\s*([\d.]+)rem\s*\+\s*([\d.]+)vw,\s*([\d.]+)rem\)/);
+  if(!m) return parseFloat(expr)*16; const [a,b,c,d]=m.slice(1).map(Number); return Math.min(d*16,Math.max(a*16,b*16+c*w/100));}
+/* WCAG wie colorMath.contrastRatio */
+function lum(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(s=>s<=.04045?s/12.92:((s+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0)}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+
+/* Skala */
+const fam=f=>f==="display"?"var(--serif)":"var(--sans)";
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+  const st=w=>`font-family:${fam(t.font)};font-size:${px(t.size,w).toFixed(1)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${t.upper?"text-transform:uppercase;":""}${t.italic?"font-style:italic;font-weight:300;":""}`;
+  return `<div class="step"><div class="lab"><span class="kick">${k}${t.extra?" (neu)":""}</span><span class="note">${t.font==="display"?"Newsreader":"Source Sans 3"} ${t.weight}${t.upper?", Versal":""}<br>Zeile ${t.line} · ${t.track}<br><span class="mono">${t.size}</span></span></div>
+  <div class="s375"><span class="px">375 → ${px(t.size,375).toFixed(1)} px</span><div style="${st(375)}">${t.ex}</div></div>
+  <div class="s1440"><span class="px">1440 → ${px(t.size,1440).toFixed(1)} px</span><div style="${st(1440)};${k==="body"?"white-space:normal;max-width:36rem":""}">${t.ex}</div></div></div>`}).join("");
+
+/* Abstände */
+document.getElementById("bars").innerHTML=Object.entries(SPACE).map(([k,v])=>{
+  const a=px(v,390),b=px(v,1440);const lab=v.startsWith("clamp")?`${a.toFixed(0)} / ${b.toFixed(0)} px`:`${a.toFixed(0)} px`;
+  const wb=k==="measure"||k==="max"?b/4:b; return `<div class="bar"><span class="kick">${k}</span><span class="mono">${v}</span><span style="display:flex;align-items:center;gap:12px"><b style="width:${wb}px"></b><span class="note">${lab}${k==="measure"||k==="max"?" (Balken ¼)":""}</span></span></div>`}).join("");
+
+/* Paletten */
+const checks=[["ink","paper",7],["muted","paper",4.5],["accent","paper",4.5],["onDeep","deep",7]];
+document.getElementById("pals").innerHTML=PALS.map(p=>`<div class="pal">
+  <div class="hero" style="background:${p.paper};color:${p.ink}"><p class="kick" style="color:${p.ink}"><i style="color:${p.accent}">0${PALS.indexOf(p)+1}</i>${p.name} · ${p.id}</p>
+   <p class="n">Salon Lindner</p><p class="it">Schnitt, Farbe &amp; gute Laune.</p>
+   <p style="font-family:var(--sans);font-size:14px;color:${p.muted};margin-top:10px;letter-spacing:.02em">Damenschnitt · ab 48 €</p>
+   <span class="btn" style="background:${p.deep};color:${p.onDeep}">Termin anfragen</span><span class="lk" style="color:${p.ink}">Route planen</span></div>
+  <div class="sw">${["paper","ink","muted","rule","accent","deep","onDeep"].map(k=>`<div style="background:${p[k]};border-left:1px solid rgba(0,0,0,.06)"><small style="color:${cr(p[k],"#ffffff")>3?"#fff":"#2f2e2c"}">${k}<br>${p[k]}</small></div>`).join("")}</div>
+  <div class="cr">${checks.map(([a,b,min])=>{const v=cr(p[a],p[b]);return `<span>${a} / ${b}</span><span>≥ ${min}</span><span class="${v>=min?"ok":"no"}">${v.toFixed(2)} ${v>=min?"✓":"✗"}</span>`}).join("")}</div></div>`).join("");
+
+/* Mockups */
+const T=id=>document.getElementById(id).content.cloneNode(true);
+const pageH=()=>{};
+const phones=document.getElementById("phones");
+const SEG=2300;
+for(let i=0;i<3;i++){
+  const f=document.createElement("div");f.className="phone jf pal-papier";
+  const roll=document.createElement("div");roll.className="roll";roll.style.transform=`translateY(${-i*SEG}px)`;roll.appendChild(T("tpl-page"));
+  f.appendChild(roll);
+  if(i===0){const fold=document.createElement("div");fold.className="fold";fold.innerHTML="<span>Ende 1. Bildschirm</span>";f.appendChild(fold);}
+  else{const c=document.createElement("div");c.className="cont";f.appendChild(c);}
+  f.appendChild(T("tpl-dock"));
+  const w=document.createElement("div");w.className="phwrap";w.innerHTML=`<p class="px2">${i*SEG} bis ${(i+1)*SEG} px</p>`;w.appendChild(f);phones.appendChild(w);
+}
+const fp=document.getElementById("first-photo");fp.classList.add("play");fp.appendChild(T("tpl-page"));fp.appendChild(T("tpl-dock"));
+const ft=document.getElementById("first-typo");ft.appendChild(T("tpl-typo"));ft.appendChild(T("tpl-dock"));
+document.getElementById("desk").appendChild(T("tpl-desk"));
+document.getElementById("desk2").appendChild(T("tpl-desk2"));
+window.__pageHeight=()=>phones.querySelector(".roll .j").offsetHeight;
+
+/* Endtabellen */
+const rows=Object.entries(TYPE).map(([k,t])=>`<tr><td>${k}${t.extra?" *":""}</td><td>${t.font}</td><td><code>${t.size}</code></td><td>${t.line}</td><td><code>${t.track}</code></td><td>${t.weight}</td><td>${t.upper?"ja":""}</td></tr>`).join("");
+document.getElementById("finaltables").innerHTML=`
+<h3>Schriftskala (font: display = Newsreader, text = Source Sans 3)</h3>
+<table class="t"><thead><tr><th>Stufe</th><th>Schrift</th><th>Größe</th><th>Zeile</th><th>Laufweite</th><th>Gewicht</th><th>Versal</th></tr></thead><tbody>${rows}</tbody></table>
+<p class="note" style="margin-top:8px">* Vorschlag: neue Stufen <code>link</code> (Textlinks, Knöpfe, Navigation) und <code>mark</code> (Marke im Kopf/Fuß). Ohne sie müsste <code>small</code> doppelt herhalten. <code>body</code> nutzt bewusst <code>display</code> (Serife), wie bei Aman. <code>lede</code> wird im Einstieg kursiv 300 gesetzt.</p>
+<h3>Abstände</h3>
+<table class="t"><thead><tr>${Object.keys(SPACE).map(k=>`<th>${k}</th>`).join("")}</tr></thead><tbody><tr>${Object.values(SPACE).map(v=>`<td style="font-weight:400"><code>${v}</code></td>`).join("")}</tr></tbody></table>
+<h3>Paletten</h3>
+<table class="t"><thead><tr><th>ID</th><th>Name</th><th>paper</th><th>ink</th><th>muted</th><th>rule</th><th>accent</th><th>deep</th><th>onDeep</th></tr></thead><tbody>${PALS.map(p=>`<tr><td><code>${p.id}</code></td><td>${p.name}</td>${["paper","ink","muted","rule","accent","deep","onDeep"].map(k=>`<td><code>${p[k]}</code></td>`).join("")}</tr>`).join("")}</tbody></table>
+<h3>Schriftdateien</h3>
+<table class="t"><thead><tr><th>Rolle</th><th>Familie</th><th>Datei</th><th>Gewicht</th><th>Stil</th><th>Vorladen</th></tr></thead><tbody>
+<tr><td>display</td><td>Newsreader</td><td><code>newsreader-latin-o36-wght.woff2</code></td><td><code>300 500</code></td><td>normal</td><td>ja</td></tr>
+<tr><td>display</td><td>Newsreader</td><td><code>newsreader-latin-o36-wght-italic.woff2</code></td><td><code>300 500</code></td><td>italic</td><td>ja</td></tr>
+<tr><td>text</td><td>Source Sans 3</td><td><code>source-sans-3-latin-wght.woff2</code></td><td><code>200 900</code></td><td>normal</td><td>nein</td></tr></tbody></table>
+<p class="note" style="margin-top:8px">Fallbacks: display <code>Georgia, 'Times New Roman', serif</code> · text <code>system-ui, -apple-system, 'Segoe UI', sans-serif</code>. Helles Band: <code>color-mix(in srgb, paper 35%, #fff)</code>, kein eigenes Token.</p>`;
+</script>
+</body>
+</html>
