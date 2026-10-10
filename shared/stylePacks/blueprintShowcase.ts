@@ -4,6 +4,8 @@
  * aufbereitet wie eine frisch erzeugte Seite: Einstieg Bühne oder
  * Farbfläche, Bauplan angewendet. Reine Beispieldaten — keine echte Firma.
  */
+import { withDesignSystem } from "../designSystems/apply";
+import type { DesignSystemId } from "../designSystems/types";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
@@ -345,4 +347,13 @@ export function showcaseDoc(
     { heroLandscape: entry === "stage", extraPhotos: 3 }
   );
   return withBlueprint({ ...directed, designProfile }, blueprint);
+}
+
+/** Beispielbetrieb im Designsystem (Systemübersicht, /demo/system/…). */
+export function systemShowcaseDoc(
+  showcase: Showcase,
+  system: DesignSystemId,
+  palette?: string
+): WebsiteDataV2 {
+  return withDesignSystem(showcaseDoc(showcase, "stage"), system, palette);
 }

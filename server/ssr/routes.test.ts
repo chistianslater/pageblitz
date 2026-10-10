@@ -117,6 +117,70 @@ describe("SSR routes", () => {
     expect(res.text).not.toContain("<script");
   });
 
+  describe("Designsystem-Vorschauen", () => {
+    test("Dev-Vorschau rendert Journal mit Palette", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      const res = await request(app).get(
+        "/dev/site-preview?system=journal&palette=ton&fixture=full"
+      );
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('data-pb-system="journal"');
+      expect(res.text).toContain('data-pb-palette="ton"');
+    });
+
+    test("Dev-Vorschau lehnt unbekanntes System ab, ohne es zu spiegeln", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      const res = await request(app).get(
+        "/dev/site-preview?system=%3Cscript%3E&fixture=full"
+      );
+      expect(res.status).toBe(400);
+      expect(res.text).not.toContain("<script");
+    });
+
+    test("Demo-Route Journal x Friseur", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      const res = await request(app).get("/demo/system/journal/friseur");
+      expect(res.status).toBe(200);
+      expect(res.text).toContain("jr-entry");
+      expect(res.headers["x-robots-tag"]).toContain("noindex");
+    });
+
+    test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      expect((await request(app).get("/demo/system/nacht/friseur")).status).toBe(404);
+      expect((await request(app).get("/demo/system/journal/gibtsnicht")).status).toBe(404);
+    });
+
+    test("preview-ssr ?system= rendert nur, ohne zu speichern; unbekannt -> 400", async () => {
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: getFixture("salon-noir", "full"),
+      });
+      const app = express();
+      registerSsrRoutes(app);
+      const ok = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?system=journal&palette=salbei"
+      );
+      expect(ok.status).toBe(200);
+      expect(ok.text).toContain('data-pb-system="journal"');
+      expect(ok.text).toContain('data-pb-palette="salbei"');
+      const bad = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?system=%3Cscript%3E"
+      );
+      expect(bad.status).toBe(400);
+      expect(bad.text).not.toContain("<script");
+      const unbuilt = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?system=nacht"
+      );
+      expect(unbuilt.status).toBe(400);
+    });
+  });
+
   describe("GET /demo/:pack", () => {
     test("gültiges Pack → 200, noindex, 1h-Cache, enthält den Fixture-Business-Namen", async () => {
       const app = buildAppWithFallback();

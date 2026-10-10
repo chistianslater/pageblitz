@@ -8,8 +8,15 @@ import { renderSiteHtml } from "./renderSite";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import {
+  DESIGN_SYSTEM_IDS,
+  getSystem,
+  withDesignSystem,
+  type DesignSystemId,
+} from "../../shared/designSystems";
+import {
   findShowcase,
   showcaseDoc,
+  systemShowcaseDoc,
 } from "../../shared/stylePacks/blueprintShowcase";
 import { withArtDirection } from "../../shared/stylePacks/artDirection";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
@@ -170,6 +177,34 @@ function isFixtureKind(
  * geprüft — anders als vorher (statische `PREVIEW_PATHNAMES`, vor dem
  * Token-Lookup geprüft) reicht ein rein statischer Pfad-Check nicht mehr.
  */
+/**
+ * `?system=&palette=` für Vorschauen: nur gebaute Systeme (Freischaltung ist
+ * für Vorschauen nicht nötig) und deren Paletten. `undefined` = kein System
+ * verlangt; `null` = ungültig, 400 ist schon gesendet — der Parameter wird
+ * nie in die Antwort gespiegelt.
+ */
+function readSystemQuery(
+  req: Request,
+  res: Response
+): { system: DesignSystemId; palette?: string } | undefined | null {
+  const systemParam = typeof req.query.system === "string" ? req.query.system : "";
+  if (!systemParam) return undefined;
+  const def = (DESIGN_SYSTEM_IDS as readonly string[]).includes(systemParam)
+    ? getSystem(systemParam as DesignSystemId)
+    : undefined;
+  if (!def) {
+    res.status(400).type("text/plain").send("Unbekanntes System");
+    return null;
+  }
+  const paletteParam =
+    typeof req.query.palette === "string" ? req.query.palette : "";
+  if (paletteParam && !def.palettes.some(p => p.id === paletteParam)) {
+    res.status(400).type("text/plain").send("Unbekannte Palette");
+    return null;
+  }
+  return { system: def.id, palette: paletteParam || undefined };
+}
+
 async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
   // Express-Regex-Route (siehe registerSsrRoutes): params[0] = Token, params[1] = Restpfad
   const token = typeof req.params[0] === "string" ? req.params[0] : "";
@@ -185,6 +220,8 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
     res.status(400).type("text/plain").send("Unbekanntes Pack");
     return;
   }
+  const systemQuery = readSystemQuery(req, res);
+  if (systemQuery === null) return;
   // Verlauf (2026-09-03): ?version=<id> rendert einen gespeicherten Stand
   // aus website_versions statt des aktuellen Dokuments — nur lesen, nie
   // schreiben, und nur Stände derselben Website (getWebsiteVersion prüft
@@ -228,8 +265,10 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       getFontPair(fontParam)
         ? { entryVariant: variantParam as 0 | 1 | 2, fontPairId: fontParam }
         : undefined;
-    const data =
-      packParam && packParam !== parsed.data.stylePackId
+    // ?system= hat Vorrang vor variant/font; nur Vorschau, nichts wird gespeichert.
+    const data = systemQuery
+      ? withDesignSystem(parsed.data, systemQuery.system, systemQuery.palette)
+      : packParam && packParam !== parsed.data.stylePackId
         ? applyStylePack(parsed.data, packParam as PackId, look)
         : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
@@ -334,9 +373,31 @@ function handleDevPreview(req: Request, res: Response): void {
     return;
   }
 
-  const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
+  const systemQuery = readSystemQuery(req, res);
+  if (systemQuery === null) return;
+  const packParam =
+    typeof req.query.pack === "string" ? req.query.pack : "";
   const fixtureParam =
     typeof req.query.fixture === "string" ? req.query.fixture : "full";
+
+  if (systemQuery && isFixtureKind(fixtureParam)) {
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const base = getFixture(
+      isKnownPackId(packParam) ? packParam : "salon-noir",
+      fixtureParam
+    );
+    const { html, status } = renderSiteHtml(
+      withDesignSystem(base, systemQuery.system, systemQuery.palette),
+      {
+        origin,
+        now: new Date("2026-08-19T10:00:00"),
+        slug: "demo",
+        site: { chatWelcomeMessage: "Willkommen in der Demo!" },
+      }
+    );
+    res.status(status).type("html").send(html);
+    return;
+  }
 
   if (!isKnownPackId(packParam)) {
     // Bewusst OHNE den Parameter im Body zu reflektieren — siehe
@@ -503,6 +564,47 @@ function handleBauplanDemoRoute(req: Request, res: Response): void {
     res.status(status).type("html").send(html);
   } catch (err) {
     console.error("[SSR] Bauplan-Demo-Render fehlgeschlagen:", err);
+    res.status(500).send("Demo konnte nicht gerendert werden");
+  }
+}
+
+/**
+ * System-Übersicht (`/demo/system/:system/:id`): Beispielbetrieb im
+ * Designsystem, `?palette=`; Standard = Vorschau, `?live=1` fertige Seite.
+ * Nur gebaute Systeme (Freischaltung nicht nötig), sonst 404.
+ */
+function handleSystemDemoRoute(req: Request, res: Response): void {
+  const systemParam = String(req.params.system ?? "");
+  const def = (DESIGN_SYSTEM_IDS as readonly string[]).includes(systemParam)
+    ? getSystem(systemParam as DesignSystemId)
+    : undefined;
+  const showcase = findShowcase(String(req.params.id ?? ""));
+  if (!def || !showcase) {
+    res.status(404).type("text/plain").send("Unbekannte Vorschau");
+    return;
+  }
+  const paletteParam =
+    typeof req.query.palette === "string" ? req.query.palette : "";
+  const palette = def.palettes.some(p => p.id === paletteParam)
+    ? paletteParam
+    : undefined;
+  try {
+    const data = systemShowcaseDoc(showcase, def.id, palette);
+    const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
+    const live = req.query.live === "1";
+    const { html, status } = renderSiteHtml(data, {
+      origin,
+      basePath: `/demo/system/${def.id}/${showcase.id}`,
+      slug: "demo",
+      site: {},
+      ...(live ? {} : { islandsMode: "preview" as const }),
+      now: new Date("2026-08-19T10:00:00"),
+    });
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    res.setHeader("Cache-Control", DEMO_CACHE_CONTROL);
+    res.status(status).type("html").send(html);
+  } catch (err) {
+    console.error("[SSR] System-Demo-Render fehlgeschlagen:", err);
     res.status(500).send("Demo konnte nicht gerendert werden");
   }
 }
@@ -790,6 +892,10 @@ export function registerSsrRoutes(app: Express): void {
   app.get(
     "/demo/bauplan/:id([a-z0-9-]+)/:entry(stage|colorfield)",
     handleBauplanDemoRoute
+  );
+  app.get(
+    "/demo/system/:system([a-z]+)/:id([a-z0-9-]+)",
+    handleSystemDemoRoute
   );
   app.get(
     "/demo/:pack([a-z0-9-]+)/:page(impressum|datenschutz)",

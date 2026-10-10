@@ -7,6 +7,8 @@ import {
   Smartphone,
   X,
 } from "lucide-react";
+import { DESIGN_SYSTEMS, systemsForDoc } from "@shared/designSystems";
+import type { DesignSystemId } from "@shared/designSystems/types";
 import { PACK_SUMMARY } from "@shared/stylePacks/summary";
 import {
   SHOWCASES,
@@ -29,6 +31,26 @@ const ENTRY_LABEL: Record<ShowcaseEntry, string> = {
 
 function bauplanSrc(id: string, entry: ShowcaseEntry, live = false): string {
   return `/demo/bauplan/${id}/${entry}${live ? "?live=1" : ""}`;
+}
+
+function systemSrc(
+  system: string,
+  id: string,
+  palette: string,
+  live = false
+): string {
+  return `/demo/system/${system}/${id}?palette=${palette}${live ? "&live=1" : ""}`;
+}
+
+/** Beispielbetriebe, deren Hauptsystem `system` ist (Spec §5). */
+function showcasesForSystem(system: DesignSystemId): Showcase[] {
+  return SHOWCASES.filter(
+    showcase =>
+      systemsForDoc({
+        businessCategory: showcase.businessCategory ?? showcase.label,
+        businessName: showcase.businessName ?? showcase.sample,
+      })[0] === system
+  );
 }
 
 /** Zwei bis drei Optionen als Pillen-Umschalter (Dialog und Karten). */
@@ -269,6 +291,13 @@ function BauplanCard({
 
 type OpenState =
   | { kind: "pack"; packId: string }
+  | {
+      kind: "system";
+      system: string;
+      showcase: Showcase;
+      palette: string;
+      live: boolean;
+    }
   | { kind: "bauplan"; showcase: Showcase; entry: ShowcaseEntry; live: boolean }
   | null;
 
@@ -282,11 +311,56 @@ function previewTarget(open: OpenState): PreviewTarget | null {
       src: `/demo/${open.packId}`,
     };
   }
+  if (open.kind === "system") {
+    return {
+      kicker: `System ${open.system} · Palette ${open.palette}`,
+      title: `${open.showcase.label} – ${open.showcase.sample}`,
+      src: systemSrc(open.system, open.showcase.id, open.palette, open.live),
+    };
+  }
   return {
     kicker: `${open.showcase.group} · ${ENTRY_LABEL[open.entry]}`,
     title: `${open.showcase.label} – ${open.showcase.sample}`,
     src: bauplanSrc(open.showcase.id, open.entry, open.live),
   };
+}
+
+function SystemCard({
+  systemName,
+  showcase,
+  palette,
+  onOpen,
+}: {
+  systemName: string;
+  showcase: Showcase;
+  palette: { id: string; name: string };
+  onOpen: () => void;
+}) {
+  return (
+    <article className="overflow-hidden rounded-[14px] border border-lp-line bg-lp-surface">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`${showcase.label} in ${systemName}, ${palette.name}, ansehen`}
+        className="group relative block w-full overflow-hidden border-b border-lp-line text-left"
+      >
+        <ScaledFrame
+          src={systemSrc(systemName, showcase.id, palette.id)}
+          title={`${showcase.label} – ${palette.name}`}
+        />
+        <span className="absolute right-3 bottom-3 inline-flex h-9 items-center gap-2 rounded-full bg-lp-ink px-3 text-[0.78rem] font-medium text-lp-canvas">
+          Ansehen
+          <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </span>
+      </button>
+      <div className="p-4">
+        <h4 className="text-[1.05rem] font-medium">{showcase.label}</h4>
+        <p className="mt-0.5 text-[0.82rem] text-lp-muted">
+          {showcase.sample} · Palette {palette.name}
+        </p>
+      </div>
+    </article>
+  );
 }
 
 function groupedShowcases(): [string, Showcase[]][] {
@@ -328,6 +402,23 @@ export default function DesignReviewPage() {
       </>
     ) : undefined;
 
+  const systemControls =
+    open?.kind === "system" ? (
+      <Segmented
+        label="Ansicht"
+        value={open.live ? "live" : "preview"}
+        onChange={mode => setOpen({ ...open, live: mode === "live" })}
+        options={[
+          { value: "preview", label: "Vorschau" },
+          { value: "live", label: "Fertige Seite" },
+        ]}
+      />
+    ) : undefined;
+
+  const builtSystems = Object.values(DESIGN_SYSTEMS).filter(
+    (def): def is NonNullable<typeof def> => Boolean(def)
+  );
+
   return (
     <div className="lp min-h-screen bg-lp-canvas text-lp-ink">
       <header className="sticky top-0 z-30 border-b border-lp-line bg-lp-canvas/95 backdrop-blur-[3px]">
@@ -339,6 +430,9 @@ export default function DesignReviewPage() {
             <span className="font-medium">Pageblitz</span>
           </a>
           <nav className="flex gap-4 text-[0.82rem] text-lp-muted">
+            <a href="#systeme" className="hover:text-lp-ink">
+              Systeme
+            </a>
             <a href="#bauplaene" className="hover:text-lp-ink">
               Baupläne
             </a>
@@ -365,7 +459,49 @@ export default function DesignReviewPage() {
           </p>
         </div>
 
-        <section id="bauplaene" className="scroll-mt-24">
+        <section id="systeme" className="scroll-mt-24">
+          {builtSystems.map(def => {
+            const showcases = showcasesForSystem(def.id);
+            return (
+              <div key={def.id} className="mt-12">
+                <h2 className="flex items-baseline gap-3 text-[1.5rem] font-medium tracking-[-0.02em]">
+                  System {def.name}
+                  <span className="text-[0.8rem] font-normal text-lp-muted">
+                    {showcases.length} Betriebe × {def.palettes.length} Paletten
+                  </span>
+                </h2>
+                {def.palettes.map(palette => (
+                  <div key={palette.id} className="mt-6">
+                    <h3 className="text-[0.82rem] uppercase tracking-[0.14em] text-lp-muted">
+                      Palette {palette.name}
+                    </h3>
+                    <div className="mt-3 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                      {showcases.map(showcase => (
+                        <SystemCard
+                          key={showcase.id}
+                          systemName={def.id}
+                          showcase={showcase}
+                          palette={palette}
+                          onOpen={() =>
+                            setOpen({
+                              kind: "system",
+                              system: def.id,
+                              showcase,
+                              palette: palette.id,
+                              live: false,
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </section>
+
+        <section id="bauplaene" className="mt-20 scroll-mt-24 border-t border-lp-line pt-4">
           {groupedShowcases().map(([group, showcases]) => (
             <div key={group} className="mt-12">
               <h2 className="flex items-baseline gap-3 text-[1.5rem] font-medium tracking-[-0.02em]">
@@ -457,7 +593,7 @@ export default function DesignReviewPage() {
         viewport={viewport}
         onViewportChange={setViewport}
         onClose={() => setOpen(null)}
-        controls={bauplanControls}
+        controls={bauplanControls ?? systemControls}
       />
     </div>
   );
