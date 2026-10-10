@@ -53,6 +53,26 @@ export function primaryAction(
   return { label, href: href.startsWith("#") ? anchorPrefix + href : href };
 }
 
+/** Ab hier wird die Marke im Handy-Kopf kleiner bzw. verlässt die Versalien. */
+const BRAND_LONG_WORD = 8;
+const BRAND_LONG_TOTAL = 16;
+const BRAND_XLONG_WORD = 12;
+const BRAND_XLONG_TOTAL = 24;
+
+/**
+ * Größenstufe der Marke im Kopf, beim Rendern aus der Namenslänge: Gesperrte
+ * Versalien passen auf schmalen Handys nur für kurze Namen zwischen „Menü"
+ * und „Anrufen". `--long` verkleinert, `--xlong` setzt gemischte Schreibung.
+ */
+export function brandClasses(name: string): string {
+  const longest = Math.max(...name.split(/[\s\-–/]+/).map(w => w.length), 0);
+  if (longest > BRAND_XLONG_WORD || name.length > BRAND_XLONG_TOTAL)
+    return "jr-brand jr-brand--xlong";
+  if (longest > BRAND_LONG_WORD || name.length > BRAND_LONG_TOTAL)
+    return "jr-brand jr-brand--long";
+  return "jr-brand";
+}
+
 /** Journal-Wortwahl der Navigation (Systemblatt); Bauplan-Labels gewinnen. */
 const NAV_LABELS: Partial<Record<SectionType, string>> = {
   gallery: "Einblicke",
@@ -121,13 +141,13 @@ export function JournalHead({
         <details className="jr-menu">
           <summary className="jr-menu-toggle">
             <span className="jr-menu-icon" aria-hidden="true" />
-            Menü
+            <span className="jr-menu-label">Menü</span>
           </summary>
           <nav className="jr-menu-panel" aria-label="Menü">
             <NavLinks items={navItems} />
           </nav>
         </details>
-        <a className="jr-brand" href={home}>
+        <a className={brandClasses(data.businessName)} href={home}>
           {data.businessName}
         </a>
         <div className="jr-head-actions">

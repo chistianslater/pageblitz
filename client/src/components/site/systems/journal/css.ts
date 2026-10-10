@@ -30,12 +30,12 @@ export function step(s: TypeStep): string {
 }
 
 /**
- * Breite eines Newsreader-Light-Kleinbuchstabens in em (gemessen
- * 2026-10-10: 0,39–0,49 je nach Wort; Versalien zählt nameFitClasses
- * 1,45-fach). Daraus: Schriftgröße, bei der
- * ein Wort mit N Zeichen gerade in die Spalte passt.
+ * Fit-Klassen `jr-fit-7` … `jr-fit-20` für das längste Wort im Namen:
+ * Schriftgröße, bei der ein Wort mit N Zeichen gerade in die Spalte passt.
+ * NAME_EM_PER_CHAR ist die Breite eines Newsreader-Light-Kleinbuchstabens
+ * in em (gemessen 2026-10-10: 0,39–0,49 je nach Wort; Versalien zählt
+ * nameFitClasses 1,45-fach).
  */
-/** Fit-Klassen gibt es für die längsten Wörter von 7 bis 20 Zeichen. */
 export const FIT_MIN = 7;
 export const FIT_MAX = 20;
 const NAME_EM_PER_CHAR = 0.46;
@@ -87,7 +87,15 @@ ${FONT_FACES}
 .pb-journal .jr-head{position:sticky;top:0;z-index:20;background:var(--sys-paper);border-bottom:1px solid var(--sys-rule)}
 .pb-journal .jr-head-bar{display:grid;grid-template-columns:1fr minmax(0,auto) 1fr;align-items:center;gap:var(--sys-space-s);
   padding:var(--sys-space-s) var(--sys-space-gutter);position:relative}
-.pb-journal .jr-brand{${step("mark")};text-decoration:none;text-align:center;text-wrap:balance}
+.pb-journal .jr-brand{${step("mark")};text-decoration:none;text-align:center;text-wrap:balance;min-width:0;overflow-wrap:anywhere}
+@media (max-width:63.99rem){
+  .pb-journal .jr-brand--long{font-size:calc(var(--sys-mark-size) * .875);letter-spacing:.12em}
+  .pb-journal .jr-brand--xlong{text-transform:none;letter-spacing:.01em;line-height:1.15;hyphens:auto}
+}
+/* Sehr schmale Handys: „Menü" nur als Symbol, damit die Marke Platz hat */
+@media (max-width:22.5rem){
+  .pb-journal .jr-menu-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+}
 .pb-journal .jr-head-actions{justify-self:end;display:flex;align-items:center;gap:var(--sys-space-m)}
 .pb-journal .jr-head-phone,.pb-journal .jr-head .jr-pill,.pb-journal .jr-nav{display:none}
 .pb-journal .jr-menu{justify-self:start}
@@ -144,7 +152,7 @@ ${FONT_FACES}
 .pb-journal .jr-entry h1{${step("display")};--jr-name-size:var(--sys-display-size);--jr-name-floor:2.5rem;
   font-size:max(var(--jr-name-floor),min(var(--jr-name-size),var(--jr-fit,var(--jr-name-size))));
   margin-inline:auto;text-wrap:balance;overflow-wrap:anywhere;hyphens:auto;hyphenate-limit-chars:10 5 5}
-.pb-journal .jr-entry-name--long{--jr-name-size:calc(var(--sys-display-size) * .78)}
+.pb-journal .jr-entry .jr-entry-name--long{--jr-name-size:calc(var(--sys-display-size) * .78)}
 .pb-journal .jr-entry .jr-entry-name--xlong{--jr-name-size:calc(var(--sys-display-size) * .6);line-height:1}
 ${NAME_FIT}
 .pb-journal .jr-entry-line{${step("lede")};font-style:italic;font-weight:300;margin:calc(var(--sys-space-m) - var(--sys-space-2xs)) auto 0;max-width:22ch;hyphens:manual}
@@ -152,7 +160,7 @@ ${NAME_FIT}
 .pb-journal .jr-entry-photo img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:var(--sys-rule)}
 .pb-journal .jr-entry-photo figcaption{${step("small")};font-size:calc(var(--sys-small-size) * .93);color:var(--sys-muted);
   margin-top:calc(var(--sys-space-xs) + var(--sys-space-2xs) / 2);display:flex;justify-content:space-between;gap:var(--sys-space-m)}
-.pb-journal .jr-entry-photo figcaption i{font-family:var(--sys-font-display);font-size:calc(var(--sys-small-size) * 1.07);letter-spacing:0;color:var(--sys-ink)}
+.pb-journal .jr-entry-abb{font-style:italic;font-family:var(--sys-font-display);font-size:calc(var(--sys-small-size) * 1.07);letter-spacing:0;color:var(--sys-ink)}
 .pb-journal .jr-entry-facts{margin-top:var(--sys-space-l);border-top:1px solid var(--sys-rule);text-align:left}
 .pb-journal .jr-entry-fact{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sys-space-m);padding-block:var(--sys-space-s);border-bottom:1px solid var(--sys-rule)}
 .pb-journal .jr-entry-fact>span:first-child{flex:0 0 auto;max-width:62%;hyphens:manual}

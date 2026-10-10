@@ -11,6 +11,21 @@ import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { JournalChapter, chapterIndex } from "./sections";
 import { JOURNAL_CSS } from "./css";
 import { entryLine, nameFitClasses } from "./Entry";
+import { brandClasses } from "./Chrome";
+import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
+import { isPlaceholderHours } from "../../artDirection/heroFacts";
+
+/** [ids, Klassen/Attribute/Pseudoklassen, Elemente] eines einfachen Selektors. */
+function specificityOf(selector: string): [number, number, number] {
+  const ids = (selector.match(/#[\w-]+/g) ?? []).length;
+  const classes = (selector.match(/\.[\w-]+|\[[^\]]+\]|:(?!:)[\w-]+/g) ?? []).length;
+  const elements = (selector.match(/(^|[\s>+~])[a-z][\w-]*/gi) ?? []).length;
+  return [ids, classes, elements];
+}
+function compareSpecificity(a: number[], b: number[]): number {
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i];
+  return 0;
+}
 
 export const journalDoc = (
   kind: "full" | "minimal" | "features" = "full",
@@ -93,7 +108,7 @@ describe("Journal: Grundgerüst", () => {
   test("Kopf: Menü links, Marke, Anrufen als Textlink, Navigation", () => {
     const html = render();
     expect(html).toMatch(/<summary[^>]*class="jr-menu-toggle"[^>]*>.*Menü/);
-    expect(html).toMatch(/class="jr-brand"[^>]*>NOIR Haarstudio</);
+    expect(html).toMatch(/class="jr-brand[^"]*"[^>]*>NOIR Haarstudio</);
     expect(html).toContain(
       '<a class="jr-link jr-head-call" href="tel:089551792">Anrufen</a>'
     );
@@ -252,17 +267,40 @@ describe("Journal: Einstieg", () => {
       google: { rating: 5, reviewCount: 0 },
       sections: d.sections.map(s =>
         s.type === "contact"
-          ? {
-              ...s,
-              openingHours: [
-                { day: "Mo–Fr", hours: "09:00–18:00" },
-              ],
-            }
+          ? { ...s, openingHours: PLACEHOLDER_OPENING_HOURS.map(h => ({ ...h })) }
           : s
       ),
     });
     const entry = entryOf(html);
+    // 13.10.2026 ist Dienstag — echte Mo–Fr-Zeiten ergäben eine Heute-Zeile.
+    expect(isPlaceholderHours(PLACEHOLDER_OPENING_HOURS)).toBe(true);
     expect(entry).not.toContain("bei Google");
+    expect(entry).not.toContain("Heute");
+    expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(1);
+  });
+
+  test("Bildunterschrift: Abb. 1 als gestalteter span, kein <i>", () => {
+    const entry = entryOf(render());
+    expect(entry).toContain('<span class="jr-entry-abb">Abb. 1</span>');
+    expect(entry).not.toContain("<i>");
+  });
+
+  test("CSS: Längenstufen schlagen die Grundregel des Namens", () => {
+    const base = specificityOf(".pb-journal .jr-entry h1");
+    for (const sel of [
+      ".pb-journal .jr-entry .jr-entry-name--long",
+      ".pb-journal .jr-entry .jr-entry-name--xlong",
+      ".pb-journal .jr-entry--type .jr-entry-name--long",
+    ]) {
+      const at = JOURNAL_CSS.indexOf(`${sel}{`);
+      expect(at, sel).toBeGreaterThan(JOURNAL_CSS.indexOf(".pb-journal .jr-entry h1{"));
+      expect(JOURNAL_CSS.slice(at, JOURNAL_CSS.indexOf("}", at))).toContain("--jr-name-size:");
+      expect(compareSpecificity(specificityOf(sel), base), sel).toBeGreaterThan(0);
+    }
+    // Typo-Fassung lang muss nach der allgemeinen --long-Regel stehen (gleiche Spezifität).
+    expect(JOURNAL_CSS.indexOf(".pb-journal .jr-entry--type .jr-entry-name--long{")).toBeGreaterThan(
+      JOURNAL_CSS.indexOf(".pb-journal .jr-entry .jr-entry-name--long{")
+    );
   });
 
   test("ohne Foto: Typo-Einstieg mit Knopf und Route, kein leeres Bildfeld", () => {
@@ -309,5 +347,23 @@ describe("Journal: Einstieg", () => {
   test("genau ein h1", () => {
     expect((render().match(/<h1/g) ?? []).length).toBe(1);
     expect((render(withHero({ imageUrl: undefined })).match(/<h1/g) ?? []).length).toBe(1);
+  });
+});
+
+describe("Journal: Marke im Kopf", () => {
+  test("Längenklasse aus dem Namen", () => {
+    expect(brandClasses("Lindner")).toBe("jr-brand");
+    expect(brandClasses("NOIR Haarstudio")).toBe("jr-brand jr-brand--long");
+    expect(brandClasses("Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff")).toBe(
+      "jr-brand jr-brand--xlong"
+    );
+  });
+  test("Kopf trägt die Klasse; CSS kann nicht überlaufen", () => {
+    const d = journalDoc();
+    const html = render({ ...d, businessName: "Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff" });
+    expect(html).toMatch(/<a class="jr-brand jr-brand--xlong" href="#start">/);
+    expect(render()).toMatch(/<a class="jr-brand jr-brand--long" href="#start">/);
+    expect(JOURNAL_CSS).toMatch(/\.jr-brand\{[^}]*min-width:0[^}]*overflow-wrap:anywhere/);
+    expect(JOURNAL_CSS).toMatch(/\.jr-brand--xlong\{[^}]*text-transform:none/);
   });
 });

@@ -3,7 +3,11 @@ import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { tradeLabel } from "../../../../../../shared/stylePacks/blueprints";
 import { stripMarks } from "../../richText";
 import { SECTION_ANCHORS } from "../../engine";
-import { shortHours, streetLine, todayLine } from "../../artDirection/heroFacts";
+import {
+  shortHours,
+  streetLine,
+  todayLine,
+} from "../../artDirection/heroFacts";
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { useSystem } from "../SystemContext";
 import { addressLine, mapsHref, primaryAction } from "./Chrome";
@@ -43,10 +47,7 @@ export function entryLine(
  * `--long`/`--xlong` stufen lange Namen insgesamt ab.
  */
 export function nameFitClasses(name: string): string {
-  const longest = Math.max(
-    ...name.split(/[\s\-–/]+/).map(fitWidth),
-    0
-  );
+  const longest = Math.max(...name.split(/[\s\-–/]+/).map(fitWidth), 0);
   const classes = ["jr-entry-name"];
   if (name.length > XLONG_NAME) classes.push("jr-entry-name--xlong");
   else if (name.length > LONG_NAME) classes.push("jr-entry-name--long");
@@ -150,7 +151,8 @@ export function JournalEntry({
             />
             <figcaption>
               <span>
-                <i>Abb. 1</i> {data.businessName}
+                <span className="jr-entry-abb">Abb. 1</span>{" "}
+                {data.businessName}
               </span>
               {(street || contact?.city) && (
                 <span>{street ?? contact?.city}</span>
