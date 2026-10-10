@@ -22,6 +22,7 @@ import {
   SERVICES_LAYOUTS,
 } from "./designProfile";
 import { DESIGN_STAND_MUSTER } from "./designStand";
+import { DESIGN_SYSTEM_IDS } from "../designSystems/types";
 
 export { PACK_IDS };
 
@@ -613,7 +614,13 @@ export const DesignProfileSchema = z
 export const WebsiteDataV2Schema = z
   .object({
     version: z.literal(2),
-    designRevision: z.union([z.literal(1), z.literal(2)]).optional(),
+    designRevision: z
+      .union([z.literal(1), z.literal(2), z.literal(3)])
+      .optional(),
+    // Designsysteme (2026-10-10): nur bei designRevision 3. `palette` ist
+    // ein Lookup-Key (getPalette), landet nie als CSS-Wert im Dokument.
+    system: z.enum(DESIGN_SYSTEM_IDS).optional(),
+    palette: z.string().regex(/^[a-z]+$/).max(20).optional(),
     stylePackId: PackIdSchema,
     businessName: z.string().min(1),
     slug: z.string().optional(),
@@ -720,11 +727,22 @@ export const WebsiteDataV2Schema = z
     goal: z.enum(GOAL_KEYS).optional(),
   })
   .strict()
-  .refine(
-    doc => {
-      if (!doc.pages) return true;
+  .superRefine((doc, ctx) => {
+    if (doc.pages) {
       const slugs = doc.pages.map(p => p.slug);
-      return new Set(slugs).size === slugs.length;
-    },
-    { message: "Seiten-Slugs müssen eindeutig sein.", path: ["pages"] }
-  );
+      if (new Set(slugs).size !== slugs.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["pages"],
+          message: "Seiten-Slugs müssen eindeutig sein.",
+        });
+      }
+    }
+    if ((doc.designRevision === 3) !== Boolean(doc.system)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["system"],
+        message: "designRevision 3 und system gehören zusammen",
+      });
+    }
+  });
