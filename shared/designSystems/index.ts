@@ -4,3 +4,4 @@ export * from "./palette";
 export * from "./toCss";
 export { JOURNAL } from "./journal";
 export * from "./assignment";
+export * from "./apply";

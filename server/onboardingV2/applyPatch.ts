@@ -3,6 +3,7 @@ import {
   keepEntryComposition,
   type AlternativeLook,
 } from "../../shared/stylePacks/artDirection";
+import { withoutDesignSystem } from "../../shared/designSystems/apply";
 import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { TRPCError } from "@trpc/server";
 import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
@@ -51,6 +52,8 @@ export function applyStylePack(
   /** Look aus der Design-Auswahl (alternativeLooks): Fassung + Schrift. */
   look?: AlternativeLook
 ): WebsiteDataV2 {
+  // Pack-Wahl verlässt ein Designsystem (rev 3 → rev 2).
+  doc = doc.designRevision === 3 ? withoutDesignSystem(doc) : doc;
   const designProfile = keepEntryComposition(
     doc.designProfile,
     (doc.designRevision !== 1 ? deriveArtDirectedProfile : deriveDesignProfile)(

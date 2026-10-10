@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { getFixture } from "../../shared/siteContract/fixtures";
+import { withArtDirection } from "../../shared/stylePacks/artDirection";
+import { withDesignSystem } from "../../shared/designSystems/apply";
 import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import {
   addOnFlagsFromDoc,
@@ -36,6 +39,14 @@ describe("parsePackId", () => {
   });
 });
 describe("applyStylePack", () => {
+  test("Pack-Wahl auf einer Journal-Seite wechselt zurück auf rev 2", () => {
+    const j = withDesignSystem(withArtDirection(getFixture("salon-noir", "full")), "journal");
+    const next = applyStylePack(j, "werkbank");
+    expect(next.designRevision).toBe(2);
+    expect(next.system).toBeUndefined();
+    expect(next.palette).toBeUndefined();
+    expect(next.stylePackId).toBe("werkbank");
+  });
   test("setzt stylePackId, mutiert das Original nicht, Rest bleibt identisch", () => {
     const next = applyStylePack(doc, "kanzlei");
     expect(next.stylePackId).toBe("kanzlei");
