@@ -33,6 +33,12 @@ import type {
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
+import { SYSTEM_MODULES } from "./systems/registry";
+import { SystemContext, type SystemState } from "./systems/SystemContext";
+import { getSystem } from "../../../../shared/designSystems/registry";
+import { getPalette } from "../../../../shared/designSystems/palette";
+import { systemCssVars } from "../../../../shared/designSystems/toCss";
+import { blueprintFor } from "../../../../shared/stylePacks/blueprints";
 import { SiteIslands } from "./islands/SiteIslands";
 import { MOBILE_NAV_CSS } from "./mobileNavCss";
 import { LAYOUT_POLISH_CSS } from "./layoutPolishCss";
@@ -94,6 +100,28 @@ import {
   withAboutFallbackImage,
   withGalleryLimit,
 } from "./engine";
+
+/**
+ * Styles einer Designsystem-Seite (rev 3): Modul-CSS plus nur die geteilten
+ * Bausteine, die rev 3 tatsächlich nutzt — kein Pack-, Motion-, Layout-
+ * oder rev-2-CSS.
+ */
+function systemStyles(
+  moduleCss: string,
+  opts: { album: boolean; ageGate: boolean; photoCredits: boolean }
+): string {
+  return [
+    moduleCss,
+    RICH_TEXT_CSS,
+    NOTICE_CSS,
+    BRANDING_CSS,
+    opts.album ? ALBUM_CSS : "",
+    opts.ageGate ? AGE_GATE_CSS : "",
+    opts.photoCredits ? PHOTO_CREDITS_CSS : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
 
 export const SiteRenderer: React.FC<{
   data: WebsiteDataV2;
@@ -183,7 +211,13 @@ export const SiteRenderer: React.FC<{
   data = withAboutFallbackImage(data);
   // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar.
   data = withGalleryLimit(data);
+  // Designsystem (rev 3): eigenes Modul, eigene Variablen, kein Pack-Layout.
+  const systemDef =
+    data.designRevision === 3 && data.system
+      ? getSystem(data.system)
+      : undefined;
   const effectiveData =
+    !systemDef &&
     packOverride &&
     packOverride !== data.stylePackId &&
     PACK_MODULES[packOverride]
@@ -225,21 +259,27 @@ export const SiteRenderer: React.FC<{
       cleanup?.();
     };
   }, [motionKey]);
-  const mod = PACK_MODULES[effectiveData.stylePackId];
+  const mod = systemDef
+    ? SYSTEM_MODULES[systemDef.id]
+    : PACK_MODULES[effectiveData.stylePackId];
   if (!mod)
     throw new Error(
-      `Pack-Modul nicht registriert: ${effectiveData.stylePackId}`
+      systemDef
+        ? `System-Modul nicht registriert: ${systemDef.id}`
+        : `Pack-Modul nicht registriert: ${effectiveData.stylePackId}`
     );
-  const vars = toCssVars(
-    getConstitution(effectiveData.stylePackId),
-    effectiveData.designRevision === 2
-      ? {
-          ...artPalette(effectiveData.stylePackId),
-          ...effectiveData.colorOverrides,
-        }
-      : effectiveData.colorOverrides,
-    getFontPair(effectiveData.fontPairId)
-  );
+  const vars = systemDef
+    ? systemCssVars(systemDef, effectiveData.palette)
+    : toCssVars(
+        getConstitution(effectiveData.stylePackId),
+        effectiveData.designRevision === 2
+          ? {
+              ...artPalette(effectiveData.stylePackId),
+              ...effectiveData.colorOverrides,
+            }
+          : effectiveData.colorOverrides,
+        getFontPair(effectiveData.fontPairId)
+      );
   if (effectiveData.designRevision === 2) {
     vars["--pb-art-accent-text"] = ensureTextContrast(
       ensureTextContrast(vars["--pb-accent"], vars["--pb-canvas"], 4.7),
@@ -284,9 +324,24 @@ export const SiteRenderer: React.FC<{
   // Ohne persistiertes Profil greifen ausschließlich die handgestalteten
   // Pack-Defaults. Sobald ein Profil existiert, variiert DESIGN_PROFILE_CSS
   // die Komposition in allen 14 Packs über data-pb-slot.
-  const designProfile = effectiveData.designProfile;
-  const entry = entryState(effectiveData, preview, now);
-  const blueprintNav = entry?.blueprint.navLabels;
+  // Rev 3 behält designProfile im Dokument (Studio-Schalter wie
+  // hiddenElements lesen die Module über data.designProfile), aber keine
+  // Pack-Layout-Attribute und kein DESIGN_PROFILE_CSS.
+  const designProfile = systemDef ? undefined : effectiveData.designProfile;
+  const entry = systemDef ? undefined : entryState(effectiveData, preview, now);
+  const systemState: SystemState | undefined = systemDef
+    ? {
+        data: effectiveData,
+        blueprint: blueprintFor(
+          effectiveData.businessCategory,
+          effectiveData.businessName,
+          effectiveData.blueprintFamily
+        ),
+        preview,
+        now,
+      }
+    : undefined;
+  const blueprintNav = (systemState?.blueprint ?? entry?.blueprint)?.navLabels;
   // Stockfotos nicht als „Referenzen" ausgeben (Betreiber 2026-10-07).
   const stockGallery = galleryIsStock(effectiveData);
   const navItems = buildNavItems(effectiveData, { pathname, basePath }).map(
@@ -347,9 +402,13 @@ export const SiteRenderer: React.FC<{
   return (
     <div
       ref={rootRef}
-      className={`pb-site pb-${effectiveData.stylePackId}`}
+      className={`pb-site pb-${systemDef ? systemDef.id : effectiveData.stylePackId}`}
       style={vars as React.CSSProperties}
       data-pb-revision={effectiveData.designRevision}
+      data-pb-system={systemDef?.id}
+      data-pb-palette={
+        systemDef ? getPalette(systemDef, effectiveData.palette).id : undefined
+      }
       data-pb-texture={
         effectiveData.designRevision === 2
           ? ART_DIRECTIONS[effectiveData.stylePackId].texture
@@ -381,57 +440,62 @@ export const SiteRenderer: React.FC<{
           Packs aus einer Quelle (siehe motionCss.ts). */}
       <style
         dangerouslySetInnerHTML={{
-          __html:
-            mod.css +
-            "\n" +
-            MOBILE_NAV_CSS +
-            "\n" +
-            MOTION_CSS +
-            "\n" +
-            REVIEW_CHROME_CSS +
-            "\n" +
-            RICH_TEXT_CSS +
-            "\n" +
-            STORY_CSS +
-            SECTION_LINK_CSS +
-            "\n" +
-            USP_CSS +
-            "\n" +
-            NOTICE_CSS +
-            "\n" +
-            EXTRA_SECTIONS_CSS +
-            "\n" +
-            PARTNERS_CSS +
-            "\n" +
-            DECO_TOGGLE_CSS +
-            "\n" +
-            BRANDING_CSS +
-            "\n" +
-            LAYOUT_POLISH_CSS +
-            (albumJson ? "\n" + ALBUM_CSS : "") +
-            (site?.requiresAgeGate === true ? "\n" + AGE_GATE_CSS : "") +
-            (designProfile
-              ? "\n" +
-                (effectiveData.designRevision === 2
-                  ? DESIGN_PROFILE_CSS.replaceAll(
-                      "#start",
-                      "#start:not(.pb-art-hero)"
-                    )
-                  : DESIGN_PROFILE_CSS)
-              : "") +
-            (effectiveData.designRevision === 2
-              ? "\n" +
-                ART_DIRECTION_CSS +
-                "\n" +
-                ENTRY_SECTIONS_CSS +
-                "\n" +
-                ENTRY_GASTRO_CSS +
-                "\n" +
-                ENTRY_LAYOUTS_CSS
-              : "") +
-            (effectiveData.photoCredits?.length
-              ? "\n" + PHOTO_CREDITS_CSS
-              : ""),
+          __html: systemDef
+            ? systemStyles(mod.css, {
+                album: Boolean(albumJson),
+                ageGate: site?.requiresAgeGate === true,
+                photoCredits: Boolean(effectiveData.photoCredits?.length),
+              })
+            : mod.css +
+              "\n" +
+              MOBILE_NAV_CSS +
+              "\n" +
+              MOTION_CSS +
+              "\n" +
+              REVIEW_CHROME_CSS +
+              "\n" +
+              RICH_TEXT_CSS +
+              "\n" +
+              STORY_CSS +
+              SECTION_LINK_CSS +
+              "\n" +
+              USP_CSS +
+              "\n" +
+              NOTICE_CSS +
+              "\n" +
+              EXTRA_SECTIONS_CSS +
+              "\n" +
+              PARTNERS_CSS +
+              "\n" +
+              DECO_TOGGLE_CSS +
+              "\n" +
+              BRANDING_CSS +
+              "\n" +
+              LAYOUT_POLISH_CSS +
+              (albumJson ? "\n" + ALBUM_CSS : "") +
+              (site?.requiresAgeGate === true ? "\n" + AGE_GATE_CSS : "") +
+              (designProfile
+                ? "\n" +
+                  (effectiveData.designRevision === 2
+                    ? DESIGN_PROFILE_CSS.replaceAll(
+                        "#start",
+                        "#start:not(.pb-art-hero)"
+                      )
+                    : DESIGN_PROFILE_CSS)
+                : "") +
+              (effectiveData.designRevision === 2
+                ? "\n" +
+                  ART_DIRECTION_CSS +
+                  "\n" +
+                  ENTRY_SECTIONS_CSS +
+                  "\n" +
+                  ENTRY_GASTRO_CSS +
+                  "\n" +
+                  ENTRY_LAYOUTS_CSS
+                : "") +
+              (effectiveData.photoCredits?.length
+                ? "\n" + PHOTO_CREDITS_CSS
+                : ""),
         }}
       />
       {/* FSK-18-Overlay VOR allem Inhalt (fail-closed ohne JS); das
@@ -451,18 +515,32 @@ export const SiteRenderer: React.FC<{
           zentral statt im Pack-Sektionsfluss (siehe noticeBanner.tsx).
           Nur auf der Startseite; Unterseiten bleiben banner-frei. */}
       {!currentPage && <NoticeBanner data={effectiveData} />}
-      <EntryContext.Provider value={entry}>
-        <mod.Page
-          data={packRenderData}
-          basePath={basePath}
-          now={now}
-          navItems={navItems}
-          pageTitle={currentPage?.title}
-          sections={pageSections}
-        />
-        <EntryDock />
-        <PhotoCredits data={effectiveData} />
-      </EntryContext.Provider>
+      {systemState ? (
+        <SystemContext.Provider value={systemState}>
+          <mod.Page
+            data={packRenderData}
+            basePath={basePath}
+            now={now}
+            navItems={navItems}
+            pageTitle={currentPage?.title}
+            sections={pageSections}
+          />
+          <PhotoCredits data={effectiveData} />
+        </SystemContext.Provider>
+      ) : (
+        <EntryContext.Provider value={entry}>
+          <mod.Page
+            data={packRenderData}
+            basePath={basePath}
+            now={now}
+            navItems={navItems}
+            pageTitle={currentPage?.title}
+            sections={pageSections}
+          />
+          <EntryDock />
+          <PhotoCredits data={effectiveData} />
+        </EntryContext.Provider>
+      )}
       {/* „Mit ♥ erstellt mit ⚡ Pageblitz" (Dashboard-Schalter, default an):
           der Backlink-Hebel jedes Baukastens — bewusst ohne nofollow. Der
           siteEnhancer hängt das Badge beim Laden in den Pack-Footer. */}

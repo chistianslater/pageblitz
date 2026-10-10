@@ -5,9 +5,11 @@ import type {
   WebsiteDataV2,
 } from "../../../../shared/siteContract/types";
 import type { NavItem } from "./engine";
+import type { DesignSystemId } from "../../../../shared/designSystems/types";
 
 export interface PackModule {
-  id: PackId;
+  /** Pack-ID (rev 1/2) oder Designsystem-ID (rev 3, siehe systems/registry.ts). */
+  id: PackId | DesignSystemId;
   css: string;
   /**
    * `navItems`/`pageTitle`/`sections` sind seit Plan B6 (Task 3) optional

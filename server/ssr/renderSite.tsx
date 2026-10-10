@@ -17,6 +17,8 @@ import { SITE_ENHANCER_JS } from "../../client/src/components/site/siteEnhancer"
 import { getIslandsBundlePath, getMotionBundlePath } from "./islandsBundle";
 import { pageForPathname } from "../../client/src/components/site/engine";
 import { umamiScriptTag } from "../umami";
+import { getSystem } from "../../shared/designSystems/registry";
+import type { DesignSystemDef } from "../../shared/designSystems/types";
 
 export interface RenderSiteOptions {
   origin: string;
@@ -126,6 +128,34 @@ function fontsForDoc(data: WebsiteDataV2): (FontSpec | undefined)[] {
   ];
 }
 
+/**
+ * Vorlade-Links der selbst gehosteten Systemschriften (rev 3). Die
+ * @font-face-Regeln bringt das Modul-CSS mit (siehe systems/journal/css.ts).
+ */
+export function systemFontHead(def: DesignSystemDef): string {
+  return def.preload
+    .map(
+      f =>
+        `<link rel="preload" href="/fonts/systems/${esc(f)}" as="font" type="font/woff2" crossorigin />`
+    )
+    .join("\n");
+}
+
+/** Schrift-Kopfzeilen: rev 3 selbst gehostet, sonst Google Fonts (unverändert). */
+function fontHeadTags(data: WebsiteDataV2): string[] {
+  const def =
+    data.designRevision === 3 && data.system
+      ? getSystem(data.system)
+      : undefined;
+  if (def) return [systemFontHead(def)];
+  const fontsUrl = buildFontsUrl(fontsForDoc(data));
+  return [
+    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
+    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
+    `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
+  ];
+}
+
 function findContact(data: WebsiteDataV2): SectionOf<"contact"> | undefined {
   return data.sections.find(
     (s): s is SectionOf<"contact"> => s.type === "contact"
@@ -192,7 +222,6 @@ function renderHead(
   canonicalUrl: string,
   origin: string
 ): string {
-  const fontsUrl = buildFontsUrl(fontsForDoc(data));
   const jsonLd = buildLocalBusinessJsonLd(data);
   const heroImageSrc = findHero(data)?.imageUrl;
   const tags = [
@@ -211,9 +240,7 @@ function renderHead(
     tags.push('<meta name="twitter:card" content="summary_large_image" />');
   }
   tags.push(
-    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
-    `<link rel="stylesheet" href="${esc(fontsUrl)}" />`,
+    ...fontHeadTags(data),
     `<script type="application/ld+json">${jsonLd}</script>`
   );
   return tags.join("\n");
@@ -233,7 +260,6 @@ function renderPageHead(
   canonicalUrl: string,
   origin: string
 ): string {
-  const fontsUrl = buildFontsUrl(fontsForDoc(data));
   const heroImageSrc = findHero(data)?.imageUrl;
   const tags = [
     '<meta charset="utf-8" />',
@@ -250,11 +276,7 @@ function renderPageHead(
     tags.push(`<meta property="og:image" content="${esc(ogImage)}" />`);
     tags.push('<meta name="twitter:card" content="summary_large_image" />');
   }
-  tags.push(
-    '<link rel="preconnect" href="https://fonts.googleapis.com" />',
-    '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />',
-    `<link rel="stylesheet" href="${esc(fontsUrl)}" />`
-  );
+  tags.push(...fontHeadTags(data));
   return tags.join("\n");
 }
 
