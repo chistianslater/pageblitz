@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Referenzen Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4f0e8;
+    --paper-deep: #ebe5d9;
+    --ink: #1c1a17;
+    --ink-soft: #5d574d;
+    --rule: rgba(28, 26, 23, 0.22);
+    --tag-salon: #7a4b3a;
+    --tag-hotel: #3d5a52;
+    --tag-mag: #1c1a17;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 1760px; margin: 0 auto; padding: 56px 48px 72px; }
+
+  header.kopf { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 32px; padding-bottom: 28px; border-bottom: 1px solid var(--ink); }
+  .kicker { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { font-family: var(--serif); font-weight: 300; font-size: 76px; line-height: 0.98; letter-spacing: -0.02em; margin-top: 14px; }
+  h1 em { font-style: italic; }
+  .legende { display: flex; gap: 20px; font-size: 12px; color: var(--ink-soft); }
+  .legende span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 7px; vertical-align: 1px; }
+  .legende .l-salon::before { background: var(--tag-salon); }
+  .legende .l-hotel::before { background: var(--tag-hotel); }
+  .legende .l-mag::before { background: var(--tag-mag); }
+  .vorspann { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; padding: 20px 0 40px; font-size: 13px; color: var(--ink-soft); }
+  .vorspann b { color: var(--ink); font-weight: 500; }
+
+  .raster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 44px 40px; }
+  .karte { border-top: 1px solid var(--rule); padding-top: 14px; }
+  .karte-kopf { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .nr { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 22px; }
+  .tag { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .tag.salon { color: var(--tag-salon); }
+  .tag.hotel { color: var(--tag-hotel); }
+  .tag.mag { color: var(--tag-mag); }
+
+  .bilder { display: grid; grid-template-columns: 1fr 112px; gap: 10px; align-items: start; }
+  .handy.leer { border-style: dashed; aspect-ratio: 390 / 844; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; font-size: 10px; line-height: 1.35; color: var(--ink-soft); background: transparent; }
+  .bilder figure { background: var(--paper-deep); }
+  .bilder img { display: block; width: 100%; height: auto; }
+  .desktop img { aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+  .handy { border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+  .handy img { aspect-ratio: 390 / 844; object-fit: cover; object-position: top; }
+  .kein-handy { font-size: 10px; color: var(--ink-soft); margin-top: 6px; }
+  figcaption { font-size: 10px; color: var(--ink-soft); padding-top: 5px; background: var(--paper); }
+
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 27px; line-height: 1.1; margin-top: 14px; }
+  .url { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; word-break: break-all; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .uebernehmen { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule); font-size: 13.5px; line-height: 1.5; }
+  .uebernehmen b { font-weight: 500; letter-spacing: 0.04em; }
+
+  footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--ink); font-size: 11px; color: var(--ink-soft); display: flex; justify-content: space-between; }
+
+  @media (max-width: 1100px) { .raster { grid-template-columns: repeat(2, 1fr); } .vorspann { grid-template-columns: 1fr; gap: 12px; } }
+  @media (max-width: 680px) {
+    .wrap { padding: 32px 16px 48px; }
+    h1 { font-size: 46px; }
+    header.kopf { grid-template-columns: 1fr; }
+    .legende { flex-wrap: wrap; }
+    .raster { grid-template-columns: 1fr; }
+    .bilder { grid-template-columns: 1fr 92px; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="kopf">
+    <div>
+      <p class="kicker">Pageblitz · Designsystem 01 von 06 · Referenz-Board</p>
+      <h1>Journal — <em>zwölf Vorbilder</em></h1>
+    </div>
+    <div class="legende" aria-label="Legende">
+      <span class="l-salon">Friseur &amp; Kosmetik</span>
+      <span class="l-hotel">Unterkunft</span>
+      <span class="l-mag">Magazin &amp; Studio</span>
+    </div>
+  </header>
+
+  <section class="vorspann">
+    <p><b>Wonach gesucht wurde:</b> helle Serifen-Display mit Kursiv, kleine gesperrte Versal-Kicker, Haarlinien, nummerierte Kapitel, Bildunterschriften wie im Heft, Bildpaare in zwei Größen, Papiertöne.</p>
+    <p><b>Quellen:</b> Refero-Styles (Kinfolk, Monocle, Kobu, Aesop, MANNA u. a.) plus eigene Aufnahmen bei 1440 × 900 und 390 × 844 (Handy), Stand 10.10.2026.</p>
+    <p><b>Frage an dich:</b> Welche Karten treffen Journal, welche fliegen raus? Pro Karte zählt nur der eine Satz „Übernehmen“ — nicht der ganze Look.</p>
+  </section>
+
+  <div class="raster">
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">01</span><span class="tag mag">Magazin</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/kinfolk-desktop.jpg" alt="Kinfolk Startseite Desktop" width="1200" height="750"><figcaption>Abb. 1 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/kinfolk-handy.jpg" alt="Kinfolk Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Kinfolk</h2>
+      <p class="url"><a href="https://www.kinfolk.com">kinfolk.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Einstieg wie ein Heft-Cover — zentrierte Serif-Zeile in Versalien über einem einzigen Hochformat-Bild, darunter zwei Links getrennt durch einen Haarstrich („Termin | Leistungen“).</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">02</span><span class="tag mag">Magazin</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/monocle-desktop.jpg" alt="Monocle Startseite Desktop" width="1200" height="750"><figcaption>Abb. 2 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/monocle-handy.jpg" alt="Monocle Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Monocle</h2>
+      <p class="url"><a href="https://monocle.com">monocle.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Winziger Versal-Kicker über jeder Serif-Überschrift („HOSPITALITY“) und eine Rubrikenleiste, deren Punkte nur durch senkrechte Haarstriche getrennt sind.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">03</span><span class="tag mag">Studio</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/manna-desktop.jpg" alt="MANNA Architects Startseite Desktop" width="1200" height="750"><figcaption>Abb. 3 — Desktop</figcaption></figure>
+        <figure class="handy leer" aria-label="Kein Handy-Bild">Handy-Aufnahme nicht möglich (Zeitüberschreitung)</figure>
+      </div>
+      <h2>MANNA Architects</h2>
+      <p class="url"><a href="https://www.mannaarchitects.com">mannaarchitects.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Bildreihe aus ungleich breiten Fotos, jedes mit zwei Zeilen Bildunterschrift in 11 px linksbündig direkt unter der Bildkante — wie im Architekturheft.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">04</span><span class="tag mag">Studio</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/christopher-ireland-desktop.jpg" alt="Christopher Ireland Startseite Desktop" width="1200" height="750"><figcaption>Abb. 4 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/christopher-ireland-handy.jpg" alt="Christopher Ireland Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Christopher Ireland</h2>
+      <p class="url"><a href="https://christopherireland.net">christopherireland.net</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Leistungen als große Serif-Liste mit „+“ am rechten Rand und Haarlinie unter dem Kopf — auf dem Handy bleibt die Liste genauso groß und wird zum Inhaltsverzeichnis.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">05</span><span class="tag mag">Studio</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/cori-corinne-desktop.jpg" alt="Cori Corinne Startseite Desktop" width="1200" height="750"><figcaption>Abb. 5 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/cori-corinne-handy.jpg" alt="Cori Corinne Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Cori Corinne</h2>
+      <p class="url"><a href="https://www.coricorinne.com">coricorinne.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Betriebsname als schmale Display-Serif über die volle Breite, Foto setzt ohne Abstand direkt an der Schriftlinie an — trägt auch auf 390 px als erster Eindruck.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">06</span><span class="tag salon">Kosmetik</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/aesop-desktop.jpg" alt="Aesop Startseite Desktop" width="1200" height="750"><figcaption>Abb. 6 — Desktop</figcaption></figure>
+        <figure class="handy leer" aria-label="Kein Handy-Bild">Handy blockiert (Bot-Schutz)</figure>
+      </div>
+      <h2>Aesop</h2>
+      <p class="url"><a href="https://www.aesop.com">aesop.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Kleiner fetter Kicker über einer ruhigen Serif-Zeile, darunter ein Linien-Button mit Pfeil und 0 px Ecken — kein gefüllter Farb-Button im Kopfbereich.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">07</span><span class="tag salon">Kosmetik</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/susanne-kaufmann-desktop.jpg" alt="Susanne Kaufmann Startseite Desktop" width="1200" height="750"><figcaption>Abb. 7 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/susanne-kaufmann-handy.jpg" alt="Susanne Kaufmann Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Susanne Kaufmann</h2>
+      <p class="url"><a href="https://www.susannekaufmann.com">susannekaufmann.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Serif-Headline oben links direkt auf dem Foto, darunter zwei gleich breite Rechteck-Buttons gestapelt (Papier gefüllt + Linie) — auf dem Handy identisch.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">08</span><span class="tag salon">Kosmetik</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/emma-lewisham-desktop.jpg" alt="Emma Lewisham Startseite Desktop" width="1200" height="750"><figcaption>Abb. 8 — Desktop</figcaption></figure>
+        <figure class="handy leer" aria-label="Kein Handy-Bild">Handy-Aufnahme fehlgeschlagen</figure>
+      </div>
+      <h2>Emma Lewisham</h2>
+      <p class="url"><a href="https://emmalewisham.com">emmalewisham.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Kopfbild als Bildpaar 50/50 (Nahaufnahme Mensch + Produkt/Detail) mit einer kleinen Serif-Bildzeile unten links statt großer Headline.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">09</span><span class="tag salon">Haarpflege</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/leonor-greyl-desktop.jpg" alt="Leonor Greyl Startseite Desktop" width="1200" height="750"><figcaption>Abb. 9 — Desktop</figcaption></figure>
+        <figure class="handy leer" aria-label="Kein Handy-Bild">Handy nur mit Cookie-Fenster</figure>
+      </div>
+      <h2>Leonor Greyl</h2>
+      <p class="url"><a href="https://www.leonorgreyl.com">leonorgreyl.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Schwarz-Weiß-Porträt neben Farbbild, darüber links ein gesperrter Versal-Kicker und eine dreizeilige Serif-Headline mit unterstrichenem Textlink statt Button.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">10</span><span class="tag salon">Friseur</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/david-mallett-desktop.jpg" alt="David Mallett Startseite Desktop" width="1200" height="750"><figcaption>Abb. 10 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/david-mallett-handy.jpg" alt="David Mallett Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>David Mallett</h2>
+      <p class="url"><a href="https://david-mallett.com">david-mallett.com</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Auf dem Handy füllt ein Bild den ganzen Screen, unten links nur eine Serif-Zeile und ein kleiner schwarzer Rechteck-Button — Desktop: schmale Textspalte links, Objekt rechts.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">11</span><span class="tag hotel">Unterkunft</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/kobu-desktop.jpg" alt="Kobu Startseite Desktop" width="1200" height="750"><figcaption>Abb. 11 — Desktop</figcaption></figure>
+        <figure class="handy"><img src="img/kobu-handy.jpg" alt="Kobu Startseite Handy" width="420" height="909"></figure>
+      </div>
+      <h2>Kobu</h2>
+      <p class="url"><a href="https://kobu.co">kobu.co</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Unter jedem Haus-Foto eine Bildzeile: Name groß, Ort in gesperrten Mono-Versalien darunter, rechts ein Credit-Etikett („Foto: …“) mit Haarlinie.</p>
+    </article>
+
+    <article class="karte">
+      <div class="karte-kopf"><span class="nr">12</span><span class="tag hotel">Unterkunft</span></div>
+      <div class="bilder">
+        <figure class="desktop"><img src="img/belarosa-desktop.jpg" alt="BelArosa Chalet Startseite Desktop" width="1200" height="750"><figcaption>Abb. 12 — Desktop</figcaption></figure>
+        <figure class="handy leer" aria-label="Kein Handy-Bild">Handy-Bilder luden nicht</figure>
+      </div>
+      <h2>BelArosa Chalet</h2>
+      <p class="url"><a href="https://www.belarosa-chalet.ch">belarosa-chalet.ch</a></p>
+      <p class="uebernehmen"><b>Übernehmen:</b> Gesperrter Versal-Kicker („DAS BELAROSA CHALET“) zentriert über der Serif-Headline und „Buchen“ als feiner Linienkasten oben rechts statt Farbfläche.</p>
+    </article>
+
+  </div>
+
+  <footer>
+    <span>Bildrechte bei den jeweiligen Betreibern · nur interne Referenz</span>
+    <span>docs/designsysteme/journal/referenzen.html</span>
+  </footer>
+</main>
+</body>
+</html>

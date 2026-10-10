@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f4f0e8;
+    --paper-deep: #ebe5d9;
+    --ink: #1c1a17;
+    --ink-soft: #5d574d;
+    --rule: rgba(28, 26, 23, 0.22);
+    --gut: #3d5a52;
+    --mittel: #a07a2c;
+    --schwach: #9b4a3a;
+    --wahl: #1c1a17;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 56px 48px 72px; }
+
+  header.kopf { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 32px; padding-bottom: 28px; border-bottom: 1px solid var(--ink); }
+  .kicker { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { font-family: var(--serif); font-weight: 300; font-size: 76px; line-height: 0.98; letter-spacing: -0.02em; margin-top: 14px; }
+  h1 em { font-style: italic; }
+  .vorspann { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; padding: 20px 0 36px; font-size: 14px; color: var(--ink-soft); }
+  .vorspann b { color: var(--ink); font-weight: 500; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--rule); padding-top: 14px; }
+  .kandidat.wahl { border-top: 3px solid var(--wahl); }
+  .k-kopf { display: flex; justify-content: space-between; align-items: baseline; }
+  .nr { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 24px; }
+  .tag { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
+  .badge { display: inline-block; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; background: var(--wahl); color: var(--paper); padding: 4px 9px; }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 32px; line-height: 1.08; margin-top: 10px; }
+  .url { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 14px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+  .urteil li { list-style: none; padding-left: 18px; position: relative; margin: 3px 0; }
+  .urteil li::before { position: absolute; left: 0; font-family: var(--serif); }
+  .urteil li.plus::before { content: "+"; color: var(--gut); }
+  .urteil li.minus::before { content: "–"; color: var(--schwach); }
+  .urteil li.dann::before { content: "→"; color: var(--ink); }
+  .noten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+  .note { border: 1px solid var(--rule); padding: 6px 7px; }
+  .note span { display: block; font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+  .note b { font-family: var(--serif); font-weight: 400; font-size: 20px; }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 14px; margin-top: 16px; align-items: start; }
+  .erster figure { border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; background: var(--paper-deep); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 12.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); font-weight: 500; display: block; margin-bottom: 4px; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; }
+
+  .ganz { display: grid; grid-template-columns: 1fr 190px; gap: 12px; margin-top: 18px; align-items: start; }
+  .ganz figure { background: var(--paper-deep); }
+  .ganz .handy { border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+  .ganz img { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); padding: 0 0 6px; background: var(--paper); }
+
+  section.abschnitt { margin-top: 56px; border-top: 1px solid var(--ink); padding-top: 18px; }
+  h3 { font-family: var(--serif); font-weight: 300; font-size: 44px; line-height: 1; letter-spacing: -0.01em; }
+  h3 em { font-style: italic; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+  thead th { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; }
+  thead th.wahl { color: var(--ink); }
+  tbody th { font-family: var(--serif); font-weight: 400; font-size: 18px; width: 170px; }
+  td.wahl { background: rgba(28, 26, 23, 0.04); }
+  .z { font-family: var(--serif); font-size: 17px; margin-right: 6px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; margin-top: 20px; font-size: 14px; }
+  .empfehlung h4 { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; margin-bottom: 8px; }
+  .empfehlung li { margin: 4px 0 4px 18px; }
+  .gross { font-family: var(--serif); font-weight: 300; font-size: 26px; line-height: 1.25; }
+  .gross em { font-style: italic; }
+  .fuss { margin-top: 40px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div>
+    <div class="kicker">Designsystem Journal · Aufgabe 1b · 10.10.2026</div>
+    <h1>Ein Anker, <em>nicht zehn.</em></h1>
+  </div>
+  <div class="kicker">Vier Kandidaten · ganze Seite · Desktop &amp; Handy</div>
+</header>
+
+<div class="vorspann">
+  <p><b>Worum es geht.</b> Wir bauen Journal nicht aus vielen Schnipseln, sondern nehmen eine komplette Website als Vorlage und übertragen ihr System auf unsere Abschnitte. Hier stehen die vier stärksten Kandidaten nebeneinander, jeweils die ganze Startseite.</p>
+  <p><b>Wie gesucht.</b> Refero (Styles, Screens, Sites) für Salon, Kosmetik, Hotel, Studio, dazu rund 25 Live-Seiten im Browser geprüft. Viele Refero-Treffer zeigen nur einen Bildschirm (Christopher Ireland, Cori Corinne) oder sind Shops. Die vier hier zeigen ein vollständiges System bis zum Fuß.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt der ganzen Seite, Abdeckung unserer neun Abschnitte, Handy, Robustheit bei mittelmäßigen Fotos, und was wir verbessern würden. Die Bilder sind Screenshots vom 10.10.2026 (Desktop 1440, Handy 390). Cookie-Banner wurden abgelehnt oder ausgeblendet.</p>
+</div>
+
+<div class="spalten">
+
+  <!-- 1 Aman -->
+  <article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Aman Venice</h2>
+    <div class="tag" style="margin-top:4px">Hotel · Resort-Seite</div>
+    <div class="url"><a href="https://www.aman.com/resorts/aman-venice">aman.com/resorts/aman-venice</a></div>
+    <ul class="urteil">
+      <li class="plus">Ein strenges, wiederholbares Modul: kleines Sperrsatz-Label, leichte Serifenzeile, kurzer Text, unterstrichener Link. Trägt jeden Abschnitt.</li>
+      <li class="plus">Papierton, Haarlinien, Bilder ohne Rahmen-Schnickschnack: sieht auch mit normalen Fotos wertig aus.</li>
+      <li class="minus">Erster Handy-Blick ist ruhig statt laut, Stimmen, Ablauf und FAQ fehlen. Beides bauen wir in derselben Grammatik dazu.</li>
+    </ul>
+    <div class="noten">
+      <div class="note"><span>Ganzes</span><b>9</b></div>
+      <div class="note"><span>Abdeckung</span><b>6</b></div>
+      <div class="note"><span>Handy</span><b>8</b></div>
+      <div class="note"><span>Schwache Fotos</span><b>9</b></div>
+    </div>
+    <div class="erster">
+      <figure><img src="anker/aman-venice-mobil-erster-blick.jpg" alt="Aman Venice, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Bild, dann Ortslabel, Name in Serife, drei Zeilen Text, feste Reservieren-Leiste. Ruhig und teuer. Wow kommt bei uns zusätzlich über einen größeren Namen und eine kursive Unterzeile.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop, ganze Seite</figcaption><img src="anker/aman-venice-desktop.jpg" alt="Aman Venice Desktop ganze Seite"></figure>
+      <figure class="handy"><figcaption>&nbsp;Handy</figcaption><img src="anker/aman-venice-mobil.jpg" alt="Aman Venice Handy ganze Seite"></figure>
+    </div>
+  </article>
+
+  <!-- 2 Kinfolk -->
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span><span class="tag">Magazin</span></div>
+    <h2>Kinfolk</h2>
+    <div class="tag" style="margin-top:4px">Editorial · Startseite</div>
+    <div class="url"><a href="https://www.kinfolk.com">kinfolk.com</a></div>
+    <ul class="urteil">
+      <li class="plus">Das beste Rubrik-System: Haarlinie unter jedem Abschnittstitel, Listenzeilen mit Bild, Titel und Kategorie. Ideal als Preisliste.</li>
+      <li class="minus">Ist ein Magazin, kein Betrieb: kein Kontakt, keine Öffnungszeiten, keine Leistungen. Lebt von Kunstfotografie.</li>
+      <li class="dann">Als Anker zu weit weg von Salon und Pension. Bleibt Ideengeber für Listen.</li>
+    </ul>
+    <div class="noten">
+      <div class="note"><span>Ganzes</span><b>8</b></div>
+      <div class="note"><span>Abdeckung</span><b>3</b></div>
+      <div class="note"><span>Handy</span><b>8</b></div>
+      <div class="note"><span>Schwache Fotos</span><b>5</b></div>
+    </div>
+    <div class="erster">
+      <figure><img src="anker/kinfolk-mobil-erster-blick.jpg" alt="Kinfolk, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Wortmarke, Heftnummer, Cover, dann Titelgeschichte in großer Serife über dem Bild. Stark, aber nur mit einem echten Cover-Motiv.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop, ganze Seite</figcaption><img src="anker/kinfolk-desktop.jpg" alt="Kinfolk Desktop ganze Seite"></figure>
+      <figure class="handy"><figcaption>&nbsp;Handy</figcaption><img src="anker/kinfolk-mobil.jpg" alt="Kinfolk Handy ganze Seite"></figure>
+    </div>
+  </article>
+
+  <!-- 3 Heckfield -->
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span><span class="tag">Landhotel</span></div>
+    <h2>Heckfield Place</h2>
+    <div class="tag" style="margin-top:4px">Hotel · Startseite</div>
+    <div class="url"><a href="https://www.heckfieldplace.com">heckfieldplace.com</a></div>
+    <ul class="urteil">
+      <li class="plus">Die mutigste Seite: Bild-Collagen mit Überlappung, Kapitel als Text auf dem Foto, ein Farbton für alles. Sehr eigen.</li>
+      <li class="minus">Fließtext in gesperrten Versalien liest sich schlecht, Collage braucht viele sehr gute Fotos. Fällt mit Handyfotos sofort ab.</li>
+      <li class="dann">Zu riskant als System für Betriebe mit drei Fotos.</li>
+    </ul>
+    <div class="noten">
+      <div class="note"><span>Ganzes</span><b>9</b></div>
+      <div class="note"><span>Abdeckung</span><b>4</b></div>
+      <div class="note"><span>Handy</span><b>6</b></div>
+      <div class="note"><span>Schwache Fotos</span><b>2</b></div>
+    </div>
+    <div class="erster">
+      <figure><img src="anker/heckfield-place-mobil-erster-blick.jpg" alt="Heckfield Place, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Kurzes Video, Uhrzeit in Rot, dann Collage. Wirkt nur, wenn das Video lädt. Im Screenshot ist es abgeschnitten.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop, ganze Seite</figcaption><img src="anker/heckfield-place-desktop.jpg" alt="Heckfield Place Desktop ganze Seite"></figure>
+      <figure class="handy"><figcaption>&nbsp;Handy</figcaption><img src="anker/heckfield-place-mobil.jpg" alt="Heckfield Place Handy ganze Seite"></figure>
+    </div>
+  </article>
+
+  <!-- 4 Lustre -->
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span><span class="tag">Salon · Vorlage</span></div>
+    <h2>Lustre Studio</h2>
+    <div class="tag" style="margin-top:4px">Framer-Vorlage · One-Pager</div>
+    <div class="url"><a href="https://lustrestudio.framer.website/">lustrestudio.framer.website</a></div>
+    <ul class="urteil">
+      <li class="plus">Deckt als einzige alle Salon-Abschnitte ab: Leistungen, Warum wir, Stimmen, Galerie, FAQ, Kontakt mit Zeiten. Guter Maßstab für die Vollständigkeit.</li>
+      <li class="minus">Sieht nach Vorlage aus: runde Glas-Karten, Weichzeichner-Flecken, kursive Wortwechsel in jeder Überschrift. Kein Preisniveau.</li>
+      <li class="dann">Nur als Checkliste der Abschnitte nutzen, nicht als Look.</li>
+    </ul>
+    <div class="noten">
+      <div class="note"><span>Ganzes</span><b>6</b></div>
+      <div class="note"><span>Abdeckung</span><b>9</b></div>
+      <div class="note"><span>Handy</span><b>7</b></div>
+      <div class="note"><span>Schwache Fotos</span><b>5</b></div>
+    </div>
+    <div class="erster">
+      <figure><img src="anker/lustre-studio-mobil-erster-blick.jpg" alt="Lustre Studio, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Label, Serifenzeile mit kursivem Teil, zwei Buttons, schräg beschnittenes Foto. Klar, aber austauschbar.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop, ganze Seite</figcaption><img src="anker/lustre-studio-desktop.jpg" alt="Lustre Studio Desktop ganze Seite"></figure>
+      <figure class="handy"><figcaption>&nbsp;Handy</figcaption><img src="anker/lustre-studio-mobil.jpg" alt="Lustre Studio Handy ganze Seite"></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <h3>Unsere Abschnitte, <em>Zeile für Zeile</em></h3>
+  <table>
+    <thead>
+      <tr><th>Abschnitt</th><th class="wahl">01 Aman Venice</th><th>02 Kinfolk</th><th>03 Heckfield Place</th><th>04 Lustre Studio</th></tr>
+    </thead>
+    <tbody>
+      <tr><th>Einstieg</th>
+        <td class="wahl"><span class="z g">●</span>Großes Bild, Ortslabel, Name in Serife, Intro, feste Reservieren-Leiste</td>
+        <td><span class="z g">●</span>Heftnummer und Cover, Titelgeschichte über Bild</td>
+        <td><span class="z m">◐</span>Video mit Uhrzeit, hängt am Bewegtbild</td>
+        <td><span class="z g">●</span>Label, Zeile, zwei Buttons, Foto</td></tr>
+      <tr><th>Leistungen</th>
+        <td class="wahl"><span class="z g">●</span>Karten mit Label, Titel, Satz, Link (Zimmer, Essen, Angebote)</td>
+        <td><span class="z m">◐</span>Listenzeilen mit Bild, Titel, Rubrik. Perfekt für Preise</td>
+        <td><span class="z m">◐</span>Kapitelnamen auf Collagenbildern, ohne Details</td>
+        <td><span class="z g">●</span>Sechs Bildkarten mit Kurztext</td></tr>
+      <tr><th>Über uns</th>
+        <td class="wahl"><span class="z m">◐</span>Zentrierter Intro-Text, Geschichte des Hauses als Karte</td>
+        <td><span class="z m">◐</span>Porträt-Feature mit Bild und Zitat-Titel</td>
+        <td><span class="z g">●</span>Manifest-Text zwischen den Bildern</td>
+        <td><span class="z g">●</span>Studio-Text mit rundem Bild</td></tr>
+      <tr><th>Galerie</th>
+        <td class="wahl"><span class="z g">●</span>Horizontale Bildleiste mit Fortschrittslinie</td>
+        <td><span class="z g">●</span>Bildstreifen mit Bildunterschriften</td>
+        <td><span class="z g">●</span>Die ganze Seite ist Galerie</td>
+        <td><span class="z g">●</span>Bogen-Bilder in Reihe</td></tr>
+      <tr><th>Stimmen</th>
+        <td class="wahl"><span class="z s">○</span>Fehlt. Ergänzen als große Serifen-Zitate mit Label</td>
+        <td><span class="z m">◐</span>Großer zentrierter Satz als Feature</td>
+        <td><span class="z m">◐</span>Ein Zitat in Anführungszeichen</td>
+        <td><span class="z g">●</span>Zitatkarte mit Sternen</td></tr>
+      <tr><th>Ablauf</th>
+        <td class="wahl"><span class="z s">○</span>Fehlt. Ergänzen als nummerierte Haarlinien-Zeilen</td>
+        <td><span class="z s">○</span>Fehlt</td>
+        <td><span class="z s">○</span>Fehlt</td>
+        <td><span class="z m">◐</span>„Warum wir“ als nummerierte Karten</td></tr>
+      <tr><th>Gut zu wissen</th>
+        <td class="wahl"><span class="z m">◐</span>„Getting here“-Block mit Anreise-Infos. FAQ ergänzen</td>
+        <td><span class="z s">○</span>Fehlt (Listenzeilen tragen es)</td>
+        <td><span class="z s">○</span>Fehlt</td>
+        <td><span class="z g">●</span>FAQ-Akkordeon</td></tr>
+      <tr><th>Kontakt / Zeiten</th>
+        <td class="wahl"><span class="z g">●</span>Karte, Adresse, Anreise, Telefon und Mail im Fuß</td>
+        <td><span class="z s">○</span>Fehlt</td>
+        <td><span class="z m">◐</span>„Find us“ im Fuß</td>
+        <td><span class="z g">●</span>Formular, Telefon, Zeiten</td></tr>
+      <tr><th>Fuß</th>
+        <td class="wahl"><span class="z g">●</span>Name gesperrt, Adresse, Kontakt. Konzern-Liste weglassen</td>
+        <td><span class="z m">◐</span>Schwarzer Abo-Block</td>
+        <td><span class="z g">●</span>Signet, drei Spalten, ruhig</td>
+        <td><span class="z g">●</span>Riesige Wortmarke, Spalten</td></tr>
+    </tbody>
+  </table>
+  <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+</section>
+
+<section class="abschnitt">
+  <h3>Empfehlung: <em>Aman Venice</em></h3>
+  <div class="empfehlung">
+    <div>
+      <p class="gross">Aman hat das ruhigste und zugleich strengste System: ein Modul, das jeden Abschnitt trägt, Typo und Papier statt Effekte. <em>Genau das hält auch bei mittelmäßigen Fotos.</em></p>
+    </div>
+    <div>
+      <h4>Was wir 1:1 übernehmen</h4>
+      <ul>
+        <li>Papierton, Tinte, Haarlinien statt Schatten und Rundungen</li>
+        <li>Abschnittsmodul: Sperrsatz-Label, leichte Serifenzeile, kurzer Text, unterstrichener Link</li>
+        <li>Zentriertes Intro unter dem Einstiegsbild</li>
+        <li>Bildleiste mit dünner Fortschrittslinie als Galerie</li>
+        <li>Feste Buchen-Leiste unten auf dem Handy</li>
+        <li>„Anreise“-Block mit Karte, Adresse und Wegen</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Was wir optimieren</h4>
+      <ul>
+        <li>Erster Handy-Blick: Name größer, eine kursive Unterzeile, Bildunterschrift. Das ist das Wow</li>
+        <li>Nummerierte Kapitel 01 bis 09 im Label, passend zum Journal-Gedanken</li>
+        <li>Leistungen als Preisliste in Haarlinien-Zeilen, nicht nur Karten</li>
+        <li>Stimmen, Ablauf, FAQ und Öffnungszeiten in derselben Grammatik ergänzen</li>
+        <li>Fuß auf einen Block kürzen, Konzern-Navigation entfällt</li>
+      </ul>
+    </div>
+  </div>
+  <p class="fuss">Quellen: Refero-Styles zu Kinfolk, Kobu, BelArosa, Christopher Ireland, Cori Corinne, Aesop, Susanne Kaufmann u. a. als Vorauswahl. Live geprüft und verworfen: BelArosa, Cup of Couple, 2002 Beauty Space, Bond Shoreditch, Zelda, Solanki Atelier, Hotel Sanders, Wilmina, Les Roches Rouges, Hershesons, Rossano Ferretti, The Newt, Thyme, Susanne Kaufmann, Aman (Konzernseite). Screenshots: Playwright mit Chrome, 10.10.2026.</p>
+</section>
+
+</div>
+</body>
+</html>
