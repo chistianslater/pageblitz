@@ -9,6 +9,8 @@ import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import { deriveArtDirectedProfile } from "../../../../../../shared/stylePacks/artDirection";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { JournalChapter, chapterIndex } from "./sections";
+import { JOURNAL_CSS } from "./css";
+import { entryLine, nameFitClasses } from "./Entry";
 
 export const journalDoc = (
   kind: "full" | "minimal" | "features" = "full",
@@ -212,5 +214,100 @@ describe("Journal: Knopf und Bewegung", () => {
     expect(css()).toContain(
       ".pb-journal *::before,.pb-journal *::after{transition:none!important"
     );
+  });
+});
+
+describe("Journal: Einstieg", () => {
+  const entryOf = (html: string) =>
+    html.slice(html.indexOf('<section id="start"'), html.indexOf("</section>", html.indexOf('<section id="start"')));
+  const withHero = (patch: Record<string, unknown>, d = journalDoc()) => ({
+    ...d,
+    sections: d.sections.map(s => (s.type === "hero" ? { ...s, ...patch } : s)),
+  });
+
+  test("mit Foto: Kicker, Name als h1, kursive Zeile, Bild, Abb. 1, Faktenzeilen", () => {
+    const entry = entryOf(render());
+    expect(entry).toMatch(/<section id="start" class="jr-entry"/);
+    expect(entry).toMatch(/class="jr-kicker jr-entry-kicker">Friseursalon in München-Maxvorstadt</);
+    expect(entry).toMatch(/<h1 class="jr-entry-name[^"]*">NOIR Haarstudio<\/h1>/);
+    expect(entry).toContain('<p class="jr-entry-line">Handwerk für Haar.</p>');
+    expect(entry).toContain('src="/demo/salon-noir-hero.webp"');
+    expect(entry).toContain("Abb. 1");
+    expect(entry).toContain('class="jr-entry-facts"');
+  });
+
+  test("Faktenzeilen: heute geöffnet, Google, Adresse — höchstens drei", () => {
+    const entry = entryOf(render());
+    // 13.10.2026 ist ein Dienstag, Di–Sa 9:00 – 19:00
+    expect(entry).toMatch(/Heute geöffnet<\/span><span class="jr-entry-fact-note">9 bis 19 Uhr/);
+    expect(entry).toMatch(/4,8 bei Google<\/span><span class="jr-entry-fact-note">167 Bewertungen/);
+    expect(entry).toMatch(/Türkenstraße 42<\/span><span class="jr-entry-fact-note">80799 München-Maxvorstadt/);
+    expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(3);
+  });
+
+  test("keine Google-Zeile ohne Bewertungen, keine Platzhalter-Zeiten", () => {
+    const d = journalDoc();
+    const html = render({
+      ...d,
+      google: { rating: 5, reviewCount: 0 },
+      sections: d.sections.map(s =>
+        s.type === "contact"
+          ? {
+              ...s,
+              openingHours: [
+                { day: "Mo–Fr", hours: "09:00–18:00" },
+              ],
+            }
+          : s
+      ),
+    });
+    const entry = entryOf(html);
+    expect(entry).not.toContain("bei Google");
+  });
+
+  test("ohne Foto: Typo-Einstieg mit Knopf und Route, kein leeres Bildfeld", () => {
+    const html = render(withHero({ imageUrl: undefined }));
+    const entry = entryOf(html);
+    expect(entry).toContain("jr-entry--type");
+    expect(entry).not.toContain("Abb. 1");
+    expect(entry).not.toContain("<img");
+    expect(entry).toMatch(/class="jr-pill jr-pill--ghost" href="#leistungen">Leistungen ansehen</);
+    expect(entry).toMatch(/class="jr-link" href="https:\/\/www.google.com\/maps[^"]*">Route planen</);
+  });
+
+  test("Foto aussortiert (hiddenElements) → Typo-Einstieg", () => {
+    const d = journalDoc();
+    const html = render({
+      ...d,
+      designProfile: { ...(d.designProfile ?? {}), hiddenElements: ["hero-media"] },
+    } as typeof d);
+    expect(entryOf(html)).toContain("jr-entry--type");
+  });
+
+  test("lange Modell-Überschrift → Tagline, sonst keine kursive Zeile", () => {
+    const long = "Handwerk für Haar, mitten in der Maxvorstadt und mit viel Liebe zum Detail gemacht.";
+    expect(entryLine({ headline: long, subheadline: "Kurz und gut." } as never, "Tagline.")).toBe("Tagline.");
+    expect(entryLine({ headline: long } as never, undefined)).toBeUndefined();
+    expect(entryLine({ headline: "Schnitt, **Farbe** & gute Laune." } as never, undefined)).toBe(
+      "Schnitt, Farbe & gute Laune."
+    );
+  });
+
+  test("langer Name: Größe stuft ab, Trennung erlaubt, kein nowrap", () => {
+    const d = journalDoc();
+    const name = "Friseursalon Haarmonie & Kosmetikstudio Lindner-Bramhoff";
+    const html = render({ ...d, businessName: name });
+    expect(html).toContain("Friseursalon Haarmonie");
+    expect(nameFitClasses(name)).toContain("jr-entry-name--xlong");
+    expect(nameFitClasses("NOIR Haarstudio")).not.toContain("--long");
+    expect(nameFitClasses("NOIR Haarstudio")).toContain("jr-fit-11");
+    expect(JOURNAL_CSS).toMatch(/\.jr-entry h1\{[^}]*overflow-wrap:anywhere/);
+    expect(JOURNAL_CSS).toMatch(/\.jr-entry h1\{[^}]*hyphens:auto/);
+    expect(JOURNAL_CSS).not.toMatch(/\.jr-entry h1\{[^}]*white-space:nowrap/);
+  });
+
+  test("genau ein h1", () => {
+    expect((render().match(/<h1/g) ?? []).length).toBe(1);
+    expect((render(withHero({ imageUrl: undefined })).match(/<h1/g) ?? []).length).toBe(1);
   });
 });

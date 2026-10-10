@@ -7,6 +7,7 @@ import type {
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
 export type JournalSection = SectionV2 | PageSection;
 import { rich } from "../../richText";
+import { JournalEntry } from "./Entry";
 
 /**
  * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
@@ -77,9 +78,11 @@ export function JournalChapter({
 /** Abschnitts-Weiche; Task 8–11 füllen die Fälle. */
 export function renderJournalSection(
   section: JournalSection,
-  _sections: readonly JournalSection[]
+  sections: readonly JournalSection[]
 ): React.ReactNode {
   switch (section.type) {
+    case "hero":
+      return <JournalEntry hero={section} sections={sections} />;
     default:
       return null;
   }

@@ -30,6 +30,21 @@ export function step(s: TypeStep): string {
 }
 
 /**
+ * Breite eines Newsreader-Light-Kleinbuchstabens in em (gemessen
+ * 2026-10-10: 0,39–0,49 je nach Wort; Versalien zählt nameFitClasses
+ * 1,45-fach). Daraus: Schriftgröße, bei der
+ * ein Wort mit N Zeichen gerade in die Spalte passt.
+ */
+/** Fit-Klassen gibt es für die längsten Wörter von 7 bis 20 Zeichen. */
+export const FIT_MIN = 7;
+export const FIT_MAX = 20;
+const NAME_EM_PER_CHAR = 0.46;
+const NAME_FIT = Array.from({ length: FIT_MAX - FIT_MIN + 1 }, (_, i) => {
+  const n = FIT_MIN + i;
+  return `.pb-journal .jr-fit-${n}{--jr-fit:calc((min(100vw,var(--sys-space-max)) - 2 * var(--sys-space-gutter)) / ${(n * NAME_EM_PER_CHAR).toFixed(2)})}`;
+}).join("\n");
+
+/**
  * Grundschicht von Journal (Kopf, Fuß, Kapitel, Textlink, Knopf). Gestalt
  * nach docs/designsysteme/journal/systemblatt.html. Größen, Abstände und
  * Farben ausschließlich über `--sys-*`; Ausnahmen: 1px-Haarlinien, das
@@ -119,5 +134,47 @@ ${FONT_FACES}
 .pb-journal .jr-foot-legal a:hover{text-decoration:underline}
 @media (min-width:64rem){.pb-journal .jr-foot{padding-block:var(--sys-space-xl)}.pb-journal .jr-foot-legal{justify-content:flex-start;gap:var(--sys-space-l)}}
 @media (prefers-reduced-motion:reduce){.pb-journal *,.pb-journal *::before,.pb-journal *::after{transition:none!important;animation:none!important}}
+/* Einstieg (Systemblatt „Der Wow-Moment"): Kicker, Name als Buchtitel,
+   eine kursive Zeile, Foto mit Abb. 1, Faktenzeilen. Ausnahme von den
+   --sys-Größen: --jr-name-floor. Systemblatt nennt 3,25rem als Untergrenze; unter
+   ~24rem Breite zerriss das Namen („Lind-ner"), daher 2,5rem: der Name
+   bleibt ganz, Trennung nur als letzter Ausweg. */
+.pb-journal .jr-entry{text-align:center;padding-top:calc(var(--sys-space-l) - var(--sys-space-2xs))}
+.pb-journal .jr-entry-kicker{margin-bottom:calc(var(--sys-space-s) + var(--sys-space-2xs))}
+.pb-journal .jr-entry h1{${step("display")};--jr-name-size:var(--sys-display-size);--jr-name-floor:2.5rem;
+  font-size:max(var(--jr-name-floor),min(var(--jr-name-size),var(--jr-fit,var(--jr-name-size))));
+  margin-inline:auto;text-wrap:balance;overflow-wrap:anywhere;hyphens:auto;hyphenate-limit-chars:10 5 5}
+.pb-journal .jr-entry-name--long{--jr-name-size:calc(var(--sys-display-size) * .78)}
+.pb-journal .jr-entry .jr-entry-name--xlong{--jr-name-size:calc(var(--sys-display-size) * .6);line-height:1}
+${NAME_FIT}
+.pb-journal .jr-entry-line{${step("lede")};font-style:italic;font-weight:300;margin:calc(var(--sys-space-m) - var(--sys-space-2xs)) auto 0;max-width:22ch;hyphens:manual}
+.pb-journal .jr-entry-photo{margin:calc(var(--sys-space-l) - var(--sys-space-xs)) 0 0;text-align:left}
+.pb-journal .jr-entry-photo img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:var(--sys-rule)}
+.pb-journal .jr-entry-photo figcaption{${step("small")};font-size:calc(var(--sys-small-size) * .93);color:var(--sys-muted);
+  margin-top:calc(var(--sys-space-xs) + var(--sys-space-2xs) / 2);display:flex;justify-content:space-between;gap:var(--sys-space-m)}
+.pb-journal .jr-entry-photo figcaption i{font-family:var(--sys-font-display);font-size:calc(var(--sys-small-size) * 1.07);letter-spacing:0;color:var(--sys-ink)}
+.pb-journal .jr-entry-facts{margin-top:var(--sys-space-l);border-top:1px solid var(--sys-rule);text-align:left}
+.pb-journal .jr-entry-fact{display:flex;justify-content:space-between;align-items:baseline;gap:var(--sys-space-m);padding-block:var(--sys-space-s);border-bottom:1px solid var(--sys-rule)}
+.pb-journal .jr-entry-fact>span:first-child{flex:0 0 auto;max-width:62%;hyphens:manual}
+.pb-journal .jr-entry-fact-note{${step("small")};color:var(--sys-muted);text-align:right;min-width:0}
+.pb-journal .jr-entry--type{padding-top:calc(var(--sys-space-xl) - var(--sys-space-s))}
+.pb-journal .jr-entry--type h1{--jr-name-size:calc(var(--sys-display-size) * 1.22);line-height:.9}
+.pb-journal .jr-entry--type .jr-entry-name--long{--jr-name-size:calc(var(--sys-display-size) * 1.22 * .78)}
+.pb-journal .jr-entry--type .jr-entry-line{margin-top:var(--sys-space-m)}
+.pb-journal .jr-entry--type .jr-entry-facts{margin-top:calc(var(--sys-space-xl) - var(--sys-space-s))}
+.pb-journal .jr-entry-actions{margin-top:calc(var(--sys-space-l) - var(--sys-space-xs));display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:var(--sys-space-s) calc(var(--sys-space-m) + var(--sys-space-2xs))}
+.pb-journal .jr-pill--ghost{background:transparent;color:var(--sys-ink);border-color:var(--sys-ink)}
+.pb-journal .jr-pill--ghost:hover{background:color-mix(in srgb,var(--sys-ink) 6%,transparent);border-color:var(--sys-ink)}
+@media (min-width:64rem){
+  .pb-journal .jr-entry{padding-top:calc(var(--sys-space-xl) - var(--sys-space-xs))}
+  .pb-journal .jr-entry-kicker{margin-bottom:calc(var(--sys-space-m) - var(--sys-space-2xs))}
+  .pb-journal .jr-entry-photo{margin-top:calc(var(--sys-space-xl) - var(--sys-space-m) / 2)}
+  .pb-journal .jr-entry-photo img{aspect-ratio:2.2/1}
+  .pb-journal .jr-entry-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));column-gap:var(--sys-space-l);border-top:0;margin-top:var(--sys-space-m)}
+  .pb-journal .jr-entry-fact{border-top:1px solid var(--sys-rule)}
+  .pb-journal .jr-entry--type .jr-entry-facts{display:block;max-width:var(--sys-space-measure);margin-inline:auto;border-top:1px solid var(--sys-rule)}
+  .pb-journal .jr-entry--type .jr-entry-fact{border-top:0}
+  .pb-journal .jr-entry--type{padding-bottom:var(--sys-space-xl)}
+}
 /* ende journal */
 `;
