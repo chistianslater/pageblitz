@@ -12,6 +12,7 @@ import { JournalChapter, chapterIndex } from "./sections";
 import { JOURNAL_CSS } from "./css";
 import { entryLine, nameFitClasses } from "./Entry";
 import { brandClasses } from "./Chrome";
+import { figureNumbers } from "./figures";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { isPlaceholderHours } from "../../artDirection/heroFacts";
 
@@ -594,5 +595,132 @@ describe("Journal: Angebot", () => {
   test("minimal rendert ohne Fehler", () => {
     expect(() => render(journalDoc("minimal"))).not.toThrow();
     expect(() => render(journalDoc("minimal"), true)).not.toThrow();
+  });
+});
+
+describe("Journal: Geschichte", () => {
+  test("figureNumbers: Einstieg 1, Über uns 2, Galerie ab 3 in Renderreihenfolge", () => {
+    const d = journalDoc();
+    expect(figureNumbers(d.sections)).toEqual({
+      hero: 1,
+      about: 2,
+      gallery: 3,
+      galleryLast: 4,
+    });
+  });
+
+  test("figureNumbers: ausgeblendetes Einstiegsfoto zählt nicht", () => {
+    const d = journalDoc();
+    expect(figureNumbers(d.sections, ["hero-media"])).toEqual({
+      about: 1,
+      gallery: 2,
+      galleryLast: 3,
+    });
+    const noAbout = d.sections.filter(s => s.type !== "about");
+    expect(figureNumbers(noAbout).gallery).toBe(2);
+  });
+
+  test("Über uns: Kapitel 03 auf hellem Band, Foto mit Abb. 2, Fließtext", () => {
+    const html = render();
+    const about = sectionHtml(html, "about");
+    expect(about).toMatch(
+      /<section id="ueber-uns" class="jr-section jr-about jr-section--raised"/
+    );
+    expect(about).toMatch(/jr-chapter-no[^>]*>03</);
+    expect(about).toMatch(/<img[^>]*loading="lazy"/);
+    expect(about).toMatch(/<img[^>]*width="\d+"[^>]*height="\d+"/);
+    expect(about).toMatch(/class="jr-abb"[^>]*>Abb. 2</);
+    expect(about).toContain("Maxvorstadt gegründet");
+  });
+
+  test("Über uns ohne Foto: erster Satz groß, kein leeres Bildfeld", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "gallery"
+        ? undefined
+        : s.type === "about"
+          ? { ...s, imageUrl: undefined }
+          : s
+    );
+    const about = sectionHtml(render(data), "about");
+    expect(about).not.toContain("<img");
+    expect(about).toMatch(
+      /<p class="jr-about-lede">NOIR Haarstudio wurde 2016/
+    );
+  });
+
+  test("Über uns verlinkt das Team nur, wenn es einen Team-Abschnitt gibt", () => {
+    expect(sectionHtml(render(), "about")).not.toContain('href="#team"');
+  });
+
+  test("Galerie: Einblicke, Abb. fortlaufend ab 3, Wischstreifen mit Bereich", () => {
+    const html = render();
+    const gallery = sectionHtml(html, "gallery");
+    expect(gallery).toMatch(
+      /<section id="galerie" class="jr-section jr-gallery/
+    );
+    expect(gallery).toMatch(/jr-chapter-no[^>]*>04<\/span>Einblicke/);
+    expect(gallery).toContain("Abb. 3");
+    expect(gallery).toContain("Abb. 4");
+    expect(gallery).toContain("Abb. 3 bis 4");
+    expect(gallery).toContain("Wischen für mehr");
+    expect(gallery).toContain("Die Stylingplätze des NOIR Haarstudios");
+    expect(gallery).toMatch(/<img[^>]*alt="Glänzendes Balayage-Ergebnis/);
+    expect(gallery).toMatch(/<img[^>]*loading="lazy"/);
+  });
+
+  test("Stimmen: eine große kursive Stimme, Autor, Quelle, Sterne nur bei 5", () => {
+    const html = render();
+    const reviews = sectionHtml(html, "reviews");
+    expect(reviews).toMatch(
+      /<section id="bewertungen" class="jr-section jr-reviews/
+    );
+    expect(reviews).toMatch(/<blockquote class="jr-quote"/);
+    expect(reviews).toMatch(/class="jr-stars"/);
+    expect(reviews.match(/<blockquote/g)).toHaveLength(1);
+    expect(reviews).toContain("Google-Bewertung");
+    // Kein Link ohne Google-Adresse im Dokument
+    expect(reviews).not.toContain("auf Google</a>");
+  });
+
+  test("Stimmen ohne Sternwert: keine Sterne", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "testimonials"
+        ? { ...s, items: s.items.map(({ rating: _r, ...i }) => i) }
+        : s
+    );
+    const reviews = sectionHtml(render(data), "reviews");
+    expect(reviews).toMatch(/<blockquote class="jr-quote"/);
+    expect(reviews).not.toContain("jr-stars");
+  });
+
+  test("ohne Bewertungen kein Stimmen-Abschnitt und lückenlose Kapitel ab 02", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "testimonials" ? undefined : s
+    );
+    const html = render(data);
+    expect(html).not.toContain('class="jr-section jr-reviews');
+    const nos = [...html.matchAll(/jr-chapter-no[^>]*>(\d\d)</g)].map(m =>
+      Number(m[1])
+    );
+    expect(nos.length).toBeGreaterThan(2);
+    expect(nos).toEqual(nos.map((_, i) => i + 2));
+  });
+
+  test("nur nicht zitierfähige Stimmen: Abschnitt entfällt, Nummern lückenlos", () => {
+    const data = withSections(journalDoc(), s =>
+      s.type === "testimonials"
+        ? { ...s, items: [{ author: "X", text: "Ok.", rating: 3 }] }
+        : s
+    );
+    const html = render(data);
+    expect(html).not.toContain('class="jr-section jr-reviews');
+    const nos = [...html.matchAll(/jr-chapter-no[^>]*>(\d\d)</g)].map(m =>
+      Number(m[1])
+    );
+    expect(nos).toEqual(nos.map((_, i) => i + 2));
+  });
+
+  test("minimal rendert ohne Fehler", () => {
+    expect(() => render(journalDoc("minimal"))).not.toThrow();
   });
 });

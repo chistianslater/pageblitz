@@ -259,5 +259,74 @@ ${NAME_FIT}
   .pb-journal .jr-step:last-child{border-bottom:0}
   .pb-journal .jr-step-no{font-size:var(--sys-h2-size)}
 }
+/* Hilfen: nur für Screenreader; Bildunterschrift „Abb. n" wie im Einstieg */
+.pb-journal .jr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.pb-journal .jr-figcap{${step("small")};font-size:calc(var(--sys-small-size) * .93);color:var(--sys-muted);
+  margin-top:calc(var(--sys-space-xs) + var(--sys-space-2xs) / 2);display:flex;justify-content:space-between;gap:var(--sys-space-m)}
+.pb-journal .jr-abb{font-style:italic;font-family:var(--sys-font-display);font-size:calc(var(--sys-small-size) * 1.07);letter-spacing:0;color:var(--sys-ink)}
+
+/* Über uns: Kapitel, Hochformat mit Abb., Fließtext */
+.pb-journal .jr-about-photo{margin:var(--sys-space-xs) 0 calc(var(--sys-space-l) - var(--sys-space-2xs))}
+.pb-journal .jr-about-photo img{width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;background:var(--sys-rule)}
+.pb-journal .jr-about-body{max-width:var(--sys-space-measure)}
+.pb-journal .jr-about-body p+p{margin-top:var(--sys-space-s)}
+.pb-journal .jr-about-body .jr-about-lede{${step("lede")};margin-bottom:var(--sys-space-m)}
+.pb-journal .jr-about-body .jr-section-links{margin-top:calc(var(--sys-space-m) + var(--sys-space-2xs))}
+
+/* Einblicke: Wischstreifen gemischter Formate (Aman), vertikal mittig */
+.pb-journal .jr-gallery{padding-bottom:calc(var(--sys-space-section) * .75)}
+.pb-journal .jr-strip{display:flex;gap:calc(var(--sys-space-s) - var(--sys-space-2xs) / 2);align-items:center;overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;padding-inline:var(--sys-space-gutter);scroll-padding-inline:var(--sys-space-gutter);scrollbar-width:none}
+.pb-journal .jr-strip::-webkit-scrollbar{display:none}
+.pb-journal .jr-strip figure{flex:0 0 auto;margin:0;scroll-snap-align:start;position:relative}
+.pb-journal .jr-strip img{width:100%;height:auto;object-fit:cover;background:var(--sys-rule)}
+.pb-journal .jr-strip figure:nth-child(3n+1){width:62%}
+.pb-journal .jr-strip figure:nth-child(3n+1) img{aspect-ratio:3/4}
+.pb-journal .jr-strip figure:nth-child(3n+2){width:48%}
+.pb-journal .jr-strip figure:nth-child(3n+2) img{aspect-ratio:1/1}
+.pb-journal .jr-strip figure:nth-child(3n) {width:74%}
+.pb-journal .jr-strip figure:nth-child(3n) img{aspect-ratio:1.618/1}
+.pb-journal .jr-strip[data-count="1"] figure{width:100%}
+.pb-journal .jr-strip[data-count="1"] img{aspect-ratio:3/2}
+.pb-journal .jr-strip:focus-visible{outline-offset:calc(var(--sys-space-2xs) * -1)}
+/* Handy: eine Zeile „Abb. 3 bis 7 Wischen für mehr" statt Unterschrift je Bild */
+.pb-journal .jr-strip .jr-figcap{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.pb-journal .jr-strip-note{margin-top:var(--sys-space-m);padding-top:var(--sys-space-s);border-top:1px solid var(--sys-rule)}
+
+/* Stimmen: zentriert, eine große kursive Stimme */
+.pb-journal .jr-reviews{text-align:center}
+.pb-journal .jr-reviews .jr-chapter-label{margin-bottom:0}
+.pb-journal .jr-quote-figure{margin:calc(var(--sys-space-m) - var(--sys-space-2xs)) 0 0}
+.pb-journal .jr-stars{${step("small")};letter-spacing:.3em;color:var(--sys-accent);margin-bottom:calc(var(--sys-space-m) - var(--sys-space-2xs))}
+.pb-journal .jr-quote{margin:0}
+.pb-journal .jr-quote p{${step("lede")};font-style:italic;font-weight:300;line-height:1.42;hyphens:manual;text-wrap:balance;max-width:26ch;margin-inline:auto}
+.pb-journal .jr-quote-figure figcaption{margin-top:var(--sys-space-m);display:grid;gap:var(--sys-space-2xs);justify-items:center}
+.pb-journal .jr-quote-source{${step("small")};color:var(--sys-muted)}
+
+@media (min-width:64rem){
+  .pb-journal .jr-about-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:var(--sys-space-m)}
+  .pb-journal .jr-about-grid>.jr-chapter{grid-column:7/13;grid-row:1;align-self:end}
+  .pb-journal .jr-about-photo{grid-column:1/6;grid-row:1/3;margin:0}
+  .pb-journal .jr-about-photo img{aspect-ratio:4/5}
+  .pb-journal .jr-about-body{grid-column:7/12;grid-row:2}
+  .pb-journal .jr-about--text .jr-about-grid>.jr-chapter{grid-column:1/5;grid-row:1/3;align-self:start}
+  .pb-journal .jr-about--text .jr-about-body{grid-column:6/12;grid-row:1/3}
+  .pb-journal .jr-strip{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--sys-space-xl) var(--sys-space-m);align-items:end;
+    overflow:visible;max-width:var(--sys-space-max);margin-inline:auto;scroll-snap-type:none}
+  .pb-journal .jr-strip figure{width:auto!important}
+  .pb-journal .jr-strip figure:nth-child(4n+1){grid-column:1/8}
+  .pb-journal .jr-strip figure:nth-child(4n+1) img{aspect-ratio:3/2}
+  .pb-journal .jr-strip figure:nth-child(4n+2){grid-column:8/13}
+  .pb-journal .jr-strip figure:nth-child(4n+2) img{aspect-ratio:4/5}
+  .pb-journal .jr-strip figure:nth-child(4n+3){grid-column:1/6}
+  .pb-journal .jr-strip figure:nth-child(4n+3) img{aspect-ratio:4/5}
+  .pb-journal .jr-strip figure:nth-child(4n){grid-column:6/13}
+  .pb-journal .jr-strip figure:nth-child(4n) img{aspect-ratio:3/2}
+  .pb-journal .jr-strip figure:last-child:nth-child(odd){grid-column:1/13}
+  .pb-journal .jr-strip figure:last-child:nth-child(odd) img{aspect-ratio:2.2/1}
+  .pb-journal .jr-strip .jr-figcap{position:static;width:auto;height:auto;overflow:visible;clip-path:none;white-space:normal}
+  .pb-journal .jr-strip-note{display:none}
+  .pb-journal .jr-quote p{font-size:calc(var(--sys-h2-size) * .72);line-height:1.3;max-width:28ch}
+}
 /* ende journal */
 `;

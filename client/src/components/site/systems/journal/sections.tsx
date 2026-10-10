@@ -19,6 +19,7 @@ import {
   JournalTeamSlot,
   teamSlotAfter,
 } from "./Offer";
+import { JournalAbout, JournalGallery, JournalReviews } from "./Story";
 
 /**
  * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
@@ -158,13 +159,25 @@ export function renderJournalSection(
     case "team":
       return <JournalTeam section={section} sections={sections} />;
     case "about":
-      return teamSlotAfter(sections) === "about" ? (
-        <JournalTeamSlot sections={sections} />
-      ) : null;
+      return (
+        <>
+          <JournalAbout section={section} sections={sections} />
+          {teamSlotAfter(sections) === "about" && (
+            <JournalTeamSlot sections={sections} />
+          )}
+        </>
+      );
     case "gallery":
-      return teamSlotAfter(sections) === "gallery" ? (
-        <JournalTeamSlot sections={sections} />
-      ) : null;
+      return (
+        <>
+          <JournalGallery section={section} sections={sections} />
+          {teamSlotAfter(sections) === "gallery" && (
+            <JournalTeamSlot sections={sections} />
+          )}
+        </>
+      );
+    case "testimonials":
+      return <JournalReviews section={section} sections={sections} />;
     default:
       return null;
   }
