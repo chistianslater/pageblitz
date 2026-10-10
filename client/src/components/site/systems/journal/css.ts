@@ -487,7 +487,6 @@ ${NAME_FIT}
 }
 /* Bewegung: Startzustände nur mit Script (data-jr-ready) und ohne reduzierte Bewegung.
    Nur transform, opacity, clip-path. Das Foto bleibt deckend (LCP), es wird nur aufgedeckt. */
-.pb-journal .jr-strip-bar{display:none}
 @media (prefers-reduced-motion: no-preference){
   .pb-journal[data-jr-ready] .jr-entry h1{animation:jr-rise .7s cubic-bezier(.16,1,.3,1) both}
   .pb-journal[data-jr-ready] .jr-entry-line{animation:jr-rise .7s cubic-bezier(.16,1,.3,1) .12s both}
@@ -497,11 +496,13 @@ ${NAME_FIT}
   @keyframes jr-rise{from{opacity:0;transform:translateY(14px)}}
   @keyframes jr-reveal{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
 }
-/* Streifen-Fortschritt: nur Handy, nur wenn der Streifen wirklich scrollt */
+/* Streifen-Fortschritt: liegt absolut im Abschnittsrand (kein Platz im Fluss, kein Layoutsprung),
+   nur opacity wird geschaltet; sichtbar nur, wenn der Streifen wirklich überläuft (data-active) */
+.pb-journal .jr-gallery{position:relative}
+.pb-journal .jr-strip-bar{position:absolute;left:var(--sys-space-gutter);right:var(--sys-space-gutter);bottom:calc(var(--sys-space-section) * .3);height:1px;background:var(--sys-rule);overflow:hidden;opacity:0;pointer-events:none}
+.pb-journal .jr-strip-bar>span{display:block;height:100%;background:var(--sys-ink);transform:scaleX(0);transform-origin:left}
 @media (max-width:63.99rem){
-  .pb-journal[data-jr-ready] .jr-strip-bar{display:block;height:1px;margin:var(--sys-space-s) var(--sys-space-gutter) 0;background:var(--sys-rule);overflow:hidden}
-  .pb-journal[data-jr-ready] .jr-strip[data-count="1"] + .jr-strip-bar{display:none}
-  .pb-journal .jr-strip-bar>span{display:block;height:100%;background:var(--sys-ink);transform:scaleX(0);transform-origin:left}
+  .pb-journal[data-jr-ready] .jr-strip-bar[data-active]{opacity:1;transition:opacity .3s ease}
 }
 /* ende journal */
 `;
