@@ -498,8 +498,8 @@ ${NAME_FIT}
 }
 /* Streifen-Fortschritt: liegt absolut im Abschnittsrand (kein Platz im Fluss, kein Layoutsprung),
    nur opacity wird geschaltet; sichtbar nur, wenn der Streifen wirklich überläuft (data-active) */
-.pb-journal .jr-gallery{position:relative}
-.pb-journal .jr-strip-bar{position:absolute;left:var(--sys-space-gutter);right:var(--sys-space-gutter);bottom:calc(var(--sys-space-section) * .3);height:1px;background:var(--sys-rule);overflow:hidden;opacity:0;pointer-events:none}
+.pb-journal .jr-strip-wrap{position:relative}
+.pb-journal .jr-strip-bar{position:absolute;left:var(--sys-space-gutter);right:var(--sys-space-gutter);top:calc(100% + var(--sys-space-xs));height:1px;background:var(--sys-rule);overflow:hidden;opacity:0;pointer-events:none}
 .pb-journal .jr-strip-bar>span{display:block;height:100%;background:var(--sys-ink);transform:scaleX(0);transform-origin:left}
 @media (max-width:63.99rem){
   .pb-journal[data-jr-ready] .jr-strip-bar[data-active]{opacity:1;transition:opacity .3s ease}

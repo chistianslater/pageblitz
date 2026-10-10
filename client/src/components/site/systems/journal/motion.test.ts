@@ -7,7 +7,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { JOURNAL_CSS } from "./css";
-import { isRevealed, mountJournalMotion } from "./motion";
+import { mountJournalMotion } from "./motion";
 
 /** Kleine DOM-Attrappe: nur, was mountJournalMotion anfasst. */
 function el(extra: Record<string, unknown> = {}) {
@@ -81,24 +81,6 @@ describe("mountJournalMotion", () => {
     removeEventListener: vi.fn(),
   });
 
-  test("sehr hoher Abschnitt wird über 15 % des Sichtfensters sichtbar", () => {
-    // Abschnitt 10000px hoch, 1000px sichtbar: Ratio 0,1 < 0,15
-    expect(
-      isRevealed({
-        intersectionRatio: 0.1,
-        intersectionRect: { height: 1000 },
-        rootBounds: { height: 800 },
-      })
-    ).toBe(true);
-    expect(
-      isRevealed({
-        intersectionRatio: 0.01,
-        intersectionRect: { height: 20 },
-        rootBounds: { height: 800 },
-      })
-    ).toBe(false);
-  });
-
   test("beobachtet Abschnitte einmalig und setzt data-jr-ready", () => {
     const sections = [el(), el()];
     const strip = el();
@@ -113,9 +95,10 @@ describe("mountJournalMotion", () => {
     vi.stubGlobal(
       "IntersectionObserver",
       class {
-        constructor(f: typeof cb, public opts: { threshold: number[] }) {
+        constructor(f: typeof cb, public opts: { threshold: number; rootMargin: string }) {
           cb = f;
-          expect(opts.threshold).toEqual([0, 0.15]);
+          expect(opts.threshold).toBe(0);
+          expect(opts.rootMargin).toBe("0px 0px -15% 0px");
         }
         observe = observe;
         unobserve = unobserve;
@@ -139,10 +122,9 @@ describe("mountJournalMotion", () => {
     cb([{ isIntersecting: true, intersectionRatio: 0.2, intersectionRect: { height: 10 }, target: sections[0] }]);
     expect(sections[0].attrs.has("data-jr-in")).toBe(true);
     expect(unobserve).toHaveBeenCalledWith(sections[0]);
-    cb([{ isIntersecting: true, intersectionRatio: 0.01, intersectionRect: { height: 5 }, rootBounds: { height: 800 }, target: sections[1] }]);
-    expect(sections[1].attrs.has("data-jr-in")).toBe(false);
-    cb([{ isIntersecting: false, intersectionRatio: 0, intersectionRect: { height: 0 }, target: sections[1] }]);
-    expect(sections[1].attrs.has("data-jr-in")).toBe(false);
+    cb([{ isIntersecting: true, intersectionRatio: 0.01, intersectionRect: { height: 5 }, target: sections[1] }]);
+    expect(sections[1].attrs.has("data-jr-in")).toBe(true);
+    expect(unobserve).toHaveBeenCalledWith(sections[1]);
     stop();
     expect(disconnect).toHaveBeenCalled();
     expect(strip.listeners.size).toBe(0);
@@ -176,9 +158,9 @@ describe("mountJournalMotion", () => {
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
     vi.stubGlobal("window", win());
     let n = 0;
-    vi.stubGlobal("document", { createElement: () => (n++ === 0 ? bar : fill) });
+    vi.stubGlobal("document", { createElement: () => [bar, fill, el()][n++] });
     mountJournalMotion(root as unknown as HTMLElement);
-    expect(strip.insertAdjacentElement).toHaveBeenCalledWith("afterend", bar);
+    expect(strip.insertAdjacentElement).toHaveBeenCalledWith("beforebegin", expect.anything());
     // 300 / (1000-400) = 0.5
     expect(fill.style.transform).toBe("scaleX(0.5)");
     expect(bar.attrs.has("data-active")).toBe(true);

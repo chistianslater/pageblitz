@@ -3,23 +3,11 @@
  * ersten Frame (`data-jr-ready`); ohne Script und bei reduzierter Bewegung
  * bleibt alles sichtbar (siehe CSS-Block „Bewegung" in css.ts).
  */
-/** 15 % des Abschnitts ODER 15 % des Sichtfensters: hohe Abschnitte sonst nie. */
-export function isRevealed(e: {
-  intersectionRatio: number;
-  intersectionRect: { height: number };
-  rootBounds?: { height: number } | null;
-}): boolean {
-  if (e.intersectionRatio >= 0.15) return true;
-  const vh =
-    e.rootBounds?.height ??
-    (typeof window !== "undefined" ? window.innerHeight : 0);
-  return vh > 0 && e.intersectionRect.height >= 0.15 * vh;
-}
-
 export function mountJournalMotion(root: HTMLElement): () => void {
   const cleanups: Array<() => void> = [];
 
-  // Abschnitte: einmalig einblenden, sobald sie 15 % sichtbar sind.
+  // Abschnitte: einmalig einblenden, sobald ihre Oberkante in die oberen 85 % des
+  // Sichtfensters tritt (unabhängig von der Abschnittshöhe).
   const sections = Array.from(
     root.querySelectorAll<HTMLElement>(".jr-section")
   );
@@ -29,11 +17,11 @@ export function mountJournalMotion(root: HTMLElement): () => void {
     const io = new IntersectionObserver(
       entries =>
         entries.forEach(e => {
-          if (!e.isIntersecting || !isRevealed(e)) return;
+          if (!e.isIntersecting) return;
           e.target.setAttribute("data-jr-in", "");
           io.unobserve(e.target);
         }),
-      { threshold: [0, 0.15] }
+      { threshold: 0, rootMargin: "0px 0px -15% 0px" }
     );
     sections.forEach(s => io.observe(s));
     cleanups.push(() => io.disconnect());
@@ -57,7 +45,12 @@ function mountStripProgress(strip: HTMLElement): () => void {
   bar.setAttribute("aria-hidden", "true");
   const fill = document.createElement("span");
   bar.append(fill);
-  strip.insertAdjacentElement("afterend", bar);
+  // Positionierter Rahmen um den Streifen: die Leiste hängt per top:100%
+  // direkt darunter, unabhängig von Unterschrift oder Abschnittshöhe.
+  const wrap = document.createElement("div");
+  wrap.className = "jr-strip-wrap";
+  strip.insertAdjacentElement("beforebegin", wrap);
+  wrap.append(strip, bar);
 
   let pending = 0;
   const paint = () => {
@@ -87,6 +80,6 @@ function mountStripProgress(strip: HTMLElement): () => void {
     window.removeEventListener("resize", onResize);
     window.removeEventListener("orientationchange", onResize);
     if (pending) cancelAnimationFrame(pending);
-    bar.remove?.();
+    wrap.replaceWith?.(strip);
   };
 }
