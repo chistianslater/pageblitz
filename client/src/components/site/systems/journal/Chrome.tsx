@@ -86,6 +86,22 @@ function NavLinks({ items }: { items: NavItem[] }) {
   );
 }
 
+/**
+ * Schließt das Menü nach Klick auf einen Eintrag (Sprung zum Anker), per
+ * Escape (Fokus zurück auf „Menü") und per Klick daneben. Inline-Script,
+ * weil SSR-Kundenseiten nicht hydrieren; ohne JS bleibt das Menü per
+ * <summary> bedienbar und schließt über einen zweiten Klick/Enter.
+ */
+export const JOURNAL_MENU_JS = `(function(){
+var d=document;
+d.querySelectorAll(".jr-menu").forEach(function(m){
+var t=m.querySelector("summary");
+m.addEventListener("click",function(e){if(e.target.closest&&e.target.closest(".jr-menu-panel a"))m.open=false});
+d.addEventListener("keydown",function(e){if(e.key==="Escape"&&m.open){m.open=false;t&&t.focus()}});
+d.addEventListener("click",function(e){if(m.open&&!m.contains(e.target))m.open=false});
+});
+})();`;
+
 export function JournalHead({
   navItems,
   anchorPrefix,
@@ -141,6 +157,7 @@ export function JournalHead({
         </a>
         <NavLinks items={navItems} />
       </nav>
+      <script dangerouslySetInnerHTML={{ __html: JOURNAL_MENU_JS }} />
     </header>
   );
 }

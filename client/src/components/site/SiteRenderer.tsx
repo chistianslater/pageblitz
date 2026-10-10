@@ -35,6 +35,7 @@ import type {
 import { PACK_MODULES } from "./packRegistry";
 import { SYSTEM_MODULES } from "./systems/registry";
 import { SystemContext, type SystemState } from "./systems/SystemContext";
+import { legacyPackVars } from "./systems/legacyVars";
 import { getSystem } from "../../../../shared/designSystems/registry";
 import { getPalette } from "../../../../shared/designSystems/palette";
 import { systemCssVars } from "../../../../shared/designSystems/toCss";
@@ -100,6 +101,11 @@ import {
   withAboutFallbackImage,
   withGalleryLimit,
 } from "./engine";
+
+/** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
+function withLegacyVars(sys: Record<string, string>): Record<string, string> {
+  return { ...sys, ...legacyPackVars(sys) };
+}
 
 /**
  * Styles einer Designsystem-Seite (rev 3): Modul-CSS plus nur die geteilten
@@ -269,7 +275,7 @@ export const SiteRenderer: React.FC<{
         : `Pack-Modul nicht registriert: ${effectiveData.stylePackId}`
     );
   const vars = systemDef
-    ? systemCssVars(systemDef, effectiveData.palette)
+    ? withLegacyVars(systemCssVars(systemDef, effectiveData.palette))
     : toCssVars(
         getConstitution(effectiveData.stylePackId),
         effectiveData.designRevision === 2

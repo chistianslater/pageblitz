@@ -8,7 +8,12 @@ import type {
 export type JournalSection = SectionV2 | PageSection;
 import { rich } from "../../richText";
 
-/** Nummerierte Kapitel: nur Inhaltsabschnitte, lückenlos ab 01. */
+/**
+ * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
+ * sichtbare Ziffer), der erste Inhaltsabschnitt 02; Kontakt („Besuch")
+ * zählt mit. Lückenlos über die übergebenen (sichtbaren) Abschnitte in
+ * Renderreihenfolge.
+ */
 const NUMBERED: ReadonlySet<JournalSection["type"]> = new Set([
   "services",
   "process",
@@ -19,17 +24,21 @@ const NUMBERED: ReadonlySet<JournalSection["type"]> = new Set([
   "pricelist",
   "menu",
   "faq",
+  "contact",
 ]);
 
-/** Kapitelnummer eines Abschnitts (1-basiert), 0 für nicht nummerierte. */
+/** Der Einstieg belegt Kapitel 01. */
+const FIRST_CHAPTER = 2;
+
+/** Kapitelnummer eines Abschnitts (ab 02), 0 für nicht nummerierte. */
 export function chapterIndex(
   sections: readonly JournalSection[],
   type: JournalSection["type"]
 ): number {
-  return (
-    sections.filter(s => NUMBERED.has(s.type)).findIndex(s => s.type === type) +
-    1
-  );
+  const position = sections
+    .filter(s => NUMBERED.has(s.type))
+    .findIndex(s => s.type === type);
+  return position === -1 ? 0 : position + FIRST_CHAPTER;
 }
 
 /**

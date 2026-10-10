@@ -135,20 +135,49 @@ describe("Journal: Grundgerüst", () => {
   });
 });
 
-describe("Journal: Kapitel", () => {
-  const sections = [
-    { type: "hero" },
-    { type: "services" },
-    { type: "contact" },
-    { type: "about" },
-    { type: "faq" },
-  ] as unknown as SectionV2[];
+describe("Journal: Pack-Aliase für geteilte Bausteine", () => {
+  test("--pb-* tragen die Palette (Salbei)", () => {
+    const html = render(journalDoc("full", "salbei"));
+    const style = html.match(
+      /<div[^>]*class="pb-site pb-journal"[^>]*style="([^"]*)"/
+    )![1];
+    expect(style).toContain("--pb-accent:#4a6545");
+    expect(style).toContain("--pb-canvas:#eef0ea");
+    expect(style).toContain("--pb-ink:#232924");
+    expect(style).toContain("--pb-muted:#556057");
+    expect(style).toContain("--pb-line:#d2d8cd");
+    expect(style).toContain("--pb-accent-contrast:#eef0ea");
+    expect(style).toMatch(/--pb-font-body:&quot;Source Sans 3&quot;/);
+    expect(style).not.toContain("--pb-radius");
+  });
+});
 
-  test("chapterIndex zählt nur Inhaltsabschnitte lückenlos ab 1", () => {
-    expect(chapterIndex(sections, "services")).toBe(1);
-    expect(chapterIndex(sections, "about")).toBe(2);
-    expect(chapterIndex(sections, "faq")).toBe(3);
-    expect(chapterIndex(sections, "contact")).toBe(0);
+describe("Journal: Kapitel", () => {
+  const of = (...types: string[]) =>
+    types.map(type => ({ type })) as unknown as SectionV2[];
+
+  test("chapterIndex: Einstieg ist 01, Inhalt ab 02, Besuch zählt mit", () => {
+    const sections = of(
+      "hero",
+      "services",
+      "about",
+      "testimonials",
+      "faq",
+      "contact"
+    );
+    expect(chapterIndex(sections, "hero")).toBe(0);
+    expect(chapterIndex(sections, "services")).toBe(2);
+    expect(chapterIndex(sections, "about")).toBe(3);
+    expect(chapterIndex(sections, "testimonials")).toBe(4);
+    expect(chapterIndex(sections, "faq")).toBe(5);
+    expect(chapterIndex(sections, "contact")).toBe(6);
+  });
+
+  test("chapterIndex bleibt ohne Stimmen lückenlos", () => {
+    const sections = of("hero", "services", "about", "faq", "contact");
+    expect(chapterIndex(sections, "faq")).toBe(4);
+    expect(chapterIndex(sections, "contact")).toBe(5);
+    expect(chapterIndex(sections, "testimonials")).toBe(0);
   });
 
   test("JournalChapter: kursive Nummer und Label über der Serifen-H2", () => {
