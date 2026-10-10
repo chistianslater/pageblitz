@@ -249,13 +249,18 @@ const coreProcedures = {
       const business = await getBusinessById(loaded.website.businessId);
       const category = loaded.doc?.businessCategory ?? business?.category ?? "";
       const doc = loaded.doc;
-      const systems = systemCandidates(
-        doc ?? {
-          businessCategory: category,
-          businessName: business?.name ?? "",
-        },
-        input.count - 1
-      );
+      // Systeme nur in Runde 0 (Produktentscheid): „Andere Richtungen"
+      // blättert danach ausschließlich durch Packs.
+      const systems =
+        input.round === 0
+          ? systemCandidates(
+              doc ?? {
+                businessCategory: category,
+                businessName: business?.name ?? "",
+              },
+              input.count - 1
+            )
+          : [];
       const packIds = getV2VariantCandidates(
         category,
         input.round,

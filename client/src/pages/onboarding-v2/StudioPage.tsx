@@ -642,6 +642,7 @@ export default function StudioPage({ token }: { token: string }) {
                   : null
               }
               currentPalette={state.doc?.palette ?? null}
+              previewVersion={studio.previewVersion}
               onApplied={() => {
                 studio.refetch();
                 studio.bumpPreview();

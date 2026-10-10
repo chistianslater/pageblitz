@@ -82,7 +82,6 @@ function SystemCandidateCard({
       <button
         type="button"
         className="pb-studio-cand-pick"
-        aria-pressed={false}
         disabled={disabled || !onPick}
         onClick={() => onPick?.(candidate.id, palette)}
       >
@@ -188,6 +187,8 @@ interface StylePanelProps {
   /** Designsystem der Seite (nur rev 3) und seine Farbstimmung. */
   currentSystem?: DesignSystemId | null;
   currentPalette?: string | null;
+  /** Cache-Bust für die Systemvorschauen (studio.previewVersion). */
+  previewVersion?: number;
 }
 
 export function StylePanel({
@@ -203,6 +204,7 @@ export function StylePanel({
   colorOverrides = null,
   currentSystem = null,
   currentPalette = null,
+  previewVersion = 0,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -371,7 +373,11 @@ export function StylePanel({
       {/* Marken-Import zuerst (2026-09-03): Wer schon eine Website hat,
           soll Logo, Farbe und Schrift übernehmen können, bevor er eine
           Richtung wählt — die Richtung übernimmt die Werte dann. */}
-      <BrandImportCard token={token} onApplied={onApplied} />
+      {/* Marken-Import schreibt Akzent und Schriftpaar — beides nutzt ein
+          Designsystem (rev 3) nicht, deshalb dort ausgeblendet. */}
+      {!activeSystem && (
+        <BrandImportCard token={token} onApplied={onApplied} />
+      )}
       {active?.kind === "system" && activeSystem && (
         <section
           className="pb-studio-palette-current"
@@ -411,6 +417,7 @@ export function StylePanel({
           onPick={pick}
           onPickSystem={(id, palette) => applySystem(id, palette)}
           preselectPackId={preselectPackId}
+          previewVersion={previewVersion}
         />
       )}
       {(select.error || selectSystem.error) && (
@@ -418,24 +425,23 @@ export function StylePanel({
           {select.error?.message ?? selectSystem.error?.message}
         </p>
       )}
-      <details className="pb-studio-theme-toggle">
-        {/* rev 3: Farben kommen aus der Farbstimmung, Schriften aus dem
-            System — hier bleiben nur Abstände und Bilder. */}
-        <summary>
-          {activeSystem
-            ? "Abstände & Bilder anpassen"
-            : "Farben, Schriften & Abstände anpassen"}
-        </summary>
-        <ThemeEditor
-          token={token}
-          packId={activePackId}
-          accent={accent}
-          fontPairId={fontPairId}
-          designProfile={designProfile}
-          colorOverrides={colorOverrides}
-          onApplied={onApplied}
-        />
-      </details>
+      {/* rev 3: Farben kommen aus der Farbstimmung, Schriften aus dem
+          System; Abstände/Bildwirkung ignoriert der System-Renderer —
+          der ganze Feinschliff-Block entfällt. */}
+      {!activeSystem && (
+        <details className="pb-studio-theme-toggle">
+          <summary>Farben, Schriften &amp; Abstände anpassen</summary>
+          <ThemeEditor
+            token={token}
+            packId={activePackId}
+            accent={accent}
+            fontPairId={fontPairId}
+            designProfile={designProfile}
+            colorOverrides={colorOverrides}
+            onApplied={onApplied}
+          />
+        </details>
+      )}
     </PanelFrame>
   );
 }

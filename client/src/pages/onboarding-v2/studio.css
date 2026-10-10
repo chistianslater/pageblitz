@@ -4396,9 +4396,14 @@
 .pb-design-side-wrap .pb-palette {
   justify-content: center;
 }
-/* Splash Mitte: Farbstimmung schwebt wie die Schnellwahl über der Vorschau. */
+/* Splash Mitte: Farbstimmung schwebt wie die Schnellwahl über der Vorschau.
+   `.pb-harmony button` (0,1,1) gäbe den Feldern sonst Rahmen und Fläche. */
 .pb-design-preview-shell .pb-harmony .pb-palette {
   padding: 4px 6px;
+}
+.pb-harmony .pb-palette-option {
+  border: 0;
+  background: transparent;
 }
 /* Stil-Panel: aktuelle Farbstimmung über den Alternativen. */
 .pb-studio-palette-current {

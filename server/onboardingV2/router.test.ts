@@ -51,6 +51,7 @@ import {
   runWebsiteGenerationV2Job,
 } from "../generationV2/runJob";
 import { invalidateSsrCache } from "../ssr/routes";
+import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 const mockedDb = vi.mocked(db);
 
 const ctx = (): TrpcContext => ({
@@ -656,6 +657,42 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(candidates.every(c => c.kind === "pack")).toBe(true);
   });
 
+  test("ohne Freischaltung: exakt die Pack-IDs und Reihenfolge wie bisher", async () => {
+    for (const round of [0, 1, 2]) {
+      for (const count of [2, 3] as const) {
+        const { candidates } = await caller().getStyleCandidates({
+          token: friseurToken,
+          round,
+          count,
+        });
+        expect(candidates.map(c => c.id)).toEqual(
+          getV2VariantCandidates("Friseursalon", round, count)
+        );
+      }
+    }
+  });
+
+  test("Systeme nur in Runde 0 — „Andere Richtungen“ zeigt danach nur Packs", async () => {
+    released.ids = ["journal"];
+    const first = await caller().getStyleCandidates({
+      token: friseurToken,
+      round: 0,
+      count: 3,
+    });
+    expect(first.candidates[0]).toMatchObject({ kind: "system", id: "journal" });
+    for (const round of [1, 2]) {
+      const { candidates } = await caller().getStyleCandidates({
+        token: friseurToken,
+        round,
+        count: 3,
+      });
+      expect(candidates.every(c => c.kind === "pack")).toBe(true);
+      expect(candidates.map(c => c.id)).toEqual(
+        getV2VariantCandidates("Friseursalon", round, 3)
+      );
+    }
+  });
+
   test("Kandidaten enthalten freigeschaltetes Hauptsystem", async () => {
     released.ids = ["journal"];
     const { candidates } = await caller().getStyleCandidates({
@@ -761,6 +798,26 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
         palette: "x;color:red" as any,
       })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("selectDesignSystem: verkaufte Website + fremder Nutzer → FORBIDDEN, nichts gespeichert", async () => {
+    released.ids = ["journal"];
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "s",
+      status: "sold",
+      businessId: 7,
+      websiteData: friseurDoc,
+      customerEmail: null,
+    } as any);
+    mockedDb.getSubscriptionByWebsiteId.mockResolvedValue({
+      userId: 9,
+      checkoutEmail: null,
+    } as any);
+    await expect(
+      caller().selectDesignSystem({ token: friseurToken, system: "journal" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 

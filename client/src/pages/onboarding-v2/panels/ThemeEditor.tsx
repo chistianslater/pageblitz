@@ -58,15 +58,12 @@ export function ThemeEditor({
   };
   return (
     <div className="pb-studio-theme">
-      {/* Ohne Pack (Designsystem, rev 3) gibt es keine Farb-/Schriftwahl
-          hier — die Farbstimmung sitzt oben im Stil-Panel. */}
       <h3 className="pb-studio-theme-title">
-        {packId ? "Farben, Schriften & Abstände" : "Abstände & Bilder"}
+        Farben, Schriften &amp; Abstände
       </h3>
       <p className="pb-studio-theme-hint">
-        {packId
-          ? "Dieselben abgestimmten Farben und Schriften wie beim Start. Jede Auswahl wird direkt übernommen."
-          : "Jede Auswahl wird direkt übernommen."}
+        Dieselben abgestimmten Farben und Schriften wie beim Start. Jede Auswahl
+        wird direkt übernommen.
       </p>
       {packId && (
         <DesignQuickControls

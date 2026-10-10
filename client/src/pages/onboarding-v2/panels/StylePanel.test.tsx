@@ -101,6 +101,7 @@ describe("Designsysteme im Stil-Panel (Task 16)", () => {
         busyId={null}
         onPick={() => {}}
         onPickSystem={() => {}}
+        previewVersion={7}
         candidates={[
           journal,
           { kind: "pack", id: "werkbank", name: "Werkbank", essence: "Robust." },
@@ -108,12 +109,15 @@ describe("Designsysteme im Stil-Panel (Task 16)", () => {
       />
     );
     expect(html).toContain(
-      `/preview-ssr/${token}?system=journal&amp;palette=papier&amp;v=0`
+      `/preview-ssr/${token}?system=journal&amp;palette=papier&amp;v=7`
     );
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('aria-label="Farbstimmung Journal"');
     expect(html.match(/role="radio"/g)).toHaveLength(3);
     expect(html).toContain("Dieses Design verwenden");
+    // Kein Umschalter: der Knopf der Systemkarte trägt kein aria-pressed.
+    const systemPick = html.match(/<button[^>]*>Dieses Design verwenden/)![0];
+    expect(systemPick).not.toContain("aria-pressed");
     // Pack-Karte unverändert daneben.
     expect(html).toContain(`/preview-ssr/${token}?pack=werkbank`);
     // Keine Radiogruppe und kein iframe innerhalb eines <button>.
@@ -139,7 +143,12 @@ describe("Designsysteme im Stil-Panel (Task 16)", () => {
     expect(html).toMatch(/role="radio"[^>]*aria-checked="true"[^>]*>(?:(?!<\/button>)[\s\S])*Ton/);
     expect(html).not.toContain("Schriftkombination");
     expect(html).not.toContain("Farbwelt");
-    expect(html).toContain("Abstände &amp; Bilder anpassen");
+    // Journal ignoriert density/imageTreatment — keine wirkungslosen Regler.
+    expect(html).not.toContain("Abstände");
+    expect(html).not.toContain("Bildwirkung");
+    expect(html).not.toContain("pb-studio-theme-toggle");
+    // Marken-Import schriebe Akzent/Schrift, die rev 3 nicht nutzt.
+    expect(html).not.toContain("pb-brand");
     // Kein Pack gilt als „Aktuell", solange das System aktiv ist.
     expect(html).not.toContain("Aktuell");
   });
