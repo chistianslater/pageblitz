@@ -272,6 +272,23 @@ export const SiteRenderer: React.FC<{
       cleanup?.();
     };
   }, [motionKey]);
+  useEffect(() => {
+    if (systemDef?.id !== "journal" || !rootRef.current) return;
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
+    const root = rootRef.current;
+    import("./systems/journal/motion")
+      .then(({ mountJournalMotion }) => {
+        if (!cancelled) cleanup = mountJournalMotion(root);
+      })
+      .catch(() => {
+        /* Seite bleibt ohne Bewegung vollständig lesbar. */
+      });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, [motionKey, systemDef?.id]);
   const mod = systemDef
     ? SYSTEM_MODULES[systemDef.id]
     : PACK_MODULES[effectiveData.stylePackId];

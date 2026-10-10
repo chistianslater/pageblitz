@@ -150,12 +150,13 @@ function systemOf(data: WebsiteDataV2): DesignSystemDef | undefined {
 }
 
 /**
- * Das Motion-Bundle (siteEntrance) gehört zur rev-2-Art-Direction; rev 1
- * und Designsysteme (rev 3) brauchen es nicht. Unversionierte Dokumente
+ * Das Motion-Bundle gehört zur rev-2-Art-Direction (siteEntrance) und zu
+ * Journal (rev 3); rev 1 und andere Designsysteme brauchen es nicht. Unversionierte Dokumente
  * gelten wie bisher als rev 2.
  */
 function usesMotionBundle(data: WebsiteDataV2): boolean {
-  return data.designRevision !== 1 && data.designRevision !== 3;
+  if (data.designRevision === 3) return systemOf(data)?.id === "journal";
+  return data.designRevision !== 1;
 }
 
 /** Schrift-Kopfzeilen: rev 3 selbst gehostet, sonst Google Fonts (unverändert). */

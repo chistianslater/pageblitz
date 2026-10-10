@@ -67,7 +67,7 @@ describe("SSR rev 3", () => {
     expect(html).not.toContain("/fonts/systems/");
   });
 
-  test("rev 3 lädt kein Motion-Bundle, rev 2 und unversioniert schon", () => {
+  test("Motion-Bundle: Journal (rev 3), rev 2 und unversioniert ja", () => {
     const rev3 = renderSiteHtml(
       withDesignSystem(getFixture("salon-noir", "full"), "journal"),
       { origin }
@@ -83,7 +83,7 @@ describe("SSR rev 3", () => {
     const motion = /<script type="module" src="[^"]*motion[^"]*">/;
     expect(rev2).toMatch(motion);
     expect(unversioned).toMatch(motion);
-    expect(rev3).not.toMatch(motion);
+    expect(rev3).toMatch(motion);
   });
 
   test("rev 3: Body-Hintergrund und Rechtsseiten in Papier/Tinte der Palette", () => {

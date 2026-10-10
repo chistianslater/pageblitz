@@ -485,5 +485,23 @@ ${NAME_FIT}
   .pb-journal .jr-stats-list[data-count="4"]{--jr-stats:4}
   .pb-journal .jr-stat-value{font-size:calc(var(--sys-display-size) * .72)}
 }
+/* Bewegung: Startzustände nur mit Script (data-jr-ready) und ohne reduzierte Bewegung.
+   Nur transform, opacity, clip-path. Das Foto bleibt deckend (LCP), es wird nur aufgedeckt. */
+.pb-journal .jr-strip-bar{display:none}
+@media (prefers-reduced-motion: no-preference){
+  .pb-journal[data-jr-ready] .jr-entry h1{animation:jr-rise .7s cubic-bezier(.16,1,.3,1) both}
+  .pb-journal[data-jr-ready] .jr-entry-line{animation:jr-rise .7s cubic-bezier(.16,1,.3,1) .12s both}
+  .pb-journal[data-jr-ready] .jr-entry-photo img{animation:jr-reveal 1s cubic-bezier(.16,1,.3,1) .1s both}
+  .pb-journal[data-jr-ready] .jr-section:not(.jr-entry):not([data-jr-in]){opacity:0;transform:translateY(16px)}
+  .pb-journal[data-jr-ready] .jr-section:not(.jr-entry){transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1)}
+  @keyframes jr-rise{from{opacity:0;transform:translateY(14px)}}
+  @keyframes jr-reveal{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
+}
+/* Streifen-Fortschritt: nur Handy, nur wenn der Streifen wirklich scrollt */
+@media (max-width:63.99rem){
+  .pb-journal[data-jr-ready] .jr-strip-bar{display:block;height:1px;margin:var(--sys-space-s) var(--sys-space-gutter) 0;background:var(--sys-rule);overflow:hidden}
+  .pb-journal[data-jr-ready] .jr-strip[data-count="1"] + .jr-strip-bar{display:none}
+  .pb-journal .jr-strip-bar>span{display:block;height:100%;background:var(--sys-ink);transform:scaleX(0);transform-origin:left}
+}
 /* ende journal */
 `;
