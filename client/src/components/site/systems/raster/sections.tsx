@@ -17,7 +17,11 @@ import {
   RasterUsp,
 } from "./Extras";
 import { RasterPriced, RasterTeam } from "./Offer";
-import { chapterNumber, showsFigures, type RasterChapterKey } from "./offerData";
+import {
+  chapterNumber,
+  showsFigures,
+  type RasterChapterKey,
+} from "./offerData";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */

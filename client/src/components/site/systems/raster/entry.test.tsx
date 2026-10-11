@@ -13,6 +13,7 @@ import {
 } from "./testkit";
 import {
   dockPlan,
+  echoesKicker,
   entryLede,
   entryVariant,
   isRoundTheClock,
@@ -132,12 +133,21 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
     );
   });
 
-  test("Satz: Bauplan-Überschrift „Gewerk in Ort“ fällt weg", () => {
-    const entry = entryOf(render(werkstattDoc()));
-    expect(entry).not.toContain("Kfz-Werkstatt in Dortmund-Hörde");
-    expect(entry).toContain(
-      '<p class="rs-entry-lede">Inspektion, Reifen und Reparaturen für alle Marken.</p>'
+  test("Satz: Überschrift steht im ersten Bild, Doppel des Kickers fällt weg", () => {
+    const doc = patchSection(werkstattDoc(), "hero", h => ({
+      ...h,
+      headline: "Marken mit Substanz aus Bocholt",
+    }));
+    expect(entryOf(render(doc))).toContain(
+      '<p class="rs-entry-lede">Marken mit Substanz aus Bocholt</p>'
     );
+    const twin = patchSection(werkstattDoc(), "hero", h => ({
+      ...h,
+      headline: "Kfz-Meisterbetrieb in Münster-Hiltrup",
+    }));
+    const entry = entryOf(render(twin));
+    expect(entry).not.toContain('rs-entry-lede">Kfz-Meisterbetrieb');
+    expect(entry).toContain('class="rs-entry-lede"');
   });
 
   test("Fit: Breite des längsten Worts als --rs-fit, Klasse nach Untergrenze", () => {
@@ -173,7 +183,9 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
       expect(size).toContain("/ (var(--rs-lines,1) *");
     }
     expect(sizeOf(".rs-wordmark")).toContain(`${mark * 100}svh`);
-    expect(sizeOf(".rs-entry--type .rs-wordmark")).toContain(`${typeMark * 100}svh`);
+    expect(sizeOf(".rs-entry--type .rs-wordmark")).toContain(
+      `${typeMark * 100}svh`
+    );
     expect(sizeOf(".rs-entry-clock-figure")).toContain(`${typeClock * 100}svh`);
   });
 
@@ -187,9 +199,33 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
     );
   });
 
-  test("Satz: „Gewerk in Ort“ wiederholt nicht den Kicker, lange Unterzeile wird gekürzt", () => {
+  test.each([
+    ["Marken mit Substanz aus Bocholt", "Dienstleistung in Bocholt", false],
+    ["Friseur in Münster", "Friseur in Münster", true],
+    ["Ihr Friseur für entspannte Momente", "Friseur in Münster", false],
+    ["Steuerberatung", "Steuerberatung in Münster", true],
+    [
+      "Kfz-Werkstatt in Dortmund-Hörde",
+      "Autowerkstatt in Dortmund-Hörde",
+      false,
+    ],
+  ])("echoesKicker(%s | %s) → %s", (headline, kicker, expected) => {
+    expect(echoesKicker(headline, kicker)).toBe(expected);
+  });
+
+  test("Satz: Überschrift vor Tagline vor Unterzeile (gekürzt)", () => {
     const doc = werkstattDoc();
-    expect(entryLede(heroOf(doc), doc, "Dortmund")).toBe(
+    const hero = { ...heroOf(doc), headline: "Friseur in Münster" };
+    const kicker = "Friseur in Münster";
+    expect(
+      entryLede({ ...hero, headline: "Schnell. Ehrlich." }, doc, kicker)
+    ).toBe("Schnell. Ehrlich.");
+    const withTagline = { ...doc, tagline: "Ehrlich gemacht, fair berechnet." };
+    expect(entryLede(hero, withTagline, kicker)).toBe(
+      "Ehrlich gemacht, fair berechnet."
+    );
+    const noTagline = { ...doc, tagline: undefined };
+    expect(entryLede(hero, noTagline, kicker)).toBe(
       "Inspektion, Reifen und Reparaturen für alle Marken."
     );
   });
@@ -226,8 +262,10 @@ describe("Raster-Einstieg: Fakten", () => {
   test("„24/7“ und „Jetzt erreichbar“ nur bei 24-h-Zeiten", () => {
     const allDay = entryOf(render(schluesselDoc()));
     expect(allDay).toContain(">24/7<");
-    expect(allDay).toContain('<span class="rs-sr">Rund um die Uhr erreichbar</span>');
-    expect(allDay).not.toContain("aria-label=\"Rund um die Uhr");
+    expect(allDay).toContain(
+      '<span class="rs-sr">Rund um die Uhr erreichbar</span>'
+    );
+    expect(allDay).not.toContain('aria-label="Rund um die Uhr');
     expect(allDay).toContain("Jetzt erreichbar");
     const daytime = patchSection(schluesselDoc(), "contact", c => ({
       ...c,
@@ -324,13 +362,18 @@ describe("Raster: Handy-Leiste", () => {
   });
 
   test("Hauptaktion schon E-Mail → kein zweites E-Mail-Feld", () => {
-    const base = patchSection(kanzleiDoc(), "contact", c => ({ ...c, phone: undefined }));
+    const base = patchSection(kanzleiDoc(), "contact", c => ({
+      ...c,
+      phone: undefined,
+    }));
     const doc = patchSection(base, "hero", h => ({
       ...h,
       ctaHref: "mailto:post@kanzlei-brandt.de",
     }));
     const plan = dockPlan(doc, blueprintOf(doc));
-    expect(plan?.kind === "fields" && plan.fields.map(f => f.label)).not.toContain("E-Mail");
+    expect(
+      plan?.kind === "fields" && plan.fields.map(f => f.label)
+    ).not.toContain("E-Mail");
   });
 
   test("Leiste auch auf Rechtsseiten", () => {

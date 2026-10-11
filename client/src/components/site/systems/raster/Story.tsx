@@ -213,7 +213,10 @@ export function RasterQuote({
   );
 }
 
-export function RasterReviews({ section, sections }: SectionProps<"testimonials">) {
+export function RasterReviews({
+  section,
+  sections,
+}: SectionProps<"testimonials">) {
   const { data, blueprint } = useSystem();
   const no = useChapterNo(sections, "testimonials");
   const quote = pickReviewQuote(section.items);

@@ -34,7 +34,12 @@ const aboutUrl = (list: readonly SystemSection[]) =>
 describe("claimPhotos: jedes Foto höchstens einmal je Seite", () => {
   test("Einstieg = Über uns = Galeriefoto: nur der Einstieg behält es", () => {
     const { list, bandPhotos } = claimPhotos(
-      [hero(url("x")), services(2), about(url("x")), gallery(img("x"), img(1), img(2), img(3))],
+      [
+        hero(url("x")),
+        services(2),
+        about(url("x")),
+        gallery(img("x"), img(1), img(2), img(3)),
+      ],
       []
     );
     // Bänder überspringen das Einstiegsfoto
@@ -62,11 +67,17 @@ describe("claimPhotos: jedes Foto höchstens einmal je Seite", () => {
   });
 
   test("Über-uns-Foto, das ein Band trägt, entfällt; eigenes bleibt und wird gezählt", () => {
-    const taken = claimPhotos([services(1), about(url(1)), gallery(img(1), img(2))], []);
+    const taken = claimPhotos(
+      [services(1), about(url(1)), gallery(img(1), img(2))],
+      []
+    );
     expect(taken.bandPhotos).toEqual([url(1)]);
     expect(aboutUrl(taken.list)).toBeUndefined();
     // Reihenfolge laut Entscheid: Einstieg → Bänder → Über uns → Galerie
-    const own = claimPhotos([services(1), about(url(8)), gallery(img(9), img(8), img(1))], []);
+    const own = claimPhotos(
+      [services(1), about(url(8)), gallery(img(9), img(8), img(1))],
+      []
+    );
     expect(own.bandPhotos).toEqual([url(9)]);
     expect(aboutUrl(own.list)).toBe(url(8));
     expect(galleryUrls(own.list)).toEqual([url(1)]);
@@ -94,13 +105,18 @@ describe("Raster: Seite zeigt kein Foto zweimal", () => {
     const doc = patchSection(
       patchSection(base, "about", a => ({ ...a, imageUrl: shared })),
       "gallery",
-      g => ({ ...g, images: [{ url: shared, alt: "Motor" }, img(1), img(1), img(2)] })
+      g => ({
+        ...g,
+        images: [{ url: shared, alt: "Motor" }, img(1), img(1), img(2)],
+      })
     );
     const html = render(doc);
     const srcs = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map(m => m[1]);
     expect(srcs.length).toBe(new Set(srcs).size);
     expect(sectionHtml(html, "about")).not.toContain("<img");
-    const abb = [...sectionHtml(html, "gallery").matchAll(/Abb\. (\d+)/g)].map(m => Number(m[1]));
+    const abb = [...sectionHtml(html, "gallery").matchAll(/Abb\. (\d+)/g)].map(
+      m => Number(m[1])
+    );
     expect(abb).toEqual([1, 2]);
   });
 });

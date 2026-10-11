@@ -33,7 +33,10 @@ describe("wordWidthEm (Geist-Tabelle, Versal, −0,05 em)", () => {
 describe("Referenzspalte", () => {
   it("aus dem Token gutter bei 320 px: 20 − 2 × 1,125 = 17,75 rem", () => {
     expect(REFERENCE_COLUMN_REM).toBeCloseTo(17.75, 5);
-    expect(clampAt("clamp(1.125rem, -0.1rem + 4.6vw, 4rem)", 90)).toBeCloseTo(4, 5);
+    expect(clampAt("clamp(1.125rem, -0.1rem + 4.6vw, 4rem)", 90)).toBeCloseTo(
+      4,
+      5
+    );
   });
 });
 

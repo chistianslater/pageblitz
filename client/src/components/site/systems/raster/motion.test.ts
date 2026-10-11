@@ -57,7 +57,8 @@ describe("Raster-Bewegung (CSS)", () => {
       expect(t.replace(/cubic-bezier\([^)]*\)/g, "")).not.toMatch(
         /width|height|top|left|margin|padding|filter|background/
       );
-    const frames = RASTER_MOTION_CSS.match(/@keyframes [\w-]+\{[^]*?\}\}/g) ?? [];
+    const frames =
+      RASTER_MOTION_CSS.match(/@keyframes [\w-]+\{[^]*?\}\}/g) ?? [];
     expect(frames.length).toBeGreaterThanOrEqual(4);
     for (const f of frames) {
       const props = [...f.matchAll(/([a-z-]+):/g)].map(m => m[1]);
@@ -79,22 +80,36 @@ describe("Raster-Bewegung (CSS)", () => {
   });
 
   test("Fotos (LCP) nie opacity 0 — nur scale(1.04) → 1", () => {
-    const settle = RASTER_MOTION_CSS.match(/@keyframes rs-settle\{[^]*?\}\}/)![0];
+    const settle = RASTER_MOTION_CSS.match(
+      /@keyframes rs-settle\{[^]*?\}\}/
+    )![0];
     expect(settle).toContain("transform:scale(1.04)");
     expect(settle).not.toMatch(/opacity|clip-path/);
-    expect(RASTER_MOTION_CSS).toMatch(/\.rs-entry-bg,[^{]*\.rs-entry-plate img\{animation:rs-settle 900ms/);
+    expect(RASTER_MOTION_CSS).toMatch(
+      /\.rs-entry-bg,[^{]*\.rs-entry-plate img\{animation:rs-settle 900ms/
+    );
   });
 
   test("Bänder: Abdunkeln/Skalieren nur mit Scroll-Zeitleiste, nie beim Fließen", () => {
-    expect(RASTER_MOTION_CSS).toMatch(/@supports \(animation-timeline: view\(\)\)\{/);
+    expect(RASTER_MOTION_CSS).toMatch(
+      /@supports \(animation-timeline: view\(\)\)\{/
+    );
     const supports = RASTER_MOTION_CSS.slice(
       RASTER_MOTION_CSS.indexOf("@supports (animation-timeline: view())")
     );
-    expect(supports).toMatch(/timeline-scope:--rs-b2,--rs-b3,--rs-b4,--rs-b5,--rs-b6/);
-    expect(supports).toMatch(/\.rs-band:nth-child\(2\)\{view-timeline-name:--rs-b2\}/);
-    expect(supports).toMatch(/\.rs-band:nth-child\(1\)[^{]*\{animation-timeline:--rs-b2\}/);
+    expect(supports).toMatch(
+      /timeline-scope:--rs-b2,--rs-b3,--rs-b4,--rs-b5,--rs-b6/
+    );
+    expect(supports).toMatch(
+      /\.rs-band:nth-child\(2\)\{view-timeline-name:--rs-b2\}/
+    );
+    expect(supports).toMatch(
+      /\.rs-band:nth-child\(1\)[^{]*\{animation-timeline:--rs-b2\}/
+    );
     // einzelnes Band und fließende Bänder (Handy/breit) bleiben ohne Effekt
-    expect(supports).toMatch(/\.rs-bands--one>\.rs-band[^{]*\{animation:none\}/);
+    expect(supports).toMatch(
+      /\.rs-bands--one>\.rs-band[^{]*\{animation:none\}/
+    );
     expect(supports).toMatch(
       /@media \(max-width:55\.99rem\)\{[^}]*\.rs-bands--flow>\.rs-band[^{]*\{animation:none\}/
     );
@@ -180,7 +195,10 @@ describe("mountRasterMotion", () => {
     vi.stubGlobal(
       "IntersectionObserver",
       class {
-        constructor(f: typeof cb, opts: { threshold: number; rootMargin: string }) {
+        constructor(
+          f: typeof cb,
+          opts: { threshold: number; rootMargin: string }
+        ) {
           cb = f;
           expect(opts.threshold).toBe(0);
           expect(opts.rootMargin).toBe("0px 0px -15% 0px");
@@ -249,7 +267,9 @@ describe("mountRasterMotion", () => {
       return 0;
     });
     vi.stubGlobal("cancelAnimationFrame", vi.fn());
-    expect(() => mountRasterMotion(root as unknown as HTMLElement)()).not.toThrow();
+    expect(() =>
+      mountRasterMotion(root as unknown as HTMLElement)()
+    ).not.toThrow();
     expect(root.attrs.has("data-rs-ready")).toBe(true);
   });
 });

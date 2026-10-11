@@ -97,8 +97,12 @@ describe("Raster: Zeiten und Kontakt", () => {
     );
     expect(html).toContain("Ludgeristraße 12, 48143 Münster");
     // Route nur als Karten-Fläche (ein Tab-Halt), kein doppelter Textlink
-    expect(html).not.toMatch(/class="rs-link" href="https:\/\/www\.google\.com\/maps/);
-    expect(html).toMatch(/class="rs-map" href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=[^"]+"/);
+    expect(html).not.toMatch(
+      /class="rs-link" href="https:\/\/www\.google\.com\/maps/
+    );
+    expect(html).toMatch(
+      /class="rs-map" href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=[^"]+"/
+    );
     expect(html).toMatch(
       /class="rs-link" href="mailto:post@kanzlei-brandt\.de">E-Mail schreiben</
     );

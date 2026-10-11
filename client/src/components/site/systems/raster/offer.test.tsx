@@ -198,18 +198,21 @@ describe("Raster-Leistungen: Bänder im Markup", () => {
 });
 
 describe("Raster-Bänder: Stapeln nur, wenn jedes Band passt", () => {
-  const long = "Wir übernehmen die laufende Finanzbuchhaltung, die Lohnabrechnung für alle Beschäftigten, die Umsatzsteuer-Voranmeldungen und stimmen jeden Monat alle Konten mit dir ab, damit am Jahresende nichts liegen bleibt.";
+  const long =
+    "Wir übernehmen die laufende Finanzbuchhaltung, die Lohnabrechnung für alle Beschäftigten, die Umsatzsteuer-Voranmeldungen und stimmen jeden Monat alle Konten mit dir ab, damit am Jahresende nichts liegen bleibt.";
   const withLong = (doc: Doc) =>
     patchSection(doc, "services", s => ({
       ...s,
-      items: s.items.map((it, i) => (i === 2 ? { ...it, description: long } : it)),
+      items: s.items.map((it, i) =>
+        i === 2 ? { ...it, description: long } : it
+      ),
     }));
 
   test("Schätzung: kurze Erklärung passt, lange nicht (Handy 320 × 568)", () => {
     const short = { title: "Reifen", description: "Wechsel und Einlagerung." };
     const tall = { title: "Reifen", description: long };
-    expect(bandHeightRem(short, BAND_PHONE)).toBeLessThan(568 / 16 * 0.85);
-    expect(bandHeightRem(tall, BAND_PHONE)).toBeGreaterThan(568 / 16 * 0.85);
+    expect(bandHeightRem(short, BAND_PHONE)).toBeLessThan((568 / 16) * 0.85);
+    expect(bandHeightRem(tall, BAND_PHONE)).toBeGreaterThan((568 / 16) * 0.85);
     // Desktop trägt dieselbe lange Erklärung
     expect(bandHeightRem(tall, BAND_DESKTOP)).toBeLessThan(600 / 16);
   });

@@ -125,13 +125,30 @@ export function googleFact(
 const LEDE_MAX = 90;
 const CLAUSE_MIN = 20;
 
+/** Ab diesem Anteil an Kicker-Wörtern gilt eine Überschrift als Doppel. */
+const KICKER_SHARE = 0.8;
+
+const tokens = (text: string) =>
+  text
+    .toLocaleLowerCase("de")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean);
+
 /**
- * „Kfz-Werkstatt in Dortmund-Hörde", „Taxi in Rhede und Umgebung" — die
- * Bauplan-Überschrift „Gewerk und Ort" (ohne Satzzeichen) wiederholt nur den
- * Kicker.
+ * Wiederholt die Überschrift nur den Kicker? Gleich, ganz darin enthalten
+ * oder zu mehr als 80 % aus Kicker-Wörtern („Friseur in Münster" bei Kicker
+ * „Friseur in Münster"). Ort oder Branche allein reichen nicht („Marken mit
+ * Substanz aus Bocholt" bleibt).
  */
-const PLACE_LINE =
-  /^[^.!?:]{1,50}\s(?:in|für|aus|im|am)\s\p{Lu}[\p{L}-]*(?:\s(?:und|&)\s[^.!?]*)?$/u;
+export function echoesKicker(headline: string, kicker: string): boolean {
+  const h = tokens(headline);
+  const k = tokens(kicker);
+  if (h.length === 0 || k.length === 0) return false;
+  if (h.join(" ") === k.join(" ") || k.join(" ").includes(h.join(" ")))
+    return true;
+  const known = new Set(k);
+  return h.filter(t => known.has(t)).length / h.length > KICKER_SHARE;
+}
 
 /** Erster Satzteil eines langen Satzes („… für alle Marken — mit …"). */
 function firstClause(text: string): string | undefined {
@@ -142,33 +159,22 @@ function firstClause(text: string): string | undefined {
 }
 
 /**
- * Satz des Einstiegs: Überschrift, wenn sie nicht nur „Gewerk in Ort"
- * wiederholt (das steht schon im Kicker), sonst der erste Satzteil der
- * Unterzeile, sonst die Tagline. Markierungen fallen weg.
+ * Satz des Einstiegs (Systemblatt: „Steuern. Klar geregelt."): Überschrift,
+ * außer sie verdoppelt nur den Kicker; sonst Tagline; sonst Unterzeile bzw.
+ * deren erster Satzteil. Höchstens 90 Zeichen, Markierungen fallen weg.
  */
 export function entryLede(
   hero: SectionOf<"hero">,
   data: WebsiteDataV2,
-  city: string | undefined
+  kicker: string
 ): string | undefined {
   const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
   const headline = plain(hero.headline);
-  const echoesKicker = Boolean(
-    PLACE_LINE.test(headline) ||
-      (city &&
-        headline
-          .toLocaleLowerCase("de")
-          .includes(city.toLocaleLowerCase("de"))) ||
-      (data.businessCategory &&
-        headline
-          .toLocaleLowerCase("de")
-          .includes(data.businessCategory.toLocaleLowerCase("de")))
-  );
   const sub = plain(hero.subheadline);
   const candidates = [
-    echoesKicker ? "" : headline,
-    sub.length <= LEDE_MAX ? sub : (firstClause(sub) ?? ""),
+    echoesKicker(headline, kicker) ? "" : headline,
     plain(data.tagline),
+    sub.length <= LEDE_MAX ? sub : (firstClause(sub) ?? ""),
   ];
   return candidates.find(t => t.length > 0 && t.length <= LEDE_MAX);
 }

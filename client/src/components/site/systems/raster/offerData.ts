@@ -49,9 +49,9 @@ export function bandPlan(
   const gallery = sections.find(
     (s): s is SectionOf<"gallery"> => s.type === "gallery"
   );
-  const images = [
-    ...new Set(gallery?.images.map(i => i.url) ?? []),
-  ].filter(u => !exclude.has(u));
+  const images = [...new Set(gallery?.images.map(i => i.url) ?? [])].filter(
+    u => !exclude.has(u)
+  );
   const photos =
     bands.length > 0 && images.length >= bands.length
       ? images.slice(0, bands.length)
@@ -100,8 +100,7 @@ export function fitBandName(name: string): BandFit {
   );
   return {
     widthEm,
-    hyphenate:
-      widthEm > 0 && REFERENCE_COLUMN_REM / widthEm < BAND_FLOOR_REM,
+    hyphenate: widthEm > 0 && REFERENCE_COLUMN_REM / widthEm < BAND_FLOOR_REM,
   };
 }
 
@@ -186,14 +185,49 @@ export function chapterNumber(
  * Kompositionsfuge liest es sich wie im Systemblatt („JAHRES-ABSCHLUSS").
  */
 const HEADS = [
-  "abschluss", "abrechnung", "arbeiten", "beratung", "behandlung",
-  "betreuung", "buchhaltung", "dämmung", "dienst", "einbau", "entsorgung",
-  "erklärung", "fahrten", "färbung", "gestaltung", "haltung", "installation",
-  "kosmetik", "massage", "montage", "öffnung", "pflege", "planung",
-  "prüfung", "reinigung", "reparatur", "sanierung", "schnitt", "schutz",
-  "service", "technik", "therapie", "training", "transfer", "tausch",
-  "unterricht", "verkauf", "vermessung", "vermietung", "versicherung",
-  "vermittlung", "wartung", "wechsel",
+  "abschluss",
+  "abrechnung",
+  "arbeiten",
+  "beratung",
+  "behandlung",
+  "betreuung",
+  "buchhaltung",
+  "dämmung",
+  "dienst",
+  "einbau",
+  "entsorgung",
+  "erklärung",
+  "fahrten",
+  "färbung",
+  "gestaltung",
+  "haltung",
+  "installation",
+  "kosmetik",
+  "massage",
+  "montage",
+  "öffnung",
+  "pflege",
+  "planung",
+  "prüfung",
+  "reinigung",
+  "reparatur",
+  "sanierung",
+  "schnitt",
+  "schutz",
+  "service",
+  "technik",
+  "therapie",
+  "training",
+  "transfer",
+  "tausch",
+  "unterricht",
+  "verkauf",
+  "vermessung",
+  "vermietung",
+  "versicherung",
+  "vermittlung",
+  "wartung",
+  "wechsel",
 ].sort((a, b) => b.length - a.length);
 const MIN_PREFIX = 3;
 /** Weiche Trennstelle. */
@@ -212,7 +246,10 @@ export function bandTitle(title: string): {
 } {
   let manual = false;
   const text = title.replace(/\p{L}+/gu, word => {
-    if (REFERENCE_COLUMN_REM / wordWidthEm(word, FIGURE_TRACK) >= BAND_FLOOR_REM)
+    if (
+      REFERENCE_COLUMN_REM / wordWidthEm(word, FIGURE_TRACK) >=
+      BAND_FLOOR_REM
+    )
       return word;
     const lower = word.toLocaleLowerCase("de-DE");
     const head = HEADS.find(
@@ -252,8 +289,7 @@ export function bandTitle(title: string): {
  * kippt das Handy ab rund 180 Zeichen Erklärung.
  */
 const REM = 16;
-const sp = (k: keyof typeof RASTER.space) =>
-  parseFloat(RASTER.space[k]) || 0;
+const sp = (k: keyof typeof RASTER.space) => parseFloat(RASTER.space[k]) || 0;
 const DESC_CHAR_EM = 0.55;
 
 export type BandViewport = {
@@ -290,8 +326,12 @@ export function bandHeightRem(item: Service, vp: BandViewport): number {
   // Name: Größe wie im CSS, Zeilen über die Umbruchstellen gierig gefüllt.
   const figureMax = clampAt(RASTER.type.figure!.size, vp.widthRem);
   const { text, manual, partEm } = bandTitle(item.title);
-  const widest = manual && vp === BAND_PHONE ? partEm : fitBandName(item.title).widthEm;
-  const size = Math.max(BAND_FLOOR_REM, Math.min(figureMax, column / (widest || 1)));
+  const widest =
+    manual && vp === BAND_PHONE ? partEm : fitBandName(item.title).widthEm;
+  const size = Math.max(
+    BAND_FLOOR_REM,
+    Math.min(figureMax, column / (widest || 1))
+  );
   const pieces = text
     .split(/\s+/)
     .flatMap(w => (manual && vp === BAND_PHONE ? w.split(SHY) : [w]));
@@ -313,9 +353,7 @@ export function bandHeightRem(item: Service, vp: BandViewport): number {
   const descLines = item.description
     ? Math.ceil(item.description.length / perLine)
     : 0;
-  const desc = descLines
-    ? sp("s") + descLines * h3 * RASTER.type.h3.line
-    : 0;
+  const desc = descLines ? sp("s") + descLines * h3 * RASTER.type.h3.line : 0;
   const bottom = vp === BAND_PHONE ? vp.dockRem + sp("l") : gutter;
   return sp("m") + kicker + sp("xl") + name + desc + bottom;
 }

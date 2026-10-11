@@ -124,7 +124,9 @@ describe("Raster: Kapitel-Raster", () => {
     );
     const html = render(doc);
     const first = numbered[0];
-    const anchor = html.search(new RegExp(`class="rs-sec rs-${first.type}[" ]`));
+    const anchor = html.search(
+      new RegExp(`class="rs-sec rs-${first.type}[" ]`)
+    );
     expect(anchor).toBeGreaterThan(-1);
     expect(html.slice(anchor, anchor + 600)).toContain(
       '<span class="rs-no" aria-hidden="true">01</span>'
@@ -218,11 +220,15 @@ describe("Raster: Fuß", () => {
   test("Fuß fasst gleiche Folgetage zusammen und lässt Platz für die Leiste im Fuß", () => {
     const html = render(rasterDoc("papier"));
     const foot = html.slice(html.indexOf(`<footer class="rs-foot"`));
-    expect(foot).toContain("Montag–Freitag <span class=\"rs-nowrap\">7–17 Uhr</span>");
+    expect(foot).toContain(
+      'Montag–Freitag <span class="rs-nowrap">7–17 Uhr</span>'
+    );
     expect(foot).not.toContain("Dienstag");
     expect(RASTER_CSS).toMatch(
       /\.pb-raster:has\(\.rs-dock\) \.rs-foot\{padding-bottom:calc\([^}]*var\(--rs-dock\)/
     );
-    expect(RASTER_CSS).toMatch(/\.rs-foot-call a::before\{[^}]*var\(--rs-tap\)/);
+    expect(RASTER_CSS).toMatch(
+      /\.rs-foot-call a::before\{[^}]*var\(--rs-tap\)/
+    );
   });
 });

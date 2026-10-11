@@ -76,7 +76,7 @@ export function RasterEntry({ hero }: { hero: SectionOf<"hero"> }) {
   const variant = entryVariant(data, hero);
   const photo = heroPhoto(data, hero);
   const kicker = entryKicker(data, blueprint, city, kickerWord);
-  const lede = entryLede(hero, data, city);
+  const lede = entryLede(hero, data, kicker);
   const allDay = isRoundTheClock(contact?.openingHours);
   const facts = [
     todayFact(contact?.openingHours, now),

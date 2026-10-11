@@ -28,7 +28,11 @@ describe("Raster-Einstieg bleed: Kontrast auf weißer Fotostelle", () => {
     "%s: Wortmarke ≥ 3:1, kleine Schrift ≥ 4,5:1",
     (_id, p) => {
       const base = mix(p.deep, white, BLEED_SCRIM.base);
-      const local = mix(p.deep, white, stack(BLEED_SCRIM.base, BLEED_SCRIM.local));
+      const local = mix(
+        p.deep,
+        white,
+        stack(BLEED_SCRIM.base, BLEED_SCRIM.local)
+      );
       expect(contrastRatio(p.onDeep, base)).toBeGreaterThanOrEqual(3);
       expect(contrastRatio(p.onDeep, local)).toBeGreaterThanOrEqual(4.5);
     }
