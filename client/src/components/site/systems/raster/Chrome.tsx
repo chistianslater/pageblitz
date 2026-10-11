@@ -13,6 +13,7 @@ import {
   systemShows,
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
+import { REFERENCE_COLUMN_REM, fitWordmark } from "./fit";
 import type {
   SectionOf,
   SectionType,
@@ -66,17 +67,25 @@ function NavLinks({ items }: { items: NavItem[] }) {
 export function RasterHead({
   navItems,
   anchorPrefix,
+  overPhoto = false,
 }: {
   navItems: NavItem[];
   anchorPrefix: string;
+  /** Über dem Foto-Einstieg: transparent, helle Schrift. */
+  overPhoto?: boolean;
 }) {
   const { data, blueprint } = useSystem();
   const action = primaryAction(data, blueprint, anchorPrefix);
   const home = `${anchorPrefix}#${SECTION_ANCHORS.hero}`;
   // Kopf zeigt den Namen ohne Rechtsform; Fuß und Rechtstexte behalten ihn.
-  const brand = displayName(data.businessName);
+  // Ist das Gewerk im Einstieg in den Kicker gewandert, trägt der Kopf die
+  // kurze Wortmarke (Systemblatt: YILMAZ statt KFZ-MEISTERBETRIEB YILMAZ).
+  const brand = fitWordmark(
+    displayName(data.businessName),
+    REFERENCE_COLUMN_REM
+  ).wordmark;
   return (
-    <header className="rs-head">
+    <header className={overPhoto ? "rs-head rs-head--over" : "rs-head"}>
       <div className="rs-head-bar">
         <a className="rs-brand" href={home}>
           {brand}

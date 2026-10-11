@@ -94,7 +94,7 @@ describe("Raster: Kopf", () => {
   test("Wortmarke links (ohne Rechtsform), Menü als <summary>, Desktop-Navigation mit Knopf", () => {
     const html = render();
     const head = html.slice(
-      html.indexOf('class="rs-head"'),
+      html.indexOf('class="rs-head'),
       html.indexOf("</header>")
     );
     expect(head).toMatch(
@@ -149,7 +149,7 @@ describe("Raster: Kapitel-Raster", () => {
       expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     }
     const html = render(rasterDoc());
-    expect(html).toMatch(/<h1 id="start-titel">Kfz-Service Brandt<\/h1>/);
+    expect(html).toMatch(/<h1 id="start-titel"[^>]*>Kfz-Service Brandt<\/h1>/);
   });
 
   test("hiddenSections greifen", () => {

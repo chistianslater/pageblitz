@@ -11,6 +11,8 @@ import {
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import { shownNavItems, systemShows } from "../shared";
+import { RasterDock } from "./Dock";
+import { entryVariant } from "./facts";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -21,8 +23,8 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
 /**
  * Raster (rev 3) — Gerüst wie Journal: Startseite über orderedSections
  * (hiddenSections, sectionOrder, Add-on-Gating), Kapitel zählen nur
- * Sichtbares. Vorschau-Platzhalter (Karte/Team) und Handy-Leiste folgen
- * mit R3–R5.
+ * Sichtbares. Beginnt die Startseite mit dem Foto-Einstieg „bleed", liegt
+ * der Kopf über dem Foto (Rahmen `rs-frame`). Handy-Leiste auf allen Seiten.
  */
 export const RASTER_MODULE: PackModule = {
   id: "raster",
@@ -39,24 +41,44 @@ export const RASTER_MODULE: PackModule = {
     // Unterseite ohne eigenen Kopf-Abschnitt: Titel der Seite trägt den Kopf.
     const ownHead =
       pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
+    const first = list[0];
+    const overPhoto =
+      first?.type === "hero" && entryVariant(home, first) === "bleed";
+    const head = (
+      <RasterHead
+        navItems={rasterNavItems(
+          legal ? prefixAnchors(shown, anchorPrefix) : shown
+        )}
+        anchorPrefix={anchorPrefix}
+        overPhoto={overPhoto}
+      />
+    );
+    const main = (
+      <main className="rs-main" id="inhalt">
+        {legal && <RasterLegal title={legal.title} html={legal.html} />}
+        {ownHead && <RasterPageHead title={pageTitle} />}
+        {list.map((s, i) => (
+          <React.Fragment key={`${s.type}-${i}`}>
+            {renderRasterSection(s, list)}
+          </React.Fragment>
+        ))}
+      </main>
+    );
     return (
       <>
-        <RasterHead
-          navItems={rasterNavItems(
-            legal ? prefixAnchors(shown, anchorPrefix) : shown
-          )}
-          anchorPrefix={anchorPrefix}
-        />
-        <main className="rs-main" id="inhalt">
-          {legal && <RasterLegal title={legal.title} html={legal.html} />}
-          {ownHead && <RasterPageHead title={pageTitle} />}
-          {list.map((s, i) => (
-            <React.Fragment key={`${s.type}-${i}`}>
-              {renderRasterSection(s, list)}
-            </React.Fragment>
-          ))}
-        </main>
+        {overPhoto ? (
+          <div className="rs-frame">
+            {head}
+            {main}
+          </div>
+        ) : (
+          <>
+            {head}
+            {main}
+          </>
+        )}
         <RasterFoot basePath={basePath} anchorPrefix={anchorPrefix} />
+        <RasterDock anchorPrefix={anchorPrefix} />
       </>
     );
   },

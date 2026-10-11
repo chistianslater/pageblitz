@@ -3,7 +3,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich, stripMarks } from "../../richText";
 import { useSystem } from "../SystemContext";
 import { chapterIndex, type SystemSection } from "../shared";
-import { displayName } from "../../../../../../shared/designSystems/displayName";
+import { RasterEntry } from "./Entry";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
@@ -161,37 +161,6 @@ export function RasterBlock({
 }
 
 /**
- * Vorläufiger Einstieg (R3 baut die drei Fassungen laut Systemblatt 6):
- * Gewerk als Kicker, Name ohne Rechtsform als einziges h1, Unterzeile.
- */
-export function RasterEntryPlaceholder({
-  hero,
-}: {
-  hero: Extract<RasterSection, { type: "hero" }>;
-}) {
-  const { data } = useSystem();
-  return (
-    <section
-      id={SECTION_ANCHORS.hero}
-      className="rs-entry"
-      aria-labelledby="start-titel"
-    >
-      <div className="rs-wrap">
-        {data.businessCategory && (
-          <p className="rs-entry-kicker">{data.businessCategory}</p>
-        )}
-        <h1 id="start-titel">{displayName(data.businessName)}</h1>
-        {(hero.subheadline || hero.headline) && (
-          <p className="rs-entry-lede">
-            {rich(hero.subheadline || hero.headline)}
-          </p>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/**
  * Kopf für Unterseiten und Rechtsseiten: Name als Kicker, genau ein h1.
  * Weitere pageHeader derselben Seite werden h2 ohne Anker.
  */
@@ -268,7 +237,7 @@ export function renderRasterSection(
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
-      return <RasterEntryPlaceholder hero={section} />;
+      return <RasterEntry hero={section} />;
     case "services":
     case "process":
     case "pricelist":
