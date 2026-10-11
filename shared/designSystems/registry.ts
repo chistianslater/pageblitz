@@ -6,7 +6,7 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */
-export const RELEASED_SYSTEMS: readonly DesignSystemId[] = [];
+export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal"];
 
 export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {
   return DESIGN_SYSTEMS[id];

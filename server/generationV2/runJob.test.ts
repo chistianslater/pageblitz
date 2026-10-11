@@ -530,6 +530,25 @@ describe("collectOccupiedCompositions", () => {
   });
 });
 
+/**
+ * Journal ist freigeschaltet — die rev-2-Pfade (Packs, Bühne/Farbfläche)
+ * prüfen wir mit einem Register, das nichts freigibt.
+ */
+async function runJobWithoutRelease() {
+  vi.resetModules();
+  vi.doMock("../../shared/designSystems/registry", async orig => ({
+    ...(await orig<object>()),
+    isReleased: () => false,
+  }));
+  const mod = await import("./runJob");
+  const apply = await import("../../shared/designSystems/apply");
+  return { mod, apply };
+}
+function restoreRelease() {
+  vi.doUnmock("../../shared/designSystems/registry");
+  vi.resetModules();
+}
+
 describe("withNewSiteDesign", () => {
   const doc = buildInterimV2Doc(
     "morgenlicht",
@@ -542,8 +561,9 @@ describe("withNewSiteDesign", () => {
     }
   );
 
-  test("gibt der Neuerstellung Design-Stand und Farbfläche wie einer neuen Seite", () => {
-    const result = withNewSiteDesign(
+  test("gibt der Neuerstellung Design-Stand und Farbfläche wie einer neuen Seite (ohne Freischaltung)", async () => {
+    const { mod } = await runJobWithoutRelease();
+    const result = mod.withNewSiteDesign(
       { ...doc, designProfile: undefined },
       "morgenlicht",
       {
@@ -555,6 +575,17 @@ describe("withNewSiteDesign", () => {
     expect(result.designRevision).toBe(2);
     expect(result.designStand).toBeTruthy();
     expect(result.designProfile?.composition).toBe("colorfield");
+    restoreRelease();
+  });
+
+  test("freigeschaltet: ein Friseur-Dokument wird Journal (rev 3)", () => {
+    const result = withNewSiteDesign(
+      { ...doc, designProfile: undefined },
+      "morgenlicht",
+      { hero: "https://img.test/hero.jpg", heroLandscape: false }
+    );
+    expect(result.system).toBe("journal");
+    expect(result.designRevision).toBe(3);
   });
 
   test("nimmt bei Querformat die Bühne", () => {
@@ -605,12 +636,13 @@ describe("withNewSiteDesign und Designsysteme", () => {
     buildInterimV2Doc("morgenlicht", "Salon Test", "Friseursalon", "salon-test", images);
 
   test("rev-3-Dokument wird ohne Freischaltung zu gültigem rev 2 ohne system/palette", async () => {
-    const { withDesignSystem } = await import("../../shared/designSystems/apply");
-    const rev3 = withDesignSystem(friseur(), "journal", "ton");
-    const result = withNewSiteDesign(rev3, "morgenlicht", images);
+    const { mod, apply } = await runJobWithoutRelease();
+    const rev3 = apply.withDesignSystem(friseur(), "journal", "ton");
+    const result = mod.withNewSiteDesign(rev3, "morgenlicht", images);
     expect(result.designRevision).toBe(2);
     expect(result.system).toBeUndefined();
     expect(result.palette).toBeUndefined();
+    restoreRelease();
   });
 
   test("mit freigeschaltetem Journal bekommt ein Friseur-Dokument rev 3 Journal", async () => {
