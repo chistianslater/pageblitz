@@ -64,14 +64,25 @@ const SCRIM = [
 const LOCAL_SCRIM = `linear-gradient(180deg,transparent 0,${deepAt(BLEED_SCRIM.local)} var(--sys-space-m),${deepAt(BLEED_SCRIM.local)} calc(100% - var(--sys-space-m)),transparent 100%)`;
 
 /**
- * Höhenbremse der Wortmarke: alle Zeilen zusammen höchstens 60 % der
- * Bildschirmhöhe (`--rs-lines` aus fit.ts, nur ab zwei Zeilen gesetzt), damit
- * Satz und Fakten im ersten Bildschirm bleiben („Kfz-Service Brandt" auf
- * 1440 × 900 sonst drei Zeilen à 18 rem).
+ * Höhenbremse im Einstieg, als Anteil der Bildschirmhöhe (`svh`): alle
+ * Zeilen der Wortmarke zusammen höchstens `mark` (`--rs-lines` aus fit.ts,
+ * nur ab zwei Zeilen gesetzt), damit Satz und Fakten im ersten Bildschirm
+ * bleiben („Kfz-Service Brandt" auf 1440 × 900 sonst drei Zeilen à 18 rem).
+ * Im Typo-Einstieg teilen sich Name (`typeMark`) und „24/7" (`typeClock`)
+ * dasselbe Budget. Auf dem Handy greift die Breite zuerst.
  */
-const MARK_HEIGHT = `60svh / (var(--rs-lines,1) * ${RASTER.type.display.line})`;
-/** Typo-Einstieg: Name höchstens 36 %, „24/7" höchstens 26 % der Höhe. */
-const MARK_HEIGHT_TYPE = `36svh / (var(--rs-lines,1) * ${RASTER.type.display.line})`;
+export const ENTRY_HEIGHT_SHARE = {
+  mark: 0.6,
+  typeMark: 0.36,
+  typeClock: 0.24,
+} as const;
+const svh = (share: number) => `${Math.round(share * 100)}svh`;
+/** Höhe je Zeile: Anteil ÷ (Zeilen × Zeilenhöhe der Stufe `display`). */
+const perLine = (share: number) =>
+  `${svh(share)} / (var(--rs-lines,1) * ${RASTER.type.display.line})`;
+const MARK_HEIGHT = perLine(ENTRY_HEIGHT_SHARE.mark);
+const MARK_HEIGHT_TYPE = perLine(ENTRY_HEIGHT_SHARE.typeMark);
+const CLOCK_HEIGHT = svh(ENTRY_HEIGHT_SHARE.typeClock);
 
 /**
  * Einstieg (Systemblatt 6/10). Wortmarke: Größe aus der Spaltenbreite
@@ -132,7 +143,7 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 .pb-raster .rs-entry-clock{container-type:inline-size;border-top:1px solid var(--sys-rule);margin-top:var(--sys-space-s);padding-top:var(--sys-space-xs);color:var(--sys-signal)}
 .pb-raster .rs-entry-clock-figure{${step("figure")};display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 @supports (font-size:1cqi){
-  .pb-raster .rs-entry-clock-figure{font-size:clamp(var(--sys-figure-size),min(100cqi / var(--rs-fit),26svh),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-entry-clock-figure{font-size:clamp(var(--sys-figure-size),min(100cqi / var(--rs-fit),${CLOCK_HEIGHT}),${FIT_MAX_REM}rem)}
 }
 .pb-raster .rs-entry--type .rs-entry-bottom{margin-top:auto;padding-top:var(--sys-space-xl)}
 

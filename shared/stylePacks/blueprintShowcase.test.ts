@@ -71,4 +71,14 @@ describe("Bauplan-Übersicht", () => {
       ).not.toMatch(/schreinerei|nordvolt|fundament|Kiel|seit/i);
     }
   });
+
+  it("Beispiel-Kontaktdaten sind erkennbar fiktiv (555-Nummern, .example)", () => {
+    for (const id of ["werkstatt", "taxi", "hersteller", "schluesseldienst"]) {
+      const doc = showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      const contact = doc.sections.find(s => s.type === "contact");
+      if (contact?.type !== "contact") throw new Error(id);
+      expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+      expect(contact.email).toMatch(/\.example$/);
+    }
+  });
 });

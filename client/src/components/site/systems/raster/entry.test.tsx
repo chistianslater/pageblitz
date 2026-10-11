@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import { SiteRenderer } from "../../SiteRenderer";
-import { RASTER_CSS } from "./css";
+import { ENTRY_HEIGHT_SHARE, RASTER_CSS } from "./css";
 import {
   kanzleiDoc,
   patchSection,
@@ -154,15 +154,27 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
     expect(entryOf(render(three))).toMatch(
       /class="rs-wordmark" style="--rs-fit:\d\.\d{3};--rs-lines:3"/
     );
-    expect(RASTER_CSS).toMatch(
-      /\.rs-entry--type \.rs-wordmark\{font-size:clamp\([^}]*36svh/
-    );
-    expect(RASTER_CSS).toMatch(/\.rs-entry-clock-figure\{font-size:clamp\([^}]*26svh/);
     const one = { ...kanzleiDoc(), businessName: "Yilmaz" };
     expect(entryOf(render(one))).not.toContain("--rs-lines");
-    expect(RASTER_CSS).toMatch(
-      /\.rs-wordmark\{font-size:clamp\([\d.]+rem,min\(100cqi \/ var\(--rs-fit\),60svh \/ \(var\(--rs-lines,1\) \* 0\.88\)\),26rem\)\}/
-    );
+  });
+
+  test("Höhenbremse: Breite und Höhe begrenzen gemeinsam, Typo-Einstieg teilt das Budget", () => {
+    const { mark, typeMark, typeClock } = ENTRY_HEIGHT_SHARE;
+    // Name + „24/7" im Typo-Einstieg nicht höher als ein Foto-Einstiegsname.
+    expect(typeMark + typeClock).toBeLessThanOrEqual(mark);
+    const sizeOf = (selector: string) =>
+      RASTER_CSS.match(
+        new RegExp(`${selector.replace(/[.]/g, "\\.")}\\{font-size:([^}]*)\\}`)
+      )?.[1] ?? "";
+    // Höhe je Zeile wird durch die Zeilenzahl geteilt (Fallback 1 Zeile).
+    for (const sel of [".rs-wordmark", ".rs-entry--type .rs-wordmark"]) {
+      const size = sizeOf(sel);
+      expect(size).toMatch(/^clamp\(.*min\(100cqi \/ var\(--rs-fit\),/);
+      expect(size).toContain("/ (var(--rs-lines,1) *");
+    }
+    expect(sizeOf(".rs-wordmark")).toContain(`${mark * 100}svh`);
+    expect(sizeOf(".rs-entry--type .rs-wordmark")).toContain(`${typeMark * 100}svh`);
+    expect(sizeOf(".rs-entry-clock-figure")).toContain(`${typeClock * 100}svh`);
   });
 
   test("Kanzlei: Kicker Branche in Ort, Satz aus der Überschrift", () => {

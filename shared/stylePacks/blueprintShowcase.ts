@@ -48,6 +48,11 @@ const SAMPLE_PROCESS: SectionOf<"process"> = {
 type SampleText = {
   hero: { headline: string; subheadline: string };
   /** Adresse passend zum Beispiel (die Fixture gehört zu einer anderen Firma). */
+  /**
+   * Fiktive Kontaktdaten: Rufnummern im Muster „Vorwahl 555 …", Domains auf
+   * `.example` (RFC 2606) — die Demo-Seiten sind öffentlich und verlinken
+   * per `tel:`/`mailto:`.
+   */
   contact: {
     street: string;
     zip: string;
@@ -78,7 +83,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "44263",
       city: "Dortmund",
       phone: "0231 555 4471",
-      email: "service@kfz-brandt-dortmund.de",
+      email: "service@kfz-brandt.example",
     },
     hero: {
       headline: "Kfz-Werkstatt in Dortmund-Hörde",
@@ -138,7 +143,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "46395",
       city: "Bocholt",
       phone: "02871 555 120",
-      email: "anfrage@kruse-metalltechnik.de",
+      email: "anfrage@kruse-metalltechnik.example",
     },
     hero: {
       headline: "Metallverarbeitung für die Industrie in Bocholt",
@@ -198,7 +203,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "46414",
       city: "Rhede",
       phone: "02872 555 300",
-      email: "fahrt@taxi-rhede.de",
+      email: "fahrt@taxi-rhede.example",
     },
     hero: {
       headline: "Taxi in Rhede und Umgebung",
@@ -251,11 +256,11 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
   // Einstieg nur Schrift, Zeiten rund um die Uhr.
   schluesseldienst: {
     contact: {
-      street: "Grevener Straße 301",
+      street: "Am Kanal 14",
       zip: "48159",
       city: "Münster",
-      phone: "0251 98 76 54",
-      email: "hallo@schluessel-nord.de",
+      phone: "0251 555 2440",
+      email: "hallo@schluesseldienst-nord.example",
     },
     hours: [{ day: "Mo–So", hours: "24 Stunden" }],
     hero: {
