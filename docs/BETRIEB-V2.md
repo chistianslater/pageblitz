@@ -253,25 +253,41 @@ die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 ### Rollback bei Designsystemen (rev 3)
 
 Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
-`system`/`palette` tragen (z. B. Journal). Älterer Code kennt nur Revision 1
-und 2 — solche Seiten bestehen dort die Schema-Prüfung nicht und liefern 404.
-**Bevor Prod auf einen Commit vor diesem Branch zurückgesetzt wird**, auf dem
-VPS (noch mit dem neuen Code) zuerst sichern, dann zurücksetzen:
+`system`/`palette` tragen (Journal, seit `feat/designsystem-raster` auch
+Raster). Älterer Code kennt nur Revision 1 und 2 bzw. das jüngere System
+nicht — solche Seiten bestehen dort die Schema-Prüfung nicht und liefern 404.
+**Bevor Prod auf einen älteren Commit zurückgesetzt wird**, auf dem VPS (noch
+mit dem neuen Code) zuerst sichern, dann zurücksetzen. Welche Seiten:
+
+| Ziel-Commit | Aufruf |
+|---|---|
+| vor Raster, aber mit Journal (`f1fafe55` oder älter, nicht vor `fed41e1`) | `--system raster` — nur Raster-Seiten, Journal bleibt |
+| vor Journal (`fed41e1` oder älter) | ohne `--system` — alle rev-3-Seiten |
 
 ```bash
 cd /root/pageblitz
 # 1) Backup
 mysqldump -u<user> -p<pw> pageblitz generated_websites \
   > /root/backups/vor-systeme-rollback-$(date +%F).sql
-# 2) Trockenlauf: listet alle rev-3-Seiten
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts
+# 2) Trockenlauf: listet die betroffenen rev-3-Seiten (Zeile 1 nennt den Filter)
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system raster
 # 3) Schreiben: system/palette entfallen, Revision 2, Seite zeigt ihr Pack
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --schreiben
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system raster --schreiben
 # 4) Erst jetzt den alten Commit deployen (git reset --hard <commit> …)
 ```
 
+Gültige IDs für `--system` stehen in `shared/designSystems/types.ts`
+(`DESIGN_SYSTEM_IDS`); eine unbekannte ID bricht ohne Änderung ab.
+
 Gespeicherte Stände in `website_versions` bleiben rev 3; im alten Code lässt
 sich ein solcher Stand nicht ansehen/wiederherstellen.
+
+**Neu erzeugen ändert das Aussehen.** Jede Admin-Regenerierung — auch mit
+`keepLinks` bzw. `scripts/regenerate-keep-links.ts` — vergibt das System neu:
+Baupläne `advice`, `auto`, `urgent`, `industry` und `standard` bekommen
+Raster, `beauty` (ohne Barbiere), `stay` und `creative` Journal. Gedruckte Postkarten-
+Vorschauen sehen danach anders aus als auf der Karte; Postkarten-Seiten nur
+bewusst neu erzeugen.
 
 ## 4. Umgebungsvariablen & Mock-Flags
 

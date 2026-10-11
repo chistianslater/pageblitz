@@ -376,6 +376,18 @@ describe("Raster: Handy-Leiste", () => {
     ).not.toContain("E-Mail");
   });
 
+  test("ausgeblendeter Kontakt → weder Telefon noch E-Mail in der Leiste", () => {
+    const doc = { ...kanzleiDoc(), hiddenSections: ["contact" as const] };
+    const plan = dockPlan(doc, blueprintOf(doc));
+    const hrefs =
+      plan?.kind === "fields" ? plan.fields.map(f => f.href) : [plan?.href];
+    expect(plan?.kind).toBe("fields");
+    expect(hrefs.some(h => /^(tel|mailto):/.test(h ?? ""))).toBe(false);
+    const dock = dockOf(render(doc));
+    expect(dock).not.toContain('href="tel:');
+    expect(dock).not.toContain('href="mailto:');
+  });
+
   test("Leiste auch auf Rechtsseiten", () => {
     const html = renderToStaticMarkup(
       <SiteRenderer

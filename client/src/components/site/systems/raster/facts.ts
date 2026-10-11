@@ -20,7 +20,9 @@ import {
   mailHref,
   mapsHref,
   primaryAction,
+  systemShows,
 } from "../shared";
+import { orderedSections } from "../../engine";
 
 /**
  * Reine Daten-Regeln für den Raster-Einstieg und die Handy-Leiste. Nichts
@@ -150,9 +152,16 @@ export function echoesKicker(headline: string, kicker: string): boolean {
   return h.filter(t => known.has(t)).length / h.length > KICKER_SHARE;
 }
 
+const CLAUSE_END = /\s+[—–]\s+|[.!?]\s+/;
+
 /** Erster Satzteil eines langen Satzes („… für alle Marken — mit …"). */
 function firstClause(text: string): string | undefined {
-  const cut = text.split(/\s+[—–]\s+|(?<=[.!?])\s+/)[0]?.trim();
+  // Gedankenstrich oder Satzende; das Satzzeichen bleibt am Satzteil.
+  // Ohne Lookbehind (Safari < 16.4, siehe fit.ts).
+  const end = CLAUSE_END.exec(text);
+  const cut = (
+    end ? text.slice(0, end.index + (/^[.!?]/.test(end[0]) ? 1 : 0)) : text
+  ).trim();
   if (!cut || cut.length < CLAUSE_MIN || cut.length > LEDE_MAX)
     return undefined;
   return /[.!?]$/.test(cut) ? cut : `${cut}.`;
@@ -214,10 +223,18 @@ export type DockPlan =
  * sonst Route). Ohne jede Aktion keine Leiste.
  */
 export function dockPlan(
-  data: WebsiteDataV2,
+  doc: WebsiteDataV2,
   blueprint: Blueprint,
   anchorPrefix = ""
 ): DockPlan | undefined {
+  // Nur gezeigte Abschnitte zählen: Ist der Kontakt ausgeblendet
+  // (`hiddenSections`), stehen auch Telefon und E-Mail nicht in der Leiste.
+  const shown = new Set(
+    orderedSections(doc)
+      .filter(systemShows)
+      .map(s => s.type)
+  );
+  const data = { ...doc, sections: doc.sections.filter(s => shown.has(s.type)) };
   const contact = contactOf(data.sections);
   const phone = contact?.phone?.trim();
   const tel = telHref(phone);

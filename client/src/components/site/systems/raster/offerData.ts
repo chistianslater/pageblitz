@@ -73,12 +73,17 @@ const FIGURE_TRACK = parseFloat(RASTER.type.figure!.track);
 /** Untergrenze für Bandnamen laut Systemblatt: 2,5 rem (= Abstand `l`). */
 export const BAND_FLOOR_REM = parseFloat(RASTER.space.l);
 
-/** Umbruchstellen wie bei der Wortmarke: Leerraum und nach Bindestrich. */
+/**
+ * Umbruchstellen wie bei der Wortmarke: Leerraum und nach Binde-/Schräg-
+ * strich vor einem Buchstaben. Ohne Lookbehind (Safari < 16.4, siehe fit.ts).
+ */
 const units = (name: string) =>
   name
     .split(/\s+/)
     .filter(Boolean)
-    .flatMap(w => w.split(/(?<=[-–/])(?=\p{L})/u));
+    .flatMap(w =>
+      w.replace(/([-–/])(?=\p{L})/gu, "$1\u0000").split("\u0000")
+    );
 
 export type BandFit = {
   /** Breite des längsten Worts in em (Versal, Laufweite `figure`). */

@@ -423,9 +423,10 @@ describe("runWebsiteGenerationV2Job", () => {
     const finalDoc = mockedDb.updateWebsite.mock.calls[1][1].websiteData as any;
     expect(finalDoc.designProfile).toEqual(interim.designProfile);
     // Werkbank/Tischler bekommt Raster (rev 3): die Schrift kommt dann vom
-    // System, fontPairId entfällt; ohne System bleibt sie wie im Zwischenstand.
-    if (finalDoc.system) expect(finalDoc.fontPairId).toBeUndefined();
-    else expect(finalDoc.fontPairId).toEqual(interim.fontPairId);
+    // System, fontPairId entfällt.
+    expect(finalDoc.system).toBe("raster");
+    expect(finalDoc.designRevision).toBe(3);
+    expect(finalDoc.fontPairId).toBeUndefined();
     expect(finalDoc.colorOverrides).toEqual(interim.colorOverrides);
 
     // Finaler Write überschreibt den Zwischenstand mit dem LLM-Dokument.

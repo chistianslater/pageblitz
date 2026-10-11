@@ -67,12 +67,21 @@ export function wordWidthEm(text: string, track = TRACK): number {
   return (advance + chars.length * track) * SAFETY;
 }
 
+/**
+ * Teilt nach einem Binde-/Gedankenstrich, wenn ein Buchstabe folgt
+ * („Müller-|Lüdenscheidt"). Ohne Lookbehind: der Studio-Chunk lädt dieses
+ * Modul auch in Safari < 16.4, das keine Lookbehind-Gruppen parsen kann.
+ */
+export function splitAfterHyphen(word: string): string[] {
+  return word.replace(/([-–])(?=\p{L})/gu, "$1\u0000").split("\u0000");
+}
+
 /** Umbruchstellen: Leerraum und nach einem Bindestrich („Müller-|Lüdenscheidt"). */
 function breakUnits(name: string): string[] {
   return name
     .split(/\s+/)
     .filter(Boolean)
-    .flatMap(word => word.split(/(?<=[-–])(?=\p{L})/u));
+    .flatMap(splitAfterHyphen);
 }
 
 function longestEm(name: string): number {
@@ -83,7 +92,7 @@ function longestEm(name: string): number {
 function wrap(name: string, sizeRem: number, columnRem: number): string[] {
   const lines: string[] = [];
   for (const word of name.split(/\s+/).filter(Boolean)) {
-    const units = word.split(/(?<=[-–])(?=\p{L})/u);
+    const units = splitAfterHyphen(word);
     units.forEach((unit, i) => {
       const last = lines[lines.length - 1];
       const joiner = i === 0 ? " " : "";

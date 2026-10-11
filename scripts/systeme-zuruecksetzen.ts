@@ -12,18 +12,42 @@
  * bleiben unverändert; die Seite zeigt danach wieder ihr Style-Pack.
  *
  * Standardmäßig Trockenlauf. Geschrieben wird erst mit `--schreiben`.
+ * `--system <id>` beschränkt auf ein System (z. B. `--system raster` beim
+ * Rollback auf einen Stand mit Journal, aber ohne Raster); ohne die Option
+ * werden alle rev-3-Seiten zurückgesetzt.
  * Vorher sichern (siehe docs/BETRIEB-V2.md, „Rollback bei Designsystemen"):
  *
- *   npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts
- *   npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --schreiben
+ *   npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts [--system raster]
+ *   npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts [--system raster] --schreiben
  *
  * Gespeicherte Stände in `website_versions` fasst das Skript NICHT an.
  */
 import { getDb, listWebsites, updateWebsite } from "../server/db";
 import { withoutDesignSystem } from "../shared/designSystems/apply";
+import {
+  DESIGN_SYSTEM_IDS,
+  type DesignSystemId,
+} from "../shared/designSystems/types";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 
 const schreiben = process.argv.includes("--schreiben");
+
+/** `--system <id>` oder `--system=<id>`; ohne Angabe: alle Systeme. */
+function systemFilter(argv: readonly string[]): DesignSystemId | undefined {
+  const i = argv.findIndex(a => a === "--system" || a.startsWith("--system="));
+  if (i === -1) return undefined;
+  const value = argv[i].includes("=")
+    ? argv[i].slice("--system=".length)
+    : argv[i + 1];
+  if (!value || !(DESIGN_SYSTEM_IDS as readonly string[]).includes(value)) {
+    throw new Error(
+      `--system braucht eine dieser IDs: ${DESIGN_SYSTEM_IDS.join(", ")} (bekommen: ${value ?? "nichts"})`
+    );
+  }
+  return value as DesignSystemId;
+}
+
+const nurSystem = systemFilter(process.argv.slice(2));
 const SEITENGROESSE = 200;
 
 async function alleWebsites() {
@@ -37,6 +61,11 @@ async function alleWebsites() {
 }
 
 async function main(): Promise<void> {
+  console.log(
+    nurSystem
+      ? `Nur Seiten mit System „${nurSystem}" (--system ${nurSystem}).`
+      : "Alle Designsysteme (kein --system angegeben)."
+  );
   const db = await getDb();
   if (!db) throw new Error("Keine Datenbank verfügbar — DATABASE_URL fehlt?");
 
@@ -51,6 +80,7 @@ async function main(): Promise<void> {
     gelesen += 1;
     const doc = parsed.data;
     if (doc.designRevision !== 3) continue;
+    if (nurSystem && doc.system !== nurSystem) continue;
 
     // Über das Schema zurückschreiben: ein ungültiges Dokument darf gar
     // nicht erst in die Datenbank kommen.
@@ -79,7 +109,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `\n${alle.length} Websites geladen · ${gelesen} im neuen Format · ${betroffen.length} mit Designsystem (rev 3)`
+    `\n${alle.length} Websites geladen · ${gelesen} im neuen Format · ${betroffen.length} mit Designsystem (rev 3${nurSystem ? `, nur ${nurSystem}` : ""})`
   );
   for (const e of betroffen) {
     console.log(`  ${e.id} ${e.slug} (${e.system})`);
