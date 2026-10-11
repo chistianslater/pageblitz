@@ -14,6 +14,7 @@ import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
 import { RasterMenuSlot, RasterTeamSlot } from "./Offer";
 import { RasterDock } from "./Dock";
 import { entryVariant } from "./facts";
+import { withoutBandPhotos } from "./offerData";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -33,14 +34,23 @@ export const RASTER_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
     // Startseiten-Dokument (auf Unterseiten trägt `data` die Seiten-Abschnitte).
     const { data: home } = useSystem();
-    const list: RasterSection[] = legal
+    // `source`: alles Gezeigte; `list`: ohne Galeriefotos, die schon als
+    // Band-Hintergrund stehen (Galerie entfällt, wenn nichts übrig bleibt).
+    const source: RasterSection[] = legal
       ? []
       : (sections ?? orderedSections(data)).filter(systemShows);
+    const list = withoutBandPhotos(source);
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
     const slots = sections || legal ? {} : previewSlotAnchors(list);
-    const shown = shownNavItems(navItems, orderedSections(home));
+    const homeAll = orderedSections(home);
+    const homeShown = withoutBandPhotos(homeAll.filter(systemShows));
+    const shown = shownNavItems(navItems, homeAll).filter(
+      item =>
+        item.sectionType !== "gallery" ||
+        homeShown.some(s => s.type === "gallery")
+    );
     // Unterseite ohne eigenen Kopf-Abschnitt: Titel der Seite trägt den Kopf.
     const ownHead =
       pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
@@ -62,7 +72,7 @@ export const RASTER_MODULE: PackModule = {
         {ownHead && <RasterPageHead title={pageTitle} />}
         {list.map((s, i) => (
           <React.Fragment key={`${s.type}-${i}`}>
-            {renderRasterSection(s, list)}
+            {renderRasterSection(s, list, source)}
             {slots.menu === i && <RasterMenuSlot sections={list} />}
             {slots.team === i && <RasterTeamSlot sections={list} />}
           </React.Fragment>

@@ -3,6 +3,7 @@ import { systemFontFaces } from "../shared/fonts";
 import { FIT_FLOOR_REM, FIT_HARD_FLOOR_REM, FIT_MAX_REM } from "./fit";
 import { DEEP_RULE, GRID, step } from "./step";
 import { OFFER_CSS } from "./offerCss";
+import { STORY_CSS } from "./storyCss";
 
 export { step } from "./step";
 export { BAND_ALT, BAND_DESC_ALPHA, BAND_FILTER, BAND_SCRIM } from "./offerCss";
@@ -228,6 +229,8 @@ ${FONT_FACES}
 ${ENTRY_CSS}
 
 ${OFFER_CSS}
+
+${STORY_CSS}
 
 /* Unterseiten- und Rechtsseiten-Kopf: genau ein h1 */
 .pb-raster .rs-page-head{padding-block:var(--sys-space-l) var(--sys-space-xl)}

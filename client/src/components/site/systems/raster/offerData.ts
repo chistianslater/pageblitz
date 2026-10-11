@@ -62,6 +62,31 @@ export function bandPlan(
   };
 }
 
+/**
+ * Galerie ohne die Fotos, die schon als Band-Hintergrund stehen (Abgleich
+ * über die URL). Bleibt nichts übrig, entfällt die Galerie ganz — vor der
+ * Kapitelzählung, damit Nummern und Navigation lückenlos bleiben. Die
+ * Bänder selbst lesen ihre Fotos aus der ungekürzten Liste (`source`).
+ */
+export function withoutBandPhotos<T extends SystemSection>(
+  sections: readonly T[]
+): T[] {
+  const services = sections.find(
+    (s): s is T & SectionOf<"services"> => s.type === "services"
+  );
+  const used = new Set(
+    services ? (bandPlan(services, sections).photos ?? []) : []
+  );
+  if (used.size === 0) return [...sections];
+  return sections.flatMap(s => {
+    if (s.type !== "gallery") return [s];
+    const images = (s as SectionOf<"gallery">).images.filter(
+      i => !used.has(i.url)
+    );
+    return images.length > 0 ? [{ ...s, images } as T] : [];
+  });
+}
+
 /* ── Bandnamen-Fit ───────────────────────────────────────────────────── */
 
 /** Laufweite der Stufe `figure` in em. */

@@ -6,6 +6,7 @@ import type { SystemSection } from "../shared";
 import { RasterEntry } from "./Entry";
 import { RasterServices } from "./Bands";
 import { RasterProcess } from "./Process";
+import { RasterAbout, RasterGallery, RasterReviews } from "./Story";
 import { RasterPriced, RasterTeam } from "./Offer";
 import { chapterNumber, showsFigures, type RasterChapterKey } from "./offerData";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
@@ -48,7 +49,7 @@ const CHAPTER_LABELS: Partial<Record<RasterSection["type"], string>> = {
   team: "Team",
   about: "Über uns",
   gallery: "Einblicke",
-  testimonials: "Stimmen",
+  testimonials: "Stimme",
   faq: "Gut zu wissen",
   contact: "Zeiten und Kontakt",
   story: "Geschichte",
@@ -257,13 +258,17 @@ export function RasterLegal({ title, html }: { title: string; html: string }) {
 /** Abschnitts-Weiche (exhaustiv; R3–R6 ersetzen die vorläufigen Blöcke). */
 export function renderRasterSection(
   section: RasterSection,
-  sections: readonly RasterSection[]
+  sections: readonly RasterSection[],
+  /** Ungekürzte Liste (Galerie mit allen Fotos) — Quelle der Bandfotos. */
+  source: readonly RasterSection[] = sections
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
       return <RasterEntry hero={section} />;
     case "services":
-      return <RasterServices section={section} sections={sections} />;
+      return (
+        <RasterServices section={section} sections={sections} source={source} />
+      );
     case "process":
       return <RasterProcess section={section} sections={sections} />;
     case "pricelist":
@@ -272,8 +277,11 @@ export function renderRasterSection(
     case "team":
       return <RasterTeam section={section} sections={sections} />;
     case "about":
+      return <RasterAbout section={section} sections={sections} />;
     case "gallery":
+      return <RasterGallery section={section} sections={sections} />;
     case "testimonials":
+      return <RasterReviews section={section} sections={sections} />;
     case "faq":
     case "contact":
     case "story":

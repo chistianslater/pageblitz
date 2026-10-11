@@ -11,6 +11,7 @@ import {
   useChapterNo,
   type RasterSection,
 } from "./sections";
+import { RasterPortraits } from "./Story";
 
 /**
  * Preise, Speisekarte und Team im Raster: Tabellen mit Haarlinien — Titel
@@ -144,11 +145,19 @@ export function RasterTeam({
       title={section.headline || blueprint.headlines.team}
       full
     >
-      <ul className="rs-table">
-        {section.members.map(member => (
-          <TableRow key={member.name} title={member.name} aside={member.role} />
-        ))}
-      </ul>
+      {section.members.every(m => m.imageUrl) ? (
+        <RasterPortraits members={section.members} />
+      ) : (
+        <ul className="rs-table">
+          {section.members.map(member => (
+            <TableRow
+              key={member.name}
+              title={member.name}
+              aside={member.role}
+            />
+          ))}
+        </ul>
+      )}
     </RasterChapter>
   );
 }
