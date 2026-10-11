@@ -30,12 +30,12 @@ describe("withPrimarySystem", () => {
     vi.resetModules();
   });
 
-  test("ohne Mock: Journal ist freigeschaltet, Friseur wird Journal", async () => {
+  test("ohne Mock: Friseur wird Journal, Handwerk Werkstoff", async () => {
     const { withPrimarySystem } = await import("../../shared/designSystems/apply");
     const friseur = withPrimarySystem(friseurDoc());
     expect(friseur.system).toBe("journal");
     expect(friseur.designRevision).toBe(3);
-    expect(withPrimarySystem(tischlerDoc()).designRevision).toBe(2);
+    expect(withPrimarySystem(tischlerDoc()).system).toBe("werkstoff");
   });
 
   test("mit Freischaltung: Friseur wird Journal, Handwerk bleibt rev 2", async () => {

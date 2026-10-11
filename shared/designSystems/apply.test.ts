@@ -35,7 +35,7 @@ describe("withDesignSystem", () => {
   });
 });
 
-describe("withPrimarySystem (Raster freigeschaltet)", () => {
+describe("withPrimarySystem (Raster und Werkstoff freigeschaltet)", () => {
   const withFamily = (blueprintFamily: string) =>
     withPrimarySystem({
       ...rev2,
@@ -53,7 +53,27 @@ describe("withPrimarySystem (Raster freigeschaltet)", () => {
     }
   );
 
-  test.each(["trade", "health", "retail", "courses"])(
+  test.each(["trade", "retail"])(
+    "Familie %s bekommt Werkstoff (rev 3)",
+    family => {
+      const doc = withFamily(family);
+      expect(doc.system).toBe("werkstoff");
+      expect(doc.designRevision).toBe(3);
+    }
+  );
+
+  test("Café (Gastro) bekommt Werkstoff", () => {
+    const doc = withPrimarySystem({
+      ...rev2,
+      businessCategory: "Café",
+      businessName: "Café Muster",
+      blueprintFamily: "gastro",
+    } as typeof rev2);
+    expect(doc.system).toBe("werkstoff");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test.each(["health", "courses"])(
     "Familie %s: Hauptsystem nicht gebaut, bleibt rev 2",
     family => {
       const doc = withFamily(family);

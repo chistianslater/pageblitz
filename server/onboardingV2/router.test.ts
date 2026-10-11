@@ -734,6 +734,16 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(false);
   });
 
+  test("Werkstoff frei: Handwerk Hauptsystem, Restaurant Alternative in Runde 0", async () => {
+    released.ids = ["journal", "raster", "werkstoff"];
+    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
+    const trade = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(trade.candidates[0]).toMatchObject({ kind: "system", id: "werkstoff" });
+    useDoc({ ...v2, businessCategory: "Restaurant", businessName: "Zur Linde", blueprintFamily: "gastro" });
+    const gastro = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(gastro.candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(true);
+  });
+
   test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
     useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
     released.ids = ["journal"];
