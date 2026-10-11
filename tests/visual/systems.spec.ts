@@ -140,3 +140,71 @@ test("Raster: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
     expect(ring.width).toBe("2px");
   }
 });
+
+// Bildvergleich Designsystem Werkstoff (Plan 2026-10-11, Task W8): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie Journal
+// und Raster (kein waagrechter Überlauf). Die Handy-Leiste ist
+// `position: fixed` und liegt im ganzseitigen Bild im ersten Bildschirm.
+const WERKSTOFF_PALETTES = ["kiefer", "leinen", "ton"] as const;
+
+for (const palette of WERKSTOFF_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`werkstoff ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=werkstoff&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `werkstoff-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Werkstoff: Zilla Slab, Karla und DM Mono werden geladen", async ({
+  page,
+}) => {
+  await page.goto("/dev/site-preview?system=werkstoff&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  // DM Mono wird nachgeladen (nicht vorgeladen): auf den Zettel warten.
+  await page.evaluate(() => document.fonts.load('500 1rem "DM Mono"'));
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  const families = loaded.join(",");
+  expect(families).toMatch(/Zilla Slab/);
+  expect(families).toMatch(/Karla/);
+  expect(families).toMatch(/DM Mono/);
+  const fonts = await page.evaluate(() => ({
+    head: getComputedStyle(document.querySelector(".ws-entry-head, .ws-entry-fit")!)
+      .fontFamily,
+    body: getComputedStyle(document.body.querySelector(".pb-werkstoff")!)
+      .fontFamily,
+  }));
+  expect(fonts.head).toMatch(/^"?Zilla Slab/);
+  expect(fonts.body).toMatch(/^"?Karla/);
+});
+
+test("Werkstoff: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=werkstoff&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("2px");
+  }
+});

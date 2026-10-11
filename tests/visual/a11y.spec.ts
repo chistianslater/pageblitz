@@ -312,3 +312,48 @@ test.describe("A11y (axe): Designsystem Raster", () => {
     }
   }
 });
+
+/**
+ * Designsystem Werkstoff (Plan 2026-10-11, Task W8): drei Paletten im
+ * vollen Inhaltsstand plus die drei Beispielbetriebe (Schreinerei, Bäckerei
+ * mit Tageszeitleiste und Wochentafel, Laden ohne Einstiegsfoto), Desktop
+ * und Handy. Gleiches Gate: 0 critical/serious.
+ */
+test.describe("A11y (axe): Designsystem Werkstoff", () => {
+  for (const palette of ["kiefer", "leinen", "ton"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`werkstoff ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=werkstoff&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await expectNoSeriousViolations(
+          page,
+          `werkstoff ${palette} (${width})`
+        );
+      });
+    }
+  }
+  for (const [showcase, palette] of [
+    ["schreinerei", "kiefer"],
+    ["baeckerei", "ton"],
+    ["laden", "leinen"],
+  ] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`werkstoff ${showcase} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/demo/system/werkstoff/${showcase}?palette=${palette}&live=1`
+        );
+        await page.waitForLoadState("networkidle");
+        await expectNoSeriousViolations(
+          page,
+          `werkstoff ${showcase} ${palette} (${width})`
+        );
+      });
+    }
+  }
+});
