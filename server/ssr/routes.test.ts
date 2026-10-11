@@ -165,6 +165,24 @@ describe("SSR routes", () => {
       expect(demo.text).toContain('class="pb-site pb-raster"');
     });
 
+    test("Werkstoff: Dev-Vorschau (3 Paletten) und Demo-Routen liefern 200", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["kiefer", "leinen", "ton"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=werkstoff&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="werkstoff"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+      }
+      for (const showcase of ["schreinerei", "baeckerei", "cafe"]) {
+        const demo = await request(app).get(`/demo/system/werkstoff/${showcase}`);
+        expect(demo.status).toBe(200);
+        expect(demo.text).toContain('class="pb-site pb-werkstoff"');
+      }
+    });
+
     test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);
