@@ -11,7 +11,7 @@ import {
   chapterTitle,
   type WerkstoffSection,
 } from "./sections";
-import { processMode, stepTime } from "./offerData";
+import { isDayName, processMode, stepTime } from "./offerData";
 
 /**
  * Angebot nach Systemblatt (Anker Hollis): Leistungen als Liste mit
@@ -202,10 +202,6 @@ export function WerkstoffProcess({
 
 /* ── Wochentafel: Preise und Speisekarte ─────────────────────────────── */
 
-/** Reiner Wochentag („Mi", „Mittwoch") — dann darf die Zeile „heute" tragen. */
-const DAY_NAME =
-  /^(mo|di|mi|do|fr|sa|so)(ntag|nstag|ttwoch|nnerstag|eitag|mstag|nnabend)?\.?$/i;
-
 type Priced = SectionOf<"pricelist"> | SectionOf<"menu">;
 
 export function WerkstoffPriced({ section }: { section: Priced }) {
@@ -233,26 +229,36 @@ export function WerkstoffPriced({ section }: { section: Priced }) {
           </h2>
           {categories.map(category => (
             <div className="ws-board-group" key={category.name}>
-              {!single && <h3 className="ws-data ws-board-cat">{category.name}</h3>}
+              {!single && (
+                <h3 className="ws-data ws-board-cat">{category.name}</h3>
+              )}
               <ul className="ws-board-list">
                 {category.items.map((item, i) => {
                   const today =
-                    DAY_NAME.test(item.name.trim()) &&
+                    isDayName(item.name) &&
                     coversToday(item.name.trim(), now);
                   return (
                     <li
                       key={`${item.name}-${i}`}
-                      className={today ? "ws-board-row ws-board-row--today" : "ws-board-row"}
+                      className={
+                        today
+                          ? "ws-board-row ws-board-row--today"
+                          : "ws-board-row"
+                      }
                     >
                       <span className="ws-board-name">{rich(item.name)}</span>
-                      {today && <span className="ws-data ws-board-today">heute</span>}
+                      {today && (
+                        <span className="ws-data ws-board-today">heute</span>
+                      )}
                       {item.price?.trim() && (
                         <span className="ws-data ws-board-price">
                           {formatPrice(item.price)}
                         </span>
                       )}
                       {item.description && (
-                        <p className="ws-board-desc">{rich(item.description)}</p>
+                        <p className="ws-board-desc">
+                          {rich(item.description)}
+                        </p>
                       )}
                     </li>
                   );
@@ -291,7 +297,13 @@ export function WerkstoffStats({ section }: Props<"stats">) {
 
 /* ── Vorschau-Platzhalter als eigene Abschnitte ──────────────────────── */
 
-function SlotSection({ id, children }: { id: string; children: React.ReactNode }) {
+function SlotSection({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
   return (
     <section id={id} className="ws-slot-section">
       <div className="ws-wrap">{children}</div>

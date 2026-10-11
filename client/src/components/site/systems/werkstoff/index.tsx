@@ -44,7 +44,11 @@ export const WERKSTOFF_MODULE: PackModule = {
     // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
     const slots = sections || legal ? {} : previewSlotAnchors(list);
     const homeAll = orderedSections(home);
-    const homeShown = werkstoffPhotos(homeAll.filter(systemShows), hidden).list;
+    // Auf der Startseite ist `list` schon die beanspruchte Startseiten-Liste.
+    const homeShown =
+      sections || legal
+        ? werkstoffPhotos(homeAll.filter(systemShows), hidden).list
+        : list;
     const shown = werkstoffNavItems(
       shownNavItems(navItems, homeAll).filter(
         item =>

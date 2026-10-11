@@ -20,11 +20,19 @@ export function stepTime(
 ): { time: string; label: string } | undefined {
   const m = title.trim().match(TIME_START);
   if (!m) return undefined;
+  // „4.50 € Brötchen" ist ein Preis, keine Uhrzeit.
+  if (/^(€|eur\b)/i.test(m[3])) return undefined;
   const h = Number(m[1]);
   const min = Number(m[2]);
   if (h > 23 || min > 59) return undefined;
   return { time: `${h}:${m[2]}`, label: m[3].trim() };
 }
+
+/** Reiner Wochentag („Di", „Dienstag", „So.") — dann darf eine Tafelzeile „heute" tragen. */
+const DAY_NAME =
+  /^(mo(ntag)?|di(enstag)?|mi(ttwoch)?|do(nnerstag)?|fr(eitag)?|sa(mstag)?|so(nntag|nnabend)?)\.?$/i;
+
+export const isDayName = (name: string) => DAY_NAME.test(name.trim());
 
 export type ProcessMode = "timeline" | "numbers";
 
@@ -56,8 +64,12 @@ export function processPhoto(
   const gallery = sections.find(
     (s): s is SectionOf<"gallery"> => s.type === "gallery"
   );
+  // Das Über-uns-Foto steht für den Betrieb und bleibt dort.
+  const about = sections.find(
+    (s): s is SectionOf<"about"> => s.type === "about"
+  )?.imageUrl;
   const free = [...new Set(gallery?.images.map(i => i.url) ?? [])].filter(
-    u => !claimed.has(u)
+    u => !claimed.has(u) && u !== about
   );
   return free.length > GALLERY_KEEP ? [free[0]] : undefined;
 }

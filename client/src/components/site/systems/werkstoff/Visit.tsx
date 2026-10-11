@@ -101,13 +101,19 @@ function HoursCard({
           return (
             <div
               key={`${entry.day}-${i}`}
-              className={today ? "ws-hours-row ws-hours-row--today" : "ws-hours-row"}
+              className={
+                today ? "ws-hours-row ws-hours-row--today" : "ws-hours-row"
+              }
             >
               <dt>
                 {entry.day}
                 {today && <span className="ws-today"> heute</span>}
               </dt>
-              <dd>{CLOSED.test(entry.hours) ? "geschlossen" : shortHours(entry.hours)}</dd>
+              <dd>
+                {CLOSED.test(entry.hours)
+                  ? "geschlossen"
+                  : shortHours(entry.hours)}
+              </dd>
             </div>
           );
         })}
@@ -133,7 +139,10 @@ export function WerkstoffContact({ section }: Props<"contact">) {
   const whatsapp = whatsappHref(section.phone);
   const mail = mailHref(section.email);
   const inquiryHref =
-    mailHref(section.email, `Anfrage über die Website – ${data.businessName}`) ?? tel;
+    mailHref(
+      section.email,
+      `Anfrage über die Website – ${data.businessName}`
+    ) ?? tel;
   const external = { target: "_blank", rel: "noopener noreferrer" } as const;
   return (
     <WerkstoffChapter
@@ -171,7 +180,9 @@ export function WerkstoffContact({ section }: Props<"contact">) {
             </p>
           )}
           {blueprint.serviceArea && section.city && (
-            <p className="ws-visit-area">Einsatzgebiet: {section.city} und Umgebung</p>
+            <p className="ws-visit-area">
+              Einsatzgebiet: {section.city} und Umgebung
+            </p>
           )}
           {(tel || (inquiry && inquiryHref)) && (
             <p className="ws-visit-actions">

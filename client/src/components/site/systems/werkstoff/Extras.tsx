@@ -2,7 +2,7 @@ import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
-import { paragraphs } from "./Story";
+import { paragraphs, unquote } from "./Story";
 import {
   WerkstoffChapter,
   chapterTitle,
@@ -21,10 +21,6 @@ type Props<T extends WerkstoffSection["type"]> = {
   section: Extract<WerkstoffSection, { type: T }>;
   sections: readonly WerkstoffSection[];
 };
-
-/** Anführungszeichen setzt das Markup; vorhandene aus dem Text entfernen. */
-const unquote = (text: string) =>
-  text.trim().replace(/^[„"“»«‚']+|[“"”«»‘']+$/g, "");
 
 export function WerkstoffStory({ section }: Props<"story">) {
   const { blueprint } = useSystem();

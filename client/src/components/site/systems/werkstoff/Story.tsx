@@ -119,7 +119,9 @@ export function WerkstoffTeam({ section }: Props<"team">) {
                 />
                 <figcaption>
                   <span className="ws-face-name">{m.name}</span>
-                  {m.role && <span className="ws-data ws-face-role">{m.role}</span>}
+                  {m.role && (
+                    <span className="ws-data ws-face-role">{m.role}</span>
+                  )}
                 </figcaption>
               </figure>
             </li>
@@ -130,7 +132,9 @@ export function WerkstoffTeam({ section }: Props<"team">) {
           {section.members.map((m, i) => (
             <li key={`${m.name}-${i}`}>
               <span className="ws-people-name">{m.name}</span>
-              {m.role && <span className="ws-data ws-people-role">{m.role}</span>}
+              {m.role && (
+                <span className="ws-data ws-people-role">{m.role}</span>
+              )}
             </li>
           ))}
         </ul>
@@ -186,7 +190,7 @@ export function WerkstoffGallery({ section, sections }: Props<"gallery">) {
 }
 
 /** Anführungszeichen setzt das Markup; vorhandene aus dem Text entfernen. */
-const unquote = (text: string) =>
+export const unquote = (text: string) =>
   text.trim().replace(/^[„"“»«‚']+|[“"”«»‘']+$/g, "");
 
 /** Stimme: Google-Zeile (nur mit echten Zahlen), ein Zitat, Name. */
@@ -201,7 +205,11 @@ export function WerkstoffReviews({ section }: Props<"testimonials">) {
       ? `${formatHeroRating(google.rating)} aus ${google.reviewCount.toLocaleString("de-DE")} Google-${google.reviewCount === 1 ? "Bewertung" : "Bewertungen"}`
       : undefined;
   return (
-    <section id={id} className="ws-sec ws-testimonials" aria-labelledby={`${id}-titel`}>
+    <section
+      id={id}
+      className="ws-sec ws-testimonials"
+      aria-labelledby={`${id}-titel`}
+    >
       <div className="ws-wrap">
         <h2 className="ws-sr" id={`${id}-titel`}>
           {rich(chapterTitle("testimonials", section.headline, blueprint))}
@@ -214,7 +222,9 @@ export function WerkstoffReviews({ section }: Props<"testimonials">) {
           {quote.author && (
             <figcaption className="ws-voice-who">
               <span className="ws-voice-name">{quote.author}</span>
-              {google && <span className="ws-voice-source">Google-Bewertung</span>}
+              {google && (
+                <span className="ws-voice-source">Google-Bewertung</span>
+              )}
             </figcaption>
           )}
         </figure>

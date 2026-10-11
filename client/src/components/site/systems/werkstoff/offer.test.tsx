@@ -15,11 +15,19 @@ type Doc = ReturnType<typeof holtkampDoc>;
 const count = (html: string, needle: string) => html.split(needle).length - 1;
 
 /** Bäckerei mit Backtag (Schritt-Titel mit Uhrzeit) und Wochentafel. */
-function backtagDoc(titles = ["3:30 Teig", "4:30 Uhr – Ofen", "6:00 Laden auf"]): Doc {
+function backtagDoc(
+  titles = ["3:30 Teig", "4:30 Uhr – Ofen", "6:00 Laden auf"]
+): Doc {
   const base = overbeckDoc();
   const withProcess: Doc = base.sections.some(s => s.type === "process")
     ? base
-    : { ...base, sections: [...base.sections, { type: "process", steps: [{ title: "x" }, { title: "y" }] }] };
+    : {
+        ...base,
+        sections: [
+          ...base.sections,
+          { type: "process", steps: [{ title: "x" }, { title: "y" }] },
+        ],
+      };
   return patchSection(withProcess, "process", p => ({
     ...p,
     headline: "Ein Backtag.",
@@ -34,10 +42,12 @@ describe("Werkstoff: Leistungen", () => {
     expect(s).toContain('class="ws-title ws-title--display"');
     const doc = holtkampDoc();
     const items = doc.sections.find(x => x.type === "services")!;
-    expect(items.type === "services" && count(s, '<h3 class="ws-list-title">')).toBe(
-      items.type === "services" ? items.items.length : 0
+    expect(
+      items.type === "services" && count(s, '<h3 class="ws-list-title">')
+    ).toBe(items.type === "services" ? items.items.length : 0);
+    expect(s).toContain(
+      '<span class="ws-list-arrow" aria-hidden="true">→</span>'
     );
-    expect(s).toContain('<span class="ws-list-arrow" aria-hidden="true">→</span>');
   });
 
   test("Preise nur aus den Daten, sonst keine Meta-Zeile", () => {
@@ -82,7 +92,9 @@ describe("Werkstoff: Ablauf", () => {
     const photo = s.match(/<img src="([^"]+)"/)![1];
     expect(count(html, `src="${photo}"`)).toBe(1);
     // Die Galerie behält mindestens zwei Fotos.
-    expect(count(sectionHtml(html, "gallery"), "<img ")).toBeGreaterThanOrEqual(2);
+    expect(count(sectionHtml(html, "gallery"), "<img ")).toBeGreaterThanOrEqual(
+      2
+    );
   });
 
   test("Galerie bliebe unter zwei Fotos: Ziffern ohne Foto", () => {
@@ -91,7 +103,13 @@ describe("Werkstoff: Ablauf", () => {
 
   test("ohne Galerie: Ziffern ohne Foto", () => {
     const doc = holtkampDoc();
-    const s = sectionHtml(render({ ...doc, sections: doc.sections.filter(x => x.type !== "gallery") }), "process");
+    const s = sectionHtml(
+      render({
+        ...doc,
+        sections: doc.sections.filter(x => x.type !== "gallery"),
+      }),
+      "process"
+    );
     expect(s).not.toContain("<img");
     expect(s).toContain("ws-step-no");
   });
@@ -99,16 +117,25 @@ describe("Werkstoff: Ablauf", () => {
   test("alle Titel mit Uhrzeit → Tageszeitleiste (Northdock), wischbar, per Tastatur erreichbar", () => {
     const s = sectionHtml(render(backtagDoc()), "process");
     expect(s).toContain("ws-process--day");
-    expect(s).toContain('<div class="ws-day" role="region" aria-label="Tagesablauf" tabindex="0">');
-    expect(s).toContain('<p class="ws-day-time">3:30</p><h3 class="ws-day-label">Teig</h3>');
-    expect(s).toContain('<p class="ws-day-time">4:30</p><h3 class="ws-day-label">Ofen</h3>');
+    expect(s).toContain(
+      '<div class="ws-day" role="region" aria-label="Tagesablauf" tabindex="0">'
+    );
+    expect(s).toContain(
+      '<p class="ws-day-time">3:30</p><h3 class="ws-day-label">Teig</h3>'
+    );
+    expect(s).toContain(
+      '<p class="ws-day-time">4:30</p><h3 class="ws-day-label">Ofen</h3>'
+    );
     expect(s).not.toContain("ws-step-no");
     expect(s).not.toContain("<img");
     expect(s).toContain("Wischen für den ganzen Tag");
   });
 
   test("ein Schritt ohne Uhrzeit → sauber zurück auf Ziffern", () => {
-    const s = sectionHtml(render(backtagDoc(["3:30 Teig", "Ofen", "6:00 Laden auf"])), "process");
+    const s = sectionHtml(
+      render(backtagDoc(["3:30 Teig", "Ofen", "6:00 Laden auf"])),
+      "process"
+    );
     expect(s).not.toContain("ws-day");
     expect(s).toContain("ws-step-no");
   });
@@ -139,9 +166,29 @@ describe("Werkstoff: Wochentafel", () => {
     }));
     const s = sectionHtml(render(doc), "pricelist");
     expect(count(s, "ws-board-row--today")).toBe(1);
-    expect(s).toContain('<span class="ws-board-name">Di</span><span class="ws-data ws-board-today">heute</span>');
+    expect(s).toContain(
+      '<span class="ws-board-name">Di</span><span class="ws-data ws-board-today">heute</span>'
+    );
     // Ohne Preis kein Preis — nichts erfunden.
     expect(s).not.toContain("ws-board-price");
+  });
+
+  test("Langform Dienstag ist heute, Sonntag nicht", () => {
+    const doc = patchSection(overbeckDoc(), "pricelist", p => ({
+      ...p,
+      categories: [
+        {
+          name: "Wochentafel",
+          items: [
+            { name: "Dienstag", description: "Dinkel-Vollkorn", price: "" },
+            { name: "Sonntag", description: "Stuten", price: "" },
+          ],
+        },
+      ],
+    }));
+    const s = sectionHtml(render(doc), "pricelist");
+    expect(count(s, "ws-board-row--today")).toBe(1);
+    expect(s).toContain('<span class="ws-board-name">Dienstag</span><span class="ws-data ws-board-today">heute</span>');
   });
 
   test("Speisekarte heißt nicht ws-menu (Kopf-Menü)", () => {
@@ -150,7 +197,9 @@ describe("Werkstoff: Wochentafel", () => {
   });
 
   test("Tafel nutzt Signal, nie deep", () => {
-    expect(WERKSTOFF_CSS).toMatch(/\.ws-board\{background:var\(--sys-signal\);color:var\(--sys-on-signal\)/);
+    expect(WERKSTOFF_CSS).toMatch(
+      /\.ws-board\{background:var\(--sys-signal\);color:var\(--sys-on-signal\)/
+    );
   });
 });
 
@@ -161,10 +210,18 @@ describe("Werkstoff: Zahlen", () => {
       ...doc,
       sections: [
         ...doc.sections,
-        { type: "stats", items: [{ value: "12", label: "Leute" }, { value: "3", label: "Werkstätten" }] },
+        {
+          type: "stats",
+          items: [
+            { value: "12", label: "Leute" },
+            { value: "3", label: "Werkstätten" },
+          ],
+        },
       ],
     };
     const s = sectionHtml(render(withStats), "stats");
-    expect(s).toContain('<span class="ws-fig-value">12</span><span class="ws-data ws-fig-label">Leute</span>');
+    expect(s).toContain(
+      '<span class="ws-fig-value">12</span><span class="ws-data ws-fig-label">Leute</span>'
+    );
   });
 });

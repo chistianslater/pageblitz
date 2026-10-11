@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { SystemSection } from "../shared";
 import {
   galleryGroups,
+  isDayName,
   processMode,
   processPhoto,
   stepTime,
@@ -18,13 +19,23 @@ const gallery = (...ns: number[]): SystemSection => ({
   images: ns.map(n => ({ url: url(n), alt: "" })),
 });
 const hero = (n?: number): SystemSection =>
-  ({ type: "hero", headline: "Kopf", imageUrl: n ? url(n) : undefined }) as SystemSection;
+  ({
+    type: "hero",
+    headline: "Kopf",
+    imageUrl: n ? url(n) : undefined,
+  }) as SystemSection;
 
 describe("Ablauf: Uhrzeit oder Ziffern", () => {
   test("Uhrzeit vorn wird erkannt und abgetrennt", () => {
     expect(stepTime("5:00 Teig")).toEqual({ time: "5:00", label: "Teig" });
-    expect(stepTime("05:30 Uhr – Ofen")).toEqual({ time: "5:30", label: "Ofen" });
-    expect(stepTime("6.00 Uhr: Laden auf")).toEqual({ time: "6:00", label: "Laden auf" });
+    expect(stepTime("05:30 Uhr – Ofen")).toEqual({
+      time: "5:30",
+      label: "Ofen",
+    });
+    expect(stepTime("6.00 Uhr: Laden auf")).toEqual({
+      time: "6:00",
+      label: "Laden auf",
+    });
     expect(stepTime("18:00")).toEqual({ time: "18:00", label: "" });
   });
 
@@ -34,11 +45,20 @@ describe("Ablauf: Uhrzeit oder Ziffern", () => {
     expect(stepTime("7:75 Teig")).toBeUndefined();
     expect(stepTime("25:00 Teig")).toBeUndefined();
     expect(stepTime("3 Schritte")).toBeUndefined();
+    // Preise sind keine Uhrzeit
+    expect(stepTime("4.50 € Brötchen")).toBeUndefined();
+    expect(stepTime("4,50€")).toBeUndefined();
+    expect(stepTime("12.90 EUR Mittagstisch")).toBeUndefined();
+    expect(stepTime("4.50€")).toBeUndefined();
   });
 
   test("Zeitleiste nur, wenn ALLE Schritte mit einer Uhrzeit beginnen", () => {
-    expect(processMode(steps("3:30 Teig", "4:30 Ofen", "6:00 Laden auf") as never)).toBe("timeline");
-    expect(processMode(steps("3:30 Teig", "Ofen", "6:00 Laden auf") as never)).toBe("numbers");
+    expect(
+      processMode(steps("3:30 Teig", "4:30 Ofen", "6:00 Laden auf") as never)
+    ).toBe("timeline");
+    expect(
+      processMode(steps("3:30 Teig", "Ofen", "6:00 Laden auf") as never)
+    ).toBe("numbers");
     expect(processMode(steps("Anfrage", "Angebot") as never)).toBe("numbers");
   });
 });
@@ -48,11 +68,28 @@ describe("Foto am Ablauf (Ziffern)", () => {
     const list = [hero(1), steps("Anfrage", "Bau"), gallery(1, 2, 3, 4)];
     expect(processPhoto(list, new Set([url(1)]))).toEqual([url(2)]);
     // Nach dem Einstieg bleiben nur zwei → kein Foto am Ablauf.
-    expect(processPhoto([hero(1), steps("A", "B"), gallery(1, 2, 3)], new Set([url(1)]))).toBeUndefined();
+    expect(
+      processPhoto(
+        [hero(1), steps("A", "B"), gallery(1, 2, 3)],
+        new Set([url(1)])
+      )
+    ).toBeUndefined();
+  });
+
+  test("das Über-uns-Foto wird nie Ablauf-Foto", () => {
+    const about: SystemSection = { type: "about", headline: "Über uns", body: "Text.", imageUrl: url(2) };
+    expect(processPhoto([hero(1), steps("A", "B"), about, gallery(1, 2, 3, 4, 5)], new Set([url(1)]))).toEqual([url(3)]);
+    // Ohne das Über-uns-Foto bleiben nur 2 freie Galeriefotos → kein Ablauf-Foto.
+    expect(processPhoto([steps("A", "B"), about, gallery(2, 3, 4)], new Set())).toBeUndefined();
   });
 
   test("Zeitleiste und Seiten ohne Ablauf bekommen keins", () => {
-    expect(processPhoto([steps("5:00 Teig", "6:00 Laden"), gallery(1, 2, 3, 4)], new Set())).toBeUndefined();
+    expect(
+      processPhoto(
+        [steps("5:00 Teig", "6:00 Laden"), gallery(1, 2, 3, 4)],
+        new Set()
+      )
+    ).toBeUndefined();
     expect(processPhoto([gallery(1, 2, 3, 4)], new Set())).toBeUndefined();
   });
 
@@ -62,8 +99,21 @@ describe("Foto am Ablauf (Ziffern)", () => {
       []
     );
     expect(offerPhotos).toEqual([url(2)]);
-    const g = list.find(s => s.type === "gallery") as { images: { url: string }[] };
+    const g = list.find(s => s.type === "gallery") as {
+      images: { url: string }[];
+    };
     expect(g.images.map(i => i.url)).toEqual([url(3), url(4)]);
+  });
+});
+
+describe("Wochentafel: reine Wochentage", () => {
+  test("Kurz- und Langformen, auch mit Punkt", () => {
+    for (const d of ["Mo", "Di", "Dienstag", "Mittwoch", "Do.", "Freitag", "Samstag", "Sonnabend", "Sonntag", "so"])
+      expect(isDayName(d), d).toBe(true);
+  });
+  test("keine Fantasie-Formen und keine Gerichte", () => {
+    for (const d of ["monstag", "Dinstag", "Sonntagsbraten", "Mittagstisch", "Mo–Fr"])
+      expect(isDayName(d), d).toBe(false);
   });
 });
 
