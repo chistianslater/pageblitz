@@ -11,6 +11,12 @@ import {
   WerkstoffServices,
   WerkstoffStats,
 } from "./Offer";
+import {
+  WerkstoffAbout,
+  WerkstoffGallery,
+  WerkstoffReviews,
+  WerkstoffTeam,
+} from "./Story";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
@@ -203,9 +209,13 @@ export function renderWerkstoffSection(
     case "stats":
       return <WerkstoffStats section={section} sections={sections} />;
     case "team":
+      return <WerkstoffTeam section={section} sections={sections} />;
     case "about":
+      return <WerkstoffAbout section={section} sections={sections} />;
     case "gallery":
+      return <WerkstoffGallery section={section} sections={sections} />;
     case "testimonials":
+      return <WerkstoffReviews section={section} sections={sections} />;
     case "faq":
     case "contact":
     case "story":

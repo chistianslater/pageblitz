@@ -3,6 +3,7 @@ import { systemFontFaces } from "../shared/fonts";
 import { DEEP_RULE, DOCK, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { OFFER_CSS } from "./offerCss";
+import { STORY_CSS } from "./storyCss";
 
 export { step } from "./step";
 
@@ -110,8 +111,6 @@ ${sections}
 .pb-werkstoff .ws-shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-xs);margin-top:var(--sys-space-xl)}
 .pb-werkstoff .ws-shots img{width:100%;aspect-ratio:4/5;object-fit:cover;filter:var(--sys-image-filter);background:var(--sys-rule)}
 .pb-werkstoff .ws-shots figcaption{color:var(--sys-muted);padding-top:var(--sys-space-xs)}
-.pb-werkstoff .ws-quote-text{font-family:var(--sys-font-text);font-weight:600;font-size:calc(var(--sys-h2-size) * .68);line-height:1.16;letter-spacing:-.02em;max-width:24ch;margin-top:var(--sys-space-m)}
-.pb-werkstoff .ws-voice-who{margin-top:var(--sys-space-l);padding-top:var(--sys-space-s);border-top:1px solid var(--sys-rule);font-family:var(--sys-font-display);font-weight:var(--sys-h3-weight)}
 @media (min-width:${GRID}){
   .pb-werkstoff .ws-contact{grid-template-columns:5fr 7fr;gap:var(--sys-space-2xl)}
   .pb-werkstoff .ws-shots{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -172,4 +171,4 @@ ${sections}
 `;
 }
 
-export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS + OFFER_CSS);
+export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS + OFFER_CSS + STORY_CSS);
