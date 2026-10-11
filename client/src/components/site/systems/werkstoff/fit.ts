@@ -60,7 +60,13 @@ export function splitLines(name: string, maxLines = 2, track = 0): string[] {
   return best;
 }
 
-/** Zeilen und Breite der längsten Zeile (em) für `--ws-fit`. */
+/**
+ * Sicherheitsaufschlag: Die Schätzung liegt gegen die echte Zilla-Breite
+ * (gemessen im Browser) bis 2 % zu niedrig — sonst bricht „am Markt" um.
+ */
+export const FIT_SAFETY = 1.06;
+
+/** Zeilen und Breite der längsten Zeile (em, mit Aufschlag) für `--ws-fit`. */
 export function fitName(
   name: string,
   maxLines = 2,
@@ -69,6 +75,6 @@ export function fitName(
   const lines = splitLines(name, maxLines, track);
   return {
     lines,
-    widthEm: Math.max(...lines.map(l => lineEm(l, track)), 1),
+    widthEm: Math.max(...lines.map(l => lineEm(l, track)), 1) * FIT_SAFETY,
   };
 }

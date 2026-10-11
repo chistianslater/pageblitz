@@ -10,6 +10,7 @@ import {
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
 import { shownNavItems, systemShows } from "../shared";
+import { WerkstoffDock } from "./Dock";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -20,7 +21,8 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
 /**
  * Werkstoff (rev 3) — Gerüst wie Raster: Startseite über orderedSections
  * (hiddenSections, sectionOrder, Add-on-Gating), nur gezeigte Abschnitte.
- * Heller Grund überall; dunkel ist nur der Fuß.
+ * Heller Grund überall; dunkel ist nur der Fuß. Handy-Leiste auf allen
+ * Seiten.
  */
 export const WERKSTOFF_MODULE: PackModule = {
   id: "werkstoff",
@@ -57,6 +59,7 @@ export const WERKSTOFF_MODULE: PackModule = {
           anchorPrefix={anchorPrefix}
           navItems={nav}
         />
+        <WerkstoffDock anchorPrefix={anchorPrefix} />
       </>
     );
   },

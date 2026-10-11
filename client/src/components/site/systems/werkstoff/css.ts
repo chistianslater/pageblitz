@@ -1,6 +1,7 @@
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { systemFontFaces } from "../shared/fonts";
 import { DEEP_RULE, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
+import { ENTRY_CSS } from "./entryCss";
 
 export { step } from "./step";
 
@@ -165,11 +166,5 @@ ${sections}
 /* ende werkstoff */
 `;
 }
-
-/** Einstieg (W2-Grundform): Name und Satz. */
-const ENTRY_CSS = `/* Einstieg */
-.pb-werkstoff .ws-entry{padding-top:var(--sys-space-l)}
-.pb-werkstoff .ws-entry-name{${step("display")}}
-.pb-werkstoff .ws-entry-lede{${step("lede")};margin-top:var(--sys-space-m);max-width:30ch}`;
 
 export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS);
