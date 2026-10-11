@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { JOURNAL } from "./journal";
+import { RASTER } from "./raster";
 import { getPalette, pickPalette } from "./palette";
 import { systemCssVars } from "./toCss";
 import { contrastRatio } from "../stylePacks/colorMath";
@@ -43,5 +44,61 @@ describe("Journal-Tokens", () => {
     expect(v["--sys-mark-transform"]).toBe("uppercase");
     expect(v["--sys-body-transform"]).toBe("none");
     expect(Object.values(v).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Raster-Tokens", () => {
+  test("genau drei Paletten mit eindeutigen IDs", () => {
+    expect(RASTER.id).toBe("raster");
+    expect(RASTER.palettes.map(p => p.id)).toEqual(["papier", "werk", "kohle"]);
+  });
+  test("Schriftskala enthält alle zehn Stufen inkl. figure", () => {
+    expect(Object.keys(RASTER.type).sort()).toEqual(
+      ["body", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+  });
+  test.each(RASTER.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(p.signal && p.onSignal).toBeTruthy();
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.signal!, p.paper)).toBeGreaterThanOrEqual(3);
+  });
+  test("genau ein Preload, die Geist-Datei", () => {
+    const files = [...RASTER.fonts.display.files, ...RASTER.fonts.text.files].map(f => f.file);
+    expect(RASTER.preload).toEqual(["geist-latin-wght.woff2"]);
+    for (const f of RASTER.preload) expect(files).toContain(f);
+  });
+  test("CSS-Variablen: Signal, figure, keine Steuerzeichen", () => {
+    const v = systemCssVars(RASTER, "werk");
+    expect(v["--sys-signal"]).toBe("#ff4f00");
+    expect(v["--sys-on-signal"]).toBe("#0e0e0e");
+    expect(v["--sys-accent"]).toBe("#b83a00");
+    expect(v["--sys-figure-size"]).toContain("clamp(");
+    expect(v["--sys-figure-weight"]).toBe("400");
+    expect(v["--sys-figure-transform"]).toBe("none");
+    expect(v["--sys-display-transform"]).toBe("uppercase");
+    expect(v["--sys-font-display"]).toContain("Geist");
+    expect(v["--sys-font-text"]).toContain("Geist");
+    for (const p of RASTER.palettes)
+      expect(Object.values(systemCssVars(RASTER, p.id)).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Journal-Variablen nach Erweiterung des Token-Shapes", () => {
+  test("Signal fällt auf Akzent und onDeep zurück", () => {
+    for (const p of JOURNAL.palettes) {
+      const v = systemCssVars(JOURNAL, p.id);
+      expect(v["--sys-signal"]).toBe(p.accent);
+      expect(v["--sys-on-signal"]).toBe(p.onDeep);
+    }
+  });
+  test("keine figure-Variablen, sonst nur die zwei neuen Variablen", () => {
+    const v = systemCssVars(JOURNAL, "papier");
+    expect(Object.keys(v).some(k => k.startsWith("--sys-figure-"))).toBe(false);
+    // 9 Farb/Schrift-Variablen + 9 Stufen × 5 + 11 Abstände + 2 neue
+    expect(Object.keys(v)).toHaveLength(9 + 9 * 5 + 11 + 2);
   });
 });

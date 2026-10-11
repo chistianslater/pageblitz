@@ -2,33 +2,13 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { JOURNAL_CSS } from "./css";
 import { JournalFoot, JournalHead, journalNavItems } from "./Chrome";
-import {
-  journalShows,
-  renderJournalSection,
-  type JournalSection,
-} from "./sections";
+import { renderJournalSection, type JournalSection } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
-import { JournalMenuSlot, JournalTeamSlot, previewSlotAnchors } from "./Offer";
+import { JournalMenuSlot, JournalTeamSlot } from "./Offer";
 import { JournalDock } from "./Visit";
 import { JournalLegal, JournalPageHead } from "./Extras";
 import { useSystem } from "../SystemContext";
-
-/**
- * Navigation ohne Anker auf Abschnitte, die Journal nicht zeigt (z. B.
- * Stimmen ohne zitierfähige Bewertung). Geprüft wird an der Startseite,
- * weil die Anker auch von Unterseiten dorthin zeigen.
- */
-export function shownNavItems(
-  items: NavItem[],
-  home: readonly JournalSection[]
-): NavItem[] {
-  const dropped = new Set(
-    home.filter(s => !journalShows(s)).map(s => s.type as string)
-  );
-  return items.filter(
-    item => !item.sectionType || !dropped.has(item.sectionType)
-  );
-}
+import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -46,7 +26,7 @@ export const JOURNAL_MODULE: PackModule = {
     // sectionOrder und Add-on-Gating greifen, Kapitel zählen nur Sichtbares.
     const list: JournalSection[] = legal
       ? []
-      : (sections ?? orderedSections(data)).filter(journalShows);
+      : (sections ?? orderedSections(data)).filter(systemShows);
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     // Vorschau-Platzhalter nur auf der Startseite.

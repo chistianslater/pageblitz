@@ -2,9 +2,9 @@ import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
+import { chapterIndex } from "../shared";
 import {
   JournalChapter,
-  chapterIndex,
   chapterLabel,
   interludeClass,
   sectionClass,

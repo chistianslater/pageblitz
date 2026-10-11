@@ -8,10 +8,13 @@ export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<
   const vars: Record<string, string> = {
     "--sys-paper": p.paper, "--sys-ink": p.ink, "--sys-muted": p.muted,
     "--sys-rule": p.rule, "--sys-accent": p.accent, "--sys-deep": p.deep, "--sys-on-deep": p.onDeep,
+    "--sys-signal": p.signal ?? p.accent, "--sys-on-signal": p.onSignal ?? p.onDeep,
     "--sys-font-display": stack(def.fonts.display),
     "--sys-font-text": stack(def.fonts.text),
   };
+  // Optionale Stufen (figure) fehlen in Systemen ohne sie — dann keine Variablen.
   for (const [step, t] of Object.entries(def.type)) {
+    if (!t) continue;
     vars[`--sys-${step}-size`] = t.size;
     vars[`--sys-${step}-line`] = String(t.line);
     vars[`--sys-${step}-track`] = t.track;

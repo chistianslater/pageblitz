@@ -5,7 +5,6 @@ import type {
 } from "../../../../../../shared/siteContract/types";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { journalDoc, render, sectionHtml } from "./testkit";
-import { mailHref } from "./Chrome";
 
 type Doc = ReturnType<typeof journalDoc>;
 
@@ -191,17 +190,7 @@ describe("Journal: Besuch", () => {
 });
 
 describe("Journal: E-Mail-Links aus Kundendaten", () => {
-  test("mailHref nimmt nur eine plausible Adresse und kodiert den Betreff", () => {
-    expect(mailHref("termin@noir.de")).toBe("mailto:termin@noir.de");
-    expect(mailHref(" termin@noir.de ")).toBe("mailto:termin@noir.de");
-    expect(mailHref("a@b.de?bcc=x@y.de")).toBeUndefined();
-    expect(mailHref("a@b.de,c@d.de")).toBeUndefined();
-    expect(mailHref("javascript:alert(1)")).toBeUndefined();
-    expect(mailHref("keine adresse")).toBeUndefined();
-    expect(mailHref("a@b.de", "Anfrage & Termin")).toBe(
-      "mailto:a@b.de?subject=Anfrage%20%26%20Termin"
-    );
-  });
+  // mailHref selbst: ../shared/helpers.test.ts
   test("ungültige Adresse: kein mailto-Link in Besuch und Fuß", () => {
     const html = render(withContact(journalDoc(), { email: "a@b.de?bcc=x@y.de" }));
     expect(html).not.toContain("mailto:");

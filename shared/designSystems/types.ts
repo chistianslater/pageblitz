@@ -3,8 +3,12 @@ export const DESIGN_SYSTEM_IDS = [
 ] as const;
 export type DesignSystemId = (typeof DESIGN_SYSTEM_IDS)[number];
 
-export type TypeStep =
+/** Stufen, die jedes System führt. */
+export type CoreTypeStep =
   | "display" | "h2" | "h3" | "lede" | "body" | "small" | "kicker" | "link" | "mark";
+/** Optionale Stufen: `figure` (große Ziffern, Bandnamen) nur, wo das System sie braucht. */
+export type OptionalTypeStep = "figure";
+export type TypeStep = CoreTypeStep | OptionalTypeStep;
 export type SpaceStep =
   | "2xs" | "xs" | "s" | "m" | "l" | "xl" | "2xl" | "section" | "gutter" | "measure" | "max";
 
@@ -27,6 +31,10 @@ export type SystemPalette = {
   accent: string;
   deep: string;
   onDeep: string;
+  /** Tragende Signalfläche (Rückfall: accent); als Text nicht zwingend AA. */
+  signal?: string;
+  /** Schrift auf `signal` (Rückfall: onDeep). */
+  onSignal?: string;
 };
 
 export type FontFile = { file: string; weight: string; style: "normal" | "italic" };
@@ -39,7 +47,7 @@ export type DesignSystemDef = {
   fonts: { display: SystemFont; text: SystemFont };
   /** Dateinamen (aus fonts.*.files), die im <head> vorgeladen werden — max. 2. */
   preload: readonly string[];
-  type: Record<TypeStep, TypeSpec>;
+  type: Record<CoreTypeStep, TypeSpec> & Partial<Record<OptionalTypeStep, TypeSpec>>;
   space: Record<SpaceStep, string>;
   palettes: readonly [SystemPalette, SystemPalette, SystemPalette];
 };

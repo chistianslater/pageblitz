@@ -3,13 +3,15 @@ import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS } from "../../engine";
 import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
+import {
+  addressLine,
+  contactOf,
+  mailHref,
+  mapsHref,
+  primaryAction,
+} from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
-import type {
-  SectionOf,
-  SectionType,
-  WebsiteDataV2,
-} from "../../../../../../shared/siteContract/types";
-import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import type { SectionType } from "../../../../../../shared/siteContract/types";
 
 /**
  * Kopf und Fuß von Journal nach Systemblatt (Anker Aman Venice):
@@ -17,60 +19,6 @@ import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
  * eine zentrierte Navigationszeile; Fuß als helles Band mit Marke in
  * gesperrten Serifen-Versalien, Adresse, Telefon, Textlinks, Rechtszeile.
  */
-
-function contactOf(
-  sections: readonly { type: string }[]
-): SectionOf<"contact"> | undefined {
-  return sections.find((s): s is SectionOf<"contact"> => s.type === "contact");
-}
-
-/** „Hammer Straße 41, 48153 Münster" — leer, wenn nichts bekannt ist. */
-export function addressLine(c: SectionOf<"contact"> | undefined): string {
-  return [c?.street, [c?.zip, c?.city].filter(Boolean).join(" ")]
-    .filter(Boolean)
-    .join(", ");
-}
-
-export const mapsHref = (address: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-
-/**
- * `mailto:`-Link nur für eine plausible, einzelne Adresse. Die Adresse kommt
- * aus Kundendaten: Zeichen, die einen mailto-Link umbauen könnten (?, &, #,
- * Komma, Leerraum, spitze Klammern, Anführungszeichen), schließen sie aus.
- * Der Betreff wird kodiert.
- */
-const MAIL = /^[^\s@?&#,;:<>"'()\\]+@[^\s@?&#,;:<>"'()\\]+\.[a-z]{2,}$/i;
-export function mailHref(
-  email: string | undefined,
-  subject?: string
-): string | undefined {
-  const value = email?.trim();
-  if (!value || !MAIL.test(value)) return undefined;
-  return subject
-    ? `mailto:${value}?subject=${encodeURIComponent(subject)}`
-    : `mailto:${value}`;
-}
-
-/** Hauptaktion laut Bauplan: Anruf, Route oder Sprung zum Kontakt. */
-export function primaryAction(
-  data: WebsiteDataV2,
-  blueprint: Blueprint,
-  anchorPrefix = ""
-): { label: string; href: string } {
-  const contact = contactOf(data.sections);
-  const hero = data.sections.find(
-    (s): s is SectionOf<"hero"> => s.type === "hero"
-  );
-  const label = hero?.ctaText ?? blueprint.ctaText ?? "Kontakt";
-  const tel = telHref(contact?.phone);
-  if (blueprint.ctaAction === "tel" && tel) return { label, href: tel };
-  const address = addressLine(contact);
-  if (blueprint.ctaAction === "route" && address)
-    return { label, href: mapsHref(address) };
-  const href = hero?.ctaHref ?? `#${SECTION_ANCHORS.contact}`;
-  return { label, href: href.startsWith("#") ? anchorPrefix + href : href };
-}
 
 /** Ab hier wird die Marke im Handy-Kopf kleiner bzw. verlässt die Versalien. */
 const BRAND_LONG_WORD = 8;

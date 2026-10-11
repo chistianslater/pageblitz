@@ -11,7 +11,7 @@ import {
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { useSystem } from "../SystemContext";
-import { addressLine, mapsHref, primaryAction } from "./Chrome";
+import { addressLine, mapsHref, primaryAction } from "../shared";
 import type { JournalSection } from "./sections";
 import { FIT_MAX, FIT_MIN } from "./css";
 

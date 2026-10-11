@@ -12,3 +12,11 @@ describe("Freischaltung der Designsysteme", () => {
     for (const id of RELEASED_SYSTEMS) expect(getSystem(id)).toBeDefined();
   });
 });
+
+describe("Raster", () => {
+  test("ist registriert, aber nicht freigeschaltet", () => {
+    expect(getSystem("raster")?.name).toBe("Raster");
+    expect(isReleased("raster")).toBe(false);
+    expect(RELEASED_SYSTEMS).not.toContain("raster");
+  });
+});

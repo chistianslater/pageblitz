@@ -1,23 +1,15 @@
 import { JOURNAL } from "../../../../../../shared/designSystems/journal";
-import type { TypeStep } from "../../../../../../shared/designSystems/types";
-
-const FONT_DIR = "/fonts/systems";
+import type { CoreTypeStep } from "../../../../../../shared/designSystems/types";
+import { systemFontFaces } from "../shared/fonts";
 
 /** @font-face aus der Systemdefinition — eine Quelle für Dateien/Gewichte. */
-const FONT_FACES = [JOURNAL.fonts.display, JOURNAL.fonts.text]
-  .flatMap(font =>
-    font.files.map(
-      f =>
-        `@font-face{font-family:"${font.family}";src:url(${FONT_DIR}/${f.file}) format("woff2");font-weight:${f.weight};font-style:${f.style};font-display:swap}`
-    )
-  )
-  .join("\n");
+const FONT_FACES = systemFontFaces(JOURNAL);
 
 /**
  * Vollständige Typo-Deklaration einer Stufe aus den System-Variablen. Die
  * Schriftfamilie folgt `type[step].font` (body = Serife, wie bei Aman).
  */
-export function step(s: TypeStep): string {
+export function step(s: CoreTypeStep): string {
   const family = JOURNAL.type[s].font;
   return [
     `font-family:var(--sys-font-${family})`,

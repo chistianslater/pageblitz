@@ -10,10 +10,15 @@ import {
   whatsappHref,
 } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import { addressLine, mailHref, mapsHref, primaryAction } from "./Chrome";
+import {
+  addressLine,
+  chapterIndex,
+  mailHref,
+  mapsHref,
+  primaryAction,
+} from "../shared";
 import {
   JournalChapter,
-  chapterIndex,
   chapterLabel,
   sectionClass,
   type JournalSection,

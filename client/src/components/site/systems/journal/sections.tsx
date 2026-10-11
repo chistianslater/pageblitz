@@ -1,14 +1,10 @@
 import React from "react";
-import type {
-  PageSection,
-  SectionV2,
-} from "../../../../../../shared/siteContract/types";
+import { NUMBERED, chapterIndex, type SystemSection } from "../shared";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
-export type JournalSection = SectionV2 | PageSection;
+export type JournalSection = SystemSection;
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { rich, stripMarks } from "../../richText";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
 import { JournalEntry } from "./Entry";
 import {
   JournalMenu,
@@ -29,40 +25,11 @@ import {
   JournalUsp,
 } from "./Extras";
 
-/**
- * Nummerierte Kapitel nach Systemblatt: Der Einstieg ist Kapitel 01 (ohne
- * sichtbare Ziffer), der erste Inhaltsabschnitt 02; Kontakt („Besuch")
- * zählt mit. Lückenlos über die übergebenen (sichtbaren) Abschnitte in
- * Renderreihenfolge.
+/*
+ * Kapitelnummern (chapterIndex/NUMBERED) kommen aus ../shared: Der Einstieg
+ * ist Kapitel 01 (ohne sichtbare Ziffer), der erste Inhaltsabschnitt 02;
+ * Kontakt („Besuch") zählt mit.
  */
-const NUMBERED: ReadonlySet<JournalSection["type"]> = new Set([
-  "services",
-  "process",
-  "about",
-  "gallery",
-  "testimonials",
-  "team",
-  "pricelist",
-  "menu",
-  "faq",
-  "story",
-  "usp",
-  "contact",
-]);
-
-/** Der Einstieg belegt Kapitel 01. */
-const FIRST_CHAPTER = 2;
-
-/** Kapitelnummer eines Abschnitts (ab 02), 0 für nicht nummerierte. */
-export function chapterIndex(
-  sections: readonly JournalSection[],
-  type: JournalSection["type"]
-): number {
-  const position = sections
-    .filter(s => NUMBERED.has(s.type))
-    .findIndex(s => s.type === type);
-  return position === -1 ? 0 : position + FIRST_CHAPTER;
-}
 
 /** Journal-Wortwahl der Kapitel-Labels (Systemblatt); Bauplan-Labels gewinnen. */
 const CHAPTER_LABELS: Partial<Record<JournalSection["type"], string>> = {
@@ -119,19 +86,6 @@ export function formatPrice(price: string): string {
   const trimmed = price.trim();
   if (/€|eur/i.test(trimmed) || !/\d/.test(trimmed)) return trimmed;
   return `${trimmed} €`;
-}
-
-/**
- * Zeigt Journal den Abschnitt überhaupt? Stimmen ohne zitierfähige
- * Bewertung entfallen ganz — vor der Nummerierung, damit die Kapitel
- * lückenlos bleiben.
- */
-export function journalShows(section: JournalSection): boolean {
-  if (section.type === "testimonials")
-    return Boolean(pickReviewQuote(section.items));
-  if (section.type === "menu" || section.type === "pricelist")
-    return section.categories.some(c => c.items.length > 0);
-  return true;
 }
 
 const same = (a: string, b: string) =>

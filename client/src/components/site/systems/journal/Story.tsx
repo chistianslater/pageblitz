@@ -4,10 +4,9 @@ import { rich } from "../../richText";
 import { pickReviewQuote } from "../../artDirection/heroFacts";
 import { galleryIsStock } from "../../PhotoCredits";
 import { useSystem } from "../SystemContext";
-import { figureNumbers } from "./figures";
+import { chapterIndex, figureNumbers } from "../shared";
 import {
   JournalChapter,
-  chapterIndex,
   chapterLabel,
   sectionClass,
   type JournalSection,
@@ -18,7 +17,7 @@ import {
  * und Fließtext; „Einblicke" als Wischstreifen gemischter Formate auf dem
  * Handy, als Magazinstrecke ab 64rem; „Stimmen" zentriert mit genau einer
  * großen kursiven Stimme. Abbildungen zählen über die Seite fortlaufend
- * (figures.ts), Bilder laden spät, haben Maße und den alt-Text der Daten.
+ * (../shared), Bilder laden spät, haben Maße und den alt-Text der Daten.
  */
 
 type P<T extends JournalSection["type"]> = {

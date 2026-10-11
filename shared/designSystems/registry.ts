@@ -1,8 +1,11 @@
 import { JOURNAL } from "./journal";
+import { RASTER } from "./raster";
 import type { DesignSystemDef, DesignSystemId } from "./types";
 
 export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = {
   journal: JOURNAL,
+  // Raster: gebaut, aber noch nicht abgenommen — nicht in RELEASED_SYSTEMS.
+  raster: RASTER,
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */

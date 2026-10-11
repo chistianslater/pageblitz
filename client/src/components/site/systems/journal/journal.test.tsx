@@ -8,11 +8,10 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import { deriveArtDirectedProfile } from "../../../../../../shared/stylePacks/artDirection";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
-import { JournalChapter, chapterIndex } from "./sections";
+import { JournalChapter } from "./sections";
 import { JOURNAL_CSS } from "./css";
 import { entryLine, nameFitClasses, ratingLine } from "./Entry";
 import { brandClasses } from "./Chrome";
-import { figureNumbers } from "./figures";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { isPlaceholderHours } from "../../artDirection/heroFacts";
 
@@ -159,32 +158,7 @@ describe("Journal: Pack-Aliase für geteilte Bausteine", () => {
 });
 
 describe("Journal: Kapitel", () => {
-  const of = (...types: string[]) =>
-    types.map(type => ({ type })) as unknown as SectionV2[];
-
-  test("chapterIndex: Einstieg ist 01, Inhalt ab 02, Besuch zählt mit", () => {
-    const sections = of(
-      "hero",
-      "services",
-      "about",
-      "testimonials",
-      "faq",
-      "contact"
-    );
-    expect(chapterIndex(sections, "hero")).toBe(0);
-    expect(chapterIndex(sections, "services")).toBe(2);
-    expect(chapterIndex(sections, "about")).toBe(3);
-    expect(chapterIndex(sections, "testimonials")).toBe(4);
-    expect(chapterIndex(sections, "faq")).toBe(5);
-    expect(chapterIndex(sections, "contact")).toBe(6);
-  });
-
-  test("chapterIndex bleibt ohne Stimmen lückenlos", () => {
-    const sections = of("hero", "services", "about", "faq", "contact");
-    expect(chapterIndex(sections, "faq")).toBe(4);
-    expect(chapterIndex(sections, "contact")).toBe(5);
-    expect(chapterIndex(sections, "testimonials")).toBe(0);
-  });
+  // chapterIndex: Tests in ../shared/helpers.test.ts
 
   test("JournalChapter: kursive Nummer und Label über der Serifen-H2", () => {
     const html = renderToStaticMarkup(
@@ -641,26 +615,7 @@ describe("Journal: Angebot", () => {
 });
 
 describe("Journal: Geschichte", () => {
-  test("figureNumbers: Einstieg 1, Über uns 2, Galerie ab 3 in Renderreihenfolge", () => {
-    const d = journalDoc();
-    expect(figureNumbers(d.sections)).toEqual({
-      hero: 1,
-      about: 2,
-      gallery: 3,
-      galleryLast: 4,
-    });
-  });
-
-  test("figureNumbers: ausgeblendetes Einstiegsfoto zählt nicht", () => {
-    const d = journalDoc();
-    expect(figureNumbers(d.sections, ["hero-media"])).toEqual({
-      about: 1,
-      gallery: 2,
-      galleryLast: 3,
-    });
-    const noAbout = d.sections.filter(s => s.type !== "about");
-    expect(figureNumbers(noAbout).gallery).toBe(2);
-  });
+  // figureNumbers: Tests in ../shared/helpers.test.ts
 
   test("Über uns: Kapitel 03 auf hellem Band, Foto mit Abb. 2, Fließtext", () => {
     const html = render();

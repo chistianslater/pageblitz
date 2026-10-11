@@ -3,6 +3,7 @@ export * from "./registry";
 export * from "./palette";
 export * from "./toCss";
 export { JOURNAL } from "./journal";
+export { RASTER } from "./raster";
 export * from "./assignment";
 export * from "./apply";
 export { displayName } from "./displayName";
