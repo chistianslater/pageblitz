@@ -15,11 +15,9 @@ import {
   entryKicker,
   entryLede,
   entryVariant,
-  googleFact,
-  heroPhoto,
-  isRoundTheClock,
   todayFact,
 } from "./facts";
+import { googleFact, heroPhoto, isRoundTheClock } from "../shared";
 
 /**
  * Raster-Einstieg nach Systemblatt 6 (Erster Blick, Handy) und 10 (Desktop):

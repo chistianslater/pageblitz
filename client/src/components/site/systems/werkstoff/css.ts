@@ -1,6 +1,6 @@
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { systemFontFaces } from "../shared/fonts";
-import { DEEP_RULE, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
+import { DEEP_RULE, DOCK, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 
 export { step } from "./step";
@@ -73,6 +73,10 @@ ${FONT_FACES}
 .pb-werkstoff .ws-menu-panel a{${step("h3")};text-decoration:none;display:flex;align-items:center;min-height:var(--ws-tap);padding-block:var(--sys-space-xs);border-bottom:1px solid var(--sys-rule)}
 .pb-werkstoff .ws-menu-panel a[aria-current]{color:var(--sys-accent)}
 .pb-werkstoff .ws-nav{display:none}
+.pb-werkstoff .ws-head-btn{display:none}
+@media (min-width:${DOCK}) and (max-width:63.99rem){
+  .pb-werkstoff .ws-head-btn{display:inline-flex;min-height:var(--ws-tap);margin-inline-start:auto}
+}
 @media (min-width:${NAV}){
   .pb-werkstoff .ws-head-bar{min-height:calc(var(--sys-space-xl) + var(--sys-space-xs))}
   .pb-werkstoff .ws-menu{display:none}

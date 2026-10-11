@@ -11,11 +11,13 @@ import {
   telHref,
 } from "../../artDirection/heroFacts";
 import { stripMarks } from "../../richText";
-import { echoesKicker, heroPhoto, isRoundTheClock } from "../raster/facts";
 import { orderedSections } from "../../engine";
 import {
   addressLine,
   contactOf,
+  echoesKicker,
+  heroPhoto,
+  isRoundTheClock,
   mailHref,
   mapsHref,
   primaryAction,
@@ -138,14 +140,22 @@ const RANGE =
 export const clock = (minutes: number) =>
   `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}`;
 
+/** Minutenangaben ab 60 („7:75") sind keine Uhrzeit. */
+const minutesOk = (m: RegExpMatchArray) =>
+  Number(m[2] ?? 0) < 60 && Number(m[4] ?? 0) < 60;
+
 /** „7:00 – 12:00, 13:00 – 17:00 Uhr" → Zeitspannen in Minuten. */
 export function intervals(text: string): { from: number; to: number }[] {
-  return [...text.matchAll(RANGE)]
+  const matches = [...text.matchAll(RANGE)];
+  return matches
     .map(m => ({
       from: Number(m[1]) * 60 + Number(m[2] ?? 0),
       to: Number(m[3]) * 60 + Number(m[4] ?? 0),
     }))
-    .filter(r => r.from < 24 * 60 && r.to <= 24 * 60);
+    .filter(
+      (r, i) =>
+        r.from < 24 * 60 && r.to <= 24 * 60 && minutesOk(matches[i])
+    );
 }
 
 /** Echte Zeiten (kein Platzhalter der Erzeugung), sonst nichts. */
@@ -215,6 +225,20 @@ export const EARLY_OPENING = 8 * 60;
  * dem Wochentag springt (Sonntag 7:00, Montag 6:00).
  */
 export function earlyOpening(hours: Hours | undefined): string | undefined {
+  return earlyWeekdays(hours)?.time;
+}
+
+/** Ab so vielen Werktagen mit derselben frühen Öffnung heißt es „werktags". */
+const WEEKDAYS_CLAIM = 4;
+
+/**
+ * Früheste Werktags-Öffnung und an wie vielen Werktagen (Mo–Fr) sie gilt;
+ * `weekdays` nur, wenn mindestens vier Werktage sie teilen (Vorleser:
+ * „Werktags ab 6:00" statt nur „Ab 6:00").
+ */
+export function earlyWeekdays(
+  hours: Hours | undefined
+): { time: string; weekdays: boolean } | undefined {
   const real = realHours(hours);
   if (!real || isRoundTheClock(real)) return undefined;
   const starts = Array.from(
@@ -228,7 +252,11 @@ export function earlyOpening(hours: Hours | undefined): string | undefined {
   });
   if (!starts.length) return undefined;
   const earliest = Math.min(...starts);
-  return earliest <= EARLY_OPENING ? clock(earliest) : undefined;
+  if (earliest > EARLY_OPENING) return undefined;
+  return {
+    time: clock(earliest),
+    weekdays: starts.filter(s => s === earliest).length >= WEEKDAYS_CLAIM,
+  };
 }
 
 /* ── Einstieg ─────────────────────────────────────────────────────────── */

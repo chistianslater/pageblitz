@@ -6,6 +6,7 @@ import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2
 import {
   actionPair,
   earlyOpening,
+  earlyWeekdays,
   entryHeadline,
   entryLede,
   entryVariant,
@@ -13,6 +14,7 @@ import {
   todayStatus,
 } from "./facts";
 import { WERKSTOFF_CSS } from "./css";
+import { DEEP_SHARE } from "./step";
 import {
   TEST_NOW,
   holtkampDoc,
@@ -43,6 +45,8 @@ describe("Werkstoff: Zeiten", () => {
       { from: 780, to: 1050 },
     ]);
     expect(intervals("nach Absprache")).toEqual([]);
+    expect(intervals("7:75 – 17:00")).toEqual([]);
+    expect(intervals("7:00 – 17:60")).toEqual([]);
   });
 
   test("Heute-Stand nur aus echten Zeiten (Dienstag)", () => {
@@ -68,6 +72,19 @@ describe("Werkstoff: Zeiten", () => {
     expect(earlyOpening([{ day: "Sa", hours: "6:00 – 12:00" }])).toBeUndefined();
     expect(earlyOpening(PLACEHOLDER_OPENING_HOURS)).toBeUndefined();
     expect(earlyOpening([{ day: "Mo–So", hours: "24 Stunden geöffnet" }])).toBeUndefined();
+  });
+
+  test("„werktags“ nur, wenn mindestens vier Werktage die frühe Öffnung teilen", () => {
+    expect(earlyWeekdays([{ day: "Di–Fr", hours: "6:30 – 13:00" }])).toEqual({ time: "6:30", weekdays: true });
+    expect(
+      earlyWeekdays([{ day: "Mo", hours: "6:00 – 12:00" }, { day: "Di–Fr", hours: "9:00 – 18:00" }])
+    ).toEqual({ time: "6:00", weekdays: false });
+    const html = render(
+      withContact(overbeckDoc(), {
+        openingHours: [{ day: "Mo", hours: "6:00 – 12:00" }, { day: "Di–Fr", hours: "9:00 – 18:00" }],
+      })
+    );
+    expect(html).toContain('<span class="ws-sr">Ab </span>6:00<span class="ws-sr"> Uhr geöffnet</span>');
   });
 });
 
@@ -216,6 +233,14 @@ describe("Werkstoff: Werkzettel", () => {
     }
   });
 
+  test("Fuß: gedämpfter Text auf deep ≥ 4,5:1, Haarlinie sichtbar (Gliederung, kein Bedienelement)", () => {
+    for (const p of WERKSTOFF.palettes) {
+      expect(contrastRatio(mix(p.onDeep, p.deep, DEEP_SHARE.dim), p.deep), p.id).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(mix(p.onDeep, p.deep, DEEP_SHARE.rule), p.deep), p.id).toBeGreaterThanOrEqual(1.5);
+      expect(contrastRatio(p.onDeep, p.deep), p.id).toBeGreaterThanOrEqual(7);
+    }
+  });
+
   test("Tippfläche der Leiste ≥ 44 px", () => {
     expect(WERKSTOFF_CSS).toMatch(/\.ws-slip-bar\{[^}]*min-height:var\(--ws-tap\)/);
   });
@@ -235,6 +260,20 @@ describe("Werkstoff: Handy-Leiste", () => {
     const pair = actionPair({ ...holtkampDoc(), hiddenSections: ["contact"] }, bp(holtkampDoc()));
     expect(pair.some(a => a.href.startsWith("tel:"))).toBe(false);
     expect(pair.some(a => a.label === "Route")).toBe(false);
+  });
+
+  test("ab 48 rem trägt der Einstieg die Wege, bis 64 rem auch der Kopf", () => {
+    expect(WERKSTOFF_CSS).toMatch(/@media \(min-width:48rem\)\{\s*\.pb-werkstoff \.ws-entry-actions\{display:flex/);
+    expect(WERKSTOFF_CSS).toMatch(/@media \(min-width:48rem\) and \(max-width:63\.99rem\)\{\s*\.pb-werkstoff \.ws-head-btn\{display:inline-flex/);
+    const html = render(holtkampDoc());
+    expect(html).toMatch(/<a class="ws-btn ws-head-btn" href="tel:\d+">Anrufen<\/a>/);
+    // Typo-Einstieg und Uhrzeit-Einstieg haben die Knöpfe ebenso.
+    for (const doc of [ladenDoc(), overbeckDoc()])
+      expect(entryOf(render(doc))).toContain('<p class="ws-entry-actions">');
+  });
+
+  test("Desktop: Foto oben bündig, Zettel hängt an der Bildfläche", () => {
+    expect(WERKSTOFF_CSS).toMatch(/\.ws-entry-media\{grid-column:7\/13;grid-row:1;margin:0;align-self:start\}/);
   });
 
   test("nur unter 48 rem, verdeckt nichts (Platz im Fuß bzw. Bildnachweis)", () => {

@@ -3,10 +3,9 @@ import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { contactOf } from "../shared";
-import { googleFact, heroPhoto } from "../raster/facts";
+import { contactOf, googleFact, heroPhoto } from "../shared";
 import {
-  earlyOpening,
+  earlyWeekdays,
   entryActions,
   entryHeadline,
   entryKicker,
@@ -139,12 +138,13 @@ export function WerkstoffEntry({ hero }: { hero: SectionOf<"hero"> }) {
     media = <WerkstoffSlip />;
   } else if (variant === "time") {
     const today = todayStatus(contact?.openingHours, now);
+    const early = earlyWeekdays(contact?.openingHours);
     text = (
       <>
         <Kicker name={name} city={city} fallback={kicker} named={Boolean(headline)} />
         <p className="ws-entry-figure">
-          <span className="ws-sr">Werktags ab </span>
-          {earlyOpening(contact?.openingHours)}
+          <span className="ws-sr">{early?.weekdays ? "Werktags ab " : "Ab "}</span>
+          {early?.time}
           <span className="ws-sr"> Uhr geöffnet</span>
         </p>
         {big}

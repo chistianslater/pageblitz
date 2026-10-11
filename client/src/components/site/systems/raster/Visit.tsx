@@ -11,7 +11,8 @@ import {
 } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, mailHref, mapsHref } from "../shared";
-import { isRoundTheClock, todayFact } from "./facts";
+import { todayFact } from "./facts";
+import { isRoundTheClock } from "../shared";
 import {
   RasterChapter,
   chapterLabel,

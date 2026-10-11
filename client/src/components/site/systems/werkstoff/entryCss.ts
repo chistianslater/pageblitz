@@ -1,5 +1,8 @@
 import { DOCK, GRID, step } from "./step";
 
+/** Ab hier reicht die Textspalte für den vollen Zettel-Überstand (Systemblatt 1440). */
+const WIDE = "80rem";
+
 /**
  * Einstieg, Werkzettel, Handy-Leiste (Systemblatt 8 und 14). Nur Tokens
  * (oder Vielfache); Maße des Systemblatts als Vielfache der Abstände:
@@ -43,16 +46,25 @@ const ENTRY = `/* Einstieg: photo · portrait · time · type */
 .pb-werkstoff .ws-entry--type .ws-entry-media,.pb-werkstoff .ws-entry--time .ws-entry-media>.ws-slip{margin-inline:var(--sys-space-gutter)}
 .pb-werkstoff .ws-entry--type .ws-entry-media .ws-slip,.pb-werkstoff .ws-entry--time .ws-entry-media>.ws-slip{margin:0;width:auto}
 
+/* Ab der Leisten-Grenze stehen die Wege im Einstieg (darunter trägt die Leiste) */
+@media (min-width:${DOCK}){
+  .pb-werkstoff .ws-entry-actions{display:flex;flex-wrap:wrap;gap:calc(var(--sys-space-xs) * 1.25);margin-top:var(--sys-space-l)}
+  /* Tablet (eine Spalte): flacheres Foto, damit der Zettel im ersten Blick bleibt */
+  .pb-werkstoff .ws-entry-crop,.pb-werkstoff .ws-entry--portrait .ws-entry-crop,.pb-werkstoff .ws-entry--time .ws-entry-crop{aspect-ratio:16/9}
+}
+
 @media (min-width:${GRID}){
   .pb-werkstoff .ws-entry{padding-top:var(--sys-space-l)}
   .pb-werkstoff .ws-entry-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--sys-space-m);
     max-width:var(--sys-space-max);margin-inline:auto;padding-inline:var(--sys-space-gutter)}
   .pb-werkstoff .ws-entry-text{grid-column:1/7;grid-row:1;align-self:end;padding:0 0 var(--sys-space-2xl)}
   .pb-werkstoff .ws-entry-lede{max-width:28ch}
-  .pb-werkstoff .ws-entry-actions{display:flex;flex-wrap:wrap;gap:calc(var(--sys-space-xs) * 1.25);margin-top:var(--sys-space-l)}
-  .pb-werkstoff .ws-entry-media{grid-column:7/13;grid-row:1;margin:0}
+  /* Foto oben bündig: der Zettel hängt an der Bildfläche, nicht an der gestreckten Zeile */
+  .pb-werkstoff .ws-entry-media{grid-column:7/13;grid-row:1;margin:0;align-self:start}
   .pb-werkstoff .ws-entry-crop{aspect-ratio:1/1;max-height:calc(100svh - var(--sys-space-2xl) * 1.75)}
-  .pb-werkstoff .ws-entry-media .ws-slip{position:absolute;margin:0;left:calc(var(--sys-space-2xl) * -1.6);bottom:calc(var(--sys-space-l) * 1.1);width:calc(var(--sys-space-2xl) * 3.75)}
+  /* Schmale Desktops: kleiner Überstand, damit der Zettel die Knöpfe nie überdeckt */
+  .pb-werkstoff .ws-entry-media .ws-slip{position:absolute;margin:0;left:calc(var(--sys-space-l) * -1);bottom:calc(var(--sys-space-l) * 1.1);
+    width:min(calc(var(--sys-space-2xl) * 3.75),calc(100% + var(--sys-space-l) - var(--sys-space-m)))}
   .pb-werkstoff .ws-entry-info{grid-column:1/-1;margin:var(--sys-space-l) 0 0;gap:var(--sys-space-2xs) var(--sys-space-l)}
   .pb-werkstoff .ws-entry--portrait .ws-entry-media{grid-column:8/13}
   .pb-werkstoff .ws-entry--portrait .ws-entry-crop{aspect-ratio:4/5}
@@ -60,6 +72,9 @@ const ENTRY = `/* Einstieg: photo · portrait · time · type */
   .pb-werkstoff .ws-entry--type .ws-entry-text{grid-column:1/9;align-self:start;padding-bottom:0}
   .pb-werkstoff .ws-entry--type .ws-entry-media,.pb-werkstoff .ws-entry--time .ws-entry-media:has(>.ws-slip){grid-column:9/13;align-self:end;margin:0}
   .pb-werkstoff .ws-entry--type .ws-entry-media .ws-slip,.pb-werkstoff .ws-entry--time .ws-entry-media>.ws-slip{position:static;width:auto}
+}
+@media (min-width:${WIDE}){
+  .pb-werkstoff .ws-entry--photo .ws-entry-media .ws-slip,.pb-werkstoff .ws-entry--portrait .ws-entry-media .ws-slip{left:calc(var(--sys-space-2xl) * -1.6);width:calc(var(--sys-space-2xl) * 3.75)}
 }`;
 
 /** Werkzettel: helles Papier, Tinte-Rahmen, Mono, Leiste in Signal. */

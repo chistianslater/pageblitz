@@ -97,6 +97,12 @@ export function WerkstoffHead({
             </a>
           )}
         </nav>
+        {/* Weg im Kopf zwischen Leiste (< 48 rem) und Navigation (≥ 64 rem). */}
+        {first && (
+          <a className="ws-btn ws-head-btn" href={first.href}>
+            {first.label}
+          </a>
+        )}
         {/* Menü ohne JS: <details>/<summary> (SSR-Kundenseiten hydrieren nicht). */}
         <details className="ws-menu">
           <summary className="ws-menu-toggle">

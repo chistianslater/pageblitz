@@ -13,12 +13,11 @@ import {
 } from "./testkit";
 import {
   dockPlan,
-  echoesKicker,
   entryLede,
   entryVariant,
-  isRoundTheClock,
   todayFact,
 } from "./facts";
+import { echoesKicker, isRoundTheClock } from "../shared";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 
