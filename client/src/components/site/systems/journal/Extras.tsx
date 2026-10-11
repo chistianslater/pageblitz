@@ -2,7 +2,7 @@ import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
-import { chapterIndex } from "../shared";
+import { chapterIndex, legalParts } from "../shared";
 import {
   JournalChapter,
   chapterLabel,
@@ -275,20 +275,18 @@ export function JournalPageHead({
   );
 }
 
-const FIRST_H1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i;
-
 /**
- * Rechtsseite im Journal-Rahmen. Das erste h1 des Rechtstexts wird zum
- * Seitentitel gehoben (genau ein h1 je Seite); der Rest steht im Textmaß.
+ * Rechtsseite im Journal-Rahmen. Generator-Hülle, `<style>` und Zurück-Link
+ * fallen weg (legalParts); das erste h1 wird zum Seitentitel gehoben, der
+ * Rest steht im Textmaß.
  * SICHERHEIT: `html` stammt ausschließlich aus dem legalGenerator (siehe
  * renderLegalPage in server/ssr/renderSite.tsx), nie aus Nutzereingaben.
  */
 export function JournalLegal({ title, html }: { title: string; html: string }) {
-  const match = html.match(FIRST_H1);
-  const body = match ? html.replace(FIRST_H1, "") : html;
+  const { titleHtml, body } = legalParts(html);
   return (
     <>
-      <JournalPageHead title={title} titleHtml={match?.[1]} />
+      <JournalPageHead title={title} titleHtml={titleHtml} />
       <article
         className="jr-wrap jr-legal"
         dangerouslySetInnerHTML={{ __html: body }}

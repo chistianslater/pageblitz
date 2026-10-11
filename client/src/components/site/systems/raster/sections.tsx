@@ -2,7 +2,7 @@ import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich, stripMarks } from "../../richText";
 import { useSystem } from "../SystemContext";
-import type { SystemSection } from "../shared";
+import { legalParts, type SystemSection } from "../shared";
 import { RasterEntry } from "./Entry";
 import { RasterServices } from "./Bands";
 import { RasterProcess } from "./Process";
@@ -206,25 +206,17 @@ export function RasterPageHead({
   );
 }
 
-const FIRST_H1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i;
-
 /**
- * Rechtsseite im Raster-Rahmen. Das erste h1 des Rechtstexts wird zum
- * Seitentitel gehoben (genau ein h1 je Seite).
+ * Rechtsseite im Raster-Rahmen. Generator-Hülle, `<style>` und Zurück-Link
+ * fallen weg (legalParts); das erste h1 wird zum Seitentitel gehoben.
  * SICHERHEIT: `html` stammt ausschließlich aus dem legalGenerator (siehe
  * renderLegalPage in server/ssr/renderSite.tsx), nie aus Nutzereingaben.
  */
 export function RasterLegal({ title, html }: { title: string; html: string }) {
-  const match = html.match(FIRST_H1);
-  // Der Generator liefert ein eigenes <style> (body max-width, h2-Linien) —
-  // es gälte sonst für die ganze Seite und bräche den Raster-Rahmen.
-  const body = (match ? html.replace(FIRST_H1, "") : html).replace(
-    /<style[\s\S]*?<\/style>/gi,
-    ""
-  );
+  const { titleHtml, body } = legalParts(html);
   return (
     <>
-      <RasterPageHead title={title} titleHtml={match?.[1]} />
+      <RasterPageHead title={title} titleHtml={titleHtml} />
       <article
         className="rs-wrap rs-legal"
         dangerouslySetInnerHTML={{ __html: body }}

@@ -3,6 +3,7 @@ import { renderSiteHtml, systemFontHead } from "./renderSite";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../shared/designSystems/apply";
 import { JOURNAL } from "../../shared/designSystems/journal";
+import { generateImpressum } from "../legalGenerator";
 
 const origin = "https://x.pageblitz.de";
 
@@ -129,6 +130,34 @@ describe("SSR rev 3: Rechtsseiten und Unterseiten im Journal-Rahmen", () => {
     expect(html).toMatch(/<h1 id="seite-titel">Impressum<\/h1>/);
     expect(html).toContain("<h2>Angaben gemäß § 5 TMG</h2>");
     expect(html).toContain("body{background:#f3eee7;color:#2f2e2c}");
+  });
+
+  test("Generator-Impressum: kein <style>, kein Zurück-Link, Inhalt vollständig", () => {
+    const generated = generateImpressum({
+      businessName: "NOIR Haarstudio",
+      legalOwner: "Lena Noir",
+      legalStreet: "Türkenstraße 42",
+      legalZip: "80799",
+      legalCity: "München",
+      legalEmail: "hallo@noir.de",
+      legalPhone: "089 123 456",
+    } as never);
+    const { html } = renderSiteHtml(
+      { ...doc(), legal: { impressumHtml: generated } },
+      { origin, pathname: "/impressum" }
+    );
+    const article = html.slice(
+      html.indexOf('class="jr-wrap jr-legal"'),
+      html.indexOf("</article>")
+    );
+    expect(article).not.toMatch(/<style/i);
+    expect(article).not.toContain("back-link");
+    expect(html).not.toContain("max-width: 800px");
+    expect(html).not.toContain("javascript:history.back()");
+    expect(article).toContain("<h2>Angaben gemäß § 5 TMG</h2>");
+    expect(article).toContain("Türkenstraße 42");
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toMatch(/<h1 id="seite-titel">Impressum<\/h1>/);
   });
 
   test("Datenschutz ohne h1 im Text bekommt den Seitentitel als h1", () => {

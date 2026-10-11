@@ -5,3 +5,4 @@ export * from "./slots";
 export * from "./fonts";
 export * from "./menu";
 export * from "./price";
+export * from "./legal";
