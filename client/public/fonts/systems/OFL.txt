@@ -1,6 +1,9 @@
 Newsreader: Copyright 2020 The Newsreader Project Authors (https://github.com/productiontype/Newsreader)
 Source Sans 3: Copyright 2010-2020 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
 Geist: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)
+Zilla Slab: Copyright 2017 The Zilla Slab Project Authors (https://github.com/mozilla/zilla-slab)
+Karla: Copyright 2019 The Karla Project Authors (https://github.com/googlefonts/karla)
+DM Mono: Copyright 2020 The DM Mono Project Authors (https://github.com/googlefonts/dm-mono)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

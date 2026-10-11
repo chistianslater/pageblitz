@@ -3,6 +3,12 @@ import type { DesignSystemDef, SystemFont } from "./types";
 
 const stack = (f: SystemFont) => `"${f.family}", ${f.fallback}`;
 
+/** Bildfilter landet als CSS-Wert im <style> — keine Deklarations-/Blockzeichen. */
+export function assertSafeImageFilter(value: string): string {
+  if (/[;{}]/.test(value)) throw new Error(`Unzulässiger Bildfilter: ${value}`);
+  return value;
+}
+
 export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<string, string> {
   const p = getPalette(def, paletteId);
   const vars: Record<string, string> = {
@@ -12,7 +18,11 @@ export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<
     "--sys-font-display": stack(def.fonts.display),
     "--sys-font-text": stack(def.fonts.text),
   };
-  // Optionale Stufen (figure) fehlen in Systemen ohne sie — dann keine Variablen.
+  // Mono-Schrift und Bildfilter nur in Systemen, die sie führen (Werkstoff).
+  if (def.fonts.mono) vars["--sys-font-mono"] = stack(def.fonts.mono);
+  if (def.imageFilter !== undefined)
+    vars["--sys-image-filter"] = assertSafeImageFilter(def.imageFilter);
+  // Optionale Stufen (figure, data) fehlen in Systemen ohne sie — dann keine Variablen.
   for (const [step, t] of Object.entries(def.type)) {
     if (!t) continue;
     vars[`--sys-${step}-size`] = t.size;

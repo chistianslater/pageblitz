@@ -32,3 +32,11 @@ describe("Bewegung je System", () => {
     expect(systemHasMotion("raster")).toBe(true);
   });
 });
+
+describe("Werkstoff", () => {
+  test("ist registriert, aber nicht freigeschaltet", () => {
+    expect(getSystem("werkstoff")?.name).toBe("Werkstoff");
+    expect(isReleased("werkstoff")).toBe(false);
+    expect(RELEASED_SYSTEMS).not.toContain("werkstoff");
+  });
+});

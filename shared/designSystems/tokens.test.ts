@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { JOURNAL } from "./journal";
 import { RASTER } from "./raster";
+import { WERKSTOFF } from "./werkstoff";
+import { assertSafeImageFilter } from "./toCss";
+import type { DesignSystemDef } from "./types";
 import { getPalette, pickPalette } from "./palette";
 import { systemCssVars } from "./toCss";
 import { contrastRatio } from "../stylePacks/colorMath";
@@ -100,5 +103,72 @@ describe("Journal-Variablen nach Erweiterung des Token-Shapes", () => {
     expect(Object.keys(v).some(k => k.startsWith("--sys-figure-"))).toBe(false);
     // 9 Farb/Schrift-Variablen + 9 Stufen × 5 + 11 Abstände + 2 neue
     expect(Object.keys(v)).toHaveLength(9 + 9 * 5 + 11 + 2);
+  });
+});
+
+describe("Werkstoff-Tokens", () => {
+  test("drei Paletten Kiefer, Leinen, Ton", () => {
+    expect(WERKSTOFF.id).toBe("werkstoff");
+    expect(WERKSTOFF.palettes.map(p => p.id)).toEqual(["kiefer", "leinen", "ton"]);
+  });
+  test("Schriftskala: neun Kernstufen plus figure und data", () => {
+    expect(Object.keys(WERKSTOFF.type).sort()).toEqual(
+      ["body", "data", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+    expect(WERKSTOFF.type.data?.font).toBe("mono");
+  });
+  test.each(WERKSTOFF.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(p.signal && p.onSignal).toBeTruthy();
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.signal!, p.paper)).toBeGreaterThanOrEqual(3);
+  });
+  test("genau zwei Preloads: Zilla Slab und Karla, DM Mono nicht", () => {
+    const files = [
+      ...WERKSTOFF.fonts.display.files,
+      ...WERKSTOFF.fonts.text.files,
+      ...(WERKSTOFF.fonts.mono?.files ?? []),
+    ].map(f => f.file);
+    expect(WERKSTOFF.preload).toEqual(["zilla-slab-latin-700.woff2", "karla-latin-wght.woff2"]);
+    for (const f of WERKSTOFF.preload) expect(files).toContain(f);
+    expect(WERKSTOFF.preload).not.toContain("dm-mono-latin-500.woff2");
+  });
+  test("CSS-Variablen: Mono-Schrift, data-Stufe, Bildfilter, keine Steuerzeichen", () => {
+    const v = systemCssVars(WERKSTOFF, "leinen");
+    expect(v["--sys-paper"]).toBe("#ebe8df");
+    expect(v["--sys-signal"]).toBe("#2f5b3c");
+    expect(v["--sys-font-mono"]).toContain("DM Mono");
+    expect(v["--sys-font-mono"]).toContain("ui-monospace");
+    expect(v["--sys-font-display"]).toContain("Zilla Slab");
+    expect(v["--sys-font-text"]).toContain("Karla");
+    expect(v["--sys-data-size"]).toContain("clamp(");
+    expect(v["--sys-data-transform"]).toBe("uppercase");
+    expect(v["--sys-image-filter"]).toBe(WERKSTOFF.imageFilter);
+    for (const p of WERKSTOFF.palettes)
+      expect(Object.values(systemCssVars(WERKSTOFF, p.id)).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Mono-Schrift und Bildfilter nur, wo das System sie führt", () => {
+  test.each([JOURNAL, RASTER])("$id ohne --sys-font-mono, --sys-image-filter, data", def => {
+    const v = systemCssVars(def);
+    expect(v["--sys-font-mono"]).toBeUndefined();
+    expect(v["--sys-image-filter"]).toBeUndefined();
+    expect(Object.keys(v).some(k => k.startsWith("--sys-data-"))).toBe(false);
+  });
+  test("Bildfilter mit ; { } wird abgewiesen", () => {
+    expect(() => assertSafeImageFilter("sepia(.1)")).not.toThrow();
+    for (const bad of ["sepia(.1);color:red", "x}body{", "a{b"]) {
+      expect(() => assertSafeImageFilter(bad)).toThrow();
+      const def: DesignSystemDef = { ...WERKSTOFF, imageFilter: bad };
+      expect(() => systemCssVars(def)).toThrow();
+    }
+  });
+  test("Werkstoff-Bildfilter ist zulässig", () => {
+    expect(WERKSTOFF.imageFilter).toBeTruthy();
+    expect(() => assertSafeImageFilter(WERKSTOFF.imageFilter!)).not.toThrow();
   });
 });

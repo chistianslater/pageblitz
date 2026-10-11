@@ -3,6 +3,7 @@ import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import { JOURNAL } from "../../../../../../shared/designSystems/journal";
 import { RASTER } from "../../../../../../shared/designSystems/raster";
+import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
@@ -191,5 +192,15 @@ describe("Systeme: @font-face", () => {
     expect(css).toContain("url(/fonts/systems/geist-latin-wght.woff2)");
     expect(css).toContain("font-weight:100 900");
     expect(css).toContain("font-display:swap");
+  });
+
+  test("Werkstoff: drei Dateien inkl. DM Mono, je eine Regel", () => {
+    const css = systemFontFaces(WERKSTOFF);
+    expect(css.match(/@font-face/g)).toHaveLength(3);
+    expect(css).toContain('font-family:"Zilla Slab"');
+    expect(css).toContain('font-family:"Karla"');
+    expect(css).toContain('font-family:"DM Mono"');
+    expect(css).toContain("url(/fonts/systems/dm-mono-latin-500.woff2)");
+    expect(css).toContain("font-weight:200 800");
   });
 });

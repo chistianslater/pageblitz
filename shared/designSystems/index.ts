@@ -4,6 +4,7 @@ export * from "./palette";
 export * from "./toCss";
 export { JOURNAL } from "./journal";
 export { RASTER } from "./raster";
+export { WERKSTOFF } from "./werkstoff";
 export * from "./assignment";
 export * from "./apply";
 export { displayName } from "./displayName";
