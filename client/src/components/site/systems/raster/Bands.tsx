@@ -99,15 +99,16 @@ function Band({
 export function RasterServices({
   section,
   sections,
-  source = sections,
+  bandPhotos,
 }: {
   section: SectionOf<"services">;
   sections: readonly RasterSection[];
-  /** Ungekürzte Liste: Bandfotos kommen aus der vollen Galerie. */
-  source?: readonly RasterSection[];
+  /** Vorab beanspruchte Bandfotos (photos.ts, claimPhotos). */
+  bandPhotos?: readonly string[];
 }) {
   const { blueprint } = useSystem();
-  const plan = bandPlan(section, source);
+  // Fotos nicht aus der (schon gekürzten) Galerie, sondern aus claimPhotos.
+  const plan = { ...bandPlan(section, []), photos: bandPhotos };
   const priceSlot = useSlot("pricelist", sections);
   const hasAfter = plan.rest.length > 0 || priceSlot !== undefined;
   const after = (

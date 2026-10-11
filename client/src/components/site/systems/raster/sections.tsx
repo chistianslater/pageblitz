@@ -23,6 +23,12 @@ import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
 export type RasterSection = SystemSection;
 
+/** Props einer Abschnitts-Komponente: der Abschnitt und die sichtbare Liste. */
+export type SectionProps<T extends RasterSection["type"]> = {
+  section: Extract<RasterSection, { type: T }>;
+  sections: readonly RasterSection[];
+};
+
 /**
  * Kapitelnummer nach Systemblatt: Der Einstieg trägt keine Nummer, der
  * erste Inhaltsabschnitt ist „01" (Colophon zählt die Inhalte). Gleiche
@@ -210,7 +216,12 @@ const FIRST_H1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i;
  */
 export function RasterLegal({ title, html }: { title: string; html: string }) {
   const match = html.match(FIRST_H1);
-  const body = match ? html.replace(FIRST_H1, "") : html;
+  // Der Generator liefert ein eigenes <style> (body max-width, h2-Linien) —
+  // es gälte sonst für die ganze Seite und bräche den Raster-Rahmen.
+  const body = (match ? html.replace(FIRST_H1, "") : html).replace(
+    /<style[\s\S]*?<\/style>/gi,
+    ""
+  );
   return (
     <>
       <RasterPageHead title={title} titleHtml={match?.[1]} />
@@ -226,15 +237,19 @@ export function RasterLegal({ title, html }: { title: string; html: string }) {
 export function renderRasterSection(
   section: RasterSection,
   sections: readonly RasterSection[],
-  /** Ungekürzte Liste (Galerie mit allen Fotos) — Quelle der Bandfotos. */
-  source: readonly RasterSection[] = sections
+  /** Bandfotos aus claimPhotos (jedes Foto höchstens einmal je Seite). */
+  bandPhotos?: readonly string[]
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
       return <RasterEntry hero={section} />;
     case "services":
       return (
-        <RasterServices section={section} sections={sections} source={source} />
+        <RasterServices
+          section={section}
+          sections={sections}
+          bandPhotos={bandPhotos}
+        />
       );
     case "process":
       return <RasterProcess section={section} sections={sections} />;

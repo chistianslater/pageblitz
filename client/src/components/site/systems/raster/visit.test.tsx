@@ -11,7 +11,8 @@ import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2
 import { SECTION_ANCHORS, orderedSections } from "../../engine";
 import { systemShows } from "../shared";
 import { RASTER_CSS } from "./css";
-import { showsFigures, withoutBandPhotos } from "./offerData";
+import { showsFigures } from "./offerData";
+import { claimPhotos } from "./photos";
 import { rasterChapterNo } from "./sections";
 import {
   kanzleiDoc,
@@ -27,7 +28,9 @@ type Doc = ReturnType<typeof rasterDoc>;
 
 const withContact = (d: Doc, patch: Partial<SectionOf<"contact">>): Doc => ({
   ...d,
-  sections: d.sections.map(s => (s.type === "contact" ? { ...s, ...patch } : s)),
+  sections: d.sections.map(s =>
+    s.type === "contact" ? { ...s, ...patch } : s
+  ),
 });
 
 /** Kanzlei Brandt, Mo–Fr 8–17, Fr bis 13 Uhr (Dienstag = heute). */
@@ -65,7 +68,9 @@ describe("Raster: Gut zu wissen", () => {
 
   test("CSS: Plus wird bei offener Frage zum Minus, Antwort gedämpft", () => {
     expect(RASTER_CSS).toMatch(/\.rs-faq-sign::before\{[^}]*content:"\+"/);
-    expect(RASTER_CSS).toMatch(/\.rs-faq-item\[open\] \.rs-faq-sign::before\{content:"–"\}/);
+    expect(RASTER_CSS).toMatch(
+      /\.rs-faq-item\[open\] \.rs-faq-sign::before\{content:"–"\}/
+    );
     expect(RASTER_CSS).toMatch(/\.rs-faq-a\{[^}]*color:var\(--sys-muted\)/);
   });
 });
@@ -77,28 +82,44 @@ describe("Raster: Zeiten und Kontakt", () => {
     expect(html).toContain('class="rs-status"');
     expect(html).toContain("Heute geöffnet bis 18 Uhr");
     // Gleiche Nachbartage fasst der Renderer zusammen (Sa–So)
-    expect((html.match(/class="rs-hours-row/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    expect(
+      (html.match(/class="rs-hours-row/g) ?? []).length
+    ).toBeGreaterThanOrEqual(6);
     // Dienstag (TEST_NOW) ist heute — genau eine Zeile
     expect(html.match(/rs-hours-row--today/g)).toHaveLength(1);
-    expect(html).toMatch(/rs-hours-row--today"><dt>Di<span class="rs-today"> · Heute<\/span>/);
+    expect(html).toMatch(
+      /rs-hours-row--today"><dt>Di<span class="rs-today"> · Heute<\/span>/
+    );
     expect(html).toContain(">8–18 Uhr<");
     expect(html).toContain(">geschlossen<");
-    expect(html).toMatch(/<a class="rs-phone" href="tel:025148129\d*">0251 48 12 90<\/a>/);
+    expect(html).toMatch(
+      /<a class="rs-phone" href="tel:025148129\d*">0251 48 12 90<\/a>/
+    );
     expect(html).toContain("Ludgeristraße 12, 48143 Münster");
-    expect(html).toMatch(/class="rs-link" href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=[^"]+"[^>]*>(Route planen|Anfahrt)</);
-    expect(html).toMatch(/class="rs-link" href="mailto:post@kanzlei-brandt\.de">E-Mail schreiben</);
+    // Route nur als Karten-Fläche (ein Tab-Halt), kein doppelter Textlink
+    expect(html).not.toMatch(/class="rs-link" href="https:\/\/www\.google\.com\/maps/);
+    expect(html).toMatch(/class="rs-map" href="https:\/\/www\.google\.com\/maps\/search\/\?api=1&amp;query=[^"]+"/);
+    expect(html).toMatch(
+      /class="rs-link" href="mailto:post@kanzlei-brandt\.de">E-Mail schreiben</
+    );
   });
 
   test("Karte ist eine ruhige Raster-Fläche mit Link, ohne Google-Einbettung", () => {
     const html = contact(kanzlei());
     expect(html).not.toContain("<iframe");
     expect(html).not.toContain("maps/embed");
-    expect(html).toMatch(/<a class="rs-map" href="https:\/\/www\.google\.com\/maps\/search\/[^"]+" aria-label="[^"]+" target="_blank" rel="noopener noreferrer">/);
+    expect(html).toMatch(
+      /<a class="rs-map" href="https:\/\/www\.google\.com\/maps\/search\/[^"]+" aria-label="[^"]+" target="_blank" rel="noopener noreferrer">/
+    );
   });
 
   test("ohne Adresse: keine Karte, keine Route", () => {
     const html = contact(
-      withContact(kanzlei(), { street: undefined, zip: undefined, city: undefined })
+      withContact(kanzlei(), {
+        street: undefined,
+        zip: undefined,
+        city: undefined,
+      })
     );
     expect(html).not.toContain("rs-map");
     expect(html).not.toContain("google.com/maps");
@@ -114,13 +135,15 @@ describe("Raster: Zeiten und Kontakt", () => {
 
   test("rund um die Uhr: „Jetzt erreichbar, rund um die Uhr“ mit Signal-Quadrat", () => {
     const html = contact(schluesselDoc());
-    expect(html).toMatch(/class="rs-status"><span class="rs-live">Jetzt erreichbar, rund um die Uhr<\/span>/);
+    expect(html).toMatch(
+      /class="rs-status"><span class="rs-live">Jetzt erreichbar, rund um die Uhr<\/span>/
+    );
     expect(html).toContain("rund um die Uhr geöffnet");
   });
 
   test("Kapitel-Label „Zeiten und Kontakt“ mit lückenloser Nummer", () => {
     const d = kanzlei();
-    const list = withoutBandPhotos(orderedSections(d).filter(systemShows));
+    const list = claimPhotos(orderedSections(d).filter(systemShows), []).list;
     const no = rasterChapterNo(list, "contact", showsFigures(list, d.google));
     const html = contact(d);
     expect(html).toContain(
@@ -145,7 +168,9 @@ describe("Raster: Zeiten und Kontakt", () => {
       businessName: "Tischlerei Klähn",
     };
     const html = contact(d);
-    expect(html).toMatch(/class="rs-btn" href="mailto:post@kanzlei-brandt\.de\?subject=/);
+    expect(html).toMatch(
+      /class="rs-btn" href="mailto:post@kanzlei-brandt\.de\?subject=/
+    );
     expect(html).toContain(">Anfahrt<");
     expect(html).not.toContain(">Route planen<");
   });
@@ -161,26 +186,59 @@ const EXTRAS: SectionV2[] = [
   { type: "faq", items: [{ question: "Parken?", answer: "Vor dem Haus." }] },
   {
     type: "menu",
-    categories: [{ name: "Kaffee", items: [{ name: "Espresso", price: "2,50" }] }],
+    categories: [
+      { name: "Kaffee", items: [{ name: "Espresso", price: "2,50" }] },
+    ],
   },
-  { type: "pricelist", categories: [{ name: "Service", items: [{ name: "Ölwechsel", price: "49" }] }] },
+  {
+    type: "pricelist",
+    categories: [
+      { name: "Service", items: [{ name: "Ölwechsel", price: "49" }] },
+    ],
+  },
   { type: "team", members: [{ name: "Murat Yilmaz", role: "Meister" }] },
-  { type: "cta", headline: "Termin ausmachen?", ctaText: "Termin anfragen", ctaHref: "#kontakt" },
-  { type: "story", headline: "Wie alles begann", body: "Erster Absatz.\n\nZweiter Absatz." },
+  {
+    type: "cta",
+    headline: "Termin ausmachen?",
+    ctaText: "Termin anfragen",
+    ctaHref: "#kontakt",
+  },
+  {
+    type: "story",
+    headline: "Wie alles begann",
+    body: "Erster Absatz.\n\nZweiter Absatz.",
+  },
   {
     type: "usp",
     headline: "Was uns ausmacht",
-    items: [{ title: "Preis vorher", text: "Kostenvoranschlag schriftlich." }, { title: "Alle Marken" }],
+    items: [
+      { title: "Preis vorher", text: "Kostenvoranschlag schriftlich." },
+      { title: "Alle Marken" },
+    ],
   },
   { type: "notice", text: "Vom 24. bis 26.12. geschlossen." },
-  { type: "stats", items: [{ value: "12", label: "Jahre am Ort" }, { value: "3", label: "Hebebühnen" }] },
+  {
+    type: "stats",
+    items: [
+      { value: "12", label: "Jahre am Ort" },
+      { value: "3", label: "Hebebühnen" },
+    ],
+  },
   { type: "process", steps: [{ title: "Anfragen" }, { title: "Abholen" }] },
-  { type: "quote", text: "„Ehrlich gemacht, fair berechnet.“", author: "Murat Yilmaz" },
+  {
+    type: "quote",
+    text: "„Ehrlich gemacht, fair berechnet.“",
+    author: "Murat Yilmaz",
+  },
   {
     type: "partners",
     headline: "Partner",
     items: [
-      { imageUrl: "https://example.org/logo.png", name: "Bosch Car Service", url: "https://bosch.de" },
+      {
+        imageUrl: "https://example.org/logo.png",
+        name: "Bosch Car Service",
+        url: "https://bosch.de",
+      },
       { imageUrl: "https://example.org/l2.png", name: "TÜV Nord" },
     ],
   },
@@ -202,7 +260,9 @@ const allTypes = (): Doc => {
 describe("Raster: alle Abschnittstypen", () => {
   test("jeder Startseiten-Typ außer notice rendert eigenes Raster-Markup mit Anker", () => {
     const html = render(allTypes());
-    for (const t of SECTION_TYPES.filter(t => t !== "notice" && t !== "pageHeader"))
+    for (const t of SECTION_TYPES.filter(
+      t => t !== "notice" && t !== "pageHeader"
+    ))
       expect(html, t).toContain(`id="${SECTION_ANCHORS[t]}"`);
     for (const t of ["cta", "stats", "usp", "story", "quote", "partners"])
       expect(html, t).toContain(`rs-${t}`);
@@ -212,9 +272,9 @@ describe("Raster: alle Abschnittstypen", () => {
 
   test("Kapitel lückenlos ab 01 mit allen Typen; Zwischentöne ohne Nummer", () => {
     const html = render(allTypes());
-    const nums = [...html.matchAll(/class="rs-no" aria-hidden="true">(\d\d)</g)].map(m =>
-      Number(m[1])
-    );
+    const nums = [
+      ...html.matchAll(/class="rs-no" aria-hidden="true">(\d\d)</g),
+    ].map(m => Number(m[1]));
     expect(nums).toEqual(nums.map((_, i) => i + 1));
     for (const t of ["stats", "quote", "partners", "cta"])
       expect(sectionHtml(html, t), t).not.toContain('class="rs-no"');
@@ -224,12 +284,17 @@ describe("Raster: alle Abschnittstypen", () => {
     const html = render(allTypes());
     expect(html.match(/24\. bis 26\.12\./g)).toHaveLength(1);
     expect(html).toContain('id="hinweis" class="pb-notice"');
-    expect(RASTER_CSS).toMatch(/\.pb-raster \.pb-notice\{[^}]*background:var\(--sys-signal\)/);
+    expect(RASTER_CSS).toMatch(
+      /\.pb-raster \.pb-notice\{[^}]*background:var\(--sys-signal\)/
+    );
   });
 
   test("jeder Navigations-Anker hat ein Ziel", () => {
     const html = render(allTypes());
-    const head = html.slice(html.indexOf('class="rs-head'), html.indexOf("</header>"));
+    const head = html.slice(
+      html.indexOf('class="rs-head'),
+      html.indexOf("</header>")
+    );
     const anchors = [...head.matchAll(/href="#([\w-]+)"/g)].map(m => m[1]);
     expect(anchors.length).toBeGreaterThan(5);
     for (const a of new Set(anchors)) expect(html, a).toContain(`id="${a}"`);
@@ -244,7 +309,9 @@ describe("Raster: alle Abschnittstypen", () => {
     expect(usp).toContain(">Preis vorher</h3>");
     expect(usp).toContain(">Alle Marken</h3>");
     expect(usp).toMatch(/class="rs-usp-no" aria-hidden="true">01</);
-    expect(usp.match(/<p>Kostenvoranschlag schriftlich\.<\/p>/g)).toHaveLength(1);
+    expect(usp.match(/<p>Kostenvoranschlag schriftlich\.<\/p>/g)).toHaveLength(
+      1
+    );
   });
 
   test("Zahlen-Abschnitt in der Zahlenzeile, Zitat in lede ohne doppelte Anführung", () => {
@@ -263,16 +330,26 @@ describe("Raster: alle Abschnittstypen", () => {
     const partners = sectionHtml(html, "partners");
     expect(partners).toContain('alt="Bosch Car Service"');
     expect(partners).toContain('href="https://bosch.de"');
-    const cta = html.slice(html.indexOf('id="anfrage"'), html.indexOf("</section>", html.indexOf('id="anfrage"')));
+    const cta = html.slice(
+      html.indexOf('id="anfrage"'),
+      html.indexOf("</section>", html.indexOf('id="anfrage"'))
+    );
     expect(cta).toContain("rs-cta");
     expect(cta).toContain(">Termin ausmachen?</h2>");
-    expect(cta).toMatch(/<a class="rs-btn" href="#kontakt">Termin anfragen<\/a>/);
+    expect(cta).toMatch(
+      /<a class="rs-btn" href="#kontakt">Termin anfragen<\/a>/
+    );
   });
 });
 
 describe("Raster: Unterseiten und Rechtsseiten", () => {
   test("Unterseite: Kopf mit Name als Kicker, genau ein h1, Anker zeigen auf die Startseite", () => {
-    const html = render(rasterFixture("full"), false, "/site/noir", "/leistungen-im-detail");
+    const html = render(
+      rasterFixture("full"),
+      false,
+      "/site/noir",
+      "/leistungen-im-detail"
+    );
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     expect(html).toContain('class="rs-page-head"');
     expect(html).not.toContain('class="rs-entry');
@@ -287,7 +364,7 @@ describe("Raster: Unterseiten und Rechtsseiten", () => {
         now={TEST_NOW}
         legal={{
           title: "Impressum",
-          html: "<h1>Impressum</h1><h2>Angaben gemäß § 5 DDG</h2><p>Lena Nord</p><p><a href=\"mailto:a@b.de\">a@b.de</a></p>",
+          html: '<h1>Impressum</h1><h2>Angaben gemäß § 5 DDG</h2><p>Lena Nord</p><p><a href="mailto:a@b.de">a@b.de</a></p>',
         }}
       />
     );
@@ -297,7 +374,11 @@ describe("Raster: Unterseiten und Rechtsseiten", () => {
     expect(html).toContain('class="rs-head');
     expect(html).toContain('class="rs-foot"');
     expect(html).not.toContain('id="hinweis"');
+    // Generator-<style> (body max-width, h2-Linien) gilt nicht für die Seite
+    expect(html).not.toMatch(/<style>[^<]*max-width:\s*800px/);
     expect(html).toMatch(/href="\/site\/nord#kontakt"/);
-    expect(RASTER_CSS).toMatch(/\.pb-raster \.rs-legal a\{[^}]*color:var\(--sys-ink\)/);
+    expect(RASTER_CSS).toMatch(
+      /\.pb-raster \.rs-legal a\{[^}]*color:var\(--sys-ink\)/
+    );
   });
 });

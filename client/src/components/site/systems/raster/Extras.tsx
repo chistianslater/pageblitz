@@ -9,6 +9,7 @@ import {
   chapterLabel,
   useChapterNo,
   type RasterSection,
+  type SectionProps,
 } from "./sections";
 
 /**
@@ -19,12 +20,8 @@ import {
  * ist ein dunkles Band (`deep`) mit dem Signal-Knopf.
  */
 
-type P<T extends RasterSection["type"]> = {
-  section: Extract<RasterSection, { type: T }>;
-  sections: readonly RasterSection[];
-};
 
-export function RasterStory({ section, sections }: P<"story">) {
+export function RasterStory({ section, sections }: SectionProps<"story">) {
   const { blueprint } = useSystem();
   return (
     <RasterChapter
@@ -43,7 +40,7 @@ export function RasterStory({ section, sections }: P<"story">) {
   );
 }
 
-export function RasterUsp({ section, sections }: P<"usp">) {
+export function RasterUsp({ section, sections }: SectionProps<"usp">) {
   const { blueprint } = useSystem();
   return (
     <RasterChapter
@@ -71,7 +68,7 @@ export function RasterUsp({ section, sections }: P<"usp">) {
   );
 }
 
-export function RasterStats({ section }: P<"stats">) {
+export function RasterStats({ section }: SectionProps<"stats">) {
   const { blueprint } = useSystem();
   return (
     <RasterChapter
@@ -88,7 +85,7 @@ export function RasterStats({ section }: P<"stats">) {
 }
 
 /** Zitat als Zwischenton: Label „Zitat" links, Satz groß rechts, kein h2. */
-export function RasterMotto({ section }: P<"quote">) {
+export function RasterMotto({ section }: SectionProps<"quote">) {
   const { blueprint } = useSystem();
   return (
     <section
@@ -98,7 +95,9 @@ export function RasterMotto({ section }: P<"quote">) {
     >
       <div className="rs-wrap rs-g12">
         <p className="rs-lab">
-          <span className="rs-lab-text">{chapterLabel("quote", blueprint)}</span>
+          <span className="rs-lab-text">
+            {chapterLabel("quote", blueprint)}
+          </span>
         </p>
         <div className="rs-body rs-body--full">
           <RasterQuote text={section.text} who={section.author} />
@@ -108,7 +107,7 @@ export function RasterMotto({ section }: P<"quote">) {
   );
 }
 
-export function RasterPartners({ section }: P<"partners">) {
+export function RasterPartners({ section }: SectionProps<"partners">) {
   const { blueprint } = useSystem();
   return (
     <RasterChapter
@@ -122,9 +121,13 @@ export function RasterPartners({ section }: P<"partners">) {
       <ul className="rs-logos">
         {section.items.map((item, i) => {
           const img = (
+            // Logo-Maße unbekannt: width/height gegen Layout-Sprünge, die
+            // Darstellung regelt das CSS (Höhe fest, Breite automatisch).
             <img
               src={item.imageUrl}
               alt={item.name}
+              width={160}
+              height={64}
               loading="lazy"
               decoding="async"
             />
@@ -147,15 +150,11 @@ export function RasterPartners({ section }: P<"partners">) {
 }
 
 /** Aufruf: dunkles Band, Satz in h2, Hauptaktion als Signal-Knopf. */
-export function RasterCta({ section }: P<"cta">) {
+export function RasterCta({ section }: SectionProps<"cta">) {
   const { blueprint } = useSystem();
   const id = SECTION_ANCHORS.cta;
   return (
-    <section
-      id={id}
-      className="rs-sec rs-cta"
-      aria-labelledby={`${id}-titel`}
-    >
+    <section id={id} className="rs-sec rs-cta" aria-labelledby={`${id}-titel`}>
       <div className="rs-wrap rs-g12">
         <p className="rs-lab">
           <span className="rs-lab-text">{chapterLabel("cta", blueprint)}</span>

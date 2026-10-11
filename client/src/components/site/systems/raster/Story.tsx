@@ -11,6 +11,7 @@ import {
   chapterLabel,
   useChapterNo,
   type RasterSection,
+  type SectionProps,
 } from "./sections";
 
 /**
@@ -22,10 +23,6 @@ import {
  * großes Zitat in `lede`, Name als Kicker, Quelle nur mit Google-Daten.
  */
 
-type P<T extends RasterSection["type"]> = {
-  section: Extract<RasterSection, { type: T }>;
-  sections: readonly RasterSection[];
-};
 
 /**
  * Abbildungsnummern in Raster: Das Einstiegsfoto trägt keine Unterschrift,
@@ -75,13 +72,15 @@ export function Abb({
   );
 }
 
-export function RasterAbout({ section, sections }: P<"about">) {
+export function RasterAbout({ section, sections }: SectionProps<"about">) {
   const { data, blueprint } = useSystem();
   const hidden = data.designProfile?.hiddenElements ?? [];
   const image = hidden.includes("about-media") ? undefined : section.imageUrl;
   const abb = rasterFigureNumbers(sections, hidden).about;
   const parts = paragraphs(section.body);
-  const { lead, rest } = image ? { lead: undefined, rest: parts } : splitLead(parts);
+  const { lead, rest } = image
+    ? { lead: undefined, rest: parts }
+    : splitLead(parts);
   const hasTeam = sections.some(s => s.type === "team");
   return (
     <RasterChapter
@@ -135,7 +134,7 @@ export function RasterAbout({ section, sections }: P<"about">) {
   );
 }
 
-export function RasterGallery({ section, sections }: P<"gallery">) {
+export function RasterGallery({ section, sections }: SectionProps<"gallery">) {
   const { data, blueprint } = useSystem();
   const hidden = data.designProfile?.hiddenElements ?? [];
   const label = chapterLabel("gallery", blueprint);
@@ -215,7 +214,7 @@ export function RasterQuote({
   );
 }
 
-export function RasterReviews({ section, sections }: P<"testimonials">) {
+export function RasterReviews({ section, sections }: SectionProps<"testimonials">) {
   const { data, blueprint } = useSystem();
   const no = useChapterNo(sections, "testimonials");
   const quote = pickReviewQuote(section.items);

@@ -14,7 +14,7 @@ import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
 import { RasterMenuSlot, RasterTeamSlot } from "./Offer";
 import { RasterDock } from "./Dock";
 import { entryVariant } from "./facts";
-import { withoutBandPhotos } from "./offerData";
+import { claimPhotos } from "./photos";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -34,18 +34,19 @@ export const RASTER_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
     // Startseiten-Dokument (auf Unterseiten trägt `data` die Seiten-Abschnitte).
     const { data: home } = useSystem();
-    // `source`: alles Gezeigte; `list`: ohne Galeriefotos, die schon als
-    // Band-Hintergrund stehen (Galerie entfällt, wenn nichts übrig bleibt).
-    const source: RasterSection[] = legal
-      ? []
-      : (sections ?? orderedSections(data)).filter(systemShows);
-    const list = withoutBandPhotos(source);
+    // Jedes Foto höchstens einmal je Seite (photos.ts): Einstieg → Bänder →
+    // Über uns → Galerie; vor Kapitelzählung und Abb.-Nummern.
+    const hidden = home.designProfile?.hiddenElements ?? [];
+    const { list, bandPhotos } = claimPhotos(
+      legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
+      hidden
+    );
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
     const slots = sections || legal ? {} : previewSlotAnchors(list);
     const homeAll = orderedSections(home);
-    const homeShown = withoutBandPhotos(homeAll.filter(systemShows));
+    const homeShown = claimPhotos(homeAll.filter(systemShows), hidden).list;
     const shown = shownNavItems(navItems, homeAll).filter(
       item =>
         item.sectionType !== "gallery" ||
@@ -72,7 +73,7 @@ export const RASTER_MODULE: PackModule = {
         {ownHead && <RasterPageHead title={pageTitle} />}
         {list.map((s, i) => (
           <React.Fragment key={`${s.type}-${i}`}>
-            {renderRasterSection(s, list, source)}
+            {renderRasterSection(s, list, bandPhotos)}
             {slots.menu === i && <RasterMenuSlot sections={list} />}
             {slots.team === i && <RasterTeamSlot sections={list} />}
           </React.Fragment>

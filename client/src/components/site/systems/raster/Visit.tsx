@@ -17,6 +17,7 @@ import {
   chapterLabel,
   useChapterNo,
   type RasterSection,
+  type SectionProps,
 } from "./sections";
 
 /**
@@ -29,12 +30,8 @@ import {
  * nur, wenn die Kontakt-Insel wirklich rendert.
  */
 
-type P<T extends RasterSection["type"]> = {
-  section: Extract<RasterSection, { type: T }>;
-  sections: readonly RasterSection[];
-};
 
-export function RasterFaq({ section, sections }: P<"faq">) {
+export function RasterFaq({ section, sections }: SectionProps<"faq">) {
   const { blueprint } = useSystem();
   return (
     <RasterChapter
@@ -125,7 +122,7 @@ function Hours({
   );
 }
 
-export function RasterContact({ section, sections }: P<"contact">) {
+export function RasterContact({ section, sections }: SectionProps<"contact">) {
   const { data, blueprint, contactIsland, now } = useSystem();
   const inquiry = blueprint.contactMode === "inquiry";
   const hours = shownHours(section);
@@ -199,13 +196,9 @@ export function RasterContact({ section, sections }: P<"contact">) {
               </a>
             </p>
           )}
-          {(route || mail || whatsapp) && (
+          {/* Route steht als Karten-Fläche unten (ein Tab-Halt statt zwei). */}
+          {(mail || whatsapp) && (
             <p className="rs-links">
-              {route && (
-                <a className="rs-link" href={route} {...external}>
-                  {routeLabel}
-                </a>
-              )}
               {mail && (
                 <a className="rs-link" href={mail}>
                   E-Mail schreiben
@@ -236,9 +229,7 @@ export function RasterContact({ section, sections }: P<"contact">) {
       {/* Das Formular ist die bestehende Kontakt-Insel (SiteIslands,
           data-target="#kontakt"); die Hydration hängt sie an diesen
           Abschnitt an. Hier nur ihr Titel — und nur, wenn sie rendert. */}
-      {contactIsland && (
-        <h3 className="rs-form-title">Nachricht schreiben</h3>
-      )}
+      {contactIsland && <h3 className="rs-form-title">Nachricht schreiben</h3>}
     </RasterChapter>
   );
 }

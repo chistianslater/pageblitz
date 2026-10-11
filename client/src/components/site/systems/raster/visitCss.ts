@@ -63,7 +63,8 @@ export const VISIT_CSS = `/* Gut zu wissen: Haarlinien-Zeilen, Frage h3, „+" r
 .pb-raster .rs-contact>.pb-island .pb-island-form{max-width:var(--sys-space-measure)}
 .pb-raster .pb-island-form textarea{min-height:calc(var(--sys-space-2xl) * 2)}
 .pb-raster .pb-island-privacy a{color:var(--sys-ink)}
-.pb-raster .pb-island-status{${step("small")};color:var(--sys-ink)}
+.pb-raster .pb-island-status{${step("small")}}
+/* Farbe hier nötig: islandsCss färbt Erfolg/Fehler (u. a. #b3261e, auf Kohle unlesbar) und steht später im Dokument */
 .pb-raster .pb-island-status[data-state="success"],.pb-raster .pb-island-status[data-state="error"]{color:var(--sys-ink);border-left:var(--rs-focus) solid var(--sys-signal);padding-left:var(--sys-space-s)}
 .pb-raster .pb-island-status[data-state="info"]{color:var(--sys-muted)}
 .pb-raster .pb-island-submit{min-height:var(--rs-tap);cursor:pointer}
@@ -88,7 +89,7 @@ export const VISIT_CSS = `/* Gut zu wissen: Haarlinien-Zeilen, Frage h3, „+" r
 .pb-raster .rs-logos li{display:flex;align-items:center;justify-content:center;background:var(--sys-on-deep);padding:var(--sys-space-m);min-height:calc(var(--sys-space-2xl) + var(--sys-space-l))}
 .pb-raster .rs-logos a{display:flex;align-items:center;justify-content:center;min-height:var(--rs-tap);min-width:var(--rs-tap)}
 .pb-raster .rs-logos a:focus-visible{outline-color:var(--sys-deep)}
-.pb-raster .rs-logos img{max-height:var(--sys-space-l);width:auto;object-fit:contain;filter:grayscale(1);opacity:.9}
+.pb-raster .rs-logos img{height:var(--sys-space-l);width:auto;max-width:100%;object-fit:contain;filter:grayscale(1);opacity:.9}
 @media (min-width:${GRID}){.pb-raster .rs-logos{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 /* Aufruf: dunkles Band, Signal-Knopf */
@@ -108,5 +109,5 @@ export const VISIT_CSS = `/* Gut zu wissen: Haarlinien-Zeilen, Frage h3, „+" r
 /* Rechtstexte: Links in ink, auch auf dunklem Papier */
 .pb-raster .rs-legal a{color:var(--sys-ink);text-decoration-thickness:1px;text-underline-offset:.2em}
 .pb-raster .rs-legal{color:var(--sys-ink)}
-.pb-raster .rs-legal h2+p,.pb-raster .rs-legal p{color:inherit}
+.pb-raster .rs-legal .back-link{display:none}
 `;

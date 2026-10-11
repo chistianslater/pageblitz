@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { orderedSections } from "../../engine";
 import { systemShows } from "../shared";
-import { bandPlan, withoutBandPhotos } from "./offerData";
+import { bandPlan } from "./offerData";
+import { claimPhotos } from "./photos";
 import { rasterChapterNo } from "./sections";
 import { RASTER_CSS } from "./css";
 import {
@@ -27,11 +28,16 @@ const withGallery = (n: number, doc: Doc = werkstattDoc()): Doc =>
   }));
 
 const visible = (doc: Doc) =>
-  withoutBandPhotos(orderedSections(doc).filter(systemShows));
+  claimPhotos(orderedSections(doc).filter(systemShows), []).list;
 
 describe("Raster: Über uns", () => {
   test("mit Foto: Kapitel im Raster, S/W-Bild mit Abb.-Nummer, Fließtext", () => {
-    const html = sectionHtml(render(werkstattDoc()), "about");
+    // Eigenes Foto (nicht schon im Einstieg — jedes Foto nur einmal je Seite)
+    const doc = patchSection(werkstattDoc(), "about", a => ({
+      ...a,
+      imageUrl: "https://images.example.org/team.jpg",
+    }));
+    const html = sectionHtml(render(doc), "about");
     expect(html).toContain('id="ueber-uns"');
     expect(html).toMatch(/<span class="rs-no" aria-hidden="true">\d\d<\/span>/);
     expect(html).toContain('class="rs-figure rs-about-photo"');
@@ -44,13 +50,20 @@ describe("Raster: Über uns", () => {
   test("ohne Foto: erster Satz groß als lede, Rest als Text", () => {
     // Fehlende Bilder füllt der Renderer auf; „ohne Foto" = im Studio aussortiert.
     const base = werkstattDoc();
-    const doc = patchSection({
-      ...base,
-      designProfile: { ...base.designProfile!, hiddenElements: ["about-media"] },
-    }, "about", a => ({
-      ...a,
-      body: "Wir sagen dir vorher, was es kostet und was nötig ist. Meisterbetrieb für alle Marken.",
-    }));
+    const doc = patchSection(
+      {
+        ...base,
+        designProfile: {
+          ...base.designProfile!,
+          hiddenElements: ["about-media"],
+        },
+      },
+      "about",
+      a => ({
+        ...a,
+        body: "Wir sagen dir vorher, was es kostet und was nötig ist. Meisterbetrieb für alle Marken.",
+      })
+    );
     const html = sectionHtml(render(doc), "about");
     expect(html).not.toContain("<img");
     expect(html).toContain(
@@ -64,7 +77,10 @@ describe("Raster: Über uns", () => {
     const html = sectionHtml(
       render({
         ...doc,
-        designProfile: { ...doc.designProfile!, hiddenElements: ["about-media"] },
+        designProfile: {
+          ...doc.designProfile!,
+          hiddenElements: ["about-media"],
+        },
       }),
       "about"
     );
@@ -120,8 +136,9 @@ describe("Raster: Galerie", () => {
 });
 
 describe("Raster: Stimmen", () => {
-  const reviews = (items: { author: string; text: string; rating?: number }[]) =>
-    patchSection(werkstattDoc(), "testimonials", t => ({ ...t, items }));
+  const reviews = (
+    items: { author: string; text: string; rating?: number }[]
+  ) => patchSection(werkstattDoc(), "testimonials", t => ({ ...t, items }));
 
   test("ein großes Zitat in lede, Autor als Kicker, Sterne nur bei 5", () => {
     const html = sectionHtml(
@@ -139,7 +156,9 @@ describe("Raster: Stimmen", () => {
     expect(html).toContain('id="bewertungen"');
     expect(html.match(/<blockquote/g)).toHaveLength(1);
     expect(html).toContain('class="rs-quote"');
-    expect(html).toContain("„Ehrlicher Kostenvoranschlag, Auto am selben Tag fertig.“");
+    expect(html).toContain(
+      "„Ehrlicher Kostenvoranschlag, Auto am selben Tag fertig.“"
+    );
     expect(html).toContain('class="rs-quote-who">Tobias R.</span>');
     expect(html).toContain("5 von 5 Sternen");
   });
@@ -168,13 +187,17 @@ describe("Raster: Stimmen", () => {
 describe("Raster: Bild- und Zitat-CSS", () => {
   test("Fotos S/W über den Raster-Filter, Zitat in lede mit hängender Anführung", () => {
     expect(RASTER_CSS).toMatch(/\.rs-figure img\{[^}]*filter:grayscale\(1\)/);
-    expect(RASTER_CSS).toMatch(/\.rs-quote p\{[^}]*font-size:var\(--sys-lede-size\)/);
+    expect(RASTER_CSS).toMatch(
+      /\.rs-quote p\{[^}]*font-size:var\(--sys-lede-size\)/
+    );
     expect(RASTER_CSS).toMatch(/\.rs-quote p\{[^}]*text-indent:-/);
   });
 });
 
 describe("Raster: Team", () => {
-  const withTeam = (members: { name: string; role?: string; imageUrl?: string }[]): Doc => {
+  const withTeam = (
+    members: { name: string; role?: string; imageUrl?: string }[]
+  ): Doc => {
     const d = werkstattDoc();
     const at = d.sections.findIndex(s => s.type === "contact");
     return {
@@ -191,7 +214,11 @@ describe("Raster: Team", () => {
     const html = sectionHtml(
       render(
         withTeam([
-          { name: "Murat Yilmaz", role: "Meister", imageUrl: "https://images.example.org/m.jpg" },
+          {
+            name: "Murat Yilmaz",
+            role: "Meister",
+            imageUrl: "https://images.example.org/m.jpg",
+          },
           { name: "Ela Yilmaz", imageUrl: "https://images.example.org/e.jpg" },
         ])
       ),
@@ -206,7 +233,11 @@ describe("Raster: Team", () => {
     const html = sectionHtml(
       render(
         withTeam([
-          { name: "Murat Yilmaz", role: "Meister", imageUrl: "https://images.example.org/m.jpg" },
+          {
+            name: "Murat Yilmaz",
+            role: "Meister",
+            imageUrl: "https://images.example.org/m.jpg",
+          },
           { name: "Ela Yilmaz" },
         ])
       ),
