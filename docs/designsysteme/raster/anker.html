@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Raster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --weiss: #ffffff;
+    --grund: #f2f2f0;
+    --ink: #0d0d0d;
+    --ink-soft: #5c5c5c;
+    --rule: rgba(13, 13, 13, 0.18);
+    --signal: #ff3b00;
+    --gut: #0d0d0d;
+    --mittel: #8a8a8a;
+    --schwach: #ff3b00;
+    --sans: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--weiss); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 48px 48px 72px; }
+
+  header.kopf { display: grid; grid-template-columns: 220px 1fr auto; gap: 24px; align-items: end; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+  .knr { font-size: 150px; font-weight: 800; line-height: .78; letter-spacing: -0.06em; }
+  .kicker { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { font-weight: 800; font-size: 96px; line-height: 0.9; letter-spacing: -0.045em; margin-top: 10px; }
+  h1 .sig { color: var(--signal); }
+  .vorspann { display: grid; grid-template-columns: 220px repeat(3, 1fr); gap: 24px 40px; padding: 20px 0 40px; font-size: 14px; color: var(--ink-soft); }
+  .vorspann .lbl { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); }
+  .vorspann b { color: var(--ink); font-weight: 600; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--ink); padding-top: 12px; }
+  .kandidat.wahl { border-top: 6px solid var(--signal); padding-top: 8px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: baseline; }
+  .nr { font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: .9; }
+  .wahl .nr { color: var(--signal); }
+  .tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+  .badge { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; background: var(--signal); color: var(--weiss); padding: 5px 9px; }
+  h2 { font-weight: 700; font-size: 34px; letter-spacing: -0.03em; line-height: 1.05; margin: 10px 0 4px; }
+  .url { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 14px; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 13.5px; min-height: 248px; }
+  .urteil li { list-style: none; padding-left: 20px; position: relative; margin: 4px 0; }
+  .urteil li::before { position: absolute; left: 0; font-weight: 700; }
+  .urteil li.plus::before { content: "+"; }
+  .urteil li.minus::before { content: "–"; color: var(--signal); }
+  .urteil li.dann::before { content: "→"; }
+  .noten { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 12px; border-left: 1px solid var(--rule); }
+  .note { border: 1px solid var(--rule); border-left: 0; padding: 6px 7px 4px; }
+  .note span { display: block; font-size: 9px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); min-height: 22px; line-height: 1.2; }
+  .note b { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .note.summe { background: var(--ink); color: var(--weiss); border-color: var(--ink); }
+  .note.summe span { color: #bdbdbd; }
+  .wahl .note.summe { background: var(--signal); border-color: var(--signal); }
+  .wahl .note.summe span { color: var(--weiss); }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 14px; margin-top: 16px; align-items: start; }
+  .erster figure { border: 1px solid var(--ink); overflow: hidden; background: var(--grund); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 12.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); font-weight: 700; display: block; margin-bottom: 4px; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .ganz { display: grid; grid-template-columns: 300px auto; gap: 12px; margin-top: 18px; align-items: start; }
+  .ganz img { display: block; width: 300px; }
+  .handy { display: grid; grid-template-columns: 118px 118px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); background: var(--grund); }
+  .halb img { display: block; max-width: none; }
+  figcaption { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); padding: 0 0 6px; }
+
+  section.abschnitt { margin-top: 64px; border-top: 2px solid var(--ink); padding-top: 16px; display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+  .snr { font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: .85; }
+  h3 { font-weight: 800; font-size: 52px; line-height: 0.95; letter-spacing: -0.04em; }
+  h3 .sig { color: var(--signal); }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+  thead th { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; border-bottom: 1px solid var(--ink); }
+  thead th.wahl { color: var(--signal); }
+  tbody th { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; width: 190px; }
+  td.wahl { background: rgba(255, 59, 0, 0.06); }
+  .z { font-size: 15px; margin-right: 7px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 48px; margin-top: 20px; font-size: 14px; }
+  .empfehlung h4, .betrieb h4 { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--ink); }
+  .empfehlung li { margin: 5px 0 5px 18px; }
+  .gross { font-weight: 600; font-size: 28px; line-height: 1.15; letter-spacing: -0.025em; }
+  .gross .sig { color: var(--signal); }
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 20px; }
+  .betrieb .bnr { font-size: 88px; font-weight: 800; letter-spacing: -0.06em; line-height: .85; }
+  .betrieb .bname { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin: 8px 0 10px; }
+  .betrieb dl { display: grid; grid-template-columns: 110px 1fr; font-size: 13px; }
+  .betrieb dt, .betrieb dd { padding: 6px 0; border-top: 1px solid var(--rule); }
+  .betrieb dt { font-weight: 600; color: var(--ink-soft); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding-top: 8px; }
+  .fuss { margin-top: 40px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">02</div>
+  <div>
+    <div class="kicker">Designsystem Raster · Ankersuche · 11.10.2026</div>
+    <h1>Ein Raster, eine Vorlage<span class="sig">.</span></h1>
+  </div>
+  <div class="kicker">Vier Kandidaten · ganze Seite · Desktop &amp; Handy</div>
+</header>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal nehmen wir eine komplette Website als Vorlage und übertragen ihr System auf unsere neun Abschnitte. Raster heißt: sichtbares Raster, eine Grotesk, große Ziffern, S/W-Fotos mit hartem Kontrast, eine Signalfarbe. Für Steuerberater, Werkstatt, Notdienst, Industrie und als Rückfall für alle.</p>
+  <p><b>Wie gesucht.</b> Refero (Styles und Screens zu Swiss, Architektur, Kanzlei, Industrie, Werkstatt). Die Treffer sind fast nur SaaS oder Einzelbildschirme von Portfolios. Deshalb rund 30 Live-Seiten im Browser geprüft: Kanzleien, Ingenieure, Hersteller, Studios und Swiss-Vorlagen. Nur diese vier zeigen ein System bis zum Fuß.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt, Abdeckung unserer Abschnitte, Handy, Robustheit bei mittelmäßigen Fotos und ob Steuerberater, Kfz-Werkstatt und Schlüsseldienst gleichzeitig hineinpassen. Je 1 bis 10. Screenshots vom 11.10.2026 (Desktop 1440, Handy 390). Cookie-Banner abgelehnt oder ausgeblendet.</p>
+</div>
+
+<div class="spalten">
+
+  <article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Colophon</h2>
+    <div class="tag">Studio · Framer-Vorlage</div>
+    <div class="url"><a href="https://colophone.framer.ai/">colophone.framer.ai</a></div>
+    <ul class="urteil"><li class="plus">Ein sichtbares Raster: links schmale Spalte mit Nummer und Label (01 Intro, 02 Arbeiten …), rechts der Inhalt. Eine Grotesk (BDO Grotesk), Hierarchie nur über Größe.</li><li class="plus">Leistungen als bildschirmhohe Bänder: Versalname über abgedunkeltem Foto, die sich beim Scrollen stapeln. Das ist das Handy-Wow.</li><li class="plus">Zahlenzeile, ein großes Zitat, dunkler Fuß mit Aufforderung und vier Spalten. Trägt bis ganz unten.</li><li class="minus">Kein Ablauf, kein FAQ, keine Öffnungszeiten, keine Signalfarbe. Fotos sind farbige Kampagnenbilder.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>7</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>8</b></div><div class="note"><span>Branchen-Mix</span><b>9</b></div><div class="note summe"><span>Summe</span><b>42</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/colophon-mobil-erster-blick.jpg" alt="Colophon, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Vollbild-Foto, Wortmarke über die ganze Breite, ein Satz unten links. Bei uns: Firmenname als Wortmarke, Foto in S/W, darunter Anruf in Signalfarbe.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/colophon-desktop.jpg" style="height:2167px" alt="Colophon Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1675px"><img src="anker/colophon-mobil.jpg" style="width:118px;height:3349px" alt=""></div><div class="halb" style="height:1674px"><img src="anker/colophon-mobil.jpg" style="width:118px;height:3349px;margin-top:-1675px" alt=""></div></div></figure>
+    </div>
+  </article>
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span><span class="tag">Studio</span></div>
+    <h2>Das Studio</h2>
+    <div class="tag">Studio · Framer-Vorlage</div>
+    <div class="url"><a href="https://dasstudio.framer.website/">dasstudio.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Die vollständigste Seite: Projekte, Leistungen als nummeriertes Akkordeon, Ablauf in vier Schritten, Zahlen, Stimmen, Preise, FAQ, Name riesig im Fuß.</li><li class="minus">Sieht nach Vorlage aus: Pillen-Buttons, ®-Hochzahlen, Sterne, Pastell-Produktfotos. Wenig Kontrast, kein Wow, 30.000 px lang auf dem Handy.</li><li class="dann">Nur als Checkliste der Abschnitte nutzen, nicht als Look.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>6</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>6</b></div><div class="note"><span>Schwache Fotos</span><b>5</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note summe"><span>Summe</span><b>34</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/das-studio-mobil-erster-blick.jpg" alt="Das Studio, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Name in Versalien, ein Satz, zwei Buttons, kleine Faktentabelle, dann Bildkarussell. Klar, aber austauschbar.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/das-studio-desktop.jpg" style="height:2908px" alt="Das Studio Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:2308px"><img src="anker/das-studio-mobil.jpg" style="width:118px;height:4616px" alt=""></div><div class="halb" style="height:2308px"><img src="anker/das-studio-mobil.jpg" style="width:118px;height:4616px;margin-top:-2308px" alt=""></div></div></figure>
+    </div>
+  </article>
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span><span class="tag">Hersteller</span></div>
+    <h2>Vitsœ</h2>
+    <div class="tag">Hersteller · echter Betrieb</div>
+    <div class="url"><a href="https://www.vitsoe.com/de">vitsoe.com/de</a></div>
+    <ul class="urteil"><li class="plus">Echtes Raster nach Rams, auf Deutsch: eine Grotesk, Haarlinien, „Warum Vitsœ?“ in vier Spalten, „Lebenslanger Service“ mit S/W-Foto, ein Kundenzitat.</li><li class="plus">Der ehrlichste, sachlichste Ton der vier.</li><li class="minus">Zu leise: kein Einstieg, das Handy beginnt mit Produktbild und Fließtext. Shop-Navigation, Kontakt nur im Fuß.</li><li class="dann">Beleg, dass Raster ruhig sein darf. Kein Anker für den ersten Blick.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>8</b></div><div class="note"><span>Abdeckung</span><b>5</b></div><div class="note"><span>Handy</span><b>5</b></div><div class="note"><span>Schwache Fotos</span><b>7</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note summe"><span>Summe</span><b>31</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/vitsoe-mobil-erster-blick.jpg" alt="Vitsœ, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Logo, Produktfoto, Produktname, Absatz, blauer Link. Ordentlich, aber nach fünf Sekunden weiß man nicht, was der Betrieb ist.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/vitsoe-desktop.jpg" style="height:702px" alt="Vitsœ Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:945px"><img src="anker/vitsoe-mobil.jpg" style="width:118px;height:1890px" alt=""></div><div class="halb" style="height:945px"><img src="anker/vitsoe-mobil.jpg" style="width:118px;height:1890px;margin-top:-945px" alt=""></div></div></figure>
+    </div>
+  </article>
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span><span class="tag">Agentur</span></div>
+    <h2>Swiss Brut</h2>
+    <div class="tag">Agentur · Framer-Vorlage</div>
+    <div class="url"><a href="https://swissbrut.framer.website/">swissbrut.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Am nächsten an der Raster-Idee: riesige Ziffern (1 2 3 als Ablauf, 12 / 80 / 3 als Zahlen), S/W-Bilder, Rot als einzige Farbe.</li><li class="minus">Agentur-Pose: 3D-Renderings, Namen als Riesentypo, Scroll-Effekte, lange leere Strecken. Keine Leistungen, kein Kontakt, kein FAQ.</li><li class="dann">Für Steuerberater zu laut, für alle zu lückenhaft. Zeigt nur, wie groß Ziffern werden dürfen.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>4</b></div><div class="note"><span>Handy</span><b>6</b></div><div class="note"><span>Schwache Fotos</span><b>8</b></div><div class="note"><span>Branchen-Mix</span><b>5</b></div><div class="note summe"><span>Summe</span><b>30</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/swiss-brut-mobil-erster-blick.jpg" alt="Swiss Brut, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Navigation als Vierer-Raster, „Brut“ in Schwarz, darunter Porträt. Stark als Plakat, aber ohne Aussage zum Betrieb.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/swiss-brut-desktop.jpg" style="height:2652px" alt="Swiss Brut Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1455px"><img src="anker/swiss-brut-mobil.jpg" style="width:118px;height:2909px" alt=""></div><div class="halb" style="height:1454px"><img src="anker/swiss-brut-mobil.jpg" style="width:118px;height:2909px;margin-top:-1455px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+  <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+  <table>
+    <thead>
+      <tr><th>Abschnitt</th><th class="wahl">01 Colophon</th><th>02 Das Studio</th><th>03 Vitsœ</th><th>04 Swiss Brut</th></tr>
+    </thead>
+    <tbody>
+<tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Vollbild-Foto, Wortmarke über volle Breite, Satz unten links</td><td class=""><span class="z g">●</span>Name groß, Satz, zwei Buttons, Faktentabelle</td><td class=""><span class="z s">○</span>Kein Einstieg, sofort Produktkachel</td><td class=""><span class="z m">◐</span>Name und Porträt, Navigation als Raster</td></tr>
+<tr><th>Leistungen</th><td class="wahl"><span class="z g">●</span>Bildschirmhohe Bänder, Versalname über Foto, nummeriert</td><td class=""><span class="z g">●</span>Nummeriertes Akkordeon mit Unterpunkten</td><td class=""><span class="z m">◐</span>Produktkacheln mit Satz und Link</td><td class=""><span class="z s">○</span>Nur Disziplinen als graue Riesentypo</td></tr>
+<tr><th>Über uns</th><td class="wahl"><span class="z g">●</span>„01 Intro“: Label links, großer Satz rechts</td><td class=""><span class="z g">●</span>Text, Foto, zwei Zahlen</td><td class=""><span class="z g">●</span>„Warum Vitsœ?“ in vier Spalten</td><td class=""><span class="z g">●</span>Ein großer Absatz in Fett</td></tr>
+<tr><th>Galerie / Referenzen</th><td class="wahl"><span class="z g">●</span>Zwei Spalten, Unterschrift mit Jahr und Disziplin</td><td class=""><span class="z g">●</span>Projektkarten mit Dauer und Etikett</td><td class=""><span class="z m">◐</span>Geschichten-Leiste mit vier Bildern</td><td class=""><span class="z g">●</span>Bilder mit (01)-Nummern</td></tr>
+<tr><th>Stimmen</th><td class="wahl"><span class="z g">●</span>Ein großes Zitat mit Name und Rolle</td><td class=""><span class="z m">◐</span>Karten mit Sternen, Pfeil-Karussell</td><td class=""><span class="z g">●</span>Kundenzitat groß mit Link</td><td class=""><span class="z m">◐</span>Kundennamen als Riesentypo</td></tr>
+<tr><th>Ablauf</th><td class="wahl"><span class="z s">○</span>Fehlt. Ergänzen als Ziffernzeilen 01 bis 04</td><td class=""><span class="z g">●</span>Vier Schritte mit Fortschrittslinie</td><td class=""><span class="z m">◐</span>„Lebenslanger Service“ als Textblock</td><td class=""><span class="z g">●</span>1 · 2 · 3 riesig mit Bild</td></tr>
+<tr><th>Gut zu wissen / FAQ</th><td class="wahl"><span class="z m">◐</span>Journal-Karten. FAQ als Haarlinien-Liste ergänzen</td><td class=""><span class="z g">●</span>FAQ-Akkordeon</td><td class=""><span class="z s">○</span>Nur im Fuß verlinkt</td><td class=""><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Kontakt / Zeiten</th><td class="wahl"><span class="z m">◐</span>Mail, Telefon, Adresse im Fuß. Zeiten ergänzen</td><td class=""><span class="z m">◐</span>Aufforderungs-Block, Adresse im Fuß</td><td class=""><span class="z m">◐</span>Nur im Fuß</td><td class=""><span class="z s">○</span>Nur „Let’s talk“</td></tr>
+<tr><th>Fuß</th><td class="wahl"><span class="z g">●</span>Dunkel, Aufforderung, vier Spalten, Showreel</td><td class=""><span class="z g">●</span>Name riesig, Spalten</td><td class=""><span class="z g">●</span>Grau, Newsletter, Spalten</td><td class=""><span class="z m">◐</span>Name, wenig Inhalt</td></tr>
+    </tbody>
+  </table>
+  <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+  <h3>Empfehlung: <span class="sig">Colophon</span></h3>
+  <div class="empfehlung">
+    <div>
+      <p class="gross">Colophon hat das strengste Raster der vier und trotzdem einen lauten ersten Blick: Label-Spalte links, eine Grotesk, Leistungen als bildschirmhohe Bänder. <span class="sig">Weil die Schrift trägt und nicht das Foto, hält es auch mit Google-Fotos in Schwarzweiß.</span></p>
+    </div>
+    <div>
+      <h4>Was wir 1:1 übernehmen</h4>
+      <ul>
+        <li>Linke Label-Spalte mit Nummer, Inhalt rechts. Das ist das sichtbare Raster</li>
+        <li>Eine Grotesk, Hierarchie nur über Größe und Gewicht</li>
+        <li>Einstieg: Foto vollflächig, Name als Wortmarke über die ganze Breite, ein Satz unten</li>
+        <li>Leistungen als gestapelte Bänder mit Versalnamen</li>
+        <li>Referenzen in zwei Spalten mit Unterschrift</li>
+        <li>Zahlenzeile, ein großes Zitat, dunkler Fuß mit Aufforderung und Spalten</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Was wir optimieren</h4>
+      <ul>
+        <li>Alle Fotos S/W, harter Kontrast, abgedunkelt. Ohne Foto fällt das Band auf Schwarz mit Riesentypo zurück</li>
+        <li>Zahlenzeile wird Ziffern-Bühne: seit 1987, 4,8 Sterne, 24/7, so groß wie die Wortmarke</li>
+        <li>Eine Signalfarbe nur für Anruf, aktive Nummer und Notdienst-Hinweis</li>
+        <li>Ablauf als Ziffernzeilen 01 bis 04, FAQ als Haarlinien-Liste, Öffnungszeiten als Tabelle</li>
+        <li>Feste Anrufleiste unten auf dem Handy</li>
+        <li>Journal-Karten und Showreel entfallen</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+  <h3>Drei Betriebe, ein System</h3>
+  <div class="betriebe">
+    <div class="betrieb"><div class="bnr">01</div><div class="bname">Steuerberatung</div>
+      <dl><dt>Einstieg</dt><dd>Ruhig: Kanzleiname als Wortmarke, Büro-Foto in S/W, kein Signal im ersten Bild</dd>
+      <dt>Bänder</dt><dd>Einkommensteuer, Lohn, Jahresabschluss auf Schwarz, auch ganz ohne Foto</dd>
+      <dt>Ziffern</dt><dd>Gründungsjahr, Mandanten, Fristen</dd></dl></div>
+    <div class="betrieb"><div class="bnr">02</div><div class="bname">Kfz-Werkstatt</div>
+      <dl><dt>Einstieg</dt><dd>Werkstatt-Foto in S/W, Name über volle Breite, Termin-Knopf in Signalfarbe</dd>
+      <dt>Bänder</dt><dd>Inspektion, Reifen, HU/AU, Unfall mit eigenem Foto je Band</dd>
+      <dt>Ziffern</dt><dd>Meister seit, Bewertung, Marken</dd></dl></div>
+    <div class="betrieb"><div class="bnr">03</div><div class="bname">Schlüsseldienst</div>
+      <dl><dt>Einstieg</dt><dd>Signalfarbe trägt: Anrufleiste fest unten, „24/7“ und Anfahrtszeit als Riesenziffer</dd>
+      <dt>Bänder</dt><dd>Türöffnung, Schlosstausch, Einbruchschutz</dd>
+      <dt>Ziffern</dt><dd>Minuten bis vor Ort, Festpreis, Einsätze</dd></dl></div>
+  </div>
+  <p class="fuss">Quellen: Refero-Styles zu Haus Otto, 19-86, Studio Emmerer, mono, Norgram, 247studio, Andercore, Freitag u. a. als Vorauswahl. Live geprüft und verworfen: Schnetzer Puskas, Hengeler Mueller, Homburger, Bär &amp; Karrer, Raue, Gleiss Lutz, Flick Gocke Schaumburg, Basler &amp; Hofmann, Lehni, USM, ERCO, Wilkhahn, Singer, Studio Emmerer, Norgram, 247studio, Andercore, Formhaus, Upline, Studio Think, Holm, Monodrift, Swiss Agency. Screenshots: Playwright mit Chrome, 11.10.2026. Handy-Ganzseiten aus Einzelbildern zusammengesetzt, darum wiederholen sich klebende Elemente (Colophon-Bänder, Swiss-Brut-Ziffern) stellenweise.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
