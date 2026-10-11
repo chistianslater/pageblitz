@@ -383,7 +383,8 @@ describe("Raster: Unterseiten und Rechtsseiten", () => {
     expect(html).toMatch(/href="\/site\/nord#kontakt"/);
     expect(RASTER_CSS).toMatch(
       /\.pb-raster \.rs-legal a\{[^}]*color:var\(--sys-ink\)/
-    );    // Inline-Grau des Generators (#9ca3af/#6b7280) wird gedämpft in Tokens.
+    );
+    // Inline-Grau des Generators (#9ca3af/#6b7280) wird gedämpft in Tokens.
     expect(RASTER_CSS).toMatch(
       /\.rs-legal \[style\*="color"\]\{color:var\(--sys-muted\)!important\}/
     );

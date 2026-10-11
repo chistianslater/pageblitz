@@ -21,7 +21,7 @@ export function stepTime(
   const m = title.trim().match(TIME_START);
   if (!m) return undefined;
   // „4.50 € Brötchen" ist ein Preis, keine Uhrzeit.
-  if (/^(€|eur\b)/i.test(m[3])) return undefined;
+  if (/^(€|euro?\b)/i.test(m[3])) return undefined;
   const h = Number(m[1]);
   const min = Number(m[2]);
   if (h > 23 || min > 59) return undefined;
@@ -33,6 +33,12 @@ const DAY_NAME =
   /^(mo(ntag)?|di(enstag)?|mi(ttwoch)?|do(nnerstag)?|fr(eitag)?|sa(mstag)?|so(nntag|nnabend)?)\.?$/i;
 
 export const isDayName = (name: string) => DAY_NAME.test(name.trim());
+
+/** „So." → „So", „Sonnabend" → „Sa" — Form, die `coversToday` versteht. */
+export function normalizeDay(name: string): string {
+  const t = name.trim().replace(/\.$/, "");
+  return /^sonnabend$/i.test(t) ? "Sa" : t;
+}
 
 export type ProcessMode = "timeline" | "numbers";
 

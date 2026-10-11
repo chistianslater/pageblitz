@@ -7,7 +7,7 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   journal: JOURNAL,
   // Raster: abgenommen und freigeschaltet.
   raster: RASTER,
-  // Werkstoff: registriert, NICHT freigeschaltet (Abnahme W9).
+  // Werkstoff: abgenommen und freigeschaltet.
   werkstoff: WERKSTOFF,
 };
 

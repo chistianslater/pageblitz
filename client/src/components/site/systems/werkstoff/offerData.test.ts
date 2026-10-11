@@ -1,10 +1,12 @@
 import { describe, expect, test } from "vitest";
+import { coversToday } from "../../artDirection/heroFacts";
 import type { SystemSection } from "../shared";
 import {
   galleryGroups,
   isDayName,
   processMode,
   processPhoto,
+  normalizeDay,
   stepTime,
   werkstoffPhotos,
 } from "./offerData";
@@ -37,6 +39,21 @@ describe("Ablauf: Uhrzeit oder Ziffern", () => {
       label: "Laden auf",
     });
     expect(stepTime("18:00")).toEqual({ time: "18:00", label: "" });
+  });
+
+  test("Euro-Preis ist keine Uhrzeit", () => {
+    expect(stepTime("4.50 Euro Brötchen")).toBeUndefined();
+    expect(stepTime("4.50 EUR Brötchen")).toBeUndefined();
+  });
+
+  test("Tagesnamen: „So.\" und „Sonnabend\" werden heute erkannt", () => {
+    const sunday = new Date("2026-10-18T10:00:00+02:00");
+    const saturday = new Date("2026-10-17T10:00:00+02:00");
+    expect(normalizeDay(" So. ")).toBe("So");
+    expect(coversToday(normalizeDay("So."), sunday)).toBe(true);
+    expect(coversToday(normalizeDay("So."), saturday)).toBe(false);
+    expect(coversToday(normalizeDay("Sonnabend"), saturday)).toBe(true);
+    expect(coversToday(normalizeDay("Sonnabend"), sunday)).toBe(false);
   });
 
   test("keine Uhrzeit: Mengen, falsche Minuten, Zahlen ohne Minuten", () => {

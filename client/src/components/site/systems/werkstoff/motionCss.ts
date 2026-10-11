@@ -23,7 +23,7 @@ const STAGGER = [2, 3, 4, 5];
 
 const stepDelays = STAGGER.map(
   n =>
-    `  ${W} .ws-step:nth-child(${n}) .ws-step-no{animation-delay:${STEP_BASE + (n - 1) * 80}ms}`
+    `  ${W} .ws-step:nth-child(${n >= 5 ? "n+5" : n}) .ws-step-no{animation-delay:${STEP_BASE + (n - 1) * 80}ms}`
 ).join("\n");
 const cardDelays = STAGGER.map(
   n =>

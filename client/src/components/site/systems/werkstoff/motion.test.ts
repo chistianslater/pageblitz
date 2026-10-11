@@ -104,6 +104,12 @@ describe("Werkstoff-Bewegung (CSS)", () => {
     );
   });
 
+  test("Ziffern: 6. und 7. Schritt fallen nicht auf 120 ms zurück", () => {
+    expect(WERKSTOFF_MOTION_CSS).toMatch(
+      /\.ws-step:nth-child\(n\+5\) \.ws-step-no\{animation-delay:440ms\}/
+    );
+  });
+
   test("Ziffern 1·2·3: gleiche Freilegung beim Hereinscrollen, gestaffelt", () => {
     expect(WERKSTOFF_MOTION_CSS).toMatch(
       /\.ws-sec\[data-ws-in\] \.ws-step-no\{animation:ws-reveal 560ms/

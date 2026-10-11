@@ -195,6 +195,8 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
     expect(gruppe("Schreiner")).toBe("schreinerei");
     expect(gruppe("Tischler", "Brandt")).toBe("schreinerei");
     expect(gruppe("Carpenter")).toBe("schreinerei");
+    // „Ladenbau" schlägt das kürzere Stichwort „laden"
+    expect(gruppe("Ladenbau")).toBe("schreinerei");
   });
 
   test("Läden und Einzelhandel bekommen den Laden-Satz", () => {

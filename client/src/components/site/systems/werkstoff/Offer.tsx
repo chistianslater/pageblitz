@@ -11,7 +11,7 @@ import {
   chapterTitle,
   type WerkstoffSection,
 } from "./sections";
-import { isDayName, processMode, stepTime } from "./offerData";
+import { isDayName, normalizeDay, processMode, stepTime } from "./offerData";
 
 /**
  * Angebot nach Systemblatt (Anker Hollis): Leistungen als Liste mit
@@ -236,7 +236,7 @@ export function WerkstoffPriced({ section }: { section: Priced }) {
                 {category.items.map((item, i) => {
                   const today =
                     isDayName(item.name) &&
-                    coversToday(item.name.trim(), now);
+                    coversToday(normalizeDay(item.name), now);
                   return (
                     <li
                       key={`${item.name}-${i}`}
