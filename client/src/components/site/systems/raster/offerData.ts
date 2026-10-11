@@ -5,7 +5,7 @@ import type {
 import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { NUMBERED, type SystemSection } from "../shared";
-import { REFERENCE_COLUMN_REM, wordWidthEm } from "./fit";
+import { REFERENCE_COLUMN_REM, clampAt, wordWidthEm } from "./fit";
 
 /**
  * Reine Daten-Regeln für Leistungs-Bänder, Zahlenzeile und Kapitelzählung
@@ -26,6 +26,10 @@ export type BandPlan = {
   photos?: string[];
   /** Genau ein Band: statisch, ohne Sticky. */
   single: boolean;
+  /** Ein Band ist auf dem Handy höher als der Bildschirm → kein Stapeln (< 900 px). */
+  flowNarrow: boolean;
+  /** Dasselbe für den Desktop (≥ 900 px). */
+  flowWide: boolean;
 };
 
 /**
@@ -53,6 +57,8 @@ export function bandPlan(
     rest,
     ...(photos ? { photos } : {}),
     single: bands.length === 1,
+    flowNarrow: !bandsFit(bands, BAND_PHONE),
+    flowWide: !bandsFit(bands, BAND_DESKTOP),
   };
 }
 
@@ -118,7 +124,12 @@ export function figuresOf(google: WebsiteDataV2["google"]): Figure[] {
   return figures;
 }
 
-/** Weniger als zwei Zahlen → die Zeile entfällt ganz. */
+/**
+ * Weniger als zwei Zahlen → die Zeile entfällt ganz. Hängt an `figuresOf`:
+ * Heute liefert es 0 oder 2 Zahlen (Note + Anzahl; ohne Note nur 1). Kommt
+ * eine weitere echte Zahl dazu (z. B. belegtes Gründungsjahr), zählt sie
+ * hier automatisch mit.
+ */
 export const MIN_FIGURES = 2;
 
 /**
@@ -215,4 +226,97 @@ export function bandTitle(title: string): {
     );
   const partEm = Math.max(0, ...parts.map(p => wordWidthEm(p, FIGURE_TRACK)));
   return { text, manual, partEm };
+}
+
+/* ── Stapeln nur, wenn jedes Band auf den Bildschirm passt ────────────── */
+
+/**
+ * Ein klebendes Band, das höher ist als der Bildschirm, wird vom nächsten
+ * überdeckt, bevor sein Ende gelesen ist. Ohne JS: Die Höhe jedes Bands
+ * wird serverseitig aus den Tokens geschätzt, an einem kleinen Handy
+ * (320 × 568, Band 85svh) und einem kleinen Desktop (900 × 600, Band
+ * 100svh). Passt ein Band nicht, fließen auf dieser Breite ALLE Bänder
+ * normal (kein Sticky) — ein halber Stapel wäre schlimmer.
+ *
+ * Höhe = Polster oben (m) + Kopfzeile (kicker) + Abstand vor dem Namen (xl)
+ *      + Namenszeilen (figure, eingepasst) + Abstand (s) + Erklärung (h3,
+ *      Zeilen über Zeichen je Zeile) + Polster unten (Handy: Leiste + l,
+ *      Desktop: gutter).
+ * Zeichenbreite der Erklärung: 0,55 em je Zeichen (Geist-Kleinbuchstaben
+ * im Mittel ~0,5 em, bewusst großzügig). Bei Handy-Spalte 17,75 rem und
+ * h3 22 px ergibt das ~23 Zeichen je Zeile; bei einem einzeiligen Namen
+ * kippt das Handy ab rund 180 Zeichen Erklärung.
+ */
+const REM = 16;
+const sp = (k: keyof typeof RASTER.space) =>
+  parseFloat(RASTER.space[k]) || 0;
+const DESC_CHAR_EM = 0.55;
+
+export type BandViewport = {
+  widthRem: number;
+  heightRem: number;
+  /** Anteil der Bildschirmhöhe (85svh bzw. 100svh). */
+  bandShare: number;
+  /** Polster unten zusätzlich zu den Tokens (Handy-Leiste). */
+  dockRem: number;
+  /** Max. Satzbreite der Erklärung in em (Systemblatt: 20 bzw. 24). */
+  descMaxEm: number;
+};
+
+export const BAND_PHONE: BandViewport = {
+  widthRem: 320 / REM,
+  heightRem: 568 / REM,
+  bandShare: 0.85,
+  dockRem: sp("l") + sp("m"),
+  descMaxEm: 20,
+};
+export const BAND_DESKTOP: BandViewport = {
+  widthRem: 900 / REM,
+  heightRem: 600 / REM,
+  bandShare: 1,
+  dockRem: 0,
+  descMaxEm: 24,
+};
+
+/** Geschätzte Bandhöhe in rem bei gegebener Bildschirmgröße. */
+export function bandHeightRem(item: Service, vp: BandViewport): number {
+  const gutter = clampAt(RASTER.space.gutter, vp.widthRem);
+  const column = vp.widthRem - 2 * gutter;
+  const kicker = parseFloat(RASTER.type.kicker.size) * RASTER.type.kicker.line;
+  // Name: Größe wie im CSS, Zeilen über die Umbruchstellen gierig gefüllt.
+  const figureMax = clampAt(RASTER.type.figure!.size, vp.widthRem);
+  const { text, manual, partEm } = bandTitle(item.title);
+  const widest = manual && vp === BAND_PHONE ? partEm : fitBandName(item.title).widthEm;
+  const size = Math.max(BAND_FLOOR_REM, Math.min(figureMax, column / (widest || 1)));
+  const pieces = text
+    .split(/\s+/)
+    .flatMap(w => (manual && vp === BAND_PHONE ? w.split(SHY) : [w]));
+  let lines = 0;
+  let line = "";
+  for (const piece of pieces) {
+    const next = line ? `${line} ${piece}` : piece;
+    if (line && wordWidthEm(next, FIGURE_TRACK) * size > column) {
+      lines++;
+      line = piece;
+    } else line = next;
+  }
+  if (line) lines++;
+  const name = lines * size * RASTER.type.figure!.line;
+  // Erklärung
+  const h3 = clampAt(RASTER.type.h3.size, vp.widthRem);
+  const descWidth = Math.min(column, vp.descMaxEm * h3);
+  const perLine = Math.max(1, Math.floor(descWidth / (h3 * DESC_CHAR_EM)));
+  const descLines = item.description
+    ? Math.ceil(item.description.length / perLine)
+    : 0;
+  const desc = descLines
+    ? sp("s") + descLines * h3 * RASTER.type.h3.line
+    : 0;
+  const bottom = vp === BAND_PHONE ? vp.dockRem + sp("l") : gutter;
+  return sp("m") + kicker + sp("xl") + name + desc + bottom;
+}
+
+/** Passt jedes Band auf diesen Bildschirm? Sonst fließen die Bänder. */
+export function bandsFit(items: readonly Service[], vp: BandViewport): boolean {
+  return items.every(i => bandHeightRem(i, vp) <= vp.heightRem * vp.bandShare);
 }

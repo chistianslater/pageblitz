@@ -46,6 +46,8 @@ function Band({
     <li className={`rs-band ${variant}`}>
       {photo && (
         <>
+          {/* Galeriefotos haben keine bekannten Maße: width/height nur gegen
+              Layout-Sprünge; das Bild füllt das Band per object-fit:cover. */}
           <img
             className="rs-band-img"
             src={photo}
@@ -107,7 +109,16 @@ export function RasterServices({
   const hasAfter = plan.rest.length > 0 || priceSlot !== undefined;
   const after = (
     <>
-      <ol className={plan.single ? "rs-bands rs-bands--one" : "rs-bands"}>
+      <ol
+        className={[
+          "rs-bands",
+          plan.single && "rs-bands--one",
+          plan.flowNarrow && "rs-bands--flow",
+          plan.flowWide && "rs-bands--flow-wide",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {plan.bands.map((item, i) => (
           <Band
             key={`${item.title}-${i}`}

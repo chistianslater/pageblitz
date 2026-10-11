@@ -15,6 +15,9 @@ import {
   RASTER_CSS,
 } from "./css";
 import {
+  BAND_DESKTOP,
+  BAND_PHONE,
+  bandHeightRem,
   bandPlan,
   bandTitle,
   chapterNumber,
@@ -54,7 +57,10 @@ const withGallery = (doc: Doc, n: number) => ({
   ],
 });
 const bandsHtml = (html: string) =>
-  html.slice(html.indexOf('class="rs-bands'), html.indexOf("</ol>", html.indexOf('class="rs-bands')));
+  html.slice(
+    html.indexOf('class="rs-bands'),
+    html.indexOf("</ol>", html.indexOf('class="rs-bands'))
+  );
 
 describe("Raster-Leistungen: Daten-Regeln", () => {
   test("über 6 Leistungen: erste 6 als Bänder, Rest als Liste", () => {
@@ -97,7 +103,10 @@ describe("Raster-Leistungen: Daten-Regeln", () => {
     );
     expect(bandTitle("Lohnbuchhaltung").text).toBe("Lohn\u00ADbuchhaltung");
     expect(bandTitle("Gründungsberatung").text).toBe("Gründungs\u00ADberatung");
-    expect(bandTitle("Reifen")).toMatchObject({ text: "Reifen", manual: false });
+    expect(bandTitle("Reifen")).toMatchObject({
+      text: "Reifen",
+      manual: false,
+    });
     // Ohne bekannte Fuge: Browser trennt
     expect(bandTitle("Achsvermessungsdingsbums").manual).toBe(false);
   });
@@ -116,12 +125,12 @@ describe("Raster-Leistungen: Daten-Regeln", () => {
     const doc = rasterDoc();
     const list = orderedSections(doc).filter(systemShows);
     expect(showsFigures(list, doc.google)).toBe(true);
-    const keys = [
-      ...list.map(s => s.type),
-      "figures" as const,
-    ].filter(k => chapterNumber(list, k, true) > 0);
-    expect(keys.map(k => chapterNumber(list, k, true)).sort((a, b) => a - b))
-      .toEqual(keys.map((_, i) => i + 1));
+    const keys = [...list.map(s => s.type), "figures" as const].filter(
+      k => chapterNumber(list, k, true) > 0
+    );
+    expect(
+      keys.map(k => chapterNumber(list, k, true)).sort((a, b) => a - b)
+    ).toEqual(keys.map((_, i) => i + 1));
     expect(chapterNumber(list, "figures", true)).toBe(
       chapterNumber(list, "services", true) + 1
     );
@@ -137,7 +146,9 @@ describe("Raster-Leistungen: Bänder im Markup", () => {
     expect(sec).toContain('<span class="rs-no" aria-hidden="true">01</span>');
     const bands = bandsHtml(html);
     expect(bands.match(/class="rs-band /g)).toHaveLength(4);
-    expect(bands).toMatch(/<h3 class="rs-band-name[^"]*" style="--rs-fit:[\d.]+">Leistung 1<\/h3>/);
+    expect(bands).toMatch(
+      /<h3 class="rs-band-name[^"]*" style="--rs-fit:[\d.]+">Leistung 1<\/h3>/
+    );
     expect(bands).toContain('<p class="rs-band-desc">Beschreibung 1.</p>');
     expect(bands).not.toContain("<img");
     // Flächen abwechselnd
@@ -186,6 +197,38 @@ describe("Raster-Leistungen: Bänder im Markup", () => {
   });
 });
 
+describe("Raster-Bänder: Stapeln nur, wenn jedes Band passt", () => {
+  const long = "Wir übernehmen die laufende Finanzbuchhaltung, die Lohnabrechnung für alle Beschäftigten, die Umsatzsteuer-Voranmeldungen und stimmen jeden Monat alle Konten mit dir ab, damit am Jahresende nichts liegen bleibt.";
+  const withLong = (doc: Doc) =>
+    patchSection(doc, "services", s => ({
+      ...s,
+      items: s.items.map((it, i) => (i === 2 ? { ...it, description: long } : it)),
+    }));
+
+  test("Schätzung: kurze Erklärung passt, lange nicht (Handy 320 × 568)", () => {
+    const short = { title: "Reifen", description: "Wechsel und Einlagerung." };
+    const tall = { title: "Reifen", description: long };
+    expect(bandHeightRem(short, BAND_PHONE)).toBeLessThan(568 / 16 * 0.85);
+    expect(bandHeightRem(tall, BAND_PHONE)).toBeGreaterThan(568 / 16 * 0.85);
+    // Desktop trägt dieselbe lange Erklärung
+    expect(bandHeightRem(tall, BAND_DESKTOP)).toBeLessThan(600 / 16);
+  });
+
+  test("lange Erklärung → ganze Liste fließt auf dem Handy", () => {
+    const html = render(withLong(kanzleiDoc()));
+    expect(html).toContain('class="rs-bands rs-bands--flow"');
+    expect(RASTER_CSS).toMatch(
+      /@media \(max-width:55\.99rem\)\{\.pb-raster \.rs-bands--flow>\.rs-band\{position:relative\}\}/
+    );
+  });
+
+  test("kurze Erklärungen → Stapeln bleibt", () => {
+    const html = render(kanzleiDoc());
+    expect(html).toContain('class="rs-bands"');
+    expect(html).not.toMatch(/class="rs-bands[^"]*--flow/);
+  });
+});
+
 describe("Raster: Zahlenzeile", () => {
   test("Google-Note und Anzahl als eigenes Kapitel direkt nach den Bändern", () => {
     const doc = kanzleiDoc();
@@ -224,8 +267,12 @@ describe("Raster: Ablauf", () => {
     const sec = sectionHtml(html, "process");
     expect(sec).toContain('id="ablauf"');
     expect(sec).toMatch(/<ol class="rs-steps">/);
-    expect(sec).toContain('<span class="rs-step-no" aria-hidden="true">01</span>');
-    expect(sec.match(/<li class="rs-step">/g)!.length).toBeGreaterThanOrEqual(2);
+    expect(sec).toContain(
+      '<span class="rs-step-no" aria-hidden="true">01</span>'
+    );
+    expect(sec.match(/<li class="rs-step">/g)!.length).toBeGreaterThanOrEqual(
+      2
+    );
     expect(sec).toMatch(/<h3>[^<]+<\/h3>/);
     expect(RASTER_CSS).toMatch(/\.rs-step-no\{[^}]*color:var\(--sys-accent\)/);
   });
@@ -239,7 +286,11 @@ describe("Raster: Preise, Speisekarte, Team", () => {
         {
           name: "Damen",
           items: [
-            { name: "Waschen, Schneiden", price: "45", description: "inkl. Föhnen" },
+            {
+              name: "Waschen, Schneiden",
+              price: "45",
+              description: "inkl. Föhnen",
+            },
             { name: "Färben", price: "ab 60 €" },
           ],
         },
@@ -248,7 +299,10 @@ describe("Raster: Preise, Speisekarte, Team", () => {
 
   test("Preisliste als Tabelle: Titel links, Preis rechts", () => {
     const doc = kanzleiDoc();
-    const html = render({ ...doc, sections: [...doc.sections, priced("pricelist")] });
+    const html = render({
+      ...doc,
+      sections: [...doc.sections, priced("pricelist")],
+    });
     const sec = sectionHtml(html, "pricelist");
     expect(sec).toContain('id="preise"');
     expect(sec).toContain('<h3 class="rs-group-h">Damen</h3>');
@@ -259,7 +313,10 @@ describe("Raster: Preise, Speisekarte, Team", () => {
 
   test("Speisekarte heißt nicht rs-menu (Kopf-Menü)", () => {
     const doc = kanzleiDoc();
-    const html = render({ ...doc, sections: [...doc.sections, priced("menu")] });
+    const html = render({
+      ...doc,
+      sections: [...doc.sections, priced("menu")],
+    });
     expect(sectionHtml(html, "speisekarte")).toContain('id="speisekarte"');
   });
 
@@ -299,7 +356,11 @@ describe("Raster-Bänder: Kontrast", () => {
       const plain = p.deep;
       const alt = mix(p.onDeep, p.deep, BAND_ALT);
       const photoBase = mix(p.deep, white(), BAND_SCRIM.base);
-      const photoText = mix(p.deep, white(), stack(BAND_SCRIM.base, BAND_SCRIM.local));
+      const photoText = mix(
+        p.deep,
+        white(),
+        stack(BAND_SCRIM.base, BAND_SCRIM.local)
+      );
       // Erklärung = onDeep 72 % über der Bandfläche (--band-bg); auf dem
       // Foto ist die Bandfläche `deep`, dahinter liegt das abgedunkelte Foto.
       for (const [surface, bg] of [

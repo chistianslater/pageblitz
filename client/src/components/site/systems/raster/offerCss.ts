@@ -38,6 +38,10 @@ export const OFFER_CSS = `/* Leistungen als Bänder (sticky, ohne JS) */
 .pb-raster .rs-band{position:sticky;top:0;min-height:85vh;min-height:85svh;display:flex;flex-direction:column;overflow:hidden;
   --band-bg:var(--sys-deep);background:var(--band-bg);color:var(--sys-on-deep)}
 .pb-raster .rs-bands--one>.rs-band{position:relative}
+/* Ein Band höher als der Bildschirm: nicht stapeln, sonst verdeckt das nächste
+   Band ungelesenen Text (Schätzung serverseitig, offerData.bandsFit) */
+@media (max-width:55.99rem){.pb-raster .rs-bands--flow>.rs-band{position:relative}}
+@media (min-width:${GRID}){.pb-raster .rs-bands--flow-wide>.rs-band{position:relative}}
 .pb-raster .rs-band+.rs-band{border-top:1px solid ${DEEP_RULE}}
 .pb-raster .rs-band--alt{--band-bg:color-mix(in srgb,var(--sys-on-deep) ${pct(BAND_ALT)},var(--sys-deep))}
 .pb-raster .rs-band-img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:50% 40%;
