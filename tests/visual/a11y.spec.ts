@@ -291,3 +291,24 @@ test.describe("A11y (axe): Designsystem Journal", () => {
     }
   }
 });
+
+/**
+ * Designsystem Raster (Plan 2026-10-11, Task R8): drei Paletten (Kohle =
+ * dunkles Papier) im vollen Inhaltsstand, Desktop und Handy (Handy zeigt
+ * die Leiste unten). Gleiches Gate: 0 critical/serious.
+ */
+test.describe("A11y (axe): Designsystem Raster", () => {
+  for (const palette of ["papier", "werk", "kohle"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`raster ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=raster&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await expectNoSeriousViolations(page, `raster ${palette} (${width})`);
+      });
+    }
+  }
+});

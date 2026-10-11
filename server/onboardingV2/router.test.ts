@@ -723,6 +723,27 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(candidates.some(c => c.kind === "system")).toBe(false);
   });
 
+  test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
+    useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
+    released.ids = ["journal"];
+    const before = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(before.candidates.some(c => c.id === "raster")).toBe(false);
+    released.ids = ["journal", "raster"];
+    const after = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(after.candidates[0]).toMatchObject({
+      kind: "system",
+      id: "raster",
+      name: "Raster",
+      palettes: [
+        expect.objectContaining({ id: "papier" }),
+        expect.objectContaining({ id: "werk" }),
+        expect.objectContaining({ id: "kohle" }),
+      ],
+    });
+    // Alternative 2 (Journal) für Beratung — höchstens count − 1 Systeme.
+    expect(after.candidates.filter(c => c.kind === "system").length).toBeLessThanOrEqual(2);
+  });
+
   test("aktuelles System der Seite wird nicht erneut angeboten", async () => {
     released.ids = ["journal"];
     useDoc({

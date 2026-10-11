@@ -80,3 +80,63 @@ test("Tastatur: Navigation und FAQ erreichbar, Fokus sichtbar", async ({
   );
   expect(outline).not.toBe("none");
 });
+
+// Bildvergleich Designsystem Raster (Plan 2026-10-11, Task R8): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie Journal
+// (kein waagrechter Überlauf). Die Handy-Leiste ist `position: fixed` und
+// liegt im ganzseitigen Bild an ihrer Stelle im ersten Bildschirm.
+const RASTER_PALETTES = ["papier", "werk", "kohle"] as const;
+
+for (const palette of RASTER_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`raster ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=raster&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `raster-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Raster: Geist wird geladen (keine Fallback-Schrift)", async ({
+  page,
+}) => {
+  await page.goto("/dev/site-preview?system=raster&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  // Raster-Tokens (shared/designSystems/raster.ts): eine Datei, Geist 100–900.
+  expect(loaded.join(",")).toMatch(/Geist/);
+  const family = await page.evaluate(
+    () => getComputedStyle(document.querySelector("h1")!).fontFamily
+  );
+  expect(family).toMatch(/^"?Geist/);
+});
+
+test("Raster: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=raster&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("2px");
+  }
+});
