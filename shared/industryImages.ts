@@ -9,6 +9,12 @@ export interface IndustryImageSet {
   about?: string[];
   gallery?: string[];
   keywords: string[];
+  /**
+   * Allgemeinere Gruppen (KI-Schlüssel aus classifyIndustry), die dieser
+   * Satz verfeinert: Sagt die KI „handwerk", die Kategorie aber
+   * „Schreinerei", gewinnt der genauere Satz.
+   */
+  refines?: string[];
 }
 
 // Map of industry keywords → curated Unsplash photo IDs
@@ -20,6 +26,8 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "hair",
       "salon",
       "barber",
+      // „Barbier" enthält „bier" (Bar-Satz) — das ganze Wort muss gewinnen.
+      "barbier",
       "beauty",
       "hairdresser",
       "coiffeur",
@@ -194,8 +202,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "elektriker",
       "klempner",
       "maler",
-      "schreiner",
-      "tischler",
+      // Schreiner/Tischler: eigener Satz `schreinerei` (2026-10-11).
       "zimmerer",
       "dachdecker",
       "sanitär",
@@ -543,6 +550,105 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Bäckerei & Konditorei (2026-10-11, Werkstoff W1) ───────────
+  // Alle Motive im Browser gesichtet (Brot, Gebäck, Bäcker am Ofen) und
+  // per HTTP 200 geprüft. Schlüssel = KI-Schlüssel aus classifyIndustry.
+  baeckerei: {
+    keywords: [
+      "bäckerei",
+      "baeckerei",
+      "bäcker",
+      "baecker",
+      "backstube",
+      "backhaus",
+      "backwaren",
+      "konditorei",
+      "konditor",
+      "bakery",
+      "brötchen",
+    ],
+    refines: ["cafe"],
+    hero: [
+      "https://images.unsplash.com/photo-1587241321921-91a834d6d191?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1789152952858-2b2270419149?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1515182629504-727d7753751f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1534432182912-63863115e106?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1597528662465-55ece5734101?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1568254183919-78a4f43a2877?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1711672284661-bd70e38f31b2?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1583338917451-face2751d8d5?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Schreinerei & Tischlerei (2026-10-11, Werkstoff W1) ────────
+  // Werkstatt, Hände am Hobel, Anreißen, Stemmeisen, Schleifen.
+  schreinerei: {
+    keywords: [
+      "schreinerei",
+      "schreiner",
+      "tischlerei",
+      "tischler",
+      "möbelbau",
+      "möbeltischler",
+      "holzwerkstatt",
+      "drechsler",
+      "carpenter",
+      "carpentry",
+      "joinery",
+      "woodworking",
+    ],
+    refines: ["handwerk", "bauunternehmen"],
+    hero: [
+      "https://images.unsplash.com/photo-1687422810663-c316494f725a?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631396326838-de37e5f8bcbc?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1547609434-b732edfee020?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1659930087003-2d64e33181f7?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497219055242-93359eeed651?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1497218770144-3fea6dbc33fe?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1642006953665-4046190641ee?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1683115096447-5d01c11d3ead?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1544164560-adac3045edb2?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Laden & Einzelhandel (2026-10-11, Werkstoff W1) ────────────
+  // Ladenräume, Tresen, Regale. Kein „shop"/„boutique" als Schlagwort:
+  // „Barber Shop" und „Beauty Boutique" gehören zum Friseur.
+  laden: {
+    keywords: [
+      "laden",
+      "einzelhandel",
+      "fachgeschäft",
+      "kiosk",
+      "buchhandlung",
+      "schreibwaren",
+      "spielwaren",
+      "haushaltswaren",
+      "feinkost",
+      "unverpackt",
+      "concept store",
+      "retail",
+    ],
+    hero: [
+      "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1759050486852-fdfe2fdc7bea?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1787209516537-a8e66a1b4360?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1771574209038-01ad953ca43a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1777628530456-bb93d3a03faf?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1764955307141-056b240923a1?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1769988037967-053235c08171?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1764795849986-d7f7f2f16cec?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1477120206578-46b3ca98a4e2?w=800&q=80&auto=format&fit=crop",
     ],
   },
 

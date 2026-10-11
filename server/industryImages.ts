@@ -59,7 +59,10 @@ export function getIndustryImages(
 ): IndustryImageSet {
   if (industryKey === "hotel") industryKey = "hospitality";
   if (industryKey && industryKey !== "default" && INDUSTRY_IMAGES[industryKey]) {
-    return INDUSTRY_IMAGES[industryKey];
+    // Ein allgemeiner KI-Schlüssel („handwerk") weicht einem genaueren Satz,
+    // den die Kategorie selbst trifft („Schreinerei" → schreinerei).
+    const genauer = genauererSatz(normalisiert(category), industryKey);
+    return genauer ?? INDUSTRY_IMAGES[industryKey];
   }
 
   const kategorie = normalisiert(category);
@@ -79,6 +82,24 @@ export function getIndustryImages(
     }
   }
   return beste ?? INDUSTRY_IMAGES.default;
+}
+
+/** Satz, der `key` verfeinert und von der Kategorie getroffen wird. */
+function genauererSatz(
+  kategorie: string,
+  key: string
+): IndustryImageSet | null {
+  let beste: IndustryImageSet | null = null;
+  let laenge = 0;
+  for (const satz of Object.values(INDUSTRY_IMAGES)) {
+    if (!satz.refines?.includes(key)) continue;
+    const k = trefferLaenge(kategorie, satz.keywords);
+    if (k > laenge) {
+      beste = satz;
+      laenge = k;
+    }
+  }
+  return beste;
 }
 
 /** true, wenn keine Branchengruppe passte und nur das neutrale Set bleibt. */

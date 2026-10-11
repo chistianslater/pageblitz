@@ -3,6 +3,7 @@ import { renderSiteHtml, systemFontHead } from "./renderSite";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../shared/designSystems/apply";
 import { JOURNAL } from "../../shared/designSystems/journal";
+import { WERKSTOFF } from "../../shared/designSystems/werkstoff";
 import { generateImpressum } from "../legalGenerator";
 
 const origin = "https://x.pageblitz.de";
@@ -238,5 +239,15 @@ describe("SSR rev 3: Rechtsseiten und Unterseiten im Journal-Rahmen", () => {
     expect(html).toContain(">Unsere Leistungen</h1>");
     expect(html).toContain("Damenschnitt");
     expect(html).not.toContain('class="jr-entry');
+  });
+});
+
+describe("Werkstoff-Schriften im Kopf", () => {
+  test("genau zwei Preloads: Zilla Slab und Karla, DM Mono nicht", () => {
+    const links = systemFontHead(WERKSTOFF).split("\n");
+    expect(links).toHaveLength(2);
+    expect(links[0]).toContain('href="/fonts/systems/zilla-slab-latin-700.woff2"');
+    expect(links[1]).toContain('href="/fonts/systems/karla-latin-wght.woff2"');
+    expect(links.join("")).not.toContain("dm-mono");
   });
 });

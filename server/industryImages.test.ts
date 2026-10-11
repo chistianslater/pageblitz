@@ -139,3 +139,93 @@ describe("Branchenzuordnung trifft die richtige Gruppe", () => {
     );
   });
 });
+
+describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  const motiv = (url: string) => new URL(url).pathname;
+
+  test.each(["baeckerei", "schreinerei", "laden"])(
+    "%s: geprüfte Unsplash-URLs, 3 Einstiege, 6 Galeriebilder, kein Motiv doppelt",
+    key => {
+      const satz = INDUSTRY_IMAGES[key];
+      expect(satz).toBeDefined();
+      expect(satz.hero).toHaveLength(3);
+      expect(satz.gallery).toHaveLength(6);
+      const alle = [...satz.hero, ...(satz.gallery ?? [])];
+      for (const url of alle)
+        expect(url).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=(800|1400)&q=(80|85)&auto=format&fit=crop$/
+        );
+      expect(new Set(alle.map(motiv)).size).toBe(alle.length);
+      const stock = buildStockFallbackImages(key, "Beispiel", key);
+      expect(stock.gallery?.length).toBeGreaterThanOrEqual(3);
+    }
+  );
+
+  test("kein neues Motiv steckt schon in einem anderen Satz", () => {
+    const neu = new Set(
+      ["baeckerei", "schreinerei", "laden"].flatMap(k => [
+        ...INDUSTRY_IMAGES[k].hero,
+        ...(INDUSTRY_IMAGES[k].gallery ?? []),
+      ]).map(motiv)
+    );
+    for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
+      if (["baeckerei", "schreinerei", "laden"].includes(key)) continue;
+      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+        expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
+    }
+  });
+
+  test("Bäckereien und Konditoreien bekommen den Bäckerei-Satz", () => {
+    expect(gruppe("Bäckerei")).toBe("baeckerei");
+    expect(gruppe("Bäckerei", "Baumann & Söhne")).toBe("baeckerei");
+    expect(gruppe("Konditorei", "Café Lohmann")).toBe("baeckerei");
+    expect(gruppe("Bakery")).toBe("baeckerei");
+    expect(gruppe("Backstube", "Brotzeit")).toBe("baeckerei");
+    // Der KI-Schlüssel „baeckerei" kennt classifyIndustry schon lange.
+    expect(gruppe("Irgendwas", "Betrieb", "baeckerei")).toBe("baeckerei");
+  });
+
+  test("Schreiner und Tischler bekommen den Schreinerei-Satz", () => {
+    expect(gruppe("Schreinerei")).toBe("schreinerei");
+    expect(gruppe("Tischlerei", "Holz Brandt")).toBe("schreinerei");
+    expect(gruppe("Schreiner")).toBe("schreinerei");
+    expect(gruppe("Tischler", "Brandt")).toBe("schreinerei");
+    expect(gruppe("Carpenter")).toBe("schreinerei");
+  });
+
+  test("Läden und Einzelhandel bekommen den Laden-Satz", () => {
+    expect(gruppe("Einzelhandel")).toBe("laden");
+    expect(gruppe("Bioladen", "Grünkram")).toBe("laden");
+    expect(gruppe("Fachgeschäft für Haushaltswaren")).toBe("laden");
+    expect(gruppe("Buchhandlung")).toBe("laden");
+    expect(gruppe("Kiosk")).toBe("laden");
+  });
+
+  test("ein allgemeiner KI-Schlüssel weicht dem genaueren Satz der Kategorie", () => {
+    expect(gruppe("Schreinerei", "Brandt", "handwerk")).toBe("schreinerei");
+    expect(gruppe("Bäckerei-Café", "Lohmann", "cafe")).toBe("baeckerei");
+    // ohne genaueren Treffer bleibt der Schlüssel
+    expect(gruppe("Malerbetrieb", "Brandt", "handwerk")).toBe("handwerk");
+    expect(gruppe("Café", "Lohmann", "cafe")).toBe("cafe");
+    // ein fremder Satz der Kategorie überstimmt den Schlüssel nicht
+    expect(gruppe("Schreinerei", "Brandt", "restaurant")).toBe("restaurant");
+  });
+
+  test("bestehende Gruppen bleiben, wo sie waren", () => {
+    expect(gruppe("Friseursalon", "Aland Barber Shop")).toBe("friseur");
+    expect(gruppe("Barbier", "Aland Barber Shop")).toBe("friseur");
+    expect(gruppe("Café", "Kaffeehaus Mitte")).toBe("cafe");
+    expect(gruppe("Restaurant", "Zum Brotkorb")).toBe("restaurant");
+    expect(gruppe("Malerbetrieb")).toBe("handwerk");
+    expect(gruppe("Elektriker", "Holzmann Elektro")).toBe("handwerk");
+    expect(gruppe("Dachdecker")).toBe("handwerk");
+    expect(gruppe("Zimmerer")).toBe("handwerk");
+    expect(gruppe("Kosmetikstudio", "Beauty Boutique")).toBe("friseur");
+    expect(gruppe("Boutique-Hotel", "Am Markt")).toBe("hospitality");
+    expect(gruppe("Coffee Shop", "Bohne")).toBe("cafe");
+  });
+});
