@@ -4,6 +4,7 @@ import { FIT_FLOOR_REM, FIT_HARD_FLOOR_REM, FIT_MAX_REM } from "./fit";
 import { DEEP_RULE, GRID, step } from "./step";
 import { OFFER_CSS } from "./offerCss";
 import { STORY_CSS } from "./storyCss";
+import { VISIT_CSS } from "./visitCss";
 
 export { step } from "./step";
 export { BAND_ALT, BAND_DESC_ALPHA, BAND_FILTER, BAND_SCRIM } from "./offerCss";
@@ -231,6 +232,8 @@ ${ENTRY_CSS}
 ${OFFER_CSS}
 
 ${STORY_CSS}
+
+${VISIT_CSS}
 
 /* Unterseiten- und Rechtsseiten-Kopf: genau ein h1 */
 .pb-raster .rs-page-head{padding-block:var(--sys-space-l) var(--sys-space-xl)}

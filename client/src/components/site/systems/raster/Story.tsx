@@ -97,7 +97,17 @@ export function RasterAbout({ section, sections }: P<"about">) {
         <div className="rs-about-text">
           {lead && <p className="rs-about-lede">{rich(lead)}</p>}
           {rest.map((p, i) => (
-            <p key={i}>{rich(p)}</p>
+            <p
+              key={i}
+              // Kurzer erster Absatz neben dem Bild steht eine Stufe größer.
+              className={
+                image && i === 0 && p.length <= LEAD_MAX
+                  ? "rs-about-first"
+                  : undefined
+              }
+            >
+              {rich(p)}
+            </p>
           ))}
           {hasTeam && (
             <p>

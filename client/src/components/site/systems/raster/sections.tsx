@@ -7,6 +7,15 @@ import { RasterEntry } from "./Entry";
 import { RasterServices } from "./Bands";
 import { RasterProcess } from "./Process";
 import { RasterAbout, RasterGallery, RasterReviews } from "./Story";
+import { RasterContact, RasterFaq } from "./Visit";
+import {
+  RasterCta,
+  RasterMotto,
+  RasterPartners,
+  RasterStats,
+  RasterStory,
+  RasterUsp,
+} from "./Extras";
 import { RasterPriced, RasterTeam } from "./Offer";
 import { chapterNumber, showsFigures, type RasterChapterKey } from "./offerData";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
@@ -143,48 +152,6 @@ export function RasterChapter({
   );
 }
 
-/** Überschrift und Einleitung eines Abschnitts, soweit vorhanden. */
-function headOf(section: RasterSection): { title?: string; intro?: string } {
-  const s = section as { headline?: unknown; title?: unknown; intro?: unknown };
-  const title =
-    typeof s.headline === "string"
-      ? s.headline
-      : typeof s.title === "string"
-        ? s.title
-        : undefined;
-  return {
-    title: title?.trim() || undefined,
-    intro:
-      typeof s.intro === "string" ? s.intro.trim() || undefined : undefined,
-  };
-}
-
-/**
- * Vorläufiger, neutraler Abschnitt im Kapitel-Raster, bis R4–R6 die
- * eigentliche Gestalt liefern: Label, Titel, Einleitung — keine erfundenen
- * Inhalte, Anker aus SECTION_ANCHORS (Navigation und Insel greifen).
- */
-export function RasterBlock({
-  section,
-  sections,
-}: {
-  section: Exclude<RasterSection, { type: "hero" | "pageHeader" | "notice" }>;
-  sections: readonly RasterSection[];
-}) {
-  const { blueprint } = useSystem();
-  const { title, intro } = headOf(section);
-  return (
-    <RasterChapter
-      id={SECTION_ANCHORS[section.type]}
-      name={section.type}
-      no={useChapterNo(sections, section.type)}
-      label={chapterLabel(section.type, blueprint)}
-      title={title}
-      intro={intro}
-    />
-  );
-}
-
 /**
  * Kopf für Unterseiten und Rechtsseiten: Name als Kicker, genau ein h1.
  * Weitere pageHeader derselben Seite werden h2 ohne Anker.
@@ -255,7 +222,7 @@ export function RasterLegal({ title, html }: { title: string; html: string }) {
   );
 }
 
-/** Abschnitts-Weiche (exhaustiv; R3–R6 ersetzen die vorläufigen Blöcke). */
+/** Abschnitts-Weiche (exhaustiv über alle SectionV2-/PageSection-Typen). */
 export function renderRasterSection(
   section: RasterSection,
   sections: readonly RasterSection[],
@@ -283,14 +250,21 @@ export function renderRasterSection(
     case "testimonials":
       return <RasterReviews section={section} sections={sections} />;
     case "faq":
+      return <RasterFaq section={section} sections={sections} />;
     case "contact":
+      return <RasterContact section={section} sections={sections} />;
     case "story":
+      return <RasterStory section={section} sections={sections} />;
     case "usp":
+      return <RasterUsp section={section} sections={sections} />;
     case "stats":
+      return <RasterStats section={section} sections={sections} />;
     case "quote":
+      return <RasterMotto section={section} sections={sections} />;
     case "partners":
+      return <RasterPartners section={section} sections={sections} />;
     case "cta":
-      return <RasterBlock section={section} sections={sections} />;
+      return <RasterCta section={section} sections={sections} />;
     case "pageHeader":
       // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
       return (

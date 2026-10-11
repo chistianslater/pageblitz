@@ -3,7 +3,7 @@ import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
 import { wordWidthEm } from "./fit";
-import { figuresOf, showsFigures } from "./offerData";
+import { figuresOf, showsFigures, type Figure } from "./offerData";
 import { RasterChapter, useChapterNo, type RasterSection } from "./sections";
 
 const FIGURE_TRACK = parseFloat(RASTER.type.figure!.track);
@@ -23,7 +23,6 @@ export function RasterFigures({
   const no = useChapterNo(sections, "figures");
   if (!showsFigures(sections, data.google)) return null;
   const figures = figuresOf(data.google);
-  const odd = figures.length % 2 === 1;
   return (
     <RasterChapter
       id={SECTION_ANCHORS.stats}
@@ -32,26 +31,38 @@ export function RasterFigures({
       label="In Zahlen"
       full
     >
-      <ul
-        className={odd ? "rs-figs rs-figs--odd" : "rs-figs"}
-        style={{ "--rs-n": figures.length } as React.CSSProperties}
-      >
-        {figures.map(f => (
-          <li className="rs-fig" key={f.label}>
-            <span
-              className="rs-fig-value"
-              style={
-                {
-                  "--rs-fit": wordWidthEm(f.value, FIGURE_TRACK).toFixed(3),
-                } as React.CSSProperties
-              }
-            >
-              {f.value}
-            </span>
-            <span className="rs-fig-label">{f.label}</span>
-          </li>
-        ))}
-      </ul>
+      <FigureList figures={figures} />
     </RasterChapter>
+  );
+}
+
+/**
+ * Zahlen im Haarlinien-Raster: Ziffer `figure`, je Zelle eingepasst,
+ * Beschriftung `small`. Auch für den Zahlen-Abschnitt (Werte aus dem
+ * Dokument, nichts dazu).
+ */
+export function FigureList({ figures }: { figures: readonly Figure[] }) {
+  const odd = figures.length % 2 === 1;
+  return (
+    <ul
+      className={odd ? "rs-figs rs-figs--odd" : "rs-figs"}
+      style={{ "--rs-n": figures.length } as React.CSSProperties}
+    >
+      {figures.map((f, i) => (
+        <li className="rs-fig" key={`${f.label}-${i}`}>
+          <span
+            className="rs-fig-value"
+            style={
+              {
+                "--rs-fit": wordWidthEm(f.value, FIGURE_TRACK).toFixed(3),
+              } as React.CSSProperties
+            }
+          >
+            {f.value}
+          </span>
+          <span className="rs-fig-label">{f.label}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

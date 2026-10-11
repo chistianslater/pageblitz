@@ -18,7 +18,7 @@ export const STORY_CSS = `/* Abbildungen: S/W, Haarlinie über der Unterschrift 
 /* Über uns: Aussage groß, Text gedämpft, Bild im Raster */
 .pb-raster .rs-about-grid{display:grid;gap:var(--sys-space-l)}
 .pb-raster .rs-about-text{display:grid;gap:var(--sys-space-s);align-content:start;max-width:var(--sys-space-measure);color:var(--sys-muted)}
-.pb-raster .rs-about-text>p:first-child:not(.rs-about-lede){${step("h3")}}
+.pb-raster .rs-about-first{${step("h3")}}
 .pb-raster .rs-about-lede{${step("lede")};color:var(--sys-ink);max-width:16em;margin-bottom:var(--sys-space-xs)}
 .pb-raster .rs-about-photo img{aspect-ratio:4/5}
 @media (min-width:${GRID}){
