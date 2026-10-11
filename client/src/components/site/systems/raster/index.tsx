@@ -10,7 +10,8 @@ import {
 } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { shownNavItems, systemShows } from "../shared";
+import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import { RasterMenuSlot, RasterTeamSlot } from "./Offer";
 import { RasterDock } from "./Dock";
 import { entryVariant } from "./facts";
 
@@ -37,6 +38,8 @@ export const RASTER_MODULE: PackModule = {
       : (sections ?? orderedSections(data)).filter(systemShows);
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
+    // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
+    const slots = sections || legal ? {} : previewSlotAnchors(list);
     const shown = shownNavItems(navItems, orderedSections(home));
     // Unterseite ohne eigenen Kopf-Abschnitt: Titel der Seite trägt den Kopf.
     const ownHead =
@@ -60,6 +63,8 @@ export const RASTER_MODULE: PackModule = {
         {list.map((s, i) => (
           <React.Fragment key={`${s.type}-${i}`}>
             {renderRasterSection(s, list)}
+            {slots.menu === i && <RasterMenuSlot sections={list} />}
+            {slots.team === i && <RasterTeamSlot sections={list} />}
           </React.Fragment>
         ))}
       </main>

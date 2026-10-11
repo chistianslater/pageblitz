@@ -2,8 +2,12 @@ import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich, stripMarks } from "../../richText";
 import { useSystem } from "../SystemContext";
-import { chapterIndex, type SystemSection } from "../shared";
+import type { SystemSection } from "../shared";
 import { RasterEntry } from "./Entry";
+import { RasterServices } from "./Bands";
+import { RasterProcess } from "./Process";
+import { RasterPriced, RasterTeam } from "./Offer";
+import { chapterNumber, showsFigures, type RasterChapterKey } from "./offerData";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
@@ -17,9 +21,22 @@ export type RasterSection = SystemSection;
  */
 export function rasterChapterNo(
   sections: readonly RasterSection[],
-  type: RasterSection["type"]
+  type: RasterChapterKey,
+  figures = false
 ): number {
-  return Math.max(0, chapterIndex(sections, type) - 1);
+  return chapterNumber(sections, type, figures);
+}
+
+/**
+ * Kapitelnummer im Render: Zeigt die Startseite die Zahlenzeile (echte
+ * Google-Zahlen), zählt sie als Kapitel direkt nach den Leistungen.
+ */
+export function useChapterNo(
+  sections: readonly RasterSection[],
+  key: RasterChapterKey
+): number {
+  const { data } = useSystem();
+  return rasterChapterNo(sections, key, showsFigures(sections, data.google));
 }
 
 /** Raster-Wortwahl der Kapitel-Labels (Systemblatt); Bauplan-Labels gewinnen. */
@@ -68,6 +85,8 @@ export function RasterChapter({
   title,
   intro,
   full = false,
+  className = "",
+  after,
   children,
 }: {
   id: string;
@@ -77,6 +96,10 @@ export function RasterChapter({
   title?: string;
   intro?: string;
   full?: boolean;
+  /** Zusätzliche Klassen an der Section. */
+  className?: string;
+  /** Randlos nach dem Kapitelkopf (Bänder, Listen darunter). */
+  after?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const headingId = `${id}-titel`;
@@ -89,7 +112,7 @@ export function RasterChapter({
   return (
     <section
       id={id}
-      className={`rs-sec rs-${name}`}
+      className={`rs-sec rs-${name}${className ? ` ${className}` : ""}`}
       aria-labelledby={headingId}
     >
       <div className="rs-wrap rs-g12">
@@ -114,6 +137,7 @@ export function RasterChapter({
           {children}
         </div>
       </div>
+      {after}
     </section>
   );
 }
@@ -152,7 +176,7 @@ export function RasterBlock({
     <RasterChapter
       id={SECTION_ANCHORS[section.type]}
       name={section.type}
-      no={rasterChapterNo(sections, section.type)}
+      no={useChapterNo(sections, section.type)}
       label={chapterLabel(section.type, blueprint)}
       title={title}
       intro={intro}
@@ -239,10 +263,14 @@ export function renderRasterSection(
     case "hero":
       return <RasterEntry hero={section} />;
     case "services":
+      return <RasterServices section={section} sections={sections} />;
     case "process":
+      return <RasterProcess section={section} sections={sections} />;
     case "pricelist":
     case "menu":
+      return <RasterPriced section={section} sections={sections} />;
     case "team":
+      return <RasterTeam section={section} sections={sections} />;
     case "about":
     case "gallery":
     case "testimonials":

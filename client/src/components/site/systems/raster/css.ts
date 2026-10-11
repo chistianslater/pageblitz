@@ -1,40 +1,24 @@
 import { RASTER } from "../../../../../../shared/designSystems/raster";
-import type { TypeStep } from "../../../../../../shared/designSystems/types";
 import { systemFontFaces } from "../shared/fonts";
 import { FIT_FLOOR_REM, FIT_HARD_FLOOR_REM, FIT_MAX_REM } from "./fit";
+import { DEEP_RULE, GRID, step } from "./step";
+import { OFFER_CSS } from "./offerCss";
+
+export { step } from "./step";
+export { BAND_ALT, BAND_DESC_ALPHA, BAND_FILTER, BAND_SCRIM } from "./offerCss";
 
 /** @font-face aus der Systemdefinition — Geist nur einmal (Display = Text). */
 const FONT_FACES = systemFontFaces(RASTER);
-
-/**
- * Vollständige Typo-Deklaration einer Stufe aus den System-Variablen.
- * Raster führt zusätzlich `figure` (große Ziffern, Bandnamen).
- */
-export function step(s: TypeStep): string {
-  const spec = RASTER.type[s];
-  if (!spec) throw new Error(`Raster: Stufe ${s} fehlt`);
-  return [
-    `font-family:var(--sys-font-${spec.font})`,
-    `font-size:var(--sys-${s}-size)`,
-    `line-height:var(--sys-${s}-line)`,
-    `letter-spacing:var(--sys-${s}-track)`,
-    `font-weight:var(--sys-${s}-weight)`,
-    `text-transform:var(--sys-${s}-transform)`,
-  ].join(";");
-}
 
 /**
  * Breakpoints laut Systemblatt: Kapitel-Raster (12 Spalten, Labelspalte
  * 1–3) ab 900 px; Desktop-Navigation erst ab 64 rem, damit lange Namen
  * neben fünf, sechs Einträgen nicht gedrängt stehen.
  */
-const GRID = "56.25rem";
 const NAV = "64rem";
 
 /** Gedämpfter Text auf `deep` (Systemblatt: onDeep 62 %). */
 const ON_DEEP_DIM = "color-mix(in srgb,var(--sys-on-deep) 62%,var(--sys-deep))";
-/** Haarlinie auf `deep` (Systemblatt: weiß 14–18 %). */
-const DEEP_RULE = "color-mix(in srgb,var(--sys-on-deep) 18%,transparent)";
 
 /** Handy-Leiste nur unterhalb dieser Breite (Systemblatt). */
 const DOCK = "48rem";
@@ -242,6 +226,8 @@ ${FONT_FACES}
 }
 
 ${ENTRY_CSS}
+
+${OFFER_CSS}
 
 /* Unterseiten- und Rechtsseiten-Kopf: genau ein h1 */
 .pb-raster .rs-page-head{padding-block:var(--sys-space-l) var(--sys-space-xl)}

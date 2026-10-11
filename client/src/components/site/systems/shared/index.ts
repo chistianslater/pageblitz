@@ -4,3 +4,4 @@ export * from "./sections";
 export * from "./slots";
 export * from "./fonts";
 export * from "./menu";
+export * from "./price";

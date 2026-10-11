@@ -44,7 +44,7 @@ export const render = (
 
 /** Markup des ersten Abschnitts mit Klasse `rs-<cls>`. */
 export const sectionHtml = (html: string, cls: string) => {
-  const at = html.indexOf(`class="rs-sec rs-${cls}"`);
+  const at = html.search(new RegExp(`class="rs-sec rs-${cls}[" ]`));
   if (at === -1) return "";
   const start = html.lastIndexOf("<section", at);
   return html.slice(start, html.indexOf("</section>", start));

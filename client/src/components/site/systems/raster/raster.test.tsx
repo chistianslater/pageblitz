@@ -124,7 +124,7 @@ describe("Raster: Kapitel-Raster", () => {
     );
     const html = render(doc);
     const first = numbered[0];
-    const anchor = html.indexOf(`class="rs-sec rs-${first.type}"`);
+    const anchor = html.search(new RegExp(`class="rs-sec rs-${first.type}[" ]`));
     expect(anchor).toBeGreaterThan(-1);
     expect(html.slice(anchor, anchor + 600)).toContain(
       '<span class="rs-no" aria-hidden="true">01</span>'
