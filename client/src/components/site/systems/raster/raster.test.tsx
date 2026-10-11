@@ -214,4 +214,15 @@ describe("Raster: Fuß", () => {
     });
     expect(html).not.toContain('<p class="rs-foot-h">Zeiten</p>');
   });
+
+  test("Fuß fasst gleiche Folgetage zusammen und lässt Platz für die Leiste im Fuß", () => {
+    const html = render(rasterDoc("papier"));
+    const foot = html.slice(html.indexOf(`<footer class="rs-foot"`));
+    expect(foot).toContain("Montag–Freitag <span class=\"rs-nowrap\">7–17 Uhr</span>");
+    expect(foot).not.toContain("Dienstag");
+    expect(RASTER_CSS).toMatch(
+      /\.pb-raster:has\(\.rs-dock\) \.rs-foot\{padding-bottom:calc\([^}]*var\(--rs-dock\)/
+    );
+    expect(RASTER_CSS).toMatch(/\.rs-foot-call a::before\{[^}]*var\(--rs-tap\)/);
+  });
 });

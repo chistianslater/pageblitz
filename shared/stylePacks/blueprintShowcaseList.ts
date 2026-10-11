@@ -19,7 +19,10 @@ export type Showcase = {
   businessName?: string;
   businessCategory?: string;
   amenities?: WebsiteDataV2["amenities"];
-  /** Branchenbilder statt der Fixture-Fotos (shared/industryImages.ts). */
+  /**
+   * Branchenbilder statt der Fixture-Fotos (shared/industryImages.ts);
+   * `"none"` = Betrieb ohne brauchbares Foto (Einstieg nur Schrift).
+   */
   photos?: string;
 };
 
@@ -193,6 +196,16 @@ export const SHOWCASES: readonly Showcase[] = [
     businessName: "Taxi Rhede",
     businessCategory: "Taxiunternehmen",
     photos: "automotive",
+  },
+  {
+    id: "schluesseldienst",
+    sample: "Schlüsseldienst Nord",
+    group: "Sofort-Dienste",
+    label: "Schlüsseldienst",
+    fixture: "strom",
+    businessName: "Schlüsseldienst Nord",
+    businessCategory: "Schlüsseldienst",
+    photos: "none",
   },
   {
     id: "hersteller",

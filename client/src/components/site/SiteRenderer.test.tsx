@@ -3,7 +3,8 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { WebsiteDataV2 } from "../../../../shared/siteContract/types";
 import { PACK_MODULES } from "./packRegistry";
-import { SiteRenderer } from "./SiteRenderer";
+import { SiteRenderer, SYSTEM_MOTION } from "./SiteRenderer";
+import { SYSTEMS_WITH_MOTION } from "../../../../shared/designSystems/registry";
 // Import-Nebenwirkung: registriert alle Pack-Module (u.a. kanzlei) in
 // PACK_MODULES — für die packOverride-Tests unten benötigt.
 import "./packs/index";
@@ -278,5 +279,13 @@ describe("SiteRenderer", () => {
       );
       expect(html).not.toContain('<header class="pb-wb-page-header">');
     });
+  });
+});
+
+describe("Bewegung je Designsystem", () => {
+  test("SYSTEM_MOTION deckt genau SYSTEMS_WITH_MOTION ab", () => {
+    expect(Object.keys(SYSTEM_MOTION).sort()).toEqual(
+      [...SYSTEMS_WITH_MOTION].sort()
+    );
   });
 });

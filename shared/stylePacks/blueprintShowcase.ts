@@ -48,11 +48,23 @@ const SAMPLE_PROCESS: SectionOf<"process"> = {
 type SampleText = {
   hero: { headline: string; subheadline: string };
   /** Adresse passend zum Beispiel (die Fixture gehört zu einer anderen Firma). */
-  contact: { street: string; zip: string; city: string; phone: string };
+  contact: {
+    street: string;
+    zip: string;
+    city: string;
+    phone: string;
+    email: string;
+  };
+  /** Öffnungszeiten des Beispiels; ohne Angabe die der Fixture. */
+  hours?: { day: string; hours: string }[];
   services: { title: string; description: string }[];
   about: string;
   faq: { question: string; answer: string }[];
-  reviews: { author: string; text: string }[];
+  /**
+   * Bewertungen des Beispiels. Fehlt das Feld, hat der Betrieb keine —
+   * Stimmen-Abschnitt und Google-Zahlen der Fixture entfallen.
+   */
+  reviews?: { author: string; text: string }[];
 };
 
 /**
@@ -66,6 +78,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "44263",
       city: "Dortmund",
       phone: "0231 555 4471",
+      email: "service@kfz-brandt-dortmund.de",
     },
     hero: {
       headline: "Kfz-Werkstatt in Dortmund-Hörde",
@@ -125,6 +138,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "46395",
       city: "Bocholt",
       phone: "02871 555 120",
+      email: "anfrage@kruse-metalltechnik.de",
     },
     hero: {
       headline: "Metallverarbeitung für die Industrie in Bocholt",
@@ -184,6 +198,7 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       zip: "46414",
       city: "Rhede",
       phone: "02872 555 300",
+      email: "fahrt@taxi-rhede.de",
     },
     hero: {
       headline: "Taxi in Rhede und Umgebung",
@@ -232,6 +247,50 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       { author: "Ahmet Y.", text: "Schnell da, sauberes Auto, fairer Preis." },
     ],
   },
+  // Sofort-Dienst ohne Foto und ohne Bewertungen (Review-Fokus Raster):
+  // Einstieg nur Schrift, Zeiten rund um die Uhr.
+  schluesseldienst: {
+    contact: {
+      street: "Grevener Straße 301",
+      zip: "48159",
+      city: "Münster",
+      phone: "0251 98 76 54",
+      email: "hallo@schluessel-nord.de",
+    },
+    hours: [{ day: "Mo–So", hours: "24 Stunden" }],
+    hero: {
+      headline: "Schlüsseldienst in Münster",
+      subheadline: "Ausgesperrt? Ruf an. Wir kommen, Tag und Nacht.",
+    },
+    services: [
+      {
+        title: "Türöffnung",
+        description: "Zugefallen oder abgeschlossen, Tag und Nacht.",
+      },
+      {
+        title: "Schlosstausch",
+        description:
+          "Nach Schlüsselverlust oder Einzug, neuer Zylinder nach Absprache.",
+      },
+      {
+        title: "Einbruchschutz",
+        description: "Beratung vor Ort, Zusatzschlösser, Querriegel.",
+      },
+    ],
+    about:
+      "Wir öffnen deine Tür. Ohne Schaden, wo es geht.\n\nDen Preis nennen wir dir am Telefon, bevor wir losfahren.",
+    faq: [
+      {
+        question: "Was kostet eine Türöffnung?",
+        answer:
+          "Das hängt von Uhrzeit und Schloss ab. Wir nennen dir den Preis am Telefon, bevor wir losfahren.",
+      },
+      {
+        question: "Bekomme ich eine Rechnung?",
+        answer: "Ja, du bekommst nach jedem Einsatz eine Rechnung.",
+      },
+    ],
+  },
 };
 
 /** Branchenbilder statt Fixture-Fotos, wenn die Fixture nicht passt. */
@@ -239,6 +298,7 @@ function withShowcasePhotos(
   doc: WebsiteDataV2,
   photos?: string
 ): WebsiteDataV2 {
+  if (photos === "none") return withoutPhotos(doc);
   const [name, start] = (photos ?? "").split(":");
   const set = name ? INDUSTRY_IMAGES[name] : undefined;
   if (!set) return doc;
@@ -262,6 +322,23 @@ function withShowcasePhotos(
   return { ...doc, sections };
 }
 
+/** Betrieb ohne brauchbares Foto: keine Bilder im Einstieg, Über uns, Leistungen. */
+function withoutPhotos(doc: WebsiteDataV2): WebsiteDataV2 {
+  const sections = doc.sections
+    .filter(section => section.type !== "gallery")
+    .map(section => {
+      if (section.type === "hero" || section.type === "about")
+        return { ...section, imageUrl: undefined };
+      if (section.type === "services")
+        return {
+          ...section,
+          items: section.items.map(item => ({ ...item, imageUrl: undefined })),
+        };
+      return section;
+    }) as WebsiteDataV2["sections"];
+  return { ...doc, sections };
+}
+
 function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   const text = SAMPLE_TEXT[id];
   if (!text) return doc;
@@ -276,25 +353,41 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
           ctaHref: undefined,
         };
       case "contact":
-        return { ...section, ...text.contact };
+        return {
+          ...section,
+          ...text.contact,
+          ...(text.hours ? { openingHours: text.hours } : {}),
+        };
       case "services":
-        return { ...section, items: text.services };
+        // Einleitung der Fixture gehört zu einer anderen Firma.
+        return { ...section, intro: undefined, items: text.services };
       case "about":
         return { ...section, body: text.about };
       case "faq":
         return { ...section, items: text.faq };
       case "testimonials":
-        return {
-          ...section,
-          items: text.reviews.map(r => ({ ...r, rating: 5 })),
-        };
+        return text.reviews
+          ? {
+              ...section,
+              items: text.reviews.map(r => ({ ...r, rating: 5 })),
+            }
+          : section;
       default:
         return section;
     }
   }) as WebsiteDataV2["sections"];
+  const { google, tagline: _tagline, ...rest } = doc;
   return {
-    ...doc,
-    sections,
+    ...rest,
+    // Ohne Bewertungen auch keine Google-Zahlen der fremden Fixture.
+    ...(text.reviews && google ? { google } : {}),
+    sections: text.reviews
+      ? sections
+      : (sections.filter(
+          s => s.type !== "testimonials"
+        ) as WebsiteDataV2["sections"]),
+    // Fuß und Unterzeile der Fixture gehören zu einer anderen Firma.
+    footerNote: `${doc.businessName} · ${text.contact.city}`,
     seo: { title: doc.businessName, description: text.hero.subheadline },
   };
 }

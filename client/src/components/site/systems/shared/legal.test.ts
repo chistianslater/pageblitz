@@ -57,4 +57,11 @@ describe("legalParts: Generator-HTML im System-Rahmen", () => {
     });
     expect(legalParts("<p>y</p>")).toEqual({ titleHtml: undefined, body: "<p>y</p>" });
   });
+
+  test("Stilblock mit Leerraum im Endtag wird ebenfalls entfernt", () => {
+    const { body } = legalParts(
+      "<body><style>h2{color:red}</style ><h1>Impressum</h1><p>Text</p></body>"
+    );
+    expect(body).toBe("<p>Text</p>");
+  });
 });

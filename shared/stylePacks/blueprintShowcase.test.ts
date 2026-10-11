@@ -34,6 +34,7 @@ describe("Bauplan-Übersicht", () => {
       ferienwohnung: "stay",
       fotografie: "creative",
       taxi: "urgent",
+      schluesseldienst: "urgent",
       hersteller: "industry",
       gaertnerei: "standard",
     });
@@ -42,5 +43,32 @@ describe("Bauplan-Übersicht", () => {
       "stage"
     );
     expect(schreinerei.sections.some(s => s.type === "process")).toBe(true);
+  });
+
+  it("Schlüsseldienst: ohne Foto, ohne Bewertungen, rund um die Uhr", () => {
+    const doc = showcaseDoc(
+      SHOWCASES.find(s => s.id === "schluesseldienst")!,
+      "stage"
+    );
+    const hero = doc.sections.find(s => s.type === "hero");
+    const contact = doc.sections.find(s => s.type === "contact");
+    expect(hero && "imageUrl" in hero ? hero.imageUrl : undefined).toBeFalsy();
+    expect(doc.sections.some(s => s.type === "testimonials")).toBe(false);
+    expect(doc.sections.some(s => s.type === "gallery")).toBe(false);
+    expect(doc.google).toBeUndefined();
+    expect(contact?.type === "contact" && contact.openingHours).toEqual([
+      { day: "Mo–So", hours: "24 Stunden" },
+    ]);
+    expect(JSON.stringify(doc.sections)).not.toMatch(/nordvolt|Kiel/i);
+  });
+
+  it("Beispieltexte ersetzen Kontaktdaten und Fuß der Fixture", () => {
+    for (const id of ["werkstatt", "taxi", "hersteller"]) {
+      const doc = showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      const contact = doc.sections.find(s => s.type === "contact");
+      expect(
+        JSON.stringify([contact, doc.footerNote, doc.tagline])
+      ).not.toMatch(/schreinerei|nordvolt|fundament|Kiel|seit/i);
+    }
   });
 });

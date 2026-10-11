@@ -31,6 +31,11 @@ describe("Raster-Bewegung (CSS)", () => {
       /@media \(prefers-reduced-motion: no-preference\)\{[^]*\[data-rs-ready\]/
     );
     const outside = outsideNoPreference(RASTER_CSS);
+    // Wächter: das Muster muss den Bewegungsblock wirklich treffen, sonst
+    // prüften die Erwartungen unten ins Leere.
+    expect(outside.length).toBeLessThan(
+      RASTER_CSS.length - RASTER_MOTION_CSS.length / 2
+    );
     expect(outside).not.toMatch(/data-rs-ready|data-rs-in/);
     expect(outside).not.toMatch(/rs-mask|rs-rise|rs-settle|rs-cover|rs-dim/);
     expect(outside).not.toMatch(/animation-timeline|view-timeline/);

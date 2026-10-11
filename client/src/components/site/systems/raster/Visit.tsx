@@ -30,7 +30,6 @@ import {
  * nur, wenn die Kontakt-Insel wirklich rendert.
  */
 
-
 export function RasterFaq({ section, sections }: SectionProps<"faq">) {
   const { blueprint } = useSystem();
   return (

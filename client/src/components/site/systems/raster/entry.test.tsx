@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import { SiteRenderer } from "../../SiteRenderer";
+import { RASTER_CSS } from "./css";
 import {
   kanzleiDoc,
   patchSection,
@@ -141,9 +142,27 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
 
   test("Fit: Breite des längsten Worts als --rs-fit, Klasse nach Untergrenze", () => {
     const kanzlei = entryOf(render(kanzleiDoc()));
-    expect(kanzlei).toMatch(/class="rs-wordmark" style="--rs-fit:\d\.\d{3}"/);
+    expect(kanzlei).toMatch(
+      /class="rs-wordmark" style="--rs-fit:\d\.\d{3}(;--rs-lines:\d)?"/
+    );
     const long = { ...kanzleiDoc(), businessName: "Hairlounge Hachtkemper" };
     expect(entryOf(render(long))).toContain("rs-wordmark rs-wordmark--tight");
+  });
+
+  test("Höhenbremse: mehrzeiliger Name setzt --rs-lines, einzeiliger nicht", () => {
+    const three = { ...kanzleiDoc(), businessName: "Kfz-Service Brandt" };
+    expect(entryOf(render(three))).toMatch(
+      /class="rs-wordmark" style="--rs-fit:\d\.\d{3};--rs-lines:3"/
+    );
+    expect(RASTER_CSS).toMatch(
+      /\.rs-entry--type \.rs-wordmark\{font-size:clamp\([^}]*36svh/
+    );
+    expect(RASTER_CSS).toMatch(/\.rs-entry-clock-figure\{font-size:clamp\([^}]*26svh/);
+    const one = { ...kanzleiDoc(), businessName: "Yilmaz" };
+    expect(entryOf(render(one))).not.toContain("--rs-lines");
+    expect(RASTER_CSS).toMatch(
+      /\.rs-wordmark\{font-size:clamp\([\d.]+rem,min\(100cqi \/ var\(--rs-fit\),60svh \/ \(var\(--rs-lines,1\) \* 0\.88\)\),26rem\)\}/
+    );
   });
 
   test("Kanzlei: Kicker Branche in Ort, Satz aus der Überschrift", () => {

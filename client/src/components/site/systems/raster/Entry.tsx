@@ -5,7 +5,12 @@ import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
 import { contactOf } from "../shared";
-import { REFERENCE_COLUMN_REM, fitWordmark, wordWidthEm } from "./fit";
+import {
+  REFERENCE_COLUMN_REM,
+  WIDE_COLUMN_REM,
+  fitWordmark,
+  wordWidthEm,
+} from "./fit";
 import {
   entryKicker,
   entryLede,
@@ -31,7 +36,12 @@ function Wordmark({ name, tight }: { name: string; tight?: boolean }) {
   const fit = fitWordmark(name, REFERENCE_COLUMN_REM);
   const moved = fit.kickerWord;
   const before = moved && name.startsWith(moved);
-  const style = { "--rs-fit": fit.widthEm.toFixed(3) } as React.CSSProperties;
+  // Zeilen auf Desktop-Breite; erst ab zwei Zeilen greift die Höhenbremse.
+  const wideLines = fitWordmark(name, WIDE_COLUMN_REM).lines.length;
+  const style = {
+    "--rs-fit": fit.widthEm.toFixed(3),
+    ...(wideLines > 1 ? { "--rs-lines": String(wideLines) } : {}),
+  } as React.CSSProperties;
   return (
     <div className="rs-fit">
       <h1

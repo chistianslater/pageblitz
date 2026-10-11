@@ -9,7 +9,12 @@
  * (renderLegalPage in server/ssr/renderSite.tsx), nie aus Nutzereingaben.
  */
 const BODY = /<body[^>]*>([\s\S]*?)<\/body>/i;
-const STYLE = /<style[\s\S]*?<\/style>/gi;
+const STYLE = /<style[\s\S]*?<\/style\s*>/gi;
+/**
+ * Zurück-Link aus server/legalGenerator.ts (`<a … class="back-link">`, in
+ * beiden Vorlagen Impressum/Datenschutz). Ändert der Generator die Klasse,
+ * muss dieses Muster mitziehen (Test in legal.test.ts).
+ */
 const BACK_LINK = /<a\b[^>]*class="[^"]*\bback-link\b[^"]*"[^>]*>[\s\S]*?<\/a>\s*/gi;
 const FIRST_H1 = /<h1[^>]*>([\s\S]*?)<\/h1>/i;
 

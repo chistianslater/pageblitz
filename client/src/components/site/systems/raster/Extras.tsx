@@ -20,7 +20,6 @@ import {
  * ist ein dunkles Band (`deep`) mit dem Signal-Knopf.
  */
 
-
 export function RasterStory({ section, sections }: SectionProps<"story">) {
   const { blueprint } = useSystem();
   return (

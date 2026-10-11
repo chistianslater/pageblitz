@@ -102,20 +102,20 @@ import {
   withGalleryLimit,
 } from "./engine";
 
-/** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
 /**
  * Bewegung je Designsystem (rev 3), als eigenes Chunk nachgeladen. Spiegelt
  * `SYSTEMS_WITH_MOTION` (shared/designSystems/registry.ts) und das
  * Motion-Bundle (site-islands/motion.ts).
  */
 type MountMotion = (root: HTMLElement) => () => void;
-const SYSTEM_MOTION: Partial<Record<string, () => Promise<MountMotion>>> = {
+export const SYSTEM_MOTION: Partial<Record<string, () => Promise<MountMotion>>> = {
   journal: () =>
     import("./systems/journal/motion").then(m => m.mountJournalMotion),
   raster: () =>
     import("./systems/raster/motion").then(m => m.mountRasterMotion),
 };
 
+/** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
 function withLegacyVars(sys: Record<string, string>): Record<string, string> {
   return { ...sys, ...legacyPackVars(sys) };
 }

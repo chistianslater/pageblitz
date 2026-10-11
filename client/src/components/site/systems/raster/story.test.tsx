@@ -72,6 +72,26 @@ describe("Raster: Über uns", () => {
     expect(html).toContain("<p>Meisterbetrieb für alle Marken.</p>");
   });
 
+  test("ohne Foto: Satz über 120 Zeichen steht nicht groß", () => {
+    const base = werkstattDoc();
+    const long =
+      "Roth & Weber berät seit vielen Jahren mit Sitz in Köln Unternehmen, Freiberufler und Selbstständige in Steuer, Zahlen und Planung.";
+    expect(long.length).toBeGreaterThan(120);
+    const doc = patchSection(
+      {
+        ...base,
+        designProfile: {
+          ...base.designProfile!,
+          hiddenElements: ["about-media"],
+        },
+      },
+      "about",
+      a => ({ ...a, body: `${long} Ein fester Ansprechpartner.` })
+    );
+    const html = sectionHtml(render(doc), "about");
+    expect(html).not.toContain("rs-about-lede");
+  });
+
   test("ausgeblendetes Über-uns-Bild erscheint nicht", () => {
     const doc = werkstattDoc();
     const html = sectionHtml(

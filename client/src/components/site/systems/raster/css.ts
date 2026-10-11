@@ -22,6 +22,11 @@ const NAV = "64rem";
 
 /** Gedämpfter Text auf `deep` (Systemblatt: onDeep 62 %). */
 const ON_DEEP_DIM = "color-mix(in srgb,var(--sys-on-deep) 62%,var(--sys-deep))";
+/**
+ * Haarlinie über dem Fuß: auf hellem Papier unsichtbar (dunkel an dunkel),
+ * auf Kohle trennt sie den fast gleich dunklen Fuß vom Papier darüber.
+ */
+const FOOT_RULE = "color-mix(in srgb,var(--sys-on-deep) 16%,var(--sys-deep))";
 
 /** Handy-Leiste nur unterhalb dieser Breite (Systemblatt). */
 const DOCK = "48rem";
@@ -59,6 +64,16 @@ const SCRIM = [
 const LOCAL_SCRIM = `linear-gradient(180deg,transparent 0,${deepAt(BLEED_SCRIM.local)} var(--sys-space-m),${deepAt(BLEED_SCRIM.local)} calc(100% - var(--sys-space-m)),transparent 100%)`;
 
 /**
+ * Höhenbremse der Wortmarke: alle Zeilen zusammen höchstens 60 % der
+ * Bildschirmhöhe (`--rs-lines` aus fit.ts, nur ab zwei Zeilen gesetzt), damit
+ * Satz und Fakten im ersten Bildschirm bleiben („Kfz-Service Brandt" auf
+ * 1440 × 900 sonst drei Zeilen à 18 rem).
+ */
+const MARK_HEIGHT = `60svh / (var(--rs-lines,1) * ${RASTER.type.display.line})`;
+/** Typo-Einstieg: Name höchstens 36 %, „24/7" höchstens 26 % der Höhe. */
+const MARK_HEIGHT_TYPE = `36svh / (var(--rs-lines,1) * ${RASTER.type.display.line})`;
+
+/**
  * Einstieg (Systemblatt 6/10). Wortmarke: Größe aus der Spaltenbreite
  * (Container-Einheit) ÷ Breite des längsten Worts (`--rs-fit`, serverseitig
  * aus der Geist-Tabelle), Untergrenze `display`, Obergrenze 26 rem. Ohne
@@ -71,8 +86,11 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 .pb-raster .rs-fit{container-type:inline-size}
 .pb-raster .rs-wordmark{${step("display")};hyphens:manual;overflow-wrap:normal;word-break:normal;text-wrap:wrap;margin-left:-.04em}
 @supports (font-size:1cqi){
-  .pb-raster .rs-wordmark{font-size:clamp(${FIT_FLOOR_REM}rem,100cqi / var(--rs-fit),${FIT_MAX_REM}rem)}
-  .pb-raster .rs-wordmark--tight{font-size:clamp(${FIT_HARD_FLOOR_REM}rem,100cqi / var(--rs-fit),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-wordmark{font-size:clamp(${FIT_FLOOR_REM}rem,min(100cqi / var(--rs-fit),${MARK_HEIGHT}),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-wordmark--tight{font-size:clamp(${FIT_HARD_FLOOR_REM}rem,min(100cqi / var(--rs-fit),${MARK_HEIGHT}),${FIT_MAX_REM}rem)}
+  /* Typo-Einstieg: Name und „24/7" teilen sich den ersten Bildschirm. */
+  .pb-raster .rs-entry--type .rs-wordmark{font-size:clamp(${FIT_FLOOR_REM}rem,min(100cqi / var(--rs-fit),${MARK_HEIGHT_TYPE}),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-entry--type .rs-wordmark--tight{font-size:clamp(${FIT_HARD_FLOOR_REM}rem,min(100cqi / var(--rs-fit),${MARK_HEIGHT_TYPE}),${FIT_MAX_REM}rem)}
 }
 .pb-raster .rs-wordmark--tight{overflow-wrap:anywhere}
 .pb-raster .rs-entry-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:var(--sys-space-2xs) var(--sys-space-m);margin-bottom:var(--sys-space-m)}
@@ -114,7 +132,7 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 .pb-raster .rs-entry-clock{container-type:inline-size;border-top:1px solid var(--sys-rule);margin-top:var(--sys-space-s);padding-top:var(--sys-space-xs);color:var(--sys-signal)}
 .pb-raster .rs-entry-clock-figure{${step("figure")};display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 @supports (font-size:1cqi){
-  .pb-raster .rs-entry-clock-figure{font-size:clamp(var(--sys-figure-size),100cqi / var(--rs-fit),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-entry-clock-figure{font-size:clamp(var(--sys-figure-size),min(100cqi / var(--rs-fit),26svh),${FIT_MAX_REM}rem)}
 }
 .pb-raster .rs-entry--type .rs-entry-bottom{margin-top:auto;padding-top:var(--sys-space-xl)}
 
@@ -132,7 +150,9 @@ const DOCK_CSS = `/* Handy-Leiste (unter ${DOCK}) */
 .pb-raster .rs-dock{display:none}
 @media (max-width:47.99rem){
   .pb-raster{--rs-dock:calc(var(--sys-space-l) + var(--sys-space-m))}
-  .pb-raster:has(.rs-dock){padding-bottom:calc(var(--rs-dock) + env(safe-area-inset-bottom,0rem))}
+  .pb-raster:has(.rs-dock):not(:has(.rs-foot)){padding-bottom:calc(var(--rs-dock) + env(safe-area-inset-bottom,0rem))}
+  /* Platz für die Leiste im Fuß selbst — kein Papierstreifen unter dem Fuß. */
+  .pb-raster:has(.rs-dock) .rs-foot{padding-bottom:calc(var(--sys-space-l) + var(--rs-dock) + env(safe-area-inset-bottom,0rem))}
   .pb-raster .rs-dock{position:fixed;inset-inline:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;
     background:var(--sys-rule);border-top:1px solid var(--sys-rule);padding-bottom:env(safe-area-inset-bottom,0rem)}
   .pb-raster .rs-dock--one,.pb-raster .rs-dock--call{grid-template-columns:minmax(0,1fr)}
@@ -160,7 +180,7 @@ const DOCK_CSS = `/* Handy-Leiste (unter ${DOCK}) */
 export const RASTER_CSS = `
 ${FONT_FACES}
 
-.pb-raster{--rs-focus:2px;--rs-hit:calc(var(--sys-space-s) * -.75);--rs-tap:calc(var(--sys-space-l) + var(--sys-space-2xs));
+.pb-raster{--rs-focus:2px;--rs-hit:calc(var(--sys-space-s) * -.8125);--rs-tap:calc(var(--sys-space-l) + var(--sys-space-2xs));
   background:var(--sys-paper);color:var(--sys-ink);${step("body")};
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal}
 .pb-raster *{box-sizing:border-box}
@@ -249,13 +269,16 @@ ${VISIT_CSS}
 .pb-raster .rs-legal a{overflow-wrap:anywhere}
 
 /* Fuß: dunkel, Aufforderung, vier Spalten Fakten, Rechtszeile */
-.pb-raster .rs-foot{background:var(--sys-deep);color:var(--sys-on-deep);padding-block:var(--sys-space-section) var(--sys-space-l)}
+.pb-raster .rs-foot{background:var(--sys-deep);color:var(--sys-on-deep);padding-block:var(--sys-space-section) var(--sys-space-l);
+  border-top:1px solid ${FOOT_RULE}}
 .pb-raster .rs-foot-call{${step("h2")};max-width:14em}
-.pb-raster .rs-foot-call a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.14em}
+.pb-raster .rs-foot-call a{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.14em;position:relative}
+.pb-raster .rs-foot-call a::before{content:"";position:absolute;inset-inline:0;inset-block:min(0rem,calc((100% - var(--rs-tap)) / 2))}
 .pb-raster .rs-foot-call a:hover{text-decoration-color:transparent}
 .pb-raster .rs-foot-cols{${step("small")};display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-m);
   margin-top:var(--sys-space-xl);border-top:1px solid ${DEEP_RULE};padding-top:var(--sys-space-m)}
 .pb-raster .rs-foot-col{min-width:0;overflow-wrap:anywhere}
+.pb-raster .rs-nowrap{white-space:nowrap}
 .pb-raster .rs-foot-h{${step("small")};color:${ON_DEEP_DIM};margin:0 0 var(--sys-space-xs)}
 .pb-raster .rs-foot-col ul{list-style:none;margin:0;padding:0;display:grid}
 .pb-raster .rs-foot-col a{text-decoration:none;position:relative}

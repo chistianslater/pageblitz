@@ -13,6 +13,7 @@ import {
   systemShows,
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
+import { groupOpeningHours } from "../../../../../../shared/onboardingV2/openingHours";
 import { REFERENCE_COLUMN_REM, fitWordmark } from "./fit";
 import type {
   SectionOf,
@@ -112,11 +113,17 @@ export function RasterHead({
 /** Höchstens so viele Leistungen stehen im Fuß (Rest im Abschnitt). */
 const FOOT_SERVICES = 6;
 
-/** „Mo – Fr" · „8–17 Uhr": Zeiten-Spalte nur mit echten Zeiten. */
+/**
+ * „Montag–Freitag 8–17 Uhr": Zeiten-Spalte nur mit echten Zeiten, gleiche
+ * Folgetage zusammengefasst wie im Kontakt-Kapitel (sonst fünf Zeilen).
+ */
 function hoursRows(contact: SectionOf<"contact"> | undefined) {
   const hours = contact?.openingHours;
   if (!hours?.length || isPlaceholderHours(hours)) return [];
-  return hours.map(h => ({ day: h.day, hours: shortHours(h.hours) }));
+  return groupOpeningHours(hours).map(h => ({
+    day: h.day,
+    hours: shortHours(h.hours),
+  }));
 }
 
 function FootCol({
@@ -205,7 +212,7 @@ export function RasterFoot({
               <ul className="rs-num">
                 {hours.map((h, i) => (
                   <li key={`${h.day}-${i}`}>
-                    {h.day} {h.hours}
+                    {h.day} <span className="rs-nowrap">{h.hours}</span>
                   </li>
                 ))}
               </ul>

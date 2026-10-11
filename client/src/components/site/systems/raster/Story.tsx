@@ -19,10 +19,9 @@ import {
  * Label-Spalte links, Inhalt rechts. Über uns mit S/W-Bild im Raster und
  * „Abb. n", ohne Bild trägt der erste Satz groß (`lede`). Einblicke als
  * Bildzeilen (Raster-Filter, Abb. fortlaufend), ohne die Fotos, die schon
- * Band-Hintergrund sind (index.tsx, withoutBandPhotos). Stimme: genau ein
+ * Band-Hintergrund sind (photos.ts, claimPhotos). Stimme: genau ein
  * großes Zitat in `lede`, Name als Kicker, Quelle nur mit Google-Daten.
  */
-
 
 /**
  * Abbildungsnummern in Raster: Das Einstiegsfoto trägt keine Unterschrift,
@@ -43,7 +42,7 @@ export const paragraphs = (body: string): string[] =>
 /** Erster Satz (≥ 40 Zeichen) und Rest — Fassung ohne Foto. */
 const LEAD_SENTENCE = /^(.{40,}?[.!?])\s+(.+)$/s;
 /** Längerer Satz steht nicht groß (lede verträgt zwei, drei Zeilen). */
-const LEAD_MAX = 160;
+const LEAD_MAX = 120;
 
 function splitLead(parts: string[]): { lead?: string; rest: string[] } {
   const [first, ...more] = parts;

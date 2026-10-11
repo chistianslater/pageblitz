@@ -43,6 +43,12 @@ export function clampAt(token: string, viewportRem: number): number {
 export const REFERENCE_COLUMN_REM =
   REFERENCE_VIEWPORT_REM -
   2 * clampAt(RASTER.space.gutter, REFERENCE_VIEWPORT_REM);
+/**
+ * Breite Spalte (Desktop 1440 px: 90 rem minus Ränder ≈ 80 rem). Daraus die
+ * Zeilenzahl, die das CSS als Höhenbremse nutzt (`--rs-lines`): ein Name
+ * über drei Zeilen darf den ersten Bildschirm nicht allein füllen.
+ */
+export const WIDE_COLUMN_REM = 80;
 /** Kleinste Größe, wenn nichts mehr wandern kann: Stufe h2 (1,75 rem). */
 export const FIT_HARD_FLOOR_REM = parseFloat(
   RASTER.type.h2.size.match(/clamp\(\s*([\d.]+)rem/)![1]
