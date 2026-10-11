@@ -29,7 +29,7 @@ export function RasterDock({ anchorPrefix }: { anchorPrefix: string }) {
     >
       {plan.fields.map(f => (
         <a
-          key={f.href}
+          key={`${f.label}-${f.href}`}
           className={
             f.signal ? "rs-dock-field rs-dock-field--signal" : "rs-dock-field"
           }

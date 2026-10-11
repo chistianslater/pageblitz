@@ -38,11 +38,38 @@ const DEEP_RULE = "color-mix(in srgb,var(--sys-on-deep) 18%,transparent)";
 
 /** Handy-Leiste nur unterhalb dieser Breite (Systemblatt). */
 const DOCK = "48rem";
-/** Bildfilter laut Systemblatt Abschnitt 07 (S/W). */
-const FILTER_BLEED = "grayscale(1) contrast(1.15) brightness(.8)";
+/**
+ * Bildfilter laut Systemblatt Abschnitt 07 (S/W). Kontrast/Helligkeit des
+ * Einstiegsfotos als Zahlen, weil die Kontrastprüfung (raster.test) damit
+ * den schlimmsten Fall (rein weiße Fotofläche) nachrechnet.
+ */
+export const BLEED_FILTER = { contrast: 1.15, brightness: 0.8 } as const;
+const FILTER_BLEED = `grayscale(1) contrast(${BLEED_FILTER.contrast}) brightness(${BLEED_FILTER.brightness})`;
 const FILTER_PLATE = "grayscale(1) contrast(1.1) brightness(1.02)";
-/** Verlauf über dem Einstiegsfoto: oben 38 %, unten 66 % Schwarz (`deep`). */
-const SCRIM = `linear-gradient(180deg,color-mix(in srgb,var(--sys-deep) 38%,transparent) 0%,transparent 32%,transparent 48%,color-mix(in srgb,var(--sys-deep) 66%,transparent) 100%)`;
+
+/**
+ * Abdunkelung des Foto-Einstiegs (Anteil `deep`), so gewählt, dass auch auf
+ * einer rein weißen Fotostelle gilt (siehe Test):
+ *  - `base` über die ganze Höhe: Wortmarke (große Schrift) ≥ 3:1
+ *  - `local` zusätzlich hinter Kopfzeile, Wortmarke + Kicker und dem
+ *    unteren Textblock: kleine Schrift (Navigation, Kicker, Fakten) ≥ 4,5:1
+ * Der Systemblatt-Verlauf (oben 38 %, unten 66 %) liegt obendrauf und zählt
+ * für die Prüfung nicht mit.
+ */
+export const BLEED_SCRIM = { base: 0.4, local: 0.25 } as const;
+const pct = (n: number) => `${Math.round(n * 100)}%`;
+const deepAt = (n: number) =>
+  `color-mix(in srgb,var(--sys-deep) ${pct(n)},transparent)`;
+const SCRIM = [
+  // Kopfzeile (liegt außerhalb des Einstiegs, im Rahmen darüber)
+  `linear-gradient(180deg,${deepAt(BLEED_SCRIM.local)} 0,${deepAt(BLEED_SCRIM.local)} var(--sys-space-2xl),transparent calc(var(--sys-space-2xl) + var(--sys-space-m)))`,
+  // Systemblatt-Verlauf: oben 38 %, unten 66 %
+  `linear-gradient(180deg,${deepAt(0.38)} 0%,transparent 32%,transparent 48%,${deepAt(0.66)} 100%)`,
+  // Grundabdunkelung über die ganze Höhe
+  `linear-gradient(${deepAt(BLEED_SCRIM.base)},${deepAt(BLEED_SCRIM.base)})`,
+].join(",");
+/** Lokaler Schleier hinter einem Textblock, randlos über die Fotobreite. */
+const LOCAL_SCRIM = `linear-gradient(180deg,transparent 0,${deepAt(BLEED_SCRIM.local)} var(--sys-space-m),${deepAt(BLEED_SCRIM.local)} calc(100% - var(--sys-space-m)),transparent 100%)`;
 
 /**
  * Einstieg (Systemblatt 6/10). Wortmarke: Größe aus der Spaltenbreite
@@ -67,8 +94,8 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 .pb-raster .rs-entry-bottom{display:grid;gap:var(--sys-space-s);margin-top:var(--sys-space-l)}
 .pb-raster .rs-entry-facts{${step("small")};list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--sys-space-2xs) var(--sys-space-m)}
 .pb-raster .rs-entry-status{${step("kicker")}}
-.pb-raster .rs-live{display:inline-flex;align-items:center;gap:.5em}
-.pb-raster .rs-live::before{content:"";width:.6em;height:.6em;background:var(--sys-signal)}
+.pb-raster .rs-live{display:inline-flex;align-items:center;gap:var(--sys-space-xs)}
+.pb-raster .rs-live::before{content:"";flex:none;width:var(--sys-space-xs);height:var(--sys-space-xs);background:var(--sys-signal)}
 
 /* plate: Papier, Schrift oben, S/W-Tafel unten (Handy randlos) */
 .pb-raster .rs-entry--plate .rs-entry-in{flex:0 0 auto}
@@ -78,15 +105,19 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 /* bleed: S/W-Foto vollflächig, Kopf liegt darüber (rs-frame) */
 .pb-raster .rs-frame{position:relative}
 .pb-raster .rs-head--over{position:absolute;inset-inline:0;top:0;background:transparent;color:var(--sys-on-deep)}
-.pb-raster .rs-head--over .rs-nav a:not(.rs-btn){color:color-mix(in srgb,var(--sys-on-deep) 78%,transparent)}
-.pb-raster .rs-head--over .rs-nav a:not(.rs-btn):hover,.pb-raster .rs-head--over .rs-nav a[aria-current]{color:var(--sys-on-deep)}
+/* Navigation auf dem Foto voll deckend (Kontrast wird mit voller Farbe geprüft) */
+.pb-raster .rs-head--over .rs-nav a:not(.rs-btn){color:var(--sys-on-deep)}
 .pb-raster .rs-head--over .rs-menu-panel{color:var(--sys-ink)}
 .pb-raster .rs-entry--bleed{min-height:100vh;min-height:100svh;background:var(--sys-deep);color:var(--sys-on-deep);overflow:hidden}
 .pb-raster .rs-entry-bg{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;filter:${FILTER_BLEED}}
 .pb-raster .rs-entry-scrim{position:absolute;inset:0;background:${SCRIM}}
-.pb-raster .rs-entry--bleed .rs-entry-in{padding-top:calc(var(--sys-space-2xl) + var(--sys-space-2xs));padding-bottom:calc(var(--rs-dock,0rem) + var(--sys-space-l))}
+.pb-raster .rs-entry--bleed .rs-entry-in{z-index:1;padding-top:calc(var(--sys-space-2xl) + var(--sys-space-2xs));padding-bottom:calc(var(--rs-dock,0rem) + var(--sys-space-l))}
 .pb-raster .rs-entry--bleed .rs-entry-kicker{margin-top:var(--sys-space-s)}
-.pb-raster .rs-entry--bleed .rs-entry-bottom{margin-top:auto;padding-top:var(--sys-space-xl)}
+.pb-raster .rs-entry--bleed .rs-entry-top,.pb-raster .rs-entry--bleed .rs-entry-bottom{position:relative}
+.pb-raster .rs-entry--bleed .rs-entry-top::before,.pb-raster .rs-entry--bleed .rs-entry-bottom::before{content:"";position:absolute;z-index:-1;
+  top:calc(var(--sys-space-m) * -1);bottom:calc(var(--sys-space-m) * -1);left:calc(50% - 50vw);right:calc(50% - 50vw);background:${LOCAL_SCRIM};pointer-events:none}
+.pb-raster .rs-entry--bleed .rs-entry-bottom{margin-top:auto}
+.pb-raster .rs-entry--bleed .rs-entry-top{margin-bottom:var(--sys-space-xl)}
 .pb-raster .rs-entry--bleed :focus-visible{outline-color:var(--sys-on-deep)}
 
 /* type: nur Schrift, Haarlinien-Zeilen, „24/7" in Signal */
@@ -94,9 +125,9 @@ const ENTRY_CSS = `/* Einstieg: drei Fassungen (plate · bleed · type) */
 .pb-raster .rs-entry--type .rs-entry-row{border-top:1px solid var(--sys-rule);border-bottom:1px solid var(--sys-rule);padding-block:var(--sys-space-s);margin-bottom:var(--sys-space-s)}
 .pb-raster .rs-entry--type .rs-entry-kicker{color:var(--sys-muted)}
 .pb-raster .rs-entry-clock{container-type:inline-size;border-top:1px solid var(--sys-rule);margin-top:var(--sys-space-s);padding-top:var(--sys-space-xs);color:var(--sys-signal)}
-.pb-raster .rs-entry-clock span{${step("figure")};display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pb-raster .rs-entry-clock-figure{${step("figure")};display:block;font-variant-numeric:tabular-nums;white-space:nowrap}
 @supports (font-size:1cqi){
-  .pb-raster .rs-entry-clock span{font-size:clamp(var(--sys-figure-size),100cqi / var(--rs-fit),${FIT_MAX_REM}rem)}
+  .pb-raster .rs-entry-clock-figure{font-size:clamp(var(--sys-figure-size),100cqi / var(--rs-fit),${FIT_MAX_REM}rem)}
 }
 .pb-raster .rs-entry--type .rs-entry-bottom{margin-top:auto;padding-top:var(--sys-space-xl)}
 
@@ -121,6 +152,7 @@ const DOCK_CSS = `/* Handy-Leiste (unter ${DOCK}) */
   .pb-raster .rs-dock-field{display:flex;flex-direction:column;justify-content:center;gap:0;height:var(--rs-dock);overflow:hidden;padding:0 var(--sys-space-gutter);
     background:var(--sys-paper);color:var(--sys-ink);text-decoration:none;min-width:0}
   .pb-raster .rs-dock-field--signal{background:var(--sys-signal);color:var(--sys-on-signal)}
+  .pb-raster .rs-dock-field--signal .rs-dock-detail{opacity:1}
   .pb-raster .rs-dock-field:active{background:color-mix(in srgb,var(--sys-paper) 88%,var(--sys-ink))}
   .pb-raster .rs-dock-field--signal:active{background:color-mix(in srgb,var(--sys-signal) 88%,var(--sys-ink))}
   .pb-raster .rs-dock-field:focus-visible{outline:var(--rs-focus) solid currentColor;outline-offset:calc(var(--rs-focus) * -2)}

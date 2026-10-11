@@ -4,9 +4,6 @@ import type {
 } from "../../../../../../shared/siteContract/types";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { tradeLabel } from "../../../../../../shared/stylePacks/blueprints";
-import { RASTER } from "../../../../../../shared/designSystems/raster";
-import { getPalette } from "../../../../../../shared/designSystems/palette";
-import { relativeLuminance } from "../../../../../../shared/stylePacks/colorMath";
 import { stripMarks } from "../../richText";
 import {
   coversToday,
@@ -35,31 +32,23 @@ type Hours = SectionOf<"contact">["openingHours"];
 /* ── Fassung ──────────────────────────────────────────────────────────── */
 
 /**
- * Drei Einstiege laut Systemblatt 6:
+ * Drei Einstiege laut Systemblatt 6 — Papier spielt keine Rolle, ein
+ * brauchbares Foto des Betriebs fällt nie weg (Betreiber-Entscheid R3):
  *
- * | Hero-Foto (nicht ausgeblendet) | Querformat („Bühne") | Papier | Fassung |
- * |--------------------------------|-----------------------|--------|---------|
- * | nein / `hero-media` versteckt  | –                     | egal   | type    |
- * | ja                             | ja                    | egal   | bleed   |
- * | ja                             | nein                  | dunkel | type    |
- * | ja                             | nein                  | hell   | plate   |
+ * | Hero-Foto (nicht ausgeblendet) | Querformat („Bühne") | Fassung |
+ * |--------------------------------|-----------------------|---------|
+ * | nein / `hero-media` versteckt  | –                     | type    |
+ * | ja                             | ja                    | bleed   |
+ * | ja                             | nein                  | plate   |
  *
  * „Querformat" = `designProfile.composition === "stage"`: Das setzt die
  * Erzeugung nur, wenn das Hero-Foto gemessen ein großes Querformat ist
  * (≥ 1000 px breit, Seitenverhältnis ≥ 1,25) und das Bildmodell es als
  * Titelbild taugt (heroScore ≥ 4) — siehe server/generationV2/heroPhoto.ts
- * und withEntryComposition. Hochformat-Handyfotos ergeben auf hellem Papier
- * die ruhige Tafel unten; auf dunklem Papier („Kohle") gäbe eine helle
- * S/W-Tafel einen Fleck — dort trägt die Schrift.
+ * und withEntryComposition. Hochformat-Handyfotos ergeben die ruhige Tafel
+ * unten (auch auf dunklem Papier „Kohle").
  */
 export type EntryVariant = "plate" | "bleed" | "type";
-
-/** Unter dieser Leuchtdichte gilt das Papier als dunkel (wie legacyVars). */
-const DARK_PAPER = 0.18;
-
-export function isDarkPaper(data: WebsiteDataV2): boolean {
-  return relativeLuminance(getPalette(RASTER, data.palette).paper) < DARK_PAPER;
-}
 
 export function heroPhoto(
   data: WebsiteDataV2,
@@ -75,8 +64,7 @@ export function entryVariant(
   hero: SectionOf<"hero"> | undefined
 ): EntryVariant {
   if (!heroPhoto(data, hero)) return "type";
-  if (data.designProfile?.composition === "stage") return "bleed";
-  return isDarkPaper(data) ? "type" : "plate";
+  return data.designProfile?.composition === "stage" ? "bleed" : "plate";
 }
 
 /* ── Zeiten ───────────────────────────────────────────────────────────── */
@@ -249,7 +237,7 @@ export function dockPlan(
   const second: DockField | undefined =
     tel && action.href !== tel
       ? { label: "Anrufen", detail: phone, href: tel }
-      : mail
+      : mail && !action.href.startsWith("mailto:")
         ? { label: "E-Mail", detail: contact!.email!.trim(), href: mail }
         : route && action.href !== route
           ? { label: "Route", detail: street, href: route }

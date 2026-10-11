@@ -102,7 +102,6 @@ export function RasterEntry({ hero }: { hero: SectionOf<"hero"> }) {
             height={1000}
             loading="eager"
             fetchPriority="high"
-            decoding="async"
           />
           <div className="rs-entry-scrim" aria-hidden="true" />
         </>
@@ -125,8 +124,10 @@ export function RasterEntry({ hero }: { hero: SectionOf<"hero"> }) {
           </>
         )}
         {variant === "type" && allDay && (
-          <p className="rs-entry-clock" aria-label="Rund um die Uhr erreichbar">
+          <p className="rs-entry-clock">
+            <span className="rs-sr">Rund um die Uhr erreichbar</span>
             <span
+              className="rs-entry-clock-figure"
               aria-hidden="true"
               style={{ "--rs-fit": ROUND_CLOCK_FIT } as React.CSSProperties}
             >
@@ -149,7 +150,6 @@ export function RasterEntry({ hero }: { hero: SectionOf<"hero"> }) {
             height={1200}
             loading="eager"
             fetchPriority="high"
-            decoding="async"
           />
         </figure>
       )}

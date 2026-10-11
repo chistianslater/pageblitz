@@ -16,7 +16,10 @@ import { resolve } from "node:path";
 import { chromium } from "@playwright/test";
 
 const ROOT = resolve(import.meta.dirname, "..");
-const FONT = resolve(ROOT, "client/public/fonts/systems/geist-latin-wght.woff2");
+const FONT = resolve(
+  ROOT,
+  "client/public/fonts/systems/geist-latin-wght.woff2"
+);
 const OUT = resolve(ROOT, "shared/designSystems/rasterMetrics.ts");
 
 /** Zeichen, die in Versal-Wortmarken vorkommen (text-transform: uppercase). */
@@ -28,7 +31,17 @@ const CHARS = [
 ];
 
 /** Stichproben für den Bericht: ganze Wörter (mit Kerning) gegen Summe. */
-const SAMPLES = ["YILMAZ", "KANZLEI", "BRANDT", "NORD", "SCHLÜSSELDIENST", "MEISTERBETRIEB", "HACHTKEMPER", "AVATAR", "WAVE"];
+const SAMPLES = [
+  "YILMAZ",
+  "KANZLEI",
+  "BRANDT",
+  "NORD",
+  "SCHLÜSSELDIENST",
+  "MEISTERBETRIEB",
+  "HACHTKEMPER",
+  "AVATAR",
+  "WAVE",
+];
 
 async function main() {
   const font = readFileSync(FONT).toString("base64");

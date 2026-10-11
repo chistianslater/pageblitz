@@ -75,9 +75,10 @@ describe("Raster-Einstieg: Fassung aus den Daten", () => {
     expect(render(doc)).not.toContain('class="rs-head rs-head--over"');
   });
 
-  test("Kohle mit Hochformat-Foto → Typo; Kohle mit Querformat → Foto", () => {
+  test("Kohle: Foto fällt nie weg — Hochformat → Tafel, Querformat → vollflächig", () => {
     const portrait = { ...kanzleiDoc(), palette: "kohle" };
-    expect(entryVariant(portrait, heroOf(portrait))).toBe("type");
+    expect(entryVariant(portrait, heroOf(portrait))).toBe("plate");
+    expect(entryOf(render(portrait))).toContain('class="rs-entry-plate"');
     const stage = { ...werkstattDoc(), palette: "kohle" };
     expect(entryVariant(stage, heroOf(stage))).toBe("bleed");
   });
@@ -122,8 +123,12 @@ describe("Raster-Einstieg: Wortmarke und h1", () => {
   });
 
   test("Kopf trägt die kurze Wortmarke, wenn das Gewerk gewandert ist", () => {
-    expect(render(werkstattDoc())).toMatch(/<a class="rs-brand" href="#start">Yilmaz<\/a>/);
-    expect(render(kanzleiDoc())).toMatch(/<a class="rs-brand" href="#start">Kanzlei Brandt<\/a>/);
+    expect(render(werkstattDoc())).toMatch(
+      /<a class="rs-brand" href="#start">Yilmaz<\/a>/
+    );
+    expect(render(kanzleiDoc())).toMatch(
+      /<a class="rs-brand" href="#start">Kanzlei Brandt<\/a>/
+    );
   });
 
   test("Satz: Bauplan-Überschrift „Gewerk in Ort“ fällt weg", () => {
@@ -190,6 +195,8 @@ describe("Raster-Einstieg: Fakten", () => {
   test("„24/7“ und „Jetzt erreichbar“ nur bei 24-h-Zeiten", () => {
     const allDay = entryOf(render(schluesselDoc()));
     expect(allDay).toContain(">24/7<");
+    expect(allDay).toContain('<span class="rs-sr">Rund um die Uhr erreichbar</span>');
+    expect(allDay).not.toContain("aria-label=\"Rund um die Uhr");
     expect(allDay).toContain("Jetzt erreichbar");
     const daytime = patchSection(schluesselDoc(), "contact", c => ({
       ...c,
@@ -228,6 +235,7 @@ describe("Raster-Einstieg: Bilder", () => {
       expect(img).toMatch(/fetchPriority="high"|fetchpriority="high"/);
       expect(img).toMatch(/width="\d+"/);
       expect(img).toMatch(/height="\d+"/);
+      expect(img).not.toContain("decoding");
     }
   });
 });
@@ -282,6 +290,16 @@ describe("Raster: Handy-Leiste", () => {
     expect(
       fields?.kind === "fields" && fields.fields.map(f => f.label)
     ).toEqual(["Jetzt anrufen", "E-Mail"]);
+  });
+
+  test("Hauptaktion schon E-Mail → kein zweites E-Mail-Feld", () => {
+    const base = patchSection(kanzleiDoc(), "contact", c => ({ ...c, phone: undefined }));
+    const doc = patchSection(base, "hero", h => ({
+      ...h,
+      ctaHref: "mailto:post@kanzlei-brandt.de",
+    }));
+    const plan = dockPlan(doc, blueprintOf(doc));
+    expect(plan?.kind === "fields" && plan.fields.map(f => f.label)).not.toContain("E-Mail");
   });
 
   test("Leiste auch auf Rechtsseiten", () => {

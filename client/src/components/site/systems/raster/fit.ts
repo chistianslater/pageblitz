@@ -19,12 +19,30 @@ export const FIT_FLOOR_REM = parseFloat(
 );
 /** Obergrenze laut Systemblatt. */
 export const FIT_MAX_REM = 26;
+/** Schmalste unterstützte Breite: 320 px = 20 rem. */
+const REFERENCE_VIEWPORT_REM = 20;
+
+/**
+ * Wert eines `clamp(min, a rem + b vw, max)`-Tokens bei gegebener Breite
+ * (rem). 1vw = Breite/100.
+ */
+export function clampAt(token: string, viewportRem: number): number {
+  const m = token.match(
+    /^clamp\(\s*([\d.]+)rem\s*,\s*(-?[\d.]+)rem\s*\+\s*([\d.]+)vw\s*,\s*([\d.]+)rem\s*\)$/
+  );
+  if (!m) throw new Error(`Raster: kein clamp-Token: ${token}`);
+  const [min, a, b, max] = m.slice(1).map(Number);
+  return Math.min(max, Math.max(min, a + (b * viewportRem) / 100));
+}
+
 /**
  * Spalte, an der die Entscheidung fällt (Gewerk in den Kicker, Untergrenze):
- * 320 px Breite minus zweimal Rand `gutter` (1,125 rem) = 17,75 rem. Breitere
- * Bildschirme haben breitere Spalten — was hier passt, passt überall.
+ * 320 px Breite minus zweimal Rand `gutter` (dort 1,125 rem) = 17,75 rem.
+ * Breitere Bildschirme haben breitere Spalten — was hier passt, passt überall.
  */
-export const REFERENCE_COLUMN_REM = 20 - 2 * 1.125;
+export const REFERENCE_COLUMN_REM =
+  REFERENCE_VIEWPORT_REM -
+  2 * clampAt(RASTER.space.gutter, REFERENCE_VIEWPORT_REM);
 /** Kleinste Größe, wenn nichts mehr wandern kann: Stufe h2 (1,75 rem). */
 export const FIT_HARD_FLOOR_REM = parseFloat(
   RASTER.type.h2.size.match(/clamp\(\s*([\d.]+)rem/)![1]
