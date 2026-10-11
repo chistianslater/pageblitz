@@ -162,6 +162,7 @@ ${FONT_FACES}
 .pb-journal .jr-entry .jr-entry-name--xlong{--jr-name-size:calc(var(--sys-display-size) * .6);line-height:1}
 ${NAME_FIT}
 .pb-journal .jr-entry-line{${step("lede")};font-style:italic;font-weight:300;margin:calc(var(--sys-space-m) - var(--sys-space-2xs)) auto 0;max-width:22ch;hyphens:manual}
+.pb-journal .jr-entry-rating{${step("small")};color:var(--sys-muted);margin:var(--sys-space-xs) auto 0;font-variant-numeric:tabular-nums}
 .pb-journal .jr-entry-photo{margin:calc(var(--sys-space-l) - var(--sys-space-xs)) 0 0;text-align:left}
 .pb-journal .jr-entry-photo img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:var(--sys-rule)}
 .pb-journal .jr-entry-photo figcaption{${step("small")};font-size:calc(var(--sys-small-size) * .93);color:var(--sys-muted);

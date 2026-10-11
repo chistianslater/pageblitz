@@ -9,6 +9,7 @@ import {
   todayLine,
 } from "../../artDirection/heroFacts";
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { useSystem } from "../SystemContext";
 import { addressLine, mapsHref, primaryAction } from "./Chrome";
 import type { JournalSection } from "./sections";
@@ -17,8 +18,9 @@ import { FIT_MAX, FIT_MIN } from "./css";
 /**
  * Journal-Einstieg nach Systemblatt („Der Wow-Moment", Anker Aman Venice):
  * Kicker „Branche in Ort", der Betriebsname als Buchtitel (h1, display),
- * genau eine kursive Zeile, dann das Foto mit „Abb. 1" und bis zu drei
- * Faktenzeilen mit Haarlinien. Ohne brauchbares Foto die Typo-Fassung:
+ * genau eine kursive Zeile, darunter leise die Google-Bewertung, dann das
+ * Foto mit „Abb. 1" und bis zu zwei Faktenzeilen mit Haarlinien. Der Name
+ * steht ohne Rechtsform (displayName). Ohne brauchbares Foto die Typo-Fassung:
  * Name 22 % größer, Fakten, Knopf „Leistungen ansehen" + „Route planen".
  */
 
@@ -80,22 +82,27 @@ function todayFact(
   return { label: "Heute geöffnet", note: rest.replace(/–/g, " bis ") };
 }
 
+/**
+ * „4,8 bei Google · 110 Bewertungen" — leise Zeile unter der Kursiven, nur
+ * mit echten Bewertungen. Ersetzt die frühere Google-Faktenzeile.
+ */
+export function ratingLine(
+  google: { rating: number; reviewCount: number } | undefined
+): string | undefined {
+  if (!google || !(google.reviewCount > 0)) return undefined;
+  const count = google.reviewCount.toLocaleString("de-DE");
+  const noun = google.reviewCount === 1 ? "Bewertung" : "Bewertungen";
+  return `${formatHeroRating(google.rating)} bei Google · ${count} ${noun}`;
+}
+
 function entryFacts(
-  data: ReturnType<typeof useSystem>["data"],
   contact: SectionOf<"contact"> | undefined,
   now: Date
 ): Fact[] {
-  const google = data.google;
   const street = streetLine(contact?.street);
   const place = [contact?.zip, contact?.city].filter(Boolean).join(" ");
   const facts: (Fact | undefined)[] = [
     todayFact(contact?.openingHours, now),
-    google && google.reviewCount > 0
-      ? {
-          label: `${formatHeroRating(google.rating)} bei Google`,
-          note: `${google.reviewCount.toLocaleString("de-DE")} ${google.reviewCount === 1 ? "Bewertung" : "Bewertungen"}`,
-        }
-      : undefined,
     street ? { label: street, note: place || undefined } : undefined,
   ];
   return facts.filter((f): f is Fact => Boolean(f)).slice(0, 3);
@@ -120,7 +127,9 @@ export function JournalEntry({
       : data.businessCategory;
   const kicker = [branch, contact?.city].filter(Boolean).join(" in ");
   const line = entryLine(hero, data.tagline);
-  const facts = entryFacts(data, contact, now);
+  const rating = ratingLine(data.google);
+  const facts = entryFacts(contact, now);
+  const name = displayName(data.businessName);
   const street = streetLine(contact?.street);
   const address = addressLine(contact);
   const hasServices = sections.some(s => s.type === "services");
@@ -135,10 +144,9 @@ export function JournalEntry({
     >
       <div className="jr-wrap">
         {kicker && <p className="jr-kicker jr-entry-kicker">{kicker}</p>}
-        <h1 className={nameFitClasses(data.businessName)}>
-          {data.businessName}
-        </h1>
+        <h1 className={nameFitClasses(name)}>{name}</h1>
         {line && <p className="jr-entry-line">{line}</p>}
+        {rating && <p className="jr-entry-rating">{rating}</p>}
         {photo && (
           <figure className="jr-entry-photo">
             <img
@@ -151,8 +159,7 @@ export function JournalEntry({
             />
             <figcaption>
               <span>
-                <span className="jr-entry-abb">Abb. 1</span>{" "}
-                {data.businessName}
+                <span className="jr-entry-abb">Abb. 1</span> {name}
               </span>
               {(street || contact?.city) && (
                 <span>{street ?? contact?.city}</span>

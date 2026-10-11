@@ -10,7 +10,7 @@ import { deriveArtDirectedProfile } from "../../../../../../shared/stylePacks/ar
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { JournalChapter, chapterIndex } from "./sections";
 import { JOURNAL_CSS } from "./css";
-import { entryLine, nameFitClasses } from "./Entry";
+import { entryLine, nameFitClasses, ratingLine } from "./Entry";
 import { brandClasses } from "./Chrome";
 import { figureNumbers } from "./figures";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
@@ -247,19 +247,73 @@ describe("Journal: Einstieg", () => {
     expect(entry).toContain('class="jr-entry-facts"');
   });
 
-  test("Faktenzeilen: heute geöffnet, Google, Adresse — höchstens drei", () => {
+  test("Faktenzeilen: heute geöffnet, Adresse — Google steht nicht mehr darin", () => {
     const entry = entryOf(render());
     // 13.10.2026 ist ein Dienstag, Di–Sa 9:00 – 19:00
     expect(entry).toMatch(
       /Heute geöffnet<\/span><span class="jr-entry-fact-note">9 bis 19 Uhr/
     );
     expect(entry).toMatch(
-      /4,8 bei Google<\/span><span class="jr-entry-fact-note">167 Bewertungen/
-    );
-    expect(entry).toMatch(
       /Türkenstraße 42<\/span><span class="jr-entry-fact-note">80799 München-Maxvorstadt/
     );
-    expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(3);
+    expect(entry).not.toMatch(/jr-entry-fact"><span>[^<]*bei Google/);
+    expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(2);
+  });
+
+  test("Bewertungszeile direkt unter der kursiven Zeile, vor dem Foto", () => {
+    const entry = entryOf(render());
+    expect(entry).toContain(
+      '<p class="jr-entry-line">Handwerk für Haar.</p><p class="jr-entry-rating">4,8 bei Google · 167 Bewertungen</p>'
+    );
+    expect(entry.indexOf("jr-entry-rating")).toBeLessThan(
+      entry.indexOf("jr-entry-photo")
+    );
+    expect((entry.match(/bei Google/g) ?? []).length).toBe(1);
+  });
+
+  test("Bewertungszeile auch in der Typo-Fassung", () => {
+    const entry = entryOf(render(withHero({ imageUrl: undefined })));
+    expect(entry).toContain(
+      '<p class="jr-entry-rating">4,8 bei Google · 167 Bewertungen</p>'
+    );
+    expect(entry.indexOf("jr-entry-rating")).toBeGreaterThan(
+      entry.indexOf("jr-entry-line")
+    );
+  });
+
+  test("ratingLine: Einzahl, Tausender, nur mit Bewertungen", () => {
+    expect(ratingLine({ rating: 5, reviewCount: 1 })).toBe(
+      "5,0 bei Google · 1 Bewertung"
+    );
+    expect(ratingLine({ rating: 4.75, reviewCount: 1234 })).toBe(
+      "4,8 bei Google · 1.234 Bewertungen"
+    );
+    expect(ratingLine({ rating: 4.8, reviewCount: 0 })).toBeUndefined();
+    expect(ratingLine(undefined)).toBeUndefined();
+  });
+
+  test("CSS: Bewertungszeile klein und gedämpft", () => {
+    expect(JOURNAL_CSS).toMatch(
+      /\.jr-entry-rating\{[^}]*color:var\(--sys-muted\)/
+    );
+    expect(JOURNAL_CSS).toMatch(/\.jr-entry-rating\{[^}]*--sys-small-size/);
+  });
+
+  test("Rechtsform fällt im Namen und im Kopf weg, Fuß und Rechtliches behalten sie", () => {
+    const d = journalDoc();
+    const html = render({ ...d, businessName: "Hairlounge Hachtkemper GmbH" });
+    const entry = entryOf(html);
+    expect(entry).toMatch(
+      /<h1 class="jr-entry-name[^"]*">Hairlounge Hachtkemper<\/h1>/
+    );
+    expect(entry).not.toContain("GmbH");
+    expect(html).toMatch(/class="jr-brand[^"]*"[^>]*>Hairlounge Hachtkemper</);
+    expect(html).toMatch(/class="jr-nav-home"[^>]*>Hairlounge Hachtkemper</);
+    const foot = html.slice(html.indexOf('<footer class="jr-foot"'));
+    expect(foot).toContain("Hairlounge Hachtkemper GmbH");
+    // Größenstufe aus dem Anzeigenamen (22 Zeichen → nicht --long).
+    expect(nameFitClasses("Hairlounge Hachtkemper")).not.toContain("--long");
+    expect(entry).not.toContain("jr-entry-name--long");
   });
 
   test("keine Google-Zeile ohne Bewertungen, keine Platzhalter-Zeiten", () => {
@@ -280,6 +334,7 @@ describe("Journal: Einstieg", () => {
     // 13.10.2026 ist Dienstag — echte Mo–Fr-Zeiten ergäben eine Heute-Zeile.
     expect(isPlaceholderHours(PLACEHOLDER_OPENING_HOURS)).toBe(true);
     expect(entry).not.toContain("bei Google");
+    expect(entry).not.toContain("jr-entry-rating");
     expect(entry).not.toContain("Heute");
     expect((entry.match(/class="jr-entry-fact"/g) ?? []).length).toBe(1);
   });

@@ -3,6 +3,7 @@ import type { NavItem } from "../../engine";
 import { SECTION_ANCHORS } from "../../engine";
 import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
+import { displayName } from "../../../../../../shared/designSystems/displayName";
 import type {
   SectionOf,
   SectionType,
@@ -155,6 +156,8 @@ export function JournalHead({
   const tel = telHref(contact?.phone);
   const action = primaryAction(data, blueprint, anchorPrefix);
   const home = `${anchorPrefix}#${SECTION_ANCHORS.hero}`;
+  // Kopf zeigt den Namen ohne Rechtsform; Fuß und Rechtstexte behalten ihn.
+  const brand = displayName(data.businessName);
   return (
     <header className="jr-head">
       <div className="jr-head-bar">
@@ -168,8 +171,8 @@ export function JournalHead({
             <NavLinks items={navItems} />
           </nav>
         </details>
-        <a className={brandClasses(data.businessName)} href={home}>
-          {data.businessName}
+        <a className={brandClasses(brand)} href={home}>
+          {brand}
         </a>
         <div className="jr-head-actions">
           {tel ? (
@@ -194,7 +197,7 @@ export function JournalHead({
       </div>
       <nav className="jr-nav" aria-label="Hauptnavigation">
         <a className="jr-nav-home" href={home}>
-          {data.businessName}
+          {brand}
         </a>
         <NavLinks items={navItems} />
       </nav>
