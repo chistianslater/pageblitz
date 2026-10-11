@@ -4,7 +4,6 @@ import { rich } from "../../richText";
 import { useSystem } from "../SystemContext";
 import { legalParts, type SystemSection } from "../shared";
 import { WerkstoffEntry } from "./Entry";
-import { WerkstoffBasic } from "./Basic";
 import {
   WerkstoffPriced,
   WerkstoffProcess,
@@ -17,6 +16,14 @@ import {
   WerkstoffReviews,
   WerkstoffTeam,
 } from "./Story";
+import { WerkstoffContact, WerkstoffFaq } from "./Visit";
+import {
+  WerkstoffCta,
+  WerkstoffMotto,
+  WerkstoffPartners,
+  WerkstoffStory,
+  WerkstoffUsp,
+} from "./Extras";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
@@ -217,14 +224,19 @@ export function renderWerkstoffSection(
     case "testimonials":
       return <WerkstoffReviews section={section} sections={sections} />;
     case "faq":
+      return <WerkstoffFaq section={section} sections={sections} />;
     case "contact":
+      return <WerkstoffContact section={section} sections={sections} />;
     case "story":
+      return <WerkstoffStory section={section} sections={sections} />;
     case "usp":
+      return <WerkstoffUsp section={section} sections={sections} />;
     case "quote":
+      return <WerkstoffMotto section={section} sections={sections} />;
     case "partners":
+      return <WerkstoffPartners section={section} sections={sections} />;
     case "cta":
-      // Grundform; die Systemblatt-Bausteine folgen in W4–W6.
-      return <WerkstoffBasic section={section} sections={sections} />;
+      return <WerkstoffCta section={section} sections={sections} />;
     case "pageHeader":
       // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
       return (

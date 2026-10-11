@@ -4,6 +4,7 @@ import { DEEP_RULE, DOCK, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { OFFER_CSS } from "./offerCss";
 import { STORY_CSS } from "./storyCss";
+import { VISIT_CSS } from "./visitCss";
 
 export { step } from "./step";
 
@@ -12,8 +13,8 @@ const FONT_FACES = systemFontFaces(WERKSTOFF);
 
 
 /**
- * Grundschicht von Werkstoff (Kopf, Kapitel, Grundform der Abschnitte,
- * Knöpfe, Rechtsseiten, Fuß). Gestalt nach
+ * Grundschicht von Werkstoff (Kopf, Kapitel, Knöpfe, Rechtsseiten, Fuß;
+ * die Abschnitte kommen aus entry/offer/story/visitCss). Gestalt nach
  * docs/designsysteme/werkstoff/systemblatt.html (Anker Hollis Butcher Co.).
  * Größen, Abstände und Farben ausschließlich über `--sys-*` (oder Vielfache);
  * Ausnahmen: 1px-Haarlinien und der 2px-Fokusring. Hell bleiben: `deep`
@@ -95,27 +96,6 @@ ${FONT_FACES}
 
 ${sections}
 
-/* Grundform (W2): Zeilen mit Tinte-Linie, Zeiten, Kontakt, Fotos, Zitat */
-.pb-werkstoff .ws-rows{list-style:none;margin:var(--sys-space-xl) 0 0;padding:0;border-bottom:1px solid var(--sys-ink)}
-.pb-werkstoff .ws-rows li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--sys-space-2xs) var(--sys-space-s);align-items:baseline;padding:var(--sys-space-m) 0;border-top:1px solid var(--sys-ink)}
-.pb-werkstoff .ws-row-title{${step("h3")}}
-.pb-werkstoff .ws-row-meta{color:var(--sys-muted)}
-.pb-werkstoff .ws-row-text{grid-column:1/-1;${step("small")};color:var(--sys-muted);max-width:var(--sys-space-measure)}
-.pb-werkstoff .ws-contact{display:grid;gap:var(--sys-space-l);margin-top:var(--sys-space-l)}
-.pb-werkstoff .ws-hours{list-style:none;margin:0;padding:0;background:var(--ws-raised);border:1px solid var(--sys-ink);${step("data")}}
-.pb-werkstoff .ws-hours li{display:flex;justify-content:space-between;gap:var(--sys-space-s);padding:calc(var(--sys-space-xs) * 1.25) var(--sys-space-s);border-bottom:1px solid var(--sys-rule)}
-.pb-werkstoff .ws-hours li:last-child{border-bottom:0}
-.pb-werkstoff .ws-contact-lines{display:grid;gap:var(--sys-space-xs)}
-.pb-werkstoff .ws-contact-address{${step("h3")}}
-.pb-werkstoff .ws-form-title{${step("h3")}}
-.pb-werkstoff .ws-shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-xs);margin-top:var(--sys-space-xl)}
-.pb-werkstoff .ws-shots img{width:100%;aspect-ratio:4/5;object-fit:cover;filter:var(--sys-image-filter);background:var(--sys-rule)}
-.pb-werkstoff .ws-shots figcaption{color:var(--sys-muted);padding-top:var(--sys-space-xs)}
-@media (min-width:${GRID}){
-  .pb-werkstoff .ws-contact{grid-template-columns:5fr 7fr;gap:var(--sys-space-2xl)}
-  .pb-werkstoff .ws-shots{grid-template-columns:repeat(3,minmax(0,1fr))}
-}
-
 /* Unterseiten- und Rechtsseiten-Kopf: Mono-Zeile, genau ein h1 in Stufe h2 */
 .pb-werkstoff .ws-page-head{padding-block:var(--sys-space-l) var(--sys-space-xl)}
 .pb-werkstoff .ws-page-kicker{${step("data")};color:var(--sys-muted);margin-bottom:var(--sys-space-s)}
@@ -171,4 +151,4 @@ ${sections}
 `;
 }
 
-export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS + OFFER_CSS + STORY_CSS);
+export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS + OFFER_CSS + STORY_CSS + VISIT_CSS);
