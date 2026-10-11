@@ -5,6 +5,7 @@ import { DEEP_RULE, GRID, step } from "./step";
 import { OFFER_CSS } from "./offerCss";
 import { STORY_CSS } from "./storyCss";
 import { VISIT_CSS } from "./visitCss";
+import { RASTER_MOTION_CSS } from "./motionCss";
 
 export { step } from "./step";
 export { BAND_ALT, BAND_DESC_ALPHA, BAND_FILTER, BAND_SCRIM } from "./offerCss";
@@ -280,6 +281,7 @@ ${DOCK_CSS}
 .pb-raster .pb-island-submit{${step("link")};background:var(--sys-signal);color:var(--sys-on-signal);border-radius:0;padding:var(--sys-space-s) var(--sys-space-m)}
 .pb-raster .pb-island-privacy{${step("small")};color:var(--sys-muted)}
 
+${RASTER_MOTION_CSS}
 @media (prefers-reduced-motion:reduce){.pb-raster *,.pb-raster *::before,.pb-raster *::after{transition:none!important;animation:none!important}}
 /* ende raster */
 `;

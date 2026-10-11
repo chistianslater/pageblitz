@@ -70,9 +70,9 @@ describe("SSR rev 3: Raster", () => {
     expect(html).toMatch(/<h1 id="seite-titel">Impressum<\/h1>/);
   });
 
-  test("Motion-Bundle: Raster (noch) nicht, Journal weiter ja", () => {
+  test("Motion-Bundle: Raster und Journal laden es (R7)", () => {
     const motion = /<script type="module" src="[^"]*motion[^"]*">/;
-    expect(renderSiteHtml(rasterDoc(), { origin }).html).not.toMatch(motion);
+    expect(renderSiteHtml(rasterDoc(), { origin }).html).toMatch(motion);
     expect(
       renderSiteHtml(
         withDesignSystem(getFixture("salon-noir", "full"), "journal"),

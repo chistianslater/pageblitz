@@ -103,6 +103,19 @@ import {
 } from "./engine";
 
 /** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
+/**
+ * Bewegung je Designsystem (rev 3), als eigenes Chunk nachgeladen. Spiegelt
+ * `SYSTEMS_WITH_MOTION` (shared/designSystems/registry.ts) und das
+ * Motion-Bundle (site-islands/motion.ts).
+ */
+type MountMotion = (root: HTMLElement) => () => void;
+const SYSTEM_MOTION: Partial<Record<string, () => Promise<MountMotion>>> = {
+  journal: () =>
+    import("./systems/journal/motion").then(m => m.mountJournalMotion),
+  raster: () =>
+    import("./systems/raster/motion").then(m => m.mountRasterMotion),
+};
+
 function withLegacyVars(sys: Record<string, string>): Record<string, string> {
   return { ...sys, ...legacyPackVars(sys) };
 }
@@ -273,13 +286,14 @@ export const SiteRenderer: React.FC<{
     };
   }, [motionKey]);
   useEffect(() => {
-    if (systemDef?.id !== "journal" || !rootRef.current) return;
+    const load = systemDef ? SYSTEM_MOTION[systemDef.id] : undefined;
+    if (!load || !rootRef.current) return;
     let cancelled = false;
     let cleanup: (() => void) | undefined;
     const root = rootRef.current;
-    import("./systems/journal/motion")
-      .then(({ mountJournalMotion }) => {
-        if (!cancelled) cleanup = mountJournalMotion(root);
+    load()
+      .then(mount => {
+        if (!cancelled) cleanup = mount(root);
       })
       .catch(() => {
         /* Seite bleibt ohne Bewegung vollständig lesbar. */

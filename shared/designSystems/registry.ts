@@ -21,10 +21,12 @@ export function isReleased(id: DesignSystemId): boolean {
 
 /**
  * Systeme mit eigener Bewegung im Motion-Bundle (`site-islands/motion.ts`).
- * Nur diese laden das Bundle (SSR, `usesMotionBundle`). Raster fehlt bis
- * Task R7 bewusst: ohne Bewegungscode kein unnötiges Skript.
+ * Nur diese laden das Bundle (SSR, `usesMotionBundle`).
  */
-export const SYSTEMS_WITH_MOTION: readonly DesignSystemId[] = ["journal"];
+export const SYSTEMS_WITH_MOTION: readonly DesignSystemId[] = [
+  "journal",
+  "raster",
+];
 
 export function systemHasMotion(id: DesignSystemId): boolean {
   return SYSTEMS_WITH_MOTION.includes(id);

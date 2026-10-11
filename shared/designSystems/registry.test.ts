@@ -27,8 +27,8 @@ describe("Raster", () => {
 });
 
 describe("Bewegung je System", () => {
-  test("Journal hat Bewegung, Raster bis R7 nicht", () => {
+  test("Journal und Raster haben Bewegung (R7)", () => {
     expect(systemHasMotion("journal")).toBe(true);
-    expect(systemHasMotion("raster")).toBe(false);
+    expect(systemHasMotion("raster")).toBe(true);
   });
 });
