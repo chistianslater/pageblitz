@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Werkstoff Systemblatt</title>
+<link rel="preload" href="fonts/zilla-slab-latin-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/karla-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* ── Schriften (self-hosted, OFL) ─────────────────────────────── */
+@font-face{font-family:"Zilla Slab";src:url(fonts/zilla-slab-latin-700.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Karla";src:url(fonts/karla-latin-wght.woff2) format("woff2");font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:"DM Mono";src:url(fonts/dm-mono-latin-500.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --fz:"Zilla Slab",Rockwell,"Roboto Slab",Georgia,serif;
+  --fk:"Karla","Helvetica Neue",Arial,system-ui,sans-serif;
+  --fm:"DM Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --paper:#f1e6cf;--raised:#f9f4ea;--ink:#211b14;--muted:#5e5243;--rule:#d9c8a6;--accent:#a23a1c;--signal:#b2421f;--deep:#2a2119;--onDeep:#f1e6cf;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9cfbd;color:var(--ink);font-family:var(--fk);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.sheet{width:1520px;margin:0 auto;background:var(--paper)}
+[data-shot]{padding:0 var(--pad)}
+.blk{padding:64px 0 76px;border-top:1.5px solid var(--ink)}
+.blk.first{border-top:0}
+.lb{display:flex;gap:.7em;font:500 13px/1.3 var(--fm);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.lb b{font-weight:500;color:var(--signal)}
+.bh{font:700 50px/1.02 var(--fz);letter-spacing:-.012em;margin:16px 0 14px;max-width:26ch}
+.bp{max-width:46rem;font-size:18px;line-height:1.5}
+.bp+.bp{margin-top:10px}
+.note{font-size:14px;color:var(--muted);line-height:1.45}
+code,.mono{font-family:var(--fm);font-size:12.5px;letter-spacing:0}
+code{background:rgba(33,27,20,.07);padding:1px 4px}
+table.t{width:100%;border-collapse:collapse;font-size:14.5px;line-height:1.4;margin-top:24px}
+table.t th{font:500 12px var(--fm);letter-spacing:.04em;text-transform:uppercase;text-align:left;padding:9px 14px 9px 0;border-bottom:1.5px solid var(--ink)}
+table.t td{padding:10px 14px 10px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:700;white-space:nowrap}
+table.t td.ar{color:var(--signal);font-weight:600;width:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.cap{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.4}
+
+/* Kopf */
+.top{padding:44px 0 64px}
+.top .w{font:700 300px/.82 var(--fz);letter-spacing:-.025em;margin:0 0 36px -.03em}
+.top .row{display:grid;grid-template-columns:1fr 1.3fr 1.1fr;gap:40px;align-items:start}
+.top .m{font:700 34px/1.12 var(--fz)}
+.top .r{display:grid;gap:10px}
+.top .r p{font-size:15px;line-height:1.45;color:var(--muted)}
+.top .r p b{color:var(--ink)}
+.vs3{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:40px;border-top:1.5px solid var(--ink)}
+.vs3>div{padding:18px 22px 4px 0}
+.vs3>div+div{padding-left:22px;border-left:1px solid var(--rule)}
+.vs3 h3{font:700 26px/1.1 var(--fz);margin-bottom:8px}
+.vs3 p{font-size:15px;color:var(--muted)}
+.vs3 .me h3{color:var(--signal)}
+
+/* Schriftmuster */
+.fonts3{display:grid;grid-template-columns:1.25fr 1fr .85fr;gap:0;margin-top:30px;border-top:1px solid var(--rule)}
+.fonts3>div{padding:26px 26px 0 0}
+.fonts3>div+div{padding-left:26px;border-left:1px solid var(--rule)}
+.fonts3 .nm{font:500 12px var(--fm);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.glz{font:700 150px/.86 var(--fz);letter-spacing:-.02em;margin:18px 0 10px}
+.glk{font:500 150px/.86 var(--fk);letter-spacing:-.03em;margin:18px 0 10px}
+.glm{font:500 104px/1 var(--fm);margin:30px 0 22px}
+.abc{font-size:22px;line-height:1.3;margin:14px 0}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding:8px 0}
+.wts div span:first-child{font-size:30px;line-height:1}
+.wts .note{font-family:var(--fm);font-size:11.5px}
+
+/* Skala */
+.step{display:grid;grid-template-columns:200px 400px 1fr;gap:30px;border-top:1px solid var(--rule);padding:22px 0;align-items:start}
+.step .k{display:block;font:700 22px var(--fz);margin-bottom:6px}
+.step .k i{font:500 11px var(--fm);color:var(--signal);font-style:normal;text-transform:uppercase;letter-spacing:.05em;margin-left:6px;vertical-align:middle}
+.step .s375{width:400px;padding-bottom:10px!important;border-left:1px dashed #c9b48c;border-right:1px dashed #c9b48c;padding:0 20px;overflow:hidden}
+.step .s1440{overflow:hidden}
+.step .px{display:block;font-family:var(--fm);font-size:11px;color:var(--muted);margin-bottom:8px}
+
+/* Abstände */
+.bar{display:grid;grid-template-columns:90px 300px 1fr;gap:18px;align-items:center;padding:6px 0}
+.bar b{display:block;height:14px;background:var(--ink)}
+.bar .k{font:700 17px var(--fz)}
+
+/* Raster-Diagramm */
+.gridd{position:relative;border:1px solid var(--rule);overflow:hidden;background:var(--raised)}
+.gridd .cols{position:absolute;inset:0;display:grid}
+.gridd .cols i{background:rgba(178,66,31,.06);border-left:1px solid rgba(178,66,31,.2);border-right:1px solid rgba(178,66,31,.2)}
+.gridd small{font:500 10.5px var(--fm);color:var(--signal);letter-spacing:.03em}
+
+/* Paletten */
+.pals{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:30px}
+.pal .hero{padding:24px 24px 26px;min-height:330px;position:relative;border:1px solid rgba(0,0,0,.08)}
+.pal .hero .n{font:700 44px/1 var(--fz);margin:16px 0 8px}
+.pal .hero .le{font-size:17px;line-height:1.4;max-width:24ch}
+.pal .btns{display:flex;gap:8px;margin-top:18px}
+.pal .btns span{display:inline-flex;align-items:center;height:44px;padding:0 18px;font:600 15px var(--fk);border-radius:3px}
+.pal .fig{font:700 64px/.8 var(--fz);margin-top:18px;letter-spacing:-.02em}
+.pal .sw{display:grid;grid-template-columns:repeat(9,1fr);height:74px}
+.pal .sw div{padding:6px 5px;display:flex;align-items:flex-end}
+.pal .sw small{font:500 9px/1.25 var(--fm)}
+.pal .cr{display:grid;grid-template-columns:1fr auto auto;gap:4px 14px;font:500 12px var(--fm);margin-top:12px}
+.cok{color:#2d6a3a}.cno{color:#b00020}
+
+/* Regel-Listen */
+.rules{list-style:none;counter-reset:m}
+.rules li{display:grid;grid-template-columns:40px 1fr;padding:11px 0;border-top:1px solid var(--rule);font-size:16px;line-height:1.45}
+.rules li:before{counter-increment:m;content:counter(m);font:700 22px/1 var(--fz);color:var(--signal)}
+.rules li b{font-weight:700}
+.dodont{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:26px}
+.dodont figure{position:relative}
+.dodont .fr{aspect-ratio:4/5;overflow:hidden;position:relative}
+.dodont img{width:100%;height:100%;object-fit:cover;display:block}
+.dodont figcaption{font-size:13.5px;line-height:1.4;margin-top:8px}
+.dodont figcaption b{font:500 11px var(--fm);letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:2px}
+.dodont .no figcaption b{color:#b00020}.dodont .yes figcaption b{color:#2d6a3a}
+
+/* Mockup-Rahmen */
+.phones{display:flex;gap:36px;align-items:flex-start;margin-top:30px}
+.phone{position:relative;width:390px;overflow:hidden;background:#fff;outline:1px solid #b9a98a;flex:none}
+.phone .roll{position:absolute;left:0;right:0;top:0}
+.phone .fold{position:absolute;left:0;right:0;border-top:1px dashed #ff2d55;z-index:30;pointer-events:none}
+.phone .fold span{position:absolute;right:6px;top:3px;font:500 10px var(--fm);color:#ff2d55;background:rgba(255,255,255,.88);padding:1px 4px}
+.px2{font-family:var(--fm);font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:.02em}
+.desk{position:relative;width:1408px;overflow:hidden;outline:1px solid #b9a98a}
+.firsts{display:flex;gap:36px;margin-top:30px}
+.firsts .phone{height:844px}
+.firsts p.c{font-size:15px;margin-top:12px;max-width:390px;line-height:1.42}
+.firsts p.c b{font-weight:700}
+.comp{display:grid;grid-template-columns:repeat(3,390px);gap:36px 37px;margin-top:30px}
+.comp .ch{font:700 22px/1.1 var(--fz);margin:14px 0 4px}
+.comp .cp{font-size:14.5px;line-height:1.42;color:var(--muted)}
+pre.ts{font:500 12.2px/1.5 var(--fm);background:var(--deep);color:#efe3cb;padding:26px 28px;white-space:pre;overflow:hidden;margin-top:24px}
+
+/* ══════════ WERKSTOFF-SYSTEM (Mockups; nutzt nur Tokens) ══════════ */
+.ws{background:var(--s-paper);color:var(--s-ink);font-family:var(--fk);font-size:var(--body-size);line-height:1.55;position:relative;container-type:inline-size;-webkit-font-smoothing:antialiased;
+  --raise:color-mix(in srgb,var(--s-paper) 34%,#fff);--grade:saturate(.86) sepia(.1) contrast(1.05) brightness(1.01)}
+.ws a{color:inherit;text-decoration:none}
+.ws .wrap{padding-left:var(--gutter);padding-right:var(--gutter)}
+.ws .mu{color:var(--s-muted)}
+.ws .sig{color:var(--s-signal)}
+.ws img.ph{display:block;width:100%;height:100%;object-fit:cover;filter:var(--grade);background:var(--s-rule)}
+.ws .sec{padding-top:var(--section)}
+.ws .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--s-signal);margin-right:8px;vertical-align:1px;box-shadow:0 0 0 3px color-mix(in srgb,var(--s-signal) 18%,transparent)}
+.ws .t-row{font-family:var(--fz);font-weight:700;font-size:calc(var(--h2-size)*.86);line-height:1.02;letter-spacing:-.01em}
+.ws .t-quote{font-family:var(--fk);font-weight:600;font-size:calc(var(--h2-size)*.68);line-height:1.16;letter-spacing:-.02em}
+.ws .t-q{font-family:var(--fz);font-weight:700;font-size:calc(var(--h3-size)*.86);line-height:1.18}
+.ws .ul{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px}
+
+/* Knopf */
+.ws .bt{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 22px;border-radius:3px;background:var(--s-signal);color:var(--s-onSignal);font:600 16px/1 var(--fk);white-space:nowrap}
+.ws .bt2{display:inline-flex;align-items:center;justify-content:center;height:52px;padding:0 20px;border-radius:3px;box-shadow:inset 0 0 0 1.5px var(--s-ink);font:600 16px/1 var(--fk);white-space:nowrap}
+.ws .bts{display:flex;gap:10px;flex-wrap:wrap;margin-top:var(--s-l)}
+
+/* Kopfzeile */
+.ws .hd{height:60px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--s-rule)}
+.ws .hd .t-mark small{font:500 11px var(--fm);letter-spacing:.05em;text-transform:uppercase;color:var(--s-muted);display:block;margin-top:3px}
+.ws .hd .nv,.ws .hd .bt{display:none}
+.ws .mn{width:44px;height:44px;display:grid;place-content:center;gap:6px;background:none;border:0}
+.ws .mn i{display:block;width:22px;height:2px;background:var(--s-ink)}
+
+/* Werkzettel */
+.ws .slip{background:var(--raise);color:var(--s-ink);border:1px solid var(--s-ink);font-family:var(--fm);font-weight:500;font-size:var(--data-size);line-height:1.45;letter-spacing:.03em;text-transform:uppercase;box-shadow:0 26px 40px -26px rgba(40,25,10,.55),0 2px 0 rgba(40,25,10,.06)}
+.ws .slip .r{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--s-rule)}
+.ws .slip .big{font-size:calc(var(--data-size)*1.62);letter-spacing:.01em;padding:12px 12px 4px;border:0;align-items:baseline}
+.ws .slip .big small{font-size:var(--data-size);letter-spacing:.03em}
+.ws .slip .tear{border-bottom:1.5px dashed var(--s-muted)}
+.ws .slip .sf{display:flex;justify-content:space-between;padding:10px 12px;background:var(--s-signal);color:var(--s-onSignal)}
+.ws .slip .sf .dot{background:var(--s-onSignal);box-shadow:none;width:7px;height:7px}
+
+/* Einstieg Foto */
+.ws .en-tx{padding-top:var(--s-l)}
+.ws .en-tx .t-kicker{margin-bottom:var(--s-s)}
+.ws .en-tx .t-lede{margin-top:var(--s-m);max-width:30ch}
+.ws .en-tx .bts{display:none}
+.ws .en-im{position:relative;margin-top:var(--s-l);aspect-ratio:390/350}
+.ws .en-im .cr{position:absolute;inset:0;overflow:hidden}
+.ws .en-im .slip{position:absolute;right:var(--gutter);bottom:-58px;width:min(318px,calc(100% - 2*var(--gutter)))}
+.ws .info{list-style:none;display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:calc(58px + var(--s-l));padding-top:var(--s-s);border-top:1px solid var(--s-rule);font-weight:500}
+.ws .en-ph .info{margin-left:var(--gutter);margin-right:var(--gutter);padding-left:0;padding-right:0}
+
+/* Einstieg Zeit (Bäckerei) */
+.ws .en-tm .t-figure{margin:var(--s-m) 0 var(--s-s) -.04em}
+.ws .en-tm .t-h2{max-width:14ch}
+.ws .tdy{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;margin-top:var(--s-m);font-weight:600}
+.ws .en-tm .en-im{aspect-ratio:390/300}
+
+/* Einstieg Schrift (schwache Fotos) */
+.ws .en-ty{padding-top:var(--s-xl)}
+.ws [data-fit]{display:block;white-space:nowrap}
+.ws [data-fit] span{display:block}
+.ws .en-ty .t-lede{margin-top:var(--s-m);max-width:28ch}
+.ws .en-ty .slip{margin-top:var(--s-l)}
+.ws .en-ty .info{margin-top:var(--s-l)}
+
+/* Intro */
+.ws .in .t-h2{max-width:16ch}
+.ws .in p{margin-top:var(--s-m);max-width:var(--measure)}
+
+/* Leistungen als Liste */
+.ws .ls>p{margin-top:var(--s-m);max-width:var(--measure)}
+.ws .ls ul{list-style:none;margin-top:var(--s-xl)}
+.ws .ls li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:var(--s-m) 0;border-top:1.5px solid var(--s-ink);align-items:baseline}
+.ws .ls li:last-child{border-bottom:1.5px solid var(--s-ink)}
+.ws .ls li p{grid-column:1/-1;margin-top:6px}
+.ws .ls li .meta{display:none}
+.ws .ls li .ar{font:600 22px/1 var(--fk);color:var(--s-signal)}
+
+/* Ablauf 1-2-3 */
+.ws .st-im{aspect-ratio:4/3}
+.ws .st-tx{padding-top:var(--s-xl)}
+.ws .st-tx>p{margin-top:var(--s-s);max-width:var(--measure)}
+.ws .st ol{list-style:none;margin-top:var(--s-xl)}
+.ws .st li{padding:var(--s-l) 0 var(--s-xl);border-top:1px solid var(--s-rule)}
+.ws .st li .t-figure{display:block;color:var(--s-signal);margin:0 0 var(--s-s) -.05em}
+.ws .st li .t-h3{margin-bottom:var(--s-xs)}
+.ws .st li .t-data{margin-top:var(--s-s)}
+
+/* Zeitleiste (Bäckerei, Northdock-Variante) */
+.ws .tl>.wrap>p{margin-top:var(--s-s);max-width:var(--measure)}
+.ws .tl-tr{display:grid;grid-auto-flow:column;grid-auto-columns:64%;gap:18px;align-items:start;overflow:hidden;margin-top:var(--s-xl);scroll-snap-type:x mandatory;scroll-padding-inline:var(--gutter)}
+.ws .tl-c{position:relative;border-top:1.5px solid var(--s-ink);padding-top:var(--s-m);scroll-snap-align:start}
+.ws .tl-c:before{content:"";position:absolute;left:0;top:-6px;width:10px;height:10px;border-radius:50%;background:var(--s-signal)}
+.ws .tl-c .t-h2{color:var(--s-signal);font-variant-numeric:tabular-nums}
+.ws .tl-c h3{margin:var(--s-xs) 0 4px}
+.ws .tl-c .im{aspect-ratio:4/3;margin-top:var(--s-m)}
+.ws .tl-hint{margin-top:var(--s-m)}
+
+/* Wochentafel */
+.ws .tf-b{background:var(--s-signal);color:var(--s-onSignal);padding:var(--s-l) var(--s-m) var(--s-m)}
+.ws .tf-b .t-h2{margin:var(--s-xs) 0 var(--s-l)}
+.ws .tf-b ul{list-style:none}
+.ws .tf-b li{display:grid;grid-template-columns:3.2em 1fr auto;gap:12px;align-items:baseline;padding:12px 0;border-top:1px solid color-mix(in srgb,var(--s-onSignal) 34%,transparent)}
+.ws .tf-b li.on{background:color-mix(in srgb,var(--s-deep) 26%,transparent);margin:0 calc(-1*var(--s-s));padding-left:var(--s-s);padding-right:var(--s-s)}
+.ws .tf-b .t-small{margin-top:var(--s-m);opacity:.88}
+
+/* Werkbank-Raster */
+.ws .gl>p{margin-top:var(--s-s);max-width:var(--measure)}
+.ws .gl-g{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-xs);margin-top:var(--s-xl)}
+.ws .gl-g figure{display:grid;grid-template-rows:1fr auto;grid-template-columns:minmax(0,1fr);min-width:0}
+.ws .gl-g .fr{overflow:hidden;min-height:0;position:relative;width:100%}
+.ws .gl-g .fr img.ph{position:absolute;inset:0}
+.ws .gl-g figcaption{padding-top:7px;color:var(--s-muted)}
+.ws .gl-g.n4 .g0,.ws .gl-g.n3 .g0,.ws .gl-g.n4 .g3{grid-column:1/-1}
+.ws .gl-g.n4 .g0 .fr,.ws .gl-g.n3 .g0 .fr{aspect-ratio:4/3}
+.ws .gl-g .g1 .fr,.ws .gl-g .g2 .fr{aspect-ratio:4/5}
+.ws .gl-g.n4 .g3 .fr{aspect-ratio:16/9}
+.ws .gl-g.n2 .fr{aspect-ratio:4/5}
+
+/* Stimme */
+.ws .qt blockquote{margin-top:var(--s-m);max-width:24ch}
+.ws .qt .who{margin-top:var(--s-l);padding-top:var(--s-s);border-top:1px solid var(--s-rule);display:flex;gap:6px 14px;flex-wrap:wrap;align-items:baseline}
+.ws .qt .who b{font:700 18px var(--fz)}
+
+/* Gut zu wissen */
+.ws .fq>p{margin-top:var(--s-s);max-width:var(--measure)}
+.ws .fq .t-link{display:inline-block;margin-top:var(--s-s)}
+.ws .fq-l{margin-top:var(--s-l);border-top:1.5px solid var(--s-ink)}
+.ws .fq-i{padding:var(--s-m) 0;border-bottom:1px solid var(--s-rule)}
+.ws .fq-q{display:grid;grid-template-columns:1fr 30px;gap:16px;align-items:start}
+.ws .fq-q i{width:30px;height:30px;display:grid;place-content:center;box-shadow:inset 0 0 0 1.5px var(--s-ink);font:600 18px/1 var(--fk);font-style:normal;border-radius:3px}
+.ws .fq-i.op .fq-q i{background:var(--s-signal);color:var(--s-onSignal);box-shadow:none}
+.ws .fq-i p{margin-top:var(--s-s);max-width:var(--measure)}
+
+/* Zeiten und Kontakt */
+.ws .vs-g{display:grid;gap:var(--s-m);margin-top:var(--s-l)}
+.ws .hc{background:var(--raise);border:1px solid var(--s-ink)}
+.ws .hc .stt{padding:14px 16px;border-bottom:1px solid var(--s-ink);font-weight:600}
+.ws .hc ul{list-style:none;font-family:var(--fm);font-weight:500;font-size:var(--data-size);letter-spacing:.03em;text-transform:uppercase}
+.ws .hc li{display:grid;grid-template-columns:1fr auto;gap:12px;padding:10px 16px;border-bottom:1px solid var(--s-rule)}
+.ws .hc li:last-child{border-bottom:0}
+.ws .hc li.on{box-shadow:inset 4px 0 0 var(--s-signal);background:color-mix(in srgb,var(--s-signal) 7%,transparent);font-weight:500;color:var(--s-ink)}
+.ws .hc li.on span:first-child:after{content:"heute";margin-left:10px;color:var(--s-signal)}
+.ws .ct .t-h3{margin-bottom:var(--s-s)}
+.ws .ct p{margin-top:4px}
+.ws .ct .bts{margin-top:var(--s-m)}
+
+/* Fuß (einzige dunkle Fläche) */
+.ws .ft{background:var(--s-deep);color:var(--s-onDeep);margin-top:var(--section);padding-top:var(--section)}
+.ws .ft .t-h2{max-width:14ch}
+.ws .ft .bt{margin-top:var(--s-l)}
+.ws .ft .cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-l) var(--s-m);margin-top:var(--s-2xl);padding-top:var(--s-l);border-top:1px solid color-mix(in srgb,var(--s-onDeep) 22%,transparent)}
+.ws .ft .cols h4{font-family:var(--fm);font-weight:500;font-size:var(--data-size);letter-spacing:.03em;text-transform:uppercase;opacity:.66;margin-bottom:8px}
+.ws .ft .cols p{line-height:1.6}
+.ws .ft .leg{margin-top:var(--s-xl);display:flex;gap:18px;opacity:.8}
+.ws .ft .wm{font-family:var(--fz);font-weight:700;line-height:.8;letter-spacing:-.02em;margin-top:var(--s-l);padding-bottom:calc(var(--s-m) + 64px)}
+
+/* Handy-Leiste */
+.ws .dk{position:absolute;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px var(--gutter) 12px;background:color-mix(in srgb,var(--s-paper) 90%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--s-rule)}
+.ws .dk .bt,.ws .dk .bt2{height:48px}
+
+/* Rechtliches */
+.ws .lg dl{margin-top:var(--s-l);border-top:1.5px solid var(--s-ink)}
+.ws .lg dt{font-family:var(--fm);font-weight:500;font-size:var(--data-size);letter-spacing:.03em;text-transform:uppercase;color:var(--s-muted);padding-top:var(--s-s)}
+.ws .lg dd{padding:2px 0 var(--s-s);border-bottom:1px solid var(--s-rule)}
+
+/* ── ab 900 px Containerbreite (Desktop) ── */
+@container (min-width: 900px){
+  .ws .hd{height:72px}
+  .ws .hd .nv{display:flex;gap:28px;margin-left:auto;font:600 15px var(--fk)}
+  .ws .hd .bt{display:inline-flex;height:46px}
+  .ws .mn{display:none}
+  .ws .en-ph{display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px;padding:0 var(--gutter)}
+  .ws .en-ph .en-tx{grid-column:1/7;grid-row:1;align-self:end;padding:0 0 var(--s-2xl)}
+  .ws .en-ph .en-tx .t-lede{max-width:28ch}
+  .ws .en-ph .en-tx .bts{display:flex}
+  .ws .en-ph .en-im{grid-column:7/13;grid-row:1;margin-top:var(--s-l);aspect-ratio:auto;height:640px}
+  .ws .en-ph .en-im .slip{left:-150px;right:auto;bottom:44px;width:360px}
+  .ws .en-ph .info{grid-column:1/-1;margin:var(--s-l) 0 0;gap:6px 40px}
+  .ws .ls{display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px}
+  .ws .ls h2{grid-column:1/-1}
+  .ws .ls>p{grid-column:1/5}
+  .ws .ls ul{grid-column:1/-1}
+  .ws .ls li{grid-template-columns:1fr 18rem 40px;padding:var(--s-m) 0}
+  .ws .ls li p{grid-column:1;grid-row:2;margin-top:6px}
+  .ws .ls li .meta{display:block;grid-column:2;grid-row:1/3;align-self:center}
+  .ws .ls li .ar{grid-column:3;grid-row:1/3;align-self:center;justify-self:end}
+  .ws .st{display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+  .ws .st-im{aspect-ratio:auto;height:auto;min-height:100%}
+  .ws .st-tx{padding:var(--section) var(--gutter) 0 calc(var(--gutter)*1.6)}
+  .ws .st li{display:grid;grid-template-columns:calc(var(--figure-size)*.66) 1fr;grid-template-rows:auto auto 1fr;column-gap:var(--s-l);padding:var(--s-l) 0}
+  .ws .st li .t-figure{grid-row:1/4;margin:0}
+  .ws .st li .t-h3{padding-top:.4em}
+  .ws .gl-g.n4{grid-template-columns:2fr 1fr 1fr;grid-template-rows:auto auto}
+  .ws .gl-g.n4 .g0{grid-column:1;grid-row:1/3}
+  .ws .gl-g.n4 .g0 .fr{aspect-ratio:auto;height:100%}
+  .ws .gl-g.n4 .g1{grid-column:2;grid-row:1}
+  .ws .gl-g.n4 .g2{grid-column:3;grid-row:1}
+  .ws .gl-g.n4 .g1 .fr,.ws .gl-g.n4 .g2 .fr{aspect-ratio:1/1}
+  .ws .gl-g.n4 .g3{grid-column:2/4;grid-row:2}
+  .ws .gl-g.n4 .g3 .fr{aspect-ratio:2/1}
+  .ws .tl-tr{grid-auto-columns:300px}
+  .ws .vs-g{grid-template-columns:5fr 7fr;gap:var(--s-2xl)}
+  .ws .fq{display:grid;grid-template-columns:5fr 7fr;column-gap:var(--s-2xl)}
+  .ws .fq-l{grid-column:2;grid-row:1/4;margin-top:0}
+  .ws .ft .cols{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ═════════ 1 · Kopf + Anker ═════════ -->
+<div data-shot="1">
+<header class="top">
+  <p class="lb"><b>Designsystem 3 von 6</b><span>Pageblitz Kundenseiten · Systemblatt · Stand 11.10.2026</span></p>
+  <h1 class="w" style="margin-top:28px">Werkstoff</h1>
+  <div class="row">
+    <p class="lb" style="flex-direction:column;gap:6px"><b>Wesen</b><span style="color:var(--ink);font:700 22px/1.2 var(--fz);text-transform:none;letter-spacing:0">Warm, handfest, ehrlich.</span></p>
+    <p class="m">Ein Laden mit Handwerk, auf hellem Papiergrund. Slab für das, was gebaut ist, Grotesk zum Lesen, Mono für Zettel, Zeiten und Preise.</p>
+    <div class="r">
+      <p><b>Anker:</b> Hollis Butcher Co. (Framer-Vorlage „Cleaver“), treu nachgebaut, hell umgefärbt. Einzige Zugabe: die Tageszeitleiste von Northdock als Ablauf für Bäckereien und Cafés.</p>
+      <p><b>Für:</b> Schreiner, Maler, Dachdecker, Sanitär, Elektro, Gartenbau, Café, Bäckerei, Läden. Alternativ Restaurant, Imbiss, Unterkunft, Industrie.</p>
+    </div>
+  </div>
+  <div class="vs3">
+    <div><h3>Journal</h3><p>Serifen-Magazin. Ruhig, viel Weißraum, Text führt. Keine Zettel, keine Ziffern in Farbe.</p></div>
+    <div><h3>Raster</h3><p>Schweizerisch, eine Grotesk, schwarz-weiß, riesige Wortmarke in Versalien. Bänder statt Material.</p></div>
+    <div class="me"><h3>Werkstoff</h3><p>Slab + Grotesk + Mono. Warmer, heller Grund, Werkzettel, Wochentafel, Ziffern in Oxid. Fotos dürfen mittelmäßig sein.</p></div>
+  </div>
+</header>
+<section class="blk">
+  <p class="lb"><b>01</b><span>Anker vermessen (getComputedStyle, 1440 und 390)</span></p>
+  <h2 class="bh">Hollis gemessen, Werkstoff abgeleitet</h2>
+  <p class="bp">Wir übernehmen Schriftbild, Abschnittsfolge und die drei Erkennungsstücke (Zettel, große Ziffern, Tafel). Wir ändern den Grund: hell statt fast schwarz. Damit trägt die Seite auch blasse Handyfotos.</p>
+  <table class="t" id="anker"></table>
+</section>
+</div>
+
+<!-- ═════════ 2 · Schrift ═════════ -->
+<div data-shot="2">
+<section class="blk">
+  <p class="lb"><b>02</b><span>Schrift · drei Familien, drei Dateien, 57 kB</span></p>
+  <h2 class="bh">Zilla Slab baut, Karla erklärt, DM Mono notiert</h2>
+  <p class="bp">Genau die Schriften des Ankers, alle OFL, selbst gehostet. Zilla Slab nur in 700: eine Dicke reicht für Display bis Logo. Karla als variable Datei für Text und Knöpfe. DM Mono 500 nur für Zettel, Zeiten und Bildzeilen, nicht vorgeladen.</p>
+  <div class="fonts3">
+    <div><p class="nm"><span>Zilla Slab 700 · display</span><span>16,4 kB · vorgeladen</span></p><p class="glz">Holz&nbsp;8</p><p class="abc" style="font:700 30px/1.15 var(--fz)">Schreinerei Holtkamp<br>Gebaut, um zu bleiben.<br>ÄÖÜ äöüß „1·2·3“ 4,9 €</p></div>
+    <div><p class="nm"><span>Karla 200-800 · text</span><span>31,4 kB · vorgeladen</span></p><p class="glk">Aa&nbsp;g</p>
+      <div class="wts"><div><span style="font-weight:400">Brötchen</span><span class="note">400 Fließtext</span></div><div><span style="font-weight:500">Brötchen</span><span class="note">500 Lede</span></div><div><span style="font-weight:600">Brötchen</span><span class="note">600 Knopf, Kicker, Zitat</span></div></div></div>
+    <div><p class="nm"><span>DM Mono 500 · data</span><span>8,5 kB</span></p><p class="glm">06:00</p><p class="abc" style="font:500 14px/1.6 var(--fm);letter-spacing:.03em;text-transform:uppercase">Aufmaß vor Ort · kostenlos<br>Mo 07:00-17:00<br>Tel. 0251 555 0147</p></div>
+  </div>
+  <p class="cap">Summe 56,3 kB woff2 (latin). Vorladen: <code>zilla-slab-latin-700.woff2</code>, <code>karla-latin-wght.woff2</code> (47,8 kB). DM Mono lädt mit <code>font-display: swap</code> nach, Rückfall <code>ui-monospace</code>. Zilla hat keine variable Fassung bei Google; 600 entfällt (Hollis nutzt es nur für Kleintitel, 700 trägt dort genauso).</p>
+</section>
+</div>
+
+<!-- ═════════ 3 · Skala ═════════ -->
+<div data-shot="3">
+<section class="blk">
+  <p class="lb"><b>03</b><span>Typo-Skala · 390 und 1440 · alle Größen als clamp()</span></p>
+  <h2 class="bh">Elf Stufen, eine neu: data</h2>
+  <p class="bp">Wie Raster: Kernstufen plus <code>figure</code> für die Ziffern. Neu ist <code>data</code> in DM Mono, für alles, was auf einem Zettel stünde.</p>
+  <div id="scale" style="margin-top:20px"></div>
+</section>
+</div>
+
+<!-- ═════════ 4 · Abstände + Raster ═════════ -->
+<div data-shot="4">
+<section class="blk">
+  <p class="lb"><b>04</b><span>Abstände</span></p>
+  <h2 class="bh">Großzügig zwischen den Abschnitten, eng am Zettel</h2>
+  <p class="bp">Abschnittsabstand 72 px am Handy, 129 px am Desktop (Hollis: 84 / 140). Der Rand wächst von 21 auf 35 px.</p>
+  <div id="bars" style="margin-top:26px"></div>
+</section>
+<section class="blk">
+  <p class="lb"><b>05</b><span>Raster</span></p>
+  <h2 class="bh">Zwölf Spalten, ein Bruch an der Bildkante</h2>
+  <p class="bp">Desktop: Text in Spalte 1 bis 6, Bild in 7 bis 12. Der Werkzettel liegt über der Bildkante und greift in Spalte 5 und 6. Handy: eine Spalte, Bilder randlos, der Zettel hängt unten rechts über dem Bild.</p>
+  <div class="g2" style="grid-template-columns:1fr 390px;margin-top:28px;align-items:start">
+    <div><div class="gridd" id="gd" style="height:420px"></div><p class="cap">1440 · 12 Spalten · Lücke 24 · Rand 35 · Zettel 360 breit, 150 über die Kante</p></div>
+    <div><div class="gridd" id="gm" style="height:420px;width:390px"></div><p class="cap">390 · 1 Spalte · Rand 21 · Zettel max. 318</p></div>
+  </div>
+</section>
+</div>
+
+<!-- ═════════ 5 · Paletten ═════════ -->
+<div data-shot="5">
+<section class="blk">
+  <p class="lb"><b>06</b><span>Farbe · drei helle Paletten</span></p>
+  <h2 class="bh">Papier, Leinen, Ton. Farbe nur im Kleinen.</h2>
+  <p class="bp">Immer heller Grund. Die Signalfarbe sitzt nur auf Knopf, Ziffern, Tafel, Zettelfuß und der Heute-Marke, nie auf einer ganzen Abschnittsfläche. Dunkel ist nur der Fuß.</p>
+  <div class="pals" id="pals"></div>
+  <p class="cap">Prüfregeln wie im Shape: ink/paper ≥ 7, muted/paper ≥ 4,5, accent/paper ≥ 4,5, onDeep/deep ≥ 7, onSignal/signal ≥ 4,5, signal/paper ≥ 3. Keiner der verbotenen Standard-Töne (Creme/Messing/Espresso) ist dabei.</p>
+</section>
+</div>
+
+<!-- ═════════ 6 · Bild + Bewegung ═════════ -->
+<div data-shot="6">
+<section class="blk">
+  <p class="lb"><b>07</b><span>Bildregeln</span></p>
+  <h2 class="bh">Nah ran, warm gestellt, nichts Aufgeklebtes</h2>
+  <div class="g2" style="margin-top:22px">
+    <ol class="rules">
+      <li><span><b>Eine Gradierung für alle Fotos.</b> <code>saturate(.86) sepia(.1) contrast(1.05)</code>. Bindet Handyfotos und Stockbilder zu einer Serie, ohne Instagram-Look.</span></li>
+      <li><span><b>Randlos, eckig.</b> Keine Rundung, kein Rahmen, kein Klebeband, keine Polaroids, keine Schräglage.</span></li>
+      <li><span><b>Ausschnitt vor Motiv.</b> Lieber Hände, Holz, Werkzeug, Teig als die ganze Werkstatt. Einstieg 4:3,5 am Handy, 5:6 am Desktop.</span></li>
+      <li><span><b>Kein Text auf Fotos.</b> Ausnahme: der Werkzettel, der als eigenes Stück darüber liegt.</span></li>
+      <li><span><b>Bildzeilen in Mono, unter dem Bild,</b> nur wenn der Betrieb sagt, was es zeigt.</span></li>
+      <li><span><b>Unter zwei brauchbaren Fotos:</b> Einstieg nur Schrift, Galerie entfällt, Zettel trägt den ersten Blick.</span></li>
+    </ol>
+    <div class="dodont" style="grid-template-columns:1fr 1fr;margin-top:0" id="dodont"></div>
+  </div>
+</section>
+<section class="blk">
+  <p class="lb"><b>08</b><span>Bewegung</span></p>
+  <h2 class="bh">Nur was etwas erklärt, und nur einmal</h2>
+  <div class="g2" style="margin-top:22px">
+    <ol class="rules">
+      <li><span><b>Einstieg:</b> Überschrift wird von unten freigelegt (<code>clip-path: inset(0 0 100% 0)</code> nach <code>inset(0)</code>), 560 ms, <code>cubic-bezier(.23,1,.32,1)</code>. Zettel folgt 120 ms später, 16 px hoch + Deckkraft.</span></li>
+      <li><span><b>Ziffern 1·2·3:</b> gleiche Freilegung beim Hereinscrollen (IntersectionObserver, einmal).</span></li>
+      <li><span><b>Knöpfe:</b> <code>:active</code> <code>scale(.97)</code>, 140 ms. Hover nur bei <code>(hover: hover)</code>: Pfeil der Leistungszeile 4 px nach rechts.</span></li>
+      <li><span><b>Zeitleiste:</b> wischen mit <code>scroll-snap</code>, kein Autoplay, kein Scroll-Hijack.</span></li>
+    </ol>
+    <ol class="rules" start="5" style="counter-reset:m 4">
+      <li><span><b>Fragen:</b> Plus dreht 45° (200 ms). Antwort klappt ohne Höhenanimation auf.</span></li>
+      <li><span><b>Handy-Leiste:</b> steht von Anfang an. Kein Ein- und Ausfahren beim Scrollen.</span></li>
+      <li><span><b>Nur <code>transform</code>, <code>opacity</code>, <code>clip-path</code>.</b> Keine Breiten, Höhen, Ränder.</span></li>
+      <li><span><b><code>prefers-reduced-motion: reduce</code>:</b> alle Bewegungen aus, nur Deckkraft 150 ms. Inhalte sind ohne JS sofort sichtbar.</span></li>
+    </ol>
+  </div>
+</section>
+</div>
+
+<!-- ═════════ 7 · Bausteine ═════════ -->
+<div data-shot="7">
+<section class="blk">
+  <p class="lb"><b>09</b><span>Was Hollis fehlt, in Hollis' Grammatik</span></p>
+  <h2 class="bh">Neun Bausteine für die Lücken</h2>
+  <p class="bp">Alle aus denselben Teilen gebaut: Slab-Überschrift, Linie in Tinte, Mono-Daten, ein Signal pro Baustein.</p>
+  <div class="comp" id="comp"></div>
+</section>
+</div>
+
+<!-- ═════════ 8 · Erster Blick ═════════ -->
+<div data-shot="8">
+<section class="blk">
+  <p class="lb"><b>10</b><span>Erster Blick · Handy 390 × 844</span></p>
+  <h2 class="bh">Drei Betriebe, drei Einstiege, ein System</h2>
+  <div class="firsts" id="firsts"></div>
+</section>
+</div>
+
+<div data-shot="9"><section class="blk"><p class="lb"><b>11</b><span>Ganze Seite, Handy · Palette Kiefer</span></p><h2 class="bh">Schreinerei Holtkamp</h2><p class="bp">Foto-Einstieg mit Werkzettel, Leistungen als Liste, Ablauf 1·2·3, Werkbank-Raster, Stimme, Fragen, Zeiten mit Heute, Fuß.</p><div class="phones" id="ph-holtkamp"></div></section></div>
+<div data-shot="10"><section class="blk"><p class="lb"><b>12</b><span>Ganze Seite, Handy · Palette Ton</span></p><h2 class="bh">Bäckerei Overbeck</h2><p class="bp">Einstieg mit Uhrzeit als Ziffer, Backtag als Zeitleiste (Northdock), Wochentafel ohne Preise, Öffnungszeiten mit Heute.</p><div class="phones" id="ph-overbeck"></div></section></div>
+<div data-shot="11"><section class="blk"><p class="lb"><b>13</b><span>Ganze Seite, Handy · Palette Leinen</span></p><h2 class="bh">Laden am Markt</h2><p class="bp">Nur zwei schwache Fotos: Einstieg aus Schrift und Zettel, Sortiment als Liste, kleines Werkbank-Raster am Ende.</p><div class="phones" id="ph-laden"></div></section></div>
+
+<div data-shot="12"><section class="blk"><p class="lb"><b>14</b><span>Desktop 1440 (Rahmen 1408) · erster Blick</span></p><h2 class="bh">Schreinerei Holtkamp: Einstieg</h2><div id="desk1" style="margin-top:28px"></div></section></div>
+<div data-shot="13"><section class="blk"><p class="lb"><b>15</b><span>Desktop 1440 (Rahmen 1408)</span></p><h2 class="bh">Schreinerei Holtkamp: Ablauf und Werkbank-Raster</h2><div id="desk2" style="margin-top:28px"></div></section></div>
+
+<div data-shot="14">
+<section class="blk">
+  <p class="lb"><b>16</b><span>Tokens zum Kopieren · shared/designSystems/werkstoff.ts</span></p>
+  <h2 class="bh">WERKSTOFF, fertig für das Shape</h2>
+  <p class="bp">Zwei Abweichungen vom heutigen <code>DesignSystemDef</code> sind als Vorschlag markiert: eine dritte Schriftrolle <code>mono</code> und die optionale Stufe <code>data</code>.</p>
+  <pre class="ts" id="ts"></pre>
+</section>
+</div>
+
+</div>
+
+<script>
+/* ═══════════ Tokens (einzige Quelle für Blatt und Mockups) ═══════════ */
+const TYPE={
+ display:{font:"display",size:"clamp(3rem, 1.6rem + 5.8vw, 7.25rem)",line:.94,track:"-0.012em",weight:700,ex:"Gebaut, um zu bleiben."},
+ figure:{font:"display",size:"clamp(8rem, 4.5rem + 14vw, 17.5rem)",line:.8,track:"-0.03em",weight:700,ex:"1 2 3",opt:1},
+ h2:{font:"display",size:"clamp(2.25rem, 1.6rem + 2.7vw, 4.25rem)",line:1,track:"-0.01em",weight:700,ex:"Laden am Markt"},
+ h3:{font:"display",size:"clamp(1.375rem, 1.15rem + 0.85vw, 1.875rem)",line:1.12,track:"-0.005em",weight:700,ex:"Aufmaß bei dir zu Hause"},
+ lede:{font:"text",size:"clamp(1.1875rem, 1.05rem + 0.55vw, 1.4375rem)",line:1.42,track:"-0.005em",weight:500,ex:"Bäckerei Overbeck, ab 6 Uhr frisch."},
+ body:{font:"text",size:"clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem)",line:1.55,track:"0em",weight:400,ex:"Wir bauen aus Eiche, Esche und Nussbaum, was in deinen Raum passt. Gezeichnet, gebaut und eingebaut von denselben drei Leuten."},
+ small:{font:"text",size:"0.9375rem",line:1.45,track:"0em",weight:400,ex:"Preise sind Richtwerte, der Festpreis kommt nach dem Aufmaß."},
+ kicker:{font:"text",size:"0.9375rem",line:1.3,track:"0.005em",weight:600,ex:"Schreinerei in Münster, seit 1987"},
+ link:{font:"text",size:"1rem",line:1.3,track:"0em",weight:600,ex:"Alle Leistungen ansehen"},
+ mark:{font:"display",size:"clamp(1.375rem, 1.25rem + 0.4vw, 1.625rem)",line:1,track:"-0.01em",weight:700,ex:"Holtkamp"},
+ data:{font:"mono",size:"clamp(0.8125rem, 0.78rem + 0.12vw, 0.875rem)",line:1.5,track:"0.03em",weight:500,upper:true,ex:"Heute 07:00-17:00",opt:1,neu:1},
+};
+const SPACE={"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6rem",
+ section:"clamp(4.5rem, 3.2rem + 5.4vw, 8.5rem)",gutter:"clamp(1.25rem, 0.95rem + 1.4vw, 2.5rem)",measure:"36rem",max:"90rem"};
+const PALS=[
+ {id:"kiefer",name:"Kiefer",paper:"#f1e6cf",ink:"#211b14",muted:"#5e5243",rule:"#d9c8a6",accent:"#a23a1c",deep:"#2a2119",onDeep:"#f1e6cf",signal:"#b2421f",onSignal:"#ffffff",use:"Holz und Rost. Schreiner, Zimmerer, Dachdecker, Maler.",biz:["Holtkamp","Gebaut, um zu bleiben.","Anrufen"]},
+ {id:"leinen",name:"Leinen",paper:"#ebe8df",ink:"#1c1f1a",muted:"#575b52",rule:"#cfcbbd",accent:"#2f5b3c",deep:"#22281f",onDeep:"#ebe8df",signal:"#2f5b3c",onSignal:"#ffffff",use:"Leinen und Loden. Läden, Gartenbau, Sanitär, Unterkunft.",biz:["Laden am Markt","Papier, Haushalt, Geschenke.","Route"]},
+ {id:"ton",name:"Ton",paper:"#f4e3d3",ink:"#24180f",muted:"#62503f",rule:"#e0c6ad",accent:"#8f4a14",deep:"#3b2414",onDeep:"#f4e3d3",signal:"#94501a",onSignal:"#ffffff",use:"Ton und Kruste. Bäckerei, Café, Imbiss, Restaurant.",biz:["Overbeck","Ab 6 Uhr frisch.","Anrufen"]},
+];
+const FAM={display:"var(--fz)",text:"var(--fk)",mono:"var(--fm)"};
+
+/* clamp(a, b + c, d) → px bei Breite w */
+function px(v,w){v=v.trim();
+  const rem=s=>parseFloat(s)*16;
+  if(!v.startsWith("clamp")) return v.endsWith("rem")?rem(v):parseFloat(v);
+  const [a,mid,d]=v.slice(6,-1).split(",").map(s=>s.trim());
+  const m=mid.match(/([\d.]+)rem\s*\+\s*([\d.]+)vw/);const pref=rem(m[1])+parseFloat(m[2])*w/100;
+  return Math.min(Math.max(pref,rem(a)),rem(d));}
+function L(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(x=>x<=.03928?x/12.92:((x+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function cr(a,b){const x=L(a),y=L(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+
+/* Typo-Klassen für Mockups */
+(function(){let css="";for(const [k,t] of Object.entries(TYPE)){css+=`.ws .t-${k}{font-family:${FAM[t.font]};font-weight:${t.weight};font-size:var(--${k}-size);line-height:${t.line};letter-spacing:${t.track};${t.upper?"text-transform:uppercase;":""}${k==="figure"?"font-variant-numeric:tabular-nums;":""}}\n`}
+ const s=document.createElement("style");s.textContent=css;document.head.appendChild(s)})();
+function tokVars(w,palId){const p=PALS.find(x=>x.id===palId);const v=[];
+  for(const [k,t] of Object.entries(TYPE)) v.push(`--${k}-size:${px(t.size,w).toFixed(2)}px`);
+  for(const [k,s] of Object.entries(SPACE)) v.push(`--s-${k}:${px(s,w).toFixed(1)}px`);
+  v.push(`--section:${px(SPACE.section,w).toFixed(1)}px`,`--gutter:${px(SPACE.gutter,w).toFixed(1)}px`,`--measure:${px(SPACE.measure,w)}px`);
+  for(const k of ["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"]) v.push(`--s-${k}:${p[k]}`);
+  return v.join(";");}
+
+/* ── Anker-Tabelle ── */
+const ANK=[
+ ["Grund","#161211 / #0e0b0a, fast schwarz, jede Fläche","Heller Papiergrund je Palette (Kiefer #f1e6cf). Dunkel nur der Fuß (Walnuss)."],
+ ["Signal","Metzgerrot #e8412f: Knöpfe, Ziffern, halbe Seite als Tafel","Oxid #b2421f: Knopf, Ziffern, Tafel im Rand, Zettelfuß, Heute. Nie als Abschnittsfläche."],
+ ["Display (H1)","Zilla Slab 700 · 48 → 118 px · Zeile .95 · −0,01em","Zilla Slab 700 · 48 → 109 px · .94 · −0,012em"],
+ ["Großer Kopf","„What we do.“ 68 → 200 px","Leistungskopf nutzt display (48 → 109). Auf hellem Grund wirkt 200 px Slab wie ein Plakat."],
+ ["h2","Zilla 700 · 38 → 72 px · .98","Zilla 700 · 36 → 64 px · 1,0"],
+ ["h3 / Zeile","Schritte 24 → 30 · Leistungszeile 32 → 61","h3 22 → 30 · Zeile = 0,86 × h2 (31 → 55)"],
+ ["Lede","Karla 400 · 18 → 20 px · 1,5","Karla 500 · 19 → 23 px · 1,42 (heller Grund braucht mehr Gewicht)"],
+ ["Fließtext","Karla 400 · 15 → 17 px · 1,55 (Desktop zu klein)","Karla 400 · 17 → 19 px · 1,55"],
+ ["Kicker / Info","Karla 500-600 · 15 px","kicker Karla 600 · 15 px"],
+ ["Mono","DM Mono 500 · 14 px Versal +0,02em · Nummer 30 px","data DM Mono 500 · 13 → 14 px Versal +0,03em · große Zettelzeile 1,62 ×"],
+ ["Ziffern 1·2·3","Zilla 700 · 162 → 342 px, rot","figure 128 → 274 px, Oxid"],
+ ["Zitat","Karla 600 · 52 px · 1,08","Karla 600 · 0,68 × h2 (24 → 44 px) · 1,16"],
+ ["Logo","Zilla 700 · 22 px","mark 22 → 26 px"],
+ ["Knopf","56 hoch · Radius 4 · Karla 600 16","52 hoch (Leiste 48) · Radius 3 · Karla 600 16 · einziges Rundes"],
+ ["Navigation","64 hoch, Links Karla 600 15, Rahmen-Knopf","60 / 72 hoch, Haarlinie unten, Signal-Knopf"],
+ ["Rand / Abschnitt","20 / 40 px · 84 / 140 px","gutter 21 / 35 px · section 72 / 129 px"],
+ ["Bilder","randlos, eckig, dunkel, ungefiltert","randlos, eckig, eine warme Gradierung für alle"],
+ ["Bestellzettel","dunkle Mono-Karte auf dem Ablauf-Foto, Barcode, roter Fuß","Werkzettel hell, nur echte Fakten (Tel., Adresse, Heute), Oxid-Fuß, kein Barcode, liegt im Einstieg"],
+ ["Wochentafel","rote halbe Seite, Tabelle mit Preisen","begrenzte Tafel im Rand; Preise nur, wenn der Betrieb sie liefert"],
+ ["Zeiten-Karte","dunkle Karte auf Foto","helle Karte mit Tinte-Rahmen, Heute-Zeile mit Oxid-Kante"],
+ ["Fuß","schwarz, vier Spalten, Riesen-Wortmarke","gleich, in Walnuss/Loden/Kruste (deep)"],
+ ["Lieferzonen, Menschen","Karten je Stadtteil; drei Porträts","Zonen entfallen. Menschen nur mit echten Fotos, sonst weg."],
+];
+document.getElementById("anker").innerHTML=`<tr><th>Rolle</th><th>Hollis gemessen</th><th></th><th>Werkstoff</th></tr>`+ANK.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="ar">→</td><td>${r[2]}</td></tr>`).join("");
+
+/* ── Skala ── */
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+  const st=w=>`font-family:${FAM[t.font]};font-size:${px(t.size,w).toFixed(1)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${t.upper?"text-transform:uppercase;":""}${k==="figure"?"color:var(--signal);":""}`;
+  const fn={display:"Zilla Slab",text:"Karla",mono:"DM Mono"}[t.font];
+  return `<div class="step"><div><span class="k">${k}${t.neu?"<i>neu</i>":t.opt?"<i>optional</i>":""}</span><span class="note">${fn} ${t.weight}${t.upper?", Versal":""}<br>Zeile ${t.line} · ${t.track}<br><span class="mono">${t.size}</span></span></div>
+  <div class="s375"><span class="px">390 → ${px(t.size,390).toFixed(1)} px</span><div style="${st(390)}">${t.ex}</div></div>
+  <div class="s1440"><span class="px">1440 → ${px(t.size,1440).toFixed(1)} px</span><div style="${st(1440)};${k==="body"?"max-width:36rem":"white-space:nowrap"}">${t.ex}</div></div></div>`}).join("");
+
+/* ── Abstände ── */
+document.getElementById("bars").innerHTML=Object.entries(SPACE).map(([k,v])=>{
+  const a=px(v,390),b=px(v,1440);const lab=v.startsWith("clamp")?`${a.toFixed(0)} / ${b.toFixed(0)} px`:`${a.toFixed(0)} px`;
+  const big=k==="measure"||k==="max";return `<div class="bar"><span class="k">${k}</span><span class="mono">${v}</span><span style="display:flex;align-items:center;gap:12px"><b style="width:${big?b/4:b}px"></b><span class="note">${lab}${big?" (Balken ¼)":""}</span></span></div>`}).join("");
+
+/* ── Raster-Diagramme ── */
+(function(){const d=document.getElementById("gd");const W=d.clientWidth,sc=W/1440,gut=35*sc,gap=24*sc;
+  d.innerHTML=`<div class="cols" style="padding:0 ${gut}px;grid-template-columns:repeat(12,1fr);column-gap:${gap}px">${"<i></i>".repeat(12)}</div>
+  <div style="position:absolute;left:${gut}px;top:22px"><small>RAND 35</small></div>
+  <div style="position:absolute;left:${gut}px;top:60px;width:${(W-2*gut)/2-gap}px;font:700 ${40*sc*1.6}px/0.94 var(--fz)">Gebaut, um zu bleiben.</div>
+  <div style="position:absolute;left:${gut}px;top:250px;width:${(W-2*gut)*.4}px;height:10px;background:var(--rule)"></div>
+  <div style="position:absolute;right:${gut}px;top:44px;width:${(W-2*gut)/2-gap/2}px;height:300px;background:#c9b48c"><small style="position:absolute;right:8px;top:6px">BILD 7-12</small></div>
+  <div style="position:absolute;left:${W/2+gap/2-150*sc}px;top:226px;width:${360*sc}px;height:96px;background:#fff;border:1px solid var(--ink)"><small style="display:block;padding:6px">WERKZETTEL</small><i style="position:absolute;left:0;right:0;bottom:0;height:20px;background:var(--signal)"></i></div>
+  <div style="position:absolute;left:${gut}px;right:${gut}px;top:372px;border-top:1px solid var(--ink)"><small>INFOZEILE · 1-12</small></div>`;
+  const m=document.getElementById("gm");m.innerHTML=`<div class="cols" style="padding:0 21px;grid-template-columns:1fr">${"<i></i>"}</div>
+  <div style="position:absolute;left:21px;top:20px;font:700 34px/.94 var(--fz);width:300px">Gebaut, um zu bleiben.</div>
+  <div style="position:absolute;left:0;right:0;top:120px;height:210px;background:#c9b48c"><small style="position:absolute;left:21px;top:6px">BILD RANDLOS</small></div>
+  <div style="position:absolute;right:21px;top:262px;width:250px;height:100px;background:#fff;border:1px solid var(--ink)"><small style="display:block;padding:6px">WERKZETTEL</small><i style="position:absolute;left:0;right:0;bottom:0;height:20px;background:var(--signal)"></i></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;height:56px;border-top:1px solid var(--rule);background:#fff8"><small style="position:absolute;left:21px;top:20px">HANDY-LEISTE: ANRUFEN + ROUTE</small></div>`})();
+
+/* ── Paletten ── */
+const checks=[["ink","paper",7],["muted","paper",4.5],["accent","paper",4.5],["onDeep","deep",7],["onSignal","signal",4.5],["signal","paper",3]];
+document.getElementById("pals").innerHTML=PALS.map((p,i)=>`<div class="pal">
+  <div class="hero" style="background:${p.paper};color:${p.ink}"><p class="lb" style="color:${p.muted}"><b style="color:${p.accent}">0${i+1}</b><span style="color:${p.muted}">${p.name}</span></p>
+   <p class="n">${p.biz[0]}</p><p class="le">${p.biz[1]}</p>
+   <p style="font-size:14px;color:${p.muted};margin-top:8px">${p.use}</p>
+   <div class="btns"><span style="background:${p.signal};color:${p.onSignal}">${p.biz[2]}</span><span style="box-shadow:inset 0 0 0 1.5px ${p.ink}">${p.biz[2]==="Route"?"Anrufen":"Route"}</span></div>
+   <p class="fig" style="color:${p.signal}">1 2 3</p>
+   <div style="position:absolute;left:0;right:0;bottom:0;height:34px;background:${p.deep};color:${p.onDeep};font:500 11px/34px var(--fm);padding:0 24px;letter-spacing:.04em">FUSS · DEEP / ONDEEP</div></div>
+  <div class="sw">${["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"].map(k=>`<div style="background:${p[k]};border-left:1px solid rgba(0,0,0,.06)"><small style="color:${cr(p[k],"#ffffff")>3?"#fff":"#211b14"}">${k}<br>${p[k]}</small></div>`).join("")}</div>
+  <div class="cr">${checks.map(([a,b,min])=>{const v=cr(p[a],p[b]);return `<span>${a} / ${b}</span><span>≥ ${min}</span><span class="${v>=min?"cok":"cno"}">${v.toFixed(2)} ${v>=min?"✓":"✗"}</span>`}).join("")}</div></div>`).join("");
+
+/* ═══════════ Fotos (shared/industryImages.ts, Unsplash) ═══════════ */
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const IMG={saege:"1513467535987-fd81bc7d62f8",plan:"1503387762-592deb58ef4e",bohrer:"1504148455328-c376907d081c",werkzeug:"1530124566582-a618bc2615dc",
+ latte:"1509042239860-f550ce710b93",kaffee:"1495474472287-4d71bcdd2085",bohnen:"1511920170033-f8396924c348",cafe:"1501339847302-ac426a4a7cbb",raum:"1555396273-367ea4eb4db5",schreib:"1434030216411-0b793f4b4173"};
+
+/* Do / Don't */
+document.getElementById("dodont").innerHTML=[
+ ["yes","Ja","Gradierung, enger Ausschnitt auf Hände und Holz.",IMG.saege,"filter:saturate(.86) sepia(.1) contrast(1.05);object-position:62% 70%;transform:scale(1.5);transform-origin:60% 75%"],
+ ["no","Nein","Original ungefiltert, ganzes Motiv, Kalt-Blau-Stich.",IMG.saege,""],
+ ["yes","Ja","Schwaches Foto klein im Werkbank-Raster, mit Mono-Zeile.",IMG.raum,"filter:saturate(.86) sepia(.1) contrast(1.05)"],
+ ["no","Nein","Klebeband, Schräglage, Text auf dem Bild.",IMG.raum,"transform:rotate(-4deg) scale(.86);box-shadow:0 10px 20px rgba(0,0,0,.3)"]
+].map(([c,l,t,id,st],i)=>`<figure class="${c}"><div class="fr" style="${i===3?"background:#e6dccb":""}"><img src="${U(id,600)}" style="${st}">${i===3?`<span style="position:absolute;left:30%;top:6%;width:90px;height:26px;background:rgba(240,230,190,.85);transform:rotate(-8deg)"></span><span style="position:absolute;left:16px;bottom:20px;font:700 26px var(--fz);color:#fff;transform:rotate(-4deg)">Unser Laden!</span>`:""}</div><figcaption><b>${l}</b>${t}</figcaption></figure>`).join("");
+
+/* ═══════════ Betriebe (Beispieldaten, erfunden) ═══════════ */
+const BIZ={
+ holtkamp:{pal:"kiefer",mark:"Holtkamp",markSub:"Schreinerei",entry:"photo",img:IMG.saege,pos:"44% 72%",zoom:"transform:scale(1.32);transform-origin:44% 74%",
+  kick:"Schreinerei in Münster, seit 1987",h1:"Gebaut, um zu bleiben.",lede:"Möbel, Küchen und Innenausbau nach Maß. Aus Eiche, Esche und Nussbaum.",
+  nav:["Leistungen","Ablauf","Arbeiten","Kontakt"],cta:"Anrufen",
+  slip:{a:"Schreinerei Holtkamp",b:"0251 555 0147",addr:"Am Kanal 41, 48155 Münster",big:"Aufmaß vor Ort",side:"kostenlos",note:"Termin meist in derselben Woche",foot:"Heute bis 17:00"},
+  info:["0251 555 0147","Aufmaß kostenlos","Mo bis Fr 7 bis 17 Uhr","Am Kanal 41, Münster"],
+  introH:"Drei Leute, eine Werkstatt.",intro:"Wir zeichnen, bauen und bauen ein. Wer bei dir misst, steht später auch an der Hobelbank.",
+  listH:"Was wir bauen.",listP:"Vom einzelnen Regal bis zur ganzen Küche. Alles entsteht in unserer Werkstatt am Kanal.",
+  list:[["Möbel nach Maß","Tische, Schränke, Regale, auf den Zentimeter.","4 bis 6 Wochen"],["Küchen","Fronten und Arbeitsplatten aus Massivholz.","nach Aufmaß"],["Innenausbau","Einbauschränke, Wandverkleidung, Dachschrägen.","nach Aufmaß"],["Treppen","Neu gebaut oder aufgearbeitet, mit Geländer.","nach Aufmaß"],["Reparatur","Altes Möbel, neuer Halt.","meist 1 Woche"]],
+  steps:{h:"Vom Aufmaß bis zum Einbau.",p:"Du sagst, was du brauchst. Den Rest planen wir mit dir.",img:IMG.plan,items:[["Aufmaß","Wir kommen vorbei, messen und hören zu.","Kostenlos, etwa eine Stunde"],["Entwurf","Du bekommst eine Zeichnung und einen Festpreis.","Preis steht vor dem Bau"],["Einbau","Wir bauen in der Werkstatt und bei dir ein.","Meist 4 bis 6 Wochen"]]},
+  gal:{h:"Aus der Werkstatt.",items:[[IMG.saege,"Zuschnitt Eiche","64% 70%"],[IMG.werkzeug,"Werkzeugwand"],[IMG.bohrer,"Einbau Dachschräge"],[IMG.plan,"Entwurf Esstisch"]]},
+  quote:["Der Tisch passt auf den Zentimeter in unsere Nische. Und er wackelt nach drei Jahren immer noch nicht.","Familie Brüggemann","Münster-Gievenbeck"],rating:"4,9 aus 38 Google-Bewertungen",
+  faqP:"Frag einfach. Am Telefon geht es meistens schneller.",faq:[["Was kostet ein Möbel nach Maß?","Das hängt von Holz und Größe ab. Nach dem Aufmaß bekommst du einen Festpreis, bevor wir anfangen."],["Kann ich eigenes Holz mitbringen?"],["Kommt ihr auch ins Umland?"],["Wie lange hält die Oberfläche?"]],
+  visitH:"Werkstatt am Kanal.",hours:[["Mo","07:00-17:00"],["Di","07:00-17:00"],["Mi","07:00-17:00",1],["Do","07:00-17:00"],["Fr","07:00-15:00"],["Sa","nach Absprache"],["So","geschlossen"]],today:"Heute geöffnet bis 17:00",
+  addr:"Am Kanal 41, 48155 Münster",tel:"0251 555 0147",mail:"werkstatt@holtkamp.example",
+  foot:"Ruf an. Wir kommen zum Aufmaß.",hoursShort:["Mo bis Do 07:00-17:00","Fr 07:00-15:00","Sa nach Absprache"],word:"Holtkamp",
+  order:["entry","intro","list","steps","gal","quote","faq","visit","foot"]},
+ overbeck:{pal:"ton",mark:"Overbeck",markSub:"Bäckerei",entry:"time",img:IMG.latte,pos:"50% 60%",
+  kick:"Bäckerei Overbeck, Münster-Kinderhaus",fig:"6:00",h1:"Brot und Brötchen, ab 6 Uhr frisch.",
+  nav:["Backtag","Brot der Woche","Zeiten"],cta:"Anrufen",
+  info:["0251 555 0262","Sonntag bis 11 Uhr","Idenbrockplatz 3"],
+  tl:{h:"Ein Backtag.",p:"Gebacken wird nachts, verkauft ab sechs. So sieht ein Tag in der Backstube aus.",items:[["3:30","Teig","Der Sauerteig vom Vortag kommt in die Knetmaschine."],["4:30","Ofen","Erst die Brötchen, dann die großen Laibe."],["6:00","Laden auf","Brötchen, Brot und der erste Kaffee."],["11:30","Mittag","Belegte Brote und eine Suppe."],["14:00","Kuchen","Blechkuchen aus der zweiten Runde."],["18:00","Feierabend","Was übrig bleibt, holt die Tafel ab."]]},
+  tf:{h:"Brot der Woche.",items:[["Mo","Roggenmischbrot"],["Di","Dinkel-Vollkorn"],["Mi","Kartoffelbrot",1],["Do","Walnussbrot"],["Fr","Bauernlaib"],["Sa","Sonntagsstuten"]],note:"Alle anderen Brote gibt es jeden Tag. Vorbestellen geht bis 16 Uhr am Vortag."},
+  quote:["Das Kartoffelbrot am Mittwoch ist der Grund, warum ich mittwochs früher aufstehe.","Jonas Reker","Kinderhaus"],rating:"4,8 aus 112 Google-Bewertungen",
+  faqP:"Was wir oft gefragt werden.",faq:[["Kann ich Brot vorbestellen?","Ja, bis 16 Uhr am Vortag, am Telefon oder im Laden. Abholung ab 6 Uhr."],["Gibt es glutenfreies Brot?"],["Backt ihr Torten auf Bestellung?"]],
+  visitH:"Am Idenbrockplatz.",hours:[["Mo","06:00-18:00"],["Di","06:00-18:00"],["Mi","06:00-18:00",1],["Do","06:00-18:00"],["Fr","06:00-18:00"],["Sa","06:00-13:00"],["So","07:00-11:00"]],today:"Heute geöffnet bis 18:00",
+  addr:"Idenbrockplatz 3, 48159 Münster",tel:"0251 555 0262",mail:"laden@overbeck.example",
+  foot:"Brot vorbestellen? Ruf bis 16 Uhr an.",hoursShort:["Mo bis Fr 06:00-18:00","Sa 06:00-13:00","So 07:00-11:00"],word:"Overbeck",
+  order:["entry","tl","tf","quote","visit","faq","foot"]},
+ laden:{pal:"leinen",mark:"Laden am Markt",markSub:"",entry:"type",words:["Laden","am Markt"],
+  kick:"Warendorf, seit 1964",lede:"Papier, Haushalt und kleine Geschenke. Direkt am Marktplatz.",
+  nav:["Sortiment","Fragen","Kontakt"],cta:"Route",
+  slip:{a:"Laden am Markt",b:"02581 555 0388",addr:"Marktplatz 7, 48231 Warendorf",big:"Heute offen",side:"bis 18:30",note:"Geschenke packen wir kostenlos ein",foot:"Jetzt geöffnet"},
+  info:["02581 555 0388","Marktplatz 7","Parken am Wilhelmsplatz"],
+  listH:"Was es bei uns gibt.",listP:"Fünf Abteilungen auf 80 Quadratmetern. Was fehlt, bestellen wir dir bis übermorgen.",
+  list:[["Papeterie","Hefte, Karten, gute Stifte, Füller."],["Haushalt","Emaille, Bürsten, Küchentücher aus Leinen."],["Geschenke","Kleines für Kinder und Gastgeber."],["Schulbedarf","Ranzen und Listen der Warendorfer Schulen."],["Bastelbedarf","Papier, Farben, Kleber, Wolle."]],
+  gal:{h:"Im Laden.",items:[[IMG.schreib,"Schreibwaren am Fenster"],[IMG.raum,"Blick vom Eingang"]]},
+  quote:["Hier findet man noch den Bleistift, den es sonst nirgends gibt. Und jemand weiß, wo er liegt.","Heike Wiewel","Warendorf"],rating:"4,7 aus 64 Google-Bewertungen",
+  faqP:"",faq:[["Packt ihr Geschenke ein?","Ja, kostenlos und mit Papier aus unserem Sortiment."],["Gibt es Gutscheine?"],["Kann ich mit Karte zahlen?"]],
+  visitH:"Am Marktplatz 7.",hours:[["Mo","09:00-18:30"],["Di","09:00-18:30"],["Mi","09:00-18:30",1],["Do","09:00-18:30"],["Fr","09:00-18:30"],["Sa","09:00-14:00"],["So","geschlossen"]],today:"Heute geöffnet bis 18:30",
+  addr:"Marktplatz 7, 48231 Warendorf",tel:"02581 555 0388",mail:"hallo@laden-am-markt.example",
+  foot:"Komm vorbei. Wir sind am Markt.",hoursShort:["Mo bis Fr 09:00-18:30","Sa 09:00-14:00"],word:"Am Markt",
+  order:["entry","list","quote","gal","visit","faq","foot"]},
+};
+
+/* ═══════════ Bausteine ═══════════ */
+const pad2=n=>String(n).padStart(2,"0");
+function hdr(b){return `<header class="hd wrap"><a class="t-mark">${b.mark}${b.markSub?`<small>${b.markSub}</small>`:""}</a><nav class="nv">${b.nav.map(x=>`<a>${x}</a>`).join("")}</nav><a class="bt">${b.cta}</a><button class="mn" aria-label="Menü"><i></i><i></i></button></header>`}
+function slip(s){return `<div class="slip"><div class="r"><span>${s.a}</span><span>${s.b}</span></div><div class="r">${s.addr}</div><div class="r big"><span>${s.big}</span><small>${s.side}</small></div><div class="r tear">${s.note}</div><div class="sf"><span>Anrufen</span><span><i class="dot"></i>${s.foot}</span></div></div>`}
+function info(b){return `<ul class="info t-small">${b.info.map(x=>`<li>${x}</li>`).join("")}</ul>`}
+const SEC={
+ entry(b){
+  if(b.entry==="photo") return `<section class="en en-ph"><div class="en-tx wrap"><p class="t-kicker mu">${b.kick}</p><h1 class="t-display">${b.h1}</h1><p class="t-lede">${b.lede}</p><div class="bts"><a class="bt">Anrufen</a><a class="bt2">Aufmaß anfragen</a></div></div><div class="en-im"><div class="cr"><img class="ph" src="${U(b.img,1400)}" style="object-position:${b.pos};${b.zoom||""}" alt=""></div>${slip(b.slip)}</div>${info(b)}</section>`;
+  if(b.entry==="time") return `<section class="en en-tm"><div class="wrap" style="padding-top:var(--s-l)"><p class="t-kicker mu">${b.kick}</p><p class="t-figure sig">${b.fig}</p><h1 class="t-h2">${b.h1}</h1><p class="tdy t-small"><span><i class="dot"></i>${b.today}</span><span class="t-data mu">Sonntag bis 11 Uhr</span></p></div><div class="en-im"><img class="ph" src="${U(b.img,1200)}" style="object-position:${b.pos}" alt=""></div></section>`;
+  return `<section class="en en-ty wrap"><p class="t-kicker mu">${b.kick}</p><div class="t-display" data-fit style="margin-top:var(--s-s)">${b.words.map(w=>`<span>${w}</span>`).join("")}</div><p class="t-lede">${b.lede}</p>${slip(b.slip)}${info(b)}</section>`},
+ intro(b){return `<section class="sec wrap in"><h2 class="t-h2">${b.introH}</h2><p class="mu">${b.intro}</p></section>`},
+ list(b){return `<section class="sec wrap ls"><h2 class="t-display">${b.listH}</h2><p class="mu">${b.listP}</p><ul>${b.list.map(x=>`<li><h3 class="t-row">${x[0]}</h3><span class="ar">→</span><p class="t-small mu">${x[1]}</p>${x[2]?`<span class="meta t-data mu">${x[2]}</span>`:""}</li>`).join("")}</ul></section>`},
+ steps(b){const s=b.steps;return `<section class="sec"><div class="st"><div class="st-im"><img class="ph" src="${U(s.img,1200)}" alt=""></div><div class="st-tx wrap"><h2 class="t-h2">${s.h}</h2><p class="mu">${s.p}</p><ol>${s.items.map((x,i)=>`<li><span class="t-figure">${i+1}</span><h3 class="t-h3">${x[0]}</h3><p class="mu">${x[1]}</p><p class="t-data">${x[2]}</p></li>`).join("")}</ol></div></div></section>`},
+ tl(b){const t=b.tl;return `<section class="sec tl"><div class="wrap"><h2 class="t-h2">${t.h}</h2><p class="mu">${t.p}</p></div><div class="tl-tr wrap">${t.items.map(x=>`<article class="tl-c"><p class="t-h2">${x[0]}</p><h3 class="t-kicker">${x[1]}</h3><p class="t-small mu">${x[2]}</p>${x[3]?`<div class="im"><img class="ph" src="${U(x[3],800)}" alt=""></div>`:""}</article>`).join("")}</div><p class="tl-hint wrap t-data mu">Wischen für den ganzen Tag →</p></section>`},
+ tf(b){const t=b.tf;return `<section class="sec wrap tf"><div class="tf-b"><p class="t-data">Wochentafel</p><h2 class="t-h2">${t.h}</h2><ul>${t.items.map(x=>`<li class="${x[2]?"on":""}"><span class="t-data">${x[0]}</span><span class="t-h3">${x[1]}</span><span class="t-data">${x[2]?"heute":""}</span></li>`).join("")}</ul><p class="t-small">${t.note}</p></div></section>`},
+ gal(b){const g=b.gal,n=g.items.length;return `<section class="sec wrap gl"><h2 class="t-h2">${g.h}</h2><div class="gl-g n${n}">${g.items.map((x,i)=>`<figure class="g${i}"><div class="fr"><img class="ph" src="${U(x[0],i===0?1200:700)}" style="object-position:${x[2]||"50% 50%"}" alt=""></div><figcaption class="t-data">${x[1]}</figcaption></figure>`).join("")}</div></section>`},
+ quote(b){return `<section class="sec wrap qt"><p class="t-data mu">${b.rating}</p><blockquote class="t-quote">„${b.quote[0]}“</blockquote><p class="who"><b>${b.quote[1]}</b><span class="t-small mu">${b.quote[2]}</span></p></section>`},
+ faq(b){return `<section class="sec wrap fq"><h2 class="t-h2">Gut zu wissen.</h2>${b.faqP?`<p class="mu">${b.faqP}</p>`:""}<a class="t-link ul">${b.tel} anrufen</a><div class="fq-l">${b.faq.map(x=>`<div class="fq-i ${x[1]?"op":""}"><div class="fq-q"><h3 class="t-q">${x[0]}</h3><i>${x[1]?"−":"+"}</i></div>${x[1]?`<p class="mu">${x[1]}</p>`:""}</div>`).join("")}</div></section>`},
+ visit(b){return `<section class="sec vs"><div class="wrap"><h2 class="t-h2">${b.visitH}</h2></div><div class="vs-g wrap"><div class="hc"><p class="stt"><i class="dot"></i>${b.today}</p><ul>${b.hours.map(x=>`<li class="${x[2]?"on":""}"><span>${x[0]}</span><span>${x[1]}</span></li>`).join("")}</ul></div><div class="ct"><p class="t-h3">${b.addr}</p><p><a class="ul">${b.tel}</a></p><p><a class="ul">${b.mail}</a></p><div class="bts"><a class="bt">Anrufen</a><a class="bt2">Route</a></div></div></div></section>`},
+ foot(b){return `<footer class="ft"><div class="wrap"><p class="t-h2">${b.foot}</p><a class="bt">${b.tel}</a><div class="cols t-small"><div><h4>Adresse</h4><p>${b.addr.replace(", ","<br>")}</p></div><div><h4>Kontakt</h4><p>${b.tel}<br>${b.mail}</p></div><div><h4>Zeiten</h4><p>${b.hoursShort.join("<br>")}</p></div><div><h4>Seiten</h4><p>${b.nav.slice(0,3).join("<br>")}</p></div></div><p class="leg t-small"><a>Impressum</a><a>Datenschutz</a><a>Barrierefreiheit</a></p><p class="wm" data-fit><span>${b.word}</span></p></div></footer>`},
+};
+function page(key){const b=BIZ[key];return hdr(b)+b.order.map(k=>SEC[k](b)).join("")}
+function dock(b){return `<div class="dk"><a class="bt">${b.entry==="type"?"Route":"Anrufen"}</a><a class="bt2">${b.entry==="type"?"Anrufen":"Route"}</a></div>`}
+
+/* fit: größte Zeile = Containerbreite */
+function fitAll(root){root.querySelectorAll("[data-fit]").forEach(el=>{const w=el.clientWidth;if(!w)return;el.style.fontSize="100px";const spans=[...el.querySelectorAll("span")];spans.forEach(s=>s.style.display="inline-block");const m=Math.max(...spans.map(s=>s.getBoundingClientRect().width));spans.forEach(s=>s.style.display="block");el.style.fontSize=(100*w/m*.995).toFixed(2)+"px"})}
+function frame(key,w,extra=""){const b=BIZ[key];return `<div class="ws" style="${tokVars(w===1408?1440:w,b.pal)}">${page(key)}${extra}</div>`}
+
+/* ═══════════ Komponenten-Muster (Abschnitt 09) ═══════════ */
+function compFrame(pal,html,h){return `<div class="phone" style="height:${h}px"><div class="ws" style="${tokVars(390,pal)};min-height:100%">${html}</div></div>`}
+const H=BIZ.holtkamp,O=BIZ.overbeck,Lm=BIZ.laden;
+const COMP=[
+ ["Werkbank-Raster","Galerie mit 2 bis 4 Fotos: großes Querformat, zwei Hochformate, ein Band. Mono-Zeile unter jedem Bild. Unter 2 Fotos entfällt sie.",compFrame("kiefer",SEC.gal(H),620)],
+ ["Ablauf 1·2·3","Hollis-Grammatik: Foto, dann riesige Oxid-Ziffer, Schritt in Slab, Zusage in Mono. Für Handwerk und Dienste.",compFrame("kiefer",SEC.steps(H),620)],
+ ["Ablauf als Backtag","Northdock-Zeitleiste für Bäckerei und Café. Uhrzeit statt Ziffer, wischbar. Fotos nur, wenn jede Karte eins hat, sonst alle ohne.",compFrame("ton",SEC.tl(O),620)],
+ ["Wochentafel","Begrenzte Tafel im Seitenrand, nie volle Breite. Ohne Preise, solange der Betrieb keine nennt. Heute ist dunkler hinterlegt.",compFrame("ton",SEC.tf(O),620)],
+ ["Zeiten mit Heute","Helle Karte mit Tinte-Rahmen. Stand oben in Klartext, Tageszeile mit Oxid-Kante und dem Wort heute.",compFrame("leinen",SEC.visit(Lm),620)],
+ ["Stimme und Fragen","Ein Zitat, maximal drei Zeilen, Name und Ort. Fragen mit eckigem Plus, die erste offen.",compFrame("kiefer",SEC.quote(H)+SEC.faq(H),620)],
+ ["Handy-Leiste","Immer zwei Wege: Anrufen und Route. Bei Läden zuerst Route. Leicht durchscheinend, Haarlinie oben.",compFrame("kiefer",`<div style="height:620px;position:relative;background:var(--s-paper)"><div class="wrap" style="padding-top:var(--s-l)"><p class="t-h3">Leistungen</p><p class="mu t-small" style="margin-top:8px">Seite läuft unter der Leiste weiter. Die Leiste hat 70 px plus sichere Zone.</p></div>${dock(H)}</div>`,620)],
+ ["Einstieg nur Schrift","Für Betriebe ohne brauchbares Foto: Name passt sich der Breite an, der Werkzettel trägt Fakten und Heute.",compFrame("leinen",hdr(Lm)+SEC.entry(Lm),620)],
+ ["Rechtliches und Unterseiten","Gleicher Kopf und Fuß, kein Foto, h2 statt display. Angaben als Mono-Liste, Fließtext in voller Lesebreite.",compFrame("kiefer",hdr(H)+`<section class="wrap lg" style="padding-top:var(--s-l)"><p class="t-data mu">Holtkamp · Rechtliches</p><h1 class="t-h2" style="margin-top:var(--s-s)">Impressum</h1><dl><dt>Anbieter</dt><dd>Schreinerei Holtkamp, Inh. Bernd Holtkamp</dd><dt>Anschrift</dt><dd>Am Kanal 41, 48155 Münster</dd><dt>Kontakt</dt><dd>0251 555 0147<br>werkstatt@holtkamp.example</dd><dt>Handwerkskammer</dt><dd>HWK Münster, Tischlerhandwerk</dd><dt>USt-IdNr.</dt><dd>DE 000 000 000 (Beispiel)</dd></dl></section>`,620)],
+];
+document.getElementById("comp").innerHTML=COMP.map(c=>`<div>${c[2]}<p class="ch">${c[0]}</p><p class="cp">${c[1]}</p></div>`).join("");
+
+/* ═══════════ Erster Blick ═══════════ */
+const FIRST=[["holtkamp","<b>Schreinerei, Foto stark.</b> Slab-Satz, Foto randlos, Werkzettel über der Bildkante. Hier passiert der Wow-Moment."],["overbeck","<b>Bäckerei, Uhrzeit vorn.</b> 6:00 als Oxid-Ziffer, Satz, Heute-Stand, dann Foto."],["laden","<b>Laden, Fotos schwach.</b> Name füllt die Breite, Zettel mit Heute und Telefon, kein Foto."]];
+document.getElementById("firsts").innerHTML=FIRST.map(([k,c])=>`<div><p class="px2">${BIZ[k].mark} · 390 × 844</p><div class="phone"><div class="ws" style="${tokVars(390,BIZ[k].pal)};height:844px;overflow:hidden">${page(k)}${dock(BIZ[k])}</div></div><p class="c">${c}</p></div>`).join("");
+
+/* ═══════════ Ganze Seiten (in Spalten geschnitten) ═══════════ */
+async function fullPhones(key,id,cols){
+  const host=document.getElementById(id);
+  host.innerHTML=`<div class="phone" style="visibility:hidden;position:absolute"><div class="ws" style="${tokVars(390,BIZ[key].pal)}">${page(key)}</div></div>`;
+  fitAll(host);await imgs(host);const H=host.querySelector(".ws").offsetHeight;
+  const seg=Math.ceil(H/cols);let out="";
+  for(let i=0;i<cols;i++){const h=Math.min(seg,H-i*seg);
+    out+=`<div><p class="px2">${i*seg}-${i*seg+h} px von ${H}</p><div class="phone" style="height:${h}px"><div class="roll" style="top:${-i*seg}px"><div class="ws" style="${tokVars(390,BIZ[key].pal)}">${page(key)}</div></div>${i===0?`<div class="fold" style="top:844px"><span>844</span></div>`:""}</div></div>`}
+  host.innerHTML=out;fitAll(host);}
+function imgs(root){return Promise.all([...root.querySelectorAll("img")].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r})))}
+
+/* ═══════════ Desktop ═══════════ */
+function desk(id,key,sections,height){const b=BIZ[key];const html=sections.map(k=>k==="hdr"?hdr(b):SEC[k](b)).join("");
+  document.getElementById(id).innerHTML=`<div class="desk" ${height?`style="height:${height}px"`:""}><div class="ws" style="${tokVars(1440,b.pal)}">${html}</div></div>`}
+desk("desk1","holtkamp",["hdr","entry"],900);
+desk("desk2","holtkamp",["steps","gal"]);
+
+/* ═══════════ Tokens als TS ═══════════ */
+function tsOut(){const q=s=>JSON.stringify(s);
+ const ty=Object.entries(TYPE).map(([k,t])=>`    ${/^[a-z][a-z0-9]*$/.test(k)?k:q(k)}: { font: ${q(t.font)}, size: ${q(t.size)}, line: ${t.line}, track: ${q(t.track)}, weight: ${t.weight}${t.upper?", upper: true":""} },${t.neu?" // NEU (Vorschlag: Stufe data, Schrift mono)":k==="figure"?" // optional, wie Raster":""}`).join("\n");
+ const sp=Object.entries(SPACE).map(([k,v])=>`${/^[a-z]+$/.test(k)?k:q(k)}: ${q(v)}`).reduce((a,x,i)=>a+(i===0?"":i===7||i===8||i===9?",\n    ":", ")+x,"");
+ const pa=PALS.map(p=>`    { id: ${q(p.id)}, name: ${q(p.name)}, paper: ${q(p.paper)}, ink: ${q(p.ink)}, muted: ${q(p.muted)}, rule: ${q(p.rule)},\n      accent: ${q(p.accent)}, deep: ${q(p.deep)}, onDeep: ${q(p.onDeep)}, signal: ${q(p.signal)}, onSignal: ${q(p.onSignal)} },`).join("\n");
+ return `import type { DesignSystemDef } from "./types";
+
+export const WERKSTOFF: DesignSystemDef = {
+  id: "werkstoff",
+  name: "Werkstoff",
+  essence: "Warm, handfest, ehrlich",
+  fonts: {
+    display: {
+      family: "Zilla Slab",
+      fallback: "Rockwell, 'Roboto Slab', Georgia, serif",
+      files: [{ file: "zilla-slab-latin-700.woff2", weight: "700", style: "normal" }],
+    },
+    text: {
+      family: "Karla",
+      fallback: "'Helvetica Neue', Arial, system-ui, sans-serif",
+      files: [{ file: "karla-latin-wght.woff2", weight: "200 800", style: "normal" }],
+    },
+    // NEU (Vorschlag): dritte Rolle für Zettel, Zeiten, Preise, Bildzeilen
+    mono: {
+      family: "DM Mono",
+      fallback: "ui-monospace, 'SF Mono', Menlo, monospace",
+      files: [{ file: "dm-mono-latin-500.woff2", weight: "500", style: "normal" }],
+    },
+  },
+  preload: ["zilla-slab-latin-700.woff2", "karla-latin-wght.woff2"],
+  type: {
+${ty}
+  },
+  space: {
+    ${sp},
+  },
+  palettes: [
+${pa}
+  ],
+};`}
+document.getElementById("ts").textContent=tsOut();
+
+/* Start */
+document.fonts.ready.then(async()=>{
+  fitAll(document);
+  await fullPhones("holtkamp","ph-holtkamp",3);
+  await fullPhones("overbeck","ph-overbeck",3);
+  await fullPhones("laden","ph-laden",3);
+  fitAll(document);
+  document.body.dataset.ready="1";
+});
+</script>
+</body>
+</html>
