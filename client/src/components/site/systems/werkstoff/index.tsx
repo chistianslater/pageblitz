@@ -9,8 +9,10 @@ import {
 } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { shownNavItems, systemShows } from "../shared";
+import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
 import { WerkstoffDock } from "./Dock";
+import { WerkstoffMenuSlot, WerkstoffTeamSlot } from "./Offer";
+import { werkstoffPhotos } from "./offerData";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -30,13 +32,25 @@ export const WERKSTOFF_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
     // Startseiten-Dokument (auf Unterseiten trägt `data` die Seiten-Abschnitte).
     const { data: home } = useSystem();
-    const list = legal
-      ? []
-      : (sections ?? orderedSections(data)).filter(systemShows);
+    // Jedes Foto höchstens einmal je Seite (offerData.ts): Einstieg →
+    // Ablauf → Über uns → Galerie; vor Abb.-Nummern und Navigation.
+    const hidden = home.designProfile?.hiddenElements ?? [];
+    const { list, offerPhotos } = werkstoffPhotos(
+      legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
+      hidden
+    );
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
+    // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
+    const slots = sections || legal ? {} : previewSlotAnchors(list);
+    const homeAll = orderedSections(home);
+    const homeShown = werkstoffPhotos(homeAll.filter(systemShows), hidden).list;
     const shown = werkstoffNavItems(
-      shownNavItems(navItems, orderedSections(home))
+      shownNavItems(navItems, homeAll).filter(
+        item =>
+          item.sectionType !== "gallery" ||
+          homeShown.some(s => s.type === "gallery")
+      )
     );
     const nav = legal ? prefixAnchors(shown, anchorPrefix) : shown;
     // Unterseite ohne eigenen Kopf-Abschnitt: Titel der Seite trägt den Kopf.
@@ -50,7 +64,9 @@ export const WERKSTOFF_MODULE: PackModule = {
           {ownHead && <WerkstoffPageHead title={pageTitle} />}
           {list.map((s, i) => (
             <React.Fragment key={`${s.type}-${i}`}>
-              {renderWerkstoffSection(s, list)}
+              {renderWerkstoffSection(s, list, offerPhotos)}
+              {slots.menu === i && <WerkstoffMenuSlot sections={list} />}
+              {slots.team === i && <WerkstoffTeamSlot sections={list} />}
             </React.Fragment>
           ))}
         </main>

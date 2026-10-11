@@ -128,7 +128,7 @@ describe("Werkstoff: Kapitel und Seiten", () => {
     const services = sectionHtml(html, "services");
     expect(services).toContain('id="leistungen"');
     expect(services).toContain('aria-labelledby="leistungen-titel"');
-    expect(services).toMatch(/<h2 class="ws-title" id="leistungen-titel">/);
+    expect(services).toMatch(/<h2 class="ws-title[^"]*" id="leistungen-titel">/);
     expect(services.match(/<h2[\s>]/g)).toHaveLength(1);
   });
 

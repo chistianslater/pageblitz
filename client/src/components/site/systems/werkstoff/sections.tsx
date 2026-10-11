@@ -5,6 +5,12 @@ import { useSystem } from "../SystemContext";
 import { legalParts, type SystemSection } from "../shared";
 import { WerkstoffEntry } from "./Entry";
 import { WerkstoffBasic } from "./Basic";
+import {
+  WerkstoffPriced,
+  WerkstoffProcess,
+  WerkstoffServices,
+  WerkstoffStats,
+} from "./Offer";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
@@ -57,6 +63,7 @@ export function WerkstoffChapter({
   title,
   intro,
   className = "",
+  display = false,
   after,
   children,
 }: {
@@ -65,6 +72,8 @@ export function WerkstoffChapter({
   title: string;
   intro?: string;
   className?: string;
+  /** Überschrift in Stufe `display` (Systemblatt: Leistungen). */
+  display?: boolean;
   after?: React.ReactNode;
   children?: React.ReactNode;
 }) {
@@ -76,7 +85,10 @@ export function WerkstoffChapter({
       aria-labelledby={headingId}
     >
       <div className="ws-wrap">
-        <h2 className="ws-title" id={headingId}>
+        <h2
+          className={display ? "ws-title ws-title--display" : "ws-title"}
+          id={headingId}
+        >
           {rich(title)}
         </h2>
         {intro && <p className="ws-intro">{rich(intro)}</p>}
@@ -168,15 +180,28 @@ export function WerkstoffLegal({ title, html }: { title: string; html: string })
 /** Abschnitts-Weiche (exhaustiv über alle SectionV2-/PageSection-Typen). */
 export function renderWerkstoffSection(
   section: WerkstoffSection,
-  sections: readonly WerkstoffSection[]
+  sections: readonly WerkstoffSection[],
+  /** Foto am Ablauf aus werkstoffPhotos (jedes Foto höchstens einmal). */
+  offerPhotos?: readonly string[]
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
       return <WerkstoffEntry hero={section} />;
     case "services":
+      return <WerkstoffServices section={section} sections={sections} />;
     case "process":
+      return (
+        <WerkstoffProcess
+          section={section}
+          sections={sections}
+          photo={offerPhotos?.[0]}
+        />
+      );
     case "pricelist":
     case "menu":
+      return <WerkstoffPriced section={section} />;
+    case "stats":
+      return <WerkstoffStats section={section} sections={sections} />;
     case "team":
     case "about":
     case "gallery":
@@ -185,7 +210,6 @@ export function renderWerkstoffSection(
     case "contact":
     case "story":
     case "usp":
-    case "stats":
     case "quote":
     case "partners":
     case "cta":

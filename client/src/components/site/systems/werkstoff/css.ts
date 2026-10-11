@@ -2,6 +2,7 @@ import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { systemFontFaces } from "../shared/fonts";
 import { DEEP_RULE, DOCK, GRID, NAV, ON_DEEP_DIM, RAISED, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
+import { OFFER_CSS } from "./offerCss";
 
 export { step } from "./step";
 
@@ -171,4 +172,4 @@ ${sections}
 `;
 }
 
-export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS);
+export const WERKSTOFF_CSS = werkstoffCss(ENTRY_CSS + OFFER_CSS);
