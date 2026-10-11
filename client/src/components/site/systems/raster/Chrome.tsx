@@ -1,6 +1,6 @@
 import React from "react";
 import type { NavItem } from "../../engine";
-import { SECTION_ANCHORS } from "../../engine";
+import { SECTION_ANCHORS, orderedSections } from "../../engine";
 import { shortHours, telHref } from "../../artDirection/heroFacts";
 import { isPlaceholderHours } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
@@ -10,6 +10,7 @@ import {
   detailsMenuJs,
   mailHref,
   primaryAction,
+  systemShows,
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import type {
@@ -137,12 +138,13 @@ export function RasterFoot({
   const tel = telHref(contact?.phone);
   const mail = mailHref(contact?.email);
   const action = primaryAction(data, blueprint, anchorPrefix);
-  const services = data.sections.find(
+  // Nur sichtbare Abschnitte: ausgeblendete Leistungen bzw. Aufruf dürfen
+  // im Fuß weder auftauchen noch auf einen fehlenden Anker zeigen.
+  const visible = orderedSections(data).filter(systemShows);
+  const services = visible.find(
     (s): s is SectionOf<"services"> => s.type === "services"
   );
-  const cta = data.sections.find(
-    (s): s is SectionOf<"cta"> => s.type === "cta"
-  );
+  const cta = visible.find((s): s is SectionOf<"cta"> => s.type === "cta");
   const hours = hoursRows(contact);
   const serviceTitles = (services?.items ?? [])
     .map(i => i.title.trim())
@@ -192,8 +194,8 @@ export function RasterFoot({
           {hours.length > 0 && (
             <FootCol title="Zeiten">
               <ul className="rs-num">
-                {hours.map(h => (
-                  <li key={h.day}>
+                {hours.map((h, i) => (
+                  <li key={`${h.day}-${i}`}>
                     {h.day} {h.hours}
                   </li>
                 ))}

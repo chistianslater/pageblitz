@@ -59,9 +59,8 @@ ${FONT_FACES}
 .pb-raster .rs-kicker{${step("kicker")}}
 .pb-raster .rs-mark{${step("mark")}}
 .pb-raster .rs-num{font-variant-numeric:tabular-nums}
-.pb-raster .rs-hide{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
-/* Textlink: Haarlinie darunter */
+/* Textlink: Haarlinie darunter (für „Route planen“/„E-Mail schreiben“ in Kontakt, R6) */
 .pb-raster .rs-link{${step("link")};text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em;position:relative}
 .pb-raster .rs-link:hover{text-decoration-color:transparent}
 .pb-raster .rs-link::before{content:"";position:absolute;inset:var(--rs-hit) calc(var(--sys-space-2xs) * -1)}
@@ -86,7 +85,7 @@ ${FONT_FACES}
 .pb-raster .rs-menu-panel{position:absolute;left:0;right:0;top:100%;background:var(--sys-paper);border-top:1px solid var(--sys-rule);border-bottom:1px solid var(--sys-rule);
   padding:var(--sys-space-xs) var(--sys-space-gutter) var(--sys-space-l);display:grid}
 .pb-raster .rs-menu-panel a{${step("h3")};text-decoration:none;display:flex;align-items:center;min-height:var(--rs-tap);padding-block:var(--sys-space-xs);border-bottom:1px solid var(--sys-rule)}
-.pb-raster .rs-menu-panel a[aria-current]{color:var(--sys-muted)}
+.pb-raster .rs-menu-panel a[aria-current]{color:var(--sys-muted);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
 .pb-raster .rs-nav{display:none}
 @media (min-width:${NAV}){
   .pb-raster .rs-menu{display:none}
@@ -143,10 +142,9 @@ ${FONT_FACES}
 .pb-raster .rs-foot-h{${step("small")};color:${ON_DEEP_DIM};margin:0 0 var(--sys-space-xs)}
 .pb-raster .rs-foot-col ul{list-style:none;margin:0;padding:0;display:grid}
 .pb-raster .rs-foot-col a{text-decoration:none;position:relative}
-.pb-raster .rs-foot-col a::before,.pb-raster .rs-foot-legal a::before{content:"";position:absolute;inset:var(--rs-hit) calc(var(--sys-space-2xs) * -1)}
-.pb-raster .rs-foot-col a:hover,.pb-raster .rs-foot-legal a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
+.pb-raster .rs-foot-col a::before{content:"";position:absolute;inset:var(--rs-hit) calc(var(--sys-space-2xs) * -1)}
+.pb-raster .rs-foot-col a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
 .pb-raster .rs-foot-legal{${step("small")};color:${ON_DEEP_DIM};display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--sys-space-s) var(--sys-space-m);margin-top:var(--sys-space-xl)}
-.pb-raster .rs-foot-legal a{text-decoration:none;position:relative}
 @media (min-width:${GRID}){
   .pb-raster .rs-foot-cols{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
@@ -159,7 +157,8 @@ ${FONT_FACES}
 .pb-raster .pb-island-form label{${step("kicker")};color:var(--sys-muted);gap:var(--sys-space-xs)}
 .pb-raster .pb-island-form input,.pb-raster .pb-island-form textarea{${step("body")};border:0;border-bottom:1px solid var(--sys-ink);border-radius:0;
   background:transparent;color:var(--sys-ink);padding:var(--sys-space-xs) 0}
-.pb-raster .pb-island-form input:focus,.pb-raster .pb-island-form textarea:focus{outline:none;border-bottom-color:var(--sys-accent);box-shadow:0 1px 0 var(--sys-accent)}
+/* Fokus nicht nur über Farbe: Linie wird um die Fokusring-Stärke dicker */
+.pb-raster .pb-island-form input:focus,.pb-raster .pb-island-form textarea:focus{outline:none;border-bottom-color:var(--sys-accent);box-shadow:0 var(--rs-focus) 0 var(--sys-accent)}
 .pb-raster .pb-island-submit{${step("link")};background:var(--sys-signal);color:var(--sys-on-signal);border-radius:0;padding:var(--sys-space-s) var(--sys-space-m)}
 .pb-raster .pb-island-privacy{${step("small")};color:var(--sys-muted)}
 

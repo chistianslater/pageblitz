@@ -177,6 +177,33 @@ describe("Raster: Fuß", () => {
     );
   });
 
+  test("ausgeblendete Leistungen und Aufruf erscheinen nicht im Fuß", () => {
+    const doc = rasterDoc();
+    const withCta = {
+      ...doc,
+      sections: [
+        ...doc.sections,
+        {
+          type: "cta" as const,
+          headline: "Versteckter Aufruf",
+          ctaText: "Los",
+        },
+      ],
+    };
+    const shown = render(withCta);
+    expect(shown.slice(shown.indexOf('class="rs-foot"'))).toContain(
+      "Versteckter Aufruf"
+    );
+    const html = render({ ...withCta, hiddenSections: ["services", "cta"] });
+    const foot = html.slice(html.indexOf('class="rs-foot"'));
+    expect(foot).not.toContain('<p class="rs-foot-h">Leistungen</p>');
+    expect(foot).not.toContain("#leistungen");
+    expect(foot).not.toContain("Versteckter Aufruf");
+    expect(foot).toMatch(
+      /<p class="rs-foot-call"><a href="[^"]+">[^<]+<\/a><\/p>/
+    );
+  });
+
   test("ohne echte Zeiten keine Zeiten-Spalte", () => {
     const doc = rasterDoc();
     const html = render({
