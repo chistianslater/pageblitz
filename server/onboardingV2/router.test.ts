@@ -723,6 +723,17 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(candidates.some(c => c.kind === "system")).toBe(false);
   });
 
+  test("Handwerk: Raster ist Alternative in Runde 0, auch ohne freies Hauptsystem", async () => {
+    released.ids = ["journal", "raster"];
+    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
+    const { candidates } = await caller().getStyleCandidates({
+      token: "tok",
+      count: 3,
+    });
+    expect(candidates.some(c => c.kind === "system" && c.id === "raster")).toBe(true);
+    expect(candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(false);
+  });
+
   test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
     useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
     released.ids = ["journal"];

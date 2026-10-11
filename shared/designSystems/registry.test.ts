@@ -8,7 +8,7 @@ import {
 
 describe("Freischaltung der Designsysteme", () => {
   test("Journal ist abgenommen und freigeschaltet", () => {
-    expect(RELEASED_SYSTEMS).toEqual(["journal"]);
+    expect(RELEASED_SYSTEMS).toEqual(["journal", "raster"]);
     expect(isReleased("journal")).toBe(true);
     expect(getSystem("journal")).toBeDefined();
   });
@@ -19,10 +19,10 @@ describe("Freischaltung der Designsysteme", () => {
 });
 
 describe("Raster", () => {
-  test("ist registriert, aber nicht freigeschaltet", () => {
+  test("ist registriert und freigeschaltet", () => {
     expect(getSystem("raster")?.name).toBe("Raster");
-    expect(isReleased("raster")).toBe(false);
-    expect(RELEASED_SYSTEMS).not.toContain("raster");
+    expect(isReleased("raster")).toBe(true);
+    expect(RELEASED_SYSTEMS).toContain("raster");
   });
 });
 

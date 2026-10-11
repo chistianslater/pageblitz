@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { getFixture } from "../siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../siteContract/schema";
 import { withArtDirection } from "../stylePacks/artDirection";
-import { withDesignSystem, withoutDesignSystem } from "./apply";
+import { withDesignSystem, withoutDesignSystem, withPrimarySystem } from "./apply";
 
 const rev2 = withArtDirection(getFixture("salon-noir", "full"));
 
@@ -32,5 +32,37 @@ describe("withDesignSystem", () => {
     expect(back.system).toBeUndefined();
     expect(back.palette).toBeUndefined();
     expect(WebsiteDataV2Schema.safeParse(back).success).toBe(true);
+  });
+});
+
+describe("withPrimarySystem (Raster freigeschaltet)", () => {
+  const withFamily = (blueprintFamily: string) =>
+    withPrimarySystem({
+      ...rev2,
+      businessCategory: "Unternehmen",
+      businessName: "Muster GmbH",
+      blueprintFamily,
+    } as typeof rev2);
+
+  test.each(["advice", "auto", "urgent", "industry", "standard"])(
+    "Familie %s bekommt Raster (rev 3)",
+    family => {
+      const doc = withFamily(family);
+      expect(doc.system).toBe("raster");
+      expect(doc.designRevision).toBe(3);
+    }
+  );
+
+  test.each(["trade", "health", "retail", "courses"])(
+    "Familie %s: Hauptsystem nicht gebaut, bleibt rev 2",
+    family => {
+      const doc = withFamily(family);
+      expect(doc.system).toBeUndefined();
+      expect(doc.designRevision).toBe(2);
+    }
+  );
+
+  test("Beauty behält Journal als Hauptsystem", () => {
+    expect(withFamily("beauty").system).toBe("journal");
   });
 });

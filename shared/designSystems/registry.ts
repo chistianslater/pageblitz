@@ -4,12 +4,12 @@ import type { DesignSystemDef, DesignSystemId } from "./types";
 
 export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = {
   journal: JOURNAL,
-  // Raster: gebaut, aber noch nicht abgenommen — nicht in RELEASED_SYSTEMS.
+  // Raster: abgenommen und freigeschaltet.
   raster: RASTER,
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */
-export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal"];
+export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal", "raster"];
 
 export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {
   return DESIGN_SYSTEMS[id];
