@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raster Systemblatt</title>
+<link rel="preload" href="fonts/geist-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* ── Schrift (self-hosted, OFL) ───────────────────────────────── */
+@font-face{font-family:"Geist";src:url(fonts/geist-latin-wght.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --g:"Geist","Helvetica Neue",Arial,system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --paper:#f1f0ec;--raised:#fafaf8;--ink:#141414;--muted:#5b5a56;--rule:#d3d1cb;--accent:#23419a;--deep:#161616;--onDeep:#f1f0ec;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#dcdbd6;color:var(--ink);font-family:var(--g);font-size:17px;line-height:1.45;letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+.sheet{width:1520px;margin:0 auto;background:var(--paper)}
+[data-shot]{padding:0 var(--pad)}
+.blk{padding:64px 0 76px;border-top:1px solid var(--ink)}
+.blk:first-child{border-top:0}
+.lb{display:flex;gap:.6em;font-size:16px;line-height:1.3;letter-spacing:-.015em}
+.lb b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
+.lb span{color:var(--muted)}
+.bh{font-weight:400;font-size:48px;line-height:1.06;letter-spacing:-.035em;margin:18px 0 16px;max-width:30ch}
+.bp{max-width:46rem;font-size:18px;line-height:1.45}
+.bp+.bp{margin-top:10px}
+.note{font-size:14px;color:var(--muted);line-height:1.45;letter-spacing:-.005em}
+code,.mono{font-family:var(--mono);font-size:12.5px;letter-spacing:0}
+code{background:rgba(20,20,20,.06);padding:1px 4px}
+table.t{width:100%;border-collapse:collapse;font-size:14px;line-height:1.4;margin-top:24px}
+table.t th{font-weight:500;font-size:13px;text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--ink);color:var(--ink)}
+table.t td{padding:10px 14px 10px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:500;white-space:nowrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.cap{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.4}
+
+/* Kopf */
+.top{display:grid;grid-template-columns:repeat(12,1fr);gap:24px;padding:48px 0 56px}
+.top .w{grid-column:1/-1;font-weight:400;font-size:330px;line-height:.8;letter-spacing:-.06em;text-transform:uppercase;margin:0 0 40px -.04em}
+.top .l{grid-column:1/4}
+.top .m{grid-column:4/9;font-size:30px;line-height:1.12;letter-spacing:-.03em}
+.top .r{grid-column:9/13;display:grid;gap:10px;align-content:start}
+.top .r p{font-size:14px;line-height:1.4;color:var(--muted)}
+.top .r p b{font-weight:500;color:var(--ink)}
+
+/* Schriftmuster */
+.spec{display:grid;grid-template-columns:repeat(12,1fr);gap:0 24px;border-top:1px solid var(--rule);padding-top:28px;margin-top:28px}
+.spec .a{grid-column:1/8}
+.spec .b{grid-column:8/13}
+.glyph{font-size:132px;line-height:.9;letter-spacing:-.055em;text-transform:uppercase}
+.abc{font-size:28px;line-height:1.25;letter-spacing:-.02em;margin-top:22px}
+.wts{display:grid;gap:6px;margin-top:6px}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding:8px 0}
+.wts div span:first-child{font-size:40px;letter-spacing:-.035em;line-height:1}
+.num{font-size:112px;line-height:.9;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+
+/* Skala */
+.step{display:grid;grid-template-columns:190px 390px 1fr;gap:32px;border-top:1px solid var(--rule);padding:24px 0;align-items:start}
+.step .k{display:block;font-size:16px;margin-bottom:6px}
+.step .k i{font-style:normal;color:var(--accent)}
+.step .s375{width:390px;border-left:1px dashed var(--rule);border-right:1px dashed var(--rule);padding:0 18px;overflow:hidden}
+.step .s1440{overflow:hidden}
+.step .px{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px}
+
+/* Abstände */
+.bar{display:grid;grid-template-columns:90px 260px 1fr;gap:18px;align-items:center;padding:7px 0}
+.bar b{display:block;height:14px;background:var(--ink)}
+.bar .k{font-size:15px}
+
+/* Raster-Diagramm */
+.gridd{position:relative;background:var(--raised);border:1px solid var(--rule);overflow:hidden}
+.gridd .cols{position:absolute;inset:0;display:grid}
+.gridd .cols i{background:rgba(35,65,154,.07);border-left:1px solid rgba(35,65,154,.18);border-right:1px solid rgba(35,65,154,.18)}
+.gridd .row{position:relative;display:grid;align-items:start;border-top:1px solid var(--ink)}
+.gridd small{font-size:11px;font-family:var(--mono);color:var(--accent)}
+
+/* Paletten */
+.pal{border:1px solid var(--rule);background:var(--raised)}
+.pal .hero{padding:26px 24px 24px}
+.pal .hero .n{font-size:58px;line-height:.9;letter-spacing:-.055em;text-transform:uppercase;margin:18px 0 10px}
+.pal .hero .le{font-size:22px;line-height:1.15;letter-spacing:-.025em}
+.pal .btns{display:flex;gap:1px;margin-top:22px}
+.pal .btns span{padding:15px 18px;font-weight:500;font-size:16px}
+.pal .sw{display:grid;grid-template-columns:repeat(9,1fr);height:84px}
+.pal .sw div{display:flex;align-items:flex-end;padding:6px}
+.pal .sw small{font-family:var(--mono);font-size:8.5px;line-height:1.3;overflow:hidden}
+.pal .sw div{min-width:0;overflow:hidden}
+.pal .cr{display:grid;grid-template-columns:1fr auto auto;gap:5px 16px;padding:14px 24px 18px;font-size:13.5px}
+.cok{color:#1b6b33;font-weight:500}.cno{color:#a3231a;font-weight:500}
+
+/* Bilder */
+.imgs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:28px}
+.imgs figure img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+.imgs figure figcaption{font-size:14px;margin-top:10px;line-height:1.4}
+.imgs figure figcaption code{display:block;margin-top:6px;background:none;padding:0;color:var(--muted)}
+
+/* Bewegung */
+.stack{position:relative;height:340px;background:var(--raised);border:1px solid var(--rule);overflow:hidden}
+.stack div{position:absolute;left:40px;right:40px;height:220px;background:var(--deep);color:var(--onDeep);padding:16px 18px;font-size:30px;letter-spacing:-.05em;text-transform:uppercase;line-height:1}
+.stack div small{display:block;font-size:12px;letter-spacing:0;text-transform:none;opacity:.7;margin-bottom:10px;font-family:var(--mono)}
+.mrules{list-style:none;counter-reset:m}
+.mrules li{display:grid;grid-template-columns:44px 1fr;padding:12px 0;border-top:1px solid var(--rule);font-size:16px;line-height:1.4}
+.mrules li:before{counter-increment:m;content:counter(m,decimal-leading-zero);color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* Mockup-Rahmen */
+.phones{display:flex;gap:40px;align-items:flex-start;margin-top:30px}
+.phwrap .px2{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:8px}
+.phone{position:relative;width:390px;overflow:hidden;background:#000;outline:1px solid #bdbbb4;container-type:inline-size}
+.phone .roll{position:absolute;left:0;right:0;top:0}
+.phone .fold{position:absolute;left:0;right:0;border-top:1px dashed #ff2d55;z-index:9}
+.phone .fold span{position:absolute;right:6px;top:4px;font:500 10px var(--mono);color:#ff2d55;background:rgba(255,255,255,.85);padding:1px 4px}
+.desk{position:relative;width:1408px;overflow:hidden;outline:1px solid #bdbbb4;container-type:inline-size}
+.desk .roll{position:absolute;left:0;right:0;top:0}
+.firsts{display:flex;gap:40px;margin-top:30px}
+.firsts .phone{height:844px}
+.firsts p.c{font-size:15px;margin-top:12px;max-width:390px;line-height:1.4}
+.firsts p.c b{font-weight:500}
+
+/* ══════════ RASTER-SYSTEM (Mockups; nutzt nur --sys-* Tokens) ══════════ */
+.r{--vh:844px;--dock:64px;background:var(--sys-paper);color:var(--sys-ink);font-family:var(--g);font-size:var(--sys-body-size);line-height:var(--sys-body-line);letter-spacing:var(--sys-body-track);font-feature-settings:"ss01" 0}
+.r *{font-weight:400}
+.r .t-display{font-size:var(--sys-display-size);line-height:var(--sys-display-line);letter-spacing:var(--sys-display-track);text-transform:uppercase}
+.r .t-figure{font-size:var(--sys-figure-size);line-height:var(--sys-figure-line);letter-spacing:var(--sys-figure-track);font-variant-numeric:tabular-nums}
+.r .t-h2{font-size:var(--sys-h2-size);line-height:var(--sys-h2-line);letter-spacing:var(--sys-h2-track)}
+.r .t-h3{font-size:var(--sys-h3-size);line-height:var(--sys-h3-line);letter-spacing:var(--sys-h3-track)}
+.r .t-lede{font-size:var(--sys-lede-size);line-height:var(--sys-lede-line);letter-spacing:var(--sys-lede-track)}
+.r .t-small{font-size:var(--sys-small-size);line-height:var(--sys-small-line);letter-spacing:var(--sys-small-track)}
+.r .t-kicker{font-size:var(--sys-kicker-size);line-height:var(--sys-kicker-line);letter-spacing:var(--sys-kicker-track)}
+.r .t-link{font-size:var(--sys-link-size);line-height:var(--sys-link-line);letter-spacing:var(--sys-link-track);font-weight:500}
+.r .t-mark{font-size:var(--sys-mark-size);line-height:var(--sys-mark-line);letter-spacing:var(--sys-mark-track);text-transform:uppercase}
+.r .mu{color:var(--sys-muted)}
+.r .wrap{padding-left:var(--sys-space-gutter);padding-right:var(--sys-space-gutter)}
+.r .fit{display:block;white-space:nowrap;text-transform:uppercase}
+.r .fit span{display:block}
+.r a{color:inherit;text-decoration:none}
+
+/* Kopf */
+.r .hdr{position:absolute;left:0;right:0;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;height:68px}
+.r .hdr .nav{display:none}
+.r .hdr .menu{font-size:var(--sys-link-size);font-weight:500}
+.r .on-photo{color:#fff}
+.r .btn{display:inline-flex;align-items:center;gap:.6em;padding:0 20px;height:52px;font-size:var(--sys-link-size);letter-spacing:var(--sys-link-track);font-weight:500;background:var(--sys-signal);color:var(--sys-on-signal)}
+.r .btn.ghost{background:transparent;color:inherit;box-shadow:inset 0 0 0 1px currentColor}
+
+/* Einstieg mit Foto */
+.r .entry{position:relative;height:var(--vh);overflow:hidden;background:var(--sys-deep);color:#fff}
+.r .entry > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.15) brightness(.8)}
+.r .entry .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,rgba(0,0,0,0) 32%,rgba(0,0,0,0) 48%,rgba(0,0,0,.66) 100%)}
+.r .entry .in{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:76px;padding-bottom:calc(var(--dock) + var(--sys-space-l))}
+.r .entry .in .bot{margin-top:auto}
+.r .entry .kick{display:flex;flex-wrap:wrap;gap:0 var(--sys-space-m);justify-content:space-between;margin-top:var(--sys-space-s)}
+.r .entry .side{margin-top:var(--sys-space-s);opacity:.85}
+.r .entry .lede{max-width:15em;margin-top:var(--sys-space-s)}
+/* Einstieg nur Schrift */
+.r .entry.ty{background:var(--sys-paper);color:var(--sys-ink)}
+.r .entry.ty .in{padding-top:68px}
+.r .ty .row{border-top:1px solid var(--sys-rule);padding:var(--sys-space-s) 0}
+.r .ty .row.big{padding:var(--sys-space-xs) 0 var(--sys-space-s)}
+.r .sig{color:var(--sys-accent)}
+.r .live{display:inline-flex;align-items:center;gap:.5em}
+.r .live:before{content:"";width:.6em;height:.6em;background:var(--sys-signal)}
+/* Einstieg ruhig: Papier + Bildtafel */
+.r .entry.calm{background:var(--sys-paper);color:var(--sys-ink)}
+.r .entry.calm .plate{position:absolute;left:0;right:0;bottom:0;height:46%}
+.r .entry.calm .plate img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.1) brightness(1.02)}
+.r .entry.calm .in{padding-bottom:calc(46% + var(--sys-space-m))}
+
+/* Abschnitt mit Label */
+.r .sec{border-top:1px solid var(--sys-rule);padding-top:var(--sys-space-m);padding-bottom:var(--sys-space-section)}
+.r .sec.first{border-top:0}
+.r .lab{display:flex;gap:.5em;margin-bottom:var(--sys-space-l)}
+.r .lab b{color:var(--sys-ink);font-variant-numeric:tabular-nums}
+.r .lab span{color:var(--sys-muted)}
+.r .body{display:grid;gap:var(--sys-space-m)}
+.r .body .t-h3{color:var(--sys-muted)}
+
+/* Bänder */
+.r .band{position:relative;min-height:calc(var(--vh) * .85);background:var(--sys-deep);color:var(--sys-on-deep);display:flex;flex-direction:column;overflow:hidden}
+.r .band > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.2) brightness(.55)}
+.r .band .in{position:relative;display:flex;flex-direction:column;flex:1;padding-top:var(--sys-space-m);padding-bottom:calc(var(--dock) + var(--sys-space-l))}
+.r .band .no{font-size:var(--sys-kicker-size);font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
+.r .band .nm{margin-top:auto}
+.r .band .ds{max-width:20em;margin-top:var(--sys-space-s);opacity:.72}
+.r .band .bscrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.2) 55%,rgba(0,0,0,.72) 100%)}
+.r .band .go{display:none}
+.r .band + .band{border-top:1px solid rgba(255,255,255,.14)}
+.r .band.call{background:var(--sys-signal);color:var(--sys-on-signal)}
+.r .band.call .ds{opacity:1}
+.r .band .go{margin-top:var(--sys-space-l);display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid currentColor;padding-top:var(--sys-space-s)}
+
+/* Zahlen */
+.r .nums{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--sys-rule);border-top:1px solid var(--sys-rule);border-bottom:1px solid var(--sys-rule)}
+.r .nums > div{background:var(--sys-paper);padding:var(--sys-space-s) 0 var(--sys-space-m)}
+.r .nums > div:not(.c1){padding-left:var(--sys-space-s)}
+.r .nums .t-figure{display:block;margin-bottom:var(--sys-space-xs)}
+.r .nums .wide{grid-column:1/-1}
+
+/* Ablauf */
+.r .steps > div{display:grid;grid-template-columns:auto 1fr;gap:0 var(--sys-space-m);border-top:1px solid var(--sys-rule);padding:var(--sys-space-s) 0 var(--sys-space-l)}
+.r .steps > div:last-child{border-bottom:1px solid var(--sys-rule)}
+.r .steps .t-figure{color:var(--sys-accent);min-width:1.1em}
+.r .steps p{margin-top:var(--sys-space-xs)}
+.r .steps .t-h3{color:var(--sys-ink)}
+
+/* Stimme */
+.r .quote .t-h2{text-indent:-.4em}
+.r .quote .who{margin-top:var(--sys-space-l);display:flex;gap:.6em;align-items:center}
+.r .quote .who:before{content:"";width:28px;height:1px;background:var(--sys-ink)}
+
+/* FAQ */
+.r .faq > div{border-top:1px solid var(--sys-rule);padding:var(--sys-space-s) 0}
+.r .faq > div:last-child{border-bottom:1px solid var(--sys-rule)}
+.r .faq .q{display:grid;grid-template-columns:1fr auto;gap:var(--sys-space-m)}
+.r .faq .q i{font-style:normal;font-size:var(--sys-h3-size);line-height:var(--sys-h3-line)}
+.r .faq .a{margin-top:var(--sys-space-xs);max-width:var(--sys-space-measure);color:var(--sys-muted)}
+
+/* Zeiten + Kontakt */
+.r .hours{font-variant-numeric:tabular-nums}
+.r .hours > div{display:grid;grid-template-columns:1fr auto;border-top:1px solid var(--sys-rule);padding:12px 0}
+.r .hours > div:last-child{border-bottom:1px solid var(--sys-rule)}
+.r .hours .today{font-weight:500}
+.r .hours .today *{font-weight:500}
+.r .hours .today span:first-child{display:inline-flex;gap:.6em;align-items:center}
+.r .hours .today span:first-child:before{content:"";width:.55em;height:.55em;background:var(--sys-signal)}
+.r .status{margin-bottom:var(--sys-space-l)}
+.r .contact{display:grid;gap:var(--sys-space-m);margin-top:var(--sys-space-xl)}
+.r .contact .t-h2{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.14em}
+
+/* Fuß */
+.r .foot{background:var(--sys-deep);color:var(--sys-on-deep);padding-top:var(--sys-space-section);padding-bottom:calc(var(--dock) + var(--sys-space-l))}
+.r .foot .cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--sys-space-l) var(--sys-space-m);margin-top:var(--sys-space-xl);border-top:1px solid rgba(255,255,255,.18);padding-top:var(--sys-space-m)}
+.r .foot .cols p{opacity:.62;margin-bottom:var(--sys-space-xs)}
+.r .foot .legal{display:flex;justify-content:space-between;margin-top:var(--sys-space-xl);opacity:.62}
+
+/* Aktionsleiste (Handy) */
+.r.dockhost{position:absolute;left:0;right:0;bottom:0;height:var(--dock);background:transparent;z-index:6}
+.r .dock{position:absolute;left:0;right:0;bottom:0;z-index:5;height:var(--dock);display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--sys-rule)}
+.r .dock a{display:flex;flex-direction:column;justify-content:center;padding:0 var(--sys-space-gutter);background:var(--sys-paper);color:var(--sys-ink)}
+.r .dock a.p{background:var(--sys-signal);color:var(--sys-on-signal)}
+.r .dock a small{font-size:13px;opacity:.78;font-variant-numeric:tabular-nums;letter-spacing:0}
+.r .dock.one{grid-template-columns:1fr}
+.r .dock.one a{flex-direction:row;justify-content:space-between;align-items:center}
+.r .dock.one a b{font-size:var(--sys-mark-size);letter-spacing:-.03em;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* ── Desktop (Container ≥ 900px) ── */
+@container (min-width:900px){
+  .r{--vh:900px;--dock:0px}
+  .r .hdr{height:88px}
+  .r .hdr .nav{display:flex;gap:32px;font-size:var(--sys-link-size);font-weight:500}
+  .r .hdr .menu{display:none}
+  .r .hdr .nav a{opacity:.72}
+  .r .entry .in{padding-top:110px;padding-bottom:var(--sys-space-gutter)}
+  .r .entry .bot{display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--sys-space-m);align-items:end}
+  .r .entry .bot .lede{grid-column:1/7;max-width:none}
+  .r .entry .bot .side{grid-column:10/13;text-align:right}
+  .r .g12{display:grid;grid-template-columns:repeat(12,1fr);gap:0 var(--sys-space-m)}
+  .r .sec .lab{grid-column:1/4;margin:0}
+  .r .sec .body{grid-column:4/11}
+  .r .sec .body.full{grid-column:4/13}
+  .r .band{min-height:var(--vh)}
+  .r .band .in{padding-bottom:var(--sys-space-gutter)}
+  .r .band .ds{max-width:24em}
+  .r .band .go{display:flex}
+  .r .nums{grid-template-columns:repeat(var(--n,4),1fr)}
+  .r .nums > div{padding-left:var(--sys-space-s)!important}
+  .r .nums .wide{grid-column:auto}
+  .r .steps > div{grid-template-columns:3fr 6fr;gap:0 var(--sys-space-m)}
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ═══════════════ 1 · Kopf, Anker, Schrift ═══════════════ -->
+<div data-shot="1">
+<section class="blk" style="border:0;padding-top:0">
+  <div class="top">
+    <h1 class="w">Raster</h1>
+    <div class="l"><p class="lb"><b>02</b><span>von sechs Systemen</span></p></div>
+    <p class="m">Schweizerisch, genau, sachlich. Eine Grotesk, sichtbares Raster, große Ziffern, Fotos nur schwarz-weiß, genau eine Signalfarbe.</p>
+    <div class="r">
+      <p><b>Anker</b> Colophon (colophone.framer.ai), getreu nachgebaut, für Betriebe optimiert. Keine zweite Referenz.</p>
+      <p><b>Erste Wahl für</b> Beratung (Steuer, Recht), Auto/Werkstatt, Sofort-Dienst, Industrie/Hersteller und als Rückfall für alle.</p>
+      <p><b>Alternative für</b> Handwerk, Gesundheit, Barbier, Imbiss, Kreativ, Kurse.</p>
+      <p><b>Ein System, zwei Lautstärken.</b> Die Kanzlei und der Schlüsseldienst teilen Schrift, Raster und Bausteine. Den Unterschied tragen Palette und Signalfarbe.</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="anker">
+  <p class="lb"><b>01</b><span>Anker</span></p>
+  <h2 class="bh">Colophon gemessen, Raster abgeleitet</h2>
+  <p class="bp">Gemessen am 11.10.2026 mit <code>getComputedStyle</code> bei 1440 und 390 px. Colophon setzt alles in BDO Grotesk 400, Hierarchie nur über Größe. Das übernehmen wir. Geändert wird nur, was auf dem Handy oder für Betriebe schwach ist.</p>
+  <table class="t">
+    <thead><tr><th>Rolle</th><th>Colophon 1440</th><th>Colophon 390</th><th>Raster</th><th>Warum</th></tr></thead>
+    <tbody>
+      <tr><td>Wortmarke Einstieg</td><td>226 px, Zeile 1,0, −0,058 em, 400, Versal, füllt die Breite</td><td>60 px, füllt die Breite</td><td>Füllt die Spaltenbreite (Fit), Untergrenze <code>display</code>, Obergrenze 26 rem</td><td>Das Wow von Colophon ist die randvolle Marke. Für lange Namen braucht es eine Regel.</td></tr>
+      <tr><td>Einstiegssatz</td><td>48 px / 1,08, −0,03 em</td><td>31 px / 1,08</td><td><code>lede</code> 30 → 48 px, gleiche Werte</td><td>1:1</td></tr>
+      <tr><td>Abschnittssatz</td><td>44 px / 1,08, −0,03 em</td><td>28 px</td><td><code>h2</code> 28 → 44 px</td><td>1:1</td></tr>
+      <tr><td>Untertitel, Banderklärung</td><td>28 px / 1,24, −0,02 em</td><td>22 px</td><td><code>h3</code> 22 → 28 px</td><td>1:1</td></tr>
+      <tr><td>Bandname</td><td>132 px / 1,0, −0,058 em, Versal</td><td><b>28 px</b>, nicht versal</td><td><code>figure</code> 72 → 132 px, Versal, auf längstes Wort eingepasst</td><td>Auf dem Handy verliert Colophon hier seine Wucht. Raster hält die Bänder groß.</td></tr>
+      <tr><td>Zahlen</td><td>48 px in grauen Kacheln</td><td>31 px</td><td><code>figure</code> mit Tabellenziffern, Haarlinien statt Kacheln</td><td>Ziffern-Bühne statt Kachelreihe (Ankerbericht)</td></tr>
+      <tr><td>Label „01 Intro“</td><td>16 px, Nummer Tinte, Name grau (#6f6f6f), nicht versal</td><td>16 px</td><td><code>kicker</code> 16 px, nicht versal</td><td>1:1. Keine gesperrten Versal-Eyebrows.</td></tr>
+      <tr><td>Navigation</td><td>18 px / 1,16, −0,015 em</td><td>22 px im Menü</td><td><code>link</code> 17 → 18 px, 500</td><td>500 nur für Bedienbares</td></tr>
+      <tr><td>Marke im Kopf</td><td>28 px, Versal, −0,058 em</td><td>22 px</td><td><code>mark</code> 22 → 28 px</td><td>1:1</td></tr>
+      <tr><td>Seitenrand</td><td>64 px</td><td>18 px</td><td><code>gutter</code> 18 → 64 px</td><td>1:1</td></tr>
+      <tr><td>Spalten</td><td>Labelspalte 260 px + 64, Inhalt 2 × 644, Abstand 24</td><td>eine Spalte</td><td>12 Spalten, Abstand 24, Label Spalte 1–3, Inhalt 4–10/12</td><td>gleiche Teilung, als echtes Raster</td></tr>
+      <tr><td>Abschnittsabstand</td><td>120 px oben/unten</td><td>64 px</td><td><code>section</code> 64 → 120 px</td><td>1:1</td></tr>
+      <tr><td>Linien</td><td>keine</td><td>keine</td><td>Haarlinie über jedem Abschnitt, in Listen und Zahlen</td><td>Spec verlangt sichtbares Raster</td></tr>
+      <tr><td>Bänder</td><td>100 vh, <code>sticky; top:0</code>, Foto mit 45 % Schwarz, Fläche #1d1d1d</td><td>100 vh sticky</td><td>Desktop 100svh, Handy 85svh, sticky; Foto S/W, ohne Foto <code>deep</code></td><td>85 % lässt das nächste Band anschneiden: man sieht, dass es weitergeht</td></tr>
+      <tr><td>Fotos</td><td>farbige Kampagnenbilder, Parallaxe −40 px</td><td>gleich</td><td>immer S/W, harte Kontraste, keine Parallaxe</td><td>rettet schwache Google-Fotos</td></tr>
+      <tr><td>Farben</td><td>Weiß, #1d1d1d, Grau #6f6f6f, #f0f0f0</td><td>gleich</td><td>3 Paletten + eine Signalfarbe pro Palette</td><td>Laut und leise mit demselben System</td></tr>
+      <tr><td>Knopf</td><td>Pille, 16 px, Glas 15 % Weiß</td><td>gleich</td><td>Rechteck, Signalfläche, 52 px hoch</td><td>Pille ist der Vorlagen-Teil von Colophon, nicht der Schweizer</td></tr>
+      <tr><td>Fehlt</td><td colspan="2">Ablauf, FAQ, Öffnungszeiten, Kontakt, Aktionsleiste, Einstieg ohne Foto</td><td colspan="2">neu entworfen in derselben Grammatik (Abschnitt 09)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="blk" id="schrift">
+  <p class="lb"><b>02</b><span>Schrift</span></p>
+  <h2 class="bh">Geist statt BDO Grotesk</h2>
+  <p class="bp">BDO Grotesk ist frei (OFL), liegt aber nicht bei Google Fonts. Es gibt nur Spiegel-Downloads ohne gesicherte Herkunft. Geist (Vercel, OFL 1.1) kommt ihr im Vergleich mit vier Kandidaten am nächsten: gleiche Laufweite und Mittellänge, flache Endstriche, offene 2, 4 und 7, gerades R. Inter Tight ist zu schmal, Schibsted zu zeitungsartig, Hanken zu weich. Eine variable Datei (100–900, latin, 29 kB) deckt Wortmarke, Ziffern und Fließtext ab. Tabellenziffern (<code>tnum</code>) sind drin, wichtig für Zeiten und Zahlen.</p>
+  <div class="spec">
+    <div class="a">
+      <div class="glyph">Ägz 24/7</div>
+      <div class="abc">ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ<br>abcdefghijklmnopqrstuvwxyz äöüß<br>0123456789 € „“ ‚‘ ( ) & / , . : – +</div>
+      <div class="num" style="margin-top:28px">4,8 · 1987 · 212</div>
+      <p class="note" style="margin-top:8px">Ziffern mit <code>font-variant-numeric: tabular-nums</code>. Nur zwei Schnitte im Einsatz: 400 für alles Gelesene, 500 für Bedienbares und den Heute-Eintrag.</p>
+    </div>
+    <div class="b">
+      <div class="wts">
+        <div><span style="font-weight:400">Steuern. Klar geregelt.</span><span class="note">400 · alles</span></div>
+        <div><span style="font-weight:500">Jetzt anrufen</span><span class="note">500 · Knöpfe, Links</span></div>
+      </div>
+      <table class="t">
+        <thead><tr><th>Datei</th><th>Gewicht</th><th>Vorladen</th></tr></thead>
+        <tbody><tr><td><code>geist-latin-wght.woff2</code></td><td><code>100 900</code></td><td>ja (einzige)</td></tr></tbody>
+      </table>
+      <p class="note" style="margin-top:12px">Quelle: Google Fonts CSS2-API, Safari-UA, Subset latin. Rückfall: <code>'Helvetica Neue', Arial, system-ui, sans-serif</code> (nur bis die Datei da ist). <code>display</code> und <code>text</code> zeigen auf dieselbe Familie.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════ 2 · Schriftskala ═══════════════ -->
+<div data-shot="2">
+<section class="blk" id="skala">
+  <p class="lb"><b>03</b><span>Schriftskala</span></p>
+  <h2 class="bh">Zehn Stufen, eine Familie</h2>
+  <p class="bp">Links das Handy (390 px Rahmen, 18 px Rand), rechts der Desktop bei 1440. Die Werte stammen aus der Endtabelle unten, nichts ist doppelt eingetragen. Hierarchie nur über Größe; Versalien nur für Wortmarke, Bandnamen und Marke.</p>
+  <div id="scale" style="margin-top:28px"></div>
+</section>
+</div>
+
+<!-- ═══════════════ 3 · Abstände, Raster, Farben ═══════════════ -->
+<div data-shot="3">
+<section class="blk" id="abstand">
+  <div class="g2">
+    <div>
+      <p class="lb"><b>04</b><span>Abstände</span></p>
+      <h2 class="bh">Weit zwischen, eng innen</h2>
+      <p class="bp">Label → Inhalt <code>l</code> (Handy; Desktop: Labelspalte), Titel → Text <code>m</code>, Listenzeile innen <code>s</code>, zwischen Abschnitten <code>section</code>. Seitenrand und Abschnittsabstand wachsen mit der Breite, alles andere bleibt fest.</p>
+      <div id="bars" style="margin-top:24px"></div>
+    </div>
+    <div>
+      <p class="lb"><b>05</b><span>Raster</span></p>
+      <h2 class="bh">Labelspalte und Inhalt</h2>
+      <div class="gridd" style="width:390px;height:250px;margin-top:22px">
+        <div class="cols" style="grid-template-columns:1fr;padding:0 18px"><i></i></div>
+        <div class="row" style="margin-top:40px;padding:10px 18px"><small>02 Leistungen</small></div>
+        <div style="position:relative;padding:28px 18px 0;font-size:24px;line-height:1.1;letter-spacing:-.03em">Inhalt über volle Breite, 354 px, Rand 18 px.</div>
+      </div>
+      <p class="cap">Handy: eine Spalte. Label steht über dem Inhalt, Abstand <code>l</code>.</p>
+      <div class="gridd" style="height:250px;margin-top:28px">
+        <div class="cols" style="grid-template-columns:repeat(12,1fr);gap:0 8px;padding:0 20px"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="row" style="margin-top:40px;grid-template-columns:repeat(12,1fr);gap:0 8px;padding:10px 20px">
+          <small style="grid-column:1/4">02 Leistungen · Sp. 1–3</small>
+          <div style="grid-column:4/11;font-size:22px;line-height:1.1;letter-spacing:-.03em">Text Sp. 4–10 (Satzbreite <code>measure</code>), Listen und Zahlen Sp. 4–12.</div>
+        </div>
+      </div>
+      <p class="cap">Desktop: 12 Spalten, Abstand 24 px, Rand <code>gutter</code> (64 px), max. 90 rem. Haarlinie über die volle Inhaltsbreite, Label oben links darunter. So wird das Raster sichtbar, ohne Hilfslinien zu zeichnen.</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk" id="farben">
+  <p class="lb"><b>06</b><span>Farben</span></p>
+  <h2 class="bh">Drei Paletten, eine Signalfarbe je Palette</h2>
+  <p class="bp">Papier ist ruhig (Steuer, Recht), Werk ist technisch (Werkstatt, Industrie), Kohle ist laut (Notdienst). Die Signalfarbe gibt es nur für Anrufen, Termin, „Heute“ und Notdienst. Nie für Überschriften, nie als Fläche ohne Aufgabe.</p>
+  <div class="g3" id="pals" style="margin-top:28px"></div>
+  <p class="note" style="margin-top:14px">Vorschlag: zwei neue Palettenfelder <code>signal</code> (Fläche für Aktionen, ≥ 3 : 1 zu <code>paper</code>, WCAG 1.4.11) und <code>onSignal</code> (Text darauf, ≥ 4,5 : 1). <code>accent</code> bleibt die textsichere Variante (≥ 4,5 : 1) für Ablauf-Ziffern und Links. Bei Papier und Kohle sind beide gleich, bei Werk ist Orange als Text zu hell, daher ein dunkleres <code>accent</code>. Signal nie auf <code>deep</code> in der Palette Papier (1,98 : 1).</p>
+</section>
+</div>
+
+<!-- ═══════════════ 4 · Bilder, Bewegung ═══════════════ -->
+<div data-shot="4">
+<section class="blk" id="bilder">
+  <p class="lb"><b>07</b><span>Bilder</span></p>
+  <h2 class="bh">Immer schwarz-weiß, nie mit Farbe</h2>
+  <p class="bp">Ein dunkles, unscharfes Google-Foto wird in S/W mit hartem Kontrast zur Fläche, ein gutes Foto wird zum Plakat. Drei Behandlungen, mehr nicht. Keine Rundungen, keine Bildunterschriften, keine Etiketten auf Fotos.</p>
+  <div class="imgs">
+    <figure><img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=900&q=80&auto=format&fit=crop" alt="" style="filter:grayscale(1) contrast(1.15) brightness(.8)"><figcaption><b style="font-weight:500">Einstieg</b>, Vollbild mit Verlauf oben 38 % und unten 66 % Schwarz, sonst nichts.<code>grayscale(1) contrast(1.15) brightness(.8)</code></figcaption></figure>
+    <figure><img src="https://images.unsplash.com/photo-1537984822441-cff330075342?w=900&q=80&auto=format&fit=crop" alt="" style="filter:grayscale(1) contrast(1.2) brightness(.55)"><figcaption><b style="font-weight:500">Band</b>, dunkel genug für weiße Versalien ohne extra Schatten.<code>grayscale(1) contrast(1.2) brightness(.55)</code></figcaption></figure>
+    <figure><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=900&q=80&auto=format&fit=crop" alt="" style="filter:grayscale(1) contrast(1.1) brightness(1.02)"><figcaption><b style="font-weight:500">Tafel</b> auf Papier, z. B. im ruhigen Einstieg (unteres Drittel) oder neben dem Intro.<code>grayscale(1) contrast(1.1) brightness(1.02)</code></figcaption></figure>
+  </div>
+  <table class="t">
+    <thead><tr><th>Regel</th><th>Wert</th></tr></thead>
+    <tbody>
+      <tr><td>Umwandlung</td><td>S/W serverseitig beim Bildimport (sharp: <code>greyscale().linear(1.15,…)</code>), CSS-Filter nur als Rückfall. Filter auf großen Sticky-Bildern kosten auf dem Handy Malzeit.</td></tr>
+      <tr><td>Zuschnitt</td><td>Einstieg Handy 9 : 19,5, Desktop 16 : 10; Band füllt die Fläche; Tafel 3 : 2 (Desktop) / volle Breite × 38 % (Handy). <code>object-position: 50% 40%</code>.</td></tr>
+      <tr><td>Wann Foto, wann Fläche</td><td>Einstieg: Foto nur bei Bildqualität ≥ „brauchbar“, sonst Einstieg nur Schrift. Bänder: Foto, wenn ein passendes da ist; sonst <code>deep</code>. Fotos und Flächen dürfen sich abwechseln.</td></tr>
+      <tr><td>Farbe im Bild</td><td>Keine. Auch die Signalfarbe nie als Duoton.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="blk" id="bewegung">
+  <div class="g2">
+    <div>
+      <p class="lb"><b>08</b><span>Bewegung</span></p>
+      <h2 class="bh">Bänder stapeln sich, sonst bleibt es ruhig</h2>
+      <ol class="mrules" style="margin-top:20px">
+        <li>Nur <code>transform</code>, <code>opacity</code>, <code>clip-path</code>. Kein Scroll-Listener, kein Scroll-Hijacking, keine Parallaxe.</li>
+        <li>Bänder: <code>position: sticky; top: 0</code>, jedes folgende Band schiebt sich über das vorige. Reines CSS, kein JavaScript.</li>
+        <li>Einstieg einmal beim Laden: Wortmarke Zeile für Zeile aus der Maske (<code>translateY(100%) → 0</code>, 700 ms, 60 ms Versatz), Foto <code>scale(1.04) → 1</code> in 900 ms.</li>
+        <li>Abschnitte: Label und Titel steigen 16 px auf, 500 ms, einmalig per IntersectionObserver.</li>
+        <li>Kurve <code>cubic-bezier(0.23, 1, 0.32, 1)</code> für alles. Knopf beim Drücken <code>scale(.98)</code>, 140 ms.</li>
+        <li>Aktionsleiste: bei Sofort-Dienst immer da. Sonst erscheint sie, wenn der Einstieg aus dem Bild ist (<code>translateY(100%) → 0</code>, 240 ms).</li>
+        <li><code>prefers-reduced-motion</code>: Bänder <code>position: relative</code> (kein Stapeln), keine Auf- und Einblendungen, Leiste sofort da.</li>
+        <li>Handy-Leistung: Bänder <code>85svh</code> (nicht <code>dvh</code>, springt nicht mit der Adressleiste), höchstens 5 Bänder, Bilder <code>loading="lazy" decoding="async"</code> ab Band 2, kein <code>will-change</code> dauerhaft.</li>
+      </ol>
+    </div>
+    <div>
+      <div class="stack" style="margin-top:84px">
+        <div style="top:20px;opacity:.55"><small>01 · sticky top 0</small>Inspektion</div>
+        <div style="top:70px;opacity:.8"><small>02 · schiebt sich darüber</small>Reifen</div>
+        <div style="top:120px;background:#ff4f00;color:#0e0e0e"><small>03 · Signal-Band (nur Sofort-Dienst)</small>Türöffnung</div>
+      </div>
+      <p class="cap">Stapel schematisch. In den Handy-Mockups unten sind die Bänder untereinander gesetzt, wie bei reduzierter Bewegung.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════════ 5 · Bausteine ═══════════════ -->
+<div data-shot="5">
+<section class="blk" id="bausteine">
+  <p class="lb"><b>09</b><span>Neue Bausteine</span></p>
+  <h2 class="bh">Was Colophon fehlt, in Colophons Grammatik</h2>
+  <p class="bp">Jeder Baustein beginnt mit Haarlinie und Label, dann Inhalt. Zahlen nur aus echten Daten: Google-Bewertung, Anzahl Bewertungen, Gründungsjahr, „24/7“ nur bei echtem Notdienst. Fehlt ein Wert, fällt die Zelle weg; bei weniger als zwei Werten fällt die ganze Zahlenzeile weg.</p>
+  <table class="t">
+    <thead><tr><th>Baustein</th><th>Aufbau</th><th>Regel</th></tr></thead>
+    <tbody>
+      <tr><td>Einstieg mit Foto</td><td>S/W-Vollbild, Wortmarke oben randvoll, Kicker darunter, <code>lede</code> unten links</td><td>wie Colophon; nur bei brauchbarem Foto</td></tr>
+      <tr><td>Einstieg ruhig</td><td>Papier, Wortmarke, <code>lede</code>, Bildtafel im unteren Drittel</td><td>Beratung, Gesundheit; Foto darf schwach sein</td></tr>
+      <tr><td>Einstieg nur Schrift</td><td>Zeilen mit Haarlinien: Kicker + Status, Wortmarke, Ziffer (z. B. 24/7) in Signal, <code>lede</code></td><td>kein brauchbares Foto; immer bei Sofort-Dienst ohne Foto</td></tr>
+      <tr><td>Wortmarke</td><td>Markanter Namensteil füllt die Spalte. Passt das längste Wort nicht über <code>display</code>, wandert das Branchenwort in den Kicker („Kfz-Meisterbetrieb Yilmaz“ → YILMAZ).</td><td>Breite serverseitig aus Breitentabelle der Schrift; Obergrenze 26 rem</td></tr>
+      <tr><td>Leistungen als Bänder</td><td>Nummer + Kurzinfo oben, Bandname (<code>figure</code>, Versal) unten, <code>h3</code>-Erklärung, optional Link</td><td>3–5 Bänder, Foto oder <code>deep</code>; Bandname auf längstes Wort eingepasst</td></tr>
+      <tr><td>Signal-Band</td><td>Band in <code>signal</code> mit Anrufzeile</td><td>höchstens eins, nur Sofort-Dienst</td></tr>
+      <tr><td>Zahlen</td><td>2 Spalten (Handy) / 4 (Desktop), Haarlinien als Raster (<code>gap: 1px</code>), Ziffer <code>figure</code>, Beschriftung <code>small</code></td><td>nur echte Fakten</td></tr>
+      <tr><td>Ablauf</td><td>Zeilen 01–04: Ziffer in <code>accent</code> links, Titel <code>h3</code> + Satz rechts</td><td>3–5 Schritte, Verb statt „Schritt 1“</td></tr>
+      <tr><td>Stimme</td><td>Ein Zitat in <code>h2</code>, hängende Anführung, Name + „Google-Bewertung“</td><td>höchstens 3 Zeilen am Desktop, nur echte Bewertung</td></tr>
+      <tr><td>Gut zu wissen</td><td>Haarlinien-Liste, Frage <code>h3</code>, „+“ rechts, Antwort <code>body</code> in <code>muted</code></td><td>3–6 Fragen, erste offen</td></tr>
+      <tr><td>Zeiten + Kontakt</td><td>Status-Satz, Tabelle Mo–So mit Tabellenziffern, Heute in 500 mit Signalquadrat; Telefon groß (<code>h2</code>), Adresse, E-Mail, Route</td><td>Heute serverseitig nach Europe/Berlin, Status clientseitig nachgezogen</td></tr>
+      <tr><td>Aktionsleiste</td><td>64 px, unten fest, zwei Felder (Signal + Papier) oder ein Feld mit Nummer</td><td>nur Handy; Sofort-Dienst: ein Feld „Jetzt anrufen“</td></tr>
+      <tr><td>Fuß</td><td><code>deep</code>, Satz in <code>h2</code>, Spalten Leistungen / Kontakt / Zeiten / Rechtliches</td><td>wie Colophon, ohne Showreel</td></tr>
+    </tbody>
+  </table>
+</section>
+</div>
+
+<!-- ═══════════════ 6 · Erster Blick (Handy) ═══════════════ -->
+<div data-shot="6">
+<section class="blk" id="erster">
+  <p class="lb"><b>10</b><span>Erster Blick, Handy 390 × 844</span></p>
+  <h2 class="bh">Drei Betriebe, drei Einstiege, ein System</h2>
+  <div class="firsts" id="firsts"></div>
+</section>
+</div>
+
+<!-- ═══════════════ 7–9 · Ganze Handy-Seiten ═══════════════ -->
+<div data-shot="7"><section class="blk"><p class="lb"><b>11</b><span>Ganze Seite, Handy</span></p><h2 class="bh">Kanzlei Brandt · Palette Papier</h2><p class="bp">Ruhiger Einstieg mit Bildtafel, Bänder ohne Foto, Ablauf, Zeiten. Signal (Kobalt) nur in Leiste, Heute und Ablauf-Ziffern.</p><div class="phones" id="ph-kanzlei"></div></section></div>
+<div data-shot="8"><section class="blk"><p class="lb"><b>12</b><span>Ganze Seite, Handy</span></p><h2 class="bh">Kfz-Meisterbetrieb Yilmaz · Palette Werk</h2><p class="bp">Foto-Einstieg wie Colophon, Bänder abwechselnd Foto und Fläche, Zahlen aus Google, Termin in Orange.</p><div class="phones" id="ph-werkstatt"></div></section></div>
+<div data-shot="9"><section class="blk"><p class="lb"><b>13</b><span>Ganze Seite, Handy</span></p><h2 class="bh">Schlüsseldienst Nord · Palette Kohle</h2><p class="bp">Kein brauchbares Foto: Einstieg nur Schrift. Anrufleiste immer da, ein Signal-Band, Zeiten „rund um die Uhr“.</p><div class="phones" id="ph-schluessel"></div></section></div>
+
+<!-- ═══════════════ 10–11 · Desktop ═══════════════ -->
+<div data-shot="10"><section class="blk"><p class="lb"><b>14</b><span>Desktop 1440 (Rahmen 1408)</span></p><h2 class="bh">Werkstatt: Einstieg und Intro</h2><div id="desk1" style="margin-top:28px"></div></section></div>
+<div data-shot="11"><section class="blk"><p class="lb"><b>15</b><span>Desktop 1440 (Rahmen 1408)</span></p><h2 class="bh">Werkstatt: Band, Zahlen, Ablauf</h2><div id="desk2" style="margin-top:28px"></div></section></div>
+
+<!-- ═══════════════ 12 · Endwerte ═══════════════ -->
+<div data-shot="12">
+<section class="blk" id="final">
+  <p class="lb"><b>16</b><span>Endwerte für die Umsetzung</span></p>
+  <h2 class="bh">Tokens zum Kopieren</h2>
+  <div id="finaltables"></div>
+</section>
+</div>
+</div>
+
+<script>
+/* ── Endwerte (einzige Quelle für Tabellen, Skala und Mockups) ─────── */
+const TYPE = {
+  display:{font:"display",size:"clamp(3.75rem, 1.5rem + 9.4vw, 11rem)",line:0.88,track:"-0.05em",weight:400,upper:true,ex:"Kanzlei Brandt"},
+  figure:{font:"display",size:"clamp(4.5rem, 3rem + 6vw, 8.25rem)",line:0.9,track:"-0.045em",weight:400,ex:"4,8 · 1987",extra:true},
+  h2:{font:"display",size:"clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem)",line:1.08,track:"-0.03em",weight:400,ex:"Steuern. Klar geregelt."},
+  h3:{font:"text",size:"clamp(1.375rem, 1.15rem + 0.9vw, 1.75rem)",line:1.22,track:"-0.02em",weight:400,ex:"Kfz-Meisterbetrieb Yilmaz"},
+  lede:{font:"display",size:"clamp(1.875rem, 1.35rem + 2.3vw, 3rem)",line:1.08,track:"-0.03em",weight:400,ex:"Schlüsseldienst Nord — 24 h"},
+  body:{font:"text",size:"clamp(1.0625rem, 1rem + 0.25vw, 1.125rem)",line:1.45,track:"-0.01em",weight:400,ex:"Wir übernehmen Buchhaltung, Lohn und Jahresabschluss für Selbstständige und Familien in Münster. Du bekommst einen festen Ansprechpartner und eine klare Liste, welche Belege wir brauchen."},
+  small:{font:"text",size:"0.9375rem",line:1.35,track:"-0.01em",weight:400,ex:"Google-Bewertung, 212 Stimmen"},
+  kicker:{font:"text",size:"1rem",line:1.3,track:"-0.015em",weight:400,ex:"02 Leistungen"},
+  link:{font:"text",size:"clamp(1.0625rem, 1rem + 0.2vw, 1.125rem)",line:1.2,track:"-0.015em",weight:500,ex:"Jetzt anrufen"},
+  mark:{font:"display",size:"clamp(1.375rem, 1.15rem + 0.6vw, 1.75rem)",line:1,track:"-0.05em",weight:400,upper:true,ex:"Kanzlei Brandt"},
+};
+const SPACE = {"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"3.5rem","2xl":"4.5rem",
+  section:"clamp(4rem, 2.5rem + 5.6vw, 7.5rem)",gutter:"clamp(1.125rem, -0.1rem + 4.6vw, 4rem)",measure:"40rem",max:"90rem"};
+const PALS = [
+  {id:"papier",name:"Papier",paper:"#f1f0ec",ink:"#141414",muted:"#5b5a56",rule:"#d3d1cb",accent:"#23419a",deep:"#161616",onDeep:"#f1f0ec",signal:"#23419a",onSignal:"#ffffff",use:"ruhig: Steuer, Recht, Gesundheit"},
+  {id:"werk",name:"Werk",paper:"#f7f7f6",ink:"#0e0e0e",muted:"#585858",rule:"#dadada",accent:"#b83a00",deep:"#121212",onDeep:"#f7f7f6",signal:"#ff4f00",onSignal:"#0e0e0e",use:"technisch: Werkstatt, Industrie, Handwerk"},
+  {id:"kohle",name:"Kohle",paper:"#141414",ink:"#f3f3f0",muted:"#a2a29e",rule:"#333331",accent:"#ffd426",deep:"#050505",onDeep:"#f3f3f0",signal:"#ffd426",onSignal:"#141414",use:"laut: Notdienst, Imbiss, Barbier"},
+];
+const FONT_FILES=[{role:"display + text",family:"Geist",file:"geist-latin-wght.woff2",weight:"100 900",style:"normal",preload:true}];
+
+/* clamp(a, b ± c vw, d) bei Breite w → px */
+function px(expr,w){const m=expr.match(/clamp\(([\d.]+)rem,\s*(-?[\d.]+)rem\s*\+\s*([\d.]+)vw,\s*([\d.]+)rem\)/);
+  if(!m) return parseFloat(expr)*16; const [a,b,c,d]=m.slice(1).map(Number); return Math.min(d*16,Math.max(a*16,b*16+c*w/100));}
+function lum(h){return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(s=>s<=.04045?s/12.92:((s+.055)/1.055)**2.4).reduce((a,v,i)=>a+v*[.2126,.7152,.0722][i],0)}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+const kebab=s=>s.replace(/[A-Z]/g,m=>"-"+m.toLowerCase());
+
+/* --sys-* Variablen für einen Rahmen der Breite w (vw → px aufgelöst) */
+function sysVars(palId,w){const p=PALS.find(x=>x.id===palId);const v={};
+  for(const k of ["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"]) v["--sys-"+kebab(k)]=p[k];
+  for(const [k,t] of Object.entries(TYPE)){v[`--sys-${k}-size`]=px(t.size,w).toFixed(2)+"px";v[`--sys-${k}-line`]=t.line;v[`--sys-${k}-track`]=t.track;}
+  for(const [k,s] of Object.entries(SPACE)) v[`--sys-space-${k}`]=(k==="measure"||k==="max")?s:px(s,w).toFixed(2)+"px";
+  return Object.entries(v).map(([a,b])=>`${a}:${b}`).join(";");}
+
+/* ── Skala ── */
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+  const st=w=>`font-family:var(--g);font-size:${px(t.size,w).toFixed(1)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${t.upper?"text-transform:uppercase;":""}${k==="figure"?"font-variant-numeric:tabular-nums;":""}`;
+  return `<div class="step"><div><span class="k">${k}${t.extra?" <i>neu</i>":""}</span><span class="note">Geist ${t.weight}${t.upper?", Versal":""}<br>Zeile ${t.line} · ${t.track}<br><span class="mono">${t.size}</span></span></div>
+  <div class="s375"><span class="px">390 → ${px(t.size,390).toFixed(1)} px</span><div style="${st(390)}">${t.ex}</div></div>
+  <div class="s1440"><span class="px">1440 → ${px(t.size,1440).toFixed(1)} px</span><div style="${st(1440)};${k==="body"?"max-width:40rem":"white-space:nowrap"}">${t.ex}</div></div></div>`}).join("");
+
+/* ── Abstände ── */
+document.getElementById("bars").innerHTML=Object.entries(SPACE).map(([k,v])=>{
+  const a=px(v,390),b=px(v,1440);const lab=v.startsWith("clamp")?`${a.toFixed(0)} / ${b.toFixed(0)} px`:`${a.toFixed(0)} px`;
+  const wb=k==="measure"||k==="max"?b/4:b;return `<div class="bar"><span class="k">${k}</span><span class="mono">${v}</span><span style="display:flex;align-items:center;gap:12px"><b style="width:${wb}px"></b><span class="note">${lab}${k==="measure"||k==="max"?" (Balken ¼)":""}</span></span></div>`}).join("");
+
+/* ── Paletten ── */
+const checks=[["ink","paper",7],["muted","paper",4.5],["accent","paper",4.5],["onDeep","deep",7],["onSignal","signal",4.5],["signal","paper",3]];
+document.getElementById("pals").innerHTML=PALS.map((p,i)=>`<div class="pal">
+  <div class="hero" style="background:${p.paper};color:${p.ink}"><p class="lb" style="font-size:14px"><b style="color:${p.ink}">0${i+1}</b><span style="color:${p.muted}">${p.name} · <code style="background:none;color:inherit">${p.id}</code></span></p>
+   <p class="n">${["Brandt","Yilmaz","Nord"][i]}</p><p class="le">${["Steuern. Klar geregelt.","Inspektion, Reifen, HU/AU.","Ausgesperrt? Ruf an."][i]}</p>
+   <p style="font-size:14px;color:${p.muted};margin-top:10px">${p.use}</p>
+   <div class="btns"><span style="background:${p.signal};color:${p.onSignal}">${["Anrufen","Termin","Jetzt anrufen"][i]}</span><span style="box-shadow:inset 0 0 0 1px ${p.ink};color:${p.ink}">Route</span></div>
+   <p style="margin-top:16px;font-size:44px;line-height:.9;letter-spacing:-.045em;color:${p.accent};font-variant-numeric:tabular-nums">01 02 03</p></div>
+  <div class="sw">${["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"].map(k=>`<div style="background:${p[k]};border-left:1px solid rgba(0,0,0,.06)"><small style="color:${cr(p[k],"#ffffff")>3?"#fff":"#141414"}">${k}<br>${p[k]}</small></div>`).join("")}</div>
+  <div class="cr">${checks.map(([a,b,min])=>{const v=cr(p[a],p[b]);return `<span>${a} / ${b}${a==="onSignal"||a==="signal"?" *":""}</span><span>≥ ${min}</span><span class="${v>=min?"cok":"cno"}">${v.toFixed(2)} ${v>=min?"✓":"✗"}</span>`}).join("")}</div></div>`).join("");
+
+/* ═══════════ Betriebe (Beispieldaten) ═══════════ */
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const BIZ={
+ kanzlei:{pal:"papier",mark:"Kanzlei Brandt",word:["Kanzlei","Brandt"],kick:"Steuerberatung in Münster",kick2:"Seit 1994",lede:"Steuern. Klar geregelt.",entry:"calm",img:"1454165804606-c3d57bc86b40",
+  nav:["Leistungen","Ablauf","Kontakt"],cta:"Anrufen",
+  intro:["Wir machen Buchhaltung, Lohn und Jahresabschluss. Du behältst den Überblick.","Für Selbstständige, Handwerksbetriebe und Familien in Münster und im Umland."],
+  bands:[{n:"Steuern",d:"Erklärung für Privatleute und Betriebe, mit allen Belegen, die dir zustehen.",i:null},{n:"Buchhaltung",d:"Laufend und digital, jeden Monat abgestimmt.",i:null},{n:"Jahres­abschluss",d:"Bilanz oder EÜR, fristgerecht beim Finanzamt.",i:null}],
+  nums:[["1994","gegründet"],["4,9","Google-Bewertung"],["37","Bewertungen"]],
+  steps:[["Anrufen","Du schilderst kurz, worum es geht."],["Unterlagen","Wir sagen dir genau, welche Belege wir brauchen."],["Bearbeitung","Wir erledigen den Rest und melden uns bei Fragen."],["Bescheid","Wir prüfen den Bescheid, bevor du zahlst."]],
+  quote:["Endlich jemand, der mir meine Steuer in einfachen Sätzen erklärt.","Miriam K."],
+  faq:[["Welche Unterlagen brauche ich?","Nach dem ersten Gespräch bekommst du eine Liste. Fotos der Belege reichen."],["Was kostet die Beratung?"],["Geht das auch ganz digital?"]],
+  hours:[["Mo","8:00 – 17:00"],["Di","8:00 – 17:00"],["Mi","8:00 – 17:00",1],["Do","8:00 – 17:00"],["Fr","8:00 – 13:00"],["Sa","geschlossen"],["So","geschlossen"]],status:"Jetzt geöffnet bis 17:00",
+  phone:"0251 48 12 90",addr:"Ludgeristraße 12, 48143 Münster",mail:"post@kanzlei-brandt.de",
+  foot:"Ruf an oder schreib uns. Wir melden uns am selben Tag.",dock:[["Anrufen","0251 48 12 90",1],["E-Mail","post@kanzlei-brandt.de"]]},
+ werkstatt:{pal:"werk",mark:"Yilmaz",word:["Yilmaz"],kick:"Kfz-Meisterbetrieb in Münster-Hiltrup",kick2:"",lede:"Inspektion, Reifen, HU/AU. Ehrlich gemacht, fair berechnet.",entry:"photo",img:"1486262715619-67b85e0b08d3",
+  nav:["Leistungen","Ablauf","Kontakt"],cta:"Termin",side:"Heute geöffnet bis 18:00",
+  intro:["Wir sagen dir vorher, was es kostet. Und machen nur, was nötig ist.","Meisterbetrieb seit 2006, für alle Marken, mit Hol- und Bringdienst im Stadtgebiet."],
+  bands:[{n:"Inspektion",d:"Nach Herstellervorgabe, mit Stempel im Serviceheft.",i:"1537984822441-cff330075342"},{n:"Reifen",d:"Wechsel, Einlagerung, Auswuchten. Termin meist in derselben Woche.",i:null},{n:"HU / AU",d:"Prüfung im Haus, jeden Dienstag und Donnerstag.",i:"1503376780353-7e6692767b70"},{n:"Unfall",d:"Wir kümmern uns um Gutachter und Versicherung.",i:null}],
+  nums:[["4,7","Google-Bewertung"],["212","Bewertungen"],["2006","gegründet"]],
+  steps:[["Termin","Online oder am Telefon, meist in derselben Woche."],["Annahme","Wir schauen uns das Auto mit dir zusammen an."],["Freigabe","Wird es teurer, rufen wir vorher an."],["Abholung","Mit Rechnung, die du verstehst."]],
+  quote:["Ehrlicher Kostenvoranschlag, Auto am selben Tag fertig.","Tobias R."],
+  faq:[["Kann ich auf das Auto warten?","Bei Inspektion und Reifen ja, mit Kaffee im Warteraum."],["Gibt es einen Ersatzwagen?"],["Nehmt ihr Elektroautos?"]],
+  hours:[["Mo","7:30 – 18:00"],["Di","7:30 – 18:00"],["Mi","7:30 – 18:00",1],["Do","7:30 – 18:00"],["Fr","7:30 – 18:00"],["Sa","9:00 – 13:00"],["So","geschlossen"]],status:"Jetzt geöffnet bis 18:00",
+  phone:"02501 92 44 10",addr:"Hohe Geest 88, 48165 Münster",mail:"werkstatt@yilmaz-kfz.de",
+  foot:"Termin ausmachen. Wir sagen dir vorher, was es kostet.",dock:[["Termin","online, 2 Minuten",1],["Anrufen","02501 92 44 10"]]},
+ schluessel:{pal:"kohle",mark:"Schlüsseldienst Nord",word:["Nord"],kick:"Schlüsseldienst Münster",kick2:"",fig:"24/7",lede:"Ausgesperrt? Ruf an. Wir kommen, Tag und Nacht.",entry:"type",
+  nav:["Leistungen","Fragen","Kontakt"],cta:"Anrufen",
+  intro:["Wir öffnen deine Tür. Ohne Schaden, wo es geht.","Den Preis nennen wir dir am Telefon, bevor wir losfahren."],
+  bands:[{n:"Türöffnung",d:"Zugefallen oder abgeschlossen, Tag und Nacht.",call:true},{n:"Schloss­tausch",d:"Nach Schlüsselverlust oder Einzug, mit Zylinder zum Festpreis.",i:null},{n:"Einbruch­schutz",d:"Beratung vor Ort, Zusatzschlösser, Querriegel.",i:null}],
+  nums:[["24/7","erreichbar",1],["4,8","Google-Bewertung"],["96","Bewertungen"]],
+  steps:null,
+  quote:["Nachts um zwei angerufen, zwanzig Minuten später war die Tür offen. Preis wie am Telefon gesagt.","Lena S."],
+  faq:[["Was kostet eine Türöffnung?","Das hängt von Uhrzeit und Schloss ab. Wir nennen dir den Preis am Telefon, bevor wir losfahren."],["Wie schnell seid ihr da?"],["Kann ich mit Karte zahlen?"],["Bekomme ich eine Rechnung?"]],
+  hours:[["Mo – Fr","0:00 – 24:00"],["Sa","0:00 – 24:00",1],["So, Feiertag","0:00 – 24:00"]],status:"Jetzt erreichbar, rund um die Uhr",
+  phone:"0251 98 76 54",addr:"Grevener Straße 301, 48159 Münster",mail:"hallo@schluessel-nord.de",
+  foot:"Ausgesperrt? Ruf an. Tag und Nacht.",dock:"one"},
+};
+
+/* ═══════════ Seite rendern ═══════════ */
+const lab=(n,t)=>`<div class="lab t-kicker"><b>${String(n).padStart(2,"0")}</b><span>${t}</span></div>`;
+function hdr(b,onPhoto){return `<header class="hdr wrap ${onPhoto?"on-photo":""}"><span class="t-mark">${b.mark}</span><nav class="nav">${b.nav.map(x=>`<a>${x}</a>`).join("")}<a class="btn" style="opacity:1;height:44px">${b.cta}</a></nav><span class="menu">Menü</span></header>`}
+function fit(words){return `<div class="fit t-display" data-fit>${words.map(w=>`<span>${w}</span>`).join("")}</div>`}
+function entry(b){
+  if(b.entry==="photo") return `<section class="entry">${hdr(b,1)}<img src="${U(b.img,1600)}" alt=""><div class="scrim"></div><div class="in wrap">${fit(b.word)}<div class="kick t-kicker"><span>${b.kick}</span><span>${b.kick2}</span></div><div class="bot"><p class="lede t-lede">${b.lede}</p><p class="side t-small">${b.side||""}</p></div></div></section>`;
+  if(b.entry==="calm") return `<section class="entry calm">${hdr(b,0)}<div class="in wrap"><div class="kick t-kicker" style="margin:0 0 var(--sys-space-s)"><span>${b.kick}</span><span class="mu">${b.kick2}</span></div>${fit(b.word)}<p class="lede t-lede" style="margin-top:var(--sys-space-m)">${b.lede}</p></div><div class="plate"><img src="${U(b.img,1200)}" alt=""></div></section>`;
+  return `<section class="entry ty">${hdr(b,0)}<div class="in wrap"><div class="row t-kicker" style="display:flex;justify-content:space-between"><span class="mu">${b.kick}</span><span class="live">Jetzt erreichbar</span></div><div class="row big">${fit(b.word)}</div><div class="row big sig">${fit([b.fig])}</div><div class="row" style="margin-top:auto;border-top:0;padding-bottom:0"><p class="t-lede">${b.lede}</p></div></div></section>`;
+}
+function page(key){const b=BIZ[key];let n=1;const S=[];
+  S.push(entry(b));
+  S.push(`<section class="sec first wrap g12">${lab(n++,"Über uns")}<div class="body"><p class="t-h2">${b.intro[0]}</p><p class="t-h3">${b.intro[1]}</p></div></section>`);
+  S.push(`<section class="sec wrap g12" style="padding-bottom:var(--sys-space-m)">${lab(n++,"Leistungen")}<div class="body"></div></section>`);
+  S.push(`<div class="bands">${b.bands.map((x,i)=>`<a class="band ${x.call?"call":""}">${x.i?`<img src="${U(x.i,1400)}" alt="" loading="lazy"><div class="bscrim"></div>`:""}<div class="in wrap"><div class="no"><span>${String(i+1).padStart(2,"0")}</span><span style="opacity:.72">${x.call?"rund um die Uhr":x.i?"":""}</span></div><div class="nm"><div class="fit t-figure" data-fit data-max="figure" data-min="40" style="text-transform:uppercase">${x.n.split("­").length>1?x.n.split("­").map((p,j,a)=>`<span>${p}${j<a.length-1?"-":""}</span>`).join(""):`<span>${x.n}</span>`}</div><p class="ds t-h3">${x.d}</p>${x.call?`<div class="go t-link"><span>Jetzt anrufen</span><span style="font-variant-numeric:tabular-nums">${b.phone}</span></div>`:""}</div></div></a>`).join("")}</div>`);
+  S.push(`<section class="sec first wrap g12">${lab(n++,"In Zahlen")}<div class="body full"><div class="nums" style="--n:${b.nums.length}">${b.nums.map((x,i)=>`<div class="${i===0&&b.nums.length===3?"wide c1":(b.nums.length===3?(i===1?"c1":""):(i%2===0?"c1":""))}"><span class="t-figure ${x[2]?"sig":""}">${x[0]}</span><span class="t-small mu">${x[1]}</span></div>`).join("")}</div></div></section>`);
+  if(b.steps) S.push(`<section class="sec wrap g12">${lab(n++,"Ablauf")}<div class="body full steps">${b.steps.map((x,i)=>`<div><span class="t-figure">${String(i+1).padStart(2,"0")}</span><div><p class="t-h3">${x[0]}</p><p class="mu">${x[1]}</p></div></div>`).join("")}</div></section>`);
+  S.push(`<section class="sec wrap g12 quote">${lab(n++,"Stimme")}<div class="body"><p class="t-h2">„${b.quote[0]}“</p><p class="who t-small"><span>${b.quote[1]}</span><span class="mu">Google-Bewertung</span></p></div></section>`);
+  S.push(`<section class="sec wrap g12">${lab(n++,"Gut zu wissen")}<div class="body faq">${b.faq.map((x,i)=>`<div><div class="q"><p class="t-h3">${x[0]}</p><i>${i===0?"–":"+"}</i></div>${x[1]?`<p class="a">${x[1]}</p>`:""}</div>`).join("")}</div></section>`);
+  S.push(`<section class="sec wrap g12">${lab(n++,"Zeiten und Kontakt")}<div class="body"><p class="status t-h3"><span class="live">${b.status}</span></p><div class="hours">${b.hours.map(h=>`<div class="${h[2]?"today":""}"><span>${h[0]}${h[2]?" · Heute":""}</span><span>${h[1]}</span></div>`).join("")}</div><div class="contact"><a class="t-h2" style="font-variant-numeric:tabular-nums">${b.phone}</a><p>${b.addr}<br>${b.mail}</p><p class="t-link" style="display:flex;gap:24px"><a style="border-bottom:1px solid">Route planen</a><a style="border-bottom:1px solid">E-Mail schreiben</a></p></div></div></section>`);
+  S.push(`<footer class="foot wrap"><p class="t-h2" style="max-width:14em">${b.foot}</p><div class="cols t-small"><div><p>Leistungen</p>${b.bands.map(x=>x.n.replace("­","")).join("<br>")}</div><div><p>Kontakt</p>${b.phone}<br>${b.mail}</div><div><p>Zeiten</p>${b.status.replace("Jetzt ","")}</div><div><p>Rechtliches</p>Impressum<br>Datenschutz</div></div><div class="legal t-small"><span>© 2026 ${b.mark}</span><span>${b.addr.split(", ")[1]}</span></div></footer>`);
+  return `<div class="r" style="${sysVars(b.pal,0)}">${S.join("")}</div>`;
+}
+function dock(b){return `<div class="r dockhost" style="${sysVars(b.pal,390)}">${dockInner(b)}</div>`}
+function dockInner(b){if(b.dock==="one")return `<nav class="dock one"><a class="p"><span class="t-link">Jetzt anrufen</span><b>${b.phone}</b></a></nav>`;
+  return `<nav class="dock">${b.dock.map(d=>`<a class="${d[2]?"p":""}"><span class="t-link">${d[0]}</span><small>${d[1]}</small></a>`).join("")}</nav>`}
+
+/* Rahmen: setzt --sys-* auf die Rahmenbreite um */
+function frame(key,w,cls){const b=BIZ[key];const el=document.createElement("div");el.className=cls;el.style.width=w+"px";
+  el.innerHTML=page(key);el.querySelector(".r").setAttribute("style",sysVars(b.pal,w));return el;}
+
+/* Wortmarke/Bandnamen exakt einpassen (Umsetzung: Breitentabelle serverseitig) */
+function fitAll(root){root.querySelectorAll("[data-fit]").forEach(el=>{
+  const box=el.closest(".wrap")||el.parentElement;const cs=getComputedStyle(box);
+  const avail=box.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  const r=el.closest(".r");const rs=getComputedStyle(r);
+  const isFig=el.dataset.max==="figure";
+  const maxPx=isFig?parseFloat(rs.getPropertyValue("--sys-figure-size")):416;
+  const minPx=isFig?40:parseFloat(rs.getPropertyValue("--sys-display-size"));
+  el.style.fontSize="100px";const wMax=Math.max(...[...el.children].map(s=>{s.style.display="inline-block";const x=s.getBoundingClientRect().width;s.style.display="block";return x}));
+  const scale=getComputedStyle(el.closest(".phone,.desk")||document.body).transform;
+  const size=Math.max(minPx,Math.min(maxPx,100*avail/wMax*0.97));el.style.fontSize=size.toFixed(1)+"px";});}
+
+/* ── Erster Blick ── */
+const firsts=document.getElementById("firsts");
+const CAP={kanzlei:"<b>Ruhig.</b> Papier, Wortmarke randvoll in zwei Zeilen, Satz, S/W-Tafel unten. Signal nur in der Leiste.",
+ werkstatt:"<b>Plakat.</b> S/W-Werkstattfoto, YILMAZ über die volle Breite, Satz unten links. Das ist Colophon, nur für eine Werkstatt. <b>Mobile Wow.</b>",
+ schluessel:"<b>Laut, ohne Foto.</b> Kohle, NORD randvoll, 24/7 in Gelb, Status „Jetzt erreichbar“, Anrufleiste mit Nummer."};
+for(const k of ["kanzlei","werkstatt","schluessel"]){const w=document.createElement("div");const f=frame(k,390,"phone");f.style.height="844px";f.querySelector(".r").insertAdjacentHTML("afterend","");f.insertAdjacentHTML("beforeend",dock(BIZ[k]));w.appendChild(f);w.insertAdjacentHTML("beforeend",`<p class="c">${CAP[k]}</p>`);firsts.appendChild(w);}
+
+/* ── Ganze Handy-Seiten: Seite in Spalten schneiden ── */
+const phoneSets=[];
+for(const k of ["kanzlei","werkstatt","schluessel"]){
+  const host=document.getElementById("ph-"+(k==="schluessel"?"schluessel":k));
+  phoneSets.push({k,host});
+}
+window.__layoutPhones=function(){
+  for(const {k,host} of phoneSets){host.innerHTML="";
+    const probe=frame(k,390,"phone");probe.style.height="10px";host.appendChild(probe);fitAll(probe);
+    const H=probe.querySelector(".r").offsetHeight;host.removeChild(probe);
+    const cols=Math.min(3,Math.max(1,Math.ceil(H/2350)));const seg=Math.ceil(H/cols);
+    for(let i=0;i<cols;i++){const f=frame(k,390,"phone");f.style.height=seg+"px";const r=f.querySelector(".r");
+      const roll=document.createElement("div");roll.className="roll";roll.style.transform=`translateY(${-i*seg}px)`;r.replaceWith(roll);roll.appendChild(r);
+      if(i===0) f.insertAdjacentHTML("beforeend",`<div class="fold" style="top:844px"><span>Ende 1. Bildschirm</span></div>`);
+      f.insertAdjacentHTML("beforeend",dock(BIZ[k]));
+      const w=document.createElement("div");w.className="phwrap";w.innerHTML=`<p class="px2">${i*seg} bis ${Math.min(H,(i+1)*seg)} px von ${H}</p>`;w.appendChild(f);host.appendChild(w);fitAll(f);}
+  }
+};
+
+/* ── Desktop ── */
+window.__layoutDesk=function(){
+  const make=(id,from,h)=>{const host=document.getElementById(id);host.innerHTML="";const f=frame("werkstatt",1408,"desk");f.style.height=h+"px";
+    const r=f.querySelector(".r");const roll=document.createElement("div");roll.className="roll";roll.style.transform=`translateY(${-from}px)`;r.replaceWith(roll);roll.appendChild(r);host.appendChild(f);fitAll(f);return r;};
+  const r1=make("desk1",0,1500);
+  const bandsTop=r1.querySelector(".bands").offsetTop;
+  const numsTop=r1.querySelector(".nums").closest(".sec").offsetTop;
+  make("desk2",bandsTop,1040);
+  const host=document.getElementById("desk2");const keep=host.firstChild;
+  make("desk2",numsTop,1060);host.insertBefore(keep,host.firstChild);host.lastChild.style.marginTop="24px";
+};
+
+/* ── Endtabellen ── */
+const rows=Object.entries(TYPE).map(([k,t])=>`<tr><td>${k}${t.extra?" *":""}</td><td>${t.font}</td><td><code>${t.size}</code></td><td>${t.line}</td><td><code>${t.track}</code></td><td>${t.weight}</td><td>${t.upper?"ja":""}</td></tr>`).join("");
+document.getElementById("finaltables").innerHTML=`
+<h3 style="font-weight:500;font-size:16px;margin-top:32px">Schriftskala (font: display = text = Geist)</h3>
+<table class="t"><thead><tr><th>Stufe</th><th>Schrift</th><th>Größe</th><th>Zeile</th><th>Laufweite</th><th>Gewicht</th><th>Versal</th></tr></thead><tbody>${rows}</tbody></table>
+<p class="note" style="margin-top:8px">* Vorschlag: neue Stufe <code>figure</code> (Ziffern der Zahlenzeile und des Ablaufs, Bandnamen) mit <code>font-variant-numeric: tabular-nums</code>. Bandnamen in <code>figure</code> + Versal, auf das längste Wort eingepasst (min. 2,5 rem, sonst Trennstrich). Die Einstiegs-Wortmarke nutzt <code>display</code> als Untergrenze und füllt die Spalte bis 26 rem.</p>
+<h3 style="font-weight:500;font-size:16px;margin-top:32px">Abstände</h3>
+<table class="t"><thead><tr>${Object.keys(SPACE).map(k=>`<th>${k}</th>`).join("")}</tr></thead><tbody><tr>${Object.values(SPACE).map(v=>`<td style="font-weight:400"><code>${v}</code></td>`).join("")}</tr></tbody></table>
+<h3 style="font-weight:500;font-size:16px;margin-top:32px">Paletten</h3>
+<table class="t"><thead><tr><th>ID</th><th>Name</th><th>paper</th><th>ink</th><th>muted</th><th>rule</th><th>accent</th><th>deep</th><th>onDeep</th><th>signal *</th><th>onSignal *</th></tr></thead><tbody>${PALS.map(p=>`<tr><td><code>${p.id}</code></td><td>${p.name}</td>${["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"].map(k=>`<td><code>${p[k]}</code></td>`).join("")}</tr>`).join("")}</tbody></table>
+<p class="note" style="margin-top:8px">* Vorschlag: <code>signal</code> und <code>onSignal</code> als optionale Felder in <code>SystemPalette</code> (Rückfall: <code>signal = accent</code>, <code>onSignal = onDeep</code>). Prüfung: <code>onSignal/signal ≥ 4,5</code>, <code>signal/paper ≥ 3</code>.</p>
+<h3 style="font-weight:500;font-size:16px;margin-top:32px">Schriftdateien</h3>
+<table class="t"><thead><tr><th>Rolle</th><th>Familie</th><th>Datei</th><th>Gewicht</th><th>Stil</th><th>Vorladen</th></tr></thead><tbody>
+${FONT_FILES.map(f=>`<tr><td>${f.role}</td><td>${f.family}</td><td><code>${f.file}</code></td><td><code>${f.weight}</code></td><td>${f.style}</td><td>${f.preload?"ja":"nein"}</td></tr>`).join("")}</tbody></table>
+<p class="note" style="margin-top:8px">Rückfall für beide Rollen: <code>'Helvetica Neue', Arial, system-ui, sans-serif</code>. Preload: nur <code>geist-latin-wght.woff2</code>. Feste Werte ohne Token: Bänder <code>85svh</code> Handy / <code>100svh</code> ab 900 px, Aktionsleiste 64 px, Knopf 52 px, Ecken überall 0, Haarlinie 1 px <code>rule</code>, auf <code>deep</code> <code>rgba(255,255,255,.14–.18)</code>, Banderklärung <code>onDeep</code> 72 % Deckkraft.</p>`;
+
+document.fonts.ready.then(()=>{
+  firsts.querySelectorAll(".phone").forEach(fitAll);
+  window.__layoutPhones();window.__layoutDesk();
+  document.documentElement.dataset.ready="1";
+});
+</script>
+</body>
+</html>
