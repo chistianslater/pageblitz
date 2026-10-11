@@ -444,3 +444,103 @@ describe("applyAiTheme — Sichtbarkeit + Reihenfolge (2026-08-30)", () => {
     expect(summary).toEqual([]);
   });
 });
+
+describe("applyAiTheme — Designsystem (rev 3)", () => {
+  const journal = {
+    ...(v2 as unknown as WebsiteDataV2),
+    designRevision: 3,
+    system: "journal",
+    palette: "salbei",
+  } as WebsiteDataV2;
+
+  test("Farbe/Schrift/Layout werden auf rev 3 nicht angewandt und gemeldet", () => {
+    const { next, summary, skippedLook } = applyAiTheme(journal, {
+      colorWorldId: "abend",
+      accent: "#2B44FF",
+      fontPairId: "editorial",
+      density: "compact",
+      imageTreatment: "duotone" as never,
+      heroLayout: "image-first",
+    });
+    expect(skippedLook).toBe(true);
+    expect(summary).toEqual([]);
+    expect(next.colorOverrides).toBeUndefined();
+    expect(next.fontPairId).toBeUndefined();
+    expect(next.designProfile).toBeUndefined();
+    expect(next.designRevision).toBe(3);
+    expect(next.system).toBe("journal");
+  });
+
+  test("Ein-/Ausblenden funktioniert auf rev 3 weiter, Look-Teile fallen weg", () => {
+    const { next, summary, skippedLook } = applyAiTheme(journal, {
+      hiddenSections: ["services"],
+      hiddenElements: ["hero-media"],
+      accent: "#2B44FF",
+    });
+    expect(skippedLook).toBe(true);
+    expect(next.hiddenSections).toEqual(["services"]);
+    expect(next.designProfile?.hiddenElements).toEqual(["hero-media"]);
+    expect(next.colorOverrides?.accent).toBeUndefined();
+    expect(summary.join(" ")).toContain("ausgeblendet");
+    expect(summary.join(" ")).not.toContain("#2B44FF");
+  });
+
+  test("rev 2 meldet nichts als übersprungen", () => {
+    const { skippedLook } = applyAiTheme(v2 as unknown as WebsiteDataV2, {
+      accent: "#2B44FF",
+    });
+    expect(skippedLook).toBe(false);
+  });
+});
+
+describe("onboardingV2.aiEdit (theme, rev 3)", () => {
+  const journalRow = (extra: Record<string, unknown> = {}) => ({
+    id: 42,
+    slug: "preview-brandt",
+    status: "preview",
+    businessId: 7,
+    websiteData: {
+      ...v2,
+      designRevision: 3,
+      system: "journal",
+      palette: "salbei",
+      ...extra,
+    },
+    customerEmail: null,
+  });
+
+  test("reiner Farbwunsch → Ablehnung mit Hinweis auf die Farbstimmung, kein Write", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue(journalRow() as any);
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
+      theme: { colorWorldId: "abend", accent: "#2B44FF" },
+      reason: "Dunkler gestellt.",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "mach es dunkler",
+    });
+    expect(result.kind).toBe("reject");
+    if (result.kind === "reject") expect(result.reason).toContain("Farbstimmung");
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test("Ausblenden + Farbe → Ausblenden gespeichert, Hinweis statt KI-Begründung", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue(journalRow() as any);
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
+      theme: { hiddenSections: ["services"], accent: "#2B44FF" },
+      reason: "Leistungen weg und blauer.",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "Leistungen weg und blauer",
+    });
+    expect(result.kind).toBe("theme");
+    if (result.kind === "theme") {
+      expect(result.reason).toContain("Farbstimmung");
+      expect(result.summary.join(" ")).toContain("ausgeblendet");
+    }
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  });
+});

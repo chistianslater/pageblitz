@@ -96,6 +96,7 @@ async function main(): Promise<void> {
   let uebersprungenFremd = 0;
   let unveraendert = 0;
   let ohneProfil = 0;
+  const uebersprungenSystem: string[] = [];
   const rhythmen = new Map<string, number>();
   const ansichten = new Map<string, number>();
   const packs = new Map<string, number>();
@@ -119,6 +120,12 @@ async function main(): Promise<void> {
     const kategorie = doc.businessCategory ?? "";
     if (brancheFilter && !kategorie.toLowerCase().includes(brancheFilter)) {
       uebersprungenFremd += 1;
+      continue;
+    }
+    // Designsystem-Seiten (rev 3) tragen ihr Design im System, nicht im
+    // Profil — ein Zurückschreiben mit rev 2 neben `system` wäre ungültig.
+    if (doc.designRevision === 3) {
+      uebersprungenSystem.push(website.slug);
       continue;
     }
 
@@ -204,6 +211,11 @@ async function main(): Promise<void> {
     `\n${geprueft} Vorschau-Dokumente gelesen · ${uebersprungenVerkauft} verkauft (unangetastet)` +
       (brancheFilter ? ` · ${uebersprungenFremd} andere Branche` : "")
   );
+  if (uebersprungenSystem.length > 0) {
+    console.log(
+      `${uebersprungenSystem.length} mit Designsystem (rev 3, unangetastet): ${uebersprungenSystem.join(", ")}`
+    );
+  }
   if (!staffeln) {
     console.log(
       `${ohneProfil} ohne gespeichertes Profil (leiten beim Rendern ab — alle mit demselben Grundrhythmus). Mit --staffeln werden sie verteilt.`

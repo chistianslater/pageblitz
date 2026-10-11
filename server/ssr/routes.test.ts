@@ -13,6 +13,7 @@ import express, { type Express } from "express";
 import supertest from "supertest";
 import type { Server } from "http";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { withDesignSystem } from "../../shared/designSystems/apply";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
@@ -178,6 +179,35 @@ describe("SSR routes", () => {
         "/preview-ssr/abcdefghabcdefgh?system=nacht"
       );
       expect(unbuilt.status).toBe(400);
+    });
+
+    test("preview-ssr ?pack=<eigenes Pack> auf rev-3-Seite rendert das Pack, nicht Journal", async () => {
+      const journalDoc = withDesignSystem(
+        getFixture("salon-noir", "full"),
+        "journal",
+        "salbei"
+      );
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: journalDoc,
+      });
+      const app = express();
+      registerSsrRoutes(app);
+      const own = await request(app).get(
+        `/preview-ssr/abcdefghabcdefgh?pack=${journalDoc.stylePackId}`
+      );
+      expect(own.status).toBe(200);
+      expect(own.text).not.toContain('data-pb-system="journal"');
+      expect(own.text).toContain(`class="pb-${journalDoc.stylePackId}`);
+      // Ohne ?pack bleibt es Journal.
+      const plain = await request(app).get("/preview-ssr/abcdefghabcdefgh");
+      expect(plain.text).toContain('data-pb-system="journal"');
+      // ?system= hat weiter Vorrang vor ?pack=.
+      const both = await request(app).get(
+        `/preview-ssr/abcdefghabcdefgh?pack=${journalDoc.stylePackId}&system=journal&palette=ton`
+      );
+      expect(both.text).toContain('data-pb-system="journal"');
     });
   });
 

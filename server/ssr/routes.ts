@@ -266,9 +266,12 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
         ? { entryVariant: variantParam as 0 | 1 | 2, fontPairId: fontParam }
         : undefined;
     // ?system= hat Vorrang vor variant/font; nur Vorschau, nichts wird gespeichert.
+    // ?pack=<eigenes Pack> auf einer rev-3-Seite zeigt das Pack (ohne System).
     const data = systemQuery
       ? withDesignSystem(parsed.data, systemQuery.system, systemQuery.palette)
-      : packParam && packParam !== parsed.data.stylePackId
+      : packParam &&
+          (packParam !== parsed.data.stylePackId ||
+            parsed.data.designRevision === 3)
         ? applyStylePack(parsed.data, packParam as PackId, look)
         : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;

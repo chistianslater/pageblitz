@@ -250,6 +250,29 @@ brauchbare Anschrift aus der Kampagne, ohne dass die Zeile verschwindet —
 die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 `./scripts/migration-einspielen.sh drizzle/0035_postkarten_zurueckstellen.sql`.
 
+### Rollback bei Designsystemen (rev 3)
+
+Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
+`system`/`palette` tragen (z. B. Journal). Älterer Code kennt nur Revision 1
+und 2 — solche Seiten bestehen dort die Schema-Prüfung nicht und liefern 404.
+**Bevor Prod auf einen Commit vor diesem Branch zurückgesetzt wird**, auf dem
+VPS (noch mit dem neuen Code) zuerst sichern, dann zurücksetzen:
+
+```bash
+cd /root/pageblitz
+# 1) Backup
+mysqldump -u<user> -p<pw> pageblitz generated_websites \
+  > /root/backups/vor-systeme-rollback-$(date +%F).sql
+# 2) Trockenlauf: listet alle rev-3-Seiten
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts
+# 3) Schreiben: system/palette entfallen, Revision 2, Seite zeigt ihr Pack
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --schreiben
+# 4) Erst jetzt den alten Commit deployen (git reset --hard <commit> …)
+```
+
+Gespeicherte Stände in `website_versions` bleiben rev 3; im alten Code lässt
+sich ein solcher Stand nicht ansehen/wiederherstellen.
+
 ## 4. Umgebungsvariablen & Mock-Flags
 
 `PB_LLM_MOCK=1` (nur wenn zusätzlich `NODE_ENV !== "production"`): überspringt

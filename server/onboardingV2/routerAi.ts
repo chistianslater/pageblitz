@@ -47,6 +47,40 @@ const PROPOSAL_EXPIRED_MESSAGE =
  * `persistDoc` geschrieben.
  */
 
+/** Hinweis im KI-Chat, wenn ein Look-Wunsch auf einer Designsystem-Seite (rev 3) nicht greift. */
+export const SYSTEM_LOOK_MESSAGE =
+  "Bei diesem Design stellst du den Look über die Farbstimmung ein (Studio → Stil). Farben, Schriften und Abstände kann ich hier nicht einzeln ändern.";
+
+/**
+ * Patch-Teile, die auf Designsystem-Seiten (rev 3) wirken: Ein-/Ausblenden
+ * und Reihenfolge. Farbe, Schrift, Layout und Deko bringt das System selbst
+ * mit (Farbstimmung im Stil-Panel) — sie würden still ignoriert.
+ */
+const SYSTEM_THEME_KEYS = [
+  "hiddenSections",
+  "sectionOrder",
+  "hiddenElements",
+] as const satisfies readonly (keyof AiThemePatch)[];
+
+function forDesignRevision(
+  doc: WebsiteDataV2,
+  theme: AiThemePatch
+): { theme: AiThemePatch; skippedLook: boolean } {
+  if (doc.designRevision !== 3) return { theme, skippedLook: false };
+  const kept: AiThemePatch = {};
+  for (const key of SYSTEM_THEME_KEYS) {
+    if (theme[key] !== undefined) {
+      (kept as Record<string, unknown>)[key] = theme[key];
+    }
+  }
+  const skippedLook = (Object.keys(theme) as (keyof AiThemePatch)[]).some(
+    key =>
+      theme[key] !== undefined &&
+      !(SYSTEM_THEME_KEYS as readonly string[]).includes(key)
+  );
+  return { theme: kept, skippedLook };
+}
+
 /**
  * Wendet einen Theme-Patch des KI-Assistenten über dieselben Mechaniken an
  * wie der Theme-Editor (applyTheme) und liefert eine deutsche
@@ -55,8 +89,9 @@ const PROPOSAL_EXPIRED_MESSAGE =
  */
 export function applyAiTheme(
   doc: WebsiteDataV2,
-  theme: AiThemePatch
-): { next: WebsiteDataV2; summary: string[] } {
+  patch: AiThemePatch
+): { next: WebsiteDataV2; summary: string[]; skippedLook: boolean } {
+  const { theme, skippedLook } = forDesignRevision(doc, patch);
   const summary: string[] = [];
   const packId = doc.stylePackId as PackId;
 
@@ -244,7 +279,7 @@ export function applyAiTheme(
     designProfile,
     worldOverrides,
   });
-  return { next, summary };
+  return { next, summary, skippedLook };
 }
 
 export const aiProcedures = {
@@ -298,12 +333,16 @@ export const aiProcedures = {
         // Design-Patches werden SOFORT angewandt: jede Stellschraube ist im
         // Stil-Panel mit einem Klick revidierbar — ein Bestätigen-Zwang
         // würde den „KI passt es an“-Fluss nur bremsen.
-        const { next, summary } = applyAiTheme(doc, result.theme);
+        const { next, summary, skippedLook } = applyAiTheme(
+          doc,
+          result.theme
+        );
         if (summary.length === 0) {
           return {
             kind: "reject" as const,
-            reason:
-              "Diesen Design-Wunsch konnte ich keiner Einstellung zuordnen — probiere es im Stil-Panel.",
+            reason: skippedLook
+              ? SYSTEM_LOOK_MESSAGE
+              : "Diesen Design-Wunsch konnte ich keiner Einstellung zuordnen — probiere es im Stil-Panel.",
           };
         }
         await persistDoc(input.token, loaded, next, {
@@ -312,7 +351,9 @@ export const aiProcedures = {
         });
         return {
           kind: "theme" as const,
-          reason: result.reason,
+          // Die KI-Begründung nennt ggf. auch die übersprungene Farbe —
+          // auf rev 3 steht stattdessen der Hinweis zur Farbstimmung.
+          reason: skippedLook ? SYSTEM_LOOK_MESSAGE : result.reason,
           summary,
         };
       }
