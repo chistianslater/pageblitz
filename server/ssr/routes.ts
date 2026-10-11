@@ -385,10 +385,18 @@ function handleDevPreview(req: Request, res: Response): void {
 
   if (systemQuery && isFixtureKind(fixtureParam)) {
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
-    const base = getFixture(
+    const fixture = getFixture(
       isKnownPackId(packParam) ? packParam : "salon-noir",
       fixtureParam
     );
+    // Dev-only: anderer Betriebsname (lange Namen im Bildvergleich, z. B.
+    // Fuß-Wortmarke). React escapt den Text; Länge begrenzt.
+    const nameParam =
+      typeof req.query.name === "string" ? req.query.name.trim() : "";
+    const base =
+      nameParam && nameParam.length <= 80
+        ? { ...fixture, businessName: nameParam }
+        : fixture;
     const { html, status } = renderSiteHtml(
       withDesignSystem(base, systemQuery.system, systemQuery.palette),
       {

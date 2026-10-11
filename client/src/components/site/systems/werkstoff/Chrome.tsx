@@ -27,7 +27,7 @@ import {
   nameOf,
   visibleDoc,
 } from "./facts";
-import { fitName } from "./fit";
+import { fitFootWord } from "./fit";
 
 /**
  * Kopf und Fuß von Werkstoff nach Systemblatt (Anker Hollis): Kopf hell
@@ -168,7 +168,7 @@ export function WerkstoffFoot({
   const hours = hoursRows(contact);
   const name = nameOf(data);
   const { mark } = brandParts(name, branchOf(data, blueprint));
-  const word = fitName(mark, 1, FOOT_TRACK);
+  const word = fitFootWord(mark, FOOT_TRACK);
   const street = contact?.street?.trim();
   const place = [contact?.zip, contact?.city].filter(Boolean).join(" ");
   const pages = navItems.slice(0, 4);
@@ -249,7 +249,9 @@ export function WerkstoffFoot({
           aria-hidden="true"
           style={{ "--ws-fit": word.widthEm.toFixed(3) } as React.CSSProperties}
         >
-          {mark}
+          {word.lines.length > 1
+            ? word.lines.map(line => <span key={line}>{line}</span>)
+            : mark}
         </p>
       </div>
     </footer>

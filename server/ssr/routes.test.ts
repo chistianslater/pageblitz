@@ -176,7 +176,11 @@ describe("SSR routes", () => {
         expect(dev.text).toContain('data-pb-system="werkstoff"');
         expect(dev.text).toContain(`data-pb-palette="${palette}"`);
       }
-      for (const showcase of ["schreinerei", "baeckerei", "cafe"]) {
+      const named = await request(app).get(
+        "/dev/site-preview?system=werkstoff&fixture=full&name=Pageblitz%20Demo-Werkstatt"
+      );
+      expect(named.text).toContain("<span>Demo-Werkstatt</span>");
+      for (const showcase of ["schreinerei", "baeckerei", "cafe", "laden"]) {
         const demo = await request(app).get(`/demo/system/werkstoff/${showcase}`);
         expect(demo.status).toBe(200);
         expect(demo.text).toContain('class="pb-site pb-werkstoff"');

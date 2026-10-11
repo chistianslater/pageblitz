@@ -125,10 +125,12 @@ ${sections}
 .pb-werkstoff .ws-foot-col a:hover,.pb-werkstoff .ws-foot-legal a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.2em}
 .pb-werkstoff .ws-foot-legal{${step("small")};color:${ON_DEEP_DIM};display:flex;flex-wrap:wrap;gap:var(--sys-space-s) var(--sys-space-m);margin-top:var(--sys-space-xl)}
 .pb-werkstoff .ws-foot-word{container-type:inline-size;font-family:var(--sys-font-display);font-weight:var(--sys-figure-weight);line-height:.8;letter-spacing:var(--sys-figure-track);
-  white-space:nowrap;margin-top:var(--sys-space-l);padding-bottom:var(--sys-space-m);font-size:var(--sys-h2-size)}
+  overflow-wrap:anywhere;margin-top:var(--sys-space-l);padding-bottom:var(--sys-space-m);font-size:var(--sys-h2-size)}
+/* Lange Namen: zwei Zeilen (fit.ts), nie abgeschnitten — notfalls bricht das Wort */
+.pb-werkstoff .ws-foot-word span{display:block;line-height:.9}
 @supports (font-size:1cqw){
   .pb-werkstoff .ws-foot{container-type:inline-size}
-  .pb-werkstoff .ws-foot-word{container-type:normal;font-size:clamp(var(--sys-h2-size),calc((100cqw - 2 * var(--sys-space-gutter)) / var(--ws-fit)),var(--sys-figure-size))}
+  .pb-werkstoff .ws-foot-word{container-type:normal;font-size:clamp(var(--sys-h3-size),calc((100cqw - 2 * var(--sys-space-gutter)) / var(--ws-fit)),var(--sys-figure-size))}
 }
 @media (min-width:${GRID}){
   .pb-werkstoff .ws-foot-cols{grid-template-columns:repeat(4,minmax(0,1fr))}

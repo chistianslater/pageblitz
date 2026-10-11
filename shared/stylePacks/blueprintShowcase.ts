@@ -596,9 +596,9 @@ function withWeakPhotos(
     : gallery.slice(0, 2);
   const sections = withoutPhotos(doc).sections.slice();
   const at = doc.sections.findIndex(s => s.type === "gallery");
-  const images = chosen.map(url => ({
+  const images = chosen.map((url, i) => ({
     url,
-    alt: doc.businessName,
+    alt: `${doc.businessName} – Eindruck ${i + 1}`,
   }));
   const original = doc.sections[at];
   if (at !== -1 && original.type === "gallery")

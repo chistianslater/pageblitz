@@ -14,7 +14,7 @@ import { TEST_NOW, werkstoffDoc } from "./testkit";
 /** Alle `@media (prefers-reduced-motion: no-preference){…}`-Blöcke entfernen. */
 function outsideNoPreference(css: string): string {
   return css.replace(
-    /@media \(prefers-reduced-motion: no-preference\)\{[^]*?\n\}\n/g,
+    /@media screen and \(prefers-reduced-motion: no-preference\)\{[^]*?\n\}\n/g,
     ""
   );
 }
@@ -28,7 +28,7 @@ describe("Werkstoff-Bewegung (CSS)", () => {
 
   test("Wächter: Startzustände nur unter data-ws-ready und ohne reduzierte Bewegung", () => {
     expect(WERKSTOFF_CSS).toMatch(
-      /@media \(prefers-reduced-motion: no-preference\)\{[^]*\[data-ws-ready\]/
+      /@media screen and \(prefers-reduced-motion: no-preference\)\{[^]*\[data-ws-ready\]/
     );
     const outside = outsideNoPreference(WERKSTOFF_CSS);
     // Das Muster muss den Bewegungsblock wirklich treffen.
@@ -36,7 +36,7 @@ describe("Werkstoff-Bewegung (CSS)", () => {
       WERKSTOFF_CSS.length - WERKSTOFF_MOTION_CSS.length / 2
     );
     expect(outside).not.toMatch(/data-ws-ready|data-ws-in/);
-    expect(outside).not.toMatch(/ws-reveal|ws-rise/);
+    expect(outside).not.toMatch(/ws-reveal|ws-rise|ws-slide/);
     // Kein Element ist außerhalb des Blocks per opacity:0 oder clip-path versteckt.
     expect(outside).not.toMatch(/opacity:0[;}]/);
     expect(outside).not.toMatch(/clip-path:inset\([^)]*100%/);
@@ -71,7 +71,7 @@ describe("Werkstoff-Bewegung (CSS)", () => {
       );
     const frames =
       WERKSTOFF_MOTION_CSS.match(/@keyframes [\w-]+\{[^]*?\}\}/g) ?? [];
-    expect(frames.length).toBe(2);
+    expect(frames.length).toBe(3);
     for (const f of frames) {
       const props = [...f.matchAll(/([a-z-]+):/g)].map(m => m[1]);
       for (const p of props)
@@ -109,7 +109,33 @@ describe("Werkstoff-Bewegung (CSS)", () => {
       /\.ws-sec\[data-ws-in\] \.ws-step-no\{animation:ws-reveal 560ms/
     );
     expect(WERKSTOFF_MOTION_CSS).toMatch(
-      /\.ws-step:nth-child\(2\) \.ws-step-no\{animation-delay:80ms\}/
+      /\.ws-step:nth-child\(2\) \.ws-step-no\{animation-delay:200ms\}/
+    );
+    // Ziffer 1 beginnt zuerst: Grundverzögerung 120 ms, dann je +80 ms.
+    expect(WERKSTOFF_MOTION_CSS).toMatch(
+      /\.ws-sec\[data-ws-in\] \.ws-step-no\{animation:ws-reveal 560ms [^;]* 120ms backwards\}/
+    );
+    expect(WERKSTOFF_MOTION_CSS).toMatch(
+      /\.ws-step:nth-child\(3\) \.ws-step-no\{animation-delay:280ms\}/
+    );
+  });
+
+  test("Drucken: Startzustände gelten nur am Bildschirm", () => {
+    expect(WERKSTOFF_MOTION_CSS).toContain(
+      "@media screen and (prefers-reduced-motion: no-preference){"
+    );
+    expect(WERKSTOFF_MOTION_CSS).not.toMatch(
+      /@media \(prefers-reduced-motion: no-preference\)/
+    );
+  });
+
+  test("Zeitleiste: Versatz als Animation, bleibt nach dem Aufdecken nicht hängen", () => {
+    expect(WERKSTOFF_MOTION_CSS).not.toMatch(/transition-delay/);
+    expect(WERKSTOFF_MOTION_CSS).toMatch(
+      /\.ws-sec\[data-ws-in\] \.ws-day-card\{animation:ws-slide 500ms/
+    );
+    expect(WERKSTOFF_MOTION_CSS).toMatch(
+      /\.ws-day-card:nth-child\(2\)\{animation-delay:60ms\}/
     );
   });
 

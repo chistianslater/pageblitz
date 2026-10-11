@@ -78,3 +78,43 @@ export function fitName(
     widthEm: Math.max(...lines.map(l => lineEm(l, track)), 1) * FIT_SAFETY,
   };
 }
+
+/**
+ * Ab dieser Breite (em, eine Zeile) bricht die Fuß-Wortmarke auf zwei
+ * Zeilen um: bei 320 px Breite (≈ 280 px Spalte) bliebe die Zeile sonst
+ * unter etwa 30 px Schriftgröße.
+ */
+export const FOOT_ONE_LINE_MAX = 9;
+
+/**
+ * Fuß-Wortmarke (Systemblatt: Name füllt die Breite): eine Zeile, lange
+ * Namen auf zwei Zeilen — getrennt an Leerzeichen oder nach einem
+ * Bindestrich („Demo-|Werkstatt"). Die längste Zeile bestimmt `--ws-fit`.
+ */
+export function fitFootWord(
+  mark: string,
+  track = 0
+): { lines: string[]; widthEm: number } {
+  const text = mark.trim();
+  const one = lineEm(text, track);
+  let lines = [text];
+  if (one > FOOT_ONE_LINE_MAX) {
+    let best = one;
+    for (let i = 1; i < text.length; i++) {
+      const prev = text[i - 1];
+      if (prev !== " " && prev !== "-") continue;
+      const a = text.slice(0, i).trim();
+      const b = text.slice(i).trim();
+      if (!a || !b) continue;
+      const w = Math.max(lineEm(a, track), lineEm(b, track));
+      if (w < best - 1e-6) {
+        best = w;
+        lines = [a, b];
+      }
+    }
+  }
+  return {
+    lines,
+    widthEm: Math.max(...lines.map(l => lineEm(l, track)), 1) * FIT_SAFETY,
+  };
+}

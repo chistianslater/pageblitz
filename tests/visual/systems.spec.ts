@@ -208,3 +208,44 @@ test("Werkstoff: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
     expect(ring.width).toBe("2px");
   }
 });
+
+// Fuß-Wortmarke (Abnahme-Befund 504 „Pageblitz Demo-Werkstatt"): lange
+// Namen werden nie rechts abgeschnitten — gemessen an den Text-Rechtecken
+// der Glyphen, nicht am (überlaufenden) Kasten.
+for (const name of [
+  "Pageblitz Demo-Werkstatt",
+  "Tischlerei und Innenausbau Westerhoff",
+  "Donaudampfschifffahrtsgesellschaft",
+]) {
+  for (const width of [320, 390, 1440]) {
+    test(`Werkstoff: Fuß-Wortmarke ohne Abschneiden — ${name} ${width}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(
+        `/dev/site-preview?system=werkstoff&fixture=full&name=${encodeURIComponent(name)}`
+      );
+      await page.evaluate(() => document.fonts.ready);
+      const box = await page.evaluate(() => {
+        const word = document.querySelector<HTMLElement>(".ws-foot-word")!;
+        const wrap = word.parentElement!.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(word);
+        const rects = [...range.getClientRects()];
+        return {
+          text: word.textContent,
+          right: Math.max(...rects.map(r => r.right)),
+          left: Math.min(...rects.map(r => r.left)),
+          limit: wrap.right,
+          start: wrap.left,
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+        };
+      });
+      expect(box.text?.replace(/\s/g, "")).toBe(name.replace(/\s/g, ""));
+      expect(box.left).toBeGreaterThanOrEqual(box.start - 1);
+      expect(box.right).toBeLessThanOrEqual(box.limit + 1);
+      expect(box.overflow).toBeLessThanOrEqual(0);
+    });
+  }
+}

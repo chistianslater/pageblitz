@@ -10,25 +10,28 @@
  *  - Abschnitte einmalig beim Hereinscrollen (`data-ws-in`), Ziffern 1·2·3
  *    mit derselben Freilegung, Zeitleiste rückt leicht von rechts nach
  *  - Handy-Leiste steht von Anfang an (keine Regel hier)
+ *  - nur am Bildschirm (`screen`): beim Drucken nie versteckt
  * Hinweis: Der äußere Block schließt mit „\n}\n" (Test sucht genau das);
  * innere Blöcke sind eingerückt.
  */
 const EASE = "cubic-bezier(.23,1,.32,1)";
 const W = ".pb-werkstoff[data-ws-ready]";
+/** Erste Ziffer beginnt nach der Abschnitts-Bewegung; jede weitere 80 ms später. */
+const STEP_BASE = 120;
 /** Versatz je Ziffer bzw. Zeitleisten-Karte; ab der fünften gleich. */
 const STAGGER = [2, 3, 4, 5];
 
 const stepDelays = STAGGER.map(
   n =>
-    `  ${W} .ws-step:nth-child(${n}) .ws-step-no{animation-delay:${(n - 1) * 80}ms}`
+    `  ${W} .ws-step:nth-child(${n}) .ws-step-no{animation-delay:${STEP_BASE + (n - 1) * 80}ms}`
 ).join("\n");
 const cardDelays = STAGGER.map(
   n =>
-    `  ${W} .ws-day-card:nth-child(${n >= 5 ? "n+5" : n}){transition-delay:${(n - 1) * 60}ms}`
+    `  ${W} .ws-day-card:nth-child(${n >= 5 ? "n+5" : n}){animation-delay:${(n - 1) * 60}ms}`
 ).join("\n");
 
 export const WERKSTOFF_MOTION_CSS = `/* Bewegung (Systemblatt 08) */
-@media (prefers-reduced-motion: no-preference){
+@media screen and (prefers-reduced-motion: no-preference){
   ${W} .ws-entry-head,${W} .ws-entry-fit,${W} .ws-entry-figure{animation:ws-reveal 560ms ${EASE} backwards}
   ${W} .ws-entry--time .ws-entry-head{animation-delay:60ms}
   ${W} .ws-entry-kicker{animation:ws-rise 500ms ${EASE} backwards}
@@ -37,12 +40,13 @@ export const WERKSTOFF_MOTION_CSS = `/* Bewegung (Systemblatt 08) */
   ${W} .ws-sec:not([data-ws-in])>.ws-wrap:first-child,${W} .ws-sec:not([data-ws-in]) .ws-steps-body{opacity:0;transform:translateY(var(--sys-space-s))}
   ${W} .ws-sec>.ws-wrap:first-child,${W} .ws-sec .ws-steps-body{transition:opacity 500ms ${EASE},transform 500ms ${EASE}}
   ${W} .ws-sec:not([data-ws-in]) .ws-step-no{clip-path:inset(0 -.2em 100% -.2em)}
-  ${W} .ws-sec[data-ws-in] .ws-step-no{animation:ws-reveal 560ms ${EASE} 120ms backwards}
+  ${W} .ws-sec[data-ws-in] .ws-step-no{animation:ws-reveal 560ms ${EASE} ${STEP_BASE}ms backwards}
 ${stepDelays}
   ${W} .ws-sec:not([data-ws-in]) .ws-day-card{opacity:0;transform:translateX(var(--sys-space-m))}
-  ${W} .ws-day-card{transition:opacity 500ms ${EASE},transform 500ms ${EASE}}
+  ${W} .ws-sec[data-ws-in] .ws-day-card{animation:ws-slide 500ms ${EASE} backwards}
 ${cardDelays}
   @keyframes ws-reveal{from{clip-path:inset(0 -.2em 100% -.2em)}to{clip-path:inset(-.2em)}}
+  @keyframes ws-slide{from{opacity:0;transform:translateX(var(--sys-space-m))}}
   @keyframes ws-rise{from{opacity:0;transform:translateY(var(--sys-space-s))}}
 }
 `;

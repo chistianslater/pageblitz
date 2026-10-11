@@ -1,5 +1,12 @@
 import { describe, expect, test } from "vitest";
-import { FIT_SAFETY, fitName, lineEm, splitLines } from "./fit";
+import {
+  FIT_SAFETY,
+  FOOT_ONE_LINE_MAX,
+  fitFootWord,
+  fitName,
+  lineEm,
+  splitLines,
+} from "./fit";
 
 describe("Werkstoff: Name füllt die Breite", () => {
   test("zwei Zeilen, längste Zeile so kurz wie möglich", () => {
@@ -25,5 +32,33 @@ describe("Werkstoff: Name füllt die Breite", () => {
       expect(est, text).toBeGreaterThanOrEqual(em);
       expect(est, text).toBeLessThan(em * 1.12);
     }
+  });
+});
+
+describe("Werkstoff: Fuß-Wortmarke (nie abgeschnitten)", () => {
+  test("kurze und mittlere Namen bleiben eine Zeile", () => {
+    expect(fitFootWord("Brandt").lines).toEqual(["Brandt"]);
+    expect(fitFootWord("Demo-Werkstatt").lines).toEqual(["Demo-Werkstatt"]);
+    expect(lineEm("Demo-Werkstatt")).toBeLessThan(FOOT_ONE_LINE_MAX);
+  });
+
+  test("lange Namen: zwei Zeilen an Leerzeichen oder nach Bindestrich", () => {
+    expect(fitFootWord("Pageblitz Demo-Werkstatt").lines).toEqual([
+      "Pageblitz",
+      "Demo-Werkstatt",
+    ]);
+    expect(fitFootWord("Brockmann-Westerhoffmeyer").lines).toEqual([
+      "Brockmann-",
+      "Westerhoffmeyer",
+    ]);
+    const long = fitFootWord("Tischlerei und Innenausbau Westerhoff");
+    expect(long.lines).toHaveLength(2);
+    expect(long.widthEm).toBeLessThan(
+      lineEm("Tischlerei und Innenausbau Westerhoff") * FIT_SAFETY
+    );
+  });
+
+  test("ein Wort ohne Trennstelle bleibt eine Zeile (CSS bricht notfalls)", () => {
+    expect(fitFootWord("Donaudampfschifffahrtsgesellschaft").lines).toHaveLength(1);
   });
 });

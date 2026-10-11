@@ -161,6 +161,16 @@ describe("Werkstoff: Fuß", () => {
     expect(WERKSTOFF_CSS).toMatch(/\.ws-foot\{background:var\(--sys-deep\);color:var\(--sys-on-deep\)/);
   });
 
+  test("lange Namen: Wortmarke zweizeilig, darf umbrechen statt abschneiden", () => {
+    const html = render({ ...werkstoffDoc(), businessName: "Pageblitz Demo-Werkstatt GmbH" });
+    const foot = html.slice(html.indexOf('<footer class="ws-foot"'));
+    expect(foot).toMatch(
+      /<p class="ws-foot-word" aria-hidden="true" style="--ws-fit:[\d.]+"><span>Pageblitz<\/span><span>Demo-Werkstatt<\/span><\/p>/
+    );
+    expect(WERKSTOFF_CSS).toMatch(/\.ws-foot-word\{[^}]*overflow-wrap:anywhere/);
+    expect(WERKSTOFF_CSS).not.toMatch(/\.ws-foot-word\{[^}]*white-space:nowrap/);
+  });
+
   test("ohne Kontakt: keine Kontakt-/Zeiten-Spalte, kein Telefon", () => {
     const html = render({ ...werkstoffDoc(), hiddenSections: ["contact"] });
     const foot = html.slice(html.indexOf('<footer class="ws-foot"'));
