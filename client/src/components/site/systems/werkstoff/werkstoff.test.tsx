@@ -48,8 +48,8 @@ describe("Werkstoff: Grundgerüst", () => {
     }
   });
 
-  test("Bewegung vorerst aus (W7)", () => {
-    expect(SYSTEMS_WITH_MOTION).not.toContain("werkstoff");
+  test("Bewegung an (W7): Werkstoff lädt das Motion-Bundle", () => {
+    expect(SYSTEMS_WITH_MOTION).toContain("werkstoff");
   });
 
   test("@font-face je Datei genau einmal: Zilla, Karla, DM Mono", () => {

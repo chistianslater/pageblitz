@@ -113,6 +113,8 @@ export const SYSTEM_MOTION: Partial<Record<string, () => Promise<MountMotion>>> 
     import("./systems/journal/motion").then(m => m.mountJournalMotion),
   raster: () =>
     import("./systems/raster/motion").then(m => m.mountRasterMotion),
+  werkstoff: () =>
+    import("./systems/werkstoff/motion").then(m => m.mountWerkstoffMotion),
 };
 
 /** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
