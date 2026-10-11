@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Werkstoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Karla:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --papier: #f3ede3;
+    --karton: #e8dfd0;
+    --ink: #1d1813;
+    --ink-soft: #6b5f52;
+    --rule: rgba(29, 24, 19, 0.18);
+    --oxid: #c4441f;
+    --gut: #1d1813;
+    --mittel: #9a8c7c;
+    --schwach: #c4441f;
+    --slab: "Zilla Slab", Rockwell, Georgia, serif;
+    --sans: "Karla", "Helvetica Neue", Arial, sans-serif;
+    --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--papier); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 48px 48px 72px; }
+
+  header.kopf { display: grid; grid-template-columns: 220px 1fr auto; gap: 24px; align-items: end; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+  .knr { font-family: var(--slab); font-size: 150px; font-weight: 700; line-height: .78; letter-spacing: -0.04em; }
+  .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+  h1 { font-family: var(--slab); font-weight: 700; font-size: 96px; line-height: 0.92; letter-spacing: -0.03em; margin-top: 10px; }
+  h1 .sig, h3 .sig { color: var(--oxid); }
+  .vorspann { display: grid; grid-template-columns: 220px repeat(3, 1fr); gap: 24px 40px; padding: 20px 0 40px; font-size: 14px; color: var(--ink-soft); }
+  .vorspann .lbl { font-family: var(--mono); font-size: 11px; text-transform: uppercase; color: var(--ink); }
+  .vorspann b { color: var(--ink); font-weight: 700; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--ink); padding-top: 12px; }
+  .kandidat.wahl { border-top: 6px solid var(--oxid); padding-top: 8px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: baseline; }
+  .nr { font-family: var(--slab); font-size: 64px; font-weight: 700; letter-spacing: -0.03em; line-height: .9; }
+  .wahl .nr { color: var(--oxid); }
+  .tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); }
+  .badge { display: inline-block; font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; background: var(--oxid); color: var(--papier); padding: 5px 9px; }
+  h2 { font-family: var(--slab); font-weight: 700; font-size: 36px; letter-spacing: -0.02em; line-height: 1.02; margin: 10px 0 4px; }
+  .url { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 14px; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 13.5px; min-height: 268px; }
+  .urteil li { list-style: none; padding-left: 20px; position: relative; margin: 4px 0; }
+  .urteil li::before { position: absolute; left: 0; font-weight: 700; }
+  .urteil li.plus::before { content: "+"; }
+  .urteil li.minus::before { content: "–"; color: var(--oxid); }
+  .urteil li.dann::before { content: "→"; }
+  .noten { display: grid; grid-template-columns: repeat(6, 1fr); margin-top: 12px; border-left: 1px solid var(--rule); }
+  .note { border: 1px solid var(--rule); border-left: 0; padding: 6px 7px 4px; background: var(--papier); }
+  .note span { display: block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.02em; text-transform: uppercase; color: var(--ink-soft); min-height: 22px; line-height: 1.2; }
+  .note b { font-family: var(--slab); font-size: 30px; font-weight: 700; line-height: 1; }
+  .note.summe { background: var(--ink); color: var(--papier); border-color: var(--ink); }
+  .note.summe span { color: #c9bca9; }
+  .wahl .note.summe { background: var(--oxid); border-color: var(--oxid); }
+  .wahl .note.summe span { color: var(--papier); }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 14px; margin-top: 16px; align-items: start; }
+  .erster figure { border: 1px solid var(--ink); overflow: hidden; background: var(--karton); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 12.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); display: block; margin-bottom: 4px; font-family: var(--mono); font-weight: 500; font-size: 10.5px; text-transform: uppercase; }
+
+  .gekuerzt { font-family: var(--mono); font-size: 10px; text-transform: uppercase; color: var(--oxid); margin-top: 6px; }
+  .ganz { display: grid; grid-template-columns: 210px auto; max-height: 1930px; overflow: hidden; gap: 12px; margin-top: 18px; align-items: start; }
+  .ganz img { display: block; width: 210px; }
+  .handy { display: grid; grid-template-columns: 90px 90px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); background: var(--karton); }
+  .halb img { display: block; max-width: none; }
+  figcaption { font-family: var(--mono); font-size: 10px; text-transform: uppercase; color: var(--ink-soft); padding: 0 0 6px; }
+
+  section.abschnitt { margin-top: 64px; border-top: 2px solid var(--ink); padding-top: 16px; display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+  .snr { font-family: var(--slab); font-size: 64px; font-weight: 700; line-height: .85; }
+  h3 { font-family: var(--slab); font-weight: 700; font-size: 54px; line-height: 0.95; letter-spacing: -0.025em; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+  thead th { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; border-bottom: 1px solid var(--ink); }
+  thead th.wahl { color: var(--oxid); }
+  tbody th { font-family: var(--slab); font-weight: 700; font-size: 19px; width: 190px; }
+  td.wahl { background: rgba(196, 68, 31, 0.07); }
+  .z { font-size: 15px; margin-right: 7px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 48px; margin-top: 20px; font-size: 14px; }
+  .empfehlung h4, .betrieb h4 { font-family: var(--mono); font-size: 10.5px; font-weight: 500; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--ink); }
+  .empfehlung li { margin: 5px 0 5px 18px; }
+  .gross { font-family: var(--slab); font-weight: 600; font-size: 30px; line-height: 1.15; }
+  .gross .sig { color: var(--oxid); }
+  .zettel { margin-top: 22px; background: #fbf8f2; border: 1px dashed var(--ink-soft); padding: 14px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.6; max-width: 440px; }
+  .zettel .zk { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--rule); padding-bottom: 6px; margin-bottom: 6px; }
+  .zettel .zf { border-top: 1px dashed var(--rule); margin-top: 6px; padding-top: 6px; color: var(--oxid); display: flex; justify-content: space-between; }
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 20px; }
+  .betrieb .bnr { font-family: var(--slab); font-size: 88px; font-weight: 700; line-height: .85; }
+  .betrieb .bname { font-family: var(--slab); font-size: 26px; font-weight: 700; margin: 8px 0 10px; }
+  .betrieb dl { display: grid; grid-template-columns: 110px 1fr; font-size: 13px; }
+  .betrieb dt, .betrieb dd { padding: 6px 0; border-top: 1px solid var(--rule); }
+  .betrieb dt { font-family: var(--mono); color: var(--ink-soft); font-size: 10.5px; text-transform: uppercase; padding-top: 8px; }
+  .fuss { margin-top: 40px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">03</div>
+  <div>
+    <div class="kicker">Designsystem Werkstoff · Ankersuche · 11.10.2026</div>
+    <h1>Eine Werkbank, eine Vorlage<span class="sig">.</span></h1>
+  </div>
+  <div class="kicker">Vier Kandidaten · ganze Seite · Desktop &amp; Handy</div>
+</header>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal (Aman Venice) und Raster (Colophon) nehmen wir eine komplette Website als Vorlage und übertragen ihr System auf unsere Abschnitte. Werkstoff heißt: warm, handfest, ehrlich. Slab oder Grotesk mit Charakter, Papier, Holz, Stein, Leinen. Für Schreiner, Maler, Dachdecker, Sanitär, Gartenbau, Café, Bäckerei und Laden.</p>
+  <p><b>Wie gesucht.</b> Refero (Styles und Sites zu Schreinerei, Möbelbau, Bäckerei, Rösterei, Keramik, Bau). Die Treffer sind fast nur Shops und Möbelmarken. Deshalb rund 70 Live-Seiten im Browser geprüft: echte Werkstätten, Bäckereien, Röstereien, Läden und gut 40 Framer-Vorlagen. Echte Betriebe sind entweder Shop oder dünn. Nur diese vier zeigen ein System bis zum Fuß.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt, Abdeckung unserer Abschnitte, Handy, Robustheit bei mittelmäßigen Google-Fotos und ob Schreinerei, Bäckerei und Laden gleichzeitig hineinpassen. Je 1 bis 10. Screenshots vom 11.10.2026 (Desktop 1440, Handy 390). Cookie-Banner abgelehnt oder ausgeblendet.</p>
+</div>
+
+<div class="spalten">
+
+  <article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Hollis Butcher Co.</h2>
+    <div class="tag">Metzgerei · Framer-Vorlage „Cleaver“</div>
+    <div class="url"><a href="https://cleaverbutcher.framer.website/">cleaverbutcher.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Ein Laden mit Handwerk, vom Einstieg bis zum Fuß durchgezogen: Versprechen als Slab-Satz, darunter Telefon, Abholzeit, Adresse in einer Zeile.</li><li class="plus">Ablauf 1 · 2 · 3 in Riesenziffern neben einem echten Bestellzettel in Mono. Wochentafel mit Preisen, Leute hinter der Theke, ein Zitat mit Google-Schnitt, FAQ, Öffnungszeiten-Karte.</li><li class="plus">Zilla Slab + Karla + DM Mono: genau unser Schriftbild.</li><li class="minus">Dunkel mit Metzgerrot, keine Galerie. Infozeile auf dem Handy läuft rechts aus dem Bild.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>8</b></div><div class="note"><span>Branchen-Mix</span><b>8</b></div><div class="note summe"><span>Summe</span><b>43</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/hollis-butcher-mobil-erster-blick.jpg" alt="Hollis Butcher Co., erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Hände bei der Arbeit, ein Satz mit Uhrzeit, roter Knopf, Telefon und Adresse. Man weiß sofort, was es gibt und bis wann. Bei uns: „Heute gebacken. Ab 6 Uhr da.“</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/hollis-butcher-desktop.jpg" style="height:1797px" alt="Hollis Butcher Co. Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1558px"><img src="anker/hollis-butcher-mobil.jpg" style="width:90px;height:3116px" alt=""></div><div class="halb" style="height:1558px"><img src="anker/hollis-butcher-mobil.jpg" style="width:90px;height:3116px;margin-top:-1558px" alt=""></div></div></figure>
+    </div>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span><span class="tag">Brauerei</span></div>
+    <h2>Northdock</h2>
+    <div class="tag">Brauerei · Framer-Vorlage „Growler“</div>
+    <div class="url"><a href="https://growlerbrewery.framer.website/">growlerbrewery.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Der stärkste Ablauf der Suche: ein Brautag als Zeitleiste (6 Uhr, 9 Uhr … Tag 21) mit Foto je Schritt. Dazu eine Riesenziffer „100“ auf Senfgelb.</li><li class="plus">Räume als vollflächige Bänder (Theke, Fasskeller, Garten), Karte als Preisliste, Termine mit großen Daten.</li><li class="minus">Lebt von stimmungsvollen Fotos. Kein FAQ, keine Kundenstimme, nur Brauer-Zitat. Schmale Condensed-Schrift eher Kneipe als Werkstatt.</li><li class="dann">Zeitleiste und Riesenziffer als Baustein mitnehmen.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>7</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Schwache Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note summe"><span>Summe</span><b>37</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/northdock-mobil-erster-blick.jpg" alt="Northdock, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Industriehalle, zwei Zeilen Condensed, Öffnungszeit, Adresse, Gründungsjahr, gelber Knopf. Stark, braucht aber ein gutes Foto.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/northdock-desktop.jpg" style="height:2139px" alt="Northdock Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1681px"><img src="anker/northdock-mobil.jpg" style="width:90px;height:3362px" alt=""></div><div class="halb" style="height:1681px"><img src="anker/northdock-mobil.jpg" style="width:90px;height:3362px;margin-top:-1681px" alt=""></div></div></figure>
+    </div>
+    <p class="gekuerzt">Vorschau gekürzt · volle Aufnahme in anker/</p>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span><span class="tag">Möbelwerkstatt</span></div>
+    <h2>Graft</h2>
+    <div class="tag">Möbelstudio · Framer-Vorlage</div>
+    <div class="url"><a href="https://graft.framer.website/">graft.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Am nächsten am Werkstoff-Look: Holz, Leinen, warme Brauntöne, eine Grotesk. Volle Abdeckung: Leistungen, Projekte mit Aufgabe und Lösung, vier Macher mit Porträt, Ablauf in vier Schritten, Stimmen, Formular.</li><li class="minus">Fast alles KI-Bilder in perfektem Licht. Mit Werkstatt-Handyfotos fällt die Seite in sich zusammen.</li><li class="minus">Vorlagen-Merkmale: Pillen-Knöpfe, Sterne, Bildchen im Fließtext, 17.000 px lang.</li><li class="dann">Als Farb- und Materialprobe nutzen, nicht als System.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>7</b></div><div class="note"><span>Schwache Fotos</span><b>4</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note summe"><span>Summe</span><b>33</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/graft-mobil-erster-blick.jpg" alt="Graft, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Wortmarke weiß auf Holzinterieur, Adresse oben, Stuhl als Karte. Schön, aber es könnte jedes Möbelhaus sein.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/graft-desktop.jpg" style="height:2507px" alt="Graft Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:2129px"><img src="anker/graft-mobil.jpg" style="width:90px;height:4258px" alt=""></div><div class="halb" style="height:2129px"><img src="anker/graft-mobil.jpg" style="width:90px;height:4258px;margin-top:-2129px" alt=""></div></div></figure>
+    </div>
+    <p class="gekuerzt">Vorschau gekürzt · volle Aufnahme in anker/</p>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span><span class="tag">Bäckerei</span></div>
+    <h2>Zeit für Brot</h2>
+    <div class="tag">Bio-Bäckerei · echter Betrieb</div>
+    <div class="url"><a href="https://zeitfuerbrot.com/">zeitfuerbrot.com</a></div>
+    <ul class="urteil"><li class="plus">Echter deutscher Handwerksbetrieb mit Haltung: Nahaufnahme Teig, ein ruhiger Serifensatz, vier Kapitel (Qualität, Nachhaltigkeit, Nähe, Zeitgeist) abwechselnd mit Bild.</li><li class="plus">Beweis, dass Nahaufnahmen von Händen und Material mit einfachen Mitteln tragen.</li><li class="minus">Keine Öffnungszeiten, kein Angebot, keine Stimmen, kein Ablauf auf der Startseite. Leise, kein Wow.</li><li class="dann">Ton und Bildregel (Hände, Material, nah) übernehmen.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>4</b></div><div class="note"><span>Handy</span><b>6</b></div><div class="note"><span>Schwache Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note summe"><span>Summe</span><b>30</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/zeit-fuer-brot-mobil-erster-blick.jpg" alt="Zeit für Brot, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Logo-Block, Teig unter der Hand, dann ein Satz. Ehrlich und appetitlich, aber ohne Aufforderung und ohne Uhrzeit.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/zeit-fuer-brot-desktop.jpg" style="height:661px" alt="Zeit für Brot Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:639px"><img src="anker/zeit-fuer-brot-mobil.jpg" style="width:90px;height:1277px" alt=""></div><div class="halb" style="height:638px"><img src="anker/zeit-fuer-brot-mobil.jpg" style="width:90px;height:1277px;margin-top:-639px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+  <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+  <table>
+    <thead>
+      <tr><th>Abschnitt</th><th class="wahl">01 Hollis Butcher Co.</th><th>02 Northdock</th><th>03 Graft</th><th>04 Zeit für Brot</th></tr>
+    </thead>
+    <tbody>
+<tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Foto, Versprechen mit Uhrzeit als Slab-Satz, Knopf, Infozeile Telefon/Abholung/Adresse</td><td><span class="z g">●</span>Foto, Condensed-Zeile, Infozeile, gelber Knopf</td><td><span class="z m">◐</span>Wortmarke auf Interieur, Projektkarte</td><td><span class="z m">◐</span>Nahaufnahme und Satz, keine Aufforderung</td></tr>
+<tr><th>Leistungen / Angebot</th><td class="wahl"><span class="z g">●</span>„What we do“-Liste mit Verfügbarkeit, dazu Wochentafel mit Preisen auf Rot</td><td><span class="z g">●</span>Zapfliste und Sortenliste mit Preisen</td><td><span class="z g">●</span>Produktliste plus Leistungs-Akkordeon</td><td><span class="z m">◐</span>Werte-Kapitel, Sortiment nur verlinkt</td></tr>
+<tr><th>Über uns / Menschen</th><td class="wahl"><span class="z g">●</span>„Die Leute hinter der Theke“, drei Porträts mit Name und Rolle</td><td><span class="z m">◐</span>Brauer-Zitat, Haus-Geschichte</td><td><span class="z g">●</span>Vier Macher, Philosophie mit Detailfotos</td><td><span class="z g">●</span>Haltung in vier Kapiteln</td></tr>
+<tr><th>Galerie / Referenzen</th><td class="wahl"><span class="z m">◐</span>Keine eigene Galerie. Ergänzen als Werkbank-Raster</td><td><span class="z g">●</span>Räume als vollflächige Bänder</td><td><span class="z g">●</span>Projekte mit Aufgabe und Lösung</td><td><span class="z m">◐</span>Bilder im Wechsel mit Text</td></tr>
+<tr><th>Stimmen</th><td class="wahl"><span class="z g">●</span>Ein großes Zitat, darüber „4,9 aus 880 Google-Bewertungen“</td><td><span class="z s">○</span>Nur Brauer-Zitat</td><td><span class="z m">◐</span>Karten mit Sternen, Karussell</td><td><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Ablauf</th><td class="wahl"><span class="z g">●</span>1 · 2 · 3 riesig in Signalfarbe neben Bestellzettel</td><td><span class="z g">●</span>Brautag als Zeitleiste mit Fotos</td><td><span class="z g">●</span>Vier Schritte neben Werkstattfoto</td><td><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Gut zu wissen / FAQ</th><td class="wahl"><span class="z g">●</span>„Bevor du bestellst“: Akkordeon mit Anruf-Hinweis</td><td><span class="z s">○</span>Fehlt</td><td><span class="z s">○</span>Fehlt</td><td><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Kontakt / Zeiten</th><td class="wahl"><span class="z g">●</span>Foto vom Laden mit Zeiten-Karte, Liefergebiete, Anruf-Satz</td><td><span class="z g">●</span>Adresse, Zeiten und Anfahrt im Band</td><td><span class="z m">◐</span>Formular, Adresse im Fuß, keine Zeiten</td><td><span class="z s">○</span>Nur Navigation</td></tr>
+<tr><th>Fuß</th><td class="wahl"><span class="z g">●</span>„Heute kochen? Ruf vor zwölf an.“, Spalten mit Zeiten, Name riesig</td><td><span class="z g">●</span>Spalten, Name riesig</td><td><span class="z g">●</span>Name riesig, Newsletter</td><td><span class="z m">◐</span>Schwarz, nur Links</td></tr>
+    </tbody>
+  </table>
+  <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+  <h3>Empfehlung: <span class="sig">Hollis Butcher Co.</span></h3>
+  <div class="empfehlung">
+    <div>
+      <p class="gross">Hollis ist die einzige Seite, die wie ein Laden mit Handwerk spricht: was es gibt, bis wann, wer es macht, wie es abläuft. <span class="sig">Bestellzettel, Wochentafel und Riesenziffern sind Typografie, nicht Foto. Darum trägt sie auch mit Handyfotos aus der Werkstatt.</span></p>
+      <div class="zettel">
+        <div class="zk"><span>SCHREINEREI KLÄHN</span><span>0431 55 01 83</span></div>
+        <div>AUFTRAG 0915-204 · AUFMASS DO</div>
+        <div>EINBAUSCHRANK DACHSCHRÄGE · EICHE GEÖLT</div>
+        <div>FÜR: FAM. WITT</div>
+        <div class="zf"><span>ANGEBOT IN 5 TAGEN</span><span>● FEST</span></div>
+      </div>
+    </div>
+    <div>
+      <h4>Was wir 1:1 übernehmen</h4>
+      <ul>
+        <li>Zilla Slab für Aussagen, Karla für Text, DM Mono für Zettel, Tafel und Kleingedrucktes</li>
+        <li>Einstieg: Hände-Foto, Versprechen mit Uhrzeit oder Frist, ein Knopf, Infozeile darunter</li>
+        <li>Ablauf als 1 · 2 · 3 in Riesenziffern neben dem Bestellzettel</li>
+        <li>Angebot als Liste mit Verfügbarkeit plus Wochentafel mit Preisen in Signalfläche</li>
+        <li>Menschen mit Name und Rolle, ein großes Zitat mit Google-Schnitt, FAQ als Akkordeon</li>
+        <li>Laden-Foto mit Zeiten-Karte, Fuß mit Anruf-Satz, Zeiten und riesigem Namen</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Was wir optimieren</h4>
+      <ul>
+        <li>Grund wird hell und warm: Papier, Karton, geöltes Holz. Dunkel nur für Fuß und ein Band</li>
+        <li>Metzgerrot wird Oxid bzw. Branchenton, nur für Knopf, Ziffern und Tafel</li>
+        <li>Galerie ergänzen: Werkbank-Raster mit Bildunterschrift in Mono, Fotos warm abgestimmt und nah beschnitten</li>
+        <li>Zeitleiste von Northdock als Ablauf-Variante für Bäckerei („3 Uhr Teig, 6 Uhr Laden“)</li>
+        <li>Infozeile auf dem Handy umbrechen statt abschneiden, feste Anrufleiste unten</li>
+        <li>Englische Kurzsätze in deutsche du-Sätze übersetzen, keine Fantasie-Bewertungen</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+  <h3>Drei Betriebe, ein System</h3>
+  <div class="betriebe">
+    <div class="betrieb"><div class="bnr">01</div><div class="bname">Schreinerei</div>
+      <dl><dt>Einstieg</dt><dd>Hände am Holz, „Aufmaß diese Woche, Angebot in fünf Tagen.“, Knopf „Aufmaß ausmachen“</dd>
+      <dt>Zettel</dt><dd>Auftragszettel mit Maß, Holzart, Termin</dd>
+      <dt>Tafel</dt><dd>„Gerade in der Werkstatt“: drei laufende Stücke statt Preisen</dd></dl></div>
+    <div class="betrieb"><div class="bnr">02</div><div class="bname">Bäckerei / Café</div>
+      <dl><dt>Einstieg</dt><dd>Brot im Regal, „Heute gebacken. Ab 6 Uhr da.“, Infozeile mit Öffnungszeit</dd>
+      <dt>Zettel</dt><dd>Vorbestellung für Samstag, abholbereit ab 7 Uhr</dd>
+      <dt>Tafel</dt><dd>Wochentafel mit Brot, Preis, ausverkaufte Sorte durchgestrichen</dd></dl></div>
+    <div class="betrieb"><div class="bnr">03</div><div class="bname">Laden</div>
+      <dl><dt>Einstieg</dt><dd>Schaufenster, Satz zum Sortiment, „Heute bis 18:30 offen“</dd>
+      <dt>Zettel</dt><dd>Zurücklegen oder Bestellen, Abholung im Laden</dd>
+      <dt>Tafel</dt><dd>„Neu im Regal diese Woche“ mit Preisen</dd></dl></div>
+  </div>
+  <p class="fuss">Quellen: Refero-Styles zu Stykka, Oakâme, Ashton Bespoke, Little Amps, Monte, Savor, Escape Coffee u. a. als Vorauswahl. Live geprüft und verworfen: Benchmark, Sebastian Cox, deVOL, Plain English, Tom Raffield, Schotten &amp; Hansen, Kaufmann Zimmerei, Werkraum Bregenzerwald, Another Country, Pinch, Frama, Stykka, Oakâme, Hart Bageri, Lune, E5 Bakehouse, Dusty Knuckle, Tartine, Bread Ahead, Fabrique, Bernice, Five Elephant, The Barn, Bonanza, Labour and Wait, Objects of Use, Leach Pottery, Kana; Framer-Vorlagen Cenere (Schwester von Hollis, Pizzeria), Morni, Measure, Stillroom, Timberly, Timber, Troscan, Carvix, Bramble, Mise, Deux, Baristi u. a. Hollis, Northdock und Graft sind Vorlagen mit erfundenen Betrieben; wir bauen das System nach, nicht Texte oder Bilder.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
