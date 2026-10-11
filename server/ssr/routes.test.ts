@@ -149,6 +149,22 @@ describe("SSR routes", () => {
       expect(res.headers["x-robots-tag"]).toContain("noindex");
     });
 
+    test("Raster: Dev-Vorschau und Demo-Route liefern 200", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["papier", "werk", "kohle"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=raster&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="raster"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+      }
+      const demo = await request(app).get("/demo/system/raster/werkstatt");
+      expect(demo.status).toBe(200);
+      expect(demo.text).toContain('class="pb-site pb-raster"');
+    });
+
     test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);

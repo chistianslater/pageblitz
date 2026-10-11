@@ -1,0 +1,223 @@
+import React from "react";
+import type { NavItem } from "../../engine";
+import { SECTION_ANCHORS } from "../../engine";
+import { shortHours, telHref } from "../../artDirection/heroFacts";
+import { isPlaceholderHours } from "../../artDirection/heroFacts";
+import { useSystem } from "../SystemContext";
+import {
+  addressLine,
+  contactOf,
+  detailsMenuJs,
+  mailHref,
+  primaryAction,
+} from "../shared";
+import { displayName } from "../../../../../../shared/designSystems/displayName";
+import type {
+  SectionOf,
+  SectionType,
+} from "../../../../../../shared/siteContract/types";
+
+/**
+ * Kopf und Fuß von Raster nach Systemblatt (Anker Colophon): Handy
+ * Wortmarke links, „Menü" rechts; Desktop Navigation rechts mit
+ * Signal-Knopf. Fuß dunkel mit Aufforderung, vier Spalten Fakten und
+ * Rechtszeile.
+ */
+
+/** Raster-Wortwahl der Navigation (Systemblatt); Bauplan-Labels gewinnen. */
+const NAV_LABELS: Partial<Record<SectionType, string>> = {
+  testimonials: "Stimmen",
+  process: "Ablauf",
+  faq: "Fragen",
+  contact: "Kontakt",
+  stats: "In Zahlen",
+  usp: "Grundsätze",
+  story: "Geschichte",
+};
+
+export function rasterNavItems(items: NavItem[]): NavItem[] {
+  return items.map(item =>
+    item.sectionType && !item.fixedLabel && NAV_LABELS[item.sectionType]
+      ? { ...item, label: NAV_LABELS[item.sectionType]! }
+      : item
+  );
+}
+
+/** Menü-Script (schließt bei Link-Klick, Escape, Klick daneben). */
+export const RASTER_MENU_JS = detailsMenuJs("rs");
+
+function NavLinks({ items }: { items: NavItem[] }) {
+  return (
+    <>
+      {items.map(item => (
+        <a
+          key={item.key}
+          href={item.href}
+          aria-current={item.current ? "page" : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
+    </>
+  );
+}
+
+export function RasterHead({
+  navItems,
+  anchorPrefix,
+}: {
+  navItems: NavItem[];
+  anchorPrefix: string;
+}) {
+  const { data, blueprint } = useSystem();
+  const action = primaryAction(data, blueprint, anchorPrefix);
+  const home = `${anchorPrefix}#${SECTION_ANCHORS.hero}`;
+  // Kopf zeigt den Namen ohne Rechtsform; Fuß und Rechtstexte behalten ihn.
+  const brand = displayName(data.businessName);
+  return (
+    <header className="rs-head">
+      <div className="rs-head-bar">
+        <a className="rs-brand" href={home}>
+          {brand}
+        </a>
+        <nav className="rs-nav" aria-label="Hauptnavigation">
+          <NavLinks items={navItems} />
+          <a className="rs-btn" href={action.href}>
+            {action.label}
+          </a>
+        </nav>
+        {/* Menü ohne JS: <details>/<summary> (SSR-Kundenseiten hydrieren nicht). */}
+        <details className="rs-menu">
+          <summary className="rs-menu-toggle">Menü</summary>
+          <nav className="rs-menu-panel" aria-label="Menü">
+            <NavLinks items={navItems} />
+          </nav>
+        </details>
+      </div>
+      <script dangerouslySetInnerHTML={{ __html: RASTER_MENU_JS }} />
+    </header>
+  );
+}
+
+/** Höchstens so viele Leistungen stehen im Fuß (Rest im Abschnitt). */
+const FOOT_SERVICES = 6;
+
+/** „Mo – Fr" · „8–17 Uhr": Zeiten-Spalte nur mit echten Zeiten. */
+function hoursRows(contact: SectionOf<"contact"> | undefined) {
+  const hours = contact?.openingHours;
+  if (!hours?.length || isPlaceholderHours(hours)) return [];
+  return hours.map(h => ({ day: h.day, hours: shortHours(h.hours) }));
+}
+
+function FootCol({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rs-foot-col">
+      <p className="rs-foot-h">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+export function RasterFoot({
+  basePath,
+  anchorPrefix,
+}: {
+  basePath: string;
+  anchorPrefix: string;
+}) {
+  const { data, blueprint, now } = useSystem();
+  const contact = contactOf(data.sections);
+  const address = addressLine(contact);
+  const tel = telHref(contact?.phone);
+  const mail = mailHref(contact?.email);
+  const action = primaryAction(data, blueprint, anchorPrefix);
+  const services = data.sections.find(
+    (s): s is SectionOf<"services"> => s.type === "services"
+  );
+  const cta = data.sections.find(
+    (s): s is SectionOf<"cta"> => s.type === "cta"
+  );
+  const hours = hoursRows(contact);
+  const serviceTitles = (services?.items ?? [])
+    .map(i => i.title.trim())
+    .filter(Boolean)
+    .slice(0, FOOT_SERVICES);
+  const servicesHref = `${anchorPrefix}#${SECTION_ANCHORS.services}`;
+  return (
+    <footer className="rs-foot">
+      <div className="rs-wrap">
+        {/* Aufforderung: Aufruf-Abschnitt, sonst die Hauptaktion — nichts erfunden. */}
+        <p className="rs-foot-call">
+          <a href={action.href}>{cta?.headline || action.label}</a>
+        </p>
+        <div className="rs-foot-cols">
+          {serviceTitles.length > 0 && (
+            <FootCol title="Leistungen">
+              <ul>
+                {serviceTitles.map(title => (
+                  <li key={title}>
+                    <a href={servicesHref}>{title}</a>
+                  </li>
+                ))}
+              </ul>
+            </FootCol>
+          )}
+          {(address || tel || mail) && (
+            <FootCol title="Kontakt">
+              <address>
+                <ul>
+                  {tel && contact?.phone && (
+                    <li>
+                      <a className="rs-num" href={tel}>
+                        {contact.phone}
+                      </a>
+                    </li>
+                  )}
+                  {mail && contact?.email && (
+                    <li>
+                      <a href={mail}>{contact.email.trim()}</a>
+                    </li>
+                  )}
+                  {address && <li>{address}</li>}
+                </ul>
+              </address>
+            </FootCol>
+          )}
+          {hours.length > 0 && (
+            <FootCol title="Zeiten">
+              <ul className="rs-num">
+                {hours.map(h => (
+                  <li key={h.day}>
+                    {h.day} {h.hours}
+                  </li>
+                ))}
+              </ul>
+            </FootCol>
+          )}
+          <FootCol title="Rechtliches">
+            <ul>
+              <li>
+                <a href={`${basePath}/impressum`}>Impressum</a>
+              </li>
+              <li>
+                <a href={`${basePath}/datenschutz`}>Datenschutz</a>
+              </li>
+            </ul>
+          </FootCol>
+        </div>
+        <div className="rs-foot-legal">
+          <span>
+            © {now.getFullYear()} {data.businessName}
+          </span>
+          {contact?.city && <span>{contact.city}</span>}
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { RELEASED_SYSTEMS, getSystem, isReleased } from "./registry";
+import {
+  RELEASED_SYSTEMS,
+  getSystem,
+  isReleased,
+  systemHasMotion,
+} from "./registry";
 
 describe("Freischaltung der Designsysteme", () => {
   test("Journal ist abgenommen und freigeschaltet", () => {
@@ -18,5 +23,12 @@ describe("Raster", () => {
     expect(getSystem("raster")?.name).toBe("Raster");
     expect(isReleased("raster")).toBe(false);
     expect(RELEASED_SYSTEMS).not.toContain("raster");
+  });
+});
+
+describe("Bewegung je System", () => {
+  test("Journal hat Bewegung, Raster bis R7 nicht", () => {
+    expect(systemHasMotion("journal")).toBe(true);
+    expect(systemHasMotion("raster")).toBe(false);
   });
 });

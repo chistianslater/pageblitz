@@ -6,6 +6,7 @@ import { useSystem } from "../SystemContext";
 import {
   addressLine,
   contactOf,
+  detailsMenuJs,
   mailHref,
   mapsHref,
   primaryAction,
@@ -82,15 +83,7 @@ function NavLinks({ items }: { items: NavItem[] }) {
  * weil SSR-Kundenseiten nicht hydrieren; ohne JS bleibt das Menü per
  * <summary> bedienbar und schließt über einen zweiten Klick/Enter.
  */
-export const JOURNAL_MENU_JS = `(function(){
-var d=document;
-d.querySelectorAll(".jr-menu").forEach(function(m){
-var t=m.querySelector("summary");
-m.addEventListener("click",function(e){if(e.target.closest&&e.target.closest(".jr-menu-panel a"))m.open=false});
-d.addEventListener("keydown",function(e){if(e.key==="Escape"&&m.open){m.open=false;t&&t.focus()}});
-d.addEventListener("click",function(e){if(m.open&&!m.contains(e.target))m.open=false});
-});
-})();`;
+export const JOURNAL_MENU_JS = detailsMenuJs("jr");
 
 export function JournalHead({
   navItems,

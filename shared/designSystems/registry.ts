@@ -18,3 +18,14 @@ export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {
 export function isReleased(id: DesignSystemId): boolean {
   return RELEASED_SYSTEMS.includes(id) && Boolean(DESIGN_SYSTEMS[id]);
 }
+
+/**
+ * Systeme mit eigener Bewegung im Motion-Bundle (`site-islands/motion.ts`).
+ * Nur diese laden das Bundle (SSR, `usesMotionBundle`). Raster fehlt bis
+ * Task R7 bewusst: ohne Bewegungscode kein unnötiges Skript.
+ */
+export const SYSTEMS_WITH_MOTION: readonly DesignSystemId[] = ["journal"];
+
+export function systemHasMotion(id: DesignSystemId): boolean {
+  return SYSTEMS_WITH_MOTION.includes(id);
+}

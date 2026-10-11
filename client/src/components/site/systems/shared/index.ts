@@ -3,3 +3,4 @@ export * from "./contact";
 export * from "./sections";
 export * from "./slots";
 export * from "./fonts";
+export * from "./menu";

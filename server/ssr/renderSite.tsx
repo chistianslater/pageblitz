@@ -17,7 +17,10 @@ import { SITE_ENHANCER_JS } from "../../client/src/components/site/siteEnhancer"
 import { getIslandsBundlePath, getMotionBundlePath } from "./islandsBundle";
 import { pageForPathname } from "../../client/src/components/site/engine";
 import { umamiScriptTag } from "../umami";
-import { getSystem } from "../../shared/designSystems/registry";
+import {
+  getSystem,
+  systemHasMotion,
+} from "../../shared/designSystems/registry";
 import type { DesignSystemDef } from "../../shared/designSystems/types";
 import { getPalette } from "../../shared/designSystems/palette";
 
@@ -151,11 +154,15 @@ function systemOf(data: WebsiteDataV2): DesignSystemDef | undefined {
 
 /**
  * Das Motion-Bundle gehört zur rev-2-Art-Direction (siteEntrance) und zu
- * Journal (rev 3); rev 1 und andere Designsysteme brauchen es nicht. Unversionierte Dokumente
- * gelten wie bisher als rev 2.
+ * den Designsystemen mit Bewegung (rev 3, `SYSTEMS_WITH_MOTION`); rev 1 und
+ * Systeme ohne Bewegung brauchen es nicht. Unversionierte Dokumente gelten
+ * wie bisher als rev 2.
  */
 function usesMotionBundle(data: WebsiteDataV2): boolean {
-  if (data.designRevision === 3) return systemOf(data)?.id === "journal";
+  if (data.designRevision === 3) {
+    const def = systemOf(data);
+    return def ? systemHasMotion(def.id) : false;
+  }
   return data.designRevision !== 1;
 }
 
