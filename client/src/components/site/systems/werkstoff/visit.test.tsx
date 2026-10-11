@@ -28,7 +28,7 @@ const count = (html: string, needle: string) => html.split(needle).length - 1;
 const withFaq = (doc: Doc): Doc => ({
   ...doc,
   sections: [
-    ...doc.sections,
+    ...doc.sections.filter(s => s.type !== "faq"),
     {
       type: "faq",
       items: [

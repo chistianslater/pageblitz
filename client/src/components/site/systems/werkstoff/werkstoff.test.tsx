@@ -150,14 +150,14 @@ describe("Werkstoff: Fuß", () => {
     const html = render(werkstoffDoc(), false, "/site/brandt");
     const foot = html.slice(html.indexOf('<footer class="ws-foot"'));
     expect(foot).toMatch(/<p class="ws-foot-call">[^<]+<\/p>/);
-    expect(foot).toMatch(/<a class="ws-btn ws-foot-btn" href="tel:\d+">0231 555 4471<\/a>/);
+    expect(foot).toMatch(/<a class="ws-btn ws-foot-btn" href="tel:\d+">0231 555 3180<\/a>/);
     for (const h of ["Adresse", "Kontakt", "Zeiten", "Seiten"])
       expect(foot).toContain(`<p class="ws-foot-h">${h}</p>`);
     expect(foot).toContain('href="/site/brandt/impressum"');
     expect(foot).toContain('href="/site/brandt/datenschutz"');
     expect(foot).toContain("© 2026");
     expect(foot).toMatch(/<p class="ws-foot-word" aria-hidden="true" style="--ws-fit:[\d.]+">Brandt<\/p>/);
-    expect(foot).toContain("Montag–Freitag");
+    expect(foot).toContain("Mo–Do <span class=\"ws-nowrap\">7–17 Uhr</span>");
     expect(WERKSTOFF_CSS).toMatch(/\.ws-foot\{background:var\(--sys-deep\);color:var\(--sys-on-deep\)/);
   });
 

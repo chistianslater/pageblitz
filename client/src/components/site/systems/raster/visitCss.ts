@@ -110,4 +110,7 @@ export const VISIT_CSS = `/* Gut zu wissen: Haarlinien-Zeilen, Frage h3, „+" r
 .pb-raster .rs-legal a{color:var(--sys-ink);text-decoration-thickness:1px;text-underline-offset:.2em}
 .pb-raster .rs-legal{color:var(--sys-ink)}
 .pb-raster .rs-legal .back-link{display:none}
+/* Generator-Fußzeile färbt inline hellgrau (unter AA, auf Kohle unlesbar): gedämpft in Tokens */
+.pb-raster .rs-legal [style*="color"]{color:var(--sys-muted)!important}
+.pb-raster .rs-legal hr{border:0!important;border-top:1px solid var(--sys-rule)!important}
 `;

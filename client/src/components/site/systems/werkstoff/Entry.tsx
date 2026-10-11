@@ -76,13 +76,38 @@ function FitName({ name }: { name: string }) {
   );
 }
 
+/** Breiten für das Einstiegsfoto (Handy, Tablet, Desktop-Hälfte in 2×). */
+const ENTRY_WIDTHS = [640, 960, 1400] as const;
+
+/**
+ * Unsplash-Fotos in passenden Breiten (LCP am Handy: kein 1400er-Bild für
+ * 412 px). Andere Quellen (Kundenfotos, R2) bleiben, wie sie sind.
+ */
+export function entrySrcSet(src: string): string | undefined {
+  let url: URL;
+  try {
+    url = new URL(src);
+  } catch {
+    return undefined;
+  }
+  if (url.hostname !== "images.unsplash.com") return undefined;
+  return ENTRY_WIDTHS.map(w => {
+    url.searchParams.set("w", String(w));
+    return `${url.toString()} ${w}w`;
+  }).join(", ");
+}
+
 function Photo({ src, variant }: { src: string; variant: EntryVariant }) {
   const portrait = variant === "portrait";
+  const srcSet = entrySrcSet(src);
   return (
     <div className="ws-entry-crop">
       <img
         className="ws-entry-img"
         src={src}
+        {...(srcSet
+          ? { srcSet, sizes: "(min-width: 56.25rem) 50vw, 100vw" }
+          : {})}
         alt=""
         width={portrait ? 1200 : 1600}
         height={portrait ? 1500 : 1000}

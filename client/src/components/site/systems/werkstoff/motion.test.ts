@@ -123,12 +123,12 @@ describe("Werkstoff-Bewegung (CSS)", () => {
     );
   });
 
-  test("Fragen: Plus dreht 45° (200 ms), Antwort ohne Höhenanimation", () => {
+  test("Fragen: Plus dreht sich zum Minus (200 ms, Systemblatt-Bild), Antwort ohne Höhenanimation", () => {
     expect(WERKSTOFF_CSS).toMatch(
-      /\.ws-faq-sign\{[^}]*transition:transform 200ms\}/
+      /\.ws-faq-sign::before,[^{]*::after\{[^}]*transition:transform 200ms\}/
     );
     expect(WERKSTOFF_CSS).toMatch(
-      /\.ws-faq-item\[open\] \.ws-faq-sign\{[^}]*transform:rotate\(45deg\)\}/
+      /\.ws-faq-item\[open\] \.ws-faq-sign::after\{transform:translate\(-50%,-50%\)\}/
     );
     expect(WERKSTOFF_CSS).not.toMatch(/ws-faq-a\{[^}]*transition/);
   });

@@ -16,11 +16,12 @@ export const VISIT_CSS = `/* Gut zu wissen: Tinte-Linie oben, Fragen in Slab, ec
 .pb-werkstoff .ws-faq-item summary:focus-visible{outline-offset:calc(var(--ws-focus) * -1)}
 .pb-werkstoff .ws-faq-q{${step("h3")};font-size:calc(var(--sys-h3-size) * .86);line-height:1.18}
 .pb-werkstoff .ws-faq-sign{position:relative;width:calc(var(--sys-space-l) * .75);height:calc(var(--sys-space-l) * .75);border-radius:var(--ws-radius);
-  box-shadow:inset 0 0 0 1px var(--sys-ink);transition:transform 200ms}
+  box-shadow:inset 0 0 0 1px var(--sys-ink)}
 .pb-werkstoff .ws-faq-sign::before,.pb-werkstoff .ws-faq-sign::after{content:"";position:absolute;left:50%;top:50%;width:calc(var(--sys-space-s) * .75);height:2px;
-  background:currentColor;transform:translate(-50%,-50%)}
+  background:currentColor;transform:translate(-50%,-50%);transition:transform 200ms}
 .pb-werkstoff .ws-faq-sign::after{transform:translate(-50%,-50%) rotate(90deg)}
-.pb-werkstoff .ws-faq-item[open] .ws-faq-sign{background:var(--sys-signal);color:var(--sys-on-signal);box-shadow:none;transform:rotate(45deg)}
+.pb-werkstoff .ws-faq-item[open] .ws-faq-sign{background:var(--sys-signal);color:var(--sys-on-signal);box-shadow:none}
+.pb-werkstoff .ws-faq-item[open] .ws-faq-sign::after{transform:translate(-50%,-50%)}
 .pb-werkstoff .ws-faq-a{color:var(--sys-muted);max-width:var(--sys-space-measure);padding-bottom:var(--sys-space-m);margin-top:calc(var(--sys-space-xs) * -1)}
 @media (min-width:${GRID}){
   .pb-werkstoff .ws-faq>.ws-wrap{display:grid;grid-template-columns:5fr 7fr;column-gap:var(--sys-space-2xl);align-items:start}

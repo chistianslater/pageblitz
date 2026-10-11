@@ -70,6 +70,14 @@ type SampleText = {
    * Stimmen-Abschnitt und Google-Zahlen der Fixture entfallen.
    */
   reviews?: { author: string; text: string }[];
+  /** Fragen auch ergänzen, wenn die Fixture keinen FAQ-Abschnitt hat. */
+  addFaq?: true;
+  /** `false`: Google-Zahlen der Fixture weglassen (gehören zu ihr). */
+  google?: false;
+  /** Eigener Ablauf des Beispiels (ersetzt bzw. ergänzt den der Fixture). */
+  process?: Omit<SectionOf<"process">, "type">;
+  /** Eigene Preisliste/Wochentafel (ersetzt die der Fixture). */
+  pricelist?: Omit<SectionOf<"pricelist">, "type">;
 };
 
 /**
@@ -296,6 +304,240 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       },
     ],
   },
+  // Werkstoff (2026-10-11): Handwerk, Bäckerei, Laden — Bildsätze aus
+  // shared/industryImages.ts, Kontaktdaten fiktiv.
+  schreinerei: {
+    addFaq: true,
+    contact: {
+      street: "Huckarder Straße 21",
+      zip: "44147",
+      city: "Dortmund",
+      phone: "0231 555 3180",
+      email: "werkstatt@schreinerei-brandt.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "7:00 – 17:00" },
+      { day: "Fr", hours: "7:00 – 15:00" },
+    ],
+    hero: {
+      headline: "Gebaut, um zu bleiben.",
+      subheadline:
+        "Möbel, Küchen und Innenausbau nach Maß. Aus Eiche, Esche und Nussbaum.",
+    },
+    services: [
+      {
+        title: "Möbel nach Maß",
+        description: "Tische, Schränke und Regale, passend für deinen Raum.",
+      },
+      {
+        title: "Küchen",
+        description: "Fronten aus Massivholz, Arbeitsplatten, Einbau vor Ort.",
+      },
+      {
+        title: "Innenausbau",
+        description: "Einbauschränke unter der Schräge, Treppen, Türen.",
+      },
+      {
+        title: "Reparatur",
+        description: "Alte Möbel aufarbeiten, Furnier ausbessern, neu ölen.",
+      },
+    ],
+    process: {
+      headline: "Vom Aufmaß bis zum Einbau",
+      steps: [
+        {
+          title: "Aufmaß",
+          text: "Wir kommen vorbei, messen und hören zu. Etwa eine Stunde.",
+        },
+        {
+          title: "Entwurf",
+          text: "Du bekommst eine Zeichnung und einen festen Preis.",
+        },
+        {
+          title: "Einbau",
+          text: "Wir bauen in der Werkstatt und bei dir ein. Meist vier bis sechs Wochen.",
+        },
+      ],
+    },
+    about:
+      "Wir sind eine kleine Werkstatt in Dortmund-Huckarde: zwei Meister, ein Geselle, eine Auszubildende.\n\nWir arbeiten mit Holz aus der Region und bauen, was lange hält. Was wir zeichnen, bauen wir auch selbst ein.",
+    faq: [
+      {
+        question: "Was kostet ein Möbel nach Maß?",
+        answer:
+          "Das hängt von Holz und Größe ab. Nach dem Aufmaß bekommst du einen festen Preis.",
+      },
+      {
+        question: "Wie lange dauert es?",
+        answer: "Meist vier bis sechs Wochen vom Entwurf bis zum Einbau.",
+      },
+      {
+        question: "Arbeitet ihr auch mit eigenem Holz?",
+        answer: "Ja, wenn es trocken genug ist. Wir schauen es uns vorher an.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Katrin S.",
+        text: "Der Schrank unter der Dachschräge passt auf den Millimeter. Termin und Preis wurden genau eingehalten.",
+      },
+      {
+        author: "Michael T.",
+        text: "Unser alter Esstisch sieht aus wie neu. Ehrliche Beratung, saubere Arbeit.",
+      },
+    ],
+  },
+  baeckerei: {
+    contact: {
+      street: "Zunftgasse 6",
+      zip: "86150",
+      city: "Augsburg",
+      phone: "0821 555 2610",
+      email: "hallo@baeckerei-steinofen.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "6:00 – 18:00" },
+      { day: "Sa", hours: "6:00 – 13:00" },
+      { day: "So", hours: "7:30 – 11:00" },
+    ],
+    hero: {
+      headline: "Brot und Brötchen, ab 6 Uhr frisch.",
+      subheadline:
+        "Sauerteig mit Zeit, Brötchen aus dem Steinofen und Kuchen vom Blech.",
+    },
+    services: [
+      {
+        title: "Brot",
+        description: "Sauerteigbrote aus Roggen, Dinkel und Emmer.",
+      },
+      {
+        title: "Brötchen",
+        description: "Aus dem Steinofen, ab 6 Uhr, samstags auch Laugengebäck.",
+      },
+      {
+        title: "Kuchen",
+        description:
+          "Blechkuchen und Torten, auf Bestellung auch ganze Bleche.",
+      },
+    ],
+    process: {
+      headline: "Ein Backtag",
+      steps: [
+        {
+          title: "3:30 Teig",
+          text: "Der Sauerteig vom Vortag kommt in die Knetmaschine.",
+        },
+        {
+          title: "4:30 Ofen",
+          text: "Erst die Brötchen, dann die großen Laibe.",
+        },
+        {
+          title: "6:00 Laden auf",
+          text: "Brötchen, Brot und der erste Kaffee.",
+        },
+        { title: "11:30 Mittag", text: "Belegte Brote und eine Suppe." },
+        { title: "14:00 Kuchen", text: "Blechkuchen aus der zweiten Runde." },
+        {
+          title: "18:00 Feierabend",
+          text: "Was übrig bleibt, holt die Tafel ab.",
+        },
+      ],
+    },
+    pricelist: {
+      headline: "Brot der Woche",
+      categories: [
+        {
+          name: "Wochentafel",
+          items: [
+            { name: "Montag", description: "Roggenmischbrot", price: "4,20" },
+            { name: "Dienstag", description: "Dinkel-Vollkorn", price: "5,10" },
+            { name: "Mittwoch", description: "Kartoffelbrot", price: "4,60" },
+            { name: "Donnerstag", description: "Walnussbrot", price: "5,80" },
+            { name: "Freitag", description: "Bauernlaib", price: "4,40" },
+            { name: "Samstag", description: "Sonntagsstuten", price: "3,90" },
+          ],
+        },
+      ],
+    },
+    about:
+      "Gebacken wird nachts, verkauft ab sechs. Unser Sauerteig bekommt Zeit, das Mehl kommt aus einer Mühle im Umland.\n\nAlle anderen Brote gibt es jeden Tag. Vorbestellen geht bis 16 Uhr am Vortag.",
+    faq: [
+      {
+        question: "Kann ich Brot vorbestellen?",
+        answer: "Ja, bis 16 Uhr am Vortag, im Laden oder am Telefon.",
+      },
+      {
+        question: "Backt ihr auch Torten auf Bestellung?",
+        answer: "Ja. Sag uns drei Tage vorher Bescheid.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Andrea K.",
+        text: "Das beste Roggenbrot in der Stadt. Samstags lohnt es sich, früh zu kommen.",
+      },
+      {
+        author: "Tobias R.",
+        text: "Freundlich, schnell, und die Brötchen sind um sechs wirklich warm.",
+      },
+    ],
+  },
+  laden: {
+    google: false,
+    contact: {
+      street: "Marktplatz 7",
+      zip: "48231",
+      city: "Warendorf",
+      phone: "02581 555 0388",
+      email: "hallo@laden-am-markt.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "9:00 – 18:30" },
+      { day: "Sa", hours: "9:00 – 14:00" },
+    ],
+    hero: {
+      headline: "Papier, Haushalt und kleine Geschenke.",
+      subheadline: "Direkt am Marktplatz.",
+    },
+    services: [
+      {
+        title: "Papeterie",
+        description: "Hefte, Karten, gute Stifte, Füller.",
+      },
+      {
+        title: "Haushalt",
+        description: "Emaille, Bürsten, Küchentücher aus Leinen.",
+      },
+      { title: "Geschenke", description: "Kleines für Kinder und Gastgeber." },
+      {
+        title: "Schulbedarf",
+        description: "Ranzen, Hefte und die Listen der Schulen.",
+      },
+      { title: "Bastelbedarf", description: "Papier, Farben, Kleber, Wolle." },
+    ],
+    about:
+      "Ein kleiner Laden am Marktplatz: Papier, Dinge für den Haushalt und Geschenke. Wer etwas Bestimmtes sucht, fragt einfach — wir wissen meistens, wo es liegt.",
+    faq: [
+      {
+        question: "Packt ihr Geschenke ein?",
+        answer: "Ja, mit Papier aus unserem Sortiment.",
+      },
+      {
+        question: "Gibt es Gutscheine?",
+        answer: "Ja, im Laden in jeder Höhe.",
+      },
+      {
+        question: "Könnt ihr etwas bestellen?",
+        answer: "Ja. Frag einfach im Laden oder am Telefon.",
+      },
+    ],
+    reviews: [
+      {
+        author: "Heike W.",
+        text: "Hier findet man noch den Bleistift, den es sonst nirgends gibt. Und jemand weiß, wo er liegt.",
+      },
+    ],
+  },
 };
 
 /** Branchenbilder statt Fixture-Fotos, wenn die Fixture nicht passt. */
@@ -304,16 +546,25 @@ function withShowcasePhotos(
   photos?: string
 ): WebsiteDataV2 {
   if (photos === "none") return withoutPhotos(doc);
-  const [name, start] = (photos ?? "").split(":");
+  const [name, start, picks] = (photos ?? "").split(":");
+  if (start === "weak") return withWeakPhotos(doc, name, picks);
   const set = name ? INDUSTRY_IMAGES[name] : undefined;
   if (!set) return doc;
   const first = Number(start ?? 0);
-  const gallery = set.gallery ?? set.hero;
+  const all = set.gallery ?? set.hero;
+  // Dritter Teil (`"name:0:3"`): Galeriebild 3 wird das Über-uns-Foto und
+  // fehlt dafür in der Galerie (jedes Foto nur einmal).
+  const aboutAt = picks === undefined || picks === "" ? -1 : Number(picks);
+  const aboutPhoto = all[aboutAt];
+  const gallery = aboutPhoto ? all.filter(u => u !== aboutPhoto) : all;
   const sections = doc.sections.map(section => {
     if (section.type === "hero")
       return { ...section, imageUrl: set.hero[first] ?? set.hero[0] };
     if (section.type === "about")
-      return { ...section, imageUrl: set.about?.[0] ?? gallery[0] };
+      return {
+        ...section,
+        imageUrl: aboutPhoto ?? set.about?.[0] ?? gallery[0],
+      };
     if (section.type === "gallery")
       return {
         ...section,
@@ -325,6 +576,34 @@ function withShowcasePhotos(
     return section;
   }) as WebsiteDataV2["sections"];
   return { ...doc, sections };
+}
+
+/**
+ * Betrieb mit schwachen Fotos (`"name:weak:i,j"`, Werkstoff-Laden): kein
+ * Einstiegs- und kein Über-uns-Foto, nur die gewählten Galeriebilder des
+ * Bildsatzes (ohne Auswahl die ersten zwei).
+ */
+function withWeakPhotos(
+  doc: WebsiteDataV2,
+  name: string,
+  picks?: string
+): WebsiteDataV2 {
+  const set = INDUSTRY_IMAGES[name];
+  if (!set) return withoutPhotos(doc);
+  const gallery = set.gallery ?? set.hero;
+  const chosen = picks
+    ? picks.split(",").flatMap(i => gallery[Number(i)] ?? [])
+    : gallery.slice(0, 2);
+  const sections = withoutPhotos(doc).sections.slice();
+  const at = doc.sections.findIndex(s => s.type === "gallery");
+  const images = chosen.map(url => ({
+    url,
+    alt: doc.businessName,
+  }));
+  const original = doc.sections[at];
+  if (at !== -1 && original.type === "gallery")
+    sections.splice(at, 0, { ...original, images });
+  return { ...doc, sections: sections as WebsiteDataV2["sections"] };
 }
 
 /** Betrieb ohne brauchbares Foto: keine Bilder im Einstieg, Über uns, Leistungen. */
@@ -370,6 +649,10 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
         return { ...section, body: text.about };
       case "faq":
         return { ...section, items: text.faq };
+      case "process":
+        return text.process ? { ...section, ...text.process } : section;
+      case "pricelist":
+        return text.pricelist ? { ...section, ...text.pricelist } : section;
       case "testimonials":
         return text.reviews
           ? {
@@ -382,13 +665,24 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
     }
   }) as WebsiteDataV2["sections"];
   const { google, tagline: _tagline, ...rest } = doc;
+  // Ablauf bzw. Preisliste, die die Fixture nicht hat, kommen hinzu.
+  const added: WebsiteDataV2["sections"][number][] = [
+    ...(text.process && !doc.sections.some(s => s.type === "process")
+      ? [{ type: "process" as const, ...text.process }]
+      : []),
+    ...(text.addFaq && !doc.sections.some(s => s.type === "faq")
+      ? [{ type: "faq" as const, items: text.faq }]
+      : []),
+  ];
+  // Die Folge setzt danach der Bauplan (withBlueprint), wie bei echten Seiten.
+  const all = [...sections, ...added] as WebsiteDataV2["sections"];
   return {
     ...rest,
     // Ohne Bewertungen auch keine Google-Zahlen der fremden Fixture.
-    ...(text.reviews && google ? { google } : {}),
+    ...(text.reviews && google && text.google !== false ? { google } : {}),
     sections: text.reviews
-      ? sections
-      : (sections.filter(
+      ? all
+      : (all.filter(
           s => s.type !== "testimonials"
         ) as WebsiteDataV2["sections"]),
     // Fuß und Unterzeile der Fixture gehören zu einer anderen Firma.

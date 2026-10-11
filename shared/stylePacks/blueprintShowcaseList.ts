@@ -21,7 +21,10 @@ export type Showcase = {
   amenities?: WebsiteDataV2["amenities"];
   /**
    * Branchenbilder statt der Fixture-Fotos (shared/industryImages.ts);
-   * `"none"` = Betrieb ohne brauchbares Foto (Einstieg nur Schrift).
+   * `"none"` = Betrieb ohne brauchbares Foto (Einstieg nur Schrift);
+   * `"name:0:k"` = Galeriebild k als Über-uns-Foto (nicht in der Galerie);
+   * `"name:weak:i,j"` = schwache Fotos: Einstieg nur Schrift, nur die
+   * Galeriebilder i, j des Bildsatzes.
    */
   photos?: string;
 };
@@ -56,6 +59,7 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Handwerk",
     label: "Schreinerei",
     fixture: "werkbank",
+    photos: "schreinerei:0:3",
   },
   {
     id: "elektro",
@@ -89,6 +93,7 @@ export const SHOWCASES: readonly Showcase[] = [
     label: "Bäckerei",
     fixture: "zunft",
     amenities: { breakfast: true, takeout: true },
+    photos: "baeckerei:0:4",
   },
   {
     id: "cafe",
@@ -134,6 +139,16 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Beratung & Büro",
     label: "IT-Dienstleister",
     fixture: "klarwerk",
+  },
+  {
+    id: "laden",
+    sample: "Laden am Markt",
+    group: "Laden & Handel",
+    label: "Schreibwarenladen",
+    fixture: "karat",
+    businessName: "Laden am Markt",
+    businessCategory: "Schreibwarengeschäft",
+    photos: "laden:weak:3,5",
   },
   {
     id: "goldschmiede",

@@ -98,7 +98,11 @@ describe("Werkstoff: Ablauf", () => {
   });
 
   test("Galerie bliebe unter zwei Fotos: Ziffern ohne Foto", () => {
-    expect(sectionHtml(render(holtkampDoc()), "process")).not.toContain("<img");
+    const doc = patchSection(holtkampDoc(), "gallery", g => ({
+      ...g,
+      images: g.images.slice(0, 2),
+    }));
+    expect(sectionHtml(render(doc), "process")).not.toContain("<img");
   });
 
   test("ohne Galerie: Ziffern ohne Foto", () => {

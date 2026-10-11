@@ -282,3 +282,17 @@ describe("Werkstoff: Handy-Leiste", () => {
     expect(WERKSTOFF_CSS).toMatch(/:has\(\.ws-dock\) \.ws-foot\{padding-bottom:calc\([^}]*var\(--ws-dock\)/);
   });
 });
+
+describe("Werkstoff: Einstiegsfoto in passenden Breiten (LCP)", () => {
+  test("Unsplash bekommt srcset 640/960/1400, andere Quellen nicht", async () => {
+    const { entrySrcSet } = await import("./Entry");
+    const set = entrySrcSet(
+      "https://images.unsplash.com/photo-1?w=1400&q=85&auto=format&fit=crop"
+    )!;
+    expect(set.split(", ")).toHaveLength(3);
+    expect(set).toMatch(/w=640&q=85&auto=format&fit=crop 640w/);
+    expect(set).toMatch(/w=1400[^ ]* 1400w$/);
+    expect(entrySrcSet("https://cdn.pageblitz.de/a.jpg")).toBeUndefined();
+    expect(entrySrcSet("/demo/werkbank-hero.webp")).toBeUndefined();
+  });
+});

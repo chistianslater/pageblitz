@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SHOWCASES, showcaseDoc } from "./blueprintShowcase";
 import { blueprintFor } from "./blueprints";
+import { systemsForDoc } from "../designSystems";
+import { INDUSTRY_IMAGES } from "../industryImages";
 
 describe("Bauplan-Übersicht", () => {
   it("baut jede Beispielseite mit dem gewählten Einstieg", () => {
@@ -80,5 +82,77 @@ describe("Bauplan-Übersicht", () => {
       expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
       expect(contact.email).toMatch(/\.example$/);
     }
+  });
+
+  describe("Werkstoff-Beispiele: Schreinerei, Bäckerei, Laden", () => {
+    const doc = (id: string) =>
+      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+    const section = <T extends string>(id: string, type: T) =>
+      doc(id).sections.find(s => s.type === type) as
+        | Record<string, unknown>
+        | undefined;
+
+    it("haben Werkstoff als Hauptsystem (Design-Übersicht)", () => {
+      for (const id of ["schreinerei", "baeckerei", "laden"]) {
+        const s = SHOWCASES.find(x => x.id === id)!;
+        expect(
+          systemsForDoc({
+            businessCategory: s.businessCategory ?? s.label,
+            businessName: s.businessName ?? s.sample,
+          })[0]
+        ).toBe("werkstoff");
+      }
+    });
+
+    it("Kontaktdaten fiktiv, Fotos aus den neuen Bildsätzen", () => {
+      for (const id of ["schreinerei", "baeckerei", "laden"]) {
+        const contact = section(id, "contact")!;
+        expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+        expect(contact.email).toMatch(/\.example$/);
+        const set = INDUSTRY_IMAGES[id];
+        const urls = JSON.stringify(doc(id).sections).match(
+          /https:\/\/images\.unsplash\.com[^"]+/g
+        )!;
+        const pool = [...set.hero, ...(set.gallery ?? [])];
+        for (const u of urls) expect(pool).toContain(u);
+      }
+    });
+
+    it("Bäckerei: früh geöffnet, Backtag mit Uhrzeiten, Wochentafel", () => {
+      const hours = section("baeckerei", "contact")!.openingHours as {
+        hours: string;
+      }[];
+      expect(hours[0].hours).toMatch(/^6:00/);
+      const steps = section("baeckerei", "process")!.steps as {
+        title: string;
+      }[];
+      expect(steps.length).toBeGreaterThanOrEqual(3);
+      for (const s of steps) expect(s.title).toMatch(/^\d{1,2}:\d{2} /);
+      const board = JSON.stringify(section("baeckerei", "pricelist"));
+      expect(board).toContain("Mittwoch");
+      expect(board).not.toMatch(/Steinofenkruste|Emmer-Vollkorn/);
+    });
+
+    it("Laden: schwache Fotos — Einstieg nur Schrift, zwei Galeriebilder", () => {
+      expect(section("laden", "hero")!.imageUrl).toBeUndefined();
+      expect(section("laden", "about")!.imageUrl).toBeUndefined();
+      expect((section("laden", "gallery")!.images as unknown[]).length).toBe(2);
+      expect(doc("laden").google).toBeUndefined();
+      expect(JSON.stringify(doc("laden"))).not.toMatch(
+        /Trauring|Gravur|Hartung|Lübeck/
+      );
+    });
+
+    it("Schreinerei: drei Schritte, Fragen ergänzt, ohne Fixture-Kontakt", () => {
+      expect((section("schreinerei", "process")!.steps as unknown[]).length).toBe(3);
+      expect(section("schreinerei", "faq")).toBeDefined();
+      expect(JSON.stringify(section("schreinerei", "contact"))).not.toMatch(
+        /dortmund\.de|4471/
+      );
+    });
+
+    it("andere Beispiele bekommen keine ergänzten Fragen", () => {
+      expect(section("werkstatt", "faq")).toBeUndefined();
+    });
   });
 });
