@@ -2,6 +2,7 @@ import { mountSiteEntrance } from "../components/site/artDirection/siteEntrance"
 import { mountJournalMotion } from "../components/site/systems/journal/motion";
 import { mountRasterMotion } from "../components/site/systems/raster/motion";
 import { mountWerkstoffMotion } from "../components/site/systems/werkstoff/motion";
+import { mountPlakatMotion } from "../components/site/systems/plakat/motion";
 const cleanups = [
   ...Array.from(
     document.querySelectorAll<HTMLElement>('.pb-site[data-pb-revision="2"]')
@@ -15,6 +16,9 @@ const cleanups = [
   ...Array.from(
     document.querySelectorAll<HTMLElement>(".pb-werkstoff")
   ).map(mountWerkstoffMotion),
+  ...Array.from(
+    document.querySelectorAll<HTMLElement>(".pb-plakat")
+  ).map(mountPlakatMotion),
 ];
 window.addEventListener(
   "pagehide",

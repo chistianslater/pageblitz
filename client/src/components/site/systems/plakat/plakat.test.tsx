@@ -65,10 +65,10 @@ describe("Plakat: Gerüst", () => {
     }
   });
 
-  test("nicht freigeschaltet, ohne Bewegungs-Bundle (bis P7)", () => {
+  test("nicht freigeschaltet, aber mit Bewegungs-Bundle (seit P7)", () => {
     expect(RELEASED_SYSTEMS).not.toContain("plakat");
-    expect(SYSTEMS_WITH_MOTION).not.toContain("plakat");
-    expect(SYSTEM_MOTION.plakat).toBeUndefined();
+    expect(SYSTEMS_WITH_MOTION).toContain("plakat");
+    expect(SYSTEM_MOTION.plakat).toBeDefined();
   });
 
   test("@font-face: League Gothic (wdth) und Hanken Grotesk, je einmal", () => {
@@ -274,8 +274,9 @@ describe("Plakat: Laufband und Dock", () => {
       tick.match(/<ul class="pk-tick-run" aria-hidden="true">/g)
     ).toHaveLength(3);
     expect(tick).toContain("<li>Hafenstraẞe 12</li>");
-    expect(PLAKAT_CSS).toMatch(
-      /@media \(prefers-reduced-motion:no-preference\)\{\s*\.pb-plakat \.pk-tick-track\{animation:pk-tick 38s linear infinite\}/
+    // Läuft nur mit Script und ohne reduzierte Bewegung (motionCss.ts).
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat[data-pk-ready] .pk-tick-track{animation:pk-tick 38s linear infinite}"
     );
   });
 

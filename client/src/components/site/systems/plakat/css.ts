@@ -3,6 +3,7 @@ import { systemFontFaces } from "../shared/fonts";
 import { NAV, PILL, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { CONTENT_CSS } from "./contentCss";
+import { PLAKAT_MOTION_CSS } from "./motionCss";
 
 export { step } from "./step";
 
@@ -132,6 +133,7 @@ ${sections}
 .pb-plakat .pb-photo-credits{${step("small")};color:var(--sys-field-3-muted);background:var(--sys-field-3-bg);margin:0;padding:0 var(--sys-space-gutter) var(--sys-space-l);text-align:left}
 .pb-plakat .pb-photo-credits a{color:inherit;text-underline-offset:.2em}
 
+${PLAKAT_MOTION_CSS}
 @media (prefers-reduced-motion:reduce){.pb-plakat *,.pb-plakat *::before,.pb-plakat *::after{transition:none!important;animation:none!important}}
 /* ende plakat */
 `;

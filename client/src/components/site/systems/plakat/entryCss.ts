@@ -80,19 +80,23 @@ const STICKER = `/* Sticker */
 .pb-plakat .pk-stk--inv{background:var(--sys-deep);color:var(--sys-on-deep)}
 @media (min-width:${GRID}){.pb-plakat .pk-stk{--pk-stk:calc(var(--sys-space-2xl) * 1.45)}}`;
 
-/** Laufband: tief, League Gothic, Signalpunkt; still bei reduzierter Bewegung. */
+/** Laufband: tief, League Gothic, Signalpunkt; läuft nur mit Script (motionCss), sonst still. */
 const TICKER = `/* Laufband */
-.pb-plakat .pk-tick{background:var(--sys-field-3-bg);color:var(--sys-field-3-ink);overflow:hidden;padding-block:var(--sys-space-s)}
+.pb-plakat .pk-tick{position:relative;background:var(--sys-field-3-bg);color:var(--sys-field-3-ink);overflow:hidden;padding-block:var(--sys-space-s)}
 .pb-plakat .pk-tick-track{display:flex;width:max-content;padding-left:var(--sys-space-gutter)}
 .pb-plakat .pk-tick-run{display:flex;align-items:center;list-style:none;margin:0;padding:0}
 .pb-plakat .pk-tick-run li{display:flex;align-items:center;white-space:nowrap;font-family:var(--sys-font-display);font-weight:400;font-size:calc(var(--sys-h2-size) * .72);
   line-height:1;text-transform:uppercase;font-stretch:var(--sys-h2-stretch);letter-spacing:var(--sys-h2-track)}
 .pb-plakat .pk-tick-run li::after{content:"";flex:none;width:calc(var(--sys-space-s) * .875);height:calc(var(--sys-space-s) * .875);border-radius:50%;background:var(--sys-signal);margin-inline:calc(var(--sys-space-s) * 1.375)}
-@keyframes pk-tick{to{transform:translateX(calc(-50% + var(--sys-space-gutter) / 2))}}
-@media (prefers-reduced-motion:no-preference){
-  .pb-plakat .pk-tick-track{animation:pk-tick 38s linear infinite}
-  .pb-plakat .pk-tick:hover .pk-tick-track{animation-play-state:paused}
-}`;
+/* Pause-Knopf (WCAG 2.2.2): nur sichtbar, wenn das Band läuft (motionCss) */
+.pb-plakat .pk-tick-toggle{display:none;place-items:center;position:absolute;z-index:1;right:var(--sys-space-gutter);top:50%;transform:translateY(-50%);
+  width:var(--pk-tap);height:var(--pk-tap);padding:0;border:0;border-radius:50%;cursor:pointer;
+  background:var(--sys-field-3-bg);color:var(--sys-field-3-ink);box-shadow:inset 0 0 0 2px currentColor,0 0 0 var(--sys-space-xs) var(--sys-field-3-bg)}
+.pb-plakat .pk-tick-toggle i{display:block;width:calc(var(--sys-space-s) * .75);height:calc(var(--sys-space-s) * .875);
+  border-inline:calc(var(--sys-space-2xs) * .75) solid currentColor}
+.pb-plakat .pk-tick-toggle[aria-pressed="true"] i{width:0;height:0;margin-left:calc(var(--sys-space-2xs) * .75);border-inline-end:0;
+  border-block:calc(var(--sys-space-s) * .4375) solid transparent;border-inline-start:calc(var(--sys-space-s) * .75) solid currentColor}
+.pb-plakat .pk-tick-toggle:focus-visible{outline-color:var(--sys-field-3-ink)}`;
 
 /** Dock: Tinte-Pille, Neben-Weg + Hauptaktion in Signal (unter 48 rem). */
 const DOCK_CSS = `/* Dock (unter ${DOCK}) */
