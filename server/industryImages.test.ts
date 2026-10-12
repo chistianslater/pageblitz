@@ -736,3 +736,25 @@ describe("Bildsatz Pension (einfache Unterkunft, 2026-10-12)", () => {
     }
   });
 });
+
+describe("Tierpensionen bleiben beim bisherigen Satz (2026-10-12)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  test.each([
+    "Hundepension",
+    "Tierpension",
+    "Katzenpension",
+    "Pferdepension",
+    "Hunde-Pension",
+    "Tier-Pension",
+  ])("%s → hospitality wie vorher, nicht pension", k => {
+    expect(gruppe(k, "Waldhof")).toBe("hospitality");
+    expect(gruppe(k, "Waldhof", "hotel")).toBe("hospitality");
+  });
+  test("Pension bleibt Pension", () => {
+    expect(gruppe("Pension", "Waldhof", "hotel")).toBe("pension");
+  });
+});
+

@@ -25,7 +25,8 @@ export interface IndustryImageSet {
   /**
    * Verfeinert nur, wenn die Kategorie diesen Satz mindestens so lang trifft
    * wie den allgemeinen Satz selbst (Klar K1: Praxis-Satz mit „arzt" darf
-   * „Tierarzt" nicht aus „medizin" holen). Nur für die Gesundheitssätze.
+   * „Tierarzt" nicht aus „medizin" holen). Gesundheitssätze und Pension
+   * („Hundepension" bleibt beim Hotel-Satz).
    */
   strictRefine?: boolean;
   /**
@@ -798,6 +799,16 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "lodging",
       "herberge",
       "ferienhof",
+      // Tierpensionen behalten diesen Satz (wie vor dem Pension-Satz): das
+      // längere Wort schlägt „pension" im Satz `pension`.
+      "hundepension",
+      "hunde pension",
+      "tierpension",
+      "tier pension",
+      "katzenpension",
+      "katzen pension",
+      "pferdepension",
+      "pferde pension",
     ],
     hero: [
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=85&auto=format&fit=crop",
@@ -841,6 +852,9 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "privatzimmer",
     ],
     refines: ["hospitality"],
+    // Verfeinert nur, wenn „pension" mindestens so lang trifft wie der
+    // Hotel-Satz selbst: KI „hotel" + „Hundepension" bleibt beim Hotel-Satz.
+    strictRefine: true,
     hero: [
       "https://images.unsplash.com/photo-1565089849244-55f033575bb6?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1775744244614-beb197cfac53?w=1400&q=85&auto=format&fit=crop",
