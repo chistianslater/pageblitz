@@ -525,8 +525,7 @@ describe("withAboutFallbackImage", () => {
   test("das Kopfbild wird nicht doppelt verwendet", () => {
     const doc = basis();
     const galerie = doc.sections.find(s => s.type === "gallery");
-    const erstes =
-      galerie && "images" in galerie ? galerie.images[0].url : "x";
+    const erstes = galerie && "images" in galerie ? galerie.images[0].url : "x";
     const mitDublette = {
       ...doc,
       sections: doc.sections.map(s =>
@@ -536,8 +535,7 @@ describe("withAboutFallbackImage", () => {
     const about = withAboutFallbackImage(mitDublette).sections.find(
       s => s.type === "about"
     );
-    const gesetzt =
-      about && "imageUrl" in about ? about.imageUrl : undefined;
+    const gesetzt = about && "imageUrl" in about ? about.imageUrl : undefined;
     expect(gesetzt).not.toBe(erstes);
     expect(gesetzt).toBeTruthy();
   });
@@ -616,140 +614,5 @@ describe("withGalleryLimit", () => {
     const doc = mitGalerie();
     withGalleryLimit(doc);
     expect(bilder(doc)).toBe(5);
-  });
-
-  /** Einstieg = g1, Über uns = g2 (wie frisch erzeugte Seiten aus Google-Fotos). */
-  const mitGezeigten = (): WebsiteDataV2 => {
-    const doc = mitGalerie();
-    return {
-      ...doc,
-      sections: doc.sections.map(s =>
-        s.type === "hero"
-          ? { ...s, imageUrl: "https://x/g1.jpg" }
-          : s.type === "about"
-            ? { ...s, imageUrl: "https://x/g2.jpg" }
-            : s
-      ),
-    };
-  };
-  const urls = (doc: WebsiteDataV2) => {
-    const g = doc.sections.find(s => s.type === "gallery");
-    return g && "images" in g ? g.images.map(i => i.url) : [];
-  };
-
-  test("ohne Option: die ersten drei, auch wenn Einstieg und Über uns sie schon zeigen", () => {
-    expect(urls(withGalleryLimit(mitGezeigten()))).toEqual([
-      "https://x/g1.jpg",
-      "https://x/g2.jpg",
-      "https://x/g3.jpg",
-    ]);
-  });
-
-  test("beyondShown: drei Fotos, die die Seite noch nicht zeigt (Einstieg/Über uns zählen nicht)", () => {
-    expect(
-      urls(withGalleryLimit(mitGezeigten(), { beyondShown: true }))
-    ).toEqual([
-      "https://x/g1.jpg",
-      "https://x/g2.jpg",
-      "https://x/g3.jpg",
-      "https://x/g4.jpg",
-      "https://x/g5.jpg",
-    ]);
-    // Ausgeblendetes Einstiegsfoto ist nicht gezeigt → zählt mit.
-    const ohneEinstieg = mitGezeigten();
-    const versteckt = {
-      ...ohneEinstieg,
-      designProfile: {
-        ...ohneEinstieg.designProfile!,
-        hiddenElements: ["hero-media"],
-      },
-    } as WebsiteDataV2;
-    expect(urls(withGalleryLimit(versteckt, { beyondShown: true }))).toEqual([
-      "https://x/g1.jpg",
-      "https://x/g2.jpg",
-      "https://x/g3.jpg",
-      "https://x/g4.jpg",
-    ]);
-  });
-
-  test("beyondShown: Über uns zählt nur, wenn es vor der Galerie steht", () => {
-    const alle = [
-      "https://x/g1.jpg",
-      "https://x/g2.jpg",
-      "https://x/g3.jpg",
-      "https://x/g4.jpg",
-    ];
-    // Galerie vor Über uns (sectionOrder): Die Galerie zeigt das Foto
-    // zuerst, Über uns verliert es — es ist kein schon gezeigtes Foto.
-    const galerieZuerst = {
-      ...mitGezeigten(),
-      sectionOrder: ["gallery", "about", "contact"],
-    } as WebsiteDataV2;
-    expect(
-      urls(withGalleryLimit(galerieZuerst, { beyondShown: true }))
-    ).toEqual(alle);
-    // Ausgeblendeter Über-uns-Abschnitt beansprucht nichts.
-    const ohneUeberUns = {
-      ...mitGezeigten(),
-      hiddenSections: ["about"],
-    } as WebsiteDataV2;
-    expect(
-      urls(withGalleryLimit(ohneUeberUns, { beyondShown: true }))
-    ).toEqual(alle);
-    // Über uns ausgeblendetes Foto: ebenso.
-    const ohneFoto = mitGezeigten();
-    const fotoAus = {
-      ...ohneFoto,
-      designProfile: {
-        ...ohneFoto.designProfile!,
-        hiddenElements: ["about-media"],
-      },
-    } as WebsiteDataV2;
-    expect(urls(withGalleryLimit(fotoAus, { beyondShown: true }))).toEqual(
-      alle
-    );
-  });
-
-  test("beyondShown: Dokument-Reihenfolge ohne sectionOrder zählt ebenso", () => {
-    const doc = mitGezeigten();
-    const galerie = doc.sections.find(s => s.type === "gallery")!;
-    const umgestellt = {
-      ...doc,
-      sectionOrder: undefined,
-      sections: [
-        ...doc.sections.filter(s => s.type !== "about" && s !== galerie),
-        galerie,
-        doc.sections.find(s => s.type === "about")!,
-      ],
-    } as WebsiteDataV2;
-    expect(urls(withGalleryLimit(umgestellt, { beyondShown: true }))).toEqual([
-      "https://x/g1.jpg",
-      "https://x/g2.jpg",
-      "https://x/g3.jpg",
-      "https://x/g4.jpg",
-    ]);
-  });
-
-  test("beyondShown: doppelte Adressen zählen einmal", () => {
-    const doc = mitGezeigten();
-    const dup = {
-      ...doc,
-      sections: doc.sections.map(s =>
-        s.type === "gallery"
-          ? {
-              ...s,
-              images: [
-                { url: "https://x/g3.jpg", alt: "" },
-                { url: "https://x/g3.jpg", alt: "" },
-                ...fuenfBilder,
-              ],
-            }
-          : s
-      ),
-    } as WebsiteDataV2;
-    const kept = urls(withGalleryLimit(dup, { beyondShown: true }));
-    expect(new Set(kept.filter(u => !/g[12]\.jpg$/.test(u)))).toEqual(
-      new Set(["https://x/g3.jpg", "https://x/g4.jpg", "https://x/g5.jpg"])
-    );
   });
 });

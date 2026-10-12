@@ -244,14 +244,14 @@ export const SiteRenderer: React.FC<{
   // Fehlt dem Über-uns-Abschnitt das Foto, rückt ein Galeriebild nach —
   // sonst steht der Abschnitt halb leer (Betreiber-Befund 2026-09-20).
   data = withAboutFallbackImage(data);
-  // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar (Systeme
-  // mit „jedes Foto einmal" zählen erst nach Einstieg/Über uns).
-  data = withGalleryLimit(data, {
-    beyondShown:
-      data.designRevision === 3 && data.system
-        ? getSystem(data.system)?.freeGalleryBeyondShown === true
-        : false,
-  });
+  // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar. Systeme
+  // mit „jedes Foto einmal" (freeGalleryBeyondShown) kürzen selbst
+  // (claimPhotos): drei freie nach Einstieg, Angebotsfotos und Über uns.
+  const kuerztSelbst =
+    data.designRevision === 3 &&
+    Boolean(data.system) &&
+    getSystem(data.system!)?.freeGalleryBeyondShown === true;
+  if (!kuerztSelbst) data = withGalleryLimit(data);
   // Designsystem (rev 3): eigenes Modul, eigene Variablen, kein Pack-Layout.
   const systemDef =
     data.designRevision === 3 && data.system

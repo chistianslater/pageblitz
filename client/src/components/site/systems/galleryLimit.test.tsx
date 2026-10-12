@@ -89,33 +89,47 @@ describe("freie Galeriefotos: drei zusätzlich zu Einstieg und Über uns", () =>
     expect(getSystem(system)?.freeGalleryBeyondShown).toBe(true);
   });
 
+  /**
+   * Galerie = die ersten drei Fotos (in Galerie-Reihenfolge), die die Seite
+   * nicht schon außerhalb der Galerie zeigt (Einstieg, Angebotsfotos, Über
+   * uns vor der Galerie); jedes Foto einmal.
+   */
+  function expectFreeThree(html: string) {
+    const gallery = sectionOf(html, SECTION_ANCHORS.gallery);
+    const inGallery = fotoSrcs(gallery);
+    const outside = fotoSrcs(html.replace(gallery, ""));
+    expect(inGallery).toEqual(
+      FOTOS.filter(u => !outside.includes(u)).slice(0, 3)
+    );
+    expect(inGallery).toHaveLength(3);
+    const alle = fotoSrcs(html);
+    expect(new Set(alle).size).toBe(alle.length);
+    return { inGallery, outside };
+  }
+
   test.each(DEDUPING)(
-    "%s: 8 Fotos ohne Extra → 3 in der Galerie, jedes Foto einmal",
+    "%s: 8 Fotos ohne Extra → 3 freie in der Galerie, jedes Foto einmal",
     system => {
-      const html = render(achtFotos(system));
-      const gallery = sectionOf(html, SECTION_ANCHORS.gallery);
-      expect(fotoSrcs(gallery)).toEqual(FOTOS.slice(2, 5));
-      const alle = fotoSrcs(html);
-      expect(new Set(alle).size).toBe(alle.length);
-      expect(new Set(alle)).toEqual(new Set(FOTOS.slice(0, 5)));
+      const { outside } = expectFreeThree(render(achtFotos(system)));
+      expect(outside[0]).toBe(FOTOS[0]);
     }
   );
 
   test.each(DEDUPING)(
     "%s: Über uns nach der Galerie zählt nicht als gezeigt",
     system => {
-      // Handwerks-Bauplan: Galerie vor Über uns.
+      // Handwerks-Bauplan: Galerie vor Über uns — die Galerie zeigt das
+      // Über-uns-Foto, Über uns verliert es.
       const html = render(achtFotos(system, "schreinerei"));
-      const gallery = sectionOf(html, SECTION_ANCHORS.gallery);
-      // Galerie zeigt 2.–4.; Über uns verliert das 2. (schon gezeigt).
-      expect(fotoSrcs(gallery)).toEqual(FOTOS.slice(1, 4));
-      const alle = fotoSrcs(html);
-      expect(new Set(alle).size).toBe(alle.length);
+      const { inGallery, outside } = expectFreeThree(html);
+      const about = fotoSrcs(sectionOf(html, SECTION_ANCHORS.about));
+      expect(about).toEqual([]);
+      // Raster-Bänder können das Foto vorher beanspruchen.
+      if (!outside.includes(FOTOS[1])) expect(inGallery).toContain(FOTOS[1]);
     }
   );
 
   test.each(DEDUPING)("%s: mit Extra alle acht, jedes einmal", system => {
-    // Mit Extra dürfen Angebotsfotos (Raster-Bänder) aus der Galerie schöpfen.
     const doc = achtFotos(system);
     const html = render({ ...doc, addOns: { ...doc.addOns, gallery: true } });
     const alle = fotoSrcs(html);
@@ -123,38 +137,54 @@ describe("freie Galeriefotos: drei zusätzlich zu Einstieg und Über uns", () =>
     expect(new Set(alle)).toEqual(new Set(FOTOS));
   });
 
+  const PROCESS = {
+    type: "process" as const,
+    headline: "So läuft's ab",
+    steps: [
+      { title: "Anfrage", text: "Am Telefon." },
+      { title: "Termin", text: "Wir finden einen." },
+      { title: "Fertig", text: "Und gut." },
+    ],
+  };
+  const withProcess = (doc: WebsiteDataV2): WebsiteDataV2 => {
+    const sections = [...doc.sections];
+    sections.splice(2, 0, PROCESS);
+    return { ...doc, sections } as WebsiteDataV2;
+  };
+
   test.each(DEDUPING)(
-    "%s: Angebotsfotos (Bänder, Ablauf, Bildpaar) nehmen ohne Extra keins der freien drei",
+    "%s: Angebotsfotos (Bänder, Ablauf, Bildpaar) wählen wie bisher aus den ersten drei, Galerie trotzdem drei",
     system => {
-      // Leistungen (Raster-Bänder), Ablauf (Werkstoff/Plakat) und Karte
-      // (Nacht-Bildpaar) würden sonst aus den freien Fotos schöpfen.
       const doc = achtFotos(
         system,
         system === "nacht" ? "weinberg" : "friseur"
       );
-      const process = {
-        type: "process" as const,
-        headline: "So läuft's ab",
-        steps: [
-          { title: "Anfrage", text: "Am Telefon." },
-          { title: "Termin", text: "Wir finden einen." },
-          { title: "Fertig", text: "Und gut." },
-        ],
-      };
-      const sections = [...doc.sections];
-      sections.splice(2, 0, process);
-      const html = render({ ...doc, sections } as WebsiteDataV2);
-      // Gastro-Bauplan (Weinberg): Galerie vor Über uns → Galerie 2.–4.
-      const aboutFirst =
-        sections.findIndex(s => s.type === "about") <
-        sections.findIndex(s => s.type === "gallery");
-      const gallery = aboutFirst ? FOTOS.slice(2, 5) : FOTOS.slice(1, 4);
+      const html = render(withProcess(doc));
+      const { outside } = expectFreeThree(html);
+      // Außerhalb der Galerie nur Einstieg, Über uns und die ersten drei.
+      for (const u of outside) expect(FOTOS.slice(0, 3)).toContain(u);
+    }
+  );
+
+  test.each(["werkstoff", "plakat"] as const)(
+    "%s: Einstieg und Über uns mit eigenen Fotos → Ablauf-Foto bleibt, Galerie zeigt drei weitere",
+    system => {
+      const doc = achtFotos(system);
+      const own = {
+        ...doc,
+        sections: doc.sections.map(s =>
+          s.type === "hero"
+            ? { ...s, imageUrl: "https://eigen.example/einstieg.jpg" }
+            : s.type === "about"
+              ? { ...s, imageUrl: "https://eigen.example/team.jpg" }
+              : s
+        ),
+      } as WebsiteDataV2;
+      const html = render(withProcess(own));
+      expect(fotoSrcs(sectionOf(html, "ablauf"))).toEqual([FOTOS[0]]);
       expect(fotoSrcs(sectionOf(html, SECTION_ANCHORS.gallery))).toEqual(
-        gallery
+        FOTOS.slice(1, 4)
       );
-      const alle = fotoSrcs(html);
-      expect(new Set(alle).size).toBe(alle.length);
-      expect(new Set(alle)).toEqual(new Set([FOTOS[0], FOTOS[1], ...gallery]));
     }
   );
 

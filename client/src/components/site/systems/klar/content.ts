@@ -17,7 +17,8 @@ import { claimPhotos, voiceList, type SystemSection } from "../shared";
  */
 export function klarPhotos<T extends SystemSection>(
   sections: readonly T[],
-  hidden: readonly string[]
+  hidden: readonly string[],
+  freeGallery = false
 ): { list: T[] } {
   const { list } = claimPhotos(sections, hidden, (all, claimed) => {
     const team = all.find((s): s is SectionOf<"team"> => s.type === "team");
@@ -29,7 +30,7 @@ export function klarPhotos<T extends SystemSection>(
       ),
     ];
     return picked.length ? picked : undefined;
-  });
+  }, freeGallery);
   const hero = list.find((s): s is T & SectionOf<"hero"> => s.type === "hero");
   const seen = new Set<string>(
     hero?.imageUrl && !hidden.includes("hero-media") ? [hero.imageUrl] : []

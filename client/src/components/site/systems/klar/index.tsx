@@ -2,7 +2,12 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import {
+  galleryIsFree,
+  previewSlotAnchors,
+  shownNavItems,
+  systemShows,
+} from "../shared";
 import { KLAR_CSS } from "./css";
 import { KlarDock, KlarFoot, KlarHead, klarNavItems } from "./Chrome";
 import { KlarLegal, KlarPageHead, renderKlarSection } from "./sections";
@@ -34,7 +39,11 @@ export const KLAR_MODULE: PackModule = {
     // Vorteile, die schon als Chip im Einstieg stehen, nicht noch einmal.
     const chips = factChips(home).map(c => chipKey(c.label));
     const prepare = (all: Parameters<typeof klarPhotos>[0]) =>
-      withoutChipEchoes(klarPhotos(all, hidden).list, chips, chipKey);
+      withoutChipEchoes(
+        klarPhotos(all, hidden, galleryIsFree(home)).list,
+        chips,
+        chipKey
+      );
     const list = prepare(
       legal ? [] : (sections ?? orderedSections(data)).filter(systemShows)
     );

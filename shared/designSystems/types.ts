@@ -88,8 +88,9 @@ export type DesignSystemDef = {
   scheme?: "light" | "dark";
   /**
    * Freie Galeriefotos (ohne Galerie-Extra) zählen erst nach den Fotos,
-   * die die Seite schon im Einstieg/Über uns zeigt (`withGalleryLimit`
-   * mit `beyondShown`). Ohne Angabe: die ersten drei wie bisher.
+   * die die Seite vor der Galerie schon zeigt (Einstieg, Angebotsfotos,
+   * Über uns davor) — das System kürzt selbst in `claimPhotos`, der
+   * SiteRenderer kürzt nicht vor. Ohne Angabe: die ersten drei wie bisher.
    */
   freeGalleryBeyondShown?: true;
 };

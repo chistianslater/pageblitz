@@ -3,6 +3,7 @@ import type {
   WebsiteDataV2,
 } from "../../../../../../shared/siteContract/types";
 import type { SystemSection } from "./sections";
+import { FREIE_GALERIEBILDER } from "../../engine";
 
 /**
  * Wählt die Angebotsfotos eines Systems (Raster: Bandfotos der Leistungen,
@@ -29,10 +30,13 @@ export type OfferPhotoPick = (
  * Läuft vor Kapitelzählung und Abb.-Nummern, damit Nummern, Navigation
  * und Kapitel lückenlos bleiben. Journal nutzt es nicht.
  *
- * `freeGallery` (ohne Galerie-Extra): Die Galerie trägt nur die freien
- * Fotos (`withGalleryLimit` mit `beyondShown`). Angebotsfotos schöpfen
- * dann nicht aus der Galerie — sonst blieben der Galerie weniger als die
- * freien drei (Bänder, Ablauf, Bildpaar entfallen still).
+ * `freeGallery` (ohne Galerie-Extra, Systeme mit `freeGalleryBeyondShown`):
+ * Die Galerie kommt ungekürzt an (SiteRenderer kürzt für diese Systeme
+ * nicht). Angebotsfotos wählen wie bisher aus den ersten drei
+ * Galeriefotos (unverändert gegenüber dem Vorschnitt); die Galerie zeigt
+ * danach die ersten drei Fotos, die die Seite noch nicht zeigt
+ * (FREIE_GALERIEBILDER) — gezählt nach Einstieg, Angebotsfotos und einem
+ * Über-uns-Foto, das vor der Galerie steht. Jedes Foto einmal je Seite.
  */
 export function claimPhotos<T extends SystemSection>(
   sections: readonly T[],
@@ -47,13 +51,21 @@ export function claimPhotos<T extends SystemSection>(
   if (hero?.imageUrl && !hidden.includes("hero-media"))
     claimed.add(hero.imageUrl);
 
+  // Angebotsfotos wählen wie vor 2026-10-12 aus den ersten drei
+  // Galeriefotos (damals kürzte der SiteRenderer vorher) — sie bleiben, wie
+  // sie waren; die Galerie bekommt danach trotzdem drei freie.
   const offerPool: readonly SystemSection[] = freeGallery
-    ? sections.map(s => (s.type === "gallery" ? { ...s, images: [] } : s))
+    ? sections.map(s =>
+        s.type === "gallery"
+          ? { ...s, images: s.images.slice(0, FREIE_GALERIEBILDER) }
+          : s
+      )
     : sections;
   const offerPhotos = pickOffer?.(offerPool, claimed);
   offerPhotos?.forEach(u => claimed.add(u));
 
   let changed = false;
+  let shownHere = 0;
   const list = sections.flatMap((s): T[] => {
     if (s.type === "about") {
       const a = s as T & SectionOf<"about">;
@@ -70,7 +82,9 @@ export function claimPhotos<T extends SystemSection>(
       const g = s as T & SectionOf<"gallery">;
       const images = g.images.filter(i => {
         if (claimed.has(i.url)) return false;
+        if (freeGallery && shownHere >= FREIE_GALERIEBILDER) return false;
         claimed.add(i.url);
+        shownHere++;
         return true;
       });
       if (images.length === g.images.length) return [s];
