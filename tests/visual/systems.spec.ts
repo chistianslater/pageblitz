@@ -559,3 +559,36 @@ test("Nacht: Bewegung — Foto setzt sich, Kapitel einmal, Foto nie unsichtbar, 
   );
   expect(hidden).toBe(0);
 });
+
+// Feinschliff 2026-10-12 (Abnahme echter Betriebe): Der Hauptknopf liegt im
+// ersten Bildschirm (Foto passt sich am Handy an), die Leiste weicht dann,
+// die Marke im Kopf ist ganz oder nur Monogramm — nie abgeschnitten.
+for (const [w, h] of [
+  [390, 844],
+  [360, 740],
+] as const) {
+  for (const id of ["weinberg", "noir", "pension"]) {
+    test(`Nacht ${id} ${w}×${h}: Hauptknopf im ersten Bildschirm, Leiste weicht, Marke ganz`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: w, height: h });
+      await page.goto(`/demo/system/nacht/${id}?live=1`);
+      await page.evaluate(() => document.fonts.ready);
+      const primary = page.locator(".nc-entry .nc-btn--p");
+      const box = (await primary.boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(h);
+      await expect(page.locator("[data-sys-dock]")).toHaveAttribute(
+        "data-sys-dock-hidden",
+        ""
+      );
+      const brand = await page.evaluate(() => {
+        const b = document.querySelector(".nc-brand")!.getBoundingClientRect();
+        const m = document.querySelector(".nc-mark")!.getBoundingClientRect();
+        if (m.top >= b.bottom - 1) return "monogramm";
+        return m.right <= b.right + 1 ? "ganz" : "abgeschnitten";
+      });
+      expect(brand).not.toBe("abgeschnitten");
+    });
+  }
+}

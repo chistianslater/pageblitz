@@ -8,14 +8,17 @@ import {
   entryFigure,
   entryLede,
   entryName,
+  entryRating,
   entryVariant,
   nachtActions,
   todayLine,
   type Action,
+  type EntryRating,
   type EntryVariant,
   type Figure,
 } from "./facts";
 import { Icon, wayIcon } from "./icons";
+import { entryFit } from "./fit";
 
 /**
  * Nacht-Einstieg nach Systemblatt 9 (Handy) und 14 (Desktop):
@@ -152,13 +155,33 @@ function FigureBlock({ figure, photo }: { figure?: Figure; photo?: string }) {
   );
 }
 
+/** Google-Note als ruhige Zeile: Stern + Note, Anzahl; Vorleser hören den ganzen Satz. */
+function RatingLine({ rating }: { rating: EntryRating }) {
+  return (
+    <p className="nc-erate">
+      <span className="nc-erate-v" aria-hidden="true">
+        <Icon name="star" />
+        {rating.value}
+      </span>
+      <span aria-hidden="true">{rating.text}</span>
+      <span className="nc-sr">{rating.sr}</span>
+    </p>
+  );
+}
+
+/**
+ * Knöpfe des Einstiegs. Jeder Knopf ist eine eigene `data-sys-actions`-
+ * Gruppe: Ist der Hauptknopf sichtbar, weicht die Handy-Leiste, auch wenn
+ * der zweite Knopf noch unter dem ersten Bildschirm liegt.
+ */
 function Buttons({ primary, second }: { primary: Action; second?: Action }) {
   return (
-    <div className="nc-actions" {...SYS_ACTIONS}>
+    <div className="nc-actions">
       <a
         className="nc-btn nc-btn--p"
         href={primary.href}
         {...newTabIfMaps(primary.href)}
+        {...SYS_ACTIONS}
       >
         {primary.label}
         <Icon name={wayIcon(primary.href)} />
@@ -168,6 +191,7 @@ function Buttons({ primary, second }: { primary: Action; second?: Action }) {
           className="nc-btn nc-btn--s"
           href={second.href}
           {...newTabIfMaps(second.href)}
+          {...SYS_ACTIONS}
         >
           <Icon name={wayIcon(second.href)} />
           {second.label}
@@ -175,6 +199,37 @@ function Buttons({ primary, second }: { primary: Action; second?: Action }) {
       )}
     </div>
   );
+}
+
+/**
+ * Foto-Einstieg am Handy: Zeilen von Name, Satz und Fakten als CSS-Zahlen
+ * (`--nc-*-lines`, `--nc-kick`, `--nc-word`). Daraus rechnet entryCss die
+ * Fotohöhe so, dass der Hauptknopf im ersten Bildschirm liegt.
+ */
+function photoFit(
+  data: Parameters<typeof entryName>[0],
+  blueprint: Parameters<typeof entryName>[1],
+  lede: string | undefined,
+  today: ReturnType<typeof todayLine>,
+  rating: EntryRating | undefined
+): { fitStyle: React.CSSProperties; long: boolean } {
+  const { name, mark, kicker, kickerInName } = entryName(data, blueprint);
+  const title = kickerInName ? mark : name;
+  const facts = [
+    ...(today ? [[today.open, today.kitchen].filter(Boolean).join(" ")] : []),
+    ...(rating ? [`★ ${rating.value} ${rating.text}`] : []),
+  ];
+  const fit = entryFit({ title, lede, facts });
+  return {
+    long: fit.long,
+    fitStyle: {
+      "--nc-word": longestWord(title),
+      "--nc-kick": kicker ? 1 : 0,
+      "--nc-name-lines": fit.nameLines,
+      "--nc-lede-lines": fit.ledeLines,
+      "--nc-fact-lines": fit.factLines,
+    } as React.CSSProperties,
+  };
 }
 
 export function NachtEntry({ hero }: { hero: SectionOf<"hero"> }) {
@@ -186,13 +241,19 @@ export function NachtEntry({ hero }: { hero: SectionOf<"hero"> }) {
   const figure = variant === "photo" ? undefined : entryFigure(data);
   // Steht die Ziffer schon für die Zeiten, wiederholt die Heute-Zeile sie nicht.
   const today = figure?.source === "hours" ? undefined : todayLine(hours, now);
+  const rating = entryRating(data, figure);
   const { primary, second } = nachtActions(data, blueprint);
+  const { fitStyle, long } =
+    variant === "photo"
+      ? photoFit(data, blueprint, lede, today, rating)
+      : { fitStyle: undefined, long: false };
 
   return (
     <section
       id={SECTION_ANCHORS.hero}
-      className={`nc-entry nc-entry--${variant}`}
+      className={`nc-entry nc-entry--${variant}${long ? " nc-entry--long" : ""}`}
       aria-labelledby="start-titel"
+      style={fitStyle}
     >
       {variant === "photo" ? (
         <div className="nc-bg">
@@ -222,6 +283,7 @@ export function NachtEntry({ hero }: { hero: SectionOf<"hero"> }) {
             {today.kitchen && <span>{today.kitchen}</span>}
           </p>
         )}
+        {rating && <RatingLine rating={rating} />}
         {primary && <Buttons primary={primary} second={second} />}
       </div>
     </section>

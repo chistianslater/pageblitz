@@ -390,6 +390,31 @@ export function entryFigure(doc: WebsiteDataV2): Figure | undefined {
   };
 }
 
+/**
+ * Ruhige Bewertungszeile im Einstieg („★ 4,9 · 82 Google-Bewertungen") —
+ * nur mit echter Google-Note ab {@link MIN_REVIEWS} Bewertungen und nur,
+ * wenn die Note nicht schon die Kupferziffer ist (Abnahme 2026-10-12: der
+ * Foto-Einstieg zeigt keine Ziffer, die Note fehlte ganz).
+ */
+export type EntryRating = { value: string; text: string; sr: string };
+
+export function entryRating(
+  doc: WebsiteDataV2,
+  figure: Figure | undefined
+): EntryRating | undefined {
+  if (figure?.source === "rating") return undefined;
+  const g = doc.google;
+  if (!g || !(g.rating > 0) || g.rating > 5 || !(g.reviewCount >= MIN_REVIEWS))
+    return undefined;
+  const count = g.reviewCount.toLocaleString("de-DE");
+  const value = formatHeroRating(g.rating);
+  return {
+    value,
+    text: `${count} Google-Bewertungen`,
+    sr: `${value} von 5 Sternen bei ${count} Google-Bewertungen`,
+  };
+}
+
 /* ── Einstieg ─────────────────────────────────────────────────────────── */
 
 /**

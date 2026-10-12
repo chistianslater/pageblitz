@@ -20,6 +20,7 @@ import {
   patchSection,
   render,
   weinbergDoc,
+  withComposition,
   withContact,
   without,
   type Doc,
@@ -327,12 +328,70 @@ describe("Nacht: Einstieg", () => {
     expect(e).toContain(
       '<p class="nc-today"><b>Heute 17:30 bis 23:00</b><span>Küche bis 21:30</span></p>'
     );
+    // Jeder Knopf ist eine eigene Gruppe für dockAutoHide: Ist der
+    // Hauptknopf sichtbar, weicht die Leiste — auch wenn der zweite Knopf
+    // noch unter dem ersten Bildschirm liegt (Abnahme 2026-10-12).
     expect(e).toMatch(
-      /<div class="nc-actions" data-sys-actions=""><a class="nc-btn nc-btn--p" href="https:\/\/tisch\.weinberg\.example\/">Tisch reservieren/
+      /<div class="nc-actions"><a class="nc-btn nc-btn--p" href="https:\/\/tisch\.weinberg\.example\/" data-sys-actions="">Tisch reservieren/
     );
+    expect(e).toMatch(/<a class="nc-btn nc-btn--s" href="tel:0555471820" data-sys-actions="">/);
     expect(e).toContain('fetchPriority="high"');
     // Foto-Einstieg: keine Ziffer
     expect(e).not.toContain("nc-fig");
+  });
+
+  test("Google-Note als ruhige Zeile im Einstieg (ab 20 Bewertungen, nicht doppelt zur Ziffer)", () => {
+    // Foto-Einstieg zeigt keine Ziffer → die Note steht als Zeile (589).
+    const e = entryOf(render(weinbergDoc()));
+    expect(e).toContain(
+      '<p class="nc-erate"><span class="nc-erate-v" aria-hidden="true"><svg class="nc-ic"'
+    );
+    expect(e).toMatch(
+      /4,8<\/span><span aria-hidden="true">312 Google-Bewertungen<\/span><span class="nc-sr">4,8 von 5 Sternen bei 312 Google-Bewertungen<\/span><\/p>/
+    );
+    // Reihenfolge: Heute-Zeile, Note, Knöpfe.
+    expect(e.indexOf("nc-today")).toBeLessThan(e.indexOf("nc-erate"));
+    expect(e.indexOf("nc-erate")).toBeLessThan(e.indexOf("nc-actions"));
+    // Ziffer aus den Zeiten (Salon): Note zusätzlich als Zeile.
+    const noir = entryOf(
+      render({ ...noirDoc(), google: { rating: 4.9, reviewCount: 128 } })
+    );
+    expect(noir).toContain('<p class="nc-fig" aria-hidden="true">21</p>');
+    expect(noir).toContain("128 Google-Bewertungen");
+    // Note ist schon die Kupferziffer (Pension): keine zweite Zeile.
+    expect(entryOf(render(hausDoc()))).not.toContain("nc-erate");
+    // Unter 20 Bewertungen oder ohne Note: nichts.
+    for (const google of [
+      { rating: 4.9, reviewCount: 19 },
+      { rating: 0, reviewCount: 80 },
+      undefined,
+    ])
+      expect(entryOf(render({ ...weinbergDoc(), google }))).not.toContain(
+        "nc-erate"
+      );
+  });
+
+  test("Foto-Einstieg trägt Zeilen für die Fotohöhe; langer Name → Stufe ohne Zuschlag", () => {
+    const short = entryOf(render(weinbergDoc()));
+    expect(short).toMatch(
+      /class="nc-entry nc-entry--photo" aria-labelledby="start-titel" style="--nc-word:8;--nc-kick:1;--nc-name-lines:1;--nc-lede-lines:\d+;--nc-fact-lines:\d+"/
+    );
+    const long = entryOf(
+      render(
+        withComposition(
+          { ...noirDoc(), businessName: "Herren Salon Goldmann Friseur" },
+          "stage"
+        )
+      )
+    );
+    expect(long).toContain('class="nc-entry nc-entry--photo nc-entry--long"');
+    expect(long).toContain("--nc-name-lines:4");
+    // Ziffer-Einstiege (framed/plain) rechnen nicht mit Zeilen.
+    expect(entryOf(render(noirDoc()))).not.toContain("--nc-name-lines");
+    // CSS: lange Namen am Handy in der Anzeigestufe selbst (nicht kleiner).
+    expect(body).toContain(
+      ".pb-nacht .nc-entry--long .nc-display--photo{font-size:min(var(--sys-display-size),14vw,calc(100cqi / var(--nc-word,6) / 0.8))}"
+    );
   });
 
   test("Restaurant ohne Küchen-Angabe: keine Küchenzeit; Ruhetag ohne Küche", () => {
@@ -445,6 +504,26 @@ describe("Nacht: Einstieg", () => {
     const head = headOf(render({ ...noirDoc(), businessName: name }));
     expect(head).toContain(`<a class="nc-brand" href="#start" aria-label="${name}">`);
     expect(head).toContain(`<span class="nc-mark">${name}</span>`);
+  });
+});
+
+describe("Nacht: Einstieg und Leiste ohne JS", () => {
+  test("Text des Einstiegs endet über der Leiste: Rand + engster Knopfabstand + Knopf ≥ Leiste", () => {
+    // Das Foto passt sich so an, dass der Hauptknopf `KEEP` über der
+    // Unterkante endet. Darüber liegen Knopfabstand und Knopf — zusammen
+    // mindestens so hoch wie die Leiste samt Innenabstand und Abstand
+    // zur Kante. Ohne JS (Leiste immer sichtbar) überdeckt sie also höchstens
+    // den Hauptknopf, der denselben Weg anbietet, nie Name, Satz oder Fakten.
+    expect(body).toContain("calc((100svh - var(--sys-space-s) - var(--nc-block))");
+    const keep = tokenPx("var(--sys-space-s)");
+    const tightGap = tokenPx("var(--sys-space-m)");
+    const button = tokenPx("calc(var(--sys-space-l) * 1.4)");
+    const dock =
+      tokenPx("calc(var(--sys-space-l) * 1.3)") +
+      2 * tokenPx("var(--sys-space-xs)") +
+      tokenPx("calc(var(--sys-space-s) * .625)");
+    expect(body).toContain("--nc-act-gap:var(--sys-space-m)");
+    expect(keep + tightGap + button).toBeGreaterThanOrEqual(dock);
   });
 });
 

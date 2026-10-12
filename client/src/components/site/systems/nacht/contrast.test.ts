@@ -8,9 +8,11 @@ import {
 } from "../../../../../../shared/stylePacks/colorMath";
 import { NACHT_CSS } from "./css";
 import {
+  BAND_STOP,
   HEAD_XL,
   HERO_H,
   HERO_SCRIM,
+  LIFT_VAR,
   PHOTO_VEIL,
   SCRIM_BG,
   TEXT_START,
@@ -110,11 +112,16 @@ describe("Nacht-Einstieg photo: Kontrast auf weißer Fotostelle", () => {
     expect(w.r).toBeGreaterThan(150);
   });
 
-  test("Kopfzeile liegt ganz im oberen Band (alle Breiten)", () => {
+  test("Kopfzeile liegt ganz im oberen Band (alle Fotohöhen, auch das kleinere Handy-Foto)", () => {
     const head = HEAD_XL * XL;
-    const band = HERO_SCRIM[1][0];
+    // Das Band reicht bis max(15 %, Kopfzeile) — der Kopf liegt immer darin …
+    expect(SCRIM_BG).toContain(
+      `color-mix(in srgb,var(--sys-paper) 70%,transparent) ${BAND_STOP(HERO_SCRIM[1][0])}`
+    );
+    expect(BAND_STOP(0.15)).toBe("max(15%,calc(var(--sys-space-xl) * 1.1875))");
+    // … und endet vor dem durchsichtigen Teil, auch beim kleinsten Foto.
     for (const n of Object.values(HERO_H))
-      expect(head / (n * XXL), `Fotohöhe ${n}`).toBeLessThanOrEqual(band);
+      expect(head / (n * XXL), `Fotohöhe ${n}`).toBeLessThan(HERO_SCRIM[2][0]);
   });
 
   test("Textkante liegt in der dichten Zone (≥ 0,9 Deckung)", () => {
@@ -148,17 +155,28 @@ describe("Nacht-Einstieg photo: Kontrast auf weißer Fotostelle", () => {
     expect(SCRIM_BG).toContain(
       `color-mix(in srgb,var(--sys-paper) ${PHOTO_VEIL * 100}%,transparent)`
     );
-    for (const [at, a] of HERO_SCRIM) {
+    HERO_SCRIM.forEach(([at, a], i) => {
       const color =
         a >= 1
           ? "var(--sys-paper)"
           : a <= 0
             ? "transparent"
             : `color-mix(in srgb,var(--sys-paper) ${Math.round(a * 100)}%,transparent)`;
-      expect(SCRIM_BG).toContain(`${color} ${Math.round(at * 1000) / 10}%`);
-    }
+      expect(SCRIM_BG).toContain(
+        `${color} ${i === 1 ? BAND_STOP(at) : `${Math.round(at * 1000) / 10}%`}`
+      );
+    });
+    // Handy: Fotohöhe zwischen min und base, Text ab TEXT_START.base.
+    expect(NACHT_CSS).toContain(
+      `--nc-hero-h:clamp(calc(var(--sys-space-2xl) * ${HERO_H.min}),calc((100svh - var(--sys-space-s) - var(--nc-block)) / ${TEXT_START.base}),calc(var(--sys-space-2xl) * ${HERO_H.base}))`
+    );
+    expect(LIFT_VAR).toBe(
+      `calc(var(--nc-hero-h) * -${Math.round((1 - TEXT_START.base) * 1000) / 1000})`
+    );
+    expect(NACHT_CSS).toContain(
+      `.pb-nacht .nc-entry--photo .nc-entry-in{margin-top:${LIFT_VAR}}`
+    );
     for (const [n, start] of [
-      [HERO_H.base, TEXT_START.base],
       [HERO_H.wide, TEXT_START.wide],
       [HERO_H.nav, TEXT_START.nav],
     ])
