@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakat Systemblatt</title>
+<link rel="preload" href="fonts/league-gothic-latin-wdth.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/hanken-grotesk-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* ── Schriften (self-hosted, OFL) ─────────────────────────────── */
+@font-face{font-family:"League Gothic";src:url(fonts/league-gothic-latin-wdth.woff2) format("woff2");font-weight:400;font-stretch:75% 100%;font-style:normal;font-display:swap}
+@font-face{font-family:"Hanken Grotesk";src:url(fonts/hanken-grotesk-latin-wght.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --fd:"League Gothic","Oswald","Arial Narrow",Impact,sans-serif;
+  --ft:"Hanken Grotesk","Helvetica Neue",Arial,system-ui,sans-serif;
+  --paper:#f4f1ed;--ink:#16141c;--muted:#58546a;--rule:#d8d2cf;--accent:#b8282e;--signal:#e8493a;--deep:#1c1a44;--onDeep:#f4f1ed;
+  --rosa:#f3b3aa;--flieder:#a8affa;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#cfc9c4;color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 0}
+.sheet{width:1520px;margin:0 auto;background:var(--paper)}
+[data-shot]{padding:0 var(--pad)}
+.blk{padding:64px 0 76px;border-top:2px solid var(--ink)}
+.blk.first{border-top:0}
+.lb{display:flex;gap:.8em;align-items:center;font:600 14px/1.3 var(--ft);color:var(--muted)}
+.lb b{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 8px;border-radius:999px;background:var(--ink);color:var(--paper);font:400 20px/1 var(--fd);letter-spacing:.02em}
+.bh{font:400 76px/.92 var(--fd);font-stretch:90%;text-transform:uppercase;letter-spacing:.005em;margin:18px 0 14px;max-width:22ch}
+.bp{max-width:46rem;font-size:18px;line-height:1.55}
+.bp+.bp{margin-top:10px}
+.note{font-size:14px;color:var(--muted);line-height:1.45}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:rgba(22,20,28,.07);padding:1px 5px;border-radius:4px}
+table.t{width:100%;border-collapse:collapse;font-size:14.5px;line-height:1.4;margin-top:26px}
+table.t th{font:700 13px var(--ft);text-align:left;padding:10px 16px 10px 0;border-bottom:2px solid var(--ink)}
+table.t td{padding:11px 16px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:700;white-space:nowrap}
+table.t td.ar{color:var(--accent);font-weight:700;width:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+.cap{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.4}
+
+/* Kopf */
+.top{padding:40px 0 60px;position:relative}
+.top .w{font:400 290px/.82 var(--fd);font-stretch:84%;text-transform:uppercase;letter-spacing:.005em;margin:0 0 30px -.02em}
+.top .w span{display:block}
+.top .w span:nth-child(2){padding-left:1.4em;color:var(--accent)}
+.top .row{display:grid;grid-template-columns:1fr 1.3fr 1.1fr;gap:40px;align-items:start}
+.top .m{font:600 30px/1.15 var(--ft);letter-spacing:-.015em}
+.top .r{display:grid;gap:10px}
+.top .r p{font-size:15px;line-height:1.45;color:var(--muted)}
+.top .r p b{color:var(--ink)}
+.top .stk-a{position:absolute;right:40px;top:120px}
+.vs3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.vs3>div{padding:22px 22px 18px;border-radius:24px;background:#fff}
+.vs3 h3{font:400 34px/1 var(--fd);text-transform:uppercase;margin-bottom:8px}
+.vs3 p{font-size:15px;color:var(--muted)}
+.vs3 .me{background:var(--ink);color:var(--paper)}
+.vs3 .me p{color:#cfcbe0}
+
+/* Schriftmuster */
+.fonts2{display:grid;grid-template-columns:1.2fr 1fr;gap:0;margin-top:30px;border-top:1px solid var(--rule)}
+.fonts2>div{padding:26px 30px 0 0}
+.fonts2>div+div{padding-left:30px;border-left:1px solid var(--rule)}
+.nm{font:700 13px var(--ft);color:var(--muted);display:flex;justify-content:space-between;gap:12px}
+.gld{font:400 210px/.84 var(--fd);font-stretch:88%;text-transform:uppercase;margin:64px 0 10px}
+.glt{font:500 150px/.9 var(--ft);letter-spacing:-.04em;margin:18px 0 10px}
+.abc{font-size:22px;line-height:1.3;margin:14px 0}
+.abc.d{font:400 34px/1.08 var(--fd);text-transform:none}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding:8px 0}
+.wts div span:first-child{font-size:28px;line-height:1}
+.cmp{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
+.cmp>div{background:#fff;border-radius:20px;padding:16px 18px 18px}
+.cmp .v{font-size:58px;line-height:.9;text-transform:uppercase;margin:12px 0 8px}
+.cmp .s{font-size:22px;line-height:1;text-transform:uppercase}
+.cmp p{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.4}
+.cmp p.v,.cmp p.s{color:var(--ink);margin-top:12px}
+.cmp .win{outline:3px solid var(--ink)}
+
+/* Skala */
+.step{display:grid;grid-template-columns:190px 400px 1fr;gap:30px;border-top:1px solid var(--rule);padding:22px 0;align-items:start}
+.step .k{display:block;font:400 30px/1 var(--fd);text-transform:uppercase;margin-bottom:6px}
+.step .k i{font:700 11px var(--ft);color:var(--accent);font-style:normal;margin-left:6px;vertical-align:middle}
+.step .s375{width:400px;border-left:1px dashed #b9b0aa;border-right:1px dashed #b9b0aa;padding:0 12px 8px;overflow:hidden}
+.step .s1440{overflow:hidden}
+.step .px{display:block;font:600 11.5px var(--ft);color:var(--muted);margin-bottom:8px}
+.step .spec{font-size:13px;color:var(--muted);line-height:1.45}
+
+/* Abstände, Raster */
+.sp{display:grid;grid-template-columns:110px 150px 1fr;gap:18px;align-items:center;padding:8px 0;border-top:1px solid var(--rule)}
+.sp .bar{height:18px;background:var(--accent);border-radius:999px}
+.sp b{font:400 26px/1 var(--fd);text-transform:uppercase}
+.grid12{position:relative;height:300px;background:#fff;border-radius:22px;overflow:hidden;margin-top:16px}
+.grid12 .cols{position:absolute;inset:0 40px;display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.grid12 .cols div{background:rgba(232,73,58,.09)}
+.grid4{position:relative;width:390px;height:300px;background:#fff;border-radius:22px;overflow:hidden;margin-top:16px}
+.grid4 .cols{position:absolute;inset:0 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid4 .cols div{background:rgba(232,73,58,.09)}
+
+/* Paletten */
+.pal{border-radius:28px;overflow:hidden;background:#fff}
+.pal .hd{padding:22px 22px 18px}
+.pal .hd h3{font:400 54px/.9 var(--fd);text-transform:uppercase}
+.pal .hd p{font-size:14px;color:var(--muted);margin-top:6px}
+.pal .fl{display:grid;grid-template-columns:repeat(3,1fr)}
+.pal .fl>div{padding:16px 14px 18px;min-height:150px}
+.pal .fl b{display:block;font:400 32px/.95 var(--fd);text-transform:uppercase}
+.pal .fl span{display:block;font-size:12px;margin-top:6px;line-height:1.35}
+.pal .base{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule)}
+.pal .base>div{background:#fff;padding:12px 12px 14px;font-size:12px;line-height:1.35}
+.pal .base i{display:block;width:100%;height:34px;border-radius:999px;margin-bottom:8px;border:1px solid rgba(0,0,0,.08)}
+.pal .ok{font-weight:700}
+.rhy{display:flex;gap:6px;margin-top:22px;align-items:flex-end}
+.rhy div{flex:1;border-radius:14px 14px 0 0;font:600 11px var(--ft);padding:8px 8px;min-height:64px;display:flex;align-items:flex-end}
+
+/* Formen, Sticker, Laufband */
+.shapes{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;align-items:end;margin-top:26px}
+.shapes figure{display:grid;gap:10px}
+.shapes figcaption{font-size:13px;line-height:1.4;color:var(--muted)}
+.shapes figcaption b{display:block;color:var(--ink);font:400 26px/1 var(--fd);text-transform:uppercase}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:12px 40px;margin-top:28px}
+.rules p{font-size:15px;line-height:1.45;padding-left:22px;position:relative}
+.rules p:before{content:"";position:absolute;left:0;top:.42em;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.rules p.no:before{background:transparent;border:2px solid var(--muted)}
+.stkrow{display:flex;gap:34px;align-items:center;flex-wrap:wrap;margin-top:26px}
+.stkcell{display:grid;gap:10px;justify-items:center;text-align:center;font-size:13px;color:var(--muted);width:170px}
+.mot{display:grid;grid-template-columns:200px 1fr 1fr;gap:0;border-top:1px solid var(--rule);margin-top:26px}
+.mot>div{padding:12px 16px 12px 0;border-bottom:1px solid var(--rule);font-size:14px;line-height:1.45}
+.mot>div:nth-child(3n+1){font-weight:700}
+.mot .h{font-weight:700;border-bottom:2px solid var(--ink)}
+
+/* Handy- und Desktop-Rahmen */
+.phone{position:relative;width:390px;overflow:hidden;contain:paint;background:#fff;outline:1px solid #a9a19b;flex:none;border-radius:6px}
+.phones{display:flex;gap:30px;margin-top:28px;align-items:flex-start}
+.colh{font:600 12px var(--ft);color:var(--muted);margin-bottom:8px}
+.fold{position:absolute;left:0;right:0;border-top:2px dashed var(--signal);z-index:20;pointer-events:none}
+.fold span{position:absolute;right:6px;top:-22px;background:var(--signal);color:var(--ink);font:700 11px var(--ft);padding:2px 8px;border-radius:999px}
+.desk{width:1408px;overflow:hidden;contain:paint;background:#fff;outline:1px solid #a9a19b;border-radius:8px}
+.comps{display:grid;grid-template-columns:repeat(3,390px);gap:34px 40px;margin-top:28px;align-items:start}
+.comp>h4{font:400 30px/1 var(--fd);text-transform:uppercase;margin-bottom:6px}
+.comp>p{font-size:13.5px;color:var(--muted);line-height:1.4;margin-bottom:12px;min-height:56px}
+pre.ts{background:var(--ink);color:#ecebf3;font:12.5px/1.55 ui-monospace,Menlo,monospace;padding:26px 30px;border-radius:24px;margin-top:24px;white-space:pre;overflow:hidden}
+pre.ts .c{color:#9aa0d6}
+.dev{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:22px}
+.dev>div{background:#fff;border-radius:22px;padding:20px 22px}
+.dev h4{font:400 32px/1 var(--fd);text-transform:uppercase;margin-bottom:8px}
+.dev p{font-size:14.5px;line-height:1.5}
+.dev p+p{margin-top:8px}
+
+/* ════════════════════════════════════════════════════════════════
+   PLAKAT · System-CSS (alles unter .ws; Größen kommen als px aus
+   den Tokens für die Rahmenbreite, siehe tokVars())
+   ════════════════════════════════════════════════════════════════ */
+.ws{--ease:cubic-bezier(.23,1,.32,1);background:var(--p-paper);color:var(--p-ink);font:400 var(--body-size)/1.6 var(--ft);position:relative;overflow:hidden;font-variant-numeric:tabular-nums}
+.ws .t-display{font-family:var(--fd);font-size:var(--display-size);line-height:.9;letter-spacing:.005em;text-transform:uppercase;font-stretch:88%;font-weight:400}
+.ws .t-figure{font-family:var(--fd);font-size:var(--figure-size);line-height:.8;text-transform:uppercase;font-stretch:82%}
+.ws .t-h2{font-family:var(--fd);font-size:var(--h2-size);line-height:.92;letter-spacing:.005em;text-transform:uppercase;font-stretch:92%;font-weight:400}
+.ws .t-h3{font:650 var(--h3-size)/1.15 var(--ft);letter-spacing:-.01em}
+.ws .t-lede{font:500 var(--lede-size)/1.42 var(--ft);letter-spacing:-.005em}
+.ws .t-small{font:500 var(--small-size)/1.45 var(--ft)}
+.ws .t-kicker{font:600 var(--kicker-size)/1.3 var(--ft)}
+.ws .t-link{font:650 var(--link-size)/1.3 var(--ft)}
+.ws .t-mark{font-family:var(--fd);font-size:var(--mark-size);line-height:1;letter-spacing:.02em;text-transform:uppercase}
+.ws .t-data{font:650 var(--data-size)/1.3 var(--ft);letter-spacing:.01em}
+.ws .mu{color:var(--p-muted)}
+.ws .ac{color:var(--p-accent)}
+.ws .wrap{padding-left:var(--gutter);padding-right:var(--gutter)}
+.ws .sec{padding-top:var(--section);padding-bottom:var(--section)}
+.ws .fld{background:var(--f-bg);color:var(--f-ink)}
+.ws .fld .mu{color:var(--f-muted)}
+.ws .deep{background:var(--p-deep);color:var(--p-onDeep)}
+.ws .deep .mu{color:var(--p-deepMuted)}
+.ws .h2dot{color:var(--p-accent)}
+.ws .fld .h2dot,.ws .deep .h2dot{color:inherit}
+
+/* Kopf */
+.ws .hdr{display:flex;justify-content:space-between;align-items:center;height:64px;padding:0 var(--gutter);position:relative;z-index:3}
+.ws .hdr nav{display:flex;gap:28px;align-items:center}
+.ws .hdr nav a{font:600 15px/1 var(--ft)}
+.ws .menu{display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 16px 0 18px;border-radius:999px;background:var(--p-ink);color:var(--p-paper);font:650 14px/1 var(--ft)}
+.ws .menu i{display:grid;gap:4px}
+.ws .menu i:before,.ws .menu i:after{content:"";display:block;width:16px;height:2px;border-radius:2px;background:currentColor}
+
+/* Knöpfe */
+.ws .bts{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ws .bt{display:inline-flex;align-items:center;gap:12px;height:56px;padding:0 8px 0 24px;border-radius:999px;background:var(--p-ink);color:var(--p-paper);font:650 16px/1 var(--ft);white-space:nowrap;transition:transform 160ms var(--ease)}
+.ws .bt i{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--p-signal);color:var(--p-onSignal);font:700 18px/1 var(--ft);font-style:normal}
+.ws .bt:active{transform:scale(.97)}
+.ws .bt2{display:inline-flex;align-items:center;height:56px;padding:0 22px;border-radius:999px;box-shadow:inset 0 0 0 2px currentColor;font:650 16px/1 var(--ft);white-space:nowrap}
+.ws .ul{text-decoration:underline;text-underline-offset:.22em;text-decoration-thickness:2px}
+
+/* Status-Zeile */
+.ws .stt{display:inline-flex;align-items:center;gap:9px}
+.ws .stt:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--p-open)}
+.ws .stt.closed:before{background:var(--p-muted)}
+
+/* Formen */
+.ws .shp{position:relative;overflow:hidden;background:var(--shp-bg,var(--p-rule));isolation:isolate}
+.ws .shp img{display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.12) brightness(1.04);mix-blend-mode:multiply}
+.ws .arch{border-radius:999px 999px 0 0}
+.ws .circ{border-radius:50%;aspect-ratio:1}
+.ws .pill{border-radius:999px}
+
+/* Sticker */
+.ws .stk{position:absolute;z-index:4;width:var(--stk-size);aspect-ratio:1;border-radius:50%;background:var(--p-signal);color:var(--p-onSignal);display:grid;place-items:center;text-align:center;transform:rotate(-9deg);box-shadow:0 10px 24px -14px rgba(20,10,10,.55)}
+.ws .stk:before{content:"";position:absolute;inset:6px;border-radius:50%;border:1.5px dashed currentColor;opacity:.55}
+.ws .stk b{display:block;font:400 calc(var(--stk-size)*.34)/.86 var(--fd);text-transform:uppercase;font-stretch:88%}
+.ws .stk span{display:block;font:700 calc(var(--stk-size)*.105)/1.15 var(--ft);margin-top:3px;max-width:78%;margin-inline:auto}
+.ws .stk.inv{background:var(--p-deep);color:var(--p-onDeep)}
+
+/* Laufband */
+.ws .tick{background:var(--p-deep);color:var(--p-onDeep);overflow:hidden;white-space:nowrap;padding:16px 0}
+.ws .tick .tr{display:inline-flex;align-items:center;gap:22px;padding-left:var(--gutter)}
+.ws .tick .tr span{font-family:var(--fd);font-size:calc(var(--h2-size)*.72);line-height:1;text-transform:uppercase;font-stretch:92%}
+.ws .tick .tr i{width:14px;height:14px;border-radius:50%;background:var(--p-signal);flex:none}
+@media (prefers-reduced-motion:no-preference){.ws .tick.run .tr{animation:tick 38s linear infinite}}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* Einstieg */
+.ws .hero{padding:calc(var(--s-m)) var(--gutter) var(--s-xl);position:relative}
+.ws .hero .t-display span{display:block}
+.ws .hero .t-display span.in{padding-left:var(--indent,1.6em)}
+.ws .hero .lede{margin-top:var(--s-m);max-width:30ch}
+.ws .hero .bts{margin-top:var(--s-l)}
+.ws .facts{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px;margin-top:var(--s-l);padding-top:var(--s-m);border-top:1.5px solid currentColor}
+.ws .facts p{font:600 var(--small-size)/1.35 var(--ft)}
+.ws .facts p span{display:block;font-weight:500;opacity:.78}
+
+/* Liste mit Preis (Leistungen, Karte, Preise) */
+.ws .rows{margin-top:var(--s-l)}
+.ws .row{display:grid;grid-template-columns:1fr auto;column-gap:16px;align-items:end;padding:14px 0 14px;border-top:1.5px solid currentColor}
+.ws .row:last-child{border-bottom:1.5px solid currentColor}
+.ws .row .nm2{font-family:var(--fd);font-size:var(--h2-size);line-height:.92;text-transform:uppercase;font-stretch:92%}
+.ws .row .pr{font-family:var(--fd);font-size:calc(var(--h2-size)*.78);line-height:.92;font-stretch:92%;white-space:nowrap}
+.ws .row p{grid-column:1/-1;margin-top:6px}
+.ws .mrow{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:14px 0;border-top:1px solid var(--line,var(--p-rule))}
+.ws .mrow .pr{font-family:var(--fd);font-size:var(--mark-size);line-height:1;font-stretch:96%;white-space:nowrap;align-self:start}
+.ws .mrow p{grid-column:1}
+.ws .cath{display:flex;align-items:center;gap:12px;margin-top:var(--s-xl);margin-bottom:var(--s-xs)}
+.ws .cath:first-child{margin-top:var(--s-l)}
+.ws .cath i{width:30px;height:30px;border-radius:50%;background:var(--c);flex:none}
+
+/* 01·02·03 */
+.ws .steps li{list-style:none;display:grid;grid-template-columns:auto 1fr;column-gap:var(--s-m);align-items:end;padding-top:var(--s-l)}
+.ws .steps .t-figure{color:var(--p-signal)}
+.ws .fld .steps .t-figure{color:var(--f-ink)}
+.ws .steps h3{padding-bottom:.35em}
+.ws .steps p{grid-column:1/-1;margin-top:var(--s-xs);max-width:34ch}
+
+/* Team */
+.ws .team{display:grid;align-items:start;grid-template-columns:repeat(3,1fr);gap:var(--s-m) var(--s-s);margin-top:var(--s-l)}
+.ws .team figure{display:grid;gap:10px}
+.ws .team .t-mark{margin-top:4px}
+.ws .mono{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;font-family:var(--fd);font-size:calc(var(--h2-size)*1.1);line-height:1;color:var(--p-ink)}
+
+/* Galerie */
+.ws .gal{display:grid;grid-template-columns:1.1fr 1fr;gap:var(--s-s);margin-top:var(--s-l);align-items:end}
+.ws .gal .a{aspect-ratio:1/1.9}
+.ws .gal .b{aspect-ratio:4/5}
+.ws .gal .c{grid-column:1/-1;aspect-ratio:2.4/1}
+
+/* Stimme */
+.ws .qt{position:relative}
+.ws .qt .t-h2{margin-top:var(--s-m)}
+.ws .who{margin-top:var(--s-l);display:flex;gap:12px;align-items:center}
+.ws .who b{display:block;font:650 var(--small-size)/1.3 var(--ft)}
+
+/* Fragen */
+.ws .fq{margin-top:var(--s-l)}
+.ws .fq-i{border-top:1.5px solid currentColor;padding:16px 0}
+.ws .fq-i:last-child{border-bottom:1.5px solid currentColor}
+.ws .fq-q{display:flex;justify-content:space-between;gap:16px;align-items:center}
+.ws .fq-q i{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;box-shadow:inset 0 0 0 2px currentColor;font:600 20px/1 var(--ft);font-style:normal}
+.ws .fq-i.op .fq-q i{background:var(--p-ink);color:var(--p-paper);box-shadow:none}
+.ws .fq-i p{margin-top:10px;max-width:40ch}
+
+/* Zeiten & Kontakt */
+.ws .hrs{margin-top:var(--s-l)}
+.ws .hrs li{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-radius:999px;font:600 var(--body-size)/1.2 var(--ft)}
+.ws .hrs li.on{background:var(--p-ink);color:var(--p-paper)}
+.ws .hrs li.on em{font-style:normal;font:700 12px/1 var(--ft);background:var(--p-signal);color:var(--p-onSignal);padding:5px 9px;border-radius:999px;margin-left:10px}
+.ws .ct{margin-top:var(--s-l);display:grid;gap:6px}
+
+/* Stundenplan */
+.ws .tabs{display:flex;gap:6px;margin-top:var(--s-l);overflow:hidden}
+.ws .tabs span{flex:1;display:grid;place-items:center;height:46px;border-radius:999px;box-shadow:inset 0 0 0 1.5px currentColor;font:650 15px/1 var(--ft)}
+.ws .tabs span.on{background:var(--p-ink);color:var(--p-paper);box-shadow:none}
+.ws .tabs span.td{position:relative}
+.ws .slot{display:grid;grid-template-columns:76px 1fr auto;gap:2px 14px;padding:16px 0;border-top:1.5px solid currentColor;align-items:baseline}
+.ws .slot:last-child{border-bottom:1.5px solid currentColor}
+.ws .slot .tm{font-family:var(--fd);font-size:var(--mark-size);line-height:1;font-stretch:96%}
+.ws .slot .pl{font:700 12px/1 var(--ft);padding:6px 10px;border-radius:999px;background:var(--c);color:var(--p-ink);white-space:nowrap}
+.ws .slot p{grid-column:2/-1}
+
+/* Fuß */
+.ws .ftr{padding:var(--section) var(--gutter) var(--s-l)}
+.ws .ftr .big{font-family:var(--fd);font-size:calc(var(--figure-size)*1.02);line-height:.8;text-transform:uppercase;font-stretch:80%;margin-top:var(--s-xl);white-space:nowrap;width:max-content}
+.ws .ftr .cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-m)}
+.ws .ftr .cols p{font:500 var(--small-size)/1.6 var(--ft)}
+.ws .ftr .cols b{display:block;font-weight:700;margin-bottom:4px}
+.ws .ftr .lg{display:flex;gap:18px;margin-top:var(--s-l);font:500 13px/1.3 var(--ft)}
+
+/* Dock */
+.ws .dock{position:absolute;left:12px;right:12px;z-index:10;display:grid;grid-template-columns:1fr 1.25fr;gap:8px;padding:8px;border-radius:999px;background:var(--p-ink);box-shadow:0 16px 30px -18px rgba(0,0,0,.6)}
+.ws .dock span{display:grid;place-items:center;height:48px;border-radius:999px;font:650 15px/1 var(--ft);color:var(--p-paper)}
+.ws .dock span+span{background:var(--p-signal);color:var(--p-onSignal)}
+
+/* Desktop-Varianten (Rahmen ≥ 1000 px) */
+.ws.dt .hero{display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px;padding-top:var(--s-l);padding-bottom:var(--s-xl)}
+.ws.dt .hero .tx{grid-column:1/8}
+.ws.dt .hero .im{grid-column:8/13;position:relative}
+.ws.dt .facts{grid-template-columns:repeat(4,1fr);grid-column:1/-1}
+.ws.dt .rows{display:grid;grid-template-columns:1fr 1fr;column-gap:40px}
+.ws.dt .row:nth-last-child(2){border-bottom:1.5px solid currentColor}
+</style>
+</head>
+<body>
+<main class="sheet">
+
+<div data-shot="1">
+<header class="top">
+  <div class="w"><span>Plakat</span><span>System.</span></div>
+  <div class="stk-a" id="stkA"></div>
+  <div class="row">
+    <p class="m">Laut, fröhlich, selbstbewusst. Wenige Wörter, riesig gesetzt. Farbflächen im Wechsel, Fotos in Formen, ein Sticker pro Bildschirm.</p>
+    <div class="r">
+      <p><b>Anker:</b> Arcadia Dance Collective (Framer-Vorlage „Relevé“, relevedance.framer.website). Gerüst, Rhythmus und Typo-Rollen nachgebaut, Grund und Bilder bewusst verändert.</p>
+      <p><b>Haupt für:</b> Barbier, Imbiss, Kurse/Fitness.</p>
+    </div>
+    <div class="r">
+      <p><b>Alternative für:</b> Friseur/Kosmetik, Café/Bäckerei, Handwerk, Handel, Auto, Kreativ, Sofort-Dienst.</p>
+      <p><b>Stand:</b> Systemblatt zur Abnahme, 12.10.2026. Alle Beispieldaten erfunden (555-Nummern, .example).</p>
+    </div>
+  </div>
+  <div class="vs3">
+    <div><h3>Nicht Werkstoff</h3><p>Kein Zettel, keine Slab, kein Papier-Look, kein DM Mono. Zeiten und Preise stehen in der Grotesk oder groß in der Display-Schrift.</p></div>
+    <div><h3>Nicht Raster</h3><p>Kein Schwarzweiß-Spaltenraster, keine Wortmarke als Swiss-Block. Plakat lebt von Farbe, Form und Schwung im Satz.</p></div>
+    <div class="me"><h3>Nicht Journal</h3><p>Keine Serife, keine Bildunterschriften, kein Magazin. Eine schmale Display-Schrift spricht, die Grotesk erklärt.</p></div>
+  </div>
+</header>
+
+<section class="blk">
+  <p class="lb"><b>01</b><span>Anker</span></p>
+  <h2 class="bh">Arcadia gemessen, Plakat abgeleitet</h2>
+  <p class="bp">Gemessen im eingebauten Browser per <code>getComputedStyle</code> bei 1440 und 390 px (12.10.2026). Links Arcadia, rechts was Plakat daraus macht.</p>
+  <table class="t" id="ankT"><thead><tr><th>Rolle</th><th>Arcadia gemessen</th><th></th><th>Plakat</th></tr></thead><tbody></tbody></table>
+</section>
+</div>
+
+<div data-shot="2">
+<section class="blk">
+  <p class="lb"><b>02</b><span>Schriften</span></p>
+  <h2 class="bh">League Gothic ruft, Hanken Grotesk erklärt</h2>
+  <p class="bp">Six Caps trägt Arcadia, ist aber für Handys zu dünn: Bei 22 px sind die Striche kaum 1,5 px breit, und ein großes ß fehlt. League Gothic hat dieselbe Plakat-Haltung (schmal, hoch, Versalien), trägt aber das Dreifache an Strich und eine Breitenachse von 75 bis 100. So wird sie riesig schmal und klein lesbar. Hanken Grotesk ist ruhig, rund und neutral genug, um neben der lauten Display-Schrift nicht zu konkurrieren.</p>
+  <div class="cmp" id="cmp"></div>
+  <div class="fonts2">
+    <div>
+      <p class="nm"><span>Display · League Gothic · OFL · wdth 75–100</span><span>league-gothic-latin-wdth.woff2 · 17,1 kB · vorgeladen</span></p>
+      <p class="gld">ẞ Äöü 4,9</p>
+      <p class="abc d">ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜẞ 0123456789 € & „“ : , .</p>
+      <div class="wts">
+        <div><span style="font:400 30px/1 var(--fd);font-stretch:100%;text-transform:uppercase">Kante Barbershop</span><span class="note">wdth 100 · mark, h3-Zahlen</span></div>
+        <div><span style="font:400 30px/1 var(--fd);font-stretch:92%;text-transform:uppercase">Kante Barbershop</span><span class="note">wdth 92 · h2, Zeilen, Laufband</span></div>
+        <div><span style="font:400 30px/1 var(--fd);font-stretch:88%;text-transform:uppercase">Kante Barbershop</span><span class="note">wdth 88 · display</span></div>
+        <div><span style="font:400 30px/1 var(--fd);font-stretch:80%;text-transform:uppercase">Kante Barbershop</span><span class="note">wdth 80–82 · figure, Fuß-Name</span></div>
+      </div>
+    </div>
+    <div>
+      <p class="nm"><span>Text · Hanken Grotesk · OFL · wght 100–900</span><span>hanken-grotesk-latin-wght.woff2 · 36,3 kB · vorgeladen</span></p>
+      <p class="glt">Aa ßü</p>
+      <p class="abc">Herrenschnitte und Bartpflege an der Hafenstraße. Ohne Schnickschnack, mit heißem Tuch. Größe, Grüße, Öl, Übung.</p>
+      <div class="wts">
+        <div><span style="font-weight:500">Fade, Bart, fertig.</span><span class="note">500 · lede, small</span></div>
+        <div><span style="font-weight:600">Heute bis 19 Uhr offen</span><span class="note">600 · kicker</span></div>
+        <div><span style="font-weight:650">Termin buchen</span><span class="note">650 · Knöpfe, h3, data</span></div>
+        <div><span style="font-weight:400">Mo–Fr 10–19 Uhr · 12,50 €</span><span class="note">400 · body, Ziffern tabellarisch</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:18px">Beide Dateien selbst aus den Google-Fonts-Quellen geschnitten (pyftsubset): Latin plus U+1E9E (großes ẞ), € und typografische Anführungszeichen. Zusammen 53,4 kB, beide vorgeladen (Grenze 2). Für Versalsatz ersetzt der Renderer ß durch ẞ, sonst macht CSS daraus „SS“. Zeilenabstand der Display-Schrift nie unter .88, sonst stoßen Umlautpunkte an die Zeile darüber.</p>
+</section>
+
+</div>
+<div data-shot="2b">
+<section class="blk">
+  <p class="lb"><b>03</b><span>Schriftskala</span></p>
+  <h2 class="bh">Elf Stufen, gesetzt bei 375 und 1440</h2>
+  <p class="bp">Neun Kernstufen plus <code>figure</code> (Riesenziffern, Fuß-Name) und <code>data</code> (Zeiten, Preise in Listen, in der Grotesk statt Mono). Display-Stufen tragen zusätzlich eine Breite (<code>stretch</code>, Vorschlag unten).</p>
+  <div id="scale"></div>
+</section>
+</div>
+
+<div data-shot="3">
+<section class="blk">
+  <p class="lb"><b>04</b><span>Abstände</span></p>
+  <h2 class="bh">Weit zwischen den Feldern, eng im Satz</h2>
+  <div class="g2" style="margin-top:22px">
+    <div id="space"></div>
+    <div>
+      <p class="bp">Arcadia setzt 120 px über und 110 px unter jedem Abschnitt (Handy 84/72), Rand 40/20 px. Plakat übernimmt das fast genau: <code>section</code> 81 → 120 px, <code>gutter</code> 20 → 40 px.</p>
+      <p class="bp">Farbflächen brauchen diese Luft, weil die Feldkante selbst die Trennung ist. Keine Linien zwischen Abschnitten, keine Karten. Innerhalb eines Feldes gilt der enge Takt: Zeile 14 px, Liste zu Kopf 40 px.</p>
+      <p class="bp">Die Display-Schrift steht immer bündig an der Satzkante (−0,02em optischer Ausgleich), eingerückte Zeilen springen um 1,6em (Arcadia-Staffel).</p>
+    </div>
+  </div>
+</section>
+
+<section class="blk">
+  <p class="lb"><b>05</b><span>Raster</span></p>
+  <h2 class="bh">Handy eine Spalte, Desktop zwölf</h2>
+  <div style="display:grid;grid-template-columns:390px 1fr;gap:40px">
+    <div><div class="grid4"><div class="cols"><div></div><div></div><div></div><div></div></div></div><p class="cap">390: Rand 20, vier Hilfsspalten, Lücke 12. Gesetzt wird fast alles einspaltig über 350 px. Zweispaltig nur Infozeile, Team, Galerie.</p></div>
+    <div><div class="grid12"><div class="cols"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div><p class="cap">1440: Rand 40, zwölf Spalten, Lücke 24, max. 90rem. Einstieg 7 + 5 (Schrift, Bogen). Listen zweispaltig, Riesenziffern ab Spalte 7 (Arcadia: 01 bei x = 792).</p></div>
+  </div>
+</section>
+
+<section class="blk">
+  <p class="lb"><b>06</b><span>Farbe</span></p>
+  <h2 class="bh">Drei Paletten, je drei Farbfelder</h2>
+  <p class="bp">Heller Grund statt Schwarz. Jede Palette bringt drei Felder mit: zwei helle Farben aus der Arcadia-Familie (Rosa, Flieder, Bernstein, Minze, Koralle) und ein tiefes Feld. Schrift auf hellen Feldern ist immer die Tinte der Palette. Werte live gerechnet (WCAG).</p>
+  <div class="g3" style="margin-top:26px" id="pals"></div>
+  <p class="bp" style="margin-top:28px"><b>Feld-Rhythmus</b> (am Beispiel Kante): Grund und Feld wechseln sich ab, nie zwei gleiche Felder hintereinander, das tiefe Feld höchstens dreimal (Laufband, Stimme, Fuß). Der Einstieg steht auf Grund oder einem hellen Feld, nie auf dem tiefen.</p>
+  <div class="rhy" id="rhy"></div>
+</section>
+</div>
+
+<div data-shot="4">
+<section class="blk">
+  <p class="lb"><b>07</b><span>Bild und Form</span></p>
+  <h2 class="bh">Schwarzweiß, in Form geschnitten</h2>
+  <p class="bp">Jedes Foto wird Graustufe und multipliziert sich auf die Farbe seiner Form. So entsteht ein Duoton ohne Bildbearbeitung, und schwache Handyfotos sehen nach Absicht aus. Drei Formen, je Bildschirm höchstens zwei.</p>
+  <div class="shapes" id="shapes"></div>
+  <div class="rules">
+    <p><b>Bogen</b> für das eine Hauptbild (Einstieg, Ablauf). Hochformat 4:5, oben voll rund.</p>
+    <p><b>Kreis</b> für Menschen und Gerichte. Gesicht oder Teller mittig, nie angeschnitten.</p>
+    <p><b>Pille</b> stehend 1:1,9 oder liegend 2,4:1 für Galerie und Nebenbilder.</p>
+    <p><b>Filter</b> <code>grayscale(1) contrast(1.12) brightness(1.04)</code>, Mischung <code>multiply</code> auf Feldfarbe.</p>
+    <p class="no">Kein Foto randlos über die ganze Breite, kein Text auf Fotos, keine Freisteller.</p>
+    <p class="no"><b>Schwaches Foto</b> (unter 900 px, dunkel, unscharf, Logo statt Bild): Einstieg nur aus Schrift auf hellem Feld plus Sticker. Das Foto darf höchstens als kleine Pille in die Galerie.</p>
+  </div>
+</section>
+
+<section class="blk">
+  <p class="lb"><b>08</b><span>Sticker</span></p>
+  <h2 class="bh">Ein Sticker pro Bildschirm, nur echte Fakten</h2>
+  <p class="bp">Rund, Signalfarbe, −9° gedreht, gestrichelter Innenring. Er sitzt auf einer Formkante oder einer Ecke des Einstiegs, nie auf Fließtext. Liegt er auf einem Farbfeld, wird er tief (Kontrast). Höchstens einer je 844 px Handyhöhe; fehlt ein belegter Fakt, gibt es keinen Sticker.</p>
+  <div class="stkrow" id="stks"></div>
+  <table class="t"><thead><tr><th>Quelle im Datensatz</th><th>Sticker</th><th>Bedingung</th></tr></thead><tbody>
+    <tr><td>google.rating</td><td>„4,9 bei Google“</td><td>Bewertung ab 4,5 und mindestens 20 Bewertungen</td></tr>
+    <tr><td>amenities</td><td>„Ohne Termin“, „Auch Lieferung“, „Karte geht“</td><td>nur Felder, die das Google-Profil ausdrücklich meldet</td></tr>
+    <tr><td>openingHours</td><td>„Bis 2 Uhr“, „Sonntag offen“</td><td>späteste Schließzeit nach Mitternacht bzw. Sonntag belegt</td></tr>
+    <tr><td>pricelist / menu</td><td>„Probetraining gratis“, „Ab 7,50 €“</td><td>Preis 0 € bzw. kleinster Preis aus den Daten</td></tr>
+    <tr><td>story / Studio</td><td>„Seit 2016“</td><td>Gründungsjahr vom Betrieb eingetragen</td></tr>
+  </tbody></table>
+</section>
+
+</div>
+<div data-shot="4b">
+<section class="blk">
+  <p class="lb"><b>09</b><span>Laufband und Bewegung</span></p>
+  <h2 class="bh">Ein Laufband pro Seite, still bei weniger Bewegung</h2>
+  <p class="bp">Das Laufband ist der einzige Dauerläufer. Inhalt nur aus Daten: bis zu fünf Leistungen, Straße, Öffnungszeiten-Kurzform. Trenner ist ein Signalpunkt. Mit <code>prefers-reduced-motion: reduce</code> steht es still und zeigt die erste Runde.</p>
+  <div class="phone" style="width:100%;margin-top:22px;border-radius:18px" id="tickDemo"></div>
+  <div class="mot" id="mot"></div>
+</section>
+</div>
+
+<div data-shot="5">
+<section class="blk">
+  <p class="lb"><b>10</b><span>Bausteine</span></p>
+  <h2 class="bh">Die Lücken, auf Plakat gestellt</h2>
+  <p class="bp">Jeder Baustein bei 390 px, Palette wie angegeben. Preise, Zeiten und Pläne erscheinen nur, wenn sie im Datensatz stehen.</p>
+  <div class="comps" id="comps"></div>
+</section>
+</div>
+
+<div data-shot="6">
+<section class="blk">
+  <p class="lb"><b>11</b><span>Erster Blick, Handy 390 × 844</span></p>
+  <h2 class="bh">Drei Betriebe, drei Einstiege</h2>
+  <p class="bp">Was in den ersten fünf Sekunden auf dem Handy steht. Barbier mit Bogen-Foto, Imbiss mit Kreis und späten Zeiten, Fitness ganz ohne Foto. Gestrichelt: Ende des ersten Bildschirms, darunter das Dock.</p>
+  <div class="phones" id="firsts"></div>
+</section>
+</div>
+
+<div data-shot="7"><section class="blk"><p class="lb"><b>12</b><span>Ganze Seite, Handy · Palette Kante</span></p><h2 class="bh">Kante Barbershop</h2><p class="bp">Bogen-Einstieg mit Google-Sticker, Laufband, Leistungen als Riesenliste mit Preis auf Rosa, Ablauf 01·02·03, Team im Kreis auf Flieder, Galerie, kurze Stimme auf Nacht, Fragen, Zeiten mit Heute, Fuß mit Riesenname.</p><div class="phones" id="ph-kante"></div></section></div>
+<div data-shot="8"><section class="blk"><p class="lb"><b>13</b><span>Ganze Seite, Handy · Palette Senf</span></p><h2 class="bh">Döner Ecke</h2><p class="bp">Einstieg auf Senf mit Kreis und „Bis 2 Uhr“, Karte mit Preisen aus den Daten und Farbpunkt je Kategorie, späte Zeiten als eigenes Feld, Stimme, Fuß.</p><div class="phones" id="ph-ecke"></div></section></div>
+<div data-shot="9"><section class="blk"><p class="lb"><b>14</b><span>Ganze Seite, Handy · Palette Puls</span></p><h2 class="bh">Studio Puls</h2><p class="bp">Schwache Fotos: Einstieg nur aus Schrift auf Minze. Wochenplan mit Tagesreitern, Preise, Ablauf, Trainer als Monogramm-Kreise, zwei kleine Pillen-Fotos.</p><div class="phones" id="ph-puls"></div></section></div>
+
+<div data-shot="10"><section class="blk"><p class="lb"><b>15</b><span>Desktop 1440 (Rahmen 1408) · erster Blick</span></p><h2 class="bh">Kante Barbershop: Einstieg</h2><div id="desk1" style="margin-top:28px"></div></section></div>
+<div data-shot="11"><section class="blk"><p class="lb"><b>16</b><span>Desktop 1440 (Rahmen 1408)</span></p><h2 class="bh">Kante: Leistungen und Ablauf</h2><div id="desk2" style="margin-top:28px"></div></section></div>
+
+<div data-shot="12">
+<section class="blk">
+  <p class="lb"><b>17</b><span>Tokens</span></p>
+  <h2 class="bh">PLAKAT, fertig für das Shape</h2>
+  <p class="bp">Spiegelt <code>shared/designSystems/werkstoff.ts</code>. Zwei Erweiterungen am Shape sind nötig (rechts unten), alles andere passt in <code>DesignSystemDef</code>.</p>
+  <pre class="ts" id="ts"></pre>
+  <div class="dev">
+    <div><h4>Abweichung 1: Farbfelder</h4><p><code>SystemPalette.fields?: readonly [PaletteField, PaletteField, PaletteField]</code> mit <code>{ id, bg, ink, muted }</code>.</p><p>Tests: <code>ink/bg ≥ 4.5</code> (alle hier ≥ 6,7), <code>muted/bg ≥ 4.5</code>; Display-Schrift auf Feld ≥ 3. CSS: <code>--sys-field-1-bg</code> usw. Ohne <code>fields</code> bleibt jedes andere System unverändert.</p></div>
+    <div><h4>Abweichung 2: Schriftbreite</h4><p><code>TypeSpec.stretch?: string</code> (Prozent, wird zu <code>font-stretch</code> und damit zur wdth-Achse), z. B. display 88 %, figure 82 %.</p><p>CSS: <code>--sys-display-stretch</code>. Ohne Angabe 100 %. Erlaubt eine Datei für vier Breiten statt vier Schnitte.</p></div>
+    <div><h4>Neu im Seitenvertrag: Stundenplan</h4><p>Optionaler Abschnitt <code>schedule</code>: <code>{ type, headline?, days: [{ day: "Mo"…"So", items: [{ time, title, meta? }] }] }</code>, max. 7 × 10. Eingabe im Studio, nie von der KI erfunden.</p><p>Fehlt er, entfällt der Wochenplan ganz. Kein Raten aus Preislisten.</p></div>
+    <div><h4>Kein Shape nötig</h4><p>Duoton, Formen, Sticker, Laufband, Dock sind Renderer-Regeln im System-Ordner <code>systems/plakat/</code>. <code>imageFilter</code> trägt nur den Graustufen-Filter; <code>multiply</code> setzt das System-CSS.</p></div>
+  </div>
+</section>
+</div>
+
+</main>
+
+<script>
+/* ═══ Tokens (Quelle der Wahrheit; identisch mit dem TS-Objekt unten) ═══ */
+const TYPE={
+ display:{font:"display",size:"clamp(5.75rem, 3.4rem + 10vw, 11rem)",line:.9,track:"0.005em",weight:400,upper:true,stretch:"88%"},
+ figure:{font:"display",size:"clamp(10rem, 5rem + 20vw, 22rem)",line:.8,track:"0em",weight:400,upper:true,stretch:"82%"},
+ h2:{font:"display",size:"clamp(3rem, 1.9rem + 4.7vw, 6.5rem)",line:.92,track:"0.005em",weight:400,upper:true,stretch:"92%"},
+ h3:{font:"text",size:"clamp(1.25rem, 1.1rem + 0.65vw, 1.75rem)",line:1.15,track:"-0.01em",weight:650},
+ lede:{font:"text",size:"clamp(1.125rem, 1rem + 0.55vw, 1.4375rem)",line:1.42,track:"-0.005em",weight:500},
+ body:{font:"text",size:"clamp(1rem, 0.96rem + 0.2vw, 1.125rem)",line:1.6,track:"0em",weight:400},
+ small:{font:"text",size:"0.9375rem",line:1.45,track:"0em",weight:500},
+ kicker:{font:"text",size:"0.9375rem",line:1.3,track:"0em",weight:600},
+ link:{font:"text",size:"1rem",line:1.3,track:"0em",weight:650},
+ mark:{font:"display",size:"clamp(1.875rem, 1.6rem + 1.1vw, 2.5rem)",line:1,track:"0.02em",weight:400,upper:true,stretch:"100%"},
+ data:{font:"text",size:"0.9375rem",line:1.3,track:"0.01em",weight:650},
+};
+const SPACE={"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6.5rem",
+ section:"clamp(5rem, 3.6rem + 6vw, 7.5rem)",gutter:"clamp(1.25rem, 0.8rem + 1.95vw, 2.5rem)",measure:"34rem",max:"90rem"};
+const PALS=[
+ {id:"kante",name:"Kante",use:"Barbier",paper:"#f4f1ed",ink:"#16141c",muted:"#58546a",rule:"#d8d2cf",accent:"#b8282e",deep:"#1c1a44",onDeep:"#f4f1ed",signal:"#e8493a",onSignal:"#16141c",
+  fields:[{id:"rosa",name:"Rosa",bg:"#f3b3aa",ink:"#16141c",muted:"#4a3b44"},{id:"flieder",name:"Flieder",bg:"#a8affa",ink:"#16141c",muted:"#2f3164"},{id:"nacht",name:"Nacht",bg:"#1c1a44",ink:"#f4f1ed",muted:"#c3c1de"}]},
+ {id:"senf",name:"Senf",use:"Imbiss",paper:"#f6f2ea",ink:"#1b1410",muted:"#5d5048",rule:"#ddd3c6",accent:"#b13a10",deep:"#3b1309",onDeep:"#f6f2ea",signal:"#f04e23",onSignal:"#1b1410",
+  fields:[{id:"senf",name:"Senf",bg:"#f6bd3c",ink:"#1b1410",muted:"#4f3a14"},{id:"tomate",name:"Tomate",bg:"#ef7d57",ink:"#1b1410",muted:"#3d1d10"},{id:"glut",name:"Glut",bg:"#3b1309",ink:"#f6f2ea",muted:"#e3c9bd"}]},
+ {id:"puls",name:"Puls",use:"Kurse, Fitness",paper:"#f1f3ef",ink:"#0f1a1c",muted:"#4b5a5c",rule:"#cfd8d3",accent:"#0d6e5a",deep:"#0f2b33",onDeep:"#f1f3ef",signal:"#1a9470",onSignal:"#0f1a1c",
+  fields:[{id:"minze",name:"Minze",bg:"#8fd6b5",ink:"#0f1a1c",muted:"#24453d"},{id:"flieder",name:"Flieder",bg:"#a3abf8",ink:"#0f1a1c",muted:"#2a2f63"},{id:"tief",name:"Tief",bg:"#0f2b33",ink:"#f1f3ef",muted:"#b8cdd0"}]},
+];
+const FILTER="grayscale(1) contrast(1.12) brightness(1.04)";
+
+/* ═══ Helfer ═══ */
+const REM=16;
+function px(v,w){v=v.trim();
+ if(v.startsWith("clamp(")){const [a,b,c]=v.slice(6,-1).split(",").map(s=>s.trim());return Math.min(Math.max(px(a,w),px(b,w)),px(c,w));}
+ if(v.includes("+")){return v.split("+").reduce((s,t)=>s+px(t,w),0);}
+ if(v.endsWith("rem"))return parseFloat(v)*REM; if(v.endsWith("vw"))return parseFloat(v)*w/100; if(v.endsWith("px"))return parseFloat(v); return parseFloat(v)*REM;}
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+const f2=n=>n.toFixed(2).replace(".",",");
+const P=id=>PALS.find(p=>p.id===id);
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+function tokVars(w,palId){const p=P(palId);const v=[];
+ for(const [k,t] of Object.entries(TYPE)) v.push(`--${k}-size:${px(t.size,w).toFixed(2)}px`);
+ for(const [k,s] of Object.entries(SPACE)) v.push(`--s-${k}:${px(s,w).toFixed(1)}px`);
+ v.push(`--section:${px(SPACE.section,w).toFixed(1)}px`,`--gutter:${px(SPACE.gutter,w).toFixed(1)}px`);
+ for(const k of ["paper","ink","muted","rule","accent","deep","onDeep","signal","onSignal"]) v.push(`--p-${k}:${p[k]}`);
+ v.push(`--p-deepMuted:${p.fields[2].muted}`,`--p-open:${p.signal}`,`--stk-size:${w<700?108:150}px`);
+ return v.join(";");}
+const fv=(p,i)=>`--f-bg:${p.fields[i].bg};--f-ink:${p.fields[i].ink};--f-muted:${p.fields[i].muted};--shp-bg:${p.fields[i].bg}`;
+const sticker=(big,small,cls="",style="")=>`<div class="stk ${cls}" style="${style}"><div><b>${big}</b>${small?`<span>${small}</span>`:""}</div></div>`;
+const shape=(cls,img,style="",pos="50% 50%",bg="",zoom=0)=>`<div class="shp ${cls}" style="${style};${bg?`--shp-bg:${bg}`:""}"><img src="${img}" style="object-position:${pos};${zoom?`transform:scale(${zoom});transform-origin:${pos}`:""}" alt=""></div>`;
+
+/* ═══ 01 Anker-Tabelle ═══ */
+const ANK=[
+ ["Grund","#0c0b0c fast schwarz auf jeder Fläche; nur das Aufführungs-Band rosa #e7a6a1","Heller Grund je Palette (#f4f1ed). Drei Farbfelder im Wechsel; tief nur Laufband, Stimme, Fuß."],
+ ["Display","Six Caps 400, Versal · Einstieg 176 / 96 px · Zeile .88 · +0,005em","League Gothic wdth 88 · 176 / 92 px · Zeile .9 (Umlaute) · +0,005em"],
+ ["Staffel","Einstieg vier Zeilen, jede zweite um ~1,1em eingerückt","Bleibt: zweite Zeile springt um 1,6em, max. drei Zeilen, max. drei Wörter je Zeile"],
+ ["Abschnittskopf","„STYLES.“ 112 / 68 px mit Schlusspunkt","h2 98 / 49 px, Schlusspunkt in Akzentfarbe"],
+ ["Riesenliste","Stilnamen 150 / 60 px, Zeile .84, untereinander","Leistungen als h2-Zeilen mit Preis rechts (nur aus Daten), Linie 1,5 px dazwischen"],
+ ["Wochenplan","Mo–Sa, Tag als Six Caps 88 px; Handy Tagesreiter 13 px","Reiter als Pillen 46 px hoch, Heute vorgewählt; Zeit in mark (Display), Kurs in h3"],
+ ["Riesenziffer","„01“ 380 / 200 px rosa, ab x = 792","figure 352 / 160 px in Signalfarbe, links neben dem Schritt"],
+ ["Aktions-Plakat","Rosa Band, Daten 72 / 56 px dunkel","Entfällt als Band; wird Sticker oder Feld-Block nur mit belegtem Datum (notice)"],
+ ["Team","Namen Six Caps 64 px, Hochformat-Fotos","Kreis-Ausschnitte, Name in mark 30 / 40 px; ohne Foto Monogramm-Kreis"],
+ ["Zitat","General Sans 54 px 500, lang","Kurz (bis 90 Zeichen) als h2 in Display auf Nacht; länger als lede"],
+ ["Fließtext","General Sans 16 / 25,6 px","Hanken Grotesk 16 → 18 px, Zeile 1,6"],
+ ["Knopf","54 px hoch, Radius 2 px, rosa Fläche","56 px Pille, Tinte, runder Signal-Knopf innen; aktiv scale(.97)"],
+ ["Kopf","78 px, Logo Six Caps 42, Links General Sans 15/500","64 px, Wortmarke mark 30 / 40 px, Menü als Pille"],
+ ["Abstände","Abschnitt 120 / 110 px, Handy 84 / 72; Rand 40 / 20","section 81 → 120 px, gutter 20 → 40 px"],
+ ["Statuszeile","„Next free trial: Wed 4:30 PM“ mit gelbem Punkt","„Heute bis 19 Uhr offen“ aus Öffnungszeiten; Punkt nur als echter Zustand"],
+ ["Infozeile","2 × 2 Fakten unter dem Knopf, Linie darüber","Bleibt, nur belegte Fakten (Preis ab, Tage, Straße, Bewertungen)"],
+ ["Fuß","Riesenname „ARCADIA DANCE COLLECTIVE“, vier Spalten","Riesenname in figure-Breite 80 % auf Nacht, zwei Spalten am Handy"],
+ ["Mono","DM Mono 13 px für Zeiten","Entfällt (Werkstoff-Merkmal). Zeiten in Hanken 650, tabellarische Ziffern"],
+ ["Neu","keine Formen, keine Sticker, kein Laufband","Bogen/Kreis/Pille, ein Sticker je Bildschirm, ein Laufband je Seite"],
+];
+document.querySelector("#ankT tbody").innerHTML=ANK.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="ar">→</td><td>${r[2]}</td></tr>`).join("");
+
+/* Kopf-Sticker */
+document.getElementById("stkA").innerHTML=`<div class="ws" style="${tokVars(1440,"kante")};background:transparent;overflow:visible"><div style="position:relative;width:180px;height:180px">${sticker("4 von 6","Systemen","","position:absolute;left:0;top:0;--stk-size:180px")}</div></div>`;
+
+/* ═══ 02 Vergleich ═══ */
+const CMP=[
+ ["Six Caps","Anker. Zu dünn bei 22 px, kein ẞ.",`font-family:"Six Caps";`,""],
+ ["Anton","Kräftig, aber schwer und breit: wird Impact.",`font-family:Anton;`,""],
+ ["Bebas Neue","Freundlich, aber überall gesehen und breiter.",`font-family:"Bebas Neue";`,""],
+ ["League Gothic","Gewählt. Schmal wie Six Caps, robust, wdth-Achse, ẞ.",`font-family:"League Gothic";font-stretch:88%;`,"win"],
+];
+document.getElementById("cmp").innerHTML=CMP.map(c=>`<div class="${c[3]}"><p class="nm"><span>${c[0]}</span></p><p class="v" style='${c[2]}'>Fade, Bart,<br>fertig.</p><p class="s" style='${c[2]}'>Öffnungszeiten Grüße</p><p>${c[1]}</p></div>`).join("")+
+ `<p class="note" style="grid-column:1/-1">Ebenfalls geprüft: Oswald (zu sachlich, Nachrichten-Ton), Big Shoulders Display (breiter, Industrie-Ton, nah an Raster), Antonio (kein ẞ). Alle OFL.</p>`;
+const ff=document.createElement("style");ff.textContent=`@font-face{font-family:"Six Caps";src:url(https://cdn.jsdelivr.net/npm/@fontsource/six-caps@5.1.0/files/six-caps-latin-400-normal.woff2)}@font-face{font-family:Anton;src:url(https://cdn.jsdelivr.net/npm/@fontsource/anton@5.1.0/files/anton-latin-400-normal.woff2)}@font-face{font-family:"Bebas Neue";src:url(https://cdn.jsdelivr.net/npm/@fontsource/bebas-neue@5.1.0/files/bebas-neue-latin-400-normal.woff2)}`;document.head.appendChild(ff);
+
+/* ═══ 03 Skala ═══ */
+const SAMPLE={
+ display:["Kante<br>Barbershop","Kante<br>Barbershop"],
+ figure:["01","01 · 4,9"],
+ h2:["Döner Ecke<br>bis 2 Uhr","Döner Ecke<br>bis 2 Uhr"],
+ h3:["Studio Puls: Kurse ab 6:30","Studio Puls: Kurse ab 6:30"],
+ lede:["Fade, Bart, fertig. Herrenschnitte an der Hafenstraße, ohne Wartezeit am Telefon.","Fade, Bart, fertig. Herrenschnitte an der Hafenstraße, ohne Wartezeit am Telefon."],
+ body:["Wir schneiden seit 2016 in Münster. Mit Termin bist du dran, wenn du kommst. Bart und Rasur mit heißem Tuch.","Wir schneiden seit 2016 in Münster. Mit Termin bist du dran, wenn du kommst. Bart und Rasur mit heißem Tuch, Maschine und Schere."],
+ small:["Kinder bis 12 Jahre, Waschen inklusive.","Kinder bis 12 Jahre, Waschen inklusive."],
+ kicker:["Heute bis 19 Uhr offen","Heute bis 19 Uhr offen"],
+ link:["Route in Karten öffnen","Route in Karten öffnen"],
+ mark:["Kante","Kante"],
+ data:["Mo–Fr 10–19 · Sa 9–15","Mo–Fr 10–19 · Sa 9–15"],
+};
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+ const a=px(t.size,375),b=px(t.size,1440);const opt=k==="figure"||k==="data";
+ const sty=w=>`font-family:${t.font==="display"?"var(--fd)":"var(--ft)"};font-size:${px(t.size,w).toFixed(1)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${t.upper?"text-transform:uppercase;":""}${t.stretch?`font-stretch:${t.stretch};`:""}${k==="figure"?"color:var(--signal);":""}${k==="h2"&&0?"":""}`;
+ return `<div class="step"><div><span class="k">${k}${opt?"<i>optional</i>":""}</span><p class="spec">${t.font==="display"?"League Gothic":"Hanken Grotesk"} ${t.weight}${t.stretch?` · wdth ${parseInt(t.stretch)}`:""}<br>${a.toFixed(0)} → ${b.toFixed(0)} px · Zeile ${t.line}<br>Laufweite ${t.track}${t.upper?" · Versal":""}</p></div>
+ <div class="s375"><span class="px">375 · ${a.toFixed(1)} px</span><div style="${sty(375)}">${SAMPLE[k][0]}</div></div>
+ <div class="s1440"><span class="px">1440 · ${b.toFixed(1)} px</span><div style="${sty(1440)};white-space:${k==="figure"?"nowrap":"normal"};max-width:${k==="body"||k==="lede"?"36rem":"none"}">${SAMPLE[k][1]}</div></div></div>`}).join("");
+
+/* ═══ 04 Abstände ═══ */
+document.getElementById("space").innerHTML=Object.entries(SPACE).map(([k,s])=>{const a=px(s,390),b=px(s,1440);const m=Math.min(b,560);return `<div class="sp"><b>${k}</b><span class="note">${s.startsWith("clamp")?`${a.toFixed(0)} → ${b.toFixed(0)} px`:`${b.toFixed(0)} px`}</span><div class="bar" style="width:${Math.max(4,m*0.7)}px;${k==="measure"||k==="max"?"background:var(--rule)":""}"></div></div>`}).join("");
+
+/* ═══ 06 Paletten ═══ */
+const ok=(v,min)=>`<span class="ok" style="color:${v>=min?"#0d6e3a":"#b8282e"}">${f2(v)}</span>`;
+document.getElementById("pals").innerHTML=PALS.map(p=>`<div class="pal">
+ <div class="hd" style="background:${p.paper}"><h3 style="color:${p.ink}">${p.name}<span style="color:${p.accent}">.</span></h3><p>${p.use} · Grund ${p.paper}</p></div>
+ <div class="fl">${p.fields.map(f=>`<div style="background:${f.bg};color:${f.ink}"><b>${f.name}</b><span>${f.bg}<br>Tinte ${f2(cr(f.ink,f.bg))} · leise ${f2(cr(f.muted,f.bg))}</span></div>`).join("")}</div>
+ <div class="base">
+  <div><i style="background:${p.ink}"></i>Tinte ${p.ink}<br>auf Grund ${ok(cr(p.ink,p.paper),7)}</div>
+  <div><i style="background:${p.muted}"></i>Leise ${p.muted}<br>auf Grund ${ok(cr(p.muted,p.paper),4.5)}</div>
+  <div><i style="background:${p.accent}"></i>Akzent ${p.accent}<br>auf Grund ${ok(cr(p.accent,p.paper),4.5)}</div>
+  <div><i style="background:${p.rule}"></i>Linie ${p.rule}<br>nur Fläche</div>
+  <div><i style="background:${p.deep}"></i>Tief ${p.deep}<br>Schrift ${ok(cr(p.onDeep,p.deep),7)}</div>
+  <div><i style="background:${p.signal}"></i>Signal ${p.signal}<br>auf Grund ${ok(cr(p.signal,p.paper),3)}</div>
+  <div><i style="background:${p.signal};box-shadow:inset 0 0 0 8px ${p.onSignal}"></i>Auf Signal ${p.onSignal}<br>${ok(cr(p.onSignal,p.signal),4.5)}</div>
+  <div><i style="background:linear-gradient(90deg,${p.fields.map(f=>f.bg).join(",")})"></i>Display auf Feldern<br>min. ${ok(Math.min(...p.fields.map(f=>cr(f.ink,f.bg))),3)}</div>
+ </div></div>`).join("");
+const RH=[["Kopf + Einstieg","p",230],["Laufband","d",70],["Leistungen","0",300],["Ablauf 01·02·03","p",260],["Team","1",200],["Galerie","p",220],["Stimme","d",170],["Fragen","p",210],["Zeiten","0",200],["Fuß","d",160]];
+(()=>{const p=P("kante");document.getElementById("rhy").innerHTML=RH.map(r=>{const bg=r[1]==="p"?p.paper:r[1]==="d"?p.deep:p.fields[+r[1]].bg;const c=r[1]==="d"?p.onDeep:p.ink;return `<div style="background:${bg};color:${c};height:${r[2]/2.4+40}px;${r[1]==="p"?"box-shadow:inset 0 0 0 1px "+p.rule:""}">${r[0]}</div>`}).join("")})();
+
+/* ═══ 07 Formen ═══ */
+(()=>{const p=P("kante");const W=`style="${tokVars(390,"kante")};background:transparent"`;
+ const S=[["Bogen","arch","width:100%;aspect-ratio:4/5",U("1560066984-138dadb4c035",600),p.fields[0].bg,"Einstieg, Hauptbild","40% 50%"],
+ ["Kreis","circ","width:100%",U("1559599101-f09722fb4948",500),p.fields[1].bg,"Team, Gericht","50% 30%"],
+ ["Pille stehend","pill","width:100%;aspect-ratio:1/1.9",U("1562322140-8baeececf3df",500),p.fields[0].bg,"Galerie, Nebenbild","60% 50%"],
+ ["Pille liegend","pill","width:100%;aspect-ratio:2.4/1;align-self:center",U("1521590832167-7bcbfaa6381f",600),p.rule,"Galerie quer","50% 50%"],
+ ["Schwaches Foto","","",null,null,"Kein Bild im Einstieg: Schrift auf Feld plus Sticker",""]];
+ document.getElementById("shapes").innerHTML=S.map(s=>s[3]?`<figure><div class="ws" ${W}>${shape(s[1],s[3],s[2],s[6],s[4])}</div><figcaption><b>${s[0]}</b>${s[5]}</figcaption></figure>`:
+ `<figure><div class="ws" style="${tokVars(390,"puls")};${fv(P("puls"),0)};background:var(--f-bg);color:var(--f-ink);padding:18px 16px 22px;border-radius:22px;position:relative;overflow:visible"><p class="t-display" style="font-size:64px">Kurse<br><span style="padding-left:1.2em">ab 6:30</span></p>${sticker("Gratis","Probetraining","inv","--stk-size:86px;right:-10px;top:-24px")}</div><figcaption><b>${s[0]}</b>${s[5]}</figcaption></figure>`).join("");})();
+
+/* ═══ 08 Sticker ═══ */
+(()=>{const items=[["kante","4,9","bei Google","","Grund oder Foto: Signal"],["kante","Ohne","Termin","inv","Auf Farbfeld: tief"],["senf","Bis 2","Uhr offen","","Öffnungszeiten"],["senf","Auch","Lieferung","","amenities.delivery"],["puls","Gratis","Probetraining","","Preis 0 € in der Liste"],["puls","Seit","2016","inv","Gründungsjahr"]];
+ document.getElementById("stks").innerHTML=items.map(i=>`<div class="stkcell"><div class="ws" style="${tokVars(1440,i[0])};background:transparent;overflow:visible;width:150px;height:150px;position:relative">${sticker(i[1],i[2],i[3],"left:0;top:0")}</div>${i[4]}</div>`).join("")+
+ `<div class="stkcell" style="width:auto;max-width:300px;text-align:left;justify-items:start"><b style="color:var(--ink);font-size:15px">Nie:</b>„Bester Barber der Stadt“, „Top-Preise“, „Neu“, „#1“, Prozentzahlen, Sternreihen. Nichts, was nicht im Datensatz steht.</div>`;})();
+
+/* ═══ 09 Laufband + Bewegung ═══ */
+const tickHtml=(items,cls="")=>`<div class="tick ${cls}"><div class="tr">${[...items,...items].map(x=>`<span>${x}</span><i></i>`).join("")}</div></div>`;
+document.getElementById("tickDemo").innerHTML=`<div class="ws" style="${tokVars(1440,"kante")}">${tickHtml(["Haarschnitt","Fade","Bart","Rasur mit heiẞem Tuch","Hafenstraẞe 12","Mo–Fr 10–19 Uhr"])}</div>`;
+const MOT=[["Was","Bewegung","Bei reduce"],
+ ["Einstieg","Zeilen der Display-Schrift wachsen einzeln aus clip-path inset(0 0 100% 0), 600 ms, cubic-bezier(.23,1,.32,1), 70 ms Versatz","sofort sichtbar, nur 150 ms Deckkraft"],
+ ["Formen","Bogen/Kreis öffnen sich beim Eintritt per clip-path von unten, 700 ms, einmal (IntersectionObserver)","stehen fertig da"],
+ ["Sticker","setzt sich einmal: scale(.92) → 1, rotate(-2°) → −9°, 420 ms; kein Dauerdrehen","steht gedreht, ohne Bewegung"],
+ ["Laufband","translateX 0 → −50 %, 38 s linear, Endlosschleife; hält bei Hover und Fokus","steht still, erste Runde sichtbar"],
+ ["Reiter","Pille wandert per transform 200 ms ease-out zum gewählten Tag","springt"],
+ ["Knöpfe","aktiv scale(.97) 160 ms; innerer Kreis rückt bei Hover 2 px nach rechts (nur hover:hover)","nur Farbwechsel"],
+ ["Fragen","Antwort klappt mit grid-rows 0fr → 1fr, 240 ms; Plus dreht 45°","klappt ohne Übergang"],
+];
+document.getElementById("mot").innerHTML=MOT.map((r,i)=>r.map(c=>`<div class="${i===0?"h":""}">${c}</div>`).join("")).join("")+`<div style="grid-column:1/-1;border:0;padding-top:12px" class="note">Animiert werden nur transform, opacity und clip-path. Keine Parallaxe, kein Scroll-Hijack, kein zweites Laufband.</div>`;
+
+/* ═══ Seiten-Bausteine ═══ */
+const hdr=(b,dt)=>`<header class="hdr"><span class="t-mark">${b.mark}</span>${dt?`<nav><a>${b.nav.join("</a><a>")}</a><span class="bt" style="height:46px;font-size:15px">${b.cta}<i>→</i></span></nav>`:`<span class="menu"><i></i>Menü</span>`}</header>`;
+const facts=b=>`<div class="facts">${b.facts.map(f=>`<p>${f[0]}<span>${f[1]}</span></p>`).join("")}</div>`;
+const B={
+ hero(b,dt){const p=P(b.pal);
+  const disp=`<h1 class="t-display" style="${b.dsz?`font-size:${b.dsz}`:""}">${b.h1.map((w,i)=>`<span class="${b.indent&&b.indent.includes(i)?"in":""}">${w}</span>`).join("")}</h1>`;
+  const st=`<p class="t-kicker stt ${b.closed?"closed":""}" style="margin-bottom:var(--s-m)">${b.status}</p>`;
+  const cta=`<div class="bts"><span class="bt">${b.cta}<i>→</i></span>${b.cta2?`<span class="bt2">${b.cta2}</span>`:""}</div>`;
+  if(b.entry==="arch"){
+   if(dt) return `<section class="hero"><div class="tx">${st}${disp}<p class="t-lede lede">${b.lede}</p>${cta}</div><div class="im">${shape("arch",U(b.img,1200),"width:100%;aspect-ratio:4/5",b.pos,p.fields[0].bg)}${sticker(b.stk[0],b.stk[1],"","left:-70px;top:56px")}</div>${facts(b)}</section>`;
+   return `<section class="hero">${st}${disp}<div style="position:relative;margin-top:var(--s-m);margin-left:24%">${shape("arch",U(b.img,900),"width:100%;aspect-ratio:4/5",b.pos,p.fields[0].bg)}${sticker(b.stk[0],b.stk[1],"","left:-84px;top:34px")}</div><p class="t-lede lede">${b.lede}</p>${cta}${facts(b)}</section>`;}
+  if(b.entry==="circle") return `<section class="hero fld" style="${fv(p,0)}">${st}${disp}<div style="position:relative;width:74%;margin:var(--s-s) 0 0 auto">${shape("circ",U(b.img,900),"width:100%",b.pos,p.fields[1].bg)}${sticker(b.stk[0],b.stk[1],"inv","left:-30px;bottom:-6px")}</div><p class="t-lede lede">${b.lede}</p>${cta}${facts(b)}</section>`;
+  return `<section class="hero fld" style="${fv(p,0)};padding-top:var(--s-xl)">${st}<div style="position:relative">${disp}${sticker(b.stk[0],b.stk[1],"inv","right:0;top:-22px;--stk-size:96px")}</div><p class="t-lede lede">${b.lede}</p>${cta}${facts(b)}</section>`;},
+ tick(b){return tickHtml(b.tick);},
+ list(b,dt){const p=P(b.pal);return `<section class="sec wrap fld" style="${fv(p,0)}"><h2 class="t-h2">${b.listH}<span class="h2dot">.</span></h2><div class="rows">${b.list.map(x=>`<div class="row"><span class="nm2">${x[0]}</span><span class="pr">${x[1]}</span>${x[2]?`<p class="t-small mu">${x[2]}</p>`:""}</div>`).join("")}</div>${b.listLink?`<p style="margin-top:var(--s-l)"><span class="bt">${b.listLink}<i>→</i></span></p>`:""}</section>`;},
+ steps(b,dt){const s=b.steps;const fi=s.field!=null?`fld" style="${fv(P(b.pal),s.field)}`:`"`;
+  const inner=`<h2 class="t-h2">${s.h}<span class="h2dot">.</span></h2><ol class="steps">${s.items.map((x,i)=>`<li><span class="t-figure">0${i+1}</span><h3 class="t-h3">${x[0]}</h3><p class="mu">${x[1]}</p></li>`).join("")}</ol>`;
+  if(dt) return `<section class="sec wrap ${fi}><div style="display:grid;grid-template-columns:repeat(12,1fr);column-gap:24px;align-items:start"><div style="grid-column:1/6;position:sticky;top:0">${shape("arch",U(s.img,900),"width:100%;aspect-ratio:4/5",s.pos||"50% 50%",P(b.pal).fields[1].bg)}</div><div style="grid-column:7/13">${inner}</div></div></section>`;
+  return `<section class="sec wrap ${fi}>${inner}</section>`;},
+ team(b){const p=P(b.pal);const t=b.team;return `<section class="sec wrap fld" style="${fv(p,t.field)}"><h2 class="t-h2">${t.h}<span class="h2dot">.</span></h2><div class="team">${t.items.map((m,i)=>`<figure>${m[2]?shape("circ",U(m[2],900),"width:100%",m[3],p.fields[t.field].bg,m[4]||0):`<div class="mono" style="background:${[p.paper,p.fields[0].bg,p.signal][i%3]}">${m[0][0]}</div>`}<div><p class="t-mark" style="font-size:calc(var(--mark-size)*.9)">${m[0]}</p><p class="t-small mu">${m[1]}</p></div></figure>`).join("")}</div></section>`;},
+ gal(b){const p=P(b.pal);const g=b.gal;return `<section class="sec wrap"><h2 class="t-h2">${g.h}<span class="h2dot">.</span></h2><div class="gal">${g.items.map((x,i)=>shape(["pill a","arch b","pill c"][i],U(x[0],i===2?900:600),"",x[1],[p.fields[0].bg,p.fields[1].bg,p.rule][i])).join("")}</div></section>`;},
+ quote(b){const q=b.quote;return `<section class="sec wrap deep qt"><p class="t-kicker mu">${q.rating}</p><p class="t-h2">„${q.text}“</p><div class="who"><div><b>${q.who}</b><span class="t-small mu">${q.src}</span></div></div></section>`;},
+ faq(b){return `<section class="sec wrap"><h2 class="t-h2">Fragen<span class="h2dot">.</span></h2><div class="fq">${b.faq.map((x,i)=>`<div class="fq-i ${i===0?"op":""}"><div class="fq-q"><h3 class="t-h3">${x[0]}</h3><i>${i===0?"−":"+"}</i></div>${i===0?`<p class="mu">${x[1]}</p>`:""}</div>`).join("")}</div></section>`;},
+ hours(b){const p=P(b.pal);const fi=b.hoursField;return `<section class="sec wrap ${fi!=null?"fld":""}" style="${fi!=null?fv(p,fi):""}"><h2 class="t-h2">${b.hoursH}<span class="h2dot">.</span></h2>${b.hoursFig?`<p class="t-figure" style="margin-top:var(--s-m)">${b.hoursFig}</p>`:""}<ul class="hrs">${b.hours.map(x=>`<li class="${x[2]?"on":""}"><span>${x[0]}${x[2]?"<em>Heute</em>":""}</span><span>${x[1]}</span></li>`).join("")}</ul><div class="ct"><p class="t-h3">${b.addr}</p><p><span class="ul t-link">${b.tel}</span></p><p class="t-small mu">${b.mail}</p></div><div class="bts" style="margin-top:var(--s-m)"><span class="bt">Anrufen<i>→</i></span><span class="bt2">Route</span></div></section>`;},
+ menu(b){const p=P(b.pal);const m=b.menu;return `<section class="sec wrap"><h2 class="t-h2">${m.h}<span class="h2dot">.</span></h2>${m.cats.map((c,ci)=>`<div class="cath" style="--c:${[p.fields[0].bg,p.fields[1].bg,p.signal,p.deep][ci%4]}"><i></i><h3 class="t-h2" style="font-size:calc(var(--h2-size)*.78)">${c[0]}</h3></div>${c[1].map(x=>`<div class="mrow"><span class="t-h3">${x[0]}</span><span class="pr">${x[1]}</span>${x[2]?`<p class="t-small mu">${x[2]}</p>`:""}</div>`).join("")}`).join("")}<p class="t-small mu" style="margin-top:var(--s-m)">${m.note}</p></section>`;},
+ plan(b){const p=P(b.pal);const s=b.plan;return `<section class="sec wrap"><h2 class="t-h2">${s.h}<span class="h2dot">.</span></h2><p class="t-small mu" style="margin-top:var(--s-s)">${s.p}</p><div class="tabs">${s.days.map(d=>`<span class="${d===s.on?"on":""}">${d}</span>`).join("")}</div><div style="margin-top:var(--s-m)">${s.items.map(x=>`<div class="slot" style="--c:${[p.fields[0].bg,p.fields[1].bg,p.rule][x[3]]}"><span class="tm">${x[0]}</span><span class="t-h3">${x[1]}</span><span class="pl">${x[2]}</span><p class="t-small mu">${x[4]}</p></div>`).join("")}</div></section>`;},
+ prices(b){const p=P(b.pal);return `<section class="sec wrap fld" style="${fv(p,1)}"><h2 class="t-h2">${b.pricesH}<span class="h2dot">.</span></h2><div class="rows">${b.prices.map(x=>`<div class="row"><span class="nm2">${x[0]}</span><span class="pr">${x[1]}</span><p class="t-small mu">${x[2]}</p></div>`).join("")}</div></section>`;},
+ foot(b){return `<footer class="deep ftr"><div class="cols"><p><b>Adresse</b>${b.addr}</p><p><b>Kontakt</b>${b.tel}<br>${b.mail}</p></div><p class="big" style="${b.bigSize?`font-size:${b.bigSize}px`:""}">${b.big}</p><div class="lg"><span>Impressum</span><span>Datenschutz</span><span class="mu">© 2026 ${b.name}</span></div></footer>`;},
+};
+
+/* ═══ Beispielbetriebe (alles erfunden) ═══ */
+const KANTE={pal:"kante",name:"Kante Barbershop",mark:"Kante",nav:["Leistungen","Team","Zeiten"],cta:"Termin buchen",
+ entry:"arch",status:"Heute bis 19 Uhr offen",h1:["Fade,","Bart,","fertig."],indent:[1],img:"1560066984-138dadb4c035",pos:"38% 50%",stk:["4,9","bei Google"],
+ lede:"Herrenschnitte und Bartpflege an der Hafenstraße. Seit 2016 in Münster.",cta2:"0251 555 0182",
+ facts:[["Haarschnitt ab 28 €","aus der Preisliste"],["Mo bis Sa","Sa bis 15 Uhr"],["Hafenstraße 12","48153 Münster"],["312 Bewertungen","bei Google"]],
+ tick:["Haarschnitt","Fade","Bart","Rasur","Hafenstraẞe 12","Mo–Fr 10–19"],
+ listH:"Leistungen",list:[["Haarschnitt","28 €","Waschen, Schnitt, Styling"],["Skin Fade","32 €","Maschine bis auf die Haut, Übergang von Hand"],["Bart trimmen","18 €","Kontur, Länge, Öl"],["Schnitt + Bart","45 €",""],["Rasur, heiẞes Tuch","30 €","Klinge, zwei heiße Tücher"],["Kinder bis 12","22 €",""]],listLink:"Termin buchen",
+ steps:{h:"So läuft's",field:null,img:"1562322140-8baeececf3df",pos:"60% 40%",items:[["Termin wählen","Online oder kurz anrufen. Freie Zeiten siehst du sofort."],["Schnitt besprechen","Foto mitbringen hilft. Wir sagen ehrlich, was zu deinem Haar passt."],["Raus in 35 Minuten","Waschen, schneiden, stylen. Bezahlen bar oder mit Karte."]]},
+ team:{h:"Team",field:1,items:[["Mara","Inhaberin","1559599101-f09722fb4948","24% 30%",2.3],["Jule","Barberin","1559599101-f09722fb4948","50% 24%",2.3],["Deniz","Barberin","1559599101-f09722fb4948","78% 28%",2.3]]},
+ gal:{h:"Im Laden",items:[["1562322140-8baeececf3df","64% 50%"],["1560066984-138dadb4c035","30% 50%"],["1521590832167-7bcbfaa6381f","50% 60%"]]},
+ quote:{rating:"4,9 von 5 · 312 Bewertungen bei Google",text:"Schnell, sauber, kein Gelaber. Bester Fade seit Jahren.",who:"Timo R.",src:"Google-Bewertung, September 2026"},
+ faq:[["Kann ich ohne Termin kommen?","Ja, wenn ein Stuhl frei ist. Mit Termin wartest du nicht."],["Wie bezahle ich?","Bar oder mit Karte."],["Schneidet ihr auch Locken?","Ja, mit Schere und Zeit."]],
+ hoursH:"Vorbeikommen",hoursField:0,hours:[["Montag","10–19 Uhr",1],["Dienstag","10–19 Uhr"],["Mittwoch","10–19 Uhr"],["Donnerstag","10–20 Uhr"],["Freitag","10–19 Uhr"],["Samstag","9–15 Uhr"],["Sonntag","geschlossen"]],
+ addr:"Hafenstraße 12, 48153 Münster",tel:"0251 555 0182",mail:"hallo@kante.example",big:"Kante"};
+const ECKE={pal:"senf",name:"Döner Ecke",mark:"Döner Ecke",nav:["Karte","Zeiten"],cta:"Anrufen & abholen",
+ entry:"circle",status:"Heute bis 2 Uhr offen",h1:["Döner","Ecke"],indent:[1],img:"1593504049359-74330189a345",pos:"50% 50%",stk:["Bis 2","Uhr offen"],
+ lede:"Döner, Dürüm, Pide aus dem Steinofen. Am Bahnhof, jeden Tag bis spät.",
+ facts:[["Döner ab 7,50 €","aus der Karte"],["Täglich offen","Fr und Sa bis 2 Uhr"],["Bahnhofstraße 3","Bielefeld"],["Auch Lieferung","laut Google-Profil"]],
+ tick:["Döner","Dürüm","Lahmacun","Pide","Bahnhofstraẞe 3","Fr + Sa bis 2 Uhr"],
+ menu:{h:"Karte",note:"Alle Preise inkl. MwSt. Allergene auf Nachfrage an der Theke.",cats:[["Im Brot",[["Döner im Brot","7,50 €","Kalb, Salat, Soße nach Wahl"],["Dürüm","8,50 €","im Yufka gerollt"],["Halloumi im Brot","7,90 €",""]]],["Vom Teller",[["Döner Teller","12,90 €","mit Pommes oder Reis"],["Iskender","14,50 €","Joghurt, Tomatenbutter"]]],["Aus dem Ofen",[["Lahmacun","5,50 €","mit Salat"],["Pide Käse","9,90 €",""],["Pide Sucuk","10,90 €",""]]],["Dazu",[["Pommes","3,50 €",""],["Ayran","2,00 €",""]]]]},
+ hoursH:"Spät noch Hunger",hoursField:1,hoursFig:"02:00",hours:[["Montag","11–24 Uhr",1],["Di bis Do","11–24 Uhr"],["Freitag","11–2 Uhr"],["Samstag","12–2 Uhr"],["Sonntag","12–23 Uhr"]],
+ quote:{rating:"4,7 von 5 · 1.208 Bewertungen bei Google",text:"Um eins noch warm, knusprig und riesig.",who:"Selin K.",src:"Google-Bewertung, August 2026"},
+ gal:{h:"Frisch vom Spieẞ",items:[["1593504049359-74330189a345","50% 50%"],["1565299624946-b28f40a0ae38","50% 50%"],["1504674900247-0877df9cc836","50% 50%"]]},
+ faq:[["Liefert ihr?","Ja, im Umkreis von 3 km ab 15 € Bestellwert."],["Gibt es vegetarisch?","Halloumi im Brot, Pide Käse, Lahmacun ohne Fleisch auf Nachfrage."]],
+ addr:"Bahnhofstraße 3, 33602 Bielefeld",tel:"0521 555 0144",mail:"bestellen@doener-ecke.example",big:"Döner Ecke"};
+const PULS={pal:"puls",name:"Studio Puls",mark:"Puls",nav:["Kurse","Preise","Trainer"],cta:"Probetraining",
+ entry:"type",status:"Nächster Kurs heute 18:00, Zirkel",h1:["Kurse","ab 6:30"],indent:[1],stk:["Gratis","Probetraining"],
+ lede:"Kleine Gruppen, feste Trainer, ein Raum in der Altstadt. Erste Stunde kostet nichts.",
+ facts:[["24 Kurse","pro Woche"],["Ab 39 €","im Monat"],["Mo bis Sa","ab 6:30 Uhr"],["Kolpingstraße 8","Regensburg"]],
+ tick:["Zirkel","Rücken fit","Yoga","Boxen","Kolpingstraẞe 8","Mo–Sa ab 6:30"],
+ plan:{h:"Die Woche",p:"Max. 12 Leute pro Kurs. Plätze im Studio oder telefonisch.",days:["Mo","Di","Mi","Do","Fr","Sa"],on:"Mo",items:[["6:30","Kraftzirkel","45 Min",0,"mit Lena · Langhantel und Kettlebell"],["12:15","Rücken fit","30 Min",1,"mit Ole · Mittagspause"],["18:00","Zirkel","45 Min",0,"mit Lena · ausgebucht bis auf 2"],["19:15","Yoga Flow","60 Min",2,"mit Sanne · Matten sind da"]]},
+ pricesH:"Preise",prices:[["Monat","39 €","monatlich kündbar, alle Kurse"],["10er-Karte","99 €","ein Jahr gültig"],["Probetraining","0 €","einmal, ohne Vertrag"]],
+ steps:{h:"So startest du",field:null,items:[["Probetraining buchen","Kurs aussuchen, Platz anfragen."],["Kommen, mitmachen","Wir zeigen dir alles. Schuhe für drinnen reichen."],["Weitermachen","Monat oder 10er-Karte, direkt vor Ort."]]},
+ team:{h:"Trainer",field:1,items:[["Lena","Kraft, Zirkel"],["Ole","Rücken, Mobilität"],["Sanne","Yoga"]]},
+ gal2:[["1540497077202-7c8a3999166f","50% 50%"],["1534438327276-14e5300c3a48","50% 50%"]],
+ faq:[["Muss ich fit sein?","Nein. Jeder Kurs hat leichtere Varianten."],["Gibt es Duschen?","Ja, zwei Duschen und Spinde."]],
+ hoursH:"Studio",hoursField:null,hours:[["Montag","6:30–21 Uhr",1],["Di bis Fr","6:30–21 Uhr"],["Samstag","9–14 Uhr"],["Sonntag","geschlossen"]],
+ addr:"Kolpingstraße 8, 93047 Regensburg",tel:"0941 555 0127",mail:"hallo@studio-puls.example",big:"Puls"};
+
+function pageHtml(b){const out=[hdr(b),B.hero(b)];
+ if(b===KANTE) out.push(B.tick(b),B.list(b),B.steps(b),B.team(b),B.gal(b),B.quote(b),B.faq(b),B.hours(b),B.foot(b));
+ if(b===ECKE) out.push(B.tick(b),B.menu(b),B.hours(b),B.quote(b),B.gal(b),B.faq(b),B.foot(b));
+ if(b===PULS) out.push(B.tick(b),B.plan(b),B.prices(b),B.steps(b),B.team(b),
+   `<section class="sec wrap" style="padding-top:0"><div class="gal" style="margin-top:0">${shape("pill a",U(b.gal2[0][0],500),"",b.gal2[0][1],P("puls").fields[1].bg)}${shape("pill a",U(b.gal2[1][0],500),"",b.gal2[1][1],P("puls").fields[0].bg)}</div><p class="t-small mu" style="margin-top:var(--s-s)">Zwei Handyfotos, klein gehalten.</p></section>`,
+   B.faq(b),B.hours(b),B.foot(b));
+ return out.join("");}
+
+/* Rahmen */
+const frame=(b,h,inner)=>`<div class="phone" style="height:${h}px"><div class="ws" style="${tokVars(390,b.pal)}">${inner}</div></div>`;
+const dock=(b,top)=>`<div class="dock" style="top:${top}px"><span>Anrufen</span><span>${b.cta}</span></div>`;
+
+/* 11 erster Blick */
+document.getElementById("firsts").innerHTML=[KANTE,ECKE,PULS].map(b=>`<div><p class="colh">${b.name} · ${P(b.pal).name}</p>${frame(b,844,hdr(b)+B.hero(b)+B.tick(b)+dock(b,844-72))}</div>`).join("");
+
+/* 12–14 ganze Seiten in Spalten */
+function fullPage(id,b){const host=document.getElementById(id);
+ host.innerHTML=`<div class="phone" style="position:absolute;left:-9999px;height:auto" id="m-${id}"><div class="ws" style="${tokVars(390,b.pal)}">${pageHtml(b)}</div></div>`;}
+fullPage("ph-kante",KANTE);fullPage("ph-ecke",ECKE);fullPage("ph-puls",PULS);
+function splitPages(){for(const [id,b] of [["ph-kante",KANTE],["ph-ecke",ECKE],["ph-puls",PULS]]){
+ const m=document.getElementById("m-"+id);const bg=m.querySelector(".ftr .big");if(bg){const w=bg.parentElement.clientWidth-2*parseFloat(getComputedStyle(bg.parentElement).paddingLeft);const fs0=parseFloat(getComputedStyle(bg).fontSize);b.bigSize=Math.min(fs0*w/bg.getBoundingClientRect().width*0.99,fs0*1.6).toFixed(1);m.firstElementChild.innerHTML=pageHtml(b);}const H=m.scrollHeight;const n=Math.ceil(H/2500);const ch=Math.ceil(H/n);
+ const cols=[];for(let k=0;k<n;k++){cols.push(`<div><p class="colh">${k*ch} bis ${Math.min(H,(k+1)*ch)} px von ${H}</p><div class="phone" style="height:${Math.min(ch,H-k*ch)}px"><div class="ws" style="${tokVars(390,b.pal)};transform:translateY(-${k*ch}px)">${pageHtml(b)}</div>${k===0?`<div class="fold" style="top:844px"><span>844</span></div>`+`<div class="ws" style="${tokVars(390,b.pal)};position:absolute;inset:0;background:transparent;overflow:visible;pointer-events:none">${dock(b,844-72)}</div>`:""}</div></div>`);}
+ document.getElementById(id).innerHTML=cols.join("");}}
+function fitBig(){document.querySelectorAll(".ftr .big").forEach(e=>{const w=e.parentElement.clientWidth-parseFloat(getComputedStyle(e.parentElement).paddingLeft)*2;const fs=parseFloat(getComputedStyle(e).fontSize);e.style.fontSize=(fs*w/e.scrollWidth).toFixed(1)+"px";});}
+
+/* 15–16 Desktop */
+const dframe=(b,inner,h)=>`<div class="desk" style="${h?`height:${h}px`:""}"><div class="ws dt" style="${tokVars(1440,b.pal)}">${inner}</div></div>`;
+document.getElementById("desk1").innerHTML=dframe(KANTE,hdr(KANTE,true)+B.hero(KANTE,true)+B.tick(KANTE),1092);
+document.getElementById("desk2").innerHTML=dframe(KANTE,B.list(KANTE,true)+B.steps(KANTE,true));
+
+/* 10 Bausteine */
+const COMPS=[
+ ["Leistungen, Preise","Riesenliste auf hellem Feld. Preis nur, wenn er in pricelist steht; fehlt er, bleibt die Zeile ohne Preis.","kante",B.list({...KANTE,list:KANTE.list.slice(0,3),listLink:null}),430],
+ ["Karte","Kategorie mit Farbpunkt (Arcadia: Farbcode je Stil), Gericht in h3, Preis in mark. Keine Punktleisten.","senf",B.menu({...ECKE,menu:{...ECKE.menu,cats:ECKE.menu.cats.slice(0,2)}}),560],
+ ["Stundenplan","Neuer optionaler Abschnitt schedule. Reiter Mo bis Sa, Heute vorgewählt. Ohne Daten: entfällt.","puls",B.plan({...PULS,plan:{...PULS.plan,items:PULS.plan.items.slice(0,3)}}),560],
+ ["Team ohne Fotos","Monogramm im Kreis, Farben aus Grund, Feld und Signal. Mit Fotos: Kreis-Ausschnitt, Duoton auf Feldfarbe.","puls",B.team(PULS),430],
+ ["Stimme","Bis 90 Zeichen in Display auf Nacht, Bewertungsschnitt als Kicker. Nur echte Google-Bewertungen mit Datum.","kante",B.quote(KANTE),430],
+ ["Zeiten mit Heute","Heute als Tinten-Pille mit Signal-Etikett. Statuszeile im Einstieg liest dieselbe Quelle.","kante",B.hours({...KANTE,hours:KANTE.hours.slice(0,4)}),560],
+ ["Galerie","Stehende Pille plus Bogen, liegende Pille darunter. Drei Fotos frei, mehr mit Extra.","kante",B.gal(KANTE),560],
+ ["Fragen","Akkordeon, Plus im Kreis; offen invertiert. Linien 1,5 px in Schriftfarbe.","kante",B.faq(KANTE),430],
+ ["Rechtliches, Unterseiten","Gleicher Kopf und Fuß, kein Foto, Seitentitel in h2 auf Grund, Text in voller Lesebreite.","kante",hdr(KANTE)+`<section class="wrap" style="padding-top:var(--s-l);padding-bottom:var(--s-xl)"><p class="t-kicker mu">Kante Barbershop</p><h1 class="t-h2" style="margin-top:var(--s-xs)">Impressum<span class="h2dot">.</span></h1><div style="margin-top:var(--s-l);display:grid;gap:14px"><p><b>Anbieter</b><br>Kante Barbershop, Inh. Mara Kantemir</p><p><b>Anschrift</b><br>Hafenstraße 12, 48153 Münster</p><p><b>Kontakt</b><br>0251 555 0182 · hallo@kante.example</p><p><b>USt-IdNr.</b><br>DE 000 000 000 (Beispiel)</p></div></section>`,560],
+];
+document.getElementById("comps").innerHTML=COMPS.map(c=>`<div class="comp"><h4>${c[0]}</h4><p>${c[1]}</p><div class="phone"><div class="ws" style="${tokVars(390,c[2])}">${c[3]}</div></div></div>`).join("");
+
+/* ═══ 17 TS-Objekt ═══ */
+const q=s=>JSON.stringify(s);
+const tsType=Object.entries(TYPE).map(([k,t])=>`    ${k}: { font: ${q(t.font)}, size: ${q(t.size)}, line: ${t.line}, track: ${q(t.track)}, weight: ${t.weight}${t.upper?", upper: true":""}${t.stretch?`, stretch: ${q(t.stretch)}`:""} },`).join("\n");
+const tsPal=PALS.map(p=>`    { id: ${q(p.id)}, name: ${q(p.name)}, paper: ${q(p.paper)}, ink: ${q(p.ink)}, muted: ${q(p.muted)}, rule: ${q(p.rule)},
+      accent: ${q(p.accent)}, deep: ${q(p.deep)}, onDeep: ${q(p.onDeep)}, signal: ${q(p.signal)}, onSignal: ${q(p.onSignal)},
+      fields: [${p.fields.map(f=>`\n        { id: ${q(f.id)}, bg: ${q(f.bg)}, ink: ${q(f.ink)}, muted: ${q(f.muted)} }`).join(",")},\n      ] },`).join("\n");
+document.getElementById("ts").innerHTML=`import type { DesignSystemDef } from "./types";
+
+export const PLAKAT: DesignSystemDef = {
+  id: "plakat",
+  name: "Plakat",
+  essence: "Laut, fröhlich, selbstbewusst",
+  fonts: {
+    display: {
+      family: "League Gothic",
+      fallback: "'Oswald', 'Arial Narrow', Impact, sans-serif",
+      files: [{ file: "league-gothic-latin-wdth.woff2", weight: "400", style: "normal" }],
+    },
+    text: {
+      family: "Hanken Grotesk",
+      fallback: "'Helvetica Neue', Arial, system-ui, sans-serif",
+      files: [{ file: "hanken-grotesk-latin-wght.woff2", weight: "100 900", style: "normal" }],
+    },
+  },
+  preload: ["league-gothic-latin-wdth.woff2", "hanken-grotesk-latin-wght.woff2"],
+  type: {
+${tsType}
+  },
+  space: {
+    "2xs": ".25rem", xs: ".5rem", s: "1rem", m: "1.5rem", l: "2.5rem", xl: "4rem", "2xl": "6.5rem",
+    section: ${q(SPACE.section)},
+    gutter: ${q(SPACE.gutter)},
+    measure: "34rem", max: "90rem",
+  },
+  palettes: [
+${tsPal}
+  ],
+  <span class="c">// Graustufe für alle Fotos; Duoton entsteht im System-CSS per mix-blend-mode: multiply auf Feldfarbe.</span>
+  imageFilter: ${q(FILTER)},
+};`;
+
+/* Nach Schriften + Bildern: Seiten in Spalten teilen */
+Promise.all([document.fonts.ready,...[...document.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))]).then(()=>{splitPages();document.body.dataset.ready="1";});
+</script>
+</body>
+</html>
