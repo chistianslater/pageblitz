@@ -414,6 +414,11 @@
 .pb-studio-device[data-device="mobile"] {
   max-width: 390px;
 }
+/* Systeme mit dunklem Papier (Nacht): Rahmen dunkel, kein weißer Blitz beim Laden. */
+.pb-studio-device[data-scheme="dark"] {
+  background: #151a1c;
+  color-scheme: dark;
+}
 .pb-studio-device iframe {
   width: 100%;
   height: 100%;

@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import type { PackId, SectionType } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { DesignSystemId } from "@shared/designSystems/types";
+import { getSystem } from "@shared/designSystems/registry";
 import type { InlineTextTarget } from "@shared/onboardingV2/inlineText";
 import {
   richHtml,
@@ -24,6 +25,11 @@ interface PreviewFrameProps {
   packOverride?: PackId;
   /** Designsystem-Vorschau (rev 3), Vorrang vor packOverride. */
   systemOverride?: DesignSystemId;
+  /**
+   * System des Dokuments (rev 3) — ohne Override bestimmt es, ob der
+   * Vorschau-Rahmen dunkel ist (Nacht: `scheme: "dark"`).
+   */
+  docSystem?: DesignSystemId | null;
   /** Farbstimmung zu systemOverride. */
   paletteOverride?: string;
   /** Unterseiten-Vorschau (Plan B6 Task 5): Slug der Page → `/preview-ssr/<token>/<slug>`; ohne → Startseite. */
@@ -111,6 +117,17 @@ export function isInlineLocked(el: Element): boolean {
   return Boolean(el.closest("[data-pb-readonly]"));
 }
 
+/**
+ * Farbschema des Vorschau-Rahmens: dunkel bei Systemen mit dunklem Papier
+ * (Nacht), damit beim Laden kein weißer Blitz entsteht. Sonst undefined
+ * (Rahmen wie bisher).
+ */
+export function previewScheme(
+  system: DesignSystemId | null | undefined
+): "dark" | undefined {
+  return system && getSystem(system)?.scheme === "dark" ? "dark" : undefined;
+}
+
 /** Pfad der Vorschau (Startseite oder Unterseite) — von PreviewFrame und "In neuem Tab öffnen" geteilt. */
 export function previewPath(token: string, pageSlug?: string): string {
   return pageSlug
@@ -156,6 +173,7 @@ export function PreviewFrame({
   device,
   packOverride,
   systemOverride,
+  docSystem,
   paletteOverride,
   pageSlug,
   reveal,
@@ -506,7 +524,12 @@ export function PreviewFrame({
     );
   };
   return (
-    <div ref={viewportRef} className="pb-studio-device" data-device={device}>
+    <div
+      ref={viewportRef}
+      className="pb-studio-device"
+      data-device={device}
+      data-scheme={previewScheme(systemOverride ?? docSystem)}
+    >
       <iframe
         ref={iframeRef}
         src={src}

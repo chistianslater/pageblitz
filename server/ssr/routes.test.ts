@@ -227,11 +227,31 @@ describe("SSR routes", () => {
       }
     });
 
-    test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
+    test("Nacht: Dev-Vorschau (3 Paletten) und Demo-Routen liefern 200, dunkel", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["petrol", "pflaume", "nachtblau"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=nacht&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="nacht"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+        expect(dev.text).toContain('<meta name="color-scheme" content="dark" />');
+      }
+      for (const showcase of ["restaurant", "friseur", "ferienwohnung"]) {
+        const demo = await request(app).get(`/demo/system/nacht/${showcase}`);
+        expect(demo.status).toBe(200);
+        expect(demo.text).toContain('class="pb-site pb-nacht"');
+        expect(demo.text).toContain('class="nc-entry');
+      }
+    });
+
+    test("Demo-Route: unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);
       expect(
-        (await request(app).get("/demo/system/nacht/friseur")).status
+        (await request(app).get("/demo/system/gibtsnicht/friseur")).status
       ).toBe(404);
       expect(
         (await request(app).get("/demo/system/journal/gibtsnicht")).status
@@ -257,10 +277,16 @@ describe("SSR routes", () => {
       );
       expect(bad.status).toBe(400);
       expect(bad.text).not.toContain("<script");
-      const unbuilt = await request(app).get(
-        "/preview-ssr/abcdefghabcdefgh?system=nacht"
+      const unknown = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?system=gibtsnicht"
       );
-      expect(unbuilt.status).toBe(400);
+      expect(unknown.status).toBe(400);
+      const nacht = await request(app).get(
+        "/preview-ssr/abcdefghabcdefgh?system=nacht&palette=pflaume"
+      );
+      expect(nacht.status).toBe(200);
+      expect(nacht.text).toContain('data-pb-system="nacht"');
+      expect(nacht.text).toContain('data-pb-palette="pflaume"');
     });
 
     test("preview-ssr ?pack=<eigenes Pack> auf rev-3-Seite rendert das Pack, nicht Journal", async () => {

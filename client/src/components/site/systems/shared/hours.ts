@@ -44,7 +44,7 @@ const DAY = 24 * 60;
 /** Abendtermine ab dieser Schließzeit (Minuten). */
 const EVENING = 19 * 60;
 
-type Span = { from: number; to: number };
+export type Span = { from: number; to: number };
 
 /** Echte Zeiten, sonst undefined. */
 export const realHours = (hours: Hours | undefined) =>
@@ -59,6 +59,9 @@ function spans(text: string): Span[] {
     }))
     .filter(r => r.from < DAY && r.to <= DAY);
 }
+
+/** Gelesene Spannen eines Zeiten-Texts (Minuten), z. B. für Nacht. */
+export const readSpans = (text: string): Span[] => spans(text);
 
 /** Minuten → „8:00", „20:30". */
 export const clock = (minutes: number) =>

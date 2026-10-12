@@ -954,6 +954,9 @@ export default function StudioPage({ token }: { token: string }) {
             token={token}
             version={studio.previewVersion}
             device={device}
+            docSystem={
+              state.doc.designRevision === 3 ? (state.doc.system ?? null) : null
+            }
             pageSlug={previewSlug ?? undefined}
             versionId={versionPreviewId}
             // Ein früherer Stand ist nur zum Ansehen: kein Inline-Text, keine

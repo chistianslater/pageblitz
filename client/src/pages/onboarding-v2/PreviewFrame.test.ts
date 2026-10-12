@@ -6,6 +6,7 @@ import {
   previewPath,
   buildPreviewSrc,
   photoClickTargetOf,
+  previewScheme,
 } from "./PreviewFrame";
 
 describe("PreviewFrame helpers", () => {
@@ -98,3 +99,13 @@ describe("photoClickTargetOf", () => {
 });
 
 test("non-text icon nodes do not abort inline editing", () => { expect(normalizeInlineText(undefined)).toBe(""); expect(normalizeInlineText(null)).toBe(""); });
+
+describe("Vorschau-Rahmen: Farbschema", () => {
+  test("dunkel nur bei Systemen mit dunklem Papier (Nacht)", () => {
+    expect(previewScheme("nacht")).toBe("dark");
+    for (const id of ["journal", "raster", "werkstoff", "plakat", "klar"] as const)
+      expect(previewScheme(id)).toBeUndefined();
+    expect(previewScheme(null)).toBeUndefined();
+    expect(previewScheme(undefined)).toBeUndefined();
+  });
+});

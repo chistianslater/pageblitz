@@ -1,0 +1,350 @@
+import type {
+  SectionOf,
+  WebsiteDataV2,
+} from "../../../../../../shared/siteContract/types";
+import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
+import { coversToday } from "../../artDirection/heroFacts";
+import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
+import { stripMarks } from "../../richText";
+import {
+  brandParts,
+  branchOf,
+  contactOf,
+  echoesKicker,
+  heroPhoto,
+  isRoundTheClock,
+  nameOf,
+  visibleDoc,
+} from "../shared";
+import {
+  clock,
+  readSpans,
+  realHours,
+  todayHours,
+  type Hours,
+} from "../shared/hours";
+import { systemActions, type Action } from "../shared/actions";
+
+/**
+ * Reine Daten-Regeln für Nacht (Einstieg, Ziffer, Heute/Küche, Wege).
+ * Nichts wird erfunden: Fehlt eine Angabe, entfällt das Element.
+ */
+
+const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
+
+/* ── Küche ────────────────────────────────────────────────────────────── */
+
+/**
+ * Küchenzeit steht nur im Öffnungszeiten-Text („17:30 – 23:00, Küche bis
+ * 21:30", „warme Küche bis 21 Uhr", „Küche 17:30–21:30"). Der Teil ab
+ * „Küche" bis zum nächsten Komma/Semikolon gehört der Küche — er zählt
+ * nicht als Öffnungsspanne. Ohne lesbare Uhrzeit: keine Küchenzeit.
+ */
+const KITCHEN = /(?:warme\s+)?k(?:ü|ue)che\b[^,;·|)]*/i;
+const TIME = /(\d{1,2})(?:[:.](\d{2}))?/g;
+
+export function kitchenOf(text: string): { open: string; kitchen?: string } {
+  const m = text.match(KITCHEN);
+  if (!m) return { open: text };
+  const open = (text.slice(0, m.index!) + text.slice(m.index! + m[0].length))
+    .replace(/\(\s*\)/g, "")
+    .replace(/[\s,;·|(]+$/, "")
+    .replace(/^[\s,;·|]+/, "")
+    .trim();
+  const times = [...m[0].matchAll(TIME)]
+    .map(t => ({ h: Number(t[1]), min: Number(t[2] ?? 0) }))
+    .filter(t => t.h <= 24 && t.min < 60);
+  const last = times[times.length - 1];
+  return last
+    ? { open, kitchen: clock(last.h * 60 + last.min) }
+    : { open };
+}
+
+/** Zeiten ohne Küchen-Teil (für Spannen, Ziffer und Heute-Zeile). */
+const openHours = (hours: NonNullable<Hours>): NonNullable<Hours> =>
+  hours.map(h => ({ ...h, hours: kitchenOf(h.hours).open }));
+
+/* ── Heute ────────────────────────────────────────────────────────────── */
+
+export type TodayLine = { open: string; kitchen?: string };
+
+const IS_SPAN = /^\d{1,2}:\d{2} bis \d{1,2}:\d{2}$/;
+
+/**
+ * Heute-Zeile unter dem Einstieg („Heute 17:30 bis 23:00 · Küche bis
+ * 21:30") — nur echte Zeiten (kein Platzhalter), nur am Wochentag (kein
+ * „jetzt geöffnet" nach Uhrzeit, Seiten liegen im Cache). Halbe Tage als
+ * zwei Spannen, geschlossen als „Ruhetag"/„geschlossen", Unlesbares
+ * wörtlich. Küche nur, wenn der Text sie nennt und der Tag offen ist.
+ */
+export function todayLine(
+  hours: Hours | undefined,
+  now: Date
+): TodayLine | undefined {
+  const real = realHours(hours);
+  if (!real) return undefined;
+  if (isRoundTheClock(real))
+    return { open: "Heute rund um die Uhr geöffnet" };
+  const today = todayHours(openHours(real), now);
+  if (!today) return undefined;
+  const entry = real.find(h => coversToday(h.day, now))!;
+  if (today.closed)
+    return {
+      open: /ruhetag/i.test(entry.hours) ? "Heute Ruhetag" : "Heute geschlossen",
+    };
+  if (today.lines.length === 1 && today.lines[0] === "0:00 bis 24:00")
+    return { open: "Heute rund um die Uhr geöffnet" };
+  const spans = today.lines.every(l => IS_SPAN.test(l));
+  const open = spans
+    ? `Heute ${today.lines.join(", ")}`
+    : `Heute: ${today.lines.join(", ")}`;
+  const kitchen = kitchenOf(entry.hours).kitchen;
+  return kitchen ? { open, kitchen: `Küche bis ${kitchen}` } : { open };
+}
+
+/* ── Ziffer ───────────────────────────────────────────────────────────── */
+
+export type Figure = {
+  /** Große Kupferziffer („21", „4,8"). */
+  value: string;
+  /** Hochgestellte Minuten („30" bei 21:30). */
+  minutes?: string;
+  /** Zeile darunter („Uhr · Di bis Fr so lange geöffnet"). */
+  label: string;
+  /** Ganzer Satz für Vorleser. */
+  sr: string;
+  source: "hours" | "rating";
+};
+
+const SHORT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"] as const;
+const LONG = [
+  "Montag",
+  "Dienstag",
+  "Mittwoch",
+  "Donnerstag",
+  "Freitag",
+  "Samstag",
+  "Sonntag",
+] as const;
+/** Die sieben Wochentage (Berlin, Mittag), ab Montag. */
+const WEEK = SHORT.map((_, i) => new Date(Date.UTC(2026, 9, 12 + i, 10)));
+/** Ziffer aus Zeiten erst ab dieser Schließzeit (Abend, wie Klar). */
+const EVENING = 19 * 60;
+/** Google-Note erst ab so vielen Bewertungen. */
+export const MIN_REVIEWS = 20;
+const LAST_SLOT = /letzte[rn]?\s+termin\D{0,8}?(\d{1,2})(?:[:.](\d{2}))?/i;
+
+/** Tage kurz: „Di bis Fr", „Fr und Sa", „Mo, Mi und Fr", „täglich". */
+function daysText(days: number[], names: readonly string[]): string {
+  if (days.length === 7) return "täglich";
+  const consecutive = days.every((d, k) => k === 0 || d === days[k - 1] + 1);
+  if (days.length > 2 && consecutive)
+    return `${names[days[0]]} bis ${names[days[days.length - 1]]}`;
+  const list = days.map(d => names[d]);
+  return list.length === 1
+    ? list[0]
+    : `${list.slice(0, -1).join(", ")} und ${list[list.length - 1]}`;
+}
+
+/** Späteste Zeit je Wochentag (Minuten, -1 = keine). */
+function latestPerDay(
+  hours: NonNullable<Hours>,
+  read: (text: string) => number | undefined
+): number[] {
+  return WEEK.map(d => {
+    const entry = hours.find(h => coversToday(h.day, d));
+    return entry ? (read(entry.hours) ?? -1) : -1;
+  });
+}
+
+function hoursFigure(real: NonNullable<Hours>): Figure | undefined {
+  if (isRoundTheClock(real)) return undefined;
+  // „letzter Termin 20:30" im Text: genau diese Worte trägt die Ziffer.
+  const slots = latestPerDay(real, text => {
+    const m = text.match(LAST_SLOT);
+    if (!m || Number(m[1]) > 24 || Number(m[2] ?? 0) > 59) return undefined;
+    return Number(m[1]) * 60 + Number(m[2] ?? 0);
+  });
+  const fromSlots = Math.max(...slots) >= 0;
+  const close = fromSlots
+    ? slots
+    : latestPerDay(openHours(real), text => {
+        // Über Mitternacht zählt nicht (18:00 – 2:00 ist keine Schließzeit 2).
+        const ends = readSpans(text)
+          .filter(s => s.to > s.from && !(s.from === 0 && s.to === 24 * 60))
+          .map(s => s.to);
+        return ends.length ? Math.max(...ends) : undefined;
+      });
+  const latest = Math.max(...close);
+  if (latest < EVENING) return undefined;
+  const days = close.flatMap((c, i) => (c === latest ? [i] : []));
+  const h = Math.floor(latest / 60);
+  const min = latest % 60;
+  const at = clock(latest);
+  const short = daysText(days, SHORT);
+  const long = daysText(days, LONG);
+  return {
+    value: String(h),
+    ...(min ? { minutes: String(min).padStart(2, "0") } : {}),
+    label: fromSlots
+      ? `Uhr · letzter Termin ${short}`
+      : `Uhr · ${short} so lange geöffnet`,
+    sr: fromSlots
+      ? `Letzter Termin ${long === "täglich" ? "täglich" : long} um ${at} Uhr`
+      : `${long === "täglich" ? "Täglich" : long} bis ${at} Uhr geöffnet`,
+    source: "hours",
+  };
+}
+
+/**
+ * Große Kupferziffer — nur aus echten Werten (Betreiber 2026-10-12,
+ * Variante A: keine neuen Datenfelder, also keine Zimmerzahl und kein
+ * Gründungsjahr):
+ *  1. „letzter Termin HH:MM" im Zeiten-Text → „20 / Uhr · letzter Termin …"
+ *  2. späteste Schließzeit ab 19 Uhr → „21 / Uhr · Di bis Fr so lange
+ *     geöffnet" (Platzhalter, rund um die Uhr, über Mitternacht: nein)
+ *  3. Google-Note mit mindestens 20 Bewertungen → „4,8 / von 5 · …"
+ *  sonst keine Ziffer.
+ */
+export function entryFigure(doc: WebsiteDataV2): Figure | undefined {
+  const contact = contactOf(visibleDoc(doc).sections);
+  const real = realHours(contact?.openingHours);
+  const fromHours = real ? hoursFigure(real) : undefined;
+  if (fromHours) return fromHours;
+  const g = doc.google;
+  if (!g || !(g.rating > 0) || g.rating > 5 || !(g.reviewCount >= MIN_REVIEWS))
+    return undefined;
+  const count = g.reviewCount.toLocaleString("de-DE");
+  const value = formatHeroRating(g.rating);
+  return {
+    value,
+    label: `von 5 · ${count} Google-Bewertungen`,
+    sr: `${value} von 5 Sternen bei ${count} Google-Bewertungen`,
+    source: "rating",
+  };
+}
+
+/* ── Einstieg ─────────────────────────────────────────────────────────── */
+
+/**
+ * Drei Einstiege laut Systemblatt 8 (Entscheidungstabelle). Ein
+ * brauchbares Foto des Betriebs fällt nie weg.
+ *
+ * | Foto (heroPhoto) | Querformat („stage") | Fassung |
+ * |------------------|----------------------|---------|
+ * | ja               | ja                   | photo   |
+ * | ja               | nein                 | framed  |
+ * | nein             | –                    | plain   |
+ *
+ * photo: Foto gedunkelt über die ganze Breite, Name im Verlauf zur
+ * Grundfarbe (Kontrast garantiert, contrast.test.ts). framed: kleines
+ * Hochformat neben der Ziffer (ohne Ziffer etwas größer, allein).
+ * plain: Name und Ziffer (ohne Ziffer nur der Name).
+ */
+export type EntryVariant = "photo" | "framed" | "plain";
+
+export function entryVariant(
+  data: WebsiteDataV2,
+  hero: SectionOf<"hero"> | undefined
+): EntryVariant {
+  if (!heroPhoto(data, hero)) return "plain";
+  return data.designProfile?.composition === "stage" ? "photo" : "framed";
+}
+
+/**
+ * Name als Kicker + Wortmarke: Steckt die Branche im Namen („Restaurant
+ * Weinberg"), steht sie klein darüber und die Marke groß — beides im h1,
+ * damit das h1 den ganzen Anzeigenamen trägt. Sonst: Branche als Kicker
+ * (außerhalb des h1), Name groß.
+ */
+export function entryName(
+  data: WebsiteDataV2,
+  blueprint: Blueprint
+): { name: string; mark: string; kicker?: string; kickerInName: boolean } {
+  const name = nameOf(data);
+  const branch = branchOf(data, blueprint);
+  const { mark, sub } = brandParts(name, branch);
+  if (sub && mark !== name)
+    return { name, mark, kicker: sub, kickerInName: true };
+  return {
+    name,
+    mark: name,
+    ...(branch && !name.toLocaleLowerCase("de").includes(branch.toLocaleLowerCase("de"))
+      ? { kicker: branch }
+      : {}),
+    kickerInName: false,
+  };
+}
+
+const LEDE_MAX = 200;
+const SENTENCE = /[.!?](\s+|$)/g;
+
+/** Satz unter dem Namen: Unterzeile, sonst Überschrift — nie ein Echo des Namens. */
+export function entryLede(
+  hero: SectionOf<"hero">,
+  data: WebsiteDataV2,
+  blueprint: Blueprint
+): string | undefined {
+  const name = nameOf(data);
+  const branch = branchOf(data, blueprint) ?? "";
+  const echo = (t: string) =>
+    echoesKicker(t, name) || (branch !== "" && echoesKicker(t, branch));
+  const text = [plain(hero.subheadline), plain(hero.headline)].find(
+    t => t.length > 0 && !echo(t)
+  );
+  if (!text) return undefined;
+  if (text.length <= LEDE_MAX) return text;
+  let cut = "";
+  for (const m of text.matchAll(SENTENCE)) {
+    const next = text.slice(0, m.index! + 1);
+    if (next.length > LEDE_MAX) break;
+    cut = next;
+  }
+  return cut || undefined;
+}
+
+/** Monogramm im Ring: erster Buchstabe der Marke („Haus am See" → H). */
+export function monogramOf(mark: string): string {
+  const letter = Array.from(mark.trim()).find(c => /\p{L}|\p{N}/u.test(c));
+  return (letter ?? "·").toLocaleUpperCase("de");
+}
+
+/* ── Wege ─────────────────────────────────────────────────────────────── */
+
+/** Wege wie Klar (shared/actions.ts): Buchungslink → Formular → Bauplan → Anruf. */
+export const nachtActions = systemActions;
+export type { Action };
+
+/**
+ * Kurzform für Kopf und Handy-Leiste: „Tisch reservieren" → „Reservieren",
+ * „Termin anfragen" → „Termin", „Zimmer anfragen" → „Anfragen".
+ */
+const VERB = /^(\S+)\s+(reservieren|anfragen|buchen|vereinbaren|planen)$/i;
+export function nachtShort(label: string): string {
+  const t = label.trim();
+  const m = t.match(VERB);
+  if (!m) return t;
+  if (/^termin$/i.test(m[1])) return "Termin";
+  if (/vereinbaren|planen/i.test(m[2])) return m[1];
+  return m[2].charAt(0).toLocaleUpperCase("de") + m[2].slice(1).toLowerCase();
+}
+
+/**
+ * Handy-Leiste (Systemblatt 9): links „Anrufen", rechts der Hauptweg. Ruft
+ * schon der Hauptweg an, steht links der zweite Weg (Route/E-Mail).
+ */
+export function dockPair(actions: {
+  primary?: Action;
+  second?: Action;
+  phone?: Action;
+}): { left?: Action; main: Action } | undefined {
+  const { primary, second, phone } = actions;
+  if (!primary) return undefined;
+  const calls = primary.href.startsWith("tel:");
+  const left = calls
+    ? second
+    : phone
+      ? { label: "Anrufen", href: phone.href }
+      : second;
+  return { ...(left ? { left } : {}), main: { ...primary, label: nachtShort(primary.label) } };
+}
