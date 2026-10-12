@@ -155,4 +155,66 @@ describe("Bauplan-Übersicht", () => {
       expect(section("werkstatt", "faq")).toBeUndefined();
     });
   });
+
+  describe("Plakat-Beispiele: Kante, Döner Ecke, Studio Puls", () => {
+    const doc = (id: string) =>
+      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+    const section = (id: string, type: string) =>
+      doc(id).sections.find(s => s.type === type) as
+        | Record<string, unknown>
+        | undefined;
+    const IDS = ["barbier", "imbiss", "training"];
+
+    it("haben Plakat als Hauptsystem (Design-Übersicht)", () => {
+      for (const id of IDS) {
+        const s = SHOWCASES.find(x => x.id === id)!;
+        expect(
+          systemsForDoc({
+            businessCategory: s.businessCategory ?? s.label,
+            businessName: s.businessName ?? s.sample,
+          })[0]
+        ).toBe("plakat");
+      }
+    });
+
+    it("Kontaktdaten fiktiv, keine Daten der Fixture", () => {
+      for (const id of IDS) {
+        const contact = section(id, "contact")!;
+        expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+        expect(contact.email).toMatch(/\.example$/);
+      }
+      expect(JSON.stringify(doc("barbier").sections)).not.toMatch(/noir-haarstudio|NOIR/);
+      expect(JSON.stringify(doc("imbiss").sections)).not.toMatch(/trattoria|Lucia|Italien/i);
+      expect(JSON.stringify(doc("training").sections)).not.toMatch(/studio-puls-essen|Essen\b/);
+    });
+
+    it("Fotos aus den neuen Bildsätzen barbier und imbiss; Puls ohne Foto", () => {
+      for (const id of ["barbier", "imbiss"]) {
+        const set = INDUSTRY_IMAGES[id];
+        const urls = JSON.stringify(doc(id).sections).match(
+          /https:\/\/images\.unsplash\.com[^"]+/g
+        )!;
+        expect(urls.length).toBeGreaterThan(3);
+        const pool = [...set.hero, ...(set.gallery ?? [])];
+        for (const u of urls) expect(pool).toContain(u);
+      }
+      expect(section("training", "hero")!.imageUrl).toBeUndefined();
+      expect(JSON.stringify(doc("training"))).not.toMatch(/images\.unsplash/);
+    });
+
+    it("Döner Ecke: Zeiten bis 2 Uhr, Lieferung; Puls: Probetraining 0 €, ohne Google-Zahlen", () => {
+      const hours = JSON.stringify(section("imbiss", "contact")!.openingHours);
+      expect(hours).toContain("11:00 – 2:00");
+      expect(doc("imbiss").amenities?.delivery).toBe(true);
+      expect(JSON.stringify(section("training", "services"))).toContain('"price":"0 €"');
+      expect(doc("training").google).toBeUndefined();
+      expect(doc("training").businessName).toBe("Studio Puls");
+      expect(doc("imbiss").businessName).toBe("Döner Ecke");
+    });
+
+    it("Fragen stehen vor dem Kontakt", () => {
+      const types = doc("barbier").sections.map(s => s.type);
+      expect(types.indexOf("faq")).toBeLessThan(types.indexOf("contact"));
+    });
+  });
 });

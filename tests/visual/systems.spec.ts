@@ -249,3 +249,96 @@ for (const name of [
     });
   }
 }
+
+// Bildvergleich Designsystem Plakat (Plan 2026-10-12, Task P8): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie Journal,
+// Raster, Werkstoff (kein waagrechter Überlauf; reduzierte Bewegung = Laufband
+// still, keine Startzustände). Das Dock ist `position: fixed` und liegt im
+// ganzseitigen Bild im ersten Bildschirm.
+const PLAKAT_PALETTES = ["kante", "senf", "puls"] as const;
+
+for (const palette of PLAKAT_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`plakat ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=plakat&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `plakat-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Plakat: League Gothic und Hanken Grotesk werden geladen", async ({
+  page,
+}) => {
+  await page.goto("/dev/site-preview?system=plakat&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  const families = loaded.join(",");
+  expect(families).toMatch(/League Gothic/);
+  expect(families).toMatch(/Hanken Grotesk/);
+  const fonts = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector(".pk-display")!)
+      .fontFamily,
+    body: getComputedStyle(document.body.querySelector(".pb-plakat")!)
+      .fontFamily,
+  }));
+  expect(fonts.display).toMatch(/^"?League Gothic/);
+  expect(fonts.body).toMatch(/^"?Hanken Grotesk/);
+});
+
+test("Plakat: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=plakat&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("2px");
+  }
+});
+
+test("Plakat: Laufband läuft mit Script, Pause-Knopf hält es an", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo/system/plakat/barbier?palette=kante&live=1");
+  const toggle = page.locator(".pk-tick-toggle");
+  await expect(toggle).toBeVisible();
+  const box = await toggle.boundingBox();
+  expect(box!.width).toBeGreaterThanOrEqual(44);
+  expect(box!.height).toBeGreaterThanOrEqual(44);
+  const state = () =>
+    page.evaluate(
+      () =>
+        getComputedStyle(document.querySelector(".pk-tick-track")!)
+          .animationPlayState
+    );
+  expect(await state()).toBe("running");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).toHaveAccessibleName("Laufband anhalten");
+  expect(await state()).toBe("paused");
+  // Reduzierte Bewegung: Band steht, Knopf unsichtbar.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(toggle).toBeHidden();
+});

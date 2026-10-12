@@ -357,3 +357,57 @@ test.describe("A11y (axe): Designsystem Werkstoff", () => {
     }
   }
 });
+
+/**
+ * Designsystem Plakat (Plan 2026-10-12, Task P8): drei Paletten im vollen
+ * Inhaltsstand plus die drei Beispielbetriebe (Kante Barbershop, Döner Ecke,
+ * Studio Puls ohne Foto), Desktop und Handy. Reduzierte Bewegung (beforeEach)
+ * hält Startzustände fern; zusätzlich wird bis zum Ende gescrollt. Gleiches
+ * Gate: 0 critical/serious.
+ */
+test.describe("A11y (axe): Designsystem Plakat", () => {
+  async function scrollThrough(page: Page): Promise<void> {
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 30));
+      }
+      window.scrollTo(0, 0);
+    });
+  }
+  for (const palette of ["kante", "senf", "puls"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`plakat ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=plakat&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoSeriousViolations(page, `plakat ${palette} (${width})`);
+      });
+    }
+  }
+  for (const [showcase, palette] of [
+    ["barbier", "kante"],
+    ["imbiss", "senf"],
+    ["training", "puls"],
+  ] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`plakat ${showcase} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/demo/system/plakat/${showcase}?palette=${palette}&live=1`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoSeriousViolations(
+          page,
+          `plakat ${showcase} ${palette} (${width})`
+        );
+      });
+    }
+  }
+});
