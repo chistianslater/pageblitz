@@ -7,6 +7,7 @@ import {
   buildPreviewSrc,
   photoClickTargetOf,
   previewScheme,
+  shownPreviewSystem,
 } from "./PreviewFrame";
 
 describe("PreviewFrame helpers", () => {
@@ -107,5 +108,18 @@ describe("Vorschau-Rahmen: Farbschema", () => {
       expect(previewScheme(id)).toBeUndefined();
     expect(previewScheme(null)).toBeUndefined();
     expect(previewScheme(undefined)).toBeUndefined();
+  });
+
+  test("heller Pack-Override auf einem Nacht-Dokument: kein dunkler Rahmen", () => {
+    const scheme = (args: Parameters<typeof shownPreviewSystem>[0]) =>
+      previewScheme(shownPreviewSystem(args));
+    expect(scheme({ docSystem: "nacht" })).toBe("dark");
+    expect(scheme({ docSystem: "nacht", packOverride: "werkbank" })).toBeUndefined();
+    // System-Override hat Vorrang vor Pack und Dokument.
+    expect(
+      scheme({ docSystem: "klar", packOverride: "werkbank", systemOverride: "nacht" })
+    ).toBe("dark");
+    expect(scheme({ docSystem: "nacht", systemOverride: "klar" })).toBeUndefined();
+    expect(shownPreviewSystem({ docSystem: "klar" })).toBe("klar");
   });
 });

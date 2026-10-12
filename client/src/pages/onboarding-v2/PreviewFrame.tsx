@@ -128,6 +128,20 @@ export function previewScheme(
   return system && getSystem(system)?.scheme === "dark" ? "dark" : undefined;
 }
 
+/**
+ * System, das die Vorschau gerade zeigt: Override vor allem; ein Pack-
+ * Override (alte Packs, immer hell) verdrängt das System des Dokuments —
+ * sonst bekäme ein heller Pack auf einem Nacht-Dokument den dunklen Rahmen.
+ */
+export function shownPreviewSystem(args: {
+  systemOverride?: DesignSystemId;
+  packOverride?: PackId;
+  docSystem?: DesignSystemId | null;
+}): DesignSystemId | null | undefined {
+  if (args.systemOverride) return args.systemOverride;
+  return args.packOverride ? undefined : args.docSystem;
+}
+
 /** Pfad der Vorschau (Startseite oder Unterseite) — von PreviewFrame und "In neuem Tab öffnen" geteilt. */
 export function previewPath(token: string, pageSlug?: string): string {
   return pageSlug
@@ -528,7 +542,9 @@ export function PreviewFrame({
       ref={viewportRef}
       className="pb-studio-device"
       data-device={device}
-      data-scheme={previewScheme(systemOverride ?? docSystem)}
+      data-scheme={previewScheme(
+        shownPreviewSystem({ systemOverride, packOverride, docSystem })
+      )}
     >
       <iframe
         ref={iframeRef}
