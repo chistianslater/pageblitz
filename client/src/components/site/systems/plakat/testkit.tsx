@@ -262,3 +262,173 @@ export const entryOf = (html: string) => {
   const at = html.indexOf('<section id="start"');
   return at === -1 ? "" : html.slice(at, html.indexOf("</section>", at));
 };
+
+/** Markup eines Kapitels (`pk-sec pk-<typ>`). */
+export const sectionHtml = (html: string, type: string) => {
+  const at = html.search(new RegExp(`class="pk-sec pk-${type}[" ]`));
+  if (at === -1) return "";
+  const start = html.lastIndexOf("<section", at);
+  return html.slice(start, html.indexOf("</section>", start));
+};
+
+/** Abschnitte nach `after` einfügen (oder anhängen). */
+function insertAfter(doc: Doc, after: Sec["type"], add: Sec[]): Doc {
+  const at = doc.sections.findIndex(s => s.type === after);
+  const sections = [...doc.sections];
+  sections.splice(at === -1 ? sections.length : at + 1, 0, ...add);
+  return { ...doc, sections };
+}
+
+const BARBER = INDUSTRY_IMAGES.barbier.gallery!;
+const IMBISS = INDUSTRY_IMAGES.imbiss.gallery!;
+
+/** Systemblatt 12: Kante ganze Seite (Preise an den Leistungen, Ablauf, Team, Fragen). */
+export function kanteFullDoc(): Doc {
+  let doc = kanteDoc();
+  doc = patchSection(doc, "services", s => ({
+    ...s,
+    items: [
+      { title: "Haarschnitt", description: "Waschen, Schnitt, Styling", price: "28 €" },
+      { title: "Skin Fade", description: "Maschine bis auf die Haut, Übergang von Hand", price: "32 €" },
+      { title: "Bart trimmen", description: "Kontur, Länge, Öl", price: "18 €" },
+      { title: "Schnitt + Bart", price: "45 €" },
+      { title: "Rasur, heißes Tuch", description: "Klinge, zwei heiße Tücher", price: "30 €" },
+      { title: "Kinder bis 12", price: "22 €" },
+    ],
+    link: { text: "Termin buchen", href: "#kontakt" },
+  }));
+  doc = patchSection(doc, "gallery", g => ({
+    ...g,
+    headline: "Im Laden",
+    images: BARBER.slice(0, 4).map((url, i) => ({ url, alt: `Im Laden ${i + 1}` })),
+  }));
+  doc = patchSection(doc, "testimonials", t => ({
+    ...t,
+    items: [
+      { author: "Timo R.", text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.", rating: 5 },
+    ],
+  }));
+  doc = without(doc, "pricelist");
+  doc = insertAfter(doc, "services", [
+    {
+      type: "process",
+      headline: "So läuft's",
+      steps: [
+        { title: "Termin wählen", text: "Online oder kurz anrufen. Freie Zeiten siehst du sofort." },
+        { title: "Schnitt besprechen", text: "Foto mitbringen hilft. Wir sagen ehrlich, was zu deinem Haar passt." },
+        { title: "Raus in 35 Minuten", text: "Waschen, schneiden, stylen. Bezahlen bar oder mit Karte." },
+      ],
+    },
+    {
+      type: "team",
+      headline: "Team",
+      members: [
+        { name: "Mara", role: "Inhaberin", imageUrl: BARBER[4] },
+        { name: "Jule", role: "Barberin", imageUrl: BARBER[5] },
+        { name: "Deniz", role: "Barberin" },
+      ],
+    },
+  ]);
+  doc = insertAfter(doc, "testimonials", [
+    {
+      type: "faq",
+      items: [
+        { question: "Kann ich ohne Termin kommen?", answer: "Ja, wenn ein Stuhl frei ist. Mit Termin wartest du nicht." },
+        { question: "Wie bezahle ich?", answer: "Bar oder mit Karte." },
+        { question: "Schneidet ihr auch Locken?", answer: "Ja, mit Schere und Zeit." },
+      ],
+    },
+  ]);
+  return { ...doc, sections: doc.sections.filter(s => s.type !== "about") };
+}
+
+/** Systemblatt 13: Ecke ganze Seite (Karte gebucht, vier Kategorien, Fragen). */
+export function eckeFullDoc(): Doc {
+  let doc: Doc = { ...eckeDoc(), addOns: { ...eckeDoc().addOns, menu: true } };
+  doc = patchSection(doc, "menu", m => ({
+    ...m,
+    categories: [
+      {
+        name: "Im Brot",
+        items: [
+          { name: "Döner im Brot", price: "7,50 €", description: "Kalb, Salat, Soße nach Wahl" },
+          { name: "Dürüm", price: "8,50 €", description: "im Yufka gerollt" },
+          { name: "Halloumi im Brot", price: "7,90 €" },
+        ],
+      },
+      {
+        name: "Vom Teller",
+        items: [
+          { name: "Döner Teller", price: "12,90 €", description: "mit Pommes oder Reis" },
+          { name: "Iskender", price: "14,50 €", description: "Joghurt, Tomatenbutter" },
+        ],
+      },
+      { name: "Aus dem Ofen", items: [{ name: "Lahmacun", price: "5,50 €", description: "mit Salat" }, { name: "Pide Käse", price: "9,90 €" }] },
+      { name: "Dazu", items: [{ name: "Pommes", price: "3,50 €" }, { name: "Ayran", price: "2,00 €" }] },
+    ],
+  }));
+  doc = patchSection(doc, "gallery", g => ({
+    ...g,
+    headline: "Frisch vom Spieß",
+    images: IMBISS.slice(0, 3).map((url, i) => ({ url, alt: `Vom Spieß ${i + 1}` })),
+  }));
+  doc = without(doc, "services", "about");
+  return insertAfter(doc, "gallery", [
+    {
+      type: "faq",
+      items: [
+        { question: "Liefert ihr?", answer: "Ja, im Umkreis von 3 km ab 15 € Bestellwert." },
+        { question: "Gibt es vegetarisch?", answer: "Halloumi im Brot, Pide Käse, Lahmacun ohne Fleisch auf Nachfrage." },
+      ],
+    },
+  ]);
+}
+
+/** Systemblatt 14: Puls ganze Seite (Kurse als Leistungen, Preise, Ablauf, Trainer ohne Fotos). */
+export function pulsFullDoc(): Doc {
+  let doc = pulsDoc();
+  doc = patchSection(doc, "services", s => ({
+    ...s,
+    headline: "Kurse",
+    items: [
+      { title: "Kraftzirkel", description: "45 Minuten, Langhantel und Kettlebell" },
+      { title: "Rücken fit", description: "30 Minuten, in der Mittagspause" },
+      { title: "Yoga Flow", description: "60 Minuten, Matten sind da" },
+      { title: "Boxen", description: "60 Minuten, Handschuhe leihen wir" },
+    ],
+  }));
+  doc = patchSection(doc, "pricelist", p => ({
+    ...p,
+    categories: [
+      {
+        name: "Mitgliedschaft",
+        items: [
+          { name: "Monat", price: "39 €", description: "monatlich kündbar, alle Kurse" },
+          { name: "10er-Karte", price: "99 €", description: "ein Jahr gültig" },
+          { name: "Probetraining", price: "0 €", description: "einmal, ohne Vertrag" },
+        ],
+      },
+    ],
+  }));
+  doc = without(doc, "about");
+  return insertAfter(doc, "pricelist", [
+    {
+      type: "process",
+      headline: "So startest du",
+      steps: [
+        { title: "Probetraining buchen", text: "Kurs aussuchen, Platz anfragen." },
+        { title: "Kommen, mitmachen", text: "Wir zeigen dir alles. Schuhe für drinnen reichen." },
+        { title: "Weitermachen", text: "Monat oder 10er-Karte, direkt vor Ort." },
+      ],
+    },
+    {
+      type: "team",
+      headline: "Trainer",
+      members: [
+        { name: "Lena", role: "Kraft, Zirkel" },
+        { name: "Ole", role: "Rücken, Mobilität" },
+        { name: "Sanne", role: "Yoga" },
+      ],
+    },
+  ]);
+}
