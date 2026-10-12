@@ -307,12 +307,57 @@ bei der Stockfoto-Ergänzung die Abendmotive des Bildsatzes (`prefersEveningPhot
 in `server/generationV2/runJob.ts`; eigene Google-Fotos gehen weiterhin vor).
 Die gemeinsamen Änderungen aus N0 wirken unterschiedlich: **Sofort beim
 Rendern, für alle bereits live gehenden rev-3-Seiten** (ohne Neuerzeugung)
-gelten Maps-Links im neuen Tab und die Klar-Anruf-Beschriftung („Anrufen" bzw.
-„Termin vereinbaren"). **Nur bei der Erzeugung** (also nur für neu erzeugte
+gelten Maps-Links im neuen Tab und die Anruf-Beschriftung (seit 2026-10-12 in allen
+Systemen: Knöpfe mit `tel:`-Ziel heißen „Anrufen", außer der Text nennt Anruf/Telefon
+oder ist die Nummer). **Nur bei der Erzeugung** (also nur für neu erzeugte
 Seiten, in **allen** Systemen) greifen die Abschnittsreihenfolge der
 Beratungs-Baupläne (USP direkt nach dem Einstieg, Preisliste nach den
 Leistungen) und das Schlagwort „praxis" (nur noch gezielt, kein nacktes
 Treffer-Wort).
+
+### Designsysteme auf Bestand umstellen (rev 2 → rev 3)
+
+`scripts/systeme-umstellen.ts` stellt bestehende rev-2-Seiten auf ihr
+Hauptsystem um (`withPrimarySystem`): kein LLM, keine neuen Texte, kein
+Fotowechsel. Je Seite dürfen sich nur `designRevision`, `system`, `palette`
+und `fontPairId` ändern — das Skript prüft den Top-Level-Diff und lässt eine
+Seite sonst aus. Übersprungen wird außerdem, was schon rev 3 ist, nicht im
+v2-Format vorliegt, keine bestimmte Familie hat oder dessen Hauptsystem nicht
+freigeschaltet ist. Logik und Tests: `server/systemeUmstellen.ts`.
+
+Ziele per `--ids` (Einzel-IDs und Bereiche); ohne Angabe 504, 558–607 ohne
+593, 613. Ausgabe je Seite: ID, Name, Familie/Branche, System/Palette, Zahl
+verschiedener Foto-Adressen, ob rev 3 entsteht (bzw. der Grund fürs
+Überspringen).
+
+```bash
+cd /root/pageblitz
+# 1) Backup
+mysqldump -u<user> -p<pw> pageblitz generated_websites website_versions \
+  > /root/backups/vor-systeme-umstellen-$(date +%F).sql
+# 2) Trockenlauf
+npx tsx -r dotenv/config scripts/systeme-umstellen.ts --ids 504,558-592,594-607,613
+# 3) Schreiben (sichert je Seite zuerst den alten Stand im Verlauf)
+npx tsx -r dotenv/config scripts/systeme-umstellen.ts --ids 504,558-592,594-607,613 --schreiben
+# 4) SSR-Cache leeren (lebt im Serverprozess)
+pm2 restart pageblitz
+```
+
+Vor jedem Schreiben legt das Skript einen Verlaufs-Stand an: Auslöser `panel`,
+Label „Stand vor Designsystem", Inhalt = altes rev-2-Dokument. Ohne diesen Stand
+schreibt es die Seite nicht. Die Kappung auf 50 Stände (`MAX_VERSIONS`) löscht
+immer die ältesten; das Skript selbst kappt nicht, der frische Stand ist der
+jüngste und fällt erst nach 50 späteren Ständen weg.
+
+**Rollback**, je nach Umfang:
+
+- Einzelne Seite: im Studio-Verlauf „Stand vor Designsystem" wiederherstellen
+  (Add-on-Flags bleiben dabei auf dem aktuellen Stand).
+- Alle umgestellten Seiten eines Systems: `scripts/systeme-zuruecksetzen.ts
+  --system <id>` (Trockenlauf, dann `--schreiben`). Achtung: Das trifft **alle**
+  rev-3-Seiten dieses Systems, auch neu erzeugte. Das Schriftpaar (`fontPairId`)
+  stellt nur der Verlaufs-Stand bzw. das Backup wieder her.
+- Notfall: Backup aus Schritt 1 zurückspielen.
 
 ## 4. Umgebungsvariablen & Mock-Flags
 
