@@ -4,7 +4,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
-import { hasSection, rowPrice, useSlot } from "../shared";
+import { hasSection, rowPrice, useSlot, newTabIfMaps } from "../shared";
 import { klarHref } from "./facts";
 import { Icon } from "./icons";
 import { KlarChapter, type KlarSection } from "./sections";
@@ -46,7 +46,7 @@ function LinkAction({ link, anchorPrefix }: { link: Link; anchorPrefix: string }
   const href = klarHref(link?.href, data, anchorPrefix);
   if (!link || !href) return null;
   return (
-    <a className="kl-btn kl-btn--s kl-sec-link" href={href}>
+    <a className="kl-btn kl-btn--s kl-sec-link" href={href} {...newTabIfMaps(href)}>
       {link.text}
     </a>
   );

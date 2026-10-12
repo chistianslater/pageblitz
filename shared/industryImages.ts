@@ -510,7 +510,8 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // Blutdruck-Klischees. Tierarzt/Psychotherapie bleiben bei „medizin".
   praxis: {
     keywords: [
-      "praxis",
+      // Kein nacktes „praxis“ (Nacht N0): Fußpflege-, Logopädie-, Hebammen-,
+      // Kosmetik- und Tattoo-„Praxen“ bekamen sonst Arztpraxis-Fotos.
       "arzt",
       "ärztin",
       "ärzte",

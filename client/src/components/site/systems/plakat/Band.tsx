@@ -1,6 +1,6 @@
 import React from "react";
 import { useSystem } from "../SystemContext";
-import { versalEszett } from "../shared";
+import { versalEszett, newTabIfMaps } from "../shared";
 import { plakatActions, tickerItems } from "./facts";
 import { SYS_DOCK } from "../shared/dockAutoHide";
 
@@ -76,11 +76,11 @@ export function PlakatDock({ anchorPrefix }: { anchorPrefix: string }) {
       {...SYS_DOCK}
     >
       {other && (
-        <a className="pk-dock-a" href={other.href}>
+        <a className="pk-dock-a" href={other.href} {...newTabIfMaps(other.href)}>
           {other.label}
         </a>
       )}
-      <a className="pk-dock-b" href={primary.href}>
+      <a className="pk-dock-b" href={primary.href} {...newTabIfMaps(primary.href)}>
         {primary.label}
       </a>
     </nav>

@@ -9,6 +9,7 @@ import {
   nameOf,
   versalEszett,
   visibleDoc,
+  newTabIfMaps,
 } from "../shared";
 import {
   entryFacts,
@@ -186,12 +187,12 @@ export function PlakatEntry({
           {lede && <p className="pk-entry-lede">{lede}</p>}
           {primary && (
             <p className="pk-entry-actions" {...SYS_ACTIONS}>
-              <a className="pk-btn" href={primary.href}>
+              <a className="pk-btn" href={primary.href} {...newTabIfMaps(primary.href)}>
                 {primary.label}
                 <i aria-hidden="true">→</i>
               </a>
               {second && (
-                <a className="pk-btn2" href={second.href}>
+                <a className="pk-btn2" href={second.href} {...newTabIfMaps(second.href)}>
                   {second.label}
                 </a>
               )}

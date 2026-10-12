@@ -13,6 +13,7 @@ import {
   mailHref,
   nameOf,
   systemShows,
+  newTabIfMaps,
 } from "../shared";
 import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
 import { hoursLabel, klarActions, monogram, shortLabel } from "./facts";
@@ -144,13 +145,13 @@ export function KlarHead({
         {(phone || main) && (
           <div className="kl-head-actions">
             {phone && (
-              <a className="kl-pillbtn" href={phone.href}>
+              <a className="kl-pillbtn" href={phone.href} {...newTabIfMaps(phone.href)}>
                 <Icon name="phone" />
                 {phone.label}
               </a>
             )}
             {main && (
-              <a className="kl-btn kl-btn--p kl-btn--head" href={main.href}>
+              <a className="kl-btn kl-btn--p kl-btn--head" href={main.href} {...newTabIfMaps(main.href)}>
                 {shortLabel(main.label)}
                 <span className="kl-btn-ic">
                   <Icon name={wayIcon(main.href)} />
@@ -267,12 +268,12 @@ export function KlarDock({ anchorPrefix }: { anchorPrefix: string }) {
       {...SYS_DOCK}
     >
       {second && (
-        <a className="kl-btn kl-btn--s" href={second.href}>
+        <a className="kl-btn kl-btn--s" href={second.href} {...newTabIfMaps(second.href)}>
           <Icon name={wayIcon(second.href)} />
           {second.href.startsWith("tel:") ? "Anrufen" : second.label}
         </a>
       )}
-      <a className="kl-btn kl-btn--p" href={primary.href}>
+      <a className="kl-btn kl-btn--p" href={primary.href} {...newTabIfMaps(primary.href)}>
         <Icon name={wayIcon(primary.href)} />
         {shortLabel(primary.label)}
       </a>

@@ -12,6 +12,7 @@ import {
   nameOf,
   systemShows,
   versalEszett,
+  newTabIfMaps,
 } from "../shared";
 import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
@@ -99,7 +100,7 @@ export function PlakatHead({
         <nav className="pk-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
           {primary && (
-            <a className="pk-btn pk-btn--head" href={primary.href}>
+            <a className="pk-btn pk-btn--head" href={primary.href} {...newTabIfMaps(primary.href)}>
               {primary.label}
               <i aria-hidden="true">→</i>
             </a>

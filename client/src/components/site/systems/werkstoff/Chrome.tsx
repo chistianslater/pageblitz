@@ -13,6 +13,7 @@ import {
   mailHref,
   primaryAction,
   systemShows,
+  newTabIfMaps,
 } from "../shared";
 import { groupOpeningHours } from "../../../../../../shared/onboardingV2/openingHours";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
@@ -93,14 +94,14 @@ export function WerkstoffHead({
         <nav className="ws-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
           {first && (
-            <a className="ws-btn" href={first.href}>
+            <a className="ws-btn" href={first.href} {...newTabIfMaps(first.href)}>
               {first.label}
             </a>
           )}
         </nav>
         {/* Weg im Kopf zwischen Leiste (< 48 rem) und Navigation (≥ 64 rem). */}
         {first && (
-          <a className="ws-btn ws-head-btn" href={first.href}>
+          <a className="ws-btn ws-head-btn" href={first.href} {...newTabIfMaps(first.href)}>
             {first.label}
           </a>
         )}
@@ -188,6 +189,7 @@ export function WerkstoffFoot({
               className="ws-btn ws-foot-btn"
               href={first.href}
               {...SYS_ACTIONS}
+              {...newTabIfMaps(first.href)}
             >
               {first.label}
             </a>

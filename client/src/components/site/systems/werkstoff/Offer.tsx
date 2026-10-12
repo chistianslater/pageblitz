@@ -5,7 +5,7 @@ import { rich } from "../../richText";
 import { coversToday } from "../../artDirection/heroFacts";
 import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
-import { formatPrice, hasSection, useSlot } from "../shared";
+import { formatPrice, hasSection, useSlot, newTabIfMaps } from "../shared";
 import {
   WerkstoffChapter,
   chapterTitle,
@@ -33,7 +33,7 @@ export function SectionLink({ link }: { link: Link }) {
   if (!link) return null;
   return (
     <p className="ws-more">
-      <a className="ws-link" href={link.href}>
+      <a className="ws-link" href={link.href} {...newTabIfMaps(link.href)}>
         {link.text}
       </a>
     </p>

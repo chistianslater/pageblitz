@@ -250,10 +250,10 @@ describe("Werkstoff: Handy-Leiste", () => {
   test("zwei Knöpfe: Signal + Kontur; Handwerk Anrufen zuerst, Laden Route zuerst", () => {
     const dock = (html: string) => html.slice(html.indexOf('<nav class="ws-dock"'), html.indexOf("</nav>", html.indexOf('<nav class="ws-dock"')));
     const trade = dock(render(holtkampDoc()));
-    expect(trade).toMatch(/<a class="ws-btn" href="tel:[^"]+">Anrufen<\/a><a class="ws-btn2" href="https:\/\/www\.google\.com\/maps[^"]+">Route<\/a>/);
+    expect(trade).toMatch(/<a class="ws-btn" href="tel:[^"]+">Anrufen<\/a><a class="ws-btn2" href="https:\/\/www\.google\.com\/maps[^"]+" target="_blank" rel="noopener noreferrer">Route<\/a>/);
     const shop = ladenDoc();
     expect(bp(shop).ctaAction).toBe("route");
-    expect(dock(render(shop))).toMatch(/<a class="ws-btn" href="https:\/\/www\.google[^"]+">Route<\/a><a class="ws-btn2" href="tel:/);
+    expect(dock(render(shop))).toMatch(/<a class="ws-btn" href="https:\/\/www\.google[^"]+" target="_blank" rel="noopener noreferrer">Route<\/a><a class="ws-btn2" href="tel:/);
   });
 
   test("nur aus sichtbaren Abschnitten", () => {

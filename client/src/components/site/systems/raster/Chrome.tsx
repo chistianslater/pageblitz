@@ -11,6 +11,7 @@ import {
   mailHref,
   primaryAction,
   systemShows,
+  newTabIfMaps,
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { groupOpeningHours } from "../../../../../../shared/onboardingV2/openingHours";
@@ -94,7 +95,7 @@ export function RasterHead({
         </a>
         <nav className="rs-nav" aria-label="Hauptnavigation">
           <NavLinks items={navItems} />
-          <a className="rs-btn" href={action.href}>
+          <a className="rs-btn" href={action.href} {...newTabIfMaps(action.href)}>
             {action.label}
           </a>
         </nav>
@@ -173,7 +174,7 @@ export function RasterFoot({
       <div className="rs-wrap">
         {/* Aufforderung: Aufruf-Abschnitt, sonst die Hauptaktion — nichts erfunden. */}
         <p className="rs-foot-call" {...SYS_ACTIONS}>
-          <a href={action.href}>{cta?.headline || action.label}</a>
+          <a href={action.href} {...newTabIfMaps(action.href)}>{cta?.headline || action.label}</a>
         </p>
         <div className="rs-foot-cols">
           {serviceTitles.length > 0 && (

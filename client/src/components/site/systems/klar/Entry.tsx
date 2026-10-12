@@ -2,7 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { branchOf, contactOf, heroPhoto, nameOf, visibleDoc } from "../shared";
+import { branchOf, contactOf, heroPhoto, nameOf, visibleDoc, newTabIfMaps } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import {
   entryHeadline,
@@ -138,14 +138,14 @@ function Media({ variant, photo }: { variant: EntryVariant; photo?: string }) {
 function Buttons({ primary, second }: { primary: Action; second?: Action }) {
   return (
     <div className="kl-entry-actions" {...SYS_ACTIONS}>
-      <a className="kl-btn kl-btn--p" href={primary.href}>
+      <a className="kl-btn kl-btn--p" href={primary.href} {...newTabIfMaps(primary.href)}>
         {primary.label}
         <span className="kl-btn-ic">
           <Icon name={wayIcon(primary.href)} />
         </span>
       </a>
       {second && (
-        <a className="kl-btn kl-btn--s" href={second.href}>
+        <a className="kl-btn kl-btn--s" href={second.href} {...newTabIfMaps(second.href)}>
           <Icon name={wayIcon(second.href)} />
           {second.label}
         </a>

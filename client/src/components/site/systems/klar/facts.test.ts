@@ -131,8 +131,31 @@ describe("Klar: Wege (Reihenfolge laut Entscheid)", () => {
   test("4. ohne Bauplan-Aktion: Anruf; ohne Adresse E-Mail als zweiter Knopf", () => {
     const doc = withContact(kanzleiDoc(), { street: undefined, zip: undefined, city: undefined });
     const a = klarActions(doc, bp(doc));
-    expect(a.primary).toEqual({ label: "Erstgespräch vereinbaren", href: "tel:051215550119" });
+    // Ruft der Knopf an, sagt er das (Nacht N0) — nicht „Erstgespräch vereinbaren“.
+    expect(a.primary).toEqual({ label: "Anrufen", href: "tel:051215550119" });
     expect(a.second).toEqual({ label: "E-Mail", href: "mailto:kanzlei@brandt-steuer.example" });
+  });
+  test("tel-Ziel: Beschriftung sagt Anruf bzw. Termin (Nacht N0)", () => {
+    const ki = (doc: Doc, text: string) => patchSection(doc, "hero", h => ({ ...h, ctaText: text }));
+    // Gesundheit: „Termin vereinbaren“ statt KI-Text.
+    const zahn = ki(noForm(), "Jetzt Beratung buchen");
+    expect(klarActions(zahn, bp(zahn)).primary).toEqual({ label: "Termin vereinbaren", href: TEL });
+    // Andere Branchen: „Anrufen“.
+    const kanzlei = ki(kanzleiDoc(), "Mandat anfragen");
+    expect(klarActions(kanzlei, bp(kanzlei)).primary).toEqual({ label: "Anrufen", href: "tel:051215550119" });
+    // Sagt die Beschriftung es schon, bleibt sie.
+    for (const text of ["Jetzt anrufen", "Rückruf? Einfach anrufen", "Termin buchen", "Kennenlerntermin"]) {
+      const doc = ki(kanzleiDoc(), text);
+      expect(klarActions(doc, bp(doc)).primary?.label, text).toBe(text);
+    }
+    // Fester Anruf-Text des Bauplans (Gastro, ctaAction tel) bleibt.
+    const gastro = { ...bp(kanzleiDoc()), id: "gastro" as const, ctaAction: "tel" as const, ctaText: "Tisch reservieren" };
+    const tisch = ki(kanzleiDoc(), "Tisch reservieren");
+    expect(klarActions(tisch, gastro).primary?.label).toBe("Tisch reservieren");
+    expect(klarActions(ki(kanzleiDoc(), "Jetzt Platz sichern"), gastro).primary?.label).toBe("Anrufen");
+    // Andere Ziele behalten den eigenen Text.
+    const link = patchSection(ki(noForm(), "Online buchen"), "hero", h => ({ ...h, ctaHref: "https://termine.example/x" }));
+    expect(klarActions(link, bp(link)).primary?.label).toBe("Online buchen");
   });
   test("ohne eigenen Text: „Anrufen“ beim Anruf", () => {
     const doc = patchSection(kanzleiDoc(), "hero", h => ({ ...h, ctaText: undefined }));

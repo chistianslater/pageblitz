@@ -11,6 +11,7 @@ import {
   normalizeDay,
   useSlot,
   versalEszett,
+  newTabIfMaps,
 } from "../shared";
 import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import { rowPrice } from "./offerData";
@@ -38,7 +39,7 @@ export function SectionLink({ link }: { link: Link }) {
   if (!link) return null;
   return (
     <p className="pk-more">
-      <a className="pk-btn" href={link.href}>
+      <a className="pk-btn" href={link.href} {...newTabIfMaps(link.href)}>
         {link.text}
         <i aria-hidden="true">→</i>
       </a>

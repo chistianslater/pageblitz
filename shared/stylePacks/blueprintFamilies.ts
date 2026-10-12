@@ -142,9 +142,13 @@ export function adviceBlueprint(category: string, name: string): Blueprint {
       team: "Wer berät? Mit Fotos und Namen im Studio entsteht hier euer Team — bei Beratung zählt, wem man gegenübersitzt. Auf der fertigen Seite erscheint der Block erst mit euren Angaben.",
     },
     extraSections: ["process"],
+    // usp/pricelist wie Gesundheit fest eingeordnet (Nacht N0), sonst rutschen
+    // sie ans Ende hinter den Kontakt.
     order: [
       "hero",
+      "usp",
       "services",
+      "pricelist",
       "process",
       "about",
       "team",

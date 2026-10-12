@@ -266,8 +266,8 @@ describe("Klar: Einstieg", () => {
 
   test("ohne Kontaktformular ruft der Hauptknopf an; daneben Route statt der Nummer", () => {
     const e = entryOf(render(kanzleiDoc()));
-    expect(e).toMatch(/<a class="kl-btn kl-btn--p" href="tel:051215550119">Erstgespräch vereinbaren<span class="kl-btn-ic">/);
-    expect(e).toMatch(/<a class="kl-btn kl-btn--s" href="https:\/\/www\.google\.com\/maps\/[^"]*"><svg[\s\S]*?<\/svg>Route<\/a>/);
+    expect(e).toMatch(/<a class="kl-btn kl-btn--p" href="tel:051215550119">Anrufen<span class="kl-btn-ic">/);
+    expect(e).toMatch(/<a class="kl-btn kl-btn--s" href="https:\/\/www\.google\.com\/maps\/[^"]*" target="_blank" rel="noopener noreferrer"><svg[\s\S]*?<\/svg>Route<\/a>/);
     expect(e.match(/href="tel:/g)).toHaveLength(1);
   });
 
@@ -388,7 +388,7 @@ describe("Klar: Handy-Leiste", () => {
   test("gleiches Paar wie der Einstieg: Route + Anruf, wenn der Hauptknopf anruft", () => {
     const html = render(kanzleiDoc());
     expect(html).toMatch(
-      /<nav class="kl-dock" aria-label="Schnellkontakt" data-sys-dock=""><a class="kl-btn kl-btn--s" href="https:\/\/www\.google\.com\/maps\/[^"]*">[\s\S]*?Route<\/a><a class="kl-btn kl-btn--p" href="tel:051215550119">[\s\S]*?Erstgespräch<\/a><\/nav>/
+      /<nav class="kl-dock" aria-label="Schnellkontakt" data-sys-dock=""><a class="kl-btn kl-btn--s" href="https:\/\/www\.google\.com\/maps\/[^"]*" target="_blank" rel="noopener noreferrer">[\s\S]*?Route<\/a><a class="kl-btn kl-btn--p" href="tel:051215550119">[\s\S]*?Anrufen<\/a><\/nav>/
     );
   });
   test("nur sichtbare Abschnitte: ohne Kontakt keine Leiste", () => {

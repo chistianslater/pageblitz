@@ -24,6 +24,24 @@ export function addressLine(c: SectionOf<"contact"> | undefined): string {
 export const mapsHref = (address: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
+const MAPS_PREFIX = "https://www.google.com/maps/";
+
+/** Link auf Google Maps (Route/Anfahrt)? */
+export const isMapsHref = (href: string) => href.startsWith(MAPS_PREFIX);
+
+const NEW_TAB = { target: "_blank", rel: "noopener noreferrer" } as const;
+
+/**
+ * Maps-Links öffnen in allen Systemen einheitlich einen neuen Tab (Nacht N0);
+ * alle anderen Ziele bekommen keine Attribute (leeres Objekt → Ausgabe
+ * unverändert).
+ */
+export function newTabIfMaps(
+  href: string | undefined
+): typeof NEW_TAB | Record<string, never> {
+  return href && isMapsHref(href) ? NEW_TAB : {};
+}
+
 /**
  * `mailto:`-Link nur für eine plausible, einzelne Adresse. Die Adresse kommt
  * aus Kundendaten: Zeichen, die einen mailto-Link umbauen könnten (?, &, #,

@@ -2,6 +2,7 @@ import React from "react";
 import { useSystem } from "../SystemContext";
 import { dockPlan } from "./facts";
 import { SYS_DOCK } from "../shared/dockAutoHide";
+import { newTabIfMaps } from "../shared";
 
 /**
  * Handy-Leiste (Systemblatt: 64 px, unter 48 rem, immer sichtbar). Zwei
@@ -20,7 +21,7 @@ export function RasterDock({ anchorPrefix }: { anchorPrefix: string }) {
         aria-label="Schnellkontakt"
         {...SYS_DOCK}
       >
-        <a className="rs-dock-field rs-dock-field--signal" href={plan.href}>
+        <a className="rs-dock-field rs-dock-field--signal" href={plan.href} {...newTabIfMaps(plan.href)}>
           <span className="rs-dock-label">{plan.label}</span>
           <span className="rs-dock-number">{plan.number}</span>
         </a>
@@ -40,6 +41,7 @@ export function RasterDock({ anchorPrefix }: { anchorPrefix: string }) {
             f.signal ? "rs-dock-field rs-dock-field--signal" : "rs-dock-field"
           }
           href={f.href}
+          {...newTabIfMaps(f.href)}
         >
           <span className="rs-dock-label">{f.label}</span>
           {f.detail && <span className="rs-dock-detail">{f.detail}</span>}

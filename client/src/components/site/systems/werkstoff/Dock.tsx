@@ -2,6 +2,7 @@ import React from "react";
 import { useSystem } from "../SystemContext";
 import { actionPair } from "./facts";
 import { SYS_DOCK } from "../shared/dockAutoHide";
+import { newTabIfMaps } from "../shared";
 
 /**
  * Handy-Leiste (Systemblatt: „Immer zwei Wege: Anrufen und Route. Bei
@@ -20,7 +21,7 @@ export function WerkstoffDock({ anchorPrefix }: { anchorPrefix: string }) {
       {...SYS_DOCK}
     >
       {actions.map((a, i) => (
-        <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href}>
+        <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href} {...newTabIfMaps(a.href)}>
           {a.label}
         </a>
       ))}

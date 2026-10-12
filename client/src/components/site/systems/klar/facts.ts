@@ -39,7 +39,8 @@ export type Action = { label: string; href: string };
  *  3. Bauplan-Aktion: `tel` → Anruf, `route` → Karte
  *  4. Anruf
  *  (ohne Telefon zuletzt `#kontakt`, wenn der Kontakt sichtbar ist)
- * Text: Einstieg bzw. Bauplan, sonst „Termin vereinbaren" bzw. „Anrufen".
+ * Text: Einstieg bzw. Bauplan, sonst „Termin vereinbaren"; ruft der Knopf
+ * an, „Anrufen" bzw. bei Gesundheit „Termin vereinbaren" (callLabel).
  * Zweiter Knopf: die Telefonnummer — ruft der Hauptknopf schon an, statt
  * der Nummer die Route (mit Adresse) oder E-Mail. Die Handy-Leiste zeigt
  * dasselbe Paar. Nur sichtbare Abschnitte zählen.
@@ -73,7 +74,7 @@ export function klarActions(
   if (!target) return { phone };
   const calls = target === tel;
   const primary = {
-    label: own || (calls ? "Anrufen" : "Termin vereinbaren"),
+    label: calls ? callLabel(own, blueprint) : own || "Termin vereinbaren",
     href: target,
   };
   const second = !calls
@@ -84,6 +85,22 @@ export function klarActions(
         ? { label: "E-Mail", href: mail }
         : undefined;
   return { primary, second, phone };
+}
+
+/**
+ * Ruft der Hauptknopf an, sagt er das (Nacht N0): „Anrufen“, bei Gesundheit
+ * „Termin vereinbaren“ — außer der eigene Text nennt Anruf oder Termin schon
+ * oder ist der feste Anruf-Text des Bauplans.
+ * Ein KI-Text wie „Erstgespräch vereinbaren“ versprach sonst ein Formular.
+ */
+const SAYS_CALL = /anruf|termin/i;
+function callLabel(own: string | undefined, blueprint: Blueprint): string {
+  if (own && SAYS_CALL.test(own)) return own;
+  // Fester Anruf-Text des Bauplans („Tisch reservieren“ bei Gastro mit
+  // ctaAction tel) ist fürs Telefon geschrieben und bleibt.
+  if (own && blueprint.ctaAction === "tel" && own === blueprint.ctaText)
+    return own;
+  return blueprint.id === "health" ? "Termin vereinbaren" : "Anrufen";
 }
 
 /** „Termin vereinbaren" → „Termin" (Kopf und Handy-Leiste). */

@@ -10,6 +10,7 @@ import {
   mailHref,
   mapsHref,
   primaryAction,
+  newTabIfMaps,
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
@@ -122,7 +123,7 @@ export function JournalHead({
               Anrufen
             </a>
           ) : (
-            <a className="jr-link jr-head-call" href={action.href}>
+            <a className="jr-link jr-head-call" href={action.href} {...newTabIfMaps(action.href)}>
               {action.label}
             </a>
           )}
@@ -132,7 +133,7 @@ export function JournalHead({
             </a>
           )}
           {/* Klassenname aus dem Plan; Gestalt laut Systemblatt eckig. */}
-          <a className="jr-pill" href={action.href}>
+          <a className="jr-pill" href={action.href} {...newTabIfMaps(action.href)}>
             {action.label}
           </a>
         </div>
@@ -186,12 +187,12 @@ export function JournalFoot({
         )}
         <div className="jr-links" {...SYS_ACTIONS}>
           {address && (
-            <a className="jr-link" href={mapsHref(address)}>
+            <a className="jr-link" href={mapsHref(address)} target="_blank" rel="noopener noreferrer">
               Route planen
             </a>
           )}
           {!action.href.startsWith("tel:") && (
-            <a className="jr-link" href={action.href}>
+            <a className="jr-link" href={action.href} {...newTabIfMaps(action.href)}>
               {action.label}
             </a>
           )}

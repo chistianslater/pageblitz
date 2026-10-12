@@ -3,7 +3,7 @@ import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { rich } from "../../richText";
 import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import { addressLine, mailHref, mapsHref } from "../shared";
+import { addressLine, mailHref, mapsHref, newTabIfMaps } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import {
   entryVariant,
@@ -184,14 +184,14 @@ export function KlarCta({
     >
       {primary && (
         <div className="kl-band-actions" {...SYS_ACTIONS}>
-          <a className="kl-btn kl-btn--p" href={primary.href}>
+          <a className="kl-btn kl-btn--p" href={primary.href} {...newTabIfMaps(primary.href)}>
             {primary.label}
             <span className="kl-btn-ic">
               <Icon name={wayIcon(primary.href)} />
             </span>
           </a>
           {second && second.href !== primary.href && (
-            <a className="kl-btn kl-btn--s" href={second.href}>
+            <a className="kl-btn kl-btn--s" href={second.href} {...newTabIfMaps(second.href)}>
               <Icon name={wayIcon(second.href)} />
               {second.label}
             </a>

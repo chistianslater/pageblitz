@@ -355,7 +355,7 @@ describe("Journal: Einstieg", () => {
       /class="jr-pill jr-pill--ghost" href="#leistungen">Leistungen ansehen</
     );
     expect(entry).toMatch(
-      /class="jr-link" href="https:\/\/www.google.com\/maps[^"]*">Route planen</
+      /class="jr-link" href="https:\/\/www.google.com\/maps[^"]*" target="_blank" rel="noopener noreferrer">Route planen</
     );
   });
 

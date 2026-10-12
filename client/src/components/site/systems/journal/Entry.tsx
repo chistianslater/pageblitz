@@ -11,7 +11,7 @@ import {
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import { useSystem } from "../SystemContext";
-import { addressLine, mapsHref, primaryAction } from "../shared";
+import { addressLine, mapsHref, primaryAction, newTabIfMaps } from "../shared";
 import type { JournalSection } from "./sections";
 import { FIT_MAX, FIT_MIN } from "./css";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
@@ -180,11 +180,11 @@ export function JournalEntry({
         )}
         {!photo && (
           <div className="jr-entry-actions" {...SYS_ACTIONS}>
-            <a className="jr-pill jr-pill--ghost" href={action.href}>
+            <a className="jr-pill jr-pill--ghost" href={action.href} {...newTabIfMaps(action.href)}>
               {action.label}
             </a>
             {address && (
-              <a className="jr-link" href={mapsHref(address)}>
+              <a className="jr-link" href={mapsHref(address)} target="_blank" rel="noopener noreferrer">
                 Route planen
               </a>
             )}

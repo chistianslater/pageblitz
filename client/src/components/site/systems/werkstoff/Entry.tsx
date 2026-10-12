@@ -3,7 +3,7 @@ import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { contactOf, googleFact, heroPhoto } from "../shared";
+import { contactOf, googleFact, heroPhoto, newTabIfMaps } from "../shared";
 import {
   earlyWeekdays,
   entryActions,
@@ -142,7 +142,7 @@ export function WerkstoffEntry({ hero }: { hero: SectionOf<"hero"> }) {
   const buttons = actions.length > 0 && (
     <p className="ws-entry-actions" {...SYS_ACTIONS}>
       {actions.map((a, i) => (
-        <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href}>
+        <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href} {...newTabIfMaps(a.href)}>
           {a.label}
         </a>
       ))}

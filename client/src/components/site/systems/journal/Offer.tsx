@@ -4,7 +4,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
-import { chapterIndex, hasSection as has, useSlot } from "../shared";
+import { chapterIndex, hasSection as has, useSlot, newTabIfMaps } from "../shared";
 import {
   JournalChapter,
   chapterLabel,
@@ -36,7 +36,7 @@ function SectionLink({ link }: { link: Link }) {
   if (!link) return null;
   return (
     <p className="jr-links jr-section-links">
-      <a className="jr-link" href={link.href}>
+      <a className="jr-link" href={link.href} {...newTabIfMaps(link.href)}>
         {link.text}
       </a>
     </p>

@@ -4,7 +4,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
-import { formatPrice, hasSection, useSlot } from "../shared";
+import { formatPrice, hasSection, useSlot, newTabIfMaps } from "../shared";
 import {
   RasterChapter,
   chapterLabel,
@@ -26,7 +26,7 @@ export function SectionLink({ link }: { link: Link }) {
   if (!link) return null;
   return (
     <p>
-      <a className="rs-link" href={link.href}>
+      <a className="rs-link" href={link.href} {...newTabIfMaps(link.href)}>
         {link.text}
       </a>
     </p>

@@ -454,7 +454,6 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
       "Gemeinschaftspraxis",
       "Medizinisches Versorgungszentrum",
       "MVZ",
-      "Praxis",
       "General practitioner",
     ])
       expect(gruppe(k, "Dr. Weber"), k).toBe("praxis");
@@ -551,5 +550,53 @@ describe("Verfeinerungen nach KI-Schlüssel bleiben wie vor Klar K1", () => {
   test("Physio verfeinert auch fitness, Yoga bleibt fitness", () => {
     expect(gruppe("Physiotherapie", "fitness")).toBe("physio");
     expect(gruppe("Yoga", "fitness")).toBe("fitness");
+  });
+});
+
+describe("Praxis-Satz nur für Ärzte, nicht für jede „Praxis“ (Nacht N0)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+
+  test("das nackte Schlagwort „praxis“ führt nicht mehr zum Praxis-Satz", () => {
+    expect(INDUSTRY_IMAGES.praxis.keywords).not.toContain("praxis");
+  });
+
+  test.each([
+    "Fußpflege",
+    "Fußpflegepraxis",
+    "Podologie",
+    "Podologische Praxis",
+    "Praxis für Podologie",
+    "Logopädie",
+    "Logopädische Praxis",
+    "Praxis für Logopädie",
+    "Hebamme",
+    "Hebammenpraxis",
+    "Kosmetikstudio",
+    "Kosmetikpraxis",
+    "Tattoo Praxis",
+    "Praxis",
+  ])("%s bekommt keine Arztpraxis-Fotos", k => {
+    expect(gruppe(k, "Am Markt"), k).not.toBe("praxis");
+    expect(gruppe(k, "Am Markt", "medizin"), `${k} (KI medizin)`).not.toBe("praxis");
+    expect(gruppe("", k), `${k} (nur Name)`).not.toBe("praxis");
+  });
+
+  test("Ärzte behalten den Praxis-Satz", () => {
+    for (const k of [
+      "Arztpraxis",
+      "Gemeinschaftspraxis",
+      "Hausarztpraxis",
+      "Hausarzt",
+      "Allgemeinmedizin",
+      "Praxis für Allgemeinmedizin",
+      "Kinderarztpraxis",
+    ]) {
+      expect(gruppe(k, "Dr. Weber"), k).toBe("praxis");
+      expect(gruppe(k, "Dr. Weber", "medizin"), `${k} (KI medizin)`).toBe("praxis");
+    }
+    expect(gruppe("", "Gemeinschaftspraxis am Ring")).toBe("praxis");
   });
 });

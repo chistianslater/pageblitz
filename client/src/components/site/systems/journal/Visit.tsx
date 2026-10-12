@@ -16,6 +16,7 @@ import {
   mailHref,
   mapsHref,
   primaryAction,
+  newTabIfMaps,
 } from "../shared";
 import {
   JournalChapter,
@@ -326,7 +327,7 @@ export function JournalDock({ anchorPrefix }: { anchorPrefix: string }) {
         : undefined;
   return (
     <nav className="jr-dock" aria-label="Schnellzugriff" {...SYS_DOCK}>
-      <a className="jr-dock-main" href={action.href}>
+      <a className="jr-dock-main" href={action.href} {...newTabIfMaps(action.href)}>
         {action.label}
       </a>
       {second && (

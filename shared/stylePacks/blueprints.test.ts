@@ -323,6 +323,46 @@ describe("Branchenfamilien", () => {
   });
 });
 
+describe("Bauplan Beratung: Reihenfolge wie Gesundheit (Nacht N0)", () => {
+  it("ordnet usp nach dem Einstieg und pricelist nach den Leistungen ein", () => {
+    for (const category of ["Steuerberater", "Rechtsanwalt", "Werbeagentur"]) {
+      const order = blueprintFor(category).order ?? [];
+      expect(order, category).toEqual([
+        "hero",
+        "usp",
+        "services",
+        "pricelist",
+        "process",
+        "about",
+        "team",
+        "gallery",
+        "testimonials",
+        "faq",
+        "contact",
+      ]);
+    }
+  });
+
+  it("sortiert vorhandene usp/pricelist-Abschnitte an ihren Platz", () => {
+    const base = getFixture("werkbank", "full");
+    const types = ["contact", "pricelist", "faq", "usp", "services", "hero"] as const;
+    const doc = {
+      ...base,
+      businessCategory: "Steuerberater",
+      sections: types.map(t => base.sections.find(s => s.type === t) ?? ({ type: t } as never)),
+    };
+    const sorted = withBlueprint(doc as typeof base, blueprintFor("Steuerberater"));
+    expect(sorted.sections.map(s => s.type)).toEqual([
+      "hero",
+      "usp",
+      "services",
+      "pricelist",
+      "faq",
+      "contact",
+    ]);
+  });
+});
+
 describe("Vertrauensleiste ohne Füllstoff", () => {
   it("bleibt weg, wenn nur Ort und Kontaktwege bekannt sind", () => {
     const base = getFixture("werkbank", "full");
