@@ -184,7 +184,7 @@ describe("Nacht: Kopf, Fuß, Leiste", () => {
   test("Monogramm im Ring (dekorativ) + Marke, „Menü“ mit Strichen, Hauptweg am Desktop", () => {
     const head = headOf(render(weinbergDoc()));
     expect(head).toContain(
-      '<a class="nc-brand" href="#start"><span class="nc-mono" aria-hidden="true">W</span><span class="nc-mark">Weinberg</span></a>'
+      '<a class="nc-brand" href="#start" aria-label="Restaurant Weinberg"><span class="nc-mono" aria-hidden="true">W</span><span class="nc-mark">Weinberg</span></a>'
     );
     expect(head).toContain(
       '<summary class="nc-menu-toggle"><span class="nc-menu-word">Menü</span><span class="nc-bars" aria-hidden="true"></span></summary>'
@@ -427,9 +427,24 @@ describe("Nacht: Einstieg", () => {
     expect(body).toMatch(
       /\.nc-display\{[^}]*font-size:min\(var\(--sys-display-size\),calc\(100cqi \/ var\(--nc-word,6\) \/ 0\.8\)\)\}/
     );
+  });
+
+  test("Marke im Kopf nie abgeschnitten: passt sie nicht, bleibt nur das Monogramm", () => {
+    // Abnahme 2026-10-12: „HAARSTUDIO …" / „HERREN SALO…" am Handy.
+    expect(body).not.toContain("text-overflow:ellipsis");
+    // Marke in einer Zeile, ohne Schrumpfen; passt sie nicht neben das
+    // Monogramm, bricht sie in eine zweite Reihe, die der Link (eine
+    // Reihe hoch) wegschneidet — ganz oder gar nicht.
     expect(body).toMatch(
-      /\.nc-head--over \.nc-mark\{white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/
+      /\.pb-nacht \.nc-brand\{[^}]*display:flex;flex-wrap:wrap;[^}]*height:calc\(var\(--sys-space-xl\) \* \.75\);overflow:hidden/
     );
+    expect(body).toMatch(/\.pb-nacht \.nc-mark\{[^}]*flex:none;white-space:nowrap/);
+    expect(body).not.toMatch(/\.nc-mark\{[^}]*overflow-wrap/);
+    // Der Startseiten-Link heißt immer wie der ganze Betrieb.
+    const name = "Herren Salon Nachtschicht Friseur";
+    const head = headOf(render({ ...noirDoc(), businessName: name }));
+    expect(head).toContain(`<a class="nc-brand" href="#start" aria-label="${name}">`);
+    expect(head).toContain(`<span class="nc-mark">${name}</span>`);
   });
 });
 

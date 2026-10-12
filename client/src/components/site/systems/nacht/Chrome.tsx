@@ -68,12 +68,18 @@ function NavLinks({ items }: { items: NavItem[] }) {
   );
 }
 
-/** Monogramm im Kupferring (dekorativ) und Marke. */
+/**
+ * Monogramm im Kupferring (dekorativ) und Marke. Die Marke wird nie
+ * abgeschnitten: Passt sie nicht in eine Zeile neben Monogramm und Menü,
+ * bleibt nur das Monogramm (CSS: zweite Reihe wird weggeschnitten) — der
+ * volle Name steht direkt darunter im h1. Der Link heißt für Vorleser
+ * immer wie der ganze Betrieb.
+ */
 function Brand({ href }: { href: string }) {
   const { data, blueprint } = useSystem();
-  const { mark } = entryName(data, blueprint);
+  const { name, mark } = entryName(data, blueprint);
   return (
-    <a className="nc-brand" href={href}>
+    <a className="nc-brand" href={href} aria-label={name}>
       <span className="nc-mono" aria-hidden="true">
         {monogramOf(mark)}
       </span>

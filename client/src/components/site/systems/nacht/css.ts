@@ -71,11 +71,12 @@ ${FONT_FACES}
 .pb-nacht .nc-head{position:relative;z-index:20;background:var(--sys-paper);color:var(--sys-ink)}
 .pb-nacht .nc-head--over{position:absolute;inset:0 0 auto 0;background:transparent}
 .pb-nacht .nc-head-bar{max-width:var(--sys-space-max);margin-inline:auto;display:flex;align-items:center;gap:calc(var(--sys-space-s) * .875);min-height:${HEAD_H};padding:0 var(--sys-space-gutter)}
-.pb-nacht .nc-brand{display:flex;align-items:center;gap:calc(var(--sys-space-s) * .75);margin-right:auto;min-width:0;min-height:${H_MIN};text-decoration:none}
+/* Marke ganz oder gar nicht: passt sie nicht neben das Monogramm, bricht sie in eine
+   zweite Reihe, die der eine Reihe hohe Link wegschneidet — nie „HAARSTUDIO …" */
+.pb-nacht .nc-brand{display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;gap:0 calc(var(--sys-space-s) * .75);margin-right:auto;min-width:0;min-height:${H_MIN};height:${H_MIN};overflow:hidden;text-decoration:none}
 .pb-nacht .nc-mono{flex:none;display:grid;place-items:center;width:${MONO};height:${MONO};border-radius:${ROUND};box-shadow:inset 0 0 0 1px var(--sys-accent);color:var(--sys-accent);
   font-family:var(--sys-font-display);font-weight:400;font-size:var(--sys-space-m);line-height:1}
-.pb-nacht .nc-mark{${step("mark")};min-width:0;overflow-wrap:anywhere;color:var(--sys-ink)}
-.pb-nacht .nc-head--over .nc-mark{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pb-nacht .nc-mark{${step("mark")};flex:none;white-space:nowrap;color:var(--sys-ink)}
 .pb-nacht .nc-menu{flex:none}
 .pb-nacht .nc-menu-toggle{${step("link")};display:inline-flex;align-items:center;gap:calc(var(--sys-space-xs) * 1.25);min-height:${H_MIN};padding:0 var(--sys-space-2xs) 0 calc(var(--sys-space-s) * .75);
   list-style:none;cursor:pointer}
