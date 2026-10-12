@@ -1,6 +1,5 @@
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
-import { claimPhotos, unquote, voiceOf, type SystemSection } from "../shared";
+import { claimPhotos, voiceList, type SystemSection } from "../shared";
 
 /**
  * Reine Daten-Regeln für die Klar-Kapitel (Fotos, Monogramme, Stimmen).
@@ -76,25 +75,9 @@ export function monoInitials(name: string): string {
 
 /* ── Stimmen ──────────────────────────────────────────────────────────── */
 
-export type Voice = { text: string; author: string; stars: boolean };
-
-/**
- * Stimmen: zuerst die beste (voiceOf/pickReviewQuote), danach jede weitere
- * zitierfähige Bewertung in Reihenfolge der Daten — Kritik und Wertungen
- * unter 5 entfallen (gleiche Regel wie pickReviewQuote je Eintrag).
- */
-export function klarVoices(items: SectionOf<"testimonials">["items"]): Voice[] {
-  const lead = voiceOf(items);
-  if (!lead) return [];
-  const rest = items.flatMap((item): Voice[] => {
-    const own = pickReviewQuote([item]);
-    if (!own) return [];
-    const text = unquote(own.text);
-    if (own.author.trim() === lead.author && text === lead.text) return [];
-    return [{ text, author: own.author.trim(), stars: item.rating === 5 }];
-  });
-  return [lead, ...rest];
-}
+export type { Voice } from "../shared/voice";
+/** Stimmen — Regeln in shared/voice.ts (voiceList, geteilt mit Nacht). */
+export const klarVoices = voiceList;
 
 /* ── Text ─────────────────────────────────────────────────────────────── */
 

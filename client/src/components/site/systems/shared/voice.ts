@@ -27,3 +27,24 @@ export function voiceOf(
     stars: source?.rating === 5,
   };
 }
+
+export type Voice = { text: string; author: string; stars: boolean };
+
+/**
+ * Stimmen: zuerst die beste (voiceOf/pickReviewQuote), danach jede weitere
+ * zitierfähige Bewertung in Reihenfolge der Daten — Kritik und Wertungen
+ * unter 5 entfallen (gleiche Regel wie pickReviewQuote je Eintrag).
+ * Aus Klar herausgelöst, geteilt mit Nacht; Verhalten unverändert.
+ */
+export function voiceList(items: SectionOf<"testimonials">["items"]): Voice[] {
+  const lead = voiceOf(items);
+  if (!lead) return [];
+  const rest = items.flatMap((item): Voice[] => {
+    const own = pickReviewQuote([item]);
+    if (!own) return [];
+    const text = unquote(own.text);
+    if (own.author.trim() === lead.author && text === lead.text) return [];
+    return [{ text, author: own.author.trim(), stars: item.rating === 5 }];
+  });
+  return [lead, ...rest];
+}

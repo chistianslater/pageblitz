@@ -5,9 +5,7 @@ import type {
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { stripMarks } from "../../richText";
-import { SECTION_ANCHORS } from "../../engine";
 import {
-  systemShows,
   branchOf,
   contactOf,
   echoesKicker,
@@ -17,6 +15,7 @@ import {
 } from "../shared";
 import { realHours } from "./hours";
 import { systemActions } from "../shared/actions";
+import { systemHref } from "../shared/links";
 
 /**
  * Reine Daten-Regeln für Klar (Einstieg, Wege, Fakten-Chips, Kopf).
@@ -228,25 +227,5 @@ export const hoursLabel = (blueprint: Blueprint) =>
 
 /* ── Links aus den Daten ──────────────────────────────────────────────── */
 
-/**
- * Ziel eines Links aus den Daten (Aufruf, Abschnitts-Link): absolute
- * http(s)-, tel:- und mailto:-Ziele bleiben; ein Anker nur, wenn sein
- * Abschnitt auf der Startseite sichtbar ist — dann mit Präfix (Unter- und
- * Rechtsseiten zeigen zur Startseite). Alles andere → undefined (der
- * Aufrufer fällt auf den Termin-Weg zurück oder lässt den Link weg).
- */
-export function klarHref(
-  href: string | undefined,
-  doc: WebsiteDataV2,
-  anchorPrefix = ""
-): string | undefined {
-  const h = href?.trim();
-  if (!h) return undefined;
-  if (/^(https?:\/\/|tel:|mailto:)/i.test(h)) return h;
-  if (!h.startsWith("#") || h.length < 2) return undefined;
-  const id = h.slice(1);
-  const shown = visibleDoc(doc)
-    .sections.filter(systemShows)
-    .some(s => SECTION_ANCHORS[s.type] === id);
-  return shown ? `${anchorPrefix}${h}` : undefined;
-}
+/** Ziel eines Links aus den Daten — Regeln in shared/links.ts (geteilt mit Nacht). */
+export const klarHref = systemHref;
