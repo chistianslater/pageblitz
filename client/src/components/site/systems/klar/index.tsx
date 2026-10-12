@@ -48,7 +48,11 @@ export const KLAR_MODULE: PackModule = {
       pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
     return (
       <>
-        <KlarHead navItems={nav} anchorPrefix={anchorPrefix} />
+        <KlarHead
+          navItems={nav}
+          anchorPrefix={anchorPrefix}
+          home={!sections && !legal && list.some(s => s.type === "hero")}
+        />
         <main className="kl-main" id="inhalt">
           {legal && <KlarLegal title={legal.title} html={legal.html} />}
           {ownHead && <KlarPageHead title={pageTitle} />}

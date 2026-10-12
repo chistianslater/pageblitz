@@ -16,8 +16,8 @@ import {
 } from "../shared";
 import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
 import { hoursLabel, klarActions, monogram, shortLabel } from "./facts";
-import { realHours } from "./hours";
-import { Icon } from "./icons";
+import { isClosedText, realHours } from "./hours";
+import { Icon, wayIcon } from "./icons";
 
 /**
  * Kopf, Fuß und Handy-Leiste von Klar nach Systemblatt 8–13: Kopf mit
@@ -38,7 +38,10 @@ function navLabels(blueprint: Blueprint): Partial<Record<SectionType, string>> {
   };
 }
 
-export function klarNavItems(items: NavItem[], blueprint: Blueprint): NavItem[] {
+export function klarNavItems(
+  items: NavItem[],
+  blueprint: Blueprint
+): NavItem[] {
   const labels = navLabels(blueprint);
   return items.map(item =>
     item.sectionType && !item.fixedLabel && labels[item.sectionType]
@@ -73,11 +76,19 @@ function NavLinks({ items }: { items: NavItem[] }) {
  * Vorleser — sichtbar steht er gleich darunter in der Pille (h1).
  */
 export const BRAND_LONG = 26;
-/** Mehr Einträge passen nicht in eine Desktop-Zeile: Menü bleibt. */
+/**
+ * Desktop-Navigation: bis zu fünf Einträge direkt; bei mehr die ersten
+ * vier und „Mehr" (<details> wie das Menü) mit dem Rest.
+ */
 export const NAV_MAX = 5;
+export const NAV_SHOWN = 4;
 
-/** Marke: Monogramm-Kachel (dekorativ) und Name. */
-function Brand({ href }: { href?: string }) {
+/**
+ * Marke: Monogramm-Kachel (dekorativ) und Name. `home`: Auf der
+ * Startseite steht der Name am Handy gleich darunter als h1 in der Pille —
+ * im Kopf dann nur für Vorleser (kein doppelter Name im ersten Blick).
+ */
+function Brand({ href, home = false }: { href?: string; home?: boolean }) {
   const { data } = useSystem();
   const name = nameOf(data);
   const long = name.length > BRAND_LONG;
@@ -89,36 +100,48 @@ function Brand({ href }: { href?: string }) {
       <span className={long ? "kl-mark kl-mark--long" : "kl-mark"}>{name}</span>
     </>
   );
+  const cls = home ? "kl-brand kl-brand--home" : "kl-brand";
   return href ? (
-    <a className="kl-brand" href={href}>
+    <a className={cls} href={href}>
       {inner}
     </a>
   ) : (
-    <p className="kl-brand">{inner}</p>
+    <p className={cls}>{inner}</p>
   );
 }
 
 export function KlarHead({
   navItems,
   anchorPrefix,
+  home = false,
 }: {
   navItems: NavItem[];
   anchorPrefix: string;
+  home?: boolean;
 }) {
   const { data, blueprint } = useSystem();
-  const { appointment, phone } = klarActions(data, blueprint, anchorPrefix);
+  const { primary, phone } = klarActions(data, blueprint, anchorPrefix);
+  const main = primary && primary.href !== phone?.href ? primary : undefined;
+  const more = navItems.length > NAV_MAX;
+  const direct = more ? navItems.slice(0, NAV_SHOWN) : navItems;
   return (
-    <header
-      className={
-        navItems.length > NAV_MAX ? "kl-head kl-head--menu" : "kl-head"
-      }
-    >
+    <header className="kl-head">
       <div className="kl-head-bar">
-        <Brand href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`} />
-        <nav className="kl-nav" aria-label="Hauptnavigation">
-          <NavLinks items={navItems} />
-        </nav>
-        {(phone || appointment) && (
+        <Brand href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`} home={home} />
+        {navItems.length > 0 && (
+          <nav className="kl-nav" aria-label="Hauptnavigation">
+            <NavLinks items={direct} />
+            {more && (
+              <details className="kl-menu kl-more">
+                <summary className="kl-menu-toggle kl-more-toggle">Mehr</summary>
+                <div className="kl-menu-panel kl-more-panel">
+                  <NavLinks items={navItems.slice(NAV_SHOWN)} />
+                </div>
+              </details>
+            )}
+          </nav>
+        )}
+        {(phone || main) && (
           <div className="kl-head-actions">
             {phone && (
               <a className="kl-pillbtn" href={phone.href}>
@@ -126,11 +149,11 @@ export function KlarHead({
                 {phone.label}
               </a>
             )}
-            {appointment && (
-              <a className="kl-btn kl-btn--p kl-btn--head" href={appointment.href}>
-                {shortLabel(appointment.label)}
+            {main && (
+              <a className="kl-btn kl-btn--p kl-btn--head" href={main.href}>
+                {shortLabel(main.label)}
                 <span className="kl-btn-ic">
-                  <Icon name="calendar" />
+                  <Icon name={wayIcon(main.href)} />
                 </span>
               </a>
             )}
@@ -138,7 +161,7 @@ export function KlarHead({
         )}
         {/* Menü ohne JS: <details>/<summary> (SSR-Kundenseiten hydrieren nicht). */}
         {navItems.length > 0 && (
-          <details className="kl-menu">
+          <details className="kl-menu kl-menu--main">
             <summary className="kl-menu-toggle kl-pillbtn">
               <Icon name="menu" />
               Menü
@@ -159,7 +182,7 @@ function footHours(hours: ReturnType<typeof realHours>): string[] {
   if (!hours) return [];
   return groupOpeningHours(hours).map(
     h =>
-      `${h.day.trim()} ${/geschlossen|closed|ruhetag/i.test(h.hours) ? "geschlossen" : shortHours(h.hours)}`
+      `${h.day.trim()} ${isClosedText(h.hours) ? "geschlossen" : shortHours(h.hours)}`
   );
 }
 
@@ -235,31 +258,24 @@ export function KlarFoot({ basePath }: { basePath: string }) {
  */
 export function KlarDock({ anchorPrefix }: { anchorPrefix: string }) {
   const { data, blueprint } = useSystem();
-  const { appointment, phone, primary } = klarActions(
-    data,
-    blueprint,
-    anchorPrefix
-  );
-  const main = appointment ?? (phone ? undefined : primary);
-  if (!phone && !main) return null;
+  const { primary, second } = klarActions(data, blueprint, anchorPrefix);
+  if (!primary) return null;
   return (
     <nav
-      className={phone && main ? "kl-dock" : "kl-dock kl-dock--one"}
+      className={second ? "kl-dock" : "kl-dock kl-dock--one"}
       aria-label="Schnellkontakt"
       {...SYS_DOCK}
     >
-      {phone && (
-        <a className="kl-btn kl-btn--s" href={phone.href}>
-          <Icon name="phone" />
-          Anrufen
+      {second && (
+        <a className="kl-btn kl-btn--s" href={second.href}>
+          <Icon name={wayIcon(second.href)} />
+          {second.href.startsWith("tel:") ? "Anrufen" : second.label}
         </a>
       )}
-      {main && (
-        <a className="kl-btn kl-btn--p" href={main.href}>
-          <Icon name="calendar" />
-          {shortLabel(main.label)}
-        </a>
-      )}
+      <a className="kl-btn kl-btn--p" href={primary.href}>
+        <Icon name={wayIcon(primary.href)} />
+        {shortLabel(primary.label)}
+      </a>
     </nav>
   );
 }

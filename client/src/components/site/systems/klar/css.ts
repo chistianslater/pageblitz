@@ -73,6 +73,10 @@ ${FONT_FACES}
 @media (max-width:calc(30rem - 1px)){
   .pb-klar .kl-head .kl-mark--long{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 }
+/* Startseite am Handy: Name steht darunter als h1 — im Kopf nur für Vorleser */
+@media (max-width:calc(${DOCK} - 1px)){
+  .pb-klar .kl-brand--home .kl-mark{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+}
 .pb-klar .kl-menu-toggle{list-style:none}
 .pb-klar .kl-menu-toggle::-webkit-details-marker{display:none}
 .pb-klar .kl-menu-panel{position:absolute;left:0;right:0;top:100%;display:grid;background:var(--sys-surface);color:var(--sys-ink);
@@ -81,11 +85,19 @@ ${FONT_FACES}
 .pb-klar .kl-menu-panel a[aria-current]{color:var(--sys-accent)}
 .pb-klar .kl-nav,.pb-klar .kl-head-actions{display:none}
 @media (min-width:${NAV}){
-  .pb-klar .kl-head:not(.kl-head--menu) .kl-menu{display:none}
-  .pb-klar .kl-head--menu .kl-menu-panel{left:auto;width:calc(var(--sys-space-2xl) * 4);border-radius:0 0 ${R_CARD} ${R_CARD}}
-  .pb-klar .kl-head:not(.kl-head--menu) .kl-nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--sys-space-xs) calc(var(--sys-space-s) * 1.875);margin-right:calc(var(--sys-space-s) * 1.25)}
+  .pb-klar .kl-menu--main{display:none}
+  .pb-klar .kl-nav{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:var(--sys-space-xs) calc(var(--sys-space-s) * 1.875);margin-right:calc(var(--sys-space-s) * 1.25)}
   .pb-klar .kl-nav a{${step("link")};display:inline-flex;align-items:center;min-height:${TAP};text-decoration:none}
   .pb-klar .kl-nav a:hover,.pb-klar .kl-nav a[aria-current]{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.3em}
+  .pb-klar .kl-more{position:relative}
+  .pb-klar .kl-more-toggle{${step("link")};display:inline-flex;align-items:center;gap:var(--sys-space-xs);min-height:${TAP};cursor:pointer}
+  .pb-klar .kl-more-toggle::after{content:"";width:calc(var(--sys-space-xs) * .9);height:calc(var(--sys-space-xs) * .9);border:solid currentColor;border-width:0 2px 2px 0;
+    transform:translateY(-25%) rotate(45deg);transition:transform 200ms cubic-bezier(.23,1,.32,1)}
+  .pb-klar .kl-more[open] .kl-more-toggle::after{transform:translateY(25%) rotate(-135deg)}
+  .pb-klar .kl-more-panel{left:auto;right:0;top:calc(100% + var(--sys-space-xs));min-width:calc(var(--sys-space-2xl) * 2.75);padding:var(--sys-space-xs) calc(var(--sys-space-s) * 1.25);
+    border:1px solid var(--sys-rule);border-radius:${R_CARD}}
+  .pb-klar .kl-nav .kl-more-panel a{display:flex;min-height:${H_MIN}}
+  .pb-klar .kl-more-panel a:last-child{border-bottom:0}
   .pb-klar .kl-head-actions{display:flex;align-items:center;gap:calc(var(--sys-space-s) * .75)}
   .pb-klar .kl-btn--head{min-height:${H_MIN}}
   .pb-klar .kl-btn--head .kl-btn-ic{width:calc(${TILE} * .85);height:calc(${TILE} * .85)}
@@ -98,7 +110,8 @@ ${FONT_FACES}
 .pb-klar .kl-hours-table{width:100%;border-collapse:separate;border-spacing:0}
 .pb-klar .kl-hours-table th,.pb-klar .kl-hours-table td{padding:calc(var(--sys-space-s) * .75) calc(var(--sys-space-s) * .875);border-top:1px solid var(--sys-rule);text-align:left;vertical-align:top}
 .pb-klar .kl-hours-table th{font-weight:700;width:7.5em;padding-right:var(--sys-space-xs)}
-.pb-klar .kl-hours-table td span{${step("data")};font-weight:400;display:block;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pb-klar .kl-hours-table td span{${step("data")};font-weight:400;display:block;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+.pb-klar .kl-hours-table .kl-span{white-space:nowrap}
 @media (max-width:calc(24rem - 1px)){.pb-klar .kl-hours-table th{width:auto}.pb-klar .kl-hours-table th,.pb-klar .kl-hours-table td{padding-inline:calc(var(--sys-space-s) * .625)}}
 .pb-klar .kl-hours-table .kl-now>*{background:var(--sys-field-1-bg);color:var(--sys-field-1-ink);border-top-color:transparent}
 .pb-klar .kl-hours-table .kl-now th{border-radius:calc(var(--sys-space-s) * .875) 0 0 calc(var(--sys-space-s) * .875)}

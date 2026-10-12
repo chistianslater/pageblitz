@@ -1,4 +1,14 @@
-import { step, GRID, PILL, R_CARD, R_FRAME, R_PANEL, R_PANEL_WIDE, SHADOW, TAP } from "./step";
+import {
+  step,
+  GRID,
+  PILL,
+  R_CARD,
+  R_FRAME,
+  R_PANEL,
+  R_PANEL_WIDE,
+  SHADOW,
+  TAP,
+} from "./step";
 
 /**
  * Einstieg (Systemblatt 8 Handy, 12 Desktop): helle Fläche (Feld 1) mit

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
-import { eveningHours, hoursRows, todayHours } from "./hours";
+import { eveningHours, hoursRows, isClosedText, todayHours } from "./hours";
 import { TEST_NOW } from "./testkit";
 
 /** Montag, 12.10.2026, 10 Uhr in Berlin. */
@@ -21,20 +21,42 @@ const ZAHN = [
 describe("Klar: Sprechzeiten-Zeilen", () => {
   test("ein Tag je Zeile, Mittagspause als zwei Spannen, Sa+So zusammen geschlossen", () => {
     const rows = hoursRows(ZAHN, MONDAY);
-    expect(rows.map(r => r.label)).toEqual(["Mo", "Di", "Mi", "Do", "Fr", "Sa, So"]);
+    expect(rows.map(r => r.label)).toEqual([
+      "Mo",
+      "Di",
+      "Mi",
+      "Do",
+      "Fr",
+      "Sa, So",
+    ]);
     expect(rows[0]).toEqual({
       label: "Mo",
       lines: ["8:00 bis 12:00", "14:00 bis 18:00"],
       closed: false,
+      spans: true,
       today: true,
     });
     expect(rows[2].lines).toEqual(["8:00 bis 13:00"]);
-    expect(rows[5]).toEqual({ label: "Sa, So", lines: ["geschlossen"], closed: true, today: false });
+    expect(rows[5]).toEqual({
+      label: "Sa, So",
+      lines: ["geschlossen"],
+      closed: true,
+      spans: false,
+      today: false,
+    });
   });
 
   test("„heute“ hängt am Wochentag (Berlin), auch im zusammengefassten geschlossenen Block", () => {
-    expect(hoursRows(ZAHN, TEST_NOW).filter(r => r.today).map(r => r.label)).toEqual(["Di"]);
-    expect(hoursRows(ZAHN, SUNDAY).filter(r => r.today).map(r => r.label)).toEqual(["Sa, So"]);
+    expect(
+      hoursRows(ZAHN, TEST_NOW)
+        .filter(r => r.today)
+        .map(r => r.label)
+    ).toEqual(["Di"]);
+    expect(
+      hoursRows(ZAHN, SUNDAY)
+        .filter(r => r.today)
+        .map(r => r.label)
+    ).toEqual(["Sa, So"]);
   });
 
   test("Bereiche („Mo–Do“) werden je Tag aufgeschlüsselt; fehlende Tage entfallen (nichts erfunden)", () => {
@@ -75,9 +97,43 @@ describe("Klar: Sprechzeiten-Zeilen", () => {
       MONDAY
     );
     expect(rows).toEqual([
-      { label: "Mo–Fr", lines: ["nach Vereinbarung"], closed: false, today: true },
-      { label: "Feiertage", lines: ["geschlossen"], closed: true, today: false },
+      {
+        label: "Mo–Fr",
+        lines: ["nach Vereinbarung"],
+        closed: false,
+        spans: false,
+        today: true,
+      },
+      {
+        label: "Feiertage",
+        lines: ["geschlossen"],
+        closed: true,
+        spans: false,
+        today: false,
+      },
     ]);
+  });
+});
+
+describe("Klar: halbe Tage", () => {
+  test("„8:00 – 12:00, nachmittags geschlossen“ ist ein offener Tag (Spannen vor „geschlossen“)", () => {
+    const hours = [
+      { day: "Mo", hours: "8:00 – 12:00, 14:00 – 18:00" },
+      { day: "Mi", hours: "8:00 – 12:00, nachmittags geschlossen" },
+      { day: "Sa", hours: "geschlossen" },
+    ];
+    const rows = hoursRows(hours, MONDAY);
+    expect(rows[1]).toEqual({ label: "Mi", lines: ["8:00 bis 12:00"], closed: false, spans: true, today: false });
+    expect(rows[2].closed).toBe(true);
+    const wed = new Date("2026-10-14T10:00:00+02:00");
+    expect(todayHours(hours, wed)).toEqual({ day: "Mittwoch", lines: ["8:00 bis 12:00"], closed: false });
+    expect(isClosedText("8:00 – 12:00, nachmittags geschlossen")).toBe(false);
+    expect(isClosedText("Ruhetag")).toBe(true);
+  });
+  test("Abendtermine zählen auch an halben Tagen", () => {
+    expect(
+      eveningHours([{ day: "Do", hours: "14:00 – 20:00, vormittags geschlossen" }])
+    ).toEqual({ days: "Donnerstag", until: "bis 20:00 Uhr" });
   });
 });
 
@@ -90,12 +146,20 @@ describe("Klar: Heute-Karte", () => {
     });
   });
   test("geschlossen und ohne Eintrag", () => {
-    expect(todayHours(ZAHN, SUNDAY)).toEqual({ day: "Sonntag", lines: ["geschlossen"], closed: true });
-    expect(todayHours([{ day: "Mo", hours: "9 – 12" }], TEST_NOW)).toBeUndefined();
+    expect(todayHours(ZAHN, SUNDAY)).toEqual({
+      day: "Sonntag",
+      lines: ["geschlossen"],
+      closed: true,
+    });
+    expect(
+      todayHours([{ day: "Mo", hours: "9 – 12" }], TEST_NOW)
+    ).toBeUndefined();
     expect(todayHours(PLACEHOLDER_OPENING_HOURS, MONDAY)).toBeUndefined();
   });
   test("rund um die Uhr", () => {
-    expect(todayHours([{ day: "Mo–So", hours: "24 Stunden geöffnet" }], MONDAY)).toEqual({
+    expect(
+      todayHours([{ day: "Mo–So", hours: "24 Stunden geöffnet" }], MONDAY)
+    ).toEqual({
       day: "Montag",
       lines: ["rund um die Uhr geöffnet"],
       closed: false,
@@ -111,7 +175,10 @@ describe("Klar: Abendtermine (schwaches Foto)", () => {
         { day: "Fr", hours: "7:30 – 14:00" },
       ])
     ).toEqual({ days: "Montag bis Donnerstag", until: "bis 20:00 Uhr" });
-    expect(eveningHours(ZAHN)).toEqual({ days: "Donnerstag", until: "bis 19:00 Uhr" });
+    expect(eveningHours(ZAHN)).toEqual({
+      days: "Donnerstag",
+      until: "bis 19:00 Uhr",
+    });
     expect(
       eveningHours([
         { day: "Mo", hours: "9 – 20" },

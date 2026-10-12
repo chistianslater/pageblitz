@@ -7,6 +7,7 @@ import {
   hoursLabel,
   klarActions,
   monogram,
+  pillTail,
   ratingFact,
   shortLabel,
 } from "./facts";
@@ -23,10 +24,11 @@ import {
 } from "./testkit";
 
 const bp = (doc: Doc) => blueprintFor(doc.businessCategory, doc.businessName);
-const heroOf = (doc: Doc) => doc.sections.find(s => s.type === "hero")! as Extract<
-  Doc["sections"][number],
-  { type: "hero" }
->;
+const heroOf = (doc: Doc) =>
+  doc.sections.find(s => s.type === "hero")! as Extract<
+    Doc["sections"][number],
+    { type: "hero" }
+  >;
 const variant = (doc: Doc) => entryVariant(doc, heroOf(doc));
 const hideHeroMedia = (doc: Doc): Doc => ({
   ...doc,
@@ -51,18 +53,24 @@ describe("Klar: Entscheidungstabelle Einstieg", () => {
     expect(variant(hideHeroMedia(zahnDoc()))).toBe("hours");
   });
   test("weder Foto noch echte Zeiten → nur Text", () => {
-    expect(variant(withContact(kanzleiDoc(), { openingHours: [] }))).toBe("text");
+    expect(variant(withContact(kanzleiDoc(), { openingHours: [] }))).toBe(
+      "text"
+    );
   });
   test("ein brauchbares Foto fällt nie weg, auch ohne Zeiten", () => {
     expect(variant(withContact(zahnDoc(), { openingHours: [] }))).toBe("photo");
-    expect(variant(withContact(physioDoc(), { openingHours: [] }))).toBe("small");
+    expect(variant(withContact(physioDoc(), { openingHours: [] }))).toBe(
+      "small"
+    );
   });
 });
 
 describe("Klar: Überschrift", () => {
   test("Überschrift trägt, wenn sie nicht nur Kicker oder Namen wiederholt", () => {
     const doc = zahnDoc();
-    expect(entryHeadline(heroOf(doc), doc, bp(doc))).toBe("Gut aufgehoben. Von Anfang an.");
+    expect(entryHeadline(heroOf(doc), doc, bp(doc))).toBe(
+      "Gut aufgehoben. Von Anfang an."
+    );
   });
   test("Doppel des Kickers → Tagline, sonst keine (der Name trägt)", () => {
     let doc = patchSection(zahnDoc(), "hero", h => ({
@@ -70,42 +78,86 @@ describe("Klar: Überschrift", () => {
       headline: "Zahnarztpraxis in Lüneburg",
     }));
     doc = { ...doc, tagline: "Behutsam von Anfang an." };
-    expect(entryHeadline(heroOf(doc), doc, bp(doc))).toBe("Behutsam von Anfang an.");
+    expect(entryHeadline(heroOf(doc), doc, bp(doc))).toBe(
+      "Behutsam von Anfang an."
+    );
     doc = { ...doc, tagline: undefined };
     expect(entryHeadline(heroOf(doc), doc, bp(doc))).toBeUndefined();
   });
 });
 
-describe("Klar: Wege (Termin + Telefon)", () => {
-  test("Praxis mit Anruf-Bauplan: Termin zum Kontakt, Telefon als zweiter Knopf", () => {
-    const doc = zahnDoc();
-    const a = klarActions(doc, bp(doc));
-    expect(a.primary).toEqual({ label: "Termin vereinbaren", href: "#kontakt" });
-    expect(a.second).toEqual({ label: "04131 555 0142", href: "tel:041315550142" });
-    expect(a.phone?.href).toBe("tel:041315550142");
-  });
-  test("eigener Buchungslink im Einstieg gewinnt", () => {
-    const doc = patchSection(zahnDoc(), "hero", h => ({
+describe("Klar: Wege (Reihenfolge laut Entscheid)", () => {
+  const withForm = (doc: Doc): Doc => ({ ...doc, features: { ...doc.features, contactForm: true } });
+  const TEL = "tel:041315550142";
+  /** Zahnarzt ohne gebuchtes Kontaktformular. */
+  const noForm = (): Doc => ({ ...zahnDoc(), features: { ...zahnDoc().features, contactForm: false } });
+  const ROUTE = "https://www.google.com/maps/search/?api=1&query=Lindenweg%2012%2C%2021335%20L%C3%BCneburg";
+
+  test("1. eigener http(s)-Buchungslink gewinnt; Telefon als zweiter Knopf", () => {
+    const doc = patchSection(withForm(zahnDoc()), "hero", h => ({
       ...h,
       ctaHref: "https://termine.example/sommer",
     }));
-    expect(klarActions(doc, bp(doc)).primary?.href).toBe("https://termine.example/sommer");
-  });
-  test("ohne sichtbaren Kontakt: Hauptknopf ruft an, daneben Route oder nichts", () => {
-    const doc = without(zahnDoc(), "contact");
     const a = klarActions(doc, bp(doc));
-    expect(a.primary).toBeUndefined();
-    expect(a.second).toBeUndefined();
+    expect(a.primary).toEqual({ label: "Termin vereinbaren", href: "https://termine.example/sommer" });
+    expect(a.second).toEqual({ label: "04131 555 0142", href: TEL });
   });
-  test("Anker-Präfix für Unterseiten", () => {
-    const doc = kanzleiDoc();
+  test("ein Anker als ctaHref ist kein Buchungslink", () => {
+    const doc = patchSection(noForm(), "hero", h => ({ ...h, ctaHref: "#leistungen" }));
+    expect(klarActions(doc, bp(doc)).primary?.href).toBe(TEL);
+  });
+  test("2. #kontakt nur mit Kontaktformular und sichtbarem Kontakt (Präfix auf Unterseiten)", () => {
+    const doc = withForm(zahnDoc());
+    expect(klarActions(doc, bp(doc)).primary).toEqual({ label: "Termin vereinbaren", href: "#kontakt" });
     expect(klarActions(doc, bp(doc), "/site/x").primary?.href).toBe("/site/x#kontakt");
+    expect(klarActions(doc, bp(doc)).second?.href).toBe(TEL);
+    const hidden: Doc = { ...doc, hiddenSections: ["contact"] };
+    expect(klarActions(hidden, bp(hidden)).primary).toBeUndefined();
+  });
+  test("3. Bauplan tel: Hauptknopf ruft an (Text bleibt), zweiter Knopf Route statt Nummer", () => {
+    const doc = noForm();
+    const a = klarActions(doc, bp(doc));
+    expect(a.primary).toEqual({ label: "Termin vereinbaren", href: TEL });
+    expect(a.second).toEqual({ label: "Route", href: ROUTE });
+    expect(a.phone?.href).toBe(TEL);
+  });
+  test("3. Bauplan route: Karte, Telefon daneben", () => {
+    const doc = patchSection(noForm(), "hero", h => ({ ...h, ctaText: undefined }));
+    const route = { ...bp(doc), ctaAction: "route" as const, ctaText: "Route planen" };
+    const a = klarActions(doc, route);
+    expect(a.primary).toEqual({ label: "Route planen", href: ROUTE });
+    expect(a.second?.href).toBe(TEL);
+  });
+  test("4. ohne Bauplan-Aktion: Anruf; ohne Adresse E-Mail als zweiter Knopf", () => {
+    const doc = withContact(kanzleiDoc(), { street: undefined, zip: undefined, city: undefined });
+    const a = klarActions(doc, bp(doc));
+    expect(a.primary).toEqual({ label: "Erstgespräch vereinbaren", href: "tel:051215550119" });
+    expect(a.second).toEqual({ label: "E-Mail", href: "mailto:kanzlei@brandt-steuer.example" });
+  });
+  test("ohne eigenen Text: „Anrufen“ beim Anruf", () => {
+    const doc = patchSection(kanzleiDoc(), "hero", h => ({ ...h, ctaText: undefined }));
+    expect(klarActions(doc, { ...bp(doc), ctaText: undefined }).primary?.label).toBe("Anrufen");
+  });
+  test("ohne Telefon: #kontakt (sichtbar), sonst nichts", () => {
+    const doc = withContact(noForm(), { phone: undefined });
+    expect(klarActions(doc, bp(doc)).primary?.href).toBe("#kontakt");
+    const none = without(zahnDoc(), "contact");
+    expect(klarActions(none, bp(none))).toEqual({ phone: undefined });
   });
   test("Kurzform für Kopf und Leiste", () => {
     expect(shortLabel("Termin vereinbaren")).toBe("Termin");
     expect(shortLabel("Erstgespräch vereinbaren")).toBe("Erstgespräch");
     expect(shortLabel("Termin anfragen")).toBe("Termin");
     expect(shortLabel("Jetzt anrufen")).toBe("Jetzt anrufen");
+  });
+});
+
+describe("Klar: Pille", () => {
+  test("Branche nur, wenn der Name sie nicht nennt; Ort mit „in“", () => {
+    expect(pillTail("Zahnarztpraxis Dr. Sommer", "Zahnarztpraxis", "Lüneburg")).toBe(" in Lüneburg");
+    expect(pillTail("Steuerkanzlei Brandt", "Steuerberater", "Hildesheim")).toBe(" · Steuerberater in Hildesheim");
+    expect(pillTail("Brandt", "Steuerberater", undefined)).toBe(" · Steuerberater");
+    expect(pillTail("Brandt", undefined, undefined)).toBe("");
   });
 });
 
@@ -136,7 +188,13 @@ describe("Klar: Fakten-Chips nur aus Daten", () => {
     expect(factChips(doc)).toEqual([]);
   });
   test("höchstens vier, ohne Doppel", () => {
-    const doc = withUsp(zahnDoc(), ["Privat", "privat", "Hausbesuche", "Selbstzahler", "Alle Kassen"]);
+    const doc = withUsp(zahnDoc(), [
+      "Privat",
+      "privat",
+      "Hausbesuche",
+      "Selbstzahler",
+      "Alle Kassen",
+    ]);
     expect(factChips(doc).map(c => c.label)).toEqual([
       "Privat",
       "Hausbesuche",
@@ -148,11 +206,14 @@ describe("Klar: Fakten-Chips nur aus Daten", () => {
 
 describe("Klar: Bewertung, Monogramm, Zeiten-Titel", () => {
   test("Bewertung nur mit echten Zahlen", () => {
-    expect(ratingFact(zahnDoc())).toEqual({ value: "4,8", text: "von 5 · 212 Google-Bewertungen" });
+    expect(ratingFact(zahnDoc())).toEqual({
+      value: "4,8",
+      text: "von 5 · 212 Google-Bewertungen",
+    });
     expect(ratingFact(physioDoc())).toBeUndefined();
-    expect(ratingFact({ ...zahnDoc(), google: { rating: 5, reviewCount: 1 } })?.text).toBe(
-      "von 5 · 1 Google-Bewertung"
-    );
+    expect(
+      ratingFact({ ...zahnDoc(), google: { rating: 5, reviewCount: 1 } })?.text
+    ).toBe("von 5 · 1 Google-Bewertung");
   });
   test("Monogramm: Anfangsbuchstabe des Familiennamens", () => {
     expect(monogram("Zahnarztpraxis Dr. Sommer")).toBe("S");
@@ -164,6 +225,8 @@ describe("Klar: Bewertung, Monogramm, Zeiten-Titel", () => {
   test("Zeiten-Titel: Bauplan, Beratung → Bürozeiten, sonst Öffnungszeiten", () => {
     expect(hoursLabel(bp(zahnDoc()))).toBe("Sprechzeiten");
     expect(hoursLabel(bp(kanzleiDoc()))).toBe("Bürozeiten");
-    expect(hoursLabel(blueprintFor("Bäckerei", "Bäckerei Kurz"))).toBe("Öffnungszeiten");
+    expect(hoursLabel(blueprintFor("Bäckerei", "Bäckerei Kurz"))).toBe(
+      "Öffnungszeiten"
+    );
   });
 });

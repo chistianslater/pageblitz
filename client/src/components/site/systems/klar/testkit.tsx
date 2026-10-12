@@ -102,12 +102,15 @@ export function withUsp(doc: Doc, titles: string[]): Doc {
 
 /** Systemblatt 8 links: Zahnarztpraxis Dr. Sommer, gutes Foto (Lind). */
 export function zahnDoc(palette = "lind"): Doc {
+  const base = klarDoc(palette, "zahnarzt");
   let doc: Doc = {
-    ...klarDoc(palette, "zahnarzt"),
+    ...base,
     businessName: "Zahnarztpraxis Dr. Sommer",
     businessCategory: "Zahnarztpraxis",
     google: { rating: 4.8, reviewCount: 212 },
     amenities: { wheelchair: true },
+    // Gebuchtes Kontaktformular: „Termin vereinbaren" führt zu #kontakt.
+    features: { ...base.features, contactForm: true },
   };
   doc = withContact(doc, {
     phone: "04131 555 0142",
@@ -171,9 +174,18 @@ export function physioDoc(palette = "sand"): Doc {
     ...s,
     headline: "Behandlungen",
     items: [
-      { title: "Krankengymnastik", description: "Kräftigen, dehnen, wieder sicher bewegen." },
-      { title: "Manuelle Therapie", description: "Für Rücken, Nacken und Gelenke." },
-      { title: "Hausbesuche", description: "Wenn Sie nicht zu uns kommen können." },
+      {
+        title: "Krankengymnastik",
+        description: "Kräftigen, dehnen, wieder sicher bewegen.",
+      },
+      {
+        title: "Manuelle Therapie",
+        description: "Für Rücken, Nacken und Gelenke.",
+      },
+      {
+        title: "Hausbesuche",
+        description: "Wenn Sie nicht zu uns kommen können.",
+      },
     ],
   }));
   return withComposition(withUsp(doc, ["Alle Kassen", "Privat"]), "portrait");

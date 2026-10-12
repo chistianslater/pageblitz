@@ -3,11 +3,7 @@ import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
 import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import {
-  legalParts,
-  mailHref,
-  type SystemSection,
-} from "../shared";
+import { legalParts, mailHref, type SystemSection } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
@@ -111,7 +107,11 @@ function Cards({
   );
 }
 
-function Priced({ section }: { section: SectionOf<"pricelist"> | SectionOf<"menu"> }) {
+function Priced({
+  section,
+}: {
+  section: SectionOf<"pricelist"> | SectionOf<"menu">;
+}) {
   return (
     <>
       {section.categories
@@ -158,7 +158,9 @@ function Contact({ section }: { section: SectionOf<"contact"> }) {
           {((tel && section.phone) || (mail && section.email)) && (
             <p className="kl-visit-ways" {...SYS_ACTIONS}>
               {tel && section.phone && <a href={tel}>{section.phone.trim()}</a>}
-              {mail && section.email && <a href={mail}>{section.email.trim()}</a>}
+              {mail && section.email && (
+                <a href={mail}>{section.email.trim()}</a>
+              )}
             </p>
           )}
         </div>
@@ -299,14 +301,23 @@ export function renderKlarSection(
     case "team":
       return (
         <KlarChapter type="team" own={section.headline}>
-          <Cards items={section.members.map(m => ({ title: m.name, text: m.role }))} />
+          <Cards
+            items={section.members.map(m => ({ title: m.name, text: m.role }))}
+          />
         </KlarChapter>
       );
     case "about":
       return (
         <KlarChapter type="about" own={section.headline}>
           {section.imageUrl && (
-            <img className="kl-photo" src={section.imageUrl} alt="" loading="lazy" width={1200} height={800} />
+            <img
+              className="kl-photo"
+              src={section.imageUrl}
+              alt=""
+              loading="lazy"
+              width={1200}
+              height={800}
+            />
           )}
           <div className="kl-prose">{rich(section.body)}</div>
         </KlarChapter>
@@ -317,7 +328,13 @@ export function renderKlarSection(
           <ul className="kl-gallery">
             {section.images.map(img => (
               <li key={img.url}>
-                <img src={img.url} alt={img.alt} loading="lazy" width={800} height={600} />
+                <img
+                  src={img.url}
+                  alt={img.alt}
+                  loading="lazy"
+                  width={800}
+                  height={600}
+                />
               </li>
             ))}
           </ul>
@@ -360,7 +377,9 @@ export function renderKlarSection(
     case "usp":
       return (
         <KlarChapter type="usp" own={section.headline}>
-          <Cards items={section.items.map(i => ({ title: i.title, text: i.text }))} />
+          <Cards
+            items={section.items.map(i => ({ title: i.title, text: i.text }))}
+          />
         </KlarChapter>
       );
     case "quote":
@@ -386,7 +405,10 @@ export function renderKlarSection(
       return (
         <KlarChapter type="cta" own={section.headline}>
           <p {...SYS_ACTIONS}>
-            <a className="kl-btn kl-btn--p" href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}>
+            <a
+              className="kl-btn kl-btn--p"
+              href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
+            >
               {section.ctaText}
             </a>
           </p>

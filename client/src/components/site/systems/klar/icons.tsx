@@ -14,7 +14,9 @@ export type IconName =
   | "car"
   | "wheelchair"
   | "check"
-  | "menu";
+  | "menu"
+  | "pin"
+  | "mail";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   phone: (
@@ -55,6 +57,18 @@ const PATHS: Record<IconName, React.ReactNode> = {
   ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  pin: (
+    <>
+      <circle cx="12" cy="10" r="2.5" />
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3.5 7l8.5 6 8.5-6" />
+    </>
+  ),
 };
 
 export function Icon({ name }: { name: IconName }) {
@@ -76,3 +90,12 @@ export function Icon({ name }: { name: IconName }) {
     </svg>
   );
 }
+
+/** Symbol zu einem Weg (Anruf, Karte, E-Mail, sonst Termin). */
+export function wayIcon(href: string): IconName {
+  if (href.startsWith("tel:")) return "phone";
+  if (href.startsWith("mailto:")) return "mail";
+  if (href.startsWith("https://www.google.com/maps/")) return "pin";
+  return "calendar";
+}
+

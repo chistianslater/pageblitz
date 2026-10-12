@@ -1,8 +1,5 @@
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import {
-  coversToday,
-  isPlaceholderHours,
-} from "../../artDirection/heroFacts";
+import { coversToday, isPlaceholderHours } from "../../artDirection/heroFacts";
 import { isRoundTheClock } from "../shared";
 
 /**
@@ -22,6 +19,8 @@ export type HoursRow = {
   /** „8:00 bis 12:00" je Spanne, sonst „geschlossen" bzw. wörtlich. */
   lines: string[];
   closed: boolean;
+  /** Zeilen sind gelesene Spannen (nicht umbrechen), sonst wörtlich. */
+  spans: boolean;
   today: boolean;
 };
 
@@ -65,16 +64,29 @@ function spans(text: string): Span[] {
 export const clock = (minutes: number) =>
   `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, "0")}`;
 
-/** Zeiten-Text → Zeilen und geschlossen-Flag. */
-function linesOf(text: string): { lines: string[]; closed: boolean } {
-  if (CLOSED.test(text)) return { lines: ["geschlossen"], closed: true };
+/**
+ * Geschlossen nur, wenn keine Spanne lesbar ist und der Text es sagt —
+ * „8:00 – 12:00, nachmittags geschlossen" ist ein offener Tag.
+ */
+export const isClosedText = (text: string) =>
+  spans(text).length === 0 && CLOSED.test(text);
+
+/** Zeiten-Text → Zeilen, geschlossen-Flag, gelesene Spannen? */
+function linesOf(text: string): {
+  lines: string[];
+  closed: boolean;
+  spans: boolean;
+} {
   const found = spans(text);
-  return found.length
-    ? {
-        lines: found.map(s => `${clock(s.from)} bis ${clock(s.to)}`),
-        closed: false,
-      }
-    : { lines: [text.trim()], closed: false };
+  if (found.length)
+    return {
+      lines: found.map(s => `${clock(s.from)} bis ${clock(s.to)}`),
+      closed: false,
+      spans: true,
+    };
+  if (CLOSED.test(text))
+    return { lines: ["geschlossen"], closed: true, spans: false };
+  return { lines: [text.trim()], closed: false, spans: false };
 }
 
 /** Index (0 = Mo) des heutigen Wochentags in Berlin. */
@@ -114,20 +126,19 @@ export function hoursRows(hours: Hours | undefined, now: Date): HoursRow[] {
         label: SHORT[day.i],
         lines: day.lines,
         closed: false,
+        spans: day.spans,
         today: day.i === today,
       });
       continue;
     }
     const run = [day.i];
-    while (
-      perDay[k + 1]?.closed &&
-      perDay[k + 1].i === run[run.length - 1] + 1
-    )
+    while (perDay[k + 1]?.closed && perDay[k + 1].i === run[run.length - 1] + 1)
       run.push(perDay[++k].i);
     rows.push({
       label: closedLabel(run),
       lines: ["geschlossen"],
       closed: true,
+      spans: false,
       today: run.includes(today),
     });
   }
@@ -175,7 +186,7 @@ export function eveningHours(
   if (!real || isRoundTheClock(real)) return undefined;
   const close = WEEK.map(d => {
     const entry = real.find(h => coversToday(h.day, d));
-    if (!entry || CLOSED.test(entry.hours)) return -1;
+    if (!entry) return -1;
     const ends = spans(entry.hours)
       .filter(s => s.to > s.from)
       .map(s => s.to);

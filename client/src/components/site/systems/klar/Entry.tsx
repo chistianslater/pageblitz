@@ -2,7 +2,7 @@ import React from "react";
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { SECTION_ANCHORS } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { contactOf, heroPhoto, nameOf, visibleDoc } from "../shared";
+import { branchOf, contactOf, heroPhoto, nameOf, visibleDoc } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import {
   entryHeadline,
@@ -12,13 +12,14 @@ import {
   factChips,
   hoursLabel,
   klarActions,
+  pillTail,
   ratingFact,
   type Action,
   type EntryVariant,
 } from "./facts";
 import { eveningHours, hoursRows, todayHours } from "./hours";
 import { KlarHoursCard, KlarTodayCard } from "./HoursCard";
-import { Icon } from "./icons";
+import { Icon, wayIcon } from "./icons";
 
 /**
  * Klar-Einstieg nach Systemblatt 8 (Handy) und 12 (Desktop): helle
@@ -140,12 +141,12 @@ function Buttons({ primary, second }: { primary: Action; second?: Action }) {
       <a className="kl-btn kl-btn--p" href={primary.href}>
         {primary.label}
         <span className="kl-btn-ic">
-          <Icon name={primary.href.startsWith("tel:") ? "phone" : "calendar"} />
+          <Icon name={wayIcon(primary.href)} />
         </span>
       </a>
       {second && (
         <a className="kl-btn kl-btn--s" href={second.href}>
-          {second.href.startsWith("tel:") && <Icon name="phone" />}
+          <Icon name={wayIcon(second.href)} />
           {second.label}
         </a>
       )}
@@ -161,6 +162,7 @@ export function KlarEntry({ hero }: { hero: SectionOf<"hero"> }) {
   const headline = entryHeadline(hero, data, blueprint);
   const lede = entryLede(hero, headline);
   const kicker = entryKicker(data, blueprint);
+  const tail = pillTail(name, branchOf(data, blueprint), city);
   const photo = heroPhoto(data, hero);
   const { primary, second } = klarActions(data, blueprint);
   const chips = factChips(data);
@@ -179,7 +181,7 @@ export function KlarEntry({ hero }: { hero: SectionOf<"hero"> }) {
               <h1 id="start-titel" className="kl-pill-name">
                 {name}
               </h1>
-              {city && <span> in {city}</span>}
+              {tail && <span>{tail}</span>}
             </div>
           ) : (
             kicker && <p className="kl-pill">{kicker}</p>

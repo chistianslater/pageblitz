@@ -181,7 +181,9 @@ describe("SSR routes", () => {
       );
       expect(named.text).toContain("<span>Demo-Werkstatt</span>");
       for (const showcase of ["schreinerei", "baeckerei", "cafe", "laden"]) {
-        const demo = await request(app).get(`/demo/system/werkstoff/${showcase}`);
+        const demo = await request(app).get(
+          `/demo/system/werkstoff/${showcase}`
+        );
         expect(demo.status).toBe(200);
         expect(demo.text).toContain('class="pb-site pb-werkstoff"');
       }
@@ -228,8 +230,12 @@ describe("SSR routes", () => {
     test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);
-      expect((await request(app).get("/demo/system/nacht/friseur")).status).toBe(404);
-      expect((await request(app).get("/demo/system/journal/gibtsnicht")).status).toBe(404);
+      expect(
+        (await request(app).get("/demo/system/nacht/friseur")).status
+      ).toBe(404);
+      expect(
+        (await request(app).get("/demo/system/journal/gibtsnicht")).status
+      ).toBe(404);
     });
 
     test("preview-ssr ?system= rendert nur, ohne zu speichern; unbekannt -> 400", async () => {

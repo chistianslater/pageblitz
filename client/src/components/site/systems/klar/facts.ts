@@ -13,6 +13,7 @@ import {
   contactOf,
   echoesKicker,
   heroPhoto,
+  mailHref,
   mapsHref,
   nameOf,
   visibleDoc,
@@ -29,53 +30,59 @@ export type Action = { label: string; href: string };
 /* ── Wege ─────────────────────────────────────────────────────────────── */
 
 /**
- * Wege nach Systemblatt 8: Hauptknopf „Termin vereinbaren" (Text aus
- * Einstieg bzw. Bauplan), darunter die Telefonnummer als echter
- * `tel:`-Knopf. Ziel des Termins: eigener Link im Einstieg (Buchung,
- * sichtbarer Anker), bei Route-Bauplan die Route, sonst der Kontakt-
- * Abschnitt (Sprechzeiten, Formular). Gibt es keinen davon, ruft der
- * Hauptknopf an; daneben dann Route. Nur sichtbare Abschnitte zählen.
+ * Wege nach Systemblatt 8 (Controller-Entscheid K2+K3, Runde 1). Ziel des
+ * Hauptknopfs, in dieser Reihenfolge:
+ *  1. eigener Buchungslink im Einstieg (echtes http(s), kein Anker)
+ *  2. `#kontakt` — nur mit gebuchtem Kontaktformular und sichtbarem
+ *     Kontakt-Abschnitt
+ *  3. Bauplan-Aktion: `tel` → Anruf, `route` → Karte
+ *  4. Anruf
+ *  (ohne Telefon zuletzt `#kontakt`, wenn der Kontakt sichtbar ist)
+ * Text: Einstieg bzw. Bauplan, sonst „Termin vereinbaren" bzw. „Anrufen".
+ * Zweiter Knopf: die Telefonnummer — ruft der Hauptknopf schon an, statt
+ * der Nummer die Route (mit Adresse) oder E-Mail. Die Handy-Leiste zeigt
+ * dasselbe Paar. Nur sichtbare Abschnitte zählen.
  */
 export function klarActions(
   doc: WebsiteDataV2,
   blueprint: Blueprint,
   anchorPrefix = ""
-): { primary?: Action; second?: Action; phone?: Action; appointment?: Action } {
+): { primary?: Action; second?: Action; phone?: Action } {
   const data = visibleDoc(doc);
   const contact = contactOf(data.sections);
   const hero = data.sections.find(
     (s): s is SectionOf<"hero"> => s.type === "hero"
   );
-  const anchors = new Set(
-    data.sections.map(s => `#${SECTION_ANCHORS[s.type]}`)
-  );
-  const label = plain(hero?.ctaText) || blueprint.ctaText || "Termin vereinbaren";
+  const own = plain(hero?.ctaText) || blueprint.ctaText;
   const tel = telHref(contact?.phone);
   const address = addressLine(contact);
-  const own = hero?.ctaHref;
-  const ownOk =
-    own !== undefined &&
-    !own.startsWith("tel:") &&
-    (!own.startsWith("#") || anchors.has(own));
-  const target = ownOk
-    ? own
-    : blueprint.ctaAction === "route" && address
-      ? mapsHref(address)
-      : contact
-        ? `#${SECTION_ANCHORS.contact}`
-        : undefined;
-  const appointment = target
-    ? {
-        label,
-        href: target.startsWith("#") ? anchorPrefix + target : target,
-      }
-    : undefined;
+  const mail = mailHref(contact?.email);
+  const kontakt = `${anchorPrefix}#${SECTION_ANCHORS.contact}`;
+  const link = hero?.ctaHref;
+  const target =
+    link && /^https?:\/\//i.test(link)
+      ? link
+      : doc.features?.contactForm === true && contact
+        ? kontakt
+        : blueprint.ctaAction === "route" && address
+          ? mapsHref(address)
+          : (tel ?? (contact ? kontakt : undefined));
   const phone =
     tel && contact?.phone ? { label: contact.phone.trim(), href: tel } : undefined;
-  if (appointment) return { primary: appointment, second: phone, phone, appointment };
-  if (!tel) return {};
-  const route = address ? { label: "Route", href: mapsHref(address) } : undefined;
-  return { primary: { label, href: tel }, second: route, phone };
+  if (!target) return { phone };
+  const calls = target === tel;
+  const primary = {
+    label: own || (calls ? "Anrufen" : "Termin vereinbaren"),
+    href: target,
+  };
+  const second = !calls
+    ? phone
+    : address
+      ? { label: "Route", href: mapsHref(address) }
+      : mail
+        ? { label: "E-Mail", href: mail }
+        : undefined;
+  return { primary, second, phone };
 }
 
 /** „Termin vereinbaren" → „Termin" (Kopf und Handy-Leiste). */
@@ -125,6 +132,23 @@ export function entryKicker(data: WebsiteDataV2, blueprint: Blueprint): string {
 }
 
 /**
+ * Rest der Pille hinter dem Namen (h1): Branche, wenn der Name sie nicht
+ * schon nennt, dann der Ort — „ · Steuerberater in Hildesheim",
+ * „ in Lüneburg" (Zahnarztpraxis Dr. Sommer), leer ohne beides.
+ */
+export function pillTail(
+  name: string,
+  branch: string | undefined,
+  city: string | undefined
+): string {
+  const lower = (t: string) => t.toLocaleLowerCase("de");
+  const b = branch?.trim();
+  const own = b && !lower(name).includes(lower(b)) ? ` · ${b}` : "";
+  const c = city?.trim();
+  return `${own}${c ? ` in ${c}` : ""}`;
+}
+
+/**
  * Große Zeile: die Überschrift — außer sie wiederholt nur Kicker oder
  * Namen; dann die Tagline; sonst keine (der Name trägt).
  */
@@ -171,10 +195,19 @@ export type Chip = { label: string; icon: ChipIcon };
  * wie er dasteht.
  */
 const CHIP_TITLES: [RegExp, ChipIcon][] = [
-  [/^(alle (gesetzlichen )?kassen|alle krankenkassen|kassenpatienten|gesetzlich versichert(e)?)$/, "card"],
-  [/^(privat|privatpatienten|privat versichert(e)?|privatversichert(e)?|selbstzahler(innen)?|beihilfe)$/, "card"],
+  [
+    /^(alle (gesetzlichen )?kassen|alle krankenkassen|kassenpatienten|gesetzlich versichert(e)?)$/,
+    "card",
+  ],
+  [
+    /^(privat|privatpatienten|privat versichert(e)?|privatversichert(e)?|selbstzahler(innen)?|beihilfe)$/,
+    "card",
+  ],
   [/^(hausbesuch(e)?)$/, "car"],
-  [/^(abendtermine|termine auch abends|samstagstermine|online-termine|online termine)$/, "check"],
+  [
+    /^(abendtermine|termine auch abends|samstagstermine|online-termine|online termine)$/,
+    "check",
+  ],
 ];
 const MAX_CHIPS = 4;
 
@@ -216,7 +249,10 @@ export function ratingFact(
     return undefined;
   const count = g.reviewCount.toLocaleString("de-DE");
   const noun = g.reviewCount === 1 ? "Google-Bewertung" : "Google-Bewertungen";
-  return { value: formatHeroRating(g.rating), text: `von 5 · ${count} ${noun}` };
+  return {
+    value: formatHeroRating(g.rating),
+    text: `von 5 · ${count} ${noun}`,
+  };
 }
 
 /* ── Kopf ─────────────────────────────────────────────────────────────── */

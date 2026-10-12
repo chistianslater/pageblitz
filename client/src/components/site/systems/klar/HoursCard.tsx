@@ -29,9 +29,9 @@ export function KlarHoursCard({
       </p>
       <table className="kl-hours-table" aria-labelledby={titleId}>
         <tbody>
-          {rows.map(r => (
+          {rows.map((r, i) => (
             <tr
-              key={r.label}
+              key={i}
               className={
                 [r.today ? "kl-now" : "", r.closed ? "kl-zu" : ""]
                   .filter(Boolean)
@@ -43,8 +43,10 @@ export function KlarHoursCard({
                 {r.today && <span className="kl-today-tag"> heute</span>}
               </th>
               <td>
-                {r.lines.map(line => (
-                  <span key={line}>{line}</span>
+                {r.lines.map((line, k) => (
+                  <span key={k} className={r.spans ? "kl-span" : undefined}>
+                    {line}
+                  </span>
                 ))}
               </td>
             </tr>
@@ -64,8 +66,8 @@ export function KlarTodayCard({ today }: { today: TodayHours }) {
       </span>
       <p>
         <span className="kl-todaycard-day">Heute, {today.day}</span>
-        {today.lines.map(line => (
-          <b key={line}>{line}</b>
+        {today.lines.map((line, k) => (
+          <b key={k}>{line}</b>
         ))}
       </p>
     </div>
