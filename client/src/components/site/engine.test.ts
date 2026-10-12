@@ -672,6 +672,64 @@ describe("withGalleryLimit", () => {
     ]);
   });
 
+  test("beyondShown: Über uns zählt nur, wenn es vor der Galerie steht", () => {
+    const alle = [
+      "https://x/g1.jpg",
+      "https://x/g2.jpg",
+      "https://x/g3.jpg",
+      "https://x/g4.jpg",
+    ];
+    // Galerie vor Über uns (sectionOrder): Die Galerie zeigt das Foto
+    // zuerst, Über uns verliert es — es ist kein schon gezeigtes Foto.
+    const galerieZuerst = {
+      ...mitGezeigten(),
+      sectionOrder: ["gallery", "about", "contact"],
+    } as WebsiteDataV2;
+    expect(
+      urls(withGalleryLimit(galerieZuerst, { beyondShown: true }))
+    ).toEqual(alle);
+    // Ausgeblendeter Über-uns-Abschnitt beansprucht nichts.
+    const ohneUeberUns = {
+      ...mitGezeigten(),
+      hiddenSections: ["about"],
+    } as WebsiteDataV2;
+    expect(
+      urls(withGalleryLimit(ohneUeberUns, { beyondShown: true }))
+    ).toEqual(alle);
+    // Über uns ausgeblendetes Foto: ebenso.
+    const ohneFoto = mitGezeigten();
+    const fotoAus = {
+      ...ohneFoto,
+      designProfile: {
+        ...ohneFoto.designProfile!,
+        hiddenElements: ["about-media"],
+      },
+    } as WebsiteDataV2;
+    expect(urls(withGalleryLimit(fotoAus, { beyondShown: true }))).toEqual(
+      alle
+    );
+  });
+
+  test("beyondShown: Dokument-Reihenfolge ohne sectionOrder zählt ebenso", () => {
+    const doc = mitGezeigten();
+    const galerie = doc.sections.find(s => s.type === "gallery")!;
+    const umgestellt = {
+      ...doc,
+      sectionOrder: undefined,
+      sections: [
+        ...doc.sections.filter(s => s.type !== "about" && s !== galerie),
+        galerie,
+        doc.sections.find(s => s.type === "about")!,
+      ],
+    } as WebsiteDataV2;
+    expect(urls(withGalleryLimit(umgestellt, { beyondShown: true }))).toEqual([
+      "https://x/g1.jpg",
+      "https://x/g2.jpg",
+      "https://x/g3.jpg",
+      "https://x/g4.jpg",
+    ]);
+  });
+
   test("beyondShown: doppelte Adressen zählen einmal", () => {
     const doc = mitGezeigten();
     const dup = {

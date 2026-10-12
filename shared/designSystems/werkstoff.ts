@@ -4,6 +4,9 @@ export const WERKSTOFF: DesignSystemDef = {
   id: "werkstoff",
   name: "Werkstoff",
   essence: "Warm, handfest, ehrlich",
+  // Jedes Foto einmal je Seite (claimPhotos): die drei freien Galeriefotos
+  // zählen erst nach den vor der Galerie gezeigten (Einstieg, Über uns).
+  freeGalleryBeyondShown: true,
   fonts: {
     display: {
       family: "Zilla Slab",

@@ -22,7 +22,8 @@ const GALLERY_KEEP = 2;
  */
 export function plakatPhotos<T extends SystemSection>(
   sections: readonly T[],
-  hidden: readonly string[]
+  hidden: readonly string[],
+  freeGallery = false
 ): { list: T[]; processPhoto?: string } {
   let processPhoto: string | undefined;
   const { list } = claimPhotos(sections, hidden, (all, claimed) => {
@@ -49,7 +50,7 @@ export function plakatPhotos<T extends SystemSection>(
     if (process && free.length > GALLERY_KEEP) processPhoto = free[0];
     const picked = [...teamPhotos, ...(processPhoto ? [processPhoto] : [])];
     return picked.length ? picked : undefined;
-  });
+  }, freeGallery);
   const hero = list.find((s): s is T & SectionOf<"hero"> => s.type === "hero");
   const heroUrl =
     hero?.imageUrl && !hidden.includes("hero-media") ? hero.imageUrl : "";

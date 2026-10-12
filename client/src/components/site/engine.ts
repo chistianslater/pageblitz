@@ -71,13 +71,17 @@ export const FREIE_GALERIEBILDER = 3;
 /**
  * Galerie-Abschnitte auf die freien Bilder kürzen (Start- und Unterseiten).
  *
- * `beyondShown` (Designsysteme mit „jedes Foto einmal je Seite", z. B.
- * Nacht): Fotos, die dieselbe Seite schon als Einstiegs- oder Über-uns-Bild
- * zeigt, zählen nicht zu den freien drei — sonst bliebe nach dem Entfernen
- * der Doppel oft nur ein Galeriefoto übrig (Abnahme 2026-10-12: 8 Fotos,
- * Einstieg = 1., Über uns = 2. → Galerie zeigte nur das 3.). Sie bleiben im
- * Abschnitt; das System entfernt die Doppel selbst. Doppelte Adressen
- * zählen einmal.
+ * `beyondShown` (Designsysteme mit „jedes Foto einmal je Seite", alle
+ * mit `freeGalleryBeyondShown`): Fotos, die dieselbe Seite vor der Galerie
+ * schon beansprucht, zählen nicht zu den freien drei — sonst bliebe nach
+ * dem Entfernen der Doppel oft nur ein Galeriefoto übrig (Abnahme
+ * 2026-10-12: 8 Fotos, Einstieg = 1., Über uns = 2. → Galerie zeigte nur
+ * das 3.). Beansprucht wie in `claimPhotos` (systems/shared/photos.ts):
+ * das Einstiegsfoto immer (außer ausgeblendet), das Über-uns-Foto nur,
+ * wenn der Abschnitt sichtbar ist und in Renderreihenfolge vor der Galerie
+ * steht — sonst zeigt die Galerie das Foto und Über uns verliert es. Sie
+ * bleiben im Abschnitt; das System entfernt die Doppel selbst. Doppelte
+ * Adressen zählen einmal.
  */
 export function withGalleryLimit(
   doc: WebsiteDataV2,
@@ -85,19 +89,28 @@ export function withGalleryLimit(
 ): WebsiteDataV2 {
   if (doc.addOns?.gallery === true) return doc;
   const versteckt = doc.designProfile?.hiddenElements ?? [];
+  /** Vor der Galerie beanspruchte Fotos, Abschnitte in Renderreihenfolge. */
   const gezeigt = (abschnitte: readonly { type: string }[]) => {
     const urls = new Set<string>();
     if (!beyondShown) return urls;
-    for (const a of abschnitte) {
+    const galerieAn = abschnitte.findIndex(a => a.type === "gallery");
+    abschnitte.forEach((a, i) => {
       const bild = (a as { imageUrl?: string }).imageUrl;
-      if (!bild) continue;
+      if (!bild) return;
       if (a.type === "hero" && !versteckt.includes("hero-media")) urls.add(bild);
-      if (a.type === "about" && !versteckt.includes("about-media")) urls.add(bild);
-    }
+      if (
+        a.type === "about" &&
+        !versteckt.includes("about-media") &&
+        (galerieAn === -1 || i < galerieAn)
+      )
+        urls.add(bild);
+    });
     return urls;
   };
-  const kuerzenIn = <T extends { type: string }>(abschnitte: T[]): T[] => {
-    const schonDa = gezeigt(abschnitte);
+  const kuerzenIn = <T extends { type: string }>(
+    abschnitte: T[],
+    schonDa: Set<string>
+  ): T[] => {
     return abschnitte.map(abschnitt => {
       if (abschnitt.type !== "gallery") return abschnitt;
       const galerie = abschnitt as T & { images: { url: string }[] };
@@ -122,12 +135,16 @@ export function withGalleryLimit(
   };
   return {
     ...doc,
-    sections: kuerzenIn(doc.sections),
+    // Startseite: sichtbar und sortiert wie gerendert (orderedSections).
+    sections: kuerzenIn(doc.sections, gezeigt(orderedSections(doc))),
     ...(doc.pages
       ? {
           pages: doc.pages.map(p => ({
             ...p,
-            sections: kuerzenIn(p.sections),
+            sections: kuerzenIn(
+              p.sections,
+              gezeigt(p.sections.filter(s => isSectionBooked(doc, s.type)))
+            ),
           })),
         }
       : {}),

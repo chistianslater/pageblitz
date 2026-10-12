@@ -1,4 +1,7 @@
-import type { SectionOf } from "../../../../../../shared/siteContract/types";
+import type {
+  SectionOf,
+  WebsiteDataV2,
+} from "../../../../../../shared/siteContract/types";
 import type { SystemSection } from "./sections";
 
 /**
@@ -25,11 +28,17 @@ export type OfferPhotoPick = (
  *
  * Läuft vor Kapitelzählung und Abb.-Nummern, damit Nummern, Navigation
  * und Kapitel lückenlos bleiben. Journal nutzt es nicht.
+ *
+ * `freeGallery` (ohne Galerie-Extra): Die Galerie trägt nur die freien
+ * Fotos (`withGalleryLimit` mit `beyondShown`). Angebotsfotos schöpfen
+ * dann nicht aus der Galerie — sonst blieben der Galerie weniger als die
+ * freien drei (Bänder, Ablauf, Bildpaar entfallen still).
  */
 export function claimPhotos<T extends SystemSection>(
   sections: readonly T[],
   hidden: readonly string[],
-  pickOffer?: OfferPhotoPick
+  pickOffer?: OfferPhotoPick,
+  freeGallery = false
 ): { list: T[]; offerPhotos?: string[] } {
   const claimed = new Set<string>();
   const hero = sections.find(
@@ -38,7 +47,10 @@ export function claimPhotos<T extends SystemSection>(
   if (hero?.imageUrl && !hidden.includes("hero-media"))
     claimed.add(hero.imageUrl);
 
-  const offerPhotos = pickOffer?.(sections, claimed);
+  const offerPool: readonly SystemSection[] = freeGallery
+    ? sections.map(s => (s.type === "gallery" ? { ...s, images: [] } : s))
+    : sections;
+  const offerPhotos = pickOffer?.(offerPool, claimed);
   offerPhotos?.forEach(u => claimed.add(u));
 
   let changed = false;
@@ -72,3 +84,7 @@ export function claimPhotos<T extends SystemSection>(
     ...(offerPhotos ? { offerPhotos } : {}),
   };
 }
+
+/** Ohne gebuchtes Galerie-Extra trägt die Galerie nur die freien Fotos. */
+export const galleryIsFree = (doc: WebsiteDataV2): boolean =>
+  doc.addOns?.gallery !== true;

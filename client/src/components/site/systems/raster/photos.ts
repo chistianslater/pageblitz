@@ -11,13 +11,19 @@ import { bandPlan } from "./offerData";
  */
 export function claimPhotos<T extends SystemSection>(
   sections: readonly T[],
-  hidden: readonly string[]
+  hidden: readonly string[],
+  freeGallery = false
 ): { list: T[]; bandPhotos?: string[] } {
-  const { list, offerPhotos } = claimShared(sections, hidden, (all, claimed) => {
-    const services = all.find(
-      (s): s is SectionOf<"services"> => s.type === "services"
-    );
-    return services ? bandPlan(services, all, claimed).photos : undefined;
-  });
+  const { list, offerPhotos } = claimShared(
+    sections,
+    hidden,
+    (all, claimed) => {
+      const services = all.find(
+        (s): s is SectionOf<"services"> => s.type === "services"
+      );
+      return services ? bandPlan(services, all, claimed).photos : undefined;
+    },
+    freeGallery
+  );
   return { list, ...(offerPhotos ? { bandPhotos: offerPhotos } : {}) };
 }

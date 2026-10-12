@@ -9,7 +9,12 @@ import {
 } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import {
+  galleryIsFree,
+  previewSlotAnchors,
+  shownNavItems,
+  systemShows,
+} from "../shared";
 import { WerkstoffDock } from "./Dock";
 import { WerkstoffMenuSlot, WerkstoffTeamSlot } from "./Offer";
 import { werkstoffPhotos } from "./offerData";
@@ -37,7 +42,8 @@ export const WERKSTOFF_MODULE: PackModule = {
     const hidden = home.designProfile?.hiddenElements ?? [];
     const { list, offerPhotos } = werkstoffPhotos(
       legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
-      hidden
+      hidden,
+      galleryIsFree(home)
     );
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
@@ -47,7 +53,11 @@ export const WERKSTOFF_MODULE: PackModule = {
     // Auf der Startseite ist `list` schon die beanspruchte Startseiten-Liste.
     const homeShown =
       sections || legal
-        ? werkstoffPhotos(homeAll.filter(systemShows), hidden).list
+        ? werkstoffPhotos(
+            homeAll.filter(systemShows),
+            hidden,
+            galleryIsFree(home)
+          ).list
         : list;
     const shown = werkstoffNavItems(
       shownNavItems(navItems, homeAll).filter(

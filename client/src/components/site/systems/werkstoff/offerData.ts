@@ -73,9 +73,10 @@ export function processPhoto(
 /** Jedes Foto höchstens einmal: Einstieg → Ablauf → Über uns → Galerie. */
 export function werkstoffPhotos<T extends SystemSection>(
   sections: readonly T[],
-  hidden: readonly string[]
+  hidden: readonly string[],
+  freeGallery = false
 ): { list: T[]; offerPhotos?: string[] } {
-  return claimPhotos(sections, hidden, processPhoto);
+  return claimPhotos(sections, hidden, processPhoto, freeGallery);
 }
 
 /** Größe eines Werkbank-Rasters (Systemblatt: 2 bis 4 Fotos). */

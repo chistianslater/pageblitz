@@ -2,7 +2,12 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import {
+  galleryIsFree,
+  previewSlotAnchors,
+  shownNavItems,
+  systemShows,
+} from "../shared";
 import { NACHT_CSS } from "./css";
 import { NachtDock, NachtFoot, NachtHead, nachtNavItems } from "./Chrome";
 import { NachtLegal, NachtPageHead, renderNachtSection } from "./sections";
@@ -57,7 +62,7 @@ export const NACHT_MODULE: PackModule = {
     const { data: home } = useSystem();
     const hidden = home.designProfile?.hiddenElements ?? [];
     const prepare = (all: Parameters<typeof nachtPhotos>[0]) =>
-      nachtPhotos(all, hidden);
+      nachtPhotos(all, hidden, galleryIsFree(home));
     const { list, pair } = prepare(
       legal ? [] : (sections ?? orderedSections(data)).filter(nachtShows)
     );

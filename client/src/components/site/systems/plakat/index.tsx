@@ -2,7 +2,12 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import {
+  galleryIsFree,
+  previewSlotAnchors,
+  shownNavItems,
+  systemShows,
+} from "../shared";
 import { PLAKAT_CSS } from "./css";
 import { PlakatFoot, PlakatHead, plakatNavItems } from "./Chrome";
 import { PlakatDock, PlakatTicker } from "./Band";
@@ -35,7 +40,8 @@ export const PLAKAT_MODULE: PackModule = {
     // Über uns → Galerie (offerData.ts), vor Navigation und Rhythmus.
     const { list, processPhoto } = plakatPhotos(
       legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
-      hidden
+      hidden,
+      galleryIsFree(home)
     );
     // Vorschau-Platzhalter (Karte, Team) nur auf der Startseite.
     const slots = sections || legal ? {} : previewSlotAnchors(list);
@@ -43,7 +49,11 @@ export const PLAKAT_MODULE: PackModule = {
     const homeAll = orderedSections(home);
     const homeShown =
       sections || legal
-        ? plakatPhotos(homeAll.filter(systemShows), hidden).list
+        ? plakatPhotos(
+            homeAll.filter(systemShows),
+            hidden,
+            galleryIsFree(home)
+          ).list
         : list;
     const shown = plakatNavItems(
       shownNavItems(navItems, homeAll).filter(

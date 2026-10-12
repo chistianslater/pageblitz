@@ -32,7 +32,8 @@ const PAIR_KEEPS = 2;
  */
 export function nachtPhotos<T extends SystemSection>(
   sections: readonly T[],
-  hidden: readonly string[]
+  hidden: readonly string[],
+  freeGallery = false
 ): { list: T[]; pair?: PairPhotos } {
   let pair: PairPhotos | undefined;
   const { list } = claimPhotos(sections, hidden, (all, claimed) => {
@@ -61,7 +62,7 @@ export function nachtPhotos<T extends SystemSection>(
     ];
     const picked = [...pairUrls, ...portraits];
     return picked.length ? picked : undefined;
-  });
+  }, freeGallery);
   const hero = list.find((s): s is T & SectionOf<"hero"> => s.type === "hero");
   const seen = new Set<string>([
     ...(hero?.imageUrl && !hidden.includes("hero-media")

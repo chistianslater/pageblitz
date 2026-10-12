@@ -8,6 +8,9 @@ export const KLAR: DesignSystemDef = {
   id: "klar",
   name: "Klar",
   essence: "Freundlich, ruhig, gut lesbar",
+  // Jedes Foto einmal je Seite (claimPhotos): die drei freien Galeriefotos
+  // zählen erst nach den vor der Galerie gezeigten (Einstieg, Über uns).
+  freeGalleryBeyondShown: true,
   fonts: {
     display: {
       family: "DM Sans",

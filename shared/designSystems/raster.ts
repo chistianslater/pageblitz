@@ -4,6 +4,9 @@ export const RASTER: DesignSystemDef = {
   id: "raster",
   name: "Raster",
   essence: "Schweizerisch, genau, sachlich",
+  // Jedes Foto einmal je Seite (claimPhotos): die drei freien Galeriefotos
+  // zählen erst nach den vor der Galerie gezeigten (Einstieg, Über uns).
+  freeGalleryBeyondShown: true,
   fonts: {
     display: {
       family: "Geist",

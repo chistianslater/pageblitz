@@ -10,7 +10,12 @@ import {
 } from "./sections";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
+import {
+  galleryIsFree,
+  previewSlotAnchors,
+  shownNavItems,
+  systemShows,
+} from "../shared";
 import { RasterMenuSlot, RasterTeamSlot } from "./Offer";
 import { RasterDock } from "./Dock";
 import { entryVariant } from "./facts";
@@ -39,14 +44,19 @@ export const RASTER_MODULE: PackModule = {
     const hidden = home.designProfile?.hiddenElements ?? [];
     const { list, bandPhotos } = claimPhotos(
       legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
-      hidden
+      hidden,
+      galleryIsFree(home)
     );
     // Unterseiten und Rechtsseiten: Anker zeigen auf die Startseite.
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     // Vorschau-Platzhalter (Speisekarte, Team) nur auf der Startseite.
     const slots = sections || legal ? {} : previewSlotAnchors(list);
     const homeAll = orderedSections(home);
-    const homeShown = claimPhotos(homeAll.filter(systemShows), hidden).list;
+    const homeShown = claimPhotos(
+      homeAll.filter(systemShows),
+      hidden,
+      galleryIsFree(home)
+    ).list;
     const shown = shownNavItems(navItems, homeAll).filter(
       item =>
         item.sectionType !== "gallery" ||

@@ -8,6 +8,9 @@ export const PLAKAT: DesignSystemDef = {
   id: "plakat",
   name: "Plakat",
   essence: "Laut, fröhlich, selbstbewusst",
+  // Jedes Foto einmal je Seite (claimPhotos): die drei freien Galeriefotos
+  // zählen erst nach den vor der Galerie gezeigten (Einstieg, Über uns).
+  freeGalleryBeyondShown: true,
   fonts: {
     display: {
       family: "League Gothic",
