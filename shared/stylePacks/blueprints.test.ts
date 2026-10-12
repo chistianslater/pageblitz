@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { blueprintFor, isBarberShop, withBlueprint } from "./blueprints";
+import { systemsFor } from "../designSystems/assignment";
 import { getFixture } from "../siteContract/fixtures";
 import { renderSiteHtml } from "../../server/ssr/renderSite";
 import { withEntryComposition } from "./artDirection";
@@ -428,5 +429,39 @@ describe("Barbier-Erkennung (ganze Wörter)", () => {
     expect(
       blueprintFor("Friseursalon", "Aland Barber Shop").headlines.about
     ).toBe("Über den Laden");
+  });
+});
+
+describe("Weinstube & Co. sind Gastro-Restaurant (2026-10-12)", () => {
+  it("Weinstube, Weinlokal, Besenwirtschaft, Heuriger, Straußwirtschaft, Wirtshaus, Kneipe → gastro, restaurant", () => {
+    for (const category of [
+      "Weinstube",
+      "Weinstuben",
+      "Pfälzer Weinstube",
+      "Weinlokal",
+      "Weinbar",
+      "Besenwirtschaft",
+      "Heuriger",
+      "Heurigenlokal",
+      "Straußwirtschaft",
+      "Straussenwirtschaft",
+      "Gaststätte",
+      "Wirtshaus",
+      "Kneipe",
+    ]) {
+      const bp = blueprintFor(category, "Zum Ochsen");
+      expect(bp.id, category).toBe("gastro");
+      expect(bp.gastroKind, category).toBe("restaurant");
+      expect(systemsFor(bp.id, { gastroKind: bp.gastroKind })[0], category).toBe(
+        "nacht"
+      );
+    }
+  });
+
+  it("Weinhandlung, Weingroßhandel, Straußenfarm sind keine Gastronomie", () => {
+    expect(blueprintFor("Weinhandlung", "Vinothek Müller").id).toBe("retail");
+    expect(blueprintFor("Weinfachgeschäft", "Müller").id).toBe("retail");
+    expect(blueprintFor("Straußenfarm", "Hof Kemper").id).not.toBe("gastro");
+    expect(blueprintFor("Heurekas Nachhilfe", "").id).not.toBe("gastro");
   });
 });

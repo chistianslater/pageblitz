@@ -231,8 +231,11 @@ export function tradeLabel(
 
 const GASTRO_KEYS =
   /^(restaurant|imbiss|catering|cafe|café|baeckerei|bäckerei|konditorei|eiscafe|eisdiele|pizzeria|bistro|gaststaette|gaststätte|kneipe|brauhaus|grill|doener|döner|burger|sushi|steakhouse)/;
+// Weinstube & Co. (2026-10-12): Weinlokale, Besen- und Straußwirtschaften,
+// Heurige sind Restaurants (Nacht). „Weinhandlung" bleibt Handel — es
+// zählen nur die ganzen Lokal-Wörter, kein „wein…" allein.
 const GASTRO_TEXT =
-  /restaurant|ristorante|trattoria|pizzeria|bistro|gasthaus|gasthof|gaststätte|wirtshaus|brauhaus|imbiss|döner|doener|kebab|burger|sushi|grill|lieferservice|café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscafé|eiscafe|eisdiele|cocktail|kneipe|\bpub\b|weinbar|\bbar\b|brauerei|biergarten/i;
+  /weinstube|weinlokal|besenwirtschaft|strau(?:ß|ss)(?:en)?wirtschaft|(?:^|[^a-zäöüß])heurige[nr]?|restaurant|ristorante|trattoria|pizzeria|bistro|gasthaus|gasthof|gaststätte|wirtshaus|brauhaus|imbiss|döner|doener|kebab|burger|sushi|grill|lieferservice|café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscafé|eiscafe|eisdiele|cocktail|kneipe|\bpub\b|weinbar|\bbar\b|brauerei|biergarten/i;
 
 function gastroKind(text: string): GastroKind {
   if (
