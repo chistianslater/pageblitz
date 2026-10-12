@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Plakat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Six+Caps&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --weiss: #ffffff;
+    --ink: #141014;
+    --ink-soft: #5d555c;
+    --rule: rgba(20, 16, 20, 0.16);
+    --signal: #ff4a1c;
+    --rosa: #ffb3c4;
+    --mint: #8fe3c6;
+    --gelb: #ffc93c;
+    --flieder: #a9b1ff;
+    --gut: #141014;
+    --mittel: #a39ba2;
+    --schwach: #ff4a1c;
+    --caps: "Six Caps", "Bebas Neue", Impact, sans-serif;
+    --sans: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--weiss); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 0 48px 72px; }
+  .lbl, .kicker, .tag, .badge, figcaption, thead th, .note span, .gekuerzt, h4, dt { font-family: var(--sans); font-weight: 700; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  header.kopf { background: var(--signal); color: var(--ink); margin: 0 -48px; padding: 36px 48px 28px; display: grid; grid-template-columns: 240px 1fr 360px; gap: 32px; align-items: end; position: relative; overflow: hidden; }
+  .knr { font-family: var(--caps); font-size: 260px; line-height: .78; }
+  h1 { font-family: var(--caps); font-weight: 400; font-size: 230px; line-height: 0.82; letter-spacing: 0.005em; margin-top: 8px; }
+  .kopf .kicker { color: var(--ink); }
+  .kopf-rechts { display: grid; gap: 14px; justify-items: start; }
+  .sticker { width: 150px; height: 150px; border-radius: 50%; background: var(--gelb); color: var(--ink); display: grid; place-items: center; text-align: center; transform: rotate(-9deg); font-weight: 800; font-size: 13px; line-height: 1.1; text-transform: uppercase; letter-spacing: .04em; box-shadow: 0 0 0 3px var(--ink); }
+  .sticker b { display: block; font-family: var(--caps); font-weight: 400; font-size: 64px; line-height: .85; letter-spacing: 0; }
+  .band { background: var(--ink); color: var(--weiss); margin: 0 -48px; padding: 10px 48px; white-space: nowrap; overflow: hidden; font-weight: 800; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; }
+  .band span { margin: 0 18px; color: var(--gelb); }
+
+  .vorspann { display: grid; grid-template-columns: 240px repeat(3, 1fr); gap: 24px 40px; padding: 26px 0 44px; font-size: 14px; color: var(--ink-soft); }
+  .vorspann .lbl { color: var(--ink); }
+  .vorspann b { color: var(--ink); font-weight: 700; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px; align-items: start; }
+  .kandidat { border-top: 2px solid var(--ink); padding-top: 12px; }
+  .kandidat.wahl { border-top: 10px solid var(--signal); padding-top: 6px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: center; }
+  .nr { font-family: var(--caps); font-size: 110px; line-height: .8; }
+  .wahl .nr { color: var(--signal); }
+  .tag { color: var(--ink-soft); }
+  .badge { display: inline-block; background: var(--signal); color: var(--ink); padding: 8px 14px; border-radius: 999px; font-size: 11.5px; }
+  h2 { font-family: var(--caps); font-weight: 400; font-size: 76px; line-height: .9; margin: 8px 0 4px; letter-spacing: .01em; }
+  .url { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 14px; padding: 10px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 13.5px; min-height: 250px; }
+  .urteil li { list-style: none; padding-left: 20px; position: relative; margin: 4px 0; }
+  .urteil li::before { position: absolute; left: 0; font-weight: 800; }
+  .urteil li.plus::before { content: "+"; }
+  .urteil li.minus::before { content: "–"; color: var(--signal); }
+  .urteil li.dann::before { content: "→"; }
+  .noten { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 12px; }
+  .note { background: #f1eeee; border-radius: 10px; padding: 7px 8px 5px; }
+  .note span { display: block; font-size: 8.5px; letter-spacing: .04em; color: var(--ink-soft); min-height: 22px; line-height: 1.2; }
+  .note b { font-family: var(--caps); font-weight: 400; font-size: 46px; line-height: .9; }
+  .note.summe { background: var(--ink); color: var(--weiss); }
+  .note.summe span { color: #bdb5bc; }
+  .wahl .note.summe { background: var(--signal); color: var(--ink); }
+  .wahl .note.summe span { color: var(--ink); }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 14px; margin-top: 16px; align-items: start; }
+  .erster figure { border-radius: 20px; overflow: hidden; background: #eee; border: 2px solid var(--ink); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 12.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); display: block; margin-bottom: 4px; font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+
+  .gekuerzt { color: var(--signal); margin-top: 6px; }
+  .ganz { display: grid; grid-template-columns: 210px auto; max-height: 1640px; overflow: hidden; gap: 12px; margin-top: 18px; align-items: start; }
+  .ganz img { display: block; width: 210px; }
+  .handy { display: grid; grid-template-columns: 90px 90px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); background: #eee; }
+  .halb img { display: block; max-width: none; }
+  figcaption { color: var(--ink-soft); padding: 0 0 6px; font-size: 9.5px; }
+
+  section.abschnitt { margin-top: 64px; border-top: 2px solid var(--ink); padding-top: 16px; display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+  .snr { font-family: var(--caps); font-size: 150px; line-height: .8; }
+  h3 { font-family: var(--caps); font-weight: 400; font-size: 120px; line-height: .86; letter-spacing: .01em; }
+  h3 .sig { color: var(--signal); }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+  thead th { color: var(--ink-soft); border-bottom: 2px solid var(--ink); }
+  thead th.wahl { color: var(--signal); }
+  tbody th { font-family: var(--caps); font-weight: 400; font-size: 38px; line-height: .95; width: 200px; letter-spacing: .01em; }
+  td.wahl { background: rgba(255, 74, 28, 0.08); }
+  .z { font-size: 15px; margin-right: 7px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 12px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 48px; margin-top: 22px; font-size: 14px; }
+  h4 { color: var(--ink-soft); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+  .empfehlung li { margin: 6px 0 6px 18px; }
+  .gross { font-weight: 600; font-size: 27px; line-height: 1.22; letter-spacing: -0.01em; }
+  .gross .sig { background: var(--rosa); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 0 4px; }
+
+  .muster { margin-top: 26px; display: grid; grid-template-columns: 1fr 210px; background: var(--mint); border-radius: 4px; overflow: hidden; position: relative; max-width: 620px; }
+  .muster .text { padding: 22px 24px 20px; }
+  .muster .mk { font-weight: 800; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+  .muster .worte { font-family: var(--caps); font-size: 118px; line-height: .8; margin: 10px 0 12px; }
+  .muster .worte span { display: block; }
+  .muster .worte span:nth-child(2) { padding-left: 46px; }
+  .muster .worte span:nth-child(3) { padding-left: 92px; }
+  .muster .info { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; font-size: 12px; border-top: 2px solid var(--ink); padding-top: 8px; }
+  .bogen { margin: 22px 22px 22px 0; border-radius: 105px 105px 6px 6px; background: linear-gradient(160deg, #3b3539 0%, #7b7479 45%, #1d191c 100%); position: relative; display: grid; align-items: end; padding: 14px; color: #f4efe9; font-size: 11px; line-height: 1.3; }
+  .bogen i { font-style: normal; font-weight: 700; display: block; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+  .muster .sticker { position: absolute; right: 168px; top: 18px; width: 116px; height: 116px; font-size: 10.5px; background: var(--gelb); transform: rotate(10deg); }
+  .muster .sticker b { font-size: 52px; }
+  .muster-cap { font-size: 11.5px; color: var(--ink-soft); margin-top: 8px; max-width: 620px; }
+
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; margin-top: 22px; }
+  .betrieb { border-radius: 4px; padding: 18px 20px 14px; }
+  .betrieb.b1 { background: var(--rosa); }
+  .betrieb.b2 { background: var(--gelb); }
+  .betrieb.b3 { background: var(--flieder); }
+  .betrieb .bnr { font-family: var(--caps); font-size: 130px; line-height: .8; }
+  .betrieb .bname { font-family: var(--caps); font-size: 64px; line-height: .9; margin: 6px 0 12px; }
+  .betrieb dl { display: grid; grid-template-columns: 110px 1fr; font-size: 13px; }
+  .betrieb dt, .betrieb dd { padding: 7px 0; border-top: 1px solid rgba(20,16,20,.35); }
+  .betrieb dt { padding-top: 9px; font-size: 10px; }
+  .fuss { margin-top: 40px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">04</div>
+  <div>
+    <div class="kicker">Designsystem Plakat · Ankersuche · 11.10.2026</div>
+    <h1>Fünf Wörter. Ganz laut.</h1>
+  </div>
+  <div class="kopf-rechts">
+    <div class="sticker"><span><b>4</b>Kandidaten<br>Desktop &amp; Handy</span></div>
+    <div class="kicker">Barbier · Imbiss · Kurse &amp; Fitness</div>
+  </div>
+</header>
+<div class="band">Fade 25 € <span>●</span> Döner 7,50 € <span>●</span> Probetraining gratis <span>●</span> Mo–Sa 9–20 Uhr <span>●</span> Ohne Termin <span>●</span> Mittagstisch ab 11 <span>●</span> Boxen Di &amp; Do 18 Uhr <span>●</span> Fade 25 € <span>●</span> Döner 7,50 € <span>●</span> Probetraining gratis</div>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal (Aman Venice), Raster (Colophon) und Werkstoff (Hollis Butcher Co.) nehmen wir eine komplette Website als Vorlage und bauen ihr System nach. Plakat heißt: laut, fröhlich, selbstbewusst. Eine schmale Schrift setzt wenige Wörter riesig, große Farbflächen, Fotos in Formen, ein Sticker. Für Barbier, Imbiss, Kurse und Fitness, dazu als Alternative für sieben weitere Familien.</p>
+  <p><b>Wie gesucht.</b> Refero-Styles zu Poster, Farbfeld, Burger, Barbier, Fitness (u. a. SICK Agency, Lamanna, Impossible Foods, EVOKE, The Pop Manifesto, Fictional). Treffer fast nur Marken und Agenturen. Deshalb rund 85 Seiten live im Browser: echte Barbiere, Imbisse, Pizzerien, Studios und gut 70 Framer-Vorlagen. Barbier- und Gym-Vorlagen sind fast alle schwarz mit Gold oder Neon. Nur diese vier sind laut und haben ein System.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt, Abdeckung unserer Abschnitte, Handy, Robustheit bei mittelmäßigen Handyfotos und ob Barbier, Imbiss und Fitnessstudio gleichzeitig hineinpassen. Je 1 bis 10. Aufnahmen vom 11.10.2026 (Desktop 1440, Handy 390). Cookie-Banner abgelehnt, Framer-Hinweise ausgeblendet.</p>
+</div>
+
+<div class="spalten">
+
+  <article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Arcadia Dance Collective</h2>
+    <div class="tag">Tanzschule · Framer-Vorlage „Relevé“</div>
+    <div class="url"><a href="https://relevedance.framer.website/">relevedance.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Schon ein Plakat: Six Caps, eine extrem schmale Schrift, setzt fünf Stilnamen so groß, dass die Schrift das Bild ist. Darunter ruhig General Sans.</li><li class="plus">Alles da: Einstieg mit Infozeile, Stile mit Alter, Lehrer und Preis, Wochenplan Mo–Sa (auf dem Handy als Tagesreiter), 01·02·03 riesig, Aufführungs-Plakat auf Rosa, fünf Lehrer, Zitat mit „4,9 aus 260 Bewertungen“, Preise, FAQ, Schlussband, Name riesig im Fuß.</li><li class="plus">Fotos schwarzweiß und klein. Farbe kommt aus fünf Stilfarben (Rosa, Bernstein, Flieder, Mint, Koralle).</li><li class="minus">Fast ganz schwarz, eher Bühne als gute Laune. Keine Formen, kein Sticker.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>9</b></div><div class="note"><span>Branchen-Mix</span><b>8</b></div><div class="note summe"><span>Summe</span><b>45</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/arcadia-mobil-erster-blick.jpg" alt="Arcadia, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Vier Stilnamen gestaffelt über einer Tänzerin in Schwarzweiß, ein Satz, rosa Knopf, Infozeile mit vier Fakten. Man liest das Angebot, bevor man das Foto sieht. Bei uns: „Fade. Bart. Rasur.“</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/arcadia-desktop.jpg" style="height:2149px" alt="Arcadia Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1600px"><img src="anker/arcadia-mobil.jpg" style="width:90px;height:3199px" alt=""></div><div class="halb" style="height:1600px"><img src="anker/arcadia-mobil.jpg" style="width:90px;height:3199px;margin-top:-1600px" alt=""></div></div></figure>
+    </div>
+    <p class="gekuerzt">Vorschau gekürzt · volle Aufnahme in anker/</p>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span><span class="tag">Eiswagen</span></div>
+    <h2>Pinky Swear</h2>
+    <div class="tag">Eiswagen · Framer-Vorlage „Sundae“</div>
+    <div class="url"><a href="https://sundaetruck.framer.website/">sundaetruck.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Die meiste gute Laune: rosa Sticker „frisch gerührt“ am Foto, Mint-Tafel mit Preisen, rosa Laufband mit Standorten, Titan One fett und rund.</li><li class="plus">Standort-Woche, Tages-Zeitleiste von 6 Uhr bis „ausverkauft“, Catering-Preise riesig, Termine, FAQ, Name riesig im Fuß.</li><li class="minus">Breite Bubble-Schrift statt schmal, Grund Schokobraun. Kein Team.</li><li class="minus">Tafel und Zeitleiste sind dasselbe Gerüst wie Hollis. Als Anker zu nah an Werkstoff.</li><li class="dann">Sticker und Farbflächen im Wechsel mitnehmen.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>9</b></div><div class="note"><span>Abdeckung</span><b>8</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Schwache Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note summe"><span>Summe</span><b>37</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/pinky-swear-mobil-erster-blick.jpg" alt="Pinky Swear, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Wagen-Foto mit rundem Sticker, Tag, Ort und Uhrzeit, rosa Knopf, darunter „Chase the truck.“ riesig. Fröhlich, braucht aber ein gutes Foto.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/pinky-swear-desktop.jpg" style="height:1881px" alt="Pinky Swear Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1709px"><img src="anker/pinky-swear-mobil.jpg" style="width:90px;height:3417px" alt=""></div><div class="halb" style="height:1708px"><img src="anker/pinky-swear-mobil.jpg" style="width:90px;height:3417px;margin-top:-1709px" alt=""></div></div></figure>
+    </div>
+    <p class="gekuerzt">Vorschau gekürzt · volle Aufnahme in anker/</p>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span><span class="tag">Burger</span></div>
+    <h2>Griddle</h2>
+    <div class="tag">Smash-Burger · Framer-Vorlage „Griddle“</div>
+    <div class="url"><a href="https://gribble.framer.website/">gribble.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Optisch am nächsten am Brief: hell, Rot, schmale League Gothic, drei Wörter riesig, Sticker „#1“, „New“, „Hot“, rotes Laufband, Polaroid, Wortmarke riesig im Fuß.</li><li class="minus">Nur vier Abschnitte: Einstieg, Bestseller, zwei Kacheln, Fuß. Keine Zeiten, kein Team, keine Stimmen, kein FAQ.</li><li class="minus">Sticker kleben an einem freigestellten Studio-Burger. Mit einem Handyfoto vom Imbiss wird das billig.</li><li class="dann">Laufband und Sticker-Regel übernehmen.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>8</b></div><div class="note"><span>Abdeckung</span><b>4</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>5</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note summe"><span>Summe</span><b>32</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/griddle-mobil-erster-blick.jpg" alt="Griddle, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Burger mit drei Stickern, „Smashed. Seared. Served.“ in drei Zeilen, zwei Knöpfe, rotes Laufband. Der stärkste erste Blick der Suche, danach kommt fast nichts.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/griddle-desktop.jpg" style="height:607px" alt="Griddle Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:703px"><img src="anker/griddle-mobil.jpg" style="width:90px;height:1405px" alt=""></div><div class="halb" style="height:702px"><img src="anker/griddle-mobil.jpg" style="width:90px;height:1405px;margin-top:-703px" alt=""></div></div></figure>
+    </div>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span><span class="tag">Pizzeria</span></div>
+    <h2>Lamanna’s</h2>
+    <div class="tag">Bäckerei &amp; Pizzeria, Toronto · echter Betrieb</div>
+    <div class="url"><a href="https://lamannabakery.com/">lamannabakery.com</a></div>
+    <ul class="urteil"><li class="plus">Ein echter lokaler Betrieb, der laut ist: Orange, Gelb und Rosa im Wechsel, „Home of the Big Slice“ in Riesenschrift, Stern-Sticker „Order now“, Laufband.</li><li class="plus">Beweis, dass Farbflächen im Wechsel ein ganzes Lokal tragen.</li><li class="minus">Nur Markenbühne: Zeiten nur im Fuß, keine Preise, kein Team, kein Ablauf, keine Stimmen.</li><li class="minus">Freigestellte Produktfotos Pflicht, 3D-Schatten-Schrift kippt Richtung Kitsch.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>3</b></div><div class="note"><span>Handy</span><b>6</b></div><div class="note"><span>Schwache Fotos</span><b>3</b></div><div class="note"><span>Branchen-Mix</span><b>4</b></div><div class="note summe"><span>Summe</span><b>23</b></div></div>
+    <div class="erster">
+      <figure><img src="anker/lamanna-mobil-erster-blick.jpg" alt="Lamanna’s, erster Bildschirm auf dem Handy"></figure>
+      <p><b>Erste 5 Sekunden</b>Orange Fläche, „Home of the Big Slice“ in Gelb, Pizzastück freigestellt. Laut und eindeutig, aber ohne Uhrzeit, Ort und Knopf.</p>
+    </div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/lamanna-desktop.jpg" style="height:1613px" alt="Lamanna’s Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, in zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:764px"><img src="anker/lamanna-mobil.jpg" style="width:90px;height:1527px" alt=""></div><div class="halb" style="height:763px"><img src="anker/lamanna-mobil.jpg" style="width:90px;height:1527px;margin-top:-764px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+  <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+  <table>
+    <thead>
+      <tr><th>Abschnitt</th><th class="wahl">01 Arcadia</th><th>02 Pinky Swear</th><th>03 Griddle</th><th>04 Lamanna’s</th></tr>
+    </thead>
+    <tbody>
+<tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Stilnamen gestaffelt in Six Caps, ein Satz, Knopf, Infozeile mit vier Fakten</td><td><span class="z g">●</span>Foto mit Sticker, Ort und Uhrzeit, Knopf, Riesenzeile</td><td><span class="z g">●</span>Drei Wörter riesig, Sticker am Produkt, Laufband</td><td><span class="z m">◐</span>Riesenzeile und Pizza, kein Fakt, kein Knopf</td></tr>
+<tr><th>Leistungen / Karte / Kurse</th><td class="wahl"><span class="z g">●</span>Stile als Riesenliste mit Alter, Lehrer, Preis. Dazu Preisliste mit großen Zahlen</td><td><span class="z g">●</span>„The Board.“ auf Mint mit Preisen in vier Spalten</td><td><span class="z m">◐</span>Vier Bestseller-Karten</td><td><span class="z s">○</span>Nur Link zur Karte</td></tr>
+<tr><th>Über uns / Team</th><td class="wahl"><span class="z g">●</span>Fünf Lehrer mit Name, Stil, seit wann</td><td><span class="z m">◐</span>Gründer-Zitat</td><td><span class="z m">◐</span>Polaroid mit kurzem Text</td><td><span class="z m">◐</span>Herkunftssatz</td></tr>
+<tr><th>Galerie</th><td class="wahl"><span class="z g">●</span>„Dienstagabend in der Elm Street“, Collage mit Bildunterschrift</td><td><span class="z g">●</span>Foto-Mosaik mit Zitaten</td><td><span class="z m">◐</span>Zwei Kacheln</td><td><span class="z m">◐</span>Produkte in Sternen</td></tr>
+<tr><th>Stimmen</th><td class="wahl"><span class="z g">●</span>Ein großes Zitat, dazu „4,9 aus 260 Bewertungen“</td><td><span class="z m">◐</span>Zitate im Mosaik</td><td><span class="z s">○</span>Fehlt</td><td><span class="z m">◐</span>Presse-Logos</td></tr>
+<tr><th>Ablauf / Stundenplan</th><td class="wahl"><span class="z g">●</span>Wochenplan Mo–Sa farbcodiert (Handy: Tagesreiter) und 01·02·03 zur Probestunde</td><td><span class="z g">●</span>Standort-Woche und Tages-Zeitleiste</td><td><span class="z s">○</span>Fehlt</td><td><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Aktion</th><td class="wahl"><span class="z g">●</span>Aufführungs-Plakat auf Rosa: Datum, Uhrzeit, Eintritt, Programm</td><td><span class="z g">●</span>Catering mit drei Riesenpreisen, Termine am Wochenende</td><td><span class="z s">○</span>Fehlt</td><td><span class="z m">◐</span>Catering-Fläche</td></tr>
+<tr><th>Gut zu wissen</th><td class="wahl"><span class="z g">●</span>„Questions.“ Akkordeon neben Foto</td><td><span class="z g">●</span>„Ask the window.“ Akkordeon</td><td><span class="z s">○</span>Fehlt</td><td><span class="z s">○</span>Fehlt</td></tr>
+<tr><th>Kontakt / Zeiten</th><td class="wahl"><span class="z g">●</span>Schlussband „Deine erste Stunde geht auf uns“, Adresse, Zeiten, Telefon</td><td><span class="z g">●</span>Schlussfoto, Parkplatz-Satz, Zeiten</td><td><span class="z m">◐</span>Adresse und Links im Fuß</td><td><span class="z m">◐</span>Telefon riesig, Adresse</td></tr>
+<tr><th>Fuss</th><td class="wahl"><span class="z g">●</span>Vier Spalten, Name riesig in Six Caps</td><td><span class="z g">●</span>Name riesig</td><td><span class="z g">●</span>Wortmarke riesig in Rot</td><td><span class="z m">◐</span>Logo und Social</td></tr>
+    </tbody>
+  </table>
+  <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+  <h3>Empfehlung: <span class="sig">Arcadia Dance Collective</span></h3>
+  <div class="empfehlung">
+    <div>
+      <p class="gross">Arcadia ist die einzige Seite, die vom Einstieg bis zum Fuß wie ein Aushang funktioniert: was es gibt, wann, wer, was es kostet. <span class="sig">Die Wörter sind das Bild. Fotos sind klein, schwarzweiß und dürfen mittelmäßig sein.</span> Was fehlt, ist die Laune. Die holen wir mit Farbflächen, Formen und einem Sticker.</p>
+      <div class="muster">
+        <div class="text">
+          <div class="mk">Muster · Barbier im Plakat-System</div>
+          <div class="worte"><span>Fade.</span><span>Bart.</span><span>Rasur.</span></div>
+          <div class="info"><span>Ohne Termin</span><span>Mo–Sa 9–20 Uhr</span><span>Fade ab 25 €</span><span>Steinstraße 12</span></div>
+        </div>
+        <div class="bogen"><span><i>Foto im Bogen</i>Handyfoto vom Stuhl, schwarzweiß. Die Form trägt, nicht die Bildqualität.</span></div>
+        <div class="sticker"><span><b>4,8</b>212 Google-<br>Bewertungen</span></div>
+      </div>
+      <p class="muster-cap">Muster mit Platzhalterwerten. Bewertungssticker nur mit echten Zahlen aus dem Google-Profil.</p>
+    </div>
+    <div>
+      <h4>Was wir 1:1 übernehmen</h4>
+      <ul>
+        <li>Eine extrem schmale Display-Schrift (Six Caps oder gleichwertig) nur für Wörter, die man im Vorbeigehen liest. Eine ruhige Grotesk für alles andere</li>
+        <li>Einstieg: drei bis fünf Wörter gestaffelt, ein Satz, ein Knopf, Infozeile mit vier Fakten</li>
+        <li>Angebot als Riesenliste: Name groß, rechts Dauer, wer, Preis</li>
+        <li>Farbcode je Kategorie (Arcadia: fünf Stilfarben). Bei uns je Leistung, Gericht oder Kurs</li>
+        <li>Wochenplan Mo–Sa, auf dem Handy als Tagesreiter</li>
+        <li>01·02·03 riesig für „So läuft dein erster Termin“</li>
+        <li>Aktions-Plakat als Farbfläche, Team mit „seit“, ein großes Zitat mit Google-Schnitt, FAQ, Schlussband, Name riesig im Fuß</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Was wir optimieren</h4>
+      <ul>
+        <li>Grund wird hell und laut: Farbflächen im Wechsel (Rhythmus von Pinky Swear) statt Schwarz. Schwarz nur für ein Band und den Fuß</li>
+        <li>Fotos schwarzweiß oder zweifarbig in Formen: Bogen, Kreis, Pille. Pro Abschnitt eine Form</li>
+        <li>Ein runder, schräger Sticker pro Bildschirm (von Griddle und Pinky Swear), nur mit echten Fakten: Bewertung, „Ohne Termin“, „Seit 2009“</li>
+        <li>Laufband mit Leistungen und Preisen als Trenner (Griddle)</li>
+        <li>Abgrenzung zu Werkstoff: kein Zettel, keine Slab, kein Papier, kein DM Mono. Hollis und Arcadia stammen aus derselben Vorlagen-Familie, also Gerüst bewusst anders rhythmisieren</li>
+        <li>Englische Kurzsätze in deutsche du-Sätze, keine erfundenen Bewertungen</li>
+      </ul>
+    </div>
+  </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+  <h3>Drei Betriebe, ein System</h3>
+  <div class="betriebe">
+    <div class="betrieb b1"><div class="bnr">01</div><div class="bname">Barbier</div>
+      <dl><dt>Einstieg</dt><dd>„Fade. Bart. Rasur.“ gestaffelt, Stuhl im Bogen, Sticker mit Google-Schnitt, Infozeile „Ohne Termin · Mo–Sa · ab 25 €“</dd>
+      <dt>Liste</dt><dd>Schnitte riesig, rechts Dauer und Preis</dd>
+      <dt>Plan</dt><dd>Öffnungszeiten Mo–Sa, dazu „Wer heute am Stuhl steht“</dd>
+      <dt>Aktion</dt><dd>„Samstag: Vater und Sohn“ als rosa Plakat</dd></dl></div>
+    <div class="betrieb b2"><div class="bnr">02</div><div class="bname">Imbiss</div>
+      <dl><dt>Einstieg</dt><dd>„Döner. Dürüm. Teller.“, Teller im Kreis, Sticker „Seit 2009“, Infozeile mit Zeiten und Lieferung</dd>
+      <dt>Liste</dt><dd>Karte in Riesenschrift mit Preisen, farbcodiert: Fleisch, Veggie, Getränke</dd>
+      <dt>Plan</dt><dd>Mittagstisch der Woche Mo–Fr</dd>
+      <dt>Aktion</dt><dd>„Mittwoch: Dürüm 5 €“ als gelbes Plakat</dd></dl></div>
+    <div class="betrieb b3"><div class="bnr">03</div><div class="bname">Fitness &amp; Kurse</div>
+      <dl><dt>Einstieg</dt><dd>„Kraft. Boxen. Yoga.“, Halle in der Pille, Sticker „Probetraining gratis“</dd>
+      <dt>Liste</dt><dd>Kurse mit Level, Trainer, Preis pro Monat</dd>
+      <dt>Plan</dt><dd>Echter Stundenplan Mo–Sa, farbcodiert, auf dem Handy als Reiter</dd>
+      <dt>Ablauf</dt><dd>01 Kurs aussuchen · 02 zehn Minuten früher da · 03 bleiben, wenn es passt</dd></dl></div>
+  </div>
+  <p class="fuss">Quellen: Refero-Styles zu SICK Agency, GT America, Impossible Foods, EVOKE, Lamanna, The Pop Manifesto, Dollar Shave Club, Honk, Fictional, Gumroad, Peloton, Stryds, amp, Strava als Vorauswahl. Live geprüft und verworfen: Gymbox, Frame, Pizza Pilgrims, Honest Burgers, Patty &amp; Bun, Schorem, Blind Barber; Framer-Vorlagen Lowline („Fade“), King Barber, Baron, Barbero, Mario, Dallas Barbershop, Afro Barbershop, Fadework, Clipster, UrbanCut, Razor, Atelier Barbers, The Burger, Bite Me, Angry Burgr, Crav, Emberjack, Umami, Slice Town, Stack n Snack, Hotbite, Smoke &amp; Sesame (Schwester von Pinky Swear), Hey Patty, Sunburst, Dollop, Scoopa, Mulligans, Toasted Buns, Rambler, Dinevo, Mexzo, Griddlecar, Twofive, Sweet Morels, Doughly, Cenere, Candyclaw, Progrex, Fitnex, Force, Baselinee, Nexa, Hybrd, Strikeclub, Fitbricks, Cruxfit, Threshold, Gym Pulse, Motus, Volt Form, The Forge, Southpaw, Beatnik, Danzora, Tempo, Serena, Sun &amp; Moon, Yogni, 54 Mirrors, Beastx u. a. Arcadia, Pinky Swear und Griddle sind Vorlagen mit erfundenen Betrieben; wir bauen das System nach, nicht Texte oder Bilder.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
