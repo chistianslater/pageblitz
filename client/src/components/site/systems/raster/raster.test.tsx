@@ -166,7 +166,7 @@ describe("Raster: Fuß", () => {
     const html = render(rasterDoc(), false, "/site/brandt");
     const foot = html.slice(html.indexOf('class="rs-foot"'));
     expect(foot).toMatch(
-      /<p class="rs-foot-call"><a href="[^"]+">[^<]+<\/a><\/p>/
+      /<p class="rs-foot-call" data-sys-actions=""><a href="[^"]+">[^<]+<\/a><\/p>/
     );
     expect(foot).toContain('<p class="rs-foot-h">Leistungen</p>');
     expect(foot).toContain('<p class="rs-foot-h">Kontakt</p>');
@@ -202,7 +202,7 @@ describe("Raster: Fuß", () => {
     expect(foot).not.toContain("#leistungen");
     expect(foot).not.toContain("Versteckter Aufruf");
     expect(foot).toMatch(
-      /<p class="rs-foot-call"><a href="[^"]+">[^<]+<\/a><\/p>/
+      /<p class="rs-foot-call" data-sys-actions=""><a href="[^"]+">[^<]+<\/a><\/p>/
     );
   });
 

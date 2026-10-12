@@ -290,7 +290,7 @@ describe("Plakat: Laufband und Dock", () => {
   test("Dock: zwei Wege (Neben + Haupt), nur unter 48 rem, Seite bekommt Luft", () => {
     const html = render(kanteDoc());
     expect(html).toMatch(
-      /<nav class="pk-dock" aria-label="Schnellkontakt"><a class="pk-dock-a" href="tel:02515550182">Anrufen<\/a><a class="pk-dock-b" href="#kontakt">Termin buchen<\/a><\/nav>/
+      /<nav class="pk-dock" aria-label="Schnellkontakt" data-sys-dock=""><a class="pk-dock-a" href="tel:02515550182">Anrufen<\/a><a class="pk-dock-b" href="#kontakt">Termin buchen<\/a><\/nav>/
     );
     expect(PLAKAT_CSS).toContain("@media (max-width:47.99rem)");
     expect(PLAKAT_CSS).toMatch(

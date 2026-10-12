@@ -28,6 +28,7 @@ import {
   visibleDoc,
 } from "./facts";
 import { fitFootWord } from "./fit";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Kopf und Fuß von Werkstoff nach Systemblatt (Anker Hollis): Kopf hell
@@ -178,12 +179,16 @@ export function WerkstoffFoot({
         {/* Aufforderung: Aufruf-Abschnitt, sonst die Hauptaktion — nichts erfunden. */}
         <p className="ws-foot-call">{cta?.headline ?? action.label}</p>
         {tel && contact?.phone ? (
-          <a className="ws-btn ws-foot-btn" href={tel}>
+          <a className="ws-btn ws-foot-btn" href={tel} {...SYS_ACTIONS}>
             {contact.phone.trim()}
           </a>
         ) : (
           first && (
-            <a className="ws-btn ws-foot-btn" href={first.href}>
+            <a
+              className="ws-btn ws-foot-btn"
+              href={first.href}
+              {...SYS_ACTIONS}
+            >
               {first.label}
             </a>
           )

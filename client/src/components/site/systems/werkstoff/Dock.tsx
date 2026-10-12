@@ -1,6 +1,7 @@
 import React from "react";
 import { useSystem } from "../SystemContext";
 import { actionPair } from "./facts";
+import { SYS_DOCK } from "../shared/dockAutoHide";
 
 /**
  * Handy-Leiste (Systemblatt: „Immer zwei Wege: Anrufen und Route. Bei
@@ -16,6 +17,7 @@ export function WerkstoffDock({ anchorPrefix }: { anchorPrefix: string }) {
     <nav
       className={actions.length === 1 ? "ws-dock ws-dock--one" : "ws-dock"}
       aria-label="Schnellkontakt"
+      {...SYS_DOCK}
     >
       {actions.map((a, i) => (
         <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href}>

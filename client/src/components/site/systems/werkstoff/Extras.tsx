@@ -8,6 +8,7 @@ import {
   chapterTitle,
   type WerkstoffSection,
 } from "./sections";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Übrige Abschnitte in derselben Grammatik (Slab-Überschrift, Tinte-Linie,
@@ -129,7 +130,7 @@ export function WerkstoffCta({ section }: Props<"cta">) {
       name="cta"
       title={section.headline}
     >
-      <p className="ws-cta-action">
+      <p className="ws-cta-action" {...SYS_ACTIONS}>
         <a
           className="ws-btn"
           href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}

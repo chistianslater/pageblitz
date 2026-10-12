@@ -91,6 +91,7 @@ import {
   flattenGalleryAlbums,
 } from "./galleryAlbums";
 import { DESIGN_PROFILE_CSS } from "./designProfileCss";
+import { mountDockAutoHide } from "./systems/shared/dockAutoHide";
 import { deriveDesignProfile } from "../../../../shared/siteContract/designProfile";
 import {
   buildNavItems,
@@ -306,6 +307,11 @@ export const SiteRenderer: React.FC<{
       cancelled = true;
       cleanup?.();
     };
+  }, [motionKey, systemDef?.id]);
+  // Handy-Leiste: aus, solange dieselben Knöpfe in der Seite sichtbar sind.
+  useEffect(() => {
+    if (!systemDef || !rootRef.current) return;
+    return mountDockAutoHide(rootRef.current);
   }, [motionKey, systemDef?.id]);
   const mod = systemDef
     ? SYSTEM_MODULES[systemDef.id]

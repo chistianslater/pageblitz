@@ -20,6 +20,7 @@ import {
   type RasterSection,
   type SectionProps,
 } from "./sections";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Gut zu wissen und Zeiten + Kontakt nach Systemblatt 7–9: Fragen als
@@ -172,7 +173,7 @@ export function RasterContact({ section, sections }: SectionProps<"contact">) {
             )}
           </div>
         )}
-        <div className="rs-visit-reach">
+        <div className="rs-visit-reach" {...SYS_ACTIONS}>
           {tel && section.phone && (
             <a className="rs-phone" href={tel}>
               {section.phone.trim()}

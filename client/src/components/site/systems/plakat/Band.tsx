@@ -2,6 +2,7 @@ import React from "react";
 import { useSystem } from "../SystemContext";
 import { versalEszett } from "../shared";
 import { plakatActions, tickerItems } from "./facts";
+import { SYS_DOCK } from "../shared/dockAutoHide";
 
 /**
  * Laufband (Systemblatt 09): genau eins je Seite, direkt nach dem Einstieg,
@@ -72,6 +73,7 @@ export function PlakatDock({ anchorPrefix }: { anchorPrefix: string }) {
     <nav
       className={other ? "pk-dock" : "pk-dock pk-dock--one"}
       aria-label="Schnellkontakt"
+      {...SYS_DOCK}
     >
       {other && (
         <a className="pk-dock-a" href={other.href}>

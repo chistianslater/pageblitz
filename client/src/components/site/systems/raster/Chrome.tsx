@@ -19,6 +19,7 @@ import type {
   SectionOf,
   SectionType,
 } from "../../../../../../shared/siteContract/types";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Kopf und Fuß von Raster nach Systemblatt (Anker Colophon): Handy
@@ -171,7 +172,7 @@ export function RasterFoot({
     <footer className="rs-foot">
       <div className="rs-wrap">
         {/* Aufforderung: Aufruf-Abschnitt, sonst die Hauptaktion — nichts erfunden. */}
-        <p className="rs-foot-call">
+        <p className="rs-foot-call" {...SYS_ACTIONS}>
           <a href={action.href}>{cta?.headline || action.label}</a>
         </p>
         <div className="rs-foot-cols">

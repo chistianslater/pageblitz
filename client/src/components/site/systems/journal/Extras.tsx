@@ -10,6 +10,7 @@ import {
   sectionClass,
   type JournalSection,
 } from "./sections";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Übrige Abschnittstypen in der Grammatik des Systemblatts (Label-Zeile +
@@ -212,7 +213,7 @@ export function JournalCta({ section }: P<"cta">) {
     >
       <div className="jr-wrap">
         <h2 id={`${id}-titel`}>{rich(section.headline)}</h2>
-        <p className="jr-cta-action">
+        <p className="jr-cta-action" {...SYS_ACTIONS}>
           <a
             className="jr-pill jr-pill--light"
             href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}

@@ -14,6 +14,7 @@ import { useSystem } from "../SystemContext";
 import { addressLine, mapsHref, primaryAction } from "../shared";
 import type { JournalSection } from "./sections";
 import { FIT_MAX, FIT_MIN } from "./css";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Journal-Einstieg nach Systemblatt („Der Wow-Moment", Anker Aman Venice):
@@ -178,7 +179,7 @@ export function JournalEntry({
           </div>
         )}
         {!photo && (
-          <div className="jr-entry-actions">
+          <div className="jr-entry-actions" {...SYS_ACTIONS}>
             <a className="jr-pill jr-pill--ghost" href={action.href}>
               {action.label}
             </a>

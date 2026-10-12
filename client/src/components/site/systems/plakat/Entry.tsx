@@ -24,6 +24,7 @@ import { staggerLines } from "./fit";
 import { statusLine } from "./hours";
 import type { Field } from "./rhythm";
 import { PlakatSticker } from "./Sticker";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Plakat-Einstieg nach Systemblatt 8 (Handy) und 15 (Desktop). Genau ein
@@ -184,7 +185,7 @@ export function PlakatEntry({
         <div className="pk-entry-copy">
           {lede && <p className="pk-entry-lede">{lede}</p>}
           {primary && (
-            <p className="pk-entry-actions">
+            <p className="pk-entry-actions" {...SYS_ACTIONS}>
               <a className="pk-btn" href={primary.href}>
                 {primary.label}
                 <i aria-hidden="true">→</i>

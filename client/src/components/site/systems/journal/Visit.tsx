@@ -23,6 +23,7 @@ import {
   sectionClass,
   type JournalSection,
 } from "./sections";
+import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
 
 /**
  * Gut zu wissen, Besuch und Handy-Dock nach Systemblatt (Anker Aman
@@ -214,13 +215,13 @@ export function JournalContact({ section, sections }: P<"contact">) {
               />
             )}
             {inquiry && inquiryHref && (
-              <p className="jr-contact-cta">
+              <p className="jr-contact-cta" {...SYS_ACTIONS}>
                 <a className="jr-pill" href={inquiryHref}>
                   {blueprint.ctaText ?? "Anfrage senden"}
                 </a>
               </p>
             )}
-            <p className="jr-links jr-contact-links">
+            <p className="jr-links jr-contact-links" {...SYS_ACTIONS}>
               {address && (
                 <a
                   className="jr-link"
@@ -324,7 +325,7 @@ export function JournalDock({ anchorPrefix }: { anchorPrefix: string }) {
           }
         : undefined;
   return (
-    <nav className="jr-dock" aria-label="Schnellzugriff">
+    <nav className="jr-dock" aria-label="Schnellzugriff" {...SYS_DOCK}>
       <a className="jr-dock-main" href={action.href}>
         {action.label}
       </a>

@@ -3,6 +3,7 @@ import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, contactOf } from "../shared";
 import { brandParts, branchOf, nameOf, todayStatus, visibleDoc } from "./facts";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Werkzettel (Systemblatt, DM Mono): liegt als eigenes Stück über der
@@ -43,7 +44,7 @@ export function WerkstoffSlip() {
         </p>
       )}
       {tel ? (
-        <a className="ws-slip-bar" href={tel}>
+        <a className="ws-slip-bar" href={tel} {...SYS_ACTIONS}>
           <span>Anrufen</span>
           {status}
         </a>

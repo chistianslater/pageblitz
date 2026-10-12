@@ -186,7 +186,7 @@ describe("Werkstoff: Werkzettel", () => {
     expect(slip).toContain("0251 555 0147");
     expect(slip).toContain("Am Kanal 41, 48155 Münster");
     expect(slip).toMatch(/Heute offen<\/span><span[^>]*>7:00–17:00/);
-    expect(slip).toMatch(/<a class="ws-slip-bar" href="tel:02515550147"><span>Anrufen<\/span><span class="ws-slip-status">Heute bis 17:00<\/span><\/a>/);
+    expect(slip).toMatch(/<a class="ws-slip-bar" href="tel:02515550147" data-sys-actions=""><span>Anrufen<\/span><span class="ws-slip-status">Heute bis 17:00<\/span><\/a>/);
     expect(slip).not.toMatch(/kostenlos|seit|gratis/i);
   });
 
@@ -205,7 +205,7 @@ describe("Werkstoff: Werkzettel", () => {
     expect(noAddress).not.toMatch(empty);
     const noHours = slipOf(render(withContact(ladenDoc(), { openingHours: PLACEHOLDER_OPENING_HOURS })));
     expect(noHours).not.toContain("Heute");
-    expect(noHours).toMatch(/<a class="ws-slip-bar" href="tel:[^"]+"><span>Anrufen<\/span><\/a>/);
+    expect(noHours).toMatch(/<a class="ws-slip-bar" href="tel:[^"]+" data-sys-actions=""><span>Anrufen<\/span><\/a>/);
     const onlyName = render(
       withContact(ladenDoc(), { phone: undefined, street: undefined, zip: undefined, city: undefined, openingHours: undefined })
     );
@@ -269,7 +269,7 @@ describe("Werkstoff: Handy-Leiste", () => {
     expect(html).toMatch(/<a class="ws-btn ws-head-btn" href="tel:\d+">Anrufen<\/a>/);
     // Typo-Einstieg und Uhrzeit-Einstieg haben die Knöpfe ebenso.
     for (const doc of [ladenDoc(), overbeckDoc()])
-      expect(entryOf(render(doc))).toContain('<p class="ws-entry-actions">');
+      expect(entryOf(render(doc))).toContain('<p class="ws-entry-actions" data-sys-actions="">');
   });
 
   test("Desktop: Foto oben bündig, Zettel hängt an der Bildfläche", () => {

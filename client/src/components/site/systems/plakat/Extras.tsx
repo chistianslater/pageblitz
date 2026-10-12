@@ -6,6 +6,7 @@ import { versalEszett } from "../shared";
 import { paragraphs, Voice } from "./Story";
 import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import type { Field } from "./rhythm";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Übrige Abschnitte in derselben Grammatik (League-Gothic-Überschrift mit
@@ -114,7 +115,7 @@ export function PlakatPartners({ section, field }: Props<"partners">) {
 export function PlakatCta({ section, field }: Props<"cta">) {
   return (
     <PlakatChapter type="cta" field={field} title={section.headline}>
-      <p className="pk-more">
+      <p className="pk-more" {...SYS_ACTIONS}>
         <a
           className="pk-btn"
           href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}

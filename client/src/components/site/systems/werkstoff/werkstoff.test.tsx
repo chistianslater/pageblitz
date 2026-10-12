@@ -150,7 +150,7 @@ describe("Werkstoff: Fuß", () => {
     const html = render(werkstoffDoc(), false, "/site/brandt");
     const foot = html.slice(html.indexOf('<footer class="ws-foot"'));
     expect(foot).toMatch(/<p class="ws-foot-call">[^<]+<\/p>/);
-    expect(foot).toMatch(/<a class="ws-btn ws-foot-btn" href="tel:\d+">0231 555 3180<\/a>/);
+    expect(foot).toMatch(/<a class="ws-btn ws-foot-btn" href="tel:\d+" data-sys-actions="">0231 555 3180<\/a>/);
     for (const h of ["Adresse", "Kontakt", "Zeiten", "Seiten"])
       expect(foot).toContain(`<p class="ws-foot-h">${h}</p>`);
     expect(foot).toContain('href="/site/brandt/impressum"');

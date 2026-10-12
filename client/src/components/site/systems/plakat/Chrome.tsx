@@ -17,6 +17,7 @@ import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
 import { plakatActions } from "./facts";
 import { footWord, lineEm } from "./fit";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Lange Wortmarken (geschätzt über die gemessene 88-%-Breite, ×1,15 für
@@ -151,7 +152,7 @@ export function PlakatFoot({ basePath }: { basePath: string }) {
           {((tel && contact?.phone) || (mail && contact?.email)) && (
             <div className="pk-foot-col">
               <p className="pk-foot-h">Kontakt</p>
-              <ul>
+              <ul {...SYS_ACTIONS}>
                 {tel && contact?.phone && (
                   <li>
                     <a href={tel}>{contact.phone.trim()}</a>

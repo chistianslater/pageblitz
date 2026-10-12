@@ -18,6 +18,7 @@ import {
 } from "./facts";
 import { fitName } from "./fit";
 import { WerkstoffSlip } from "./Slip";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Werkstoff-Einstieg nach Systemblatt 8 (Handy) und 14 (Desktop). Genau ein
@@ -139,7 +140,7 @@ export function WerkstoffEntry({ hero }: { hero: SectionOf<"hero"> }) {
     </h1>
   );
   const buttons = actions.length > 0 && (
-    <p className="ws-entry-actions">
+    <p className="ws-entry-actions" {...SYS_ACTIONS}>
       {actions.map((a, i) => (
         <a key={a.href} className={i === 0 ? "ws-btn" : "ws-btn2"} href={a.href}>
           {a.label}

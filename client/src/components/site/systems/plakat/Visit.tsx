@@ -12,6 +12,7 @@ import { addressLine, contactOf, mailHref, mapsHref } from "../shared";
 import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import { lateFigure } from "./offerData";
 import type { Field } from "./rhythm";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Fragen und Vorbeikommen nach Systemblatt (Bausteine „Fragen", „Zeiten
@@ -156,7 +157,7 @@ export function PlakatContact({ section, field }: Props<"contact">) {
             />
           </div>
         )}
-        <div className="pk-visit-reach">
+        <div className="pk-visit-reach" {...SYS_ACTIONS}>
           {address && <p className="pk-visit-address">{address}</p>}
           {tel && (
             <p>

@@ -13,6 +13,7 @@ import {
 } from "../shared";
 import { displayName } from "../../../../../../shared/designSystems/displayName";
 import type { SectionType } from "../../../../../../shared/siteContract/types";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Kopf und Fuß von Journal nach Systemblatt (Anker Aman Venice):
@@ -177,13 +178,13 @@ export function JournalFoot({
       <div className="jr-wrap">
         <p className="jr-mark">{data.businessName}</p>
         {(address || reach.length > 0) && (
-          <address className="jr-foot-contact">
+          <address className="jr-foot-contact" {...SYS_ACTIONS}>
             {address}
             {address && reach.length > 0 && <br />}
             {reach.flatMap((node, i) => (i === 0 ? [node] : [" · ", node]))}
           </address>
         )}
-        <div className="jr-links">
+        <div className="jr-links" {...SYS_ACTIONS}>
           {address && (
             <a className="jr-link" href={mapsHref(address)}>
               Route planen

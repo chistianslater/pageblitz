@@ -17,6 +17,7 @@ import {
   chapterTitle,
   type WerkstoffSection,
 } from "./sections";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Gut zu wissen und Besuch nach Systemblatt (Abschnitt 09, 11–13): Fragen
@@ -158,7 +159,7 @@ export function WerkstoffContact({ section }: Props<"contact">) {
             contact={section}
           />
         )}
-        <div className="ws-visit-reach">
+        <div className="ws-visit-reach" {...SYS_ACTIONS}>
           {address && <p className="ws-visit-address">{address}</p>}
           {(tel || mail || whatsapp) && (
             <p className="ws-visit-links">

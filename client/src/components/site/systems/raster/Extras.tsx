@@ -11,6 +11,7 @@ import {
   type RasterSection,
   type SectionProps,
 } from "./sections";
+import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 /**
  * Übrige Abschnittstypen in Colophons Grammatik (Label-Spalte, Haarlinien):
@@ -162,7 +163,7 @@ export function RasterCta({ section }: SectionProps<"cta">) {
           <h2 className="rs-cta-title" id={`${id}-titel`}>
             {rich(section.headline)}
           </h2>
-          <p>
+          <p {...SYS_ACTIONS}>
             <a
               className="rs-btn"
               href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}

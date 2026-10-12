@@ -1,6 +1,7 @@
 import React from "react";
 import { useSystem } from "../SystemContext";
 import { dockPlan } from "./facts";
+import { SYS_DOCK } from "../shared/dockAutoHide";
 
 /**
  * Handy-Leiste (Systemblatt: 64 px, unter 48 rem, immer sichtbar). Zwei
@@ -14,7 +15,11 @@ export function RasterDock({ anchorPrefix }: { anchorPrefix: string }) {
   if (!plan) return null;
   if (plan.kind === "call") {
     return (
-      <nav className="rs-dock rs-dock--call" aria-label="Schnellkontakt">
+      <nav
+        className="rs-dock rs-dock--call"
+        aria-label="Schnellkontakt"
+        {...SYS_DOCK}
+      >
         <a className="rs-dock-field rs-dock-field--signal" href={plan.href}>
           <span className="rs-dock-label">{plan.label}</span>
           <span className="rs-dock-number">{plan.number}</span>
@@ -26,6 +31,7 @@ export function RasterDock({ anchorPrefix }: { anchorPrefix: string }) {
     <nav
       className={plan.fields.length === 1 ? "rs-dock rs-dock--one" : "rs-dock"}
       aria-label="Schnellkontakt"
+      {...SYS_DOCK}
     >
       {plan.fields.map(f => (
         <a
