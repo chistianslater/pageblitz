@@ -218,6 +218,71 @@ describe("Nacht: Kopf, Fuß, Leiste", () => {
   });
 });
 
+describe("Nacht: Kopf über dem Einstieg und Hinweisbanner", () => {
+  test("Kopf liegt im eigenen Bezugsrahmen nach dem Banner, nicht darüber", () => {
+    const doc: Doc = {
+      ...weinbergDoc(),
+      sections: [
+        { type: "notice", text: "Betriebsferien bis 3. November" } as Doc["sections"][number],
+        ...weinbergDoc().sections,
+      ],
+    };
+    const html = render(doc);
+    const notice = html.indexOf('class="pb-notice"');
+    const top = html.indexOf('<div class="nc-top">');
+    const head = html.indexOf('<header class="nc-head nc-head--over">');
+    const end = html.indexOf("</main></div>");
+    expect(notice).toBeGreaterThan(-1);
+    expect(top).toBeGreaterThan(notice);
+    expect(head).toBeGreaterThan(top);
+    expect(end).toBeGreaterThan(head);
+    // Banner liegt nicht im Rahmen
+    expect(html.slice(top)).not.toContain("pb-notice");
+    expect(body).toMatch(/\.nc-top\{position:relative\}/);
+  });
+});
+
+describe("Nacht: Aktionsabschnitt", () => {
+  test("ohne Beschriftung fällt der Knopf auf den Hauptweg zurück", () => {
+    const doc: Doc = {
+      ...weinbergDoc(),
+      sections: [
+        ...weinbergDoc().sections,
+        { type: "cta", headline: "Kommen Sie vorbei", ctaText: "  " } as Doc["sections"][number],
+      ],
+    };
+    const html = render(doc);
+    const cta = html.slice(html.indexOf('data-pb-section="cta"') > -1 ? html.indexOf('data-pb-section="cta"') : html.indexOf("Kommen Sie vorbei"));
+    expect(cta).toMatch(/<a class="nc-btn nc-btn--p"[^>]*>Tisch reservieren/);
+    expect(cta).not.toMatch(/<a class="nc-btn nc-btn--p"[^>]*><\/a>/);
+  });
+});
+
+describe("Nacht: Kontakt mit Küchen-Zeiten", () => {
+  test("nur Küche: Zeile bleibt wörtlich, keine leere Zeiten-Zeile", () => {
+    const doc = withContact(weinbergDoc(), {
+      openingHours: [{ day: "Mo–So", hours: "Küche 12–22 Uhr" }],
+    });
+    const html = render(doc);
+    expect(html).toContain("Küche 12 bis 22 Uhr");
+    expect(html).not.toMatch(/<span class="nc-row-p"><\/span>/);
+    expect(html).not.toMatch(/Heute: <|Heute: $/);
+  });
+});
+
+describe("Nacht: Einstiegsfoto-Breiten", () => {
+  test("jede Breite hat ihre eigene URL", async () => {
+    const { nachtSrcSet } = await import("./Entry");
+    const set = nachtSrcSet("https://images.unsplash.com/photo-1?w=1&q=80")!;
+    expect(set.split(", ").map(p => p.split(" ")[0])).toEqual([
+      "https://images.unsplash.com/photo-1?w=640&q=80",
+      "https://images.unsplash.com/photo-1?w=1024&q=80",
+      "https://images.unsplash.com/photo-1?w=1600&q=80",
+      "https://images.unsplash.com/photo-1?w=2400&q=80",
+    ]);
+  });
+});
+
 describe("Nacht: Einstieg", () => {
   test("Restaurant (Foto): Foto gefiltert, Kicker + Marke im h1, Linie, Satz, Heute + Küche, Knöpfe", () => {
     const e = entryOf(render(weinbergDoc()));

@@ -152,10 +152,10 @@ function Contact({ section }: { section: SectionOf<"contact"> }) {
   const rows = hoursRows(
     realHours(section.openingHours)?.map(h => ({
       ...h,
-      hours: kitchenOf(h.hours).open,
+      hours: kitchenOf(h.hours, now).open,
     })),
     now
-  );
+  ).filter(r => r.lines.some(l => l.trim() !== ""));
   return (
     <NachtChapter type="contact" own={section.headline}>
       {address && (
@@ -197,15 +197,15 @@ function Contact({ section }: { section: SectionOf<"contact"> }) {
 function Cta({ section }: { section: SectionOf<"cta"> }) {
   const { data, blueprint } = useSystem();
   const own = section.ctaHref?.trim();
+  const primary = nachtActions(data, blueprint).primary;
   const href =
-    own && /^(https?:\/\/|tel:|mailto:)/i.test(own)
-      ? own
-      : nachtActions(data, blueprint).primary?.href;
+    own && /^(https?:\/\/|tel:|mailto:)/i.test(own) ? own : primary?.href;
+  const label = section.ctaText?.trim() || primary?.label;
   return (
     <NachtChapter type="cta" own={section.headline}>
-      {href && (
+      {href && label && (
         <a className="nc-btn nc-btn--p" href={href} {...newTabIfMaps(href)}>
-          {section.ctaText}
+          {label}
         </a>
       )}
     </NachtChapter>

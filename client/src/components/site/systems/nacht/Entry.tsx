@@ -32,14 +32,15 @@ const WIDTHS = [640, 1024, 1600, 2400] as const;
 
 /** Unsplash in passenden Breiten; andere Quellen bleiben, wie sie sind. */
 export function nachtSrcSet(src: string): string | undefined {
-  let url: URL;
+  let base: URL;
   try {
-    url = new URL(src);
+    base = new URL(src);
   } catch {
     return undefined;
   }
-  if (url.hostname !== "images.unsplash.com") return undefined;
+  if (base.hostname !== "images.unsplash.com") return undefined;
   return WIDTHS.map(w => {
+    const url = new URL(base);
     url.searchParams.set("w", String(w));
     return `${url.toString()} ${w}w`;
   }).join(", ");

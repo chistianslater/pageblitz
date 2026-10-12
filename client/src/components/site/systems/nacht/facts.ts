@@ -37,13 +37,86 @@ const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
 /**
  * Küchenzeit steht nur im Öffnungszeiten-Text („17:30 – 23:00, Küche bis
  * 21:30", „warme Küche bis 21 Uhr", „Küche 17:30–21:30"). Der Teil ab
- * „Küche" bis zum nächsten Komma/Semikolon gehört der Küche — er zählt
- * nicht als Öffnungsspanne. Ohne lesbare Uhrzeit: keine Küchenzeit.
+ * „Küche" bis zum nächsten Komma/Semikolon/Klammer gehört der Küche — er
+ * zählt nicht als Öffnungsspanne. Eine Klammer direkt dahinter („(Fr/Sa
+ * 22:30)") ist eine Ausnahme für bestimmte Tage: Sie gilt nur an diesen
+ * Tagen und nur, wenn `now` bekannt ist. Eine Küchenzeit mit Tagesangabe
+ * („Küche Fr/Sa bis 22:30") zählt nur an diesen Tagen. Was sich nicht
+ * eindeutig dem heutigen Tag zuordnen lässt, ergibt keine Küchenzeit.
+ * Gemeint ist die Zeit direkt nach „bis" oder das Ende einer „–"-Spanne.
  */
-const KITCHEN = /(?:warme\s+)?k(?:ü|ue)che\b[^,;·|)]*/i;
-const TIME = /(\d{1,2})(?:[:.](\d{2}))?/g;
+const KITCHEN = /(?:warme\s+)?(k(?:ü|ue)che\b[^,;·|()]*)(?:\s*\(([^)]*)\))?/i;
+const DAY_NAME =
+  "(?:Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag|Mo|Di|Mi|Do|Fr|Sa|So)\\.?";
+const DAY_WORD = new RegExp(`(?:^|[^\\p{L}])${DAY_NAME}(?![\\p{L}])`, "u");
+const LEADING_DAYS = new RegExp(
+  `^[Kk](?:ü|ue)che\\s+(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*`,
+  "u"
+);
+const AT = /(\d{1,2})(?:[:.](\d{2}))?/;
+const AFTER_BIS = new RegExp(`bis\\s*${AT.source}`, "i");
+const RANGE_END = new RegExp(
+  `${AT.source}\\s*(?:Uhr)?\\s*[–-]\\s*${AT.source}`
+);
+const EXCEPTION = new RegExp(
+  `^(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*(?:bis\\s*)?${AT.source}\\s*(?:Uhr)?$`,
+  "u"
+);
 
-export function kitchenOf(text: string): { open: string; kitchen?: string } {
+const minutesOf = (h?: string, min?: string): number | undefined => {
+  if (h === undefined) return undefined;
+  const hh = Number(h);
+  const mm = Number(min ?? 0);
+  return hh <= 24 && mm < 60 ? hh * 60 + mm : undefined;
+};
+
+/** „Fr/Sa", „Fr–So", „Mo, Mi und Fr": gilt das für heute? */
+function daysCoverToday(spec: string, now: Date): boolean {
+  return spec
+    .split(/[/,&]|\bund\b/)
+    .map(t => t.replace(/\.$/, "").trim())
+    .filter(Boolean)
+    .some(t => coversToday(t, now));
+}
+
+/** Zeit direkt nach „bis", sonst Ende einer „–"-Spanne; sonst keine. */
+function kitchenEnd(text: string): number | undefined {
+  const bis = text.match(AFTER_BIS);
+  if (bis) return minutesOf(bis[1], bis[2]);
+  const range = text.match(RANGE_END);
+  return range ? minutesOf(range[3], range[4]) : undefined;
+}
+
+function kitchenMinutes(
+  segment: string,
+  exception: string | undefined,
+  now: Date | undefined
+): number | undefined {
+  const lead = segment.match(LEADING_DAYS);
+  if (lead) {
+    // Tagesangabe: nur an diesen Tagen, und nur wenn der Tag bekannt ist.
+    if (!now || !daysCoverToday(lead[1], now)) return undefined;
+    return kitchenEnd(segment.slice(lead[0].length));
+  }
+  // Tagesangabe an anderer Stelle im Küchenteil: nicht zuordenbar.
+  if (DAY_WORD.test(segment.replace(/^k(?:ü|ue)che/i, ""))) return undefined;
+  const base = kitchenEnd(segment);
+  const ex = exception?.trim().match(EXCEPTION);
+  if (ex && now && daysCoverToday(ex[1], now)) {
+    return minutesOf(ex[2], ex[3]) ?? base;
+  }
+  return base;
+}
+
+export type KitchenSplit = {
+  /** Zeiten ohne Küchenteil; nur Küche → Originaltext (Spanne als „x bis y"). */
+  open: string;
+  kitchen?: string;
+  /** Der Text nennt nur die Küche — es gibt keine eigene Öffnungsspanne. */
+  kitchenOnly?: true;
+};
+
+export function kitchenOf(text: string, now?: Date): KitchenSplit {
   const m = text.match(KITCHEN);
   if (!m) return { open: text };
   const open = (text.slice(0, m.index!) + text.slice(m.index! + m[0].length))
@@ -51,13 +124,14 @@ export function kitchenOf(text: string): { open: string; kitchen?: string } {
     .replace(/[\s,;·|(]+$/, "")
     .replace(/^[\s,;·|]+/, "")
     .trim();
-  const times = [...m[0].matchAll(TIME)]
-    .map(t => ({ h: Number(t[1]), min: Number(t[2] ?? 0) }))
-    .filter(t => t.h <= 24 && t.min < 60);
-  const last = times[times.length - 1];
-  return last
-    ? { open, kitchen: clock(last.h * 60 + last.min) }
-    : { open };
+  const minutes = kitchenMinutes(m[1], m[2], now);
+  const kitchen = minutes === undefined ? undefined : clock(minutes);
+  if (!open) {
+    // Nur Küche: Originaltext behalten, aber nicht als Öffnungsspanne lesbar.
+    const literal = text.trim().replace(/(\d)\s*[–-]\s*(?=\d)/g, "$1 bis ");
+    return { open: literal, ...(kitchen ? { kitchen } : {}), kitchenOnly: true };
+  }
+  return kitchen ? { open, kitchen } : { open };
 }
 
 /** Zeiten ohne Küchen-Teil (für Spannen, Ziffer und Heute-Zeile). */
@@ -87,19 +161,24 @@ export function todayLine(
     return { open: "Heute rund um die Uhr geöffnet" };
   const today = todayHours(openHours(real), now);
   if (!today) return undefined;
+  const lines = today.lines.filter(l => l.trim() !== "");
+  if (lines.length === 0 && !today.closed) return undefined;
   const entry = real.find(h => coversToday(h.day, now))!;
   if (today.closed)
     return {
       open: /ruhetag/i.test(entry.hours) ? "Heute Ruhetag" : "Heute geschlossen",
     };
-  if (today.lines.length === 1 && today.lines[0] === "0:00 bis 24:00")
+  if (lines.length === 1 && lines[0] === "0:00 bis 24:00")
     return { open: "Heute rund um die Uhr geöffnet" };
-  const spans = today.lines.every(l => IS_SPAN.test(l));
+  const spans = lines.every(l => IS_SPAN.test(l));
   const open = spans
-    ? `Heute ${today.lines.join(", ")}`
-    : `Heute: ${today.lines.join(", ")}`;
-  const kitchen = kitchenOf(entry.hours).kitchen;
-  return kitchen ? { open, kitchen: `Küche bis ${kitchen}` } : { open };
+    ? `Heute ${lines.join(", ")}`
+    : `Heute: ${lines.join(", ")}`;
+  const split = kitchenOf(entry.hours, now);
+  // Nur Küche im Text: der Text steht schon in der Zeile, nicht doppeln.
+  return split.kitchen && !split.kitchenOnly
+    ? { open, kitchen: `Küche bis ${split.kitchen}` }
+    : { open };
 }
 
 /* ── Ziffer ───────────────────────────────────────────────────────────── */
@@ -166,12 +245,18 @@ function hoursFigure(real: NonNullable<Hours>): Figure | undefined {
     return Number(m[1]) * 60 + Number(m[2] ?? 0);
   });
   const fromSlots = Math.max(...slots) >= 0;
+  // Schließt ein Tag um 24:00 oder nach Mitternacht, ist „so lange" für die
+  // übrigen Tage falsch: keine Schließzeit-Ziffer (nie eine falsche).
+  const pastMidnight = (text: string) =>
+    readSpans(text).some(s => s.to <= s.from || (s.to >= 24 * 60 && s.from > 0));
+  if (!fromSlots && openHours(real).some(h => pastMidnight(h.hours)))
+    return undefined;
   const close = fromSlots
     ? slots
     : latestPerDay(openHours(real), text => {
-        // Über Mitternacht zählt nicht (18:00 – 2:00 ist keine Schließzeit 2).
+        // 0:00 – 24:00 (ganzer Tag) nennt keine Schließzeit.
         const ends = readSpans(text)
-          .filter(s => s.to > s.from && !(s.from === 0 && s.to === 24 * 60))
+          .filter(s => s.to > s.from && s.to < 24 * 60)
           .map(s => s.to);
         return ends.length ? Math.max(...ends) : undefined;
       });

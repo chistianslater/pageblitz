@@ -64,6 +64,7 @@ ${FONT_FACES}
 }
 
 /* Kopf: Monogramm im Kupferring + Marke, „Menü"; Desktop Navigation + Hauptweg */
+.pb-nacht .nc-top{position:relative}
 .pb-nacht .nc-head{position:relative;z-index:20;background:var(--sys-paper);color:var(--sys-ink)}
 .pb-nacht .nc-head--over{position:absolute;inset:0 0 auto 0;background:transparent}
 .pb-nacht .nc-head-bar{max-width:var(--sys-space-max);margin-inline:auto;display:flex;align-items:center;gap:calc(var(--sys-space-s) * .875);min-height:${HEAD_H};padding:0 var(--sys-space-gutter)}

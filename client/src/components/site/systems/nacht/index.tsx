@@ -44,16 +44,21 @@ export const NACHT_MODULE: PackModule = {
     const over = !sections && !legal && list[0]?.type === "hero";
     return (
       <>
-        <NachtHead navItems={nav} anchorPrefix={anchorPrefix} over={over} />
-        <main className="nc-main" id="inhalt">
-          {legal && <NachtLegal title={legal.title} html={legal.html} />}
-          {ownHead && <NachtPageHead title={pageTitle} />}
-          {list.map((s, i) => (
-            <React.Fragment key={`${s.type}-${i}`}>
-              {renderNachtSection(s, list)}
-            </React.Fragment>
-          ))}
-        </main>
+        {/* Eigener Bezugsrahmen: Der Kopf über dem Einstieg liegt am oberen
+            Rand des Einstiegs, nicht der Seite — auch unter dem Hinweisbanner
+            (der steht in SiteRenderer davor). */}
+        <div className="nc-top">
+          <NachtHead navItems={nav} anchorPrefix={anchorPrefix} over={over} />
+          <main className="nc-main" id="inhalt">
+            {legal && <NachtLegal title={legal.title} html={legal.html} />}
+            {ownHead && <NachtPageHead title={pageTitle} />}
+            {list.map((s, i) => (
+              <React.Fragment key={`${s.type}-${i}`}>
+                {renderNachtSection(s, list)}
+              </React.Fragment>
+            ))}
+          </main>
+        </div>
         <NachtFoot basePath={basePath} />
         <NachtDock anchorPrefix={anchorPrefix} />
       </>

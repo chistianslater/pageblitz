@@ -55,6 +55,73 @@ describe("Nacht: Küche aus dem Zeiten-Text", () => {
   });
 });
 
+describe("Nacht: Küche mit Klammer-Ausnahme und Tagesangabe", () => {
+  const FRI = new Date("2026-10-16T19:00:00+02:00");
+  const THU = TEST_NOW;
+
+  test("Ausnahme in Klammern gilt nicht für jeden Tag", () => {
+    const t = "17:30 – 23:00, Küche bis 21:30 (Fr/Sa 22:30)";
+    expect(kitchenOf(t)).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+    expect(kitchenOf(t, THU)).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+    expect(kitchenOf(t, FRI)).toEqual({ open: "17:30 – 23:00", kitchen: "22:30" });
+  });
+
+  test("Zeit steht direkt nach „bis“ bzw. am Ende der Spanne, nie aus Klammern", () => {
+    expect(kitchenOf("Küche bis 21:30 (nur mit Reservierung 22:45), 17:30 – 23:00"))
+      .toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+    expect(kitchenOf("17:30 – 23:00, Küche 17:30–21:30 (Sa 22:30)", THU))
+      .toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+  });
+
+  test("Küche nur an bestimmten Tagen: nur dort, sonst keine Zeit", () => {
+    const t = "17:30 – 23:00, Küche Fr/Sa bis 22:30";
+    expect(kitchenOf(t)).toEqual({ open: "17:30 – 23:00" });
+    expect(kitchenOf(t, THU)).toEqual({ open: "17:30 – 23:00" });
+    expect(kitchenOf(t, FRI)).toEqual({ open: "17:30 – 23:00", kitchen: "22:30" });
+    expect(kitchenOf("Küche bis 21:30 Fr/Sa", FRI).kitchen).toBeUndefined();
+  });
+
+  test("todayLine nimmt die Ausnahme am richtigen Tag", () => {
+    const h = [{ day: "Mi–Sa", hours: "17:30 – 23:00, Küche bis 21:30 (Fr/Sa 22:30)" }];
+    expect(todayLine(h, THU)).toEqual({
+      open: "Heute 17:30 bis 23:00",
+      kitchen: "Küche bis 21:30",
+    });
+    expect(todayLine(h, FRI)).toEqual({
+      open: "Heute 17:30 bis 23:00",
+      kitchen: "Küche bis 22:30",
+    });
+  });
+});
+
+describe("Nacht: Texte nur mit Küche", () => {
+  test.each([
+    ["Küche 12–22 Uhr", "Küche 12 bis 22 Uhr", "22:00"],
+    ["warme Küche bis 21 Uhr", "warme Küche bis 21 Uhr", "21:00"],
+  ])("%s bleibt wörtlich, nie leer", (text, open, kitchen) => {
+    expect(kitchenOf(text)).toEqual({ open, kitchen, kitchenOnly: true });
+  });
+
+  test("Heute-Zeile nie leer, Küche nicht doppelt, keine Ziffer aus der Küche", () => {
+    for (const [text, line] of [
+      ["Küche 12–22 Uhr", "Heute: Küche 12 bis 22 Uhr"],
+      ["warme Küche bis 21 Uhr", "Heute: warme Küche bis 21 Uhr"],
+    ])
+      expect(todayLine([{ day: "Mo–So", hours: text }], TEST_NOW)).toEqual({
+        open: line,
+      });
+    expect(
+      entryFigure({
+        ...withContact(noirDoc(), {
+          openingHours: [{ day: "Mo–So", hours: "Küche 12–22 Uhr" }],
+        }),
+        google: undefined,
+      })
+    ).toBeUndefined();
+    expect(todayLine([{ day: "Mo–So", hours: "" }], TEST_NOW)).toBeUndefined();
+  });
+});
+
 describe("Nacht: Heute-Zeile", () => {
   const hours = (doc: Doc) =>
     doc.sections.flatMap(s => (s.type === "contact" ? [s.openingHours] : []))[0];
@@ -141,11 +208,12 @@ describe("Nacht: Kupferziffer nur aus echten Werten", () => {
     });
   });
 
-  test("Restaurant bis 24 Uhr: „24“; über Mitternacht zählt nicht", () => {
-    expect(entryFigure(weinbergDoc())).toMatchObject({
-      value: "24",
-      label: "Uhr · Fr und Sa so lange geöffnet",
-    });
+  test("24:00 wie über Mitternacht: keine Schließzeit-Ziffer", () => {
+    const till24 = hoursDoc([{ day: "Mo–So", hours: "18:00 – 24:00" }]);
+    delete till24.google;
+    expect(entryFigure(till24)).toBeUndefined();
+    // Auch wenn nur einzelne Tage bis 24 Uhr gehen (Weinberg Fr/Sa): „so lange“ stimmte für die anderen nicht.
+    expect(entryFigure({ ...weinbergDoc(), google: undefined })).toBeUndefined();
     const late = hoursDoc([{ day: "Mo–So", hours: "18:00 – 2:00" }]);
     delete late.google;
     expect(entryFigure(late)).toBeUndefined();
