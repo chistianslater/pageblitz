@@ -62,27 +62,40 @@ describe("Nacht: Küche mit Klammer-Ausnahme und Tagesangabe", () => {
   test("Ausnahme in Klammern gilt nicht für jeden Tag", () => {
     const t = "17:30 – 23:00, Küche bis 21:30 (Fr/Sa 22:30)";
     expect(kitchenOf(t)).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
-    expect(kitchenOf(t, THU)).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
-    expect(kitchenOf(t, FRI)).toEqual({ open: "17:30 – 23:00", kitchen: "22:30" });
+    expect(kitchenOf(t, THU)).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "21:30",
+    });
+    expect(kitchenOf(t, FRI)).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "22:30",
+    });
   });
 
   test("Zeit steht direkt nach „bis“ bzw. am Ende der Spanne, nie aus Klammern", () => {
-    expect(kitchenOf("Küche bis 21:30 (nur mit Reservierung 22:45), 17:30 – 23:00"))
-      .toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
-    expect(kitchenOf("17:30 – 23:00, Küche 17:30–21:30 (Sa 22:30)", THU))
-      .toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+    expect(
+      kitchenOf("Küche bis 21:30 (nur mit Reservierung 22:45), 17:30 – 23:00")
+    ).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
+    expect(
+      kitchenOf("17:30 – 23:00, Küche 17:30–21:30 (Sa 22:30)", THU)
+    ).toEqual({ open: "17:30 – 23:00", kitchen: "21:30" });
   });
 
   test("Küche nur an bestimmten Tagen: nur dort, sonst keine Zeit", () => {
     const t = "17:30 – 23:00, Küche Fr/Sa bis 22:30";
     expect(kitchenOf(t)).toEqual({ open: "17:30 – 23:00" });
     expect(kitchenOf(t, THU)).toEqual({ open: "17:30 – 23:00" });
-    expect(kitchenOf(t, FRI)).toEqual({ open: "17:30 – 23:00", kitchen: "22:30" });
+    expect(kitchenOf(t, FRI)).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "22:30",
+    });
     expect(kitchenOf("Küche bis 21:30 Fr/Sa", FRI).kitchen).toBeUndefined();
   });
 
   test("todayLine nimmt die Ausnahme am richtigen Tag", () => {
-    const h = [{ day: "Mi–Sa", hours: "17:30 – 23:00, Küche bis 21:30 (Fr/Sa 22:30)" }];
+    const h = [
+      { day: "Mi–Sa", hours: "17:30 – 23:00, Küche bis 21:30 (Fr/Sa 22:30)" },
+    ];
     expect(todayLine(h, THU)).toEqual({
       open: "Heute 17:30 bis 23:00",
       kitchen: "Küche bis 21:30",
@@ -91,6 +104,27 @@ describe("Nacht: Küche mit Klammer-Ausnahme und Tagesangabe", () => {
       open: "Heute 17:30 bis 23:00",
       kitchen: "Küche bis 22:30",
     });
+  });
+});
+
+describe("Nacht: Mittags- und Abendküche", () => {
+  test("mehrere Blöcke: Ende des letzten; ohne Ende keine Zeit; einzelne Spanne wie bisher", () => {
+    expect(kitchenOf("17:30 – 23:00, Küche 11:30–14:00 und 17:30–21:30")).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "21:30",
+    });
+    expect(kitchenOf("17:30 – 23:00, Küche 11:30–14:00 / 17:30–21:30").kitchen).toBe("21:30");
+    expect(kitchenOf("17:30 – 23:00, Küche bis 14 Uhr und ab 17:30")).toEqual({
+      open: "17:30 – 23:00",
+    });
+    expect(kitchenOf("17:30 – 23:00, Küche 17:30–21:30").kitchen).toBe("21:30");
+    expect(kitchenOf("Küche bis 21:30, 17:30 – 23:00").kitchen).toBe("21:30");
+  });
+
+  test("Tageswörter auch kleingeschrieben", () => {
+    const FRI = new Date("2026-10-16T19:00:00+02:00");
+    expect(kitchenOf("17:30 – 23:00, küche fr/sa bis 22:30", FRI).kitchen).toBe("22:30");
+    expect(kitchenOf("17:30 – 23:00, küche fr/sa bis 22:30", TEST_NOW).kitchen).toBeUndefined();
   });
 });
 
@@ -124,7 +158,9 @@ describe("Nacht: Texte nur mit Küche", () => {
 
 describe("Nacht: Heute-Zeile", () => {
   const hours = (doc: Doc) =>
-    doc.sections.flatMap(s => (s.type === "contact" ? [s.openingHours] : []))[0];
+    doc.sections.flatMap(s =>
+      s.type === "contact" ? [s.openingHours] : []
+    )[0];
 
   test("Donnerstag: Heute 17:30 bis 23:00 · Küche bis 21:30", () => {
     expect(todayLine(hours(weinbergDoc()), TEST_NOW)).toEqual({
@@ -212,8 +248,21 @@ describe("Nacht: Kupferziffer nur aus echten Werten", () => {
     const till24 = hoursDoc([{ day: "Mo–So", hours: "18:00 – 24:00" }]);
     delete till24.google;
     expect(entryFigure(till24)).toBeUndefined();
-    // Auch wenn nur einzelne Tage bis 24 Uhr gehen (Weinberg Fr/Sa): „so lange“ stimmte für die anderen nicht.
-    expect(entryFigure({ ...weinbergDoc(), google: undefined })).toBeUndefined();
+    // Einzelne Tage bis 24 Uhr (Weinberg Fr/Sa) fallen heraus; das Label nennt nur die Tage, für die es stimmt.
+    expect(entryFigure({ ...weinbergDoc(), google: undefined })).toMatchObject({
+      value: "23",
+      label: "Uhr · Mi und Do so lange geöffnet",
+    });
+    const bar = hoursDoc([
+      { day: "Mo–Do", hours: "18:00 – 23:00" },
+      { day: "Fr–Sa", hours: "18:00 – 2:00" },
+    ]);
+    delete bar.google;
+    expect(entryFigure(bar)).toMatchObject({
+      value: "23",
+      label: "Uhr · Mo bis Do so lange geöffnet",
+      sr: "Montag bis Donnerstag bis 23:00 Uhr geöffnet",
+    });
     const late = hoursDoc([{ day: "Mo–So", hours: "18:00 – 2:00" }]);
     delete late.google;
     expect(entryFigure(late)).toBeUndefined();
@@ -251,7 +300,9 @@ describe("Nacht: Kupferziffer nur aus echten Werten", () => {
     const none = withContact(noirDoc(), { openingHours: undefined });
     expect(entryFigure(none)).toBeUndefined();
     expect(
-      entryFigure(withContact(noirDoc(), { openingHours: PLACEHOLDER_OPENING_HOURS }))
+      entryFigure(
+        withContact(noirDoc(), { openingHours: PLACEHOLDER_OPENING_HOURS })
+      )
     ).toBeUndefined();
     expect(
       entryFigure(
@@ -321,7 +372,10 @@ describe("Nacht: Name, Satz, Monogramm", () => {
   test("Satz: Unterzeile, nie ein Echo des Namens; lang → ganze Sätze", () => {
     const w = weinbergDoc();
     expect(entryLede(hero(w), w, bp(w))).toMatch(/^Pfälzer Küche/);
-    const echo = patchSection(w, "hero", h => ({ ...h, subheadline: undefined }));
+    const echo = patchSection(w, "hero", h => ({
+      ...h,
+      subheadline: undefined,
+    }));
     expect(entryLede(hero(echo), echo, bp(echo))).toBeUndefined();
     const long = patchSection(w, "hero", h => ({
       ...h,
@@ -385,7 +439,10 @@ describe("Nacht: Wege (Klar-Reihenfolge) und Leiste", () => {
       ...weinbergDoc(),
       sections: weinbergDoc().sections.filter(s => s.type !== "contact"),
     };
-    const stripped = patchSection(doc, "hero", h => ({ ...h, ctaHref: undefined }));
+    const stripped = patchSection(doc, "hero", h => ({
+      ...h,
+      ctaHref: undefined,
+    }));
     expect(dockPair(nachtActions(stripped, bp(stripped)))).toBeUndefined();
   });
 });

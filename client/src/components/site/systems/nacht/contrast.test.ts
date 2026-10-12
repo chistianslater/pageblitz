@@ -37,9 +37,15 @@ function applyFilter(filter: string, [r0, g0, b0]: Rgb): Rgb {
     switch (m[1]) {
       case "saturate":
         c = [
-          (0.213 + 0.787 * a) * r + (0.715 - 0.715 * a) * g + (0.072 - 0.072 * a) * b,
-          (0.213 - 0.213 * a) * r + (0.715 + 0.285 * a) * g + (0.072 - 0.072 * a) * b,
-          (0.213 - 0.213 * a) * r + (0.715 - 0.715 * a) * g + (0.072 + 0.928 * a) * b,
+          (0.213 + 0.787 * a) * r +
+            (0.715 - 0.715 * a) * g +
+            (0.072 - 0.072 * a) * b,
+          (0.213 - 0.213 * a) * r +
+            (0.715 + 0.285 * a) * g +
+            (0.072 - 0.072 * a) * b,
+          (0.213 - 0.213 * a) * r +
+            (0.715 - 0.715 * a) * g +
+            (0.072 + 0.928 * a) * b,
         ];
         break;
       case "contrast":
@@ -51,9 +57,15 @@ function applyFilter(filter: string, [r0, g0, b0]: Rgb): Rgb {
       case "sepia": {
         const k = 1 - a;
         c = [
-          (0.393 + 0.607 * k) * r + (0.769 - 0.769 * k) * g + (0.189 - 0.189 * k) * b,
-          (0.349 - 0.349 * k) * r + (0.686 + 0.314 * k) * g + (0.168 - 0.168 * k) * b,
-          (0.272 - 0.272 * k) * r + (0.534 - 0.534 * k) * g + (0.131 + 0.869 * k) * b,
+          (0.393 + 0.607 * k) * r +
+            (0.769 - 0.769 * k) * g +
+            (0.189 - 0.189 * k) * b,
+          (0.349 - 0.349 * k) * r +
+            (0.686 + 0.314 * k) * g +
+            (0.168 - 0.168 * k) * b,
+          (0.272 - 0.272 * k) * r +
+            (0.534 - 0.534 * k) * g +
+            (0.131 + 0.869 * k) * b,
         ];
         break;
       }
@@ -130,7 +142,9 @@ describe("Nacht-Einstieg photo: Kontrast auf weißer Fotostelle", () => {
   );
 
   test("CSS nutzt genau diese Werte", () => {
-    expect(NACHT_CSS).toContain(`.pb-nacht .nc-bg::after{content:"";position:absolute;inset:-2px;background:${SCRIM_BG}}`);
+    expect(NACHT_CSS).toContain(
+      `.pb-nacht .nc-bg::after{content:"";position:absolute;inset:-2px;background:${SCRIM_BG}}`
+    );
     expect(SCRIM_BG).toContain(
       `color-mix(in srgb,var(--sys-paper) ${PHOTO_VEIL * 100}%,transparent)`
     );

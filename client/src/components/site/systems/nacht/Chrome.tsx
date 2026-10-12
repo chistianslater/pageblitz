@@ -117,7 +117,11 @@ export function NachtHead({
         {/* Menü ohne JS: <details>/<summary> (SSR-Kundenseiten hydrieren nicht). */}
         {navItems.length > 0 && (
           <details
-            className={desk ? "nc-menu nc-menu--main" : "nc-menu nc-menu--main nc-menu--always"}
+            className={
+              desk
+                ? "nc-menu nc-menu--main"
+                : "nc-menu nc-menu--main nc-menu--always"
+            }
           >
             <summary className="nc-menu-toggle">
               <span className="nc-menu-word">Menü</span>
@@ -207,12 +211,20 @@ export function NachtDock({ anchorPrefix }: { anchorPrefix: string }) {
       {...SYS_DOCK}
     >
       {left && (
-        <a className="nc-btn nc-btn--s" href={left.href} {...newTabIfMaps(left.href)}>
+        <a
+          className="nc-btn nc-btn--s"
+          href={left.href}
+          {...newTabIfMaps(left.href)}
+        >
           <Icon name={wayIcon(left.href)} />
           {left.label}
         </a>
       )}
-      <a className="nc-btn nc-btn--p" href={main.href} {...newTabIfMaps(main.href)}>
+      <a
+        className="nc-btn nc-btn--p"
+        href={main.href}
+        {...newTabIfMaps(main.href)}
+      >
         {main.label}
         <Icon name={wayIcon(main.href)} />
       </a>

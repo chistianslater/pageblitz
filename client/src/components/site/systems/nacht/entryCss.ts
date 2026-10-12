@@ -1,4 +1,12 @@
-import { GLOW_CORE, GLOW_OPACITY, HEAD_H, NAV, ROUND, WIDE, step } from "./step";
+import {
+  GLOW_CORE,
+  GLOW_OPACITY,
+  HEAD_H,
+  NAV,
+  ROUND,
+  WIDE,
+  step,
+} from "./step";
 
 /**
  * Einstieg (Systemblatt 9 Handy, 14 Desktop).

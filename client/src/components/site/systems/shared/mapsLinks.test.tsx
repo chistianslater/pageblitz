@@ -19,7 +19,10 @@ import { isMapsHref, mapsHref, newTabIfMaps } from "./contact";
  * System und Stelle mal ja, mal nein (Klar-Endprüfung).
  */
 const NOW = new Date("2026-10-13T10:00:00+02:00");
-const render = (data: Parameters<typeof SiteRenderer>[0]["data"], pathname?: string) =>
+const render = (
+  data: Parameters<typeof SiteRenderer>[0]["data"],
+  pathname?: string
+) =>
   renderToStaticMarkup(
     <SiteRenderer
       data={data}
@@ -32,7 +35,8 @@ const render = (data: Parameters<typeof SiteRenderer>[0]["data"], pathname?: str
     />
   );
 
-const MAPS_ANCHOR = /<a\b[^>]*href="https:\/\/www\.google\.com\/maps\/[^"]*"[^>]*>/g;
+const MAPS_ANCHOR =
+  /<a\b[^>]*href="https:\/\/www\.google\.com\/maps\/[^"]*"[^>]*>/g;
 
 describe("Helfer", () => {
   it("erkennt Maps-Links und gibt nur ihnen neue-Tab-Attribute", () => {
@@ -41,7 +45,12 @@ describe("Helfer", () => {
       target: "_blank",
       rel: "noopener noreferrer",
     });
-    for (const href of ["tel:+495551234", "#kontakt", "mailto:a@b.example", "https://buchen.example/x"])
+    for (const href of [
+      "tel:+495551234",
+      "#kontakt",
+      "mailto:a@b.example",
+      "https://buchen.example/x",
+    ])
       expect(newTabIfMaps(href), href).toEqual({});
   });
 });
@@ -54,7 +63,9 @@ describe.each(RELEASED_SYSTEMS)("Maps-Links in %s", system => {
       for (const tag of html.match(MAPS_ANCHOR) ?? []) {
         count++;
         expect(tag, `${showcase.id}: ${tag}`).toContain('target="_blank"');
-        expect(tag, `${showcase.id}: ${tag}`).toContain('rel="noopener noreferrer"');
+        expect(tag, `${showcase.id}: ${tag}`).toContain(
+          'rel="noopener noreferrer"'
+        );
       }
     }
     // Mindestens Anfahrt/Route kommt in jedem System vor.
@@ -64,12 +75,20 @@ describe.each(RELEASED_SYSTEMS)("Maps-Links in %s", system => {
   it("öffnen auch auf Fixture-Seiten und Unterseiten in neuem Tab", () => {
     for (const kind of ["full", "minimal", "features"] as const) {
       const doc = withDesignSystem(getFixture("werkbank", kind), system);
-      const paths = [undefined, ...(doc.pages ?? []).map(p => `/${p.slug}`), "/impressum"];
+      const paths = [
+        undefined,
+        ...(doc.pages ?? []).map(p => `/${p.slug}`),
+        "/impressum",
+      ];
       for (const pathname of paths) {
         const html = render(doc, pathname);
         for (const tag of html.match(MAPS_ANCHOR) ?? []) {
-          expect(tag, `${kind} ${pathname}: ${tag}`).toContain('target="_blank"');
-          expect(tag, `${kind} ${pathname}: ${tag}`).toContain('rel="noopener noreferrer"');
+          expect(tag, `${kind} ${pathname}: ${tag}`).toContain(
+            'target="_blank"'
+          );
+          expect(tag, `${kind} ${pathname}: ${tag}`).toContain(
+            'rel="noopener noreferrer"'
+          );
         }
       }
     }

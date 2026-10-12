@@ -46,7 +46,15 @@ export function nachtSrcSet(src: string): string | undefined {
   }).join(", ");
 }
 
-function Img({ src, sizes, wide }: { src: string; sizes: string; wide: boolean }) {
+function Img({
+  src,
+  sizes,
+  wide,
+}: {
+  src: string;
+  sizes: string;
+  wide: boolean;
+}) {
   const srcSet = nachtSrcSet(src);
   return (
     <img
@@ -124,12 +132,20 @@ function FigureBlock({ figure, photo }: { figure?: Figure; photo?: string }) {
 function Buttons({ primary, second }: { primary: Action; second?: Action }) {
   return (
     <div className="nc-actions" {...SYS_ACTIONS}>
-      <a className="nc-btn nc-btn--p" href={primary.href} {...newTabIfMaps(primary.href)}>
+      <a
+        className="nc-btn nc-btn--p"
+        href={primary.href}
+        {...newTabIfMaps(primary.href)}
+      >
         {primary.label}
         <Icon name={wayIcon(primary.href)} />
       </a>
       {second && (
-        <a className="nc-btn nc-btn--s" href={second.href} {...newTabIfMaps(second.href)}>
+        <a
+          className="nc-btn nc-btn--s"
+          href={second.href}
+          {...newTabIfMaps(second.href)}
+        >
           <Icon name={wayIcon(second.href)} />
           {second.label}
         </a>

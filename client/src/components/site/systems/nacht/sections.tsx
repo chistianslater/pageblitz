@@ -76,7 +76,11 @@ export function NachtChapter({
   const headingId = `${id}-titel`;
   const name = type === "menu" ? "karte" : type;
   return (
-    <section id={id} className={`nc-sec nc-${name}`} aria-labelledby={headingId}>
+    <section
+      id={id}
+      className={`nc-sec nc-${name}`}
+      aria-labelledby={headingId}
+    >
       <div className="nc-wrap">
         <h2 className="nc-h2" id={headingId}>
           {rich(chapterTitle(type, own, blueprint))}
@@ -125,7 +129,11 @@ function Body({ text }: { text: string }) {
   );
 }
 
-function Priced({ section }: { section: SectionOf<"menu"> | SectionOf<"pricelist"> }) {
+function Priced({
+  section,
+}: {
+  section: SectionOf<"menu"> | SectionOf<"pricelist">;
+}) {
   return (
     <NachtChapter type={section.type} own={section.headline}>
       {section.categories.map((c, i) => (
@@ -296,7 +304,11 @@ export function renderNachtSection(
       return <NachtEntry hero={section} />;
     case "services":
       return (
-        <NachtChapter type="services" own={section.headline} intro={section.intro}>
+        <NachtChapter
+          type="services"
+          own={section.headline}
+          intro={section.intro}
+        >
           <Rows
             rows={section.items.map(i => ({
               title: i.title,
@@ -309,7 +321,9 @@ export function renderNachtSection(
     case "process":
       return (
         <NachtChapter type="process" own={section.headline}>
-          <Rows rows={section.steps.map(s => ({ title: s.title, text: s.text }))} />
+          <Rows
+            rows={section.steps.map(s => ({ title: s.title, text: s.text }))}
+          />
         </NachtChapter>
       );
     case "pricelist":
@@ -318,13 +332,17 @@ export function renderNachtSection(
     case "stats":
       return (
         <NachtChapter type="stats" own={section.headline}>
-          <Rows rows={section.items.map(s => ({ title: s.label, price: s.value }))} />
+          <Rows
+            rows={section.items.map(s => ({ title: s.label, price: s.value }))}
+          />
         </NachtChapter>
       );
     case "team":
       return (
         <NachtChapter type="team" own={section.headline}>
-          <Rows rows={section.members.map(m => ({ title: m.name, text: m.role }))} />
+          <Rows
+            rows={section.members.map(m => ({ title: m.name, text: m.role }))}
+          />
         </NachtChapter>
       );
     case "about":
@@ -332,7 +350,13 @@ export function renderNachtSection(
         <NachtChapter type="about" own={section.headline}>
           {section.imageUrl && (
             <figure className="nc-photo">
-              <img src={section.imageUrl} alt="" loading="lazy" width={1200} height={900} />
+              <img
+                src={section.imageUrl}
+                alt=""
+                loading="lazy"
+                width={1200}
+                height={900}
+              />
             </figure>
           )}
           <Body text={section.body} />
@@ -344,7 +368,13 @@ export function renderNachtSection(
           <ul className="nc-grid">
             {section.images.map((img, i) => (
               <li key={`${img.url}-${i}`}>
-                <img src={img.url} alt={img.alt} loading="lazy" width={800} height={1000} />
+                <img
+                  src={img.url}
+                  alt={img.alt}
+                  loading="lazy"
+                  width={800}
+                  height={1000}
+                />
               </li>
             ))}
           </ul>
@@ -383,7 +413,9 @@ export function renderNachtSection(
     case "usp":
       return (
         <NachtChapter type="usp" own={section.headline}>
-          <Rows rows={section.items.map(u => ({ title: u.title, text: u.text }))} />
+          <Rows
+            rows={section.items.map(u => ({ title: u.title, text: u.text }))}
+          />
         </NachtChapter>
       );
     case "quote":

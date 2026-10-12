@@ -44,7 +44,8 @@ function tokenPx(value: string): number {
   const v = value.trim();
   const space = (k: string) => {
     const raw = (NACHT.space as Record<string, string>)[k];
-    if (!/^[\d.]+rem$/.test(raw)) throw new Error(`Abstand ${k} nicht fest: ${raw}`);
+    if (!/^[\d.]+rem$/.test(raw))
+      throw new Error(`Abstand ${k} nicht fest: ${raw}`);
     return parseFloat(raw) * 16;
   };
   const calc = v.match(/^calc\(var\(--sys-space-([\w-]+)\)\s*\*\s*([\d.]+)\)$/);
@@ -116,9 +117,20 @@ describe("Nacht: Gerüst", () => {
     };
     expect(minHeight(".pb-nacht .nc-btn")).toBe(56);
     expect(minHeight(".pb-nacht .nc-dock .nc-btn")).toBe(52);
-    for (const sel of [".pb-nacht .nc-btn--head", ".pb-nacht .nc-menu-toggle", ".pb-nacht .nc-menu-panel a", ".pb-nacht .nc-brand", ".pb-nacht .nc-faq summary"])
+    for (const sel of [
+      ".pb-nacht .nc-btn--head",
+      ".pb-nacht .nc-menu-toggle",
+      ".pb-nacht .nc-menu-panel a",
+      ".pb-nacht .nc-brand",
+      ".pb-nacht .nc-faq summary",
+    ])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(48);
-    for (const sel of [".pb-nacht .nc-nav a", ".pb-nacht .nc-foot-col a", ".pb-nacht .nc-foot-legal a", ".pb-nacht .nc-ways a"])
+    for (const sel of [
+      ".pb-nacht .nc-nav a",
+      ".pb-nacht .nc-foot-col a",
+      ".pb-nacht .nc-foot-legal a",
+      ".pb-nacht .nc-ways a",
+    ])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(44);
     expect(body).toContain("--nc-focus:2px");
     expect(body).toContain("prefers-reduced-motion:reduce");
@@ -196,9 +208,14 @@ describe("Nacht: Kopf, Fuß, Leiste", () => {
 
   test("Fuß: Monogramm, Name groß, Kontakt (data-sys-actions), Adresse, Rechtslinks", () => {
     const html = render(weinbergDoc(), false, "/site/w");
-    const foot = html.slice(html.indexOf('<footer class="nc-foot"'), html.indexOf("</footer>"));
+    const foot = html.slice(
+      html.indexOf('<footer class="nc-foot"'),
+      html.indexOf("</footer>")
+    );
     expect(foot).toContain('<p class="nc-foot-name">Restaurant Weinberg</p>');
-    expect(foot).toMatch(/<ul data-sys-actions="">[\s\S]*tel:0555471820[\s\S]*tisch@weinberg\.example/);
+    expect(foot).toMatch(
+      /<ul data-sys-actions="">[\s\S]*tel:0555471820[\s\S]*tisch@weinberg\.example/
+    );
     expect(foot).toContain("Weinstraße 12");
     expect(foot).toContain('href="/site/w/impressum"');
     expect(foot).toContain('href="/site/w/datenschutz"');
@@ -223,7 +240,10 @@ describe("Nacht: Kopf über dem Einstieg und Hinweisbanner", () => {
     const doc: Doc = {
       ...weinbergDoc(),
       sections: [
-        { type: "notice", text: "Betriebsferien bis 3. November" } as Doc["sections"][number],
+        {
+          type: "notice",
+          text: "Betriebsferien bis 3. November",
+        } as Doc["sections"][number],
         ...weinbergDoc().sections,
       ],
     };
@@ -248,11 +268,19 @@ describe("Nacht: Aktionsabschnitt", () => {
       ...weinbergDoc(),
       sections: [
         ...weinbergDoc().sections,
-        { type: "cta", headline: "Kommen Sie vorbei", ctaText: "  " } as Doc["sections"][number],
+        {
+          type: "cta",
+          headline: "Kommen Sie vorbei",
+          ctaText: "  ",
+        } as Doc["sections"][number],
       ],
     };
     const html = render(doc);
-    const cta = html.slice(html.indexOf('data-pb-section="cta"') > -1 ? html.indexOf('data-pb-section="cta"') : html.indexOf("Kommen Sie vorbei"));
+    const cta = html.slice(
+      html.indexOf('data-pb-section="cta"') > -1
+        ? html.indexOf('data-pb-section="cta"')
+        : html.indexOf("Kommen Sie vorbei")
+    );
     expect(cta).toMatch(/<a class="nc-btn nc-btn--p"[^>]*>Tisch reservieren/);
     expect(cta).not.toMatch(/<a class="nc-btn nc-btn--p"[^>]*><\/a>/);
   });
@@ -311,7 +339,14 @@ describe("Nacht: Einstieg", () => {
     expect(e).toContain("<b>Heute 17:30 bis 23:00</b>");
     expect(e).not.toContain("Küche bis");
     const monday = entryOf(
-      render(weinbergDoc(), false, "", undefined, "", new Date("2026-10-12T19:00:00+02:00"))
+      render(
+        weinbergDoc(),
+        false,
+        "",
+        undefined,
+        "",
+        new Date("2026-10-12T19:00:00+02:00")
+      )
     );
     expect(monday).toContain('<p class="nc-today"><b>Heute Ruhetag</b></p>');
   });
@@ -319,8 +354,12 @@ describe("Nacht: Einstieg", () => {
   test("Salon (schwaches Foto): Ziffer 21 neben kleinem Hochformat, Vorleser-Satz, keine Heute-Zeile", () => {
     const e = entryOf(render(noirDoc()));
     expect(e).toContain('class="nc-entry nc-entry--framed"');
-    expect(e).toContain('<p class="nc-kicker">Friseursalon</p><h1 id="start-titel" class="nc-title nc-display">Salon Noir</h1>');
-    expect(e).toContain('<p class="nc-fig" aria-hidden="true">21</p><figure class="nc-pic">');
+    expect(e).toContain(
+      '<p class="nc-kicker">Friseursalon</p><h1 id="start-titel" class="nc-title nc-display">Salon Noir</h1>'
+    );
+    expect(e).toContain(
+      '<p class="nc-fig" aria-hidden="true">21</p><figure class="nc-pic">'
+    );
     expect(e).toContain(
       '<span aria-hidden="true">Uhr · Di bis Fr so lange geöffnet</span><span class="nc-sr">Dienstag bis Freitag bis 21:00 Uhr geöffnet</span>'
     );
@@ -330,15 +369,20 @@ describe("Nacht: Einstieg", () => {
   test("Pension (ohne Foto): Name, Ziffer aus Google-Note, kein Foto", () => {
     const e = entryOf(render(hausDoc()));
     expect(e).toContain('class="nc-entry nc-entry--plain"');
-    expect(e).toContain('<p class="nc-fig nc-fig--long" aria-hidden="true">4,9</p>');
+    expect(e).toContain(
+      '<p class="nc-fig nc-fig--long" aria-hidden="true">4,9</p>'
+    );
     expect(e).toContain("von 5 · 86 Google-Bewertungen");
     expect(e).not.toContain("<img");
   });
 
   test("keine Daten → keine Ziffer, nur der Name", () => {
-    const doc: Doc = withContact({ ...hausDoc(), google: undefined }, {
-      openingHours: undefined,
-    });
+    const doc: Doc = withContact(
+      { ...hausDoc(), google: undefined },
+      {
+        openingHours: undefined,
+      }
+    );
     const e = entryOf(render(doc));
     expect(e).not.toContain("nc-fig");
     expect(e).not.toContain("nc-figure");
@@ -346,9 +390,12 @@ describe("Nacht: Einstieg", () => {
   });
 
   test("schwaches Foto ohne Ziffer: Foto bleibt (allein)", () => {
-    const doc: Doc = withContact({ ...noirDoc(), google: undefined }, {
-      openingHours: undefined,
-    });
+    const doc: Doc = withContact(
+      { ...noirDoc(), google: undefined },
+      {
+        openingHours: undefined,
+      }
+    );
     const e = entryOf(render(doc));
     expect(e).toContain('<figure class="nc-pic nc-pic--solo">');
     expect(e).not.toContain('<p class="nc-fig');
@@ -358,7 +405,10 @@ describe("Nacht: Einstieg", () => {
     const { PLACEHOLDER_OPENING_HOURS } = await import(
       "../../../../../../shared/onboardingV2/openingHours"
     );
-    const doc = withContact({ ...noirDoc() }, { openingHours: PLACEHOLDER_OPENING_HOURS });
+    const doc = withContact(
+      { ...noirDoc() },
+      { openingHours: PLACEHOLDER_OPENING_HOURS }
+    );
     const e = entryOf(render(doc, true));
     expect(e).not.toContain('<p class="nc-fig');
     expect(e).not.toContain("nc-today");
@@ -366,6 +416,8 @@ describe("Nacht: Einstieg", () => {
 
   test("langer Name: bricht um statt überzulaufen", () => {
     expect(body).toMatch(/\.nc-display\{[^}]*overflow-wrap:anywhere/);
-    expect(body).toMatch(/\.nc-head--over \.nc-mark\{white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/);
+    expect(body).toMatch(
+      /\.nc-head--over \.nc-mark\{white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/
+    );
   });
 });

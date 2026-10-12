@@ -48,10 +48,10 @@ const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
 const KITCHEN = /(?:warme\s+)?(k(?:ü|ue)che\b[^,;·|()]*)(?:\s*\(([^)]*)\))?/i;
 const DAY_NAME =
   "(?:Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag|Mo|Di|Mi|Do|Fr|Sa|So)\\.?";
-const DAY_WORD = new RegExp(`(?:^|[^\\p{L}])${DAY_NAME}(?![\\p{L}])`, "u");
+const DAY_WORD = new RegExp(`(?:^|[^\\p{L}])${DAY_NAME}(?![\\p{L}])`, "iu");
 const LEADING_DAYS = new RegExp(
   `^[Kk](?:ü|ue)che\\s+(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*`,
-  "u"
+  "iu"
 );
 const AT = /(\d{1,2})(?:[:.](\d{2}))?/;
 const AFTER_BIS = new RegExp(`bis\\s*${AT.source}`, "i");
@@ -60,7 +60,7 @@ const RANGE_END = new RegExp(
 );
 const EXCEPTION = new RegExp(
   `^(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*(?:bis\\s*)?${AT.source}\\s*(?:Uhr)?$`,
-  "u"
+  "iu"
 );
 
 const minutesOf = (h?: string, min?: string): number | undefined => {
@@ -79,12 +79,30 @@ function daysCoverToday(spec: string, now: Date): boolean {
     .some(t => coversToday(t, now));
 }
 
-/** Zeit direkt nach „bis", sonst Ende einer „–"-Spanne; sonst keine. */
+/**
+ * Ende der Küche in einem Zeitblock: Zeit direkt nach „bis" bzw. Ende einer
+ * „–"-Spanne (bei mehreren: die letzte); „ab 17:30" ohne Ende: keine Zeit.
+ */
+function blockEnd(block: string): number | undefined {
+  const found: { at: number; minutes: number | undefined }[] = [];
+  for (const m of block.matchAll(new RegExp(AFTER_BIS.source, "gi")))
+    found.push({ at: m.index!, minutes: minutesOf(m[1], m[2]) });
+  for (const m of block.matchAll(new RegExp(RANGE_END.source, "g")))
+    found.push({ at: m.index!, minutes: minutesOf(m[3], m[4]) });
+  if (found.length === 0) return undefined;
+  const last = found.reduce((a, b) => (b.at > a.at ? b : a));
+  // Danach beginnt noch ein Block ohne Ende („… und ab 17:30"): unbekannt.
+  if (/\bab\s*\d/i.test(block.slice(last.at + 1))) return undefined;
+  return last.minutes;
+}
+
+/**
+ * Mittags- und Abendküche („11:30–14:00 und 17:30–21:30"): Ende des
+ * letzten Blocks; hat der letzte Block kein Ende, gibt es keine Zeit.
+ */
 function kitchenEnd(text: string): number | undefined {
-  const bis = text.match(AFTER_BIS);
-  if (bis) return minutesOf(bis[1], bis[2]);
-  const range = text.match(RANGE_END);
-  return range ? minutesOf(range[3], range[4]) : undefined;
+  const blocks = text.split(/\s+und\s+|\s*[/&]\s*/).filter(b => b.trim());
+  return blocks.length ? blockEnd(blocks[blocks.length - 1]) : undefined;
 }
 
 function kitchenMinutes(
@@ -129,7 +147,11 @@ export function kitchenOf(text: string, now?: Date): KitchenSplit {
   if (!open) {
     // Nur Küche: Originaltext behalten, aber nicht als Öffnungsspanne lesbar.
     const literal = text.trim().replace(/(\d)\s*[–-]\s*(?=\d)/g, "$1 bis ");
-    return { open: literal, ...(kitchen ? { kitchen } : {}), kitchenOnly: true };
+    return {
+      open: literal,
+      ...(kitchen ? { kitchen } : {}),
+      kitchenOnly: true,
+    };
   }
   return kitchen ? { open, kitchen } : { open };
 }
@@ -157,8 +179,7 @@ export function todayLine(
 ): TodayLine | undefined {
   const real = realHours(hours);
   if (!real) return undefined;
-  if (isRoundTheClock(real))
-    return { open: "Heute rund um die Uhr geöffnet" };
+  if (isRoundTheClock(real)) return { open: "Heute rund um die Uhr geöffnet" };
   const today = todayHours(openHours(real), now);
   if (!today) return undefined;
   const lines = today.lines.filter(l => l.trim() !== "");
@@ -166,7 +187,9 @@ export function todayLine(
   const entry = real.find(h => coversToday(h.day, now))!;
   if (today.closed)
     return {
-      open: /ruhetag/i.test(entry.hours) ? "Heute Ruhetag" : "Heute geschlossen",
+      open: /ruhetag/i.test(entry.hours)
+        ? "Heute Ruhetag"
+        : "Heute geschlossen",
     };
   if (lines.length === 1 && lines[0] === "0:00 bis 24:00")
     return { open: "Heute rund um die Uhr geöffnet" };
@@ -245,19 +268,16 @@ function hoursFigure(real: NonNullable<Hours>): Figure | undefined {
     return Number(m[1]) * 60 + Number(m[2] ?? 0);
   });
   const fromSlots = Math.max(...slots) >= 0;
-  // Schließt ein Tag um 24:00 oder nach Mitternacht, ist „so lange" für die
-  // übrigen Tage falsch: keine Schließzeit-Ziffer (nie eine falsche).
-  const pastMidnight = (text: string) =>
-    readSpans(text).some(s => s.to <= s.from || (s.to >= 24 * 60 && s.from > 0));
-  if (!fromSlots && openHours(real).some(h => pastMidnight(h.hours)))
-    return undefined;
   const close = fromSlots
     ? slots
     : latestPerDay(openHours(real), text => {
         // 0:00 – 24:00 (ganzer Tag) nennt keine Schließzeit.
-        const ends = readSpans(text)
-          .filter(s => s.to > s.from && s.to < 24 * 60)
-          .map(s => s.to);
+        const all = readSpans(text);
+        // Ein Tag bis 24:00 oder über Mitternacht fällt aus der Ziffer; das
+        // Label nennt nur die Tage, für die sie gilt.
+        if (all.some(s => s.to <= s.from || (s.to >= 24 * 60 && s.from > 0)))
+          return undefined;
+        const ends = all.filter(s => s.to < 24 * 60).map(s => s.to);
         return ends.length ? Math.max(...ends) : undefined;
       });
   const latest = Math.max(...close);
@@ -354,7 +374,8 @@ export function entryName(
   return {
     name,
     mark: name,
-    ...(branch && !name.toLocaleLowerCase("de").includes(branch.toLocaleLowerCase("de"))
+    ...(branch &&
+    !name.toLocaleLowerCase("de").includes(branch.toLocaleLowerCase("de"))
       ? { kicker: branch }
       : {}),
     kickerInName: false,
@@ -431,5 +452,8 @@ export function dockPair(actions: {
     : phone
       ? { label: "Anrufen", href: phone.href }
       : second;
-  return { ...(left ? { left } : {}), main: { ...primary, label: nachtShort(primary.label) } };
+  return {
+    ...(left ? { left } : {}),
+    main: { ...primary, label: nachtShort(primary.label) },
+  };
 }
