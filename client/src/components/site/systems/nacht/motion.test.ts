@@ -64,6 +64,10 @@ describe("Nacht-Bewegung (CSS)", () => {
     expect(hidden).toEqual([
       ".pb-nacht[data-nc-ready] .nc-sec:not([data-nc-in])>.nc-wrap,.pb-nacht[data-nc-ready] .nc-sec:not([data-nc-in])>.pb-island{opacity:0;transform:translateY(var(--sys-space-m))}",
     ]);
+    // Tastaturfokus vor dem Hereinscrollen: Kapitel sofort sichtbar.
+    expect(NACHT_MOTION_CSS).toContain(
+      ".pb-nacht[data-nc-ready] .nc-sec:focus-within>.nc-wrap,.pb-nacht[data-nc-ready] .nc-sec:focus-within>.pb-island{opacity:1;transform:none}"
+    );
     expect(NACHT_MOTION_CSS).toContain(
       `.pb-nacht[data-nc-ready] .nc-sec>.nc-wrap,.pb-nacht[data-nc-ready] .nc-sec>.pb-island{transition:opacity 900ms ${EASE},transform 900ms ${EASE}}`
     );

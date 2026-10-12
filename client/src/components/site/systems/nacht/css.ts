@@ -102,7 +102,7 @@ ${FONT_FACES}
   .pb-nacht .nc-menu--main{display:none}
   .pb-nacht .nc-menu--always{display:block}
   .pb-nacht .nc-nav{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:var(--sys-space-xs) calc(var(--sys-space-s) * 2.125);margin-right:calc(var(--sys-space-s) * 1.25)}
-  .pb-nacht .nc-nav a{${step("link")};display:inline-flex;align-items:center;min-height:${TAP};text-decoration:none}
+  .pb-nacht .nc-nav a{${step("link")};display:inline-flex;align-items:center;justify-content:center;min-height:${TAP};min-width:${TAP};text-decoration:none}
   .pb-nacht .nc-nav a:hover,.pb-nacht .nc-nav a[aria-current]{text-decoration:underline;text-decoration-color:var(--sys-accent);text-decoration-thickness:1px;text-underline-offset:.45em}
   .pb-nacht .nc-btn--head{display:inline-flex;min-height:${H_MIN}}
 }
@@ -164,6 +164,8 @@ ${sections}
 }
 
 ${NACHT_MOTION_CSS}
+/* Weniger Transparenz gewünscht: Leiste als volle tiefe Fläche, ohne Unschärfe */
+@media (prefers-reduced-transparency:reduce){.pb-nacht .nc-dock{background:var(--sys-deep);-webkit-backdrop-filter:none;backdrop-filter:none}}
 @media (prefers-reduced-motion:reduce){.pb-nacht *,.pb-nacht *::before,.pb-nacht *::after{transition:none!important;animation:none!important}}
 /* ende nacht */
 `;

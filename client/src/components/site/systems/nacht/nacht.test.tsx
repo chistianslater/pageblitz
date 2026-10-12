@@ -442,3 +442,19 @@ describe("Nacht: Namensgröße", () => {
     expect(longestWord("")).toBe(1);
   });
 });
+
+describe("Nacht: Tippflächen", () => {
+  test("Navigation am Desktop: auch kurze Punkte (FAQ) ≥ 44 × 44 px", () => {
+    expect(NACHT_CSS).toMatch(
+      /\.pb-nacht \.nc-nav a\{[^}]*min-height:calc\(var\(--sys-space-l\) \* 1\.1\);min-width:calc\(var\(--sys-space-l\) \* 1\.1\)/
+    );
+  });
+});
+
+describe("Nacht: Leiste bei weniger Transparenz", () => {
+  test("prefers-reduced-transparency: volle tiefe Fläche, keine Unschärfe", () => {
+    expect(NACHT_CSS).toContain(
+      "@media (prefers-reduced-transparency:reduce){.pb-nacht .nc-dock{background:var(--sys-deep);-webkit-backdrop-filter:none;backdrop-filter:none}}"
+    );
+  });
+});

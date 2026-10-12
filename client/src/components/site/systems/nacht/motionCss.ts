@@ -9,7 +9,8 @@
  *  - Name wird von unten aufgedeckt (clip-path, 1,1 s, 150 ms nach dem
  *    Foto), steigt dabei um xs; Kicker, Satz und Knöpfe stehen sofort
  *  - Kapitel einmalig beim Hereinscrollen (`data-nc-in`): 24 px Aufstieg
- *    mit Einblenden, 900 ms; die Kontakt-Insel geht mit ihrem Kapitel
+ *    mit Einblenden, 900 ms; die Kontakt-Insel geht mit; ein Kapitel mit
+ *    Tastaturfokus ist sofort sichtbar (nie unsichtbar fokussiert) ihrem Kapitel
  *  - kein Ken-Burns, kein Karussell, kein Parallax, keine Dauerschleife;
  *    Handy-Leiste fest ohne Animation (Ausblenden regelt dockAutoHide)
  *  - nur am Bildschirm (`screen`): beim Drucken nie versteckt
@@ -32,6 +33,7 @@ export const NACHT_MOTION_CSS = `/* Bewegung (Systemblatt 7) */
   ${P} .nc-bg img,${P} .nc-entry .nc-pic img{animation:nc-settle ${SETTLE_MS}ms ${EASE} backwards}
   ${P} .nc-entry .nc-display{animation:nc-mask ${MASK_MS}ms ${EASE} ${MASK_AT}ms backwards}
   ${P} .nc-sec:not([data-nc-in])>.nc-wrap,${P} .nc-sec:not([data-nc-in])>.pb-island{opacity:0;transform:translateY(var(--sys-space-m))}
+  ${P} .nc-sec:focus-within>.nc-wrap,${P} .nc-sec:focus-within>.pb-island{opacity:1;transform:none}
   ${P} .nc-sec>.nc-wrap,${P} .nc-sec>.pb-island{transition:opacity ${RISE_MS}ms ${EASE},transform ${RISE_MS}ms ${EASE}}
   @keyframes nc-settle{from{transform:scale(1.06)}}
   @keyframes nc-mask{from{clip-path:inset(0 0 100% 0);transform:translateY(var(--sys-space-xs))}to{clip-path:inset(0 0 0 0);transform:none}}
