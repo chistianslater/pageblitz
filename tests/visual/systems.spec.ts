@@ -449,3 +449,113 @@ test("Klar: Bewegung — Einstieg setzt sich, Abschnitte einmal, Foto nie unsich
   );
   expect(hidden).toBe(0);
 });
+
+// Bildvergleich Designsystem Nacht (Plan 2026-10-12, Task N7+N8): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie die
+// übrigen Systeme (kein waagrechter Überlauf; reduzierte Bewegung = keine
+// Startzustände). Das Dock ist `position: fixed`.
+const NACHT_PALETTES = ["petrol", "pflaume", "nachtblau"] as const;
+
+for (const palette of NACHT_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`nacht ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=nacht&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `nacht-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Nacht: Gilda Display und Jost werden geladen", async ({ page }) => {
+  await page.goto("/dev/site-preview?system=nacht&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  const families = loaded.join(",");
+  expect(families).toMatch(/Gilda Display/);
+  expect(families).toMatch(/Jost/);
+  const fonts = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector(".nc-display")!)
+      .fontFamily,
+    body: getComputedStyle(document.body.querySelector(".pb-nacht")!)
+      .fontFamily,
+  }));
+  expect(fonts.display).toMatch(/^"?Gilda Display/);
+  expect(fonts.body).toMatch(/^"?Jost/);
+});
+
+test("Nacht: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=nacht&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("2px");
+  }
+});
+
+test("Nacht: Bewegung — Foto setzt sich, Kapitel einmal, Foto nie unsichtbar, Leiste weicht", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo/system/nacht/weinberg?palette=petrol&live=1");
+  const root = page.locator('.pb-nacht[data-pb-system="nacht"]');
+  await expect(root).toHaveAttribute("data-nc-ready", "");
+  // Das Einstiegsfoto (LCP) ist zu keinem Zeitpunkt per Deckkraft versteckt.
+  expect(
+    await page.evaluate(
+      () => getComputedStyle(document.querySelector(".nc-bg img")!).opacity
+    )
+  ).toBe("1");
+  // Einstiegsknöpfe sichtbar: Handy-Leiste ausgeblendet (dockAutoHide).
+  const dock = page.locator("[data-sys-dock]");
+  await expect(dock).toHaveAttribute("data-sys-dock-hidden", "");
+  await page.evaluate(() => window.scrollTo(0, 1500));
+  await expect(dock).not.toHaveAttribute("data-sys-dock-hidden", "");
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 400) {
+      window.scrollTo(0, y);
+      await new Promise(r => setTimeout(r, 40));
+    }
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll(".nc-sec")].filter(
+            s => !s.hasAttribute("data-nc-in")
+          ).length
+      )
+    )
+    .toBe(0);
+  // Reduzierte Bewegung: nichts wartet auf Script oder Scrollen.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  const hidden = await page.evaluate(
+    () =>
+      [...document.querySelectorAll(".nc-sec>.nc-wrap")].filter(
+        w => getComputedStyle(w).opacity !== "1"
+      ).length
+  );
+  expect(hidden).toBe(0);
+});

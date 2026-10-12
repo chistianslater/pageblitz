@@ -474,3 +474,66 @@ test.describe("A11y (axe): Designsystem Klar", () => {
     }
   }
 });
+
+/**
+ * Designsystem Nacht (Plan 2026-10-12, Task N7+N8): drei Paletten im vollen
+ * Inhaltsstand plus die drei Beispielbetriebe (Weinberg Petrol mit Foto,
+ * Salon Noir Pflaume mit kleinem Foto, Haus am See Nachtblau ohne Foto),
+ * Desktop und Handy. Wie Klar: 0 Befunde jeder Schwere — dunkles Papier
+ * verlangt geprüften Kontrast überall. Reduzierte Bewegung + Durchscrollen.
+ */
+test.describe("A11y (axe): Designsystem Nacht", () => {
+  async function scrollThrough(page: Page): Promise<void> {
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 30));
+      }
+      window.scrollTo(0, 0);
+    });
+  }
+  async function expectNoViolations(page: Page, label: string): Promise<void> {
+    const results = await new AxeBuilder({ page }).analyze();
+    const found = results.violations.map(
+      v =>
+        `  - ${v.id} [${v.impact}] ${v.help}\n    nodes: ${v.nodes
+          .slice(0, 3)
+          .map(n => n.target.join(" "))
+          .join(" | ")}`
+    );
+    if (found.length)
+      throw new Error(`axe: ${found.length} Befund(e) auf "${label}":\n${found.join("\n")}`);
+  }
+  for (const palette of ["petrol", "pflaume", "nachtblau"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`nacht ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=nacht&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `nacht ${palette} (${width})`);
+      });
+    }
+  }
+  for (const [showcase, palette] of [
+    ["weinberg", "petrol"],
+    ["noir", "pflaume"],
+    ["pension", "nachtblau"],
+  ] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`nacht ${showcase} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/demo/system/nacht/${showcase}?palette=${palette}&live=1`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `nacht ${showcase} ${palette} (${width})`);
+      });
+    }
+  }
+});
