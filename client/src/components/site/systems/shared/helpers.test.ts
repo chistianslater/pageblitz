@@ -7,6 +7,7 @@ import { JOURNAL } from "../../../../../../shared/designSystems/journal";
 import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
+import { KLAR } from "../../../../../../shared/designSystems/klar";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
@@ -249,6 +250,39 @@ describe("Systeme: @font-face", () => {
       ).toBe(true);
     }
     expect(PLAKAT.preload).toHaveLength(2);
+  });
+
+  test("Klar: DM Sans und Atkinson je latin + latin-ext, ohne Breitenbereich", () => {
+    const rules = systemFontFaces(KLAR).split("\n");
+    expect(rules).toHaveLength(4);
+    const [dm, dmExt, atk, atkExt] = rules;
+    expect(dm).toContain('font-family:"DM Sans"');
+    expect(dm).toContain("url(/fonts/systems/dm-sans-latin-wght.woff2)");
+    expect(dm).toContain("font-weight:400 700");
+    expect(dm).not.toContain("unicode-range");
+    expect(dmExt).toContain("url(/fonts/systems/dm-sans-latin-ext-wght.woff2)");
+    expect(dmExt).toContain("unicode-range:U+0100-02BA");
+    expect(atk).toContain('font-family:"Atkinson Hyperlegible Next"');
+    expect(atk).toContain("url(/fonts/systems/atkinson-next-latin-wght.woff2)");
+    expect(atk).toContain("font-weight:200 800");
+    expect(atk).not.toContain("unicode-range");
+    expect(atkExt).toContain("url(/fonts/systems/atkinson-next-latin-ext-wght.woff2)");
+    expect(atkExt).toContain("unicode-range:U+0100-02BA");
+    for (const r of rules) {
+      expect(r).not.toContain("font-stretch");
+      expect(r).toContain("font-display:swap");
+    }
+  });
+
+  test("Klar: alle vier Dateien liegen bei, nur latin wird vorgeladen", () => {
+    const files = [...KLAR.fonts.display.files, ...KLAR.fonts.text.files];
+    for (const f of files)
+      expect(
+        existsSync(resolve(__dirname, "../../../../../public/fonts/systems", f.file)),
+        f.file
+      ).toBe(true);
+    expect(KLAR.preload).toHaveLength(2);
+    for (const f of files.filter(x => x.unicodeRange)) expect(KLAR.preload).not.toContain(f.file);
   });
 
   test.each([JOURNAL, RASTER, WERKSTOFF])("$id: kein unicode-range (unverändert)", def => {

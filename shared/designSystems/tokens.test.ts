@@ -3,6 +3,8 @@ import { JOURNAL } from "./journal";
 import { RASTER } from "./raster";
 import { WERKSTOFF } from "./werkstoff";
 import { PLAKAT } from "./plakat";
+import { KLAR } from "./klar";
+import { DESIGN_SYSTEMS, isReleased } from "./registry";
 import { assertSafeImageFilter } from "./toCss";
 import type { DesignSystemDef } from "./types";
 import { getPalette, pickPalette } from "./palette";
@@ -266,6 +268,98 @@ describe("Felder und Stretch nur, wo das System sie führt", () => {
         type: { ...PLAKAT.type, display: { ...PLAKAT.type.display, stretch: bad } },
       };
       expect(() => systemCssVars(badStretch)).toThrow();
+    }
+  });
+});
+
+describe("Klar-Tokens", () => {
+  test("drei Paletten Lind, Wasser, Sand mit je drei Feldern und Kartenfläche", () => {
+    expect(KLAR.id).toBe("klar");
+    expect(KLAR.palettes.map(p => p.id)).toEqual(["lind", "wasser", "sand"]);
+    for (const p of KLAR.palettes) {
+      expect(p.fields).toHaveLength(3);
+      expect(new Set(p.fields!.map(f => f.id)).size).toBe(3);
+      expect(p.surface).toBe("#ffffff");
+    }
+  });
+  test("registriert, aber nicht freigeschaltet", () => {
+    expect(DESIGN_SYSTEMS.klar).toBe(KLAR);
+    expect(isReleased("klar")).toBe(false);
+  });
+  test("Schriftskala: neun Kernstufen plus figure und data, ohne Stretch/Versal", () => {
+    expect(Object.keys(KLAR.type).sort()).toEqual(
+      ["body", "data", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+    for (const t of Object.values(KLAR.type)) {
+      expect(t!.stretch).toBeUndefined();
+      expect(t!.upper).toBeUndefined();
+      expect(t!.font).not.toBe("mono");
+    }
+  });
+  test("Barrierefreiheit: Fließtext ab 1.125rem, kleinste Stufe 1rem", () => {
+    expect(KLAR.type.body.size).toMatch(/^clamp\(1\.125rem,/);
+    expect(KLAR.type.small.size).toBe("1rem");
+    expect(KLAR.type.kicker.size).toBe("1rem");
+  });
+  // Klar zielt für jede Textfarbe auf ≥ 7 : 1 (Endwerte).
+  test.each(KLAR.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(p.signal && p.onSignal).toBeTruthy();
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.signal!, p.paper)).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(p.ink, p.surface!)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.surface!)).toBeGreaterThanOrEqual(7);
+  });
+  test.each(
+    KLAR.palettes.flatMap(p => p.fields!.map(f => [`${p.id}/${f.id}`, f] as const))
+  )("Feld-Kontrast %s", (_id, f) => {
+    expect(contrastRatio(f.ink, f.bg)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(f.muted, f.bg)).toBeGreaterThanOrEqual(7);
+  });
+  test("genau zwei Preloads: DM Sans und Atkinson (latin), latin-ext nie", () => {
+    const all = [...KLAR.fonts.display.files, ...KLAR.fonts.text.files];
+    expect(KLAR.preload).toEqual(["dm-sans-latin-wght.woff2", "atkinson-next-latin-wght.woff2"]);
+    for (const f of KLAR.preload) expect(all.map(x => x.file)).toContain(f);
+    for (const f of all.filter(x => x.unicodeRange)) expect(KLAR.preload).not.toContain(f.file);
+    expect(all.filter(x => x.unicodeRange).map(x => x.file)).toEqual([
+      "dm-sans-latin-ext-wght.woff2",
+      "atkinson-next-latin-ext-wght.woff2",
+    ]);
+  });
+  test("CSS-Variablen: Kartenfläche, Felder, Bildfilter, keine Steuerzeichen", () => {
+    const v = systemCssVars(KLAR, "wasser");
+    expect(v["--sys-paper"]).toBe("#f2f6f7");
+    expect(v["--sys-surface"]).toBe("#ffffff");
+    expect(v["--sys-signal"]).toBe("#11475b");
+    expect(v["--sys-on-signal"]).toBe("#d3eef5");
+    expect(v["--sys-field-1-bg"]).toBe("#cfe9ef");
+    expect(v["--sys-field-3-bg"]).toBe("#0c2a35");
+    expect(v["--sys-font-display"]).toContain("DM Sans");
+    expect(v["--sys-font-text"]).toContain("Atkinson Hyperlegible Next");
+    expect(v["--sys-font-mono"]).toBeUndefined();
+    expect(v["--sys-image-filter"]).toBe(KLAR.imageFilter);
+    expect(v["--sys-data-size"]).toBe("1.125rem");
+    expect(Object.keys(v).some(k => k.endsWith("-stretch"))).toBe(false);
+    for (const p of KLAR.palettes)
+      expect(Object.values(systemCssVars(KLAR, p.id)).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Kartenfläche nur, wo das System sie führt", () => {
+  test.each([JOURNAL, RASTER, WERKSTOFF, PLAKAT])("$id ohne --sys-surface", def => {
+    for (const p of def.palettes) expect(systemCssVars(def, p.id)["--sys-surface"]).toBeUndefined();
+  });
+  test("Kartenfläche mit ; { } wird abgewiesen", () => {
+    for (const bad of ["#fff;color:red", "x}body{", "a{b"]) {
+      const [p0, ...rest] = KLAR.palettes;
+      const def: DesignSystemDef = {
+        ...KLAR,
+        palettes: [{ ...p0, surface: bad }, rest[0], rest[1]],
+      };
+      expect(() => systemCssVars(def, p0.id)).toThrow();
     }
   });
 });

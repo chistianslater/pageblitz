@@ -34,6 +34,8 @@ export type SystemPalette = {
   id: string;
   name: string;
   paper: string;
+  /** Kartenfläche (Klar), `--sys-surface`; nur ausgegeben, wenn gesetzt. Rückfall im CSS: #ffffff. */
+  surface?: string;
   ink: string;
   muted: string;
   rule: string;

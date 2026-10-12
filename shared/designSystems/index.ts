@@ -6,6 +6,7 @@ export { JOURNAL } from "./journal";
 export { RASTER } from "./raster";
 export { WERKSTOFF } from "./werkstoff";
 export { PLAKAT } from "./plakat";
+export { KLAR } from "./klar";
 export * from "./assignment";
 export * from "./apply";
 export { displayName } from "./displayName";

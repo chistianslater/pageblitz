@@ -24,6 +24,8 @@ export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<
     "--sys-font-display": stack(def.fonts.display),
     "--sys-font-text": stack(def.fonts.text),
   };
+  // Kartenfläche nur in Systemen, die sie führen (Klar).
+  if (p.surface !== undefined) vars["--sys-surface"] = assertSafeCssValue(p.surface);
   // Mono-Schrift und Bildfilter nur in Systemen, die sie führen (Werkstoff).
   if (def.fonts.mono) vars["--sys-font-mono"] = stack(def.fonts.mono);
   if (def.imageFilter !== undefined)
