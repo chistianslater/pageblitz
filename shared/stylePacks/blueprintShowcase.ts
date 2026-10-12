@@ -1454,10 +1454,32 @@ export function showcaseDoc(
     },
     { heroLandscape: entry === "stage", extraPhotos: 3 }
   );
-  return withStudioMenu(
-    withBlueprint({ ...directed, designProfile }, blueprint),
+  return withSampleAction(
+    withStudioMenu(
+      withBlueprint({ ...directed, designProfile }, blueprint),
+      showcase.id
+    ),
     showcase.id
   );
+}
+
+/**
+ * Nach dem Bauplan: Bringt ein Beispiel eine eigene Hauptaktion mit echtem
+ * Ziel mit (Weinberg: Buchungslink), gilt sie — der Gastro-Bauplan setzt
+ * sonst fest „Anrufen" ein. Nur Beispiele mit `hero.ctaHref`; alle anderen
+ * bleiben unverändert.
+ */
+function withSampleAction(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
+  const hero = SAMPLE_TEXT[id]?.hero;
+  if (!hero?.ctaHref) return doc;
+  return {
+    ...doc,
+    sections: doc.sections.map(s =>
+      s.type === "hero"
+        ? { ...s, ctaText: hero.ctaText ?? s.ctaText, ctaHref: hero.ctaHref }
+        : s
+    ) as WebsiteDataV2["sections"],
+  };
 }
 
 /**

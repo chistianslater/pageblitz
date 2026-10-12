@@ -12,6 +12,7 @@ import {
   dishCount,
   knowIcon,
   openerOf,
+  isDrinkCategory,
   openerWord,
   ratingLine,
 } from "./content";
@@ -335,6 +336,13 @@ describe("Nacht: Leistungen und Zimmer", () => {
     expect(openerWord(pl("Haarschnitt"), { id: "beauty" } as never)).toBe("Leistungen");
     expect(openerWord(pl("Zimmer"), { id: "stay" } as never)).toBe("Angebote");
     expect(openerWord({ type: "menu", categories: [] } as never, gastro)).toBe("Gerichte");
+  });
+
+  test("isDrinkCategory: ganze Wörter, kein Essen", () => {
+    for (const n of ["Weine", "Rotweine", "Bier vom Fass", "Alkoholfreie Getränke", "Kaffee", "Säfte & Limonaden", "Cocktails"])
+      expect(isDrinkCategory(n), n).toBe(true);
+    for (const n of ["Weinbergschnecken", "Kaffee & Kuchen", "Zum Mitnehmen", "Biergarten-Snacks", "Teegebäck", "Vorspeisen"])
+      expect(isDrinkCategory(n), n).toBe(false);
   });
 
   test("Getränkekarte im Restaurant zählt Getränke, nicht Leistungen", () => {

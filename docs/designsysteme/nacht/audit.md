@@ -92,8 +92,11 @@ Kontrast überall geprüft, Fokus sichtbar auf Dunkel, Fotos lesbar.
 - **O2 Reduzierte Bewegung schaltet alles ab** (keine Startzustände), wie
   Klar. Ohne Bewegung ist die Seite vollständig.
 - **O3 Hauptknopf „Termin anfragen" ruft an** (Salon Noir ohne
-  Buchungslink): Klar-Reihenfolge, das Symbol zeigt das Telefon. Die
-  Klar-Regel „Anrufen" als Beschriftung gilt bisher nur für Klar.
+  Buchungslink): Reihenfolge wie Klar (Buchungslink, sonst Telefon). Die
+  Beschriftung kommt aus dem geteilten `callLabel` (shared/actions.ts), den
+  Nacht genauso nutzt wie Klar: eine eigene Beschriftung bleibt, wenn sie
+  den Anruf schon trägt — „Termin anfragen" passt auf /termin/ und bleibt
+  darum stehen; das Telefon-Symbol zeigt den Weg.
 - **O4 Kapitel steigen 900 ms** (Systemblatt). Länger als Klar (360 ms),
   gewollt ruhig; blockiert nichts, Fokus und Links sind sofort bedienbar.
 

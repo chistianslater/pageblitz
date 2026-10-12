@@ -353,6 +353,13 @@ describe("Nacht-Beispiele: Weinberg, Salon Noir, Haus am See (N8)", () => {
     expect(d.addOns?.menu).toBe(true);
     expect(JSON.stringify(section(d, "menu"))).toContain('"price":"32,00"');
     expect(section(d, "cta")!.ctaHref).toBe("https://tisch.weinberg.example/");
+    // Hauptaktion im Einstieg: der Buchungslink des Beispiels, nicht „Anrufen"
+    const hero = section(d, "hero")!;
+    expect(hero.ctaHref).toBe("https://tisch.weinberg.example/");
+    expect(hero.ctaText).toBe("Tisch reservieren");
+    expect(section(sys("weinberg"), "hero")!.ctaHref).toBe(
+      "https://tisch.weinberg.example/"
+    );
     expect(d.google).toEqual({ rating: 4.8, reviewCount: 312 });
     // Küche nur, weil sie im Öffnungszeiten-Text steht
     expect(JSON.stringify(section(d, "contact"))).toContain("Küche bis 21:30");

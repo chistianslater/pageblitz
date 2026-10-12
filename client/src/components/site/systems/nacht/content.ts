@@ -126,9 +126,20 @@ export function openerOf(
   return { value: String(count), word: openerWord(section, blueprint) };
 }
 
-/** Getränkekarte: jede Kategorie heißt nach Getränken (Wein, Bier, Bar …). */
-const DRINKS =
-  /getränk|drinks?\b|wein|weine\b|bier|cocktail|spirituos|schnaps|brände|longdrink|aperitif|digestif|kaffee|tee\b|säfte|softdrink|limonade|alkoholfrei/i;
+/**
+ * Getränkekarte: ein Wort der Kategorie ist ein Getränk (auch als Wortende:
+ * „Rotweine", „Fassbier") und keins ist Essen — „Weinbergschnecken" oder
+ * „Kaffee & Kuchen" zählen nicht. Ganze Wörter, keine Teilstrings.
+ */
+const DRINK_WORD =
+  /^\p{L}*(?:wein|weine|bier|biere|getränk|getränke|drink|drinks|cocktail|cocktails|spirituosen|schnaps|schnäpse|brände|aperitif|aperitifs|digestif|digestifs|kaffee|tee|tees|saft|säfte|limonade|limonaden|alkoholfrei|alkoholfreie|alkoholfreies)$/u;
+const FOOD_WORD =
+  /^(?:kuchen|torte|torten|speise|speisen|essen|gericht|gerichte|snack|snacks|frühstück|brot|dessert|desserts|eis|gebäck)$/u;
+
+export function isDrinkCategory(name: string): boolean {
+  const words = name.toLocaleLowerCase("de").split(/[^\p{L}]+/u).filter(Boolean);
+  return words.some(w => DRINK_WORD.test(w)) && !words.some(w => FOOD_WORD.test(w));
+}
 
 /**
  * Geisterwort zur Zählung, nach Abschnitt und Branche: Karte → „Gerichte",
@@ -143,7 +154,7 @@ export function openerWord(
   if (blueprint.id === "stay") return "Angebote";
   if (section.type === "pricelist" && blueprint.id === "gastro") {
     const named = section.categories.filter(c => c.items.length > 0);
-    return named.length > 0 && named.every(c => DRINKS.test(c.name))
+    return named.length > 0 && named.every(c => isDrinkCategory(c.name))
       ? "Getränke"
       : "Posten";
   }
