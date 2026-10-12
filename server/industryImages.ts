@@ -133,15 +133,17 @@ function genauererSatz(
   // Stichworte nicht („Restaurant & Takeaway" bleibt Restaurant).
   const schwach =
     trefferLaenge(ohneSchwache(kategorie), INDUSTRY_IMAGES[key].keywords) === 0;
-  // Der genauere Satz muss mindestens so genau treffen wie der allgemeine
-  // selbst: „Tierarzt" trifft „medizin" über „tierarzt", den Praxis-Satz
-  // nur über „arzt" — dann bleibt es bei „medizin" (Klar K1).
+  // Sätze mit `strictRefine` (Zahnarzt, Physio, Praxis) müssen mindestens so
+  // genau treffen wie der allgemeine Satz selbst: „Tierarzt" trifft „medizin"
+  // über „tierarzt", den Praxis-Satz nur über „arzt" — dann bleibt es bei
+  // „medizin" (Klar K1). Alle anderen Verfeinerungen wie bisher.
   const eigen = trefferLaenge(kategorie, INDUSTRY_IMAGES[key].keywords);
   let beste: IndustryImageSet | null = null;
-  let laenge = Math.max(0, eigen - 1);
+  let laenge = 0;
   for (const satz of Object.values(INDUSTRY_IMAGES)) {
     if (!satz.refines?.includes(key)) continue;
     const k = treffer(kategorie, satz, schwach);
+    if (satz.strictRefine && k < eigen) continue;
     if (k > laenge) {
       beste = satz;
       laenge = k;

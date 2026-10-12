@@ -507,3 +507,49 @@ describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
     expect(gruppe("Gesundheit", "Vital")).toBe("fitness");
   });
 });
+
+describe("Verfeinerungen nach KI-Schlüssel bleiben wie vor Klar K1", () => {
+  const gruppe = (kategorie: string, key: string) => {
+    const satz = getIndustryImages(kategorie, "Beispiel", key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+
+  test.each([
+    ["Dönerrestaurant", "restaurant", "imbiss"],
+    ["Döner-Restaurant", "restaurant", "imbiss"],
+    ["Döner Restaurant", "restaurant", "imbiss"],
+    ["Imbiss & Restaurant", "restaurant", "imbiss"],
+    ["Barber Friseur", "friseur", "barbier"],
+    ["Barber Friseursalon", "friseur", "barbier"],
+    ["Barber Hairdresser", "friseur", "barbier"],
+    ["Bäckerei Kaffeehaus", "cafe", "baeckerei"],
+    ["Bäckerei Kaffeebar", "cafe", "baeckerei"],
+    ["Bäckerei Coffee Shop", "cafe", "baeckerei"],
+    ["Bäckerei Kaffeerösterei", "cafe", "baeckerei"],
+    ["Tischlerei Renovierung", "handwerk", "schreinerei"],
+    ["Schreiner Elektriker", "handwerk", "schreinerei"],
+  ])("%s mit Schlüssel %s → %s", (kategorie, key, erwartet) => {
+    expect(gruppe(kategorie, key)).toBe(erwartet);
+  });
+
+  test.each([
+    ["Tierarzt", "medizin"],
+    ["Tierärztin", "medizin"],
+    ["Tierarztpraxis", "medizin"],
+    ["Heilpraktiker", "medizin"],
+    ["Psychotherapie", "medizin"],
+    ["Apotheke", "medizin"],
+    ["Zahnarzt", "zahnarzt"],
+    ["Zahnarztpraxis", "zahnarzt"],
+    ["Physiotherapie", "physio"],
+    ["Allgemeinmedizin", "praxis"],
+    ["Hausarzt", "praxis"],
+  ])("Gesundheit: %s mit Schlüssel medizin → %s", (kategorie, erwartet) => {
+    expect(gruppe(kategorie, "medizin")).toBe(erwartet);
+  });
+
+  test("Physio verfeinert auch fitness, Yoga bleibt fitness", () => {
+    expect(gruppe("Physiotherapie", "fitness")).toBe("physio");
+    expect(gruppe("Yoga", "fitness")).toBe("fitness");
+  });
+});

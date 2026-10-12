@@ -22,6 +22,12 @@ export interface IndustryImageSet {
    * trifft („Restaurant & Takeaway" bleibt Restaurant).
    */
   weakKeywords?: string[];
+  /**
+   * Verfeinert nur, wenn die Kategorie diesen Satz mindestens so lang trifft
+   * wie den allgemeinen Satz selbst (Klar K1: Praxis-Satz mit „arzt" darf
+   * „Tierarzt" nicht aus „medizin" holen). Nur für die Gesundheitssätze.
+   */
+  strictRefine?: boolean;
 }
 
 // Map of industry keywords → curated Unsplash photo IDs
@@ -444,6 +450,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "dentist",
     ],
     refines: ["medizin"],
+    strictRefine: true,
     hero: [
       "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1728342057953-94bfad8f0e7e?w=1400&q=85&auto=format&fit=crop",
@@ -482,6 +489,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "physiotherapy",
     ],
     refines: ["medizin", "fitness"],
+    strictRefine: true,
     hero: [
       "https://images.unsplash.com/photo-1706353399656-210cca727a33?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1649751361457-01d3a696c7e6?w=1400&q=85&auto=format&fit=crop",
@@ -527,6 +535,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "family doctor",
     ],
     refines: ["medizin"],
+    strictRefine: true,
     hero: [
       "https://images.unsplash.com/photo-1758691461935-202e2ef6b69f?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1758691462878-6edc3d3da1be?w=1400&q=85&auto=format&fit=crop",
