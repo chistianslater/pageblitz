@@ -206,6 +206,25 @@ describe("SSR routes", () => {
       }
     });
 
+    test("Klar: Dev-Vorschau (3 Paletten) und Demo-Routen liefern 200", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["lind", "wasser", "sand"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=klar&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="klar"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+      }
+      for (const showcase of ["zahnarzt", "naturheil", "steuerberater"]) {
+        const demo = await request(app).get(`/demo/system/klar/${showcase}`);
+        expect(demo.status).toBe(200);
+        expect(demo.text).toContain('class="pb-site pb-klar"');
+        expect(demo.text).toContain('class="kl-entry');
+      }
+    });
+
     test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);

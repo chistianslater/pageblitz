@@ -4,6 +4,7 @@ import { JOURNAL_MODULE } from "./journal";
 import { RASTER_MODULE } from "./raster";
 import { WERKSTOFF_MODULE } from "./werkstoff";
 import { PLAKAT_MODULE } from "./plakat";
+import { KLAR_MODULE } from "./klar";
 
 /** Render-Module der Designsysteme (rev 3) — Gegenstück zu PACK_MODULES. */
 export const SYSTEM_MODULES: Partial<Record<DesignSystemId, PackModule>> = {
@@ -11,4 +12,6 @@ export const SYSTEM_MODULES: Partial<Record<DesignSystemId, PackModule>> = {
   raster: RASTER_MODULE,
   werkstoff: WERKSTOFF_MODULE,
   plakat: PLAKAT_MODULE,
+  // Klar: in Arbeit, nicht freigeschaltet (Routen nur Vorschau/Demo).
+  klar: KLAR_MODULE,
 };
