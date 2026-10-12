@@ -243,7 +243,14 @@ function withSections(doc: Doc, rest: Sec[]): Doc {
   const keep = (t: Sec["type"]) => doc.sections.filter(s => s.type === t);
   return {
     ...doc,
-    sections: [...keep("hero"), ...keep("usp"), ...rest, ...keep("contact")],
+    // Aufruf wie im Systemblatt zuletzt, direkt vor dem Fuß.
+    sections: [
+      ...keep("hero"),
+      ...keep("usp"),
+      ...rest.filter(s => s.type !== "cta"),
+      ...keep("contact"),
+      ...rest.filter(s => s.type === "cta"),
+    ],
   };
 }
 

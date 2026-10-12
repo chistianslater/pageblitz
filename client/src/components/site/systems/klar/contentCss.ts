@@ -110,7 +110,7 @@ export const CONTENT_CSS = `/* Kapitel-Kopf mit Knopf rechts (Desktop) */
 .pb-klar .kl-about-grid .kl-prose{margin-top:0}
 .pb-klar .kl-prose{margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
 .pb-klar .kl-prose p+p{margin-top:var(--sys-space-s)}
-.pb-klar .kl-gal{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:var(--sys-space-s);grid-template-columns:repeat(auto-fill,minmax(min(100%,17rem),1fr))}
+.pb-klar .kl-gal{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:var(--sys-space-s);grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))}
 .pb-klar .kl-gal-fig{margin:0}
 .pb-klar .kl-gal-cap{${step("small")};margin-top:var(--sys-space-xs);color:var(--sys-muted)}
 @media (min-width:${GRID}){

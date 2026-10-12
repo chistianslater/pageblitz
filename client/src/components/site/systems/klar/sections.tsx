@@ -49,7 +49,7 @@ function chapterLabel(type: KlarSection["type"], blueprint: Blueprint): string {
     faq: "Häufige Fragen",
     contact: "So finden Sie uns",
     story: "Geschichte",
-    usp: "Gut zu wissen",
+    usp: "Ihre Vorteile",
     stats: "In Zahlen",
     partners: "Partner",
     quote: "Leitsatz",

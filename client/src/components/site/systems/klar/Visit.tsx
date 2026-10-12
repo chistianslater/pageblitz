@@ -109,7 +109,7 @@ export function KlarContact({
                 )}
                 {area && (
                   <li>
-                    <Icon name="car" />
+                    <Icon name="pin" />
                     Einsatzgebiet: {area} und Umgebung
                   </li>
                 )}

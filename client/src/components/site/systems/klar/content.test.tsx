@@ -1,4 +1,7 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
+import { SiteRenderer } from "../../SiteRenderer";
 import { INDUSTRY_IMAGES } from "../../../../../../shared/industryImages";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
@@ -13,6 +16,7 @@ import {
   physioFullDoc,
   render,
   sectionHtml,
+  TEST_NOW,
   withContact,
   without,
   zahnFullDoc,
@@ -387,6 +391,24 @@ describe("Klar: Unterseiten und Rechtsseiten", () => {
     const html = render(doc, false, "/site/z", "/leistungen");
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     expect(sectionHtml(html, "cta")).toContain('href="/site/z#kontakt"');
+  });
+});
+
+describe("Klar: Rechtsseite", () => {
+  test("nur Kopf (ein h1) und Rechtstext — keine Kapitel, keine Vorschau-Platzhalter", () => {
+    const html = renderToStaticMarkup(
+      <SiteRenderer
+        data={zahnFullDoc()}
+        basePath="/site/z"
+        now={TEST_NOW}
+        preview
+        legal={{ title: "Impressum", html: "<h1>Impressum</h1><h2>Angaben</h2><p>Dr. Katrin Sommer</p>" }}
+      />
+    );
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).not.toContain('class="kl-sec');
+    expect(html).not.toContain("Nur in deiner Vorschau");
+    expect(html).toContain('<article class="kl-wrap kl-legal"><h2>Angaben</h2>');
   });
 });
 
