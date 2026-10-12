@@ -187,6 +187,25 @@ describe("SSR routes", () => {
       }
     });
 
+    test("Plakat: Dev-Vorschau (3 Paletten) und Demo-Routen liefern 200", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["kante", "senf", "puls"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=plakat&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="plakat"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+      }
+      for (const showcase of ["barbier", "imbiss", "training"]) {
+        const demo = await request(app).get(`/demo/system/plakat/${showcase}`);
+        expect(demo.status).toBe(200);
+        expect(demo.text).toContain('class="pb-site pb-plakat"');
+        expect(demo.text).toContain('class="pk-entry');
+      }
+    });
+
     test("Demo-Route: nicht gebautes oder unbekanntes System, unbekannter Betrieb -> 404", async () => {
       const app = express();
       registerSsrRoutes(app);
