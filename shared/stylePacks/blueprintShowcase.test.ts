@@ -316,6 +316,68 @@ describe("Bauplan-Übersicht", () => {
   });
 });
 
+describe("Nacht-Beispiele: Weinberg, Salon Noir, Haus am See (N8)", () => {
+  const IDS = ["weinberg", "noir", "pension"];
+  const doc = (id: string) => showcaseDoc(findShowcase(id)!, "stage");
+  const sys = (id: string) => systemShowcaseDoc(findShowcase(id)!, "nacht");
+  const section = (d: ReturnType<typeof doc>, type: string) =>
+    d.sections.find(s => s.type === type) as Record<string, unknown> | undefined;
+
+  it("stehen unter Nacht in der Design-Übersicht (Haupt- oder zugeordnetes System)", () => {
+    for (const id of IDS) {
+      const s = findShowcase(id)!;
+      const main = systemsForDoc({
+        businessCategory: s.businessCategory ?? s.label,
+        businessName: s.businessName ?? s.sample,
+      })[0];
+      expect(main === "nacht" || s.alsoIn?.includes("nacht")).toBe(true);
+    }
+    expect(findShowcase("weinberg")!.alsoIn).toBeUndefined();
+  });
+
+  it("frei erfunden: 555-Nummern, .example, keine Daten der Fixture", () => {
+    for (const id of IDS) {
+      const contact = section(doc(id), "contact")!;
+      expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+      expect(contact.email).toMatch(/\.example$/);
+      const all = JSON.stringify(sys(id)) + JSON.stringify(doc(id));
+      expect(all).not.toMatch(/Trattoria|Lucia|Berlin|NOIR|Maxvorstadt|München|Belmare|Lindau|\.de"/);
+    }
+  });
+
+  it("Weinberg: Karte wie im Studio eingetragen (nach dem Einstieg, Extra gebucht), Band vor den Stimmen", () => {
+    const d = doc("weinberg");
+    const types = d.sections.map(s => s.type);
+    expect(types.indexOf("menu")).toBe(1);
+    expect(types.indexOf("cta")).toBeLessThan(types.indexOf("testimonials"));
+    expect(d.addOns?.menu).toBe(true);
+    expect(JSON.stringify(section(d, "menu"))).toContain('"price":"32,00"');
+    expect(section(d, "cta")!.ctaHref).toBe("https://tisch.weinberg.example/");
+    expect(d.google).toEqual({ rating: 4.8, reviewCount: 312 });
+    // Küche nur, weil sie im Öffnungszeiten-Text steht
+    expect(JSON.stringify(section(d, "contact"))).toContain("Küche bis 21:30");
+  });
+
+  it("Salon Noir: sechs Leistungen mit Preis, keine doppelte Preisliste der Fixture, kleines Foto", () => {
+    const d = doc("noir");
+    expect((section(d, "services")!.items as unknown[]).length).toBe(6);
+    expect(section(d, "pricelist")).toBeUndefined();
+    expect(sys("noir").designProfile?.composition).toBe("colorfield");
+  });
+
+  it("Haus am See: ohne Foto, vier Zimmer, Anreise/Abreise als Zeilen", () => {
+    const d = sys("pension");
+    expect(JSON.stringify(d)).not.toMatch(/images\.unsplash|\/demo\/.*\.webp/);
+    expect((section(d, "services")!.items as unknown[]).length).toBe(4);
+    expect(JSON.stringify(section(d, "contact"))).toContain('"day":"Anreise"');
+  });
+
+  it("andere Beispiele unverändert: Gastro-Bauplan verwirft erzeugte Karten weiterhin", () => {
+    expect(doc("restaurant" as string).sections.some(s => s.type === "menu")).toBe(false);
+    expect(doc("restaurant").addOns?.menu).toBeUndefined();
+  });
+});
+
 describe("Systemübersicht: Abendmotive nur für dunkles Papier (Nacht N2+N3)", () => {
   const photos = (doc: ReturnType<typeof systemShowcaseDoc>) =>
     doc.sections.flatMap(s =>

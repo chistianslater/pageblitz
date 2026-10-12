@@ -47,7 +47,13 @@ const SAMPLE_PROCESS: SectionOf<"process"> = {
 };
 
 type SampleText = {
-  hero: { headline: string; subheadline: string };
+  /** Hauptaktion nur, wenn das Beispiel ein echtes Ziel hat (Buchungslink). */
+  hero: {
+    headline: string;
+    subheadline: string;
+    ctaText?: string;
+    ctaHref?: string;
+  };
   /** Adresse passend zum Beispiel (die Fixture gehört zu einer anderen Firma). */
   /**
    * Fiktive Kontaktdaten: Rufnummern im Muster „Vorwahl 555 …", Domains auf
@@ -86,6 +92,15 @@ type SampleText = {
   process?: Omit<SectionOf<"process">, "type">;
   /** Eigene Preisliste/Wochentafel (ersetzt bzw. ergänzt die der Fixture, bucht das Add-on). */
   pricelist?: Omit<SectionOf<"pricelist">, "type">;
+  /**
+   * Eigene Speisekarte, wie im Studio eingetragen (nach dem Bauplan
+   * eingesetzt, bucht das Extra; withStudioMenu).
+   */
+  menu?: Omit<SectionOf<"menu">, "type">;
+  /** Aufruf mit eigenem Ziel (Reservierungs-Band in Nacht), vor den Stimmen. */
+  cta?: Omit<SectionOf<"cta">, "type">;
+  /** Abschnitte der Fixture, die nicht zum Beispiel passen (z. B. doppelte Preise). */
+  drop?: readonly WebsiteDataV2["sections"][number]["type"][];
 };
 
 /**
@@ -606,6 +621,206 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
     ],
     google: false,
   },
+  // Nacht (2026-10-12): Restaurant Weinberg, Salon Noir, Pension Haus am
+  // See — Systemblatt 9–16 (docs/designsysteme/nacht), frei erfunden:
+  // Rufnummern mit 555, Domains auf .example, keine echten Betriebe.
+  weinberg: {
+    contact: {
+      street: "Weinstraße 12",
+      zip: "67098",
+      city: "Bad Dürkheim",
+      phone: "06322 555 4718",
+      email: "tisch@weinberg.example",
+    },
+    hours: [
+      { day: "Mo", hours: "Ruhetag" },
+      { day: "Di", hours: "Ruhetag" },
+      { day: "Mi", hours: "17:30 – 23:00, Küche bis 21:30" },
+      { day: "Do", hours: "17:30 – 23:00, Küche bis 21:30" },
+      { day: "Fr", hours: "17:30 – 24:00, Küche bis 22:00" },
+      { day: "Sa", hours: "17:30 – 24:00, Küche bis 22:00" },
+      { day: "So", hours: "12:00 – 15:00, Küche bis 14:30" },
+    ],
+    hero: {
+      headline: "Ein Abend, der bleibt.",
+      subheadline:
+        "Pfälzer Küche im Gewölbe des alten Weinguts. Sieben Gänge oder à la carte, dazu Rieslinge von nebenan.",
+      ctaText: "Tisch reservieren",
+      ctaHref: "https://tisch.weinberg.example/",
+    },
+    services: [],
+    menu: {
+      headline: "Die Karte",
+      categories: [
+        {
+          name: "Vorspeisen",
+          items: [
+            { name: "Saibling aus dem Pfälzerwald", description: "Rote Bete, Meerrettich, Dill", price: "14,50" },
+            { name: "Kürbissuppe", description: "geröstete Kerne, Kürbiskernöl", price: "9,00" },
+            { name: "Kalbstatar", description: "Eigelb, Kapern, Brioche", price: "16,00" },
+          ],
+        },
+        {
+          name: "Hauptgänge",
+          items: [
+            { name: "Lammrücken vom Hof Berger", description: "Bohnen, Rosmarinjus", price: "32,00" },
+            { name: "Zander", description: "Rieslingkraut, Speck, Kartoffelschaum", price: "28,00" },
+            { name: "Pilzrisotto", description: "Bergkäse, Petersilienöl", price: "22,00" },
+          ],
+        },
+        {
+          name: "Zum Schluss",
+          items: [
+            { name: "Zwetschgen", description: "Mandel, Sauerrahmeis", price: "11,00" },
+            { name: "Käse vom Hof Wolf", description: "Feigensenf, Früchtebrot", price: "14,00" },
+          ],
+        },
+      ],
+    },
+    cta: {
+      headline: "Tisch für heute Abend?",
+      ctaText: "Online reservieren",
+      ctaHref: "https://tisch.weinberg.example/",
+    },
+    about:
+      "Im Gewölbe des alten Weinguts kochen wir mit dem, was die Pfalz gerade hergibt: Saibling aus dem Pfälzerwald, Lamm vom Hof Berger, Gemüse vom Markt.\n\nDazu Rieslinge und Spätburgunder von Winzern, die wir seit Jahren kennen. Sieben Gänge oder à la carte, jeder Gang auch vegetarisch.",
+    faq: [
+      {
+        question: "Vegetarisch und vegan",
+        answer: "Jeder Gang auch ohne Fleisch, bitte bei der Reservierung sagen.",
+      },
+      {
+        question: "Hunde",
+        answer: "Auf der Terrasse willkommen, im Gewölbe leider nicht.",
+      },
+      {
+        question: "Barrierefrei",
+        answer: "Gewölbe über Rampe erreichbar, WC ebenerdig.",
+      },
+      {
+        question: "Parken",
+        answer: "14 Plätze im Hof des Weinguts, abends frei.",
+      },
+    ],
+    addFaq: true,
+    google: { rating: 4.8, reviewCount: 312 },
+    reviews: [
+      {
+        author: "Henrike S.",
+        text: "Der Zander war das Beste, was ich dieses Jahr gegessen habe. Und man hat sich gemerkt, dass meine Frau keinen Koriander mag.",
+      },
+      {
+        author: "Jonas W.",
+        text: "Ruhiges Gewölbe, aufmerksamer Service und eine Weinbegleitung, die wirklich zu jedem Gang passt.",
+      },
+    ],
+  },
+  noir: {
+    contact: {
+      street: "Rotlintstraße 41",
+      zip: "60316",
+      city: "Frankfurt am Main",
+      phone: "069 555 20931",
+      email: "termin@salon-noir.example",
+    },
+    hours: [
+      { day: "Mo", hours: "geschlossen" },
+      { day: "Di–Fr", hours: "12:00 – 21:00" },
+      { day: "Sa", hours: "9:00 – 16:00" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Schnitt und Farbe am Abend.",
+      subheadline:
+        "Schnitt, Farbe und Balayage für Menschen, die tagsüber keine Zeit haben. Termine bis 21 Uhr, mitten im Nordend.",
+    },
+    services: [
+      { title: "Damenschnitt", description: "Waschen, Schnitt, Föhnen", price: "ab 58 €" },
+      { title: "Herrenschnitt", description: "mit Nackenrasur", price: "36 €" },
+      { title: "Farbe", description: "Ansatz oder ganze Länge", price: "ab 72 €" },
+      { title: "Balayage", description: "frei gemalte Strähnen, mit Pflege", price: "ab 140 €" },
+      { title: "Föhnen und Styling", description: "", price: "28 €" },
+      { title: "Hochsteckfrisur", description: "Hochzeit, Abend, Probetermin", price: "ab 65 €" },
+    ],
+    about:
+      "Ein kleiner Salon im Nordend mit drei Plätzen und ruhigem Licht. Wir schneiden, färben und malen Balayage für Menschen, die tagsüber arbeiten — darum sind wir dienstags bis freitags bis 21 Uhr da.\n\nJeder Termin beginnt mit einem Gespräch über Haar, Alltag und Pflege. Was wir empfehlen, lässt sich zu Hause halten.",
+    faq: [
+      {
+        question: "Absagen",
+        answer: "Bis 24 Stunden vorher kostenlos, danach 50 % des Preises.",
+      },
+      { question: "Bezahlen", answer: "Karte, Apple Pay, bar." },
+      { question: "Zugang", answer: "Erdgeschoss, eine Stufe am Eingang." },
+    ],
+    addFaq: true,
+    drop: ["pricelist"],
+    google: { rating: 4.9, reviewCount: 128 },
+    reviews: [
+      {
+        author: "Meral A.",
+        text: "Endlich ein Salon, in den ich nach der Arbeit gehen kann. Die Balayage sieht nach drei Monaten noch aus wie am ersten Tag.",
+      },
+      {
+        author: "Lena K.",
+        text: "Ruhig, ehrlich beraten und kein Verkaufsgespräch. Der Schnitt sitzt auch ohne Föhnen.",
+      },
+    ],
+  },
+  pension: {
+    contact: {
+      street: "Seestraße 3",
+      zip: "82211",
+      city: "Herrsching am Ammersee",
+      phone: "08152 555 6630",
+      email: "zimmer@haus-am-see.example",
+    },
+    hours: [
+      { day: "Anreise", hours: "15:00 – 20:00" },
+      { day: "Abreise", hours: "bis 11:00" },
+      { day: "Frühstück", hours: "8:00 – 10:30" },
+      { day: "Rezeption", hours: "8:00 – 20:00" },
+    ],
+    hero: {
+      headline: "Sechs Zimmer am See.",
+      subheadline:
+        "Sechs Zimmer, ein Steg, Frühstück bis halb elf. Familiengeführt seit 1987, fünf Minuten vom Dampfersteg.",
+    },
+    services: [
+      { title: "Seezimmer", description: "2 Personen · Balkon zum See", price: "ab 145 €/Nacht" },
+      { title: "Turmzimmer", description: "2 Personen · Rundumblick, 3. Stock", price: "ab 165 €/Nacht" },
+      { title: "Gartenzimmer", description: "2 Personen · Hund erlaubt", price: "ab 118 €/Nacht" },
+      { title: "Bootshaus-Suite", description: "2 Personen · eigener Steg", price: "ab 220 €/Nacht" },
+    ],
+    about:
+      "Familiengeführt seit 1987: sechs Zimmer direkt am Ammersee, ein eigener Steg und ein Garten bis ans Wasser.\n\nMorgens gibt es Frühstück bis halb elf, regional und auf Wunsch glutenfrei. Zum Dampfersteg sind es fünf Minuten zu Fuß.",
+    faq: [
+      {
+        question: "Frühstück",
+        answer: "Inklusive, regional, auf Wunsch auch glutenfrei.",
+      },
+      { question: "Hunde", answer: "Im Gartenzimmer, 15 € pro Nacht." },
+      {
+        question: "Kein Aufzug",
+        answer: "Turmzimmer im 3. Stock nur über die Treppe.",
+      },
+      {
+        question: "Ruderboot",
+        answer: "Für Gäste kostenlos, Schwimmwesten im Bootshaus.",
+      },
+    ],
+    addFaq: true,
+    google: { rating: 4.9, reviewCount: 86 },
+    reviews: [
+      {
+        author: "Familie Okafor",
+        text: "Morgens mit dem Kaffee auf dem Steg, abends der Blick vom Turmzimmer. Wir kommen im Herbst wieder.",
+      },
+      {
+        author: "Sabine R.",
+        text: "Herzlich geführt, blitzsauber und ein Frühstück, für das man gern früh aufsteht.",
+      },
+    ],
+  },
   // Plakat (2026-10-12): Barbier, Imbiss, Kurse — Systemblatt 8–11,
   // Bildsätze barbier/imbiss, Kontaktdaten fiktiv.
   barbier: {
@@ -1086,9 +1301,10 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
         // Hauptaktion setzt der Bauplan (die Fixture hätte „Immobilie bewerten lassen").
         return {
           ...section,
-          ...text.hero,
-          ctaText: undefined,
-          ctaHref: undefined,
+          headline: text.hero.headline,
+          subheadline: text.hero.subheadline,
+          ctaText: text.hero.ctaText,
+          ctaHref: text.hero.ctaHref,
         };
       case "contact":
         return {
@@ -1141,12 +1357,15 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   ];
   // Ergänzte Abschnitte stehen vor Fragen und Kontakt; die Folge setzt
   // danach der Bauplan (withBlueprint), wie bei echten Seiten.
-  const tail = sections.findIndex(s => s.type === "faq" || s.type === "contact");
-  const at = tail === -1 ? sections.length : tail;
+  const kept = text.drop
+    ? sections.filter(s => !(text.drop as readonly string[]).includes(s.type))
+    : sections;
+  const tail = kept.findIndex(s => s.type === "faq" || s.type === "contact");
+  const at = tail === -1 ? kept.length : tail;
   const merged = [
-    ...sections.slice(0, at),
+    ...kept.slice(0, at),
     ...added,
-    ...sections.slice(at),
+    ...kept.slice(at),
   ] as WebsiteDataV2["sections"];
   // Vorteile (Fakten-Chips) direkt nach dem Einstieg, falls die Fixture keine hat.
   const all = (
@@ -1235,7 +1454,42 @@ export function showcaseDoc(
     },
     { heroLandscape: entry === "stage", extraPhotos: 3 }
   );
-  return withBlueprint({ ...directed, designProfile }, blueprint);
+  return withStudioMenu(
+    withBlueprint({ ...directed, designProfile }, blueprint),
+    showcase.id
+  );
+}
+
+/**
+ * Nach dem Bauplan: Die Gastro-Baupläne verwerfen erzeugte Speisekarten
+ * (`stripSections`) — eine Karte trägt der Betrieb im Studio selbst ein.
+ * Beispiele mit eigener Karte (Nacht-Weinberg) bekommen sie danach wie eine
+ * im Studio eingetragene: direkt nach dem Einstieg, Extra gebucht. Ein
+ * eigener Aufruf (Reservierungs-Band) steht vor den Stimmen.
+ */
+function withStudioMenu(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
+  const text = SAMPLE_TEXT[id];
+  if (!text?.menu && !text?.cta) return doc;
+  const rest = doc.sections.filter(
+    s => !(text.menu && s.type === "menu") && !(text.cta && s.type === "cta")
+  );
+  const out: WebsiteDataV2["sections"][number][] = [];
+  const cta = text.cta ? [{ type: "cta" as const, ...text.cta }] : [];
+  const before = rest.findIndex(
+    s => s.type === "testimonials" || s.type === "faq" || s.type === "contact"
+  );
+  rest.forEach((s, i) => {
+    if (i === before) out.push(...cta);
+    out.push(s);
+    if (s.type === "hero" && text.menu)
+      out.push({ type: "menu", ...text.menu });
+  });
+  if (before === -1) out.push(...cta);
+  return {
+    ...doc,
+    ...(text.menu ? { addOns: { ...doc.addOns, menu: true } } : {}),
+    sections: out as WebsiteDataV2["sections"],
+  };
 }
 
 /** Beispielbetrieb im Designsystem (Systemübersicht, /demo/system/…). */
