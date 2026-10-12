@@ -1,0 +1,851 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klar Systemblatt</title>
+<link rel="preload" href="fonts/dm-sans-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/atkinson-next-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Nur fürs Blatt: Symbole aus Phosphor (MIT). Im System entscheidet K1 über die Symbolquelle. -->
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+/* ── Schriften (self-hosted, OFL) ─────────────────────────────── */
+@font-face{font-family:"DM Sans";src:url(fonts/dm-sans-latin-wght.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"DM Sans";src:url(fonts/dm-sans-latin-ext-wght.woff2) format("woff2");font-weight:400 700;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Atkinson Hyperlegible Next";src:url(fonts/atkinson-next-latin-wght.woff2) format("woff2");font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:"Atkinson Hyperlegible Next";src:url(fonts/atkinson-next-latin-ext-wght.woff2) format("woff2");font-weight:200 800;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --fd:"DM Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+  --ft:"Atkinson Hyperlegible Next","Verdana",system-ui,sans-serif;
+  --paper:#f4f7ec;--ink:#15231a;--muted:#3f5044;--rule:#d6dfcb;--accent:#2b5e35;--deep:#173020;--onDeep:#f4f7ec;--signal:#234a2d;--onSignal:#dff0b0;
+  --lind:#dcecac;--tau:#e2ede4;
+  --pad:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9e1cc;color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.sheet{width:1520px;margin:0 auto;background:var(--paper)}
+[data-shot]{padding:0 var(--pad)}
+.blk{padding:60px 0 72px;border-top:1px solid var(--rule)}
+.blk.first{border-top:0}
+.lb{display:flex;gap:.7em;align-items:center;font:700 15px/1.3 var(--ft);color:var(--muted)}
+.lb b{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 10px;border-radius:999px;background:var(--lind);color:var(--ink);font:650 16px/1 var(--fd)}
+.bh{font:560 58px/1.04 var(--fd);letter-spacing:-.026em;margin:16px 0 14px;max-width:24ch}
+.bp{max-width:48rem;font-size:19px;line-height:1.55}
+.bp+.bp{margin-top:10px}
+.note{font-size:15px;color:var(--muted);line-height:1.45}
+code{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:rgba(21,35,26,.07);padding:1px 5px;border-radius:5px}
+table.t{width:100%;border-collapse:collapse;font-size:15px;line-height:1.42;margin-top:26px}
+table.t th{font:700 14px var(--ft);text-align:left;padding:10px 18px 10px 0;border-bottom:2px solid var(--ink)}
+table.t td{padding:11px 18px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:700;white-space:nowrap}
+table.t td.bad{color:#8a2a1c}
+table.t .ok{color:var(--accent);font-weight:700}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.cap{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.4}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+
+/* Kopf */
+.top{padding:44px 0 56px}
+.top .wm{display:flex;align-items:flex-end;gap:28px;margin:6px 0 34px}
+.top .w{font:560 250px/.8 var(--fd);letter-spacing:-.05em;margin-left:-8px}
+.top .w span{display:inline-block;background:var(--lind);border-radius:40px;padding:0 26px 18px 18px;margin-left:10px}
+.top .row{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:44px;align-items:start}
+.top .m{font:560 32px/1.15 var(--fd);letter-spacing:-.02em}
+.top .r p{font-size:16px;line-height:1.5;color:var(--muted)}
+.top .r p+p{margin-top:8px}
+.top .r p b{color:var(--ink)}
+.vs{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:40px}
+.vs>div{padding:20px 20px 18px;border-radius:20px;background:#fff}
+.vs h3{font:600 22px/1.1 var(--fd);letter-spacing:-.01em;margin-bottom:6px}
+.vs p{font-size:15px;color:var(--muted);line-height:1.45}
+.vs .me{background:var(--deep);color:var(--onDeep)}
+.vs .me p{color:#c4d4bf}
+
+/* Schrift */
+.fonts2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:28px}
+.fonts2>div{background:#fff;border-radius:24px;padding:26px 30px 24px}
+.nm{font:700 14px var(--ft);color:var(--muted);display:flex;justify-content:space-between;gap:12px}
+.gl{font:560 170px/.9 var(--fd);letter-spacing:-.05em;margin:30px 0 8px}
+.gl.t{font:400 170px/.9 var(--ft);letter-spacing:-.03em}
+.abc{font-size:22px;line-height:1.35;margin:12px 0 16px}
+.abc.d{font-family:var(--fd);font-weight:560;letter-spacing:-.01em}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding:8px 0}
+.wts div span:first-child{font-size:26px;line-height:1.1}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.cmp>div{border-radius:20px;padding:20px 22px;background:var(--tau)}
+.cmp .x{font-size:15px;color:var(--muted);margin-bottom:10px}
+.ill{font-size:44px;line-height:1;letter-spacing:.02em}
+
+.scale{margin-top:30px;border-top:2px solid var(--ink)}
+.srow{display:grid;grid-template-columns:150px 380px 1fr;gap:28px;padding:20px 0;border-bottom:1px solid var(--rule);align-items:start}
+.srow .k{font:700 15px var(--ft)}
+.srow .k small{display:block;font:400 13.5px/1.45 var(--ft);color:var(--muted);margin-top:4px}
+.srow .m375{width:375px;overflow:hidden}
+.srow .m1440{overflow:hidden}
+.srow .hd{font:700 12.5px var(--ft);color:var(--muted);margin-bottom:6px}
+
+/* Abstände, Raster */
+.spc{display:flex;align-items:flex-end;gap:18px;margin-top:24px}
+.spc>div>div{background:var(--accent);border-radius:6px}
+.spc span{display:block;font:700 14px var(--ft);margin-top:8px}
+.spc span small{display:block;font-weight:400;color:var(--muted)}
+.grids{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:28px;align-items:start}
+.gv{background:#fff;border-radius:22px;padding:18px}
+.gv .cols{display:grid;gap:var(--g);height:180px;margin-top:12px}
+.gv .cols i{background:var(--tau);border-radius:6px}
+.radii{display:flex;gap:16px;margin-top:26px;flex-wrap:wrap}
+.radii div{width:150px;height:110px;background:#fff;display:grid;place-items:end start;padding:12px 14px;font:700 14px var(--ft);box-shadow:inset 0 0 0 2px var(--rule)}
+
+/* Paletten */
+.pals{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:28px}
+.pal{border-radius:26px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px var(--rule)}
+.pal .pv{padding:22px 22px 20px}
+.pal .pv h3{font:560 34px/1.05 var(--fd);letter-spacing:-.02em}
+.pal .pv p{font-size:17px;margin-top:6px}
+.pal .pv .bt{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pal .pv .bt span{display:inline-flex;align-items:center;min-height:48px;padding:0 18px;border-radius:14px;font:700 16px var(--ft)}
+.pal .chips{display:grid;grid-template-columns:repeat(5,1fr)}
+.pal .chips div{height:64px;padding:8px;font:700 11.5px/1.25 var(--ft)}
+.pal .fl{display:grid;grid-template-columns:repeat(3,1fr)}
+.pal .fl div{height:76px;padding:9px 10px;font:700 12.5px/1.3 var(--ft)}
+.pal .fl div small{display:block;font-weight:400}
+.pal table{width:100%;border-collapse:collapse;font-size:13.5px}
+.pal td{padding:6px 14px;border-top:1px solid #edf0e6}
+.pal td:last-child{text-align:right;font-weight:700}
+.pal .use{padding:10px 14px 14px;font-size:14px;color:#3f5044;border-top:1px solid #edf0e6}
+
+/* Bausteine */
+.bs{display:grid;grid-template-columns:repeat(12,1fr);gap:22px;margin-top:28px}
+.bs>.c{background:#fff;border-radius:24px;padding:22px;overflow:hidden}
+.bs>.c>h4{font:700 15px var(--ft);color:var(--muted);margin-bottom:14px}
+.bs .s4{grid-column:span 4}.bs .s5{grid-column:span 5}.bs .s6{grid-column:span 6}.bs .s7{grid-column:span 7}.bs .s8{grid-column:span 8}.bs .s12{grid-column:span 12}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.rules ul{list-style:none;display:grid;gap:9px}
+.rules li{font-size:16.5px;line-height:1.45;padding-left:22px;position:relative}
+.rules li::before{content:"";position:absolute;left:2px;top:.55em;width:9px;height:9px;border-radius:3px;background:var(--accent)}
+.rules li.no::before{background:#b4472f}
+
+/* Handys */
+.phone{position:relative;width:390px;overflow:hidden;contain:paint;background:#fff;box-shadow:0 0 0 1px #b9c4ad;border-radius:8px;flex:none}
+.phones{display:flex;gap:30px;margin-top:26px;align-items:flex-start;justify-content:space-between}
+.pcap{font:700 15px var(--ft);margin-bottom:10px;width:390px}
+.pcap small{display:block;font-weight:400;color:var(--muted)}
+.fold{position:absolute;left:0;right:0;border-top:2px dashed #b4472f;z-index:30}
+.fold span{position:absolute;right:6px;top:-24px;background:#b4472f;color:#fff;font:700 12px/1 var(--ft);padding:5px 7px;border-radius:6px}
+.desk{width:1440px;margin:26px 0 0 -16px;box-shadow:0 0 0 1px #b9c4ad;border-radius:8px;overflow:hidden;background:#fff}
+pre.ts{background:var(--deep);color:#e7efdc;border-radius:22px;padding:26px 30px;font:13.2px/1.5 ui-monospace,Menlo,monospace;white-space:pre;overflow:hidden;margin-top:24px}
+
+/* ════════ KLAR · System-CSS der Muster (gescoped auf .k) ════════ */
+.k{background:var(--paper);color:var(--ink);font-family:var(--ft);font-size:var(--body-size);line-height:var(--body-line);position:relative;
+   --r-btn:14px;--r-card:20px;--r-panel:28px;--r-frame:26px;--ease:cubic-bezier(.23,1,.32,1)}
+.k img{display:block;width:100%;height:100%;object-fit:cover;filter:var(--img-filter)}
+.k a{color:inherit;text-decoration:none}
+.k .wrap{max-width:var(--s-max);margin:0 auto;padding:0 var(--s-gutter)}
+.k .ph{font-size:1.25em;line-height:1}
+/* Navigation */
+.k-nav{display:flex;align-items:center;gap:12px;height:72px;padding:0 var(--s-gutter)}
+.k-brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.k-logo{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--signal);color:var(--onSignal);font:650 20px/1 var(--fd);letter-spacing:-.02em}
+.k-brand .t-mark{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-iconbtn{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:48px;height:48px;padding:0 12px;border-radius:var(--r-btn);background:var(--surface);box-shadow:inset 0 0 0 2px var(--rule);font:700 16px var(--ft)}
+.k-links{display:flex;gap:30px;margin-right:28px}
+.k-links a{font:700 var(--link-size)/1 var(--ft)}
+/* Knöpfe: Pille-in-Pille nur beim Hauptknopf */
+.k-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:56px;padding:0 22px;border-radius:var(--r-btn);font:700 var(--link-size)/1.2 var(--ft);transition:transform .16s var(--ease)}
+.k-btn:active{transform:scale(.97)}
+.k .k-btn--p{background:var(--signal);color:var(--onSignal);padding-right:8px}
+.k-btn--p .bi{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:var(--onSignal);color:var(--signal)}
+.k .k-btn--s{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.k-ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.k-m .k-ctas .k-btn{width:100%;justify-content:space-between}
+.k-m .k-ctas .k-btn--s{justify-content:center}
+/* Einstieg */
+.k-hero{padding:4px 12px 0}
+.k-panel{background:var(--f1-bg);color:var(--f1-ink);border-radius:var(--r-panel);padding:28px 20px 20px;position:relative}
+.k-pill{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:999px;background:var(--surface);color:var(--ink)}
+.k-hero h1{margin-top:18px;max-width:14ch;text-wrap:balance}
+.k-hero .t-lede{margin-top:14px;color:var(--f1-muted);max-width:var(--s-measure)}
+.k-frame{margin-top:28px;margin-bottom:34px;border-radius:var(--r-frame);padding:7px;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.7);position:relative}
+.k-frame .in{border-radius:calc(var(--r-frame) - 7px);overflow:hidden;aspect-ratio:4/3}
+.k-today{position:absolute;left:16px;right:16px;bottom:-34px;background:var(--surface);color:var(--ink);border-radius:16px;padding:12px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 12px 32px -14px rgba(21,35,26,.45)}
+.k-today .ic{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--f1-bg)}
+.k-today .t-small{color:var(--muted)}
+/* Fakten-Chips (nur aus Daten) */
+.k-facts{display:flex;flex-wrap:wrap;gap:8px;padding:18px var(--s-gutter) 0}
+.k-chip{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--rule);font:700 var(--small-size)/1.2 var(--ft)}
+.k-chip .ph{color:var(--accent)}
+.k-rate{display:flex;align-items:baseline;gap:10px;padding:16px var(--s-gutter) 0}
+.k-rate .t-small{color:var(--muted)}
+/* Abschnitte */
+.k-sec{padding:var(--s-section) 0 0}
+.k-sec h2{max-width:18ch;text-wrap:balance}
+.k-sec .intro{color:var(--muted);margin-top:12px;max-width:var(--s-measure)}
+/* Sprechzeiten */
+.k-hours{background:var(--surface);border-radius:var(--r-card);padding:8px;box-shadow:0 0 0 1px var(--rule);margin-top:var(--s-m)}
+.k-hours .hd{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 10px}
+.k-hours ol{list-style:none}
+.k-hours li{display:grid;grid-template-columns:7.2em 1fr;gap:10px;padding:12px 14px;border-top:1px solid var(--rule);align-items:start}
+.k-hours li .d{font-weight:700}
+.k-hours li .v{font-variant-numeric:tabular-nums}
+.k-hours li.now{background:var(--f1-bg);border-radius:14px;border-top-color:transparent}
+.k-hours li.now+li{border-top-color:transparent}
+.k-hours li.now .d small{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:var(--signal);color:var(--onSignal);font:700 14px/1.3 var(--ft)}
+.k-hours li.zu .v{color:var(--muted)}
+.k-hours .ft{padding:12px 14px 10px;color:var(--muted);border-top:1px solid var(--rule)}
+/* Leistungen */
+.k-svc{display:grid;gap:10px;margin-top:var(--s-l)}
+.k-svc>div{border-radius:var(--r-card);padding:20px;background:var(--surface);box-shadow:0 0 0 1px var(--rule);display:grid;gap:8px}
+.k-svc>div.tint{background:var(--f2-bg);box-shadow:none}
+.k-svc>div.photo{padding:0;overflow:hidden;background:var(--f1-bg);box-shadow:none}
+.k-svc>div.photo .im{aspect-ratio:16/10}
+.k-svc>div.photo .tx{padding:18px 20px 20px;display:grid;gap:8px}
+.k-svc p{color:var(--muted)}
+.k-svc .more{display:inline-flex;align-items:center;gap:6px;font:700 var(--small-size) var(--ft);color:var(--accent);margin-top:4px}
+/* Preise (nur aus Daten) */
+.k-price{margin-top:var(--s-m);background:var(--surface);border-radius:var(--r-card);box-shadow:0 0 0 1px var(--rule);padding:6px 18px}
+.k-price div{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-top:1px solid var(--rule)}
+.k-price div:first-child{border-top:0}
+.k-price .t-data{font-variant-numeric:tabular-nums}
+/* Erster Termin */
+.k-steps{list-style:none;margin-top:var(--s-l);position:relative;display:grid;gap:22px}
+.k-steps::before{content:"";position:absolute;left:21px;top:22px;bottom:22px;width:2px;background:var(--rule)}
+.k-steps li{display:grid;grid-template-columns:44px 1fr;gap:16px;position:relative}
+.k-steps .n{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2px var(--accent);font:650 19px/1 var(--fd);color:var(--accent)}
+.k-steps li:first-child .n{background:var(--signal);color:var(--onSignal);box-shadow:none}
+.k-steps h3{margin-top:8px}
+.k-steps p{color:var(--muted);margin-top:4px}
+.k-bring{margin-top:var(--s-l);background:var(--f2-bg);border-radius:var(--r-card);padding:18px 20px}
+.k-bring ul{list-style:none;display:grid;gap:8px;margin-top:10px}
+.k-bring li{display:flex;gap:10px;align-items:flex-start}
+.k-bring li .ph{color:var(--accent);margin-top:2px}
+/* Team */
+.k-team{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:var(--s-l)}
+.k-team .p .pic{aspect-ratio:1/1;border-radius:var(--r-card);overflow:hidden;display:grid;place-items:center;font:560 54px/1 var(--fd);letter-spacing:-.04em}
+.k-team .p:nth-child(3n+1) .pic{background:var(--f1-bg);color:var(--f1-ink)}
+.k-team .p:nth-child(3n+2) .pic{background:var(--f2-bg);color:var(--f2-ink)}
+.k-team .p:nth-child(3n) .pic{background:var(--f3-bg);color:var(--f3-ink)}
+.k-team h3{margin-top:12px;font-size:var(--link-size);font-family:var(--ft);font-weight:700;letter-spacing:0}
+.k-team p{color:var(--muted);font-size:var(--small-size)}
+/* Stimme (nur mit Daten) */
+.k-voice{background:var(--surface);border-radius:var(--r-card);box-shadow:0 0 0 1px var(--rule);padding:22px;margin-top:var(--s-l)}
+.k-voice .fig{display:flex;align-items:baseline;gap:12px}
+.k-voice blockquote{margin-top:16px;font:500 var(--h3-size)/1.35 var(--fd);letter-spacing:-.01em}
+.k-voice .who{margin-top:12px;color:var(--muted)}
+/* FAQ */
+.k-faq{display:grid;gap:10px;margin-top:var(--s-l)}
+.k-faq details{background:var(--surface);border-radius:16px;box-shadow:0 0 0 1px var(--rule)}
+.k-faq summary{list-style:none;display:flex;justify-content:space-between;gap:14px;align-items:center;min-height:60px;padding:14px 18px;font:700 var(--body-size)/1.35 var(--ft);cursor:pointer}
+.k-faq summary::-webkit-details-marker{display:none}
+.k-faq summary .pm{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--f1-bg);transition:transform .2s var(--ease)}
+.k-faq details[open] summary .pm{transform:rotate(45deg)}
+.k-faq details p{padding:0 18px 18px;color:var(--muted)}
+/* Anfahrt: Kartenkachel ohne Einbettung */
+.k-map{margin-top:var(--s-l);border-radius:var(--r-card);overflow:hidden;background:var(--surface);box-shadow:0 0 0 1px var(--rule)}
+.k-map .tile{height:210px;position:relative;background:
+  linear-gradient(90deg,transparent 47%,var(--surface) 47%,var(--surface) 53%,transparent 53%) 0 0/100% 100%,
+  linear-gradient(0deg,transparent 58%,var(--surface) 58%,var(--surface) 63%,transparent 63%) 0 0/100% 100%,
+  linear-gradient(28deg,transparent 30%,var(--surface) 30%,var(--surface) 33%,transparent 33%) 0 0/100% 100%,
+  repeating-linear-gradient(90deg,transparent 0 58px,rgba(255,255,255,.55) 58px 61px),
+  repeating-linear-gradient(0deg,transparent 0 46px,rgba(255,255,255,.55) 46px 49px),
+  var(--f2-bg)}
+.k-map .tile .park{position:absolute;left:8%;top:12%;width:24%;height:30%;border-radius:18px;background:var(--f1-bg)}
+.k-map .pin{position:absolute;left:50%;top:60%;transform:translate(-50%,-100%);display:grid;place-items:center;width:52px;height:52px;border-radius:16px 16px 16px 4px;background:var(--signal);color:var(--onSignal);font-size:26px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);rotate:-45deg}
+.k-map .pin .ph{rotate:45deg}
+.k-map .bd{padding:18px 20px 20px;display:grid;gap:10px}
+.k-map .acc{display:grid;gap:6px;color:var(--muted)}
+.k-map .acc span{display:flex;gap:10px;align-items:center}
+.k-map .acc .ph{color:var(--accent)}
+/* Abschluss + Fuß */
+.k-end{margin-top:var(--s-section);background:var(--deep);color:var(--onDeep);padding:var(--s-xl) 0 calc(var(--s-l) + 92px)}
+.k-end .t-h2{color:var(--onDeep);max-width:16ch}
+.k .k-end .k-btn--p{background:var(--onSignal);color:var(--signal)}
+.k-end .k-btn--p .bi{background:var(--signal);color:var(--onSignal)}
+.k .k-end .k-btn--s{background:transparent;color:var(--onDeep);box-shadow:inset 0 0 0 2px var(--onDeep)}
+.k-end .cols{display:grid;gap:22px;margin-top:var(--s-xl);padding-top:var(--s-l);border-top:1px solid rgba(255,255,255,.18)}
+.k-end .cols h4{font:700 var(--small-size) var(--ft);color:var(--f3-muted);margin-bottom:6px}
+.k-end .legal{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:var(--s-l)}
+.k-end .legal a{font:700 var(--small-size)/1 var(--ft);text-decoration:underline;text-underline-offset:4px;padding:8px 0}
+.k-end .k-brand .t-mark{color:var(--onDeep)}
+.k-end .k-logo{background:var(--onSignal);color:var(--signal)}
+/* Handy-Leiste */
+.k-dock{position:absolute;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:1fr 1.25fr;gap:8px;padding:10px 12px 14px;background:rgba(255,255,255,.94);box-shadow:0 -1px 0 var(--rule),0 -12px 28px -18px rgba(21,35,26,.35);backdrop-filter:blur(10px)}
+.k-dock .k-btn{width:100%;padding:0 12px}
+.k-dock .k-btn--p{justify-content:center;padding:0 12px}
+/* Typo-Klassen werden per JS aus TYPE erzeugt (.t-display …) */
+/* Unterseite */
+.k-sub .crumb{padding:6px var(--s-gutter) 0;color:var(--muted);font-size:var(--small-size)}
+.k-sub .crumb a{text-decoration:underline;text-underline-offset:3px}
+.k-sub article{padding:var(--s-m) var(--s-gutter) var(--s-xl)}
+.k-sub article h1{margin-bottom:16px}
+.k-sub article h2{font:650 var(--h3-size)/1.2 var(--fd);margin:22px 0 6px}
+.k-sub article p{max-width:var(--s-measure)}
+
+/* ── Desktop-Varianten (k-d) ── */
+.k-d .k-hero{padding:8px 24px 0}
+.k-d .k-panel{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center;padding:56px 56px 56px 64px;border-radius:36px}
+.k-d .k-hero h1{max-width:12ch}
+.k-d .k-frame{margin-top:0}
+.k-d .k-frame .in{aspect-ratio:5/4.6}
+.k-d .k-today{left:auto;right:-28px;bottom:36px;width:300px;padding:14px 16px}
+.k-d .k-frame{margin-bottom:0}
+.k-d .k-facts{padding:0;margin-top:var(--s-l)}
+.k-d .k-facts .k-chip{background:rgba(255,255,255,.7);box-shadow:none}
+.k-d .k-rate{padding:0;margin-top:14px}
+.k-d .row2{display:grid;grid-template-columns:5fr 7fr;gap:72px;align-items:start}
+.k-d .k-steps{grid-template-columns:repeat(2,1fr);gap:28px 36px}
+.k-d .k-steps::before{display:none}
+.k-d .k-steps li{grid-template-columns:1fr;gap:12px;background:var(--surface);border-radius:var(--r-card);padding:22px;box-shadow:0 0 0 1px var(--rule)}
+.k-d .k-svc{grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:auto auto;gap:16px}
+.k-d .k-svc>div.photo{grid-row:span 2}
+.k-d .k-svc>div.photo .im{aspect-ratio:auto;height:330px}
+.k-d .k-team{grid-template-columns:repeat(3,1fr);gap:20px}
+.k-d .k-sec .head{display:flex;justify-content:space-between;align-items:end;gap:40px}
+.k-m .k-team{grid-template-columns:1fr;gap:12px}
+.k-m .k-team .p{display:grid;grid-template-columns:84px 1fr;gap:16px;align-items:center;background:var(--surface);border-radius:var(--r-card);padding:10px;box-shadow:0 0 0 1px var(--rule)}
+.k-m .k-team .p .pic{font-size:30px;border-radius:14px}
+.k-m .k-team h3{margin-top:0}
+.k-d .k-steps li{align-content:start}
+.k-d .k-svc>div:last-child{grid-column:span 2}
+.k-svc>div{align-content:start}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ═══════════ 1 · Kopf + Luma gemessen ═══════════ -->
+<div data-shot="1">
+<section class="top">
+  <p class="lb"><b>Klar</b><span>Designsystem 5 von 6 · Pageblitz · Systemblatt, Stand 12.10.2026</span></p>
+  <div class="wm"><div class="w">Kl<span>ar</span></div></div>
+  <div class="row">
+    <p class="m">Freundlich, ruhig und gut lesbar. Für Praxen, in die Menschen mit Sorgen kommen und mit Brille lesen.</p>
+    <div class="r">
+      <p><b>Anker:</b> Luma Dental (Framer-Vorlage, luma-dental.framer.website). Treu nachgebaut: Lindgrün, runde DM Sans, weiche Karten, Einstieg mit Foto und schwebender Karte, Ablauf „erster Besuch“, Team, Kassen, FAQ.</p>
+      <p><b>Verbessert:</b> kräftigere Schnitte, Fließtext ≥ 18 px in Atkinson Hyperlegible Next, Text dunkelgrün statt grau, Lindgrün nur als Fläche, Knöpfe 56 px hoch.</p>
+    </div>
+    <div class="r">
+      <p><b>Erste Wahl für</b> Arzt, Zahnarzt, Physio, Heilpraktiker, Psychotherapie, Pflege, Tierarzt.</p>
+      <p><b>Auch für</b> Beratung, Kurse (Yoga), Sofort-Dienst, Industrie, Standard.</p>
+      <p><b>Herzstück:</b> Sprechzeiten mit „heute“, Telefon zuerst, „Erster Termin“ als Ablauf.</p>
+    </div>
+  </div>
+  <div class="vs">
+    <div><h3>Journal</h3><p>Serife, Magazin, lange Texte, Bildstrecken.</p></div>
+    <div><h3>Raster</h3><p>Schweizer Schwarz-Weiß, Linien, Geist.</p></div>
+    <div><h3>Werkstoff</h3><p>Warme Slab, Papier, Auftragszettel.</p></div>
+    <div><h3>Plakat</h3><p>Farbfelder, Plakatschrift, Sticker.</p></div>
+    <div class="me"><h3>Klar</h3><p>Runde Grotesk auf Lindgrün, weiche Karten, Sprechzeiten als Hauptdarsteller.</p></div>
+  </div>
+</section>
+
+</div>
+<div data-shot="1b">
+<section class="blk first">
+  <p class="lb"><b>1</b><span>Anker zerlegt bei 1440 und 390 (getComputedStyle, 12.10.2026)</span></p>
+  <h2 class="bh">Luma gemessen, Klar daraus gemacht</h2>
+  <p class="bp">Luma ist nett und vollständig, aber für ältere Patienten zu klein und zu dünn gesetzt. Die Farbkontraste der Texte sind besser als gedacht. Durch fallen vor allem Schriftgröße, Strichstärke und die lindgrüne Knopffläche.</p>
+  <table class="t">
+    <thead><tr><th>Rolle</th><th>Luma gemessen</th><th>Klar</th></tr></thead>
+    <tbody id="lumaRows"></tbody>
+  </table>
+  <h3 style="font:650 26px/1.2 var(--fd);margin:40px 0 0;letter-spacing:-.01em">Was durchfällt und wie Klar es löst</h3>
+  <table class="t">
+    <thead><tr><th>Prüfung</th><th>Luma</th><th>Wert</th><th>Klar</th><th>Wert</th></tr></thead>
+    <tbody id="failRows"></tbody>
+  </table>
+</section>
+</div>
+
+<!-- ═══════════ 2 · Schrift + Skala ═══════════ -->
+<div data-shot="2">
+<section class="blk">
+  <p class="lb"><b>2</b><span>Schriften</span></p>
+  <h2 class="bh">Lumas runde Grotesk bleibt. Darunter kommt eine Leseschrift.</h2>
+  <p class="bp">DM Sans trägt Überschriften, Logo und große Zahlen, aber in 520 bis 650 statt Light 300. Fließtext, Zeiten und Knöpfe setzt Atkinson Hyperlegible Next. Sie wurde vom Braille Institute für Menschen mit Sehschwäche gezeichnet: I, l und 1 sind klar verschieden, 0 und O auch.</p>
+  <div class="fonts2">
+    <div>
+      <p class="nm"><span>Anzeige · DM Sans (OFL, Colophon / Google)</span><span>wght 400 bis 700, opsz 24</span></p>
+      <p class="gl">Aa 4,8</p>
+      <p class="abc d">Zahnarztpraxis Dr. Sommer · Öffnungszeiten · Größe</p>
+      <div class="wts">
+        <div><span style="font-family:var(--fd);font-weight:520">Gut aufgehoben</span><span class="note">520 Zahlen</span></div>
+        <div><span style="font-family:var(--fd);font-weight:560">Gut aufgehoben</span><span class="note">560 Einstieg, H2</span></div>
+        <div><span style="font-family:var(--fd);font-weight:620">Gut aufgehoben</span><span class="note">620 H3</span></div>
+        <div><span style="font-family:var(--fd);font-weight:650">Gut aufgehoben</span><span class="note">650 Logo</span></div>
+      </div>
+      <p class="note" style="margin-top:12px">Dateien: <code>dm-sans-latin-wght.woff2</code> 35,7 kB (vorgeladen), <code>dm-sans-latin-ext-wght.woff2</code> 17,5 kB (nur bei Namen wie Doğan, Łukasz, Dvořák).</p>
+    </div>
+    <div>
+      <p class="nm"><span>Text · Atkinson Hyperlegible Next (OFL, Braille Institute)</span><span>wght 200 bis 800</span></p>
+      <p class="gl t">Aa Il1</p>
+      <p class="abc">Termine auch abends. Bitte bringen Sie Ihre Versichertenkarte mit.</p>
+      <div class="wts">
+        <div><span style="font-weight:400">Montag 8:00 bis 18:00</span><span class="note">400 Fließtext</span></div>
+        <div><span style="font-weight:700">Montag 8:00 bis 18:00</span><span class="note">700 Zeiten, Knöpfe, Fragen</span></div>
+      </div>
+      <p class="note" style="margin-top:12px">Dateien: <code>atkinson-next-latin-wght.woff2</code> 33,2 kB (vorgeladen), <code>atkinson-next-latin-ext-wght.woff2</code> 18,6 kB (nur bei Bedarf).</p>
+    </div>
+  </div>
+  <div class="cmp">
+    <div><p class="x">Luma: DM Sans 400 / 14,5 px / #5c6057</p><p style="font:400 14.5px/1.68 'DM Sans';color:#5c6057">Gentle, modern dentistry in South Austin. Clear guidance, honest pricing, and a calmer visit from hello to healthy.</p><p class="ill" style="font-family:'DM Sans';margin-top:12px">Il1 0O rn</p></div>
+    <div><p class="x">Klar: Atkinson Next 400 / 18 px / #15231a</p><p style="font:400 18px/1.6 var(--ft)">Behutsame Zahnmedizin für die ganze Familie. Wir erklären jeden Schritt, bevor wir anfangen.</p><p class="ill" style="font-family:var(--ft);margin-top:12px">Il1 0O rn</p></div>
+  </div>
+</section>
+
+</div>
+<div data-shot="2b">
+<section class="blk first">
+  <p class="lb"><b>3</b><span>Schriftskala, echt gerechnet bei 375 und 1440</span></p>
+  <h2 class="bh">Elf Stufen, keine unter 16 px</h2>
+  <p class="bp">Fließtext 18 px am Handy, 20 px am Desktop. Die Kleinstufe hat 16 px und gilt nur für Bildzeilen und Nebeninfos. Kicker in Satzschreibung statt 10 px Versalien.</p>
+  <div class="scale" id="scale"></div>
+</section>
+</div>
+
+<!-- ═══════════ 3 · Abstände, Raster, Ecken, Paletten ═══════════ -->
+<div data-shot="3">
+<section class="blk">
+  <p class="lb"><b>4</b><span>Abstände, Raster, Ecken</span></p>
+  <h2 class="bh">Weich, mit viel Luft, aber nie verloren</h2>
+  <p class="bp">Wie bei Luma liegt die Seite auf einer leicht getönten Fläche, Karten sind weiß. Ein Rasterfeld von maximal 82 rem, Rand 20 px am Handy, 40 px am Desktop. Ecken in fünf festen Größen, nichts dazwischen.</p>
+  <div class="spc" id="spc"></div>
+  <div class="grids">
+    <div class="gv" style="--g:12px"><p class="nm"><span>Handy 390</span><span>4 Spalten, Rand 20, Abstand 12</span></p><div class="cols" style="grid-template-columns:repeat(4,1fr)"><i></i><i></i><i></i><i></i></div></div>
+    <div class="gv" style="--g:24px"><p class="nm"><span>Desktop 1440</span><span>12 Spalten, Rand 40, Abstand 24, Inhalt 1312</span></p><div class="cols" style="grid-template-columns:repeat(12,1fr)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="radii">
+    <div style="border-radius:14px">14 · Knöpfe</div>
+    <div style="border-radius:20px">20 · Karten</div>
+    <div style="border-radius:26px">26/19 · Fotorahmen</div>
+    <div style="border-radius:28px">28/36 · Einstieg</div>
+    <div style="border-radius:999px;width:220px;height:64px;place-items:center">999 · Chips, Pillen</div>
+  </div>
+  <p class="note" style="margin-top:12px">Ecken stehen im System-CSS (<code>--r-btn</code> usw.), nicht im Token-Objekt. Siehe Abweichungen am Ende.</p>
+</section>
+
+<section class="blk">
+  <p class="lb"><b>5</b><span>Paletten mit Kontrast (WCAG 2.2)</span></p>
+  <h2 class="bh">Drei ruhige Paletten, jede Textfarbe über 7 : 1</h2>
+  <p class="bp">Lindgrün, Wasser und Sand. Text ist immer dunkel. Die hellen Töne sind Flächen. Der Hauptknopf ist dunkel mit heller Schrift, damit er sich auch gegen Weiß klar abhebt.</p>
+  <div class="pals" id="pals"></div>
+</section>
+</div>
+
+<!-- ═══════════ 4 · Bausteine ═══════════ -->
+<div data-shot="4">
+<section class="blk">
+  <p class="lb"><b>6</b><span>Bausteine für die Lücken</span></p>
+  <h2 class="bh">Was Luma nicht hatte, aber jede Praxis braucht</h2>
+  <p class="bp">Alle Bausteine gezeigt bei 390 px Breite in der Palette Lind. Fakten, Bewertungen und Preise erscheinen nur, wenn sie in den Daten stehen. Sonst fällt der Baustein weg, ohne Lücke.</p>
+  <div class="bs" id="bausteine"></div>
+</section>
+</div>
+<div data-shot="4b">
+<section class="blk first">
+  <p class="lb"><b>7</b><span>Bilder und Bewegung</span></p>
+  <h2 class="bh">Fotos im Rahmen, Bewegung nur zum Verstehen</h2>
+  <div class="rules">
+    <div class="c" style="background:#fff;border-radius:24px;padding:24px">
+      <h4 style="font:650 24px/1.2 var(--fd);margin-bottom:14px">Bilder</h4>
+      <ul>
+        <li>Foto immer im weichen Doppelrahmen (außen 26 px, 7 px heller Rand, innen 19 px), neben oder unter dem Text. Nie Text auf Foto.</li>
+        <li>Gutes Foto (≥ 1400 px, hell): großer Rahmen 4 : 3 im Einstieg, schwebende „Heute“-Karte darauf.</li>
+        <li>Schwaches Foto (klein, dunkel, unscharf): kleiner Rahmen 3 : 2 neben einer Faktenkarte, nie über 45 % Breite.</li>
+        <li>Kein Foto: Die Sprechzeiten-Karte wird zum Bild des Einstiegs.</li>
+        <li>Team: Porträt 1 : 1, Ecken 20. Fehlt es, Monogramm auf Feldfarbe. Nie Platzhalter-Silhouette.</li>
+        <li>Leichter Filter für alle Fotos: <code>saturate(.94) contrast(1.03) brightness(1.03)</code>. Hebt dunkle Praxisfotos an, ohne zu verfärben.</li>
+        <li class="no">Keine Vollbild-Fotos, keine Bilder hinter Text, keine Etiketten auf Fotos.</li>
+      </ul>
+    </div>
+    <div class="c" style="background:#fff;border-radius:24px;padding:24px">
+      <h4 style="font:650 24px/1.2 var(--fd);margin-bottom:14px">Bewegung</h4>
+      <ul>
+        <li>Nur <code>transform</code>, <code>opacity</code>, <code>clip-path</code>. Kurve <code>cubic-bezier(.23, 1, .32, 1)</code>.</li>
+        <li>Einstieg einmal: Text 12 px hoch und einblenden, 320 ms, Abstand 60 ms. Foto per <code>clip-path: inset(8% 8% 8% 8% round 26px)</code> auf voll, 520 ms.</li>
+        <li>„Heute“-Karte kommt 160 ms nach dem Foto, 8 px von unten.</li>
+        <li>Abschnitte beim Hereinscrollen: 16 px, 360 ms, einmal (IntersectionObserver).</li>
+        <li>Knopf drücken: <code>scale(.97)</code>, 160 ms. Hover nur bei <code>(hover: hover)</code>.</li>
+        <li>FAQ: Plus dreht sich 45°, Antwort blendet ein. Kein Höhen-Animieren.</li>
+        <li><code>prefers-reduced-motion: reduce</code>: alles nur Einblenden 150 ms, keine Wege, kein clip-path.</li>
+        <li class="no">Kein Karussell, kein Laufband, kein Parallax, keine Dauerschleife.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ═══════════ 5 · Erster Blick Handy ═══════════ -->
+<div data-shot="5">
+<section class="blk">
+  <p class="lb"><b>8</b><span>Erster Blick, Handy 390 × 844</span></p>
+  <h2 class="bh">Die ersten fünf Sekunden</h2>
+  <p class="bp">Zahnarzt mit guten Fotos, Physio mit schwachem Foto, Steuerkanzlei ganz ohne Foto. Gestrichelt: Ende des ersten Bildschirms. Die Handy-Leiste blendet sich erst ein, wenn die Knöpfe oben aus dem Bild sind.</p>
+  <div class="phones" id="firsts"></div>
+</section>
+</div>
+
+<!-- ═══════════ 6 ff · ganze Seiten ═══════════ -->
+<div data-shot="6"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 1)</span></p><div class="phones" data-part="0"></div></section></div>
+<div data-shot="7"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 2)</span></p><div class="phones" data-part="1"></div></section></div>
+<div data-shot="8"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 3)</span></p><div class="phones" data-part="2"></div></section></div>
+<div data-shot="9"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 4)</span></p><div class="phones" data-part="3"></div></section></div>
+
+<!-- ═══════════ Desktop ═══════════ -->
+<div data-shot="10" style="padding:0 40px">
+<section class="blk" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>10</b><span>Desktop 1440: erster Bildschirm, Zahnarztpraxis Dr. Sommer (gestrichelt: 900 px)</span></p>
+  <div class="desk" id="deskA"></div>
+</section>
+</div>
+<div data-shot="10b" style="padding:0 40px">
+<section class="blk" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>10</b><span>Desktop 1440: zwei Abschnitte darunter</span></p>
+  <div class="desk" id="deskB"></div>
+</section>
+</div>
+
+<!-- ═══════════ Tokens ═══════════ -->
+<div data-shot="11">
+<section class="blk">
+  <p class="lb"><b>11</b><span>Token-Objekt, Schriftdateien, Abweichungen</span></p>
+  <h2 class="bh">Zum Kopieren: <code style="font-size:44px">shared/designSystems/klar.ts</code></h2>
+  <div class="g2" style="grid-template-columns:1fr;gap:10px">
+    <pre class="ts" id="ts"></pre>
+    <div>
+      <h3 style="font:650 26px/1.2 var(--fd);margin-top:24px">Dateien und Vorladen</h3>
+      <table class="t" style="margin-top:12px">
+        <thead><tr><th>Datei</th><th>kB</th><th>Laden</th></tr></thead>
+        <tbody>
+          <tr><td>dm-sans-latin-wght.woff2</td><td>35,7</td><td class="ok">vorladen</td></tr>
+          <tr><td>atkinson-next-latin-wght.woff2</td><td>33,2</td><td class="ok">vorladen</td></tr>
+          <tr><td>dm-sans-latin-ext-wght.woff2</td><td>17,5</td><td>unicode-range</td></tr>
+          <tr><td>atkinson-next-latin-ext-wght.woff2</td><td>18,6</td><td>unicode-range</td></tr>
+          <tr><td colspan="3" style="font-weight:400;color:var(--muted)">Summe sicher geladen 68,9 kB, mit latin-ext 104,9 kB. Pfeil → fehlt in beiden latin-Dateien, Klar zeichnet Pfeile als Symbol, nicht als Zeichen.</td></tr>
+        </tbody>
+      </table>
+      <h3 style="font:650 26px/1.2 var(--fd);margin-top:34px">Vorgeschlagene Abweichungen vom Shape</h3>
+      <ol style="margin:12px 0 0 20px;display:grid;gap:10px;font-size:16.5px">
+        <li><b>Neu, optional: <code>surface</code></b> in <code>SystemPalette</code> (Kartenfläche, Rückfall <code>#ffffff</code>). Klar braucht getöntes Papier plus weiße Karten, wie Luma. Prüfung: ink/surface ≥ 7, muted/surface ≥ 4,5.</li>
+        <li><b>Felder anders genutzt:</b> <code>fields</code> sind bei Klar keine Plakatflächen, sondern Einstieg (Feld 1), getönte Karte (Feld 2), Tiefgrün (Feld 3). Shape bleibt gleich.</li>
+        <li><b><code>signal</code> ist dunkel:</b> Hauptknopf dunkelgrün mit lindgrüner Schrift. Lindgrün als Knopffläche fällt gegen Weiß bei 3 : 1 durch.</li>
+        <li><b>Ecken nicht im Token:</b> Ecken liegen im System-CSS. Falls K1 Ecken je System will: optional <code>radius: { btn, card, frame, panel }</code>.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+</div>
+
+</div>
+
+<script>
+/* ═══ Tokens (Quelle der Wahrheit; identisch mit dem TS-Objekt unten) ═══ */
+const TYPE={
+ display:{font:"display",size:"clamp(2.5rem, 1.6rem + 3.85vw, 5rem)",line:1.03,track:"-0.028em",weight:560},
+ figure:{font:"display",size:"clamp(3.25rem, 2.3rem + 4vw, 6rem)",line:.95,track:"-0.035em",weight:520},
+ h2:{font:"display",size:"clamp(2rem, 1.5rem + 2.2vw, 3.375rem)",line:1.08,track:"-0.022em",weight:560},
+ h3:{font:"display",size:"clamp(1.375rem, 1.27rem + 0.45vw, 1.75rem)",line:1.2,track:"-0.012em",weight:620},
+ lede:{font:"text",size:"clamp(1.25rem, 1.16rem + 0.4vw, 1.5rem)",line:1.45,track:"-0.003em",weight:400},
+ body:{font:"text",size:"clamp(1.125rem, 1.08rem + 0.2vw, 1.25rem)",line:1.6,track:"0em",weight:400},
+ small:{font:"text",size:"1rem",line:1.5,track:"0em",weight:400},
+ kicker:{font:"text",size:"1rem",line:1.3,track:"0.005em",weight:700},
+ link:{font:"text",size:"1.125rem",line:1.3,track:"0em",weight:700},
+ mark:{font:"display",size:"clamp(1.25rem, 1.18rem + 0.3vw, 1.5rem)",line:1.05,track:"-0.02em",weight:650},
+ data:{font:"text",size:"1.125rem",line:1.35,track:"0.005em",weight:700},
+};
+const SPACE={"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6rem",
+ section:"clamp(4rem, 3rem + 4.3vw, 7.5rem)",gutter:"clamp(1.25rem, 0.85rem + 1.7vw, 2.5rem)",measure:"36rem",max:"82rem"};
+const PALS=[
+ {id:"lind",name:"Lind",use:"Zahnarzt, Arzt, Pflege, Tierarzt",paper:"#f4f7ec",surface:"#ffffff",ink:"#15231a",muted:"#3f5044",rule:"#d6dfcb",accent:"#2b5e35",deep:"#173020",onDeep:"#f4f7ec",signal:"#234a2d",onSignal:"#dff0b0",
+  fields:[{id:"lind",name:"Lind",bg:"#dcecac",ink:"#15231a",muted:"#36472a"},{id:"tau",name:"Tau",bg:"#e2ede4",ink:"#15231a",muted:"#3b4f42"},{id:"tief",name:"Tief",bg:"#173020",ink:"#f4f7ec",muted:"#c4d4bf"}]},
+ {id:"wasser",name:"Wasser",use:"Beratung, Steuer, Psychotherapie, Industrie",paper:"#f2f6f7",surface:"#ffffff",ink:"#0f2129",muted:"#3c5059",rule:"#d2dee2",accent:"#145a73",deep:"#0c2a35",onDeep:"#f2f6f7",signal:"#11475b",onSignal:"#d3eef5",
+  fields:[{id:"aqua",name:"Aqua",bg:"#cfe9ef",ink:"#0f2129",muted:"#2d4852"},{id:"lind",name:"Lind",bg:"#e2edcf",ink:"#0f2129",muted:"#3b4a30"},{id:"tief",name:"Tief",bg:"#0c2a35",ink:"#f2f6f7",muted:"#b9cfd6"}]},
+ {id:"sand",name:"Sand",use:"Physio, Heilpraktiker, Kurse, Hebamme",paper:"#f6f2ec",surface:"#ffffff",ink:"#241c21",muted:"#54464c",rule:"#e2d8cf",accent:"#7a3a5f",deep:"#2e1c27",onDeep:"#f6f2ec",signal:"#5a2b47",onSignal:"#f9dfea",
+  fields:[{id:"sand",name:"Sand",bg:"#ebe2d3",ink:"#241c21",muted:"#51443a"},{id:"rose",name:"Rose",bg:"#f3d9e3",ink:"#241c21",muted:"#573a48"},{id:"tief",name:"Tief",bg:"#2e1c27",ink:"#f6f2ec",muted:"#dcc6d1"}]},
+];
+const FILTER="saturate(.94) contrast(1.03) brightness(1.03)";
+
+/* ═══ Helfer ═══ */
+const REM=16;
+function px(v,w){v=v.trim();
+ if(v.startsWith("clamp(")){const [a,b,c]=v.slice(6,-1).split(",").map(s=>s.trim());return Math.min(Math.max(px(a,w),px(b,w)),px(c,w));}
+ if(v.includes("+")){return v.split("+").reduce((s,t)=>s+px(t,w),0);}
+ if(v.endsWith("rem"))return parseFloat(v)*REM; if(v.endsWith("vw"))return parseFloat(v)*w/100; if(v.endsWith("px"))return parseFloat(v); return parseFloat(v)*REM;}
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+const f2=n=>n.toFixed(2).replace(".",",");
+const P=id=>PALS.find(p=>p.id===id);
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const FAM={display:"var(--fd)",text:"var(--ft)"};
+function vars(w,palId){const p=P(palId);const v=[];
+ for(const [k,t] of Object.entries(TYPE)) v.push(`--${k}-size:${px(t.size,w).toFixed(2)}px`,`--${k}-line:${t.line}`);
+ for(const [k,s] of Object.entries(SPACE)) v.push(`--s-${k}:${px(s,w).toFixed(1)}px`);
+ for(const k of ["paper","surface","ink","muted","rule","accent","deep","onDeep","signal","onSignal"]) v.push(`--${k}:${p[k]}`);
+ p.fields.forEach((f,i)=>v.push(`--f${i+1}-bg:${f.bg}`,`--f${i+1}-ink:${f.ink}`,`--f${i+1}-muted:${f.muted}`));
+ v.push(`--img-filter:${FILTER}`);
+ return v.join(";");}
+// Typo-Klassen aus TYPE
+(function(){let css="";for(const [k,t] of Object.entries(TYPE)){css+=`.k .t-${k}{font-family:${FAM[t.font]};font-size:var(--${k}-size);line-height:var(--${k}-line);letter-spacing:${t.track};font-weight:${t.weight}}`;}
+ css+=`.k .t-data{font-variant-numeric:tabular-nums}`;
+ const s=document.createElement("style");s.textContent=css;document.head.appendChild(s);})();
+
+/* ═══ 1 · Luma-Tabellen ═══ */
+const LUMA=[
+ ["Überschrift","DM Sans Light 300, 72 / 50 / 43 px Desktop, 36 / 28 px Handy, Laufweite −2 px","DM Sans 560, 80 / 54 px Desktop, 40 / 32 px Handy, Laufweite −0,028 em"],
+ ["Fließtext","DM Sans 400, 14,5 px (Karten 12,5 px), Grau #5c6057","Atkinson Hyperlegible Next 400, 18 px Handy, 20 px Desktop, Tinte #15231a"],
+ ["Kicker","10 px Versalien 600 in lindgrüner Pille, über jedem Abschnitt","16 px 700 Satzschreibung, Pille weiß, nur im Einstieg und höchstens jeder dritte Abschnitt"],
+ ["Hauptknopf","Lind #d9eba6, Tinte, 43 px hoch, Ecke 10, Chevron","Praxisgrün #234a2d, Schrift Lindgrün, 56 px hoch, Ecke 14, Pfeil im eigenen Feld"],
+ ["Zweitknopf","Weiß, 1 px Rand, 43 px","Weiß, 2 px Tintenrand, 56 px, Telefonnummer als Beschriftung"],
+ ["Farben","Rahmen Lind #e9f2d6, Weiß, Creme #fbfaf3, Karten Mint, Blau, Sand, Grau, Dunkelgrün #47603a","Papier #f4f7ec, Karten weiß, Felder Lind #dcecac, Tau #e2ede4, Tief #173020; zwei weitere Paletten"],
+ ["Ecken","10, 11, 12, 17, 18, 20, 22 px gemischt","14 Knöpfe, 20 Karten, 26 / 19 Fotorahmen, 28 / 36 Einstieg, 999 Pillen"],
+ ["Raster","Seite als Karte 1389 px in 25 px Lindrahmen, Inhalt ca. 1180 px; Handy-Rand 50 px","Max. 82 rem (1312 px), Rand 20 px Handy, 40 px Desktop, Einstieg als Fläche mit 12 / 24 px Abstand"],
+ ["Navigation","75 px, Telefon, Knopf, Burger ohne Wort","72 px, Logo-Zeichen, Anruf-Knopf 48 px, „Menü“ mit Wort"],
+ ["Einstieg","Satz mit Marker-Wort, Foto 552 × 620 Ecke 22, Karten „Next availability“, „Comfort-first care“","Satz ohne Marker, Foto im Doppelrahmen, eine Karte „Heute“ aus echten Sprechzeiten"],
+ ["Kennzahlen","Vier Karten: 4.9/5, 800+, 96 %, 91 %","Nur Bewertung, wenn Daten da sind. Keine Quoten."],
+ ["Leistungen","Vier Farbkarten plus Raster mit sechs Gruppen","Bento: eine Fotokarte, eine getönte, Rest weiß; Handy als Liste"],
+ ["Erster Besuch","Vier Schritte mit Minutenangabe (15 / 30 / 30 / 15)","Vier Schritte ohne Dauer an einer Linie, dazu „Bitte mitbringen“"],
+ ["Team","Vier Porträts mit Lizenznummer in Mono","Porträt oder Monogramm auf Feldfarbe, Name und Rolle"],
+ ["Kassen, Preise","PPO-Chips, Finanzierungskarte","Chips nur aus Daten (Alle Kassen, Privat); Preisliste nur, wenn Preise vorliegen"],
+ ["FAQ","Akkordeon rechts, links Telefon","Übernommen, Fragen 18 px fett, Zeile ≥ 60 px"],
+ ["Fuß","Weiß, vier Spalten, 13 px","Tiefgrün, 16 bis 18 px, Impressum, Datenschutz, Barrierefreiheit als eigene Links"],
+];
+document.getElementById("lumaRows").innerHTML=LUMA.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+const L0=P("lind");
+const FAILS=[
+ ["Knopffläche gegen Seite (1.4.11, ≥ 3 : 1)","Lind #d9eba6 auf Weiß",cr("#d9eba6","#ffffff"),"Praxisgrün auf Papier",cr(L0.signal,L0.paper)],
+ ["Fließtext-Größe","14,5 px, Karten 12,5 px",null,"18 px Handy, 20 px Desktop",null],
+ ["Strichstärke Überschrift","Light 300 auf 36 bis 72 px",null,"560",null],
+ ["Kicker","10 px Versalien",null,"16 px Satzschreibung",null],
+ ["Fließtext grau (AAA ≥ 7)","#5c6057 auf Weiß",cr("#5c6057","#ffffff"),"#15231a auf Papier",cr(L0.ink,L0.paper)],
+ ["Grau auf Creme (AAA)","#5c6057 auf #fbfaf3",cr("#5c6057","#fbfaf3"),"#3f5044 auf Papier",cr(L0.muted,L0.paper)],
+ ["Grau auf Lind (AAA)","#5c6057 auf #d9eba6",cr("#5c6057","#d9eba6"),"Feld-Grau auf Lind",cr(L0.fields[0].muted,L0.fields[0].bg)],
+ ["Akzent-Grün als Text (AAA)","#47603a auf Weiß",cr("#47603a","#ffffff"),"#2b5e35 auf Papier",cr(L0.accent,L0.paper)],
+ ["Ziele (2.5.8, Handy)","Knöpfe 43 px, FAQ-Plus 16 px",null,"Knöpfe 56 px, alle Ziele ≥ 48 px",null],
+];
+document.getElementById("failRows").innerHTML=FAILS.map(r=>{const a=r[2],b=r[4];return `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${a!==null&&a<7?'bad':''}">${a===null?'<span class="bad" style="color:#8a2a1c;font-weight:700">zu klein</span>':f2(a)+" : 1"}</td><td>${r[3]}</td><td class="ok">${b===null?'erfüllt':f2(b)+" : 1"}</td></tr>`}).join("");
+
+/* ═══ 3 · Skala ═══ */
+const SAMPLE={display:"Gut aufgehoben. Von Anfang an.",figure:"4,8",h2:"Physiotherapie Lindner<br>Termine auch abends",h3:"Ihr erster Termin",lede:"Behutsame Zahnmedizin für die ganze Familie. Wir erklären jeden Schritt.",body:"Bitte bringen Sie Ihre Versichertenkarte mit. Den Fragebogen füllen wir gemeinsam aus.",small:"Bus 5011, Haltestelle Lindenweg. Parkplätze im Hof.",kicker:"Zahnarztpraxis in Lüneburg",link:"Termin vereinbaren",mark:"Steuerkanzlei Brandt",data:"Mo 8:00 bis 18:00 · 38 €"};
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+ const a=px(t.size,375),b=px(t.size,1440);
+ const st=w=>`font-family:${FAM[t.font]};font-size:${px(t.size,w).toFixed(2)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight}`;
+ return `<div class="srow"><div class="k">${k}<small>${t.font==="display"?"DM Sans":"Atkinson Next"} ${t.weight}<br>${a.toFixed(0)} px → ${b.toFixed(0)} px<br>Zeile ${String(t.line).replace(".",",")}</small></div>
+ <div class="m375"><p class="hd">375</p><div style="${st(375)}">${SAMPLE[k]}</div></div>
+ <div class="m1440"><p class="hd">1440</p><div style="${st(1440)};">${SAMPLE[k]}</div></div></div>`}).join("");
+
+/* ═══ 4 · Abstände, Paletten ═══ */
+document.getElementById("spc").innerHTML=["2xs","xs","s","m","l","xl","2xl","section","gutter"].map(k=>{const a=px(SPACE[k],375),b=px(SPACE[k],1440);return `<div style="width:auto"><div style="width:${Math.max(b,4)}px;height:${Math.max(b,4)}px"></div><span>${k}<small>${a.toFixed(0)}${a!==b?" → "+b.toFixed(0):""} px</small></span></div>`}).join("")+`<div><span>measure<small>36 rem</small></span><span>max<small>82 rem</small></span></div>`;
+document.getElementById("pals").innerHTML=PALS.map(p=>{
+ const rows=[["Tinte / Papier",p.ink,p.paper],["Tinte / Karte",p.ink,p.surface],["Grau / Papier",p.muted,p.paper],["Akzent / Papier",p.accent,p.paper],["Knopfschrift / Knopf",p.onSignal,p.signal],["Knopf / Papier (Fläche)",p.signal,p.paper],["Schrift / Tief",p.onDeep,p.deep],
+  ...p.fields.map(f=>[`Text / Feld ${f.name}`,f.ink,f.bg]),...p.fields.map(f=>[`Grau / Feld ${f.name}`,f.muted,f.bg])];
+ return `<div class="pal">
+ <div class="pv" style="background:${p.paper};color:${p.ink}"><p style="font:700 15px var(--ft);color:${p.muted}">${p.use}</p><h3>${p.name}</h3><p style="color:${p.muted}">Sprechzeiten heute 8:00 bis 18:00</p>
+  <div class="bt"><span style="background:${p.signal};color:${p.onSignal}">Termin vereinbaren</span><span style="background:${p.surface};color:${p.ink};box-shadow:inset 0 0 0 2px ${p.ink}">Anrufen</span></div></div>
+ <div class="chips">${["paper","surface","rule","accent","signal"].map(k=>`<div style="background:${p[k]};color:${lum(p[k])>.3?p.ink:"#fff"}">${k}<br>${p[k]}</div>`).join("")}</div>
+ <div class="fl">${p.fields.map(f=>`<div style="background:${f.bg};color:${f.ink}">Feld ${f.name}<small style="color:${f.muted}">${f.bg}</small></div>`).join("")}</div>
+ <table>${rows.map(r=>{const c=cr(r[1],r[2]);return `<tr><td><span class="sw" style="background:${r[1]}"></span><span class="sw" style="background:${r[2]}"></span>${r[0]}</td><td style="color:${c>=7?'#2b5e35':c>=4.5?'#6a5a12':'#8a2a1c'}">${f2(c)}</td></tr>`}).join("")}</table>
+ <p class="use">Text min. ${f2(Math.min(cr(p.ink,p.paper),cr(p.muted,p.paper),cr(p.accent,p.paper),cr(p.onSignal,p.signal),cr(p.onDeep,p.deep),...p.fields.flatMap(f=>[cr(f.ink,f.bg),cr(f.muted,f.bg)])))} : 1, also überall AAA.</p></div>`}).join("");
+
+/* ═══ Betriebe (frei erfunden, 555-Nummern, .example) ═══ */
+const ICON={Kassen:"identification-card",Privat:"identification-card",Barriere:"wheelchair",Haus:"car",Erst:"chat-circle",Rentner:"hand-heart",Digital:"file-text"};
+const ZAHN={pal:"lind",name:"Zahnarztpraxis Dr. Sommer",short:"Praxis Dr. Sommer",mono:"S",kicker:"Zahnarztpraxis in Lüneburg",
+ h1:"Gut aufgehoben. Von Anfang an.",lede:"Behutsame Zahnmedizin für die ganze Familie. Wir erklären jeden Schritt, bevor wir anfangen.",
+ phone:"04131 555 0142",cta:"Termin vereinbaren",ctaShort:"Termin",photo:"good",hero:"1576091160550-2173dba999ef",second:"1584982751601-97dcc096659c",
+ hoursLabel:"Sprechzeiten",hours:[["Montag","8:00 bis 12:00","14:00 bis 18:00"],["Dienstag","8:00 bis 12:00","14:00 bis 18:00"],["Mittwoch","8:00 bis 13:00",""],["Donnerstag","8:00 bis 12:00","14:00 bis 19:00"],["Freitag","8:00 bis 13:00",""]],today:0,todayShort:"8:00 bis 12:00<br>14:00 bis 18:00",
+ hoursNote:"Telefon ab 7:30 Uhr. Schmerzen? Rufen Sie an, wir finden noch am selben Tag Zeit.",
+ facts:[["Alle Kassen","identification-card"],["Privat","identification-card"],["Barrierefreier Zugang","wheelchair"]],rating:{v:"4,8",n:"212 Google-Bewertungen"},
+ quote:{t:"Ich hatte zwölf Jahre Angst vor dem Bohrer. Hier wurde jeder Schritt erklärt, und ich durfte jederzeit Pause machen.",a:"Renate K., Google-Bewertung"},
+ svcTitle:"Was wir für Sie tun",svc:[["Vorsorge und Zahnreinigung","Untersuchung, professionelle Reinigung, Röntgen nur wenn nötig."],["Füllungen und Wurzelbehandlung","Zahnfarbene Füllungen, gründlich betäubt."],["Zahnersatz","Kronen, Brücken, Prothesen. Kostenplan vorab schriftlich."],["Für Angstpatienten","Mehr Zeit, Pause auf Handzeichen."]],
+ stepTitle:"Ihr erster Termin",steps:[["Anrufen oder online buchen","Sagen Sie uns kurz, worum es geht. Wir nennen Ihnen einen Termin."],["Ankommen","Den Fragebogen füllen wir gemeinsam am Empfang aus."],["Untersuchung und Gespräch","Wir zeigen Ihnen die Aufnahmen am Bildschirm und erklären, was wir sehen."],["Ihr Plan, schriftlich","Alle Schritte und Kosten auf Papier. Entscheiden müssen Sie nichts sofort."]],
+ bring:["Versichertenkarte","Bonusheft, falls vorhanden","Liste Ihrer Medikamente"],
+ team:[["Dr. Katrin Sommer","Zahnärztin, Inhaberin","KS"],["Jonas Petersen","Zahnarzt","JP"],["Aylin Demir","Prophylaxe","AD"]],
+ faq:[["Nehmen Sie neue Patienten auf?","Ja. Rufen Sie an, wir finden einen Termin und sagen Ihnen, was Sie mitbringen."],["Ich habe Angst. Was können Sie tun?","Wir planen mehr Zeit ein, erklären vorher jeden Schritt und machen Pause, sobald Sie die Hand heben."],["Was zahlt meine Kasse?","Das klären wir vor der Behandlung. Sie bekommen den Eigenanteil schriftlich."]],
+ address:"Lindenweg 12, 21335 Lüneburg",access:[["wheelchair","Stufenloser Zugang, Aufzug"],["car","Parkplätze im Hof"],["bus","Bus 5011, Haltestelle Lindenweg"]],mail:"praxis@dr-sommer.example",
+ endTitle:"Wir freuen uns auf Sie.",prices:null};
+const PHYS={pal:"sand",name:"Physiotherapie Lindner",short:"Physio Lindner",mono:"L",kicker:"Physiotherapie in Celle",
+ h1:"Termine auch abends.",lede:"Krankengymnastik, Manuelle Therapie und Lymphdrainage. Mit Rezept oder als Selbstzahler.",
+ phone:"05141 555 0187",cta:"Termin anfragen",ctaShort:"Termin",photo:"weak",hero:"1505751172876-fa1923c5c528",
+ hoursLabel:"Öffnungszeiten",hours:[["Montag","7:30 bis 20:00",""],["Dienstag","7:30 bis 20:00",""],["Mittwoch","7:30 bis 20:00",""],["Donnerstag","7:30 bis 20:00",""],["Freitag","7:30 bis 14:00",""]],today:0,todayShort:"7:30 bis 20:00",
+ hoursNote:"Telefon Montag bis Freitag 8:00 bis 12:00. Sonst gern auf den Anrufbeantworter.",
+ facts:[["Alle Kassen","identification-card"],["Privat","identification-card"],["Hausbesuche","car"]],rating:null,quote:null,
+ svcTitle:"Behandlungen",svc:[["Krankengymnastik","Kräftigen, dehnen, wieder sicher bewegen."],["Manuelle Therapie","Für Rücken, Nacken und Gelenke."],["Lymphdrainage","Sanft, nach Operationen und bei Schwellungen."],["Hausbesuche","Wenn Sie nicht zu uns kommen können."]],
+ prices:{title:"Für Selbstzahler",rows:[["Krankengymnastik","32 €"],["Manuelle Therapie","38 €"],["Lymphdrainage","36 €"],["Klassische Massage","29 €"]]},
+ stepTitle:"Ihr erster Termin",steps:[["Verordnung mitbringen","Ihr Rezept vom Arzt. Ohne Rezept behandeln wir als Selbstzahler."],["Befund","Wir fragen nach Ihren Beschwerden und schauen uns die Bewegung an."],["Behandlung","Wir beginnen gleich und erklären, was wir tun."],["Übungen für zu Hause","Sie bekommen Ihre Übungen ausgedruckt mit."]],
+ bring:["Verordnung vom Arzt","Versichertenkarte","Handtuch und bequeme Kleidung"],
+ team:[["Marie Lindner","Physiotherapeutin, Inhaberin","ML"],["Tobias Wendt","Manuelle Therapie","TW"],["Svenja Koch","Lymphdrainage","SK"]],
+ faq:[["Brauche ich ein Rezept?","Für die Kasse ja. Ohne Rezept zahlen Sie selbst, die Preise stehen oben."],["Kommen Sie auch nach Hause?","Ja, mit Verordnung für Hausbesuche, in Celle und Umgebung."],["Wie schnell bekomme ich einen Termin?","Rufen Sie an. Abendtermine sind am schnellsten frei."]],
+ address:"Mühlenstraße 4, 29221 Celle",access:[["wheelchair","Erdgeschoss, stufenlos"],["car","Zwei Parkplätze vor der Tür"]],mail:"team@physio-lindner.example",
+ endTitle:"Rufen Sie an, wir finden einen Abend."};
+const KANZ={pal:"wasser",name:"Steuerkanzlei Brandt",short:"Kanzlei Brandt",mono:"B",kicker:"Steuerberatung in Hildesheim",
+ h1:"Ihre Steuern. In ruhigen Händen.",lede:"Für Angestellte, Rentner und kleine Betriebe. Das Erstgespräch kostet nichts.",
+ phone:"05121 555 0119",cta:"Erstgespräch vereinbaren",ctaShort:"Erstgespräch",photo:"none",
+ hoursLabel:"Bürozeiten",hours:[["Montag","8:30 bis 17:00",""],["Dienstag","8:30 bis 17:00",""],["Mittwoch","8:30 bis 13:00",""],["Donnerstag","8:30 bis 18:00",""],["Freitag","8:30 bis 13:00",""]],today:0,todayShort:"8:30 bis 17:00",
+ hoursNote:"Termine außerhalb der Bürozeiten nach Absprache.",
+ facts:[["Erstgespräch kostenfrei","chat-circle"],["Auch für Rentner","hand-heart"],["Belege digital oder auf Papier","file-text"]],rating:null,quote:null,
+ svcTitle:"Wobei wir helfen",svc:[["Steuererklärung","Für Angestellte, Rentner und Vermieter."],["Buchhaltung und Lohn","Für Betriebe bis etwa 20 Mitarbeiter."],["Jahresabschluss","Bilanz oder Einnahmen-Überschuss-Rechnung."],["Existenzgründung","Rechtsform, Finanzamt, erste Schritte."]],prices:null,
+ stepTitle:"So läuft das Erstgespräch",steps:[["Anrufen","Wir vereinbaren einen Termin, in der Kanzlei oder am Telefon."],["Unterlagen","Sie bekommen vorab eine kurze Liste, was wir sehen möchten."],["Gespräch","Wir hören zu und sagen ehrlich, was wir für Sie tun können."],["Angebot","Sie bekommen ein schriftliches Angebot. Ohne Verpflichtung."]],
+ bring:["Letzter Steuerbescheid","Lohnsteuer- oder Rentenbescheinigung","Ihre Steuer-ID"],
+ team:[["Henrike Brandt","Steuerberaterin","HB"],["Mehmet Yıldız","Steuerfachwirt","MY"]],
+ faq:[["Was kostet die Steuererklärung?","Das richtet sich nach der Gebührenverordnung. Im Erstgespräch nennen wir Ihnen den Betrag."],["Muss ich in die Kanzlei kommen?","Nein. Belege gehen auch per Post oder digital."],["Helfen Sie auch Rentnern?","Ja, das ist ein großer Teil unserer Arbeit."]],
+ address:"Almsstraße 21, 31134 Hildesheim",access:[["tram","Bus bis Almsstraße"],["wheelchair","Aufzug im Haus"]],mail:"kanzlei@brandt-steuer.example",
+ endTitle:"Ein Gespräch kostet nichts."};
+const BIZ=[ZAHN,PHYS,KANZ];
+
+/* ═══ Seitenbausteine ═══ */
+const ic=n=>`<i class="ph ph-${n}" aria-hidden="true"></i>`;
+const btnP=(t)=>`<a class="k-btn k-btn--p" href="#">${t}<span class="bi">${ic("calendar-check")}</span></a>`;
+const btnS=(b)=>`<a class="k-btn k-btn--s" href="#">${ic("phone")} ${b.phone}</a>`;
+const nav=(b,d)=>`<header class="k-nav"><a class="k-brand" href="#"><span class="k-logo">${b.mono}</span><span class="t-mark">${d?b.name:b.short}</span></a>
+ ${d?`<nav class="k-links"><a href="#">Leistungen</a><a href="#">Team</a><a href="#">${b.stepTitle.includes("Erstgespräch")?"Erstgespräch":"Erster Termin"}</a><a href="#">Anfahrt</a></nav><a class="k-iconbtn" href="#">${ic("phone")} ${b.phone}</a><a class="k-btn k-btn--p" href="#" style="min-height:48px">${b.ctaShort}<span class="bi" style="width:34px;height:34px">${ic("calendar-check")}</span></a>`
+  :`<a class="k-iconbtn" href="#">${ic("list")}Menü</a>`}</header>`;
+const today=b=>`<div class="k-today"><span class="ic">${ic("clock")}</span><span><span class="t-small" style="display:block">Heute, ${b.hours[b.today][0]}</span><b class="t-data" style="display:block;">${b.todayShort}</b></span></div>`;
+const hours=(b,inHero,noHead)=>`<div class="k-hours"${inHero?' style="margin-top:var(--s-l);box-shadow:none"':''}>${noHead?'<div style="height:6px"></div>':`<div class="hd"><span class="t-h3" style="font-size:var(--link-size);font-family:var(--ft);font-weight:700;letter-spacing:0">${b.hoursLabel}</span>${ic("clock")}</div>`}
+ <ol>${b.hours.map((h,i)=>`<li class="${i===b.today?"now":""}"><span class="d">${h[0].slice(0,2)}${i===b.today?' <small>heute</small>':''}</span><span class="v t-data" style="font-weight:${i===b.today?700:400}">${h[1]}${h[2]?`<br>${h[2]}`:""}</span></li>`).join("")}
+ <li class="zu"><span class="d">Sa, So</span><span class="v">geschlossen</span></li></ol>
+ <p class="ft t-small">${b.hoursNote}</p></div>`;
+function hero(b,d){
+ const facts=`<div class="k-facts">${b.facts.map(f=>`<span class="k-chip">${ic(f[1])}${f[0]}</span>`).join("")}</div>`;
+ const rate=b.rating?`<div class="k-rate"><span class="t-figure" style="font-size:44px">${b.rating.v}</span><span class="t-small">von 5 · ${b.rating.n}</span></div>`:"";
+ const text=`<div><p class="k-pill t-kicker">${b.kicker}</p><h1 class="t-display">${b.h1}</h1><p class="t-lede">${b.lede}</p><div class="k-ctas">${btnP(b.cta)}${btnS(b)}</div>${d?facts.replace('k-facts','k-facts')+rate:""}</div>`;
+ let vis="";
+ if(b.photo==="good") vis=`<figure class="k-frame"><div class="in"><img src="${U(b.hero,d?1200:800)}" alt="Behandlungsraum der Praxis"></div>${today(b)}</figure>`;
+ if(b.photo==="weak") vis=`<div style="display:grid;grid-template-columns:0.82fr 1fr;gap:10px;margin-top:var(--s-l);align-items:stretch">
+   <figure class="k-frame" style="margin:0;padding:5px;border-radius:22px"><div class="in" style="aspect-ratio:3/4;border-radius:17px;height:100%"><img src="${U(b.hero,360)}" alt="Praxisraum"></div></figure>
+   <div style="background:var(--surface);border-radius:20px;padding:16px;display:grid;align-content:space-between;gap:10px"><span class="ic" style="display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--f2-bg)">${ic("moon")}</span><span><span class="t-small" style="display:block;color:var(--muted)">Montag bis Donnerstag</span><b class="t-h3" style="display:block">bis 20:00 Uhr</b></span></div></div>`;
+ if(b.photo==="none") vis=hours(b,true);
+ return `<section class="k-hero"><div class="k-panel">${text}${vis}</div></section>${d?"":facts+rate}`;}
+const sec=(t,inner,intro)=>`<section class="k-sec"><div class="wrap"><h2 class="t-h2">${t}</h2>${intro?`<p class="intro t-body">${intro}</p>`:""}${inner}</div></section>`;
+const svc=(b,d)=>`<div class="k-svc">${b.svc.map((s,i)=>{const photo=i===0&&b.photo==="good";const cls=photo?"photo":(i===1?"tint":"");
+ const tx=`<h3 class="t-h3">${s[0]}</h3><p class="t-body">${s[1]}</p><span class="more">Mehr dazu ${ic("caret-right")}</span>`;
+ return photo?`<div class="photo"><div class="im"><img src="${U(b.second,800)}" alt=""></div><div class="tx">${tx}</div></div>`:`<div class="${cls}">${tx}</div>`}).join("")}</div>`;
+const prices=b=>b.prices?`<div class="k-price"><p class="t-small" style="padding:12px 0 2px;color:var(--muted)">${b.prices.title}, je Behandlung</p>${b.prices.rows.map(r=>`<div><span>${r[0]}</span><b class="t-data">${r[1]}</b></div>`).join("")}</div>`:"";
+const steps=b=>`<ol class="k-steps">${b.steps.map((s,i)=>`<li><span class="n">${i+1}</span><div><h3 class="t-h3">${s[0]}</h3><p class="t-body">${s[1]}</p></div></li>`).join("")}</ol>`;
+const bring=b=>`<div class="k-bring"><b class="t-link">Bitte mitbringen</b><ul>${b.bring.map(x=>`<li>${ic("check")}<span>${x}</span></li>`).join("")}</ul></div>`;
+const team=b=>`<div class="k-team">${b.team.map(t=>`<div class="p"><div class="pic">${t[2]}</div><div><h3>${t[0]}</h3><p>${t[1]}</p></div></div>`).join("")}</div>`;
+const voice=b=>b.quote?`<div class="k-voice"><div class="fig"><span class="t-figure">${b.rating.v}</span><span class="t-small" style="color:var(--muted)">von 5<br>${b.rating.n}</span></div><blockquote>„${b.quote.t}“</blockquote><p class="who t-small">${b.quote.a}</p></div>`:"";
+const faq=b=>`<div class="k-faq">${b.faq.map((f,i)=>`<details${i===0?" open":""}><summary>${f[0]}<span class="pm">${ic("plus")}</span></summary><p class="t-body">${f[1]}</p></details>`).join("")}</div>`;
+const map=b=>`<div class="k-map"><div class="tile"><span class="park"></span><span class="pin">${ic("map-pin")}</span></div><div class="bd"><b class="t-link">${b.address}</b><div class="acc t-small">${b.access.map(a=>`<span>${ic(a[0])}${a[1]}</span>`).join("")}</div><a class="k-btn k-btn--s" href="#" style="justify-self:start">${ic("navigation-arrow")} Route planen</a></div></div>`;
+const end=(b,d)=>`<section class="k-end"><div class="wrap"><h2 class="t-h2">${b.endTitle}</h2><div class="k-ctas">${btnP(b.cta)}<a class="k-btn k-btn--s" href="#">${ic("phone")} ${b.phone}</a></div>
+ <div class="cols" style="${d?"grid-template-columns:1.4fr 1fr 1fr 1fr":""}"><div><a class="k-brand" href="#"><span class="k-logo">${b.mono}</span><span class="t-mark">${b.name}</span></a></div>
+ <div><h4>Adresse</h4><p class="t-small">${b.address.replace(", ","<br>")}</p></div><div><h4>Kontakt</h4><p class="t-small">${b.phone}<br>${b.mail}</p></div><div><h4>${b.hoursLabel}</h4><p class="t-small">Montag bis Freitag<br>Zeiten im Einzelnen oben</p></div></div>
+ <nav class="legal"><a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Barrierefreiheit</a></nav></div></section>`;
+const dock=b=>`<div class="k-dock"><a class="k-btn k-btn--s" href="#">${ic("phone")} Anrufen</a><a class="k-btn k-btn--p" href="#">${ic("calendar-check")} ${b.ctaShort}</a></div>`;
+
+function mobile(b){
+ const order=[
+  hero(b,false),
+  b.photo==="none"?"":sec(b.hoursLabel,hours(b,false,true)),
+  sec(b.svcTitle,svc(b,false)+prices(b)),
+  sec(b.stepTitle,steps(b)+bring(b)),
+  sec(b.team.length>2?"Wer Sie behandelt":"Wer Sie berät",team(b)),
+  b.quote?sec("Was Patienten sagen",voice(b)):"",
+  sec("Häufige Fragen",faq(b)),
+  sec("So finden Sie uns",map(b)),
+  end(b,false)];
+ return `<div class="k k-m" style="${vars(390,b.pal)};width:390px">${nav(b,false)}${order.join("")}${dock(b)}</div>`;}
+
+/* ═══ Erster Blick + ganze Seiten ═══ */
+const CAP=[["Zahnarztpraxis Dr. Sommer","Lind · gute Fotos · Bewertung aus Daten"],["Physiotherapie Lindner","Sand · schwaches Foto, klein gerahmt · Preise aus Daten"],["Steuerkanzlei Brandt","Wasser · ohne Foto, Bürozeiten als Einstieg"]];
+document.getElementById("firsts").innerHTML=BIZ.map((b,i)=>`<div><p class="pcap">${CAP[i][0]}<small>${CAP[i][1]}</small></p><div class="phone" style="height:844px">${mobile(b).replace('<div class="k-dock"','<div class="k-dock" style="display:none"')}<div class="fold" style="top:842px"></div></div></div>`).join("");
+
+const PART=2250;
+function buildParts(){
+ const tmp=document.createElement("div");tmp.style.cssText="position:absolute;left:-9999px;top:0";document.body.appendChild(tmp);
+ const hs=BIZ.map(b=>{tmp.innerHTML=mobile(b);return tmp.firstElementChild.scrollHeight});tmp.remove();
+ const H=Math.max(...hs);const n=Math.ceil(H/PART);
+ document.querySelectorAll(".phones[data-part]").forEach(el=>{const k=+el.dataset.part;
+  if(k>=n){el.closest("[data-shot]").remove();return;}
+  el.innerHTML=BIZ.map((b,i)=>{const h=Math.min(PART,Math.max(0,hs[i]-k*PART));
+   return `<div><p class="pcap">${CAP[i][0]}<small>${k*PART} bis ${Math.min(hs[i],(k+1)*PART)} px von ${hs[i]} px</small></p><div class="phone" style="height:${h||1}px;${h?"":"visibility:hidden"}"><div style="margin-top:-${k*PART}px">${mobile(b)}</div>${k===0?'<div class="fold" style="top:842px"><span>Ende erster Bildschirm</span></div>':""}</div></div>`}).join("");
+ });
+}
+
+/* ═══ Desktop ═══ */
+function desktop(b){
+ return `<div class="k k-d" style="${vars(1440,b.pal)};width:1440px">${nav(b,true)}${hero(b,true)}
+ <section class="k-sec"><div class="wrap row2"><div><h2 class="t-h2">${b.hoursLabel}</h2>${hours(b,false,true)}</div><div><h2 class="t-h2">${b.stepTitle}</h2>${steps(b)}${bring(b)}</div></div></section>
+ <section class="k-sec"><div class="wrap"><div class="head"><h2 class="t-h2">${b.svcTitle}</h2><a class="k-btn k-btn--s" href="#">Alle Leistungen</a></div>${svc(b,true)}
+  <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:56px;margin-top:var(--s-section);align-items:start"><div><h2 class="t-h2">Wer Sie behandelt</h2>${team(b)}</div><div><h2 class="t-h2">Was Patienten sagen</h2>${voice(b)}</div></div></div></section>
+ <div style="height:var(--s-section)"></div></div>`;}
+function buildDesk(){const tmp=document.createElement("div");tmp.style.cssText="position:absolute;left:-9999px;top:0";tmp.innerHTML=desktop(ZAHN);document.body.appendChild(tmp);const H=tmp.firstElementChild.scrollHeight;tmp.remove();
+ const CUT=1060;
+ document.getElementById("deskA").innerHTML=`<div style="height:${CUT}px;overflow:hidden;position:relative">${desktop(ZAHN)}<div class="fold" style="top:898px"><span>Ende erster Bildschirm 1440 × 900</span></div></div>`;
+ document.getElementById("deskB").innerHTML=`<div style="height:${H-CUT}px;overflow:hidden"><div style="margin-top:-${CUT}px">${desktop(ZAHN)}</div></div>`;}
+
+/* ═══ Bausteine (390, Lind) ═══ */
+const W=390,v=vars(W,"lind");
+const box=(cls,h,inner,pad)=>`<div class="c ${cls}"><h4>${h}</h4><div class="k k-m" style="${v};background:transparent;${pad||""}">${inner}</div></div>`;
+document.getElementById("bausteine").innerHTML=[
+ box("s4","Sprechzeiten · heute hervorgehoben · blueprint.hoursLabel",hours(ZAHN)),
+ box("s4","Erster Termin · aus dem Ablauf, ohne Dauer",steps(ZAHN)),
+ box("s4","Team · ohne Porträt ein Monogramm",team({...ZAHN,team:[...ZAHN.team,["Merle Kaya","Empfang","MK"]]})),
+ box("s4","Fakten-Chips · nur aus Daten",`<div class="k-facts" style="padding:0">${ZAHN.facts.map(f=>`<span class="k-chip">${ic(f[1])}${f[0]}</span>`).join("")}</div><div class="k-rate" style="padding:14px 0 0"><span class="t-figure" style="font-size:44px">4,8</span><span class="t-small">von 5 · 212 Google-Bewertungen</span></div><p class="t-small" style="margin-top:14px;color:var(--muted)">Keine Kassen in den Daten? Chip fehlt. Keine Bewertung? Zeile fehlt. Nie „Top-Praxis“ oder erfundene Zahlen.</p>${prices(PHYS)}`),
+ box("s4","FAQ · Ziel ≥ 60 px, Plus dreht 45°",faq(ZAHN)),
+ box("s4","Kartenkachel · ohne Einbettung, Route als Link",map(ZAHN)),
+ box("s6","Handy-Leiste · erscheint erst unter dem Einstieg",`<div style="position:relative;height:96px;border-radius:16px;overflow:hidden;background:var(--paper)">${dock(ZAHN)}</div><p class="t-small" style="margin-top:12px;color:var(--muted)">Zwei Ziele à 56 px: Anrufen links (Tintenrand), Termin rechts (Praxisgrün). Fehlt ein Online-Termin, wird links „E-Mail“ und rechts „Anrufen“ der Hauptknopf.</p>`),
+ box("s6","Unterseite · Impressum, Datenschutz, Leistungen",`<div class="k-sub" style="background:var(--paper);border-radius:16px;overflow:hidden">${nav(ZAHN,false)}<p class="crumb"><a href="#">Startseite</a> / Impressum</p><article><h1 class="t-h2">Impressum</h1><h2>Angaben nach § 5 DDG</h2><p class="t-body">Zahnarztpraxis Dr. Sommer<br>Lindenweg 12, 21335 Lüneburg</p><h2>Zuständige Kammer</h2><p class="t-body">Zahnärztekammer Niedersachsen. Berufsbezeichnung Zahnärztin, verliehen in Deutschland.</p></article></div>`),
+].join("");
+
+/* ═══ TS-Objekt ═══ */
+const LATIN_EXT="U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF";
+const q=s=>JSON.stringify(s);
+const tsType=Object.entries(TYPE).map(([k,t])=>`    ${k}: { font: ${q(t.font)}, size: ${q(t.size)}, line: ${t.line}, track: ${q(t.track)}, weight: ${t.weight} },`).join("\n");
+const tsPal=PALS.map(p=>`    { id: ${q(p.id)}, name: ${q(p.name)}, paper: ${q(p.paper)}, surface: ${q(p.surface)}, ink: ${q(p.ink)}, muted: ${q(p.muted)}, rule: ${q(p.rule)},
+      accent: ${q(p.accent)}, deep: ${q(p.deep)}, onDeep: ${q(p.onDeep)}, signal: ${q(p.signal)}, onSignal: ${q(p.onSignal)},
+      fields: [
+${p.fields.map(f=>`        { id: ${q(f.id)}, bg: ${q(f.bg)}, ink: ${q(f.ink)}, muted: ${q(f.muted)} },`).join("\n")}
+      ] },`).join("\n");
+document.getElementById("ts").textContent=`import type { DesignSystemDef } from "./types";
+
+/** Googles latin-ext-Bereich (Fonts-API, Stand 2026-10). */
+const LATIN_EXT =
+  "${LATIN_EXT}";
+
+export const KLAR: DesignSystemDef = {
+  id: "klar",
+  name: "Klar",
+  essence: "Freundlich, ruhig, gut lesbar",
+  fonts: {
+    display: {
+      family: "DM Sans",
+      fallback: "'Helvetica Neue', Arial, system-ui, sans-serif",
+      files: [
+        // Instanz opsz 24, wght 400–700.
+        { file: "dm-sans-latin-wght.woff2", weight: "400 700", style: "normal" },
+        { file: "dm-sans-latin-ext-wght.woff2", weight: "400 700", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+    text: {
+      family: "Atkinson Hyperlegible Next",
+      fallback: "Verdana, system-ui, sans-serif",
+      files: [
+        { file: "atkinson-next-latin-wght.woff2", weight: "200 800", style: "normal" },
+        { file: "atkinson-next-latin-ext-wght.woff2", weight: "200 800", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+  },
+  preload: ["dm-sans-latin-wght.woff2", "atkinson-next-latin-wght.woff2"],
+  type: {
+${tsType}
+  },
+  space: {
+    "2xs": ".25rem", xs: ".5rem", s: "1rem", m: "1.5rem", l: "2.5rem", xl: "4rem", "2xl": "6rem",
+    section: ${q(SPACE.section)},
+    gutter: ${q(SPACE.gutter)},
+    measure: "36rem", max: "82rem",
+  },
+  // \`surface\` ist ein Vorschlag (siehe Abweichung 1).
+  palettes: [
+${tsPal}
+  ],
+  // Hebt schwache Praxisfotos leicht an, ohne zu verfärben.
+  imageFilter: ${q(FILTER)},
+};`;
+
+/* Teile erst nach dem Laden der Schriften messen */
+document.fonts.ready.then(()=>{buildParts();buildDesk();document.body.dataset.ready="1";});
+</script>
+</body>
+</html>
