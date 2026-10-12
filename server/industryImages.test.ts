@@ -603,7 +603,7 @@ describe("Praxis-Satz nur für Ärzte, nicht für jede „Praxis“ (Nacht N0)",
 
 describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
   const motiv = (url: string) => new URL(url).pathname;
-  const MIT_ABEND = ["restaurant", "bar", "friseur", "hospitality"];
+  const MIT_ABEND = ["restaurant", "bar", "friseur", "hospitality", "pension"];
 
   test.each(MIT_ABEND)(
     "%s: geprüfte Unsplash-URLs, mindestens fünf, kein Motiv doppelt",
@@ -630,7 +630,7 @@ describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
         expect(abend.has(motiv(url)), `${key}: ${url}`).toBe(false);
   });
 
-  test("nur Restaurant, Bar, Friseur und Unterkunft führen Abendmotive", () => {
+  test("nur Restaurant, Bar, Friseur, Hotel und Pension führen Abendmotive", () => {
     for (const [key, satz] of Object.entries(INDUSTRY_IMAGES))
       if (!MIT_ABEND.includes(key)) expect(satz.evening, key).toBeUndefined();
   });
@@ -645,7 +645,7 @@ describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
       ["Cocktailbar", "bar"],
       ["Friseursalon", "friseur"],
       ["Hotel", "hospitality"],
-      ["Pension", "hospitality"],
+      ["Pension", "pension"],
       ["Boutique Hotel", "hospitality"],
     ] as const) {
       expect(getIndustryImages(kategorie, "Abendrot"), kategorie).toBe(INDUSTRY_IMAGES[key]);
@@ -681,5 +681,58 @@ describe("buildStockFallbackImages: Abendmotive für Nacht (N2+N3)", () => {
     expect(
       buildStockFallbackImages("Schreinerei", "Brandt", undefined, { evening: true })
     ).toEqual(hell);
+  });
+});
+
+describe("Bildsatz Pension (einfache Unterkunft, 2026-10-12)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+
+  test("Pension, Gasthof, Gästehaus, Ferienwohnung, Fremdenzimmer → eigener Satz", () => {
+    for (const k of [
+      "Pension",
+      "Frühstückspension",
+      "Gasthof",
+      "Landgasthof",
+      "Gästehaus",
+      "Gaestehaus",
+      "Ferienwohnung",
+      "Ferienwohnungen",
+      "Ferienzimmer",
+      "Fremdenzimmer",
+      "Gästezimmer",
+      "Zimmervermietung",
+    ]) {
+      expect(gruppe(k, "Haus am See"), k).toBe("pension");
+      // KI sagt „hotel" (Unterkunft allgemein): der genauere Satz gewinnt.
+      expect(gruppe(k, "Haus am See", "hotel"), `${k} (KI hotel)`).toBe("pension");
+    }
+    expect(gruppe("", "Pension Sonnenhang")).toBe("pension");
+  });
+
+  test("Hotel, Hostel, Resort, Restaurant, Ferienpark bleiben, wo sie waren", () => {
+    expect(gruppe("Hotel", "Seehotel")).toBe("hospitality");
+    expect(gruppe("Hotel", "Seehotel", "hotel")).toBe("hospitality");
+    expect(gruppe("Boutique-Hotel", "Am Markt")).toBe("hospitality");
+    expect(gruppe("Hostel", "Backpackers")).toBe("hospitality");
+    expect(gruppe("Resort", "Seeblick")).toBe("hospitality");
+    expect(gruppe("Hotel garni", "Linde")).toBe("hospitality");
+    expect(gruppe("Restaurant", "Zum Brotkorb")).toBe("restaurant");
+    expect(gruppe("Ferienpark", "Seepark")).not.toBe("pension");
+    expect(gruppe("Ferienhof", "Hof Berger")).toBe("hospitality");
+  });
+
+  test("8–12 geprüfte Fotos, keine Doppel, Abendmotive eigen", () => {
+    const satz = INDUSTRY_IMAGES.pension;
+    const alle = [...new Set([...satz.hero, ...(satz.gallery ?? [])].map(u => new URL(u).pathname))];
+    expect(alle.length).toBeGreaterThanOrEqual(8);
+    expect(alle.length).toBeLessThanOrEqual(12);
+    for (const [key, other] of Object.entries(INDUSTRY_IMAGES)) {
+      if (key === "pension") continue;
+      for (const u of [...other.hero, ...(other.gallery ?? [])])
+        expect(alle.includes(new URL(u).pathname), `${key}: ${u}`).toBe(false);
+    }
   });
 });

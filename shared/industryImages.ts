@@ -783,7 +783,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   hospitality: {
     keywords: [
       "hotel",
-      "pension",
       "hostel",
       "airbnb",
       "unterkunft",
@@ -797,11 +796,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "boardinghouse",
       "boarding house",
       "lodging",
-      "gasthof",
-      "gästehaus",
-      "gaestehaus",
       "herberge",
-      "ferienwohnung",
       "ferienhof",
     ],
     hero: [
@@ -822,6 +817,54 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1740047957758-24c66b4468e4?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1783014619882-0e9ee99f0a20?w=1400&q=85&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1780126752257-cae35f118114?w=1400&q=85&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Pension, Gasthof, Ferienwohnung (2026-10-12) ───────────────
+  // Einfache Unterkunft statt Resort-/Poolhotel: helle Gästezimmer,
+  // Frühstück, Gaststube, Gasthaus-Fassade mit Geranien, Holzflur, Dorf und
+  // Landschaft. Keine Pools, kein Spa, kein Luxus. Alle Motive gesichtet und
+  // per HTTP 200 geprüft. Verfeinert „hospitality" (KI-Schlüssel „hotel"):
+  // Hotel, Hostel, Resort und Ferienhof bleiben dort.
+  pension: {
+    keywords: [
+      "pension",
+      "gasthof",
+      "gästehaus",
+      "gaestehaus",
+      "ferienwohnung",
+      "ferienzimmer",
+      "fremdenzimmer",
+      "gästezimmer",
+      "gaestezimmer",
+      "zimmervermietung",
+      "privatzimmer",
+    ],
+    refines: ["hospitality"],
+    hero: [
+      "https://images.unsplash.com/photo-1565089849244-55f033575bb6?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1775744244614-beb197cfac53?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1773225630750-a7dc5e70ea82?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1766431066492-9bec8410a57b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1759139445627-5ce9d5fac8f9?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1754597302822-4b96f3442d3f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1704283735270-f973e7e9c14e?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1788032008128-23291ef60c78?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1649056325447-72874fa7db56?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1635542927159-5d4ec69068b1?w=800&q=80&auto=format&fit=crop",
+    ],
+    // Abendmotive (Nacht): warme Gaststube, Gasthaus und Hütten in der
+    // Dämmerung bzw. bei Nacht. Gesichtet, HTTP 200 (2026-10-12).
+    evening: [
+      "https://images.unsplash.com/photo-1714733340805-268e89cf861a?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1645450433868-6509200515ec?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1789466190150-16cfde9c0ab6?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1736317855552-d7db0552c8fd?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1657215223750-c4988d4a2635?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1767729606859-7228b96c4c40?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 
