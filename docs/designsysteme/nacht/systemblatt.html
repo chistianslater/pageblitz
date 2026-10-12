@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nacht Systemblatt</title>
+<link rel="preload" href="fonts/gilda-display-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jost-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+<!-- Nur fürs Blatt: Symbole aus Phosphor (MIT), Light-Schnitt passend zur dünnen Linie des Systems. -->
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css">
+<style>
+/* ── Schriften (self-hosted, OFL) ─────────────────────────────── */
+@font-face{font-family:"Gilda Display";src:url(fonts/gilda-display-latin.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Gilda Display";src:url(fonts/gilda-display-latin-ext.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Jost";src:url(fonts/jost-latin-wght.woff2) format("woff2");font-weight:300 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Jost";src:url(fonts/jost-latin-ext-wght.woff2) format("woff2");font-weight:300 700;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+/* ── Blatt (Rahmen des Dokuments, nicht Teil des Systems) ─────── */
+:root{
+  --fd:"Gilda Display","Didot","Bodoni 72",Georgia,serif;
+  --ft:"Jost","Futura","Century Gothic",system-ui,sans-serif;
+  --paper:#1c2a2a;--surface:#24363a;--ink:#f2ece3;--muted:#c5ccc4;--rule:#3a5052;--accent:#e1a97c;--deep:#101b1c;--onDeep:#f2ece3;--signal:#d6996a;--onSignal:#132121;
+  --pad:56px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b1414;color:var(--ink);font-family:var(--ft);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.sheet{width:1520px;margin:0 auto;background:var(--paper);position:relative}
+[data-shot]{padding:0 var(--pad);background:var(--paper)}
+.blk{padding:60px 0 72px;border-top:1px solid var(--rule)}
+.blk.first{border-top:0}
+.lb{display:flex;gap:.8em;align-items:center;font:500 14px/1.3 var(--ft);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.lb b{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--accent);font:400 18px/1 var(--fd);letter-spacing:0}
+.bh{font:400 56px/1.04 var(--fd);letter-spacing:.005em;text-transform:uppercase;margin:18px 0 16px;max-width:26ch}
+.bp{max-width:50rem;font-size:19px;line-height:1.6;color:var(--ink)}
+.bp+.bp{margin-top:10px}
+.note{font-size:15px;color:var(--muted);line-height:1.5}
+code{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:rgba(242,236,227,.08);padding:1px 5px;border-radius:4px}
+table.t{width:100%;border-collapse:collapse;font-size:15px;line-height:1.45;margin-top:26px}
+table.t th{font:500 13px var(--ft);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);text-align:left;padding:10px 18px 10px 0;border-bottom:1px solid var(--accent)}
+table.t td{padding:11px 18px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.t td:first-child{font-weight:500;white-space:nowrap}
+table.t td.bad{color:#ff9f8a}
+table.t .ok{color:#a9d6a0;font-weight:600}
+table.t .no{color:#ff9f8a;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+.cap{font-size:14px;color:var(--muted);margin-top:10px;line-height:1.45}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+
+/* Kopf */
+.top{padding:46px 0 60px;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;right:-260px;top:-160px;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle closest-side,rgba(80,120,74,.55),transparent);filter:blur(40px);pointer-events:none}
+.top .wm{position:relative;z-index:1;display:flex;align-items:flex-end;gap:36px;margin:10px 0 40px}
+.top .w{font:400 250px/.78 var(--fd);letter-spacing:.01em;text-transform:uppercase;color:var(--accent);margin-left:-10px}
+.top .dot{width:16px;height:16px;border-radius:50%;background:var(--accent);margin-bottom:24px}
+.top .row{position:relative;z-index:1;display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:44px;align-items:start}
+.top .m{font:400 34px/1.15 var(--fd)}
+.top .r p{font-size:16px;line-height:1.55;color:var(--muted)}
+.top .r p+p{margin-top:8px}
+.top .r p b{color:var(--ink);font-weight:500}
+.vs{position:relative;z-index:1;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:44px}
+.vs>div{padding:18px 18px 16px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--rule)}
+.vs h3{font:400 22px/1.1 var(--fd);margin-bottom:6px}
+.vs p{font-size:14.5px;color:var(--muted);line-height:1.45}
+.vs .me{background:var(--signal);color:var(--onSignal);box-shadow:none}
+.vs .me p{color:#2a2420}
+
+/* Schrift */
+.fonts2{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;margin-top:28px}
+.fonts2>div{background:var(--surface);border-radius:4px;padding:26px 30px 24px}
+.nm{font:500 13px var(--ft);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);display:flex;justify-content:space-between;gap:12px}
+.nm span:last-child{color:var(--muted);letter-spacing:.04em;text-transform:none;font-size:14px}
+.gl{font:400 170px/.9 var(--fd);margin:30px 0 8px;color:var(--accent)}
+.gl.t{font:400 150px/.9 var(--ft);letter-spacing:-.02em;color:var(--ink)}
+.abc{font-size:22px;line-height:1.35;margin:12px 0 16px}
+.abc.d{font-family:var(--fd)}
+.wts div{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);padding:8px 0}
+.wts div span:first-child{font-size:24px;line-height:1.15}
+.wts div span:last-child{font-size:13px;color:var(--muted)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.cmp>div{border-radius:4px;padding:20px 22px;box-shadow:inset 0 0 0 1px var(--rule)}
+.cmp .x{font-size:15px;color:var(--muted);margin-bottom:12px}
+.cmp img{display:block;width:100%;border-radius:2px}
+
+.scale{margin-top:30px;border-top:1px solid var(--accent)}
+.srow{display:grid;grid-template-columns:150px 380px 1fr;gap:28px;padding:22px 0;border-bottom:1px solid var(--rule);align-items:start}
+.srow .k{font:500 15px var(--ft);color:var(--accent);letter-spacing:.06em}
+.srow .k small{display:block;font:400 13.5px/1.45 var(--ft);color:var(--muted);margin-top:4px;letter-spacing:0}
+.srow .m375{width:375px;overflow:hidden}
+.srow .m1440{overflow:hidden}
+.srow .hd{font:500 12px var(--ft);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+
+/* Abstände, Raster */
+.spc{display:flex;align-items:flex-end;gap:18px;margin-top:24px}
+.spc>div>div{background:var(--accent);border-radius:2px}
+.spc span{display:block;font:500 14px var(--ft);margin-top:8px}
+.spc span small{display:block;font-weight:400;color:var(--muted)}
+.grids{display:grid;grid-template-columns:420px 1fr;gap:28px;margin-top:28px;align-items:start}
+.gv{background:var(--surface);border-radius:4px;padding:18px}
+.gv .cols{display:grid;gap:var(--g);height:180px;margin-top:12px}
+.gv .cols i{background:rgba(225,169,124,.16);box-shadow:inset 0 0 0 1px rgba(225,169,124,.35)}
+.radii{display:flex;gap:16px;margin-top:26px;flex-wrap:wrap}
+.radii div{width:150px;height:110px;display:grid;place-items:end start;padding:12px 14px;font:500 14px var(--ft);box-shadow:inset 0 0 0 1px var(--muted)}
+
+/* Paletten */
+.pals{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:28px}
+.pal{border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px var(--rule)}
+.pal .pv{padding:26px 24px 22px;position:relative;overflow:hidden}
+.pal .pv::after{content:"";position:absolute;left:-30%;top:-40%;width:120%;height:140%;border-radius:50%;background:radial-gradient(circle closest-side,var(--ga),transparent);opacity:.5;filter:blur(30px);pointer-events:none}
+.pal .pv>*{position:relative;z-index:1}
+.pal .pv .fig{font:400 120px/.8 var(--fd)}
+.pal .pv h3{font:400 30px/1.05 var(--fd);text-transform:uppercase;margin-top:14px}
+.pal .pv p{font-size:17px;margin-top:8px;line-height:1.5}
+.pal .pv .kk{font:500 14px var(--ft);letter-spacing:.16em;text-transform:uppercase}
+.pal .pv .bt{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.pal .pv .bt span{display:inline-flex;align-items:center;min-height:50px;padding:0 20px;border-radius:2px;font:500 15px var(--ft);letter-spacing:.12em;text-transform:uppercase}
+.pal .chips{display:grid;grid-template-columns:repeat(6,1fr)}
+.pal .chips div{height:66px;padding:8px;font:500 11px/1.25 var(--ft)}
+.pal table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--deep)}
+.pal td{padding:6px 14px;border-top:1px solid rgba(255,255,255,.07)}
+.pal td:last-child{text-align:right;font-weight:600}
+.pal .use{padding:10px 14px 14px;font-size:14px;color:var(--muted);background:var(--deep);border-top:1px solid rgba(255,255,255,.07)}
+
+/* Bausteine */
+.bs{display:grid;grid-template-columns:repeat(12,1fr);gap:22px;margin-top:28px}
+.bs>.c{border-radius:4px;overflow:hidden;box-shadow:0 0 0 1px var(--rule)}
+.bs>.c>h4{font:500 13px var(--ft);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);padding:16px 22px 0}
+.bs>.c>.cn{padding:6px 22px 22px}
+.bs .s4{grid-column:span 4}.bs .s5{grid-column:span 5}.bs .s6{grid-column:span 6}.bs .s7{grid-column:span 7}.bs .s8{grid-column:span 8}.bs .s12{grid-column:span 12}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
+.rules h4{font:400 26px/1.1 var(--fd);text-transform:uppercase;margin-bottom:14px}
+.rules ul{list-style:none;display:grid;gap:10px}
+.rules li{font-size:16.5px;line-height:1.5;padding-left:24px;position:relative}
+.rules li::before{content:"";position:absolute;left:2px;top:.6em;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.rules li.no::before{background:transparent;box-shadow:inset 0 0 0 1.5px #ff9f8a}
+
+/* Handys */
+.phone{position:relative;width:390px;overflow:hidden;contain:paint;box-shadow:0 0 0 1px #41585a;border-radius:6px;flex:none;background:#000}
+.phones{display:flex;gap:30px;margin-top:26px;align-items:flex-start;justify-content:space-between}
+.pcap{font:500 14px var(--ft);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;width:390px}
+.pcap small{display:block;font-weight:400;color:var(--muted);letter-spacing:0;text-transform:none;font-size:14.5px;margin-top:2px}
+.fold{position:absolute;left:0;right:0;border-top:2px dashed #ff9f8a;z-index:40}
+.fold span{position:absolute;right:6px;top:-24px;background:#ff9f8a;color:#1a1010;font:600 12px/1 var(--ft);padding:5px 7px;border-radius:3px}
+.desk{width:1440px;margin:26px 0 0 -16px;box-shadow:0 0 0 1px #41585a;border-radius:6px;overflow:hidden}
+pre.ts{background:var(--deep);color:#e9e3d8;border-radius:4px;padding:26px 30px;font:13px/1.5 ui-monospace,Menlo,monospace;white-space:pre;overflow:hidden;margin-top:24px;box-shadow:inset 0 0 0 1px var(--rule)}
+
+/* ════════ NACHT · System-CSS der Muster (gescoped auf .n) ════════ */
+.n{background:var(--paper);color:var(--ink);font-family:var(--ft);font-size:var(--body-size);line-height:var(--body-line);position:relative;overflow:hidden;isolation:isolate;
+   --ease:cubic-bezier(.23,1,.32,1);--hair:1px;--r:2px}
+.n img{display:block;width:100%;height:100%;object-fit:cover;filter:var(--img-filter)}
+.n a{color:inherit;text-decoration:none}
+.n .ph{font-size:1.2em;line-height:1}
+.n .wrap{max-width:var(--s-max);margin:0 auto;padding:0 var(--s-gutter);position:relative}
+/* Schein: die zwei weichen Lichter aus Zimmerl, gedeckelt (siehe Kontrast „Text auf Schein“) */
+.n .glow{position:absolute;z-index:-1;width:140vw;max-width:1400px;aspect-ratio:1;border-radius:50%;pointer-events:none;
+   background:radial-gradient(circle closest-side,var(--glow-a),transparent 72%);opacity:var(--glow-op);filter:blur(40px)}
+.n .glow.b{background:radial-gradient(circle closest-side,var(--glow-b),transparent 72%)}
+/* Kupferlinie mit Punkt (Zimmerl-Motiv) */
+.n .cl{display:flex;align-items:center;gap:0;height:7px}
+.n .cl::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.n .cl::after{content:"";height:var(--hair);background:var(--accent);flex:1;opacity:.55}
+.n .vl{width:var(--hair);height:40px;background:var(--accent);margin:0 auto;position:relative}
+.n .vl::after{content:"";position:absolute;left:50%;bottom:-6px;width:9px;height:9px;border-radius:50%;background:var(--accent);transform:translateX(-50%)}
+.n .t-kicker,.n .t-link{text-transform:uppercase}
+.n .acc{color:var(--accent)}
+.n .mut{color:var(--muted)}
+/* Navigation */
+.n-nav{position:absolute;inset:0 0 auto 0;z-index:5;display:flex;align-items:center;gap:14px;height:76px;padding:0 var(--s-gutter)}
+.n-nav.solid{position:relative;background:var(--paper);border-bottom:var(--hair) solid var(--rule)}
+.n-mono{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent);font:400 24px/1 var(--fd)}
+.n-brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
+.n-brand .t-mark{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.n-links{display:flex;gap:34px;margin-right:30px}
+.n-links a{font:500 var(--link-size)/1 var(--ft);letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.n-menu{flex:none;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 4px 0 12px;font:500 var(--link-size)/1 var(--ft);letter-spacing:.14em;text-transform:uppercase}
+.n-menu i.bars{display:grid;gap:6px;width:22px}
+.n-menu i.bars::before,.n-menu i.bars::after{content:"";height:1.5px;background:var(--ink)}
+/* Knöpfe: Kupferfläche (Haupt), Linie (Zweit). Ecke 2 px, scharf wie Zimmerl, aber 56 px hoch. */
+.n-btn{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:56px;padding:0 24px;border-radius:var(--r);font:500 var(--link-size)/1.2 var(--ft);letter-spacing:.14em;text-transform:uppercase;transition:transform .16s var(--ease),background-color .2s ease;white-space:nowrap}
+.n-btn:active{transform:scale(.97)}
+.n .n-btn--p{background:var(--signal);color:var(--onSignal)}
+.n .n-btn--p .ph{transition:transform .2s var(--ease)}
+.n .n-btn--s{color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.n-btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+@media (hover:hover) and (pointer:fine){.n .n-btn--p:hover .ph{transform:translateX(3px)}}
+/* Einstieg mit Foto */
+.n-hero{position:relative;text-align:center}
+.n-hero .bg{position:relative;height:var(--hero-h);overflow:hidden;background:var(--paper);-webkit-mask-image:linear-gradient(#000 calc(100% - 3px),transparent);mask-image:linear-gradient(#000 calc(100% - 3px),transparent)}
+.n-hero .bg::after{content:"";position:absolute;inset:-2px;background:linear-gradient(180deg,rgb(var(--paper-rgb)/.6) 0%,rgb(var(--paper-rgb)/0) 16%,rgb(var(--paper-rgb)/0) 38%,rgb(var(--paper-rgb)/.9) 66%,rgb(var(--paper-rgb)/1) 82%)}
+.n-hero .txt{position:relative;margin-top:calc(var(--hero-h) * -.3);padding:0 var(--s-gutter)}
+.n-hero h1{font-size:calc(var(--display-size) * 1.18)}
+.n-hero .t-kicker{color:var(--accent)}
+.n-hero h1{margin-top:var(--s-xs);color:var(--accent);text-wrap:balance}
+.n-hero .vl{margin-top:var(--s-m)}
+.n-hero .t-lede{margin:var(--s-m) auto 0;max-width:var(--s-measure);color:var(--ink)}
+.n-today{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 18px;margin-top:var(--s-m);color:var(--muted)}
+.n-today b{color:var(--ink);font-weight:500}
+.n-ctas{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:var(--s-l)}
+.n-m .n-ctas .n-btn{width:100%}
+/* Einstieg ohne starkes Foto: Ziffer + Name, Foto klein und versetzt */
+.n-hero2{position:relative;padding:calc(76px + var(--s-l)) var(--s-gutter) 0}
+.n-hero2 .t-kicker{color:var(--accent)}
+.n-hero2 h1{color:var(--accent);margin-top:var(--s-xs);text-wrap:balance;position:relative;z-index:2}
+.n-hero2 .row{display:grid;grid-template-columns:1fr;align-items:end;margin-top:var(--s-l);position:relative}
+.n-hero2 .row.has-pic{grid-template-columns:1fr 46%}
+.n-hero2 .fig{font-family:var(--fd);font-size:var(--figure-size);line-height:var(--figure-line);color:var(--accent);position:relative;z-index:2;white-space:nowrap}
+.n-hero2 .has-pic .fig{margin-right:-.42em;padding-bottom:.04em}
+.n-hero2 .figl{display:block;font:500 var(--kicker-size)/1.3 var(--ft);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);margin-top:var(--s-m)}
+.n-hero2 .pic{aspect-ratio:3/4;position:relative;z-index:1;overflow:hidden}
+.n-hero2 .pic::after{content:"";position:absolute;inset:0;background:linear-gradient(200deg,rgb(var(--paper-rgb)/0) 45%,rgb(var(--paper-rgb)/.6))}
+.n-hero2 .ghost{position:absolute;left:var(--s-gutter);top:calc(76px + var(--s-l) + var(--display-size) * 1.6);font:400 calc(var(--figure-size) * .5)/1 var(--fd);text-transform:uppercase;color:var(--ink);opacity:.06;white-space:nowrap;pointer-events:none}
+.n-hero2 .t-lede{margin-top:var(--s-l);max-width:var(--s-measure)}
+.n-hero2 .n-ctas{justify-content:flex-start}
+/* Abschnitte */
+.n-sec{padding:var(--s-section) 0 0;position:relative}
+.n-sec h2{color:var(--accent);max-width:18ch;text-wrap:balance}
+.n-sec .intro{color:var(--muted);margin-top:var(--s-s);max-width:var(--s-measure)}
+.n-open{position:relative;margin-bottom:var(--s-m)}
+.n-open .fig{font-family:var(--fd);font-size:var(--figure-size);line-height:var(--figure-line);color:var(--accent);display:block}
+.n-open .ghost{position:absolute;left:.55em;bottom:.08em;font:400 calc(var(--figure-size) * .34)/1 var(--fd);color:var(--ink);opacity:.09;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;pointer-events:none}
+.n-open .cl{margin-top:var(--s-s)}
+/* Speisekarte (nur aus Daten) */
+.n-menu-cat{margin-top:var(--s-xl)}
+.n-menu-cat:first-of-type{margin-top:var(--s-l)}
+.n-menu-cat>h3{color:var(--ink);display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:var(--s-s);border-bottom:var(--hair) solid var(--accent)}
+.n-menu-cat>h3 small{white-space:nowrap;font:500 var(--kicker-size)/1 var(--ft);letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+.n-dish{display:grid;grid-template-columns:1fr auto;gap:4px 18px;padding:var(--s-m) 0;border-bottom:var(--hair) solid var(--rule)}
+.n-dish .dn{font:500 var(--body-size)/1.35 var(--ft);color:var(--ink)}
+.n-dish .ds{grid-column:1;color:var(--muted);font-size:var(--small-size);line-height:var(--small-line)}
+.n-dish .pr{white-space:nowrap;grid-row:1;grid-column:2;color:var(--accent);font-variant-numeric:tabular-nums lining-nums;text-align:right}
+.n-dish .tg{grid-column:1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.n-dish .tg span{font:500 13.5px/1 var(--ft);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);padding:6px 9px;box-shadow:inset 0 0 0 1px var(--rule);border-radius:var(--r)}
+.n-set{margin-top:var(--s-l);background:var(--surface);padding:var(--s-m);display:grid;gap:var(--s-xs);position:relative}
+.n-set::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent)}
+.n-set .row{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.n-set .t-h3{color:var(--accent)}
+.n-set .t-data{color:var(--ink)}
+.n-src{margin-top:var(--s-s);color:var(--muted);font-size:var(--small-size)}
+/* Zeiten mit Küche */
+.n-hours{margin-top:var(--s-l);border-top:var(--hair) solid var(--accent)}
+.n-hours .hd,.n-hours li{display:grid;grid-template-columns:3.4em 1fr auto;gap:12px;padding:var(--s-s) 0;border-bottom:var(--hair) solid var(--rule);align-items:baseline}
+.n-hours .hd{color:var(--muted);font:500 var(--kicker-size)/1.2 var(--ft);letter-spacing:.14em;text-transform:uppercase;padding:var(--s-xs) 0}
+.n-hours ol{list-style:none}
+.n-hours .d{font-weight:500}
+.n-hours .v{font-variant-numeric:tabular-nums;white-space:nowrap}
+.n-hours .k{color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.n-hours li.zu .v{color:var(--muted)}
+.n-hours li.now{position:relative}
+.n-hours li.now::before{content:"";position:absolute;left:calc(var(--s-gutter) * -1);top:-1px;bottom:-1px;width:3px;background:var(--signal)}
+.n-hours li.now .d::after{content:"heute";display:block;font:500 13.5px/1.3 var(--ft);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-top:2px}
+.n-hours.two .hd,.n-hours.two li{grid-template-columns:6.4em 1fr}
+/* Reservierung: tiefes Band */
+.n-res{margin-top:var(--s-section);background:var(--deep);color:var(--onDeep);padding:var(--s-xl) 0;position:relative;overflow:hidden}
+.n-res .glow{left:-40%;top:-30%}
+.n-res h2{color:var(--accent);max-width:14ch}
+.n-res .t-lede{margin-top:var(--s-s);max-width:var(--s-measure)}
+.n-res .tel{display:block;white-space:nowrap;margin-top:var(--s-l);font-family:var(--fd);font-size:var(--h2-size);line-height:1.05;color:var(--onDeep);font-variant-numeric:lining-nums}
+.n-res .tel small{display:block;font:500 var(--kicker-size)/1.3 var(--ft);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:var(--s-xs)}
+.n-res ul{list-style:none;margin-top:var(--s-l);display:grid;gap:var(--s-xs)}
+.n-res li{display:flex;gap:12px;align-items:flex-start;color:var(--muted)}
+.n-res li .ph{color:var(--accent);margin-top:3px}
+/* Gästestimme */
+.n-voice{margin-top:var(--s-m);position:relative}
+.n-voice .q{display:block;height:.42em;overflow:hidden;font:400 calc(var(--figure-size) * .8)/.2 var(--fd);color:var(--accent);margin-bottom:var(--s-s)}
+.n-voice blockquote{font-family:var(--fd);font-size:var(--h3-size);line-height:1.35;color:var(--ink);max-width:28ch;position:relative}
+.n-voice .who{margin-top:var(--s-m);display:flex;gap:14px;align-items:center;color:var(--muted)}
+.n-voice .who b{color:var(--ink);font-weight:500}
+.n-rate{display:flex;align-items:baseline;gap:12px;margin-top:var(--s-l);padding-top:var(--s-m);border-top:var(--hair) solid var(--rule)}
+.n-rate .t-h2{color:var(--accent)}
+/* Gut zu wissen */
+.n-know{margin-top:var(--s-l);display:grid;gap:0}
+.n-know div{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:var(--s-m) 0;border-bottom:var(--hair) solid var(--rule)}
+.n-know .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent);font-size:22px}
+.n-know h3{font:500 var(--body-size)/1.35 var(--ft);color:var(--ink)}
+.n-know p{color:var(--muted);margin-top:2px}
+/* Anfahrt: Kartenkachel ohne Einbettung, nachtfarben */
+.n-map{margin-top:var(--s-l);background:var(--surface)}
+.n-map .tile{height:230px;position:relative;overflow:hidden;background:
+  linear-gradient(90deg,transparent 46%,var(--rule) 46%,var(--rule) 49%,transparent 49%),
+  linear-gradient(0deg,transparent 57%,var(--rule) 57%,var(--rule) 61%,transparent 61%),
+  linear-gradient(32deg,transparent 31%,var(--rule) 31%,var(--rule) 33%,transparent 33%),
+  repeating-linear-gradient(90deg,transparent 0 62px,rgba(255,255,255,.035) 62px 64px),
+  repeating-linear-gradient(0deg,transparent 0 48px,rgba(255,255,255,.035) 48px 50px),
+  var(--deep)}
+.n-map .tile .wat{position:absolute;right:-6%;top:-10%;width:42%;height:60%;border-radius:50%;background:rgba(120,160,190,.12)}
+.n-map .pin{position:absolute;left:47.5%;top:59%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 10px rgb(var(--accent-rgb)/.18),0 0 0 22px rgb(var(--accent-rgb)/.08)}
+.n-map .bd{padding:var(--s-m);display:grid;gap:var(--s-s)}
+.n-map .adr{font-family:var(--fd);font-size:var(--h3-size);line-height:1.25}
+.n-map .acc2{display:grid;gap:8px;color:var(--muted)}
+.n-map .acc2 span{display:flex;gap:10px;align-items:flex-start}
+.n-map .acc2 .ph{color:var(--accent);margin-top:3px}
+.n-map .n-btn{justify-self:start}
+/* Leistungen mit Preis (Salon) */
+.n-svc{margin-top:var(--s-l)}
+.n-svc div{display:grid;grid-template-columns:1fr auto;gap:2px 16px;padding:var(--s-m) 0;border-bottom:var(--hair) solid var(--rule)}
+.n-svc div:first-child{border-top:var(--hair) solid var(--accent)}
+.n-svc .dn{font-family:var(--fd);font-size:var(--h3-size);line-height:1.2}
+.n-svc .pr{white-space:nowrap;color:var(--accent);font-variant-numeric:tabular-nums;text-align:right;align-self:baseline}
+.n-svc .ds{grid-column:1/-1;color:var(--muted)}
+/* Zimmer als Angebot (Unterkunft) */
+.n-rooms{margin-top:var(--s-l);display:grid;gap:var(--s-m)}
+.n-room{background:var(--surface);padding:var(--s-m);display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:end;position:relative}
+.n-room .sz{grid-row:1/3;font-family:var(--fd);font-size:calc(var(--figure-size) * .5);line-height:.8;color:var(--accent)}
+.n-room .sz small{font-size:.32em;margin-left:2px}
+.n-room h3{color:var(--ink)}
+.n-room .meta{color:var(--muted);font-size:var(--small-size)}
+.n-room .pr{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;margin-top:var(--s-s);padding-top:var(--s-s);border-top:var(--hair) solid var(--rule)}
+.n-room .pr .t-data{color:var(--accent)}
+.n-room .pr span:first-child{color:var(--muted)}
+/* Bilder: Paar, versetzt (Zimmerl) */
+.n-pair{display:grid;grid-template-columns:1.3fr 1fr;gap:var(--s-s);margin-top:var(--s-l);align-items:start}
+.n-pair div{aspect-ratio:4/5;overflow:hidden;position:relative}
+.n-pair div::after,.n-hero2 .pic::before{content:"";position:absolute;inset:0;background:rgb(var(--paper-rgb)/.22);pointer-events:none;z-index:1}
+.n-pair div:last-child{margin-top:var(--s-xl);aspect-ratio:3/4}
+/* Fuß */
+.n-foot{margin-top:var(--s-section);background:var(--deep);color:var(--onDeep);padding:var(--s-xl) 0 calc(var(--s-xl) + var(--dock-pad,0px))}
+.n-foot .n-mono{width:64px;height:64px;font-size:32px}
+.n-foot .nm2{font-family:var(--fd);font-size:var(--h2-size);line-height:1.05;text-transform:uppercase;color:var(--accent);margin-top:var(--s-m)}
+.n-foot .cols{display:grid;gap:var(--s-l);margin-top:var(--s-l)}
+.n-foot .cols h4{font:500 var(--kicker-size)/1.3 var(--ft);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:var(--s-xs)}
+.n-foot .cols p,.n-foot .cols a{color:var(--onDeep);display:block}
+.n-foot .legal{display:flex;flex-wrap:wrap;gap:var(--s-xs) var(--s-m);margin-top:var(--s-xl);padding-top:var(--s-m);border-top:var(--hair) solid rgba(255,255,255,.12)}
+.n-foot .legal a{font-size:var(--small-size);text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgb(var(--accent-rgb)/.6)}
+.n-foot .legal span{font-size:var(--small-size);color:var(--muted);margin-left:auto}
+/* Handy-Leiste */
+.n-dock{position:absolute;left:10px;right:10px;z-index:30;display:grid;grid-template-columns:1fr 1.25fr;gap:8px;padding:8px;background:rgb(var(--deep-rgb)/.86);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 40px -18px #000;border-radius:4px}
+.n-dock .n-btn{min-height:52px;padding:0 12px;gap:10px}
+.n-dock .n-btn--s{box-shadow:inset 0 0 0 1px rgb(var(--ink-rgb)/.7)}
+/* Unterseite */
+.n-sub{padding:var(--s-xl) 0 0}
+.n-sub .back{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font:500 var(--link-size)/1 var(--ft);letter-spacing:.12em;text-transform:uppercase;min-height:48px}
+.n-sub h1{color:var(--accent);margin-top:var(--s-m)}
+.n-sub h2{font:500 var(--body-size)/1.35 var(--ft);color:var(--ink);margin-top:var(--s-l)}
+.n-sub p{color:var(--muted);margin-top:var(--s-xs);max-width:var(--s-measure)}
+.n-sub p a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:4px}
+/* Desktop-Varianten */
+.n-d .n-hero{text-align:center}
+.n-d .n-hero h1{font-size:calc(var(--display-size) * 1.3)}
+.n-d .n-hero .txt{margin-top:calc(var(--hero-h) * -.36)}
+.n-d .n-ctas{margin-top:var(--s-l)}
+.n-d .karte{display:grid;grid-template-columns:5fr 7fr;gap:var(--s-2xl)}
+.n-d .karte .left{position:relative}
+.n-d .karte .left .n-pair{grid-template-columns:1fr 1fr}
+.n-d .cats{columns:2;column-gap:var(--s-xl)}
+.n-d .cats .n-menu-cat{break-inside:avoid;margin-top:0;margin-bottom:var(--s-xl)}
+.n-d .row3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--s-xl);align-items:start}
+.n-d .n-res{margin-top:0;padding:var(--s-l)}
+.n-d .n-map{margin-top:var(--s-l)}
+/* Einblenden: nur transform/opacity/clip-path; aus bei reduzierter Bewegung */
+@media (prefers-reduced-motion:no-preference){
+  .n [data-reveal]{animation:nRise .9s var(--ease) both;animation-timeline:view();animation-range:entry 0% entry 40%}
+  .n .n-hero .bg img{animation:nSettle 1.6s var(--ease) both}
+  .n .n-hero h1{animation:nMask 1.1s var(--ease) .15s both}
+}
+@keyframes nRise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes nSettle{from{transform:scale(1.06)}to{transform:scale(1)}}
+@keyframes nMask{from{clip-path:inset(0 0 100% 0);transform:translateY(.15em)}to{clip-path:inset(0 0 0 0);transform:none}}
+/* Für die Aufnahmen: Endzustand zeigen */
+body[data-still] .n *{animation:none!important}
+</style>
+</head>
+<body data-still>
+<div class="sheet">
+
+<!-- ═══ 1 · Kopf ═══ -->
+<div data-shot="1">
+<section class="top">
+  <p class="lb"><b>N</b><span>Designsystem 6 von 6 · Systemblatt · 12.10.2026</span></p>
+  <div class="wm"><div class="w">Nacht</div><div class="dot"></div></div>
+  <div class="row">
+    <p class="m">Dunkel, warm, ein Abend lang. Schrift und Ziffer tragen, wo Fotos schwach sind.</p>
+    <div class="r">
+      <p><b>Anker:</b> Restaurant Zimmerl, Waidhofen an der Thaya (restaurantzimmerl.at, Awwwards 2025). Nachgebaut, nicht gemischt.</p>
+      <p><b>Für:</b> Restaurant, Weinbar, Feinkostbistro. Dazu gehobener Friseur und Kosmetik, Barbier, Boutique-Unterkunft, Auto premium.</p>
+    </div>
+    <div class="r">
+      <p><b>Behalten:</b> Petrolgrund, Kupfer als einzige Farbe, Riesenziffern als Abschnittsöffner, kleine versetzte Fotos, Kupferlinie mit Punkt.</p>
+      <p><b>Neu:</b> Speisekarte aus Daten, Küchenzeiten, Reservierung, Gästestimme, Gut zu wissen, Anfahrt, Handy-Leiste, Fließtext 18 bis 20 px.</p>
+    </div>
+  </div>
+  <div class="vs">
+    <div><h3>Journal</h3><p>Hell, Serifenmagazin, Papier.</p></div>
+    <div><h3>Raster</h3><p>Schweizer Schwarz-Weiß, Linien.</p></div>
+    <div><h3>Werkstoff</h3><p>Warme Slab auf Papier, Handwerk.</p></div>
+    <div><h3>Plakat</h3><p>Farbfelder, laute Versalien.</p></div>
+    <div><h3>Klar</h3><p>Hell, ruhig, Gesundheit.</p></div>
+    <div class="me"><h3>Nacht</h3><p>Einziges dunkles System. Petrol, Kupfer, Abend.</p></div>
+  </div>
+</section>
+</div>
+
+<!-- ═══ 2 · Zimmerl gemessen ═══ -->
+<div data-shot="2">
+<section class="blk">
+  <p class="lb"><b>1</b><span>Anker vermessen</span></p>
+  <h2 class="bh">Zimmerl gemessen, Nacht daraus gemacht</h2>
+  <p class="bp">Gemessen live mit getComputedStyle bei 1440 und 390 px. Die Stimmung bleibt eins zu eins. Geändert wird alles, was beim Lesen, Tippen und Finden hakt.</p>
+  <table class="t"><thead><tr><th style="width:150px">Rolle</th><th>Zimmerl gemessen</th><th>Nacht</th></tr></thead><tbody id="zRows"></tbody></table>
+  <table class="t" style="margin-top:36px"><thead><tr><th>Prüfung</th><th>Zimmerl</th><th style="width:90px">Wert</th><th>Nacht</th><th style="width:90px">Wert</th></tr></thead><tbody id="fRows"></tbody></table>
+</section>
+</div>
+
+<!-- ═══ 3 · Schrift ═══ -->
+<div data-shot="3">
+<section class="blk">
+  <p class="lb"><b>2</b><span>Schrift</span></p>
+  <h2 class="bh">Valky und Nord sind Kaufschriften. Zwei freie treten an.</h2>
+  <p class="bp">Gilda Display ersetzt Valky: hoher Kontrast, breite Versalien, feine Serifen, Ziffern in Versalhöhe. Jost ersetzt Nord und Judson zugleich: gesperrte Versalien für Knöpfe und Kicker, ruhiger Fließtext auf Dunkel. Zwei Familien, zwei Vorlade-Dateien, 39,8 kB.</p>
+  <div class="fonts2">
+    <div><p class="nm"><span>Display · Gilda Display 400</span><span>OFL · latin 13,2 kB + latin-ext 8,8 kB</span></p>
+      <div class="gl">Ag 23</div>
+      <p class="abc d">ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ<br>abcdefghijklmnopqrstuvwxyz äöüß 0123456789 € &amp;</p>
+      <div class="wts">
+        <div><span style="font-family:var(--fd);text-transform:uppercase">Restaurant Weinberg</span><span>Display, Versalien</span></div>
+        <div><span style="font-family:var(--fd)">Ein Abend, der bleibt.</span><span>h3, Satzschreibung</span></div>
+        <div><span style="font-family:var(--fd);font-size:44px;color:var(--accent)">7 · 21 · 28 m²</span><span>Ziffern als Öffner</span></div>
+      </div></div>
+    <div><p class="nm"><span>Text · Jost 300 bis 700</span><span>OFL · latin 26,6 kB + latin-ext 17,2 kB</span></p>
+      <div class="gl t">Ag 18</div>
+      <p class="abc">Wir kochen, was die Region hergibt. Küche bis 21:30, Tisch für vier: 0555 4718 20.</p>
+      <div class="wts">
+        <div><span style="font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:17px">Tisch reservieren</span><span>Knopf 500, +0,14 em</span></div>
+        <div><span style="font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:15px;color:var(--accent)">Die Karte · Herbst</span><span>Kicker 15 px 500</span></div>
+        <div><span style="font-variant-numeric:tabular-nums;font-weight:500;font-size:20px">14,50 · 32,00 · 128,00 €</span><span>Daten, Tabellenziffern</span></div>
+      </div></div>
+  </div>
+  <div class="cmp">
+    <div><p class="x">Zimmerl: Valky (Kauf), 200 px im Einstieg</p><img src="../../../.superpowers/nacht/valky-ref.png" alt="Zimmerl Wortmarke in Valky"></div>
+    <div><p class="x">Nacht: Gilda Display, gleiche Rolle, gleiche Farbe</p><div style="font:400 104px/1.2 var(--fd);color:#d39969;text-transform:uppercase;background:#141c1c;padding:12px 18px;letter-spacing:.02em">Weinberg</div></div>
+  </div>
+  <p class="cap">Geprüft und verworfen: Marcellus (Mediävalziffern, die 3 hängt unter die Linie), Cormorant (schön, aber Mediävalziffern und dünn auf Dunkel unter 24 px), Bellefair, Forum, Italiana (Haarlinien verschwinden auf Petrol unter 30 px), Josefin Sans (zu kleine x-Höhe im Fließtext), Judson (frei, aber 18 px Serifen auf Dunkel flimmern; Jost liest ruhiger). Ausgeschlossen, weil schon vergeben: Newsreader, Source Sans 3, Geist, Zilla Slab, Karla, DM Mono, League Gothic, Hanken Grotesk, DM Sans, Atkinson.</p>
+</section>
+</div>
+
+<div data-shot="4">
+<section class="blk first">
+  <p class="lb"><b>3</b><span>Stufen</span></p>
+  <h2 class="bh">Elf Stufen, Fließtext nie unter 18 px</h2>
+  <p class="bp">Links 375 px, rechts 1440 px, gerechnet aus denselben clamp-Werten. Versalien nur in Display, h2, Marke, Kicker und Knopf. Lange Namen brechen ausgewogen um, nie mitten im Wort.</p>
+  <div class="scale" id="scale"></div>
+</section>
+</div>
+
+<!-- ═══ 5 · Abstände, Raster, Paletten ═══ -->
+<div data-shot="5">
+<section class="blk">
+  <p class="lb"><b>4</b><span>Raum und Raster</span></p>
+  <h2 class="bh">Viel Nacht zwischen den Abschnitten</h2>
+  <p class="bp">Abschnittsabstand 80 bis 144 px: der Abend darf langsam sein. Inhalte auf einer Spalte am Handy (Rand 20 px), auf zwölf Spalten am Desktop (max. 80 rem). Ecken 2 px überall, nur Monogramm, Ziffernring und Kartenpunkt sind rund.</p>
+  <div class="spc" id="spc"></div>
+  <div class="grids">
+    <div class="gv" style="--g:12px"><p class="nm"><span>Handy 390</span><span>1 Spalte, Rand 20</span></p><div class="cols" style="grid-template-columns:1fr"><i></i></div></div>
+    <div class="gv" style="--g:24px"><p class="nm"><span>Desktop 1440</span><span>12 Spalten, Rand 48, Karte 5 + 7</span></p><div class="cols" style="grid-template-columns:repeat(12,1fr)"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="radii"><div style="border-radius:2px">2 px · Knöpfe, Karten, Fotos</div><div style="border-radius:4px">4 px · Handy-Leiste</div><div style="border-radius:50%;width:110px">rund · Monogramm, Punkte</div></div>
+</section>
+<section class="blk">
+  <p class="lb"><b>5</b><span>Paletten</span></p>
+  <h2 class="bh">Drei Nächte. Papier ist hier dunkel.</h2>
+  <p class="bp">Jede Palette hat eine Grundfarbe, eine helle Tinte und genau ein Metall. Kein Schwarz-Gold: Grund ist immer getönt, das Metall ist Kupfer, Rosé oder Champagner. Werte live gerechnet (WCAG 2.2).</p>
+  <div class="pals" id="pals"></div>
+</section>
+</div>
+
+<!-- ═══ 6 · Bausteine ═══ -->
+<div data-shot="6">
+<section class="blk">
+  <p class="lb"><b>6</b><span>Lücken geschlossen</span></p>
+  <h2 class="bh">Was Zimmerl nicht hatte, im Ton von Zimmerl</h2>
+  <p class="bp">Jeder Baustein erscheint nur, wenn die Daten ihn tragen. Preise, Zeiten, Bewertungen, Hinweise: nichts wird erfunden. Platzhalter gibt es nur in der Studio-Vorschau, dort sichtbar markiert.</p>
+  <div class="bs" id="bs"></div>
+</section>
+</div>
+<div data-shot="6b">
+<section class="blk first" style="padding-top:0">
+  <div class="bs" id="bs2" style="margin-top:0"></div>
+</section>
+</div>
+
+<div data-shot="7">
+<section class="blk first">
+  <p class="lb"><b>7</b><span>Bilder und Bewegung</span></p>
+  <h2 class="bh">Fotos werden Teil der Nacht. Bewegung bleibt leise.</h2>
+  <div class="bs" id="imgs"></div>
+  <div class="rules">
+    <div><h4>Bildregeln</h4><ul>
+      <li>Filter für jedes Foto: <code id="fcode"></code>. Hebt Kontrast, nimmt Sättigung und Helligkeit, wärmt leicht an. Dazu ein Schleier in Grundfarbe (22 %), damit helle Salon- und Speisenfotos nicht aus der Nacht fallen.</li>
+      <li>Text auf Foto nur über dem Verlauf zur Grundfarbe (Deckung ab 88 %). Der schlechteste Fall (weißes Pixel) ist unten gerechnet.</li>
+      <li>Höchstens ein großes Foto (Einstieg). Sonst klein, versetzt, als Paar, nie mehr als fünf Fotos pro Seite.</li>
+      <li>Schwache oder helle Fotos (Salon in Weiß): kein Vollbild. Einstieg mit Ziffer und Name, Foto klein im Hochformat.</li>
+      <li>Kein Foto vorhanden: Seite trägt sich allein mit Ziffer, Kupferlinie und Schein. Kein Stockbild als Ersatz für Speisen.</li>
+      <li class="no">Kein Text direkt auf Speisenfoto, keine Bildbeschriftungen als Schmuck, keine Pillen auf Bildern.</li>
+    </ul></div>
+    <div><h4>Bewegung</h4><ul>
+      <li>Nur <code>transform</code>, <code>opacity</code>, <code>clip-path</code>. Kurve <code>cubic-bezier(.23,1,.32,1)</code>.</li>
+      <li>Einstieg: Foto setzt sich von 106 % auf 100 % (1,6 s), Name wird von unten aufgedeckt (clip-path, 1,1 s). Einmal, nie in Schleife.</li>
+      <li>Abschnitte: 24 px Aufstieg mit Einblenden, per CSS <code>animation-timeline: view()</code>, ohne Scroll-Listener.</li>
+      <li>Knopf: 0,97 beim Drücken, Pfeil 3 px nach rechts bei Hover (nur Maus).</li>
+      <li>Handy-Leiste erscheint fest, ohne Animation. Kein Ken-Burns, kein Karussell, kein ScrollSmoother wie bei Zimmerl.</li>
+      <li class="no">Bei <code>prefers-reduced-motion: reduce</code> ist alles sofort da. Nur Farbwechsel bleiben.</li>
+    </ul></div>
+  </div>
+</section>
+</div>
+
+<!-- ═══ 8 · Erste fünf Sekunden ═══ -->
+<div data-shot="8">
+<section class="blk">
+  <p class="lb"><b>8</b><span>Handy · erster Blick</span></p>
+  <h2 class="bh">Die ersten fünf Sekunden</h2>
+  <p class="bp">Drei Betriebe, drei Paletten, dieselbe Nacht. Gestrichelt: Ende des ersten Bildschirms (844 px). Die Leiste unten bleibt beim Scrollen stehen.</p>
+  <div class="phones" id="first"></div>
+</section>
+</div>
+
+<div data-shot="9"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 1)</span></p><div class="phones" data-part="0"></div></section></div>
+<div data-shot="10"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 2)</span></p><div class="phones" data-part="1"></div></section></div>
+<div data-shot="11"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 3)</span></p><div class="phones" data-part="2"></div></section></div>
+<div data-shot="12"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 4)</span></p><div class="phones" data-part="3"></div></section></div>
+<div data-shot="13"><section class="blk"><p class="lb"><b>9</b><span>Ganze Seite, Handy 390 (Teil 5)</span></p><div class="phones" data-part="4"></div></section></div>
+
+<!-- ═══ 10 · Desktop ═══ -->
+<div data-shot="14" style="padding:0 40px">
+<section class="blk" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>10</b><span>Desktop 1440 · Restaurant Weinberg · erster Bildschirm</span></p>
+  <div class="desk" id="deskA"></div>
+</section>
+</div>
+<div data-shot="15" style="padding:0 40px">
+<section class="blk first" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>10</b><span>Desktop 1440 · Karte und Abend</span></p>
+  <div class="desk" id="deskB"></div>
+</section>
+</div>
+<div data-shot="15b" style="padding:0 40px">
+<section class="blk first" style="padding-left:16px;padding-right:16px">
+  <p class="lb"><b>10</b><span>Desktop 1440 · Zeiten, Reservierung, Stimme, Anfahrt</span></p>
+  <div class="desk" id="deskC"></div>
+</section>
+</div>
+
+<!-- ═══ 11 · TS ═══ -->
+<div data-shot="16">
+<section class="blk">
+  <p class="lb"><b>11</b><span>Endwerte</span></p>
+  <h2 class="bh" style="text-transform:none">Zum Kopieren: <code style="font-size:40px">shared/designSystems/nacht.ts</code></h2>
+  <p class="bp">Zwei Abweichungen von der Form, beide optional und rückwärtsverträglich: <b>1.</b> <code>scheme: "dark"</code> am System, damit Shell, <code>color-scheme</code>, <code>theme-color</code> und Studio-Rahmen wissen, dass Papier dunkel ist. <b>2.</b> <code>glow</code> je Palette (zwei Farben für Zimmerls weiche Lichter); Deckkraft fest 0,34 im System-CSS.</p>
+  <pre class="ts" id="ts"></pre>
+</section>
+</div>
+
+</div>
+
+<script>
+/* ═══ Tokens (Quelle der Wahrheit; identisch mit dem TS-Objekt unten) ═══ */
+const TYPE={
+ display:{font:"display",size:"clamp(2.75rem, 1.9rem + 3.6vw, 6rem)",line:1,track:"0.02em",weight:400,upper:true},
+ figure:{font:"display",size:"clamp(8.5rem, 6rem + 10.5vw, 16rem)",line:.8,track:"-0.01em",weight:400},
+ h2:{font:"display",size:"clamp(2rem, 1.6rem + 1.7vw, 3.25rem)",line:1.06,track:"0.015em",weight:400,upper:true},
+ h3:{font:"display",size:"clamp(1.5rem, 1.38rem + 0.5vw, 1.875rem)",line:1.2,track:"0.005em",weight:400},
+ lede:{font:"text",size:"clamp(1.25rem, 1.16rem + 0.4vw, 1.5rem)",line:1.5,track:"0em",weight:350},
+ body:{font:"text",size:"clamp(1.125rem, 1.08rem + 0.2vw, 1.25rem)",line:1.65,track:"0.005em",weight:400},
+ small:{font:"text",size:"1rem",line:1.55,track:"0.01em",weight:400},
+ kicker:{font:"text",size:"0.9375rem",line:1.3,track:"0.16em",weight:500,upper:true},
+ link:{font:"text",size:"1rem",line:1.2,track:"0.14em",weight:500,upper:true},
+ mark:{font:"display",size:"clamp(1.25rem, 1.15rem + 0.4vw, 1.5rem)",line:1,track:"0.08em",weight:400,upper:true},
+ data:{font:"text",size:"1.125rem",line:1.35,track:"0.01em",weight:500},
+};
+const SPACE={"2xs":".25rem",xs:".5rem",s:"1rem",m:"1.5rem",l:"2.5rem",xl:"4rem","2xl":"6.5rem",
+ section:"clamp(5rem, 3.6rem + 6vw, 9rem)",gutter:"clamp(1.25rem, 0.75rem + 2.15vw, 3rem)",measure:"34rem",max:"80rem"};
+const PALS=[
+ {id:"petrol",name:"Petrol",use:"Restaurant, Weinbar, Bistro, Barbier",paper:"#1c2a2a",surface:"#24363a",ink:"#f2ece3",muted:"#c5ccc4",rule:"#3a5052",accent:"#e1a97c",deep:"#101b1c",onDeep:"#f2ece3",signal:"#d6996a",onSignal:"#132121",glow:["#50784a","#8c875f"]},
+ {id:"pflaume",name:"Pflaume",use:"Friseur, Kosmetik, Nagelstudio, Weinbar",paper:"#251a20",surface:"#30222a",ink:"#f4ebe6",muted:"#d2c1c5",rule:"#4a3640",accent:"#e6a996",deep:"#160f13",onDeep:"#f4ebe6",signal:"#dc9d89",onSignal:"#22161b",glow:["#6e3a4e","#8a6a55"]},
+ {id:"nachtblau",name:"Nachtblau",use:"Unterkunft, Pension, Auto premium",paper:"#151d2a",surface:"#1d2738",ink:"#eef0f3",muted:"#bfc7d3",rule:"#33405a",accent:"#dcc394",deep:"#0c121c",onDeep:"#eef0f3",signal:"#d4b885",onSignal:"#131a26",glow:["#2c4a6e","#6d6a58"]},
+];
+const FILTER="saturate(.78) contrast(1.08) brightness(.8) sepia(.1)";
+const GLOW_OP=.34, SCRIM=.88;
+
+/* ═══ Helfer ═══ */
+const REM=16;
+function px(v,w){v=v.trim();
+ if(v.startsWith("clamp(")){const [a,b,c]=v.slice(6,-1).split(",").map(s=>s.trim());return Math.min(Math.max(px(a,w),px(b,w)),px(c,w));}
+ if(v.includes("+")){return v.split("+").reduce((s,t)=>s+px(t,w),0);}
+ if(v.endsWith("rem"))return parseFloat(v)*REM; if(v.endsWith("vw"))return parseFloat(v)*w/100; if(v.endsWith("px"))return parseFloat(v); return parseFloat(v)*REM;}
+const hx=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const toHex=a=>"#"+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,"0")).join("");
+const mix=(a,b,t)=>toHex(hx(a).map((v,i)=>v*(1-t)+hx(b)[i]*t));
+function lum(h){const c=hx(h).map(v=>v/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function cr(a,b){const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+const f2=n=>n.toFixed(2).replace(".",",");
+const P=id=>PALS.find(p=>p.id===id);
+const U=(id,w)=>`https://images.unsplash.com/photo-${id}?w=${w}&q=80&auto=format&fit=crop`;
+const FAM={display:"var(--fd)",text:"var(--ft)"};
+const rgb=h=>hx(h).join(" ");
+function vars(w,palId,heroH){const p=P(palId);const v=[];
+ for(const [k,t] of Object.entries(TYPE)) v.push(`--${k}-size:${px(t.size,w).toFixed(2)}px`,`--${k}-line:${t.line}`);
+ for(const [k,s] of Object.entries(SPACE)) v.push(`--s-${k}:${px(s,w).toFixed(1)}px`);
+ for(const k of ["paper","surface","ink","muted","rule","accent","deep","onDeep","signal","onSignal"]) v.push(`--${k}:${p[k]}`);
+ v.push(`--paper-rgb:${rgb(p.paper)}`,`--deep-rgb:${rgb(p.deep)}`,`--accent-rgb:${rgb(p.accent)}`,`--ink-rgb:${rgb(p.ink)}`);
+ v.push(`--glow-a:${p.glow[0]}`,`--glow-b:${p.glow[1]}`,`--glow-op:${GLOW_OP}`,`--img-filter:${FILTER}`,`--hero-h:${heroH||640}px`);
+ return v.join(";");}
+(function(){let css="";for(const [k,t] of Object.entries(TYPE)){css+=`.n .t-${k}{font-family:${FAM[t.font]};font-size:var(--${k}-size);line-height:var(--${k}-line);letter-spacing:${t.track};font-weight:${t.weight}${t.upper?";text-transform:uppercase":""}}`;}
+ css+=`.n .t-data{font-variant-numeric:tabular-nums lining-nums}`;
+ const s=document.createElement("style");s.textContent=css;document.head.appendChild(s);})();
+const ic=n=>`<i class="ph-light ph-${n}"></i>`;
+
+/* ═══ 1 · Zimmerl-Tabellen ═══ */
+const Z=[
+ ["Wortmarke","Valky 200 px als Bild (SVG), zentriert über Foto, Schatten #1f2d2d 10 px, Kupferpunkt unter dem M","Gilda Display Versalien, 52 px Handy, 107 px Desktop, als Text (Name aus Daten), Kupferlinie mit Punkt darunter"],
+ ["Abschnittstitel","Valky 47 px Desktop, 30 px Handy, Versalien, Zeile normal","Gilda Display Versalien, 32 bis 52 px, Zeile 1,06, Laufweite +0,015 em"],
+ ["Riesenziffer","Valky 200 px Desktop, 100 px Handy, Kupfer, über Fotokante, Geisterwort dahinter","136 px Handy, 256 px Desktop. Zählt nur echte Daten (Gänge, Zimmer, letzte Terminstunde)"],
+ ["Fließtext","Judson 18 px Desktop, 16 px Handy, Zeile 1,11 bis 1,13, reines Weiß","Jost 400, 18 px Handy, 20 px Desktop, Zeile 1,65, warmes Weiß #f2ece3"],
+ ["Leitsatz","Nord 300 Kupfer 18 / 16 px, Satzschreibung","Jost 350, 20 bis 24 px, Tinte; Kupfer nur für Titel und Ziffern"],
+ ["Kicker, Knopf","Nord 300, 12 px, +1 px gesperrt, Kupfer auf Moos #3b5843, 42 px hoch, Ecke 4","Jost 500, 15 / 16 px Versalien, +0,16 / 0,14 em, Knopf Kupferfläche mit Petrolschrift, 56 px, Ecke 2"],
+ ["Farben","Grund #1f2d2d, Band #223b3b, Kupfer #d39969, Moos #3b5843, Lichter #8c875f und #50784a (blur 50 px)","Petrol #1c2a2a, Fläche #24363a, Kupfer #e1a97c (Text) und #d6996a (Fläche), Lichter gedeckelt auf 34 %"],
+ ["Raster","Bootstrap-Container 1170 px, Rand 15 px am Handy, Spalten 750 / 458 px","Max. 80 rem, Rand 20 px Handy, 48 px Desktop, Karte 5 + 7 Spalten"],
+ ["Fotos","Fotoshooting, vier Karussells, Ken-Burns im Einstieg, Fotos klein und versetzt","Filter + Verlauf zur Grundfarbe, max. fünf Fotos, Paar versetzt; ohne Karussell"],
+ ["Navigation","Monogramm-Kreis 80 px, Sprachwahl, Reservieren 42 px","Monogramm 48 px, Name als Marke, Menü mit Wort, Reservieren in der Handy-Leiste"],
+ ["Zeiten","Drei Zeilen Nord 18 px Kupfer (Do bis Sa ab 18:00)","Tabelle Tag / Geöffnet / Küche, „heute“ markiert, Ruhetage gedämpft"],
+ ["Fuß","Logo, E-Mail, Adresse, Impressum, Datenschutz, 15 bis 18 px, Weiß auf Petrol","Tiefes Band, Name groß, Telefon, Adresse, Zeiten-Link, Impressum, Datenschutz, 16 bis 18 px"],
+ ["Bewegung","GSAP ScrollSmoother, SplitText, Vegas-Diashow mit Ken-Burns, tiny-slider","CSS only: Aufdecken des Namens, Aufstieg je Abschnitt, aus bei reduzierter Bewegung"],
+ ["Fehlt","Keine Speisekarte, keine Gästestimme, kein FAQ, keine Anfahrt, keine Handy-Leiste","Alles ergänzt, nur aus Daten"],
+];
+document.getElementById("zRows").innerHTML=Z.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+const P0=P("petrol");
+const worstGlow=mix(P0.paper,P0.glow[1],GLOW_OP*.7);
+const FAILS=[
+ ["Knopfschrift (AA ≥ 4,5)","Kupfer #d39969 auf Moos #3b5843, 12 px Light",cr("#d39969","#3b5843"),"Petrol #132121 auf Kupfer #d6996a, 16 px 500",cr(P0.onSignal,P0.signal)],
+ ["Knopffläche gegen Grund (≥ 3)","Moos #3b5843 auf #1f2d2d",cr("#3b5843","#1f2d2d"),"Kupfer #d6996a auf Petrol",cr(P0.signal,P0.paper)],
+ ["Kupfer auf Grund (Ziel ≥ 7)","#d39969 auf #1f2d2d",cr("#d39969","#1f2d2d"),"#e1a97c auf #1c2a2a",cr(P0.accent,P0.paper)],
+ ["Kupfer auf Lichtschein","#d39969 auf #8c875f (Kern, volle Deckung)",cr("#d39969","#8c875f"),"#e1a97c auf hellstem Scheinpunkt",cr(P0.accent,worstGlow)],
+ ["Fließtext","Weiß auf #1f2d2d, 16 px, Zeile 1,13",cr("#ffffff","#1f2d2d"),"#f2ece3 auf Petrol, 18 px, Zeile 1,65",cr(P0.ink,P0.paper)],
+ ["Kleiner Text (Ziel ≥ 7)","Nord Light 12 px Kupfer",cr("#d39969","#1f2d2d"),"Jost 500 15 px, Gedämpft #c5ccc4",cr(P0.muted,P0.paper)],
+ ["Zielgröße Knopf","165 × 42 px",null,"volle Breite × 56 px, Leiste 52 px",null],
+];
+document.getElementById("fRows").innerHTML=FAILS.map(r=>{const ok=v=>v==null?"":`<span class="${v>=4.5?"ok":"no"}">${f2(v)}</span>`;return `<tr><td>${r[0]}</td><td class="${r[2]!=null&&r[2]<4.5||r[0].startsWith("Zielgr")||r[0].startsWith("Fließ")?"bad":""}">${r[1]}</td><td>${ok(r[2])}</td><td>${r[3]}</td><td>${ok(r[4])}</td></tr>`}).join("");
+
+/* ═══ 3 · Stufen ═══ */
+const SAMPLE={
+ display:"Restaurant Weinberg",figure:"7",h2:"Ein Abend, der bleibt.",h3:"Salon Noir — Schnitt &amp; Farbe am Abend",
+ lede:"Haus am See — sechs Zimmer, Frühstück bis halb elf und ein Steg, der dir allein gehört.",
+ body:"Wir kochen, was die Pfalz gerade hergibt: Saibling aus dem Pfälzerwald, Lamm vom Hof Berger, Rüben aus dem eigenen Garten. Küche bis 21:30.",
+ small:"Alle Preise in Euro inklusive Mehrwertsteuer. Allergene auf Nachfrage.",
+ kicker:"Die Karte · Herbst",link:"Tisch reservieren",mark:"Weinberg",data:"Mi bis Sa 17:30 bis 23:00 · 32,00 €"};
+document.getElementById("scale").innerHTML=Object.entries(TYPE).map(([k,t])=>{
+ const a=px(t.size,375),b=px(t.size,1440);
+ const st=w=>`font-family:${FAM[t.font]};font-size:${px(t.size,w)}px;line-height:${t.line};letter-spacing:${t.track};font-weight:${t.weight};${t.upper?"text-transform:uppercase;":""}${k==="data"?"font-variant-numeric:tabular-nums;":""}color:${["display","figure","h2","kicker","mark"].includes(k)?"var(--accent)":"var(--ink)"}`;
+ return `<div class="srow"><div class="k">${k}<small>${t.font==="display"?"Gilda Display":"Jost"} ${t.weight}${t.upper?", Versalien":""}<br>${Math.round(a)} → ${Math.round(b)} px · Zeile ${String(t.line).replace(".",",")}<br>${t.track}</small></div>
+ <div class="m375"><div class="hd">375</div><div style="${st(375)}">${SAMPLE[k]}</div></div>
+ <div class="m1440"><div class="hd">1440</div><div style="${st(1440)};white-space:${["kicker","link","mark","data","figure"].includes(k)?"nowrap":"normal"};max-width:${k==="body"||k==="lede"?"34rem":"none"}">${SAMPLE[k]}</div></div></div>`}).join("");
+
+/* ═══ 4 · Abstände, Paletten ═══ */
+document.getElementById("spc").innerHTML=Object.entries(SPACE).filter(([k])=>!["measure","max"].includes(k)).map(([k,s])=>{const a=px(s,375),b=px(s,1440);return `<div><div style="width:${Math.max(a,4)}px;height:${Math.max(b,4)}px"></div><span>${k}<small>${Math.round(a)}${a!==b?" / "+Math.round(b):""} px</small></span></div>`}).join("")+`<div style="margin-left:auto;text-align:right"><span>measure 34 rem<small>Zeilenlänge ≈ 62 Zeichen</small></span><span style="margin-top:14px">max 80 rem<small>1280 px</small></span></div>`;
+const CHECKS=p=>[["Tinte / Papier ≥ 7",cr(p.ink,p.paper),7],["Tinte / Fläche ≥ 7",cr(p.ink,p.surface),7],["Gedämpft / Papier (Ziel 7)",cr(p.muted,p.paper),7],["Gedämpft / Fläche",cr(p.muted,p.surface),4.5],["Akzent / Papier ≥ 4,5",cr(p.accent,p.paper),4.5],["Akzent / Fläche",cr(p.accent,p.surface),4.5],["onDeep / Deep ≥ 7",cr(p.onDeep,p.deep),7],["onSignal / Signal ≥ 4,5",cr(p.onSignal,p.signal),4.5],["Signal / Papier ≥ 3",cr(p.signal,p.paper),3],["Tinte auf hellstem Scheinpunkt",cr(p.ink,mix(p.paper,p.glow[1],GLOW_OP*.7)),7],["Tinte auf Foto, weißes Pixel",cr(p.ink,mix(p.paper,"#cccccc",1-SCRIM)),7]];
+document.getElementById("pals").innerHTML=PALS.map(p=>`<div class="pal" style="--ga:${p.glow[0]}">
+ <div class="pv" style="background:${p.paper};color:${p.ink}">
+  <div class="kk" style="color:${p.accent}">${p.name}</div>
+  <div class="fig" style="color:${p.accent};margin-top:12px">${p.id==="petrol"?"7":p.id==="pflaume"?"21":"6"}</div>
+  <h3 style="color:${p.accent}">${p.id==="petrol"?"Gänge am Abend":p.id==="pflaume"?"Letzter Termin":"Zimmer am See"}</h3>
+  <p>${p.id==="petrol"?"Küche bis 21:30, Tisch für vier frei.":p.id==="pflaume"?"Schnitt und Farbe bis 21 Uhr, Di bis Fr.":"Anreise 15 bis 20 Uhr, Frühstück inklusive."}</p>
+  <p style="color:${p.muted};font-size:15px">Gedämpft für Zweitzeilen und Hinweise.</p>
+  <div class="bt"><span style="background:${p.signal};color:${p.onSignal}">Reservieren</span><span style="box-shadow:inset 0 0 0 1px ${p.ink};color:${p.ink}">Anrufen</span></div></div>
+ <div class="chips">${["paper","surface","ink","muted","accent","deep"].map(k=>`<div style="background:${p[k]};color:${cr(p[k],"#000000")>8?"#111":"#fff"}">${k}<br>${p[k]}</div>`).join("")}</div>
+ <table>${CHECKS(p).map(([l,v,min])=>`<tr><td style="color:#c5ccc4">${l}</td><td style="color:${v>=min?"#a9d6a0":"#ff9f8a"}">${f2(v)}</td></tr>`).join("")}</table>
+ <div class="use">Für: ${p.use}. Schein: <span class="sw" style="background:${p.glow[0]}"></span><span class="sw" style="background:${p.glow[1]}"></span></div></div>`).join("");
+
+/* ═══ Beispieldaten (frei erfunden, 555-Nummern, .example) ═══ */
+const R={id:"r",pal:"petrol",trade:"Restaurant",name:"Weinberg",mono:"W",
+ heroImg:"1517248135467-4c7edcad34c4",pair:["1514362545857-3bc16c4c7d1b","1504674900247-0877df9cc836"],
+ lede:"Pfälzer Küche im Gewölbe des alten Weinguts. Sieben Gänge oder à la carte, dazu Rieslinge von nebenan.",
+ today:["Heute 17:30 bis 23:00","Küche bis 21:30"],cta:"Tisch reservieren",ctaIcon:"calendar-check",phone:"0555 4718 20",dockMain:"Reservieren",
+ menu:{fig:"7",ghost:"Gänge",title:"Die Karte",intro:"Wechselt mit der Saison. Jeder Gang auch vegetarisch.",cats:[
+  {t:"Vorspeisen",items:[["Saibling aus dem Pfälzerwald","Rote Bete, Meerrettich, Dill","14,50",["fisch"]],["Kürbissuppe","geröstete Kerne, Kürbiskernöl","9,00",["vegan"]],["Kalbstatar","Eigelb, Kapern, Brioche","16,00"]]},
+  {t:"Hauptgänge",items:[["Lammrücken vom Hof Berger","Bohnen, Rosmarinjus","32,00"],["Zander","Rieslingkraut, Speck, Kartoffelschaum","28,00",["fisch"]],["Pilzrisotto","Bergkäse, Petersilienöl","22,00",["vegetarisch"]]]},
+  {t:"Zum Schluss",items:[["Zwetschgen","Mandel, Sauerrahmeis","11,00"],["Käse vom Hof Wolf","Feigensenf, Früchtebrot","14,00"]]}],
+  set:{t:"Sieben Gänge",d:"Mi bis Sa, Tisch bis 19:30",p:"89,00",p2:["Weinbegleitung","52,00"]}},
+ hours:{title:"Öffnungszeiten",two:false,cols:["Tag","Geöffnet","Küche"],rows:[["Mo","Ruhetag",""],["Di","Ruhetag",""],["Mi","17:30 bis 23:00","bis 21:30"],["Do","17:30 bis 23:00","bis 21:30",1],["Fr","17:30 bis 24:00","bis 22:00"],["Sa","17:30 bis 24:00","bis 22:00"],["So","12:00 bis 15:00","bis 14:30"]],note:"Feiertage wie Sonntag. Betriebsferien 2. bis 16. Januar."},
+ res:{t:"Tisch für heute Abend?",lede:"Ruf an oder reserviere online. Wir halten deinen Tisch 15 Minuten.",link:"Online reservieren",linkHost:"tisch.weinberg.example",list:[["users-three","Ab 8 Personen bitte anrufen"],["clock","Letzte Reservierung 21:00"],["gift","Gutscheine an der Bar"]]},
+ voice:{q:"Der Zander war das Beste, was ich dieses Jahr gegessen habe. Und man hat sich gemerkt, dass meine Frau keinen Koriander mag.",who:"Henrike S.",src:"Google, September 2026",rate:"4,8",count:"312 Bewertungen auf Google"},
+ know:[["leaf","Vegetarisch und vegan","Jeder Gang auch ohne Fleisch, bitte bei der Reservierung sagen."],["dog","Hunde","Auf der Terrasse willkommen, im Gewölbe leider nicht."],["wheelchair","Barrierefrei","Gewölbe über Rampe erreichbar, WC ebenerdig."],["car","Parken","14 Plätze im Hof des Weinguts, abends frei."]],
+ map:{adr:"Weinstraße 12<br>67098 Bad Dürkheim",acc:[["train","Rhein-Haardtbahn bis Bahnhof, 6 Minuten zu Fuß"],["car","Hof des Weinguts, Einfahrt Gerberstraße"]]},
+ foot:{mail:"tisch@weinberg.example"}};
+const S={id:"s",pal:"pflaume",trade:"Salon",name:"Noir",mono:"N",weak:true,
+ heroImg:"1562322140-8baeececf3df",fig:"21",figLabel:"Uhr · letzter Termin Di bis Fr",
+ lede:"Schnitt, Farbe und Balayage für Menschen, die tagsüber keine Zeit haben. Termine bis 21 Uhr, mitten im Nordend.",
+ cta:"Termin anfragen",ctaIcon:"calendar-plus",phone:"0555 2093 11",dockMain:"Termin",
+ svc:{fig:"6",ghost:"Leistungen",title:"Schnitt & Farbe",intro:"Preise je nach Länge und Aufwand. Am Telefon sagen wir dir den genauen Preis.",rows:[["Damenschnitt","Waschen, Schnitt, Föhnen","ab 58,00"],["Herrenschnitt","mit Nackenrasur","36,00"],["Farbe","Ansatz oder ganze Länge","ab 72,00"],["Balayage","frei gemalte Strähnen, inkl. Pflege","ab 140,00"],["Föhnen und Styling","","28,00"],["Hochsteckfrisur","Hochzeit, Abend, Probetermin","ab 65,00"]]},
+ hours:{title:"Termine",two:true,cols:["Tag","Termine"],rows:[["Mo","geschlossen"],["Di","12:00 bis 21:00",0,1],["Mi","12:00 bis 21:00"],["Do","12:00 bis 21:00"],["Fr","12:00 bis 21:00"],["Sa","9:00 bis 16:00"],["So","geschlossen"]],note:"Nur mit Termin. Absagen bitte bis 24 Stunden vorher."},
+ voice:{q:"Endlich ein Salon, in den ich nach der Arbeit gehen kann. Die Balayage sieht nach drei Monaten noch aus wie am ersten Tag.",who:"Meral A.",src:"Google, August 2026",rate:"4,9",count:"128 Bewertungen auf Google"},
+ know:[["calendar-x","Absagen","Bis 24 Stunden vorher kostenlos, danach 50 % des Preises."],["credit-card","Bezahlen","Karte, Apple Pay, bar."],["stairs","Zugang","Erdgeschoss, eine Stufe am Eingang."]],
+ map:{adr:"Rotlintstraße 41<br>60316 Frankfurt am Main",acc:[["train","U4 Merianplatz, 4 Minuten zu Fuß"],["bicycle","Fahrradbügel vor der Tür"]]},
+ foot:{mail:"termin@salon-noir.example"}};
+const H={id:"h",pal:"nachtblau",trade:"Pension",name:"Haus am See",mono:"H",weak:true,noPhoto:true,
+ heroImg:"1542314831-068cd1dbfeeb",fig:"6",figLabel:"Zimmer · direkt am Ammersee",
+ lede:"Sechs Zimmer, ein Steg, Frühstück bis halb elf. Familiengeführt seit 1987, fünf Minuten vom Dampfersteg.",
+ cta:"Zimmer anfragen",ctaIcon:"envelope-simple",phone:"0555 6630 72",dockMain:"Anfragen",
+ rooms:{title:"Die Zimmer",intro:"Alle Preise pro Nacht für zwei Personen mit Frühstück, sofern nicht anders angegeben.",list:[["Seezimmer","28","2 Personen · Balkon zum See","ab 145,00"],["Turmzimmer","34","2 Personen · Rundumblick, 3. Stock","ab 165,00"],["Gartenzimmer","22","2 Personen · Hund erlaubt","ab 118,00"],["Bootshaus-Suite","48","2 Personen · eigener Steg","ab 220,00"]],more:"Familienzimmer und Kammer: auf Anfrage."},
+ hours:{title:"Anreise und Abreise",two:true,cols:["","Uhrzeit"],rows:[["Anreise","15:00 bis 20:00"],["Abreise","bis 11:00"],["Frühstück","8:00 bis 10:30",0,1],["Rezeption","8:00 bis 20:00"]],note:"Späte Anreise nach Absprache, Schlüsselbox am Eingang."},
+ voice:{q:"Morgens mit dem Kaffee auf dem Steg, abends der Blick vom Turmzimmer. Wir kommen im Herbst wieder.",who:"Familie Okafor",src:"Google, Juli 2026",rate:"4,9",count:"86 Bewertungen auf Google"},
+ know:[["coffee","Frühstück","Inklusive, regional, auf Wunsch auch glutenfrei."],["dog","Hunde","Im Gartenzimmer, 15,00 € pro Nacht."],["stairs","Kein Aufzug","Turmzimmer im 3. Stock nur über Treppe."],["boat","Ruderboot","Für Gäste kostenlos, Schwimmwesten im Bootshaus."]],
+ map:{adr:"Seestraße 3<br>82211 Herrsching am Ammersee",acc:[["train","S8 bis Herrsching, 12 Minuten zu Fuß"],["boat","Dampfersteg Herrsching, 5 Minuten"]]},
+ foot:{mail:"zimmer@haus-am-see.example"}};
+const ALL=[R,S,H];
+
+/* ═══ Bausteine (HTML) ═══ */
+const btnP=(t,i)=>`<a class="n-btn n-btn--p" href="#">${t} ${ic(i||"arrow-right")}</a>`;
+const btnS=(t,i)=>`<a class="n-btn n-btn--s" href="#">${i?ic(i)+" ":""}${t}</a>`;
+const nav=(b,solid)=>`<nav class="n-nav${solid?" solid":""}"><a class="n-brand" href="#"><span class="n-mono">${b.mono}</span><span class="t-mark">${b.name}</span></a><a class="n-menu" href="#">Menü <i class="bars"></i></a></nav>`;
+function hero(b){
+ if(!b.weak) return `<header class="n-hero"><div class="bg"><img src="${U(b.heroImg,900)}" alt=""></div>${nav(b)}<div class="txt">
+  <p class="t-kicker">${b.trade}</p><h1 class="t-display">${b.name}</h1><div class="vl"></div>
+  <p class="t-lede">${b.lede}</p><p class="n-today t-small"><b>${b.today[0]}</b><span>${b.today[1]}</span></p>
+  <div class="n-ctas">${btnP(b.cta,b.ctaIcon)}</div></div></header>`;
+ return `<header class="n-hero2"><div class="glow b" style="right:-60%;top:-20%"></div>${nav(b)}
+  <p class="t-kicker">${b.trade}</p><h1 class="t-display">${b.name}</h1>
+  <div class="row${b.noPhoto?"":" has-pic"}"><div class="fig">${b.fig}</div>${b.noPhoto?"":`<div class="pic"><img src="${U(b.heroImg,600)}" alt=""></div>`}</div>
+  <span class="figl">${b.figLabel}</span>
+  <div class="cl" style="margin-top:var(--s-l)"></div>
+  <p class="t-lede">${b.lede}</p>
+  <div class="n-ctas">${btnP(b.cta,b.ctaIcon)}${btnS(b.phone,"phone")}</div></header>`;}
+const open=(fig,ghost)=>`<div class="n-open"><span class="fig">${fig}</span><span class="ghost">${ghost}</span><div class="cl"></div></div>`;
+const sec=(t,inner,intro,openHtml)=>`<section class="n-sec" data-reveal><div class="wrap">${openHtml||""}<h2 class="t-h2">${t}</h2>${intro?`<p class="intro t-body">${intro}</p>`:""}${inner}</div></section>`;
+const menu=b=>b.menu.cats.map(c=>`<div class="n-menu-cat"><h3 class="t-h3">${c.t}<small>${c.items.length} ${c.items.length===1?"Gericht":"Gerichte"}</small></h3>${c.items.map(i=>`<div class="n-dish"><span class="dn">${i[0]}</span><span class="pr t-data">${i[2]}</span><span class="ds">${i[1]}</span>${i[3]?`<span class="tg">${i[3].map(x=>`<span>${x}</span>`).join("")}</span>`:""}</div>`).join("")}</div>`).join("");
+const setMenu=b=>`<div class="n-set"><div class="row"><span class="t-h3">${b.menu.set.t}</span><span class="t-data">${b.menu.set.p}</span></div><div class="row mut t-small"><span>${b.menu.set.d}</span></div><div class="row"><span>${b.menu.set.p2[0]}</span><span class="t-data">${b.menu.set.p2[1]}</span></div></div><p class="n-src">Alle Preise in Euro. Allergene auf Nachfrage.</p>`;
+const hours=b=>`<div class="n-hours${b.hours.two?" two":""}"><div class="hd">${b.hours.cols.map(c=>`<span>${c}</span>`).join("")}</div><ol>${b.hours.rows.map(r=>`<li class="${r[3]?"now":""} ${/Ruhetag|geschlossen/.test(r[1])?"zu":""}"><span class="d">${r[0]}</span><span class="v">${r[1]}</span>${b.hours.two?"":`<span class="k">${r[2]||""}</span>`}</li>`).join("")}</ol><p class="t-small mut" style="margin-top:var(--s-s)">${b.hours.note}</p></div>`;
+const res=b=>`<section class="n-res" data-reveal><div class="glow"></div><div class="wrap"><h2 class="t-h2">${b.res.t}</h2><p class="t-lede">${b.res.lede}</p>
+ <a class="tel" href="#"><small>Anrufen</small>${b.phone}</a>
+ <div class="n-ctas" style="justify-content:flex-start">${btnP(b.res.link,"arrow-up-right")}</div>
+ <p class="t-small mut" style="margin-top:var(--s-xs)">öffnet ${b.res.linkHost}</p>
+ <ul class="t-body">${b.res.list.map(([i,t])=>`<li>${ic(i)}<span>${t}</span></li>`).join("")}</ul></div></section>`;
+const voice=b=>`<div class="n-voice"><div class="cl" style="width:72px;margin-bottom:var(--s-m)"></div><blockquote>${b.voice.q}</blockquote><p class="who t-small"><b>${b.voice.who}</b><span>${b.voice.src}</span></p>
+ <div class="n-rate"><span class="t-h2">${b.voice.rate}</span><span class="mut t-small">von 5 · ${b.voice.count}</span></div></div>`;
+const know=b=>`<div class="n-know">${b.know.map(([i,h,p])=>`<div><span class="ic">${ic(i)}</span><span><h3>${h}</h3><p class="t-small">${p}</p></span></div>`).join("")}</div>`;
+const map=b=>`<div class="n-map"><div class="tile"><div class="wat"></div><div class="pin"></div></div><div class="bd"><p class="adr">${b.map.adr}</p><div class="acc2 t-small">${b.map.acc.map(([i,t])=>`<span>${ic(i)}${t}</span>`).join("")}</div>${btnS("Route planen","navigation-arrow")}</div></div>`;
+const svc=b=>`<div class="n-svc">${b.svc.rows.map(r=>`<div><span class="dn">${r[0]}</span><span class="pr t-data">${r[2]}</span>${r[1]?`<span class="ds t-small">${r[1]}</span>`:""}</div>`).join("")}</div><p class="n-src">Preise in Euro, aus euren Angaben.</p>`;
+const rooms=b=>`<div class="n-rooms">${b.rooms.list.map(r=>`<div class="n-room"><span class="sz">${r[1]}<small>m²</small></span><h3 class="t-h3">${r[0]}</h3><span class="meta">${r[2]}</span><div class="pr"><span class="t-small">pro Nacht</span><span class="t-data">${r[3]}</span></div></div>`).join("")}</div><p class="n-src">${b.rooms.more}</p>`;
+const foot=b=>`<footer class="n-foot"><div class="wrap"><span class="n-mono">${b.mono}</span><p class="nm2">${b.trade} ${b.name}</p>
+ <div class="cols"><div><h4>Kontakt</h4><a href="#" class="t-body">${b.phone}</a><a href="#" class="t-body">${b.foot.mail}</a></div><div><h4>Adresse</h4><p class="t-body">${b.map.adr}</p></div></div>
+ <div class="legal"><a href="#">Impressum</a><a href="#">Datenschutz</a><a href="#">Barrierefreiheit</a><span>© 2026</span></div></div></footer>`;
+const dock=(b,top)=>`<div class="n-dock" style="${top!=null?`top:${top}px`:"bottom:10px"}">${btnS("Anrufen","phone")}<a class="n-btn n-btn--p" href="#">${b.dockMain} ${ic(b.ctaIcon)}</a></div>`;
+
+function page(b){
+ let h=hero(b);
+ if(b.id==="r"){
+  h+=sec(b.menu.title,menu(b)+setMenu(b),b.menu.intro,open(b.menu.fig,b.menu.ghost));
+  h+=`<div class="wrap"><div class="n-pair" data-reveal><div><img src="${U(b.pair[0],600)}" alt=""></div><div><img src="${U(b.pair[1],500)}" alt=""></div></div></div>`;
+  h+=sec(b.hours.title,hours(b));
+  h+=res(b);
+ } else if(b.id==="s"){
+  h+=sec(b.svc.title,svc(b),b.svc.intro,open(b.svc.fig,b.svc.ghost));
+  h+=sec(b.hours.title,hours(b));
+ } else {
+  h+=sec(b.rooms.title,rooms(b),b.rooms.intro);
+  h+=sec(b.hours.title,hours(b));
+ }
+ h+=sec("Was Gäste sagen",voice(b));
+ h+=sec("Gut zu wissen",know(b));
+ h+=sec("Anfahrt",map(b));
+ h+=foot(b);
+ return h;}
+
+/* ═══ 6 · Baustein-Karten ═══ */
+const box=(cls,title,inner,pal="petrol",w=390)=>`<div class="c ${cls}" style="background:${P(pal).paper}"><h4>${title}</h4><div class="cn"><div class="n" style="${vars(w,pal)};background:transparent">${inner}</div></div></div>`;
+const legal=b=>`<div class="n" style="${vars(390,b.pal)};width:390px;border-radius:4px;box-shadow:0 0 0 1px var(--rule)">${nav(b,true)}<div class="n-sub"><div class="wrap"><a class="back" href="#">${ic("arrow-left")} Zur Startseite</a><h1 class="t-h2">Impressum</h1>
+ <h2>Angaben nach § 5 DDG</h2><p class="t-body">Weinberg Gastronomie GmbH<br>Weinstraße 12, 67098 Bad Dürkheim</p>
+ <h2>Vertreten durch</h2><p class="t-body">Jana Kessler, Geschäftsführerin</p><h2>Kontakt</h2><p class="t-body">Telefon 0555 4718 20<br><a href="#">tisch@weinberg.example</a></p></div></div><div style="height:var(--s-l)"></div></div>`;
+const BS=
+ box("s7","Speisekarte · nur aus Daten (menu / pricelist)",open("7","Gänge")+`<h2 class="t-h2" style="color:var(--accent)">Die Karte</h2>`+menu({menu:{cats:[R.menu.cats[1]]}})+setMenu(R),"petrol",420)+
+ `<div class="c s5" style="background:${P("petrol").paper}"><h4>Zeiten mit Küche · „heute“ aus Datum</h4><div class="cn"><div class="n" style="${vars(390,"petrol")};background:transparent;overflow:visible">${hours(R)}</div></div>
+  <h4 style="margin-top:12px">Gut zu wissen</h4><div class="cn"><div class="n" style="${vars(390,"petrol")};background:transparent">${know({know:R.know.slice(0,3)})}</div></div></div>`+
+ `<div class="c s5" style="background:${P("petrol").deep}"><h4>Reservierung · Telefon oder Buchungslink</h4><div class="n" style="${vars(390,"petrol")};background:transparent">${res(R).replace('class="n-res"','class="n-res" style="margin-top:0;background:transparent;padding-top:var(--s-s)"')}</div></div>`+
+ box("s7","Gästestimme · nur echte Bewertungen mit Quelle",voice(R)+`<div style="height:22px"></div>`,"petrol",420);document.getElementById("bs").innerHTML=BS;document.getElementById("bs2").innerHTML=
+ box("s5","Anfahrt · Kachel ohne Einbettung, Route als Link",map(R),"petrol",390)+
+ `<div class="c s7" style="background:${P("petrol").paper}"><h4>Handy-Leiste und Unterseite</h4><div class="cn" style="display:flex;gap:26px;align-items:flex-start">${legal(R)}
+  <div style="flex:1;display:grid;gap:18px;font-size:16px;line-height:1.5;color:var(--muted)">
+   <div class="n" style="${vars(390,"petrol")};height:150px;border-radius:4px;box-shadow:0 0 0 1px var(--rule);background:linear-gradient(var(--paper),var(--surface))">${dock(R,80)}</div>
+   <p><b style="color:var(--ink)">Leiste:</b> fest unten, 10 px Abstand, tiefe Fläche zu 86 % mit Unschärfe. Links „Anrufen“ (immer, wenn Telefon da), rechts der Hauptweg: Reservieren (Link oder Telefon), Termin, Anfragen. Erscheint unter 768 px, Fuß bekommt 84 px Polster.</p>
+   <p><b style="color:var(--ink)">Unterseiten:</b> feste Kopfzeile auf Grund mit Linie, „Zur Startseite“ als erster Link, Titel als h2, Text 18 px, Links unterstrichen in Kupfer. Keine Ziffer, kein Schein.</p></div></div></div>`;
+
+/* ═══ 7 · Bilder ═══ */
+document.getElementById("fcode").textContent=FILTER;
+const pv=(id,pal,label,cls,mode)=>{const p=P(pal);return `<div class="c ${cls}" style="background:${p.paper}"><h4>${label}</h4><div class="cn"><div class="n" style="${vars(390,pal)};background:transparent">
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <div><p class="t-small mut" style="margin-bottom:6px">Original</p><div style="aspect-ratio:4/5;overflow:hidden"><img src="${U(id,500)}" style="filter:none" alt=""></div></div>
+  <div><p class="t-small mut" style="margin-bottom:6px">Nacht</p><div style="aspect-ratio:4/5;overflow:hidden;position:relative"><img src="${U(id,500)}" alt=""><div style="position:absolute;inset:0;background:rgb(var(--paper-rgb)/.22)"></div>${mode==="scrim"?`<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgb(var(--paper-rgb)/0) 30%,rgb(var(--paper-rgb)/.88) 70%,var(--paper))"></div><p class="t-h3" style="position:absolute;left:12px;right:12px;bottom:12px;color:var(--accent)">Weinberg</p>`:""}</div></div>
+ </div></div></div></div>`};
+document.getElementById("imgs").innerHTML=
+ pv("1517248135467-4c7edcad34c4","petrol","Einstieg: Filter + Verlauf, Text nur im Verlauf","s4","scrim")+
+ pv("1562322140-8baeececf3df","pflaume","Schwaches, helles Salonfoto: nur klein","s4")+
+ pv("1504674900247-0877df9cc836","petrol","Speisen: Filter, kein Text darauf","s4");
+
+/* ═══ 8 · Handys ═══ */
+const PH=844, PART=2120;
+function phone(b,mode,part){
+ const heroH=b.weak?0:520;
+ const inner=`<div class="n n-m" style="${vars(390,b.pal,heroH)};--dock-pad:84px">${page(b)}${mode==="first"?dock(b,PH-72):""}</div>`;
+ if(mode==="first") return `<div><p class="pcap">${b.trade} ${b.name}<small>${P(b.pal).name} · ${b.weak?(b.noPhoto?"ohne Foto":"schwache Fotos"):"mit Foto"}</small></p><div class="phone" style="height:${PH+40}px">${inner}<div class="fold" style="top:${PH}px"><span>844</span></div></div></div>`;
+ return `<div><p class="pcap">${b.trade} ${b.name}<small>ab ${part*PART} px</small></p><div class="phone" data-b="${b.id}" style="height:${PART}px"><div class="mv" style="margin-top:${-part*PART}px">${inner}</div></div></div>`;}
+document.getElementById("first").innerHTML=ALL.map(b=>phone(b,"first")).join("");
+document.querySelectorAll(".phones[data-part]").forEach(el=>{const k=+el.dataset.part;el.innerHTML=ALL.map(b=>phone(b,"part",k)).join("");});
+
+/* ═══ 10 · Desktop ═══ */
+function deskNav(b){return `<nav class="n-nav"><a class="n-brand" href="#"><span class="n-mono">${b.mono}</span><span class="t-mark">${b.name}</span></a><div class="n-links"><a href="#">Karte</a><a href="#">Zeiten</a><a href="#">Anfahrt</a></div><a class="n-btn n-btn--p" href="#" style="min-height:48px">Reservieren ${ic("arrow-right")}</a></nav>`}
+document.getElementById("deskA").innerHTML=`<div class="n n-d" style="${vars(1440,"petrol",780)}">
+ <header class="n-hero"><div class="bg"><img src="${U(R.heroImg,1800)}" alt=""></div>${deskNav(R)}<div class="txt">
+ <p class="t-kicker">${R.trade}</p><h1 class="t-display">${R.name}</h1><div class="vl"></div><p class="t-lede">${R.lede}</p>
+ <p class="n-today t-small"><b>${R.today[0]}</b><span>${R.today[1]}</span></p><div class="n-ctas">${btnP(R.cta,R.ctaIcon)}${btnS(R.phone,"phone")}</div></div></header><div style="height:var(--s-xl)"></div></div>`;
+document.getElementById("deskB").innerHTML=`<div class="n n-d" style="${vars(1440,"petrol",900)};padding-bottom:var(--s-section)">
+ <div class="glow" style="left:-30%;top:-10%"></div>
+ <section class="n-sec" style="padding-top:var(--s-2xl)"><div class="wrap karte"><div class="left">${open(R.menu.fig,R.menu.ghost)}<h2 class="t-h2">${R.menu.title}</h2><p class="intro t-body">${R.menu.intro}</p>${setMenu(R)}<div class="n-pair"><div><img src="${U(R.pair[0],600)}" alt=""></div><div><img src="${U(R.pair[1],500)}" alt=""></div></div></div>
+ <div class="cats">${menu(R)}</div></div></section></div>`;
+document.getElementById("deskC").innerHTML=`<div class="n n-d" style="${vars(1440,"petrol",900)};padding-bottom:var(--s-section)">
+ <div class="glow b" style="right:-30%;top:-20%"></div>
+ <section class="n-sec" style="padding-top:var(--s-2xl)"><div class="wrap row3"><div><h2 class="t-h2">${R.hours.title}</h2>${hours(R)}</div>
+  <div>${res(R).replace('class="n-res"','class="n-res" style="margin-top:0"')}</div></div></section>
+ <section class="n-sec"><div class="wrap row3"><div><h2 class="t-h2">Was Gäste sagen</h2>${voice(R)}</div><div><h2 class="t-h2">Anfahrt</h2>${map(R)}</div></div></section></div>`;
+
+/* ═══ 11 · TS ═══ */
+const q=s=>`"${s}"`;
+const tsType=Object.entries(TYPE).map(([k,t])=>`    ${k}: { font: ${q(t.font)}, size: ${q(t.size)}, line: ${t.line}, track: ${q(t.track)}, weight: ${t.weight}${t.upper?", upper: true":""} },`).join("\n");
+const tsPal=PALS.map(p=>`    { id: ${q(p.id)}, name: ${q(p.name)}, paper: ${q(p.paper)}, surface: ${q(p.surface)}, ink: ${q(p.ink)}, muted: ${q(p.muted)}, rule: ${q(p.rule)},\n      accent: ${q(p.accent)}, deep: ${q(p.deep)}, onDeep: ${q(p.onDeep)}, signal: ${q(p.signal)}, onSignal: ${q(p.onSignal)},\n      glow: [${q(p.glow[0])}, ${q(p.glow[1])}] },`).join("\n");
+document.getElementById("ts").textContent=`import type { DesignSystemDef } from "./types";
+
+/** Googles latin-ext-Bereich (Fonts-API, Stand 2026-10). */
+const LATIN_EXT =
+  "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF";
+
+export const NACHT: DesignSystemDef = {
+  id: "nacht",
+  name: "Nacht",
+  essence: "Dunkel, warm, ein Abend lang",
+  // Abweichung 1: Papier ist dunkel (color-scheme, theme-color, Studio-Rahmen).
+  scheme: "dark",
+  fonts: {
+    display: {
+      family: "Gilda Display",
+      fallback: "'Didot', 'Bodoni 72', Georgia, serif",
+      files: [
+        { file: "gilda-display-latin.woff2", weight: "400", style: "normal" },
+        { file: "gilda-display-latin-ext.woff2", weight: "400", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+    text: {
+      family: "Jost",
+      fallback: "'Futura', 'Century Gothic', system-ui, sans-serif",
+      files: [
+        { file: "jost-latin-wght.woff2", weight: "300 700", style: "normal" },
+        { file: "jost-latin-ext-wght.woff2", weight: "300 700", style: "normal", unicodeRange: LATIN_EXT },
+      ],
+    },
+  },
+  preload: ["gilda-display-latin.woff2", "jost-latin-wght.woff2"],
+  type: {
+${tsType}
+  },
+  space: {
+    "2xs": ".25rem", xs: ".5rem", s: "1rem", m: "1.5rem", l: "2.5rem", xl: "4rem", "2xl": "6.5rem",
+    section: ${q(SPACE.section)},
+    gutter: ${q(SPACE.gutter)},
+    measure: "34rem", max: "80rem",
+  },
+  // Abweichung 2: \`glow\` (zwei Scheinfarben, Deckkraft 0,34 im System-CSS).
+  palettes: [
+${tsPal}
+  ],
+  // Dunkelt und wärmt jedes Foto; Text auf Foto nur über Verlauf zur Grundfarbe (≥ 88 %).
+  imageFilter: ${q(FILTER)},
+};`;
+
+/* Bereit, sobald Schriften und Bilder da sind */
+Promise.all([document.fonts.ready,...[...document.images].map(i=>i.complete?1:new Promise(r=>{i.onload=i.onerror=r}))]).then(()=>{
+ // leere Handy-Teile entfernen
+ document.querySelectorAll(".phones[data-part]").forEach(el=>{const k=+el.dataset.part;const hs=[...el.querySelectorAll(".n")].map(n=>n.scrollHeight);
+  if(Math.max(...hs)<=k*PART){el.closest("[data-shot]").remove();return;}
+  el.querySelectorAll(".phone").forEach((ph,i)=>{const rest=hs[i]-k*PART;if(rest<PART)ph.style.height=Math.max(rest,0)+"px";if(rest<=0)ph.style.visibility="hidden";});});
+ document.body.dataset.ready="1";});
+</script>
+</body>
+</html>
