@@ -15,6 +15,7 @@ import {
 } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { CONTENT_CSS } from "./contentCss";
+import { NACHT_MOTION_CSS } from "./motionCss";
 
 export { step } from "./step";
 
@@ -161,6 +162,7 @@ ${sections}
   .pb-nacht .nc-foot{padding-bottom:calc(var(--sys-space-xl) + ${H_DOCK} + var(--sys-space-m) + env(safe-area-inset-bottom,0rem))}
 }
 
+${NACHT_MOTION_CSS}
 @media (prefers-reduced-motion:reduce){.pb-nacht *,.pb-nacht *::before,.pb-nacht *::after{transition:none!important;animation:none!important}}
 /* ende nacht */
 `;

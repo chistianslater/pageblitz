@@ -80,10 +80,10 @@ describe("Nacht: Gerüst", () => {
     }
   });
 
-  test("nicht freigeschaltet, ohne Bewegungs-Bundle (bis N7)", () => {
+  test("nicht freigeschaltet (bis N9), aber mit Bewegungs-Bundle (N7)", () => {
     expect(RELEASED_SYSTEMS).not.toContain("nacht");
-    expect(SYSTEMS_WITH_MOTION).not.toContain("nacht");
-    expect(SYSTEM_MOTION.nacht).toBeUndefined();
+    expect(SYSTEMS_WITH_MOTION).toContain("nacht");
+    expect(SYSTEM_MOTION.nacht).toBeDefined();
   });
 
   test("@font-face: Gilda Display und Jost, je latin + latin-ext", () => {

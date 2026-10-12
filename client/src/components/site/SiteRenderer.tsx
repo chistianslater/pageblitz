@@ -120,6 +120,8 @@ export const SYSTEM_MOTION: Partial<Record<string, () => Promise<MountMotion>>> 
     import("./systems/plakat/motion").then(m => m.mountPlakatMotion),
   klar: () =>
     import("./systems/klar/motion").then(m => m.mountKlarMotion),
+  nacht: () =>
+    import("./systems/nacht/motion").then(m => m.mountNachtMotion),
 };
 
 /** System-Variablen plus `--pb-*`-Aliase für geteilte Bausteine. */
