@@ -1,6 +1,7 @@
 /**
- * Kopiert die Pack-Tokens (`--pb-*`) von `.pb-site` auf ein portaliertes
- * Insel-Panel.
+ * Kopiert die Pack-Tokens (`--pb-*`) und — bei Designsystemen (rev 3) — die
+ * System-Tokens (`--sys-*`) von `.pb-site` auf ein portaliertes Insel-Panel
+ * (Nacht stylt seine Panels mit `--sys-*`, islandCss.ts).
  *
  * `toCssVars` setzt die Variablen als Inline-Styles auf `.pb-site`
  * (`SiteRenderer.tsx`). Chat- und Buchungs-Panel hängen per `createPortal`
@@ -42,7 +43,7 @@ function readInlinePbVars(
   const vars: Record<string, string> = {};
   for (let i = 0; i < style.length; i++) {
     const name = style.item(i);
-    if (name && name.startsWith("--pb-")) {
+    if (name && (name.startsWith("--pb-") || name.startsWith("--sys-"))) {
       const value = style.getPropertyValue(name).trim();
       if (value) vars[name] = value;
     }

@@ -16,6 +16,7 @@ import {
 import { ENTRY_CSS } from "./entryCss";
 import { CONTENT_CSS } from "./contentCss";
 import { NACHT_MOTION_CSS } from "./motionCss";
+import { ISLAND_CSS } from "./islandCss";
 
 export { step } from "./step";
 
@@ -170,4 +171,6 @@ ${NACHT_MOTION_CSS}
 
 export const NACHT_CSS = nachtCss(`${ENTRY_CSS}
 
-${CONTENT_CSS}`);
+${CONTENT_CSS}
+
+${ISLAND_CSS}`);

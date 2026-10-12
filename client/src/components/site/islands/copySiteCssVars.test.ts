@@ -19,10 +19,12 @@ describe("copySiteCssVars", () => {
     expect(copySiteCssVars()).toEqual({});
   });
 
-  test("kopiert Inline --pb-* von .pb-site", () => {
+  test("kopiert Inline --pb-* und --sys-* von .pb-site", () => {
     const store: Record<string, string> = {
       "--pb-font-body": '"Source Sans 3", sans-serif',
       "--pb-ink": "#191919",
+      "--sys-ink": "#f2ece3",
+      "--other": "x",
       "color": "#000",
     };
     const names = Object.keys(store);
@@ -39,6 +41,7 @@ describe("copySiteCssVars", () => {
     expect(copySiteCssVars()).toEqual({
       "--pb-font-body": '"Source Sans 3", sans-serif',
       "--pb-ink": "#191919",
+      "--sys-ink": "#f2ece3",
     });
   });
 
