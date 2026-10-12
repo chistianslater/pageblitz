@@ -77,10 +77,10 @@ describe("Klar: Gerüst", () => {
     }
   });
 
-  test("noch nicht freigeschaltet und (bis K7) ohne Bewegungs-Bundle", () => {
+  test("noch nicht freigeschaltet, aber mit Bewegungs-Bundle", () => {
     expect(RELEASED_SYSTEMS).not.toContain("klar");
-    expect(SYSTEMS_WITH_MOTION).not.toContain("klar");
-    expect(SYSTEM_MOTION.klar).toBeUndefined();
+    expect(SYSTEMS_WITH_MOTION).toContain("klar");
+    expect(SYSTEM_MOTION.klar).toBeDefined();
   });
 
   test("@font-face: DM Sans und Atkinson Next, je latin + latin-ext", () => {

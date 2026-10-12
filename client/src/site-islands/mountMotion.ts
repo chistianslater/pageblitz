@@ -4,6 +4,7 @@ import { mountJournalMotion } from "../components/site/systems/journal/motion";
 import { mountRasterMotion } from "../components/site/systems/raster/motion";
 import { mountWerkstoffMotion } from "../components/site/systems/werkstoff/motion";
 import { mountPlakatMotion } from "../components/site/systems/plakat/motion";
+import { mountKlarMotion } from "../components/site/systems/klar/motion";
 import { mountDockAutoHide } from "../components/site/systems/shared/dockAutoHide";
 
 type Mount = (root: HTMLElement) => () => void;
@@ -14,6 +15,7 @@ export const ISLAND_MOTION: Partial<Record<DesignSystemId, Mount>> = {
   raster: mountRasterMotion,
   werkstoff: mountWerkstoffMotion,
   plakat: mountPlakatMotion,
+  klar: mountKlarMotion,
 };
 
 /**

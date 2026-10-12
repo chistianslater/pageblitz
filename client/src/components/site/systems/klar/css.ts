@@ -15,6 +15,7 @@ import {
 } from "./step";
 import { ENTRY_CSS } from "./entryCss";
 import { CONTENT_CSS } from "./contentCss";
+import { KLAR_MOTION_CSS } from "./motionCss";
 
 export { step } from "./step";
 
@@ -176,6 +177,7 @@ ${sections}
   .pb-klar .kl-foot{padding-bottom:calc(var(--sys-space-l) + ${H_BTN} + var(--sys-space-m) + env(safe-area-inset-bottom,0rem))}
 }
 
+${KLAR_MOTION_CSS}
 @media (prefers-reduced-motion:reduce){.pb-klar *,.pb-klar *::before,.pb-klar *::after{transition:none!important;animation:none!important}}
 /* ende klar */
 `;

@@ -37,6 +37,7 @@ export const SYSTEMS_WITH_MOTION: readonly DesignSystemId[] = [
   "raster",
   "werkstoff",
   "plakat",
+  "klar",
 ];
 
 export function systemHasMotion(id: DesignSystemId): boolean {
