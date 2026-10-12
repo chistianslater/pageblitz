@@ -655,3 +655,31 @@ describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
     }
   });
 });
+
+describe("buildStockFallbackImages: Abendmotive für Nacht (N2+N3)", () => {
+  const ohne = (url: string) => new URL(url).pathname;
+
+  test("ohne Abend-Wunsch unverändert; mit Wunsch Abendmotive zuerst", () => {
+    for (const branche of ["Restaurant", "Friseur", "Bar", "Pension"]) {
+      const satz = getIndustryImages(branche, "Weinberg");
+      const hell = buildStockFallbackImages(branche, "Weinberg");
+      expect(buildStockFallbackImages(branche, "Weinberg", undefined, {})).toEqual(hell);
+      const abend = buildStockFallbackImages(branche, "Weinberg", undefined, {
+        evening: true,
+      });
+      const liste = satz.evening ?? [];
+      expect(liste.length, branche).toBeGreaterThan(0);
+      expect(liste).toContain(abend.hero);
+      expect(liste).toContain(abend.about);
+      expect(ohne(abend.about!)).not.toBe(ohne(abend.hero));
+      expect(abend.gallery!.slice(0, liste.length)).toEqual(liste.slice(0, 8));
+    }
+  });
+
+  test("Satz ohne Abendmotive: Wunsch ändert nichts", () => {
+    const hell = buildStockFallbackImages("Schreinerei", "Brandt");
+    expect(
+      buildStockFallbackImages("Schreinerei", "Brandt", undefined, { evening: true })
+    ).toEqual(hell);
+  });
+});

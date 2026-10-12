@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { SHOWCASES, showcaseDoc, systemShowcaseDoc } from "./blueprintShowcase";
+import { describe, expect, it, test } from "vitest";
+import {
+  SHOWCASES,
+  findShowcase,
+  showcaseDoc,
+  systemShowcaseDoc,
+} from "./blueprintShowcase";
 import { healthBlueprint } from "./blueprintFamilies";
 import { blueprintFor } from "./blueprints";
 import { systemsForDoc } from "../designSystems";
@@ -308,5 +313,37 @@ describe("Bauplan-Übersicht", () => {
       for (const t of ["usp", "pricelist", "process", "team"] as const)
         expect(order.indexOf(t)).toBeLessThan(order.indexOf("testimonials"));
     });
+  });
+});
+
+describe("Systemübersicht: Abendmotive nur für dunkles Papier (Nacht N2+N3)", () => {
+  const photos = (doc: ReturnType<typeof systemShowcaseDoc>) =>
+    doc.sections.flatMap(s =>
+      s.type === "hero" || s.type === "about"
+        ? s.imageUrl
+          ? [s.imageUrl]
+          : []
+        : s.type === "gallery"
+          ? s.images.map(i => i.url)
+          : []
+    );
+
+  test.each([
+    ["restaurant", "restaurant"],
+    ["friseur", "friseur"],
+    ["ferienwohnung", "hospitality"],
+  ])("%s: Nacht zeigt nur Abendmotive, jedes einmal", (id, set) => {
+    const nacht = photos(systemShowcaseDoc(findShowcase(id)!, "nacht"));
+    expect(nacht.length).toBeGreaterThan(0);
+    for (const url of nacht) expect(INDUSTRY_IMAGES[set].evening).toContain(url);
+    expect(new Set(nacht).size).toBe(nacht.length);
+  });
+
+  test("helle Systeme unverändert", () => {
+    for (const sys of ["journal", "raster", "werkstoff", "plakat", "klar"] as const) {
+      const doc = systemShowcaseDoc(findShowcase("restaurant")!, sys);
+      for (const url of photos(doc))
+        expect(INDUSTRY_IMAGES.restaurant.evening).not.toContain(url);
+    }
   });
 });

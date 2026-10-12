@@ -25,6 +25,7 @@ import { classifyIndustry } from "../industryClassifier";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
 import {
   buildStockFallbackImages,
+  eveningImages,
   getIndustryImages,
   istNeutralesSet,
 } from "../industryImages";
@@ -44,6 +45,8 @@ import {
   withoutDesignSystem,
   withPrimarySystem,
 } from "../../shared/designSystems/apply";
+import { systemsForDoc } from "../../shared/designSystems/assignment";
+import { isReleased } from "../../shared/designSystems/registry";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
@@ -382,13 +385,31 @@ export function collectOccupiedCompositions(
  * `key=`. Schlägt die Spiegelung fehl (z. B. R2 nicht konfiguriert), greift
  * der Stock-Fallback statt jemals einer Key-URL.
  */
+/**
+ * Wird die Seite eine Nacht-Seite (Hauptsystem der Branche, freigeschaltet)?
+ * Dann bevorzugt die Stockfoto-Ergänzung die Abendmotive des Bildsatzes
+ * (Nacht N2+N3). Andere Systeme bleiben unverändert.
+ */
+export function prefersEveningPhotos(
+  category: string,
+  businessName: string,
+  released: boolean = isReleased("nacht")
+): boolean {
+  if (!released) return false;
+  const [primary] = systemsForDoc({ businessCategory: category, businessName });
+  return primary === "nacht";
+}
+
 export async function resolveV2Images(
   business: { placeId: string | null; name: string },
   category: string,
   industryKey: string,
-  websiteId: number
+  websiteId: number,
+  evening: boolean = prefersEveningPhotos(category, business.name)
 ): Promise<V2Images> {
-  const stock = buildStockFallbackImages(category, business.name, industryKey);
+  const stock = buildStockFallbackImages(category, business.name, industryKey, {
+    evening,
+  });
   const gmb =
     business.placeId && !business.placeId.startsWith("self-")
       ? await mirrorGmbPhotosToR2(business.placeId, websiteId, MAX_GMB_PHOTOS)
@@ -407,7 +428,13 @@ export async function resolveV2Images(
         )
       : { urls: [], credits: [] };
   if (fill.urls.length > 0) {
-    const pool = Array.from(new Set([...gmb, ...fill.urls]));
+    // Ohne eigene Fotos stehen bei Nacht die Abendmotive vorn (dunkler
+    // Einstieg); eigene Fotos gehen immer vor.
+    const night =
+      evening && gmb.length === 0
+        ? eveningImages(category, business.name, industryKey)
+        : [];
+    const pool = Array.from(new Set([...gmb, ...night, ...fill.urls]));
     return {
       hero: pool[0],
       about: pool[1],

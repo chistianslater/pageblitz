@@ -35,6 +35,11 @@ export type Showcase = {
    */
   systemEntry?: ShowcaseEntry;
   /**
+   * Bildsatz mit Abendmotiven (`evening` in shared/industryImages.ts) für
+   * Systeme mit dunklem Papier (Nacht): ersetzt die vorhandenen Fotos.
+   */
+  evening?: string;
+  /**
    * Zusätzlich unter diesen Systemen in der Design-Übersicht, obwohl sie
    * dort nicht Hauptsystem sind (Systemblatt-Muster, z. B. Klar-Kanzlei).
    */
@@ -48,6 +53,7 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Friseur & Beauty",
     label: "Friseursalon",
     fixture: "salon-noir",
+    evening: "friseur",
   },
   {
     id: "barbier",
@@ -88,6 +94,7 @@ export const SHOWCASES: readonly Showcase[] = [
     label: "Restaurant",
     fixture: "gusto",
     amenities: { reservable: true, takeout: true, vegetarian: true },
+    evening: "restaurant",
   },
   {
     id: "imbiss",
@@ -226,6 +233,7 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Unterkunft",
     label: "Ferienwohnung",
     fixture: "riviera",
+    evening: "hospitality",
   },
   {
     id: "fotografie",

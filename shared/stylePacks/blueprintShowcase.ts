@@ -6,6 +6,7 @@
  */
 import { withDesignSystem } from "../designSystems/apply";
 import type { DesignSystemId } from "../designSystems/types";
+import { getSystem } from "../designSystems/registry";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
@@ -1243,9 +1244,41 @@ export function systemShowcaseDoc(
   system: DesignSystemId,
   palette?: string
 ): WebsiteDataV2 {
-  return withDesignSystem(
-    showcaseDoc(showcase, showcase.systemEntry ?? "stage"),
-    system,
-    palette
-  );
+  const base = showcaseDoc(showcase, showcase.systemEntry ?? "stage");
+  // Dunkles Papier (Nacht): Abendmotive statt heller Tagesfotos.
+  const doc =
+    getSystem(system)?.scheme === "dark" && showcase.evening
+      ? withEveningPhotos(base, showcase.evening)
+      : base;
+  return withDesignSystem(doc, system, palette);
+}
+
+/**
+ * Fotos eines Beispielbetriebs durch die Abendmotive des Bildsatzes
+ * ersetzen (Nacht N2+N3): Einstieg = Motiv 1, Über uns = Motiv 2, Galerie
+ * = der Rest — jedes Foto einmal. Nur dort, wo schon ein Foto steht.
+ */
+export function withEveningPhotos(
+  doc: WebsiteDataV2,
+  setKey: string
+): WebsiteDataV2 {
+  const evening = INDUSTRY_IMAGES[setKey]?.evening ?? [];
+  if (evening.length === 0) return doc;
+  const [hero, about, ...rest] = evening;
+  const sections = doc.sections.map(section => {
+    if (section.type === "hero" && section.imageUrl)
+      return { ...section, imageUrl: hero };
+    if (section.type === "about" && section.imageUrl && about)
+      return { ...section, imageUrl: about };
+    if (section.type === "gallery" && section.images.length > 0 && rest.length)
+      return {
+        ...section,
+        images: rest.map((url, i) => ({
+          url,
+          alt: `${doc.businessName} – Eindruck ${i + 1}`,
+        })),
+      };
+    return section;
+  }) as WebsiteDataV2["sections"];
+  return { ...doc, sections };
 }

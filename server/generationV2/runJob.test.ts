@@ -55,6 +55,7 @@ import {
   collectOccupiedDesignFingerprints,
   collectOccupiedCompositions,
   resolveV2Images,
+  prefersEveningPhotos,
   runWebsiteGenerationV2Job,
   withNewSiteDesign,
   keepOwnPhotos,
@@ -193,6 +194,47 @@ describe("resolveV2Images", () => {
     expect(result.about).toMatch(/^https?:\/\//);
     expect(result.gallery?.length).toBeGreaterThanOrEqual(3);
     expect(JSON.stringify(result)).not.toContain("maps.googleapis.com");
+  });
+});
+
+describe("Abendmotive für Nacht-Seiten (N2+N3)", () => {
+  test("nur wenn Nacht Hauptsystem UND freigeschaltet ist", () => {
+    expect(prefersEveningPhotos("Restaurant", "Weinberg", true)).toBe(true);
+    expect(prefersEveningPhotos("Restaurant", "Weinberg", false)).toBe(false);
+    // Solange Nacht nicht freigeschaltet ist, bleibt alles wie bisher.
+    expect(prefersEveningPhotos("Restaurant", "Weinberg")).toBe(false);
+    expect(prefersEveningPhotos("Friseur", "Salon Noir", true)).toBe(false);
+    expect(prefersEveningPhotos("Schreinerei", "Brandt", true)).toBe(false);
+  });
+
+  test("ohne eigene Fotos: Stock-Fallback mit Abendmotiven; eigene Fotos gehen vor", async () => {
+    mockedMirror.mockResolvedValue([]);
+    const nacht = await resolveV2Images(
+      { placeId: "self-abc", name: "Weinberg" },
+      "Restaurant",
+      "restaurant",
+      42,
+      true
+    );
+    const { INDUSTRY_IMAGES } = await import("../../shared/industryImages");
+    expect(INDUSTRY_IMAGES.restaurant.evening).toContain(nacht.hero);
+    const hell = await resolveV2Images(
+      { placeId: "self-abc", name: "Weinberg" },
+      "Restaurant",
+      "restaurant",
+      42,
+      false
+    );
+    expect(INDUSTRY_IMAGES.restaurant.evening).not.toContain(hell.hero);
+    mockedMirror.mockResolvedValue([R2_1, R2_2, R2_3]);
+    const eigen = await resolveV2Images(
+      { placeId: "ChIJabc", name: "Weinberg" },
+      "Restaurant",
+      "restaurant",
+      42,
+      true
+    );
+    expect(eigen.hero).toBe(R2_1);
   });
 });
 

@@ -167,15 +167,17 @@ export function getHeroImageUrl(
   industryKey?: string
 ): string {
   const imageSet = getIndustryImages(category, businessName, industryKey);
-  const heroes = imageSet.hero;
-  // Use a simple hash of the businessName to pick a consistent image
+  return pickBySeed(imageSet.hero, businessName);
+}
+
+/** Gleicher Betrieb → gleiches Bild (Hash des Namens). */
+function pickBySeed(list: string[], businessName: string): string {
   let hash = 0;
   for (let i = 0; i < businessName.length; i++) {
     hash = (hash << 5) - hash + businessName.charCodeAt(i);
     hash |= 0;
   }
-  const idx = Math.abs(hash) % heroes.length;
-  return heroes[idx];
+  return list[Math.abs(hash) % list.length];
 }
 
 /**
@@ -219,12 +221,17 @@ export function bildIdentitaet(url: string): string {
 export function buildStockFallbackImages(
   category: string,
   businessName: string = "",
-  industryKey?: string
+  industryKey?: string,
+  opts: { evening?: boolean } = {}
 ): { hero: string; about?: string; gallery?: string[] } {
   const imageSet = getIndustryImages(category, businessName, industryKey);
+  // Nacht (dunkles Papier): Abendmotive des Satzes zuerst — nur wenn der
+  // Satz welche hat; alle anderen Systeme bleiben unverändert.
+  const evening = opts.evening ? (imageSet.evening ?? []) : [];
   const unique: string[] = [];
   const gesehen = new Set<string>();
   for (const url of [
+    ...evening,
     ...(imageSet.gallery ?? []),
     ...imageSet.hero,
     ...(imageSet.about ?? []),
@@ -234,7 +241,10 @@ export function buildStockFallbackImages(
     gesehen.add(id);
     unique.push(url);
   }
-  const hero = getHeroImageUrl(category, businessName, industryKey);
+  const hero =
+    evening.length > 0
+      ? pickBySeed(evening, businessName)
+      : getHeroImageUrl(category, businessName, industryKey);
   const heroId = bildIdentitaet(hero);
   const about =
     unique.find(url => bildIdentitaet(url) !== heroId) ?? unique[0] ?? hero;
@@ -245,4 +255,13 @@ export function buildStockFallbackImages(
       ? { gallery: unique.slice(0, 8) }
       : {}),
   };
+}
+
+/** Abendmotive des passenden Bildsatzes (leer, wenn der Satz keine hat). */
+export function eveningImages(
+  category: string,
+  businessName: string = "",
+  industryKey?: string
+): string[] {
+  return getIndustryImages(category, businessName, industryKey).evening ?? [];
 }
