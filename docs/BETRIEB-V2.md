@@ -253,7 +253,7 @@ die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 ### Rollback bei Designsystemen (rev 3)
 
 Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
-`system`/`palette` tragen (Journal, danach Raster, Werkstoff und Plakat). Code vor Journal kennt nur
+`system`/`palette` tragen (Journal, danach Raster, Werkstoff, Plakat und Klar). Code vor Journal kennt nur
 Revision 1 und 2 — rev-3-Seiten bestehen dort die Schema-Prüfung nicht. Code mit rev 3, dem aber das
 jüngere System fehlt, liefert **kein** 404: die System-ID steht schon in der Schema-Liste, die
 Systemdefinition fehlt, und die Seite rendert still den Pack-Rückfall — falscher Look, kein Fehler im Log.
@@ -263,6 +263,7 @@ mit dem neuen Code) zuerst sichern, dann zurücksetzen. Welche Seiten:
 
 | Ziel-Commit | Aufruf |
 |---|---|
+| vor Klar, aber mit Plakat (`a535970c` oder älter, nicht vor `623159d7`, dem Plakat-Release) | `--system klar` — nur Klar-Seiten, Journal, Raster, Werkstoff und Plakat bleiben |
 | vor Plakat, aber mit Werkstoff (`7ab2e05d` oder älter, nicht vor `1f67e1de`) | `--system plakat` — nur Plakat-Seiten, Journal, Raster und Werkstoff bleiben |
 | vor Werkstoff, aber mit Raster (`32a69284` oder älter, nicht vor `f1fafe55`) | `--system werkstoff` — nur Werkstoff-Seiten, Journal und Raster bleiben |
 | vor Raster, aber mit Journal (`f1fafe55` oder älter, nicht vor `fed41e1`) | `--system raster` — nur Raster-Seiten, Journal bleibt |
@@ -274,9 +275,9 @@ cd /root/pageblitz
 mysqldump -u<user> -p<pw> pageblitz generated_websites \
   > /root/backups/vor-systeme-rollback-$(date +%F).sql
 # 2) Trockenlauf: listet die betroffenen rev-3-Seiten (Zeile 1 nennt den Filter)
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system plakat
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system klar
 # 3) Schreiben: system/palette entfallen, Revision 2, Seite zeigt ihr Pack
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system plakat --schreiben
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system klar --schreiben
 # 4) Erst jetzt den alten Commit deployen (git reset --hard <commit> …)
 ```
 
@@ -289,12 +290,16 @@ sich ein solcher Stand nicht ansehen/wiederherstellen.
 **Neu erzeugen ändert das Aussehen.** Jede Admin-Regenerierung — auch mit
 `keepLinks` bzw. `scripts/regenerate-keep-links.ts` — vergibt das System neu:
 Baupläne `advice`, `auto`, `urgent`, `industry` und `standard` bekommen
-Raster, `beauty` (ohne Barbiere), `stay` und `creative` Journal, `trade`,
+Raster, `health` (Gesundheit) bekommt Klar, `beauty` (ohne Barbiere), `stay` und `creative` Journal, `trade`,
 `retail` sowie Café/Bäckerei Werkstoff; Barbiere/Herrenfriseure, Imbiss und
 `courses` (Kurse) bekommen Plakat. Gedruckte Postkarten-
 Vorschauen sehen danach anders aus als auf der Karte (Postkarten-Seiten von
 Barbieren ändern sich bei Neuerzeugung auf Plakat); Postkarten-Seiten nur
 bewusst neu erzeugen.
+
+Mit dem Klar-Release ändert sich außerdem die Abschnittsreihenfolge der
+Baupläne `health` und `advice`. Das gilt für neu erzeugte Seiten in **allen**
+Systemen, nicht nur in Klar.
 
 ## 4. Umgebungsvariablen & Mock-Flags
 

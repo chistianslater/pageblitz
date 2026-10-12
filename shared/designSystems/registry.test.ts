@@ -8,13 +8,21 @@ import {
 
 describe("Freischaltung der Designsysteme", () => {
   test("Journal ist abgenommen und freigeschaltet", () => {
-    expect(RELEASED_SYSTEMS).toEqual(["journal", "raster", "werkstoff", "plakat"]);
+    expect(RELEASED_SYSTEMS).toEqual(["journal", "raster", "werkstoff", "plakat", "klar"]);
     expect(isReleased("journal")).toBe(true);
     expect(getSystem("journal")).toBeDefined();
   });
 
   test("nur registrierte Systeme gelten als freigeschaltet", () => {
     for (const id of RELEASED_SYSTEMS) expect(getSystem(id)).toBeDefined();
+  });
+});
+
+describe("Klar", () => {
+  test("ist registriert und freigeschaltet", () => {
+    expect(getSystem("klar")?.name).toBe("Klar");
+    expect(isReleased("klar")).toBe(true);
+    expect(RELEASED_SYSTEMS).toContain("klar");
   });
 });
 

@@ -35,7 +35,7 @@ describe("withDesignSystem", () => {
   });
 });
 
-describe("withPrimarySystem (Raster, Werkstoff und Plakat freigeschaltet)", () => {
+describe("withPrimarySystem (Raster, Werkstoff, Plakat und Klar freigeschaltet)", () => {
   const withFamily = (blueprintFamily: string) =>
     withPrimarySystem({
       ...rev2,
@@ -73,10 +73,10 @@ describe("withPrimarySystem (Raster, Werkstoff und Plakat freigeschaltet)", () =
     expect(doc.designRevision).toBe(3);
   });
 
-  test("Familie health: Hauptsystem nicht gebaut, bleibt rev 2", () => {
+  test("Familie health bekommt Klar (rev 3)", () => {
     const doc = withFamily("health");
-    expect(doc.system).toBeUndefined();
-    expect(doc.designRevision).toBe(2);
+    expect(doc.system).toBe("klar");
+    expect(doc.designRevision).toBe(3);
   });
 
   test("Familie courses bekommt Plakat (rev 3)", () => {

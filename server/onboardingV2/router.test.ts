@@ -771,6 +771,32 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(courses.candidates[0]).toMatchObject({ kind: "system", id: "plakat" });
   });
 
+  test("Klar frei: Gesundheit Hauptsystem, Beratung/Kurse/Dringend Alternative in Runde 0", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar"];
+    const isKlar = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "klar";
+    useDoc({ ...v2, businessCategory: "Zahnarzt", blueprintFamily: "health" });
+    const health = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(health.candidates[0]).toMatchObject({ kind: "system", id: "klar" });
+    for (const family of ["advice", "courses", "urgent"]) {
+      useDoc({ ...v2, businessCategory: "Betrieb", blueprintFamily: family });
+      const r = await caller().getStyleCandidates({ token: "tok", count: 3 });
+      expect(r.candidates.some(isKlar), family).toBe(true);
+    }
+  });
+
+  test("Klar frei: Industrie und Standard zeigen Klar erst, wenn die Seite Raster trägt", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar"];
+    const isKlar = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "klar";
+    for (const family of ["industry", "standard"]) {
+      useDoc({ ...v2, businessCategory: "Betrieb", blueprintFamily: family });
+      const before = await caller().getStyleCandidates({ token: "tok", count: 3 });
+      expect(before.candidates.some(isKlar), family).toBe(false);
+      useDoc({ ...v2, designRevision: 3, system: "raster", palette: "papier", businessCategory: "Betrieb", blueprintFamily: family });
+      const after = await caller().getStyleCandidates({ token: "tok", count: 3 });
+      expect(after.candidates.some(isKlar), family).toBe(true);
+    }
+  });
+
   test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
     useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
     released.ids = ["journal"];

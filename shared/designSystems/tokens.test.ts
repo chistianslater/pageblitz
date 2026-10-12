@@ -282,9 +282,9 @@ describe("Klar-Tokens", () => {
       expect(p.surface).toBe("#ffffff");
     }
   });
-  test("registriert, aber nicht freigeschaltet", () => {
+  test("registriert und freigeschaltet", () => {
     expect(DESIGN_SYSTEMS.klar).toBe(KLAR);
-    expect(isReleased("klar")).toBe(false);
+    expect(isReleased("klar")).toBe(true);
   });
   test("Schriftskala: neun Kernstufen plus figure und data, ohne Stretch/Versal", () => {
     expect(Object.keys(KLAR.type).sort()).toEqual(

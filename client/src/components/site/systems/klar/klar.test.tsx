@@ -77,8 +77,8 @@ describe("Klar: Gerüst", () => {
     }
   });
 
-  test("noch nicht freigeschaltet, aber mit Bewegungs-Bundle", () => {
-    expect(RELEASED_SYSTEMS).not.toContain("klar");
+  test("freigeschaltet und mit Bewegungs-Bundle", () => {
+    expect(RELEASED_SYSTEMS).toContain("klar");
     expect(SYSTEMS_WITH_MOTION).toContain("klar");
     expect(SYSTEM_MOTION.klar).toBeDefined();
   });
