@@ -415,3 +415,35 @@ export function kanzleiFullDoc(palette = "wasser"): Doc {
     { type: "cta", headline: "Ein Gespräch kostet nichts.", ctaText: "Erstgespräch vereinbaren" },
   ] as Sec[]);
 }
+
+/**
+ * Belastungsprobe (Review-Fokus 3/4): sehr langer Praxisname, lange
+ * Leistungs- und Teamnamen, langer Preis, Mittagspause, geschlossene Tage
+ * und Wortlaut-Zeiten — für 320 px.
+ */
+export function stressDoc(): Doc {
+  let doc: Doc = {
+    ...zahnFullDoc(),
+    businessName:
+      "Gemeinschaftspraxis für Allgemeinmedizin Dr. med. Katharina Oberländer-Wittgenstein",
+  };
+  doc = patchSection(doc, "services", s => ({
+    ...s,
+    items: [
+      { title: "Professionelle Zahnreinigungsbehandlung mit Fluoridierung", description: "Gründlich.", price: "ab 1.200 € zzgl. Material und Laborkosten" },
+      ...s.items.slice(1),
+    ],
+  }));
+  doc = patchSection(doc, "team", t => ({
+    ...t,
+    members: [{ name: "Prof. Dr. med. dent. Maximiliane Oberländer-Wittgenstein", role: "Fachzahnärztin für Kieferorthopädie und Oralchirurgie" }, ...t.members.slice(1)],
+  }));
+  return withContact(doc, {
+    street: "Bürgermeister-Schmidt-Straße 123a",
+    openingHours: [
+      { day: "Mo–Do", hours: "8:00 – 12:00, 14:00 – 18:00" },
+      { day: "Fr", hours: "nach telefonischer Vereinbarung" },
+      { day: "Sa–So", hours: "geschlossen" },
+    ],
+  });
+}

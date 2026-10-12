@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import { SiteRenderer } from "../../SiteRenderer";
+import { KLAR_CSS } from "./css";
 import { INDUSTRY_IMAGES } from "../../../../../../shared/industryImages";
 import { PLACEHOLDER_OPENING_HOURS } from "../../../../../../shared/onboardingV2/openingHours";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
@@ -16,6 +17,7 @@ import {
   physioFullDoc,
   render,
   sectionHtml,
+  stressDoc,
   TEST_NOW,
   withContact,
   without,
@@ -391,6 +393,20 @@ describe("Klar: Unterseiten und Rechtsseiten", () => {
     const html = render(doc, false, "/site/z", "/leistungen");
     expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
     expect(sectionHtml(html, "cta")).toContain('href="/site/z#kontakt"');
+  });
+});
+
+describe("Klar: Belastungsprobe 320", () => {
+  test("lange Namen, Preise und Wortlaut-Zeiten bleiben ganz; Karten-Raster klemmen ihre Spalte", () => {
+    const html = render(stressDoc());
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(sectionHtml(html, "services")).toContain('<p class="kl-svc-note">ab 1.200 € zzgl. Material und Laborkosten</p>');
+    expect(sectionHtml(html, "team")).toContain(">Prof. Dr. med. dent. Maximiliane Oberländer-Wittgenstein</h3>");
+    expect(sectionHtml(html, "team")).toContain('aria-hidden="true">MO</span>');
+    expect(sectionHtml(html, "contact")).toContain("<span>nach telefonischer Vereinbarung</span>");
+    // Ohne minmax(0,1fr) setzt ein langes Wort die Mindestbreite (1px Überlauf bei 320).
+    for (const sel of ["kl-svc-card", "kl-voice", "kl-place-body", "kl-band-actions", "kl-faqs", "kl-crew"])
+      expect(KLAR_CSS).toMatch(new RegExp(`\\.pb-klar \\.${sel}\\{[^}]*grid-template-columns:minmax\\(0,1fr\\)`));
   });
 });
 
