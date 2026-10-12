@@ -219,7 +219,8 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
 
   test("bestehende Gruppen bleiben, wo sie waren", () => {
     expect(gruppe("Friseursalon", "Aland Barber Shop")).toBe("friseur");
-    expect(gruppe("Barbier", "Aland Barber Shop")).toBe("friseur");
+    // Seit Plakat P1 (2026-10-12) hat der Barbier einen eigenen Satz.
+    expect(gruppe("Barbier", "Aland Barber Shop")).toBe("barbier");
     expect(gruppe("Café", "Kaffeehaus Mitte")).toBe("cafe");
     expect(gruppe("Restaurant", "Zum Brotkorb")).toBe("restaurant");
     expect(gruppe("Malerbetrieb")).toBe("handwerk");
@@ -229,5 +230,102 @@ describe("Bildsätze Bäckerei, Schreinerei, Laden (Werkstoff W1)", () => {
     expect(gruppe("Kosmetikstudio", "Beauty Boutique")).toBe("friseur");
     expect(gruppe("Boutique-Hotel", "Am Markt")).toBe("hospitality");
     expect(gruppe("Coffee Shop", "Bohne")).toBe("cafe");
+  });
+});
+
+describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  const motiv = (url: string) => new URL(url).pathname;
+  const NEU = ["barbier", "imbiss"];
+
+  test.each(NEU)(
+    "%s: geprüfte Unsplash-URLs, 3 Einstiege, 6 Galeriebilder, kein Motiv doppelt",
+    key => {
+      const satz = INDUSTRY_IMAGES[key];
+      expect(satz).toBeDefined();
+      expect(satz.hero).toHaveLength(3);
+      expect(satz.gallery).toHaveLength(6);
+      const alle = [...satz.hero, ...(satz.gallery ?? [])];
+      for (const url of alle)
+        expect(url).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=(800|1400)&q=(80|85)&auto=format&fit=crop$/
+        );
+      expect(new Set(alle.map(motiv)).size).toBe(alle.length);
+      const stock = buildStockFallbackImages(key, "Beispiel", key);
+      expect(stock.gallery?.length).toBeGreaterThanOrEqual(3);
+    }
+  );
+
+  test("kein neues Motiv steckt schon in einem anderen Satz", () => {
+    const neu = new Set(
+      NEU.flatMap(k => [
+        ...INDUSTRY_IMAGES[k].hero,
+        ...(INDUSTRY_IMAGES[k].gallery ?? []),
+      ]).map(motiv)
+    );
+    for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
+      if (NEU.includes(key)) continue;
+      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+        expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
+    }
+  });
+
+  test("Barbiere bekommen den Barbier-Satz — in allen Designs", () => {
+    expect(gruppe("Barbier")).toBe("barbier");
+    expect(gruppe("Barbershop", "Kante")).toBe("barbier");
+    expect(gruppe("Barber Shop", "Kante")).toBe("barbier");
+    // Google-Typ barber_shop kommt als „barber_shop"
+    expect(gruppe("barber_shop", "Kante")).toBe("barbier");
+    expect(gruppe("Herrenfriseur", "Salon Ali")).toBe("barbier");
+    // KI sagt „friseur", die Kategorie ist genauer
+    expect(gruppe("Barbier", "Kante", "friseur")).toBe("barbier");
+    // Name allein reicht, wenn die Kategorie nichts sagt
+    expect(gruppe("Dienstleister", "Kante Barbershop")).toBe("barbier");
+  });
+
+  test("Friseure bleiben beim Friseur-Satz, auch mit Barber im Namen", () => {
+    expect(gruppe("Friseursalon", "Aland Barber Shop")).toBe("friseur");
+    expect(gruppe("Friseursalon", "H&B Barber")).toBe("friseur");
+    expect(gruppe("Friseur", "Barbier Müller")).toBe("friseur");
+    expect(gruppe("Friseursalon", "Test", "friseur")).toBe("friseur");
+    expect(gruppe("Kosmetikstudio", "Beauty Boutique")).toBe("friseur");
+    // „bier" in „Barbier" darf die Bar nicht holen — und umgekehrt
+    expect(gruppe("Bar", "Zum Anker")).toBe("bar");
+    expect(gruppe("Bierbar", "Zum Anker")).not.toBe("barbier");
+  });
+
+  test("Imbisse, Döner und Kebab bekommen den Imbiss-Satz", () => {
+    expect(gruppe("Imbiss")).toBe("imbiss");
+    expect(gruppe("Imbisswagen", "Grillwagen Kaya")).toBe("imbiss");
+    expect(gruppe("Schnellimbiss", "Bei Ali")).toBe("imbiss");
+    expect(gruppe("Grillimbiss")).toBe("imbiss");
+    expect(gruppe("Döner Kebab Restaurant", "Bosporus")).toBe("imbiss");
+    expect(gruppe("Doner kebab restaurant", "Bosporus")).toBe("imbiss");
+    expect(gruppe("Kebab shop", "Bosporus")).toBe("imbiss");
+    expect(gruppe("Kebab")).toBe("imbiss");
+    expect(gruppe("Döner")).toBe("imbiss");
+    expect(gruppe("Dürüm-Laden", "Mangal")).toBe("imbiss");
+    expect(gruppe("Imbiss & Takeaway", "Bosporus")).toBe("imbiss");
+    // KI sagt „restaurant", die Kategorie ist genauer
+    expect(gruppe("Imbiss", "Bosporus", "restaurant")).toBe("imbiss");
+    expect(gruppe("Restaurant", "Bosporus Döner")).toBe("restaurant");
+  });
+
+  test("Grill, Pizza und Restaurant bleiben, wo sie waren", () => {
+    expect(gruppe("Grill")).toBe("restaurant");
+    expect(gruppe("Grillrestaurant", "Steakhaus")).toBe("restaurant");
+    expect(gruppe("Steakhouse")).toBe("restaurant");
+    // Pizza bleibt unverändert (vorher wie nachher, nie Imbiss).
+    expect(gruppe("Pizzeria", "Da Mario")).not.toBe("imbiss");
+    expect(gruppe("Pizza Lieferdienst", "Da Mario")).not.toBe("imbiss");
+    expect(gruppe("Pizzaservice", "Da Mario")).toBe("pizza");
+    expect(gruppe("Restaurant", "Zum Brotkorb")).toBe("restaurant");
+    expect(gruppe("Burger Restaurant", "Bun")).toBe("restaurant");
+    expect(gruppe("Imbiss", "Pizza Döner Haus")).toBe("imbiss");
+    expect(gruppe("Café", "Kaffeehaus Mitte")).toBe("cafe");
+    expect(gruppe("Bäckerei", "Imbiss-Ecke")).toBe("baeckerei");
   });
 });

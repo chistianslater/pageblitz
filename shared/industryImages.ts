@@ -25,9 +25,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "friseur",
       "hair",
       "salon",
-      "barber",
-      // „Barbier" enthält „bier" (Bar-Satz) — das ganze Wort muss gewinnen.
-      "barbier",
+      // „barber"/„barbier": eigener Satz `barbier` (2026-10-12, Plakat P1).
       "beauty",
       "hairdresser",
       "coiffeur",
@@ -52,6 +50,40 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     ],
   },
 
+  // ── Barbier & Barbershop (2026-10-12, Plakat P1) ───────────────
+  // Barbershop-Raum, Bartschnitt, Fade, Barbierstuhl. Vorher landete
+  // „Barbier" beim Friseur-Satz (Salon-Fotos mit Damen) — Barbiere bekommen
+  // jetzt in allen Designs Barbershop-Fotos. „barber"/„barbier" stehen nur
+  // noch hier; ein Friseursalon mit „Barber" im Namen bleibt beim Friseur,
+  // weil die Kategorie schwerer wiegt.
+  barbier: {
+    keywords: [
+      "barbier",
+      "barber",
+      "barbershop",
+      "barber shop",
+      "barbiersalon",
+      "herrenfriseur",
+      "bartpflege",
+      "bartschnitt",
+      "nassrasur",
+    ],
+    refines: ["friseur"],
+    hero: [
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1593702275687-f8b402bf1fb5?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1672257493626-038f96997ade?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1599011176306-4a96f1516d4d?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1582771498000-8ad44e6c84db?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1517832606299-7ae9b720a186?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1621645582931-d1d3e6564943?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1635273051937-a0ddef9573b6?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
   // ── Restaurant & Food ──────────────────────────────
   restaurant: {
     keywords: [
@@ -68,7 +100,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "wirtshaus",
       "gasthaus",
       "food",
-      "imbiss",
+      // „imbiss": eigener Satz `imbiss` (2026-10-12, Plakat P1).
       "steak",
       "lunch",
       "mittagstisch",
@@ -107,6 +139,55 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Imbiss, Döner & Kebab (2026-10-12, Plakat P1) ───────────────
+  // Dönerspieß, Dürüm, Wraps mit Pommes, Grill. „Grill" allein und
+  // „Grillrestaurant" bleiben beim Restaurant, Pizza beim bisherigen Satz.
+  // Komposita („Döner Kebab Restaurant") brauchen das lange Stichwort,
+  // sonst gewinnt „restaurant" als längerer Treffer.
+  imbiss: {
+    keywords: [
+      "imbiss",
+      "schnellimbiss",
+      "döner",
+      "doener",
+      "doner",
+      "döner kebab",
+      "doner kebab",
+      "doener kebab",
+      "kebab restaurant",
+      "kebap",
+      "kebab",
+      "dürüm",
+      "dürum",
+      "durum",
+      "lahmacun",
+      "falafel",
+      "gyros",
+      "shawarma",
+      "currywurst",
+      "pommesbude",
+      "frittenbude",
+      "snackbar",
+      "takeaway",
+      "fast food",
+      "fastfood",
+    ],
+    refines: ["restaurant"],
+    hero: [
+      "https://images.unsplash.com/photo-1596995804697-27d11d43652e?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1778866677043-6f7871cdbec8?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1773514294087-b93f864866a5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1699728088614-7d1d4277414b?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1773620494884-940e0db95e46?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1653379557259-48a725b08460?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1530469912745-a215c6b256ea?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1561758033-d89a9ad46330?w=800&q=80&auto=format&fit=crop",
     ],
   },
 
