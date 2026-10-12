@@ -6,7 +6,13 @@ import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { telHref } from "../../artDirection/heroFacts";
 import { stripMarks } from "../../richText";
 import { SECTION_ANCHORS } from "../../engine";
-import { addressLine, contactOf, mailHref, mapsHref } from "./contact";
+import {
+  addressLine,
+  contactOf,
+  mailHref,
+  mapsHref,
+  telLabel,
+} from "./contact";
 import { visibleDoc } from "./brand";
 
 /**
@@ -28,7 +34,7 @@ const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
  *  4. Anruf
  *  (ohne Telefon zuletzt `#kontakt`, wenn der Kontakt sichtbar ist)
  * Text: Einstieg bzw. Bauplan, sonst „Termin vereinbaren"; ruft der Knopf
- * an, „Anrufen" bzw. bei Gesundheit „Termin vereinbaren" (callLabel).
+ * an, „Anrufen" — außer der Text nennt Anruf oder Telefon (telLabel).
  * Zweiter Knopf: die Telefonnummer — ruft der Hauptknopf schon an, statt
  * der Nummer die Route (mit Adresse) oder E-Mail. Nur sichtbare
  * Abschnitte zählen.
@@ -62,7 +68,7 @@ export function systemActions(
   if (!target) return { phone };
   const calls = target === tel;
   const primary = {
-    label: calls ? callLabel(own, blueprint) : own || "Termin vereinbaren",
+    label: telLabel(own || "Termin vereinbaren", target),
     href: target,
   };
   const second = !calls
@@ -73,20 +79,4 @@ export function systemActions(
         ? { label: "E-Mail", href: mail }
         : undefined;
   return { primary, second, phone };
-}
-
-/**
- * Ruft der Hauptknopf an, sagt er das (Nacht N0): „Anrufen“, bei Gesundheit
- * „Termin vereinbaren“ — außer der eigene Text nennt Anruf oder Termin schon
- * oder ist der feste Anruf-Text des Bauplans.
- * Ein KI-Text wie „Erstgespräch vereinbaren“ versprach sonst ein Formular.
- */
-const SAYS_CALL = /anruf|termin/i;
-function callLabel(own: string | undefined, blueprint: Blueprint): string {
-  if (own && SAYS_CALL.test(own)) return own;
-  // Fester Anruf-Text des Bauplans („Tisch reservieren“ bei Gastro mit
-  // ctaAction tel) ist fürs Telefon geschrieben und bleibt.
-  if (own && blueprint.ctaAction === "tel" && own === blueprint.ctaText)
-    return own;
-  return blueprint.id === "health" ? "Termin vereinbaren" : "Anrufen";
 }

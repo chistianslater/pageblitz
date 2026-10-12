@@ -7,6 +7,7 @@ import { paragraphs, Voice } from "./Story";
 import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import type { Field } from "./rhythm";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Übrige Abschnitte in derselben Grammatik (League-Gothic-Überschrift mit
@@ -120,7 +121,7 @@ export function PlakatCta({ section, field }: Props<"cta">) {
           className="pk-btn"
           href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
         >
-          {section.ctaText}
+          {telLabel(section.ctaText, section.ctaHref)}
           <i aria-hidden="true">→</i>
         </a>
       </p>

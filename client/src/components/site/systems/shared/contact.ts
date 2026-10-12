@@ -60,6 +60,23 @@ export function mailHref(
     : `mailto:${value}`;
 }
 
+const SAYS_CALL = /anruf|telefon/i;
+/** Beschriftung ist die Nummer selbst („0555 4718 20", „+49 (0)555 / 47-18"). */
+const IS_NUMBER = /^[+\d][\d\s()/.\-–]*$/;
+
+/**
+ * Ein Knopf, der anruft, sagt das (Betreiber-Entscheid 2026-10-12): Zielt
+ * er auf `tel:`, heißt er „Anrufen" — außer sein Text nennt Anruf oder
+ * Telefon schon oder ist die Nummer. „Tisch reservieren", „Termin
+ * anfragen" oder „Verfügbarkeit anfragen" versprachen sonst ein Formular.
+ * Andere Ziele behalten ihren Text.
+ */
+export function telLabel(label: string, href: string | undefined): string {
+  if (!href || !/^tel:/i.test(href.trim())) return label;
+  const t = label.trim();
+  return SAYS_CALL.test(t) || IS_NUMBER.test(t) ? label : "Anrufen";
+}
+
 /** Hauptaktion laut Bauplan: Anruf, Route oder Sprung zum Kontakt. */
 export function primaryAction(
   data: WebsiteDataV2,
@@ -72,10 +89,14 @@ export function primaryAction(
   );
   const label = hero?.ctaText ?? blueprint.ctaText ?? "Kontakt";
   const tel = telHref(contact?.phone);
-  if (blueprint.ctaAction === "tel" && tel) return { label, href: tel };
+  if (blueprint.ctaAction === "tel" && tel)
+    return { label: telLabel(label, tel), href: tel };
   const address = addressLine(contact);
   if (blueprint.ctaAction === "route" && address)
     return { label, href: mapsHref(address) };
   const href = hero?.ctaHref ?? `#${SECTION_ANCHORS.contact}`;
-  return { label, href: href.startsWith("#") ? anchorPrefix + href : href };
+  return {
+    label: telLabel(label, href),
+    href: href.startsWith("#") ? anchorPrefix + href : href,
+  };
 }

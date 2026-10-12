@@ -12,6 +12,7 @@ import {
   type SectionProps,
 } from "./sections";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Übrige Abschnittstypen in Colophons Grammatik (Label-Spalte, Haarlinien):
@@ -168,7 +169,7 @@ export function RasterCta({ section }: SectionProps<"cta">) {
               className="rs-btn"
               href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
             >
-              {section.ctaText}
+              {telLabel(section.ctaText, section.ctaHref)}
             </a>
           </p>
         </div>

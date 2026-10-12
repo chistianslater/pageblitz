@@ -447,7 +447,7 @@ describe("Nacht: Wege (Klar-Reihenfolge) und Leiste", () => {
     });
   });
 
-  test("ohne Buchungslink: Restaurant ruft an und behält „Tisch reservieren“", () => {
+  test("ohne Buchungslink: Restaurant ruft an und sagt „Anrufen“ (Entscheid 2026-10-12)", () => {
     const doc = patchSection(weinbergDoc(), "hero", h => ({
       ...h,
       ctaHref: undefined,
@@ -455,12 +455,12 @@ describe("Nacht: Wege (Klar-Reihenfolge) und Leiste", () => {
     }));
     const a = nachtActions(doc, bp(doc));
     expect(a.primary).toEqual({
-      label: "Tisch reservieren",
+      label: "Anrufen",
       href: "tel:0555471820",
     });
     expect(a.second?.label).toBe("Route");
     expect(dockPair(a)?.left?.label).toBe("Route");
-    expect(dockPair(a)?.main.label).toBe("Reservieren");
+    expect(dockPair(a)?.main.label).toBe("Anrufen");
   });
 
   test("Formular gebucht → #kontakt; Kurzformen", () => {

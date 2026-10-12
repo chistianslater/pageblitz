@@ -21,6 +21,7 @@ import {
   type SectionProps,
 } from "./sections";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Gut zu wissen und Zeiten + Kontakt nach Systemblatt 7–9: Fragen als
@@ -193,7 +194,7 @@ export function RasterContact({ section, sections }: SectionProps<"contact">) {
           {inquiry && inquiryHref && (
             <p>
               <a className="rs-btn" href={inquiryHref}>
-                {blueprint.ctaText ?? "Anfrage senden"}
+                {telLabel(blueprint.ctaText ?? "Anfrage senden", inquiryHref)}
               </a>
             </p>
           )}

@@ -13,6 +13,7 @@ import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import { lateFigure } from "./offerData";
 import type { Field } from "./rhythm";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Fragen und Vorbeikommen nach Systemblatt (Bausteine „Fragen", „Zeiten
@@ -189,7 +190,7 @@ export function PlakatContact({ section, field }: Props<"contact">) {
             <p className="pk-visit-actions">
               {inquiry && inquiryHref && (
                 <a className="pk-btn" href={inquiryHref}>
-                  {blueprint.ctaText ?? "Anfrage senden"}
+                  {telLabel(blueprint.ctaText ?? "Anfrage senden", inquiryHref)}
                   <i aria-hidden="true">→</i>
                 </a>
               )}

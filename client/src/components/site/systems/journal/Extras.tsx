@@ -11,6 +11,7 @@ import {
   type JournalSection,
 } from "./sections";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Übrige Abschnittstypen in der Grammatik des Systemblatts (Label-Zeile +
@@ -218,7 +219,7 @@ export function JournalCta({ section }: P<"cta">) {
             className="jr-pill jr-pill--light"
             href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
           >
-            {section.ctaText}
+            {telLabel(section.ctaText, section.ctaHref)}
           </a>
         </p>
       </div>

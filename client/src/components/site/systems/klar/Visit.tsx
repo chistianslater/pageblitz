@@ -5,6 +5,7 @@ import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, mailHref, mapsHref, newTabIfMaps } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 import {
   entryVariant,
   hoursLabel,
@@ -172,7 +173,7 @@ export function KlarCta({
   const own = klarHref(section.ctaHref, data, anchorPrefix);
   const href = own ?? ways.primary?.href;
   const primary: Action | undefined = href
-    ? { label: section.ctaText, href }
+    ? { label: telLabel(section.ctaText, href), href }
     : undefined;
   const second = own ? ways.phone : ways.second;
   return (

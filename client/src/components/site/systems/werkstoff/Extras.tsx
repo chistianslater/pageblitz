@@ -9,6 +9,7 @@ import {
   type WerkstoffSection,
 } from "./sections";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Übrige Abschnitte in derselben Grammatik (Slab-Überschrift, Tinte-Linie,
@@ -135,7 +136,7 @@ export function WerkstoffCta({ section }: Props<"cta">) {
           className="ws-btn"
           href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
         >
-          {section.ctaText}
+          {telLabel(section.ctaText, section.ctaHref)}
         </a>
       </p>
     </WerkstoffChapter>

@@ -18,6 +18,7 @@ import {
   type WerkstoffSection,
 } from "./sections";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Gut zu wissen und Besuch nach Systemblatt (Abschnitt 09, 11–13): Fragen
@@ -189,7 +190,7 @@ export function WerkstoffContact({ section }: Props<"contact">) {
             <p className="ws-visit-actions">
               {inquiry && inquiryHref && (
                 <a className="ws-btn" href={inquiryHref}>
-                  {blueprint.ctaText ?? "Anfrage senden"}
+                  {telLabel(blueprint.ctaText ?? "Anfrage senden", inquiryHref)}
                 </a>
               )}
               {tel && (

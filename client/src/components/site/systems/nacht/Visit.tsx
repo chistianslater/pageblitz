@@ -13,6 +13,7 @@ import {
   systemHref,
 } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 import { knowIcon } from "./content";
 import { hostOf, hoursTable, nachtActions } from "./facts";
 import { Icon, wayIcon } from "./icons";
@@ -218,7 +219,8 @@ export function NachtCta({
   const ways = nachtActions(data, blueprint, anchorPrefix);
   const own = systemHref(section.ctaHref, data, anchorPrefix);
   const href = own ?? ways.primary?.href;
-  const label = section.ctaText?.trim() || ways.primary?.label;
+  const text = section.ctaText?.trim() || ways.primary?.label;
+  const label = text && telLabel(text, href);
   const phone = ways.phone;
   const button =
     href && label && href !== phone?.href ? { href, label } : undefined;

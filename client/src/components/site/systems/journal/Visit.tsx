@@ -25,6 +25,7 @@ import {
   type JournalSection,
 } from "./sections";
 import { SYS_ACTIONS, SYS_DOCK } from "../shared/dockAutoHide";
+import { telLabel } from "../shared/contact";
 
 /**
  * Gut zu wissen, Besuch und Handy-Dock nach Systemblatt (Anker Aman
@@ -218,7 +219,7 @@ export function JournalContact({ section, sections }: P<"contact">) {
             {inquiry && inquiryHref && (
               <p className="jr-contact-cta" {...SYS_ACTIONS}>
                 <a className="jr-pill" href={inquiryHref}>
-                  {blueprint.ctaText ?? "Anfrage senden"}
+                  {telLabel(blueprint.ctaText ?? "Anfrage senden", inquiryHref)}
                 </a>
               </p>
             )}

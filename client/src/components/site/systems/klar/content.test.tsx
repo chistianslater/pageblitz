@@ -477,11 +477,12 @@ describe("Klar: Aufruf und Extras", () => {
       /<div class="kl-band-actions" data-sys-actions=""><a class="kl-btn kl-btn--p" href="#kontakt">Termin vereinbaren<span class="kl-btn-ic">/
     );
     expect(z).toContain('href="tel:041315550142"');
-    // Kanzlei ohne Formular: Hauptknopf ruft an, daneben Route
+    // Kanzlei ohne Formular: Hauptknopf ruft an („Anrufen“), daneben Route
     const k = sectionHtml(render(kanzleiFullDoc()), "cta");
     expect(k).toMatch(
-      /<a class="kl-btn kl-btn--p" href="tel:051215550119">Erstgespräch vereinbaren/
+      /<a class="kl-btn kl-btn--p" href="tel:051215550119">Anrufen</
     );
+    expect(k).not.toContain("Erstgespräch vereinbaren");
     expect(k).toContain(">Route</a>");
   });
 
