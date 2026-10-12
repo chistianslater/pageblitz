@@ -508,6 +508,8 @@ test.describe("A11y (axe): Designsystem Nacht", () => {
     for (const width of [1440, 390] as const) {
       test(`nacht ${palette} ${width}`, async ({ page }) => {
         await skipCookieBanner(page);
+        // Ausdrücklich ohne Bewegung: keine Startzustände (opacity 0) im axe-Lauf.
+        await page.emulateMedia({ reducedMotion: "reduce" });
         await page.setViewportSize({ width, height: 900 });
         await page.goto(
           `/dev/site-preview?system=nacht&palette=${palette}&fixture=full`
@@ -526,6 +528,8 @@ test.describe("A11y (axe): Designsystem Nacht", () => {
     for (const width of [1440, 390] as const) {
       test(`nacht ${showcase} ${width}`, async ({ page }) => {
         await skipCookieBanner(page);
+        // Ausdrücklich ohne Bewegung: keine Startzustände (opacity 0) im axe-Lauf.
+        await page.emulateMedia({ reducedMotion: "reduce" });
         await page.setViewportSize({ width, height: 900 });
         await page.goto(
           `/demo/system/nacht/${showcase}?palette=${palette}&live=1`

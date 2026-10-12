@@ -18,7 +18,7 @@ function mix(a: string, b: string, p: number): string {
 
 describe("Nacht: Chat- und Termin-Insel auf dunkel", () => {
   test.each(NACHT.palettes.map(p => [p.id, p] as const))(
-    "%s: Panel-Text ≥ 7, Gedämpft ≥ 4,5, Knopfschrift ≥ 4,5, Fokus ≥ 3",
+    "%s: Panel-Text ≥ 7, Gedämpft ≥ 4,5, Knopfschrift ≥ 4,5, Kupferstrich ≥ 3",
     (_id, p) => {
       const sys = {
         "--sys-paper": p.paper,
@@ -39,15 +39,12 @@ describe("Nacht: Chat- und Termin-Insel auf dunkel", () => {
       for (const bg of [surface, p.paper]) {
         expect(contrastRatio(p.ink, bg)).toBeGreaterThanOrEqual(7);
         expect(contrastRatio(p.muted, bg)).toBeGreaterThanOrEqual(4.5);
-        // Fokusring in Tinte, Kupferstrich der Meldungen
-        expect(contrastRatio(p.ink, bg)).toBeGreaterThanOrEqual(3);
+        // Kupferstrich der Meldungen (Fokusring in Tinte deckt ≥ 7 oben ab)
         expect(contrastRatio(p.accent, bg)).toBeGreaterThanOrEqual(3);
       }
       // Knöpfe, Nutzer-Blasen, gewählte Chips: Schrift auf Kupfer
       const on = pb["--pb-accent-contrast"];
       expect(contrastRatio(on, p.accent)).toBeGreaterThanOrEqual(4.5);
-      // Knopf-Fokus (Tinte) hebt sich vom Papier ab
-      expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(3);
     }
   );
 
