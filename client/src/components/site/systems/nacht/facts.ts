@@ -45,13 +45,26 @@ const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
  * eindeutig dem heutigen Tag zuordnen lässt, ergibt keine Küchenzeit.
  * Gemeint ist die Zeit direkt nach „bis" oder das Ende einer „–"-Spanne.
  */
-const KITCHEN = /(?:warme\s+)?(k(?:ü|ue)che\b[^,;·|()]*)(?:\s*\(([^)]*)\))?/i;
+const KITCHEN = /(?:warme\s+)?(k(?:ü|ue)che\b[^,;·|()]*)/i;
+/** Buchstabe in beiden Schreibweisen: „Fr" → `[Ff][Rr]`. */
+const ci = (w: string) =>
+  Array.from(w, c => `[${c.toUpperCase()}${c.toLowerCase()}]`).join("");
+/**
+ * Wochentage ohne Rücksicht auf Groß-/Kleinschreibung — außer „So" und „Do":
+ * kleingeschrieben sind das Wörter („so lange"), Tage nur als „So"/„Do" oder
+ * mit Punkt/Strich/Schrägstrich („so.", „do–fr", „so/mo").
+ */
 const DAY_NAME =
-  "(?:Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag|Mo|Di|Mi|Do|Fr|Sa|So)\\.?";
-const DAY_WORD = new RegExp(`(?:^|[^\\p{L}])${DAY_NAME}(?![\\p{L}])`, "iu");
+  "(?:" +
+  ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag", "Mo", "Di", "Mi", "Fr", "Sa"]
+    .map(ci)
+    .join("|") +
+  "|So|Do|(?:so|do)(?=[.–\\-/]))\\.?";
+const KITCHEN_WORD = `${ci("k")}(?:[üÜ]|${ci("ue")})${ci("che")}`;
+const DAY_WORD = new RegExp(`(?:^|[^\\p{L}])${DAY_NAME}(?![\\p{L}])`, "u");
 const LEADING_DAYS = new RegExp(
-  `^[Kk](?:ü|ue)che\\s+(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*`,
-  "iu"
+  `^${KITCHEN_WORD}\\s+(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*`,
+  "u"
 );
 const AT = /(\d{1,2})(?:[:.](\d{2}))?/;
 const AFTER_BIS = new RegExp(`bis\\s*${AT.source}`, "i");
@@ -60,7 +73,7 @@ const RANGE_END = new RegExp(
 );
 const EXCEPTION = new RegExp(
   `^(${DAY_NAME}(?:\\s*(?:[–\\-/,&]|und)\\s*${DAY_NAME})*)\\s*(?:bis\\s*)?${AT.source}\\s*(?:Uhr)?$`,
-  "iu"
+  "u"
 );
 
 const minutesOf = (h?: string, min?: string): number | undefined => {
@@ -101,7 +114,7 @@ function blockEnd(block: string): number | undefined {
  * letzten Blocks; hat der letzte Block kein Ende, gibt es keine Zeit.
  */
 function kitchenEnd(text: string): number | undefined {
-  const blocks = text.split(/\s+und\s+|\s*[/&]\s*/).filter(b => b.trim());
+  const blocks = text.split(/\s+und\s+|\s*[/&,]\s*/).filter(b => b.trim());
   return blocks.length ? blockEnd(blocks[blocks.length - 1]) : undefined;
 }
 
@@ -117,7 +130,7 @@ function kitchenMinutes(
     return kitchenEnd(segment.slice(lead[0].length));
   }
   // Tagesangabe an anderer Stelle im Küchenteil: nicht zuordenbar.
-  if (DAY_WORD.test(segment.replace(/^k(?:ü|ue)che/i, ""))) return undefined;
+  if (DAY_WORD.test(segment.replace(new RegExp(`^${KITCHEN_WORD}`, "u"), ""))) return undefined;
   const base = kitchenEnd(segment);
   const ex = exception?.trim().match(EXCEPTION);
   if (ex && now && daysCoverToday(ex[1], now)) {
@@ -134,15 +147,61 @@ export type KitchenSplit = {
   kitchenOnly?: true;
 };
 
+/** Zeit oder Zeitspanne allein („17:30–21:30", „12 – 14 Uhr"). */
+const TIME_PART =
+  "\\d{1,2}(?:[:.]\\d{2})?(?:\\s*Uhr)?(?:\\s*[–-]\\s*\\d{1,2}(?:[:.]\\d{2})?(?:\\s*Uhr)?)?";
+const NEXT_PART = new RegExp(`\\s*,\\s*(${TIME_PART})(?=\\s*(?:[,;·|(]|$))`, "y");
+const PAREN = /\s*\(([^)]*)\)/y;
+const ENDS_IN_RANGE = /[–-]\s*\d{1,2}(?:[:.]\d{2})?\s*(?:Uhr)?\s*$/;
+
+/**
+ * Mittag und Abend mit Komma („Küche 11:30–14:00, 17:30–21:30"): Folgen auf
+ * eine Küchenspanne weitere Komma-Teile, die nur aus Zeiten bestehen, gehören
+ * sie zur Küche; beim ersten Teil mit einem Wort ist Schluss. Steht die
+ * Küche als „bis X", ist ein folgendes Zeitstück meist die Öffnungsspanne
+ * („Küche bis 21:30, 17:30 – 23:00"): Es bleibt draußen. Steht davor aber
+ * schon eine Spanne, ist es nicht zuzuordnen („12–14:30, Küche bis 14,
+ * 17:30–23:00") — dann gibt es keine Küchenzeit.
+ */
+function kitchenTail(text: string, from: number, segment: string, before: string) {
+  let end = from;
+  let seg = segment;
+  let ambiguous = false;
+  const rangeForm = ENDS_IN_RANGE.test(segment.trimEnd());
+  for (;;) {
+    NEXT_PART.lastIndex = end;
+    const part = NEXT_PART.exec(text);
+    if (!part) break;
+    if (!rangeForm) {
+      ambiguous = readSpans(before).length > 0;
+      break;
+    }
+    end = NEXT_PART.lastIndex;
+    seg += `, ${part[1]}`;
+  }
+  PAREN.lastIndex = end;
+  const paren = PAREN.exec(text);
+  if (paren) end = PAREN.lastIndex;
+  return { end, seg, exception: paren?.[1], ambiguous };
+}
+
 export function kitchenOf(text: string, now?: Date): KitchenSplit {
   const m = text.match(KITCHEN);
   if (!m) return { open: text };
-  const open = (text.slice(0, m.index!) + text.slice(m.index! + m[0].length))
+  const tail = kitchenTail(
+    text,
+    m.index! + m[0].length,
+    m[1],
+    text.slice(0, m.index!)
+  );
+  const open = (text.slice(0, m.index!) + text.slice(tail.end))
     .replace(/\(\s*\)/g, "")
     .replace(/[\s,;·|(]+$/, "")
     .replace(/^[\s,;·|]+/, "")
     .trim();
-  const minutes = kitchenMinutes(m[1], m[2], now);
+  const minutes = tail.ambiguous
+    ? undefined
+    : kitchenMinutes(tail.seg, tail.exception, now);
   const kitchen = minutes === undefined ? undefined : clock(minutes);
   if (!open) {
     // Nur Küche: Originaltext behalten, aber nicht als Öffnungsspanne lesbar.

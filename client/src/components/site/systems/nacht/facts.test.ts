@@ -121,6 +121,45 @@ describe("Nacht: Mittags- und Abendküche", () => {
     expect(kitchenOf("Küche bis 21:30, 17:30 – 23:00").kitchen).toBe("21:30");
   });
 
+  test("Komma-Form: reine Zeit-Teile gehören zur Küche, Wort-Teile nicht", () => {
+    expect(kitchenOf("Küche 11:30–14:00, 17:30–21:30")).toEqual({
+      open: "Küche 11:30 bis 14:00, 17:30 bis 21:30",
+      kitchen: "21:30",
+      kitchenOnly: true,
+    });
+    expect(kitchenOf("17:30 – 23:00, Küche 11:30–14:00, 17:30–21:30")).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "21:30",
+    });
+    expect(kitchenOf("Küche bis 21:30, Mo Ruhetag")).toEqual({
+      open: "Mo Ruhetag",
+      kitchen: "21:30",
+    });
+    expect(kitchenOf("Küche 11:30–14:00, 17:30–21:30, Mo Ruhetag")).toMatchObject({
+      open: "Mo Ruhetag",
+      kitchen: "21:30",
+    });
+  });
+
+  test("„Küche bis“ vor einer Zeitspanne: Öffnungsspanne bleibt draußen; mit Spanne davor keine Küchenzeit", () => {
+    expect(kitchenOf("Küche bis 21:30, 17:30 – 23:00")).toEqual({
+      open: "17:30 – 23:00",
+      kitchen: "21:30",
+    });
+    expect(kitchenOf("12:00 – 14:30, Küche bis 14:00, 17:30 – 23:00").kitchen).toBeUndefined();
+  });
+
+  test("klein geschriebenes „so“/„do“ ist ein Wort, kein Tag", () => {
+    const FRI = new Date("2026-10-16T19:00:00+02:00");
+    // „Küche so lange Vorrat reicht": kein Tagesbezug, keine Zeit im Küchenteil → keine Küchenzeit (nie eine falsche).
+    expect(kitchenOf("Küche so lange Vorrat reicht, bis 21 Uhr", FRI).kitchen).toBeUndefined();
+    expect(kitchenOf("17:30 – 23:00, Küche bis 21 Uhr, so lange Vorrat reicht", FRI).kitchen).toBe("21:00");
+    // Als Tag zählen „So"/„Do" und „so." / „do–fr".
+    expect(kitchenOf("Küche So bis 21:00", new Date("2026-10-18T19:00:00+02:00")).kitchen).toBe("21:00");
+    expect(kitchenOf("Küche do–fr bis 22:00", FRI).kitchen).toBe("22:00");
+    expect(kitchenOf("Küche do–fr bis 22:00", new Date("2026-10-17T19:00:00+02:00")).kitchen).toBeUndefined();
+  });
+
   test("Tageswörter auch kleingeschrieben", () => {
     const FRI = new Date("2026-10-16T19:00:00+02:00");
     expect(kitchenOf("17:30 – 23:00, küche fr/sa bis 22:30", FRI).kitchen).toBe("22:30");
