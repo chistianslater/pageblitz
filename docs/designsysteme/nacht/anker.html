@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Nacht</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Judson:ital,wght@0,400;0,700;1,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --nacht: #172423;
+    --petrol: #1f2d2d;
+    --petrol-2: #223b3b;
+    --flaeche: #263c3b;
+    --text: #efe9df;
+    --text-soft: #b9c2bc;
+    --rule: rgba(239, 233, 223, 0.16);
+    --kupfer: #d39969;
+    --kupfer-hell: #e7b88f;
+    --gut: #9fd0a6;
+    --mittel: #8e9d98;
+    --schwach: #ef8f78;
+    --display: "Marcellus", "Didot", Georgia, serif;
+    --serif: "Judson", Georgia, serif;
+    --sans: "Jost", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--nacht);
+    background-image: radial-gradient(1200px 700px at 85% 4%, rgba(160, 150, 100, 0.16), transparent 70%),
+                      radial-gradient(1100px 900px at 8% 62%, rgba(70, 120, 70, 0.14), transparent 70%);
+    color: var(--text); font-family: var(--serif); font-size: 16px; line-height: 1.5;
+  }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 0 56px 80px; }
+  .lbl, .kicker, .tag, figcaption, thead th, .note span, .gekuerzt, h4, .badge, .fakten div:nth-child(odd) {
+    font-family: var(--sans); font-weight: 500; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+
+  header.kopf { margin: 0 -56px; padding: 44px 56px 40px; display: grid; grid-template-columns: 300px 1fr 540px; gap: 40px; align-items: end; border-bottom: 1px solid var(--rule); }
+  .knr { font-family: var(--display); font-size: 230px; line-height: .8; color: var(--kupfer); }
+  h1 { font-family: var(--display); font-weight: 400; font-size: 118px; line-height: 0.98; letter-spacing: 0.005em; margin-top: 18px; }
+  .kicker { color: var(--kupfer); }
+  .fakten { display: grid; grid-template-columns: 1fr 1.4fr; border-top: 1px solid var(--rule); }
+  .fakten div { padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 16px; }
+  .fakten div:nth-child(odd) { color: var(--text-soft); }
+  .fakten div:nth-child(even) { text-align: right; }
+
+  .vorspann { display: grid; grid-template-columns: 300px repeat(3, 1fr); gap: 24px 48px; padding: 32px 0 52px; font-size: 16px; color: var(--text-soft); }
+  .vorspann .lbl { color: var(--kupfer); }
+  .vorspann b { color: var(--text); font-weight: 700; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--text-soft); padding-top: 14px; }
+  .kandidat.wahl { border-top: 6px solid var(--kupfer); padding-top: 9px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: center; }
+  .nr { font-family: var(--display); font-size: 104px; line-height: .85; color: var(--mittel); }
+  .wahl .nr { color: var(--kupfer); }
+  .tag { color: var(--text-soft); }
+  .badge { display: inline-block; border: 1px solid var(--kupfer); color: var(--kupfer); padding: 9px 16px; }
+  h2 { font-family: var(--display); font-weight: 400; font-size: 46px; line-height: 1; margin: 12px 0 8px; }
+  .url { font-size: 14px; color: var(--text-soft); margin-top: 4px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 16px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 15.5px; min-height: 360px; }
+  .urteil li { list-style: none; padding-left: 22px; position: relative; margin: 7px 0; }
+  .urteil li::before { position: absolute; left: 0; font-family: var(--sans); font-weight: 600; }
+  .urteil li.plus::before { content: "+"; color: var(--gut); }
+  .urteil li.minus::before { content: "–"; color: var(--schwach); }
+  .noten { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 14px; }
+  .note { background: var(--flaeche); padding: 8px 8px 6px; }
+  .note span { display: block; font-size: 9.5px; letter-spacing: 0.08em; color: var(--text-soft); min-height: 30px; line-height: 1.25; }
+  .note b { font-family: var(--display); font-weight: 400; font-size: 36px; line-height: 1; }
+  .note.summe { background: var(--text); color: var(--nacht); }
+  .note.summe span { color: #4b5652; }
+  .wahl .note.summe { background: var(--kupfer); }
+  .wahl .note.summe span { color: #3b2a1c; }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 16px; margin-top: 18px; align-items: start; }
+  .erster figure { overflow: hidden; border: 1px solid var(--rule); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 14.5px; color: var(--text-soft); }
+  .erster p b { color: var(--kupfer); display: block; margin-bottom: 4px; font-family: var(--sans); font-weight: 500; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+
+  .gekuerzt { color: var(--kupfer); margin-top: 10px; }
+  .ganz { display: grid; grid-template-columns: 210px auto; max-height: 1420px; overflow: hidden; gap: 12px; margin-top: 16px; align-items: start; }
+  .ganz img { display: block; width: 210px; }
+  .handy { display: grid; grid-template-columns: 90px 90px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); }
+  .halb img { display: block; max-width: none; }
+  figcaption { color: var(--text-soft); padding: 0 0 6px; font-size: 10px; letter-spacing: 0.08em; }
+
+  section.abschnitt { margin-top: 76px; border-top: 1px solid var(--text-soft); padding-top: 18px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+  .snr { font-family: var(--display); font-size: 130px; line-height: .8; color: var(--kupfer); }
+  h3 { font-family: var(--display); font-weight: 400; font-size: 74px; line-height: 1; }
+  h3 .sig { color: var(--kupfer); }
+  table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 15.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+  thead th { color: var(--text-soft); border-bottom: 1px solid var(--text-soft); }
+  thead th.wahl { color: var(--kupfer); }
+  tbody th { font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; width: 250px; }
+  td.wahl { background: rgba(211, 153, 105, 0.10); }
+  .z { font-size: 15px; margin-right: 7px; font-family: var(--sans); }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 14px; color: var(--text-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 56px; margin-top: 26px; font-size: 16.5px; }
+  h4 { color: var(--kupfer); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--text-soft); font-size: 13px; }
+  .empfehlung li { margin: 8px 0 8px 18px; }
+  .empfehlung li::marker { color: var(--kupfer); }
+  .gross { font-size: 30px; line-height: 1.32; }
+  .gross .sig { color: var(--kupfer); }
+
+  /* Muster: Weinbar im Nacht-System */
+  .muster { margin-top: 30px; border: 1px solid var(--rule); max-width: 860px; background: linear-gradient(180deg, #1c2a2a 0%, #1f2d2d 40%, #213634 100%); overflow: hidden; }
+  .m-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); }
+  .m-signet { width: 38px; height: 38px; border: 1px solid var(--kupfer); border-radius: 50%; display: grid; place-items: center; font-family: var(--display); color: var(--kupfer); font-size: 19px; letter-spacing: 0; }
+  .m-res { border: 1px solid var(--kupfer); color: var(--kupfer); padding: 10px 14px; }
+  .m-held { position: relative; height: 330px; margin: 0 24px; display: grid; place-items: center;
+    background: linear-gradient(180deg, rgba(23,36,35,.55), rgba(23,36,35,.82)), linear-gradient(120deg, #4a3a2a 0%, #2d2a22 35%, #34403a 70%, #20302e 100%); }
+  .m-held .wm { font-family: var(--display); font-size: 92px; letter-spacing: 0.12em; color: var(--kupfer); line-height: 1; }
+  .m-held .unter { position: absolute; left: 0; right: 0; bottom: 16px; text-align: center; font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); }
+  .m-held .foto-hinweis { position: absolute; left: 14px; top: 12px; font-size: 12.5px; color: var(--text-soft); max-width: 300px; line-height: 1.35; }
+  .m-zeile { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0 24px; border-bottom: 1px solid var(--rule); }
+  .m-zeile div { padding: 14px 0; font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--kupfer); }
+  .m-teil { display: grid; grid-template-columns: 170px 1fr; gap: 20px; padding: 26px 24px 8px; }
+  .m-ziffer { font-family: var(--display); font-size: 120px; line-height: .8; color: var(--kupfer); }
+  .m-ziffer small { display: block; font-family: var(--sans); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-soft); margin-top: 14px; }
+  .m-karte .kopf { font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--kupfer); margin-bottom: 4px; }
+  .m-karte .g { display: grid; grid-template-columns: 1fr auto; gap: 2px 18px; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+  .m-karte .g b { font-family: var(--display); font-weight: 400; font-size: 21px; }
+  .m-karte .g i { font-style: normal; font-size: 15px; color: var(--text-soft); grid-column: 1; }
+  .m-karte .g em { font-style: normal; font-family: var(--sans); font-size: 16px; font-variant-numeric: tabular-nums; grid-row: 1; grid-column: 2; }
+  .m-unten { display: grid; grid-template-columns: 1fr 1fr; margin-top: 18px; border-top: 1px solid var(--rule); }
+  .m-zeit { padding: 20px 24px; }
+  .m-zeit .t, .m-weg .t { font-family: var(--sans); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--kupfer); margin-bottom: 8px; }
+  .m-zeit dl { display: grid; grid-template-columns: auto 1fr auto; column-gap: 14px; font-size: 16px; }
+  .m-zeit dt, .m-zeit dd { padding: 7px 0; border-bottom: 1px solid var(--rule); }
+  .m-zeit dd { text-align: right; font-family: var(--sans); font-variant-numeric: tabular-nums; }
+  .m-zeit dd.k { color: var(--text-soft); text-align: left; font-size: 14px; }
+  .m-zeit .heute { color: var(--kupfer); }
+  .m-weg { padding: 20px 24px; border-left: 1px solid var(--rule); }
+  .m-weg .adr { font-family: var(--display); font-size: 28px; line-height: 1.15; }
+  .m-weg p { font-size: 15px; color: var(--text-soft); margin-top: 8px; }
+  .m-knoepfe { display: flex; gap: 10px; margin-top: 16px; font-family: var(--sans); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+  .m-knoepfe span { padding: 13px 16px; border: 1px solid var(--kupfer); color: var(--kupfer); }
+  .m-knoepfe span.voll { background: var(--kupfer); color: #1f2d2d; }
+  .muster-cap { font-size: 14px; color: var(--text-soft); margin-top: 10px; max-width: 860px; }
+
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 26px; }
+  .betrieb { padding: 22px 24px 18px; background: var(--flaeche); border-top: 1px solid var(--kupfer); }
+  .betrieb .bnr { font-family: var(--display); font-size: 78px; line-height: .85; color: var(--kupfer); }
+  .betrieb .bname { font-family: var(--display); font-size: 38px; line-height: 1.05; margin: 8px 0 14px; }
+  .betrieb dl { display: grid; grid-template-columns: 130px 1fr; font-size: 15.5px; }
+  .betrieb dt, .betrieb dd { padding: 8px 0; border-top: 1px solid var(--rule); }
+  .betrieb dt { padding-top: 10px; font-family: var(--sans); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft); }
+  .fuss { margin-top: 44px; font-size: 14px; color: var(--text-soft); border-top: 1px solid var(--rule); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">06</div>
+  <div>
+    <div class="kicker">Designsystem Nacht · Ankersuche · 12.10.2026</div>
+    <h1>Der Raum ist dunkel.<br>Die Schrift führt durch den Abend.</h1>
+  </div>
+  <div>
+    <div class="kicker" style="margin-bottom:10px">Worum es geht</div>
+    <div class="fakten">
+      <div>Hauptfamilie</div><div>Restaurant, Weinbar, Bistro, Fine Dining</div>
+      <div>Alternative</div><div>Salon und Kosmetik gehoben, Barbier premium, Boutique-Unterkunft, Auto premium</div>
+      <div>Muss</div><div>Karte nur aus Daten, Reservieren, Zeiten mit Küche, Anfahrt</div>
+      <div>Kandidaten</div><div>4, Desktop und Handy</div>
+    </div>
+  </div>
+</header>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal (Aman Venice), Raster (Colophon), Werkstoff (Hollis Butcher), Plakat (Arcadia) und Klar (Luma Dental) nehmen wir eine komplette Website als Vorlage und bauen ihr System nach, aber besser. Nacht heißt: dunkel, elegant, Abendstimmung. Feine Serife, viel Luft, Fotos abgedunkelt, wenige große Bilder. Muss auch mit trüben Handyfotos aus dem Gastraum gut aussehen.</p>
+  <p><b>Wie gesucht.</b> Refero-Styles zu Restaurant, Weinbar, Boutique-Hotel, dunkel und elegant (u. a. Amrit Palace, Liron Moran, Sequel, Ysl, BelArosa, Haley Park). Refero-Screens liefern zu Restaurants nur Plattformen (Tripadvisor, Yelp, Volkshotel). Deshalb rund 30 Seiten live im Browser: echte Restaurants (Zimmerl, Amrit Palace, Ikoyi, Coda, Kol, Nobelhart, Horváth, Bacchanalia, The Mandrake u. a.) und dunkle Framer-Vorlagen (Selva, Lumen House, Velvet Hour, Qitchen, LuxDin, Osteria Nera u. a.).</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt vom Einstieg bis zum Fuß, Abdeckung unserer Abschnitte, Handy, Robustheit bei mittelmäßigen Fotos, ob Restaurant, gehobener Salon und Boutique-Unterkunft gleichzeitig hineinpassen, und wie barrierearm es auf Dunkel ist. Je 1 bis 10. Aufnahmen vom 12.10.2026 (Desktop 1440, Handy 390). Cookie-Banner abgelehnt, Framer-Hinweise ausgeblendet, wo möglich.</p>
+</div>
+
+<div class="spalten">
+  <article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Restaurant Zimmerl</h2>
+    <div class="tag">Fine Dining, Waldviertel (AT) · echte Seite, Awwwards-Auszeichnung 2025</div>
+    <div class="url"><a href="https://restaurantzimmerl.at/">restaurantzimmerl.at</a></div>
+    <ul class="urteil">
+      <li class="plus">Eine Stimmung von oben bis unten: dunkles Petrol (#1f2d2d) mit weichem Moos- und Bernsteinschein, Kupfer (#d39969) als einzige Farbe. Nicht Schwarz-Gold, sondern ein Raum bei Kerzenlicht.</li>
+      <li class="plus">Die Schrift trägt: Wortmarke in einer Display-Serife mit eigener Form, riesige Kupferziffern als Abschnittsöffner (23 Gänge, 5 Tische), dazu Buchserife und breite Versal-Grotesk.</li>
+      <li class="plus">Fotos klein und versetzt gerahmt, eine Kupferlinie mit Punkten führt durch den Raum. Funktioniert auch mit mittleren Bildern, weil Fläche und Ziffer die Arbeit machen.</li>
+      <li class="plus">Deutsche Seite, echte Daten: Auszeichnungen, Küchenchef, Raumkonzept, Team, Tage und Uhrzeit, Reservieren immer oben rechts.</li>
+      <li class="minus">Fließtext 11 bis 12 px, Kupfer-Versalien klein: auf Dunkel zu schwer lesbar. Keine Speisekarte, keine Gästestimmen, keine Fragen. Ergänzen wir im selben Ton.</li>
+    </ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>10</b></div><div class="note"><span>Abdeckung</span><b>6</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Schwache Fotos</span><b>8</b></div><div class="note"><span>Branchen-Mix</span><b>9</b></div><div class="note"><span>Barrierearm</span><b>5</b></div><div class="note summe"><span>Summe /60</span><b>46</b></div></div>
+    <div class="erster"><figure><img src="anker/zimmerl-mobil-erster-blick.jpg" alt="Restaurant Zimmerl, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Abgedunkelter Gastraum, darüber der Name in Kupfer, gesperrt und riesig. Oben Signet und Reservieren. Darunter sofort die Auszeichnungen. Wirkt wie Abend, bevor man ein Wort gelesen hat.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/zimmerl-desktop.jpg" style="height:943px" alt="Restaurant Zimmerl Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:599px"><img src="anker/zimmerl-mobil.jpg" style="width:90px;height:1198px" alt=""></div><div class="halb" style="height:599px"><img src="anker/zimmerl-mobil.jpg" style="width:90px;height:1198px;margin-top:-599px" alt=""></div></div></figure>
+    </div>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span></div>
+    <h2>Lumen House</h2>
+    <div class="tag">Tasting-Menü-Restaurant · Framer-Vorlage</div>
+    <div class="url"><a href="https://empathic-quicker-278238.framer.app/">empathic-quicker-278238.framer.app</a></div>
+    <ul class="urteil">
+      <li class="plus">Mitternachtsblau (#07111f) statt Schwarz, Bodoni Moda für Überschriften, kleine Grotesk für den Rest. Eigenständig gegenüber allen fünf Systemen.</li>
+      <li class="plus">Die beste Karte ohne Fotos: Gänge nummeriert 01 bis 06 in Serife, rechts drei Geschmackswörter. Zeiten, Anfahrt und „der Tisch“ (Preis, Weinbegleitung, Plätze) als drei klare Kästen.</li>
+      <li class="plus">Handy vorbildlich: alles einspaltig, Karte bleibt als Liste lesbar.</li>
+      <li class="minus">Wenig Wow: schmale Spalte (rund 900 px) auf 1440, Einstieg mit Platzhalter-Kugel statt Bild, Kästen und blaue Pillen-Knöpfe wirken wie Software.</li>
+      <li class="minus">Kein Mensch, keine Stimmen, keine Fragen. Kobaltblau ist eher Bar als Salon oder Hotel.</li>
+    </ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>7</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>9</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note"><span>Barrierearm</span><b>6</b></div><div class="note summe"><span>Summe /60</span><b>45</b></div></div>
+    <div class="erster"><figure><img src="anker/lumen-house-mobil-erster-blick.jpg" alt="Lumen House, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Satz in Bodoni, Ort und Jahr als Kicker, blauer Knopf, darunter Bildkarte „Tasting Menu · 8 Courses“. Klar und ruhig, aber eher Vorlage als Restaurant.</p></div>
+    <div class="gekuerzt">Ganze Seite</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/lumen-house-desktop.jpg" style="height:637px" alt="Lumen House Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:553px"><img src="anker/lumen-house-mobil.jpg" style="width:90px;height:1106px" alt=""></div><div class="halb" style="height:553px"><img src="anker/lumen-house-mobil.jpg" style="width:90px;height:1106px;margin-top:-553px" alt=""></div></div></figure>
+    </div>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span></div>
+    <h2>Amrit Palace</h2>
+    <div class="tag">Indisches Restaurant, Florida · echte Seite</div>
+    <div class="url"><a href="https://amritpalace.com/">amritpalace.com</a></div>
+    <ul class="urteil">
+      <li class="plus">Am vollständigsten: Speisekarte als ockerfarbene Tafel mit Preisen, Getränkekarte als Liste, Catering, Gutschein, Geschichte, Gästestimmen mit Quelle, Fuß mit zwei Standorten und Zeiten je Tag.</li>
+      <li class="plus">Einstieg stark: Versal-Serife über dunklem Tisch bei Kerzenlicht, Google-Schnitt 4,7 als kleine Karte unten rechts.</li>
+      <li class="minus">Nur Einstieg und Fuß sind dunkel, die Mitte ist Sand (#d8cbb5). Das ist warmes Papier mit Speisekarte, also zu nah an Werkstoff.</li>
+      <li class="minus">Lebt von vielen großen, sehr guten Fotos. Mit trüben Handybildern bricht die Mitte weg. Indisch-üppig, für Salon oder Hotel schwer.</li>
+    </ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>7</b></div><div class="note"><span>Schwache Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>5</b></div><div class="note"><span>Barrierearm</span><b>7</b></div><div class="note summe"><span>Summe /60</span><b>42</b></div></div>
+    <div class="erster"><figure><img src="anker/amrit-palace-mobil-erster-blick.jpg" alt="Amrit Palace, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Lange Tafel bei Kerzenlicht, Satz in Versalien, unten feste Leiste Menü und Bestellen. Sehr appetitlich, aber die Nacht hält nur einen Bildschirm.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/amrit-palace-desktop.jpg" style="height:1501px" alt="Amrit Palace Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1092px"><img src="anker/amrit-palace-mobil.jpg" style="width:90px;height:2183px" alt=""></div><div class="halb" style="height:1091px"><img src="anker/amrit-palace-mobil.jpg" style="width:90px;height:2183px;margin-top:-1092px" alt=""></div></div></figure>
+    </div>
+  </article>
+
+  <article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span></div>
+    <h2>Selva</h2>
+    <div class="tag">Toskanisches Restaurant · Framer-Vorlage</div>
+    <div class="url"><a href="https://practical-travel-350340.framer.app/">practical-travel-350340.framer.app</a></div>
+    <ul class="urteil">
+      <li class="plus">Der stärkste Wortmarken-Einstieg: Didone-Name riesig auf Schwarz, kursive Unterzeile, Koordinaten als Kicker, ein freigestelltes Gericht daneben.</li>
+      <li class="plus">Schöner Schluss: Schlussbild mit Satz, Knopf und Zeile „geöffnet Mi–So, 18:30–23:00“, Fuß direkt im Bild.</li>
+      <li class="minus">Die Karte ist ein Karussell mit je einem freigestellten Gericht. Ohne Freisteller nicht machbar, ohne Daten leer.</li>
+      <li class="minus">Satz auf hellem Vollbildfoto kaum lesbar, Creme-Abschnitt in der Mitte bricht die Nacht. Fotos sichtbar KI-erzeugt, Schwarz plus Kursive ist nah am Luxus-Klischee.</li>
+    </ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>7</b></div><div class="note"><span>Handy</span><b>6</b></div><div class="note"><span>Schwache Fotos</span><b>4</b></div><div class="note"><span>Branchen-Mix</span><b>6</b></div><div class="note"><span>Barrierearm</span><b>6</b></div><div class="note summe"><span>Summe /60</span><b>36</b></div></div>
+    <div class="erster"><figure><img src="anker/selva-mobil-erster-blick.jpg" alt="Selva, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Name riesig, kursive Zeile, Pfanne mit Steak im Dunkeln. Sofort edel, aber ohne Reservieren und ohne Ort im ersten Bildschirm.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/selva-desktop.jpg" style="height:910px" alt="Selva Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:715px"><img src="anker/selva-mobil.jpg" style="width:90px;height:1430px" alt=""></div><div class="halb" style="height:715px"><img src="anker/selva-mobil.jpg" style="width:90px;height:1430px;margin-top:-715px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+    <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+    <table>
+      <thead><tr><th>Abschnitt</th><th class="wahl">01 Zimmerl</th><th>02 Lumen House</th><th>03 Amrit Palace</th><th>04 Selva</th></tr></thead>
+      <tbody>
+        <tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Name in Kupfer riesig über abgedunkeltem Gastraum, Signet links, Reservieren rechts, Auszeichnungen direkt darunter</td><td><span class="z g">●</span>Satz in Bodoni, Ort und Jahr, Knopf, Bildkarte mit Menü-Hinweis</td><td><span class="z g">●</span>Versal-Serife auf Kerzenlicht-Foto, Google 4,7 als Karte</td><td><span class="z g">●</span>Didone-Name, kursive Zeile, freigestelltes Gericht</td></tr>
+        <tr><th>Karte / Angebot</th><td class="wahl"><span class="z m">◐</span>Keine Speisekarte. Riesenziffer „23“ (Gänge) mit Text und Knopf Menü</td><td><span class="z g">●</span>Nummerierte Gangliste mit Geschmackswörtern, trägt ohne Foto</td><td><span class="z g">●</span>Ocker-Tafel mit Preisen, Getränke als Liste</td><td><span class="z m">◐</span>Karussell, ein Freisteller je Seite</td></tr>
+        <tr><th>Über uns / Küche</th><td class="wahl"><span class="z g">●</span>Küchenchef s/w, Kupfer-Versalzeile, Text; Kreislauf-Abschnitt mit Foto</td><td><span class="z m">◐</span>„The Room“ als Bild-Text-Kasten, kein Mensch</td><td><span class="z g">●</span>Geschichte auf großem Raumfoto</td><td><span class="z g">●</span>Philosophie auf Creme, Foto und Absatz</td></tr>
+        <tr><th>Galerie</th><td class="wahl"><span class="z g">●</span>Raumkonzept mit Ziffer „5“ (Tische), Fotos versetzt, Kupferlinie mit Punkten; Teamband in Schwarz-Weiß</td><td><span class="z g">●</span>Sechs kleine Atmosphärenbilder im Raster</td><td><span class="z m">◐</span>Viele Fotos verteilt, kein eigener Teil</td><td><span class="z g">●</span>Vollbild Terrasse mit Satz</td></tr>
+        <tr><th>Stimmen / Presse</th><td class="wahl"><span class="z m">◐</span>Auszeichnungsreihe (Michelin, Gault&amp;Millau, Falstaff u. a.), keine Gäste</td><td><span class="z s">○</span>Fehlt</td><td><span class="z g">●</span>Google-Schnitt und Kartenreihe mit Quelle</td><td><span class="z m">◐</span>Ein Pressezitat</td></tr>
+        <tr><th>Erlebnis / Ablauf</th><td class="wahl"><span class="z m">◐</span>„Als Gast im Geschehen“: Satz plus Teamband, kein Ablauf</td><td><span class="z m">◐</span>Raumabsatz mit Zeiten-Zeile</td><td><span class="z g">●</span>Catering in drei Bildern, Gutschein</td><td><span class="z s">○</span>Fehlt</td></tr>
+        <tr><th>Gut zu wissen</th><td class="wahl"><span class="z s">○</span>Nur im Fließtext (Allergien)</td><td><span class="z g">●</span>Drei Kästen: Zeiten, Anfahrt, der Tisch</td><td><span class="z s">○</span>Fehlt</td><td><span class="z s">○</span>Fehlt</td></tr>
+        <tr><th>Reservieren / Zeiten / Anfahrt</th><td class="wahl"><span class="z g">●</span>Eigene Fläche mit Signet, Adresse, Tage und Uhrzeit in Kupfer-Versalien, Knopf Reservieren. Keine Route, keine Küchenzeit</td><td><span class="z g">●</span>Schlussband zentriert, Knopf, Adresse</td><td><span class="z g">●</span>Im Fuß: zwei Standorte, Zeiten je Tag, Telefon</td><td><span class="z g">●</span>Schlussbild mit Knopf und Öffnungszeile</td></tr>
+        <tr><th>Fuß</th><td class="wahl"><span class="z g">●</span>Wortmarke, Mail, Adresse, Rechtliches. Ruhig, im selben Petrol</td><td><span class="z g">●</span>Zwei Spalten</td><td><span class="z g">●</span>Viele Spalten, Wortmarke riesig in Ocker</td><td><span class="z m">◐</span>Im Schlussbild</td></tr>
+      </tbody>
+    </table>
+    <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+    <h3>Empfehlung: <span class="sig">Restaurant Zimmerl</span></h3>
+    <div class="empfehlung">
+      <div>
+        <p class="gross">Zimmerl ist die einzige Seite, die vom ersten bis zum letzten Bildschirm nach demselben Abend aussieht, und das ohne Schwarz-Gold. <span class="sig">Ein Gedanke trägt alles: dunkler Raum, ein warmes Licht, große Ziffern statt großer Bilder.</span> Was fehlt, sind Karte, Stimmen, Fragen und Lesbarkeit. Die bauen wir im selben Ton ein.</p>
+        <div class="muster">
+          <div class="m-nav"><span class="m-signet">W</span><span>Karte · Abende · Haus · Anfahrt</span><span class="m-res">Reservieren</span></div>
+          <div class="m-held"><span class="foto-hinweis">Gastraum vom Handy, stark abgedunkelt und leicht ins Petrol gezogen. Das Licht kommt von der Schrift.</span><span class="wm">WEINHAUS</span><span class="unter">Weinbar und Küche · Bremen-Viertel</span></div>
+          <div class="m-zeile"><div>Heute bis 23 Uhr</div><div>Küche bis 22 Uhr</div><div>34 Plätze</div><div>Ostertorsteinweg 1</div></div>
+          <div class="m-teil">
+            <div class="m-ziffer">12<small>Gerichte auf der Karte</small></div>
+            <div class="m-karte"><div class="kopf">Abendkarte</div>
+              <div class="g"><b>Rote Bete, Ziegenkäse</b><em>12</em><i>Haselnuss, Thymianhonig</i></div>
+              <div class="g"><b>Kalbsbäckchen</b><em>26</em><i>Selleriepüree, Schalotten</i></div>
+              <div class="g"><b>Zwetschgen, Sauerrahm</b><em>9</em><i>Mandelkrokant</i></div></div>
+          </div>
+          <div class="m-unten">
+            <div class="m-zeit"><div class="t">Öffnungszeiten</div>
+              <dl><dt>Mo, Di</dt><dd class="k"></dd><dd>Ruhetag</dd>
+              <dt class="heute">Mi (heute)</dt><dd class="k heute">Küche bis 22</dd><dd class="heute">17–23 Uhr</dd>
+              <dt>Do</dt><dd class="k">Küche bis 22</dd><dd>17–23 Uhr</dd>
+              <dt>Fr, Sa</dt><dd class="k">Küche bis 23</dd><dd>17–24 Uhr</dd></dl></div>
+            <div class="m-weg"><div class="t">Anfahrt und Tisch</div><div class="adr">Ostertorsteinweg 1<br>28203 Bremen</div><p>Tram 2, 3 bis Sielwall</p>
+              <div class="m-knoepfe"><span class="voll">Tisch reservieren</span><span>Route</span></div></div>
+          </div>
+        </div>
+        <p class="muster-cap">Muster mit Platzhalterwerten. Karte, Ziffer, Küchenzeiten, Plätze und ÖPNV erscheinen nur, wenn die Daten es hergeben. Reservieren führt auf Telefon oder Buchungslink.</p>
+      </div>
+      <div>
+        <h4>Was wir 1:1 übernehmen</h4>
+        <ul>
+          <li>Grund dunkles Petrol (#1f2d2d, Flächen #223b3b) mit weichem Moos- und Bernsteinschein, nie flaches Schwarz</li>
+          <li>Kupfer (#d39969) als einzige Akzentfarbe: Wortmarke, Ziffern, Versal-Kicker, Linien, Knopf-Rahmen</li>
+          <li>Drei Schriftrollen: Display-Serife mit Charakter nur für Name und Ziffern, Buchserife für Text, breite gesperrte Versal-Grotesk für Kicker und Zeiten</li>
+          <li>Einstieg: Name riesig und gesperrt über abgedunkeltem Raumfoto, Signet links, Reservieren immer rechts oben</li>
+          <li>Riesenziffer als Abschnittsöffner, Fotos klein und versetzt gerahmt, Kupferlinie mit Punkten als Leitfaden</li>
+          <li>Auszeichnungen direkt unter dem Einstieg (nur wenn vorhanden), Team in Schwarz-Weiß als Band</li>
+          <li>Reservieren als eigene ruhige Fläche mit Signet, Adresse, Tagen; Fuß mit Wortmarke im selben Petrol</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Was wir optimieren</h4>
+        <ul>
+          <li>Lesbarkeit auf Dunkel: Fließtext mindestens 18 px, Versal-Kicker mindestens 13 px, Text #efe9df, Grau nicht dunkler als #b9c2bc; Kupfer auf Petrol liegt bei rund 5,9:1</li>
+          <li>Speisekarte nur aus Daten: Abschnitte, Gericht in Serife, Zeile darunter, Preis rechts in Tabellenziffern. Die Ziffer davor zählt echte Daten (Gerichte, Plätze, Jahre, Zimmer); ohne Daten weg</li>
+          <li>Öffnungszeiten als Tabelle mit „heute“ in Kupfer und eigener Küchenzeit, Ruhetage ausgeschrieben</li>
+          <li>Anfahrt: Adresse groß, Route, ÖPNV und Parken wenn bekannt. Handy: feste Leiste Anrufen / Reservieren</li>
+          <li>Ergänzen im selben Ton: Gästestimme als großes Zitat mit Google-Schnitt, „Gut zu wissen“ als Liste (Allergien, Gruppen, Hunde, Gutscheine)</li>
+          <li>Schwache Fotos: immer abgedunkelt und leicht ins Petrol gezogen, höchstens 3 bis 5, Vollbild nur im Einstieg</li>
+          <li>Freie Schriften: Valky und Nord sind Kaufschriften, Judson ist frei. Ersatz mit gleicher Haltung im Systemblatt festlegen (z. B. Marcellus, Judson, Jost)</li>
+          <li>Abgrenzung: kein Papier (Journal, Werkstoff), kein Schwarz-Weiß-Raster (Raster), keine Farbflächen und Sticker (Plakat), keine runden Karten (Klar), kein Schwarz-Gold</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+    <h3>Drei Betriebe, ein System</h3>
+    <div class="betriebe">
+      <div class="betrieb"><div class="bnr">01</div><div class="bname">Restaurant und Weinbar</div>
+        <dl><dt>Einstieg</dt><dd>Name in Kupfer über dem abgedunkelten Gastraum. Zeile: heute offen bis, Küche bis, Plätze, Adresse</dd>
+        <dt>Ziffer</dt><dd>12 Gerichte, 40 offene Weine oder 34 Plätze, je nach Daten</dd>
+        <dt>Karte</dt><dd>Vorspeisen, Hauptgänge, Dessert, Weine offen. Preis rechts</dd>
+        <dt>Gut zu wissen</dt><dd>Allergien, Gruppen ab 8, Hunde, Gutscheine</dd></dl></div>
+      <div class="betrieb"><div class="bnr">02</div><div class="bname">Salon, gehoben</div>
+        <dl><dt>Einstieg</dt><dd>Name über dem Spiegelplatz am Abend. Zeile: heute bis, Termin, Stadtteil</dd>
+        <dt>Ziffer</dt><dd>4 Plätze oder 15 Jahre im Viertel</dd>
+        <dt>Karte</dt><dd>Leistungen wie eine Karte: Schnitt, Farbe, Pflege, „ab“-Preise rechts</dd>
+        <dt>Gut zu wissen</dt><dd>Beratung vorab, Absagen bis 24 Stunden, Produkte</dd></dl></div>
+      <div class="betrieb"><div class="bnr">03</div><div class="bname">Boutique-Unterkunft</div>
+        <dl><dt>Einstieg</dt><dd>Name über dem Zimmer bei Lampenlicht. Zeile: Check-in ab, Zimmer, Frühstück, Lage</dd>
+        <dt>Ziffer</dt><dd>9 Zimmer oder 3 Apartments</dd>
+        <dt>Karte</dt><dd>Zimmerarten mit Größe und „ab“-Preis, sonst ohne Preis</dd>
+        <dt>Gut zu wissen</dt><dd>Anreise spät, Parken, Haustiere, Stornierung</dd></dl></div>
+    </div>
+    <p class="fuss">Quellen: Refero-Styles zu Amrit Palace, Bibliothèque, Liron Moran Interiors, Sequel, Ysl, Essie Wine, BelArosa Chalet, Haley Park, Drepute, Kobu; Refero-Screens nur Plattformen (Tripadvisor, Yelp, Volkshotel Canvas). Live geprüft und verworfen: Velvet Hour (Bildregie, braucht Spitzenfotos), Qitchen (mehrseitig, Startseite nur Kacheln), Ikoyi (Startbild ist ein Muster), Coda Berlin (Popups über der Seite), Kol, Nobelhart &amp; Schmutzig, Horváth, Bacchanalia, Noble Rot (hell oder ohne durchgehendes System), The Mandrake (Popup, Hotel-Portal), Alchemist (Banner, Video), LuxDin, Osteria Nera, Pastalia, Vintessa (austauschbar), Kaiseki, Ristorante, Luna Rossa (hell); frantzen.com nicht erreichbar.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
