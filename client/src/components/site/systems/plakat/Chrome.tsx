@@ -24,7 +24,8 @@ import { footWord, lineEm } from "./fit";
  * stapelt sich der Name am Handy neben der Menü-Pille über vier Zeilen.
  */
 export const BRAND_LONG_EM = 5;
-export const brandIsLong = (mark: string) => lineEm(mark, 88) * 1.15 > BRAND_LONG_EM;
+export const brandIsLong = (mark: string) =>
+  lineEm(mark, 88) * 1.15 > BRAND_LONG_EM;
 
 /**
  * Kopf und Fuß von Plakat nach Systemblatt (Anker Arcadia): Kopf auf Grund
@@ -57,7 +58,11 @@ function NavLinks({ items }: { items: NavItem[] }) {
   return (
     <>
       {items.map(item => (
-        <a key={item.key} href={item.href} aria-current={item.current ? "page" : undefined}>
+        <a
+          key={item.key}
+          href={item.href}
+          aria-current={item.current ? "page" : undefined}
+        >
           {item.label}
         </a>
       ))}
@@ -165,7 +170,9 @@ export function PlakatFoot({ basePath }: { basePath: string }) {
           <p
             className="pk-foot-word"
             aria-hidden="true"
-            style={{ "--pk-fit": word.widthEm.toFixed(3) } as React.CSSProperties}
+            style={
+              { "--pk-fit": word.widthEm.toFixed(3) } as React.CSSProperties
+            }
           >
             {word.lines.map(line => (
               <span key={line}>{line}</span>

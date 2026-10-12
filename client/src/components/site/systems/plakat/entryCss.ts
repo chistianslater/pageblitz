@@ -11,11 +11,14 @@ const ENTRY = `/* Einstieg: arch · circle · type */
 .pb-plakat .pk-entry--type{padding-top:var(--sys-space-l)}
 .pb-plakat .pk-entry-grid{max-width:var(--sys-space-max);margin-inline:auto;padding-inline:var(--sys-space-gutter);display:grid;grid-template-columns:minmax(0,1fr)}
 .pb-plakat .pk-entry-text,.pb-plakat .pk-entry-copy,.pb-plakat .pk-entry-media{min-width:0}
-.pb-plakat .pk-entry-top{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--sys-space-s);margin-bottom:var(--sys-space-m)}
-.pb-plakat .pk-status{${step("kicker")};display:inline-flex;align-items:center;gap:calc(var(--sys-space-xs) * 1.125)}
+/* Status-Zeile bleibt einzeilig; reicht der Platz nicht, rutscht der Sticker darunter (rechts) */
+.pb-plakat .pk-entry-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:var(--sys-space-s);margin-bottom:var(--sys-space-m)}
+.pb-plakat .pk-entry-top .pk-entry-stk{margin-left:auto}
+.pb-plakat .pk-status{${step("kicker")};display:inline-flex;align-items:center;gap:calc(var(--sys-space-xs) * 1.125);white-space:nowrap}
 .pb-plakat .pk-status::before{content:"";flex:none;width:calc(var(--sys-space-xs) * 1.125);height:calc(var(--sys-space-xs) * 1.125);border-radius:50%;background:var(--sys-signal)}
 .pb-plakat .pk-status--closed::before{background:var(--pk-muted)}
-.pb-plakat .pk-entry-name{${step("kicker")};color:var(--pk-muted);margin-bottom:var(--sys-space-xs);overflow-wrap:anywhere}
+.pb-plakat .pk-entry-kicker{${step("kicker")};color:var(--pk-muted);margin-bottom:var(--sys-space-xs);overflow-wrap:anywhere}
+.pb-plakat .pk-entry-name{display:inline;font:inherit;letter-spacing:inherit;color:inherit}
 /* Große Zeile: Staffel, füllt die Breite (--pk-fit aus fit.ts), Zeile ≥ .88 für Umlautpunkte */
 .pb-plakat .pk-fit{container-type:inline-size}
 .pb-plakat .pk-display{${step("display")};font-size:var(--sys-h2-size);overflow-wrap:anywhere;hyphens:manual;text-wrap:wrap}
@@ -35,7 +38,7 @@ const ENTRY = `/* Einstieg: arch · circle · type */
 .pb-plakat .pk-entry--circle .pk-entry-media{width:74%;margin:var(--sys-space-s) 0 0 auto;--pk-shape-bg:var(--sys-field-2-bg)}
 .pb-plakat .pk-entry--arch .pk-entry-stk{position:absolute;left:max(calc(var(--pk-stk) * -.78),-31%);top:calc(var(--sys-space-l) * .85)}
 .pb-plakat .pk-entry--circle .pk-entry-stk{position:absolute;left:calc(var(--pk-stk) * -.28);bottom:0}
-.pb-plakat .pk-entry-lede{${step("lede")};margin-top:var(--sys-space-m);max-width:30ch}
+.pb-plakat .pk-entry-lede{${step("lede")};margin-top:var(--sys-space-m);max-width:calc(var(--sys-space-measure) * .82)}
 .pb-plakat .pk-entry-actions{display:flex;flex-wrap:wrap;gap:calc(var(--sys-space-xs) * 1.25);margin-top:var(--sys-space-l)}
 .pb-plakat .pk-facts{list-style:none;margin:var(--sys-space-l) 0 0;padding:var(--sys-space-m) 0 0;border-top:2px solid currentColor;
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--sys-space-s) * .875) calc(var(--sys-space-s) * 1.25)}
@@ -72,6 +75,8 @@ const STICKER = `/* Sticker */
 .pb-plakat .pk-stk--long b{font-size:calc(var(--pk-stk) * .25)}
 .pb-plakat .pk-stk--xlong b{font-size:calc(var(--pk-stk) * .2)}
 .pb-plakat .pk-stk-in>span{display:block;font-family:var(--sys-font-text);font-weight:700;font-size:calc(var(--pk-stk) * .12);line-height:1.15;margin-top:var(--sys-space-2xs)}
+.pb-plakat .pk-stk--fine .pk-stk-in>span{font-size:calc(var(--pk-stk) * .1)}
+.pb-plakat .pk-stk--fine .pk-stk-in{max-width:76%}
 .pb-plakat .pk-stk--inv{background:var(--sys-deep);color:var(--sys-on-deep)}
 @media (min-width:${GRID}){.pb-plakat .pk-stk{--pk-stk:calc(var(--sys-space-2xl) * 1.45)}}`;
 

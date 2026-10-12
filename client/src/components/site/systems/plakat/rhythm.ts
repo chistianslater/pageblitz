@@ -13,7 +13,8 @@ import type { SystemSection } from "../shared";
  *
  *  - Einstieg: `entry` (Grund oder erstes helles Feld)
  *  - Stimme (testimonials, sonst quote): tief — höchstens einmal, nie
- *    direkt vor dem Fuß (zweimal tief hintereinander)
+ *    direkt vor dem Fuß und nie direkt nach dem Laufband (zweimal tief
+ *    hintereinander); dann übernimmt die nächste Stimme oder keine
  *  - Kopf einer Unterseite (pageHeader): Grund
  *  - alle anderen: nach einer Fläche Grund, nach Grund das nächste helle
  *    Feld (1, 2, 1, …)
@@ -30,14 +31,19 @@ const FLOATING: ReadonlySet<SystemSection["type"]> = new Set(["notice"]);
 
 export function fieldRhythm(
   types: readonly SystemSection["type"][],
-  entry: EntryGround = "ground"
+  entry: EntryGround = "ground",
+  /** Laufband (tief) direkt nach dem Einstieg — die Stimme darf dort nicht tief folgen. */
+  tickerAfterEntry = false
 ): Field[] {
   const placed = types.filter(t => !FLOATING.has(t));
   const lastPlaced = placed.length - 1;
-  // Die Stimme: Bewertungen vor Zitat, nie der letzte Abschnitt (Fuß tief).
-  const voiceAt = VOICE.map(v => placed.indexOf(v)).find(
-    i => i >= 0 && i !== lastPlaced
-  );
+  const heroAt = placed.indexOf("hero");
+  // Plätze, an denen die tiefe Stimme stehen darf: nicht als letzter
+  // Abschnitt (Fuß tief) und nicht direkt nach dem Laufband (tief).
+  const eligible = (i: number) =>
+    i >= 0 && i !== lastPlaced && !(tickerAfterEntry && heroAt >= 0 && i === heroAt + 1);
+  // Bewertungen vor Zitat; ist der erste Platz verboten, rückt die nächste Stimme nach.
+  const voiceAt = VOICE.map(v => placed.indexOf(v)).find(eligible);
   let light = 0;
   const nextLight = (): Field => (light++ % 2 === 0 ? "f1" : "f2");
   let prev: Field | undefined;

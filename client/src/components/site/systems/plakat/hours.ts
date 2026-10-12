@@ -48,16 +48,24 @@ export type Status = { text: string; closed: boolean };
  * Werkstoff kein „jetzt geöffnet" nach Uhrzeit (Seiten liegen im Cache);
  * nur der Tag zählt. Ohne Uhrzeit für heute: keine Zeile.
  */
-export function statusLine(hours: Hours | undefined, now: Date): Status | undefined {
+export function statusLine(
+  hours: Hours | undefined,
+  now: Date
+): Status | undefined {
   const real = realHours(hours);
   if (!real) return undefined;
-  if (isRoundTheClock(real)) return { text: "Rund um die Uhr offen", closed: false };
+  if (isRoundTheClock(real))
+    return { text: "Rund um die Uhr offen", closed: false };
   const entry = real.find(h => coversToday(h.day, now));
   if (!entry) return undefined;
-  if (CLOSED.test(entry.hours)) return { text: "Heute geschlossen", closed: true };
+  if (CLOSED.test(entry.hours))
+    return { text: "Heute geschlossen", closed: true };
   const today = spans(entry.hours);
   if (!today.length) return undefined;
-  return { text: `Heute bis ${uhr(today[today.length - 1].to)} offen`, closed: false };
+  return {
+    text: `Heute bis ${uhr(today[today.length - 1].to)} offen`,
+    closed: false,
+  };
 }
 
 /** Späteste Schließzeit nach Mitternacht (bis 6 Uhr), in Minuten. */
@@ -82,18 +90,26 @@ export function sundayOpen(hours: Hours | undefined): boolean {
   const real = realHours(hours);
   if (!real || isRoundTheClock(real)) return false;
   return real.some(
-    h => coversToday(h.day, SUNDAY) && !CLOSED.test(h.hours) && spans(h.hours).length > 0
+    h =>
+      coversToday(h.day, SUNDAY) &&
+      !CLOSED.test(h.hours) &&
+      spans(h.hours).length > 0
   );
 }
 
 /** Die sieben Wochentage (Berlin, Mittag), ab Montag. */
-const WEEK = Array.from({ length: 7 }, (_, i) => new Date(Date.UTC(2026, 9, 12 + i, 10)));
+const WEEK = Array.from(
+  { length: 7 },
+  (_, i) => new Date(Date.UTC(2026, 9, 12 + i, 10))
+);
 
 /**
  * Kurzform der Zeiten für Fakten und Laufband: die zusammengefasste Zeile
  * mit den meisten Tagen („Di–Sa", „11–2 Uhr"), bei Gleichstand die erste.
  */
-export function firstHours(hours: Hours | undefined): { day: string; hours: string } | undefined {
+export function firstHours(
+  hours: Hours | undefined
+): { day: string; hours: string } | undefined {
   const real = realHours(hours);
   if (!real) return undefined;
   const open = groupOpeningHours(real).filter(h => !CLOSED.test(h.hours));

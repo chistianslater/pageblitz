@@ -6,13 +6,15 @@ import { claimPhotos, shownNavItems, systemShows } from "../shared";
 import { PLAKAT_CSS } from "./css";
 import { PlakatFoot, PlakatHead, plakatNavItems } from "./Chrome";
 import { PlakatDock, PlakatTicker } from "./Band";
-import { entryGround, entryVariant } from "./facts";
+import { entryGround, entryVariant, tickerItems } from "./facts";
 import { fieldRhythm } from "./rhythm";
 import { PlakatLegal, PlakatPageHead, renderPlakatSection } from "./sections";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
-  items.map(item => (item.href.startsWith("#") ? { ...item, href: prefix + item.href } : item));
+  items.map(item =>
+    item.href.startsWith("#") ? { ...item, href: prefix + item.href } : item
+  );
 
 /**
  * Plakat (rev 3) — Gerüst wie Werkstoff: Startseite über orderedSections
@@ -34,22 +36,30 @@ export const PLAKAT_MODULE: PackModule = {
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     const homeAll = orderedSections(home);
     const homeShown =
-      sections || legal ? claimPhotos(homeAll.filter(systemShows), hidden).list : list;
+      sections || legal
+        ? claimPhotos(homeAll.filter(systemShows), hidden).list
+        : list;
     const shown = plakatNavItems(
       shownNavItems(navItems, homeAll).filter(
-        item => item.sectionType !== "gallery" || homeShown.some(s => s.type === "gallery")
+        item =>
+          item.sectionType !== "gallery" ||
+          homeShown.some(s => s.type === "gallery")
       )
     );
     const nav = legal ? prefixAnchors(shown, anchorPrefix) : shown;
-    const ownHead = pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
+    const ownHead =
+      pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
     const hero = list.find(s => s.type === "hero");
     const entry =
       hero && hero.type === "hero"
         ? entryGround(entryVariant(home, hero, blueprint))
         : "ground";
+    // Laufband nur auf der Startseite direkt nach dem Einstieg (tief).
+    const ticker = Boolean(hero) && tickerItems(home).length > 0;
     const fields = fieldRhythm(
       list.map(s => s.type),
-      entry
+      entry,
+      ticker
     );
     return (
       <>

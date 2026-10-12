@@ -44,11 +44,12 @@ export function plakatActions(
 ): { primary?: Action; other?: Action } {
   const data = visibleDoc(doc);
   const contact = contactOf(data.sections);
-  const anchors = new Set(data.sections.map(s => `#${SECTION_ANCHORS[s.type]}`));
+  const anchors = new Set(
+    data.sections.map(s => `#${SECTION_ANCHORS[s.type]}`)
+  );
   const main = primaryAction(data, blueprint, anchorPrefix);
   const hash = main.href.slice(anchorPrefix.length);
-  const mainOk =
-    !main.href.startsWith(`${anchorPrefix}#`) || anchors.has(hash);
+  const mainOk = !main.href.startsWith(`${anchorPrefix}#`) || anchors.has(hash);
   const tel = telHref(contact?.phone);
   const address = addressLine(contact);
   const mail = mailHref(contact?.email);
@@ -112,7 +113,8 @@ export function entryVariant(
 }
 
 /** Einstieg auf Grund (Bogen) oder hellem Feld (Kreis, Schrift). */
-export const entryGround = (v: EntryVariant) => (v === "arch" ? "ground" : "field");
+export const entryGround = (v: EntryVariant) =>
+  v === "arch" ? "ground" : "field";
 
 const plain = (t: string | undefined) => (t ? stripMarks(t).trim() : "");
 
@@ -165,20 +167,44 @@ export function entryLede(
 
 /* ── Preise ───────────────────────────────────────────────────────────── */
 
-type Priced = { name: string; price: number; text: string; source: "menu" | "pricelist" | "services" };
+type Priced = {
+  name: string;
+  price: number;
+  text: string;
+  source: "menu" | "pricelist" | "services";
+};
 
-/** Zahl direkt vor „€"/„EUR" (z. B. „1 Std. 50 €" → 50, nicht 1). */
-const WITH_EURO = /(\d{1,4})(?:[.,](\d{1,2}))?\s*(?:€|eur\b|euro\b)/i;
-/** Nur eine Zahl („45", „ab 7,50"). */
-const BARE = /^\s*(?:ab\s+)?(\d{1,4})(?:[.,](\d{1,2}))?\s*$/i;
+/**
+ * Deutsche Zahl: „1.200" / „1.200,50" (Tausenderpunkt), „7,50", „12.50",
+ * „45". Tausender zuerst, damit „1.200" nicht als 1,2 gelesen wird.
+ */
+const NUM = "(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d{1,5}(?:[.,]\\d{1,2})?)";
+const EURO = "(?:€|eur\\b|euro\\b)";
+/** Spanne „25–35 €" / „25 € – 35 €" → untere Grenze. */
+const RANGE_EURO = new RegExp(`${NUM}\\s*${EURO}?\\s*[–-]\\s*${NUM}\\s*${EURO}`, "i");
+/** Zahl direkt vor „€" (z. B. „1 Std. 50 €" → 50, nicht 1). */
+const WITH_EURO = new RegExp(`${NUM}\\s*${EURO}`, "i");
+/** Nur eine Zahl oder Spanne ohne Währung („45", „ab 7,50", „25–35"). */
+const BARE = new RegExp(`^\\s*(?:ab\\s+)?${NUM}(?:\\s*[–-]\\s*${NUM})?\\s*$`, "i");
 const FREE = /\b(gratis|kostenlos|umsonst)\b/i;
 
-/** „7,50 €" → 7.5; „gratis" → 0; sonst (unklar) → undefined. */
+/** „1.200,50" → 1200.5; „12.50" → 12.5. */
+function germanNumber(text: string): number {
+  const thousands = /\.\d{3}(?:,|$)/.test(text);
+  const plain = thousands ? text.replace(/\./g, "").replace(",", ".") : text.replace(",", ".");
+  return Number(plain);
+}
+
+/**
+ * „7,50 €" → 7.5; Spanne → untere Grenze; „gratis" → 0; sonst (unklar)
+ * → undefined. Nur so kann „Ab X" der kleinste echte Preis sein.
+ */
 export function priceValue(price: string): number | undefined {
   if (FREE.test(price)) return 0;
-  const m = price.match(WITH_EURO) ?? price.match(BARE);
+  const m = price.match(RANGE_EURO) ?? price.match(WITH_EURO) ?? price.match(BARE);
   if (!m) return undefined;
-  return Number(m[1]) + (m[2] ? Number(m[2].padEnd(2, "0")) / 100 : 0);
+  const value = germanNumber(m[1]);
+  return Number.isFinite(value) ? value : undefined;
 }
 
 /** 7.5 → „7,50", 28 → „28". */
@@ -194,7 +220,14 @@ export function pricedItems(data: WebsiteDataV2): Priced[] {
           const price = priceValue(i.price);
           return price === undefined
             ? []
-            : [{ name: i.name.trim(), price, text: i.price.trim(), source: s.type }];
+            : [
+                {
+                  name: i.name.trim(),
+                  price,
+                  text: i.price.trim(),
+                  source: s.type,
+                },
+              ];
         })
       );
     if (s.type === "services")
@@ -202,7 +235,14 @@ export function pricedItems(data: WebsiteDataV2): Priced[] {
         const price = i.price ? priceValue(i.price) : undefined;
         return price === undefined
           ? []
-          : [{ name: i.title.trim(), price, text: i.price!.trim(), source: "services" as const }];
+          : [
+              {
+                name: i.title.trim(),
+                price,
+                text: i.price!.trim(),
+                source: "services" as const,
+              },
+            ];
       });
     return [];
   });
@@ -222,11 +262,15 @@ export type Sticker = {
 /** Google-Sticker erst ab dieser Bewertung und Anzahl (Systemblatt). */
 export const STICKER_RATING = 4.5;
 export const STICKER_REVIEWS = 20;
-/** Kleine Zeile höchstens so lang (sonst ohne). */
-const SMALL_MAX = 20;
+/** Kleine Zeile höchstens so lang (sonst ohne) — passt bei 320 px in den Ring. */
+export const SMALL_MAX = 14;
 
 /** Belegte Ausstattung → Sticker (nur, was das Google-Profil meldet). */
-const AMENITY_STICKERS: [keyof NonNullable<WebsiteDataV2["amenities"]>, string, string][] = [
+const AMENITY_STICKERS: [
+  keyof NonNullable<WebsiteDataV2["amenities"]>,
+  string,
+  string,
+][] = [
   ["delivery", "Auch", "Lieferung"],
   ["takeout", "To go", "zum Mitnehmen"],
   ["vegetarian", "Veggie", "auch vegetarisch"],
@@ -248,7 +292,11 @@ export function entrySticker(doc: WebsiteDataV2): Sticker | undefined {
   const hours = contactOf(data.sections)?.openingHours;
   const late = lateClose(hours);
   if (late !== undefined)
-    return { big: `Bis ${uhr(late).replace(" Uhr", "")}`, small: "Uhr offen", source: "late" };
+    return {
+      big: `Bis ${uhr(late).replace(" Uhr", "")}`,
+      small: "Uhr offen",
+      source: "late",
+    };
   const prices = pricedItems(data);
   const free = prices.find(p => p.price === 0);
   if (free)
@@ -258,15 +306,27 @@ export function entrySticker(doc: WebsiteDataV2): Sticker | undefined {
       source: "free",
     };
   const g = data.google;
-  if (g && g.rating >= STICKER_RATING && g.reviewCount >= STICKER_REVIEWS && g.rating <= 5)
-    return { big: formatHeroRating(g.rating), small: "bei Google", source: "google" };
-  if (sundayOpen(hours)) return { big: "Sonntag", small: "offen", source: "sunday" };
+  if (
+    g &&
+    g.rating >= STICKER_RATING &&
+    g.reviewCount >= STICKER_REVIEWS &&
+    g.rating <= 5
+  )
+    return {
+      big: formatHeroRating(g.rating),
+      small: "bei Google",
+      source: "google",
+    };
+  if (sundayOpen(hours))
+    return { big: "Sonntag", small: "offen", source: "sunday" };
   const paid = prices.filter(p => p.price > 0);
   if (paid.length) {
     const min = Math.min(...paid.map(p => p.price));
     return { big: `Ab ${euro(min)}`, small: "Euro", source: "price" };
   }
-  const amenity = AMENITY_STICKERS.find(([key]) => data.amenities?.[key] === true);
+  const amenity = AMENITY_STICKERS.find(
+    ([key]) => data.amenities?.[key] === true
+  );
   if (amenity) return { big: amenity[1], small: amenity[2], source: "amenity" };
   return undefined;
 }
@@ -293,19 +353,34 @@ export function entryFacts(doc: WebsiteDataV2): Fact[] {
     const label = `ab ${euro(min.price)} €`;
     out.push({
       strong:
-        min.name.length <= FACT_NAME_MAX ? `${min.name} ${label}` : label.replace(/^a/, "A"),
-      sub: min.source === "menu" ? "aus der Karte" : min.source === "pricelist" ? "aus der Preisliste" : "aus den Leistungen",
+        min.name.length <= FACT_NAME_MAX
+          ? `${min.name} ${label}`
+          : label.replace(/^a/, "A"),
+      sub:
+        min.source === "menu"
+          ? "aus der Karte"
+          : min.source === "pricelist"
+            ? "aus der Preisliste"
+            : "aus den Leistungen",
     });
   }
   const hours = firstHours(contact?.openingHours);
   if (hours) out.push({ strong: hours.day, sub: hours.hours });
   const street = contact?.street?.trim();
   const place = [contact?.zip, contact?.city].filter(Boolean).join(" ").trim();
-  if (street || place) out.push(street && place ? { strong: street, sub: place } : { strong: street || place, sub: "Adresse" });
+  if (street || place)
+    out.push(
+      street && place
+        ? { strong: street, sub: place }
+        : { strong: street || place, sub: "Adresse" }
+    );
   const g = data.google;
   if (g && g.reviewCount > 0) {
     const noun = g.reviewCount === 1 ? "Bewertung" : "Bewertungen";
-    out.push({ strong: `${g.reviewCount.toLocaleString("de-DE")} ${noun}`, sub: "bei Google" });
+    out.push({
+      strong: `${g.reviewCount.toLocaleString("de-DE")} ${noun}`,
+      sub: "bei Google",
+    });
   }
   return out.slice(0, 4);
 }

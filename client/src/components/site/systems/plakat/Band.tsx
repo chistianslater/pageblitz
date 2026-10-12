@@ -51,7 +51,10 @@ export function PlakatDock({ anchorPrefix }: { anchorPrefix: string }) {
   const { primary, other } = plakatActions(data, blueprint, anchorPrefix);
   if (!primary) return null;
   return (
-    <nav className={other ? "pk-dock" : "pk-dock pk-dock--one"} aria-label="Schnellkontakt">
+    <nav
+      className={other ? "pk-dock" : "pk-dock pk-dock--one"}
+      aria-label="Schnellkontakt"
+    >
       {other && (
         <a className="pk-dock-a" href={other.href}>
           {other.label}

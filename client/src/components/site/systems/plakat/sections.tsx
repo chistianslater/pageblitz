@@ -69,11 +69,17 @@ export function PlakatChapter({
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
   return (
-    <section id={id} className={`pk-sec pk-${type} pk-${field}`} aria-labelledby={headingId}>
+    <section
+      id={id}
+      className={`pk-sec pk-${type} pk-${field}`}
+      aria-labelledby={headingId}
+    >
       <div className="pk-wrap">
         <h2 className="pk-title" id={headingId}>
           {rich(versalEszett(title))}
-          <span className="pk-dot" aria-hidden="true">.</span>
+          <span className="pk-dot" aria-hidden="true">
+            .
+          </span>
         </h2>
         {children}
       </div>
@@ -85,10 +91,15 @@ export function PlakatChapter({
 function blockLines(s: PlakatSection): { text: string; meta?: string }[] {
   switch (s.type) {
     case "services":
-      return s.items.map(i => ({ text: i.title, meta: i.price ? formatPrice(i.price) : undefined }));
+      return s.items.map(i => ({
+        text: i.title,
+        meta: i.price ? formatPrice(i.price) : undefined,
+      }));
     case "menu":
     case "pricelist":
-      return s.categories.flatMap(c => c.items.map(i => ({ text: i.name, meta: formatPrice(i.price) })));
+      return s.categories.flatMap(c =>
+        c.items.map(i => ({ text: i.name, meta: formatPrice(i.price) }))
+      );
     case "process":
       return s.steps.map(st => ({ text: st.title }));
     case "team":
@@ -119,13 +130,26 @@ function blockText(s: PlakatSection): string | undefined {
  * Vorläufiger Plakat-Block für alle Inhaltsabschnitte (P4–P6 ersetzen ihn):
  * Kapitelkopf, Satz, kurze Liste — auf der Fläche aus dem Rhythmus.
  */
-function PlakatBlock({ section, field }: { section: PlakatSection; field: Field }) {
+function PlakatBlock({
+  section,
+  field,
+}: {
+  section: PlakatSection;
+  field: Field;
+}) {
   const { blueprint } = useSystem();
-  const own = "headline" in section ? (section.headline as string | undefined) : undefined;
+  const own =
+    "headline" in section
+      ? (section.headline as string | undefined)
+      : undefined;
   const lines = blockLines(section);
   const text = blockText(section);
   return (
-    <PlakatChapter type={section.type} field={field} title={chapterTitle(section.type, own, blueprint)}>
+    <PlakatChapter
+      type={section.type}
+      field={field}
+      title={chapterTitle(section.type, own, blueprint)}
+    >
       {text && <p className="pk-intro">{rich(text)}</p>}
       {lines.length > 0 && (
         <ul className="pk-lines">
@@ -153,7 +177,11 @@ function PlakatContactBlock({
   const address = addressLine(section);
   const tel = telHref(section.phone);
   return (
-    <PlakatChapter type="contact" field={field} title={chapterTitle("contact", section.headline, blueprint)}>
+    <PlakatChapter
+      type="contact"
+      field={field}
+      title={chapterTitle("contact", section.headline, blueprint)}
+    >
       {address && <p className="pk-intro">{address}</p>}
       {tel && section.phone && (
         <p className="pk-intro">
@@ -193,11 +221,19 @@ export function PlakatPageHead({
     );
   }
   return (
-    <section className="pk-page-head pk-ground" id={SECTION_ANCHORS.pageHeader} aria-labelledby="seite-titel">
+    <section
+      className="pk-page-head pk-ground"
+      id={SECTION_ANCHORS.pageHeader}
+      aria-labelledby="seite-titel"
+    >
       <div className="pk-wrap">
         <p className="pk-page-kicker">{kicker ?? data.businessName}</p>
         {titleHtml !== undefined ? (
-          <h1 id="seite-titel" className="pk-page-title" dangerouslySetInnerHTML={{ __html: titleHtml }} />
+          <h1
+            id="seite-titel"
+            className="pk-page-title"
+            dangerouslySetInnerHTML={{ __html: titleHtml }}
+          />
         ) : (
           <h1 id="seite-titel" className="pk-page-title">
             {rich(versalEszett(title ?? ""))}
@@ -219,8 +255,15 @@ export function PlakatLegal({ title, html }: { title: string; html: string }) {
   const { titleHtml, body } = legalParts(html);
   return (
     <>
-      <PlakatPageHead title={title} titleHtml={titleHtml} kicker={`${data.businessName} · Rechtliches`} />
-      <article className="pk-wrap pk-legal" dangerouslySetInnerHTML={{ __html: body }} />
+      <PlakatPageHead
+        title={title}
+        titleHtml={titleHtml}
+        kicker={`${data.businessName} · Rechtliches`}
+      />
+      <article
+        className="pk-wrap pk-legal"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
     </>
   );
 }

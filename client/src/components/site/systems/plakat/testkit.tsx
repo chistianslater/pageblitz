@@ -50,19 +50,29 @@ export const render = (
 
 type Doc = ReturnType<typeof plakatDoc>;
 type Sec = Doc["sections"][number];
-type Patch<T extends Sec["type"]> = (s: Extract<Sec, { type: T }>) => Extract<Sec, { type: T }>;
+type Patch<T extends Sec["type"]> = (
+  s: Extract<Sec, { type: T }>
+) => Extract<Sec, { type: T }>;
 
 /** Abschnitt eines Typs ersetzen. */
-export function patchSection<T extends Sec["type"]>(doc: Doc, type: T, patch: Patch<T>): Doc {
+export function patchSection<T extends Sec["type"]>(
+  doc: Doc,
+  type: T,
+  patch: Patch<T>
+): Doc {
   return {
     ...doc,
-    sections: doc.sections.map(s => (s.type === type ? patch(s as Extract<typeof s, { type: T }>) : s)),
+    sections: doc.sections.map(s =>
+      s.type === type ? patch(s as Extract<typeof s, { type: T }>) : s
+    ),
   };
 }
 
 /** Kontakt-Abschnitt ersetzen. */
-export const withContact = (doc: Doc, patch: Partial<Extract<Sec, { type: "contact" }>>) =>
-  patchSection(doc, "contact", c => ({ ...c, ...patch }));
+export const withContact = (
+  doc: Doc,
+  patch: Partial<Extract<Sec, { type: "contact" }>>
+) => patchSection(doc, "contact", c => ({ ...c, ...patch }));
 
 /** Abschnitt (Typ) ohne Weiteres entfernen. */
 export const without = (doc: Doc, ...types: Sec["type"][]): Doc => ({
@@ -150,7 +160,8 @@ export function eckeDoc(): Doc {
   doc = patchSection(doc, "hero", h => ({
     ...h,
     headline: "Döner Ecke",
-    subheadline: "Döner, Dürüm, Pide aus dem Steinofen. Am Bahnhof, jeden Tag bis spät.",
+    subheadline:
+      "Döner, Dürüm, Pide aus dem Steinofen. Am Bahnhof, jeden Tag bis spät.",
     ctaText: "Anrufen & abholen",
     ctaHref: undefined,
     imageUrl: INDUSTRY_IMAGES.imbiss.hero[0],
@@ -162,7 +173,11 @@ export function eckeDoc(): Doc {
       {
         name: "Im Brot",
         items: [
-          { name: "Döner im Brot", price: "7,50 €", description: "Kalb, Salat, Soße nach Wahl" },
+          {
+            name: "Döner im Brot",
+            price: "7,50 €",
+            description: "Kalb, Salat, Soße nach Wahl",
+          },
           { name: "Dürüm", price: "8,50 €" },
         ],
       },
@@ -172,9 +187,16 @@ export function eckeDoc(): Doc {
   const services: Sec = {
     type: "services",
     headline: "Was es gibt",
-    items: [{ title: "Döner" }, { title: "Dürüm" }, { title: "Lahmacun" }, { title: "Pide" }],
+    items: [
+      { title: "Döner" },
+      { title: "Dürüm" },
+      { title: "Lahmacun" },
+      { title: "Pide" },
+    ],
   };
-  const sections = doc.sections.flatMap((s): Sec[] => (s.type === "hero" ? [s, services, menu] : [s]));
+  const sections = doc.sections.flatMap((s): Sec[] =>
+    s.type === "hero" ? [s, services, menu] : [s]
+  );
   return { ...doc, sections };
 }
 
@@ -201,13 +223,19 @@ export function pulsDoc(): Doc {
   doc = patchSection(doc, "hero", h => ({
     ...h,
     headline: "Kurse ab 6:30",
-    subheadline: "Kleine Gruppen, feste Trainer, ein Raum in der Altstadt. Erste Stunde kostet nichts.",
+    subheadline:
+      "Kleine Gruppen, feste Trainer, ein Raum in der Altstadt. Erste Stunde kostet nichts.",
     ctaText: "Probetraining",
     imageUrl: undefined,
   }));
   doc = patchSection(doc, "services", s => ({
     ...s,
-    items: [{ title: "Zirkel" }, { title: "Rücken fit" }, { title: "Yoga" }, { title: "Boxen" }],
+    items: [
+      { title: "Zirkel" },
+      { title: "Rücken fit" },
+      { title: "Yoga" },
+      { title: "Boxen" },
+    ],
   }));
   const prices: Sec = {
     type: "pricelist",
@@ -223,7 +251,9 @@ export function pulsDoc(): Doc {
       },
     ],
   };
-  const sections = doc.sections.flatMap((s): Sec[] => (s.type === "services" ? [s, prices] : [s]));
+  const sections = doc.sections.flatMap((s): Sec[] =>
+    s.type === "services" ? [s, prices] : [s]
+  );
   return { ...doc, sections };
 }
 

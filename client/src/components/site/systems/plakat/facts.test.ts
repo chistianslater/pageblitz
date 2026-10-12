@@ -22,8 +22,13 @@ import {
 } from "./testkit";
 
 type Doc = ReturnType<typeof kanteDoc>;
-const bp = (d: Doc) => blueprintFor(d.businessCategory, d.businessName, d.blueprintFamily);
-const hero = (d: Doc) => d.sections.find(s => s.type === "hero") as Extract<Doc["sections"][number], { type: "hero" }>;
+const bp = (d: Doc) =>
+  blueprintFor(d.businessCategory, d.businessName, d.blueprintFamily);
+const hero = (d: Doc) =>
+  d.sections.find(s => s.type === "hero") as Extract<
+    Doc["sections"][number],
+    { type: "hero" }
+  >;
 
 /** Dokument ohne jede Sticker-Quelle. */
 function bare(doc: Doc): Doc {
@@ -35,50 +40,98 @@ function bare(doc: Doc): Doc {
 
 describe("Plakat: Einstiegs-Fassung (Entscheidungstabelle)", () => {
   test("Barbier mit Foto → Bogen, Imbiss mit Foto → Kreis, ohne Foto → Schrift", () => {
-    expect(entryVariant(kanteDoc(), hero(kanteDoc()), bp(kanteDoc()))).toBe("arch");
-    expect(entryVariant(eckeDoc(), hero(eckeDoc()), bp(eckeDoc()))).toBe("circle");
-    expect(entryVariant(pulsDoc(), hero(pulsDoc()), bp(pulsDoc()))).toBe("type");
+    expect(entryVariant(kanteDoc(), hero(kanteDoc()), bp(kanteDoc()))).toBe(
+      "arch"
+    );
+    expect(entryVariant(eckeDoc(), hero(eckeDoc()), bp(eckeDoc()))).toBe(
+      "circle"
+    );
+    expect(entryVariant(pulsDoc(), hero(pulsDoc()), bp(pulsDoc()))).toBe(
+      "type"
+    );
   });
 
   test("ausgeblendetes Foto (hero-media) → Schrift; vorhandenes Foto fällt nie weg", () => {
-    const hidden = { ...kanteDoc(), designProfile: { hiddenElements: ["hero-media"] } } as Doc;
+    const hidden = {
+      ...kanteDoc(),
+      designProfile: { hiddenElements: ["hero-media"] },
+    } as Doc;
     expect(entryVariant(hidden, hero(hidden), bp(hidden))).toBe("type");
     // Ein Fitness-Betrieb MIT Foto bekommt den Bogen, nicht die Schrift.
-    const withPhoto = patchSection(pulsDoc(), "hero", h => ({ ...h, imageUrl: "/demo/verve-hero.webp" }));
-    expect(entryVariant(withPhoto, hero(withPhoto), bp(withPhoto))).toBe("arch");
+    const withPhoto = patchSection(pulsDoc(), "hero", h => ({
+      ...h,
+      imageUrl: "/demo/verve-hero.webp",
+    }));
+    expect(entryVariant(withPhoto, hero(withPhoto), bp(withPhoto))).toBe(
+      "arch"
+    );
   });
 
   test("große Zeile: eigene Überschrift; Doppel von Name/Kicker fällt weg", () => {
-    expect(entryHeadline(hero(kanteDoc()), kanteDoc(), bp(kanteDoc()))).toBe("Fade, Bart, fertig.");
+    expect(entryHeadline(hero(kanteDoc()), kanteDoc(), bp(kanteDoc()))).toBe(
+      "Fade, Bart, fertig."
+    );
     // „Döner Ecke" wiederholt nur den Namen, keine Tagline → der Name trägt
-    expect(entryHeadline(hero(eckeDoc()), eckeDoc(), bp(eckeDoc()))).toBeUndefined();
+    expect(
+      entryHeadline(hero(eckeDoc()), eckeDoc(), bp(eckeDoc()))
+    ).toBeUndefined();
     const tagged = { ...eckeDoc(), tagline: "Döner, Dürüm, Pide." };
-    expect(entryHeadline(hero(tagged), tagged, bp(tagged))).toBe("Döner, Dürüm, Pide.");
+    expect(entryHeadline(hero(tagged), tagged, bp(tagged))).toBe(
+      "Döner, Dürüm, Pide."
+    );
     // Ort allein macht kein Doppel (wie Werkstoff/Raster)
-    const own = patchSection(eckeDoc(), "hero", h => ({ ...h, headline: "Spät noch Hunger am Bahnhof" }));
-    expect(entryHeadline(hero(own), own, bp(own))).toBe("Spät noch Hunger am Bahnhof");
+    const own = patchSection(eckeDoc(), "hero", h => ({
+      ...h,
+      headline: "Spät noch Hunger am Bahnhof",
+    }));
+    expect(entryHeadline(hero(own), own, bp(own))).toBe(
+      "Spät noch Hunger am Bahnhof"
+    );
   });
 });
 
 describe("Plakat: Status-Zeile aus echten Zeiten", () => {
   test("Heute bis … offen, über Mitternacht, geschlossen, rund um die Uhr", () => {
-    expect(statusLine([{ day: "Mo–Fr", hours: "10:00 – 19:00" }], TEST_NOW)).toEqual({ text: "Heute bis 19 Uhr offen", closed: false });
-    expect(statusLine([{ day: "Di", hours: "11:00 – 2:00" }], TEST_NOW)?.text).toBe("Heute bis 2 Uhr offen");
-    expect(statusLine([{ day: "Di", hours: "9:00 – 18:30" }], TEST_NOW)?.text).toBe("Heute bis 18:30 Uhr offen");
-    expect(statusLine([{ day: "Di", hours: "Ruhetag" }], TEST_NOW)).toEqual({ text: "Heute geschlossen", closed: true });
-    expect(statusLine([{ day: "Mo–So", hours: "24 Stunden geöffnet" }], TEST_NOW)?.text).toBe("Rund um die Uhr offen");
+    expect(
+      statusLine([{ day: "Mo–Fr", hours: "10:00 – 19:00" }], TEST_NOW)
+    ).toEqual({ text: "Heute bis 19 Uhr offen", closed: false });
+    expect(
+      statusLine([{ day: "Di", hours: "11:00 – 2:00" }], TEST_NOW)?.text
+    ).toBe("Heute bis 2 Uhr offen");
+    expect(
+      statusLine([{ day: "Di", hours: "9:00 – 18:30" }], TEST_NOW)?.text
+    ).toBe("Heute bis 18:30 Uhr offen");
+    expect(statusLine([{ day: "Di", hours: "Ruhetag" }], TEST_NOW)).toEqual({
+      text: "Heute geschlossen",
+      closed: true,
+    });
+    expect(
+      statusLine([{ day: "Mo–So", hours: "24 Stunden geöffnet" }], TEST_NOW)
+        ?.text
+    ).toBe("Rund um die Uhr offen");
   });
 
   test("keine Zeile ohne echte Zeiten: Platzhalter, fehlt heute, ohne Uhrzeit", () => {
     expect(statusLine(PLACEHOLDER_OPENING_HOURS, TEST_NOW)).toBeUndefined();
     expect(statusLine(undefined, TEST_NOW)).toBeUndefined();
-    expect(statusLine([{ day: "Sa", hours: "9:00 – 13:00" }], TEST_NOW)).toBeUndefined();
-    expect(statusLine([{ day: "Di", hours: "nach Absprache" }], TEST_NOW)).toBeUndefined();
+    expect(
+      statusLine([{ day: "Sa", hours: "9:00 – 13:00" }], TEST_NOW)
+    ).toBeUndefined();
+    expect(
+      statusLine([{ day: "Di", hours: "nach Absprache" }], TEST_NOW)
+    ).toBeUndefined();
   });
 
   test("späte Schließzeit und Sonntag", () => {
-    expect(lateClose([{ day: "Fr–Sa", hours: "11:00 – 2:00" }, { day: "Mo", hours: "11 – 24 Uhr" }])).toBe(120);
-    expect(lateClose([{ day: "Mo–Fr", hours: "11:00 – 24:00" }])).toBeUndefined();
+    expect(
+      lateClose([
+        { day: "Fr–Sa", hours: "11:00 – 2:00" },
+        { day: "Mo", hours: "11 – 24 Uhr" },
+      ])
+    ).toBe(120);
+    expect(
+      lateClose([{ day: "Mo–Fr", hours: "11:00 – 24:00" }])
+    ).toBeUndefined();
     expect(lateClose(PLACEHOLDER_OPENING_HOURS)).toBeUndefined();
     expect(sundayOpen([{ day: "So", hours: "12:00 – 23:00" }])).toBe(true);
     expect(sundayOpen([{ day: "So", hours: "geschlossen" }])).toBe(false);
@@ -89,9 +142,21 @@ describe("Plakat: Status-Zeile aus echten Zeiten", () => {
 
 describe("Plakat: Sticker nur aus der Allowlist", () => {
   test("Systemblatt: Kante Google, Ecke „Bis 2“, Puls „Gratis“", () => {
-    expect(entrySticker(kanteDoc())).toEqual({ big: "4,9", small: "bei Google", source: "google" });
-    expect(entrySticker(eckeDoc())).toEqual({ big: "Bis 2", small: "Uhr offen", source: "late" });
-    expect(entrySticker(pulsDoc())).toEqual({ big: "Gratis", small: "Probetraining", source: "free" });
+    expect(entrySticker(kanteDoc())).toEqual({
+      big: "4,9",
+      small: "bei Google",
+      source: "google",
+    });
+    expect(entrySticker(eckeDoc())).toEqual({
+      big: "Bis 2",
+      small: "Uhr offen",
+      source: "late",
+    });
+    expect(entrySticker(pulsDoc())).toEqual({
+      big: "Gratis",
+      small: "Probetraining",
+      source: "free",
+    });
   });
 
   test("kein Fakt → kein Sticker (nie Platzhalter)", () => {
@@ -101,23 +166,63 @@ describe("Plakat: Sticker nur aus der Allowlist", () => {
 
   test("Google nur ab 4,5 und 20 Bewertungen", () => {
     const base = bare(kanteDoc());
-    expect(entrySticker({ ...base, google: { rating: 4.9, reviewCount: 19 } })).toBeUndefined();
-    expect(entrySticker({ ...base, google: { rating: 4.4, reviewCount: 500 } })).toBeUndefined();
-    expect(entrySticker({ ...base, google: { rating: 4.5, reviewCount: 20 } })?.big).toBe("4,5");
+    expect(
+      entrySticker({ ...base, google: { rating: 4.9, reviewCount: 19 } })
+    ).toBeUndefined();
+    expect(
+      entrySticker({ ...base, google: { rating: 4.4, reviewCount: 500 } })
+    ).toBeUndefined();
+    expect(
+      entrySticker({ ...base, google: { rating: 4.5, reviewCount: 20 } })?.big
+    ).toBe("4,5");
   });
 
   test("Sonntag, kleinster Preis, Ausstattung — in dieser Rangfolge", () => {
     const base = bare(kanteDoc());
-    const sunday = withContact(base, { openingHours: [{ day: "So", hours: "10:00 – 14:00" }] });
+    const sunday = withContact(base, {
+      openingHours: [{ day: "So", hours: "10:00 – 14:00" }],
+    });
     expect(entrySticker(sunday)?.source).toBe("sunday");
-    const priced = patchSection({ ...kanteDoc(), google: undefined }, "contact", c => ({ ...c }));
-    expect(entrySticker(priced)).toEqual({ big: "Ab 18", small: "Euro", source: "price" });
-    expect(entrySticker({ ...base, amenities: { delivery: true } })).toEqual({ big: "Auch", small: "Lieferung", source: "amenity" });
-    expect(entrySticker({ ...base, amenities: { delivery: false } })).toBeUndefined();
+    const priced = patchSection(
+      { ...kanteDoc(), google: undefined },
+      "contact",
+      c => ({ ...c })
+    );
+    expect(entrySticker(priced)).toEqual({
+      big: "Ab 18",
+      small: "Euro",
+      source: "price",
+    });
+    expect(entrySticker({ ...base, amenities: { delivery: true } })).toEqual({
+      big: "Auch",
+      small: "Lieferung",
+      source: "amenity",
+    });
+    expect(
+      entrySticker({ ...base, amenities: { delivery: false } })
+    ).toBeUndefined();
+  });
+
+  test("„Ab“ nennt nur den kleinsten echten Preis (Spannen, Tausender)", () => {
+    const doc = patchSection({ ...kanteDoc(), google: undefined }, "pricelist", p => ({
+      ...p,
+      categories: [{ name: "Herren", items: [
+        { name: "Paket", price: "1.200 €" },
+        { name: "Färben", price: "25–35 €" },
+        { name: "Bart", price: "ab 29,50 €" },
+      ] }],
+    }));
+    expect(entrySticker(doc)).toEqual({ big: "Ab 25", small: "Euro", source: "price" });
+    expect(entryFacts(doc)[0]).toEqual({ strong: "Färben ab 25 €", sub: "aus der Preisliste" });
   });
 
   test("ausgeblendete Abschnitte liefern keine Sticker-Fakten", () => {
-    const hiddenHours = { ...eckeDoc(), google: undefined, amenities: undefined, hiddenSections: ["contact", "menu", "services"] } as Doc;
+    const hiddenHours = {
+      ...eckeDoc(),
+      google: undefined,
+      amenities: undefined,
+      hiddenSections: ["contact", "menu", "services"],
+    } as Doc;
     expect(entrySticker(hiddenHours)).toBeUndefined();
   });
 
@@ -129,6 +234,14 @@ describe("Plakat: Sticker nur aus der Allowlist", () => {
     expect(priceValue("gratis")).toBe(0);
     expect(priceValue("0 €")).toBe(0);
     expect(priceValue("auf Anfrage")).toBeUndefined();
+    expect(priceValue("ab 9,50 €")).toBe(9.5);
+    expect(priceValue("25–35 €")).toBe(25);
+    expect(priceValue("25 - 35 €")).toBe(25);
+    expect(priceValue("25 € – 35 €")).toBe(25);
+    expect(priceValue("1.200 €")).toBe(1200);
+    expect(priceValue("1.200,50 €")).toBe(1200.5);
+    expect(priceValue("12.50 €")).toBe(12.5);
+    expect(priceValue("25–35")).toBe(25);
     expect(priceValue("1 Std.")).toBeUndefined();
   });
 });
@@ -141,14 +254,25 @@ describe("Plakat: Fakten, Laufband, Wege", () => {
       { strong: "Hafenstraße 12", sub: "48153 Münster" },
       { strong: "312 Bewertungen", sub: "bei Google" },
     ]);
-    expect(entryFacts(bare({ ...kanteDoc(), hiddenSections: ["contact"] } as Doc))).toEqual([]);
+    expect(
+      entryFacts(bare({ ...kanteDoc(), hiddenSections: ["contact"] } as Doc))
+    ).toEqual([]);
   });
 
   test("Laufband: Leistungen, Straße, Zeiten; unter zwei Einträgen keins", () => {
-    expect(tickerItems(kanteDoc())).toEqual(["Haarschnitt", "Fade", "Bart", "Rasur", "Hafenstraße 12", "Mo–Fr 10–19"]);
+    expect(tickerItems(kanteDoc())).toEqual([
+      "Haarschnitt",
+      "Fade",
+      "Bart",
+      "Rasur",
+      "Hafenstraße 12",
+      "Mo–Fr 10–19",
+    ]);
     // Zeiten-Kurzform: die Zeile mit den meisten Tagen, nicht einfach die erste
     expect(tickerItems(eckeDoc()).at(-1)).toBe("Di–Sa 11–2");
-    const thin = withContact(without(kanteDoc(), "services"), { openingHours: undefined });
+    const thin = withContact(without(kanteDoc(), "services"), {
+      openingHours: undefined,
+    });
     expect(tickerItems(thin)).toEqual([]);
   });
 
@@ -157,7 +281,10 @@ describe("Plakat: Fakten, Laufband, Wege", () => {
     expect(kante.other).toEqual({ label: "Anrufen", href: "tel:02515550182" });
     expect(kante.primary?.label).toBe("Termin buchen");
     const ecke = plakatActions(eckeDoc(), bp(eckeDoc()));
-    expect(ecke.primary).toEqual({ label: "Anrufen & abholen", href: "tel:05215550144" });
+    expect(ecke.primary).toEqual({
+      label: "Anrufen & abholen",
+      href: "tel:05215550144",
+    });
     expect(ecke.other?.label).toBe("Route");
   });
 
