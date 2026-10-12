@@ -379,30 +379,38 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
 
   // ── Medizin & Gesundheit ───────────────────────────
   // NOTE: Keywords strictly medical only – legal terms moved to `legal` category
+  // Seit Klar K1 haben Zahnarzt, Physio und Arztpraxis eigene Sätze (unten).
+  // Tierarzt, Heilpraktiker, Psychotherapie und Apotheke bleiben bewusst hier;
+  // ihre langen Stichworte schlagen „arzt"/„praxis" des Praxis-Satzes
+  // (längster Treffer gewinnt: „Tierarztpraxis" ⊃ „arztpraxis").
   medizin: {
     keywords: [
-      "arzt",
-      "zahnarzt",
-      "praxis",
       "medizin",
       "gesundheit",
       "klinik",
-      "physiotherapie",
+      "krankenhaus",
       "therapie",
       "apotheke",
-      "doctor",
-      "dental",
       "medical",
       "heilpraktiker",
-      "osteopath",
-      "chiropractor",
+      "naturheil",
       "orthopäde",
       "gynäkologie",
       "kardiologie",
       "neurologie",
       "psychiatrie",
       "psychologie",
+      "psycholog",
+      "psychotherap",
       "dermatologie",
+      "tierarzt",
+      "tierarztpraxis",
+      "tierärzt",
+      "tierpraxis",
+      "kleintierpraxis",
+      "tierklinik",
+      "tiermedizin",
+      "veterinär",
     ],
     hero: [
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1400&q=85&auto=format&fit=crop",
@@ -412,6 +420,125 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1584982751601-97dcc096659c?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Zahnarzt & Kieferorthopädie (2026-10-12, Klar K1) ──────────
+  // Moderne Behandlungsräume, Zahnärzte am Patienten, Röntgenbild — kein
+  // Mund in Großaufnahme. Alle Motive im Browser gesichtet, HTTP 200.
+  zahnarzt: {
+    keywords: [
+      "zahnarzt",
+      // schlägt „arztpraxis" des Praxis-Satzes
+      "zahnarztpraxis",
+      "zahnärzt",
+      "zahnmedizin",
+      "zahnklinik",
+      "zahnheilkunde",
+      "kieferorthopäd",
+      "kieferorthopädie",
+      "kfo",
+      "oralchirurg",
+      "implantologie",
+      "dental",
+      "dentist",
+    ],
+    refines: ["medizin"],
+    hero: [
+      "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1728342057953-94bfad8f0e7e?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1662837625421-5fd8ed6131a0?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1643660526741-094639fbe53a?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1704455306251-b4634215d98f?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1662837625427-970713d74aa6?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1663755489920-5e09f66d011a?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Physiotherapie & Ergotherapie (2026-10-12, Klar K1) ─────────
+  // Behandlung auf der Liege, Übungen mit Therapeutin, Gangschule,
+  // Praxisraum. Keine Wellness-Massage: „Massage" allein bleibt neutral.
+  physio: {
+    keywords: [
+      "physiotherapie",
+      "physiotherapeut",
+      "physio",
+      "krankengymnastik",
+      "ergotherapie",
+      "ergotherapeut",
+      "manuelle therapie",
+      "massagepraxis",
+      "medizinische massage",
+      "osteopath",
+      "chiropraktik",
+      "chiropractor",
+      "rehazentrum",
+      "rehabilitation",
+      "physical therap",
+      "physiotherapy",
+    ],
+    refines: ["medizin", "fitness"],
+    hero: [
+      "https://images.unsplash.com/photo-1706353399656-210cca727a33?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1649751361457-01d3a696c7e6?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1630226040750-d934f017f0e4?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1709880754472-be89c13abc52?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1770012905139-713758ded6ec?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1645005512968-0c1fe99f0093?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1645005513713-9e2b92a687d3?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1768507423533-b87b62769758?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1645005512964-5057008b4425?w=800&q=80&auto=format&fit=crop",
+    ],
+  },
+
+  // ── Arztpraxis & Allgemeinmedizin (2026-10-12, Klar K1) ─────────
+  // Ärztin/Arzt im Gespräch, Sprechzimmer, Wartebereich — keine
+  // Blutdruck-Klischees. Tierarzt/Psychotherapie bleiben bei „medizin".
+  praxis: {
+    keywords: [
+      "praxis",
+      "arzt",
+      "ärztin",
+      "ärzte",
+      "arztpraxis",
+      "ärztehaus",
+      "hausarzt",
+      "hausärztin",
+      "allgemeinmedizin",
+      "allgemeinarzt",
+      "allgemeinärztin",
+      "facharzt",
+      "fachärztin",
+      "internist",
+      "innere medizin",
+      "kinderarzt",
+      "kinderärztin",
+      "gemeinschaftspraxis",
+      "versorgungszentrum",
+      "mvz",
+      "doctor",
+      "general practitioner",
+      "family doctor",
+    ],
+    refines: ["medizin"],
+    hero: [
+      "https://images.unsplash.com/photo-1758691461935-202e2ef6b69f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758691462878-6edc3d3da1be?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631217871099-88310a909a32?w=1400&q=85&auto=format&fit=crop",
+    ],
+    gallery: [
+      "https://images.unsplash.com/photo-1629909614456-6b1c5c94cecc?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1762625570087-6d98fca29531?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758691463198-dc663b8a64e4?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1589279003513-467d320f47eb?w=800&q=80&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1771574204208-b47e2d863bc5?w=800&q=80&auto=format&fit=crop",
     ],
   },
 

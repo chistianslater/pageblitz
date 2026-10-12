@@ -110,7 +110,8 @@ describe("Branchenzuordnung trifft die richtige Gruppe", () => {
     expect(gruppe("Friseursalon", "Haarlounge am Café Central")).toBe(
       "friseur"
     );
-    expect(gruppe("Zahnarztpraxis", "Zahnrad Immobilien")).toBe("medizin");
+    // Seit Klar K1 mit eigenem Zahnarzt-Satz (vorher „medizin“).
+    expect(gruppe("Zahnarztpraxis", "Zahnrad Immobilien")).toBe("zahnarzt");
   });
 
   test("die 32 Postkarten-Betriebe landen alle beim Friseur-Set", () => {
@@ -352,5 +353,157 @@ describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
     expect(gruppe("Imbiss", "Pizza Döner Haus")).toBe("imbiss");
     expect(gruppe("Café", "Kaffeehaus Mitte")).toBe("cafe");
     expect(gruppe("Bäckerei", "Imbiss-Ecke")).toBe("baeckerei");
+  });
+});
+
+describe("Bildsätze Zahnarzt, Physio, Praxis (Klar K1)", () => {
+  const gruppe = (kategorie: string, name = "", key?: string) => {
+    const satz = getIndustryImages(kategorie, name, key);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  const motiv = (url: string) => new URL(url).pathname;
+  const NEU = ["zahnarzt", "physio", "praxis"];
+
+  test.each(NEU)(
+    "%s: geprüfte Unsplash-URLs, 3 Einstiege, 6 Galeriebilder, kein Motiv doppelt",
+    key => {
+      const satz = INDUSTRY_IMAGES[key];
+      expect(satz).toBeDefined();
+      expect(satz.hero).toHaveLength(3);
+      expect(satz.gallery).toHaveLength(6);
+      expect(satz.refines).toContain("medizin");
+      const alle = [...satz.hero, ...(satz.gallery ?? [])];
+      for (const url of alle)
+        expect(url).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=(800|1400)&q=(80|85)&auto=format&fit=crop$/
+        );
+      expect(new Set(alle.map(motiv)).size).toBe(alle.length);
+      const stock = buildStockFallbackImages(key, "Beispiel", key);
+      expect(stock.gallery?.length).toBeGreaterThanOrEqual(3);
+    }
+  );
+
+  test("kein neues Motiv steckt schon in einem anderen Satz", () => {
+    const neu = new Set(
+      NEU.flatMap(k => [
+        ...INDUSTRY_IMAGES[k].hero,
+        ...(INDUSTRY_IMAGES[k].gallery ?? []),
+      ]).map(motiv)
+    );
+    for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
+      if (NEU.includes(key)) continue;
+      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+        expect(neu.has(motiv(url)), `${key}: ${url}`).toBe(false);
+    }
+  });
+
+  test("Zahnärzte und Kieferorthopäden bekommen den Zahnarzt-Satz", () => {
+    for (const k of [
+      "Zahnarzt",
+      "Zahnärztin",
+      "Zahnarztpraxis",
+      "Zahnklinik",
+      "Zahnmedizin",
+      "Kieferorthopäde",
+      "Kieferorthopädie",
+      "Dentist",
+      "Dental clinic",
+    ])
+      expect(gruppe(k, "Praxis Sommer"), k).toBe("zahnarzt");
+    expect(gruppe("Zahnarzt", "Sommer", "medizin")).toBe("zahnarzt");
+    expect(gruppe("Arztpraxis", "Zahnarztpraxis Dr. Sommer")).toBe("praxis");
+    expect(gruppe("", "Zahnarztpraxis Dr. Sommer")).toBe("zahnarzt");
+  });
+
+  test("Physio, Krankengymnastik, Ergotherapie bekommen den Physio-Satz", () => {
+    for (const k of [
+      "Physiotherapie",
+      "Physiotherapeut",
+      "Physiotherapeutin",
+      "Physiotherapiepraxis",
+      "Praxis für Physiotherapie",
+      "Krankengymnastik",
+      "Ergotherapie",
+      "Ergotherapeutin",
+      "Manuelle Therapie",
+      "Osteopathie",
+      "Massagepraxis",
+      "Physical therapist",
+    ])
+      expect(gruppe(k, "Lindner"), k).toBe("physio");
+    // Allgemeiner KI-Schlüssel weicht der genaueren Kategorie.
+    expect(gruppe("Physiotherapie", "Lindner", "medizin")).toBe("physio");
+    expect(gruppe("Physiotherapie", "Lindner", "fitness")).toBe("physio");
+    expect(gruppe("", "Physio Lindner")).toBe("physio");
+  });
+
+  test("Allgemeinmedizin, Hausarzt, Arzt bekommen den Praxis-Satz", () => {
+    for (const k of [
+      "Allgemeinmedizin",
+      "Arzt",
+      "Ärztin",
+      "Hausarzt",
+      "Hausärztin",
+      "Hausarztpraxis",
+      "Allgemeinarzt",
+      "Facharzt für Innere Medizin",
+      "Internist",
+      "Kinderarzt",
+      "Ärztehaus",
+      "Arztpraxis",
+      "Gemeinschaftspraxis",
+      "Medizinisches Versorgungszentrum",
+      "MVZ",
+      "Praxis",
+      "General practitioner",
+    ])
+      expect(gruppe(k, "Dr. Weber"), k).toBe("praxis");
+    expect(gruppe("Allgemeinmedizin", "Dr. Weber", "medizin")).toBe("praxis");
+    expect(gruppe("", "Hausarztpraxis Nord")).toBe("praxis");
+  });
+
+  test("keine Übernahme fremder Gesundheitsbranchen", () => {
+    // Tierarzt, Heilpraktiker, Psychotherapie, Apotheke bleiben bei „medizin“.
+    for (const k of [
+      "Tierarzt",
+      "Tierärztin",
+      "Tierarztpraxis",
+      "Tierärztliche Praxis",
+      "Kleintierpraxis",
+      "Tierklinik",
+      "Heilpraktiker",
+      "Heilpraktikerin",
+      "Heilpraktikerpraxis",
+      "Naturheilpraxis",
+      "Psychotherapie",
+      "Psychotherapeut",
+      "Psychotherapeutin",
+      "Psychotherapeutische Praxis",
+      "Praxis für Psychotherapie",
+      "Psychologische Praxis",
+      "Apotheke",
+      "Klinik",
+    ])
+      expect(gruppe(k, "Am Park"), k).toBe("medizin");
+    for (const k of ["Tierarzt", "Heilpraktiker", "Psychotherapie", "Apotheke"])
+      expect(gruppe(k, "Am Park", "medizin"), `${k} (KI medizin)`).toBe("medizin");
+    expect(gruppe("", "Tierarztpraxis am Park")).toBe("medizin");
+    expect(gruppe("", "Praxis für Psychotherapie Meier")).toBe("medizin");
+  });
+
+  test("Kosmetik, Fitness, Massage und Nachbarn bleiben, wo sie waren", () => {
+    expect(gruppe("Kosmetikstudio", "Beauty Boutique")).toBe("friseur");
+    expect(istNeutralesSet(getIndustryImages("Kosmetik", "Haut & Sinn"))).toBe(true);
+    expect(gruppe("Fitness")).toBe("fitness");
+    expect(gruppe("Fitnessstudio", "Fitness First")).toBe("fitness");
+    expect(gruppe("Yoga", "Atem")).toBe("fitness");
+    expect(gruppe("Personal Trainer", "Kraft")).toBe("fitness");
+    expect(gruppe("Fitness", "Kraft", "fitness")).toBe("fitness");
+    expect(istNeutralesSet(getIndustryImages("Massage", "Ruhepol"))).toBe(true);
+    expect(istNeutralesSet(getIndustryImages("Thai Massage", "Ruhepol"))).toBe(true);
+    expect(gruppe("Rechtsanwalt")).toBe("legal");
+    expect(gruppe("Steuerberater")).toBe("legal");
+    expect(gruppe("Friseur")).toBe("friseur");
+    expect(gruppe("Gesundheit", "Vital")).toBe("fitness");
   });
 });
