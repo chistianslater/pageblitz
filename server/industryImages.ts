@@ -263,5 +263,11 @@ export function eveningImages(
   businessName: string = "",
   industryKey?: string
 ): string[] {
-  return getIndustryImages(category, businessName, industryKey).evening ?? [];
+  const list = getIndustryImages(category, businessName, industryKey).evening ?? [];
+  if (list.length < 2) return list;
+  // Je Betrieb andere Reihenfolge (gleicher Name → gleiche), sonst bekäme
+  // jedes Restaurant ohne eigene Fotos dasselbe Einstiegsbild.
+  const first = pickBySeed(list, businessName);
+  const at = list.indexOf(first);
+  return [...list.slice(at), ...list.slice(0, at)];
 }

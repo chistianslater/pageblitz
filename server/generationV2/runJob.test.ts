@@ -208,6 +208,28 @@ describe("Abendmotive für Nacht-Seiten (N2+N3)", () => {
     expect(prefersEveningPhotos("Schreinerei", "Brandt", true)).toBe(false);
   });
 
+  test("nutzt dieselbe Familien-/Systemwahl wie die Seite (Weinstube, industryKey)", () => {
+    // „Weinstube" erkennt nur der Branchenschlüssel als Gastro – genau wie die Seite.
+    expect(prefersEveningPhotos("Weinstube", "Zum Anker", true, "restaurant")).toBe(true);
+    expect(prefersEveningPhotos("Weinstube", "Zum Anker", true)).toBe(false);
+    expect(prefersEveningPhotos("Zahnarzt", "Praxis Lind", true, "restaurant")).toBe(false);
+    expect(prefersEveningPhotos("Bäckerei", "Kornblume", true)).toBe(false);
+  });
+
+  test("Abendfotos rotieren je Betrieb, deterministisch", async () => {
+    const { eveningImages } = await import("../industryImages");
+    const names = ["Weinberg", "Zum Anker", "Ristorante Bella", "Gasthaus Linde", "Trattoria Roma"];
+    const firsts = names.map(n => eveningImages("Restaurant", n, "restaurant")[0]);
+    expect(new Set(firsts).size).toBeGreaterThan(1);
+    expect(eveningImages("Restaurant", "Weinberg", "restaurant")).toEqual(
+      eveningImages("Restaurant", "Weinberg", "restaurant")
+    );
+    const { INDUSTRY_IMAGES } = await import("../../shared/industryImages");
+    expect([...eveningImages("Restaurant", "Weinberg", "restaurant")].sort()).toEqual(
+      [...INDUSTRY_IMAGES.restaurant.evening!].sort()
+    );
+  });
+
   test("ohne eigene Fotos: Stock-Fallback mit Abendmotiven; eigene Fotos gehen vor", async () => {
     mockedMirror.mockResolvedValue([]);
     const nacht = await resolveV2Images(

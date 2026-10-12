@@ -305,10 +305,14 @@ Systemen, nicht nur in Klar.
 Mit dem Nacht-Release gilt außerdem: Neue Nacht-Seiten (Restaurant/Bar) bevorzugen
 bei der Stockfoto-Ergänzung die Abendmotive des Bildsatzes (`prefersEveningPhotos`
 in `server/generationV2/runJob.ts`; eigene Google-Fotos gehen weiterhin vor).
-Die gemeinsamen Änderungen aus N0 greifen für neu erzeugte Seiten in **allen**
-Systemen: Schlagwort „praxis" nur noch gezielt (kein nacktes Treffer-Wort),
-Abschnittsreihenfolge der Beratungs-Baupläne (USP direkt nach dem Einstieg,
-Preisliste nach den Leistungen) und Maps-Links öffnen in einem neuen Tab.
+Die gemeinsamen Änderungen aus N0 wirken unterschiedlich: **Sofort beim
+Rendern, für alle bereits live gehenden rev-3-Seiten** (ohne Neuerzeugung)
+gelten Maps-Links im neuen Tab und die Klar-Anruf-Beschriftung („Anrufen" bzw.
+„Termin vereinbaren"). **Nur bei der Erzeugung** (also nur für neu erzeugte
+Seiten, in **allen** Systemen) greifen die Abschnittsreihenfolge der
+Beratungs-Baupläne (USP direkt nach dem Einstieg, Preisliste nach den
+Leistungen) und das Schlagwort „praxis" (nur noch gezielt, kein nacktes
+Treffer-Wort).
 
 ## 4. Umgebungsvariablen & Mock-Flags
 

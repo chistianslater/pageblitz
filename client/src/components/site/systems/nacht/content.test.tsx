@@ -431,6 +431,15 @@ describe("Nacht: Zeiten, Anfahrt, Kontakt", () => {
     expect(hoursTable(undefined, TEST_NOW)).toEqual([]);
   });
 
+  test("hoursTable: reine Küchenzeile zeigt die Zeit nicht doppelt", () => {
+    const rows = hoursTable(
+      [{ day: "Mo–So", hours: "Küche bis 21:30" }],
+      TEST_NOW
+    );
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every(r => r.kitchen === undefined)).toBe(true);
+  });
+
   test("Anfahrt: Kachel ohne Einbettung, Route im neuen Tab, Wege mit data-sys-actions", () => {
     const html = render(weinbergDoc());
     const kontakt = sectionOf(html, SECTION_ANCHORS.contact);

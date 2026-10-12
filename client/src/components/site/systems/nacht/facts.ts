@@ -201,9 +201,15 @@ export function kitchenOf(text: string, now?: Date): KitchenSplit {
     .replace(/[\s,;·|(]+$/, "")
     .replace(/^[\s,;·|]+/, "")
     .trim();
-  const minutes = tail.ambiguous
+  let minutes = tail.ambiguous
     ? undefined
     : kitchenMinutes(tail.seg, tail.exception, now);
+  // Endet die Küche vor Öffnungsbeginn („Küche bis 14 Uhr, 17:30–21:30"),
+  // ist die Angabe nicht zuzuordnen: keine Küchenzeit statt einer falschen.
+  if (minutes !== undefined && open) {
+    const starts = readSpans(open).map(s => s.from);
+    if (starts.length > 0 && minutes <= Math.min(...starts)) minutes = undefined;
+  }
   const kitchen = minutes === undefined ? undefined : clock(minutes);
   if (!open) {
     // Nur Küche: Originaltext behalten, aber nicht als Öffnungsspanne lesbar.
@@ -576,7 +582,9 @@ export function hoursTable(
       const entry = literal
         ? real[k]
         : date && real.find(h => coversToday(h.day, date));
-      const kitchen = entry && kitchenOf(entry.hours, date).kitchen;
+      const split = entry ? kitchenOf(entry.hours, date) : undefined;
+      // Nur Küche im Text: der Text steht schon in der Zeile (wie todayLine).
+      const kitchen = split && !split.kitchenOnly ? split.kitchen : undefined;
       return kitchen ? { ...row, kitchen } : row;
     })
     .filter(r => r.lines.some(l => l.trim() !== ""));

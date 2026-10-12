@@ -393,10 +393,18 @@ export function collectOccupiedCompositions(
 export function prefersEveningPhotos(
   category: string,
   businessName: string,
-  released: boolean = isReleased("nacht")
+  released: boolean = isReleased("nacht"),
+  industryKey?: string
 ): boolean {
   if (!released) return false;
-  const [primary] = systemsForDoc({ businessCategory: category, businessName });
+  // Dieselbe Familienwahl wie bei der fertigen Seite (Kategorie, Name,
+  // Branchenschlüssel), sonst weicht das Bildset vom Design ab.
+  const blueprintFamily = resolveIndustryFamily(category, businessName, industryKey);
+  const [primary] = systemsForDoc({
+    businessCategory: category,
+    businessName,
+    blueprintFamily,
+  });
   return primary === "nacht";
 }
 
@@ -405,7 +413,12 @@ export async function resolveV2Images(
   category: string,
   industryKey: string,
   websiteId: number,
-  evening: boolean = prefersEveningPhotos(category, business.name)
+  evening: boolean = prefersEveningPhotos(
+    category,
+    business.name,
+    isReleased("nacht"),
+    industryKey
+  )
 ): Promise<V2Images> {
   const stock = buildStockFallbackImages(category, business.name, industryKey, {
     evening,

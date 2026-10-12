@@ -485,3 +485,16 @@ describe("Nacht: Wege (Klar-Reihenfolge) und Leiste", () => {
     expect(dockPair(nachtActions(stripped, bp(stripped)))).toBeUndefined();
   });
 });
+
+describe("Nacht: Küchenzeit muss zur Öffnung passen", () => {
+  test("Küche, die vor Öffnungsbeginn endet, entfällt", () => {
+    expect(kitchenOf("Küche bis 14 Uhr, 17:30–21:30")).toEqual({
+      open: "17:30–21:30",
+    });
+    expect(kitchenOf("17:30 – 23:00, Küche bis 17:30")).toEqual({
+      open: "17:30 – 23:00",
+    });
+    // Normalfall bleibt.
+    expect(kitchenOf("17:30 – 23:00, Küche bis 21:30").kitchen).toBe("21:30");
+  });
+});
