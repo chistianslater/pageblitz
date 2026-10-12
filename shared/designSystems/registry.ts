@@ -3,6 +3,7 @@ import { RASTER } from "./raster";
 import { WERKSTOFF } from "./werkstoff";
 import { PLAKAT } from "./plakat";
 import { KLAR } from "./klar";
+import { NACHT } from "./nacht";
 import type { DesignSystemDef, DesignSystemId } from "./types";
 
 export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = {
@@ -15,6 +16,8 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   plakat: PLAKAT,
   // Klar: abgenommen und freigeschaltet (siehe RELEASED_SYSTEMS).
   klar: KLAR,
+  // Nacht: in Arbeit, NICHT freigeschaltet (nicht in RELEASED_SYSTEMS).
+  nacht: NACHT,
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */

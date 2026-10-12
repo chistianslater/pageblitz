@@ -28,6 +28,14 @@ export interface IndustryImageSet {
    * „Tierarzt" nicht aus „medizin" holen). Nur für die Gesundheitssätze.
    */
   strictRefine?: boolean;
+  /**
+   * Abend- und Dunkelmotive (Nacht N1): Gastraum am Abend, angerichteter
+   * Teller auf dunklem Grund, Weinregal/Bar, Salon mit warmem Licht,
+   * Boutique-Zimmer mit Lampenlicht. Nur für Systeme mit dunklem Papier —
+   * Zuordnung, Hero, Über-uns und Galerie (buildStockFallbackImages) lesen
+   * die Liste nicht, helle Systeme bleiben unverändert.
+   */
+  evening?: string[];
 }
 
 // Map of industry keywords → curated Unsplash photo IDs
@@ -60,6 +68,15 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1559599101-f09722fb4948?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=800&q=80&auto=format&fit=crop",
+    ],
+    // Abendmotive (Nacht N1): Salon mit warmem bzw. gedämpftem Licht, Hochsteckfrisur, Föhn am Platz, Haar auf Schwarz.
+    // Im Browser gesichtet, HTTP 200 (2026-10-12).
+    evening: [
+      "https://images.unsplash.com/photo-1773904215697-e6c21fc27ac2?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1790009419857-51fa0a2d9354?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1672788694268-ecc234591d31?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1637777292536-27a13272dbea?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1620939391250-eb822ac0818a?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 
@@ -152,6 +169,17 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop",
+    ],
+    // Abendmotive (Nacht N1): Gastraum abends, Weinkeller-Tisch, angerichtete Teller auf dunklem Grund, Gedeck am Fenster.
+    // Im Browser gesichtet, HTTP 200 (2026-10-12).
+    evening: [
+      "https://images.unsplash.com/photo-1552960226-639240203497?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1609238000857-303bf54099b1?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1709548145082-04d0cde481d4?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1695555438641-7ccdace35d78?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1547478267-54ce493dd7d6?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1469234496837-d0101f54be3e?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1621494268492-d01b98eba7e4?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 
@@ -284,6 +312,16 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
     gallery: [
       "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800&q=80&auto=format&fit=crop",
+    ],
+    // Abendmotive (Nacht N1): Bar mit warmem Licht, Weinregal, Kerzen und Flasche, Gläser.
+    // Im Browser gesichtet, HTTP 200 (2026-10-12).
+    evening: [
+      "https://images.unsplash.com/photo-1693520016313-e129d398a467?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1580929753530-ef52238116c5?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1581291641156-1f2e1da8db6f?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1758827926633-621fb8694e6e?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1610065333275-b3e5c63fc872?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1723309765458-611f53ab39c0?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 
@@ -774,6 +812,16 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80&auto=format&fit=crop",
+    ],
+    // Abendmotive (Nacht N1): Boutique-Zimmer mit Lampenlicht, dunkle Wände, Schreibtisch am Abend.
+    // Im Browser gesichtet, HTTP 200 (2026-10-12).
+    evening: [
+      "https://images.unsplash.com/photo-1645619179966-1647b5591f80?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1711059985570-4c32ed12a12c?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1701725047112-ecfe6c4f0cad?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1740047957758-24c66b4468e4?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1783014619882-0e9ee99f0a20?w=1400&q=85&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1780126752257-cae35f118114?w=1400&q=85&auto=format&fit=crop",
     ],
   },
 

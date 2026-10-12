@@ -48,6 +48,11 @@ export type SystemPalette = {
   onSignal?: string;
   /** Genau drei Farbfelder (Plakat): zwei helle, ein tiefes. Optional. */
   fields?: readonly [PaletteField, PaletteField, PaletteField];
+  /**
+   * Zwei Scheinfarben (Nacht: Lichter im Abendraum), `--sys-glow-1/2`;
+   * Deckkraft im System-CSS. Nur ausgegeben, wenn gesetzt.
+   */
+  glow?: readonly [string, string];
 };
 
 export type FontFile = {
@@ -75,4 +80,10 @@ export type DesignSystemDef = {
   palettes: readonly [SystemPalette, SystemPalette, SystemPalette];
   /** CSS-`filter` für Fotos (`--sys-image-filter`), ohne `;{}`. Optional. */
   imageFilter?: string;
+  /**
+   * Farbschema des Papiers (Nacht: dunkel). Gesetzt → `--sys-scheme`,
+   * `color-scheme` an der Wurzel, `color-scheme`/`theme-color` im SSR-Kopf.
+   * Ohne Angabe bleibt alles wie bisher (helle Systeme, byte-gleich).
+   */
+  scheme?: "light" | "dark";
 };

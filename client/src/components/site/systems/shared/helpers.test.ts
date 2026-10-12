@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";
@@ -8,6 +8,7 @@ import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
 import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import { KLAR } from "../../../../../../shared/designSystems/klar";
+import { NACHT } from "../../../../../../shared/designSystems/nacht";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
@@ -291,5 +292,27 @@ describe("Systeme: @font-face", () => {
 
   test.each([JOURNAL, RASTER, WERKSTOFF])("$id: kein font-stretch", def => {
     expect(systemFontFaces(def)).not.toContain("font-stretch");
+  });
+});
+
+describe("Nacht-Schriften", () => {
+  test("Gilda Display und Jost je latin + latin-ext; latin-ext nur per unicode-range", () => {
+    const rules = systemFontFaces(NACHT).split("\n");
+    expect(rules).toHaveLength(4);
+    expect(rules.filter(r => r.includes('font-family:"Gilda Display"'))).toHaveLength(2);
+    expect(rules.filter(r => r.includes('font-family:"Jost"'))).toHaveLength(2);
+    for (const r of rules) {
+      expect(r).toContain("font-display:swap");
+      expect(r.includes("latin-ext")).toBe(r.includes("unicode-range:"));
+    }
+    expect(rules.find(r => r.includes("jost-latin-wght"))).toContain("font-weight:300 700");
+  });
+  test("alle vier Dateien liegen unter public/fonts/systems, OFL-Hinweise vorhanden", () => {
+    const dir = resolve(__dirname, "../../../../../public/fonts/systems");
+    for (const f of [...NACHT.fonts.display.files, ...NACHT.fonts.text.files])
+      expect(existsSync(resolve(dir, f.file)), f.file).toBe(true);
+    const ofl = readFileSync(resolve(dir, "OFL.txt"), "utf8");
+    expect(ofl).toContain("Gilda Display: Copyright 2012 The Gilda Display Project Authors");
+    expect(ofl).toContain("Jost: Copyright 2020 The Jost Project Authors");
   });
 });

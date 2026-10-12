@@ -8,6 +8,8 @@ League Gothic: Copyright 2020 The League Gothic Project Authors (https://github.
 Hanken Grotesk: Copyright 2021 The Hanken Grotesk Project Authors (https://github.com/marcologous/hanken-grotesk)
 DM Sans: Copyright 2014 The DM Sans Project Authors (https://github.com/googlefonts/dm-fonts)
 Atkinson Hyperlegible Next: Copyright 2020 Braille Institute of America, Inc. (https://www.brailleinstitute.org/)
+Gilda Display: Copyright 2012 The Gilda Display Project Authors (https://github.com/etunni/gilda-display) with Reserved Font Name 'Gilda'.
+Jost: Copyright 2020 The Jost Project Authors (https://github.com/indestructible-type)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

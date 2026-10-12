@@ -600,3 +600,58 @@ describe("Praxis-Satz nur für Ärzte, nicht für jede „Praxis“ (Nacht N0)",
     expect(gruppe("", "Gemeinschaftspraxis am Ring")).toBe("praxis");
   });
 });
+
+describe("Abendmotive für dunkle Systeme (Nacht N1)", () => {
+  const motiv = (url: string) => new URL(url).pathname;
+  const MIT_ABEND = ["restaurant", "bar", "friseur", "hospitality"];
+
+  test.each(MIT_ABEND)(
+    "%s: geprüfte Unsplash-URLs, mindestens fünf, kein Motiv doppelt",
+    key => {
+      const abend = INDUSTRY_IMAGES[key].evening ?? [];
+      expect(abend.length).toBeGreaterThanOrEqual(5);
+      for (const url of abend)
+        expect(url).toMatch(
+          /^https:\/\/images\.unsplash\.com\/photo-[0-9]+-[0-9a-f]+\?w=1400&q=85&auto=format&fit=crop$/
+        );
+      expect(new Set(abend.map(motiv)).size).toBe(abend.length);
+    }
+  );
+
+  test("Abendmotive stecken in keinem anderen Satz und in keiner anderen Liste", () => {
+    const abend = new Set(
+      MIT_ABEND.flatMap(k => INDUSTRY_IMAGES[k].evening ?? []).map(motiv)
+    );
+    expect(abend.size).toBe(
+      MIT_ABEND.reduce((n, k) => n + (INDUSTRY_IMAGES[k].evening ?? []).length, 0)
+    );
+    for (const [key, satz] of Object.entries(INDUSTRY_IMAGES))
+      for (const url of [...satz.hero, ...(satz.gallery ?? []), ...(satz.about ?? [])])
+        expect(abend.has(motiv(url)), `${key}: ${url}`).toBe(false);
+  });
+
+  test("nur Restaurant, Bar, Friseur und Unterkunft führen Abendmotive", () => {
+    for (const [key, satz] of Object.entries(INDUSTRY_IMAGES))
+      if (!MIT_ABEND.includes(key)) expect(satz.evening, key).toBeUndefined();
+  });
+
+  test("Abendmotive ändern weder Zuordnung noch Stock-Fotos heller Systeme", () => {
+    const abend = new Set(
+      MIT_ABEND.flatMap(k => INDUSTRY_IMAGES[k].evening ?? []).map(motiv)
+    );
+    for (const [kategorie, key] of [
+      ["Restaurant", "restaurant"],
+      ["Weinbar", "bar"],
+      ["Cocktailbar", "bar"],
+      ["Friseursalon", "friseur"],
+      ["Hotel", "hospitality"],
+      ["Pension", "hospitality"],
+      ["Boutique Hotel", "hospitality"],
+    ] as const) {
+      expect(getIndustryImages(kategorie, "Abendrot"), kategorie).toBe(INDUSTRY_IMAGES[key]);
+      const stock = buildStockFallbackImages(kategorie, "Abendrot");
+      for (const url of [stock.hero, stock.about, ...(stock.gallery ?? [])].filter(Boolean))
+        expect(abend.has(motiv(url!)), `${kategorie}: ${url}`).toBe(false);
+    }
+  });
+});

@@ -5,12 +5,14 @@ import { handleKurzlink } from "../postkarten/route";
 import { sdk } from "../_core/sdk";
 import { findeKarteNachCode, scanErfassen } from "../postkarten/db";
 import { renderSiteHtml } from "./renderSite";
+import { SYSTEM_MODULES } from "../../client/src/components/site/systems/registry";
 import { renderNotFoundHtml } from "./notFoundPage";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import {
   DESIGN_SYSTEM_IDS,
   getSystem,
   withDesignSystem,
+  type DesignSystemDef,
   type DesignSystemId,
 } from "../../shared/designSystems";
 import {
@@ -179,9 +181,7 @@ function readSystemQuery(
 ): { system: DesignSystemId; palette?: string } | undefined | null {
   const systemParam = typeof req.query.system === "string" ? req.query.system : "";
   if (!systemParam) return undefined;
-  const def = (DESIGN_SYSTEM_IDS as readonly string[]).includes(systemParam)
-    ? getSystem(systemParam as DesignSystemId)
-    : undefined;
+  const def = renderableSystem(systemParam);
   if (!def) {
     res.status(400).type("text/plain").send("Unbekanntes System");
     return null;
@@ -193,6 +193,17 @@ function readSystemQuery(
     return null;
   }
   return { system: def.id, palette: paletteParam || undefined };
+}
+
+/**
+ * Gebautes System: Tokens registriert UND Render-Modul vorhanden. Ein System
+ * mit Tokens, aber noch ohne Modul (Nacht ab N1, bis N2), gilt als nicht
+ * gebaut — 400/404 statt Absturz im SiteRenderer.
+ */
+function renderableSystem(id: string): DesignSystemDef | undefined {
+  if (!(DESIGN_SYSTEM_IDS as readonly string[]).includes(id)) return undefined;
+  const system = id as DesignSystemId;
+  return SYSTEM_MODULES[system] ? getSystem(system) : undefined;
 }
 
 /**
@@ -586,9 +597,7 @@ function handleBauplanDemoRoute(req: Request, res: Response): void {
  */
 function handleSystemDemoRoute(req: Request, res: Response): void {
   const systemParam = String(req.params.system ?? "");
-  const def = (DESIGN_SYSTEM_IDS as readonly string[]).includes(systemParam)
-    ? getSystem(systemParam as DesignSystemId)
-    : undefined;
+  const def = renderableSystem(systemParam);
   const showcase = findShowcase(String(req.params.id ?? ""));
   if (!def || !showcase) {
     res.status(404).type("text/plain").send("Unbekannte Vorschau");

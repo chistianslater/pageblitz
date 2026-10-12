@@ -24,7 +24,10 @@ describe("withDesignSystem", () => {
     expect(withDesignSystem(rev2, "journal", "gibtsnicht").palette).toBe("papier");
   });
   test("nicht gebautes System wirft", () => {
-    expect(() => withDesignSystem(rev2, "nacht")).toThrow(/nicht vorhanden/);
+    // Seit Nacht N1 sind alle sechs IDs registriert — eine unbekannte prüfen.
+    expect(() =>
+      withDesignSystem(rev2, "gibtsnicht" as Parameters<typeof withDesignSystem>[1])
+    ).toThrow(/nicht vorhanden/);
   });
   test("withoutDesignSystem kehrt zu rev 2 zurück", () => {
     const back = withoutDesignSystem(withDesignSystem(rev2, "journal"));

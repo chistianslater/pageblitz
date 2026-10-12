@@ -30,6 +30,12 @@ export function systemCssVars(def: DesignSystemDef, paletteId?: string): Record<
   if (def.fonts.mono) vars["--sys-font-mono"] = stack(def.fonts.mono);
   if (def.imageFilter !== undefined)
     vars["--sys-image-filter"] = assertSafeImageFilter(def.imageFilter);
+  // Schema und Schein nur in Systemen, die sie führen (Nacht).
+  if (def.scheme !== undefined) vars["--sys-scheme"] = def.scheme;
+  if (p.glow) {
+    vars["--sys-glow-1"] = assertSafeCssValue(p.glow[0]);
+    vars["--sys-glow-2"] = assertSafeCssValue(p.glow[1]);
+  }
   // Farbfelder nur in Systemen, die sie führen (Plakat).
   p.fields?.forEach((f, i) => {
     vars[`--sys-field-${i + 1}-bg`] = assertSafeCssValue(f.bg);

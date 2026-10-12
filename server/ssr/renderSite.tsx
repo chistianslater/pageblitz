@@ -145,6 +145,23 @@ export function systemFontHead(def: DesignSystemDef): string {
     .join("\n");
 }
 
+/**
+ * Farbschema-Kopfzeilen für Systeme mit `scheme` (Nacht: dunkles Papier):
+ * Browser-UI und Formularelemente dunkel, Adressleiste in Papierfarbe der
+ * Palette. Systeme ohne `scheme` bekommen nichts (Ausgabe byte-gleich).
+ */
+export function systemSchemeHead(
+  def: DesignSystemDef,
+  paletteId: string | undefined
+): string[] {
+  if (!def.scheme) return [];
+  const paper = getPalette(def, paletteId).paper;
+  return [
+    `<meta name="color-scheme" content="${esc(def.scheme)}" />`,
+    `<meta name="theme-color" content="${esc(paper)}" />`,
+  ];
+}
+
 /** Systemdefinition eines rev-3-Dokuments, sonst undefined. */
 function systemOf(data: WebsiteDataV2): DesignSystemDef | undefined {
   return data.designRevision === 3 && data.system
@@ -169,7 +186,7 @@ function usesMotionBundle(data: WebsiteDataV2): boolean {
 /** Schrift-Kopfzeilen: rev 3 selbst gehostet, sonst Google Fonts (unverändert). */
 function fontHeadTags(data: WebsiteDataV2): string[] {
   const def = systemOf(data);
-  if (def) return [systemFontHead(def)];
+  if (def) return [systemFontHead(def), ...systemSchemeHead(def, data.palette)];
   const fontsUrl = buildFontsUrl(fontsForDoc(data));
   return [
     '<link rel="preconnect" href="https://fonts.googleapis.com" />',
@@ -510,6 +527,7 @@ function renderLegalPage(
     const head = [
       renderLegalHead(data, canonicalUrl, title),
       systemFontHead(system),
+      ...systemSchemeHead(system, data.palette),
       analyticsTag(opts),
     ]
       .filter(Boolean)

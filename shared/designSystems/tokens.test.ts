@@ -4,7 +4,8 @@ import { RASTER } from "./raster";
 import { WERKSTOFF } from "./werkstoff";
 import { PLAKAT } from "./plakat";
 import { KLAR } from "./klar";
-import { DESIGN_SYSTEMS, isReleased } from "./registry";
+import { NACHT } from "./nacht";
+import { DESIGN_SYSTEMS, RELEASED_SYSTEMS, isReleased, systemHasMotion } from "./registry";
 import { assertSafeImageFilter } from "./toCss";
 import type { DesignSystemDef } from "./types";
 import { getPalette, pickPalette } from "./palette";
@@ -358,6 +359,90 @@ describe("Kartenfläche nur, wo das System sie führt", () => {
       const def: DesignSystemDef = {
         ...KLAR,
         palettes: [{ ...p0, surface: bad }, rest[0], rest[1]],
+      };
+      expect(() => systemCssVars(def, p0.id)).toThrow();
+    }
+  });
+});
+
+describe("Nacht-Tokens", () => {
+  test("drei Paletten Petrol, Pflaume, Nachtblau mit Kartenfläche und Schein", () => {
+    expect(NACHT.id).toBe("nacht");
+    expect(NACHT.palettes.map(p => p.id)).toEqual(["petrol", "pflaume", "nachtblau"]);
+    for (const p of NACHT.palettes) {
+      expect(p.surface).toBeTruthy();
+      expect(p.glow).toHaveLength(2);
+      expect(p.fields).toBeUndefined();
+    }
+  });
+  test("dunkles Schema", () => {
+    expect(NACHT.scheme).toBe("dark");
+  });
+  test("registriert, aber NICHT freigeschaltet und ohne Bewegung (bis N7/N9)", () => {
+    expect(DESIGN_SYSTEMS.nacht).toBe(NACHT);
+    expect(isReleased("nacht")).toBe(false);
+    expect(RELEASED_SYSTEMS).not.toContain("nacht");
+    expect(systemHasMotion("nacht")).toBe(false);
+  });
+  test("Schriftskala: neun Kernstufen plus figure und data", () => {
+    expect(Object.keys(NACHT.type).sort()).toEqual(
+      ["body", "data", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+    expect(NACHT.type.body.size).toMatch(/^clamp\(1\.125rem,/);
+    expect(NACHT.type.small.size).toBe("1rem");
+  });
+  // Fließtext auf dunklem Grund: Ziel ≥ 7 : 1 (Endwerte, Systemblatt).
+  test.each(NACHT.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(p.signal && p.onSignal).toBeTruthy();
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.signal!, p.paper)).toBeGreaterThanOrEqual(3);
+    expect(contrastRatio(p.ink, p.surface!)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.surface!)).toBeGreaterThanOrEqual(4.5);
+  });
+  test("genau zwei Preloads: Gilda Display und Jost (latin), latin-ext nie", () => {
+    const all = [...NACHT.fonts.display.files, ...NACHT.fonts.text.files];
+    expect(NACHT.preload).toEqual(["gilda-display-latin.woff2", "jost-latin-wght.woff2"]);
+    for (const f of NACHT.preload) expect(all.map(x => x.file)).toContain(f);
+    expect(all.filter(x => x.unicodeRange).map(x => x.file)).toEqual([
+      "gilda-display-latin-ext.woff2",
+      "jost-latin-ext-wght.woff2",
+    ]);
+    for (const f of all.filter(x => x.unicodeRange)) expect(NACHT.preload).not.toContain(f.file);
+  });
+  test("CSS-Variablen: Schema, Schein, Kartenfläche, Bildfilter, keine Steuerzeichen", () => {
+    const v = systemCssVars(NACHT, "pflaume");
+    expect(v["--sys-paper"]).toBe("#251a20");
+    expect(v["--sys-surface"]).toBe("#30222a");
+    expect(v["--sys-scheme"]).toBe("dark");
+    expect(v["--sys-glow-1"]).toBe("#6e3a4e");
+    expect(v["--sys-glow-2"]).toBe("#8a6a55");
+    expect(v["--sys-font-display"]).toContain("Gilda Display");
+    expect(v["--sys-font-text"]).toContain("Jost");
+    expect(v["--sys-image-filter"]).toBe(NACHT.imageFilter);
+    for (const p of NACHT.palettes)
+      expect(Object.values(systemCssVars(NACHT, p.id)).every(x => !/[;{}]/.test(x))).toBe(true);
+  });
+});
+
+describe("Schema und Schein nur, wo das System sie setzt", () => {
+  test.each([JOURNAL, RASTER, WERKSTOFF, PLAKAT, KLAR])("$id ohne --sys-scheme/--sys-glow-*", def => {
+    expect(def.scheme).toBeUndefined();
+    for (const p of def.palettes) {
+      expect(p.glow).toBeUndefined();
+      const keys = Object.keys(systemCssVars(def, p.id));
+      expect(keys.filter(k => k === "--sys-scheme" || k.startsWith("--sys-glow"))).toEqual([]);
+    }
+  });
+  test("Schein mit ; { } wird abgewiesen", () => {
+    for (const bad of ["#fff;color:red", "x}body{", "a{b"]) {
+      const [p0, ...rest] = NACHT.palettes;
+      const def: DesignSystemDef = {
+        ...NACHT,
+        palettes: [{ ...p0, glow: [bad, "#000000"] }, rest[0], rest[1]],
       };
       expect(() => systemCssVars(def, p0.id)).toThrow();
     }

@@ -461,7 +461,11 @@ export const SiteRenderer: React.FC<{
     <div
       ref={rootRef}
       className={`pb-site pb-${systemDef ? systemDef.id : effectiveData.stylePackId}`}
-      style={vars as React.CSSProperties}
+      style={
+        (systemDef?.scheme
+          ? { ...vars, colorScheme: systemDef.scheme }
+          : vars) as React.CSSProperties
+      }
       data-pb-revision={effectiveData.designRevision}
       data-pb-system={systemDef?.id}
       data-pb-palette={
