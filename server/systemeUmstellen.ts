@@ -109,6 +109,8 @@ export function countPhotos(doc: unknown): number {
 export type SwitchPlan =
   | {
       kind: "switch";
+      /** Revision vorher (immer 2). */
+      revision: 2;
       name: string;
       family: string;
       system: DesignSystemId;
@@ -122,6 +124,8 @@ export type SwitchPlan =
       reason: string;
       family?: string;
       photos?: number;
+      /** Revision des gespeicherten Dokuments (fehlt: nicht parsebar). */
+      revision?: number;
     };
 
 /**
@@ -138,8 +142,19 @@ export function planSwitch(raw: unknown): SwitchPlan {
   const doc = parsed.data;
   const name = doc.businessName;
   const photos = countPhotos(doc);
-  if (doc.designRevision === 3)
-    return { kind: "skip", name, reason: "schon rev 3", photos };
+  const revision = doc.designRevision;
+  if (revision === 3)
+    return { kind: "skip", name, reason: "schon rev 3", photos, revision };
+  // Nur rev 2 (Art Direction): rev 1 bzw. ohne Revision rendert der
+  // SiteRenderer anders — ein Systemwechsel wäre dort ein zweiter Sprung.
+  if (revision !== 2)
+    return {
+      kind: "skip",
+      name,
+      photos,
+      revision,
+      reason: `nur rev 2 wird umgestellt (hier rev ${revision ?? "ohne"})`,
+    };
 
   const bp = blueprintFor(
     doc.businessCategory,
@@ -226,6 +241,7 @@ export function planSwitch(raw: unknown): SwitchPlan {
     };
   return {
     kind: "switch",
+    revision: 2,
     name,
     family,
     system: next.system,
@@ -233,4 +249,124 @@ export function planSwitch(raw: unknown): SwitchPlan {
     photos,
     next: written as WebsiteDataV2,
   };
+}
+
+/* ── Kommandozeile ───────────────────────────────────────────────────── */
+
+/**
+ * Argumente prüfen, bevor die Datenbank angefasst wird: nur `--schreiben`
+ * und `--ids <liste>` / `--ids=<liste>`. Alles andere (Tippfehler wie
+ * „--id") bricht ab — sonst liefe still die Standardliste.
+ */
+export function parseArgs(argv: readonly string[]): {
+  ids: number[];
+  schreiben: boolean;
+} {
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--schreiben" || a.startsWith("--ids=")) continue;
+    if (a === "--ids") {
+      i += 1;
+      continue;
+    }
+    throw new Error(
+      `Unbekanntes Argument: ${a} (erlaubt: --ids <liste>, --schreiben)`
+    );
+  }
+  return { ids: idsFromArgv(argv), schreiben: argv.includes("--schreiben") };
+}
+
+/* ── Schreiben (Ablauf, mit austauschbarer Datenbank-Seite) ──────────── */
+
+/** JSON mit sortierten Schlüsseln — MySQL-JSON ändert die Reihenfolge. */
+export function stableJson(value: unknown): string {
+  const sort = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(sort);
+    if (v && typeof v === "object")
+      return Object.fromEntries(
+        Object.keys(v as object)
+          .sort()
+          .map(k => [k, sort((v as Record<string, unknown>)[k])])
+      );
+    return v;
+  };
+  return JSON.stringify(sort(value));
+}
+
+export const LABEL_VORHER = "Stand vor Designsystem";
+export const LABEL_NACHHER = "Designsystem umgestellt";
+/** Bestehender Auslöser (versions.ts): manuelle Änderung, keine Erzeugung. */
+export const VERSION_TRIGGER = "panel";
+
+export interface SwitchRepo {
+  /** Aktuelles `websiteData` der Seite. */
+  readDoc(): Promise<unknown>;
+  /** Dokument des jüngsten Verlaufs-Stands (null: keiner). */
+  latestVersionDoc(): Promise<unknown | null>;
+  /** Neuer Verlaufs-Stand; Rückgabe 0 = nicht gespeichert. */
+  insertVersion(v: {
+    trigger: string;
+    label: string;
+    doc: unknown;
+  }): Promise<number>;
+  writeDoc(doc: WebsiteDataV2): Promise<void>;
+}
+
+export type SwitchResult =
+  | { ok: true }
+  | { ok: false; written: boolean; reason: string };
+
+/**
+ * Eine Seite umstellen. Reihenfolge, damit „Rückgängig" im Verlauf (stellt
+ * den vorletzten Stand her, der jüngste gilt als aktueller) genau den
+ * rev-2-Stand zurückholt:
+ *
+ * 1. neu lesen — hat sich das Dokument seit der Planung geändert, nichts tun
+ * 2. alter Stand in den Verlauf („Stand vor Designsystem"), außer der
+ *    jüngste Stand ist schon genau dieses Dokument
+ * 3. neues Dokument schreiben
+ * 4. neuer Stand in den Verlauf („Designsystem umgestellt")
+ *
+ * Schlägt 2 fehl, wird nicht geschrieben; schlägt 4 fehl, ist die Seite
+ * schon umgestellt (`written: true`) — das Skript meldet es.
+ */
+export async function applySwitch(
+  plannedFrom: unknown,
+  next: WebsiteDataV2,
+  repo: SwitchRepo
+): Promise<SwitchResult> {
+  const current = await repo.readDoc();
+  if (stableJson(current) !== stableJson(plannedFrom))
+    return {
+      ok: false,
+      written: false,
+      reason: "Dokument seit der Planung geändert — nicht umgestellt",
+    };
+  const latest = await repo.latestVersionDoc();
+  if (latest === null || stableJson(latest) !== stableJson(current)) {
+    const before = await repo.insertVersion({
+      trigger: VERSION_TRIGGER,
+      label: LABEL_VORHER,
+      doc: current,
+    });
+    if (!before)
+      return {
+        ok: false,
+        written: false,
+        reason: "Verlaufs-Stand vorher nicht gespeichert — nicht umgestellt",
+      };
+  }
+  await repo.writeDoc(next);
+  const after = await repo.insertVersion({
+    trigger: VERSION_TRIGGER,
+    label: LABEL_NACHHER,
+    doc: next,
+  });
+  if (!after)
+    return {
+      ok: false,
+      written: true,
+      reason: "umgestellt, aber Verlaufs-Stand nachher nicht gespeichert",
+    };
+  return { ok: true };
 }

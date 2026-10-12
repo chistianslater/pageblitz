@@ -11,10 +11,15 @@
  * keine bestimmte Familie hat oder dessen Hauptsystem nicht freigeschaltet
  * ist.
  *
- * Standardmäßig Trockenlauf. Geschrieben wird erst mit `--schreiben`. Vor
- * jedem Schreiben sichert das Skript den alten Stand im Verlauf
- * („Stand vor Designsystem", Auslöser `panel`) — der Kunde bzw. Betreiber
- * kann ihn im Verlaufs-Panel wiederherstellen.
+ * Nur rev 2 wird umgestellt (rev 1 bzw. ohne Revision: übersprungen).
+ * Standardmäßig Trockenlauf. Geschrieben wird erst mit `--schreiben`;
+ * unbekannte Argumente brechen vor jedem Datenbank-Zugriff ab. Je Seite
+ * (server/systemeUmstellen.ts, applySwitch): neu lesen und abbrechen, wenn
+ * sich das Dokument seit der Planung geändert hat → alter Stand in den
+ * Verlauf („Stand vor Designsystem") → schreiben → neuer Stand in den
+ * Verlauf („Designsystem umgestellt"). So holt „Rückgängig" im Verlauf
+ * genau den rev-2-Stand zurück. Das Neu-Lesen verkleinert das Zeitfenster,
+ * ist aber keine Sperre: laufen lassen, wenn niemand im Studio bearbeitet.
  *
  *   npx tsx -r dotenv/config scripts/systeme-umstellen.ts [--ids 504,558-607]
  *   npx tsx -r dotenv/config scripts/systeme-umstellen.ts [--ids …] --schreiben
@@ -24,17 +29,17 @@
  */
 import {
   getDb,
+  getLatestWebsiteVersion,
   getWebsiteById,
   insertWebsiteVersion,
   updateWebsite,
 } from "../server/db";
-import { idsFromArgv, planSwitch } from "../server/systemeUmstellen";
-
-const schreiben = process.argv.includes("--schreiben");
-const VERSION_LABEL = "Stand vor Designsystem";
+import { applySwitch, parseArgs, planSwitch } from "../server/systemeUmstellen";
 
 async function main(): Promise<void> {
-  const ids = idsFromArgv(process.argv.slice(2));
+  // Argumente zuerst: ein Tippfehler („--id") bricht ab, bevor die
+  // Datenbank angefasst wird.
+  const { ids, schreiben } = parseArgs(process.argv.slice(2));
   const db = await getDb();
   if (!db) throw new Error("Keine Datenbank verfügbar — DATABASE_URL fehlt?");
   console.log(
@@ -51,32 +56,40 @@ async function main(): Promise<void> {
       uebersprungen += 1;
       continue;
     }
+    const rev = (website.websiteData as { designRevision?: unknown } | null)
+      ?.designRevision;
+    const quelle = `rev ${typeof rev === "number" ? rev : "ohne"}`;
     const plan = planSwitch(website.websiteData);
     if (plan.kind === "skip") {
       console.log(
-        `${id}  ${plan.name}  ·  ${plan.family ?? "–"}  ·  Fotos ${plan.photos ?? "–"}  ·  ÜBERSPRUNGEN: ${plan.reason}`
+        `${id}  ${plan.name}  ·  ${quelle}  ·  ${plan.family ?? "–"}  ·  Fotos ${plan.photos ?? "–"}  ·  ÜBERSPRUNGEN: ${plan.reason}`
       );
       uebersprungen += 1;
       continue;
     }
     console.log(
-      `${id}  ${plan.name}  ·  ${plan.family}  ·  ${plan.system}/${plan.palette}  ·  Fotos ${plan.photos}  ·  rev 3: ja`
+      `${id}  ${plan.name}  ·  ${quelle} → rev 3  ·  ${plan.family}  ·  ${plan.system}/${plan.palette}  ·  Fotos ${plan.photos}`
     );
     if (!schreiben) {
       umgestellt += 1;
       continue;
     }
     try {
-      // Alter Stand zuerst in den Verlauf — ohne gesicherten Stand kein Wechsel.
-      const versionId = await insertWebsiteVersion({
-        websiteId: id,
-        trigger: "panel",
-        label: VERSION_LABEL,
-        doc: website.websiteData,
+      const result = await applySwitch(website.websiteData, plan.next, {
+        readDoc: async () => (await getWebsiteById(id))?.websiteData,
+        latestVersionDoc: async () =>
+          (await getLatestWebsiteVersion(id))?.doc ?? null,
+        insertVersion: v => insertWebsiteVersion({ websiteId: id, ...v }),
+        writeDoc: doc => updateWebsite(id, { websiteData: doc as never }),
       });
-      if (!versionId) throw new Error("Verlaufs-Stand nicht gespeichert");
-      await updateWebsite(id, { websiteData: plan.next as never });
-      umgestellt += 1;
+      if (result.ok) umgestellt += 1;
+      else {
+        fehler += 1;
+        if (result.written) umgestellt += 1;
+        console.error(
+          `${id}  ${result.written ? "WARNUNG" : "ABGEBROCHEN"}: ${result.reason}`
+        );
+      }
     } catch (err) {
       fehler += 1;
       console.error(`${id}  FEHLER beim Schreiben:`, err);

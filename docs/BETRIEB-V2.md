@@ -343,16 +343,25 @@ npx tsx -r dotenv/config scripts/systeme-umstellen.ts --ids 504,558-592,594-607,
 pm2 restart pageblitz
 ```
 
-Vor jedem Schreiben legt das Skript einen Verlaufs-Stand an: Auslöser `panel`,
-Label „Stand vor Designsystem", Inhalt = altes rev-2-Dokument. Ohne diesen Stand
-schreibt es die Seite nicht. Die Kappung auf 50 Stände (`MAX_VERSIONS`) löscht
-immer die ältesten; das Skript selbst kappt nicht, der frische Stand ist der
-jüngste und fällt erst nach 50 späteren Ständen weg.
+Nur rev-2-Seiten werden umgestellt (rev 1 bzw. ohne Revision: übersprungen,
+der Trockenlauf nennt die Quell-Revision). Unbekannte Argumente (z. B. `--id`)
+brechen vor jedem DB-Zugriff mit Exit-Code 1 ab.
+
+Je Seite, in dieser Reihenfolge: neu lesen (hat sich das Dokument seit der
+Planung geändert, wird die Seite übersprungen) → Verlaufs-Stand „Stand vor
+Designsystem" mit dem alten rev-2-Dokument (entfällt, wenn der jüngste Stand
+schon genau dieses Dokument ist; ohne gespeicherten Stand kein Schreiben) →
+schreiben → Verlaufs-Stand „Designsystem umgestellt" mit dem neuen Dokument
+(Auslöser jeweils `panel`). Schlägt der zweite Stand fehl, ist die Seite schon
+umgestellt; das Skript meldet es und endet mit Exit-Code 1. Die Kappung auf 50
+Stände (`MAX_VERSIONS`) löscht immer die ältesten; das Skript selbst kappt
+nicht. **Nur laufen lassen, wenn niemand im Studio bearbeitet** — das
+Neu-Lesen verkleinert das Zeitfenster, ist aber keine Sperre.
 
 **Rollback**, je nach Umfang:
 
-- Einzelne Seite: im Studio-Verlauf „Stand vor Designsystem" wiederherstellen
-  (Add-on-Flags bleiben dabei auf dem aktuellen Stand).
+- Einzelne Seite: im Studio-Verlauf „Rückgängig" bzw. „Stand vor Designsystem"
+  wiederherstellen (Add-on-Flags bleiben dabei auf dem aktuellen Stand).
 - Alle umgestellten Seiten eines Systems: `scripts/systeme-zuruecksetzen.ts
   --system <id>` (Trockenlauf, dann `--schreiben`). Achtung: Das trifft **alle**
   rev-3-Seiten dieses Systems, auch neu erzeugte. Das Schriftpaar (`fontPairId`)

@@ -7,9 +7,13 @@ import {
   changedKeys,
   countPhotos,
   forbiddenChanges,
+  applySwitch,
   idsFromArgv,
+  parseArgs,
   parseIdList,
   planSwitch,
+  stableJson,
+  type SwitchRepo,
 } from "./systemeUmstellen";
 
 /** Erfundener Betrieb (rev 2) auf Basis einer Fixture. */
@@ -122,9 +126,24 @@ describe("planSwitch", () => {
     expect(plan.kind === "switch" && plan.system).toBe("nacht");
   });
 
-  test("schon rev 3 → überspringen", () => {
+  test("nur rev 2 wird umgestellt: rev 3, rev 1 und ohne Revision → überspringen", () => {
     const plan = planSwitch(withDesignSystem(rev2("Restaurant"), "journal"));
-    expect(plan).toMatchObject({ kind: "skip", reason: "schon rev 3" });
+    expect(plan).toMatchObject({
+      kind: "skip",
+      reason: "schon rev 3",
+      revision: 3,
+    });
+    const r1 = planSwitch(rev2("Restaurant", "Linde", { designRevision: 1 }));
+    expect(r1).toMatchObject({ kind: "skip", revision: 1 });
+    expect(r1.kind === "skip" && r1.reason).toMatch(/nur rev 2/);
+    const { designRevision: _d, ...ohne } = rev2("Restaurant", "Linde");
+    const r0 = planSwitch(ohne);
+    expect(r0).toMatchObject({ kind: "skip" });
+    expect(r0.kind === "skip" && r0.reason).toMatch(/nur rev 2/);
+    const ok = planSwitch(
+      rev2("Restaurant", "Linde", { blueprintFamily: "gastro" })
+    );
+    expect(ok).toMatchObject({ kind: "switch", revision: 2 });
   });
 
   test("nicht parsebar → überspringen", () => {
@@ -146,5 +165,121 @@ describe("planSwitch", () => {
       altFeld: 1,
     };
     expect(planSwitch(doc)).toMatchObject({ kind: "skip" });
+  });
+});
+
+describe("parseArgs", () => {
+  test("erlaubt --schreiben und --ids (beide Schreibweisen)", () => {
+    expect(parseArgs(["--ids", "5-6", "--schreiben"])).toEqual({
+      ids: [5, 6],
+      schreiben: true,
+    });
+    expect(parseArgs(["--ids=7"])).toEqual({ ids: [7], schreiben: false });
+    expect(parseArgs([]).schreiben).toBe(false);
+  });
+  test("unbekannte Argumente brechen ab (vor jedem DB-Zugriff)", () => {
+    expect(() => parseArgs(["--id", "5"])).toThrow(
+      /Unbekanntes Argument: --id/
+    );
+    expect(() => parseArgs(["--schreibe"])).toThrow(/--schreibe/);
+    expect(() => parseArgs(["504"])).toThrow(/504/);
+  });
+});
+
+describe("stableJson", () => {
+  test("Schlüsselreihenfolge egal (MySQL-JSON sortiert um)", () => {
+    expect(stableJson({ a: 1, b: { c: [1, { d: 2, e: 3 }] } })).toBe(
+      stableJson({ b: { c: [1, { e: 3, d: 2 }] }, a: 1 })
+    );
+    expect(stableJson({ a: 1 })).not.toBe(stableJson({ a: 2 }));
+  });
+});
+
+describe("applySwitch (Ablauf mit Fake-Repo)", () => {
+  const OLD = { designRevision: 2, businessName: "Alt" };
+  const NEW = {
+    designRevision: 3,
+    system: "nacht",
+    palette: "p",
+    businessName: "Alt",
+  };
+  function fakeRepo(
+    over: Partial<{
+      current: unknown;
+      latest: unknown;
+      failInsertAt: number;
+    }> = {}
+  ) {
+    const log: string[] = [];
+    let inserts = 0;
+    const repo: SwitchRepo = {
+      async readDoc() {
+        log.push("read");
+        return "current" in over ? over.current : OLD;
+      },
+      async latestVersionDoc() {
+        log.push("latest");
+        return "latest" in over ? over.latest : null;
+      },
+      async insertVersion(v) {
+        inserts += 1;
+        log.push(
+          `insert:${v.label}:${(v.doc as { designRevision: number }).designRevision}`
+        );
+        return over.failInsertAt === inserts ? 0 : inserts;
+      },
+      async writeDoc(doc) {
+        log.push(`write:${(doc as { designRevision: number }).designRevision}`);
+      },
+    };
+    return { repo, log };
+  }
+
+  test("Reihenfolge: lesen → alter Stand → schreiben → neuer Stand", async () => {
+    const { repo, log } = fakeRepo();
+    expect(await applySwitch(OLD, NEW as never, repo)).toEqual({ ok: true });
+    expect(log).toEqual([
+      "read",
+      "latest",
+      "insert:Stand vor Designsystem:2",
+      "write:3",
+      "insert:Designsystem umgestellt:3",
+    ]);
+  });
+
+  test("jüngster Stand = alter Stand (andere Schlüsselreihenfolge) → kein doppelter Vorher-Stand", async () => {
+    const { repo, log } = fakeRepo({
+      latest: { businessName: "Alt", designRevision: 2 },
+    });
+    expect(await applySwitch(OLD, NEW as never, repo)).toEqual({ ok: true });
+    expect(log).toEqual([
+      "read",
+      "latest",
+      "write:3",
+      "insert:Designsystem umgestellt:3",
+    ]);
+  });
+
+  test("Dokument seit der Planung geändert → nichts geschrieben", async () => {
+    const { repo, log } = fakeRepo({
+      current: { ...OLD, businessName: "Neu" },
+    });
+    const r = await applySwitch(OLD, NEW as never, repo);
+    expect(r).toMatchObject({ ok: false, written: false });
+    expect(log).toEqual(["read"]);
+  });
+
+  test("Vorher-Stand nicht gespeichert → nichts geschrieben", async () => {
+    const { repo, log } = fakeRepo({ failInsertAt: 1 });
+    const r = await applySwitch(OLD, NEW as never, repo);
+    expect(r).toMatchObject({ ok: false, written: false });
+    expect(log.some(l => l.startsWith("write"))).toBe(false);
+  });
+
+  test("Nachher-Stand nicht gespeichert → gemeldet, Seite aber schon geschrieben", async () => {
+    const { repo, log } = fakeRepo({ failInsertAt: 2 });
+    const r = await applySwitch(OLD, NEW as never, repo);
+    expect(r).toMatchObject({ ok: false, written: true });
+    expect(log).toContain("write:3");
   });
 });
