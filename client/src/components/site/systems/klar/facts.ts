@@ -8,6 +8,7 @@ import { formatHeroRating } from "../../artDirection/ArtDirectedHero";
 import { stripMarks } from "../../richText";
 import { SECTION_ANCHORS } from "../../engine";
 import {
+  systemShows,
   addressLine,
   branchOf,
   contactOf,
@@ -214,6 +215,9 @@ const MAX_CHIPS = 4;
 const norm = (t: string) =>
   plain(t).toLocaleLowerCase("de").replace(/[.!]$/, "").replace(/\s+/g, " ");
 
+/** Vergleichsschlüssel eines Chips bzw. Vorteil-Titels (Groß/klein, Punkt, Leerraum egal). */
+export const chipKey = norm;
+
 /**
  * Fakten-Chips (Systemblatt: „Alle Kassen", „Privat", „Hausbesuche",
  * „Barrierefreier Zugang") nur aus Daten: Titel aus Vorteilen und
@@ -271,3 +275,28 @@ export function monogram(name: string): string {
 export const hoursLabel = (blueprint: Blueprint) =>
   blueprint.hoursLabel ??
   (blueprint.id === "advice" ? "Bürozeiten" : "Öffnungszeiten");
+
+/* ── Links aus den Daten ──────────────────────────────────────────────── */
+
+/**
+ * Ziel eines Links aus den Daten (Aufruf, Abschnitts-Link): absolute
+ * http(s)-, tel:- und mailto:-Ziele bleiben; ein Anker nur, wenn sein
+ * Abschnitt auf der Startseite sichtbar ist — dann mit Präfix (Unter- und
+ * Rechtsseiten zeigen zur Startseite). Alles andere → undefined (der
+ * Aufrufer fällt auf den Termin-Weg zurück oder lässt den Link weg).
+ */
+export function klarHref(
+  href: string | undefined,
+  doc: WebsiteDataV2,
+  anchorPrefix = ""
+): string | undefined {
+  const h = href?.trim();
+  if (!h) return undefined;
+  if (/^(https?:\/\/|tel:|mailto:)/i.test(h)) return h;
+  if (!h.startsWith("#") || h.length < 2) return undefined;
+  const id = h.slice(1);
+  const shown = visibleDoc(doc)
+    .sections.filter(systemShows)
+    .some(s => SECTION_ANCHORS[s.type] === id);
+  return shown ? `${anchorPrefix}${h}` : undefined;
+}

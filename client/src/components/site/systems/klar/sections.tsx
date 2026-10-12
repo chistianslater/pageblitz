@@ -218,12 +218,18 @@ export function renderKlarSection(
     case "hero":
       return <KlarEntry hero={section} />;
     case "services":
-      return <KlarServices section={section} sections={sections} />;
+      return (
+        <KlarServices
+          section={section}
+          sections={sections}
+          anchorPrefix={anchorPrefix}
+        />
+      );
     case "process":
       return <KlarProcess section={section} />;
     case "pricelist":
     case "menu":
-      return <KlarPriced section={section} />;
+      return <KlarPriced section={section} anchorPrefix={anchorPrefix} />;
     case "stats":
       return <KlarStats section={section} />;
     case "team":

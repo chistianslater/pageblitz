@@ -51,7 +51,11 @@ export function KlarAbout({ section }: { section: SectionOf<"about"> }) {
   const image = hidden.includes("about-media") ? undefined : section.imageUrl;
   return (
     <KlarChapter type="about" own={section.headline}>
-      <div className={image ? "kl-about-grid kl-about-grid--photo" : "kl-about-grid"}>
+      <div
+        className={
+          image ? "kl-about-grid kl-about-grid--photo" : "kl-about-grid"
+        }
+      >
         {image && <SoftPhoto src={image} />}
         <div className="kl-prose">
           {paragraphs(section.body).map((p, i) => (
@@ -139,7 +143,11 @@ function Stars() {
  * besten Zitat groß, danach jede weitere zitierfähige Bewertung als
  * ruhige Karte. Quelle „Google-Bewertung" nur mit Google-Profil.
  */
-export function KlarVoices({ section }: { section: SectionOf<"testimonials"> }) {
+export function KlarVoices({
+  section,
+}: {
+  section: SectionOf<"testimonials">;
+}) {
   const { data } = useSystem();
   const voices = klarVoices(section.items);
   if (voices.length === 0) return null;

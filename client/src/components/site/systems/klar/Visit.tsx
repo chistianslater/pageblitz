@@ -5,7 +5,13 @@ import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
 import { addressLine, mailHref, mapsHref } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
-import { entryVariant, hoursLabel, klarActions, type Action } from "./facts";
+import {
+  entryVariant,
+  hoursLabel,
+  klarActions,
+  klarHref,
+  type Action,
+} from "./facts";
 import { hoursRows } from "./hours";
 import { KlarHoursCard } from "./HoursCard";
 import { Icon, wayIcon } from "./icons";
@@ -63,9 +69,7 @@ export function KlarContact({
       ? section.headline
       : undefined;
   // Steht die Zeiten-Tabelle schon als Bild im Einstieg, nicht noch einmal.
-  const hero = sections.find(
-    (s): s is SectionOf<"hero"> => s.type === "hero"
-  );
+  const hero = sections.find((s): s is SectionOf<"hero"> => s.type === "hero");
   const rows =
     hero && entryVariant(data, hero) === "hours"
       ? []
@@ -110,7 +114,7 @@ export function KlarContact({
                 {area && (
                   <li>
                     <Icon name="pin" />
-                    Einsatzgebiet: {area} und Umgebung
+                    Einsatzgebiet: {area}
                   </li>
                 )}
               </ul>
@@ -149,7 +153,8 @@ export function KlarContact({
 
 /**
  * Aufruf: großer Satz auf der tiefen Fläche, Hauptknopf hell. Ziel: eigener
- * Link des Abschnitts, sonst der Termin-Weg aus klarActions (nur sichtbare
+ * Link des Abschnitts, wenn er trägt (klarHref), sonst der Termin-Weg aus
+ * klarActions (nur sichtbare
  * Abschnitte, auf Unterseiten mit Präfix zur Startseite) — nie ein Anker
  * auf einen ausgeblendeten Kontakt. Daneben der zweite Weg (Nummer bzw.
  * Route), wie im Einstieg.
@@ -163,14 +168,13 @@ export function KlarCta({
 }) {
   const { data, blueprint } = useSystem();
   const ways = klarActions(data, blueprint, anchorPrefix);
-  const href = section.ctaHref ?? ways.primary?.href;
+  // Eigenes Ziel nur, wenn es trägt (klarHref); sonst der Termin-Weg.
+  const own = klarHref(section.ctaHref, data, anchorPrefix);
+  const href = own ?? ways.primary?.href;
   const primary: Action | undefined = href
     ? { label: section.ctaText, href }
     : undefined;
-  const second =
-    section.ctaHref && ways.phone?.href !== section.ctaHref
-      ? ways.phone
-      : ways.second;
+  const second = own ? ways.phone : ways.second;
   return (
     <KlarChapter
       type="cta"

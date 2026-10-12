@@ -70,8 +70,7 @@ export function monoInitials(name: string): string {
     .filter(w => w && !SKIP.test(w) && /^\p{L}/u.test(w));
   if (words.length === 0) return "·";
   const first = Array.from(words[0])[0];
-  const last =
-    words.length > 1 ? Array.from(words[words.length - 1])[0] : "";
+  const last = words.length > 1 ? Array.from(words[words.length - 1])[0] : "";
   return `${first}${last}`.toLocaleUpperCase("de");
 }
 
@@ -84,9 +83,7 @@ export type Voice = { text: string; author: string; stars: boolean };
  * zitierfähige Bewertung in Reihenfolge der Daten — Kritik und Wertungen
  * unter 5 entfallen (gleiche Regel wie pickReviewQuote je Eintrag).
  */
-export function klarVoices(
-  items: SectionOf<"testimonials">["items"]
-): Voice[] {
+export function klarVoices(items: SectionOf<"testimonials">["items"]): Voice[] {
   const lead = voiceOf(items);
   if (!lead) return [];
   const rest = items.flatMap((item): Voice[] => {
@@ -107,3 +104,29 @@ export const paragraphs = (body: string): string[] =>
     .split(/\n\s*\n/)
     .map(p => p.trim())
     .filter(Boolean);
+
+/* ── Vorteile ohne Doppel ─────────────────────────────────────────────── */
+
+/**
+ * Vorteile, die schon als Fakten-Chip im Einstieg stehen und keinen
+ * eigenen Satz haben, entfallen (gleicher Schlüssel wie die Chips). Bleibt
+ * keiner übrig, entfällt das Kapitel — vor der Navigation, damit kein
+ * Anker ins Leere zeigt. Nur Seiten mit Einstieg (dort stehen die Chips).
+ */
+export function withoutChipEchoes<T extends SystemSection>(
+  sections: readonly T[],
+  chipKeys: readonly string[],
+  key: (t: string) => string
+): T[] {
+  if (!sections.some(s => s.type === "hero") || chipKeys.length === 0)
+    return [...sections];
+  return sections.flatMap((s): T[] => {
+    if (s.type !== "usp") return [s];
+    const u = s as T & SectionOf<"usp">;
+    const items = u.items.filter(
+      i => Boolean(i.text?.trim()) || !chipKeys.includes(key(i.title))
+    );
+    if (items.length === u.items.length) return [s];
+    return items.length > 0 ? [{ ...u, items } as T] : [];
+  });
+}

@@ -5,6 +5,7 @@ import { rich } from "../../richText";
 import { menuVisible } from "../../artDirection/entryGastro";
 import { useSystem } from "../SystemContext";
 import { hasSection, rowPrice, useSlot } from "../shared";
+import { klarHref } from "./facts";
 import { Icon } from "./icons";
 import { KlarChapter, type KlarSection } from "./sections";
 
@@ -17,7 +18,13 @@ import { KlarChapter, type KlarSection } from "./sections";
  */
 
 /** Gestrichelte Karte „Nur in deiner Vorschau" — nie auf der Live-Seite. */
-export function KlarPreviewCard({ title, text }: { title: string; text: string }) {
+export function KlarPreviewCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
   return (
     <aside className="kl-slot" aria-label={title}>
       <p className="kl-slot-kicker">Nur in deiner Vorschau</p>
@@ -29,13 +36,24 @@ export function KlarPreviewCard({ title, text }: { title: string; text: string }
 
 type Link = SectionOf<"services">["link"];
 
-/** Weiterführender Link als Nebenknopf rechts neben dem Titel. */
-const linkAction = (link: Link) =>
-  link ? (
-    <a className="kl-btn kl-btn--s kl-sec-link" href={link.href}>
+/**
+ * Weiterführender Link als Nebenknopf rechts neben dem Titel — nur mit
+ * gültigem Ziel (klarHref: absolute Links, Anker nur auf sichtbare
+ * Abschnitte, mit Präfix auf Unterseiten); sonst kein Knopf.
+ */
+function LinkAction({ link, anchorPrefix }: { link: Link; anchorPrefix: string }) {
+  const { data } = useSystem();
+  const href = klarHref(link?.href, data, anchorPrefix);
+  if (!link || !href) return null;
+  return (
+    <a className="kl-btn kl-btn--s kl-sec-link" href={href}>
       {link.text}
     </a>
-  ) : undefined;
+  );
+}
+
+const linkAction = (link: Link, anchorPrefix: string) =>
+  link ? <LinkAction link={link} anchorPrefix={anchorPrefix} /> : undefined;
 
 /** Ab so vielen Karten trägt die erste die Lind-Fläche (Desktop groß). */
 const LEAD_FROM = 4;
@@ -45,9 +63,11 @@ const LEAD_FROM = 4;
 export function KlarServices({
   section,
   sections,
+  anchorPrefix,
 }: {
   section: SectionOf<"services">;
   sections: readonly KlarSection[];
+  anchorPrefix: string;
 }) {
   const priceSlot = useSlot("pricelist", sections);
   const n = section.items.length;
@@ -62,7 +82,7 @@ export function KlarServices({
       type="services"
       own={section.headline}
       intro={section.intro}
-      action={linkAction(section.link)}
+      action={linkAction(section.link, anchorPrefix)}
     >
       <ul className="kl-svc" data-n={n}>
         {section.items.map((item, i) => {
@@ -113,18 +133,26 @@ function PriceCell({ price }: { price: string }) {
  * Preisliste und Karte als Tabelle je Kategorie: Kategorie als Titel der
  * Tabelle, Name (und Beschreibung) als Zeilenkopf, Betrag rechts.
  */
-export function KlarPriced({ section }: { section: Priced }) {
+export function KlarPriced({
+  section,
+  anchorPrefix,
+}: {
+  section: Priced;
+  anchorPrefix: string;
+}) {
   const categories = section.categories.filter(c => c.items.length > 0);
   return (
     <KlarChapter
       type={section.type}
       own={section.headline}
-      action={linkAction(section.link)}
+      action={linkAction(section.link, anchorPrefix)}
     >
       <div className="kl-prices">
         {categories.map(category => (
           <table className="kl-ptable" key={category.name}>
-            <caption className="kl-pcat">{category.name}</caption>
+            {category.name.trim() && (
+              <caption className="kl-pcat">{category.name}</caption>
+            )}
             <tbody>
               {category.items.map((item, i) => (
                 <tr key={`${item.name}-${i}`}>
@@ -191,6 +219,8 @@ export function KlarStats({ section }: { section: SectionOf<"stats"> }) {
 
 /** Vorteile als ruhige Punkte mit Haken (Symbol lokal, dekorativ). */
 export function KlarUsp({ section }: { section: SectionOf<"usp"> }) {
+  // Doppel zu den Chips entfernt schon withoutChipEchoes (index.tsx).
+  if (section.items.length === 0) return null;
   return (
     <KlarChapter type="usp" own={section.headline}>
       <ul className="kl-points">
@@ -212,7 +242,13 @@ export function KlarUsp({ section }: { section: SectionOf<"usp"> }) {
 
 /* ── Vorschau-Platzhalter als eigene Abschnitte ──────────────────────── */
 
-function SlotSection({ id, children }: { id: string; children: React.ReactNode }) {
+function SlotSection({
+  id,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+}) {
   return (
     <section id={id} className="kl-slot-section">
       <div className="kl-wrap">{children}</div>
@@ -220,7 +256,11 @@ function SlotSection({ id, children }: { id: string; children: React.ReactNode }
   );
 }
 
-export function KlarMenuSlot({ sections }: { sections: readonly KlarSection[] }) {
+export function KlarMenuSlot({
+  sections,
+}: {
+  sections: readonly KlarSection[];
+}) {
   const { data, preview, blueprint } = useSystem();
   const real = menuVisible(data) && hasSection(sections, "menu");
   if (!preview || !blueprint.placeholders.includes("menu") || real) return null;
@@ -234,7 +274,11 @@ export function KlarMenuSlot({ sections }: { sections: readonly KlarSection[] })
   );
 }
 
-export function KlarTeamSlot({ sections }: { sections: readonly KlarSection[] }) {
+export function KlarTeamSlot({
+  sections,
+}: {
+  sections: readonly KlarSection[];
+}) {
   const text = useSlot("team", sections);
   if (text === undefined) return null;
   return (

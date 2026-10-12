@@ -270,7 +270,7 @@ export function zahnFullDoc(palette = "lind"): Doc {
         { title: "Zahnersatz", description: "Kronen, Brücken, Prothesen. Kostenplan vorab schriftlich.", price: "auf Anfrage" },
         { title: "Für Angstpatienten", description: "Mehr Zeit, Pause auf Handzeichen." },
       ],
-      link: { text: "Alle Leistungen", href: "/leistungen" },
+      link: { text: "Alle Leistungen", href: "https://dr-sommer.example/leistungen" },
     },
     {
       type: "process",

@@ -7,7 +7,8 @@ import { KLAR_CSS } from "./css";
 import { KlarDock, KlarFoot, KlarHead, klarNavItems } from "./Chrome";
 import { KlarLegal, KlarPageHead, renderKlarSection } from "./sections";
 import { KlarMenuSlot, KlarTeamSlot } from "./Offer";
-import { klarPhotos } from "./content";
+import { klarPhotos, withoutChipEchoes } from "./content";
+import { chipKey, factChips } from "./facts";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -19,6 +20,7 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
  * Klar (rev 3) — Gerüst wie Plakat: Startseite über orderedSections
  * (hiddenSections, sectionOrder, Add-on-Gating), nur gezeigte Abschnitte,
  * jedes Foto einmal (klarPhotos: Einstieg → Team → Über uns → Galerie),
+ * Vorteile ohne Doppel zu den Fakten-Chips (withoutChipEchoes),
  * Vorschau-Platzhalter nur auf der Startseite, Kopf/Fuß/Leiste auf allen
  * Seiten.
  * Gestalt nach docs/designsysteme/klar/systemblatt.html (Anker Luma Dental).
@@ -29,22 +31,25 @@ export const KLAR_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
     const { data: home, blueprint } = useSystem();
     const hidden = home.designProfile?.hiddenElements ?? [];
-    const { list } = klarPhotos(
-      legal ? [] : (sections ?? orderedSections(data)).filter(systemShows),
-      hidden
+    // Vorteile, die schon als Chip im Einstieg stehen, nicht noch einmal.
+    const chips = factChips(home).map(c => chipKey(c.label));
+    const prepare = (all: Parameters<typeof klarPhotos>[0]) =>
+      withoutChipEchoes(klarPhotos(all, hidden).list, chips, chipKey);
+    const list = prepare(
+      legal ? [] : (sections ?? orderedSections(data)).filter(systemShows)
     );
     const slots = sections || legal ? {} : previewSlotAnchors(list);
     const anchorPrefix = sections || legal ? basePath || "/" : "";
     const homeAll = orderedSections(home);
     const homeShown =
       sections || legal
-        ? klarPhotos(homeAll.filter(systemShows), hidden).list
+        ? prepare(homeAll.filter(systemShows))
         : list;
     const shown = klarNavItems(
       shownNavItems(navItems, homeAll).filter(
         item =>
-          item.sectionType !== "gallery" ||
-          homeShown.some(s => s.type === "gallery")
+          (item.sectionType !== "gallery" && item.sectionType !== "usp") ||
+          homeShown.some(s => s.type === item.sectionType)
       ),
       blueprint
     );
