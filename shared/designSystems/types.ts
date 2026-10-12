@@ -86,4 +86,10 @@ export type DesignSystemDef = {
    * Ohne Angabe bleibt alles wie bisher (helle Systeme, byte-gleich).
    */
   scheme?: "light" | "dark";
+  /**
+   * Freie Galeriefotos (ohne Galerie-Extra) zählen erst nach den Fotos,
+   * die die Seite schon im Einstieg/Über uns zeigt (`withGalleryLimit`
+   * mit `beyondShown`). Ohne Angabe: die ersten drei wie bisher.
+   */
+  freeGalleryBeyondShown?: true;
 };

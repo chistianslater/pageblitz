@@ -10,6 +10,9 @@ export const NACHT: DesignSystemDef = {
   essence: "Dunkel, warm, ein Abend lang",
   // Abweichung 1: Papier ist dunkel (color-scheme, theme-color, Studio-Rahmen).
   scheme: "dark",
+  // Abweichung 3: jedes Foto einmal je Seite — die drei freien Galeriefotos
+  // zählen erst nach Einstiegs- und Über-uns-Foto (Abnahme 2026-10-12).
+  freeGalleryBeyondShown: true,
   fonts: {
     display: {
       family: "Gilda Display",

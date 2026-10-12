@@ -68,23 +68,66 @@ export const ADDON_GATED_SECTION_TYPES: Partial<
  */
 export const FREIE_GALERIEBILDER = 3;
 
-/** Galerie-Abschnitte auf die freien Bilder kürzen (Start- und Unterseiten). */
-export function withGalleryLimit(doc: WebsiteDataV2): WebsiteDataV2 {
+/**
+ * Galerie-Abschnitte auf die freien Bilder kürzen (Start- und Unterseiten).
+ *
+ * `beyondShown` (Designsysteme mit „jedes Foto einmal je Seite", z. B.
+ * Nacht): Fotos, die dieselbe Seite schon als Einstiegs- oder Über-uns-Bild
+ * zeigt, zählen nicht zu den freien drei — sonst bliebe nach dem Entfernen
+ * der Doppel oft nur ein Galeriefoto übrig (Abnahme 2026-10-12: 8 Fotos,
+ * Einstieg = 1., Über uns = 2. → Galerie zeigte nur das 3.). Sie bleiben im
+ * Abschnitt; das System entfernt die Doppel selbst. Doppelte Adressen
+ * zählen einmal.
+ */
+export function withGalleryLimit(
+  doc: WebsiteDataV2,
+  { beyondShown = false }: { beyondShown?: boolean } = {}
+): WebsiteDataV2 {
   if (doc.addOns?.gallery === true) return doc;
-  const kuerzen = <T extends { type: string }>(abschnitt: T): T => {
-    if (abschnitt.type !== "gallery") return abschnitt;
-    const galerie = abschnitt as T & { images: { url: string }[] };
-    if (galerie.images.length <= FREIE_GALERIEBILDER) return abschnitt;
-    return { ...galerie, images: galerie.images.slice(0, FREIE_GALERIEBILDER) };
+  const versteckt = doc.designProfile?.hiddenElements ?? [];
+  const gezeigt = (abschnitte: readonly { type: string }[]) => {
+    const urls = new Set<string>();
+    if (!beyondShown) return urls;
+    for (const a of abschnitte) {
+      const bild = (a as { imageUrl?: string }).imageUrl;
+      if (!bild) continue;
+      if (a.type === "hero" && !versteckt.includes("hero-media")) urls.add(bild);
+      if (a.type === "about" && !versteckt.includes("about-media")) urls.add(bild);
+    }
+    return urls;
+  };
+  const kuerzenIn = <T extends { type: string }>(abschnitte: T[]): T[] => {
+    const schonDa = gezeigt(abschnitte);
+    return abschnitte.map(abschnitt => {
+      if (abschnitt.type !== "gallery") return abschnitt;
+      const galerie = abschnitt as T & { images: { url: string }[] };
+      if (schonDa.size === 0) {
+        if (galerie.images.length <= FREIE_GALERIEBILDER) return abschnitt;
+        return {
+          ...galerie,
+          images: galerie.images.slice(0, FREIE_GALERIEBILDER),
+        };
+      }
+      const frei = new Set<string>();
+      const images = galerie.images.filter(i => {
+        if (schonDa.has(i.url) || frei.has(i.url)) return true;
+        if (frei.size >= FREIE_GALERIEBILDER) return false;
+        frei.add(i.url);
+        return true;
+      });
+      return images.length === galerie.images.length
+        ? abschnitt
+        : { ...galerie, images };
+    });
   };
   return {
     ...doc,
-    sections: doc.sections.map(kuerzen),
+    sections: kuerzenIn(doc.sections),
     ...(doc.pages
       ? {
           pages: doc.pages.map(p => ({
             ...p,
-            sections: p.sections.map(kuerzen),
+            sections: kuerzenIn(p.sections),
           })),
         }
       : {}),

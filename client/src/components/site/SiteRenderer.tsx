@@ -244,8 +244,14 @@ export const SiteRenderer: React.FC<{
   // Fehlt dem Über-uns-Abschnitt das Foto, rückt ein Galeriebild nach —
   // sonst steht der Abschnitt halb leer (Betreiber-Befund 2026-09-20).
   data = withAboutFallbackImage(data);
-  // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar.
-  data = withGalleryLimit(data);
+  // Ohne gebuchte Galerie bleiben die ersten drei Fotos sichtbar (Systeme
+  // mit „jedes Foto einmal" zählen erst nach Einstieg/Über uns).
+  data = withGalleryLimit(data, {
+    beyondShown:
+      data.designRevision === 3 && data.system
+        ? getSystem(data.system)?.freeGalleryBeyondShown === true
+        : false,
+  });
   // Designsystem (rev 3): eigenes Modul, eigene Variablen, kein Pack-Layout.
   const systemDef =
     data.designRevision === 3 && data.system

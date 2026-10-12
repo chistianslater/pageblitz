@@ -565,6 +565,34 @@ describe("Nacht: Stimme, Gut zu wissen, Galerie, Über uns", () => {
     expect(html).not.toContain(`href="#${SECTION_ANCHORS.gallery}"`);
   });
 
+  test("ohne Galerie-Extra: drei freie Fotos zusätzlich zu Einstieg und Über uns, jedes einmal", () => {
+    // Muster einer frisch erzeugten Seite aus Google-Fotos (Abnahme
+    // 2026-10-12): acht Fotos, Einstieg = 1., Über uns = 2. Vorher blieb
+    // von den freien drei nach dem Entfernen der Doppel nur eins.
+    const fotos = Array.from(
+      { length: 8 },
+      (_, i) => `https://fotos.example/salon-${i + 1}.jpg`
+    );
+    let doc = patchSection(noirDoc(), "gallery", g => ({
+      ...g,
+      images: fotos.map(url => ({ url, alt: "Salon" })),
+    }));
+    doc = patchSection(doc, "hero", h => ({ ...h, imageUrl: fotos[0] }));
+    doc = patchSection(doc, "about", a => ({ ...a, imageUrl: fotos[1] }));
+    doc = { ...doc, addOns: { ...doc.addOns, gallery: false } };
+    const html = render(doc);
+    const srcs = imgSrcs(html).filter(u => u.startsWith("https://fotos.example/"));
+    expect(srcs).toEqual(fotos.slice(0, 5));
+    const gallery = sectionOf(html, SECTION_ANCHORS.gallery);
+    expect(imgSrcs(gallery)).toEqual(fotos.slice(2, 5));
+    expect(gallery).toContain('data-n="3"');
+    // Mit Extra: alle übrigen sechs.
+    const all = render({ ...doc, addOns: { ...doc.addOns, gallery: true } });
+    expect(imgSrcs(sectionOf(all, SECTION_ANCHORS.gallery))).toEqual(
+      fotos.slice(2)
+    );
+  });
+
   test("Über uns ohne Foto: kein leerer Rahmen; mit Foto im Nacht-Rahmen", () => {
     const pension = sectionOf(render(hausDoc()), SECTION_ANCHORS.about);
     expect(pension).toContain('class="nc-about-body"');
