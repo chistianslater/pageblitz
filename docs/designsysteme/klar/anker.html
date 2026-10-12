@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anker Klar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --weiss: #ffffff;
+    --ink: #11241e;
+    --ink-soft: #4a5b55;
+    --rule: rgba(17, 36, 30, 0.14);
+    --gruen: #1a6f55;
+    --gruen-tief: #0f4a39;
+    --mint: #e9f3ee;
+    --mint-2: #d5e9de;
+    --gut: #1a6f55;
+    --mittel: #9aaba4;
+    --schwach: #b8432f;
+    --sans: "Plus Jakarta Sans", "Helvetica Neue", Arial, sans-serif;
+    --r: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--weiss); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; font-feature-settings: "tnum" 0; }
+  .wrap { max-width: 2360px; margin: 0 auto; padding: 0 56px 80px; }
+  .lbl, .kicker, .tag, figcaption, thead th, .note span, .gekuerzt, h4, dt { font-weight: 600; font-size: 12px; letter-spacing: 0.01em; }
+
+  header.kopf { margin: 0 -56px; padding: 44px 56px 40px; display: grid; grid-template-columns: 300px 1fr 520px; gap: 40px; align-items: end; border-bottom: 1px solid var(--rule); }
+  .knr { font-weight: 600; font-size: 220px; line-height: .8; letter-spacing: -0.06em; color: var(--gruen); font-variant-numeric: tabular-nums; }
+  h1 { font-weight: 600; font-size: 132px; line-height: 0.95; letter-spacing: -0.045em; margin-top: 14px; }
+  .kicker { color: var(--ink-soft); }
+  .fakten { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); }
+  .fakten div { padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 15px; }
+  .fakten div:nth-child(odd) { color: var(--ink-soft); }
+  .fakten div:nth-child(even) { text-align: right; font-weight: 600; }
+
+  .vorspann { display: grid; grid-template-columns: 300px repeat(3, 1fr); gap: 24px 48px; padding: 32px 0 52px; font-size: 15px; color: var(--ink-soft); }
+  .vorspann .lbl { color: var(--ink); }
+  .vorspann b { color: var(--ink); font-weight: 600; }
+
+  .spalten { display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; align-items: start; }
+  .kandidat { border-top: 1px solid var(--ink); padding-top: 14px; }
+  .kandidat.wahl { border-top: 6px solid var(--gruen); padding-top: 9px; }
+  .k-kopf { display: flex; justify-content: space-between; align-items: center; }
+  .nr { font-weight: 600; font-size: 96px; line-height: .85; letter-spacing: -0.05em; color: var(--mittel); }
+  .wahl .nr { color: var(--gruen); }
+  .tag { color: var(--ink-soft); }
+  .badge { display: inline-block; background: var(--gruen); color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+  h2 { font-weight: 600; font-size: 42px; line-height: 1; letter-spacing: -0.035em; margin: 12px 0 6px; }
+  .url { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+  .url a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .urteil { margin-top: 16px; padding: 12px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: 14.5px; min-height: 330px; }
+  .urteil li { list-style: none; padding-left: 22px; position: relative; margin: 6px 0; }
+  .urteil li::before { position: absolute; left: 0; font-weight: 700; }
+  .urteil li.plus::before { content: "+"; color: var(--gruen); }
+  .urteil li.minus::before { content: "–"; color: var(--schwach); }
+  .noten { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 14px; }
+  .note { background: var(--mint); border-radius: 10px; padding: 8px 8px 6px; }
+  .note span { display: block; font-size: 10px; color: var(--ink-soft); min-height: 28px; line-height: 1.2; font-weight: 600; }
+  .note b { font-weight: 600; font-size: 34px; line-height: 1; letter-spacing: -0.04em; }
+  .note.summe { background: var(--ink); color: var(--weiss); }
+  .note.summe span { color: #b9c7c1; }
+  .wahl .note.summe { background: var(--gruen); }
+  .wahl .note.summe span { color: #d5e9de; }
+
+  .erster { display: grid; grid-template-columns: 150px 1fr; gap: 16px; margin-top: 18px; align-items: start; }
+  .erster figure { border-radius: 18px; overflow: hidden; background: #eee; border: 1px solid var(--rule); }
+  .erster img { display: block; width: 100%; }
+  .erster p { font-size: 13.5px; color: var(--ink-soft); }
+  .erster p b { color: var(--ink); display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; }
+
+  .gekuerzt { color: var(--gruen); margin-top: 8px; }
+  .ganz { display: grid; grid-template-columns: 210px auto; max-height: 1420px; overflow: hidden; gap: 12px; margin-top: 16px; align-items: start; }
+  .ganz img { display: block; width: 210px; }
+  .handy { display: grid; grid-template-columns: 90px 90px; gap: 6px; }
+  .halb { overflow: hidden; border: 1px solid var(--rule); background: #eee; }
+  .halb img { display: block; max-width: none; }
+  figcaption { color: var(--ink-soft); padding: 0 0 6px; font-size: 10.5px; }
+
+  section.abschnitt { margin-top: 72px; border-top: 1px solid var(--ink); padding-top: 18px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; }
+  .snr { font-weight: 600; font-size: 120px; line-height: .8; letter-spacing: -0.05em; color: var(--gruen); }
+  h3 { font-weight: 600; font-size: 72px; line-height: 1; letter-spacing: -0.04em; }
+  h3 .sig { color: var(--gruen); }
+  table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border-bottom: 1px solid var(--rule); }
+  thead th { color: var(--ink-soft); border-bottom: 1px solid var(--ink); }
+  thead th.wahl { color: var(--gruen); }
+  tbody th { font-weight: 600; font-size: 22px; line-height: 1.1; letter-spacing: -0.02em; width: 230px; }
+  td.wahl { background: var(--mint); }
+  .z { font-size: 15px; margin-right: 7px; }
+  .z.g { color: var(--gut); } .z.m { color: var(--mittel); } .z.s { color: var(--schwach); }
+  .legende { font-size: 13px; color: var(--ink-soft); margin-top: 10px; }
+
+  .empfehlung { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 56px; margin-top: 26px; font-size: 15px; }
+  h4 { color: var(--ink-soft); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--ink); font-size: 13px; }
+  .empfehlung li { margin: 7px 0 7px 18px; }
+  .gross { font-weight: 500; font-size: 28px; line-height: 1.3; letter-spacing: -0.02em; }
+  .gross .sig { color: var(--gruen); }
+
+  /* Muster: Zahnarzt im Klar-System */
+  .muster { margin-top: 30px; border: 1px solid var(--rule); border-radius: 22px; overflow: hidden; max-width: 820px; background: var(--weiss); }
+  .m-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .m-nav b { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+  .m-nav .tel { font-weight: 600; }
+  .m-held { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; padding: 28px 24px 24px; align-items: end; }
+  .m-held .mk { font-size: 13px; font-weight: 600; color: var(--gruen); }
+  .m-held h5 { font-weight: 600; font-size: 50px; line-height: 1; letter-spacing: -0.04em; margin: 10px 0 14px; }
+  .m-held p { font-size: 17px; color: var(--ink-soft); line-height: 1.5; }
+  .m-knoepfe { display: flex; gap: 10px; margin-top: 18px; }
+  .k1, .k2 { display: inline-block; padding: 14px 20px; border-radius: 12px; font-weight: 600; font-size: 16px; }
+  .k1 { background: var(--gruen); color: #fff; }
+  .k2 { border: 1.5px solid var(--ink); }
+  .m-foto { border-radius: 18px; aspect-ratio: 4 / 5; background: linear-gradient(170deg, #cfe0d7 0%, #a9c3b7 55%, #7f9c90 100%); display: grid; align-items: end; padding: 14px; color: #0d2a20; font-size: 12px; line-height: 1.35; }
+  .m-foto i { font-style: normal; font-weight: 700; display: block; margin-bottom: 2px; }
+  .m-zeile { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); }
+  .m-zeile div { padding: 14px 24px; font-size: 15px; font-weight: 500; border-right: 1px solid var(--rule); }
+  .m-zeile div:last-child { border-right: 0; }
+  .m-unten { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--rule); background: var(--mint); }
+  .m-zeit { padding: 20px 24px; }
+  .m-zeit .t { font-weight: 600; font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; }
+  .m-zeit dl { display: grid; grid-template-columns: 1fr auto; font-size: 16px; }
+  .m-zeit dt, .m-zeit dd { padding: 7px 0; border-bottom: 1px solid var(--rule); font-size: 16px; font-weight: 400; }
+  .m-zeit dd { text-align: right; font-variant-numeric: tabular-nums; }
+  .m-zeit .heute { font-weight: 700; color: var(--gruen-tief); }
+  .m-zeit .status { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-weight: 600; font-size: 15px; color: var(--gruen-tief); }
+  .m-zeit .status::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--gruen); }
+  .m-ablauf { padding: 20px 24px; border-left: 1px solid var(--rule); }
+  .m-ablauf .schritt { display: grid; grid-template-columns: 92px 1fr; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+  .m-ablauf .schritt b { font-weight: 600; font-size: 34px; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .m-ablauf .schritt span { font-size: 15px; }
+  .muster-cap { font-size: 13px; color: var(--ink-soft); margin-top: 10px; max-width: 820px; }
+
+  .betriebe { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 26px; }
+  .betrieb { border-radius: var(--r); padding: 22px 24px 18px; background: var(--mint); }
+  .betrieb.b2 { background: #eef1f6; }
+  .betrieb.b3 { background: #f3f1ec; }
+  .betrieb .bnr { font-weight: 600; font-size: 72px; line-height: .85; letter-spacing: -0.05em; color: var(--gruen); }
+  .betrieb .bname { font-weight: 600; font-size: 36px; line-height: 1.05; letter-spacing: -0.03em; margin: 8px 0 14px; }
+  .betrieb dl { display: grid; grid-template-columns: 130px 1fr; font-size: 14.5px; }
+  .betrieb dt, .betrieb dd { padding: 8px 0; border-top: 1px solid var(--rule); }
+  .betrieb dt { padding-top: 10px; }
+  .fuss { margin-top: 44px; font-size: 13px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="kopf">
+  <div class="knr">05</div>
+  <div>
+    <div class="kicker">Designsystem Klar · Ankersuche · 12.10.2026</div>
+    <h1>Ruhig. Lesbar.<br>Sofort klar, wie es weitergeht.</h1>
+  </div>
+  <div>
+    <div class="kicker" style="margin-bottom:10px">Worum es geht</div>
+    <div class="fakten">
+      <div>Hauptfamilie</div><div>Gesundheit &amp; Praxis</div>
+      <div>Alternative</div><div>Beratung, Kurse, Sofort-Dienst, Industrie</div>
+      <div>Rückfall</div><div>alle ohne eigene Richtung</div>
+      <div>Kandidaten</div><div>4, Desktop und Handy</div>
+    </div>
+  </div>
+</header>
+
+<div class="vorspann">
+  <div class="lbl">Vorab</div>
+  <p><b>Worum es geht.</b> Wie bei Journal (Aman Venice), Raster (Colophon), Werkstoff (Hollis Butcher) und Plakat (Arcadia) nehmen wir eine komplette Website als Vorlage und bauen ihr System nach. Klar heißt: ruhig, vertrauenswürdig, freundlich. Eine menschliche Grotesk, viel Weiß, weiche Ecken, große Schrift für ältere Patienten. Telefon zuerst, Sprechzeiten auf einen Blick, Kassen nur wenn bekannt.</p>
+  <p><b>Wie gesucht.</b> Refero-Styles und -Screens zu Zahnarzt, Physio, Praxis, Gesundheit (u. a. August Health, Ease Health, Letters, Headspace, Hers, Fresha). Treffer fast nur Gesundheits-Software, keine Praxis. Deshalb 43 Seiten live im Browser: echte Praxen (32reasons Hamburg, Six Physio, Modern Animal, One Medical u. a.) und 35 Framer-Vorlagen für Zahnarzt, Physio, Therapie, Tierarzt. Die meisten setzen auf Serife mit Kursiv oder Hochglanz-Stockfotos aus der Klinik. Diese vier haben ein ganzes System.</p>
+  <p><b>Wie bewertet.</b> Zusammenhalt vom Einstieg bis zum Fuß, Abdeckung unserer Abschnitte, Handy, Robustheit bei mittelmäßigen Fotos (Behandlungsraum, Porträt vom Handy), ob Zahnarzt, Physio und Steuerberater gleichzeitig hineinpassen, und wie barrierearm es ist. Je 1 bis 10. Aufnahmen vom 12.10.2026 (Desktop 1440, Handy 390). Cookie-Banner abgelehnt, Framer-Hinweise ausgeblendet, wo möglich.</p>
+</div>
+
+<div class="spalten">
+<article class="kandidat wahl">
+    <div class="k-kopf"><span class="nr">01</span><span class="badge">Empfehlung</span></div>
+    <h2>Brightleaf Dental</h2>
+    <div class="tag">Zahnarztpraxis · Framer-Vorlage „Molar“</div>
+    <div class="url"><a href="https://brightleafdental.framer.website/">brightleafdental.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Eine Schrift, eine Farbe, ein Gedanke: Plus Jakarta Sans auf Weiß, ein ruhiges Praxisgrün, Mint als einzige Fläche. Wirkt sicher, nicht steril.</li><li class="plus">Alles da und in Patientensprache: Einstieg mit Faktenzeile (Erstbesuch 89 $, Termine in derselben Woche, Kassen, Adresse), fünf Leistungen als große Liste mit „klingt das nach dir?“, erster Termin als Zeitleiste 0:00 bis 0:55, Kennzahlen, Team mit Schwerpunkt, ein großes Zitat, Preise, FAQ mit Namen der Rezeption, Adresse mit Parken und Sprechzeiten, Fuß mit Notfall-Satz und Riesen-Wortmarke.</li><li class="plus">Handy fast vorbildlich: Faktenzeile wird zur Liste, Zeitleiste bleibt lesbar, Preise rechtsbündig.</li><li class="minus">Einstieg lebt von einem großen Vollbild-Foto mit weißer Schrift. Mit einem dunklen Handyfoto vom Behandlungsstuhl kippt das. Ecken 4 px, Fließtext 14 px grau: für ältere Patienten zu klein und zu hart.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>10</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>6</b></div><div class="note"><span>Branchen-Mix</span><b>9</b></div><div class="note"><span>Barrierearm</span><b>8</b></div><div class="note summe"><span>Summe /60</span><b>52</b></div></div>
+    <div class="erster"><figure><img src="anker/brightleaf-mobil-erster-blick.jpg" alt="Brightleaf Dental, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Satz auf Foto, darunter vier Fakten und ein grüner Knopf. Man weiß in drei Sekunden: was, was es kostet, wo. Bei uns: „Zahnarztpraxis in Findorff. Alle Kassen.“</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/brightleaf-desktop.jpg" style="height:1873px" alt="Brightleaf Dental Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1622px"><img src="anker/brightleaf-mobil.jpg" style="width:90px;height:3243px" alt=""></div><div class="halb" style="height:1621px"><img src="anker/brightleaf-mobil.jpg" style="width:90px;height:3243px;margin-top:-1622px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">02</span></div>
+    <h2>Alderwren Animal Health</h2>
+    <div class="tag">Tierarztpraxis · Framer-Vorlage</div>
+    <div class="url"><a href="https://amusing-llama-498455.framer.app/">amusing-llama-498455.framer.app</a></div>
+    <ul class="urteil"><li class="plus">Am konsequentesten barrierearm: Atkinson Hyperlegible für Text, Leiste „Notfall? Erst anrufen“, auf dem Handy feste Leiste Anrufen / Termin.</li><li class="plus">Kommt fast ohne Fotos aus: Wege nach Anliegen (Vorsorge, heute krank, Bestandskunde), Leistungen mit Symbolen, Team als Karten, zwei Standorte mit Zeiten.</li><li class="minus">Vollkorn-Serife auf Creme: zu nah an Journal. Viele gleich große Karten, wirkt eher wie Verwaltung als wie Praxis mit Gesicht.</li><li class="minus">Erster Termin nur angedeutet, Stimmen als Dreierreihe ohne Fallhöhe.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>7</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>9</b></div><div class="note"><span>Schwache Fotos</span><b>9</b></div><div class="note"><span>Branchen-Mix</span><b>7</b></div><div class="note"><span>Barrierearm</span><b>9</b></div><div class="note summe"><span>Summe /60</span><b>50</b></div></div>
+    <div class="erster"><figure><img src="anker/alderwren-mobil-erster-blick.jpg" alt="Alderwren Animal Health, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Notfallzeile oben, Serifensatz, roter Knopf plus „Team kennenlernen“, Fotokarte mit „Nimmt neue Patienten auf · Mo–Sa“. Sehr nützlich, aber wenig Wow.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/alderwren-desktop.jpg" style="height:1116px" alt="Alderwren Animal Health Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:1603px"><img src="anker/alderwren-mobil.jpg" style="width:90px;height:3206px" alt=""></div><div class="halb" style="height:1603px"><img src="anker/alderwren-mobil.jpg" style="width:90px;height:3206px;margin-top:-1603px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">03</span></div>
+    <h2>Luma Dental</h2>
+    <div class="tag">Zahnarztpraxis · Framer-Vorlage</div>
+    <div class="url"><a href="https://luma-dental.framer.website/">luma-dental.framer.website</a></div>
+    <ul class="urteil"><li class="plus">Freundlich und hell: DM Sans, Lindgrün, weiche Karten (10–17 px), Bewertung direkt unter dem Knopf, vier Kennzahlen.</li><li class="plus">Gute Bausteine: „Die Menschen, die wirklich im Raum sind“ (Team), „Wissen, was es kostet“ (Kassen und Preise), Ablauf in vier Schritten.</li><li class="minus">Überschriften in Light 300 und Text auf Lindgrün: zu wenig Kontrast für Ältere. Hervorgehobenes Wort im Marker wirkt nach Vorlage.</li><li class="minus">Leistungen als Raster aus Farbkarten, der Rest ebenfalls Karten. Kein eigener Gedanke, der hängen bleibt.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>8</b></div><div class="note"><span>Abdeckung</span><b>9</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Schwache Fotos</span><b>7</b></div><div class="note"><span>Branchen-Mix</span><b>8</b></div><div class="note"><span>Barrierearm</span><b>6</b></div><div class="note summe"><span>Summe /60</span><b>46</b></div></div>
+    <div class="erster"><figure><img src="anker/luma-mobil-erster-blick.jpg" alt="Luma Dental, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>„Feel good about your smile“ mit Marker, zwei Knöpfe, Bewertung, Foto der Zahnärztin. Nett, aber austauschbar.</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/luma-desktop.jpg" style="height:1616px" alt="Luma Dental Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:2090px"><img src="anker/luma-mobil.jpg" style="width:90px;height:4180px" alt=""></div><div class="halb" style="height:2090px"><img src="anker/luma-mobil.jpg" style="width:90px;height:4180px;margin-top:-2090px" alt=""></div></div></figure>
+    </div>
+  </article>
+<article class="kandidat">
+    <div class="k-kopf"><span class="nr">04</span></div>
+    <h2>Stridewell</h2>
+    <div class="tag">Physiotherapie · Framer-Vorlage</div>
+    <div class="url"><a href="https://gleaming-galaxy-812468.framer.app/">gleaming-galaxy-812468.framer.app</a></div>
+    <ul class="urteil"><li class="plus">Der stärkste Einstieg: „Zeig uns, wo es weh tut“, Körperkarte zum Antippen, nächster freier Termin heute 16:20 schon oben in der Leiste.</li><li class="plus">Ablauf „Sechzig Minuten, vier Schritte“, Behandlungsplan als Verlauf, fünf Therapeuten, drei Preise, FAQ, Terminwahl am Schluss.</li><li class="minus">Pink, Schwarz und Mono-Schrift: Sport-App, nicht Hausarztpraxis. Für Zahnarzt oder Steuerberater nicht übertragbar.</li><li class="minus">Lebt von Spielereien (Gradmesser, Diagramme), die echte Daten bräuchten, die wir nicht haben.</li></ul>
+    <div class="noten"><div class="note"><span>Ganzes</span><b>8</b></div><div class="note"><span>Abdeckung</span><b>10</b></div><div class="note"><span>Handy</span><b>8</b></div><div class="note"><span>Schwache Fotos</span><b>7</b></div><div class="note"><span>Branchen-Mix</span><b>5</b></div><div class="note"><span>Barrierearm</span><b>6</b></div><div class="note summe"><span>Summe /60</span><b>44</b></div></div>
+    <div class="erster"><figure><img src="anker/stridewell-mobil-erster-blick.jpg" alt="Stridewell, erster Bildschirm auf dem Handy"></figure><p><b>Erste 5 Sekunden</b>Leiste mit freiem Termin, Satz mit Unterstreichung, pinker Knopf, drei Kennzahlen. Mit Vorlagen-Werbung unten rechts (nicht Teil der Seite).</p></div>
+    <div class="gekuerzt">Ansicht gekürzt, ganze Seite in anker/</div>
+    <div class="ganz">
+      <figure><figcaption>Desktop 1440, ganze Seite</figcaption><img src="anker/stridewell-desktop.jpg" style="height:2402px" alt="Stridewell Desktop ganze Seite"></figure>
+      <figure><figcaption>Handy 390, zwei Spalten</figcaption><div class="handy"><div class="halb" style="height:2089px"><img src="anker/stridewell-mobil.jpg" style="width:90px;height:4177px" alt=""></div><div class="halb" style="height:2088px"><img src="anker/stridewell-mobil.jpg" style="width:90px;height:4177px;margin-top:-2089px" alt=""></div></div></figure>
+    </div>
+  </article>
+</div>
+
+<section class="abschnitt">
+  <div class="snr">A</div>
+  <div>
+    <h3>Unsere Abschnitte, Zeile für Zeile</h3>
+    <table>
+      <thead><tr><th>Abschnitt</th><th class="wahl">01 Brightleaf</th><th>02 Alderwren</th><th>03 Luma</th><th>04 Stridewell</th></tr></thead>
+      <tbody>
+        <tr><th>Einstieg</th><td class="wahl"><span class="z g">●</span>Zwei kurze Sätze, Faktenzeile mit vier Fakten, ein Knopf, Telefon oben rechts</td><td><span class="z g">●</span>Notfallzeile, Satz, zwei Knöpfe, Karte „nimmt neue Patienten auf“</td><td><span class="z g">●</span>Satz, zwei Knöpfe, Google-Schnitt, vier Kennzahlen</td><td><span class="z g">●</span>Nächster freier Termin, Körperkarte, drei Kennzahlen</td></tr>
+        <tr><th>Leistungen</th><td class="wahl"><span class="z g">●</span>Fünf Leistungen als große Liste: Name, „klingt das nach dir?“, wie viele Termine. Dazu Bilderstreifen</td><td><span class="z g">●</span>Sechs Karten mit Symbol, vorher Wege nach Anliegen</td><td><span class="z g">●</span>Vier Farbkarten und Raster mit Unterpunkten</td><td><span class="z g">●</span>Beschwerden am Körper, Behandlungen als Balken</td></tr>
+        <tr><th>Team</th><td class="wahl"><span class="z g">●</span>„Same dentist, every visit.“ Vier Porträts mit Schwerpunkt und Abschluss</td><td><span class="z g">●</span>Drei Karten mit Symbol statt Foto</td><td><span class="z g">●</span>Vier Porträts „die wirklich im Raum sind“</td><td><span class="z g">●</span>Fünf Therapeuten im Streifen</td></tr>
+        <tr><th>Praxis / Galerie</th><td class="wahl"><span class="z m">◐</span>Fotos in der Zeitleiste mit Bildunterschrift, Raumfoto bei der Adresse</td><td><span class="z m">◐</span>Zwei Standorte, kaum Fotos</td><td><span class="z g">●</span>Fotoband „Walk in calm“</td><td><span class="z m">◐</span>Fotoband, Ratgeber</td></tr>
+        <tr><th>Stimmen</th><td class="wahl"><span class="z g">●</span>Ein großes Zitat auf Foto, darüber „4,9 aus 740 Bewertungen“, „Einzelfall“-Hinweis</td><td><span class="z m">◐</span>Drei Zitate auf Dunkelgrün</td><td><span class="z m">◐</span>Ein Zitat mit Foto</td><td><span class="z g">●</span>Großes Zitat mit Schmerz 8 → 1</td></tr>
+        <tr><th>Erster Termin</th><td class="wahl"><span class="z g">●</span>Zeitleiste 0:00 bis 0:55 mit sechs Schritten, Knopf und „Was mitbringen, Parken, Formulare“</td><td><span class="z s">○</span>Nur „Termin anfragen oder anrufen“</td><td><span class="z g">●</span>Vier Schritte in neunzig Minuten</td><td><span class="z g">●</span>Vier Schritte, Behandlungsplan</td></tr>
+        <tr><th>Kassen / Preise</th><td class="wahl"><span class="z g">●</span>Preisliste rechtsbündig, darunter „Wir rechnen ab mit …“</td><td><span class="z g">●</span>Drei Vorsorgepläne</td><td><span class="z g">●</span>„Wissen, was es kostet“: Kassen und Pläne</td><td><span class="z g">●</span>Drei Preise</td></tr>
+        <tr><th>Gut zu wissen</th><td class="wahl"><span class="z g">●</span>FAQ mit Angst-Frage („Ich habe Angst vorm Zahnarzt“), daneben Rezeption mit Namen und Telefon</td><td><span class="z g">●</span>Praktische Fragen</td><td><span class="z g">●</span>FAQ</td><td><span class="z g">●</span>„Bevor du buchst“</td></tr>
+        <tr><th>Sprechzeiten / Kontakt</th><td class="wahl"><span class="z g">●</span>Adresse riesig, Parken und Rad, Sprechzeiten als Tabelle, Termin, Anruf, Route, Raumfoto</td><td><span class="z g">●</span>Zwei Karten: Anfrage oder erst anrufen. Handy: feste Leiste</td><td><span class="z m">◐</span>Schlussband, Zeiten nur im Fuß</td><td><span class="z g">●</span>Terminwahl mit freien Zeiten</td></tr>
+        <tr><th>Fuß</th><td class="wahl"><span class="z g">●</span>Vier Spalten mit Zeiten, Notfall-Satz, Wortmarke riesig</td><td><span class="z g">●</span>Dunkelgrün, Spalten</td><td><span class="z m">◐</span>Spalten</td><td><span class="z g">●</span>Dunkel, Spalten</td></tr>
+      </tbody>
+    </table>
+    <p class="legende"><span class="z g">●</span>vorhanden und übertragbar &nbsp; <span class="z m">◐</span>teilweise &nbsp; <span class="z s">○</span>fehlt</p>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">B</div>
+  <div>
+    <h3>Empfehlung: <span class="sig">Brightleaf Dental</span></h3>
+    <div class="empfehlung">
+      <div>
+        <p class="gross">Brightleaf ist die einzige Seite, die von oben bis unten wie ein gutes Gespräch an der Rezeption funktioniert: was ihr macht, was es kostet, wie der erste Termin abläuft, wer behandelt, wann offen ist. <span class="sig">Ein Gedanke trägt alles: Fakten statt Versprechen, groß gesetzt.</span> Was fehlt, ist Weichheit und Robustheit für schwache Fotos. Die bauen wir ein.</p>
+        <div class="muster">
+          <div class="m-nav"><b>Zahnarztpraxis Dr. Muster</b><span>Leistungen · Erster Termin · Team · Sprechzeiten</span><span class="tel">0421 123 456</span></div>
+          <div class="m-held">
+            <div>
+              <div class="mk">Zahnarztpraxis in Bremen-Findorff</div>
+              <h5>Gesunde Zähne. Ohne Umwege.</h5>
+              <p>Vorsorge, Füllungen und Zahnersatz. Wir erklären jeden Schritt, bevor wir anfangen.</p>
+              <div class="m-knoepfe"><span class="k1">Termin buchen</span><span class="k2">0421 123 456</span></div>
+            </div>
+            <div class="m-foto"><span><i>Foto im weichen Rahmen</i>Behandlungsraum vom Handy. Weiß und Grün tragen, nicht die Bildqualität. Vollbild nur bei gutem Foto.</span></div>
+          </div>
+          <div class="m-zeile"><div>Alle Kassen und privat</div><div>Heute bis 18 Uhr</div><div>Barrierefreier Zugang</div><div>Musterstraße 4</div></div>
+          <div class="m-unten">
+            <div class="m-zeit"><div class="t">Sprechzeiten</div>
+              <dl><dt>Mo, Mi</dt><dd>8–18 Uhr</dd><dt class="heute">Di (heute)</dt><dd class="heute">8–18 Uhr</dd><dt>Do</dt><dd>8–20 Uhr</dd><dt>Fr</dt><dd>8–13 Uhr</dd></dl>
+              <div class="status">Jetzt geöffnet</div></div>
+            <div class="m-ablauf"><div class="t" style="font-weight:600;font-size:13px;color:var(--ink-soft);margin-bottom:8px">Dein erster Termin</div>
+              <div class="schritt"><b>0:00</b><span>Ankommen, Karte einlesen</span></div>
+              <div class="schritt"><b>0:10</b><span>Gespräch: was dich stört</span></div>
+              <div class="schritt"><b>0:20</b><span>Untersuchung, ggf. Röntgen</span></div>
+              <div class="schritt"><b>0:40</b><span>Plan in einfachen Worten</span></div></div>
+          </div>
+        </div>
+        <p class="muster-cap">Muster mit Platzhalterwerten. Kassen, Barrierefreiheit, „Jetzt geöffnet“ und Zeitleiste erscheinen nur, wenn die Daten es hergeben.</p>
+      </div>
+      <div>
+        <h4>Was wir 1:1 übernehmen</h4>
+        <ul>
+          <li>Eine Grotesk für alles (Plus Jakarta Sans oder gleichwertig), Überschriften Halbfett mit engem Abstand, keine Serife, keine Kursive</li>
+          <li>Weiß als Grund, ein ruhiges Praxisgrün nur für Knöpfe und Ziffern, Mint als einzige Fläche (Kennzahlen, Fuß)</li>
+          <li>Einstieg: zwei kurze Sätze, darunter Faktenzeile mit vier Fakten, ein Knopf, Telefon immer sichtbar</li>
+          <li>Leistungen als große Liste: Name groß, rechts „Das kennst du vielleicht“ und „meist 2 Termine“</li>
+          <li>Erster Termin als Zeitleiste mit großen Ziffern (0:00, 0:10 …), Fotos mit Bildunterschrift daneben</li>
+          <li>Team mit Schwerpunkt, ein großes Zitat mit Google-Schnitt, FAQ mit Mensch und Telefon daneben</li>
+          <li>Kontakt: Adresse riesig, Parken, Sprechzeiten als Tabelle, drei Wege (Termin, Anruf, Route); Fuß mit Wortmarke</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Was wir optimieren</h4>
+        <ul>
+          <li>Barrierearm für Ältere: Fließtext mindestens 18 px, Grau nicht heller als #4a5b55, Ziele mindestens 48 px, Fokus sichtbar</li>
+          <li>Weiche Ecken (12–18 px) statt 4 px, ohne ins Kartenraster zu kippen</li>
+          <li>Einstieg robust: Foto im weichen Rahmen neben dem Satz; Vollbild-Foto nur bei guter Bildqualität</li>
+          <li>Sprechzeiten mit „heute“ hervorgehoben und „Jetzt geöffnet“; Telefonzeiten getrennt, falls bekannt</li>
+          <li>Handy: feste Leiste Anrufen / Termin (gibt es in Pageblitz schon)</li>
+          <li>Ohne Daten weglassen: Kassenzeile, Preise, Kennzahlen, Bewertung. Bei Ärzten statt Preisen „Was du mitbringst“</li>
+          <li>Kurz-Kürzel in Mono (PREV, FILL) ersetzen durch deutsche Wörter in Grün; Wortmarke im Fuß passt sich langen Namen an</li>
+          <li>Abgrenzung: kein Papier und keine Slab (Werkstoff), keine Farbflächen und Sticker (Plakat), kein Schwarz-Weiß-Raster (Raster), keine Serife (Journal)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="abschnitt">
+  <div class="snr">C</div>
+  <div>
+    <h3>Drei Betriebe, ein System</h3>
+    <div class="betriebe">
+      <div class="betrieb b1"><div class="bnr">01</div><div class="bname">Zahnarztpraxis</div>
+        <dl><dt>Einstieg</dt><dd>„Gesunde Zähne. Ohne Umwege.“ Faktenzeile: Kassen, heute offen bis, Zugang, Adresse</dd>
+        <dt>Liste</dt><dd>Vorsorge, Füllungen, Zahnersatz, Kinder, Schmerzen heute</dd>
+        <dt>Erster Termin</dt><dd>0:00 Ankommen bis 0:40 Plan in einfachen Worten</dd>
+        <dt>Gut zu wissen</dt><dd>„Ich habe Angst vorm Zahnarzt“, „Was zahlt meine Kasse?“</dd></dl></div>
+      <div class="betrieb b2"><div class="bnr">02</div><div class="bname">Physiotherapie</div>
+        <dl><dt>Einstieg</dt><dd>„Wieder schmerzfrei bewegen.“ Faktenzeile: Rezept und privat, Hausbesuch, Parkplatz, Adresse</dd>
+        <dt>Liste</dt><dd>Krankengymnastik, Manuelle Therapie, Lymphdrainage, Massage, jeweils „meist 6 Termine“</dd>
+        <dt>Erster Termin</dt><dd>0:00 Rezept vorlegen, 0:10 Befund, 0:25 Behandlung, 0:50 Übungen für zu Hause</dd>
+        <dt>Gut zu wissen</dt><dd>„Brauche ich ein Rezept?“, „Was ziehe ich an?“</dd></dl></div>
+      <div class="betrieb b3"><div class="bnr">03</div><div class="bname">Steuerberatung</div>
+        <dl><dt>Einstieg</dt><dd>„Steuern. Ordentlich erledigt.“ Faktenzeile: Privat und Firmen, Erstgespräch, Bürozeiten, Adresse</dd>
+        <dt>Liste</dt><dd>Einkommensteuer, Buchhaltung, Jahresabschluss, Lohn</dd>
+        <dt>Erstgespräch</dt><dd>0:00 Kennenlernen, 0:15 Unterlagen sichten, 0:30 Fristen klären, 0:45 Angebot schriftlich</dd>
+        <dt>Gut zu wissen</dt><dd>„Welche Unterlagen brauche ich?“, „Geht das auch digital?“</dd></dl></div>
+    </div>
+    <p class="fuss">Quellen: Refero-Styles zu August Health, Ease Health, Letters, Headspace, Zelt, Podia, Hims, WhatsApp; Refero-Screens zu Hers, Fresha, ClassPass, Doctronic, Cal.com (nur Software, keine Praxis). Live geprüft und verworfen: 32reasons ZAHNTEAM (nur Vollbild-Foto), Six Physio, Modern Animal (Serife, Kette), Tend (heute andere Seite), Avi Medical (gesperrt); Framer-Vorlagen Fysio (sauber, aber dünn), DentArt, Dentix, Evia Dental, Dentel, Dentique, Apex Clinic, ClinicHub, Clireo, Dental, Hospic, Helora, Medivra, Mindleaf, Haumind, Seren, Celune, Althea, Aevum/Meridian, Avelune, Clearpath, Healthio, Serelin, ReoDental, Wellbase, Well-be, Wellns, Alma, Human Home, Elaraa. Brightleaf, Alderwren, Luma und Stridewell sind Vorlagen mit erfundenen Betrieben; wir bauen das System nach, nicht Texte oder Bilder.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
