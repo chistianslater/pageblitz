@@ -411,3 +411,66 @@ test.describe("A11y (axe): Designsystem Plakat", () => {
     }
   }
 });
+
+/**
+ * Designsystem Klar (Plan 2026-10-12, Task K8): drei Paletten im vollen
+ * Inhaltsstand plus die drei Beispielbetriebe (Zahnarzt Lind, Physio Sand mit
+ * kleinem Foto, Kanzlei Wasser ohne Foto), Desktop und Handy. Strenger als
+ * die übrigen Systeme: 0 Befunde jeder Schwere (Klar zielt auf ältere
+ * Besucher). Reduzierte Bewegung + Durchscrollen hält Startzustände fern.
+ */
+test.describe("A11y (axe): Designsystem Klar", () => {
+  async function scrollThrough(page: Page): Promise<void> {
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 30));
+      }
+      window.scrollTo(0, 0);
+    });
+  }
+  async function expectNoViolations(page: Page, label: string): Promise<void> {
+    const results = await new AxeBuilder({ page }).analyze();
+    const found = results.violations.map(
+      v =>
+        `  - ${v.id} [${v.impact}] ${v.help}\n    nodes: ${v.nodes
+          .slice(0, 3)
+          .map(n => n.target.join(" "))
+          .join(" | ")}`
+    );
+    if (found.length)
+      throw new Error(`axe: ${found.length} Befund(e) auf "${label}":\n${found.join("\n")}`);
+  }
+  for (const palette of ["lind", "wasser", "sand"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`klar ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=klar&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `klar ${palette} (${width})`);
+      });
+    }
+  }
+  for (const [showcase, palette] of [
+    ["zahnarzt", "lind"],
+    ["physio", "sand"],
+    ["kanzlei", "wasser"],
+  ] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`klar ${showcase} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/demo/system/klar/${showcase}?palette=${palette}&live=1`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `klar ${showcase} ${palette} (${width})`);
+      });
+    }
+  }
+});

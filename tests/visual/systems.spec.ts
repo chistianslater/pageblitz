@@ -342,3 +342,110 @@ test("Plakat: Laufband läuft mit Script, Pause-Knopf hält es an", async ({
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(toggle).toBeHidden();
 });
+
+// Bildvergleich Designsystem Klar (Plan 2026-10-12, Task K8): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie Journal,
+// Raster, Werkstoff, Plakat (kein waagrechter Überlauf; reduzierte Bewegung =
+// keine Startzustände). Das Dock ist `position: fixed`.
+const KLAR_PALETTES = ["lind", "wasser", "sand"] as const;
+
+for (const palette of KLAR_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`klar ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=klar&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `klar-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Klar: DM Sans und Atkinson Hyperlegible Next werden geladen", async ({
+  page,
+}) => {
+  await page.goto("/dev/site-preview?system=klar&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  const families = loaded.join(",");
+  expect(families).toMatch(/DM Sans/);
+  expect(families).toMatch(/Atkinson Hyperlegible Next/);
+  const fonts = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector(".kl-display")!)
+      .fontFamily,
+    body: getComputedStyle(document.body.querySelector(".pb-klar")!)
+      .fontFamily,
+  }));
+  expect(fonts.display).toMatch(/^"?DM Sans/);
+  expect(fonts.body).toMatch(/^"?Atkinson Hyperlegible Next/);
+});
+
+test("Klar: Tastatur — Fokusring 2 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=klar&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("2px");
+  }
+});
+
+test("Klar: Bewegung — Einstieg setzt sich, Abschnitte einmal, Foto nie unsichtbar", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo/system/klar/zahnarzt?palette=lind&live=1");
+  const root = page.locator('.pb-klar[data-pb-system="klar"]');
+  await expect(root).toHaveAttribute("data-kl-ready", "");
+  // Das Einstiegsfoto ist zu keinem Zeitpunkt per Deckkraft versteckt.
+  expect(
+    await page.evaluate(
+      () => getComputedStyle(document.querySelector(".kl-entry-media .kl-frame img")!).opacity
+    )
+  ).toBe("1");
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 400) {
+      window.scrollTo(0, y);
+      await new Promise(r => setTimeout(r, 40));
+    }
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll(".kl-sec")].filter(
+            s => !s.hasAttribute("data-kl-in")
+          ).length
+      )
+    )
+    .toBe(0);
+  // Reduzierte Bewegung: nichts wartet auf Script oder Scrollen.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  const hidden = await page.evaluate(
+    () =>
+      [...document.querySelectorAll(".kl-sec>.kl-wrap")].filter(
+        w => getComputedStyle(w).opacity !== "1"
+      ).length
+  );
+  expect(hidden).toBe(0);
+});
