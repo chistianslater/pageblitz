@@ -34,7 +34,9 @@ describe("Klar-Bewegung (CSS)", () => {
   test("hängt im Modul-CSS, vor der Abschaltung bei reduzierter Bewegung und dem Endmarker", () => {
     const i = KLAR_CSS.indexOf(KLAR_MOTION_CSS);
     expect(i).toBeGreaterThan(0);
-    expect(i).toBeLessThan(KLAR_CSS.indexOf("@media (prefers-reduced-motion:reduce)"));
+    expect(i).toBeLessThan(
+      KLAR_CSS.indexOf("@media (prefers-reduced-motion:reduce)")
+    );
     expect(i).toBeLessThan(KLAR_CSS.indexOf("/* ende klar */"));
   });
 
@@ -45,7 +47,9 @@ describe("Klar-Bewegung (CSS)", () => {
       KLAR_CSS.length - KLAR_MOTION_CSS.length / 2
     );
     expect(outside).not.toMatch(/data-kl-ready|data-kl-in/);
-    expect(outside).not.toMatch(/kl-rise|@keyframes kl-|kl-card|kl-fade|animation:kl-|--kl-clip-r/);
+    expect(outside).not.toMatch(
+      /kl-rise|@keyframes kl-|kl-card|kl-fade|animation:kl-|--kl-clip-r/
+    );
     // Kein Element ist außerhalb des Blocks per opacity:0 oder clip-path versteckt.
     expect(outside).not.toMatch(/opacity:0[;}]/);
     expect(outside).not.toMatch(/clip-path:inset/);

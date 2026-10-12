@@ -135,7 +135,9 @@ export function entryKicker(data: WebsiteDataV2, blueprint: Blueprint): string {
 /**
  * Rest der Pille hinter dem Namen (h1): Branche, wenn der Name sie nicht
  * schon nennt, dann der Ort — „ · Steuerberater in Hildesheim",
- * „ in Lüneburg" (Zahnarztpraxis Dr. Sommer), leer ohne beides.
+ * „ in Lüneburg" (Zahnarztpraxis Dr. Sommer), leer ohne beides. Vor „·"
+ * steht ein geschütztes Leerzeichen: der Trenner bleibt am Namen, eine
+ * Folgezeile beginnt nie mit „·".
  */
 export function pillTail(
   name: string,
@@ -144,7 +146,7 @@ export function pillTail(
 ): string {
   const lower = (t: string) => t.toLocaleLowerCase("de");
   const b = branch?.trim();
-  const own = b && !lower(name).includes(lower(b)) ? ` · ${b}` : "";
+  const own = b && !lower(name).includes(lower(b)) ? `\u00a0· ${b}` : "";
   const c = city?.trim();
   return `${own}${c ? ` in ${c}` : ""}`;
 }

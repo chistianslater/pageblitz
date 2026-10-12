@@ -273,7 +273,12 @@ describe("Klar: Einstieg", () => {
 
   test("Pille nennt die Branche, wenn der Name sie nicht nennt (h1 bleibt der Name)", () => {
     const e = entryOf(render(kanzleiDoc()));
-    expect(e).toContain('<h1 id="start-titel" class="kl-pill-name">Steuerkanzlei Brandt</h1><span> · Steuerberater in Hildesheim</span>');
+    expect(e).toContain('<h1 id="start-titel" class="kl-pill-name">Steuerkanzlei Brandt</h1><span>\u00a0· Steuerberater in Hildesheim</span>');
+    // Fließtext statt Flex-Zeilen: „·" hängt am Namen, nie am Zeilenanfang.
+    const pill = rules(KLAR_CSS).find(([sel]) => sel === ".pb-klar .kl-pill")![1];
+    expect(pill).toContain("display:inline-block");
+    expect(pill).not.toMatch(/flex/);
+    expect(KLAR_CSS).toMatch(/\.pb-klar \.kl-pill-name\{[^}]*display:inline/);
   });
 
   test("Physio (schwaches Foto): kleines Foto neben Abendtermin-Karte, Chips aus Daten", () => {

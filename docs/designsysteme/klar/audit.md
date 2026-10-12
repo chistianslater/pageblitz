@@ -61,11 +61,22 @@ Besucher (Schriftgrößen, Tippflächen, Kontrast, Fokus-Reihenfolge).
   dann Kartenkachel links (7) und Anschrift/Wege rechts (5) über die volle
   Breite. Handy unverändert.
 
+### Vor-Abnahme-Feinschliff (behoben, nach Probe mit echter Seite 593)
+
+- **V1 Kicker-Pille begann eine Folgezeile mit „·“** („Steuerkanzlei Brandt /
+  · Steuerberater …“). Behebung: Pille als Fließtext statt Flex-Zeilen,
+  geschütztes Leerzeichen vor „·“ (`pillTail`) — der Trenner bleibt am Namen.
+- **V2 Kartenkachel mit leerer hellgrüner Fläche oben links.** Behebung:
+  Park füllt den Block rechts oben zwischen Allee und Querstraße (mit
+  Baumpunkten), die Querstraße liegt unter der Nadelspitze.
+- **V3 Zeiten-Karte neben dem kleinen Foto am Desktop zu leer.** Behebung:
+  ab 900 px so hoch wie ihr Inhalt, unten bündig zum Foto.
+- **V4 Handy-Leiste mit gebautem Bundle geprüft:** im ersten Bildschirm
+  ausgeblendet (Einstiegsknöpfe sichtbar), nach dem Scrollen sichtbar —
+  mit und ohne reduzierte Bewegung.
+
 ### Niedrig (offen, bewusst)
 
-- **N1 Kicker-Pille bricht bei langen Namen vor „·“ um** (Kanzlei:
-  „Steuerkanzlei Brandt / · Steuerberater in Hildesheim“). Zwei saubere
-  Zeilen, Name bleibt als h1 zusammen; bei der Abnahme ansprechen.
 - **N2 Galerie am Handy einspaltig** — fünf Fotos ergeben eine lange
   Strecke. Bewusst: große Bilder statt kleiner Kacheln für ältere Augen.
 - **N3 Über uns ohne Foto** lässt am Desktop rechts Luft (Kanzlei). Hält

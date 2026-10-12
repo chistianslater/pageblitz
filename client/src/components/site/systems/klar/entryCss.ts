@@ -22,8 +22,10 @@ export const ENTRY_CSS = `/* Einstieg: photo · small · hours · text */
   grid-template-areas:"text" "actions" "media" "facts";background:var(--sys-field-1-bg);color:var(--sys-field-1-ink);border-radius:${R_PANEL};
   padding:calc(var(--sys-space-l) * .7) calc(var(--sys-space-s) * 1.25) calc(var(--sys-space-s) * 1.25)}
 .pb-klar .kl-entry-text{grid-area:text;min-width:0}
-.pb-klar .kl-pill{${step("kicker")};display:inline-flex;flex-wrap:wrap;align-items:center;column-gap:.3em;max-width:100%;min-height:calc(var(--sys-space-l) * .9);
-  padding:calc(var(--sys-space-2xs) * 1.5) calc(var(--sys-space-s) * .875);border-radius:calc(var(--sys-space-s) * 1.125);background:var(--sys-surface);color:var(--sys-ink);overflow-wrap:anywhere}
+/* Pille als Fließtext: der Trenner „·" hängt fest (geschütztes Leerzeichen)
+   am Namen, eine zweite Zeile beginnt nie mit „·" */
+.pb-klar .kl-pill{${step("kicker")};display:inline-block;max-width:100%;
+  padding:var(--sys-space-xs) calc(var(--sys-space-s) * .875);border-radius:calc(var(--sys-space-s) * 1.125);background:var(--sys-surface);color:var(--sys-ink);overflow-wrap:anywhere}
 .pb-klar .kl-pill-name{font:inherit;letter-spacing:inherit;display:inline}
 .pb-klar .kl-display{${step("display")};margin-top:calc(var(--sys-space-s) * 1.125);max-width:8em;text-wrap:balance;overflow-wrap:break-word;hyphens:auto}
 .pb-klar .kl-entry-lede{${step("lede")};margin-top:calc(var(--sys-space-s) * .875);max-width:var(--sys-space-measure);color:var(--kl-muted)}
@@ -91,7 +93,9 @@ export const ENTRY_CSS = `/* Einstieg: photo · small · hours · text */
   .pb-klar .kl-frame-in{aspect-ratio:5/4.6}
   .pb-klar .kl-stage--card{margin-bottom:0}
   .pb-klar .kl-todaycard{left:auto;right:calc(var(--sys-space-l) * -.7);bottom:calc(var(--sys-space-l) * .9);width:calc(var(--sys-space-2xl) * 3.125);padding:calc(var(--sys-space-s) * .875) var(--sys-space-s)}
-  .pb-klar .kl-duo{max-width:calc(var(--sys-space-2xl) * 5.5)}
+  .pb-klar .kl-duo{max-width:calc(var(--sys-space-2xl) * 5.5);align-items:end}
+  /* Zeiten-Karte neben dem kleinen Foto: so hoch wie ihr Inhalt, unten bündig */
+  .pb-klar .kl-duo .kl-side{align-content:start;gap:calc(var(--sys-space-s) * .75)}
   .pb-klar .kl-entry-facts{margin-top:var(--sys-space-l)}
   .pb-klar .kl-chip{background:color-mix(in srgb,var(--sys-surface) 70%,transparent);box-shadow:none}
   .pb-klar .kl-rate b{font-size:calc(var(--sys-space-l) * 1.5)}

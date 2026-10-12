@@ -155,8 +155,8 @@ describe("Klar: Wege (Reihenfolge laut Entscheid)", () => {
 describe("Klar: Pille", () => {
   test("Branche nur, wenn der Name sie nicht nennt; Ort mit „in“", () => {
     expect(pillTail("Zahnarztpraxis Dr. Sommer", "Zahnarztpraxis", "Lüneburg")).toBe(" in Lüneburg");
-    expect(pillTail("Steuerkanzlei Brandt", "Steuerberater", "Hildesheim")).toBe(" · Steuerberater in Hildesheim");
-    expect(pillTail("Brandt", "Steuerberater", undefined)).toBe(" · Steuerberater");
+    expect(pillTail("Steuerkanzlei Brandt", "Steuerberater", "Hildesheim")).toBe("\u00a0· Steuerberater in Hildesheim");
+    expect(pillTail("Brandt", "Steuerberater", undefined)).toBe("\u00a0· Steuerberater");
     expect(pillTail("Brandt", undefined, undefined)).toBe("");
   });
 });

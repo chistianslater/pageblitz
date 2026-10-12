@@ -164,12 +164,14 @@ export const CONTENT_CSS = `/* Kapitel-Kopf mit Knopf rechts (Desktop) */
 .pb-klar .kl-map{position:relative;height:calc(var(--sys-space-2xl) * 2.2);
   background:
     linear-gradient(90deg,transparent 47%,var(--sys-surface) 47%,var(--sys-surface) 53%,transparent 53%),
-    linear-gradient(0deg,transparent 58%,var(--sys-surface) 58%,var(--sys-surface) 63%,transparent 63%),
+    linear-gradient(0deg,transparent 35%,var(--sys-surface) 35%,var(--sys-surface) 40%,transparent 40%),
     linear-gradient(28deg,transparent 30%,var(--sys-surface) 30%,var(--sys-surface) 33%,transparent 33%),
     linear-gradient(90deg,color-mix(in srgb,var(--sys-surface) 55%,transparent) 2px,transparent 2px) 0 0/calc(var(--sys-space-xl) * .95) 100%,
     linear-gradient(0deg,color-mix(in srgb,var(--sys-surface) 55%,transparent) 2px,transparent 2px) 0 0/100% calc(var(--sys-space-l) * 1.2),
     var(--sys-field-2-bg)}
-.pb-klar .kl-map-park{position:absolute;left:8%;top:12%;width:24%;height:30%;border-radius:calc(var(--sys-space-s) * 1.125);background:var(--sys-field-1-bg)}
+/* Park füllt den Block rechts oben zwischen Allee und Querstraße, mit Baumpunkten */
+.pb-klar .kl-map-park{position:absolute;inset:10% 6% 46% 58%;border-radius:calc(var(--sys-space-s) * .75);
+  background:radial-gradient(circle,color-mix(in srgb,var(--sys-field-1-bg) 78%,var(--sys-ink)) 0 22%,transparent 26%) 0 0/calc(var(--sys-space-s) * 1.25) calc(var(--sys-space-s) * 1.25),var(--sys-field-1-bg)}
 .pb-klar .kl-map-pin{position:absolute;left:50%;top:60%;display:grid;place-items:center;width:calc(${TILE} * 1.3);height:calc(${TILE} * 1.3);
   border-radius:var(--sys-space-s) var(--sys-space-s) var(--sys-space-s) var(--sys-space-2xs);background:var(--sys-signal);color:var(--sys-on-signal);
   transform:translate(-50%,-100%) rotate(-45deg);box-shadow:0 calc(var(--sys-space-s) * .625) calc(var(--sys-space-m)) calc(var(--sys-space-s) * -.625) color-mix(in srgb,var(--sys-ink) 50%,transparent)}
