@@ -65,8 +65,8 @@ describe("Plakat: Gerüst", () => {
     }
   });
 
-  test("nicht freigeschaltet, aber mit Bewegungs-Bundle (seit P7)", () => {
-    expect(RELEASED_SYSTEMS).not.toContain("plakat");
+  test("freigeschaltet und mit Bewegungs-Bundle", () => {
+    expect(RELEASED_SYSTEMS).toContain("plakat");
     expect(SYSTEMS_WITH_MOTION).toContain("plakat");
     expect(SYSTEM_MOTION.plakat).toBeDefined();
   });

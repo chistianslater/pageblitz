@@ -744,6 +744,33 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     expect(gastro.candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(true);
   });
 
+  test("Plakat frei: Friseur, Café und Handwerk bekommen es als Alternative in Runde 0", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat"];
+    const isPlakat = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "plakat";
+    useDoc(friseurDoc);
+    const friseur = await caller().getStyleCandidates({ token: friseurToken, count: 3 });
+    expect(friseur.candidates.some(isPlakat)).toBe(true);
+    // Café und Handwerk: Plakat steht an dritter Stelle des Tripels und rückt
+    // nach, sobald die Seite das Hauptsystem (Werkstoff) schon trägt.
+    const onWerkstoff = { designRevision: 3, system: "werkstoff", palette: "papier" };
+    useDoc({ ...v2, ...onWerkstoff, businessCategory: "Café", businessName: "Café Muster", blueprintFamily: "gastro" });
+    const cafe = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(cafe.candidates.some(isPlakat)).toBe(true);
+    useDoc({ ...v2, ...onWerkstoff, businessCategory: "Tischlerei", blueprintFamily: "trade" });
+    const trade = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(trade.candidates.some(isPlakat)).toBe(true);
+  });
+
+  test("Plakat frei: Barbershop und Kurse bekommen es als Hauptsystem", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat"];
+    useDoc({ ...v2, businessCategory: "Friseursalon", businessName: "Kante Barbershop", blueprintFamily: "beauty" });
+    const barber = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(barber.candidates[0]).toMatchObject({ kind: "system", id: "plakat" });
+    useDoc({ ...v2, businessCategory: "Tanzschule", blueprintFamily: "courses" });
+    const courses = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(courses.candidates[0]).toMatchObject({ kind: "system", id: "plakat" });
+  });
+
   test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
     useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
     released.ids = ["journal"];

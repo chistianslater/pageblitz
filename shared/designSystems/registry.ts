@@ -10,12 +10,12 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   raster: RASTER,
   // Werkstoff: abgenommen und freigeschaltet.
   werkstoff: WERKSTOFF,
-  // Plakat: im Bau, registriert für Vorschau/Tests, NICHT freigeschaltet.
+  // Plakat: abgenommen und freigeschaltet (siehe RELEASED_SYSTEMS).
   plakat: PLAKAT,
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */
-export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal", "raster", "werkstoff"];
+export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal", "raster", "werkstoff", "plakat"];
 
 export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {
   return DESIGN_SYSTEMS[id];

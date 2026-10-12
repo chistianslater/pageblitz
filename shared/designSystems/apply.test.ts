@@ -35,7 +35,7 @@ describe("withDesignSystem", () => {
   });
 });
 
-describe("withPrimarySystem (Raster und Werkstoff freigeschaltet)", () => {
+describe("withPrimarySystem (Raster, Werkstoff und Plakat freigeschaltet)", () => {
   const withFamily = (blueprintFamily: string) =>
     withPrimarySystem({
       ...rev2,
@@ -73,14 +73,39 @@ describe("withPrimarySystem (Raster und Werkstoff freigeschaltet)", () => {
     expect(doc.designRevision).toBe(3);
   });
 
-  test.each(["health", "courses"])(
-    "Familie %s: Hauptsystem nicht gebaut, bleibt rev 2",
-    family => {
-      const doc = withFamily(family);
-      expect(doc.system).toBeUndefined();
-      expect(doc.designRevision).toBe(2);
-    }
-  );
+  test("Familie health: Hauptsystem nicht gebaut, bleibt rev 2", () => {
+    const doc = withFamily("health");
+    expect(doc.system).toBeUndefined();
+    expect(doc.designRevision).toBe(2);
+  });
+
+  test("Familie courses bekommt Plakat (rev 3)", () => {
+    const doc = withFamily("courses");
+    expect(doc.system).toBe("plakat");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test("Barbershop (Beauty + Barber im Namen) bekommt Plakat", () => {
+    const doc = withPrimarySystem({
+      ...rev2,
+      businessCategory: "Friseursalon",
+      businessName: "Kante Barbershop",
+      blueprintFamily: "beauty",
+    } as typeof rev2);
+    expect(doc.system).toBe("plakat");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test("Imbiss (Gastro) bekommt Plakat", () => {
+    const doc = withPrimarySystem({
+      ...rev2,
+      businessCategory: "Imbiss",
+      businessName: "Imbiss Muster",
+      blueprintFamily: "gastro",
+    } as typeof rev2);
+    expect(doc.system).toBe("plakat");
+    expect(doc.designRevision).toBe(3);
+  });
 
   test("Beauty behält Journal als Hauptsystem", () => {
     expect(withFamily("beauty").system).toBe("journal");

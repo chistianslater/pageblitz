@@ -253,13 +253,14 @@ die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 ### Rollback bei Designsystemen (rev 3)
 
 Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
-`system`/`palette` tragen (Journal, danach Raster und Werkstoff). Älterer Code kennt nur Revision 1
+`system`/`palette` tragen (Journal, danach Raster, Werkstoff und Plakat). Älterer Code kennt nur Revision 1
 und 2 bzw. das jüngere System nicht — solche Seiten bestehen dort die Schema-Prüfung nicht und liefern 404.
 **Bevor Prod auf einen älteren Commit zurückgesetzt wird**, auf dem VPS (noch
 mit dem neuen Code) zuerst sichern, dann zurücksetzen. Welche Seiten:
 
 | Ziel-Commit | Aufruf |
 |---|---|
+| vor Plakat, aber mit Werkstoff (`7ab2e05d` oder älter, nicht vor `1f67e1de`) | `--system plakat` — nur Plakat-Seiten, Journal, Raster und Werkstoff bleiben |
 | vor Werkstoff, aber mit Raster (`32a69284` oder älter, nicht vor `f1fafe55`) | `--system werkstoff` — nur Werkstoff-Seiten, Journal und Raster bleiben |
 | vor Raster, aber mit Journal (`f1fafe55` oder älter, nicht vor `fed41e1`) | `--system raster` — nur Raster-Seiten, Journal bleibt |
 | vor Journal (`fed41e1` oder älter) | ohne `--system` — alle rev-3-Seiten |
@@ -270,9 +271,9 @@ cd /root/pageblitz
 mysqldump -u<user> -p<pw> pageblitz generated_websites \
   > /root/backups/vor-systeme-rollback-$(date +%F).sql
 # 2) Trockenlauf: listet die betroffenen rev-3-Seiten (Zeile 1 nennt den Filter)
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system werkstoff
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system plakat
 # 3) Schreiben: system/palette entfallen, Revision 2, Seite zeigt ihr Pack
-npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system werkstoff --schreiben
+npx tsx -r dotenv/config scripts/systeme-zuruecksetzen.ts --system plakat --schreiben
 # 4) Erst jetzt den alten Commit deployen (git reset --hard <commit> …)
 ```
 
@@ -286,8 +287,10 @@ sich ein solcher Stand nicht ansehen/wiederherstellen.
 `keepLinks` bzw. `scripts/regenerate-keep-links.ts` — vergibt das System neu:
 Baupläne `advice`, `auto`, `urgent`, `industry` und `standard` bekommen
 Raster, `beauty` (ohne Barbiere), `stay` und `creative` Journal, `trade`,
-`retail` sowie Café/Bäckerei Werkstoff. Gedruckte Postkarten-
-Vorschauen sehen danach anders aus als auf der Karte; Postkarten-Seiten nur
+`retail` sowie Café/Bäckerei Werkstoff; Barbiere/Herrenfriseure, Imbiss und
+`courses` (Kurse) bekommen Plakat. Gedruckte Postkarten-
+Vorschauen sehen danach anders aus als auf der Karte (Postkarten-Seiten von
+Barbieren ändern sich bei Neuerzeugung auf Plakat); Postkarten-Seiten nur
 bewusst neu erzeugen.
 
 ## 4. Umgebungsvariablen & Mock-Flags
