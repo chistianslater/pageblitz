@@ -4,6 +4,7 @@ import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
 import { JOURNAL } from "../../../../../../shared/designSystems/journal";
 import { RASTER } from "../../../../../../shared/designSystems/raster";
 import { WERKSTOFF } from "../../../../../../shared/designSystems/werkstoff";
+import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { blueprintFor } from "../../../../../../shared/stylePacks/blueprints";
 import { SECTION_ANCHORS, type NavItem } from "../../engine";
@@ -202,5 +203,24 @@ describe("Systeme: @font-face", () => {
     expect(css).toContain('font-family:"DM Mono"');
     expect(css).toContain("url(/fonts/systems/dm-mono-latin-500.woff2)");
     expect(css).toContain("font-weight:200 800");
+  });
+
+  test("Plakat: League Gothic mit Breitenbereich, Hanken Grotesk ohne", () => {
+    const css = systemFontFaces(PLAKAT);
+    const rules = css.split("\n");
+    expect(rules).toHaveLength(2);
+    const [gothic, hanken] = rules;
+    expect(gothic).toContain('font-family:"League Gothic"');
+    expect(gothic).toContain("url(/fonts/systems/league-gothic-latin-wdth.woff2)");
+    // Bereich aus den genutzten Stufen (figure 82 % … mark 100 %), damit
+    // font-stretch die wdth-Achse ansteuert statt zu synthetisieren.
+    expect(gothic).toContain("font-stretch:82% 100%");
+    expect(hanken).toContain('font-family:"Hanken Grotesk"');
+    expect(hanken).toContain("font-weight:100 900");
+    expect(hanken).not.toContain("font-stretch");
+  });
+
+  test.each([JOURNAL, RASTER, WERKSTOFF])("$id: kein font-stretch", def => {
+    expect(systemFontFaces(def)).not.toContain("font-stretch");
   });
 });

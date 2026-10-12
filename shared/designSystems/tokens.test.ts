@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { JOURNAL } from "./journal";
 import { RASTER } from "./raster";
 import { WERKSTOFF } from "./werkstoff";
+import { PLAKAT } from "./plakat";
 import { assertSafeImageFilter } from "./toCss";
 import type { DesignSystemDef } from "./types";
 import { getPalette, pickPalette } from "./palette";
@@ -170,5 +171,101 @@ describe("Mono-Schrift und Bildfilter nur, wo das System sie führt", () => {
   test("Werkstoff-Bildfilter ist zulässig", () => {
     expect(WERKSTOFF.imageFilter).toBeTruthy();
     expect(() => assertSafeImageFilter(WERKSTOFF.imageFilter!)).not.toThrow();
+  });
+});
+
+describe("Plakat-Tokens", () => {
+  test("drei Paletten Kante, Senf, Puls mit je drei Feldern", () => {
+    expect(PLAKAT.id).toBe("plakat");
+    expect(PLAKAT.palettes.map(p => p.id)).toEqual(["kante", "senf", "puls"]);
+    for (const p of PLAKAT.palettes) {
+      expect(p.fields).toHaveLength(3);
+      expect(new Set(p.fields!.map(f => f.id)).size).toBe(3);
+    }
+  });
+  test("Schriftskala: neun Kernstufen plus figure und data, Display-Stufen gestaucht", () => {
+    expect(Object.keys(PLAKAT.type).sort()).toEqual(
+      ["body", "data", "display", "figure", "h2", "h3", "kicker", "lede", "link", "mark", "small"]
+    );
+    expect(PLAKAT.type.display.stretch).toBe("88%");
+    expect(PLAKAT.type.h2.stretch).toBe("92%");
+    expect(PLAKAT.type.figure?.stretch).toBe("82%");
+    expect(PLAKAT.type.mark.stretch).toBe("100%");
+    expect(PLAKAT.type.body.stretch).toBeUndefined();
+  });
+  test.each(PLAKAT.palettes.map(p => [p.id, p] as const))("Kontrast %s", (_id, p) => {
+    expect(contrastRatio(p.ink, p.paper)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(7);
+    expect(p.signal && p.onSignal).toBeTruthy();
+    expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(p.signal!, p.paper)).toBeGreaterThanOrEqual(3);
+  });
+  test.each(
+    PLAKAT.palettes.flatMap(p => p.fields!.map(f => [`${p.id}/${f.id}`, f] as const))
+  )("Feld-Kontrast %s", (_id, f) => {
+    expect(contrastRatio(f.ink, f.bg)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(f.muted, f.bg)).toBeGreaterThanOrEqual(4.5);
+  });
+  test("genau zwei Preloads: League Gothic und Hanken Grotesk", () => {
+    const files = [...PLAKAT.fonts.display.files, ...PLAKAT.fonts.text.files].map(f => f.file);
+    expect(PLAKAT.preload).toEqual([
+      "league-gothic-latin-wdth.woff2",
+      "hanken-grotesk-latin-wght.woff2",
+    ]);
+    for (const f of PLAKAT.preload) expect(files).toContain(f);
+  });
+  test("CSS-Variablen: Felder, Stretch, Bildfilter, keine Steuerzeichen", () => {
+    const v = systemCssVars(PLAKAT, "senf");
+    expect(v["--sys-paper"]).toBe("#f6f2ea");
+    expect(v["--sys-field-1-bg"]).toBe("#f6bd3c");
+    expect(v["--sys-field-2-ink"]).toBe("#1b1410");
+    expect(v["--sys-field-3-bg"]).toBe("#3b1309");
+    expect(v["--sys-field-3-muted"]).toBe("#e3c9bd");
+    expect(v["--sys-display-stretch"]).toBe("88%");
+    expect(v["--sys-h2-stretch"]).toBe("92%");
+    expect(v["--sys-figure-stretch"]).toBe("82%");
+    expect(v["--sys-mark-stretch"]).toBe("100%");
+    expect(v["--sys-body-stretch"]).toBeUndefined();
+    expect(v["--sys-font-display"]).toContain("League Gothic");
+    expect(v["--sys-font-text"]).toContain("Hanken Grotesk");
+    expect(v["--sys-font-mono"]).toBeUndefined();
+    expect(v["--sys-image-filter"]).toBe(PLAKAT.imageFilter);
+    for (const p of PLAKAT.palettes) {
+      const pv = systemCssVars(PLAKAT, p.id);
+      expect(Object.keys(pv).filter(k => k.startsWith("--sys-field-"))).toHaveLength(9);
+      expect(Object.values(pv).every(x => !/[;{}]/.test(x))).toBe(true);
+    }
+  });
+});
+
+describe("Felder und Stretch nur, wo das System sie führt", () => {
+  test.each([JOURNAL, RASTER, WERKSTOFF])("$id ohne --sys-field-*, --sys-*-stretch", def => {
+    for (const p of def.palettes) {
+      const v = systemCssVars(def, p.id);
+      expect(Object.keys(v).some(k => k.startsWith("--sys-field-"))).toBe(false);
+      expect(Object.keys(v).some(k => k.endsWith("-stretch"))).toBe(false);
+    }
+  });
+  test("Feld- und Stretch-Werte mit ; { } werden abgewiesen", () => {
+    for (const bad of ["#fff;color:red", "x}body{", "a{b"]) {
+      const [p0, ...rest] = PLAKAT.palettes;
+      const f0 = p0.fields!;
+      const badField: DesignSystemDef = {
+        ...PLAKAT,
+        palettes: [
+          { ...p0, fields: [{ ...f0[0], bg: bad }, f0[1], f0[2]] },
+          rest[0],
+          rest[1],
+        ],
+      };
+      expect(() => systemCssVars(badField, p0.id)).toThrow();
+      const badStretch: DesignSystemDef = {
+        ...PLAKAT,
+        type: { ...PLAKAT.type, display: { ...PLAKAT.type.display, stretch: bad } },
+      };
+      expect(() => systemCssVars(badStretch)).toThrow();
+    }
   });
 });

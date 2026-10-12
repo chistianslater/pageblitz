@@ -1,6 +1,7 @@
 import { JOURNAL } from "./journal";
 import { RASTER } from "./raster";
 import { WERKSTOFF } from "./werkstoff";
+import { PLAKAT } from "./plakat";
 import type { DesignSystemDef, DesignSystemId } from "./types";
 
 export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = {
@@ -9,6 +10,8 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   raster: RASTER,
   // Werkstoff: abgenommen und freigeschaltet.
   werkstoff: WERKSTOFF,
+  // Plakat: im Bau, registriert für Vorschau/Tests, NICHT freigeschaltet.
+  plakat: PLAKAT,
 };
 
 /** Nur abgenommene Systeme gehen an neue Seiten und ins Studio (Spec §6). */

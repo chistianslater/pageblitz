@@ -4,6 +4,8 @@ Geist: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist
 Zilla Slab: Copyright 2017 The Zilla Slab Project Authors (https://github.com/mozilla/zilla-slab)
 Karla: Copyright 2019 The Karla Project Authors (https://github.com/googlefonts/karla)
 DM Mono: Copyright 2020 The DM Mono Project Authors (https://github.com/googlefonts/dm-mono)
+League Gothic: Copyright 2020 The League Gothic Project Authors (https://github.com/theleagueof/league-gothic)
+Hanken Grotesk: Copyright 2021 The Hanken Grotesk Project Authors (https://github.com/marcologous/hanken-grotesk)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

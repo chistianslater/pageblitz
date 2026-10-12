@@ -23,7 +23,12 @@ export type TypeSpec = {
   track: string;
   weight: number;
   upper?: boolean;
+  /** `font-stretch` (wdth-Achse), z. B. "88%" — nur Systeme mit Breitenachse (Plakat). */
+  stretch?: string;
 };
+
+/** Farbfeld (Plakat): Fläche mit eigener Schrift- und Nebenfarbe. */
+export type PaletteField = { id: string; bg: string; ink: string; muted: string };
 
 export type SystemPalette = {
   id: string;
@@ -39,6 +44,8 @@ export type SystemPalette = {
   signal?: string;
   /** Schrift auf `signal` (Rückfall: onDeep). */
   onSignal?: string;
+  /** Genau drei Farbfelder (Plakat): zwei helle, ein tiefes. Optional. */
+  fields?: readonly [PaletteField, PaletteField, PaletteField];
 };
 
 export type FontFile = { file: string; weight: string; style: "normal" | "italic" };
