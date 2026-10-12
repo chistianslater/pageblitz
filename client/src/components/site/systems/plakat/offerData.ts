@@ -29,9 +29,7 @@ export function plakatPhotos<T extends SystemSection>(
   let processPhoto: string | undefined;
   const { list } = claimPhotos(sections, hidden, (all, claimed) => {
     const taken = new Set(claimed);
-    const team = all.find(
-      (s): s is SectionOf<"team"> => s.type === "team"
-    );
+    const team = all.find((s): s is SectionOf<"team"> => s.type === "team");
     const teamPhotos: string[] = [];
     for (const m of team?.members ?? [])
       if (m.imageUrl && !taken.has(m.imageUrl)) {
@@ -39,9 +37,11 @@ export function plakatPhotos<T extends SystemSection>(
         teamPhotos.push(m.imageUrl);
       }
     const process = all.some(s => s.type === "process");
-    const about = all.find(
-      (s): s is SectionOf<"about"> => s.type === "about"
-    )?.imageUrl;
+    // Das Über-uns-Foto bleibt dort — außer es ist ausgeblendet.
+    const about = hidden.includes("about-media")
+      ? undefined
+      : all.find((s): s is SectionOf<"about"> => s.type === "about")
+          ?.imageUrl;
     const gallery = all.find(
       (s): s is SectionOf<"gallery"> => s.type === "gallery"
     );
@@ -52,9 +52,7 @@ export function plakatPhotos<T extends SystemSection>(
     const picked = [...teamPhotos, ...(processPhoto ? [processPhoto] : [])];
     return picked.length ? picked : undefined;
   });
-  const hero = list.find(
-    (s): s is T & SectionOf<"hero"> => s.type === "hero"
-  );
+  const hero = list.find((s): s is T & SectionOf<"hero"> => s.type === "hero");
   const heroUrl =
     hero?.imageUrl && !hidden.includes("hero-media") ? hero.imageUrl : "";
   const seen = new Set<string>([heroUrl]);
@@ -96,18 +94,31 @@ export function galleryGroups(count: number): number[] {
 
 /* ── Preise ───────────────────────────────────────────────────────────── */
 
+/** Betrag wie „7,50", „1.200", „25–35"; optional „ab" davor, „€" dahinter. */
+const AMOUNT = String.raw`\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
+const SHORT_PRICE = new RegExp(
+  String.raw`^(?:ab\s+)?(?:${AMOUNT})(?:\s*[–-]\s*(?:${AMOUNT}))?\s*(?:€|eur|euro)?$`,
+  "i"
+);
+/** Länger passt der große Preis bei 320 px nicht neben den Namen. */
+const BIG_MAX = 12;
+
 /**
- * Preis einer Zeile: lesbarer Preis (priceValue) → groß, so geschrieben
- * wie in den Daten (formatPrice ergänzt nur „€"); sonst Text klein
- * („auf Anfrage"); leer → nichts.
+ * Preis einer Zeile: kurzer, lesbarer Betrag (priceValue; „ab", Spanne,
+ * höchstens 12 Zeichen) → groß, so geschrieben wie in den Daten
+ * (formatPrice ergänzt nur „€"); alles andere („auf Anfrage", „ab 1.200 €
+ * zzgl. Anfahrt") klein und umbrechend; leer → nichts.
  */
 export function rowPrice(
   price: string | undefined
 ): { big: string } | { note: string } | undefined {
   const t = price?.trim();
   if (!t) return undefined;
-  return priceValue(t) !== undefined
-    ? { big: formatPrice(t) }
+  const big = formatPrice(t);
+  return priceValue(t) !== undefined &&
+    SHORT_PRICE.test(t) &&
+    big.length <= BIG_MAX
+    ? { big }
     : { note: t };
 }
 
@@ -137,9 +148,11 @@ export function voiceOf(
 ): { text: string; author: string; stars: boolean } | undefined {
   const quote = pickReviewQuote(items);
   if (!quote) return undefined;
-  const source = items.find(
-    i => i.author === quote.author && i.text.includes(quote.text.slice(0, 24))
-  );
+  // Genau die Bewertung, aus der das Zitat stammt (gleiche Auswahl je Eintrag).
+  const source = items.find(i => {
+    const own = pickReviewQuote([i]);
+    return own?.author === quote.author && own.text === quote.text;
+  });
   return {
     text: unquote(quote.text),
     author: quote.author.trim(),

@@ -12,12 +12,7 @@ import {
   PlakatServices,
   PlakatStats,
 } from "./Offer";
-import {
-  PlakatAbout,
-  PlakatGallery,
-  PlakatReviews,
-  PlakatTeam,
-} from "./Story";
+import { PlakatAbout, PlakatGallery, PlakatReviews, PlakatTeam } from "./Story";
 import { PlakatContact, PlakatFaq } from "./Visit";
 import {
   PlakatCta,

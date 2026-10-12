@@ -18,7 +18,7 @@ const SHARED = `/* Töne je Fläche (Formen, Monogramme, Farbpunkte) */
 .pb-plakat .pk-more{margin-top:var(--sys-space-l)}
 .pb-plakat .pk-prose{display:grid;gap:var(--sys-space-s);max-width:var(--sys-space-measure);margin-top:var(--sys-space-m)}
 .pb-plakat .pk-ul{${step("link")};text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.25em}
-.pb-plakat .pk-today{display:inline-block;vertical-align:middle;margin-left:calc(var(--sys-space-xs) * 1.25);padding:calc(var(--sys-space-2xs) * 1.25) calc(var(--sys-space-xs) * 1.125);
+.pb-plakat .pk-today{display:inline-block;vertical-align:middle;margin-left:calc(var(--sys-space-xs) * .75);padding:calc(var(--sys-space-2xs) * 1.25) calc(var(--sys-space-xs) * 1.125);
   border-radius:${PILL};background:var(--sys-signal);color:var(--sys-on-signal);font-family:var(--sys-font-text);font-style:normal;font-weight:700;
   font-size:calc(var(--sys-small-size) * .8);line-height:1;letter-spacing:0;text-transform:none;font-stretch:normal}
 /* Kapitel mit Form daneben: Handy Form nach dem Inhalt, Desktop links (Ablauf) bzw. rechts (Über uns) */
@@ -41,7 +41,8 @@ const OFFER = `/* Riesenliste: Name in League Gothic, Preis rechts (nur aus Date
 .pb-plakat .pk-row:first-child{border-top:2px solid currentColor}
 .pb-plakat .pk-row-name{${step("h2")};overflow-wrap:anywhere;hyphens:manual}
 .pb-plakat .pk-row-price{${step("h2")};font-size:calc(var(--sys-h2-size) * .78);white-space:nowrap}
-.pb-plakat .pk-row-note{${step("small")};color:var(--pk-muted);text-align:right;max-width:calc(var(--sys-space-2xl) * 1.2)}
+/* Preis als Text (lang oder ohne Betrag): eigene Zeile unter dem Namen, bricht um */
+.pb-plakat .pk-row-note{${step("small")};font-weight:600;grid-column:1/-1;margin-top:calc(var(--sys-space-2xs) * 1.5);max-width:var(--sys-space-measure);overflow-wrap:anywhere}
 .pb-plakat .pk-row-text{${step("small")};grid-column:1/-1;margin-top:calc(var(--sys-space-2xs) * 1.5);color:var(--pk-muted);max-width:var(--sys-space-measure)}
 .pb-plakat .pk-cat+.pk-cat{margin-top:var(--sys-space-xl)}
 .pb-plakat .pk-cat-name{${step("h2")};font-size:calc(var(--sys-h2-size) * .62);display:flex;align-items:center;gap:calc(var(--sys-space-s) * .75);margin-top:var(--sys-space-l)}
@@ -74,7 +75,12 @@ const OFFER = `/* Riesenliste: Name in League Gothic, Preis rechts (nur aus Date
 .pb-plakat .pk-step-text{grid-column:1/-1;margin-top:var(--sys-space-xs);color:var(--pk-muted);max-width:calc(var(--sys-space-measure) * .8)}
 .pb-plakat .pk-process-media{width:72%;margin-left:auto}
 .pb-plakat .pk-process-media .pk-shape{--pk-shape-bg:var(--pk-tone-b)}
-@media (min-width:${GRID}){.pb-plakat .pk-process-media{width:auto;margin:0}}
+@media (min-width:${GRID}){
+  .pb-plakat .pk-process-media{width:auto;margin:0}
+  /* Ohne Foto: Schritte nebeneinander über die ganze Breite (keine leere rechte Hälfte) */
+  .pb-plakat .pk-process:not(.pk-process--photo) .pk-steps{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);column-gap:var(--sys-space-l)}
+  .pb-plakat .pk-process:not(.pk-process--photo) .pk-step{align-content:start}
+}
 
 /* Zahlen */
 .pb-plakat .pk-figs{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-m)}
@@ -108,7 +114,12 @@ const STORY = `/* Über uns: Pille daneben */
 .pb-plakat .pk-crew li:nth-child(3n) .pk-mono{background:var(--sys-signal);color:var(--sys-on-signal)}
 .pb-plakat .pk-team-name{${step("mark")};font-size:calc(var(--sys-mark-size) * .9);display:block;overflow-wrap:anywhere}
 .pb-plakat .pk-team-role{${step("small")};display:block;color:var(--pk-muted);overflow-wrap:anywhere}
-@media (min-width:${GRID}){.pb-plakat .pk-crew{grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-m)}}
+@media (min-width:${GRID}){
+  .pb-plakat .pk-crew{grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-m)}
+  /* Bis vier Menschen: große Kreise über die ganze Breite */
+  .pb-plakat .pk-crew[data-n="1"],.pb-plakat .pk-crew[data-n="2"],.pb-plakat .pk-crew[data-n="3"],.pb-plakat .pk-crew[data-n="4"]{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-xl)}
+  .pb-plakat .pk-crew .pk-team-name{font-size:var(--sys-mark-size)}
+}
 
 /* Galerie: stehende Pille, Bogen, liegende Pille */
 .pb-plakat .pk-gal{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:var(--sys-space-s);align-items:end}

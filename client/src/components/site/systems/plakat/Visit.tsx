@@ -86,14 +86,23 @@ function Hours({
         return (
           <li
             key={`${entry.day}-${i}`}
-            className={today ? "pk-hours-row pk-hours-row--today" : "pk-hours-row"}
+            className={
+              today ? "pk-hours-row pk-hours-row--today" : "pk-hours-row"
+            }
           >
             <span className="pk-hours-day">
               {entry.day}
-              {today && <em className="pk-today">Heute</em>}
+              {today && (
+                <>
+                  {" "}
+                  <em className="pk-today">Heute</em>
+                </>
+              )}
             </span>
             <span className="pk-hours-time">
-              {CLOSED.test(entry.hours) ? "geschlossen" : shortHours(entry.hours)}
+              {CLOSED.test(entry.hours)
+                ? "geschlossen"
+                : shortHours(entry.hours)}
             </span>
           </li>
         );

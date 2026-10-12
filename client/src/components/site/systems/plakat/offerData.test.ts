@@ -58,6 +58,13 @@ describe("plakatPhotos: Einstieg → Team → Ablauf → Über uns → Galerie",
     ]);
   });
 
+  test("ausgeblendetes Über-uns-Foto hält kein Galeriefoto zurück", () => {
+    const about = (imageUrl: string): SystemSection => ({ type: "about", body: "x", imageUrl });
+    const s = [hero(), process, about("a"), gallery("a", "b", "c", "d")];
+    expect(plakatPhotos(s, []).processPhoto).toBe("b");
+    expect(plakatPhotos(s, ["about-media"]).processPhoto).toBe("a");
+  });
+
   test("ausgeblendetes Einstiegsfoto zählt nicht als beansprucht", () => {
     const { list } = plakatPhotos([hero("h"), gallery("h")], ["hero-media"]);
     expect(list.some(s => s.type === "gallery")).toBe(true);
@@ -83,6 +90,13 @@ describe("rowPrice: nur Preise aus den Daten", () => {
     expect(rowPrice("25–35 €")).toEqual({ big: "25–35 €" });
     expect(rowPrice("ab 7,50 €")).toEqual({ big: "ab 7,50 €" });
   });
+  test("langer Preistext bleibt klein (würde bei 320 px überlaufen)", () => {
+    expect(rowPrice("ab 1.200 € zzgl. Anfahrt und Material")).toEqual({
+      note: "ab 1.200 € zzgl. Anfahrt und Material",
+    });
+    expect(rowPrice("1 Std. 50 €")).toEqual({ note: "1 Std. 50 €" });
+    expect(rowPrice("ab 12.500,00 €")).toEqual({ note: "ab 12.500,00 €" });
+  });
   test("Text ohne lesbaren Preis → kleine Zeile, leer → nichts", () => {
     expect(rowPrice("auf Anfrage")).toEqual({ note: "auf Anfrage" });
     expect(rowPrice("  ")).toBeUndefined();
@@ -105,18 +119,41 @@ describe("lateFigure", () => {
 describe("voiceOf: Zitat, Sterne nur bei 5", () => {
   test("Sterne nur, wenn die gewählte Bewertung 5 trägt", () => {
     const five = voiceOf([
-      { author: "Timo R.", text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.", rating: 5 },
+      {
+        author: "Timo R.",
+        text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.",
+        rating: 5,
+      },
     ]);
     expect(five?.stars).toBe(true);
     const none = voiceOf([
-      { author: "Timo R.", text: "Schnell, sauber und freundlich. Bester Fade seit Jahren." },
+      {
+        author: "Timo R.",
+        text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.",
+      },
     ]);
     expect(none?.stars).toBe(false);
-    expect(none?.text).toBe("Schnell, sauber und freundlich. Bester Fade seit Jahren.");
+    expect(none?.text).toBe(
+      "Schnell, sauber und freundlich. Bester Fade seit Jahren."
+    );
+  });
+  test("Sterne von genau der zitierten Bewertung (gleicher Autor, anderer Text)", () => {
+    const v = voiceOf([
+      { author: "Timo R.", text: "Gut.", rating: 4 },
+      { author: "Timo R.", text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.", rating: 5 },
+    ]);
+    expect(v?.stars).toBe(true);
+    const w = voiceOf([
+      { author: "Timo R.", text: "Schnell, sauber und freundlich. Bester Fade seit Jahren." },
+      { author: "Timo R.", text: "Kurz.", rating: 5 },
+    ]);
+    expect(w?.stars).toBe(false);
   });
   test("Anführungszeichen aus dem Text fallen weg (setzt das Markup)", () => {
     expect(
-      voiceOf([{ author: "A", text: "„Um eins noch warm, knusprig und riesig.“" }])?.text
+      voiceOf([
+        { author: "A", text: "„Um eins noch warm, knusprig und riesig.“" },
+      ])?.text
     ).toBe("Um eins noch warm, knusprig und riesig.");
   });
 });

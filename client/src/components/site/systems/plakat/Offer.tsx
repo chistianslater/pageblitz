@@ -70,7 +70,11 @@ function Price({ price, cls }: { price?: string; cls: string }) {
 
 /* ── Leistungen ──────────────────────────────────────────────────────── */
 
-export function PlakatServices({ section, sections, field }: Props<"services">) {
+export function PlakatServices({
+  section,
+  sections,
+  field,
+}: Props<"services">) {
   const { blueprint } = useSystem();
   const priceSlot = useSlot("pricelist", sections);
   return (
@@ -110,7 +114,13 @@ function useToday(name: string): boolean {
 }
 
 function TodayMark({ on }: { on: boolean }) {
-  return on ? <em className="pk-today">Heute</em> : null;
+  // Leerzeichen davor: zugänglicher Name „Dienstag Heute", nicht „DienstagHeute".
+  return on ? (
+    <>
+      {" "}
+      <em className="pk-today">Heute</em>
+    </>
+  ) : null;
 }
 
 function BigRow({
@@ -137,7 +147,11 @@ function BigRow({
   );
 }
 
-function MenuRow({ item }: { item: Priced["categories"][number]["items"][number] }) {
+function MenuRow({
+  item,
+}: {
+  item: Priced["categories"][number]["items"][number];
+}) {
   const today = useToday(item.name);
   return (
     <li className={today ? "pk-mrow pk-row--today" : "pk-mrow"}>

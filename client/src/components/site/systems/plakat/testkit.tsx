@@ -197,7 +197,14 @@ export function eckeDoc(): Doc {
   const sections = doc.sections.flatMap((s): Sec[] =>
     s.type === "hero" ? [s, services, menu] : [s]
   );
-  return { ...doc, sections };
+  // Eigene, passende Stimmen (erfunden) statt der Restaurant-Stimmen des Beispiels.
+  return patchSection({ ...doc, sections }, "testimonials", t => ({
+    ...t,
+    items: [
+      { author: "Selin K.", text: "Um eins noch warm, knusprig und riesig. Bester Döner am Bahnhof.", rating: 5 },
+      { author: "Jonas P.", text: "Dürüm frisch gerollt, Soße hausgemacht, und das bis spät in die Nacht.", rating: 5 },
+    ],
+  }));
 }
 
 /** Systemblatt 8 rechts: Studio Puls, kein Foto, Gratis-Probetraining (Puls). */

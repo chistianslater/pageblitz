@@ -48,7 +48,9 @@ export function ShapePhoto({
   height?: number;
 }) {
   return (
-    <div className={`pk-shape pk-shape--${shape}${className ? ` ${className}` : ""}`}>
+    <div
+      className={`pk-shape pk-shape--${shape}${className ? ` ${className}` : ""}`}
+    >
       <img
         src={src}
         alt={alt}
@@ -108,7 +110,7 @@ export function PlakatTeam({ section, field }: Props<"team">) {
       field={field}
       title={chapterTitle("team", section.headline, blueprint)}
     >
-      <ul className="pk-crew">
+      <ul className="pk-crew" data-n={section.members.length}>
         {section.members.map((m, i) => (
           <li key={`${m.name}-${i}`}>
             <figure>
@@ -166,7 +168,9 @@ export function PlakatGallery({ section, field }: Props<"gallery">) {
                     height={shapes[i] === "pill-wide" ? 500 : 1100}
                   />
                   {image.caption && (
-                    <figcaption className="pk-gal-cap">{image.caption}</figcaption>
+                    <figcaption className="pk-gal-cap">
+                      {image.caption}
+                    </figcaption>
                   )}
                 </figure>
               </li>
@@ -242,7 +246,9 @@ export function Voice({
       )}
       <blockquote
         className={
-          clean.length > QUOTE_LONG ? "pk-voice-text pk-voice-text--long" : "pk-voice-text"
+          clean.length > QUOTE_LONG
+            ? "pk-voice-text pk-voice-text--long"
+            : "pk-voice-text"
         }
       >
         <p>„{rich(versalEszett(clean))}“</p>
