@@ -53,7 +53,13 @@ export const ENTRY_CSS = `/* Einstieg: photo · small · hours · text */
 .pb-klar .kl-duo{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1fr);gap:calc(var(--sys-space-s) * .625);align-items:stretch}
 .pb-klar .kl-duo--solo{grid-template-columns:minmax(0,1fr);max-width:calc(var(--sys-space-2xl) * 2.5)}
 .pb-klar .kl-duo .kl-frame{padding:calc(var(--sys-space-2xs) * 1.25);border-radius:calc(var(--sys-space-s) * 1.375)}
-.pb-klar .kl-duo .kl-frame-in{aspect-ratio:3/4;height:100%;border-radius:calc(var(--sys-space-s) * 1.0625)}
+/* Hochformat 3:4 als Mindesthöhe (Polster in % der Breite); wird die
+   Zeiten-Karte höher, wächst das Foto mit, statt breiter zu werden und sie
+   zu überdecken (320 px, lange Tage) */
+.pb-klar .kl-duo .kl-frame{height:100%}
+.pb-klar .kl-duo .kl-frame-in{position:relative;aspect-ratio:auto;height:100%;border-radius:calc(var(--sys-space-s) * 1.0625)}
+.pb-klar .kl-duo .kl-frame-in::before{content:"";display:block;padding-top:calc(400% / 3)}
+.pb-klar .kl-duo .kl-frame-in img{position:absolute;inset:0}
 .pb-klar .kl-side{display:grid;align-content:space-between;gap:calc(var(--sys-space-s) * .625);min-width:0;padding:var(--sys-space-s);border-radius:${R_CARD};background:var(--sys-surface);color:var(--sys-ink)}
 .pb-klar .kl-side p{min-width:0;overflow-wrap:break-word}
 .pb-klar .kl-side-days{${step("small")};display:block;color:var(--sys-muted)}
