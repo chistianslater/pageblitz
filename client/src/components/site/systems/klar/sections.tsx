@@ -1,21 +1,35 @@
 import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import { legalParts, mailHref, type SystemSection } from "../shared";
-import { SYS_ACTIONS } from "../shared/dockAutoHide";
+import { legalParts, type SystemSection } from "../shared";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
-import type { SectionOf } from "../../../../../../shared/siteContract/types";
 import { KlarEntry } from "./Entry";
-import { hoursLabel } from "./facts";
-import { hoursRows } from "./hours";
-import { KlarHoursCard } from "./HoursCard";
+import {
+  KlarPriced,
+  KlarProcess,
+  KlarServices,
+  KlarStats,
+  KlarUsp,
+} from "./Offer";
+import {
+  KlarAbout,
+  KlarGallery,
+  KlarMotto,
+  KlarPartners,
+  KlarStory,
+  KlarTeam,
+  KlarVoices,
+} from "./People";
+import { KlarContact, KlarCta, KlarFaq } from "./Visit";
 
 /**
- * Abschnitte von Klar. Einstieg nach Systemblatt (K3); die übrigen
- * Kapitel sind bis K4–K6 schlichte Klar-Blöcke (Titel, Inhalt als Liste
- * bzw. Text) — vollständig und lesbar, aber noch ohne eigene Gestalt.
+ * Abschnitte von Klar nach Systemblatt 9–13 (Anker Luma Dental):
+ * Einstieg (Entry), Angebot (Offer: Leistungen, Preise, erster Termin,
+ * Zahlen, Vorteile), Menschen (People: Über uns, Team, Galerie, Stimmen,
+ * Geschichte, Leitsatz, Partner), Besuch (Visit: Fragen, Sprechzeiten und
+ * Anfahrt, Aufruf). Jedes Kapitel: ruhige h2 in DM Sans, weiche Karten auf
+ * Papier, Felder nur als Fläche.
  */
 
 export type KlarSection = SystemSection;
@@ -56,116 +70,63 @@ export function chapterTitle(
   );
 }
 
-function KlarChapter({
+/**
+ * Ein Kapitel: h2 (oder nur für Vorleser), optional Einleitung und ein
+ * Knopf rechts neben dem Titel (Desktop), dann der Inhalt. Die Klasse
+ * `kl-<typ>` steht nur an der <section> (Speisekarte: `kl-karte`, weil
+ * `kl-menu` das Menü im Kopf ist).
+ */
+export function KlarChapter({
   type,
   own,
+  title,
+  intro,
+  action,
   hiddenTitle = false,
+  className,
+  titleClass = "kl-title",
   children,
 }: {
   type: KlarSection["type"];
   own?: string;
+  /** Fester Titel statt eigener/Bauplan-/Klar-Überschrift. */
+  title?: string;
+  intro?: string;
+  action?: React.ReactNode;
   hiddenTitle?: boolean;
+  className?: string;
+  titleClass?: string;
   children?: React.ReactNode;
 }) {
   const { blueprint } = useSystem();
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
-  // Nicht „kl-menu": so heißt das Menü im Kopf.
   const name = type === "menu" ? "karte" : type;
+  const text = title ?? chapterTitle(type, own, blueprint);
+  const h2 = (
+    <h2 className={hiddenTitle ? "kl-sr" : titleClass} id={headingId}>
+      {rich(text)}
+    </h2>
+  );
   return (
     <section
       id={id}
-      className={`kl-sec kl-${name}`}
+      className={`kl-sec kl-${name}${className ? ` ${className}` : ""}`}
       aria-labelledby={headingId}
     >
       <div className="kl-wrap">
-        <h2 className={hiddenTitle ? "kl-sr" : "kl-title"} id={headingId}>
-          {rich(chapterTitle(type, own, blueprint))}
-        </h2>
+        {action ? (
+          <div className="kl-sec-head">
+            {h2}
+            {action}
+          </div>
+        ) : (
+          h2
+        )}
+        {intro && <p className="kl-intro">{rich(intro)}</p>}
         {children}
       </div>
     </section>
-  );
-}
-
-/** Karte mit Titel, Text und optional Preis (Leistungen, Vorteile). */
-function Cards({
-  items,
-}: {
-  items: { title: string; text?: string; price?: string }[];
-}) {
-  return (
-    <ul className="kl-cards">
-      {items.map((i, k) => (
-        <li key={`${i.title}-${k}`} className="kl-card">
-          <h3>{rich(i.title)}</h3>
-          {i.text && <p>{rich(i.text)}</p>}
-          {i.price && <p className="kl-card-price">{i.price}</p>}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Priced({
-  section,
-}: {
-  section: SectionOf<"pricelist"> | SectionOf<"menu">;
-}) {
-  return (
-    <>
-      {section.categories
-        .filter(c => c.items.length > 0)
-        .map(c => (
-          <div key={c.name} className="kl-price">
-            <h3>{c.name}</h3>
-            <dl>
-              {c.items.map((i, k) => (
-                <div key={`${i.name}-${k}`}>
-                  <dt>{i.name}</dt>
-                  <dd>{i.price}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        ))}
-    </>
-  );
-}
-
-function Contact({ section }: { section: SectionOf<"contact"> }) {
-  const { blueprint, now } = useSystem();
-  const tel = telHref(section.phone);
-  const mail = mailHref(section.email);
-  const street = section.street?.trim();
-  const place = [section.zip, section.city].filter(Boolean).join(" ");
-  return (
-    <KlarChapter type="contact" own={section.headline}>
-      <div className="kl-visit">
-        <KlarHoursCard
-          id="kontakt-zeiten"
-          label={hoursLabel(blueprint)}
-          rows={hoursRows(section.openingHours, now)}
-        />
-        <div className="kl-card">
-          {(street || place) && (
-            <address>
-              {street}
-              {street && place && <br />}
-              {place}
-            </address>
-          )}
-          {((tel && section.phone) || (mail && section.email)) && (
-            <p className="kl-visit-ways" {...SYS_ACTIONS}>
-              {tel && section.phone && <a href={tel}>{section.phone.trim()}</a>}
-              {mail && section.email && (
-                <a href={mail}>{section.email.trim()}</a>
-              )}
-            </p>
-          )}
-        </div>
-      </div>
-    </KlarChapter>
   );
 }
 
@@ -244,176 +205,49 @@ export function KlarLegal({ title, html }: { title: string; html: string }) {
   );
 }
 
-/** Abschnitts-Weiche (exhaustiv über alle SectionV2-/PageSection-Typen). */
+/**
+ * Abschnitts-Weiche (exhaustiv über alle SectionV2-/PageSection-Typen).
+ * `anchorPrefix`: auf Unter- und Rechtsseiten zeigen Anker zur Startseite.
+ */
 export function renderKlarSection(
   section: KlarSection,
-  sections: readonly KlarSection[]
+  sections: readonly KlarSection[],
+  anchorPrefix = ""
 ): React.ReactNode {
   switch (section.type) {
     case "hero":
       return <KlarEntry hero={section} />;
     case "services":
-      return (
-        <KlarChapter type="services" own={section.headline}>
-          {section.intro && <p className="kl-intro">{rich(section.intro)}</p>}
-          <Cards
-            items={section.items.map(i => ({
-              title: i.title,
-              text: i.description,
-              price: i.price,
-            }))}
-          />
-        </KlarChapter>
-      );
+      return <KlarServices section={section} sections={sections} />;
     case "process":
-      return (
-        <KlarChapter type="process" own={section.headline}>
-          <ol className="kl-steps">
-            {section.steps.map((s, k) => (
-              <li key={`${s.title}-${k}`}>
-                <h3>{rich(s.title)}</h3>
-                {s.text && <p>{rich(s.text)}</p>}
-              </li>
-            ))}
-          </ol>
-        </KlarChapter>
-      );
+      return <KlarProcess section={section} />;
     case "pricelist":
     case "menu":
-      return (
-        <KlarChapter type={section.type} own={section.headline}>
-          <Priced section={section} />
-        </KlarChapter>
-      );
+      return <KlarPriced section={section} />;
     case "stats":
-      return (
-        <KlarChapter type="stats" own={section.headline}>
-          <dl className="kl-stats">
-            {section.items.map(i => (
-              <div key={i.label}>
-                <dt>{i.label}</dt>
-                <dd>{i.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </KlarChapter>
-      );
+      return <KlarStats section={section} />;
     case "team":
-      return (
-        <KlarChapter type="team" own={section.headline}>
-          <Cards
-            items={section.members.map(m => ({ title: m.name, text: m.role }))}
-          />
-        </KlarChapter>
-      );
+      return <KlarTeam section={section} />;
     case "about":
-      return (
-        <KlarChapter type="about" own={section.headline}>
-          {section.imageUrl && (
-            <img
-              className="kl-photo"
-              src={section.imageUrl}
-              alt=""
-              loading="lazy"
-              width={1200}
-              height={800}
-            />
-          )}
-          <div className="kl-prose">{rich(section.body)}</div>
-        </KlarChapter>
-      );
+      return <KlarAbout section={section} />;
     case "gallery":
-      return (
-        <KlarChapter type="gallery" own={section.headline}>
-          <ul className="kl-gallery">
-            {section.images.map(img => (
-              <li key={img.url}>
-                <img
-                  src={img.url}
-                  alt={img.alt}
-                  loading="lazy"
-                  width={800}
-                  height={600}
-                />
-              </li>
-            ))}
-          </ul>
-        </KlarChapter>
-      );
+      return <KlarGallery section={section} />;
     case "testimonials":
-      return (
-        <KlarChapter type="testimonials" own={section.headline}>
-          <ul className="kl-cards">
-            {section.items.slice(0, 3).map((t, k) => (
-              <li key={`${t.author}-${k}`} className="kl-card">
-                <blockquote>{rich(t.text)}</blockquote>
-                <p className="kl-who">{t.author}</p>
-              </li>
-            ))}
-          </ul>
-        </KlarChapter>
-      );
+      return <KlarVoices section={section} />;
     case "faq":
-      return (
-        <KlarChapter type="faq" own={section.headline}>
-          <div className="kl-faq">
-            {section.items.map((f, k) => (
-              <details key={`${f.question}-${k}`}>
-                <summary>{f.question}</summary>
-                <p>{rich(f.answer)}</p>
-              </details>
-            ))}
-          </div>
-        </KlarChapter>
-      );
+      return <KlarFaq section={section} />;
     case "contact":
-      return <Contact section={section} />;
+      return <KlarContact section={section} sections={sections} />;
     case "story":
-      return (
-        <KlarChapter type="story" own={section.headline}>
-          <div className="kl-prose">{rich(section.body)}</div>
-        </KlarChapter>
-      );
+      return <KlarStory section={section} />;
     case "usp":
-      return (
-        <KlarChapter type="usp" own={section.headline}>
-          <Cards
-            items={section.items.map(i => ({ title: i.title, text: i.text }))}
-          />
-        </KlarChapter>
-      );
+      return <KlarUsp section={section} />;
     case "quote":
-      return (
-        <KlarChapter type="quote" hiddenTitle>
-          <blockquote className="kl-quote">
-            {rich(section.text)}
-            {section.author && <footer>{section.author}</footer>}
-          </blockquote>
-        </KlarChapter>
-      );
+      return <KlarMotto section={section} />;
     case "partners":
-      return (
-        <KlarChapter type="partners" own={section.headline}>
-          <ul className="kl-partners">
-            {section.items.map(p => (
-              <li key={p.name}>{p.name}</li>
-            ))}
-          </ul>
-        </KlarChapter>
-      );
+      return <KlarPartners section={section} />;
     case "cta":
-      return (
-        <KlarChapter type="cta" own={section.headline}>
-          <p {...SYS_ACTIONS}>
-            <a
-              className="kl-btn kl-btn--p"
-              href={section.ctaHref ?? `#${SECTION_ANCHORS.contact}`}
-            >
-              {section.ctaText}
-            </a>
-          </p>
-        </KlarChapter>
-      );
+      return <KlarCta section={section} anchorPrefix={anchorPrefix} />;
     case "pageHeader":
       // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
       return (

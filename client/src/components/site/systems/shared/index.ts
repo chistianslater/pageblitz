@@ -11,3 +11,4 @@ export * from "./photos";
 export * from "./versal";
 export * from "./brand";
 export * from "./days";
+export * from "./voice";

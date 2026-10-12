@@ -1,7 +1,5 @@
 import type { SectionOf } from "../../../../../../shared/siteContract/types";
-import { pickReviewQuote } from "../../artDirection/heroFacts";
-import { claimPhotos, formatPrice, type SystemSection } from "../shared";
-import { priceValue } from "./facts";
+import { claimPhotos, type SystemSection } from "../shared";
 import { lateClose, type Hours } from "./hours";
 
 /**
@@ -94,33 +92,7 @@ export function galleryGroups(count: number): number[] {
 
 /* ── Preise ───────────────────────────────────────────────────────────── */
 
-/** Betrag wie „7,50", „1.200", „25–35"; optional „ab" davor, „€" dahinter. */
-const AMOUNT = String.raw`\d{1,3}(?:\.\d{3})+(?:,\d{1,2})?|\d+(?:[.,]\d{1,2})?`;
-const SHORT_PRICE = new RegExp(
-  String.raw`^(?:ab\s+)?(?:${AMOUNT})(?:\s*[–-]\s*(?:${AMOUNT}))?\s*(?:€|eur|euro)?$`,
-  "i"
-);
-/** Länger passt der große Preis bei 320 px nicht neben den Namen. */
-const BIG_MAX = 12;
-
-/**
- * Preis einer Zeile: kurzer, lesbarer Betrag (priceValue; „ab", Spanne,
- * höchstens 12 Zeichen) → groß, so geschrieben wie in den Daten
- * (formatPrice ergänzt nur „€"); alles andere („auf Anfrage", „ab 1.200 €
- * zzgl. Anfahrt") klein und umbrechend; leer → nichts.
- */
-export function rowPrice(
-  price: string | undefined
-): { big: string } | { note: string } | undefined {
-  const t = price?.trim();
-  if (!t) return undefined;
-  const big = formatPrice(t);
-  return priceValue(t) !== undefined &&
-    SHORT_PRICE.test(t) &&
-    big.length <= BIG_MAX
-    ? { big }
-    : { note: t };
-}
+export { rowPrice } from "../shared/price";
 
 /* ── Zeiten ───────────────────────────────────────────────────────────── */
 
@@ -133,29 +105,4 @@ export function lateFigure(hours: Hours | undefined): string | undefined {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-/* ── Stimme ───────────────────────────────────────────────────────────── */
-
-/** Anführungszeichen setzt das Markup; vorhandene aus dem Text entfernen. */
-export const unquote = (text: string) =>
-  text.trim().replace(/^[„"“»«‚']+|[“"”«»‘']+$/g, "");
-
-/**
- * Die eine Stimme (pickReviewQuote: zitierfähig, keine Kritik). Sterne nur,
- * wenn die gewählte Bewertung ausdrücklich 5 trägt.
- */
-export function voiceOf(
-  items: SectionOf<"testimonials">["items"]
-): { text: string; author: string; stars: boolean } | undefined {
-  const quote = pickReviewQuote(items);
-  if (!quote) return undefined;
-  // Genau die Bewertung, aus der das Zitat stammt (gleiche Auswahl je Eintrag).
-  const source = items.find(i => {
-    const own = pickReviewQuote([i]);
-    return own?.author === quote.author && own.text === quote.text;
-  });
-  return {
-    text: unquote(quote.text),
-    author: quote.author.trim(),
-    stars: source?.rating === 5,
-  };
-}
+export { unquote, voiceOf } from "../shared/voice";

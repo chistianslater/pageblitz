@@ -120,7 +120,7 @@ describe("Klar: Gerüst", () => {
     for (const sel of [".pb-klar .kl-btn", ".pb-klar .kl-pillbtn", ".pb-klar .kl-btn--head", ".pb-klar .kl-menu-panel a"])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(48);
     expect(minHeight(".pb-klar .kl-btn")).toBe(56);
-    for (const sel of [".pb-klar .kl-chip", ".pb-klar .kl-brand", ".pb-klar .kl-nav a", ".pb-klar .kl-more-toggle", ".pb-klar .kl-foot-col a", ".pb-klar .kl-foot-legal a", ".pb-klar .kl-visit-ways a", ".pb-klar .kl-faq summary"])
+    for (const sel of [".pb-klar .kl-chip", ".pb-klar .kl-brand", ".pb-klar .kl-nav a", ".pb-klar .kl-more-toggle", ".pb-klar .kl-foot-col a", ".pb-klar .kl-foot-legal a", ".pb-klar .kl-way", ".pb-klar .kl-faq-item summary", ".pb-klar .kl-logos a"])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(44);
     expect(body).toContain("--kl-focus:2px");
     expect(body).toContain("prefers-reduced-motion:reduce");

@@ -16,7 +16,10 @@ export type IconName =
   | "check"
   | "menu"
   | "pin"
-  | "mail";
+  | "mail"
+  | "plus"
+  | "star"
+  | "route";
 
 const PATHS: Record<IconName, React.ReactNode> = {
   phone: (
@@ -69,6 +72,14 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <path d="M3.5 7l8.5 6 8.5-6" />
     </>
   ),
+  plus: <path d="M12 5v14M5 12h14" />,
+  star: (
+    <path
+      d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"
+      fill="currentColor"
+    />
+  ),
+  route: <path d="M4 11l16-7-7 16-2-7z" />,
 };
 
 export function Icon({ name }: { name: IconName }) {

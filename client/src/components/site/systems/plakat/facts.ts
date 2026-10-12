@@ -20,6 +20,7 @@ import {
   visibleDoc,
 } from "../shared";
 import { firstHours, lateClose, sundayOpen, uhr } from "./hours";
+import { priceValue } from "../shared/price";
 
 /**
  * Reine Daten-Regeln für Plakat (Einstieg, Sticker, Laufband, Dock).
@@ -174,38 +175,7 @@ type Priced = {
   source: "menu" | "pricelist" | "services";
 };
 
-/**
- * Deutsche Zahl: „1.200" / „1.200,50" (Tausenderpunkt), „7,50", „12.50",
- * „45". Tausender zuerst, damit „1.200" nicht als 1,2 gelesen wird.
- */
-const NUM = "(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d{1,5}(?:[.,]\\d{1,2})?)";
-const EURO = "(?:€|eur\\b|euro\\b)";
-/** Spanne „25–35 €" / „25 € – 35 €" → untere Grenze. */
-const RANGE_EURO = new RegExp(`${NUM}\\s*${EURO}?\\s*[–-]\\s*${NUM}\\s*${EURO}`, "i");
-/** Zahl direkt vor „€" (z. B. „1 Std. 50 €" → 50, nicht 1). */
-const WITH_EURO = new RegExp(`${NUM}\\s*${EURO}`, "i");
-/** Nur eine Zahl oder Spanne ohne Währung („45", „ab 7,50", „25–35"). */
-const BARE = new RegExp(`^\\s*(?:ab\\s+)?${NUM}(?:\\s*[–-]\\s*${NUM})?\\s*$`, "i");
-const FREE = /\b(gratis|kostenlos|umsonst)\b/i;
-
-/** „1.200,50" → 1200.5; „12.50" → 12.5. */
-function germanNumber(text: string): number {
-  const thousands = /\.\d{3}(?:,|$)/.test(text);
-  const plain = thousands ? text.replace(/\./g, "").replace(",", ".") : text.replace(",", ".");
-  return Number(plain);
-}
-
-/**
- * „7,50 €" → 7.5; Spanne → untere Grenze; „gratis" → 0; sonst (unklar)
- * → undefined. Nur so kann „Ab X" der kleinste echte Preis sein.
- */
-export function priceValue(price: string): number | undefined {
-  if (FREE.test(price)) return 0;
-  const m = price.match(RANGE_EURO) ?? price.match(WITH_EURO) ?? price.match(BARE);
-  if (!m) return undefined;
-  const value = germanNumber(m[1]);
-  return Number.isFinite(value) ? value : undefined;
-}
+export { priceValue } from "../shared/price";
 
 /** 7.5 → „7,50", 28 → „28", 1200 → „1.200" (deutsche Tausenderpunkte). */
 export const euro = (v: number) =>

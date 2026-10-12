@@ -14,6 +14,7 @@ import {
   step,
 } from "./step";
 import { ENTRY_CSS } from "./entryCss";
+import { CONTENT_CSS } from "./contentCss";
 
 export { step } from "./step";
 
@@ -21,8 +22,9 @@ export { step } from "./step";
 const FONT_FACES = systemFontFaces(KLAR);
 
 /**
- * Grundschicht von Klar (Kopf, Knöpfe, Zeiten-Karte, schlichte Kapitel,
- * Unterseiten, Fuß, Handy-Leiste; Einstieg in entryCss). Gestalt nach
+ * Grundschicht von Klar (Kopf, Knöpfe, Zeiten-Karte, Kapitel-Titel,
+ * Unterseiten, Fuß, Handy-Leiste; Einstieg in entryCss, Inhalte in
+ * contentCss). Gestalt nach
  * docs/designsysteme/klar/systemblatt.html (Anker Luma Dental).
  * Größen, Abstände und Farben ausschließlich über `--sys-*` (oder
  * Vielfache); Ausnahmen: 1px/2px-Linien und der 2px-Fokusring.
@@ -122,42 +124,10 @@ ${FONT_FACES}
 .pb-klar .kl-today-tag{${step("small")};font-weight:700;display:inline-block;margin-left:calc(var(--sys-space-xs) * .75);padding:0 var(--sys-space-xs);
   border-radius:${PILL};background:var(--sys-signal);color:var(--sys-on-signal)}
 
-/* Kapitel (bis K4–K6 schlicht) */
+/* Kapitel: ruhiger Titel, gedämpfte Einleitung (Inhalte in contentCss) */
 .pb-klar .kl-sec{padding-top:var(--sys-space-section)}
-.pb-klar .kl-title{${step("h2")};max-width:10em;overflow-wrap:break-word}
+.pb-klar .kl-title{${step("h2")};max-width:14em;overflow-wrap:break-word}
 .pb-klar .kl-intro{margin-top:calc(var(--sys-space-s) * .75);max-width:var(--sys-space-measure);color:var(--sys-muted)}
-.pb-klar .kl-cards{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:calc(var(--sys-space-s) * .625);grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr))}
-.pb-klar .kl-card{display:grid;gap:var(--sys-space-xs);align-content:start;padding:calc(var(--sys-space-s) * 1.25);border-radius:${R_CARD};background:var(--sys-surface);box-shadow:0 0 0 1px var(--sys-rule);min-width:0;overflow-wrap:break-word}
-.pb-klar .kl-card h3{${step("h3")}}
-.pb-klar .kl-card p,.pb-klar .kl-who{color:var(--sys-muted)}
-.pb-klar .kl-card-price{${step("data")};color:var(--sys-ink)}
-.pb-klar .kl-steps{margin:var(--sys-space-l) 0 0;padding-left:var(--sys-space-m);display:grid;gap:var(--sys-space-m)}
-.pb-klar .kl-steps h3{${step("h3")}}
-.pb-klar .kl-steps p{color:var(--sys-muted)}
-.pb-klar .kl-price{margin-top:var(--sys-space-m);padding:calc(var(--sys-space-xs) * .75) calc(var(--sys-space-s) * 1.125);border-radius:${R_CARD};background:var(--sys-surface);box-shadow:0 0 0 1px var(--sys-rule)}
-.pb-klar .kl-price h3{${step("link")};padding-block:calc(var(--sys-space-s) * .75)}
-.pb-klar .kl-price dl>div{display:flex;justify-content:space-between;gap:var(--sys-space-s);padding-block:calc(var(--sys-space-s) * .8);border-top:1px solid var(--sys-rule)}
-.pb-klar .kl-price dd{${step("data")};flex:none}
-.pb-klar .kl-stats{margin-top:var(--sys-space-l);display:grid;gap:var(--sys-space-m);grid-template-columns:repeat(auto-fill,minmax(min(100%,12rem),1fr))}
-.pb-klar .kl-stats div{display:flex;flex-direction:column-reverse}
-.pb-klar .kl-stats dd{${step("figure")}}
-.pb-klar .kl-stats dt{color:var(--sys-muted)}
-.pb-klar .kl-photo{margin-top:var(--sys-space-l);width:100%;border-radius:${R_CARD};filter:var(--sys-image-filter)}
-.pb-klar .kl-prose{margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
-.pb-klar .kl-prose p+p{margin-top:var(--sys-space-s)}
-.pb-klar .kl-gallery{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:calc(var(--sys-space-s) * .625);grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr))}
-.pb-klar .kl-gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:${R_CARD};filter:var(--sys-image-filter)}
-.pb-klar .kl-faq{margin-top:var(--sys-space-l);display:grid;gap:calc(var(--sys-space-s) * .625)}
-.pb-klar .kl-faq details{border-radius:var(--sys-space-s);background:var(--sys-surface);box-shadow:0 0 0 1px var(--sys-rule)}
-.pb-klar .kl-faq summary{font-weight:700;cursor:pointer;min-height:calc(var(--sys-space-xl) * .9375);display:flex;align-items:center;padding:calc(var(--sys-space-s) * .875) calc(var(--sys-space-s) * 1.125)}
-.pb-klar .kl-faq details p{padding:0 calc(var(--sys-space-s) * 1.125) calc(var(--sys-space-s) * 1.125);color:var(--sys-muted)}
-.pb-klar .kl-quote{${step("h3")};margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
-.pb-klar .kl-quote footer{${step("small")};margin-top:var(--sys-space-s);color:var(--sys-muted)}
-.pb-klar .kl-partners{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:flex;flex-wrap:wrap;gap:var(--sys-space-xs) var(--sys-space-m)}
-.pb-klar .kl-visit{margin-top:var(--sys-space-l);display:grid;gap:var(--sys-space-s);grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));align-items:start}
-.pb-klar .kl-visit-ways{display:grid;margin-top:var(--sys-space-xs)}
-.pb-klar .kl-visit-ways a{display:inline-flex;align-items:center;min-height:${TAP};overflow-wrap:anywhere}
-.pb-klar .kl-cta p{margin-top:var(--sys-space-m)}
 
 ${sections}
 
@@ -211,4 +181,4 @@ ${sections}
 `;
 }
 
-export const KLAR_CSS = klarCss(ENTRY_CSS);
+export const KLAR_CSS = klarCss(`${ENTRY_CSS}\n\n${CONTENT_CSS}`);
