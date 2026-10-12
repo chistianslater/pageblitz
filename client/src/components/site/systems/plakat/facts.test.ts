@@ -6,6 +6,7 @@ import {
   entryHeadline,
   entrySticker,
   entryVariant,
+  euro,
   plakatActions,
   priceValue,
   tickerItems,
@@ -214,6 +215,21 @@ describe("Plakat: Sticker nur aus der Allowlist", () => {
     }));
     expect(entrySticker(doc)).toEqual({ big: "Ab 25", small: "Euro", source: "price" });
     expect(entryFacts(doc)[0]).toEqual({ strong: "Färben ab 25 €", sub: "aus der Preisliste" });
+  });
+
+  test("Tausender mit deutschem Punkt: „Ab 1.200 Euro“", () => {
+    expect(euro(1200)).toBe("1.200");
+    expect(euro(28)).toBe("28");
+    expect(euro(7.5)).toBe("7,50");
+    expect(euro(12500.5)).toBe("12.500,50");
+    const doc = patchSection({ ...kanteDoc(), google: undefined }, "pricelist", p => ({
+      ...p,
+      categories: [{ name: "Pakete", items: [
+        { name: "Komplettpaket", price: "1.200 €" },
+        { name: "Großpaket", price: "2.400 €" },
+      ] }],
+    }));
+    expect(entrySticker(doc)).toEqual({ big: "Ab 1.200", small: "Euro", source: "price" });
   });
 
   test("ausgeblendete Abschnitte liefern keine Sticker-Fakten", () => {

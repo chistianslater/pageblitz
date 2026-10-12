@@ -253,8 +253,11 @@ die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 ### Rollback bei Designsystemen (rev 3)
 
 Seit `feat/designsystem-journal` können Dokumente `designRevision: 3` mit
-`system`/`palette` tragen (Journal, danach Raster, Werkstoff und Plakat). Älterer Code kennt nur Revision 1
-und 2 bzw. das jüngere System nicht — solche Seiten bestehen dort die Schema-Prüfung nicht und liefern 404.
+`system`/`palette` tragen (Journal, danach Raster, Werkstoff und Plakat). Code vor Journal kennt nur
+Revision 1 und 2 — rev-3-Seiten bestehen dort die Schema-Prüfung nicht. Code mit rev 3, dem aber das
+jüngere System fehlt, liefert **kein** 404: die System-ID steht schon in der Schema-Liste, die
+Systemdefinition fehlt, und die Seite rendert still den Pack-Rückfall — falscher Look, kein Fehler im Log.
+Deshalb muss das Rollback-Skript **vor** dem Zurücksetzen laufen.
 **Bevor Prod auf einen älteren Commit zurückgesetzt wird**, auf dem VPS (noch
 mit dem neuen Code) zuerst sichern, dann zurücksetzen. Welche Seiten:
 

@@ -24,11 +24,24 @@ export const STAGGER_INDENT = 1.6;
 export const versal = (text: string) =>
   versalEszett(text).toLocaleUpperCase("de-DE");
 
+/** Akzent-Versalien ohne Zerlegung (NFD) → gleich breiter Grundbuchstabe. */
+const BASE_LETTER: Record<string, string> = { Ł: "L", Đ: "D", Ø: "O", Ħ: "H" };
+
+/**
+ * Breite eines Zeichens: gemessen, sonst wie sein Grundbuchstabe (latin-ext
+ * der League Gothic setzt Ş, Ğ, İ, Č, Ő … so breit wie S, G, I, C, O),
+ * sonst der breite Rückfall.
+ */
+function charEm(table: Record<string, number>, ch: string, stretch: Stretch) {
+  const base = BASE_LETTER[ch] ?? ch.normalize("NFD")[0];
+  return table[ch] ?? table[base] ?? UNKNOWN_EM[stretch];
+}
+
 /** Breite einer Zeile in em (Versal, inkl. Laufweite je Zeichen). */
 export function lineEm(text: string, stretch: Stretch = 88, track = 0): number {
   const table = LEAGUE_GOTHIC_EM[stretch] as Record<string, number>;
   return [...versal(text)].reduce(
-    (sum, ch) => sum + (table[ch] ?? UNKNOWN_EM[stretch]) + track,
+    (sum, ch) => sum + charEm(table, ch, stretch) + track,
     0
   );
 }

@@ -48,7 +48,16 @@ export type SystemPalette = {
   fields?: readonly [PaletteField, PaletteField, PaletteField];
 };
 
-export type FontFile = { file: string; weight: string; style: "normal" | "italic" };
+export type FontFile = {
+  file: string;
+  weight: string;
+  style: "normal" | "italic";
+  /**
+   * Zeichenbereich einer Ergänzungsdatei (z. B. latin-ext). Der Browser lädt
+   * sie erst, wenn ein Zeichen daraus vorkommt — nie vorladen.
+   */
+  unicodeRange?: string;
+};
 export type SystemFont = { family: string; fallback: string; files: readonly FontFile[] };
 
 export type DesignSystemDef = {

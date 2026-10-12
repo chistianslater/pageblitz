@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
@@ -208,8 +210,8 @@ describe("Systeme: @font-face", () => {
   test("Plakat: League Gothic mit Breitenbereich, Hanken Grotesk ohne", () => {
     const css = systemFontFaces(PLAKAT);
     const rules = css.split("\n");
-    expect(rules).toHaveLength(2);
-    const [gothic, hanken] = rules;
+    expect(rules).toHaveLength(5);
+    const [gothic, gothicExt, hanken, hankenExt, arrow] = rules;
     expect(gothic).toContain('font-family:"League Gothic"');
     expect(gothic).toContain("url(/fonts/systems/league-gothic-latin-wdth.woff2)");
     // Bereich aus den genutzten Stufen (figure 82 % … mark 100 %), damit
@@ -218,6 +220,39 @@ describe("Systeme: @font-face", () => {
     expect(hanken).toContain('font-family:"Hanken Grotesk"');
     expect(hanken).toContain("font-weight:100 900");
     expect(hanken).not.toContain("font-stretch");
+    // Grundschnitte ohne Bereich (wie bisher), Ergänzungen nur mit Bereich.
+    expect(gothic).not.toContain("unicode-range");
+    expect(hanken).not.toContain("unicode-range");
+    expect(gothicExt).toContain("url(/fonts/systems/league-gothic-latin-ext-wdth.woff2)");
+    expect(gothicExt).toContain("font-stretch:82% 100%");
+    expect(gothicExt).toContain("unicode-range:U+0100-02BA");
+    expect(hankenExt).toContain("url(/fonts/systems/hanken-grotesk-latin-ext-wght.woff2)");
+    expect(hankenExt).toContain("unicode-range:U+0100-02BA");
+    expect(arrow).toContain("url(/fonts/systems/hanken-grotesk-arrow-wght.woff2)");
+    expect(arrow).toContain("unicode-range:U+2192;");
+  });
+
+  test("Plakat: Ergänzungsdateien liegen bei und werden nie vorgeladen", () => {
+    const extra = [...PLAKAT.fonts.display.files, ...PLAKAT.fonts.text.files].filter(
+      f => f.unicodeRange
+    );
+    expect(extra.map(f => f.file)).toEqual([
+      "league-gothic-latin-ext-wdth.woff2",
+      "hanken-grotesk-latin-ext-wght.woff2",
+      "hanken-grotesk-arrow-wght.woff2",
+    ]);
+    for (const f of extra) {
+      expect(PLAKAT.preload).not.toContain(f.file);
+      expect(
+        existsSync(resolve(__dirname, "../../../../../public/fonts/systems", f.file)),
+        f.file
+      ).toBe(true);
+    }
+    expect(PLAKAT.preload).toHaveLength(2);
+  });
+
+  test.each([JOURNAL, RASTER, WERKSTOFF])("$id: kein unicode-range (unverändert)", def => {
+    expect(systemFontFaces(def)).not.toContain("unicode-range");
   });
 
   test.each([JOURNAL, RASTER, WERKSTOFF])("$id: kein font-stretch", def => {

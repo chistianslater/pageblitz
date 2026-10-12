@@ -51,6 +51,9 @@ describe("Plakat: Staffel und Fit (League Gothic)", () => {
 
   test("unbekannte Zeichen zählen breit (lieber zu klein als Überlauf)", () => {
     expect(lineEm("✱")).toBeGreaterThanOrEqual(lineEm("M"));
+    // latin-ext: Akzent-Versalien so breit wie ihr Grundbuchstabe.
+    expect(lineEm("ŞİŞLİ")).toBeCloseTo(lineEm("SISLI"), 6);
+    expect(lineEm("Łódź Čapek Ő", 82)).toBeCloseTo(lineEm("Lodz Capek O", 82), 6);
   });
 
   test("Fuß-Wortmarke: kurz eine Zeile, lang zwei Zeilen an Leerzeichen/Bindestrich", () => {

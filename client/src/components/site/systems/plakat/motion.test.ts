@@ -1,6 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { ISLAND_MOTION } from "../../../../site-islands/mountMotion";
 import { PLAKAT_CSS } from "./css";
 import { PLAKAT_MOTION_CSS } from "./motionCss";
 import { mountPlakatMotion } from "./motion";
@@ -22,10 +21,7 @@ function motionRules(): string[] {
     .map(l => l.trim())
     .filter(
       l =>
-        l &&
-        l !== "}" &&
-        !l.startsWith("@keyframes") &&
-        !l.startsWith("@media")
+        l && l !== "}" && !l.startsWith("@keyframes") && !l.startsWith("@media")
     );
 }
 
@@ -56,7 +52,10 @@ describe("Plakat-Bewegung (CSS)", () => {
   });
 
   test("Abschnitte: versteckt nur, solange data-pk-in fehlt", () => {
-    const hidden = PLAKAT_MOTION_CSS.match(/[^\n]*(opacity:0|clip-path:inset\([^)]*100%)[^\n]*/g) ?? [];
+    const hidden =
+      PLAKAT_MOTION_CSS.match(
+        /[^\n]*(opacity:0|clip-path:inset\([^)]*100%)[^\n]*/g
+      ) ?? [];
     expect(hidden.length).toBeGreaterThan(0);
     for (const h of hidden.filter(l => !l.includes("@keyframes")))
       expect(h).toContain(":not([data-pk-in])");
@@ -104,7 +103,9 @@ describe("Plakat-Bewegung (CSS)", () => {
     expect(photoRules).toEqual([
       ".pb-plakat[data-pk-ready] .pk-entry-media .pk-shape img{animation:pk-settle 900ms cubic-bezier(.23,1,.32,1) backwards}",
     ]);
-    const settle = PLAKAT_MOTION_CSS.match(/@keyframes pk-settle\{[^]*?\}\}/)![0];
+    const settle = PLAKAT_MOTION_CSS.match(
+      /@keyframes pk-settle\{[^]*?\}\}/
+    )![0];
     expect(settle).not.toMatch(/opacity|clip-path/);
     // Formen-Öffnung nur in Abschnitten (.pk-sec), nie im Einstieg (.pk-entry).
     for (const r of motionRules().filter(r => r.includes("pk-open")))
@@ -185,12 +186,7 @@ describe("Plakat-Bewegung (CSS)", () => {
   });
 
   test("Motion-Bundle-Einstieg montiert Plakat neben den anderen Systemen", () => {
-    const src = readFileSync(
-      resolve(__dirname, "../../../../site-islands/motion.ts"),
-      "utf8"
-    );
-    expect(src).toContain('querySelectorAll<HTMLElement>(".pb-plakat")');
-    expect(src).toContain("mountPlakatMotion");
+    expect(ISLAND_MOTION.plakat).toBe(mountPlakatMotion);
   });
 });
 

@@ -1,11 +1,10 @@
 import React from "react";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import "../../packs";
 import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { ISLAND_MOTION } from "../../../../site-islands/mountMotion";
 import { RASTER_CSS } from "./css";
 import { RASTER_MOTION_CSS } from "./motionCss";
 import { mountRasterMotion } from "./motion";
@@ -143,13 +142,8 @@ describe("Raster-Bewegung (CSS)", () => {
   });
 
   test("Motion-Bundle-Einstieg montiert Raster neben Journal", () => {
-    const src = readFileSync(
-      resolve(__dirname, "../../../../site-islands/motion.ts"),
-      "utf8"
-    );
-    expect(src).toContain('querySelectorAll<HTMLElement>(".pb-raster")');
-    expect(src).toContain("mountRasterMotion");
-    expect(src).toContain('querySelectorAll<HTMLElement>(".pb-journal")');
+    expect(ISLAND_MOTION.raster).toBe(mountRasterMotion);
+    expect(ISLAND_MOTION.journal).toBeDefined();
   });
 });
 

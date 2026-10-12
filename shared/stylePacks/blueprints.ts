@@ -72,9 +72,44 @@ const STANDARD: Blueprint = {
 const BEAUTY_KEYS =
   /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung|wellness|massage|day-?spa|spa$|hundesalon|hundefriseur|tierfriseur)/;
 
-/** Google führt viele Barbershops als „Friseursalon" — der Name verrät sie. */
+/** Eindeutige Barbier-Wörter — als ganzes Wort, nie als Teil („Barbara"). */
+const BARBER_WORDS = new Set([
+  "barber",
+  "barbers",
+  "barbershop",
+  "barbershops",
+  "barbier",
+  "barbiere",
+  "barbiershop",
+  "barbiersalon",
+]);
+/** Herren-Wörter zählen nur, solange nicht auch Damen bedient werden. */
+const MEN_WORDS = new Set([
+  "herrenfriseur",
+  "herrenfriseure",
+  "herrenfriseurin",
+  "herrensalon",
+]);
+
+/**
+ * Google führt viele Barbershops als „Friseursalon" — der Name verrät sie.
+ * Ganze Wörter statt Wortteile: „Haarstudio Barbara" und Orte wie
+ * „Herrenberg" sind keine Barbiere, „Damen & Herren Salon" auch nicht.
+ */
 export function isBarberShop(category: string | undefined, name: string): boolean {
-  return /barb|herren/i.test(`${category ?? ""} ${name}`);
+  const words = `${category ?? ""} ${name}`
+    .toLowerCase()
+    .split(/[^a-zäöüß]+/)
+    .filter(Boolean);
+  if (words.some(w => BARBER_WORDS.has(w))) return true;
+  if (words.includes("damen")) return false;
+  return words.some(
+    (w, i) =>
+      MEN_WORDS.has(w) ||
+      // „Herren Salon", „Herren-Friseur", „Friseur für Herren"
+      (w === "herren" &&
+        (/^(salon|friseur)$/.test(words[i + 1] ?? "") || words[i - 1] === "für"))
+  );
 }
 
 function beautyBlueprint(category: string, name: string): Blueprint {
@@ -207,9 +242,12 @@ function gastroKind(text: string): GastroKind {
   )
     return "cafe";
   if (
-    /imbiss|fast-?food|döner|doener|kebab|burger|lieferservice|take-?away|schnellrestaurant|meal/i.test(
-      text
-    )
+    /imbiss|fast-?food|döner|doener|kebab|schnellrestaurant/i.test(text) ||
+    // Nur ganze Wörter: „Restaurant / Hamburger Hof" ist kein Imbiss.
+    // „Burger…" darf ein Wort beginnen (Burgerladen), Googles
+    // „Hamburgerrestaurant" bleibt Imbiss.
+    /(^|[^a-zäöüß])(burger|hamburger-?restaurant)/i.test(text) ||
+    /(^|[^a-zäöüß])(lieferservice|take-?away|meal)([^a-zäöüß]|$)/i.test(text)
   )
     return "imbiss";
   return "restaurant";

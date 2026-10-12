@@ -41,7 +41,7 @@ export function systemFontFaces(def: DesignSystemDef): string {
         if (seen.has(key)) return [];
         seen.add(key);
         return [
-          `@font-face{font-family:"${font.family}";src:url(${SYSTEM_FONT_DIR}/${f.file}) format("woff2");font-weight:${f.weight};font-style:${f.style}${stretch};font-display:swap}`,
+          `@font-face{font-family:"${font.family}";src:url(${SYSTEM_FONT_DIR}/${f.file}) format("woff2");font-weight:${f.weight};font-style:${f.style}${stretch}${f.unicodeRange ? `;unicode-range:${f.unicodeRange}` : ""};font-display:swap}`,
         ];
       });
     })

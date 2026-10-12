@@ -1,11 +1,10 @@
 import React from "react";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import "../../packs";
 import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { afterEach, describe, expect, test, vi } from "vitest";
+import { ISLAND_MOTION } from "../../../../site-islands/mountMotion";
 import { WERKSTOFF_CSS } from "./css";
 import { WERKSTOFF_MOTION_CSS } from "./motionCss";
 import { mountWerkstoffMotion } from "./motion";
@@ -177,13 +176,8 @@ describe("Werkstoff-Bewegung (CSS)", () => {
   });
 
   test("Motion-Bundle-Einstieg montiert Werkstoff neben Journal und Raster", () => {
-    const src = readFileSync(
-      resolve(__dirname, "../../../../site-islands/motion.ts"),
-      "utf8"
-    );
-    expect(src).toContain('querySelectorAll<HTMLElement>(".pb-werkstoff")');
-    expect(src).toContain("mountWerkstoffMotion");
-    expect(src).toContain('querySelectorAll<HTMLElement>(".pb-raster")');
+    expect(ISLAND_MOTION.werkstoff).toBe(mountWerkstoffMotion);
+    expect(ISLAND_MOTION.raster).toBeDefined();
   });
 });
 

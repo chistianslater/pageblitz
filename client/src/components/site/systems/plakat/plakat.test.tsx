@@ -71,9 +71,10 @@ describe("Plakat: Gerüst", () => {
     expect(SYSTEM_MOTION.plakat).toBeDefined();
   });
 
-  test("@font-face: League Gothic (wdth) und Hanken Grotesk, je einmal", () => {
+  test("@font-face: League Gothic (wdth) und Hanken Grotesk, je einmal plus Ergänzungen", () => {
     const css = styleOf(render());
-    expect(css.match(/@font-face/g)).toHaveLength(2);
+    expect(css.match(/@font-face/g)).toHaveLength(5);
+    expect(css.match(/unicode-range/g)).toHaveLength(3);
     expect(css).toContain("/fonts/systems/league-gothic-latin-wdth.woff2");
     expect(css).toContain("/fonts/systems/hanken-grotesk-latin-wght.woff2");
   });

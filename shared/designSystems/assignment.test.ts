@@ -28,6 +28,9 @@ describe("Zuordnung Branche → System", () => {
     expect(isBarberShop("Friseursalon", "Kante Barbershop")).toBe(true);
     expect(isBarberShop("Friseursalon", "Salon Lindner")).toBe(false);
     expect(systemsForDoc({ businessCategory: "Friseursalon", businessName: "Kante Barbershop", blueprintFamily: "beauty" })[0]).toBe("plakat");
+    // Damen & Herren ist ein gewöhnlicher Salon, Barbara keine Barbierin.
+    for (const businessName of ["Damen & Herren Salon Elke", "Haarstudio Barbara"])
+      expect(systemsForDoc({ businessCategory: "Friseursalon", businessName, blueprintFamily: "beauty" })[0]).not.toBe("plakat");
   });
   test("Gastro ohne erkennbare Unterart → Restaurant-Zeile", () => {
     expect(systemsFor("gastro")).toEqual(["nacht", "journal", "werkstoff"]);

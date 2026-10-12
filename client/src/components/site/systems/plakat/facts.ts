@@ -207,9 +207,12 @@ export function priceValue(price: string): number | undefined {
   return Number.isFinite(value) ? value : undefined;
 }
 
-/** 7.5 → „7,50", 28 → „28". */
+/** 7.5 → „7,50", 28 → „28", 1200 → „1.200" (deutsche Tausenderpunkte). */
 export const euro = (v: number) =>
-  Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",");
+  v.toLocaleString("de-DE", {
+    minimumFractionDigits: Number.isInteger(v) ? 0 : 2,
+    maximumFractionDigits: Number.isInteger(v) ? 0 : 2,
+  });
 
 /** Alle echten Preise aus sichtbaren Preisliste, Karte und Leistungen. */
 export function pricedItems(data: WebsiteDataV2): Priced[] {

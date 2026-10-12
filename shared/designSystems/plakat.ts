@@ -1,5 +1,9 @@
 import type { DesignSystemDef } from "./types";
 
+/** Googles latin-ext-Bereich (Fonts-API, Stand 2026-10). */
+const LATIN_EXT =
+  "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF";
+
 export const PLAKAT: DesignSystemDef = {
   id: "plakat",
   name: "Plakat",
@@ -8,12 +12,21 @@ export const PLAKAT: DesignSystemDef = {
     display: {
       family: "League Gothic",
       fallback: "'Oswald', 'Arial Narrow', Impact, sans-serif",
-      files: [{ file: "league-gothic-latin-wdth.woff2", weight: "400", style: "normal" }],
+      files: [
+        { file: "league-gothic-latin-wdth.woff2", weight: "400", style: "normal" },
+        // Türkische, polnische, tschechische … Namen (ş ğ İ ł ć č ž ő …).
+        { file: "league-gothic-latin-ext-wdth.woff2", weight: "400", style: "normal", unicodeRange: LATIN_EXT },
+      ],
     },
     text: {
       family: "Hanken Grotesk",
       fallback: "'Helvetica Neue', Arial, system-ui, sans-serif",
-      files: [{ file: "hanken-grotesk-latin-wght.woff2", weight: "100 900", style: "normal" }],
+      files: [
+        { file: "hanken-grotesk-latin-wght.woff2", weight: "100 900", style: "normal" },
+        { file: "hanken-grotesk-latin-ext-wght.woff2", weight: "100 900", style: "normal", unicodeRange: LATIN_EXT },
+        // Pfeil der Knöpfe (→) — fehlt im latin-Schnitt.
+        { file: "hanken-grotesk-arrow-wght.woff2", weight: "100 900", style: "normal", unicodeRange: "U+2192" },
+      ],
     },
   },
   preload: ["league-gothic-latin-wdth.woff2", "hanken-grotesk-latin-wght.woff2"],

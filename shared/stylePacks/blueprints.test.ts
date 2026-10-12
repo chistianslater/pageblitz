@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blueprintFor, withBlueprint } from "./blueprints";
+import { blueprintFor, isBarberShop, withBlueprint } from "./blueprints";
 import { getFixture } from "../siteContract/fixtures";
 import { renderSiteHtml } from "../../server/ssr/renderSite";
 import { withEntryComposition } from "./artDirection";
@@ -192,6 +192,20 @@ describe("Bauplan Gastro", () => {
     expect(blueprintFor("Friseursalon").id).toBe("beauty");
   });
 
+  it("Burger, Lieferservice, Take-away und Meal nur als ganzes Wort", () => {
+    const kind = (cat: string, name: string) =>
+      blueprintFor(cat, name).gastroKind;
+    expect(kind("Restaurant", "Restaurant / Hamburger Hof")).toBe("restaurant");
+    expect(kind("Restaurant", "Mealhouse Brasserie")).toBe("restaurant");
+    expect(kind("Restaurant", "Gasthaus Takeawayer")).toBe("restaurant");
+    expect(kind("Restaurant", "Burger Werk")).toBe("imbiss");
+    expect(kind("Restaurant", "Burgerladen Ost")).toBe("imbiss");
+    expect(kind("Hamburgerrestaurant", "Smash Ost")).toBe("imbiss");
+    expect(kind("Restaurant", "Pizza Lieferservice Mario")).toBe("imbiss");
+    expect(kind("Restaurant", "Asia Take-away")).toBe("imbiss");
+    expect(kind("Restaurant", "Happy Meal Corner")).toBe("imbiss");
+  });
+
   it("verwirft die vom Modell erfundene Speisekarte samt Extra", () => {
     const base = getFixture("gusto", "full");
     const doc = {
@@ -329,5 +343,50 @@ describe("Vertrauensleiste ohne Füllstoff", () => {
     }).html;
     expect(html).not.toContain('class="pb-entry-trust"');
     expect(html).not.toContain("Telefon &amp; E-Mail");
+  });
+});
+
+describe("Barbier-Erkennung (ganze Wörter)", () => {
+  it("erkennt echte Barbiere", () => {
+    for (const name of [
+      "Aland Barber Shop",
+      "H&B Barber",
+      "Barbier Müller",
+      "Herrenfriseur Yilmaz",
+      "Kante Barbershop",
+      "Herren Salon Ali",
+      "Herren-Friseur Can",
+      "Friseur für Herren",
+    ])
+      expect(isBarberShop("Friseursalon", name), name).toBe(true);
+    expect(isBarberShop("Barbier", "Salon Kaya")).toBe(true);
+    expect(isBarberShop("barber_shop", "Salon Kaya")).toBe(true);
+  });
+
+  it("verwechselt Damen & Herren, Barbara und Orte nicht", () => {
+    for (const name of [
+      "Damen & Herren Salon Elke",
+      "Damen und Herren Friseur Lutz",
+      "Damen- und Herrenfriseur Weber",
+      "Friseur für Damen und Herren",
+      "Haarstudio Barbara",
+      "Barbara Beauty",
+      "Friseur Herrenberg",
+      "Salon Herrenhausen",
+      "Herrenmode Schulte",
+    ])
+      expect(isBarberShop("Friseursalon", name), name).toBe(false);
+  });
+
+  it("Bauplan-Überschrift folgt der Erkennung", () => {
+    expect(
+      blueprintFor("Friseursalon", "Damen & Herren Salon Elke").headlines.about
+    ).toBe("Über den Salon");
+    expect(blueprintFor("Friseursalon", "Barbara Beauty").headlines.about).toBe(
+      "Über das Studio"
+    );
+    expect(
+      blueprintFor("Friseursalon", "Aland Barber Shop").headlines.about
+    ).toBe("Über den Laden");
   });
 });

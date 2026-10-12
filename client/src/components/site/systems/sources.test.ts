@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, test } from "vitest";
 import { DESIGN_SYSTEM_IDS } from "../../../../../shared/designSystems/types";
 import { SYSTEMS_WITH_MOTION } from "../../../../../shared/designSystems/registry";
+import { ISLAND_MOTION } from "../../../site-islands/mountMotion";
 
 /**
  * Quelltext-Prüfungen für die Designsysteme (2026-10-11).
@@ -34,14 +35,8 @@ describe("Designsysteme: Quelltext", () => {
   });
 
   test("Motion-Bundle bindet genau die Systeme aus SYSTEMS_WITH_MOTION ein", () => {
-    const src = readFileSync(
-      resolve(ROOT, "client/src/site-islands/motion.ts"),
-      "utf8"
-    );
-    const mounted = Array.from(
-      src.matchAll(/["']\.pb-([a-z-]+)["']/g),
-      m => m[1]
-    ).filter(id => (DESIGN_SYSTEM_IDS as readonly string[]).includes(id));
+    const mounted = Object.keys(ISLAND_MOTION);
+    expect(mounted.every(id => (DESIGN_SYSTEM_IDS as readonly string[]).includes(id))).toBe(true);
     expect([...mounted].sort()).toEqual([...SYSTEMS_WITH_MOTION].sort());
   });
 });
