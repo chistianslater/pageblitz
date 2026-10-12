@@ -3,6 +3,7 @@
  * Import, damit die Admin-Seite nur diese Liste lädt. Die Seiten selbst
  * rendert der Server (`/demo/bauplan/:id/:entry`, blueprintShowcase.ts).
  */
+import type { DesignSystemId } from "../designSystems/types";
 import type { PackId, WebsiteDataV2 } from "../siteContract/types";
 
 export type ShowcaseEntry = "stage" | "colorfield";
@@ -27,6 +28,17 @@ export type Showcase = {
    * Galeriebilder i, j des Bildsatzes.
    */
   photos?: string;
+  /**
+   * Einstieg in der Systemübersicht (/demo/system/…); Standard „stage".
+   * „colorfield" = Foto taugt nicht fürs Querformat (Klar: kleines Foto
+   * neben der Zeiten-Karte).
+   */
+  systemEntry?: ShowcaseEntry;
+  /**
+   * Zusätzlich unter diesen Systemen in der Design-Übersicht, obwohl sie
+   * dort nicht Hauptsystem sind (Systemblatt-Muster, z. B. Klar-Kanzlei).
+   */
+  alsoIn?: readonly DesignSystemId[];
 };
 
 export const SHOWCASES: readonly Showcase[] = [
@@ -113,6 +125,18 @@ export const SHOWCASES: readonly Showcase[] = [
     label: "Zahnarztpraxis",
     fixture: "morgenlicht",
     amenities: { wheelchair: true },
+    photos: "zahnarzt:0:0",
+  },
+  {
+    id: "physio",
+    sample: "Physiotherapie Lindner",
+    group: "Gesundheit",
+    label: "Physiotherapie",
+    fixture: "patina",
+    businessName: "Physiotherapie Lindner",
+    businessCategory: "Physiotherapie",
+    photos: "physio:1:2",
+    systemEntry: "colorfield",
   },
   {
     id: "naturheil",
@@ -127,6 +151,17 @@ export const SHOWCASES: readonly Showcase[] = [
     group: "Beratung & Büro",
     label: "Steuerberater",
     fixture: "kanzlei",
+  },
+  {
+    id: "kanzlei",
+    sample: "Steuerkanzlei Brandt",
+    group: "Beratung & Büro",
+    label: "Steuerkanzlei",
+    fixture: "kanzlei",
+    businessName: "Steuerkanzlei Brandt",
+    businessCategory: "Steuerberater",
+    photos: "none",
+    alsoIn: ["klar"],
   },
   {
     id: "makler",

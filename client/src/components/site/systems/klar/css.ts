@@ -68,7 +68,7 @@ ${FONT_FACES}
 .pb-klar .kl-head{position:relative;z-index:20;background:var(--sys-paper);color:var(--sys-ink)}
 .pb-klar .kl-head-bar{max-width:var(--sys-space-max);margin-inline:auto;display:flex;align-items:center;gap:calc(var(--sys-space-s) * .75);
   min-height:calc(var(--sys-space-xl) * 1.125);padding:var(--sys-space-xs) var(--sys-space-gutter)}
-.pb-klar .kl-brand{display:flex;align-items:center;gap:calc(var(--sys-space-s) * .625);margin-right:auto;min-width:0;min-height:${TAP};text-decoration:none}
+.pb-klar .kl-brand{display:flex;align-items:center;gap:calc(var(--sys-space-s) * .625);margin-right:auto;min-width:${TAP};min-height:${TAP};text-decoration:none}
 .pb-klar .kl-logo{flex:none;display:grid;place-items:center;width:${TILE};height:${TILE};border-radius:calc(var(--sys-space-s) * .75);background:var(--sys-signal);color:var(--sys-on-signal);
   font-family:var(--sys-font-display);font-weight:var(--sys-mark-weight);font-size:var(--sys-mark-size);line-height:1}
 .pb-klar .kl-mark{${step("mark")};min-width:0;overflow-wrap:break-word;hyphens:auto}

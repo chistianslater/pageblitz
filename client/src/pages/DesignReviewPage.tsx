@@ -42,10 +42,14 @@ function systemSrc(
   return `/demo/system/${system}/${id}?palette=${palette}${live ? "&live=1" : ""}`;
 }
 
-/** Beispielbetriebe, deren Hauptsystem `system` ist (Spec §5). */
+/**
+ * Beispielbetriebe, deren Hauptsystem `system` ist (Spec §5), dazu die
+ * ausdrücklich zugeordneten (`alsoIn`, Systemblatt-Muster).
+ */
 function showcasesForSystem(system: DesignSystemId): Showcase[] {
   return SHOWCASES.filter(
     showcase =>
+      showcase.alsoIn?.includes(system) ||
       systemsForDoc({
         businessCategory: showcase.businessCategory ?? showcase.label,
         businessName: showcase.businessName ?? showcase.sample,

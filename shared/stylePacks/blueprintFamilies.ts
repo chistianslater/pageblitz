@@ -73,10 +73,16 @@ export function healthBlueprint(category: string, name: string): Blueprint {
     placeholderText: {
       team: "Wer behandelt, wer empfängt? Mit Fotos und Namen im Studio entsteht hier euer Praxisteam — Vertrauen beginnt beim Gesicht. Auf der fertigen Seite erscheint der Block erst mit euren Angaben.",
     },
+    // Vorteile (Kassen/Privat), Preise, Erster Termin und Team gehören vor
+    // Stimmen und Kontakt — sonst landen sie hinter den Sprechzeiten.
     order: [
       "hero",
+      "usp",
       "services",
+      "pricelist",
+      "process",
       "about",
+      "team",
       "gallery",
       "testimonials",
       "faq",
@@ -141,6 +147,7 @@ export function adviceBlueprint(category: string, name: string): Blueprint {
       "services",
       "process",
       "about",
+      "team",
       "gallery",
       "testimonials",
       "faq",

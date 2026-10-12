@@ -110,12 +110,22 @@ export const CONTENT_CSS = `/* Kapitel-Kopf mit Knopf rechts (Desktop) */
 .pb-klar .kl-about-grid .kl-prose{margin-top:0}
 .pb-klar .kl-prose{margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
 .pb-klar .kl-prose p+p{margin-top:var(--sys-space-s)}
-.pb-klar .kl-gal{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:var(--sys-space-s);grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr))}
+.pb-klar .kl-gal{list-style:none;margin:var(--sys-space-l) 0 0;padding:0;display:grid;gap:var(--sys-space-s);grid-template-columns:minmax(0,1fr)}
+/* Galerie ohne Waisen: Tablet 2 Spalten (ungerade → erstes Foto über beide),
+   Desktop 6er-Raster mit 3 je Zeile, 2 und 4 als Paare, 5 = 2 + 3 */
+@media (min-width:40rem) and (max-width:calc(${GRID} - 1px)){
+  .pb-klar .kl-gal{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pb-klar .kl-gal:is([data-n="1"],[data-n="3"],[data-n="5"]) li:first-child{grid-column:span 2}
+}
 .pb-klar .kl-gal-fig{margin:0}
 .pb-klar .kl-gal-cap{${step("small")};margin-top:var(--sys-space-xs);color:var(--sys-muted)}
 @media (min-width:${GRID}){
   .pb-klar .kl-about-grid--photo{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);align-items:center;gap:var(--sys-space-xl)}
+  .pb-klar .kl-gal{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .pb-klar .kl-gal li{grid-column:span 2}
+  .pb-klar .kl-gal:is([data-n="2"],[data-n="4"]) li,.pb-klar .kl-gal[data-n="5"] li:nth-child(-n+2){grid-column:span 3}
   .pb-klar .kl-gal[data-n="1"]{grid-template-columns:minmax(0,1fr);max-width:calc(var(--sys-space-measure) * 1.4)}
+  .pb-klar .kl-gal[data-n="1"] li{grid-column:auto}
 }
 
 /* Stimmen: ruhige Karten, erste mit Google-Schnitt und großem Zitat */
@@ -175,7 +185,11 @@ export const CONTENT_CSS = `/* Kapitel-Kopf mit Knopf rechts (Desktop) */
 .pb-klar .kl-place-ways .kl-btn{margin-top:var(--sys-space-xs)}
 @media (min-width:${GRID}){
   .pb-klar .kl-visit{grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:var(--sys-space-l)}
-  .pb-klar .kl-visit--solo{grid-template-columns:minmax(0,1fr);max-width:calc(var(--sys-space-measure) * 1.4)}
+  /* Zeiten stehen schon im Einstieg: Karte und Anschrift nebeneinander über die volle Breite */
+  .pb-klar .kl-visit--solo{grid-template-columns:minmax(0,1fr)}
+  .pb-klar .kl-visit--solo .kl-place:has(.kl-map){display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+  .pb-klar .kl-visit--solo .kl-map{height:auto;min-height:calc(var(--sys-space-2xl) * 2.6)}
+  .pb-klar .kl-visit--solo .kl-place-body{align-content:center;padding:${PAD} calc(${PAD} * 1.5)}
 }
 
 /* Kontakt-Insel: Titel nur, wenn das Formular rendert; Felder ≥ 7:1 */

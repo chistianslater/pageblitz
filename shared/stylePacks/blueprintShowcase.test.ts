@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SHOWCASES, showcaseDoc } from "./blueprintShowcase";
+import { SHOWCASES, showcaseDoc, systemShowcaseDoc } from "./blueprintShowcase";
+import { healthBlueprint } from "./blueprintFamilies";
 import { blueprintFor } from "./blueprints";
 import { systemsForDoc } from "../designSystems";
 import { INDUSTRY_IMAGES } from "../industryImages";
@@ -215,6 +216,97 @@ describe("Bauplan-Übersicht", () => {
     it("Fragen stehen vor dem Kontakt", () => {
       const types = doc("barbier").sections.map(s => s.type);
       expect(types.indexOf("faq")).toBeLessThan(types.indexOf("contact"));
+    });
+  });
+
+  describe("Klar-Beispiele: Zahnarzt, Physio, Kanzlei", () => {
+    const doc = (id: string) =>
+      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+    const sys = (id: string) =>
+      systemShowcaseDoc(SHOWCASES.find(s => s.id === id)!, "klar");
+    const section = (id: string, type: string) =>
+      doc(id).sections.find(s => s.type === type) as
+        | Record<string, unknown>
+        | undefined;
+    const IDS = ["zahnarzt", "physio", "kanzlei"];
+
+    it("stehen unter Klar in der Design-Übersicht (Haupt- oder zugeordnetes System)", () => {
+      for (const id of IDS) {
+        const s = SHOWCASES.find(x => x.id === id)!;
+        const main = systemsForDoc({
+          businessCategory: s.businessCategory ?? s.label,
+          businessName: s.businessName ?? s.sample,
+        })[0];
+        expect(main === "klar" || s.alsoIn?.includes("klar")).toBe(true);
+      }
+      expect(SHOWCASES.find(s => s.id === "kanzlei")!.alsoIn).toEqual(["klar"]);
+    });
+
+    it("Kontaktdaten fiktiv, keine Daten der Fixture", () => {
+      for (const id of IDS) {
+        const contact = section(id, "contact")!;
+        expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
+        expect(contact.email).toMatch(/\.example$/);
+      }
+      expect(JSON.stringify(doc("zahnarzt").sections)).not.toMatch(/Eppendorf|Hamburg|dr-sommer-hamburg/);
+      expect(JSON.stringify(doc("physio").sections)).not.toMatch(/Voss|Freiburg|Loretto/);
+      expect(JSON.stringify(doc("kanzlei").sections)).not.toMatch(/Roth|Weber|Köln/);
+    });
+
+    it("Sie-Ansprache, kein du/dein in den Texten", () => {
+      for (const id of IDS) {
+        const text = JSON.stringify(doc(id).sections);
+        expect(text).not.toMatch(/\b(du|dein|deine|dich|dir|euch|euer)\b/i);
+        expect(text).toMatch(/\bSie\b|\bIhre?\b/);
+      }
+    });
+
+    it("Fotos: Zahnarzt groß (Bühne), Physio klein (Farbfläche), Kanzlei ohne Foto", () => {
+      const urls = (id: string) =>
+        JSON.stringify(doc(id).sections).match(/https:\/\/images\.unsplash\.com[^"]+/g) ?? [];
+      for (const id of ["zahnarzt", "physio"]) {
+        const set = INDUSTRY_IMAGES[id];
+        const pool = [...set.hero, ...(set.gallery ?? [])];
+        expect(urls(id).length).toBeGreaterThan(3);
+        for (const u of urls(id)) expect(pool).toContain(u);
+        // jedes Foto nur einmal
+        expect(new Set(urls(id)).size).toBe(urls(id).length);
+      }
+      expect(sys("zahnarzt").designProfile?.composition).toBe("stage");
+      expect(sys("physio").designProfile?.composition).toBe("colorfield");
+      expect(JSON.stringify(doc("kanzlei"))).not.toMatch(/images\.unsplash|\/demo\/.*\.webp/);
+    });
+
+    it("Fakten nur aus Daten: Vorteile Kassen/Privat, Zahnarzt barrierefrei mit eigenen Google-Zahlen", () => {
+      for (const id of ["zahnarzt", "physio"])
+        expect(section(id, "usp")!.items).toEqual([{ title: "Alle Kassen" }, { title: "Privat" }]);
+      expect(section("kanzlei", "usp")).toBeUndefined();
+      expect(doc("zahnarzt").amenities?.wheelchair).toBe(true);
+      expect(doc("zahnarzt").google).toEqual({ rating: 4.8, reviewCount: 212 });
+      expect(doc("physio").google).toBeUndefined();
+      expect(doc("kanzlei").google).toBeUndefined();
+      expect(section("physio", "testimonials")).toBeUndefined();
+    });
+
+    it("Team, Erster Termin, Preise ergänzt — Add-ons gebucht, Reihenfolge vor Stimmen und Kontakt", () => {
+      for (const id of IDS) {
+        expect(section(id, "team")).toBeDefined();
+        expect(doc(id).addOns?.team).toBe(true);
+        const types = doc(id).sections.map(s => s.type);
+        expect(types.indexOf("process")).toBeLessThan(types.indexOf("contact"));
+        expect(types.indexOf("team")).toBeLessThan(types.indexOf("faq"));
+      }
+      expect(doc("physio").addOns?.pricelist).toBe(true);
+      expect(JSON.stringify(section("physio", "pricelist"))).toContain('"price":"32 €"');
+      expect(section("zahnarzt", "process")!.headline).toBe("Ihr erster Termin");
+      const z = doc("zahnarzt").sections.map(s => s.type);
+      expect(z.indexOf("usp")).toBe(1);
+    });
+
+    it("Bauplan Gesundheit ordnet Vorteile, Preise, Ablauf, Team vor Stimmen und Kontakt", () => {
+      const order = healthBlueprint("Zahnarztpraxis", "X").order!;
+      for (const t of ["usp", "pricelist", "process", "team"] as const)
+        expect(order.indexOf(t)).toBeLessThan(order.indexOf("testimonials"));
     });
   });
 });

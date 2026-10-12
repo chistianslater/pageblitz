@@ -72,11 +72,18 @@ type SampleText = {
   reviews?: { author: string; text: string }[];
   /** Fragen auch ergänzen, wenn die Fixture keinen FAQ-Abschnitt hat. */
   addFaq?: true;
-  /** `false`: Google-Zahlen der Fixture weglassen (gehören zu ihr). */
-  google?: false;
+  /**
+   * `false`: Google-Zahlen der Fixture weglassen (gehören zu ihr); eigene
+   * Zahlen ersetzen die der Fixture (nur mit Bewertungen).
+   */
+  google?: false | { rating: number; reviewCount: number };
+  /** Vorteile als Titel (Fakten-Chips in Klar), direkt nach dem Einstieg. */
+  usp?: string[];
+  /** Eigenes Team (ersetzt bzw. ergänzt das der Fixture, bucht das Add-on). */
+  team?: Omit<SectionOf<"team">, "type">;
   /** Eigener Ablauf des Beispiels (ersetzt bzw. ergänzt den der Fixture). */
   process?: Omit<SectionOf<"process">, "type">;
-  /** Eigene Preisliste/Wochentafel (ersetzt die der Fixture). */
+  /** Eigene Preisliste/Wochentafel (ersetzt bzw. ergänzt die der Fixture, bucht das Add-on). */
   pricelist?: Omit<SectionOf<"pricelist">, "type">;
 };
 
@@ -303,6 +310,300 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
         answer: "Ja, du bekommst nach jedem Einsatz eine Rechnung.",
       },
     ],
+  },
+  // Klar (2026-10-12): Zahnarzt, Physio, Kanzlei — Systemblatt 8–13,
+  // „Sie"-Ansprache, Bildsätze zahnarzt/physio, Kontaktdaten fiktiv.
+  zahnarzt: {
+    contact: {
+      street: "Lindenweg 12",
+      zip: "21335",
+      city: "Lüneburg",
+      phone: "04131 555 0142",
+      email: "praxis@dr-sommer.example",
+    },
+    hours: [
+      { day: "Mo", hours: "8:00 – 12:00, 14:00 – 18:00" },
+      { day: "Di", hours: "8:00 – 12:00, 14:00 – 18:00" },
+      { day: "Mi", hours: "8:00 – 13:00" },
+      { day: "Do", hours: "8:00 – 12:00, 14:00 – 19:00" },
+      { day: "Fr", hours: "8:00 – 13:00" },
+      { day: "Sa", hours: "geschlossen" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Gut aufgehoben. Von Anfang an.",
+      subheadline:
+        "Behutsame Zahnmedizin für die ganze Familie. Wir erklären jeden Schritt, bevor wir anfangen.",
+    },
+    usp: ["Alle Kassen", "Privat"],
+    services: [
+      {
+        title: "Vorsorge und Zahnreinigung",
+        description: "Untersuchung, professionelle Reinigung, Röntgen nur wenn nötig.",
+      },
+      {
+        title: "Füllungen und Wurzelbehandlung",
+        description: "Zahnfarbene Füllungen, gründlich betäubt.",
+      },
+      {
+        title: "Zahnersatz",
+        description: "Kronen, Brücken, Prothesen. Kostenplan vorab schriftlich.",
+      },
+      {
+        title: "Für Angstpatienten",
+        description: "Mehr Zeit, Pause auf Handzeichen.",
+      },
+    ],
+    process: {
+      headline: "Ihr erster Termin",
+      steps: [
+        {
+          title: "Anrufen oder online buchen",
+          text: "Sagen Sie uns kurz, worum es geht. Wir nennen Ihnen einen Termin.",
+        },
+        {
+          title: "Ankommen",
+          text: "Den Fragebogen füllen wir gemeinsam am Empfang aus.",
+        },
+        {
+          title: "Untersuchung und Gespräch",
+          text: "Wir zeigen Ihnen die Aufnahmen am Bildschirm und erklären, was wir sehen.",
+        },
+        {
+          title: "Ihr Plan, schriftlich",
+          text: "Alle Schritte und Kosten auf Papier. Entscheiden müssen Sie nichts sofort.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Dr. Katrin Sommer", role: "Zahnärztin, Inhaberin" },
+        { name: "Jonas Petersen", role: "Zahnarzt" },
+        { name: "Aylin Demir", role: "Prophylaxe" },
+      ],
+    },
+    about:
+      "Seit vielen Jahren behandeln wir am Lindenweg Kinder, Eltern und Großeltern. Wir nehmen uns Zeit für Ihre Fragen und erklären jeden Schritt, bevor wir anfangen.\n\nDie Praxis liegt im Erdgeschoss, ein Aufzug führt auch in die Behandlungsräume im ersten Stock.",
+    faq: [
+      {
+        question: "Nehmen Sie neue Patienten auf?",
+        answer:
+          "Ja. Rufen Sie an, wir finden einen Termin und sagen Ihnen, was Sie mitbringen.",
+      },
+      {
+        question: "Ich habe Angst. Was können Sie tun?",
+        answer:
+          "Wir planen mehr Zeit ein, erklären vorher jeden Schritt und machen Pause, sobald Sie die Hand heben.",
+      },
+      {
+        question: "Was zahlt meine Kasse?",
+        answer:
+          "Das klären wir vor der Behandlung. Sie bekommen den Eigenanteil schriftlich.",
+      },
+    ],
+    google: { rating: 4.8, reviewCount: 212 },
+    reviews: [
+      {
+        author: "Renate K.",
+        text: "Ich hatte zwölf Jahre Angst vor dem Bohrer. Hier wurde jeder Schritt erklärt, und ich durfte jederzeit Pause machen.",
+      },
+      {
+        author: "Thomas B.",
+        text: "Kurzfristig einen Termin bekommen, als der Zahn wehtat. Freundlich, ruhig und gründlich.",
+      },
+      {
+        author: "Familie Ahrens",
+        text: "Unsere Kinder gehen gern hin. Das sagt eigentlich alles.",
+      },
+    ],
+  },
+  physio: {
+    contact: {
+      street: "Mühlenstraße 4",
+      zip: "29221",
+      city: "Celle",
+      phone: "05141 555 0187",
+      email: "team@physio-lindner.example",
+    },
+    hours: [
+      { day: "Mo–Do", hours: "7:30 – 20:00" },
+      { day: "Fr", hours: "7:30 – 14:00" },
+      { day: "Sa–So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Termine auch abends.",
+      subheadline:
+        "Krankengymnastik, Manuelle Therapie und Lymphdrainage. Mit Rezept oder als Selbstzahler.",
+    },
+    usp: ["Alle Kassen", "Privat"],
+    services: [
+      {
+        title: "Krankengymnastik",
+        description: "Kräftigen, dehnen, wieder sicher bewegen.",
+      },
+      {
+        title: "Manuelle Therapie",
+        description: "Für Rücken, Nacken und Gelenke.",
+      },
+      {
+        title: "Lymphdrainage",
+        description: "Sanft, nach Operationen und bei Schwellungen.",
+      },
+      {
+        title: "Hausbesuche",
+        description: "Wenn Sie nicht zu uns kommen können.",
+      },
+    ],
+    pricelist: {
+      headline: "Für Selbstzahler",
+      categories: [
+        {
+          name: "Je Behandlung",
+          items: [
+            { name: "Krankengymnastik", price: "32 €" },
+            { name: "Manuelle Therapie", price: "38 €" },
+            { name: "Lymphdrainage", price: "36 €" },
+            { name: "Klassische Massage", price: "29 €" },
+          ],
+        },
+      ],
+    },
+    process: {
+      headline: "Ihr erster Termin",
+      steps: [
+        {
+          title: "Verordnung mitbringen",
+          text: "Ihr Rezept vom Arzt. Ohne Rezept behandeln wir als Selbstzahler.",
+        },
+        {
+          title: "Befund",
+          text: "Wir fragen nach Ihren Beschwerden und schauen uns die Bewegung an.",
+        },
+        {
+          title: "Behandlung",
+          text: "Wir beginnen gleich und erklären, was wir tun.",
+        },
+        {
+          title: "Übungen für zu Hause",
+          text: "Sie bekommen Ihre Übungen ausgedruckt mit.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Marie Lindner", role: "Physiotherapeutin, Inhaberin" },
+        { name: "Tobias Wendt", role: "Manuelle Therapie" },
+        { name: "Svenja Koch", role: "Lymphdrainage" },
+      ],
+    },
+    about:
+      "Drei Behandlungsräume im Erdgeschoss, ein kleiner Übungsraum und ein Team, das Sie beim Namen kennt. Wir behandeln mit Rezept und als Selbstzahler.\n\nWer tagsüber arbeitet, kommt abends: Montag bis Donnerstag sind wir bis 20 Uhr da.",
+    faq: [
+      {
+        question: "Brauche ich ein Rezept?",
+        answer:
+          "Für die Kasse ja. Ohne Rezept zahlen Sie selbst, die Preise stehen oben.",
+      },
+      {
+        question: "Kommen Sie auch nach Hause?",
+        answer: "Ja, mit Verordnung für Hausbesuche, in Celle und Umgebung.",
+      },
+      {
+        question: "Wie schnell bekomme ich einen Termin?",
+        answer: "Rufen Sie an. Abendtermine sind am schnellsten frei.",
+      },
+    ],
+    addFaq: true,
+    google: false,
+  },
+  kanzlei: {
+    contact: {
+      street: "Almsstraße 21",
+      zip: "31134",
+      city: "Hildesheim",
+      phone: "05121 555 0119",
+      email: "kanzlei@brandt-steuer.example",
+    },
+    hours: [
+      { day: "Mo", hours: "8:30 – 17:00" },
+      { day: "Di", hours: "8:30 – 17:00" },
+      { day: "Mi", hours: "8:30 – 13:00" },
+      { day: "Do", hours: "8:30 – 18:00" },
+      { day: "Fr", hours: "8:30 – 13:00" },
+      { day: "Sa", hours: "geschlossen" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Ihre Steuern. In ruhigen Händen.",
+      subheadline:
+        "Für Angestellte, Rentner und kleine Betriebe. Das Erstgespräch kostet nichts.",
+    },
+    services: [
+      {
+        title: "Steuererklärung",
+        description: "Für Angestellte, Rentner und Vermieter.",
+      },
+      {
+        title: "Buchhaltung und Lohn",
+        description: "Für Betriebe bis etwa 20 Mitarbeiter.",
+      },
+      {
+        title: "Jahresabschluss",
+        description: "Bilanz oder Einnahmen-Überschuss-Rechnung.",
+      },
+      {
+        title: "Existenzgründung",
+        description: "Rechtsform, Finanzamt, erste Schritte.",
+      },
+    ],
+    process: {
+      headline: "So läuft das Erstgespräch",
+      steps: [
+        {
+          title: "Anrufen",
+          text: "Wir vereinbaren einen Termin, in der Kanzlei oder am Telefon.",
+        },
+        {
+          title: "Unterlagen",
+          text: "Sie bekommen vorab eine kurze Liste, was wir sehen möchten.",
+        },
+        {
+          title: "Gespräch",
+          text: "Wir hören zu und sagen ehrlich, was wir für Sie tun können.",
+        },
+        {
+          title: "Angebot",
+          text: "Sie bekommen ein schriftliches Angebot. Ohne Verpflichtung.",
+        },
+      ],
+    },
+    team: {
+      headline: "Ihr Team",
+      members: [
+        { name: "Henrike Brandt", role: "Steuerberaterin" },
+        { name: "Mehmet Yıldız", role: "Steuerfachwirt" },
+      ],
+    },
+    about:
+      "Eine kleine Kanzlei in der Hildesheimer Innenstadt. Wir betreuen Angestellte, Rentner, Vermieter und Betriebe mit bis zu zwanzig Mitarbeitern.\n\nBelege nehmen wir auf Papier oder digital an, ganz wie es Ihnen lieber ist.",
+    faq: [
+      {
+        question: "Was kostet die Steuererklärung?",
+        answer:
+          "Das richtet sich nach der Gebührenverordnung. Im Erstgespräch nennen wir Ihnen den Betrag.",
+      },
+      {
+        question: "Muss ich in die Kanzlei kommen?",
+        answer: "Nein. Belege gehen auch per Post oder digital.",
+      },
+      {
+        question: "Helfen Sie auch Rentnern?",
+        answer: "Ja, das ist ein großer Teil unserer Arbeit.",
+      },
+    ],
+    google: false,
   },
   // Plakat (2026-10-12): Barbier, Imbiss, Kurse — Systemblatt 8–11,
   // Bildsätze barbier/imbiss, Kontaktdaten fiktiv.
@@ -805,6 +1106,10 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
         return text.process ? { ...section, ...text.process } : section;
       case "pricelist":
         return text.pricelist ? { ...section, ...text.pricelist } : section;
+      case "team":
+        return text.team ? { ...section, ...text.team } : section;
+      case "usp":
+        return text.usp ? { ...section, items: text.usp.map(title => ({ title })) } : section;
       case "testimonials":
         return text.reviews
           ? {
@@ -817,10 +1122,17 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
     }
   }) as WebsiteDataV2["sections"];
   const { google, tagline: _tagline, ...rest } = doc;
-  // Ablauf bzw. Fragen, die die Fixture nicht hat, kommen hinzu.
+  const has = (type: string) => doc.sections.some(s => s.type === type);
+  // Ablauf, Preise, Team bzw. Fragen, die die Fixture nicht hat, kommen hinzu.
   const added: WebsiteDataV2["sections"][number][] = [
-    ...(text.process && !doc.sections.some(s => s.type === "process")
+    ...(text.process && !has("process")
       ? [{ type: "process" as const, ...text.process }]
+      : []),
+    ...(text.pricelist && !has("pricelist")
+      ? [{ type: "pricelist" as const, ...text.pricelist }]
+      : []),
+    ...(text.team && !has("team")
+      ? [{ type: "team" as const, ...text.team }]
       : []),
     ...(text.addFaq && !doc.sections.some(s => s.type === "faq")
       ? [{ type: "faq" as const, items: text.faq }]
@@ -830,15 +1142,40 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
   // danach der Bauplan (withBlueprint), wie bei echten Seiten.
   const tail = sections.findIndex(s => s.type === "faq" || s.type === "contact");
   const at = tail === -1 ? sections.length : tail;
-  const all = [
+  const merged = [
     ...sections.slice(0, at),
     ...added,
     ...sections.slice(at),
   ] as WebsiteDataV2["sections"];
+  // Vorteile (Fakten-Chips) direkt nach dem Einstieg, falls die Fixture keine hat.
+  const all = (
+    text.usp && !has("usp")
+      ? merged.flatMap((s): WebsiteDataV2["sections"][number][] =>
+          s.type === "hero"
+            ? [s, { type: "usp", items: text.usp!.map(title => ({ title })) }]
+            : [s]
+        )
+      : merged
+  ) as WebsiteDataV2["sections"];
+  const ownGoogle = text.google ? text.google : google;
+  // Gebuchte Add-ons für ergänzte Preise/Team (sonst blendet das Gating sie aus).
+  const addOns =
+    text.pricelist || text.team
+      ? {
+          addOns: {
+            ...doc.addOns,
+            ...(text.pricelist ? { pricelist: true } : {}),
+            ...(text.team ? { team: true } : {}),
+          },
+        }
+      : {};
   return {
     ...rest,
+    ...addOns,
     // Ohne Bewertungen auch keine Google-Zahlen der fremden Fixture.
-    ...(text.reviews && google && text.google !== false ? { google } : {}),
+    ...(text.reviews && ownGoogle && text.google !== false
+      ? { google: ownGoogle }
+      : {}),
     sections: text.reviews
       ? all
       : (all.filter(
@@ -906,5 +1243,9 @@ export function systemShowcaseDoc(
   system: DesignSystemId,
   palette?: string
 ): WebsiteDataV2 {
-  return withDesignSystem(showcaseDoc(showcase, "stage"), system, palette);
+  return withDesignSystem(
+    showcaseDoc(showcase, showcase.systemEntry ?? "stage"),
+    system,
+    palette
+  );
 }
