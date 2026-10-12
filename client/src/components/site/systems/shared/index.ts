@@ -9,3 +9,4 @@ export * from "./legal";
 export * from "./entryFacts";
 export * from "./photos";
 export * from "./versal";
+export * from "./brand";
