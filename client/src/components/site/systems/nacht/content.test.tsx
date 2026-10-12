@@ -253,6 +253,17 @@ describe("Nacht: Speisekarte", () => {
     expect(alts).toEqual(["Gewölbe 1", "Gewölbe 2"]);
   });
 
+  test("Inhaltsfotos laden am Handy nur die passende Größe (srcSet + sizes)", () => {
+    const html = render(weinbergDoc());
+    const gallery = sectionOf(html, SECTION_ANCHORS.gallery);
+    const karte = sectionOf(html, SECTION_ANCHORS.menu);
+    expect(gallery).toMatch(/<img [^>]*srcSet="[^"]*360w[^"]*640w[^"]*" sizes="\(min-width: 48rem\) 30vw, 46vw"/);
+    expect(karte).toMatch(/<img [^>]*srcSet="[^"]*640w[^"]*" sizes="\(min-width: 64rem\) 20vw, 50vw"/);
+    // Fremde Quellen (kein Unsplash) bleiben ohne srcSet.
+    const own = patchSection(weinbergDoc(), "about", a => ({ ...a, imageUrl: "/uploads/haus.jpg" }));
+    expect(sectionOf(render(own), SECTION_ANCHORS.about)).toMatch(/<img src="\/uploads\/haus\.jpg" alt=""/);
+  });
+
   test("ohne genug Galeriefotos kein Bildpaar (Galerie bleibt ganz)", () => {
     const doc = patchSection(weinbergDoc(), "gallery", g => ({
       ...g,

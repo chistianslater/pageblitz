@@ -6,6 +6,7 @@ import { useSystem } from "../SystemContext";
 import { unquote, voiceList } from "../shared";
 import { initials, paragraphs, ratingLine } from "./content";
 import { NachtChapter } from "./sections";
+import { SMALL_WIDTHS, nachtSrcSet } from "./Entry";
 
 /**
  * Menschen und Haus nach Systemblatt 10–13: Fotos mit System-Filter und
@@ -21,17 +22,22 @@ export function NightPhoto({
   width = 1200,
   height = 1500,
   className = "nc-pic-frame",
+  sizes,
 }: {
   src: string;
   alt?: string;
   width?: number;
   height?: number;
   className?: string;
+  /** Angezeigte Breite: mit `sizes` lädt das Handy nur die passende Größe. */
+  sizes?: string;
 }) {
+  const srcSet = sizes ? nachtSrcSet(src, SMALL_WIDTHS) : undefined;
   return (
     <div className={className}>
       <img
         src={src}
+        {...(srcSet ? { srcSet, sizes } : {})}
         alt={alt}
         width={width}
         height={height}
@@ -64,7 +70,9 @@ export function NachtAbout({ section }: { section: SectionOf<"about"> }) {
         }
       >
         <Prose text={section.body} />
-        {image && <NightPhoto src={image} />}
+        {image && (
+          <NightPhoto src={image} sizes="(min-width: 48rem) 40vw, 92vw" />
+        )}
       </div>
     </NachtChapter>
   );
@@ -83,6 +91,7 @@ export function NachtTeam({ section }: { section: SectionOf<"team"> }) {
                 width={600}
                 height={800}
                 className="nc-portrait"
+                sizes="5rem"
               />
             ) : (
               <span className="nc-ring nc-ring--mono" aria-hidden="true">
@@ -115,6 +124,7 @@ export function NachtGallery({ section }: { section: SectionOf<"gallery"> }) {
                 alt={image.alt}
                 width={800}
                 height={1000}
+                sizes="(min-width: 48rem) 30vw, 46vw"
               />
               {image.caption && (
                 <figcaption className="nc-gal-cap">{image.caption}</figcaption>

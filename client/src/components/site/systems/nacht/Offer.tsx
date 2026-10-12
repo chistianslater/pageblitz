@@ -13,6 +13,7 @@ import {
 } from "../shared";
 import { dishCount, openerOf, type PairPhotos } from "./content";
 import { NachtChapter, type NachtSection } from "./sections";
+import { SMALL_WIDTHS, nachtSrcSet } from "./Entry";
 
 /**
  * Angebot nach Systemblatt 10/15: Speisekarte je Kategorie (Name, Anzahl
@@ -137,6 +138,14 @@ export function NachtServices({
 
 /* ── Karte und Preise ────────────────────────────────────────────────── */
 
+/** Bildpaar: halbe Breite am Handy, ein Fünftel am Desktop. */
+function pairSrcSet(url: string) {
+  const srcSet = nachtSrcSet(url, SMALL_WIDTHS);
+  return srcSet
+    ? { srcSet, sizes: "(min-width: 64rem) 20vw, 50vw" }
+    : {};
+}
+
 /** Zwei Galeriefotos versetzt (Systemblatt 10/15), Schleier in Grundfarbe. */
 function Pair({ pair }: { pair: PairPhotos }) {
   return (
@@ -145,6 +154,7 @@ function Pair({ pair }: { pair: PairPhotos }) {
         <figure className="nc-pair-pic" key={photo.url}>
           <img
             src={photo.url}
+            {...pairSrcSet(photo.url)}
             alt={photo.alt}
             width={i === 0 ? 800 : 600}
             height={1000}

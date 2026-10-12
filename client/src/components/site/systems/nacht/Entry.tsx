@@ -28,10 +28,18 @@ import { Icon, wayIcon } from "./icons";
  */
 
 /** Breiten fürs Einstiegsfoto (Handy bis Desktop in 2×). */
-const WIDTHS = [640, 1024, 1600, 2400] as const;
+const WIDTHS = [640, 828, 1024, 1600, 2400] as const;
+/**
+ * Breiten für kleine Fotos (Hochformat im Einstieg, Bildpaar, Galerie,
+ * Porträts): am Handy oft unter 360 px breit — kein 640er nötig.
+ */
+export const SMALL_WIDTHS = [360, 480, 640, 960, 1280] as const;
 
 /** Unsplash in passenden Breiten; andere Quellen bleiben, wie sie sind. */
-export function nachtSrcSet(src: string): string | undefined {
+export function nachtSrcSet(
+  src: string,
+  widths: readonly number[] = WIDTHS
+): string | undefined {
   let base: URL;
   try {
     base = new URL(src);
@@ -39,7 +47,7 @@ export function nachtSrcSet(src: string): string | undefined {
     return undefined;
   }
   if (base.hostname !== "images.unsplash.com") return undefined;
-  return WIDTHS.map(w => {
+  return widths.map(w => {
     const url = new URL(base);
     url.searchParams.set("w", String(w));
     return `${url.toString()} ${w}w`;
@@ -55,7 +63,7 @@ function Img({
   sizes: string;
   wide: boolean;
 }) {
-  const srcSet = nachtSrcSet(src);
+  const srcSet = nachtSrcSet(src, wide ? WIDTHS : SMALL_WIDTHS);
   return (
     <img
       src={src}
@@ -123,7 +131,11 @@ function FigureBlock({ figure, photo }: { figure?: Figure; photo?: string }) {
           <figure className={figure ? "nc-pic" : "nc-pic nc-pic--solo"}>
             <Img
               src={photo}
-              sizes="(min-width: 48rem) 22vw, 46vw"
+              sizes={
+                figure
+                  ? "(min-width: 48rem) 22vw, 46vw"
+                  : "(max-width: 25rem) 92vw, 22.75rem"
+              }
               wide={false}
             />
           </figure>

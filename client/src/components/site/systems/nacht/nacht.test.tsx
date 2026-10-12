@@ -307,6 +307,7 @@ describe("Nacht: Einstiegsfoto-Breiten", () => {
     const set = nachtSrcSet("https://images.unsplash.com/photo-1?w=1&q=80")!;
     expect(set.split(", ").map(p => p.split(" ")[0])).toEqual([
       "https://images.unsplash.com/photo-1?w=640&q=80",
+      "https://images.unsplash.com/photo-1?w=828&q=80",
       "https://images.unsplash.com/photo-1?w=1024&q=80",
       "https://images.unsplash.com/photo-1?w=1600&q=80",
       "https://images.unsplash.com/photo-1?w=2400&q=80",
