@@ -209,9 +209,11 @@ describe("Abendmotive für Nacht-Seiten (N2+N3)", () => {
   });
 
   test("nutzt dieselbe Familien-/Systemwahl wie die Seite (Weinstube, industryKey)", () => {
-    // „Weinstube" erkennt nur der Branchenschlüssel als Gastro – genau wie die Seite.
+    // Seit 2026-10-12 ist „Weinstube" auch ohne Branchenschlüssel Gastro – wie die Seite.
     expect(prefersEveningPhotos("Weinstube", "Zum Anker", true, "restaurant")).toBe(true);
-    expect(prefersEveningPhotos("Weinstube", "Zum Anker", true)).toBe(false);
+    expect(prefersEveningPhotos("Weinstube", "Zum Anker", true)).toBe(true);
+    // „Weinhandlung" ist Handel – keine Abendfotos.
+    expect(prefersEveningPhotos("Weinhandlung", "Zum Anker", true)).toBe(false);
     expect(prefersEveningPhotos("Zahnarzt", "Praxis Lind", true, "restaurant")).toBe(false);
     expect(prefersEveningPhotos("Bäckerei", "Kornblume", true)).toBe(false);
   });
