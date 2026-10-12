@@ -136,6 +136,11 @@ const STORY = `/* Über uns: Pille daneben */
   .pb-plakat .pk-gal-arch{grid-column:span 4}
   .pb-plakat .pk-gal-pill-wide{grid-column:span 5}
   .pb-plakat .pk-gal[data-n="1"] .pk-gal-pill-wide{grid-column:1/9}
+  /* Zwei Fotos: Pille + Bogen füllen die ganze Breite (5 + 7 Spalten), Höhen nahe beieinander */
+  .pb-plakat .pk-gal[data-n="2"] .pk-gal-pill{grid-column:span 5}
+  .pb-plakat .pk-gal[data-n="2"] .pk-gal-pill .pk-shape{aspect-ratio:3/4}
+  .pb-plakat .pk-gal[data-n="2"] .pk-gal-arch{grid-column:span 7}
+  .pb-plakat .pk-gal[data-n="2"] .pk-gal-arch .pk-shape{aspect-ratio:1}
 }
 
 /* Stimme und Motto: ein großer Satz, Kicker, Urheber */

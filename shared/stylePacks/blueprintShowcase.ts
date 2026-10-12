@@ -62,7 +62,7 @@ type SampleText = {
   };
   /** Öffnungszeiten des Beispiels; ohne Angabe die der Fixture. */
   hours?: { day: string; hours: string }[];
-  services: { title: string; description: string }[];
+  services: { title: string; description: string; price?: string }[];
   about: string;
   faq: { question: string; answer: string }[];
   /**
@@ -301,6 +301,158 @@ const SAMPLE_TEXT: Record<string, SampleText> = {
       {
         question: "Bekomme ich eine Rechnung?",
         answer: "Ja, du bekommst nach jedem Einsatz eine Rechnung.",
+      },
+    ],
+  },
+  // Plakat (2026-10-12): Barbier, Imbiss, Kurse — Systemblatt 8–11,
+  // Bildsätze barbier/imbiss, Kontaktdaten fiktiv.
+  barbier: {
+    contact: {
+      street: "Hafenstraße 12",
+      zip: "48153",
+      city: "Münster",
+      phone: "0251 555 0182",
+      email: "hallo@kante.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "10:00 – 19:00" },
+      { day: "Sa", hours: "9:00 – 15:00" },
+      { day: "So", hours: "geschlossen" },
+    ],
+    hero: {
+      headline: "Fade, Bart, fertig.",
+      subheadline: "Herrenschnitte und Bartpflege an der Hafenstraße.",
+    },
+    services: [
+      { title: "Haarschnitt", description: "Waschen, Schnitt, Styling." },
+      { title: "Skin Fade", description: "Maschine bis auf die Haut, Übergang von Hand." },
+      { title: "Bart", description: "Kontur, Länge, Öl." },
+      { title: "Rasur", description: "Klinge und zwei heiße Tücher." },
+    ],
+    pricelist: {
+      headline: "Preise",
+      categories: [
+        {
+          name: "Herren",
+          items: [
+            { name: "Haarschnitt", price: "28 €" },
+            { name: "Skin Fade", price: "32 €" },
+            { name: "Bart trimmen", price: "18 €" },
+            { name: "Schnitt + Bart", price: "45 €" },
+            { name: "Kinder bis 12", price: "22 €" },
+          ],
+        },
+      ],
+    },
+    about:
+      "Drei Stühle, ein Tresen, Musik in Zimmerlautstärke. Seit der Eröffnung schneiden wir an der Hafenstraße fast nur Herren und Bärte.\n\nWir nehmen uns Zeit fürs Gespräch vor dem Schnitt und sagen ehrlich, was zu deinem Haar passt.",
+    faq: [
+      {
+        question: "Kann ich ohne Termin kommen?",
+        answer: "Ja, wenn ein Stuhl frei ist. Mit Termin wartest du nicht.",
+      },
+      { question: "Wie bezahle ich?", answer: "Bar oder mit Karte." },
+      {
+        question: "Schneidet ihr auch Locken?",
+        answer: "Ja, mit Schere und Zeit.",
+      },
+    ],
+    addFaq: true,
+    reviews: [
+      {
+        author: "Timo R.",
+        text: "Schnell, sauber und freundlich. Bester Fade seit Jahren.",
+      },
+      {
+        author: "Ali D.",
+        text: "Bart sitzt endlich so, wie ich ihn will. Termin hat auf die Minute gepasst.",
+      },
+    ],
+  },
+  imbiss: {
+    contact: {
+      street: "Bahnhofstraße 3",
+      zip: "33602",
+      city: "Bielefeld",
+      phone: "0521 555 0144",
+      email: "bestellen@doener-ecke.example",
+    },
+    hours: [
+      { day: "Mo", hours: "11:00 – 24:00" },
+      { day: "Di–Sa", hours: "11:00 – 2:00" },
+      { day: "So", hours: "12:00 – 23:00" },
+    ],
+    hero: {
+      headline: "Döner Ecke",
+      subheadline:
+        "Döner, Dürüm und Pide aus dem Steinofen. Am Bahnhof, jeden Tag bis spät.",
+    },
+    services: [],
+    about:
+      "Seit Jahren am Bahnhof: Spieß von Hand geschichtet, Brot jeden Morgen aus dem Steinofen, Soßen nach eigenem Rezept.\n\nWer spät aus dem Zug steigt, bekommt bei uns noch etwas Warmes.",
+    faq: [
+      {
+        question: "Liefert ihr?",
+        answer: "Ja, im Umkreis von 3 km ab 15 € Bestellwert.",
+      },
+      {
+        question: "Gibt es vegetarisch?",
+        answer: "Halloumi im Brot, Pide mit Käse und Lahmacun ohne Fleisch auf Nachfrage.",
+      },
+    ],
+    addFaq: true,
+    reviews: [
+      {
+        author: "Selin K.",
+        text: "Um eins noch warm, knusprig und riesig. Bester Döner am Bahnhof.",
+      },
+      {
+        author: "Jonas P.",
+        text: "Dürüm frisch gerollt, Soße hausgemacht, und das bis spät in die Nacht.",
+      },
+    ],
+  },
+  training: {
+    contact: {
+      street: "Kolpingstraße 8",
+      zip: "93047",
+      city: "Regensburg",
+      phone: "0941 555 0127",
+      email: "hallo@studio-puls.example",
+    },
+    hours: [
+      { day: "Mo–Fr", hours: "6:30 – 21:00" },
+      { day: "Sa", hours: "9:00 – 14:00" },
+    ],
+    hero: {
+      headline: "Kurse ab 6:30",
+      subheadline:
+        "Kleine Gruppen, feste Trainer, ein Raum in der Altstadt. Die erste Stunde kostet nichts.",
+    },
+    services: [
+      { title: "Kraftzirkel", description: "45 Minuten, Langhantel und Kettlebell.", price: "ab 12 €" },
+      { title: "Rücken fit", description: "30 Minuten, in der Mittagspause.", price: "ab 9 €" },
+      { title: "Yoga Flow", description: "60 Minuten, Matten sind da.", price: "ab 14 €" },
+      { title: "Boxen", description: "60 Minuten, Handschuhe leihen wir.", price: "ab 14 €" },
+      { title: "Probetraining", description: "Einmal, ohne Vertrag.", price: "0 €" },
+    ],
+    about:
+      "Ein Raum, drei Trainer, höchstens zwölf Leute pro Kurs. Wir kennen deinen Namen und merken, wenn du fehlst.",
+    faq: [
+      {
+        question: "Brauche ich Erfahrung?",
+        answer: "Nein. Jede Übung gibt es in einer leichteren Fassung.",
+      },
+      {
+        question: "Was muss ich mitbringen?",
+        answer: "Hallenschuhe, Wasser und ein Handtuch.",
+      },
+    ],
+    google: false,
+    reviews: [
+      {
+        author: "Katja M.",
+        text: "Kleine Gruppe, ehrliche Korrekturen. Nach drei Monaten ist mein Rücken ruhig.",
       },
     ],
   },
@@ -665,7 +817,7 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
     }
   }) as WebsiteDataV2["sections"];
   const { google, tagline: _tagline, ...rest } = doc;
-  // Ablauf bzw. Preisliste, die die Fixture nicht hat, kommen hinzu.
+  // Ablauf bzw. Fragen, die die Fixture nicht hat, kommen hinzu.
   const added: WebsiteDataV2["sections"][number][] = [
     ...(text.process && !doc.sections.some(s => s.type === "process")
       ? [{ type: "process" as const, ...text.process }]
@@ -674,8 +826,15 @@ function withSampleText(doc: WebsiteDataV2, id: string): WebsiteDataV2 {
       ? [{ type: "faq" as const, items: text.faq }]
       : []),
   ];
-  // Die Folge setzt danach der Bauplan (withBlueprint), wie bei echten Seiten.
-  const all = [...sections, ...added] as WebsiteDataV2["sections"];
+  // Ergänzte Abschnitte stehen vor Fragen und Kontakt; die Folge setzt
+  // danach der Bauplan (withBlueprint), wie bei echten Seiten.
+  const tail = sections.findIndex(s => s.type === "faq" || s.type === "contact");
+  const at = tail === -1 ? sections.length : tail;
+  const all = [
+    ...sections.slice(0, at),
+    ...added,
+    ...sections.slice(at),
+  ] as WebsiteDataV2["sections"];
   return {
     ...rest,
     // Ohne Bewertungen auch keine Google-Zahlen der fremden Fixture.

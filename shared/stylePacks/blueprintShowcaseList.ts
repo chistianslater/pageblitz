@@ -45,6 +45,7 @@ export const SHOWCASES: readonly Showcase[] = [
     fixture: "salon-noir",
     businessName: "Kante Barbershop",
     businessCategory: "Barbershop",
+    photos: "barbier:0:3",
   },
   {
     id: "kosmetik",
@@ -78,13 +79,14 @@ export const SHOWCASES: readonly Showcase[] = [
   },
   {
     id: "imbiss",
-    sample: "Grillhaus am Markt",
+    sample: "Döner Ecke",
     group: "Gastro",
     label: "Imbiss",
     fixture: "gusto",
-    businessName: "Grillhaus am Markt",
+    businessName: "Döner Ecke",
     businessCategory: "Imbiss",
     amenities: { takeout: true, delivery: true, vegetarian: true },
+    photos: "imbiss:0:2",
   },
   {
     id: "baeckerei",
@@ -176,10 +178,12 @@ export const SHOWCASES: readonly Showcase[] = [
   },
   {
     id: "training",
-    sample: "Studio PULS",
+    sample: "Studio Puls",
     group: "Sport & Kurse",
     label: "Personal Training",
     fixture: "verve",
+    businessName: "Studio Puls",
+    photos: "none",
   },
   {
     id: "ferienwohnung",

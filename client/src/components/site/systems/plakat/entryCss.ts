@@ -59,6 +59,8 @@ const ENTRY = `/* Einstieg: arch · circle · type */
   .pb-plakat .pk-entry--type .pk-entry-copy{grid-column:1/8}
   .pb-plakat .pk-entry--type .pk-display span{display:inline}
   .pb-plakat .pk-entry--type .pk-display .pk-in{padding-left:0}
+  /* Ohne Foto trägt die Schrift die ganze Fläche: eine Stufe größer, bricht als Plakatzeilen um */
+  .pb-plakat .pk-entry--type .pk-display{font-size:calc(var(--sys-display-size) * 1.35)}
   .pb-plakat .pk-entry--type .pk-entry-stk{position:absolute;right:var(--sys-space-gutter);top:0}
   .pb-plakat .pk-entry--arch .pk-entry-stk{left:calc(var(--pk-stk) * -.47);top:calc(var(--sys-space-xl) * .875)}
   .pb-plakat .pk-facts{grid-column:1/-1;grid-row:3;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -107,11 +109,11 @@ const DOCK_CSS = `/* Dock (unter ${DOCK}) */
   .pb-plakat:has(.pk-dock):has(.pb-photo-credits) .pk-foot{padding-bottom:var(--sys-space-l)}
   .pb-plakat:has(.pk-dock) .pb-photo-credits{padding-bottom:calc(var(--sys-space-l) + var(--pk-dock) + env(safe-area-inset-bottom,0rem))}
   .pb-plakat .pk-dock{position:fixed;z-index:30;inset-inline:calc(var(--sys-space-xs) * 1.5);bottom:calc(var(--sys-space-xs) * 1.5 + env(safe-area-inset-bottom,0rem));
-    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:var(--sys-space-xs);padding:var(--sys-space-xs);border-radius:${PILL};
+    display:grid;grid-template-columns:auto minmax(0,1fr);gap:var(--sys-space-xs);padding:var(--sys-space-xs);border-radius:${PILL};
     background:var(--sys-ink);box-shadow:0 var(--sys-space-s) var(--sys-space-l) calc(var(--sys-space-s) * -1.125) color-mix(in srgb,var(--sys-ink) 70%,transparent)}
   .pb-plakat .pk-dock--one{grid-template-columns:minmax(0,1fr)}
   .pb-plakat .pk-dock a{${step("link")};font-size:var(--sys-small-size);display:grid;place-items:center;text-align:center;min-height:calc(var(--sys-space-xl) * .75);
-    min-width:0;padding-inline:var(--sys-space-s);border-radius:${PILL};color:var(--sys-paper);text-decoration:none;overflow-wrap:anywhere;transition:transform 160ms}
+    min-width:0;padding-inline:calc(var(--sys-space-s) * 1.25);border-radius:${PILL};color:var(--sys-paper);text-decoration:none;overflow-wrap:anywhere;transition:transform 160ms}
   .pb-plakat .pk-dock a:active{transform:scale(.97)}
   .pb-plakat .pk-dock-b{background:var(--sys-signal)}
   .pb-plakat .pk-dock a.pk-dock-b{color:var(--sys-on-signal)}
