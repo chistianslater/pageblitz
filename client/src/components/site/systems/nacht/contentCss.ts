@@ -33,6 +33,7 @@ export const CONTENT_CSS = `/* Kapitel */
 .pb-nacht .nc-open-fig{${step("figure")};flex:none;display:block;color:var(--sys-accent);font-variant-numeric:lining-nums}
 .pb-nacht .nc-open-ghost{min-width:0;margin:0 0 calc(var(--sys-figure-size) * .0136) calc(var(--sys-figure-size) * -.04);overflow:hidden;white-space:nowrap;
   font-family:var(--sys-font-display);font-size:min(calc(var(--sys-figure-size) * .34),calc(62cqi / var(--nc-chars,10) / .8));line-height:1;letter-spacing:.04em;text-transform:uppercase;color:var(--sys-ink);opacity:.09}
+.pb-nacht .nc-open-ghost::before{content:attr(data-word)}
 .pb-nacht .nc-open .nc-cl{margin-top:var(--sys-space-s)}
 
 /* Kopf links, Inhalt rechts (Desktop); am Handy Kopf → Inhalt → Bildpaar */

@@ -94,7 +94,9 @@ function OpenerFigure({ opener, title }: { opener: Opener; title: string }) {
     >
       <span className="nc-open-num">
         <span className="nc-open-fig">{opener.value}</span>
-        {word && <span className="nc-open-ghost">{word}</span>}
+        {/* Wort als ::before-Inhalt: reine Zierde (9 % Deckkraft), kein
+            Text im Dokument — Vorleser und Kontrastprüfung überspringen es. */}
+        {word && <span className="nc-open-ghost" data-word={word} />}
       </span>
       <span className="nc-cl" />
     </div>

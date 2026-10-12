@@ -53,6 +53,13 @@ export const SCRIM_BG = [
   `linear-gradient(180deg,${HERO_SCRIM.map(([at, a]) => `${paper(a)} ${pct(at)}`).join(",")})`,
 ].join(",");
 
+/**
+ * Name passt mit seinem längsten Wort (`--nc-word`, Zeichen) in die
+ * Titelbreite: Gilda-Versalien samt Laufweite ≈ 0,8 em je Zeichen.
+ */
+export const FIT_EM = 0.8;
+const FIT = `calc(100cqi / var(--nc-word,6) / ${FIT_EM})`;
+
 const heroH = (n: number) => `calc(var(--sys-space-2xl) * ${n})`;
 const lift = (n: number, start: number) =>
   `calc(var(--sys-space-2xl) * ${n} * -${Math.round((1 - start) * 1000) / 1000})`;
@@ -62,9 +69,11 @@ export const ENTRY_CSS = `/* Einstieg: photo · framed · plain */
 .pb-nacht .nc-entry-in{position:relative;max-width:var(--sys-space-max);margin-inline:auto;padding:0 var(--sys-space-gutter)}
 .pb-nacht .nc-kicker{${step("kicker")};display:block;color:var(--sys-accent)}
 .pb-nacht .nc-title{margin:0;color:var(--sys-accent)}
-.pb-nacht .nc-display{${step("display")};display:block;color:var(--sys-accent);margin-top:var(--sys-space-xs);overflow-wrap:anywhere;hyphens:manual;text-wrap:balance}
+.pb-nacht .nc-titlebox{container-type:inline-size}
+.pb-nacht .nc-display{${step("display")};display:block;color:var(--sys-accent);margin-top:var(--sys-space-xs);overflow-wrap:anywhere;hyphens:manual;text-wrap:balance;
+  font-size:min(var(--sys-display-size),${FIT})}
 /* Foto-Fassung: Name größer, am Handy auf die Breite begrenzt (kein Trennstrich in „WEINBERG") */
-.pb-nacht .nc-display--photo{font-size:min(calc(var(--sys-display-size) * 1.18),14vw)}
+.pb-nacht .nc-display--photo{font-size:min(calc(var(--sys-display-size) * 1.18),14vw,${FIT})}
 .pb-nacht .nc-lede{${step("lede")};margin-top:var(--sys-space-m);max-width:var(--sys-space-measure);color:var(--sys-ink)}
 .pb-nacht .nc-today{${step("small")};display:flex;flex-wrap:wrap;gap:calc(var(--sys-space-2xs) * 1.5) calc(var(--sys-space-s) * 1.125);margin-top:var(--sys-space-m);color:var(--sys-muted)}
 .pb-nacht .nc-today b{font-weight:500;color:var(--sys-ink)}
@@ -117,7 +126,7 @@ export const ENTRY_CSS = `/* Einstieg: photo · framed · plain */
 @media (min-width:${NAV}){
   .pb-nacht .nc-entry--photo{--nc-hero-h:${heroH(HERO_H.nav)}}
   .pb-nacht .nc-entry--photo .nc-entry-in{margin-top:${lift(HERO_H.nav, TEXT_START.nav)}}
-  .pb-nacht .nc-display--photo{font-size:calc(var(--sys-display-size) * 1.3)}
+  .pb-nacht .nc-display--photo{font-size:min(calc(var(--sys-display-size) * 1.3),${FIT})}
   .pb-nacht .nc-entry--framed .nc-entry-in,.pb-nacht .nc-entry--plain .nc-entry-in{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);column-gap:var(--sys-space-2xl);
     grid-template-areas:"title figure" "lede figure" "today figure" "actions figure";grid-template-rows:auto auto auto 1fr;padding-top:calc(${HEAD_H} + var(--sys-space-xl));align-items:start}
   .pb-nacht .nc-entry--framed .nc-titlebox,.pb-nacht .nc-entry--plain .nc-titlebox{grid-area:title}

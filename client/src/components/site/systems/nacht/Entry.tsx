@@ -69,21 +69,32 @@ function Img({
   );
 }
 
+/** Zeichen des längsten Worts (mindestens 1) — Maß für die Namensgröße. */
+export function longestWord(text: string): number {
+  return Math.max(1, ...text.split(/[\s\u2013\u2014-]+/).map(w => [...w].length));
+}
+
 function Title({ variant }: { variant: EntryVariant }) {
   const { data, blueprint } = useSystem();
   const { name, mark, kicker, kickerInName } = entryName(data, blueprint);
   const cls = `nc-display${variant === "photo" ? " nc-display--photo" : ""}`;
+  // Längstes Wort passt in die Breite (kein „HAARSTUDI-O" bei 320 px).
+  const fit = {
+    "--nc-word": longestWord(kickerInName ? mark : name),
+  } as React.CSSProperties;
   if (kickerInName)
     return (
       <h1 id="start-titel" className="nc-title">
         <span className="nc-kicker">{kicker}</span>{" "}
-        <span className={cls}>{mark}</span>
+        <span className={cls} style={fit}>
+          {mark}
+        </span>
       </h1>
     );
   return (
     <>
       {kicker && <p className="nc-kicker">{kicker}</p>}
-      <h1 id="start-titel" className={`nc-title ${cls}`}>
+      <h1 id="start-titel" className={`nc-title ${cls}`} style={fit}>
         {name}
       </h1>
     </>

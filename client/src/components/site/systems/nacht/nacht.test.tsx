@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import { SiteRenderer, SYSTEM_MOTION } from "../../SiteRenderer";
+import { longestWord } from "./Entry";
 import { NACHT_CSS } from "./css";
 import { NACHT } from "../../../../../../shared/designSystems/nacht";
 import { SHOWCASES } from "../../../../../../shared/stylePacks/blueprintShowcase";
@@ -319,7 +320,7 @@ describe("Nacht: Einstieg", () => {
     expect(e).toContain('class="nc-entry nc-entry--photo"');
     expect(e).toContain('<div class="nc-bg"><img');
     expect(e).toContain(
-      '<h1 id="start-titel" class="nc-title"><span class="nc-kicker">Restaurant</span> <span class="nc-display nc-display--photo">Weinberg</span></h1>'
+      '<h1 id="start-titel" class="nc-title"><span class="nc-kicker">Restaurant</span> <span class="nc-display nc-display--photo" style="--nc-word:8">Weinberg</span></h1>'
     );
     expect(e).toContain('<span class="nc-vl" aria-hidden="true"></span>');
     expect(e).toContain(
@@ -357,7 +358,7 @@ describe("Nacht: Einstieg", () => {
     const e = entryOf(render(noirDoc()));
     expect(e).toContain('class="nc-entry nc-entry--framed"');
     expect(e).toContain(
-      '<p class="nc-kicker">Friseursalon</p><h1 id="start-titel" class="nc-title nc-display">Salon Noir</h1>'
+      '<p class="nc-kicker">Friseursalon</p><h1 id="start-titel" class="nc-title nc-display" style="--nc-word:5">Salon Noir</h1>'
     );
     expect(e).toContain(
       '<p class="nc-fig" aria-hidden="true">21</p><figure class="nc-pic">'
@@ -388,7 +389,9 @@ describe("Nacht: Einstieg", () => {
     const e = entryOf(render(doc));
     expect(e).not.toContain("nc-fig");
     expect(e).not.toContain("nc-figure");
-    expect(e).toContain('<span class="nc-display">Haus am See</span>');
+    expect(e).toContain(
+      '<span class="nc-display" style="--nc-word:4">Haus am See</span>'
+    );
   });
 
   test("schwaches Foto ohne Ziffer: Foto bleibt (allein)", () => {
@@ -418,8 +421,23 @@ describe("Nacht: Einstieg", () => {
 
   test("langer Name: bricht um statt überzulaufen", () => {
     expect(body).toMatch(/\.nc-display\{[^}]*overflow-wrap:anywhere/);
+    // Längstes Wort passt in die Titelbreite (Containerbreite / Zeichen / 0,8 em).
+    expect(body).toContain(".pb-nacht .nc-titlebox{container-type:inline-size}");
+    expect(body).toMatch(
+      /\.nc-display\{[^}]*font-size:min\(var\(--sys-display-size\),calc\(100cqi \/ var\(--nc-word,6\) \/ 0\.8\)\)\}/
+    );
     expect(body).toMatch(
       /\.nc-head--over \.nc-mark\{white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/
     );
+  });
+});
+
+describe("Nacht: Namensgröße", () => {
+  test("longestWord zählt Zeichen des längsten Worts (Bindestrich trennt)", () => {
+    expect(longestWord("Haus am See")).toBe(4);
+    expect(longestWord("NOIR Haarstudio")).toBe(10);
+    expect(longestWord("Bootshaus-Suite")).toBe(9);
+    expect(longestWord("Öl")).toBe(2);
+    expect(longestWord("")).toBe(1);
   });
 });

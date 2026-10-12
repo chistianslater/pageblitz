@@ -175,7 +175,7 @@ describe("Nacht: Speisekarte", () => {
     const html = render(weinbergDoc());
     const karte = sectionOf(html, SECTION_ANCHORS.menu);
     expect(karte).toMatch(
-      /<div class="nc-open" aria-hidden="true"[^>]*>.*<span class="nc-open-fig">8<\/span><span class="nc-open-ghost">Gerichte<\/span>/
+      /<div class="nc-open" aria-hidden="true"[^>]*>.*<span class="nc-open-fig">8<\/span><span class="nc-open-ghost" data-word="Gerichte"><\/span>/
     );
     expect(html.match(/class="nc-open"/g)).toHaveLength(1);
     expect(dishCount(1)).toBe("1 Gericht");
@@ -297,7 +297,7 @@ describe("Nacht: Leistungen und Zimmer", () => {
     }));
     const svc = sectionOf(render(doc), SECTION_ANCHORS.services);
     expect(svc).toMatch(
-      /nc-open-fig">4<\/span><span class="nc-open-ghost">Leistungen/
+      /nc-open-fig">4<\/span><span class="nc-open-ghost" data-word="Leistungen"/
     );
     // Groß-/Kleinschreibung und Auszeichnung zählen nicht als Unterschied.
     const same = patchSection(noirDoc(), "services", s => ({
@@ -344,7 +344,7 @@ describe("Nacht: Leistungen und Zimmer", () => {
     const doc = withSections(without(weinbergDoc(), "menu", "services"), drinks);
     const html = render({ ...doc, addOns: { ...doc.addOns, pricelist: true } });
     expect(sectionOf(html, SECTION_ANCHORS.pricelist)).toMatch(
-      /nc-open-fig">3<\/span><span class="nc-open-ghost">Getränke/
+      /nc-open-fig">3<\/span><span class="nc-open-ghost" data-word="Getränke"/
     );
   });
 
@@ -355,7 +355,7 @@ describe("Nacht: Leistungen und Zimmer", () => {
     expect(svc.match(/class="nc-room"/g)).toHaveLength(4);
     expect(svc).toContain("ab 118 €/Nacht");
     expect(svc).not.toMatch(/m²|pro Nacht/);
-    expect(svc).toMatch(/nc-open-ghost">Angebote/);
+    expect(svc).toMatch(/nc-open-ghost" data-word="Angebote"/);
   });
 
   test("openerOf: nur das erste Angebots-Kapitel", () => {
