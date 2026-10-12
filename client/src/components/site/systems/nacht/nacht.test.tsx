@@ -82,8 +82,8 @@ describe("Nacht: Gerüst", () => {
     }
   });
 
-  test("nicht freigeschaltet (bis N9), aber mit Bewegungs-Bundle (N7)", () => {
-    expect(RELEASED_SYSTEMS).not.toContain("nacht");
+  test("freigeschaltet und mit Bewegungs-Bundle (N7)", () => {
+    expect(RELEASED_SYSTEMS).toContain("nacht");
     expect(SYSTEMS_WITH_MOTION).toContain("nacht");
     expect(SYSTEM_MOTION.nacht).toBeDefined();
   });

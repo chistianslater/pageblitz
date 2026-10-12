@@ -378,10 +378,10 @@ describe("Nacht-Tokens", () => {
   test("dunkles Schema", () => {
     expect(NACHT.scheme).toBe("dark");
   });
-  test("registriert, NICHT freigeschaltet (bis N9), mit Bewegung (N7)", () => {
+  test("registriert, freigeschaltet, mit Bewegung (N7)", () => {
     expect(DESIGN_SYSTEMS.nacht).toBe(NACHT);
-    expect(isReleased("nacht")).toBe(false);
-    expect(RELEASED_SYSTEMS).not.toContain("nacht");
+    expect(isReleased("nacht")).toBe(true);
+    expect(RELEASED_SYSTEMS).toContain("nacht");
     expect(systemHasMotion("nacht")).toBe(true);
   });
   test("Schriftskala: neun Kernstufen plus figure und data", () => {

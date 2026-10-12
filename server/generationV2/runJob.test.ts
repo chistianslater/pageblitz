@@ -201,8 +201,9 @@ describe("Abendmotive für Nacht-Seiten (N2+N3)", () => {
   test("nur wenn Nacht Hauptsystem UND freigeschaltet ist", () => {
     expect(prefersEveningPhotos("Restaurant", "Weinberg", true)).toBe(true);
     expect(prefersEveningPhotos("Restaurant", "Weinberg", false)).toBe(false);
-    // Solange Nacht nicht freigeschaltet ist, bleibt alles wie bisher.
-    expect(prefersEveningPhotos("Restaurant", "Weinberg")).toBe(false);
+    // Nacht ist freigeschaltet: der Standardwert greift für Restaurants.
+    expect(prefersEveningPhotos("Restaurant", "Weinberg")).toBe(true);
+    expect(prefersEveningPhotos("Friseur", "Salon Noir")).toBe(false);
     expect(prefersEveningPhotos("Friseur", "Salon Noir", true)).toBe(false);
     expect(prefersEveningPhotos("Schreinerei", "Brandt", true)).toBe(false);
   });

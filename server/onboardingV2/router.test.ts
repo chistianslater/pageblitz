@@ -797,6 +797,30 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     }
   });
 
+  test("Nacht frei: Restaurant Hauptsystem, Friseur/Hotel/Barbershop/Auto Alternative in Runde 0", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
+    const isNacht = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "nacht";
+    useDoc({ ...v2, businessCategory: "Restaurant", businessName: "Zur Linde", blueprintFamily: "gastro" });
+    const restaurant = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(restaurant.candidates[0]).toMatchObject({ kind: "system", id: "nacht" });
+    useDoc(friseurDoc);
+    const friseur = await caller().getStyleCandidates({ token: friseurToken, count: 3 });
+    expect(friseur.candidates.some(isNacht)).toBe(true);
+    useDoc({ ...v2, businessCategory: "Friseursalon", businessName: "Kante Barbershop", blueprintFamily: "beauty" });
+    const barber = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(barber.candidates.some(isNacht)).toBe(true);
+    useDoc({ ...v2, businessCategory: "Hotel", blueprintFamily: "stay" });
+    const stay = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(stay.candidates.some(isNacht)).toBe(true);
+  });
+
+  test("Nacht frei: Auto behält Raster als Hauptsystem", async () => {
+    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
+    useDoc({ ...v2, businessCategory: "Autowerkstatt", blueprintFamily: "auto" });
+    const auto = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(auto.candidates[0]).toMatchObject({ kind: "system", id: "raster" });
+  });
+
   test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
     useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
     released.ids = ["journal"];

@@ -38,7 +38,7 @@ describe("withDesignSystem", () => {
   });
 });
 
-describe("withPrimarySystem (Raster, Werkstoff, Plakat und Klar freigeschaltet)", () => {
+describe("withPrimarySystem (Raster, Werkstoff, Plakat, Klar und Nacht freigeschaltet)", () => {
   const withFamily = (blueprintFamily: string) =>
     withPrimarySystem({
       ...rev2,
@@ -109,6 +109,24 @@ describe("withPrimarySystem (Raster, Werkstoff, Plakat und Klar freigeschaltet)"
     expect(doc.system).toBe("plakat");
     expect(doc.designRevision).toBe(3);
   });
+
+  test("Restaurant (Gastro) bekommt Nacht (rev 3)", () => {
+    const doc = withPrimarySystem({
+      ...rev2,
+      businessCategory: "Restaurant",
+      businessName: "Weinberg",
+      blueprintFamily: "gastro",
+    } as typeof rev2);
+    expect(doc.system).toBe("nacht");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test.each(["beauty", "stay", "creative", "trade", "retail", "auto"])(
+    "Familie %s bekommt nicht Nacht als Hauptsystem",
+    family => {
+      expect(withFamily(family).system).not.toBe("nacht");
+    }
+  );
 
   test("Beauty behält Journal als Hauptsystem", () => {
     expect(withFamily("beauty").system).toBe("journal");
