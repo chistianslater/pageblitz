@@ -136,6 +136,57 @@ export function weinbergDoc(palette = "petrol"): Doc {
     ctaHref: "https://tisch.weinberg.example/",
     imageUrl: INDUSTRY_IMAGES.restaurant.hero[1],
   }));
+  // Karte, Band und „Gut zu wissen" aus Systemblatt 10–12 (erfunden, Beispiel).
+  const menu: Sec = {
+    type: "menu",
+    headline: "Die Karte",
+    categories: [
+      {
+        name: "Vorspeisen",
+        items: [
+          { name: "Saibling aus dem Pfälzerwald", description: "Rote Bete, Meerrettich, Dill", price: "14,50" },
+          { name: "Kürbissuppe", description: "geröstete Kerne, Kürbiskernöl", price: "9,00" },
+          { name: "Kalbstatar", description: "Eigelb, Kapern, Brioche", price: "16,00" },
+        ],
+      },
+      {
+        name: "Hauptgänge",
+        items: [
+          { name: "Lammrücken vom Hof Berger", description: "Bohnen, Rosmarinjus", price: "32,00" },
+          { name: "Zander", description: "Rieslingkraut, Speck, Kartoffelschaum", price: "28,00" },
+          { name: "Pilzrisotto", description: "Bergkäse, Petersilienöl", price: "22,00" },
+        ],
+      },
+      {
+        name: "Zum Schluss",
+        items: [
+          { name: "Zwetschgen", description: "Mandel, Sauerrahmeis", price: "11,00" },
+          { name: "Käse vom Hof Wolf", description: "Feigensenf, Früchtebrot", price: "14,00" },
+        ],
+      },
+    ],
+  };
+  const cta: Sec = {
+    type: "cta",
+    headline: "Tisch für heute Abend?",
+    ctaText: "Online reservieren",
+    ctaHref: "https://tisch.weinberg.example/",
+  };
+  const faq: Sec = {
+    type: "faq",
+    headline: "Gut zu wissen",
+    items: [
+      { question: "Vegetarisch und vegan", answer: "Jeder Gang auch ohne Fleisch, bitte bei der Reservierung sagen." },
+      { question: "Hunde", answer: "Auf der Terrasse willkommen, im Gewölbe leider nicht." },
+      { question: "Barrierefrei", answer: "Gewölbe über Rampe erreichbar, WC ebenerdig." },
+      { question: "Parken", answer: "14 Plätze im Hof des Weinguts, abends frei." },
+    ],
+  };
+  const sections = doc.sections.filter(x => !["menu", "cta", "faq"].includes(x.type));
+  sections.splice(1, 0, menu);
+  sections.splice(sections.findIndex(x => x.type === "testimonials"), 0, cta);
+  sections.splice(sections.findIndex(x => x.type === "contact"), 0, faq);
+  doc = { ...doc, sections, addOns: { ...doc.addOns, menu: true } };
   return withComposition(doc, "stage");
 }
 

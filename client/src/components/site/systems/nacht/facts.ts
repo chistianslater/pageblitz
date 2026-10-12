@@ -18,10 +18,12 @@ import {
 } from "../shared";
 import {
   clock,
+  hoursRows,
   readSpans,
   realHours,
   todayHours,
   type Hours,
+  type HoursRow,
 } from "../shared/hours";
 import { systemActions, type Action } from "../shared/actions";
 
@@ -515,4 +517,53 @@ export function dockPair(actions: {
     ...(left ? { left } : {}),
     main: { ...primary, label: nachtShort(primary.label) },
   };
+}
+
+/* ── Zeiten-Tabelle mit Küche ─────────────────────────────────────────── */
+
+export type HoursTableRow = HoursRow & { kitchen?: string };
+
+/** Montag 12.10.2026 (Berlin, Mittag) + i Tage — wie shared/hours. */
+const weekday = (i: number) => new Date(Date.UTC(2026, 9, 12 + i, 10));
+
+/**
+ * Zeiten Tag für Tag (shared/hoursRows, ohne Küchenteil) und je Zeile die
+ * Küchenzeit — nur, wenn der Text des Tages sie nennt (kitchenOf, mit dem
+ * Wochentag der Zeile, damit Ausnahmen wie „(Fr/Sa 22:30)" nur dort
+ * gelten). Zeilen, die nach dem Abzug leer sind, entfallen.
+ */
+export function hoursTable(
+  hours: Hours | undefined,
+  now: Date
+): HoursTableRow[] {
+  const real = realHours(hours);
+  if (!real) return [];
+  const rows = hoursRows(
+    real.map(h => ({ ...h, hours: kitchenOf(h.hours).open })),
+    now
+  );
+  const literal = real.some(h => !SHORT.some((_, i) => coversToday(h.day, weekday(i))));
+  return rows
+    .map((row, k): HoursTableRow => {
+      if (row.closed) return row;
+      const day = literal ? undefined : SHORT.indexOf(row.label as (typeof SHORT)[number]);
+      const date = day !== undefined && day >= 0 ? weekday(day) : undefined;
+      const entry = literal
+        ? real[k]
+        : date && real.find(h => coversToday(h.day, date));
+      const kitchen = entry && kitchenOf(entry.hours, date).kitchen;
+      return kitchen ? { ...row, kitchen } : row;
+    })
+    .filter(r => r.lines.some(l => l.trim() !== ""));
+}
+
+/** „https://tisch.weinberg.example/x" → „tisch.weinberg.example" (ohne www). */
+export function hostOf(href: string): string | undefined {
+  try {
+    const url = new URL(href);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return undefined;
+    return url.hostname.replace(/^www\./, "") || undefined;
+  } catch {
+    return undefined;
+  }
 }

@@ -2,10 +2,12 @@ import React from "react";
 import type { PackModule } from "../../packRegistry";
 import { orderedSections, type NavItem } from "../../engine";
 import { useSystem } from "../SystemContext";
-import { claimPhotos, shownNavItems, systemShows } from "../shared";
+import { previewSlotAnchors, shownNavItems, systemShows } from "../shared";
 import { NACHT_CSS } from "./css";
 import { NachtDock, NachtFoot, NachtHead, nachtNavItems } from "./Chrome";
 import { NachtLegal, NachtPageHead, renderNachtSection } from "./sections";
+import { NachtMenuSlot, NachtTeamSlot } from "./Offer";
+import { nachtPhotos } from "./content";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -16,9 +18,11 @@ const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
 /**
  * Nacht (rev 3) — Gerüst wie Klar: Startseite über orderedSections
  * (hiddenSections, sectionOrder, Add-on-Gating), nur gezeigte Abschnitte,
- * jedes Foto einmal (claimPhotos: Einstieg → Über uns → Galerie), Kopf/Fuß/
- * Leiste auf allen Seiten. Liegt der Einstieg als dunkles Foto oben, liegt
- * der Kopf darüber (auch über dem Schein der Fassungen ohne Foto). Gestalt nach docs/designsysteme/nacht/systemblatt.html
+ * jedes Foto einmal (nachtPhotos: Einstieg → Bildpaar an der Karte →
+ * Team → Über uns → Galerie), Vorschau-Platzhalter nur auf der
+ * Startseite, Kopf/Fuß/Leiste auf allen Seiten. Liegt der Einstieg als
+ * dunkles Foto oben, liegt der Kopf darüber (auch über dem Schein der
+ * Fassungen ohne Foto). Gestalt nach docs/designsysteme/nacht/systemblatt.html
  * (Anker Restaurant Zimmerl). Dunkles Papier: `scheme: "dark"` setzt
  * color-scheme/theme-color (SiteRenderer, SSR-Kopf).
  */
@@ -28,20 +32,30 @@ export const NACHT_MODULE: PackModule = {
   Page: ({ data, basePath, navItems = [], sections, pageTitle, legal }) => {
     const { data: home } = useSystem();
     const hidden = home.designProfile?.hiddenElements ?? [];
-    const prepare = <T extends Parameters<typeof claimPhotos>[0][number]>(
-      all: readonly T[]
-    ) => claimPhotos(all, hidden).list;
-    const list = prepare(
+    const prepare = (all: Parameters<typeof nachtPhotos>[0]) =>
+      nachtPhotos(all, hidden);
+    const { list, pair } = prepare(
       legal ? [] : (sections ?? orderedSections(data)).filter(systemShows)
     );
-    const anchorPrefix = sections || legal ? basePath || "/" : "";
+    const sub = Boolean(sections || legal);
+    const slots = sub ? {} : previewSlotAnchors(list);
+    const anchorPrefix = sub ? basePath || "/" : "";
+    const back = sub ? basePath || "/" : undefined;
     const homeAll = orderedSections(home);
-    const shown = nachtNavItems(shownNavItems(navItems, homeAll));
+    const homeShown = sub ? prepare(homeAll.filter(systemShows)).list : list;
+    // Galerie kann nach der Foto-Verteilung leer sein: dann kein Anker dorthin.
+    const shown = nachtNavItems(
+      shownNavItems(navItems, homeAll).filter(
+        item =>
+          item.sectionType !== "gallery" ||
+          homeShown.some(s => s.type === "gallery")
+      )
+    );
     const nav = legal ? prefixAnchors(shown, anchorPrefix) : shown;
     const ownHead =
       pageTitle !== undefined && !list.some(s => s.type === "pageHeader");
     // Startseite mit Einstieg oben: Kopf liegt über Foto bzw. Schein.
-    const over = !sections && !legal && list[0]?.type === "hero";
+    const over = !sub && list[0]?.type === "hero";
     return (
       <>
         {/* Eigener Bezugsrahmen: Der Kopf über dem Einstieg liegt am oberen
@@ -50,11 +64,15 @@ export const NACHT_MODULE: PackModule = {
         <div className="nc-top">
           <NachtHead navItems={nav} anchorPrefix={anchorPrefix} over={over} />
           <main className="nc-main" id="inhalt">
-            {legal && <NachtLegal title={legal.title} html={legal.html} />}
-            {ownHead && <NachtPageHead title={pageTitle} />}
+            {legal && (
+              <NachtLegal title={legal.title} html={legal.html} back={back} />
+            )}
+            {ownHead && <NachtPageHead title={pageTitle} back={back} />}
             {list.map((s, i) => (
               <React.Fragment key={`${s.type}-${i}`}>
-                {renderNachtSection(s, list)}
+                {renderNachtSection(s, list, anchorPrefix, pair, back)}
+                {slots.menu === i && <NachtMenuSlot sections={list} />}
+                {slots.team === i && <NachtTeamSlot sections={list} />}
               </React.Fragment>
             ))}
           </main>

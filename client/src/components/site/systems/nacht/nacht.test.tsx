@@ -122,14 +122,16 @@ describe("Nacht: Gerüst", () => {
       ".pb-nacht .nc-menu-toggle",
       ".pb-nacht .nc-menu-panel a",
       ".pb-nacht .nc-brand",
-      ".pb-nacht .nc-faq summary",
+      ".pb-nacht .nc-back",
+      ".pb-nacht .pb-island-submit",
+      ".pb-nacht .pb-island-form input",
     ])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(48);
     for (const sel of [
       ".pb-nacht .nc-nav a",
       ".pb-nacht .nc-foot-col a",
       ".pb-nacht .nc-foot-legal a",
-      ".pb-nacht .nc-ways a",
+      ".pb-nacht .nc-way",
     ])
       expect(minHeight(sel), sel).toBeGreaterThanOrEqual(44);
     expect(body).toContain("--nc-focus:2px");
@@ -293,7 +295,7 @@ describe("Nacht: Kontakt mit Küchen-Zeiten", () => {
     });
     const html = render(doc);
     expect(html).toContain("Küche 12 bis 22 Uhr");
-    expect(html).not.toMatch(/<span class="nc-row-p"><\/span>/);
+    expect(html).not.toMatch(/<td class="nc-hv[^"]*"><\/td>/);
     expect(html).not.toMatch(/Heute: <|Heute: $/);
   });
 });
