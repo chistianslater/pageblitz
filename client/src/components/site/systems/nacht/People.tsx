@@ -58,7 +58,11 @@ export function NachtAbout({ section }: { section: SectionOf<"about"> }) {
   const image = hidden.includes("about-media") ? undefined : section.imageUrl;
   return (
     <NachtChapter type="about" own={section.headline}>
-      <div className={image ? "nc-about-body nc-about-body--photo" : "nc-about-body"}>
+      <div
+        className={
+          image ? "nc-about-body nc-about-body--photo" : "nc-about-body"
+        }
+      >
         <Prose text={section.body} />
         {image && <NightPhoto src={image} />}
       </div>
@@ -67,6 +71,7 @@ export function NachtAbout({ section }: { section: SectionOf<"about"> }) {
 }
 
 export function NachtTeam({ section }: { section: SectionOf<"team"> }) {
+  if (section.members.length === 0) return null;
   return (
     <NachtChapter type="team" own={section.headline}>
       <ul className="nc-crew">
@@ -198,6 +203,7 @@ export function NachtMotto({ section }: { section: SectionOf<"quote"> }) {
 }
 
 export function NachtPartners({ section }: { section: SectionOf<"partners"> }) {
+  if (section.items.length === 0) return null;
   return (
     <NachtChapter type="partners" own={section.headline}>
       <ul className="nc-logos">

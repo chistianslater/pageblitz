@@ -15,6 +15,10 @@ import type { IconName } from "./icons";
 
 /* ── Fotos ────────────────────────────────────────────────────────────── */
 
+/** Zwei Galeriefotos neben der Karte, mit dem Alt-Text der Galerie. */
+export type PairPhoto = { url: string; alt: string };
+export type PairPhotos = readonly [PairPhoto, PairPhoto];
+
 /** Bildpaar neben der Karte nur, wenn der Galerie danach noch so viele bleiben. */
 const PAIR_KEEPS = 2;
 
@@ -29,20 +33,24 @@ const PAIR_KEEPS = 2;
 export function nachtPhotos<T extends SystemSection>(
   sections: readonly T[],
   hidden: readonly string[]
-): { list: T[]; pair?: [string, string] } {
-  let pair: [string, string] | undefined;
+): { list: T[]; pair?: PairPhotos } {
+  let pair: PairPhotos | undefined;
   const { list } = claimPhotos(sections, hidden, (all, claimed) => {
     const gallery = all.find(
       (s): s is SectionOf<"gallery"> => s.type === "gallery"
     );
-    const free = [
-      ...new Set(
-        (gallery?.images ?? []).map(i => i.url).filter(u => !claimed.has(u))
-      ),
-    ];
+    // Erstes Vorkommen je Adresse, mit seinem Alt-Text.
+    const free = (gallery?.images ?? []).filter(
+      (img, i, list) =>
+        !claimed.has(img.url) && list.findIndex(o => o.url === img.url) === i
+    );
     if (all.some(s => s.type === "menu") && free.length >= 2 + PAIR_KEEPS)
-      pair = [free[0], free[1]];
-    const taken = new Set([...claimed, ...(pair ?? [])]);
+      pair = [
+        { url: free[0].url, alt: free[0].alt ?? "" },
+        { url: free[1].url, alt: free[1].alt ?? "" },
+      ];
+    const pairUrls = (pair ?? []).map(p => p.url);
+    const taken = new Set([...claimed, ...pairUrls]);
     const team = all.find((s): s is SectionOf<"team"> => s.type === "team");
     const portraits = [
       ...new Set(
@@ -51,13 +59,15 @@ export function nachtPhotos<T extends SystemSection>(
           .filter((u): u is string => Boolean(u) && !taken.has(u!))
       ),
     ];
-    const picked = [...(pair ?? []), ...portraits];
+    const picked = [...pairUrls, ...portraits];
     return picked.length ? picked : undefined;
   });
   const hero = list.find((s): s is T & SectionOf<"hero"> => s.type === "hero");
   const seen = new Set<string>([
-    ...(hero?.imageUrl && !hidden.includes("hero-media") ? [hero.imageUrl] : []),
-    ...(pair ?? []),
+    ...(hero?.imageUrl && !hidden.includes("hero-media")
+      ? [hero.imageUrl]
+      : []),
+    ...(pair ?? []).map(p => p.url),
   ]);
   const out = list.map((s): T => {
     if (s.type !== "team") return s;
@@ -102,24 +112,47 @@ export function openerOf(
     s => s.type === "menu" || s.type === "services" || s.type === "pricelist"
   );
   if (first !== section) return undefined;
+  if (
+    section.type !== "menu" &&
+    section.type !== "services" &&
+    section.type !== "pricelist"
+  )
+    return undefined;
   const count =
     section.type === "services"
       ? section.items.length
-      : section.type === "menu" || section.type === "pricelist"
-        ? section.categories.reduce((n, c) => n + c.items.length, 0)
-        : 0;
+      : section.categories.reduce((n, c) => n + c.items.length, 0);
   if (count < OPENER_MIN || count > OPENER_MAX) return undefined;
-  const word =
-    section.type === "menu"
-      ? "Gerichte"
-      : section.type === "services" && blueprint.id === "stay"
-        ? "Angebote"
-        : "Leistungen";
-  return { value: String(count), word };
+  return { value: String(count), word: openerWord(section, blueprint) };
+}
+
+/** Getränkekarte: jede Kategorie heißt nach Getränken (Wein, Bier, Bar …). */
+const DRINKS =
+  /getränk|drinks?\b|wein|weine\b|bier|cocktail|spirituos|schnaps|brände|longdrink|aperitif|digestif|kaffee|tee\b|säfte|softdrink|limonade|alkoholfrei/i;
+
+/**
+ * Geisterwort zur Zählung, nach Abschnitt und Branche: Karte → „Gerichte",
+ * Preisliste in der Gastronomie → „Getränke", wenn jede Kategorie danach
+ * heißt, sonst „Posten"; Unterkunft → „Angebote"; sonst „Leistungen".
+ */
+export function openerWord(
+  section: SectionOf<"menu"> | SectionOf<"services"> | SectionOf<"pricelist">,
+  blueprint: Blueprint
+): string {
+  if (section.type === "menu") return "Gerichte";
+  if (blueprint.id === "stay") return "Angebote";
+  if (section.type === "pricelist" && blueprint.id === "gastro") {
+    const named = section.categories.filter(c => c.items.length > 0);
+    return named.length > 0 && named.every(c => DRINKS.test(c.name))
+      ? "Getränke"
+      : "Posten";
+  }
+  return "Leistungen";
 }
 
 /** „3 Gerichte" / „1 Gericht" an der Kategorie der Karte. */
-export const dishCount = (n: number) => `${n} ${n === 1 ? "Gericht" : "Gerichte"}`;
+export const dishCount = (n: number) =>
+  `${n} ${n === 1 ? "Gericht" : "Gerichte"}`;
 
 /* ── Bewertung ────────────────────────────────────────────────────────── */
 
@@ -146,7 +179,10 @@ const KNOW: readonly (readonly [RegExp, IconName])[] = [
   [/barriere|rollstuhl|rollator|stufe|aufzug|treppe|rampe/i, "access"],
   [/vegan|vegetar|allerg|gluten|laktose|unvertr/i, "leaf"],
   [/frühstück|kaffee|getränk/i, "cup"],
-  [/bezahl|zahlung|\bzahlen|\bkarte\b|kartenzahl|\bbar\b|apple pay|paypal|\bec\b|kredit/i, "card"],
+  [
+    /bezahl|zahlung|\bzahlen|\bkarte\b|kartenzahl|\bbar\b|apple pay|paypal|\bec\b|kredit/i,
+    "card",
+  ],
   [/absag|storn|termin|reserv|buch/i, "calendar"],
   [/check.?in|check.?out|anreise|abreise|wann|uhr\b|zeit/i, "clock"],
 ];

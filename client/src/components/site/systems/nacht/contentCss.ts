@@ -17,9 +17,9 @@ const VEIL = `color-mix(in srgb,var(--sys-paper) ${Math.round(PHOTO_VEIL * 100)}
 
 export const CONTENT_CSS = `/* Kapitel */
 .pb-nacht .nc-sec{position:relative;padding-top:var(--sys-space-section)}
-.pb-nacht .nc-h2{${step("h2")};color:var(--sys-accent);max-width:14em;overflow-wrap:break-word}
-/* Lange Wörter („Öffnungszeiten") am schmalen Handy: etwas kleiner, sonst Trennung statt Bruch */
-.pb-nacht .nc-sec .nc-h2,.pb-nacht .nc-page-head .nc-h2{font-size:min(var(--sys-h2-size),8.6vw);hyphens:auto;hyphenate-limit-chars:8 4 4}
+.pb-nacht .nc-h2{${step("h2")};color:var(--sys-accent);max-width:calc(var(--sys-space-measure) * 1.3);overflow-wrap:break-word}
+/* Lange Wörter („Öffnungszeiten") am schmalen Handy: etwas kleiner (unter 24 rem), sonst Trennung statt Bruch */
+.pb-nacht .nc-sec .nc-h2,.pb-nacht .nc-page-head .nc-h2{hyphens:auto;hyphenate-limit-chars:8 4 4}
 .pb-nacht .nc-intro{margin-top:var(--sys-space-s);max-width:var(--sys-space-measure);color:var(--sys-muted)}
 .pb-nacht .nc-item-title{font-weight:500;color:var(--sys-ink);overflow-wrap:break-word}
 .pb-nacht .nc-item-text{margin-top:var(--sys-space-2xs);color:var(--sys-muted)}
@@ -31,7 +31,7 @@ export const CONTENT_CSS = `/* Kapitel */
 .pb-nacht .nc-open{margin-bottom:var(--sys-space-m);container-type:inline-size}
 .pb-nacht .nc-open-num{display:flex;align-items:flex-end}
 .pb-nacht .nc-open-fig{${step("figure")};flex:none;display:block;color:var(--sys-accent);font-variant-numeric:lining-nums}
-.pb-nacht .nc-open-ghost{min-width:0;margin:0 0 .04em calc(var(--sys-figure-size) * -.04);overflow:hidden;white-space:nowrap;
+.pb-nacht .nc-open-ghost{min-width:0;margin:0 0 calc(var(--sys-figure-size) * .0136) calc(var(--sys-figure-size) * -.04);overflow:hidden;white-space:nowrap;
   font-family:var(--sys-font-display);font-size:min(calc(var(--sys-figure-size) * .34),calc(62cqi / var(--nc-chars,10) / .8));line-height:1;letter-spacing:.04em;text-transform:uppercase;color:var(--sys-ink);opacity:.09}
 .pb-nacht .nc-open .nc-cl{margin-top:var(--sys-space-s)}
 
@@ -52,7 +52,7 @@ export const CONTENT_CSS = `/* Kapitel */
 .pb-nacht .nc-dish-name{font-weight:500;line-height:1.35;color:var(--sys-ink);overflow-wrap:break-word;hyphens:auto}
 .pb-nacht .nc-dish-text{grid-column:1;${step("small")};color:var(--sys-muted);overflow-wrap:break-word}
 .pb-nacht .nc-pr{grid-column:2;grid-row:1;color:var(--sys-accent);text-align:right;white-space:nowrap;font-weight:500;font-variant-numeric:tabular-nums lining-nums}
-.pb-nacht .nc-pr--note{${step("small")};white-space:normal;max-width:9em;overflow-wrap:break-word}
+.pb-nacht .nc-pr--note{${step("small")};white-space:normal;max-width:calc(var(--sys-space-2xl) * 1.4);overflow-wrap:break-word}
 
 /* Bildpaar an der Karte: versetzt, Schleier in Grundfarbe */
 .pb-nacht .nc-pair{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--sys-space-s);margin-top:var(--sys-space-l);align-items:start}
@@ -88,7 +88,7 @@ export const CONTENT_CSS = `/* Kapitel */
 .pb-nacht .nc-know,.pb-nacht .nc-steps,.pb-nacht .nc-points{margin-top:var(--sys-space-l);display:grid}
 .pb-nacht .nc-know-item,.pb-nacht .nc-step{display:grid;grid-template-columns:${TAP} minmax(0,1fr);gap:calc(var(--sys-space-s) * .875);align-items:start;padding:var(--sys-space-m) 0;border-bottom:1px solid var(--sys-rule)}
 .pb-nacht .nc-point{position:relative;padding:var(--sys-space-m) 0 var(--sys-space-m) var(--sys-space-m);border-bottom:1px solid var(--sys-rule)}
-.pb-nacht .nc-point::before{content:"";position:absolute;left:0;top:calc(var(--sys-space-m) + .6em);width:calc(var(--sys-space-xs) * .875);height:calc(var(--sys-space-xs) * .875);border-radius:${ROUND};background:var(--sys-accent)}
+.pb-nacht .nc-point::before{content:"";position:absolute;left:0;top:calc(var(--sys-space-m) + var(--sys-body-size) * .6);width:calc(var(--sys-space-xs) * .875);height:calc(var(--sys-space-xs) * .875);border-radius:${ROUND};background:var(--sys-accent)}
 
 /* Zahlen */
 .pb-nacht .nc-figs{margin:var(--sys-space-l) 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-l) var(--sys-space-m)}
@@ -109,9 +109,11 @@ export const CONTENT_CSS = `/* Kapitel */
 /* Galerie: zwei Spalten versetzt (wie das Bildpaar), Desktop drei */
 .pb-nacht .nc-gal{margin-top:var(--sys-space-l);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sys-space-s);align-items:start}
 .pb-nacht .nc-gal li:nth-child(2n){margin-top:var(--sys-space-xl)}
-/* Sehr schmal: Zeiten-Tabelle in kleiner Stufe, damit Zeit und Küche nebeneinander passen */
+/* Sehr schmal: Zeiten-Tabelle in kleiner Stufe, damit Zeit und Küche nebeneinander passen;
+   Kapitel-Titel kleiner, damit „Öffnungszeiten" bei 320 px in eine Zeile passt */
 @media (max-width:calc(24rem - 1px)){
   .pb-nacht .nc-hours tbody{${step("small")}}
+  .pb-nacht .nc-sec .nc-h2,.pb-nacht .nc-page-head .nc-h2{font-size:calc(var(--sys-h2-size) * .86)}
 }
 /* Handy, ungerade Anzahl: das erste Bild über beide Spalten, der Versatz wandert mit */
 @media (max-width:calc(${WIDE} - 1px)){

@@ -11,7 +11,7 @@ import {
   systemHref,
   useSlot,
 } from "../shared";
-import { dishCount, openerOf } from "./content";
+import { dishCount, openerOf, type PairPhotos } from "./content";
 import { NachtChapter, type NachtSection } from "./sections";
 
 /**
@@ -89,6 +89,7 @@ export function NachtServices({
   const { blueprint } = useSystem();
   const priceSlot = useSlot("pricelist", sections);
   const rooms = blueprint.id === "stay";
+  if (section.items.length === 0) return null;
   return (
     <NachtChapter
       type="services"
@@ -137,14 +138,14 @@ export function NachtServices({
 /* ── Karte und Preise ────────────────────────────────────────────────── */
 
 /** Zwei Galeriefotos versetzt (Systemblatt 10/15), Schleier in Grundfarbe. */
-function Pair({ pair }: { pair: readonly [string, string] }) {
+function Pair({ pair }: { pair: PairPhotos }) {
   return (
     <div className="nc-pair">
-      {pair.map((src, i) => (
-        <figure className="nc-pair-pic" key={src}>
+      {pair.map((photo, i) => (
+        <figure className="nc-pair-pic" key={photo.url}>
           <img
-            src={src}
-            alt=""
+            src={photo.url}
+            alt={photo.alt}
             width={i === 0 ? 800 : 600}
             height={1000}
             loading="lazy"
@@ -170,7 +171,7 @@ export function NachtPriced({
   section: SectionOf<"menu"> | SectionOf<"pricelist">;
   sections: readonly NachtSection[];
   anchorPrefix: string;
-  pair?: readonly [string, string];
+  pair?: PairPhotos;
 }) {
   const { blueprint } = useSystem();
   const categories = section.categories.filter(c => c.items.length > 0);
@@ -223,6 +224,7 @@ export function NachtPriced({
 
 /** Schritte so, wie sie dastehen: Nummer im Kupferring, Titel, Satz. */
 export function NachtProcess({ section }: { section: SectionOf<"process"> }) {
+  if (section.steps.length === 0) return null;
   return (
     <NachtChapter type="process" own={section.headline}>
       <ol className="nc-steps">
@@ -243,6 +245,7 @@ export function NachtProcess({ section }: { section: SectionOf<"process"> }) {
 }
 
 export function NachtStats({ section }: { section: SectionOf<"stats"> }) {
+  if (section.items.length === 0) return null;
   return (
     <NachtChapter type="stats" own={section.headline}>
       <dl className="nc-figs">

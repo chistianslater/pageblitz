@@ -5,7 +5,7 @@ import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { useSystem } from "../SystemContext";
 import { legalParts, type SystemSection } from "../shared";
 import { NachtEntry } from "./Entry";
-import type { Opener } from "./content";
+import type { Opener, PairPhotos } from "./content";
 import { Icon } from "./icons";
 import {
   NachtPriced,
@@ -68,17 +68,33 @@ export function chapterTitle(
   );
 }
 
-/** Große Kupferziffer mit Geisterwort und Kupferlinie (dekorativ). */
-function OpenerFigure({ opener }: { opener: Opener }) {
+/** Gleiches Wort trotz Versalien, Leerraum, Auszeichnung („**Leistungen**"). */
+const sameWord = (a: string, b: string) => {
+  const norm = (t: string) =>
+    t.replace(/[*_]/g, "").replace(/\s+/g, " ").trim().toLocaleLowerCase("de");
+  return norm(a) === norm(b);
+};
+
+/**
+ * Große Kupferziffer mit Geisterwort und Kupferlinie (dekorativ). Lautet
+ * die Kapitelüberschrift schon wie das Geisterwort („Leistungen"), steht
+ * nur die Ziffer — kein Wort doppelt untereinander.
+ */
+function OpenerFigure({ opener, title }: { opener: Opener; title: string }) {
+  const word = sameWord(opener.word, title) ? "" : opener.word;
   return (
     <div
       className="nc-open"
       aria-hidden="true"
-      style={{ "--nc-chars": opener.word.length } as React.CSSProperties}
+      style={
+        word
+          ? ({ "--nc-chars": word.length } as React.CSSProperties)
+          : undefined
+      }
     >
       <span className="nc-open-num">
         <span className="nc-open-fig">{opener.value}</span>
-        <span className="nc-open-ghost">{opener.word}</span>
+        {word && <span className="nc-open-ghost">{word}</span>}
       </span>
       <span className="nc-cl" />
     </div>
@@ -120,11 +136,12 @@ export function NachtChapter({
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
   const name = type === "menu" ? "karte" : type;
+  const text = title ?? chapterTitle(type, own, blueprint);
   const head = (
     <>
-      {opener && <OpenerFigure opener={opener} />}
+      {opener && <OpenerFigure opener={opener} title={text} />}
       <h2 className={hiddenTitle ? "nc-sr" : "nc-h2"} id={headingId}>
-        {rich(title ?? chapterTitle(type, own, blueprint))}
+        {rich(text)}
       </h2>
       {intro && <p className="nc-intro">{rich(intro)}</p>}
     </>
@@ -261,7 +278,7 @@ export function renderNachtSection(
   section: NachtSection,
   sections: readonly NachtSection[],
   anchorPrefix = "",
-  pair?: readonly [string, string],
+  pair?: PairPhotos,
   back?: string
 ): React.ReactNode {
   switch (section.type) {

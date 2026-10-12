@@ -9,6 +9,30 @@ import { NachtLegal, NachtPageHead, renderNachtSection } from "./sections";
 import { NachtMenuSlot, NachtTeamSlot } from "./Offer";
 import { nachtPhotos } from "./content";
 
+type Shown = Parameters<typeof systemShows>[0];
+
+/**
+ * Wie systemShows, dazu: Abschnitte ohne Einträge (leere Liste bei
+ * Leistungen, Ablauf, Zahlen, Team, Gut zu wissen, Partner) entfallen
+ * samt Anker — kein Kapitel nur aus Überschrift.
+ */
+export function nachtShows(s: Shown): boolean {
+  if (!systemShows(s)) return false;
+  switch (s.type) {
+    case "services":
+    case "stats":
+    case "partners":
+    case "faq":
+      return s.items.length > 0;
+    case "process":
+      return s.steps.length > 0;
+    case "team":
+      return s.members.length > 0;
+    default:
+      return true;
+  }
+}
+
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
   items.map(item =>
@@ -35,20 +59,21 @@ export const NACHT_MODULE: PackModule = {
     const prepare = (all: Parameters<typeof nachtPhotos>[0]) =>
       nachtPhotos(all, hidden);
     const { list, pair } = prepare(
-      legal ? [] : (sections ?? orderedSections(data)).filter(systemShows)
+      legal ? [] : (sections ?? orderedSections(data)).filter(nachtShows)
     );
     const sub = Boolean(sections || legal);
     const slots = sub ? {} : previewSlotAnchors(list);
     const anchorPrefix = sub ? basePath || "/" : "";
     const back = sub ? basePath || "/" : undefined;
     const homeAll = orderedSections(home);
-    const homeShown = sub ? prepare(homeAll.filter(systemShows)).list : list;
-    // Galerie kann nach der Foto-Verteilung leer sein: dann kein Anker dorthin.
+    const homeShown = sub ? prepare(homeAll.filter(nachtShows)).list : list;
+    // Galerie kann nach der Foto-Verteilung leer sein, Listen ohne Einträge
+    // entfallen: dann kein Anker dorthin.
     const shown = nachtNavItems(
       shownNavItems(navItems, homeAll).filter(
         item =>
-          item.sectionType !== "gallery" ||
-          homeShown.some(s => s.type === "gallery")
+          !item.sectionType ||
+          homeShown.some(s => s.type === item.sectionType)
       )
     );
     const nav = legal ? prefixAnchors(shown, anchorPrefix) : shown;

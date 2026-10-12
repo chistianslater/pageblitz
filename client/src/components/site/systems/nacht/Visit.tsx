@@ -28,6 +28,7 @@ import { NachtChapter, chapterTitle } from "./sections";
  */
 
 export function NachtKnow({ section }: { section: SectionOf<"faq"> }) {
+  if (section.items.length === 0) return null;
   return (
     <NachtChapter type="faq" own={section.headline}>
       <ul className="nc-know">
@@ -87,7 +88,9 @@ export function NachtContact({ section }: { section: SectionOf<"contact"> }) {
     >
       <div
         className={
-          rows.length && place ? "nc-wrap nc-visit" : "nc-wrap nc-visit nc-visit--solo"
+          rows.length && place
+            ? "nc-wrap nc-visit"
+            : "nc-wrap nc-visit nc-visit--solo"
         }
       >
         {rows.length > 0 && (
@@ -115,7 +118,9 @@ export function NachtContact({ section }: { section: SectionOf<"contact"> }) {
                   >
                     <th
                       scope="row"
-                      className={r.label.length > LONG_LABEL ? "nc-hd--long" : undefined}
+                      className={
+                        r.label.length > LONG_LABEL ? "nc-hd--long" : undefined
+                      }
                     >
                       {r.label}
                       {r.today && <span className="nc-now-tag">heute</span>}
@@ -220,11 +225,7 @@ export function NachtCta({
   const host =
     button && !isMapsHref(button.href) ? hostOf(button.href) : undefined;
   return (
-    <NachtChapter
-      type="cta"
-      title={section.headline}
-      className="nc-band"
-    >
+    <NachtChapter type="cta" title={section.headline} className="nc-band">
       {(phone || button) && (
         <div className="nc-band-ways" {...SYS_ACTIONS}>
           {phone && (
