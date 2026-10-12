@@ -294,11 +294,10 @@ describe("Nacht: Leistungen und Zimmer", () => {
     const svc = sectionOf(html, SECTION_ANCHORS.services);
     expect(svc).toContain('<ul class="nc-svc">');
     expect(svc).toContain('<span class="nc-pr">ab 45 €</span>');
-    // Titel heißt schon „Leistungen": nur die Ziffer, kein Wort doppelt.
-    expect(svc).toMatch(
-      /<span class="nc-open-num"><span class="nc-open-fig">4<\/span><\/span>/
-    );
-    expect(svc).not.toContain("nc-open-ghost");
+    // Titel heißt schon „Leistungen": keine nackte Ziffer — die ganze
+    // Kupferziffer entfällt (Abnahme 2026-10-12: große „4" ohne Bezug).
+    expect(svc).not.toContain('class="nc-open"');
+    expect(svc).not.toContain("nc-open-fig");
     expect(svc).toContain('id="leistungen-titel">Leistungen</h2>');
   });
 
@@ -316,9 +315,9 @@ describe("Nacht: Leistungen und Zimmer", () => {
       ...s,
       headline: "**LEISTUNGEN**",
     }));
-    expect(
-      sectionOf(render(same), SECTION_ANCHORS.services)
-    ).not.toContain("nc-open-ghost");
+    const sameSvc = sectionOf(render(same), SECTION_ANCHORS.services);
+    expect(sameSvc).not.toContain("nc-open-ghost");
+    expect(sameSvc).not.toContain("nc-open-fig");
   });
 
   test("openerWord: Wort passt zur Branche (Getränkekarte, Posten, Angebote)", () => {

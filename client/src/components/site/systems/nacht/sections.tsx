@@ -77,26 +77,24 @@ const sameWord = (a: string, b: string) => {
 
 /**
  * Große Kupferziffer mit Geisterwort und Kupferlinie (dekorativ). Lautet
- * die Kapitelüberschrift schon wie das Geisterwort („Leistungen"), steht
- * nur die Ziffer — kein Wort doppelt untereinander.
+ * die Kapitelüberschrift schon wie das Geisterwort („Leistungen"), entfällt
+ * die ganze Ziffer: ohne Wort stünde eine nackte „4" ohne Bezug über dem
+ * Titel (Abnahme 2026-10-12) — und doppelt untereinander soll es auch nicht.
  */
 function OpenerFigure({ opener, title }: { opener: Opener; title: string }) {
-  const word = sameWord(opener.word, title) ? "" : opener.word;
+  if (sameWord(opener.word, title)) return null;
+  const word = opener.word;
   return (
     <div
       className="nc-open"
       aria-hidden="true"
-      style={
-        word
-          ? ({ "--nc-chars": word.length } as React.CSSProperties)
-          : undefined
-      }
+      style={{ "--nc-chars": word.length } as React.CSSProperties}
     >
       <span className="nc-open-num">
         <span className="nc-open-fig">{opener.value}</span>
         {/* Wort als ::before-Inhalt: reine Zierde (9 % Deckkraft), kein
             Text im Dokument — Vorleser und Kontrastprüfung überspringen es. */}
-        {word && <span className="nc-open-ghost" data-word={word} />}
+        <span className="nc-open-ghost" data-word={word} />
       </span>
       <span className="nc-cl" />
     </div>
