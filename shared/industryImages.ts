@@ -15,6 +15,13 @@ export interface IndustryImageSet {
    * „Schreinerei", gewinnt der genauere Satz.
    */
   refines?: string[];
+  /**
+   * Schwache Stichworte („Takeaway", „Fast Food"): zählen nur, wenn die
+   * Kategorie keinen Satz mit einem normalen Stichwort trifft — und beim
+   * Verfeinern nur, wenn die Kategorie den allgemeinen Satz nicht selbst
+   * trifft („Restaurant & Takeaway" bleibt Restaurant).
+   */
+  weakKeywords?: string[];
 }
 
 // Map of industry keywords → curated Unsplash photo IDs
@@ -164,17 +171,16 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "dürum",
       "durum",
       "lahmacun",
-      "falafel",
-      "gyros",
+      // „Gyros"/„Falafel" allein heißen oft Restaurant — nur als Imbiss.
+      "gyros imbiss",
+      "falafel imbiss",
       "shawarma",
       "currywurst",
       "pommesbude",
       "frittenbude",
       "snackbar",
-      "takeaway",
-      "fast food",
-      "fastfood",
     ],
+    weakKeywords: ["takeaway", "take away", "fast food", "fastfood"],
     refines: ["restaurant"],
     hero: [
       "https://images.unsplash.com/photo-1596995804697-27d11d43652e?w=1400&q=85&auto=format&fit=crop",

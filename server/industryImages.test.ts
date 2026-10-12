@@ -314,6 +314,31 @@ describe("Bildsätze Barbier und Imbiss (Plakat P1)", () => {
     expect(gruppe("Restaurant", "Bosporus Döner")).toBe("restaurant");
   });
 
+  test("Gyros/Falafel nur als Imbiss-Kompositum, nie Restaurant überstimmen", () => {
+    // KI-Schlüssel restaurant + „Gyros Restaurant": bleibt Restaurant.
+    expect(gruppe("Gyros Restaurant", "Olympia", "restaurant")).toBe("restaurant");
+    expect(gruppe("Griechisches Restaurant", "Gyros Haus")).toBe("restaurant");
+    expect(gruppe("Falafel Restaurant", "Beirut", "restaurant")).toBe("restaurant");
+    expect(gruppe("Restaurant", "Gyros Haus")).toBe("restaurant");
+    // Kompositum mit Imbiss bleibt Imbiss.
+    expect(gruppe("Gyros Imbiss", "Olympia")).toBe("imbiss");
+    expect(gruppe("Gyros Imbiss", "Olympia", "restaurant")).toBe("imbiss");
+    expect(gruppe("Falafel Imbiss", "Beirut")).toBe("imbiss");
+  });
+
+  test("Takeaway/Fast Food überstimmen Restaurant und Pizzeria nicht", () => {
+    expect(gruppe("Restaurant & Takeaway", "Bosporus", "restaurant")).toBe("restaurant");
+    expect(gruppe("Fast Food Restaurant", "Bun", "restaurant")).toBe("restaurant");
+    expect(gruppe("Pizza Fast Food", "Da Mario")).not.toBe("imbiss");
+    expect(gruppe("Pizzeria Takeaway", "Da Mario")).not.toBe("imbiss");
+    expect(gruppe("Pizzeria", "Da Mario Takeaway", "restaurant")).not.toBe("imbiss");
+    expect(gruppe("Restaurant", "Fast Food Eck")).toBe("restaurant");
+    // Ohne anderen Treffer reichen sie weiter.
+    expect(gruppe("Takeaway", "Bei Ali")).toBe("imbiss");
+    expect(gruppe("Fast Food", "Bei Ali")).toBe("imbiss");
+    expect(gruppe("Takeaway", "Bei Ali", "restaurant")).toBe("imbiss");
+  });
+
   test("Grill, Pizza und Restaurant bleiben, wo sie waren", () => {
     expect(gruppe("Grill")).toBe("restaurant");
     expect(gruppe("Grillrestaurant", "Steakhaus")).toBe("restaurant");

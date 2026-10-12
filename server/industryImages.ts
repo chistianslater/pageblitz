@@ -67,13 +67,53 @@ export function getIndustryImages(
 
   const kategorie = normalisiert(category);
   const name = normalisiert(businessName);
+  return (
+    besterSatz(ohneSchwache(kategorie), ohneSchwache(name), false) ??
+    besterSatz(kategorie, name, true) ??
+    INDUSTRY_IMAGES.default
+  );
+}
+
+/** Alle schwachen Stichworte aller Sätze. */
+const SCHWACHE = Object.values(INDUSTRY_IMAGES)
+  .flatMap(s => s.weakKeywords ?? [])
+  .map(k => normalisiert(k).trim())
+  .filter(Boolean);
+
+/**
+ * Text ohne schwache Stichworte: „Fast Food" darf nicht über „food" den
+ * Restaurant-Satz treffen, „Fast Food Restaurant" bleibt Restaurant.
+ */
+function ohneSchwache(text: string): string {
+  let out = text;
+  for (const k of SCHWACHE) out = out.split(` ${k} `).join(" ");
+  return out;
+}
+
+/** Treffer eines Satzes; schwache Stichworte nur, wenn `schwach`. */
+function treffer(text: string, satz: IndustryImageSet, schwach: boolean): number {
+  const stark = trefferLaenge(text, satz.keywords);
+  return schwach
+    ? Math.max(stark, trefferLaenge(text, satz.weakKeywords ?? []))
+    : stark;
+}
+
+/**
+ * Längster Treffer in Kategorie, dann Name. Schwache Stichworte erst im
+ * zweiten Durchgang — sie überstimmen nie einen echten Treffer.
+ */
+function besterSatz(
+  kategorie: string,
+  name: string,
+  schwach: boolean
+): IndustryImageSet | null {
   let beste: IndustryImageSet | null = null;
   let bestKategorie = 0;
   let bestName = 0;
   for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
     if (key === "default") continue;
-    const k = trefferLaenge(kategorie, satz.keywords);
-    const n = trefferLaenge(name, satz.keywords);
+    const k = treffer(kategorie, satz, schwach);
+    const n = treffer(name, satz, schwach);
     if (k === 0 && n === 0) continue;
     if (k > bestKategorie || (k === bestKategorie && n > bestName)) {
       beste = satz;
@@ -81,7 +121,7 @@ export function getIndustryImages(
       bestName = n;
     }
   }
-  return beste ?? INDUSTRY_IMAGES.default;
+  return beste;
 }
 
 /** Satz, der `key` verfeinert und von der Kategorie getroffen wird. */
@@ -89,11 +129,15 @@ function genauererSatz(
   kategorie: string,
   key: string
 ): IndustryImageSet | null {
+  // Trifft die Kategorie den allgemeinen Satz selbst, zählen schwache
+  // Stichworte nicht („Restaurant & Takeaway" bleibt Restaurant).
+  const schwach =
+    trefferLaenge(ohneSchwache(kategorie), INDUSTRY_IMAGES[key].keywords) === 0;
   let beste: IndustryImageSet | null = null;
   let laenge = 0;
   for (const satz of Object.values(INDUSTRY_IMAGES)) {
     if (!satz.refines?.includes(key)) continue;
-    const k = trefferLaenge(kategorie, satz.keywords);
+    const k = treffer(kategorie, satz, schwach);
     if (k > laenge) {
       beste = satz;
       laenge = k;
