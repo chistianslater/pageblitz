@@ -593,6 +593,20 @@ describe("Nacht: Stimme, Gut zu wissen, Galerie, Über uns", () => {
     );
   });
 
+  test("Handy, drei Fotos: eins groß, darunter zwei gleich hoch (kein Versatz)", () => {
+    const mobile = CONTENT_CSS.slice(
+      CONTENT_CSS.indexOf("@media (max-width:calc(48rem - 1px)){"),
+    );
+    const block = mobile.slice(0, mobile.indexOf("\n}"));
+    expect(block).toContain(
+      '.pb-nacht .nc-gal[data-n="3"] li:first-child~li:nth-child(n+2){margin-top:0}'
+    );
+    // Die Regel steht nach der allgemeinen Versatz-Regel (gleiche Spezifität).
+    expect(block.indexOf('[data-n="3"]')).toBeGreaterThan(
+      block.indexOf("~li:nth-child(2n+1){margin-top:var(--sys-space-xl)}")
+    );
+  });
+
   test("Über uns ohne Foto: kein leerer Rahmen; mit Foto im Nacht-Rahmen", () => {
     const pension = sectionOf(render(hausDoc()), SECTION_ANCHORS.about);
     expect(pension).toContain('class="nc-about-body"');

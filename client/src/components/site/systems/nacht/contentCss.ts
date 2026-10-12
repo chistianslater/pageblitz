@@ -122,6 +122,8 @@ export const CONTENT_CSS = `/* Kapitel */
   .pb-nacht .nc-gal li:first-child:nth-last-child(2n+1) .nc-pic-frame{aspect-ratio:3/2}
   .pb-nacht .nc-gal li:first-child:nth-last-child(2n+1)~li:nth-child(2n){margin-top:0}
   .pb-nacht .nc-gal li:first-child:nth-last-child(2n+1)~li:nth-child(2n+1){margin-top:var(--sys-space-xl)}
+  /* Genau drei: eins groß, darunter zwei gleich hoch — ein Versatz wirkt hier schief */
+  .pb-nacht .nc-gal[data-n="3"] li:first-child~li:nth-child(n+2){margin-top:0}
 }
 .pb-nacht .nc-gal[data-n="1"]{grid-template-columns:minmax(0,1fr);max-width:var(--sys-space-measure)}
 .pb-nacht .nc-gal-cap{${step("small")};margin-top:var(--sys-space-xs);color:var(--sys-muted)}
