@@ -2,6 +2,7 @@ import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import { systemFontFaces } from "../shared/fonts";
 import { NAV, PILL, step } from "./step";
 import { ENTRY_CSS } from "./entryCss";
+import { CONTENT_CSS } from "./contentCss";
 
 export { step } from "./step";
 
@@ -10,7 +11,7 @@ const FONT_FACES = systemFontFaces(PLAKAT);
 
 /**
  * Grundschicht von Plakat (Flächen, Kopf, Knöpfe, Kapitel, Unterseiten,
- * Fuß; Einstieg/Sticker/Laufband/Dock in entryCss). Gestalt nach
+ * Fuß; Einstieg/Sticker/Laufband/Dock in entryCss, Inhalte in contentCss). Gestalt nach
  * docs/designsysteme/plakat/systemblatt.html (Anker Arcadia).
  * Größen, Abstände und Farben ausschließlich über `--sys-*` (oder
  * Vielfache); Ausnahmen: 1px/2px-Linien und der 2px-Fokusring.
@@ -26,7 +27,7 @@ ${FONT_FACES}
   background:var(--sys-paper);color:var(--sys-ink);${step("body")};font-variant-numeric:tabular-nums;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-kerning:normal}
 .pb-plakat *{box-sizing:border-box}
-.pb-plakat h1,.pb-plakat h2,.pb-plakat h3{margin:0;font-weight:inherit;text-wrap:balance;hyphens:manual}
+.pb-plakat h1,.pb-plakat h2,.pb-plakat h3,.pb-plakat h4{margin:0;font-weight:inherit;text-wrap:balance;hyphens:manual}
 .pb-plakat p,.pb-plakat blockquote,.pb-plakat figure{margin:0}
 .pb-plakat p{text-wrap:pretty;hyphens:auto;hyphenate-limit-chars:7 3 3}
 .pb-plakat address{font-style:normal}
@@ -91,9 +92,6 @@ ${FONT_FACES}
 .pb-plakat .pk-dot{color:var(--sys-accent)}
 .pb-plakat .pk-f1 .pk-dot,.pb-plakat .pk-f2 .pk-dot,.pb-plakat .pk-deep .pk-dot{color:inherit}
 .pb-plakat .pk-intro{margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
-.pb-plakat .pk-lines{list-style:none;margin:var(--sys-space-l) 0 0;padding:0}
-.pb-plakat .pk-lines li{display:flex;justify-content:space-between;gap:var(--sys-space-s);padding-block:calc(var(--sys-space-s) * .875);border-top:2px solid currentColor;overflow-wrap:anywhere}
-.pb-plakat .pk-lines li:last-child{border-bottom:2px solid currentColor}
 
 ${sections}
 
@@ -106,7 +104,8 @@ ${sections}
 .pb-plakat .pk-legal h2{${step("h3")};margin:var(--sys-space-xl) 0 var(--sys-space-s)}
 .pb-plakat .pk-legal h3{${step("kicker")};margin:var(--sys-space-m) 0 var(--sys-space-xs)}
 .pb-plakat .pk-legal p,.pb-plakat .pk-legal ul{margin:0 0 var(--sys-space-s)}
-.pb-plakat .pk-legal a{overflow-wrap:anywhere}
+.pb-plakat .pk-legal a{overflow-wrap:anywhere;text-decoration-thickness:1px;text-underline-offset:.2em}
+.pb-plakat .pk-legal hr{border:0!important;border-top:2px solid var(--sys-ink)!important}
 /* Inline-Grau des Generators wird gedämpft in Tokens */
 .pb-plakat .pk-legal [style*="color"]{color:var(--sys-muted)!important}
 
@@ -138,4 +137,6 @@ ${sections}
 `;
 }
 
-export const PLAKAT_CSS = plakatCss(ENTRY_CSS);
+export const PLAKAT_CSS = plakatCss(`${ENTRY_CSS}
+
+${CONTENT_CSS}`);

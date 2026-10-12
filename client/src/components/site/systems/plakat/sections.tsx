@@ -1,18 +1,31 @@
 import React from "react";
 import { SECTION_ANCHORS } from "../../engine";
 import { rich } from "../../richText";
-import { pickReviewQuote, telHref } from "../../artDirection/heroFacts";
 import { useSystem } from "../SystemContext";
-import {
-  addressLine,
-  formatPrice,
-  legalParts,
-  versalEszett,
-  type SystemSection,
-} from "../shared";
+import { legalParts, versalEszett, type SystemSection } from "../shared";
 import type { Blueprint } from "../../../../../../shared/stylePacks/blueprints";
 import { PlakatEntry } from "./Entry";
 import type { Field } from "./rhythm";
+import {
+  PlakatPriced,
+  PlakatProcess,
+  PlakatServices,
+  PlakatStats,
+} from "./Offer";
+import {
+  PlakatAbout,
+  PlakatGallery,
+  PlakatReviews,
+  PlakatTeam,
+} from "./Story";
+import { PlakatContact, PlakatFaq } from "./Visit";
+import {
+  PlakatCta,
+  PlakatMotto,
+  PlakatPartners,
+  PlakatStory,
+  PlakatUsp,
+} from "./Extras";
 
 /** Startseiten- und Unterseiten-Abschnitte (inkl. pageHeader). */
 export type PlakatSection = SystemSection;
@@ -53,142 +66,70 @@ export function chapterTitle(
 
 /**
  * Kapitel auf seiner Fläche (Feld-Rhythmus): h2 in League Gothic mit
- * Signal-Punkt, dann Inhalt. Grundlage für P4–P6.
+ * Signal-Punkt, gedämpfter Satz in Lesebreite, dann Inhalt. `aside` steht
+ * am Handy über dem Inhalt, am Desktop links daneben (Bogen am Ablauf,
+ * Pille an „Über uns"). `hiddenTitle`: Überschrift nur für Vorleser
+ * (Stimme, Motto — der Satz selbst ist die große Zeile).
  */
 export function PlakatChapter({
   type,
   field,
   title,
+  intro,
+  className,
+  aside,
+  hiddenTitle = false,
   children,
 }: {
   type: PlakatSection["type"];
   field: Field;
   title: string;
+  intro?: string;
+  className?: string;
+  aside?: React.ReactNode;
+  hiddenTitle?: boolean;
   children?: React.ReactNode;
 }) {
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
+  // Nicht „pk-menu": so heißt das Menü im Kopf (Karte heißt pk-karte).
+  const name = type === "menu" ? "karte" : type;
+  const head = hiddenTitle ? (
+    <h2 className="pk-sr" id={headingId}>
+      {rich(title)}
+    </h2>
+  ) : (
+    <>
+      <h2 className="pk-title" id={headingId}>
+        {rich(versalEszett(title))}
+        <span className="pk-dot" aria-hidden="true">
+          .
+        </span>
+      </h2>
+      {intro && <p className="pk-intro">{rich(intro)}</p>}
+    </>
+  );
   return (
     <section
       id={id}
-      className={`pk-sec pk-${type} pk-${field}`}
+      className={`pk-sec pk-${name} pk-${field}${className ? ` ${className}` : ""}`}
       aria-labelledby={headingId}
     >
-      <div className="pk-wrap">
-        <h2 className="pk-title" id={headingId}>
-          {rich(versalEszett(title))}
-          <span className="pk-dot" aria-hidden="true">
-            .
-          </span>
-        </h2>
-        {children}
-      </div>
+      {aside ? (
+        <div className="pk-wrap pk-split">
+          {aside}
+          <div className="pk-split-body">
+            {head}
+            {children}
+          </div>
+        </div>
+      ) : (
+        <div className="pk-wrap">
+          {head}
+          {children}
+        </div>
+      )}
     </section>
-  );
-}
-
-/** Kurze Zeilen eines Abschnitts (vorläufiger Block bis P4–P6). */
-function blockLines(s: PlakatSection): { text: string; meta?: string }[] {
-  switch (s.type) {
-    case "services":
-      return s.items.map(i => ({
-        text: i.title,
-        meta: i.price ? formatPrice(i.price) : undefined,
-      }));
-    case "menu":
-    case "pricelist":
-      return s.categories.flatMap(c =>
-        c.items.map(i => ({ text: i.name, meta: formatPrice(i.price) }))
-      );
-    case "process":
-      return s.steps.map(st => ({ text: st.title }));
-    case "team":
-      return s.members.map(m => ({ text: m.name, meta: m.role }));
-    case "faq":
-      return s.items.map(i => ({ text: i.question }));
-    default:
-      return [];
-  }
-}
-
-/** Fließtext eines Abschnitts (vorläufiger Block bis P4–P6). */
-function blockText(s: PlakatSection): string | undefined {
-  switch (s.type) {
-    case "about":
-    case "story":
-      return s.body;
-    case "services":
-      return s.intro;
-    case "testimonials":
-      return pickReviewQuote(s.items)?.text;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Vorläufiger Plakat-Block für alle Inhaltsabschnitte (P4–P6 ersetzen ihn):
- * Kapitelkopf, Satz, kurze Liste — auf der Fläche aus dem Rhythmus.
- */
-function PlakatBlock({
-  section,
-  field,
-}: {
-  section: PlakatSection;
-  field: Field;
-}) {
-  const { blueprint } = useSystem();
-  const own =
-    "headline" in section
-      ? (section.headline as string | undefined)
-      : undefined;
-  const lines = blockLines(section);
-  const text = blockText(section);
-  return (
-    <PlakatChapter
-      type={section.type}
-      field={field}
-      title={chapterTitle(section.type, own, blueprint)}
-    >
-      {text && <p className="pk-intro">{rich(text)}</p>}
-      {lines.length > 0 && (
-        <ul className="pk-lines">
-          {lines.map((l, i) => (
-            <li key={`${l.text}-${i}`}>
-              <span>{l.text}</span>
-              {l.meta && <span className="pk-muted">{l.meta}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-    </PlakatChapter>
-  );
-}
-
-/** Kontakt (vorläufig): Adresse, Telefon — Anker `kontakt` bleibt Ziel. */
-function PlakatContactBlock({
-  section,
-  field,
-}: {
-  section: Extract<PlakatSection, { type: "contact" }>;
-  field: Field;
-}) {
-  const { blueprint } = useSystem();
-  const address = addressLine(section);
-  const tel = telHref(section.phone);
-  return (
-    <PlakatChapter
-      type="contact"
-      field={field}
-      title={chapterTitle("contact", section.headline, blueprint)}
-    >
-      {address && <p className="pk-intro">{address}</p>}
-      {tel && section.phone && (
-        <p className="pk-intro">
-          <a href={tel}>{section.phone.trim()}</a>
-        </p>
-      )}
-    </PlakatChapter>
   );
 }
 
@@ -272,29 +213,47 @@ export function PlakatLegal({ title, html }: { title: string; html: string }) {
 export function renderPlakatSection(
   section: PlakatSection,
   sections: readonly PlakatSection[],
-  field: Field
+  field: Field,
+  /** Bogen-Foto am Ablauf aus plakatPhotos (jedes Foto höchstens einmal). */
+  processPhoto?: string
 ): React.ReactNode {
+  const props = { sections, field };
   switch (section.type) {
     case "hero":
       return <PlakatEntry hero={section} field={field} />;
-    case "contact":
-      return <PlakatContactBlock section={section} field={field} />;
     case "services":
+      return <PlakatServices section={section} {...props} />;
     case "process":
+      return (
+        <PlakatProcess section={section} {...props} photo={processPhoto} />
+      );
     case "pricelist":
     case "menu":
+      return <PlakatPriced section={section} field={field} />;
     case "stats":
+      return <PlakatStats section={section} {...props} />;
     case "team":
+      return <PlakatTeam section={section} {...props} />;
     case "about":
+      return <PlakatAbout section={section} {...props} />;
     case "gallery":
+      return <PlakatGallery section={section} {...props} />;
     case "testimonials":
+      return <PlakatReviews section={section} {...props} />;
     case "faq":
+      return <PlakatFaq section={section} {...props} />;
+    case "contact":
+      return <PlakatContact section={section} {...props} />;
     case "story":
+      return <PlakatStory section={section} {...props} />;
     case "usp":
+      return <PlakatUsp section={section} {...props} />;
     case "quote":
+      return <PlakatMotto section={section} {...props} />;
     case "partners":
+      return <PlakatPartners section={section} {...props} />;
     case "cta":
-      return <PlakatBlock section={section} field={field} />;
+      return <PlakatCta section={section} {...props} />;
     case "pageHeader":
       // Genau ein h1 je Seite: nur der erste pageHeader trägt den Seitentitel.
       return (
