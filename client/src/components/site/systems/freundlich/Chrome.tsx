@@ -46,8 +46,13 @@ export function freundlichNavItems(items: NavItem[]): NavItem[] {
 /** Menü-Script (schließt bei Link-Klick, Escape, Klick daneben). */
 export const FREUNDLICH_MENU_JS = detailsMenuJs("fr");
 
-/** Desktop: bis zu fünf Einträge direkt, mehr → „Menü" bleibt. */
-export const NAV_MAX = 5;
+/**
+ * Desktop (ab 80 rem, Systemblatt 16): bis zu fünf Ziele stehen alle in
+ * der Zeile; sind es mehr, die ersten vier und der Rest hinter „Mehr".
+ * Darunter (Handy, Tablet, kleiner Laptop) trägt das „Menü" alle Ziele.
+ */
+export const NAV_ALL = 5;
+export const NAV_INLINE = 4;
 
 function NavLinks({ items }: { items: NavItem[] }) {
   return (
@@ -90,15 +95,25 @@ export function FreundlichHead({
 }) {
   const { data, blueprint } = useSystem();
   const { primary, phone } = freundlichActions(data, blueprint, anchorPrefix);
-  const desk = navItems.length > 0 && navItems.length <= NAV_MAX;
+  const cut = navItems.length <= NAV_ALL ? navItems.length : NAV_INLINE;
+  const inline = navItems.slice(0, cut);
+  const more = navItems.slice(cut);
   const calls = primary?.href.startsWith("tel:");
   return (
     <header className="fr-head">
       <div className="fr-head-bar">
         <Brand href={`${anchorPrefix}#${SECTION_ANCHORS.hero}`} />
-        {desk && (
+        {inline.length > 0 && (
           <nav className="fr-nav" aria-label="Hauptnavigation">
-            <NavLinks items={navItems} />
+            <NavLinks items={inline} />
+            {more.length > 0 && (
+              <details className="fr-menu fr-menu--more">
+                <summary className="fr-more-toggle">Mehr</summary>
+                <nav className="fr-menu-panel fr-menu-panel--more" aria-label="Mehr">
+                  <NavLinks items={more} />
+                </nav>
+              </details>
+            )}
           </nav>
         )}
         {phone && !calls && (
@@ -119,13 +134,7 @@ export function FreundlichHead({
         )}
         {/* Menü ohne JS: <details>/<summary> (SSR-Kundenseiten hydrieren nicht). */}
         {navItems.length > 0 && (
-          <details
-            className={
-              desk
-                ? "fr-menu fr-menu--main"
-                : "fr-menu fr-menu--main fr-menu--always"
-            }
-          >
+          <details className="fr-menu fr-menu--main">
             <summary className="fr-menu-toggle">
               <Icon name="list" />
               <span className="fr-menu-word">Menü</span>

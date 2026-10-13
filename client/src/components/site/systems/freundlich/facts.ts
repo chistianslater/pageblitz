@@ -62,12 +62,12 @@ export function entryVariant(
  * in Leipzig-Gohlis". Die Pille (mit Punkt) gibt es nur, wenn der Ort in
  * den Daten steht (Betreiber 2026-10-13; eine Zielgruppe führt das
  * Dokument nicht) — sonst steht der Name ohne Pille als ruhige Zeile.
- * Vor „·" steht ein geschütztes Leerzeichen: der Trenner bleibt am Namen.
+ * `branch` nur, wenn der Name die Branche nicht schon nennt.
  */
 export type EntryTop = {
   name: string;
-  /** Rest hinter dem Namen („\u00a0· Hundesalon in Leipzig"). */
-  tail: string;
+  branch?: string;
+  city?: string;
   /** Pille ohne Namen (Einstieg ohne große Zeile): „Hundesalon in Leipzig". */
   kicker: string;
   pill: boolean;
@@ -76,12 +76,11 @@ export type EntryTop = {
 export function entryTop(data: WebsiteDataV2, blueprint: Blueprint): EntryTop {
   const name = nameOf(data);
   const branch = branchOf(data, blueprint);
-  const city = contactOf(visibleDoc(data).sections)?.city?.trim();
-  const own =
-    branch && !lower(name).includes(lower(branch)) ? ` · ${branch}` : "";
+  const city = contactOf(visibleDoc(data).sections)?.city?.trim() || undefined;
   return {
     name,
-    tail: `${own}${city ? ` in ${city}` : ""}`,
+    ...(branch && !lower(name).includes(lower(branch)) ? { branch } : {}),
+    ...(city ? { city } : {}),
     kicker: [branch, city].filter(Boolean).join(" in "),
     pill: Boolean(city),
   };
@@ -112,12 +111,34 @@ export function entryHeadline(
 /**
  * Zweiter Satzteil in Akzentfarbe (Systemblatt: „Frisch gebürstet, / ganz
  * entspannt.", „Klein, warm, / mitten im Viertel."): Teilung am letzten
- * Komma, Punkt, Doppelpunkt oder Gedankenstrich mit Text dahinter; ohne Satzzeichen ab vier Wörtern die
- * letzten zwei Wörter; sonst keine Teilung.
+ * Komma, Semikolon, Doppelpunkt, Ausrufe-/Fragezeichen oder Gedankenstrich
+ * mit Text dahinter. Ein Punkt teilt nur als Satzschluss: das Wort davor
+ * hat mindestens vier Zeichen (keine Abkürzung wie „Dr.", „z. B.", „Nr.")
+ * und danach folgt ein Großbuchstabe oder eine Ziffer. Ohne gültige Stelle
+ * ab vier Wörtern die letzten zwei Wörter; sonst keine Teilung.
  */
+const SEPARATOR = /([,;:!?]|\.|\s[–—-])\s+(?=\S)/g;
+const MIN_SENTENCE_WORD = 4;
+
+function validSplit(text: string, at: number, sep: string, after: number): boolean {
+  if (sep !== ".") return true;
+  const word = text.slice(0, at).match(/([\p{L}\p{N}]+)$/u)?.[1] ?? "";
+  if ([...word].length < MIN_SENTENCE_WORD) return false;
+  return /^[\p{Lu}\p{N}„"]/u.test(text.slice(after));
+}
+
 export function splitHeadline(text: string): { lead: string; rest?: string } {
-  const m = text.match(/^(.+[,.:;!?]|.+\s[–—-])\s+(\S.*)$/);
-  if (m) return { lead: m[1], rest: m[2] };
+  let cut: { lead: string; rest: string } | undefined;
+  for (const m of text.matchAll(SEPARATOR)) {
+    const at = m.index!;
+    const after = at + m[0].length;
+    if (after >= text.length || !validSplit(text, at, m[1], after)) continue;
+    cut = {
+      lead: text.slice(0, at + m[1].length).trimEnd(),
+      rest: text.slice(after),
+    };
+  }
+  if (cut) return cut;
   const words = text.split(/\s+/);
   if (words.length >= 4)
     return {

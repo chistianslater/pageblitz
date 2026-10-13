@@ -85,12 +85,15 @@ function Text({ hero }: { hero: SectionOf<"hero"> }) {
   const headline = entryHeadline(hero, data, blueprint);
   const lede = entryLede(hero, headline);
   const parts = headline ? splitHeadline(headline) : undefined;
+  // Ort ohne Umbruch am Bindestrich („Leipzig-|Gohlis").
+  const city = top.city && <span className="fr-nowrap">{top.city}</span>;
   const nameLine = (
     <>
       <h1 id="start-titel" className="fr-top-name">
         {top.name}
       </h1>
-      {top.tail && <span>{top.tail}</span>}
+      {top.branch && `\u00a0· ${top.branch}`}
+      {city && <> in {city}</>}
     </>
   );
   return (
@@ -99,7 +102,7 @@ function Text({ hero }: { hero: SectionOf<"hero"> }) {
         (top.pill ? (
           <div className="fr-pill fr-pill--top">
             <i className="fr-dot" aria-hidden="true" />
-            <span className="fr-pill-text">{nameLine}</span>
+            <div className="fr-pill-text">{nameLine}</div>
           </div>
         ) : (
           <div className="fr-nameline">{nameLine}</div>
@@ -107,7 +110,10 @@ function Text({ hero }: { hero: SectionOf<"hero"> }) {
       {!headline && top.pill && (
         <p className="fr-pill fr-pill--top">
           <i className="fr-dot" aria-hidden="true" />
-          <span className="fr-pill-text">{top.kicker}</span>
+          <span className="fr-pill-text">
+            {top.kicker.slice(0, top.kicker.length - top.city!.length)}
+            {city}
+          </span>
         </p>
       )}
       {parts ? (
@@ -187,7 +193,19 @@ export function Cloud({ tone }: { tone: "band" | "paper" | "deep" }) {
   return <span className={`fr-cloud fr-cloud--${tone}`} aria-hidden="true" />;
 }
 
-export function FreundlichEntry({ hero }: { hero: SectionOf<"hero"> }) {
+/**
+ * `nextBand`: die erste Fläche nach dem Einstieg liegt auf dem Band — die
+ * Wolke der Pastellfläche nimmt dann die Bandfarbe statt Papier (keine
+ * Kante). Nach dem Foto-Einstieg liegt die erste Fläche immer auf dem Band
+ * (entryCss), die Wolke ist dort immer bandfarben.
+ */
+export function FreundlichEntry({
+  hero,
+  nextBand = false,
+}: {
+  hero: SectionOf<"hero">;
+  nextBand?: boolean;
+}) {
   const { data, blueprint, now } = useSystem();
   const variant = entryVariant(data, hero);
   const photo = heroPhoto(data, hero);
@@ -234,7 +252,7 @@ export function FreundlichEntry({ hero }: { hero: SectionOf<"hero"> }) {
           </figure>
         )}
       </div>
-      <Cloud tone="paper" />
+      <Cloud tone={nextBand ? "band" : "paper"} />
     </section>
   );
 }

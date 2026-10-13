@@ -52,6 +52,29 @@ describe("Einstieg nach Fotolage", () => {
     expect(entry.match(/<img /g)).toHaveLength(1);
     expect(entry).toContain("fr-cloud--paper");
   });
+  test("Wolke der Pastellfläche in der Farbe der nächsten Fläche", () => {
+    // Pusteblume: danach kommen die Leistungen auf dem Band.
+    const html = render(pusteblumeDoc());
+    expect(html).toMatch(/<\/section><section id="[^"]+" class="fr-sec[^"]*fr-sec--band/);
+    expect(entryOf(html)).toContain("fr-cloud--band");
+    // Folgt Papier, ist die Wolke papierfarben.
+    const paperNext = pusteblumeDoc();
+    const order = paperNext.sections.filter(s => s.type !== "services");
+    const html2 = render({ ...paperNext, sections: order });
+    const next = html2.match(/<\/section><section id="[^"]+" class="([^"]*)"/)?.[1] ?? "";
+    expect(next).not.toContain("fr-sec--band");
+    expect(entryOf(html2)).toContain("fr-cloud--paper");
+  });
+  test("h1 liegt nicht in einem span (Pille als div)", () => {
+    const html = render(fellfreundeDoc());
+    expect(html).not.toMatch(/<span[^>]*>(?:(?!<\/span>)[\s\S])*<h1/);
+    expect(html).toContain('<div class="fr-pill-text"><h1 id="start-titel"');
+  });
+  test("Ort in der Pille bricht nicht am Bindestrich", () => {
+    expect(entryOf(render(fellfreundeDoc()))).toContain(
+      '<span class="fr-nowrap">Leipzig-Gohlis</span>'
+    );
+  });
   test("kein Foto: Pastellfläche, Faktenpillen tragen, kein Bild", () => {
     const entry = entryOf(render(pusteblumeDoc()));
     expect(entry).not.toContain("<img");
@@ -89,6 +112,27 @@ describe("Einstieg nach Fotolage", () => {
 });
 
 describe("Kopf, Leiste, Fuß", () => {
+  test("viele Ziele: die ersten stehen am Desktop in der Zeile, der Rest unter „Mehr“", () => {
+    const html = render(fellfreundeDoc());
+    const nav = html.match(/<nav class="fr-nav"[\s\S]*?<details/)?.[0] ?? "";
+    const inline = nav.match(/<a /g)?.length ?? 0;
+    expect(fellfreundeDoc().sections.length).toBeGreaterThan(6);
+    expect(inline).toBe(4);
+    const more = html.match(/<details class="fr-menu fr-menu--more">[\s\S]*?<\/details>/)?.[0] ?? "";
+    expect(more).toContain(">Mehr<");
+    expect((more.match(/<a /g)?.length ?? 0) + inline).toBe(
+      (html.match(/<nav class="fr-menu-panel" aria-label="Menü">[\s\S]*?<\/nav>/)?.[0].match(/<a /g) ?? []).length
+    );
+    expect(FREUNDLICH_CSS).toMatch(/@media \(min-width:80rem\)\{[^@]*\.fr-nav\{display:flex/);
+    expect(FREUNDLICH_CSS).toMatch(/@media \(min-width:80rem\)\{[^@]*\.fr-menu--main\{display:none\}/);
+  });
+  test("bis zu fünf Ziele: alle in der Zeile, kein „Mehr“", () => {
+    const html = render(pusteblumeDoc());
+    const nav = html.match(/<nav class="fr-nav"[\s\S]*?<\/nav>/)?.[0] ?? "";
+    expect((nav.match(/<a /g) ?? []).length).toBeLessThanOrEqual(5);
+    expect(html).toContain('class="fr-nav"');
+    expect(html).not.toContain('<details class="fr-menu fr-menu--more"');
+  });
   test("Leiste mit data-sys-dock, Einstiegsknöpfe mit data-sys-actions", () => {
     const html = render(fellfreundeDoc());
     expect(html).toContain(
@@ -144,8 +188,11 @@ describe("CSS-Regeln", () => {
     );
   });
   test("Kippen nur ab Desktop (64rem)", () => {
-    const outside = css.replace(/@media \(min-width:64rem\)\{[\s\S]*?\n\}/g, "");
-    expect(outside).not.toMatch(/rotate\(/);
+    const outside = css.replace(
+      /@media \(min-width:64rem\)\{[\s\S]*?\n\}/g,
+      ""
+    );
+    expect(outside).not.toMatch(/rotate\((?:calc\()?var\(--sys-tilt/);
     expect(css).toMatch(
       /@media \(min-width:64rem\)\{[\s\S]*rotate\(calc\(var\(--sys-tilt\) \* -1\)\)/
     );
@@ -159,6 +206,9 @@ describe("CSS-Regeln", () => {
     expect(css).toContain(
       "--fr-text:var(--sys-tint-1-ink);--fr-text-muted:var(--sys-tint-1-ink)"
     );
+  });
+  test("Pastell-Einstieg: Akzent-Satzteil ab Desktop in eigener Zeile", () => {
+    expect(css).toMatch(/@media \(min-width:64rem\)\{[^@]*\.fr-entry--tint \.fr-acc\{display:block\}/);
   });
   test("reduzierte Bewegung", () => {
     expect(css).toContain("@media (prefers-reduced-motion:reduce)");

@@ -41,8 +41,9 @@ export const ENTRY_CSS = `
 .pb-freundlich .fr-pill .fr-ic{width:1.15em;height:1.15em}
 .pb-freundlich .fr-dot{flex:none;width:${DOT};height:${DOT};border-radius:var(--sys-radius-pill);background:var(--sys-signal)}
 .pb-freundlich .fr-pill-text{min-width:0;overflow-wrap:anywhere;text-align:left}
-.pb-freundlich .fr-top-name{display:inline;font:inherit;letter-spacing:inherit;font-weight:600}
+.pb-freundlich .fr-nowrap{white-space:nowrap}
 .pb-freundlich .fr-nameline{${step("kicker")};color:var(--fr-text-muted,var(--sys-muted));overflow-wrap:anywhere}
+.pb-freundlich .fr-top-name{display:inline;font:inherit;letter-spacing:inherit;font-weight:600}
 .pb-freundlich .fr-nameline .fr-top-name{color:var(--fr-text,var(--sys-ink))}
 .pb-freundlich .fr-facts{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--sys-space-xs)}
 .pb-freundlich .fr-fact{white-space:normal}
@@ -101,5 +102,8 @@ export const ENTRY_CSS = `
   /* Kippen erst ab Desktop; am Handy gerade (Endwerte) */
   .pb-freundlich .fr-frame{transform:rotate(calc(var(--sys-tilt) * -1))}
   .pb-freundlich .fr-smallpic{transform:rotate(var(--sys-tilt))}
+  /* Pastell-Einstieg: zweiter Satzteil in eigener Zeile (Systemblatt 18) */
+  .pb-freundlich .fr-entry--tint .fr-acc{display:block}
+  .pb-freundlich .fr-entry--tint .fr-display{max-width:18ch}
 }
 `;

@@ -59,6 +59,17 @@ export function chapterTitle(
   );
 }
 
+/**
+ * Abschnitte auf dem Band (Wechselfläche). Eine Quelle für die Kapitel und
+ * für die Wolke des Einstiegs, die in die nächste Fläche führt.
+ */
+export const BAND_TYPES: ReadonlySet<FreundlichSection["type"]> = new Set([
+  "services",
+  "team",
+  "testimonials",
+  "cta",
+]);
+
 /** Pastell je Eintrag (1–4 im Wechsel). */
 const tint = (i: number) => `fr-tint-${(i % 4) + 1}`;
 
@@ -67,16 +78,15 @@ export function FreundlichChapter({
   type,
   own,
   intro,
-  band = false,
   children,
 }: {
   type: FreundlichSection["type"];
   own?: string;
   intro?: string;
-  band?: boolean;
   children?: React.ReactNode;
 }) {
   const { blueprint } = useSystem();
+  const band = BAND_TYPES.has(type);
   const id = SECTION_ANCHORS[type];
   const headingId = `${id}-titel`;
   const name = type === "menu" ? "karte" : type;
@@ -222,7 +232,7 @@ function Cta({
     ? { label: section.ctaText.trim() || primary?.label || "", href: own }
     : primary;
   return (
-    <FreundlichChapter type="cta" own={section.headline} band>
+    <FreundlichChapter type="cta" own={section.headline}>
       {target && (
         <div className="fr-ctas fr-ctas--start">
           <a
@@ -342,11 +352,18 @@ export function renderFreundlichSection(
   back?: string
 ): React.ReactNode {
   switch (section.type) {
-    case "hero":
-      return <FreundlichEntry hero={section} />;
+    case "hero": {
+      const next = sections[sections.indexOf(section) + 1];
+      return (
+        <FreundlichEntry
+          hero={section}
+          nextBand={Boolean(next && BAND_TYPES.has(next.type))}
+        />
+      );
+    }
     case "services":
       return (
-        <FreundlichChapter type="services" own={section.headline} intro={section.intro} band>
+        <FreundlichChapter type="services" own={section.headline} intro={section.intro}>
           <Cards
             items={section.items.map(i => ({
               title: i.title,
@@ -396,7 +413,7 @@ export function renderFreundlichSection(
       );
     case "team":
       return (
-        <FreundlichChapter type="team" own={section.headline} band>
+        <FreundlichChapter type="team" own={section.headline}>
           <ul className="fr-cards">
             {section.members.map((m, i) => (
               <li key={`${m.name}-${i}`} className={`fr-card fr-person ${tint(i)}`}>
@@ -437,7 +454,7 @@ export function renderFreundlichSection(
       ) : null;
     case "testimonials":
       return (
-        <FreundlichChapter type="testimonials" own={section.headline} band>
+        <FreundlichChapter type="testimonials" own={section.headline}>
           <ul className="fr-cards">
             {section.items.slice(0, 3).map((t, i) => (
               <li key={`${t.author}-${i}`} className={`fr-card ${tint(i)}`}>

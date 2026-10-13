@@ -23,10 +23,12 @@ for (const p of FREUNDLICH.palettes) {
       expect(contrastRatio(p.muted, p.paper)).toBeGreaterThanOrEqual(BODY);
     });
     test("Pastell 1 (Einstieg): Tinte ≥ 7, Akzent der großen Zeile ≥ 4,5", () => {
-      expect(contrastRatio(tints[0].ink, tints[0].bg)).toBeGreaterThanOrEqual(BODY);
+      expect(contrastRatio(tints[0].ink, tints[0].bg)).toBeGreaterThanOrEqual(
+        BODY
+      );
       expect(contrastRatio(p.accent, tints[0].bg)).toBeGreaterThanOrEqual(TEXT);
     });
-    test("Akzent der großen Zeile auf Papier ≥ 4,5", () => {
+    test("Akzent der großen Zeile und der aktiven Navigation auf Papier ≥ 4,5", () => {
       expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(TEXT);
     });
     test("Pillen: Tinte auf allen Pastellen, auf Weiß und Pastell-Tinte ≥ 7", () => {
@@ -38,11 +40,16 @@ for (const p of FREUNDLICH.palettes) {
       expect(contrastRatio(p.ink, surface)).toBeGreaterThanOrEqual(BODY);
     });
     test("Hauptknopf: Schrift auf Signal ≥ 4,5, Grenze (Kante) zu jedem Grund ≥ 3", () => {
-      expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(TEXT);
+      expect(contrastRatio(p.onSignal!, p.signal!)).toBeGreaterThanOrEqual(
+        TEXT
+      );
       const edge = p.edge!;
       for (const bg of [p.paper, surface, ...tints.map(t => t.bg)]) {
         // Signal oder Kante muss den Knopf vom Grund abheben.
-        const best = Math.max(contrastRatio(p.signal!, bg), contrastRatio(edge, bg));
+        const best = Math.max(
+          contrastRatio(p.signal!, bg),
+          contrastRatio(edge, bg)
+        );
         expect(best, bg).toBeGreaterThanOrEqual(UI);
       }
     });
@@ -55,12 +62,10 @@ for (const p of FREUNDLICH.palettes) {
       for (const bg of [p.paper, surface, p.band!, ...tints.map(t => t.bg)])
         expect(contrastRatio(p.accent, bg), bg).toBeGreaterThanOrEqual(UI);
     });
-    test("Fuß und Logo: onDeep auf Tief ≥ 7, Fokus onDeep ≥ 3", () => {
+    test("Fuß und Logo: onDeep auf Tief ≥ 7, Fokusring onDeep gegen Tief ≥ 3", () => {
       expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(BODY);
-    });
-    test("Navigation: Akzent (aktiv) auf Papier und Pastell 1 ≥ 4,5", () => {
-      expect(contrastRatio(p.accent, p.paper)).toBeGreaterThanOrEqual(TEXT);
-      expect(contrastRatio(p.accent, tints[0].bg)).toBeGreaterThanOrEqual(TEXT);
+      // Fokus im Fuß: Ring in onDeep auf der tiefen Fläche.
+      expect(contrastRatio(p.onDeep, p.deep)).toBeGreaterThanOrEqual(UI);
     });
   });
 }

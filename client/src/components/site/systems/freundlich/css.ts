@@ -88,14 +88,22 @@ ${FONT_FACES}
 .pb-freundlich .fr-menu-panel a[aria-current]{color:var(--sys-accent)}
 .pb-freundlich .fr-nav,.pb-freundlich .fr-btn--head{display:none}
 @media (min-width:${NAV}){
-  .pb-freundlich .fr-menu--main{display:none}
-  .pb-freundlich .fr-menu--always{display:block}
-  .pb-freundlich .fr-nav{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:var(--sys-space-xs) calc(var(--sys-space-s) * 1.875);margin-right:calc(var(--sys-space-s) * .5)}
-  .pb-freundlich .fr-nav a{${step("link")};font-weight:500;display:inline-flex;align-items:center;min-height:${H_MIN};text-decoration:none}
-  .pb-freundlich .fr-nav a:hover,.pb-freundlich .fr-nav a[aria-current]{color:var(--sys-accent);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.4em}
   .pb-freundlich .fr-btn--head.fr-btn--p{display:inline-flex;min-height:${H_SMALL}}
 }
+/* Ab 80 rem: Ziele in der Zeile (höchstens vier), Rest hinter „Mehr" */
 @media (min-width:80rem){
+  .pb-freundlich .fr-menu--main{display:none}
+  .pb-freundlich .fr-nav{display:flex;align-items:center;gap:calc(var(--sys-space-s) * 1.75);margin-right:calc(var(--sys-space-s) * .5)}
+  .pb-freundlich .fr-nav a,.pb-freundlich .fr-more-toggle{${step("link")};font-weight:500;display:inline-flex;align-items:center;min-height:${H_MIN};text-decoration:none;white-space:nowrap}
+  .pb-freundlich .fr-nav>a:hover,.pb-freundlich .fr-nav>a[aria-current]{color:var(--sys-accent);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.4em}
+  .pb-freundlich .fr-menu--more{position:relative}
+  .pb-freundlich .fr-more-toggle{gap:var(--sys-space-2xs);list-style:none;cursor:pointer}
+  .pb-freundlich .fr-more-toggle::-webkit-details-marker{display:none}
+  .pb-freundlich .fr-more-toggle::after{content:"";width:var(--sys-space-xs);height:var(--sys-space-xs);border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-25%) rotate(45deg);margin-left:var(--sys-space-xs)}
+  .pb-freundlich .fr-menu-panel--more{left:auto;right:0;top:calc(100% + var(--sys-space-xs));min-width:calc(var(--sys-space-xl) * 3.5)}
+  .pb-freundlich .fr-menu-panel--more a{${step("link")}}
+}
+@media (min-width:90rem){
   .pb-freundlich .fr-btn--head.fr-btn--s{display:inline-flex;min-height:${H_SMALL}}
 }
 

@@ -51,20 +51,24 @@ describe("Pille über dem Titel nur mit Ort", () => {
     const f = fellfreundeDoc();
     expect(entryTop(f, bp(f))).toMatchObject({
       name: "Fellfreunde",
-      tail: " · Hundesalon in Leipzig-Gohlis",
+      branch: "Hundesalon",
+      city: "Leipzig-Gohlis",
       pill: true,
     });
     const k = pusteblumeDoc();
-    expect(entryTop(k, bp(k))).toMatchObject({
+    const top = entryTop(k, bp(k));
+    expect(top).toMatchObject({
       name: "Kita Pusteblume",
-      tail: " in Bremen-Findorff",
+      city: "Bremen-Findorff",
       pill: true,
     });
+    expect(top.branch).toBeUndefined();
   });
   test("ohne Ort: keine Pille (nichts erfunden)", () => {
     const d = withContact(fellfreundeDoc(), { city: undefined });
     expect(entryTop(d, bp(d)).pill).toBe(false);
-    expect(entryTop(d, bp(d)).tail).toBe(" · Hundesalon");
+    expect(entryTop(d, bp(d)).city).toBeUndefined();
+    expect(entryTop(d, bp(d)).branch).toBe("Hundesalon");
   });
 });
 
@@ -76,6 +80,21 @@ describe("große Zeile: zweiter Satzteil in Akzent", () => {
     ["Gute Pfoten – gute Laune", "Gute Pfoten –", "gute Laune"],
   ])("%s", (text, lead, rest) => {
     expect(splitHeadline(text)).toEqual({ lead, rest });
+  });
+  test.each([
+    ["Praxis Dr. Sommer für die ganze Familie", "Praxis Dr. Sommer für die", "ganze Familie"],
+    ["Alles fürs Tier, z. B. Futter und Spielzeug", "Alles fürs Tier,", "z. B. Futter und Spielzeug"],
+    ["Eis seit 1998. Jeden Tag frisch", "Eis seit 1998.", "Jeden Tag frisch"],
+    ["Gelato Nr. 1 am Ufer", "Gelato Nr. 1", "am Ufer"],
+  ])("Abkürzungen teilen nicht: %s", (text, lead, rest) => {
+    expect(splitHeadline(text)).toEqual({ lead, rest });
+  });
+  test("Punkt vor Kleinbuchstaben teilt nicht", () => {
+    // Kein gültiger Satzschluss → Rückfall: die letzten zwei Wörter.
+    expect(splitHeadline("Gewaschen. dann gekämmt und gebürstet")).toEqual({
+      lead: "Gewaschen. dann gekämmt",
+      rest: "und gebürstet",
+    });
   });
   test("kurz und ohne Satzzeichen: keine Teilung", () => {
     expect(splitHeadline("Willkommen bei uns")).toEqual({ lead: "Willkommen bei uns" });
