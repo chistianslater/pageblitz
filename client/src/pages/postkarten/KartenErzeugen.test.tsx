@@ -26,6 +26,9 @@ const zeile = (teil: Record<string, unknown> = {}) => ({
   bildAt: new Date("2026-09-12T10:00:00Z"),
   pdfUrl: null,
   sentAt: null,
+  welle: null,
+  batch: null,
+  layout: null,
   stadt: "Bocholt",
   zustand: "bereit",
   hinweis: "Motiv passt zur aktuellen Seite.",
@@ -84,6 +87,7 @@ vi.mock("@/lib/trpc", () => {
     trpc: {
       useUtils: () => ({
         postkarten: {
+          nachfassListe: { invalidate: vi.fn() },
           kandidaten: { invalidate: vi.fn() },
           uebersicht: { invalidate: vi.fn() },
         },
@@ -114,6 +118,18 @@ vi.mock("@/lib/trpc", () => {
               templateId: "93df425c-64eb-4c13-b07b-cd54dd663301",
               ausUmgebung: false,
               heymailBereit: true,
+              vorlagen: [
+                {
+                  layout: "standard",
+                  envName: "HEYMAIL_TEMPLATE_ID",
+                  templateId: "93df425c-64eb-4c13-b07b-cd54dd663301",
+                },
+                {
+                  layout: "screenshot",
+                  envName: "HEYMAIL_TEMPLATE_ID_SCREENSHOT",
+                  templateId: null,
+                },
+              ],
             },
           }),
         },
@@ -130,6 +146,50 @@ vi.mock("@/lib/trpc", () => {
         musterMotiv: { useMutation: () => mutation },
         vorschau: { useMutation: () => mutation },
         beauftragen: { useMutation: () => mutation },
+        nachfassAnlegen: { useMutation: () => mutation },
+        nachfassListe: {
+          useQuery: () => ({
+            data: {
+              zeilen: [
+                {
+                  karteId: 11,
+                  code: "QW12",
+                  businessId: 50,
+                  betrieb: "Salon Erste Welle",
+                  city: "Borken",
+                  welle: null,
+                  status: "versendet",
+                  testkarte: false,
+                  druckstatus: "verschickt",
+                  scans: 0,
+                  websiteStatus: "preview",
+                  hatNeuereKarte: false,
+                  sentAt: null,
+                  sperre: null,
+                  vorgeschlagen: true,
+                },
+                {
+                  karteId: 12,
+                  code: "7N38",
+                  businessId: 51,
+                  betrieb: "SCHAU & HORCH",
+                  city: "Bocholt",
+                  welle: null,
+                  status: "versendet",
+                  testkarte: true,
+                  druckstatus: "verschickt",
+                  scans: 5,
+                  websiteStatus: "preview",
+                  hatNeuereKarte: false,
+                  sentAt: null,
+                  sperre: "eigene Testkarte",
+                  vorgeschlagen: false,
+                },
+              ],
+              vorschlag: [11],
+            },
+          }),
+        },
       },
     },
   };
@@ -178,5 +238,25 @@ describe("KartenErzeugen", () => {
     expect(html).toContain("Zurückstellen");
     expect(html).toContain("Wieder aufnehmen");
     expect(html).toContain("Seite löschen");
+  });
+
+  test("bietet Welle, Batch und Layout an (Welle 2)", () => {
+    expect(html).toContain("Welle und Batch");
+    expect(html).toContain("B — Screenshot-Vorderseite");
+    expect(html).toContain("Screenshot groß auf der Vorderseite");
+    expect(html).toContain('value="welle-2"');
+  });
+
+  test("zeigt die Vorlage des gewählten Layouts statt eines globalen Browserwerts", () => {
+    expect(html).toContain("Vorlage standard: 93df425c");
+    expect(html).toContain("HEYMAIL_TEMPLATE_ID");
+  });
+
+  test("Nachfass-Liste: Vorschlag markiert, Testkarte gesperrt", () => {
+    expect(html).toContain("Nachfass (Welle 2 · Batch D)");
+    expect(html).toContain("Salon Erste Welle");
+    expect(html).toContain("Vorschlag");
+    expect(html).toContain("eigene Testkarte");
+    expect(html).toContain("1 von 2 Karten der ersten Welle");
   });
 });

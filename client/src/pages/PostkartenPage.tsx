@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import KartenErzeugen from "./postkarten/KartenErzeugen";
+import VersuchsarmTabelle from "./postkarten/VersuchsarmTabelle";
 
 const datum = (d: Date | string | null) =>
   d
@@ -90,28 +91,6 @@ const DRUCK_LABEL: Record<Druckstatus, string> = {
   storniert: "storniert",
 };
 
-/**
- * Höchste erreichte Stufe je Karte — spiegelt `trichterStufe` auf dem Server
- * (server/postkarten/auswertung.ts), damit die Zeile ohne zweiten Abruf
- * weiß, was als Nächstes zu tun ist.
- */
-function stufeVon(k: {
-  status: string;
-  druckstatus: Druckstatus | null;
-  websiteStatus: string | null;
-  hatEmail: boolean;
-  designBestaetigt: boolean;
-  scans: number;
-}): Stufe | null {
-  if (k.status !== "versendet" || k.druckstatus === "storniert") return null;
-  if (k.websiteStatus === "sold" || k.websiteStatus === "active")
-    return "gekauft";
-  if (k.hatEmail) return "email";
-  if (k.designBestaetigt) return "design";
-  if (k.scans > 0) return "gescannt";
-  return "beauftragt";
-}
-
 /** Was mit diesem Salon als Nächstes zu tun ist — die Spalte zum Nachfassen. */
 const NAECHSTER_SCHRITT: Record<Stufe, { text: string; nachfassen: boolean }> =
   {
@@ -187,6 +166,8 @@ function Auswertung() {
     <div className="space-y-6">
       <Trichter stufen={data?.trichter ?? []} />
 
+      <VersuchsarmTabelle arme={data?.nachVersuchsarm ?? []} />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -260,11 +241,19 @@ function Auswertung() {
               </thead>
               <tbody>
                 {karten.map(k => {
-                  const stufe = stufeVon(k);
+                  // Stufe vom Server (auswertung.ts) — dort steht auch die
+                  // Nachfass-Regel; hier wird sie nicht nachgebaut.
+                  const stufe = k.stufe;
                   const schritt = stufe ? NAECHSTER_SCHRITT[stufe] : null;
                   return (
                     <tr key={k.id} className="border-t align-top">
-                      <td className="py-2 font-mono font-medium">{k.code}</td>
+                      <td className="py-2">
+                        <span className="font-mono font-medium">{k.code}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {k.welle ?? "welle-1"}
+                          {k.batch ? ` · ${k.batch}` : ""}
+                        </span>
+                      </td>
                       <td className="py-2">{k.betrieb}</td>
                       <td className="py-2">{k.city ?? "—"}</td>
                       <td className="py-2">

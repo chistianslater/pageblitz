@@ -28,17 +28,33 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, FileText, Image, Send, Trash2 } from "lucide-react";
+import { Camera, FileText, Image, Send } from "lucide-react";
 import { toast } from "sonner";
+import {
+  BatchWahl,
+  ZUORDNUNG_START,
+  zuordnungFuerServer,
+  type Zuordnung,
+} from "./BatchWahl";
+import NachfassAuswahl from "./NachfassAuswahl";
+import MusterMotiv from "./MusterMotiv";
+import ZeilenAktionen, { type Zustand } from "./ZeilenAktionen";
 
-type Zustand =
-  | "versendet"
-  | "zurueckgestellt"
-  | "bereit"
-  | "motiv-veraltet"
-  | "ohne-motiv"
-  | "ohne-anschrift"
-  | "ohne-vorschau";
+/**
+ * Vorlagen-Überschreibung im Browser JE LAYOUT (Welle 2). Der alte
+ * Schlüssel `pb-heymail-template` galt still für alles und stach die
+ * Server-Umgebung — mit zwei Layouts hätte er Batch B in der Vorlage der
+ * ersten Welle gedruckt. Er wird bewusst nicht mehr gelesen.
+ */
+const vorlageSchluessel = (layout: string) => `pb-heymail-template:${layout}`;
+
+function vorlageLesen(layout: string): string {
+  try {
+    return localStorage.getItem(vorlageSchluessel(layout)) ?? "";
+  } catch {
+    return "";
+  }
+}
 
 const ZUSTAND_TEXT: Record<
   Zustand,
@@ -122,189 +138,12 @@ function AnschriftNachtragen({
   );
 }
 
-/**
- * Musterbild für den Template-Bau bei HeyMail.
- *
- * Im Editor braucht man eine Bildadresse, die bleibt — ein Motiv eines
- * echten Betriebs gehört zu dessen Karte und wird ersetzt, sobald dessen
- * Seite neu erzeugt wird. Das Muster liegt unter einer festen Adresse und
- * ändert sich nur, wenn man hier erneut drückt.
- */
-function MusterMotiv() {
-  const [url, setUrl] = useState<string | null>(null);
-  const muster = trpc.postkarten.musterMotiv.useMutation();
-
-  return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-dashed p-3">
-      <div className="text-sm">
-        <div className="font-medium">Musterbild fürs HeyMail-Template</div>
-        <div className="text-muted-foreground">
-          Feste Adresse zum Einsetzen in den Editor — steht für{" "}
-          <code>{"{{bildUrl}}"}</code>. Laptop-Mockup, 1760 × 1760 px
-          (quadratisch, wie HeyMail es für dynamische Bilder verlangt), PNG mit
-          durchsichtigem Hintergrund.
-        </div>
-      </div>
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={muster.isPending}
-        onClick={async () => {
-          try {
-            const { bildUrl, betrieb } = await muster.mutateAsync({});
-            setUrl(bildUrl);
-            toast.success(`Muster von ${betrieb} aufgenommen.`);
-          } catch (err) {
-            toast.error(err instanceof Error ? err.message : String(err));
-          }
-        }}
-      >
-        <Image className="h-4 w-4" />
-        {muster.isPending ? "nimmt auf …" : "Musterbild erzeugen"}
-      </Button>
-      {url && (
-        <a
-          className="font-mono text-xs underline"
-          href={url}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {url}
-        </a>
-      )}
-    </div>
-  );
-}
-
-/**
- * Aktionen je Zeile: aus der Kampagne nehmen, zurückholen, Seite löschen.
- *
- * Zurückstellen ist der normale Weg — die Zeile bleibt mit Begründung
- * stehen, und beim nächsten Durchgang ist zu sehen, dass der Betrieb dran
- * war. Löschen ist für Seiten, die gar nicht hätten entstehen sollen: Danach
- * ist auch die Buchführung weg.
- */
-function ZeilenAktionen({
-  businessId,
-  name,
-  zustand,
-  fertig,
-}: {
-  businessId: number;
-  name: string;
-  zustand: Zustand;
-  fertig: () => Promise<void>;
-}) {
-  const [loeschenOffen, setLoeschenOffen] = useState(false);
-  const zurueckstellen = trpc.postkarten.zurueckstellen.useMutation();
-  const wiederAufnehmen = trpc.postkarten.wiederAufnehmen.useMutation();
-  const seiteLoeschen = trpc.postkarten.seiteLoeschen.useMutation();
-
-  if (zustand === "versendet") {
-    return <span className="text-xs text-muted-foreground">—</span>;
-  }
-
-  async function ruf(
-    arbeit: () => Promise<unknown>,
-    erfolg: string
-  ): Promise<void> {
-    try {
-      await arbeit();
-      toast.success(erfolg);
-      await fertig();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    }
-  }
-
-  return (
-    <div className="flex flex-col items-start gap-1">
-      {zustand === "zurueckgestellt" ? (
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 px-2 text-xs"
-          disabled={wiederAufnehmen.isPending}
-          onClick={() =>
-            ruf(
-              () => wiederAufnehmen.mutateAsync({ businessId }),
-              `${name} ist wieder in der Kampagne.`
-            )
-          }
-        >
-          Wieder aufnehmen
-        </Button>
-      ) : (
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 px-2 text-xs"
-          disabled={zurueckstellen.isPending}
-          onClick={() =>
-            ruf(
-              () => zurueckstellen.mutateAsync({ businessId }),
-              `${name} zurückgestellt — bleibt in der Liste.`
-            )
-          }
-        >
-          Zurückstellen
-        </Button>
-      )}
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-7 px-2 text-xs text-destructive"
-        onClick={() => setLoeschenOffen(true)}
-      >
-        <Trash2 className="h-3 w-3" />
-        Seite löschen
-      </Button>
-
-      <Dialog open={loeschenOffen} onOpenChange={setLoeschenOffen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Vorschau-Seite von {name} löschen</DialogTitle>
-            <DialogDescription>
-              Die Seite und alles, was daran hängt, sind danach weg — auch der
-              Eintrag in dieser Liste. Für „fällt aus der Kampagne" ist
-              <strong> Zurückstellen </strong>
-              das bessere Werkzeug: Der Betrieb bleibt mit Begründung stehen,
-              und du siehst beim nächsten Durchgang, dass er schon dran war.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setLoeschenOffen(false)}>
-              Abbrechen
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={seiteLoeschen.isPending}
-              onClick={async () => {
-                setLoeschenOffen(false);
-                await ruf(
-                  () =>
-                    seiteLoeschen.mutateAsync({
-                      businessId,
-                      bestaetigung: "LOESCHEN",
-                    }),
-                  `Seite von ${name} gelöscht.`
-                );
-              }}
-            >
-              Endgültig löschen
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-
 export default function KartenErzeugen() {
   const [filter, setFilter] = useState({ branche: "", stadt: "", suche: "" });
   const [entwurf, setEntwurf] = useState(filter);
   const [ausgewaehlt, setAusgewaehlt] = useState<number[]>([]);
-  const [variante, setVariante] = useState("ungefragt");
+  const [zuordnung, setZuordnung] = useState<Zuordnung>(ZUORDNUNG_START);
+  const variante = zuordnung.variante;
   const [lauf, setLauf] = useState<Lauf | null>(null);
   const [versandDialog, setVersandDialog] = useState(false);
   const [bestaetigung, setBestaetigung] = useState("");
@@ -314,13 +153,9 @@ export default function KartenErzeugen() {
    * Der Wert bleibt im Browser stehen, damit er nicht bei jedem Lauf neu
    * eingetippt werden muss.
    */
-  const [templateId, setTemplateId] = useState(() => {
-    try {
-      return localStorage.getItem("pb-heymail-template") ?? "";
-    } catch {
-      return "";
-    }
-  });
+  const [templateId, setTemplateId] = useState(() =>
+    vorlageLesen(ZUORDNUNG_START.layout)
+  );
 
   const utils = trpc.useUtils();
   const { data, isLoading } = trpc.postkarten.kandidaten.useQuery(filter);
@@ -329,6 +164,20 @@ export default function KartenErzeugen() {
   const motiv = trpc.postkarten.motiv.useMutation();
   const vorschau = trpc.postkarten.vorschau.useMutation();
   const beauftragen = trpc.postkarten.beauftragen.useMutation();
+  /** Vorlage, die der Server für das gewählte Layout nähme. */
+  const serverVorlage =
+    einstellungen?.vorlagen?.find(v => v.layout === zuordnung.layout) ?? null;
+  const zuServer = zuordnungFuerServer(zuordnung);
+  const vorlageFeld = templateId.trim()
+    ? { templateId: templateId.trim() }
+    : {};
+
+  function zuordnungAendern(neu: Zuordnung) {
+    // Layout gewechselt: die Überschreibung DIESES Layouts laden — nie die
+    // des vorigen mitnehmen.
+    if (neu.layout !== zuordnung.layout) setTemplateId(vorlageLesen(neu.layout));
+    setZuordnung(neu);
+  }
 
   const zeilen = useMemo(() => data?.zeilen ?? [], [data]);
   // „Offen" heisst: macht noch Arbeit. Versendet und zurueckgestellt sind
@@ -460,7 +309,21 @@ export default function KartenErzeugen() {
               </p>
             </div>
           )}
-          <MusterMotiv />
+          <BatchWahl
+            wert={zuordnung}
+            aendern={zuordnungAendern}
+            varianten={
+              varianten ?? [{ id: "ungefragt", headline: "Deine Website ist fertig." }]
+            }
+            gesperrt={laeuft}
+            brancheVorschlagen={branche => {
+              const neu = { ...entwurf, branche };
+              setEntwurf(neu);
+              setFilter(neu);
+              setAusgewaehlt([]);
+            }}
+          />
+          <MusterMotiv layout={zuordnung.layout} />
           {data?.abgeschnitten && (
             <p className="text-sm text-muted-foreground">
               Die Liste endet hier — es gibt mehr Betriebe, als angezeigt
@@ -514,7 +377,7 @@ export default function KartenErzeugen() {
               disabled={laeuft || ausgewaehlt.length === 0}
               onClick={() =>
                 laufen("Motive aufnehmen", ausgewaehlt, async businessId => {
-                  await motiv.mutateAsync({ businessId });
+                  await motiv.mutateAsync({ businessId, ...zuServer });
                 })
               }
             >
@@ -523,38 +386,34 @@ export default function KartenErzeugen() {
             </Button>
             <Input
               className="w-72"
+              aria-label={`HeyMail-Vorlage für Layout ${zuordnung.layout}`}
               placeholder={
-                einstellungen?.templateId
-                  ? `HeyMail-Vorlage (Standard: ${einstellungen.templateId.slice(0, 8)}…)`
-                  : "HeyMail-Vorlage — Pflicht, keine hinterlegt"
+                serverVorlage?.templateId
+                  ? `Vorlage ${zuordnung.layout}: ${serverVorlage.templateId.slice(0, 8)}… (${serverVorlage.envName})`
+                  : `Keine Vorlage für ${zuordnung.layout} — ${serverVorlage?.envName ?? "Variable"} setzen`
               }
               value={templateId}
               disabled={laeuft}
               onChange={e => {
                 setTemplateId(e.target.value);
-                // Im Browser merken: Die ID gehoert zum Konto, nicht zum
-                // einzelnen Lauf — sie jedes Mal neu zu tippen waere Unsinn.
+                // Je Layout im Browser merken — eine Überschreibung gilt nur
+                // für das Layout, unter dem sie eingetragen wurde.
                 try {
-                  localStorage.setItem("pb-heymail-template", e.target.value);
+                  localStorage.setItem(
+                    vorlageSchluessel(zuordnung.layout),
+                    e.target.value
+                  );
                 } catch {
                   // Privates Fenster o. Ä. — dann eben nur für diesen Lauf.
                 }
               }}
             />
-            <select
-              className="h-9 rounded-md border bg-background px-2 text-sm"
-              value={variante}
-              disabled={laeuft}
-              onChange={e => setVariante(e.target.value)}
-            >
-              {(varianten ?? [{ id: "ungefragt", headline: "ungefragt" }]).map(
-                v => (
-                  <option key={v.id} value={v.id}>
-                    {v.id} — {v.headline}
-                  </option>
-                )
+            {templateId.trim() &&
+              templateId.trim() !== serverVorlage?.templateId && (
+                <Badge variant="destructive">
+                  überschreibt {serverVorlage?.envName ?? "Server"}
+                </Badge>
               )}
-            </select>
             <Button
               size="sm"
               variant="secondary"
@@ -564,9 +423,8 @@ export default function KartenErzeugen() {
                   await vorschau.mutateAsync({
                     businessId,
                     variante: variante as "ungefragt",
-                    ...(templateId.trim()
-                      ? { templateId: templateId.trim() }
-                      : {}),
+                    ...vorlageFeld,
+                    ...zuServer,
                   });
                 })
               }
@@ -657,7 +515,16 @@ export default function KartenErzeugen() {
                         )}
                       </td>
                       <td className="py-2">{z.stadt ?? "—"}</td>
-                      <td className="py-2 font-mono">{z.code ?? "—"}</td>
+                      <td className="py-2">
+                        <span className="font-mono">{z.code ?? "—"}</span>
+                        {(z.welle || z.batch) && (
+                          <span className="block text-xs text-muted-foreground">
+                            {z.welle ?? "welle-1"}
+                            {z.batch ? ` · ${z.batch}` : ""}
+                            {z.layout === "screenshot" ? " · Screenshot" : ""}
+                          </span>
+                        )}
+                      </td>
                       <td className="py-2">
                         <Badge
                           variant={ZUSTAND_TEXT[z.zustand as Zustand].variante}
@@ -723,6 +590,13 @@ export default function KartenErzeugen() {
         </CardContent>
       </Card>
 
+      <NachfassAuswahl
+        angelegt={async () => {
+          await utils.postkarten.kandidaten.invalidate();
+          await utils.postkarten.uebersicht.invalidate();
+        }}
+      />
+
       <Dialog open={versandDialog} onOpenChange={setVersandDialog}>
         <DialogContent>
           <DialogHeader>
@@ -731,7 +605,10 @@ export default function KartenErzeugen() {
               {auswahl.filter(z => z.beauftragbar).length} Karten gehen als
               Druckauftrag zu HeyMail. Das kostet Porto und Druck und lässt sich
               nicht zurückholen. Karten, deren Motiv veraltet ist oder deren
-              Anschrift fehlt, sind nicht dabei.
+              Anschrift fehlt, sind nicht dabei. Gedruckt wird mit{" "}
+              {zuordnung.welle || "ohne Welle"}
+              {zuordnung.batch ? ` · Batch ${zuordnung.batch}` : ""} · Layout{" "}
+              {zuordnung.layout} · Text {variante}.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
@@ -762,9 +639,8 @@ export default function KartenErzeugen() {
                       businessId,
                       variante: variante as "ungefragt",
                       bestaetigung: "VERSENDEN",
-                      ...(templateId.trim()
-                        ? { templateId: templateId.trim() }
-                        : {}),
+                      ...vorlageFeld,
+                      ...zuServer,
                     });
                   }
                 );
