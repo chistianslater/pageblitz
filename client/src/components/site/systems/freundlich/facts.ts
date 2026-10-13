@@ -12,8 +12,9 @@ import {
   nameOf,
   visibleDoc,
 } from "../shared";
-import { formatHeroRating, streetLine } from "../shared/heroFacts";
-import { clock, todayHours } from "../shared/hours";
+import { formatHeroRating, streetLine, telHref } from "../shared/heroFacts";
+import { clock, hoursRows, todayHours } from "../shared/hours";
+import { addressLine, mailHref } from "../shared";
 import { systemActions, type Action } from "../shared/actions";
 import type { IconName } from "./icons";
 
@@ -267,8 +268,43 @@ export function factPills(
 
 /* ── Wege ─────────────────────────────────────────────────────────────── */
 
-/** Wege wie Klar/Nacht (shared/actions.ts): Buchungslink → Formular → Bauplan → Anruf. */
-export const freundlichActions = systemActions;
+/**
+ * Hat „Besuch uns" etwas zu zeigen? Zeiten, Anschrift, Telefon, E-Mail —
+ * oder das Kontaktformular (`form`: gebucht bzw. die Insel rendert; dann
+ * bleibt das Kapitel samt #kontakt als Ziel der Hydration und der Knöpfe).
+ * Sonst entfällt es samt Anker (F3-Review).
+ */
+export function contactHasContent(
+  section: SectionOf<"contact">,
+  form: boolean
+): boolean {
+  return (
+    form ||
+    hoursRows(section.openingHours, new Date(0)).length > 0 ||
+    Boolean(addressLine(section)) ||
+    Boolean(telHref(section.phone?.trim())) ||
+    Boolean(mailHref(section.email?.trim()))
+  );
+}
+
+/**
+ * Wege wie Klar/Nacht (shared/actions.ts): Buchungslink → Formular →
+ * Bauplan → Anruf. Ein leerer Kontakt (entfällt, s. contactHasContent) ist
+ * kein Ziel: kein Knopf führt auf einen fehlenden Anker #kontakt.
+ */
+export function freundlichActions(
+  doc: WebsiteDataV2,
+  blueprint: Blueprint,
+  anchorPrefix = ""
+): ReturnType<typeof systemActions> {
+  const contact = contactOf(doc.sections);
+  const empty =
+    contact && !contactHasContent(contact, doc.features?.contactForm === true);
+  const usable = empty
+    ? { ...doc, sections: doc.sections.filter(s => s !== contact) }
+    : doc;
+  return systemActions(usable as WebsiteDataV2, blueprint, anchorPrefix);
+}
 export type { Action };
 
 /**

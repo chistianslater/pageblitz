@@ -14,7 +14,9 @@ import {
 } from "../shared";
 import { SYS_ACTIONS } from "../shared/dockAutoHide";
 import { tintOf } from "./content";
-import { freundlichActions } from "./facts";
+import { contactHasContent, freundlichActions, type Action } from "./facts";
+import type { WebsiteDataV2 } from "../../../../../../shared/siteContract/types";
+import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { Icon, wayIcon } from "./icons";
 import { FreundlichChapter, type Place } from "./sections";
 
@@ -117,7 +119,9 @@ export function FreundlichContact({
   section: SectionOf<"contact">;
   place: Place;
 }) {
-  const { blueprint, now, contactIsland } = useSystem();
+  const { data, blueprint, now, contactIsland } = useSystem();
+  const form = Boolean(contactIsland) || data.features?.contactForm === true;
+  if (!contactHasContent(section, form)) return null;
   const rows = hoursRows(section.openingHours, now);
   const address = addressLine(section);
   const route = address ? mapsHref(address) : undefined;
@@ -194,6 +198,28 @@ export function FreundlichContact({
  * Hauptweg — und die Telefonnummer als Zweitknopf. Ruft der Hauptknopf
  * schon an, steht nur er („Anrufen").
  */
+/**
+ * Knöpfe des Abschluss-Bands: Hauptweg (eigenes Ziel per systemHref, sonst
+ * der Hauptweg der Seite) und die Nummer, sofern sie nicht schon der
+ * Hauptweg ist. Ohne beides entfällt das Band (F3-Review).
+ */
+export function ctaButtons(
+  section: SectionOf<"cta">,
+  data: WebsiteDataV2,
+  blueprint: Blueprint,
+  anchorPrefix: string
+): { primary?: Action; phone?: Action } {
+  const ways = freundlichActions(data, blueprint, anchorPrefix);
+  const own = systemHref(section.ctaHref, data, anchorPrefix);
+  const href = own ?? ways.primary?.href;
+  const text = section.ctaText?.trim() || ways.primary?.label;
+  const primary =
+    href && text ? { href, label: telLabel(text, href) } : undefined;
+  const phone =
+    ways.phone && ways.phone.href !== primary?.href ? ways.phone : undefined;
+  return { primary, phone };
+}
+
 export function FreundlichCta({
   section,
   anchorPrefix,
@@ -204,12 +230,8 @@ export function FreundlichCta({
   place: Place;
 }) {
   const { data, blueprint } = useSystem();
-  const ways = freundlichActions(data, blueprint, anchorPrefix);
-  const own = systemHref(section.ctaHref, data, anchorPrefix);
-  const href = own ?? ways.primary?.href;
-  const text = section.ctaText?.trim() || ways.primary?.label;
-  const primary = href && text ? { href, label: telLabel(text, href) } : undefined;
-  const phone = ways.phone && ways.phone.href !== primary?.href ? ways.phone : undefined;
+  const { primary, phone } = ctaButtons(section, data, blueprint, anchorPrefix);
+  if (!primary && !phone) return null;
   return (
     <FreundlichChapter
       type="cta"
@@ -217,8 +239,7 @@ export function FreundlichCta({
       place={place}
       layout="center"
     >
-      {(primary || phone) && (
-        <div className="fr-ctas fr-ctas--band" {...SYS_ACTIONS}>
+      <div className="fr-ctas fr-ctas--band" {...SYS_ACTIONS}>
           {primary && (
             <a
               className="fr-btn fr-btn--p"
@@ -236,7 +257,6 @@ export function FreundlichCta({
             </a>
           )}
         </div>
-      )}
     </FreundlichChapter>
   );
 }

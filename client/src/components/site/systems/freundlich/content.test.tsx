@@ -399,7 +399,7 @@ describe("Freundlich: Gut zu wissen, Besuch uns, Abschluss", () => {
     expect(sec).toContain('class="fr-ways" data-sys-actions=""');
     expect(sec).not.toMatch(/jetzt geöffnet/i);
   });
-  test("ohne Anschrift und Wege nur die Zeiten; ganz leer nur der Titel", () => {
+  test("ohne Anschrift und Wege nur die Zeiten; ganz leer kein Kapitel (mit Insel nur der Formular-Titel)", () => {
     const doc = withContact(fellfreundeDoc(), {
       phone: undefined,
       email: undefined,
@@ -410,12 +410,44 @@ describe("Freundlich: Gut zu wissen, Besuch uns, Abschluss", () => {
     const sec = sectionOf(render(doc), S.contact);
     expect(sec).toContain("fr-visit fr-visit--solo");
     expect(sec).not.toContain("fr-place");
-    const empty = sectionOf(
-      render(withContact(doc, { openingHours: undefined })),
+    const bare = withContact(doc, { openingHours: undefined });
+    // Ohne Formular: kein Kapitel, kein Anker, kein Knopf und kein
+    // Menüpunkt führt dorthin.
+    const noForm = { ...bare, features: { ...bare.features, contactForm: false } };
+    const html = render(noForm);
+    expect(sectionOf(html, S.contact)).toBe("");
+    expect(html).not.toContain(`#${S.contact}"`);
+    // Mit Formular bzw. Insel (slug): Kapitel bleibt als Ziel der Hydration.
+    const withIsland = sectionOf(
+      render(bare, false, "", undefined, "demo"),
       S.contact
     );
-    expect(empty).not.toContain("fr-visit");
-    expect(empty).toMatch(/<h2 class="fr-h2" id="kontakt-titel">/);
+    expect(withIsland).not.toContain("fr-visit");
+    expect(withIsland).toMatch(/<h2 class="fr-h2" id="kontakt-titel">/);
+    expect(withIsland).toContain('<h3 class="fr-form-title">Nachricht schreiben</h3>');
+  });
+  test("Abschluss-Band ohne Hauptweg und ohne Nummer: kein Band", () => {
+    // Gelato ohne jede Kontaktangabe: kein Weg (Route, Anruf, #kontakt).
+    const doc = withContact(gelatoDoc(), {
+      phone: undefined,
+      email: undefined,
+      street: undefined,
+      zip: undefined,
+      city: undefined,
+      openingHours: undefined,
+    });
+    const noWay = patchSection(doc, "cta", c => ({ ...c, ctaHref: undefined }));
+    const html = render(noWay);
+    expect(sectionOf(html, S.cta)).toBe("");
+    expect(html).not.toContain('class="fr-sec fr-sec--cta');
+    expect(sectionOf(html, S.contact)).toBe("");
+    expect(html).not.toContain('href="#kontakt"');
+    // Mit eigenem Ziel bleibt es.
+    const own = patchSection(doc, "cta", c => ({
+      ...c,
+      ctaHref: "https://bestellen.gelato-mio.example/",
+    }));
+    expect(sectionOf(render(own), S.cta)).toContain("fr-btn--p");
   });
   test("Kontakt-Insel: Titel nur, wenn das Formular rendert", () => {
     const withForm = render(fellfreundeDoc(), false, "", undefined, "demo");
@@ -566,4 +598,68 @@ describe("Freundlich: Inhalts-CSS", () => {
     expect(css).toMatch(/\.fr-q summary\{[^}]*min-height:calc\(var\(--sys-space-l\) \* 1\.1\)/);
     expect(css).toMatch(/\.fr-way\{[^}]*min-height:calc\(var\(--sys-space-l\) \* 1\.1\)/);
   });
+});
+
+describe("Freundlich: Reste aus dem F3-Review", () => {
+  test("Geschichte und Leitsatz ohne Text: kein Kapitel", () => {
+    const base = pusteblumeDoc();
+    const doc: Doc = {
+      ...base,
+      sections: [
+        ...base.sections,
+        { type: "story", headline: "Unsere Geschichte", body: "  " },
+        { type: "quote", text: " „ “ " },
+      ] as Sec[],
+    };
+    const html = render(doc);
+    expect(html).not.toContain('class="fr-sec fr-sec--story');
+    expect(html).not.toContain('class="fr-sec fr-sec--quote');
+    const filled: Doc = {
+      ...base,
+      sections: [
+        ...base.sections,
+        { type: "story", headline: "Unsere Geschichte", body: "Seit 2011 in Findorff." },
+        { type: "quote", text: "Jedes Kind wird gesehen." },
+      ] as Sec[],
+    };
+    const html2 = render(filled);
+    expect(html2).toContain('class="fr-sec fr-sec--story');
+    expect(html2).toContain('class="fr-sec fr-sec--quote');
+  });
+
+  test("Partner-Logo im neuen Tab sagt das auch Vorlesern", () => {
+    const base = pusteblumeDoc();
+    const doc: Doc = {
+      ...base,
+      sections: [
+        ...base.sections,
+        {
+          type: "partners",
+          headline: "Partner",
+          items: [
+            { name: "Bio-Hof", imageUrl: "https://x.example/logo.png", url: "https://biohof.example/" },
+            { name: "Ohne Link", imageUrl: "https://x.example/b.png" },
+          ],
+        },
+      ] as Sec[],
+    };
+    const sec = sectionOf(render(doc), S.partners);
+    expect(sec).toMatch(
+      /<a href="https:\/\/biohof\.example\/" target="_blank" rel="noopener noreferrer"><img[^>]*alt="Bio-Hof"[^>]*\/><span class="fr-sr"> \(öffnet in neuem Tab\)<\/span><\/a>/
+    );
+    expect(sec.match(/öffnet in neuem Tab/g)).toHaveLength(1);
+  });
+
+  test.each(FREUNDLICH.palettes.map(p => [p.id, p] as const))(
+    "%s: Angebots- und Zeilentext in Pastell-Tinte (≥ 7 auf allen Pastellen)",
+    (_id, p) => {
+      expect(FREUNDLICH_CSS).toContain(
+        '.pb-freundlich .fr-offer-text{font-family:var(--sys-font-text);font-size:var(--sys-small-size)'
+      );
+      expect(FREUNDLICH_CSS).toMatch(/\.fr-offer-text\{[^}]*color:var\(--fr-cink\)\}/);
+      expect(FREUNDLICH_CSS).toMatch(/\.fr-row-text\{[^}]*color:var\(--fr-cink\)\}/);
+      for (const t of p.tints!)
+        expect(contrastRatio(t.ink, t.bg), t.id).toBeGreaterThanOrEqual(7);
+    }
+  );
 });

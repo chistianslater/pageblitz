@@ -64,7 +64,7 @@ export const CONTENT_CSS = `
   background:var(--fr-cbg);color:var(--fr-cink);overflow-wrap:break-word}
 .pb-freundlich .fr-offer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sys-space-s);margin-bottom:var(--sys-space-xs)}
 .pb-freundlich .fr-offer-name{${step("h3")};hyphens:auto}
-.pb-freundlich .fr-offer-text{${step("small")};color:var(--fr-cmut)}
+.pb-freundlich .fr-offer-text{${step("small")};color:var(--fr-cink)}
 .pb-freundlich .fr-price{${step("data")};flex:none;padding:calc(var(--sys-space-xs) * .5) calc(var(--sys-space-s) * .75);border-radius:var(--sys-radius-pill);background:var(--sys-surface);color:var(--sys-ink);
   white-space:nowrap;font-variant-numeric:tabular-nums lining-nums}
 .pb-freundlich .fr-price--note{flex:0 1 auto;white-space:normal;text-align:right;max-width:60%}
@@ -78,7 +78,7 @@ export const CONTENT_CSS = `
   border-top:1px solid color-mix(in srgb,var(--fr-cedge) 55%,transparent)}
 .pb-freundlich .fr-row:first-child{border-top:0}
 .pb-freundlich .fr-row-name{font-weight:600;overflow-wrap:break-word}
-.pb-freundlich .fr-row-text{${step("small")};grid-column:1/-1;color:var(--fr-cmut)}
+.pb-freundlich .fr-row-text{${step("small")};grid-column:1/-1;color:var(--fr-cink)}
 .pb-freundlich .fr-row .fr-price--note{max-width:none}
 
 /* Ablauf: weiße Karten, Nummernkachel in Pastell */

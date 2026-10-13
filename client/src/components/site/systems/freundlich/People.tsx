@@ -234,6 +234,7 @@ export function FreundlichStory({
   section: SectionOf<"story">;
   place: Place;
 }) {
+  if (!section.body?.trim()) return null;
   return (
     <FreundlichChapter type="story" own={section.headline} place={place}>
       <Prose text={section.body} />
@@ -249,6 +250,7 @@ export function FreundlichQuote({
   section: SectionOf<"quote">;
   place: Place;
 }) {
+  if (!unquote(section.text ?? "").trim()) return null;
   return (
     <FreundlichChapter type="quote" place={place} hiddenTitle layout="center">
       <figure className="fr-motto">
@@ -292,6 +294,7 @@ export function FreundlichPartners({
               {item.url ? (
                 <a href={item.url} target="_blank" rel="noopener noreferrer">
                   {img}
+                  <span className="fr-sr"> (öffnet in neuem Tab)</span>
                 </a>
               ) : (
                 img
