@@ -16,6 +16,15 @@ import { fieldRhythm } from "./rhythm";
 import { PlakatLegal, PlakatPageHead, renderPlakatSection } from "./sections";
 import { PlakatMenuSlot, PlakatTeamSlot } from "./Offer";
 import { plakatPhotos } from "./offerData";
+import { photoTreatmentOf } from "../../../../../../shared/designSystems/photoTreatment";
+
+/**
+ * Originalfarben (designProfile.photoTreatment, Standard für Essen): hebt
+ * das Duoton auf, Formen bleiben. Nur dann ausgegeben — eingefärbte Seiten
+ * bleiben byte-gleich.
+ */
+export const PLAKAT_ORIGINAL_PHOTOS_CSS =
+  ".pb-plakat .pk-shape img{filter:none;mix-blend-mode:normal}";
 
 /** Rechtsseiten liegen außerhalb der Startseite: Anker dorthin umlenken. */
 const prefixAnchors = (items: NavItem[], prefix: string): NavItem[] =>
@@ -72,6 +81,9 @@ export const PLAKAT_MODULE: SiteModule = {
         : "ground";
     // Laufband nur auf der Startseite direkt nach dem Einstieg (tief).
     const ticker = Boolean(hero) && tickerItems(home).length > 0;
+    const original =
+      photoTreatmentOf(home.designProfile, blueprint, home.businessCategory) ===
+      "original";
     const fields = fieldRhythm(
       list.map(s => s.type),
       entry,
@@ -79,6 +91,12 @@ export const PLAKAT_MODULE: SiteModule = {
     );
     return (
       <>
+        {original && (
+          <style
+            data-pk-photos="original"
+            dangerouslySetInnerHTML={{ __html: PLAKAT_ORIGINAL_PHOTOS_CSS }}
+          />
+        )}
         <PlakatHead navItems={nav} anchorPrefix={anchorPrefix} />
         <main className="pk-main" id="inhalt">
           {legal && <PlakatLegal title={legal.title} html={legal.html} />}
