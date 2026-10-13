@@ -852,3 +852,33 @@ describe("Bildsätze der Freundlich-Zielbranchen (F1, 2026-10-13)", () => {
     expect(gruppe("", "Kita Pusteblume")).toBe("kita");
   });
 });
+
+describe("Review F1: Bildsätze kapern keine Nachbarn", () => {
+  const gruppe = (kategorie: string, name = "") => {
+    const satz = getIndustryImages(kategorie, name);
+    return Object.entries(INDUSTRY_IMAGES).find(([, v]) => v === satz)?.[0];
+  };
+  test.each([
+    ["adult day care center", "Muster", "kita"],
+    ["dog day care center", "Muster", "kita"],
+    ["Seniorenheim", "Tagespflege & Day Care", "kita"],
+    ["carpet store", "Muster", "tierbedarf"],
+    ["Teppichhandel", "Carpet Shop Orient", "tierbedarf"],
+    ["Bekleidungsgeschäft", "Kinderhaus Mode", "kita"],
+    ["Gaststätte", "Zur Krippe", "kita"],
+    ["Weihnachtsmarkt", "Krippe", "kita"],
+    ["Krippenbau", "Holz Meier", "kita"],
+    ["ice cream equipment supplier", "Muster", "eisdiele"],
+    ["fernlernzentrum", "Muster", "nachhilfe"],
+  ])("%s / %s → nicht %s", (kategorie, name, nicht) => {
+    expect(gruppe(kategorie, name)).not.toBe(nicht);
+  });
+  test("die echten Treffer bleiben", () => {
+    expect(gruppe("Krippe", "Sonnenschein")).toBe("kita");
+    expect(gruppe("day care center", "Muster")).toBe("kita");
+    expect(gruppe("pet store", "Muster")).toBe("tierbedarf");
+    expect(gruppe("pet shop", "Napf")).toBe("tierbedarf");
+    expect(gruppe("ice cream shop", "Muster")).toBe("eisdiele");
+    expect(gruppe("Lernzentrum", "Muster")).toBe("nachhilfe");
+  });
+});

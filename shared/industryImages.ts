@@ -35,6 +35,17 @@ export interface IndustryImageSet {
    */
   wholeWords?: string[];
   /**
+   * Ganze Wörter, die nur in der KATEGORIE zählen, nie im Namen (Review F1:
+   * „Krippe" ist Kita nur als Kategorie — nicht „Zur Krippe" (Gaststätte),
+   * nicht „Kinderhaus Mode").
+   */
+  categoryWords?: string[];
+  /**
+   * Sperrwörter (ganze Wörter) in der Kategorie: Dann zählt der Satz gar
+   * nicht („adult day care", „ice cream equipment supplier").
+   */
+  blockers?: string[];
+  /**
    * Abend- und Dunkelmotive (Nacht N1): Gastraum am Abend, angerichteter
    * Teller auf dunklem Grund, Weinregal/Bar, Salon mit warmem Licht,
    * Boutique-Zimmer mit Lampenlicht. Nur für Systeme mit dunklem Papier —
@@ -986,13 +997,13 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // Helle Gruppenräume, Spielzeug, Malen, Spielplatz — Kinder nur von hinten, unscharf oder in Händen, keine Gesichter in Nahaufnahme.
   kita: {
     wholeWords: ["kita", "kitas"],
+    categoryWords: ["krippe", "krippen", "kinderhaus", "day care", "daycare"],
+    blockers: ["adult", "adults", "senior", "seniors", "elderly", "dog", "dogs", "pet", "pets", "hunde", "tagespflege", "seniorenheim"],
     keywords: [
       "kindertagesstätte",
       "kindertagesstaette",
       "kindergarten",
       "kinderkrippe",
-      "krippe",
-      "kinderhaus",
       "kindertagespflege",
       "tagespflegestelle",
       "großtagespflege",
@@ -1001,8 +1012,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "tagesvater",
       "tageseltern",
       "kinderbetreuung",
-      "day care",
-      "daycare",
       "child care",
       "childcare",
       "preschool",
@@ -1027,13 +1036,13 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // ── Nachhilfe & Lernstudio ──
   // Hausaufgaben, Hände mit Stift, Lernplatz am Fenster, Lernraum — keine Kindergesichter.
   nachhilfe: {
+    wholeWords: ["lernzentrum"],
     keywords: [
       "nachhilfe",
       "nachhilfeinstitut",
       "nachhilfeschule",
       "lernstudio",
       "lernförderung",
-      "lernzentrum",
       "hausaufgabenbetreuung",
       "hausaufgabenhilfe",
       "schülerhilfe",
@@ -1122,6 +1131,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // ── Eisdiele, Eiscafé, Gelateria ──
   // Eistheke, Kugeln in der Waffel, Becher, Sommer — keine Markennamen, kein Ladenschild.
   eisdiele: {
+    blockers: ["supplier", "suppliers", "equipment", "wholesale", "wholesaler", "manufacturer", "distributor", "großhandel", "grosshandel", "hersteller", "lieferant", "zubehör"],
     keywords: [
       "eisdiele",
       "eiscafé",
@@ -1228,6 +1238,7 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
   // ── Tierbedarf & Zoohandlung ──
   // Hund im hellen Laden, Regale mit Futter und Zubehör, Spielzeug, Futterschalen, Hundebett — keine Ketten-Logos.
   tierbedarf: {
+    wholeWords: ["pet store", "pet shop", "pet supply", "pet supplies"],
     keywords: [
       "tierbedarf",
       "heimtierbedarf",
@@ -1244,10 +1255,6 @@ export const INDUSTRY_IMAGES: Record<string, IndustryImageSet> = {
       "tierhandel",
       "tierfutter",
       "tiernahrung",
-      "pet store",
-      "pet shop",
-      "pet supply",
-      "pet supplies",
     ],
     hero: [
       "https://images.unsplash.com/photo-1516453734593-8d198ae84bcf?w=1400&q=85&auto=format&fit=crop",

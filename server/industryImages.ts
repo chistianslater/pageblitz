@@ -100,11 +100,25 @@ function ohneSchwache(text: string): string {
   return out;
 }
 
-/** Treffer eines Satzes; schwache Stichworte nur, wenn `schwach`. */
-function treffer(text: string, satz: IndustryImageSet, schwach: boolean): number {
+/** Satz gesperrt, weil die Kategorie ein Sperrwort enthält („adult day care"). */
+function gesperrt(kategorie: string, satz: IndustryImageSet): boolean {
+  return ganzwortLaenge(kategorie, satz.blockers ?? []) > 0;
+}
+
+/**
+ * Treffer eines Satzes; schwache Stichworte nur, wenn `schwach`.
+ * `categoryWords` zählen nur in der Kategorie (`istKategorie`).
+ */
+function treffer(
+  text: string,
+  satz: IndustryImageSet,
+  schwach: boolean,
+  istKategorie = true
+): number {
   const stark = Math.max(
     trefferLaenge(text, satz.keywords),
-    ganzwortLaenge(text, satz.wholeWords ?? [])
+    ganzwortLaenge(text, satz.wholeWords ?? []),
+    istKategorie ? ganzwortLaenge(text, satz.categoryWords ?? []) : 0
   );
   return schwach
     ? Math.max(stark, trefferLaenge(text, satz.weakKeywords ?? []))
@@ -124,9 +138,9 @@ function besterSatz(
   let bestKategorie = 0;
   let bestName = 0;
   for (const [key, satz] of Object.entries(INDUSTRY_IMAGES)) {
-    if (key === "default") continue;
+    if (key === "default" || gesperrt(kategorie, satz)) continue;
     const k = treffer(kategorie, satz, schwach);
-    const n = treffer(name, satz, schwach);
+    const n = treffer(name, satz, schwach, false);
     if (k === 0 && n === 0) continue;
     if (k > bestKategorie || (k === bestKategorie && n > bestName)) {
       beste = satz;
@@ -154,7 +168,7 @@ function genauererSatz(
   let beste: IndustryImageSet | null = null;
   let laenge = 0;
   for (const satz of Object.values(INDUSTRY_IMAGES)) {
-    if (!satz.refines?.includes(key)) continue;
+    if (!satz.refines?.includes(key) || gesperrt(kategorie, satz)) continue;
     const k = treffer(kategorie, satz, schwach);
     if (satz.strictRefine && k < eigen) continue;
     if (k > laenge) {
