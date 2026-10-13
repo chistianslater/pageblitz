@@ -26,6 +26,18 @@ export const ALLOWED_KEY = "palette";
 export interface VersionMeta {
   trigger: string;
   label: string;
+  /** Zeitpunkt und ID des Eintrags (Reihenfolge im Verlauf). */
+  createdAt?: Date;
+  id?: number;
+}
+
+const LABEL_MIGRATION = "Designsystem umgestellt";
+
+/** a ist neuer als b (Zeit, bei Gleichstand ID). Ohne Zeitangabe: unbekannt → true. */
+function isNewer(a: VersionMeta, b: VersionMeta): boolean {
+  if (!a.createdAt || !b.createdAt) return true;
+  const diff = a.createdAt.getTime() - b.createdAt.getTime();
+  return diff !== 0 ? diff > 0 : (a.id ?? 0) > (b.id ?? 0);
 }
 
 /**
@@ -36,6 +48,10 @@ export interface VersionMeta {
  * mit. Restore/Undo schreiben „Wiederhergestellt: Design: …" bzw.
  * „Rückgängig: Design: …" (Auslöser `restore`) — ebenfalls Wahl des Kunden.
  *
+ * Nur Einträge NACH der jüngsten „Designsystem umgestellt" zählen (davor
+ * liegende Pack-Wahlen wie „Designrichtung: Patina" hat die Umstellung
+ * überschrieben); ohne solchen Eintrag zählt jede Wahl.
+ *
  * Nicht dazu zählen die Labels der eigenen Werkzeuge: „Designsystem
  * umgestellt" (systeme-umstellen.ts) und „Farbstimmung verteilt" /
  * „Stand vor Farbstimmung" (dieses Skript) — sonst fielen alle bereits
@@ -44,9 +60,19 @@ export interface VersionMeta {
 export function ownerChoiceReason(
   versions: readonly VersionMeta[]
 ): string | null {
+  // Wahlen aus der Pack-Zeit hat die Systemumstellung überschrieben: nur
+  // Einträge nach der jüngsten „Designsystem umgestellt" zählen.
+  let migration: VersionMeta | undefined;
+  for (const v of versions)
+    if (
+      v.label.trim() === LABEL_MIGRATION &&
+      (!migration || isNewer(v, migration))
+    )
+      migration = v;
   for (const v of versions) {
+    if (migration && !isNewer(v, migration)) continue;
     const label = v.label.trim();
-    if (label === "Designsystem umgestellt" || label === "Stand vor Designsystem")
+    if (label === LABEL_MIGRATION || label === "Stand vor Designsystem")
       continue;
     if (label === LABEL_NACHHER || label === LABEL_VORHER) continue;
     // „Design angepasst" (nur ausgeblendete Elemente) lässt die Palette frei.

@@ -95,6 +95,70 @@ describe("ownerChoiceReason", () => {
   });
 });
 
+describe("ownerChoiceReason nach der Systemumstellung", () => {
+  const at = (min: number) => new Date(Date.UTC(2026, 9, 12, 10, min));
+  const migration = {
+    id: 5,
+    trigger: "panel",
+    label: "Designsystem umgestellt",
+    createdAt: at(10),
+  };
+  test("Pack-Wahl vor der Umstellung zählt nicht", () => {
+    expect(
+      ownerChoiceReason([
+        migration,
+        { id: 3, trigger: "panel", label: "Designrichtung: Patina", createdAt: at(0) },
+        { id: 4, trigger: "restore", label: "Rückgängig: Designrichtung: Patina", createdAt: at(5) },
+      ])
+    ).toBeNull();
+  });
+  test("Wahl nach der Umstellung zählt", () => {
+    expect(
+      ownerChoiceReason([
+        migration,
+        { id: 9, trigger: "panel", label: "Design: Nacht · Petrol", createdAt: at(30) },
+      ])
+    ).toMatch(/Nacht/);
+    expect(
+      ownerChoiceReason([
+        { id: 9, trigger: "restore", label: "Wiederhergestellt: Design: Klar · Sand", createdAt: at(30) },
+        migration,
+      ])
+    ).not.toBeNull();
+  });
+  test("gleicher Zeitpunkt: höhere ID ist neuer", () => {
+    const same = at(10);
+    expect(
+      ownerChoiceReason([
+        { ...migration, createdAt: same },
+        { id: 4, trigger: "panel", label: "Designrichtung: Patina", createdAt: same },
+      ])
+    ).toBeNull();
+    expect(
+      ownerChoiceReason([
+        { ...migration, createdAt: same },
+        { id: 6, trigger: "panel", label: "Design: Nacht · Petrol", createdAt: same },
+      ])
+    ).not.toBeNull();
+  });
+  test("mehrere Umstellungen: die jüngste zählt", () => {
+    expect(
+      ownerChoiceReason([
+        { id: 8, trigger: "panel", label: "Designsystem umgestellt", createdAt: at(40) },
+        { id: 7, trigger: "panel", label: "Design: Nacht · Petrol", createdAt: at(20) },
+        migration,
+      ])
+    ).toBeNull();
+  });
+  test("ohne Umstellung zählt jede Wahl, auch Pack-Labels", () => {
+    expect(
+      ownerChoiceReason([
+        { id: 1, trigger: "panel", label: "Designrichtung: Patina", createdAt: at(0) },
+      ])
+    ).not.toBeNull();
+  });
+});
+
 describe("classify", () => {
   test("rev 2 und Nicht-v2 werden ausgelassen", () => {
     const rev2 = { ...salon("A", "Köln"), designRevision: 2 };

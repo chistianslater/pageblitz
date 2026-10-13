@@ -426,7 +426,9 @@ und alle Seiten, bei denen der Inhaber im Studio gewählt hat — Verlauf mit
 Auslöser `panel` und Label „Design: …“ bzw. „Designrichtung …“ (z. B.
 „Design: Nacht · Petrol“; „Design angepasst“ = nur ausgeblendete Elemente
 zählt nicht), „Wiederhergestellt: Design: …“/„Rückgängig: Design …“ oder jedes
-andere Label mit „Farbstimmung“. Eigene Labels („Designsystem umgestellt“,
+andere Label mit „Farbstimmung“. Es zählen nur Einträge, die neuer sind als der jüngste „Designsystem
+umgestellt“-Eintrag (Pack-Wahlen davor hat die Umstellung überschrieben);
+ohne diesen Eintrag zählt jede Wahl. Eigene Labels („Designsystem umgestellt“,
 „Farbstimmung verteilt“) zählen nicht, ein zweiter Lauf ist daher
 idempotent.
 
