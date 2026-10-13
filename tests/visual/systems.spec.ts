@@ -592,3 +592,155 @@ for (const [w, h] of [
     });
   }
 }
+
+// Bildvergleich Designsystem Freundlich (Plan 2026-10-13, Task F4): drei
+// Paletten × zwei Inhaltsstände × fünf Breiten, gleiche Regeln wie die
+// übrigen Systeme (kein waagrechter Überlauf; reduzierte Bewegung = keine
+// Startzustände). Das Dock ist `position: fixed`.
+const FREUNDLICH_PALETTES = ["wald", "himmel", "beere"] as const;
+
+for (const palette of FREUNDLICH_PALETTES) {
+  for (const fixture of FIXTURES) {
+    for (const width of WIDTHS) {
+      test(`freundlich ${palette} ${fixture} ${width}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=freundlich&palette=${palette}&fixture=${fixture}`
+        );
+        await page.evaluate(() => document.fonts.ready);
+        await settleImages(page);
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+        await expect(page).toHaveScreenshot(
+          `freundlich-${palette}-${fixture}-${width}.png`,
+          { fullPage: true, maxDiffPixelRatio: 0.003 }
+        );
+      });
+    }
+  }
+}
+
+test("Freundlich: Bricolage Grotesque und Instrument Sans werden geladen", async ({
+  page,
+}) => {
+  await page.goto("/dev/site-preview?system=freundlich&fixture=full");
+  await page.evaluate(() => document.fonts.ready);
+  const loaded = await page.evaluate(() =>
+    [...document.fonts].filter(f => f.status === "loaded").map(f => f.family)
+  );
+  const families = loaded.join(",");
+  expect(families).toMatch(/Bricolage Grotesque/);
+  expect(families).toMatch(/Instrument Sans/);
+  const fonts = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector(".fr-display")!)
+      .fontFamily,
+    body: getComputedStyle(document.body.querySelector(".pb-freundlich")!)
+      .fontFamily,
+  }));
+  expect(fonts.display).toMatch(/^"?Bricolage Grotesque/);
+  expect(fonts.body).toMatch(/^"?Instrument Sans/);
+});
+
+test("Freundlich: Tastatur — Fokusring 3 px sichtbar", async ({ page }) => {
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/dev/site-preview?system=freundlich&fixture=full");
+    await page.keyboard.press("Tab");
+    const ring = await page.evaluate(() => {
+      const s = getComputedStyle(document.activeElement!);
+      return { style: s.outlineStyle, width: s.outlineWidth };
+    });
+    expect(ring.style).not.toBe("none");
+    expect(ring.width).toBe("3px");
+  }
+});
+
+test("Freundlich: Bewegung — Foto federt, nie unsichtbar, Kapitel einmal, Leiste weicht den Einstiegsknöpfen", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/demo/system/freundlich/fellfreunde?live=1");
+  const root = page.locator('.pb-freundlich[data-pb-system="freundlich"]');
+  await expect(root).toHaveAttribute("data-fr-ready", "");
+  // Das Einstiegsfoto (LCP) ist zu keinem Zeitpunkt per Deckkraft versteckt.
+  const frame = await page.evaluate(() => {
+    const f = document.querySelector(".fr-heroimg .fr-frame")!;
+    return {
+      opacity: getComputedStyle(f).opacity,
+      img: getComputedStyle(f.querySelector("img")!).opacity,
+      animation: getComputedStyle(f).animationName,
+    };
+  });
+  expect(frame).toEqual({ opacity: "1", img: "1", animation: "fr-settle" });
+  // Einstiegsknöpfe sichtbar: Handy-Leiste ausgeblendet (dockAutoHide).
+  const dock = page.locator("[data-sys-dock]");
+  await expect(dock).toHaveAttribute("data-sys-dock-hidden", "");
+  await page.evaluate(() => window.scrollTo(0, 1800));
+  await expect(dock).not.toHaveAttribute("data-sys-dock-hidden", "");
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 400) {
+      window.scrollTo(0, y);
+      await new Promise(r => setTimeout(r, 40));
+    }
+  });
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll(".fr-sec")].filter(
+            s => !s.hasAttribute("data-fr-in")
+          ).length
+      )
+    )
+    .toBe(0);
+  // Reduzierte Bewegung: nichts wartet auf Script oder Scrollen.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  const hidden = await page.evaluate(
+    () =>
+      [...document.querySelectorAll(".fr-sec>.fr-wrap")].filter(
+        w => getComputedStyle(w).opacity !== "1"
+      ).length
+  );
+  expect(hidden).toBe(0);
+  expect(
+    await page.evaluate(
+      () =>
+        getComputedStyle(document.querySelector(".fr-heroimg .fr-frame")!)
+          .animationName
+    )
+  ).toBe("none");
+});
+
+// Die drei Beispielbetriebe am Handy: Hauptknopf im ersten Bildschirm, die
+// Leiste weicht ihm, nach dem Einstieg kommt sie.
+for (const [w, h] of [
+  [390, 844],
+  [360, 740],
+] as const) {
+  for (const id of ["pusteblume", "fellfreunde", "gelato"]) {
+    test(`Freundlich ${id} ${w}×${h}: Hauptknopf im ersten Bildschirm, Leiste weicht`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: w, height: h });
+      await page.goto(`/demo/system/freundlich/${id}?live=1`);
+      await page.evaluate(() => document.fonts.ready);
+      const primary = page.locator(".fr-entry .fr-btn--p");
+      const box = (await primary.boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(h);
+      await expect(page.locator("[data-sys-dock]")).toHaveAttribute(
+        "data-sys-dock-hidden",
+        ""
+      );
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+}

@@ -155,6 +155,7 @@ test.describe("A11y (axe): Unterseite je System", () => {
     "plakat",
     "klar",
     "nacht",
+    "freundlich",
   ] as const) {
     test(`${system} /leistungen-im-detail`, async ({ page }) => {
       await skipCookieBanner(page);
@@ -544,6 +545,73 @@ test.describe("A11y (axe): Designsystem Nacht", () => {
         await page.waitForLoadState("networkidle");
         await scrollThrough(page);
         await expectNoViolations(page, `nacht ${showcase} ${palette} (${width})`);
+      });
+    }
+  }
+});
+
+/**
+ * Designsystem Freundlich (Plan 2026-10-13, Task F4): drei Paletten im vollen
+ * Inhaltsstand plus die drei Beispielbetriebe (Kita Pusteblume Wald ohne
+ * Foto, Fellfreunde Himmel mit Foto, Gelato Mio Beere mit kleinem Foto),
+ * Desktop und Handy. Wie Klar/Nacht: 0 Befunde jeder Schwere — Pastelle
+ * verlangen geprüften Kontrast überall. Reduzierte Bewegung + Durchscrollen.
+ */
+test.describe("A11y (axe): Designsystem Freundlich", () => {
+  async function scrollThrough(page: Page): Promise<void> {
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += 600) {
+        window.scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 30));
+      }
+      window.scrollTo(0, 0);
+    });
+  }
+  async function expectNoViolations(page: Page, label: string): Promise<void> {
+    const results = await new AxeBuilder({ page }).analyze();
+    const found = results.violations.map(
+      v =>
+        `  - ${v.id} [${v.impact}] ${v.help}\n    nodes: ${v.nodes
+          .slice(0, 3)
+          .map(n => n.target.join(" "))
+          .join(" | ")}`
+    );
+    if (found.length)
+      throw new Error(`axe: ${found.length} Befund(e) auf "${label}":\n${found.join("\n")}`);
+  }
+  for (const palette of ["wald", "himmel", "beere"] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`freundlich ${palette} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        // Ausdrücklich ohne Bewegung: keine Startzustände (opacity 0) im axe-Lauf.
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/dev/site-preview?system=freundlich&palette=${palette}&fixture=full`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `freundlich ${palette} (${width})`);
+      });
+    }
+  }
+  for (const [showcase, palette] of [
+    ["pusteblume", "wald"],
+    ["fellfreunde", "himmel"],
+    ["gelato", "beere"],
+  ] as const) {
+    for (const width of [1440, 390] as const) {
+      test(`freundlich ${showcase} ${width}`, async ({ page }) => {
+        await skipCookieBanner(page);
+        // Ausdrücklich ohne Bewegung: keine Startzustände (opacity 0) im axe-Lauf.
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(
+          `/demo/system/freundlich/${showcase}?palette=${palette}&live=1`
+        );
+        await page.waitForLoadState("networkidle");
+        await scrollThrough(page);
+        await expectNoViolations(page, `freundlich ${showcase} ${palette} (${width})`);
       });
     }
   }
