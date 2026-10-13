@@ -410,6 +410,39 @@ Neu-Lesen verkleinert das Zeitfenster, ist aber keine Sperre.
 den Studio-Verlauf („Stand vor Designsystem“), sonst Backup aus Schritt 1
 zurückspielen. `systeme-zuruecksetzen.ts` gibt es nicht mehr.
 
+### Farbstimmungen verteilen (rev 3)
+
+`scripts/paletten-verteilen.ts` verteilt je **Ort und System** die Paletten
+des Systems reihum (nach Website-ID sortiert, deterministisch), damit Betriebe
+im selben Ort nicht gleich aussehen. Geändert wird **nur `palette`** (System,
+Texte, Fotos bleiben; der Top-Level-Diff wird geprüft). Ort = `city` der
+Kontakt-Sektion (normalisiert; ohne Ort: Gruppe „ohne Ort“).
+
+Ausgelassen (`SKIP` mit Grund): nicht rev 3, System nicht freigeschaltet,
+und alle Seiten, bei denen der Inhaber im Studio gewählt hat — Verlauf mit
+Auslöser `panel` und Label ab „Design“ („Design: Nacht · Petrol“, „Design
+angepasst“), „Wiederhergestellt: Design …“/„Rückgängig: Design …“ oder jedes
+andere Label mit „Farbstimmung“. Eigene Labels („Designsystem umgestellt“,
+„Farbstimmung verteilt“) zählen nicht, ein zweiter Lauf ist daher
+idempotent.
+
+```bash
+cd /root/pageblitz
+mysqldump -u<user> -p<pw> pageblitz generated_websites website_versions \
+  > /root/backups/vor-paletten-verteilen-$(date +%F).sql
+npx tsx -r dotenv/config scripts/paletten-verteilen.ts [--ids 600-700]            # Trockenlauf
+npx tsx -r dotenv/config scripts/paletten-verteilen.ts [--ids …] --schreiben
+pm2 restart pageblitz   # SSR-Cache
+```
+
+Je Seite: neu lesen (geändert → übersprungen) → Verlauf „Stand vor
+Farbstimmung“ → schreiben (`assertV2SafeWrite`) → Verlauf „Farbstimmung
+verteilt“. Unbekannte Argumente brechen vor dem DB-Zugriff ab; Exit-Code 1
+bei Fehlern. **Nur laufen lassen, wenn niemand im Studio bearbeitet.**
+
+**Rollback:** Einzelseite über den Studio-Verlauf („Stand vor Farbstimmung“
+wiederherstellen), sonst das Backup zurückspielen.
+
 ## 4. Umgebungsvariablen & Mock-Flags
 
 `PB_LLM_MOCK=1` (nur wenn zusätzlich `NODE_ENV !== "production"`): überspringt
