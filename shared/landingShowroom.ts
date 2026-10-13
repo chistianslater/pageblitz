@@ -7,7 +7,9 @@
  * je Beispiel das Hauptsystem — dieselben Ziele wie der 301 der alten
  * Pack-Demo, siehe `legacyDemoTarget` in server/ssr/routes.ts). `image` ist
  * noch das alte Showroom-Bild unter `client/public/landing/<image>.webp`;
- * neue Bilder aus den System-Beispielen kommen nach Freigabe [E4].
+ * neue Bilder aus den System-Beispielen kommen nach Freigabe [E4]. Das
+ * Raster-Bild zeigt noch ein Architekturbüro, Text und Link nennen das
+ * Ziel (Steuerberater) wahrheitsgemäß.
  */
 export interface ShowroomItem {
   label: string;
@@ -32,8 +34,8 @@ export const LANDING_SHOWROOM: readonly ShowroomItem[] = [
     href: "/demo/system/nacht/restaurant",
   },
   {
-    label: "Architektur & Planung",
-    name: "Studio Raster",
+    label: "Steuerberatung",
+    name: "Roth & Weber Steuerberater",
     image: "raster",
     href: "/demo/system/raster/steuerberater",
   },
