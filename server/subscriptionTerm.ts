@@ -539,8 +539,9 @@ export async function switchToYearly(
       ? base.price.product
       : base.price.product?.id;
   const taxRates = taxRateIds(env);
+  const subscriptionId = record.stripeSubscriptionId;
   await withTaxRateFallback(taxRates, rates =>
-    deps.stripe.subscriptions.update(record.stripeSubscriptionId, {
+    deps.stripe.subscriptions.update(subscriptionId, {
       items: [
         {
           id: base.id,
