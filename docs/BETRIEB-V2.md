@@ -252,7 +252,7 @@ Es gibt kein Pack-Layout mehr, auf das eine Seite zurückfallen könnte.
 - Der Rückweg auf `f65d848d` (letzter Stand mit Pack-System) oder jünger
   braucht **keine** Datenänderung: Der neue Code schreibt nur Dokumente, die
   `f65d848d` lesen kann (Schema unverändert, `stylePackId` bleibt, jeder
-  Schreibvorgang ist rev 3 + `system`). Alter Code rendert rev 3 wie rev 2.
+  Schreibvorgang ist rev 3 + `system`). Der alte Code liest rev 3 und rendert es als System-Seite.
 - Ein Commit **älter als `f65d848d`** (vor dem Hauptsystem-Umbau) kennt je
   nach Alter rev 3 nicht oder nicht alle Systeme. Dort muss vorher
   `scripts/systeme-zuruecksetzen.ts` aus einem Checkout des damals
@@ -297,8 +297,16 @@ Raster, `health` (Gesundheit) bekommt Klar, `gastro` mit Gastro-Art Restaurant (
 `courses` (Kurse) bekommen Plakat. Die **Farbstimmung** einer neu erzeugten Seite wählt `defaultPalette`
 (`shared/designSystems/apply.ts`) deterministisch je Betrieb: ein vorhandener
 Akzent (`colorOverrides.accent`) ergibt wie bisher die nächstliegende
-Palette, sonst `palettes[designSeed(Name|Kategorie) % 3]`; bei einer
-Neuerzeugung bleiben System, Profil, Stand und Akzent des vorigen Stands.
+Palette, sonst `palettes[designSeed(Name|Kategorie) % 3]`; die
+Palette folgt also dem Akzent.
+
+Zwei Wege, zwei Verhalten: Die **Neuerzeugung über den Generierungs-Job**
+(`runJob`, auch Studio „neu erzeugen“) wählt das System über
+`withPrimarySystem` neu, behält aber Profil (`designProfile`), Stand
+(`designStand`) und Akzent des vorigen Stands. Die **Admin-Regenerierung**
+(`withNewSiteDesign` in `server/routers.ts`, auch `keepLinks`) verwirft
+Akzent und Profil und setzt beides neu (neues Profil nach Fotolage, Palette
+nach der Betriebs-Regel ohne Akzent).
 Gedruckte Postkarten-
 Vorschauen sehen danach anders aus als auf der Karte (Postkarten-Seiten von
 Barbieren ändern sich bei Neuerzeugung auf Plakat); Postkarten-Seiten nur

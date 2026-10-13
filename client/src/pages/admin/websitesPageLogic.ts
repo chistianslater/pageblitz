@@ -5,20 +5,32 @@
  */
 import { getSystem } from "@shared/designSystems/registry";
 import { getPalette } from "@shared/designSystems/palette";
-import { systemDocOf } from "@/lib/systemDoc";
+import { DESIGN_SYSTEM_IDS } from "@shared/designSystems/types";
+import type { DesignSystemId } from "@shared/designSystems/types";
 
 const FALLBACK_DESIGN_NAME = "—";
 
 /**
  * Designrichtung einer Website: „System · Farbstimmung“ (z. B. „Raster ·
- * Papier“). Alte Dokumente laufen über `systemDocOf` und zeigen ihr
- * Hauptsystem; ohne gültiges v2-Dokument kommt der Fallback „—“.
+ * Papier“). Liest `system`/`palette` direkt aus dem Dokument (keine
+ * Schema-Prüfung je Zeile, die Liste kann hunderte Zeilen haben). Seiten
+ * ohne System (kein v2-Dokument) zeigen den Fallback „—“.
  */
 export function designNameFor(websiteData: unknown): string {
-  const doc = systemDocOf(websiteData);
-  const def = doc?.system ? getSystem(doc.system) : undefined;
-  if (!doc || !def) return FALLBACK_DESIGN_NAME;
-  return `${def.name} · ${getPalette(def, doc.palette).name}`;
+  if (!websiteData || typeof websiteData !== "object")
+    return FALLBACK_DESIGN_NAME;
+  const { system, palette } = websiteData as {
+    system?: unknown;
+    palette?: unknown;
+  };
+  if (
+    typeof system !== "string" ||
+    !(DESIGN_SYSTEM_IDS as readonly string[]).includes(system)
+  )
+    return FALLBACK_DESIGN_NAME;
+  const def = getSystem(system as DesignSystemId);
+  if (!def) return FALLBACK_DESIGN_NAME;
+  return `${def.name} · ${getPalette(def, typeof palette === "string" ? palette : undefined).name}`;
 }
 
 /**

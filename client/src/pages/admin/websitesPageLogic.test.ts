@@ -1,10 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { designNameFor, studioHrefFor } from "./websitesPageLogic";
 import { getFixture } from "@shared/siteContract/fixtures";
-import {
-  withDesignSystem,
-  withPrimarySystem,
-} from "@shared/designSystems/apply";
+import { withDesignSystem } from "@shared/designSystems/apply";
 import { getSystem } from "@shared/designSystems/registry";
 
 describe("designNameFor", () => {
@@ -31,13 +28,9 @@ describe("designNameFor", () => {
     );
   });
 
-  test("altes Dokument (ohne System) zeigt sein Hauptsystem, nie den Pack-Namen", () => {
-    const old = getFixture("zunft", "full");
-    const primary = withPrimarySystem(old);
-    const def = getSystem(primary.system!)!;
-    const name = designNameFor(old);
-    expect(name.startsWith(`${def.name} · `)).toBe(true);
-    expect(name).not.toContain("Zunft");
+  test("Dokument ohne System (alt) → Fallback, nie der Pack-Name", () => {
+    expect(designNameFor(getFixture("zunft", "full"))).toBe("—");
+    expect(designNameFor({ system: "gibtsnicht" })).toBe("—");
   });
 
   test("kein v2-Dokument → Fallback", () => {
