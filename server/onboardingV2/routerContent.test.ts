@@ -637,10 +637,10 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Patches während laufender Generi
   });
 });
 
-describe("onboardingV2.updateTheme: Collage-Bilder (2026-09-03)", () => {
+describe("onboardingV2.updateTheme: nur noch das Kompositionsprofil (Packs entfernen, Task 3)", () => {
   const PROFILE = {
     version: 1,
-    heroLayout: "collage",
+    heroLayout: "split",
     servicesLayout: "list",
     aboutLayout: "image-right",
     galleryLayout: "grid",
@@ -649,72 +649,60 @@ describe("onboardingV2.updateTheme: Collage-Bilder (2026-09-03)", () => {
     seed: 7,
   } as const;
 
-  const withGallery = () => ({
-    ...v2,
-    sections: [
-      ...v2.sections,
-      {
-        type: "gallery",
-        images: [
-          { url: "https://x/g1.jpg", alt: "" },
-          { url: "https://x/g2.jpg", alt: "" },
-        ],
-      },
-    ],
-  });
-
-  test("Bilder aus dem eigenen Material werden gespeichert", async () => {
+  const useDoc = (doc: object) =>
     mockedDb.getWebsiteByToken.mockResolvedValue({
       id: 42,
       slug: "preview-brandt",
       status: "preview",
       businessId: 7,
-      websiteData: withGallery(),
+      websiteData: doc,
       customerEmail: null,
     } as any);
+
+  test("„Bild ausblenden“ speichert hiddenElements, die Seite bleibt im System", async () => {
+    useDoc(v2);
     const state = await caller().onboardingV2.updateTheme({
       token: "tok",
-      designProfile: { ...PROFILE, heroCollageImages: ["https://x/g2.jpg"] },
+      designProfile: { ...PROFILE, hiddenElements: ["hero-media"] },
     });
-    expect(state.doc?.designProfile?.heroCollageImages).toEqual([
-      "https://x/g2.jpg",
-    ]);
+    expect(state.doc?.designProfile?.hiddenElements).toEqual(["hero-media"]);
+    expect(state.doc?.designRevision).toBe(3);
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
   });
 
-  test("fremde Adresse → BAD_REQUEST, nichts geschrieben", async () => {
-    mockedDb.getWebsiteByToken.mockResolvedValue({
-      id: 42,
-      slug: "preview-brandt",
-      status: "preview",
-      businessId: 7,
-      websiteData: withGallery(),
-      customerEmail: null,
-    } as any);
+  test.each([
+    ["accent", { accent: "#1D3FBF" }],
+    ["fontPairId", { fontPairId: "elegant" }],
+    ["colorWorldId", { colorWorldId: "abend" }],
+    ["colorWorldBase", { colorWorldBase: "#112233" }],
+  ])("Farb-/Schriftfeld %s → BAD_REQUEST, nichts geschrieben", async (_name, extra) => {
+    useDoc(v2);
     await expect(
       caller().onboardingV2.updateTheme({
         token: "tok",
-        designProfile: {
-          ...PROFILE,
-          heroCollageImages: ["https://fremd/klau.jpg"],
-        },
-      })
+        designProfile: PROFILE,
+        ...(extra as object),
+      } as any)
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("leere Auswahl ist erlaubt — bewusst keine Karten", async () => {
-    mockedDb.getWebsiteByToken.mockResolvedValue({
-      id: 42,
-      slug: "preview-brandt",
-      status: "preview",
-      businessId: 7,
-      websiteData: withGallery(),
-      customerEmail: null,
-    } as any);
-    const state = await caller().onboardingV2.updateTheme({
-      token: "tok",
-      designProfile: { ...PROFILE, heroCollageImages: [] },
+  test("Collage-Bilder kommen nie vom Client: gespeicherte bleiben, neue werden nicht gesetzt", async () => {
+    useDoc({
+      ...v2,
+      designProfile: { ...PROFILE, heroCollageImages: ["https://x/g1.jpg"] },
     });
-    expect(state.doc?.designProfile?.heroCollageImages).toEqual([]);
+    const kept = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      designProfile: { ...PROFILE, heroCollageImages: ["https://fremd/klau.jpg"] },
+    });
+    expect(kept.doc?.designProfile?.heroCollageImages).toEqual(["https://x/g1.jpg"]);
+
+    useDoc({ ...v2, designProfile: PROFILE });
+    const none = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      designProfile: { ...PROFILE, heroCollageImages: ["https://fremd/klau.jpg"] },
+    });
+    expect(none.doc?.designProfile?.heroCollageImages).toBeUndefined();
   });
 });

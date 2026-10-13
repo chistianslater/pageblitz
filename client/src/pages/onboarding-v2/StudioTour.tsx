@@ -50,7 +50,7 @@ function anchorRect(anchor: string | null): Rect | null {
 
 /**
  * Einmalige Tour beim ersten Studio-Besuch pro Vorschau (Test-Feedback
- * 2026-09-18). Vier Karten: Schritte links, Vorschau mit Layout-Varianten,
+ * 2026-09-18). Vier Karten: Schritte links, Werkzeuge in der Vorschau,
  * KI-Assistent, Kauf erst zum Schluss.
  *
  * Seit dem Betreiber-Feedback am selben Tag dunkelt ein Spotlight alles

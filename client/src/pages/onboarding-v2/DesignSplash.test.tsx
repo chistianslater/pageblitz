@@ -27,26 +27,17 @@ const base = {
   onConfirmed: () => {},
 };
 
-describe("DesignSplash — Designsystem (Task 16)", () => {
-  test("rev 3: Vorschau als System, Farbstimmungen statt Farb-/Schriftwahl", () => {
+describe("DesignSplash — nur Designsysteme (Packs entfernen, Task 3)", () => {
+  test("Vorschau im System, Farbstimmungen statt Farb-/Schriftwahl", () => {
     const html = renderWithTrpc(
-      <DesignSplash
-        {...base}
-        currentPackId="salon-noir"
-        currentSystem="journal"
-        currentPalette="salbei"
-      />
+      <DesignSplash {...base} currentSystem="journal" currentPalette="salbei" />
     );
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('aria-label="Farbstimmung Journal"');
-    expect(html).not.toContain("Schriftkombination");
-  });
-
-  test("rev 2: Pack-Schnellwahl wie bisher, keine Farbstimmungen", () => {
-    const html = renderWithTrpc(
-      <DesignSplash {...base} currentPackId="salon-noir" />
-    );
-    expect(html).toContain("Schriftkombination");
-    expect(html).not.toContain('role="radiogroup"');
+    expect(html).toContain("?system=journal&amp;palette=salbei&amp;v=4");
+    expect(html).not.toContain("pack=");
+    expect(html).not.toContain("Schrift");
+    expect(html).not.toContain("Eigene Farbe");
+    expect(html).toContain("Mit diesem Design weiter");
   });
 });

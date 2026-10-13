@@ -1,12 +1,4 @@
-import {
-  deriveArtDirectedProfile,
-  keepEntryComposition,
-  type AlternativeLook,
-} from "../../shared/stylePacks/artDirection";
-import { withoutDesignSystem } from "../../shared/designSystems/apply";
-import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { TRPCError } from "@trpc/server";
-import { WORLD_ROLES } from "../../shared/stylePacks/colorWorlds";
 import type {
   ImagesPatch,
   OfferPatch,
@@ -16,8 +8,6 @@ import type {
 } from "../../shared/onboardingV2/patches";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
-  PACK_IDS,
-  type PackId,
   type DesignProfile,
   type SectionOf,
   type SectionType,
@@ -26,7 +16,6 @@ import {
   type SiteFeatures,
   type WebsiteDataV2,
 } from "../../shared/siteContract/types";
-import { deriveDesignProfile } from "../../shared/siteContract/designProfile";
 import { collectInlineTextTargets } from "../../shared/onboardingV2/inlineText";
 import {
   ADDON_KEYS,
@@ -37,101 +26,17 @@ import {
   type SectionAddOnKey,
 } from "../../shared/pricing";
 
-export function parsePackId(value: string): PackId {
-  if ((PACK_IDS as readonly string[]).includes(value)) return value as PackId;
-  throw new TRPCError({
-    code: "BAD_REQUEST",
-    message: `Unbekannte Designrichtung: "${value}"`,
-  });
-}
-
-/** Pure: neues, schema-validiertes Dokument mit anderem Pack; Inhalte bleiben 1:1. */
-export function applyStylePack(
-  doc: WebsiteDataV2,
-  packId: PackId,
-  /** Look aus der Design-Auswahl (alternativeLooks): Fassung + Schrift. */
-  look?: AlternativeLook
-): WebsiteDataV2 {
-  // Pack-Wahl verlässt ein Designsystem (rev 3 → rev 2).
-  doc = doc.designRevision === 3 ? withoutDesignSystem(doc) : doc;
-  const designProfile = keepEntryComposition(
-    doc.designProfile,
-    (doc.designRevision !== 1 ? deriveArtDirectedProfile : deriveDesignProfile)(
-      {
-        stylePackId: packId,
-        businessName: doc.businessName,
-        businessCategory: doc.businessCategory,
-        sections: doc.sections,
-      }
-    )
-  );
-  // Ein Wechsel bringt die Farbwelt und Schrift mit, die das neue Pack bei
-  // einer Neuerstellung bekäme (inkl. Imbiss-Stimmung für Gusto). Vorher
-  // blieben die Overrides des alten Packs stehen — Grau aus Klarwerk auf
-  // Zunft, Gold-los auf Gusto. Dasselbe Pack erneut wählen behält eigene
-  // Anpassungen.
-  const theme =
-    packId === doc.stylePackId
-      ? {}
-      : pickArtTheme(packId, doc.businessName, doc.businessCategory);
-  const entry =
-    designProfile.composition === "stage" ||
-    designProfile.composition === "colorfield";
-  return WebsiteDataV2Schema.parse({
-    ...doc,
-    ...theme,
-    ...(look ? { fontPairId: look.fontPairId } : {}),
-    designRevision: doc.designRevision ?? 2,
-    stylePackId: packId,
-    designProfile:
-      look && entry
-        ? { ...designProfile, entryVariant: look.entryVariant }
-        : designProfile,
-  });
-}
-
 /**
- * Pure: Studio-Theme-Editor (2026-08-24) — Akzent-Override und/oder
- * kuratierte Schriftpaarung. `null` entfernt die jeweilige Wahl (zurück
- * zur Pack-Standardfarbe/-schrift), `undefined` lässt sie unangetastet.
- * Die fontPairId ist router-seitig bereits gegen FONT_PAIRS validiert.
+ * Pure: Kompositionsprofil setzen — seit den Designsystemen nur noch für
+ * „Bild ausblenden“ (`hiddenElements`), Farbe und Schrift bringt die
+ * Farbstimmung des Systems. Gespeicherte Altfelder (`colorOverrides`,
+ * `fontPairId`) bleiben unangetastet, werden aber nicht mehr gesetzt.
  */
 export function applyTheme(
   doc: WebsiteDataV2,
-  patch: {
-    accent?: string | null;
-    fontPairId?: string | null;
-    designProfile?: DesignProfile;
-    /**
-     * Farbwelt (P10): vollständiges Grundrollen-Set aus getColorWorld —
-     * `null` setzt auf Original zurück (Grundrollen löschen, accent bleibt).
-     */
-    worldOverrides?: Record<string, string> | null;
-  }
+  patch: { designProfile?: DesignProfile }
 ): WebsiteDataV2 {
   const next: WebsiteDataV2 = { ...doc };
-  if (patch.worldOverrides !== undefined) {
-    const overrides = { ...(doc.colorOverrides ?? {}) };
-    for (const role of WORLD_ROLES) delete overrides[role];
-    if (patch.worldOverrides) {
-      for (const [role, hex] of Object.entries(patch.worldOverrides)) {
-        overrides[role] = hex;
-      }
-    }
-    if (Object.keys(overrides).length > 0) next.colorOverrides = overrides;
-    else delete next.colorOverrides;
-  }
-  if (patch.accent !== undefined) {
-    const overrides = { ...(next.colorOverrides ?? {}) };
-    if (patch.accent === null) delete overrides.accent;
-    else overrides.accent = patch.accent;
-    if (Object.keys(overrides).length > 0) next.colorOverrides = overrides;
-    else delete next.colorOverrides;
-  }
-  if (patch.fontPairId !== undefined) {
-    if (patch.fontPairId === null) delete next.fontPairId;
-    else next.fontPairId = patch.fontPairId;
-  }
   if (patch.designProfile !== undefined) {
     next.designProfile = patch.designProfile;
   }
@@ -139,9 +44,8 @@ export function applyTheme(
 }
 
 /**
- * Firmenlogo (2026-08-31): alle 20 Packs rendern `doc.logo` seit jeher
- * (Bild-Marke statt Textmarke in Nav/Footer) — dies ist der erste
- * Schreibpfad dafür. `null` entfernt das Logo (zurück zur Textmarke).
+ * Firmenlogo (2026-08-31): die Systeme rendern `doc.logo` als Bild-Marke
+ * statt Textmarke in Nav/Footer — dies ist der Schreibpfad dafür. `null` entfernt das Logo (zurück zur Textmarke).
  */
 export function applyLogo(
   doc: WebsiteDataV2,

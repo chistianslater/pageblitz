@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../siteContract/types";
 import {
   AiEditResponseSchema,
+  AiThemePatchSchema,
   AiPageEditResponseSchema,
   diffDocuments,
   diffPages,
@@ -43,7 +44,7 @@ describe("AiEditResponseSchema", () => {
     expect(
       AiEditResponseSchema.safeParse({
         kind: "style",
-        packId: "salon-noir",
+        system: "raster",
         reason: "Passt zur Zielgruppe.",
       }).success
     ).toBe(true);
@@ -58,14 +59,35 @@ describe("AiEditResponseSchema", () => {
     );
   });
 
-  test("style mit unbekannter packId wird abgelehnt", () => {
+  test("style nennt ein Designsystem — Pack-IDs und Unbekanntes werden abgelehnt", () => {
+    for (const bad of [
+      { kind: "style", system: "nicht-registriert", reason: "x" },
+      { kind: "style", packId: "salon-noir", reason: "x" },
+    ]) {
+      expect(AiEditResponseSchema.safeParse(bad).success).toBe(false);
+    }
+  });
+
+  test("theme kennt nur noch Ein-/Ausblenden und Reihenfolge — Farbe, Schrift, Layout nicht", () => {
     expect(
-      AiEditResponseSchema.safeParse({
-        kind: "style",
-        packId: "nicht-registriert",
-        reason: "x",
+      AiThemePatchSchema.safeParse({
+        hiddenSections: ["services"],
+        sectionOrder: ["hero", "contact"],
+        hiddenElements: ["hero-media"],
       }).success
-    ).toBe(false);
+    ).toBe(true);
+    for (const look of [
+      { accent: "#123456" },
+      { fontPairId: "elegant" },
+      { colorWorldId: "abend" },
+      { colorWorldBase: "#112233" },
+      { heroLayout: "split" },
+      { density: "compact" },
+      { decorations: "off" },
+      { hiddenDecorations: ["dots"] },
+    ]) {
+      expect(AiThemePatchSchema.safeParse(look).success, JSON.stringify(look)).toBe(false);
+    }
   });
 });
 

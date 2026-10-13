@@ -1,24 +1,20 @@
-import { deriveArtDirectedProfile } from "../../shared/stylePacks/artDirection";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import { getBusinessById } from "../db";
-import { getConstitution, getFontPair } from "../../shared/stylePacks";
 import {
-  buildCustomWorldOverrides,
-  getColorWorld,
-  getColorWorlds,
-} from "../../shared/stylePacks/colorWorlds";
-import {
-  deriveDesignProfile,
+  DEFAULT_DESIGN_PROFILE,
   type DesignProfile,
 } from "../../shared/siteContract/designProfile";
-import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { getSystem, type DesignSystemId } from "../../shared/designSystems";
 import {
   AiChatHistorySchema,
   SECTION_LABELS,
+  SYSTEM_LOOK_MESSAGE,
   type AiThemePatch,
 } from "../../shared/onboardingV2/aiEdit";
+import { styleSuggestionSystems } from "./aiEditPrompt";
 import { applyTheme } from "./applyPatch";
 import {
   assertAiEditQuota,
@@ -47,58 +43,25 @@ const PROPOSAL_EXPIRED_MESSAGE =
  * `persistDoc` geschrieben.
  */
 
-/** Hinweis im KI-Chat, wenn ein Look-Wunsch auf einer Designsystem-Seite (rev 3) nicht greift. */
-export const SYSTEM_LOOK_MESSAGE =
-  "Bei diesem Design stellst du den Look über die Farbstimmung ein (Studio → Stil). Farben, Schriften und Abstände kann ich hier nicht einzeln ändern.";
+export { SYSTEM_LOOK_MESSAGE };
+
+const ELEMENT_LABELS: Record<string, string> = {
+  "hero-media": "Hero-Bild",
+  "about-media": "Über-uns-Bild",
+};
 
 /**
- * Patch-Teile, die auf Designsystem-Seiten (rev 3) wirken: Ein-/Ausblenden
- * und Reihenfolge. Farbe, Schrift, Layout und Deko bringt das System selbst
- * mit (Farbstimmung im Stil-Panel) — sie würden still ignoriert.
- */
-const SYSTEM_THEME_KEYS = [
-  "hiddenSections",
-  "sectionOrder",
-  "hiddenElements",
-] as const satisfies readonly (keyof AiThemePatch)[];
-
-function forDesignRevision(
-  doc: WebsiteDataV2,
-  theme: AiThemePatch
-): { theme: AiThemePatch; skippedLook: boolean } {
-  if (doc.designRevision !== 3) return { theme, skippedLook: false };
-  const kept: AiThemePatch = {};
-  for (const key of SYSTEM_THEME_KEYS) {
-    if (theme[key] !== undefined) {
-      (kept as Record<string, unknown>)[key] = theme[key];
-    }
-  }
-  const skippedLook = (Object.keys(theme) as (keyof AiThemePatch)[]).some(
-    key =>
-      theme[key] !== undefined &&
-      !(SYSTEM_THEME_KEYS as readonly string[]).includes(key)
-  );
-  return { theme: kept, skippedLook };
-}
-
-/**
- * Wendet einen Theme-Patch des KI-Assistenten über dieselben Mechaniken an
- * wie der Theme-Editor (applyTheme) und liefert eine deutsche
- * Änderungsliste für die Chat-Karte. Unbekannte Farbwelt/Schriftpaar-IDs
- * werden übersprungen statt den ganzen Patch zu verwerfen.
+ * Wendet einen Ein-/Ausblende-Patch des KI-Assistenten an und liefert eine
+ * deutsche Änderungsliste für die Chat-Karte. Beide Sektionslisten werden
+ * auf tatsächlich vorhandene Typen gefiltert und dedupliziert — die KI kann
+ * nichts verstecken/ordnen, was es nicht gibt. Farbe, Schrift und Layout
+ * kennt der Patch nicht (Farbstimmung des Systems).
  */
 export function applyAiTheme(
   doc: WebsiteDataV2,
-  patch: AiThemePatch
-): { next: WebsiteDataV2; summary: string[]; skippedLook: boolean } {
-  const { theme, skippedLook } = forDesignRevision(doc, patch);
+  theme: AiThemePatch
+): { next: WebsiteDataV2; summary: string[] } {
   const summary: string[] = [];
-  const packId = doc.stylePackId as PackId;
-
-  // Sichtbarkeit + Reihenfolge (2026-08-30): VOR applyTheme aufs Dokument,
-  // damit dessen abschließendes Zod-Parse alles gemeinsam validiert. Beide
-  // Listen werden auf tatsächlich vorhandene Sektionstypen gefiltert und
-  // dedupliziert — die KI kann nichts verstecken/ordnen, was es nicht gibt.
   let base = doc;
   // Set<string>: sectionOrder erlaubt schema-seitig auch "pageHeader"
   // (SECTION_TYPES) — der Filter wirft es hier ohnehin raus.
@@ -120,46 +83,6 @@ export function applyAiTheme(
     if (hidden.length > 0) base.hiddenSections = hidden;
     else delete base.hiddenSections;
   }
-  if (theme.hiddenElements !== undefined) {
-    // Einzeln ausgeblendete Elemente („Bild weg, Text breiter") leben im
-    // designProfile — hier nur die Summary; der Patch läuft unten über die
-    // wantsProfileChange-Mechanik mit.
-    const beforeEl = new Set(doc.designProfile?.hiddenElements ?? []);
-    const afterEl = new Set(theme.hiddenElements);
-    const elLabels: Record<string, string> = {
-      "hero-media": "Hero-Bild",
-      "about-media": "Über-uns-Bild",
-    };
-    for (const el of afterEl) {
-      if (!beforeEl.has(el))
-        summary.push(
-          `${elLabels[el] ?? el} ausgeblendet — Text nutzt die volle Breite`
-        );
-    }
-    for (const el of beforeEl) {
-      if (!afterEl.has(el))
-        summary.push(`${elLabels[el] ?? el} wieder eingeblendet`);
-    }
-  }
-  if (theme.hiddenDecorations !== undefined) {
-    // Deko granular (Backlog 13d): gleiche Mechanik wie hiddenElements.
-    const beforeDeco = new Set(doc.designProfile?.hiddenDecorations ?? []);
-    const afterDeco = new Set(theme.hiddenDecorations);
-    const decoLabels: Record<string, string> = {
-      blobs: "Farbflächen",
-      dots: "Punktraster",
-      sprigs: "Zweig-Illustrationen",
-      ornaments: "Ornamente",
-    };
-    for (const grp of afterDeco) {
-      if (!beforeDeco.has(grp))
-        summary.push(`${decoLabels[grp] ?? grp} ausgeblendet`);
-    }
-    for (const grp of beforeDeco) {
-      if (!afterDeco.has(grp))
-        summary.push(`${decoLabels[grp] ?? grp} wieder eingeblendet`);
-    }
-  }
   if (theme.sectionOrder !== undefined) {
     const order = Array.from(new Set(theme.sectionOrder)).filter(t =>
       presentTypes.has(t)
@@ -175,111 +98,51 @@ export function applyAiTheme(
       summary.push("Reihenfolge auf Standard zurückgesetzt");
     }
   }
-
-  let worldOverrides: Record<string, string> | null | undefined;
-  if (theme.colorWorldBase !== undefined) {
-    worldOverrides = buildCustomWorldOverrides(packId, theme.colorWorldBase);
-    summary.push(`Grundfarbe auf ${theme.colorWorldBase} gestellt`);
-  } else if (theme.colorWorldId !== undefined) {
-    if (theme.colorWorldId === null || theme.colorWorldId === "original") {
-      worldOverrides = null;
-      summary.push("Farbwelt auf Original zurückgesetzt");
-    } else {
-      const world = getColorWorld(packId, theme.colorWorldId);
-      if (world) {
-        worldOverrides = world.overrides;
-        summary.push(`Farbwelt „${world.name}“ aktiviert`);
-      }
-    }
-  }
-
-  let fontPairId: string | null | undefined;
-  if (theme.fontPairId !== undefined) {
-    if (theme.fontPairId === null) {
-      fontPairId = null;
-      summary.push("Schriften auf die Richtungs-Standards zurückgesetzt");
-    } else {
-      const pair = getFontPair(theme.fontPairId);
-      if (pair) {
-        fontPairId = pair.id;
-        summary.push(`Schriftpaar „${pair.label}“ gewählt`);
-      }
-    }
-  }
-
-  if (theme.accent !== undefined) {
-    summary.push(
-      theme.accent === null
-        ? "Akzentfarbe auf die Richtungsfarbe zurückgesetzt"
-        : `Akzentfarbe auf ${theme.accent} gestellt`
-    );
-  }
-
-  const layoutKeys = [
-    "heroLayout",
-    "servicesLayout",
-    "aboutLayout",
-    "galleryLayout",
-    "testimonialsLayout",
-    "contactLayout",
-    "density",
-    "imageTreatment",
-    "decorations",
-    "hiddenElements",
-    "hiddenDecorations",
-  ] as const;
-  const layoutLabels: Record<(typeof layoutKeys)[number], string> = {
-    heroLayout: "Hero-Layout",
-    servicesLayout: "Leistungen-Layout",
-    aboutLayout: "Über-uns-Layout",
-    galleryLayout: "Galerie-Layout",
-    testimonialsLayout: "Bewertungen-Layout",
-    contactLayout: "Kontakt-Layout",
-    density: "Abstände",
-    imageTreatment: "Bildwirkung",
-    decorations: "Schmuck-Illustrationen",
-    // Summary läuft separat (Einzelelemente mit deutschen Namen).
-    hiddenElements: "Ausgeblendete Elemente",
-    hiddenDecorations: "Ausgeblendete Deko-Gruppen",
-  };
-  const wantsProfileChange = layoutKeys.some(key => theme[key] !== undefined);
   let designProfile: DesignProfile | undefined;
-  if (wantsProfileChange) {
-    const base =
-      doc.designProfile ??
-      (doc.designRevision !== 1
-        ? deriveArtDirectedProfile
-        : deriveDesignProfile)({
-        stylePackId: packId,
-        businessName: doc.businessName,
-        businessCategory: doc.businessCategory,
-        sections: doc.sections,
-      });
-    const merged: DesignProfile = { ...base };
-    for (const key of layoutKeys) {
-      const value = theme[key];
-      if (value !== undefined) {
-        (merged as unknown as Record<string, unknown>)[key] = value;
-        if (key === "hiddenElements" || key === "hiddenDecorations") continue; // Summary lief oben separat.
+  if (theme.hiddenElements !== undefined) {
+    // Einzeln ausgeblendete Elemente („Bild weg, Text breiter") leben im
+    // designProfile — nicht-destruktiv, die Bilder bleiben gespeichert.
+    const beforeEl = new Set(doc.designProfile?.hiddenElements ?? []);
+    const afterEl = Array.from(new Set(theme.hiddenElements));
+    for (const el of afterEl) {
+      if (!beforeEl.has(el))
         summary.push(
-          key === "decorations"
-            ? value === "off"
-              ? "Schmuck-Illustrationen ausgeblendet"
-              : "Schmuck-Illustrationen wieder eingeblendet"
-            : `${layoutLabels[key]}: ${value}`
+          `${ELEMENT_LABELS[el] ?? el} ausgeblendet — Text nutzt die volle Breite`
         );
-      }
     }
-    designProfile = merged;
+    for (const el of beforeEl) {
+      if (!afterEl.includes(el))
+        summary.push(`${ELEMENT_LABELS[el] ?? el} wieder eingeblendet`);
+    }
+    designProfile = { ...(doc.designProfile ?? DEFAULT_DESIGN_PROFILE) };
+    if (afterEl.length > 0) designProfile.hiddenElements = afterEl;
+    else delete designProfile.hiddenElements;
   }
+  return { next: applyTheme(base, { designProfile }), summary };
+}
 
-  const next = applyTheme(base, {
-    accent: theme.accent,
-    fontPairId,
-    designProfile,
-    worldOverrides,
-  });
-  return { next, summary, skippedLook };
+/**
+ * Stil-Vorschlag der KI (E5): nur ein freigeschaltetes System aus dem
+ * Branchen-Tripel, nie das aktuelle — sonst eine ehrliche Ablehnung.
+ */
+function styleOutcome(
+  doc: WebsiteDataV2,
+  category: string,
+  suggestion: { system: string; reason: string }
+):
+  | { kind: "style"; system: DesignSystemId; name: string; reason: string }
+  | { kind: "reject"; reason: string } {
+  const allowed = styleSuggestionSystems(doc, category);
+  const system = allowed.find(id => id === suggestion.system);
+  const def = system ? getSystem(system) : undefined;
+  if (!system || !def) {
+    return {
+      kind: "reject",
+      reason:
+        "Dafür habe ich gerade kein passenderes Design — im Stil-Panel kannst du alle Designs und Farbstimmungen ansehen.",
+    };
+  }
+  return { kind: "style", system, name: def.name, reason: suggestion.reason };
 }
 
 export const aiProcedures = {
@@ -330,17 +193,13 @@ export const aiProcedures = {
         };
       }
       if (result.kind === "theme") {
-        // Design-Patches werden SOFORT angewandt: jede Stellschraube ist im
-        // Stil-Panel mit einem Klick revidierbar — ein Bestätigen-Zwang
-        // würde den „KI passt es an“-Fluss nur bremsen.
-        const { next, summary, skippedLook } = applyAiTheme(
-          doc,
-          result.theme
-        );
+        // Ein-/Ausblenden wird SOFORT angewandt — jederzeit revidierbar,
+        // ein Bestätigen-Zwang würde den „KI passt es an“-Fluss nur bremsen.
+        const { next, summary } = applyAiTheme(doc, result.theme);
         if (summary.length === 0) {
           return {
             kind: "reject" as const,
-            reason: skippedLook
+            reason: result.skippedLook
               ? SYSTEM_LOOK_MESSAGE
               : "Diesen Design-Wunsch konnte ich keiner Einstellung zuordnen — probiere es im Stil-Panel.",
           };
@@ -351,19 +210,14 @@ export const aiProcedures = {
         });
         return {
           kind: "theme" as const,
-          // Die KI-Begründung nennt ggf. auch die übersprungene Farbe —
-          // auf rev 3 steht stattdessen der Hinweis zur Farbstimmung.
-          reason: skippedLook ? SYSTEM_LOOK_MESSAGE : result.reason,
+          // Die KI-Begründung nennt ggf. auch die verworfene Farbe — dann
+          // steht stattdessen der Hinweis zur Farbstimmung.
+          reason: result.skippedLook ? SYSTEM_LOOK_MESSAGE : result.reason,
           summary,
         };
       }
       if (result.kind === "style") {
-        return {
-          kind: "style" as const,
-          packId: result.packId,
-          name: getConstitution(result.packId).name,
-          reason: result.reason,
-        };
+        return styleOutcome(doc, category, result);
       }
       if (result.kind === "question") {
         return { kind: "question" as const, question: result.question };

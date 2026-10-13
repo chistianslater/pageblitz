@@ -5,8 +5,8 @@ import {
   addonContentDone,
 } from "@shared/onboardingV2/addonEditors";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
-import type { PackId } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
+import type { DesignSystemId } from "@shared/designSystems/types";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
 import { BOOKABLE_ADDON_KEYS, type AddOnKey } from "@shared/pricing";
 import { useStudioState } from "./useStudioState";
@@ -103,7 +103,7 @@ export default function StudioPage({ token }: { token: string }) {
     tagStudioSession({
       quelle: via === "karte" ? "postkarte" : "direkt",
       status: studio.state.status,
-      design: studio.state.stylePackId ?? "offen",
+      design: studio.state.doc?.system ?? "offen",
     });
   }, [studio.state, via]);
   const initialLocation = resolveStudioLocation(window.location.search);
@@ -248,7 +248,9 @@ export default function StudioPage({ token }: { token: string }) {
   // Sprung zu #pb-checkout-email lief auf Screens ohne Checkout-Leiste ins
   // Leere — jetzt speichert das Modal selbst.
   const guardSaveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
-  const applySectionLayout = useCallback(
+  // „Bild ausblenden“ in der Vorschau: das System rendert das Ausblenden
+  // selbst (SSR) — nach dem Speichern lädt die Vorschau deshalb neu.
+  const applyDesignProfile = useCallback(
     (profile: DesignProfile) => {
       trackStudioEvent("vorschau_layout_gewechselt");
       updateTheme.mutate(
@@ -256,29 +258,26 @@ export default function StudioPage({ token }: { token: string }) {
         {
           onSuccess: () => {
             studio.refetch();
-            // Collage-Karten rendert nur das SSR (heroCollage.tsx) — beim
-            // Einschalten braucht die Vorschau deshalb einen Reload. Das
-            // Wegschalten versteckt die Karten sofort per CSS-Basisregel.
-            if (profile.heroLayout === "collage") studio.bumpPreview();
+            studio.bumpPreview();
           },
         }
       );
     },
     [token, updateTheme, studio]
   );
-  // Vom KI-Chat vorgeschlagenes Pack ("Ansehen" auf einer Stil-Karte) — nur
-  // für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
-  const [preselectPackId, setPreselectPackId] = useState<PackId | undefined>(
-    undefined
-  );
+  // Vom KI-Chat vorgeschlagenes System ("Ansehen" auf einer Stil-Karte) —
+  // nur für die nächste Öffnung des Stil-Panels relevant, danach zurückgesetzt.
+  const [preselectSystem, setPreselectSystem] = useState<
+    DesignSystemId | undefined
+  >(undefined);
 
-  const openStylePanelWithSuggestion = (packId: PackId) => {
-    setPreselectPackId(packId);
+  const openStylePanelWithSuggestion = (system: DesignSystemId) => {
+    setPreselectSystem(system);
     setActiveId("style");
   };
   const closeStylePanel = () => {
     setActiveId(null);
-    setPreselectPackId(undefined);
+    setPreselectSystem(undefined);
   };
 
   // ── Geführter Modus (Wizard) ─────────────────────────────────────────
@@ -309,7 +308,7 @@ export default function StudioPage({ token }: { token: string }) {
   const exitWizard = () => {
     setWizardActive(false);
     sessionStorage.setItem(wizardDismissedKey, "1");
-    setPreselectPackId(undefined);
+    setPreselectSystem(undefined);
     setActiveId(null);
   };
 
@@ -321,7 +320,7 @@ export default function StudioPage({ token }: { token: string }) {
       studio.state.checklist,
       (activeId ?? undefined) as WizardPanelStep | undefined
     );
-    setPreselectPackId(undefined);
+    setPreselectSystem(undefined);
     setActiveId(next === "publish" ? null : next);
   };
 
@@ -429,7 +428,8 @@ export default function StudioPage({ token }: { token: string }) {
         <GenerationScreen
           businessName={state.businessName}
           token={token}
-          packId={state.stylePackId}
+          system={state.doc?.system ?? null}
+          palette={state.doc?.palette ?? null}
           hasDoc={!!state.doc}
           progress={job?.progress ?? 5}
           status={status}
@@ -454,14 +454,8 @@ export default function StudioPage({ token }: { token: string }) {
         <DesignSplash
           token={token}
           businessName={state.businessName}
-          currentPackId={state.doc.stylePackId}
-          currentSystem={
-            state.doc.designRevision === 3 ? (state.doc.system ?? null) : null
-          }
+          currentSystem={state.doc.system ?? null}
           currentPalette={state.doc.palette ?? null}
-          accent={state.doc.colorOverrides?.accent ?? null}
-          colorOverrides={state.doc.colorOverrides}
-          fontPairId={state.doc.fontPairId ?? null}
           previewVersion={studio.previewVersion}
           onApplied={() => {
             studio.refetch();
@@ -573,7 +567,7 @@ export default function StudioPage({ token }: { token: string }) {
     <div className="pb-studio">
       {leaveGuard}
       {/* Einmalige Einführung (Test-Feedback 2026-09-18): Schritte links,
-          Layout-Varianten in der Vorschau, Assistent, Kauf zum Schluss. */}
+          Werkzeuge in der Vorschau, Assistent, Kauf zum Schluss. */}
       <StudioTour token={token} status={state.status} />
       <div className="pb-studio-layout" data-tab={tab}>
         <aside className="pb-studio-rail" data-tour="rail">
@@ -629,18 +623,8 @@ export default function StudioPage({ token }: { token: string }) {
           {activeId === "style" ? (
             <StylePanel
               token={token}
-              currentPackId={state.stylePackId}
-              category={state.category}
-              preselectPackId={preselectPackId}
-              accent={state.doc?.colorOverrides?.accent ?? null}
-              fontPairId={state.doc?.fontPairId ?? null}
-              designProfile={state.doc?.designProfile ?? null}
-              colorOverrides={state.doc?.colorOverrides ?? null}
-              currentSystem={
-                state.doc?.designRevision === 3
-                  ? (state.doc.system ?? null)
-                  : null
-              }
+              preselectSystem={preselectSystem}
+              currentSystem={state.doc?.system ?? null}
               currentPalette={state.doc?.palette ?? null}
               previewVersion={studio.previewVersion}
               onApplied={() => {
@@ -917,9 +901,9 @@ export default function StudioPage({ token }: { token: string }) {
               Sekunden. Die Sektion erscheint an ihrer Stelle in der Vorschau.
             </p>
           )}
-          {/* Tipp-Zeile entfernt (Betreiber-Feedback 2026-09-18): Der beschriftete
-              „Layout"-Knopf und die Studio-Tour erklären das — die Vorschau
-              bekommt die Höhe. */}
+          {/* Tipp-Zeile entfernt (Betreiber-Feedback 2026-09-18): Die
+              beschrifteten Knöpfe in der Vorschau und die Studio-Tour
+              erklären das — die Vorschau bekommt die Höhe. */}
           {inlineUpdateText.error && (
             <p role="alert" className="pb-studio-inline-error">
               Änderung konnte nicht gespeichert werden:{" "}
@@ -928,7 +912,7 @@ export default function StudioPage({ token }: { token: string }) {
           )}
           {updateTheme.error && (
             <p role="alert" className="pb-studio-inline-error">
-              Layout konnte nicht gespeichert werden:{" "}
+              Änderung konnte nicht gespeichert werden:{" "}
               {updateTheme.error.message}
             </p>
           )}
@@ -954,13 +938,11 @@ export default function StudioPage({ token }: { token: string }) {
             token={token}
             version={studio.previewVersion}
             device={device}
-            docSystem={
-              state.doc.designRevision === 3 ? (state.doc.system ?? null) : null
-            }
+            docSystem={state.doc.system ?? null}
             pageSlug={previewSlug ?? undefined}
             versionId={versionPreviewId}
-            // Ein früherer Stand ist nur zum Ansehen: kein Inline-Text, keine
-            // Layout-Schalter, kein Foto-Klick, bis er wiederhergestellt ist.
+            // Ein früherer Stand ist nur zum Ansehen: kein Inline-Text, kein
+            // „Bild ausblenden“, kein Foto-Klick, bis er wiederhergestellt ist.
             inlineTargets={
               versionPreviewId === null ? inlineTargets : undefined
             }
@@ -977,8 +959,8 @@ export default function StudioPage({ token }: { token: string }) {
             // nächste Neuladen der Vorschau an der Stelle bleibt.
             onFocusHandled={() => setPreviewFocusAnchor(null)}
             designProfile={state.doc.designProfile ?? null}
-            onSectionLayout={
-              versionPreviewId === null ? applySectionLayout : undefined
+            onDesignProfile={
+              versionPreviewId === null ? applyDesignProfile : undefined
             }
             onInsertSection={
               versionPreviewId === null && previewSlug === null
@@ -1098,9 +1080,9 @@ export default function StudioPage({ token }: { token: string }) {
                     studio.bumpPreview();
                     flashPreview();
                   }}
-                  onOpenStylePanel={packId => {
+                  onOpenStylePanel={system => {
                     setAssistantOpen(false);
-                    openStylePanelWithSuggestion(packId);
+                    openStylePanelWithSuggestion(system);
                   }}
                   onOpenPanel={id => {
                     setAssistantOpen(false);

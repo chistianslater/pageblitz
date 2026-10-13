@@ -509,47 +509,6 @@
 }
 
 /* Farbwelten (P10, 2026-08-30): Swatch-Karten im Theme-Editor. */
-.pb-studio-theme-worlds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.pb-studio-theme-world {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.75rem 0.4rem 0.5rem;
-  border: 1px solid var(--st-line);
-  border-radius: 999px;
-  background: var(--st-canvas);
-  color: var(--st-ink);
-  font: inherit;
-  font-size: 0.82rem;
-  cursor: pointer;
-}
-.pb-studio-theme-world:hover:not(:disabled) {
-  border-color: var(--st-muted);
-}
-.pb-studio-theme-world[data-active="true"] {
-  border-color: var(--st-accent);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--st-accent) 25%, transparent);
-}
-.pb-studio-theme-world:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-.pb-studio-theme-world-dots {
-  display: inline-flex;
-}
-.pb-studio-theme-world-dots i {
-  width: 0.95rem;
-  height: 0.95rem;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-}
-.pb-studio-theme-world-dots i + i {
-  margin-left: -0.35rem;
-}
 
 /* Texte-Panel aufgeräumt (2026-08-30): Sektionen mit Mono-Kicker,
    KI-Vorschlag als kleines Funken-Icon in der Label-Zeile, SEO als
@@ -562,7 +521,6 @@
   border-top: 0;
   padding-top: 0;
 }
-.pb-studio-group-kicker,
 .pb-studio-field-group > summary {
   font-family: var(--st-mono, ui-monospace, monospace);
   font-size: 0.7rem;
@@ -1265,8 +1223,7 @@
   opacity: 0;
   cursor: pointer;
 }
-.pb-design-color-wheel,
-.pb-studio-theme-color-wheel {
+.pb-design-color-wheel {
   display: grid;
   width: 1.65rem;
   height: 1.65rem;
@@ -1286,8 +1243,7 @@
   box-shadow: 0 0 0 1px var(--st-line);
   color: white;
 }
-.pb-design-color-wheel svg,
-.pb-studio-theme-color-wheel svg {
+.pb-design-color-wheel svg {
   width: 0.8rem;
   height: 0.8rem;
   stroke-width: 3;
@@ -1536,7 +1492,7 @@
   }
 }
 /* Skeleton: Canvas-Hintergrund + schimmernde Platzhalterblöcke in den
-   Pack-Farben (--pb-* via toCssVars, Fallback: Studio-Farben). CSS-only. */
+   Farben der Farbstimmung (--pb-* via skeletonVars, Fallback: Studio-Farben). CSS-only. */
 .pb-studio-skeleton {
   position: absolute;
   inset: 0;
@@ -1777,79 +1733,7 @@
 /* Collage-Fotos wählen (2026-09-03): eigener Block im Fotos-Panel, nur bei
    Hero-Layout „collage". Gewählte Karten tragen ihre Reihenfolge sichtbar,
    damit klar ist, welches Foto oben liegt. */
-.pb-studio-collage {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border: 1px solid var(--st-line);
-  border-radius: 14px;
-  background: var(--st-canvas);
-}
-.pb-studio-collage-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-.pb-studio-collage-head h3 {
-  margin: 0;
-  font-family: var(--st-display);
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-.pb-studio-collage-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-}
-.pb-studio-collage-grid button {
-  position: relative;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 10px;
-  background: none;
-  overflow: hidden;
-  cursor: pointer;
-  aspect-ratio: 4 / 3;
-  transition:
-    border-color 140ms ease,
-    transform 140ms ease;
-}
-.pb-studio-collage-grid button img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.pb-studio-collage-grid button[aria-pressed="false"] img {
-  opacity: 0.55;
-}
-.pb-studio-collage-grid button[aria-pressed="true"] {
-  border-color: var(--st-ink);
-}
-.pb-studio-collage-grid button:hover:not(:disabled) {
-  transform: translateY(-1px);
-}
-.pb-studio-collage-grid button:disabled {
-  cursor: not-allowed;
-}
-.pb-studio-collage-mark {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 20px;
-  height: 20px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--st-ink);
-  color: var(--st-surface);
-  font-size: 0.7rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
+
 .pb-studio-photo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3142,139 +3026,6 @@
 /* ── Theme-Editor (Farben & Schriften, 2026-08-24) ─────────────────────── */
 /* Aufklapper (P1): Der Feinschliff ist eine zweite Entscheidungsebene und
    bleibt standardmäßig eingeklappt, damit die Stil-Wahl das Panel prägt. */
-.pb-studio-theme-toggle {
-  border-top: 1px solid var(--st-line);
-  padding-top: 0.75rem;
-}
-.pb-studio-theme-toggle > summary {
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--st-ink);
-}
-.pb-studio-theme-toggle[open] > summary {
-  margin-bottom: 0.75rem;
-}
-.pb-studio-theme {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-.pb-studio-theme-title {
-  margin: 0;
-  font-size: 1.05rem;
-}
-.pb-studio-theme-hint {
-  margin: 0;
-  color: var(--st-muted);
-  font-size: 0.9rem;
-}
-.pb-studio-theme-label {
-  margin: 0.4rem 0 0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--st-ink);
-}
-.pb-studio-theme-layouts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.55rem;
-}
-.pb-studio-theme-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  min-width: 0;
-  font-size: 0.8rem;
-  color: var(--st-muted);
-}
-.pb-studio-theme-layout .pb-studio-input {
-  width: 100%;
-  min-width: 0;
-  padding: 0.5rem 0.55rem;
-  color: var(--st-ink);
-  background: var(--st-canvas);
-}
-@media (max-width: 380px) {
-  .pb-studio-theme-layouts {
-    grid-template-columns: 1fr;
-  }
-}
-.pb-studio-theme-swatches,
-.pb-studio-theme-fonts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-.pb-studio-theme-swatch,
-.pb-studio-theme-font {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.5rem 0.6rem;
-  border: 1px solid var(--st-line);
-  border-radius: 0.6rem;
-  background: var(--st-canvas);
-  cursor: pointer;
-  font: inherit;
-  color: var(--st-ink);
-  transition:
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-.pb-studio-theme-swatch:hover,
-.pb-studio-theme-font:hover {
-  border-color: var(--st-accent);
-}
-.pb-studio-theme-swatch[data-active],
-.pb-studio-theme-font[data-active] {
-  border-color: var(--st-accent);
-  box-shadow: 0 0 0 1px var(--st-accent);
-}
-.pb-studio-theme-swatch:disabled,
-.pb-studio-theme-font:disabled {
-  opacity: 0.6;
-  cursor: wait;
-}
-.pb-studio-theme-dot {
-  width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 50%;
-  border: 1px solid rgb(0 0 0 / 0.12);
-}
-.pb-studio-theme-swatch-name {
-  font-size: 0.72rem;
-  color: var(--st-muted);
-}
-.pb-studio-theme-custom {
-  position: relative;
-  min-width: 5.2rem;
-}
-.pb-studio-theme-custom input[type="color"] {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-}
-.pb-studio-theme-font {
-  align-items: flex-start;
-  min-width: 8.5rem;
-}
-.pb-studio-theme-font-name {
-  font-size: 1rem;
-}
-.pb-studio-theme-font-vibe {
-  font-size: 0.75rem;
-  color: var(--st-muted);
-}
-.pb-studio-theme-warn {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--st-warn);
-}
 
 /* Leave-ohne-E-Mail: Alert-Modal beim Verlassen (kein dauerhafter Banner).
    `beforeunload` kann in Chrome keinen eigenen Text mehr zeigen. */
@@ -4036,83 +3787,6 @@
 @media (max-width: 560px) { .pb-insert-grid { grid-template-columns: 1fr; } }
 
 /* ── Marken-Import (2026-09-03) ────────────────────────────────────────── */
-.pb-brand-block {
-  margin: 0 0 18px;
-  padding: 14px;
-  border: 1px solid var(--st-accent, #ccff00);
-  border-radius: 12px;
-  background: rgba(204, 255, 0, 0.05);
-}
-.pb-brand-loading {
-  margin: 0 0 14px;
-  font-size: 0.85rem;
-  color: var(--st-muted, #a4a39d);
-}
-.pb-brand-lead { margin: 4px 0 12px; font-size: 0.86rem; color: var(--st-muted, #a4a39d); }
-.pb-brand-rows { display: flex; flex-direction: column; gap: 8px; }
-.pb-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.12));
-  border-radius: 10px;
-  background: var(--st-surface, rgba(255, 255, 255, 0.04));
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-.pb-brand-row[aria-pressed="true"] { border-color: var(--st-accent, #ccff00); }
-.pb-brand-row:disabled { opacity: 0.6; cursor: default; }
-.pb-brand-check {
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  border-radius: 5px;
-  border: 1px solid var(--st-line, rgba(255, 255, 255, 0.2));
-  color: var(--st-accent-text, #ccff00);
-}
-.pb-brand-check svg { width: 13px; height: 13px; }
-.pb-brand-row[aria-pressed="true"] .pb-brand-check { border-color: var(--st-accent, #ccff00); }
-.pb-brand-logo {
-  display: grid;
-  place-items: center;
-  width: 54px;
-  height: 30px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 3px;
-}
-.pb-brand-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.pb-brand-swatch {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-.pb-brand-fonts {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  font-family: Georgia, serif;
-  font-size: 0.9rem;
-}
-.pb-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.pb-brand-text span { font-size: 0.78rem; color: var(--st-muted, #a4a39d); }
-.pb-brand-actions { display: flex; gap: 8px; margin-top: 12px; }
-.pb-brand-actions .pb-studio-btn { display: inline-flex; align-items: center; gap: 6px; }
-.pb-brand-actions svg { width: 15px; height: 15px; }
 
 .pb-studio-inline-dismiss {
   background: none;
@@ -4165,26 +3839,16 @@
 .pb-design-splash-head{margin-bottom:20px}.pb-design-splash-head .pb-studio-title{font-size:clamp(24px,2.4vw,34px)}
 @media(max-width:900px){.pb-design-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pb-design-side{margin-top:0}.pb-design-splash .pb-studio-device{height:55dvh}.pb-design-splash-head{gap:14px}}
 
-.pb-harmony{margin-top:18px;padding:16px;border:1px solid var(--st-line);border-radius:10px;background:var(--st-surface);text-align:left}.pb-harmony-heading{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:13px}.pb-harmony-heading>span{font-size:11px;color:var(--st-muted)}.pb-harmony-triggers{display:flex;gap:8px;margin-top:12px}.pb-harmony button{font:inherit;cursor:pointer;color:var(--st-ink);border:1px solid var(--st-line);background:var(--st-canvas);border-radius:8px}.pb-harmony button:focus-visible{outline:2px solid var(--st-accent-text);outline-offset:3px}.pb-harmony-triggers button{display:flex;align-items:center;gap:9px;padding:10px 12px;font-size:12px}.pb-harmony button[aria-expanded=true],.pb-harmony button[aria-pressed=true]{border-color:var(--st-accent-text);box-shadow:inset 0 0 0 1px var(--st-accent-text)}.pb-harmony-options{position:relative;border:0;margin:16px 0 0;padding:0;min-width:0}.pb-harmony-options legend{font-size:12px;margin-bottom:12px;color:var(--st-muted)}.pb-harmony-foot{position:sticky;bottom:0;display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;background:linear-gradient(to top,var(--st-surface) 70%,transparent)}.pb-harmony .pb-harmony-close{padding:9px 18px;min-height:40px;font-size:12px;font-weight:600;background:var(--st-canvas);border:1px solid var(--st-line);border-radius:8px}.pb-harmony-options:disabled{opacity:.6}.pb-harmony-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.pb-harmony-grid button{padding:12px;text-align:left;min-width:0}.pb-harmony-grid strong,.pb-harmony-grid small,.pb-harmony-grid button>span{display:block}.pb-harmony-grid strong{font-size:14px}.pb-harmony-grid small,.pb-harmony-grid button>span:not(.pb-harmony-swatches){font-size:11px;margin-top:5px;color:var(--st-muted)}.pb-harmony .pb-harmony-swatches{display:flex;border-radius:5px;overflow:hidden;height:35px;margin-bottom:10px;border:1px solid var(--st-line)}.pb-harmony-swatches i{flex:1}.pb-harmony-current{font-size:12px;color:var(--st-muted)}.pb-harmony-custom{margin-top:14px;font-size:12px}.pb-harmony-custom summary{cursor:pointer}.pb-harmony-custom label{display:flex;align-items:center;gap:12px;margin:12px 0}.pb-harmony-custom button{padding:8px 12px}.pb-harmony>p{font-size:12px}.pb-design-confirm{margin-top:14px}
-@media(max-width:1100px){.pb-harmony-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.pb-harmony{padding:12px}.pb-harmony-triggers{flex-wrap:wrap}.pb-harmony-grid button{padding:10px}}
+.pb-harmony{margin-top:18px;padding:16px;border:1px solid var(--st-line);border-radius:10px;background:var(--st-surface);text-align:left}.pb-harmony button{font:inherit;cursor:pointer;color:var(--st-ink);border:1px solid var(--st-line);background:var(--st-canvas);border-radius:8px}.pb-harmony button:focus-visible{outline:2px solid var(--st-accent-text);outline-offset:3px}.pb-harmony button[aria-expanded=true],.pb-harmony button[aria-pressed=true]{border-color:var(--st-accent-text);box-shadow:inset 0 0 0 1px var(--st-accent-text)}.pb-harmony>p{font-size:12px}.pb-design-confirm{margin-top:14px}
+@media(max-width:480px){.pb-harmony{padding:12px}}
 
 .pb-design-side-frame img{display:block;width:100%;height:100%;object-fit:cover;object-position:top}
 
 /* Compact design tools remain inside the preview; only the tools intercept input. */
 .pb-design-preview-shell{position:relative;min-width:0}
 .pb-design-preview-shell .pb-harmony{position:absolute;right:12px;bottom:12px;z-index:5;margin:0;padding:6px;background:rgba(255,255,255,.97);box-shadow:0 5px 24px #0002;max-width:calc(100% - 24px)}
-.pb-design-preview-shell .pb-harmony-triggers{margin:0;gap:4px;flex-wrap:nowrap;align-items:center}
-.pb-design-preview-shell .pb-harmony-triggers button{padding:9px 8px;gap:5px;min-height:44px;font-size:11px}
-.pb-harmony-accent{display:flex;align-items:center;gap:5px;font-size:11px;padding:0 7px;cursor:pointer}
-.pb-harmony-accent input{width:30px;height:32px;padding:0;border:0;background:none;cursor:pointer}
-.pb-design-preview-shell .pb-harmony-options{position:absolute;right:0;bottom:calc(100% + 8px);width:min(420px,calc(100vw - 56px));max-height:40dvh;overflow:auto;background:#fff;border:1px solid var(--st-line);border-radius:12px;padding:16px;box-shadow:0 8px 30px #0002;margin:0}
-.pb-design-preview-shell .pb-harmony-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.pb-design-preview-shell .pb-harmony-foot{background:linear-gradient(to top,#fff 70%,transparent)}
-.pb-design-preview-shell .pb-harmony-options legend{float:left;width:100%}
-@media(max-width:480px){.pb-design-preview-shell .pb-harmony-triggers button>svg:last-child{display:none}.pb-design-preview-shell .pb-harmony-triggers button{gap:4px;padding:8px 5px}.pb-harmony-accent{padding:0 4px}.pb-design-preview-shell .pb-harmony{right:8px;bottom:8px;max-width:calc(100% - 16px)}}
-.pb-design-preview-shell .pb-harmony-grid,.pb-design-preview-shell .pb-harmony-current{clear:both}
-.pb-harmony-accent i{display:block;width:25px;height:25px;border-radius:5px;border:1px solid #0002}.pb-harmony-color-chip{height:32px;border-radius:5px;border:1px solid #0002}.pb-harmony-custom-color{display:flex;align-items:center;gap:10px;font-size:12px;padding:10px}.pb-harmony-custom-color input{width:32px;height:32px;border:0;padding:0;background:none}
-.pb-studio-theme .pb-harmony-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pb-studio-theme .pb-harmony-triggers{flex-wrap:wrap}.pb-studio-theme .pb-harmony{margin:14px 0 24px}.pb-studio-theme .pb-harmony-triggers button{min-height:44px;font-size:11px;padding:8px}
+
+@media(max-width:480px){.pb-design-preview-shell .pb-harmony{right:8px;bottom:8px;max-width:calc(100% - 16px)}}
 
 /* Vorschau füllt am Desktop die ganze restliche Höhe der Bühne statt fester
    65dvh (Betreiber-Feedback 2026-09-18: unten blieb viel Platz frei).
@@ -4299,10 +3963,7 @@
   .pb-design-preview-shell .pb-harmony {
     left: 8px;
   }
-  .pb-design-preview-shell .pb-harmony-triggers > * {
-    flex: 1 1 auto;
-    justify-content: center;
-  }
+  
 }
 /* Übersicht: Häkchen und Status-Wörter bündig mit Schritt-Leiste und
    Trennlinien (vorher 8 px eingerückt). Die Hervorhebung der aktuellen

@@ -52,16 +52,12 @@ export type SiteCrawlDeps = {
   timeoutMs?: number;
 };
 
-import { extractBrandingSignals, type BrandingSignals } from "./siteBranding";
-
 const DEFAULT_TIMEOUT_MS = 10_000;
 const MAX_BODY_BYTES = 200 * 1024;
 const MAX_TEXT_CHARS = 2_000;
 const MAX_TITLE_CHARS = 300;
 const MAX_DESCRIPTION_CHARS = 500;
 const MAX_REDIRECTS = 3;
-/** Marken-Crawl: höchstens drei eigene Stylesheets (2026-09-03). */
-const MAX_STYLESHEETS = 3;
 /** "" = kein expliziter Port in der URL (Standard-Port des Schemas). */
 const ALLOWED_PORTS = new Set(["", "80", "443"]);
 const CRAWL_HEADERS: Record<string, string> = {
@@ -494,87 +490,6 @@ function extractSiteFacts(html: string): ExistingSiteFacts | null {
  * Inhalt). Wirft NIE: der Aufrufer (Generierungs-Job) läuft ohne die
  * Faktenquelle einfach weiter.
  */
-/**
- * Marken-Signale der bestehenden Website (2026-09-03, Punkt 3 Scheibe 1):
- * dieselbe Kette wie `crawlExistingSite` (SSRF-Prüfung, robots.txt,
- * begrenzte Redirects, 200-kB-Kappung, jeder Fehler → null), zusätzlich bis
- * zu drei eigene Stylesheets. Ausgelesen wird nur, was `siteBranding.ts`
- * deterministisch erkennt — kein LLM, keine Texte.
- */
-export async function crawlSiteBranding(
-  url: string,
-  deps: SiteCrawlDeps = {}
-): Promise<(BrandingSignals & { origin: string }) | null> {
-  const fetchImpl = deps.fetchImpl ?? fetch;
-  const resolveIps = deps.resolveIps ?? defaultResolveIps;
-  const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-
-  let target: URL;
-  try {
-    target = new URL(url.trim());
-  } catch {
-    return null;
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    if (!(await isSafeTarget(target, resolveIps))) return null;
-    const rules = await fetchRobotsRules(
-      target.origin,
-      fetchImpl,
-      controller.signal
-    );
-    if (!isPathAllowed(target.pathname + target.search, rules)) return null;
-
-    const response = await fetchWithGuardedRedirects(
-      target,
-      fetchImpl,
-      resolveIps,
-      controller.signal
-    );
-    if (!response) return null;
-    const html = await readBodyLimited(response);
-    if (html === null) return null;
-
-    const origin = target.origin;
-    const stylesheets: string[] = [];
-    for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
-      if (stylesheets.length >= MAX_STYLESHEETS) break;
-      if (!/rel\s*=\s*["']?stylesheet/i.test(tag)) continue;
-      const hrefMatch = /href\s*=\s*("([^"]*)"|'([^']*)')/i.exec(tag);
-      const href = hrefMatch?.[2] ?? hrefMatch?.[3];
-      if (!href) continue;
-      let sheetUrl: URL;
-      try {
-        sheetUrl = new URL(href, origin);
-      } catch {
-        continue;
-      }
-      // Nur eigene Stylesheets: fremde CDNs (Fonts, Frameworks) tragen
-      // keine Markenfarbe und wären zusätzliche Abrufziele.
-      if (sheetUrl.origin !== origin) continue;
-      if (!isPathAllowed(sheetUrl.pathname + sheetUrl.search, rules)) continue;
-      const sheetResponse = await fetchWithGuardedRedirects(
-        sheetUrl,
-        fetchImpl,
-        resolveIps,
-        controller.signal
-      );
-      if (!sheetResponse) continue;
-      const css = await readBodyLimited(sheetResponse);
-      if (css !== null) stylesheets.push(css);
-    }
-
-    const signals = extractBrandingSignals(html, origin, stylesheets);
-    return { origin, ...signals };
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 export async function crawlExistingSite(
   url: string,
   deps: SiteCrawlDeps = {}

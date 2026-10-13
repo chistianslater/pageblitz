@@ -91,12 +91,12 @@ interface AiStyleCardProps {
   onView: () => void;
 }
 
-/** Reine Darstellung eines Stil-Vorschlags aus dem KI-Chat (Design-Wünsche → Pack-Vorschlag, nie Farb-/Font-Patch). */
+/** Reine Darstellung eines Stil-Vorschlags aus dem KI-Chat (anderes Designsystem, nie Farb-/Font-Patch). */
 export function AiStyleCard({ name, reason, onView }: AiStyleCardProps) {
   return (
     <div className="pb-studio-ai-style-card">
       <p>
-        Designrichtung: <strong>{name}</strong> — {reason}
+        Design-Vorschlag: <strong>{name}</strong> — {reason}
       </p>
       <button
         type="button"

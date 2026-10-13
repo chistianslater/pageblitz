@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { collagePhotoPool } from "../../client/src/components/site/heroCollage";
 import { z } from "zod";
 import { publicProcedure } from "../_core/trpc";
 import {
@@ -14,11 +13,6 @@ import {
   uploadPhoto as uploadPhotoToStorage,
   uploadLogo as uploadLogoToStorage,
 } from "../onboardingUpload";
-import {
-  buildCustomWorldOverrides,
-  getColorWorld,
-} from "../../shared/stylePacks/colorWorlds";
-import type { PackId } from "../../shared/siteContract/types";
 import {
   AI_IMAGES_PER_HOUR,
   consumeAiImageQuota,
@@ -45,7 +39,6 @@ import {
   applyTexts,
   applyTheme,
 } from "./applyPatch";
-import { getFontPair } from "../../shared/stylePacks";
 import {
   DesignProfileSchema,
   SafeUrlSchema,
@@ -520,98 +513,28 @@ export const contentProcedures = {
     }),
 
   /**
-   * Studio-Design-Editor: Akzentfarbe, kuratierte Schriftpaarung und/oder
-   * Kompositionsprofil. `null` setzt Farbe/Schrift auf den Richtungsstandard
-   * zurück, Weglassen lässt sie unverändert. fontPairId ist gegen die
-   * kuratierte Liste (shared/stylePacks/fontPairs.ts) validiert, accent
-   * gegen das Hex-Format (Schema-Invariante: nur Hex, kein CSS-Freitext).
+   * Kompositionsprofil aus der Vorschau („Bild ausblenden“). Farben und
+   * Schriften bringt die Farbstimmung des Designsystems — Akzent-,
+   * Schriftpaar- und Farbwelt-Felder gibt es nicht mehr (strict: werden
+   * abgelehnt). Collage-Bilder setzt der Client nie: gespeicherte bleiben,
+   * neue kommen nicht hinzu.
    */
   updateTheme: publicProcedure
     .input(
-      tokenInput.extend({
-        accent: z
-          .string()
-          .regex(/^#[0-9a-fA-F]{6}$/)
-          .nullish(),
-        fontPairId: z
-          .string()
-          .regex(/^[a-z0-9-]+$/)
-          .max(40)
-          .nullish()
-          .refine(id => id == null || getFontPair(id) != null, {
-            message: "Unbekannte Schriftpaarung.",
-          }),
-        designProfile: DesignProfileSchema.optional(),
-        /**
-         * Farbwelt (P10): kuratierte Grundstimmung per ID — der Server löst
-         * sie gegen getColorWorld(pack) auf und schreibt die Grundrollen als
-         * colorOverrides. `null`/"original" setzt auf das Pack zurück.
-         */
-        colorWorldId: z
-          .string()
-          .regex(/^[a-z-]+$/)
-          .max(24)
-          .nullish(),
-        /**
-         * Eigene Grundfarbe statt kuratierter Welt: der Server rechnet
-         * daraus ein vollständiges kontrastgeführtes Rollen-Set
-         * (buildCustomWorldOverrides). Gewinnt gegenüber colorWorldId.
-         */
-        colorWorldBase: z
-          .string()
-          .regex(/^#[0-9a-fA-F]{6}$/)
-          .optional(),
-      })
+      tokenInput
+        .extend({ designProfile: DesignProfileSchema })
+        .strict()
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      let worldOverrides: Record<string, string> | null | undefined;
-      if (input.colorWorldBase !== undefined) {
-        worldOverrides = buildCustomWorldOverrides(
-          doc.stylePackId as PackId,
-          input.colorWorldBase
-        );
-      } else if (input.colorWorldId !== undefined) {
-        if (input.colorWorldId === null || input.colorWorldId === "original") {
-          worldOverrides = null;
-        } else {
-          const world = getColorWorld(
-            doc.stylePackId as PackId,
-            input.colorWorldId
-          );
-          if (!world) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Unbekannte Farbwelt.",
-            });
-          }
-          worldOverrides = world.overrides;
-        }
-      }
-      // Collage-Bilder dürfen nur aus dem eigenen Material stammen — sonst
-      // hinge eine fremde, ungeprüfte Adresse in der Kundenseite
-      // (2026-09-03). Der Vorrat ist derselbe, den das Fotos-Panel anbietet.
-      const collage = input.designProfile?.heroCollageImages;
-      if (collage && collage.length > 0) {
-        const pool = collagePhotoPool(doc);
-        const fremd = collage.filter(url => !pool.includes(url));
-        if (fremd.length > 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Für die Collage sind nur Fotos aus deiner Galerie oder dem Über-uns-Bild möglich.",
-          });
-        }
-      }
+      const { heroCollageImages: _ignored, ...profile } = input.designProfile;
+      const stored = doc.designProfile?.heroCollageImages;
       return persistDoc(
         input.token,
         loaded,
         applyTheme(doc, {
-          accent: input.accent,
-          fontPairId: input.fontPairId,
-          designProfile: input.designProfile,
-          worldOverrides,
+          designProfile: stored ? { ...profile, heroCollageImages: stored } : profile,
         }),
         { trigger: "panel", label: "Design angepasst" }
       );

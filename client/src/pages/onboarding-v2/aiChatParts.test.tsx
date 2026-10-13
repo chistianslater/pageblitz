@@ -74,13 +74,13 @@ describe("AiStyleCard", () => {
   test("zeigt Name, Begründung und einen Ansehen-Button", () => {
     const html = renderToStaticMarkup(
       <AiStyleCard
-        name="Werkbank"
+        name="Werkstoff"
         reason="Passt besser zu einem Handwerksbetrieb."
         onView={() => {}}
       />
     );
-    expect(html).toContain("Designrichtung");
-    expect(html).toContain("Werkbank");
+    expect(html).toContain("Design-Vorschlag");
+    expect(html).toContain("Werkstoff");
     expect(html).toContain("Passt besser zu einem Handwerksbetrieb.");
     expect(html).toContain(">Ansehen<");
   });

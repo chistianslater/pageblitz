@@ -1,6 +1,3 @@
-import { alternativeLooks } from "../../shared/stylePacks/artDirection";
-import { PACK_FONT_PAIRS } from "../../shared/stylePacks/packVariants";
-import { getFontPair } from "../../shared/stylePacks/fontPairs";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
@@ -14,7 +11,6 @@ import {
   isInterimV2Doc,
   runWebsiteGenerationV2Job,
 } from "../generationV2/runJob";
-import { getConstitution } from "../../shared/stylePacks";
 import {
   DESIGN_SYSTEM_IDS,
   getSystem,
@@ -23,9 +19,7 @@ import {
   withDesignSystem,
   type DesignSystemId,
 } from "../../shared/designSystems";
-import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
-import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
-import { applyStylePack, parsePackId } from "./applyPatch";
+import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import { loadStudioWebsite } from "./ownership";
 import { withEnsureLock } from "./ensureLock";
 import { buildState, persistDoc, requireDoc, tokenInput } from "./state";
@@ -36,7 +30,6 @@ import { versionProcedures } from "./routerVersions";
 import { toneProcedures } from "./routerTone";
 import { goalProcedures } from "./routerGoal";
 import { insertProcedures } from "./routerInsert";
-import { brandProcedures } from "./routerBrand";
 
 /**
  * Legt den v2-Generierungs-Job an und startet den Runner im Hintergrund —
@@ -75,57 +68,54 @@ export type StudioPalette = {
   paper: string;
 };
 
-export type StyleCandidate =
-  | {
-      kind: "pack";
-      id: PackId;
-      name: string;
-      essence: string;
-      look?: ReturnType<typeof alternativeLooks>[PackId];
-    }
-  | {
-      kind: "system";
-      id: DesignSystemId;
-      name: string;
-      essence: string;
-      palettes: StudioPalette[];
-    };
+/** Systemkarte für Design-Splash und Stil-Panel. */
+export type StyleCandidate = {
+  kind: "system";
+  id: DesignSystemId;
+  name: string;
+  essence: string;
+  palettes: StudioPalette[];
+};
+
+type CandidateDoc = Pick<
+  WebsiteDataV2,
+  "businessCategory" | "businessName" | "blueprintFamily"
+> & { designRevision?: number; system?: DesignSystemId };
 
 /**
- * Freigeschaltete Systeme aus dem Branchen-Tripel (Haupt, Alt 1, Alt 2),
- * ohne das System, das die Seite schon trägt. Höchstens `limit` Stück —
- * mindestens ein Platz bleibt für Packs, damit „Andere Richtungen" weiter
- * etwas Neues zeigt.
+ * Runden der Designwahl (Packs entfernen, E2): Runde 0 = Branchen-Tripel
+ * ohne das System, das die Seite trägt; Runde 1 = alle übrigen
+ * freigeschalteten Systeme. Leere Runden fallen weg, danach geht es wieder
+ * von vorn.
  */
-function systemCandidates(
-  doc: Pick<
-    WebsiteDataV2,
-    "businessCategory" | "businessName" | "blueprintFamily"
-  > & { designRevision?: number; system?: DesignSystemId },
-  limit: number
-): Extract<StyleCandidate, { kind: "system" }>[] {
+export function systemRounds(doc: CandidateDoc): DesignSystemId[][] {
   const current = doc.designRevision === 3 ? doc.system : undefined;
-  return systemsForDoc(doc)
-    .filter(id => id !== current && isReleased(id))
-    .slice(0, Math.max(0, limit))
-    .flatMap(id => {
-      const def = getSystem(id);
-      if (!def) return [];
-      return [
-        {
-          kind: "system" as const,
-          id,
-          name: def.name,
-          essence: def.essence,
-          palettes: def.palettes.map(p => ({
-            id: p.id,
-            name: p.name,
-            accent: p.accent,
-            paper: p.paper,
-          })),
-        },
-      ];
-    });
+  const offer = (id: DesignSystemId) => id !== current && isReleased(id);
+  const triple: readonly DesignSystemId[] = systemsForDoc(doc);
+  const rounds = [
+    triple.filter(offer),
+    DESIGN_SYSTEM_IDS.filter(id => offer(id) && !triple.includes(id)),
+  ];
+  return rounds.filter(round => round.length > 0);
+}
+
+function toCandidate(id: DesignSystemId): StyleCandidate[] {
+  const def = getSystem(id);
+  if (!def) return [];
+  return [
+    {
+      kind: "system",
+      id,
+      name: def.name,
+      essence: def.essence,
+      palettes: def.palettes.map(p => ({
+        id: p.id,
+        name: p.name,
+        accent: p.accent,
+        paper: p.paper,
+      })),
+    },
+  ];
 }
 
 const coreProcedures = {
@@ -237,98 +227,28 @@ const coreProcedures = {
   getStyleCandidates: publicProcedure
     .input(
       tokenInput.extend({
-        round: z.number().int().min(0).default(0),
-        count: z
-          .union([z.literal(2), z.literal(3)])
-          .optional()
-          .default(2),
+        round: z.number().int().min(0).max(1000).default(0),
       })
     )
     .query(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const business = await getBusinessById(loaded.website.businessId);
-      const category = loaded.doc?.businessCategory ?? business?.category ?? "";
-      const doc = loaded.doc;
-      // Systeme nur in Runde 0 (Produktentscheid): „Andere Richtungen"
-      // blättert danach ausschließlich durch Packs.
-      const systems =
-        input.round === 0
-          ? systemCandidates(
-              doc ?? {
-                businessCategory: category,
-                businessName: business?.name ?? "",
-              },
-              input.count - 1
-            )
-          : [];
-      const packIds = getV2VariantCandidates(
-        category,
-        input.round,
-        input.count
-      ).slice(0, input.count - systems.length);
-      const looks = doc
-        ? alternativeLooks(
-            {
-              pack: doc.stylePackId,
-              entryVariant: doc.designProfile?.entryVariant,
-              fontPairId: doc.fontPairId,
-            },
-            packIds,
-            pack => PACK_FONT_PAIRS[pack]
-          )
-        : {};
-      const packs: StyleCandidate[] = packIds.map(id => {
-        const c = getConstitution(id);
-        return {
-          kind: "pack" as const,
-          id,
-          name: c.name,
-          essence: c.essence,
-          look: looks[id],
+      let doc: CandidateDoc | null = loaded.doc;
+      if (!doc) {
+        const business = await getBusinessById(loaded.website.businessId);
+        doc = {
+          businessCategory: business?.category ?? "",
+          businessName: business?.name ?? "",
         };
-      });
-      const candidates: StyleCandidate[] = [...systems, ...packs];
-      return { candidates };
-    }),
-
-  selectStylePack: publicProcedure
-    .input(
-      tokenInput.extend({
-        packId: z.string(),
-        /** Erst „Passt so" bestätigt den Gate/Checklist-Schritt. */
-        confirm: z.boolean().optional().default(false),
-        /** Look der gezeigten Alternative (getStyleCandidates). */
-        look: z
-          .object({
-            entryVariant: z.union([z.literal(0), z.literal(1), z.literal(2)]),
-            fontPairId: z.string().refine(id => Boolean(getFontPair(id)), {
-              message: "Unbekanntes Schriftpaar",
-            }),
-          })
-          .optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const packId = parsePackId(input.packId);
-      const loaded = await loadStudioWebsite(input.token, ctx.user);
-      const doc = await requireDoc(loaded);
-      const next = applyStylePack(doc, packId, input.look);
-      return persistDoc(
-        input.token,
-        loaded,
-        next,
-        {
-          trigger: "panel",
-          label: `Designrichtung: ${getConstitution(packId).name}`,
-        },
-        input.confirm ? { progress: { styleConfirmed: true } } : undefined
-      );
+      }
+      const rounds = systemRounds(doc);
+      const ids = rounds.length > 0 ? rounds[input.round % rounds.length] : [];
+      return { candidates: ids.flatMap(toCandidate) };
     }),
 
   /**
-   * Designsystem samt Farbstimmung übernehmen (rev 3). Gleiche Ownership und
-   * Persistenz wie selectStylePack; nur freigeschaltete Systeme, die Palette
-   * muss zum System gehören (kein stiller Rückfall auf die erste).
+   * Designsystem samt Farbstimmung übernehmen (rev 3) — der einzige Weg,
+   * das Design zu wechseln. Nur freigeschaltete Systeme, die Palette muss
+   * zum System gehören (kein stiller Rückfall auf die erste).
    */
   selectDesignSystem: publicProcedure
     .input(
@@ -382,5 +302,4 @@ export const onboardingV2Router = router({
   ...toneProcedures,
   ...goalProcedures,
   ...insertProcedures,
-  ...brandProcedures,
 });

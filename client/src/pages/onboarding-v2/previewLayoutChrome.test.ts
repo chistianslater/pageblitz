@@ -1,60 +1,115 @@
-import { describe, expect, test } from "vitest";
+// @vitest-environment jsdom
+import { describe, expect, test, vi } from "vitest";
 import { DEFAULT_DESIGN_PROFILE } from "@shared/siteContract/designProfile";
 import {
-  LAYOUT_GRID_ICON_HTML,
-  PREVIEW_LAYOUT_SECTIONS,
-  applyLayoutOverlay,
-  applyProfileAttrs,
-  chromeViewportTop,
-  layoutChromeTitle,
-  renderLayoutChromeHtml,
-  renderInsertZoneHtml,
-  renderInsertSkeletonHtml,
-  skeletonAnchorFor,
-  SKELETON_TOP,
   CHROME_CSS,
+  HIDEABLE_MEDIA,
+  SKELETON_TOP,
+  chromeViewportTop,
+  enablePreviewChrome,
   insertZoneDocumentTop,
+  renderHideToggleHtml,
+  renderInsertSkeletonHtml,
+  renderInsertZoneHtml,
+  skeletonAnchorFor,
 } from "./previewLayoutChrome";
 
-function attrTarget(attrs: Record<string, string>) {
-  return {
-    setAttribute: (name: string, value: string) => {
-      attrs[name] = value;
-    },
-    removeAttribute: (name: string) => {
-      delete attrs[name];
-    },
-  };
-}
-
-describe("PREVIEW_LAYOUT_SECTIONS", () => {
-  test("deckt Hero, Leistungen, Über uns und Galerie mit Anker und Varianten ab", () => {
-    expect(PREVIEW_LAYOUT_SECTIONS.map(section => section.field)).toEqual([
-      "heroLayout",
-      "servicesLayout",
-      "aboutLayout",
-      "galleryLayout",
-      "testimonialsLayout",
-      "contactLayout",
+describe("HIDEABLE_MEDIA (Bild ausblenden)", () => {
+  test("Hero- und Über-uns-Bild mit Anker und deutschen Labels", () => {
+    expect(HIDEABLE_MEDIA.map(m => [m.anchor, m.key])).toEqual([
+      ["start", "hero-media"],
+      ["ueber-uns", "about-media"],
     ]);
-    expect(PREVIEW_LAYOUT_SECTIONS.map(section => section.anchor)).toEqual([
-      "start",
-      "leistungen",
-      "ueber-uns",
-      "galerie",
-      "bewertungen",
-      "kontakt",
-    ]);
-    for (const section of PREVIEW_LAYOUT_SECTIONS) {
-      expect(section.options.length).toBeGreaterThanOrEqual(2);
-      for (const option of section.options) {
-        expect(option.icon).toContain("<svg");
-        expect(option.icon).toContain('fill="currentColor"');
-      }
+    for (const media of HIDEABLE_MEDIA) {
+      expect(media.hideLabel).toBe("Bild ausblenden");
+      expect(media.showLabel).toBe("Bild einblenden");
     }
-    expect(
-      PREVIEW_LAYOUT_SECTIONS[0]!.options.map(option => option.value)
-    ).toEqual(["split", "centered", "image-first", "collage", "banner"]);
+  });
+});
+
+describe("renderHideToggleHtml", () => {
+  test("ein beschrifteter Knopf, aria-pressed folgt dem Zustand — keine Layout-Optionen", () => {
+    const shown = renderHideToggleHtml(HIDEABLE_MEDIA[0]!, false);
+    expect(shown).toContain('data-pb-hide-element="hero-media"');
+    expect(shown).toContain('aria-pressed="false"');
+    expect(shown).toContain("Bild ausblenden");
+    expect(shown).not.toContain("data-pb-layout-option");
+    expect(shown).not.toContain("Layout");
+    const hidden = renderHideToggleHtml(HIDEABLE_MEDIA[0]!, true);
+    expect(hidden).toContain('aria-pressed="true"');
+    expect(hidden).toContain("Bild einblenden");
+  });
+});
+
+describe("enablePreviewChrome", () => {
+  const build = (heroHtml = '<img src="h.jpg" alt="">') => {
+    document.head.innerHTML = "";
+    document.documentElement.removeAttribute("data-pb-preview-chrome");
+    document.body.innerHTML = `<div class="pb-site"><section id="start">${heroHtml}</section><section id="leistungen"></section><section id="ueber-uns"><p>Text</p></section><section id="kontakt"></section></div>`;
+    return document;
+  };
+
+  test("kein Layout-Wähler, kein Layout-CSS, keine data-pb-Layoutattribute", () => {
+    const doc = build();
+    enablePreviewChrome(doc, DEFAULT_DESIGN_PROFILE, () => {});
+    expect(doc.querySelector("[data-pb-layout-option]")).toBeNull();
+    expect(doc.querySelector(".pb-preview-layout-btn")).toBeNull();
+    const site = doc.querySelector(".pb-site")!;
+    expect(site.getAttribute("data-pb-hero")).toBeNull();
+    expect(site.getAttribute("data-pb-services")).toBeNull();
+    const css = doc.head.textContent ?? "";
+    expect(css).not.toContain("data-pb-hero");
+    expect(css).not.toContain("data-pb-he");
+  });
+
+  test("„Bild ausblenden“ nur dort, wo ein Bild steht; Klick meldet das Profil mit hiddenElements", () => {
+    const doc = build();
+    const onPick = vi.fn();
+    enablePreviewChrome(doc, DEFAULT_DESIGN_PROFILE, onPick);
+    const buttons = Array.from(
+      doc.querySelectorAll<HTMLButtonElement>("[data-pb-hide-element]")
+    );
+    // Über uns hat kein Bild → kein wirkungsloser Schalter.
+    expect(buttons.map(b => b.getAttribute("data-pb-hide-element"))).toEqual([
+      "hero-media",
+    ]);
+    buttons[0]!.click();
+    expect(onPick).toHaveBeenCalledWith({
+      ...DEFAULT_DESIGN_PROFILE,
+      hiddenElements: ["hero-media"],
+    });
+    expect(buttons[0]!.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  test("ausgeblendetes Bild (nicht mehr im DOM) bleibt per „Bild einblenden“ erreichbar", () => {
+    const doc = build("<h1>Ohne Bild</h1>");
+    const onPick = vi.fn();
+    enablePreviewChrome(
+      doc,
+      { ...DEFAULT_DESIGN_PROFILE, hiddenElements: ["hero-media"] },
+      onPick
+    );
+    const button = doc.querySelector<HTMLButtonElement>(
+      '[data-pb-hide-element="hero-media"]'
+    )!;
+    expect(button.textContent).toContain("Bild einblenden");
+    button.click();
+    const next = onPick.mock.calls[0]![0];
+    expect(next.hiddenElements).toBeUndefined();
+  });
+
+  test("Plus-Zonen hinter jeder Sektion außer Kontakt, Klick meldet den Typ", () => {
+    const doc = build();
+    const onInsert = vi.fn();
+    enablePreviewChrome(doc, DEFAULT_DESIGN_PROFILE, () => {}, {
+      onInsertSection: onInsert,
+    });
+    const zones = Array.from(doc.querySelectorAll("[data-pb-after]")).map(z =>
+      z.getAttribute("data-pb-after")
+    );
+    expect(zones).toEqual(["hero", "services", "about"]);
+    doc.querySelector<HTMLButtonElement>('[data-pb-after="services"] button')!.click();
+    expect(onInsert).toHaveBeenCalledWith("services");
   });
 });
 
@@ -99,128 +154,6 @@ describe("renderInsertSkeletonHtml (Sofort-Rückmeldung, 2026-09-03)", () => {
   });
 });
 
-describe("renderLayoutChromeHtml", () => {
-  test("markiert die aktuelle Variante und listet die Optionen", () => {
-    const html = renderLayoutChromeHtml(
-      PREVIEW_LAYOUT_SECTIONS[0]!,
-      "centered"
-    );
-    expect(html).toContain("Hero-Layout");
-    expect(html).not.toContain("(Mobil)");
-    expect(html).toContain("Bild &amp; Text");
-    expect(html).toContain("Zentriert");
-    expect(html).toContain("Bild oben");
-    expect(html).not.toContain("Kompakt");
-    expect(html).toContain(
-      'data-pb-layout-option="centered" aria-pressed="true"'
-    );
-    expect(html).toContain(
-      'data-pb-layout-option="split" aria-pressed="false"'
-    );
-  });
-
-  test("zeigt das 3×3-Raster-Icon im runden Auslöser, ohne hidden-Menü", () => {
-    const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
-    expect(html).toContain(LAYOUT_GRID_ICON_HTML);
-    expect(html).toContain("pb-preview-layout-icon");
-    expect((html.match(/<i><\/i>/g) ?? []).length).toBe(9);
-    expect(html).not.toMatch(/class="pb-preview-layout-menu"[^>]*\bhidden\b/);
-  });
-
-  test("rendert Optionen als Piktogramme mit Label als Tooltip", () => {
-    const html = renderLayoutChromeHtml(PREVIEW_LAYOUT_SECTIONS[0]!, "split");
-    expect((html.match(/<svg viewBox="0 0 20 20"/g) ?? []).length).toBe(5);
-    expect(html).toContain('aria-label="Bild &amp; Text"');
-    expect(html).toContain('title="Zentriert"');
-    expect(html).not.toContain("pb-preview-layout-caption");
-  });
-
-  test("kennzeichnet Mobil-Layouts im Aria-Label", () => {
-    expect(layoutChromeTitle(PREVIEW_LAYOUT_SECTIONS[0]!, "mobile")).toBe(
-      "Hero-Layout (Mobil)"
-    );
-    const html = renderLayoutChromeHtml(
-      PREVIEW_LAYOUT_SECTIONS[0]!,
-      "centered",
-      "mobile"
-    );
-    expect(html).toContain("Hero-Layout (Mobil)");
-    expect(html).toContain("Text oben");
-    expect(html).not.toContain("Bild &amp; Text");
-  });
-
-  test("benennt Über-uns auf dem Smartphone nach oben/unten", () => {
-    const html = renderLayoutChromeHtml(
-      PREVIEW_LAYOUT_SECTIONS[2]!,
-      "image-left",
-      "mobile"
-    );
-    expect(html).toContain("Bild oben");
-    expect(html).toContain("Bild unten");
-    expect(html).not.toContain("Bild links");
-  });
-});
-
-describe("applyProfileAttrs", () => {
-  test("schreibt alle data-pb-Layoutattribute", () => {
-    const attrs: Record<string, string> = {
-      "data-pb-hero-mobile": "stale",
-    };
-    applyProfileAttrs(attrTarget(attrs), {
-      ...DEFAULT_DESIGN_PROFILE,
-      heroLayout: "compact",
-      galleryLayout: "mosaic",
-    });
-    expect(attrs["data-pb-hero"]).toBe("compact");
-    expect(attrs["data-pb-gallery"]).toBe("mosaic");
-    expect(attrs["data-pb-services"]).toBe("list");
-    expect(attrs["data-pb-about"]).toBe("image-right");
-    expect(attrs["data-pb-hero-mobile"]).toBeUndefined();
-  });
-
-  test("setzt Mobil-Attribute unabhängig vom Desktop", () => {
-    const attrs: Record<string, string> = {};
-    applyProfileAttrs(attrTarget(attrs), {
-      ...DEFAULT_DESIGN_PROFILE,
-      heroLayout: "split",
-      heroLayoutMobile: "centered",
-      servicesLayoutMobile: "grid",
-    });
-    expect(attrs["data-pb-hero"]).toBe("split");
-    expect(attrs["data-pb-hero-mobile"]).toBe("centered");
-    expect(attrs["data-pb-services-mobile"]).toBe("grid");
-    expect(attrs["data-pb-about-mobile"]).toBeUndefined();
-  });
-});
-
-describe("applyLayoutOverlay", () => {
-  test("setzt nur gewählte Felder und räumt den Rest weg", () => {
-    const attrs: Record<string, string> = {
-      "data-pb-hero": "split",
-      "data-pb-services": "list",
-      "data-pb-hero-mobile": "compact",
-    };
-    applyLayoutOverlay(attrTarget(attrs), { heroLayout: "centered" });
-    expect(attrs).toEqual({ "data-pb-hero": "centered" });
-  });
-
-  test("schreibt Mobil-Attribute und lässt Pack-Defaults auf dem Desktop", () => {
-    const attrs: Record<string, string> = {
-      "data-pb-hero": "split",
-      "data-pb-services": "list",
-    };
-    applyLayoutOverlay(
-      attrTarget(attrs),
-      { heroLayout: "centered", servicesLayout: "grid" },
-      "mobile"
-    );
-    expect(attrs).toEqual({
-      "data-pb-hero-mobile": "centered",
-      "data-pb-services-mobile": "grid",
-    });
-  });
-});
-
 describe("chromeViewportTop", () => {
   test("sitzt unter der Sticky-Nav, wenn die Sektion darunter beginnt", () => {
     expect(chromeViewportTop(4, 400, 64, 800, 36)).toBe(72);
@@ -241,10 +174,6 @@ describe("chromeViewportTop", () => {
 
 describe("Plus-Zonen scrollen mit dem Inhalt (Ruckeln am Handy, 2026-09-04)", () => {
   test("die Zone liegt absolut im Dokument, nicht fest im Viewport", () => {
-    // position:fixed zwang zu einer Neuberechnung bei JEDEM Scroll-
-    // Ereignis. Am Handy kommen die während des Schwungscrollens verzögert,
-    // der Knopf hinkte sichtbar hinterher. Absolut positioniert scrollt ihn
-    // der Browser selbst mit — ohne JavaScript pro Bild.
     const rule = CHROME_CSS.match(/\.pb-preview-insert\{[^}]*\}/)?.[0] ?? "";
     expect(rule).toContain("position:absolute");
     expect(rule).not.toContain("position:fixed");

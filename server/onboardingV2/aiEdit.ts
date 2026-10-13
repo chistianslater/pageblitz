@@ -4,12 +4,10 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { invokeLLM } from "../_core/llm";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
-import type {
-  PackId,
-  Page,
-  WebsiteDataV2,
-} from "../../shared/siteContract/types";
+import type { Page, WebsiteDataV2 } from "../../shared/siteContract/types";
+import type { DesignSystemId } from "../../shared/designSystems/types";
 import {
+  AI_THEME_KEYS,
   AiEditResponseSchema,
   AiPageEditResponseSchema,
   diffDocuments,
@@ -25,17 +23,24 @@ import { AI_EDIT_SYSTEM_PROMPT, buildAiEditPrompt } from "./aiEditPrompt";
 
 /**
  * KI-Chat des Onboarding-v2-Studios ("Was soll anders sein?"). Anders als
- * die Panel-Vorschläge (suggest.ts) kann das Ergebnis drei Formen annehmen:
- * ein validierter Inhalts-Vorschlag mit Diff, ein Stil-Vorschlag (Pack-
- * Wechsel statt Farb-/Font-Patch) oder eine Ablehnung bei Fakten-Wünschen.
+ * die Panel-Vorschläge (suggest.ts) kann das Ergebnis mehrere Formen
+ * annehmen: ein validierter Inhalts-Vorschlag mit Diff, ein Ein-/Ausblende-
+ * Patch, ein Stil-Vorschlag (anderes Designsystem statt Farb-/Font-Patch),
+ * eine Rückfrage oder eine Ablehnung bei Fakten-Wünschen.
  * Nichts wird hier persistiert — das übernimmt `applyAiEdit` in routerAi.ts
  * über `persistDoc`, erst nachdem der Nutzer den Vorschlag bestätigt hat.
  */
 
 export type ProposeAiEditResult =
   | { kind: "content"; next: WebsiteDataV2; diff: AiDiffEntry[] }
-  | { kind: "theme"; theme: AiThemePatch; reason: string }
-  | { kind: "style"; packId: PackId; reason: string }
+  | {
+      kind: "theme";
+      theme: AiThemePatch;
+      reason: string;
+      /** Farbe/Schrift/Layout gewünscht, aber verworfen (Farbstimmung statt Einzelwerte). */
+      skippedLook?: boolean;
+    }
+  | { kind: "style"; system: DesignSystemId; reason: string }
   | { kind: "reject"; reason: string }
   | { kind: "question"; question: string };
 
@@ -43,7 +48,7 @@ export type ProposeAiEditResult =
 const MAX_AI_EDIT_ATTEMPTS = 2;
 
 const AI_EDIT_FAILED_MESSAGE =
-  "Das hat leider nicht geklappt. Gut kann ich: Texte umformulieren, Farben, Schriften und Abstände ändern, Sektions-Layouts umstellen (auch eine Foto-Collage im Hero), eine Erzähl-Sektion ergänzen oder einen anderen Look vorschlagen. Nicht möglich: Kontaktdaten und Rechtliches — die änderst du in den Panels.";
+  "Das hat leider nicht geklappt. Gut kann ich: Texte umformulieren, Sektionen aus- und einblenden oder umsortieren, eine Erzähl-Sektion ergänzen oder ein anderes Design vorschlagen. Nicht möglich: Kontaktdaten und Rechtliches — die änderst du in den Panels.";
 
 /**
  * Ein Versuch + Retry; sind beide erschöpft, kommt KEIN Fehler, sondern eine
@@ -85,7 +90,7 @@ const RawAiEditResponseSchema = z.object({
     .nullable()
     .optional(),
   theme: z.record(z.string(), z.unknown()).nullable().optional(),
-  packId: z.string().nullable().optional(),
+  system: z.string().nullable().optional(),
   reason: z.string().nullable().optional(),
   question: z.string().nullable().optional(),
 });
@@ -105,12 +110,25 @@ function mapRawToAiEditResponse(
   if (raw.kind === "theme") {
     if (!raw.theme)
       throw new Error("KI-Antwort: 'theme' fehlt bei kind=theme.");
-    return { kind: "theme", theme: raw.theme, reason: raw.reason ?? "" };
+    // Farbe/Schrift/Layout gibt es nicht mehr als Einzelwerte — die Felder
+    // fallen weg und werden gemeldet, statt die ganze Antwort zu verwerfen.
+    const theme: Record<string, unknown> = {};
+    let skippedLook = false;
+    for (const [key, value] of Object.entries(raw.theme)) {
+      if ((AI_THEME_KEYS as readonly string[]).includes(key)) theme[key] = value;
+      else if (value !== undefined) skippedLook = true;
+    }
+    return {
+      kind: "theme",
+      theme,
+      reason: raw.reason ?? "",
+      ...(skippedLook ? { skippedLook } : {}),
+    };
   }
   if (raw.kind === "style") {
-    if (!raw.packId)
-      throw new Error("KI-Antwort: 'packId' fehlt bei kind=style.");
-    return { kind: "style", packId: raw.packId, reason: raw.reason ?? "" };
+    if (!raw.system)
+      throw new Error("KI-Antwort: 'system' fehlt bei kind=style.");
+    return { kind: "style", system: raw.system, reason: raw.reason ?? "" };
   }
   if (raw.kind === "question") {
     if (!raw.question)
@@ -148,7 +166,7 @@ const AI_EDIT_RESPONSE_FORMAT = {
           required: ["seo", "sections"],
         },
         theme: { type: ["object", "null"] },
-        packId: { type: ["string", "null"] },
+        system: { type: ["string", "null"] },
         reason: { type: ["string", "null"] },
         question: { type: ["string", "null"] },
       },

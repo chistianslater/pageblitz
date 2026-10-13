@@ -10,7 +10,8 @@ function render(
     <GenerationScreen
       businessName="Schreinerei Brandt"
       token="tok-123"
-      packId={null}
+      system={null}
+      palette={null}
       hasDoc={false}
       progress={30}
       status="processing"
@@ -43,16 +44,21 @@ describe("GenerationScreen", () => {
     expect(render({ progress: 90 })).not.toContain("pb-gen-writing");
   });
 
-  test("ohne Zwischenstand: Pack-Skeleton sichtbar, kein Vorschau-iframe (Zeitmaschine, Task 4)", () => {
+  test("ohne Zwischenstand: Skeleton sichtbar, kein Vorschau-iframe (Zeitmaschine, Task 4)", () => {
     const html = render({ hasDoc: false });
     expect(html).toContain("pb-studio-skeleton");
     expect(html).not.toContain("<iframe");
   });
 
-  test("packId setzt die Pack-Farben als CSS-Variablen auf den Skeleton (toCssVars)", () => {
-    const html = render({ packId: "werkbank" });
-    expect(html).toContain("--pb-canvas");
-    expect(html).toContain("--pb-accent");
+  test("System + Farbstimmung färben den Skeleton (Papier, Fläche, Akzent der Palette)", () => {
+    const html = render({ system: "journal", palette: "ton" });
+    expect(html).toContain("--pb-canvas:#f4ece6");
+    expect(html).toContain("--pb-accent:#9a4630");
+    expect(html).toContain("--pb-surface:");
+  });
+
+  test("ohne System: neutrale Studio-Farben (keine --pb-Variablen)", () => {
+    expect(render()).not.toContain("--pb-");
   });
 
   test("mit Zwischenstand: iframe lädt /preview-ssr/<token> mit reveal=1 (Sektions-Einblendung nur im Preview-Modus)", () => {

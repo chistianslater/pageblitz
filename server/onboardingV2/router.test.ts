@@ -54,8 +54,8 @@ import {
   runWebsiteGenerationV2Job,
 } from "../generationV2/runJob";
 import { invalidateSsrCache } from "../ssr/routes";
-import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
 import { systemsForDoc } from "../../shared/designSystems/assignment";
+import { DESIGN_SYSTEM_IDS } from "../../shared/designSystems/types";
 const mockedDb = vi.mocked(db);
 
 const ctx = (): TrpcContext => ({
@@ -520,60 +520,30 @@ describe("onboardingV2 — Kategorie-Rückfrage (Plan B7 Task 5)", () => {
 });
 
 describe("onboardingV2.getStyleCandidates", () => {
-  test("liefert 2 Kandidaten mit Name/Essenz aus der Registry", async () => {
+  test("liefert nur Systemkarten mit Name, Essenz und drei Farbstimmungen", async () => {
     const r = await appRouter
       .createCaller(ctx())
       .onboardingV2.getStyleCandidates({ token: "tok", round: 0 });
-    expect(r.candidates).toHaveLength(2);
-    expect(r.candidates[0]).toMatchObject({
-      id: expect.any(String),
-      name: expect.any(String),
-      essence: expect.any(String),
-    });
-  });
-  test("Design-Splash kann 3 Kandidaten zum Swipen anfordern", async () => {
-    const r = await appRouter
-      .createCaller(ctx())
-      .onboardingV2.getStyleCandidates({
-        token: "tok",
-        round: 0,
-        count: 3,
+    expect(r.candidates.length).toBeGreaterThan(0);
+    for (const c of r.candidates) {
+      expect(c).toMatchObject({
+        kind: "system",
+        id: expect.any(String),
+        name: expect.any(String),
+        essence: expect.any(String),
       });
-    expect(r.candidates).toHaveLength(3);
+      expect(c.palettes).toHaveLength(3);
+    }
   });
 });
 
-describe("onboardingV2.selectStylePack", () => {
-  // Packs entfernen (Task 2): Eine Pack-Wahl verließe das Designsystem
-  // (rev 2) — der Write-Guard lehnt das ab, nichts wird gespeichert. Die
-  // Prozedur selbst entfällt in Task 3.
-  test("Pack-Wahl wird abgelehnt (nur rev 3 wird geschrieben), nichts gespeichert", async () => {
-    await expect(
-      appRouter
-        .createCaller(ctx())
-        .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei", confirm: true })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: expect.stringMatching(/Designsystem/) });
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
-  });
-  test("unbekanntes Pack → BAD_REQUEST; ohne v2-Dokument → BAD_REQUEST", async () => {
-    await expect(
-      appRouter
-        .createCaller(ctx())
-        .onboardingV2.selectStylePack({ token: "tok", packId: "disco" })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-    mockedDb.getWebsiteByToken.mockResolvedValue({
-      id: 42,
-      slug: "s",
-      status: "preview",
-      businessId: 7,
-      websiteData: null,
-    } as any);
-    await expect(
-      appRouter
-        .createCaller(ctx())
-        .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+describe("onboardingV2 — keine Pack-Wahl mehr (Packs entfernen, Task 3)", () => {
+  test("selectStylePack und der Marken-Import existieren nicht mehr", () => {
+    const procedures = appRouter._def.procedures as Record<string, unknown>;
+    expect(procedures["onboardingV2.selectStylePack"]).toBeUndefined();
+    expect(procedures["onboardingV2.brandImportPreview"]).toBeUndefined();
+    expect(procedures["onboardingV2.applyBrandImport"]).toBeUndefined();
+    expect(procedures["onboardingV2.selectDesignSystem"]).toBeDefined();
   });
 });
 
@@ -610,38 +580,53 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     } as any);
   });
 
-  // Packs entfernen (Task 2): Das Studio liest jede Seite als System-Dokument
-  // — die Seite trägt also immer schon ihr Hauptsystem. Gestaffelte
-  // Freischaltungen und Pack-only-Runden mit rev-2-Seiten gibt es nicht mehr;
-  // Task 3 stellt die Kandidaten ganz auf Systeme um (E2).
-  test("Runde 0: Alternativen aus dem Tripel ohne das aktuelle System, Rest Packs", async () => {
+  // Packs entfernen (Task 3, E2): Das Studio liest jede Seite als System-
+  // Dokument und bietet nur noch Systeme an. Runde 0 = Branchen-Tripel ohne
+  // das aktuelle System, Runde 1 = übrige freigeschaltete Systeme, danach
+  // wieder von vorn.
+  test("Runde 0: Alternativen aus dem Tripel ohne das aktuelle System, nur Systeme", async () => {
     const { candidates } = await caller().getStyleCandidates({
       token: friseurToken,
-      count: 3,
     });
-    expect(candidates).toHaveLength(3);
+    expect(candidates.map(c => c.id)).toEqual(["nacht", "plakat"]);
     expect(candidates[0]).toMatchObject({
       kind: "system",
       id: "nacht",
       name: "Nacht",
     });
-    expect(candidates[1]).toMatchObject({ kind: "system", id: "plakat" });
-    expect((candidates[0] as any).palettes).toHaveLength(3);
-    expect(candidates[2].kind).toBe("pack");
+    expect(candidates[0].palettes).toHaveLength(3);
   });
 
-  test("Runde ≥ 1 („Andere Richtungen“) zeigt weiter nur Packs", async () => {
-    for (const round of [1, 2]) {
-      const { candidates } = await caller().getStyleCandidates({
-        token: friseurToken,
-        round,
-        count: 3,
-      });
-      expect(candidates.every(c => c.kind === "pack")).toBe(true);
-      expect(candidates.map(c => c.id)).toEqual(
-        getV2VariantCandidates("Friseursalon", round, 3)
-      );
-    }
+  test("Runde 1 („Andere Richtungen“): die übrigen freigeschalteten Systeme, danach wieder von vorn", async () => {
+    const one = await caller().getStyleCandidates({ token: friseurToken, round: 1 });
+    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar"]);
+    expect(one.candidates.every(c => c.kind === "system")).toBe(true);
+    const two = await caller().getStyleCandidates({ token: friseurToken, round: 2 });
+    expect(two.candidates.map(c => c.id)).toEqual(["nacht", "plakat"]);
+    const three = await caller().getStyleCandidates({ token: friseurToken, round: 3 });
+    expect(three.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar"]);
+  });
+
+  test("Seite trägt ein System außerhalb des Tripels: Runde 0 = ganzes Tripel, Runde 1 = Rest ohne aktuelles", async () => {
+    useDoc({ ...friseurDoc, designRevision: 3, system: "klar", palette: "papier" });
+    const zero = await caller().getStyleCandidates({ token: friseurToken });
+    expect(zero.candidates.map(c => c.id)).toEqual(["journal", "nacht", "plakat"]);
+    const one = await caller().getStyleCandidates({ token: friseurToken, round: 1 });
+    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff"]);
+  });
+
+  test("nur freigeschaltete Systeme; leere Runde 0 springt auf die übrigen", async () => {
+    released.ids = ["journal", "raster"];
+    const zero = await caller().getStyleCandidates({ token: friseurToken });
+    expect(zero.candidates.map(c => c.id)).toEqual(["raster"]);
+    const one = await caller().getStyleCandidates({ token: friseurToken, round: 1 });
+    expect(one.candidates.map(c => c.id)).toEqual(["raster"]);
+  });
+
+  test("ohne Dokument: Kandidaten aus Kategorie und Name des Betriebs", async () => {
+    useDoc(null as any);
+    const { candidates } = await caller().getStyleCandidates({ token: friseurToken });
+    expect(candidates.map(c => c.id)).toEqual(["journal", "nacht", "plakat"]);
   });
 
   test.each([
@@ -656,17 +641,22 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     ["stay", "Hotel", "Hotel Muster"],
     ["industry", "Betrieb", "Muster GmbH"],
     ["standard", "Betrieb", "Muster"],
-  ])("%s (%s): Seite trägt das Hauptsystem, Kandidaten sind die übrigen zwei", async (family, category, name) => {
+  ])("%s (%s): Seite trägt das Hauptsystem, Runde 0 die übrigen zwei, Runde 1 der Rest", async (family, category, name) => {
     const doc = { ...v2, businessCategory: category, businessName: name, blueprintFamily: family };
     useDoc(doc);
-    const [primary, alt1, alt2] = systemsForDoc(doc as any);
+    const triple = systemsForDoc(doc as any);
+    const [primary, alt1, alt2] = triple;
     const state = await caller().getState({ token: "tok" });
     expect(state.doc?.system).toBe(primary);
-    const { candidates } = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(candidates.filter(c => c.kind === "system").map(c => c.id)).toEqual([alt1, alt2]);
+    const zero = await caller().getStyleCandidates({ token: "tok" });
+    expect(zero.candidates.map(c => c.id)).toEqual([alt1, alt2]);
+    const one = await caller().getStyleCandidates({ token: "tok", round: 1 });
+    expect(one.candidates.map(c => c.id)).toEqual(
+      DESIGN_SYSTEM_IDS.filter(id => !(triple as readonly string[]).includes(id))
+    );
   });
 
-  test("aktuelles System der Seite wird nicht erneut angeboten", async () => {
+  test("aktuelles System der Seite wird nie angeboten", async () => {
     released.ids = ["journal"];
     useDoc({
       ...friseurDoc,
@@ -674,12 +664,13 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
       system: "journal",
       palette: "papier",
     });
-    const { candidates } = await caller().getStyleCandidates({
-      token: friseurToken,
-      count: 2,
-    });
-    expect(candidates).toHaveLength(2);
-    expect(candidates.some(c => c.kind === "system")).toBe(false);
+    for (const round of [0, 1]) {
+      const { candidates } = await caller().getStyleCandidates({
+        token: friseurToken,
+        round,
+      });
+      expect(candidates).toEqual([]);
+    }
   });
 
   test("selectDesignSystem setzt rev 3", async () => {
@@ -711,6 +702,25 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
       42,
       expect.objectContaining({ studioProgress: { styleConfirmed: true } })
     );
+    expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
+  });
+
+  test("selectDesignSystem mit confirm ohne Onboarding-Row → legt Row mit studioProgress an, statt zu updaten", async () => {
+    mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
+    const s = await caller().selectDesignSystem({
+      token: friseurToken,
+      system: "nacht",
+      confirm: true,
+    });
+    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        websiteId: 42,
+        status: "in_progress",
+        stepCurrent: 0,
+        studioProgress: { styleConfirmed: true },
+      })
+    );
+    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
     expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
   });
 

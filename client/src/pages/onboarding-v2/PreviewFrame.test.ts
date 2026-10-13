@@ -37,13 +37,12 @@ describe("PreviewFrame helpers", () => {
         token: "tok",
         version: 1,
         pageSlug: "leistungen",
-        packOverride: "kanzlei",
         reveal: true,
       })
-    ).toBe("/preview-ssr/tok/leistungen?pack=kanzlei&reveal=1&v=1");
+    ).toBe("/preview-ssr/tok/leistungen?reveal=1&v=1");
   });
 
-  test("buildPreviewSrc: system/palette haben Vorrang vor Pack, Fassung und Schrift", () => {
+  test("buildPreviewSrc: nur noch ?system=&palette= als Override", () => {
     expect(
       buildPreviewSrc({
         token: "tok",
@@ -53,13 +52,7 @@ describe("PreviewFrame helpers", () => {
       })
     ).toBe("/preview-ssr/tok?system=journal&palette=salbei&v=2");
     expect(
-      buildPreviewSrc({
-        token: "tok",
-        version: 2,
-        packOverride: "kanzlei",
-        look: { entryVariant: 1, fontPairId: "klassisch" },
-        system: "journal",
-      })
+      buildPreviewSrc({ token: "tok", version: 2, system: "journal" })
     ).toBe("/preview-ssr/tok?system=journal&v=2");
   });
 
@@ -110,15 +103,11 @@ describe("Vorschau-Rahmen: Farbschema", () => {
     expect(previewScheme(undefined)).toBeUndefined();
   });
 
-  test("heller Pack-Override auf einem Nacht-Dokument: kein dunkler Rahmen", () => {
+  test("System-Override hat Vorrang vor dem System des Dokuments", () => {
     const scheme = (args: Parameters<typeof shownPreviewSystem>[0]) =>
       previewScheme(shownPreviewSystem(args));
     expect(scheme({ docSystem: "nacht" })).toBe("dark");
-    expect(scheme({ docSystem: "nacht", packOverride: "werkbank" })).toBeUndefined();
-    // System-Override hat Vorrang vor Pack und Dokument.
-    expect(
-      scheme({ docSystem: "klar", packOverride: "werkbank", systemOverride: "nacht" })
-    ).toBe("dark");
+    expect(scheme({ docSystem: "klar", systemOverride: "nacht" })).toBe("dark");
     expect(scheme({ docSystem: "nacht", systemOverride: "klar" })).toBeUndefined();
     expect(shownPreviewSystem({ docSystem: "klar" })).toBe("klar");
   });

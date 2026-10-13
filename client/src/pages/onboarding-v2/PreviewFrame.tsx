@@ -1,6 +1,6 @@
 import { usePreviewViewport } from "./usePreviewViewport";
 import React, { useCallback, useEffect, useRef } from "react";
-import type { PackId, SectionType } from "@shared/siteContract/types";
+import type { SectionType } from "@shared/siteContract/types";
 import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { DesignSystemId } from "@shared/designSystems/types";
 import { getSystem } from "@shared/designSystems/registry";
@@ -11,10 +11,7 @@ import {
   stripMarks,
 } from "@/components/site/richText";
 import { enableInlineFormatToolbar } from "./previewInlineFormat";
-import {
-  applyInsertSkeleton,
-  enablePreviewLayoutChrome,
-} from "./previewLayoutChrome";
+import { applyInsertSkeleton, enablePreviewChrome } from "./previewLayoutChrome";
 import { scrollRestoreTarget, shouldConsumeFocus } from "./previewScroll";
 import { swapSectionFromHtml } from "./previewSectionSwap";
 
@@ -22,8 +19,7 @@ interface PreviewFrameProps {
   token: string;
   version: number;
   device: "desktop" | "mobile";
-  packOverride?: PackId;
-  /** Designsystem-Vorschau (rev 3), Vorrang vor packOverride. */
+  /** Designsystem-Vorschau (Designwahl), Vorrang vor dem System des Dokuments. */
   systemOverride?: DesignSystemId;
   /**
    * System des Dokuments (rev 3) — ohne Override bestimmt es, ob der
@@ -41,7 +37,7 @@ interface PreviewFrameProps {
    * ersten Load nach einer frisch beobachteten Generierung.
    */
   reveal?: boolean;
-  /** Aktuelle Dokumenttexte zum robusten Auffinden im pack-spezifischen DOM. */
+  /** Aktuelle Dokumenttexte zum robusten Auffinden im System-DOM. */
   inlineTargets?: InlineTextTarget[];
   /** Speichert direkte Änderungen aus dem Preview-iframe. */
   onInlineTextEdit?: (path: string, value: string) => void;
@@ -54,10 +50,10 @@ interface PreviewFrameProps {
    * Kunde wieder ganz oben.
    */
   onFocusHandled?: () => void;
-  /** Kompositionsprofil — Layout-Buttons in der Vorschau. */
+  /** Kompositionsprofil — „Bild ausblenden“ in der Vorschau. */
   designProfile?: DesignProfile | null;
-  /** Speichert ein in der Vorschau gewähltes Sektions-Layout. */
-  onSectionLayout?: (profile: DesignProfile) => void;
+  /** Speichert das in der Vorschau umgeschaltete Profil (hiddenElements). */
+  onDesignProfile?: (profile: DesignProfile) => void;
   /** Meldet das geladene iframe z. B. für Scroll-Weiterleitung im Splash. */
   onIframeReady?: (iframe: HTMLIFrameElement) => void;
   /**
@@ -105,10 +101,9 @@ export function photoClickTargetOf(el: Element): PhotoClickTarget | null {
 }
 
 export function normalizeInlineText(value: string | null | undefined): string {
-  // Case-Fold (2026-08-30): Packs rendern Texte per CSS text-transform in
-  // GROSSBUCHSTABEN — innerText liefert den GERENDERTEN Text, sodass der
-  // Vergleich mit dem Dokumentwert sonst nie matcht (Werkbank-H1 war
-  // dadurch nicht inline-editierbar).
+  // Case-Fold (2026-08-30): Designs rendern Texte teils per CSS
+  // text-transform in GROSSBUCHSTABEN — innerText liefert den GERENDERTEN
+  // Text, sodass der Vergleich mit dem Dokumentwert sonst nie matcht.
   return (value ?? "").replace(/\s+/g, " ").trim().toLocaleLowerCase("de-DE");
 }
 
@@ -128,18 +123,12 @@ export function previewScheme(
   return system && getSystem(system)?.scheme === "dark" ? "dark" : undefined;
 }
 
-/**
- * System, das die Vorschau gerade zeigt: Override vor allem; ein Pack-
- * Override (alte Packs, immer hell) verdrängt das System des Dokuments —
- * sonst bekäme ein heller Pack auf einem Nacht-Dokument den dunklen Rahmen.
- */
+/** System, das die Vorschau gerade zeigt: Override vor dem Dokument. */
 export function shownPreviewSystem(args: {
   systemOverride?: DesignSystemId;
-  packOverride?: PackId;
   docSystem?: DesignSystemId | null;
 }): DesignSystemId | null | undefined {
-  if (args.systemOverride) return args.systemOverride;
-  return args.packOverride ? undefined : args.docSystem;
+  return args.systemOverride ?? args.docSystem;
 }
 
 /** Pfad der Vorschau (Startseite oder Unterseite) — von PreviewFrame und "In neuem Tab öffnen" geteilt. */
@@ -149,17 +138,14 @@ export function previewPath(token: string, pageSlug?: string): string {
     : `/preview-ssr/${token}`;
 }
 
-/** Vorschau-URL inkl. Pack-Override, Verlaufs-Stand, Reveal und Cache-Bust. */
+/** Vorschau-URL inkl. System-Override, Verlaufs-Stand, Reveal und Cache-Bust. */
 export function buildPreviewSrc(args: {
   token: string;
   version: number;
   pageSlug?: string;
-  packOverride?: PackId;
   reveal?: boolean;
   versionId?: number | null;
-  /** Look einer Alternative in der Design-Auswahl (Fassung + Schrift). */
-  look?: { entryVariant: number; fontPairId: string };
-  /** Designsystem-Vorschau (rev 3) — hat Vorrang vor Pack/Fassung/Schrift. */
+  /** Designsystem-Vorschau (Designwahl). */
   system?: DesignSystemId;
   /** Farbstimmung des Systems; ohne → Palette des Dokuments bzw. erste. */
   palette?: string;
@@ -168,12 +154,6 @@ export function buildPreviewSrc(args: {
   if (args.system) {
     params.set("system", args.system);
     if (args.palette) params.set("palette", args.palette);
-  } else if (args.packOverride) {
-    params.set("pack", args.packOverride);
-    if (args.look) {
-      params.set("variant", String(args.look.entryVariant));
-      params.set("font", args.look.fontPairId);
-    }
   }
   if (args.versionId) params.set("version", String(args.versionId));
   if (args.reveal) params.set("reveal", "1");
@@ -185,7 +165,6 @@ export function PreviewFrame({
   token,
   version,
   device,
-  packOverride,
   systemOverride,
   docSystem,
   paletteOverride,
@@ -196,7 +175,7 @@ export function PreviewFrame({
   focusAnchor,
   onFocusHandled,
   designProfile,
-  onSectionLayout,
+  onDesignProfile,
   onIframeReady,
   draftValues,
   onPickPhoto,
@@ -209,7 +188,6 @@ export function PreviewFrame({
     token,
     version,
     pageSlug,
-    packOverride,
     system: systemOverride,
     palette: paletteOverride,
     reveal,
@@ -347,14 +325,13 @@ export function PreviewFrame({
   }, [pendingInsert, src]);
 
   useEffect(() => {
-    if (pageSlug || !onSectionLayout) return;
+    if (pageSlug || !onDesignProfile) return;
     const doc = iframeRef.current?.contentDocument;
-    if (!doc?.documentElement?.hasAttribute("data-pb-layout-chrome")) return;
-    enablePreviewLayoutChrome(doc, designProfile, onSectionLayout, {
-      viewport: device,
+    if (!doc?.documentElement?.hasAttribute("data-pb-preview-chrome")) return;
+    enablePreviewChrome(doc, designProfile, onDesignProfile, {
       onInsertSection,
     });
-  }, [designProfile, onSectionLayout, pageSlug, device, onInsertSection]);
+  }, [designProfile, onDesignProfile, pageSlug, onInsertSection]);
 
   const enableInlineEditing = (iframeEl: HTMLIFrameElement) => {
     onIframeReady?.(iframeEl);
@@ -374,7 +351,7 @@ export function PreviewFrame({
         reveal: reveal ?? false,
       });
       if (restore !== null) {
-        // Ohne "auto" würde ein Pack mit scroll-behavior:smooth sichtbar
+        // Ohne "auto" würde eine Seite mit scroll-behavior:smooth sichtbar
         // von oben herunterfahren statt einfach an der Stelle zu stehen.
         const previousBehavior = previewRoot.style.scrollBehavior;
         previewRoot.style.scrollBehavior = "auto";
@@ -386,9 +363,8 @@ export function PreviewFrame({
     // Neuer iframe-Load (z. B. nach Patch): Fokusposition wiederherstellen.
     window.setTimeout(scrollToFocus, 80);
     const previewDoc = iframeEl.contentDocument;
-    if (previewDoc && !pageSlug && onSectionLayout) {
-      enablePreviewLayoutChrome(previewDoc, designProfile, onSectionLayout, {
-        viewport: device,
+    if (previewDoc && !pageSlug && onDesignProfile) {
+      enablePreviewChrome(previewDoc, designProfile, onDesignProfile, {
         onInsertSection,
       });
     }
@@ -543,7 +519,7 @@ export function PreviewFrame({
       className="pb-studio-device"
       data-device={device}
       data-scheme={previewScheme(
-        shownPreviewSystem({ systemOverride, packOverride, docSystem })
+        shownPreviewSystem({ systemOverride, docSystem })
       )}
     >
       <iframe

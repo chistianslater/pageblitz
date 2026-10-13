@@ -1,5 +1,3 @@
-import { getFontPair } from "../../shared/stylePacks/fontPairs";
-import { applyStylePack } from "../onboardingV2/applyPatch";
 import type { Express, NextFunction, Request, Response } from "express";
 import { handleKurzlink } from "../postkarten/route";
 import { sdk } from "../_core/sdk";
@@ -211,8 +209,8 @@ function renderableSystem(id: string): DesignSystemDef | undefined {
 /**
  * Studio-Live-Preview: rendert das gespeicherte v2-Dokument per previewToken
  * (Zugangsgeheimnis, nanoid 32) — ungecacht (jeder Patch soll sofort sichtbar
- * sein), noindex, optional mit Pack-Override (?pack=) für Stil-Kandidaten.
- * Der Override verändert NIE das gespeicherte Dokument. Seit Plan B6 (Task 3)
+ * sein), noindex, optional mit System-Override (?system=&palette=) für die
+ * Designwahl. Der Override verändert NIE das gespeicherte Dokument. Seit Plan B6 (Task 3)
  * ist die Pfad-Gültigkeit vom Dokument abhängig (`data.pages[]`), deshalb
  * wird erst geladen und geparst, dann der Pfad gegen `isKnownSitePathname`
  * geprüft — anders als vorher (statische `PREVIEW_PATHNAMES`, vor dem
@@ -225,14 +223,6 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
     typeof req.params[1] === "string" && req.params[1].length > 0
       ? req.params[1]
       : "/";
-  const packParam = typeof req.query.pack === "string" ? req.query.pack : "";
-  if (packParam && !isKnownPackId(packParam)) {
-    // Bewusst OHNE den Parameter im Body zu reflektieren — ein Query-Wert wie
-    // `<script>...` würde sonst unescaped in einer text/html-Antwort landen
-    // (reflected XSS), siehe handleDemoRoute weiter unten.
-    res.status(400).type("text/plain").send("Unbekanntes Pack");
-    return;
-  }
   const systemQuery = readSystemQuery(req, res);
   if (systemQuery === null) return;
   // Verlauf (2026-09-03): ?version=<id> rendert einen gespeicherten Stand
@@ -281,24 +271,12 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       res.status(404).send("Vorschau-Seite nicht gefunden");
       return;
     }
-    // Look der Alternative aus der Design-Auswahl (?variant=&font=): nur
-    // gültige Werte, sonst der Pack-Standard — nie reflektiert.
-    const variantParam = Number(req.query.variant);
-    const fontParam = typeof req.query.font === "string" ? req.query.font : "";
-    const look =
-      (variantParam === 0 || variantParam === 1 || variantParam === 2) &&
-      getFontPair(fontParam)
-        ? { entryVariant: variantParam as 0 | 1 | 2, fontPairId: fontParam }
-        : undefined;
-    // ?system= hat Vorrang vor variant/font; nur Vorschau, nichts wird gespeichert.
-    // ?pack=<eigenes Pack> auf einer rev-3-Seite zeigt das Pack (ohne System).
+    // ?system=&palette= zeigt eine Alternative der Designwahl; nur Vorschau,
+    // nichts wird gespeichert. Pack-Parameter (?pack=&variant=&font=) gibt
+    // es seit dem Entfernen der Packs nicht mehr — sie werden ignoriert.
     const data = systemQuery
       ? withDesignSystem(parsed.data, systemQuery.system, systemQuery.palette)
-      : packParam &&
-          (packParam !== parsed.data.stylePackId ||
-            parsed.data.designRevision === 3)
-        ? applyStylePack(parsed.data, packParam as PackId, look)
-        : parsed.data;
+      : parsed.data;
     const origin = `${req.protocol}://${req.get("host") ?? "localhost"}`;
     const basePath = `/preview-ssr/${token}`;
     const { html, status } = renderSiteHtml(data, {

@@ -52,7 +52,7 @@ function llmContentResponse(sections: unknown[] = doc.sections, seo = doc.seo) {
           content: JSON.stringify({
             kind: "content",
             content: { seo, sections },
-            packId: null,
+            system: null,
             reason: null,
           }),
         },
@@ -318,7 +318,7 @@ describe("proposeAiEdit — Unterseiten-Scope (pageSlug, Plan B6 Task 5)", () =>
             content: JSON.stringify({
               kind: "style",
               content: null,
-              packId: "salon-noir",
+              system: "raster",
               reason: "Edler.",
             }),
           },
@@ -333,40 +333,88 @@ describe("proposeAiEdit — Unterseiten-Scope (pageSlug, Plan B6 Task 5)", () =>
     });
     expect(result).toEqual({
       kind: "style",
-      packId: "salon-noir",
+      system: "raster",
       reason: "Edler.",
     });
   });
 });
 
-describe("proposeAiEdit — kind=style", () => {
-  test("liefert Pack-Vorschlag ohne Dokument-Änderung", async () => {
-    vi.mocked(invokeLLM).mockResolvedValue({
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              kind: "style",
-              content: null,
-              packId: "salon-noir",
-              reason: "Dunkler, edler Auftritt passt zum Wunsch.",
-            }),
-          },
-        },
-      ],
-    } as any);
+function llmJson(body: Record<string, unknown>) {
+  return {
+    choices: [{ message: { content: JSON.stringify(body) } }],
+  } as any;
+}
 
+describe("proposeAiEdit — kind=style (Designsystem, Packs entfernen Task 3)", () => {
+  test("liefert den System-Vorschlag ohne Dokument-Änderung", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmJson({
+        kind: "style",
+        content: null,
+        system: "raster",
+        reason: "Sachlicher Auftritt passt zum Wunsch.",
+      })
+    );
     const result = await proposeAiEdit({
       doc,
-      message: "Mach die Seite dunkler und eleganter",
+      message: "Mach die Seite sachlicher",
       category: "Tischler",
     });
-
     expect(result).toEqual({
       kind: "style",
-      packId: "salon-noir",
-      reason: "Dunkler, edler Auftritt passt zum Wunsch.",
+      system: "raster",
+      reason: "Sachlicher Auftritt passt zum Wunsch.",
     });
+  });
+
+  test("Pack-ID statt System → Retry, danach erklärende Absage", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmJson({ kind: "style", content: null, system: "salon-noir", reason: "x" })
+    );
+    const result = await proposeAiEdit({ doc, message: "dunkler", category: "Tischler" });
+    expect(result.kind).toBe("reject");
+    expect(invokeLLM).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("proposeAiEdit — kind=theme ohne Farbe/Schrift/Layout", () => {
+  test("Look-Felder werden verworfen und gemeldet, Ein-/Ausblenden bleibt", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmJson({
+        kind: "theme",
+        content: null,
+        theme: {
+          hiddenSections: ["services"],
+          accent: "#2B44FF",
+          fontPairId: "elegant",
+          heroLayout: "split",
+        },
+        reason: "Leistungen weg und blauer.",
+      })
+    );
+    const result = await proposeAiEdit({ doc, message: "Leistungen weg und blauer", category: "Tischler" });
+    expect(result).toEqual({
+      kind: "theme",
+      theme: { hiddenSections: ["services"] },
+      reason: "Leistungen weg und blauer.",
+      skippedLook: true,
+    });
+  });
+
+  test("reiner Farbwunsch → leerer Patch mit skippedLook", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmJson({ kind: "theme", content: null, theme: { colorWorldId: "abend" }, reason: "Dunkler." })
+    );
+    const result = await proposeAiEdit({ doc, message: "dunkler", category: "Tischler" });
+    expect(result).toEqual({ kind: "theme", theme: {}, reason: "Dunkler.", skippedLook: true });
+  });
+
+  test("ohne Look-Felder kein skippedLook", async () => {
+    vi.mocked(invokeLLM).mockResolvedValue(
+      llmJson({ kind: "theme", content: null, theme: { hiddenElements: ["hero-media"] }, reason: "Bild weg." })
+    );
+    const result = await proposeAiEdit({ doc, message: "Bild weg", category: "Tischler" });
+    expect(result).toEqual({ kind: "theme", theme: { hiddenElements: ["hero-media"] }, reason: "Bild weg." });
   });
 });
 
@@ -379,7 +427,7 @@ describe("proposeAiEdit — kind=reject", () => {
             content: JSON.stringify({
               kind: "reject",
               content: null,
-              packId: null,
+              system: null,
               reason: "Bitte im Panel 'Rechtliches' ändern.",
             }),
           },
@@ -509,7 +557,7 @@ describe("proposeAiEdit — kind=question (Rückfrage, 2026-08-30)", () => {
               kind: "question",
               content: null,
               theme: null,
-              packId: null,
+              system: null,
               reason: null,
               question:
                 "Meinst du die Überschrift im Hero oder bei Leistungen?",

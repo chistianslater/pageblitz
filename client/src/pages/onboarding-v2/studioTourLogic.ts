@@ -1,7 +1,7 @@
 /**
  * Einmalige Studio-Tour (Test-Feedback 2026-09-18): Nutzer:innen verstanden
- * nicht, dass links die Schritte durchzugehen sind, dass Sektionen in der
- * Vorschau Layout-Varianten haben und dass der Kauf erst am Ende kommt.
+ * nicht, dass links die Schritte durchzugehen sind, was in der Vorschau
+ * direkt geht und dass der Kauf erst am Ende kommt.
  * Reine Daten + Geometrie hier, DOM/React in StudioTour.tsx.
  */
 
@@ -23,12 +23,12 @@ export const STUDIO_TOUR_STEPS: readonly TourStep[] = [
   {
     anchor: "preview",
     title: "Die Vorschau: sofort das Ergebnis",
-    body: "Texte kannst du direkt in der Vorschau anklicken und ändern. Am rechten Rand jeder Sektion sitzt der Knopf „Layout“ — dahinter liegen Varianten, zum Beispiel Bild links, Bild rechts oder zentriert.",
+    body: "Texte kannst du direkt in der Vorschau anklicken und ändern, ein Klick aufs Foto tauscht es. Rechts neben Hero und Über uns sitzt „Bild ausblenden“, unter jeder Sektion „Sektion einfügen“.",
   },
   {
     anchor: "assistant",
     title: "Dein KI-Assistent",
-    body: "Sag ihm einfach, was du ändern willst — „Texte kürzer“, „andere Farbe“, „Öffnungszeiten nach oben“. Er setzt es direkt um.",
+    body: "Sag ihm einfach, was du ändern willst — „Texte kürzer“, „Bewertungen ausblenden“, „Leistungen nach oben“. Er setzt es direkt um.",
   },
   {
     anchor: null,

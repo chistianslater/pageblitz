@@ -29,7 +29,7 @@ import { appRouter } from "../routers";
 import * as db from "../db";
 import { proposals, proposeAiEdit } from "./aiEdit";
 import { applyAiTheme } from "./routerAi";
-import { getColorWorld } from "../../shared/stylePacks/colorWorlds";
+import { SYSTEM_LOOK_MESSAGE } from "../../shared/onboardingV2/aiEdit";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 const mockedDb = vi.mocked(db);
 const mockedProposeAiEdit = vi.mocked(proposeAiEdit);
@@ -161,24 +161,40 @@ describe("onboardingV2.aiEdit", () => {
     expect(mockedProposeAiEdit).not.toHaveBeenCalled();
   });
 
-  test("kind=style → packId/name/reason, kein Write", async () => {
+  test("kind=style → System aus dem Tripel mit Name und Begründung, kein Write", async () => {
+    // Tischler auf Werkstoff — Tripel: werkstoff, raster, plakat.
     mockedProposeAiEdit.mockResolvedValue({
       kind: "style",
-      packId: "salon-noir",
-      reason: "Dunkler, edler Auftritt.",
+      system: "raster",
+      reason: "Sachlicher Auftritt.",
     });
-
     const result = await caller().onboardingV2.aiEdit({
       token: "tok",
-      message: "Mach die Seite dunkler",
+      message: "Mach die Seite sachlicher",
     });
-
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       kind: "style",
-      packId: "salon-noir",
-      reason: "Dunkler, edler Auftritt.",
+      system: "raster",
+      name: "Raster",
+      reason: "Sachlicher Auftritt.",
     });
-    expect((result as any).name).toBeTruthy();
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["außerhalb des Branchen-Tripels", "nacht"],
+    ["das System, das die Seite schon trägt", "werkstoff"],
+  ])("kind=style mit System %s → Ablehnung, kein Write", async (_label, system) => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "style",
+      system: system as any,
+      reason: "x",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "tok",
+      message: "Ganz anderer Stil",
+    });
+    expect(result.kind).toBe("reject");
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
@@ -207,46 +223,6 @@ describe("onboardingV2.aiEdit", () => {
   });
 });
 
-/** Reine Pack-Logik (rev 2) — fällt mit Task 3. */
-const { system: _s, palette: _p, ...v2Rev2Base } = v2;
-const v2Rev2 = { ...v2Rev2Base, designRevision: 2 };
-
-describe("applyAiTheme", () => {
-  const doc = v2Rev2 as unknown as WebsiteDataV2;
-
-  test("Farbwelt + Akzent + Layout werden über applyTheme angewandt und zusammengefasst", () => {
-    const { next, summary } = applyAiTheme(doc, {
-      colorWorldId: "abend",
-      accent: "#2B44FF",
-      heroLayout: "image-first",
-      density: "compact",
-    });
-    const abend = getColorWorld("werkbank", "abend")!;
-    expect(next.colorOverrides?.canvas).toBe(abend.overrides.canvas);
-    expect(next.colorOverrides?.accent).toBe("#2B44FF");
-    expect(next.designProfile?.heroLayout).toBe("image-first");
-    expect(next.designProfile?.density).toBe("compact");
-    expect(summary.join(" ")).toContain("Abend");
-    expect(summary.join(" ")).toContain("#2B44FF");
-    expect(summary.join(" ")).toContain("Hero-Layout");
-  });
-
-  test("unbekannte Schriftpaar-ID wird übersprungen, Original-Welt setzt zurück", () => {
-    const { next, summary } = applyAiTheme(doc, {
-      fontPairId: "gibts-nicht",
-      colorWorldId: "original",
-    });
-    expect(next.fontPairId).toBeUndefined();
-    expect(summary.join(" ")).toContain("Original");
-    expect(summary.join(" ")).not.toContain("gibts-nicht");
-  });
-
-  test("leerer Patch liefert leere Summary (Route mappt das auf reject)", () => {
-    const { summary } = applyAiTheme(doc, {});
-    expect(summary).toEqual([]);
-  });
-});
-
 describe("onboardingV2.aiEdit (theme)", () => {
   test("theme-Antwort wird sofort persistiert und als Summary zurückgegeben", async () => {
     mockedProposeAiEdit.mockResolvedValue({
@@ -258,8 +234,7 @@ describe("onboardingV2.aiEdit (theme)", () => {
       token: "a".repeat(32),
       message: "blende die Leistungen aus",
     });
-    expect(result.kind).toBe("theme");
-    // Sofort-Persist: updateWebsite wurde mit neuem Doc aufgerufen.
+    expect(result).toMatchObject({ kind: "theme", reason: "Leistungen ausgeblendet." });
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
       42,
       expect.objectContaining({
@@ -271,24 +246,44 @@ describe("onboardingV2.aiEdit (theme)", () => {
     );
   });
 
-  test("Farbwelt-Wunsch auf einer System-Seite → Ablehnung mit Hinweis auf die Farbstimmung", async () => {
+  test("reiner Look-Wunsch (verworfen) → Ablehnung mit Hinweis auf die Farbstimmung, kein Write", async () => {
     mockedProposeAiEdit.mockResolvedValue({
       kind: "theme",
-      theme: { colorWorldId: "heller" },
+      theme: {},
       reason: "Heller gestellt.",
+      skippedLook: true,
     });
     const result = await caller().onboardingV2.aiEdit({
       token: "a".repeat(32),
       message: "mach alles heller",
     });
-    expect(result.kind).toBe("reject");
+    expect(result).toEqual({ kind: "reject", reason: SYSTEM_LOOK_MESSAGE });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("theme ohne zuordenbare Felder wird zur Ablehnung", async () => {
+  test("Ausblenden + verworfene Farbe → Ausblenden gespeichert, Hinweis statt KI-Begründung", async () => {
     mockedProposeAiEdit.mockResolvedValue({
       kind: "theme",
-      theme: { fontPairId: "gibts-nicht" },
+      theme: { hiddenSections: ["services"] },
+      reason: "Leistungen weg und blauer.",
+      skippedLook: true,
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "Leistungen weg und blauer",
+    });
+    expect(result.kind).toBe("theme");
+    if (result.kind === "theme") {
+      expect(result.reason).toBe(SYSTEM_LOOK_MESSAGE);
+      expect(result.summary.join(" ")).toContain("ausgeblendet");
+    }
+    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  });
+
+  test("theme ohne Wirkung wird zur Ablehnung", async () => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
+      theme: {},
       reason: "",
     });
     const result = await caller().onboardingV2.aiEdit({
@@ -472,102 +467,36 @@ describe("applyAiTheme — Sichtbarkeit + Reihenfolge (2026-08-30)", () => {
   });
 });
 
-describe("applyAiTheme — Designsystem (rev 3)", () => {
-  const journal = {
-    ...(v2 as unknown as WebsiteDataV2),
-    designRevision: 3,
-    system: "journal",
-    palette: "salbei",
-  } as WebsiteDataV2;
-
-  test("Farbe/Schrift/Layout werden auf rev 3 nicht angewandt und gemeldet", () => {
-    const { next, summary, skippedLook } = applyAiTheme(journal, {
-      colorWorldId: "abend",
-      accent: "#2B44FF",
-      fontPairId: "editorial",
-      density: "compact",
-      imageTreatment: "duotone" as never,
-      heroLayout: "image-first",
-    });
-    expect(skippedLook).toBe(true);
-    expect(summary).toEqual([]);
-    expect(next.colorOverrides).toBeUndefined();
-    expect(next.fontPairId).toBeUndefined();
-    expect(next.designProfile).toBeUndefined();
-    expect(next.designRevision).toBe(3);
-    expect(next.system).toBe("journal");
-  });
-
-  test("Ein-/Ausblenden funktioniert auf rev 3 weiter, Look-Teile fallen weg", () => {
-    const { next, summary, skippedLook } = applyAiTheme(journal, {
-      hiddenSections: ["services"],
+describe("applyAiTheme — Bild ausblenden", () => {
+  test("hiddenElements landet im Profil (Standardprofil, wenn keins gespeichert ist)", () => {
+    const { next, summary } = applyAiTheme(v2 as unknown as WebsiteDataV2, {
       hiddenElements: ["hero-media"],
-      accent: "#2B44FF",
     });
-    expect(skippedLook).toBe(true);
-    expect(next.hiddenSections).toEqual(["services"]);
     expect(next.designProfile?.hiddenElements).toEqual(["hero-media"]);
-    expect(next.colorOverrides?.accent).toBeUndefined();
-    expect(summary.join(" ")).toContain("ausgeblendet");
-    expect(summary.join(" ")).not.toContain("#2B44FF");
+    expect(next.designRevision).toBe(3);
+    expect(next.system).toBe("werkstoff");
+    expect(summary).toEqual(["Hero-Bild ausgeblendet — Text nutzt die volle Breite"]);
   });
 
-  test("rev 2 meldet nichts als übersprungen", () => {
-    const { skippedLook } = applyAiTheme(v2Rev2 as unknown as WebsiteDataV2, {
-      accent: "#2B44FF",
-    });
-    expect(skippedLook).toBe(false);
-  });
-});
-
-describe("onboardingV2.aiEdit (theme, rev 3)", () => {
-  const journalRow = (extra: Record<string, unknown> = {}) => ({
-    id: 42,
-    slug: "preview-brandt",
-    status: "preview",
-    businessId: 7,
-    websiteData: {
-      ...v2,
-      designRevision: 3,
-      system: "journal",
-      palette: "salbei",
-      ...extra,
-    },
-    customerEmail: null,
-  });
-
-  test("reiner Farbwunsch → Ablehnung mit Hinweis auf die Farbstimmung, kein Write", async () => {
-    mockedDb.getWebsiteByToken.mockResolvedValue(journalRow() as any);
-    mockedProposeAiEdit.mockResolvedValue({
-      kind: "theme",
-      theme: { colorWorldId: "abend", accent: "#2B44FF" },
-      reason: "Dunkler gestellt.",
-    });
-    const result = await caller().onboardingV2.aiEdit({
-      token: "a".repeat(32),
-      message: "mach es dunkler",
-    });
-    expect(result.kind).toBe("reject");
-    if (result.kind === "reject") expect(result.reason).toContain("Farbstimmung");
-    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
-  });
-
-  test("Ausblenden + Farbe → Ausblenden gespeichert, Hinweis statt KI-Begründung", async () => {
-    mockedDb.getWebsiteByToken.mockResolvedValue(journalRow() as any);
-    mockedProposeAiEdit.mockResolvedValue({
-      kind: "theme",
-      theme: { hiddenSections: ["services"], accent: "#2B44FF" },
-      reason: "Leistungen weg und blauer.",
-    });
-    const result = await caller().onboardingV2.aiEdit({
-      token: "a".repeat(32),
-      message: "Leistungen weg und blauer",
-    });
-    expect(result.kind).toBe("theme");
-    if (result.kind === "theme") {
-      expect(result.reason).toContain("Farbstimmung");
-      expect(result.summary.join(" ")).toContain("ausgeblendet");
-    }
-    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  test("[] blendet wieder ein, das übrige Profil bleibt", () => {
+    const doc = {
+      ...(v2 as unknown as WebsiteDataV2),
+      designProfile: {
+        version: 1,
+        heroLayout: "split",
+        servicesLayout: "list",
+        aboutLayout: "image-right",
+        galleryLayout: "grid",
+        density: "airy",
+        imageTreatment: "natural",
+        composition: "stage",
+        hiddenElements: ["about-media"],
+        seed: 3,
+      },
+    } as WebsiteDataV2;
+    const { next, summary } = applyAiTheme(doc, { hiddenElements: [] });
+    expect(next.designProfile?.hiddenElements).toBeUndefined();
+    expect(next.designProfile?.composition).toBe("stage");
+    expect(summary).toEqual(["Über-uns-Bild wieder eingeblendet"]);
   });
 });

@@ -5,7 +5,7 @@ import type {
   AiChatHistoryEntry,
   AiDiffEntry,
 } from "@shared/onboardingV2/aiEdit";
-import type { PackId } from "@shared/siteContract/types";
+import type { DesignSystemId } from "@shared/designSystems/types";
 import {
   AiDiffList,
   AiStyleCard,
@@ -22,7 +22,7 @@ const LEGAL_HINT_PATTERN = /rechtlich|kontakt|impressum/i;
 type AiChatOutcome =
   | { kind: "content"; proposalId: string; diff: AiDiffEntry[] }
   | { kind: "theme"; reason: string; summary: string[] }
-  | { kind: "style"; packId: PackId; name: string; reason: string }
+  | { kind: "style"; system: DesignSystemId; name: string; reason: string }
   | { kind: "reject"; reason: string }
   | { kind: "question"; question: string };
 
@@ -45,8 +45,8 @@ interface AiChatProps {
   token: string;
   /** Nach erfolgreichem "Übernehmen" — lädt den Studio-Zustand neu und zeigt die aktualisierte Vorschau. */
   onApplied: () => void;
-  /** "Ansehen" auf einer Stil-Karte — öffnet das Stil-Panel mit diesem Pack vorausgewählt. */
-  onOpenStylePanel: (packId: PackId) => void;
+  /** "Ansehen" auf einer Stil-Karte — öffnet das Stil-Panel mit diesem System hervorgehoben. */
+  onOpenStylePanel: (system: DesignSystemId) => void;
   /** Ablehnung mit Rechtliches-/Kontakt-Bezug — öffnet das passende Panel. */
   onOpenPanel: (id: ChecklistItemId) => void;
   /**
@@ -275,7 +275,7 @@ export function AiChat({
               data-variant="ghost"
               onClick={() => onOpenPanel("style")}
             >
-              Im Stil-Panel feinjustieren
+              Im Stil-Panel ansehen
             </button>
           </>
         );
@@ -284,7 +284,7 @@ export function AiChat({
           <AiStyleCard
             name={outcome.name}
             reason={outcome.reason}
-            onView={() => onOpenStylePanel(outcome.packId)}
+            onView={() => onOpenStylePanel(outcome.system)}
           />
         );
       case "question":
@@ -324,8 +324,9 @@ export function AiChat({
       >
         <div className="pb-studio-chat-msg" data-role="assistant">
           <p>
-            Hi! Was möchtest du noch ändern? Ich passe Texte, Farben und Layout
-            direkt an.
+            Hi! Was möchtest du noch ändern? Ich passe Texte an, blende
+            Sektionen aus oder sortiere sie um und schlage dir andere Designs
+            vor.
           </p>
         </div>
         {messages.map(msg =>

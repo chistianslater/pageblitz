@@ -2,9 +2,6 @@ import { describe, expect, test } from "vitest";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import { getFixture } from "../../shared/siteContract/fixtures";
-import { withArtDirection } from "../../shared/stylePacks/artDirection";
-import { withDesignSystem } from "../../shared/designSystems/apply";
-import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import {
   addOnFlagsFromDoc,
   applyAddOnFlags,
@@ -15,11 +12,9 @@ import {
   applyInlineText,
   applyOffer,
   applyPages,
-  applyStylePack,
   applyTeam,
   applyTexts,
   applyTheme,
-  parsePackId,
 } from "./applyPatch";
 
 const doc: WebsiteDataV2 = {
@@ -30,112 +25,31 @@ const doc: WebsiteDataV2 = {
   sections: [{ type: "hero", headline: "H" }],
 };
 
-describe("parsePackId", () => {
-  test("kennt registrierte IDs, wirft BAD_REQUEST sonst", () => {
-    expect(parsePackId("kanzlei")).toBe("kanzlei");
-    expect(() => parsePackId("disco")).toThrowError(
-      /Unbekannte Designrichtung/
-    );
-  });
-});
-describe("applyStylePack", () => {
-  test("Pack-Wahl auf einer Journal-Seite wechselt zurück auf rev 2", () => {
-    const j = withDesignSystem(withArtDirection(getFixture("salon-noir", "full")), "journal");
-    const next = applyStylePack(j, "werkbank");
-    expect(next.designRevision).toBe(2);
-    expect(next.system).toBeUndefined();
-    expect(next.palette).toBeUndefined();
-    expect(next.stylePackId).toBe("werkbank");
-  });
-  test("setzt stylePackId, mutiert das Original nicht, Rest bleibt identisch", () => {
-    const next = applyStylePack(doc, "kanzlei");
-    expect(next.stylePackId).toBe("kanzlei");
-    expect(next.designProfile).toBeDefined();
-    expect(doc.stylePackId).toBe("werkbank");
-    expect(next.sections).toEqual(doc.sections);
-  });
-
-  test("Designwechsel bringt die passende Farbwelt und Schrift mit", () => {
-    const alt = {
-      ...doc,
-      colorOverrides: { accent: "#292929", canvas: "#eeefed" },
-      fontPairId: "markant",
-    };
-    const next = applyStylePack(alt, "kanzlei");
-    const erwartet = pickArtTheme("kanzlei", "B");
-    expect(next.colorOverrides).toEqual(erwartet.colorOverrides);
-    expect(next.fontPairId).toBe(erwartet.fontPairId);
-  });
-
-  test("Imbiss auf Gusto bekommt die Imbiss-Farbwelt", () => {
-    const doener = {
-      ...doc,
-      stylePackId: "zunft" as const,
-      businessName: "Dicle Döner",
-      businessCategory: "Kebabimbiss",
-      colorOverrides: { accent: "#292929" },
-    };
-    const next = applyStylePack(doener, "gusto");
-    expect(next.colorOverrides).toEqual(
-      pickArtTheme("gusto", "Dicle Döner", "Kebabimbiss").colorOverrides
-    );
-    expect(["markant", "kraftvoll"]).toContain(next.fontPairId);
-  });
-
-  test("dasselbe Design erneut wählen behält eigene Anpassungen", () => {
-    const angepasst = {
-      ...doc,
-      colorOverrides: { accent: "#1D3FBF" },
-      fontPairId: "elegant",
-    };
-    const next = applyStylePack(angepasst, "werkbank");
-    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
-    expect(next.fontPairId).toBe("elegant");
-  });
-});
-
 describe("applyTheme", () => {
-  test("setzt Akzent-Override und Schriftpaar, mutiert das Original nicht", () => {
-    const next = applyTheme(doc, { accent: "#1D3FBF", fontPairId: "elegant" });
-    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
-    expect(next.fontPairId).toBe("elegant");
-    expect(doc.colorOverrides).toBeUndefined();
-    expect(doc.fontPairId).toBeUndefined();
-  });
-  test("null entfernt die Wahl; leere Overrides fallen ganz weg", () => {
-    const themed = applyTheme(doc, {
-      accent: "#1D3FBF",
-      fontPairId: "modern",
-    });
-    const cleared = applyTheme(themed, { accent: null, fontPairId: null });
-    expect(cleared.colorOverrides).toBeUndefined();
-    expect(cleared.fontPairId).toBeUndefined();
-  });
-  test("undefined lässt die jeweilige Wahl unangetastet", () => {
-    const themed = applyTheme(doc, { accent: "#1D3FBF" });
-    const next = applyTheme(themed, { fontPairId: "klassisch" });
-    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
-    expect(next.fontPairId).toBe("klassisch");
-  });
-  test("lehnt Nicht-Hex-Akzent ab (Schema-Invariante: kein CSS-Freitext)", () => {
-    expect(() =>
-      applyTheme(doc, { accent: "red;background:url(x)" })
-    ).toThrow();
-  });
-  test("setzt ein schema-valides Kompositionsprofil", () => {
-    const designProfile = {
-      version: 1 as const,
-      heroLayout: "centered" as const,
-      servicesLayout: "grid" as const,
-      aboutLayout: "image-left" as const,
-      galleryLayout: "mosaic" as const,
-      density: "compact" as const,
-      imageTreatment: "framed" as const,
-      seed: 42,
-    };
+  const designProfile = {
+    version: 1 as const,
+    heroLayout: "centered" as const,
+    servicesLayout: "grid" as const,
+    aboutLayout: "image-left" as const,
+    galleryLayout: "mosaic" as const,
+    density: "compact" as const,
+    imageTreatment: "framed" as const,
+    hiddenElements: ["hero-media" as const],
+    seed: 42,
+  };
+  test("setzt ein schema-valides Kompositionsprofil, mutiert das Original nicht", () => {
     const next = applyTheme(doc, { designProfile });
     expect(next.designProfile).toEqual(designProfile);
     expect(doc.designProfile).toBeUndefined();
+  });
+  test("lässt gespeicherte Altfelder (Akzent, Schriftpaar) stehen, setzt aber keine", () => {
+    const alt = { ...doc, colorOverrides: { accent: "#1D3FBF" }, fontPairId: "elegant" };
+    const next = applyTheme(alt, { designProfile });
+    expect(next.colorOverrides).toEqual({ accent: "#1D3FBF" });
+    expect(next.fontPairId).toBe("elegant");
+  });
+  test("ohne Profil bleibt das Dokument inhaltlich gleich", () => {
+    expect(applyTheme(doc, {})).toEqual(doc);
   });
 });
 
@@ -695,44 +609,5 @@ describe("applyTexts — Button-Block (cta)", () => {
     expect(applyTexts(doc, { ctaBlockText: "X" }).sections).toEqual(
       doc.sections
     );
-  });
-});
-
-describe("applyStylePack mit Look aus der Design-Auswahl", () => {
-  const entryDoc: WebsiteDataV2 = {
-    ...doc,
-    designRevision: 2,
-    designProfile: {
-      version: 1,
-      composition: "colorfield",
-      heroLayout: "collage",
-      heroLayoutMobile: "collage",
-      servicesLayout: "list",
-      aboutLayout: "image-left",
-      galleryLayout: "grid",
-      density: "airy",
-      imageTreatment: "framed",
-      seed: 1,
-    },
-  };
-
-  test("übernimmt Fassung und Schrift der gezeigten Alternative", () => {
-    const next = applyStylePack(entryDoc, "schimmer", {
-      entryVariant: 0,
-      fontPairId: "elegant",
-    });
-    expect(next.fontPairId).toBe("elegant");
-    expect(next.designProfile?.entryVariant).toBe(0);
-    expect(next.designProfile?.composition).toBe("colorfield");
-  });
-
-  test("ohne Look gilt die Fassung des neuen Packs", () => {
-    const withVariant = applyStylePack(entryDoc, "schimmer", {
-      entryVariant: 0,
-      fontPairId: "elegant",
-    });
-    expect(
-      applyStylePack(withVariant, "patina").designProfile?.entryVariant
-    ).toBeUndefined();
   });
 });

@@ -1,7 +1,8 @@
 import { usePreviewViewport } from "./usePreviewViewport";
 import React from "react";
-import { getConstitution, toCssVars } from "@shared/stylePacks";
-import type { PackId } from "@shared/siteContract/types";
+import { getSystem } from "@shared/designSystems/registry";
+import { getPalette } from "@shared/designSystems/palette";
+import type { DesignSystemId } from "@shared/designSystems/types";
 import {
   PHASES,
   PHASE_BOUNDS,
@@ -38,11 +39,12 @@ interface GenerationScreenProps {
   /** previewToken — Basis der Vorschau-URL `/preview-ssr/<token>`. */
   token: string;
   /**
-   * Pack des (Zwischen-)Dokuments (state.stylePackId) — färbt den Skeleton
-   * in den Pack-Farben; `null`, solange der Job das Pack noch nicht in einem
-   * persistierten Stand verraten hat (dann neutrale Studio-Farben).
+   * Designsystem + Farbstimmung des (Zwischen-)Dokuments — färben den
+   * Skeleton; `null`, solange der Job noch keinen Stand geschrieben hat
+   * (dann neutrale Studio-Farben).
    */
-  packId: PackId | null;
+  system: DesignSystemId | null;
+  palette: string | null;
   /**
    * true, sobald der Job den Zeitmaschinen-Zwischenstand geschrieben hat
    * (state.doc vorhanden) — dann lädt das iframe die echte Vorschau und die
@@ -57,19 +59,37 @@ interface GenerationScreenProps {
   retrying?: boolean;
 }
 
+/** Skeleton-Farben aus der Farbstimmung des Systems; ohne System neutral. */
+export function skeletonVars(
+  system: DesignSystemId | null,
+  palette: string | null
+): Record<string, string> | undefined {
+  const def = system ? getSystem(system) : undefined;
+  if (!def) return undefined;
+  const p = getPalette(def, palette ?? undefined);
+  return {
+    "--pb-canvas": p.paper,
+    "--pb-surface": p.surface ?? p.paper,
+    "--pb-accent": p.accent,
+  };
+}
+
 /**
  * Skelett der entstehenden Website: Canvas-Hintergrund + schimmernde
- * Platzhalterblöcke in den Pack-Farben (CSS-only, `prefers-reduced-motion`
- * → statisch, siehe studio.css). Liegt unter dem iframe und bleibt sichtbar,
- * bis die echte Vorschau geladen ist.
+ * Platzhalterblöcke in den Farben der Farbstimmung (CSS-only,
+ * `prefers-reduced-motion` → statisch, siehe studio.css). Liegt unter dem
+ * iframe und bleibt sichtbar, bis die echte Vorschau geladen ist.
  */
-function PackSkeleton({ packId }: { packId: PackId | null }) {
+function SiteSkeleton({
+  system,
+  palette,
+}: {
+  system: DesignSystemId | null;
+  palette: string | null;
+}) {
   const style = React.useMemo(
-    () =>
-      packId
-        ? (toCssVars(getConstitution(packId)) as React.CSSProperties)
-        : undefined,
-    [packId]
+    () => skeletonVars(system, palette) as React.CSSProperties | undefined,
+    [system, palette]
   );
   return (
     <div className="pb-studio-skeleton" aria-hidden="true" style={style}>
@@ -89,7 +109,8 @@ function PackSkeleton({ packId }: { packId: PackId | null }) {
 export function GenerationScreen({
   businessName,
   token,
-  packId,
+  system,
+  palette,
   hasDoc,
   progress,
   status,
@@ -234,7 +255,7 @@ export function GenerationScreen({
               ref={viewportRef}
               data-frame-loaded={frameLoaded || undefined}
             >
-              <PackSkeleton packId={packId} />
+              <SiteSkeleton system={system} palette={palette} />
               {hasDoc ? (
                 <iframe
                   src={frameSrc}

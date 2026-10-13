@@ -184,7 +184,7 @@ test.describe("Studio", () => {
     );
   });
 
-  test("Initialer Design-Gate: Richtung + Feinschliff bestätigen → Studio startet beim ersten offenen Schritt", async ({
+  test("Initialer Design-Gate: Design + Farbstimmung bestätigen → Studio startet beim ersten offenen Schritt", async ({
     page,
     request,
   }) => {
@@ -206,40 +206,43 @@ test.describe("Studio", () => {
     await expect(
       page.getByRole("heading", { name: /Welche Richtung passt/ })
     ).toBeVisible();
+    // Packs entfernt (Task 3): nur noch Designsysteme — links/rechts die
+    // übrigen zwei des Branchen-Tripels, darunter die Farbstimmungen statt
+    // Farb-/Schriftwahl.
     await expect(
       page.getByRole("button", { name: /als Designrichtung ansehen/ })
     ).toHaveCount(2);
-    await expect(page.getByText("Schrift", { exact: true })).toBeVisible();
-    await expect(page.getByText("Seitenaufbau", { exact: true })).toHaveCount(
-      0
-    );
-    await page.getByRole("button", { name: /Farbe/ }).click();
-    await expect(page.getByText("Akzentfarbe", { exact: true })).toBeVisible();
-    await expect(page.getByText("Eigene Farbe", { exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Farbauswahl schließen" }).click();
-    await page.getByRole("button", { name: /Schrift/ }).click();
+    await expect(page.getByText("Schriftkombination")).toHaveCount(0);
+    await expect(page.getByText("Eigene Farbe")).toHaveCount(0);
+    // Farbstimmung der aktiven Richtung (unter der Vorschau) — die Felder an
+    // den Seitenkarten ändern nur deren Vorschau.
+    const palettes = page
+      .locator(".pb-design-preview-shell")
+      .getByRole("radiogroup", { name: /^Farbstimmung / });
+    await expect(palettes).toBeVisible();
+    await Promise.all([
+      page.waitForResponse(
+        res =>
+          res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
+      ),
+      palettes.getByRole("radio").nth(1).click(),
+    ]);
     await expect(
-      page.getByText("Schriftkombination", { exact: true })
-    ).toBeVisible();
-    await page
-      .getByRole("button", { name: "Schriftauswahl schließen" })
-      .click();
+      page.locator(".pb-design-center iframe")
+    ).toHaveAttribute("src", /system=[a-z]+&palette=[a-z]+/);
 
-    const previewFrame = page.frameLocator(".pb-design-center iframe");
-    const scrollBefore = await previewFrame
-      .locator("html")
-      .evaluate(() => scrollY);
-    await page.locator(".pb-design-swipe-surface").hover();
-    await page.mouse.wheel(0, 600);
-    await page.waitForTimeout(200);
-    const scrollAfter = await previewFrame
-      .locator("html")
-      .evaluate(() => scrollY);
-    expect(scrollAfter).toBeGreaterThan(scrollBefore);
+    // „Andere Designs zeigen“: Runde 1 bietet die übrigen Systeme an.
+    const tabs = page.getByRole("group", { name: "Designrichtungen" });
+    const before = await tabs.getByRole("button").allTextContents();
+    await page.getByRole("button", { name: "Andere Designs zeigen" }).click();
+    await expect
+      .poll(async () => (await tabs.getByRole("button").allTextContents()).join("|"))
+      .not.toBe(before.join("|"));
 
     await Promise.all([
       page.waitForResponse(
-        res => res.url().includes("onboardingV2.selectStylePack") && res.ok()
+        res =>
+          res.url().includes("onboardingV2.selectDesignSystem") && res.ok()
       ),
       page.getByRole("button", { name: "Mit diesem Design weiter" }).click(),
     ]);

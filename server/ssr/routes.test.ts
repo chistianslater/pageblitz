@@ -1094,31 +1094,26 @@ describe("SSR routes", () => {
           )
         ).status
       ).toBe(404);
-      (getWebsiteByToken as Mock).mockResolvedValue({
-        id: 1,
-        slug: "s",
-        websiteData: getFixture("werkbank", "full"),
-      });
-      expect(
-        (
-          await request(buildAppWithFallback()).get(
-            "/preview-ssr/abcdefghabcdefgh?pack=disco"
-          )
-        ).status
-      ).toBe(400);
     });
 
-    test("unbekanntes ?pack → 400-Body reflektiert den Parameter NICHT (kein reflected XSS)", async () => {
+    test("Pack-Parameter (?pack=&variant=&font=) werden ignoriert und nie reflektiert (Packs entfernen, Task 3)", async () => {
       (getWebsiteByToken as Mock).mockResolvedValue({
         id: 1,
         slug: "s",
         websiteData: getFixture("werkbank", "full"),
       });
-      const res = await request(buildAppWithFallback()).get(
-        "/preview-ssr/abcdefghabcdefgh?pack=%3Cscript%3E"
+      const plain = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh"
       );
-      expect(res.status).toBe(400);
-      expect(res.text).not.toContain("<script");
+      const res = await request(buildAppWithFallback()).get(
+        "/preview-ssr/abcdefghabcdefgh?pack=%3Cscript%3Ealert(1)%3C%2Fscript%3E&variant=1&font=elegant"
+      );
+      expect(res.status).toBe(200);
+      expect(res.text).not.toContain("alert(1)");
+      expect(res.text).toContain("data-pb-system");
+      expect(res.text.replace(/:\d{4,5}/g, "")).toBe(
+        plain.text.replace(/:\d{4,5}/g, "")
+      );
     });
   });
 

@@ -1,34 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { getConstitution } from "@shared/stylePacks";
-import type { PackId } from "@shared/siteContract/types";
-import type { DesignProfile } from "@shared/siteContract/designProfile";
 import type { DesignSystemId } from "@shared/designSystems/types";
 import { PanelFrame } from "./PanelFrame";
-import { BrandImportCard } from "./BrandImportCard";
-import { ThemeEditor } from "./ThemeEditor";
 import { buildPreviewSrc } from "../PreviewFrame";
 import { PaletteChooser } from "../PaletteChooser";
 import {
   initialChoice,
-  isSystemCandidate,
   systemCandidateFor,
   type DesignChoice,
-  type StudioCandidate,
   type SystemCandidate,
 } from "../designChoice";
 
 interface StyleCandidateListProps {
   token: string;
-  candidates: StudioCandidate[];
-  currentPackId: PackId | null;
-  /** Pack-ID oder `system:<id>` der Karte, die gerade übernommen wird. */
+  candidates: SystemCandidate[];
+  /** `system:<id>` der Karte, die gerade übernommen wird. */
   busyId: string | null;
-  onPick: (id: PackId) => void;
   /** Systemkarte übernehmen — mit der dort angesehenen Farbstimmung. */
   onPickSystem?: (id: DesignSystemId, palette: string) => void;
-  /** Vom KI-Chat vorgeschlagenes Pack — bekommt eine "KI-Vorschlag"-Badge. */
-  preselectPackId?: PackId | null;
+  /** Vom KI-Chat vorgeschlagenes System — bekommt eine "KI-Vorschlag"-Badge. */
+  preselectSystem?: DesignSystemId | null;
   /** Cache-Bust der Systemvorschauen. */
   previewVersion?: number;
 }
@@ -44,6 +35,7 @@ function SystemCandidateCard({
   busy,
   disabled,
   previewVersion,
+  preselected,
   onPick,
 }: {
   token: string;
@@ -51,11 +43,19 @@ function SystemCandidateCard({
   busy: boolean;
   disabled: boolean;
   previewVersion: number;
+  preselected: boolean;
   onPick?: (id: DesignSystemId, palette: string) => void;
 }) {
   const [palette, setPalette] = useState(candidate.palettes[0]?.id ?? "");
   return (
-    <div className="pb-studio-cand" data-kind="system">
+    <div
+      className="pb-studio-cand"
+      data-kind="system"
+      data-preselected={preselected ? "true" : undefined}
+    >
+      {preselected && (
+        <span className="pb-studio-cand-badge">KI-Vorschlag</span>
+      )}
       <div className="pb-studio-thumb" aria-hidden="true">
         <iframe
           src={buildPreviewSrc({
@@ -94,97 +94,42 @@ function SystemCandidateCard({
 export function StyleCandidateList({
   token,
   candidates,
-  currentPackId,
   busyId,
-  onPick,
   onPickSystem,
-  preselectPackId = null,
+  preselectSystem = null,
   previewVersion = 0,
 }: StyleCandidateListProps) {
   return (
     <div className="pb-studio-cands" role="group" aria-label="Designrichtungen">
-      {candidates.map(c => {
-        if (isSystemCandidate(c)) {
-          return (
-            <SystemCandidateCard
-              key={`system:${c.id}`}
-              token={token}
-              candidate={c}
-              busy={busyId === `system:${c.id}`}
-              disabled={busyId !== null}
-              previewVersion={previewVersion}
-              onPick={onPickSystem}
-            />
-          );
-        }
-        const isCurrent = c.id === currentPackId;
-        const isPreselected = c.id === preselectPackId;
-        const isBusy = busyId === c.id;
-        const label = isCurrent
-          ? "Aktuell"
-          : isBusy
-            ? "Wird übernommen…"
-            : "Diese Richtung verwenden";
-        return (
-          <div
-            key={c.id}
-            className="pb-studio-cand"
-            data-current={isCurrent ? "true" : undefined}
-            data-preselected={isPreselected ? "true" : undefined}
-          >
-            {isPreselected && (
-              <span className="pb-studio-cand-badge">KI-Vorschlag</span>
-            )}
-            <div className="pb-studio-thumb" aria-hidden="true">
-              <iframe
-                src={`/preview-ssr/${token}?pack=${c.id}`}
-                title={`Vorschau ${c.name}`}
-                tabIndex={-1}
-                // eager statt lazy: Visual-Tests warten deterministisch auf
-                // das load-Event jedes iframes vor dem Screenshot — mit
-                // lazy loading hängt der Ladezeitpunkt vom Intersection-
-                // Observer-Timing des Browsers ab, das im Headless-CI
-                // unzuverlässig sein kann (Finding #7).
-                loading="eager"
-              />
-            </div>
-            <div className="pb-studio-cand-name">{c.name}</div>
-            <p className="pb-studio-cand-ess">{c.essence}</p>
-            <button
-              type="button"
-              className="pb-studio-cand-pick"
-              aria-pressed={isCurrent}
-              disabled={busyId !== null}
-              onClick={() => onPick(c.id)}
-            >
-              {label}
-            </button>
-          </div>
-        );
-      })}
+      {candidates.map(c => (
+        <SystemCandidateCard
+          key={c.id}
+          token={token}
+          candidate={c}
+          busy={busyId === `system:${c.id}`}
+          disabled={busyId !== null}
+          previewVersion={previewVersion}
+          preselected={c.id === preselectSystem}
+          onPick={onPickSystem}
+        />
+      ))}
     </div>
   );
 }
 
 interface StylePanelProps {
   token: string;
-  currentPackId: PackId | null;
-  category: string;
   onApplied: () => void;
   onClose: () => void;
-  /** Aus dem KI-Chat übergebenes Pack ("Ansehen" auf einer Stil-Karte) — vorausgewählt und hervorgehoben, notfalls als zusätzlicher erster Kandidat eingeblendet. */
-  preselectPackId?: PackId;
+  /**
+   * Vom KI-Chat vorgeschlagenes System („Ansehen" auf einer Stil-Karte) —
+   * hervorgehoben und notfalls als zusätzliche erste Karte eingeblendet,
+   * aber erst mit dem Knopf übernommen.
+   */
+  preselectSystem?: DesignSystemId;
   /** Geführter Modus (Studio-Wizard): „Passt so" bestätigt und springt zum nächsten Schritt statt nur zu schließen. */
   onNext?: () => void;
-  /** Gespeicherter Akzent-Override (doc.colorOverrides?.accent) — Theme-Editor. */
-  accent?: string | null;
-  /** Gespeicherte Schriftpaar-ID (doc.fontPairId) — Theme-Editor. */
-  fontPairId?: string | null;
-  /** Gespeichertes Kompositionsprofil innerhalb der Designrichtung. */
-  designProfile?: DesignProfile | null;
-  /** colorOverrides des Dokuments — markiert die aktive Farbwelt im Editor. */
-  colorOverrides?: Record<string, string> | null;
-  /** Designsystem der Seite (nur rev 3) und seine Farbstimmung. */
+  /** Designsystem der Seite und seine Farbstimmung. */
   currentSystem?: DesignSystemId | null;
   currentPalette?: string | null;
   /** Cache-Bust für die Systemvorschauen (studio.previewVersion). */
@@ -193,15 +138,10 @@ interface StylePanelProps {
 
 export function StylePanel({
   token,
-  currentPackId,
   onApplied,
   onClose,
-  preselectPackId,
+  preselectSystem,
   onNext,
-  accent = null,
-  fontPairId = null,
-  designProfile = null,
-  colorOverrides = null,
   currentSystem = null,
   currentPalette = null,
   previewVersion = 0,
@@ -210,75 +150,41 @@ export function StylePanel({
   const [busyId, setBusyId] = useState<string | null>(null);
   // Lokal nachgeführter Zustand statt der (ggf. veralteten) Prop: verhindert,
   // dass „Passt so" nach einem gerade erfolgreichen Wechsel noch das alte
-  // Pack bestätigt, bevor der Eltern-Refetch durchgelaufen ist.
+  // Design bestätigt, bevor der Eltern-Refetch durchgelaufen ist.
   //
-  // Finding F4: startet IMMER auf `currentPackId`, auch wenn der KI-Chat
-  // einen anderen Pack vorschlägt (`preselectPackId`) — der Vorschlag wird
-  // in `StyleCandidateList` nur als Badge ("KI-Vorschlag") hervorgehoben,
-  // gilt aber nicht als aktiv/bestätigt, bevor der Nutzer ihn tatsächlich
-  // anklickt. Vorher setzte `preselectPackId ?? currentPackId` den Vorschlag
-  // sofort als "Aktuell", wodurch ein Klick auf „Passt so" ohne bewusste
-  // Auswahl den Vorschlag übernahm (Race zwischen Vorschlag und Bestätigung).
-  //
-  // Seit Task 16 kann die Seite statt eines Packs ein Designsystem tragen
-  // (rev 3) — `active` hält deshalb Pack ODER System samt Farbstimmung.
+  // Finding F4: startet IMMER auf dem gespeicherten System, auch wenn der
+  // KI-Chat ein anderes vorschlägt (`preselectSystem`) — der Vorschlag ist
+  // nur hervorgehoben, bis der Nutzer ihn tatsächlich übernimmt.
   const [active, setActive] = useState<DesignChoice | null>(() =>
-    initialChoice({
-      packId: currentPackId,
-      system: currentSystem,
-      palette: currentPalette,
-    })
+    initialChoice({ system: currentSystem, palette: currentPalette })
   );
   useEffect(
     () =>
-      setActive(
-        initialChoice({
-          packId: currentPackId,
-          system: currentSystem,
-          palette: currentPalette,
-        })
-      ),
-    [currentPackId, currentSystem, currentPalette]
+      setActive(initialChoice({ system: currentSystem, palette: currentPalette })),
+    [currentSystem, currentPalette]
   );
-  const activePackId = active?.kind === "pack" ? active.id : null;
-  const activeSystem =
-    active?.kind === "system" ? systemCandidateFor(active.id) : null;
+  const activeSystem = active ? systemCandidateFor(active.id) : null;
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
   });
-  // Der KI-Vorschlag muss immer sichtbar sein, auch wenn er nicht unter den
-  // Kandidaten der aktuellen Runde ist — Name/Essenz kommen dann direkt aus
-  // der Pack-Verfassung statt aus der Server-Antwort (client-seitig
-  // verfügbar über shared/stylePacks, siehe Task-Brief).
   const displayCandidates = useMemo(() => {
     // Das System, das die Seite gerade trägt, steht oben als Farbstimmung —
     // nicht noch einmal als Alternative (der Server filtert nur den
     // gespeicherten Stand, nicht eine eben getroffene Wahl).
-    const base: StudioCandidate[] = (candidates.data?.candidates ?? []).filter(
-      c => !(isSystemCandidate(c) && activeSystem?.id === c.id)
+    const base = (candidates.data?.candidates ?? []).filter(
+      c => c.id !== active?.id
     );
     if (
-      !preselectPackId ||
-      base.some(c => !isSystemCandidate(c) && c.id === preselectPackId)
+      !preselectSystem ||
+      preselectSystem === active?.id ||
+      base.some(c => c.id === preselectSystem)
     ) {
       return base;
     }
-    const constitution = getConstitution(preselectPackId);
-    return [
-      {
-        kind: "pack" as const,
-        id: preselectPackId,
-        name: constitution.name,
-        essence: constitution.essence,
-      },
-      ...base,
-    ];
-  }, [candidates.data, preselectPackId, activeSystem?.id]);
-  // Eine gemeinsame Mutation für Auswahl UND Bestätigung — verhindert das
-  // Race, bei dem ein noch laufender Pick von einer separaten
-  // Bestätigungs-Mutation überholt/überschrieben wird.
-  const select = trpc.onboardingV2.selectStylePack.useMutation();
+    const suggested = systemCandidateFor(preselectSystem);
+    return suggested ? [suggested, ...base] : base;
+  }, [candidates.data, preselectSystem, active?.id]);
   const selectSystem = trpc.onboardingV2.selectDesignSystem.useMutation();
 
   const applySystem = (
@@ -293,61 +199,32 @@ export function StylePanel({
       {
         onSettled: () => setBusyId(null),
         onSuccess: () => {
-          setActive({ kind: "system", id, palette });
+          setActive({ id, palette });
           onApplied();
           onSuccessExtra?.();
         },
       }
     );
   };
-
-  const applyPack = (
-    id: PackId,
-    onSuccessExtra?: () => void,
-    confirm = false
-  ) => {
-    setBusyId(id);
-    select.mutate(
-      { token, packId: id, confirm },
-      {
-        onSettled: () => setBusyId(null),
-        onSuccess: () => {
-          setActive({ kind: "pack", id });
-          onApplied();
-          onSuccessExtra?.();
-        },
-      }
-    );
-  };
-
-  const pick = (id: PackId) => applyPack(id);
 
   const confirm = () => {
     // Geführter Modus: nach erfolgreicher Bestätigung direkt zum nächsten
     // Schritt (onNext) statt nur zu schließen — ohne Wizard wie bisher
     // einfach zumachen (onClose).
     const after = onNext ?? onClose;
-    if (active?.kind === "system") {
-      applySystem(active.id, active.palette, after, true);
-    } else if (active) {
-      applyPack(active.id, after, true);
-    } else {
-      after();
-    }
+    if (active) applySystem(active.id, active.palette, after, true);
+    else after();
   };
 
   const busy = busyId !== null;
 
-  // Seit 2026-08-25 nutzt auch das Stil-Panel den PanelFrame (sticky
-  // Kopfleiste mit Rückweg, sticky Fuß mit den Hauptaktionen) — vorher
-  // Sonderlayout ohne die gemeinsame Panel-Chrome.
   return (
     <PanelFrame
       step="Schritt 1"
-      title="Welche Designrichtung passt zu deinem Betrieb?"
+      title="Welches Design passt zu deinem Betrieb?"
       panelId="style"
       onClose={onClose}
-      intro="Die Richtung ist dein Ausgangspunkt. Inhalte, Farben, Schriften und Bilder machen daraus deine Website."
+      intro="Das Design ist dein Ausgangspunkt: Aufbau, Typografie und drei abgestimmte Farbstimmungen. Inhalte und Bilder machen daraus deine Website."
       footer={
         <>
           <button
@@ -357,7 +234,7 @@ export function StylePanel({
             disabled={busy}
             onClick={() => setRound(r => r + 1)}
           >
-            Andere Richtungen
+            Andere Designs
           </button>
           <button
             type="button"
@@ -370,15 +247,7 @@ export function StylePanel({
         </>
       }
     >
-      {/* Marken-Import zuerst (2026-09-03): Wer schon eine Website hat,
-          soll Logo, Farbe und Schrift übernehmen können, bevor er eine
-          Richtung wählt — die Richtung übernimmt die Werte dann. */}
-      {/* Marken-Import schreibt Akzent und Schriftpaar — beides nutzt ein
-          Designsystem (rev 3) nicht, deshalb dort ausgeblendet. */}
-      {!activeSystem && (
-        <BrandImportCard token={token} onApplied={onApplied} />
-      )}
-      {active?.kind === "system" && activeSystem && (
+      {active && activeSystem && (
         <section
           className="pb-studio-palette-current"
           aria-labelledby="pb-palette-current-title"
@@ -399,10 +268,12 @@ export function StylePanel({
           />
         </section>
       )}
-      {preselectPackId && (
+      {preselectSystem && (
         <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
       )}
-      {candidates.isLoading && <p>Lade Vorschläge …</p>}
+      {candidates.isLoading && displayCandidates.length === 0 && (
+        <p>Lade Designs …</p>
+      )}
       {candidates.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
           {candidates.error.message}
@@ -412,35 +283,16 @@ export function StylePanel({
         <StyleCandidateList
           token={token}
           candidates={displayCandidates}
-          currentPackId={activePackId}
           busyId={busyId}
-          onPick={pick}
           onPickSystem={(id, palette) => applySystem(id, palette)}
-          preselectPackId={preselectPackId}
+          preselectSystem={preselectSystem}
           previewVersion={previewVersion}
         />
       )}
-      {(select.error || selectSystem.error) && (
+      {selectSystem.error && (
         <p role="alert" style={{ color: "var(--st-warn)" }}>
-          {select.error?.message ?? selectSystem.error?.message}
+          {selectSystem.error.message}
         </p>
-      )}
-      {/* rev 3: Farben kommen aus der Farbstimmung, Schriften aus dem
-          System; Abstände/Bildwirkung ignoriert der System-Renderer —
-          der ganze Feinschliff-Block entfällt. */}
-      {!activeSystem && (
-        <details className="pb-studio-theme-toggle">
-          <summary>Farben, Schriften &amp; Abstände anpassen</summary>
-          <ThemeEditor
-            token={token}
-            packId={activePackId}
-            accent={accent}
-            fontPairId={fontPairId}
-            designProfile={designProfile}
-            colorOverrides={colorOverrides}
-            onApplied={onApplied}
-          />
-        </details>
       )}
     </PanelFrame>
   );

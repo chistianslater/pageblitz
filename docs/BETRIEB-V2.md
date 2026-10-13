@@ -969,6 +969,15 @@ löschen, Stripe-Sync nach Checkout, §6), Kundenstatistik (Umami-Provisionierun
 als Gate (§8); parallel Landingpage-Neubau im Studio-Look, Space Grotesk als
 einzige Systemschrift, echte Bilder für alle 14 Demo-Packs.
 
+**Backlog aus „Packs entfernen“ (2026-10-13, E6):**
+- **Palette aus dem Logo:** Logo von der alten Website übernehmen und die
+  Farbstimmung nach der Logofarbe vorwählen (`pickPalette(system, logoAkzent)`
+  gibt es schon). Der frühere Marken-Import (Logo + Akzent + Schriftpaar,
+  `routerBrand.ts`, `shared/onboardingV2/brandImport.ts`, Crawler
+  `crawlSiteBranding` + `server/gmb/siteBranding.ts`, `uploadLogoFromUrl`)
+  ist mit den Packs entfernt worden — bei Bedarf aus dem Stand `0f046111`
+  zurückholen und nur Logo + Palettenwahl übernehmen.
+
 **Offen nach B6 (Backlog):**
 - Lost-Update-Fenster auf `subscriptions.addOns` (§6, dokumentiert, selbstheilend).
 - Doppel-Request Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne Reload (§7).

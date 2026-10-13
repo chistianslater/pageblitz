@@ -1,27 +1,20 @@
-import type { AlternativeLook } from "../../../../shared/stylePacks/artDirection";
 import React, { useCallback, useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { getConstitution } from "@shared/stylePacks";
-import type { PackId } from "@shared/siteContract/types";
 import type { DesignSystemId } from "@shared/designSystems/types";
 import { usePreviewViewport } from "./usePreviewViewport";
 import { PreviewFrame, buildPreviewSrc } from "./PreviewFrame";
-import { DesignQuickControls } from "./DesignQuickControls";
 import { PaletteChooser } from "./PaletteChooser";
 import {
-  directionKey,
   introStorageKey,
   neighbourOf,
   orderDirections,
-  parseDirectionKey,
   shouldShowIntro,
 } from "./designSplashLogic";
 import {
   initialChoice,
-  isSystemCandidate,
   systemCandidateFor,
   type DesignChoice,
-  type StudioCandidate,
+  type SystemCandidate,
 } from "./designChoice";
 import { SplashIntro } from "./SplashIntro";
 import { tagStudioSession, trackStudioEvent } from "@/lib/studioEvents";
@@ -45,37 +38,29 @@ function writeSession(key: string): void {
   }
 }
 
-/** Eine Richtung der Bühne: `id` ist der Schlüssel `kind:id` (siehe directionKey). */
+/** Eine Richtung der Bühne = ein Designsystem. */
 interface Direction {
   id: string;
   name: string;
   essence: string;
-  candidate: StudioCandidate;
+  candidate: SystemCandidate;
 }
 
-function toDirection(candidate: StudioCandidate): Direction {
+function toDirection(candidate: SystemCandidate): Direction {
   return {
-    id: directionKey(candidate.kind ?? "pack", candidate.id),
+    id: candidate.id,
     name: candidate.name,
     essence: candidate.essence,
     candidate,
   };
 }
 
-function choiceKey(choice: DesignChoice): string {
-  return directionKey(choice.kind, choice.id);
-}
-
 interface DesignSplashProps {
   token: string;
   businessName: string;
-  currentPackId: PackId;
-  /** Designsystem der Seite (nur rev 3) und seine Farbstimmung. */
+  /** Designsystem der Seite und seine Farbstimmung. */
   currentSystem?: DesignSystemId | null;
   currentPalette?: string | null;
-  accent?: string | null;
-  colorOverrides?: Record<string, string>;
-  fontPairId?: string | null;
   previewVersion: number;
   onApplied: () => void;
   onSelectionApplied?: () => void;
@@ -84,17 +69,13 @@ interface DesignSplashProps {
 
 function AlternativePreview({
   token,
-  packId,
   version,
-  look,
   system,
   palette,
 }: {
   token: string;
-  packId?: PackId;
   version: number;
-  look?: AlternativeLook;
-  system?: DesignSystemId;
+  system: DesignSystemId;
   palette?: string;
 }) {
   const ref = usePreviewViewport("desktop");
@@ -105,14 +86,7 @@ function AlternativePreview({
       aria-hidden="true"
     >
       <iframe
-        src={buildPreviewSrc({
-          token,
-          packOverride: packId,
-          version,
-          look,
-          system,
-          palette,
-        })}
+        src={buildPreviewSrc({ token, version, system, palette })}
         title="Alternative mit deinen Inhalten"
         loading="lazy"
         tabIndex={-1}
@@ -124,7 +98,7 @@ function AlternativePreview({
 /**
  * Vollbild-Design-Splash direkt nach der Generierung (und seit 2026-09-18
  * auch das Ziel des Postkarten-Kurzlinks): Alternative links ← aktive
- * Live-Vorschau → Alternative rechts, darunter Farbe/Schrift.
+ * Live-Vorschau → Alternative rechts, darunter die Farbstimmungen.
  *
  * Test-Feedback 2026-09-18: Die Alternativen wurden übersehen und die
  * Bestätigung klang endgültig. Deshalb: Richtungs-Leiste über der Bühne,
@@ -134,25 +108,17 @@ function AlternativePreview({
 export function DesignSplash({
   token,
   businessName,
-  currentPackId,
   currentSystem = null,
   currentPalette = null,
-  accent = null,
-  colorOverrides,
-  fontPairId = null,
   previewVersion,
   onApplied,
   onSelectionApplied = onApplied,
   onConfirmed,
 }: DesignSplashProps) {
   const [round, setRound] = useState(0);
-  const startChoice = (): DesignChoice =>
-    initialChoice({
-      packId: currentPackId,
-      system: currentSystem,
-      palette: currentPalette,
-    }) ?? { kind: "pack", id: currentPackId };
-  const [active, setActive] = useState<DesignChoice>(startChoice);
+  const startChoice = (): DesignChoice | null =>
+    initialChoice({ system: currentSystem, palette: currentPalette });
+  const [active, setActive] = useState<DesignChoice | null>(startChoice);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [busyKey, setBusyKey] = useState<string | null>(null);
   /** Farbstimmung, die auf einer Systemkarte am Rand gerade angesehen wird. */
@@ -184,83 +150,57 @@ export function DesignSplash({
   const candidates = trpc.onboardingV2.getStyleCandidates.useQuery({
     token,
     round,
-    count: 3,
   });
-  const select = trpc.onboardingV2.selectStylePack.useMutation();
   const selectSystem = trpc.onboardingV2.selectDesignSystem.useMutation();
 
   useEffect(
     () => setActive(startChoice()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentPackId, currentSystem, currentPalette]
+    [currentSystem, currentPalette]
   );
 
-  const activeKey = choiceKey(active);
+  const activeKey = active?.id ?? "";
   const directions = orderDirections<Direction>(
     (candidates.data?.candidates ?? []).map(toDirection),
     activeKey,
-    key => {
-      const parsed = parseDirectionKey(key);
-      if (!parsed) return null;
-      if (parsed.kind === "system") {
-        const system = systemCandidateFor(parsed.id as DesignSystemId);
-        return system ? toDirection(system) : null;
-      }
-      const constitution = getConstitution(parsed.id as PackId);
-      return toDirection({
-        id: parsed.id as PackId,
-        name: constitution.name,
-        essence: constitution.essence,
-      });
+    id => {
+      const system = systemCandidateFor(id as DesignSystemId);
+      return system ? toDirection(system) : null;
     }
   );
   const activeIndex = directions.findIndex(d => d.id === activeKey);
   const previous = neighbourOf(directions, activeKey, -1);
   const next = neighbourOf(directions, activeKey, 1);
-  const activeSystem =
-    active.kind === "system" ? systemCandidateFor(active.id) : null;
+  const activeSystem = active ? systemCandidateFor(active.id) : null;
 
-  const sidePaletteOf = (candidate: StudioCandidate): string | undefined =>
-    isSystemCandidate(candidate)
-      ? (sidePalettes[candidate.id] ?? candidate.palettes[0]?.id)
-      : undefined;
+  const sidePaletteOf = (candidate: SystemCandidate): string | undefined =>
+    sidePalettes[candidate.id] ?? candidate.palettes[0]?.id;
 
   const pick = (direction: Direction, side: "left" | "right" = "right") => {
     if (busyKey || direction.id === activeKey) return;
     setSlideDirection(side);
     setBusyKey(direction.id);
     const candidate = direction.candidate;
-    const onSuccess = (choice: DesignChoice) => () => {
-      trackStudioEvent("design_angesehen");
-      setActive(choice);
-      onSelectionApplied();
-    };
-    const onSettled = () => setBusyKey(null);
-    if (isSystemCandidate(candidate)) {
-      const palette = sidePaletteOf(candidate);
-      selectSystem.mutate(
-        { token, system: candidate.id, palette, confirm: false },
-        {
-          onSuccess: onSuccess({
-            kind: "system",
+    const palette = sidePaletteOf(candidate);
+    selectSystem.mutate(
+      { token, system: candidate.id, palette, confirm: false },
+      {
+        onSuccess: () => {
+          trackStudioEvent("design_angesehen");
+          setActive({
             id: candidate.id,
             palette: palette ?? candidate.palettes[0]?.id ?? "",
-          }),
-          onSettled,
-        }
-      );
-      return;
-    }
-    const look = candidate.look;
-    select.mutate(
-      { token, packId: candidate.id, confirm: false, ...(look ? { look } : {}) },
-      { onSuccess: onSuccess({ kind: "pack", id: candidate.id }), onSettled }
+          });
+          onSelectionApplied();
+        },
+        onSettled: () => setBusyKey(null),
+      }
     );
   };
 
   /** Farbstimmung der aktiven Richtung wechseln — sofort sichtbar, sofort gespeichert. */
   const changePalette = (palette: string) => {
-    if (active.kind !== "system" || busyKey) return;
+    if (!active || busyKey) return;
     const before = active;
     setActive({ ...active, palette });
     setBusyKey(activeKey);
@@ -275,25 +215,20 @@ export function DesignSplash({
   };
 
   const confirm = () => {
+    if (!active) return;
     setBusyKey(activeKey);
-    const onSuccess = () => {
-      // Gewählte Richtung statt Start-Design als Tag für alles Weitere.
-      tagStudioSession({ design: active.id });
-      trackStudioEvent("design_bestaetigt");
-      onApplied();
-      onConfirmed();
-    };
-    const onSettled = () => setBusyKey(null);
-    if (active.kind === "system") {
-      selectSystem.mutate(
-        { token, system: active.id, palette: active.palette, confirm: true },
-        { onSuccess, onSettled }
-      );
-      return;
-    }
-    select.mutate(
-      { token, packId: active.id, confirm: true },
-      { onSuccess, onSettled }
+    selectSystem.mutate(
+      { token, system: active.id, palette: active.palette, confirm: true },
+      {
+        onSuccess: () => {
+          // Gewählte Richtung statt Start-Design als Tag für alles Weitere.
+          tagStudioSession({ design: active.id });
+          trackStudioEvent("design_bestaetigt");
+          onApplied();
+          onConfirmed();
+        },
+        onSettled: () => setBusyKey(null),
+      }
     );
   };
 
@@ -309,27 +244,17 @@ export function DesignSplash({
         disabled={busyKey !== null}
         aria-label={`${candidate.name} als Designrichtung ansehen`}
       >
-        {isSystemCandidate(candidate) ? (
-          <AlternativePreview
-            token={token}
-            version={previewVersion}
-            system={candidate.id}
-            palette={sidePaletteOf(candidate)}
-          />
-        ) : (
-          <AlternativePreview
-            token={token}
-            packId={candidate.id}
-            version={previewVersion}
-            look={candidate.look}
-          />
-        )}
+        <AlternativePreview
+          token={token}
+          version={previewVersion}
+          system={candidate.id}
+          palette={sidePaletteOf(candidate)}
+        />
         <span className="pb-design-side-pill" aria-hidden="true">
           Alternative ansehen
         </span>
       </button>
     );
-    if (!isSystemCandidate(candidate)) return button;
     // Farbfelder neben (nicht in) dem Kartenknopf — eine Radiogruppe darf
     // nicht in einem <button> liegen.
     return (
@@ -352,10 +277,7 @@ export function DesignSplash({
     );
   };
 
-  const error =
-    select.error?.message ??
-    selectSystem.error?.message ??
-    candidates.error?.message;
+  const error = selectSystem.error?.message ?? candidates.error?.message;
 
   return (
     <section
@@ -379,8 +301,9 @@ export function DesignSplash({
               Welche Richtung passt zu {businessName}?
             </h1>
             <p>
-              Links und rechts: Alternativen mit deinen Inhalten. Farbe, Schrift
-              und Texte passt du gleich im Studio an — nichts ist endgültig.
+              Links und rechts: andere Designs mit deinen Inhalten. Darunter
+              wählst du die Farbstimmung — Fotos und Texte passt du gleich im
+              Studio an, nichts ist endgültig.
             </p>
           </div>
           <div className="pb-studio-seg pb-studio-seg--even" aria-label="Gerät">
@@ -437,53 +360,39 @@ export function DesignSplash({
               {busyKey ? "Design wird geladen …" : ""}
             </span>
             <div className="pb-design-preview-shell">
-              {/* Eine Vorschau für beide Arten — der Wechsel Pack ↔ System
-                  tauscht nur die URL, das iframe bleibt stehen. */}
+              {/* Ein iframe für alle Richtungen — ein Wechsel tauscht nur
+                  die URL (?system=&palette=). */}
               <PreviewFrame
                 token={token}
                 version={previewVersion}
                 device={device}
-                packOverride={active.kind === "pack" ? active.id : undefined}
-                systemOverride={active.kind === "system" ? active.id : undefined}
-                paletteOverride={
-                  active.kind === "system" ? active.palette : undefined
-                }
+                systemOverride={active?.id}
+                paletteOverride={active?.palette}
               />
-              {active.kind === "system" ? (
-                activeSystem && (
-                  <div className="pb-harmony">
-                    <PaletteChooser
-                      size="compact"
-                      label={`Farbstimmung ${activeSystem.name}`}
-                      palettes={activeSystem.palettes}
-                      value={active.palette}
-                      disabled={busyKey !== null}
-                      onChange={changePalette}
-                    />
-                  </div>
-                )
-              ) : (
-                <DesignQuickControls
-                  token={token}
-                  packId={active.id}
-                  accent={accent}
-                  colorOverrides={colorOverrides}
-                  fontPairId={fontPairId}
-                  onApplied={onApplied}
-                />
+              {active && activeSystem && (
+                <div className="pb-harmony">
+                  <PaletteChooser
+                    size="compact"
+                    label={`Farbstimmung ${activeSystem.name}`}
+                    palettes={activeSystem.palettes}
+                    value={active.palette}
+                    disabled={busyKey !== null}
+                    onChange={changePalette}
+                  />
+                </div>
               )}
             </div>
             <button
               type="button"
               className="pb-studio-btn pb-design-confirm"
               onClick={confirm}
-              disabled={busyKey !== null}
+              disabled={busyKey !== null || !active}
             >
               {busyKey ? "Einen Moment …" : "Mit diesem Design weiter"}
             </button>
             <p className="pb-design-confirm-note">
-              Im nächsten Schritt passt du Fotos, Texte und Farben an — das
-              Design lässt sich dort jederzeit wechseln.
+              Im nächsten Schritt passt du Fotos und Texte an — Design und
+              Farbstimmung lassen sich dort jederzeit wechseln.
             </p>
           </div>
           {sideCard(next, "right")}
@@ -495,7 +404,7 @@ export function DesignSplash({
           onClick={() => setRound(value => value + 1)}
           disabled={busyKey !== null || candidates.isFetching}
         >
-          Andere Richtungen zeigen
+          Andere Designs zeigen
         </button>
 
         {error && (

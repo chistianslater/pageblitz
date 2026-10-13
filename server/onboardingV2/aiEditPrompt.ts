@@ -1,18 +1,19 @@
-import { FONT_PAIRS, getConstitution } from "../../shared/stylePacks";
+import { getConstitution } from "../../shared/stylePacks";
 import {
-  activeColorWorldId,
-  getColorWorlds,
-} from "../../shared/stylePacks/colorWorlds";
-import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
-import { PACK_IDS } from "../../shared/siteContract/schema";
-import type { AiChatHistoryEntry } from "../../shared/onboardingV2/aiEdit";
+  asSystemDoc,
+  getPalette,
+  getSystem,
+  isReleased,
+  systemsForDoc,
+  type DesignSystemId,
+} from "../../shared/designSystems";
+import {
+  SYSTEM_LOOK_MESSAGE,
+  type AiChatHistoryEntry,
+} from "../../shared/onboardingV2/aiEdit";
 import { tonePromptLines } from "../../shared/onboardingV2/tone";
 import { GOALS } from "../../shared/onboardingV2/goal";
-import type {
-  PackId,
-  Page,
-  WebsiteDataV2,
-} from "../../shared/siteContract/types";
+import type { Page, WebsiteDataV2 } from "../../shared/siteContract/types";
 
 export const AI_EDIT_SYSTEM_PROMPT =
   "Du bist ein KI-Assistent, der Kundenwünsche zu einer bestehenden Kleinunternehmer-Website interpretiert und ausschließlich als valides JSON beantwortest, ohne Markdown, ohne Erklärung.";
@@ -21,24 +22,19 @@ const FORBIDDEN_CONTENT_RULE =
   "Erfinde oder ändere niemals Telefonnummern, E-Mail-Adressen, Postadressen oder Öffnungszeiten. URLs nur aus der Liste „Erlaubte Link-Ziele“ — nie erfinden.";
 
 /**
- * Kandidaten-Packs für Stil-Vorschläge: die branchenpassenden Kandidaten
- * zuerst (Runde 0 und 1 von getV2VariantCandidates), danach alle übrigen
- * registrierten Packs — dedupliziert, stabile Reihenfolge. So bekommt die KI
- * eine Auswahl, ist aber nicht auf Branchenmatches beschränkt.
+ * Systeme, die die KI als „anderen Look“ vorschlagen darf: das Branchen-
+ * Tripel ohne das aktuelle System, nur freigeschaltete (E5 — der Server
+ * prüft dieselbe Zugehörigkeit in routerAi).
  */
-function buildStyleCandidateIds(category: string): PackId[] {
-  const primary = getV2VariantCandidates(category, 0);
-  const secondary = getV2VariantCandidates(category, 1);
-  const all = PACK_IDS as unknown as PackId[];
-  const seen = new Set<PackId>();
-  const ordered: PackId[] = [];
-  for (const id of [...primary, ...secondary, ...all]) {
-    if (!seen.has(id)) {
-      seen.add(id);
-      ordered.push(id);
-    }
-  }
-  return ordered;
+export function styleSuggestionSystems(
+  doc: WebsiteDataV2,
+  category?: string
+): DesignSystemId[] {
+  const current = asSystemDoc(doc).system;
+  return systemsForDoc({
+    ...doc,
+    businessCategory: doc.businessCategory || category,
+  }).filter(id => id !== current && isReleased(id));
 }
 
 /**
@@ -58,10 +54,10 @@ function linkRuleLines(allowed: string[], isPage: boolean): string[] {
 }
 
 /**
- * Baut den User-Prompt für den KI-Chat: Verfassung (essence + llmHints) des
- * aktuell gewählten Packs, aktueller Inhalt (seo + sections) als JSON, harte
- * Regeln (nur Inhalte, keine Fakten/Rechtstexte, Struktur beibehalten) und
- * die drei möglichen Antwortformen (content/style/reject) mit Beispiel-JSON.
+ * Baut den User-Prompt für den KI-Chat: Textstimme (essence + llmHints),
+ * aktuelles Design (System + Farbstimmung), aktueller Inhalt (seo +
+ * sections) als JSON, harte Regeln (nur Inhalte, keine Fakten/Rechtstexte,
+ * Struktur beibehalten) und die fünf Antwortformen mit Beispiel-JSON.
  */
 export function buildAiEditPrompt(args: {
   doc: WebsiteDataV2;
@@ -74,32 +70,30 @@ export function buildAiEditPrompt(args: {
   /** Belegte Link-Ziele (aiEditLinks) — die KI darf nur diese setzen. */
   allowedLinks?: string[];
 }): string {
+  // Textstimme (historisch „Verfassung“) — nur Ton und Regeln, kein Look.
   const constitution = getConstitution(args.doc.stylePackId);
-  const candidateIds = buildStyleCandidateIds(args.category);
-  const candidateLines = candidateIds.map(id => {
-    const c = getConstitution(id);
-    return `- ${id}: ${c.name} — ${c.essence}`;
+  const systemDoc = asSystemDoc(args.doc);
+  const system = systemDoc.system ? getSystem(systemDoc.system) : undefined;
+  const candidateLines = styleSuggestionSystems(
+    args.doc,
+    args.category
+  ).flatMap(id => {
+    const def = getSystem(id);
+    return def ? [`- ${id}: ${def.name} — ${def.essence}`] : [];
   });
-  const worlds = getColorWorlds(args.doc.stylePackId);
-  const activeWorld = activeColorWorldId(
-    args.doc.stylePackId,
-    args.doc.colorOverrides ?? undefined
-  );
-  const profile = args.doc.designProfile;
   const designStatus = [
-    `Designrichtung: ${constitution.name} (${args.doc.stylePackId})`,
-    `Aktive Farbwelt: ${activeWorld}`,
-    `Akzentfarbe: ${args.doc.colorOverrides?.accent ?? "Richtungsfarbe"}`,
-    `Schriftpaar: ${args.doc.fontPairId ?? "Richtungsschriften"}`,
+    ...(system
+      ? [
+          `Design: ${system.name}`,
+          `Farbstimmung: ${getPalette(system, systemDoc.palette).name}`,
+        ]
+      : []),
     // Ziel (2026-09-03): damit Button-Wünsche zum gewählten Ziel passen.
     ...(args.doc.goal
       ? [
           `Ziel der Website: ${GOALS[args.doc.goal].label} — der Hero-Button führt dorthin, Text und Ziel des Buttons nur auf ausdrücklichen Wunsch ändern.`,
         ]
       : []),
-    profile
-      ? `Layout: hero=${profile.heroLayout}, leistungen=${profile.servicesLayout}, ueber-uns=${profile.aboutLayout}, galerie=${profile.galleryLayout}, abstaende=${profile.density}, bildwirkung=${profile.imageTreatment}`
-      : `Layout: Richtungs-Standard`,
     // Bestand/Sichtbarkeit/Reihenfolge betreffen die STARTSEITE — im
     // Unterseiten-Scope weggelassen (dort gilt die Sektions-Whitelist der
     // Page, und der Test belegt: kein "hero" im Unterseiten-Prompt).
@@ -138,7 +132,7 @@ export function buildAiEditPrompt(args: {
     ...dialogLines,
     `Der Kunde äußert folgenden Wunsch für ${scope}: "${args.message}"`,
     ``,
-    `## Tonalität (aktuelles Style Pack: ${constitution.name})`,
+    `## Tonalität (Textstimme: ${constitution.name})`,
     constitution.essence,
     ``,
     `## Regeln`,
@@ -152,7 +146,7 @@ export function buildAiEditPrompt(args: {
       ? `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen.`
       : `- Sektionstypen und ihre Reihenfolge NIE verändern — keine Sektion hinzufügen oder entfernen. EINZIGE Ausnahmen (faktenfreie Zusatz-Sektionen, hinzufügen UND entfernen erlaubt): {"type":"story","headline":"...","body":"..."} (mehr erzählen: Geschichte/Historie/Philosophie — nach "about" einsortieren, Absätze durch Leerzeile), {"type":"usp","headline":"...","items":[{"title":"...","text":"..."}]} (2–6 Vorteile/Argumente — früh platzieren, z. B. nach "hero" oder "services"), {"type":"notice","text":"..."} (Saison-/Aktionshinweis wie Urlaub oder Rabatt — wird als Banner GANZ OBEN über der Navigation gezeigt, egal wo er in der Liste steht; genau EIN Satz), {"type":"stats","headline":"...","items":[{"value":"25+","label":"Jahre Erfahrung"}]} (2–4 Kennzahlen — NUR Zahlen verwenden, die der Kunde selbst nennt oder die aus dem Inhalt belegt sind, NIE erfinden), {"type":"process","headline":"...","steps":[{"title":"...","text":"..."}]} (Ablauf in 2–5 nummerierten Schritten, z. B. Anfrage → Termin → Umsetzung), {"type":"quote","text":"...","author":"..."} (großes Zitat/Motto des Betriebs).`,
     ...linkRuleLines(args.allowedLinks ?? [], Boolean(args.page)),
-    `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben — aber heroLayout "collage" (Format 2) zeigt zusätzlich zum Hauptbild bis zu zwei Galerie-Bilder im Hero.`,
+    `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben.`,
     // Tonalität (2026-09-03): Vorgabe des Kunden schlägt Anrede-Hinweise
     // der Verfassung — gilt für jeden Text, den der Chat umschreibt.
     ...(args.doc.tone ? [``, ...tonePromptLines(args.doc.tone)] : []),
@@ -169,50 +163,40 @@ export function buildAiEditPrompt(args: {
     `Antworte mit GENAU EINEM der fünf folgenden JSON-Formate:`,
     ``,
     `1) Inhaltlicher Wunsch (Texte ändern):`,
-    `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"theme":null,"packId":null,"reason":null}`,
+    `{"kind":"content","content":{"seo":{"title":"...","description":"..."},"sections":[...]},"theme":null,"system":null,"reason":null}`,
     `- "sections" enthält ALLE Sektionen aus dem aktuellen Inhalt, in derselben Reihenfolge und mit denselben Typen — nur die vom Wunsch betroffenen Textfelder ändern sich.`,
     `- Fakten (imageUrl, Telefon, E-Mail, Adresse, Öffnungszeiten) unverändert aus dem aktuellen Inhalt übernehmen. Bestehende "ctaHref"/"link" unverändert mitgeben, außer der Wunsch betrifft genau diesen Button.`,
     ``,
-    `2) Design-Feinjustierung (Farben, Schrift, Abstände, Layout — z. B. "dunkler", "andere Akzentfarbe", "mehr Luft", "Bild im Hero nach oben"):`,
-    `{"kind":"theme","content":null,"theme":{...nur die gewünschten Felder...},"packId":null,"reason":"<ein Satz, was du geändert hast>"}`,
-    `Mögliche Felder in "theme" (nur setzen, was der Wunsch verlangt; null = Richtungs-Standard):`,
-    `- "colorWorldId": eine von ${worlds.map(w => `"${w.id}"`).join(", ")} — Grundstimmung der Farben ("abend" = dunkel, "heller" = licht, "waermer"/"kuehler"/"getoent" = Tönung, "original" = zurücksetzen).`,
-    `- "colorWorldBase": "#rrggbb" — eigene Grundfarbe (Hintergrund), wenn der Kunde eine KONKRETE Farbe für den Hintergrund nennt; Text-/Linienfarben werden automatisch lesbar nachgeführt.`,
-    `- "accent": "#rrggbb" oder null — Akzentfarbe (Buttons, Hervorhebungen).`,
-    `- "fontPairId": eine von ${FONT_PAIRS.map(f => `"${f.id}"`).join(", ")} oder null. (${FONT_PAIRS.map(f => `${f.id} = ${f.label}, ${f.vibe}`).join("; ")})`,
-    `- "density": "airy" (großzügig) oder "compact".`,
-    `- "imageTreatment": "natural", "framed" (gerahmt) oder "bleed" (flächig).`,
-    `- "heroLayout": "split" (Bild neben Text), "centered", "image-first" (Bild oben), "collage" (mehrere Fotos im Hero — Hauptbild plus bis zu zwei Galerie-Bilder als gestapelte Karten; wähle das bei Wünschen wie "mehr Bilder im Hero" oder "3 Fotos im Hero").`,
-    `- "servicesLayout": "list", "grid", "featured". "aboutLayout": "image-left", "image-right". "galleryLayout": "grid", "mosaic", "filmstrip".`,
-    `- "decorations": "off" blendet Schmuck-Illustrationen aus (Zweige, Farbkleckse, Ornamente — z. B. wenn dem Kunden eine Illustration nicht gefällt), "on" zeigt sie wieder.`,
-    `- "hiddenDecorations": VOLLSTÄNDIGE Liste einzeln ausgeblendeter Deko-Gruppen (statt alles auf einmal): "blobs" = organische Farbflächen, "dots" = Punktraster, "sprigs" = Zweig-Illustrationen, "ornaments" = Trennornamente/Bordüren. [] blendet alle Gruppen wieder ein. Beispiel: Kunde will nur die Zweige weg → ["sprigs"].`,
-    `- heroLayout "banner": Hero-Bild vollflächig hinter dem Text (dunkles Overlay, helle Schrift) — für „großes Bild über die ganze Breite". galleryLayout "masonry": Bilder in Spalten mit natürlicher Höhe (Pinterest-Stil).`,
-    `- "testimonialsLayout": "stack" (untereinander), "grid" (2 Spalten), "carousel" (seitlich wischbar). "contactLayout": "split" stellt Kontaktdaten/Öffnungszeiten/Formular zweispaltig, "stack" untereinander. Beide weglassen = Pack-Standard.`,
-    `- Leistungen (services) tragen KEINE Preise — bei Preis-Wünschen freundlich auf die Extras Preisliste bzw. Speisekarte verweisen (buchbar im Extras-Panel).`,
-    // Sichtbarkeit/Reihenfolge wirken auf die Startseite — im
-    // Unterseiten-Scope nicht anbieten (und kein "hero" in den Prompt
-    // leaken, siehe Whitelist-Test).
+    `2) Sektionen ein-/ausblenden oder umsortieren, Bild im Hero/Über-uns ausblenden:`,
+    `{"kind":"theme","content":null,"theme":{...nur die gewünschten Felder...},"system":null,"reason":"<ein Satz, was du geändert hast>"}`,
+    `Mögliche Felder in "theme" (nur setzen, was der Wunsch verlangt):`,
     ...(args.page
-      ? []
+      ? [
+          `- Auf einer Unterseite gibt es hier nichts einzustellen — Ein-/Ausblenden und Reihenfolge gelten für die Startseite.`,
+        ]
       : [
           `- "hiddenSections": VOLLSTÄNDIGE Liste der auszublendenden Sektionstypen (ersetzt die bisherige Liste; [] blendet alles wieder ein). Erlaubt sind nur Typen aus dem Dokument, NIE "hero" oder "contact". Beispiel: Kunde will keine Bewertungen zeigen → ["testimonials"] (plus alles, was schon ausgeblendet war und bleiben soll).`,
           `- "sectionOrder": VOLLSTÄNDIGE neue Reihenfolge der Sektionstypen (alle Typen aus dem Dokument aufzählen; "hero" bleibt immer zuerst, "contact" gehört ans Ende).`,
           `- "hiddenElements": VOLLSTÄNDIGE Liste einzeln ausgeblendeter Elemente (ersetzt die bisherige; [] zeigt alles wieder). Möglich: "hero-media" (Bild im Hero weg — Text nutzt die volle Breite), "about-media" (Über-uns-Bild weg). Nicht-destruktiv, die Bilder bleiben gespeichert.`,
         ]),
-    `Diese Änderungen werden SOFORT angewandt — wähle sie, wenn der Wunsch mit der aktuellen Designrichtung erfüllbar ist.`,
+    `- Leistungen (services) tragen KEINE Preise — bei Preis-Wünschen freundlich auf die Extras Preisliste bzw. Speisekarte verweisen (buchbar im Extras-Panel).`,
+    `Diese Änderungen werden SOFORT angewandt.`,
+    `- Farben, Schriften, Abstände und Layouts bringt das Design selbst mit. Einzelne Farb-, Schrift- oder Layoutwünsche („dunkler", „andere Schrift", „blauer") setzt du NICHT um — antworte dann mit Format 4 und dem Hinweis: "${SYSTEM_LOOK_MESSAGE}" Passt das ganze Design nicht, schlage ein anderes vor (Format 3).`,
     ``,
-    `3) Grundlegend anderer Look (die aktuelle Richtung passt überhaupt nicht — z. B. "komplett anderer Stil", "wie eine Anwaltskanzlei statt Werkstatt"):`,
-    `{"kind":"style","content":null,"theme":null,"packId":"<eine ID aus der Liste unten>","reason":"<ein Satz, warum dieses Pack passt>"}`,
-    `Verfügbare Packs:`,
-    ...candidateLines,
+    `3) Grundlegend anderer Look (das aktuelle Design passt überhaupt nicht — z. B. "komplett anderer Stil", "viel moderner", "edler und dunkler"):`,
+    `{"kind":"style","content":null,"theme":null,"system":"<eine ID aus der Liste unten>","reason":"<ein Satz, warum dieses Design passt>"}`,
+    ...(candidateLines.length > 0
+      ? [`Verfügbare Designs:`, ...candidateLines]
+      : [`Es gibt gerade kein anderes Design für diese Branche — nutze Format 4.`]),
     ``,
-    `4) Nicht machbarer Wunsch — zwei Fälle:`,
+    `4) Nicht machbarer Wunsch — drei Fälle:`,
     `   a) Fakten (Telefon, Adresse, Preise, Öffnungszeiten, Rechtliches): die ändert der Kunde selbst in den Panels.`,
-    `   b) Struktur/Funktionen, die es nicht gibt (andere als die erlaubten Zusatz-Sektionen hinzufügen/entfernen, Buchung/Shop/neue Features). Buttons/Links zu einer Bestell- oder Buchungsseite SIND machbar (siehe Buttons & Links) — fehlt nur die Adresse, frag danach (Format 5). Hinweis: "mehr Bilder im Hero" IST machbar — heroLayout "collage" (Format 2); "mehr erzählen" IST machbar — story-Sektion (Format 1).`,
-    `{"kind":"reject","content":null,"theme":null,"packId":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst. NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
+    `   b) Struktur/Funktionen, die es nicht gibt (andere als die erlaubten Zusatz-Sektionen hinzufügen/entfernen, Buchung/Shop/neue Features). Buttons/Links zu einer Bestell- oder Buchungsseite SIND machbar (siehe Buttons & Links) — fehlt nur die Adresse, frag danach (Format 5). Hinweis: "mehr erzählen" IST machbar — story-Sektion (Format 1).`,
+    `   c) Einzelne Farb-, Schrift- oder Layoutwünsche (siehe oben).`,
+    `{"kind":"reject","content":null,"theme":null,"system":null,"reason":"<sag EHRLICH und konkret, was nicht geht und warum — und nenne die nächstbeste Alternative, die du kannst. NIE einen generischen Fehler, immer eine hilfreiche Erklärung.>"}`,
     ``,
     `5) Rückfrage — NUR wenn der Wunsch so mehrdeutig ist, dass du ihn ohne Zusatzinfo falsch umsetzen könntest (z. B. "mach das schöner" ohne Bezug, oder zwei mögliche Lesarten mit sehr unterschiedlichem Ergebnis):`,
-    `{"kind":"question","content":null,"theme":null,"packId":null,"reason":null,"question":"<genau EINE kurze, konkrete Rückfrage auf Deutsch, gern mit 2–3 Optionen>"}`,
+    `{"kind":"question","content":null,"theme":null,"system":null,"reason":null,"question":"<genau EINE kurze, konkrete Rückfrage auf Deutsch, gern mit 2–3 Optionen>"}`,
     `- Höchstens EINE Rückfrage pro Wunsch: steht im bisherigen Dialog bereits eine Rückfrage von dir, dann NIE erneut fragen — setze stattdessen die plausibelste Interpretation um.`,
     `- Bei nur leichter Unschärfe nicht fragen, sondern die naheliegendste Interpretation direkt umsetzen.`,
   ].join("\n");

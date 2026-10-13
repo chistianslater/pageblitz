@@ -8,11 +8,15 @@ import {
 } from "./studioTourLogic";
 
 describe("Studio-Tour (Test-Feedback 2026-09-18)", () => {
-  test("erklärt Schritte links, Layout-Varianten in der Vorschau, Assistent und den späten Kauf", () => {
+  test("erklärt Schritte links, Werkzeuge in der Vorschau, Assistent und den späten Kauf", () => {
     const text = STUDIO_TOUR_STEPS.map(s => `${s.title} ${s.body}`).join(" ");
     expect(STUDIO_TOUR_STEPS.length).toBeGreaterThanOrEqual(3);
     expect(text).toMatch(/Schritt/);
-    expect(text).toMatch(/Layout/);
+    expect(text).toMatch(/Bild ausblenden/);
+    expect(text).toMatch(/Sektion einfügen/);
+    // Layout-Wähler und Einzelfarben gibt es seit den Designsystemen nicht mehr.
+    expect(text).not.toMatch(/Layout/);
+    expect(text).not.toMatch(/andere Farbe/);
     expect(text).toMatch(/Assistent/);
     expect(text).toMatch(/zum Schluss|am Ende/i);
   });

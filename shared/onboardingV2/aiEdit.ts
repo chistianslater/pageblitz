@@ -1,23 +1,11 @@
 import { z } from "zod";
 import {
-  PACK_IDS,
   PageSectionSchema,
   SECTION_TYPES,
   SectionV2Schema,
 } from "../siteContract/schema";
-import {
-  ABOUT_LAYOUTS,
-  CONTACT_LAYOUTS,
-  DECORATION_GROUPS,
-  DECORATION_MODES,
-  DESIGN_DENSITIES,
-  GALLERY_LAYOUTS,
-  HERO_LAYOUTS,
-  HIDEABLE_ELEMENTS,
-  IMAGE_TREATMENTS,
-  SERVICES_LAYOUTS,
-  TESTIMONIALS_LAYOUTS,
-} from "../siteContract/designProfile";
+import { HIDEABLE_ELEMENTS } from "../siteContract/designProfile";
+import { DESIGN_SYSTEM_IDS } from "../designSystems/types";
 import type {
   Page,
   PageSection,
@@ -49,52 +37,34 @@ export const HIDEABLE_SECTION_TYPES = [
 ] as const;
 
 /**
- * Design-Patch des KI-Assistenten (2026-08-30): jede Stellschraube, die
- * auch der Theme-Editor kennt — Akzent, Farbwelt (kuratiert oder eigene
- * Grundfarbe), Schriftpaar, Abstände, Bildwirkung, Sektionslayouts, seit
- * heute auch Sichtbarkeit (hiddenSections) und Reihenfolge (sectionOrder)
- * der Sektionen. `null` = auf Richtungs-Standard zurück; fehlende Felder
- * bleiben unangetastet. Server-seitig zusätzlich gegen FONT_PAIRS/
- * getColorWorld/den Sektionsbestand validiert (routerAi.ts) und SOFORT
- * angewandt (leicht revidierbar).
+ * Design-Patch des KI-Assistenten: Sichtbarkeit (hiddenSections),
+ * Reihenfolge (sectionOrder) und einzeln ausgeblendete Elemente
+ * (hiddenElements). Farbe, Schrift und Layout bringt das Designsystem mit
+ * (Farbstimmung im Stil-Panel) — solche Felder kennt der Patch nicht mehr.
+ * Server-seitig gegen den Sektionsbestand gefiltert (routerAi.ts) und
+ * SOFORT angewandt (leicht revidierbar).
  */
 export const AiThemePatchSchema = z
   .object({
-    accent: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/)
-      .nullable()
-      .optional(),
-    colorWorldId: z
-      .string()
-      .regex(/^[a-z-]+$/)
-      .max(24)
-      .nullable()
-      .optional(),
-    colorWorldBase: z
-      .string()
-      .regex(/^#[0-9a-fA-F]{6}$/)
-      .optional(),
-    fontPairId: z.string().max(40).nullable().optional(),
-    density: z.enum(DESIGN_DENSITIES).optional(),
-    imageTreatment: z.enum(IMAGE_TREATMENTS).optional(),
-    heroLayout: z.enum(HERO_LAYOUTS).optional(),
-    servicesLayout: z.enum(SERVICES_LAYOUTS).optional(),
-    aboutLayout: z.enum(ABOUT_LAYOUTS).optional(),
-    galleryLayout: z.enum(GALLERY_LAYOUTS).optional(),
-    testimonialsLayout: z.enum(TESTIMONIALS_LAYOUTS).optional(),
-    contactLayout: z.enum(CONTACT_LAYOUTS).optional(),
-    decorations: z.enum(DECORATION_MODES).optional(),
     // VOLLSTÄNDIGE Ersatz-Listen (kein Merge): [] blendet alles wieder ein
     // bzw. setzt die Reihenfolge auf die Dokument-Ordnung zurück.
     hiddenSections: z.array(z.enum(HIDEABLE_SECTION_TYPES)).max(14).optional(),
     sectionOrder: z.array(z.enum(SECTION_TYPES)).max(16).optional(),
     // Einzeln ausblendbare Sektions-Elemente („Bild weg, Text breiter").
     hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
-    // Deko granular (Backlog 13d): ebenfalls VOLLSTÄNDIGE Ersatzliste.
-    hiddenDecorations: z.array(z.enum(DECORATION_GROUPS)).max(4).optional(),
   })
   .strict();
+
+/** Felder des Theme-Patches — alles andere in einer KI-Antwort ist ein Look-Wunsch. */
+export const AI_THEME_KEYS = [
+  "hiddenSections",
+  "sectionOrder",
+  "hiddenElements",
+] as const satisfies readonly (keyof z.infer<typeof AiThemePatchSchema>)[];
+
+/** Hinweis im KI-Chat, wenn ein Farb-/Schrift-/Layout-Wunsch nicht greift. */
+export const SYSTEM_LOOK_MESSAGE =
+  "Bei diesem Design stellst du den Look über die Farbstimmung ein (Studio → Stil). Farben, Schriften und Abstände kann ich hier nicht einzeln ändern.";
 
 export type AiThemePatch = z.infer<typeof AiThemePatchSchema>;
 
@@ -103,6 +73,8 @@ const AiThemeResponseSchema = z
     kind: z.literal("theme"),
     theme: AiThemePatchSchema,
     reason: z.string().max(200),
+    /** Die KI wollte zusätzlich Farbe/Schrift/Layout ändern (verworfen). */
+    skippedLook: z.boolean().optional(),
   })
   .strict();
 
@@ -123,9 +95,10 @@ const AiQuestionResponseSchema = z
  * Antwortschema der KI-Chat-Bearbeitung (server/onboardingV2/aiEdit.ts). Vier
  * sich gegenseitig ausschließende Ergebnisse:
  * - "content": ein validierter Inhalts-Vorschlag (seo + sections).
- * - "theme": ein Design-Patch (Farben/Schrift/Layout) — wird sofort
- *   angewandt, weil im Stil-Panel jederzeit revidierbar.
- * - "style": ein Pack-Vorschlag für grundlegend anderen Look.
+ * - "theme": Ein-/Ausblenden und Reihenfolge — wird sofort angewandt,
+ *   weil jederzeit revidierbar.
+ * - "style": Vorschlag eines anderen Designsystems aus dem Branchen-Tripel
+ *   (der Server prüft die Zugehörigkeit).
  * - "reject": eine Ablehnung, z. B. bei Fakten-/Kontaktwünschen, die nur
  *   über die Panels geändert werden dürfen.
  * - "question": eine Rückfrage bei mehrdeutigem Wunsch (als fünfte Option
@@ -143,7 +116,7 @@ export const AiEditResponseSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("style"),
-      packId: z.enum(PACK_IDS),
+      system: z.enum(DESIGN_SYSTEM_IDS),
       reason: z.string().max(200),
     })
     .strict(),
