@@ -2529,14 +2529,8 @@ details[open] summary::after{content:"−"}
 /* Footer */
 footer{background:#050505;color:rgba(255,255,255,.25);padding:2rem 0;text-align:center;font-size:.875rem;border-top:1px solid rgba(255,255,255,.06)}
 footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
-/* Mock Browser Preview */
+/* Website-Vorschau */
 .preview-section{padding:5rem 0;border-bottom:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
-.mock-browser{max-width:860px;margin:3.5rem auto 0;border-radius:16px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);background:#111}
-.mock-chrome{background:#1c1c1c;padding:.625rem 1rem;display:flex;align-items:center;gap:.75rem;border-bottom:1px solid rgba(255,255,255,.07)}
-.mock-dots{display:flex;gap:.375rem;flex-shrink:0}
-.mock-dot{width:.625rem;height:.625rem;border-radius:50%}
-.mock-dot.r{background:#ff5f57}.mock-dot.a{background:#febc2e}.mock-dot.g{background:#28c840}
-.mock-url{flex:1;background:rgba(255,255,255,.06);border-radius:6px;padding:.25rem .75rem;font-size:.75rem;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:.375rem;max-width:380px;margin:0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Inner mock website */
 .mw-wrap{overflow:hidden}
 .mw-nav{background:rgba(0,0,0,.35);padding:.625rem 1.25rem;display:flex;align-items:center;gap:.75rem}
@@ -2605,7 +2599,7 @@ footer a{color:rgba(255,255,255,.4);text-decoration:underline;margin:0 .5rem}
    Ueberschreibt den alten Basis-Skin darunter (Magenta auf Kohle) und
    ersetzt den Nachtschicht-Skin, der hier bis zum Klarstart-Relaunch stand.
    Die branchenspezifischen Akzentfarben und die Website-Vorschau (.mw-*,
-   .mock-*) bleiben unangetastet: dort demonstrieren sie das Ergebnis. */
+   .device-*) bleiben unangetastet: dort demonstrieren sie das Ergebnis. */
 @font-face{font-family:"Space Grotesk";font-style:normal;font-weight:300 700;font-display:swap;src:url("/fonts/space-grotesk-latin-wght.woff2") format("woff2")}
 body{font-family:"Space Grotesk",system-ui,sans-serif;color:#242424;background:#fff}
 .container{max-width:1200px}
@@ -2685,15 +2679,42 @@ summary::after{color:#62675b}
 .industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#425000;color:#425000;background:#f5f9da}
 footer{background:#fff;color:#62675b;border-color:#d8ddce}
 footer a{color:#242424}
-.showcase-frame{padding:0}
-.showcase-shot{display:block;line-height:0}
-.showcase-shot img{display:block;width:100%;height:auto;background:#f5f6f0}
-.showcase-caption{max-width:860px;margin:1rem auto 0;text-align:center;font-size:.875rem;line-height:1.55;color:#62675b}
+/* Geräte-Komposition (2026-10-13): Monitor + Telefon statt Browser-Attrappe.
+   Alle Maße in cqw der Bühne, damit die Komposition ohne JS und ohne
+   Layout-Sprung mitskaliert (aspect-ratio hält den Platz frei). */
+.device-showcase{max-width:1080px;margin:3.5rem auto 0}
+.device-stage{position:relative;display:block;container-type:inline-size;aspect-ratio:100/68;isolation:isolate;color:inherit;text-decoration:none;border-radius:2cqw}
+.device-stage::before{content:"";position:absolute;z-index:-1;inset:16% 4% 3% 10%;border-radius:3cqw;background:radial-gradient(ellipse 45% 60% at 82% 70%,rgba(215,239,69,.32),transparent 70%),#f5f6f0}
+.device-desktop,.device-phone{display:block;background:#1f211d}
+.device-desktop{position:absolute;left:0;top:0;width:86cqw;padding:.7cqw;border-radius:1.6cqw;box-shadow:0 0 0 1px rgba(36,36,36,.06),0 2px 4px rgba(36,36,36,.05),0 18px 36px -14px rgba(36,36,36,.2),0 50px 90px -44px rgba(36,36,36,.34)}
+.device-phone{position:absolute;right:1cqw;top:19cqw;width:23cqw;padding:1cqw;border-radius:4.2cqw;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 4px 8px rgba(36,36,36,.1),0 24px 44px -16px rgba(36,36,36,.38),0 60px 90px -40px rgba(36,36,36,.4)}
+.device-screen{display:block;overflow:hidden;border-radius:1cqw;background:#f5f6f0}
+.device-phone .device-screen{border-radius:3.3cqw}
+.device-screen img{display:block;width:100%;height:auto}
+.device-stage:focus-visible{outline:2px solid #425000;outline-offset:8px}
+.device-stage--solo{aspect-ratio:auto;max-width:880px;margin:0 auto}
+.device-stage--solo::before{display:none}
+.device-stage--solo .device-desktop{position:relative;width:100%;padding:8px;border-radius:16px}
+.device-stage--solo .device-screen{border-radius:10px;background:#2a2c27}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .device-desktop,.device-phone{transition:transform .6s cubic-bezier(.16,1,.3,1)}
+  a.device-stage:hover .device-phone{transform:translateY(-.9cqw)}
+  a.device-stage:hover .device-desktop{transform:translateY(-.3cqw)}
+}
+@media(max-width:639px){
+  .device-showcase{margin-top:2.5rem}
+  .device-stage{aspect-ratio:100/122}
+  .device-stage::before{inset:30% 0 6% 0;border-radius:5cqw;background:radial-gradient(ellipse 60% 50% at 70% 60%,rgba(215,239,69,.3),transparent 70%),#f5f6f0}
+  .device-desktop{top:34cqw;width:74cqw;padding:1cqw;border-radius:2.4cqw}
+  .device-desktop .device-screen{border-radius:1.5cqw}
+  .device-phone{top:0;left:34cqw;right:auto;width:58cqw;padding:2.2cqw;border-radius:10cqw}
+  .device-phone .device-screen{border-radius:8cqw}
+}
+.showcase-caption{max-width:860px;margin:1.5rem auto 0;text-align:center;font-size:.875rem;line-height:1.55;color:#62675b;text-wrap:pretty}
 .showcase-caption strong{color:#242424;font-weight:600}
 .showcase-caption a{color:#425000;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
-.mock-browser{background:#fff;box-shadow:0 30px 70px -40px rgba(36,36,36,.45),0 0 0 1px #d8ddce}
-.mock-chrome,.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
-.mock-url,.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
+.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
+.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
 @media(max-width:768px){
   .nav-cta{padding:.55rem .85rem;font-size:.75rem;white-space:nowrap}
   .comp-table{display:block;overflow:visible}
@@ -2784,20 +2805,14 @@ function heroPersonaSrc(slug: string): string {
   return HERO_PERSONA_OVERRIDES[slug] ?? `/personas/seo/${slug}.webp`;
 }
 
-/** Adresse im Fensterrahmen: Name des Beispiels als Pageblitz-Subdomain. */
-function showcaseHost(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" })[m] ?? m)
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return `${slug}.pageblitz.de`;
-}
-
 /**
  * Echtes Beispiel statt Attrappe (2026-10-13): Bild des Beispielbetriebs im
  * System, das ein Betrieb dieser Branche bekommt (shared/seoShowcases.ts).
- * Lazy und unterhalb des Heros — die Hero-Persona bleibt das LCP-Element.
+ *
+ * Geräte-Komposition (2026-10-13): Desktop-Bild in einem schlanken Monitor-
+ * Rahmen, davor rechts unten das Handy-Bild im Telefon-Rahmen. Auf schmalen
+ * Bildschirmen wird das Handy zur Hauptfigur (CSS `.device-stage`). Beide
+ * Bilder lazy und unterhalb des Heros — die Hero-Persona bleibt LCP.
  */
 function showcasePreviewHtml(
   industry: SeoIndustry,
@@ -2806,26 +2821,18 @@ function showcasePreviewHtml(
   const systemName = getSystem(showcase.system)?.name ?? showcase.system;
   const { sample, label } = showcase.entry;
   const alt = `Beispiel-Website im Design ${systemName}: ${sample}, ${label}`;
-  return `<figure class="mock-browser showcase-frame">
-      <div class="mock-chrome">
-        <div class="mock-dots">
-          <div class="mock-dot r"></div>
-          <div class="mock-dot a"></div>
-          <div class="mock-dot g"></div>
-        </div>
-        <div class="mock-url">
-          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-          <span>${escapeHtml(showcaseHost(sample))}</span>
-        </div>
-      </div>
-      <a class="showcase-shot" href="${escapeHtml(showcase.href)}" target="_blank" rel="noopener">
-        <picture>
-          <source media="(max-width:600px)" srcset="${escapeHtml(showcase.imageMobile)}" width="${SHOWCASE_IMAGE_MOBILE.width}" height="${SHOWCASE_IMAGE_MOBILE.height}">
+  const href = escapeHtml(showcase.href);
+  return `    <figure class="device-showcase">
+      <a class="device-stage" href="${href}" target="_blank" rel="noopener">
+        <span class="device-desktop"><span class="device-screen">
           <img src="${escapeHtml(showcase.image)}" alt="${escapeHtml(alt)}" width="${SHOWCASE_IMAGE.width}" height="${SHOWCASE_IMAGE.height}" loading="lazy" decoding="async">
-        </picture>
+        </span></span>
+        <span class="device-phone"><span class="device-screen">
+          <img src="${escapeHtml(showcase.imageMobile)}" alt="${escapeHtml(`${sample} auf dem Handy`)}" width="${SHOWCASE_IMAGE_MOBILE.width}" height="${SHOWCASE_IMAGE_MOBILE.height}" loading="lazy" decoding="async">
+        </span></span>
       </a>
-    </figure>
-    <p class="showcase-caption">Beispielbetrieb <strong>${escapeHtml(sample)}</strong> (${escapeHtml(label)}) im Design ${escapeHtml(systemName)} – dieses Design bekommt auch deine ${escapeHtml(industry.displayName)}-Website. <a href="${escapeHtml(showcase.href)}" target="_blank" rel="noopener">Beispiel ansehen</a></p>`;
+      <figcaption class="showcase-caption">Beispielbetrieb <strong>${escapeHtml(sample)}</strong> (${escapeHtml(label)}) im Design ${escapeHtml(systemName)} – dieses Design bekommt auch deine ${escapeHtml(industry.displayName)}-Website. <a href="${href}" target="_blank" rel="noopener">Beispiel ansehen</a></figcaption>
+    </figure>`;
 }
 
 export function generateLandingPageHTML(
@@ -2961,9 +2968,6 @@ export function generateLandingPageHTML(
   const mockBusinessName = city
     ? `${industry.displayName} ${city.name}`
     : `${industry.displayName}`;
-  const mockUrl = city
-    ? `${industry.slug}-${city.slug}.pageblitz.de`
-    : `${industry.slug}.pageblitz.de`;
   const mockCardsHtml = industry.features
     .slice(0, 3)
     .map(
@@ -2975,19 +2979,10 @@ export function generateLandingPageHTML(
   const showcase = seoShowcaseFor(industry.slug);
   const previewHtml = showcase
     ? showcasePreviewHtml(industry, showcase)
-    : `    <div class="mock-browser">
-      <div class="mock-chrome">
-        <div class="mock-dots">
-          <div class="mock-dot r"></div>
-          <div class="mock-dot a"></div>
-          <div class="mock-dot g"></div>
-        </div>
-        <div class="mock-url">
-          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-          <span>${escapeHtml(mockUrl)}</span>
-        </div>
-      </div>
-      <div class="mw-wrap">
+    : `    <figure class="device-showcase">
+      <div class="device-stage device-stage--solo">
+        <div class="device-desktop"><div class="device-screen">
+      <div class="mw-wrap">      <div class="mw-wrap">
         <div class="mw-nav">
           <div class="mw-logo-pill"></div>
           <div class="mw-spacer"></div>
@@ -3013,7 +3008,9 @@ export function generateLandingPageHTML(
           ${mockCardsHtml}
         </div>
       </div>
-    </div>`;
+        </div></div>
+      </div>
+    </figure>`;
 
   return `<!DOCTYPE html>
 <html lang="de">

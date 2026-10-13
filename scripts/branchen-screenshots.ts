@@ -11,7 +11,11 @@
  * Farbstimmung (shared/showcases/showcasePalettes.ts) auf:
  *
  *   client/public/showcases/<id>.webp        Desktop 1440 → 1200×833
- *   client/public/showcases/<id>-mobil.webp  Handy 390×560 @2x → 780×1120
+ *   client/public/showcases/<id>-mobil.webp  Handy 390×844 @2x → 585×1266
+ *
+ * Das Handy-Bild hat das Seitenverhältnis eines heutigen Telefons (~9:19,5),
+ * weil die SEO-Seiten es in einem Handy-Rahmen zeigen (Geräte-Komposition,
+ * 2026-10-13); es zeigt den ersten Bildschirm der mobilen Seite.
  *
  * Nach jeder sichtbaren Änderung an Systemen, Fixtures oder Beispielfotos
  * neu laufen lassen, sonst werben die Seiten mit einem alten Stand.
@@ -53,15 +57,19 @@ const chromiumPfad = arg("--chromium");
 /** Desktop: 1440 breit aufnehmen, auf 1200×833 verkleinern (Showroom-Maß). */
 const DESKTOP: AufnahmeFenster = { breite: 1440, hoehe: 1000 };
 const DESKTOP_ZIEL = { breite: 1200, hoehe: 833 };
-/** Handy: erster Bildschirm-Ausschnitt, doppelte Pixeldichte. */
-const MOBIL: AufnahmeFenster = { breite: 390, hoehe: 560, dichte: 2 };
-/** WebP-Qualität; Ziel ≤ 70 kB je Bild. */
+/** Handy: erster Bildschirm im Telefon-Format, doppelte Pixeldichte. */
+const MOBIL: AufnahmeFenster = { breite: 390, hoehe: 844, dichte: 2 };
+/** 1,5-fach statt 2-fach: im Handy-Rahmen höchstens ~300 CSS-px breit. */
+const MOBIL_ZIEL = { breite: 585, hoehe: 1266 };
+/** WebP-Qualität; Ziel ≤ 70 kB je Desktop-, ≤ 60 kB je Handy-Bild. */
 const QUALITAET = 78;
 const ZIEL_BYTES = 70 * 1024;
+const ZIEL_BYTES_MOBIL = 60 * 1024;
 
 async function webp(
   png: Buffer,
-  groesse?: { breite: number; hoehe: number }
+  groesse?: { breite: number; hoehe: number },
+  zielBytes = ZIEL_BYTES
 ): Promise<Buffer> {
   let bild = sharp(png);
   if (groesse)
@@ -74,8 +82,16 @@ async function webp(
     .clone()
     .webp({ quality: QUALITAET, effort: 6 })
     .toBuffer();
-  if (erst.length <= ZIEL_BYTES) return erst;
-  return bild.webp({ quality: QUALITAET - 10, effort: 6 }).toBuffer();
+  if (erst.length <= zielBytes) return erst;
+  // Sonst in Stufen sparsamer, bis das Ziel hält (Untergrenze 50).
+  for (let q = QUALITAET - 8; q >= 50; q -= 8) {
+    const kleiner = await bild
+      .clone()
+      .webp({ quality: q, effort: 6 })
+      .toBuffer();
+    if (kleiner.length <= zielBytes || q - 8 < 50) return kleiner;
+  }
+  return erst;
 }
 
 async function main(): Promise<void> {
@@ -103,7 +119,11 @@ async function main(): Promise<void> {
           await geraet.aufnehmen(url, DESKTOP),
           DESKTOP_ZIEL
         );
-        const mobil = await webp(await geraet.aufnehmen(url, MOBIL));
+        const mobil = await webp(
+          await geraet.aufnehmen(url, MOBIL),
+          MOBIL_ZIEL,
+          ZIEL_BYTES_MOBIL
+        );
         fs.writeFileSync(path.join(ziel, `${showcase.id}.webp`), desktop);
         fs.writeFileSync(path.join(ziel, `${showcase.id}-mobil.webp`), mobil);
         console.log(

@@ -75,7 +75,8 @@ export const SEO_SHOWCASES: Readonly<Record<string, SeoShowcaseRef | null>> = {
 
 /** Maße der Bilder (scripts/branchen-screenshots.ts). */
 export const SHOWCASE_IMAGE = { width: 1200, height: 833 } as const;
-export const SHOWCASE_IMAGE_MOBILE = { width: 780, height: 1120 } as const;
+/** Handy-Bild im Telefon-Format (390×844 @1,5), für den Handy-Rahmen. */
+export const SHOWCASE_IMAGE_MOBILE = { width: 585, height: 1266 } as const;
 
 export function showcaseImagePath(id: string, mobile = false): string {
   return `/showcases/${id}${mobile ? "-mobil" : ""}.webp`;

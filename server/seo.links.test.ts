@@ -255,11 +255,24 @@ describe("Branchenseiten zeigen ein echtes System-Beispiel statt der Attrappe", 
       it(`${where}: ${showcase ? "Bild" : "Attrappe"}`, () => {
         const html = generateLandingPageHTML(industry, city);
         if (!showcase) {
+          // Attrappe im selben schlanken Geräte-Rahmen, ohne Ampel-Punkte.
           expect(html).toContain('class="mw-wrap"');
-          expect(html).not.toContain('class="mock-browser showcase-frame"');
+          expect(html).toContain("device-stage--solo");
+          expect(html).not.toContain('class="device-phone"');
+          expect(html).not.toContain("mock-dot");
           return;
         }
         expect(html).not.toContain('class="mw-wrap"');
+        // Geräte-Komposition statt Browser-Attrappe: kein Fensterrahmen
+        // mit Ampel-Punkten und erfundener Adresszeile mehr.
+        expect(html).not.toContain("mock-dot");
+        expect(html).not.toContain("mock-url");
+        expect(html).toContain('class="device-desktop"');
+        expect(html).toContain('class="device-phone"');
+        expect(html).toContain(`<img src="${showcase.imageMobile}" alt="`);
+        expect(html).toMatch(
+          / auf dem Handy" width="585" height="1266" loading="lazy" decoding="async">/
+        );
         expect(html).toContain(
           `<img src="${showcase.image}" alt="Beispiel-Website im Design `
         );
@@ -285,6 +298,8 @@ describe("Branchenseiten zeigen ein echtes System-Beispiel statt der Attrappe", 
     expect(html).toContain(
       'alt="Beispiel-Website im Design Journal: NOIR Haarstudio, Friseursalon"'
     );
-    expect(html).toContain('srcset="/showcases/friseur-mobil.webp"');
+    expect(html).toContain(
+      'src="/showcases/friseur-mobil.webp" alt="NOIR Haarstudio auf dem Handy"'
+    );
   });
 });
