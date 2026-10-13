@@ -307,6 +307,31 @@ describe("SSR routes", () => {
       }
     });
 
+    test("Freundlich (gebaut, nicht freigeschaltet): Dev-Vorschau (3 Paletten), Demo- und Rechtsseiten liefern 200", async () => {
+      const app = express();
+      registerSsrRoutes(app);
+      for (const palette of ["wald", "himmel", "beere"]) {
+        const dev = await request(app).get(
+          `/dev/site-preview?system=freundlich&palette=${palette}&fixture=full`
+        );
+        expect(dev.status).toBe(200);
+        expect(dev.text).toContain('data-pb-system="freundlich"');
+        expect(dev.text).toContain(`data-pb-palette="${palette}"`);
+        expect(dev.text).not.toContain('name="color-scheme"');
+      }
+      for (const showcase of ["musikschule", "friseur", "cafe"]) {
+        const demo = await request(app).get(`/demo/system/freundlich/${showcase}`);
+        expect(demo.status).toBe(200);
+        expect(demo.text).toContain('class="pb-site pb-freundlich"');
+        expect(demo.text).toContain('class="fr-entry');
+      }
+      for (const page of ["impressum", "datenschutz"]) {
+        const res = await request(app).get(`/demo/system/freundlich/musikschule/${page}`);
+        expect(res.status).toBe(200);
+        expect(res.text).toContain("Beispielseite");
+      }
+    });
+
     test("Demo-Rechtsseiten: Impressum/Datenschutz im System, Hinweistext, noindex", async () => {
       const app = express();
       registerSsrRoutes(app);

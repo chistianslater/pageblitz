@@ -6,6 +6,7 @@ import { WERKSTOFF_MODULE } from "./werkstoff";
 import { PLAKAT_MODULE } from "./plakat";
 import { KLAR_MODULE } from "./klar";
 import { NACHT_MODULE } from "./nacht";
+import { FREUNDLICH_MODULE } from "./freundlich";
 
 /** Render-Module der Designsysteme (rev 3). */
 export const SYSTEM_MODULES: Partial<Record<DesignSystemId, SiteModule>> = {
@@ -15,4 +16,6 @@ export const SYSTEM_MODULES: Partial<Record<DesignSystemId, SiteModule>> = {
   plakat: PLAKAT_MODULE,
   klar: KLAR_MODULE,
   nacht: NACHT_MODULE,
+  // Gebaut, aber nicht freigeschaltet (RELEASED_SYSTEMS) bis zur Abnahme.
+  freundlich: FREUNDLICH_MODULE,
 };

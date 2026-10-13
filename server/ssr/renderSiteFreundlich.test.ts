@@ -1,10 +1,8 @@
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { renderSiteHtml, systemFontHead, systemSchemeHead } from "./renderSite";
 import { FREUNDLICH } from "../../shared/designSystems/freundlich";
 import { withDesignSystem } from "../../shared/designSystems/apply";
 import { getFixture } from "../../shared/siteContract/fixtures";
-import { SYSTEM_MODULES } from "../../client/src/components/site/systems/registry";
-import type { SiteModule } from "../../client/src/components/site/siteModule";
 
 const OPTS = { origin: "https://pageblitz.de", slug: "test" };
 
@@ -25,15 +23,7 @@ describe("SSR: Freundlich-Schriften", () => {
   });
 });
 
-describe("SSR: Freundlich-Seite (Stub-Modul bis F2)", () => {
-  // Freundlich hat noch kein Render-Modul; ein Stub prüft nur Kopf und Hülle.
-  const stub: SiteModule = { ...(SYSTEM_MODULES.klar as SiteModule) };
-  beforeAll(() => {
-    SYSTEM_MODULES.freundlich = stub;
-  });
-  afterAll(() => {
-    delete SYSTEM_MODULES.freundlich;
-  });
+describe("SSR: Freundlich-Seite (eigenes Modul seit F2)", () => {
   const doc = () => withDesignSystem(getFixture("werkbank", "full"), "freundlich", "himmel");
 
   test("Startseite: zwei Preloads, Form-, Band- und Pastell-Variablen an der Wurzel", () => {
@@ -55,5 +45,12 @@ describe("SSR: Freundlich-Seite (Stub-Modul bis F2)", () => {
       expect(html.match(/rel="preload"[^>]*as="font"/g), pathname).toHaveLength(2);
       expect(html, pathname).toContain("bricolage-latin-wght.woff2");
     }
+  });
+  test("Startseite: eigenes Modul, genau ein h1, Einstieg und Leiste", () => {
+    const html = renderSiteHtml(doc(), OPTS).html;
+    expect(html.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(html).toContain('class="fr-entry');
+    expect(html).toContain("data-sys-dock");
+    expect(html).toContain("data-sys-actions");
   });
 });
