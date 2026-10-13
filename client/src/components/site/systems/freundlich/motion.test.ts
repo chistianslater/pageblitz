@@ -165,11 +165,11 @@ describe("Freundlich-Bewegung (CSS)", () => {
     expect(render(gelatoDoc())).toContain('class="fr-smallpic"');
   });
 
-  test("Anbindung: Motion-Bundle, Chunk und SYSTEMS_WITH_MOTION — nicht freigeschaltet", () => {
+  test("Anbindung: Motion-Bundle, Chunk und SYSTEMS_WITH_MOTION — freigeschaltet", () => {
     expect(ISLAND_MOTION.freundlich).toBe(mountFreundlichMotion);
     expect(SYSTEM_MOTION.freundlich).toBeDefined();
     expect(SYSTEMS_WITH_MOTION).toContain("freundlich");
-    expect(RELEASED_SYSTEMS).not.toContain("freundlich");
+    expect(RELEASED_SYSTEMS).toContain("freundlich");
   });
 });
 

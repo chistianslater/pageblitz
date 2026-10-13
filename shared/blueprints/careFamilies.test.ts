@@ -366,7 +366,7 @@ describe("Freundliche Unterarten bestehender Familien", () => {
   });
 });
 
-describe("withPrimarySystem: Freundlich noch nicht frei → nächstes freies System der Reihe", () => {
+describe("withPrimarySystem: Freundlich freigeschaltet (Rückfall ohne Freundlich: nächstes System der Reihe)", () => {
   const base = getFixture("werkbank", "full");
   const doc = (businessCategory: string, businessName: string) =>
     ({
@@ -388,25 +388,32 @@ describe("withPrimarySystem: Freundlich noch nicht frei → nächstes freies Sys
     ["Kinderfotografie", "Kleine Momente", "journal"],
     ["Kinderarzt", "Dr. Weber", "klar"],
   ];
-  test("Freundlich ist nicht freigeschaltet", () => {
-    expect(isReleased("freundlich")).toBe(false);
+  const withoutFreundlich = (id: DesignSystemId) =>
+    id !== "freundlich" && isReleased(id);
+  test("Freundlich ist freigeschaltet", () => {
+    expect(isReleased("freundlich")).toBe(true);
   });
   test.each(cases)(
     "%s → %s (ohne Freundlich: %s)",
     (category, name, fallback) => {
-      const out = withPrimarySystem(doc(category, name));
+      const out = withPrimarySystem(doc(category, name), withoutFreundlich);
       expect(out.system).toBe(fallback);
       expect(out.designRevision).toBe(3);
       expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
     }
   );
   test.each(cases.filter(([c]) => c !== "Kinderarzt"))(
-    "%s → Freundlich, sobald freigeschaltet",
+    "%s → Freundlich (freigeschaltet)",
     (category, name) => {
-      const out = withPrimarySystem(doc(category, name), () => true);
+      const out = withPrimarySystem(doc(category, name));
       expect(out.system).toBe("freundlich");
+      expect(out.designRevision).toBe(3);
+      expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
     }
   );
+  test("Kinderarzt behält Klar als Hauptsystem", () => {
+    expect(withPrimarySystem(doc("Kinderarzt", "Dr. Weber")).system).toBe("klar");
+  });
   test("Familie im Dokument wird vom Schema angenommen", () => {
     for (const blueprintFamily of ["family", "pets"] as const)
       expect(

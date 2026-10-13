@@ -69,7 +69,7 @@ describe("Standard-Farbstimmung [E3]", () => {
   });
 });
 
-describe("withPrimarySystem (Raster, Werkstoff, Plakat, Klar und Nacht freigeschaltet)", () => {
+describe("withPrimarySystem (Raster, Werkstoff, Plakat, Klar, Nacht und Freundlich freigeschaltet)", () => {
   const withFamily = (blueprintFamily: string) =>
     withPrimarySystem({
       ...rev2,
@@ -162,6 +162,30 @@ describe("withPrimarySystem (Raster, Werkstoff, Plakat, Klar und Nacht freigesch
   test("Beauty behält Journal als Hauptsystem", () => {
     expect(withFamily("beauty").system).toBe("journal");
   });
+
+  test.each(["family", "pets"])("Familie %s bekommt Freundlich (rev 3)", family => {
+    const doc = withFamily(family);
+    expect(doc.system).toBe("freundlich");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test.each([
+    ["Eisdiele", "Gelato Mio", "gastro"],
+    ["Musikschule", "Tonleiter", "courses"],
+    ["Kinderfotografie", "Kleine Momente", "creative"],
+    ["Hebamme", "Hebamme Lind", "health"],
+  ])("%s (Familie %s im Dokument) bekommt Freundlich", (businessCategory, businessName, blueprintFamily) => {
+    const doc = withPrimarySystem({ ...rev2, businessCategory, businessName, blueprintFamily } as typeof rev2);
+    expect(doc.system).toBe("freundlich");
+    expect(doc.designRevision).toBe(3);
+  });
+
+  test.each(["beauty", "trade", "health", "advice", "retail", "auto", "courses", "stay", "creative", "urgent", "industry", "standard"])(
+    "Familie %s ohne Kinder-/Tier-Bezug bekommt nicht Freundlich",
+    family => {
+      expect(withFamily(family).system).not.toBe("freundlich");
+    }
+  );
 });
 
 describe("withPrimarySystem ist total (Packs entfernen, Task 2)", () => {
@@ -177,6 +201,9 @@ describe("withPrimarySystem ist total (Packs entfernen, Task 2)", () => {
     ["gastro Imbiss", { blueprintFamily: "gastro", businessCategory: "Imbiss", businessName: "Imbiss Muster" }],
     ["gastro Café", { blueprintFamily: "gastro", businessCategory: "Café", businessName: "Café Muster" }],
     ["gastro ohne Art", { blueprintFamily: "gastro", businessCategory: "Gastronomie", businessName: "Zur Post" }],
+    ["gastro Eisdiele", { blueprintFamily: "gastro", businessCategory: "Eisdiele", businessName: "Gelato Mio" }],
+    ["Kinderarzt", { blueprintFamily: undefined, businessCategory: "Kinderarzt", businessName: "Dr. Weber" }],
+    ["Tierarzt", { blueprintFamily: undefined, businessCategory: "Tierarzt", businessName: "Praxis am Deich" }],
     ["Familie leer", { blueprintFamily: undefined, businessCategory: "Schreinerei", businessName: "Brandt" }],
     ["standard", { blueprintFamily: "standard", businessCategory: "Unternehmen", businessName: "Muster" }],
     ["unbekannte Kategorie", { blueprintFamily: undefined, businessCategory: "Xyzzy Quatsch", businessName: "Foo" }],

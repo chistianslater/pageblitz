@@ -19,7 +19,7 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
   klar: KLAR,
   // Nacht: abgenommen und freigeschaltet (siehe RELEASED_SYSTEMS).
   nacht: NACHT,
-  // Freundlich: registriert, NICHT freigeschaltet (bis zur Abnahme, Task F5).
+  // Freundlich: abgenommen und freigeschaltet (siehe RELEASED_SYSTEMS).
   freundlich: FREUNDLICH,
 };
 
@@ -35,7 +35,15 @@ export const DESIGN_SYSTEMS: Partial<Record<DesignSystemId, DesignSystemDef>> = 
  * freigeschaltetes System behält (Test „withPrimarySystem ist total“ in
  * apply.test.ts).
  */
-export const RELEASED_SYSTEMS: readonly DesignSystemId[] = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
+export const RELEASED_SYSTEMS: readonly DesignSystemId[] = [
+  "journal",
+  "raster",
+  "werkstoff",
+  "plakat",
+  "klar",
+  "nacht",
+  "freundlich",
+];
 
 export function getSystem(id: DesignSystemId): DesignSystemDef | undefined {
   return DESIGN_SYSTEMS[id];

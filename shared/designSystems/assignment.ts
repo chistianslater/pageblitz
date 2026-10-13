@@ -53,9 +53,9 @@ const GASTRO: Record<GastroKind, SystemTriple> = {
  * Freundliche Unterarten bestehender Familien (Eisdiele, Musikschule,
  * Nachhilfe, Kinderfotografie; im Bestand gespeicherte Tierärzte, Hebammen,
  * Hundesalons, Tierbedarf): Freundlich vorn, dahinter das bisherige
- * Hauptsystem der Familie — solange Freundlich nicht freigeschaltet ist,
- * bekommen diese Betriebe über `withPrimarySystem` also genau das System
- * von vorher.
+ * Hauptsystem der Familie. Seit der Freischaltung (2026-10-13) bekommen
+ * diese Betriebe Freundlich; ohne Freundlich (Rollback) fallen sie über
+ * `withPrimarySystem` auf genau das System von vorher zurück.
  */
 type FriendlyBase =
   | "health"

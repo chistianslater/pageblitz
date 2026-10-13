@@ -1,9 +1,9 @@
 # Projektstand (2026-08-29, Nachtrag 2026-10-13)
 
 > **Nachtrag 2026-10-13 („Packs entfernen“):** Das alte Style-Pack-System ist
-> weg. Kundenseiten rendern ausschließlich über eines von sechs Designsystemen
-> (rev 3: `journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht`; ein
-> siebtes, „freundlich“, ist in Arbeit). Die 20 früheren Pack-Verfassungen
+> weg. Kundenseiten rendern ausschließlich über eines von sieben Designsystemen
+> (rev 3: `journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht`,
+> `freundlich` — Freundlich live seit 2026-10-13). Die 20 früheren Pack-Verfassungen
 > leben nur als **Textstimmen** (`shared/textVoices/`) weiter. Rollback nur
 > per Commit-Deploy, siehe `docs/BETRIEB-V2.md` §3. Die Landing-Tabellen unten
 > sind Stand 2026-08-29 (Landing selbst: `LANDING.md`, inzwischen `Klarstart`).
@@ -33,7 +33,7 @@ Der Betreiber fand die **einzelnen Sektionen** dort cool — nicht einen
 | Marketing `/` | `client/src/pages/LandingPage.tsx` + `client/src/components/landing/` |
 | Landing-Tokens | `client/src/index.css` → Block `.lp { … }` |
 | Studio | `client/src/pages/onboarding-v2/`, Server `server/onboardingV2/` |
-| 6 System-Renderer | `client/src/components/site/systems/<id>/` (Definitionen `shared/designSystems/`) |
+| 7 System-Renderer | `client/src/components/site/systems/<id>/` (Definitionen `shared/designSystems/`) |
 | Vertrag | `shared/siteContract/` (Zod `.strict()`) |
 | Generierung | `server/generationV2/runJob.ts` |
 | SSR Kundenseiten | `server/ssr/` |

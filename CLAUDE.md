@@ -13,7 +13,7 @@ Antworten an den Betreiber: **Deutsch, informell (du)**.
 ## Produkt in einem Satz
 
 Pageblitz erzeugt aus Firmenname oder Google-Profil in ~3 Minuten eine fertige
-Website-Vorschau. 6 Designsysteme mit je 3 Farbstimmungen, Studio unter `/onboarding/:token`,
+Website-Vorschau. 7 Designsysteme mit je 3 Farbstimmungen, Studio unter `/onboarding/:token`,
 Live-Vorschau same-origin `/preview-ssr/<token>`.
 
 ## Preise (einzige Quelle)
@@ -21,13 +21,14 @@ Live-Vorschau same-origin `/preview-ssr/<token>`.
 Nur `shared/pricing.ts`: Basis **19,90 €**/Monat jährlich bzw. **24,90 €**
 monatlich. Keine erfundenen Preise, keine erfundenen Testimonials.
 
-## 6 Designsysteme — kein 7. (außer „freundlich“, in Arbeit)
+## 7 Designsysteme — kein 8.
 
-`journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht` — je System drei
+`journal`, `raster`, `werkstoff`, `plakat`, `klar`, `nacht`, `freundlich` — je System drei
 Farbstimmungen. IDs in `shared/designSystems/types.ts`, Definitionen in
 `shared/designSystems/<id>.ts`, Zuordnung Branche → Systeme in
 `shared/designSystems/assignment.ts`. Renderer: `client/src/components/site/systems/<id>/`.
-Ein siebtes System („freundlich“) ist in Arbeit, aber nicht freigeschaltet.
+Alle sieben sind freigeschaltet (Freundlich seit 2026-10-13: Kita, Hebamme,
+Tiere, Eisdiele, Kinderkurse, Kinderfotografie).
 
 - **Nur rev 3.** Jede Kundenseite trägt `designRevision: 3` + `system` +
   `palette`. Das alte Pack-System (Renderer, Bühne/Farbfläche, Fassungen,

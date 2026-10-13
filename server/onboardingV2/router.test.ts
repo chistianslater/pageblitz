@@ -31,9 +31,9 @@ vi.mock("../generationV2/runJob", async importOriginal => {
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
 // Freischaltung der Designsysteme steuerbar. Standard = Produktion: alle
-// sechs Systeme frei (ohne freies System lässt sich keine Seite mehr lesen,
+// sieben Systeme frei (ohne freies System lässt sich keine Seite mehr lesen,
 // Packs entfernen Task 2).
-const ALL_SYSTEMS = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
+const ALL_SYSTEMS = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht", "freundlich"];
 const released = vi.hoisted(() => ({ ids: [] as string[] }));
 vi.mock("../../shared/designSystems/registry", async importOriginal => {
   const actual =
@@ -599,12 +599,12 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
 
   test("Runde 1 („Andere Richtungen“): die übrigen freigeschalteten Systeme, danach wieder von vorn", async () => {
     const one = await caller().getStyleCandidates({ token: friseurToken, round: 1 });
-    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar"]);
+    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar", "freundlich"]);
     expect(one.candidates.every(c => c.kind === "system")).toBe(true);
     const two = await caller().getStyleCandidates({ token: friseurToken, round: 2 });
     expect(two.candidates.map(c => c.id)).toEqual(["nacht", "plakat"]);
     const three = await caller().getStyleCandidates({ token: friseurToken, round: 3 });
-    expect(three.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar"]);
+    expect(three.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "klar", "freundlich"]);
   });
 
   test("Seite trägt ein System außerhalb des Tripels: Runde 0 = ganzes Tripel, Runde 1 = Rest ohne aktuelles", async () => {
@@ -612,7 +612,7 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     const zero = await caller().getStyleCandidates({ token: friseurToken });
     expect(zero.candidates.map(c => c.id)).toEqual(["journal", "nacht", "plakat"]);
     const one = await caller().getStyleCandidates({ token: friseurToken, round: 1 });
-    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff"]);
+    expect(one.candidates.map(c => c.id)).toEqual(["raster", "werkstoff", "freundlich"]);
   });
 
   test("nur freigeschaltete Systeme; leere Runde 0 springt auf die übrigen", async () => {
@@ -651,12 +651,54 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     const zero = await caller().getStyleCandidates({ token: "tok" });
     expect(zero.candidates.map(c => c.id)).toEqual([alt1, alt2]);
     const one = await caller().getStyleCandidates({ token: "tok", round: 1 });
-    // Nur freigeschaltete Systeme (Freundlich ist bis F5 registriert, aber nicht frei).
+    // Nur freigeschaltete Systeme (seit F5 alle sieben).
     expect(one.candidates.map(c => c.id)).toEqual(
       DESIGN_SYSTEM_IDS.filter(
         id => ALL_SYSTEMS.includes(id) && !(triple as readonly string[]).includes(id)
       )
     );
+  });
+
+  test.each([
+    ["Kita", "Kita Pusteblume"],
+    ["Hebamme", "Hebamme Lind"],
+    ["Tierarzt", "Praxis am Deich"],
+    ["Hundesalon", "Fellfreunde"],
+    ["Hundeschule", "Pfotenschule"],
+    ["Zoohandlung", "Napf & Co"],
+    ["Eisdiele", "Gelato Mio"],
+    ["Musikschule", "Tonleiter"],
+    ["Kinderfotografie", "Kleine Momente"],
+  ])("Freundlich frei: %s trägt Freundlich als Hauptsystem, Runde 0 die übrigen zwei", async (category, name) => {
+    const doc = { ...v2, businessCategory: category, businessName: name };
+    useDoc(doc);
+    const state = await caller().getState({ token: "tok" });
+    expect(state.doc?.system).toBe("freundlich");
+    const [, alt1, alt2] = systemsForDoc(doc as any);
+    const zero = await caller().getStyleCandidates({ token: "tok" });
+    expect(zero.candidates.map(c => c.id)).toEqual([alt1, alt2]);
+  });
+
+  test("Freundlich frei: Kinderarzt behält Klar, Freundlich ist erste Alternative", async () => {
+    const doc = { ...v2, businessCategory: "Kinderarzt", businessName: "Dr. Weber" };
+    useDoc(doc);
+    const state = await caller().getState({ token: "tok" });
+    expect(state.doc?.system).toBe("klar");
+    const zero = await caller().getStyleCandidates({ token: "tok" });
+    expect(zero.candidates[0]).toMatchObject({ kind: "system", id: "freundlich", name: "Freundlich" });
+  });
+
+  test("Freundlich frei: ohne Kinder-/Tier-Bezug kein Freundlich in Runde 0", async () => {
+    for (const [category, name, family] of [
+      ["Friseursalon", "Salon Lindner", "beauty"],
+      ["Restaurant", "Zur Linde", "gastro"],
+      ["Tanzschule", "Tanzschule Muster", "courses"],
+      ["Zahnarzt", "Praxis Muster", "health"],
+    ]) {
+      useDoc({ ...v2, businessCategory: category, businessName: name, blueprintFamily: family });
+      const zero = await caller().getStyleCandidates({ token: "tok" });
+      expect(zero.candidates.some(c => c.id === "freundlich"), category).toBe(false);
+    }
   });
 
   test("aktuelles System der Seite wird nie angeboten", async () => {

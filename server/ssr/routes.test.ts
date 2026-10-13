@@ -307,7 +307,7 @@ describe("SSR routes", () => {
       }
     });
 
-    test("Freundlich (gebaut, nicht freigeschaltet): Dev-Vorschau (3 Paletten), Demo- und Rechtsseiten liefern 200", async () => {
+    test("Freundlich (freigeschaltet): Dev-Vorschau (3 Paletten), Demo- und Rechtsseiten liefern 200", async () => {
       const app = express();
       registerSsrRoutes(app);
       for (const palette of ["wald", "himmel", "beere"]) {
@@ -424,7 +424,7 @@ describe("SSR routes", () => {
       kanzlei: "/demo/system/raster/steuerberater",
       "salon-noir": "/demo/system/journal/friseur",
       morgenlicht: "/demo/system/klar/zahnarzt",
-      marktplatz: "/demo/system/plakat/musikschule",
+      marktplatz: "/demo/system/freundlich/musikschule",
       gusto: "/demo/system/nacht/restaurant",
       landgut: "/demo/system/raster/gaertnerei",
       atelier: "/demo/system/journal/fotografie",

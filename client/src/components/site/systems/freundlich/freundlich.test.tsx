@@ -20,9 +20,9 @@ const entryOf = (html: string) =>
   html.match(/<section id="start"[\s\S]*?<\/section>/)?.[0] ?? "";
 
 describe("Freundlich: Modul", () => {
-  test("registriert, aber nicht freigeschaltet", () => {
+  test("registriert und freigeschaltet", () => {
     expect(SYSTEM_MODULES.freundlich?.id).toBe("freundlich");
-    expect(RELEASED_SYSTEMS).not.toContain("freundlich");
+    expect(RELEASED_SYSTEMS).toContain("freundlich");
   });
 });
 

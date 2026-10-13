@@ -472,10 +472,10 @@ describe("Freundlich-Tokens", () => {
     });
     expect(FREUNDLICH.freeGalleryBeyondShown).toBe(true);
   });
-  test("registriert, NICHT freigeschaltet (bis F5), mit Bewegung (F4)", () => {
+  test("registriert, freigeschaltet, mit Bewegung (F4)", () => {
     expect(DESIGN_SYSTEMS.freundlich).toBe(FREUNDLICH);
-    expect(isReleased("freundlich")).toBe(false);
-    expect(RELEASED_SYSTEMS).not.toContain("freundlich");
+    expect(isReleased("freundlich")).toBe(true);
+    expect(RELEASED_SYSTEMS).toContain("freundlich");
     expect(systemHasMotion("freundlich")).toBe(true);
   });
   test("Schriftskala: neun Kernstufen plus figure und data, keine Versalien, Laufweite ≥ −0,04 em", () => {

@@ -20,7 +20,7 @@ describe("Design-Review: Stand je System", () => {
       expect(s.live, id).toBe(RELEASED_SYSTEMS.includes(id));
       expect(s.label).toBe(s.live ? "live" : "in Arbeit");
     }
-    expect(systemStatus("freundlich")).toMatchObject({ live: false, label: "in Arbeit" });
+    expect(systemStatus("freundlich")).toMatchObject({ live: true, label: "live" });
     expect(systemStatus("nacht")).toMatchObject({ live: true, label: "live" });
   });
 
@@ -30,7 +30,7 @@ describe("Design-Review: Stand je System", () => {
     const work = html.match(/data-status="arbeit"/g) ?? [];
     expect(live.length + work.length).toBe(built.length);
     expect(live).toHaveLength(built.filter(id => RELEASED_SYSTEMS.includes(id)).length);
-    expect(html).toMatch(/System Freundlich<span data-status="arbeit"[^>]*>.*?in Arbeit<\/span>/);
+    expect(html).toMatch(/System Freundlich<span data-status="live"[^>]*>.*?live<\/span>/);
     expect(html).toMatch(/System Nacht<span data-status="live"[^>]*>.*?live<\/span>/);
   });
 });

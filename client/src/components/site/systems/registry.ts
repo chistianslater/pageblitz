@@ -16,6 +16,6 @@ export const SYSTEM_MODULES: Partial<Record<DesignSystemId, SiteModule>> = {
   plakat: PLAKAT_MODULE,
   klar: KLAR_MODULE,
   nacht: NACHT_MODULE,
-  // Gebaut, aber nicht freigeschaltet (RELEASED_SYSTEMS) bis zur Abnahme.
+  // Abgenommen und freigeschaltet (RELEASED_SYSTEMS).
   freundlich: FREUNDLICH_MODULE,
 };

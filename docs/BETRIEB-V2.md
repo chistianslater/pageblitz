@@ -8,15 +8,15 @@ ersetzt keine davon.
 
 Das Produkt läuft vollständig auf v2 — es gibt keinen Flag-Zweig mehr:
 
-- **Designsysteme (6)**: `shared/designSystems/` (`journal`, `raster`,
-  `werkstoff`, `plakat`, `klar`, `nacht`; IDs in `types.ts`, Zuordnung
+- **Designsysteme (7)**: `shared/designSystems/` (`journal`, `raster`,
+  `werkstoff`, `plakat`, `klar`, `nacht`, `freundlich`; IDs in `types.ts`, Zuordnung
   Branche → Systeme in `assignment.ts`), Renderer unter
   `client/src/components/site/systems/<id>/`. Jede Kundenseite ist rev 3
   (`designRevision: 3`, `system`, `palette`). Das frühere Style-Pack-System
   ist seit „Packs entfernen“ (2026-10-13) weg; geblieben sind die 20
   **Textstimmen** (`shared/textVoices/`, IDs `PACK_IDS` in
   `shared/siteContract/packIds.ts`, Feld `stylePackId`), die nur die
-  Texterzeugung steuern. Ein siebtes System („freundlich“) ist in Arbeit.
+  Texterzeugung steuern. Freundlich ist seit 2026-10-13 freigeschaltet.
 - **Site-Contract (strict)**: `shared/siteContract/schema.ts`
   (`WebsiteDataV2Schema`, Zod, `.strict()`).
 - **SSR**: `server/ssr/` (`renderSite.tsx`, `routes.ts`, `islandsBundle.ts`).
@@ -243,6 +243,23 @@ die Frage „haben wir den schon angefasst?" bleibt beantwortbar. Additiv:
 
 ### Rollback nach „Packs entfernen“ (2026-10-13)
 
+**Rollback vor Freundlich (Release 2026-10-13):** Code bis einschließlich
+`9f565b5e` (main vor dem Freundlich-Merge) kennt die System-ID `freundlich`
+nicht — rev-3-Seiten mit `system: "freundlich"` bestehen dort die
+Schema-Prüfung nicht. Bestandsseiten ändern sich durch den Release nicht; betroffen
+sind nur Seiten, die nach dem Deploy neu erzeugt (oder im Studio auf
+Freundlich umgestellt) wurden. Vor dem Deploy wird
+`/root/backups/vor-freundlich-2026-10-13.sql` angelegt
+(`mysqldump … generated_websites website_versions`). Rückweg: entweder das
+Backup zurückspielen (verliert alles seit dem Deploy) oder je Seite — vor
+dem Code-Rollback, noch mit dem neuen Code — im Studio-Verlauf den Stand vor
+Freundlich wiederherstellen bzw. ein anderes System wählen. Betroffene
+Seiten findet
+`SELECT id FROM generated_websites WHERE JSON_UNQUOTE(JSON_EXTRACT(websiteData,'$.system'))='freundlich';`
+(muss vor dem Rollback leer sein). Ein Rollback auf einen Commit dieses
+Zweigs vor der Freischaltung (`4e4c7045`) braucht keine Datenänderung: der
+kennt und rendert Freundlich, vergibt es nur nicht an neue Seiten.
+
 Seit `chore/packs-entfernen` kennt der Code nur noch rev 3. Das Skript
 `scripts/systeme-zuruecksetzen.ts` (rev 3 → rev 2 je System) ist **entfernt**:
 Es gibt kein Pack-Layout mehr, auf das eine Seite zurückfallen könnte.
@@ -294,7 +311,15 @@ WHERE JSON_EXTRACT(websiteData,'$.version')=2` → JSON), mit dem alten Code
 Baupläne `advice`, `auto`, `urgent`, `industry` und `standard` bekommen
 Raster, `health` (Gesundheit) bekommt Klar, `gastro` mit Gastro-Art Restaurant (Restaurant, Bistro, Bar, Pub, Weinbar u. Ä.) bekommt Nacht, `beauty` (ohne Barbiere), `stay` und `creative` Journal, `trade`,
 `retail` sowie Café/Bäckerei Werkstoff (Imbiss: Plakat); Barbiere/Herrenfriseure, Imbiss und
-`courses` (Kurse) bekommen Plakat. Die **Farbstimmung** einer neu erzeugten Seite wählt `defaultPalette`
+`courses` (Kurse) bekommen Plakat. Freundlich (seit 2026-10-13) bekommen die
+Baupläne `family` (Kita, Krippe, Tagesmutter, Hebamme) und `pets` (Tierarzt,
+Hundesalon, Hundeschule, Zoohandlung u. Ä.) sowie die freundlichen Unterarten
+bestehender Familien, erkannt **nur an der Kategorie**: Eisdiele/Eiscafé
+(statt Werkstoff), Musikschule, Nachhilfe und Kinderkurse (statt Plakat),
+Kinderfotografie (statt Journal), Hebamme und Tierarzt mit gespeicherter
+Familie `health` (statt Klar), Hundesalon (`beauty`, statt Journal),
+Tierbedarf (`retail`, statt Werkstoff). Kinder- und Jugendärzte behalten
+Klar (Freundlich ist dort erste Alternative im Studio). Die **Farbstimmung** einer neu erzeugten Seite wählt `defaultPalette`
 (`shared/designSystems/apply.ts`) deterministisch je Betrieb: ein vorhandener
 Akzent (`colorOverrides.accent`) ergibt wie bisher die nächstliegende
 Palette, sonst `palettes[designSeed(Name|Kategorie) % 3]`; die
@@ -986,7 +1011,7 @@ einzige Systemschrift, echte Bilder für alle 14 Demo-Packs.
 **Funnel-Tracking (Clarity/GA4, `client/src/lib/studioEvents.ts`):** Seit
 „Packs entfernen“ (2026-10-13) trägt das Sitzungs-Tag `design`
 (`tagStudioSession`) **System-IDs** (`journal`, `raster`, `werkstoff`,
-`plakat`, `klar`, `nacht`) statt Pack-IDs — beim Studio-Start das System
+`plakat`, `klar`, `nacht`, seit 2026-10-13 auch `freundlich`) statt Pack-IDs — beim Studio-Start das System
 der Seite, nach „Mit diesem Design weiter“ das bestätigte. Auswertungen
 über den Stichtag hinweg müssen beide Wertebereiche berücksichtigen. Das
 Ereignis „Bild ausblenden“ in der Vorschau läuft aus Kontinuitätsgründen
