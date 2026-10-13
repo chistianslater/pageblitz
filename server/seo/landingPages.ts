@@ -2651,9 +2651,17 @@ nav{background:rgba(255,255,255,.9);border-color:#d8ddce;padding:.75rem 0}
 .pricing-addon-row span:first-child{color:#242424}
 .pricing-cta{background:#d7ef45!important;color:#202514!important}
 .billing-toggle{background:#f5f6f0;border-color:#d8ddce}
-.billing-btn{color:#62675b}
+.billing-btn{color:#62675b;font-family:inherit}
 .billing-btn.active{background:#d7ef45;color:#202514;box-shadow:none}
 .billing-save{background:#f5f9da;color:#425000}
+/* Schmale Handys (320–400px): Plakette unter „Jährlich" statt daneben,
+   sonst ragt der Umschalter 36px über den Rand (2026-10-13). */
+@media(max-width:400px){
+  .billing-toggle{max-width:100%}
+  .billing-btn{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;padding:.5rem .75rem;line-height:1.2;border-radius:14px}
+  .billing-toggle{border-radius:18px}
+  .billing-save{margin-left:0}
+}
 .comp-table{background:#fff;border-color:#d8ddce;border-radius:14px}
 .comp-header{background:#f5f6f0}
 .comp-header div{color:#62675b}
