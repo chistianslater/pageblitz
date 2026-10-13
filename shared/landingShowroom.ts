@@ -9,6 +9,7 @@
  * Bilder sind Aufnahmen genau dieser Demos (`client/public/showcases/<id>.webp`,
  * erzeugt von scripts/branchen-screenshots.ts, 2026-10-13).
  */
+import { RELEASED_SYSTEMS } from "./designSystems/registry";
 import { showcaseImagePath } from "./seoShowcases";
 
 export interface ShowroomItem {
@@ -51,3 +52,30 @@ export const LANDING_SHOWROOM_NOTE =
 
 /** Punkt in „Deine Website bleibt deine Website“. */
 export const LANDING_DESIGN_CHOICE = "Design und Farbstimmung selbst wählen";
+
+const COUNT_WORDS = [
+  "Null",
+  "Ein",
+  "Zwei",
+  "Drei",
+  "Vier",
+  "Fünf",
+  "Sechs",
+  "Sieben",
+  "Acht",
+  "Neun",
+  "Zehn",
+  "Elf",
+  "Zwölf",
+];
+
+/** Zahlwort am Satzanfang („Sieben Designs"); ab 13 Ziffern. */
+export function germanCount(n: number): string {
+  return COUNT_WORDS[n] ?? String(n);
+}
+
+/**
+ * Satz unter den Beispielen (Auftritt). Die Zahl folgt den freigeschalteten
+ * Systemen, damit sie nach einer Freischaltung nicht veraltet.
+ */
+export const LANDING_DESIGN_COUNT_NOTE = `${germanCount(RELEASED_SYSTEMS.length)} Designs mit je drei Farbstimmungen. Dazu deine Inhalte, die deinen Auftritt zu deinem machen.`;

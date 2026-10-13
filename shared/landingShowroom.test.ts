@@ -1,8 +1,12 @@
 import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import { getSystem } from "./designSystems/registry";
-import { LANDING_SHOWROOM } from "./landingShowroom";
+import { RELEASED_SYSTEMS, getSystem } from "./designSystems/registry";
+import {
+  LANDING_DESIGN_COUNT_NOTE,
+  LANDING_SHOWROOM,
+  germanCount,
+} from "./landingShowroom";
 import {
   findShowcase,
   showcasePrimarySystem,
@@ -31,4 +35,22 @@ describe("LANDING_SHOWROOM", () => {
       );
     });
   }
+});
+
+describe("Anzahl der Designs", () => {
+  it("folgt den freigeschalteten Systemen", () => {
+    expect(RELEASED_SYSTEMS).toHaveLength(7);
+    expect(LANDING_DESIGN_COUNT_NOTE).toMatch(/^Sieben Designs mit je drei /);
+  });
+
+  it("je drei Farbstimmungen stimmt für jedes System", () => {
+    for (const id of RELEASED_SYSTEMS)
+      expect(getSystem(id)?.palettes, id).toHaveLength(3);
+  });
+
+  it("Zahlwort mit Ziffern-Rückfall", () => {
+    expect(germanCount(6)).toBe("Sechs");
+    expect(germanCount(12)).toBe("Zwölf");
+    expect(germanCount(13)).toBe("13");
+  });
 });

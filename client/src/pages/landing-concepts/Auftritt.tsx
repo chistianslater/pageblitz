@@ -1,7 +1,10 @@
 import React from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Logo, StartForm, DemoLink, Price, Questions, Footer } from "./shared";
-import { LANDING_SHOWROOM } from "@shared/landingShowroom";
+import {
+  LANDING_DESIGN_COUNT_NOTE,
+  LANDING_SHOWROOM,
+} from "@shared/landingShowroom";
 
 /** Showroom-Beispiele: Salon groß, die beiden anderen als Paar. */
 const [SALON, ...PAIR] = LANDING_SHOWROOM;
@@ -152,10 +155,7 @@ export default function Auftritt() {
                 </article>
               ))}
             </div>
-            <p className="bold-example-note">
-              Sechs Designs mit je drei Farbstimmungen. Dazu deine Inhalte, die
-              deinen Auftritt zu deinem machen.
-            </p>
+            <p className="bold-example-note">{LANDING_DESIGN_COUNT_NOTE}</p>
           </div>
         </section>
         <section className="bold-process lc-width">
