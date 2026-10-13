@@ -1,4 +1,5 @@
-import type { Blueprint } from "../blueprints/blueprints";
+import { blueprintFor, type Blueprint } from "../blueprints/blueprints";
+import type { WebsiteDataV2 } from "../siteContract/types";
 import type {
   DesignProfile,
   PhotoTreatment,
@@ -40,4 +41,19 @@ export function photoTreatmentOf(
   category: string | undefined
 ): PhotoTreatment {
   return profile?.photoTreatment ?? defaultPhotoTreatment(blueprint, category);
+}
+
+/** Wirksame Behandlung eines Dokuments (Bauplan wie im SiteRenderer). */
+export function docPhotoTreatment(
+  doc: Pick<
+    WebsiteDataV2,
+    "designProfile" | "businessCategory" | "businessName" | "blueprintFamily"
+  >
+): PhotoTreatment {
+  const blueprint = blueprintFor(
+    doc.businessCategory,
+    doc.businessName,
+    doc.blueprintFamily
+  );
+  return photoTreatmentOf(doc.designProfile, blueprint, doc.businessCategory);
 }

@@ -128,3 +128,44 @@ describe("StylePanel (nur Systeme und Farbstimmungen)", () => {
     expect(html).toContain("?system=nacht&amp;palette=");
   });
 });
+
+describe("StylePanel: „Fotos einfärben“ (nur Plakat, 2026-10-13)", () => {
+  const panel = (props: Partial<React.ComponentProps<typeof StylePanel>>) =>
+    renderWithTrpc(
+      <StylePanel
+        token={token}
+        currentSystem="plakat"
+        currentPalette="kante"
+        onApplied={() => {}}
+        onClose={() => {}}
+        onPhotoTreatment={() => {}}
+        {...props}
+      />
+    );
+  const checkbox = (html: string) =>
+    html.match(/<input[^>]*data-pb-photo-tint[^>]*>/)?.[0];
+
+  test("Plakat eingefärbt: Schalter an, mit Hinweis", () => {
+    const html = panel({ photoTreatment: "tinted" });
+    expect(html).toContain("Fotos einfärben");
+    expect(checkbox(html)).toMatch(/type="checkbox"/);
+    expect(checkbox(html)).toMatch(/checked=""/);
+    expect(html).toMatch(/Aus zeigt deine Fotos in Originalfarben/);
+  });
+
+  test("Plakat original: Schalter aus", () => {
+    const html = panel({ photoTreatment: "original" });
+    expect(checkbox(html)).toBeDefined();
+    expect(checkbox(html)).not.toMatch(/checked=""/);
+  });
+
+  test("andere Systeme oder ohne Speicher-Weg: kein Schalter", () => {
+    expect(
+      panel({ currentSystem: "journal", currentPalette: "papier", photoTreatment: "tinted" })
+    ).not.toContain("Fotos einfärben");
+    expect(
+      panel({ onPhotoTreatment: undefined, photoTreatment: "tinted" })
+    ).not.toContain("Fotos einfärben");
+  });
+});
+

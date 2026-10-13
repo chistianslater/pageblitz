@@ -5,7 +5,11 @@ import {
   addonContentDone,
 } from "@shared/onboardingV2/addonEditors";
 import type { ChecklistItemId } from "@shared/onboardingV2/checklist";
-import type { DesignProfile } from "@shared/siteContract/designProfile";
+import type {
+  DesignProfile,
+  PhotoTreatment,
+} from "@shared/siteContract/designProfile";
+import { docPhotoTreatment } from "@shared/designSystems/photoTreatment";
 import type { DesignSystemId } from "@shared/designSystems/types";
 import { collectInlineTextTargets } from "@shared/onboardingV2/inlineText";
 import { BOOKABLE_ADDON_KEYS, type AddOnKey } from "@shared/pricing";
@@ -268,6 +272,23 @@ export default function StudioPage({ token }: { token: string }) {
       trackStudioEvent("vorschau_layout_gewechselt");
       updateTheme.mutate(
         { token, hiddenElements: profile.hiddenElements ?? [] },
+        {
+          onSuccess: () => {
+            studio.refetch();
+            studio.bumpPreview();
+          },
+        }
+      );
+    },
+    [token, updateTheme, studio]
+  );
+  // „Fotos einfärben“ (Plakat): gespeichert über updateTheme, danach lädt
+  // die Vorschau neu — die Behandlung rendert das System selbst (SSR).
+  const applyPhotoTreatment = useCallback(
+    (photoTreatment: PhotoTreatment) => {
+      trackStudioEvent("fotos_einfaerben_umgeschaltet");
+      updateTheme.mutate(
+        { token, photoTreatment },
         {
           onSuccess: () => {
             studio.refetch();
@@ -648,6 +669,11 @@ export default function StudioPage({ token }: { token: string }) {
               }}
               onClose={wizardActive ? exitWizard : closeStylePanel}
               onNext={panelNext}
+              photoTreatment={
+                state.doc ? docPhotoTreatment(state.doc) : undefined
+              }
+              onPhotoTreatment={applyPhotoTreatment}
+              photoTreatmentBusy={updateTheme.isPending}
             />
           ) : activeId === "photos" ? (
             <PhotosPanel

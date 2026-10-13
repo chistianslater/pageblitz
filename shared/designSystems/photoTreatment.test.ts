@@ -3,6 +3,7 @@ import { blueprintFor } from "../blueprints/blueprints";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import {
   defaultPhotoTreatment,
+  docPhotoTreatment,
   photoTreatmentOf,
 } from "./photoTreatment";
 
@@ -73,5 +74,31 @@ describe("photoTreatmentOf", () => {
         "Barbershop"
       )
     ).toBe("original");
+  });
+});
+
+describe("docPhotoTreatment (Studio-Schalter)", () => {
+  test("liest Branche, Name und gespeicherte Familie des Dokuments", () => {
+    expect(
+      docPhotoTreatment({ businessCategory: "Imbiss", businessName: "Döner Ecke" })
+    ).toBe("original");
+    // Gespeicherte Familie hat Vorrang vor den Stichwörtern.
+    expect(
+      docPhotoTreatment({
+        businessCategory: "Kantine",
+        businessName: "Werk 3",
+        blueprintFamily: "gastro",
+      })
+    ).toBe("original");
+    expect(
+      docPhotoTreatment({
+        businessCategory: "Imbiss",
+        businessName: "Döner Ecke",
+        designProfile: { ...DEFAULT_DESIGN_PROFILE, photoTreatment: "tinted" },
+      })
+    ).toBe("tinted");
+    expect(
+      docPhotoTreatment({ businessCategory: "Barbershop", businessName: "Kante" })
+    ).toBe("tinted");
   });
 });

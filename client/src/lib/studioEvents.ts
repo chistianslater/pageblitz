@@ -41,6 +41,8 @@ export type StudioEvent =
   | "vorschau_text_bearbeitet"
   | "vorschau_layout_gewechselt"
   | "vorschau_foto_geklickt"
+  // Design-Panel: „Fotos einfärben“ (Plakat, 2026-10-13)
+  | "fotos_einfaerben_umgeschaltet"
   | "sektion_einfuegen_geoeffnet"
   | "sektion_eingefuegt"
   | "sektion_abgelehnt"

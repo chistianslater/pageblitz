@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import type { DesignSystemId } from "@shared/designSystems/types";
+import type { PhotoTreatment } from "@shared/siteContract/designProfile";
 import { PanelFrame } from "./PanelFrame";
 import { buildPreviewSrc } from "../PreviewFrame";
 import { PaletteChooser } from "../PaletteChooser";
@@ -134,6 +135,58 @@ interface StylePanelProps {
   currentPalette?: string | null;
   /** Cache-Bust für die Systemvorschauen (studio.previewVersion). */
   previewVersion?: number;
+  /** Plakat: wirksame Fotobehandlung (Kundenwahl oder Branchenregel). */
+  photoTreatment?: PhotoTreatment;
+  /** Plakat: „Fotos einfärben“ speichern — ohne Handler kein Schalter. */
+  onPhotoTreatment?: (value: PhotoTreatment) => void;
+  /** Speichern der Fotobehandlung läuft. */
+  photoTreatmentBusy?: boolean;
+}
+
+/**
+ * „Fotos einfärben“ (Plakat, 2026-10-13): an = Duoton in den Feldfarben,
+ * aus = Originalfarben in denselben Formen. Der Schalter folgt sofort,
+ * gespeichert wird über updateTheme.
+ */
+function PhotoTintToggle({
+  value,
+  busy,
+  onChange,
+}: {
+  value: PhotoTreatment;
+  busy: boolean;
+  onChange: (value: PhotoTreatment) => void;
+}) {
+  const [local, setLocal] = useState(value);
+  useEffect(() => setLocal(value), [value]);
+  return (
+    <section
+      className="pb-studio-palette-current"
+      aria-labelledby="pb-photo-tint-title"
+    >
+      <h3 id="pb-photo-tint-title">Fotos</h3>
+      <label className="pb-studio-checkbox">
+        <input
+          type="checkbox"
+          data-pb-photo-tint=""
+          aria-describedby="pb-photo-tint-hint"
+          checked={local === "tinted"}
+          disabled={busy}
+          onChange={e => {
+            const next: PhotoTreatment = e.target.checked
+              ? "tinted"
+              : "original";
+            setLocal(next);
+            onChange(next);
+          }}
+        />
+        Fotos einfärben
+      </label>
+      <p id="pb-photo-tint-hint">
+        Aus zeigt deine Fotos in Originalfarben, etwa für Speisen.
+      </p>
+    </section>
+  );
 }
 
 export function StylePanel({
@@ -145,6 +198,9 @@ export function StylePanel({
   currentSystem = null,
   currentPalette = null,
   previewVersion = 0,
+  photoTreatment = "tinted",
+  onPhotoTreatment,
+  photoTreatmentBusy = false,
 }: StylePanelProps) {
   const [round, setRound] = useState(0);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -272,6 +328,13 @@ export function StylePanel({
             onChange={palette => applySystem(activeSystem.id, palette)}
           />
         </section>
+      )}
+      {active?.id === "plakat" && onPhotoTreatment && (
+        <PhotoTintToggle
+          value={photoTreatment}
+          busy={busy || photoTreatmentBusy}
+          onChange={onPhotoTreatment}
+        />
       )}
       {preselectSystem && (
         <p style={{ color: "var(--st-muted)" }}>Vorschlag aus dem KI-Chat</p>
