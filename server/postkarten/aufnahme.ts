@@ -24,9 +24,20 @@ import type { Browser } from "@playwright/test";
 export const MOTIV_BREITE = 1280;
 export const MOTIV_HOEHE = 900;
 
+/**
+ * Abweichender Ausschnitt (Branchen-Screenshots, 2026-10-13): Fenstergroesse
+ * und Pixeldichte. Ohne Angabe gilt das Postkarten-Motiv.
+ */
+export interface AufnahmeFenster {
+  breite: number;
+  hoehe: number;
+  /** Pixeldichte (2 = Retina, fuer Handy-Aufnahmen). */
+  dichte?: number;
+}
+
 export interface Aufnahmegeraet {
   /** Nimmt eine Seite auf; wirft, wenn dort keine Kundenseite steht. */
-  aufnehmen(url: string): Promise<Buffer>;
+  aufnehmen(url: string, fenster?: AufnahmeFenster): Promise<Buffer>;
   schliessen(): Promise<void>;
 }
 
@@ -51,9 +62,12 @@ export async function aufnahmegeraetOeffnen(
   );
 
   return {
-    async aufnehmen(url: string): Promise<Buffer> {
+    async aufnehmen(url: string, fenster?: AufnahmeFenster): Promise<Buffer> {
+      const breite = fenster?.breite ?? MOTIV_BREITE;
+      const hoehe = fenster?.hoehe ?? MOTIV_HOEHE;
       const page = await browser.newPage({
-        viewport: { width: MOTIV_BREITE, height: MOTIV_HOEHE },
+        viewport: { width: breite, height: hoehe },
+        deviceScaleFactor: fenster?.dichte ?? 1,
       });
       try {
         const antwort = await page.goto(url, {
@@ -83,7 +97,7 @@ export async function aufnahmegeraetOeffnen(
         // halb sichtbarer Text auf der Karte.
         await page.waitForTimeout(1200);
         return await page.screenshot({
-          clip: { x: 0, y: 0, width: MOTIV_BREITE, height: MOTIV_HOEHE },
+          clip: { x: 0, y: 0, width: breite, height: hoehe },
         });
       } finally {
         await page.close();

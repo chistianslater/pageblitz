@@ -1,5 +1,12 @@
 import { PRICING, formatEuro } from "../../shared/pricing";
 import { escapeHtml } from "./metaInjection";
+import { getSystem } from "../../shared/designSystems/registry";
+import {
+  SHOWCASE_IMAGE,
+  SHOWCASE_IMAGE_MOBILE,
+  seoShowcaseFor,
+  type SeoShowcase,
+} from "../../shared/seoShowcases";
 
 export interface SeoIndustry {
   slug: string;
@@ -2678,6 +2685,12 @@ summary::after{color:#62675b}
 .industry-link:hover,.industry-link.active,.city-link:hover,.city-link.active{border-color:#425000;color:#425000;background:#f5f9da}
 footer{background:#fff;color:#62675b;border-color:#d8ddce}
 footer a{color:#242424}
+.showcase-frame{padding:0}
+.showcase-shot{display:block;line-height:0}
+.showcase-shot img{display:block;width:100%;height:auto;background:#f5f6f0}
+.showcase-caption{max-width:860px;margin:1rem auto 0;text-align:center;font-size:.875rem;line-height:1.55;color:#62675b}
+.showcase-caption strong{color:#242424;font-weight:600}
+.showcase-caption a{color:#425000;font-weight:600;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
 .mock-browser{background:#fff;box-shadow:0 30px 70px -40px rgba(36,36,36,.45),0 0 0 1px #d8ddce}
 .mock-chrome,.hb-chrome{background:#fdfcfa;border-color:#ddd6c9}
 .mock-url,.hb-url{background:#f7f5f1;color:#6b645b;border:1px solid #ddd6c9}
@@ -2769,6 +2782,50 @@ const HERO_PERSONA_OVERRIDES: Record<string, string> = {
 };
 function heroPersonaSrc(slug: string): string {
   return HERO_PERSONA_OVERRIDES[slug] ?? `/personas/seo/${slug}.webp`;
+}
+
+/** Adresse im Fensterrahmen: Name des Beispiels als Pageblitz-Subdomain. */
+function showcaseHost(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[äöüß]/g, m => ({ ä: "ae", ö: "oe", ü: "ue", ß: "ss" })[m] ?? m)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return `${slug}.pageblitz.de`;
+}
+
+/**
+ * Echtes Beispiel statt Attrappe (2026-10-13): Bild des Beispielbetriebs im
+ * System, das ein Betrieb dieser Branche bekommt (shared/seoShowcases.ts).
+ * Lazy und unterhalb des Heros — die Hero-Persona bleibt das LCP-Element.
+ */
+function showcasePreviewHtml(
+  industry: SeoIndustry,
+  showcase: SeoShowcase
+): string {
+  const systemName = getSystem(showcase.system)?.name ?? showcase.system;
+  const { sample, label } = showcase.entry;
+  const alt = `Beispiel-Website im Design ${systemName}: ${sample}, ${label}`;
+  return `<figure class="mock-browser showcase-frame">
+      <div class="mock-chrome">
+        <div class="mock-dots">
+          <div class="mock-dot r"></div>
+          <div class="mock-dot a"></div>
+          <div class="mock-dot g"></div>
+        </div>
+        <div class="mock-url">
+          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <span>${escapeHtml(showcaseHost(sample))}</span>
+        </div>
+      </div>
+      <a class="showcase-shot" href="${escapeHtml(showcase.href)}" target="_blank" rel="noopener">
+        <picture>
+          <source media="(max-width:600px)" srcset="${escapeHtml(showcase.imageMobile)}" width="${SHOWCASE_IMAGE_MOBILE.width}" height="${SHOWCASE_IMAGE_MOBILE.height}">
+          <img src="${escapeHtml(showcase.image)}" alt="${escapeHtml(alt)}" width="${SHOWCASE_IMAGE.width}" height="${SHOWCASE_IMAGE.height}" loading="lazy" decoding="async">
+        </picture>
+      </a>
+    </figure>
+    <p class="showcase-caption">Beispielbetrieb <strong>${escapeHtml(sample)}</strong> (${escapeHtml(label)}) im Design ${escapeHtml(systemName)} – dieses Design bekommt auch deine ${escapeHtml(industry.displayName)}-Website. <a href="${escapeHtml(showcase.href)}" target="_blank" rel="noopener">Beispiel ansehen</a></p>`;
 }
 
 export function generateLandingPageHTML(
@@ -2915,6 +2972,49 @@ export function generateLandingPageHTML(
     )
     .join("\n          ");
 
+  const showcase = seoShowcaseFor(industry.slug);
+  const previewHtml = showcase
+    ? showcasePreviewHtml(industry, showcase)
+    : `    <div class="mock-browser">
+      <div class="mock-chrome">
+        <div class="mock-dots">
+          <div class="mock-dot r"></div>
+          <div class="mock-dot a"></div>
+          <div class="mock-dot g"></div>
+        </div>
+        <div class="mock-url">
+          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <span>${escapeHtml(mockUrl)}</span>
+        </div>
+      </div>
+      <div class="mw-wrap">
+        <div class="mw-nav">
+          <div class="mw-logo-pill"></div>
+          <div class="mw-spacer"></div>
+          <div class="mw-nav-links">
+            <div class="mw-nav-link"></div>
+            <div class="mw-nav-link"></div>
+            <div class="mw-nav-link"></div>
+          </div>
+          <div class="mw-btn"></div>
+        </div>
+        <div class="mw-hero" style="position:relative;overflow:hidden;background:#111;padding:0">
+          <img src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" width="640" height="400" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.8;display:block">
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 100%)"></div>
+          <div style="position:relative;z-index:1;padding:2.25rem 1.5rem 2rem">
+            <div class="mw-hero-eyebrow" style="background:${style.accent};opacity:1;height:.3rem;border-radius:99px;width:4rem;margin-bottom:.875rem"></div>
+            <div class="mw-hero-name">${escapeHtml(mockBusinessName)}</div>
+            <div class="mw-hero-sub"></div>
+            <div class="mw-hero-sub2"></div>
+            <div class="mw-hero-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
+          </div>
+        </div>
+        <div class="mw-services">
+          ${mockCardsHtml}
+        </div>
+      </div>
+    </div>`;
+
   return `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -2985,45 +3085,7 @@ export function generateLandingPageHTML(
     <p class="section-label">Beispiel</p>
     <h2 class="section-title">So könnte deine ${escapeHtml(industry.displayName)}-Website aussehen</h2>
     <p class="section-sub">Von der KI in 3 Minuten generiert – mit deinen echten Daten, deinem Namen, deiner Adresse</p>
-    <div class="mock-browser">
-      <div class="mock-chrome">
-        <div class="mock-dots">
-          <div class="mock-dot r"></div>
-          <div class="mock-dot a"></div>
-          <div class="mock-dot g"></div>
-        </div>
-        <div class="mock-url">
-          <span><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-          <span>${escapeHtml(mockUrl)}</span>
-        </div>
-      </div>
-      <div class="mw-wrap">
-        <div class="mw-nav">
-          <div class="mw-logo-pill"></div>
-          <div class="mw-spacer"></div>
-          <div class="mw-nav-links">
-            <div class="mw-nav-link"></div>
-            <div class="mw-nav-link"></div>
-            <div class="mw-nav-link"></div>
-          </div>
-          <div class="mw-btn"></div>
-        </div>
-        <div class="mw-hero" style="position:relative;overflow:hidden;background:#111;padding:0">
-          <img src="${style.previewPhoto}" alt="${escapeHtml(mockBusinessName)}" width="640" height="400" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;opacity:.8;display:block">
-          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,.78) 0%,rgba(0,0,0,.35) 100%)"></div>
-          <div style="position:relative;z-index:1;padding:2.25rem 1.5rem 2rem">
-            <div class="mw-hero-eyebrow" style="background:${style.accent};opacity:1;height:.3rem;border-radius:99px;width:4rem;margin-bottom:.875rem"></div>
-            <div class="mw-hero-name">${escapeHtml(mockBusinessName)}</div>
-            <div class="mw-hero-sub"></div>
-            <div class="mw-hero-sub2"></div>
-            <div class="mw-hero-cta" style="background:${style.accent}">Jetzt Termin buchen →</div>
-          </div>
-        </div>
-        <div class="mw-services">
-          ${mockCardsHtml}
-        </div>
-      </div>
-    </div>
+${previewHtml}
   </div>
 </section>
 

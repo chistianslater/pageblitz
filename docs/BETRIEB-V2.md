@@ -809,6 +809,30 @@ und Playwright samt Chromium (`npx playwright install --with-deps chromium`).
 Playwright ist devDependency und wird erst beim Aufnehmen geladen — fehlt es,
 meldet das Backend das im Klartext, der Serverstart bleibt unberührt.
 
+### Branchen-Screenshots (SEO-Seiten & Showroom, seit 2026-10-13)
+
+Die SEO-Branchenseiten (`/website-erstellen/<branche>[/<stadt>]`) und der
+Showroom der Startseite zeigen statische Aufnahmen der Beispielbetriebe
+(`client/public/showcases/<id>.webp` 1200×833 und `<id>-mobil.webp`
+780×1120), je im Hauptsystem des Beispiels mit seiner festen Farbstimmung.
+Welche Branche welches Beispiel zeigt: `shared/seoShowcases.ts` (Test prüft,
+dass das System dem eines echten Betriebs der Branche entspricht; `null` =
+alte CSS-Attrappe). Showroom: `shared/landingShowroom.ts`.
+
+Nach sichtbaren Änderungen an Systemen, Fixtures oder Beispielfotos **lokal**
+neu aufnehmen und committen (die Bilder liegen im Repo, auf dem VPS ist
+nichts zu tun):
+
+```bash
+npm run dev                                   # oder Prod-Build starten
+npx tsx scripts/branchen-screenshots.ts --basis http://localhost:3000
+npx tsx scripts/branchen-screenshots.ts --basis http://localhost:3000 --nur friseur,restaurant
+```
+
+Das Skript nutzt `server/postkarten/aufnahme.ts` (Fehlerseiten-Prüfung,
+Vorschau-Leiste aus), schreibt WebP (Qualität 78, ab 70 kB eine Stufe
+sparsamer) und endet mit Exit 1, wenn eine Aufnahme fehlschlägt.
+
 ## 7. Fonts & Performance
 
 - **v1-Font-Rest entfernt (B5 Task 5):** `client/src/index.css` importierte

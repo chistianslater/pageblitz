@@ -1,4 +1,7 @@
+import fs from "fs";
+import path from "path";
 import { describe, expect, it } from "vitest";
+import { seoShowcaseFor } from "../shared/seoShowcases";
 import { SEO_INDUSTRY_LINKS } from "../shared/seoIndustryLinks";
 import { HOME_FAQ_VISIBLE } from "../shared/faq";
 import {
@@ -239,5 +242,49 @@ describe("Showroom der Startseite zeigt auf die System-Demos (Packs entfernt)", 
     const html = generateHomePrerender();
     expect(html).not.toContain("Schriften");
     expect(html).toContain(LANDING_SHOWROOM_NOTE);
+  });
+});
+
+describe("Branchenseiten zeigen ein echtes System-Beispiel statt der Attrappe", () => {
+  const PUBLIC = path.resolve(__dirname, "../client/public");
+
+  for (const industry of Object.values(SEO_INDUSTRIES)) {
+    const showcase = seoShowcaseFor(industry.slug);
+    for (const city of [undefined, DE_CITIES[0]]) {
+      const where = `${industry.slug}${city ? `/${city.slug}` : ""}`;
+      it(`${where}: ${showcase ? "Bild" : "Attrappe"}`, () => {
+        const html = generateLandingPageHTML(industry, city);
+        if (!showcase) {
+          expect(html).toContain('class="mw-wrap"');
+          expect(html).not.toContain('class="mock-browser showcase-frame"');
+          return;
+        }
+        expect(html).not.toContain('class="mw-wrap"');
+        expect(html).toContain(
+          `<img src="${showcase.image}" alt="Beispiel-Website im Design `
+        );
+        expect(html).toMatch(
+          /<img src="\/showcases\/[a-z0-9-]+\.webp" alt="[^"]+" width="1200" height="833" loading="lazy" decoding="async">/
+        );
+        expect(html).toContain(`href="${showcase.href}"`);
+        expect(html).toContain(">Beispiel ansehen</a>");
+        // Jedes referenzierte Bild existiert (kein kaputter Pfad).
+        for (const [, src] of html.matchAll(
+          /(?:src|srcset)="(\/showcases\/[^"]+)"/g
+        )) {
+          expect(fs.existsSync(path.join(PUBLIC, src)), src).toBe(true);
+        }
+        // Hero-Persona bleibt das LCP-Element.
+        expect(html).toMatch(/class="hero-persona"[^>]*fetchpriority="high"/);
+      });
+    }
+  }
+
+  it("Alt-Text nennt Beispiel, Branche und System", () => {
+    const html = generateLandingPageHTML(SEO_INDUSTRIES.friseur);
+    expect(html).toContain(
+      'alt="Beispiel-Website im Design Journal: NOIR Haarstudio, Friseursalon"'
+    );
+    expect(html).toContain('srcset="/showcases/friseur-mobil.webp"');
   });
 });
