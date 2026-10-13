@@ -3,7 +3,8 @@
  * die Einstiegs-Regeln der Pack-Daten).
  *
  * Die Designsysteme lesen vom Profil nur `composition === "stage"` (großes
- * Querformat trägt die volle Fläche) und `hiddenElements`. Alles andere am
+ * Querformat trägt die volle Fläche) und `hiddenElements`, Plakat dazu
+ * `photoTreatment` (Fotos eingefärbt/original). Alles andere am
  * Profil ist der neutrale Standard.
  */
 import type { PackId } from "../siteContract/types";

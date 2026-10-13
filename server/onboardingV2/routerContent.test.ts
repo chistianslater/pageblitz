@@ -713,3 +713,83 @@ describe("onboardingV2.updateTheme: nur noch „Bild ausblenden“ (Packs entfer
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 });
+
+describe("onboardingV2.updateTheme: „Fotos einfärben“ (Plakat, 2026-10-13)", () => {
+  const PROFILE = {
+    version: 1,
+    heroLayout: "split",
+    servicesLayout: "list",
+    aboutLayout: "image-right",
+    galleryLayout: "grid",
+    density: "airy",
+    imageTreatment: "natural",
+    hiddenElements: ["about-media"],
+    seed: 7,
+  } as const;
+  const plakat = { ...v2, designRevision: 3, system: "plakat", palette: "kante" };
+
+  const useDoc = (doc: object) =>
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: doc,
+      customerEmail: null,
+    } as any);
+
+  test.each(["tinted", "original"] as const)(
+    "photoTreatment %s wird gespeichert, ausgeblendete Bilder bleiben",
+    async value => {
+      useDoc({ ...plakat, designProfile: PROFILE });
+      const state = await caller().onboardingV2.updateTheme({
+        token: "tok",
+        photoTreatment: value,
+      });
+      expect(state.doc?.designProfile).toEqual({
+        ...PROFILE,
+        photoTreatment: value,
+      });
+      expect(state.doc?.system).toBe("plakat");
+    }
+  );
+
+  test("nur hiddenElements lässt eine gesetzte Fotowahl stehen", async () => {
+    useDoc({ ...plakat, designProfile: { ...PROFILE, photoTreatment: "original" } });
+    const state = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      hiddenElements: [],
+    });
+    const { hiddenElements: _h, ...rest } = PROFILE;
+    expect(state.doc?.designProfile).toEqual({ ...rest, photoTreatment: "original" });
+  });
+
+  test("ohne Profil dient das Standardprofil als Basis", async () => {
+    useDoc(plakat);
+    const state = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      photoTreatment: "original",
+    });
+    expect(state.doc?.designProfile?.photoTreatment).toBe("original");
+    expect(state.doc?.designProfile?.heroLayout).toBe("split");
+  });
+
+  test("anderes System → BAD_REQUEST, nichts geschrieben", async () => {
+    useDoc({ ...plakat, system: "journal", palette: "papier" });
+    await expect(
+      caller().onboardingV2.updateTheme({ token: "tok", photoTreatment: "original" })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ["unbekannter Wert", { photoTreatment: "sepia" }],
+    ["leere Anfrage", {}],
+  ])("%s → BAD_REQUEST", async (_name, extra) => {
+    useDoc({ ...plakat, designProfile: PROFILE });
+    await expect(
+      caller().onboardingV2.updateTheme({ token: "tok", ...(extra as object) } as any)
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
+  });
+});

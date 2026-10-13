@@ -42,6 +42,7 @@ import {
 import {
   DEFAULT_DESIGN_PROFILE,
   HIDEABLE_ELEMENTS,
+  PHOTO_TREATMENTS,
 } from "../../shared/siteContract/designProfile";
 import {
   SafeUrlSchema,
@@ -517,26 +518,42 @@ export const contentProcedures = {
 
   /**
    * „Bild ausblenden“ aus der Vorschau: einzeln ausgeblendete Elemente als
-   * VOLLSTÄNDIGE Liste, gemischt ins gespeicherte Profil. Layout, Farbe und
-   * Schrift bringt das Designsystem mit — solche Felder nimmt der Server
-   * nicht an (strict). Sichtbarkeit/Reihenfolge ganzer Sektionen laufen
-   * über updateStructure.
+   * VOLLSTÄNDIGE Liste, gemischt ins gespeicherte Profil. Dazu „Fotos
+   * einfärben“ (nur Plakat, 2026-10-13): `photoTreatment`. Beide Felder
+   * optional, mindestens eines nötig; ein fehlendes Feld bleibt, wie es
+   * ist. Layout, Farbe und Schrift bringt das Designsystem mit — solche
+   * Felder nimmt der Server nicht an (strict). Sichtbarkeit/Reihenfolge
+   * ganzer Sektionen laufen über updateStructure.
    */
   updateTheme: publicProcedure
     .input(
       tokenInput
         .extend({
-          hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4),
+          hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4).optional(),
+          photoTreatment: z.enum(PHOTO_TREATMENTS).optional(),
         })
         .strict()
+        .refine(
+          i => i.hiddenElements !== undefined || i.photoTreatment !== undefined,
+          { message: "Keine Änderung angegeben." }
+        )
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      const hidden = Array.from(new Set(input.hiddenElements));
+      if (input.photoTreatment !== undefined && doc.system !== "plakat")
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Fotos einfärben gibt es nur im Design Plakat.",
+        });
       const designProfile = { ...(doc.designProfile ?? DEFAULT_DESIGN_PROFILE) };
-      if (hidden.length > 0) designProfile.hiddenElements = hidden;
-      else delete designProfile.hiddenElements;
+      if (input.hiddenElements !== undefined) {
+        const hidden = Array.from(new Set(input.hiddenElements));
+        if (hidden.length > 0) designProfile.hiddenElements = hidden;
+        else delete designProfile.hiddenElements;
+      }
+      if (input.photoTreatment !== undefined)
+        designProfile.photoTreatment = input.photoTreatment;
       return persistDoc(
         input.token,
         loaded,
