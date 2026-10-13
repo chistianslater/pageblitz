@@ -486,12 +486,10 @@ describe("withdrawCancellation", () => {
       updateSubscription: vi.fn(),
       stripe: {
         subscriptions: {
-          retrieve: vi
-            .fn()
-            .mockResolvedValue({
-              status: "trialing",
-              cancel_at_period_end: true,
-            }),
+          retrieve: vi.fn().mockResolvedValue({
+            status: "trialing",
+            cancel_at_period_end: true,
+          }),
           update: vi.fn().mockResolvedValue({}),
         },
       },
@@ -614,7 +612,11 @@ describe("switchToYearly", () => {
       env: { STRIPE_TAX_RATE_ID: "txr_ust19" },
     };
     await switchToYearly(
-      row({ billingInterval: "monthly", termStartedAt: null, currentTermEnd: null }),
+      row({
+        billingInterval: "monthly",
+        termStartedAt: null,
+        currentTermEnd: null,
+      }),
       d
     );
     const params = d.stripe.subscriptions.update.mock.calls[0][1];
@@ -622,6 +624,46 @@ describe("switchToYearly", () => {
     expect(params.items[0].tax_rates).toEqual(["txr_ust19"]);
     expect(params.items[0].price_data.unit_amount).toBe(1990);
     expect(params.items[0].price_data.tax_behavior).toBe("inclusive");
+  });
+
+  test("abgelehnter Steuersatz beim Tarifwechsel → derselbe Wechsel ohne Steuersatz", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const d = {
+      updateSubscription: vi.fn(),
+      stripe: {
+        subscriptions: {
+          retrieve: vi
+            .fn()
+            .mockResolvedValue({ status: "active", items: { data: items } }),
+          update: vi
+            .fn()
+            .mockRejectedValueOnce(
+              Object.assign(new Error("No such tax rate: 'txr_ust19'"), {
+                code: "resource_missing",
+                param: "tax_rates",
+              })
+            )
+            .mockResolvedValueOnce({}),
+        },
+      },
+      now: () => 1000,
+      env: { STRIPE_TAX_RATE_ID: "txr_ust19" },
+    };
+    await switchToYearly(
+      row({
+        billingInterval: "monthly",
+        termStartedAt: null,
+        currentTermEnd: null,
+      }),
+      d
+    );
+    expect(d.stripe.subscriptions.update).toHaveBeenCalledTimes(2);
+    const retry = d.stripe.subscriptions.update.mock.calls[1][1];
+    expect(retry).not.toHaveProperty("default_tax_rates");
+    expect(retry.items[0]).not.toHaveProperty("tax_rates");
+    expect(retry.items[0].price_data.unit_amount).toBe(1990);
+    expect(d.updateSubscription).toHaveBeenCalled();
+    err.mockRestore();
   });
 
   test("bereits Jahrestarif / gekündigt → Fehler, kein Stripe-Write", async () => {
@@ -833,7 +875,11 @@ describe("Review-Fixes 2026-10-13", () => {
       t("2027-05-10T08:00:00Z")
     );
     await withdrawCancellation(
-      row({ status: "past_due", cancelRequestedAt: 1, cancelEffectiveAt: TERM_END }),
+      row({
+        status: "past_due",
+        cancelRequestedAt: 1,
+        cancelEffectiveAt: TERM_END,
+      }),
       d
     );
     expect(d.updateSubscription).toHaveBeenCalledWith(
@@ -851,7 +897,11 @@ describe("Review-Fixes 2026-10-13", () => {
       row({ termStartedAt: null, currentTermEnd: null, billingAnchorAt: null }),
       d
     );
-    expect(result).toEqual({ mode: "cancel_at", endsAt: TERM_END, reason: "term_end" });
+    expect(result).toEqual({
+      mode: "cancel_at",
+      endsAt: TERM_END,
+      reason: "term_end",
+    });
     expect(d.updateSubscription).not.toHaveBeenCalled();
     expect(d.stripe.subscriptions.update).not.toHaveBeenCalled();
   });
@@ -859,11 +909,18 @@ describe("Review-Fixes 2026-10-13", () => {
   test("previewCancellation: ausstehender Wechsel → Ende Abrechnungsmonat", async () => {
     const end = t("2027-06-30T12:00:00Z");
     const d = cdeps(
-      { status: "active", current_period_end: end, metadata: { tariffSwitchedAt: "1" } },
+      {
+        status: "active",
+        current_period_end: end,
+        metadata: { tariffSwitchedAt: "1" },
+      },
       t("2027-06-10T08:00:00Z")
     );
     expect(
-      await previewCancellation(row({ termStartedAt: null, currentTermEnd: null }), d)
+      await previewCancellation(
+        row({ termStartedAt: null, currentTermEnd: null }),
+        d
+      )
     ).toEqual({ mode: "period_end", endsAt: end, reason: "monthly" });
   });
 
@@ -885,7 +942,9 @@ describe("Review-Fixes 2026-10-13", () => {
     const d = {
       getSubscriptionByStripeId: vi
         .fn()
-        .mockResolvedValue(row({ cancelRequestedAt: 5, cancelEffectiveAt: TERM_END })),
+        .mockResolvedValue(
+          row({ cancelRequestedAt: 5, cancelEffectiveAt: TERM_END })
+        ),
       updateSubscription: vi.fn(),
       stripe: { subscriptions: { update: vi.fn() } },
     };
@@ -903,7 +962,10 @@ describe("Review-Fixes 2026-10-13", () => {
     expect(d.stripe.subscriptions.update).not.toHaveBeenCalled();
     expect(d.updateSubscription).toHaveBeenCalledWith(
       9,
-      expect.objectContaining({ cancelEffectiveAt: early, cancelRequestedAt: 5 })
+      expect.objectContaining({
+        cancelEffectiveAt: early,
+        cancelRequestedAt: 5,
+      })
     );
   });
 });

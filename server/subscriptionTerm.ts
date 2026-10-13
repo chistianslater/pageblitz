@@ -28,7 +28,7 @@ import {
   type CancellationResult,
 } from "../shared/pricingTerm";
 import { resolveAddOnPriceIds } from "./stripeAddons";
-import { taxRateIds } from "./stripeTax";
+import { taxRateIds, withTaxRateFallback } from "./stripeTax";
 import type { Subscription } from "../drizzle/schema";
 
 /** Metadaten-Schlüssel an der Stripe-Subscription. */
@@ -215,7 +215,12 @@ export async function handleInvoicePaid(
     const months = PLANS.yearly.termMonths;
     if (record.termStartedAt == null) {
       patch.termStartedAt = period.start;
-      patch.currentTermEnd = termEndAt(period.start, period.start, months, anchor);
+      patch.currentTermEnd = termEndAt(
+        period.start,
+        period.start,
+        months,
+        anchor
+      );
       outcome = "term_started";
       try {
         // Stripe als zweite Quelle — falls unsere Zeile je verloren geht.
@@ -347,7 +352,9 @@ async function planCancellation(
   const inTrial = stripeSub?.status === "trialing";
   const tariff = tariffOf(record);
   const termStartedAt =
-    tariff === "yearly" && !inTrial ? resolveTermStart(record, stripeSub) : null;
+    tariff === "yearly" && !inTrial
+      ? resolveTermStart(record, stripeSub)
+      : null;
   const billingAnchor =
     record.billingAnchorAt ??
     (typeof stripeSub?.billing_cycle_anchor === "number"
@@ -358,7 +365,11 @@ async function planCancellation(
   let result: CancellationResult;
   if (tariff === "yearly" && !inTrial && termStartedAt == null) {
     if (!currentPeriodEnd) throw new TermUnknownError();
-    result = { mode: "period_end", endsAt: currentPeriodEnd, reason: "monthly" };
+    result = {
+      mode: "period_end",
+      endsAt: currentPeriodEnd,
+      reason: "monthly",
+    };
   } else {
     result = computeCancellation({
       tariff,
@@ -528,29 +539,31 @@ export async function switchToYearly(
       ? base.price.product
       : base.price.product?.id;
   const taxRates = taxRateIds(env);
-  await deps.stripe.subscriptions.update(record.stripeSubscriptionId, {
-    items: [
-      {
-        id: base.id,
-        price_data: {
-          currency: "eur",
-          product,
-          unit_amount: PLANS.yearly.centsPerMonth,
-          recurring: { interval: "month" },
-          tax_behavior: "inclusive",
+  await withTaxRateFallback(taxRates, rates =>
+    deps.stripe.subscriptions.update(record.stripeSubscriptionId, {
+      items: [
+        {
+          id: base.id,
+          price_data: {
+            currency: "eur",
+            product,
+            unit_amount: PLANS.yearly.centsPerMonth,
+            recurring: { interval: "month" },
+            tax_behavior: "inclusive",
+          },
+          ...(rates.length > 0 ? { tax_rates: rates } : {}),
         },
-        ...(taxRates.length > 0 ? { tax_rates: taxRates } : {}),
+      ],
+      // USt. 19 % inklusive auch für Alt-Abos ohne Steuersatz nachziehen
+      // (server/stripeTax.ts) — Beträge bleiben brutto.
+      ...(rates.length > 0 ? { default_tax_rates: rates } : {}),
+      proration_behavior: "none",
+      metadata: {
+        ...subscriptionMetadataFor("yearly"),
+        [SUB_META.tariffSwitchedAt]: String(now),
       },
-    ],
-    // USt. 19 % inklusive auch für Alt-Abos ohne Steuersatz nachziehen
-    // (server/stripeTax.ts) — Beträge bleiben brutto.
-    ...(taxRates.length > 0 ? { default_tax_rates: taxRates } : {}),
-    proration_behavior: "none",
-    metadata: {
-      ...subscriptionMetadataFor("yearly"),
-      [SUB_META.tariffSwitchedAt]: String(now),
-    },
-  });
+    })
+  );
   await deps.updateSubscription(record.id, {
     billingInterval: "yearly",
     termStartedAt: null,
@@ -674,9 +687,7 @@ export const PORTAL_CONFIG_MARKER = "pageblitz-laufzeit-v1";
 export interface PortalConfigClient {
   billingPortal: {
     configurations: {
-      list: (
-        params: any
-      ) => Promise<{
+      list: (params: any) => Promise<{
         data: Array<{
           id: string;
           active?: boolean;

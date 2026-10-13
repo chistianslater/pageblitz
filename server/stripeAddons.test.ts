@@ -189,6 +189,26 @@ describe("syncSubscriptionAddOns", () => {
     });
   });
 
+  test("abgelehnter Steuersatz → Add-on wird ohne tax_rates angelegt", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { stripe, create } = fakeStripe([]);
+    create.mockRejectedValueOnce(
+      Object.assign(new Error("No such tax rate: 'txr_ust19'"), {
+        code: "resource_missing",
+        param: "tax_rates",
+      })
+    );
+    const result = await syncSubscriptionAddOns(
+      "sub_1",
+      { gallery: true },
+      { stripe, env: { ...fullEnv, STRIPE_TAX_RATE_ID: "txr_ust19" } }
+    );
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls[1][0]).not.toHaveProperty("tax_rates");
+    expect(result.added).toEqual(["gallery"]);
+    err.mockRestore();
+  });
+
   test("Stripe-Fehler werden durchgereicht (Aufrufer entscheidet: BAD_REQUEST, Flags unverändert)", async () => {
     const { stripe, create } = fakeStripe([]);
     create.mockRejectedValue(new Error("card_declined"));

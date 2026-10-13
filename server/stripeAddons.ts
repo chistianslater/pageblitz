@@ -6,7 +6,7 @@ import {
   type AddOnFlags,
   type AddOnKey,
 } from "../shared/pricing";
-import { taxRateIds } from "./stripeTax";
+import { taxRateIds, withTaxRateFallback } from "./stripeTax";
 
 /**
  * Stripe-Sync der Add-ons NACH dem Checkout (Plan B6 Task 6, Spec §2.2/§5.3):
@@ -152,13 +152,15 @@ export async function syncSubscriptionAddOns(
     if (!priceId) continue; // false ohne Price-ID: nichts identifizierbar
     const existing = itemByPrice.get(priceId);
     if (addOns[key] === true && !existing) {
-      await stripe.subscriptionItems.create({
-        subscription: stripeSubscriptionId,
-        price: priceId,
-        quantity: 1,
-        proration_behavior: "create_prorations",
-        ...(taxRates.length > 0 ? { tax_rates: taxRates } : {}),
-      });
+      await withTaxRateFallback(taxRates, rates =>
+        stripe.subscriptionItems.create({
+          subscription: stripeSubscriptionId,
+          price: priceId,
+          quantity: 1,
+          proration_behavior: "create_prorations",
+          ...(rates.length > 0 ? { tax_rates: rates } : {}),
+        })
+      );
       added.push(key);
     } else if (addOns[key] === false && existing) {
       await stripe.subscriptionItems.del(existing.id, {

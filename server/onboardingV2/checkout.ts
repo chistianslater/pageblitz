@@ -13,7 +13,7 @@ import {
 import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 import { resolveAddOnPriceIds } from "../stripeAddons";
 import { B2B_META_KEY, subscriptionMetadataFor } from "../subscriptionTerm";
-import { taxRateIds } from "../stripeTax";
+import { taxRateIds, withTaxRateFallback } from "../stripeTax";
 
 /**
  * Stripe-Checkout für das Studio (Spec B2 Task 7) — seit 2026-10-13 der
@@ -41,7 +41,6 @@ export interface CheckoutArgs {
   /** Zeitpunkt der B2B-Bestätigung (§ 14 BGB) im Studio, Unix-Sekunden. */
   b2bConfirmedAt: number;
 }
-
 
 /**
  * Eine Checkout-Position je aktivem Add-on (Plan B6 Task 6): mit
@@ -99,68 +98,71 @@ export async function createStudioCheckoutSession(
     );
   }
 
-  const session = await stripeClient.checkout.sessions.create({
-    payment_method_types: ["card"],
-    mode: "subscription",
-    customer_email: args.customerEmail,
-    line_items: [
-      {
-        price_data: {
-          currency: "eur",
-          product_data: {
-            name: `Pageblitz – ${args.websiteName}`,
-            description,
-            metadata: { pageblitzBase: args.billingInterval },
+  // Lehnt Stripe den Steuersatz ab, derselbe Checkout ohne (stripeTax.ts).
+  const session = await withTaxRateFallback(taxRates, rates =>
+    stripeClient.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "subscription",
+      customer_email: args.customerEmail,
+      line_items: [
+        {
+          price_data: {
+            currency: "eur",
+            product_data: {
+              name: `Pageblitz – ${args.websiteName}`,
+              description,
+              metadata: { pageblitzBase: args.billingInterval },
+            },
+            // Seit Plan B6 Task 6 nur noch der Basispreis — Add-ons sind
+            // eigene Positionen (buildAddOnLineItems), damit sie nach dem
+            // Checkout einzeln zu-/abbuchbar sind.
+            unit_amount: PLANS[args.billingInterval].centsPerMonth,
+            recurring: { interval: "month" },
+            // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
+            tax_behavior: "inclusive" as const,
           },
-          // Seit Plan B6 Task 6 nur noch der Basispreis — Add-ons sind
-          // eigene Positionen (buildAddOnLineItems), damit sie nach dem
-          // Checkout einzeln zu-/abbuchbar sind.
-          unit_amount: PLANS[args.billingInterval].centsPerMonth,
-          recurring: { interval: "month" },
-          // Alle Preise sind Bruttopreise inkl. MwSt. – Stripe rechnet KEINE Steuer drauf
-          tax_behavior: "inclusive" as const,
+          quantity: 1,
         },
-        quantity: 1,
+        ...buildAddOnLineItems(args.addOns, priceIds),
+      ],
+      subscription_data: {
+        trial_period_days: TRIAL_DAYS,
+        // Subscription-weit: gilt für Basis, Add-ons und spätere Items.
+        ...(rates.length > 0 ? { default_tax_rates: rates } : {}),
+        metadata: {
+          ...subscriptionMetadataFor(args.billingInterval),
+          websiteId: args.websiteId.toString(),
+          [B2B_META_KEY]: String(args.b2bConfirmedAt),
+        },
       },
-      ...buildAddOnLineItems(args.addOns, priceIds),
-    ],
-    subscription_data: {
-      trial_period_days: TRIAL_DAYS,
-      // Subscription-weit: gilt für Basis, Add-ons und spätere Items.
-      ...(taxRates.length > 0 ? { default_tax_rates: taxRates } : {}),
+      // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf.
+      custom_text: {
+        submit: { message: checkoutTermLine(args.billingInterval) },
+        ...(termsUrl
+          ? {
+              terms_of_service_acceptance: {
+                message: `Ich stimme den [AGB](${termsUrl}) zu.`,
+              },
+            }
+          : {}),
+      },
+      // AGB-Zustimmung erst, wenn es AGB gibt: STRIPE_TERMS_URL setzen UND
+      // dieselbe URL in Stripe (Settings → Public details) hinterlegen.
+      ...(termsUrl
+        ? { consent_collection: { terms_of_service: "required" as const } }
+        : {}),
+      success_url: `${args.origin}/my-website?checkout=success`,
+      cancel_url: `${args.origin}/onboarding/${args.token}`,
       metadata: {
-        ...subscriptionMetadataFor(args.billingInterval),
         websiteId: args.websiteId.toString(),
+        userId: args.userId?.toString() || "0",
+        billingInterval: args.billingInterval,
+        addOns: JSON.stringify(addOns),
+        totalAmount: totalCents.toString(),
         [B2B_META_KEY]: String(args.b2bConfirmedAt),
       },
-    },
-    // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf.
-    custom_text: {
-      submit: { message: checkoutTermLine(args.billingInterval) },
-      ...(termsUrl
-        ? {
-            terms_of_service_acceptance: {
-              message: `Ich stimme den [AGB](${termsUrl}) zu.`,
-            },
-          }
-        : {}),
-    },
-    // AGB-Zustimmung erst, wenn es AGB gibt: STRIPE_TERMS_URL setzen UND
-    // dieselbe URL in Stripe (Settings → Public details) hinterlegen.
-    ...(termsUrl
-      ? { consent_collection: { terms_of_service: "required" as const } }
-      : {}),
-    success_url: `${args.origin}/my-website?checkout=success`,
-    cancel_url: `${args.origin}/onboarding/${args.token}`,
-    metadata: {
-      websiteId: args.websiteId.toString(),
-      userId: args.userId?.toString() || "0",
-      billingInterval: args.billingInterval,
-      addOns: JSON.stringify(addOns),
-      totalAmount: totalCents.toString(),
-      [B2B_META_KEY]: String(args.b2bConfirmedAt),
-    },
-  });
+    })
+  );
 
   if (!session.url) {
     throw new Error("Stripe session URL not generated");

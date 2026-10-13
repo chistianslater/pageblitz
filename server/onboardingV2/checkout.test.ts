@@ -192,6 +192,32 @@ describe("createStudioCheckoutSession", () => {
     warn.mockRestore();
   });
 
+  test("falsche/fremde STRIPE_TAX_RATE_ID blockiert keinen Verkauf: Stripe lehnt ab → derselbe Checkout ohne Steuersatz", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { stripe, create } = fakeStripe();
+    create.mockRejectedValueOnce(
+      Object.assign(new Error("No such tax rate: 'txr_ust19'"), {
+        code: "resource_missing",
+        param: "tax_rates",
+      })
+    );
+    const result = await createStudioCheckoutSession(baseArgs, stripe, {
+      STRIPE_TAX_RATE_ID: "txr_ust19",
+    });
+    expect(result.url).toBe("https://stripe/s");
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls[0][0].subscription_data.default_tax_rates).toEqual(
+      ["txr_ust19"]
+    );
+    expect(create.mock.calls[1][0].subscription_data).not.toHaveProperty(
+      "default_tax_rates"
+    );
+    expect(create.mock.calls[1][0].line_items).toEqual(
+      create.mock.calls[0][0].line_items
+    );
+    err.mockRestore();
+  });
+
   test("wirft Fehler, wenn Stripe keine URL zurückgibt", async () => {
     const { stripe } = fakeStripe({ url: null });
     await expect(
@@ -240,7 +266,9 @@ describe("createStudioCheckoutSession", () => {
     await createStudioCheckoutSession(baseArgs, stripe, {});
     const call = create.mock.calls[0][0];
     expect(call.metadata.b2b_bestaetigt_at).toBe("1790000000");
-    expect(call.subscription_data.metadata.b2b_bestaetigt_at).toBe("1790000000");
+    expect(call.subscription_data.metadata.b2b_bestaetigt_at).toBe(
+      "1790000000"
+    );
   });
 
   test("AGB-Zustimmung nur mit STRIPE_TERMS_URL", async () => {

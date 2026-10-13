@@ -41,7 +41,49 @@ export function taxRateIds(env: NodeJS.ProcessEnv = process.env): string[] {
   return id ? [id] : [];
 }
 
-/** Nur für Tests: Warnung wieder scharf schalten. */
+let rejectionLogged = false;
+
+/**
+ * Lehnt Stripe den Steuersatz ab? (falsche ID, Test-/Live-Modus vertauscht,
+ * archiviert) — `resource_missing` an einem `*tax_rates*`-Parameter oder
+ * eine Meldung, die den Steuersatz nennt.
+ */
+export function isTaxRateError(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const e = err as { code?: unknown; param?: unknown; message?: unknown };
+  const param = typeof e.param === "string" ? e.param : "";
+  const message = typeof e.message === "string" ? e.message.toLowerCase() : "";
+  if (param.includes("tax_rate")) return true;
+  return message.includes("tax_rate") || message.includes("tax rate");
+}
+
+/**
+ * Führt einen Stripe-Aufruf mit Steuersatz aus; lehnt Stripe den Satz ab,
+ * wird derselbe Aufruf OHNE Steuersatz wiederholt — ein falscher Satz darf
+ * nie einen Verkauf blockieren. Der Fehler geht einmal pro Prozess als
+ * `console.error` ins Log. Andere Fehler werden unverändert geworfen.
+ */
+export async function withTaxRateFallback<T>(
+  taxRates: string[],
+  call: (taxRates: string[]) => Promise<T>
+): Promise<T> {
+  try {
+    return await call(taxRates);
+  } catch (err) {
+    if (taxRates.length === 0 || !isTaxRateError(err)) throw err;
+    if (!rejectionLogged) {
+      rejectionLogged = true;
+      console.error(
+        `[steuer] Stripe lehnt ${TAX_RATE_ENV_KEY}=${taxRates.join(",")} ab (falsche ID oder Test-/Live-Modus vertauscht?) — verkaufe ohne ausgewiesene USt. weiter. Env prüfen.`,
+        err
+      );
+    }
+    return call([]);
+  }
+}
+
+/** Nur für Tests: Warnungen wieder scharf schalten. */
 export function resetTaxRateWarningForTests(): void {
   warned = false;
+  rejectionLogged = false;
 }
