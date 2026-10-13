@@ -253,10 +253,14 @@ Freundlich umgestellt) wurden. Vor dem Deploy wird
 (`mysqldump … generated_websites website_versions`). Rückweg: entweder das
 Backup zurückspielen (verliert alles seit dem Deploy) oder je Seite — vor
 dem Code-Rollback, noch mit dem neuen Code — im Studio-Verlauf den Stand vor
-Freundlich wiederherstellen bzw. ein anderes System wählen. Betroffene
-Seiten findet
-`SELECT id FROM generated_websites WHERE JSON_UNQUOTE(JSON_EXTRACT(websiteData,'$.system'))='freundlich';`
-(muss vor dem Rollback leer sein). Ein Rollback auf einen Commit dieses
+Freundlich wiederherstellen. Achtung: Neu erzeugte Seiten der Zielbranchen
+tragen außerdem `blueprintFamily` `family` bzw. `pets`, die der alte Code
+ebenfalls nicht kennt (Schema `.strict()`) — „anderes System wählen“ allein
+macht sie also nicht rollback-fest; für sie hilft nur der Verlauf (Stand vor
+der Erzeugung) oder das Backup. Betroffene Seiten findet
+`SELECT id FROM generated_websites WHERE JSON_UNQUOTE(JSON_EXTRACT(websiteData,'$.system'))='freundlich' OR JSON_UNQUOTE(JSON_EXTRACT(websiteData,'$.blueprintFamily')) IN ('family','pets');`
+(muss vor dem Rollback leer sein). Ohne Datenänderung geht nur der Rollback
+auf `4e4c7045` (bzw. das Backup). Ein Rollback auf einen Commit dieses
 Zweigs vor der Freischaltung (`4e4c7045`) braucht keine Datenänderung: der
 kennt und rendert Freundlich, vergibt es nur nicht an neue Seiten.
 
