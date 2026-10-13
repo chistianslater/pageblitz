@@ -185,7 +185,12 @@ export function StylePanel({
     const suggested = systemCandidateFor(preselectSystem);
     return suggested ? [suggested, ...base] : base;
   }, [candidates.data, preselectSystem, active?.id]);
-  const selectSystem = trpc.onboardingV2.selectDesignSystem.useMutation();
+  const utils = trpc.useUtils();
+  // Nach jedem Wechsel bietet der Server andere Kandidaten an (das aktuelle
+  // System fällt heraus) — die zwischengespeicherte Antwort wäre veraltet.
+  const selectSystem = trpc.onboardingV2.selectDesignSystem.useMutation({
+    onSuccess: () => utils.onboardingV2.getStyleCandidates.invalidate({ token }),
+  });
 
   const applySystem = (
     id: DesignSystemId,

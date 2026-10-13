@@ -40,7 +40,10 @@ import {
   applyTheme,
 } from "./applyPatch";
 import {
-  DesignProfileSchema,
+  DEFAULT_DESIGN_PROFILE,
+  HIDEABLE_ELEMENTS,
+} from "../../shared/siteContract/designProfile";
+import {
   SafeUrlSchema,
   SECTION_TYPES,
 } from "../../shared/siteContract/schema";
@@ -513,29 +516,31 @@ export const contentProcedures = {
     }),
 
   /**
-   * Kompositionsprofil aus der Vorschau („Bild ausblenden“). Farben und
-   * Schriften bringt die Farbstimmung des Designsystems — Akzent-,
-   * Schriftpaar- und Farbwelt-Felder gibt es nicht mehr (strict: werden
-   * abgelehnt). Collage-Bilder setzt der Client nie: gespeicherte bleiben,
-   * neue kommen nicht hinzu.
+   * „Bild ausblenden“ aus der Vorschau: einzeln ausgeblendete Elemente als
+   * VOLLSTÄNDIGE Liste, gemischt ins gespeicherte Profil. Layout, Farbe und
+   * Schrift bringt das Designsystem mit — solche Felder nimmt der Server
+   * nicht an (strict). Sichtbarkeit/Reihenfolge ganzer Sektionen laufen
+   * über updateStructure.
    */
   updateTheme: publicProcedure
     .input(
       tokenInput
-        .extend({ designProfile: DesignProfileSchema })
+        .extend({
+          hiddenElements: z.array(z.enum(HIDEABLE_ELEMENTS)).max(4),
+        })
         .strict()
     )
     .mutation(async ({ input, ctx }) => {
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       const doc = await requireDoc(loaded);
-      const { heroCollageImages: _ignored, ...profile } = input.designProfile;
-      const stored = doc.designProfile?.heroCollageImages;
+      const hidden = Array.from(new Set(input.hiddenElements));
+      const designProfile = { ...(doc.designProfile ?? DEFAULT_DESIGN_PROFILE) };
+      if (hidden.length > 0) designProfile.hiddenElements = hidden;
+      else delete designProfile.hiddenElements;
       return persistDoc(
         input.token,
         loaded,
-        applyTheme(doc, {
-          designProfile: stored ? { ...profile, heroCollageImages: stored } : profile,
-        }),
+        applyTheme(doc, { designProfile }),
         { trigger: "panel", label: "Design angepasst" }
       );
     }),

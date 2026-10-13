@@ -978,6 +978,15 @@ einzige Systemschrift, echte Bilder für alle 14 Demo-Packs.
   ist mit den Packs entfernt worden — bei Bedarf aus dem Stand `0f046111`
   zurückholen und nur Logo + Palettenwahl übernehmen.
 
+**Funnel-Tracking (Clarity/GA4, `client/src/lib/studioEvents.ts`):** Seit
+„Packs entfernen“ (2026-10-13) trägt das Sitzungs-Tag `design`
+(`tagStudioSession`) **System-IDs** (`journal`, `raster`, `werkstoff`,
+`plakat`, `klar`, `nacht`) statt Pack-IDs — beim Studio-Start das System
+der Seite, nach „Mit diesem Design weiter“ das bestätigte. Auswertungen
+über den Stichtag hinweg müssen beide Wertebereiche berücksichtigen. Das
+Ereignis „Bild ausblenden“ in der Vorschau läuft aus Kontinuitätsgründen
+weiter unter `vorschau_layout_gewechselt`.
+
 **Offen nach B6 (Backlog):**
 - Lost-Update-Fenster auf `subscriptions.addOns` (§6, dokumentiert, selbstheilend).
 - Doppel-Request Pack-Fonts im CSR-Fallback bei Website-Wechsel ohne Reload (§7).

@@ -13,7 +13,7 @@ import { GA4_MEASUREMENT_ID, hasAnalyticsConsent } from "./consent";
  * Einwilligung gar nicht geladen, und für GA prüfen wir die Einwilligung
  * ausdrücklich — `gtag` existiert wegen Google Ads auch ohne sie. Es gehen
  * keine personenbezogenen Daten raus, nur feste Ereignisnamen und grobe
- * Tags (Quelle, Status, Designrichtung).
+ * Tags (Quelle, Status, Design — seit 2026-10-13 die System-ID).
  */
 
 export type StudioEvent =

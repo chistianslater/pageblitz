@@ -254,7 +254,7 @@ export default function StudioPage({ token }: { token: string }) {
     (profile: DesignProfile) => {
       trackStudioEvent("vorschau_layout_gewechselt");
       updateTheme.mutate(
-        { token, designProfile: profile },
+        { token, hiddenElements: profile.hiddenElements ?? [] },
         {
           onSuccess: () => {
             studio.refetch();

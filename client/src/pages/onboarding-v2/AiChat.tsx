@@ -269,14 +269,6 @@ export function AiChat({
                 </li>
               ))}
             </ul>
-            <button
-              type="button"
-              className="pb-studio-btn"
-              data-variant="ghost"
-              onClick={() => onOpenPanel("style")}
-            >
-              Im Stil-Panel ansehen
-            </button>
           </>
         );
       case "style":

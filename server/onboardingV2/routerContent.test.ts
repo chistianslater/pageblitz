@@ -637,7 +637,7 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Patches während laufender Generi
   });
 });
 
-describe("onboardingV2.updateTheme: nur noch das Kompositionsprofil (Packs entfernen, Task 3)", () => {
+describe("onboardingV2.updateTheme: nur noch „Bild ausblenden“ (Packs entfernen, Task 3)", () => {
   const PROFILE = {
     version: 1,
     heroLayout: "split",
@@ -646,6 +646,8 @@ describe("onboardingV2.updateTheme: nur noch das Kompositionsprofil (Packs entfe
     galleryLayout: "grid",
     density: "airy",
     imageTreatment: "natural",
+    composition: "stage",
+    heroCollageImages: ["https://x/g1.jpg"],
     seed: 7,
   } as const;
 
@@ -659,15 +661,31 @@ describe("onboardingV2.updateTheme: nur noch das Kompositionsprofil (Packs entfe
       customerEmail: null,
     } as any);
 
-  test("„Bild ausblenden“ speichert hiddenElements, die Seite bleibt im System", async () => {
-    useDoc(v2);
+  test("hiddenElements wird ins gespeicherte Profil gemischt, alles andere bleibt", async () => {
+    useDoc({ ...v2, designProfile: PROFILE });
     const state = await caller().onboardingV2.updateTheme({
       token: "tok",
-      designProfile: { ...PROFILE, hiddenElements: ["hero-media"] },
+      hiddenElements: ["hero-media"],
     });
-    expect(state.doc?.designProfile?.hiddenElements).toEqual(["hero-media"]);
+    expect(state.doc?.designProfile).toEqual({
+      ...PROFILE,
+      hiddenElements: ["hero-media"],
+    });
     expect(state.doc?.designRevision).toBe(3);
-    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  });
+
+  test("[] blendet wieder ein und entfernt das Feld; ohne Profil dient das Standardprofil als Basis", async () => {
+    useDoc({ ...v2, designProfile: { ...PROFILE, hiddenElements: ["about-media"] } });
+    const shown = await caller().onboardingV2.updateTheme({ token: "tok", hiddenElements: [] });
+    expect(shown.doc?.designProfile).toEqual(PROFILE);
+
+    useDoc(v2);
+    const fresh = await caller().onboardingV2.updateTheme({
+      token: "tok",
+      hiddenElements: ["about-media"],
+    });
+    expect(fresh.doc?.designProfile?.hiddenElements).toEqual(["about-media"]);
+    expect(fresh.doc?.designProfile?.heroLayout).toBeDefined();
   });
 
   test.each([
@@ -675,34 +693,23 @@ describe("onboardingV2.updateTheme: nur noch das Kompositionsprofil (Packs entfe
     ["fontPairId", { fontPairId: "elegant" }],
     ["colorWorldId", { colorWorldId: "abend" }],
     ["colorWorldBase", { colorWorldBase: "#112233" }],
-  ])("Farb-/Schriftfeld %s → BAD_REQUEST, nichts geschrieben", async (_name, extra) => {
-    useDoc(v2);
+    ["designProfile (Layoutfelder)", { designProfile: { ...PROFILE, heroLayout: "banner" } }],
+  ])("%s → BAD_REQUEST, nichts geschrieben", async (_name, extra) => {
+    useDoc({ ...v2, designProfile: PROFILE });
     await expect(
       caller().onboardingV2.updateTheme({
         token: "tok",
-        designProfile: PROFILE,
+        hiddenElements: [],
         ...(extra as object),
       } as any)
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
-  test("Collage-Bilder kommen nie vom Client: gespeicherte bleiben, neue werden nicht gesetzt", async () => {
-    useDoc({
-      ...v2,
-      designProfile: { ...PROFILE, heroCollageImages: ["https://x/g1.jpg"] },
-    });
-    const kept = await caller().onboardingV2.updateTheme({
-      token: "tok",
-      designProfile: { ...PROFILE, heroCollageImages: ["https://fremd/klau.jpg"] },
-    });
-    expect(kept.doc?.designProfile?.heroCollageImages).toEqual(["https://x/g1.jpg"]);
-
-    useDoc({ ...v2, designProfile: PROFILE });
-    const none = await caller().onboardingV2.updateTheme({
-      token: "tok",
-      designProfile: { ...PROFILE, heroCollageImages: ["https://fremd/klau.jpg"] },
-    });
-    expect(none.doc?.designProfile?.heroCollageImages).toBeUndefined();
+  test("unbekanntes Element → BAD_REQUEST", async () => {
+    useDoc(v2);
+    await expect(
+      caller().onboardingV2.updateTheme({ token: "tok", hiddenElements: ["gallery-media"] } as any)
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 });
