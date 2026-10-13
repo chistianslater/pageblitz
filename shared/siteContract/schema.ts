@@ -675,6 +675,8 @@ export const WebsiteDataV2Schema = z
         "creative",
         "urgent",
         "industry",
+        "family",
+        "pets",
         "standard",
       ])
       .optional(),

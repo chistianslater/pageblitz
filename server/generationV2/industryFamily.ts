@@ -11,6 +11,7 @@ import {
   keywordFamily,
   type BlueprintId,
 } from "../../shared/blueprints/blueprints";
+import { careFamily } from "../../shared/blueprints/careWords";
 import { CATEGORY_FAMILIES } from "./categoryFamilies";
 
 /** Schlüssel aus `classifyIndustry` → Familie. */
@@ -51,6 +52,12 @@ export function resolveIndustryFamily(
   industryKey?: string
 ): BlueprintId {
   const cat = category?.trim() ?? "";
+  // Freundlich-Familien (Kinder & Familie, Tiere) schlagen die Google-Tabelle:
+  // dort stehen Tierarzt/Hebamme unter Gesundheit, Hundeschule unter Kurse,
+  // „Kindergarten" sogar unter Sofort-Dienste. Nur die Kategorie zählt hier —
+  // ein Name allein überstimmt die Tabelle nicht.
+  const care = careFamily(cat);
+  if (care) return care;
   const fromTable = cat ? CATEGORY_FAMILIES[categoryKey(cat)] : undefined;
   const fromKeyword = keywordFamily(cat, businessName);
   // „Hersteller" ist bei Google oft ein Handwerksbetrieb (Tischlerei Klähn) —

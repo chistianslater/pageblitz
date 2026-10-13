@@ -270,7 +270,7 @@ describe("Branchenfamilien", () => {
     const cases: Record<string, string> = {
       Zahnarztpraxis: "health",
       Physiotherapeut: "health",
-      Tierarzt: "health",
+      Tierarzt: "pets",
       Steuerberater: "advice",
       Rechtsanwalt: "advice",
       Immobilienmakler: "advice",

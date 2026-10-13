@@ -17,8 +17,22 @@ import {
   type FamilyId,
 } from "./blueprintFamilies";
 import { designIndustryKey } from "./categoryAliases";
+import { careBlueprint } from "./careBlueprints";
+import {
+  careFamily,
+  isIceCream,
+  isKidsLessons,
+  isPediatric,
+  type CareFamilyId,
+} from "./careWords";
 
-export type BlueprintId = "beauty" | "trade" | "gastro" | FamilyId | "standard";
+export type BlueprintId =
+  | "beauty"
+  | "trade"
+  | "gastro"
+  | FamilyId
+  | CareFamilyId
+  | "standard";
 
 /** Unterart im Bauplan Gastro — steuert Hauptaktion und Vokabular. */
 export type GastroKind = "restaurant" | "imbiss" | "cafe";
@@ -69,8 +83,10 @@ const STANDARD: Blueprint = {
   trust: true,
 };
 
+// Hundesalon/Hundefriseur/Tierfriseur: seit Freundlich Familie „Tiere"
+// (careWords.ts), nicht mehr Beauty.
 const BEAUTY_KEYS =
-  /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung|wellness|massage|day-?spa|spa$|hundesalon|hundefriseur|tierfriseur)/;
+  /^(friseur|barbier|kosmetik|nagel|wimpern|schoenheit|beauty|make-?up|augenbrauen|waxing|haarentfernung|wellness|massage|day-?spa|spa$)/;
 
 /** Eindeutige Barbier-Wörter — als ganzes Wort, nie als Teil („Barbara"). */
 const BARBER_WORDS = new Set([
@@ -238,6 +254,8 @@ const GASTRO_TEXT =
   /weinstube|weinlokal|besenwirtschaft|strau(?:ß|ss)(?:en)?wirtschaft|(?:^|[^a-zäöüß])heurige[nr]?|restaurant|ristorante|trattoria|pizzeria|bistro|gasthaus|gasthof|gaststätte|wirtshaus|brauhaus|imbiss|döner|doener|kebab|burger|sushi|grill|lieferservice|café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscafé|eiscafe|eisdiele|cocktail|kneipe|\bpub\b|weinbar|\bbar\b|brauerei|biergarten/i;
 
 function gastroKind(text: string): GastroKind {
+  // Eisdiele, Gelateria, „ice cream shop" (Google) sind Cafés, kein Restaurant.
+  if (isIceCream(text)) return "cafe";
   if (
     /café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscaf|eisdiele/i.test(
       text
@@ -378,6 +396,8 @@ export const BLUEPRINT_IDS = [
   "creative",
   "urgent",
   "industry",
+  "family",
+  "pets",
   "standard",
 ] as const satisfies readonly BlueprintId[];
 
@@ -405,6 +425,15 @@ export function keywordFamily(
   businessName = ""
 ): Exclude<BlueprintId, "standard"> | undefined {
   if (!category.trim()) return undefined;
+  // Freundlich-Familien zuerst (ganze Wörter): „Tierarzt" vor „arzt",
+  // „Hundesalon" vor Beauty, „Hebamme" vor Gesundheit, „Hundeschule" vor Kurse.
+  const care = careFamily(category);
+  if (care) return care;
+  if (isIceCream(category)) return "gastro";
+  // Musikunterricht, Lernstudio, Kinderturnen: Kurse (freundliche Unterart);
+  // „pediatrician" (Google) ist Gesundheit.
+  if (isKidsLessons(category)) return "courses";
+  if (isPediatric(category)) return "health";
   if (BEAUTY_KEYS.test(designIndustryKey(category))) return "beauty";
   if (TRADE.test(`${category} ${businessName}`)) return "trade";
   if (
@@ -413,7 +442,11 @@ export function keywordFamily(
   )
     return "gastro";
   // Neue Familien zuerst über die Kategorie, erst dann über den Namen.
-  return familyByKeyword(category) ?? familyByKeyword(businessName);
+  return (
+    familyByKeyword(category) ??
+    careFamily(businessName) ??
+    familyByKeyword(businessName)
+  );
 }
 
 function byFamily(
@@ -424,6 +457,8 @@ function byFamily(
   if (family === "beauty") return beautyBlueprint(category, name);
   if (family === "trade") return tradeBlueprint(category, name);
   if (family === "gastro") return gastroBlueprint(category, name);
+  if (family === "family" || family === "pets")
+    return careBlueprint(family, category, name);
   return familyBlueprint(family, category, name);
 }
 
