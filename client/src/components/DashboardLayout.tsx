@@ -21,43 +21,14 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import {
-  LayoutDashboard,
-  Search,
-  Globe,
-  Mail,
-  BarChart3,
-  LogOut,
-  PanelLeft,
-  Zap,
-  TrendingUp,
-  Building2,
-  Bug,
-  MailCheck,
-  QrCode,
-  Users,
-  MessageCircle,
-} from "lucide-react";
+import { LogOut, PanelLeft, Zap } from "lucide-react";
+import { ADMIN_MENU } from "./adminMenu";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-  { icon: Search, label: "GMB-Suche", path: "/admin/search" },
-  { icon: Building2, label: "Businesses", path: "/admin/businesses" },
-  { icon: Globe, label: "Websites", path: "/admin/websites" },
-  { icon: TrendingUp, label: "Lead-Funnel", path: "/admin/leads" },
-  { icon: Mail, label: "Outreach", path: "/admin/outreach" },
-  { icon: MailCheck, label: "Lifecycle-Mails", path: "/admin/lifecycle" },
-  { icon: QrCode, label: "Postkarten", path: "/admin/postkarten" },
-  { icon: Users, label: "Nutzer", path: "/admin/users" },
-  { icon: BarChart3, label: "Statistiken", path: "/admin/stats" },
-  { icon: Zap, label: "Pipeline", path: "/admin/pipeline" },
-  { icon: MessageCircle, label: "Support-Chats", path: "/admin/support-chats" },
-  { icon: Bug, label: "Errors", path: "/admin/errors" },
-];
+const menuItems = ADMIN_MENU;
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 260;

@@ -13,6 +13,7 @@ import {
   SHOWCASES,
   type Showcase,
 } from "@shared/showcases/blueprintShowcaseList";
+import { systemStatus } from "./designReviewStatus";
 
 type Viewport = "desktop" | "mobile";
 
@@ -338,6 +339,7 @@ export default function DesignReviewPage() {
           <p className="max-w-[40rem] text-[1rem] leading-7 text-lp-muted">
             Je Designsystem die Beispielbetriebe, deren Hauptsystem es ist, in
             allen drei Farbstimmungen, so wie eine neu erzeugte Seite aussieht.
+            „live" heißt freigeschaltet, „in Arbeit" noch nicht für Kunden.
             „Vorschau" zeigt die Platzhalter, die der Kunde im Studio sieht,
             „Fertige Seite" die Live-Fassung.
           </p>
@@ -346,10 +348,28 @@ export default function DesignReviewPage() {
         <section id="systeme" className="scroll-mt-24">
           {builtSystems.map(def => {
             const showcases = showcasesForSystem(def.id);
+            const status = systemStatus(def.id);
             return (
               <div key={def.id} className="mt-12">
-                <h2 className="flex items-baseline gap-3 text-[1.5rem] font-medium tracking-[-0.02em]">
+                <h2 className="flex flex-wrap items-baseline gap-3 text-[1.5rem] font-medium tracking-[-0.02em]">
                   System {def.name}
+                  <span
+                    data-status={status.live ? "live" : "arbeit"}
+                    title={status.hint}
+                    className={`inline-flex h-7 items-center gap-1.5 self-center rounded-full px-3 text-[0.78rem] font-medium tracking-normal ${
+                      status.live
+                        ? "bg-lp-accent text-lp-accent-ink"
+                        : "border border-dashed border-lp-ink text-lp-ink"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        status.live ? "bg-lp-accent-ink" : "bg-lp-ink"
+                      }`}
+                    />
+                    {status.label}
+                  </span>
                   <span className="text-[0.8rem] font-normal text-lp-muted">
                     {showcases.length} Betriebe × {def.palettes.length} Paletten
                   </span>
