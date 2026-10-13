@@ -1,20 +1,91 @@
 /**
- * Preis-Konstanten und -Berechnungen für Basispreis und Add-ons.
- * Ausgelagert aus server/routers.ts (Findings B2/Task 1), damit Client
- * (Checkout-Panel) und Server dieselbe Quelle der Wahrheit nutzen.
+ * Preis-Konstanten und -Berechnungen für Basispreis, Tarife und Add-ons —
+ * EINZIGE Quelle der Wahrheit für jeden Preis in App, Landing, SEO-Seiten,
+ * Postkarten und Stripe-Checkout. Anzeigetexte entstehen ausschließlich in
+ * shared/pricingText.ts, Laufzeit-/Kündigungsdaten in shared/pricingTerm.ts.
+ * server/pricingLiterals.test.ts schlägt an, wenn irgendwo sonst ein
+ * Basispreis als Literal steht.
+ *
+ * Preismodell (Betreiber-Entscheidung 2026-10-13):
+ * - Jahrestarif: 19,90 €/Monat, monatlich abgebucht, 12 Monate
+ *   Mindestlaufzeit ab der ersten Zahlung nach den Testtagen; verlängert
+ *   sich um je 12 Monate, wenn nicht mit 1 Monat Frist zum Laufzeitende
+ *   gekündigt wird.
+ * - Monatstarif: 24,90 €/Monat, monatlich zum Ende des Abrechnungsmonats
+ *   kündbar.
+ * - Alle Preise sind Bruttopreise inkl. 19 % MwSt. (Regelbesteuerung).
+ * - Add-ons kosten in beiden Tarifen dasselbe, sind auch im Jahrestarif
+ *   monatlich kündbar (keine eigene Laufzeit) und enden spätestens mit dem
+ *   Basis-Abo.
  */
+
+/** Tarif = Abrechnungsart. Der alte Name `BillingInterval` bleibt als Alias. */
+export type Tariff = "monthly" | "yearly";
+export type BillingInterval = Tariff;
+
+export interface PlanSpec {
+  tariff: Tariff;
+  /** Bruttopreis je Monat in Cent. */
+  centsPerMonth: number;
+  /** Mindestlaufzeit in Monaten (0 = keine, monatlich kündbar). */
+  termMonths: number;
+  /** Kündigungsfrist in Monaten vor Laufzeitende (0 = zum Ende des Abrechnungsmonats). */
+  noticeMonths: number;
+  /** Automatische Verlängerung in Monaten nach Laufzeitende (0 = keine feste Laufzeit). */
+  renewMonths: number;
+  /** Kostenlose Testtage vor der ersten Zahlung. */
+  trialDays: number;
+}
+
+export const TRIAL_DAYS = 7;
+
+export const VAT = { ratePercent: 19, included: true } as const;
+/** Kurzform für Schema.org/Stripe: alle Preise sind Bruttopreise. */
+export const vatIncluded = VAT.included;
+
+export const PLANS: Readonly<Record<Tariff, PlanSpec>> = {
+  monthly: {
+    tariff: "monthly",
+    centsPerMonth: 2490,
+    termMonths: 0,
+    noticeMonths: 0,
+    renewMonths: 0,
+    trialDays: TRIAL_DAYS,
+  },
+  yearly: {
+    tariff: "yearly",
+    centsPerMonth: 1990,
+    termMonths: 12,
+    noticeMonths: 1,
+    renewMonths: 12,
+    trialDays: TRIAL_DAYS,
+  },
+};
 
 export const PRICING = {
   base: {
-    monthly: 2490, // 24,90 €/Monat (monatliche Abrechnung)
-    yearly: 1990, // 19,90 €/Monat (jährliche Abrechnung, monatlich abgebucht)
+    monthly: PLANS.monthly.centsPerMonth,
+    yearly: PLANS.yearly.centsPerMonth,
   },
   addon: 390, // 3,90 € pro Standard-Add-on
   addonAiChat: 990, // 9,90 € KI-Chat
   addonBooking: 490, // 4,90 € Terminbuchung
 } as const;
 
-export type BillingInterval = "monthly" | "yearly";
+/** Ersparnis Jahrestarif gegenüber Monatstarif über 12 Monate (Cent). */
+export const YEARLY_SAVINGS_CENTS =
+  (PLANS.monthly.centsPerMonth - PLANS.yearly.centsPerMonth) * 12;
+
+/** Ersparnis in Prozent des Monatstarifs, ganzzahlig gerundet. */
+export const YEARLY_SAVINGS_PERCENT = Math.round(
+  ((PLANS.monthly.centsPerMonth - PLANS.yearly.centsPerMonth) /
+    PLANS.monthly.centsPerMonth) *
+    100
+);
+
+export function isTariff(value: unknown): value is Tariff {
+  return value === "monthly" || value === "yearly";
+}
 
 export type AddOnKey =
   | "contactForm"
@@ -154,5 +225,20 @@ export function calcTotalCents(
 }
 
 export function formatEuro(cents: number): string {
-  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
+  return `${formatEuroNumber(cents)} €`;
+}
+
+/** „19,90" — Betrag ohne Währungszeichen (deutsches Format). */
+export function formatEuroNumber(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",");
+}
+
+/** „19.90" — Betrag für Schema.org/JSON (Punkt als Dezimaltrenner). */
+export function formatDecimal(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
+/** Ganze Euro ohne Nachkommastellen, wenn glatt: 6000 → „60 €". */
+export function formatEuroShort(cents: number): string {
+  return cents % 100 === 0 ? `${cents / 100} €` : formatEuro(cents);
 }

@@ -8,12 +8,52 @@ import {
   calcTotalCents,
   FEATURE_ADDON_KEYS,
   formatEuro,
+  PLANS,
   PRICING,
+  TRIAL_DAYS,
+  VAT,
+  YEARLY_SAVINGS_CENTS,
+  YEARLY_SAVINGS_PERCENT,
+  formatDecimal,
+  formatEuroShort,
+  isTariff,
   sanitizeAddOns,
   SECTION_ADDON_KEYS,
 } from "./pricing";
 
 describe("pricing", () => {
+  test("Tarife: Jahrestarif mit 12 Monaten Laufzeit, Monatstarif ohne", () => {
+    expect(PLANS.yearly).toEqual({
+      tariff: "yearly",
+      centsPerMonth: 1990,
+      termMonths: 12,
+      noticeMonths: 1,
+      renewMonths: 12,
+      trialDays: 7,
+    });
+    expect(PLANS.monthly).toEqual({
+      tariff: "monthly",
+      centsPerMonth: 2490,
+      termMonths: 0,
+      noticeMonths: 0,
+      renewMonths: 0,
+      trialDays: 7,
+    });
+    expect(TRIAL_DAYS).toBe(7);
+    expect(VAT).toEqual({ ratePercent: 19, included: true });
+  });
+  test("Ersparnis: 60 € im Jahr bzw. 20 %", () => {
+    expect(YEARLY_SAVINGS_CENTS).toBe(6000);
+    expect(YEARLY_SAVINGS_PERCENT).toBe(20);
+    expect(formatEuroShort(YEARLY_SAVINGS_CENTS)).toBe("60 €");
+    expect(formatEuroShort(1990)).toBe("19,90 €");
+    expect(formatDecimal(1990)).toBe("19.90");
+  });
+  test("isTariff", () => {
+    expect(isTariff("yearly")).toBe(true);
+    expect(isTariff("monthly")).toBe(true);
+    expect(isTariff("weekly")).toBe(false);
+  });
   test("Basispreise und Add-on-Preise", () => {
     expect(PRICING.base.monthly).toBe(2490);
     expect(PRICING.base.yearly).toBe(1990);
