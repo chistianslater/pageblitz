@@ -17,7 +17,10 @@ import fs from "fs";
 import path from "path";
 import { nanoid } from "nanoid";
 import { appRouter } from "../server/routers";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { businesses, generatedWebsites } from "../drizzle/schema";
 import {
+  getDb,
   getGenerationJobById,
   getWebsiteByBusinessId,
   upsertBusiness,
@@ -38,6 +41,10 @@ interface Args {
   branche: string;
   anzahl: number;
   trocken: boolean;
+  /** Nur Betriebe ohne vorhandene Vorschau-Seite (z. B. nicht aus Welle 1). */
+  neu: boolean;
+  /** Namen mit einem dieser Stichworte fallen raus (Komma-getrennt). */
+  ohne: string[];
 }
 
 function parseArgs(argv: string[]): Args {
@@ -49,7 +56,7 @@ function parseArgs(argv: string[]): Args {
   const branche = get("--branche");
   if (!stadt || !branche) {
     throw new Error(
-      'Aufruf: npx tsx scripts/stapel-vorschauen.ts --stadt "Dortmund" --branche "Friseur" [--anzahl 10] [--trocken]'
+      'Aufruf: npx tsx scripts/stapel-vorschauen.ts --stadt "Dortmund" --branche "Friseur" [--anzahl 10] [--neu] [--ohne "massage,akademie"] [--trocken]'
     );
   }
   return {
@@ -57,6 +64,11 @@ function parseArgs(argv: string[]): Args {
     branche,
     anzahl: Number(get("--anzahl") ?? 10),
     trocken: argv.includes("--trocken"),
+    neu: argv.includes("--neu"),
+    ohne: (get("--ohne") ?? "")
+      .split(",")
+      .map(w => w.trim().toLowerCase())
+      .filter(Boolean),
   };
 }
 
@@ -86,6 +98,19 @@ type Treffer = Awaited<
   ReturnType<ReturnType<typeof adminCaller>["search"]["gmb"]>
 >["results"][number];
 
+/** placeIds der Treffer, deren Betrieb schon eine Vorschau-Seite hat. */
+async function placeIdsMitSeite(results: Treffer[]): Promise<Set<string>> {
+  const ids = results.map(r => r.placeId).filter(Boolean);
+  const db = await getDb();
+  if (!db || ids.length === 0) return new Set();
+  const rows = await db
+    .select({ placeId: businesses.placeId })
+    .from(businesses)
+    .innerJoin(generatedWebsites, eq(generatedWebsites.businessId, businesses.id))
+    .where(and(inArray(businesses.placeId, ids), isNotNull(businesses.placeId)));
+  return new Set(rows.map(r => r.placeId).filter((p): p is string => Boolean(p)));
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const caller = adminCaller();
@@ -98,8 +123,11 @@ async function main(): Promise<void> {
   });
   console.log(`  ${results.length} Betriebe gefunden.`);
 
+  const schonDa = args.neu ? await placeIdsMitSeite(results) : new Set<string>();
   const kandidaten: Treffer[] = results
     .filter(r => (r.address ?? "").trim().length > 0)
+    .filter(r => !schonDa.has(r.placeId))
+    .filter(r => !args.ohne.some(w => r.name.toLowerCase().includes(w)))
     .sort(
       (a, b) =>
         (RANG[a.leadType] ?? 3) - (RANG[b.leadType] ?? 3) ||
