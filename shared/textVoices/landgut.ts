@@ -1,0 +1,45 @@
+import type { TextVoice } from "./types";
+
+export const LANDGUT: TextVoice = {
+  id: "landgut",
+  name: "Landgut",
+  essence: "Leinen, Blattgrün und organische Formen — geerdet und lebendig.",
+  industries: [
+    "gaertnerei",
+    "gartenbau",
+    "landschaftsbau",
+    "florist",
+    "blumen",
+    "ferienhof",
+    "imkerei",
+    "baumschule",
+    "pension",
+    "gaestehaus",
+    "unterkunft",
+    "hostel",
+    "motel",
+    "ferienwohnung",
+    "gasthof",
+    "gasthaus",
+    "herberge",
+    "lodge",
+    "bb",
+    "bnb",
+    "bedbreakfast",
+    "bedandbreakfast",
+    "tierpension",
+  ],
+  llmHints: {
+    do: [
+      "geerdete, konkrete Sprache mit Orts- und Materialbezug",
+      "kurze, ruhige Sätze wie eine Gartenbeschreibung oder Hausprospekt",
+      "Wortwahl an die tatsächliche Kategorie koppeln (Garten, Floristik, Pension, Gästehaus)",
+    ],
+    dont: [
+      "Superlative und Ausrufezeichen",
+      "Marketing-Floskeln ohne Bezug zur Sache",
+      "Emojis",
+      "Beet, Pflanzung, Floristik — außer die Kategorie ist Garten, Blumen oder Landschaftsbau",
+    ],
+  },
+};

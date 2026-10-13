@@ -16,7 +16,7 @@ import { invokeLLM } from "../_core/llm";
 import {
   STAGE_MIN_RATIO,
   STAGE_MIN_WIDTH,
-} from "../../shared/stylePacks/artDirection";
+} from "../../shared/designSystems/entry";
 import type { V2Images } from "./runJob";
 
 const MEASURE_TIMEOUT_MS = 8000;

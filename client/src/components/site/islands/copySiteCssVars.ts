@@ -3,8 +3,8 @@
  * System-Tokens (`--sys-*`) von `.pb-site` auf ein portaliertes Insel-Panel
  * (Nacht stylt seine Panels mit `--sys-*`, islandCss.ts).
  *
- * `toCssVars` setzt die Variablen als Inline-Styles auf `.pb-site`
- * (`SiteRenderer.tsx`). Chat- und Buchungs-Panel hängen per `createPortal`
+ * `SiteRenderer.tsx` setzt die Variablen als Inline-Styles auf `.pb-site`
+ * (Systeme über `legacyVars`). Chat- und Buchungs-Panel hängen per `createPortal`
  * an `document.body` (eigener Stacking-Context, siehe ChatIsland.tsx) — dort
  * erben sie die Tokens nicht mehr, und der Browser fällt auf die
  * User-Agent-Schrift (oft Times) plus ungestylte Flächen zurück.

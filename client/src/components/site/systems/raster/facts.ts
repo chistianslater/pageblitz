@@ -47,7 +47,7 @@ type Hours = SectionOf<"contact">["openingHours"];
  * Erzeugung nur, wenn das Hero-Foto gemessen ein großes Querformat ist
  * (≥ 1000 px breit, Seitenverhältnis ≥ 1,25) und das Bildmodell es als
  * Titelbild taugt (heroScore ≥ 4) — siehe server/generationV2/heroPhoto.ts
- * und withEntryComposition. Hochformat-Handyfotos ergeben die ruhige Tafel
+ * und shared/designSystems/entry.ts. Hochformat-Handyfotos ergeben die ruhige Tafel
  * unten (auch auf dunklem Papier „Kohle").
  */
 export type EntryVariant = "plate" | "bleed" | "type";

@@ -4,7 +4,6 @@ vi.mock("../db", () => ({
   getWebsiteById: vi.fn(),
   getBusinessById: vi.fn(),
   listWebsites: vi.fn().mockResolvedValue([]),
-  listDesignNeighbors: vi.fn().mockResolvedValue([]),
   getNextLayoutForIndustry: vi.fn().mockResolvedValue("0"),
   updateGenerationJob: vi.fn().mockResolvedValue(undefined),
   updateWebsite: vi.fn().mockResolvedValue(undefined),
@@ -28,8 +27,8 @@ vi.mock("./heroPhoto", async importOriginal => ({
   withStagePhoto: vi.fn(async (images: unknown) => images),
 }));
 vi.mock("../gmb/siteCrawl", () => ({ crawlExistingSite: vi.fn() }));
-vi.mock("./selectPack", () => ({
-  selectPack: vi.fn().mockResolvedValue("werkbank"),
+vi.mock("./selectVoice", () => ({
+  selectVoice: vi.fn().mockResolvedValue("werkbank"),
 }));
 vi.mock("./generateSiteContent", () => ({ generateSiteContent: vi.fn() }));
 // Fakten-Guard hier als Passthrough gemockt (eigene Tests in
@@ -53,8 +52,6 @@ import { resolveIndustryFamily } from "./industryFamily";
 import { guardGeneratedContent } from "./factGuard";
 import {
   buildInterimV2Doc,
-  collectOccupiedDesignFingerprints,
-  collectOccupiedCompositions,
   resolveV2Images,
   prefersEveningPhotos,
   runWebsiteGenerationV2Job,
@@ -72,30 +69,6 @@ const mockedGuard = vi.mocked(guardGeneratedContent);
 const R2_1 = "https://media.pageblitz.de/website-42/gmb-1.jpg";
 const R2_2 = "https://media.pageblitz.de/website-42/gmb-2.jpg";
 const R2_3 = "https://media.pageblitz.de/website-42/gmb-3.jpg";
-
-describe("collectOccupiedDesignFingerprints", () => {
-  test("berücksichtigt nur schema-valide Profile derselben Branche", () => {
-    const sameCategory = {
-      ...doc,
-      businessCategory: "Tischler",
-      designProfile: DEFAULT_DESIGN_PROFILE,
-    };
-    const otherCategory = {
-      ...sameCategory,
-      businessCategory: "Restaurant",
-    };
-    const result = collectOccupiedDesignFingerprints(
-      [
-        { websiteData: sameCategory },
-        { websiteData: otherCategory },
-        { websiteData: { kaputt: true } },
-      ],
-      "tischler"
-    );
-    expect(result.size).toBe(1);
-    expect([...result][0]).toContain("werkbank|split|list");
-  });
-});
 
 const website = { id: 42, slug: "preview-brandt", businessId: 7 };
 const business = {
@@ -316,24 +289,36 @@ describe("runWebsiteGenerationV2Job", () => {
     const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
       .websiteData as any;
     expect(finalDoc.designProfile).toEqual(existingProfile);
-    expect(mockedDb.listDesignNeighbors).not.toHaveBeenCalled();
   });
 
-  test("Fehler der optionalen Kollisionsprüfung blockiert die Generierung nicht", async () => {
+  test("Regenerierung behält den Akzent des vorigen Stands (gleiche Farbstimmung)", async () => {
     mockedMirror.mockResolvedValue([]);
-    mockedDb.listDesignNeighbors.mockRejectedValueOnce(
-      new Error("DB kurz weg")
-    );
-
+    mockedDb.getWebsiteById.mockResolvedValue({
+      ...website,
+      websiteData: { ...doc, colorOverrides: { accent: "#9a4630" } },
+    } as any);
     await runWebsiteGenerationV2Job(99, 42);
-
-    expect(mockedDb.updateGenerationJob).toHaveBeenLastCalledWith(
-      99,
-      expect.objectContaining({ status: "completed" })
-    );
     const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
       .websiteData as any;
-    expect(finalDoc.designProfile).toBeDefined();
+    const { getSystem } = await import("../../shared/designSystems/registry");
+    const { pickPalette } = await import("../../shared/designSystems/palette");
+    expect(finalDoc.palette).toBe(
+      pickPalette(getSystem(finalDoc.system)!, "#9a4630").id
+    );
+  });
+
+  test("neue Seite: keine Pack-Farben, Farbstimmung je Betrieb [E3]", async () => {
+    mockedMirror.mockResolvedValue([]);
+    await runWebsiteGenerationV2Job(99, 42);
+    const finalDoc = mockedDb.updateWebsite.mock.calls.at(-1)?.[1]
+      .websiteData as any;
+    const { getSystem } = await import("../../shared/designSystems/registry");
+    const { defaultPalette } = await import("../../shared/designSystems/apply");
+    expect(finalDoc.colorOverrides).toBeUndefined();
+    expect(finalDoc.fontPairId).toBeUndefined();
+    expect(finalDoc.palette).toBe(
+      defaultPalette(getSystem(finalDoc.system)!, finalDoc).id
+    );
   });
 
   test("Key-Leak-Regression (Plan B7 Task 3): kein `key=` und kein maps.googleapis.com in irgendeinem persistierten Dokument", async () => {
@@ -610,35 +595,6 @@ describe("runWebsiteGenerationV2Job", () => {
   });
 });
 
-describe("collectOccupiedCompositions", () => {
-  test("groups salon synonyms and ignores colors while excluding other industries", () => {
-    const profile = {
-      ...DEFAULT_DESIGN_PROFILE,
-      composition: "portrait" as const,
-    };
-    const salon = {
-      ...doc,
-      businessCategory: "Friseur",
-      stylePackId: "salon-noir",
-      designProfile: profile,
-    };
-    const rows = [
-      { websiteData: salon },
-      { websiteData: { ...salon, colorOverrides: { accent: "#ffffff" } } },
-      {
-        websiteData: {
-          ...salon,
-          businessCategory: "Restaurant",
-          stylePackId: "gusto",
-        },
-      },
-      { websiteData: { broken: true } },
-    ];
-    expect(collectOccupiedCompositions(rows, "Haarsalon").size).toBe(1);
-    expect(collectOccupiedCompositions(rows, "Zahnarzt").size).toBe(0);
-  });
-});
-
 /**
  * Journal ist freigeschaltet — die rev-2-Pfade (Packs, Bühne/Farbfläche)
  * prüfen wir mit einem Register, das nichts freigibt.
@@ -700,10 +656,7 @@ describe("withNewSiteDesign", () => {
       hero: "https://img.test/hero.jpg",
       heroLandscape: true,
     });
-    expect(result.designProfile).toMatchObject({
-      composition: "stage",
-      heroLayout: "banner",
-    });
+    expect(result.designProfile?.composition).toBe("stage");
   });
 });
 

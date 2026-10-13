@@ -11,7 +11,7 @@ import {
   withAddOnEnabled,
 } from "@shared/onboardingV2/addonEditors";
 import { SECTION_ANCHORS } from "@/components/site/engine";
-import { FALLBACK_PACK, getConstitution } from "@shared/stylePacks";
+import { FALLBACK_VOICE, getVoice } from "@shared/textVoices";
 import type { AddOnFlags } from "@shared/pricing";
 import { PanelFrame } from "./PanelFrame";
 import {
@@ -26,11 +26,11 @@ export { OfferEditor, validateOffer };
 /**
  * Reine Ableitung: bestehende Angebots-Sektion (services/menu/pricelist) →
  * Patch; ohne Sektion ein leerer Entwurf. Der Startmodus des leeren
- * Entwurfs richtet sich nach der Pack-Verfassung: Gastro-Packs
+ * Entwurfs richtet sich nach der Textstimme: Gastro-Stimmen
  * (`prefersMenu: true`, z. B. gusto/zunft/marktplatz — siehe
- * shared/stylePacks/types.ts) starten im Speisekarten- statt
- * Leistungen-Modus (B4c Task 7). Unbekannte/nicht registrierte Pack-IDs
- * fallen auf FALLBACK_PACK zurück (kein prefersMenu → Leistungen).
+ * shared/textVoices/types.ts) starten im Speisekarten- statt
+ * Leistungen-Modus (B4c Task 7). Unbekannte/nicht registrierte IDs
+ * fallen auf FALLBACK_VOICE zurück (kein prefersMenu → Leistungen).
  */
 export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
   const services = doc.sections.find(
@@ -75,13 +75,13 @@ export function offerFromDoc(doc: WebsiteDataV2): OfferPatch {
       ...(pricelist.link ? { link: pricelist.link } : {}),
     };
   }
-  let constitution;
+  let voice;
   try {
-    constitution = getConstitution(doc.stylePackId);
+    voice = getVoice(doc.stylePackId);
   } catch {
-    constitution = getConstitution(FALLBACK_PACK);
+    voice = getVoice(FALLBACK_VOICE);
   }
-  return blankOffer(constitution.prefersMenu ? "menu" : "services");
+  return blankOffer(voice.prefersMenu ? "menu" : "services");
 }
 
 /**

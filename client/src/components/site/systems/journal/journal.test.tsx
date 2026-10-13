@@ -5,7 +5,7 @@ import "../registry";
 import { SiteRenderer } from "../../SiteRenderer";
 import { getFixture } from "../../../../../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../../../../../shared/designSystems/apply";
-import { deriveArtDirectedProfile } from "../../../../../../shared/stylePacks/artDirection";
+import { DEFAULT_DESIGN_PROFILE } from "../../../../../../shared/siteContract/designProfile";
 import type { SectionV2 } from "../../../../../../shared/siteContract/types";
 import { JournalChapter } from "./sections";
 import { JOURNAL_CSS } from "./css";
@@ -58,7 +58,10 @@ describe("Journal: Grundgerüst", () => {
       ...base,
       designRevision: 2 as const,
       designProfile: {
-        ...deriveArtDirectedProfile(base),
+        ...DEFAULT_DESIGN_PROFILE,
+        composition: "editorial" as const,
+        heroLayout: "image-first" as const,
+        galleryLayout: "mosaic" as const,
         hiddenElements: ["hero-media" as const],
       },
     };

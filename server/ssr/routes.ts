@@ -17,7 +17,7 @@ import {
 } from "../../shared/designSystems";
 import {
   findShowcase,
-  showcaseDoc,
+  showcasePrimarySystem,
   systemShowcaseDoc,
   SHOWCASES,
   type Showcase,
@@ -415,9 +415,15 @@ function handleDevPreview(req: Request, res: Response): void {
       nameParam && nameParam.length <= 80
         ? { ...fixture, businessName: nameParam }
         : fixture;
-    const data = systemQuery
-      ? withDesignSystem(base, systemQuery.system, systemQuery.palette)
-      : withPrimarySystem(base);
+    // Fixtures sind keine Betriebe: ohne `?palette` immer die erste
+    // Farbstimmung des Systems (stabile Bildvergleiche), nicht die
+    // Standard-Regel neuer Seiten [E3].
+    const system = systemQuery?.system ?? withPrimarySystem(base).system!;
+    const data = withDesignSystem(
+      base,
+      system,
+      systemQuery?.palette ?? getSystem(system)!.palettes[0].id
+    );
     const seite = typeof req.query.seite === "string" ? req.query.seite : "";
     const page = seite ? pageForPathname(data, `/${seite}`) : null;
     if (seite && !page) {
@@ -455,9 +461,7 @@ const systemDemoPathCache = new Map<string, string>();
 export function systemDemoPath(showcase: Showcase): string {
   const cached = systemDemoPathCache.get(showcase.id);
   if (cached) return cached;
-  const primary = withPrimarySystem(
-    showcaseDoc(showcase, showcase.systemEntry ?? "stage")
-  ).system;
+  const primary = showcasePrimarySystem(showcase);
   const path = `/demo/system/${primary}/${showcase.id}`;
   systemDemoPathCache.set(showcase.id, path);
   return path;

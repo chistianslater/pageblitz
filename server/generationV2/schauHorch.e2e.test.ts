@@ -33,8 +33,8 @@ vi.mock("../industryClassifier", () => ({
 }));
 vi.mock("../gmbPhotos", () => ({ mirrorGmbPhotosToR2: vi.fn() }));
 vi.mock("../gmb/siteCrawl", () => ({ crawlExistingSite: vi.fn() }));
-vi.mock("./selectPack", () => ({
-  selectPack: vi.fn().mockResolvedValue("werkbank"),
+vi.mock("./selectVoice", () => ({
+  selectVoice: vi.fn().mockResolvedValue("werkbank"),
 }));
 vi.mock("./llmClient", () => ({ llmComplete: vi.fn() }));
 

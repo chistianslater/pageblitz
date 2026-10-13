@@ -1,7 +1,7 @@
 import { invokeLLM } from "../_core/llm";
 import { jsonFromLlm, normalizeLlmText } from "../generationV2/jsonFromLlm";
 import { SectionV2Schema } from "../../shared/siteContract/schema";
-import { getConstitution } from "../../shared/stylePacks";
+import { getVoice } from "../../shared/textVoices";
 import { tonePromptLines } from "../../shared/onboardingV2/tone";
 import {
   INSERT_META,
@@ -134,10 +134,10 @@ export function buildInsertSectionPrompt(args: {
 }): string {
   const { doc, type, category } = args;
   const meta = INSERT_META[type];
-  const constitution = getConstitution(doc.stylePackId);
+  const voice = getVoice(doc.stylePackId);
   return [
     `Betrieb: ${doc.businessName}${category ? ` (${category})` : ""}`,
-    `Stil der Website: ${constitution.essence}`,
+    `Stil der Website: ${voice.essence}`,
     ...(doc.tone ? [``, ...tonePromptLines(doc.tone)] : []),
     ``,
     `Belegte Fakten und bestehende Inhalte der Website (Auszug, JSON je Sektion):`,

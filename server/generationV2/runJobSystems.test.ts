@@ -1,21 +1,18 @@
 import { describe, expect, test, vi } from "vitest";
 import { getFixture } from "../../shared/siteContract/fixtures";
-import { withArtDirection } from "../../shared/stylePacks/artDirection";
 
-const friseurDoc = () =>
-  withArtDirection({
-    ...getFixture("salon-noir", "full"),
-    blueprintFamily: "beauty",
-    businessCategory: "Friseursalon",
-    businessName: "Salon Lindner",
-  });
-const tischlerDoc = () =>
-  withArtDirection({
-    ...getFixture("werkbank", "full"),
-    blueprintFamily: "trade",
-    businessCategory: "Tischlerei",
-    businessName: "Tischlerei Klähn",
-  });
+const friseurDoc = () => ({
+  ...getFixture("salon-noir", "full"),
+  blueprintFamily: "beauty",
+  businessCategory: "Friseursalon",
+  businessName: "Salon Lindner",
+});
+const tischlerDoc = () => ({
+  ...getFixture("werkbank", "full"),
+  blueprintFamily: "trade",
+  businessCategory: "Tischlerei",
+  businessName: "Tischlerei Klähn",
+});
 
 describe("withPrimarySystem", () => {
   test("ohne Freischaltung wirft (nie rev 2 schreiben)", async () => {

@@ -157,6 +157,19 @@ describe("SSR routes", () => {
     expect(unknown.text).not.toContain("<script");
   });
 
+  test("dev-preview ohne ?palette: erste Farbstimmung des Systems (Fixtures, nicht E3)", async () => {
+    const app = buildAppWithFallback();
+    const raster = await request(app).get(
+      "/dev/site-preview?system=raster&fixture=features"
+    );
+    expect(raster.text).toContain('data-pb-palette="papier"');
+    const primary = await request(app).get(
+      "/dev/site-preview?pack=salon-noir&fixture=full"
+    );
+    expect(primary.text).toContain('data-pb-system="journal"');
+    expect(primary.text).toContain('data-pb-palette="papier"');
+  });
+
   test("dev-preview: unbekannte Fixture-Art → 400 ohne Reflektieren", async () => {
     const res = await request(buildAppWithFallback()).get(
       "/dev/site-preview?system=journal&fixture=%3Cscript%3E"

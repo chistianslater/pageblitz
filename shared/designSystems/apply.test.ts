@@ -1,12 +1,18 @@
 import { describe, expect, test } from "vitest";
 import { getFixture } from "../siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../siteContract/schema";
-import { withArtDirection } from "../stylePacks/artDirection";
+import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { BLUEPRINT_IDS } from "../blueprints/blueprints";
-import { asSystemDoc, withDesignSystem, withoutDesignSystem, withPrimarySystem } from "./apply";
+import { asSystemDoc, defaultPalette, withDesignSystem, withPrimarySystem } from "./apply";
 import { systemsForDoc } from "./assignment";
+import { getSystem } from "./registry";
 
-const rev2 = withArtDirection(getFixture("salon-noir", "full"));
+/** Gespeicherter Pack-Stand (rev 2) mit Profil, wie im Verlauf. */
+const rev2 = {
+  ...getFixture("salon-noir", "full"),
+  designRevision: 2 as const,
+  designProfile: { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" as const, seed: 7 },
+};
 
 describe("withDesignSystem", () => {
   test("setzt rev 3, System, Palette; entfernt Schriftpaar, behält Profil", () => {
@@ -31,12 +37,35 @@ describe("withDesignSystem", () => {
       withDesignSystem(rev2, "gibtsnicht" as Parameters<typeof withDesignSystem>[1])
     ).toThrow(/nicht vorhanden/);
   });
-  test("withoutDesignSystem kehrt zu rev 2 zurück", () => {
-    const back = withoutDesignSystem(withDesignSystem(rev2, "journal"));
-    expect(back.designRevision).toBe(2);
-    expect(back.system).toBeUndefined();
-    expect(back.palette).toBeUndefined();
-    expect(WebsiteDataV2Schema.safeParse(back).success).toBe(true);
+});
+
+describe("Standard-Farbstimmung [E3]", () => {
+  const journal = getSystem("journal")!;
+  const plain = (businessName: string, businessCategory?: string) => ({
+    businessName,
+    businessCategory,
+  });
+  test("ohne Akzent deterministisch je Betrieb (Name + Kategorie)", () => {
+    const a = defaultPalette(journal, plain("Salon Lindner", "Friseursalon"));
+    expect(defaultPalette(journal, plain("Salon Lindner", "Friseursalon"))).toBe(a);
+    const { colorOverrides: _c, ...noAccent } = rev2;
+    expect(withDesignSystem(noAccent, "journal").palette).toBe(
+      defaultPalette(journal, noAccent).id
+    );
+  });
+  test("verteilt neue Seiten etwa zu gleichen Teilen auf die drei Stimmungen", () => {
+    const counts = new Map<string, number>();
+    for (let i = 0; i < 600; i += 1) {
+      const id = defaultPalette(journal, plain(`Betrieb ${i}`, "Friseursalon")).id;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    expect([...counts.keys()].sort()).toEqual(journal.palettes.map(p => p.id).sort());
+    for (const n of counts.values()) expect(n).toBeGreaterThan(150);
+  });
+  test("vorhandene Akzentfarbe gewinnt (Bestand)", () => {
+    expect(
+      defaultPalette(journal, { ...plain("X"), colorOverrides: { accent: "#9a4630" } }).id
+    ).toBe("ton");
   });
 });
 

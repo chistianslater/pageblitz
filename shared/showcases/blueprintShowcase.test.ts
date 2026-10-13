@@ -2,28 +2,43 @@ import { describe, expect, it, test } from "vitest";
 import {
   SHOWCASES,
   findShowcase,
-  showcaseDoc,
+  showcaseBase,
+  showcasePrimarySystem,
   systemShowcaseDoc,
 } from "./blueprintShowcase";
+import { SHOWCASE_PALETTES } from "./showcasePalettes";
 import { healthBlueprint } from "../blueprints/blueprintFamilies";
 import { blueprintFor } from "../blueprints/blueprints";
 import { systemsForDoc } from "../designSystems";
 import { INDUSTRY_IMAGES } from "../industryImages";
 
 describe("Bauplan-Übersicht", () => {
-  it("baut jede Beispielseite mit dem gewählten Einstieg", () => {
-    for (const showcase of SHOWCASES)
-      for (const entry of ["stage", "colorfield"] as const) {
-        const doc = showcaseDoc(showcase, entry);
-        expect(doc.designRevision).toBe(2);
-        expect(doc.designProfile?.composition).toBe(entry);
-      }
+  it("baut jede Beispielseite mit ihrem Einstieg, ohne Pack-Farben und -Schrift", () => {
+    for (const showcase of SHOWCASES) {
+      const doc = showcaseBase(showcase);
+      expect(doc.designProfile?.composition).toBe(
+        showcase.systemEntry ?? "stage"
+      );
+      expect(doc.colorOverrides).toBeUndefined();
+      expect(doc.fontPairId).toBeUndefined();
+    }
+  });
+
+  it("Standard-Farbstimmung aus der festen Tabelle [E3], ?palette gewinnt", () => {
+    for (const showcase of SHOWCASES) {
+      const system = showcasePrimarySystem(showcase);
+      const table = SHOWCASE_PALETTES[showcase.id]?.[system];
+      expect(table, showcase.id).toBeTruthy();
+      expect(systemShowcaseDoc(showcase, system).palette).toBe(table);
+    }
+    const friseur = findShowcase("friseur")!;
+    expect(systemShowcaseDoc(friseur, "journal", "ton").palette).toBe("ton");
   });
 
   it("wendet den Bauplan der Branche an", () => {
     const ids = Object.fromEntries(
       SHOWCASES.map(s => {
-        const doc = showcaseDoc(s, "stage");
+        const doc = showcaseBase(s);
         return [s.id, blueprintFor(doc.businessCategory, doc.businessName).id];
       })
     );
@@ -46,18 +61,12 @@ describe("Bauplan-Übersicht", () => {
       hersteller: "industry",
       gaertnerei: "standard",
     });
-    const schreinerei = showcaseDoc(
-      SHOWCASES.find(s => s.id === "schreinerei")!,
-      "stage"
-    );
+    const schreinerei = showcaseBase(SHOWCASES.find(s => s.id === "schreinerei")!);
     expect(schreinerei.sections.some(s => s.type === "process")).toBe(true);
   });
 
   it("Schlüsseldienst: ohne Foto, ohne Bewertungen, rund um die Uhr", () => {
-    const doc = showcaseDoc(
-      SHOWCASES.find(s => s.id === "schluesseldienst")!,
-      "stage"
-    );
+    const doc = showcaseBase(SHOWCASES.find(s => s.id === "schluesseldienst")!);
     const hero = doc.sections.find(s => s.type === "hero");
     const contact = doc.sections.find(s => s.type === "contact");
     expect(hero && "imageUrl" in hero ? hero.imageUrl : undefined).toBeFalsy();
@@ -72,7 +81,7 @@ describe("Bauplan-Übersicht", () => {
 
   it("Beispieltexte ersetzen Kontaktdaten und Fuß der Fixture", () => {
     for (const id of ["werkstatt", "taxi", "hersteller"]) {
-      const doc = showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      const doc = showcaseBase(SHOWCASES.find(s => s.id === id)!);
       const contact = doc.sections.find(s => s.type === "contact");
       expect(
         JSON.stringify([contact, doc.footerNote, doc.tagline])
@@ -82,7 +91,7 @@ describe("Bauplan-Übersicht", () => {
 
   it("Beispiel-Kontaktdaten sind erkennbar fiktiv (555-Nummern, .example)", () => {
     for (const id of ["werkstatt", "taxi", "hersteller", "schluesseldienst"]) {
-      const doc = showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      const doc = showcaseBase(SHOWCASES.find(s => s.id === id)!);
       const contact = doc.sections.find(s => s.type === "contact");
       if (contact?.type !== "contact") throw new Error(id);
       expect(contact.phone).toMatch(/^0\d+ 555 \d+$/);
@@ -92,7 +101,7 @@ describe("Bauplan-Übersicht", () => {
 
   describe("Werkstoff-Beispiele: Schreinerei, Bäckerei, Laden", () => {
     const doc = (id: string) =>
-      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      showcaseBase(SHOWCASES.find(s => s.id === id)!);
     const section = <T extends string>(id: string, type: T) =>
       doc(id).sections.find(s => s.type === type) as
         | Record<string, unknown>
@@ -164,7 +173,7 @@ describe("Bauplan-Übersicht", () => {
 
   describe("Plakat-Beispiele: Kante, Döner Ecke, Studio Puls", () => {
     const doc = (id: string) =>
-      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      showcaseBase(SHOWCASES.find(s => s.id === id)!);
     const section = (id: string, type: string) =>
       doc(id).sections.find(s => s.type === type) as
         | Record<string, unknown>
@@ -226,7 +235,7 @@ describe("Bauplan-Übersicht", () => {
 
   describe("Klar-Beispiele: Zahnarzt, Physio, Kanzlei", () => {
     const doc = (id: string) =>
-      showcaseDoc(SHOWCASES.find(s => s.id === id)!, "stage");
+      showcaseBase(SHOWCASES.find(s => s.id === id)!);
     const sys = (id: string) =>
       systemShowcaseDoc(SHOWCASES.find(s => s.id === id)!, "klar");
     const section = (id: string, type: string) =>
@@ -318,7 +327,7 @@ describe("Bauplan-Übersicht", () => {
 
 describe("Nacht-Beispiele: Weinberg, Salon Noir, Haus am See (N8)", () => {
   const IDS = ["weinberg", "noir", "pension"];
-  const doc = (id: string) => showcaseDoc(findShowcase(id)!, "stage");
+  const doc = (id: string) => showcaseBase(findShowcase(id)!);
   const sys = (id: string) => systemShowcaseDoc(findShowcase(id)!, "nacht");
   const section = (d: ReturnType<typeof doc>, type: string) =>
     d.sections.find(s => s.type === type) as Record<string, unknown> | undefined;

@@ -1,25 +1,18 @@
 import { unsplashFill, type PhotoCredit } from "./unsplashFill";
 import { resolveIndustryFamily } from "./industryFamily";
-import { pickArtTheme } from "../../shared/stylePacks/artThemes";
 import { AKTUELLER_DESIGN_STAND } from "../../shared/siteContract/designStand";
 import {
-  CURRENT_DESIGN_REVISION,
-  deriveArtDirectedProfile,
-  compositionFingerprint,
-  withEntryComposition,
+  entryProfile,
   type EntryPhotos,
-} from "../../shared/stylePacks/artDirection";
-import { designIndustryKey } from "../../shared/blueprints/categoryAliases";
+} from "../../shared/designSystems/entry";
 import {
   getBusinessById,
-  listDesignNeighbors,
-  getNextLayoutForIndustry,
   getWebsiteById,
   updateGenerationJob,
   updateWebsite,
   recordIndustryGap,
 } from "../db";
-import { hasDirectPackMatch } from "../../shared/stylePacks";
+import { hasDirectVoiceMatch } from "../../shared/textVoices";
 import { invalidateSsrCache } from "../ssr/routes";
 import { classifyIndustry } from "../industryClassifier";
 import { mirrorGmbPhotosToR2 } from "../gmbPhotos";
@@ -33,7 +26,7 @@ import { generateIndustryImages } from "./aiStockImages";
 import { crawlExistingSite } from "../gmb/siteCrawl";
 import { withStagePhoto } from "./heroPhoto";
 import { generateSiteContent } from "./generateSiteContent";
-import { selectPack } from "./selectPack";
+import { selectVoice } from "./selectVoice";
 import { buildV2GenerationFacts } from "./facts";
 import { buildGuardContextText, guardGeneratedContent } from "./factGuard";
 import type { GmbReview } from "../gmb/details";
@@ -41,19 +34,12 @@ import { upsertOnboarding } from "../onboardingV2/state";
 import { assertV2SafeWrite } from "../v2WriteGuard";
 import { SECTION_ADDON_KEYS } from "../../shared/pricing";
 import { PLACEHOLDER_OPENING_HOURS } from "../../shared/onboardingV2/openingHours";
-import {
-  withoutDesignSystem,
-  withPrimarySystem,
-} from "../../shared/designSystems/apply";
+import { withPrimarySystem } from "../../shared/designSystems/apply";
 import { systemsForDoc } from "../../shared/designSystems/assignment";
 import { isReleased } from "../../shared/designSystems/registry";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import type { InsertOnboardingResponse } from "../../drizzle/schema";
 import type { PackId, WebsiteDataV2 } from "../../shared/siteContract/types";
-import {
-  designFingerprint,
-  designSeed,
-} from "../../shared/siteContract/designProfile";
 
 /** Entwurfs-Flags in onboarding_responses je Sektions-Add-on (wie server/onboardingV2/addOnFlags.ts). */
 const ONBOARDING_ADDON_COLUMNS: Record<
@@ -191,29 +177,34 @@ export function isInterimV2Doc(doc: WebsiteDataV2): boolean {
 }
 
 /**
- * Gestaltung wie bei einer neuen Seite (2026-10-05): aktueller Design-Stand,
- * Farbwelt des Packs und Einstieg nach Fotomaterial. Für die Admin-
- * Neuerstellung, die bisher ohne Designprofil schrieb — dann leitete erst
- * der Renderer ein Profil ab, ohne Bühne/Farbfläche.
+ * Gestaltung wie bei einer neuen Seite (2026-10-05, ohne Packs seit
+ * 2026-10-13): aktueller Design-Stand, Einstieg nach Fotomaterial und das
+ * Hauptsystem der Branche mit Standard-Farbstimmung [E3]. Für die Admin-
+ * Neuerstellung. Alte Farbwerte und Schriftpaare fallen weg.
  */
 export function withNewSiteDesign(
   doc: WebsiteDataV2,
   packId: PackId,
   images: V2Images
 ): WebsiteDataV2 {
+  const {
+    system: _system,
+    palette: _palette,
+    designRevision: _revision,
+    colorOverrides: _colors,
+    fontPairId: _fontPair,
+    ...content
+  } = doc;
   const designed = WebsiteDataV2Schema.parse({
-    // rev 3 ⇔ system/palette: erst ablegen, dann rev 2 erzwingen.
-    ...withoutDesignSystem(doc),
-    ...pickArtTheme(packId, doc.businessName, doc.businessCategory),
-    designRevision: CURRENT_DESIGN_REVISION,
+    ...content,
     designStand: AKTUELLER_DESIGN_STAND,
-    designProfile: withEntryComposition(
-      deriveArtDirectedProfile({
+    designProfile: entryProfile(
+      {
         stylePackId: packId,
         businessName: doc.businessName,
         businessCategory: doc.businessCategory,
         sections: doc.sections,
-      }),
+      },
       entryPhotos(images)
     ),
   });
@@ -243,7 +234,6 @@ export function buildInterimV2Doc(
   const family = resolveIndustryFamily(category, businessName, industryKey);
   const interim = {
     version: 2 as const,
-    designRevision: CURRENT_DESIGN_REVISION,
     stylePackId: packId,
     businessName,
     businessCategory: category,
@@ -298,12 +288,8 @@ export function buildInterimV2Doc(
   return withPrimarySystem(
     WebsiteDataV2Schema.parse({
       ...interim,
-      ...pickArtTheme(packId, businessName, category),
       designStand: AKTUELLER_DESIGN_STAND,
-      designProfile: withEntryComposition(
-        deriveArtDirectedProfile(interim),
-        entryPhotos(images)
-      ),
+      designProfile: entryProfile(interim, entryPhotos(images)),
     })
   );
 }
@@ -329,56 +315,6 @@ const TARGET_PHOTOS = 9;
 const FILL_RESERVE = 3;
 /** Galerie nur, wenn mindestens so viele brauchbare GMB-Fotos existieren (Spec §2.2). */
 const MIN_GALLERY_PHOTOS = 3;
-
-/**
- * Fingerprints der zuletzt erzeugten Websites derselben Branche. Alte
- * Dokumente ohne Designprofil werden ignoriert (sie behalten bewusst den
- * rückwärtskompatiblen Default-Aufbau).
- */
-export function collectOccupiedDesignFingerprints(
-  rows: Array<{ websiteData?: unknown }>,
-  category: string
-): Set<string> {
-  const normalizedCategory = category.trim().toLowerCase();
-  const occupied = new Set<string>();
-  for (const row of rows) {
-    const parsed = WebsiteDataV2Schema.safeParse(row.websiteData);
-    if (!parsed.success || !parsed.data.designProfile) continue;
-    if (
-      (parsed.data.businessCategory ?? "").trim().toLowerCase() !==
-      normalizedCategory
-    )
-      continue;
-    occupied.add(
-      designFingerprint({
-        stylePackId: parsed.data.stylePackId,
-        profile: parsed.data.designProfile,
-        fontPairId: parsed.data.fontPairId,
-        accent: parsed.data.colorOverrides?.accent,
-      })
-    );
-  }
-  return occupied;
-}
-
-export function collectOccupiedCompositions(
-  rows: Array<{ websiteData?: unknown }>,
-  category: string
-): Set<string> {
-  const occupied = new Set<string>();
-  for (const row of rows) {
-    const result = WebsiteDataV2Schema.safeParse(row.websiteData);
-    if (!result.success || !result.data.designProfile) continue;
-    const doc = result.data;
-    if (
-      designIndustryKey(doc.businessCategory ?? "") ===
-      designIndustryKey(category)
-    ) {
-      occupied.add(compositionFingerprint(doc.stylePackId, doc.designProfile!));
-    }
-  }
-  return occupied;
-}
 
 /**
  * Bilder kommen NIE vom LLM: echte GMB-Fotos zuerst (Foto 1 = Hero, Foto 2 =
@@ -489,7 +425,7 @@ export async function resolveV2Images(
  * routers.ts' website.generate/outreach.queueBusinesses und
  * outreachPipeline.ts rufen seit Plan B4b direkt runWebsiteGenerationV2Job
  * auf, kein separater Wrapper mehr):
- * Pack per Rotation wählen, Inhalte vom LLM holen
+ * Textstimme per Rotation wählen, Inhalte vom LLM holen
  * (zod-validiert, genau 1 Retry, kein stiller Fallback), als websiteData
  * persistieren (gleiche JSON-Spalte wie v1) und den SSR-Cache für den Slug
  * invalidieren, damit die neue Seite sofort sichtbar ist statt bis zu
@@ -504,7 +440,7 @@ async function runWebsiteGenerationV2(
 ): Promise<void> {
   const t0 = Date.now();
   await updateGenerationJob(jobId, { progress: 30 });
-  // Branchen-Lücken-Logging (Backlog 16): Kategorien, die kein Pack direkt
+  // Branchen-Lücken-Logging (Backlog 16): Kategorien, die keine Stimme direkt
   // matcht (z. B. „Naturschutzbund"), fürs Admin-Panel zählen — daraus
   // werden neue Template-Richtungen priorisiert. Der generische Leerfall-
   // Fallback „Dienstleistung" zählt nicht als echte Lücke. Fire-and-forget,
@@ -513,11 +449,11 @@ async function runWebsiteGenerationV2(
   if (
     trimmedCategory &&
     trimmedCategory.toLowerCase() !== "dienstleistung" &&
-    !hasDirectPackMatch(trimmedCategory)
+    !hasDirectVoiceMatch(trimmedCategory)
   ) {
     void recordIndustryGap(trimmedCategory, website.id);
   }
-  const packId = await selectPack(
+  const packId = await selectVoice(
     category,
     industryKey,
     business.editorialSummary ?? undefined
@@ -550,69 +486,17 @@ async function runWebsiteGenerationV2(
     images,
     industryKey
   );
-  // Decide the visual identity before the first preview, then retain it when text arrives.
+  // Bei einer Neuerstellung bleibt die Gestaltung des vorigen Stands
+  // (Einstieg, Design-Stand, Akzent → Farbstimmung); sonst die neue.
   const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
-  let designProfile = previousParsed.success
-    ? previousParsed.data.designProfile
-    : undefined;
-  if (!designProfile) {
-    let occupied = new Set<string>();
-    let recipeOffset = 0;
-    try {
-      const city = buildV2GenerationFacts(
-        business,
-        category,
-        website.slug,
-        images
-      ).facts?.contact?.city;
-      const recentWebsites = await listDesignNeighbors(city);
-      occupied = collectOccupiedCompositions(recentWebsites, category);
-      // Transaction-backed recipe rotation also spreads concurrent jobs whose
-      // final documents are not yet visible in the neighbor query.
-      recipeOffset = Number(
-        await getNextLayoutForIndustry(
-          `art2:${packId}:${designSeed(`${designIndustryKey(category)}|${(city ?? "").trim().toLowerCase()}`)}`,
-          Array.from({ length: 12 }, (_, i) => String(i))
-        )
-      );
-    } catch (err) {
-      // Individualisierung ist wichtig, darf aber nie die eigentliche
-      // Website-Generierung blockieren. Ohne Vergleichsdaten bleibt die
-      // Ableitung durch Betriebsname/Kategorie trotzdem deterministisch.
-      console.warn(
-        "[DesignProfile] Kollisionsprüfung nicht verfügbar, nutze deterministische Ableitung:",
-        err
-      );
-    }
-    designProfile = withEntryComposition(
-      deriveArtDirectedProfile(
-        {
-          stylePackId: packId,
-          businessName: interim.businessName,
-          businessCategory: interim.businessCategory,
-          sections: interim.sections,
-        },
-        occupied,
-        recipeOffset
-      ),
-      entryPhotos(images)
-    );
-  }
-  // Erneut durch withPrimarySystem: Palette nach den endgültigen
-  // colorOverrides (wie bei der fertigen Seite), ein altes Schriftpaar fällt.
+  const previous = previousParsed.success ? previousParsed.data : undefined;
+  const colorOverrides = previous?.colorOverrides ?? interim.colorOverrides;
   interim = withPrimarySystem(
     WebsiteDataV2Schema.parse({
       ...interim,
-      designProfile,
-      fontPairId:
-        (previousParsed.success && previousParsed.data.fontPairId) ||
-        interim.fontPairId,
-      colorOverrides:
-        (previousParsed.success && previousParsed.data.colorOverrides) ||
-        interim.colorOverrides,
-      designStand:
-        (previousParsed.success && previousParsed.data.designStand) ||
-        interim.designStand,
+      designProfile: previous?.designProfile ?? interim.designProfile,
+      ...(colorOverrides ? { colorOverrides } : {}),
+      designStand: previous?.designStand || interim.designStand,
     })
   );
   assertV2SafeWrite(previousWebsiteData, interim);
@@ -667,14 +551,14 @@ async function runWebsiteGenerationV2(
     // der Texterstellung erhalten.
     websiteData = WebsiteDataV2Schema.parse({
       ...websiteData,
-      designRevision: CURRENT_DESIGN_REVISION,
       designStand: interim.designStand,
-      fontPairId: interim.fontPairId,
-      colorOverrides: interim.colorOverrides,
+      ...(interim.colorOverrides
+        ? { colorOverrides: interim.colorOverrides }
+        : {}),
       designProfile: interim.designProfile,
     });
     // blueprintFamily steht jetzt (generateSiteContent/withFamily): das
-    // freigeschaltete Hauptsystem der Branche anwenden (sonst bleibt rev 2).
+    // freigeschaltete Hauptsystem der Branche anwenden.
     websiteData = WebsiteDataV2Schema.parse(withPrimarySystem(websiteData));
   } catch (err) {
     // Der Zwischenstand darf einen Fehlschlag nicht überleben: sonst sähe
@@ -704,7 +588,7 @@ async function runWebsiteGenerationV2(
     result: { success: true, alreadyGenerated: false, usedFallback: false },
   });
   console.log(
-    `[Generation Job ${jobId}] Completed (v2) for website ${website.id}, pack=${packId} — Bilder ${tImages - t0} ms, Texte ${tLlm - tImages} ms, gesamt ${Date.now() - t0} ms`
+    `[Generation Job ${jobId}] Completed (v2) for website ${website.id}, stimme=${packId} — Bilder ${tImages - t0} ms, Texte ${tLlm - tImages} ms, gesamt ${Date.now() - t0} ms`
   );
 }
 

@@ -1,10 +1,11 @@
 /**
- * Persistiertes Designprofil einer v2-Website.
+ * Persistiertes Designprofil einer v2-Website (Schema-Felder).
  *
- * Eine `stylePackId` ist nur noch die kuratierte Designrichtung
- * (Typografie-/Farb-/Formsprache). Das Profil variiert die Komposition
- * innerhalb dieser Richtung. Bestehende Dokumente ohne Profil rendern mit
- * DEFAULT_DESIGN_PROFILE exakt wie bisher (Rückwärtskompatibilität).
+ * Seit den Designsystemen (rev 3) lesen die Seiten davon nur noch
+ * `composition === "stage"` und `hiddenElements`; neue Seiten bekommen
+ * `DEFAULT_DESIGN_PROFILE` + Einstieg (shared/designSystems/entry.ts). Die
+ * übrigen Felder bleiben im Schema, damit gespeicherte Stände parsebar
+ * bleiben.
  */
 
 export const HERO_LAYOUTS = [
@@ -12,20 +13,10 @@ export const HERO_LAYOUTS = [
   "centered",
   "compact",
   "image-first",
-  // Collage (2026-08-30, „3 Fotos im Hero"): Hauptbild + bis zu zwei
-  // Galerie-Bilder als gestapelte Karten (heroCollage.tsx). Bewusst NICHT
-  // in HERO_LAYOUT_CHOICES — der Generator wählt sie nie zufällig, nur
-  // Kunde/KI-Chat schalten sie aktiv.
+  // Collage (2026-08-30) und Banner (2026-08-31): Pack-Zeit, nur noch für
+  // gespeicherte Profile gültig.
   "collage",
-  // Banner (Backlog 13c, 2026-08-31): Hero-Bild vollflächig hinter dem
-  // Text (dunkles Overlay, helle Typo). Wie collage nur aktiv wählbar.
   "banner",
-] as const;
-/** Picker und Generator: compact bleibt nur für bestehende Profile gültig. */
-export const HERO_LAYOUT_CHOICES = [
-  "split",
-  "centered",
-  "image-first",
 ] as const;
 export const SERVICES_LAYOUTS = ["list", "grid", "featured"] as const;
 export const ABOUT_LAYOUTS = ["image-left", "image-right"] as const;
@@ -33,11 +24,9 @@ export const GALLERY_LAYOUTS = [
   "grid",
   "mosaic",
   "filmstrip",
-  // Masonry (Backlog 13c): Spalten mit natürlicher Bildhöhe — nur aktiv
-  // wählbar (Picker/KI), der Generator nutzt GALLERY_LAYOUT_CHOICES.
+  // Masonry (Backlog 13c): Pack-Zeit, nur für gespeicherte Profile.
   "masonry",
 ] as const;
-export const GALLERY_LAYOUT_CHOICES = ["grid", "mosaic", "filmstrip"] as const;
 /**
  * Backlog 13c Rest (2026-08-31): Bewertungen- und Kontakt-Layout. Beide
  * Felder sind OPTIONAL — fehlt der Wert, bleibt der handgestaltete
@@ -133,35 +122,6 @@ export interface DesignProfile {
   seed: number;
 }
 
-export type LayoutViewport = "desktop" | "mobile";
-
-export type SectionLayoutField =
-  | "heroLayout"
-  | "servicesLayout"
-  | "aboutLayout"
-  | "galleryLayout"
-  | "testimonialsLayout"
-  | "contactLayout";
-
-export type LayoutOverlay = Partial<Record<SectionLayoutField, string>>;
-
-export const MOBILE_LAYOUT_FIELD: Record<
-  SectionLayoutField,
-  | "heroLayoutMobile"
-  | "servicesLayoutMobile"
-  | "aboutLayoutMobile"
-  | "galleryLayoutMobile"
-  | "testimonialsLayoutMobile"
-  | "contactLayoutMobile"
-> = {
-  heroLayout: "heroLayoutMobile",
-  servicesLayout: "servicesLayoutMobile",
-  aboutLayout: "aboutLayoutMobile",
-  galleryLayout: "galleryLayoutMobile",
-  testimonialsLayout: "testimonialsLayoutMobile",
-  contactLayout: "contactLayoutMobile",
-};
-
 export const DEFAULT_DESIGN_PROFILE: DesignProfile = {
   version: 1,
   heroLayout: "split",
@@ -173,21 +133,6 @@ export const DEFAULT_DESIGN_PROFILE: DesignProfile = {
   seed: 0,
 };
 
-interface ProfileSection {
-  type: string;
-  headline?: string;
-  imageUrl?: string;
-  items?: unknown[];
-  images?: unknown[];
-}
-
-export interface DesignProfileInput {
-  stylePackId?: string;
-  businessName: string;
-  businessCategory?: string;
-  sections: ProfileSection[];
-}
-
 /** Stabiler 32-Bit-FNV-1a-Hash, identisch in Node und Browser. */
 export function designSeed(value: string): number {
   let hash = 0x811c9dc5;
@@ -196,121 +141,4 @@ export function designSeed(value: string): number {
     hash = Math.imul(hash, 0x01000193);
   }
   return hash >>> 0;
-}
-
-function pick<T>(values: readonly T[], seed: number, offset: number): T {
-  return values[(seed + offset * 2654435761) % values.length];
-}
-
-/**
- * Inhaltsbasierte, deterministische Ableitung:
- * - kein Hero-Foto → centered; sehr lange Headline → compact
- * - viele Leistungen → grid; wenige → featured
- * - Galeriegröße steuert grid/mosaic/filmstrip
- * - viele Sektionen/Leistungen → compact
- * - Bildbehandlung variiert deterministisch, aber nur wenn Bilder existieren
- *
- * `salt` wird vom Kollisionsschutz erhöht, wenn eine visuell identische
- * Kombination in derselben Branche bereits existiert.
- */
-export function deriveDesignProfile(
-  input: DesignProfileInput,
-  salt = 0
-): DesignProfile {
-  const hero = input.sections.find(s => s.type === "hero");
-  const services = input.sections.find(s => s.type === "services");
-  const about = input.sections.find(s => s.type === "about");
-  const gallery = input.sections.find(s => s.type === "gallery");
-  const serviceCount = services?.items?.length ?? 0;
-  const galleryCount = gallery?.images?.length ?? 0;
-  const hasImages = Boolean(
-    hero?.imageUrl || about?.imageUrl || galleryCount > 0
-  );
-  const seed = designSeed(
-    `${input.stylePackId ?? ""}|${input.businessName}|${input.businessCategory ?? ""}|${salt}`
-  );
-
-  const heroLayout: HeroLayout = !hero?.imageUrl
-    ? "centered"
-    : pick(HERO_LAYOUT_CHOICES, seed, 1);
-  const servicesLayout: ServicesLayout =
-    serviceCount >= 5
-      ? "grid"
-      : serviceCount > 0 && serviceCount <= 3
-        ? "featured"
-        : pick(SERVICES_LAYOUTS, seed, 2);
-  const galleryLayout: GalleryLayout =
-    galleryCount >= 5
-      ? "mosaic"
-      : galleryCount > 0 && galleryCount <= 3
-        ? "filmstrip"
-        : pick(GALLERY_LAYOUT_CHOICES, seed, 3);
-
-  return {
-    version: 1,
-    heroLayout,
-    servicesLayout,
-    aboutLayout: pick(ABOUT_LAYOUTS, seed, 4),
-    galleryLayout,
-    density:
-      input.sections.length >= 7 || serviceCount >= 6 ? "compact" : "airy",
-    imageTreatment: hasImages ? pick(IMAGE_TREATMENTS, seed, 5) : "natural",
-    seed,
-  };
-}
-
-/**
- * Sichtbarer Fingerprint (Pack + Profil + Theme). `seed` zählt absichtlich
- * nicht separat: zwei Profile mit identischer Darstellung sind eine
- * Kollision, auch wenn sie durch verschiedene Seeds entstanden.
- */
-export function designFingerprint(input: {
-  stylePackId: string;
-  profile: DesignProfile;
-  fontPairId?: string | null;
-  accent?: string | null;
-}): string {
-  const p = input.profile;
-  return [
-    input.stylePackId,
-    p.heroLayout,
-    p.servicesLayout,
-    p.aboutLayout,
-    p.galleryLayout,
-    p.heroLayoutMobile ?? "",
-    p.servicesLayoutMobile ?? "",
-    p.aboutLayoutMobile ?? "",
-    p.galleryLayoutMobile ?? "",
-    p.density,
-    p.imageTreatment,
-    input.fontPairId ?? "pack-font",
-    input.accent?.toLowerCase() ?? "pack-accent",
-  ].join("|");
-}
-
-/**
- * Probiert deterministisch weitere Salts, bis kein belegter Fingerprint mehr
- * getroffen wird. Nach 32 Versuchen ist die endliche Variantenmenge
- * ausgeschöpft; dann bleibt die letzte deterministische Kombination.
- */
-export function deriveDistinctDesignProfile(
-  input: DesignProfileInput & {
-    stylePackId: string;
-    fontPairId?: string | null;
-    accent?: string | null;
-  },
-  occupied: ReadonlySet<string>
-): DesignProfile {
-  let profile = deriveDesignProfile(input, 0);
-  for (let salt = 0; salt < 32; salt += 1) {
-    profile = deriveDesignProfile(input, salt);
-    const fingerprint = designFingerprint({
-      stylePackId: input.stylePackId,
-      profile,
-      fontPairId: input.fontPairId,
-      accent: input.accent,
-    });
-    if (!occupied.has(fingerprint)) return profile;
-  }
-  return profile;
 }

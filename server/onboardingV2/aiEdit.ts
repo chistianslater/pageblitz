@@ -225,7 +225,7 @@ function requirePage(doc: WebsiteDataV2, pageSlug: string): Page {
 }
 
 /**
- * Verarbeitet einen KI-Chat-Wunsch: baut den Prompt aus Verfassung +
+ * Verarbeitet einen KI-Chat-Wunsch: baut den Prompt aus Textstimme +
  * aktuellem Inhalt, ruft das LLM, validiert die Antwort strikt und liefert
  * bei "content" ein bereits fakten-restauriertes, schema-valides Dokument
  * samt Diff zurück — persistiert wird hier nichts.

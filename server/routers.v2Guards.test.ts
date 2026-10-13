@@ -283,7 +283,7 @@ describe("Zentraler Write-Guard — verbliebene Schreibpfade (Teilprojekt B)", (
   test("website.regenerate auf v2-Website mit korrumpierendem LLM-Payload → TRPCError, kein Write", async () => {
     // Task 3 (Cutover): website.regenerate läuft ab jetzt über die v2-
     // Content-Pipeline (server/generationV2, wie ensureGeneration) statt der
-    // alten Inline-LLM-Prompt-Pipeline — selectPack ruft intern
+    // alten Inline-LLM-Prompt-Pipeline — selectVoice ruft intern
     // getNextLayoutForIndustry, generateSiteContent ruft intern llmComplete
     // (== der hier gemockte invokeLLM).
     // status: "preview" explizit, damit dieser Test den LLM-Validierungspfad

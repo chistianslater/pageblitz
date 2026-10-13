@@ -1,7 +1,6 @@
 import type { z } from "zod";
 // Nur Typ-Importe aus schema.ts: dieses Modul bleibt zur Laufzeit zod-frei,
-// damit `PACK_IDS`-Konsumenten (shared/stylePacks/summary.ts → Landing-
-// Chunk) zod nicht mitladen (B6 Task 8). SECTION_TYPES wird unten per
+// damit `PACK_IDS`-Konsumenten zod nicht mitladen (B6 Task 8). SECTION_TYPES wird unten per
 // `typeof` verwendet, daher reicht der Typ-Import.
 import type {
   ChatConfigSchema,

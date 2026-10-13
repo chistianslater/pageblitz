@@ -1,10 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { invokeLLM, type InvokeResult } from "../_core/llm";
-import {
-  getConstitution,
-  type PackConstitution,
-} from "../../shared/stylePacks";
+import { getVoice, type TextVoice } from "../../shared/textVoices";
 import {
   OfferPatchSchema,
   type OfferPatch,
@@ -128,7 +125,7 @@ export function buildTextVariantPrompt(
     /** Freitext-Kontext des Kunden („Was willst du sagen?“) — optional. */
     hint?: string;
   },
-  constitution: PackConstitution
+  voice: TextVoice
 ): string {
   const factLines = [
     `Unternehmen: ${args.businessName}`,
@@ -143,13 +140,13 @@ export function buildTextVariantPrompt(
     factLines.join("\n"),
     ``,
     `## Tonalität`,
-    constitution.essence,
+    voice.essence,
     ``,
     `## Regeln`,
-    ...constitution.llmHints.do.map(rule => `- ${rule}`),
+    ...voice.llmHints.do.map(rule => `- ${rule}`),
     ``,
     `## Verbote`,
-    ...constitution.llmHints.dont.map(rule => `- ${rule}`),
+    ...voice.llmHints.dont.map(rule => `- ${rule}`),
     `- ${FORBIDDEN_CONTENT_RULE}`,
     // Tonalität (2026-09-03): gesetzte Anrede/Ton des Dokuments gilt auch
     // für jede einzelne Variante.
@@ -173,8 +170,8 @@ export function buildTextVariantPrompt(
 
 /**
  * Liefert genau 3 zod-validierte Textvarianten für ein Feld, auf die
- * Feldlänge geklemmt. Nutzt die llmHints der Style-Pack-Verfassung des
- * Dokuments, damit der Vorschlag zur Tonalität des gewählten Packs passt.
+ * Feldlänge geklemmt. Nutzt die llmHints der Textstimme des Dokuments,
+ * damit der Vorschlag zur Tonalität der Seite passt.
  */
 /**
  * PB_LLM_MOCK=1 (nicht-produktiv): deterministische Vorschläge ohne LLM —
@@ -226,8 +223,8 @@ export async function suggestTextVariants(args: {
   hint?: string;
 }): Promise<string[]> {
   if (LLM_MOCK_ACTIVE) return mockTextVariants(args.field);
-  const constitution = getConstitution(args.doc.stylePackId);
-  const prompt = buildTextVariantPrompt(args, constitution);
+  const voice = getVoice(args.doc.stylePackId);
+  const prompt = buildTextVariantPrompt(args, voice);
 
   return withSuggestionRetry(async () => {
     const response = await invokeLLM({

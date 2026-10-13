@@ -1,4 +1,4 @@
-import { getConstitution } from "../../shared/stylePacks";
+import { getVoice } from "../../shared/textVoices";
 import {
   asSystemDoc,
   getPalette,
@@ -71,7 +71,7 @@ export function buildAiEditPrompt(args: {
   allowedLinks?: string[];
 }): string {
   // Textstimme (historisch „Verfassung“) — nur Ton und Regeln, kein Look.
-  const constitution = getConstitution(args.doc.stylePackId);
+  const voice = getVoice(args.doc.stylePackId);
   const systemDoc = asSystemDoc(args.doc);
   const system = systemDoc.system ? getSystem(systemDoc.system) : undefined;
   const candidateLines = styleSuggestionSystems(
@@ -132,14 +132,14 @@ export function buildAiEditPrompt(args: {
     ...dialogLines,
     `Der Kunde äußert folgenden Wunsch für ${scope}: "${args.message}"`,
     ``,
-    `## Tonalität (Textstimme: ${constitution.name})`,
-    constitution.essence,
+    `## Tonalität (Textstimme: ${voice.name})`,
+    voice.essence,
     ``,
     `## Regeln`,
-    ...constitution.llmHints.do.map(rule => `- ${rule}`),
+    ...voice.llmHints.do.map(rule => `- ${rule}`),
     ``,
     `## Verbote`,
-    ...constitution.llmHints.dont.map(rule => `- ${rule}`),
+    ...voice.llmHints.dont.map(rule => `- ${rule}`),
     `- ${FORBIDDEN_CONTENT_RULE}`,
     `- Erfinde oder ändere niemals Rechtstexte (Impressum/Datenschutz).`,
     args.page
@@ -148,7 +148,7 @@ export function buildAiEditPrompt(args: {
     ...linkRuleLines(args.allowedLinks ?? [], Boolean(args.page)),
     `- Die Bildplätze sind fest: der Hero hat genau EIN Bild-Feld, Über-uns genau eines; nur die Galerie trägt mehrere. Du darfst keine Bild-URLs erfinden oder verschieben.`,
     // Tonalität (2026-09-03): Vorgabe des Kunden schlägt Anrede-Hinweise
-    // der Verfassung — gilt für jeden Text, den der Chat umschreibt.
+    // der Textstimme — gilt für jeden Text, den der Chat umschreibt.
     ...(args.doc.tone ? [``, ...tonePromptLines(args.doc.tone)] : []),
     ``,
     args.page

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getConstitution } from "../../shared/stylePacks";
+import { getVoice } from "../../shared/textVoices";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import { buildContentPrompt } from "../generationV2/contentPrompt";
 import { buildAiEditPrompt } from "./aiEditPrompt";
@@ -16,13 +16,13 @@ const doc: WebsiteDataV2 = {
 describe("Tonalität in den Prompts (2026-09-03)", () => {
   test("Content-Prompt: Block nur mit tone, nach den Pack-Regeln, mit Vorrang", () => {
     const without = buildContentPrompt({
-      constitution: getConstitution("patina"),
+      voice: getVoice("patina"),
       business: { name: "Café Lindenhof", category: "Café" },
       sections: ["hero", "contact"],
     });
     expect(without).not.toContain("## Anrede und Ton");
     const withTone = buildContentPrompt({
-      constitution: getConstitution("patina"),
+      voice: getVoice("patina"),
       business: { name: "Café Lindenhof", category: "Café" },
       sections: ["hero", "contact"],
       tone: "locker",
@@ -78,11 +78,11 @@ describe("Tonalität in den Prompts (2026-09-03)", () => {
       businessName: "Café Lindenhof",
       category: "Café",
     };
-    const p = buildTextVariantPrompt(args, getConstitution("patina"));
+    const p = buildTextVariantPrompt(args, getVoice("patina"));
     expect(p).toContain("## Anrede und Ton");
     expect(p).toMatch(/duzen/);
     expect(
-      buildTextVariantPrompt({ ...args, doc }, getConstitution("patina"))
+      buildTextVariantPrompt({ ...args, doc }, getVoice("patina"))
     ).not.toContain("## Anrede und Ton");
   });
 });

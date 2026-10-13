@@ -106,7 +106,7 @@ describe("SSR rev 3: Rechtsseiten und Unterseiten im Journal-Rahmen", () => {
   const impressum =
     "<h1>Impressum</h1><h2>Angaben gemäß § 5 TMG</h2><p>NOIR Haarstudio, Türkenstraße 42</p>";
   const doc = () => ({
-    ...withDesignSystem(getFixture("salon-noir", "full"), "journal"),
+    ...withDesignSystem(getFixture("salon-noir", "full"), "journal", "papier"),
     legal: {
       impressumHtml: impressum,
       datenschutzHtml: "<p>Wir speichern nichts.</p>",

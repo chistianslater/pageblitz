@@ -123,7 +123,7 @@ import {
   withNewSiteDesign,
   keepOwnPhotos,
 } from "./generationV2/runJob";
-import { selectPack } from "./generationV2/selectPack";
+import { selectVoice } from "./generationV2/selectVoice";
 import { generateSiteContent } from "./generationV2/generateSiteContent";
 import { buildV2GenerationFacts } from "./generationV2/facts";
 import {
@@ -1151,7 +1151,7 @@ export const appRouter = router({
 
     // v2-Regenerierung (Task 3, Cutover): gleiche Content-Pipeline wie die
     // Erstgenerierung (server/generationV2) statt der alten LLM-Prompt-Pipeline
-    // hier inline — Pack-Rotation über selectPack, echte GMB-/Stock-Bilder über
+    // hier inline — Stimmen-Rotation über selectVoice, echte GMB-/Stock-Bilder über
     // resolveV2Images, Fakten-Mapping über buildV2GenerationFacts (geteilt mit
     // runWebsiteGenerationV2 in generationV2/runJob.ts, siehe dort). Neuer
     // Slug + Token: der bisherige Preview-Link wird ungültig (Hinweistext in
@@ -1198,7 +1198,7 @@ export const appRouter = router({
         const packId =
           input.keepLinks && previous.success
             ? previous.data.stylePackId
-            : await selectPack(category, industryKey);
+            : await selectVoice(category, industryKey);
         const businessForFacts = {
           ...business,
           openingHours: business.openingHours as string[] | null,

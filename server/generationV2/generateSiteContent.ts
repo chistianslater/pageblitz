@@ -6,7 +6,7 @@ import {
 import type { Amenities } from "../../shared/siteContract/types";
 import type { BlueprintId } from "../../shared/blueprints/blueprints";
 import { resolveIndustryFamily } from "./industryFamily";
-import { getConstitution } from "../../shared/stylePacks";
+import { getVoice } from "../../shared/textVoices";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { isTrustedPlaceholderGallery } from "../../shared/onboardingV2/placeholderImages";
@@ -456,7 +456,7 @@ export async function generateSiteContent(
     return mockSiteContent(packId, business, facts);
   }
 
-  const constitution = getConstitution(packId);
+  const voice = getVoice(packId);
   const family = resolveIndustryFamily(
     business.category,
     business.name,
@@ -484,7 +484,7 @@ export async function generateSiteContent(
     .slice(0, 3)
     .map(r => r.text.trim().slice(0, 220));
   const basePrompt = buildContentPrompt({
-    constitution,
+    voice,
     business,
     sections,
     ...(blueprintLines.length ? { blueprintLines } : {}),

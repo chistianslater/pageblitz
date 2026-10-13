@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { getPackPool, hasDirectPackMatch } from "../stylePacks/index";
+import { getVoicePool, hasDirectVoiceMatch } from "../textVoices";
 import type { PackId } from "../siteContract/types";
 import { CATEGORY_ALIAS_TARGETS } from "./categoryAliases";
 
@@ -70,19 +70,19 @@ const ERWARTET: Record<string, readonly PackId[]> = {
 describe("Branchenerkennung — Komposita, Synonyme, Google-Types", () => {
   for (const [kategorie, familie] of Object.entries(ERWARTET)) {
     test(`${kategorie} → ${familie.join("/")}`, () => {
-      expect(hasDirectPackMatch(kategorie), "direkter Treffer").toBe(true);
-      expect(familie).toContain(getPackPool(kategorie)[0]);
+      expect(hasDirectVoiceMatch(kategorie), "direkter Treffer").toBe(true);
+      expect(familie).toContain(getVoicePool(kategorie)[0]);
     });
   }
 
   test("Unterstrich-Types wie „car_dealer“ zählen wie Leerzeichen", () => {
-    expect(getPackPool("car_dealer")[0]).toBe("fundament");
-    expect(getPackPool("fast_food_restaurant")[0]).toBe("gusto");
+    expect(getVoicePool("car_dealer")[0]).toBe("fundament");
+    expect(getVoicePool("fast_food_restaurant")[0]).toBe("gusto");
   });
 
   test("Wortende zählt erst ab vier Zeichen — „Sushibar“ trifft über „sushi“, nicht über „bar“", () => {
-    expect(getPackPool("Sushibar")[0]).toBe("gusto");
-    expect(getPackPool("Barbershop")[0]).toBe("salon-noir");
+    expect(getVoicePool("Sushibar")[0]).toBe("gusto");
+    expect(getVoicePool("Barbershop")[0]).toBe("salon-noir");
   });
 });
 
@@ -100,13 +100,13 @@ describe("Gusto nur für Gastronomie", () => {
   ];
   for (const kategorie of nichtGastro) {
     test(`${kategorie}: kein Gastro-Design im Vorschlag`, () => {
-      expect(getPackPool(kategorie)).not.toContain("gusto");
+      expect(getVoicePool(kategorie)).not.toContain("gusto");
     });
   }
 
   test("Gastro behält Gusto an erster Stelle", () => {
     for (const kategorie of ["Restaurant", "Café", "Pizzeria", "Imbiss"]) {
-      expect(getPackPool(kategorie)[0]).toBe("gusto");
+      expect(getVoicePool(kategorie)[0]).toBe("gusto");
     }
   });
 });
@@ -114,7 +114,7 @@ describe("Gusto nur für Gastronomie", () => {
 describe("Kategorie-Brücke", () => {
   for (const ziel of CATEGORY_ALIAS_TARGETS) {
     test(`Ziel „${ziel}“ trifft ein Pack direkt`, () => {
-      expect(hasDirectPackMatch(ziel)).toBe(true);
+      expect(hasDirectVoiceMatch(ziel)).toBe(true);
     });
   }
 });

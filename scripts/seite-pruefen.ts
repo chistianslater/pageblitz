@@ -2,7 +2,7 @@
  * Eine Kundenseite diagnostizieren (2026-09-13).
  *
  * Liest ein Dokument aus der Datenbank und beantwortet die Fragen, die bei
- * einem Befund am Telefon zuerst kommen: Welches Pack, welche Gestaltung,
+ * einem Befund am Telefon zuerst kommen: Welches System, welche Gestaltung,
  * welche Bilder — und sind die Bilder überhaupt erreichbar? Die Bild-URLs
  * werden per HEAD geprüft, weil „Bild fehlt" fast immer eines von zwei
  * Dingen heißt: gar keine URL im Dokument, oder eine URL, die ins Leere
@@ -109,12 +109,12 @@ async function main(): Promise<void> {
 
   console.log(`\n${doc.businessName} · ${website.slug}`);
   console.log(
-    `Status: ${website.status} · Pack: ${doc.stylePackId} · Revision: ${doc.designRevision ?? "ohne (leitet beim Rendern ab)"}`
+    `Status: ${website.status} · System: ${doc.system ?? "–"}/${doc.palette ?? "–"} · Textstimme: ${doc.stylePackId} · Revision: ${doc.designRevision ?? "ohne (wird beim Lesen ins Hauptsystem gewandelt)"}`
   );
   console.log(
-    `Gestaltung: ${
+    `Einstieg: ${
       profil
-        ? `${profil.composition ?? "alt"}/${profil.heroLayout} · ${profil.servicesLayout}/${profil.galleryLayout}`
+        ? `${profil.composition ?? "alt"}${profil.hiddenElements?.length ? ` · ausgeblendet: ${profil.hiddenElements.join(", ")}` : ""}`
         : "kein gespeichertes Profil"
     }`
   );
@@ -123,8 +123,7 @@ async function main(): Promise<void> {
   const bilder = bilderSammeln(doc.sections, "sections");
   if (bilder.length === 0) {
     console.log(
-      "\nKEINE Bild-URLs im Dokument. Das Layout rechnet dann mit Fotos, die es nicht gibt —\n" +
-        "die Seite braucht die Typo-Variante (Komposition 'statement')."
+      "\nKEINE Bild-URLs im Dokument. Das System zeigt dann den Einstieg ohne Foto."
     );
     return;
   }

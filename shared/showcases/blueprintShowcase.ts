@@ -1,19 +1,21 @@
 /**
- * Bauplan-Übersicht (2026-10-06, Betreiber: „wo kann ich die Templates in der
- * Übersicht sehen?"). Je Branche ein Beispielbetrieb aus den Fixtures, so
- * aufbereitet wie eine frisch erzeugte Seite: Einstieg Bühne oder
- * Farbfläche, Bauplan angewendet. Reine Beispieldaten — keine echte Firma.
+ * Beispielbetriebe der Designsysteme (/demo/system/…, Design-Übersicht).
+ * Je Branche ein Beispielbetrieb aus den Fixtures, so aufbereitet wie eine
+ * frisch erzeugte Seite: Einstieg, Bauplan, System mit fester
+ * Standard-Farbstimmung. Reine Beispieldaten — keine echte Firma.
  */
-import { withDesignSystem } from "../designSystems/apply";
+import { withDesignSystem, withPrimarySystem } from "../designSystems/apply";
 import type { DesignSystemId } from "../designSystems/types";
 import { getSystem } from "../designSystems/registry";
-import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
+import {
+  DEFAULT_DESIGN_PROFILE,
+  designSeed,
+} from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
-import { withArtDirection, withEntryComposition } from "../stylePacks/artDirection";
 import { INDUSTRY_IMAGES } from "../industryImages";
-import { pickArtTheme } from "../stylePacks/artThemes";
 import { blueprintFor, withBlueprint } from "../blueprints/blueprints";
+import { SHOWCASE_PALETTES } from "./showcasePalettes";
 import {
   SHOWCASES,
   type Showcase,
@@ -1411,14 +1413,21 @@ export function findShowcase(id: string): Showcase | undefined {
   return SHOWCASES.find(s => s.id === id);
 }
 
-/** Beispielseite wie eine frisch erzeugte: Einstieg + Bauplan. */
-export function showcaseDoc(
-  showcase: Showcase,
-  entry: ShowcaseEntry
-): WebsiteDataV2 {
+/**
+ * Beispielbetrieb wie eine frisch erzeugte Seite, noch ohne System:
+ * Fixture + Beispieltexte + Fotos + Bauplan, Einstieg laut
+ * `showcase.systemEntry` (Standard „stage“). Schriftpaar und Farbwerte der
+ * Fixture entfallen — Schrift und Farben bringt das System.
+ */
+export function showcaseBase(showcase: Showcase): WebsiteDataV2 {
   const fixture = getFixture(showcase.fixture, "full");
   // Unterseiten sind ein Extra — die Übersicht zeigt die Startseite.
-  const { pages: _pages, ...withoutPages } = fixture;
+  const {
+    pages: _pages,
+    fontPairId: _fontPairId,
+    colorOverrides: _colorOverrides,
+    ...withoutPages
+  } = fixture;
   const named: WebsiteDataV2 = {
     ...withoutPages,
     ...(showcase.businessName ? { businessName: showcase.businessName } : {}),
@@ -1437,26 +1446,18 @@ export function showcaseDoc(
     !texted.sections.some(s => s.type === "process")
       ? { ...texted, sections: [...texted.sections, SAMPLE_PROCESS] }
       : texted;
-  // Schrift und Farbwelt wie bei einer neuen Seite (runJob), nicht die
-  // handgesetzten Werte der Fixture.
-  const directed = withArtDirection({
-    ...withExtras,
-    ...pickArtTheme(
-      withExtras.stylePackId,
-      withExtras.businessName,
-      withExtras.businessCategory
+  // Einstieg wie in der Übersicht festgelegt — unabhängig von der
+  // Fotolage (auch ein Beispiel ohne Foto zeigt die gewählte Fassung).
+  const designProfile = {
+    ...DEFAULT_DESIGN_PROFILE,
+    composition: showcase.systemEntry ?? "stage",
+    seed: designSeed(
+      `${withExtras.businessName}|${withExtras.businessCategory ?? ""}|${withExtras.stylePackId}`
     ),
-  });
-  const designProfile = withEntryComposition(
-    {
-      ...(directed.designProfile ?? DEFAULT_DESIGN_PROFILE),
-      composition: "portrait",
-    },
-    { heroLandscape: entry === "stage", extraPhotos: 3 }
-  );
+  };
   return withSampleAction(
     withStudioMenu(
-      withBlueprint({ ...directed, designProfile }, blueprint),
+      withBlueprint({ ...withExtras, designProfile }, blueprint),
       showcase.id
     ),
     showcase.id
@@ -1520,13 +1521,23 @@ export function systemShowcaseDoc(
   system: DesignSystemId,
   palette?: string
 ): WebsiteDataV2 {
-  const base = showcaseDoc(showcase, showcase.systemEntry ?? "stage");
+  const base = showcaseBase(showcase);
   // Dunkles Papier (Nacht): Abendmotive statt heller Tagesfotos.
   const doc =
     getSystem(system)?.scheme === "dark" && showcase.evening
       ? withEveningPhotos(base, showcase.evening)
       : base;
-  return withDesignSystem(doc, system, palette);
+  // Ohne Wahl die feste Standard-Farbstimmung des Beispiels [E3].
+  return withDesignSystem(
+    doc,
+    system,
+    palette ?? SHOWCASE_PALETTES[showcase.id]?.[system]
+  );
+}
+
+/** Hauptsystem eines Beispielbetriebs (erstes freigeschaltetes des Tripels). */
+export function showcasePrimarySystem(showcase: Showcase): DesignSystemId {
+  return withPrimarySystem(showcaseBase(showcase)).system!;
 }
 
 /**

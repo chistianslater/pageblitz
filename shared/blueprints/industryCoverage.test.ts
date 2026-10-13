@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { SEO_INDUSTRIES } from "../../server/seo/landingPages";
-import { packMatchesCategory } from "../stylePacks/index";
+import { voiceMatchesCategory } from "../textVoices";
 import { PACK_IDS } from "../siteContract/packIds";
 import { CATEGORY_GROUPS } from "../gmbCategories";
 
@@ -97,7 +97,7 @@ const GMB_CATEGORIES = [
 ];
 
 function hasDirectMatch(category: string): boolean {
-  return PACK_IDS.some(packId => packMatchesCategory(packId, category));
+  return PACK_IDS.some(packId => voiceMatchesCategory(packId, category));
 }
 
 describe("Branchen-Abdeckung der Designrichtungen", () => {

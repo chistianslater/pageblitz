@@ -37,11 +37,33 @@ type Case = {
 };
 
 const CASES: Case[] = [
-  { packId: "werkbank", name: "Schreinerei Brandt", category: "Schreinerei", city: "Dortmund" },
-  { packId: "gusto", name: "Trattoria Sole", category: "Restaurant", city: "Münster", tone: "locker" },
-  { packId: "salon-noir", name: "NOIR Haarstudio", category: "Friseursalon", city: "Bocholt", tone: "formell" },
+  {
+    packId: "werkbank",
+    name: "Schreinerei Brandt",
+    category: "Schreinerei",
+    city: "Dortmund",
+  },
+  {
+    packId: "gusto",
+    name: "Trattoria Sole",
+    category: "Restaurant",
+    city: "Münster",
+    tone: "locker",
+  },
+  {
+    packId: "salon-noir",
+    name: "NOIR Haarstudio",
+    category: "Friseursalon",
+    city: "Bocholt",
+    tone: "formell",
+  },
   { packId: "raster", name: "Büro Lindqvist", category: "Architekturbüro" },
-  { packId: "patina", name: "Café Lindenhof", category: "Café", city: "Borken" },
+  {
+    packId: "patina",
+    name: "Café Lindenhof",
+    category: "Café",
+    city: "Borken",
+  },
 ];
 
 function docFor(c: Case): WebsiteDataV2 {
@@ -51,15 +73,26 @@ function docFor(c: Case): WebsiteDataV2 {
     businessName: c.name,
     businessCategory: c.category,
     ...(c.tone ? { tone: c.tone } : {}),
-    seo: { title: c.name, description: `${c.name} in ${c.city ?? "der Stadt"}` },
+    seo: {
+      title: c.name,
+      description: `${c.name} in ${c.city ?? "der Stadt"}`,
+    },
     sections: [
-      { type: "hero", headline: `${c.name}`, subheadline: "Seit 1998 vor Ort." },
+      {
+        type: "hero",
+        headline: `${c.name}`,
+        subheadline: "Seit 1998 vor Ort.",
+      },
       {
         type: "services",
         headline: "Leistungen",
         items: [{ title: "Beratung" }, { title: "Umsetzung" }],
       },
-      { type: "about", headline: "Über uns", body: "Ein kleines Team mit 12 Jahren Erfahrung." },
+      {
+        type: "about",
+        headline: "Über uns",
+        body: "Ein kleines Team mit 12 Jahren Erfahrung.",
+      },
       { type: "contact", ...(c.city ? { city: c.city } : {}) },
     ],
   };
@@ -78,9 +111,7 @@ describe("Prompt-Schnappschuss je Textstimme", () => {
   for (const c of CASES) {
     test(`${c.packId}: ${c.name}`, async () => {
       const { generateSiteContent } = await import("./generateSiteContent");
-      const { suggestTextVariants } = await import(
-        "../onboardingV2/suggest"
-      );
+      const { suggestTextVariants } = await import("../onboardingV2/suggest");
       const { buildAiEditPrompt } = await import(
         "../onboardingV2/aiEditPrompt"
       );
@@ -95,7 +126,11 @@ describe("Prompt-Schnappschuss je Textstimme", () => {
           facts: {
             contact: { street: "Hauptstraße 12", city: c.city },
             reviews: [
-              { author: "Anna K.", rating: 5, text: "Sehr freundlich und pünktlich." },
+              {
+                author: "Anna K.",
+                rating: 5,
+                text: "Sehr freundlich und pünktlich.",
+              },
             ],
           } as never,
         })

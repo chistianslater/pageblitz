@@ -3,7 +3,6 @@ import { blueprintFor, isBarberShop, withBlueprint } from "./blueprints";
 import { systemsFor } from "../designSystems/assignment";
 import { getFixture } from "../siteContract/fixtures";
 import { renderSiteHtml } from "../../server/ssr/renderSite";
-import { withEntryComposition } from "../stylePacks/artDirection";
 import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 
 describe("blueprintFor", () => {
@@ -102,13 +101,7 @@ describe("Platzhalter für Preise und Team", () => {
       ...base,
       businessCategory: "Friseursalon",
       designRevision: 2 as const,
-      designProfile: withEntryComposition(
-        { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
-        {
-          heroLandscape: false,
-          extraPhotos: 3,
-        }
-      ),
+      designProfile: { ...DEFAULT_DESIGN_PROFILE, composition: "colorfield" as const },
       sections: base.sections.filter(
         s => s.type !== "pricelist" && s.type !== "team"
       ),
@@ -143,10 +136,7 @@ describe("Handwerk-Seite", () => {
     businessName: "Tischlermeister Klähn",
     businessCategory: "Tischlerei",
     designRevision: 2 as const,
-    designProfile: withEntryComposition(
-      { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
-      { heroLandscape: false, extraPhotos: 3 }
-    ),
+    designProfile: { ...DEFAULT_DESIGN_PROFILE, composition: "colorfield" as const },
     sections: [
       ...base.sections.filter(s => s.type !== "team"),
       {
@@ -263,10 +253,7 @@ describe("Bauplan Gastro", () => {
       amenities: { reservable: true, takeout: true, vegetarian: true },
       addOns: { ...(base.addOns ?? {}), menu: false },
       designRevision: 2 as const,
-      designProfile: withEntryComposition(
-        { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
-        { heroLandscape: false, extraPhotos: 3 }
-      ),
+      designProfile: { ...DEFAULT_DESIGN_PROFILE, composition: "colorfield" as const },
     };
     const render = (preview: boolean) =>
       renderSiteHtml(doc as typeof base, {
@@ -368,10 +355,7 @@ describe("Vertrauensleiste ohne Füllstoff", () => {
       businessCategory: "Tischlerei",
       google: undefined,
       designRevision: 2 as const,
-      designProfile: withEntryComposition(
-        { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
-        { heroLandscape: false, extraPhotos: 3 }
-      ),
+      designProfile: { ...DEFAULT_DESIGN_PROFILE, composition: "colorfield" as const },
     };
     const html = renderSiteHtml(doc as typeof base, {
       origin: "https://pageblitz.de",

@@ -690,17 +690,16 @@ export const WebsiteDataV2Schema = z
       })
       .strict()
       .optional(),
-    // SICHERHEITS-INVARIANTE: colorOverrides-Werte landen unescaped als
-    // Inline-Style-Variablen (siehe client/src/components/site/SiteRenderer.tsx,
-    // toCssVars). Ohne Formatzwang könnte ein Wert wie "red;background:url(x)"
-    // CSS-Injection auf der Kundenseite ermöglichen — daher nur Hex-Farben.
+    // SICHERHEITS-INVARIANTE: colorOverrides-Werte landeten zu Pack-Zeiten
+    // unescaped als Inline-Style-Variablen; heute wählen sie höchstens die
+    // Farbstimmung (defaultPalette). Ohne Formatzwang könnte ein Wert wie
+    // "red;background:url(x)" Freitext in die DB tragen — daher nur Hex-Farben.
     colorOverrides: z
       .record(z.string(), z.string().regex(/^#[0-9a-fA-F]{3,8}$/))
       .optional(),
-    // Studio-Theme-Editor (2026-08-24): kuratierte Schriftpaar-ID aus
-    // shared/stylePacks/fontPairs.ts. SICHERHEIT: Der Wert ist nur ein
-    // Lookup-Key (getFontPair) und landet nie als CSS-Wert im Dokument —
-    // trotzdem enges Format, damit kein Freitext in die DB wandert.
+    // Schriftpaar-ID der Pack-Zeit (Studio-Theme-Editor, 2026-08-24). Nur
+    // noch in gespeicherten Ständen; withDesignSystem entfernt sie. Enges
+    // Format, damit kein Freitext in die DB wandert.
     fontPairId: z
       .string()
       .regex(/^[a-z0-9-]+$/)

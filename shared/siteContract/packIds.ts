@@ -1,11 +1,10 @@
 /**
- * Die 20 Style-Pack-IDs — bewusst in einem eigenen, **zod-freien** Modul.
- *
- * `shared/siteContract/schema.ts` (und damit zod, ~57 kB unminifiziert)
+ * Die 20 IDs der Textstimmen (historischer Feldname `stylePackId`, Typ
+ * `PackId` — Entscheidung E8: bleibt für Rollback und Verlauf; Stimmen in
+ * shared/textVoices/). Auch Schlüssel der Beispiel-Fixtures. Bewusst in
+ * einem eigenen, **zod-freien** Modul: `shared/siteContract/schema.ts`
  * re-exportiert die Liste für `PackIdSchema`; Module, die nur die IDs
- * brauchen (`shared/stylePacks/summary.ts` → Landingpage-Chunk), importieren
- * sie hier bzw. über `types.ts`, ohne zod in den Entry-Chunk von "/" zu
- * ziehen (B6 Task 8). Reihenfolge = Landing-Grid-Reihenfolge.
+ * brauchen, importieren sie hier bzw. über `types.ts`, ohne zod mitzuladen.
  */
 export const PACK_IDS = [
   "werkbank",

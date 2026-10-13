@@ -51,7 +51,7 @@ import {
   IndustryGap,
   websiteVersions,
 } from "../drizzle/schema";
-import { normalizeCategoryKey } from "../shared/stylePacks";
+import { normalizeCategoryKey } from "../shared/textVoices";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -336,24 +336,6 @@ export async function listWebsites(limit = 50, offset = 0) {
     .orderBy(desc(generatedWebsites.createdAt))
     .limit(limit)
     .offset(offset);
-}
-
-/** Compare within the actual locality rather than the last 200 global rows.
- * JSON_CONTAINS uses a bound JSON string; city values never become SQL syntax.
- */
-export async function listDesignNeighbors(city?: string, limit = 1000) {
-  const db = await getDb();
-  if (!db) return [];
-  return db
-    .select({ websiteData: generatedWebsites.websiteData })
-    .from(generatedWebsites)
-    .where(
-      city?.trim()
-        ? sql`JSON_CONTAINS(JSON_EXTRACT(${generatedWebsites.websiteData}, '$.sections[*].city'), ${JSON.stringify(city.trim())})`
-        : undefined
-    )
-    .orderBy(desc(generatedWebsites.createdAt))
-    .limit(limit);
 }
 
 export async function countWebsites(source?: "admin" | "external") {

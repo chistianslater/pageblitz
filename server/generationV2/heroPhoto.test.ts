@@ -9,15 +9,6 @@ import {
   type PhotoCheck,
   type VisionRating,
 } from "./heroPhoto";
-import {
-  alternativeLooks,
-  entryVariant,
-  entryVariantIndex,
-  keepEntryComposition,
-  withEntryComposition,
-} from "../../shared/stylePacks/artDirection";
-import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
-import { DEFAULT_DESIGN_PROFILE } from "../../shared/siteContract/designProfile";
 
 const SIZES: Record<string, [number, number]> = {
   "hoch.jpg": [1200, 1600],
@@ -89,50 +80,6 @@ describe("withStagePhoto", () => {
     );
     expect(result.hero).toBe("hoch.jpg");
     expect(result.heroLandscape).toBe(false);
-  });
-});
-
-describe("keepEntryComposition", () => {
-  it("behält den Einstieg beim Designwechsel", () => {
-    const stage = withEntryComposition(
-      { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" },
-      { heroLandscape: true, extraPhotos: 0 }
-    );
-    const next = {
-      ...DEFAULT_DESIGN_PROFILE,
-      composition: "editorial" as const,
-    };
-    expect(keepEntryComposition(stage, next)).toMatchObject({
-      composition: "stage",
-      heroLayout: "banner",
-    });
-    expect(keepEntryComposition(DEFAULT_DESIGN_PROFILE, next)).toBe(next);
-  });
-});
-
-describe("withEntryComposition", () => {
-  const base = { ...DEFAULT_DESIGN_PROFILE, composition: "portrait" as const };
-
-  it("gibt Querformaten die Bühne", () => {
-    expect(
-      withEntryComposition(base, { heroLandscape: true, extraPhotos: 0 })
-    ).toMatchObject({ composition: "stage", heroLayout: "banner" });
-  });
-
-  it("gibt Hochformaten mit weiteren Fotos die Farbfläche", () => {
-    expect(
-      withEntryComposition(base, { heroLandscape: false, extraPhotos: 2 })
-    ).toMatchObject({ composition: "colorfield", heroLayout: "collage" });
-  });
-
-  it("lässt Seiten ohne Fotos und ohne Hero-Bild in Ruhe", () => {
-    expect(
-      withEntryComposition(base, { heroLandscape: false, extraPhotos: 0 })
-    ).toBe(base);
-    const statement = { ...base, composition: "statement" as const };
-    expect(
-      withEntryComposition(statement, { heroLandscape: true, extraPhotos: 3 })
-    ).toBe(statement);
   });
 });
 
@@ -377,71 +324,6 @@ describe("Über uns ohne zweites eigenes Foto", () => {
     );
     expect(result.hero).toBe(front);
     expect(result.about).toBe(stock);
-  });
-});
-
-describe("Fassungen der Einstiege in der Design-Auswahl", () => {
-  it("zeigt nebeneinander gezeigte Alternativen in verschiedenen Fassungen", () => {
-    const categories = [
-      "Friseursalon",
-      "Kosmetikstudio",
-      "Restaurant",
-      "Café",
-      "Bäckerei",
-      "Tischlerei",
-      "Elektriker",
-      "Physiotherapie",
-      "Rechtsanwalt",
-      "Hotel",
-      "Dienstleistung",
-      "Fitnessstudio",
-      "Blumenladen",
-    ];
-    const doppelt: string[] = [];
-    for (const category of categories)
-      for (const round of [0, 1, 2]) {
-        const [a, b] = getV2VariantCandidates(category, round);
-        if (entryVariant(a, "stage") === entryVariant(b, "stage"))
-          doppelt.push(`${category}: ${a}/${b}`);
-      }
-    expect(doppelt).toEqual([]);
-  });
-});
-
-describe("alternativeLooks", () => {
-  const fonts = (pack: string) =>
-    ({
-      schimmer: ["luxurioes", "elegant", "modern"],
-      patina: ["klassisch", "elegant", "freundlich"],
-      "salon-noir": ["elegant", "luxurioes", "modern"],
-    })[pack] ?? ["modern"];
-
-  it("gibt beiden Alternativen andere Fassungen und Schriften als die aktive Seite", () => {
-    const looks = alternativeLooks(
-      { pack: "salon-noir", fontPairId: "luxurioes" },
-      ["salon-noir", "schimmer", "patina"],
-      fonts as never
-    );
-    expect(looks["salon-noir"]).toBeUndefined();
-    const a = looks.schimmer!;
-    const b = looks.patina!;
-    const active = entryVariantIndex("salon-noir");
-    expect(new Set([active, a.entryVariant, b.entryVariant]).size).toBe(3);
-    expect(a.fontPairId).toBe("elegant");
-    expect(b.fontPairId).toBe("klassisch");
-  });
-
-  it("weicht auf die nächste Schrift aus, wenn die erste schon vergeben ist", () => {
-    const looks = alternativeLooks(
-      { pack: "patina", entryVariant: 2, fontPairId: "luxurioes" },
-      ["schimmer", "salon-noir"],
-      fonts as never
-    );
-    expect(looks.schimmer!.fontPairId).toBe("elegant");
-    expect(looks["salon-noir"]!.fontPairId).toBe("modern");
-    expect(
-      [looks.schimmer!.entryVariant, looks["salon-noir"]!.entryVariant].sort()
-    ).toEqual([0, 1]);
   });
 });
 

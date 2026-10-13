@@ -1,4 +1,4 @@
-import type { PackConstitution } from "../../shared/stylePacks";
+import type { TextVoice } from "../../shared/textVoices";
 import type { SectionType } from "../../shared/siteContract/types";
 import {
   tonePromptLines,
@@ -6,7 +6,7 @@ import {
 } from "../../shared/onboardingV2/tone";
 
 export interface ContentPromptArgs {
-  constitution: PackConstitution;
+  voice: TextVoice;
   business: { name: string; category: string; city?: string };
   sections: SectionType[];
   /** Straße mit Hausnummer (bereinigt) — Ortsbezug für Überschriften. */
@@ -72,9 +72,9 @@ const SECTION_FIELD_DOC: Record<SectionType, string> = {
 /**
  * Baut den deutschen Content-Prompt für die v2-Generierung: Rolle,
  * Business-Fakten, Tonalitäts-Anker (essence) und Regeln/Verbote
- * (llmHints) aus der Style-Pack-Verfassung, dann das JSON-Format für
- * genau die angefragten Sektionen. Enthält bewusst KEINE Design-Infos
- * (Farben, Fonts) — die kommen ausschließlich aus der Verfassung, nie vom LLM.
+ * (llmHints) aus der Textstimme, dann das JSON-Format für genau die
+ * angefragten Sektionen. Enthält bewusst KEINE Design-Infos (Farben,
+ * Fonts) — die kommen ausschließlich aus dem Designsystem, nie vom LLM.
  */
 /**
  * Anti-Injection-Rahmung für externen Freitext im Prompt (Website-Crawl,
@@ -110,7 +110,7 @@ export const FLOSKELN = [
 
 export function buildContentPrompt(args: ContentPromptArgs): string {
   const {
-    constitution,
+    voice,
     business,
     sections,
     existingSite,
@@ -179,14 +179,14 @@ export function buildContentPrompt(args: ContentPromptArgs): string {
     ...reviewLines,
     ``,
     `## Tonalität`,
-    constitution.essence,
+    voice.essence,
     ``,
     `## Regeln`,
-    ...constitution.llmHints.do.map(rule => `- ${rule}`),
+    ...voice.llmHints.do.map(rule => `- ${rule}`),
     ...(blueprintLines?.length ? [``, `## Branche`, ...blueprintLines] : []),
     ``,
     `## Verbote`,
-    ...constitution.llmHints.dont.map(rule => `- ${rule}`),
+    ...voice.llmHints.dont.map(rule => `- ${rule}`),
     `- keine Bild-URLs, keine Links — ctaHref weglassen`,
     `- Keine austauschbaren Stimmungssätze. Verboten sind insbesondere: ${FLOSKELN.map(f => `„${f}“`).join(", ")}. Jeder Satz muss etwas über GENAU diesen Betrieb sagen.`,
     `- Erfinde niemals Telefonnummern, E-Mail-Adressen, Straßen oder Öffnungszeiten — die contact-Sektion enthält höchstens city.`,

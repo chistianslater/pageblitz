@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { getConstitution } from "../../shared/stylePacks";
+import { getVoice } from "../../shared/textVoices";
 import { buildContentPrompt, FLOSKELN } from "./contentPrompt";
 
 describe("buildContentPrompt", () => {
   const p = buildContentPrompt({
-    constitution: getConstitution("werkbank"),
+    voice: getVoice("werkbank"),
     business: {
       name: "Schreinerei Brandt",
       category: "Schreinerei",
@@ -33,7 +33,7 @@ describe("buildContentPrompt", () => {
   });
   test("existingSite wird als Faktenquelle-Abschnitt gerendert (kein Stil-Vorbild, nichts erfinden)", () => {
     const withSite = buildContentPrompt({
-      constitution: getConstitution("werkbank"),
+      voice: getVoice("werkbank"),
       business: {
         name: "SCHAU & HORCH",
         category: "Werbeagentur",
@@ -67,7 +67,7 @@ describe("buildContentPrompt", () => {
 
 describe("buildContentPrompt — Fakten-Kontext B7 Task 3", () => {
   const base = {
-    constitution: getConstitution("werkbank"),
+    voice: getVoice("werkbank"),
     business: {
       name: "Schreinerei Brandt",
       category: "Schreinerei" as string,
@@ -123,7 +123,7 @@ describe("buildContentPrompt — Fakten-Kontext B7 Task 3", () => {
 
 describe("buildContentPrompt — konkrete Texte (2026-10-05)", () => {
   const base = {
-    constitution: getConstitution("morgenlicht"),
+    voice: getVoice("morgenlicht"),
     business: {
       name: "Friseursalon Haarem",
       category: "Friseursalon",
