@@ -28,10 +28,37 @@ export function withoutDesignSystem(doc: WebsiteDataV2): WebsiteDataV2 {
 }
 
 /**
- * Neue Seiten: das freigeschaltete Hauptsystem der Branche, sonst unverändert
- * (rev 2). Erwartet ein Dokument mit gesetztem `blueprintFamily`.
+ * Hauptsystem der Branche: das erste freigeschaltete System des Tripels
+ * (Spec §5). Total — jede Familie/Unterart ergibt rev 3; wirft nur, wenn
+ * keins der drei freigeschaltet ist. Ohne `blueprintFamily` erkennt
+ * `systemsForDoc` die Familie aus Kategorie und Name.
  */
-export function withPrimarySystem(doc: WebsiteDataV2): WebsiteDataV2 {
-  const [primary] = systemsForDoc(doc);
-  return isReleased(primary) ? withDesignSystem(doc, primary) : doc;
+export function withPrimarySystem(
+  doc: WebsiteDataV2,
+  released: (id: DesignSystemId) => boolean = isReleased
+): WebsiteDataV2 {
+  const triple = systemsForDoc(doc);
+  const system = triple.find(id => released(id));
+  if (!system)
+    throw new Error(
+      `Kein Designsystem freigeschaltet für: ${triple.join(", ")}`
+    );
+  return withDesignSystem(doc, system);
+}
+
+/**
+ * Lesegrenze (Packs entfernen, 2026-10-13): Jedes gelesene Dokument wird ein
+ * System-Dokument (rev 3). rev 3 mit System bleibt dasselbe Objekt
+ * (Byte-Gleichheit); alte Stände (rev 1/2/ohne Revision) übernehmen System
+ * und Palette des aktuellen Stands, sonst das Hauptsystem der Branche.
+ * Inhalte, `stylePackId` (Textstimme) und `designProfile` bleiben.
+ */
+export function asSystemDoc(
+  doc: WebsiteDataV2,
+  current?: Pick<WebsiteDataV2, "designRevision" | "system" | "palette">
+): WebsiteDataV2 {
+  if (doc.designRevision === 3 && doc.system) return doc;
+  if (current?.designRevision === 3 && current.system)
+    return withDesignSystem(doc, current.system, current.palette);
+  return withPrimarySystem(doc);
 }

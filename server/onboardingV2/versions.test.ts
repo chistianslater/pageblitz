@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import {
   COALESCE_WINDOW_MS,
   MAX_VERSIONS,
@@ -192,6 +193,62 @@ describe("restoreDoc", () => {
       addOns: { gallery: true },
     };
     expect("addOns" in restoreDoc(current, old)).toBe(false);
+  });
+
+  // E1 (Packs entfernen): alte Stände ohne Designsystem — u. a. „Stand vor
+  // Designsystem" der umgestellten Postkarten-Seiten — bringen ihre Inhalte
+  // zurück, behalten aber System und Farbstimmung des aktuellen Stands.
+  test("rev-2-Stand: Inhalte zurück, aktuelles System + Palette bleiben", () => {
+    const current: WebsiteDataV2 = {
+      ...withHeadline("Aktuell"),
+      designRevision: 3,
+      system: "raster",
+      palette: "kohle",
+      addOns: { gallery: true, team: true },
+    };
+    const old: WebsiteDataV2 = {
+      ...withHeadline("Stand vor Designsystem"),
+      designRevision: 2,
+      fontPairId: "modern",
+      tagline: "Alte Zeile",
+      addOns: { gallery: true },
+    };
+    const restored = restoreDoc(current, old);
+    expect(restored.designRevision).toBe(3);
+    expect(restored.system).toBe("raster");
+    expect(restored.palette).toBe("kohle");
+    expect(restored.fontPairId).toBeUndefined();
+    expect(restored.tagline).toBe("Alte Zeile");
+    expect(restored.sections[0]).toEqual({
+      type: "hero",
+      headline: "Stand vor Designsystem",
+    });
+    expect(restored.addOns).toEqual({ gallery: true, team: true });
+    expect(WebsiteDataV2Schema.safeParse(restored).success).toBe(true);
+  });
+
+  test("rev-3-Stand mit anderem System bleibt bei seinem System", () => {
+    const current: WebsiteDataV2 = {
+      ...withHeadline("Aktuell"),
+      designRevision: 3,
+      system: "raster",
+      palette: "kohle",
+    };
+    const old: WebsiteDataV2 = {
+      ...withHeadline("Alt"),
+      designRevision: 3,
+      system: "werkstoff",
+      palette: "kiefer",
+    };
+    const restored = restoreDoc(current, old);
+    expect(restored.system).toBe("werkstoff");
+    expect(restored.palette).toBe("kiefer");
+  });
+
+  test("Stand ohne Revision bei aktuellem Stand ohne System → Hauptsystem", () => {
+    const restored = restoreDoc(withHeadline("Aktuell"), withHeadline("Alt"));
+    expect(restored.designRevision).toBe(3);
+    expect(restored.system).toBeTruthy();
   });
 });
 

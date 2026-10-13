@@ -21,9 +21,9 @@ describe("renderSiteHtml", () => {
     expect(html).toContain('"@type":"LocalBusiness"');
     expect(html).toContain('"aggregateRating"');
   });
-  test("lädt Pack-Fonts über eine css2-URL mit display=swap", () => {
-    expect(html).toContain("fonts.googleapis.com/css2?family=Archivo+Black");
-    expect(html).toContain("display=swap");
+  test("lädt die Schriften des Systems selbst gehostet (alte Fixture → System)", () => {
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).toContain("/fonts/systems/");
   });
   test("Inhalt ist ohne JS im HTML (Anker vorhanden)", () => {
     expect(html).toContain('id="leistungen"');
@@ -139,8 +139,8 @@ describe("renderSiteHtml — Rechtsseiten (Impressum/Datenschutz)", () => {
     });
     expect(status).toBe(200);
     expect(html).toContain("<p>Firma XY, Musterstraße 1</p>");
-    expect(html).toContain('href="/"');
-    expect(html).toContain("Zurück");
+    // Rechtsseite im System-Rahmen: Navigation zurück zur Startseite.
+    expect(html).toContain('href="/#kontakt"');
     expect(html).not.toContain('id="leistungen"');
     expect(html).not.toContain("Massarbeit");
   });
@@ -180,8 +180,8 @@ describe("renderSiteHtml — basePath (/site/:slug-Form)", () => {
       pathname: "/impressum",
       basePath: "/site/foo",
     });
-    expect(html).toContain('href="/site/foo"');
-    expect(html).not.toContain('href="/"');
+    expect(html).toContain('href="/site/foo#kontakt"');
+    expect(html).not.toContain('href="/#kontakt"');
   });
 
   test("ohne basePath zeigt der Legal-Zurück-Link weiterhin auf / (Subdomain-Form)", () => {
@@ -193,7 +193,7 @@ describe("renderSiteHtml — basePath (/site/:slug-Form)", () => {
       origin: "https://brandt.pageblitz.de",
       pathname: "/impressum",
     });
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/#kontakt"');
   });
 });
 
@@ -418,13 +418,15 @@ describe("renderSiteHtml — Add-on-Gating (Plan B6 Task 6)", () => {
 });
 
 describe("renderSiteHtml — SSR-Inseln", () => {
+  // Marker des Inseln-Stylesheets (islandsCss.ts). „.pb-island-form{“ allein
+  // taugt nicht mehr: die System-CSS stylt Formular-Inseln selbst mit.
   test("Bundle-Tag und Inseln-CSS fehlen, wenn keine Features aktiv sind (Fixture full)", () => {
     const { html } = renderSiteHtml(getFixture("werkbank", "full"), {
       origin: "https://brandt.pageblitz.de",
       slug: "brandt",
     });
     expect(html).not.toContain("/islands/site-islands.js");
-    expect(html).not.toContain(".pb-island-form{");
+    expect(html).not.toContain(".pb-islands{font-family");
   });
 
   test("Bundle-Tag und Inseln-CSS erscheinen, wenn Features aktiv sind (Fixture features)", () => {
@@ -437,7 +439,7 @@ describe("renderSiteHtml — SSR-Inseln", () => {
         /<script type="module" src="\/islands\/site-islands\.js" defer><\/script>/g
       )
     ).toHaveLength(1);
-    expect(html).toContain(".pb-island-form{");
+    expect(html).toContain(".pb-islands{font-family");
     expect(html).toContain('data-island="contact"');
     expect(html).toContain('action="/api/site/brandt/contact"');
   });
@@ -456,7 +458,7 @@ describe("renderSiteHtml — SSR-Inseln", () => {
       // kein slug übergeben
     });
     expect(html).not.toContain("/islands/site-islands.js");
-    expect(html).not.toContain(".pb-island-form{");
+    expect(html).not.toContain(".pb-islands{font-family");
   });
 
   test("opts.site.chatWelcomeMessage landet als data-welcome-Attribut auf der Chat-Insel (Fixture features)", () => {
@@ -482,10 +484,10 @@ describe("renderSiteHtml — SSR-Inseln", () => {
       slug: "brandt",
     });
     const headEnd = html.indexOf("</head>");
-    const cssPos = html.indexOf(".pb-island-form{");
+    const cssPos = html.indexOf(".pb-islands{font-family");
     expect(headEnd).toBeGreaterThan(-1);
     expect(cssPos).toBeGreaterThan(headEnd);
-    expect(html.match(/\.pb-island-form\{/g)).toHaveLength(1);
+    expect(html.match(/\.pb-islands\{font-family/g)).toHaveLength(1);
   });
 });
 
@@ -590,8 +592,10 @@ describe("Rechtsseiten in der Vorschau — Ton (2026-09-09)", () => {
     // Der Empfaenger einer Postkarte kennt keinen "Schritt Rechtliches" —
     // er hat noch nie mit uns gesprochen. Ein Verweis darauf verwirrt.
     const html = vorschau("/impressum");
-    expect(html).toContain("Keine Sorge");
-    expect(html).not.toContain("Schritt");
+    // Nur sichtbarer Text zählt (die System-CSS nennt „Schritt“ in Kommentaren).
+    const text = html.replace(/<style[\s\S]*?<\/style>/g, "");
+    expect(text).toContain("Keine Sorge");
+    expect(text).not.toContain("Schritt");
   });
 
   test("duzt, wie die ganze Seite", () => {
@@ -630,12 +634,12 @@ describe("Rechtsseiten in der Vorschau — Ton (2026-09-09)", () => {
 });
 
 describe("revision 2 entrance delivery", () => {
-  test("loads independent motion without paid islands and keeps complete static content", () => {
+  test("rev 2 rendert als System: Motion-Bundle, keine bezahlten Inseln, kein Pack-Einstieg", () => {
     const data = { ...getFixture("gusto", "full"), designRevision: 2 as const };
     const { html } = renderSiteHtml(data, { origin: "https://example.test" });
     expect(html).toMatch(/src="\/islands\/site-motion[^"]*\.js"/);
     expect(html).not.toMatch(/src="\/islands\/site-islands/);
-    expect(html).toContain('class="pb-art-hero"');
-    expect(html).toContain("body{background:#192019}");
+    expect(html).toMatch(/data-pb-system="[a-z]+"/);
+    expect(html).not.toContain('class="pb-art-hero"');
   });
 });

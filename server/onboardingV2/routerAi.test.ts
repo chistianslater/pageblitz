@@ -41,8 +41,12 @@ const ctx = (): TrpcContext => ({
 });
 const caller = () => appRouter.createCaller(ctx());
 
+// Studio-Dokumente sind System-Dokumente (rev 3, Packs entfernen Task 2).
 const v2 = {
   version: 2,
+  designRevision: 3,
+  system: "werkstoff",
+  palette: "kiefer",
   stylePackId: "werkbank",
   businessName: "Brandt",
   businessCategory: "Tischler",
@@ -203,8 +207,12 @@ describe("onboardingV2.aiEdit", () => {
   });
 });
 
+/** Reine Pack-Logik (rev 2) — fällt mit Task 3. */
+const { system: _s, palette: _p, ...v2Rev2Base } = v2;
+const v2Rev2 = { ...v2Rev2Base, designRevision: 2 };
+
 describe("applyAiTheme", () => {
-  const doc = v2 as unknown as WebsiteDataV2;
+  const doc = v2Rev2 as unknown as WebsiteDataV2;
 
   test("Farbwelt + Akzent + Layout werden über applyTheme angewandt und zusammengefasst", () => {
     const { next, summary } = applyAiTheme(doc, {
@@ -243,6 +251,29 @@ describe("onboardingV2.aiEdit (theme)", () => {
   test("theme-Antwort wird sofort persistiert und als Summary zurückgegeben", async () => {
     mockedProposeAiEdit.mockResolvedValue({
       kind: "theme",
+      theme: { hiddenSections: ["services"] },
+      reason: "Leistungen ausgeblendet.",
+    });
+    const result = await caller().onboardingV2.aiEdit({
+      token: "a".repeat(32),
+      message: "blende die Leistungen aus",
+    });
+    expect(result.kind).toBe("theme");
+    // Sofort-Persist: updateWebsite wurde mit neuem Doc aufgerufen.
+    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({
+        websiteData: expect.objectContaining({
+          hiddenSections: ["services"],
+          designRevision: 3,
+        }),
+      })
+    );
+  });
+
+  test("Farbwelt-Wunsch auf einer System-Seite → Ablehnung mit Hinweis auf die Farbstimmung", async () => {
+    mockedProposeAiEdit.mockResolvedValue({
+      kind: "theme",
       theme: { colorWorldId: "heller" },
       reason: "Heller gestellt.",
     });
@@ -250,12 +281,8 @@ describe("onboardingV2.aiEdit (theme)", () => {
       token: "a".repeat(32),
       message: "mach alles heller",
     });
-    expect(result.kind).toBe("theme");
-    if (result.kind === "theme") {
-      expect(result.summary.join(" ")).toContain("Heller");
-    }
-    // Sofort-Persist: updateWebsite wurde mit neuem Doc aufgerufen.
-    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+    expect(result.kind).toBe("reject");
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
   test("theme ohne zuordenbare Felder wird zur Ablehnung", async () => {
@@ -486,7 +513,7 @@ describe("applyAiTheme — Designsystem (rev 3)", () => {
   });
 
   test("rev 2 meldet nichts als übersprungen", () => {
-    const { skippedLook } = applyAiTheme(v2 as unknown as WebsiteDataV2, {
+    const { skippedLook } = applyAiTheme(v2Rev2 as unknown as WebsiteDataV2, {
       accent: "#2B44FF",
     });
     expect(skippedLook).toBe(false);

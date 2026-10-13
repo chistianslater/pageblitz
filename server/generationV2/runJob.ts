@@ -234,8 +234,13 @@ export function buildInterimV2Doc(
   businessName: string,
   category: string,
   slug: string,
-  images: V2Images
+  images: V2Images,
+  industryKey?: string
 ): WebsiteDataV2 {
+  // Dieselbe Familienwahl wie die fertige Seite (generateSiteContent), damit
+  // der Zwischenstand schon im richtigen Designsystem erscheint. Standard
+  // bleibt ohne Feld (wie withFamily).
+  const family = resolveIndustryFamily(category, businessName, industryKey);
   const interim = {
     version: 2 as const,
     designRevision: CURRENT_DESIGN_REVISION,
@@ -243,6 +248,7 @@ export function buildInterimV2Doc(
     businessName,
     businessCategory: category,
     slug,
+    ...(family === "standard" ? {} : { blueprintFamily: family }),
     seo: {
       title: businessName,
       description: INTERIM_SEO_DESCRIPTION,
@@ -287,16 +293,19 @@ export function buildInterimV2Doc(
     // Sektion ohne `addOns.gallery` aus, bis der Kunde sie bucht.
   };
   // Harte Garantie statt Annahme: der Zwischenstand MUSS dem Vertrag genügen
-  // (SSR-Preview und assertV2SafeWrite verlassen sich darauf).
-  return WebsiteDataV2Schema.parse({
-    ...interim,
-    ...pickArtTheme(packId, businessName, category),
-    designStand: AKTUELLER_DESIGN_STAND,
-    designProfile: withEntryComposition(
-      deriveArtDirectedProfile(interim),
-      entryPhotos(images)
-    ),
-  });
+  // (SSR-Preview und assertV2SafeWrite verlassen sich darauf) und ist wie
+  // jedes geschriebene Dokument ein System-Dokument (rev 3).
+  return withPrimarySystem(
+    WebsiteDataV2Schema.parse({
+      ...interim,
+      ...pickArtTheme(packId, businessName, category),
+      designStand: AKTUELLER_DESIGN_STAND,
+      designProfile: withEntryComposition(
+        deriveArtDirectedProfile(interim),
+        entryPhotos(images)
+      ),
+    })
+  );
 }
 
 /**
@@ -538,7 +547,8 @@ async function runWebsiteGenerationV2(
     business.name,
     category,
     website.slug,
-    images
+    images,
+    industryKey
   );
   // Decide the visual identity before the first preview, then retain it when text arrives.
   const previousParsed = WebsiteDataV2Schema.safeParse(previousWebsiteData);
@@ -588,19 +598,23 @@ async function runWebsiteGenerationV2(
       entryPhotos(images)
     );
   }
-  interim = WebsiteDataV2Schema.parse({
-    ...interim,
-    designProfile,
-    fontPairId:
-      (previousParsed.success && previousParsed.data.fontPairId) ||
-      interim.fontPairId,
-    colorOverrides:
-      (previousParsed.success && previousParsed.data.colorOverrides) ||
-      interim.colorOverrides,
-    designStand:
-      (previousParsed.success && previousParsed.data.designStand) ||
-      interim.designStand,
-  });
+  // Erneut durch withPrimarySystem: Palette nach den endgültigen
+  // colorOverrides (wie bei der fertigen Seite), ein altes Schriftpaar fällt.
+  interim = withPrimarySystem(
+    WebsiteDataV2Schema.parse({
+      ...interim,
+      designProfile,
+      fontPairId:
+        (previousParsed.success && previousParsed.data.fontPairId) ||
+        interim.fontPairId,
+      colorOverrides:
+        (previousParsed.success && previousParsed.data.colorOverrides) ||
+        interim.colorOverrides,
+      designStand:
+        (previousParsed.success && previousParsed.data.designStand) ||
+        interim.designStand,
+    })
+  );
   assertV2SafeWrite(previousWebsiteData, interim);
   await updateWebsite(website.id, { websiteData: interim as any });
   invalidateSsrCache(website.slug);

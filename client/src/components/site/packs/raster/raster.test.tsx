@@ -16,11 +16,6 @@ describe("Pack raster", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("raster", "full")} />
   );
-  test("eine h1, Marginalien- und Bildunterschrift-Signatur", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-ra-hero-margin");
-    expect(html).toContain("Abb. 00");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');

@@ -11,6 +11,7 @@ import { getFixture } from "../../shared/siteContract/fixtures";
 import {
   DESIGN_SYSTEM_IDS,
   getSystem,
+  asSystemDoc,
   withDesignSystem,
   type DesignSystemDef,
   type DesignSystemId,
@@ -32,6 +33,7 @@ import {
   HERO_LAYOUTS,
 } from "../../shared/siteContract/designProfile";
 import { getWebsiteBySlug, getWebsiteByToken, getWebsiteVersion } from "../db";
+import { restoreDoc } from "../onboardingV2/versions";
 import {
   pageForPathname,
   visiblePages,
@@ -249,16 +251,28 @@ async function handlePreviewSsr(req: Request, res: Response): Promise<void> {
       res.status(404).send("Vorschau nicht gefunden");
       return;
     }
-    let rawDoc: unknown = website.websiteData;
+    const parsedCurrent = WebsiteDataV2Schema.safeParse(website.websiteData);
+    let parsed = parsedCurrent;
     if (versionParam) {
       const version = await getWebsiteVersion(website.id, Number(versionParam));
       if (!version) {
         res.status(404).send("Stand nicht gefunden");
         return;
       }
-      rawDoc = version.doc;
+      // Stand-Vorschau = genau das, was „Wiederherstellen“ schreiben würde:
+      // Inhalte des Stands, System/Palette laut restoreDoc (E1).
+      const parsedVersion = WebsiteDataV2Schema.safeParse(version.doc);
+      parsed =
+        parsedVersion.success && parsedCurrent.success
+          ? {
+              success: true,
+              data: restoreDoc(
+                asSystemDoc(parsedCurrent.data),
+                parsedVersion.data
+              ),
+            }
+          : parsedVersion;
     }
-    const parsed = WebsiteDataV2Schema.safeParse(rawDoc);
     if (!parsed.success) {
       res.status(404).send("Noch keine Website im neuen Format");
       return;

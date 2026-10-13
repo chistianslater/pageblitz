@@ -41,6 +41,9 @@ const caller = () => appRouter.createCaller(ctx());
 
 const current = {
   version: 2,
+  designRevision: 3,
+  system: "werkstoff",
+  palette: "leinen",
   stylePackId: "werkbank",
   businessName: "Brandt",
   seo: { title: "t", description: "d" },
@@ -50,6 +53,20 @@ const current = {
 const older = {
   ...current,
   sections: [{ type: "hero", headline: "Alt" }, { type: "contact" }],
+  addOns: { gallery: true },
+};
+
+/** „Stand vor Designsystem" einer umgestellten Seite (fiktiv, rev 2). */
+const vorDesignsystem = {
+  version: 2,
+  designRevision: 2,
+  stylePackId: "werkbank",
+  fontPairId: "modern",
+  colorOverrides: { accent: "#8a3b12" },
+  businessName: "Brandt",
+  tagline: "Alte Zeile",
+  seo: { title: "t", description: "d" },
+  sections: [{ type: "hero", headline: "Vor dem System" }, { type: "contact" }],
   addOns: { gallery: true },
 };
 
@@ -194,6 +211,68 @@ describe("onboardingV2 Verlauf-Prozeduren (2026-09-03)", () => {
       trigger: "restore",
       label: "Rückgängig: KI-Chat: „Header dunkler“",
     });
+  });
+
+  test("restoreVersion eines rev-2-Stands: Texte zurück, aktuelles System + Palette bleiben (E1)", async () => {
+    mockedDb.getWebsiteVersion.mockResolvedValue({
+      id: 5,
+      trigger: "panel",
+      label: "Stand vor Designsystem",
+      createdAt: T(2000),
+      doc: vorDesignsystem,
+    });
+    const state = await caller().onboardingV2.restoreVersion({
+      token: "tok",
+      versionId: 5,
+    });
+    const written = mockedDb.updateWebsite.mock.calls[0][1].websiteData as any;
+    expect(written.designRevision).toBe(3);
+    expect(written.system).toBe("werkstoff");
+    expect(written.palette).toBe("leinen");
+    expect(written.fontPairId).toBeUndefined();
+    expect(written.tagline).toBe("Alte Zeile");
+    expect(written.sections[0]).toEqual({ type: "hero", headline: "Vor dem System" });
+    expect(written.addOns).toEqual({ gallery: true, team: true });
+    expect(state.doc?.system).toBe("werkstoff");
+    const inserted = mockedDb.insertWebsiteVersion.mock.calls.map(c => c[0]);
+    expect(inserted.at(-1)).toMatchObject({ trigger: "restore" });
+    expect((inserted.at(-1) as any).doc.designRevision).toBe(3);
+  });
+
+  test("undoLast nach „Designsystem umgestellt“ landet auf rev 3", async () => {
+    mockedDb.listWebsiteVersions.mockResolvedValue([
+      { id: 6, trigger: "panel", label: "Designsystem umgestellt", createdAt: T(3000) },
+      { id: 5, trigger: "panel", label: "Stand vor Designsystem", createdAt: T(2000) },
+    ]);
+    mockedDb.getWebsiteVersion.mockResolvedValue({
+      id: 5,
+      trigger: "panel",
+      label: "Stand vor Designsystem",
+      createdAt: T(2000),
+      doc: vorDesignsystem,
+    });
+    const state = await caller().onboardingV2.undoLast({ token: "tok" });
+    expect(state.doc?.designRevision).toBe(3);
+    expect(state.doc?.system).toBe("werkstoff");
+    expect(state.doc?.palette).toBe("leinen");
+    expect(state.doc?.sections[0]).toEqual({ type: "hero", headline: "Vor dem System" });
+  });
+
+  test("Studio lädt ein gespeichertes rev-2-Dokument als System-Dokument", async () => {
+    mockedDb.getWebsiteByToken.mockResolvedValue({
+      id: 42,
+      slug: "preview-brandt",
+      status: "preview",
+      businessId: 7,
+      websiteData: vorDesignsystem,
+      customerEmail: null,
+    } as any);
+    const state = await caller().onboardingV2.getState({ token: "tok" });
+    expect(state.doc?.designRevision).toBe(3);
+    // Kein aktueller System-Stand → Hauptsystem der Branche (ohne Kategorie: Standard → Raster).
+    expect(state.doc?.system).toBe("raster");
+    expect(state.doc?.sections[0]).toEqual({ type: "hero", headline: "Vor dem System" });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
   });
 
   test("undoLast ohne vorherigen Stand → BAD_REQUEST", async () => {

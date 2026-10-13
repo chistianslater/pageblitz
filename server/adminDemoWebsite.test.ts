@@ -59,6 +59,8 @@ describe("ensureAdminDemoWebsite", () => {
         addOnSubpages: true,
         websiteData: expect.objectContaining({
           version: 2,
+          designRevision: 3,
+          system: expect.any(String),
           businessName: "Pageblitz Demo-Werkstatt",
           features: expect.objectContaining({
             contactForm: true,

@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
+import { asSystemDoc } from "../../shared/designSystems/apply";
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
 import { getSubscriptionByWebsiteId, getWebsiteByToken } from "../db";
 import { linkOrphanSubscriptionsToUser } from "../linkSubscriptions";
@@ -76,5 +77,11 @@ export async function loadStudioWebsite(
   }
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
   const hasLegacyDoc = !parsed.success && website.websiteData != null;
-  return { website, doc: parsed.success ? parsed.data : null, hasLegacyDoc };
+  // Lesegrenze Studio: jedes Dokument ist ein System-Dokument (rev 3) —
+  // State, Patches und Verlauf arbeiten nur noch damit.
+  return {
+    website,
+    doc: parsed.success ? asSystemDoc(parsed.data) : null,
+    hasLegacyDoc,
+  };
 }

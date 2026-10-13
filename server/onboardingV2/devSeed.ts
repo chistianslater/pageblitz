@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { nanoid } from "nanoid";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { withPrimarySystem } from "../../shared/designSystems/apply";
 import { PACK_IDS, type PackId } from "../../shared/siteContract/types";
 import {
   createGeneratedWebsite,
@@ -51,7 +52,8 @@ async function handleStudioSeed(req: Request, res: Response): Promise<void> {
       ? `studio-seed-${packId}-${fixture}-designgate`
     : `studio-seed-${packId}-${fixture}`;
   const fixtureDoc = getFixture(packId, fixture);
-  const doc = needsCategory ? null : { ...fixtureDoc, slug };
+  // Seeds sind wie jede gespeicherte Seite System-Dokumente (rev 3).
+  const doc = needsCategory ? null : withPrimarySystem({ ...fixtureDoc, slug });
 
   let websiteId: number;
   let token: string;

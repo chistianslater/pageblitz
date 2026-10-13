@@ -21,11 +21,6 @@ describe("Pack salon-noir", () => {
     <SiteRenderer data={getFixture("salon-noir", "full")} now={NOW} />
   );
 
-  test("Signatur-Klassen (Passepartout-Rahmen, Vertikal-Label) rendern", () => {
-    expect(html).toContain("pb-sn-frame");
-    expect(html).toContain("pb-sn-vert");
-  });
-
   test("zeigt eine eigenständige fotografische Salon-Serie", () => {
     expect(html).toContain("salon-noir-hero.webp");
     expect(html).toContain("salon-noir-detail-1.webp");
@@ -64,13 +59,4 @@ describe("Pack salon-noir", () => {
     expect(h).not.toContain('id="ueber-uns"');
   });
 
-  test("Goldlinien-Sweep und Sticky-Buchungsimpuls respektieren Motion-Modi", () => {
-    expect(html).toContain('class="pb-sn-booking"');
-    expect(SALON_NOIR_CSS).toContain("@keyframes pb-sn-gold-sweep");
-    expect(SALON_NOIR_CSS).toContain("scroll-margin-top");
-    expect(SALON_NOIR_CSS).toContain("@media(max-width:840px)");
-    expect(SALON_NOIR_CSS).toContain("prefers-reduced-motion:reduce");
-    expect(SALON_NOIR_CSS).toContain("(pointer:fine)");
-    expect(SALON_NOIR_CSS).not.toContain("infinite");
-  });
 });

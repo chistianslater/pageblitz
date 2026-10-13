@@ -1,4 +1,5 @@
 import type { WebsiteDataV2 } from "../../shared/siteContract/types";
+import { asSystemDoc } from "../../shared/designSystems/apply";
 
 /**
  * Verlauf (2026-09-03): reine Entscheidungslogik für die Versionierung des
@@ -141,15 +142,19 @@ export function versionsToPrune(count: number): number {
 /**
  * Wiederherstellen: alter Inhalt, aber die Add-on-Flags des aktuellen Stands
  * — ein später gebuchtes Extra darf durch Zurückspringen nicht verschwinden.
+ * Ein Stand ohne Designsystem (rev 1/2, z. B. „Stand vor Designsystem")
+ * übernimmt System und Farbstimmung des aktuellen Stands (E1); ein rev-3-
+ * Stand behält sein eigenes System.
  */
 export function restoreDoc(
   current: WebsiteDataV2,
   old: WebsiteDataV2
 ): WebsiteDataV2 {
   const { addOns: _oldAddOns, ...rest } = old;
+  const restored = asSystemDoc(rest, current);
   return current.addOns !== undefined
-    ? { ...rest, addOns: current.addOns }
-    : rest;
+    ? { ...restored, addOns: current.addOns }
+    : restored;
 }
 
 /** Liste absteigend nach Zeit: Eintrag 0 ist der aktuelle Stand, Eintrag 1 das Undo-Ziel. */

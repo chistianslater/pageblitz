@@ -22,44 +22,10 @@ describe("Pack morgenlicht", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("morgenlicht", "full")} now={WEDNESDAY} />
   );
-  test("Signatur-Klassen und fotografische Galerie rendern", () => {
-    expect(html).toContain("pb-ml-blob");
-    expect(html).toContain("pb-ml-float");
-    expect(html).toContain("pb-ml-gallery");
-    expect(html).toContain("morgenlicht-detail-2.webp");
-    expect(html).toContain("morgenlicht-detail-3.webp");
-  });
   test("genau eine h1, deutsche Anker leistungen + kontakt", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');
   });
 
-  describe("Heute-geöffnet-Karte hängt vom übergebenen now ab", () => {
-    test("Mittwoch (innerhalb Mo–Fr): Karte rendert mit Öffnungszeit", () => {
-      const wedHtml = renderToStaticMarkup(
-        <SiteRenderer
-          data={getFixture("morgenlicht", "full")}
-          now={WEDNESDAY}
-        />
-      );
-      expect(wedHtml).toContain("Heute geöffnet");
-      expect(wedHtml).toContain("8:00 – 18:00");
-    });
-    test("Samstag (außerhalb Mo–Fr): Karte rendert nicht", () => {
-      const satHtml = renderToStaticMarkup(
-        <SiteRenderer data={getFixture("morgenlicht", "full")} now={SATURDAY} />
-      );
-      expect(satHtml).not.toContain("Heute geöffnet");
-    });
-  });
-  test("Fokus-Motion, Sticky-Praxisinfo und Mobile-Badge-Fallbacks", () => {
-    expect(html).toContain('class="pb-ml-practice-dock"');
-    expect(MORGENLICHT_CSS).toContain("@keyframes pb-ml-focus");
-    expect(MORGENLICHT_CSS).toContain("overflow-wrap:anywhere");
-    expect(MORGENLICHT_CSS).toContain("@media(max-width:840px)");
-    expect(MORGENLICHT_CSS).toContain("prefers-reduced-motion:reduce");
-    expect(MORGENLICHT_CSS).toContain("(pointer:fine)");
-    expect(MORGENLICHT_CSS).not.toContain("infinite");
-  });
 });

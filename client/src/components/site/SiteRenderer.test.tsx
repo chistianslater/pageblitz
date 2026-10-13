@@ -24,27 +24,6 @@ const data: WebsiteDataV2 = {
 };
 
 describe("SiteRenderer", () => {
-  test("rendert registriertes Pack mit CSS und CSS-Variablen", () => {
-    PACK_MODULES.werkbank = {
-      id: "werkbank",
-      css: ".pb-test{color:red}",
-      Page: ({ data }) => <main>{data.businessName}</main>,
-    };
-    const html = renderToStaticMarkup(<SiteRenderer data={data} />);
-    expect(html).toContain("Probe");
-    expect(html).toContain(".pb-test{color:red}");
-    // werkbank: Original-Signal als Fläche (B6 Task 9), dunkler
-    // Kleintext-Ton `accent-text` separat emittiert.
-    expect(html).toContain("--pb-accent:#FF4D00");
-    expect(html).toContain("--pb-accent-text:#A83600");
-  });
-  test("wirft verständlich bei nicht registriertem Pack-Modul", () => {
-    delete PACK_MODULES.werkbank;
-    expect(() => renderToStaticMarkup(<SiteRenderer data={data} />)).toThrow(
-      /Pack-Modul nicht registriert/
-    );
-  });
-
   describe("packOverride (Variant-Picker-Preview)", () => {
     beforeEach(() => {
       // Unabhängig davon, was die Tests oben mit PACK_MODULES.werkbank
@@ -52,15 +31,6 @@ describe("SiteRenderer", () => {
       // zurücksetzen, damit "gespeicherter Pack bleibt aktiv" unten
       // tatsächlich rendert statt zu werfen.
       PACK_MODULES.werkbank = REAL_WERKBANK_MODULE;
-    });
-
-    test("registrierter Override rendert das andere Pack-CSS statt des gespeicherten", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={data} packOverride="kanzlei" />
-      );
-      expect(html).toContain("pb-kz-");
-      expect(html).not.toContain("pb-wb-hero");
-      expect(html).toContain("pb-site pb-kanzlei");
     });
 
     test("Inhalte bleiben beim Override erhalten", () => {
@@ -74,18 +44,6 @@ describe("SiteRenderer", () => {
       expect(html).toContain("Welt");
     });
 
-    test("nicht registrierter Override wird ignoriert — gespeicherter Pack bleibt aktiv", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={data} packOverride={"nicht-registriert" as any} />
-      );
-      expect(html).toContain("pb-site pb-werkbank");
-    });
-
-    test("ohne Override bleibt der gespeicherte Pack aktiv", () => {
-      const html = renderToStaticMarkup(<SiteRenderer data={data} />);
-      expect(html).toContain("pb-site pb-werkbank");
-    });
-
     test("explizite Revision 1 ohne Profil nutzt handgestaltete Pack-Defaults", () => {
       const html = renderToStaticMarkup(
         <SiteRenderer data={{ ...data, designRevision: 1 }} />
@@ -96,83 +54,6 @@ describe("SiteRenderer", () => {
       expect(root).not.toContain("data-pb-density=");
     });
 
-    test("persistiertes Profil landet als Kompositionsattribute am Site-Root", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer
-          data={{
-            ...data,
-            designProfile: {
-              version: 1,
-              heroLayout: "centered",
-              servicesLayout: "grid",
-              aboutLayout: "image-left",
-              galleryLayout: "mosaic",
-              density: "compact",
-              imageTreatment: "framed",
-              seed: 42,
-            },
-          }}
-        />
-      );
-      expect(html).toContain('data-pb-hero="centered"');
-      expect(html).toContain('data-pb-services="grid"');
-      expect(html).toContain('data-pb-about="image-left"');
-      expect(html).toContain('data-pb-gallery="mosaic"');
-      expect(html).toContain('data-pb-density="compact"');
-      expect(html).toContain('data-pb-image="framed"');
-      expect(html).toContain('[data-pb-slot="services-items"]');
-      const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
-      expect(root).not.toContain("data-pb-hero-mobile=");
-    });
-
-    test("Mobil-Profil wird als eigenes Attribut am Site-Root ausgegeben", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer
-          data={{
-            ...data,
-            designProfile: {
-              version: 1,
-              heroLayout: "split",
-              servicesLayout: "list",
-              aboutLayout: "image-right",
-              galleryLayout: "grid",
-              density: "airy",
-              imageTreatment: "natural",
-              heroLayoutMobile: "centered",
-              galleryLayoutMobile: "filmstrip",
-              seed: 1,
-            },
-          }}
-        />
-      );
-      const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
-      expect(root).toContain('data-pb-hero="split"');
-      expect(root).toContain('data-pb-hero-mobile="centered"');
-      expect(root).toContain('data-pb-gallery-mobile="filmstrip"');
-      expect(root).not.toContain("data-pb-services-mobile=");
-    });
-
-    test("Profilvarianten greifen in jedem Pack, auch in handkuratierten", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer
-          data={{
-            ...data,
-            stylePackId: "kanzlei",
-            designProfile: {
-              version: 1,
-              heroLayout: "centered",
-              servicesLayout: "grid",
-              aboutLayout: "image-left",
-              galleryLayout: "mosaic",
-              density: "compact",
-              imageTreatment: "framed",
-              seed: 42,
-            },
-          }}
-        />
-      );
-      expect(html).toContain('.pb-site[data-pb-services="grid"] #leistungen');
-    });
   });
 
   describe("pathname / Unterseiten (Plan B6, Task 3 + Task 4: pageHeader im Pack)", () => {
@@ -214,20 +95,6 @@ describe("SiteRenderer", () => {
       const html = renderToStaticMarkup(<SiteRenderer data={dataWithPage} />);
       expect(html).toContain("Hallo Welt");
       expect(html).not.toContain("Ein genauerer Blick.");
-    });
-
-    test("pathname einer bekannten Page rendert den pageHeader des Packs (Titel + Intro) — seit Task 4 im Pack-Modul selbst, kein SiteRenderer-Fallback mehr", () => {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={dataWithPage} pathname="/leistungen-im-detail" />
-      );
-      // werkbank rendert die pageHeader-Sektion selbst (Klasse
-      // pb-wb-page-header, siehe packs/werkbank/index.tsx) — der generische
-      // Fallback in SiteRenderer wurde entfernt (Task 4), sonst gäbe es zwei
-      // <h1> (a11y-Regression).
-      expect(html).toContain('<header class="pb-wb-page-header">');
-      expect(html.match(/<h1/g)).toHaveLength(1);
-      expect(html).toContain("Leistungen im Detail");
-      expect(html).toContain("Ein genauerer Blick.");
     });
 
     test("pathname einer bekannten Page rendert die Page-Sektionen statt der Startseiten-Sektionen", () => {

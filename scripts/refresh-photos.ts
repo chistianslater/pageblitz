@@ -17,6 +17,7 @@ import { withStagePhoto } from "../server/generationV2/heroPhoto";
 import { resolveIndustryFamily } from "../server/generationV2/industryFamily";
 import { unsplashFill } from "../server/generationV2/unsplashFill";
 import { assertV2SafeWrite } from "../server/v2WriteGuard";
+import { asSystemDoc } from "../shared/designSystems/apply";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type { WebsiteDataV2 } from "../shared/siteContract/types";
 
@@ -78,7 +79,8 @@ async function refresh(websiteId: number): Promise<string> {
   const website = await getWebsiteById(websiteId);
   const parsed = WebsiteDataV2Schema.safeParse(website?.websiteData);
   if (!website || !parsed.success) return `✗ ${websiteId}: keine v2-Seite`;
-  const doc = parsed.data;
+  // Geschrieben wird immer ein System-Dokument (rev 3).
+  const doc = asSystemDoc(parsed.data);
   const business = await getBusinessById(website.businessId);
   const category = business?.category || website.industry || "";
   const own = Array.from(

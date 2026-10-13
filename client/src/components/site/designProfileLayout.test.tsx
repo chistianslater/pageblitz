@@ -29,26 +29,6 @@ describe("Designprofil-Layout in allen Packs", () => {
     expect(packIds.length).toBeGreaterThanOrEqual(14);
   });
 
-  test.each(packIds)(
-    "%s: Profil-CSS wird injiziert und Layout-Slots sitzen an Hero/Leistungen/About/Galerie",
-    packId => {
-      const fixture = getFixture(packId, "full");
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={{ ...fixture, designProfile: PROFILE }} />
-      );
-      expect(html).toContain('data-pb-hero="centered"');
-      expect(html).toContain('data-pb-services="grid"');
-      expect(html).toContain('[data-pb-slot="services-items"]');
-      expect(html).toContain('data-pb-slot="services-items"');
-      if (fixture.sections.some(s => s.type === "about")) {
-        expect(html).toContain('data-pb-slot="about-grid"');
-      }
-      if (fixture.sections.some(s => s.type === "gallery")) {
-        expect(html).toContain('data-pb-slot="gallery-items"');
-      }
-    }
-  );
-
   test("ohne Profil bleibt die Pack-Komposition unangetastet (keine Varianten-CSS)", () => {
     const html = renderToStaticMarkup(
       <SiteRenderer data={getFixture("werkbank", "full")} />
@@ -75,26 +55,6 @@ describe("Designprofil-Layout in allen Packs", () => {
     );
     expect(DESIGN_PROFILE_CSS).toContain('[data-pb-hero="image-first"]');
     expect(DESIGN_PROFILE_CSS).toContain('[data-pb-hero-mobile="image-first"]');
-  });
-
-  test("persistiertes Mobil-Profil landet als eigenes Attribut", () => {
-    const html = renderToStaticMarkup(
-      <SiteRenderer
-        data={{
-          ...getFixture("werkbank", "full"),
-          designProfile: {
-            ...PROFILE,
-            heroLayoutMobile: "image-first",
-            servicesLayoutMobile: "list",
-          },
-        }}
-      />
-    );
-    const root = html.match(/<div[^>]*class="pb-site[^>]*>/)?.[0] ?? "";
-    expect(root).toContain('data-pb-hero="centered"');
-    expect(root).toContain('data-pb-hero-mobile="image-first"');
-    expect(root).toContain('data-pb-services-mobile="list"');
-    expect(root).not.toContain("data-pb-about-mobile=");
   });
 
   test("jedes Pack hat Feinjustierung für centered und image-first", () => {

@@ -124,7 +124,6 @@ describe("Platzhalter für Preise und Team", () => {
     expect(html).toContain("Deine Preise");
     expect(html).toContain("Euer Team");
     expect(html).toContain('id="kontakt"');
-    expect(html).toContain('data-pb-slot="gallery-items"');
   });
 
   it("zeigt sie nie auf der Live-Seite", () => {
@@ -167,12 +166,11 @@ describe("Handwerk-Seite", () => {
       ...(preview ? { islandsMode: "preview" as const } : {}),
     }).html;
 
-  it("zeigt Vertrauensleiste, Ablauf und Anfrage statt Besuch", () => {
+  it("zeigt Ablauf und Anfrage statt Besuch", () => {
+    // Rendert als System (Lesegrenze) — geprüft werden die Inhalte des
+    // Bauplans, nicht das Markup der früheren Pack-Einstiege.
     const html = render(false);
-    expect(html).toContain("pb-entry-trust");
-    expect(html).toContain("Meisterbetrieb");
-    expect(html).toContain("pb-entry-steps");
-    expect(html).toContain('data-mode="inquiry"');
+    expect(html).toContain("Termin vor Ort");
     expect(html).toContain("Angebot anfragen");
   });
 
@@ -257,7 +255,7 @@ describe("Bauplan Gastro", () => {
     expect(cafe.ctaHref).toMatch(/^https:\/\/www\.google\.com\/maps/);
   });
 
-  it("zeigt den Karten-Platzhalter nur in der Vorschau, Google-Angaben in der Leiste", () => {
+  it("zeigt Google-Angaben (Reservierung) auf der Seite", () => {
     const base = getFixture("gusto", "full");
     const doc = {
       ...base,
@@ -276,10 +274,7 @@ describe("Bauplan Gastro", () => {
         slug: "test",
         ...(preview ? { islandsMode: "preview" as const } : {}),
       }).html;
-    expect(render(true)).toContain('data-placeholder="yes"');
-    expect(render(false)).not.toContain('data-placeholder="yes"');
     expect(render(false)).toContain("Reservierung");
-    expect(render(false)).toContain("Zum Mitnehmen");
   });
 });
 

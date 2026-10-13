@@ -115,6 +115,7 @@ import {
 import { readSubscriptionAddOns } from "./onboardingV2/addOnFlags";
 import { syncSubscriptionAddOns } from "./stripeAddons";
 import { assertV2SafeWrite } from "./v2WriteGuard";
+import { asSystemDoc } from "../shared/designSystems/apply";
 import { classifyIndustry } from "./industryClassifier";
 import {
   runWebsiteGenerationV2Job,
@@ -2037,7 +2038,13 @@ export const appRouter = router({
         // gehört nach websiteData.legal.* statt top-level (SICHERHEITS-
         // INVARIANTE, siehe shared/siteContract/schema.ts) — hasLegalPages
         // ist dort kein gültiges Feld (strict schema).
-        const websiteData = (website.websiteData as any) || {};
+        const storedData = (website.websiteData as any) || {};
+        // Lesegrenze: ein altes v2-Dokument (rev 1/2) wird beim Schreiben
+        // System-Dokument (rev 3), sonst lehnt der Write-Guard ab.
+        const parsedStored = WebsiteDataV2Schema.safeParse(storedData);
+        const websiteData = parsedStored.success
+          ? asSystemDoc(parsedStored.data)
+          : storedData;
         const nextWebsiteData =
           websiteData.version === 2
             ? {

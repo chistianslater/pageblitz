@@ -1,3 +1,4 @@
+import { asSystemDoc } from "../../shared/designSystems/apply";
 import { artPalette } from "../../shared/stylePacks/artDirection";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -569,9 +570,12 @@ ${content}
  * das immer als 200 zu senden.
  */
 export function renderSiteHtml(
-  data: WebsiteDataV2,
+  input: WebsiteDataV2,
   opts: RenderSiteOptions
 ): RenderSiteResult {
+  // Lesegrenze: ganz oben wandeln, damit Kopf (Schriften, Farben) und Körper
+  // dasselbe System sehen. rev 3 bleibt dasselbe Objekt (Byte-Gleichheit).
+  const data = asSystemDoc(input);
   const pathname = opts.pathname ?? "/";
   const basePath = opts.basePath ?? "";
   // Canonical muss die tatsächliche Adresse der Seite sein — in der Pfadform

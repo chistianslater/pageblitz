@@ -26,8 +26,12 @@ import type { StudioWebsite } from "./ownership";
 
 const mockedDb = vi.mocked(db);
 
+// Studio-Dokumente sind System-Dokumente (rev 3, Packs entfernen Task 2).
 const base: WebsiteDataV2 = {
   version: 2,
+  designRevision: 3,
+  system: "werkstoff",
+  palette: "kiefer",
   stylePackId: "werkbank",
   businessName: "Brandt",
   seo: { title: "t", description: "d" },

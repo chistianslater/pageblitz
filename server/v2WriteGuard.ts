@@ -20,19 +20,21 @@ import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
  * still zu korrumpieren.
  *
  * Ist das gespeicherte Dokument KEIN v2-Dokument (version !== 2, inkl. v1
- * oder fehlend), greift die Prüfung nicht — v1-Schreibpfade bleiben
- * unverändert erlaubt.
+ * oder fehlend), greift die Schemaprüfung nur, wenn das NÄCHSTE Dokument v2
+ * ist — v1-Schreibpfade bleiben unverändert erlaubt.
+ *
+ * Designsysteme (Packs entfernen, 2026-10-13): Jedes geschriebene
+ * v2-Dokument ist ein System-Dokument (`designRevision: 3` + `system`).
+ * Alte Stände (rev 1/2) werden nur noch gelesen und an den Lesegrenzen
+ * per `asSystemDoc` gewandelt, nie zurückgeschrieben.
  */
 export function assertV2SafeWrite(
   storedWebsiteData: unknown,
   nextWebsiteData: unknown
 ): void {
-  const storedVersion =
-    storedWebsiteData && typeof storedWebsiteData === "object"
-      ? (storedWebsiteData as Record<string, unknown>).version
-      : undefined;
-
-  if (storedVersion !== 2) return;
+  const storedVersion = versionOf(storedWebsiteData);
+  const nextVersion = versionOf(nextWebsiteData);
+  if (storedVersion !== 2 && nextVersion !== 2) return;
 
   const result = WebsiteDataV2Schema.safeParse(nextWebsiteData);
   if (!result.success) {
@@ -41,4 +43,17 @@ export function assertV2SafeWrite(
       message: "Diese Funktion unterstützt das neue Website-Format noch nicht.",
     });
   }
+  if (result.data.designRevision !== 3 || !result.data.system) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "Die Website kann nur mit einem Designsystem gespeichert werden.",
+    });
+  }
+}
+
+function versionOf(data: unknown): unknown {
+  return data && typeof data === "object"
+    ? (data as Record<string, unknown>).version
+    : undefined;
 }

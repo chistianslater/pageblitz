@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { getWebsiteById, updateWebsite } from "./db";
 import { invalidateSsrCache } from "./ssr/routes";
 import { assertV2SafeWrite } from "./v2WriteGuard";
+import { asSystemDoc } from "../shared/designSystems/apply";
 import {
   ChatConfigSchema,
   ContactFormConfigSchema,
@@ -106,7 +107,8 @@ function requireV2Doc(websiteData: unknown): WebsiteDataV2 {
         "Diese Einstellungen sind nur für das neue Website-Format verfügbar.",
     });
   }
-  return parsed.data;
+  // Lesegrenze: geschrieben wird immer ein System-Dokument (rev 3).
+  return asSystemDoc(parsed.data);
 }
 
 async function persistDocPatch(

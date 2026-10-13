@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { renderSiteHtml, systemFontHead } from "./renderSite";
 import { getFixture } from "../../shared/siteContract/fixtures";
-import { withDesignSystem } from "../../shared/designSystems/apply";
+import { asSystemDoc, withDesignSystem } from "../../shared/designSystems/apply";
 import { JOURNAL } from "../../shared/designSystems/journal";
 import { WERKSTOFF } from "../../shared/designSystems/werkstoff";
 import { generateImpressum } from "../legalGenerator";
@@ -61,12 +61,12 @@ describe("SSR rev 3", () => {
     expect(head).toContain('type="font/woff2"');
   });
 
-  test("rev 2 bleibt bei Google Fonts", () => {
+  test("alte Stände (rev 1/2) laden die Schriften des Systems, kein Google Fonts", () => {
     const { html } = renderSiteHtml(getFixture("salon-noir", "full"), {
       origin,
     });
-    expect(html).toContain("fonts.googleapis.com");
-    expect(html).not.toContain("/fonts/systems/");
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).toContain("/fonts/systems/");
   });
 
   test("Motion-Bundle: Journal (rev 3), rev 2 und unversioniert ja", () => {
@@ -249,5 +249,31 @@ describe("Werkstoff-Schriften im Kopf", () => {
     expect(links[0]).toContain('href="/fonts/systems/zilla-slab-latin-700.woff2"');
     expect(links[1]).toContain('href="/fonts/systems/karla-latin-wght.woff2"');
     expect(links.join("")).not.toContain("dm-mono");
+  });
+});
+
+describe("Lesegrenze: alte Dokumente rendern als System (Packs entfernen)", () => {
+  test("rev-1-Fixture → Hauptsystem in Kopf und Körper, keine Google Fonts", () => {
+    const fixture = getFixture("werkbank", "full");
+    expect(fixture.designRevision).toBe(1);
+    const { html, status } = renderSiteHtml(fixture, { origin });
+    expect(status).toBe(200);
+    expect(html).toMatch(/data-pb-system="[a-z]+"/);
+    expect(html).not.toContain("fonts.googleapis.com");
+    expect(html).not.toContain('class="pb-werkbank');
+  });
+  test("rev-2-Dokument ohne Revision → dasselbe HTML wie die explizite Wandlung", () => {
+    const { designRevision: _r, ...ohne } = getFixture("gusto", "full");
+    const viaGrenze = renderSiteHtml(ohne, { origin }).html;
+    const explizit = renderSiteHtml(asSystemDoc(ohne), { origin }).html;
+    expect(viaGrenze).toBe(explizit);
+  });
+  test("Rechtsseite eines rev-1-Dokuments im System-Rahmen", () => {
+    const fixture = {
+      ...getFixture("werkbank", "full"),
+      legal: { impressumHtml: "<p>Impressum-Test</p>" },
+    };
+    const { html } = renderSiteHtml(fixture, { origin, pathname: "/impressum" });
+    expect(html).toMatch(/data-pb-system="[a-z]+"/);
   });
 });

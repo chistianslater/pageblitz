@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { nanoid } from "nanoid";
 import { getFixture } from "../../shared/siteContract/fixtures";
+import { withPrimarySystem } from "../../shared/designSystems/apply";
 import { PACK_IDS, type PackId } from "../../shared/siteContract/types";
 import { issueSessionCookie } from "../_core/magicLinkAuth";
 import {
@@ -43,7 +44,8 @@ async function handleDashboardSeed(req: Request, res: Response): Promise<void> {
   }
   const packId = pack as PackId;
   const slug = `dev-dashboard-${packId}`;
-  const doc = { ...getFixture(packId, fixture), slug };
+  // Seeds sind wie jede gespeicherte Seite System-Dokumente (rev 3).
+  const doc = withPrimarySystem({ ...getFixture(packId, fixture), slug });
 
   // ── User: per E-Mail finden oder anlegen ──────────────────────────────
   let user = await getUserByEmail(DEV_DASHBOARD_EMAIL);

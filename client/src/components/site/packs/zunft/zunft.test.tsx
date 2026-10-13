@@ -21,12 +21,6 @@ describe("Pack zunft", () => {
     <SiteRenderer data={getFixture("zunft", "full")} now={NOW} />
   );
 
-  test("Signatur-Klassen (Bordüre, Stempel, Preistafel) rendern", () => {
-    expect(html).toContain("pb-zf-borde");
-    expect(html).toContain("pb-zf-stamp");
-    expect(html).toContain("pb-zf-tafel");
-  });
-
   test("zeigt eine echte handwerkliche Backstuben-Fotostrecke", () => {
     for (const asset of [
       "zunft-hero.webp",
@@ -36,16 +30,6 @@ describe("Pack zunft", () => {
     ]) {
       expect(html).toContain(asset);
     }
-  });
-
-  test("Siegel-/Herkunftsmotion, Preisrhythmus und sticky Aktion erfüllen den Vertrag", () => {
-    expect(html).toContain("pb-zf-order-sticky");
-    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-seal");
-    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-origin");
-    expect(ZUNFT_CSS).toContain("@keyframes pb-zf-row");
-    expect(ZUNFT_CSS).toContain("@media(prefers-reduced-motion:reduce)");
-    expect(ZUNFT_CSS).toContain("@media(pointer:fine)");
-    expect(ZUNFT_CSS).toContain("@media(max-width:840px)");
   });
 
   test("Preistafel-Sektion rendert Kategorienamen und Preise aus der Fixture", () => {

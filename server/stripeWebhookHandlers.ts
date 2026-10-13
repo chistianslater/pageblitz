@@ -8,6 +8,7 @@ import type Stripe from "stripe";
 import { applyAddOnFlags } from "./onboardingV2/applyPatch";
 import type { applyFeatureFlags as ApplyFeatureFlags } from "./onboardingV2/applyFeatures";
 import { assertV2SafeWrite } from "./v2WriteGuard";
+import { asSystemDoc } from "../shared/designSystems/apply";
 import { invalidateSsrCache } from "./ssr/routes";
 import { addOnsFromSubscriptionItems } from "./stripeAddons";
 import { ADDON_KEYS, type AddOnFlags, type AddOnKey } from "../shared/pricing";
@@ -193,7 +194,8 @@ export async function handleCheckoutCompleted(
   try {
     const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
     if (parsed.success) {
-      const next = applyAddOnFlags(parsed.data, addOns);
+      // Lesegrenze: ein altes Dokument (rev 1/2) wird beim Schreiben System-Dokument.
+      const next = applyAddOnFlags(asSystemDoc(parsed.data), addOns);
       assertV2SafeWrite(website.websiteData, next);
       await deps.updateWebsite(websiteId, { websiteData: next as any });
       invalidateSsrCache(website.slug);

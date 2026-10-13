@@ -16,11 +16,6 @@ describe("Pack plakat", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("plakat", "full")} />
   );
-  test("eine h1, Sticker- und Karten-Signatur", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-pl-sticker");
-    expect(html).toContain("pb-pl-card");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');

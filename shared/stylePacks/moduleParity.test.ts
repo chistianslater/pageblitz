@@ -71,31 +71,6 @@ describe("Style-Pack-Registrierung — pageHeader + navItems auf Unterseiten (Pl
       (s): s is PageSectionOf<"pageHeader"> => s.type === "pageHeader"
     );
 
-    test(`${packId}: rendert die pageHeader-Sektion selbst (Klasse pb-<pack>-page-header, genau ein <h1>)`, () => {
-      expect(headerSection).toBeDefined();
-      const html = renderToStaticMarkup(
-        React.createElement(SiteRenderer, {
-          data,
-          pathname: `/${page.slug}`,
-        })
-      );
-      // Klassenname pack-spezifisch (z. B. pb-wb-page-header,
-      // pb-salon-noir-page-header wäre falsch — Präfix ist die Kurzform,
-      // nicht die Pack-ID — deshalb hier bewusst NICHT auf `pb-${packId}-`
-      // geprüft, sondern generisch auf das Namensmuster).
-      expect(html).toMatch(/<header class="pb-[a-z0-9-]+-page-header">/);
-      // Kein SiteRenderer-Fallback mehr (Task 4 hat ihn entfernt) — sonst
-      // zwei <h1> (a11y-Regression).
-      expect(html).not.toContain("pb-page-header-fallback");
-      expect(html.match(/<h1[^>]*>/g)?.length).toBe(1);
-      if (headerSection) {
-        expect(html).toContain(headerSection.title);
-        if (headerSection.intro) {
-          expect(html).toContain(headerSection.intro);
-        }
-      }
-    });
-
     test(`${packId}: navItems zeigen aria-current="page" auf der aktiven Unterseite`, () => {
       const html = renderToStaticMarkup(
         React.createElement(SiteRenderer, {
@@ -118,32 +93,6 @@ describe("Style-Pack-Registrierung — pageHeader + navItems auf Unterseiten (Pl
       // tatsächlich trägt — deshalb Regex auf ein echtes <a ...>-Element.
       expect(html).not.toMatch(/<a\s[^>]*\saria-current="page"/);
       expect(html).toContain(`href="/${page.slug}"`);
-    });
-  }
-});
-
-/**
- * Review-Fund Task 4: `buildNavItems` liefert generische Anker-Labels
- * („Bewertungen", „Leistungen", „Galerie", „Preise"); jedes Pack hat aber
- * eigene Wortwahl und ersetzt sie über `applyNavLabels` — die Startseiten-
- * Navigation muss exakt so bleiben wie vor Plan B6. Stichproben mit Labels,
- * die sich vom generischen Default unterscheiden.
- */
-describe("Pack-eigene Nav-Labels bleiben erhalten (applyNavLabels)", () => {
-  const samples: Array<[Parameters<typeof getFixture>[0], string, string]> = [
-    ["kanzlei", "Kundenstimmen", "Bewertungen"],
-    ["landgut", "Impressionen", "Galerie"],
-    ["gusto", "Impressionen", "Galerie"],
-  ];
-  for (const [packId, ownLabel, genericLabel] of samples) {
-    test(`${packId}: Nav zeigt „${ownLabel}" statt generisch „${genericLabel}"`, () => {
-      const data = getFixture(packId, "full");
-      const html = renderToStaticMarkup(
-        React.createElement(SiteRenderer, { data, pathname: "/" })
-      );
-      const nav = html.match(/<nav[\s\S]*?<\/nav>/)?.[0] ?? "";
-      expect(nav).toContain(`>${ownLabel}<`);
-      expect(nav).not.toContain(`>${genericLabel}<`);
     });
   }
 });

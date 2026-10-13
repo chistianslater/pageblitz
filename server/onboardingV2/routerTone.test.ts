@@ -43,8 +43,12 @@ const ctx = (): TrpcContext => ({
 });
 const caller = () => appRouter.createCaller(ctx());
 
+// Studio-Dokumente sind System-Dokumente (rev 3, Packs entfernen Task 2).
 const v2 = {
   version: 2,
+  designRevision: 3,
+  system: "werkstoff",
+  palette: "kiefer",
   stylePackId: "werkbank",
   businessName: "Brandt",
   businessCategory: "Tischler",

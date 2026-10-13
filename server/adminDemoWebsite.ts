@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid";
 import { getFixture } from "../shared/siteContract/fixtures";
+import { withPrimarySystem } from "../shared/designSystems/apply";
 import type { User } from "../drizzle/schema";
 import {
   createGeneratedWebsite,
@@ -59,7 +60,8 @@ export async function ensureAdminDemoWebsite(
       subscriptionStatus: "active",
     });
   } else {
-    const fixture = getFixture("werkbank", "features");
+    // getFixture liefert rev 1 — gespeichert wird ein System-Dokument (rev 3).
+    const fixture = withPrimarySystem(getFixture("werkbank", "features"));
     const websiteData = {
       ...fixture,
       businessName: "Pageblitz Demo-Werkstatt",

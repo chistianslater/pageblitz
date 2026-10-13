@@ -21,12 +21,6 @@ describe("Pack verve", () => {
     <SiteRenderer data={getFixture("verve", "full")} now={NOW} />
   );
 
-  test("Signatur-Klassen (Ghost-Wort, Tape, Skew-Panel) rendern", () => {
-    expect(html).toContain("pb-vv-ghost");
-    expect(html).toContain("pb-vv-tape");
-    expect(html).toContain("pb-vv-panel");
-  });
-
   test("zeigt eine echte Trainings-Fotostrecke", () => {
     for (const asset of [
       "verve-hero.webp",
@@ -36,16 +30,6 @@ describe("Pack verve", () => {
     ]) {
       expect(html).toContain(asset);
     }
-  });
-
-  test("kurze Typo-/Tape-Motion und sticky Probetraining erfüllen den Vertrag", () => {
-    expect(html).toContain("pb-vv-trial-sticky");
-    expect(VERVE_CSS).toContain("@keyframes pb-vv-snap");
-    expect(VERVE_CSS).toContain("@keyframes pb-vv-tape");
-    expect(VERVE_CSS).toContain("@media(prefers-reduced-motion:reduce)");
-    expect(VERVE_CSS).toContain("@media(pointer:fine)");
-    expect(VERVE_CSS).toContain("@media(max-width:840px)");
-    expect(VERVE_CSS).not.toMatch(/pb-vv-(?:snap|tape)[^}]*infinite/);
   });
 
   test("Services-Sektion rendert Programme und Preise aus der Fixture", () => {

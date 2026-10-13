@@ -1,6 +1,7 @@
 import { getWebsiteById, updateWebsite } from "../db";
 import { invalidateSsrCache } from "../ssr/routes";
 import { assertV2SafeWrite } from "../v2WriteGuard";
+import { asSystemDoc } from "../../shared/designSystems/apply";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { applyAddOnFlags } from "./applyPatch";
 import type { AddOnFlags } from "../../shared/pricing";
@@ -72,7 +73,8 @@ export async function applyFeatureFlags(
 
   const parsed = WebsiteDataV2Schema.safeParse(website.websiteData);
   if (parsed.success) {
-    const next = applyAddOnFlags(parsed.data, patch);
+    // Lesegrenze: geschrieben wird immer ein System-Dokument (rev 3).
+    const next = applyAddOnFlags(asSystemDoc(parsed.data), patch);
     assertV2SafeWrite(website.websiteData, next);
     await updateWebsite(websiteId, {
       ...columnPatch,

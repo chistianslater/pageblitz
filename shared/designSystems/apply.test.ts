@@ -2,7 +2,9 @@ import { describe, expect, test } from "vitest";
 import { getFixture } from "../siteContract/fixtures";
 import { WebsiteDataV2Schema } from "../siteContract/schema";
 import { withArtDirection } from "../stylePacks/artDirection";
-import { withDesignSystem, withoutDesignSystem, withPrimarySystem } from "./apply";
+import { BLUEPRINT_IDS } from "../blueprints/blueprints";
+import { asSystemDoc, withDesignSystem, withoutDesignSystem, withPrimarySystem } from "./apply";
+import { systemsForDoc } from "./assignment";
 
 const rev2 = withArtDirection(getFixture("salon-noir", "full"));
 
@@ -130,5 +132,74 @@ describe("withPrimarySystem (Raster, Werkstoff, Plakat, Klar und Nacht freigesch
 
   test("Beauty behält Journal als Hauptsystem", () => {
     expect(withFamily("beauty").system).toBe("journal");
+  });
+});
+
+describe("withPrimarySystem ist total (Packs entfernen, Task 2)", () => {
+  const base = getFixture("werkbank", "full");
+  const cases: Array<[string, Partial<typeof base>]> = [];
+  for (const family of BLUEPRINT_IDS) {
+    cases.push([`${family}`, { blueprintFamily: family, businessCategory: "Unternehmen", businessName: "Muster GmbH" }]);
+  }
+  cases.push(
+    ["beauty + Barbier", { blueprintFamily: "beauty", businessCategory: "Friseursalon", businessName: "Kante Barbershop" }],
+    ["beauty ohne Barbier", { blueprintFamily: "beauty", businessCategory: "Friseursalon", businessName: "Salon Lindner" }],
+    ["gastro Restaurant", { blueprintFamily: "gastro", businessCategory: "Restaurant", businessName: "Weinberg" }],
+    ["gastro Imbiss", { blueprintFamily: "gastro", businessCategory: "Imbiss", businessName: "Imbiss Muster" }],
+    ["gastro Café", { blueprintFamily: "gastro", businessCategory: "Café", businessName: "Café Muster" }],
+    ["gastro ohne Art", { blueprintFamily: "gastro", businessCategory: "Gastronomie", businessName: "Zur Post" }],
+    ["Familie leer", { blueprintFamily: undefined, businessCategory: "Schreinerei", businessName: "Brandt" }],
+    ["standard", { blueprintFamily: "standard", businessCategory: "Unternehmen", businessName: "Muster" }],
+    ["unbekannte Kategorie", { blueprintFamily: undefined, businessCategory: "Xyzzy Quatsch", businessName: "Foo" }],
+    ["ohne Kategorie", { blueprintFamily: undefined, businessCategory: undefined, businessName: "Foo" }]
+  );
+  test.each(cases)("%s → rev 3, System aus dem Tripel", (_label, patch) => {
+    const doc = { ...base, ...patch } as typeof base;
+    const out = withPrimarySystem(doc);
+    expect(out.designRevision).toBe(3);
+    expect(systemsForDoc(doc)).toContain(out.system);
+    expect(out.palette).toBeTruthy();
+    expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
+  });
+  test("nimmt das erste freigeschaltete System des Tripels", () => {
+    const doc = { ...base, blueprintFamily: "trade" } as typeof base;
+    const [first, second] = systemsForDoc(doc);
+    expect(withPrimarySystem(doc, id => id !== first).system).toBe(second);
+  });
+  test("wirft nur, wenn keins freigeschaltet ist", () => {
+    expect(() => withPrimarySystem(base, () => false)).toThrow(/freigeschaltet/);
+  });
+});
+
+describe("asSystemDoc", () => {
+  const rev3 = withDesignSystem(getFixture("werkbank", "full"), "klar", "wasser");
+  test("rev 3 mit System → dasselbe Objekt", () => {
+    expect(asSystemDoc(rev3)).toBe(rev3);
+    expect(asSystemDoc(rev3, withDesignSystem(rev3, "raster"))).toBe(rev3);
+  });
+  test.each([
+    ["rev 1", { ...getFixture("salon-noir", "full"), designRevision: 1 as const }],
+    ["rev 2", rev2],
+    ["ohne Revision", (() => { const { designRevision: _r, ...d } = getFixture("gusto", "full"); return d; })()],
+  ])("%s ohne current → Hauptsystem, rev 3", (_l, doc) => {
+    const out = asSystemDoc({ ...doc, fontPairId: "modern" });
+    expect(out.designRevision).toBe(3);
+    expect(out.system).toBe(systemsForDoc(doc)[0]);
+    expect(out.fontPairId).toBeUndefined();
+    expect(out.sections).toEqual(doc.sections);
+    expect(out.stylePackId).toBe(doc.stylePackId);
+    expect(out.designProfile).toEqual(doc.designProfile);
+    expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
+  });
+  test("mit rev-3-current → System und Palette des aktuellen Stands", () => {
+    const out = asSystemDoc(rev2, rev3);
+    expect(out.designRevision).toBe(3);
+    expect(out.system).toBe("klar");
+    expect(out.palette).toBe(rev3.palette);
+    expect(out.sections).toEqual(rev2.sections);
+    expect(out.businessName).toBe(rev2.businessName);
+  });
+  test("current ohne System → Hauptsystem", () => {
+    expect(asSystemDoc(rev2, rev2).system).toBe(systemsForDoc(rev2)[0]);
   });
 });

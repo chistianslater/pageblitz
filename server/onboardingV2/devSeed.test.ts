@@ -62,7 +62,11 @@ describe("/dev/studio-seed", () => {
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
       42,
       expect.objectContaining({
-        websiteData: expect.objectContaining({ stylePackId: "werkbank" }),
+        websiteData: expect.objectContaining({
+          stylePackId: "werkbank",
+          designRevision: 3,
+          system: expect.any(String),
+        }),
       })
     );
     expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
@@ -142,6 +146,8 @@ describe("/dev/studio-seed", () => {
       expect.objectContaining({
         slug: "studio-seed-werkbank-features",
         websiteData: expect.objectContaining({
+          designRevision: 3,
+          system: expect.any(String),
           features: {
             contactForm: true,
             aiChat: true,

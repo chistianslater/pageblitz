@@ -16,11 +16,6 @@ describe("Pack riviera", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("riviera", "full")} />
   );
-  test("eine h1, Bogen- und Kicker-Signatur", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-rv-arch");
-    expect(html).toContain("pb-rv-kicker");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');

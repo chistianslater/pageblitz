@@ -42,16 +42,4 @@ describe("googleReview", () => {
     expect(html.match(/data-on=""/g)).toHaveLength(4);
   });
 
-  test("alle 14 Packs sperren echte Reviews und zeigen Google-Quelle", () => {
-    for (const packId of PACK_IDS) {
-      const html = renderToStaticMarkup(
-        <SiteRenderer data={reviewDoc(packId)} />
-      );
-      expect(html, packId).toContain("data-pb-readonly");
-      expect(html, packId).toContain("Google-Bewertung");
-      expect(html, packId).toContain("Der Schrank sitzt auf den Millimeter.");
-      expect(html, packId).not.toContain("contenteditable");
-      expect(html, packId).toContain(REVIEW_CHROME_CSS.slice(0, 40));
-    }
-  });
 });

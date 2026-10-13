@@ -18,13 +18,6 @@ describe("Pack marktplatz", () => {
     <SiteRenderer data={getFixture("marktplatz", "full")} />
   );
 
-  test("Signatur-Klassen (Karte, Sticker, Kritzel, Scallop) rendern", () => {
-    expect(html).toContain("pb-mp-card");
-    expect(html).toContain("pb-mp-sticker");
-    expect(html).toContain("pb-mp-squiggle");
-    expect(html).toContain("pb-mp-scallop");
-  });
-
   test("genau eine h1, deutsche Anker leistungen + kontakt", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
     expect(html).toContain('id="leistungen"');
@@ -39,16 +32,4 @@ describe("Pack marktplatz", () => {
     expect(h).not.toContain('id="ueber-uns"');
   });
 
-  test("Sticker-Stagger, Sticky-Schnupper-CTA und Mobile-Illustration", () => {
-    expect(html).toContain('class="pb-mp-trial-cta"');
-    expect(MARKTPLATZ_CSS).toContain("@keyframes pb-mp-guide-in");
-    expect(MARKTPLATZ_CSS).toContain(".pb-mp-sticker.outline{animation-delay:");
-    expect(MARKTPLATZ_CSS).toContain("@media(max-width:840px)");
-    expect(MARKTPLATZ_CSS).toContain(
-      ".pb-mp-photo-wrap{display:block;width:min(72%,280px)"
-    );
-    expect(MARKTPLATZ_CSS).toContain("prefers-reduced-motion:reduce");
-    expect(MARKTPLATZ_CSS).toContain("(pointer:fine)");
-    expect(MARKTPLATZ_CSS).not.toContain("infinite");
-  });
 });

@@ -21,24 +21,6 @@ describe("Pack gusto", () => {
     <SiteRenderer data={getFixture("gusto", "full")} now={NOW} />
   );
 
-  test("Cinematic-Menu-Signatur rendert Doppelrahmen, Food-Bühne und Schnellzugriff", () => {
-    expect(html).toContain("pb-gu-frame");
-    expect(html).toContain("pb-gu-hero-media");
-    expect(html).toContain("pb-gu-hero-shade");
-    expect(html).toContain("pb-gu-menu");
-    expect(html).toContain("pb-gu-quick");
-    expect(html).toContain("Speisekarte");
-    expect(html).toContain("Tisch reservieren");
-    expect(html).toContain("Route");
-  });
-
-  test("redaktionelle Sektionen und filmische Galerie sind strukturell eigenständig", () => {
-    expect(html).toContain("pb-gu-service-list");
-    expect(html).toContain("pb-gu-story");
-    expect(html).toContain("pb-gu-film");
-    expect(html).toContain("pb-gu-reservation");
-  });
-
   test("Crop-/Reveal-Motion ist transformbasiert und reduced-motion-kompatibel", () => {
     expect(GUSTO_CSS).toContain("@keyframes pb-gu-crop");
     expect(GUSTO_CSS).toContain("32s cubic-bezier");
@@ -75,13 +57,6 @@ describe("Pack gusto", () => {
 
   test("genau eine h1", () => {
     expect(html.match(/<h1/g)).toHaveLength(1);
-  });
-
-  test("Kontakt-Kicker ist branchenneutral, CTA kommt aus dem Dokument", () => {
-    expect(html).not.toContain("Ihr Tisch wartet");
-    expect(html).not.toContain("Jetzt reservieren");
-    expect(html).toContain("Tisch reservieren");
-    expect(html).toContain("Kontakt");
   });
 
   test("Hotel auf Gusto: kein Gastro-Kicker im Layout", () => {

@@ -17,12 +17,6 @@ describe("Pack ernte", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("ernte", "full")} />
   );
-  test("eine h1, Blob-/Script-/Zweig-Signatur", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-er-blob");
-    expect(html).toContain("pb-er-script");
-    expect(html).toContain("pb-er-sprig");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="speisekarte"');
     expect(html).toContain('id="kontakt"');

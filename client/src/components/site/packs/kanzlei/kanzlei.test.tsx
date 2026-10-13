@@ -18,17 +18,6 @@ describe("Pack kanzlei", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("kanzlei", "full")} />
   );
-  test("eine h1, deutsche Anker, Signatur-Klassen", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain('id="leistungen"');
-    expect(html).toContain("pb-kz-split");
-    expect(html).toContain("pb-kz-photo");
-    expect(html).toContain("pb-kz-idx");
-    expect(html).not.toContain("pb-kz-grid");
-  });
-  test("Kennzahlen-Leiste rendert", () => {
-    expect(html).toContain("pb-kz-facts");
-  });
   test("Hero-Foto und Dossier-Motion, responsive Motion-Fallbacks", () => {
     expect(html).toContain("/demo/kanzlei-hero.webp");
     expect(html).not.toContain('class="pb-kz-section-index"');
@@ -43,15 +32,4 @@ describe("Pack kanzlei", () => {
     expect(KANZLEI_CSS).not.toContain("infinite");
   });
 
-  test("Chrome ist beratungstauglich, nicht nur Anwaltskanzlei", () => {
-    const c = getConstitution("kanzlei");
-    expect(c.signature.decor).not.toContain("paragraph-watermark");
-    expect(c.signature.decor).not.toContain("frame-watermark");
-    expect(html).not.toContain("§");
-    expect(html).toContain("Kundenstimmen");
-    expect(html).not.toContain("Mandantenstimmen");
-    expect(html).not.toContain("Fachgebiete");
-    expect(html).not.toContain("Mandant");
-    expect(html).not.toContain("Klage");
-  });
 });

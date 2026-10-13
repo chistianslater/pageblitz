@@ -16,11 +16,6 @@ describe("Pack karat", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("karat", "full")} />
   );
-  test("eine h1, Kicker-/Rahmen-Signatur-Klassen", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-ka-kicker");
-    expect(html).toContain("pb-ka-frame");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');

@@ -37,6 +37,7 @@ import { SYSTEM_MODULES } from "./systems/registry";
 import { SystemContext, type SystemState } from "./systems/SystemContext";
 import { legacyPackVars } from "./systems/legacyVars";
 import { getSystem } from "../../../../shared/designSystems/registry";
+import { asSystemDoc } from "../../../../shared/designSystems/apply";
 import { getPalette } from "../../../../shared/designSystems/palette";
 import { systemCssVars } from "../../../../shared/designSystems/toCss";
 import { blueprintFor } from "../../../../shared/blueprints/blueprints";
@@ -231,16 +232,10 @@ export const SiteRenderer: React.FC<{
   pathname = "/",
   legal,
 }) => {
-  // There are no paying customers yet: existing unversioned previews also
-  // adopt the new default. Revision 1 remains an explicit comparison option.
-  data =
-    data.designRevision === undefined
-      ? {
-          ...data,
-          designRevision: 2,
-          designProfile: data.designProfile ?? deriveArtDirectedProfile(data),
-        }
-      : data;
+  // Lesegrenze (Packs entfernen): jedes Dokument rendert als Designsystem
+  // (rev 3). rev 3 bleibt dasselbe Objekt; alte Stände bekommen das
+  // Hauptsystem ihrer Branche.
+  data = asSystemDoc(data);
   // Fehlt dem Über-uns-Abschnitt das Foto, rückt ein Galeriebild nach —
   // sonst steht der Abschnitt halb leer (Betreiber-Befund 2026-09-20).
   data = withAboutFallbackImage(data);

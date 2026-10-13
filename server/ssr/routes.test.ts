@@ -1,4 +1,3 @@
-import { applyStylePack } from "../onboardingV2/applyPatch";
 import {
   afterAll,
   afterEach,
@@ -14,6 +13,7 @@ import supertest from "supertest";
 import type { Server } from "http";
 import { getFixture } from "../../shared/siteContract/fixtures";
 import { withDesignSystem } from "../../shared/designSystems/apply";
+import { restoreDoc } from "../onboardingV2/versions";
 
 vi.mock("../db", () => ({
   getWebsiteBySlug: vi.fn(),
@@ -87,18 +87,6 @@ describe("SSR routes", () => {
     expect(res.status).toBe(200);
     expect(res.text).toContain('data-welcome="Willkommen in der Demo!"');
   });
-  test("dev-preview kann ein deterministisches Designprofil per variant ableiten", async () => {
-    const app = express();
-    registerSsrRoutes(app);
-    const res = await request(app).get(
-      "/dev/site-preview?pack=werkbank&fixture=full&variant=1"
-    );
-    expect(res.status).toBe(200);
-    expect(res.text).toContain('data-pb-services="grid"');
-    expect(res.text).toContain('data-pb-about="image-left"');
-    expect(res.text).toContain('data-pb-gallery="filmstrip"');
-  });
-
   test("unbekanntes Pack → 400 mit Meldung", async () => {
     const app = express();
     registerSsrRoutes(app);
@@ -289,34 +277,6 @@ describe("SSR routes", () => {
       expect(nacht.text).toContain('data-pb-palette="pflaume"');
     });
 
-    test("preview-ssr ?pack=<eigenes Pack> auf rev-3-Seite rendert das Pack, nicht Journal", async () => {
-      const journalDoc = withDesignSystem(
-        getFixture("salon-noir", "full"),
-        "journal",
-        "salbei"
-      );
-      (getWebsiteByToken as Mock).mockResolvedValue({
-        id: 1,
-        slug: "s",
-        websiteData: journalDoc,
-      });
-      const app = express();
-      registerSsrRoutes(app);
-      const own = await request(app).get(
-        `/preview-ssr/abcdefghabcdefgh?pack=${journalDoc.stylePackId}`
-      );
-      expect(own.status).toBe(200);
-      expect(own.text).not.toContain('data-pb-system="journal"');
-      expect(own.text).toContain(`class="pb-${journalDoc.stylePackId}`);
-      // Ohne ?pack bleibt es Journal.
-      const plain = await request(app).get("/preview-ssr/abcdefghabcdefgh");
-      expect(plain.text).toContain('data-pb-system="journal"');
-      // ?system= hat weiter Vorrang vor ?pack=.
-      const both = await request(app).get(
-        `/preview-ssr/abcdefghabcdefgh?pack=${journalDoc.stylePackId}&system=journal&palette=ton`
-      );
-      expect(both.text).toContain('data-pb-system="journal"');
-    });
   });
 
   describe("GET /demo/:pack", () => {
@@ -441,7 +401,11 @@ describe("SSR routes", () => {
         const res = await request(app).get("/demo/werkbank/impressum");
         expect(res.status).toBe(200);
         expect(res.text).toContain("Impressum");
-        expect(res.text).not.toContain("Leistungen im Detail");
+        // Die Navigation (System-Rahmen) darf auf die Unterseite verlinken —
+        // ihr Inhalt erscheint aber nicht.
+        expect(res.text).not.toContain(
+          "Ein genauerer Blick auf unser Angebot, Schritt für Schritt."
+        );
       });
 
       test("kein DB-Zugriff (Fixture statt echter Website)", async () => {
@@ -708,7 +672,9 @@ describe("SSR routes", () => {
       });
 
       test("ohne gebuchte Galerie liefert die Seite die drei freien Fotos aus", async () => {
-        const fixture = getFixture("werkbank", "full");
+        // Journal zeigt ohne Extra die ersten drei Fotos (die anderen Systeme
+        // zeigen jedes Foto genau einmal, siehe freeGalleryBeyondShown).
+        const fixture = withDesignSystem(getFixture("werkbank", "full"), "journal");
         const { gallery: _g, ...rest } = fixture.addOns ?? {};
         (getWebsiteBySlug as Mock).mockResolvedValue({
           slug: "brandt-ohne-galerie",
@@ -1039,60 +1005,62 @@ describe("SSR routes", () => {
       });
     });
 
-    test("?pack=kanzlei rendert die Inhalte im anderen Pack, ohne zu persistieren", async () => {
-      (getWebsiteByToken as Mock).mockResolvedValue({
-        id: 1,
-        slug: "s",
-        websiteData: getFixture("werkbank", "full"),
-      });
-      const res = await request(buildAppWithFallback()).get(
-        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
-      );
-      expect(res.status).toBe(200);
-      expect(res.text).toContain('class="pb-kanzlei');
-    });
-
-    test("Designalternative und übernommenes Design zeigen dieselbe Komposition", async () => {
-      const source = {
-        ...getFixture("werkbank", "full"),
-        designRevision: 2 as const,
-      };
-      const chosen = applyStylePack(source, "kanzlei");
-      const lookup = getWebsiteByToken as Mock;
-      lookup.mockResolvedValue({ id: 1, slug: "s", websiteData: source });
-      const candidate = await request(buildAppWithFallback()).get(
-        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
-      );
-      lookup.mockResolvedValue({ id: 1, slug: "s", websiteData: chosen });
-      const selected = await request(buildAppWithFallback()).get(
-        "/preview-ssr/abcdefghabcdefgh?pack=kanzlei"
-      );
-      const hero = (html: string) =>
-        html.match(/<section[^>]*data-art-composition[^>]*>/)?.[0];
-      expect(hero(candidate.text)).toBeTruthy();
-      expect(hero(candidate.text)).toBe(hero(selected.text));
-    });
-
     test("?version=<id> rendert den gespeicherten Stand statt des Dokuments (Verlauf, 2026-09-03)", async () => {
       (getWebsiteByToken as Mock).mockResolvedValue({
         id: 1,
         slug: "s",
-        websiteData: getFixture("werkbank", "full"),
+        websiteData: withDesignSystem(getFixture("werkbank", "full"), "werkstoff"),
       });
       (getWebsiteVersion as Mock).mockResolvedValue({
         id: 5,
         trigger: "panel",
-        label: "Designrichtung: Kanzlei",
+        label: "Designsystem: Klar",
         createdAt: new Date(),
-        doc: getFixture("kanzlei", "full"),
+        doc: withDesignSystem(getFixture("kanzlei", "full"), "klar"),
       });
       const res = await request(buildAppWithFallback()).get(
         "/preview-ssr/abcdefghabcdefgh?version=5"
       );
       expect(res.status).toBe(200);
       expect(getWebsiteVersion).toHaveBeenCalledWith(1, 5);
-      expect(res.text).toContain('class="pb-kanzlei');
+      expect(res.text).toContain('data-pb-system="klar"');
       expect(res.headers["cache-control"]).toBe("no-store");
+    });
+
+    test("?version= eines rev-2-Stands zeigt genau die Wiederherstellung (aktuelles System, alte Texte)", async () => {
+      const current = withDesignSystem(getFixture("werkbank", "full"), "raster", "kohle");
+      const kanzlei = getFixture("kanzlei", "full");
+      const stand = {
+        ...kanzlei,
+        designRevision: 2 as const,
+        fontPairId: "modern",
+        sections: kanzlei.sections.map(section =>
+          section.type === "hero"
+            ? { ...section, headline: "Alter Stand vor Designsystem" }
+            : section
+        ),
+      };
+      (getWebsiteVersion as Mock).mockResolvedValue({
+        id: 7,
+        trigger: "panel",
+        label: "Stand vor Designsystem",
+        createdAt: new Date(),
+        doc: stand,
+      });
+      const agent = request(buildAppWithFallback());
+      (getWebsiteByToken as Mock).mockResolvedValue({ id: 1, slug: "s", websiteData: current });
+      const preview = await agent.get("/preview-ssr/abcdefghabcdefgh?version=7");
+      (getWebsiteByToken as Mock).mockResolvedValue({
+        id: 1,
+        slug: "s",
+        websiteData: restoreDoc(current, stand),
+      });
+      const restored = await agent.get("/preview-ssr/abcdefghabcdefgh");
+      expect(preview.status).toBe(200);
+      expect(preview.text).toContain('data-pb-system="raster"');
+      expect(preview.text).toContain("Alter Stand vor Designsystem");
+      const ohnePort = (html: string) => html.replace(/127\.0\.0\.1:\d+/g, "host");
+      expect(ohnePort(preview.text)).toBe(ohnePort(restored.text));
     });
 
     test("?version= unbekannt oder fremd → 404; ungültiger Wert → 400 ohne Reflektion", async () => {

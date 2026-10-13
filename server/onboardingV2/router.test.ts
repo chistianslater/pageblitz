@@ -30,7 +30,10 @@ vi.mock("../generationV2/runJob", async importOriginal => {
   };
 });
 vi.mock("../ssr/routes", () => ({ invalidateSsrCache: vi.fn() }));
-// Freischaltung der Designsysteme steuerbar (Spec §6: bis zur Abnahme leer).
+// Freischaltung der Designsysteme steuerbar. Standard = Produktion: alle
+// sechs Systeme frei (ohne freies System lässt sich keine Seite mehr lesen,
+// Packs entfernen Task 2).
+const ALL_SYSTEMS = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
 const released = vi.hoisted(() => ({ ids: [] as string[] }));
 vi.mock("../../shared/designSystems/registry", async importOriginal => {
   const actual =
@@ -52,6 +55,7 @@ import {
 } from "../generationV2/runJob";
 import { invalidateSsrCache } from "../ssr/routes";
 import { getV2VariantCandidates } from "../../shared/stylePacks/variantCandidates";
+import { systemsForDoc } from "../../shared/designSystems/assignment";
 const mockedDb = vi.mocked(db);
 
 const ctx = (): TrpcContext => ({
@@ -72,7 +76,7 @@ const v2 = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  released.ids = [];
+  released.ids = [...ALL_SYSTEMS];
   mockedDb.getWebsiteByToken.mockResolvedValue({
     id: 42,
     slug: "preview-brandt",
@@ -540,39 +544,17 @@ describe("onboardingV2.getStyleCandidates", () => {
 });
 
 describe("onboardingV2.selectStylePack", () => {
-  test("persistiert Pack, setzt styleConfirmed, invalidiert Cache, gibt neuen State", async () => {
-    const s = await appRouter
-      .createCaller(ctx())
-      .onboardingV2.selectStylePack({
-        token: "tok",
-        packId: "kanzlei",
-        confirm: true,
-      });
-    expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
-      42,
-      expect.objectContaining({
-        websiteData: expect.objectContaining({ stylePackId: "kanzlei" }),
-      })
-    );
-    expect(mockedDb.updateOnboarding).toHaveBeenCalledWith(
-      42,
-      expect.objectContaining({ studioProgress: { styleConfirmed: true } })
-    );
-    expect(invalidateSsrCache).toHaveBeenCalledWith("preview-brandt");
-    expect(s.stylePackId).toBe("kanzlei");
-    expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
-  });
-  test("bloßes Ansehen einer Richtung persistiert Pack, aber bestätigt den Gate nicht", async () => {
-    const s = await appRouter
-      .createCaller(ctx())
-      .onboardingV2.selectStylePack({
-        token: "tok",
-        packId: "kanzlei",
-        confirm: false,
-      });
-    expect(mockedDb.updateWebsite).toHaveBeenCalled();
+  // Packs entfernen (Task 2): Eine Pack-Wahl verließe das Designsystem
+  // (rev 2) — der Write-Guard lehnt das ab, nichts wird gespeichert. Die
+  // Prozedur selbst entfällt in Task 3.
+  test("Pack-Wahl wird abgelehnt (nur rev 3 wird geschrieben), nichts gespeichert", async () => {
+    await expect(
+      appRouter
+        .createCaller(ctx())
+        .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei", confirm: true })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST", message: expect.stringMatching(/Designsystem/) });
+    expect(mockedDb.updateWebsite).not.toHaveBeenCalled();
     expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
-    expect(s.checklist.find(i => i.id === "style")?.status).toBe("open");
   });
   test("unbekanntes Pack → BAD_REQUEST; ohne v2-Dokument → BAD_REQUEST", async () => {
     await expect(
@@ -592,26 +574,6 @@ describe("onboardingV2.selectStylePack", () => {
         .createCaller(ctx())
         .onboardingV2.selectStylePack({ token: "tok", packId: "kanzlei" })
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
-  });
-  test("ohne Onboarding-Row → legt Row mit studioProgress an, statt zu updaten", async () => {
-    mockedDb.getOnboardingByWebsiteId.mockResolvedValue(undefined);
-    const s = await appRouter
-      .createCaller(ctx())
-      .onboardingV2.selectStylePack({
-        token: "tok",
-        packId: "kanzlei",
-        confirm: true,
-      });
-    expect(mockedDb.createOnboarding).toHaveBeenCalledWith(
-      expect.objectContaining({
-        websiteId: 42,
-        status: "in_progress",
-        stepCurrent: 0,
-        studioProgress: { styleConfirmed: true },
-      })
-    );
-    expect(mockedDb.updateOnboarding).not.toHaveBeenCalled();
-    expect(s.checklist.find(i => i.id === "style")?.status).toBe("done");
   });
 });
 
@@ -648,38 +610,27 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     } as any);
   });
 
-  test("ohne Freischaltung: nur Packs, jeder mit kind pack", async () => {
+  // Packs entfernen (Task 2): Das Studio liest jede Seite als System-Dokument
+  // — die Seite trägt also immer schon ihr Hauptsystem. Gestaffelte
+  // Freischaltungen und Pack-only-Runden mit rev-2-Seiten gibt es nicht mehr;
+  // Task 3 stellt die Kandidaten ganz auf Systeme um (E2).
+  test("Runde 0: Alternativen aus dem Tripel ohne das aktuelle System, Rest Packs", async () => {
     const { candidates } = await caller().getStyleCandidates({
       token: friseurToken,
       count: 3,
     });
     expect(candidates).toHaveLength(3);
-    expect(candidates.every(c => c.kind === "pack")).toBe(true);
-  });
-
-  test("ohne Freischaltung: exakt die Pack-IDs und Reihenfolge wie bisher", async () => {
-    for (const round of [0, 1, 2]) {
-      for (const count of [2, 3] as const) {
-        const { candidates } = await caller().getStyleCandidates({
-          token: friseurToken,
-          round,
-          count,
-        });
-        expect(candidates.map(c => c.id)).toEqual(
-          getV2VariantCandidates("Friseursalon", round, count)
-        );
-      }
-    }
-  });
-
-  test("Systeme nur in Runde 0 — „Andere Richtungen“ zeigt danach nur Packs", async () => {
-    released.ids = ["journal"];
-    const first = await caller().getStyleCandidates({
-      token: friseurToken,
-      round: 0,
-      count: 3,
+    expect(candidates[0]).toMatchObject({
+      kind: "system",
+      id: "nacht",
+      name: "Nacht",
     });
-    expect(first.candidates[0]).toMatchObject({ kind: "system", id: "journal" });
+    expect(candidates[1]).toMatchObject({ kind: "system", id: "plakat" });
+    expect((candidates[0] as any).palettes).toHaveLength(3);
+    expect(candidates[2].kind).toBe("pack");
+  });
+
+  test("Runde ≥ 1 („Andere Richtungen“) zeigt weiter nur Packs", async () => {
     for (const round of [1, 2]) {
       const { candidates } = await caller().getStyleCandidates({
         token: friseurToken,
@@ -693,153 +644,26 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
     }
   });
 
-  test("Kandidaten enthalten freigeschaltetes Hauptsystem", async () => {
-    released.ids = ["journal"];
-    const { candidates } = await caller().getStyleCandidates({
-      token: friseurToken,
-      count: 3,
-    });
-    expect(candidates).toHaveLength(3);
-    expect(candidates[0]).toMatchObject({
-      kind: "system",
-      id: "journal",
-      name: "Journal",
-      palettes: [
-        { id: "papier", name: "Papier", accent: "#6e5643", paper: "#f3eee7" },
-        expect.objectContaining({ id: "salbei" }),
-        expect.objectContaining({ id: "ton" }),
-      ],
-    });
-    expect(candidates.slice(1).every(c => c.kind === "pack")).toBe(true);
-  });
-
-  test("Handwerk (Hauptsystem nicht frei) bekommt keine Systemkarte", async () => {
-    released.ids = ["journal"];
-    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
-    const { candidates } = await caller().getStyleCandidates({
-      token: "tok",
-      count: 3,
-    });
-    expect(candidates.some(c => c.kind === "system")).toBe(false);
-  });
-
-  test("Handwerk: Raster ist Alternative in Runde 0, auch ohne freies Hauptsystem", async () => {
-    released.ids = ["journal", "raster"];
-    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
-    const { candidates } = await caller().getStyleCandidates({
-      token: "tok",
-      count: 3,
-    });
-    expect(candidates.some(c => c.kind === "system" && c.id === "raster")).toBe(true);
-    expect(candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(false);
-  });
-
-  test("Werkstoff frei: Handwerk Hauptsystem, Restaurant Alternative in Runde 0", async () => {
-    released.ids = ["journal", "raster", "werkstoff"];
-    useDoc({ ...v2, businessCategory: "Tischlerei", blueprintFamily: "trade" });
-    const trade = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(trade.candidates[0]).toMatchObject({ kind: "system", id: "werkstoff" });
-    useDoc({ ...v2, businessCategory: "Restaurant", businessName: "Zur Linde", blueprintFamily: "gastro" });
-    const gastro = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(gastro.candidates.some(c => c.kind === "system" && c.id === "werkstoff")).toBe(true);
-  });
-
-  test("Plakat frei: Friseur, Café und Handwerk bekommen es als Alternative in Runde 0", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat"];
-    const isPlakat = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "plakat";
-    useDoc(friseurDoc);
-    const friseur = await caller().getStyleCandidates({ token: friseurToken, count: 3 });
-    expect(friseur.candidates.some(isPlakat)).toBe(true);
-    // Café und Handwerk: Plakat steht an dritter Stelle des Tripels und rückt
-    // nach, sobald die Seite das Hauptsystem (Werkstoff) schon trägt.
-    const onWerkstoff = { designRevision: 3, system: "werkstoff", palette: "papier" };
-    useDoc({ ...v2, ...onWerkstoff, businessCategory: "Café", businessName: "Café Muster", blueprintFamily: "gastro" });
-    const cafe = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(cafe.candidates.some(isPlakat)).toBe(true);
-    useDoc({ ...v2, ...onWerkstoff, businessCategory: "Tischlerei", blueprintFamily: "trade" });
-    const trade = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(trade.candidates.some(isPlakat)).toBe(true);
-  });
-
-  test("Plakat frei: Barbershop und Kurse bekommen es als Hauptsystem", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat"];
-    useDoc({ ...v2, businessCategory: "Friseursalon", businessName: "Kante Barbershop", blueprintFamily: "beauty" });
-    const barber = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(barber.candidates[0]).toMatchObject({ kind: "system", id: "plakat" });
-    useDoc({ ...v2, businessCategory: "Tanzschule", blueprintFamily: "courses" });
-    const courses = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(courses.candidates[0]).toMatchObject({ kind: "system", id: "plakat" });
-  });
-
-  test("Klar frei: Gesundheit Hauptsystem, Beratung/Kurse/Dringend Alternative in Runde 0", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar"];
-    const isKlar = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "klar";
-    useDoc({ ...v2, businessCategory: "Zahnarzt", blueprintFamily: "health" });
-    const health = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(health.candidates[0]).toMatchObject({ kind: "system", id: "klar" });
-    for (const family of ["advice", "courses", "urgent"]) {
-      useDoc({ ...v2, businessCategory: "Betrieb", blueprintFamily: family });
-      const r = await caller().getStyleCandidates({ token: "tok", count: 3 });
-      expect(r.candidates.some(isKlar), family).toBe(true);
-    }
-  });
-
-  test("Klar frei: Industrie und Standard zeigen Klar erst, wenn die Seite Raster trägt", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar"];
-    const isKlar = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "klar";
-    for (const family of ["industry", "standard"]) {
-      useDoc({ ...v2, businessCategory: "Betrieb", blueprintFamily: family });
-      const before = await caller().getStyleCandidates({ token: "tok", count: 3 });
-      expect(before.candidates.some(isKlar), family).toBe(false);
-      useDoc({ ...v2, designRevision: 3, system: "raster", palette: "papier", businessCategory: "Betrieb", blueprintFamily: family });
-      const after = await caller().getStyleCandidates({ token: "tok", count: 3 });
-      expect(after.candidates.some(isKlar), family).toBe(true);
-    }
-  });
-
-  test("Nacht frei: Restaurant Hauptsystem, Friseur/Hotel/Barbershop/Auto Alternative in Runde 0", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
-    const isNacht = (c: { kind: string; id: string }) => c.kind === "system" && c.id === "nacht";
-    useDoc({ ...v2, businessCategory: "Restaurant", businessName: "Zur Linde", blueprintFamily: "gastro" });
-    const restaurant = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(restaurant.candidates[0]).toMatchObject({ kind: "system", id: "nacht" });
-    useDoc(friseurDoc);
-    const friseur = await caller().getStyleCandidates({ token: friseurToken, count: 3 });
-    expect(friseur.candidates.some(isNacht)).toBe(true);
-    useDoc({ ...v2, businessCategory: "Friseursalon", businessName: "Kante Barbershop", blueprintFamily: "beauty" });
-    const barber = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(barber.candidates.some(isNacht)).toBe(true);
-    useDoc({ ...v2, businessCategory: "Hotel", blueprintFamily: "stay" });
-    const stay = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(stay.candidates.some(isNacht)).toBe(true);
-  });
-
-  test("Nacht frei: Auto behält Raster als Hauptsystem", async () => {
-    released.ids = ["journal", "raster", "werkstoff", "plakat", "klar", "nacht"];
-    useDoc({ ...v2, businessCategory: "Autowerkstatt", blueprintFamily: "auto" });
-    const auto = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(auto.candidates[0]).toMatchObject({ kind: "system", id: "raster" });
-  });
-
-  test("Raster erscheint erst mit Freischaltung (Steuerberater: Hauptsystem)", async () => {
-    useDoc({ ...v2, businessCategory: "Steuerberater", blueprintFamily: "advice" });
-    released.ids = ["journal"];
-    const before = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(before.candidates.some(c => c.id === "raster")).toBe(false);
-    released.ids = ["journal", "raster"];
-    const after = await caller().getStyleCandidates({ token: "tok", count: 3 });
-    expect(after.candidates[0]).toMatchObject({
-      kind: "system",
-      id: "raster",
-      name: "Raster",
-      palettes: [
-        expect.objectContaining({ id: "papier" }),
-        expect.objectContaining({ id: "werk" }),
-        expect.objectContaining({ id: "kohle" }),
-      ],
-    });
-    // Alternative 2 (Journal) für Beratung — höchstens count − 1 Systeme.
-    expect(after.candidates.filter(c => c.kind === "system").length).toBeLessThanOrEqual(2);
+  test.each([
+    ["trade", "Tischlerei", "Brandt"],
+    ["gastro", "Restaurant", "Zur Linde"],
+    ["gastro", "Café", "Café Muster"],
+    ["beauty", "Friseursalon", "Kante Barbershop"],
+    ["courses", "Tanzschule", "Tanzschule Muster"],
+    ["health", "Zahnarzt", "Praxis Muster"],
+    ["advice", "Steuerberater", "Kanzlei Muster"],
+    ["auto", "Autowerkstatt", "Autohaus Muster"],
+    ["stay", "Hotel", "Hotel Muster"],
+    ["industry", "Betrieb", "Muster GmbH"],
+    ["standard", "Betrieb", "Muster"],
+  ])("%s (%s): Seite trägt das Hauptsystem, Kandidaten sind die übrigen zwei", async (family, category, name) => {
+    const doc = { ...v2, businessCategory: category, businessName: name, blueprintFamily: family };
+    useDoc(doc);
+    const [primary, alt1, alt2] = systemsForDoc(doc as any);
+    const state = await caller().getState({ token: "tok" });
+    expect(state.doc?.system).toBe(primary);
+    const { candidates } = await caller().getStyleCandidates({ token: "tok", count: 3 });
+    expect(candidates.filter(c => c.kind === "system").map(c => c.id)).toEqual([alt1, alt2]);
   });
 
   test("aktuelles System der Seite wird nicht erneut angeboten", async () => {
@@ -891,9 +715,6 @@ describe("onboardingV2 — Designsysteme im Studio (Task 16)", () => {
   });
 
   test("selectDesignSystem lehnt nicht freigeschaltetes System ab", async () => {
-    await expect(
-      caller().selectDesignSystem({ token: friseurToken, system: "journal" })
-    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     released.ids = ["journal"];
     await expect(
       caller().selectDesignSystem({ token: friseurToken, system: "nacht" })

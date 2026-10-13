@@ -49,6 +49,7 @@ import { crawlExistingSite } from "../gmb/siteCrawl";
 import { invalidateSsrCache } from "../ssr/routes";
 import { WebsiteDataV2Schema } from "../../shared/siteContract/schema";
 import { generateSiteContent } from "./generateSiteContent";
+import { resolveIndustryFamily } from "./industryFamily";
 import { guardGeneratedContent } from "./factGuard";
 import {
   buildInterimV2Doc,
@@ -514,6 +515,43 @@ describe("runWebsiteGenerationV2Job", () => {
       {}
     );
     expect(WebsiteDataV2Schema.safeParse(interim).success).toBe(true);
+    expect(interim.designRevision).toBe(3);
+    expect(interim.system).toBeTruthy();
+  });
+
+  test("buildInterimV2Doc: Familie aus Kategorie/Name/Branchenschlüssel, schon im System (Zeitmaschine)", () => {
+    const restaurant = buildInterimV2Doc(
+      "gusto",
+      "Trattoria Roma",
+      "Restaurant",
+      "preview-roma",
+      {},
+      "restaurant"
+    );
+    expect(restaurant.blueprintFamily).toBe("gastro");
+    expect(restaurant.designRevision).toBe(3);
+    expect(restaurant.system).toBe("nacht");
+    // Unbekannte Kategorie → Standard: kein Feld, Hauptsystem Raster.
+    const standard = buildInterimV2Doc("werkbank", "Foo", "Xyzzy", "foo", {});
+    expect(standard.blueprintFamily).toBeUndefined();
+    expect(standard.system).toBe("raster");
+  });
+
+  test("Zwischenstand und fertige Seite zeigen dasselbe System und dieselbe Palette", async () => {
+    mockedMirror.mockResolvedValue([R2_1]);
+    // Wie generateSiteContent (withFamily): Familie aus Kategorie + Name.
+    mockedGen.mockResolvedValue({
+      ...doc,
+      businessCategory: "Tischler",
+      blueprintFamily: resolveIndustryFamily("Tischler", "Schreinerei Brandt"),
+    } as any);
+    await runWebsiteGenerationV2Job(99, 42);
+    const interim = mockedDb.updateWebsite.mock.calls[0][1].websiteData as any;
+    const finalDoc = mockedDb.updateWebsite.mock.calls[1][1].websiteData as any;
+    expect(interim.designRevision).toBe(3);
+    expect(interim.system).toBe(finalDoc.system);
+    expect(interim.palette).toBe(finalDoc.palette);
+    expect(interim.fontPairId).toBeUndefined();
   });
 
   test("LLM-Fehler NACH dem Zwischenstand: vorheriges websiteData wird wiederhergestellt (hier: null), Cache invalidiert, Job failed", async () => {
@@ -632,9 +670,8 @@ describe("withNewSiteDesign", () => {
     }
   );
 
-  test("gibt der Neuerstellung Design-Stand und Farbfläche wie einer neuen Seite (ohne Freischaltung)", async () => {
-    const { mod } = await runJobWithoutRelease();
-    const result = mod.withNewSiteDesign(
+  test("gibt der Neuerstellung Design-Stand und Farbfläche wie einer neuen Seite", () => {
+    const result = withNewSiteDesign(
       { ...doc, designProfile: undefined },
       "morgenlicht",
       {
@@ -643,10 +680,9 @@ describe("withNewSiteDesign", () => {
         heroLandscape: false,
       }
     );
-    expect(result.designRevision).toBe(2);
+    expect(result.designRevision).toBe(3);
     expect(result.designStand).toBeTruthy();
     expect(result.designProfile?.composition).toBe("colorfield");
-    restoreRelease();
   });
 
   test("freigeschaltet: ein Friseur-Dokument wird Journal (rev 3)", () => {
@@ -706,13 +742,12 @@ describe("withNewSiteDesign und Designsysteme", () => {
   const friseur = () =>
     buildInterimV2Doc("morgenlicht", "Salon Test", "Friseursalon", "salon-test", images);
 
-  test("rev-3-Dokument wird ohne Freischaltung zu gültigem rev 2 ohne system/palette", async () => {
+  test("ohne freigeschaltetes System wirft die Neuerstellung (nie rev 2 schreiben)", async () => {
     const { mod, apply } = await runJobWithoutRelease();
     const rev3 = apply.withDesignSystem(friseur(), "journal", "ton");
-    const result = mod.withNewSiteDesign(rev3, "morgenlicht", images);
-    expect(result.designRevision).toBe(2);
-    expect(result.system).toBeUndefined();
-    expect(result.palette).toBeUndefined();
+    expect(() => mod.withNewSiteDesign(rev3, "morgenlicht", images)).toThrow(
+      /freigeschaltet/
+    );
     restoreRelease();
   });
 

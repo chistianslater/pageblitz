@@ -18,12 +18,6 @@ describe("Pack patina", () => {
     <SiteRenderer data={getFixture("patina", "full")} />
   );
 
-  test("Signatur-Klassen (Initial, Bogen, Randnotiz) rendern", () => {
-    expect(html).toContain("pb-pa-init");
-    expect(html).toContain("pb-pa-arch");
-    expect(html).toContain("pb-pa-note");
-  });
-
   test("zeigt eine eigenständige fotografische Praxis-Serie", () => {
     for (const asset of [
       "patina-hero.webp",
@@ -50,13 +44,4 @@ describe("Pack patina", () => {
     expect(h).not.toContain('id="ueber-uns"');
   });
 
-  test("Papierseiten-Reveal und Sticky-Kapitelmarke sind responsiv", () => {
-    expect(html).toContain('class="pb-pa-chapters"');
-    expect(PATINA_CSS).toContain("@keyframes pb-pa-page-turn");
-    expect(PATINA_CSS).toContain("scroll-margin-top");
-    expect(PATINA_CSS).toContain("@media(max-width:840px)");
-    expect(PATINA_CSS).toContain("prefers-reduced-motion:reduce");
-    expect(PATINA_CSS).toContain("(pointer:fine)");
-    expect(PATINA_CSS).not.toContain("infinite");
-  });
 });

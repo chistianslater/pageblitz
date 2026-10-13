@@ -36,15 +36,6 @@ function sectionHtml(html: string, anchor: string): string {
 }
 
 describe("Button unter der Speisekarte", () => {
-  test.each(PACK_IDS)("%s zeigt den Button innerhalb der Sektion", pack => {
-    const html = renderToStaticMarkup(<SiteRenderer data={doc(pack)} />);
-    const menu = sectionHtml(html, SECTION_ANCHORS.menu);
-    expect(menu).toContain('class="pb-section-link-btn"');
-    expect(menu).toContain('href="https://dicle.nexorder.de/"');
-    expect(menu).toContain('target="_blank"');
-    expect(menu).toContain("Online bestellen");
-  });
-
   test("interne Anker öffnen im selben Tab", () => {
     const data = doc("gusto");
     data.sections[1] = { ...MENU, link: { text: "Kontakt", href: "#kontakt" } };

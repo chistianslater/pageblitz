@@ -79,6 +79,10 @@ describe("/dev/dashboard-seed", () => {
         slug: "dev-dashboard-werkbank",
         status: "active",
         customerEmail: "dev-dashboard@example.test",
+        websiteData: expect.objectContaining({
+          designRevision: 3,
+          system: expect.any(String),
+        }),
       })
     );
     expect(mockedDb.createSubscription).toHaveBeenCalledWith(

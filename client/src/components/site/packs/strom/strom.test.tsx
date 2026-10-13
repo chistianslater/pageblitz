@@ -16,11 +16,6 @@ describe("Pack strom", () => {
   const html = renderToStaticMarkup(
     <SiteRenderer data={getFixture("strom", "full")} />
   );
-  test("eine h1, Terminal-/Aurora-Signatur-Klassen", () => {
-    expect(html.match(/<h1/g)).toHaveLength(1);
-    expect(html).toContain("pb-st-terminal");
-    expect(html).toContain("pb-st-aurora");
-  });
   test("deutsche Anker vorhanden", () => {
     expect(html).toContain('id="leistungen"');
     expect(html).toContain('id="kontakt"');
