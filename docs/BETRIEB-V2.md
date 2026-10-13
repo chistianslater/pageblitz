@@ -479,6 +479,7 @@ Weitere relevante Env-Vars (Namen + Zweck, keine Werte hier — siehe
 | `APP_BASE_URL` / `APP_URL` / `BASE_URL` | Basis-URL für Links (E-Mails, Redirects) |
 | `STRIPE_SECRET_KEY` | Stripe-API |
 | `STRIPE_WEBHOOK_SECRET` | Signaturprüfung `handleCheckoutCompleted` |
+| `STRIPE_TERMS_URL` | optional: AGB-URL — erst wenn gesetzt, verlangt der Checkout die AGB-Zustimmung (`consent_collection.terms_of_service`); dieselbe URL in Stripe → Public details eintragen |
 | `STRIPE_PORTAL_CONFIGURATION_ID` | optional: feste Kundenportal-Konfiguration ohne Kündigen (sonst legt der Server sie selbst an, siehe „Preise & Laufzeit“) |
 | `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Transaktions-/Lifecycle-Mails |
 | `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` / `R2_PUBLIC_URL` | Objekt-Storage (Cloudflare R2, S3-kompatibel — nicht AWS S3) |
@@ -696,6 +697,13 @@ Bis zu drei optionale Hydration-Inseln pro v2-Website, gesteuert über
   `tariff=monthly`, `termMonths=0`; in der DB `billingInterval=monthly`,
   `termStartedAt`/`currentTermEnd` auf NULL).
 - Alle Preise brutto **inkl. 19 % MwSt.** (Regelbesteuerung).
+- **Nur B2B:** Die Preis-Fußnote sagt „Angebot nur für Gewerbetreibende und
+  Selbstständige." Vor der Weiterleitung zu Stripe muss im Studio das
+  Pflicht-Häkchen „Ich bestelle als Unternehmer oder Selbstständiger (§ 14
+  BGB) …" gesetzt sein (Server prüft `b2bConfirmed`); der Zeitpunkt steht als
+  Metadatum `b2b_bestaetigt_at` an Session und Subscription und in
+  `subscriptions.b2bConfirmedAt`. (Betreiber-Entscheidung B2B-only noch
+  offen — Schalter ist eingebaut.)
 
 **Wo was steht:** Zahlen nur in `shared/pricing.ts`; alle Texte (Landing,
 SEO, Studio, Checkout, Konto, Postkarte, Chat-Prompts, llms.txt, JSON-LD)
@@ -713,7 +721,12 @@ Vite-Plugin `pageblitz-pricing-html`.
   Laufzeittext am Bezahl-Knopf (`custom_text.submit`).
 - Webhook `invoice.paid` → erste Zahlung > 0 € setzt `termStartedAt` /
   `currentTermEnd` (+ Stripe-Metadatum `termStartedAt`), jede Zahlung ab
-  Laufzeitende rollt `currentTermEnd` um 12 Monate.
+  Laufzeitende rollt `currentTermEnd` um 12 Monate. Laufzeitenden zählen vom
+  Stripe-`billing_cycle_anchor` (`subscriptions.billingAnchorAt`), damit
+  `cancel_at` immer auf einer Periodengrenze liegt (Anker 31., Wechsel-Beginn
+  28.02. → Ende 29.02.).
+- Das Konto zeigt das Kündigungsdatum aus `customer.cancellationPreview`
+  (dieselbe Rechnung wie die Kündigung); Kündigen ist nie gesperrt.
 - Kündigen im Konto (`customer.cancelSubscription`) setzt in Stripe
   `cancel_at` = Laufzeitende (Jahrestarif, `proration_behavior: none`) bzw.
   `cancel_at_period_end` (Monat/Test). `customer.withdrawCancellation` nimmt

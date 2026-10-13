@@ -39,6 +39,9 @@ export const SUB_META = {
   cancelOverride: "cancelOverride",
 } as const;
 
+/** Metadatum (Session + Subscription) mit dem Zeitpunkt der B2B-Bestätigung. */
+export const B2B_META_KEY = "b2b_bestaetigt_at";
+
 /** Metadaten für eine neue Subscription (Checkout). */
 export function subscriptionMetadataFor(
   tariff: Tariff

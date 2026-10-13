@@ -33,6 +33,7 @@ const baseArgs = {
   token: "tok-abc",
   billingInterval: "yearly" as const,
   addOns: { contactForm: false, gallery: true, menu: false, pricelist: false },
+  b2bConfirmedAt: 1_790_000_000,
 };
 
 describe("createStudioCheckoutSession", () => {
@@ -145,7 +146,12 @@ describe("createStudioCheckoutSession", () => {
     expect(call.mode).toBe("subscription");
     expect(call.subscription_data).toEqual({
       trial_period_days: 7,
-      metadata: { tariff: "yearly", termMonths: "12", websiteId: "42" },
+      metadata: {
+        tariff: "yearly",
+        termMonths: "12",
+        websiteId: "42",
+        b2b_bestaetigt_at: "1790000000",
+      },
     });
     expect(call.line_items[0].price_data.tax_behavior).toBe("inclusive");
     expect(call.customer_email).toBe("kunde@x.de");
@@ -192,5 +198,32 @@ describe("createStudioCheckoutSession", () => {
     });
     expect(call.subscription_data.trial_period_days).toBe(TRIAL_DAYS);
     expect(call.custom_text.submit.message).toBe(checkoutTermLine("monthly"));
+  });
+
+  test("B2B-Bestätigung landet in Session- und Subscription-Metadaten", async () => {
+    const { stripe, create } = fakeStripe();
+    await createStudioCheckoutSession(baseArgs, stripe, {});
+    const call = create.mock.calls[0][0];
+    expect(call.metadata.b2b_bestaetigt_at).toBe("1790000000");
+    expect(call.subscription_data.metadata.b2b_bestaetigt_at).toBe("1790000000");
+  });
+
+  test("AGB-Zustimmung nur mit STRIPE_TERMS_URL", async () => {
+    const without = fakeStripe();
+    await createStudioCheckoutSession(baseArgs, without.stripe, {});
+    expect(without.create.mock.calls[0][0].consent_collection).toBeUndefined();
+    expect(
+      without.create.mock.calls[0][0].custom_text.terms_of_service_acceptance
+    ).toBeUndefined();
+
+    const withTerms = fakeStripe();
+    await createStudioCheckoutSession(baseArgs, withTerms.stripe, {
+      STRIPE_TERMS_URL: "https://pageblitz.de/agb",
+    });
+    const call = withTerms.create.mock.calls[0][0];
+    expect(call.consent_collection).toEqual({ terms_of_service: "required" });
+    expect(call.custom_text.terms_of_service_acceptance.message).toBe(
+      "Ich stimme den [AGB](https://pageblitz.de/agb) zu."
+    );
   });
 });

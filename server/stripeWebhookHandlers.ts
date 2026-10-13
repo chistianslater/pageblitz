@@ -11,6 +11,7 @@ import { assertV2SafeWrite } from "./v2WriteGuard";
 import { asSystemDoc } from "../shared/designSystems/apply";
 import { invalidateSsrCache } from "./ssr/routes";
 import { addOnsFromSubscriptionItems } from "./stripeAddons";
+import { B2B_META_KEY } from "./subscriptionTerm";
 import { ADDON_KEYS, type AddOnFlags, type AddOnKey } from "../shared/pricing";
 import { WebsiteDataV2Schema } from "../shared/siteContract/schema";
 import type * as Db from "./db";
@@ -44,6 +45,12 @@ function normalizeAddOns(rawAddOns: any): Record<AddOnKey, boolean> {
       rawAddOns?.[key] ?? rawAddOns?.features?.[key] ?? false,
     ])
   ) as Record<AddOnKey, boolean>;
+}
+
+/** B2B-Bestätigung aus den Session-Metadaten (Unix-Sekunden) oder null. */
+function parseB2bConfirmedAt(raw: string | undefined): number | null {
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : null;
 }
 
 /**
@@ -160,6 +167,7 @@ export async function handleCheckoutCompleted(
     checkoutEmail,
     currentPeriodEnd,
     billingAnchorAt,
+    b2bConfirmedAt: parseB2bConfirmedAt(session.metadata?.[B2B_META_KEY]),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   });

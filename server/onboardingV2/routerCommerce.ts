@@ -335,9 +335,18 @@ export const commerceProcedures = {
     .input(
       tokenInput.extend({
         billingInterval: z.enum(["monthly", "yearly"]).default("yearly"),
+        /** Pflicht-Häkchen „bestelle als Unternehmer (§ 14 BGB)". */
+        b2bConfirmed: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
+      if (!input.b2bConfirmed) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Bitte bestätige, dass du als Unternehmer oder Selbstständiger bestellst — das Angebot richtet sich nicht an Verbraucher.",
+        });
+      }
       const loaded = await loadStudioWebsite(input.token, ctx.user);
       await requireDoc(loaded);
       const state = await buildState(input.token, loaded);
@@ -359,6 +368,7 @@ export const commerceProcedures = {
         origin,
         token: input.token,
         billingInterval: input.billingInterval,
+        b2bConfirmedAt: Math.floor(Date.now() / 1000),
         // sanitizeAddOns statt state.addOns direkt: eine veraltete DB-Zeile
         // mit aiChat/booking/team=true (z. B. aus der Zeit vor Finding I1)
         // darf weder in die Preis-Summe noch in die Stripe-Metadaten

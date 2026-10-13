@@ -12,7 +12,7 @@ import {
 } from "@shared/pricing";
 import { checkoutTermLine, stripeBaseDescription } from "@shared/pricingText";
 import { resolveAddOnPriceIds } from "../stripeAddons";
-import { subscriptionMetadataFor } from "../subscriptionTerm";
+import { B2B_META_KEY, subscriptionMetadataFor } from "../subscriptionTerm";
 
 /**
  * Stripe-Checkout für das Studio (Spec B2 Task 7) — seit 2026-10-13 der
@@ -37,6 +37,8 @@ export interface CheckoutArgs {
   token: string;
   billingInterval: BillingInterval;
   addOns: AddOnFlags;
+  /** Zeitpunkt der B2B-Bestätigung (§ 14 BGB) im Studio, Unix-Sekunden. */
+  b2bConfirmedAt: number;
 }
 
 
@@ -85,6 +87,7 @@ export async function createStudioCheckoutSession(
     return acc;
   }, {});
   const priceIds = resolveAddOnPriceIds(env);
+  const termsUrl = env.STRIPE_TERMS_URL?.trim() || null;
   const missing = ADDON_KEYS.filter(key => addOns[key] && !priceIds[key]);
   if (missing.length > 0) {
     console.warn(
@@ -122,12 +125,25 @@ export async function createStudioCheckoutSession(
       metadata: {
         ...subscriptionMetadataFor(args.billingInterval),
         websiteId: args.websiteId.toString(),
+        [B2B_META_KEY]: String(args.b2bConfirmedAt),
       },
     },
-    // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf (PAngV/§ 312j BGB).
+    // Laufzeit-/Kündigungsbedingungen direkt am Bezahl-Knopf.
     custom_text: {
       submit: { message: checkoutTermLine(args.billingInterval) },
+      ...(termsUrl
+        ? {
+            terms_of_service_acceptance: {
+              message: `Ich stimme den [AGB](${termsUrl}) zu.`,
+            },
+          }
+        : {}),
     },
+    // AGB-Zustimmung erst, wenn es AGB gibt: STRIPE_TERMS_URL setzen UND
+    // dieselbe URL in Stripe (Settings → Public details) hinterlegen.
+    ...(termsUrl
+      ? { consent_collection: { terms_of_service: "required" as const } }
+      : {}),
     success_url: `${args.origin}/my-website?checkout=success`,
     cancel_url: `${args.origin}/onboarding/${args.token}`,
     metadata: {
@@ -136,6 +152,7 @@ export async function createStudioCheckoutSession(
       billingInterval: args.billingInterval,
       addOns: JSON.stringify(addOns),
       totalAmount: totalCents.toString(),
+      [B2B_META_KEY]: String(args.b2bConfirmedAt),
     },
   });
 

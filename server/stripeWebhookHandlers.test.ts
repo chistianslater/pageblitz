@@ -94,6 +94,25 @@ describe("handleCheckoutCompleted", () => {
     );
   });
 
+  test("speichert die B2B-Bestätigung aus den Session-Metadaten", async () => {
+    const deps = makeDeps();
+    await handleCheckoutCompleted(
+      fakeSession({
+        metadata: {
+          websiteId: "42",
+          userId: "7",
+          billingInterval: "yearly",
+          addOns: "{}",
+          b2b_bestaetigt_at: "1790000000",
+        },
+      }),
+      deps
+    );
+    expect(deps.createSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ b2bConfirmedAt: 1_790_000_000 })
+    );
+  });
+
   test("normalisiert alle 8 Add-on-Keys, legt Subscription an, setzt Website-Status", async () => {
     const deps = makeDeps();
     await handleCheckoutCompleted(fakeSession(), deps);

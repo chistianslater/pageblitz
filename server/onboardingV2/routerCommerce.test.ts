@@ -906,6 +906,23 @@ describe("onboardingV2.setCustomerEmail", () => {
 });
 
 describe("onboardingV2.createCheckout", () => {
+  test("ohne B2B-Bestätigung (§ 14 BGB) → BAD_REQUEST, kein Stripe-Aufruf", async () => {
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+      })
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller().onboardingV2.createCheckout({
+        token: "tok",
+        billingInterval: "yearly",
+        b2bConfirmed: false,
+      })
+    ).rejects.toThrow(/Unternehmer/);
+    expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
+  });
+
   test("ohne vollständiges Rechtliches → BAD_REQUEST, kein Stripe-Aufruf", async () => {
     // beforeEach: onboardingRow.legal* ist null, website.customerEmail null
     // → checkoutReady bleibt false.
@@ -913,6 +930,7 @@ describe("onboardingV2.createCheckout", () => {
       caller().onboardingV2.createCheckout({
         token: "tok",
         billingInterval: "yearly",
+        b2bConfirmed: true,
       })
     ).rejects.toMatchObject({
       code: "BAD_REQUEST",
@@ -946,6 +964,7 @@ describe("onboardingV2.createCheckout", () => {
     const result = await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
+        b2bConfirmed: true,
     });
 
     expect(result).toEqual({ url: "https://stripe/session" });
@@ -957,6 +976,7 @@ describe("onboardingV2.createCheckout", () => {
         customerEmail: "kunde@x.de",
         token: "tok",
         billingInterval: "yearly",
+        b2bConfirmedAt: expect.any(Number),
       })
     );
     expect(mockedDb.updateWebsite).toHaveBeenCalledWith(
@@ -1006,6 +1026,7 @@ describe("onboardingV2.createCheckout", () => {
     await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
+        b2bConfirmed: true,
     });
 
     expect(mockedCheckout.createStudioCheckoutSession).toHaveBeenCalledWith(
@@ -1053,6 +1074,7 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
       caller().onboardingV2.createCheckout({
         token: "tok",
         billingInterval: "yearly",
+        b2bConfirmed: true,
       })
     ).rejects.toMatchObject({ code: "BAD_REQUEST", message: GATE_MESSAGE });
     expect(mockedCheckout.createStudioCheckoutSession).not.toHaveBeenCalled();
@@ -1086,6 +1108,7 @@ describe("Generierungs-Gate (Plan B7 Nachfix): Checkout/Extras während laufende
     const result = await caller().onboardingV2.createCheckout({
       token: "tok",
       billingInterval: "yearly",
+        b2bConfirmed: true,
     });
     expect(result).toEqual({ url: "https://stripe/session" });
   });

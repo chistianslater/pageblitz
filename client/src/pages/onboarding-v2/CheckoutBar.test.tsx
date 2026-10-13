@@ -301,4 +301,14 @@ describe("CheckoutBar (Audit 2026-09-19)", () => {
     expect(mit).toContain("KI-Chat");
     expect(mit).toContain("direkt nach dem Freischalten aktiv");
   });
+
+  test("B2B-Pflicht-Häkchen (§ 14 BGB) steht vor dem Freischalten", () => {
+    const html = renderWithTrpc(
+      <CheckoutBar state={buildState()} token={"t".repeat(32)} onStateChanged={() => {}} />
+    );
+    expect(html).toContain(
+      "Ich bestelle als Unternehmer oder Selbstständiger (§ 14 BGB). Das Angebot richtet sich nicht an Verbraucher."
+    );
+    expect(html).toMatch(/id="pb-checkout-b2b"[^>]*required|required[^>]*id="pb-checkout-b2b"/);
+  });
 });

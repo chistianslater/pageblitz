@@ -10,6 +10,7 @@ import {
   type BillingInterval,
 } from "@shared/pricing";
 import {
+  B2B_CONFIRM_LABEL,
   CHECKOUT_FOOTER,
   PRICE_MONTHLY,
   PRICE_YEARLY,
@@ -161,6 +162,9 @@ export function CheckoutBar({
   const [emailTouched, setEmailTouched] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [showEmailHint, setShowEmailHint] = useState(false);
+  // B2B-Bestätigung (§ 14 BGB) — Pflicht vor der Weiterleitung zu Stripe.
+  const [b2bConfirmed, setB2bConfirmed] = useState(false);
+  const [showB2bHint, setShowB2bHint] = useState(false);
 
   const saveEmail = trpc.onboardingV2.setCustomerEmail.useMutation();
   const checkout = trpc.onboardingV2.createCheckout.useMutation();
@@ -206,7 +210,7 @@ export function CheckoutBar({
 
   const startCheckout = () =>
     checkout.mutate(
-      { token, billingInterval },
+      { token, billingInterval, b2bConfirmed: true },
       {
         onSuccess: ({ url }) => {
           trackStudioEvent("kauf_gestartet");
@@ -222,6 +226,12 @@ export function CheckoutBar({
     if (firstMissingStep) {
       trackStudioEvent("kauf_blockiert");
       selectMissing(firstMissingStep);
+      return;
+    }
+    if (!b2bConfirmed) {
+      trackStudioEvent("kauf_blockiert");
+      setShowB2bHint(true);
+      document.getElementById("pb-checkout-b2b")?.focus();
       return;
     }
     if (!state.customerEmail) {
@@ -324,6 +334,25 @@ export function CheckoutBar({
       {addonNote && (
         <p style={{ color: "var(--st-muted)", fontSize: "0.8rem" }}>
           {addonNote}
+        </p>
+      )}
+      <label className="pb-studio-checkbox">
+        <input
+          id="pb-checkout-b2b"
+          type="checkbox"
+          required
+          checked={b2bConfirmed}
+          onChange={e => {
+            setB2bConfirmed(e.target.checked);
+            if (e.target.checked) setShowB2bHint(false);
+          }}
+        />
+        {B2B_CONFIRM_LABEL}
+      </label>
+      {showB2bHint && (
+        <p role="alert" style={{ color: "var(--st-warn)" }}>
+          Bitte bestätige, dass du als Unternehmer oder Selbstständiger
+          bestellst.
         </p>
       )}
       <div className="pb-studio-checkout-cta-area">
