@@ -6,6 +6,7 @@ import {
   MIN_LAST,
   footWord,
   lineEm,
+  priceFitEm,
   wordFitEm,
   staggerLines,
   versal,
@@ -143,5 +144,14 @@ describe("Plakat: Staffel und Fit (League Gothic)", () => {
       6
     );
     expect(wordFitEm("", 92)).toBe(1);
+  });
+
+  test("Preis in der Riesenliste: Breite in h2-em (Stufe .78), ohne Preis 0", () => {
+    expect(priceFitEm("ab 350 €", 0.005)).toBeCloseTo(
+      lineEm("AB 350 €", 92, 0.005) * 0.78 * FIT_SAFETY,
+      6
+    );
+    expect(priceFitEm(undefined)).toBe(0);
+    expect(priceFitEm("")).toBe(0);
   });
 });

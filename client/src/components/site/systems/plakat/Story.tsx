@@ -5,7 +5,12 @@ import { formatHeroRating } from "../shared/heroFacts";
 import { galleryIsStock } from "../../PhotoCredits";
 import { useSystem } from "../SystemContext";
 import { versalEszett } from "../shared";
-import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
+import {
+  PlakatChapter,
+  chapterTitle,
+  wordFit,
+  type PlakatSection,
+} from "./sections";
 import { galleryGroups, unquote, voiceOf } from "./offerData";
 import type { Field } from "./rhythm";
 
@@ -250,6 +255,7 @@ export function Voice({
             ? "pk-voice-text pk-voice-text--long"
             : "pk-voice-text"
         }
+        style={wordFit(`„${versalEszett(clean)}“`)}
       >
         <p>„{rich(versalEszett(clean))}“</p>
       </blockquote>

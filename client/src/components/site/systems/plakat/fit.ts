@@ -241,3 +241,17 @@ export function footWord(
       Math.max(...lines.map(l => lineEm(l, 82, track)), 0.5) * FIT_SAFETY,
   };
 }
+
+/** Preis der Riesenliste in Stufe h2 × .78 (contentCss). */
+const PRICE_SCALE = 0.78;
+
+/**
+ * Breite des Preises rechts in der Riesenliste, in em der Stufe h2 (mit
+ * Aufschlag); ohne Preis 0. Das CSS zieht ihn von der Zeile ab, bevor es
+ * den Namen am längsten Wort deckelt.
+ */
+export function priceFitEm(price: string | undefined, track = 0): number {
+  const text = price?.trim();
+  if (!text) return 0;
+  return lineEm(text, 92, track) * PRICE_SCALE * FIT_SAFETY;
+}

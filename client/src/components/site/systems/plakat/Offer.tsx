@@ -14,6 +14,8 @@ import {
 } from "../shared";
 import { PlakatChapter, chapterTitle, type PlakatSection } from "./sections";
 import { rowPrice } from "./offerData";
+import { priceFitEm, wordFitEm } from "./fit";
+import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import type { Field } from "./rhythm";
 
 /**
@@ -57,6 +59,21 @@ export function PreviewCard({ title, text }: { title: string; text: string }) {
   );
 }
 
+const H2_TRACK = parseFloat(PLAKAT.type.h2.track);
+
+/**
+ * Zeile der Riesenliste: Name am längsten Wort gedeckelt, neben dem Preis
+ * (`--pk-price`, nur ein großer Preis steht daneben). Reicht die Breite
+ * nicht, rutscht der Preis unter den Namen (contentCss).
+ */
+function rowFit(name: string, price?: string) {
+  const p = rowPrice(price);
+  return {
+    "--pk-word": wordFitEm(versalEszett(name), 92, H2_TRACK).toFixed(3),
+    "--pk-price": (p && "big" in p ? priceFitEm(p.big, H2_TRACK) : 0).toFixed(3),
+  } as React.CSSProperties;
+}
+
 /** Preis rechts in der Zeile: groß, wenn lesbar; sonst klein. */
 function Price({ price, cls }: { price?: string; cls: string }) {
   const p = rowPrice(price);
@@ -86,7 +103,11 @@ export function PlakatServices({
     >
       <ul className="pk-rows">
         {section.items.map((item, i) => (
-          <li className="pk-row" key={`${item.title}-${i}`}>
+          <li
+            className="pk-row"
+            key={`${item.title}-${i}`}
+            style={rowFit(item.title, item.price)}
+          >
             <h3 className="pk-row-name">{rich(versalEszett(item.title))}</h3>
             <Price price={item.price} cls="pk-row-price" />
             {item.description && (
@@ -134,7 +155,10 @@ function BigRow({
   const today = useToday(item.name);
   const Tag = sub ? "h4" : "h3";
   return (
-    <li className={today ? "pk-row pk-row--today" : "pk-row"}>
+    <li
+      className={today ? "pk-row pk-row--today" : "pk-row"}
+      style={rowFit(item.name, item.price)}
+    >
       <Tag className="pk-row-name">
         {rich(versalEszett(item.name))}
         <TodayMark on={today} />

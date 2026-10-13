@@ -34,16 +34,20 @@ const SHARED = `/* Töne je Fläche (Formen, Monogramme, Farbpunkte) */
 }`;
 
 /** Leistungen, Preise, Karte, Ablauf, Zahlen, Vorschau-Platzhalter. */
-const OFFER = `/* Riesenliste: Name in League Gothic, Preis rechts (nur aus Daten) */
+const OFFER = `/* Riesenliste: Name in League Gothic, Preis rechts (nur aus Daten); passt das längste Wort nicht neben den Preis, rutscht er darunter (flex-wrap) */
 .pb-plakat .pk-rows{list-style:none;margin:var(--sys-space-l) 0 0;padding:0}
-.pb-plakat .pk-row{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--sys-space-s);align-items:end;
+.pb-plakat .pk-row{display:flex;flex-wrap:wrap;column-gap:var(--sys-space-s);align-items:flex-end;container-type:inline-size;
   padding-block:calc(var(--sys-space-s) * .875);border-bottom:2px solid currentColor}
 .pb-plakat .pk-row:first-child{border-top:2px solid currentColor}
-.pb-plakat .pk-row-name{${step("h2")};overflow-wrap:anywhere;hyphens:manual}
-.pb-plakat .pk-row-price{${step("h2")};font-size:calc(var(--sys-h2-size) * .78);white-space:nowrap}
+.pb-plakat .pk-row-name{${step("h2")};flex:1 1 0;overflow-wrap:break-word;hyphens:manual}
+/* Stufe h2, gedeckelt: längstes Wort (--pk-word) neben dem Preis (--pk-price, fit.ts) — höchstens auf 80 % der Zeile, dann rutscht der Preis */
+@supports (font-size:1cqi){
+.pb-plakat .pk-row-name{font-size:min(var(--sys-h2-size),max((100cqi - var(--pk-price,0) * var(--sys-h2-size) - var(--sys-space-s)) / var(--pk-word,1),100cqi * .8 / var(--pk-word,1)))}
+}
+.pb-plakat .pk-row-price{${step("h2")};font-size:calc(var(--sys-h2-size) * .78);white-space:nowrap;flex:none;margin-left:auto}
 /* Preis als Text (lang oder ohne Betrag): eigene Zeile unter dem Namen, bricht um */
-.pb-plakat .pk-row-note{${step("small")};font-weight:600;grid-column:1/-1;margin-top:calc(var(--sys-space-2xs) * 1.5);max-width:var(--sys-space-measure);overflow-wrap:anywhere}
-.pb-plakat .pk-row-text{${step("small")};grid-column:1/-1;margin-top:calc(var(--sys-space-2xs) * 1.5);color:var(--pk-muted);max-width:var(--sys-space-measure)}
+.pb-plakat .pk-row-note{${step("small")};font-weight:600;flex:1 0 100%;margin-top:calc(var(--sys-space-2xs) * 1.5);max-width:var(--sys-space-measure);overflow-wrap:anywhere}
+.pb-plakat .pk-row-text{${step("small")};flex:1 0 100%;margin-top:calc(var(--sys-space-2xs) * 1.5);color:var(--pk-muted);max-width:var(--sys-space-measure)}
 .pb-plakat .pk-cat+.pk-cat{margin-top:var(--sys-space-xl)}
 .pb-plakat .pk-cat-name{${step("h2")};font-size:calc(var(--sys-h2-size) * .62);display:flex;align-items:center;gap:calc(var(--sys-space-s) * .75);margin-top:var(--sys-space-l)}
 .pb-plakat .pk-cat-name i{flex:none;width:calc(var(--sys-space-l) * .75);height:calc(var(--sys-space-l) * .75);border-radius:50%;background:var(--pk-tone-a)}
@@ -147,8 +151,13 @@ const STORY = `/* Über uns: Pille daneben */
 .pb-plakat .pk-voice-kicker{${step("kicker")};color:var(--pk-muted);display:flex;flex-wrap:wrap;align-items:center;gap:var(--sys-space-xs) var(--sys-space-s)}
 .pb-plakat .pk-stars{color:var(--sys-signal);letter-spacing:.12em}
 .pb-plakat .pk-voice-text{margin:var(--sys-space-m) 0 0}
-.pb-plakat .pk-voice-text p{${step("h2")};overflow-wrap:anywhere;hyphens:manual;max-width:18em}
+.pb-plakat .pk-voice-text p{${step("h2")};overflow-wrap:break-word;hyphens:manual;max-width:18em}
 .pb-plakat .pk-voice-text--long p{font-size:calc(var(--sys-h2-size) * .66)}
+/* Nur zwischen Wörtern umbrechen: Stufe am längsten Wort gedeckelt (--pk-word, fit.ts) */
+@supports (font-size:1cqi){
+.pb-plakat .pk-voice-text p{font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}
+.pb-plakat .pk-voice-text--long p{font-size:min(calc(var(--sys-h2-size) * .66),100cqi / var(--pk-word,1))}
+}
 .pb-plakat .pk-voice-who{margin-top:var(--sys-space-l);display:grid;gap:var(--sys-space-2xs)}
 .pb-plakat .pk-voice-name{${step("small")};font-weight:650}
 .pb-plakat .pk-voice-src{${step("small")};color:var(--pk-muted)}

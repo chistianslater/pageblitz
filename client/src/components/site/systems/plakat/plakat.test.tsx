@@ -387,6 +387,36 @@ describe("Plakat: Kopf und Fuß", () => {
     );
   });
 
+  test("Umbruch: Riesenliste — Name am längsten Wort neben dem Preis gedeckelt, Preis rutscht sonst darunter", () => {
+    const html = render(kanteDoc());
+    expect(html).toMatch(
+      /<li class="pk-row" style="--pk-word:[\d.]+;--pk-price:[\d.]+"><h3 class="pk-row-name">/
+    );
+    const name = rules(body).find(([s]) => s === ".pb-plakat .pk-row-name")![1];
+    expect(name).not.toContain("anywhere");
+    const row = rules(body).find(([s]) => s === ".pb-plakat .pk-row")![1];
+    expect(row).toContain("display:flex");
+    expect(row).toContain("flex-wrap:wrap");
+    expect(row).toContain("container-type:inline-size");
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat .pk-row-name{font-size:min(var(--sys-h2-size),max((100cqi - var(--pk-price,0) * var(--sys-h2-size) - var(--sys-space-s)) / var(--pk-word,1),100cqi * .8 / var(--pk-word,1)))}"
+    );
+  });
+
+  test("Umbruch: große Stimme bricht nur zwischen Wörtern (Stufe am längsten Wort gedeckelt)", () => {
+    const quote = rules(body).find(([s]) => s === ".pb-plakat .pk-voice-text p")![1];
+    expect(quote).not.toContain("anywhere");
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat .pk-voice-text p{font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}"
+    );
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat .pk-voice-text--long p{font-size:min(calc(var(--sys-h2-size) * .66),100cqi / var(--pk-word,1))}"
+    );
+    expect(render(kanteDoc())).toMatch(
+      /<blockquote class="pk-voice-text[^"]*" style="--pk-word:[\d.]+"><p>„/
+    );
+  });
+
   test("Zeit fest: Renderzeitpunkt aus dem Kontext", () => {
     expect(render(kanteDoc(), false, "", undefined, "", TEST_NOW)).toContain(
       "© 2026"

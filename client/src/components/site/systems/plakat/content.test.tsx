@@ -78,7 +78,7 @@ describe("Plakat: Leistungen, Preise, Karte", () => {
   test("Kante: Riesenliste mit Preis aus den Daten, ẞ im Versal, Link als Pille", () => {
     const s = sectionHtml(render(kanteFullDoc()), "services");
     expect(s).toContain("pk-f1");
-    expect(count(s, '<li class="pk-row">')).toBe(6);
+    expect(count(s, '<li class="pk-row" style="--pk-word:')).toBe(6);
     expect(s).toContain('<span class="pk-row-price">28 €</span>');
     expect(s).toContain("Rasur, heiẞes Tuch");
     expect(s).toContain('<p class="pk-row-text">Waschen, Schnitt, Styling</p>');
@@ -117,8 +117,8 @@ describe("Plakat: Leistungen, Preise, Karte", () => {
     }));
     const s = sectionHtml(render(doc), "pricelist");
     expect(count(s, '<li class="pk-row')).toBe(2);
-    expect(s).toContain(
-      '<li class="pk-row pk-row--today"><h3 class="pk-row-name">Dienstag <em class="pk-today">Heute</em></h3>'
+    expect(s).toMatch(
+      /<li class="pk-row pk-row--today" style="--pk-word:[\d.]+;--pk-price:[\d.]+"><h3 class="pk-row-name">Dienstag <em class="pk-today">Heute<\/em><\/h3>/
     );
     expect(count(s, "pk-today")).toBe(1);
     // eine Kategorie: keine Kategorie-Zeile
