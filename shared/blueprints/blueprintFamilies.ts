@@ -29,9 +29,15 @@ const faqLine = (questions: string) =>
 export const HEALTH =
   /arzt|ärzt|aerzt|mediziner|praxis|zahn|kieferorthop|physio|ergotherap|logopäd|logopaed|osteopath|heilprakt|naturheil|psychotherap|psycholog|chiroprakt|podolog|fußpflege|fusspflege|hebamme|tierarzt|tierklinik|tierärzt|pflegedienst|apotheke|hörakust|hoerakust|hörgerät|orthopäd|klinik|ambulan|therapeut|dentist|doctor|physician|clinic|pharmacy|veterinar|therapist|chiropract/i;
 
-export function healthBlueprint(category: string, name: string): Blueprint {
+export function healthBlueprint(
+  category: string,
+  name: string,
+  opts: { vet?: boolean } = {}
+): Blueprint {
   const text = `${category} ${name}`;
-  const vet = /tierarzt|tierklinik|tierärzt|veterinar/i.test(text);
+  // `vet`: Familie Tiere setzt es ausdrücklich (Tierheilpraktiker,
+  // Tierphysiotherapie, Pferdeklinik), sonst wie bisher über Stichwörter.
+  const vet = opts.vet ?? /tierarzt|tierklinik|tierärzt|veterinar/i.test(text);
   const therapy =
     /physio|ergotherap|logopäd|logopaed|osteopath|heilprakt|naturheil|psychotherap|chiroprakt|podolog|fußpflege|fusspflege|therapeut|therapist|chiropract/i.test(
       text

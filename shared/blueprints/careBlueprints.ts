@@ -193,10 +193,8 @@ function petsBlueprint(category: string, name: string): Blueprint {
     };
   }
   if (kind === "shop") return { ...retailBlueprint(category), id: "pets" };
-  // Gesundheit erkennt Tierärzte an „tierarzt" in Kategorie oder Name — so
-  // bekommen auch Tierheilpraktiker und Tierphysiotherapie die
-  // Tierarzt-Zeilen; der Prompt nennt weiter nur die Kategorie.
-  return { ...healthBlueprint(category, `${name} tierarzt`), id: "pets" };
+  // Tierheilpraktiker, Tierphysiotherapie, Pferdeklinik: Tierarzt-Zeilen.
+  return { ...healthBlueprint(category, name, { vet: true }), id: "pets" };
 }
 
 export function careBlueprint(

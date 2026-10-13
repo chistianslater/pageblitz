@@ -253,9 +253,10 @@ const GASTRO_KEYS =
 const GASTRO_TEXT =
   /weinstube|weinlokal|besenwirtschaft|strau(?:ß|ss)(?:en)?wirtschaft|(?:^|[^a-zäöüß])heurige[nr]?|restaurant|ristorante|trattoria|pizzeria|bistro|gasthaus|gasthof|gaststätte|wirtshaus|brauhaus|imbiss|döner|doener|kebab|burger|sushi|grill|lieferservice|café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscafé|eiscafe|eisdiele|cocktail|kneipe|\bpub\b|weinbar|\bbar\b|brauerei|biergarten/i;
 
-function gastroKind(text: string): GastroKind {
-  // Eisdiele, Gelateria, „ice cream shop" (Google) sind Cafés, kein Restaurant.
-  if (isIceCream(text)) return "cafe";
+function gastroKind(text: string, category = text): GastroKind {
+  // Eisdiele, Gelateria, „ice cream shop" (Google) sind Cafés, kein
+  // Restaurant — nur über die Kategorie; ein „Gelato" im Namen zählt nicht.
+  if (isIceCream(category)) return "cafe";
   if (
     /café|cafe|kaffee|bäckerei|baeckerei|backhaus|konditorei|patisserie|eiscaf|eisdiele/i.test(
       text
@@ -276,7 +277,7 @@ function gastroKind(text: string): GastroKind {
 
 function gastroBlueprint(category: string, name: string): Blueprint {
   const text = `${category} ${name}`;
-  const kind = gastroKind(text);
+  const kind = gastroKind(text, category);
   const bakery = /bäckerei|baeckerei|backhaus|konditorei|patisserie/i.test(
     text
   );
@@ -442,11 +443,8 @@ export function keywordFamily(
   )
     return "gastro";
   // Neue Familien zuerst über die Kategorie, erst dann über den Namen.
-  return (
-    familyByKeyword(category) ??
-    careFamily(businessName) ??
-    familyByKeyword(businessName)
-  );
+  // Freundlich-Familien nie über den Namen allein (Review F1).
+  return familyByKeyword(category) ?? familyByKeyword(businessName);
 }
 
 function byFamily(

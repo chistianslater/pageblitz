@@ -61,7 +61,9 @@ describe("Familie Kinder & Familie", () => {
     expect(hebamme.promptLines.join("\n")).toMatch(/Heilmittelwerberecht/);
     expect(hebamme.ctaText).toBe("Begleitung anfragen");
     // Kategorie vor Name: eine Kita bleibt Kita, auch mit „Hebamme" im Namen.
-    expect(blueprintFor("Kita", "Hebammen-Kita").ctaText).toBe("Kennenlernen anfragen");
+    expect(blueprintFor("Kita", "Hebammen-Kita").ctaText).toBe(
+      "Kennenlernen anfragen"
+    );
   });
 
   test("Reihenfolge ohne neue Datenfelder (Gesundheit-Reihe)", () => {
@@ -115,7 +117,14 @@ describe("Familie Tiere", () => {
   });
 
   test("Tierarzt ≠ Arzt: Arzt, Hausarzt, Zahnarzt, Kinderarzt bleiben Gesundheit/Klar", () => {
-    for (const category of ["Arzt", "Hausarzt", "Zahnarzt", "Zahnarztpraxis", "Kinderarzt", "Arztpraxis"]) {
+    for (const category of [
+      "Arzt",
+      "Hausarzt",
+      "Zahnarzt",
+      "Zahnarztpraxis",
+      "Kinderarzt",
+      "Arztpraxis",
+    ]) {
       expect(careFamily(category), category).toBeUndefined();
       expect(resolveIndustryFamily(category), category).toBe("health");
       expect(triple(category)[0], category).toBe("klar");
@@ -126,22 +135,30 @@ describe("Familie Tiere", () => {
   test("Tierarzt übernimmt die Tierarzt-Zeilen der Gesundheit (Sprechzeiten, Heilmittelwerberecht)", () => {
     const vet = blueprintFor("Tierarztpraxis", "Praxis am Deich");
     expect(vet.hoursLabel).toBe("Sprechzeiten");
-    expect(vet.headlines.testimonials).toBe("Das sagen Tierhalterinnen und Tierhalter");
-    expect(vet.promptLines.join("\n")).toMatch(/Tierarztpraxis \(Tierarztpraxis\)/);
+    expect(vet.headlines.testimonials).toBe(
+      "Das sagen Tierhalterinnen und Tierhalter"
+    );
+    expect(vet.promptLines.join("\n")).toMatch(
+      /Tierarztpraxis \(Tierarztpraxis\)/
+    );
     expect(vet.promptLines.join("\n")).toMatch(/Heilmittelwerberecht/);
   });
 
   test("Hundesalon: eigener Bauplan statt Friseur-Zeilen", () => {
     const salon = blueprintFor("Hundesalon", "Fellfreunde");
     expect(salon.promptLines.join("\n")).toMatch(/Hundesalon\/Hundefriseur/);
-    expect(salon.promptLines.join("\n")).not.toMatch(/Damenschnitt|Friseursalon/);
+    expect(salon.promptLines.join("\n")).not.toMatch(
+      /Damenschnitt|Friseursalon/
+    );
     expect(salon.placeholders).toEqual(["pricelist"]);
   });
 
   test("Hundeschule: Kurse-Bauplan mit Tierhalter-Stimmen", () => {
     const school = blueprintFor("Hundeschule", "Pfotenschule");
     expect(school.ctaText).toBe("Probestunde vereinbaren");
-    expect(school.headlines.testimonials).toBe("Das sagen Tierhalterinnen und Tierhalter");
+    expect(school.headlines.testimonials).toBe(
+      "Das sagen Tierhalterinnen und Tierhalter"
+    );
   });
 
   test("Tierbedarf: Handel-Bauplan (Route, Sortiment)", () => {
@@ -150,90 +167,199 @@ describe("Familie Tiere", () => {
     expect(shop.headlines.services).toBe("Sortiment");
   });
 
-  test.each(["Hundepension", "Tierpension", "Hunde-Pension", "Hundehotel", "Pension"])(
-    "%s bleibt Unterkunft (wie vorher)",
-    category => {
-      expect(careFamily(category)).toBeUndefined();
-      expect(keywordFamily(category)).toBe("stay");
-    }
-  );
+  test.each([
+    "Hundepension",
+    "Tierpension",
+    "Hunde-Pension",
+    "Hundehotel",
+    "Pension",
+  ])("%s bleibt Unterkunft (wie vorher)", category => {
+    expect(careFamily(category)).toBeUndefined();
+    expect(keywordFamily(category)).toBe("stay");
+  });
 
-  test.each(["Tierheim", "Hundepark", "Hundezüchter", "Hunde Café", "Zoo", "Tierpark"])(
-    "%s wird nicht Tiere-Familie",
-    category => {
-      expect(careFamily(category)).toBeUndefined();
-    }
-  );
+  test.each([
+    "Tierheim",
+    "Hundepark",
+    "Hundezüchter",
+    "Hunde Café",
+    "Zoo",
+    "Tierpark",
+  ])("%s wird nicht Tiere-Familie", category => {
+    expect(careFamily(category)).toBeUndefined();
+  });
 });
 
 describe("Freundliche Unterarten bestehender Familien", () => {
   test("Eiscafé vs. Café: Café bleibt Werkstoff, Eisdiele geht zu Freundlich (dahinter Werkstoff)", () => {
-    expect(triple("Café", "Café Muster")).toEqual(["werkstoff", "journal", "plakat"]);
-    for (const category of ["Eiscafé", "Eisdiele", "Gelateria", "Eissalon", "ice_cream_shop", "ice cream shop"]) {
+    expect(triple("Café", "Café Muster")).toEqual([
+      "werkstoff",
+      "journal",
+      "plakat",
+    ]);
+    for (const category of [
+      "Eiscafé",
+      "Eisdiele",
+      "Gelateria",
+      "Eissalon",
+      "ice_cream_shop",
+      "ice cream shop",
+    ]) {
       expect(isIceCream(category), category).toBe(true);
       expect(blueprintFor(category).id, category).toBe("gastro");
       expect(blueprintFor(category).gastroKind, category).toBe("cafe");
-      expect(triple(category), category).toEqual(["freundlich", "werkstoff", "journal"]);
+      expect(triple(category), category).toEqual([
+        "freundlich",
+        "werkstoff",
+        "journal",
+      ]);
     }
-    // Google führt Eisdielen oft als „Café" — der Name verrät sie.
-    expect(triple("Café", "Eiscafé Venezia")[0]).toBe("freundlich");
+    // Nur die Kategorie zählt (Review F1): ein Café mit „Eiscafé" im Namen
+    // bleibt Café-Reihe.
+    expect(triple("Café", "Eiscafé Venezia")[0]).toBe("werkstoff");
     expect(triple("Café", "Café Eisberg")[0]).toBe("werkstoff");
     expect(resolveIndustryFamily("ice cream shop")).toBe("gastro");
     expect(resolveIndustryFamily("Gelateria")).toBe("gastro");
   });
 
   test("Musikschule vs. Kurse: Musik, Nachhilfe, Kinderkurse Freundlich; Fitness, Tanz, Fahrschule Plakat", () => {
-    for (const category of ["Musikschule", "Musikunterricht", "Nachhilfe", "Nachhilfeinstitut", "Lernstudio", "tutoring service", "music school", "Babyschwimmen", "Kinderturnen"]) {
+    for (const category of [
+      "Musikschule",
+      "Musikunterricht",
+      "Nachhilfe",
+      "Nachhilfeinstitut",
+      "Lernstudio",
+      "tutoring service",
+      "music school",
+      "Babyschwimmen",
+      "Kinderturnen",
+    ]) {
       expect(isKidsLessons(category), category).toBe(true);
       expect(blueprintFor(category).id, category).toBe("courses");
-      expect(triple(category), category).toEqual(["freundlich", "plakat", "klar"]);
+      expect(triple(category), category).toEqual([
+        "freundlich",
+        "plakat",
+        "klar",
+      ]);
     }
-    for (const category of ["Fitnessstudio", "Tanzschule", "Fahrschule", "Yoga", "Kampfsport", "Sprachschule", "Kampfsport für Kinder"]) {
+    for (const category of [
+      "Fitnessstudio",
+      "Tanzschule",
+      "Fahrschule",
+      "Yoga",
+      "Kampfsport",
+      "Sprachschule",
+      "Kampfsport für Kinder",
+    ]) {
       expect(isKidsLessons(category), category).toBe(false);
       expect(triple(category), category).toEqual(["plakat", "klar", "raster"]);
     }
   });
 
   test("Kinderfotografie: Freundlich vorn, jeder andere Fotograf bleibt Journal", () => {
-    for (const category of ["Kinderfotografie", "Babyfotografin", "Neugeborenenfotograf", "Familienfotografie", "newborn photographer"]) {
+    for (const category of [
+      "Kinderfotografie",
+      "Babyfotografin",
+      "Neugeborenenfotograf",
+      "Familienfotografie",
+      "newborn photographer",
+    ]) {
       expect(isKidsPhoto(category), category).toBe(true);
       expect(blueprintFor(category).id, category).toBe("creative");
-      expect(triple(category), category).toEqual(["freundlich", "journal", "raster"]);
+      expect(triple(category), category).toEqual([
+        "freundlich",
+        "journal",
+        "raster",
+      ]);
     }
-    for (const category of ["Fotograf", "Hochzeitsfotograf", "Fotostudio", "Tattoostudio"])
+    for (const category of [
+      "Fotograf",
+      "Hochzeitsfotograf",
+      "Fotostudio",
+      "Tattoostudio",
+    ])
       expect(triple(category)[0], category).toBe("journal");
   });
 
   test("Kinderarzt bleibt Klar, Freundlich nur als erste Alternative", () => {
-    for (const category of ["Kinderarzt", "Kinderärztin", "Kinder- und Jugendarzt", "Kinderzahnarzt", "pediatrician"]) {
+    for (const category of [
+      "Kinderarzt",
+      "Kinderärztin",
+      "Kinder- und Jugendarzt",
+      "Kinderzahnarzt",
+      "pediatrician",
+    ]) {
       expect(isPediatric(category), category).toBe(true);
       expect(blueprintFor(category).id, category).toBe("health");
-      expect(triple(category), category).toEqual(["klar", "freundlich", "journal"]);
+      expect(triple(category), category).toEqual([
+        "klar",
+        "freundlich",
+        "journal",
+      ]);
     }
     expect(isPediatric("Zahnarzt")).toBe(false);
     expect(isPediatric("Arzt")).toBe(false);
   });
 
   test("Bestand mit gespeicherter alter Familie: Freundlich vorn, dahinter das bisherige Hauptsystem", () => {
-    const stored = (blueprintFamily: "health" | "beauty" | "courses" | "retail", businessCategory: string) =>
-      systemsForDoc({ businessCategory, businessName: "Muster", blueprintFamily });
-    expect(stored("health", "Tierarzt")).toEqual(["freundlich", "klar", "journal"]);
-    expect(stored("health", "Hebamme")).toEqual(["freundlich", "klar", "journal"]);
-    expect(stored("beauty", "Hundesalon")).toEqual(["freundlich", "journal", "werkstoff"]);
-    expect(stored("courses", "Hundeschule")).toEqual(["freundlich", "plakat", "klar"]);
-    expect(stored("retail", "Zoohandlung")).toEqual(["freundlich", "werkstoff", "journal"]);
+    const stored = (
+      blueprintFamily: "health" | "beauty" | "courses" | "retail",
+      businessCategory: string
+    ) =>
+      systemsForDoc({
+        businessCategory,
+        businessName: "Muster",
+        blueprintFamily,
+      });
+    expect(stored("health", "Tierarzt")).toEqual([
+      "freundlich",
+      "klar",
+      "journal",
+    ]);
+    expect(stored("health", "Hebamme")).toEqual([
+      "freundlich",
+      "klar",
+      "journal",
+    ]);
+    expect(stored("beauty", "Hundesalon")).toEqual([
+      "freundlich",
+      "journal",
+      "werkstoff",
+    ]);
+    expect(stored("courses", "Hundeschule")).toEqual([
+      "freundlich",
+      "plakat",
+      "klar",
+    ]);
+    expect(stored("retail", "Zoohandlung")).toEqual([
+      "freundlich",
+      "werkstoff",
+      "journal",
+    ]);
     // Die Nachbarn mit gespeicherter Familie bleiben unverändert.
     expect(stored("health", "Zahnarzt")).toEqual(["klar", "journal", "raster"]);
-    expect(stored("beauty", "Friseursalon")).toEqual(["journal", "nacht", "plakat"]);
-    expect(stored("retail", "Blumenladen")).toEqual(["werkstoff", "journal", "plakat"]);
+    expect(stored("beauty", "Friseursalon")).toEqual([
+      "journal",
+      "nacht",
+      "plakat",
+    ]);
+    expect(stored("retail", "Blumenladen")).toEqual([
+      "werkstoff",
+      "journal",
+      "plakat",
+    ]);
   });
 
   test("alle Freundlich-Reihen: drei verschiedene Systeme", () => {
     const subs = [
       systemsFor("family"),
       systemsFor("pets"),
-      ...(["vet", "grooming", "school", "shop"] as const).map(k => systemsFor("pets", { petKind: k })),
-      ...(["health", "beauty", "courses", "retail", "gastro", "creative"] as const).map(f => systemsFor(f, { friendly: true })),
+      ...(["vet", "grooming", "school", "shop"] as const).map(k =>
+        systemsFor("pets", { petKind: k })
+      ),
+      ...(
+        ["health", "beauty", "courses", "retail", "gastro", "creative"] as const
+      ).map(f => systemsFor(f, { friendly: true })),
       systemsFor("health", { pediatric: true }),
     ];
     for (const t of subs) expect(new Set(t).size).toBe(3);
@@ -243,7 +369,13 @@ describe("Freundliche Unterarten bestehender Familien", () => {
 describe("withPrimarySystem: Freundlich noch nicht frei → nächstes freies System der Reihe", () => {
   const base = getFixture("werkbank", "full");
   const doc = (businessCategory: string, businessName: string) =>
-    ({ ...base, businessCategory, businessName, blueprintFamily: undefined, designRevision: 2 }) as typeof base;
+    ({
+      ...base,
+      businessCategory,
+      businessName,
+      blueprintFamily: undefined,
+      designRevision: 2,
+    }) as typeof base;
   const cases: Array<[string, string, DesignSystemId]> = [
     ["Kita", "Kita Pusteblume", "klar"],
     ["Hebamme", "Hebamme Lind", "klar"],
@@ -259,12 +391,15 @@ describe("withPrimarySystem: Freundlich noch nicht frei → nächstes freies Sys
   test("Freundlich ist nicht freigeschaltet", () => {
     expect(isReleased("freundlich")).toBe(false);
   });
-  test.each(cases)("%s → %s (ohne Freundlich: %s)", (category, name, fallback) => {
-    const out = withPrimarySystem(doc(category, name));
-    expect(out.system).toBe(fallback);
-    expect(out.designRevision).toBe(3);
-    expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
-  });
+  test.each(cases)(
+    "%s → %s (ohne Freundlich: %s)",
+    (category, name, fallback) => {
+      const out = withPrimarySystem(doc(category, name));
+      expect(out.system).toBe(fallback);
+      expect(out.designRevision).toBe(3);
+      expect(WebsiteDataV2Schema.safeParse(out).success).toBe(true);
+    }
+  );
   test.each(cases.filter(([c]) => c !== "Kinderarzt"))(
     "%s → Freundlich, sobald freigeschaltet",
     (category, name) => {
@@ -275,7 +410,89 @@ describe("withPrimarySystem: Freundlich noch nicht frei → nächstes freies Sys
   test("Familie im Dokument wird vom Schema angenommen", () => {
     for (const blueprintFamily of ["family", "pets"] as const)
       expect(
-        WebsiteDataV2Schema.safeParse({ ...withPrimarySystem(doc("Kita", "Pusteblume")), blueprintFamily }).success
+        WebsiteDataV2Schema.safeParse({
+          ...withPrimarySystem(doc("Kita", "Pusteblume")),
+          blueprintFamily,
+        }).success
       ).toBe(true);
+  });
+});
+
+/**
+ * Review F1 (2026-10-13): Der Name entscheidet nie über Freundlich — nur die
+ * Kategorie. Erwartungen = Stand vor Freundlich (BASE 45687514, Probe
+ * scratchpad/f1/probe2.mts): Reihe mit gespeicherter Familie und erstes
+ * freigeschaltetes System ohne Familie.
+ */
+describe("Review F1: Name schaltet keine freundliche Unterart", () => {
+  const firstReleased = (t: readonly DesignSystemId[]) => t.find(id => isReleased(id));
+  test.each([
+    ["Italienisches Restaurant", "Ristorante Gelateria Da Mario", "nacht,journal,werkstoff", "nacht"],
+    ["Restaurant", "Gelato & Caffè", "nacht,journal,werkstoff", "nacht"],
+    ["Pizzeria", "Pizzeria Gelato", "nacht,journal,werkstoff", "nacht"],
+    ["Imbiss", "Döner & Gelato", "plakat,werkstoff,raster", "plakat"],
+    ["Arzt", "Dr. Tierarzt", "klar,journal,raster", "klar"],
+    ["Fitnessstudio", "Kinderturnen & Fitness", "plakat,klar,raster", "plakat"],
+    ["Fahrschule", "Fahrschule & Nachhilfe Meyer", "plakat,klar,raster", "plakat"],
+    ["Tanzschule", "Kindertanz Ballerina", "plakat,klar,raster", "plakat"],
+    ["Heilpraktiker", "Tierheilpraktikerin Lea", "klar,journal,raster", "klar"],
+    ["Fotograf", "Hochzeits- und Familienfotografie Lena", "journal,raster,plakat", "journal"],
+    ["Pizzeria", "Pizzeria & Eiscafé Venezia", "werkstoff,journal,plakat", "werkstoff"],
+    ["adult day care center", "Muster", "klar,journal,raster", "raster"],
+    ["dog day care center", "Muster", "plakat,klar,raster", "raster"],
+    ["Seniorenheim", "Tagespflege & Day Care", "journal,nacht,werkstoff", "raster"],
+    ["carpet store", "Muster", "werkstoff,journal,plakat", "werkstoff"],
+    ["Teppichhandel", "Carpet Shop Orient", "werkstoff,journal,plakat", "werkstoff"],
+    ["Bekleidungsgeschäft", "Kinderhaus Mode", "werkstoff,journal,plakat", "werkstoff"],
+    ["Gaststätte", "Zur Krippe", "nacht,journal,werkstoff", "nacht"],
+    ["Weihnachtsmarkt", "Krippe", "werkstoff,journal,plakat", "werkstoff"],
+    ["ice cream equipment supplier", "Muster", "nacht,journal,werkstoff", "raster"],
+  ])("%s / %s → unverändert (%s; ohne Familie %s)", (businessCategory, businessName, expected, noFam) => {
+    const blueprintFamily = resolveIndustryFamily(businessCategory, businessName);
+    expect(systemsForDoc({ businessCategory, businessName, blueprintFamily }).join(",")).toBe(expected);
+    expect(firstReleased(systemsForDoc({ businessCategory, businessName }))).toBe(noFam);
+    expect(systemsForDoc({ businessCategory, businessName, blueprintFamily })).not.toContain("freundlich");
+  });
+
+  test("Eis hinter Freundlich behält die Reihe seiner Gastro-Art", () => {
+    expect(systemsFor("gastro", { gastroKind: "cafe", friendly: true })).toEqual(["freundlich", "werkstoff", "journal"]);
+    expect(systemsFor("gastro", { gastroKind: "restaurant", friendly: true })).toEqual(["freundlich", "nacht", "journal"]);
+    expect(systemsFor("gastro", { gastroKind: "imbiss", friendly: true })).toEqual(["freundlich", "plakat", "werkstoff"]);
+  });
+
+  test("Freundlich-Familie nie über den Namen allein", () => {
+    expect(keywordFamily("Dienstleistung", "Hundesalon Struppi")).toBeUndefined();
+    expect(keywordFamily("Seniorenheim", "Tagespflege & Day Care")).not.toBe("family");
+  });
+
+  test("ice cream equipment supplier ist kein Eis-Betrieb (B2B)", () => {
+    expect(isIceCream("ice cream equipment supplier")).toBe(false);
+    expect(isIceCream("Eismaschinen Großhandel")).toBe(false);
+    expect(blueprintFor("ice cream equipment supplier").gastroKind).not.toBe("cafe");
+  });
+});
+
+describe("Review F1: Erkennungslücken", () => {
+  test.each(["Pferdeklinik", "Hundephysiotherapie", "Hunde-Physiotherapie", "Pferdephysiotherapie", "Pferde Physiotherapie"])(
+    "%s → Tierarzt-Unterart",
+    category => {
+      expect(petKind(category)).toBe("vet");
+      expect(blueprintFor(category).id).toBe("pets");
+      expect(blueprintFor(category).hoursLabel).toBe("Sprechzeiten");
+    }
+  );
+  test.each(["Hundefutter", "Tiernahrung", "Katzenfutter"])("%s → Tierbedarf", category => {
+    expect(petKind(category)).toBe("shop");
+  });
+  test.each(["Krabbelgruppe", "Babymassage"])("%s → Kinder & Familie", category => {
+    expect(careFamily(category)).toBe("family");
+  });
+  test("Physiotherapie ohne Tier bleibt Gesundheit", () => {
+    expect(petKind("Physiotherapie")).toBeUndefined();
+    expect(blueprintFor("Physiotherapie").id).toBe("health");
+  });
+  test("Tierarzt-Bauplan ohne Namens-Trick: Prompt nennt nur die Kategorie", () => {
+    const vet = blueprintFor("Tierphysiotherapie", "Lea Sommer");
+    expect(vet.promptLines.join("\n")).toMatch(/Branche: Tierarztpraxis \(Tierphysiotherapie\)/);
   });
 });

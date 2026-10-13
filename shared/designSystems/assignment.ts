@@ -1,5 +1,10 @@
 import type { WebsiteDataV2 } from "../siteContract/types";
-import { blueprintFor, isBarberShop, type BlueprintId, type GastroKind } from "../blueprints/blueprints";
+import {
+  blueprintFor,
+  isBarberShop,
+  type BlueprintId,
+  type GastroKind,
+} from "../blueprints/blueprints";
 import {
   isIceCream,
   isKidsLessons,
@@ -11,7 +16,11 @@ import {
 } from "../blueprints/careWords";
 import type { DesignSystemId } from "./types";
 
-export type SystemTriple = readonly [DesignSystemId, DesignSystemId, DesignSystemId];
+export type SystemTriple = readonly [
+  DesignSystemId,
+  DesignSystemId,
+  DesignSystemId,
+];
 
 /** Spec §5 — Haupt, Alternative 1, Alternative 2. */
 const BY_FAMILY: Record<Exclude<BlueprintId, "gastro">, SystemTriple> = {
@@ -48,13 +57,17 @@ const GASTRO: Record<GastroKind, SystemTriple> = {
  * bekommen diese Betriebe über `withPrimarySystem` also genau das System
  * von vorher.
  */
-type FriendlyBase = "health" | "beauty" | "courses" | "retail" | "gastro" | "creative";
+type FriendlyBase =
+  | "health"
+  | "beauty"
+  | "courses"
+  | "retail"
+  | "creative";
 const FRIENDLY: Record<FriendlyBase, SystemTriple> = {
   health: ["freundlich", "klar", "journal"],
   beauty: ["freundlich", "journal", "werkstoff"],
   courses: ["freundlich", "plakat", "klar"],
   retail: ["freundlich", "werkstoff", "journal"],
-  gastro: ["freundlich", "werkstoff", "journal"],
   creative: ["freundlich", "journal", "raster"],
 };
 /** Tiere je Unterart — dieselbe Reihe wie die Familie, aus der sie kommen. */
@@ -82,16 +95,28 @@ export type SystemSub = {
   pediatric?: boolean;
 };
 
-export function systemsFor(family: BlueprintId, sub: SystemSub = {}): SystemTriple {
-  if (family === "pets") return sub.petKind ? PET_TRIPLE[sub.petKind] : BY_FAMILY.pets;
-  if (sub.friendly && family in FRIENDLY) return FRIENDLY[family as FriendlyBase];
+export function systemsFor(
+  family: BlueprintId,
+  sub: SystemSub = {}
+): SystemTriple {
+  if (family === "pets")
+    return sub.petKind ? PET_TRIPLE[sub.petKind] : BY_FAMILY.pets;
+  if (family === "gastro") {
+    const kind = GASTRO[sub.gastroKind ?? "restaurant"];
+    // Eis: Freundlich vorn, dahinter die Reihe der eigenen Gastro-Art.
+    return sub.friendly ? ["freundlich", kind[0], kind[1]] : kind;
+  }
+  if (sub.friendly && family in FRIENDLY)
+    return FRIENDLY[family as FriendlyBase];
   if (family === "health" && sub.pediatric) return PEDIATRIC;
-  if (family === "gastro") return GASTRO[sub.gastroKind ?? "restaurant"];
   if (family === "beauty" && sub.barber) return BARBER;
   return BY_FAMILY[family];
 }
 
-/** Freundliche Unterart einer bestehenden Familie aus Kategorie und Name. */
+/**
+ * Freundliche Unterart einer bestehenden Familie — NUR aus der Kategorie
+ * (Review F1): „Pizzeria Gelato" bleibt Pizzeria, „Dr. Tierarzt" Arzt.
+ */
 function friendlyVariant(family: BlueprintId, text: string): boolean {
   switch (family) {
     case "gastro":
@@ -112,16 +137,24 @@ function friendlyVariant(family: BlueprintId, text: string): boolean {
 }
 
 export function systemsForDoc(
-  doc: Pick<WebsiteDataV2, "businessCategory" | "businessName" | "blueprintFamily">
+  doc: Pick<
+    WebsiteDataV2,
+    "businessCategory" | "businessName" | "blueprintFamily"
+  >
 ): SystemTriple {
-  const bp = blueprintFor(doc.businessCategory, doc.businessName, doc.blueprintFamily);
+  const bp = blueprintFor(
+    doc.businessCategory,
+    doc.businessName,
+    doc.blueprintFamily
+  );
   const category = doc.businessCategory ?? "";
-  const text = `${category} ${doc.businessName}`;
   return systemsFor(bp.id, {
-    barber: bp.id === "beauty" && isBarberShop(doc.businessCategory, doc.businessName),
+    barber:
+      bp.id === "beauty" &&
+      isBarberShop(doc.businessCategory, doc.businessName),
     gastroKind: bp.gastroKind,
-    friendly: friendlyVariant(bp.id, text),
-    petKind: bp.id === "pets" ? (petKind(category) ?? petKind(doc.businessName)) : undefined,
-    pediatric: bp.id === "health" && isPediatric(text),
+    friendly: friendlyVariant(bp.id, category),
+    petKind: bp.id === "pets" ? petKind(category) : undefined,
+    pediatric: bp.id === "health" && isPediatric(category),
   });
 }
