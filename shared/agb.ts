@@ -1,9 +1,9 @@
 /**
  * Allgemeine Geschäftsbedingungen von Pageblitz — EINZIGE Quelle des
  * AGB-Texts (Seite `/agb`, Checkout-Häkchen, Stripe-Metadaten,
- * docs/agb-entwurf.md). Entwurf 2026-10-13, vom Betreiber zur anwaltlichen
- * Prüfung gegeben. Stellen mit „[PRÜFEN]“ sind Betreiber-Entscheidungen, die
- * im Code nicht belegt sind — vor dem Livegang auflösen.
+ * docs/agb-entwurf.md). Entwurf 2026-10-13, vom Betreiber freigegeben
+ * (Mahnfrist 14 Tage, Ankündigung Preisänderungen 6 Wochen) und zur
+ * anwaltlichen Prüfung gegeben.
  *
  * Versionierung: Jede inhaltliche Änderung bekommt eine neue AGB_VERSION
  * (Datum der Fassung). Der Checkout speichert die akzeptierte Version an
@@ -25,6 +25,7 @@ import {
   formatEuro,
 } from "./pricing";
 import { PRICE_MONTHLY, PRICE_YEARLY } from "./pricingText";
+import { CONTACT_EMAIL } from "./const";
 
 /** Fassung der AGB (Datum, ISO). Neue Fassung = neuer Wert. */
 export const AGB_VERSION = "2026-10-13";
@@ -41,7 +42,7 @@ export const AGB_PROVIDER = {
   street: "Zum Waldschlösschen 19",
   zipCity: "46395 Bocholt",
   country: "Deutschland",
-  email: "hello@pageblitz.de",
+  email: CONTACT_EMAIL,
   phone: "+49 2871 349 2100",
   vatId: "DE277120646",
   seatCity: "Bocholt",
@@ -152,7 +153,7 @@ export const AGB_SECTIONS: readonly AgbSection[] = [
     title: "Zahlungsverzug und Sperrung",
     paragraphs: [
       "Schlägt ein Einzug fehl oder gerät der Kunde mit einer Zahlung in Verzug, gelten die gesetzlichen Regeln. Der Kunde trägt die Kosten, die durch eine von ihm zu vertretende Rücklastschrift oder Zahlungsablehnung entstehen.",
-      "Ist der Kunde mit einer fälligen Zahlung in Verzug, darf der Anbieter die Website nach vorheriger Ankündigung in Textform und fruchtlosem Ablauf einer Zahlungsfrist von [PRÜFEN: 14] Tagen vorübergehend sperren (offline nehmen). Die Pflicht zur Zahlung der vereinbarten Entgelte bleibt während der Sperrung bestehen. Nach Zahlung wird die Website unverzüglich wieder freigeschaltet.",
+      "Ist der Kunde mit einer fälligen Zahlung in Verzug, darf der Anbieter die Website nach vorheriger Ankündigung in Textform und fruchtlosem Ablauf einer Zahlungsfrist von 14 Tagen vorübergehend sperren (offline nehmen). Die Pflicht zur Zahlung der vereinbarten Entgelte bleibt während der Sperrung bestehen. Nach Zahlung wird die Website unverzüglich wieder freigeschaltet.",
       "Bei Verzug mit einem Betrag, der zwei Monatsentgelten entspricht, darf der Anbieter den Vertrag außerordentlich kündigen.",
     ],
   },
@@ -161,7 +162,7 @@ export const AGB_SECTIONS: readonly AgbSection[] = [
     title: "Preisänderungen",
     paragraphs: [
       "Der Anbieter darf die Entgelte zum Beginn einer neuen Laufzeit (Jahrestarif) bzw. eines neuen Abrechnungsmonats (Monatstarif) anpassen, um gestiegene Kosten für Betrieb, Hosting, KI-Dienste oder Zahlungsabwicklung auszugleichen. Während einer laufenden Mindestlaufzeit bleibt der vereinbarte Preis unverändert.",
-      "Preisänderungen kündigt der Anbieter mindestens [PRÜFEN: 6 Wochen] vor ihrem Wirksamwerden in Textform an. Der Kunde kann den Vertrag in diesem Fall bis zum Wirksamwerden der Änderung zu diesem Zeitpunkt kündigen (Sonderkündigungsrecht); der Anbieter weist in der Ankündigung darauf hin. Kündigt der Kunde nicht, gilt der neue Preis ab dem angekündigten Zeitpunkt.",
+      "Preisänderungen kündigt der Anbieter mindestens 6 Wochen vor ihrem Wirksamwerden in Textform an. Der Kunde kann den Vertrag in diesem Fall bis zum Wirksamwerden der Änderung zu diesem Zeitpunkt kündigen (Sonderkündigungsrecht); der Anbieter weist in der Ankündigung darauf hin. Kündigt der Kunde nicht, gilt der neue Preis ab dem angekündigten Zeitpunkt.",
       "Ändert sich der gesetzliche Umsatzsteuersatz, ändern sich die Bruttopreise entsprechend.",
     ],
   },

@@ -794,7 +794,7 @@ Stripe-`consent_collection`**: Stripe nimmt die Terms-URL aus den
 Account-Einstellungen, und der Account ist mit anderen Produkten geteilt;
 die Zustimmung holt das Studio-Häkchen ein (siehe „Nur B2B + AGB“). Der
 frühere Schalter `STRIPE_TERMS_URL` ist entfernt — falls in `.env` gesetzt,
-wirkungslos. Stellen mit `[PRÜFEN]` vor dem Livegang auflösen.
+wirkungslos. Mahnfrist (14 Tage) und Preis-Ankündigung (6 Wochen) vom Betreiber freigegeben; AVV-Entwurf in `docs/avv-entwurf.md` (noch nicht veröffentlicht).
 
 ### GMB-Wahrheit & Erstgenerierung (seit Plan B7)
 

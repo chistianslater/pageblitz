@@ -10,8 +10,9 @@ dem Code erzeugt (`agbToMarkdown()`), ein Test prüft die Übereinstimmung.
 npx tsx -e 'import {agbToMarkdown} from "./shared/agb.ts"; process.stdout.write(agbToMarkdown())'
 ```
 
-**Stellen mit `[PRÜFEN]` sind Betreiber-Entscheidungen ohne Beleg im Code und
-müssen vor dem Livegang aufgelöst werden.**
+**Vom Betreiber freigegeben (13.10.2026):** Mahnfrist 14 Tage vor Sperrung,
+Ankündigung von Preisänderungen 6 Wochen vorher. Offene Platzhalter gibt es
+im AGB-Text nicht mehr.
 
 ## Bitte prüfen lassen
 
@@ -25,7 +26,7 @@ müssen vor dem Livegang aufgelöst werden.**
    Maßnahmen nötig (z. B. Pflichtfeld Firma/USt-IdNr.)? Folge, wenn doch ein
    Verbraucher bestellt (Widerrufsrecht, § 312k BGB Kündigungsbutton)?
 3. **Preisanpassungsklausel (§ 10):** Transparenz/Bestimmtheit der Gründe
-   („gestiegene Kosten …“), Ankündigungsfrist `[PRÜFEN: 6 Wochen]`,
+   („gestiegene Kosten …“), Ankündigungsfrist 6 Wochen,
    Sonderkündigungsrecht, Zustimmungsfiktion bei Schweigen — trägt das im
    B2B?
 4. **Haftungsbeschränkung (§ 16):** Kardinalpflicht-Formel, Ausschluss der
@@ -39,16 +40,15 @@ müssen vor dem Livegang aufgelöst werden.**
 6. **Rechtstexte der Kundenwebsite (§ 13):** Pageblitz erzeugt Impressum und
    Datenschutzerklärung. Reicht „Vorlage, keine Rechtsberatung, Kunde
    verantwortlich“ (RDG, Haftung bei fehlerhafter Vorlage)?
-7. **Zahlungsverzug/Sperrung (§ 9):** Mahnfrist `[PRÜFEN: 14]` Tage,
+7. **Zahlungsverzug/Sperrung (§ 9):** Mahnfrist 14 Tage,
    außerordentliche Kündigung ab Verzug mit zwei Monatsentgelten,
    Fortbestehen der Zahlungspflicht während der Sperrung.
 8. **Leistungsänderungsvorbehalt (§ 3 Abs. 5):** zulässig in dieser Form?
 9. **Freistellung (§ 11 Abs. 4)** und **Sperrrecht bei Rechtsverletzungen
    (§ 11 Abs. 3).**
-10. **Auftragsverarbeitung (§ 17):** Ein AVV existiert noch nicht — muss
-    erstellt werden (Unterauftragsverarbeiter u. a. Hostinger, Stripe, Resend,
-    KI-Anbieter, Umami, Cloudflare R2). Reicht „Bestandteil, auf Anfrage“,
-    oder muss der AVV im Checkout mit abgeschlossen werden?
+10. **Auftragsverarbeitung (§ 17):** AVV-Entwurf liegt in
+    `docs/avv-entwurf.md` (noch nicht veröffentlicht). Reicht „Bestandteil,
+    auf Anfrage“, oder muss der AVV im Checkout mit abgeschlossen werden?
 11. **Herausgabe nach Vertragsende (§ 18 Abs. 2):** 30 Tage, Inhalte (Texte,
     Fotos, Logo) „in einem gängigen Dateiformat“, kein Anspruch auf Code oder
     lauffähige Kopie. Es gibt dafür noch keine Export-Funktion — der Betreiber
@@ -66,19 +66,14 @@ müssen vor dem Livegang aufgelöst werden.**
     Änderung der AGB während der Laufzeit. Braucht es eine (mit
     Widerspruchsrecht)?
 
-## Fakten, die nicht im Code/Doku belegt waren
+## Offene Fakten
 
-- Mahnfrist vor Sperrung (14 Tage) und Ankündigungsfrist für Preisänderungen
-  (6 Wochen) — Vorschläge, im Text mit `[PRÜFEN]` markiert.
-- AVV-Dokument und Export-/Herausgabeprozess existieren noch nicht.
-- Domains: Laut Code verbindet der Kunde seine eigene Domain per CNAME beim
-  eigenen Domain-Anbieter (Kundenkonto „Eigene Domain verbinden“) — Pageblitz
-  registriert keine Domains. Eine SEO-Seite (`server/seo/landingPages.ts`,
-  Fotografen-FAQ) nennt die eigene Domain „als Add-on nutzbar“; ein solches
-  Add-on gibt es in `shared/pricing.ts` nicht.
-- Kontakt-E-Mail: Impressum/Datenschutz nennen `hello@pageblitz.de`,
-  Landing-Fuß und SEO-Startseite `hallo@pageblitz.de`. Die AGB nutzen die
-  Adresse aus dem Impressum.
+- Export-/Herausgabeprozess (§ 18 Abs. 2) existiert noch nicht als Funktion.
+- Domains: Pageblitz registriert keine Domains; der Kunde verbindet seine
+  eigene Domain per CNAME beim eigenen Domain-Anbieter (inklusive, kein
+  Add-on — die frühere gegenteilige SEO-FAQ ist korrigiert).
+- Kontaktadresse ist überall `hello@pageblitz.de` (`shared/const.ts`
+  `CONTACT_EMAIL`, Wächter `server/contactEmail.test.ts`).
 - Telefon steht im Impressum, wird in den AGB aber nicht als Support-Kanal
   zugesagt.
 
@@ -162,7 +157,7 @@ Fassung 2026-10-13 · Stand: 13.10.2026
 
 (1) Schlägt ein Einzug fehl oder gerät der Kunde mit einer Zahlung in Verzug, gelten die gesetzlichen Regeln. Der Kunde trägt die Kosten, die durch eine von ihm zu vertretende Rücklastschrift oder Zahlungsablehnung entstehen.
 
-(2) Ist der Kunde mit einer fälligen Zahlung in Verzug, darf der Anbieter die Website nach vorheriger Ankündigung in Textform und fruchtlosem Ablauf einer Zahlungsfrist von [PRÜFEN: 14] Tagen vorübergehend sperren (offline nehmen). Die Pflicht zur Zahlung der vereinbarten Entgelte bleibt während der Sperrung bestehen. Nach Zahlung wird die Website unverzüglich wieder freigeschaltet.
+(2) Ist der Kunde mit einer fälligen Zahlung in Verzug, darf der Anbieter die Website nach vorheriger Ankündigung in Textform und fruchtlosem Ablauf einer Zahlungsfrist von 14 Tagen vorübergehend sperren (offline nehmen). Die Pflicht zur Zahlung der vereinbarten Entgelte bleibt während der Sperrung bestehen. Nach Zahlung wird die Website unverzüglich wieder freigeschaltet.
 
 (3) Bei Verzug mit einem Betrag, der zwei Monatsentgelten entspricht, darf der Anbieter den Vertrag außerordentlich kündigen.
 
@@ -170,7 +165,7 @@ Fassung 2026-10-13 · Stand: 13.10.2026
 
 (1) Der Anbieter darf die Entgelte zum Beginn einer neuen Laufzeit (Jahrestarif) bzw. eines neuen Abrechnungsmonats (Monatstarif) anpassen, um gestiegene Kosten für Betrieb, Hosting, KI-Dienste oder Zahlungsabwicklung auszugleichen. Während einer laufenden Mindestlaufzeit bleibt der vereinbarte Preis unverändert.
 
-(2) Preisänderungen kündigt der Anbieter mindestens [PRÜFEN: 6 Wochen] vor ihrem Wirksamwerden in Textform an. Der Kunde kann den Vertrag in diesem Fall bis zum Wirksamwerden der Änderung zu diesem Zeitpunkt kündigen (Sonderkündigungsrecht); der Anbieter weist in der Ankündigung darauf hin. Kündigt der Kunde nicht, gilt der neue Preis ab dem angekündigten Zeitpunkt.
+(2) Preisänderungen kündigt der Anbieter mindestens 6 Wochen vor ihrem Wirksamwerden in Textform an. Der Kunde kann den Vertrag in diesem Fall bis zum Wirksamwerden der Änderung zu diesem Zeitpunkt kündigen (Sonderkündigungsrecht); der Anbieter weist in der Ankündigung darauf hin. Kündigt der Kunde nicht, gilt der neue Preis ab dem angekündigten Zeitpunkt.
 
 (3) Ändert sich der gesetzliche Umsatzsteuersatz, ändern sich die Bruttopreise entsprechend.
 
