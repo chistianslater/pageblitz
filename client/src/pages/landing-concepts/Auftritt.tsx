@@ -1,6 +1,12 @@
 import React from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Logo, StartForm, DemoLink, Price, Questions, Footer } from "./shared";
+import { LANDING_SHOWROOM } from "@shared/landingShowroom";
+
+/** System-Demo zum alten Showroom-Bild (Links ohne Umweg über den 301). */
+const demoHref = (image: string): string =>
+  LANDING_SHOWROOM.find(item => item.image === image)?.href ??
+  LANDING_SHOWROOM[0].href;
 export default function Auftritt() {
   return (
     <div className="concept concept-bold" id="top">
@@ -109,10 +115,10 @@ export default function Auftritt() {
                   Deine Arbeit im Mittelpunkt. Mit Bildern, die zeigen, was
                   deinen Stil ausmacht.
                 </p>
-                <DemoLink id="salon-noir">Salon-Website entdecken</DemoLink>
+                <DemoLink href={demoHref("salon-noir")}>Salon-Website entdecken</DemoLink>
               </div>
               <a
-                href="/demo/salon-noir"
+                href={demoHref("salon-noir")}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Salon-Demo öffnen"
@@ -141,7 +147,7 @@ export default function Auftritt() {
               ].map(d => (
                 <article key={d.id}>
                   <a
-                    href={`/demo/${d.id}`}
+                    href={demoHref(d.id)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -155,13 +161,13 @@ export default function Auftritt() {
                   </a>
                   <span className="bold-index">{d.label}</span>
                   <h3>{d.title}</h3>
-                  <DemoLink id={d.id}>Website ansehen</DemoLink>
+                  <DemoLink href={demoHref(d.id)}>Website ansehen</DemoLink>
                 </article>
               ))}
             </div>
             <p className="bold-example-note">
-              20 Designrichtungen. Farben, Schriften und Inhalte, die deinen
-              Auftritt zu deinem machen.
+              Sechs Designs mit je drei Farbstimmungen. Dazu deine Inhalte, die
+              deinen Auftritt zu deinem machen.
             </p>
           </div>
         </section>

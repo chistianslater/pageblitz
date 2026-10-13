@@ -10,6 +10,10 @@ import {
 import { generateHomePrerender, buildHomeFaqSchema } from "./seo/homePage";
 import { PRICING, addonPrice, ADDON_KEYS, formatEuro } from "../shared/pricing";
 import { LANDING_FEATURES } from "../shared/landingFeatures";
+import {
+  LANDING_SHOWROOM,
+  LANDING_SHOWROOM_NOTE,
+} from "../shared/landingShowroom";
 
 describe("SEO_INDUSTRY_LINKS bleibt deckungsgleich mit SEO_INDUSTRIES", () => {
   it("enthält exakt dieselben Slugs", () => {
@@ -218,5 +222,22 @@ describe("Home-Prerender", () => {
         `Unbekannter Monatspreis im Prerender: ${price}`
       ).toBe(true);
     }
+  });
+});
+
+describe("Showroom der Startseite zeigt auf die System-Demos (Packs entfernt)", () => {
+  it("Prerender verlinkt nur /demo/system/… und keine alte Pack-Demo", () => {
+    const html = generateHomePrerender();
+    for (const item of LANDING_SHOWROOM) {
+      expect(item.href).toMatch(/^\/demo\/system\/[a-z]+\/[a-z0-9-]+$/);
+      expect(html).toContain(`href="${item.href}"`);
+    }
+    expect(html).not.toMatch(/href="\/demo\/(?!system\/)/);
+  });
+
+  it("verspricht keine freie Schriftwahl mehr", () => {
+    const html = generateHomePrerender();
+    expect(html).not.toContain("Schriften");
+    expect(html).toContain(LANDING_SHOWROOM_NOTE);
   });
 });

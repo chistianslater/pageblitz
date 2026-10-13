@@ -27,6 +27,11 @@
 import { HOME_FAQ_VISIBLE } from "../../shared/faq";
 import { LANDING_FEATURES } from "../../shared/landingFeatures";
 import {
+  LANDING_DESIGN_CHOICE,
+  LANDING_SHOWROOM,
+  LANDING_SHOWROOM_NOTE,
+} from "../../shared/landingShowroom";
+import {
   ADDON_NAMES,
   PRICING,
   addonPrice,
@@ -55,12 +60,8 @@ const C = {
   voltInk: "#25300d",
 };
 
-/** Die drei Branchenbeispiele aus dem Klarstart-Hero (`choices`). */
-const CHOICES = [
-  { label: "Salon & Beauty", pack: "salon-noir", name: "NOIR Haarstudio" },
-  { label: "Restaurant & Café", pack: "gusto", name: "Trattoria Lucia" },
-  { label: "Architektur & Planung", pack: "raster", name: "Studio Raster" },
-];
+/** Die drei Branchenbeispiele aus dem Klarstart-Hero (shared/landingShowroom.ts). */
+const CHOICES = LANDING_SHOWROOM;
 
 /** Vorteilsleiste unter dem Hero (`clear-benefit-strip`). */
 const BENEFITS = [
@@ -89,7 +90,7 @@ const STEPS = [
 /** Die Punkte aus dem Abschnitt „Deine Website bleibt deine Website". */
 const CONTROL_POINTS = [
   "Texte und Bilder jederzeit anpassen",
-  "Farben und Schriften selbst wählen",
+  LANDING_DESIGN_CHOICE,
   "Änderungen in der Vorschau prüfen",
 ];
 
@@ -141,7 +142,7 @@ export function generateHomePrerender(): string {
 
   const choices = CHOICES.map(
     c =>
-      `<li style="${CARD}"><h3 style="font-size:1rem;font-weight:700;margin:0 0 .35rem;color:${C.ink}">${escapeHtml(c.label)}</h3><p style="font-size:.875rem;line-height:1.55;color:${C.muted};margin:0 0 .5rem">Beispielwebsite ${escapeHtml(c.name)}</p><a href="/demo/${c.pack}" style="font-size:.875rem;color:${C.ink}">Live ansehen</a></li>`
+      `<li style="${CARD}"><h3 style="font-size:1rem;font-weight:700;margin:0 0 .35rem;color:${C.ink}">${escapeHtml(c.label)}</h3><p style="font-size:.875rem;line-height:1.55;color:${C.muted};margin:0 0 .5rem">Beispielwebsite ${escapeHtml(c.name)}</p><a href="${escapeHtml(c.href)}" style="font-size:.875rem;color:${C.ink}">Live ansehen</a></li>`
   ).join("\n          ");
 
   const benefits = BENEFITS.map(
@@ -214,7 +215,7 @@ export function generateHomePrerender(): string {
         <ul style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;list-style:none;margin:0;padding:0">
           ${choices}
         </ul>
-        <p style="${LEAD};margin-top:1rem">Deine Farben, deine Schriften, deine Inhalte. Du bestimmst den letzten Schliff.</p>
+        <p style="${LEAD};margin-top:1rem">${escapeHtml(LANDING_SHOWROOM_NOTE)}</p>
       </div>
       <ul style="display:flex;flex-wrap:wrap;gap:.75rem;list-style:none;margin:2rem 0 0;padding:0">
         ${benefits}

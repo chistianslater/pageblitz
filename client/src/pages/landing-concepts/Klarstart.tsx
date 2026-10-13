@@ -16,15 +16,17 @@ import {
   Footer,
 } from "./shared";
 import { startHref } from "@/components/landing/primitives";
+import {
+  LANDING_DESIGN_CHOICE,
+  LANDING_SHOWROOM,
+  LANDING_SHOWROOM_NOTE,
+} from "@shared/landingShowroom";
 import ClearFeatures from "./ClearFeatures";
 import TypingStart from "./TypingStart";
 import BuildStory from "./BuildStory";
 import "./clear-flow.css";
-const choices = [
-  { label: "Salon & Beauty", pack: "salon-noir", name: "NOIR Haarstudio" },
-  { label: "Restaurant & Café", pack: "gusto", name: "Trattoria Lucia" },
-  { label: "Architektur & Planung", pack: "raster", name: "Studio Raster" },
-];
+// Branchenbeispiele: Links auf die System-Demos, Bilder noch alt [E4].
+const choices = LANDING_SHOWROOM;
 function EditingDemo() {
   const root = useRef<HTMLDivElement>(null);
   const [frame, setFrame] = useState(0);
@@ -255,7 +257,7 @@ export default function Klarstart() {
               >
                 {choices.map((c, i) => (
                   <button
-                    key={c.pack}
+                    key={c.image}
                     aria-pressed={i === active}
                     onClick={() => {
                       setActive(i);
@@ -283,10 +285,7 @@ export default function Klarstart() {
               )}
               <div className="clear-choice-note">
                 <Check size={18} />
-                <p>
-                  Deine Farben, deine Schriften, deine Inhalte. Du bestimmst den
-                  letzten Schliff.
-                </p>
+                <p>{LANDING_SHOWROOM_NOTE}</p>
               </div>
             </aside>
             <div className="clear-preview">
@@ -296,14 +295,14 @@ export default function Klarstart() {
                 <span>↗</span>
               </div>
               <a
-                href={`/demo/${item.pack}`}
+                href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Demo ${item.name} öffnen`}
               >
                 <img
-                  key={item.pack}
-                  src={`/landing/${item.pack}.webp`}
+                  key={item.image}
+                  src={`/landing/${item.image}.webp`}
                   alt={`Pageblitz-Beispielwebsite ${item.name}`}
                   width="1200"
                   height="833"
@@ -313,7 +312,7 @@ export default function Klarstart() {
                 <span>
                   <i /> Mit Pageblitz gestaltet
                 </span>
-                <DemoLink id={item.pack}>Live ansehen</DemoLink>
+                <DemoLink href={item.href}>Live ansehen</DemoLink>
               </div>
             </div>
           </div>
@@ -352,7 +351,7 @@ export default function Klarstart() {
                   <Check size={17} /> Texte und Bilder jederzeit anpassen
                 </li>
                 <li>
-                  <Check size={17} /> Farben und Schriften selbst wählen
+                  <Check size={17} /> {LANDING_DESIGN_CHOICE}
                 </li>
                 <li>
                   <Check size={17} /> Änderungen in der Vorschau prüfen

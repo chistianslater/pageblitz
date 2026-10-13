@@ -479,7 +479,7 @@ function Example({ id }: { id: AddOnKey }) {
         ))}
       </div>
       <a
-        href="/demo/salon-noir"
+        href="/demo/system/journal/friseur"
         target="_blank"
         rel="noopener noreferrer"
         className="lc-link"

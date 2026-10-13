@@ -47,17 +47,18 @@ export function StartForm({
     </form>
   );
 }
+/** Link auf eine System-Demo (`/demo/system/<System>/<Beispiel>`). */
 export function DemoLink({
-  id,
+  href,
   children,
 }: {
-  id: string;
+  href: string;
   children: React.ReactNode;
 }) {
   return (
     <a
       className="lc-link"
-      href={`/demo/${id}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
     >

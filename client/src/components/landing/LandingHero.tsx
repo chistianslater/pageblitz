@@ -148,7 +148,10 @@ export function LandingHero(props: Omit<HeroFormProps, "idPrefix" | "size">) {
             {/* Reibungsfreier Sekundär-CTA (Snaplove-Muster „Live
                 ausprobieren"): erst gucken, ohne irgendetwas einzugeben. */}
             <p className="lp-rise lp-rise-4 mt-5">
-              <a href="/demo/gusto" className={`${textLink} text-[0.95rem]`}>
+              <a
+                href="/demo/system/nacht/restaurant"
+                className={`${textLink} text-[0.95rem]`}
+              >
                 Oder erst eine Live-Demo ansehen →
               </a>
             </p>
