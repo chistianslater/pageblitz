@@ -6,6 +6,8 @@ import { legalParts, versalEszett, type SystemSection } from "../shared";
 import type { Blueprint } from "../../../../../../shared/blueprints/blueprints";
 import { PlakatEntry } from "./Entry";
 import type { Field } from "./rhythm";
+import { wordFitEm } from "./fit";
+import { PLAKAT } from "../../../../../../shared/designSystems/plakat";
 import {
   PlakatPriced,
   PlakatProcess,
@@ -44,6 +46,18 @@ const CHAPTER_LABELS: Partial<Record<PlakatSection["type"], string>> = {
   quote: "Motto",
   cta: "Anfrage",
 };
+
+const H2_TRACK = parseFloat(PLAKAT.type.h2.track);
+
+/**
+ * Deckel der Stufe h2 fürs längste Wort (CSS: `100cqi / --pk-word`):
+ * lange Wörter („Öffnungszeiten.", „Steuerberatungsgesellschaft") werden
+ * kleiner statt im Wort zu brechen.
+ */
+export const wordFit = (text: string) =>
+  ({
+    "--pk-word": wordFitEm(text, 92, H2_TRACK).toFixed(3),
+  }) as React.CSSProperties;
 
 /** Titel: eigene Überschrift, sonst Bauplan, sonst Plakat-Wortwahl. */
 export function chapterTitle(
@@ -95,7 +109,11 @@ export function PlakatChapter({
     </h2>
   ) : (
     <>
-      <h2 className="pk-title" id={headingId}>
+      <h2
+        className="pk-title"
+        id={headingId}
+        style={wordFit(`${versalEszett(title)}.`)}
+      >
         {rich(versalEszett(title))}
         <span className="pk-dot" aria-hidden="true">
           .
@@ -150,7 +168,12 @@ export function PlakatPageHead({
     return (
       <section className="pk-page-head pk-ground">
         <div className="pk-wrap">
-          <h2 className="pk-page-title">{rich(versalEszett(title ?? ""))}</h2>
+          <h2
+            className="pk-page-title"
+            style={wordFit(versalEszett(title ?? ""))}
+          >
+            {rich(versalEszett(title ?? ""))}
+          </h2>
           {intro && <p className="pk-intro">{rich(intro)}</p>}
         </div>
       </section>
@@ -168,10 +191,15 @@ export function PlakatPageHead({
           <h1
             id="seite-titel"
             className="pk-page-title"
+            style={wordFit(titleHtml.replace(/<[^>]*>/g, " "))}
             dangerouslySetInnerHTML={{ __html: titleHtml }}
           />
         ) : (
-          <h1 id="seite-titel" className="pk-page-title">
+          <h1
+            id="seite-titel"
+            className="pk-page-title"
+            style={wordFit(versalEszett(title ?? ""))}
+          >
             {rich(versalEszett(title ?? ""))}
           </h1>
         )}

@@ -21,7 +21,7 @@ import {
   plakatActions,
   type EntryVariant,
 } from "./facts";
-import { staggerLines } from "./fit";
+import { staggerLines, wordFitEm } from "./fit";
 import { statusLine } from "./hours";
 import type { Field } from "./rhythm";
 import { PlakatSticker } from "./Sticker";
@@ -40,7 +40,11 @@ import { SYS_ACTIONS } from "../shared/dockAutoHide";
 
 const TRACK = parseFloat(PLAKAT.type.display.track);
 
-/** Große Zeile in Staffel (Zeilen und Breite aus fit.ts, Größe per CSS). */
+/**
+ * Große Zeile in Staffel (Zeilen und Breite aus fit.ts, Größe per CSS).
+ * `--pk-word` deckelt den Fließsatz (lang, Desktop ohne Foto) am längsten
+ * Wort, damit der Browser nur zwischen Wörtern umbricht.
+ */
 function Display({ text, h1 }: { text: string; h1: boolean }) {
   const { lines, indent, widthEm } = staggerLines(text, TRACK);
   const Tag = h1 ? "h1" : "p";
@@ -52,9 +56,10 @@ function Display({ text, h1 }: { text: string; h1: boolean }) {
         {...id}
         className={flow ? "pk-display pk-display--flow" : "pk-display"}
         style={
-          flow
-            ? undefined
-            : ({ "--pk-fit": widthEm.toFixed(3) } as React.CSSProperties)
+          {
+            ...(flow ? {} : { "--pk-fit": widthEm.toFixed(3) }),
+            "--pk-word": wordFitEm(text, 88, TRACK).toFixed(3),
+          } as React.CSSProperties
         }
       >
         {flow

@@ -28,6 +28,10 @@ const ENTRY = `/* Einstieg: arch · circle · type */
   .pb-plakat .pk-display{font-size:clamp(var(--sys-h3-size),calc(100cqi / var(--pk-fit)),var(--sys-display-size))}
 }
 .pb-plakat .pk-display--flow,.pb-plakat .pk-display.pk-display--flow{font-size:var(--sys-h2-size);text-wrap:balance}
+/* Fließsatz: Stufe h2, gedeckelt am längsten Wort (--pk-word aus fit.ts) — Umbruch nur zwischen Wörtern */
+@supports (font-size:1cqi){
+  .pb-plakat .pk-display--flow,.pb-plakat .pk-display.pk-display--flow{font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}
+}
 /* Formen: Duoton = grau + multiply auf Feldfarbe */
 .pb-plakat .pk-shape{position:relative;overflow:hidden;isolation:isolate;background:var(--pk-shape-bg,var(--sys-rule))}
 .pb-plakat .pk-shape img{display:block;width:100%;height:100%;max-width:none;object-fit:cover;filter:var(--sys-image-filter);mix-blend-mode:multiply}
@@ -60,7 +64,10 @@ const ENTRY = `/* Einstieg: arch · circle · type */
   .pb-plakat .pk-entry--type .pk-display span{display:inline}
   .pb-plakat .pk-entry--type .pk-display .pk-in{padding-left:0}
   /* Ohne Foto trägt die Schrift die ganze Fläche: eine Stufe größer, bricht als Plakatzeilen um */
-  .pb-plakat .pk-entry--type .pk-display{font-size:calc(var(--sys-display-size) * 1.35)}
+  .pb-plakat .pk-entry--type .pk-display{font-size:calc(var(--sys-display-size) * 1.35);text-wrap:balance}
+  @supports (font-size:1cqi){
+    .pb-plakat .pk-entry--type .pk-display{font-size:min(calc(var(--sys-display-size) * 1.35),100cqi / var(--pk-word,1))}
+  }
   .pb-plakat .pk-entry--type .pk-entry-stk{position:absolute;right:var(--sys-space-gutter);top:0}
   .pb-plakat .pk-entry--arch .pk-entry-stk{left:calc(var(--pk-stk) * -.47);top:calc(var(--sys-space-xl) * .875)}
   .pb-plakat .pk-facts{grid-column:1/-1;grid-row:3;grid-template-columns:repeat(4,minmax(0,1fr))}

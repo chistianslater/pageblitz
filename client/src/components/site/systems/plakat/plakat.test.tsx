@@ -198,7 +198,7 @@ describe("Plakat: Einstieg", () => {
       '<div class="pk-entry-kicker"><h1 id="start-titel" class="pk-entry-name">Kante Barbershop</h1><span>, Münster</span></div>'
     );
     expect(entry).toMatch(
-      /<p class="pk-display" style="--pk-fit:[\d.]+"><span>Fade,<\/span> <span class="pk-in">Bart,<\/span> <span>fertig\.<\/span><\/p>/
+      /<p class="pk-display" style="--pk-fit:[\d.]+;--pk-word:[\d.]+"><span>Fade,<\/span> <span class="pk-in">Bart,<\/span> <span>fertig\.<\/span><\/p>/
     );
     expect(entry).toContain('class="pk-shape pk-shape--arch"');
     expect(entry).toMatch(
@@ -217,7 +217,7 @@ describe("Plakat: Einstieg", () => {
     expect(entry).toContain('class="pk-entry pk-entry--circle pk-f1"');
     expect(entry).toContain('<p class="pk-status">Heute bis 2 Uhr offen</p>');
     expect(entry).toMatch(
-      /<h1 id="start-titel" class="pk-display" style="--pk-fit:[\d.]+"><span>Döner<\/span> <span class="pk-in">Ecke<\/span><\/h1>/
+      /<h1 id="start-titel" class="pk-display" style="--pk-fit:[\d.]+;--pk-word:[\d.]+"><span>Döner<\/span> <span class="pk-in">Ecke<\/span><\/h1>/
     );
     expect(entry).toContain('class="pk-shape pk-shape--circle"');
     expect(entry).toContain(
@@ -362,6 +362,28 @@ describe("Plakat: Kopf und Fuß", () => {
     });
     expect(html).toMatch(
       /<p class="pk-foot-word"[^>]*><span>Pageblitz<\/span><span>Demo-Werkstatt<\/span><\/p>/
+    );
+  });
+
+  test("Umbruch: Titel und große Zeile brechen nur zwischen Wörtern (Stufe am längsten Wort gedeckelt)", () => {
+    // Titel: h2 mit --pk-word, Spalte als Container, Stufe min(h2, 100cqi / Wort).
+    const html = render(kanteDoc());
+    expect(html).toMatch(/<h2 class="pk-title" id="[a-z-]+-titel" style="--pk-word:[\d.]+">/);
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat .pk-sec>.pk-wrap,.pb-plakat .pk-page-head>.pk-wrap,.pb-plakat .pk-split-body{container-type:inline-size}"
+    );
+    expect(PLAKAT_CSS).toContain(
+      ".pb-plakat .pk-title,.pb-plakat .pk-page-title{font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}"
+    );
+    // Fließsatz und Schrift-Einstieg am Desktop: ebenfalls gedeckelt, ausgewogen.
+    expect(PLAKAT_CSS).toContain(
+      "font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}"
+    );
+    expect(PLAKAT_CSS).toMatch(
+      /\.pk-entry--type \.pk-display\{font-size:min\(calc\(var\(--sys-display-size\) \* 1\.35\),100cqi \/ var\(--pk-word,1\)\)\}/
+    );
+    expect(PLAKAT_CSS).toMatch(
+      /\.pk-entry--type \.pk-display\{font-size:calc\(var\(--sys-display-size\) \* 1\.35\);text-wrap:balance\}/
     );
   });
 

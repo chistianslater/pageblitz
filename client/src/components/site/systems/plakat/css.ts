@@ -90,6 +90,8 @@ ${FONT_FACES}
 /* Kapitel: League-Gothic-Überschrift mit Signal-Punkt */
 .pb-plakat .pk-sec{padding-block:var(--sys-space-section)}
 .pb-plakat .pk-title{${step("h2")};overflow-wrap:break-word}
+/* Titel umbrechen nur zwischen Wörtern: Stufe h2, gedeckelt am längsten Wort (--pk-word, fit.ts) */
+.pb-plakat .pk-sec>.pk-wrap,.pb-plakat .pk-page-head>.pk-wrap,.pb-plakat .pk-split-body{container-type:inline-size}
 .pb-plakat .pk-dot{color:var(--sys-accent)}
 .pb-plakat .pk-f1 .pk-dot,.pb-plakat .pk-f2 .pk-dot,.pb-plakat .pk-deep .pk-dot{color:inherit}
 .pb-plakat .pk-intro{margin-top:var(--sys-space-m);max-width:var(--sys-space-measure)}
@@ -100,6 +102,9 @@ ${sections}
 .pb-plakat .pk-page-head{padding-block:var(--sys-space-l) var(--sys-space-xl)}
 .pb-plakat .pk-page-kicker{${step("kicker")};color:var(--pk-muted);margin-bottom:var(--sys-space-xs)}
 .pb-plakat .pk-page-title{${step("h2")};overflow-wrap:anywhere}
+@supports (font-size:1cqi){
+  .pb-plakat .pk-title,.pb-plakat .pk-page-title{font-size:min(var(--sys-h2-size),100cqi / var(--pk-word,1))}
+}
 .pb-plakat .pk-legal{padding-bottom:var(--sys-space-section)}
 .pb-plakat .pk-legal>*{max-width:var(--sys-space-measure)}
 .pb-plakat .pk-legal h2{${step("h3")};margin:var(--sys-space-xl) 0 var(--sys-space-s)}
