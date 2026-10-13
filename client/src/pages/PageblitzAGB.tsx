@@ -24,9 +24,14 @@ export default function PageblitzAGB() {
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-white font-semibold tracking-tight">Pageblitz</span>
+            <span className="text-white font-semibold tracking-tight">
+              Pageblitz
+            </span>
           </Link>
-          <Link href="/" className="text-sm text-white/40 hover:text-white/80 transition-colors">
+          <Link
+            href="/"
+            className="text-sm text-white/40 hover:text-white/80 transition-colors"
+          >
             ← Zurück
           </Link>
         </div>
@@ -34,14 +39,20 @@ export default function PageblitzAGB() {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-bold mb-2">Allgemeine Geschäftsbedingungen</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          Allgemeine Geschäftsbedingungen
+        </h1>
         <p className="text-white/40 text-sm mb-12">
           Fassung {AGB_VERSION} · Stand: {AGB_STAND}
         </p>
 
         <div className="space-y-10 text-white/80 leading-relaxed">
           {AGB_SECTIONS.map((section, i) => (
-            <section key={section.id} id={section.id} aria-labelledby={`agb-${section.id}`}>
+            <section
+              key={section.id}
+              id={section.id}
+              aria-labelledby={`agb-${section.id}`}
+            >
               <h2
                 id={`agb-${section.id}`}
                 className="text-lg font-semibold text-white mb-3 pb-2 border-b border-white/10"
@@ -69,8 +80,18 @@ export default function PageblitzAGB() {
         <div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/30">
           <span>© 2026 Pageblitz – eine Marke von Schau und Horch</span>
           <div className="flex gap-6">
-            <Link href="/impressum" className="hover:text-white/80 transition-colors">Impressum</Link>
-            <Link href="/datenschutz" className="hover:text-white/80 transition-colors">Datenschutz</Link>
+            <Link
+              href="/impressum"
+              className="hover:text-white/80 transition-colors"
+            >
+              Impressum
+            </Link>
+            <Link
+              href="/datenschutz"
+              className="hover:text-white/80 transition-colors"
+            >
+              Datenschutz
+            </Link>
             <span className="text-white/60">AGB</span>
           </div>
         </div>
