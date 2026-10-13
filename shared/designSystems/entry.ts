@@ -62,6 +62,15 @@ export function entryComposition(
   return "portrait";
 }
 
+/** Seed des Entwurfsprofils: Name, Kategorie und Textstimme des Betriebs. */
+export function entrySeed(
+  input: Pick<EntryInput, "businessName" | "businessCategory" | "stylePackId">
+): number {
+  return designSeed(
+    `${input.businessName}|${input.businessCategory ?? ""}|${input.stylePackId}`
+  );
+}
+
 /** Profil einer neuen Seite: Standard + Einstieg nach Fotos + Seed. */
 export function entryProfile(
   input: EntryInput,
@@ -70,8 +79,6 @@ export function entryProfile(
   return {
     ...DEFAULT_DESIGN_PROFILE,
     composition: entryComposition(input, photos),
-    seed: designSeed(
-      `${input.businessName}|${input.businessCategory ?? ""}|${input.stylePackId}`
-    ),
+    seed: entrySeed(input),
   };
 }

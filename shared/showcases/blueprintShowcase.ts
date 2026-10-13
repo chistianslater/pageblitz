@@ -7,10 +7,8 @@
 import { withDesignSystem, withPrimarySystem } from "../designSystems/apply";
 import type { DesignSystemId } from "../designSystems/types";
 import { getSystem } from "../designSystems/registry";
-import {
-  DEFAULT_DESIGN_PROFILE,
-  designSeed,
-} from "../siteContract/designProfile";
+import { entrySeed } from "../designSystems/entry";
+import { DEFAULT_DESIGN_PROFILE } from "../siteContract/designProfile";
 import { getFixture } from "../siteContract/fixtures";
 import type { SectionOf, WebsiteDataV2 } from "../siteContract/types";
 import { INDUSTRY_IMAGES } from "../industryImages";
@@ -1451,9 +1449,7 @@ export function showcaseBase(showcase: Showcase): WebsiteDataV2 {
   const designProfile = {
     ...DEFAULT_DESIGN_PROFILE,
     composition: showcase.systemEntry ?? "stage",
-    seed: designSeed(
-      `${withExtras.businessName}|${withExtras.businessCategory ?? ""}|${withExtras.stylePackId}`
-    ),
+    seed: entrySeed(withExtras),
   };
   return withSampleAction(
     withStudioMenu(

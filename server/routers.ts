@@ -1260,7 +1260,7 @@ export const appRouter = router({
             })
         );
 
-        // Wie eine neue Seite: Design-Stand, Farbwelt, Einstieg nach Fotos.
+        // Wie eine neue Seite: Design-Stand, Farbstimmung [E3], Einstieg nach Fotos.
         websiteData = withNewSiteDesign(websiteData, packId, images);
 
         const newPreviewToken =

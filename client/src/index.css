@@ -725,13 +725,6 @@ html.lp-reveal-on .lp-section.lp-in li:nth-child(5) {
 html.lp-reveal-on .lp-section.lp-in li:nth-child(n + 6) {
   transition-delay: 340ms;
 }
-/* Die Vier-Schritte-Reihe choreografiert GSAP selbst (HowItWorks.tsx,
-   Bounce + Nudge) — der CSS-Stagger bleibt dort komplett aus. */
-html.lp-reveal-on .lp-section [data-gsap-steps] li {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
 /* Mini-Visual-Loops der Vier Schritte (lph-*): kleine, ruhige Bewegungen,
    die den jeweiligen Schritt erklären. Nur unter no-preference. */
 .lph-line {

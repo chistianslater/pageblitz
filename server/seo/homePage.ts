@@ -16,7 +16,7 @@
  * Weicht er ab, ist das aus Google-Sicht Cloaking. Seit dem Klarstart-Relaunch
  * ist das `client/src/pages/landing-concepts/Klarstart.tsx` samt `BuildStory`,
  * `ClearFeatures` und `shared.tsx` — nicht mehr die alten Bausteine in
- * `client/src/components/landing/` (ProblemSection, HowItWorks, TrustSection,
+ * `client/src/components/landing/` (ProblemSection, TrustSection,
  * Pricing), die `/` nicht mehr rendert. Reihenfolge und Überschriften unten
  * folgen Klarstart Abschnitt für Abschnitt.
  *

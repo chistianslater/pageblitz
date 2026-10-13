@@ -23,12 +23,8 @@ const DEMO_FEATURES = {
 };
 
 /**
- * Demo-Unterseite für die "full"-Fixtures aller 14 Packs (Plan B6 Task 2).
- * Bewusst identisch über alle Packs — solange kein Pack `pages` auswertet
- * (Task 3/4), ändert sich am Rendering nichts, daher bleiben die
- * Playwright-Baselines von `packs.spec.ts` für "full" unverändert (siehe
- * Task-Kommentar im Plan). Task 3 baut daraus die SSR/CSR-Route
- * `/leistungen-im-detail`, Task 4 die Navigation in den Packs.
+ * Demo-Unterseite für die "full"-Fixtures (Plan B6 Task 2). Identisch über
+ * alle Textstimmen; die Systeme rendern sie als `/leistungen-im-detail`.
  */
 const DEMO_PAGES: NonNullable<WebsiteDataV2["pages"]> = [
   {

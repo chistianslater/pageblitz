@@ -3,7 +3,8 @@
  * Packs entfernen 2026-10-13). Bis dahin ergab sie sich aus dem Pack-Akzent
  * (Pack-Farbthema → `pickPalette`); die Tabelle hält genau diese Wahl fest,
  * damit `/demo/system/…` ohne `?palette` unverändert aussieht. Fehlt ein
- * Eintrag, gilt die erste Palette des Systems.
+ * Eintrag, gilt die Regel für neue Seiten (`defaultPalette` in
+ * `designSystems/apply.ts`: Palette nach `designSeed` von Name und Kategorie).
  */
 import type { DesignSystemId } from "../designSystems/types";
 
