@@ -4,8 +4,8 @@ Diese Liste ist verbindlich. Nicht „aus Kulanz“ umgehen.
 
 ## Produkt
 
-- **Sechs Designsysteme** (`journal`, `raster`, `werkstoff`, `plakat`, `klar`,
-  `nacht`), nur rev 3; kein Pack-Renderer mehr. Quelle:
+- **Sieben Designsysteme** (`journal`, `raster`, `werkstoff`, `plakat`, `klar`,
+  `nacht`, `freundlich`), nur rev 3; kein Pack-Renderer mehr. Quelle:
   `shared/designSystems/types.ts`. Die 20 **Textstimmen**
   (`shared/siteContract/packIds.ts`, `shared/textVoices/`) steuern nur Texte;
   keine Stimmen-ID umbenennen, das Feld `stylePackId` bleibt (Rollback).
