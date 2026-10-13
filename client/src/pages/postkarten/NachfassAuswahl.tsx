@@ -43,10 +43,10 @@ export default function NachfassAuswahl({
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         <p className="text-muted-foreground">
-          {berechtigt.length} von {zeilen.length} Karten der ersten Welle
-          kommen in Frage (versendet, nie gescannt, keine Testkarte, Seite
-          nicht gekauft). Vorgeschlagen: fünf, reihum über die Städte. Die
-          alte Karte bleibt unverändert; die neue bekommt einen eigenen Code.
+          {berechtigt.length} von {zeilen.length} Karten der ersten Welle kommen
+          in Frage (versendet, nie gescannt, keine Testkarte, Seite nicht
+          gekauft). Vorgeschlagen: fünf, reihum über die Städte. Die alte Karte
+          bleibt unverändert; die neue bekommt einen eigenen Code.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full">

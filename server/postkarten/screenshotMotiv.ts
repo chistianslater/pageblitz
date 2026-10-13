@@ -69,7 +69,9 @@ export const SICHER_FELD_MM: Feld = {
 };
 
 export function ueberschneiden(a: Feld, b: Feld): boolean {
-  return a.x < b.x + b.b && b.x < a.x + a.b && a.y < b.y + b.h && b.y < a.y + a.h;
+  return (
+    a.x < b.x + b.b && b.x < a.x + a.b && a.y < b.y + b.h && b.y < a.y + a.h
+  );
 }
 
 export function innerhalb(innen: Feld, aussen: Feld): boolean {

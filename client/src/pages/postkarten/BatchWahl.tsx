@@ -130,8 +130,8 @@ export function BatchWahl({
         </select>
       </div>
       <p className="text-xs text-muted-foreground">
-        Gilt für Motiv, Vorschau und Auftrag der ausgewählten Zeilen und wird
-        an der Karte gespeichert.
+        Gilt für Motiv, Vorschau und Auftrag der ausgewählten Zeilen und wird an
+        der Karte gespeichert.
         {wert.batch === "D" &&
           " Batch D: Karten zuerst unten unter „Nachfass“ anlegen, dann hier wie gewohnt Motiv, Vorschau, Auftrag."}
       </p>
